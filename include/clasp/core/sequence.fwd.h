@@ -24,28 +24,13 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#ifndef _core_Sequence_H
-#define _core_Sequence_H
-
-#include <clasp/core/foundation.h>
-#include <clasp/core/object.h>
-#include <clasp/core/sequence.fwd.h>
-#include <clasp/core/corePackage.fwd.h>
-
+#ifndef _core_Sequence_fwd_H
 namespace core {
-  size_t cl__length(T_sp arg);
-
-  T_sp cl__reverse(T_sp obj);
-  T_sp cl__nreverse(T_sp obj);
-
-  T_sp cl__elt(T_sp sequence, size_t index);
-  T_sp core_setf_elt(T_sp sequence, size_t index, T_sp value);
-
-  T_sp cl__subseq(T_sp sequence, size_t start, T_sp end);
-  T_sp core_setf_subseq(T_sp sequence, size_t start, T_sp end, T_sp newSubseq);
-
-  T_sp cl__copy_seq(T_sp seq);
-
+  size_t_pair sequenceKeywordStartEnd(Symbol_sp function_name,
+                               T_sp seq, Fixnum_sp start, T_sp end);
+  size_t_pair sequenceStartEnd(Symbol_sp function_name,
+                               size_t length, size_t start, T_sp end);
+  void sequenceIndexInBounds(Symbol_sp fn_name, size_t vector_length, size_t index);
 
 };
-#endif /* _core_Sequence_H */
+#endif

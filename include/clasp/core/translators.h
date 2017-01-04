@@ -85,19 +85,6 @@ struct from_object<int, std::true_type> {
   from_object(core::T_sp o) : _v(clasp_to_int(gc::As<core::Integer_sp>(o))){};
 };
 
-template <>
-struct from_object<uchar, std::true_type> {
-  typedef uchar DeclareType;
-  DeclareType _v;
-  from_object(core::T_sp o) {
-    int v = clasp_to_int(gc::As<core::Integer_sp>(o));
-    if (v >= 0 && v < 255) {
-      this->_v = v;
-      return;
-    }
-    SIMPLE_ERROR(BF("Could not convert %d to uchar") % v);
-  }
-};
 
  template <>
 struct from_object<short, std::true_type> {
@@ -377,21 +364,21 @@ template <>
 struct from_object<const string &, std::true_type> {
   typedef string DeclareType;
   DeclareType _v;
-  from_object(T_P o) : _v(str_get(o)){};
+  from_object(T_P o) : _v(string_get_std_string(o)){};
 };
 
 template <>
 struct from_object<string, std::true_type> {
   typedef string DeclareType;
   DeclareType _v;
-  from_object(T_P o) : _v(str_get(o)){};
+  from_object(T_P o) : _v(string_get_std_string(o)){};
 };
 
 template <>
 struct from_object<string &, std::true_type> {
   typedef string DeclareType;
   DeclareType _v;
-  from_object(T_P o) : _v(str_get(o)){};
+  from_object(T_P o) : _v(string_get_std_string(o)){};
 };
 
 template <>
@@ -421,19 +408,6 @@ struct to_object<string, translate::dont_adopt_pointer> {
   }
 };
 
-#if 0
-    template <>
-	struct	to_object<const string>
-    {
-	typedef	core::Str_sp		ExpectedType;
-	typedef	core::Str_sp		DeclareType;
-	static core::T_sp convert(const string& v)
-	{_G();
-	    core::T_sp oi = core::str_create(v);
-	    return Values(oi);
-	}
-    };
-#endif
 
 template <>
 struct to_object<const std::string &> {

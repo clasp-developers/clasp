@@ -40,20 +40,10 @@ THE SOFTWARE.
 
 namespace core {
 
-int clasp_string_case(Str_sp s) {
-  int upcase = 0;
-  for (cl_index i(0),iEnd(s->length()); i<iEnd; ++i ) {
-    if (clasp_isupper((*s)[i])) {
-      if (upcase < 0)
-        return 0;
-      upcase = +1;
-    } else if (clasp_islower((*s)[i])) {
-      if (upcase > 0)
-        return 0;
-      upcase = -1;
-    }
-  }
-  return upcase;
+
+void handleWideCharactersError(claspCharacter cc)
+{
+  SIMPLE_ERROR(BF("A wide character with the value %d was encountered in a function that needed a base-char") % cc);
 }
 
 /*! Return -1 if a<b
@@ -198,9 +188,9 @@ CL_DECLARE();
 CL_DOCSTRING("NE_");
 CL_DEFUN T_sp cl__char_NE_(List_sp args) {
   while (args.notnilp()) {
-    int a = clasp_as_character(gc::As<Character_sp>(oCar(args)));
+    int a = as_claspCharacter(gc::As<Character_sp>(oCar(args)));
     for (List_sp cur = oCdr(args); cur.notnilp(); cur = oCdr(cur)) {
-      int b = clasp_as_character(gc::As<Character_sp>(oCar(cur)));
+      int b = as_claspCharacter(gc::As<Character_sp>(oCar(cur)));
       if (a == b)
         return ((_Nil<T_O>()));
     }
@@ -215,10 +205,10 @@ CL_DOCSTRING("EQ_");
 CL_DEFUN T_sp cl__char_EQ_(List_sp args) {
   if (args.nilp())
     return ((_lisp->_true()));
-  int a = clasp_as_character(gc::As<Character_sp>(oCar(args)));
+  int a = as_claspCharacter(gc::As<Character_sp>(oCar(args)));
   args = oCdr(args);
   while (args.notnilp()) {
-    int b = clasp_as_character(gc::As<Character_sp>(oCar(args)));
+    int b = as_claspCharacter(gc::As<Character_sp>(oCar(args)));
     if (a != b)
       return ((_Nil<T_O>()));
     args = oCdr(args);
@@ -231,10 +221,10 @@ CL_DECLARE();
 CL_DOCSTRING("Like char_NE_ but ignore case");
 CL_DEFUN T_mv cl__char_not_equal(List_sp args) {
   while (args.notnilp()) {
-    int a = clasp_as_character(gc::As<Character_sp>(oCar(args)));
+    int a = as_claspCharacter(gc::As<Character_sp>(oCar(args)));
     a = toupper(a);
     for (List_sp cur = oCdr(args); cur.notnilp(); cur = oCdr(cur)) {
-      int b = clasp_as_character(gc::As<Character_sp>(oCar(cur)));
+      int b = as_claspCharacter(gc::As<Character_sp>(oCar(cur)));
       b = toupper(b);
       if (a == b)
         return (Values(_Nil<T_O>()));
@@ -251,8 +241,8 @@ bool clasp_charEqual2(T_sp x, T_sp y) {
     return cx == cy;
   }
   // Get rid of this when we lose Character_O
-  int icx = toupper(clasp_as_character(gc::As<Character_sp>(x)));
-  int icy = toupper(clasp_as_character(gc::As<Character_sp>(y)));
+  int icx = toupper(as_claspCharacter(gc::As<Character_sp>(x)));
+  int icy = toupper(as_claspCharacter(gc::As<Character_sp>(y)));
   return icx == icy;
 }
 
@@ -262,11 +252,11 @@ CL_DOCSTRING("Like char_EQ_, ignore case");
 CL_DEFUN bool cl__char_equal(List_sp args) {
   if (args.nilp())
     return true;
-  int a = clasp_as_character(gc::As<Character_sp>(oCar(args)));
+  int a = as_claspCharacter(gc::As<Character_sp>(oCar(args)));
   a = toupper(a);
   args = oCdr(args);
   while (args.notnilp()) {
-    int b = clasp_as_character(gc::As<Character_sp>(oCar(args)));
+    int b = as_claspCharacter(gc::As<Character_sp>(oCar(args)));
     b = toupper(b);
     if (a != b)
       return false;
@@ -350,7 +340,7 @@ void CharacterInfo::initialize() {
 //    printf("%s:%d Adding char: %s  at: %d\n", __FILE__, __LINE__, name, fci);
     this->gNamesToCharacterIndex[name] = fci;
     this->gIndexedCharacters[fci] = clasp_make_standard_character((char)fci);
-    this->gCharacterNames[fci] = Str_O::create(name);
+    this->gCharacterNames[fci] = SimpleBaseCharString_O::make(std::string(name));
   }
   gNamesToCharacterIndex["NULL"] = 0;
   gNamesToCharacterIndex["LINEFEED"] = 10;
@@ -432,7 +422,7 @@ CL_DEFUN T_sp cl__digit_char_p(Character_sp c, Fixnum_sp radix) {
   if (basis < 2 || basis > 36) {
     QERROR_WRONG_TYPE_NTH_ARG(2, radix, Integer_O::makeIntegerType(2, 36));
   }
-  Fixnum value = clasp_digitp(clasp_as_character(c), basis);
+  Fixnum value = clasp_digitp(as_claspCharacter(c), basis);
   if (value < 0) {
     return _Nil<T_O>();
   }
@@ -442,8 +432,8 @@ CL_DEFUN T_sp cl__digit_char_p(Character_sp c, Fixnum_sp radix) {
 CL_LAMBDA(sname);
 CL_DECLARE();
 CL_DOCSTRING("name_char");
-CL_DEFUN T_mv cl__name_char(Str_sp sname) {
-  Str_sp name = coerce::stringDesignator(sname);
+CL_DEFUN T_mv cl__name_char(T_sp sname) {
+  String_sp name = coerce::stringDesignator(sname);
   string upname = stringUpper(name->get());
   map<string, int>::const_iterator it = _lisp->characterInfo().gNamesToCharacterIndex.find(upname);
   if (it != _lisp->characterInfo().gNamesToCharacterIndex.end()) {
@@ -455,9 +445,9 @@ CL_DEFUN T_mv cl__name_char(Str_sp sname) {
 CL_LAMBDA(och);
 CL_DECLARE();
 CL_DOCSTRING("char_name");
-CL_DEFUN Str_sp cl__char_name(Character_sp och) {
+CL_DEFUN SimpleBaseCharString_sp cl__char_name(Character_sp och) {
   char ch = clasp_as_char(och);
-  return (_lisp->characterInfo().gCharacterNames[ch]);
+  return _lisp->characterInfo().gCharacterNames[ch];
 };
 
 CL_LAMBDA(och);

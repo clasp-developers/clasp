@@ -41,8 +41,6 @@ THE SOFTWARE.
 #include <clasp/core/bignum.h>
 #include <clasp/core/binder.fwd.h>
 #include <clasp/core/binder.h>
-#include <clasp/core/bitVector.fwd.h>
-#include <clasp/core/bitVector.h>
 #include <clasp/core/bootStrapCoreSymbolMap.h>
 #include <clasp/core/builtInClass.fwd.h>
 #include <clasp/core/builtInClass.h>

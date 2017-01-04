@@ -56,7 +56,7 @@ CL_DEFUN T_sp core__calculate_missing_common_lisp_symbols() {
     T_mv sym = commonLispPackage->findSymbol(it.first);
     T_sp found = sym.valueGet_(1);
     if (found.nilp()) {
-      missing = Cons_O::create(Str_O::create(it.first), missing);
+      missing = Cons_O::create(SimpleBaseCharString_O::make(it.first), missing);
     }
   }
   return missing;
@@ -65,7 +65,7 @@ CL_DEFUN T_sp core__calculate_missing_common_lisp_symbols() {
 void initializeAllClSymbols(Package_sp commonLispPkg) {
 #define AddClSymbol(name)                        \
   {                                              \
-    Symbol_sp sym = commonLispPkg->intern(Str_O::create(name)); \
+    Symbol_sp sym = commonLispPkg->intern(SimpleBaseCharString_O::make(name)); \
     commonLispPkg->_export2(sym);                \
   }
   AddClSymbol("&ALLOW-OTHER-KEYS");

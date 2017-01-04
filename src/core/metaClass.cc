@@ -305,7 +305,7 @@ namespace core {
 void Class_O::lowLevel_calculateClassPrecedenceList() {
   using namespace boost;
   HashTableEq_sp supers = HashTableEq_O::create_default();
-  VectorObjects_sp arrayedSupers(VectorObjects_O::make(_Nil<T_O>(), 16, cl::_sym_T_O, clasp_make_fixnum(0)));
+  VectorObjects_sp arrayedSupers(VectorObjects_O::make(16, _Nil<T_O>(), clasp_make_fixnum(0)));
   this->accumulateSuperClasses(supers, arrayedSupers, this->sharedThis<Class_O>());
   vector<list<int>> graph(cl__length(arrayedSupers));
 

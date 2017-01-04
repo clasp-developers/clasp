@@ -793,7 +793,7 @@ CLBIND_TRANSLATE_SYMBOL_TO_ENUM(clang::AccessSpecifier, asttooling::_sym_STARcla
 namespace asttooling {
 void initialize_astExpose() {
   core::Package_sp pkg = _lisp->findPackage(ClangAstPkg); //, {"CAST"}, {}); //{"CAST"},{"CL","CORE","AST_TOOLING"});
-  pkg->shadow(core::Str_O::create("TYPE"));
+  pkg->shadow(core::SimpleBaseCharString_O::make("TYPE"));
   package(ClangAstPkg)[ //,{"CAST"},{"CL","CORE","AST-TOOLING"}) [
     class_<clang::Decl>("Decl", no_default_constructor)
      .def("getGlobalID", &clang::Decl::getGlobalID)
@@ -1084,7 +1084,7 @@ void initialize_astExpose() {
 
     ,
     class_<Type>("Type", no_default_constructor)
-        .def("dump", &clang::Type::dump)
+    .def("dump", (void(clang::Type::*)() const)&clang::Type::dump)
         //            .  def("getAsCXXRecordDecl",&clang::Type::getAsCXXRecordDecl)
         //            .  def("getAsStructureType",&clang::Type::getAsStructureType)
         .def("getAsTemplateSpecializationType", &clang::Type::getAs<clang::TemplateSpecializationType>, policies<>(), "", "", "Specialization of getAs<TemplateSpecializationType>")

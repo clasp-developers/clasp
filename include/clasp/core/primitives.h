@@ -67,7 +67,7 @@ List_sp cl__append(List_sp lists);
 
 //    Stream_mv af_open(T_sp filespec, Symbol_sp direction, T_sp element_type, T_sp if_exists, T_sp if_does_not_exist, T_sp external_format );
 
- Symbol_mv cl__gensym(T_sp x = _Nil<T_O>());
+ Symbol_sp cl__gensym(T_sp x = _Nil<T_O>());
 
 };
 
@@ -119,7 +119,7 @@ public:
   };
   virtual T_sp element() const {
     if (this->_Index < cl__length(this->_Domain)) {
-      return this->_Domain->elt(this->_Index);
+      return this->_Domain->rowMajorAref(this->_Index);
     } else {
       return _Nil<T_O>();
     }
@@ -263,6 +263,7 @@ namespace core {
   void core__setf_global_inline_statis(core::T_sp name, bool status, core::T_sp env);
   T_sp cl__fdefinition(T_sp functionName);
   T_mv cl__special_operator_p(T_sp sym);
+  List_sp core__list_from_va_list(VaList_sp valist);
 
 };
 

@@ -34,7 +34,14 @@ THE SOFTWARE.
 
 
 namespace core {
-
+  FORWARD(BaseSimpleVector);
+  FORWARD(SimpleString);
+  FORWARD(SimpleBaseCharString);
+  FORWARD(SimpleCharacterString);
+  FORWARD(MDArrayNs);
+  FORWARD(StrNs);
+  FORWARD(Str8Ns);
+  FORWARD(StrWNs);
 }; /* core */
 
 
@@ -45,13 +52,13 @@ namespace core {
   //  Convert 8-bit strings
   
 /*! Access functions to avoid having to include the entire class */
-string str_get(T_sp str);
-string str_get(Str_sp str);
+string string_get_std_string(T_sp str);
+string string_get_std_string(String_sp str);
 
-/*! Create a Str_O object */
+/*! Create a SimpleBaseCharString_O object */
 T_sp str_create(const string &val);
 
-/*! Create a Str_O object from a const char* */
+/*! Create a SimpleBaseCharString_O object from a const char* */
 T_sp str_create(const char *val);
 
 }; /* core */

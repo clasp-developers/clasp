@@ -24,7 +24,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#define DEBUG_LEVEL_NONE
+#define DEBUG_LEVEL_FULL
 #include <clasp/core/foundation.h>
 #pragma clang diagnostic push
 //#pragma clang diagnostic ignored "-Wunused-local-typedef"
@@ -252,16 +252,21 @@ typedef enum {
   short_float_exp
 } FloatExponentType;
 
-string tokenStr(const vector<uint> &token, uint start = 0, uint end = UNDEF_UINT) {
-  stringstream ss;
-  for (uint i = start, iEnd(end == UNDEF_UINT ? token.size() : end);
-       i < iEnd; ++i) {
-    ss << CHR(token[i]);
+SimpleString_sp tokenStr(const vector<claspCharacter> &token, size_t start = 0, size_t end = UNDEF_UINT) {
+  bool extended = false;
+  if (end==UNDEF_UINT) end = token.size();
+  for (size_t i = start, iEnd(end); i < iEnd; ++i) if (token[i]>255) extended = true;
+  unlikely_if (extended) {
+    StrWNs_sp sw = StrWNs_O::make(16,'\0',clasp_make_fixnum(0));
+    for (size_t i=start,iEnd(end); i<iEnd; ++i) sw->vectorPushExtend_claspCharacter(token[i]);
+    return sw;
   }
-  return ss.str();
+  Str8Ns_sp s8 = Str8Ns_O::make(16,'\0',clasp_make_fixnum(0));
+  for (size_t i=start,iEnd(end); i<iEnd; ++i) s8->vectorPushExtend_claspChar(token[i]);
+  return s8;
 }
 
-T_sp interpret_token_or_throw_reader_error(T_sp sin, const vector<uint> &token) {
+T_sp interpret_token_or_throw_reader_error(T_sp sin, const vector<claspCharacter> &token) {
   ASSERTF(token.size() > 0, BF("The token is empty!"));
   const uint *start = token.data();
   const uint *cur = start;
@@ -410,12 +415,8 @@ T_sp interpret_token_or_throw_reader_error(T_sp sin, const vector<uint> &token) 
   case tsymz:
     // interpret symbols in current package
     {
-      if (cl::_sym_STARread_suppressSTAR->symbolValue().isTrue())
-        return _Nil<T_O>();
-      string symbolName = tokenStr(token, name_marker - token.data());
-      LOG(BF("Interpreting symbol tokenStr=|%s|") % symbolName );
-      Str_sp sym_name = Str_O::create(symbolName);
-      LOG(BF("sym_name = |%s|") % sym_name->get());
+      if (cl::_sym_STARread_suppressSTAR->symbolValue().isTrue()) return _Nil<T_O>();
+      SimpleString_sp sym_name = tokenStr(token, name_marker - token.data());
       Symbol_sp sym = _lisp->getCurrentPackage()->intern(sym_name);
       LOG(BF("sym->symbolNameAsString() = |%s|") % sym->symbolNameAsString());
       return sym;
@@ -438,18 +439,19 @@ T_sp interpret_token_or_throw_reader_error(T_sp sin, const vector<uint> &token) 
       ++separator;
       ++cur;
     }
-    string symbolName = tokenStr(token, name_marker - token.data());
-    Str_sp symbol_name_str = Str_O::create(symbolName);
-    LOG(BF("Interpreting token as packageName[%s] and symbol-name[%s]") % packageSin.str() % symbolName);
+    // TODO Handle proper string names
+    SimpleString_sp symbol_name_str = tokenStr(token, name_marker - token.data());
+    LOG(BF("Interpreting token as packageName[%s] and symbol-name[%s]") % packageSin.str() % symbol_name_str->get_std_string());
+    // TODO Deal with proper string package names
     string packageName = packageSin.str();
     Package_sp pkg = gc::As<Package_sp>(_lisp->findPackage(packageName, true));
     Symbol_sp sym;
     if (separator == 1) { // Asking for external symbol
-      Symbol_mv sym_mv = pkg->_findSymbol(symbol_name_str);
+      Symbol_mv sym_mv = pkg->findSymbol_SimpleString(symbol_name_str);
       sym = sym_mv;
       T_sp status = sym_mv.second();
       if (status != kw::_sym_external) {
-        SIMPLE_ERROR(BF("Cannot find the external symbol %s in %s") % symbolName % _rep_(pkg));
+        SIMPLE_ERROR(BF("Cannot find the external symbol %s in %s") % symbol_name_str->get_std_string() % _rep_(pkg));
       }
     } else {
       sym = pkg->intern(symbol_name_str);
@@ -462,8 +464,7 @@ T_sp interpret_token_or_throw_reader_error(T_sp sin, const vector<uint> &token) 
       return _Nil<T_O>();
     // interpret good keywords
     LOG(BF("Token[%s] interpreted as keyword") % name_marker);
-    string keywordName = tokenStr(token, name_marker - token.data());
-    Str_sp keyword_name = Str_O::create(keywordName);
+    SimpleString_sp keyword_name = tokenStr(token, name_marker - token.data());
     return _lisp->keywordPackage()->intern(keyword_name);
   } break;
   case tsyme:
@@ -473,16 +474,17 @@ T_sp interpret_token_or_throw_reader_error(T_sp sin, const vector<uint> &token) 
     if (cl::_sym_STARread_suppressSTAR->symbolValue().isTrue())
       return _Nil<T_O>();
     // interpret failed symbols
-    SIMPLE_ERROR(BF("Error encountered while reading source file %s at character position %s - Could not interpret symbol state(%s) symbol: [%s]") % _rep_(clasp_filename(sin,false)) % _rep_(clasp_file_position(sin)) % stateString(state) % tokenStr(token, start - token.data()));
+    SIMPLE_ERROR(BF("Error encountered while reading source file %s at character position %s - Could not interpret symbol state(%s) symbol: [%s]") % _rep_(clasp_filename(sin,false)) % _rep_(clasp_file_position(sin)) % stateString(state) % tokenStr(token, start - token.data())->get_std_string());
     break;
   case tintt:
   case tintp:
     // interpret ints
     {
-      int read_base = unbox_fixnum(gc::As<Fixnum_sp>(cl::_sym_STARread_baseSTAR->symbolValue()));
-      string num = tokenStr(token, start - token.data());
-      if (num[0] == '+')
-        num = num.substr(1, num.size());
+      ASSERT(cl::_sym_STARread_baseSTAR->symbolValue().fixnump());
+      int read_base = cl::_sym_STARread_baseSTAR->symbolValue().unsafe_fixnum();
+      SimpleString_sp ssnum = tokenStr(token, start - token.data());
+      string num = ssnum->get_std_string();
+      if (num[0] == '+') num = num.substr(1,num.size());
       try {
         if (num[num.size() - 1] == '.') {
           mpz_class z10(num.substr(0, num.size() - 1), 10);
@@ -499,7 +501,8 @@ T_sp interpret_token_or_throw_reader_error(T_sp sin, const vector<uint> &token) 
     break;
   case tratio: {
     // interpret ratio
-    string ratioStr = tokenStr(token, start - token.data());
+    SimpleString_sp sRatioStr = tokenStr(token, start - token.data());
+    std::string ratioStr = sRatioStr->get_std_string();
     if (ratioStr[0] == '+') {
       Ratio_sp rp = Ratio_O::create(ratioStr.substr(1, ratioStr.size() - 1).c_str());
       return rp;
@@ -517,11 +520,11 @@ T_sp interpret_token_or_throw_reader_error(T_sp sin, const vector<uint> &token) 
       case undefined_exp: {
         char *lastValid = NULL;
         if (cl::_sym_STARreadDefaultFloatFormatSTAR->symbolValue() == cl::_sym_single_float) {
-          string numstr = tokenStr(token, start - token.data()).c_str();
+          string numstr = tokenStr(token, start - token.data())->get_std_string();
           double d = ::strtod(numstr.c_str(), &lastValid);
           return clasp_make_single_float(d);
         } else if (cl::_sym_STARreadDefaultFloatFormatSTAR->symbolValue() == cl::_sym_DoubleFloat_O) {
-          string numstr = tokenStr(token, start - token.data()).c_str();
+          string numstr = tokenStr(token, start - token.data())->get_std_string();
           double d = ::strtod(numstr.c_str(), &lastValid);
           return DoubleFloat_O::create(d);
         } else {
@@ -530,31 +533,31 @@ T_sp interpret_token_or_throw_reader_error(T_sp sin, const vector<uint> &token) 
       }
       case float_exp: {
         char *lastValid = NULL;
-        string numstr = fix_exponent_char(tokenStr(token, start - token.data()).c_str());
+        string numstr = fix_exponent_char(tokenStr(token, start - token.data())->get_std_string().c_str());
         double d = ::strtod(numstr.c_str(), &lastValid);
         return DoubleFloat_O::create(d);
       }
       case short_float_exp: {
         char *lastValid = NULL;
-        string numstr = fix_exponent_char(tokenStr(token, start - token.data()).c_str());
+        string numstr = fix_exponent_char(tokenStr(token, start - token.data())->get_std_string().c_str());
         double d = ::strtod(numstr.c_str(), &lastValid);
         return clasp_make_single_float(d);
       }
       case single_float_exp: {
         char *lastValid = NULL;
-        string numstr = fix_exponent_char(tokenStr(token, start - token.data()).c_str());
+        string numstr = fix_exponent_char(tokenStr(token, start - token.data())->get_std_string().c_str());
         double d = ::strtod(numstr.c_str(), &lastValid);
         return clasp_make_single_float(d);
       }
       case double_float_exp: {
         char *lastValid = NULL;
-        string numstr = fix_exponent_char(tokenStr(token, start - token.data()).c_str());
+        string numstr = fix_exponent_char(tokenStr(token, start - token.data())->get_std_string().c_str());
         double d = ::strtod(numstr.c_str(), &lastValid);
         return DoubleFloat_O::create(d);
       }
       case long_float_exp: {
         char *lastValid = NULL;
-        string numstr = fix_exponent_char(tokenStr(token, start - token.data()).c_str());
+        string numstr = fix_exponent_char(tokenStr(token, start - token.data())->get_std_string().c_str());
 #ifdef CLASP_LONG_FLOAT
         LongFloat d = ::strtold(numstr.c_str(), &lastValid);
         return LongFloat_O::create(d);
@@ -727,7 +730,7 @@ T_mv lisp_object_query(T_sp sin, bool eofErrorP, T_sp eofValue, bool recursiveP)
   ++monitorReaderStep;
 #endif
   string chars;
-  vector<uint> token;
+  vector<claspCharacter> token;
   ReadTable_sp readTable = _lisp->getCurrentReadTable();
   Character_sp x, y, z, X, Y, Z;
 /* See the CLHS 2.2 Reader Algorithm  - continue has the effect of jumping to step 1 */

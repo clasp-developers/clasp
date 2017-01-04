@@ -63,7 +63,6 @@ THE SOFTWARE.
 #include <clasp/core/structureClass.h>
 #include <clasp/core/structureObject.h>
 #include <clasp/core/str.h>
-#include <clasp/core/binder.h>
 #include <clasp/core/pointer.h>
 #include <clasp/core/wrappedPointer.h>
 #include <clasp/core/debugger.h>
@@ -319,10 +318,10 @@ Symbol_sp lisp_symbolNil() {
 CL_LAMBDA(name);
 CL_DECLARE();
 CL_DOCSTRING("lispifyName");
-CL_DEFUN Str_sp core__lispify_name(Str_sp name) {
+CL_DEFUN String_sp core__lispify_name(String_sp name) {
   ASSERT(name.notnilp());
   string lispified = lispify_symbol_name(name->get());
-  return Str_O::create(lispified);
+  return SimpleBaseCharString_O::make(lispified);
 };
 
 /*!
@@ -353,7 +352,7 @@ CL_DEFUN Symbol_sp core__magic_intern(const string& name, const string& package)
   std::string pkg;
   colon_split(pkg_sym,pkg,sym);
   Package_sp p = _lisp->findPackage(pkg);
-  return p->intern(Str_O::create(sym));
+  return p->intern(SimpleBaseCharString_O::make(sym));
 }
 
 
@@ -418,7 +417,7 @@ CL_DEFUN T_mv core__magic_name(const std::string& name, const std::string& packa
   std::string sym;
   std::string pkg;
   colon_split(pkg_sym,pkg,sym);
-  return Values(Str_O::create(pkg_sym),Str_O::create(pkg),Str_O::create(sym));
+  return Values(SimpleBaseCharString_O::make(pkg_sym),SimpleBaseCharString_O::make(pkg),SimpleBaseCharString_O::make(sym));
 };
 
 
@@ -747,7 +746,7 @@ string _rep_(T_sp obj) {
 #if defined(USE_WRITE_OBJECT)
   T_sp sout = clasp_make_string_output_stream();
   write_object(obj, sout);
-  return cl__get_output_stream_string(sout).as<Str_O>()->get();
+  return cl__get_output_stream_string(sout).as<String_O>()->get();
 #else
   if (obj.fixnump()) {
     stringstream ss;
@@ -898,7 +897,7 @@ List_sp lisp_parse_arguments(const string &packageName, const string &args) {
     return _Nil<T_O>();
   Package_sp pkg = gc::As<Package_sp>(_lisp->findPackage(packageName, true));
   ChangePackage changePackage(pkg);
-  Str_sp ss = Str_O::create(args);
+  SimpleBaseCharString_sp ss = SimpleBaseCharString_O::make(args);
   Stream_sp str = cl__make_string_input_stream(ss, make_fixnum(0), _Nil<T_O>());
   Reader_sp reader = Reader_O::create(str);
   T_sp osscons = reader->primitive_read(true, _Nil<T_O>(), false);
@@ -911,7 +910,7 @@ List_sp lisp_parse_declares(const string &packageName, const string &declarestri
     return _Nil<T_O>();
   Package_sp pkg = gc::As<Package_sp>(_lisp->findPackage(packageName, true));
   ChangePackage changePackage(pkg);
-  Str_sp ss = Str_O::create(declarestring);
+  SimpleBaseCharString_sp ss = SimpleBaseCharString_O::make(declarestring);
   Stream_sp str = cl__make_string_input_stream(ss, make_fixnum(0), _Nil<T_O>());
   Reader_sp reader = Reader_O::create(str);
   List_sp sscons = reader->primitive_read(true, _Nil<T_O>(), false);
@@ -999,7 +998,7 @@ void lisp_defineSingleDispatchMethod(Symbol_sp sym,
   if (autoExport)
     sym->exportYourself();
   LOG(BF("Interned method in class[%s]@%p with symbol[%s] arguments[%s] - autoexport[%d]") % receiver_class->instanceClassName() % (receiver_class.get()) % sym->fullName() % arguments % autoExport);
-  Str_sp docStr = Str_O::create(docstring);
+  SimpleBaseCharString_sp docStr = SimpleBaseCharString_O::make(docstring);
   T_sp gfn = core__ensure_single_dispatch_generic_function(sym, llhandler); // Ensure the single dispatch generic function exists
   (void)gfn;                                                         // silence compiler warning
   LOG(BF("Attaching single_dispatch_method symbol[%s] receiver_class[%s]  method_body@%p") % _rep_(sym) % _rep_(receiver_class) % ((void *)(method_body)));
@@ -1082,15 +1081,15 @@ void lisp_defun(Symbol_sp sym,
     llh = lisp_function_lambda_list_handler(ll, _Nil<T_O>(), skipIndices);
   }
   fc->finishSetup(llh, kw::_sym_function);
-  fc->setSourcePosInfo(Str_O::create(sourceFile), 0, lineNumber, 0);
+  fc->setSourcePosInfo(SimpleBaseCharString_O::make(sourceFile), 0, lineNumber, 0);
   Function_sp func = fc;
   sym->setf_symbolFunction(func);
   if (autoExport)
     sym->exportYourself();
   else
     sym->setReadOnlyFunction(false);
-  core::ext__annotate(sym,cl::_sym_documentation,cl::_sym_function, core::Str_O::create(docstring));
-  core::ext__annotate(func,cl::_sym_documentation,cl::_sym_function, core::Str_O::create(docstring));
+  core::ext__annotate(sym,cl::_sym_documentation,cl::_sym_function, core::SimpleBaseCharString_O::make(docstring));
+  core::ext__annotate(func,cl::_sym_documentation,cl::_sym_function, core::SimpleBaseCharString_O::make(docstring));
 
 }
 
@@ -1475,7 +1474,7 @@ string lisp_symbolNameAsString(Symbol_sp sym) {
 }
 
 T_sp lisp_createStr(const string &s) {
-  return Str_O::create(s);
+  return SimpleBaseCharString_O::make(s);
 }
 
 T_sp lisp_createFixnum(int fn) {
@@ -1483,7 +1482,7 @@ T_sp lisp_createFixnum(int fn) {
 }
 
 SourcePosInfo_sp lisp_createSourcePosInfo(const string &fileName, size_t filePos, int lineno) {
-  Str_sp fn = Str_O::create(fileName);
+  SimpleBaseCharString_sp fn = SimpleBaseCharString_O::make(fileName);
   SourceFileInfo_mv sfi_mv = core__source_file_info(fn);
   SourceFileInfo_sp sfi = sfi_mv;
   Fixnum_sp handle = gc::As<Fixnum_sp>(sfi_mv.valueGet_(1));
@@ -1548,7 +1547,7 @@ NOINLINE void lisp_error_simple(const char *functionName, const char *fileName, 
   eval::funcall(_sym_signalSimpleError,
                 cl::_sym_programError,    //arg0
                 _Nil<T_O>(),              // arg1
-                Str_O::create(fmt.str()), // arg2
+                SimpleBaseCharString_O::make(fmt.str()), // arg2
                 _Nil<T_O>());
 }
 
@@ -1566,7 +1565,7 @@ void lisp_error_condition(const char *functionName, const char *fileName, int li
   eval::applyLastArgsPLUSFirst(_sym_signalSimpleError, initializers // initializers is a LIST and the last argument to APPLY!!!!!
                                // this allows us to include a variable number of arguments next
                                ,
-                               baseCondition, _Nil<T_O>() );// Str_O::create(ss.str()), _Nil<T_O>());
+                               baseCondition, _Nil<T_O>() );// SimpleBaseCharString_O::make(ss.str()), _Nil<T_O>());
 }
 
 void lisp_error(T_sp datum, T_sp arguments) {

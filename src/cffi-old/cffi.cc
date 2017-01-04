@@ -76,7 +76,7 @@ static vector<void *> _library_handles;
 #define ARGS_cffi_sys__PERCENTload_foreign_library "(name)"
 #define DECL_cffi_sys__PERCENTload_foreign_library ""
 #define DOCS_cffi_sys__PERCENTload_foreign_library "PERCENTload_foreign_library"
-CL_DEFUN Pointer_sp cffi_sys__PERCENTload_foreign_library(core::Str_sp name) {
+CL_DEFUN Pointer_sp cffi_sys__PERCENTload_foreign_library(core::String_sp name) {
   const char *cname = name->get().c_str();
   void *handle = dlopen(cname, RTLD_LAZY);
   _library_handles.push_back(handle);

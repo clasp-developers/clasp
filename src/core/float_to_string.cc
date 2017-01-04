@@ -27,43 +27,40 @@ namespace core {
 T_sp
 _clasp_ensure_buffer(T_sp buffer, gc::Fixnum length) {
   if (buffer.nilp()) {
-    buffer = Str_O::create_with_fill_pointer(' ', length, 0, true);
-#if 0
-	    buffer = core__make_vector(cl::_sym_base_char, clasp_make_fixnum(length),
-				      _lisp->_true() /* adjustable */,
-				      clasp_make_fixnum(0) /* fill pointer */,
-				      _Nil<T_O>() /* displacement */,
-				      _Nil<T_O>() /* displ. offset */);
-#endif
+      buffer = Str8Ns_O::make(length, ' ', clasp_make_fixnum(0));
   }
   return buffer;
 }
 
 void
-_clasp_string_push_c_string(Str_sp s, const char *c) {
-  for (; *c; c++) {
-          s->vectorPushExtend(clasp_make_character(*c));
-  }
+_clasp_string_push_c_string(StrNs_sp s, const char *c) {
+    for (; *c; c++) {
+	s->vectorPushExtend(clasp_make_character(*c));
+    }
 }
 
 static void
-insert_char(Str_sp buffer, cl_index where, gc::Fixnum c) {
+insert_char(StrNs_sp buffer, cl_index where, gc::Fixnum c) {
     ASSERT(buffer->arrayHasFillPointer());
     gc::Fixnum end = buffer->fillPointer();
     buffer->vectorPushExtend(clasp_make_character('.'));
-    memmove(&(*buffer)[where + 1], &(*buffer)[where], end - where);
-    //clasp_copy_subarray(buffer, where+1, buffer, where, end - where);
-    buffer->setf_elt(where,clasp_make_character(c)); // clasp_char_set(buffer, where, c);
+    if ( Str8Ns_sp buffer8 = buffer.asOrNull<Str8Ns_O>() ) {
+	memmove(&(*buffer8)[where + 1], &(*buffer8)[where], (end - where)*buffer8->elementSizeInBytes());
+	(*buffer8)[where] = c;
+    } else {
+	StrWNs_sp bufferw = gc::As_unsafe<StrWNs_sp>(buffer);
+	memmove(&(*bufferw)[where + 1], &(*bufferw)[where], (end - where)*bufferw->elementSizeInBytes());
+	(*bufferw)[where] = c;
+    }
 }
 
 static T_sp
-push_base_string(T_sp buffer, Str_sp s) {
+push_base_string(T_sp buffer, StrNs_sp s) {
     ASSERT(s->arrayHasFillPointer());
     buffer = _clasp_ensure_buffer(buffer, s->fillPointer());
-    Str_sp sbuffer = gc::As<Str_sp>(buffer);
-    std::string ss = s->get_std_string();
-    for ( char c : ss ) {
-	sbuffer->vectorPush(clasp_make_character(c));
+    StrNs_sp sbuffer = gc::As<StrNs_sp>(buffer);
+    for ( size_t i(0),iEnd(s->length()); i<iEnd; ++i ) {
+	sbuffer->vectorPush(s->rowMajorAref(i));
     }
     return buffer;
 }
@@ -99,7 +96,7 @@ print_float_exponent(T_sp buffer, T_sp number, gc::Fixnum exp) {
     SIMPLE_ERROR(BF("Handle additional enumeration values value=%s t_of=%d") % _rep_(number).c_str() % clasp_t_of(number));
   }
   if (e != 'e' || exp != 0) {
-    Str_sp sbuffer = gc::As<Str_sp>(buffer);
+    StrNs_sp sbuffer = gc::As<StrNs_sp>(buffer);
     sbuffer->vectorPushExtend(clasp_make_character(e));
     core__integer_to_string(sbuffer, clasp_make_fixnum(exp), clasp_make_fixnum(10),
                          false, false);
@@ -120,7 +117,7 @@ core_float_to_string_free(T_sp buffer_or_nil, Float_sp number,
   base = cl__length(buffer_or_nil);
   T_mv mv_exp = core__float_to_digits(buffer_or_nil, number, _Nil<T_O>(), _Nil<T_O>());
   T_sp exp = mv_exp;
-  Str_sp buffer = gc::As<Str_sp>(mv_exp.second());
+  StrNs_sp buffer = gc::As<StrNs_sp>(mv_exp.second());
   e = clasp_to_fixnum(exp);
   if (clasp_signbit(number)) {
     insert_char(buffer, base++, '-');
@@ -130,7 +127,7 @@ core_float_to_string_free(T_sp buffer_or_nil, Float_sp number,
     insert_char(buffer, base + 1, '.');
     print_float_exponent(buffer, number, e - 1);
   } else if (e > 0) {
-          gc::Fixnum l = gc::As<Str_sp>(buffer)->fillPointer() - base;
+          gc::Fixnum l = gc::As<StrNs_sp>(buffer)->fillPointer() - base;
     while (l++ <= e) {
             buffer->vectorPushExtend(clasp_make_character('0'));
     }

@@ -892,7 +892,7 @@ the stage, the +application-name+ and the +bitcode-name+"
 #-(or aclasp bclasp cclasp)
 (eval-when (:execute)
   (process-command-line-load-eval-sequence)
-  (bformat t "Low level repl\n")
+  (bformat t "Low level repl - in init.lsp\n")
   (core:low-level-repl))
 
 #-(or bclasp cclasp)

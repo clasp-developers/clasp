@@ -93,9 +93,9 @@ def analyze_clasp(cfg):
                 "-i", "./build/boehmdc/cclasp-boehmdc-image.fasl",
                  "-f", "ignore-extensions",
                  "-e", "(require :clasp-analyzer)",
-		 "-e", "(defparameter *compile-commands* \"build/mpsprep/compile_commands.json\")",
-		 "-e", "(time (clasp-analyzer:search/generate-code (clasp-analyzer:setup-clasp-analyzer-compilation-tool-database (pathname *compile-commands*))))",
-		 "-e", "(core:quit)")
+                 "-e", "(defparameter *compile-commands* \"build/mpsprep/compile_commands.json\")",
+                 "-e", "(time (clasp-analyzer:search/generate-code (clasp-analyzer:setup-clasp-analyzer-compilation-tool-database (pathname *compile-commands*))))",
+                 "-e", "(core:quit)")
     print("\n\n\n----------------- Done static analysis --------------------")
 
 
@@ -165,6 +165,8 @@ def configure_common(cfg,variant):
     cfg.define("VARIANT_NAME",variant.variant_name())
     cfg.define("BUILD_STLIB", libraries_as_link_flags_as_string(cfg.env.STLIB_ST,cfg.env.STLIB))
     cfg.define("BUILD_LIB", libraries_as_link_flags_as_string(cfg.env.LIB_ST,cfg.env.LIB))
+    print("cfg.env.LINKFLAGS=%s" % cfg.env.LINKFLAGS)
+    print("cfg.env.LDFLAGS=%s" % cfg.env.LDFLAGS)
     cfg.define("BUILD_LINKFLAGS", ' '.join(cfg.env.LINKFLAGS) + ' ' + ' '.join(cfg.env.LDFLAGS))
 #    cfg.define("DEBUG_STARTUP",1)
 
@@ -257,7 +259,7 @@ class variant(object):
     def configure_for_release(self,cfg):
         cfg.define("_RELEASE_BUILD",1)
         cfg.env.append_value('CXXFLAGS', [ '-O3', '-g' ])
-        cfg.env.append_value('CFLAGS', [ '-O0', '-g' ])
+        cfg.env.append_value('CFLAGS', [ '-O3', '-g' ])
         if (os.getenv("CLASP_RELEASE_CXXFLAGS") != None):
             cfg.env.append_value('CXXFLAGS', os.getenv("CLASP_RELEASE_CXXFLAGS").split() )
         if (os.getenv("CLASP_RELEASE_LINKFLAGS") != None):
@@ -265,7 +267,11 @@ class variant(object):
     def configure_for_debug(self,cfg):
         cfg.define("_DEBUG_BUILD",1)
 #        cfg.define("DEBUG_GUARD",1)
+#        cfg.env.append_value('CXXFLAGS', [ '-O0', '-g' ])
         cfg.env.append_value('CXXFLAGS', [ '-O0', '-g' ])
+        print("cfg.env.LTO_FLAG = %s" % cfg.env.LTO_FLAG)
+        if (cfg.env.LTO_FLAG):
+            cfg.env.append_value('LDFLAGS', [ '-Wl','-mllvm', '-O0', '-g' ])
         cfg.env.append_value('CFLAGS', [ '-O0', '-g' ])
         if (os.getenv("CLASP_DEBUG_CXXFLAGS") != None):
             cfg.env.append_value('CXXFLAGS', os.getenv("CLASP_DEBUG_CXXFLAGS").split() )
@@ -283,7 +289,9 @@ class boehm_base(variant):
     def configure_variant(self,cfg,env_copy):
         cfg.define("USE_BOEHM",1)
         if (cfg.env['DEST_OS'] == DARWIN_OS ):
-            cfg.env.append_value('LDFLAGS', '-Wl,-object_path_lto,%s.lto.o' % self.executable_name())
+            print("boehm_base cfg.env.LTO_FLAG=%s" % cfg.env.LTO_FLAG)
+            if (cfg.env.LTO_FLAG):
+                cfg.env.append_value('LDFLAGS', '-Wl,-object_path_lto,%s.lto.o' % self.executable_name())
         print("Setting up boehm library cfg.env.STLIB_BOEHM = %s " % cfg.env.STLIB_BOEHM)
         print("Setting up boehm library cfg.env.LIB_BOEHM = %s" % cfg.env.LIB_BOEHM)
         if (cfg.env.LIB_BOEHM == [] ):
@@ -326,7 +334,8 @@ class mps_base(variant):
     def configure_variant(self,cfg,env_copy):
         cfg.define("USE_MPS",1)
         if (cfg.env['DEST_OS'] == DARWIN_OS ):
-            cfg.env.append_value('LDFLAGS', '-Wl,-object_path_lto,%s.lto.o' % self.executable_name())
+            if (cfg.env.LTO_FLAG):
+                cfg.env.append_value('LDFLAGS', '-Wl,-object_path_lto,%s.lto.o' % self.executable_name())
 #        print("Setting up boehm library cfg.env.STLIB_BOEHM = %s " % cfg.env.STLIB_BOEHM)
 #        print("Setting up boehm library cfg.env.LIB_BOEHM = %s" % cfg.env.LIB_BOEHM)
 #        if (cfg.env.LIB_BOEHM == [] ):
@@ -507,6 +516,17 @@ def configure(cfg):
     cfg.env["LLVM_AR_BINARY"] = cfg.find_program("llvm-ar", var = "LLVM_AR")[0]
     cfg.env["GIT_BINARY"] = cfg.find_program("git", var = "GIT")[0]
     cfg.env["LLVM_BIN_DIR"] = run_llvm_config(cfg, "--bindir")
+    print("cfg.env['LTO_OPTION'] = %s" % cfg.env['LTO_OPTION'])
+    if (cfg.env['LTO_OPTION']==None or cfg.env['LTO_OPTION']=='thinlto'):
+        cfg.env.LTO_FLAG = '-flto=thin'
+    elif (cfg.env['LTO_OPTION']=='lto'):
+        cfg.env.LTO_FLAG = '-flto'
+    elif (cfg.env['LTO_OPTION']=='obj'):
+        cfg.env.LTO_FLAG = []
+    else:
+        raise Exception("LTO_OPTION can only be 'thinlto'(default), 'lto', or 'obj'")
+    print("default cfg.env.LTO_OPTION = %s" % cfg.env.LTO_OPTION)
+    print("default cfg.env.LTO_FLAG = %s" % cfg.env.LTO_FLAG)
     run_llvm_config(cfg, "--version") # make sure we fail early
     # find a lisp for the scraper
     if not cfg.env.SCRAPER_LISP:
@@ -610,8 +630,10 @@ def configure(cfg):
 #    print("DEBUG includes_from_build_dir = %s\n" % includes_from_build_dir)
     cfg.env.append_value('CXXFLAGS', [ '-std=c++11'])
 #    cfg.env.append_value('CXXFLAGS', ["-D_GLIBCXX_USE_CXX11_ABI=1"])
-    cfg.env.append_value('CXXFLAGS', '-flto=thin')
-    cfg.env.append_value('CFLAGS', '-flto=thin')
+    if (cfg.env.LTO_FLAG):
+        cfg.env.append_value('CXXFLAGS', cfg.env.LTO_FLAG )
+        cfg.env.append_value('CFLAGS', cfg.env.LTO_FLAG )
+        cfg.env.append_value('LINKFLAGS', cfg.env.LTO_FLAG )
     if (cfg.env['DEST_OS'] == LINUX_OS ):
         cfg.env.append_value('LINKFLAGS', '-fuse-ld=gold')
         cfg.env.append_value('LINKFLAGS', ['-stdlib=libstdc++'])
@@ -636,7 +658,6 @@ def configure(cfg):
     cfg.env.append_value('CXXFLAGS', ['-Wno-invalid-offsetof'] )
     cfg.env.append_value('CXXFLAGS', ['-Wno-#pragma-messages'] )
     cfg.env.append_value('CXXFLAGS', ['-Wno-inconsistent-missing-override'] )
-    cfg.env.append_value('LINKFLAGS', ['-flto=thin'])
     cfg.env.append_value('LIBPATH', ['/usr/lib'])
     cfg.env.append_value('LINKFLAGS', ['-fvisibility=default'])
     cfg.env.append_value('LINKFLAGS', ['-rdynamic'])
@@ -720,18 +741,19 @@ def build(bld):
                                includes=include_dirs,
                                target = [iclasp_executable], install_path = '${INSTALL_PATH_PREFIX}/bin')
     elif (bld.env['DEST_OS'] == DARWIN_OS ):
-        iclasp_lto_o = bld.path.find_or_declare('%s.lto.o' % variant.executable_name(stage='i'))
         executable_dir = "MacOS"
         bld_task = bld.program(source=source_files,
                                includes=include_dirs,
                                target = [iclasp_executable], install_path = '${INSTALL_PATH_PREFIX}/MacOS')
-        iclasp_dsym = bld.path.find_or_declare("%s.dSYM"%variant.executable_name(stage='i'))
-        iclasp_dsym_files = generate_dsym_files(variant.executable_name(stage='i'),iclasp_dsym)
-        dsymutil_iclasp = dsymutil(env=bld.env)
-        dsymutil_iclasp.set_inputs([iclasp_executable,iclasp_lto_o])
-        dsymutil_iclasp.set_outputs(iclasp_dsym_files)
-        bld.add_to_group(dsymutil_iclasp)
-        bld.install_files('${INSTALL_PATH_PREFIX}/%s/%s' % (executable_dir, iclasp_dsym.name), iclasp_dsym_files, relative_trick = True, cwd = iclasp_dsym)
+        if (bld.env.LTO_FLAG):
+            iclasp_lto_o = bld.path.find_or_declare('%s.lto.o' % variant.executable_name(stage='i'))
+            iclasp_dsym = bld.path.find_or_declare("%s.dSYM"%variant.executable_name(stage='i'))
+            iclasp_dsym_files = generate_dsym_files(variant.executable_name(stage='i'),iclasp_dsym)
+            dsymutil_iclasp = dsymutil(env=bld.env)
+            dsymutil_iclasp.set_inputs([iclasp_executable,iclasp_lto_o])
+            dsymutil_iclasp.set_outputs(iclasp_dsym_files)
+            bld.add_to_group(dsymutil_iclasp)
+            bld.install_files('${INSTALL_PATH_PREFIX}/%s/%s' % (executable_dir, iclasp_dsym.name), iclasp_dsym_files, relative_trick = True, cwd = iclasp_dsym)
     if (stage_val <= -1):
         print("About to add run_aclasp")
         cmp_aclasp = run_aclasp(env=bld.env)
@@ -856,10 +878,14 @@ class dsymutil(Task.Task):
 
 class link_fasl(Task.Task):
     def run(self):
+        if (self.env.LTO_FLAG):
+            lto_option = self.env.LTO_FLAG
+        else:
+            lto_option = ""
         if (self.env['DEST_OS'] == DARWIN_OS ):
-            cmd = "%s %s %s -flto=thin -flat_namespace -undefined suppress -bundle -o %s" % (self.env.CXX[0],self.inputs[0].abspath(),self.inputs[1].abspath(),self.outputs[0].abspath())
+            cmd = "%s %s %s %s -flat_namespace -undefined suppress -bundle -o %s" % (self.env.CXX[0],self.inputs[0].abspath(),self.inputs[1].abspath(),lto_option,self.outputs[0].abspath())
         elif (self.env['DEST_OS'] == LINUX_OS ):
-            cmd = "%s %s %s -flto=thin -fuse-ld=gold -shared -o %s" % (self.env.CXX[0],self.inputs[0].abspath(),self.inputs[1].abspath(),self.outputs[0].abspath())
+            cmd = "%s %s %s %s -fuse-ld=gold -shared -o %s" % (self.env.CXX[0],self.inputs[0].abspath(),self.inputs[1].abspath(),lto_option,self.outputs[0].abspath())
         else:
             self.fatal("Illegal DEST_OS: %s" % self.env['DEST_OS'])
         print(" link_fasl cmd: %s\n" % cmd)
@@ -872,6 +898,12 @@ class link_fasl(Task.Task):
 
 class link_executable(Task.Task):
     def run(self):
+        if (cfg.env.LTO_FLAG):
+            lto_option_list = [cfg.env.LTO_FLAG]
+            lto_object_path_lto = "-Wl,-object_path_lto,%s"% self.outputs[1].abspath()
+        else:
+            lto_option_list = []
+            lto_object_path_lto = []
         if (self.env['DEST_OS'] == DARWIN_OS ):
             cmd = [ self.env.CXX[0],
                     self.inputs[0].abspath(),
@@ -879,12 +911,10 @@ class link_executable(Task.Task):
                     self.env['LINKFLAGS'] + \
                     self.env['LDFLAGS']  + \
                     libraries_as_link_flags(self.env.STLIB_ST,self.env.STLIB) + \
-                    libraries_as_link_flags(self.env.LIB_ST,self.env.LIB) + [
+                    libraries_as_link_flags(self.env.LIB_ST,self.env.LIB) + lto_option_list + [
                         "-v",
-                        "-flto=thin",
                         "-o",
-                        self.outputs[0].abspath(),
-                        "-Wl,-object_path_lto,%s"% self.outputs[1].abspath() ]
+                        self.outputs[0].abspath()] + lto_object_path_lto
         elif (self.env['DEST_OS'] == LINUX_OS ):
             cmd = [ self.env.CXX[0],
                     self.inputs[0].abspath(),
@@ -892,8 +922,7 @@ class link_executable(Task.Task):
                     self.env['LINKFLAGS'] + \
                     self.env['LDFLAGS'] + \
                     libraries_as_link_flags(self.env.STLIB_ST,self.env.STLIB) + \
-                    libraries_as_link_flags(self.env.LIB_ST,self.env.LIB) + [
-                        "-flto=thin",
+                    libraries_as_link_flags(self.env.LIB_ST,self.env.LIB) + lto_option_list + [
                         "-fuse-ld=gold",
                         "-o",
                         self.outputs[0].abspath()]
@@ -919,7 +948,11 @@ class link_executable(Task.Task):
 class run_aclasp(Task.Task):
     def run(self):
         print("In run_aclasp %s -> %s" % (self.inputs[0],self.outputs[0]))
-        cmd = [ self.inputs[0].abspath(),
+        cmd = [ self.inputs[0].abspath() ]
+        if (self.bld.debug_on ):
+            cmd = cmd + [ '--feature', 'exit-backtrace',
+                          '--feature', 'pause-pid' ]
+        cmd = cmd + [
                 "--ignore-image",
                 "--feature", "no-implicit-compilation",
                 "--feature", "clasp-min",
@@ -1150,7 +1183,7 @@ class scrape_with_preproc_scan(Task.Task):
             "--load", os.path.join(env.BUILD_ROOT, "src/scraper/scraper.lisp"),
             "--eval", "(cscrape:generate-one-sif \"%s\" #P\"%s\")" % (preproc_args, self.outputs[0].abspath()),
             "--eval", "(quit)"]
-        #print("scrape = %s" % cmd)
+#        print("scrape = %s" % cmd)
         return self.exec_command(cmd, shell = False)
 
     def scan(self):

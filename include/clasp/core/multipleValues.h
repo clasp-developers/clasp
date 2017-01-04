@@ -90,8 +90,11 @@ public: // Functions here
 namespace core {
 
 typedef gctools::multiple_values<T_O> T_mv;
-void multipleValuesSaveToVector(T_mv values, VectorObjects_sp save);
-core::T_mv multipleValuesLoadFromVector(core::VectorObjects_sp load);
+ 
+ // The SimpleVector needs to be created with SimpleVector_O::create_for_multiple_values
+ void multipleValuesSaveToVector(T_mv values, SimpleVector_sp save);
+ inline size_t multipleValuesLength(SimpleVector_sp values);
+ core::T_mv multipleValuesLoadFromVector(SimpleVector_sp load);
 
  inline void multipleValuesSaveToMultipleValues(T_mv values, MultipleValues* destmv)
  {

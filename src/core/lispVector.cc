@@ -139,7 +139,7 @@ T_sp NonSimpleVector_O::vectorPush(T_sp newElement) {
   unlikely_if (!this->_FillPointerp) noFillPointerError();
   cl_index idx = this->_FillPointerOrLength;
   likely_if (idx < this->_TotalArraySize) {
-    this->_Vec->setf_elt(idx+this->_DisplacedIndexOffset,newElement);
+    this->_Vec->rowMajorAset(idx+this->_DisplacedIndexOffset,newElement);
     ++this->_FillPointerOrLength;
     return clasp_make_fixnum(idx);
   }
@@ -158,7 +158,7 @@ Fixnum_sp NonSimpleVector_O::vectorPushExtend(T_sp newElement, cl_index extensio
   } else {
     eval::funcall(cl::_sym_adjust_array,this->asSmartPtr(),clasp_make_fixnum(new_size),cl::_sym_fill_pointer,this->_FillPointer);
   }
-  this->_Vec->setf_elt(idx+this->_DisplacedIndexOffset,newElement);
+  this->_Vec->rowMajorAset(idx+this->_DisplacedIndexOffset,newElement);
   ++this->_FillPointerOrLength;
   return make_fixnum(idx);
 }
@@ -251,8 +251,8 @@ T_sp Vector_O::reverse() {
   Vector_sp newVec = gc::As<Vector_sp>(eval::funcall(_sym_make_vector, this->elementType(), make_fixnum(thisLength)));
   for (int i = 0; i < thisLength; i++) {
     int ri = lastElement - i;
-    //    newVec->setf_elt(ri, this->elt(i));
-    newVec->aset_unsafe(ri, this->elt(i));
+    //    newVec->rowMajorAset(ri, this->rowMajorAref(i));
+    newVec->aset_unsafe(ri, this->rowMajorAref(i));
   }
   return newVec;
 }

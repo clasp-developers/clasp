@@ -32,7 +32,6 @@ THE SOFTWARE.
 #include <clasp/core/hashTableEq.h>
 #include <clasp/core/environment.h>
 #include <clasp/core/hashTableEql.h>
-#include <clasp/core/binder.h>
 #include <clasp/core/lisp.h>
 
 // last include is wrappers.h

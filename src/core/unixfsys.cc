@@ -40,6 +40,7 @@ THE SOFTWARE.
 
 #include <string.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <limits.h>
 
 #ifndef _MSC_VER
@@ -115,26 +116,26 @@ SYMBOL_EXPORT_SC_(KeywordPkg, wild);
 
 namespace core {
 
-Str_sp clasp_strerror(int e) {
-  return Str_O::create(strerror(e));
+String_sp clasp_strerror(int e) {
+  return SimpleBaseCharString_O::make(std::string(strerror(e)));
 }
 
-static Str_sp
-coerce_to_posix_filename(T_sp pathname) {
+static String_sp coerce_to_posix_filename(T_sp pathname) {
   /* This converts a pathname designator into a namestring, with the
 	 * particularity that directories do not end with a slash '/', because
 	 * this is not supported on all POSIX platforms (most notably Windows)
 	 */
   ASSERT(pathname);
-  Str_sp sfilename = gc::As<Str_sp>(core__coerce_to_filename(pathname));
-  return cl__string_right_trim(Str_O::create(DIR_SEPARATOR), sfilename);
+  String_sp sfilename = core__coerce_to_filename(pathname);
+  return cl__string_right_trim(SimpleBaseCharString_O::make(DIR_SEPARATOR), sfilename);
 }
 
 static int
 safe_chdir(const char *path, T_sp tprefix) {
-  if (Str_sp prefix = tprefix.asOrNull<Str_O>()) {
+  if (cl__stringp(tprefix)) {
+    String_sp prefix = gc::As_unsafe<String_sp>(tprefix);
     stringstream ss;
-    ss << gc::As<Str_sp>(prefix)->get() << path;
+    ss << prefix->get_std_string() << path;
     return safe_chdir(ss.str().c_str(), _Nil<T_O>());
   } else {
     int output;
@@ -184,8 +185,12 @@ CL_LAMBDA(pathname);
 CL_DECLARE();
 CL_DOCSTRING("chdir");
 CL_DEFUN T_sp ext__chdir(T_sp dir) {
-  Str_sp sdir = clasp_namestring(dir, true);
-  return Integer_O::create((gc::Fixnum)safe_chdir(sdir->get().c_str(), _Nil<T_O>()));
+  T_sp tdir = clasp_namestring(dir, true);
+  LIKELY_if (cl__stringp(tdir)) {
+    String_sp sdir = gc::As_unsafe<String_sp>(tdir);
+    return Integer_O::create((gc::Fixnum)safe_chdir(sdir->get_std_string().c_str(), _Nil<T_O>()));
+  }
+  SIMPLE_ERROR(BF("Could not convert %s to a namestring") % _rep_(dir));
 };
 
 static int
@@ -230,13 +235,21 @@ namespace ext {
  */
 
 CL_DOCSTRING("Return the unix current working directory");
-CL_DEFUN core::Str_sp ext__getcwd() {
+CL_DEFUN core::String_sp ext__getcwd() {
   // TESTME :   Test this function with the new code
-  const char *ok;
+#if 1
+  const char *ok = ::getcwd(NULL,0);
+  size_t cwdsize = strlen(ok);
+  // Pad with 4 characters for / and terminator \0
+  core::Str8Ns_sp output = core::Str8Ns_O::make(cwdsize+2,'\0',core::clasp_make_fixnum(0));
+  StringPushStringCharStar(output, ok);
+  ::free((void*)ok);
+#else
+  DEPRECIATED();
   size_t size = 128;
-  core::Str_sp output(core::Str_O::create_with_fill_pointer(' ', 32, 0, true));
+  core::String_sp output(core::Str8Ns_O::create_with_fill_pointer(' ', 32, 0, true));
   do {
-    output->adjust(core::clasp_make_character(' '),size);
+    output->internalAdjustSize_(core::clasp_make_character(' '),size);
     clasp_disable_interrupts();
     ok = ::getcwd((char *)output->addressOfBuffer(), size - 1);
     clasp_enable_interrupts();
@@ -247,16 +260,19 @@ CL_DEFUN core::Str_sp ext__getcwd() {
     /* Too large to host the trailing '/' */
     output->adjust(core::clasp_make_character(' '),output->arrayTotalSize()+2);
   }
+  output->fillPointerSet(size-1);
+#endif
+#if defined(_TARGET_OS_DARWIN) || defined(_TARGET_OS_LINUX)
+  // Add a terminal '/' if there is none
+  if ((*output)[output->fillPointer() - 1] != DIR_SEPARATOR_CHAR) {
+    output->vectorPushExtend(core::clasp_make_character(DIR_SEPARATOR_CHAR));
+  }
+#endif
 #ifdef _MSC_VER
   for (c = output->base_string.self; *c; c++)
     if (*c == '\\')
       *c = '/';
 #endif
-  output->fillPointerSet(size-1);
-  if ((*output)[size - 1] != DIR_SEPARATOR_CHAR) {
-    output->vectorPushExtend(core::clasp_make_character(DIR_SEPARATOR_CHAR));
-    size++;
-  }
   return output;
 }
 };
@@ -315,21 +331,21 @@ file_kind(const char *filename, bool follow_links) {
   return output;
 }
 
-static Symbol_sp
-smart_file_kind(Str_sp sfilename, bool follow_links) {
+static Symbol_sp smart_file_kind(String_sp sfilename, bool follow_links) {
+  ASSERT(cl__stringp(sfilename));
   if (follow_links) {
-    Symbol_sp kind_follow_links = file_kind((char *)(sfilename->c_str()), true);
+    Symbol_sp kind_follow_links = file_kind((char *)(sfilename->get_std_string().c_str()), true);
     if (kind_follow_links.notnilp()) {
       return kind_follow_links;
     } else {
       // If its a broken link return _sym_file
-      Symbol_sp kind_no_follow_links = file_kind((char *)(sfilename->c_str()), false);
+      Symbol_sp kind_no_follow_links = file_kind((char *)(sfilename->get_std_string().c_str()), false);
       if (kind_no_follow_links.nilp())
         return _Nil<T_O>();
       return kw::_sym_broken_link;
     }
   } else {
-    Symbol_sp kind = file_kind((char *)(sfilename->c_str()), false);
+    Symbol_sp kind = file_kind((char *)(sfilename->get_std_string().c_str()), false);
     return kind;
   }
 }
@@ -339,7 +355,7 @@ CL_DECLARE();
 CL_DOCSTRING("file_kind (values kind found) - if found but kind==nil then its a broken symlink");
 CL_DEFUN Symbol_sp core__file_kind(T_sp filename, bool follow_links) {
   ASSERT(filename);
-  Str_sp sfilename = coerce_to_posix_filename(filename);
+  String_sp sfilename = coerce_to_posix_filename(filename);
   return smart_file_kind(sfilename, follow_links);
 }
 
@@ -348,22 +364,23 @@ CL_DEFUN Symbol_sp core__file_kind(T_sp filename, bool follow_links) {
 CL_LAMBDA(filename);
 CL_DECLARE();
 CL_DOCSTRING("file_kind (values kind found) - if found but kind==nil then its a br");
-CL_DEFUN T_sp core__readlink(Str_sp filename) {
+CL_DEFUN T_sp core__readlink(String_sp filename) {
+  ASSERT(cl__stringp(filename));
   /* Given a filename which is a symlink, this routine returns
 	 * the value of this link in the form of a pathname. */
   size_t size = 128, written;
-  Str_sp output;
+  Str8Ns_sp output;
   Symbol_sp kind;
   do {
-    output = Str_O::create_with_fill_pointer(' ', size, 0, true);
+    output = Str8Ns_O::make(size, ' ', clasp_make_fixnum(0));
     clasp_disable_interrupts();
-    written = readlink((char *)filename->c_str(),
-                       (char *)output->c_str(), size);
+    written = readlink((char *)filename->get_std_string().c_str(),
+                       (char *)output->get_std_string().c_str(), size);
     clasp_enable_interrupts();
     size += 256;
   } while (written == size);
   (*output)[written] = '\0';
-  kind = file_kind((char *)output->c_str(), false);
+  kind = file_kind((char *)output->get_std_string().c_str(), false);
   if (kind == kw::_sym_directory) {
     (*output)[written++] = DIR_SEPARATOR_CHAR;
     (*output)[written] = '\0';
@@ -379,7 +396,7 @@ enter_directory(Pathname_sp base_dir, T_sp subdir, bool ignore_if_failure) {
  * "subdir", which may be a string, :UP, :ABSOLUTE or :RELATIVE.
  * If the operation succeeds, return the truename of the resulting
  * path -- resolving any links in the process. */
-  Str_sp aux;
+  String_sp aux;
   Pathname_sp output;
   Symbol_sp kind;
   if (subdir == kw::_sym_absolute) {
@@ -390,13 +407,13 @@ enter_directory(Pathname_sp base_dir, T_sp subdir, bool ignore_if_failure) {
     /* Nothing to do */
     return base_dir;
   } else if (subdir == kw::_sym_up) {
-    aux = Str_O::create("..");
+    aux = SimpleBaseCharString_O::make("..");
   } else if (!cl__stringp(subdir)) {
     SIMPLE_ERROR(BF("Directory component %s found in pathname %s"
                     "is not allowed in TRUENAME or DIRECTORY") %
                  _rep_(subdir) % _rep_(base_dir));
   } else {
-    aux = gc::As<Str_sp>(subdir);
+    aux = gc::As<String_sp>(subdir);
   }
   /* We now compose a new path based on the base directory and
  * the new component. We have to verify that the new pathname is
@@ -406,9 +423,9 @@ enter_directory(Pathname_sp base_dir, T_sp subdir, bool ignore_if_failure) {
                                              kw::_sym_directory, ldir,
                                              kw::_sym_defaults, base_dir));
   aux = clasp_namestring(output, CLASP_NAMESTRING_FORCE_BASE_STRING);
-  aux = Str_O::create(aux->subseq(0, clasp_make_fixnum(aux->length() - 1)));
+  aux = aux->subseq(0, clasp_make_fixnum(aux->length() - 1));
   //    aux->_contents()[aux->base_string.fillp-1] = 0;
-  kind = file_kind((char *)aux->c_str(), false);
+  kind = file_kind((char *)aux->get_std_string().c_str(), false);
   if (kind.nilp()) {
     if (ignore_if_failure)
       return _Nil<Pathname_O>();
@@ -486,7 +503,7 @@ file_truename(T_sp pathname, T_sp filename, int flags) {
   }
   T_sp original_pathname = pathname;
   T_sp original_filename = filename;
-  kind = file_kind((char *)gc::As<Str_sp>(filename)->c_str(), false);
+  kind = file_kind((char *)gc::As<String_sp>(filename)->get_std_string().c_str(), false);
   //  kind = smart_file_kind( filename, false);
   if (kind.nilp()) {
     CANNOT_OPEN_FILE_ERROR(filename);
@@ -497,7 +514,7 @@ file_truename(T_sp pathname, T_sp filename, int flags) {
                  * the other hand, if the link is broken – return file
                  * truename "as is". */
     struct stat filestatus;
-    if (safe_stat(gc::As<Str_sp>(filename)->c_str(), &filestatus) < 0)
+    if (safe_stat(gc::As<String_sp>(filename)->get_std_string().c_str(), &filestatus) < 0)
       return Values(pathname, kind);
     /* The link might be a relative pathname. In that case we have
 	 * to merge with the original pathname */
@@ -521,7 +538,7 @@ file_truename(T_sp pathname, T_sp filename, int flags) {
 	   separator and re-parsing again the namestring */
     if (gc::As<Pathname_sp>(pathname)->_Name.notnilp() ||
         gc::As<Pathname_sp>(pathname)->_Type.notnilp()) {
-      Str_sp spathname = gc::As<Str_sp>(filename);
+      String_sp spathname = gc::As<String_sp>(filename);
       spathname->vectorPushExtend(clasp_make_character(DIR_SEPARATOR_CHAR));
       pathname = cl__truename(spathname);
     }
@@ -596,7 +613,7 @@ int clasp_backup_open(const char *filename, int option, int mode) {
 #endif
   if (rename(filename, backupfilename.c_str())) {
     clasp_enable_interrupts();
-    SIMPLE_ERROR(BF("Cannot rename the file %s to %s.") % _rep_(Str_O::create(filename)) % _rep_(Str_O::create(backupfilename)));
+    SIMPLE_ERROR(BF("Cannot rename the file %s to %s.") % _rep_(SimpleBaseCharString_O::make(std::string(filename))) % backupfilename);
   }
   clasp_enable_interrupts();
   return open(filename, option, mode);
@@ -615,20 +632,17 @@ CL_LAMBDA(oldn newn &key (if-exists :error));
 CL_DECLARE();
 CL_DOCSTRING("renameFile");
 CL_DEFUN T_mv cl__rename_file(T_sp oldn, T_sp newn, T_sp if_exists) {
-  Str_sp old_filename, new_filename;
   Pathname_sp old_truename, new_truename;
-
   /* 1) Get the old filename, and complain if it has wild components,
- *    or if it does not exist. Notice that the filename to be renamed
- *    is not the truename, because we might be renaming a symbolic link.
- */
+   *    or if it does not exist. Notice that the filename to be renamed
+   *    is not the truename, because we might be renaming a symbolic link.
+   */
   old_truename = cl__truename(oldn);
-  old_filename = coerce_to_posix_filename(old_truename);
+  String_sp old_filename = coerce_to_posix_filename(old_truename);
 
   /* 2) Create the new file name. */
   Pathname_sp pnewn = clasp_mergePathnames(newn, oldn, kw::_sym_newest);
-  new_filename = core__coerce_to_filename(pnewn);
-
+  String_sp new_filename = core__coerce_to_filename(pnewn);
   while (if_exists == kw::_sym_error || if_exists.nilp()) {
     if (cl__probe_file(new_filename).nilp()) {
       if_exists = _lisp->_true();
@@ -636,12 +650,12 @@ CL_DEFUN T_mv cl__rename_file(T_sp oldn, T_sp newn, T_sp if_exists) {
     }
     /* if the file already exists */
     if (if_exists == kw::_sym_error) {
-      const char *msg = "When trying to rename ~S, ~S already exists";
+      std::string msg = "When trying to rename ~S, ~S already exists";
       if_exists = eval::funcall(_sym_signalSimpleError,
                                 cl::_sym_fileError, /* condition */
                                 kw::_sym_supersede, /* continuable */
                                 /* format */
-                                Str_O::create(msg),
+                                SimpleBaseCharString_O::make(msg),
                                 Cons_O::createList(oldn, new_filename), /* format args */
                                 kw::_sym_pathname,                      /* file-error options */
                                 new_filename);
@@ -699,8 +713,8 @@ CL_DEFUN T_mv cl__rename_file(T_sp oldn, T_sp newn, T_sp if_exists) {
     }
 /* fall through */
 #else
-    if (rename((char *)old_filename->c_str(),
-               (char *)new_filename->c_str()) == 0) {
+    if (rename((char *)old_filename->get_std_string().c_str(),
+               (char *)new_filename->get_std_string().c_str()) == 0) {
       goto SUCCESS;
     }
 #endif
@@ -711,11 +725,11 @@ FAILURE_CLOBBER:
   clasp_enable_interrupts();
   {
     T_sp c_error = clasp_strerror(errno);
-    const char *msg = "Unable to rename file ~S to ~S.~%C library error: ~S";
+    std::string msg = "Unable to rename file ~S to ~S.~%C library error: ~S";
     eval::funcall(_sym_signalSimpleError,
                   cl::_sym_fileError,                      /* condition */
                   _Nil<T_O>(),                             /* continuable */
-                  Str_O::create(msg),                      /* format */
+                  SimpleBaseCharString_O::make(msg),                      /* format */
                   Cons_O::createList(oldn, newn, c_error), /* format args */
                   kw::_sym_pathname,                       /* file-error options */
                   oldn);
@@ -739,21 +753,21 @@ CL_DOCSTRING("deleteFile");
 CL_DEFUN T_sp cl__delete_file(T_sp file) {
   Pathname_sp path = cl__pathname(file);
   int isdir = directory_pathname_p(path);
-  Str_sp filename = coerce_to_posix_filename(path);
+  String_sp filename = coerce_to_posix_filename(path);
   int ok;
 
   clasp_disable_interrupts();
-  ok = (isdir ? rmdir : unlink)((char *)filename->c_str());
+  ok = (isdir ? rmdir : unlink)((char *)filename->get_std_string().c_str());
   clasp_enable_interrupts();
 
   if (ok < 0) {
-    const char *msg =
+    std::string msg =
         isdir ? "Cannot delete the file ~S.~%C library error: ~S" : "Cannot delete the directory ~S.~%C library error: ~S";
     T_sp c_error = clasp_strerror(errno);
     eval::funcall(_sym_signalSimpleError,
                   cl::_sym_fileError,
                   _lisp->_true(),                    // continuable
-                  Str_O::create(msg),                // format
+                  SimpleBaseCharString_O::make(msg),                // format
                   Cons_O::createList(file, c_error), // format args
                   kw::_sym_pathname,                 /* file-error options */
                   file);
@@ -776,10 +790,10 @@ CL_DOCSTRING("file_write_date");
 CL_DEFUN Number_sp cl__file_write_date(T_sp pathspec) {
   Number_sp time;
   Pathname_sp pathname = cl__pathname(pathspec);
-  Str_sp filename = coerce_to_posix_filename(pathname);
+  String_sp filename = coerce_to_posix_filename(pathname);
   struct stat filestatus;
   time = _Nil<Number_O>();
-  if (safe_stat((char *)filename->c_str(), &filestatus) >= 0) {
+  if (safe_stat((char *)filename->get_std_string().c_str(), &filestatus) >= 0) {
     Number_sp accJan1st1970UT(Integer_O::create((gc::Fixnum)(24 * 60 * 60)));
     accJan1st1970UT = contagen_mul(accJan1st1970UT, Integer_O::create((gc::Fixnum)(17 + 365 * 70)));
     time = Integer_O::create((gc::Fixnum)filestatus.st_mtime);
@@ -794,16 +808,16 @@ CL_DOCSTRING("file_author");
 CL_DEFUN T_sp cl__file_author(T_sp file) {
   T_sp output;
   Pathname_sp pn = cl__pathname(file);
-  Str_sp filename = coerce_to_posix_filename(pn);
+  String_sp filename = coerce_to_posix_filename(pn);
   struct stat filestatus;
-  if (safe_stat((char *)filename->c_str(), &filestatus) < 0) {
-    const char *msg = "Unable to read file author for ~S."
+  if (safe_stat((char *)filename->get_std_string().c_str(), &filestatus) < 0) {
+    std::string msg = "Unable to read file author for ~S."
                       "~%C library error: ~S";
     T_sp c_error = clasp_strerror(errno);
     eval::funcall(_sym_signalSimpleError,
                   cl::_sym_fileError,                /* condition */
                   _lisp->_true(),                    /* continuable */
-                  Str_O::create(msg),                /* format */
+                  SimpleBaseCharString_O::make(msg),                /* format */
                   Cons_O::createList(file, c_error), /* format args */
                   kw::_sym_pathname,                 /* file-error options */
                   file);
@@ -814,7 +828,7 @@ CL_DEFUN T_sp cl__file_author(T_sp file) {
     clasp_disable_interrupts();
     pwent = ::getpwuid(filestatus.st_uid);
     clasp_enable_interrupts();
-    output = Str_O::create(pwent->pw_name);
+    output = SimpleBaseCharString_O::make(pwent->pw_name);
   }
 #else
   output = make_constant_base_string("UNKNOWN");
@@ -824,20 +838,22 @@ CL_DEFUN T_sp cl__file_author(T_sp file) {
 
 Pathname_sp clasp_homedir_pathname(T_sp tuser) {
   size_t i;
-  Str_sp namestring;
+  String_sp namestring;
   const char *h;
 #if defined(CLASP_MS_WINDOWS_HOST)
   const char *d;
 #endif
-  if (Str_sp user = tuser.asOrNull<Str_O>()) {
+  if (cl__stringp(tuser)) {
+    String_sp user = gc::As_unsafe<String_sp>(tuser);
 #ifdef HAVE_PWD_H
     struct passwd *pwent = NULL;
 #endif
     char *p;
     /* This ensures that our string has the right length
 	   and it is terminated with a '\0' */
-    user = Str_O::create(user->get());
-    p = (char *)user->c_str();
+    user = SimpleBaseCharString_O::make(user->get());
+    std::string suser = user->get_std_string();
+    p = (char *)suser.c_str();
     i = user->length();
     if (i > 0 && *p == '~') {
       p++;
@@ -850,11 +866,11 @@ Pathname_sp clasp_homedir_pathname(T_sp tuser) {
     if (pwent == NULL) {
       SIMPLE_ERROR(BF("Unknown user %s.") % p);
     }
-    namestring = Str_O::create(pwent->pw_dir);
+    namestring = SimpleBaseCharString_O::make(std::string(pwent->pw_dir));
 #endif
     SIMPLE_ERROR(BF("Unknown user %s.") % p);
   } else if ((h = getenv("HOME"))) {
-    namestring = Str_O::create(h);
+    namestring = SimpleBaseCharString_O::make(std::string(h));
 #if defined(CLASP_MS_WINDOWS_HOST)
   } else if ((h = getenv("HOMEPATH")) && (d = getenv("HOMEDRIVE"))) {
     namestring =
@@ -863,14 +879,14 @@ Pathname_sp clasp_homedir_pathname(T_sp tuser) {
                                    make_constant_base_string(h));
 #endif
   } else {
-    namestring = Str_O::create("/");
+    namestring = SimpleBaseCharString_O::make("/");
   }
-  if (namestring->c_str()[0] == '~') {
+  if (namestring->get_std_string().c_str()[0] == '~') {
     SIMPLE_ERROR(BF("Not a valid home pathname %s") % namestring->get());
   }
   i = namestring->length();
-  if (!IS_DIR_SEPARATOR(namestring->c_str()[i - 1]))
-    namestring = Str_O::create(namestring->get() + DIR_SEPARATOR);
+  if (!IS_DIR_SEPARATOR(namestring->get_std_string().c_str()[i - 1]))
+    namestring = SimpleBaseCharString_O::make(namestring->get() + DIR_SEPARATOR);
   return cl__parse_namestring(namestring);
 }
 
@@ -888,7 +904,7 @@ string_match(const char *s, T_sp pattern) {
     return 1;
   } else {
     int ls = strlen(s);
-    Str_sp strng = Str_O::create(s, strlen(s));
+    String_sp strng = Str8Ns_O::create(s, strlen(s));
     return clasp_stringMatch(strng, 0, ls,
                              pattern, 0, cl__length(pattern));
   }
@@ -911,7 +927,7 @@ list_directory(T_sp base_dir, T_sp text_mask, T_sp pathname_mask, int flags) {
   struct dirent *entry;
 
   clasp_disable_interrupts();
-  dir = opendir((char *)gc::As<Str_sp>(prefix)->c_str());
+  dir = opendir((char *)gc::As<String_sp>(prefix)->get_std_string().c_str());
   if (dir == NULL) {
     out = _Nil<T_O>();
     goto OUTPUT;
@@ -968,14 +984,15 @@ list_directory(T_sp base_dir, T_sp text_mask, T_sp pathname_mask, int flags) {
       continue;
     if (!string_match(text, text_mask))
       continue;
-    component = Str_O::create(text);
+    component = SimpleBaseCharString_O::make(std::string(text));
 #if 1
     stringstream concat;
-    Str_sp str_prefix = coerce::stringDesignator(prefix);
-    concat << str_prefix->c_str();
-    Str_sp str_component = coerce::stringDesignator(component);
-    concat << str_component->c_str();
-    component = Str_O::create(concat.str());
+    String_sp str_prefix = coerce::stringDesignator(prefix);
+    concat << str_prefix->get_std_string();
+    String_sp str_component = coerce::stringDesignator(component);
+    concat << str_component->get_std_string();
+    // TODO Support proper strings
+    component = SimpleBaseCharString_O::make(concat.str());
 #else
     component = base_string_concatenate(LCC_PASS_ARGS2_ELLIPSIS(prefix.raw_(), component.raw_()));
 #endif
@@ -1006,18 +1023,17 @@ OUTPUT:
 CL_LAMBDA(template);
 CL_DECLARE();
 CL_DOCSTRING("mkstemp");
-CL_DEFUN T_sp core__mkstemp(Str_sp thetemplate) {
+CL_DEFUN T_sp core__mkstemp(String_sp thetemplate) {
   //  cl_index l;
   int fd;
-
+  ASSERT(cl__stringp(thetemplate));
 #if defined(CLASP_MS_WINDOWS_HOST)
   T_sp phys, dir, file;
   char strTempDir[MAX_PATH];
   char strTempFileName[MAX_PATH];
   char *s;
   int ok;
-
-  phys = cl_translate_logical_pathname(1, thetemplate);
+  phys = cl__translate_logical_pathname(1, thetemplate);
   dir = cl__make_pathname(8,
                          kw::_sym_type, _Nil<T_O>(),
                          kw::_sym_name, _Nil<T_O>(),
@@ -1070,7 +1086,7 @@ CL_DEFUN T_sp core__mkstemp(Str_sp thetemplate) {
     output = _Nil<T_O>();
   } else {
     close(fd);
-    output = cl__truename(Str_O::create(outname));
+    output = cl__truename(SimpleBaseCharString_O::make(outname));
   }
 #endif
   return output;
@@ -1153,13 +1169,13 @@ si_get_library_pathname(void)
                                     CLASP_NAMESTRING_FORCE_BASE_STRING);
 	if (safe_chdir((char*)namestring->c_str(), _Nil<T_O>()) < 0) {
 		T_sp c_error = clasp_strerror(errno);
-		const char *msg = "Can't change the current directory to ~A."
-			"~%C library error: ~S";
+                std::string msg = "Can't change the current directory to ~A."
+                  "~%C library error: ~S";
 		eval::funcall(_sym_signalSimpleError,
 			      cl::_sym_fileError, /* condition */
 			      _lisp->_true(), /* continuable */
 			      /* format */
-			      Str_O::create(msg),
+			      SimpleBaseCharString_O::make(msg),
 			      Cons_O::createList( directory, c_error), /* format args */
 			      kw::_sym_pathname, /* file-error options */
 			      directory);
@@ -1247,15 +1263,15 @@ CL_DOCSTRING("chmod - use octal values for mode for convenience (eg #o777)");
 CL_DEFUN void core__chmod(T_sp file, T_sp mode) {
   mode_t code = clasp_to_uint32_t(mode);
   T_sp filename = coerce_to_posix_filename(file);
-  unlikely_if(chmod((char *)gc::As<Str_sp>(filename)->c_str(), code)) {
+  unlikely_if(chmod((char *)gc::As<String_sp>(filename)->get_std_string().c_str(), code)) {
     T_sp c_error = clasp_strerror(errno);
-    const char *msg = "Unable to change mode of file ~S to value ~O"
+    std::string msg = "Unable to change mode of file ~S to value ~O"
                       "~%C library error: ~S";
     eval::funcall(_sym_signalSimpleError,
                   cl::_sym_fileError, /* condition */
                   _lisp->_true(),     /* continuable */
                                       /* format */
-                  Str_O::create(msg),
+                  SimpleBaseCharString_O::make(msg),
                   Cons_O::createList(file, mode, c_error), /* format args */
                   kw::_sym_pathname,                       /* file-error options */
                   file);
@@ -1268,12 +1284,12 @@ CL_DOCSTRING("copy_file");
 CL_DEFUN T_sp core__copy_file(T_sp orig, T_sp dest) {
   FILE *in, *out;
   int ok = 0;
-  Str_sp sorig = core__coerce_to_filename(orig);
-  Str_sp sdest = core__coerce_to_filename(dest);
+  String_sp sorig = core__coerce_to_filename(orig);
+  String_sp sdest = core__coerce_to_filename(dest);
   clasp_disable_interrupts();
-  in = fopen(sorig->c_str(), "r");
+  in = fopen(sorig->get_std_string().c_str(), "r");
   if (in) {
-    out = fopen(sdest->c_str(), "w");
+    out = fopen(sdest->get_std_string().c_str(), "w");
     if (out) {
       unsigned char *buffer = (unsigned char *)malloc(1024);
       cl_index size;
@@ -1466,7 +1482,7 @@ CL_DOCSTRING("mkdir");
 CL_DEFUN T_sp core__mkdir(T_sp directory, T_sp mode) {
   int modeint = 0;
   int ok;
-  Str_sp filename = coerce::stringDesignator(directory);
+  String_sp filename = coerce::stringDesignator(directory);
   if (mode.fixnump()) { // Fixnum_sp fn = mode.asOrNull<Fixnum_O>() ) {
     Fixnum_sp fnMode(gc::As<Fixnum_sp>(mode));
     modeint = unbox_fixnum(fnMode);
@@ -1479,7 +1495,7 @@ CL_DEFUN T_sp core__mkdir(T_sp directory, T_sp mode) {
          * and null terminated. */
     int last = cl__length(filename);
     if (last > 1) {
-      claspChar c = filename->schar(last - 1);
+      claspCharacter c = as_claspCharacter(cl__char(filename,last - 1));
       if (IS_DIR_SEPARATOR(c))
         last--;
     }
@@ -1489,19 +1505,19 @@ CL_DEFUN T_sp core__mkdir(T_sp directory, T_sp mode) {
 #if defined(CLASP_MS_WINDOWS_HOST)
   ok = mkdir((char *)filename->c_str());
 #else
-  ok = mkdir((char *)filename->c_str(), modeint);
+  ok = mkdir((char *)filename->get_std_string().c_str(), modeint);
 #endif
   //    clasp_enable_interrupts();
 
   if (UNLIKELY(ok < 0)) {
     T_sp c_error = clasp_strerror(errno);
-    const char *msg = "Could not create directory ~S"
+    std::string msg = "Could not create directory ~S"
                       "~%C library error: ~S";
     eval::funcall(_sym_signalSimpleError,
                   cl::_sym_fileError, /* condition */
                   _lisp->_true(),     /* continuable */
                   /* format */
-                  Str_O::create(msg),
+                  SimpleBaseCharString_O::make(msg),
                   Cons_O::createList(filename, c_error), /* format args */
                   kw::_sym_pathname,                     /* file-error options */
                   filename);

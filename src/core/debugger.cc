@@ -415,7 +415,7 @@ CL_DEFUN void core__print_current_ihs_frame_environment() {
   if (args.notnilp()) {
     VectorObjects_sp vargs = gc::As<VectorObjects_sp>(args);
     for (int i = 0; i < cl__length(vargs); ++i) {
-      _lisp->print(BF("arg%s --> %s") % i % _rep_(vargs->elt(i)));
+      _lisp->print(BF("arg%s --> %s") % i % _rep_(vargs->rowMajorAref(i)));
     }
   } else {
     _lisp->print(BF("Args not available"));
@@ -464,9 +464,9 @@ void dbg_lowLevelDescribe(T_sp obj) {
   } else if (obj.characterp()) {
     printf("character: %d #\\%c\n", obj.unsafe_character(), obj.unsafe_character());
   } else if (obj.generalp()) {
-    printf("other_tag: %p  typeid: %s\n", &*obj, typeid(obj).name());
-    printf("More info:\n");
-    printf("%s\n", _rep_(obj).c_str());
+    printf("other_tag: %p  typeid: %s\n", &*obj, typeid(obj.unsafe_general()).name());
+    printf("className-> %s\n", obj.unsafe_general()->className().c_str());
+    printf("contents-> [%s]\n", _rep_(obj).c_str());
     if ( Closure_sp closure = obj.asOrNull<Closure_O>() ) {
       core__closure_slots_dump(closure);
     }

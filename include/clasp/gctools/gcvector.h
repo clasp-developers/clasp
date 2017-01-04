@@ -36,6 +36,7 @@ public:
   friend class GCVector;
   typedef GCVector_moveable<T> container_type;
   typedef T value_type;
+  typedef value_type container_value_type;
   typedef value_type &reference;
 
   GCVector_moveable(size_t num, size_t e = 0) : _Capacity(num), _End(e){};

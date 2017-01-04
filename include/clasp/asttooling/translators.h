@@ -78,10 +78,10 @@ struct to_object<int &> {
 template <>
 struct to_object<std::vector<std::string>, translate::adopt_pointer> {
   static core::T_sp convert(std::vector<std::string> strings) {
-    core::VectorObjects_sp vo = core::VectorObjects_O::create(_Nil<core::T_O>(), strings.size(), cl::_sym_T_O);
+    core::VectorObjects_sp vo = core::VectorObjects_O::make(strings.size(),_Nil<core::T_O>());
     int i(0);
     for (auto ai = strings.begin(); ai != strings.end(); ai++) {
-      vo->setf_elt(i++, core::lisp_createStr(*ai));
+      vo->rowMajorAset(i++, core::lisp_createStr(*ai));
     }
     return vo;
   }
@@ -90,10 +90,10 @@ struct to_object<std::vector<std::string>, translate::adopt_pointer> {
 template <>
 struct to_object<std::vector<std::string>, translate::dont_adopt_pointer> {
   static core::T_sp convert(std::vector<std::string> strings) {
-    core::VectorObjects_sp vo = core::VectorObjects_O::create(_Nil<core::T_O>(), strings.size(), cl::_sym_T_O);
+    core::VectorObjects_sp vo = core::VectorObjects_O::make(strings.size(),_Nil<core::T_O>());
     int i(0);
     for (auto ai = strings.begin(); ai != strings.end(); ai++) {
-      vo->setf_elt(i++, core::lisp_createStr(*ai));
+      vo->rowMajorAset(i++, core::lisp_createStr(*ai));
     }
     return vo;
   }
@@ -111,14 +111,14 @@ struct from_object<const vector<string> &> {
     } else if (core::VectorObjects_sp vo = o.asOrNull<core::VectorObjects_O>()) {
       _v.resize(vo->length());
       for (int i(0), iEnd(vo->length()); i < iEnd; ++i) {
-        _v[i] = gc::As<core::Str_sp>(vo->elt(i))->get_std_string();
+        _v[i] = gc::As<core::String_sp>(vo->rowMajorAref(i))->get_std_string();
       }
       return;
     } else if (core::Cons_sp co = o.asOrNull<core::Cons_O>()) {
       _v.resize(co->length());
       int i = 0;
       for (auto cur : (core::List_sp)co) {
-        _v[i] = gc::As<core::Str_sp>(oCar(cur))->get_std_string();
+        _v[i] = gc::As<core::String_sp>(oCar(cur))->get_std_string();
         ++i;
       }
       return;
@@ -143,7 +143,7 @@ template <>
 struct to_object<std::vector<std::unique_ptr<clang::ASTUnit>> &> {
   typedef std::vector<std::unique_ptr<clang::ASTUnit>> GivenType;
   static core::T_sp convert(std::vector<std::unique_ptr<clang::ASTUnit>> &vals) {
-    core::VectorObjects_sp vo = core::VectorObjects_O::make(_Nil<core::T_O>(), vals.size(), cl::_sym_T_O, core::clasp_make_fixnum(0));
+    core::VectorObjects_sp vo = core::VectorObjects_O::make( vals.size(), _Nil<core::T_O>(), core::clasp_make_fixnum(0));
     for (int i(0), iEnd(vals.size()); i < iEnd; ++i) {
       vo->vectorPushExtend(clbind::Wrapper<clang::ASTUnit, std::unique_ptr<clang::ASTUnit>>::create(std::move(vals[i]), reg::registered_class<clang::ASTUnit>::id));
     }
@@ -155,7 +155,7 @@ template <>
 struct to_object<std::vector<clang::tooling::CompileCommand>> {
   typedef std::vector<clang::tooling::CompileCommand> GivenType;
   static core::T_sp convert(GivenType vals) {
-    core::VectorObjects_sp vo = core::VectorObjects_O::make(_Nil<core::T_O>(), vals.size(), cl::_sym_T_O, core::clasp_make_fixnum(0));
+    core::VectorObjects_sp vo = core::VectorObjects_O::make(vals.size(), _Nil<core::T_O>(), core::clasp_make_fixnum(0));
     for (int i(0), iEnd(vals.size()); i < iEnd; ++i) {
       vo->vectorPushExtend(clbind::Wrapper<clang::tooling::CompileCommand, std::unique_ptr<clang::tooling::CompileCommand>>::create(vals[i], reg::registered_class<clang::tooling::CompileCommand>::id));
     }

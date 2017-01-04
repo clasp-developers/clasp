@@ -109,6 +109,10 @@ class type_info;
 #define clasp_likely(x) __builtin_expect(!!(x), 1)
 #define UNLIKELY(x) clasp_unlikely(x)
 #define LIKELY(x) clasp_likely(x)
+// unlikely_if in lowercase to differentiate from LIKELY_if
+#define unlikely_if(x) if (UNLIKELY(x))
+// LIKELY_if in caps to make it stand out
+#define LIKELY_if(x) if (LIKELY(x))
 
 typedef std::size_t class_id;
 
@@ -1326,8 +1330,6 @@ namespace boost_filesystem = boost::filesystem;
 
 #define clasp_disable_interrupts()
 #define clasp_enable_interrupts()
-
-#define unlikely_if(x) if (UNLIKELY(x))
 
 #ifdef DMALLOC
 #include <dmalloc.h>

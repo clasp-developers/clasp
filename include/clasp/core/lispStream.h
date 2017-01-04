@@ -93,9 +93,10 @@ enum StreamMode {                          /*  stream mode  */
 typedef enum {
   CLASP_STREAM_BINARY = 0,
   CLASP_STREAM_FORMAT = 0xF,
-#ifndef ECL_UNICODE
+#ifndef CLASP_UNICODE
   CLASP_STREAM_DEFAULT_FORMAT = 1,
 #else
+  #error "Handle this"
   CLASP_STREAM_DEFAULT_FORMAT = 2,
   CLASP_STREAM_ISO_8859_1 = 1,
   CLASP_STREAM_LATIN_1 = 1,
@@ -174,6 +175,7 @@ T_sp cl__make_two_way_stream(T_sp in, T_sp out);
 
 T_sp cl__make_string_input_stream(String_sp strng, Fixnum_sp istart, T_sp iend);
 T_sp clasp_make_string_output_stream(cl_index line_length = 128, bool extended = false);
+ T_sp cl__make_string_output_stream(Symbol_sp elementType);
 T_sp cl__get_output_stream_string(T_sp strm);
 
 T_sp cl__close(T_sp strm, T_sp abort = _Nil<T_O>());
@@ -433,7 +435,7 @@ struct gctools::GCInfo<core::StringOutputStream_O> {
 
 namespace core {
 class StringOutputStream_O : public StringStream_O {
-  friend Str_sp &StringOutputStreamOutputString(T_sp);
+  friend String_sp &StringOutputStreamOutputString(T_sp);
   LISP_CLASS(core, CorePkg, StringOutputStream_O, "string-output-stream",StringStream_O);
   //    DECLARE_ARCHIVE();
 public: // Simple default ctor/dtor
@@ -443,7 +445,7 @@ public: // ctor/dtor for classes with shared virtual base
         //    explicit StringStream_O(core::Class_sp const& mc) : T_O(mc),AnsiStream(mc) {};
         //    virtual ~StringStream_O() {};
 public: // instance variables here
-  Str_sp _Contents;
+  String_sp _Contents;
 
 public: // Functions here
   void fill(const string &data);
@@ -461,7 +463,7 @@ namespace core {
 class StringInputStream_O : public StringStream_O {
   friend gctools::Fixnum &StringInputStreamInputPosition(T_sp strm);
   friend gctools::Fixnum &StringInputStreamInputLimit(T_sp strm);
-  friend Str_sp &StringInputStreamInputString(T_sp strm);
+  friend String_sp &StringInputStreamInputString(T_sp strm);
   LISP_CLASS(core, CorePkg, StringInputStream_O, "string-input-stream",StringStream_O);
   //    DECLARE_ARCHIVE();
 public: // Simple default ctor/dtor
@@ -471,7 +473,7 @@ public:    // ctor/dtor for classes with shared virtual base
            //    explicit StringStream_O(core::Class_sp const& mc) : T_O(mc),AnsiStream(mc) {};
            //    virtual ~StringStream_O() {};
 private: // instance variables here
-  Str_sp _Contents;
+  String_sp _Contents;
   gctools::Fixnum _InputPosition;
   gctools::Fixnum _InputLimit;
 

@@ -358,8 +358,8 @@ void HashTable_O::sxhash_equalp(HashGenerator &hg, T_sp obj, LocationDependencyP
       hg.hashObject(obj);
       return;
     }
-    if (Str_sp str = obj.asOrNull<Str_O>()) {
-      Str_sp upstr = cl__string_upcase(str);
+    if (cl__stringp(obj)) {
+      SimpleString_sp upstr = cl__string_upcase(obj);
       hg.hashObject(upstr);
       return;
     } else if (cl__numberp(obj)) {
@@ -451,8 +451,8 @@ void HashTable_O::fields(Record_sp node) {
     node->field(INTERN_(core, data), keyValueVec);
     this->clrhash();
     for (size_t i(0), iEnd(cl__length(keyValueVec)); i < iEnd; ++++i) {
-      T_sp key = keyValueVec->elt(i + 0);
-      T_sp val = keyValueVec->elt(i + 1);
+      T_sp key = keyValueVec->rowMajorAref(i + 0);
+      T_sp val = keyValueVec->rowMajorAref(i + 1);
       this->hash_table_setf_gethash(key, val);
     };
   } break;
@@ -460,8 +460,8 @@ void HashTable_O::fields(Record_sp node) {
     Vector_sp keyValueVec = core__make_vector(cl::_sym_T_O, 2 * this->hashTableCount());
     size_t idx = 0;
     this->mapHash([&idx, &keyValueVec](T_sp key, T_sp val) {
-        keyValueVec->setf_elt(idx++,key);
-        keyValueVec->setf_elt(idx++,val);
+        keyValueVec->rowMajorAset(idx++,key);
+        keyValueVec->rowMajorAset(idx++,val);
     });
     node->field(INTERN_(core, data), keyValueVec);
   } break;
@@ -473,7 +473,7 @@ void HashTable_O::fields(Record_sp node) {
 
 uint HashTable_O::resizeEmptyTable(uint sz) {
   if (sz < 16) sz = 16;
-  this->_HashTable = VectorObjects_O::make(_Nil<T_O>(), sz, cl::_sym_T_O);
+  this->_HashTable = VectorObjects_O::make(sz, _Nil<T_O>() );
 #ifdef USE_MPS
   mps_ld_reset(const_cast<mps_ld_t>(&(this->_LocationDependency)), global_arena);
 #endif

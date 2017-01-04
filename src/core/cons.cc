@@ -186,7 +186,7 @@ Cons_sp Cons_O::createList(T_sp o1, T_sp o2, T_sp o3, T_sp o4, T_sp o5, T_sp o6,
 	Cons_sp curArg = _Nil<T_O>();
 	for ( int i=0;i!=argc; i++ )
 	{
-	    Cons_sp carg = Cons_O::create(Str_O::create(argv[i]),_Nil<T_O>());
+          Cons_sp carg = Cons_O::create(SimpleBaseCharString_O::make(argv[i]),_Nil<T_O>());
 	    if ( curArg.nilp() )
 	    {
 		args = carg;
@@ -215,7 +215,7 @@ T_sp stringToObject(Lisp_sp e, const string &s) {
   }
   if (s == "false" || s == "False")
     return ((_Nil<T_O>()));
-  return (Str_O::create(s));
+  return (SimpleBaseCharString_O::make(s));
 }
 
 #if 1
@@ -405,16 +405,14 @@ List_sp Cons_O::assoc(T_sp item, T_sp key, T_sp test, T_sp testNot) const {
 }
 
 List_sp Cons_O::subseq(cl_index start, T_sp end) const {
-  cl_index length = this->length();
-  coerce::inBoundsOrError(start,0,length);
-  cl_index iend = coerce::coerceToEndInRangeOrError(end,start,length);
+  size_t_pair bounds = sequenceStartEnd(cl::_sym_subseq,this->length(),start,end);
   ql::list l(_lisp);
   List_sp cur = this->onthcdr(start);
-  for (; start < iend; start++) {
+  for (size_t start(bounds.start); start < bounds.end; ++start) {
     l << oCar(cur);
     cur = oCdr(cur);
   }
-  return ((l.cons()));
+  return l.cons();
 }
 
 

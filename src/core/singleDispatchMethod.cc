@@ -49,7 +49,7 @@ SingleDispatchMethod_sp SingleDispatchMethod_O::create(Symbol_sp name,
                                                        Class_sp receiverClass,
                                                        LambdaListHandler_sp llh,
                                                        List_sp declares,
-                                                       gc::Nilable<Str_sp> docstr,
+                                                       gc::Nilable<String_sp> docstr,
                                                        Function_sp body) {
   GC_ALLOCATE(SingleDispatchMethod_O, method);
   method->_name = name;

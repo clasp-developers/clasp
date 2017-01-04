@@ -122,7 +122,7 @@ T_sp BranchSNode_O::object() const {
 void BranchSNode_O::pushVectorSNode(SNode_sp snode) {
   SaveArchive_sp saveArchive = Archive_O::currentSaveArchive();
   if (this->_VectorSNodes.nilp()) {
-    this->_VectorSNodes = gc::As<Vector_sp>(VectorObjects_O::make(_Nil<T_O>(), 0, cl::_sym_T_O, clasp_make_fixnum(0)));
+    this->_VectorSNodes = gc::As<Vector_sp>(VectorObjects_O::make( 4, _Nil<T_O>(), clasp_make_fixnum(0)));
   }
   this->_VectorSNodes->vectorPushExtend(snode);
 }
@@ -132,7 +132,7 @@ void BranchSNode_O::pushVector(T_sp obj) {
   SaveArchive_sp saveArchive = Archive_O::currentSaveArchive();
   SNode_sp snode = saveArchive->getOrCreateSNodeForObjectIncRefCount(obj);
   if (this->_VectorSNodes.unboundp()) {
-    this->_VectorSNodes = gc::As<Vector_sp>(VectorObjects_O::make(_Nil<T_O>(), 0, cl::_sym_T_O, clasp_make_fixnum(0)));
+    this->_VectorSNodes = gc::As<Vector_sp>(VectorObjects_O::make( 4, _Nil<T_O>(), clasp_make_fixnum(0)));
   }
   this->pushVectorSNode(snode);
 }
@@ -191,7 +191,7 @@ void BranchSNode_O::loadVector(gctools::Vec0<T_sp> &vec) {
   vec.clear();
   if (Vector_sp vectorSNodes = this->_VectorSNodes.asOrNull<Vector_O>()) {
     for (int i(0), iEnd(vectorSNodes->length()); i < iEnd; ++i) {
-      SNode_sp snode = gc::As<SNode_sp>(vectorSNodes->elt(i));
+      SNode_sp snode = gc::As<SNode_sp>(vectorSNodes->rowMajorAref(i));
       vec.push_back(snode->object());
     };
   }
@@ -204,7 +204,7 @@ void BranchSNode_O::mapVector(std::function<void(T_sp)> const &fn) {
   if (this->_VectorSNodes.unboundp())
     SIMPLE_ERROR(BF("BranchSNode VectorSNodes is unbound"));
   for (int i(0), iEnd(this->_VectorSNodes->length()); i < iEnd; ++i) {
-    SNode_sp snode = gc::As<SNode_sp>(this->_VectorSNodes->elt(i));
+    SNode_sp snode = gc::As<SNode_sp>(this->_VectorSNodes->rowMajorAref(i));
     T_sp obj = snode->object();
     fn(obj);
   };
@@ -212,7 +212,7 @@ void BranchSNode_O::mapVector(std::function<void(T_sp)> const &fn) {
 
 void BranchSNode_O::saveVector(gctools::Vec0<T_sp> const &vec) {
   SaveArchive_sp saveArchive = Archive_O::currentSaveArchive();
-  this->_VectorSNodes = gc::As<Vector_sp>(VectorObjects_O::make(_Nil<T_O>(), 0, cl::_sym_T_O, clasp_make_fixnum(0)));
+  this->_VectorSNodes = gc::As<Vector_sp>(VectorObjects_O::make(4,_Nil<T_O>(), clasp_make_fixnum(0)));
   for (auto it = vec.begin(); it != vec.end(); it++) {
     SNode_sp snode = saveArchive->getOrCreateSNodeForObjectIncRefCount(*it);
     this->_VectorSNodes->vectorPushExtend(snode);
@@ -247,7 +247,7 @@ string BranchSNode_O::__repr__() const {
 	VectorObjects_sp result = VectorObjects_O::create(_Nil<T_O>(),this->_VectorSNodes->length(),cl::_sym_T_O);
 	for (int i(0),iEnd(this->_VectorSNodes->length());i<iEnd;++i)
 	{
-	    result->setf_elt(i,this->_VectorSNodes->elt(i).as<SNode_O>()->object());
+	    result->rowMajorAset(i,this->_VectorSNodes->rowMajorAref(i).as<SNode_O>()->object());
 	}
 	return result;
     }
@@ -266,7 +266,7 @@ T_sp BranchSNode_O::getUniqueId() const {
 
 SNode_sp BranchSNode_O::childWithUniqueId(Symbol_sp uid) const {
   for (int i(0), iEnd(this->_VectorSNodes->length()); i < iEnd; ++i) {
-    SNode_sp child = gc::As<SNode_sp>(this->_VectorSNodes->elt(i));
+    SNode_sp child = gc::As<SNode_sp>(this->_VectorSNodes->rowMajorAref(i));
     if (child->getUniqueId() == uid) {
       return child;
     }
@@ -377,7 +377,7 @@ T_sp LoadArchive_O::loadObjectDirectly(SNode_sp node) {
     if (!branchSNode->_VectorSNodes.unboundp()) {
       Vector_sp branchSNodeVectorSNodes = gc::As<Vector_sp>(branchSNode->_VectorSNodes);
       for (int i(0), iEnd(branchSNodeVectorSNodes->length()); i < iEnd; ++i) {
-        this->loadObjectDirectly(gc::As<SNode_sp>(branchSNodeVectorSNodes->elt(i)));
+        this->loadObjectDirectly(gc::As<SNode_sp>(branchSNodeVectorSNodes->rowMajorAref(i)));
       }
     }
     IMPLEMENT_MEF(BF("Should I return NIL at this point?  The BranchSNode was not completely initialized"));

@@ -416,7 +416,7 @@ public: // bidirectional
       _BLOCK_TRACE("Loading");
       v.clear();
       this->mapVector([&v](T_sp pair) {
-			string key = str_get(oCar(pair));
+			string key = string_get_std_string(oCar(pair));
 			Integer_sp ival = gc::As<Integer_sp>(oCdr(pair));
 			v[key] = clasp_to_int(ival);
       });

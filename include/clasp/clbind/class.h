@@ -787,7 +787,7 @@ public:
 
   // virtual functions
   template <class F, class DefaultOrPolicies>
-  class_ &def(const std::string &name, F fn, DefaultOrPolicies default_or_policies, string const &arguments = "", string const &declares = "", string const &docstring = "") {
+    class_ &def(const std::string &name, F fn, DefaultOrPolicies default_or_policies=DefaultOrPolicies(), string const &arguments = "", string const &declares = "", string const &docstring = "") {
     return this->virtual_def(
         name, fn, default_or_policies, reg::null_type(), CLBIND_MSVC_TYPENAME is_policy_list<DefaultOrPolicies>::type(), arguments, declares, docstring);
   }

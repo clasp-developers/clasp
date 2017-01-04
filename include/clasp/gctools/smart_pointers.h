@@ -528,7 +528,7 @@ DO NOT CHANGE THE ORDER OF THESE OBJECTS WITHOUT UPDATING THE DEFINITION OF +va_
 namespace gctools {
 //////////////////////////////////////////////////////////////////////
 //
-// Declare AsOrNull and As converters
+// Declare As converters
 //
 template <typename To_SP>
 inline bool IsA(return_type const &rhs) {
@@ -538,7 +538,8 @@ template <typename To_SP, typename From_SP>
 inline bool IsA(From_SP const &rhs) {
   return TaggedCast<typename To_SP::Type *, typename From_SP::Type *>::isA(reinterpret_cast<typename From_SP::Type *>(rhs.raw_()));
 };
-template <typename To_SP, typename From_SP>
+#if 0
+ template <typename To_SP, typename From_SP>
 inline To_SP AsOrNull(From_SP const &rhs) {
   if (LIKELY(rhs.generalp())) {
     typename To_SP::Type *cast = TaggedCast<typename To_SP::Type *, typename From_SP::Type *>::castOrNULL(untag_general<typename From_SP::Type *>(reinterpret_cast<typename From_SP::Type *>(rhs.raw_())));
@@ -560,7 +561,10 @@ inline To_SP AsOrNull(From_SP const &rhs) {
   // unreachable
   HARD_UNREACHABLE();
 };
-template <typename To_SP, typename From_SP>
+#endif
+
+ 
+ template <typename To_SP, typename From_SP>
 inline To_SP As(From_SP const &rhs) {
   if (IsA<To_SP>(rhs)) {
     To_SP ret((Tagged)rhs.raw_());

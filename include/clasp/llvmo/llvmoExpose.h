@@ -1038,8 +1038,8 @@ struct from_object<llvm::ArrayRef<llvm::Value *>> {
     } else if (core::Vector_sp vvals = o.asOrNull<core::Vector_O>()) {
       _v.resize(vvals->length());
       for (int i(0), iEnd(vvals->length()); i < iEnd; ++i) {
-        _v[i] = gc::As<llvmo::Value_sp>(vvals->elt(i))->wrappedPtr();
-        printf("%s:%d   Entry[%d] <-- %s\n", __FILE__, __LINE__, i, _rep_(vvals->elt(i)).c_str());
+        _v[i] = gc::As<llvmo::Value_sp>(vvals->rowMajorAref(i))->wrappedPtr();
+        printf("%s:%d   Entry[%d] <-- %s\n", __FILE__, __LINE__, i, _rep_(vvals->rowMajorAref(i)).c_str());
       }
       return;
     }
@@ -1123,7 +1123,7 @@ struct from_object<llvm::ArrayRef<llvm::Metadata *>> {
     } else if (core::Vector_sp vvals = o.asOrNull<core::Vector_O>()) {
       _v.resize(vvals->length());
       for (int i(0), iEnd(vvals->length()); i < iEnd; ++i) {
-        _v[i] = gc::As<llvmo::Metadata_sp>(vvals->elt(i))->wrappedPtr();
+        _v[i] = gc::As<llvmo::Metadata_sp>(vvals->rowMajorAref(i))->wrappedPtr();
       }
       return;
     }
@@ -1380,7 +1380,7 @@ struct from_object<llvm::ArrayRef<llvm::Constant *>> {
     } else if (core::Vector_sp vvals = o.asOrNull<core::Vector_O>()) {
       _v.resize(vvals->length());
       for (int i(0), iEnd(vvals->length()); i < iEnd; ++i) {
-        _v[i] = gc::As<llvmo::Constant_sp>(vvals->elt(i))->wrappedPtr();
+        _v[i] = gc::As<llvmo::Constant_sp>(vvals->rowMajorAref(i))->wrappedPtr();
       }
       return;
     }
@@ -1558,7 +1558,7 @@ class GlobalVariable_O : public GlobalValue_O {
   typedef llvm::GlobalVariable *PointerToExternalType;
 
 public:
-  static GlobalVariable_sp make(Module_sp module, Type_sp type, bool isConstant, core::Symbol_sp linkage, /*Constant_sp*/ core::T_sp initializer, core::Str_sp name, /*GlobalVariable_sp*/ core::T_sp insertBefore, core::Symbol_sp threadLocalMode);
+  static GlobalVariable_sp make(Module_sp module, Type_sp type, bool isConstant, core::Symbol_sp linkage, /*Constant_sp*/ core::T_sp initializer, core::String_sp name, /*GlobalVariable_sp*/ core::T_sp insertBefore, core::Symbol_sp threadLocalMode);
 
 public:
   PointerToExternalType wrappedPtr() const { return llvm_cast<ExternalType>(this->_ptr); };
@@ -1636,7 +1636,7 @@ public:
 
   void addModule(Module_sp module);
 
-  Function_sp find_function_named(core::Str_sp name);
+  Function_sp find_function_named(core::String_sp name);
 
   void addNamedModule(const string &name, Module_sp module);
   bool hasNamedModule(const string &name);
@@ -1647,7 +1647,7 @@ public:
   /*! Add a global mapping for an object, give it a new name and return the GlobalVariable_sp */
   void addGlobalMappingForLoadTimeValueVector(GlobalValue_sp value, const string &name);
 
-  void runFunction(Function_sp func, core::Str_sp fileName); //, core::Cons_sp args );
+  void runFunction(Function_sp func, core::String_sp fileName); //, core::Cons_sp args );
 };                                                           // ExecutionEngine_O
 };                                                           // llvmo
 
@@ -1718,7 +1718,7 @@ public:
   core::List_sp getFunctionList() const;
 
   /*! Wrap the Module::getFunction function */
-  llvm::Function *getFunction(core::Str_sp dispatchName);
+  llvm::Function *getFunction(core::String_sp dispatchName);
 
   /*! Get or create a string GlobalVariable with the given name.
 	  Make sure that the string passed is the same as the string
@@ -2361,7 +2361,7 @@ public:
   ~Instruction_O() {}
 
 public:
-  void setMetadata(core::Str_sp kind, MDNode_sp mdnode);
+  void setMetadata(core::String_sp kind, MDNode_sp mdnode);
 
   bool terminatorInstP() const;
 }; // Instruction_O
@@ -3404,7 +3404,7 @@ public:
   ~MDString_O() {}
 
 public:
-  static MDString_sp get(LLVMContext_sp context, core::Str_sp str);
+  static MDString_sp get(LLVMContext_sp context, core::String_sp str);
 
 }; // MDString_O
 }; // llvmo
@@ -3934,7 +3934,7 @@ public:
 
 public: // static methods
   /*! Get a structure using llvm:StructType::create(LLVMContext& context, ArrayRef<Type*>Elements,StringRef name,bool isPacked) */
-  static StructType_sp make(LLVMContext_sp context, core::T_sp elements, core::Str_sp name, core::T_sp isPacked);
+  static StructType_sp make(LLVMContext_sp context, core::T_sp elements, core::String_sp name, core::T_sp isPacked);
 
   static StructType_sp get(LLVMContext_sp context, core::T_sp elements, bool isPacked = false);
 
@@ -4146,7 +4146,7 @@ struct from_object<const llvm::StringRef, std::true_type> {
   DeclareType _v;
   string _Storage;
   from_object(T_P object) {
-    this->_Storage = gc::As<core::Str_sp>(object)->get();
+    this->_Storage = gc::As<core::String_sp>(object)->get();
     this->_v = llvm::StringRef(this->_Storage);
   }
 };
@@ -4298,7 +4298,7 @@ struct from_object<llvm::CmpInst::Predicate, std::true_type> {
 namespace llvmo {
   void finalizeEngineAndRegisterWithGcAndRunMainFunctions(ExecutionEngine_sp oengine, core::T_sp fileName);
 
-  Module_sp llvm_sys__parseBitcodeFile(core::Str_sp filename, LLVMContext_sp context);
+  Module_sp llvm_sys__parseBitcodeFile(core::String_sp filename, LLVMContext_sp context);
 
 void initialize_llvmo_expose();
 }

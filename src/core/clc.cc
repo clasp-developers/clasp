@@ -39,7 +39,7 @@ bool treat_as_special_operator_p(core::T_sp form)
 core::T_mv separate_ordinary_body(core::List_sp body)
 {
   core::List_sp declares;
-  gc::Nilable<core::Str_sp> dummy_doc;
+  gc::Nilable<core::String_sp> dummy_doc;
   core::List_sp code;
   core::List_sp specials;
   core::eval::extract_declares_docstring_code_specials(body,declares,false,dummy_doc,code,specials);

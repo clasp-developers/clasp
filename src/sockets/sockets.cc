@@ -67,14 +67,19 @@ static void *
 safe_buffer_pointer(core::T_sp x, uint size) {
   bool ok = false;
   void *address;
-  if (core::Str_sp str = x.asOrNull<core::Str_O>()) {
+  if (core::Str8Ns_sp str = x.asOrNull<core::Str8Ns_O>()) {
     ok = (size <= str->arrayTotalSize());
-    address = str->addressOfBuffer();
+    address = (void*)&(*str)[0]; // str->addressOfBuffer();
+      } else if (core::SimpleBaseCharString_sp strb = x.asOrNull<core::SimpleBaseCharString_O>()) {
+    ok = (size <= strb->arrayTotalSize());
+    address = (void*)&(*strb)[0]; // str->addressOfBuffer();
   } else if (core::VectorObjects_sp vec = x.asOrNull<core::VectorObjects_O>()) {
     int divisor = vec->elementSizeInBytes();
     size = (size + divisor - 1) / divisor;
     ok = (size <= vec->arrayTotalSize());
     address = &(*vec)[0];
+  } else {
+    SIMPLE_ERROR(BF("Add support for buffer %s") % _rep_(x));
   }
   if (!ok) {
     SIMPLE_ERROR(BF("Lisp object does not have enough space to be a valid socket buffer: %s") % _rep_(x));
@@ -137,8 +142,8 @@ CL_DEFUN int sockets_internal__ll_get_name_service_h_errno() {
 CL_LAMBDA(num);
 CL_DECLARE();
 CL_DOCSTRING("ll_getNameServiceErrorMessage");
-CL_DEFUN core::Str_sp sockets_internal__ll_getNameServiceErrorMessage(int num) {
-  return core::Str_O::create(strerror(num));
+CL_DEFUN core::String_sp sockets_internal__ll_getNameServiceErrorMessage(int num) {
+  return core::SimpleBaseCharString_O::make(strerror(num));
 };
 
 CL_LAMBDA(host-name host-ent setf-host-ent-name setf-host-ent-aliases setf-host-ent-address-type setf-host-ent-addresses);
@@ -158,11 +163,11 @@ CL_DEFUN core::T_sp sockets_internal__ll_getHostByName(const string &hostName,  
     core::T_sp aliases_list = _Nil<core::T_O>();
     core::T_sp addr_list = _Nil<core::T_O>();
     int length = hostent->h_length;
-    core::eval::funcall(setf_host_ent_name, core::Str_O::create(hostent->h_name), tHostEnt);
+    core::eval::funcall(setf_host_ent_name, core::SimpleBaseCharString_O::make(hostent->h_name), tHostEnt);
     core::eval::funcall(/*#4*/ setf_host_ent_address_type, core::Integer_O::create((gc::Fixnum)hostent->h_addrtype), tHostEnt);
 
     for (aliases = hostent->h_aliases; *aliases != NULL; aliases++) {
-      aliases_list = core::Cons_O::create(core::Str_O::create(*aliases), aliases_list);
+      aliases_list = core::Cons_O::create(core::SimpleBaseCharString_O::make(*aliases), aliases_list);
     }
     core::eval::funcall(/*#3*/ setf_host_ent_aliases, aliases_list, tHostEnt);
 
@@ -170,7 +175,7 @@ CL_DEFUN core::T_sp sockets_internal__ll_getHostByName(const string &hostName,  
       int pos;
       core::Vector_sp vector = gc::As<core::Vector_sp>(core::eval::funcall(cl::_sym_makeArray, core::make_fixnum(length)));
       for (pos = 0; pos < length; pos++)
-        vector->setf_elt(pos,core::make_fixnum((unsigned char)((*addrs)[pos])));
+        vector->rowMajorAset(pos,core::make_fixnum((unsigned char)((*addrs)[pos])));
       addr_list = core::Cons_O::create(vector, addr_list);
     }
     core::eval::funcall(/*#5*/ setf_host_ent_addresses, addr_list, /*#1*/ tHostEnt);
@@ -194,10 +199,10 @@ CL_DEFUN core::T_sp sockets_internal__ll_getHostByAddress(core::Vector_sp addres
 {
   unsigned char vector[4];
   struct hostent *hostent;
-  vector[0] = unbox_fixnum(gc::As<core::Fixnum_sp>(address->elt(0)));
-  vector[1] = unbox_fixnum(gc::As<core::Fixnum_sp>(address->elt(1)));
-  vector[2] = unbox_fixnum(gc::As<core::Fixnum_sp>(address->elt(2)));
-  vector[3] = unbox_fixnum(gc::As<core::Fixnum_sp>(address->elt(3)));
+  vector[0] = unbox_fixnum(gc::As<core::Fixnum_sp>(address->rowMajorAref(0)));
+  vector[1] = unbox_fixnum(gc::As<core::Fixnum_sp>(address->rowMajorAref(1)));
+  vector[2] = unbox_fixnum(gc::As<core::Fixnum_sp>(address->rowMajorAref(2)));
+  vector[3] = unbox_fixnum(gc::As<core::Fixnum_sp>(address->rowMajorAref(3)));
   clasp_disable_interrupts();
   hostent = gethostbyaddr(REINTERPRET_CAST(const char *, vector), 4, AF_INET);
   clasp_enable_interrupts();
@@ -208,11 +213,11 @@ CL_DEFUN core::T_sp sockets_internal__ll_getHostByAddress(core::Vector_sp addres
     core::T_sp addr_list = _Nil<core::T_O>();
     int length = hostent->h_length;
 
-    core::eval::funcall(/*#2*/ setf_host_ent_name, core::Str_O::create(hostent->h_name), tHostEnt);
+    core::eval::funcall(/*#2*/ setf_host_ent_name, core::SimpleBaseCharString_O::make(hostent->h_name), tHostEnt);
     core::eval::funcall(/*#4*/ setf_host_ent_address_type, core::Integer_O::create((gc::Fixnum)hostent->h_addrtype), tHostEnt);
 
     for (aliases = hostent->h_aliases; *aliases != NULL; aliases++) {
-      aliases_list = core::Cons_O::create(core::Str_O::create(*aliases), aliases_list);
+      aliases_list = core::Cons_O::create(core::SimpleBaseCharString_O::make(*aliases), aliases_list);
     }
     core::eval::funcall(/*#3*/ setf_host_ent_aliases, aliases_list, tHostEnt);
 
@@ -220,7 +225,7 @@ CL_DEFUN core::T_sp sockets_internal__ll_getHostByAddress(core::Vector_sp addres
       int pos;
       core::Vector_sp vector = gc::As<core::Vector_sp>(core::eval::funcall(cl::_sym_makeArray,core::make_fixnum(length)));
       for (pos = 0; pos < length; pos++)
-        vector->setf_elt(pos,core::make_fixnum((unsigned char)((*addrs)[pos])));
+        vector->rowMajorAset(pos,core::make_fixnum((unsigned char)((*addrs)[pos])));
       addr_list = core::Cons_O::create(vector, addr_list);
     }
     core::eval::funcall(/*#5*/ setf_host_ent_addresses, addr_list, tHostEnt);
@@ -250,7 +255,7 @@ CL_DEFUN core::T_mv sockets_internal__ll_socketReceive(int fd,       // #0
   len = recvfrom(fd, REINTERPRET_CAST(char *, safe_buffer_pointer(buffer, length)), length, flags, NULL, NULL);
   clasp_enable_interrupts();
   if (len >= 0) {
-    if (core::Str_sp vec = gc::As<core::Str_sp>(buffer)) {
+    if (core::StrNs_sp vec = buffer.asOrNull<core::StrNs_O>()) {
       vec->fillPointerSet(len);
     } else {
       SIMPLE_ERROR(BF("Vector must have fill pointer to be socket buffer: %s") % _rep_(vec));
@@ -298,10 +303,10 @@ CL_DEFUN core::T_mv sockets_internal__ll_socketAccept_inetSocket(int sfd) {
     uint32_t ip = ntohl(sockaddr.sin_addr.s_addr);
     uint16_t port = ntohs(sockaddr.sin_port);
     core::Vector_sp vector = gc::As<core::Vector_sp>(core::eval::funcall(cl::_sym_makeArray,core::make_fixnum(4)));
-    vector->setf_elt(0,core::make_fixnum(ip >> 24));
-    vector->setf_elt(1,core::make_fixnum((ip >> 16) & 0xFF));
-    vector->setf_elt(2,core::make_fixnum((ip >> 8) & 0xFF));
-    vector->setf_elt(3,core::make_fixnum(ip & 0xFF));
+    vector->rowMajorAset(0,core::make_fixnum(ip >> 24));
+    vector->rowMajorAset(1,core::make_fixnum((ip >> 16) & 0xFF));
+    vector->rowMajorAset(2,core::make_fixnum((ip >> 8) & 0xFF));
+    vector->rowMajorAset(3,core::make_fixnum(ip & 0xFF));
     return1 = vector;
     return2 = port;
   }
@@ -337,10 +342,10 @@ CL_DEFUN int sockets_internal__ll_socketPeername_inetSocket(int fd, core::Vector
     uint32_t ip = ntohl(name.sin_addr.s_addr);
     uint16_t port = ntohs(name.sin_port);
 
-    vector->setf_elt(0,core::make_fixnum(ip >> 24));
-    vector->setf_elt(1,core::make_fixnum((ip >> 16) & 0xFF));
-    vector->setf_elt(2,core::make_fixnum((ip >> 8) & 0xFF));
-    vector->setf_elt(3,core::make_fixnum(ip & 0xFF));
+    vector->rowMajorAset(0,core::make_fixnum(ip >> 24));
+    vector->rowMajorAset(1,core::make_fixnum((ip >> 16) & 0xFF));
+    vector->rowMajorAset(2,core::make_fixnum((ip >> 8) & 0xFF));
+    vector->rowMajorAset(3,core::make_fixnum(ip & 0xFF));
     return port;
   } else {
     return -1;
@@ -364,10 +369,10 @@ CL_DEFUN int sockets_internal__ll_socketName(int fd, core::Vector_sp vector) {
     uint32_t ip = ntohl(name.sin_addr.s_addr);
     uint16_t port = ntohs(name.sin_port);
 
-    vector->setf_elt(0,core::make_fixnum(ip >> 24));
-    vector->setf_elt(1,core::make_fixnum((ip >> 16) & 0xFF));
-    vector->setf_elt(2,core::make_fixnum((ip >> 8) & 0xFF));
-    vector->setf_elt(3,core::make_fixnum(ip & 0xFF));
+    vector->rowMajorAset(0,core::make_fixnum(ip >> 24));
+    vector->rowMajorAset(1,core::make_fixnum((ip >> 16) & 0xFF));
+    vector->rowMajorAset(2,core::make_fixnum((ip >> 8) & 0xFF));
+    vector->rowMajorAset(3,core::make_fixnum(ip & 0xFF));
 
     return port;
   } else {
@@ -500,7 +505,11 @@ CL_DEFUN core::T_mv sockets_internal__ll_socketAccept_localSocket(int socketFile
   clasp_disable_interrupts();
   new_fd = accept(socketFileDescriptor, (struct sockaddr *)&sockaddr, &addr_len);
   clasp_enable_interrupts();
-  return Values(core::Integer_O::create((gc::Fixnum)new_fd), (new_fd == -1) ? _Nil<core::Str_O>() : core::Str_O::create(sockaddr.sun_path));
+  core::T_sp second_ret = _Nil<core::T_O>();
+  if (new_fd != -1) {
+    second_ret = core::SimpleBaseCharString_O::make(sockaddr.sun_path);
+  }
+  return Values(core::Integer_O::create((gc::Fixnum)new_fd), second_ret);
 }
 
 CL_LAMBDA(fd family path);
@@ -526,7 +535,7 @@ CL_DEFUN int sockets_internal__ll_socketConnect_localSocket(int fd, int family, 
 CL_LAMBDA(fd);
 CL_DECLARE();
 CL_DOCSTRING("socketPeername_localSocket");
-CL_DEFUN core::Str_sp sockets_internal__socketPeername_localSocket(int fd) {
+CL_DEFUN core::T_sp sockets_internal__socketPeername_localSocket(int fd) {
   struct sockaddr_un name;
   socklen_t len = sizeof(struct sockaddr_un);
   int ret;
@@ -536,9 +545,9 @@ CL_DEFUN core::Str_sp sockets_internal__socketPeername_localSocket(int fd) {
   clasp_enable_interrupts();
 
   if (ret == 0) {
-    return core::Str_O::create(name.sun_path);
+    return core::SimpleBaseCharString_O::make(name.sun_path);
   } else {
-    return _Nil<core::Str_O>();
+    return _Nil<core::T_O>();
   }
 }
 
@@ -610,15 +619,15 @@ CL_DEFUN void sockets_internal__ll_autoCloseTwoWayStream(core::Stream_sp stream)
 CL_LAMBDA(num);
 CL_DECLARE();
 CL_DOCSTRING("ll_strerror");
-CL_DEFUN core::Str_sp sockets_internal__ll_strerror(int num) {
-  return core::Str_O::create(strerror(num));
+CL_DEFUN core::String_sp sockets_internal__ll_strerror(int num) {
+  return core::SimpleBaseCharString_O::make(strerror(num));
 }
 
 CL_LAMBDA();
 CL_DECLARE();
 CL_DOCSTRING("ll_strerror_errno");
-CL_DEFUN core::Str_sp sockets_internal__ll_strerror_errno() {
-  return core::Str_O::create(strerror(errno));
+CL_DEFUN core::String_sp sockets_internal__ll_strerror_errno() {
+  return core::SimpleBaseCharString_O::make(strerror(errno));
 }
 
 CL_LAMBDA(fd level constant);

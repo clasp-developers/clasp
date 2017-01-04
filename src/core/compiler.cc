@@ -297,25 +297,25 @@ CL_LAMBDA(object &optional is-function);
 CL_DECLARE();
 CL_DOCSTRING("mangleName");
 CL_DEFUN T_mv core__mangle_name(Symbol_sp sym, bool is_function) {
-  Str_sp name;
+  SimpleBaseCharString_sp name;
   if (!is_function) {
     if (sym.nilp())
-      name = Str_O::create("CLASP_NIL");
+      name = SimpleBaseCharString_O::make("CLASP_NIL");
     else if (sym == _lisp->_true())
-      name = Str_O::create("CLASP_T");
+      name = SimpleBaseCharString_O::make("CLASP_T");
     else {
       stringstream ss;
       ss << "SYM(" << sym->symbolName()->get() << ")";
-      name = Str_O::create(ss.str());
+      name = SimpleBaseCharString_O::make(ss.str());
     }
     return Values(_Nil<T_O>(), name, make_fixnum(0), make_fixnum(CALL_ARGUMENTS_LIMIT));
   }
   Function_sp fsym = coerce::functionDesignator(sym);
   if ( BuiltinClosure_sp  bcc = fsym.asOrNull<BuiltinClosure_O>()) {
     (void)bcc; // suppress warning
-    return Values(_lisp->_true(), Str_O::create("Provide-c-func-name"), make_fixnum(0), make_fixnum(CALL_ARGUMENTS_LIMIT));
+    return Values(_lisp->_true(), SimpleBaseCharString_O::make("Provide-c-func-name"), make_fixnum(0), make_fixnum(CALL_ARGUMENTS_LIMIT));
   }
-  return Values(_Nil<T_O>(), Str_O::create("Provide-func-name"), make_fixnum(0), make_fixnum(CALL_ARGUMENTS_LIMIT));
+  return Values(_Nil<T_O>(), SimpleBaseCharString_O::make("Provide-func-name"), make_fixnum(0), make_fixnum(CALL_ARGUMENTS_LIMIT));
 }
 
 CL_LAMBDA();
@@ -326,7 +326,7 @@ CL_DEFUN T_sp core__startup_image_pathname() {
   ss << "build:";
   ss << VARIANT_NAME;
   ss << "/image.fasl";
-  Str_sp spath = Str_O::create(ss.str());
+  String_sp spath = SimpleBaseCharString_O::make(ss.str());
   Pathname_sp pn = cl__pathname(spath);
   return pn;
 };
@@ -350,25 +350,25 @@ CL_DEFUN T_mv core__load_bundle(T_sp pathDesig, T_sp verbose, T_sp print, T_sp e
   Pathname_sp path = cl__pathname(pathDesig);
   if (cl__probe_file(path).notnilp())
     goto LOAD;
-  path->_Type = Str_O::create("bundle");
+  path->_Type = SimpleBaseCharString_O::make("bundle");
   if (cl__probe_file(path).notnilp())
     goto LOAD;
-  path->_Type = Str_O::create("fasl");
+  path->_Type = SimpleBaseCharString_O::make("fasl");
   if (cl__probe_file(path).notnilp())
     goto LOAD;
-  path->_Type = Str_O::create("dylib");
+  path->_Type = SimpleBaseCharString_O::make("dylib");
   if (cl__probe_file(path).notnilp())
     goto LOAD;
-  path->_Type = Str_O::create("so");
+  path->_Type = SimpleBaseCharString_O::make("so");
   if (cl__probe_file(path).notnilp())
     goto LOAD;
   SIMPLE_ERROR(BF("Could not find bundle %s") % _rep_(pathDesig));
 LOAD:
-  Str_sp nameStr = cl__namestring(cl__probe_file(path));
+  String_sp nameStr = cl__namestring(cl__probe_file(path));
   string name = nameStr->get();
 
   /* Look up the initialization function. */
-  string stem = cl__string_downcase(gc::As<Str_sp>(path->_Name))->get();
+  string stem = cl__string_downcase(gc::As<String_sp>(path->_Name))->get();
   size_t dsp = 0;
   if ((dsp = stem.find("_d")) != string::npos)
     stem = stem.substr(0, dsp);
@@ -388,7 +388,7 @@ LOAD:
   if (handle == NULL) {
     string error = dlerror();
     SIMPLE_ERROR(BF("Error in dlopen: %s") % error);
-    //    return (Values(_Nil<T_O>(), Str_O::create(error)));
+    //    return (Values(_Nil<T_O>(), SimpleBaseCharString_O::make(error)));
   }
   _lisp->openDynamicLibraryHandles()[name] = handle;
   if (startup_functions_are_waiting()) {
@@ -419,7 +419,7 @@ CL_DEFUN T_mv core__dlload(T_sp pathDesig) {
   void *handle = dlopen(ts.c_str(), mode);
   if (handle == NULL) {
     string error = dlerror();
-    return (Values(_Nil<T_O>(), Str_O::create(error)));
+    return (Values(_Nil<T_O>(), SimpleBaseCharString_O::make(error)));
   }
   string stem = path->stem();
   size_t dsp = 0;
@@ -508,7 +508,7 @@ CL_DEFUN T_mv core__dlopen(T_sp pathDesig) {
   void * handle = std::get<0>( result );
 
   if( handle == nullptr ) {
-    return (Values(_Nil<T_O>(), Str_O::create( get<1>( result ))));
+    return (Values(_Nil<T_O>(), SimpleBaseCharString_O::make( get<1>( result ))));
   }
   return (Values(Pointer_O::create(handle), _Nil<T_O>()));
 }
@@ -531,7 +531,7 @@ std::tuple< void *, string > do_dlsym( void * p_handle, const char * pc_symbol )
 // -----------------------------------------------------------------------------
 // -----------------------------------------------------------------------------
 CL_DOCSTRING("(dlsym handle name) handle is pointer from dlopen or :rtld-next, :rtld-self, :rtld-default or :rtld-main-only (see dlsym man page) returns ptr or nil if not found.");
-CL_DEFUN T_sp core__dlsym(T_sp ohandle, Str_sp name) {
+CL_DEFUN T_sp core__dlsym(T_sp ohandle, String_sp name) {
   void *handle = NULL;
   if (ohandle.nilp()) {
     SIMPLE_ERROR(BF("Invalid ohandle passed -> nil"));
@@ -564,11 +564,11 @@ CL_DEFUN T_sp core__dlsym(T_sp ohandle, Str_sp name) {
     SIMPLE_ERROR(BF("Illegal handle argument[%s] for dlsym only a pointer or :rtld-next :rtld-self :rtld-default :rtld-main-only are allowed") % _rep_(ohandle));
   }
 //  printf("%s:%d handle = %p\n", __FILE__, __LINE__, handle);
-  string ts = name->get();
+  string ts = name->get_std_string();
   auto result = do_dlsym(handle, ts.c_str());
   void * p_sym = std::get<0>( result );
   if( p_sym == nullptr ) {
-    return ( Values(_Nil<T_O>(), Str_O::create( get<1>( result ))) );
+    return ( Values(_Nil<T_O>(), SimpleBaseCharString_O::make( get<1>( result ))) );
   }
   return ( Values(Pointer_O::create( p_sym ), _Nil<T_O>()) );
 }
@@ -588,9 +588,9 @@ CL_DEFUN T_mv core__dladdr(Integer_sp addr) {
   if (!ret) {
     return Values(_Nil<T_O>());
   } else {
-    return Values(Str_O::create(info.dli_fname),
+    return Values(SimpleBaseCharString_O::make(info.dli_fname),
                   Pointer_O::create(info.dli_fbase),
-                  Str_O::create(info.dli_sname),
+                  SimpleBaseCharString_O::make(info.dli_sname),
                   Pointer_O::create(info.dli_saddr));
   }
 }
@@ -827,7 +827,7 @@ CL_DEFUN T_mv core__operations_per_second(int op, T_sp arg) {
   default:
     return Values(_Nil<T_O>());
   }
-  return Values(DoubleFloat_O::create(((double)times) / timer.getAccumulatedTime()), Str_O::create(name));
+  return Values(DoubleFloat_O::create(((double)times) / timer.getAccumulatedTime()), SimpleBaseCharString_O::make(name));
 }
 #endif
 #if 0

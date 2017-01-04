@@ -460,11 +460,11 @@ List_sp LambdaListHandler_O::process_macro_lambda_list(List_sp lambda_list) {
     }
   }
   if (whole_symbol.nilp())
-    whole_symbol = cl__gensym(Str_O::create("whole"));
+    whole_symbol = cl__gensym(SimpleBaseCharString_O::make("whole"));
   if (environment_symbol.nilp())
-    environment_symbol = cl__gensym(Str_O::create("environment"));
+    environment_symbol = cl__gensym(SimpleBaseCharString_O::make("environment"));
 
-  Symbol_sp name_symbol = cl__gensym(Str_O::create("macro-name"));
+  Symbol_sp name_symbol = cl__gensym(SimpleBaseCharString_O::make("macro-name"));
   //	SourceCodeList_sp new_name_ll = SourceCodeCons_O::createWithDuplicateSourceCodeInfo(name_symbol,new_lambda_list,lambda_list,_lisp);
   ql::list sclist; // (af_lineNumber(lambda_list),af_column(lambda_list),core__source_file_info(lambda_list));
   sclist << whole_symbol << environment_symbol << Cons_O::create(name_symbol, new_lambda_list);
@@ -1141,7 +1141,7 @@ void LambdaListHandler_O::create_required_arguments(int num, const std::set<int>
   _OF();
   TargetClassifier classifier(skipIndices);
   for (int i = 0, iEnd(num - skipIndices.size()); i < iEnd; ++i) {
-    Symbol_sp name = cl__gensym(Str_O::create("arg"));
+    Symbol_sp name = cl__gensym(SimpleBaseCharString_O::make("arg"));
     RequiredArgument req(name, i);
     this->_RequiredArguments.push_back(req);
     classifier.classifyTarget(req);
@@ -1329,7 +1329,7 @@ CL_DEFMETHOD List_sp LambdaListHandler_O::namesOfLexicalVariables() const {
 
 void LambdaListHandler_O::calculateNamesOfLexicalVariablesForDebugging() {
   List_sp names = this->namesOfLexicalVariables();
-  this->_LexicalVariableNamesForDebugging = VectorObjects_O::make(_Nil<T_O>(), cl__length(names), cl::_sym_T_O);
+  this->_LexicalVariableNamesForDebugging = VectorObjects_O::make(cl__length(names),_Nil<T_O>());
   gc::As<VectorObjects_sp>(this->_LexicalVariableNamesForDebugging)->fillInitialContents(names);
 }
 

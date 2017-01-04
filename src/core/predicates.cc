@@ -72,18 +72,18 @@ CL_DEFUN bool core__bignump(T_sp obj) {
 
 // XXX: this should be adjusted whenever unicode is implemented
 CL_DEFUN bool core__base_string_p(T_sp obj) {
-  return gc::IsA<String_sp>(obj);
+  return gc::IsA<Str8Ns_sp>(obj) || gc::IsA<SimpleBaseCharString_sp>(obj);
 };
 
 CL_DEFUN bool cl__stringp(T_sp obj) {
-  return gc::IsA<String_sp>(obj);
+  return gc::IsA<SimpleString_sp>(obj) || gc::IsA<StrNs_sp>(obj);
 };
 
 CL_LAMBDA(arg);
 CL_DECLARE();
 CL_DOCSTRING("Return true if argument is a simple-string");
-CL_DEFUN bool core__simple_string_p(T_sp obj) {
-  return gc::IsA<Str_sp>(obj);
+CL_DEFUN bool cl__simple_string_p(T_sp obj) {
+  return gc::IsA<SimpleString_sp>(obj);
 };
 
 CL_LAMBDA(arg);
@@ -296,21 +296,14 @@ CL_LAMBDA(arg);
 CL_DECLARE();
 CL_DOCSTRING("simple_bit_vector_p");
 CL_DEFUN bool cl__simple_bit_vector_p(T_sp o) {
-  if (BitVector_sp sbv = o.asOrNull<BitVector_O>()) {
-    return sbv->adjustableArrayP();
-  }
-  return false;
+  return gc::IsA<SimpleBitVector_sp>(o);
 };
 
 CL_LAMBDA(arg);
 CL_DECLARE();
 CL_DOCSTRING("simple_vector_p");
 CL_DEFUN bool cl__simple_vector_p(T_sp o) {
-  if (VectorObjects_sp vo = o.asOrNull<VectorObjects_O>()) {
-    (void)vo;
-    return true;
-  }
-  return false;
+  return gc::IsA<SimpleVector_sp>(o);
 };
 
 CL_LAMBDA(arg);

@@ -53,8 +53,8 @@ string str_get(T_sp str) {
   };
   return gc::As<Str_sp>(str)->get();
 };
-T_sp str_create(const string &str) { return Str_O::create(str); };
-T_sp str_create(const char *str) { return Str_O::create(str); };
+T_sp str_create(const string &str) { return SimpleBaseCharString_O::make(str); };
+T_sp str_create(const char *str) { return SimpleBaseCharString_O::make(str); };
 
 CL_LAMBDA(str1 start1 end1 str2 start2 end2);
 CL_DECLARE();
@@ -145,6 +145,7 @@ Bignum Str_O::stringToBignum(const char *str) {
 CL_LAMBDA(&va-rest args);
 CL_LISPIFY_NAME(base_string_concatenate);
 CL_DEFUN T_sp core__base_string_concatenate(T_sp args) {
+  // TODO Handle proper strings
   if (!args.valistp()) {
     SIMPLE_ERROR(BF("arg must be valist"));
   }
@@ -153,10 +154,10 @@ CL_DEFUN T_sp core__base_string_concatenate(T_sp args) {
   stringstream ss;
   for (size_t i(0); i < nargs; ++i) {
     T_sp csp = vargs->next_arg();
-    Str_sp ssp = coerce::stringDesignator(csp);
-    ss << ssp->c_str();
+    String_sp ssp = coerce::stringDesignator(csp);
+    ss << ssp->get_std_string();
   }
-  return Str_O::create(ss.str());
+  return SimpleBaseCharString_O::make(ss.str());
 };
 
 Str_sp Str_O::create(char initial_element, cl_index dimension) {
@@ -296,7 +297,7 @@ bool Str_O::eql_(T_sp obj) const {
 
 #if 0
 bool Str_O::equal(T_sp obj) const {
-  if (core__simple_string_p(obj)) {
+  if (cl__simple_string_p(obj)) {
     return this->eql_(obj);
   }
   return false;
@@ -848,6 +849,7 @@ void Str_O::setSize(cl_index newSize) {
   }
   if (this->_String.size() == newSize) return;
   if (this->_String.size() < newSize) {
+    // FIXME - I'll have to add a resize function to GCArray_moveable
     this->_String.resize(newSize, ' ');
     this->_Dimension = newSize;
   } else {
@@ -897,7 +899,7 @@ Fixnum_sp Str_O::vectorPushExtend(T_sp newElement, cl_index extension) {
   } else {
     eval::funcall(cl::_sym_adjust_array,this->asSmartPtr(),clasp_make_fixnum(new_size),cl::_sym_fill_pointer,this->_FillPointer);
   }
-  (*this)[idx] = clasp_as_character(newElement);
+  (*this)[idx] = as_claspCharacter(newElement);
   this->_FillPointer = clasp_make_fixnum(idx+1);
   return make_fixnum(idx);
 }

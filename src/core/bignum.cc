@@ -267,4 +267,13 @@ void clasp_big_register_free(Bignum_sp b) {
   // could clear out the bignum register if it's too big
   return;
 }
+
+Bignum CStrToBignum(const char *str) {
+  Bignum bn = 0;
+  for (const unsigned char *cp = (const unsigned char *)str; *cp; ++cp) {
+    bn = (bn << 7) | ((*cp) & 0x7f);
+  }
+  return bn;
+}
+
 };

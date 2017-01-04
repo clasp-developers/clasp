@@ -175,19 +175,24 @@ int &StreamOutputColumn(T_sp strm) {
   return stream->_OutputColumn;
 }
 
-Str_sp &StringOutputStreamOutputString(T_sp strm) {
+String_sp &StringOutputStreamOutputString(T_sp strm) {
   StringOutputStream_sp sout = gc::As<StringOutputStream_sp>(strm);
   return sout->_Contents;
 }
 
-Fixnum StringFillp(Str_sp s) {
+Fixnum StringFillp(String_sp s) {
+  ASSERT(cl__non_simple_stringp(s));
   if (!s->arrayHasFillPointerP()) {
     SIMPLE_ERROR(BF("The vector does not have a fill pointer"));
   }
   return s->fillPointer();
 }
 
-void SetStringFillp(Str_sp s, Fixnum fp) {
+void SetStringFillp(String_sp s, Fixnum fp) {
+  ASSERT(core__non_simple_stringp(s));
+  if (!s->arrayHasFillPointerP()) {
+    SIMPLE_ERROR(BF("The vector does not have a fill pointer"));
+  }
   s->fillPointerSet(fp);
 }
 
@@ -201,7 +206,7 @@ gctools::Fixnum &StringInputStreamInputLimit(T_sp strm) {
   return ss->_InputLimit;
 }
 
-Str_sp &StringInputStreamInputString(T_sp strm) {
+String_sp &StringInputStreamInputString(T_sp strm) {
   StringInputStream_sp ss = gc::As<StringInputStream_sp>(strm);
   return ss->_Contents;
 }
@@ -694,16 +699,16 @@ generic_write_vector(T_sp strm, T_sp data, cl_index start, cl_index end) {
     return start;
   const FileOps &ops = stream_dispatch_table(strm);
   Vector_sp vec = gc::As<Vector_sp>(data);
-  T_sp elementType = vec->elementType();
-  if (elementType == cl::_sym_base_char && cl__characterp(vec->elt(0))) {
+  T_sp elementType = vec->arrayElementType();
+  if (elementType == cl::_sym_base_char && cl__characterp(vec->rowMajorAref(0))) {
     claspCharacter (*write_char)(T_sp, claspCharacter) = ops.write_char;
     for (; start < end; start++) {
-      write_char(strm, clasp_charCode(vec->elt(start)));
+      write_char(strm, clasp_charCode(vec->rowMajorAref(start)));
     }
   } else {
     void (*write_byte)(T_sp, T_sp) = ops.write_byte;
     for (; start < end; start++) {
-      write_byte(vec->elt(start), strm);
+      write_byte(vec->rowMajorAref(start), strm);
     }
   }
 
@@ -740,7 +745,7 @@ generic_read_vector(T_sp strm, T_sp data, cl_index start, cl_index end) {
     for (; start < end; start++) {
       claspCharacter c = read_char(strm);
       if (c == EOF) break;
-      vec->setf_elt(start, clasp_make_character(c)); //clasp_charCode(c));
+      vec->rowMajorAset(start, clasp_make_character(c)); //clasp_charCode(c));
     }
   } else {
     T_sp (*read_byte)(T_sp) = ops.read_byte;
@@ -748,7 +753,7 @@ generic_read_vector(T_sp strm, T_sp data, cl_index start, cl_index end) {
       T_sp x = read_byte(strm);
       if (x.nilp())
         break;
-      vec->setf_elt(start, x);
+      vec->rowMajorAset(start, x);
     }
   }
   return start;
@@ -1558,15 +1563,13 @@ str_out_write_char(T_sp strm, claspCharacter c) {
 static T_sp
 str_out_element_type(T_sp strm) {
   T_sp string = StringOutputStreamOutputString(strm);
-  if (core__simple_string_p(string))
+  if (cl__simple_string_p(string))
     return cl::_sym_base_char;
   return cl::_sym_character;
 }
 
-Str_sp global_str;
 T_sp str_out_get_position(T_sp strm) {
-  Str_sp str = StringOutputStreamOutputString(strm);
-  global_str = str;
+  String_sp str = StringOutputStreamOutputString(strm);
   return Integer_O::create((gc::Fixnum)(StringFillp(str)));
 }
 
@@ -1645,7 +1648,7 @@ CL_DEFUN T_sp core__make_string_output_stream_from_string(T_sp s) {
   StreamFlags(strm) = CLASP_STREAM_DEFAULT_FORMAT;
   StreamByteSize(strm) = 8;
 #else
-  if (core__simple_string_p(s)) {
+  if (cl__simple_string_p(s)) {
     StreamFormat(strm) = kw::_sym_latin_1;
     StreamFlags(strm) = CLASP_STREAM_LATIN_1;
     StreamByteSize(strm) = 8;
@@ -1659,10 +1662,15 @@ CL_DEFUN T_sp core__make_string_output_stream_from_string(T_sp s) {
 }
 
 T_sp clasp_make_string_output_stream(cl_index line_length, bool extended) {
-#ifdef ECL_UNICODE
-  T_sp s = extended ? clasp_alloc_adjustable_extended_string(line_length) : clasp_alloc_adjustable_base_string(line_length);
+#ifdef CLASP_UNICODE
+  T_sp s;
+  if (extended) {
+    s = StrWNs_O::createBufferString(line_length);
+  } else {
+    s = Str8Ns_O::createBufferString(line_length);
+  }
 #else
-  T_sp s = Str_O::createBufferString(line_length); // clasp_alloc_adjustable_base_string(line_length);
+  T_sp s = Str8Ns_O::createBufferString(line_length); // clasp_alloc_adjustable_base_string(line_length);
 #endif
   return core__make_string_output_stream_from_string(s);
 }
@@ -1698,7 +1706,7 @@ CL_DEFUN T_sp cl__get_output_stream_string(T_sp strm) {
   T_sp strng;
   unlikely_if(!AnsiStreamTypeP(strm, clasp_smm_string_output))
       af_wrongTypeOnlyArg(__FILE__, __LINE__, cl::_sym_getOutputStreamString, strm, cl::_sym_StringStream_O);
-  Str_sp buffer = StringOutputStreamOutputString(strm);
+  String_sp buffer = StringOutputStreamOutputString(strm);
   //        printf("%s:%d StringOutputStreamOutputString = %s\n", __FILE__, __LINE__, buffer->get().c_str());
   strng = cl__copy_seq(buffer);
   SetStringFillp(buffer,0);
@@ -1716,7 +1724,7 @@ str_in_read_char(T_sp strm) {
   if (curr_pos >= StringInputStreamInputLimit(strm)) {
     c = EOF;
   } else {
-    c = StringInputStreamInputString(strm)->schar(curr_pos);
+    c = as_claspCharacter(cl__char(StringInputStreamInputString(strm),curr_pos));
     StringInputStreamInputPosition(strm) = curr_pos + 1;
   }
   return c;
@@ -1737,7 +1745,7 @@ str_in_peek_char(T_sp strm) {
   if (pos >= StringInputStreamInputLimit(strm)) {
     return EOF;
   } else {
-    return StringInputStreamInputString(strm)->schar(pos);
+    return as_claspCharacter(cl__char(StringInputStreamInputString(strm),pos));
   }
 }
 
@@ -1752,7 +1760,7 @@ str_in_listen(T_sp strm) {
 static T_sp
 str_in_element_type(T_sp strm) {
   T_sp string = StringInputStreamInputString(strm);
-  if (core__simple_string_p(string))
+  if (cl__simple_string_p(string))
     return cl::_sym_base_char;
   return cl::_sym_character;
 }
@@ -1810,6 +1818,7 @@ const FileOps str_in_ops = {
     generic_close};
 
 T_sp clasp_make_string_input_stream(T_sp strng, cl_index istart, cl_index iend) {
+  ASSERT(cl__stringp(strng));
   T_sp strm;
   strm = StringInputStream_O::create();
   StreamOps(strm) = duplicate_dispatch_table(str_in_ops);
@@ -1822,7 +1831,7 @@ T_sp clasp_make_string_input_stream(T_sp strng, cl_index istart, cl_index iend) 
   StreamFlags(strm) = CLASP_STREAM_DEFAULT_FORMAT;
   StreamByteSize(strm) = 8;
 #else
-  if (core__simple_string_p(strng) == t_base_string) {
+  if (cl__simple_string_p(strng) == t_base_string) {
     StreamFormat(strm) = kw::_sym_latin_1;
     StreamFlags(strm) = CLASP_STREAM_LATIN_1;
     StreamByteSize(strm) = 8;
@@ -1839,8 +1848,9 @@ CL_LAMBDA(strng &optional (istart 0) iend);
 CL_DECLARE();
 CL_DOCSTRING("make_string_input_stream");
 CL_DEFUN T_sp cl__make_string_input_stream(String_sp strng, Fixnum_sp istart, T_sp iend) {
+  ASSERT(cl__stringp(strng));
   size_t_pair p = sequenceStartEnd(cl::_sym_make_string_input_stream,
-                                   strng, istart, iend);
+                                   strng->length(), istart, iend);
   return clasp_make_string_input_stream(strng, p.start, p.end);
 }
 
@@ -4378,7 +4388,7 @@ CL_DEFUN T_sp core__file_stream_fd(T_sp s) {
 	StreamMode(strm) = clasp_smm_sequence_input;
         if (!byte_size) {
 #if defined(ECL_UNICODE)
-            if (core__simple_string_p(vector)) {
+            if (cl__simple_string_p(vector)) {
                 if (Null(external_format))
                     external_format = kw::_sym_default;
             } else {
@@ -4525,7 +4535,7 @@ CL_DEFUN T_sp core__file_stream_fd(T_sp s) {
 	StreamMode(strm) = clasp_smm_sequence_output;
         if (!byte_size) {
 #if defined(ECL_UNICODE)
-            if (core__simple_string_p(vector)) {
+            if (cl__simple_string_p(vector)) {
                 if (Null(external_format))
                     external_format = kw::_sym_default;
             } else {
@@ -4755,10 +4765,10 @@ BEGIN:
     l = compute_char_size(stream, clasp_charCode(string));
   } else if (cl__stringp(string)) {
     for (int i(0), iEnd(StringFillp(string)); i < iEnd; ++i) {
-      l += compute_char_size(stream, cl__char(string, i));
+      l += compute_char_size(stream, cl__char(string, i).unsafe_character());
     }
   } else {
-    ERROR_WRONG_TYPE_NTH_ARG(cl::_sym_file_string_length, 2, string, cl::_sym_String_O);
+    ERROR_WRONG_TYPE_NTH_ARG(cl::_sym_file_string_length, 2, string, cl::_sym_string);
   }
   return make_fixnum(l);
 }
@@ -5067,8 +5077,8 @@ T_sp clasp_open_stream(T_sp fn, enum StreamMode smm, T_sp if_exists,
 #else
   clasp_mode_t mode = S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH;
 #endif
-  Str_sp filename = core__coerce_to_filename(fn);
-  string fname = filename->get();
+  String_sp filename = core__coerce_to_filename(fn);
+  string fname = filename->get_std_string();
   bool appending = 0;
   ASSERT(filename);
   bool exists = core__file_kind(filename, true).notnilp();
@@ -5457,7 +5467,7 @@ static T_sp
 not_a_file_stream(T_sp strm) {
   cl__error(cl::_sym_simpleTypeError,
            Cons_O::createList(kw::_sym_formatControl,
-                              Str_O::create("~A is not an file stream"),
+                              SimpleBaseCharString_O::make("~A is not an file stream"),
                               kw::_sym_formatArguments, Cons_O::createList(strm),
                               kw::_sym_expectedType, cl::_sym_FileStream_O,
                               kw::_sym_datum, strm));
@@ -5467,7 +5477,7 @@ not_a_file_stream(T_sp strm) {
 static void
 not_an_input_stream(T_sp strm) {
   cl__error(cl::_sym_simpleTypeError, Cons_O::createList(kw::_sym_formatControl,
-                                                        Str_O::create("~A is not an input stream"),
+                                                        SimpleBaseCharString_O::make("~A is not an input stream"),
                                                         kw::_sym_formatArguments, Cons_O::createList(strm),
                                                         kw::_sym_expectedType,
                                                         Cons_O::createList(cl::_sym_satisfies, cl::_sym_input_stream_p),
@@ -5477,7 +5487,7 @@ not_an_input_stream(T_sp strm) {
 static void
 not_an_output_stream(T_sp strm) {
   cl__error(cl::_sym_simpleTypeError, Cons_O::createList(kw::_sym_formatControl,
-                                                        Str_O::create("~A is not an output stream"),
+                                                        SimpleBaseCharString_O::make("~A is not an output stream"),
                                                         kw::_sym_formatArguments, Cons_O::createList(strm),
                                                         kw::_sym_expectedType, Cons_O::createList(cl::_sym_satisfies, cl::_sym_output_stream_p),
                                                         kw::_sym_datum, strm));
@@ -5486,7 +5496,7 @@ not_an_output_stream(T_sp strm) {
 static void
 not_a_character_stream(T_sp s) {
   cl__error(cl::_sym_simpleTypeError, Cons_O::createList(kw::_sym_formatControl,
-                                                        Str_O::create("~A is not a character stream"),
+                                                        SimpleBaseCharString_O::make("~A is not a character stream"),
                                                         kw::_sym_formatArguments, Cons_O::createList(s),
                                                         kw::_sym_expectedType, cl::_sym_character,
                                                         kw::_sym_datum, cl_stream_element_type(s)));
@@ -5495,7 +5505,7 @@ not_a_character_stream(T_sp s) {
 static void
 not_a_binary_stream(T_sp s) {
   cl__error(cl::_sym_simpleTypeError, Cons_O::createList(kw::_sym_formatControl,
-                                                        Str_O::create("~A is not a binary stream"),
+                                                        SimpleBaseCharString_O::make("~A is not a binary stream"),
                                                         kw::_sym_formatArguments, Cons_O::createList(s),
                                                         kw::_sym_expectedType, cl::_sym_Integer_O,
                                                         kw::_sym_datum, cl_stream_element_type(s)));
@@ -5510,15 +5520,15 @@ static void
 file_libc_error(T_sp error_type, T_sp stream,
                 const char *msg, int narg, ...) {
   clasp_va_list args;
-  T_sp error = Str_O::create(strerror(errno));
+  T_sp error = SimpleBaseCharString_O::make(std::string(strerror(errno)));
   clasp_va_start(args, narg);
   T_sp rest = clasp_grab_rest_args(args, narg);
   clasp_va_end(args);
 
   eval::funcall(core::_sym_signalSimpleError,
                 error_type, _Nil<T_O>(),
-                Str_O::create("~?~%C library explanation: ~A."),
-                Cons_O::createList(Str_O::create(msg), rest,
+                SimpleBaseCharString_O::make("~?~%C library explanation: ~A."),
+                Cons_O::createList(SimpleBaseCharString_O::make(std::string(msg)), rest,
                                    error));
 }
 
@@ -5552,7 +5562,7 @@ restartable_io_error(T_sp strm, const char *s) {
   if (old_errno == EINTR) {
     return 1;
   } else {
-    Str_sp temp = Str_O::create(s, strlen(s));
+    String_sp temp = SimpleBaseCharString_O::make(std::string(s, strlen(s)));
     file_libc_error(cl::_sym_streamError, strm,
                     "C operation (~A) signaled an error.",
                     1, temp.raw_());
@@ -5650,7 +5660,7 @@ wsock_error(const char *err_msg, T_sp strm) {
 	flags = CLASP_STREAM_DEFAULT_FORMAT;
 #endif
 
-	null_stream = clasp_make_stream_from_FILE(Str_O::create("/dev/null"),
+	null_stream = clasp_make_stream_from_FILE(SimpleBaseCharString_O::make("/dev/null"),
 						NULL, clasp_smm_io, 8, flags, external_format);
 	generic_close(null_stream);
 	null_stream = cl__make_two_way_stream(null_stream, cl_make_broadcast_stream(0));
@@ -5739,7 +5749,7 @@ T_sp clasp_filename(T_sp strm, bool errorp) {
     if (errorp) {
       SIMPLE_ERROR(BF("The stream %s does not have a filename") % _rep_(strm));
     } else {
-      return Str_O::create("-no-name-");
+      return SimpleBaseCharString_O::make("-no-name-");
     }
   }
   return fn;
@@ -5852,13 +5862,13 @@ namespace core {
 
 
 void StringOutputStream_O::fill(const string &data) {
-  this->_Contents->pushStringCharStar(data.c_str());
+  StringPushStringCharStar(this->_Contents,data.c_str());
 }
 
 /*! Get the contents and reset them */
-Str_sp StringOutputStream_O::getAndReset() {
-  Str_sp contents = this->_Contents;
-  StringOutputStreamOutputString(this->asSmartPtr()) = Str_O::createBufferString(128);
+String_sp StringOutputStream_O::getAndReset() {
+  String_sp contents = this->_Contents;
+  StringOutputStreamOutputString(this->asSmartPtr()) = Str8Ns_O::createBufferString(128);
   StreamOutputColumn(this->asSmartPtr()) = 0;
   return contents;
 };
@@ -5873,13 +5883,13 @@ string FileStream_O::__repr__() const {
 }
 
 T_sp StringInputStream_O::make(const string &str) {
-  Str_sp s = str_create(str);
+  String_sp s = str_create(str);
   return cl__make_string_input_stream(s, make_fixnum(0), _Nil<T_O>());
 }
 
 
 T_sp IOFileStream_O::make(const string &name, int fd, enum StreamMode smm, T_sp elementType, T_sp externalFormat) {
-  Str_sp sname = Str_O::create(name);
+  String_sp sname = str_create(name);
   T_sp stream = clasp_make_file_stream_from_fd(sname, fd, smm, 8, CLASP_STREAM_DEFAULT_FORMAT, externalFormat);
   FileStreamEltType(stream) = elementType;
   return stream;
@@ -5997,7 +6007,8 @@ END_OF_FILE:
 CL_LAMBDA(content &optional (eof-error-p t) eof-value &key (start 0) end preserve-whitespace);
 CL_DECLARE();
 CL_DOCSTRING("read_from_string");
-CL_DEFUN T_mv cl__read_from_string(Str_sp content, T_sp eof_error_p, T_sp eof_value, Fixnum_sp start, T_sp end, T_sp preserve_whitespace) {
+CL_DEFUN T_mv cl__read_from_string(String_sp content, T_sp eof_error_p, T_sp eof_value, Fixnum_sp start, T_sp end, T_sp preserve_whitespace) {
+  ASSERT(cl__stringp(content));
   bool eofErrorP = eof_error_p.isTrue();
   int istart = clasp_to_int(start);
   int iend;
@@ -6035,22 +6046,24 @@ CL_LAMBDA(&optional input-stream (eof-error-p t) eof-value recursive-p);
 CL_DECLARE();
 CL_DOCSTRING("See clhs");
 CL_DEFUN T_mv cl__read_line(T_sp sin, T_sp eof_error_p, T_sp eof_value, T_sp recursive_p) {
+  // TODO Handle encodings from sin - currently only Str8Ns is supported
   sin = coerce::inputStreamDesignator(sin);
   bool eofErrorP = eof_error_p.isTrue();
   //    bool recursiveP = translate::from_object<bool>::convert(env->lookup(_sym_recursive_p));
-  if (sin.nilp())
-    sin = cl::_sym_STARstandard_inputSTAR->symbolValue();
-  stringstream sbuf;
+  Str8Ns_sp sbuf = Str8Ns_O::createBufferString();
   while (1) {
     T_sp tch = cl__read_char(sin, _Nil<T_O>(), _Nil<T_O>(), recursive_p);
     if (tch.nilp()) {
       if (eofErrorP) {
         ERROR_END_OF_FILE(sin);
       } else {
-        return (Values(eof_value /*Str_O::create(sbuf.str())*/, _lisp->_true()));
+        return (Values(eof_value, _lisp->_true()));
       }
     } else {
-      char cc = clasp_as_char(gc::As<Character_sp>(tch));
+      claspCharacter cc = (gc::As<Character_sp>(tch)).unsafe_character();
+      if (!clasp_base_char_p(cc)) {
+        SIMPLE_ERROR(BF("Clasp currently can't handle anything but base-char in input streams"));
+      }
       if (cc == '\n') {
         break;
       } else if (cc == '\r') {
@@ -6059,11 +6072,11 @@ CL_DEFUN T_mv cl__read_line(T_sp sin, T_sp eof_error_p, T_sp eof_value, T_sp rec
         }
         break;
       }
-      sbuf << cc;
+      sbuf->vectorPushExtend_claspChar(cc);
     }
   }
   LOG(BF("Read line result -->[%s]") % sbuf.str());
-  return (Values(Str_O::create(sbuf.str()), _Nil<T_O>()));
+  return Values(sbuf, _Nil<T_O>());
 }
 
 void clasp_terpri(T_sp s) {
@@ -6105,7 +6118,8 @@ CL_DEFUN bool cl__fresh_line(T_sp outputStreamDesig) {
   return clasp_freshLine(outputStreamDesig);
 };
 
-Str_sp clasp_writeString(Str_sp str, T_sp stream, int istart, T_sp end) {
+String_sp clasp_writeString(String_sp str, T_sp stream, int istart, T_sp end) {
+  ASSERT(cl__stringp(str));
   stream = coerce::outputStreamDesignator(stream);
   if (!AnsiStreamP(stream)) {
     Fixnum_sp fnstart = make_fixnum(istart);
@@ -6117,7 +6131,7 @@ Str_sp clasp_writeString(Str_sp str, T_sp stream, int istart, T_sp end) {
     iend = MIN(iend, unbox_fixnum(gc::As<Fixnum_sp>(end)));
   }
   int ilen = iend - istart;
-  clasp_write_characters(&(str->get().c_str()[istart]), ilen, stream);
+  clasp_write_characters(&(str->get_std_string().c_str()[istart]), ilen, stream);
   return str;
 }
 
@@ -6126,10 +6140,11 @@ CL_DECLARE();
 CL_DOCSTRING("writeString");
 CL_DEFUN T_sp cl__write_string(T_sp tstr, T_sp tstream, int start, T_sp end) {
   T_sp stream = coerce::outputStreamDesignator(tstream);
-  if ( Str_sp str = tstr.asOrNull<Str_O>() ) {
+  if ( cl__stringp(tstr)) {
+    String_sp str = gc::As_unsafe<String_sp>(tstr);
     clasp_writeString(str, stream, start, end);
   } else if ( Vector_sp vstr = tstr.asOrNull<Vector_O>() ) {
-    if ( clasp_is_character_type(vstr->elementType()) ) {
+    if ( clasp_is_character_type(vstr->arrayElementType()) ) {
       size_t send;
       if (end.nilp()) {
         send = vstr->arrayTotalSize();
@@ -6139,7 +6154,7 @@ CL_DEFUN T_sp cl__write_string(T_sp tstr, T_sp tstream, int start, T_sp end) {
         TYPE_ERROR(end,cl::_sym_integer);
       }
       for (size_t i=start; i<send; ++i ) {
-        clasp_write_char(gctools::As<Character_sp>(vstr->elt(i)).unsafe_character(),stream);
+        clasp_write_char(gctools::As<Character_sp>(vstr->rowMajorAref(i)).unsafe_character(),stream);
       }
     } else {
       TYPE_ERROR(tstr,cl::_sym_string);
@@ -6151,7 +6166,7 @@ CL_DEFUN T_sp cl__write_string(T_sp tstr, T_sp tstream, int start, T_sp end) {
 CL_LAMBDA(string &optional output-stream &key (start 0) end);
 CL_DECLARE();
 CL_DOCSTRING("writeLine");
-CL_DEFUN String_sp cl__write_line(Str_sp str, T_sp stream, Fixnum_sp start, T_sp end) {
+CL_DEFUN String_sp cl__write_line(String_sp str, T_sp stream, Fixnum_sp start, T_sp end) {
   stream = coerce::outputStreamDesignator(stream);
   clasp_writeString(str, stream, unbox_fixnum(start), end);
   clasp_terpri(stream);
@@ -6287,7 +6302,7 @@ OUTPUT:
 }
 
 T_sp clasp_openRead(T_sp sin) {
-  Str_sp filename = gc::As<Str_sp>(cl__namestring(sin));
+  String_sp filename = gc::As<String_sp>(cl__namestring(sin));
   enum StreamMode smm = clasp_smm_input;
   T_sp if_exists = _Nil<T_O>();
   T_sp if_does_not_exist = _Nil<T_O>();

@@ -241,7 +241,7 @@ CL_DEFUN Function_sp core__coerce_to_function(T_sp arg) {
         T_sp olambdaList = oCadr(carg);
         List_sp body = oCdr(oCdr(arg));
         List_sp declares;
-        gc::Nilable<Str_sp> docstring;
+        gc::Nilable<String_sp> docstring;
         List_sp code;
         eval::parse_lambda_body(body, declares, docstring, code);
         T_sp name = cl::_sym_lambda;
@@ -270,7 +270,7 @@ CL_DOCSTRING("Handle special declarations and remove declarations from body. Ret
 CL_DEFUN T_mv core__process_declarations(List_sp inputBody, T_sp expectDocString) {
   bool b_expect_doc = expectDocString.isTrue();
   List_sp declares = _Nil<T_O>();
-  gc::Nilable<Str_sp> docstring;
+  gc::Nilable<String_sp> docstring;
   List_sp code;
   List_sp specials;
   eval::extract_declares_docstring_code_specials(inputBody, declares,
@@ -299,7 +299,7 @@ CL_DOCSTRING("If form has is a list of declares ((function-name xxx) ...) or els
 CL_DEFUN T_sp core__extract_lambda_name(List_sp lambdaExpression, T_sp defaultValue) {
   List_sp body = oCddr(lambdaExpression);
   List_sp declares;
-  gc::Nilable<Str_sp> docstring;
+  gc::Nilable<String_sp> docstring;
   List_sp form;
   eval::parse_lambda_body(body, declares, docstring, form);
   // First check for a (declare (core:function-name XXX))
@@ -416,7 +416,7 @@ CL_DEFUN T_mv core__eval_with_env_default(T_sp form, T_sp env) {
 
 namespace core {
 
-//void parse_lambda_body(List_sp body, List_sp &declares, gc::Nilable<Str_sp> &docstring, List_sp &code);
+//void parse_lambda_body(List_sp body, List_sp &declares, gc::Nilable<String_sp> &docstring, List_sp &code);
 
 List_sp separateTopLevelForms(List_sp accumulated, T_sp possibleForms) {
   if (Cons_sp cpf = possibleForms.asOrNull<Cons_O>()) {
@@ -594,17 +594,31 @@ SYMBOL_EXPORT_SC_(ClPkg, multipleValueSetq);
 T_sp interpreter_multipleValueSetq(List_sp args, T_sp environment) {
   List_sp lcur = oCar(args);
   T_sp form = oCadr(args);
-  VectorObjects_sp values(VectorObjects_O::create());
   T_mv result = eval::evaluate(form, environment);
+#define USE_SAVE_TO_MULTIPLE_VALUES 1
+#if USE_SAVE_TO_MULTIPLE_VALUES
+  MultipleValues values;
+  multipleValuesSaveToMultipleValues(result,&values);
+#else
+  SimpleVector_sp values(SimpleVector_O::create_for_multiple_values());
   multipleValuesSaveToVector(result, values);
+#endif
   Cons_sp skipFirst = Cons_O::create(_Nil<T_O>(), _Nil<T_O>());
   Cons_sp add = skipFirst;
   // Assemble a Cons for sp_setq
-  size_t valuesLength = cl__length(values);
+#if USE_SAVE_TO_MULTIPLE_VALUES
+  size_t valuesLength = values._Size;
+#else
+  size_t valuesLength = multipleValuesLength(values);
+#endif
   int i = 0;
   for (auto cur : lcur) {
     Symbol_sp symbol = gc::As<Symbol_sp>(oCar(cur));
+#if USE_SAVE_TO_MULTIPLE_VALUES
+    T_sp value = i < valuesLength ? T_sp((gctools::Tagged)values[i]) : _Nil<T_O>();
+#else
     T_sp value = i < valuesLength ? values->operator[](i) : _Nil<T_O>();
+#endif
     Cons_sp one = Cons_O::create(symbol, _Nil<T_O>());
     add->setCdr(one);
     add = one;
@@ -615,7 +629,11 @@ T_sp interpreter_multipleValueSetq(List_sp args, T_sp environment) {
     ++i;
   }
   eval::sp_setq(oCdr(skipFirst), environment);
+#if USE_SAVE_TO_MULTIPLE_VALUES
+  return T_sp((gctools::Tagged)(values[0]));
+#else
   return (values->operator[](0));
+#endif
 }
 
 SYMBOL_EXPORT_SC_(ClPkg, prog1);
@@ -636,7 +654,7 @@ namespace eval {
 	  Return the list of declarations, the documentation string and the rest
 	  of the forms in CODE.  Identify the local special declarations and
 	return them in SPECIALS but leave them in the DECLARES list */
-void extract_declares_docstring_code_specials(List_sp inputBody, List_sp &declares, bool expectDocString, gc::Nilable<Str_sp> &documentation, List_sp &code, List_sp &specials) {
+void extract_declares_docstring_code_specials(List_sp inputBody, List_sp &declares, bool expectDocString, gc::Nilable<String_sp> &documentation, List_sp &code, List_sp &specials) {
   List_sp body = inputBody;
   declares = _Nil<T_O>();
   specials = _Nil<T_O>();
@@ -651,7 +669,7 @@ void extract_declares_docstring_code_specials(List_sp inputBody, List_sp &declar
       if (oCdr(body).notnilp()) {
         // Here we are in undefined behavior CLHS 3.4.11
         // we may be replacing previous docstrings
-        documentation = gc::As<Str_sp>(form);
+        documentation = gc::As<String_sp>(form);
         continue;
       } else {
         // Nothing follows so the current form is a form
@@ -693,7 +711,7 @@ void extract_declares_docstring_code_specials(List_sp inputBody, List_sp &declar
 	{
 	    IMPLEMENT_MEF(BF("Switch to process-declarations"));
 	    List_sp declares;
-	    Str_sp docstr;
+	    String_sp docstr;
 	    List_sp code;
 	    List_sp specials;
 	    extract_declares_docstring_code_specials(body,declares,expectDocStr.isTrue(),docstr,code,specials);
@@ -702,13 +720,13 @@ void extract_declares_docstring_code_specials(List_sp inputBody, List_sp &declar
 #endif
 
 void extract_declares_code(List_sp args, List_sp &declares, List_sp &code) {
-  gc::Nilable<Str_sp> dummy_docstring;
+  gc::Nilable<String_sp> dummy_docstring;
   List_sp specials;
   IMPLEMENT_MEF(BF("Check who is using this and why they aren't calling extract_declares_docstring_code_specials directly"));
   extract_declares_docstring_code_specials(args, declares, false, dummy_docstring, code, specials);
 }
 
-void parse_lambda_body(List_sp body, List_sp &declares, gc::Nilable<Str_sp> &docstring, List_sp &code) {
+void parse_lambda_body(List_sp body, List_sp &declares, gc::Nilable<String_sp> &docstring, List_sp &code) {
   LOG(BF("Parsing lambda body: %s") % body->__repr__());
   List_sp specials;
   extract_declares_docstring_code_specials(body, declares, true, docstring, code, specials);
@@ -749,8 +767,8 @@ T_mv sp_progv(List_sp args, T_sp environment) {
 
 T_mv sp_debug_message(List_sp args, T_sp env) {
   ASSERT(env.generalp());
-  Str_sp msg = gc::As<Str_sp>(oCar(args));
-  printf("+++DEBUG-MESSAGE[%s]\n", msg->c_str());
+  String_sp msg = gc::As<String_sp>(oCar(args));
+  printf("+++DEBUG-MESSAGE[%s]\n", msg->get_std_string().c_str());
   return (Values(_Nil<T_O>()));
 }
 
@@ -794,7 +812,7 @@ T_mv sp_lexicalVar(List_sp args, T_sp env) {
 T_mv sp_locally(List_sp args, T_sp env) {
   ASSERT(env.generalp());
   List_sp declares;
-  gc::Nilable<Str_sp> docstring;
+  gc::Nilable<String_sp> docstring;
   List_sp code;
   List_sp specials;
   extract_declares_docstring_code_specials(args, declares, false, docstring, code, specials);
@@ -979,7 +997,7 @@ T_mv sp_let(List_sp args, T_sp parentEnvironment) {
   //    LOG(BF("Extended the environment - result -->\n%s") % newEnvironment->__repr__() );
   //    LOG(BF("Evaluating code in this new lexical environment: %s") % body->__repr__() );
   List_sp declares;
-  gc::Nilable<Str_sp> docstring;
+  gc::Nilable<String_sp> docstring;
   List_sp code;
   List_sp declaredSpecials;
   extract_declares_docstring_code_specials(body, declares, false, docstring, code, declaredSpecials);
@@ -992,8 +1010,7 @@ T_mv sp_let(List_sp args, T_sp parentEnvironment) {
   ValueEnvironmentDynamicScopeManager scope(newEnvironment);
   // Set up the debugging info - it's empty to begin with
   ValueFrame_sp valueFrame = gc::As<ValueFrame_sp>(newEnvironment->getActivationFrame());
-  VectorObjects_sp debuggingInfo = VectorObjects_O::create(_Nil<T_O>(),
-                                                           cl__length(valueFrame), _Nil<T_O>());
+  VectorObjects_sp debuggingInfo = VectorObjects_O::make(cl__length(valueFrame),_Nil<T_O>());
   //  valueFrame->attachDebuggingInfo(debuggingInfo);
 
   // Figure out which environment to evaluate in
@@ -1037,7 +1054,7 @@ T_mv sp_let(List_sp args, T_sp parentEnvironment) {
       scope.new_special(classified);
     }
     if (shead == ext::_sym_lexicalVar) {
-      debuggingInfo->setf_elt(debugInfoIndex, oCadr(classified));
+      debuggingInfo->rowMajorAset(debugInfoIndex, oCadr(classified));
       debugInfoIndex++;
     }
   }
@@ -1054,7 +1071,7 @@ T_mv sp_letSTAR(List_sp args, T_sp parentEnvironment) {
   //    LOG(BF("Extended the environment - result -->\n%s") % newEnvironment->__repr__() );
   //    LOG(BF("Evaluating code in this new lexical environment: %s") % body->__repr__() );
   List_sp declares;
-  gc::Nilable<Str_sp> docstring;
+  gc::Nilable<String_sp> docstring;
   List_sp code;
   List_sp declaredSpecials;
   extract_declares_docstring_code_specials(body, declares, false, docstring, code, declaredSpecials);
@@ -1068,8 +1085,7 @@ T_mv sp_letSTAR(List_sp args, T_sp parentEnvironment) {
 
   // Set up the debugging info - it's empty to begin with
   ValueFrame_sp valueFrame = gc::As<ValueFrame_sp>(newEnvironment->getActivationFrame());
-  VectorObjects_sp debuggingInfo = VectorObjects_O::create(_Nil<T_O>(),
-                                                           cl__length(valueFrame), _Nil<T_O>());
+  VectorObjects_sp debuggingInfo = VectorObjects_O::make(cl__length(valueFrame),_Nil<T_O>());
   //  valueFrame->attachDebuggingInfo(debuggingInfo);
 
   // Figure out which environment to evaluate in
@@ -1091,7 +1107,7 @@ T_mv sp_letSTAR(List_sp args, T_sp parentEnvironment) {
       scope.new_special(classified);
     }
     if (shead == ext::_sym_lexicalVar) {
-      debuggingInfo->setf_elt(debugInfoIndex, oCadr(classified));
+      debuggingInfo->rowMajorAset(debugInfoIndex, oCadr(classified));
       debugInfoIndex++;
     }
   }
@@ -1313,7 +1329,7 @@ T_mv sp_multipleValueCall(List_sp args, T_sp env) {
 /*! Parse a lambda expression of the form ([declare*] ["docstring"] body...) */
 Function_sp lambda(T_sp name, bool wrap_block, T_sp lambda_list, List_sp body, T_sp env) {
   List_sp declares;
-  gc::Nilable<Str_sp> docstring;
+  gc::Nilable<String_sp> docstring;
   List_sp form;
   parse_lambda_body(body, declares, docstring, form);
   LOG(BF("lambda is closing over environment\n%s") % env->__repr__());
@@ -1509,7 +1525,7 @@ T_mv sp_flet(List_sp args, T_sp environment) {
   }
   List_sp declares;
   List_sp code;
-  gc::Nilable<Str_sp> docstring;
+  gc::Nilable<String_sp> docstring;
   List_sp specials;
   extract_declares_docstring_code_specials(body, declares, false, docstring, code, specials);
   return eval::sp_progn(code, newEnvironment);
@@ -1540,7 +1556,7 @@ T_mv sp_labels(List_sp args, T_sp environment) {
   }
   List_sp declares;
   List_sp code;
-  gc::Nilable<Str_sp> docstring;
+  gc::Nilable<String_sp> docstring;
   List_sp specials;
   extract_declares_docstring_code_specials(body, declares, false, docstring, code, specials);
   return eval::sp_progn(code, newEnvironment);
@@ -1562,7 +1578,7 @@ T_mv doMacrolet(List_sp args, T_sp env, bool toplevel) {
     T_sp olambdaList = oCadr(oneDef);
     List_sp inner_body = oCdr(oCdr(oneDef));
     List_sp inner_declares;
-    gc::Nilable<Str_sp> inner_docstring;
+    gc::Nilable<String_sp> inner_docstring;
     List_sp inner_code;
     parse_lambda_body(inner_body, inner_declares, inner_docstring, inner_code);
     // printf("   name = %s\n", _rep_(name).c_str());
@@ -1584,7 +1600,7 @@ T_mv doMacrolet(List_sp args, T_sp env, bool toplevel) {
       List_sp outer_body = oCddr(outer_func_cons);
       //		printf("%s:%d sp_macrolet outer_body = %s\n", __FILE__, __LINE__, _rep_(outer_body).c_str());
       List_sp declares;
-      gc::Nilable<Str_sp> docstring;
+      gc::Nilable<String_sp> docstring;
       List_sp code;
       parse_lambda_body(outer_body, declares, docstring, code);
       LambdaListHandler_sp outer_llh = LambdaListHandler_O::create(outer_ll, declares, cl::_sym_function);
@@ -1599,7 +1615,7 @@ T_mv doMacrolet(List_sp args, T_sp env, bool toplevel) {
   }
   List_sp declares;
   List_sp code;
-  gc::Nilable<Str_sp> docstring;
+  gc::Nilable<String_sp> docstring;
   List_sp specials;
   extract_declares_docstring_code_specials(body, declares, false, docstring, code, specials);
   if (toplevel) {
@@ -1664,7 +1680,7 @@ T_mv sp_symbolMacrolet(List_sp args, T_sp env) {
 	    List_sp body = oCdr(args);
 	    List_sp cur = macros;
 	    LOG(BF("macros part=%s") % macros->__repr__() );
-	    gc::Nilable<Str_sp> docString = _Nil<T_O>();
+	    gc::Nilable<String_sp> docString = _Nil<T_O>();
 	    SYMBOL_SC_(CorePkg,whole);
 	    SYMBOL_SC_(CorePkg,env);
 	    List_sp outer_ll = Cons_O::createList(_sym_whole, _sym_env);
@@ -1860,7 +1876,7 @@ T_mv t1Locally(List_sp args, T_sp env) {
     printf("%s:%d t1Locally args: %s\n", __FILE__, __LINE__, _rep_(args).c_str());
   }
   List_sp declares;
-  gc::Nilable<Str_sp> docstring;
+  gc::Nilable<String_sp> docstring;
   List_sp code;
   List_sp specials;
   extract_declares_docstring_code_specials(args, declares, false, docstring, code, specials);
@@ -1881,7 +1897,7 @@ T_mv t1Macrolet(List_sp args, T_sp env) {
     List_sp body = oCdr(args);
     List_sp cur = macros;
     LOG(BF("macros part=%s") % macros->__repr__() );
-    gc::Nilable<Str_sp> docString = _Nil<T_O>();
+    gc::Nilable<String_sp> docString = _Nil<T_O>();
     while ( cur.notnilp() )
     {
       List_sp oneDef = oCar(cur);
@@ -1900,7 +1916,7 @@ T_mv t1Macrolet(List_sp args, T_sp env) {
       List_sp outer_ll = oCaddr(outer_func_cons);
       List_sp outer_body = cCdddr(outer_func_cons);
       List_sp declares;
-      Str_sp docstring;
+      String_sp docstring;
       List_sp code;
       parse_lambda_body(outer_body,declares,docstring,code);
       LambdaListHandler_sp outer_llh = LambdaListHandler_O::create(outer_ll,declares,cl::_sym_function);
@@ -1924,7 +1940,7 @@ T_mv t1Macrolet(List_sp args, T_sp env) {
     }
     List_sp declares;
     List_sp code;
-    Str_sp docstring;
+    String_sp docstring;
     List_sp specials;
     extract_declares_docstring_code_specials(body,declares,false,docstring,code,specials);
 //            printf("%s:%d macrolet evaluating code: %s  in env: %s\n", __FILE__, __LINE__, _rep_(code).c_str(), _rep_(newEnv).c_str());
@@ -1940,7 +1956,7 @@ T_mv t1SymbolMacrolet(List_sp args, T_sp env) {
     List_sp body = cCdr(args);
     List_sp cur = macros;
     LOG(BF("macros part=%s") % macros->__repr__() );
-    gc::Nilable<Str_sp> docstring = _Nil<T_O>();
+    gc::Nilable<String_sp> docstring = _Nil<T_O>();
     SYMBOL_SC_(CorePkg,whole);
     SYMBOL_SC_(CorePkg,env);
     List_sp outer_ll = Cons_O::createList(_sym_whole, _sym_env);

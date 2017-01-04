@@ -31,8 +31,8 @@ THE SOFTWARE.
 #include <clasp/core/array.h>
 namespace core {
 
-Str8Ns_sp core__integer_to_string(Str8Ns_sp buffer, Integer_sp integer,
-                                 Fixnum_sp base, bool radix, bool decimalp);
+StrNs_sp core__integer_to_string(StrNs_sp buffer, Integer_sp integer,
+                                 Fixnum_sp base, bool radix=false, bool decimalp=false);
 
 };
 #endif

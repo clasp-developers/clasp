@@ -307,7 +307,7 @@ namespace core {
       fptr(ptr),
       _associatedFunctions(assocFuncs),
       _lambdaList(ll), 
-      _Slots(_Unbound<T_O>(),capacity) {};
+      _Slots(capacity,_Unbound<T_O>(),true) {};
     void setAssociatedFunctions(core::List_sp assocFuncs) { this->_associatedFunctions = assocFuncs; };
     T_sp associatedFunctions() const { return this->_associatedFunctions; };
     bool compiledP() const { return true; };
@@ -315,19 +315,19 @@ namespace core {
     void setf_lambda_list(core::List_sp lambda_list) { this->_lambdaList = lambda_list; };
     core::LambdaListHandler_sp lambdaListHandler() const { return _Nil<core::LambdaListHandler_O>(); };
     inline T_sp &operator[](int idx) {
-      ASSERT(idx>=0 && idx<this->_Slots._Capacity);
+      ASSERT(idx>=0 && idx<this->_Slots._Length);
 #ifdef DEBUG_FRAME_BOUNDS
-      if ( idx<0 || idx >= this->_Slots._Capacity) {
-        printf("%s:%d Caught out of bounds access to ValueFrame_O idx=%d capacity=%d\n", __FILE__, __LINE__, idx, this->_Slots._Capacity );
+      if ( idx<0 || idx >= this->_Slots._Length) {
+        printf("%s:%d Caught out of bounds access to ValueFrame_O idx=%d capacity=%d\n", __FILE__, __LINE__, idx, this->_Slots._Length );
       }
 #endif
       return this->_Slots[idx];
     };
     inline const T_sp &operator[](int idx) const {
-      ASSERT(idx>=0 && idx<this->_Slots._Capacity);
+      ASSERT(idx>=0 && idx<this->_Slots._Length);
 #ifdef DEBUG_FRAME_BOUNDS
-      if ( idx<0 || idx >= this->_Slots._Capacity) {
-        printf("%s:%d Caught out of bounds access to ValueFrame_O idx=%d capacity=%d\n", __FILE__, __LINE__, idx, this->_Slots._Capacity );
+      if ( idx<0 || idx >= this->_Slots._Length) {
+        printf("%s:%d Caught out of bounds access to ValueFrame_O idx=%d capacity=%d\n", __FILE__, __LINE__, idx, this->_Slots._Length );
       }
 #endif
       return this->_Slots[idx];

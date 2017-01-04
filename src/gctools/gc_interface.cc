@@ -131,13 +131,12 @@ typedef bool _Bool;
 #include <clasp/core/readtable.h>
 #include <clasp/core/nativeVector.h>
 #include <clasp/core/intArray.h>
+#include <clasp/core/array.h>
 #include <clasp/core/lispStream.h>
 #include <clasp/core/lispVector.h>
 #include <clasp/core/primitives.h>
 #include <clasp/core/singleDispatchMethod.h>
-#include <clasp/core/binder.h>
 #include <clasp/core/fileSystem.h>
-#include <clasp/core/vectorDisplaced.h>
 #include <clasp/core/null.h>
 #include <clasp/core/multiStringBuffer.h>
 #include <clasp/core/posixTime.h>
@@ -268,8 +267,8 @@ NOINLINE void define_source_info(source_info_kind kind,
   std::string package_part, symbol_part;
   core::colon_split(lisp_name,package_part,symbol_part);
   core::Symbol_sp sym = core::lisp_intern(symbol_part,package_part);
-  core::Str_sp sourceFile = core::Str_O::create(file);
-  core::Str_sp docs = core::Str_O::create(docstring);
+  core::SimpleBaseCharString_sp sourceFile = core::SimpleBaseCharString_O::make(file);
+  core::SimpleBaseCharString_sp docs = core::SimpleBaseCharString_O::make(docstring);
   if ( kind == code_kind ) {
     core::Function_sp func = core::coerce::functionDesignator(sym);
     func->setSourcePosInfo(sourceFile, character_offset, line, 0 );
@@ -279,7 +278,7 @@ NOINLINE void define_source_info(source_info_kind kind,
     core::List_sp info = core__get_sysprop(sym,core::_sym_cxx_method_source_location);
     info = core::Cons_O::create(core::Cons_O::createList(sourceFile,core::clasp_make_fixnum(character_offset)),info);
     core::core__put_sysprop(sym,core::_sym_cxx_method_source_location,info);
-    core::Str_sp docs = core::Str_O::create(docstring);
+    core::SimpleBaseCharString_sp docs = core::SimpleBaseCharString_O::make(docstring);
     ext__annotate(sym,cl::_sym_documentation,cl::_sym_method, docs);
   } else if ( kind == class_kind ) {
     core::List_sp info = core::Cons_O::createList(sourceFile,core::clasp_make_fixnum(character_offset));

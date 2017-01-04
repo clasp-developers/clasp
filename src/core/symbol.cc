@@ -115,7 +115,7 @@ CL_DEFUN Function_sp cl__symbol_function(Symbol_sp sym) {
 CL_LAMBDA(arg);
 CL_DECLARE();
 CL_DOCSTRING("symbolName");
-CL_DEFUN Str_sp cl__symbol_name(Symbol_sp arg) {
+CL_DEFUN SimpleString_sp cl__symbol_name(Symbol_sp arg) {
   return arg->symbolName();
 }
 
@@ -139,9 +139,9 @@ CL_DEFUN T_sp core__symbol_value_address(Symbol_sp arg) {
 CL_LAMBDA(name);
 CL_DECLARE();
 CL_DOCSTRING("make_symbol");
-CL_DEFUN Symbol_mv cl__make_symbol(Str_sp name) {
-  Symbol_sp sym = Symbol_O::create(name->get());
-  return (Values(sym));
+CL_DEFUN Symbol_sp cl__make_symbol(SimpleString_sp name) {
+  Symbol_sp sym = Symbol_O::create(name);
+  return sym;
 };
 };
 
@@ -156,11 +156,10 @@ Symbol_O::Symbol_O(bool dummy) : _HomePackage(_Nil<T_O>()),
                                  _IsConstant(false),
                                  _ReadOnlyFunction(false),
                                  _PropertyList(_Nil<List_V>()) { //no guard
-  //  this->_Name = Str_O::create(name);
 }
 
 Symbol_O::Symbol_O() : Base(),
-                       _Name(gctools::smart_ptr<Str_O>()),
+                       _Name(gctools::smart_ptr<SimpleBaseCharString_O>()),
                        _HomePackage(gctools::smart_ptr<Package_O>()),
                        _Value(gctools::smart_ptr<T_O>()),
                        _Function(gctools::smart_ptr<Function_O>()),
@@ -193,24 +192,21 @@ Symbol_sp Symbol_O::create_at_boot(const string &nm) {
     THROW_HARD_ERROR(BF("Illegal name for symbol[%s]") % nm);
   }
 #endif
-  n->_Name = Str_O::create(nm);
+  n->_Name = SimpleBaseCharString_O::make(nm.size(),'\0',true,nm.size(),(const claspChar*)nm.c_str());
   return n;
 };
 
-Symbol_sp Symbol_O::create(const string &nm) {
+Symbol_sp Symbol_O::create_from_string(const string &nm) {
   // This is used to allocate roots that are pointed
   // to by global variable _sym_XXX  and will never be collected
   Symbol_sp n = gctools::GC<Symbol_O>::root_allocate(true);
-  Str_sp snm = Str_O::create(nm);
+  SimpleString_sp snm = SimpleBaseCharString_O::make(nm);
   n->setf_name(snm);
   ASSERTF(nm != "", BF("You cannot create a symbol without a name"));
 #if VERBOSE_SYMBOLS
   if (nm.find("/dyn") != string::npos) {
     THROW_HARD_ERROR(BF("Illegal name for symbol[%s]") % nm);
   }
-#endif
-#if 0
-  n->_Name = Str_O::create(nm);
 #endif
   return n;
 };
@@ -222,7 +218,7 @@ CL_DEFMETHOD void Symbol_O::makunbound() {
 }
 
 void Symbol_O::symbolUnboundError() const {
-  SIMPLE_ERROR(BF("Symbol %s is unbound\n") % this->_Name->c_str());
+  SIMPLE_ERROR(BF("Symbol %s is unbound\n") % this->_Name->get_std_string().c_str());
 }
 
 void Symbol_O::setf_plist(List_sp plist) {
@@ -237,7 +233,7 @@ void Symbol_O::sxhash_(HashGenerator &hg) const {
 CL_LISPIFY_NAME("cl:copy_symbol");
 CL_LAMBDA(symbol &optional copy-properties);
 CL_DEFMETHOD Symbol_sp Symbol_O::copy_symbol(T_sp copy_properties) const {
-  Symbol_sp new_symbol = Symbol_O::create(this->_Name->get());
+  Symbol_sp new_symbol = Symbol_O::create(this->_Name);
   if (copy_properties.isTrue()) {
     ASSERT(this->_Function);
     new_symbol->_Value = this->_Value;
@@ -355,7 +351,7 @@ string Symbol_O::formattedName(bool prefixAlways) const { //no guard
       ss << ":" << this->_Name->get();
     } else {
       Package_sp currentPackage = _lisp->getCurrentPackage();
-      if (currentPackage->_findSymbol(this->_Name).notnilp() && !prefixAlways) {
+      if (currentPackage->findSymbol_SimpleString(this->_Name).notnilp() && !prefixAlways) {
         ss << this->_Name->get();
       } else {
         if (myPackage->isExported(this->const_sharedThis<Symbol_O>())) {

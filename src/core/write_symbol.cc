@@ -56,17 +56,16 @@ THE SOFTWARE.
 namespace core {
 
 static bool
-potential_number_p(Str_sp s, int base) {
+potential_number_p(String_sp s, int base) {
   /* See ANSI 2.3.1.1 */
   static cl_index i, l;
   claspCharacter c;
   /* A potential number must contain at least one digit */
   bool some_digit = false;
-
-  l = s->length(); // .as<Str_O>()->fillPointer();
+  l = s->length();
   if (l == 0)
     return false;
-  c = s->schar(0);
+  c = as_claspCharacter(cl__char(s,0));
 
   /* A potential number must begin with a digit, sign or
            extension character (^ _) */
@@ -76,12 +75,12 @@ potential_number_p(Str_sp s, int base) {
     return false;
 
   /* A potential number cannot end with a sign */
-  c = s->schar(l - 1);
+  c = as_claspCharacter(cl__char(s,l - 1));
   if (c == '+' || c == '-')
     return false;
 
   for (i = 1; i < l; i++) {
-    c = s->schar(i);
+    c = as_claspCharacter(cl__char(s,i));
     /* It can only contain digits, signs, ratio markers,
              * extension characters and number markers. Number
              * markers are letters, but two adjacent letters fail
@@ -91,8 +90,7 @@ potential_number_p(Str_sp s, int base) {
     } else if (c == '+' || c == '-' ||
                c == '/' || c == '.' || c == '^' || c == '_') {
       continue;
-    } else if (isalpha(c) &&
-               (((i + 1) >= l) || !isalpha(s->schar(i + 1)))) {
+    } else if (isalpha(c) && (((i + 1) >= l) || !isalpha(as_claspCharacter(cl__char(s,i + 1))))) {
       continue;
     } else {
       return false;
@@ -101,18 +99,17 @@ potential_number_p(Str_sp s, int base) {
   return some_digit;
 }
 
-#define needs_to_be_inverted(s) (clasp_string_case(s) != 0)
-
 static bool
-all_dots(Str_sp s) {
+all_dots(String_sp s) {
   for (cl_index i = 0, iEnd(s->length()); i < iEnd; ++i)
-    if (s->schar(i) != '.')
+    if (as_claspCharacter(cl__char(s,i)) != '.')
       return 0;
   return 1;
 }
 
 static bool
-needs_to_be_escaped(Str_sp s, T_sp readtable, T_sp print_case) {
+needs_to_be_escaped(String_sp s, T_sp readtable, T_sp print_case) {
+  ASSERT(cl__stringp(s));
   int action = gc::As<ReadTable_sp>(readtable)->getReadTableCaseAsEnum();
   if (potential_number_p(s, clasp_print_base()))
     return 1;
@@ -123,7 +120,7 @@ needs_to_be_escaped(Str_sp s, T_sp readtable, T_sp print_case) {
 	 * string has to be escaped according to readtable case and the rules
 	 * of 22.1.3.3.2. */
   for (cl_index i = 0, iEnd(s->length()); i < iEnd; i++) {
-    int c = s->schar(i);
+    claspCharacter c = as_claspCharacter(cl__char(s,i));
     Character_sp cc = clasp_make_character(c);
     //            int syntax = clasp_readtable_get(readtable, c, 0);
     Symbol_sp syntax = gc::As<ReadTable_sp>(readtable)->syntax_type(cc);
@@ -148,7 +145,7 @@ needs_to_be_escaped(Str_sp s, T_sp readtable, T_sp print_case) {
 #define needs_to_be_inverted(s) (clasp_string_case(s) != 0)
 
 static void
-write_symbol_string(Str_sp s, int action, T_sp print_case,
+write_symbol_string(SimpleString_sp s, int action, T_sp print_case,
                     T_sp stream, bool escape) {
   bool capitalize;
   if (action == clasp_case_invert) {
@@ -159,7 +156,7 @@ write_symbol_string(Str_sp s, int action, T_sp print_case,
     clasp_write_char('|', stream);
   capitalize = 1;
   for (cl_index i = 0, iEnd(s->length()); i < iEnd; i++) {
-    int c = s->schar(i);
+    claspCharacter c = as_claspCharacter(cl__char(s,i));
     if (escape) {
       if (c == '|' || c == '\\') {
         clasp_write_char('\\', stream);
@@ -206,7 +203,7 @@ void clasp_write_symbol(Symbol_sp x, T_sp stream) {
   bool forced_package = 0;
 
   T_sp package;
-  Str_sp name;
+  SimpleString_sp name;
   if (x.nilp()) {
     package = cl::_sym_nil->homePackage();
     name = cl::_sym_nil->symbolName();
@@ -242,7 +239,7 @@ void clasp_write_symbol(Symbol_sp x, T_sp stream) {
         print_package = true;
     }
     if (print_package) {
-      T_sp name = Str_O::create(gc::As<Package_sp>(package)->packageName());
+      T_sp name = SimpleBaseCharString_O::make(gc::As<Package_sp>(package)->packageName());
       write_symbol_string(name, readtable->getReadTableCaseAsEnum(),
                           print_case, stream,
                           needs_to_be_escaped(name, readtable, print_case));

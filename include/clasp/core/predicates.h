@@ -112,12 +112,12 @@ bool core__path_p(T_sp obj);
 bool core__pointerp(T_sp obj);
 bool core__ratio_p(T_sp obj);
 bool core__short_float_p(T_sp obj);
-bool core__simple_string_p(T_sp obj);
 bool core__single_dispatch_activation_frame_p(T_sp obj);
 bool core__single_dispatch_generic_function_p(T_sp obj);
 bool core__single_float_p(T_sp obj);
 bool core__special_form_p(T_sp obj);
 bool core__standardObjectP(T_sp obj);
+inline bool core__non_simple_stringp(T_sp obj) { return gc::IsA<StrNs_sp>(obj); };
 bool llvmo__llvm_sys_value_p(T_sp obj);
  bool core__proper_list_p(T_sp obj);
 }

@@ -30,199 +30,239 @@ THE SOFTWARE.
 #include <clasp/core/clasp_gmpxx.h>
 #include <clasp/core/foundation.h>
 #include <clasp/core/numbers.h>
+#include <clasp/core/character.fwd.h>
+#include <clasp/core/sequence.fwd.h>
 #include <clasp/core/corePackage.fwd.h>
 
 namespace cl {
+  extern core::Symbol_sp& _sym_General_O;
   extern core::Symbol_sp& _sym_sequence;
   extern core::Symbol_sp& _sym_array;
   extern core::Symbol_sp& _sym_vector;
+  extern core::Symbol_sp& _sym_vectorPush;
+  extern core::Symbol_sp& _sym_vectorPushExtend;
   extern core::Symbol_sp& _sym_simple_base_string;
   extern core::Symbol_sp& _sym_simple_bit_vector;
   extern core::Symbol_sp& _sym_simple_vector;
   extern core::Symbol_sp& _sym_base_string;
+  extern core::Symbol_sp& _sym_subseq;
+  extern core::Symbol_sp& _sym_string;
+  extern core::Symbol_sp& _sym_fillPointer;
+  extern core::Symbol_sp& _sym_arrayDimension;
+  extern core::Symbol_sp& _sym_reverse;
+  extern core::Symbol_sp& _sym_nreverse;
+  extern core::Symbol_sp& _sym_base_char;
+  extern core::Symbol_sp& _sym_character;
+  extern core::Symbol_sp& _sym_bit_vector;
+  extern core::Symbol_sp& _sym_bit;
+  extern core::Symbol_sp& _sym_T_O;
+  extern core::Symbol_sp& _sym_simple_string;
 };
+namespace core {
+  extern core::Symbol_sp& _sym_replaceArray;
+  extern core::Symbol_sp& _sym_swapElements;
+  extern core::Symbol_sp& _sym_fillPointerSet;
+  extern core::Symbol_sp& _sym_fillArrayWithElt;
+  extern core::Symbol_sp& _sym_setf_subseq;
+  extern void clasp_write_string(const string &str, T_sp strm );
+  extern claspCharacter clasp_write_char(claspCharacter c, T_sp strm);
+};
+  
 
 namespace core {
 
   // ------------------------------------------------------------
   // Utility
 
-  void noFillPointerError();
-  void notVectorError();
+  [[noreturn]] void bitVectorDoesntSupportError();
+  [[noreturn]] void missingValueListError(List_sp indices);
+  [[noreturn]] void tooManyIndicesListError(List_sp indices);
+  [[noreturn]] void missingValueVaListError(VaList_sp indices);
+  [[noreturn]] void tooManyIndicesVaListError(VaList_sp indices);
+  [[noreturn]] void badAxisNumberError(Symbol_sp fn_name, size_t rank, size_t axisNumber);
+  [[noreturn]] void badIndexError(size_t oneIndex, size_t curDimension);
+  [[noreturn]] void indexNotFixnumError(T_sp index);
+  [[noreturn]] void insufficientIndexListError(List_sp indices);
+  [[noreturn]] void insufficientIndexVaListError(VaList_sp indices);
+  [[noreturn]] void notStringError(T_sp obj);
+  [[noreturn]] void notSequenceError(T_sp obj);
+  [[noreturn]] void noFillPointerError(Symbol_sp fn_name, T_sp array);
+  [[noreturn]] void vectorNotArrayError(Symbol_sp fn_name, T_sp array);
+  [[noreturn]] void notAdjustableError(Symbol_sp fn_name, T_sp array);
+  [[noreturn]] void notVectorError(T_sp array);
+  bool ranged_bit_vector_EQ_(const SimpleBitVector_O& x, const SimpleBitVector_O& y, size_t startx, size_t endx, size_t starty, size_t endy );
 
+  template <typename T1,typename T2>
+    bool template_string_EQ_equal(const T1& string1, const T2& string2, size_t start1, size_t end1, size_t start2, size_t end2)
+  {
+    const typename T1::value_type* cp1(&string1[start1]);
+    const typename T2::value_type* cp2(&string2[start2]);
+    size_t num1 = end1 - start1;
+    size_t num2 = end2 - start2;
+//    printf("%s:%d:%s string1@%p string2=@%p sizeof(*cp1)=%lu sizeof(*cp2)=%lu cp1=%p cp2=%p start1=%lu end1=%lu start2=%lu end2=%lu num1=%lu num2=%lu\n", __FILE__, __LINE__, __FUNCTION__, (void*)&string1, (void*)&string2, sizeof(*cp1), sizeof(*cp2), (void*)cp1, (void*)cp2, start1, end1, start2, end2, num1, num2);
+    while (1) {
+      if (num1 == 0)
+        goto END_STRING1;
+      if (num2 == 0)
+        goto END_STRING2;
+      if ((static_cast<claspCharacter>(*cp1) != static_cast<claspCharacter>(*cp2)))
+        goto RETURN_FALSE;
+      --num1;
+      --num2;
+      ++cp1;
+      ++cp2;
+    }
+  END_STRING1:
+    if (num2 == 0)
+      goto RETURN_TRUE;
+    goto RETURN_FALSE;
+  END_STRING2:
+  RETURN_FALSE:
+    return false;
+  RETURN_TRUE:
+    return true;
+  }
 
-  
-#define INHERIT_SEQUENCE
+  template <class SimpleType>
+    Array_sp templated_ranged_reverse(const SimpleType& me, size_t start, size_t end) {
+    size_t meLength = end - start;
+    size_t lastElement = meLength - 1;
+    gctools::smart_ptr<SimpleType> newVec = SimpleType::make(meLength);
+    for (size_t i = start; i < meLength; ++i) {
+      size_t ri = lastElement-i;
+      (*newVec)[ri] = me[i];
+    }
+    return newVec;
+  }
+  template <class T>
+    void templated_swapElements(T& x, size_t xi, size_t yi) {
+    typename T::value_type u = x[xi];
+    x[xi] = x[yi];
+    x[yi] = u;
+  }
+  template <class MaybeTemplatedSimpleType>
+    Array_sp templated_ranged_nreverse(MaybeTemplatedSimpleType& me,size_t start, size_t end) {
+    size_t meLength = end-start;
+    size_t halfLength = meLength/2;
+    size_t lastElement = meLength - 1;
+    for (size_t i = start; i < halfLength; ++i) {
+      size_t ri = lastElement-i;
+      templated_swapElements(me,i,ri);
+    }
+    return me.asSmartPtr();
+  }
 
+  template <class T>
+    Array_sp templated_reverse_VectorNs(T& me) {
+    BaseSimpleVector_sp bsv;
+    size_t start, end;
+    me.asBaseSimpleVectorRange(bsv,start,end);
+    auto sv = gc::As_unsafe<gctools::smart_ptr<typename T::simple_type>>(bsv);
+    return templated_ranged_reverse<typename T::simple_type>(*sv,start,end);
+  }
+
+  template <class T>
+    Array_sp templated_nreverse_VectorNs(T& me) {
+    BaseSimpleVector_sp bsv;
+    size_t start, end;
+    me.asBaseSimpleVectorRange(bsv,start,end);
+    auto sv = gc::As_unsafe<gctools::smart_ptr<typename T::simple_type>>(bsv);
+    return templated_ranged_nreverse(*sv,start,end);
+  }
+
+};
+
+namespace core {
 class Array_O : public General_O {
   LISP_CLASS(core, ClPkg, Array_O, "array",General_O);
  public:
-  /*! A very hackish way to get at the first element of all subclasses
-      - which will be the FillPointer or the Length for vectors */
-  size_t       _Length[0];  // A very hackish way to get at the first element of all subclasses
- public: // Functions here
-  virtual T_sp type_as_symbol() = 0;
-  size_t length() const { return this->_Length[0]; };
-  virtual bool equalp(T_sp other) const { SUBIMP(); };
-  
-  CL_LISPIFY_NAME("cl:array-has-fill-pointer-p");
-  CL_DEFMETHOD   virtual bool arrayHasFillPointerP() const { return false; };
-
-  CL_LISPIFY_NAME("cl:array-total-size");
-  CL_DEFMETHOD virtual size_t arrayTotalSize() const = 0;
-
-  virtual T_sp elt(cl_index index) const = 0;
-  virtual T_sp setf_elt(cl_index index, T_sp value) = 0;
-
-  /*! This is to reach through to the simple vectors that contain everything
-      and get a pointer to the element at index.   It follows the
-      chain of displacements. */
-  virtual void* addressOfElement(size_t index) const = 0;
+  /*! A hackish (clever?) way to get at the first element of all subclasses
+      - which will be the FillPointer/Length for vectors and a Dummy for Arrays.
+      - The first field of every subclass needs to be a size_t length/fillPointer.
+ */
+  size_t       _Length[0];
+ public:
+  // Low level functions for access to contents
   virtual size_t elementSizeInBytes() const = 0;
-  
-  virtual T_sp aset_unsafe(cl_index j, T_sp val) = 0;
-  virtual T_sp aref_unsafe(cl_index index) const = 0;
-  /*! Return the total capacity of the array */
-  virtual std::vector<cl_index> dimensions() const { SUBIMP(); };
-
-  CL_LISPIFY_NAME("core:rowMajorAset");
-  CL_DEFMETHOD   virtual void rowMajorAset(cl_index idx, T_sp value) { SUBIMP(); };
- 
-  CL_LISPIFY_NAME("cl:rowMajorAref");
-  CL_DEFMETHOD   virtual T_sp rowMajorAref(cl_index idx) const { SUBIMP(); };
- 
-  virtual cl_index arrayRowMajorIndex(VaList_sp indices) const = 0;
-
-  //! Don't support adjustable arrays yet
-  bool adjustable_array_p() const { return false; };
-  //! Don't support displaced arrays yet
-  bool _displaced_array_p() const { return false; }
-  //! Don't support fill pointers yet
-  bool array_has_fill_pointer_p() const { return false; }
-
+  virtual void* rowMajorAddressOfElement_(size_t index) const = 0;
+  virtual void asBaseSimpleVectorRange(BaseSimpleVector_sp& sv, size_t& start, size_t& end) const = 0;
+ public: // Functions here
+  virtual T_sp type_as_symbol() const = 0;
+  /*! length() doesn't dispatch - it reaches into the subclass
+      through the _Length[0] array to read the first size_t element
+      which is the Length/FillPointer for vectors and a Dummy value for arrays */
+  size_t length() const { return this->_Length[0]; };
+  virtual bool equal(T_sp other) const = 0;
+  virtual bool equalp(T_sp other) const = 0;
+  virtual size_t arrayTotalSize() const = 0;
+  virtual void rowMajorAset(size_t idx, T_sp value) = 0;
+  virtual T_sp rowMajorAref(size_t idx) const = 0;
+  virtual bool adjustableArrayP() const { return false; };
+  virtual bool displacedToP() const { return false; };
+  size_t arrayRowMajorIndex(VaList_sp indices) const {
+    return this->index_(indices);
+  }
   virtual LongLongInt setDimensions(List_sp dimensions, T_sp initialElement) { SUBIMP(); };
-  virtual void swapElements(cl_index i1, cl_index i2) = 0;
-
-  /*! Return the rank of the array */
-  CL_LISPIFY_NAME("cl:array-rank");
-  CL_DEFMETHOD   virtual size_t rank() const = 0;
-
+  virtual Array_sp reverse() const = 0;
+  virtual Array_sp nreverse() = 0;
+  virtual size_t rank() const = 0;
   /*! Return the offset into a one-dimensional vector for the multidimensional index
       in the vector<int>s.  This is in rowMajor order.*/
-  cl_index index_vector_int(const vector<int> &indices) const;
-
+  size_t index_vector_int(const vector<int> &indices) const;
   /*! Return the offset into a one-dimensional vector for a multidimensional index
-	 If last_value_is_val == true then don't use the last value in the indices list
-	*/
-  cl_index index_val_(List_sp indices, bool last_value_is_val, T_sp &last_val) const;
-  cl_index index_val_(VaList_sp indices, bool last_value_is_val, T_sp &last_val) const;
-
-  /*! Return the offset into a one-dimensional vector for a multidimensional index
-	*/
-  inline cl_index index_(List_sp indices) const {
-    T_sp dummy;
-    return this->index_val_(indices,false,dummy);
-  };
-  inline cl_index index_(VaList_sp indices) const {
-    T_sp dummy;
-    return this->index_val_(indices,false,dummy);
-  };
-
+	 If last_value_is_val == true then don't use the last value in the indices list */
+  size_t index_val_(List_sp indices, bool last_value_is_val, T_sp &last_val) const;
+  size_t index_val_(VaList_sp indices, bool last_value_is_val, T_sp &last_val) const;
+  /*! Return the offset into a one-dimensional vector for a multidimensional index */
+  inline size_t index_(List_sp indices) const {T_sp dummy; return this->index_val_(indices,false,dummy);};
+  inline size_t index_(VaList_sp indices) const {T_sp dummy; return this->index_val_(indices,false,dummy);};
   /*! Return the type returned by this array */
-CL_LISPIFY_NAME("cl:array-element-type");
- CL_DEFMETHOD   virtual T_sp arrayElementType() = 0;
-
+  virtual T_sp arrayElementType() const = 0;
+  virtual bool arrayHasFillPointerP() const { return false; };
+  virtual void fillPointerSet(size_t f) {noFillPointerError(cl::_sym_fillPointer,this->asSmartPtr());};
+  virtual size_t fillPointer() const {noFillPointerError(cl::_sym_fillPointer,this->asSmartPtr());};
   /*! This replicates ECL ecl__elttype_to_symbol in array.d */
-
-  Symbol_sp element_type_as_symbol() const;
-
+  virtual Symbol_sp elementTypeAsSymbol() const = 0;
+  virtual size_t displacedIndexOffset() const = 0;
   /*! Return the array dimension along the axis-number */
-  CL_LISPIFY_NAME("cl:array-dimension");
- CL_DEFMETHOD   virtual size_t arrayDimension(size_t axisNumber) const = 0;
-
-  /*! Return the array dimensions as a list of integers */
-  virtual List_sp arrayDimensions() const = 0;
-
+  virtual size_t arrayDimension(size_t axisNumber) const = 0;
   /*! Return the value at the indices */
-  virtual T_sp aref(VaList_sp indices) const;
-
-  /*! Setf the value at the indices - the val is at the end of the list of indices */
-  virtual T_sp setf_aref(List_sp indices_val);
-
-CL_LISPIFY_NAME("cl:svref");
-CL_DEFMETHOD   virtual T_sp svref(cl_index idx) const { SUBIMP(); };
-CL_LISPIFY_NAME("core:setf-svref");
-CL_DEFMETHOD   virtual T_sp setf_svref(cl_index idx, T_sp val) { SUBIMP(); };
-
-  /*! Return the value at the indices */
-CL_LISPIFY_NAME("core:array-fill");
- CL_DEFMETHOD   virtual void arrayFill(T_sp val) {SUBIMP();}
-
-
-  /*! Fill the range of elements of the array,
-     if end is nil then fill to the end of the array*/
-CL_LISPIFY_NAME("core:fill-array-with-elt");
-CL_DEFMETHOD void fillArrayWithElt(T_sp element, cl_index start, T_sp end) {
-    cl_index iend = this->checkBounds(start,end,this->arrayTotalSize());
-    this->unsafe_fillArrayWithElt(element,start,iend);
-  }
-
-CL_LISPIFY_NAME("core:replace-array");
-CL_DEFMETHOD   virtual T_sp replace_array(T_sp other) {
-    SUBCLASS_MUST_IMPLEMENT();
-  };
-
- virtual T_sp elementType() const = 0;
-
-  virtual void __write__(T_sp strm) const;
-
+  virtual T_sp replaceArray(T_sp other) = 0;
+  virtual void __write__(T_sp strm) const = 0;
   virtual string __repr__() const;
-
   // ------------------------------------------------------------
   //
   // String functions
-  virtual claspCharacter schar(cl_index index) const;
-  virtual claspCharacter scharSet(cl_index index, claspCharacter c);
-  virtual std::string get_std_string() const;
+  virtual std::string get_std_string() const = 0;
   std::string get() const {/*DEPRECIATE for get_std_string*/return this->get_std_string(); };
-
+  virtual vector<size_t> arrayDimensionsAsVector() const = 0;
   // ------------------------------------------------------------
   //
   // Vector functions
   //
   virtual T_sp vectorPush(T_sp newElement) = 0;
-  virtual Fixnum_sp vectorPushExtend(T_sp newElement, cl_index extension = 0) = 0;
-
+  virtual Fixnum_sp vectorPushExtend(T_sp newElement, size_t extension = 0) = 0;
   /*! The safe version - check if its a vector and
       check the arguments */
-  T_sp subseq(cl_index start, T_sp end) const {
-    if (this->rank()!=1) notVectorError();
-    cl_index iend = this->checkBounds(start,end,this->length());
-    return this->unsafe_subseq(start,iend);
+  T_sp subseq(size_t start, T_sp end) const {
+    if (this->rank()!=1) notVectorError(this->asSmartPtr());
+    size_t_pair p = sequenceStartEnd(cl::_sym_subseq,this->length(),start,end);
+    return this->unsafe_subseq(p.start,p.end);
   }
-  
-  virtual T_sp setf_subseq(cl_index start, T_sp end, T_sp new_subseq) {
-    if (this->rank()!=1) notVectorError();
-    cl_index iend = this->checkBounds(start,end,this->length());
-    return this->unsafe_setf_subseq(start,iend,new_subseq);
+  virtual T_sp setf_subseq(size_t start, T_sp end, T_sp new_subseq) {
+    if (this->rank()!=1) notVectorError(this->asSmartPtr());
+    size_t_pair p = sequenceStartEnd(core::_sym_setf_subseq,this->length(),start,end);
+    Array_sp newVec = gc::As<Array_sp>(new_subseq);
+    return this->unsafe_setf_subseq(p.start,p.end,newVec);
   }
-  virtual void fillInitialContents(T_sp initialContents) {
-    this->unsafe_fillInitialContents(0,this->arrayTotalSize(),initialContents);
-  }
-  virtual void sxhash_(HashGenerator& hg) = 0;
-  
+  void fillInitialContents(T_sp initialContents);
+  virtual void sxhash_(HashGenerator& hg) const = 0;
   // --------------------------------------------------
   // Ranged operations with explicit limits
-  virtual Array_sp unsafe_subseq(cl_index start, cl_index end) const = 0;
-  virtual Array_sp unsafe_setf_subseq(cl_index start, cl_index end, T_sp newSubseq) = 0;
-  virtual void unsafe_fillInitialContents(cl_index start, cl_index end,T_sp initialContents) = 0;
-  virtual void unsafe_fillArrayWithElt(T_sp initial_element, cl_index start, cl_index end) = 0;
-  
-  /*! Signal an error if the value is out of bounds */
-  cl_index checkBounds(cl_index start, T_sp end, cl_index length) const;
-
+  virtual Array_sp unsafe_subseq(size_t start, size_t end) const = 0;
+  virtual Array_sp unsafe_setf_subseq(size_t start, size_t end, Array_sp newSubseq) = 0;
+  virtual void unsafe_fillArrayWithElt(T_sp initial_element, size_t start, size_t end) = 0;
 };
-
 
  
 }; /* core */
@@ -242,35 +282,55 @@ namespace core {
     gctools::GCArray_moveable<size_t> _Dimensions;
     MDArray_O(size_t rank,
               List_sp dimensions,
-              T_sp elementType,
               T_sp fillPointer,
-              Array_sp displacedTo,
-              size_t displacedIndexOffset,
-              T_sp initial_element,
-              bool initial_element_supplied_p );
+              T_sp displacedTo,
+              size_t displacedIndexOffset);
   public:
-    virtual Array_sp data() { return this->_Data; };
+    virtual Array_sp data() const { return this->_Data;};
+    void set_data(Array_sp a);
+  public:
+    virtual size_t elementSizeInBytes() const override { return this->_Data->elementSizeInBytes(); };
+    virtual void* rowMajorAddressOfElement_(size_t index) const override { return this->_Data->rowMajorAddressOfElement_(index+this->_DisplacedIndexOffset); };
     virtual bool adjustableArrayP() const { return true; }
+    virtual bool displacedToP() const { return this->_DisplacedToP; };
   public:
     virtual size_t arrayTotalSize() const { return this->_ArrayTotalSize; };
-    virtual T_sp displaced_to() const {
+    virtual T_sp displacedTo() const {
       if (this->_DisplacedToP) return this->_Data;
       return _Nil<T_O>();
     };
-    virtual cl_index displaced_index_offset() const {return this->_DisplacedIndexOffset;}
-    virtual bool arrayHasFillPointerP() const { return this->_FillPointerP; };
-    virtual T_sp elt(cl_index index) const { TYPE_ERROR(this->asSmartPtr(),cl::_sym_sequence);};
-    virtual T_sp setf_elt(cl_index index, T_sp value) { TYPE_ERROR(this->asSmartPtr(),cl::_sym_sequence);};
-    virtual void fillPointerSet(size_t idx) {
-      unlikely_if (!this->_FillPointerP) noFillPointerError();
+
+    virtual size_t rank() const override { return this->_Dimensions._Length; };
+    virtual Symbol_sp elementTypeAsSymbol() const override { return this->_Data->elementTypeAsSymbol(); };
+    virtual size_t arrayDimension(size_t axisNumber) const override {
+      LIKELY_if (axisNumber<this->_Dimensions._Length) return this->_Dimensions[axisNumber];
+      badAxisNumberError(cl::_sym_arrayDimension,this->_Dimensions._Length,axisNumber);
+      
+    };
+    virtual size_t displacedIndexOffset() const override {return this->_DisplacedIndexOffset;}
+    virtual T_sp arrayElementType() const override { return this->_Data->arrayElementType();};
+    virtual bool arrayHasFillPointerP() const override { return this->_FillPointerP; };
+    virtual T_sp replaceArray(T_sp other) override { this->set_data(gc::As<Array_sp>(other)); return this->asSmartPtr(); };
+    void fillPointerSet(size_t idx) {
       this->_FillPointerOrLengthOrDummy = idx;
     };
     size_t fillPointer() const {
-      unlikely_if (this->_FillPointerP) noFillPointerError();
       return this->_FillPointerOrLengthOrDummy;
     };
-    virtual T_sp elementType() const { return this->_Data->elementType();};
-    virtual void __write__(T_sp strm) const;
+    virtual void __write__(T_sp strm) const override;
+    virtual std::string get_std_string() const {notStringError(this->asSmartPtr()); }
+    virtual vector<size_t> arrayDimensionsAsVector() const {
+      vector<size_t> dims;
+      for (size_t i; i<this->_Dimensions._Length; ++i ) {
+        dims.push_back(this->_Dimensions[i]);
+      }
+      return dims;
+    }
+    virtual void internalAdjustSize_(size_t size, T_sp init_element=_Nil<T_O>(), bool initElementSupplied=false ) = 0;
+    virtual void unsafe_fillArrayWithElt(T_sp element, size_t start, size_t end) final
+    {
+      this->_Data->unsafe_fillArrayWithElt(element,start+this->_DisplacedIndexOffset,end+this->_DisplacedIndexOffset);
+    }
   };
 };
 
@@ -282,17 +342,32 @@ namespace core {
   class MDArrayNs_O : public MDArray_O {
     LISP_CLASS(core, ClPkg, MDArrayNs_O, "mdarrayns",MDArray_O);
   public:
-    virtual T_sp type_as_symbol() { return cl::_sym_array; };
+  MDArrayNs_O(size_t rank,
+              List_sp dimensions,
+              T_sp fillPointer,
+              T_sp displacedTo,
+              size_t displacedIndexOffset) : Base(rank,dimensions,fillPointer,displacedTo,displacedIndexOffset) {};
+  public:
+    virtual Array_sp reverse() const final {notSequenceError(this->asSmartPtr());};
+    virtual Array_sp nreverse() final {notSequenceError(this->asSmartPtr());};
+    virtual T_sp vectorPush(T_sp newElement)  override {notVectorError(this->asSmartPtr());};;
+    virtual Fixnum_sp vectorPushExtend(T_sp newElement, size_t extension = 0)  override {notVectorError(this->asSmartPtr());};
+    virtual Array_sp unsafe_subseq(size_t start, size_t end) const override {notVectorError(this->asSmartPtr());};
+    virtual Array_sp unsafe_setf_subseq(size_t start, size_t end, Array_sp newSubseq) override {notVectorError(this->asSmartPtr());};
   };
 };
 
-
 namespace core {
-  class ArrayTNs_O : public MDArrayNs_O {
-    LISP_CLASS(core, ClPkg, ArrayTNs_O, "arraytns",MDArrayNs_O);
+  class SpecializedMDArrayNs_O : public MDArrayNs_O {
+    LISP_CLASS(core, ClPkg, SpecializedMDArrayNs_O, "specialized-mdarrayns",MDArrayNs_O);
   public:
-    static ArrayTNs_sp make(T_sp dim, T_sp elementType, T_sp initialElement, T_sp initialElementSuppliedP, T_sp displacedTo, Fixnum displacedIndexOffset );
-    
+  SpecializedMDArrayNs_O(size_t rank,
+                         List_sp dimensions,
+                         T_sp fillPointer,
+                         T_sp displacedTo,
+                         size_t displacedIndexOffset) : Base(rank,dimensions,fillPointer,displacedTo,displacedIndexOffset) {};
+  public:
+    virtual T_sp type_as_symbol() const final { return cl::_sym_array; };
   };
 };
 
@@ -310,47 +385,237 @@ namespace core {
   public:
     virtual Array_sp data() { return this->asSmartPtr(); };
     virtual size_t arrayTotalSize() const { return this->length(); };
-    INHERIT_SEQUENCE virtual T_sp elt(cl_index index) const { return this->svref(index); };
-    INHERIT_SEQUENCE virtual T_sp setf_elt(cl_index index, T_sp value) { return this->setf_svref(index,value); };
-    virtual T_sp svref(cl_index index) const = 0;
-    virtual T_sp setf_svref(cl_index index, T_sp value) = 0;
-    INHERIT_SEQUENCE virtual void swap(cl_index i1, cl_index i2) const = 0;
+    virtual void rowMajorAset(size_t idx, T_sp value) = 0;
+    virtual T_sp rowMajorAref(size_t idx) const = 0;
+    virtual size_t rank() const override { return 1; };
+    virtual size_t displacedIndexOffset() const override { return 0; };
+    virtual size_t arrayDimension(size_t axisNumber) const override {
+      unlikely_if (axisNumber!=0) { vectorNotArrayError(cl::_sym_arrayDimension,this->asSmartPtr()); }
+      return this->length();
+    }
+    virtual T_sp vectorPush(T_sp newElement) override {noFillPointerError(cl::_sym_vectorPush,this->asSmartPtr());  };
+    virtual Fixnum_sp vectorPushExtend(T_sp newElement, size_t extension) override {noFillPointerError(cl::_sym_vectorPushExtend,this->asSmartPtr());  };
+    virtual T_sp replaceArray(T_sp other) override {notAdjustableError(core::_sym_replaceArray,this->asSmartPtr());  };
+    virtual void ranged_sxhash(HashGenerator& hg, size_t start, size_t end) const = 0;
+    virtual std::string get_std_string() const override {notStringError(this->asSmartPtr());};
+
   };
 };
 
-namespace core { class SimpleBaseString_O; };
-template <>
-struct gctools::GCInfo<core::SimpleBaseString_O> {
-  static bool constexpr NeedsInitialization = false;
-  static bool constexpr NeedsFinalization = false;
-  static GCInfo_policy constexpr Policy = atomic;
-};
 namespace core {
-  class SimpleBaseString_O : public BaseSimpleVector_O {
-    LISP_CLASS(core, ClPkg, SimpleBaseString_O, "simple-base-string",BaseSimpleVector_O);
+  class SpecializedSimpleVector_O : public BaseSimpleVector_O {
+    LISP_CLASS(core, ClPkg, SpecializedSimpleVector_O, "specialized-simple-vector",BaseSimpleVector_O);
   public:
-    typedef unsigned char value_type;
+     // ranged_sxhash is only appropriate for string and bit-vector
+     virtual void ranged_sxhash(HashGenerator& hg, size_t start, size_t end) const final
+     {TYPE_ERROR(this->asSmartPtr(),Cons_O::createList(cl::_sym_string,cl::_sym_bit_vector));};
+     virtual void sxhash_(HashGenerator& hg) const final {this->General_O::sxhash_(hg);}
+     
+  };
+};
+
+
+
+namespace core {
+  template <typename MyLeafType, typename ValueType, typename MyParentType >
+    class template_SimpleVector : public MyParentType {
+  public:
+    // The types that define what this class does
+    typedef MyParentType Base;
+    typedef MyLeafType /* eg: SimpleVector_O*/ leaf_type;
+    typedef ValueType  /*eg: T_sp*/ value_type;
+    typedef gctools::smart_ptr<leaf_type> leaf_smart_ptr_type;
     typedef gctools::GCArray_moveable<value_type> vector_type;
     typedef value_type* iterator;
     typedef const value_type* const_iterator;
   public:
     vector_type _Data;
-    // Always leave space for \0 at end
-  SimpleBaseString_O(value_type initial_element, size_t total_size) : Base(), _Data(initial_element,total_size) {};
-  //SimpleBaseString_O(size_t total_size) : Base(), _Data('\0',total_size+1) {};
   public:
-    virtual T_sp type_as_symbol() { return cl::_sym_simple_base_string; };
-    virtual cl_index length() const { return this->_Data._Capacity; };
+  template_SimpleVector(size_t length, value_type initialElement=value_type(), bool initialElementSupplied=false, size_t initialContentsSize=0, const value_type* initialContents=NULL)
+    : Base(), _Data(length,initialElement,initialElementSupplied,initialContentsSize,initialContents) {};
   public:
-    virtual void* addressOfElement(size_t index) const { return (void*)&((*this)[index]); };
     value_type& operator[](size_t index) { return this->_Data[index];};
     const value_type& operator[](size_t index) const { return this->_Data[index];};
     iterator begin() { return &this->_Data[0];};
     iterator end() { return &this->_Data[this->_Data._Capacity]; }
     const_iterator begin() const { return &this->_Data[0];};
-    const_iterator end() const { return &this->_Data[this->_Data._Capacity]; }
+    const_iterator end() const { return &this->_Data[this->_Data._Length]; }
+    virtual size_t elementSizeInBytes() const override {return sizeof(value_type); };
+    virtual void* rowMajorAddressOfElement_(size_t i) const override {return (void*)&(*this)[i];};
+    void asBaseSimpleVectorRange(BaseSimpleVector_sp& sv, size_t& start, size_t& end) const override {
+      sv = this->asSmartPtr();
+      start = 0;
+      end = this->length();
+    }
+    virtual vector<size_t> arrayDimensionsAsVector() const {
+      vector<size_t> dims;
+      dims.push_back(this->length());
+      return dims;
+    }
+    virtual void unsafe_fillArrayWithElt(T_sp initialElement, size_t start, size_t end) override {
+      for (size_t i(start); i<end; ++i ) {
+        (*this)[i] = leaf_type::from_object(initialElement);
+      }
+    };
+    virtual Array_sp reverse() const final { return templated_ranged_reverse<leaf_type>(*reinterpret_cast<const leaf_type*>(this),0,this->length()); };
+    virtual Array_sp nreverse() final { return templated_ranged_nreverse(*this,0,this->length()); };
+    CL_METHOD_OVERLOAD virtual void rowMajorAset(size_t idx, T_sp value) final {(*this)[idx] = leaf_type::from_object(value);}
+    CL_METHOD_OVERLOAD virtual T_sp rowMajorAref(size_t idx) const final {return leaf_type::to_object((*this)[idx]);}
+    virtual Array_sp unsafe_subseq(size_t start, size_t end) const final {
+      return leaf_type::make(end-start,value_type(),true,end-start,&(*this)[start]);
+    }
+    virtual Array_sp unsafe_setf_subseq(size_t start, size_t end, Array_sp newSubseq) final {
+      // TODO: Write specialized versions of this to speed it up
+      for ( size_t i(start),ni(0); i<end; ++i,++ni ) {
+        (*this)[i] = leaf_type::from_object(newSubseq->rowMajorAref(ni));
+      }
+      return newSubseq;
+    }
+    virtual void __write__(T_sp strm) const override {
+      clasp_write_string("#<",strm);
+      clasp_write_string(this->className(),strm);
+      clasp_write_char('>',strm);
+    };
+  };
+};
+namespace core { class SimpleString_O; };
+template <>
+struct gctools::GCInfo<core::SimpleString_O> {
+  static bool constexpr NeedsInitialization = false;
+  static bool constexpr NeedsFinalization = false;
+  static GCInfo_policy constexpr Policy = atomic;
+};
+namespace core {
+  class SimpleString_O : public BaseSimpleVector_O {
+    LISP_CLASS(core, ClPkg, SimpleString_O, "simple-string",BaseSimpleVector_O);
+  };
+};
+
+namespace core { class SimpleBaseCharString_O; };
+template <>
+struct gctools::GCInfo<core::SimpleBaseCharString_O> {
+  static bool constexpr NeedsInitialization = false;
+  static bool constexpr NeedsFinalization = false;
+  static GCInfo_policy constexpr Policy = atomic;
+};
+namespace core {
+  class SimpleBaseCharString_O;
+  typedef template_SimpleVector<SimpleBaseCharString_O,claspChar,SimpleString_O> specialized_SimpleBaseCharString;
+  class SimpleBaseCharString_O : public specialized_SimpleBaseCharString {
+    LISP_CLASS(core, ClPkg, SimpleBaseCharString_O, "SimpleBaseCharString",SimpleString_O);
   public:
-    virtual void __write__(T_sp strm) const;
+    typedef specialized_SimpleBaseCharString TemplatedBase;
+    typedef typename TemplatedBase::leaf_type leaf_type;
+    typedef typename TemplatedBase::value_type value_type;
+    typedef typename TemplatedBase::vector_type vector_type;
+    typedef typename TemplatedBase::iterator iterator;
+    typedef typename TemplatedBase::const_iterator const_iterator;
+    typedef value_type container_value_type;
+  public:
+    static value_type from_object(T_sp obj) {return obj.unsafe_character();}
+    static T_sp to_object(const value_type& v) { return clasp_make_character(v); };
+  public:
+    // Always leave space for \0 at end
+  SimpleBaseCharString_O(size_t length, value_type initialElement=value_type(), bool initialElementSupplied=false, size_t initialContentsSize=0, const value_type* initialContents=NULL) : TemplatedBase(length,initialElement,initialElementSupplied,initialContentsSize,initialContents) {};
+    static SimpleBaseCharString_sp make(size_t length, value_type initialElement='\0', bool initialElementSupplied=false, size_t initialContentsSize=0, const value_type* initialContents=NULL) {
+      // For C/C++ interop make SimpleBaseCharString 1 character longer and append a \0
+      auto bs = gctools::GC<SimpleBaseCharString_O>::allocate_container(gctools::GCStamp<SimpleBaseCharString_O>::TheStamp,
+                                                                        length+1,length,initialElement,initialElementSupplied,initialContentsSize,initialContents);
+      (*bs)[length] = '\0';
+      return bs;
+    }
+    static SimpleBaseCharString_sp make(const std::string& str) {
+      return SimpleBaseCharString_O::make(str.size(),'\0',true,str.size(),(const claspChar*)str.c_str());
+    }
+  //SimpleBaseCharString_O(size_t total_size) : Base(), _Data('\0',total_size+1) {};
+  public:
+    virtual T_sp type_as_symbol() const final { return cl::_sym_simple_base_string; };
+    virtual T_sp arrayElementType() const final { return cl::_sym_base_char; };
+    virtual Symbol_sp elementTypeAsSymbol() const final { return cl::_sym_base_char; };
+    virtual bool equal(T_sp other) const final;
+    virtual bool equalp(T_sp other) const final {IMPLEMENT_ME();};
+    virtual void __write__(T_sp strm) const final; // implemented in write_array.cc
+    virtual std::string get_std_string() const final { return string((char*)&(*this)[0],this->length());};
+    virtual std::string __repr__() const { return this->get_std_string(); };
+    virtual void sxhash_(HashGenerator& hg) const final {this->ranged_sxhash(hg,0,this->length());}
+    virtual void ranged_sxhash(HashGenerator& hg, size_t start, size_t end) const final {
+      if (hg.isFilling()) {
+        Fixnum hash = 5381;
+        Fixnum c;
+        for ( size_t i(start); i<end; ++i ) {
+          const value_type& c = (*this)[i];
+          hash = ((hash << 5) + hash) + c;
+        }
+        hg.addPart(hash);
+      }
+    }
+  };
+};
+
+namespace core { class SimpleCharacterString_O; };
+template <>
+struct gctools::GCInfo<core::SimpleCharacterString_O> {
+  static bool constexpr NeedsInitialization = false;
+  static bool constexpr NeedsFinalization = false;
+  static GCInfo_policy constexpr Policy = atomic;
+};
+namespace core {
+  class SimpleCharacterString_O;
+  typedef template_SimpleVector<SimpleCharacterString_O,claspCharacter,SimpleString_O> specialized_SimpleCharacterString;
+  class SimpleCharacterString_O : public specialized_SimpleCharacterString {
+    LISP_CLASS(core, ClPkg, SimpleCharacterString_O, "simple-character-string",SimpleString_O);
+  public:
+    typedef specialized_SimpleCharacterString TemplatedBase;
+    typedef typename TemplatedBase::leaf_type leaf_type;
+    typedef typename TemplatedBase::value_type value_type;
+    typedef typename TemplatedBase::vector_type vector_type;
+    typedef typename TemplatedBase::iterator iterator;
+    typedef typename TemplatedBase::const_iterator const_iterator;
+    typedef value_type container_value_type;
+  public:
+    static value_type from_object(T_sp obj) {return obj.unsafe_character();}
+    static T_sp to_object(const value_type& v) { return clasp_make_character(v); };
+  public:
+    // Always leave space for \0 at end
+  SimpleCharacterString_O(size_t length, value_type initialElement=value_type(), bool initialElementSupplied=false, size_t initialContentsSize=0, const value_type* initialContents=NULL) : TemplatedBase(length,initialElement,initialElementSupplied,initialContentsSize,initialContents) {};
+    static SimpleCharacterString_sp make(size_t length, value_type initialElement='\0', bool initialElementSupplied=false, size_t initialContentsSize=0, const value_type* initialContents=NULL) {
+      auto bs = gctools::GC<SimpleCharacterString_O>::allocate_container(gctools::GCStamp<SimpleCharacterString_O>::TheStamp,
+                                                                         length,length,initialElement,initialElementSupplied,initialContentsSize,initialContents);
+      return bs;
+    }
+    static SimpleCharacterString_sp make(const std::string& str) {
+      auto bs = SimpleCharacterString_O::make(str.size(),'\0');
+      for ( size_t i(0); i<str.size(); ++i ) {
+        (*bs)[i] = str[i];
+      }
+      return bs;
+    }
+  //SimpleCharacterString_O(size_t total_size) : Base(), _Data('\0',total_size+1) {};
+  public:
+    virtual T_sp type_as_symbol() const final { return cl::_sym_simple_string; };
+    virtual T_sp arrayElementType() const override { return cl::_sym_character; };
+    virtual Symbol_sp elementTypeAsSymbol() const override { return cl::_sym_character; };
+  public:
+    // Implement these methods for simple vectors - some are implemented in parent classes
+    // for convenience if not speed
+    virtual void __write__(T_sp strm) const final;
+    virtual bool equal(T_sp other) const final;
+    virtual bool equalp(T_sp other) const {IMPLEMENT_ME();};
+    virtual std::string get_std_string() const final;
+    virtual std::string __repr__() const final;
+  public:
+    virtual void sxhash_(HashGenerator& hg) const override {this->ranged_sxhash(hg,0,this->length());}
+    virtual void ranged_sxhash(HashGenerator& hg, size_t start, size_t end) const override {
+      if (hg.isFilling()) {
+        Fixnum hash = 5381;
+        Fixnum c;
+        for ( size_t i(start); i<end; ++i ) {
+          const value_type& c = (*this)[i];
+          hash = ((hash << 5) + hash) + c;
+        }
+        hg.addPart(hash);
+      }
+    }
   };
 };
 
@@ -364,28 +629,40 @@ struct gctools::GCInfo<core::SimpleVector_O> {
   static GCInfo_policy constexpr Policy = normal;
 };
 namespace core {
-  class SimpleVector_O : public BaseSimpleVector_O {
-    LISP_CLASS(core, ClPkg, SimpleVector_O, "simple-vector",BaseSimpleVector_O);
+  class SimpleVector_O;
+  typedef template_SimpleVector<SimpleVector_O,T_sp,SpecializedSimpleVector_O> specialized_SimpleVector;
+  class SimpleVector_O : public specialized_SimpleVector {
+    LISP_CLASS(core, ClPkg, SimpleVector_O, "simple-vector",SpecializedSimpleVector_O);
   public:
-    typedef T_sp value_type;
-    typedef gctools::GCArray_moveable<value_type> vector_type;
-    typedef value_type* iterator;
-    typedef const value_type* const_iterator;
+    typedef specialized_SimpleVector TemplatedBase;
+    typedef typename TemplatedBase::leaf_type leaf_type;
+    typedef typename TemplatedBase::value_type value_type;
+    typedef typename TemplatedBase::vector_type vector_type;
+    typedef typename TemplatedBase::iterator iterator;
+    typedef typename TemplatedBase::const_iterator const_iterator;
+    typedef value_type container_value_type;
   public:
-    vector_type _Data;
-  SimpleVector_O(value_type initial_element, size_t total_size) : Base(), _Data(initial_element,total_size) {};
+    static value_type from_object(T_sp obj) {return obj; };
+    static T_sp to_object(const value_type& v) { return v; };
   public:
-    virtual T_sp type_as_symbol() { return cl::_sym_simple_vector; };
-    virtual cl_index length() const { return this->_Data._Capacity; };
+  SimpleVector_O(size_t length, value_type initialElement=value_type(), bool initialElementSupplied=false, size_t initialContentsSize=0, const value_type* initialContents=NULL) : TemplatedBase(length,initialElement,initialElementSupplied,initialContentsSize,initialContents) {};
+    static SimpleVector_sp make(size_t length, T_sp initialElement=_Nil<T_O>(), bool initialElementSupplied=false, size_t initialContentsSize=0, const T_sp* initialContents=NULL) {
+      auto bs = gctools::GC<SimpleVector_O>::allocate_container(gctools::GCStamp<SimpleVector_O>::TheStamp,
+                                                                length,length,initialElement,initialElementSupplied,initialContentsSize,initialContents);
+      return bs;
+    }
   public:
-    virtual void* addressOfElement(size_t index) const { return (void*)&((*this)[index]); };
-    value_type& operator[](size_t index) { return this->_Data[index];};
-    const value_type& operator[](size_t index) const { return this->_Data[index];};
-    iterator begin() { return &this->_Data[0];};
-    iterator end() { return &this->_Data[this->_Data._Capacity]; }
-    const_iterator begin() const { return &this->_Data[0];};
-    const_iterator end() const { return &this->_Data[this->_Data._Capacity]; }
+    // Specific to SimpleVector_O
+    virtual void __write__(T_sp stream) const final;
   public:
+    virtual T_sp type_as_symbol() const final { return cl::_sym_simple_vector; };
+    virtual T_sp arrayElementType() const override { return cl::_sym_T_O; };
+    virtual Symbol_sp elementTypeAsSymbol() const override { return cl::_sym_T_O; };
+  public:
+    // Implement these methods for simple vectors - some are implemented in parent classes
+    // for convenience if not speed
+    virtual bool equal(T_sp other) const override { return this->eq(other);};
+    virtual bool equalp(T_sp other) const override { IMPLEMENT_ME();};
   };
 };
 
@@ -401,21 +678,30 @@ namespace core {
     LISP_CLASS(core, ClPkg, SimpleBitVector_O, "simple-bit-vector",BaseSimpleVector_O);
   public:
     typedef uintptr_t value_type;
-    static const size_t BitWidth = sizeof(value_type)/8;
-    typedef gctools::GCArray_moveable<value_type> vector_type;
-    typedef value_type* iterator;
-    typedef const value_type* const_iterator;
+    static const size_t BitWidth = sizeof(value_type)*8;
+    static const size_t BinitWidth = 1;
+    typedef gctools::GCBitArray_moveable<value_type> vector_type;
   public:
     vector_type _Data;
-  SimpleBitVector_O(value_type initial_element, size_t total_size) : Base(), _Data(initial_element,total_size) {};
+  SimpleBitVector_O(size_t length,value_type initialElement) : Base(), _Data(length,initialElement) {};
+    static SimpleBitVector_sp make(size_t length,uint initialElement=0, bool initialElementSupplied=false) {
+      IMPLEMENT_MEF(BF("Handle binit size"));
+//      auto sbv = gctools::GC<SimpleBitVector_O>::allocate_binit_container(gctools::GCStamp<SimpleBitVector_O>::TheStamp, length,BinitWidth,initialElement);
+//      return sbv;
+    }
   public:
-    virtual T_sp type_as_symbol() { return cl::_sym_simple_bit_vector; };
-    virtual cl_index length() const { return this->_Data._Capacity; };
+    virtual T_sp type_as_symbol() const final { return cl::_sym_simple_bit_vector; };
+    virtual T_sp arrayElementType() const override { return cl::_sym_bit; };
+    virtual Symbol_sp elementTypeAsSymbol() const override { return cl::_sym_bit; };
   public:
-    virtual void* addressOfElement(size_t index) const { SIMPLE_ERROR(BF("bit-vector cannot support addressOfElement")); };
-    void setBit(cl_index i, uint v) {
-      cl_index block;
-      cl_index offset;
+    void asBaseSimpleVectorRange(BaseSimpleVector_sp& sv, size_t& start, size_t& end) const override {
+      sv = this->asSmartPtr();
+      start = 0;
+      end = this->length();
+    }
+    void setBit(size_t i, uint v) {
+      size_t block;
+      size_t offset;
       value_type packedVal;
       value_type mask;
       value_type omask;
@@ -427,9 +713,9 @@ namespace core {
       this->_Data[block] = (this->_Data[block] & mask) | packedVal;
     }
 
-    uint testBit(cl_index idx) const {
-      cl_index block;
-      cl_index offset;
+    uint testBit(size_t idx) const {
+      size_t block;
+      size_t offset;
       value_type mask;
       block = idx / BitWidth;
       offset = idx % BitWidth;
@@ -441,9 +727,41 @@ namespace core {
       LOG(BF("    result = |%lx|") % result);
       return ((result ? 1 : 0));
     }
+  public:
+    // Implement these methods for simple vectors - some are implemented in parent classes
+    // for convenience if not speed
+    virtual void __write__(T_sp strm) const final;
+    virtual size_t elementSizeInBytes() const override {bitVectorDoesntSupportError();};
+    virtual void* rowMajorAddressOfElement_(size_t i) const override {bitVectorDoesntSupportError();};
+    virtual Array_sp reverse() const final;
+    virtual Array_sp nreverse() final;
+    virtual bool equal(T_sp other) const final;
+    virtual bool equalp(T_sp other) const final {return this->equal(other);};
+    virtual Array_sp unsafe_subseq(size_t start, size_t end) const final;
+    virtual Array_sp unsafe_setf_subseq(size_t start, size_t end, Array_sp newSubseq) override;
+    virtual vector<size_t> arrayDimensionsAsVector() const final {
+      vector<size_t> dims;
+      dims.push_back(this->length());
+      return dims;
+    }
+    virtual void unsafe_fillArrayWithElt(T_sp initialElement, size_t start, size_t end) final;
+  public:
+    CL_METHOD_OVERLOAD virtual void rowMajorAset(size_t idx, T_sp value) final {this->setBit(idx,value.unsafe_fixnum());};
+    CL_METHOD_OVERLOAD virtual T_sp rowMajorAref(size_t idx) const final {return clasp_make_fixnum(this->testBit(idx)); };
+    virtual void sxhash_(HashGenerator& hg) const final {this->ranged_sxhash(hg,0,this->length());}
+    virtual void ranged_sxhash(HashGenerator& hg, size_t start, size_t end) const final {
+      if (hg.isFilling()) {
+        Fixnum hash = 5381;
+        Fixnum c;
+        for ( size_t i(start); i<end; ++i ) {
+          uint c = this->testBit(i);
+          hash = ((hash << 5) + hash) + c;
+        }
+        hg.addPart(hash);
+      }
+    }
   };
 };
-
 
 namespace core {
 Vector_sp core__make_vector(T_sp element_type,
@@ -451,247 +769,524 @@ Vector_sp core__make_vector(T_sp element_type,
                             bool adjustable = false,
                             T_sp fill_pointer = _Nil<T_O>(),
                             T_sp displaced_to = _Nil<T_O>(),
-                            cl_index displaced_index_offset = 0,
+                            size_t displacedIndexOffset = 0,
                             T_sp initial_element = _Nil<T_O>(),
                             bool initial_element_supplied_p = false);
 };
 
 
 namespace core {
-
-  class VectorNs_O : public MDArray_O {
-    LISP_CLASS(core, ClPkg, VectorNs_O, "non-simple-vector",MDArray_O);
-  public:
-  VectorNs_O(List_sp dimensions,
-             T_sp elementType,
-             T_sp fillPointer,
-             Array_sp displacedTo,
-             size_t displacedIndexOffset,
-             T_sp initial_element,
-             bool initial_element_supplied_p ) : Base(1,dimensions,elementType,fillPointer,displacedTo,displacedIndexOffset,initial_element,initial_element_supplied_p) {};
-  public:
-    virtual T_sp type_as_symbol() { return cl::_sym_vector; };
-    virtual void swapElements(cl_index i1, cl_index i2) {
-      this->_Data->swapElements(i1+this->_DisplacedIndexOffset,i2+this->_DisplacedIndexOffset);
-    }
-
-    virtual T_sp elt(cl_index index) const { return this->_Data->rowMajorAref(index+this->_DisplacedIndexOffset); }
-    virtual T_sp setf_elt(cl_index index, T_sp value) { this->_Data->rowMajorAset(index+this->_DisplacedIndexOffset,value);
-      return value;
-    }
-
-    virtual Array_sp unsafe_subseq(cl_index start, cl_index iend) const
-    {
-      return this->_Data->unsafe_subseq(start+this->_DisplacedIndexOffset,iend+this->_DisplacedIndexOffset);
-    }
-    virtual Array_sp unsafe_setf_subseq(cl_index start, cl_index iend, T_sp new_subseq)
-    {
-      return this->_Data->unsafe_setf_subseq(start+this->_DisplacedIndexOffset,iend+this->_DisplacedIndexOffset,new_subseq);
-    }
-    virtual void unsafe_fillArrayWithElt(T_sp element, cl_index start, cl_index end)
-    {
-      this->_Data->unsafe_fillArrayWithElt(element,start+this->_DisplacedIndexOffset,end+this->_DisplacedIndexOffset);
-    }
-    virtual void sxhash_(HashGenerator &hg) const;
-
-    void ensureSpaceAfterFillPointer(cl_index size);
-    T_sp vectorPush(T_sp newElement);
-    Fixnum_sp vectorPushExtend(T_sp newElement, cl_index extension = 0);
-
-    // Old functions
-    void adjust(T_sp initial_element, size_t dimension);
-  };
-}
-
-namespace core {
-  class Str8Ns_O : public VectorNs_O {
-    LISP_CLASS(core, ClPkg, Str8Ns_O, "base-string",VectorNs_O);
+  template <typename MyArrayType, typename MySimpleType, typename MyParentType >
+    class template_DisplacementHandlingVector : public MyParentType {
   public:
     // The types that define what this class does
-    typedef Str8Ns_O my_type;
-    typedef SimpleBaseString_O my_simple_type;
-    typedef unsigned char value_type;
-    typedef gctools::smart_ptr<my_type> smart_ptr_type;
+    typedef MyParentType Base;
+    typedef MyArrayType /*eg: VectorTNs_O*/ my_array_type;
+    typedef MySimpleType /*eg: SimpleVector_O*/ simple_type;
+    typedef typename simple_type::value_type /*eg: T_sp*/ value_type;
+    typedef gctools::smart_ptr<my_array_type> my_smart_ptr_type;
   public:
-      virtual void* addressOfElement(size_t index) const {
-      unlikely_if (gc::IsA<smart_ptr_type>(this->_Data)) {
-        my_type& vecns = *reinterpret_cast<my_type*>(&*this->_Data);
-        // It's another VectorTNs - we need to deal with multiple indirection
-        return (void*)&vecns[this->_DisplacedIndexOffset+index];
-      }
-      // It's a SimpleVector_O - so we can index into it directly
-      my_simple_type& simple_vec = *reinterpret_cast<my_simple_type*>(&*this->_Data);
-      return &simple_vec[this->_DisplacedIndexOffset+index];
+    // Pass constructor arguments up
+  template_DisplacementHandlingVector(size_t rank,
+                                      List_sp dimensions,
+                                      T_sp fillPointer,
+                                      T_sp displacedTo,
+                                      size_t displacedIndexOffset)
+    : Base(rank,dimensions,fillPointer,displacedTo,displacedIndexOffset) {};
+    // Primary functions/operators for operator[] that handle displacement
+    // There's a non-const and a const version of each
+    value_type& unsafe_indirectReference(size_t index) {
+      my_array_type& vecns = *reinterpret_cast<my_array_type*>(&*this->_Data);
+      return vecns[this->_DisplacedIndexOffset+index];
     }
     value_type& operator[](size_t index) {
-      // FIXME:   This is where I get fancy and dangerous
-      // Get a pointer to the data element
-      void* address = this->addressOfElement(index);
-      return *reinterpret_cast<value_type*>(address);
+      unlikely_if (gc::IsA<my_smart_ptr_type>(this->_Data)) return this->unsafe_indirectReference(index);
+      return (*reinterpret_cast<simple_type*>(&*(this->_Data)))[this->_DisplacedIndexOffset+index];
+    }
+    const value_type& unsafe_indirectReference(size_t index) const {
+      my_array_type& vecns = *reinterpret_cast<my_array_type*>(&*this->_Data);
+      return vecns[this->_DisplacedIndexOffset+index];
     }
     const value_type& operator[](size_t index) const {
-      // FIXME:   This is where I get fancy and dangerous
-      // Get a pointer to the data element
-      void* address = this->addressOfElement(index);
-      return *reinterpret_cast<value_type*>(address);
+      unlikely_if (gc::IsA<my_smart_ptr_type>(this->_Data)) return this->unsafe_indirectReference(index);
+      return (*reinterpret_cast<simple_type*>(&*(this->_Data)))[this->_DisplacedIndexOffset+index];
     }
   public:
-    // move all the constructors into here
-    static Str8Ns_sp create_with_fill_pointer(value_type initial_element, size_t dimension, cl_index fill_pointer, bool adjustable);
-  static Str8Ns_sp createBufferString(size_t bufferSize = BUFFER_STRING_SIZE) {
-    return Str8Ns_O::create_with_fill_pointer(value_type()/*' '*/, bufferSize, 0, true);
-  };
-  public:
-  static Str8Ns_sp create(cl_index dim, Str8Ns_sp displacedTo, cl_index displacedIndexOffset );
-  static Str8Ns_sp create(const string &nm);
-  static Str8Ns_sp create(const boost::format &nm);
-  static Str8Ns_sp create(const char *nm);
-  static Str8Ns_sp create(size_t numChars);
-  static Str8Ns_sp create(const char *nm, cl_index numChars);
-  static Str8Ns_sp create(claspChar initial_element, cl_index dimension);
-  static Str8Ns_sp create(Str8Ns_sp orig);
-  public:
-    virtual T_sp type_as_symbol() { return cl::_sym_base_string; };
-  public:
-  // Return a pointer to the zero terminated string - do not use this for
-  // anything but legacy calls.
-  const char* c_str() const;
-  std::string get() { /*DEPRECIATE for get_std_string */ return this->get_std_string(); };
-  void* addressOfBuffer();
-  };
-};
-
-
-
-
-
-
-
-namespace core {
-  class VectorTNs_O : public VectorNs_O {
-    LISP_CLASS(core, ClPkg, VectorTNs_O, "non-simple-vector-t",VectorNs_O);
-  public:
-    // The types that define what this class does
-    typedef VectorTNs_O my_type;
-    typedef SimpleVector_O my_simple_type;
-    typedef gctools::smart_ptr<my_type> smart_ptr_type;
-    typedef T_sp value_type;
-  public:
-    static VectorObjects_sp make(T_sp initial_element, size_t dimension, T_sp elementType, T_sp fillPointer= _Nil<core::T_O>(), T_sp displacedTo=_Nil<core::T_O>(), Fixnum displacedIndexOffset=0 );
-    static VectorTNs_sp create(T_sp initial_element, size_t dimension, T_sp elementType);
-    static VectorTNs_sp create(const gctools::Vec0<T_sp> &objs);
-  public:
-    virtual void* addressOfElement(size_t index) const {
-      unlikely_if (gc::IsA<smart_ptr_type>(this->_Data)) {
-        my_type& vecns = *reinterpret_cast<my_type*>(&*this->_Data);
-        // It's another VectorTNs - we need to deal with multiple indirection
-        return (void*)&vecns[this->_DisplacedIndexOffset+index];
-      }
-      // It's a SimpleVector_O - so we can index into it directly
-      my_simple_type& simple_vec = *reinterpret_cast<my_simple_type*>(&*this->_Data);
-      return &simple_vec[this->_DisplacedIndexOffset+index];
-    }
-    value_type& operator[](size_t index) {
-      // FIXME:   This is where I get fancy and dangerous
-      // Get a pointer to the data element
-      void* address = this->addressOfElement(index);
-      return *reinterpret_cast<value_type*>(address);
-    }
-    const value_type& operator[](size_t index) const {
-      // FIXME:   This is where I get fancy and dangerous
-      // Get a pointer to the data element
-      void* address = this->addressOfElement(index);
-      return *reinterpret_cast<value_type*>(address);
-    }
-  public:
+    // Iterators
     value_type* begin() { return &(*this)[0]; };
     value_type* end() { return &(*this)[this->length()]; };
     const value_type* begin() const { return &(*this)[0]; };
     const value_type* end() const { return &(*this)[this->length()]; };
+  public:
+    void this_asBaseSimpleVectorRange(BaseSimpleVector_sp& sv, size_t& start, size_t& end) const  {
+      unlikely_if (gc::IsA<my_smart_ptr_type>(this->_Data)) {
+        this->asBaseSimpleVectorRange(sv,start,end);
+        start += this->_DisplacedIndexOffset;
+        end = this->length()+this->_DisplacedIndexOffset;
+        return;
+      }
+      sv = gc::As<BaseSimpleVector_sp>(this->_Data);
+      start = this->_DisplacedIndexOffset;
+      end = this->length()+this->_DisplacedIndexOffset;
+    }
+    void asBaseSimpleVectorRange(BaseSimpleVector_sp& sv, size_t& start, size_t& end) const final {
+      this->this_asBaseSimpleVectorRange(sv,start,end);
+    }
+    virtual Array_sp reverse() const final { return templated_reverse_VectorNs(*this); };
+    virtual Array_sp nreverse() final { return templated_nreverse_VectorNs(*this); };
+    virtual void internalAdjustSize_(size_t size, T_sp initElement=_Nil<T_O>(), bool initElementSupplied=false ) final {
+      if (size == this->_ArrayTotalSize) return;
+      BaseSimpleVector_sp basesv;
+      size_t start, end;
+      this->this_asBaseSimpleVectorRange(basesv,start,end);
+      gctools::smart_ptr<simple_type> sv = gc::As_unsafe<gctools::smart_ptr<simple_type>>(basesv);
+      size_t initialContentsSize = MIN(this->length(),size);
+      my_smart_ptr_type newData = simple_type::make(size,simple_type::from_object(initElement),true,initialContentsSize,&(*sv)[start]);
+      this->set_data(newData);
+      printf("%s:%d:%s  original size=%lu new size=%lu  copied %lu elements\n", __FILE__, __LINE__, __FUNCTION__, this->_ArrayTotalSize, size, initialContentsSize );
+      this->_ArrayTotalSize = size;
+      if (!this->_FillPointerP) this->_FillPointerOrLengthOrDummy = size;
+      this->_DisplacedIndexOffset = 0;
+      this->_DisplacedToP = false;
+    }
+    bool equalp(T_sp o) const final {
+      if (&*o == this) return true;
+      if (my_smart_ptr_type other = o.asOrNull<my_array_type>()) {
+        if (this->rank() != other->rank() ) return false;
+        for (size_t i(0); i<this->rank(); ++i ) {
+          if (this->_Dimensions[i] != other->_Dimensions[i]) return false;
+        }
+        for (size_t i(0),iEnd(this->arrayTotalSize()); i<iEnd; ++i) {
+          if (!cl__equalp(this->rowMajorAref(i), other->rowMajorAref(i))) return false;
+        }
+        return true;
+      }
+      return false;
+    }
+    CL_METHOD_OVERLOAD virtual void rowMajorAset(size_t idx, T_sp value) final {(*this)[idx] = simple_type::from_object(value);}
+    CL_METHOD_OVERLOAD virtual T_sp rowMajorAref(size_t idx) const final {return simple_type::to_object((*this)[idx]);}
+    bool equal(T_sp obj) const override { return this->eq(obj); };
+  };
+};
+
+
+namespace core {
+  class VectorNs_O : public MDArray_O {
+    LISP_CLASS(core, ClPkg, VectorNs_O, "non-simple-vector",MDArray_O);
+  public:
+  VectorNs_O(size_t rank,
+             List_sp dimensions,
+             T_sp fillPointer,
+             T_sp displacedTo,
+             size_t displacedIndexOffset)
+    : Base(rank,dimensions,fillPointer,displacedTo,displacedIndexOffset) {};
+  public:
+    virtual Array_sp unsafe_subseq(size_t start, size_t iend) const
+    {
+      return this->_Data->unsafe_subseq(start+this->_DisplacedIndexOffset,iend+this->_DisplacedIndexOffset);
+    }
+    virtual Array_sp unsafe_setf_subseq(size_t start, size_t iend, Array_sp new_subseq)
+    {
+      return this->_Data->unsafe_setf_subseq(start+this->_DisplacedIndexOffset,iend+this->_DisplacedIndexOffset,new_subseq);
+    }
+
+    void ensureSpaceAfterFillPointer(T_sp init_element, size_t size);
+    T_sp vectorPush(T_sp newElement);
+    Fixnum_sp vectorPushExtend(T_sp newElement, size_t extension = 0);
+
+    // The class needs to provide something to resize the
+    // vector until adjust-array is available
+    // Was setSize
+    virtual void sxhash_(HashGenerator& hg) const override {this->General_O::sxhash_(hg);}
+  };
+}
+
+namespace core {
+  class StrNs_O : public VectorNs_O {
+    LISP_CLASS(core, ClPkg, StrNs_O, "StrNs",VectorNs_O);
+  public:
+  StrNs_O(size_t rank,
+          List_sp dimensions,
+          T_sp fillPointer,
+          T_sp displacedTo,
+          size_t displacedIndexOffset)
+    : Base(rank,dimensions,fillPointer,displacedTo,displacedIndexOffset) {};
+  public:
+    virtual T_sp type_as_symbol() const = 0;
+    virtual void sxhash_(HashGenerator& hg) const final {
+      BaseSimpleVector_sp svec;
+      size_t start,end;
+      this->asBaseSimpleVectorRange(svec,start,end);
+      svec->ranged_sxhash(hg,start,end);
+    }
   };
 };
 
 namespace core {
-  class BitVectorNs_O : public VectorNs_O {
-    LISP_CLASS(core, ClPkg, BitVectorNs_O, "bit-vector",VectorNs_O);
+  class Str8Ns_O : public template_DisplacementHandlingVector<Str8Ns_O,SimpleBaseCharString_O,StrNs_O> {
+    LISP_CLASS(core, ClPkg, Str8Ns_O, "base-string",StrNs_O);
   public:
-  static BitVectorNs_sp create(T_sp initial_element, size_t dimension);
+    // The types that define what this class does
+    typedef template_DisplacementHandlingVector<Str8Ns_O,SimpleBaseCharString_O,StrNs_O> TemplatedBase;
+    typedef typename TemplatedBase::value_type value_type;
+    typedef typename TemplatedBase::simple_type simple_type;
+    typedef value_type* iterator;
+    typedef const value_type* const_iterator;
   public:
-    virtual void* addressOfElement(size_t index) const { SIMPLE_ERROR(BF("bit-vector cannot support addressOfElement")); };
-    virtual void __write__(T_sp strm) const;
-    uint testBit(cl_index idx) const;
-    void setBit(cl_index i, uint v);
+  Str8Ns_O(size_t dimension,
+           T_sp fillPointer,
+           T_sp displacedTo,
+           size_t displacedIndexOffset)
+    : TemplatedBase(1,Cons_O::createList(clasp_make_fixnum(dimension)),fillPointer,displacedTo,displacedIndexOffset) {};
+    static Str8Ns_sp make(size_t dimension, claspChar initElement, T_sp fillPointer=_Nil<T_O>(), T_sp displacedTo=_Nil<T_O>(), size_t displacedIndexOffset=0 ) {
+      GC_ALLOCATE_VARIADIC(Str8Ns_O,s,dimension,fillPointer,displacedTo,displacedIndexOffset);
+      if (LIKELY(displacedTo.nilp())) {
+        SimpleBaseCharString_sp sb = SimpleBaseCharString_O::make(dimension,initElement,true);
+        s->set_data(sb);
+      }
+      return s;
+    }
+    static Str8Ns_sp make(const string& nm) {
+      auto ss = SimpleBaseCharString_O::make(nm);
+      auto result = Str8Ns_O::make(nm.size(),'\0');
+      result->set_data(ss);
+      return result;
+    }
+  public:
+    // move all the constructors into here
+  static Str8Ns_sp createBufferString(size_t bufferSize = BUFFER_STRING_SIZE) {
+    return Str8Ns_O::make(bufferSize, value_type()/*' '*/, clasp_make_fixnum(0));
+  };
+  public:
+  static Str8Ns_sp create(const string &nm);
+//  static Str8Ns_sp create(const boost::format &nm);
+  static Str8Ns_sp create(const char *nm, size_t numChars);
+  static Str8Ns_sp create(const char *nm);
+  static Str8Ns_sp create(size_t numChars);
+  static Str8Ns_sp create(Str8Ns_sp orig);
+  public:
+    virtual T_sp type_as_symbol() const final { return cl::_sym_base_string; };
+  public:
+    virtual bool equal(T_sp other) const final;
+  public:
+    iterator begin() { return &(*this)[0]; };
+    iterator end() { return &(*this)[this->length()]; };
+    const_iterator begin() const { return &(*this)[0]; };
+    const_iterator end() const { return &(*this)[this->length()]; };
+  public:
+    virtual void __write__(T_sp strm) const final;
+    virtual std::string get_std_string() const final { return std::string((const char*)this->begin(),this->length());};
+    virtual std::string __repr__() const final { return this->get_std_string(); };
+  public: // Str8Ns specific functions
+    void vectorPushExtend_claspChar(claspChar c, size_t extension=32);
+  std::string get() { /*DEPRECIATE for get_std_string */ return this->get_std_string(); };
+  };
+};
+
+namespace core {
+  class StrWNs_O : public template_DisplacementHandlingVector<StrWNs_O,SimpleCharacterString_O,StrNs_O> {
+    LISP_CLASS(core, ClPkg, StrWNs_O, "wide-string",StrNs_O);
+  public:
+    // The types that define what this class does
+    typedef template_DisplacementHandlingVector<StrWNs_O,SimpleCharacterString_O,StrNs_O> TemplatedBase;
+    typedef typename TemplatedBase::value_type value_type;
+    typedef typename TemplatedBase::simple_type simple_type;
+    typedef value_type* iterator;
+    typedef const value_type* const_iterator;
+  public:
+  StrWNs_O(size_t dimension,
+          T_sp fillPointer,
+          T_sp displacedTo,
+          size_t displacedIndexOffset)
+    : TemplatedBase(1,Cons_O::createList(clasp_make_fixnum(dimension)),fillPointer,displacedTo,displacedIndexOffset) {};
+    static StrWNs_sp make(size_t dimension, claspCharacter initElement, T_sp fillPointer=_Nil<T_O>(), T_sp displacedTo=_Nil<T_O>(), size_t displacedIndexOffset=0 ) {
+      GC_ALLOCATE_VARIADIC(StrWNs_O,s,dimension,fillPointer,displacedTo,displacedIndexOffset);
+      LIKELY_if (displacedTo.nilp()) {
+        SimpleCharacterString_sp sb = SimpleCharacterString_O::make(dimension,initElement,true);
+        s->set_data(sb);
+      }
+      return s;
+    }
+    static StrWNs_sp make(const string& nm) {
+      auto ss = SimpleCharacterString_O::make(nm);
+      auto result = StrWNs_O::make(nm.size(),'\0');
+      result->set_data(ss);
+      return result;
+    }
+    static StrWNs_sp createBufferString(size_t bufferSize = BUFFER_STRING_SIZE) {
+      return StrWNs_O::make(bufferSize, value_type()/*' '*/, clasp_make_fixnum(0));
+    };
+  public:
+    virtual T_sp type_as_symbol() const final{ return cl::_sym_string; };
+  public:
+    virtual bool equal(T_sp other) const final;
+  public:
+    iterator begin() { return &(*this)[0]; };
+    iterator end() { return &(*this)[this->length()]; };
+    const_iterator begin() const { return &(*this)[0]; };
+    const_iterator end() const { return &(*this)[this->length()]; };
+  public:
+    virtual void __write__(T_sp strm) const final;
+    virtual std::string get_std_string() const final;
+    virtual std::string __repr__() const final;
+  public: // StrWNs specific functions
+    void vectorPushExtend_claspCharacter(claspCharacter c, size_t extension=32);
+    /*! Return true if all characters are base characters and the string 
+        can be downgraded to a base-char string */
+    bool all_base_char_p() const;
   };
 };
 
 
+namespace core {
+  class SpecializedVectorNs_O : public VectorNs_O {
+    LISP_CLASS(core, ClPkg, SpecializedVectorNs_O, "specialized-non-simple-vector",VectorNs_O);
+  public:
+  SpecializedVectorNs_O(size_t rank,
+                        List_sp dimensions,
+                        T_sp fillPointer,
+                        T_sp displacedTo,
+                        size_t displacedIndexOffset)
+    : Base(rank,dimensions,fillPointer,displacedTo,displacedIndexOffset) {};
+  public:
+    virtual T_sp type_as_symbol() const final { return cl::_sym_vector; };
+    virtual void sxhash_(HashGenerator& hg) const final {this->General_O::sxhash_(hg);}
+  };
+}
 
-namespace cl {
-  extern core::Symbol_sp& _sym_General_O;
+namespace core {
+  class VectorTNs_O : public template_DisplacementHandlingVector<VectorTNs_O,SimpleVector_O,SpecializedVectorNs_O> {
+    LISP_CLASS(core, ClPkg, VectorTNs_O, "non-simple-vector-t",SpecializedVectorNs_O);
+  public:
+    typedef template_DisplacementHandlingVector<VectorTNs_O,SimpleVector_O,SpecializedVectorNs_O> TemplatedBase;
+    typedef typename TemplatedBase::value_type value_type;
+    typedef typename TemplatedBase::simple_type simple_type;
+  public:
+  VectorTNs_O(size_t dimension,
+              T_sp fillPointer,
+              T_sp displacedTo,
+              size_t displacedIndexOffset)
+    : TemplatedBase(1,Cons_O::createList(clasp_make_fixnum(dimension)),fillPointer,displacedTo,displacedIndexOffset) {};
+    static VectorTNs_sp make(size_t dimension, T_sp initElement=_Nil<T_O>(), T_sp fillPointer=_Nil<T_O>(), T_sp displacedTo=_Nil<T_O>(), size_t displacedIndexOffset=0 );
+    static VectorTNs_sp create(const gctools::Vec0<T_sp> &objs);
+  };
 };
+
+namespace core {
+  // I can't use the template_DisplacementHandlingVector here because of bitwise access
+  class BitVectorNs_O : public VectorNs_O {
+    LISP_CLASS(core, ClPkg, BitVectorNs_O, "bit-vector",VectorNs_O);
+  public:
+    typedef SimpleBitVector_O simple_type;
+  BitVectorNs_O(size_t dimension,
+                T_sp fillPointer,
+                T_sp displacedTo,
+                size_t displacedIndexOffset)
+    : Base(1,Cons_O::createList(clasp_make_fixnum(dimension)),fillPointer,displacedTo,displacedIndexOffset) {};
+    static BitVectorNs_sp make(size_t length, uint initialElement, T_sp fillPointer, T_sp displacedTo, size_t displacedIndexOffset ) {
+      GC_ALLOCATE_VARIADIC(BitVectorNs_O, bv, length, fillPointer, displacedTo, displacedIndexOffset );
+      LIKELY_if (displacedTo.nilp()) {
+        SimpleBitVector_sp sbv = SimpleBitVector_O::make(length,initialElement,true);
+        bv->set_data(sbv);
+      }
+      return bv;
+    }
+  public:
+    virtual void __write__(T_sp strm) const;
+    uint testBit(size_t idx) const {
+        BaseSimpleVector_sp bme;
+        size_t mstart, mend;
+        this->asBaseSimpleVectorRange(bme,mstart,mend);
+        simple_type* me = reinterpret_cast<simple_type*>(&*bme);
+        return me->testBit(idx+this->_DisplacedIndexOffset);
+    }
+    void setBit(size_t idx, uint v)  {
+        BaseSimpleVector_sp bme;
+        size_t mstart, mend;
+        this->asBaseSimpleVectorRange(bme,mstart,mend);
+        simple_type* me = reinterpret_cast<simple_type*>(&*bme);
+        me->setBit(idx+this->_DisplacedIndexOffset,v);
+    }
+    void asBaseSimpleVectorRange(BaseSimpleVector_sp& sv, size_t& start, size_t& end) const final {
+      unlikely_if (gc::IsA<smart_ptr_type>(this->_Data)) {
+        this->asBaseSimpleVectorRange(sv,start,end);
+        start += this->_DisplacedIndexOffset;
+        end = this->length()+this->_DisplacedIndexOffset;
+        return;
+      }
+      sv = gc::As<SimpleBitVector_sp>(this->_Data);
+      start = this->_DisplacedIndexOffset;
+      end = this->length()+this->_DisplacedIndexOffset;
+    }
+  public:
+    virtual T_sp type_as_symbol() const final { return cl::_sym_bit_vector; };
+    virtual bool equal(T_sp other) const final;
+    virtual bool equalp(T_sp other) const final { return this->equal(other);};
+    virtual void internalAdjustSize_(size_t size, T_sp init_element=_Nil<T_O>(), bool initElementSupplied=false ) override;
+    virtual Array_sp reverse() const override;
+    virtual Array_sp nreverse() override;
+  public:
+    CL_METHOD_OVERLOAD virtual void rowMajorAset(size_t idx, T_sp value) override {this->setBit(idx,value.unsafe_fixnum());};
+    CL_METHOD_OVERLOAD virtual T_sp rowMajorAref(size_t idx) const override {return clasp_make_fixnum(this->testBit(idx)); };
+    virtual void sxhash_(HashGenerator& hg) const final {
+      if (hg.isFilling()) {
+        BaseSimpleVector_sp svec;
+        size_t start,end;
+        this->asBaseSimpleVectorRange(svec,start,end);
+        svec->ranged_sxhash(hg,start,end);
+      }
+    }
+  };
+};
+
+
+namespace core {
+  template <typename MyArrayType, typename MySimpleType, typename MyParentType >
+    class template_DisplacementHandlingArray : public MyParentType {
+  public:
+    // The types that define what this class does
+    typedef MyParentType Base;
+    typedef MyArrayType /*eg: VectorTNs_O*/ my_array_type;
+    typedef MySimpleType /*eg: SimpleVector_O*/ simple_type;
+    typedef typename simple_type::value_type /*eg: T_sp*/ value_type;
+    typedef gctools::smart_ptr<my_array_type> my_smart_ptr_type;
+  public:
+    // Pass constructor arguments up
+  template_DisplacementHandlingArray(size_t rank,
+                                     List_sp dimensions,
+                                     T_sp fillPointer,
+                                     T_sp displacedTo,
+                                     size_t displacedIndexOffset)
+    : Base(rank,dimensions,fillPointer,displacedTo,displacedIndexOffset) {};
+    // Primary functions/operators for operator[] that handle displacement
+    // There's a non-const and a const version of each
+    value_type& unsafe_indirectReference(size_t index) {
+      my_array_type& vecns = *reinterpret_cast<my_array_type*>(&*this->_Data);
+      return vecns[this->_DisplacedIndexOffset+index];
+    }
+    value_type& operator[](size_t index) {
+      unlikely_if (gc::IsA<my_smart_ptr_type>(this->_Data)) return this->unsafe_indirectReference(index);
+      return (*reinterpret_cast<simple_type*>(&*(this->_Data)))[this->_DisplacedIndexOffset+index];
+    }
+    const value_type& unsafe_indirectReference(size_t index) const {
+      my_array_type& vecns = *reinterpret_cast<my_array_type*>(&*this->_Data);
+      return vecns[this->_DisplacedIndexOffset+index];
+    }
+    const value_type& operator[](size_t index) const {
+      unlikely_if (gc::IsA<my_smart_ptr_type>(this->_Data)) return this->unsafe_indirectReference(index);
+      return (*reinterpret_cast<simple_type*>(&*(this->_Data)))[this->_DisplacedIndexOffset+index];
+    }
+  public:
+    // Iterators
+    value_type* begin() { return &(*this)[0]; };
+    value_type* end() { return &(*this)[this->arrayTotalSize()]; };
+    const value_type* begin() const { return &(*this)[0]; };
+    const value_type* end() const { return &(*this)[this->arrayTotalSize()]; };
+  public:
+    void asBaseSimpleVectorRange(BaseSimpleVector_sp& sv, size_t& start, size_t& end) const final {
+      unlikely_if (gc::IsA<my_smart_ptr_type>(this->_Data)) {
+        this->asBaseSimpleVectorRange(sv,start,end);
+        start += this->_DisplacedIndexOffset;
+        end = this->arrayTotalSize()+this->_DisplacedIndexOffset;
+        return;
+      }
+      sv = gc::As<SimpleVector_sp>(this->_Data);
+      start = this->_DisplacedIndexOffset;
+      end = this->arrayTotalSize()+this->_DisplacedIndexOffset;
+    }
+    virtual void sxhash_(HashGenerator& hg) const final {this->General_O::sxhash_(hg);}
+    virtual bool equal(T_sp other) const override { return this->eq(other);};
+    bool equalp(T_sp o) const final {
+      if (&*o == this) return true;
+      if (my_smart_ptr_type other = o.asOrNull<my_array_type>()) {
+        if (this->rank() != other->rank() ) return false;
+        for (size_t i(0); i<this->rank(); ++i ) {
+          if (this->_Dimensions[i] != other->_Dimensions[i]) return false;
+        }
+        for (size_t i(0),iEnd(this->arrayTotalSize()); i<iEnd; ++i) {
+          if (!cl__equalp((*this)[i], (*other)[i])) return false;
+        }
+        return true;
+      }
+      return false;
+    }
+  public:
+    CL_METHOD_OVERLOAD virtual void rowMajorAset(size_t idx, T_sp value) final {(*this)[idx] = simple_type::from_object(value);}
+    CL_METHOD_OVERLOAD virtual T_sp rowMajorAref(size_t idx) const final {return simple_type::to_object((*this)[idx]);}
+
+  };
+}
+
+namespace core {
+  class ArrayTNs_O : public template_DisplacementHandlingArray<ArrayTNs_O,SimpleVector_O,SpecializedMDArrayNs_O>  {
+    LISP_CLASS(core, ClPkg, ArrayTNs_O, "arraytns",SpecializedMDArrayNs_O);
+  public:
+    typedef template_DisplacementHandlingArray<ArrayTNs_O,SimpleVector_O,SpecializedMDArrayNs_O> TemplatedBase;
+  ArrayTNs_O(size_t rank,
+             List_sp dimensions,
+             T_sp fillPointer,
+             T_sp displacedTo,
+             size_t displacedIndexOffset) : TemplatedBase(rank,dimensions,fillPointer,displacedTo,displacedIndexOffset) {};
+  public:
+    static ArrayTNs_sp make(T_sp dim_desig, T_sp initialElement, T_sp fillPointer, T_sp displacedTo, size_t displacedIndexOffset);
+  public:
+    virtual void internalAdjustSize_(size_t size, T_sp initElement=_Nil<T_O>(), bool initElementSupplied=false ) final {
+      IMPLEMENT_MEF(BF("Add support for internalAdjustSize for ArrayTNs when you see this"));
+    };
+  };
+
+};
+
+
+
 
 namespace core {
 // Like ecl__vector_start_end
 T_mv clasp_vectorStartEnd(Symbol_sp fn, T_sp thing, Fixnum_sp start, Fixnum_sp end);
 
- void noFillPointerError();
 };
 
 
 
 // ----------------------------------------------------------------------
 //
-// String functions
+// Array and String functions
 //
-
 
 namespace core {
 
+  List_sp cl__arrayDimensions(Array_sp array);
+
+
   String_sp cl__string(T_sp str);
-  String_sp cl__string_upcase(T_sp arg);
-  String_sp cl__string_downcase(T_sp arg);
+  SimpleString_sp cl__string_upcase(T_sp arg);
+  SimpleString_sp cl__string_downcase(T_sp arg);
   String_sp cl__nstring_upcase(String_sp arg);
   String_sp cl__nstring_downcase(String_sp arg);
-  claspChar cl__char(String_sp str, cl_index idx);
+  Character_sp cl__char(String_sp str, size_t idx);
 
-  bool clasp_memberChar(claspChar c, T_sp charBag);
+  bool clasp_memberChar(claspChar c, String_sp charBag);
 
   String_sp cl__string_trim(T_sp charbag, T_sp str);
   String_sp cl__string_left_trim(T_sp charbag, T_sp str);
   String_sp cl__string_right_trim(T_sp charbag, T_sp str);
 
-  T_mv cl__parse_integer(Str_sp str, Fixnum start = 0, T_sp end = _Nil<T_O>(), uint radix = 10, T_sp junkAllowed = _Nil<T_O>());
+  T_mv cl__parse_integer(String_sp str, Fixnum start = 0, T_sp end = _Nil<T_O>(), uint radix = 10, T_sp junkAllowed = _Nil<T_O>());
 
   T_sp cl__string_equal(T_sp strdes1, T_sp strdes2, Fixnum_sp start1 = make_fixnum(0), T_sp end1 = _Nil<T_O>(), Fixnum_sp start2 = make_fixnum(0), T_sp end2 = _Nil<T_O>());
 
-
-  String_sp make_string(T_sp element_type,
-                        size_t dimension,
-                        bool adjustable,
-                        T_sp fill_pointer,
-                        T_sp displaced_to,
-                        cl_index displaced_index_offset,
-                        T_sp initial_element,
-                        T_sp initial_element_supplied_p);
-
   /*! Push a c-style string worth of characters into the buffer */
   void StringPushStringCharStar(String_sp buffer, const char* cp);
-  // Was Str_O::pushStringSubstring
-  void StringPushSubString(String_sp buffer, String_sp other, cl_index start, cl_index end);
-  // Was Str_O::pushString
+  void StringPushSubString(String_sp buffer, String_sp other, size_t start, size_t end);
   void StringPushString(String_sp buffer, String_sp other);
-  /*! Search outer for the first occurrence of inner starting at start of outer
-      This function should be depreciated - look into it */
-  T_sp StrFind(Str_sp outer, Str_sp inner, size_t start);
 
-  Vector_sp VectorReverse(Vector_sp vec);
-  Vector_sp VectorNReverse(Vector_sp vec);
+  T_sp cl__string_EQ_(T_sp strdes1, T_sp strdes2, Fixnum_sp start1=clasp_make_fixnum(0), T_sp end1=_Nil<T_O>(), Fixnum_sp start2=clasp_make_fixnum(0), T_sp end2=_Nil<T_O>());
 
-
-  BitVector_sp make_bit_vector(uint initial_element, size_t arrayTotalSize);
-  
+  T_sp core__string_search(String_sp sub, String_sp outer, size_t sub_start, T_sp sub_end, size_t outer_start, T_sp outer_end );
 };
 
+
+#include <clasp/core/string.h>
 
 
 

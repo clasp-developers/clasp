@@ -69,16 +69,6 @@ THE SOFTWARE.
 #include <clasp/core/wrappers.h>
 namespace core {
 
-CL_LAMBDA(arg);
-CL_DECLARE();
-CL_DOCSTRING("isString");
-CL_DEFUN void core__is_string(T_sp arg) {
-  if (Str_sp s = arg.asOrNull<Str_O>()) {
-    printf("The object |%s| is a string\n", s->get().c_str());
-  } else {
-    printf("The object is not a string\n");
-  }
-};
 
 CL_LAMBDA(arg);
 CL_DECLARE();
@@ -96,12 +86,12 @@ CL_DECLARE();
 CL_DOCSTRING("testVal");
 CL_DEFUN T_sp core__test_val(T_sp v) {
   if (v.fixnump()) { // Fixnum_sp fn = v.asOrNull<Fixnum_O>() ) {
-    return Str_O::create("val is fixnum");
+    return SimpleBaseCharString_O::make("val is fixnum");
   } else if (Symbol_sp sym = v.asOrNull<Symbol_O>()) {
     (void)sym;
-    return Str_O::create("arg is symbol");
+    return SimpleBaseCharString_O::make("arg is symbol");
   }
-  return Str_O::create("arg didn't match");
+  return SimpleBaseCharString_O::make("arg didn't match");
 };
 
   SYMBOL_EXPORT_SC_(CorePkg, isString);

@@ -155,8 +155,7 @@ static Fixnum scale(float_approx *approx) {
   return k;
 }
 
-static Str_sp
-generate(Str_sp digits, float_approx *approx) {
+static StrNs_sp generate(StrNs_sp digits, float_approx *approx) {
   Real_sp d, x;
   gctools::Fixnum digit;
   bool tc1, tc2;
@@ -233,19 +232,20 @@ CL_DECLARE();
 CL_DOCSTRING("float_to_digits");
 CL_DEFUN T_mv core__float_to_digits(T_sp tdigits, Float_sp number, gc::Nilable<Real_sp> position,
                           T_sp relativep) {
+  ASSERT(tdigits.nilp()||gc::IsA<Str8Ns_sp>(tdigits));
   gctools::Fixnum k;
   float_approx approx[1];
   setup(number, approx);
   change_precision(approx, position, relativep);
   k = scale(approx);
-  Str_sp digits;
+  Str8Ns_sp digits;
   if (tdigits.nilp()) {
-    digits = gc::As<Str_sp>(core__make_vector(cl::_sym_base_char,
+    digits = gc::As<Str8Ns_sp>(core__make_vector(cl::_sym_base_char,
                                               10,
                                               true /* adjustable */,
                                               clasp_make_fixnum(0) /* fill pointer */));
   } else {
-    digits = gc::As<Str_sp>(tdigits);
+    digits = gc::As<Str8Ns_sp>(tdigits);
   }
   generate(digits, approx);
   return Values(clasp_make_fixnum(k), digits);

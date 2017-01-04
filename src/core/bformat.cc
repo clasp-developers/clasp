@@ -71,9 +71,9 @@ CL_DEFUN T_sp core__bformat(T_sp destination, const string &control, List_sp arg
         stringstream ss;
         ss << clasp_to_mpz(flli);
         fmter % ss.str();
-      } else if (core__simple_string_p(fobj)) {
-        Str_sp ftext = gc::As<Str_sp>(fobj);
-        fmter % ftext->get();
+      } else if (cl__stringp(fobj)) {
+        String_sp ftext = gc::As_unsafe<String_sp>(fobj);
+        fmter % ftext->get_std_string();
       } else if (core__double_float_p(fobj)) {
         DoubleFloat_sp freal = gc::As<DoubleFloat_sp>(fobj);
         fmter % freal->get();
@@ -125,7 +125,7 @@ CL_DEFUN T_sp cl__format(T_sp destination, T_sp control, List_sp args) {
   if (!cl__stringp(control)) {
     SIMPLE_ERROR(BF("FORMAT control must be a string or a function - you gave: %s") % _rep_(control));
   }
-  string ts = gc::As<Str_sp>(control)->get();
+  string ts = gc::As<String_sp>(control)->get_std_string();
   const char *cur = ts.c_str();
   while (*cur) {
     if (*cur == '~') {

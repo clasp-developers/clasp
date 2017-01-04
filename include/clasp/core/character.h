@@ -43,7 +43,7 @@ inline claspCharacter unbox_character(Character_sp c) {
   return c.unsafe_character();
 };
 
-Str_sp cl__char_name(Character_sp och);
+SimpleBaseCharString_sp cl__char_name(Character_sp och);
 
 int clasp_string_case(String_sp s);
 Fixnum clasp_digitp(int ch, int basis);
@@ -174,11 +174,13 @@ struct from_object<claspChar, std::true_type> {
   typedef claspChar DeclareType;
   DeclareType _v;
   from_object(T_P o) {
-    if (core::Character_sp ch = o.asOrNull<core::Character_O>()) {
-      this->_v = clasp_as_char(ch);
-      return;
+    if (o.characterp()) {
+      if (o.unsafe_character()<=255) {
+        this->_v = o.unsafe_character();
+        return;
+      }
     }
-    SIMPLE_ERROR(BF("Could not convert %s to CHARACTER") % _rep_(o));
+    SIMPLE_ERROR(BF("Could not convert %s to claspChar") % _rep_(o));
   }
 };
 
@@ -199,24 +201,14 @@ inline bool clasp_invalid_character_p(int c) {
   return (c <= 32) || (c == 127);
 }
 
-inline Character_sp clasp_char_upcase(claspCharacter code) {
-  unsigned char uc = toupper(code);
-  return clasp_make_character(uc);
+inline claspCharacter claspCharacter_upcase(claspCharacter code) {
+  claspCharacter uc = toupper(code);
+  return uc;
 }
 
-inline Character_sp clasp_char_downcase(claspCharacter code) {
-  unsigned char uc = tolower(code);
-  return clasp_make_character(uc);
-}
-
-inline Character_sp clasp_char_upcase(Character_sp code) {
-  unsigned char uc = toupper(clasp_as_char(code));
-  return clasp_make_character(uc);
-}
-
-inline Character_sp clasp_char_downcase(Character_sp code) {
-  unsigned char uc = tolower(clasp_as_char(code));
-  return clasp_make_character(uc);
+inline claspCharacter claspCharacter_downcase(claspCharacter code) {
+  claspCharacter uc = tolower(code);
+  return uc;
 }
 
 inline bool clasp_alphanumericp(claspCharacter i) {
@@ -229,9 +221,6 @@ inline claspChar clasp_as_char(Character_sp c) {
   return cc;
 }
 
-inline claspCharacter clasp_as_character(Character_sp c) {
-  return c.unsafe_character();
-}
 
  
 // See character.fwd.h for the following
@@ -241,6 +230,14 @@ inline claspCharacter clasp_as_character(Character_sp c) {
 }
 #endif
 
+ inline bool clasp_base_char_p(claspCharacter c) {
+   return c<=255;
+ }
+
+ inline bool clasp_base_char_p(Character_sp c) {
+   return c.unsafe_character()>=0 && c.unsafe_character()<=255;
+ }
+ 
  inline bool clasp_isupper(claspCharacter cc) {
    // FIXME : handle unicode
     unlikely_if (cc>255) handleWideCharactersError(cc);
