@@ -88,15 +88,17 @@ def sync_submodules(cfg):
 # run this from a completely cold system with:
 # ./waf distclean configure --> cold system
 # ./waf build_cboehmdc build_impsprep analyze_clasp
+# This is the static analyzer - formerly called 'redeye'
 def analyze_clasp(cfg):
     run_program_echo("build/boehmdc/iclasp-boehmdc",
-                "-i", "./build/boehmdc/cclasp-boehmdc-image.fasl",
-                 "-f", "ignore-extensions",
-                 "-e", "(require :clasp-analyzer)",
-                 "-e", "(defparameter *compile-commands* \"build/mpsprep/compile_commands.json\")",
-                 "-e", "(time (clasp-analyzer:search/generate-code (clasp-analyzer:setup-clasp-analyzer-compilation-tool-database (pathname *compile-commands*))))",
-                 "-e", "(core:quit)")
-    print("\n\n\n----------------- Done static analysis --------------------")
+                     "-i", "./build/boehmdc/bclasp-boehmdc-image.fasl",
+                     "-f", "ignore-extensions",
+                     "-e", '(load (compile-file #P"sys:modules;clang-tool;clang-tool.lisp" :print t))',
+                     "-e", '(load (compile-file #P"sys:modules;clasp-analyzer;clasp-analyzer.lisp" :print t))',
+                     "-e", "(defparameter *compile-commands* \"build/mpsprep/compile_commands.json\")",
+                     "-e", "(time (clasp-analyzer:search/generate-code (clasp-analyzer:setup-clasp-analyzer-compilation-tool-database (pathname *compile-commands*))))",
+                     "-e", "(core:quit)")
+    print("\n\n\n----------------- proceeding with static analysis --------------------")
 
 
 def dump_command(cmd):
@@ -898,9 +900,9 @@ class link_fasl(Task.Task):
 
 class link_executable(Task.Task):
     def run(self):
-        if (cfg.env.LTO_FLAG):
-            lto_option_list = [cfg.env.LTO_FLAG]
-            lto_object_path_lto = "-Wl,-object_path_lto,%s"% self.outputs[1].abspath()
+        if (self.env.LTO_FLAG):
+            lto_option_list = [self.env.LTO_FLAG]
+            lto_object_path_lto = ["-Wl,-object_path_lto,%s"% self.outputs[1].abspath()]
         else:
             lto_option_list = []
             lto_object_path_lto = []

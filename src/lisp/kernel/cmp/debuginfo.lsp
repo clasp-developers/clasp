@@ -111,18 +111,17 @@
 
 (defmacro with-dbg-compile-unit ((source-pathname) &rest body)
   (let ((path (gensym))
-	(file-name (gensym))
+	(file (gensym))
 	(dir-name (gensym)))
     `(if (and *dbg-generate-dwarf* *the-module-dibuilder*)
 	 (progn
 	   (let* ((,path (pathname ,source-pathname))
-		  (,file-name (dbg-filename* ,path))
+		  (,file *dbg-current-file*)
 		  (,dir-name (directory-namestring ,path))
 		  (*dbg-compile-unit* (llvm-sys:create-compile-unit
 				       *the-module-dibuilder* ; dibuilder
 				       llvm-sys:dw-lang-c ; 1 llvm-sys:dw-lang-common-lisp
-				       ,file-name         ; 2 file
-				       ,dir-name          ; 3 dir
+				       ,file   ; 2 file
 				       "clasp Common Lisp compiler" ; 4 producer
 				       nil  ; 5 isOptimized
 				       "-v" ; 6 compiler flags
@@ -134,7 +133,7 @@
 				       )))
 	     (cmp-log "with-dbg-compile-unit *dbg-compile-unit*: %s\n" *dbg-compile-unit*)
 	     (cmp-log "with-dbg-compile-unit source-pathname: %s\n" ,source-pathname)
-	     (cmp-log "with-dbg-compile-unit file-name: [%s]\n" ,file-name)
+	     (cmp-log "with-dbg-compile-unit file-name: [%s]\n" ,file)
 	     (cmp-log "with-dbg-compile-unit dir-name: [%s]\n" ,dir-name)
 	     ,@body
 	     ))
@@ -153,7 +152,9 @@
 		(*dbg-current-file* (llvm-sys:create-file
 				     *the-module-dibuilder*
 				     ,file-name
-				     ,dir-name)))
+				     ,dir-name
+                                     :csk-none
+                                     "")))
 ;;		(*dbg-current-scope* *dbg-current-file*))
 	   ,@body)
 	 (progn
@@ -164,8 +165,8 @@
   "One macro that uses three other macros"
   `(let ((*with-debug-info-generator* t))
      (with-dibuilder (,module)
-       (with-dbg-compile-unit (,pathname)
-	 (with-dbg-file-descriptor (,pathname)
+       (with-dbg-file-descriptor (,pathname)
+         (with-dbg-compile-unit (,pathname)
 	   ,@body)))))
 
 (defvar *with-dbg-function* nil)

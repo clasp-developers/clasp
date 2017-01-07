@@ -1075,7 +1075,7 @@ CL_DEFUN T_mv cl__read_delimited_list(Character_sp chr, T_sp input_stream_design
     SIMPLE_ERROR(BF("Currently I don't handle recursive-p[true] for read_delimited_list"));
   }
 #endif
-  T_sp result = read_list(sin, clasp_as_char(chr), true);
+  T_sp result = read_list(sin, clasp_as_claspCharacter(chr), true);
   if (cl::_sym_STARread_suppressSTAR->symbolValue().isTrue()) {
     return (Values(_Nil<T_O>()));
   }
@@ -1459,30 +1459,30 @@ CL_DECLARE();
 CL_DOCSTRING("See CLHS gensym");
 CL_DEFUN Symbol_sp cl__gensym(T_sp x) {
   //CHECKME
-  StrNs_sp ss;
-  if (x.nilp()) {
-    Fixnum counter = unbox_fixnum(gc::As<Fixnum_sp>(cl::_sym_STARgensym_counterSTAR->symbolValue()));
-    ss = Str8Ns_O::make(8,'G',clasp_make_fixnum(1));
-    core__integer_to_string(ss,gc::As<Integer_sp>(cl::_sym_STARgensym_counterSTAR->symbolValue()),clasp_make_fixnum(10));
-    cl::_sym_STARgensym_counterSTAR->setf_symbolValue(make_fixnum(counter + 1));
-  } else if (cl__stringp(x)) {
+  if (cl__stringp(x)) {
     String_sp sx = gc::As_unsafe<String_sp>(x);
-    ss = core__make_vector(sx->arrayElementType(),8,true,clasp_make_fixnum(0));
+    StrNs_sp ss = gc::As_unsafe<StrNs_sp>(core__make_vector(sx->arrayElementType(),16,true,clasp_make_fixnum(0)));
     StringPushString(ss,sx);
     core__integer_to_string(ss,gc::As<Integer_sp>(cl::_sym_STARgensym_counterSTAR->symbolValue()),clasp_make_fixnum(10));
     ASSERT(cl::_sym_STARgensym_counterSTAR->symbolValue().fixnump());
     Fixnum counter = cl::_sym_STARgensym_counterSTAR->symbolValue().unsafe_fixnum();
     cl::_sym_STARgensym_counterSTAR->setf_symbolValue(make_fixnum(counter + 1));
-  } else if (cl__integerp(x)) {
-    Integer_sp ix = gc::As_unsafe<Integer_sp>(x);
-    ss = Str8Ns_O::make(8,'G',clasp_make_fixnum(1));
-    core__integer_to_string(ss,ix,clasp_make_fixnum(10));
-  } else {
-    SIMPLE_ERROR(BF("Illegal argument for gensym[%s]") % _rep_(x));
+    Symbol_sp sym = Symbol_O::create(ss->asMinimalSimpleString());
+    sym->setPackage(_Nil<T_O>());
+    return sym;
   }
-  SimpleString_sp simple = coerce::simple_string(ss);
-  Symbol_sp sym = Symbol_O::create(simple);
-  sym->setPackage(_Nil<Package_O>());
+  SafeBuffer ss;
+  Fixnum counter;
+  ss.string()->vectorPushExtend_claspChar('G');
+  if (x.fixnump()||gc::IsA<Integer_sp>(x)) {
+    core__integer_to_string(ss.string(),x,clasp_make_fixnum(10));
+  } else if (x.nilp()) {
+    counter = unbox_fixnum(gc::As<Fixnum_sp>(cl::_sym_STARgensym_counterSTAR->symbolValue()));
+    core__integer_to_string(ss.string(),gc::As<Integer_sp>(cl::_sym_STARgensym_counterSTAR->symbolValue()),clasp_make_fixnum(10));
+    cl::_sym_STARgensym_counterSTAR->setf_symbolValue(make_fixnum(counter + 1));
+  }
+  Symbol_sp sym = Symbol_O::create(ss.string()->asMinimalSimpleString());
+  sym->setPackage(_Nil<T_O>());
   return sym;
 }
 
@@ -1600,34 +1600,25 @@ T_sp type_of(T_sp x) {
     if (cl__keywordp(symx))
       return cl::_sym_keyword;
     return cl::_sym_symbol;
-  } else if (String_sp sx = x.asOrNull<String_O>()) {
-    Symbol_sp t;
-    if (sx->adjustableArrayP() || sx->arrayHasFillPointerP() || sx->displacedToP()) {
-      t = cl::_sym_array;
-    } else t = cl::_sym_simple_array;
-    return (ql::list(_lisp) << t << cl::_sym_base_char << Cons_O::createList(make_fixnum(1), make_fixnum(cl__length(sx)))).cons();
-  } else if (Vector_sp vx = x.asOrNull<Vector_O>()) {
-    if (vx->adjustableArrayP() || vx->displacedToP()) {
-      return (ql::list(_lisp) << cl::_sym_vector << vx->elementTypeAsSymbol() << cl__arrayDimensions(vx)).cons();
-    } else if (vx->arrayHasFillPointerP() /* || (cl__elttype)x->vector.elttype != aet_object) */) {
-      return (ql::list(_lisp) << cl::_sym_simple_array << vx->elementTypeAsSymbol() << cl__arrayDimensions(vx)).cons();
-    } else {
-      return (ql::list(_lisp) << cl::_sym_simple_vector << make_fixnum(cl__length(vx))).cons();
+  } else if (gc::IsA<Array_sp>(x)) {
+    if (cl__stringp(x)) {
+      String_sp sx = gc::As_unsafe<String_sp>(x);
+      Symbol_sp tt;
+      if (sx->adjustableArrayP() || sx->arrayHasFillPointerP() || sx->displacedToP()) tt = cl::_sym_array;
+      else tt = cl::_sym_simple_array;
+      return Cons_O::createList(tt,sx->elementTypeAsSymbol(),Cons_O::createList(make_fixnum(1), make_fixnum(cl__length(sx))));
+    } else if (gc::IsA<BaseSimpleVector_sp>(x)) {
+      BaseSimpleVector_sp bx = gc::As_unsafe<BaseSimpleVector_sp>(x);
+      return Cons_O::createList(cl::_sym_simple_array, bx->elementTypeAsSymbol(), clasp_make_fixnum(bx->length()));
+    } else if (gc::IsA<VectorNs_sp>(x)) {
+      VectorNs_sp vx = gc::As_unsafe<VectorNs_sp>(x);
+      return Cons_O::createList(cl::_sym_vector,vx->elementTypeAsSymbol(),clasp_make_fixnum(vx->length()));
+    } else if (gc::IsA<MDArrayNs_sp>(x)) {
+      MDArrayNs_sp ax = gc::As_unsafe<MDArrayNs_sp>(x);
+      Symbol_sp tt = cl::_sym_simple_array;
+      if (ax->adjustableArrayP()||ax->displacedToP()) tt = cl::_sym_array;
+      return Cons_O::createList(tt,ax->elementTypeAsSymbol(),cl__arrayDimensions(ax));
     }
-  } else if (Array_sp ax = x.asOrNull<Array_O>()) {
-    Symbol_sp t;
-    if (ax->adjustableArrayP() || ax->displacedToP()) {
-      t = cl::_sym_array;
-    } else
-      t = cl::_sym_simple_array;
-    return (ql::list(_lisp) << t << ax->elementTypeAsSymbol() << cl__arrayDimensions(ax)).cons();
-  } else if (BitVector_sp bx = x.asOrNull<BitVector_O>()) {
-    Symbol_sp t;
-    if (bx->adjustableArrayP() || bx->arrayHasFillPointerP() || bx->displacedToP()) {
-      t = cl::_sym_array;
-    } else
-      t = cl::_sym_simple_array;
-    return (ql::list(_lisp) << t << cl::_sym_bit << Cons_O::createList(make_fixnum(1), make_fixnum(cl__length(bx)))).cons();
   } else if (WrappedPointer_sp pp = x.asOrNull<WrappedPointer_O>()) {
     return pp->_instanceClass()->className();
   } else if (core__structurep(x)) {

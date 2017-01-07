@@ -39,7 +39,7 @@ namespace gctools {
     size_t    _Length; // Index one beyond the total number of elements allocated
     word_type _Data[0];      // Store _Length numbers of bits with multiple bits per T
   public:
-  GCBitArray_moveable(uint initialValue, size_t length) : _Length(length) {
+  GCBitArray_moveable(size_t length,uint initialValue) : _Length(length) {
       word_type initialFillValue = (initialValue!=0) ? ~0 : 0;
       size_t numWords = (length+(BitWidth-1))/BitWidth;
       for ( size_t i(0); i<this->_Length; ++i ) {

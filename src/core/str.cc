@@ -899,7 +899,7 @@ Fixnum_sp Str_O::vectorPushExtend(T_sp newElement, cl_index extension) {
   } else {
     eval::funcall(cl::_sym_adjust_array,this->asSmartPtr(),clasp_make_fixnum(new_size),cl::_sym_fill_pointer,this->_FillPointer);
   }
-  (*this)[idx] = as_claspCharacter(newElement);
+  (*this)[idx] = clasp_as_claspCharacter(newElement);
   this->_FillPointer = clasp_make_fixnum(idx+1);
   return make_fixnum(idx);
 }

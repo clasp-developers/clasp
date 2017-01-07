@@ -27,7 +27,7 @@ namespace core {
 T_sp
 _clasp_ensure_buffer(T_sp buffer, gc::Fixnum length) {
   if (buffer.nilp()) {
-      buffer = Str8Ns_O::make(length, ' ', clasp_make_fixnum(0));
+          buffer = Str8Ns_O::make(length, ' ', true, clasp_make_fixnum(0));
   }
   return buffer;
 }
@@ -103,8 +103,7 @@ print_float_exponent(T_sp buffer, T_sp number, gc::Fixnum exp) {
   }
 }
 
-T_sp
-core_float_to_string_free(T_sp buffer_or_nil, Float_sp number,
+T_sp core_float_to_string_free(T_sp buffer_or_nil, Float_sp number,
                           T_sp e_min, T_sp e_max) {
   gc::Fixnum base, e;
   if (clasp_float_nan_p(number)) {

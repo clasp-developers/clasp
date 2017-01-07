@@ -163,7 +163,7 @@ struct from_object<unsigned long, std::true_type> {
       this->_v = (unsigned long)o.unsafe_fixnum();
       return;
     }
-    SIMPLE_ERROR(BF("Add support to convert other types to unsigned long long"));
+    TYPE_ERROR(o,cl::_sym_fixnum);
   }
   from_object() : _v(0){};
   from_object(core::T_sp o) { this->set(o); };

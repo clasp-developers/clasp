@@ -654,9 +654,14 @@ struct from_object<llvm::DIBuilder &, std::true_type> {
   from_object(T_P object) : _v(*gc::As<llvmo::DIBuilder_sp>(object)->wrappedPtr()){};
 };
 };
-    ;
-/* to_object translators */
 
-;
+
+// ------------------------------------------------------------
+//
+// Translators for other types
+//
+
+ENUM_FROM_OBJECT_TRANSLATOR(llvm::DIFile::ChecksumKind,llvmo::_sym_CSKEnum);
+
 
 #endif // debugInfo expose

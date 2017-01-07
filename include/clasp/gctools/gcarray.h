@@ -48,6 +48,9 @@ class GCArray_moveable : public GCContainer {
    for ( size_t h(0); h<initialContentsSize; ++h ) {
      this->_Data[h] = initialContents[h];
    }
+   // If initialElementSupplied is false and we are in an Atomic pool then
+   // we don't need to initialize all elements - otherwise we do.
+   // For now just initialize all elements
    for ( size_t i(initialContentsSize); i<this->_Length; ++i ) {
      new(&(this->_Data[i])) value_type(initialElement);
    }

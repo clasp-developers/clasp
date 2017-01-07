@@ -55,6 +55,9 @@ namespace cl {
   extern core::Symbol_sp& _sym_character;
   extern core::Symbol_sp& _sym_bit_vector;
   extern core::Symbol_sp& _sym_bit;
+  extern core::Symbol_sp& _sym_float;
+  extern core::Symbol_sp& _sym_double_float;
+  extern core::Symbol_sp& _sym_single_float;
   extern core::Symbol_sp& _sym_T_O;
   extern core::Symbol_sp& _sym_simple_string;
 };
@@ -64,6 +67,7 @@ namespace core {
   extern core::Symbol_sp& _sym_fillPointerSet;
   extern core::Symbol_sp& _sym_fillArrayWithElt;
   extern core::Symbol_sp& _sym_setf_subseq;
+  extern core::Symbol_sp& _sym_simple_double_vector;
   extern void clasp_write_string(const string &str, T_sp strm );
   extern claspCharacter clasp_write_char(claspCharacter c, T_sp strm);
 };
@@ -403,6 +407,7 @@ namespace core {
 };
 
 namespace core {
+  FORWARD(SpecializedSimpleVector);
   class SpecializedSimpleVector_O : public BaseSimpleVector_O {
     LISP_CLASS(core, ClPkg, SpecializedSimpleVector_O, "specialized-simple-vector",BaseSimpleVector_O);
   public:
@@ -410,7 +415,7 @@ namespace core {
      virtual void ranged_sxhash(HashGenerator& hg, size_t start, size_t end) const final
      {TYPE_ERROR(this->asSmartPtr(),Cons_O::createList(cl::_sym_string,cl::_sym_bit_vector));};
      virtual void sxhash_(HashGenerator& hg) const final {this->General_O::sxhash_(hg);}
-     
+     virtual bool equalp(T_sp other) const;
   };
 };
 
@@ -512,6 +517,7 @@ namespace core {
     typedef typename TemplatedBase::const_iterator const_iterator;
     typedef value_type container_value_type;
   public:
+    static value_type initial_element_from_object(T_sp obj, bool supplied);
     static value_type from_object(T_sp obj) {return obj.unsafe_character();}
     static T_sp to_object(const value_type& v) { return clasp_make_character(v); };
   public:
@@ -533,7 +539,7 @@ namespace core {
     virtual T_sp arrayElementType() const final { return cl::_sym_base_char; };
     virtual Symbol_sp elementTypeAsSymbol() const final { return cl::_sym_base_char; };
     virtual bool equal(T_sp other) const final;
-    virtual bool equalp(T_sp other) const final {IMPLEMENT_ME();};
+    virtual bool equalp(T_sp other) const final;
     virtual void __write__(T_sp strm) const final; // implemented in write_array.cc
     virtual std::string get_std_string() const final { return string((char*)&(*this)[0],this->length());};
     virtual std::string __repr__() const { return this->get_std_string(); };
@@ -573,6 +579,7 @@ namespace core {
     typedef typename TemplatedBase::const_iterator const_iterator;
     typedef value_type container_value_type;
   public:
+    static value_type initial_element_from_object(T_sp obj, bool supplied);
     static value_type from_object(T_sp obj) {return obj.unsafe_character();}
     static T_sp to_object(const value_type& v) { return clasp_make_character(v); };
   public:
@@ -600,7 +607,7 @@ namespace core {
     // for convenience if not speed
     virtual void __write__(T_sp strm) const final;
     virtual bool equal(T_sp other) const final;
-    virtual bool equalp(T_sp other) const {IMPLEMENT_ME();};
+    virtual bool equalp(T_sp other) const final;
     virtual std::string get_std_string() const final;
     virtual std::string __repr__() const final;
   public:
@@ -642,6 +649,7 @@ namespace core {
     typedef typename TemplatedBase::const_iterator const_iterator;
     typedef value_type container_value_type;
   public:
+    static value_type initial_element_from_object(T_sp obj, bool supplied) {return supplied ? obj : _Nil<T_O>();};
     static value_type from_object(T_sp obj) {return obj; };
     static T_sp to_object(const value_type& v) { return v; };
   public:
@@ -662,7 +670,7 @@ namespace core {
     // Implement these methods for simple vectors - some are implemented in parent classes
     // for convenience if not speed
     virtual bool equal(T_sp other) const override { return this->eq(other);};
-    virtual bool equalp(T_sp other) const override { IMPLEMENT_ME();};
+    virtual bool equalp(T_sp other) const override;
   };
 };
 
@@ -679,15 +687,24 @@ namespace core {
   public:
     typedef uintptr_t value_type;
     static const size_t BitWidth = sizeof(value_type)*8;
-    static const size_t BinitWidth = 1;
     typedef gctools::GCBitArray_moveable<value_type> vector_type;
   public:
     vector_type _Data;
   SimpleBitVector_O(size_t length,value_type initialElement) : Base(), _Data(length,initialElement) {};
-    static SimpleBitVector_sp make(size_t length,uint initialElement=0, bool initialElementSupplied=false) {
-      IMPLEMENT_MEF(BF("Handle binit size"));
-//      auto sbv = gctools::GC<SimpleBitVector_O>::allocate_binit_container(gctools::GCStamp<SimpleBitVector_O>::TheStamp, length,BinitWidth,initialElement);
-//      return sbv;
+    static SimpleBitVector_sp make(size_t length,value_type initialElement=0, bool initialElementSupplied=false) {
+      auto sbv = gctools::GC<SimpleBitVector_O>::allocate_bunit_container<1>(gctools::GCStamp<SimpleBitVector_O>::TheStamp, length,initialElement);
+      return sbv;
+    }
+  public:
+    static value_type initial_element_from_object(T_sp initialElement, bool initialElementSupplied) {
+      if (initialElementSupplied) {
+        if (initialElement.fixnump()) {
+          value_type i = initialElement.unsafe_fixnum();
+          if (i==0||i==1) return i;
+        }
+        TYPE_ERROR(initialElement,cl::_sym_bit);
+      }
+      return 0;
     }
   public:
     virtual T_sp type_as_symbol() const final { return cl::_sym_simple_bit_vector; };
@@ -763,13 +780,85 @@ namespace core {
   };
 };
 
+SYMBOL_EXPORT_SC_(CorePkg,simple_double_vector);
+
+namespace core {
+  FORWARD(SimpleDoubleVector);
+};
+template <>
+struct gctools::GCInfo<core::SimpleDoubleVector_O> {
+  static bool constexpr NeedsInitialization = false;
+  static bool constexpr NeedsFinalization = false;
+  static GCInfo_policy constexpr Policy = atomic;
+};
+namespace core {
+  class SimpleDoubleVector_O;
+  typedef template_SimpleVector<SimpleDoubleVector_O,double,SpecializedSimpleVector_O> specialized_SimpleDoubleVector;
+  class SimpleDoubleVector_O : public specialized_SimpleDoubleVector {
+    LISP_CLASS(core, CorePkg, SimpleDoubleVector_O, "SimpleDoubleVector",SpecializedSimpleVector_O);
+  public:
+    typedef specialized_SimpleDoubleVector TemplatedBase;
+    typedef typename TemplatedBase::leaf_type leaf_type;
+    typedef typename TemplatedBase::value_type value_type;
+    typedef typename TemplatedBase::vector_type vector_type;
+    typedef typename TemplatedBase::iterator iterator;
+    typedef typename TemplatedBase::const_iterator const_iterator;
+    typedef value_type container_value_type;
+  public:
+    static value_type initial_element_from_object(T_sp obj, bool supplied) {
+      if (supplied) {
+        if (obj.single_floatp()) {
+          return obj.unsafe_single_float();
+        } else if (gc::IsA<DoubleFloat_sp>(obj)) {
+          return gc::As_unsafe<DoubleFloat_sp>(obj)->get();
+        }
+        TYPE_ERROR(obj,cl::_sym_float);
+      }
+      return 0.0;
+    }
+    static value_type from_object(T_sp obj) { if (gc::IsA<DoubleFloat_sp>(obj)) return gc::As_unsafe<DoubleFloat_sp>(obj)->get(); TYPE_ERROR(obj,cl::_sym_double_float); };
+    static T_sp to_object(const value_type& v) { return DoubleFloat_O::create(v); };
+  public:
+  SimpleDoubleVector_O(size_t length, value_type initialElement=value_type(), bool initialElementSupplied=false, size_t initialContentsSize=0, const value_type* initialContents=NULL) : TemplatedBase(length,initialElement,initialElementSupplied,initialContentsSize,initialContents) {};
+    static SimpleDoubleVector_sp make(size_t length, value_type initialElement=value_type(), bool initialElementSupplied=false, size_t initialContentsSize=0, const value_type* initialContents=NULL) {
+      auto bs = gctools::GC<SimpleDoubleVector_O>::allocate_container(gctools::GCStamp<SimpleDoubleVector_O>::TheStamp,
+                                                                      length,length,initialElement,initialElementSupplied,initialContentsSize,initialContents);
+      return bs;
+    }
+  public:
+    // Specific to SimpleDoubleVector_O
+//    virtual void __write__(T_sp stream) const final;
+  public:
+    virtual T_sp type_as_symbol() const final { return core::_sym_simple_double_vector; };
+    virtual T_sp arrayElementType() const override { return cl::_sym_double_float; };
+    virtual Symbol_sp elementTypeAsSymbol() const override { return gc::As_unsafe<Symbol_sp>(this->arrayElementType()); };
+  public:
+    // Implement these methods for simple vectors - some are implemented in parent classes
+    // for convenience if not speed
+    virtual bool equal(T_sp other) const override { return this->eq(other);};
+//    virtual bool equalp(T_sp other) const override;
+  };
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
 namespace core {
 Vector_sp core__make_vector(T_sp element_type,
                             size_t dimension,
                             bool adjustable = false,
                             T_sp fill_pointer = _Nil<T_O>(),
                             T_sp displaced_to = _Nil<T_O>(),
-                            size_t displacedIndexOffset = 0,
+                            T_sp displacedIndexOffset = _Nil<T_O>(),
                             T_sp initial_element = _Nil<T_O>(),
                             bool initial_element_supplied_p = false);
 };
@@ -843,13 +932,13 @@ namespace core {
       size_t initialContentsSize = MIN(this->length(),size);
       my_smart_ptr_type newData = simple_type::make(size,simple_type::from_object(initElement),true,initialContentsSize,&(*sv)[start]);
       this->set_data(newData);
-      printf("%s:%d:%s  original size=%lu new size=%lu  copied %lu elements\n", __FILE__, __LINE__, __FUNCTION__, this->_ArrayTotalSize, size, initialContentsSize );
+//      printf("%s:%d:%s  original size=%lu new size=%lu  copied %lu elements\n", __FILE__, __LINE__, __FUNCTION__, this->_ArrayTotalSize, size, initialContentsSize );
       this->_ArrayTotalSize = size;
       if (!this->_FillPointerP) this->_FillPointerOrLengthOrDummy = size;
       this->_DisplacedIndexOffset = 0;
       this->_DisplacedToP = false;
     }
-    bool equalp(T_sp o) const final {
+    bool equalp(T_sp o) const {
       if (&*o == this) return true;
       if (my_smart_ptr_type other = o.asOrNull<my_array_type>()) {
         if (this->rank() != other->rank() ) return false;
@@ -898,6 +987,7 @@ namespace core {
     // vector until adjust-array is available
     // Was setSize
     virtual void sxhash_(HashGenerator& hg) const override {this->General_O::sxhash_(hg);}
+    virtual bool equalp(T_sp other) const;
   };
 }
 
@@ -919,6 +1009,7 @@ namespace core {
       this->asBaseSimpleVectorRange(svec,start,end);
       svec->ranged_sxhash(hg,start,end);
     }
+    virtual SimpleString_sp asMinimalSimpleString() const = 0;
   };
 };
 
@@ -938,24 +1029,24 @@ namespace core {
            T_sp displacedTo,
            size_t displacedIndexOffset)
     : TemplatedBase(1,Cons_O::createList(clasp_make_fixnum(dimension)),fillPointer,displacedTo,displacedIndexOffset) {};
-    static Str8Ns_sp make(size_t dimension, claspChar initElement, T_sp fillPointer=_Nil<T_O>(), T_sp displacedTo=_Nil<T_O>(), size_t displacedIndexOffset=0 ) {
+    static Str8Ns_sp make(size_t dimension, claspChar initElement='\0', bool initialElementSuppliedP = false, T_sp fillPointer=_Nil<T_O>(), T_sp displacedTo=_Nil<T_O>(), size_t displacedIndexOffset=0 ) {
       GC_ALLOCATE_VARIADIC(Str8Ns_O,s,dimension,fillPointer,displacedTo,displacedIndexOffset);
       if (LIKELY(displacedTo.nilp())) {
-        SimpleBaseCharString_sp sb = SimpleBaseCharString_O::make(dimension,initElement,true);
+        SimpleBaseCharString_sp sb = SimpleBaseCharString_O::make(dimension,initElement,initialElementSuppliedP);
         s->set_data(sb);
       }
       return s;
     }
     static Str8Ns_sp make(const string& nm) {
       auto ss = SimpleBaseCharString_O::make(nm);
-      auto result = Str8Ns_O::make(nm.size(),'\0');
+      auto result = Str8Ns_O::make(nm.size());
       result->set_data(ss);
       return result;
     }
   public:
     // move all the constructors into here
   static Str8Ns_sp createBufferString(size_t bufferSize = BUFFER_STRING_SIZE) {
-    return Str8Ns_O::make(bufferSize, value_type()/*' '*/, clasp_make_fixnum(0));
+    return Str8Ns_O::make(bufferSize, value_type()/*' '*/, true, clasp_make_fixnum(0));
   };
   public:
   static Str8Ns_sp create(const string &nm);
@@ -980,6 +1071,7 @@ namespace core {
   public: // Str8Ns specific functions
     void vectorPushExtend_claspChar(claspChar c, size_t extension=32);
   std::string get() { /*DEPRECIATE for get_std_string */ return this->get_std_string(); };
+  virtual SimpleString_sp asMinimalSimpleString() const final;
   };
 };
 
@@ -999,22 +1091,22 @@ namespace core {
           T_sp displacedTo,
           size_t displacedIndexOffset)
     : TemplatedBase(1,Cons_O::createList(clasp_make_fixnum(dimension)),fillPointer,displacedTo,displacedIndexOffset) {};
-    static StrWNs_sp make(size_t dimension, claspCharacter initElement, T_sp fillPointer=_Nil<T_O>(), T_sp displacedTo=_Nil<T_O>(), size_t displacedIndexOffset=0 ) {
+    static StrWNs_sp make(size_t dimension, claspCharacter initElement='\0', bool initialElementSuppliedP=false, T_sp fillPointer=_Nil<T_O>(), T_sp displacedTo=_Nil<T_O>(), size_t displacedIndexOffset=0 ) {
       GC_ALLOCATE_VARIADIC(StrWNs_O,s,dimension,fillPointer,displacedTo,displacedIndexOffset);
       LIKELY_if (displacedTo.nilp()) {
-        SimpleCharacterString_sp sb = SimpleCharacterString_O::make(dimension,initElement,true);
+        SimpleCharacterString_sp sb = SimpleCharacterString_O::make(dimension,initElement,initialElementSuppliedP);
         s->set_data(sb);
       }
       return s;
     }
     static StrWNs_sp make(const string& nm) {
       auto ss = SimpleCharacterString_O::make(nm);
-      auto result = StrWNs_O::make(nm.size(),'\0');
+      auto result = StrWNs_O::make(nm.size());
       result->set_data(ss);
       return result;
     }
     static StrWNs_sp createBufferString(size_t bufferSize = BUFFER_STRING_SIZE) {
-      return StrWNs_O::make(bufferSize, value_type()/*' '*/, clasp_make_fixnum(0));
+      return StrWNs_O::make(bufferSize, value_type()/*' '*/, true, clasp_make_fixnum(0));
     };
   public:
     virtual T_sp type_as_symbol() const final{ return cl::_sym_string; };
@@ -1034,6 +1126,8 @@ namespace core {
     /*! Return true if all characters are base characters and the string 
         can be downgraded to a base-char string */
     bool all_base_char_p() const;
+    /*! Return the smallest character simple-string that can hold this */
+    SimpleString_sp asMinimalSimpleString() const final;
   };
 };
 
@@ -1069,6 +1163,7 @@ namespace core {
     : TemplatedBase(1,Cons_O::createList(clasp_make_fixnum(dimension)),fillPointer,displacedTo,displacedIndexOffset) {};
     static VectorTNs_sp make(size_t dimension, T_sp initElement=_Nil<T_O>(), T_sp fillPointer=_Nil<T_O>(), T_sp displacedTo=_Nil<T_O>(), size_t displacedIndexOffset=0 );
     static VectorTNs_sp create(const gctools::Vec0<T_sp> &objs);
+    virtual bool equalp(T_sp o) const final;
   };
 };
 
@@ -1083,10 +1178,10 @@ namespace core {
                 T_sp displacedTo,
                 size_t displacedIndexOffset)
     : Base(1,Cons_O::createList(clasp_make_fixnum(dimension)),fillPointer,displacedTo,displacedIndexOffset) {};
-    static BitVectorNs_sp make(size_t length, uint initialElement, T_sp fillPointer, T_sp displacedTo, size_t displacedIndexOffset ) {
+    static BitVectorNs_sp make(size_t length, SimpleBitVector_O::value_type initialElement, bool initialElementSuppliedP, T_sp fillPointer, T_sp displacedTo, size_t displacedIndexOffset ) {
       GC_ALLOCATE_VARIADIC(BitVectorNs_O, bv, length, fillPointer, displacedTo, displacedIndexOffset );
       LIKELY_if (displacedTo.nilp()) {
-        SimpleBitVector_sp sbv = SimpleBitVector_O::make(length,initialElement,true);
+        SimpleBitVector_sp sbv = SimpleBitVector_O::make(length,initialElement,initialElementSuppliedP);
         bv->set_data(sbv);
       }
       return bv;
@@ -1282,7 +1377,7 @@ namespace core {
 
   T_sp cl__string_EQ_(T_sp strdes1, T_sp strdes2, Fixnum_sp start1=clasp_make_fixnum(0), T_sp end1=_Nil<T_O>(), Fixnum_sp start2=clasp_make_fixnum(0), T_sp end2=_Nil<T_O>());
 
-  T_sp core__string_search(String_sp sub, String_sp outer, size_t sub_start, T_sp sub_end, size_t outer_start, T_sp outer_end );
+  T_sp core__search_string(String_sp sub, size_t sub_start, T_sp sub_end, String_sp outer, size_t outer_start, T_sp outer_end );
 };
 
 

@@ -241,7 +241,7 @@ CL_DEFUN core::String_sp ext__getcwd() {
   const char *ok = ::getcwd(NULL,0);
   size_t cwdsize = strlen(ok);
   // Pad with 4 characters for / and terminator \0
-  core::Str8Ns_sp output = core::Str8Ns_O::make(cwdsize+2,'\0',core::clasp_make_fixnum(0));
+  core::Str8Ns_sp output = core::Str8Ns_O::make(cwdsize+2,'\0',true,core::clasp_make_fixnum(0));
   StringPushStringCharStar(output, ok);
   ::free((void*)ok);
 #else
@@ -372,15 +372,15 @@ CL_DEFUN T_sp core__readlink(String_sp filename) {
   Str8Ns_sp output;
   Symbol_sp kind;
   do {
-    output = Str8Ns_O::make(size, ' ', clasp_make_fixnum(0));
+    output = Str8Ns_O::make(size+2, '*', true, clasp_make_fixnum(0));
     clasp_disable_interrupts();
     written = readlink((char *)filename->get_std_string().c_str(),
-                       (char *)output->get_std_string().c_str(), size);
+                       (char *)output->rowMajorAddressOfElement_(0), size);
     clasp_enable_interrupts();
     size += 256;
-  } while (written == size);
+  } while (written == size-256);
   (*output)[written] = '\0';
-  kind = file_kind((char *)output->get_std_string().c_str(), false);
+  kind = file_kind((const char *)output->rowMajorAddressOfElement_(0), false);
   if (kind == kw::_sym_directory) {
     (*output)[written++] = DIR_SEPARATOR_CHAR;
     (*output)[written] = '\0';
@@ -425,7 +425,7 @@ enter_directory(Pathname_sp base_dir, T_sp subdir, bool ignore_if_failure) {
   aux = clasp_namestring(output, CLASP_NAMESTRING_FORCE_BASE_STRING);
   aux = aux->subseq(0, clasp_make_fixnum(aux->length() - 1));
   //    aux->_contents()[aux->base_string.fillp-1] = 0;
-  kind = file_kind((char *)aux->get_std_string().c_str(), false);
+  kind = file_kind((const char *)aux->rowMajorAddressOfElement_(0), false);
   if (kind.nilp()) {
     if (ignore_if_failure)
       return _Nil<Pathname_O>();
@@ -539,8 +539,10 @@ file_truename(T_sp pathname, T_sp filename, int flags) {
     if (gc::As<Pathname_sp>(pathname)->_Name.notnilp() ||
         gc::As<Pathname_sp>(pathname)->_Type.notnilp()) {
       String_sp spathname = gc::As<String_sp>(filename);
-      spathname->vectorPushExtend(clasp_make_character(DIR_SEPARATOR_CHAR));
-      pathname = cl__truename(spathname);
+      SafeBuffer buffer;
+      StringPushString(buffer.string(),spathname);
+      buffer.string()->vectorPushExtend(clasp_make_character(DIR_SEPARATOR_CHAR));
+      pathname = cl__truename(buffer.string());
     }
   }
   /* ECL does not contemplate version numbers
@@ -1495,7 +1497,7 @@ CL_DEFUN T_sp core__mkdir(T_sp directory, T_sp mode) {
          * and null terminated. */
     int last = cl__length(filename);
     if (last > 1) {
-      claspCharacter c = as_claspCharacter(cl__char(filename,last - 1));
+      claspCharacter c = clasp_as_claspCharacter(cl__char(filename,last - 1));
       if (IS_DIR_SEPARATOR(c))
         last--;
     }

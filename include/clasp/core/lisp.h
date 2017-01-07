@@ -460,8 +460,10 @@ public:
   int mpiSize() { return this->_MpiSize; }
 
 public:
-  Str8Ns_sp get_buffer_string();
-  void put_buffer_string(Str8Ns_sp str);
+  Str8Ns_sp get_Str8Ns_buffer_string();
+  void put_Str8Ns_buffer_string(Str8Ns_sp str);
+  StrWNs_sp get_StrWNs_buffer_string();
+  void put_StrWNs_buffer_string(StrWNs_sp str);
 
 public:
   IntegerOrdering const &integer_ordering() const { return this->_IntegerOrdering; };
@@ -992,11 +994,23 @@ public:
 struct SafeBuffer {
   Str8Ns_sp _Buffer;
   SafeBuffer() {
-    this->_Buffer = _lisp->get_buffer_string();
+    this->_Buffer = _lisp->get_Str8Ns_buffer_string();
   };
   ~SafeBuffer() {
-    _lisp->put_buffer_string(this->_Buffer);
+    _lisp->put_Str8Ns_buffer_string(this->_Buffer);
   };
+  Str8Ns_sp string() const {return this->_Buffer;};
+};
+
+ struct SafeBufferStrWNs {
+  StrWNs_sp _Buffer;
+  SafeBufferStrWNs() {
+    this->_Buffer = _lisp->get_StrWNs_buffer_string();
+  };
+  ~SafeBufferStrWNs() {
+    _lisp->put_StrWNs_buffer_string(this->_Buffer);
+  };
+  StrWNs_sp string() const {return this->_Buffer;};
 };
 
 

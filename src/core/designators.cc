@@ -101,7 +101,8 @@ core::Package_sp packageDesignator(core::T_sp obj) {
     goto PACKAGE_NAME;
   } else if (Character_sp chr = obj.asOrNull<Character_O>()) {
     stringstream ss;
-    ss << clasp_as_char(chr);
+    // TODO Handle package names of any string type
+    ss << (clasp_as_claspCharacter(chr)&0xFF);
     packageName = SimpleBaseCharString_O::make(ss.str());
     goto PACKAGE_NAME;
   }

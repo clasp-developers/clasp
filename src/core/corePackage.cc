@@ -175,6 +175,9 @@ SYMBOL_EXPORT_SC_(CorePkg,function_boundary);
 SYMBOL_EXPORT_SC_(CorePkg,type_assertions);
 SYMBOL_EXPORT_SC_(ExtPkg,assume_no_errors);
 
+SYMBOL_EXPORT_SC_(ClPkg, float);
+SYMBOL_EXPORT_SC_(ClPkg, double_float);
+SYMBOL_EXPORT_SC_(ClPkg, single_float);
 SYMBOL_EXPORT_SC_(ClPkg, parse_namestring);
 SYMBOL_EXPORT_SC_(ClPkg, make_instance);
 SYMBOL_EXPORT_SC_(ClPkg, class);

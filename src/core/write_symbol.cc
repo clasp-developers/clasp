@@ -65,7 +65,7 @@ potential_number_p(String_sp s, int base) {
   l = s->length();
   if (l == 0)
     return false;
-  c = as_claspCharacter(cl__char(s,0));
+  c = clasp_as_claspCharacter(cl__char(s,0));
 
   /* A potential number must begin with a digit, sign or
            extension character (^ _) */
@@ -75,12 +75,12 @@ potential_number_p(String_sp s, int base) {
     return false;
 
   /* A potential number cannot end with a sign */
-  c = as_claspCharacter(cl__char(s,l - 1));
+  c = clasp_as_claspCharacter(cl__char(s,l - 1));
   if (c == '+' || c == '-')
     return false;
 
   for (i = 1; i < l; i++) {
-    c = as_claspCharacter(cl__char(s,i));
+    c = clasp_as_claspCharacter(cl__char(s,i));
     /* It can only contain digits, signs, ratio markers,
              * extension characters and number markers. Number
              * markers are letters, but two adjacent letters fail
@@ -90,7 +90,7 @@ potential_number_p(String_sp s, int base) {
     } else if (c == '+' || c == '-' ||
                c == '/' || c == '.' || c == '^' || c == '_') {
       continue;
-    } else if (isalpha(c) && (((i + 1) >= l) || !isalpha(as_claspCharacter(cl__char(s,i + 1))))) {
+    } else if (isalpha(c) && (((i + 1) >= l) || !isalpha(clasp_as_claspCharacter(cl__char(s,i + 1))))) {
       continue;
     } else {
       return false;
@@ -102,7 +102,7 @@ potential_number_p(String_sp s, int base) {
 static bool
 all_dots(String_sp s) {
   for (cl_index i = 0, iEnd(s->length()); i < iEnd; ++i)
-    if (as_claspCharacter(cl__char(s,i)) != '.')
+    if (clasp_as_claspCharacter(cl__char(s,i)) != '.')
       return 0;
   return 1;
 }
@@ -120,18 +120,18 @@ needs_to_be_escaped(String_sp s, T_sp readtable, T_sp print_case) {
 	 * string has to be escaped according to readtable case and the rules
 	 * of 22.1.3.3.2. */
   for (cl_index i = 0, iEnd(s->length()); i < iEnd; i++) {
-    claspCharacter c = as_claspCharacter(cl__char(s,i));
+    claspCharacter c = clasp_as_claspCharacter(cl__char(s,i));
     Character_sp cc = clasp_make_character(c);
     //            int syntax = clasp_readtable_get(readtable, c, 0);
     Symbol_sp syntax = gc::As<ReadTable_sp>(readtable)->syntax_type(cc);
 #if 0
             if (syntax != cat_constituent ||
-                clasp_invalid_character_p(c) ||
+                clasp_invalid_base_char_p(c) ||
                 (c) == ':')
                 return 1;
 #endif
     if (syntax != kw::_sym_constituent_character ||
-        clasp_invalid_character_p(c) ||
+        clasp_invalid_base_char_p(c) ||
         (c) == ':')
       return 1;
     if ((action == clasp_case_downcase) && isupper(c))
@@ -156,7 +156,7 @@ write_symbol_string(SimpleString_sp s, int action, T_sp print_case,
     clasp_write_char('|', stream);
   capitalize = 1;
   for (cl_index i = 0, iEnd(s->length()); i < iEnd; i++) {
-    claspCharacter c = as_claspCharacter(cl__char(s,i));
+    claspCharacter c = clasp_as_claspCharacter(cl__char(s,i));
     if (escape) {
       if (c == '|' || c == '\\') {
         clasp_write_char('\\', stream);

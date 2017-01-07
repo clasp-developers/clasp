@@ -215,10 +215,12 @@ size_t Array_O::index_val_(List_sp indices, bool last_value_is_val, T_sp &last_v
     } else {
       insufficientIndexListError(indices);
     }
+    cur = oCdr(cur);
   }
   if (last_value_is_val) {
     LIKELY_if (cur.consp()) {
       last_val = oCar(cur);
+      cur = oCdr(cur);
     } else {
       missingValueListError(indices);
     }
@@ -401,14 +403,6 @@ CL_DEFUN T_mv cl__array_displacement(Array_sp array) {
   return Values(mdarray->displacedTo(),clasp_make_fixnum(mdarray->displacedIndexOffset()));
 }
 
-CL_LAMBDA(core::type &optional core::env);
-CL_DECLARE();
-CL_DOCSTRING("upgradedArrayElementType");
-CL_DEFUN T_mv cl__upgraded_array_element_type(T_sp type, T_sp env) {
-  IMPLEMENT_MEF(BF("Handle new types"));
-  return Values(T_O::static_class);
-};
-
 CL_LAMBDA(dest destStart orig origStart len);
 CL_DECLARE();
 CL_DOCSTRING("copy_subarray");
@@ -442,7 +436,7 @@ CL_DEFUN void core__copy_subarray(Array_sp dest, Fixnum_sp destStart, Array_sp o
 }
 
 
-CL_LAMBDA(array &rest indices-value);
+CL_LAMBDA(array &va-rest indices-value);
 CL_DECLARE();
 CL_DOCSTRING("aset");
 CL_DEFUN T_sp core__aset(Array_sp array, VaList_sp vargs) {
@@ -611,7 +605,7 @@ static String_sp string_trim0(bool left_trim, bool right_trim, T_sp char_bag, T_
       }
     }
   }
-  return strng->subseq(i, clasp_make_fixnum(j-i));
+  return strng->unsafe_subseq(i, j);
 }
 
 CL_LAMBDA(charbag str);
@@ -718,9 +712,6 @@ SYMBOL_EXPORT_SC_(ClPkg, stringLeftTrim);
 SYMBOL_EXPORT_SC_(ClPkg, stringRightTrim);
 SYMBOL_EXPORT_SC_(ClPkg, char);
 
-
-
-
 template <typename T>
 struct StringCharPointer {
   const T* _stringPtr;
@@ -739,6 +730,39 @@ StringCharPointer& operator++() {
   return *this;
 }
 };
+
+
+template <typename T1, typename T2>
+bool template_string_equalp_bool(const T1& string1, const T2& string2, size_t start1, size_t end1, size_t start2, size_t end2) {
+  StringCharPointer<T1> cp1(&string1,start1);
+  StringCharPointer<T2> cp2(&string2,start2);
+  size_t num1 = end1 - start1;
+  size_t num2 = end2 - start2;
+  while (1) {
+    if (num1 == 0)
+      goto END_STRING1;
+    if (num2 == 0)
+      goto END_STRING2;
+    if ((toupper(static_cast<claspCharacter>(*cp1)) != toupper(static_cast<claspCharacter>(*cp2))))
+      goto RETURN_FALSE;
+    --num1;
+    --num2;
+    ++cp1;
+    ++cp2;
+  }
+ END_STRING1:
+  if (num2 == 0)
+    goto RETURN_TRUE;
+  goto RETURN_FALSE;
+ END_STRING2:
+ RETURN_FALSE:
+  return false;
+ RETURN_TRUE:
+  return true;
+}
+
+
+
 
 /*! bounding index designator range from 0 to the end of each string */
 template <typename T1,typename T2>
@@ -1140,6 +1164,25 @@ inline void setup_string_op_arguments(T_sp string1_desig, T_sp string2_desig,
   iend2 = MIN(end2.nilp() ? cl__length(string2) : unbox_fixnum(gc::As<Fixnum_sp>(end2)), cl__length(string2));
 }
 
+#define TEMPLATE_HALF_STRING_DISPATCHER(_this_,_string2_,_function_,istart1,iend1,istart2,iend2) \
+  if (gc::IsA<SimpleString_sp>(_string2_)) {				\
+    if (gc::IsA<SimpleBaseCharString_sp>(_string2_)) { \
+      auto sbcs2 = gc::As_unsafe<SimpleBaseCharString_sp>(_string2_); \
+      return _function_(*_this_,*sbcs2,istart1,iend1,istart2,iend2); \
+    } else {							\
+      auto scs2 = gc::As_unsafe<SimpleCharacterString_sp>(_string2_); \
+      return _function_(*_this_,*scs2,istart1,iend1,istart2,iend2); \
+    } \
+  } else { \
+    if (gc::IsA<Str8Ns_sp>(_string2_)) { \
+      auto ns82 = gc::As_unsafe<Str8Ns_sp>(_string2_); \
+      return _function_(*_this_,*ns82,istart1,iend1,istart2,iend2); \
+    } else { \
+      auto nsw2 = gc::As_unsafe<StrWNs_sp>(_string2_); \
+      return _function_(*_this_,*nsw2,istart1,iend1,istart2,iend2); \
+    } \
+  }
+    
 #define TEMPLATE_STRING_DISPATCHER(_string1_,_string2_,_function_,istart1,iend1,istart2,iend2) \
 if (gc::IsA<SimpleString_sp>(_string1_) ) {			    \
   if (gc::IsA<SimpleString_sp>(_string2_)) {				\
@@ -1394,11 +1437,11 @@ SYMBOL_EXPORT_SC_(ClPkg,simple_string);
 CL_LAMBDA(str index);
 CL_DECLARE();
 CL_DOCSTRING("CLHS schar");
-CL_DEFUN claspChar cl__schar(BaseSimpleVector_sp str, size_t idx) {
+CL_DEFUN Character_sp cl__schar(BaseSimpleVector_sp str, size_t idx) {
   if (SimpleBaseCharString_sp sb = str.asOrNull<SimpleBaseCharString_O>()) {
-    return (*sb)[idx];
+    return clasp_make_character((*sb)[idx]);
   } else if (SimpleCharacterString_sp sc = str.asOrNull<SimpleCharacterString_O>()) {
-    return (*sc)[idx];
+    return clasp_make_character((*sc)[idx]);
   }
   TYPE_ERROR(str,cl::_sym_simple_string);
 }
@@ -1441,9 +1484,9 @@ CL_DEFUN Character_sp core__char_set(String_sp str, size_t idx, Character_sp c) 
 CL_LAMBDA(str index c);
 CL_DECLARE();
 CL_DOCSTRING("CLHS schar");
-CL_DEFUN claspChar core__schar_set(String_sp str, size_t idx, Character_sp c) {
+CL_DEFUN Character_sp core__schar_set(String_sp str, size_t idx, Character_sp c) {
   str->rowMajorAset(idx,c);
-  return as_claspCharacter(c);
+  return c;
 };
 
 typedef enum { iinit,
@@ -1481,7 +1524,7 @@ cl_index fsmInteger(mpz_class &result, cl_index &numDigits, bool &sawJunk, Strin
   numDigits = 0;
   cl_index cur = istart;
   while (1) {
-    claspCharacter c = as_claspCharacter(str->rowMajorAref(cur));
+    claspCharacter c = clasp_as_claspCharacter(str->rowMajorAref(cur));
     LOG(BF("fsmInteger str[%ld] -> c = [%d/%c]") % cur  % c % c );
     switch (state) {
       LOG(BF("  top state = %d") % state);
@@ -1612,8 +1655,51 @@ SYMBOL_EXPORT_SC_(ClPkg, parseInteger);
 
 // ------------------------------------------------------------
 //
+// Class SpecializedSimpleVector_O
+//
+
+bool SpecializedSimpleVector_O::equalp(T_sp other) const {
+  if (&*other==this) return true;
+  if (!other.generalp()) return false;
+  if (gc::IsA<SpecializedSimpleVector_sp>(other)) {
+    SpecializedSimpleVector_sp svother = gc::As_unsafe<SpecializedSimpleVector_sp>(other);
+    if (svother->length()!=this->length()) return false;
+    for (size_t i(0),iEnd(this->length()); i<iEnd; ++i ) {
+      if (!cl__equalp(this->rowMajorAref(i),svother->rowMajorAref(i))) return false;
+    }
+    return true;
+  } else if (gc::IsA<VectorNs_sp>(other)) {
+    VectorNs_sp vother = gc::As_unsafe<VectorNs_sp>(other);
+    if (vother->length()!=this->length()) return false;
+    for (size_t i(0),iEnd(this->length()); i<iEnd; ++i ) {
+      if (!cl__equalp(this->rowMajorAref(i),vother->rowMajorAref(i))) return false;
+    }
+    return true;
+  }
+  return false;
+}
+
+// ------------------------------------------------------------
+//
 // Class SimpleBaseCharString_O
 //
+
+
+    // (element_type == cl::_sym_base_char)
+typename SimpleBaseCharString_O::value_type SimpleBaseCharString_O::initial_element_from_object(T_sp obj, bool initialElementSuppliedP) {
+  typename SimpleBaseCharString_O::value_type initialBaseChar = '\0';
+  if (initialElementSuppliedP) {
+    if (obj.characterp() ) {
+      Character_sp initCharacter = gc::As_unsafe<Character_sp>(obj);
+      if (clasp_base_char_p(initCharacter)) {
+        return (typename SimpleBaseCharString_O::value_type)initCharacter.unsafe_character();
+      }
+    }
+    TYPE_ERROR(obj,cl::_sym_base_char);
+  }
+  return '\0';
+}
+
 bool SimpleBaseCharString_O::equal(T_sp other) const {
   if (&*other==this) return true;
   if (!other.generalp()) return false;
@@ -1636,6 +1722,14 @@ bool SimpleBaseCharString_O::equal(T_sp other) const {
   }
   return false;
 };
+
+bool SimpleBaseCharString_O::equalp(T_sp other) const {
+  if (&*other==this) return true;
+  if (!other.generalp()) return false;
+  if (!cl__stringp(other)) return false;
+  String_sp sother = gc::As_unsafe<String_sp>(other);
+  TEMPLATE_HALF_STRING_DISPATCHER(this,sother,template_string_equalp_bool,0,this->length(),0,sother->length());
+}
 
 
 #if 0
@@ -1664,6 +1758,18 @@ void SimpleString8_O::__write__(T_sp stream) const {
 // Class SimpleCharacterString_O
 //
 
+typename SimpleCharacterString_O::value_type SimpleCharacterString_O::initial_element_from_object(T_sp obj, bool initialElementSuppliedP) {
+  typename SimpleCharacterString_O::value_type initialCharacter = '\0';
+  if (initialElementSuppliedP) {
+    if (obj.characterp() ) {
+      Character_sp initCharacter = gc::As_unsafe<Character_sp>(obj);
+      return (typename SimpleCharacterString_O::value_type)initCharacter.unsafe_character();
+    }
+    TYPE_ERROR(obj,cl::_sym_character);
+  }
+  return '\0';
+}
+
 bool SimpleCharacterString_O::equal(T_sp other) const {
   if (&*other==this) return true;
   if (!other.generalp()) return false;
@@ -1686,12 +1792,22 @@ bool SimpleCharacterString_O::equal(T_sp other) const {
   }
   return false;
 };
+
+bool SimpleCharacterString_O::equalp(T_sp other) const {
+  if (&*other==this) return true;
+  if (!other.generalp()) return false;
+  if (!cl__stringp(other)) return false;
+  String_sp sother = gc::As_unsafe<String_sp>(other);
+  TEMPLATE_HALF_STRING_DISPATCHER(this,sother,template_string_equalp_bool,0,this->length(),0,sother->length());
+}
+
 std::string SimpleCharacterString_O::get_std_string() const {
   T_sp stream = cl__make_string_output_stream(cl::_sym_base_char);
-  this->__write__(stream);
-  String_sp s = gc::As<String_sp>(cl__get_output_stream_string(stream));
+  for (size_t i(0),iEnd(this->length()); i<iEnd; ++i ) clasp_write_char((*this)[i],stream);
+  String_sp s = gc::As_unsafe<String_sp>(cl__get_output_stream_string(stream));
   return s->get_std_string();
 }
+
 std::string SimpleCharacterString_O::__repr__() const {
   return this->get_std_string();
 }
@@ -1701,10 +1817,40 @@ std::string SimpleCharacterString_O::__repr__() const {
 // Class SimpleVector_O
 //
 
+bool SimpleVector_O::equalp(T_sp other) const {
+  if (&*other==this) return true;
+  if (!other.generalp()) return false;
+  if (gc::IsA<SimpleVector_sp>(other)) {
+    SimpleVector_sp svother = gc::As_unsafe<SimpleVector_sp>(other);
+    if (svother->length()!=this->length()) return false;
+    for (size_t i(0),iEnd(this->length()); i<iEnd; ++i ) {
+      if (!cl__equalp((*this)[i],(*svother)[i])) return false;
+    }
+    return true;
+  } else if (gc::IsA<VectorTNs_sp>(other)) {
+    VectorTNs_sp vother = gc::As_unsafe<VectorTNs_sp>(other);
+    if (vother->length()!=this->length()) return false;
+    for (size_t i(0),iEnd(this->length()); i<iEnd; ++i ) {
+      if (!cl__equalp((*this)[i],(*vother)[i])) return false;
+    }
+    return true;
+  }
+  return this->SpecializedSimpleVector_O::equalp(other);
+}
+
+
+// ------------------------------------------------------------
+//
+// Class SimpleDoubleVector_O
+//
+
+
+
 // ----------------------------------------------------------------------
 //
 // Class SimpleBitVector
 //
+
 Array_sp SimpleBitVector_O::unsafe_subseq(size_t start, size_t end) const {
   SimpleBitVector_sp sbv = SimpleBitVector_O::make(end-start);
   for (size_t i(0),iEnd(end-start);i<iEnd;++i) {
@@ -1788,6 +1934,29 @@ void VectorNs_O::ensureSpaceAfterFillPointer(T_sp init_element, size_t size) {
   }
 }
 
+bool VectorNs_O::equalp(T_sp other) const {
+  if (&*other==this) return true;
+  if (!other.generalp()) return false;
+  if (gc::IsA<SpecializedSimpleVector_sp>(other)) {
+    SpecializedSimpleVector_sp svother = gc::As_unsafe<SpecializedSimpleVector_sp>(other);
+    if (svother->length()!=this->length()) return false;
+    for (size_t i(0),iEnd(this->length()); i<iEnd; ++i ) {
+      if (!cl__equalp(this->rowMajorAref(i),svother->rowMajorAref(i))) return false;
+    }
+    return true;
+  } else if (gc::IsA<VectorNs_sp>(other)) {
+    VectorNs_sp vother = gc::As_unsafe<VectorNs_sp>(other);
+    if (vother->length()!=this->length()) return false;
+    for (size_t i(0),iEnd(this->length()); i<iEnd; ++i ) {
+      if (!cl__equalp(this->rowMajorAref(i),vother->rowMajorAref(i))) return false;
+    }
+    return true;
+  }
+  return false;
+}
+
+
+
 T_sp VectorNs_O::vectorPush(T_sp newElement) {
   unlikely_if (!this->_FillPointerP) noFillPointerError(cl::_sym_vectorPush,this->asSmartPtr());
   cl_index idx = this->_FillPointerOrLengthOrDummy;
@@ -1841,6 +2010,26 @@ VectorTNs_sp VectorTNs_O::create(const gc::Vec0<T_sp>& objs) {
   return result;
 }
 
+bool VectorTNs_O::equalp(T_sp other) const {
+  if (&*other==this) return true;
+  if (!other.generalp()) return false;
+  if (gc::IsA<SimpleVector_sp>(other)) {
+    SimpleVector_sp svother = gc::As_unsafe<SimpleVector_sp>(other);
+    if (svother->length()!=this->length()) return false;
+    for (size_t i(0),iEnd(this->length()); i<iEnd; ++i ) {
+      if (!cl__equalp((*this)[i],(*svother)[i])) return false;
+    }
+    return true;
+  } else if (gc::IsA<VectorTNs_sp>(other)) {
+    VectorTNs_sp vother = gc::As_unsafe<VectorTNs_sp>(other);
+    if (vother->length()!=this->length()) return false;
+    for (size_t i(0),iEnd(this->length()); i<iEnd; ++i ) {
+      if (!cl__equalp((*this)[i],(*vother)[i])) return false;
+    }
+    return true;
+  }
+  return false;
+}
 // ------------------------------------------------------------
 //
 // Class Str8Ns
@@ -1872,14 +2061,14 @@ bool Str8Ns_O::equal(T_sp other) const {
 // Creators - depreciate these once the new array stuff is working better
 Str8Ns_sp Str8Ns_O::create(const string& nm) {
   auto ss = SimpleBaseCharString_O::make(nm.size(),'\0',true,nm.size(),(const claspChar*)nm.c_str());
-  auto result = Str8Ns_O::make(nm.size(),'\0');
+  GC_ALLOCATE_VARIADIC(Str8Ns_O,result,nm.size(),_Nil<T_O>(),_Nil<T_O>(),0);
   result->set_data(ss);
   return result;
 }
 
 Str8Ns_sp Str8Ns_O::create(const char* nm,size_t len) {
   SimpleBaseCharString_sp ss = SimpleBaseCharString_O::make(len,'\0',true,len,(const claspChar*)nm);
-  Str8Ns_sp result = Str8Ns_O::make(len,'\0');
+  GC_ALLOCATE_VARIADIC(Str8Ns_O,result,len,_Nil<T_O>(),_Nil<T_O>(),0);
   result->set_data(ss);
   return result;
 }
@@ -1891,7 +2080,7 @@ Str8Ns_sp Str8Ns_O::create(const char* nm) {
 
 Str8Ns_sp Str8Ns_O::create(size_t len) {
   SimpleBaseCharString_sp ss = SimpleBaseCharString_O::make(len,'\0',true);
-  Str8Ns_sp result = Str8Ns_O::make(len,'\0');
+  GC_ALLOCATE_VARIADIC(Str8Ns_O,result,len,_Nil<T_O>(),_Nil<T_O>(),0);
   result->set_data(ss);
   return result;
 }
@@ -1899,7 +2088,7 @@ Str8Ns_sp Str8Ns_O::create(size_t len) {
 Str8Ns_sp Str8Ns_O::create(Str8Ns_sp other) {
   size_t len = other->length();
   SimpleBaseCharString_sp ss = SimpleBaseCharString_O::make(len,'\0',true,len,&(*other)[0]);
-  Str8Ns_sp result = Str8Ns_O::make(len,'\0');
+  GC_ALLOCATE_VARIADIC(Str8Ns_O,result,len,_Nil<T_O>(),_Nil<T_O>(),0);
   result->set_data(ss);
   return result;
 }
@@ -1921,6 +2110,12 @@ void Str8Ns_O::vectorPushExtend_claspChar(claspChar newElement, size_t extension
   ++this->_FillPointerOrLengthOrDummy;
 }
 
+
+SimpleString_sp Str8Ns_O::asMinimalSimpleString() const {
+  SimpleBaseCharString_sp str8 = SimpleBaseCharString_O::make(this->length());
+  str8->unsafe_setf_subseq(0,this->length(),this->asSmartPtr());
+  return str8;
+}
 
 
 
@@ -1962,10 +2157,11 @@ bool StrWNs_O::equal(T_sp other) const {
 
 std::string StrWNs_O::get_std_string() const {
   T_sp stream = cl__make_string_output_stream(cl::_sym_base_char);
-  this->__write__(stream);
-  String_sp s = gc::As<String_sp>(cl__get_output_stream_string(stream));
+  for (size_t i(0),iEnd(this->length()); i<iEnd; ++i ) clasp_write_char((*this)[i],stream);
+  String_sp s = gc::As_unsafe<String_sp>(cl__get_output_stream_string(stream));
   return s->get_std_string();
 }
+
 std::string StrWNs_O::__repr__() const {
   return this->get_std_string();
 }
@@ -1985,6 +2181,18 @@ void StrWNs_O::vectorPushExtend_claspCharacter(claspCharacter newElement, size_t
   }
   (*this)[idx] = newElement;
   ++this->_FillPointerOrLengthOrDummy;
+}
+
+SimpleString_sp StrWNs_O::asMinimalSimpleString() const {
+  if (this->all_base_char_p()) {
+    SimpleBaseCharString_sp str8 = SimpleBaseCharString_O::make(this->length());
+    str8->unsafe_setf_subseq(0,this->length(),this->asSmartPtr());
+    return str8;
+  } else {
+    SimpleCharacterString_sp strw = SimpleCharacterString_O::make(this->length());
+    strw->unsafe_setf_subseq(0,this->length(),this->asSmartPtr());
+    return strw;
+  }
 }
 
 // ------------------------------------------------------------
@@ -2073,8 +2281,7 @@ bool BitVectorNs_O::equal(T_sp other) const {
 //
 // ArrayNs
 namespace core {
-CL_LISPIFY_NAME(make-array-objects);
-CL_DEFUN ArrayTNs_sp ArrayTNs_O::make(T_sp dim_desig, T_sp initialElement, T_sp fillPointer, T_sp displacedTo, size_t displacedIndexOffset) {
+ArrayTNs_sp ArrayTNs_O::make(T_sp dim_desig, T_sp initialElement, T_sp fillPointer, T_sp displacedTo, size_t displacedIndexOffset) {
   size_t rank = cl__length(dim_desig);
   List_sp dim;
   if (dim_desig.nilp()) {
@@ -2152,7 +2359,10 @@ CL_DEFUN Vector_sp cl__vector(List_sp args) {
 };
 SYMBOL_EXPORT_SC_(ClPkg, subtypep);
 
-CL_LAMBDA(element_type dimension &optional adjustable fill_pointer displaced_to (displaced_index_offset 0) initial_element initial_element_supplied_p);
+
+
+
+CL_LAMBDA(element_type dimension &optional adjustable fill_pointer displaced_to displaced_index_offset initial_element initial_element_supplied_p);
 CL_DECLARE();
 CL_DOCSTRING("Makes a vector based on the arguments. See si_make_vector in ecl>>array.d");
 CL_DEFUN Vector_sp core__make_vector(T_sp element_type,
@@ -2160,79 +2370,63 @@ CL_DEFUN Vector_sp core__make_vector(T_sp element_type,
                                      bool adjustable,
                                      T_sp fillPointer,
                                      T_sp displacedTo,
-                                     size_t displacedIndexOffset,
+                                     T_sp tdisplacedIndexOffset,
                                      T_sp initialElement,
                                      bool initialElementSuppliedP) {
-  // FIXME: make compatible with the new code.
+  size_t displacedIndexOffset = 0;
+  if (tdisplacedIndexOffset.fixnump()) {
+    displacedIndexOffset = tdisplacedIndexOffset.unsafe_fixnum();
+  } else {
+    if (tdisplacedIndexOffset.notnilp()) {
+      TYPE_ERROR(tdisplacedIndexOffset,Cons_O::createList(cl::_sym_or,cl::_sym_null,cl::_sym_integer));
+    }
+  }
   if (fillPointer == cl::_sym_T_O) fillPointer = clasp_make_fixnum(dimension);
   if ( fillPointer.notnilp() || displacedTo.notnilp()) adjustable = true;
   if (element_type == cl::_sym_bit) {
-    uint init_bit = 0;
-    if (initialElementSuppliedP) {
-      if (initialElement.fixnump() ) {
-        if (initialElement.unsafe_fixnum() < 0 ||
-            initialElement.unsafe_fixnum() > 1 ) {
-          init_bit = initialElement.unsafe_fixnum();
-          goto GOOD_BIT;
-        }
-      }
-      TYPE_ERROR(initialElement,cl::_sym_bit);
-    }
-  GOOD_BIT:
-    if (adjustable) {
-      return BitVectorNs_O::make(init_bit,dimension,fillPointer,displacedTo,displacedIndexOffset);
-    } else {
-      return SimpleBitVector_O::make(init_bit,dimension);
-    }
+    SimpleBitVector_O::value_type init_bit = SimpleBitVector_O::initial_element_from_object(initialElement,initialElementSuppliedP);
+    if (adjustable) return BitVectorNs_O::make(dimension,init_bit,initialElementSuppliedP,fillPointer,displacedTo,displacedIndexOffset);
+    return SimpleBitVector_O::make(dimension,init_bit,initialElementSuppliedP);
   } else if (element_type == cl::_sym_base_char
              || element_type == cl::_sym_character) {
     unlikely_if (element_type == cl::_sym_character) {
-      claspCharacter initialCharacter;
-      if (initialElementSuppliedP) {
-        if (initialElement.characterp() ) {
-          initialCharacter = gc::As_unsafe<Character_sp>(initialElement).unsafe_character();
-        } else {
-          TYPE_ERROR(initialElement,cl::_sym_character);
-        }
-      } else {
-        initialCharacter = '\0';
-      }
-      if (adjustable) return StrWNs_O::make(dimension,initialCharacter,fillPointer,displacedTo,displacedIndexOffset);
-      else return SimpleCharacterString_O::make(dimension,initialCharacter,true);
+      claspCharacter initialCharacter = SimpleCharacterString_O::initial_element_from_object(initialElement,initialElementSuppliedP);
+      if (adjustable) return StrWNs_O::make(dimension,initialCharacter,initialElementSuppliedP,fillPointer,displacedTo,displacedIndexOffset);
+      else return SimpleCharacterString_O::make(dimension,initialCharacter,initialElementSuppliedP);
     }
-    // (element_type == cl::_sym_base_char)
-    unsigned char initialBaseChar = '\0';
-    if (initialElementSuppliedP) {
-      if (initialElement.characterp() ) {
-        Character_sp initCharacter = gc::As_unsafe<Character_sp>(initialElement);
-        if (clasp_base_char_p(initCharacter)) {
-          initialBaseChar = initCharacter.unsafe_character();
-        } else {
-          TYPE_ERROR(initialElement,cl::_sym_base_char);
-        }
-      } else {
-        TYPE_ERROR(initialElement,cl::_sym_base_char);
-      }
-    } else {
-      initialBaseChar = '\0';
-    }
-    if (adjustable) return Str8Ns_O::make(dimension,initialBaseChar,fillPointer,displacedTo,displacedIndexOffset);
-    else return SimpleBaseCharString_O::make(dimension,initialBaseChar);
-/*  // Handle other types
-  else if ((element_type).consp()) {
-      // For type = '(unsigned-byte XXX) set initialElement if it hasn't been set
-      Cons_sp cet = gc::As<Cons_sp>(element_type);
-      if (oCar(cet) == cl::_sym_UnsignedByte && initialElement.nilp()) {
-        initialElement = make_fixnum(0);
-      }
-    }
-*/
+    claspChar initialChar = SimpleBaseCharString_O::initial_element_from_object(initialElement,initialElementSuppliedP);
+    if (adjustable) return Str8Ns_O::make(dimension,initialChar,initialElementSuppliedP,fillPointer,displacedTo,displacedIndexOffset);
+    else return SimpleBaseCharString_O::make(dimension,initialChar,initialElementSuppliedP);
   } else if ( element_type == cl::_sym_T_O ) {
     if (adjustable) return VectorTNs_O::make(dimension,initialElement,fillPointer,displacedTo,displacedIndexOffset);
     return SimpleVector_O::make(dimension,initialElement,true);
   }
   SIMPLE_ERROR(BF("Handle make-vector :element-type %s") % _rep_(element_type));
 };
+
+
+
+
+
+CL_LAMBDA(dimensions element_type displaced_to displaced_index_offset initial_element initial_element_supplied_p);
+CL_DECLARE();
+CL_DOCSTRING("Makes a multidimensional array based on the arguments.");
+CL_DEFUN MDArray_sp core__make_mdarray(List_sp dimensions,
+                                       T_sp element_type,
+                                       T_sp displacedTo,
+                                       size_t displacedIndexOffset,
+                                       T_sp initialElement,
+                                       bool initialElementSuppliedP) {
+#if 0
+  if ( element_type == cl::_sym_T_O ) {
+    return ArrayTNs_O::make(dimensions,initialElement,initialElementSuppliedP,displacedTo,displacedIndexOffset);
+  }
+#endif
+  IMPLEMENT_MEF(BF("Handle creating an MDArray"));
+};
+
+
+
 
 #if 0 // DEPRECIATED
 CL_LAMBDA(array dimensions initial-element); //initial-contents);
@@ -2298,7 +2492,7 @@ CL_DEFUN T_sp core__base_string_concatenate(VaList_sp vargs) {
 
 
 template <typename T1,typename T2>
-T_sp template_string_search(const T1& sub, const T2& outer, size_t sub_start, size_t sub_end, size_t outer_start, size_t outer_end)
+T_sp template_search_string(const T1& sub, const T2& outer, size_t sub_start, size_t sub_end, size_t outer_start, size_t outer_end)
 {
   // The std::search convention is reversed -->  std::search(outer,sub,...)
   const typename T2::value_type* cps = &outer[outer_start];
@@ -2306,18 +2500,32 @@ T_sp template_string_search(const T1& sub, const T2& outer, size_t sub_start, si
   const typename T1::value_type* s_cps = &sub[sub_start];
   const typename T1::value_type* s_cpe = &sub[sub_end];
   const typename T2::value_type* pos = std::search(cps,cpe,s_cps,s_cpe);
-  if (pos == NULL ) return _Nil<T_O>();
+  if (pos == cpe ) return _Nil<T_O>();
   return clasp_make_fixnum(pos-cps);
 }
 
-SYMBOL_EXPORT_SC_(CorePkg,string_search);
-CL_LAMBDA(sub outer sub_start sub_end outer_start outer_end);
+SYMBOL_EXPORT_SC_(CorePkg,search_string);
+CL_LAMBDA(sub sub_start sub_end outer outer_start outer_end);
 CL_DOCSTRING("search for the first occurance of sub in outer");
-CL_DEFUN T_sp core__string_search(String_sp sub, String_sp outer, size_t sub_start, T_sp sub_end,size_t outer_start, T_sp outer_end) {
-  size_t_pair psub = sequenceStartEnd(core::_sym_string_search,sub->length(),sub_start,sub_end);
-  size_t_pair pouter = sequenceStartEnd(core::_sym_string_search,outer->length(),outer_start,outer_end);
-  TEMPLATE_STRING_DISPATCHER(sub,outer,template_string_search,psub.start,psub.end,pouter.start,pouter.end);
+CL_DEFUN T_sp core__search_string(String_sp sub, size_t sub_start, T_sp sub_end, String_sp outer, size_t outer_start, T_sp outer_end) {
+  size_t_pair psub = sequenceStartEnd(core::_sym_search_string,sub->length(),sub_start,sub_end);
+  size_t_pair pouter = sequenceStartEnd(core::_sym_search_string,outer->length(),outer_start,outer_end);
+  TEMPLATE_STRING_DISPATCHER(sub,outer,template_search_string,psub.start,psub.end,pouter.start,pouter.end);
 };
+
+
+CL_LISPIFY_NAME("core:split");
+CL_DEFUN List_sp core__split(const string& all, const string &chars) {
+  vector<string> parts = core::split(all, chars);
+  T_sp first = _Nil<T_O>();
+  T_sp* cur = &first;
+  for (vector<string>::iterator it = parts.begin(); it != parts.end(); it++) {
+    Cons_sp cons = Cons_O::create(Str_O::create(*it), _Nil<T_O>());
+    *cur = cons;
+    cur = &(cons->_Cdr);
+  }
+  return first;
+}
 
 
 }; /* core */

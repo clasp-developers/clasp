@@ -687,10 +687,9 @@ namespace gctools {
       return GCObjectAllocator<OT>::allocate_kind(the_stamp,GCKind<OT>::Kind,size,length,/*initial_element,*/std::forward<ARGS>(args)...);
     }
 
-#if 0    
-    template <typename... ARGS>
-      static smart_pointer_type allocate_binit_container( Stamp the_stamp, size_t capacity, size_t binitWidth, ARGS &&... args) {
-      size_t size = sizeof_binit_container_with_header<OT>(capacity,binitWidth);
+    template <int BunitWidth,typename... ARGS>
+      static smart_pointer_type allocate_bunit_container( Stamp the_stamp, size_t length, ARGS &&... args) {
+      size_t size = sizeof_bunit_container_with_header<BunitWidth,OT>(length);
 #if 0
       if ( GCKind<OT>::Kind == 31 && size == 88 ) {
         printf("%s:%d allocate_container  kind = 31\n", __FILE__, __LINE__ );
@@ -701,9 +700,8 @@ namespace gctools {
         printf("        sizeof_container<T>(capacity) --> %lu\n", sizeof_container<OT>(capacity) );
       }
 #endif
-      return GCObjectAllocator<OT>::allocate_kind(the_stamp,GCKind<OT>::Kind,size,capacity,binitWidth,std::forward<ARGS>(args)...);
+      return GCObjectAllocator<OT>::allocate_kind(the_stamp,GCKind<OT>::Kind,size,length,std::forward<ARGS>(args)...);
     }
-#endif
     
     static smart_pointer_type allocate_with_default_constructor() {
       return GCObjectDefaultConstructorAllocator<OT,std::is_default_constructible<OT>::value>::allocate();

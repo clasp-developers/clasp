@@ -189,7 +189,7 @@ public:
     Symbol_sp svalue = gc::As<Symbol_sp>(value);
     SimpleString_sp symbolName = svalue->symbolName();
     SimpleString_sp upcasedSymbolName = cl__string_upcase(symbolName);
-    T_sp pos = core__string_search(this->_substr,upcasedSymbolName,0,_Nil<T_O>(),0,_Nil<T_O>());
+    T_sp pos = core__search_string(this->_substr,0,_Nil<T_O>(),upcasedSymbolName,0,_Nil<T_O>());
     if (pos.notnilp()) {
       LOG(BF("    It is apropos"));
       this->_symbols->setf_gethash(svalue, _Nil<T_O>());
@@ -338,7 +338,7 @@ void run_quick_tests() {
   SimpleBaseCharString_sp s1 = SimpleBaseCharString_O::make("Hello");
   Str8Ns_sp s2 = Str8Ns_O::create("there");
   Str8Ns_sp s3 = Str8Ns_O::create("Hello");
-  Str8Ns_sp s4 = Str8Ns_O::make(16,'\0',clasp_make_fixnum(0));
+  Str8Ns_sp s4 = Str8Ns_O::make(16,'\0',true,clasp_make_fixnum(0));
   printf("%s:%d  s1 = %s\n", __FILE__, __LINE__, s1->get_std_string().c_str());
   printf("%s:%d  _rep_(s1) = %s\n", __FILE__, __LINE__, _rep_(s1).c_str());
   printf("%s:%d  s2 = %s\n", __FILE__, __LINE__, s2->get_std_string().c_str());
@@ -412,7 +412,7 @@ void run_quick_tests() {
   VectorTNs_sp vec9 = VectorTNs_O::make(5,_Nil<T_O>(),clasp_make_fixnum(0));
   for (size_t i=0; i<256; ++i) {
     printf("%s:%d    Building string of %lu size\n", __FILE__, __LINE__, i);
-    Str8Ns_sp s9 = Str8Ns_O::make(i,'A');
+    Str8Ns_sp s9 = Str8Ns_O::make(i,'A',true);
     printf("%s:%d     doing vectorPushExtend orig length=%lu total size=%lu\n", __FILE__, __LINE__, vec9->length(),vec9->arrayTotalSize());
     vec9->vectorPushExtend(s9);
     printf("%s:%d     done vectorPushExtend final length=%lu total size=%lu\n", __FILE__, __LINE__, vec9->length(),vec9->arrayTotalSize());
@@ -686,30 +686,56 @@ void Lisp_O::startupLispEnvironment(Bundle *bundle) {
   }
 }
 
-/*! Get a Str8Ns buffer string from the BufferStringPool.*/
-Str8Ns_sp Lisp_O::get_buffer_string() {
-  /* BufferStringPool must be thread local */
-  if (!my_thread->_BufferStringPool) {
+/*! Get a Str8Ns buffer string from the BufferStr8NsPool.*/
+Str8Ns_sp Lisp_O::get_Str8Ns_buffer_string() {
+  /* BufferStr8NsPool must be thread local */
+  unlikely_if (!my_thread->_BufferStr8NsPool) {
     // Lazy initialize
-    my_thread->_BufferStringPool = _Nil<T_O>();
-    Str8Ns_sp one = Str8Ns_O::make(256, ' ', clasp_make_fixnum(0));
-    my_thread->_BufferStringPool = Cons_O::create(one, my_thread->_BufferStringPool);
-  } else if (my_thread->_BufferStringPool.nilp()) {
-    // If list is empty, link in a buffer
-    Str8Ns_sp one = Str8Ns_O::make(256, ' ', clasp_make_fixnum(0));
-    my_thread->_BufferStringPool = Cons_O::create(one, my_thread->_BufferStringPool);
+    my_thread->_BufferStr8NsPool = _Nil<T_O>();
   }
-  Str8Ns_sp ret = gc::As<Str8Ns_sp>(oCar(my_thread->_BufferStringPool));
-  my_thread->_BufferStringPool = oCdr(my_thread->_BufferStringPool);
+  unlikely_if (my_thread->_BufferStr8NsPool.nilp()) {
+    // If list is empty, link in a buffer
+    Str8Ns_sp one = Str8Ns_O::make(256, ' ', true, clasp_make_fixnum(0));
+    my_thread->_BufferStr8NsPool = Cons_O::create(one, my_thread->_BufferStr8NsPool);
+  }
+  Str8Ns_sp ret = gc::As<Str8Ns_sp>(oCar(my_thread->_BufferStr8NsPool));
+  my_thread->_BufferStr8NsPool = oCdr(my_thread->_BufferStr8NsPool);
   ret->fillPointerSet(clasp_make_fixnum(0));
   return ret;
 }
 
-/*! Return a buffer string to the BufferStringPool
+/*! Return a buffer string to the BufferStr8NsPool
 */
-void Lisp_O::put_buffer_string(Str8Ns_sp str) {
-  my_thread->_BufferStringPool = Cons_O::create(str, my_thread->_BufferStringPool);
+void Lisp_O::put_Str8Ns_buffer_string(Str8Ns_sp str) {
+  my_thread->_BufferStr8NsPool = Cons_O::create(str, my_thread->_BufferStr8NsPool);
 }
+
+
+/*! Get a StrWNs buffer string from the BufferStrWNsPool.*/
+StrWNs_sp Lisp_O::get_StrWNs_buffer_string() {
+  /* BufferStrWNsPool must be thread local */
+  unlikely_if (!my_thread->_BufferStrWNsPool) {
+    // Lazy initialize
+    my_thread->_BufferStrWNsPool = _Nil<T_O>();
+  }
+  unlikely_if (my_thread->_BufferStrWNsPool.nilp()) {
+    // If list is empty, link in a buffer
+    StrWNs_sp one = StrWNs_O::make(256, ' ', true, clasp_make_fixnum(0));
+    my_thread->_BufferStrWNsPool = Cons_O::create(one, my_thread->_BufferStrWNsPool);
+  }
+  StrWNs_sp ret = gc::As<StrWNs_sp>(oCar(my_thread->_BufferStrWNsPool));
+  my_thread->_BufferStrWNsPool = oCdr(my_thread->_BufferStrWNsPool);
+  ret->fillPointerSet(clasp_make_fixnum(0));
+  return ret;
+}
+
+/*! Return a buffer string to the BufferStrWNsPool
+*/
+void Lisp_O::put_StrWNs_buffer_string(StrWNs_sp str) {
+  my_thread->_BufferStrWNsPool = Cons_O::create(str, my_thread->_BufferStrWNsPool);
+}
+
+
 
 ReadTable_sp Lisp_O::getCurrentReadTable() {
   return gc::As<ReadTable_sp>(cl::_sym_STARreadtableSTAR->symbolValue());
@@ -1839,26 +1865,22 @@ void searchForApropos(List_sp packages, SimpleString_sp insubstring, bool print_
                 stringstream ss;
                 Symbol_sp sym = gc::As<Symbol_sp>(key);
                 ss << (BF("%50s") % (sym)->fullName()).str();
-                if ( (sym)->specialP() || (sym)->fboundp() )
-                {
-                    if ( (sym)->fboundp() )
-                    {
+                if ( (sym)->specialP() || (sym)->fboundp() ) {
+                    if ( (sym)->fboundp() ) {
                         ss << " ";
                         ss << cl__class_of(cl__symbol_function((sym)))->classNameAsString();
-			Function_sp fn = cl__symbol_function(sym);
-                        if ( !fn.unboundp() && gc::As<Function_sp>(cl__symbol_function(sym))->macroP() )
-                        {
-                            ss << "(MACRO)";
+			T_sp tfn = cl__symbol_function(sym);
+                        if ( !tfn.unboundp() && gc::IsA<Function_sp>(tfn)) {
+                          Function_sp fn = gc::As_unsafe<Function_sp>(tfn);
+                          if (fn->macroP()) ss << "(MACRO)";
                         }
                     }
                     if ( !(sym)->symbolValueUnsafe() ) {
                         ss << " !!UNDEFINED!!";
                     } else {
-                        if ( (sym)->specialP() || (sym)->symbolValueUnsafe() )
-                        {
+                        if ( (sym)->specialP() || (sym)->symbolValueUnsafe() ) {
                             ss << " VALUE";
-                            if ( print_values )
-                            {
+                            if ( print_values ) {
                                 stringstream sval;
                                 T_sp symVal = (sym)->symbolValueUnsafe();
                                 sval << _rep_(symVal);
@@ -1867,7 +1889,7 @@ void searchForApropos(List_sp packages, SimpleString_sp insubstring, bool print_
                         }
                     }
                 }
-                _lisp->print(BF("%s") % ss.str());
+                BFORMAT_T(BF("%s\n") % ss.str());
   });
 }
 

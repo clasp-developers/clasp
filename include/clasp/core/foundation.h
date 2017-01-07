@@ -1201,13 +1201,15 @@ namespace core {
     ThreadLocalState() {
       this->_Bindings.reserve(1024);
       this->_InvocationHistoryStack = NULL;
-      this->_BufferStringPool.reset_(); // Can't use _Nil<core::T_O>(); - too early
+      this->_BufferStr8NsPool.reset_(); // Can't use _Nil<core::T_O>(); - too early
+      this->_BufferStrWNsPool.reset_();
     };
     DynamicBindingStack _Bindings;
     InvocationHistoryFrame* _InvocationHistoryStack;
     ExceptionStack _ExceptionStack;
     MultipleValues _MultipleValues;
-    List_sp _BufferStringPool;
+    List_sp _BufferStr8NsPool;
+    List_sp _BufferStrWNsPool;
     inline core::DynamicBindingStack& bindings() { return this->_Bindings; };
     inline ExceptionStack& exceptionStack() { return this->_ExceptionStack; };
   };

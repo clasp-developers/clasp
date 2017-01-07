@@ -160,23 +160,24 @@ CL_LAMBDA(stream chr);
 CL_DECLARE();
 CL_DOCSTRING("reader_double_quote_string");
 CL_DEFUN T_mv core__reader_double_quote_string(T_sp stream, Character_sp ch) {
-  stringstream str;
+  // Create a wide character string buffer
+  SafeBufferStrWNs buffer;
   bool done = false;
   while (!done) {
     Character_sp nc = gc::As<Character_sp>(cl__read_char(stream, _lisp->_true(), _Nil<T_O>(), _lisp->_true()));
-    char cc = clasp_as_char(nc);
+    claspCharacter cc = clasp_as_claspCharacter(nc);
     if (cc == '"')
       break;
     if (cc == '\\') {
       nc = gc::As<Character_sp>(cl__read_char(stream, _lisp->_true(), _Nil<T_O>(), _lisp->_true()));
-      cc = clasp_as_char(nc);
+      cc = clasp_as_claspCharacter(nc);
       if (cc == 'n')
         cc = '\n';
     }
-    str << cc;
+    buffer.string()->vectorPushExtend(clasp_make_character(cc));
   }
-  // Return one value in a MultipleValues object to indicate that something is being returned
-  return (Values(SimpleBaseCharString_O::make(str.str())));
+  SimpleString_sp result = buffer.string()->asMinimalSimpleString();
+  return Values(result);
 };
 
 CL_LAMBDA(sin ch);
@@ -280,7 +281,7 @@ CL_DEFUN T_mv core__reader_skip_semicolon_comment(T_sp sin, Character_sp ch) {
     if ( tc == _sym_eof_value ) break;
     ASSERT(tc.characterp());
     Character_sp nc = gctools::reinterpret_cast_smart_ptr<Character_sp>(tc);
-    char cc = clasp_as_char(nc);
+    claspCharacter cc = clasp_as_claspCharacter(nc);
     if (cc == '\n') break;
   }
   // Return one value in a MultipleValues object to indicate that something is being returned
@@ -328,7 +329,7 @@ T_sp read_ch_or_die(T_sp sin) {
 
 /*! See SACLA reader.lisp::unread-ch */
 void unread_ch(T_sp sin, Character_sp c) {
-  clasp_unread_char(clasp_as_char(c), sin);
+  clasp_unread_char(clasp_as_claspCharacter(c), sin);
 }
 
 /*! See SACLA reader.lisp::collect-escaped-lexemes */
@@ -380,15 +381,15 @@ List_sp collect_lexemes(/*Character_sp*/ T_sp tc, T_sp sin) {
 void make_str(StrWNs_sp sout, List_sp cur_char, bool preserveCase = false) {
   while (cur_char.notnilp()) {
     T_sp obj = oCar(cur_char);
-    if ((obj).consp()) {
+    if (obj.consp()) {
       make_str(sout, obj, preserveCase);
     } else if (cl__characterp(obj)) {
       if (preserveCase)
         sout->vectorPushExtend(obj);
       else
         sout->vectorPushExtend(gc::As<ReadTable_sp>(cl::_sym_STARreadtableSTAR->symbolValue())->convert_case(gc::As<Character_sp>(obj)));
-    } else {
-      SIMPLE_ERROR(BF("Illegal entry for make_str[%s]") % _rep_(obj));
+    } else if (obj.nilp()) {
+      // Handling name ||   do nothing
     }
     cur_char = oCdr(cur_char);
   }
@@ -398,16 +399,16 @@ CL_LAMBDA(stream ch num);
 CL_DECLARE();
 CL_DOCSTRING("sharp_backslash");
 CL_DEFUN T_mv core__sharp_backslash(T_sp sin, Character_sp ch, T_sp num) {
-  Str8Ns_sp sslexemes = Str8Ns_O::make(16,'\0',clasp_make_fixnum(0));
+  SafeBuffer sslexemes;
   List_sp lexemes = collect_lexemes(ch, sin);
-  make_str(sslexemes, lexemes, true);
+  make_str(sslexemes.string(), lexemes, true);
   if (!cl::_sym_STARread_suppressSTAR->symbolValue().isTrue()) {
-    if (sslexemes->length() == 1) {
-      return Values(sslexemes->rowMajorAref(0));
+    if (sslexemes.string()->length() == 1) {
+      return Values(sslexemes.string()->rowMajorAref(0));
     } else {
-      T_sp tch = eval::funcall(cl::_sym_name_char, sslexemes);
+      T_sp tch = eval::funcall(cl::_sym_name_char, sslexemes.string());
       if (tch.nilp())
-        SIMPLE_ERROR(BF("Unknown character name[%s]") % _rep_(sslexemes));
+        SIMPLE_ERROR(BF("Unknown character name for [%s]") % _rep_(sslexemes.string()));
       return Values(gc::As<Character_sp>(tch));
     }
   }
@@ -511,10 +512,10 @@ CL_DEFUN T_mv core__sharp_asterisk(T_sp sin, Character_sp ch, T_sp num) {
     }
     unlikely_if(syntaxType == kw::_sym_single_escape_character ||
                 syntaxType == kw::_sym_multiple_escape_character ||
-                (clasp_as_char(ch) != '0' && clasp_as_char(ch) != '1')) {
+                (clasp_as_claspCharacter(ch) != '0' && clasp_as_claspCharacter(ch) != '1')) {
       READER_ERROR(SimpleBaseCharString_O::make("Character ~:C is not allowed after #*"), Cons_O::create(ch), sin);
     }
-    pattern << clasp_as_char(ch);
+    pattern << clasp_as_claspCharacter(ch);
   }
   if (num.nilp()) {
     dim = dimcount;
@@ -548,18 +549,11 @@ CL_DOCSTRING("sharp_colon");
 CL_DEFUN T_mv core__sharp_colon(T_sp sin, Character_sp ch, T_sp num) {
   // CHECKME
   List_sp lexemes = collect_lexemes(ch, sin);
-  StrWNs_sp sslexemes = StrWNs_O::make(16,'\0',clasp_make_fixnum(0));
-  make_str(sslexemes, lexemes);
-  SimpleString_sp lexeme_str;
-  if (sslexemes->all_base_char_p()) {
-    lexeme_str = SimpleBaseCharString_O::make(sslexemes->length());
-    lexeme_str->unsafe_setf_subseq(0,lexeme_str->length(),sslexemes);
-  } else {
-    lexeme_str = SimpleCharacterString_O::make(sslexemes->length());
-    lexeme_str->unsafe_setf_subseq(0,lexeme_str->length(),sslexemes);
-  }
+  SafeBufferStrWNs sslexemes;
+  make_str(sslexemes.string(), lexemes);
+  SimpleString_sp lexeme_str = sslexemes.string()->asMinimalSimpleString();
   if (!cl::_sym_STARread_suppressSTAR->symbolValue().isTrue()) {
-    Symbol_sp new_symbol = Symbol_O::create(lexeme_str);
+    Symbol_sp new_symbol = Symbol_O::create(lexeme_str->unsafe_subseq(1,lexeme_str->length()));
     return Values(new_symbol);
   }
   return Values(_Nil<T_O>());
@@ -746,15 +740,15 @@ CL_DEFUN T_mv core__sharp_vertical_bar(T_sp sin, Character_sp ch, T_sp num) {
   bool done = false;
   while (!done) {
     Character_sp nc = gc::As<Character_sp>(cl__read_char(sin, _lisp->_true(), _Nil<T_O>(), _lisp->_true()));
-    char cc = clasp_as_char(nc);
+    claspCharacter cc = clasp_as_claspCharacter(nc);
     if (cc == '#') {
-      char nextc = clasp_peek_char(sin);
+      claspCharacter nextc = clasp_peek_char(sin);
       if (nextc == '|') {
         Character_sp nextsubc = gc::As<Character_sp>(cl__read_char(sin, _lisp->_true(), _Nil<T_O>(), _lisp->_true()));
         eval::funcall(_sym_sharp_vertical_bar, sin, nextsubc, num);
       }
     } else if (cc == '|') {
-      char nextc = clasp_peek_char(sin);
+      claspCharacter nextc = clasp_peek_char(sin);
       if (nextc == '#') {
         Character_sp nextsubc = gc::As<Character_sp>(cl__read_char(sin, _lisp->_true(), _Nil<T_O>(), _lisp->_true()));
         (void)nextsubc;

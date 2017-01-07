@@ -239,24 +239,11 @@ namespace core {
 	}
     }
 
-    void unsafe_write_claspCharacter(claspCharacter cc, T_sp stream)
-    {
-	if (cc>255) {
-	    clasp_write_char('\\',stream);
-	    clasp_write_char('u',stream);
-	    Fixnum_sp f = clasp_make_fixnum(cc);
-	    SafeBuffer buffer;
-	    core__integer_to_string(buffer._Buffer,f,make_fixnum(16),false,false);
-	    cl__write_sequence(buffer._Buffer,stream,make_fixnum(0),_Nil<T_O>());
-	} else {
-	    clasp_write_char(cc, stream);
-	}
-    }
     void unsafe_write_SimpleCharacterString(SimpleCharacterString_sp str, size_t start, size_t end, T_sp stream) {
 	cl_index ndx;
 	if (!clasp_print_escape() && !clasp_print_readably()) {
 	    for (ndx = start; ndx < end; ndx++) {
-		unsafe_write_claspCharacter((*str)[ndx],stream);
+		clasp_write_char((*str)[ndx],stream);
 	    }
 	} else {
 	    clasp_write_char('"', stream);
@@ -264,7 +251,7 @@ namespace core {
 		char c = (*str)[ndx];
 		if (c == '"' || c == '\\')
 		    clasp_write_char('\\', stream);
-		unsafe_write_claspCharacter((*str)[ndx],stream);
+		clasp_write_char((*str)[ndx],stream);
 	    }
 	    clasp_write_char('"', stream);
 	}

@@ -446,10 +446,9 @@ void write_single_float(T_sp strm, SingleFloat_sp i) {
 
 void
 write_float(T_sp f, T_sp stream) {
-  Str8Ns_sp s = _lisp->get_buffer_string();
-  s = core_float_to_string_free(s, f, clasp_make_fixnum(-3), clasp_make_fixnum(8));
-  cl__write_sequence(s, stream, clasp_make_fixnum(0), _Nil<T_O>());
-  _lisp->put_buffer_string(s);
+  SafeBuffer s;
+  StrNs_sp result = core_float_to_string_free(s.string(), f, clasp_make_fixnum(-3), clasp_make_fixnum(8));
+  cl__write_sequence(result, stream, clasp_make_fixnum(0), _Nil<T_O>());
 }
 
 void write_character(T_sp strm, T_sp chr) {

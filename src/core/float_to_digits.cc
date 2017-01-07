@@ -230,22 +230,21 @@ change_precision(float_approx *approx, T_sp tposition, T_sp relativep) {
 CL_LAMBDA(digits number position relativep);
 CL_DECLARE();
 CL_DOCSTRING("float_to_digits");
-CL_DEFUN T_mv core__float_to_digits(T_sp tdigits, Float_sp number, gc::Nilable<Real_sp> position,
-                          T_sp relativep) {
+CL_DEFUN T_mv core__float_to_digits(T_sp tdigits, Float_sp number, gc::Nilable<Real_sp> position, T_sp relativep) {
   ASSERT(tdigits.nilp()||gc::IsA<Str8Ns_sp>(tdigits));
   gctools::Fixnum k;
   float_approx approx[1];
   setup(number, approx);
   change_precision(approx, position, relativep);
   k = scale(approx);
-  Str8Ns_sp digits;
+  StrNs_sp digits;
   if (tdigits.nilp()) {
-    digits = gc::As<Str8Ns_sp>(core__make_vector(cl::_sym_base_char,
-                                              10,
-                                              true /* adjustable */,
-                                              clasp_make_fixnum(0) /* fill pointer */));
+    digits = gc::As<StrNs_sp>(core__make_vector(cl::_sym_base_char,
+                                                10,
+                                                true /* adjustable */,
+                                                clasp_make_fixnum(0) /* fill pointer */));
   } else {
-    digits = gc::As<Str8Ns_sp>(tdigits);
+    digits = gc::As<StrNs_sp>(tdigits);
   }
   generate(digits, approx);
   return Values(clasp_make_fixnum(k), digits);

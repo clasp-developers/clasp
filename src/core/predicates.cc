@@ -59,11 +59,7 @@ CL_LAMBDA(arg);
 CL_DECLARE();
 CL_DOCSTRING("baseCharP");
 CL_DEFUN bool core__base_char_p(T_sp arg) {
-  if (Character_sp c = arg.asOrNull<Character_O>()) {
-    (void)c;
-    return true;
-  }
-  return false;
+  return (arg.characterp()&&clasp_base_char_p(arg.unsafe_character()));
 };
 
 CL_DEFUN bool core__bignump(T_sp obj) {
@@ -157,7 +153,7 @@ CL_LAMBDA(arg);
 CL_DECLARE();
 CL_DOCSTRING("numberP");
 CL_DEFUN bool cl__numberp(T_sp obj) {
-  return gc::IsA<Number_sp>(obj);
+  return obj.fixnump()||obj.single_floatp()||gc::IsA<Number_sp>(obj);
 };
 
 CL_DEFUN bool cl__complexp(T_sp obj) {
@@ -179,7 +175,7 @@ CL_DEFUN bool cl__random_state_p(T_sp obj) {
 };
 
 CL_DEFUN bool cl__rationalp(T_sp obj) {
-  return gc::IsA<Rational_sp>(obj);
+  return obj.fixnump()||gc::IsA<Rational_sp>(obj);
 };
 
 CL_LAMBDA(arg);
@@ -200,19 +196,19 @@ CL_LAMBDA(arg);
 CL_DECLARE();
 CL_DOCSTRING("singleFloatP");
 CL_DEFUN bool core__single_float_p(T_sp obj) {
-  return gc::IsA<SingleFloat_sp>(obj);
+  return obj.single_floatp();
 };
 
 CL_DEFUN bool cl__realp(T_sp obj) {
-  return gc::IsA<Real_sp>(obj);
+  return obj.fixnump()||obj.single_floatp()||gc::IsA<Real_sp>(obj);
 };
 
 CL_DEFUN bool cl__floatp(T_sp obj) {
-  return gc::IsA<Float_sp>(obj);
+  return obj.single_floatp()||gc::IsA<Float_sp>(obj);
 };
 
 CL_DEFUN bool cl__vectorp(T_sp obj) {
-  return gc::IsA<Vector_sp>(obj);
+  return gc::IsA<VectorNs_sp>(obj)||gc::IsA<BaseSimpleVector_sp>(obj);
 };
 
 CL_DEFUN bool cl__integerp(T_sp obj) {
@@ -226,12 +222,6 @@ CL_DEFUN bool cl__keywordp(T_sp obj) {
   return false;
 };
 
-CL_LAMBDA(arg);
-CL_DECLARE();
-CL_DOCSTRING("pathP");
-CL_DEFUN bool core__path_p(T_sp obj) {
-  return gc::IsA<Path_sp>(obj);
-};
 
 CL_LAMBDA(arg);
 CL_DECLARE();

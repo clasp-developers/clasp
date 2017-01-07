@@ -703,7 +703,7 @@ generic_write_vector(T_sp strm, T_sp data, cl_index start, cl_index end) {
   if (elementType == cl::_sym_base_char && cl__characterp(vec->rowMajorAref(0))) {
     claspCharacter (*write_char)(T_sp, claspCharacter) = ops.write_char;
     for (; start < end; start++) {
-      write_char(strm, clasp_charCode(vec->rowMajorAref(start)));
+      write_char(strm, clasp_as_claspCharacter(gc::As<Character_sp>((vec->rowMajorAref(start)))));
     }
   } else {
     void (*write_byte)(T_sp, T_sp) = ops.write_byte;
@@ -721,7 +721,7 @@ generic_write_vector(T_sp strm, T_sp data, cl_index start, cl_index end) {
 	    (elttype == clasp_aet_object && CLASPCHARACTERP(clasp_elt(data, 0)))) {
             claspCharacter (*write_char)(T_sp, claspCharacter) = ops.write_char;
             for (; start < end; start++) {
-                write_char(strm, clasp_char_code(clasp_elt(data, start)));
+                write_char(strm, clasp_as_claspCharacter(clasp_elt(data, start)));
             }
 	} else {
             void (*write_byte)(T_sp, T_sp) = ops.write_byte;
@@ -745,7 +745,7 @@ generic_read_vector(T_sp strm, T_sp data, cl_index start, cl_index end) {
     for (; start < end; start++) {
       claspCharacter c = read_char(strm);
       if (c == EOF) break;
-      vec->rowMajorAset(start, clasp_make_character(c)); //clasp_charCode(c));
+      vec->rowMajorAset(start, clasp_make_character(c));
     }
   } else {
     T_sp (*read_byte)(T_sp) = ops.read_byte;
@@ -1407,7 +1407,7 @@ clos_stream_read_char(T_sp strm) {
   T_sp output = eval::funcall(gray::_sym_stream_read_char, strm);
   gctools::Fixnum value;
   if (cl__characterp(output))
-    value = clasp_charCode(output);
+    value = output.unsafe_character();
   else if (core__fixnump(output))
     value = clasp_fixnum(output);
   else if (output == _Nil<T_O>() || output == kw::_sym_eof)
@@ -1435,7 +1435,7 @@ clos_stream_peek_char(T_sp strm) {
   T_sp out = eval::funcall(gray::_sym_stream_peek_char, strm);
   if (out == kw::_sym_eof)
     return EOF;
-  return clasp_charCode(out);
+  return clasp_as_claspCharacter(gc::As<Character_sp>(out));
 }
 
 static int
@@ -1724,7 +1724,7 @@ str_in_read_char(T_sp strm) {
   if (curr_pos >= StringInputStreamInputLimit(strm)) {
     c = EOF;
   } else {
-    c = as_claspCharacter(cl__char(StringInputStreamInputString(strm),curr_pos));
+    c = clasp_as_claspCharacter(cl__char(StringInputStreamInputString(strm),curr_pos));
     StringInputStreamInputPosition(strm) = curr_pos + 1;
   }
   return c;
@@ -1745,7 +1745,7 @@ str_in_peek_char(T_sp strm) {
   if (pos >= StringInputStreamInputLimit(strm)) {
     return EOF;
   } else {
-    return as_claspCharacter(cl__char(StringInputStreamInputString(strm),pos));
+    return clasp_as_claspCharacter(cl__char(StringInputStreamInputString(strm),pos));
   }
 }
 
@@ -4718,6 +4718,7 @@ void clasp_write_addr(T_sp x, T_sp strm) {
 
 static cl_index
 compute_char_size(T_sp stream, claspCharacter c) {
+  // TODO  Make this work with full characters
   unsigned char buffer[5];
   int l = 0;
   if (c == CLASP_CHAR_CODE_NEWLINE) {
@@ -4762,7 +4763,7 @@ BEGIN:
     not_a_file_stream(stream);
   }
   if (cl__characterp(string)) {
-    l = compute_char_size(stream, clasp_charCode(string));
+    l = compute_char_size(stream, string.unsafe_character());
   } else if (cl__stringp(string)) {
     for (int i(0), iEnd(StringFillp(string)); i < iEnd; ++i) {
       l += compute_char_size(stream, cl__char(string, i).unsafe_character());
@@ -4817,7 +4818,7 @@ CL_DEFUN T_sp core__do_write_sequence(T_sp seq, T_sp stream, T_sp s, T_sp e) {
         if (start < end) {
           T_sp elt = oCar(s);
           if (ischar)
-            ops.write_char(stream, clasp_charCode(elt));
+            ops.write_char(stream, clasp_as_claspCharacter(gc::As<Character_sp>(elt)));
           else
             ops.write_byte(elt, stream);
           start++;
@@ -5596,7 +5597,7 @@ encoding_error(T_sp stream, unsigned char *buffer, claspCharacter c) {
     return 0;
   } else {
     /* Try with supplied character */
-    return StreamEncoder(stream)(stream, buffer, clasp_charCode(code));
+    return StreamEncoder(stream)(stream, buffer, clasp_as_claspCharacter(gc::As<Character_sp>(code)));
   }
 }
 
@@ -5614,7 +5615,7 @@ decoding_error(T_sp stream, unsigned char *buffer, int length) {
     return StreamDecoder(stream)(stream);
   } else {
     /* Return supplied character */
-    return clasp_charCode(code);
+    return clasp_as_claspCharacter(gc::As<Character_sp>(code));
   }
 }
 #endif
@@ -5927,13 +5928,11 @@ CL_DEFUN T_sp cl__peek_char(T_sp peek_type, T_sp strm, T_sp eof_errorp, T_sp eof
     return clasp_make_character(clasp_peek_char(strm));
   }
   if (cl__characterp(peek_type)) {
-    int looking_for = clasp_char_code(gc::As<Character_sp>(peek_type));
+    claspCharacter looking_for = clasp_as_claspCharacter(gc::As<Character_sp>(peek_type));
     while (1) {
       int c = clasp_peek_char(strm);
-      if (c == EOF)
-        goto HANDLE_EOF;
-      if (c == looking_for)
-        return clasp_make_character(c);
+      if (c == EOF) goto HANDLE_EOF;
+      if (c == looking_for) return clasp_make_character(c);
       clasp_read_char(strm);
     }
   }
@@ -6187,7 +6186,7 @@ CL_DECLARE();
 CL_DOCSTRING("writeChar");
 CL_DEFUN Character_sp cl__write_char(Character_sp chr, T_sp stream) {
   stream = coerce::outputStreamDesignator(stream);
-  clasp_write_char(clasp_as_char(chr), stream);
+  clasp_write_char(clasp_as_claspCharacter(chr), stream);
   return chr;
 };
 
@@ -6236,7 +6235,7 @@ CL_DECLARE();
 CL_DOCSTRING("unread_char");
 CL_DEFUN void cl__unread_char(Character_sp ch, T_sp dstrm) {
   dstrm = coerce::inputStreamDesignator(dstrm);
-  clasp_unread_char(clasp_as_char(ch), dstrm);
+  clasp_unread_char(clasp_as_claspCharacter(ch), dstrm);
 };
 
 CL_LAMBDA(arg);
@@ -6286,7 +6285,7 @@ CL_DEFUN T_sp cl__write_sequence(T_sp seq, T_sp stream, Fixnum_sp fstart, T_sp t
       if (start < end) {
         T_sp elt = oCar(s);
         if (ischar)
-          clasp_write_char(clasp_char_code(gc::As<Character_sp>(elt)), stream);
+          clasp_write_char(clasp_as_claspCharacter(gc::As<Character_sp>(elt)), stream);
         else
           clasp_write_byte(gc::As<Integer_sp>(elt), stream);
         start++;

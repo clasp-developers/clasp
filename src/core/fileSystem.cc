@@ -590,7 +590,7 @@ Pathname_sp getcwd(bool change_d_p_d) {
   boost::filesystem::path cwd = boost::filesystem::current_path();
   SimpleBaseCharString_sp namestring = SimpleBaseCharString_O::make(cwd.string());
   size_t i = namestring->length();
-  if (!IS_DIR_SEPARATOR(as_claspCharacter(namestring->rowMajorAref(i - 1))))
+  if (!IS_DIR_SEPARATOR(clasp_as_claspCharacter(namestring->rowMajorAref(i - 1))))
     namestring = SimpleBaseCharString_O::make(namestring->get() + DIR_SEPARATOR);
   Pathname_sp pathname = cl__parse_namestring(namestring);
   if (change_d_p_d) {

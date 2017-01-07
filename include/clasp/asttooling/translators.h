@@ -104,17 +104,18 @@ struct from_object<const vector<string> &> {
   typedef vector<string> DeclareType;
   DeclareType _v;
   from_object(core::T_sp o) {
-    _G();
     if (o.nilp()) {
       _v.clear();
       return;
-    } else if (core::VectorObjects_sp vo = o.asOrNull<core::VectorObjects_O>()) {
+    } else if (core::cl__vectorp(o)) {
+      core::Vector_sp vo = gc::As_unsafe<core::Vector_sp>(o);
       _v.resize(vo->length());
       for (int i(0), iEnd(vo->length()); i < iEnd; ++i) {
         _v[i] = gc::As<core::String_sp>(vo->rowMajorAref(i))->get_std_string();
       }
       return;
-    } else if (core::Cons_sp co = o.asOrNull<core::Cons_O>()) {
+    } else if (o.consp()) {
+      core::Cons_sp co = gc::As_unsafe<core::Cons_sp>(o);
       _v.resize(co->length());
       int i = 0;
       for (auto cur : (core::List_sp)co) {
@@ -123,7 +124,7 @@ struct from_object<const vector<string> &> {
       }
       return;
     }
-    SIMPLE_ERROR(BF("Add support to convert other types to vector<string>"));
+    SIMPLE_ERROR(BF("Add support to convert %s to vector<string>") % _rep_(o));
   }
 };
 
