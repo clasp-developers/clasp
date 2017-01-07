@@ -645,6 +645,10 @@ to expose."
   (format stream "{ container_kind, ~a, sizeof(~a), 0, \"~a\" },~%" enum key key )
   (codegen-variable-part stream (fixed-part layout) analysis))
 
+(defun codegen-bitunit-container-layout (stream enum key layout analysis)
+  (format stream "{ bitunit_container_kind, ~a, sizeof(~a), ~a, \"~a\" },~%" enum key (species-bitwidth (enum-species enum)) key )
+  (codegen-variable-part stream (fixed-part layout) analysis))
+
 (defun codegen-templated-layout (stream enum key layout analysis)
   (format stream "{ templated_kind, ~a, sizeof(~a), 0, \"~a\" },~%" enum key key )
   (codegen-full stream layout analysis))
@@ -1891,8 +1895,8 @@ so that they don't have to be constantly recalculated"
   name
   preprocessor-guard ;; defines a preprocessor symbol XXX used to wrap #ifdef XXX/#endif around GCKind
   discriminator ;; Function - takes one argument, returns a species index
+  (bitwidth 0)  ;; bit(1),crumb(2),nibble(4),byte(8) etc containers length need this to be converted to bytes
   scan          ;; Function - generates scanner for species
-  skip          ;; Function - generates obj_skip code for species
   finalize      ;; Function - generates obj_finalize code for species
   deallocator   ;; Function - generates obj_deallocate_unmanaged_instance code for species
   dump          ;; Function - fills a stringstream with a dump of the species
@@ -2070,13 +2074,6 @@ so that they don't have to be constantly recalculated"
              (class-layout (gethash key (project-classes (analysis-project anal))) anal)))
         (codegen-lisp-layout fh enum-name key layout anal)))))
 
-(defun skipper-for-lispallocs (dest enum anal)
-  (assert (simple-enum-p enum))
-  (let* ((alloc (simple-enum-alloc enum))
-         (key (alloc-key alloc))
-         (enum-name (enum-name enum)))
-    (gclog "skipper-for-lispallocs -> inheritance classid[~a]  value[~a]~%" key (enum-value enum))))
-
 (defun dumper-for-lispallocs (dest enum anal)
   (assert (simple-enum-p enum))
   (let* ((alloc (simple-enum-alloc enum))
@@ -2137,18 +2134,6 @@ so that they don't have to be constantly recalculated"
         #+(or)(format fout "    size = ~a->templatedSizeof();" +ptr-name+))))
 
 
-(defun skipper-for-templated-lispallocs (dest enum anal)
-  (assert (templated-enum-p enum))
-  (let* ((key (enum-key enum))
-         (enum-name (enum-name enum)))
-    (gclog "build-mps-scan-for-one-family -> inheritance key[~a]  value[~a]~%" key value)
-    (with-jump-table (fout jti dest enum)
-      (format fout "    ~A* ~A = reinterpret_cast<~A*>(client);~%" key +ptr-name+ key)
-      (format fout "    // client = (char*)client + AlignUp(~a->templatedSizeof()) + global_alignup_sizeof_header;~%" +ptr-name+)
-      (format fout "    size = ~a->templatedSizeof();~%" +ptr-name+)
-      (format fout "    goto DONE; //return client;~%")
-      )))
-
 (defun dumper-for-templated-lispallocs (dest enum anal)
   (assert (templated-enum-p enum))
   (let* ((key (enum-key enum))
@@ -2197,32 +2182,6 @@ so that they don't have to be constantly recalculated"
           (let ((layout (class-layout (gethash key (project-classes (analysis-project anal))) anal)))
             (codegen-container-layout fh enum-name key layout anal))))))
 
-
-(defun skipper-for-gccontainer (dest enum anal)
-  (check-type enum simple-enum)
-  (let* ((alloc (simple-enum-alloc enum))
-         (decl (containeralloc-ctype alloc))
-         (key (alloc-key alloc))
-         (enum-name (enum-name enum)))
-    #+(or)(with-jump-table (fout jti dest enum)
-      ;;    (format fout "// processing ~a~%" alloc)
-      (if (cxxrecord-ctype-p decl)
-          (progn
-            (format fout "    THROW_HARD_ERROR(BF(\"Should never scan ~a\"));~%" (cxxrecord-ctype-key decl)))
-          (let* ((parms (class-template-specialization-ctype-arguments decl))
-                 (parm0 (car parms))
-                 (parm0-ctype (gc-template-argument-ctype parm0)))
-            ;;          (format fout "// parm0-ctype = ~a~%" parm0-ctype)
-            (format fout "  {~%")
-            (format fout "    ~A* ~A = reinterpret_cast<~A*>(client);~%" key +ptr-name+ key)
-            (format fout "    typedef typename ~A type_~A;~%" key enum-name)
-            (format fout "    // size_t header_and_gccontainer_size = AlignUp(sizeof_container<type_~a>(~a->capacity()))+AlignUp(sizeof(gctools::Header_s));~%" enum-name +ptr-name+)
-            (format fout "    size = sizeof_container<type_~a>(~a->capacity());~%" enum-name +ptr-name+)
-            (format fout "    //client = (char*)client + header_and_gccontainer_size;~%" enum-name)
-            (format fout "  }~%")))
-      (format fout "    goto DONE; //return client;~%")
-      ;;              (format fout "    base = (char*)base + length;~%")
-      )))
 
 (defun dumper-for-gccontainer (dest enum anal)
   (check-type enum simple-enum)
@@ -2298,37 +2257,6 @@ so that they don't have to be constantly recalculated"
       (let ((layout (class-layout (gethash key (project-classes (analysis-project anal))) anal)))
         (codegen-container-layout fh enum-name key layout anal)))))
 
-
-
-(defun skipper-for-gcstring (dest enum anal)
-  (check-type enum simple-enum)
-  (let* ((alloc (simple-enum-alloc enum))
-         (decl (containeralloc-ctype alloc))
-         (key (alloc-key alloc))
-         (enum-name (enum-name enum)))
-    #+(or)(with-jump-table (fout jti dest enum)
-            ;;    (format fout "// processing ~a~%" alloc)
-            (if (cxxrecord-ctype-p decl)
-                (progn
-                  (format fout "    THROW_HARD_ERROR(BF(\"Should never scan ~a\"));~%" (cxxrecord-ctype-key decl)))
-                (let* ((parms (class-template-specialization-ctype-arguments decl))
-                       (parm0 (car parms))
-                       (parm0-ctype (gc-template-argument-ctype parm0)))
-                  ;;          (format fout "// parm0-ctype = ~a~%" parm0-ctype)
-                  (format fout "  {~%")
-                  (format fout "    ~A* ~A = reinterpret_cast<~A*>(client);~%" key +ptr-name+ key)
-                  ;;          (format fout "    ~A* ~A = BasePtrToMostDerivedPtr<~A>(base);~%" key +ptr-name+ key)
-                  (format fout "    typedef typename ~A type_~A;~%" key enum-name)
-                  (format fout "    //size_t header_and_gcstring_size = AlignUp(sizeof_container<type_~a>(~a->capacity()))+AlignUp(sizeof(gctools::Header_s));~%" enum-name +ptr-name+)
-                  (format fout "    size = sizeof_container<type_~a>(~a->capacity());~%" enum-name +ptr-name+)
-                  (format fout "    //client = (char*)client + Align(header_and_gcstring_size);~%")
-                  (format fout "  }~%")
-                  ;;          (format fout "    base = (char*)base + length;~%")
-                  (format fout "    goto DONE; //return client;~%")
-
-                  ))
-            )))
-
 (defun dumper-for-gcstring (dest enum anal)
   (check-type enum simple-enum)
   (let* ((alloc (simple-enum-alloc enum))
@@ -2347,11 +2275,7 @@ so that they don't have to be constantly recalculated"
 			  (format fout "    ~A* ~A = reinterpret_cast<~A*>(client);~%" key +ptr-name+ key)
 			  (format fout "    typedef typename ~A type_~A;~%" key enum-name)
 			  (format fout "    size_t header_and_gcstring_size = AlignUp(sizeof_container<type_~a>(~a->capacity()))+AlignUp(sizeof(gctools::Header_s));~%" enum-name +ptr-name+)
-			  (format fout "    sout << \"~a\" << \"bytes[\" << header_and_gcstring_size << \"]\";~%" enum-name )
-			  ))
-		      )))
-
-
+			  (format fout "    sout << \"~a\" << \"bytes[\" << header_and_gcstring_size << \"]\";~%" enum-name ))))))
 
 (defun finalizer-for-gcstring (dest enum anal)
   (check-type enum simple-enum)
@@ -2390,6 +2314,56 @@ so that they don't have to be constantly recalculated"
     )))
 
 
+(defun scanner-for-gcbitunit (dest enum anal)
+  (assert (simple-enum-p enum))
+  (let* ((alloc (simple-enum-alloc enum))
+         (key (alloc-key alloc))
+         (enum-name (enum-name enum)))
+    (gclog "build-mps-scan-for-one-family -> inheritance key[~a]  value[~a]~%" key value)
+    ;;(with-jump-table (fout jump-table-index dest enum "goto SCAN_ADVANCE")
+    (let ((fh (destination-helper-stream dest)))
+      (let ((layout (class-layout (gethash key (project-classes (analysis-project anal))) anal)))
+        (codegen-bitunit-container-layout fh enum-name key layout anal)))))
+
+(defun dumper-for-gcbitunit (dest enum anal)
+  (check-type enum simple-enum)
+  (let* ((alloc (simple-enum-alloc enum))
+         (decl (containeralloc-ctype alloc))
+         (key (alloc-key alloc))
+         (enum-name (enum-name enum)))
+   (with-jump-table (fout jti dest enum "goto BOTTOM")
+    ;;    (format fout "// processing ~a~%" alloc)
+    (if (cxxrecord-ctype-p decl)
+	(progn
+	 (format fout "    THROW_HARD_ERROR(BF(\"Should never scan ~a\"));~%" (cxxrecord-ctype-key decl)))
+	    (let* ((parms (class-template-specialization-ctype-arguments decl))
+		   (parm0 (car parms))
+		   (parm0-ctype (gc-template-argument-ctype parm0)))
+	     ;;          (format fout "// parm0-ctype = ~a~%" parm0-ctype)
+	     (format fout "    ~A* ~A = reinterpret_cast<~A*>(client);~%" key +ptr-name+ key)
+	     (format fout "    typedef typename ~A type_~A;~%" key enum-name)
+	     (format fout "    size_t header_and_gcbitunit_size = AlignUp(sizeof_bitunit_container<type_~a>(~a->;emgtj()))+AlignUp(sizeof(gctools::Header_s));~%" enum-name +ptr-name+)
+	     (format fout "    sout << \"~a\" << \"bytes[\" << header_and_gcbitunit_size << \"]\";~%" enum-name ))))))
+
+(defun finalizer-for-gcbitunit (dest enum anal)
+  (check-type enum simple-enum)
+  (let* ((alloc (simple-enum-alloc enum))
+         (decl (containeralloc-ctype alloc))
+         (key (alloc-key alloc))
+         (enum-name (enum-name enum)))
+   (with-jump-table (fout jti dest enum)
+    (format fout "    THROW_HARD_ERROR(BF(\"Should never finalize ~a\"));~%" (record-ctype-key decl)))))
+
+(defun deallocator-for-gcbitunit (dest enum anal)
+  (check-type enum simple-enum)
+  (let* ((alloc (simple-enum-alloc enum))
+         (decl (containeralloc-ctype alloc))
+         (key (alloc-key alloc))
+         (enum-name (enum-name enum)))
+    (with-jump-table (fout jti dest enum)
+     (format fout "    THROW_HARD_ERROR(BF(\"Should never deallocate gcbitunits ~a\"));" (record-ctype-key decl)))))
+
+
 (defun string-left-matches (str sub)
   (eql (search str sub) 0))
 
@@ -2400,77 +2374,70 @@ so that they don't have to be constantly recalculated"
                                        :discriminator (lambda (x) (and (lispalloc-p x)
                                                                        (gctools::bootstrap-kind-p (alloc-key x))))
                                        :scan 'scanner-for-lispallocs
-                                       :skip 'skipper-for-lispallocs
                                        :dump 'dumper-for-lispallocs
                                        :finalize 'finalizer-for-lispallocs
-                                       :deallocator 'deallocator-for-lispallocs
-                                       ))
+                                       :deallocator 'deallocator-for-lispallocs))
     (add-species manager (make-species :name :lispalloc
                                        :discriminator (lambda (x) (and (lispalloc-p x)
                                                                        (not (gctools:bootstrap-kind-p (alloc-key x)))
                                                                        (not (alloc-template-specializer-p x *analysis*))))
                                        :scan 'scanner-for-lispallocs
-                                       :skip 'skipper-for-lispallocs
                                        :dump 'dumper-for-lispallocs
                                        :finalize 'finalizer-for-lispallocs
-                                       :deallocator 'deallocator-for-lispallocs
-                                       ))
+                                       :deallocator 'deallocator-for-lispallocs))
     (add-species manager (make-species :name :templated-lispalloc
                                        :discriminator (lambda (x) (and (lispalloc-p x) (alloc-template-specializer-p x *analysis*)))
                                        :scan 'scanner-for-templated-lispallocs
-                                       :skip 'skipper-for-templated-lispallocs
                                        :dump 'dumper-for-templated-lispallocs
                                        :finalize 'finalizer-for-templated-lispallocs
-                                       :deallocator 'deallocator-for-templated-lispallocs
-                                       ))
+                                       :deallocator 'deallocator-for-templated-lispallocs))
     (add-species manager (make-species :name :GCVECTOR
                                        :discriminator (lambda (x) (and (containeralloc-p x) (search "gctools::GCVector" (alloc-key x))))
                                        :scan 'scanner-for-gccontainer
-                                       :skip 'skipper-for-gccontainer
                                        :dump 'dumper-for-gccontainer
                                        :finalize 'finalizer-for-gccontainer
-                                       :deallocator 'deallocator-for-gccontainer
-                                       ))
+                                       :deallocator 'deallocator-for-gccontainer))
     (add-species manager (make-species :name :GCARRAY
                                        :discriminator (lambda (x) (and (containeralloc-p x) (search "gctools::GCArray" (alloc-key x))))
                                        :scan 'scanner-for-gccontainer
-                                       :skip 'skipper-for-gccontainer
                                        :dump 'dumper-for-gccontainer
                                        :finalize 'finalizer-for-gccontainer
-                                       :deallocator 'deallocator-for-gccontainer
-                                       ))
+                                       :deallocator 'deallocator-for-gccontainer))
     (add-species manager (make-species :name :GCSTRING
                                        :discriminator (lambda (x) (and (containeralloc-p x) (search "gctools::GCString" (alloc-key x))))
                                        :scan 'scanner-for-gcstring ;; don't need to scan but do need to calculate size
-                                       :skip 'skipper-for-gcstring
                                        :dump 'dumper-for-gcstring
                                        :finalize 'finalizer-for-gcstring
-                                       :deallocator 'deallocator-for-gcstring
-                                       ))
+                                       :deallocator 'deallocator-for-gcstring))
+    (dolist (bitunit '(1 2 4 7 8 15 16 31 32 62 63 64))
+      (add-species manager (make-species :name (intern (format nil "GCBITUNITCONTAINER~a" bitunit) :keyword)
+                                         :discriminator (lambda (x)
+                                                          (let ((match-string (format nil "gctools::GCBitUnitContainer<~a," bitunit)))
+                                                            (and (containeralloc-p x)
+                                                                 (search match-string (alloc-key x)))))
+                                         :bitwidth bitunit
+                                         :scan 'scanner-for-gcbitunit ;; don't need to scan but do need to calculate size
+                                         :dump 'dumper-for-gcbitunit
+                                         :finalize 'finalizer-for-gcbitunit
+                                         :deallocator 'deallocator-for-gcbitunit)))
     (add-species manager (make-species :name :classalloc
                                        :discriminator (lambda (x) (and (classalloc-p x) (not (alloc-template-specializer-p x *analysis*))))
                                        :scan 'scanner-for-lispallocs
-                                       :skip 'skipper-for-lispallocs
                                        :dump 'dumper-for-lispallocs
                                        :finalize 'finalizer-for-lispallocs
-                                       :deallocator 'deallocator-for-lispallocs
-                                       ))
+                                       :deallocator 'deallocator-for-lispallocs))
     (add-species manager (make-species :name :rootclassalloc
                                        :discriminator (lambda (x) (rootclassalloc-p x))
                                        :scan 'scanner-for-lispallocs
-                                       :skip 'skipper-for-lispallocs
                                        :dump 'dumper-for-lispallocs
                                        :finalize 'finalizer-for-lispallocs
-                                       :deallocator 'deallocator-for-lispallocs
-                                       ))
+                                       :deallocator 'deallocator-for-lispallocs))
     (add-species manager (make-species :name :templated-classalloc
                                        :discriminator (lambda (x) (and (classalloc-p x) (alloc-template-specializer-p x *analysis*)))
                                        :scan 'scanner-for-templated-lispallocs
-                                       :skip 'skipper-for-templated-lispallocs
                                        :dump 'dumper-for-templated-lispallocs
                                        :finalize 'finalizer-for-templated-lispallocs
-                                       :deallocator 'deallocator-for-templated-lispallocs
-                                       ))
+                                       :deallocator 'deallocator-for-templated-lispallocs))
     manager))
 
 
@@ -3133,14 +3100,6 @@ Pointers to these objects are fixed in obj_scan or they must be roots."
                     (format stream "#if defined(GC_KIND_SELECTORS)~%")
                     (generate-gckind-for-enums stream analysis)
                     (format stream "#endif // defined(GC_KIND_SELECTORS)~%")
-		    #+(or)(do-generator stream analysis
-				  :table-name "OBJ_SKIP"
-				  :function-declaration "mps_addr_t ~a(mps_addr_t client)"
-				  :function-prefix "obj_skip"
-				  :function-table-type "mps_addr_t (*OBJ_SKIP_table[])(mps_addr_t)"
-				  :generator (lambda (dest anal)
-					       (dolist (enum (analysis-sorted-enums anal))
-						 (funcall (species-skip (enum-species enum)) dest enum anal))))
 		    (do-generator stream analysis
 				  :table-name "OBJ_SCAN"
 				  :function-declaration "GC_RESULT ~a(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit)"
