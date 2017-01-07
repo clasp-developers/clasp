@@ -148,9 +148,9 @@ string ValueFrame_O::summaryOfContents() const {
   if (this->_DebuggingInfo.notnilp()) {
     debuggingInfo = gc::As<Vector_sp>(this->_DebuggingInfo);
   }
-  for (int i = 0; i < this->_Objects.capacity(); ++i) {
+  for (int i = 0; i < this->_Objects.length(); ++i) {
     if (debuggingInfo.notnilp() && (i < cl__length(gc::As<Vector_sp>(debuggingInfo)))) {
-      ss << _rep_(gc::As<Vector_sp>(debuggingInfo)->elt(i)) << " ";
+      ss << _rep_(gc::As<Vector_sp>(debuggingInfo)->rowMajorAref(i)) << " ";
     } else {
       ss << ":arg" << i << "@" << (void *)(&(this->operator[](i))) << " ";
     }
@@ -241,7 +241,7 @@ bool ValueFrame_O::_updateValue(Symbol_sp sym, T_sp obj) {
   }
   Vector_sp debuggingInfo = gc::As<Vector_sp>(this->_DebuggingInfo);
   for (int i(0), iEnd(this->length()); i < iEnd; ++i) {
-    if (gc::As<Symbol_sp>(debuggingInfo->elt(i)) == sym) {
+    if (gc::As<Symbol_sp>(debuggingInfo->rowMajorAref(i)) == sym) {
       this->_Objects[i] = obj;
       return true;
     }
@@ -266,7 +266,7 @@ bool ValueFrame_O::_findValue(T_sp sym, int &depth, int &index, ValueKind &value
   Vector_sp debuggingInfo = gc::As<Vector_sp>(this->_DebuggingInfo);
   int i = 0;
   for (; i < this->length(); ++i) {
-    if (gc::As<Symbol_sp>(debuggingInfo->elt(i)) == sym) {
+    if (gc::As<Symbol_sp>(debuggingInfo->rowMajorAref(i)) == sym) {
       index = i;
       value = this->_Objects[i];
       valueKind = lexicalValue;
@@ -289,7 +289,7 @@ string FunctionFrame_O::summaryOfContents() const {
 string FunctionFrame_O::asString() const {
   stringstream ss;
   ss << "#<[" << this->_instanceClass()->classNameAsString() << " :len " << this->length() << " ";
-  for (int i = 0; i < this->_Objects.capacity(); ++i) {
+  for (int i = 0; i < this->_Objects.length(); ++i) {
     ss << _rep_(this->_Objects[i]) << " " << std::endl;
   }
   ss << "]>";

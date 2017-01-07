@@ -82,7 +82,7 @@ Vector_sp ExceptionStack::backtrace() {
       kind = kw::_sym_landingPadFrame;
       break;
     };
-    result->setf_elt(i, Cons_O::create(kind, this->_Stack[i]._Key));
+    result->rowMajorAset(i, Cons_O::create(kind, this->_Stack[i]._Key));
   }
   return result;
 }
@@ -112,7 +112,7 @@ VectorObjects_sp InvocationHistoryFrame::arguments() const {
   for (size_t i(0); i < numberOfArguments; ++i) {
     //objRaw = this->valist_sp().indexed_arg(i);
     LCC_VA_LIST_INDEXED_ARG(objRaw,copy_args,i);
-    vargs->setf_elt(i, T_sp((gc::Tagged)objRaw));
+    vargs->rowMajorAset(i, T_sp((gc::Tagged)objRaw));
   }
 #endif
   return vargs;
@@ -121,12 +121,12 @@ VectorObjects_sp InvocationHistoryFrame::arguments() const {
   T_O** register_area = LCC_VA_LIST_REGISTER_SAVE_AREA(orig_args);
   T_O** overflow_area = LCC_ORIGINAL_VA_LIST_OVERFLOW_ARG_AREA(orig_args);
   size_t numberOfArguments = orig_args->total_nargs(); //    LCC_VA_LIST_NUMBER_OF_ARGUMENTS(orig_args);
-  VectorObjects_sp vargs = VectorObjects_O::create(_Nil<T_O>(), numberOfArguments, cl::_sym_T_O->symbolValue());
+  VectorObjects_sp vargs = VectorObjects_O::make(numberOfArguments,_Nil<T_O>());
   T_O* objRaw;
   for (size_t i(0); i < numberOfArguments; ++i) {
     //objRaw = this->valist_sp().indexed_arg(i);
     objRaw = orig_args->absolute_indexed_arg(i);
-    vargs->setf_elt(i, T_sp((gc::Tagged)objRaw));
+    vargs->rowMajorAset(i, T_sp((gc::Tagged)objRaw));
   }
   return vargs;
 #endif
@@ -137,7 +137,7 @@ string InvocationHistoryFrame::argumentsAsString(int maxWidth) const {
   T_sp sout = clasp_make_string_output_stream();
   int nargs = cl__length(vargs);
   for (int i(0); i < nargs; ++i) {
-    T_sp obj = vargs->elt(i);
+    T_sp obj = vargs->rowMajorAref(i);
     if (Instance_sp iobj = obj.asOrNull<Instance_O>()) {
       clasp_write_string("#<", sout);
       write_ugly_object(cl__class_of(obj), sout);
@@ -147,7 +147,7 @@ string InvocationHistoryFrame::argumentsAsString(int maxWidth) const {
       clasp_write_char(' ', sout);
     }
   }
-  Str_sp strres = gc::As<Str_sp>(cl__get_output_stream_string(sout));
+  String_sp strres = gc::As<String_sp>(cl__get_output_stream_string(sout));
   if (cl__length(strres) > maxWidth) {
     return strres->get().substr(0, maxWidth) + "...";
   }

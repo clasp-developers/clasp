@@ -93,7 +93,8 @@ string Closure_O::nameAsString() const {
     ss << gc::As<Symbol_sp>(oCadr(cname))->symbolNameAsString();
     ss << ")";
     return ss.str();
-  } else if (Str_sp strname = this->_name.asOrNull<Str_O>()) {
+  } else if (cl__stringp(this->_name)) {
+    String_sp strname = gc::As_unsafe<String_sp>(this->_name);
     stringstream ss;
     ss << "Function-name(string-";
     ss << strname->get();
@@ -130,8 +131,9 @@ void FunctionClosure_O::set_source_info(List_sp source_info)
     } else {
       printf("%s:%d Illegal source file name designator: %s\n", __FILE__, __LINE__, _rep_(sym).c_str());
     }
-  } else if (Str_sp str = sourceFileInfo.asOrNull<Str_O>() ) {
-    this->_sourceFileInfoHandle = _lisp->getOrRegisterSourceFileInfo(str->get());
+  } else if (cl__stringp(sourceFileInfo)) {
+    String_sp str = gc::As_unsafe<String_sp>(sourceFileInfo);
+    this->_sourceFileInfoHandle = _lisp->getOrRegisterSourceFileInfo(str->get_std_string());
     printf("%s:%d  Function is having its source-info file set after the fact to: %s  filePos: %s\n", __FILE__,__LINE__,str->get().c_str(), _rep_(filePos).c_str());
   }
   this->_filePos = filePos.fixnump() ? filePos.unsafe_fixnum() : 0;
@@ -183,7 +185,7 @@ CL_DEFUN size_t core__closure_with_slots_size(size_t number_of_slots)
 CL_DEFUN size_t core__closure_length(Closure_sp tclosure)
 {
   if ( ClosureWithSlots_sp closure = tclosure.asOrNull<ClosureWithSlots_O>() ) {
-    return closure->_Slots._Capacity;
+    return closure->_Slots._Length;
   } else if ( ClosureWithFrame_sp closure = tclosure.asOrNull<ClosureWithFrame_O>() ) {
     T_sp env = closure->closedEnvironment();
     if ( ValueEnvironment_sp ve = env.asOrNull<ValueEnvironment_O>() ) {
@@ -199,8 +201,8 @@ CL_DEFUN size_t core__closure_length(Closure_sp tclosure)
 CL_DEFUN T_sp core__closure_ref(Closure_sp tclosure, size_t index)
 {
   if ( ClosureWithSlots_sp closure = tclosure.asOrNull<ClosureWithSlots_O>() ) {
-    if ( index >= closure->_Slots._Capacity ) {
-      SIMPLE_ERROR(BF("Out of bounds closure reference - there are only %d slots") % closure->_Slots._Capacity );
+    if ( index >= closure->_Slots._Length ) {
+      SIMPLE_ERROR(BF("Out of bounds closure reference - there are only %d slots") % closure->_Slots._Length );
     }
     return closure->_Slots[index];
   } else if ( ClosureWithFrame_sp closure = tclosure.asOrNull<ClosureWithFrame_O>() ) {

@@ -123,10 +123,12 @@ bool clasp_print_array(void) {
 }
 
 bool clasp_print_readably(void) {
+  unlikely_if (!cl::_sym_STARprint_readablySTAR) return false;
   return cl::_sym_STARprint_readablySTAR->symbolValue().isTrue();
 }
 
 bool clasp_print_escape(void) {
+  unlikely_if (!cl::_sym_STARprint_escapeSTAR) return false;
   return cl::_sym_STARprint_escapeSTAR->symbolValue().isTrue();
 }
 

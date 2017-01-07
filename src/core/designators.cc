@@ -66,10 +66,10 @@ Closure_sp closureDesignator(T_sp obj) {
 }
 
 core::Path_sp pathDesignator(core::T_sp obj) {
-  if (core__simple_string_p(obj)) {
-    return Path_O::create(gc::As<Str_sp>(obj)->get());
+  if (cl__simple_string_p(obj)) {
+    return Path_O::create(gc::As<String_sp>(obj)->get());
   } else if ( Pathname_sp pn = obj.asOrNull<Pathname_O>() ) {
-    Str_sp spn = cl__namestring(pn);
+    String_sp spn = cl__namestring(pn);
     return Path_O::create(spn->get());
   }else if (gc::IsA<Path_sp>(obj)) {
     return gc::As<Path_sp>(obj);
@@ -90,22 +90,23 @@ namespace core {
 namespace coerce {
 core::Package_sp packageDesignator(core::T_sp obj) {
   // TODO: Add support for Unicode package names
-  Str_sp packageName;
+  String_sp packageName;
   if (Package_sp apkg = obj.asOrNull<Package_O>()) {
     return apkg;
-  } else if (Str_sp str = obj.asOrNull<Str_O>()) {
-    packageName = str;
+  } else if (cl__stringp(obj)) {
+    packageName = gc::As_unsafe<String_sp>(obj);
     goto PACKAGE_NAME;
   } else if (Symbol_sp sym = obj.asOrNull<Symbol_O>()) {
     packageName = cl__symbol_name(sym);
     goto PACKAGE_NAME;
   } else if (Character_sp chr = obj.asOrNull<Character_O>()) {
     stringstream ss;
-    ss << clasp_as_char(chr);
-    packageName = Str_O::create(ss.str());
+    // TODO Handle package names of any string type
+    ss << (clasp_as_claspCharacter(chr)&0xFF);
+    packageName = SimpleBaseCharString_O::make(ss.str());
     goto PACKAGE_NAME;
   }
-  TYPE_ERROR(obj, Cons_O::createList(cl::_sym_or, cl::_sym_String_O, cl::_sym_Symbol_O, cl::_sym_character));
+  TYPE_ERROR(obj, Cons_O::createList(cl::_sym_or, cl::_sym_string, cl::_sym_Symbol_O, cl::_sym_character));
  PACKAGE_NAME:
   Package_sp pkg = gc::As<Package_sp>(_lisp->findPackage(packageName->get(), true));
   return pkg;
@@ -126,8 +127,8 @@ string packageNameDesignator(T_sp obj) {
   if (cl__packagep(obj)) {
     return gc::As<Package_sp>(obj)->getName();
   }
-  Str_sp packageName = stringDesignator(obj);
-  return packageName->get();
+  String_sp packageName = stringDesignator(obj);
+  return packageName->get_std_string();
 }
 
 List_sp listOfPackageDesignators(T_sp obj) {
@@ -158,24 +159,51 @@ List_sp listOfSymbols(T_sp syms) {
   return symbols;
 }
 
-Str_sp stringDesignator(T_sp obj) {
-  if (Str_sp str = obj.asOrNull<Str_O>()) {
-    return str;
+SimpleString_sp simple_string(T_sp obj) {
+  if (cl__stringp(obj)) {
+    if (cl__simple_string_p(obj)) {
+      return gc::As_unsafe<SimpleString_sp>(obj);
+    } else if (gc::IsA<Str8Ns_sp>(obj)) {
+      Str8Ns_sp s8 = gc::As_unsafe<Str8Ns_sp>(obj);
+      BaseSimpleVector_sp base;
+      size_t start, end;
+      s8->asBaseSimpleVectorRange(base,start,end);
+      return gc::As_unsafe<SimpleString_sp>(base->unsafe_subseq(start,end));
+    }
+    StrWNs_sp sw = gc::As_unsafe<StrWNs_sp>(obj);
+    BaseSimpleVector_sp base;
+    size_t start, end;
+    sw->asBaseSimpleVectorRange(base,start,end);
+    return gc::As_unsafe<SimpleString_sp>(base->unsafe_subseq(start,end));
+    SIMPLE_ERROR(BF("This should never happen - the string %s was not recognized as a concrete string type") % _rep_(obj));
   } else if (Symbol_sp sym = obj.asOrNull<Symbol_O>()) {
     return cl__symbol_name(sym);
   } else if (Character_sp chr = obj.asOrNull<Character_O>()) {
-    stringstream ss;
-    ss << clasp_as_char(chr);
-    return Str_O::create(ss.str());
+    if (clasp_base_char_p(chr)) {
+      return SimpleBaseCharString_O::make(1,chr.unsafe_character());
+    }
+    return SimpleCharacterString_O::make(1,chr.unsafe_character());
   }
-  TYPE_ERROR(obj, Cons_O::createList(cl::_sym_or, cl::_sym_String_O, cl::_sym_Symbol_O, cl::_sym_character));
+  TYPE_ERROR(obj, Cons_O::createList(cl::_sym_or, cl::_sym_string, cl::_sym_Symbol_O, cl::_sym_character));
+}
+
+String_sp stringDesignator(T_sp obj) {
+  if (cl__stringp(obj)) {
+    return gc::As_unsafe<String_sp>(obj);
+  } else if (Symbol_sp sym = obj.asOrNull<Symbol_O>()) {
+    return cl__symbol_name(sym);
+  } else if (Character_sp chr = obj.asOrNull<Character_O>()) {
+    if (clasp_base_char_p(chr)) {
+      return SimpleBaseCharString_O::make(1,chr.unsafe_character());
+    }
+    return SimpleCharacterString_O::make(1,chr.unsafe_character());
+  }
+  TYPE_ERROR(obj, Cons_O::createList(cl::_sym_or, cl::_sym_string, cl::_sym_Symbol_O, cl::_sym_character));
 }
 
 List_sp listOfStringDesignators(T_sp obj) {
-  if (obj.nilp())
-    return _Nil<List_V>();
-  if (Cons_sp cobj = obj.asOrNull<Cons_O>()) {
-    List_sp lobj = cobj;
+  if (obj.consp()) {
+    List_sp lobj = gc::As_unsafe<Cons_sp>(obj);
     Cons_sp first = Cons_O::create(_Nil<T_O>());
     Cons_sp cur = first;
     for (auto ic : lobj) {
@@ -184,6 +212,8 @@ List_sp listOfStringDesignators(T_sp obj) {
       cur = one;
     }
     return oCdr(first);
+  } else if (obj.nilp()) {
+    return _Nil<List_V>();
   } else {
     return Cons_O::create(stringDesignator(obj));
   }
@@ -213,41 +243,6 @@ T_sp outputStreamDesignator(T_sp obj) {
 }
 
 
-void inBoundsBelowEndOrError(cl_index index, cl_index start, cl_index end ) {
-  unlikely_if ( index < start ) {
-    SIMPLE_ERROR(BF("The index %ld must be greator or equal to %ld and less than %lu") % index % start % end );
-  }
-  unlikely_if ( index >= end ) {
-    SIMPLE_ERROR(BF("Out of bounds index %ld must be a value from %lu and less than %lu") % index % start % end );
-  }
-  return;
-}
-
-void inBoundsOrError(cl_index index, cl_index start, cl_index end ) {
-  unlikely_if ( index < start ) {
-    SIMPLE_ERROR(BF("The index %ld must be greator or equal to %ld and less than %lu") % index % start % end );
-  }
-  unlikely_if ( index > end ) {
-    SIMPLE_ERROR(BF("Out of bounds index %ld must be less than or equal to %lu") % index % end );
-  }
-  return;
-}
-
-
-/*! if end is a fixnum then check that its in [start,iend) and if
-    not signal an error.   Otherwise return it.
-    if end is NIL then return iend, otherwise error.
-*/
-cl_index coerceToEndInRangeOrError(T_sp end, cl_index start, cl_index iend )
-{
-  if (end.fixnump()) {
-    cl_index rend = end.unsafe_fixnum();
-    inBoundsOrError(rend,start,iend);
-    return rend;
-  }
-  if (end.nilp()) return iend;
-  SIMPLE_ERROR(BF("%s is an illegal designator for the end") % _rep_(end));
-}
 
 
 }; /* coerce */

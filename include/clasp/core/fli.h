@@ -65,7 +65,7 @@ THE SOFTWARE.
 
 #include <clasp/core/foundation.h>
 #include <clasp/core/clasp_ffi_package.fwd.h>
-#include <clasp/core/vectorObjects.h>
+#include <clasp/core/array.h>
 #include <clasp/core/externalObject.h>
 #include <clasp/core/pointer.h>
 
@@ -188,7 +188,7 @@ namespace clasp_ffi {
   CL_DEFUN ForeignData_sp PERCENTallocate_foreign_object(core::T_sp kind);
   CL_DEFUN ForeignData_sp PERCENTallocate_foreign_data(core::Integer_sp size);
 
-  CL_DEFUN ForeignData_sp PERCENTmake_pointer(core::Integer_sp address);
+  CL_DEFUN ForeignData_sp PERCENTmake_pointer(core::T_sp address);
   CL_DEFUN core::T_sp PERCENTpointerp( core::T_sp obj );
 
   CL_DEFUN ForeignData_sp PERCENTmake_nullpointer();
@@ -208,7 +208,7 @@ namespace clasp_ffi {
   // DYNAMIC LIBRARY HANDLING
   CL_DEFUN core::T_sp PERCENTdlopen( core::T_sp path_designator);
   CL_DEFUN core::T_sp PERCENTdlclose( ForeignData_sp handle );
-  CL_DEFUN core::T_sp PERCENTdlsym( core::Str_sp name );
+  CL_DEFUN core::T_sp PERCENTdlsym( core::String_sp name );
 
 }; // namespace clasp_ffi
 
@@ -425,42 +425,42 @@ namespace clasp_ffi {
     // MAKE AND CREATE - LISP EXPOSED FUNCTIONS
 
       static ForeignTypeSpec_sp create( core::Symbol_sp   lisp_symbol,
-                                        core::Str_sp      lisp_name,
+                                        core::String_sp   lisp_name,
                                         core::Integer_sp  size,
                                         core::Fixnum_sp   alignment,
-                                        core::Str_sp      cxx_name,
+                                        core::String_sp   cxx_name,
                                         core::Symbol_sp   llvm_type_symbol,
-                                        core::Str_sp      to_object_fn_name,
-                                        core::Str_sp      from_object_fn_name,
+                                        core::String_sp   to_object_fn_name,
+                                        core::String_sp   from_object_fn_name,
                                         ForeignData_sp    to_object_fn_ptr,
                                         ForeignData_sp    from_object_fn_ptr );
 
     // SLOT ACCESS
       CL_DEFMETHOD core::Symbol_sp      PERCENTlisp_symbol() { return m_lisp_symbol; }; // e.g. :unsigned-int
-      CL_DEFMETHOD core::Str_sp         PERCENTlisp_name() { return m_lisp_name; }; // e.g. unisgned_int
+      CL_DEFMETHOD core::String_sp      PERCENTlisp_name() { return m_lisp_name; }; // e.g. unisgned_int
       CL_DEFMETHOD core::Integer_sp     PERCENTsize() { return m_size; }; // size in bytes
       CL_DEFMETHOD core::Fixnum_sp      PERCENTalignment() { return m_alignment; }; // alignment in bytes
-      CL_DEFMETHOD core::Str_sp         PERCENTcxx_name() { return m_cxx_name; }; // e.g. "unsigned int"
+      CL_DEFMETHOD core::String_sp      PERCENTcxx_name() { return m_cxx_name; }; // e.g. "unsigned int"
 
-      CL_DEFMETHOD core::Str_sp         PERCENTto_object_fn_name() { return m_to_object_fn_name; };
-      CL_DEFMETHOD core::Str_sp         PERCENTfrom_object_fn_name() { return m_from_object_fn_name; };
-      CL_DEFMETHOD core::Str_sp         PERCENTto_object_fn_ptr() { return m_to_object_fn_ptr; };
-      CL_DEFMETHOD core::Str_sp         PERCENTfrom_object_fn_ptr() { return m_from_object_fn_ptr; };
+      CL_DEFMETHOD core::String_sp      PERCENTto_object_fn_name() { return m_to_object_fn_name; };
+      CL_DEFMETHOD core::String_sp      PERCENTfrom_object_fn_name() { return m_from_object_fn_name; };
+      CL_DEFMETHOD core::String_sp      PERCENTto_object_fn_ptr() { return m_to_object_fn_ptr; };
+      CL_DEFMETHOD core::String_sp      PERCENTfrom_object_fn_ptr() { return m_from_object_fn_ptr; };
 
-      CL_DEFMETHOD core::Str_sp         PERCENTllvm_type_symbol() { return m_llvm_type_symbol; };
+      CL_DEFMETHOD core::String_sp      PERCENTllvm_type_symbol() { return m_llvm_type_symbol; };
 
       CL_DEFMETHOD void                 PERCENTset_llvm_type_symbol( core::Symbol_sp llvm_type_symbol );
 
     // SLOTS
       core::Symbol_sp       m_lisp_symbol;
-      core::Str_sp          m_lisp_name;
+      core::String_sp       m_lisp_name;
       core::Integer_sp      m_size;
       core::Fixnum_sp       m_alignment;
-      core::Str_sp          m_cxx_name;
+      core::String_sp       m_cxx_name;
       core::Symbol_sp       m_llvm_type_symbol;
 
-      core::Str_sp          m_to_object_fn_name;
-      core::Str_sp          m_from_object_fn_name;
+      core::String_sp       m_to_object_fn_name;
+      core::String_sp       m_from_object_fn_name;
       ForeignData_sp        m_to_object_fn_ptr;
       ForeignData_sp        m_from_object_fn_ptr;
 

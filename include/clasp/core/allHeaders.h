@@ -41,8 +41,6 @@ THE SOFTWARE.
 #include <clasp/core/bignum.h>
 #include <clasp/core/binder.fwd.h>
 #include <clasp/core/binder.h>
-#include <clasp/core/bitVector.fwd.h>
-#include <clasp/core/bitVector.h>
 #include <clasp/core/bootStrapCoreSymbolMap.h>
 #include <clasp/core/builtInClass.fwd.h>
 #include <clasp/core/builtInClass.h>
@@ -122,7 +120,7 @@ THE SOFTWARE.
 #include <clasp/core/lispStream.h>
 #include <clasp/core/lispString.fwd.h>
 #include <clasp/core/lispString.h>
-#include <clasp/core/lispVector.h>
+#include <clasp/core/array.h>
 #include <clasp/core/loadTimeValues.fwd.h>
 #include <clasp/core/loadTimeValues.h>
 #include <clasp/core/mathDispatch.h>
@@ -196,9 +194,6 @@ THE SOFTWARE.
 #include <clasp/core/stdClass.fwd.h>
 #include <clasp/core/stdClass.h>
 #include <clasp/core/str.fwd.h>
-#include <clasp/core/str.h>
-#include <clasp/core/strWithFillPtr.fwd.h>
-#include <clasp/core/strWithFillPtr.h>
 #include <clasp/core/stringList.fwd.h>
 #include <clasp/core/stringList.h>
 #include <clasp/core/stringSet.fwd.h>
@@ -225,6 +220,6 @@ THE SOFTWARE.
 #include <clasp/core/tnc.h>
 #include <clasp/core/translators.h>
 #include <clasp/core/vectorObjects.fwd.h>
-#include <clasp/core/vectorObjects.h>
+#include <clasp/core/array.h>
 #include <core/weakReference.h>
 #include <clasp/core/wrappers.h>

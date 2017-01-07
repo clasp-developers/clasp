@@ -43,7 +43,7 @@ size_t global_next_unused_kind = KIND_max+1;
  */
 
 const char *global_HardcodedKinds[] = {
-    "", "core::T_O", "core::StandardObject_O", "core::Metaobject_O", "core::Specializer_O", "core::Class_O", "core::BuiltInClass_O", "core::StdClass_O", "core::StandardClass_O", "core::StructureClass_O", "core::Symbol_O", "core::Str_O"};
+    "", "core::T_O", "core::StandardObject_O", "core::Metaobject_O", "core::Specializer_O", "core::Class_O", "core::BuiltInClass_O", "core::StdClass_O", "core::StandardClass_O", "core::StructureClass_O", "core::Symbol_O"};
 
 CL_DEFUN int gctools__max_bootstrap_kinds() {
   return sizeof(global_HardcodedKinds) / sizeof(global_HardcodedKinds[0]);
@@ -59,28 +59,12 @@ int iBootstrapKind(const string &name) {
   SIMPLE_ERROR(BF("Illegal bootstrap-kind %s") % name);
 }
 
-void initialize_bootstrap_kinds() {
-  DEPRECIATED();
-// Hard-coded bootstrap kinds
-#define SetupKind(_x_) _x_::static_Kind = iBootstrapKind(#_x_)
-  SetupKind(core::T_O);
-  SetupKind(core::StandardObject_O);
-  SetupKind(core::Metaobject_O);
-  SetupKind(core::Specializer_O);
-  SetupKind(core::Class_O);
-  SetupKind(core::BuiltInClass_O);
-  SetupKind(core::StdClass_O);
-  SetupKind(core::StandardClass_O);
-  SetupKind(core::StructureClass_O);
-  SetupKind(core::Symbol_O);
-  SetupKind(core::Str_O);
-}
 
 CL_DEFUN core::Cons_sp gctools__bootstrap_kind_symbols() {
   core::Cons_sp list(_Nil<core::Cons_O>());
   for (int i(gctools__max_bootstrap_kinds() - 1); i > 0; --i) {
     string name = global_HardcodedKinds[i];
-    list = core::Cons_O::create(core::Str_O::create(name), list);
+    list = core::Cons_O::create(core::SimpleBaseCharString_O::make(name), list);
   }
   return list;
 }
@@ -196,9 +180,9 @@ CL_DEFUN core::T_mv core__hardwired_kinds() {
   std::vector<Immediate_info> immediates = get_immediate_info();
   core::List_sp result = _Nil<core::T_O>();
   for ( int i=0; i<immediates.size(); ++i ) {
-    result = core::Cons_O::create(core::Cons_O::create(core::Str_O::create(immediates[i]._name), core::clasp_make_fixnum(immediates[i]._kind)),result);
+    result = core::Cons_O::create(core::Cons_O::create(core::SimpleBaseCharString_O::make(immediates[i]._name), core::clasp_make_fixnum(immediates[i]._kind)),result);
   }
-  core::List_sp ignoreClasses = _Nil<core::T_O>(); // core::Cons_O::createList(Str_O::create("core__Cons_O") <-- future when CONS are in their own pool
+  core::List_sp ignoreClasses = _Nil<core::T_O>(); // core::Cons_O::createList(SimpleBaseCharString_O::make("core__Cons_O") <-- future when CONS are in their own pool
   return Values(result, ignoreClasses, core::clasp_make_fixnum(kind_first_general), core::clasp_make_fixnum(kind_first_alien), core::clasp_make_fixnum(kind_last_alien), core::clasp_make_fixnum(kind_first_instance));
 }
 
@@ -494,7 +478,8 @@ CL_DECLARE();
 CL_DOCSTRING("room - Return info about the reachable objects.  x can be T, nil, :default - as in ROOM.  marker can be a fixnum (0 - matches everything, any other number/only objects with that marker)");
 CL_DEFUN core::T_mv cl__room(core::T_sp x, core::Fixnum_sp marker, core::T_sp tmsg) {
   string smsg = "Total";
-  if (core::Str_sp msg = tmsg.asOrNull<core::Str_O>()) {
+  if (cl__stringp(tmsg)) {
+    core::String_sp msg = gc::As_unsafe<core::String_sp>(tmsg);
     smsg = msg->get();
   }
 #ifdef USE_MPS
@@ -616,7 +601,7 @@ CL_DEFUN void gctools__function_call_count_profiler(core::T_sp func) {
         results = core::Cons_O::create(core::Cons_O::create(core::clasp_make_fixnum(diff),f),results);
       }
     });
-  printf("%s:%d There are %d results\n", __FILE__, __LINE__, core::cl__length(results));
+  printf("%s:%d There are %zu results\n", __FILE__, __LINE__, core::cl__length(results));
   results = core::cl__sort(results,cl::_sym__LT_,cl::_sym_car);
   for ( auto cur : results ) {
     core::T_sp one = oCar(cur);

@@ -31,9 +31,10 @@ THE SOFTWARE.
 #include <clasp/core/symbolTable.h>
 #include <clasp/core/lispVector.h>
 #include <clasp/core/bitVector.h>
+#include <clasp/core/print.h>
+#include <clasp/core/lispStream.h>
 #include <clasp/core/str.h>
 #include <clasp/core/evaluator.h>
-#include <clasp/core/strWithFillPtr.h>
 #include <clasp/core/vectorObjects.h>
 #include <clasp/core/character.h>
 #include <clasp/core/wrappers.h>
@@ -41,6 +42,10 @@ namespace core {
 
 // ----------------------------------------------------------------------
 //
+
+void noFillPointerError() {
+  SIMPLE_ERROR(BF("This vector does not have a fill pointer"));
+}
 
 CL_LAMBDA(&rest args);
 CL_DECLARE();
@@ -52,61 +57,41 @@ CL_DEFUN Vector_sp cl__vector(List_sp args) {
 };
 SYMBOL_EXPORT_SC_(ClPkg, subtypep);
 
-
 CL_LAMBDA(element-type dimension &optional adjustable (fill-pointer t) displaced-to displaced-index-offset initial-element initial-element-supplied-p);
 CL_DECLARE();
-CL_DOCSTRING("make_vector See si_make_vector in ecl>>array.d");
+CL_DOCSTRING("Makes a vector based on the arguments. See si_make_vector in ecl>>array.d");
 CL_DEFUN Vector_sp core__make_vector(T_sp element_type,
                                      size_t dimension,
                                      bool adjustable,
                                      T_sp fill_pointer,
                                      T_sp displaced_to,
-                                     T_sp displaced_index_offset,
+                                     cl_index displaced_index_offset,
                                      T_sp initial_element,
-                                     T_sp initial_element_supplied_p) {
+                                     bool initial_element_supplied_p) {
+  // FIXME: make compatible with the new code.
+  IMPLEMENT_ME(BF("This has to be brought up to speed with the new code"));
   ASSERTF(displaced_to.nilp(), BF("Add support for make-vector :displaced-to"));
   ASSERTF(displaced_index_offset.nilp() || unbox_fixnum(gc::As<Fixnum_sp>(displaced_index_offset)) == 0, BF("Add support for make-vector non-zero :displaced-index-offset "));
+  if (fill_pointer == cl::_sym_T_O) fill_pointer = clasp_make_fixnum(dimension);
   if (element_type == cl::_sym_bit) {
-    int init_bit = 0;
-    if (initial_element_supplied_p.notnilp()) {
-      if (initial_element.fixnump()) {
-        init_bit = initial_element.unsafe_fixnum()&0x1;
-      } else {
-        TYPE_ERROR(initial_element,cl::_sym_bit);
+    uint init_bit = 0;
+    if (initial_element_supplied_p) {
+      if (initial_element.fixnump() ) {
+        if (initial_element.unsafe_fixnum() < 0 ||
+            initial_element.unsafe_fixnum() > 1 ) {
+            init_bit = initial_element.unsafe_fixnum();
+          goto GOOD_BIT;
+        }
       }
+      TYPE_ERROR(initial_element,cl::_sym_bit);
     }
-    if (adjustable || fill_pointer.notnilp()) {
-      size_t s_fill_ptr = dimension;
-      if (fill_pointer.notnilp()) {
-        if (fill_pointer != cl::_sym_T_O)
-          s_fill_ptr = MIN(dimension, std::abs(unbox_fixnum(gc::As<Fixnum_sp>(fill_pointer))));
-      }
-      return BitVectorWithFillPtr_O::make(dimension, s_fill_ptr, adjustable,init_bit);
-    }
-    return SimpleBitVector_O::make(dimension,init_bit);
+  GOOD_BIT:
+    return make_bit_vector(init_bit, dimension,adjustable,fill_pointer, displaced_to, displaced_index_offset);
   } else if (element_type == cl::_sym_base_char
              || element_type == cl::_sym_character
              || element_type == cl::_sym_standard_char
              || element_type == cl::_sym_extended_char) {
-    // Currently any kind of Character vector is a Str or subclass
-    // TODO: Maybe use other types of strings - unicode?
-    char c = ' ';
-    if (initial_element_supplied_p.notnilp()) {
-      if (Character_sp cc = initial_element.asOrNull<Character_O>()) {
-        c = clasp_as_char(cc);
-      } else {
-        TYPE_ERROR(initial_element,cl::_sym_character);
-      }
-    }
-    if (fill_pointer.notnilp()) {
-      int ifp = 0;
-      if (fill_pointer == cl::_sym_T_O)
-        ifp = dimension;
-      else
-        ifp = MIN(dimension, std::abs(unbox_fixnum(gc::As<Fixnum_sp>(fill_pointer))));
-      return StrWithFillPtr_O::create(c, dimension, ifp, adjustable);
-    }
-    return (Str_O::create(c, dimension));
+    return make_string(element_type, dimension,adjustable,fill_pointer, displaced_to, displaced_index_offset, initial_element, initial_element_supplied_p);
   } else {
     if ((element_type).consp()) {
       // For type = '(unsigned-byte XXX) set initial_element if it hasn't been set
@@ -115,16 +100,7 @@ CL_DEFUN Vector_sp core__make_vector(T_sp element_type,
         initial_element = make_fixnum(0);
       }
     }
-    if (fill_pointer.notnilp()) {
-      int ifp = 0;
-      if (fill_pointer == _lisp->_true())
-        ifp = dimension;
-      else
-        ifp = unbox_fixnum(gc::As<Fixnum_sp>(fill_pointer));
-      return VectorObjects_O::make(initial_element, dimension, element_type, clasp_make_fixnum(ifp));
-    } else {
-      return VectorObjects_O::make(initial_element, dimension, element_type);
-    }
+    return make_vector_objects(element_type, dimension, initial_element, initial_element_supplied_p.notnilp(), adjustable, fill_pointer, displaced_to, displaced_index_offset);
   }
   SIMPLE_ERROR(BF("Handle make-vector :element-type %s") % _rep_(element_type));
 };
@@ -140,22 +116,83 @@ CL_DEFUN T_sp core__adjust_vector(T_sp array, int new_dimensions, T_sp initial_e
   IMPLEMENT_MEF(BF("Implement adjustVector for: %s") % _rep_(array));
 };
 
-void Vector_O::initialize() {
-  _OF();
-  this->Base::initialize();
+
+cl_index NonSimpleVector_O::checkBounds(cl_index start, T_sp end, size_t length) {
+  coerce::inBoundsOrError(start,0,length);
+  cl_index iend = coerce::coerceToEndInRangeOrError(end,start,length);
+  return iend;
 }
 
-void Vector_O::archiveBase(::core::ArchiveP node) {
-  // Do nothing
+T_sp NonSimpleVector_O::subseq(cl_index start, T_sp end) const {
+  cl_index length = this->length();
+  coerce::inBoundsOrError(start,0,length);
+  cl_index iend = coerce::coerceToEndInRangeOrError(end,start,length);
+  return this->_Vec->subseq(start+this->_DisplacedIndexOffset,iend+this->_DisplacedIndexOffset);
 }
+
+T_sp NonSimpleVector_O::setf_subseq(cl_index start, T_sp end, T_sp new_subseq) const {
+  size_t iend = checkBounds(start,end,this->length());
+  return this->_Vec->setf_subseq(start+this->_DisplacedIndexOffset,iend+this->_DisplacedIndexOffset,new_subseq);
+}
+
+T_sp NonSimpleVector_O::vectorPush(T_sp newElement) {
+  unlikely_if (!this->_FillPointerp) noFillPointerError();
+  cl_index idx = this->_FillPointerOrLength;
+  likely_if (idx < this->_TotalArraySize) {
+    this->_Vec->rowMajorAset(idx+this->_DisplacedIndexOffset,newElement);
+    ++this->_FillPointerOrLength;
+    return clasp_make_fixnum(idx);
+  }
+  return _Nil<T_O>();
+}
+
+Fixnum_sp NonSimpleVector_O::vectorPushExtend(T_sp newElement, cl_index extension) {
+  unlikely_if (!this->_FillPointerP) noFillPointerError();
+  cl_index idx = this->_FillPointerOrLength;
+  unlikely_if (idx >= this->_TotalArraySize) {
+    if (extension <= 0) extension = 32;
+  }
+  cl_index new_size = this->_TotalArraySize+extension;
+  unlikely_if (!cl::_sym_adjust_array->boundP()) {
+    this->setSize(new_size);
+  } else {
+    eval::funcall(cl::_sym_adjust_array,this->asSmartPtr(),clasp_make_fixnum(new_size),cl::_sym_fill_pointer,this->_FillPointer);
+  }
+  this->_Vec->rowMajorAset(idx+this->_DisplacedIndexOffset,newElement);
+  ++this->_FillPointerOrLength;
+  return make_fixnum(idx);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 gc::Fixnum Vector_O::arrayDimension(gc::Fixnum axisNumber) const {
   ASSERTF(axisNumber == 0, BF("Illegal axis number %d for Vector") % axisNumber);
-  return this->dimension();
+  return this->arrayTotalSize();
 }
 
 List_sp Vector_O::arrayDimensions() const {
-  return Cons_O::create(make_fixnum(this->dimension()), _Nil<T_O>());
+  return Cons_O::create(make_fixnum(this->arrayTotalSize()), _Nil<T_O>());
 }
 
 bool Vector_O::equalp(T_sp o) const {
@@ -186,7 +223,7 @@ bool Vector_O::equalp(T_sp o) const {
   return false;
 }
 CL_NAME("FILL-POINTER-SET");
-CL_DEFMETHOD void Vector_O::setFillPointer(T_sp idx)
+CL_DEFMETHOD void Vector_O::fillPointerSet(T_sp idx)
 {
   ERROR(cl::_sym_simpleTypeError,
         core::lisp_createList(kw::_sym_formatControl, core::lisp_createStr("~S is not an array with a fill pointer."),
@@ -214,8 +251,8 @@ T_sp Vector_O::reverse() {
   Vector_sp newVec = gc::As<Vector_sp>(eval::funcall(_sym_make_vector, this->elementType(), make_fixnum(thisLength)));
   for (int i = 0; i < thisLength; i++) {
     int ri = lastElement - i;
-    //    newVec->setf_elt(ri, this->elt(i));
-    newVec->aset_unsafe(ri, this->elt(i));
+    //    newVec->rowMajorAset(ri, this->rowMajorAref(i));
+    newVec->aset_unsafe(ri, this->rowMajorAref(i));
   }
   return newVec;
 }
@@ -242,6 +279,51 @@ T_sp Vector_O::nreverse() {
   return this->sharedThis<T_O>();
 }
 
+
+CL_DEFUN T_sp core__make_simple_string8(T_sp val)
+{
+  if (Str_sp sv = val.asOrNull<Str_O>() ) {
+    GC_ALLOCATE_VARIADIC(SimpleString8_O,dv,' ',sv->length());
+    memcpy(dv->begin(),sv->begin(),sv->length());
+    return dv;
+  }
+  SIMPLE_ERROR(BF("Only argument must be a string"));
+}
+  
+  
+
+// ------------------------------------------------------------
+//
+// SimpleString8_O
+//
+
+void SimpleString8_O::__write__(T_sp stream) const {
+  cl_index ndx;
+  if (!clasp_print_escape() && !clasp_print_readably()) {
+    for (ndx = 0; ndx < this->length(); ndx++) {
+      clasp_write_char((*this)[ndx], stream);
+    }
+  } else {
+    clasp_write_char('"', stream);
+    for (ndx = 0; ndx < this->length(); ndx++) {
+      char c = (*this)[ndx];
+      if (c == '"' || c == '\\')
+        clasp_write_char('\\', stream);
+      clasp_write_char(c, stream);
+    }
+    clasp_write_char('"', stream);
+  }
+}
+
+// ------------------------------------------------------------
+// ------------------------------------------------------------
+
+
+
+
+
+
+
 CL_LAMBDA(newElement vector);
 CL_DECLARE();
 CL_DOCSTRING("vectorPush");
@@ -255,6 +337,7 @@ CL_DOCSTRING("vectorPushExtend");
 CL_DEFUN Fixnum_sp cl__vector_push_extend(T_sp newElement, Vector_sp vec, int extension) {
   return vec->vectorPushExtend(newElement, extension);
 }
+
 
 
 

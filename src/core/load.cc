@@ -124,7 +124,7 @@ CL_DEFUN T_sp cl__load(T_sp source, T_sp verbose, T_sp print, T_sp if_does_not_e
   //        printf("%s:%d cl__load source= %s\n", __FILE__, __LINE__, _rep_(source).c_str());
   if (verbose.notnilp()) {
     eval::funcall(cl::_sym_format, _lisp->_true(),
-                  Str_O::create("~&;;; Loading ~s~%"),
+                  SimpleBaseCharString_O::make("~&;;; Loading ~s~%"),
                   source);
   }
 
@@ -215,7 +215,7 @@ NOT_A_FILENAME:
   }
   if (print.notnilp()) {
     eval::funcall(cl::_sym_format, _lisp->_true(),
-                  Str_O::create("~&;;; Loading ~s~%"),
+                  SimpleBaseCharString_O::make("~&;;; Loading ~s~%"),
                   filename);
   }
   return _lisp->_true();

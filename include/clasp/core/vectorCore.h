@@ -97,7 +97,7 @@ public:
   MutableVector(size_t n, const value_type &val = value_type()) : VectorBase<T>(), _Capacity(n + MutableVectorPad) {
   }
 
-  size_t size() const { return this->_End; };
+  cl_index size() const { return this->_End; };
 
   reference operator[](size_t n) { return this->_Data[n]; };
 

@@ -68,17 +68,17 @@ void VectorObjects_O::setup(T_sp initialElement, size_t dimension, T_sp elementT
     this->_Values = values;
     this->_Values.resize(dimension, initialElement);
     this->_DisplacedIndexOffset = 0;
-    this->_DisplacedTo = _Nil<core::T_O>();
+    this->_DisplacedTo.reset_();
   } else {
-    vector_type values = gc::As<VectorObjects_sp>(displacedTo)->_Values;
-    this->_DisplacedTo = displacedTo;
+    this->_Values = vector_type();
+    this->_DisplacedTo = gc::As<VectorObjects_sp>(displacedTo);
     this->_DisplacedIndexOffset = displacedIndexOffset;
   }
 }
 
 void VectorObjects_O::fillInitialContents(T_sp ic) {
-  if (cl__length(ic) != this->dimension())
-    SIMPLE_ERROR(BF("The number of elements %d in :INITIAL-CONTENTS does not match the size of the vector %d") % cl__length(ic) % this->dimension());
+  if (cl__length(ic) != this->arrayTotalSize())
+    SIMPLE_ERROR(BF("The number of elements %d in :INITIAL-CONTENTS does not match the size of the vector %d") % cl__length(ic) % this->arrayTotalSize());
   if (ic.nilp()) {
     // do nothing
   } else if (Cons_sp ccInitialContents = ic.asOrNull<Cons_O>()) {
@@ -118,7 +118,7 @@ void VectorObjects_O::fillArrayWithElt(T_sp element, Fixnum_sp start, T_sp end) 
   ASSERTF(iend <= last, BF("Illegal value for end[%d] - must be between istart[%d] and less than %d") % iend % istart % last);
   ASSERTF(istart >= 0 <= iend, BF("Illegal value for start[%d] - must be between 0 and %d") % istart % iend);
   for (uint i = istart; i < iend; i++) {
-    this->_Values[this->_DisplacedIndexOffset+i] = element;
+    (*this)[i] = element;
   }
 }
 
@@ -162,20 +162,18 @@ T_sp VectorObjects_O::subseq(cl_index istart, T_sp end) const {
   cl_index isize = iend - istart;
   VectorObjects_sp result = VectorObjects_O::make(_Nil<core::T_O>(),isize,this->_ElementType,_Nil<core::T_O>());
   for (cl_index i = 0; i < isize; ++i) {
-      result->setf_elt(i,this->_Values[this->_DisplacedIndexOffset+istart]);
-      ++istart;
+    result->setf_elt(i,(*this)[istart]);
+    ++istart;
   }
   return result;
 }
 
 
 T_sp VectorObjects_O::vectorPush(T_sp newElement) {
-  if (!this->_FillPointer.fixnump()) {
-    SIMPLE_ERROR(BF("This vector does not have a fill pointer"));
-  }
+  if (!this->_FillPointer.fixnump()) noFillPointerError();
   cl_index idx = this->_FillPointer.unsafe_fixnum();
   if (idx < this->_Dimension) {
-    this->_Values[this->_DisplacedIndexOffset+idx] = newElement;
+    (*this)[idx] = newElement;
     this->_FillPointer = clasp_make_fixnum(idx+1);
     return clasp_make_fixnum(idx);
   }
@@ -183,14 +181,12 @@ T_sp VectorObjects_O::vectorPush(T_sp newElement) {
 }
 
 Fixnum_sp VectorObjects_O::vectorPushExtend(T_sp newElement, cl_index extension) {
-  if (!this->_FillPointer.fixnump()) {
-    SIMPLE_ERROR(BF("This vector does not have a fill pointer"));
-  }
+  unlikely_if (!this->_FillPointer.fixnump()) noFillPointerError();
   cl_index idx = this->_FillPointer.unsafe_fixnum();
-  if (idx >= this->_Dimension) {
+  unlikely_if (idx >= this->arrayTotalSize()) {
     if (extension <= 0) extension = 256;
   }
-  cl_index new_size = this->_Dimension+extension;
+  cl_index new_size = this->arrayTotalSize()+extension;
   unlikely_if (!cl::_sym_adjust_array->boundP()) {
     this->adjust(_Nil<core::T_O>(),new_size);
   } else {
@@ -202,87 +198,38 @@ Fixnum_sp VectorObjects_O::vectorPushExtend(T_sp newElement, cl_index extension)
 }
 
 
+void VectorObjects_O::fillPointerSet(T_sp fp) {
+  if (fp.fixnump()) {
+    cl_index ifp = fp.unsafe_fixnum();
+    if (ifp >= 0 && ifp <= this->arrayTotalSize()) {
+      this->_FillPointer = fp;
+      return;
+    }
+  } else if (fp.nilp()) {
+    this->_FillPointer = fp;
+    return;
+  }
+  SIMPLE_ERROR(BF("Illegal fill-pointer %d - must be less than %d or nil") % fp % this->length());
+}
+
+
+
+ Vector_sp make_vector_objects(T_sp element_type,
+                               size_t dimension,
+                               T_sp initial_element,
+                               bool initial_element_supplied_p,
+                               bool adjustable,
+                               T_sp fill_pointer,
+                               T_sp displaced_to,
+                               cl_index displaced_index_offset)
+ {
+   if (!initial_element_supplied_p) {
+     initial_element = _Nil<T_O>();
+   }
+   VectorObjects_sp v = VectorObjects_O::make(initial_element,dimension,element_type,fill_pointer,displaced_to,displaced_index_offset);
+   return v;
+ }
+
 }; /* core */
 
 
-namespace core {
-#if 0
-#include <clasp/core/common.h>
-#include <clasp/core/environment.h>
-#include <clasp/core/symbolTable.h>
-#include <clasp/core/serialize.h>
-#include <clasp/core/wrappers.h>
-namespace core {
-
-// ----------------------------------------------------------------------
-//
-
-CL_LAMBDA(vec);
-CL_DECLARE();
-CL_DOCSTRING("Return the fill-pointer");
-CL_DEFUN int cl__fill_pointer(Vector_sp vec) {
-  return vec->fillPointer();
-}
-
-
-
-VectorObjects_sp VectorObjectsWithFillPtr_O::make(T_sp initialElement, int dimension, Fixnum fillPtr, T_sp elementType) {
-  GC_ALLOCATE(VectorObjectsWithFillPtr_O, vo);
-  if (fillPtr < 0)
-    fillPtr = 0;
-  if (fillPtr > dimension)
-    fillPtr = dimension;
-  vo->_FillPtr = fillPtr;
-  vo->setup(initialElement, dimension, elementType, 0);
-  return vo;
-}
-
-VectorObjectsWithFillPtr_O::VectorObjectsWithFillPtr_O() : Base(){};
-
-
-
-
-void VectorObjectsWithFillPtr_O::archiveBase(::core::ArchiveP node) {
-  this->Base::archiveBase(node);
-  SYMBOL_EXPORT_SC_(KeywordPkg, fillPointer);
-  node->attribute(kw::_sym_fillPointer, this->_FillPtr);
-}
-
-string VectorObjectsWithFillPtr_O::__repr__() const {
-  _OF();
-  stringstream ss;
-  ss << "#" << this->_FillPtr << "( ";
-  for (int i = 0; i < this->_FillPtr; i++) {
-    ss << _rep_(this->elt(i)) << " ";
-  }
-  ss << ")";
-  return ss.str();
-}
-
-
-T_sp VectorObjectsWithFillPtr_O::elt(int index) const {
-  if (index >= this->_FillPtr) {
-    //	    ERROR(make_condition(_sym_indexTooLargeError) << kw::_sym_datum << index << kw::_sym_expectedType << this->_FillPtr );
-    SIMPLE_ERROR(BF("Index %d is too large - must be less than %d") % index % this->_FillPtr);
-  }
-  return this->Base::elt(index);
-}
-
-T_sp VectorObjectsWithFillPtr_O::setf_elt(int index, T_sp value) {
-  if (index >= this->_FillPtr) {
-    //	    ERROR(make_condition(_sym_indexTooLargeError) << kw::_sym_datum << index << kw::_sym_expectedType << this->_FillPtr );
-    SIMPLE_ERROR(BF("Index %d is too large - must be less than %d") % index % this->_FillPtr);
-  }
-  return this->Base::setf_elt(index, value);
-}
-
-void VectorObjectsWithFillPtr_O::setFillPointer(cl_index fp) {
-  if (fp < this->_Dimension) {
-    this->_FillPtr = fp;
-    return;
-  }
-  TYPE_ERROR_INDEX(this->asSmartPtr(),fp);
-}
-#endif
-
-};

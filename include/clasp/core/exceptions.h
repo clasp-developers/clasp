@@ -83,7 +83,7 @@ struct _TRACE {
     THROW_NEVER_REACH();                                                                  \
   }
 #define SIMPLE_WARN(_boost_fmt_) \
-  core::eval::funcall(cl::_sym_warn, core::Str_O::create((_boost_fmt_).str()));
+  core::eval::funcall(cl::_sym_warn, core::SimpleBaseCharString_O::make((_boost_fmt_).str()));
 #define ERROR(_type_, _initializers_)                                               \
   {                                                                                 \
     lisp_error( _type_, _initializers_); \
@@ -162,6 +162,8 @@ struct _TRACE {
 #define CONTROL_ERROR() NO_INITIALIZERS_ERROR(cl::_sym_controlError);
 
 #define WRONG_TYPE_ARG(_datum_, _expectedType_) core__wrong_type_argument(__FILE__, __LINE__, core::lisp_intern(__FUNCTION__, CurrentPkg), _datum_, _expectedType_)
+
+#define FUNCTION_WRONG_TYPE_ARG(function_name, _datum_, _expectedType_) core__function_wrong_type_argument( function_name, _datum_, _expectedType_)
 
 #define ERROR_WRONG_TYPE_KEY_ARG(_fn_, _key_, _value_, _type_) af_wrongTypeKeyArg(__FILE__, __LINE__, _fn_, _key_, _value_, _type_)
 
@@ -714,6 +716,8 @@ public:
   T_mv returnObject() { return this->_ReturnObject; };
 };
 
+void core__function_wrong_type_argument(Symbol_sp function, T_sp value, T_sp type);
+
 void core__wrong_type_argument(const string &sourceFile, int lineno, Symbol_sp function, T_sp value, T_sp type);
 
 void af_wrongTypeKeyArg(const string &sourceFile, int lineno, Symbol_sp function, T_sp key, T_sp value, T_sp type);
@@ -725,7 +729,7 @@ void af_wrongTypeOnlyArg(const string &sourceFile, int lineno, Symbol_sp functio
 void core__wrong_index(const string &sourceFile, int lineno, Symbol_sp function, T_sp array, int which, T_sp index, int noninc_index);
 
 void cl__reader_error(const string &sourceFile, uint lineno, Symbol_sp function,
-                    Str_sp fmt, List_sp fmtargs, T_sp stream = _Nil<T_O>());
+                    String_sp fmt, List_sp fmtargs, T_sp stream = _Nil<T_O>());
 
 void assert_type_integer(T_sp p, int idx);
 

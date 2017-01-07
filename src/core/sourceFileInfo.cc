@@ -85,14 +85,14 @@ CL_DOCSTRING("sourceFileInfo given a source name (string) or pathname or integer
 CL_DEFUN T_mv core__source_file_info(T_sp sourceFile, T_sp sourceDebugNamestring, size_t sourceDebugOffset, bool useLineno) {
   if (sourceFile.nilp()) {
     return core__source_file_info(make_fixnum(0));
-  } else if (Str_sp strSourceFile = sourceFile.asOrNull<Str_O>()) {
-    return _lisp->getOrRegisterSourceFileInfo(strSourceFile->get(), sourceDebugNamestring, sourceDebugOffset, useLineno);
+  } else if (cl__stringp(sourceFile)) {
+    return _lisp->getOrRegisterSourceFileInfo(gc::As<String_sp>(sourceFile)->get_std_string(), sourceDebugNamestring, sourceDebugOffset, useLineno);
   } else if (Pathname_sp pnSourceFile = sourceFile.asOrNull<Pathname_O>()) {
     T_sp ns = cl__namestring(pnSourceFile);
     if (ns.nilp()) {
       SIMPLE_ERROR(BF("No namestring could be generated for %s") % _rep_(pnSourceFile));
     }
-    return _lisp->getOrRegisterSourceFileInfo(gc::As<Str_sp>(ns)->get(), sourceDebugNamestring, sourceDebugOffset, useLineno);
+    return _lisp->getOrRegisterSourceFileInfo(gc::As<String_sp>(ns)->get_std_string(), sourceDebugNamestring, sourceDebugOffset, useLineno);
   } else if (sourceFile.fixnump()) { // Fixnum_sp fnSourceFile = sourceFile.asOrNull<Fixnum_O>() ) {
     Fixnum_sp fnSourceFile(gc::As<Fixnum_sp>(sourceFile));
     size_t idx = unbox_fixnum(fnSourceFile);
@@ -294,22 +294,6 @@ CL_DEFUN T_sp core__walk_to_find_source_pos_info(T_sp obj, T_sp defaultSpi) {
   return defaultSpi;
 };
 
-#if 0
-#define ARGS_af_SourceFileInfoGetOrCreate "(arg)"
-#define DECL_af_SourceFileInfoGetOrCreate ""
-#define DOCS_af_SourceFileInfoGetOrCreate "SourceFileInfoGetOrCreate"
-    T_sp af_SourceFileInfoGetOrCreate(T_sp arg)
-    {
-	if ( Str_sp sarg = arg.asOrNull<Str_O>() )
-	{
-	    return SourceFileInfo_O::getOrCreate(sarg->get());
-	} else if ( Pathname_sp parg = arg.asOrNull<Pathname_O>() )
-	{
-	    return SourceFileInfo_O::getOrCreate(parg);
-	}
-	SIMPLE_ERROR(BF("Illegal argument for source-file-info-get-or-create"));
-    }
-#endif
 
 SourceFileInfo_O::SourceFileInfo_O() : Base(), _PermanentPathName(NULL), _PermanentFileName(NULL){};
 
@@ -328,7 +312,7 @@ SourceFileInfo_sp SourceFileInfo_O::create(Pathname_sp path, int handle, T_sp so
 }
 
 SourceFileInfo_sp SourceFileInfo_O::create(const string &str, int handle, T_sp truename, size_t offset, bool useLineno) {
-  Pathname_sp pn = cl__pathname(Str_O::create(str));
+  Pathname_sp pn = cl__pathname(SimpleBaseCharString_O::make(str));
   return SourceFileInfo_O::create(pn, handle, truename, offset, useLineno);
 }
 
@@ -347,24 +331,24 @@ string SourceFileInfo_O::__repr__() const {
 CL_LISPIFY_NAME("SourceFileInfo-sourceDebugNamestring");
 CL_DEFMETHOD string SourceFileInfo_O::sourceDebugNamestring() const {
   if (this->_SourceDebugNamestring.notnilp()) {
-    return gc::As<Str_sp>(this->_SourceDebugNamestring)->get();
+    return gc::As<String_sp>(this->_SourceDebugNamestring)->get_std_string();
   }
   return this->namestring();
 }
 
 string SourceFileInfo_O::fileName() const {
-  Str_sp s = cl__file_namestring(this->_pathname);
-  return s->get();
+  String_sp s = gc::As<String_sp>(cl__file_namestring(this->_pathname));
+  return s->get_std_string();
 }
 
 string SourceFileInfo_O::namestring() const {
-  Str_sp s = cl__namestring(this->_pathname);
-  return s->get();
+  String_sp s = gc::As<String_sp>(cl__namestring(this->_pathname));
+  return s->get_std_string();
 }
 
 string SourceFileInfo_O::parentPathName() const {
-  Str_sp s = cl__directory_namestring(this->_pathname);
-  return s->get();
+  String_sp s = gc::As<String_sp>(cl__directory_namestring(this->_pathname));
+  return s->get_std_string();
 }
 
 const char *SourceFileInfo_O::permanentPathName() {

@@ -102,7 +102,7 @@ CL_DOCSTRING("make-condition while brcl is booting - replace this once ");
 CL_DEFUN T_sp cl__make_condition(T_sp type, List_sp slot_initializations) {
   GC_ALLOCATE(CandoException_O, condition);
   Cons_sp all = Cons_O::createList(type, slot_initializations);
-  Str_sp msg = gc::As<Str_sp>(core__bformat(_Nil<T_O>(), "%s %s", all));
+  String_sp msg = gc::As<String_sp>(core__bformat(_Nil<T_O>(), "%s %s", all));
   condition->setMessage(msg->get());
   return condition;
 };
@@ -116,26 +116,8 @@ CL_DEFUN string core__condition_message(T_sp condition) {
   }
   T_sp sout = clasp_make_string_output_stream();
   eval::funcall(cl::_sym_printObject, condition, sout);
-  return gc::As<Str_sp>(cl__get_output_stream_string(sout))->get();
+  return gc::As<String_sp>(cl__get_output_stream_string(sout))->get();
 }
-
-#if 0
-CL_LAMBDA(cond file function line);
-CL_DECLARE();
-CL_DOCSTRING("setThrowPosition");
-CL_DEFUN     void core__set_throw_position(T_sp cond, Str_sp file, Str_sp function, Fixnum_sp line)
-    {
-	if ( CandoException_sp ce = cond.asOrNull<CandoException_O>() )
-	{
-	    string ts = file->get();
-	    string fg = function->get();
-	    ce->setThrowPosition(ts.c_str(), fg.c_str(), line->get());
-	    return ;
-	}
-	string cs = _rep_(cond);
-	printf("%s:%d - Add setThrowPosition for %s\n", __FILE__, __LINE__, cs.c_str());
-    };
-#endif
 
   SYMBOL_EXPORT_SC_(ClPkg, makeCondition);
   SYMBOL_SC_(CorePkg, conditionMessage);

@@ -303,57 +303,60 @@ CL_LAMBDA(op x y &optional r);
 CL_DECLARE();
 CL_DOCSTRING("bitArrayOp");
 CL_DEFUN T_sp core__bit_array_op(T_sp o, T_sp tx, T_sp ty, T_sp tr) {
+  IMPLEMENT_MEF(BF("This needs to be fixed to handle the new bitvectors and bit arrays"));
+#if 0
   if (o.nilp()) {
     ERROR_WRONG_TYPE_NTH_ARG(core::_sym_bitArrayOp, 1, o, cl::_sym_fixnum);
   }
-  if (tx.nilp() || !gc::IsA<SimpleBitVector_sp>(tx)) {
-    ERROR_WRONG_TYPE_NTH_ARG(core::_sym_bitArrayOp, 2, tx, cl::_sym_BitVector_O);
+  if (tx.nilp() || !gc::IsA<BaseBitVector_sp>(tx)) {
+    ERROR_WRONG_TYPE_NTH_ARG(core::_sym_bitArrayOp, 2, tx, cl::_sym_BaseBitVector_O);
   }
-  if (ty.nilp() || !gc::IsA<SimpleBitVector_sp>(ty)) {
-    ERROR_WRONG_TYPE_NTH_ARG(core::_sym_bitArrayOp, 3, ty, cl::_sym_BitVector_O);
+  if (ty.nilp() || !gc::IsA<BaseBitVector_sp>(ty)) {
+    ERROR_WRONG_TYPE_NTH_ARG(core::_sym_bitArrayOp, 3, ty, cl::_sym_BaseBitVector_O);
   }
   int opval = unbox_fixnum(gc::As<Fixnum_sp>(o));
   gctools::Fixnum i, j, n, d;
-  SimpleBitVector_sp r0;
+  BaseBitVector_sp r0;
   bit_operator op;
   bool replace = false;
   int xi, yi, ri;
   byte *xp, *yp, *rp;
   int xo, yo, ro;
-  SimpleBitVector_sp x = tx.asOrNull<SimpleBitVector_O>();
-  SimpleBitVector_sp y = ty.asOrNull<SimpleBitVector_O>();
-  SimpleBitVector_sp r;
-  d = x->dimension();
+  BaseBitVector_sp x = tx.asOrNull<BaseBitVector_O>();
+  BaseBitVector_sp y = ty.asOrNull<BaseBitVector_O>();
+  BaseBitVector_sp r;
+  d = x->arrayTotalSize();
   xp = x->bytes();
   xo = x->offset();
-  if (d != y->dimension())
+  if (d != y->arrayTotalSize())
     goto ERROR;
   yp = y->bytes();
   yo = x->offset();
   if (tr == _lisp->_true())
     tr = x;
   if (tr.notnilp()) {
-    r = tr.asOrNull<SimpleBitVector_O>();
+    r = tr.asOrNull<BaseBitVector_O>();
     if (!r) {
-      ERROR_WRONG_TYPE_NTH_ARG(core::_sym_bitArrayOp, 4, tr, cl::_sym_BitVector_O);
+      ERROR_WRONG_TYPE_NTH_ARG(core::_sym_bitArrayOp, 4, tr, cl::_sym_BaseBitVector_O);
     }
-    if (r->dimension() != d)
+    if (r->arrayTotalSize() != d)
       goto ERROR;
     i = (r->bytes() - xp) * 8 + (r->offset() - xo);
     if ((i > 0 && i < d) || (i < 0 && -i < d)) {
       r0 = r;
-      r = _Nil<SimpleBitVector_O>();
+      r = _Nil<BaseBitVector_O>();
       replace = true;
       goto L1;
     }
     i = (r->bytes() - yp) * 8 + (r->offset() - yo);
     if ((i > 0 && i < d) || (i < 0 && -i < d)) {
       r0 = r;
-      r = _Nil<SimpleBitVector_O>();
+      r = _Nil<BaseBitVector_O>();
       replace = true;
     }
   }
 L1:
+  IMPLEMENT_MEF(BF("What do I do if I have to create r?"));
   if (!r)
     r = SimpleBitVector_O::make(d);
   rp = r->bytes();
@@ -412,6 +415,7 @@ L1:
   return r0;
 ERROR:
   SIMPLE_ERROR(BF("Illegal arguments for bit-array operation."));
+#endif
 }
 
 /*! Copied from ECL */

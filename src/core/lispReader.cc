@@ -54,21 +54,22 @@ THE SOFTWARE.
 #include <clasp/core/wrappers.h>
 
 namespace core {
-
-#define TRAIT_DIGIT 0X000100
-#define TRAIT_ALPHABETIC 0X000200
-#define TRAIT_PACKAGEMARKER 0X000400
-#define TRAIT_ALPHADIGIT 0X000800
-#define TRAIT_PLUSSIGN 0X001000
-#define TRAIT_MINUSSIGN 0X002000
-#define TRAIT_DOT 0X004000
-#define TRAIT_DECIMALPOINT 0X008000
-#define TRAIT_RATIOMARKER 0X010000
-#define TRAIT_EXPONENTMARKER 0X020000
-#define TRAIT_INVALID 0X040000
-#define TRAIT_MASK 0X0FFF00
-#define CHAR_MASK 0X0000FF
-#define CHR(x) (static_cast<char>((x)&CHAR_MASK))
+// Store characters and flags about the characters
+typedef uint64_t trait_chr_type;
+#define TRAIT_DIGIT          0x000100000000
+#define TRAIT_ALPHABETIC     0x000200000000
+#define TRAIT_PACKAGEMARKER  0x000400000000
+#define TRAIT_ALPHADIGIT     0x000800000000
+#define TRAIT_PLUSSIGN       0x001000000000
+#define TRAIT_MINUSSIGN      0x002000000000
+#define TRAIT_DOT            0x004000000000
+#define TRAIT_DECIMALPOINT   0x008000000000
+#define TRAIT_RATIOMARKER    0x010000000000
+#define TRAIT_EXPONENTMARKER 0x020000000000
+#define TRAIT_INVALID        0x040000000000
+#define TRAIT_MASK           0x0FFF00000000
+#define CHAR_MASK            0x0000FFFFFFFF
+#define CHR(x) (static_cast<claspCharacter>((x)&CHAR_MASK))
 #define CHR_MATCH(x, m) (CHR(x) == (m))
 #define TRAIT_MATCH_ANY(x, t) (((x) & (t)) != 0)
 #define CHR_TRAIT_MATCH_ANY(x, t, m) (TRAIT_MATCH_ANY(x, t) && CHR_MATCH(x, m))
@@ -88,23 +89,25 @@ namespace core {
 
 /*! Return a uint that combines the character x with its character TRAITs
       See CLHS 2.1.4.2 */
-uint constituentChar(Character_sp ch, uint trait = 0) {
-  claspChar x(clasp_as_char(ch));
+trait_chr_type constituentChar(Character_sp ch, trait_chr_type trait = 0) {
+  claspCharacter x = ch.unsafe_character();
+  ASSERT(x<CHAR_MASK);
   if (trait != 0)
     return (x | trait);
-  uint result = 0;
-  int readBase = unbox_fixnum(gc::As<Fixnum_sp>(cl::_sym_STARread_baseSTAR->symbolValue()));
+  trait_chr_type result = 0;
+  trait_chr_type read_base = unbox_fixnum(gc::As<Fixnum_sp>(cl::_sym_STARread_baseSTAR->symbolValue()));
+  ASSERT(read_base>=2 && read_base<=36);
   if (x >= '0' && x <= '9') {
-    uint uix = x - '0';
-    if (uix < readBase) {
+    trait_chr_type uix = x - '0';
+    if (uix < read_base) {
       result = (TRAIT_DIGIT | x);
       return result;
     }
     return (TRAIT_ALPHABETIC | x);
   }
   if (x >= 'a' && x <= 'z') {
-    uint uix = x - 'a' + 10;
-    if (uix < readBase) {
+    trait_chr_type uix = x - 'a' + 10;
+    if (uix < read_base) {
       result = (TRAIT_DIGIT | x);
       goto LETTER;
     }
@@ -112,8 +115,8 @@ uint constituentChar(Character_sp ch, uint trait = 0) {
     goto LETTER;
   }
   if (x >= 'A' && x <= 'Z') {
-    uint uix = x - 'A' + 10;
-    if (uix < readBase) {
+    trait_chr_type uix = x - 'A' + 10;
+    if (uix < read_base) {
       result = (TRAIT_DIGIT | x);
       goto LETTER;
     }
@@ -252,22 +255,21 @@ typedef enum {
   short_float_exp
 } FloatExponentType;
 
-string tokenStr(const vector<uint> &token, uint start = 0, uint end = UNDEF_UINT) {
-  stringstream ss;
-  for (uint i = start, iEnd(end == UNDEF_UINT ? token.size() : end);
-       i < iEnd; ++i) {
-    ss << CHR(token[i]);
-  }
-  return ss.str();
+SimpleString_sp tokenStr(const vector<trait_chr_type> &token, size_t start = 0, size_t end = UNDEF_UINT) {
+  bool extended = false;
+  if (end==UNDEF_UINT) end = token.size();
+  SafeBufferStrWNs buffer;
+  for (size_t i=start,iEnd(end); i<iEnd; ++i) buffer.string()->vectorPushExtend_claspCharacter(CHR(token[i]));
+  return buffer.string()->asMinimalSimpleString();
 }
 
-T_sp interpret_token_or_throw_reader_error(T_sp sin, const vector<uint> &token) {
+T_sp interpret_token_or_throw_reader_error(T_sp sin, const vector<trait_chr_type> &token) {
   ASSERTF(token.size() > 0, BF("The token is empty!"));
-  const uint *start = token.data();
-  const uint *cur = start;
-  const uint *end = token.data() + token.size();
-  const uint *package_marker = start;
-  const uint *name_marker = start;
+  const trait_chr_type *start = token.data();
+  const trait_chr_type *cur = start;
+  const trait_chr_type *end = token.data() + token.size();
+  const trait_chr_type *package_marker = start;
+  const trait_chr_type *name_marker = start;
   TokenState state = tstart;
   FloatExponentType exponent = undefined_exp;
 #define EXPTEST(c, x)                                                                                             \
@@ -399,6 +401,12 @@ T_sp interpret_token_or_throw_reader_error(T_sp sin, const vector<uint> &token) 
   }
   switch (state) {
   case tstart:
+    {
+      if (cl::_sym_STARread_suppressSTAR->symbolValue().isTrue()) return _Nil<T_O>();
+      SimpleString_sp sym_name = SimpleBaseCharString_O::make("");
+      Symbol_sp sym = _lisp->getCurrentPackage()->intern(sym_name);
+      return sym;
+    }
     SIMPLE_ERROR(BF("There was no token!!!!"));
   case tsymdot:
     return _sym_dot;
@@ -410,12 +418,8 @@ T_sp interpret_token_or_throw_reader_error(T_sp sin, const vector<uint> &token) 
   case tsymz:
     // interpret symbols in current package
     {
-      if (cl::_sym_STARread_suppressSTAR->symbolValue().isTrue())
-        return _Nil<T_O>();
-      string symbolName = tokenStr(token, name_marker - token.data());
-      LOG(BF("Interpreting symbol tokenStr=|%s|") % symbolName );
-      Str_sp sym_name = Str_O::create(symbolName);
-      LOG(BF("sym_name = |%s|") % sym_name->get());
+      if (cl::_sym_STARread_suppressSTAR->symbolValue().isTrue()) return _Nil<T_O>();
+      SimpleString_sp sym_name = tokenStr(token, name_marker - token.data());
       Symbol_sp sym = _lisp->getCurrentPackage()->intern(sym_name);
       LOG(BF("sym->symbolNameAsString() = |%s|") % sym->symbolNameAsString());
       return sym;
@@ -427,10 +431,10 @@ T_sp interpret_token_or_throw_reader_error(T_sp sin, const vector<uint> &token) 
       return _Nil<T_O>();
     // interpret good package:name symbols
     // Get package part
-    stringstream packageSin;
+    SafeBufferStrWNs packageSin;
     cur = start;
     while (cur != package_marker) {
-      packageSin << CHR(*cur);
+      packageSin.string()->vectorPushExtend_claspCharacter(CHR(*cur));
       ++cur;
     }
     int separator(0);
@@ -438,18 +442,19 @@ T_sp interpret_token_or_throw_reader_error(T_sp sin, const vector<uint> &token) 
       ++separator;
       ++cur;
     }
-    string symbolName = tokenStr(token, name_marker - token.data());
-    Str_sp symbol_name_str = Str_O::create(symbolName);
-    LOG(BF("Interpreting token as packageName[%s] and symbol-name[%s]") % packageSin.str() % symbolName);
-    string packageName = packageSin.str();
+    // TODO Handle proper string names
+    SimpleString_sp symbol_name_str = tokenStr(token, name_marker - token.data());
+    LOG(BF("Interpreting token as packageName[%s] and symbol-name[%s]") % _rep_(packageSin.string()) % symbol_name_str->get_std_string());
+    // TODO Deal with proper string package names
+    string packageName = packageSin.string()->get_std_string();
     Package_sp pkg = gc::As<Package_sp>(_lisp->findPackage(packageName, true));
     Symbol_sp sym;
     if (separator == 1) { // Asking for external symbol
-      Symbol_mv sym_mv = pkg->_findSymbol(symbol_name_str);
+      Symbol_mv sym_mv = pkg->findSymbol_SimpleString(symbol_name_str);
       sym = sym_mv;
       T_sp status = sym_mv.second();
       if (status != kw::_sym_external) {
-        SIMPLE_ERROR(BF("Cannot find the external symbol %s in %s") % symbolName % _rep_(pkg));
+        SIMPLE_ERROR(BF("Cannot find the external symbol %s in %s") % symbol_name_str->get_std_string() % _rep_(pkg));
       }
     } else {
       sym = pkg->intern(symbol_name_str);
@@ -462,27 +467,34 @@ T_sp interpret_token_or_throw_reader_error(T_sp sin, const vector<uint> &token) 
       return _Nil<T_O>();
     // interpret good keywords
     LOG(BF("Token[%s] interpreted as keyword") % name_marker);
-    string keywordName = tokenStr(token, name_marker - token.data());
-    Str_sp keyword_name = Str_O::create(keywordName);
+    SimpleString_sp keyword_name = tokenStr(token, name_marker - token.data());
+    return _lisp->keywordPackage()->intern(keyword_name);
+  } break;
+  case tsymk:{
+    if (cl::_sym_STARread_suppressSTAR->symbolValue().isTrue()) return _Nil<T_O>();
+    // interpret :|| keyword
+    LOG(BF("Token[:||] interpreted as keyword"));
+    SimpleBaseCharString_sp keyword_name = SimpleBaseCharString_O::make(""); // tokenStr(token, name_marker - token.data());
     return _lisp->keywordPackage()->intern(keyword_name);
   } break;
   case tsyme:
   case tsymp:
-  case tsymk:
   case tsymbad:
     if (cl::_sym_STARread_suppressSTAR->symbolValue().isTrue())
       return _Nil<T_O>();
     // interpret failed symbols
-    SIMPLE_ERROR(BF("Error encountered while reading source file %s at character position %s - Could not interpret symbol state(%s) symbol: [%s]") % _rep_(clasp_filename(sin,false)) % _rep_(clasp_file_position(sin)) % stateString(state) % tokenStr(token, start - token.data()));
+    SIMPLE_ERROR(BF("Error encountered while reading source file %s at character position %s - Could not interpret symbol state(%s) symbol: [%s]") % _rep_(clasp_filename(sin,false)) % _rep_(clasp_file_position(sin)) % stateString(state) % tokenStr(token, start - token.data())->get_std_string());
     break;
   case tintt:
   case tintp:
     // interpret ints
     {
-      int read_base = unbox_fixnum(gc::As<Fixnum_sp>(cl::_sym_STARread_baseSTAR->symbolValue()));
-      string num = tokenStr(token, start - token.data());
-      if (num[0] == '+')
-        num = num.substr(1, num.size());
+      ASSERT(cl::_sym_STARread_baseSTAR->symbolValue().fixnump());
+      int read_base = cl::_sym_STARread_baseSTAR->symbolValue().unsafe_fixnum();
+      ASSERT(read_base>=2 && read_base<=36);
+      SimpleString_sp ssnum = tokenStr(token, start - token.data());
+      string num = ssnum->get_std_string();
+      if (num[0] == '+') num = num.substr(1,num.size());
       try {
         if (num[num.size() - 1] == '.') {
           mpz_class z10(num.substr(0, num.size() - 1), 10);
@@ -499,7 +511,8 @@ T_sp interpret_token_or_throw_reader_error(T_sp sin, const vector<uint> &token) 
     break;
   case tratio: {
     // interpret ratio
-    string ratioStr = tokenStr(token, start - token.data());
+    SimpleString_sp sRatioStr = tokenStr(token, start - token.data());
+    std::string ratioStr = sRatioStr->get_std_string();
     if (ratioStr[0] == '+') {
       Ratio_sp rp = Ratio_O::create(ratioStr.substr(1, ratioStr.size() - 1).c_str());
       return rp;
@@ -517,11 +530,11 @@ T_sp interpret_token_or_throw_reader_error(T_sp sin, const vector<uint> &token) 
       case undefined_exp: {
         char *lastValid = NULL;
         if (cl::_sym_STARreadDefaultFloatFormatSTAR->symbolValue() == cl::_sym_single_float) {
-          string numstr = tokenStr(token, start - token.data()).c_str();
+          string numstr = tokenStr(token, start - token.data())->get_std_string();
           double d = ::strtod(numstr.c_str(), &lastValid);
           return clasp_make_single_float(d);
         } else if (cl::_sym_STARreadDefaultFloatFormatSTAR->symbolValue() == cl::_sym_DoubleFloat_O) {
-          string numstr = tokenStr(token, start - token.data()).c_str();
+          string numstr = tokenStr(token, start - token.data())->get_std_string();
           double d = ::strtod(numstr.c_str(), &lastValid);
           return DoubleFloat_O::create(d);
         } else {
@@ -530,31 +543,31 @@ T_sp interpret_token_or_throw_reader_error(T_sp sin, const vector<uint> &token) 
       }
       case float_exp: {
         char *lastValid = NULL;
-        string numstr = fix_exponent_char(tokenStr(token, start - token.data()).c_str());
+        string numstr = fix_exponent_char(tokenStr(token, start - token.data())->get_std_string().c_str());
         double d = ::strtod(numstr.c_str(), &lastValid);
         return DoubleFloat_O::create(d);
       }
       case short_float_exp: {
         char *lastValid = NULL;
-        string numstr = fix_exponent_char(tokenStr(token, start - token.data()).c_str());
+        string numstr = fix_exponent_char(tokenStr(token, start - token.data())->get_std_string().c_str());
         double d = ::strtod(numstr.c_str(), &lastValid);
         return clasp_make_single_float(d);
       }
       case single_float_exp: {
         char *lastValid = NULL;
-        string numstr = fix_exponent_char(tokenStr(token, start - token.data()).c_str());
+        string numstr = fix_exponent_char(tokenStr(token, start - token.data())->get_std_string().c_str());
         double d = ::strtod(numstr.c_str(), &lastValid);
         return clasp_make_single_float(d);
       }
       case double_float_exp: {
         char *lastValid = NULL;
-        string numstr = fix_exponent_char(tokenStr(token, start - token.data()).c_str());
+        string numstr = fix_exponent_char(tokenStr(token, start - token.data())->get_std_string().c_str());
         double d = ::strtod(numstr.c_str(), &lastValid);
         return DoubleFloat_O::create(d);
       }
       case long_float_exp: {
         char *lastValid = NULL;
-        string numstr = fix_exponent_char(tokenStr(token, start - token.data()).c_str());
+        string numstr = fix_exponent_char(tokenStr(token, start - token.data())->get_std_string().c_str());
 #ifdef CLASP_LONG_FLOAT
         LongFloat d = ::strtold(numstr.c_str(), &lastValid);
         return LongFloat_O::create(d);
@@ -593,7 +606,7 @@ T_sp interpret_token_or_throw_reader_error(T_sp sin, const vector<uint> &token) 
       list))
 #endif
 
-List_sp read_list(T_sp sin, char end_char, bool allow_consing_dot) {
+List_sp read_list(T_sp sin, claspCharacter end_char, bool allow_consing_dot) {
   core__stack_monitor();
   bool got_dotted = false;
   T_sp dotted_object = _Nil<T_O>();
@@ -605,7 +618,7 @@ List_sp read_list(T_sp sin, char end_char, bool allow_consing_dot) {
 #endif
     Character_sp cp = gc::As<Character_sp>(cl__peek_char(_lisp->_true(), sin, _lisp->_true(), _Nil<Character_O>(), _lisp->_true()));
     LOG(BF("read_list ---> peeked char[%s]") % _rep_(cp));
-    if (clasp_as_char(cp) == end_char) {
+    if (clasp_as_claspCharacter(cp) == end_char) {
       cl__read_char(sin, _lisp->_true(), _Nil<T_O>(), _lisp->_true());
       if (dotted_object.notnilp()) {
         cur.asCons()->setCdr(dotted_object);
@@ -636,7 +649,7 @@ List_sp read_list(T_sp sin, char end_char, bool allow_consing_dot) {
         if (allow_consing_dot) {
           got_dotted = true;
           Character_sp cdotp = gc::As<Character_sp>(cl__peek_char(_lisp->_true(), sin, _lisp->_true(), _Nil<Character_O>(), _lisp->_true()));
-          if (clasp_as_char(cdotp) == end_char) {
+          if (clasp_as_claspCharacter(cdotp) == end_char) {
             SIMPLE_ERROR(BF("Nothing after consing dot"));
           }
           dotted_object = read_lisp_object(sin, true, _Nil<T_O>(), true);
@@ -727,7 +740,7 @@ T_mv lisp_object_query(T_sp sin, bool eofErrorP, T_sp eofValue, bool recursiveP)
   ++monitorReaderStep;
 #endif
   string chars;
-  vector<uint> token;
+  vector<trait_chr_type> token;
   ReadTable_sp readTable = _lisp->getCurrentReadTable();
   Character_sp x, y, z, X, Y, Z;
 /* See the CLHS 2.2 Reader Algorithm  - continue has the effect of jumping to step 1 */
@@ -740,22 +753,22 @@ step1:
     return Values(eofValue);
   }
   x = gc::As<Character_sp>(tx);
-  LOG(BF("Read character x[%d/%s]") % (int)clasp_as_char(x) % clasp_as_char(x));
+  LOG(BF("Read character x[%d/%s]") % (int)clasp_as_claspCharacter(x) % clasp_as_claspCharacter(x));
   Symbol_sp x1_syntax_type = readTable->syntax_type(x);
   //    step2:
   if (x1_syntax_type == kw::_sym_invalid_character) {
-    LOG(BF("step2 - invalid-character[%c]") % clasp_as_char(x));
+    LOG(BF("step2 - invalid-character[%c]") % clasp_as_claspCharacter(x));
     SIMPLE_ERROR(BF("ReaderError_O::create(sin,_lisp)"));
   }
   //    step3:
   if (x1_syntax_type == kw::_sym_whitespace_character) {
-    LOG(BF("step3 - whitespace character[%c/%d]") % clasp_as_char(x) % clasp_as_char(x));
+    LOG(BF("step3 - whitespace character[%c/%d]") % clasp_as_claspCharacter(x) % clasp_as_claspCharacter(x));
     goto step1;
   }
   //    step4:
   if ((x1_syntax_type == kw::_sym_terminating_macro_character) || (x1_syntax_type == kw::_sym_non_terminating_macro_character)) {
-    _BLOCK_TRACEF(BF("Processing macro character x[%s]") % clasp_as_char(x));
-    LOG(BF("step4 - terminating-macro-character or non-terminating-macro-character char[%c]") % clasp_as_char(x));
+    _BLOCK_TRACEF(BF("Processing macro character x[%s]") % clasp_as_claspCharacter(x));
+    LOG(BF("step4 - terminating-macro-character or non-terminating-macro-character char[%c]") % clasp_as_claspCharacter(x));
     T_sp reader_macro;
     {
       MULTIPLE_VALUES_CONTEXT();
@@ -766,7 +779,7 @@ step1:
   }
   //    step5:
   if (x1_syntax_type == kw::_sym_single_escape_character) {
-    LOG(BF("step5 - single-escape-character char[%c]") % clasp_as_char(x));
+    LOG(BF("step5 - single-escape-character char[%c]") % clasp_as_claspCharacter(x));
     LOG(BF("Handling single escape"));
     T_sp ty = cl__read_char(sin, _lisp->_true(), _Nil<T_O>(), _lisp->_true());
     if ( !ty.characterp() ) {
@@ -775,23 +788,23 @@ step1:
     y = gc::As<Character_sp>(ty);
     token.clear();
     token.push_back(constituentChar(y, TRAIT_ALPHABETIC));
-    LOG(BF("Read y[%d/%s]") % (int)clasp_as_char(y) % clasp_as_char(y));
+    LOG(BF("Read y[%d/%s]") % (int)clasp_as_claspCharacter(y) % clasp_as_claspCharacter(y));
     goto step8;
   }
   //    step6:
   if (x1_syntax_type == kw::_sym_multiple_escape_character) {
-    LOG(BF("step6 - multiple-escape-character char[%c]") % clasp_as_char(x));
+    LOG(BF("step6 - multiple-escape-character char[%c]") % clasp_as_claspCharacter(x));
     LOG(BF("Handling multiple escape - clearing token"));
     token.clear();
     goto step9;
   }
   //    step7:
   if (readTable->syntax_type(x) == kw::_sym_constituent_character) {
-    LOG(BF("step7 - constituent-character char[%c]") % clasp_as_char(x));
+    LOG(BF("step7 - constituent-character char[%c]") % clasp_as_claspCharacter(x));
     LOG(BF("Handling constituent character"));
     token.clear();
     X = readTable->convert_case(x);
-    LOG(BF("Converted case X[%s]") % clasp_as_char(X));
+    LOG(BF("Converted case X[%s]") % clasp_as_claspCharacter(X));
     token.push_back(constituentChar(X));
   }
 step8:
@@ -803,7 +816,7 @@ step8:
       goto step10;
     }
     Character_sp y(ty);
-    LOG(BF("Step8: Read y[%s]") % clasp_as_char(y));
+    LOG(BF("Step8: Read y[%s]") % clasp_as_claspCharacter(y));
     Symbol_sp y8_syntax_type = readTable->syntax_type(y);
     LOG(BF("y8_syntax_type=%s") % _rep_(y8_syntax_type));
     if ((y8_syntax_type == kw::_sym_constituent_character) || (y8_syntax_type == kw::_sym_non_terminating_macro_character)) {
@@ -814,7 +827,7 @@ step8:
     if (y8_syntax_type == kw::_sym_single_escape_character) {
       z = gc::As<Character_sp>(cl__read_char(sin, _lisp->_true(), _Nil<T_O>(), _lisp->_true()));
       token.push_back(constituentChar(z, TRAIT_ALPHABETIC));
-      LOG(BF("Single escape read z[%s] accumulated token[%s]") % clasp_as_char(z) % tokenStr(token));
+      LOG(BF("Single escape read z[%s] accumulated token[%s]") % clasp_as_claspCharacter(z) % tokenStr(token));
       goto step8;
     }
     if (y8_syntax_type == kw::_sym_multiple_escape_character)
@@ -822,15 +835,15 @@ step8:
     if (y8_syntax_type == kw::_sym_invalid_character)
       SIMPLE_ERROR(BF("ReaderError_O::create()"));
     if (y8_syntax_type == kw::_sym_terminating_macro_character) {
-      LOG(BF("UNREADING char y[%s]") % clasp_as_char(y));
-      clasp_unread_char(clasp_as_char(y), sin);
+      LOG(BF("UNREADING char y[%s]") % clasp_as_claspCharacter(y));
+      clasp_unread_char(clasp_as_claspCharacter(y), sin);
       goto step10;
     }
     if (y8_syntax_type == kw::_sym_whitespace_character) {
       LOG(BF("y is whitespace"));
       if (_sym_STARpreserve_whitespace_pSTAR->symbolValue().isTrue()) {
-        LOG(BF("unreading y[%s]") % clasp_as_char(y));
-        clasp_unread_char(clasp_as_char(y), sin);
+        LOG(BF("unreading y[%s]") % clasp_as_claspCharacter(y));
+        clasp_unread_char(clasp_as_claspCharacter(y), sin);
       }
       goto step10;
     }
@@ -840,7 +853,7 @@ step9:
   {
     y = gc::As<Character_sp>(cl__read_char(sin, _lisp->_true(), _Nil<T_O>(), _lisp->_true()));
     Symbol_sp y9_syntax_type = readTable->syntax_type(y);
-    LOG(BF("Step9: Read y[%s] y9_syntax_type[%s]") % clasp_as_char(y) % _rep_(y9_syntax_type));
+    LOG(BF("Step9: Read y[%s] y9_syntax_type[%s]") % clasp_as_claspCharacter(y) % _rep_(y9_syntax_type));
     if ((y9_syntax_type == kw::_sym_constituent_character) || (y9_syntax_type == kw::_sym_non_terminating_macro_character) || (y9_syntax_type == kw::_sym_terminating_macro_character) || (y9_syntax_type == kw::_sym_whitespace_character)) {
       token.push_back(constituentChar(y, TRAIT_ALPHABETIC));
       LOG(BF("token[%s]") % tokenStr(token));
@@ -851,7 +864,7 @@ step9:
       LOG(BF("Handling single_escape_character"));
       z = gc::As<Character_sp>(cl__read_char(sin, _lisp->_true(), _Nil<T_O>(), _lisp->_true()));
       token.push_back(constituentChar(z, TRAIT_ALPHABETIC));
-      LOG(BF("Read z[%s] accumulated token[%s]") % clasp_as_char(z) % tokenStr(token));
+      LOG(BF("Read z[%s] accumulated token[%s]") % clasp_as_claspCharacter(z) % tokenStr(token));
       goto step9;
     }
     if (y9_syntax_type == kw::_sym_multiple_escape_character) {

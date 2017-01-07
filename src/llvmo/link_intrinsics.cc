@@ -123,8 +123,8 @@ void cc_allocate_roots(gctools::ConstantsTable* holder, core::T_sp* root_address
 
 void ltvc_assign_source_file_info_handle(const char *moduleName, const char *sourceDebugPathname, size_t sourceDebugOffset, int useLineno, int *sourceFileInfoHandleP) {
   //	printf("%s:%d assignSourceFileInfoHandle %s\n", __FILE__, __LINE__, moduleName );
-  core::Str_sp mname = core::Str_O::create(moduleName);
-  core::Str_sp struename = core::Str_O::create(sourceDebugPathname);
+  core::SimpleBaseCharString_sp mname = core::SimpleBaseCharString_O::make(moduleName);
+  core::SimpleBaseCharString_sp struename = core::SimpleBaseCharString_O::make(sourceDebugPathname);
   SourceFileInfo_mv sfi_mv = core::core__source_file_info(mname, struename, sourceDebugOffset, useLineno ? true : false);
   int sfindex = unbox_fixnum(gc::As<core::Fixnum_sp>(sfi_mv.valueGet_(1)));
 #if 0
@@ -191,11 +191,14 @@ gctools::Tagged ltvc_make_array(gctools::ConstantsTable* holder, size_t index,
   core::T_sp element_type(telement_type);
   core::List_sp dimensions(tdimensions);
   core::T_sp val;
+    if (element_type != cl::_sym_T_O) {
+      SIMPLE_WARN(BF("Call make-array to make the array/vector rather than defaulting to an VectorObjects/ArrayObjects"));
+    }
   if (core::cl__length(dimensions) == 1) // vector
   {
-    val = core::VectorObjects_O::create(_Nil<core::T_O>(), oCar(dimensions).unsafe_fixnum(),element_type);
+    val = core::VectorObjects_O::make(oCar(dimensions).unsafe_fixnum(),_Nil<core::T_O>());
   } else {
-    val = core::ArrayObjects_O::make(dimensions,element_type,_Nil<core::T_O>(),_lisp->_true(),_Nil<core::T_O>(), 0 );
+    val = core::ArrayObjects_O::make(dimensions,_Nil<core::T_O>(),_Nil<core::T_O>(),_Nil<core::T_O>(), 0 );
   }
   return holder->set(index,val.tagged_());
 }
@@ -228,7 +231,7 @@ gctools::Tagged ltvc_make_fixnum(gctools::ConstantsTable* holder, size_t index, 
 }
 
 gctools::Tagged ltvc_make_bignum(gctools::ConstantsTable* holder, size_t index, gctools::Tagged bignum_string_t) {
-  core::Str_sp bignum_string = gctools::As<core::Str_sp>(core::T_sp(bignum_string_t));
+  core::SimpleBaseCharString_sp bignum_string = gctools::As<core::SimpleBaseCharString_sp>(core::T_sp(bignum_string_t));
   core::T_sp val = core::Bignum_O::make(bignum_string->get());
   return holder->set(index,val.tagged_());
 }
@@ -236,7 +239,7 @@ gctools::Tagged ltvc_make_bignum(gctools::ConstantsTable* holder, size_t index, 
 gctools::Tagged ltvc_make_symbol(gctools::ConstantsTable* holder, size_t index, gctools::Tagged name_t,
                                  gctools::Tagged package_t ) {
   core::T_sp package(package_t);
-  core::Str_sp symbol_name(name_t);
+  core::SimpleString_sp symbol_name(name_t);
   core::Symbol_sp sym;
   if (package.notnilp()) {
     sym = gctools::As<Package_sp>(package)->intern(symbol_name);
@@ -253,7 +256,7 @@ gctools::Tagged ltvc_make_character(gctools::ConstantsTable* holder, size_t inde
 }
 
 gctools::Tagged ltvc_make_base_string(gctools::ConstantsTable* holder, size_t index, const char* str) {
-  core::T_sp v = core::Str_O::create(str);
+  core::T_sp v = core::SimpleBaseCharString_O::make(str);
   return holder->set(index,v.tagged_());
 }
 
@@ -275,7 +278,7 @@ gctools::Tagged ltvc_make_pathname(gctools::ConstantsTable* holder, size_t index
 }
 
 gctools::Tagged ltvc_make_package(gctools::ConstantsTable* holder, size_t index, gctools::Tagged package_name_t ) {
-  core::Str_sp package_name(package_name_t);
+  core::SimpleBaseCharString_sp package_name(package_name_t);
   core::T_sp tpkg = _lisp->findPackage(package_name->get(),false);
   if ( tpkg.nilp() ) {
     // If we don't find the package - just make it
@@ -287,7 +290,7 @@ gctools::Tagged ltvc_make_package(gctools::ConstantsTable* holder, size_t index,
 }
 
 gctools::Tagged ltvc_make_random_state(gctools::ConstantsTable* holder, size_t index, gctools::Tagged random_state_string_t) {
-  core::Str_sp random_state_string(random_state_string_t);
+  core::SimpleBaseCharString_sp random_state_string(random_state_string_t);
   core::RandomState_sp rs = core::RandomState_O::create();
   rs->random_state_set(random_state_string->get());
   core::T_sp val = rs;
@@ -575,7 +578,7 @@ void internSymbol_tsp(core::T_sp *resultP, const char *symbolNameP, const char *
 }
 
 void makeSymbol_tsp(core::T_sp *resultP, const char *symbolNameP) {
-  core::Symbol_sp newSym = core::Symbol_O::create(symbolNameP);
+  core::Symbol_sp newSym = core::Symbol_O::create_from_string(std::string(symbolNameP));
   ASSERTNOTNULL(newSym);
   (*resultP) = newSym;
 }
@@ -587,7 +590,7 @@ void internSymbol_symsp(core::Symbol_sp *resultP, const char *symbolNameP, const
 }
 
 void makeSymbol_symsp(core::Symbol_sp *resultP, const char *symbolNameP) {
-  core::Symbol_sp newSym = core::Symbol_O::create(symbolNameP);
+  core::Symbol_sp newSym = core::Symbol_O::create_from_string(std::string(symbolNameP));
   ASSERTNOTNULL(newSym);
   (*resultP) = newSym;
 }
@@ -612,7 +615,7 @@ void makeBignum(core::T_sp *fnP, const char *cP) {
 void makeString(core::T_sp *fnP, const char *str) {
   // placement new into memory passed into this function
   ASSERT(fnP != NULL);
-  core::Str_sp ns = core::Str_O::create(str);
+  core::SimpleBaseCharString_sp ns = core::SimpleBaseCharString_O::make(str);
   (*fnP) = ns;
 }
 
@@ -620,7 +623,7 @@ void makePathname(core::T_sp *fnP, const char *cstr) {
   // placement new into memory passed into this function
   ASSERT(fnP != NULL);
 
-  core::Str_sp str = core::Str_O::create(cstr);
+  core::SimpleBaseCharString_sp str = core::SimpleBaseCharString_O::make(cstr);
   core::Pathname_sp ns = core::cl__pathname(str);
   (*fnP) = ns;
 }
@@ -674,7 +677,7 @@ void invokeTopLevelFunction(core::T_mv *resultP,
                             size_t column,
                             core::LoadTimeValues_O **ltvPP) {
   ASSERT(ltvPP != NULL);
-  core::Str_sp name = core::Str_O::create(cpname);
+  core::SimpleBaseCharString_sp name = core::SimpleBaseCharString_O::make(cpname);
   FunctionClosure_sp tc = FunctionClosure_O::create(name, kw::_sym_function, *sourceFileInfoHandleP, filePos, lineno, column);
 #define TIME_TOP_LEVEL_FUNCTIONS
 #ifdef TIME_TOP_LEVEL_FUNCTIONS
@@ -1330,15 +1333,15 @@ extern void saveValues(core::T_sp *resultP, core::T_mv *mvP) {
   ASSERT(resultP != NULL);
   ASSERT(mvP != NULL);
   int numValues = (*mvP).number_of_values();
-  core::VectorObjects_sp vo = core::VectorObjects_O::create(_Nil<core::T_O>(), numValues, core::T_O::static_class);
+  core::VectorObjects_sp vo = core::VectorObjects_O::make(numValues,_Nil<core::T_O>());
   //	printf("intrinsics.cc saveValues numValues = %d\n", numValues );
   if (numValues > 0) {
-    vo->setf_elt(0, (*mvP));
+    vo->rowMajorAset(0, (*mvP));
   }
   core::MultipleValues& mv = core::lisp_multipleValues();
   for (int i(1); i < (*mvP).number_of_values(); ++i) {
     core::T_sp val((gctools::Tagged)mv._Values[i]);
-    vo->setf_elt(i, val );
+    vo->rowMajorAset(i, val );
   }
   (*resultP) = vo;
   ASSERTNOTNULL(*resultP);
@@ -1361,10 +1364,10 @@ extern void loadValues(core::T_mv *resultP, core::T_sp *vectorObjectsP) {
     (*resultP) = gctools::multiple_values<core::T_O>();
     return;
   }
-  (*resultP) = gctools::multiple_values<core::T_O>(vo->elt(0), vo->length());
+  (*resultP) = gctools::multiple_values<core::T_O>(vo->rowMajorAref(0), vo->length());
   core::MultipleValues& mv = core::lisp_multipleValues();
   for (int i(1); i < vo->length(); ++i) {
-    mv._Values[i] = vo->elt(i).raw_();
+    mv._Values[i] = vo->rowMajorAref(i).raw_();
   }
 }
 
@@ -1495,7 +1498,9 @@ core::T_O *cc_enclose(core::T_O *lambdaName, fnLispCallingConvention llvm_func,
                       std::size_t numCells, ...) {
   core::T_sp tlambdaName = gctools::smart_ptr<core::T_O>((gc::Tagged)lambdaName);
   gctools::smart_ptr<core::ClosureWithSlots_O> functoid =
-    gctools::GC<core::ClosureWithSlots_O>::allocate_container(numCells
+    gctools::GC<core::ClosureWithSlots_O>::allocate_container(gctools::GCStamp<core::ClosureWithSlots_O>::TheStamp
+                                                              , numCells
+                                                              , numCells
                                                              , tlambdaName
                                                              , kw::_sym_function
                                                              , llvm_func

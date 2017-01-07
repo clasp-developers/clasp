@@ -28,7 +28,7 @@ THE SOFTWARE.
 #define _core_VectorDisplaced_H
 
 #include <clasp/core/object.h>
-#include <clasp/core/lispVector.h>
+#include <clasp/core/array.h>
 #include <clasp/core/corePackage.fwd.h>
 
 namespace core {
@@ -73,7 +73,7 @@ public: // Functions here
     dims.push_back(this->_Size);
     return dims;
   };
-  virtual gc::Fixnum dimension() const { return this->_Size; };
+  virtual cl_index dimension() const { return this->_Size; };
   virtual void rowMajorAset(cl_index idx, T_sp value);
   virtual T_sp rowMajorAref(cl_index idx) const;
   //  virtual gc::Fixnum arrayRowMajorIndex(List_sp indices) const;

@@ -37,7 +37,7 @@ THE SOFTWARE.
 #include <set>
 #include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
-#include <clasp/core/lispVector.h>
+#include <clasp/core/array.h>
 #include <clasp/core/hashTableEq.h>
 #include <clasp/core/cons.h>
 #include <clasp/core/symbol.h>

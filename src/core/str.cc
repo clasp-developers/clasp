@@ -24,7 +24,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-//#define DEBUG_LEVEL_FULL
+#define DEBUG_LEVEL_FULL
 #include <algorithm>
 //#include "clasp_gmpxx.h"
 #include <ctype.h>
@@ -34,6 +34,7 @@ THE SOFTWARE.
 #include <clasp/core/symbolTable.h>
 #include <clasp/core/designators.h>
 #include <clasp/core/character.h>
+#include <clasp/core/evaluator.h>
 #include <clasp/core/bignum.h>
 #include <clasp/core/multipleValues.h>
 #include <clasp/core/str.h>
@@ -44,6 +45,7 @@ THE SOFTWARE.
 
 namespace core {
 
+
 string str_get(Str_sp str) { return gc::As<Str_sp>(str)->get(); };
 string str_get(T_sp str) {
   if (str.nilp()) {
@@ -51,21 +53,22 @@ string str_get(T_sp str) {
   };
   return gc::As<Str_sp>(str)->get();
 };
-T_sp str_create(const string &str) { return Str_O::create(str); };
-T_sp str_create(const char *str) { return Str_O::create(str); };
+T_sp str_create(const string &str) { return SimpleBaseCharString_O::make(str); };
+T_sp str_create(const char *str) { return SimpleBaseCharString_O::make(str); };
 
 CL_LAMBDA(str1 start1 end1 str2 start2 end2);
 CL_DECLARE();
-CL_DOCSTRING("searchString");
+CL_DOCSTRING("search for the first occurance of str1 in str2");
 CL_DEFUN T_sp core__search_string(Str_sp str1, Fixnum_sp start1, T_sp end1, Str_sp str2, Fixnum_sp start2, T_sp end2) {
   ASSERT(start1.fixnump());
   ASSERT(start2.fixnump());
+  // This needs to be generalized to String_sp
   Str_sp s1 = str1->subseq(start1.unsafe_fixnum(), end1);
   Str_sp s2 = str2->subseq(start2.unsafe_fixnum(), end2);
-  Str_O::element_type* first = &((*s2)[0]);
-  Str_O::element_type* last = &((*s2)[s2->length()]);
-  Str_O::element_type* s_first = &((*s1)[0]);
-  Str_O::element_type* s_last = &((*s1)[s1->length()]);
+  Str_O::element_type* first = &(*s2)[0];
+  Str_O::element_type* last = &(*s2)[s2->length()];
+  Str_O::element_type* s_first = &(*s1)[0];
+  Str_O::element_type* s_last = &(*s1)[s1->length()];
   Str_O::element_type* found = std::search(first,last,s_first,s_last);
   if (found == last) {
     return _Nil<core::T_O>();
@@ -73,43 +76,61 @@ CL_DEFUN T_sp core__search_string(Str_sp str1, Fixnum_sp start1, T_sp end1, Str_
   return clasp_make_fixnum(found-first);
 };
 
+
+Str_sp Str_O::create_with_fill_pointer(char initial_element, size_t dimension, cl_index fill_ptr, bool adjustable) {
+  GC_ALLOCATE_VARIADIC(Str_O, str, dimension, clasp_make_fixnum(fill_ptr), _Nil<T_O>(), 0 );
+  str->_String = string(dimension, initial_element);
+  return str;
+}
+
+
 Str_sp Str_O::create(Str_sp val) {
-  GC_ALLOCATE(Str_O, v);
-  v->set(val->c_str());
+  GC_ALLOCATE_VARIADIC(Str_O, v, val->length() ,clasp_make_fixnum(val->fillPointer()),_Nil<T_O>(),0);
+  str_type temp((char*)&((*val)[0]),val->length());
+  v->_String.swap(temp);
   return v;
 }
 
 Str_sp Str_O::create(const boost::format &nm) {
-  GC_ALLOCATE(Str_O, v);
-  v->set(nm.str());
-  return v;
+  string s = nm.str();
+  return Str_O::create(s);
 };
 
 Str_sp Str_O::create(const string &nm) {
-  GC_ALLOCATE(Str_O, v);
-  //	printf("%s:%d Str_O::create(const string& nm) @ %p nm = %s\n", __FILE__, __LINE__, v.raw_(), nm.c_str() );
-  v->set(nm);
+  GC_ALLOCATE_VARIADIC(Str_O, v, nm.size(),_Nil<T_O>(),_Nil<T_O>(),0);
+  str_type temp(nm);
+  v->_String.swap(temp);
   return v;
 };
 
 Str_sp Str_O::create(const char *nm) {
-  GC_ALLOCATE(Str_O, v);
+  cl_index len = strlen(nm);
+  GC_ALLOCATE_VARIADIC(Str_O, v,len,_Nil<T_O>(),_Nil<T_O>(),0);
   //	printf("%s:%d Str_O::create(const char* nm) @ %p nm = %s\n", __FILE__, __LINE__, v.raw_(), nm );
-  v->setFromChars(nm);
+  str_type temp(nm,len);
+  v->_String.swap(temp);
   return v;
 };
 
 Str_sp Str_O::create(const char *nm, cl_index numChars) {
-  GC_ALLOCATE(Str_O, v);
+  GC_ALLOCATE_VARIADIC(Str_O, v,numChars,_Nil<T_O>(),_Nil<T_O>(),0);
   //	printf("%s:%d Str_O::create(const char* nm) @ %p nm = %s\n", __FILE__, __LINE__, v.raw_(), nm );
-  v->setFromChars(nm, numChars);
+  str_type temp(nm,numChars);
+  v->_String.swap(temp);
   return v;
 };
 
+Str_sp Str_O::create(cl_index dim, Str_sp displacedTo, cl_index displacedIndexOffset )
+{
+  GC_ALLOCATE_VARIADIC(Str_O, v,dim,_Nil<T_O>(),displacedTo,displacedIndexOffset);
+  return v;
+};
+  
 Str_sp Str_O::create(size_t numChars) {
-  GC_ALLOCATE(Str_O, v);
+  GC_ALLOCATE_VARIADIC(Str_O, v,numChars,_Nil<T_O>(),_Nil<T_O>(),0);
   //	printf("%s:%d Str_O::create(const char* nm) @ %p nm = %s\n", __FILE__, __LINE__, v.raw_(), nm );
-  v->setFromSize(numChars);
+  str_type temp(numChars);
+  v->_String.swap(temp);
   return v;
 };
 
@@ -121,13 +142,10 @@ Bignum Str_O::stringToBignum(const char *str) {
   return bn;
 }
 
-T_sp Str_O::elementType() const {
-  return cl::_sym_base_char;
-}
-
 CL_LAMBDA(&va-rest args);
 CL_LISPIFY_NAME(base_string_concatenate);
 CL_DEFUN T_sp core__base_string_concatenate(T_sp args) {
+  // TODO Handle proper strings
   if (!args.valistp()) {
     SIMPLE_ERROR(BF("arg must be valist"));
   }
@@ -136,15 +154,15 @@ CL_DEFUN T_sp core__base_string_concatenate(T_sp args) {
   stringstream ss;
   for (size_t i(0); i < nargs; ++i) {
     T_sp csp = vargs->next_arg();
-    Str_sp ssp = coerce::stringDesignator(csp);
-    ss << ssp->c_str();
+    String_sp ssp = coerce::stringDesignator(csp);
+    ss << ssp->get_std_string();
   }
-  return Str_O::create(ss.str());
+  return SimpleBaseCharString_O::make(ss.str());
 };
 
 Str_sp Str_O::create(char initial_element, cl_index dimension) {
-  GC_ALLOCATE(Str_O, str);
-  str->_Contents = string(dimension, initial_element);
+  GC_ALLOCATE_VARIADIC(Str_O, str,dimension,_Nil<T_O>(),_Nil<T_O>(),0);
+  str->_String = string(dimension, initial_element);
   return str;
 }
 
@@ -158,21 +176,6 @@ void Str_O::serialize(serialize::SNode node) {
 }
 #endif
 
-#if defined(XML_ARCHIVE)
-void Str_O::archiveBase(ArchiveP node) {
-  this->Base::archiveBase(node);
-  node->archiveString("contents", this->_Contents);
-}
-#endif // defined(XML_ARCHIVE)
-
-
-#if 0
-Fixnum_sp Str_O::asInt() const {
-  Fixnum_sp i;
-  i = make_fixnum(atoi(this->get().c_str()));
-  return i;
-}
-#endif
 Rational_sp Str_O::parseInteger() {
   return Integer_O::create(this->get());
 }
@@ -184,26 +187,24 @@ CL_DEFMETHOD DoubleFloat_sp Str_O::asReal() const {
   return n;
 }
 
-T_sp Str_O::elt(cl_index index) const {
-  _OF();
-  ASSERTF(index >= 0 && index < this->size(), BF("Index %d out of range for elt of string size: %d") % index % this->size());
-  char c = this->_Contents[index];
-  Character_sp ch = clasp_make_character(c);
-  return ch;
+char& Str_O::operator[](cl_index i) {
+  if (this->_DisplacedTo) {
+    return (*this->_DisplacedTo)[this->_DisplacedIndexOffset + i];
+  }
+  return this->_String[i];
+}
+
+const char& Str_O::operator[](cl_index i) const {
+  if (this->_DisplacedTo) {
+    return (*this->_DisplacedTo)[this->_DisplacedIndexOffset + i];
+  }
+  return this->_String[i];
 }
 
 T_sp Str_O::setf_elt(cl_index index, T_sp val) {
-  _OF();
   ASSERTF(index >= 0 && index < this->size(), BF("Index out of range for string: %d") % index);
   char ch = clasp_as_char(val);
-  this->_Contents[index] = ch;
-  return val;
-}
-
-T_sp Str_O::aset_unsafe(cl_index index, T_sp val) {
-  _OF();
-  char ch = clasp_as_char(gc::As<Character_sp>(val));
-  this->_Contents[index] = ch;
+  (*this)[index] = ch;
   return val;
 }
 
@@ -215,37 +216,36 @@ T_sp Str_O::aref(VaList_sp indices) const {
   if (index >= this->size()) {
     SIMPLE_ERROR(BF("Index %d out of bounds - must be [0,%d)") % index % this->size());
   }
-  return this->elt(index);
+  return clasp_make_character((*this)[index]);
 }
 
 T_sp Str_O::setf_aref(List_sp indices_val) {
   ASSERTF(cl__length(indices_val) == 2, BF("Illegal index/val for setf_aref of string: %s") % _rep_(indices_val));
   cl_index index = unbox_fixnum(gc::As<Fixnum_sp>(oCar(indices_val)));
-  return this->setf_elt(index, oCadr(indices_val));
+  T_sp val = oCadr(indices_val);
+  ASSERT(val.characterp());
+  (*this)[index] = val.unsafe_character();
+  return val;
 }
 
 CL_LISPIFY_NAME("core:countOccurances");
 CL_DEFMETHOD uint Str_O::countOccurances(const string &chars) {
-  _OF();
   ASSERT_eq(chars.size(), 1);
-  uint c = 0;
-  string::size_type found = this->_Contents.find_first_of(chars);
-  while (found < this->size() && found != string::npos) {
-    c++;
-    found = this->_Contents.find_first_of(chars, found + 1);
+  uint count = 0;
+  for ( auto ch : chars ) {
+    count += std::count(this->begin(),this->end(),ch);
   }
-  return c;
+  return count;
 }
+
 CL_LISPIFY_NAME("core:left");
-CL_DEFMETHOD string Str_O::left(gc::Fixnum num) const {
-  string res = this->get().substr(0, num);
-  return res;
+CL_DEFMETHOD Str_sp Str_O::left(gc::Fixnum num) const {
+  return this->subseq(0,clasp_make_fixnum(num));
 }
 
 CL_LISPIFY_NAME("core:right");
-CL_DEFMETHOD string Str_O::right(gc::Fixnum num) const {
-  string res = this->get().substr(this->size() - num, num);
-  return res;
+CL_DEFMETHOD Str_sp Str_O::right(gc::Fixnum num) const {
+  return this->subseq(this->length()-num,clasp_make_fixnum(num));
 }
 
 CL_LISPIFY_NAME("core:string-find");
@@ -256,28 +256,10 @@ CL_DEFMETHOD T_sp Str_O::find(const string &substring, gc::Fixnum start) {
   return _Nil<T_O>();
 }
 
-CL_LISPIFY_NAME("core:substr");
-CL_DEFMETHOD string Str_O::substr(gc::Fixnum start, gc::Fixnum num) const {
-  string res = this->get().substr(start, num);
-  return res;
-}
-
-CL_LISPIFY_NAME("core:asSymbol");
-CL_DEFMETHOD Symbol_sp Str_O::asSymbol() const {
-  Symbol_sp sym = _lisp->intern(this->get());
-  return sym;
-}
-
-CL_LISPIFY_NAME("core:asKeywordSymbol");
-CL_DEFMETHOD Symbol_sp Str_O::asKeywordSymbol() const {
-  Symbol_sp sym = _lisp->internKeyword(this->get());
-  return sym;
-}
-
-
 CL_LISPIFY_NAME("core:splitAtWhiteSpace");
 CL_DEFMETHOD List_sp Str_O::splitAtWhiteSpace() {
-  vector<string> parts = core::split(this->get(), " \n\t");
+  string all = this->get();
+  vector<string> parts = core::split(all, " \n\t");
   T_sp first = _Nil<T_O>();
   T_sp* cur = &first;
   for (vector<string>::iterator it = parts.begin(); it != parts.end(); it++) {
@@ -291,7 +273,8 @@ CL_DEFMETHOD List_sp Str_O::splitAtWhiteSpace() {
 
 CL_LISPIFY_NAME("core:split");
 CL_DEFMETHOD List_sp Str_O::split(const string &chars) {
-  vector<string> parts = core::split(this->get(), chars);
+  string all = this->get();
+  vector<string> parts = core::split(all, chars);
   T_sp first = _Nil<T_O>();
   T_sp* cur = &first;
   for (vector<string>::iterator it = parts.begin(); it != parts.end(); it++) {
@@ -314,7 +297,7 @@ bool Str_O::eql_(T_sp obj) const {
 
 #if 0
 bool Str_O::equal(T_sp obj) const {
-  if (core__simple_string_p(obj)) {
+  if (cl__simple_string_p(obj)) {
     return this->eql_(obj);
   }
   return false;
@@ -326,7 +309,7 @@ void Str_O::sxhash_(HashGenerator &hg) const {
     Fixnum hash = 5381;
     Fixnum c;
     for (cl_index i(0), iEnd(cl__length(this->asSmartPtr())); i < iEnd; ++i) {
-      c = this->operator[](i);
+      c = (*this)[i];
       hash = ((hash << 5) + hash) + c;
     }
     hg.addPart(hash);
@@ -336,16 +319,15 @@ void Str_O::sxhash_(HashGenerator &hg) const {
 string Str_O::__repr__() const {
   stringstream ss;
   ss << '"';
-  const char *cur = this->_Contents.c_str(); // this->_Contents is a std::string
-  while (*cur) {
-    if (*cur == '"') {
+  for ( cl_index i(0), iEnd(this->length()); i<iEnd; ++i ) {
+    char c = (*this)[i];
+    if (c == '"') {
       ss << '\\' << '"';
-    } else if (*cur == '\n') {
+    } else if (c == '\n') {
       ss << '\\' << 'n';
     } else {
-      ss << *cur;
+      ss << c;
     }
-    ++cur;
   }
   ss << '"';
   return ss.str();
@@ -355,9 +337,9 @@ string Str_O::__repr__() const {
 #ifndef USE_TEMPLATE_STRING_MATCHER
 /*! bounding index designator range from 0 to the end of each string */
 T_sp Str_O::string_EQ_(Str_sp string2, cl_index start1, cl_index end1, cl_index start2, cl_index end2) const {
-  _OF();
-  const char *cp1 = this->_Contents.c_str() + start1;
-  const char *cp2 = string2->_Contents.c_str() + start2;
+  
+  const char *cp1 = &(*this)[start1];
+  const char *cp2 = &(*string2)[start2];
   cl_index num1 = end1 - start1;
   cl_index num2 = end2 - start2;
   while (1) {
@@ -385,9 +367,8 @@ RETURN_TRUE:
 
 /*! bounding index designator range from 0 to the end of each string */
 T_sp Str_O::string_NE_(Str_sp string2, cl_index start1, cl_index end1, cl_index start2, cl_index end2) const {
-  _OF();
-  const char *cp1 = this->_Contents.c_str() + start1;
-  const char *cp2 = string2->_Contents.c_str() + start2;
+  const char *cp1 = &(*this)[start1];
+  const char *cp2 = &(*string2)[start2];
   cl_index num1 = end1 - start1;
   cl_index num2 = end2 - start2;
   while (1) {
@@ -417,8 +398,8 @@ RETURN_FALSE:
 /*! bounding index designator range from 0 to the end of each string */
 T_sp Str_O::string_LT_(Str_sp string2, cl_index start1, cl_index end1, cl_index start2, cl_index end2) const {
   _OF();
-  const char *cp1 = this->_Contents.c_str() + start1;
-  const char *cp2 = string2->_Contents.c_str() + start2;
+  const char *cp1 = &(*this)[start1];
+  const char *cp2 = &(*string2)[start2];
   cl_index num1 = end1 - start1;
   cl_index num2 = end2 - start2;
   while (1) {
@@ -440,7 +421,7 @@ END_STRING1:
   if (num2 == 0)
     goto RETURN_FALSE;
 RETURN_TRUE:
-  return make_fixnum((int)(cp1 - this->_Contents.c_str()));
+  return make_fixnum((cl_index)(cp1 - &(*this)[0]));
 END_STRING2:
 RETURN_FALSE:
   return _Nil<T_O>();
@@ -449,8 +430,8 @@ RETURN_FALSE:
 /*! bounding index designator range from 0 to the end of each string */
 T_sp Str_O::string_GT_(Str_sp string2, cl_index start1, cl_index end1, cl_index start2, cl_index end2) const {
   _OF();
-  const char *cp1 = this->_Contents.c_str() + start1;
-  const char *cp2 = string2->_Contents.c_str() + start2;
+  const char *cp1 = &(*this)[start1];
+  const char *cp2 = &(*string2)[start2];
   cl_index num1 = end1 - start1;
   cl_index num2 = end2 - start2;
   while (1) {
@@ -473,14 +454,13 @@ RETURN_FALSE:
   return _Nil<T_O>();
 END_STRING2:
 RETURN_TRUE:
-  return make_fixnum((int)(cp1 - this->_Contents.c_str()));
+  return make_fixnum((int)(cp1 - &(*this)[0]));
 }
 
 /*! bounding index designator range from 0 to the end of each string */
 T_sp Str_O::string_LE_(Str_sp string2, cl_index start1, cl_index end1, cl_index start2, cl_index end2) const {
-  _OF();
-  const char *cp1 = this->_Contents.c_str() + start1;
-  const char *cp2 = string2->_Contents.c_str() + start2;
+  const char *cp1 = &(*this)[start1];
+  const char *cp2 = &(*string2)[start2];
   cl_index num1 = end1 - start1;
   cl_index num2 = end2 - start2;
   while (1) {
@@ -506,14 +486,13 @@ END_STRING2:
 RETURN_FALSE:
   return _Nil<T_O>();
 RETURN_TRUE:
-  return make_fixnum((int)(cp1 - this->_Contents.c_str()));
+  return make_fixnum((int)(cp1 - &(*this)[0]));
 }
 
 /*! bounding index designator range from 0 to the end of each string */
 T_sp Str_O::string_GE_(Str_sp string2, cl_index start1, cl_index end1, cl_index start2, cl_index end2) const {
-  _OF();
-  const char *cp1 = this->_Contents.c_str() + start1;
-  const char *cp2 = string2->_Contents.c_str() + start2;
+  const char *cp1 = &(*this)[start1];
+  const char *cp2 = &(*string2)[start2];
   cl_index num1 = end1 - start1;
   cl_index num2 = end2 - start2;
   while (1) {
@@ -539,14 +518,13 @@ END_STRING2:
 RETURN_FALSE:
   return _Nil<T_O>();
 RETURN_TRUE:
-  return make_fixnum((int)(cp1 - this->_Contents.c_str()));
+  return make_fixnum((int)(cp1 - &(*this)[0]));
 }
 
 /*! bounding index designator range from 0 to the end of each string */
 T_sp Str_O::string_equal(Str_sp string2, cl_index start1, cl_index end1, cl_index start2, cl_index end2) const {
-  _OF();
-  const char *cp1 = this->_Contents.c_str() + start1;
-  const char *cp2 = string2->_Contents.c_str() + start2;
+  const char *cp1 = &(*this)[start1];
+  const char *cp2 = &(*string2)[start2];
   cl_index num1 = end1 - start1;
   cl_index num2 = end2 - start2;
   while (1) {
@@ -574,9 +552,8 @@ RETURN_TRUE:
 
 /*! bounding index designator range from 0 to the end of each string */
 T_sp Str_O::string_not_equal(Str_sp string2, cl_index start1, cl_index end1, cl_index start2, cl_index end2) const {
-  _OF();
-  const char *cp1 = this->_Contents.c_str() + start1;
-  const char *cp2 = string2->_Contents.c_str() + start2;
+  const char *cp1 = &(*this)[start1];
+  const char *cp2 = &(*string2)[start2];
   cl_index num1 = end1 - start1;
   cl_index num2 = end2 - start2;
   while (1) {
@@ -604,9 +581,8 @@ RETURN_FALSE:
 
 /*! bounding index designator range from 0 to the end of each string */
 T_sp Str_O::string_lessp(Str_sp string2, cl_index start1, cl_index end1, cl_index start2, cl_index end2) const {
-  _OF();
-  const char *cp1 = this->_Contents.c_str() + start1;
-  const char *cp2 = string2->_Contents.c_str() + start2;
+  const char *cp1 = &(*this)[start1];
+  const char *cp2 = &(*string2)[start2];
   cl_index num1 = end1 - start1;
   cl_index num2 = end2 - start2;
   while (1) {
@@ -630,7 +606,7 @@ END_STRING1:
   if (num2 == 0)
     goto RETURN_FALSE;
 RETURN_TRUE:
-  return make_fixnum((int)(cp1 - this->_Contents.c_str()));
+  return make_fixnum((int)(cp1 - &(*this)[0]));
 END_STRING2:
 RETURN_FALSE:
   return _Nil<T_O>();
@@ -638,9 +614,8 @@ RETURN_FALSE:
 
 /*! bounding index designator range from 0 to the end of each string */
 T_sp Str_O::string_greaterp(Str_sp string2, cl_index start1, cl_index end1, cl_index start2, cl_index end2) const {
-  _OF();
-  const char *cp1 = this->_Contents.c_str() + start1;
-  const char *cp2 = string2->_Contents.c_str() + start2;
+  const char *cp1 = &(*this)[start1];
+  const char *cp2 = &(*string2)[start2];
   cl_index num1 = end1 - start1;
   cl_index num2 = end2 - start2;
   while (1) {
@@ -665,14 +640,13 @@ RETURN_FALSE:
   return _Nil<T_O>();
 END_STRING2:
 RETURN_TRUE:
-  return make_fixnum((int)(cp1 - this->_Contents.c_str()));
+  return make_fixnum((int)(cp1 - &(*this)[0]));
 }
 
 /*! bounding index designator range from 0 to the end of each string */
 T_sp Str_O::string_not_greaterp(Str_sp string2, cl_index start1, cl_index end1, cl_index start2, cl_index end2) const {
-  _OF();
-  const char *cp1 = this->_Contents.c_str() + start1;
-  const char *cp2 = string2->_Contents.c_str() + start2;
+  const char *cp1 = &(*this)[start1];
+  const char *cp2 = &(*string2)[start2];
   cl_index num1 = end1 - start1;
   cl_index num2 = end2 - start2;
   while (1) {
@@ -700,14 +674,13 @@ END_STRING2:
 RETURN_FALSE:
   return _Nil<T_O>();
 RETURN_TRUE:
-  return make_fixnum((int)(cp1 - this->_Contents.c_str()));
+  return make_fixnum((int)(cp1 - &(*this)[0]));
 }
 
 /*! bounding index designator range from 0 to the end of each string */
 T_sp Str_O::string_not_lessp(Str_sp string2, cl_index start1, cl_index end1, cl_index start2, cl_index end2) const {
-  _OF();
-  const char *cp1 = this->_Contents.c_str() + start1;
-  const char *cp2 = string2->_Contents.c_str() + start2;
+  const char *cp1 = &(*this)[start1];
+  const char *cp2 = &(*string2)[start2];
   cl_index num1 = end1 - start1;
   cl_index num2 = end2 - start2;
   while (1) {
@@ -735,7 +708,7 @@ END_STRING2:
 RETURN_FALSE:
   return _Nil<T_O>();
 RETURN_TRUE:
-  return make_fixnum((int)(cp1 - this->_Contents.c_str()));
+  return make_fixnum((int)(cp1 - &(*this)[0]));
 }
 #endif // USE_TEMPLATE_STRING_MATCHER
 
@@ -745,6 +718,7 @@ T_sp Str_O::subseq(cl_index start, T_sp end) const {
   coerce::inBoundsOrError(start,0,this->length());
   cl_index iend = coerce::coerceToEndInRangeOrError(end,start,this->length());
   size_t ilen = iend - start;
+  LOG(BF("Creating str with length = %lu") % ilen);
   Str_sp news = Str_O::create(ilen);
   memcpy(&((*news)[0]),&((*this)[start]),ilen*sizeof(element_type));
   return news;
@@ -763,12 +737,12 @@ T_sp Str_O::setf_subseq(cl_index start, T_sp end, T_sp new_subseq) {
 
 claspChar Str_O::schar(cl_index index) const {
   coerce::inBoundsBelowEndOrError(index,0,this->length());
-  return this->_Contents[index];
+  return (*this)[index];
 }
 
 claspChar Str_O::scharSet(cl_index index, claspChar c) {
   coerce::inBoundsBelowEndOrError(index,0,this->length());
-  this->_Contents[index] = c;
+  (*this)[index] = c;
   return c;
 }
 
@@ -788,12 +762,36 @@ void Str_O::fillArrayWithElt(T_sp element, Fixnum_sp start, T_sp end) {
     SIMPLE_ERROR(BF("Illegal value for start[%d] - must be between 0 and %d") % istart % iend);
   }
   for (cl_index i = istart; i < iend; i++) {
-    this->_Contents[i] = celement;
+    (*this)[i] = celement;
   }
 }
 
 void *Str_O::addressOfBuffer() const {
-  return (void *)(this->_Contents.c_str());
+  return (void *)&((*this)[0]);
+}
+
+void Str_O::fillPointerSet(T_sp fp) {
+  if (fp.fixnump()) {
+    cl_index ifp = fp.unsafe_fixnum();
+    if (ifp >= 0 && ifp <= this->arrayTotalSize()) {
+      this->_FillPointer = fp;
+      return;
+    }
+  } else if (fp.nilp()) {
+    this->_FillPointer = fp;
+    return;
+  }
+  SIMPLE_ERROR(BF("Illegal fill-pointer %d - must be less than %d or nil") % fp % this->length());
+}
+
+char *Str_O::addressOfFillPointer() {
+  unlikely_if (!this->_FillPointer.fixnump()) noFillPointerError();
+  return static_cast<char *>(this->addressOfBuffer()) + this->_FillPointer.unsafe_fixnum();
+}
+
+void Str_O::incrementFillPointer(cl_index off) {
+  unlikely_if (!this->_FillPointer.fixnump()) noFillPointerError();
+  this->_FillPointer = clasp_make_fixnum(this->_FillPointer.unsafe_fixnum() + off);
 }
 
 void Str_O::fillInitialContents(T_sp seq) {
@@ -803,20 +801,20 @@ void Str_O::fillInitialContents(T_sp seq) {
       goto ERROR;
     cl_index i = 0;
     for (auto cur : ls) {
-      this->_Contents[i] = clasp_as_char(gc::As<Character_sp>(oCar(cur)));
+      (*this)[i] = clasp_as_char(gc::As<Character_sp>(oCar(cur)));
       ++i;
     }
   } else if (Str_sp ss = seq.asOrNull<Str_O>()) {
     if (ss->length() != this->size())
       goto ERROR;
     for (cl_index i = 0; i < this->size(); ++i) {
-      this->_Contents[i] = (*ss)[i];
+      (*this)[i] = (*ss)[i];
     }
   } else if (Vector_sp vs = seq.asOrNull<Vector_O>()) {
     if (vs->length() != this->size())
       goto ERROR;
     for (cl_index i = 0; i < this->size(); ++i) {
-      this->_Contents[i] = clasp_as_char(gc::As<Character_sp>(vs));
+      (*this)[i] = clasp_as_char(gc::As<Character_sp>(vs));
     }
   } else {
     SIMPLE_ERROR(BF("Illegal :INITIAL-CONTENTS"));
@@ -830,12 +828,12 @@ void Str_O::__write__(T_sp stream) const {
   cl_index ndx;
   if (!clasp_print_escape() && !clasp_print_readably()) {
     for (ndx = 0; ndx < this->size(); ndx++) {
-      clasp_write_char(this->_Contents[ndx], stream);
+      clasp_write_char((*this)[ndx], stream);
     }
   } else {
     clasp_write_char('"', stream);
     for (ndx = 0; ndx < this->size(); ndx++) {
-      char c = this->_Contents[ndx];
+      char c = (*this)[ndx];
       if (c == '"' || c == '\\')
         clasp_write_char('\\', stream);
       clasp_write_char(c, stream);
@@ -843,6 +841,89 @@ void Str_O::__write__(T_sp stream) const {
     clasp_write_char('"', stream);
   }
 }
+
+void Str_O::setSize(cl_index newSize) {
+  ASSERT(!this->_DisplacedTo);
+  if (newSize < 0) {
+    SIMPLE_ERROR(BF("You can only set size to >= 0 - not %d") % newSize);
+  }
+  if (this->_String.size() == newSize) return;
+  if (this->_String.size() < newSize) {
+    // FIXME - I'll have to add a resize function to GCArray_moveable
+    this->_String.resize(newSize, ' ');
+    this->_Dimension = newSize;
+  } else {
+    this->_String.resize(newSize);
+    this->_Dimension = newSize;
+    if ( this->_FillPointer.fixnump()) {
+      if (this->_FillPointer.unsafe_fixnum() > this->_String.size()) {
+        this->_FillPointer = clasp_make_fixnum(this->_String.size());
+      }
+    }
+  }
+}
+
+void Str_O::ensureSpaceAfterFillPointer(cl_index size) {
+  ASSERT(!this->_DisplacedTo);
+  if (!this->_FillPointer.fixnump()) noFillPointerError();
+  cl_index left = this->arrayTotalSize() - this->_FillPointer.unsafe_fixnum();
+  if (left < size) {
+    this->setSize((size-left)+this->arrayTotalSize());
+  }
+}
+
+
+T_sp Str_O::vectorPush(T_sp newElement) {
+  ASSERT(newElement.characterp());
+  if (!this->_FillPointer.fixnump()) noFillPointerError();
+  cl_index idx = this->_FillPointer.unsafe_fixnum();
+  if (idx < this->_Dimension) {
+    (*this)[idx] = newElement.unsafe_character();
+    this->_FillPointer = clasp_make_fixnum(idx+1);
+    return clasp_make_fixnum(idx);
+  }
+  return _Nil<T_O>();
+}
+
+Fixnum_sp Str_O::vectorPushExtend(T_sp newElement, cl_index extension) {
+  unlikely_if (!this->_FillPointer.fixnump()) {
+    SIMPLE_ERROR(BF("This string does not have a fill pointer"));
+  }
+  cl_index idx = this->_FillPointer.unsafe_fixnum();
+  unlikely_if (idx >= this->arrayTotalSize() ) {
+    if (extension <= 0) extension = 32;
+  }
+  cl_index new_size = this->arrayTotalSize()+extension;
+  unlikely_if (!cl::_sym_adjust_array->boundP()) {
+    this->setSize(new_size);
+  } else {
+    eval::funcall(cl::_sym_adjust_array,this->asSmartPtr(),clasp_make_fixnum(new_size),cl::_sym_fill_pointer,this->_FillPointer);
+  }
+  (*this)[idx] = clasp_as_claspCharacter(newElement);
+  this->_FillPointer = clasp_make_fixnum(idx+1);
+  return make_fixnum(idx);
+}
+
+void Str_O::pushSubString(T_sp tstr, cl_index start, cl_index end) {
+  Str_sp str = cl__string(tstr);
+  while (start < end) {
+    this->vectorPushExtend(clasp_make_character(cl__char(str, start)));
+    start++;
+  }
+}
+
+CL_LISPIFY_NAME(push-string);
+CL_DEFMETHOD void Str_O::pushString(T_sp str) {
+  this->pushSubString(str, 0, cl__length(str));
+}
+
+void Str_O::pushStringCharStar(const char *cPtr) {
+  while (*cPtr) {
+    this->vectorPushExtend(clasp_make_character(*cPtr), this->length());
+    cPtr++;
+  }
+}
+
 
 
 

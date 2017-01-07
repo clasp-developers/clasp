@@ -94,7 +94,7 @@ CL_DEFUN bool llvm_sys__load_bitcode(core::Pathname_sp filename, bool verbose, b
   if (comp::_sym_STARllvm_contextSTAR->symbolValue().nilp()) {
     SIMPLE_ERROR(BF("The cmp:*llvm-context* is NIL"));
   }
-  core::Str_sp namestring = gctools::As<core::Str_sp>(tnamestring);
+  core::String_sp namestring = gctools::As<core::String_sp>(tnamestring);
   Module_sp m = llvm_sys__parseBitcodeFile(namestring,comp::_sym_STARllvm_contextSTAR->symbolValue());
   EngineBuilder_sp engineBuilder = EngineBuilder_O::make(m);
   TargetOptions_sp targetOptions = TargetOptions_O::make();
@@ -107,7 +107,8 @@ CL_DEFUN bool llvm_sys__load_bitcode(core::Pathname_sp filename, bool verbose, b
   return true;
 }
 
-CL_DEFUN core::Str_sp llvm_sys__mangleSymbolName(core::Str_sp name) {
+CL_DEFUN core::SimpleBaseCharString_sp llvm_sys__mangleSymbolName(core::String_sp name) {
+  ASSERT(cl__stringp(name));
   stringstream sout;
   const char *cur = name->get().c_str();
   bool first = true;
@@ -122,7 +123,7 @@ CL_DEFUN core::Str_sp llvm_sys__mangleSymbolName(core::Str_sp name) {
     first = false;
     ++cur;
   }
-  return Str_O::create(sout.str());
+  return SimpleBaseCharString_O::make(sout.str());
 };
 
 /*! Return an a-list containing lots of values that define C++ objects that Clasp needs to know about */

@@ -91,14 +91,14 @@ struct from_object<clang::tooling::CommandLineArguments> {
         core::List_sp args = cargs;
         _v.clear();
         for (auto cur : args) {
-          core::Str_sp s = gc::As<core::Str_sp>(oCar(cur));
+          core::String_sp s = gc::As<core::String_sp>(oCar(cur));
           _v.push_back(s->get());
         }
         return;
       } else if (core::Vector_sp vargs = o.asOrNull<core::Vector_O>()) {
         _v.clear();
         for (int i(0), iEnd(vargs->length()); i < iEnd; ++i) {
-          core::Str_sp s = gc::As<core::Str_sp>(vargs->elt(i));
+          core::String_sp s = gc::As<core::String_sp>(vargs->rowMajorAref(i));
           _v.push_back(s->get());
         }
         return;
@@ -108,34 +108,6 @@ struct from_object<clang::tooling::CommandLineArguments> {
   }
 };
 
-#if 0
-    // This is not necessary because CommandLineArguments are just vector<string>
-        template <>
-    struct from_object<const clang::tooling::CommandLineArguments&> {
-        typedef clang::tooling::CommandLineArguments DeclareType;
-        DeclareType _v;
-        from_object(core::T_sp o) {
-	    if ( o.notnilp() ) {
-		if ( core::Cons_sp args = o.asOrNull<core::Cons_O>() ) {
-		    _v.clear();
-		    for ( core::Cons_sp cur = args; cur.notnilp(); cur=cCdr(cur) ) {
-			core::Str_sp s = oCar(cur).as<core::Str_O>();
-			_v.push_back(s->get());
-		    }
-		    return;
-		} else if ( core::Vector_sp vargs = o.asOrNull<core::Vector_O>() ) {
-                    _v.clear();
-                    for ( int i(0), iEnd(vargs->length()); i<iEnd; ++i ) {
-                        core::Str_sp s = (*vargs)[i].as<core::Str_O>();
-                        _v.push_back(s->get());
-                    }
-                    return;
-		}
-	    }
-	    SIMPLE_ERROR(BF("Conversion of %s to clang::tooling::CommandLineArguments not supported yet") % _rep_(o) );
-	}
-    };
-#endif
 
 template <>
 struct from_object<clang::tooling::ArgumentsAdjuster> {
@@ -233,7 +205,7 @@ CL_DEFUN core::Symbol_sp ast_tooling__intern_matcher_keyword(const string& orig_
 SYMBOL_EXPORT_SC_(AstToolingPkg,STARmatcher_namesSTAR);
 void add_matcher_name(const string& name, core::Symbol_sp symbol)
 {
-  core::List_sp one = core::Cons_O::createList(symbol,core::Str_O::create(name));
+  core::List_sp one = core::Cons_O::createList(symbol,core::SimpleBaseCharString_O::make(name));
   _sym_STARmatcher_namesSTAR->defparameter(core::Cons_O::create(one,_sym_STARmatcher_namesSTAR->symbolValue()));
 }
 
@@ -574,8 +546,8 @@ namespace asttooling {
 #define ARGS_ast_tooling__clangVersionString "()"
 #define DECL_ast_tooling__clangVersionString ""
 #define DOCS_ast_tooling__clangVersionString "clangVersionString"
-CL_DEFUN core::Str_sp ast_tooling__clangVersionString() {
-  core::Str_sp version = core::Str_O::create(CLANG_VERSION_STRING);
+CL_DEFUN core::T_sp ast_tooling__clangVersionString() {
+  core::T_sp version = core::SimpleBaseCharString_O::make(CLANG_VERSION_STRING);
   return version;
 };
 
@@ -777,8 +749,8 @@ namespace asttooling {
 CL_DEFUN core::T_mv ast_tooling__wrapped_JSONCompilationDatabase_loadFromFile(core::T_sp FilePath, core::Symbol_sp ssyntax ) {
   clang::tooling::JSONCommandLineSyntax syntax = translate::from_object<clang::tooling::JSONCommandLineSyntax>(ssyntax)._v;
   std::string ErrorMessage;
-  std::unique_ptr<clang::tooling::JSONCompilationDatabase> result = clang::tooling::JSONCompilationDatabase::loadFromFile(gc::As<core::Str_sp>(FilePath)->get(),ErrorMessage,syntax);
-  return Values(translate::to_object<clang::tooling::JSONCompilationDatabase*,translate::adopt_pointer>::convert(result.release()), core::Str_O::create(ErrorMessage));
+  std::unique_ptr<clang::tooling::JSONCompilationDatabase> result = clang::tooling::JSONCompilationDatabase::loadFromFile(gc::As<core::String_sp>(FilePath)->get(),ErrorMessage,syntax);
+  return Values(translate::to_object<clang::tooling::JSONCompilationDatabase*,translate::adopt_pointer>::convert(result.release()), core::SimpleBaseCharString_O::make(ErrorMessage));
 }
 
 

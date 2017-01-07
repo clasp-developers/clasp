@@ -304,12 +304,6 @@ namespace core {
 	 */
     List_sp extend(List_sp rest);
 
-  /*! Return the reversed list */
-    List_sp reverse();
-
-  /*! Return the reversed list */
-    List_sp nreverse();
-
     List_sp revappend(T_sp tail);
     List_sp nreconc(T_sp tail);
 
@@ -379,6 +373,9 @@ namespace core {
     T_sp olookupKeyObject(Symbol_sp key);
 
     T_sp olookupKeyObjectDefault(Symbol_sp key, T_sp dflt);
+
+    List_sp reverse();
+    List_sp nreverse();
 
     List_sp memberEq(T_sp item) const;
     List_sp memberEql(T_sp item) const;
@@ -630,5 +627,6 @@ void fillVec0(core::List_sp c, gctools::Vec0<T> &vec) {
     vec.emplace_back(gc::As<T>(me->_Car));
   }
 }
+
 };
 #endif //]

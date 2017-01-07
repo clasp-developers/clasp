@@ -265,13 +265,13 @@ void register_foreign_type_spec( core::VectorObjects_sp sp_tst,
 
   ForeignTypeSpec_sp sp_fts =
     ForeignTypeSpec_O::create( lisp_symbol,
-                               core::Str_O::create( lisp_name ),
+                               core::SimpleBaseCharString_O::make( lisp_name ),
                                core::make_fixnum(size),
                                core::make_fixnum(alignment),
-                               core::Str_O::create( cxx_name ),
+                               core::SimpleBaseCharString_O::create( cxx_name ),
                                _Nil<core::T_O>(),
-                               core::Str_O::create( to_object_fn_name ),
-                               core::Str_O::create( from_object_fn_name ),
+                               core::SimpleBaseCharString_O::create( to_object_fn_name ),
+                               core::SimpleBaseCharString_O::create( from_object_fn_name ),
                                _Nil<core::T_O>(),
                                _Nil<core::T_O>() );
 
@@ -682,7 +682,7 @@ core::T_sp PERCENTdlopen( core::T_sp path_designator ) {
   void * p_handle = std::get<0>( result );
 
   if( p_handle == nullptr ) {
-    return ( Values(_Nil<core::T_O>(), core::Str_O::create( get<1>( result ))) );
+    return ( Values(_Nil<core::T_O>(), core::SimpleBaseCharString_O::make( get<1>( result ))) );
   }
 
   sp_handle = ForeignData_O::create( p_handle );
@@ -699,21 +699,21 @@ core::T_sp PERCENTdlclose( ForeignData_sp handle ) {
   int n_rc = std::get<0>( result );
 
   if( n_rc != 0 ) {
-    return ( Values(_Nil<core::T_O>(), core::Str_O::create( get<1>( result ))) );
+    return ( Values(_Nil<core::T_O>(), core::SimpleBaseCharString_O::make( get<1>( result ))) );
   }
   return ( Values( _lisp->_true(), _Nil<core::T_O>()) );
 }
 
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
-core::T_sp PERCENTdlsym( core::Str_sp name ) {
-
+core::T_sp PERCENTdlsym( core::String_sp name ) {
+  ASSERT(cl__stringp(name));
   ForeignData_sp sp_sym;
-  auto result = core::do_dlsym( RTLD_DEFAULT, name->get().c_str() );
+  auto result = core::do_dlsym( RTLD_DEFAULT, name->get_std_string().c_str() );
   void *p_sym = std::get<0>( result );
 
   if( ! p_sym ) {
-    return ( Values(_Nil<core::T_O>(), core::Str_O::create( get<1>( result ))) );
+    return ( Values(_Nil<core::T_O>(), core::SimpleBaseCharString_O::make( get<1>( result ))) );
   }
 
   sp_sym = ForeignData_O::create( p_sym );
@@ -774,13 +774,13 @@ inline string ForeignTypeSpec_O::__repr__() const {
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
 ForeignTypeSpec_sp ForeignTypeSpec_O::create( core::Symbol_sp   lisp_symbol,
-                                              core::Str_sp      lisp_name,
+                                              core::String_sp   lisp_name,
                                               core::Integer_sp  size,
                                               core::Fixnum_sp   alignment,
-                                              core::Str_sp      cxx_name,
+                                              core::String_sp   cxx_name,
                                               core::Symbol_sp   llvm_type_symbol,
-                                              core::Str_sp      to_object_fn_name,
-                                              core::Str_sp      from_object_fn_name,
+                                              core::String_sp   to_object_fn_name,
+                                              core::String_sp   from_object_fn_name,
                                               ForeignData_sp to_object_fn_ptr,
                                               ForeignData_sp from_object_fn_ptr)
 {

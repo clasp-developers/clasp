@@ -59,9 +59,10 @@ extern string packageNameDesignator(T_sp obj);
 /*! Return a List of packages by interpreting as a list of package designators */
 extern List_sp listOfPackageDesignators(T_sp obj);
 
-/*! Return a String object by interpreting the object
-	  as a string designator */
-extern Str_sp stringDesignator(T_sp obj);
+ /*! Coerce the obj to a simple-string */
+ SimpleString_sp simple_string(T_sp obj);
+ 
+extern String_sp stringDesignator(T_sp obj);
 
 /*! Return a List of strings by interpreting the
 	  object as a list of string designators */
@@ -76,10 +77,13 @@ T_sp inputStreamDesignator(T_sp obj);
 /*! Convert an Object output stream designator (as described by CLHS) into a Stream */
 T_sp outputStreamDesignator(T_sp obj);
 
+#if 0
  cl_index coerceToEndInRangeOrError(T_sp tend, cl_index start, cl_index end);
 
  void inBoundsOrError(cl_index index, cl_index start, cl_index end);
  void inBoundsBelowEndOrError(cl_index index, cl_index start, cl_index end);
+#endif
+ 
 }; /* designators */
 
 }; /* core */

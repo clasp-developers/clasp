@@ -97,7 +97,7 @@ void SexpSaveArchive_O::write(SNode_sp snode, HashTable_sp snodeToRef, T_sp stre
       write_ugly_object(make_fixnum(bsnode->_VectorSNodes->length()), stream);
       clasp_write_string("( ", stream);
       for (int i(0), iEnd(bsnode->_VectorSNodes->length()); i < iEnd; ++i) {
-        SNode_sp snode = gc::As<SNode_sp>(bsnode->_VectorSNodes->elt(i));
+        SNode_sp snode = gc::As<SNode_sp>(bsnode->_VectorSNodes->rowMajorAref(i));
         this->write(snode, snodeToRef, stream);
         clasp_write_char(' ', stream);
       }

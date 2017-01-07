@@ -9,5 +9,7 @@
 (test (string= (concatenate 'string (make-string 3 :initial-element #\Nul) "abc") (bformat nil "%c%c%cabc" #\nul #\nul #\nul)))
 (test (string= (copy-seq (concatenate 'string (make-string 3 :initial-element #\Nul) "abc")) (bformat nil "%c%c%cabc" #\nul #\nul #\nul)))
 (test (string= (substitute #\X #\Nul (subseq (concatenate 'string "a" (make-string 3 :initial-element #\Nul) "bcd") 0)) "aXXXbcd"))
+(test (multiple-value-bind (val pos) (parse-integer "123 456") (and (= val 123) (= pos 3))))
 
+(test (= (count-occurances "azazbza" "ab") 4))
 

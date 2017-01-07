@@ -58,7 +58,7 @@ THE SOFTWARE.
 #include <clasp/core/pathname.h>
 #include <clasp/core/lispStream.h>
 #include <clasp/core/instance.h>
-#include <clasp/core/strWithFillPtr.h>
+#include <clasp/core/str.h>
 #include <clasp/core/structureObject.h>
 #include <clasp/core/sysprop.h>
 #include <clasp/core/numberToString.h>
@@ -119,7 +119,7 @@ void Pathname_O::__write__(T_sp strm) const {
 	} else {
 	    clasp_write_string("#\\",stream);
 	    if (i < 32 || i >= 127) {
-		Str_sp name = gc::As<Str_sp>(eval::funcall(cl::_sym_char_name,char));
+		SimpleBaseCharString_sp name = gc::As<SimpleBaseCharString_sp>(eval::funcall(cl::_sym_char_name,char));
 		clasp_write_string(name->get(),stream);
 	    } else {
 		clasp_write_char(i,stream);
@@ -446,10 +446,9 @@ void write_single_float(T_sp strm, SingleFloat_sp i) {
 
 void
 write_float(T_sp f, T_sp stream) {
-  StrWithFillPtr_sp s = _lisp->get_buffer_string();
-  s = core_float_to_string_free(s, f, clasp_make_fixnum(-3), clasp_make_fixnum(8));
-  cl__write_sequence(s, stream, clasp_make_fixnum(0), _Nil<T_O>());
-  _lisp->put_buffer_string(s);
+  SafeBuffer s;
+  StrNs_sp result = core_float_to_string_free(s.string(), f, clasp_make_fixnum(-3), clasp_make_fixnum(8));
+  cl__write_sequence(result, stream, clasp_make_fixnum(0), _Nil<T_O>());
 }
 
 void write_character(T_sp strm, T_sp chr) {
@@ -460,7 +459,7 @@ void write_character(T_sp strm, T_sp chr) {
   } else {
     clasp_write_string("#\\", strm);
     if (i < 32 || i >= 127) {
-      Str_sp name = cl__char_name(clasp_make_character(i));
+      SimpleBaseCharString_sp name = cl__char_name(clasp_make_character(i));
       clasp_write_string(name->get(), strm);
     } else {
       clasp_write_char(i, strm);

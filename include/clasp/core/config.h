@@ -43,8 +43,8 @@ typedef uintptr_t cl_intptr_t;
 
 #define CHAR_CODE_LIMIT 256 /* ASCII or unicode character code limit */
 
-typedef char claspChar;
-typedef unsigned int claspCharacter;
+typedef unsigned char claspChar;
+typedef unsigned int  claspCharacter;
 #define CLASP_CHAR(x) ((x)&0xff)
 
 #define IS_DIR_SEPARATOR(c) ((c) == '/')
@@ -94,7 +94,7 @@ typedef unsigned int claspCharacter;
 /*! Maximum number of arguments that can be passed */
 #define CALL_ARGUMENTS_LIMIT 64
 
-#define CHAR_CODE_LIMIT 256
+#define CHAR_CODE_LIMIT 16777216
 
 #define CLASP_INTERNAL_TIME_UNITS_PER_SECOND 1000
 #endif

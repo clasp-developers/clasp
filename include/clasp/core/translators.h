@@ -37,8 +37,9 @@ THE SOFTWARE.
 #include <clasp/core/clasp_gmpxx.h>
 #include <clasp/core/glue.h>
 #include <clasp/core/pointer.h>
-#include <clasp/core/str.fwd.h>
 #include <clasp/core/numbers.h>
+#include <clasp/core/str.fwd.h>
+#include <clasp/core/array.fwd.h>
 #include <clasp/core/fli.h>
 
 namespace translate {
@@ -61,7 +62,7 @@ namespace translate {
     struct from_object< short, std::true_type > {
     typedef short DeclareType;
     DeclareType _v;
-    from_object(core::T_sp o) : _v( core::clasp_to_short( o )){};
+  from_object(core::T_sp o) : _v( core::clasp_to_short( o )){};
   };
 
   template <>
@@ -72,7 +73,7 @@ namespace translate {
   };
 
   template <>
-  struct from_object< int, std::true_type >
+    struct from_object< int, std::true_type >
   {
     typedef int DeclareType;
     DeclareType _v;
@@ -112,6 +113,22 @@ namespace translate {
     typedef long long DeclareType;
     DeclareType _v;
   from_object(core::T_sp o) : _v( core::clasp_to_longlong( o )){};
+  };
+
+  template <>
+    struct from_object<unsigned long, std::true_type> {
+    typedef unsigned long ExpectedType;
+    typedef unsigned long DeclareType;
+    DeclareType _v;
+    inline void set(core::T_sp o) {
+      if (o.fixnump()) {
+        this->_v = (unsigned long)o.unsafe_fixnum();
+        return;
+      }
+      TYPE_ERROR(o,cl::_sym_fixnum);
+    }
+  from_object() : _v(0){};
+    from_object(core::T_sp o) { this->set(o); };
   };
 
   template <>
@@ -420,21 +437,21 @@ namespace translate {
     struct from_object<const string &, std::true_type> {
     typedef string DeclareType;
     DeclareType _v;
-  from_object(T_P o) : _v(str_get(o)){};
+  from_object(T_P o) : _v(string_get_std_string(o)){};
   };
 
   template <>
     struct from_object<string, std::true_type> {
     typedef string DeclareType;
     DeclareType _v;
-  from_object(T_P o) : _v(str_get(o)){};
+  from_object(T_P o) : _v(string_get_std_string(o)){};
   };
 
   template <>
     struct from_object<string &, std::true_type> {
     typedef string DeclareType;
     DeclareType _v;
-  from_object(T_P o) : _v(str_get(o)){};
+  from_object(T_P o) : _v(string_get_std_string(o)){};
   };
 
   template <>
@@ -465,20 +482,6 @@ namespace translate {
       return oi;
     }
   };
-
-#if 0
-  template <>
-    struct	to_object<const string>
-  {
-    typedef	core::Str_sp		ExpectedType;
-    typedef	core::Str_sp		DeclareType;
-    static core::T_sp convert(const string& v)
-    {_G();
-      core::T_sp oi = core::str_create(v);
-      return Values(oi);
-    }
-  };
-#endif
 
   template <>
     struct to_object<const std::string &> {

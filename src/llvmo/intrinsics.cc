@@ -43,8 +43,6 @@ extern "C" {
 #include <clasp/core/bignum.h>
 #include <clasp/core/character.h>
 #include <clasp/core/symbolTable.h>
-#include <clasp/core/arrayObjects.h>
-#include <clasp/core/vectorObjects.h>
 #include <clasp/core/arguments.h>
 #include <clasp/core/designators.h>
 #include <clasp/core/compPackage.h>
@@ -58,7 +56,6 @@ extern "C" {
 #include <clasp/core/posixTime.h>
 #include <clasp/core/numbers.h>
 #include <clasp/core/activationFrame.h>
-#include <clasp/core/str.h>
 #include <clasp/core/symbolTable.h>
 #include <clasp/llvmo/llvmoExpose.h>
 #include <clasp/llvmo/intrinsics.h>

@@ -1,5 +1,5 @@
 /*
-    File: arrayObjects.fwd.h
+    File: sequence.h
 */
 
 /*
@@ -24,15 +24,13 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-/* @(#)arrayObjects.fwd.h
- */
-
-#ifndef _core_ArrayObjects_fwd_H
-#define _core_ArrayObjects_fwd_H
-
+#ifndef _core_Sequence_fwd_H
 namespace core {
-FORWARD(ArrayObjects);
+  size_t_pair sequenceKeywordStartEnd(Symbol_sp function_name,
+                               T_sp seq, Fixnum_sp start, T_sp end);
+  size_t_pair sequenceStartEnd(Symbol_sp function_name,
+                               size_t length, size_t start, T_sp end);
+  void sequenceIndexInBounds(Symbol_sp fn_name, size_t vector_length, size_t index);
 
-}; /* core */
-
-#endif /* _core_ArrayObjects_fwd_H */
+};
+#endif

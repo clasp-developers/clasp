@@ -261,8 +261,8 @@ namespace core {
   gctools::smart_ptr<oClass> asSmartPtr()                               \
   { return this->sharedThis<oClass>(); };                               \
  public:                                                                \
-  typedef oClass ThisClass;                                             \
-  typedef gctools::smart_ptr<oClass> smart_ptr;                         \
+  typedef oClass my_type;                                               \
+  typedef gctools::smart_ptr<oClass> smart_ptr_type;                 \
  public:                                                                \
   static core::Symbol_sp static_class_symbol;                           \
   static core::Class_sp static_class;                                   \
@@ -651,7 +651,7 @@ namespace core {
 
 #include <clasp/core/metaClass.h>
 #include <clasp/core/sourceFileInfo.h>
-#include <clasp/core/lispVector.h>
+#include <clasp/core/array.h>
 #include <clasp/core/tagged_cast_specializations.h>
 #include <clasp/core/cxxObject.h>
 

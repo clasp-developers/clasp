@@ -79,6 +79,11 @@ namespace gctools {
 #endif
 
   typedef Fixnum cl_fixnum;
+};
+
+typedef gctools::Fixnum cl_index;
+
+namespace gctools {
 /*! A pointer that is already tagged can be passed to smart_ptr constructors
       by first reinterpret_casting it to Tagged */
   typedef uintptr_t Tagged;

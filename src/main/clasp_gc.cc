@@ -277,7 +277,7 @@
     class BuiltInClass_O;
     class ValueEnvironment_O;
     class StructureObject_O;
-    class StrWithFillPtr_O;
+    class Str_O;
     class InvocationHistoryFrameIterator_O;
     class IOStreamStream_O;
     class TagbodyEnvironment_O;
@@ -379,7 +379,7 @@ KIND_LISPALLOC_core__BitVectorWithFillPtr_O = 52,
 KIND_LISPALLOC_core__VectorDisplaced_O = 53,
 KIND_LISPALLOC_core__String_O = 54,
 KIND_BOOTSTRAP_core__Str_O = 55,
-KIND_LISPALLOC_core__StrWithFillPtr_O = 56,
+KIND_LISPALLOC_core__Str_O = 56,
 KIND_LISPALLOC_core__VectorObjects_O = 57,
 KIND_LISPALLOC_core__Exposer_O = 58,
 KIND_LISPALLOC_asttooling__AsttoolingExposer_O = 59,
@@ -1262,7 +1262,7 @@ template <typename FP> struct Cast<core::InvocationHistoryFrameIterator_O*,FP> {
       return (kindVal == 274);
   };
 };
-template <typename FP> struct Cast<core::StrWithFillPtr_O*,FP> {
+template <typename FP> struct Cast<core::Str_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
@@ -3388,9 +3388,9 @@ template <> class gctools::GCKind<core::InvocationHistoryFrameIterator_O> {
 public:
   static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__InvocationHistoryFrameIterator_O ;
 };
-template <> class gctools::GCKind<core::StrWithFillPtr_O> {
+template <> class gctools::GCKind<core::Str_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__StrWithFillPtr_O ;
+  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__Str_O ;
 };
 template <> class gctools::GCKind<core::StructureObject_O> {
 public:
@@ -4525,10 +4525,10 @@ public:
 { class_kind, KIND_LISPALLOC_core__String_O, sizeof(core::String_O), 0, "core::String_O" },
 { class_kind, KIND_BOOTSTRAP_core__Str_O, sizeof(core::Str_O), 0, "core::Str_O" },
  {  fixed_field, TAGGED_POINTER_OFFSET, sizeof(gctools::tagged_pointer<gctools::GCString_moveable<char>>), offsetof(SAFE_TYPE_MACRO(core::Str_O),_Contents._Contents), "_Contents._Contents" }, // public: (NIL T) fixable: TAGGED-POINTER-FIX good-name: T
-{ class_kind, KIND_LISPALLOC_core__StrWithFillPtr_O, sizeof(core::StrWithFillPtr_O), 0, "core::StrWithFillPtr_O" },
- {  fixed_field, TAGGED_POINTER_OFFSET, sizeof(gctools::tagged_pointer<gctools::GCString_moveable<char>>), offsetof(SAFE_TYPE_MACRO(core::StrWithFillPtr_O),_Contents._Contents), "_Contents._Contents" }, // public: (NIL T) fixable: TAGGED-POINTER-FIX good-name: T
-// not-exposing {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::StrWithFillPtr_O),_FillPointer), "_FillPointer" }, // public: (NIL) fixable: NIL good-name: T
-// not-exposing {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(core::StrWithFillPtr_O),_Adjustable), "_Adjustable" }, // public: (NIL) fixable: NIL good-name: T
+{ class_kind, KIND_LISPALLOC_core__Str_O, sizeof(core::Str_O), 0, "core::StrWithFillPtr_O" },
+ {  fixed_field, TAGGED_POINTER_OFFSET, sizeof(gctools::tagged_pointer<gctools::GCString_moveable<char>>), offsetof(SAFE_TYPE_MACRO(core::Str_O),_Contents._Contents), "_Contents._Contents" }, // public: (NIL T) fixable: TAGGED-POINTER-FIX good-name: T
+// not-exposing {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::Str_O),_FillPointer), "_FillPointer" }, // public: (NIL) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(core::Str_O),_Adjustable), "_Adjustable" }, // public: (NIL) fixable: NIL good-name: T
 { class_kind, KIND_LISPALLOC_core__VectorObjects_O, sizeof(core::VectorObjects_O), 0, "core::VectorObjects_O" },
  {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::VectorObjects_O),_Dimension), "_Dimension" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::VectorObjects_O),_FillPointer), "_FillPointer" }, // public: (T) fixable: SMART-PTR-FIX good-name: T

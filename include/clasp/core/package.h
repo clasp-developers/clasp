@@ -47,12 +47,8 @@ class Package_O : public General_O {
   friend T_sp cl__delete_package(T_sp pobj);
 public: // virtual functions inherited from Object
   void initialize();
-#if defined(XML_ARCHIVE)
-  void archiveBase(ArchiveP node);
-#endif // defined(XML_ARCHIVE)
   string __repr__() const;
-
-GCPRIVATE: // instance variables
+public: // instance variables
   gctools::gcstring _Name;
   HashTableEqual_sp _InternalSymbols;
   HashTableEqual_sp _ExternalSymbols;
@@ -70,13 +66,13 @@ public: // Creation class functions
 public:
   /*! Very low level - add to internal symbols unless keyword
 	  package, in that case add to external symbols */
-  void add_symbol_to_package(Str_sp nameKey, Symbol_sp sym, bool exportp = false);
+  void add_symbol_to_package(SimpleString_sp nameKey, Symbol_sp sym, bool exportp = false);
   void bootstrap_add_symbol_to_package(const char *symName, Symbol_sp sym, bool exportp = false, bool shadowp = false);
 
 private:
   // This returns a NULL smart_ptr if it doesn't find a conflict
   // so that it can be used within the expression of an if statement
-  Package_sp export_conflict_or_NULL(Str_sp nameKey, Symbol_sp sym);
+  Package_sp export_conflict_or_NULL(SimpleString_sp nameKey, Symbol_sp sym);
 
 public:
   string packageName() const { return this->_Name.asStdString(); };
@@ -111,7 +107,7 @@ public:
   bool shadow(List_sp listOfSymbolNames);
 
   /*! support for CLHS::shadow */
-  bool shadow(Str_sp sym);
+  bool shadow(String_sp sym);
 
   //	bool areThereNameCollisions(Package_sp otherPackage);
 
@@ -124,20 +120,21 @@ public:
   void _export2(Symbol_sp sym);
 
   /*! Return the symbol if we contain it directly */
-  Symbol_mv findSymbolDirectlyContained(Str_sp nameKey) const;
+  Symbol_mv findSymbolDirectlyContained(String_sp nameKey) const;
 
-  Symbol_mv _findSymbol(Str_sp nameKey) const;
+  Symbol_mv findSymbol_SimpleString(SimpleString_sp nameKey) const;
 
   /*! Return the (values symbol [:inherited,:external,:internal])
 	 */
   Symbol_mv findSymbol(const string &name) const;
+  Symbol_mv findSymbol(String_sp name) const;
 
   //	T_mv findSymbol(const string& symbolName);
 
   /*! Return the Symbol if we contain it 
 		 * and create it and return it if we don't
 		 */
-  T_mv intern(Str_sp symbolName);
+  T_mv intern(SimpleString_sp symbolName);
 
   /*! Remove the symbol from the package */
   bool unintern(Symbol_sp sym);
@@ -184,16 +181,6 @@ public:
   virtual ~Package_O(){};
 };
 
-struct FindConflicts : public KeyValueMapper {
-public:
-  set<string> _conflicts;
-  Package_sp _me;
-  FindConflicts(Package_sp me) {
-    this->_me = me;
-  }
-
-  virtual bool mapKeyValue(T_sp key, T_sp value);
-};
-T_mv cl__find_symbol(Str_sp symbolName, T_sp packageDesig);
+T_mv cl__find_symbol(String_sp symbolName, T_sp packageDesig);
 };
 #endif //]

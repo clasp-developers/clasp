@@ -105,7 +105,7 @@ CL_DOCSTRING("Return a cons of the load-time-values ids");
 CL_DEFUN void core__load_time_values_ids() {
   List_sp names = _lisp->loadTimeValuesIds();
   for (auto cur : names) {
-    Str_sp nm = gc::As<Str_sp>(oCar(cur));
+    SimpleBaseCharString_sp nm = gc::As<SimpleBaseCharString_sp>(oCar(cur));
     T_sp ltv = _lisp->findLoadTimeValues(nm->get());
     printf("%s:%d LTV[%s]@%p = %s\n", __FILE__, __LINE__, nm->get().c_str(), ltv.raw_(), _rep_(ltv).c_str());
   }
@@ -139,9 +139,9 @@ CL_DEFUN void core__load_time_values_dump_values(T_sp nameOrLtv, T_sp indices) {
   LoadTimeValues_sp ltv;
   if (cl__stringp(nameOrLtv)) {
     int count = 0;
-    ltv = _lisp->findLoadTimeValuesWithNameContaining(gc::As<Str_sp>(nameOrLtv)->get(), count);
+    ltv = _lisp->findLoadTimeValuesWithNameContaining(gc::As<String_sp>(nameOrLtv)->get(), count);
     if (count != 1) {
-      SIMPLE_ERROR(BF("There is more than one load-time-values object with a name that contains: %s") % gc::As<Str_sp>(nameOrLtv)->get());
+      SIMPLE_ERROR(BF("There is more than one load-time-values object with a name that contains: %s") % gc::As<String_sp>(nameOrLtv)->get());
     }
   } else {
     ltv = gc::As<LoadTimeValues_sp>(nameOrLtv);
@@ -160,9 +160,9 @@ CL_DEFUN void core__load_time_values_dump_symbols(T_sp nameOrLtv, T_sp indices) 
   LoadTimeValues_sp ltv;
   if (cl__stringp(nameOrLtv)) {
     int count = 0;
-    ltv = _lisp->findLoadTimeValuesWithNameContaining(gc::As<Str_sp>(nameOrLtv)->get(), count);
+    ltv = _lisp->findLoadTimeValuesWithNameContaining(gc::As<String_sp>(nameOrLtv)->get(), count);
     if (count != 1) {
-      SIMPLE_ERROR(BF("There is more than one load-time-values object with a name that contains: %s") % gc::As<Str_sp>(nameOrLtv)->get());
+      SIMPLE_ERROR(BF("There is more than one load-time-values object with a name that contains: %s") % gc::As<String_sp>(nameOrLtv)->get());
     }
   } else {
     ltv = gc::As<LoadTimeValues_sp>(nameOrLtv);
@@ -255,22 +255,6 @@ CL_DEFMETHOD size_t LoadTimeValues_O::data_vectorPushExtend(T_sp val, size_t ext
 }
 
 
-#if 0
-void LoadTimeValues_O::symbols_setFillPointer(uint i) {
-  ASSERT(i == 0);
-  this->_Symbols.resize(i);
-}
-#endif
-
-
-#if 0
-CL_LISPIFY_NAME("symbols_vectorPushExtend");
-CL_DEFMETHOD int LoadTimeValues_O::symbols_vectorPushExtend(Symbol_sp val, int extension) {
-  int i = this->_Symbols.size();
-  this->_Symbols.push_back(val);
-  return i;
-}
-#endif
 
 
 }; /* core */

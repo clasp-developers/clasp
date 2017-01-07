@@ -41,6 +41,7 @@ public:
   typedef value_type &reference;
   typedef T *iterator;
   typedef T const *const_iterator;
+  typedef value_type container_value_type;
 
   GCString_moveable(size_t num, size_t e = 0) : _Capacity(num){};
   size_t _Capacity; // Index one beyond the total number of elements allocated

@@ -348,18 +348,45 @@ inline gctools::return_type funcall_consume_valist_(gc::Tagged func_tagged,
   core::T_O *arg2;
   size_t current_arg_index;
   LCC_VA_LIST_CURRENT_INDEX(current_arg_index,args);
+  Func_O_Type* func_object_ptr = reinterpret_cast<Func_O_Type*>(gctools::untag_general(func_tagged));
+  ASSERT_LCC_VA_LIST_CLOSURE_DEFINED(args.tagged_());
+  size_t nargs = LCC_VA_LIST_TOTAL_NUMBER_OF_ARGUMENTS(args)-current_arg_index;
+  switch (nargs) {
+    case 3:
+        LCC_VA_LIST_ABSOLUTE_INDEXED_ARG(arg0, args, current_arg_index+0);
+        LCC_VA_LIST_ABSOLUTE_INDEXED_ARG(arg1, args, current_arg_index+1);
+        LCC_VA_LIST_ABSOLUTE_INDEXED_ARG(arg2, args, current_arg_index+2);
+        return func_object_ptr->invoke_va_list(reinterpret_cast<core::T_O*>(func_tagged),
+                                               reinterpret_cast<core::T_O*>(args.tagged_()),
+                                               nargs, arg0,arg1,arg2);
+        break;
+    case 2:
+        LCC_VA_LIST_ABSOLUTE_INDEXED_ARG(arg0, args, current_arg_index+0);
+        LCC_VA_LIST_ABSOLUTE_INDEXED_ARG(arg1, args, current_arg_index+1);
+        return func_object_ptr->invoke_va_list(reinterpret_cast<core::T_O*>(func_tagged),
+                                               reinterpret_cast<core::T_O*>(args.tagged_()),
+                                               nargs, arg0,arg1,NULL);
+        break;
+    case 1:
+        LCC_VA_LIST_ABSOLUTE_INDEXED_ARG(arg0, args, current_arg_index+0);
+        return func_object_ptr->invoke_va_list(reinterpret_cast<core::T_O*>(func_tagged),
+                                               reinterpret_cast<core::T_O*>(args.tagged_()),
+                                               nargs, arg0,NULL,NULL);
+        break;
+    case 0:
+        return func_object_ptr->invoke_va_list(reinterpret_cast<core::T_O*>(func_tagged),
+                                               reinterpret_cast<core::T_O*>(args.tagged_()),
+                                               nargs,NULL,NULL,NULL);
+        break;
+    }
   LCC_VA_LIST_ABSOLUTE_INDEXED_ARG(arg0, args, current_arg_index+0);
   LCC_VA_LIST_ABSOLUTE_INDEXED_ARG(arg1, args, current_arg_index+1);
   LCC_VA_LIST_ABSOLUTE_INDEXED_ARG(arg2, args, current_arg_index+2);
-  size_t nargs = LCC_VA_LIST_TOTAL_NUMBER_OF_ARGUMENTS(args)-current_arg_index;
-  ASSERT_LCC_VA_LIST_CLOSURE_DEFINED(args.tagged_());
-  Func_O_Type* func_object_ptr = reinterpret_cast<Func_O_Type*>(gctools::untag_general(func_tagged));
-  gctools::return_type res = func_object_ptr->invoke_va_list(reinterpret_cast<core::T_O*>(func_tagged),
-                                                             reinterpret_cast<core::T_O*>(args.tagged_()),
-                                                             nargs,
-                                                             arg0,  // LCC_VA_LIST_REGISTER_ARG0(args),
-                                                             arg1,  // LCC_VA_LIST_REGISTER_ARG1(args),
-                                                             arg2); //LCC_VA_LIST_REGISTER_ARG2(args) );
-  return res;
+  return func_object_ptr->invoke_va_list(reinterpret_cast<core::T_O*>(func_tagged),
+                                         reinterpret_cast<core::T_O*>(args.tagged_()),
+                                         nargs,
+                                         arg0,  // LCC_VA_LIST_REGISTER_ARG0(args),
+                                         arg1,  // LCC_VA_LIST_REGISTER_ARG1(args),
+                                         arg2); //LCC_VA_LIST_REGISTER_ARG2(args) );
 }
 #endif // #ifdef LCC_PROTOTYPES

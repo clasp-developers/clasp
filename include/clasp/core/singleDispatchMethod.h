@@ -85,7 +85,7 @@ public: // creation function
   static SingleDispatchMethod_sp create(Symbol_sp name,
                                         Class_sp receiver,
                                         LambdaListHandler_sp lambda_list_handler,
-                                        List_sp declares, gc::Nilable<Str_sp> docstr,
+                                        List_sp declares, gc::Nilable<String_sp> docstr,
                                         Function_sp body);
 
 public: // Functions here
@@ -167,7 +167,7 @@ namespace core {
 
 
  
-  void core__ensure_single_dispatch_method(Symbol_sp gfname, Class_sp receiver_class, LambdaListHandler_sp lambda_list_handler, List_sp declares, gc::Nilable<Str_sp> docstring, Function_sp body);
+  void core__ensure_single_dispatch_method(Symbol_sp gfname, Class_sp receiver_class, LambdaListHandler_sp lambda_list_handler, List_sp declares, gc::Nilable<String_sp> docstring, Function_sp body);
 
 
 };

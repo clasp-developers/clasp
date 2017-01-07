@@ -32,7 +32,6 @@ THE SOFTWARE.
 #include <clasp/core/hashTableEq.h>
 #include <clasp/core/environment.h>
 #include <clasp/core/hashTableEql.h>
-#include <clasp/core/binder.h>
 #include <clasp/core/lisp.h>
 
 // last include is wrappers.h
@@ -41,6 +40,13 @@ THE SOFTWARE.
 namespace core {
 
 
+List_sp SymbolToEnumConverter_O::enumSymbolsAsList() const {
+  List_sp symbols = _Nil<T_O>();
+  this->_SymbolToEnum->maphash([&symbols] (T_sp key, T_sp val) {
+      symbols = Cons_O::create(key,symbols);
+    });
+  return symbols;
+}
 
 SymbolToEnumConverter_sp SymbolToEnumConverter_O::create(const string &whatDoesEnumRepresent) {
   SymbolToEnumConverter_sp c = SymbolToEnumConverter_O::create();
@@ -79,12 +85,10 @@ Symbol_sp SymbolToEnumConverter_O::addSymbolEnumPair(Symbol_sp asym, Symbol_sp c
 }
 
 CL_LISPIFY_NAME("enumIndexForSymbol");
-CL_DEFMETHOD int SymbolToEnumConverter_O::enumIndexForSymbol(Symbol_sp sym) {
-  _OF();
-  if (!this->_SymbolToEnum->contains(sym)) {
-    SIMPLE_ERROR(BF("Could not find %s in symbol-to-enum-converter: %s") % _rep_(sym) % _rep_(this->sharedThis<SymbolToEnumConverter_O>()));
-  }
-  return unbox_fixnum(gc::As<Fixnum_sp>(this->_SymbolToEnum->gethash(sym)));
+CL_DEFMETHOD int SymbolToEnumConverter_O::enumIndexForSymbol(T_sp obj) {
+  T_mv match_mv = this->_SymbolToEnum->gethash(obj);
+  if (match_mv.second().nilp()) TYPE_ERROR(obj,Cons_O::create(cl::_sym_member,this->enumSymbolsAsList()));
+  return unbox_fixnum(match_mv);
 }
 
 Symbol_sp SymbolToEnumConverter_O::symbolForEnumIndex(int index) {
@@ -121,13 +125,6 @@ string SymbolToEnumConverter_O::legalEnumValuesAndSymbols() {
   });
   return ss.str();
 }
-
-#if 0
-bool SymbolToEnumConverter_O::recognizesSymbolString(const string& enumStr)
-{_OF();
-    return this->_ArchiveStringToEnum.count(enumStr)>0;
-}
-#endif
 
 bool SymbolToEnumConverter_O::recognizesEnumIndex(int ei) {
   _OF();

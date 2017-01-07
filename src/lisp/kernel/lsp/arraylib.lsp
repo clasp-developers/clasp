@@ -124,7 +124,7 @@ contiguous block."
         (error "Cannot displace the array, because the element types don't match")))
   (cond
     ((null dimensions)
-     (make-array-objects dimensions (upgraded-array-element-type element-type) initial-element initial-element-supplied-p displaced-to displaced-index-offset))
+     (make-mdarray dimensions (upgraded-array-element-type element-type) displaced-to displaced-index-offset initial-element initial-element-supplied-p))
     ((or (fixnump dimensions) (and (consp dimensions) (eql 1 (length dimensions))))
      (let ((dim (if (fixnump dimensions)
 		    dimensions
@@ -134,16 +134,19 @@ contiguous block."
            (fill-array-with-elt x initial-element 0 nil))
          x)))
     ((listp dimensions)
-     (let ((x (make-array-objects dimensions
-                                  (upgraded-array-element-type element-type)
-                                  initial-element
-                                  initial-element-supplied-p
-                                  displaced-to
-                                  displaced-index-offset)))
+     (let ((x (make-mdarray dimensions
+                            (upgraded-array-element-type element-type)
+                            displaced-to
+                            displaced-index-offset
+                            initial-element
+                            initial-element-supplied-p)))
        (when (and displaced-to initial-element-supplied-p)
          (fill-array-with-elt x initial-element 0 nil))
+       (when initial-contents
+         (error "Handle initial-contents for make-mdarray"))
        x))
     (t (error "Illegal dimensions ~a for make-array" dimensions ))))
+
 
 (defun fill-array-with-seq (array initial-contents)
   (declare (array array)

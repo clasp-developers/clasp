@@ -33,7 +33,7 @@ THE SOFTWARE.
 #include <set>
 #include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
-#include <clasp/core/str.fwd.h>
+#include <clasp/core/array.fwd.h>
 #include <clasp/core/symbolToEnumConverter.h>
 #include <clasp/core/serialize.fwd.h>
 
@@ -416,7 +416,7 @@ public: // bidirectional
       _BLOCK_TRACE("Loading");
       v.clear();
       this->mapVector([&v](T_sp pair) {
-			string key = str_get(oCar(pair));
+			string key = string_get_std_string(oCar(pair));
 			Integer_sp ival = gc::As<Integer_sp>(oCdr(pair));
 			v[key] = clasp_to_int(ival);
       });

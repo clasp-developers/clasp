@@ -97,13 +97,13 @@ CL_DEFUN T_sp core__environment_debug_values(T_sp frame) {
     return _Nil<T_O>();
   else if (ValueFrame_sp vf = frame.asOrNull<ValueFrame_O>()) {
     int iEnd = vf->length();
-    VectorObjects_sp vo = VectorObjects_O::create(_Nil<T_O>(), iEnd, _Nil<T_O>());
+    VectorObjects_sp vo = VectorObjects_O::make(iEnd,_Nil<T_O>());
     for (int i(0); i < iEnd; ++i) {
       T_sp val = (*vf)[i];
       if (val.unboundp()) {
         val = _sym__BANG_unbound_BANG_;
       }
-      vo->setf_elt(i, val);
+      vo->rowMajorAset(i, val);
     }
     return vo;
   } else if (ActivationFrame_sp af = frame.asOrNull<ActivationFrame_O>()) {

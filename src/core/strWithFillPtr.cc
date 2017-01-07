@@ -43,8 +43,8 @@ THE SOFTWARE.
 
 namespace core {
 
-StrWithFillPtr_sp StrWithFillPtr_O::create(char initial_element, size_t dimension, size_t fill_ptr, bool adjustable, T_sp initialContents) {
-  GC_ALLOCATE(StrWithFillPtr_O, str);
+Str_sp Str_O::create(char initial_element, size_t dimension, size_t fill_ptr, bool adjustable, T_sp initialContents) {
+  GC_ALLOCATE(Str_O, str);
   str->_Contents = string(dimension, initial_element);
   str->_FillPointer = fill_ptr;
   str->_Adjustable = adjustable;
@@ -59,7 +59,7 @@ StrWithFillPtr_sp StrWithFillPtr_O::create(char initial_element, size_t dimensio
 
 
 
-T_sp StrWithFillPtr_O::vectorPush(T_sp newElement) {
+T_sp Str_O::vectorPush(T_sp newElement) {
   if (newElement.notnilp()) {
     if (Character_sp ch = newElement.asOrNull<Character_O>()) {
       if (this->_FillPointer < this->_Contents.size()) {
@@ -74,7 +74,7 @@ T_sp StrWithFillPtr_O::vectorPush(T_sp newElement) {
   TYPE_ERROR(newElement, cl::_sym_character);
 }
 
-void StrWithFillPtr_O::setFillPointer(size_t fp) {
+void Str_O::setFillPointer(size_t fp) {
   if (fp < this->_Contents.size()) {
     this->_FillPointer = fp;
     return;
@@ -82,11 +82,11 @@ void StrWithFillPtr_O::setFillPointer(size_t fp) {
   SIMPLE_ERROR(BF("Illegal fill-pointer %d - must be less than %d") % fp % this->_Contents.size());
 }
 
-void StrWithFillPtr_O::adjustSize(cl_index extension) {
+void Str_O::adjustSize(cl_index extension) {
   this->setSize(this->_Contents.size() + extension);
 }
 
-void StrWithFillPtr_O::setSize(cl_index newSize) {
+void Str_O::setSize(cl_index newSize) {
   if (this->_Adjustable) {
     if (newSize < 0) {
       SIMPLE_ERROR(BF("You can only set size to >= 0 - not %d") % newSize);
@@ -107,7 +107,7 @@ void StrWithFillPtr_O::setSize(cl_index newSize) {
   SIMPLE_ERROR(BF("The array is not adjustable"));
 }
 
-cl_index StrWithFillPtr_O::pushCharExtend(claspChar c, cl_index extension) {
+cl_index Str_O::pushCharExtend(claspChar c, cl_index extension) {
   if (this->_FillPointer >= this->_Contents.size()) {
     if (extension == 0)
       extension = this->_Contents.size();
@@ -119,7 +119,7 @@ cl_index StrWithFillPtr_O::pushCharExtend(claspChar c, cl_index extension) {
   return newIndex;
 }
 
-Fixnum_sp StrWithFillPtr_O::vectorPushExtend(T_sp newElement, cl_index extension) {
+Fixnum_sp Str_O::vectorPushExtend(T_sp newElement, cl_index extension) {
   if (newElement.notnilp()) {
     if (Character_sp ch = newElement.asOrNull<Character_O>()) {
       return make_fixnum(this->pushCharExtend(clasp_as_char(ch), extension));
@@ -128,7 +128,7 @@ Fixnum_sp StrWithFillPtr_O::vectorPushExtend(T_sp newElement, cl_index extension
   TYPE_ERROR(newElement, cl::_sym_character);
 }
 
-string StrWithFillPtr_O::__repr__() const {
+string Str_O::__repr__() const {
   stringstream ss;
   ss << '"';
   int i = 0;
@@ -149,7 +149,7 @@ string StrWithFillPtr_O::__repr__() const {
   return ss.str();
 }
 
-void StrWithFillPtr_O::pushSubString(T_sp tstr, cl_index start, cl_index end) {
+void Str_O::pushSubString(T_sp tstr, cl_index start, cl_index end) {
   Str_sp str = cl__string(tstr);
   while (start < end) {
     this->vectorPushExtend(clasp_make_character(cl__char(str, start)));
@@ -158,26 +158,26 @@ void StrWithFillPtr_O::pushSubString(T_sp tstr, cl_index start, cl_index end) {
 }
 
 CL_LISPIFY_NAME(push-string);
-CL_DEFMETHOD void StrWithFillPtr_O::pushString(T_sp str) {
+CL_DEFMETHOD void Str_O::pushString(T_sp str) {
   this->pushSubString(str, 0, cl__length(str));
 }
 
-void StrWithFillPtr_O::pushStringCharStar(const char *cPtr) {
+void Str_O::pushStringCharStar(const char *cPtr) {
   while (*cPtr) {
     this->pushCharExtend(*cPtr, this->length());
     cPtr++;
   }
 }
 
-char *StrWithFillPtr_O::addressOfFillPtr() {
+char *Str_O::addressOfFillPtr() {
   return static_cast<char *>(this->addressOfBuffer()) + this->_FillPointer;
 }
 
-void StrWithFillPtr_O::incrementFillPointer(cl_index off) {
+void Str_O::incrementFillPointer(cl_index off) {
   this->_FillPointer += off;
 }
 
-void StrWithFillPtr_O::ensureSpaceAfterFillPointer(cl_index size) {
+void Str_O::ensureSpaceAfterFillPointer(cl_index size) {
   int left = this->_Contents.size() - this->_FillPointer;
   if (left < size) {
     this->adjustSize(size - left);

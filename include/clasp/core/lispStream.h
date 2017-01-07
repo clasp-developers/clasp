@@ -52,7 +52,7 @@ THE SOFTWARE.
 #include <clasp/core/pathname.fwd.h>
 #include <clasp/core/lispVector.fwd.h>
 #include <clasp/core/sourceFileInfo.fwd.h>
-#include <clasp/core/strWithFillPtr.fwd.h>
+#include <clasp/core/array.fwd.h>
 #include <clasp/core/intStackQueue.h>
 
 #define OPEN_R "rb"
@@ -93,9 +93,10 @@ enum StreamMode {                          /*  stream mode  */
 typedef enum {
   CLASP_STREAM_BINARY = 0,
   CLASP_STREAM_FORMAT = 0xF,
-#ifndef ECL_UNICODE
+#ifndef CLASP_UNICODE
   CLASP_STREAM_DEFAULT_FORMAT = 1,
 #else
+  #error "Handle this"
   CLASP_STREAM_DEFAULT_FORMAT = 2,
   CLASP_STREAM_ISO_8859_1 = 1,
   CLASP_STREAM_LATIN_1 = 1,
@@ -172,8 +173,9 @@ T_sp clasp_make_file_stream_from_fd(T_sp fname, int fd, enum StreamMode smm, gct
 T_sp cl__make_synonym_stream(T_sp sym);
 T_sp cl__make_two_way_stream(T_sp in, T_sp out);
 
-T_sp cl__make_string_input_stream(Str_sp strng, Fixnum_sp istart, T_sp iend);
+T_sp cl__make_string_input_stream(String_sp strng, Fixnum_sp istart, T_sp iend);
 T_sp clasp_make_string_output_stream(cl_index line_length = 128, bool extended = false);
+ T_sp cl__make_string_output_stream(Symbol_sp elementType);
 T_sp cl__get_output_stream_string(T_sp strm);
 
 T_sp cl__close(T_sp strm, T_sp abort = _Nil<T_O>());
@@ -433,7 +435,7 @@ struct gctools::GCInfo<core::StringOutputStream_O> {
 
 namespace core {
 class StringOutputStream_O : public StringStream_O {
-  friend StrWithFillPtr_sp &StringOutputStreamOutputString(T_sp);
+  friend String_sp &StringOutputStreamOutputString(T_sp);
   LISP_CLASS(core, CorePkg, StringOutputStream_O, "string-output-stream",StringStream_O);
   //    DECLARE_ARCHIVE();
 public: // Simple default ctor/dtor
@@ -443,11 +445,11 @@ public: // ctor/dtor for classes with shared virtual base
         //    explicit StringStream_O(core::Class_sp const& mc) : T_O(mc),AnsiStream(mc) {};
         //    virtual ~StringStream_O() {};
 public: // instance variables here
-  StrWithFillPtr_sp _Contents;
+  String_sp _Contents;
 
 public: // Functions here
   void fill(const string &data);
-  StrWithFillPtr_sp getAndReset();
+  String_sp getAndReset();
 }; // StringStream class
 };
 
@@ -461,7 +463,7 @@ namespace core {
 class StringInputStream_O : public StringStream_O {
   friend gctools::Fixnum &StringInputStreamInputPosition(T_sp strm);
   friend gctools::Fixnum &StringInputStreamInputLimit(T_sp strm);
-  friend Str_sp &StringInputStreamInputString(T_sp strm);
+  friend String_sp &StringInputStreamInputString(T_sp strm);
   LISP_CLASS(core, CorePkg, StringInputStream_O, "string-input-stream",StringStream_O);
   //    DECLARE_ARCHIVE();
 public: // Simple default ctor/dtor
@@ -470,8 +472,8 @@ public: // Simple default ctor/dtor
 public:    // ctor/dtor for classes with shared virtual base
            //    explicit StringStream_O(core::Class_sp const& mc) : T_O(mc),AnsiStream(mc) {};
            //    virtual ~StringStream_O() {};
-GCPRIVATE: // instance variables here
-  Str_sp _Contents;
+private: // instance variables here
+  String_sp _Contents;
   gctools::Fixnum _InputPosition;
   gctools::Fixnum _InputLimit;
 
@@ -617,7 +619,7 @@ T_sp cl__write_sequence(T_sp seq, T_sp stream, Fixnum_sp start, T_sp end);
 
 bool cl__streamp(T_sp strm);
 
-Str_sp clasp_writeString(Str_sp str, T_sp stream, int istart = 0, T_sp end = _Nil<T_O>());
+String_sp clasp_writeString(String_sp str, T_sp stream, int istart = 0, T_sp end = _Nil<T_O>());
 
 //    int core__stream_linenumber(T_sp strm);
 //    int core__stream_column(T_sp strm);

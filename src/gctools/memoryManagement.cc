@@ -75,7 +75,7 @@ void do_pollSignals() {
   SET_SIGNAL(0);
   if (signo == SIGINT) {
     printf("You pressed Ctrl+C\n");
-    core::eval::funcall(cl::_sym_break, core::Str_O::create("Break on Ctrl+C"));
+    core::eval::funcall(cl::_sym_break, core::SimpleBaseCharString_O::make("Break on Ctrl+C"));
       //    core__invoke_internal_debugger(_Nil<core::T_O>());
     printf("Resuming after Ctrl+C\n");
   } else if (signo == SIGCHLD) {
@@ -86,7 +86,7 @@ void do_pollSignals() {
   } else if (signo == SIGABRT) {
     printf("ABORT was called!!!!!!!!!!!!\n");
     core__invoke_internal_debugger(_Nil<core::T_O>());
-      //    core:eval::funcall(cl::_sym_break,core::Str_O::create("ABORT was called"));
+      //    core:eval::funcall(cl::_sym_break,core::SimpleBaseCharString_O::make("ABORT was called"));
   }
 #ifdef USE_MPS
   if (--global_pollTicksGC == 0 ) {

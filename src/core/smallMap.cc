@@ -59,8 +59,8 @@ void SmallMap_O::fields(Record_sp node) {
     node->field(INTERN_(core, data), keyValueVec);
     this->map.clear();
     for (size_t i(0), iEnd(this->size()); i < iEnd; ++++i) {
-      T_sp key = keyValueVec->elt(i + 0);
-      T_sp val = keyValueVec->elt(i + 1);
+      T_sp key = keyValueVec->rowMajorAref(i + 0);
+      T_sp val = keyValueVec->rowMajorAref(i + 1);
       this->setf(key, val);
     };
   } break;
@@ -70,8 +70,8 @@ void SmallMap_O::fields(Record_sp node) {
     for ( auto it : this->map ) {
       T_sp key = it.first;
       T_sp val = it.second;
-      keyValueVec->setf_elt(idx++,key);
-      keyValueVec->setf_elt(idx++,val);
+      keyValueVec->rowMajorAset(idx++,key);
+      keyValueVec->rowMajorAset(idx++,val);
     }
     node->field(INTERN_(core, data), keyValueVec);
   } break;

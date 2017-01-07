@@ -307,8 +307,8 @@ void HashTable_O::sxhash_equal(HashGenerator &hg, T_sp obj, LocationDependencyPt
         str_obj->sxhash_(hg);
       return;
     } else if (BitVector_sp bv_obj = obj.asOrNull<BitVector_O>()) {
-      (void)bv_obj;
-      IMPLEMENT_MEF(BF("Hash bit-vectors"));
+      if (hg.isFilling()) bv_obj->sxhash_(hg);
+      return;
     } else if (Pathname_sp pobj = obj.asOrNull<Pathname_O>()) {
       if (hg.isFilling())
         HashTable_O::sxhash_equal(hg, pobj->_Host, ld);
@@ -358,8 +358,8 @@ void HashTable_O::sxhash_equalp(HashGenerator &hg, T_sp obj, LocationDependencyP
       hg.hashObject(obj);
       return;
     }
-    if (Str_sp str = obj.asOrNull<Str_O>()) {
-      Str_sp upstr = cl__string_upcase(str);
+    if (cl__stringp(obj)) {
+      SimpleString_sp upstr = cl__string_upcase(obj);
       hg.hashObject(upstr);
       return;
     } else if (cl__numberp(obj)) {
@@ -397,7 +397,7 @@ void HashTable_O::sxhash_equalp(HashGenerator &hg, T_sp obj, LocationDependencyP
             HashTable_O::sxhash_equalp(hg, iobj->_Slots[i], ld);
         }
         return;
-      } else if (BitVector_sp bv_obj = gobj.asOrNull<Array_O>()) {
+      } else if (BitVector_sp bv_obj = gobj.asOrNull<BitVector_O>()) {
         (void)bv_obj; // silence warning
         IMPLEMENT_MEF(BF("Handle HashTable_O::sxhash_equalp for BitVector"));
       } else if (Array_sp aobj = gobj.asOrNull<Array_O>()) {
@@ -451,8 +451,8 @@ void HashTable_O::fields(Record_sp node) {
     node->field(INTERN_(core, data), keyValueVec);
     this->clrhash();
     for (size_t i(0), iEnd(cl__length(keyValueVec)); i < iEnd; ++++i) {
-      T_sp key = keyValueVec->elt(i + 0);
-      T_sp val = keyValueVec->elt(i + 1);
+      T_sp key = keyValueVec->rowMajorAref(i + 0);
+      T_sp val = keyValueVec->rowMajorAref(i + 1);
       this->hash_table_setf_gethash(key, val);
     };
   } break;
@@ -460,8 +460,8 @@ void HashTable_O::fields(Record_sp node) {
     Vector_sp keyValueVec = core__make_vector(cl::_sym_T_O, 2 * this->hashTableCount());
     size_t idx = 0;
     this->mapHash([&idx, &keyValueVec](T_sp key, T_sp val) {
-        keyValueVec->setf_elt(idx++,key);
-        keyValueVec->setf_elt(idx++,val);
+        keyValueVec->rowMajorAset(idx++,key);
+        keyValueVec->rowMajorAset(idx++,val);
     });
     node->field(INTERN_(core, data), keyValueVec);
   } break;
@@ -473,7 +473,7 @@ void HashTable_O::fields(Record_sp node) {
 
 uint HashTable_O::resizeEmptyTable(uint sz) {
   if (sz < 16) sz = 16;
-  this->_HashTable = VectorObjects_O::make(_Nil<T_O>(), sz, cl::_sym_T_O);
+  this->_HashTable = VectorObjects_O::make(sz, _Nil<T_O>() );
 #ifdef USE_MPS
   mps_ld_reset(const_cast<mps_ld_t>(&(this->_LocationDependency)), global_arena);
 #endif
@@ -508,7 +508,7 @@ gc::Fixnum HashTable_O::sxhashKey(T_sp obj, gc::Fixnum bound, bool willAddKey) c
 
 List_sp HashTable_O::findAssoc(gc::Fixnum index, T_sp key) const {
   VectorObjects_O* spine = &*(this->_HashTable);
-//  printf("%s:%d:%s  spine->dimension() = %ld  index = %ld\n", __FILE__, __LINE__, __FUNCTION__, spine->dimension(), index );
+//  printf("%s:%d:%s  spine->arrayTotalSize() = %ld  index = %ld\n", __FILE__, __LINE__, __FUNCTION__, spine->dimension(), index );
   T_sp trib = (*spine)[index];
   List_sp rib = coerce_to_list(trib);
   for (auto cur : rib) {

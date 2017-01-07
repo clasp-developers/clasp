@@ -38,7 +38,7 @@ THE SOFTWARE.
 
 #include <boost/limits.hpp>
 #include <cstddef>
-#include <clasp/core/str.h>
+#include <clasp/core/array.h>
 #include <clasp/core/activationFrame.h>
 #include <clasp/core/evaluator.h>
 

@@ -19,9 +19,9 @@ CL_DECLARE();
 CL_DOCSTRING("");
 CL_DEFUN void core__telemetry_open(core::T_sp tpathname) {
   core::Pathname_sp pathname = core::cl__pathname(tpathname);
-  core::Str_sp filename = core::cl__namestring(pathname);
+  core::String_sp filename = core::cl__namestring(pathname);
   global_telemetry_search = new Telemetry();
-  global_telemetry_search->open_read(filename->c_str());
+  global_telemetry_search->open_read(filename->get_std_string().c_str());
   if (global_telemetry_search->_File == NULL ) {
     printf("Could not open file: %s\n", _rep_(pathname).c_str());
   }

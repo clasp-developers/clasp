@@ -30,3 +30,7 @@
 
 # This turns on build with address sanitizer
 # ADDRESS_SANITIZER = True
+
+# This controls how whether LTO is used and what kind ("thinlto"(default) or "lto" or "obj" (no lto))
+# 'obj' is faster for debugging
+# LTO_OPTION = 'obj'

@@ -138,6 +138,16 @@ CL_VALUE_ENUM(_sym_DIFlagsBitField,llvm::DINode::FlagBitField);
 CL_VALUE_ENUM(_sym_DIFlagsNoReturn,llvm::DINode::FlagNoReturn);
 CL_END_ENUM(_sym_DIFlagsEnum);
 
+SYMBOL_EXPORT_SC_(KeywordPkg, CSK_None);
+SYMBOL_EXPORT_SC_(KeywordPkg, CSK_MD5);
+SYMBOL_EXPORT_SC_(KeywordPkg, CSK_SHA1);
+SYMBOL_EXPORT_SC_(LlvmoPkg, CSKEnum);
+CL_BEGIN_ENUM(llvm::DIFile::ChecksumKind,_sym_CSKEnum,"CSKEnum");
+CL_VALUE_ENUM(kw::_sym_CSK_None,llvm::DIFile::CSK_None); // Use it as zero value.
+CL_VALUE_ENUM(kw::_sym_CSK_MD5,llvm::DIFile::CSK_MD5); // Use it as zero value.
+CL_VALUE_ENUM(kw::_sym_CSK_SHA1,llvm::DIFile::CSK_SHA1); // Use it as zero value.
+CL_END_ENUM(_sym_CSKEnum);
+
 
 CL_LISPIFY_NAME(createCompileUnit);
 CL_EXTERN_DEFMETHOD(DIBuilder_O,&llvm::DIBuilder::createCompileUnit);
