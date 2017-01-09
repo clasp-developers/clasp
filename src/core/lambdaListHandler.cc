@@ -1124,6 +1124,10 @@ LambdaListHandler_sp LambdaListHandler_O::create(List_sp lambda_list, List_sp de
   return ollh;
 }
 
+void LambdaListHandler_O::setComment(const string &s) { this->_Comment = SimpleBaseCharString_O::make(s); };
+string LambdaListHandler_O::getComment() const { return this->_Comment->get_std_string(); };
+
+
 LambdaListHandler_sp LambdaListHandler_O::create(int numArgs, const std::set<int> &skipIndices) {
   GC_ALLOCATE(LambdaListHandler_O, ollh);
   ollh->create_required_arguments(numArgs, skipIndices);
@@ -1249,7 +1253,7 @@ string LambdaListHandler_O::__repr__() const {
   {
     ss << this->partsAsString();
   }
-  ss << " :comment \"" << this->_Comment.c_str() << "\"";
+  ss << " :comment \"" << this->_Comment->get_std_string() << "\"";
   ss << "> ";
   return ss.str();
 }

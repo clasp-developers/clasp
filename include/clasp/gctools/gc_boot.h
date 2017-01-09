@@ -35,9 +35,11 @@ namespace gctools {
       TAGGED_POINTER_OFFSET,
       ARRAY_OFFSET,
       POINTER_OFFSET,
+      CONSTANT_ARRAY_OFFSET,
       ctype_double,
       ctype_float,
       ctype_int,
+      ctype_unsigned_char,
       ctype_unsigned_long,
       ctype_unsigned_int,
       ctype_long,
@@ -54,6 +56,7 @@ namespace gctools {
       variable_array0=4, variable_capacity=5, variable_field=6,
       templated_class_jump_table_index=7,
       container_jump_table_index=8,
+      bitunit_container_kind=9,
       layout_end
   };
 
@@ -86,7 +89,7 @@ namespace gctools {
     size_t            capacity_offset;
   };
 
-  enum Layout_operation { class_container_op, templated_op };
+  enum Layout_operation { class_container_op, bitunit_container_op, templated_op };
   struct Kind_info {
     Layout_operation    layout_op;
     const char*   name;
@@ -98,6 +101,7 @@ namespace gctools {
     Layout_operation    layout_op; // One of class_kind, templated_class_kind, container_kind
     Field_layout*  field_layout_start; // Points into global_field_layout_table
     size_t            number_of_fields;
+    size_t            bits_per_bitunit;
     size_t            size;
     Container_layout* container_layout;
   };

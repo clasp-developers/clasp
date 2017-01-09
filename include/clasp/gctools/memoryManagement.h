@@ -416,17 +416,17 @@ namespace gctools {
   };
 
   /*! Size of containers given the number of binits where BinitWidth is the number of bits/bunit */
-  template <int BunitWidth,typename Cont_impl>
-    size_t sizeof_bunit_container(size_t n) {
+  template <typename Cont_impl>
+    size_t sizeof_bitunit_container(size_t n) {
     size_t classSz = sizeof(Cont_impl);
-    size_t dataSz = sizeof(typename Cont_impl::value_type)*n*(BunitWidth/8);
+    size_t dataSz = Cont_impl::bitunit_array_type::sizeof_for_length(n);
     size_t totalSz = classSz + dataSz;
     return AlignUp(totalSz);
   };
 
-  template <int BunitWidth,class T>
-    inline size_t sizeof_bunit_container_with_header(size_t num) {
-    return sizeof_bunit_container<BunitWidth,T>(num) + sizeof(Header_s);
+  template <class T>
+    inline size_t sizeof_bitunit_container_with_header(size_t num) {
+    return sizeof_bitunit_container<T>(num) + sizeof(Header_s);
   };
 
 /* Align size upwards and ensure that it's big enough to store a

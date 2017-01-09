@@ -351,8 +351,18 @@ string Symbol_O::formattedName(bool prefixAlways) const { //no guard
       ss << ":" << this->_Name->get();
     } else {
       Package_sp currentPackage = _lisp->getCurrentPackage();
-      if (currentPackage->findSymbol_SimpleString(this->_Name).notnilp() && !prefixAlways) {
-        ss << this->_Name->get();
+      LIKELY_if (currentPackage) {
+        SimpleString_sp name = this->_Name;
+        Symbol_sp sym = currentPackage->findSymbol_SimpleString(name);
+        if (sym.notnilp() && !prefixAlways) {
+          ss << name->get_std_string();
+        } else {
+          if (myPackage->isExported(this->const_sharedThis<Symbol_O>())) {
+            ss << myPackage->getName() << ":" << this->_Name->get();
+          } else {
+            ss << myPackage->getName() << "::" << this->_Name->get();
+          }
+        } 
       } else {
         if (myPackage->isExported(this->const_sharedThis<Symbol_O>())) {
           ss << myPackage->getName() << ":" << this->_Name->get();
@@ -375,7 +385,6 @@ string Symbol_O::formattedName(bool prefixAlways) const { //no guard
     ss << "/lexical";
   }
 #endif
-
   return ss.str();
 };
 
@@ -416,6 +425,7 @@ T_sp Symbol_O::funcall() {
 #endif
 
 string Symbol_O::__repr__() const {
+  unlikely_if(!this->_Name) return "UNITIALIZED-SYMBOL";
   return this->formattedName(false);
 };
 

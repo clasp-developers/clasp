@@ -410,6 +410,7 @@ class Cons_O;
 class General_O;
 class Pointer_O;
 class Number_O;
+class Package_O;
 class Integer_O;
 class LoadTimeValues_O;
 /* AMS pool classes */
@@ -567,7 +568,9 @@ namespace core {
 typedef gctools::smart_ptr<T_O> T_sp;
 typedef T_sp SEQUENCE_sp;
 typedef T_sp LIST_sp;
+ typedef gctools::smart_ptr<Pointer_O> Pointer_sp;
 typedef gctools::smart_ptr<Cons_O> Cons_sp;
+typedef gctools::smart_ptr<Package_O> Package_sp;
 typedef gctools::smart_ptr<Stream_O> Stream_sp;
 typedef gctools::smart_ptr<SourcePosInfo_O> SourcePosInfo_sp;
 typedef gctools::smart_ptr<SourceFileInfo_O> SourceFileInfo_sp;
@@ -636,8 +639,6 @@ uint lisp_hash(uintptr_t v);
 //#include <clasp/gctools/gcweak.h>
 
 #include <clasp/gctools/managedStatic.h>
-
-#include <clasp/gctools/gcstring.h>
 
 #include <clasp/gctools/gc_interface.h>
 
@@ -804,8 +805,6 @@ typedef T_mv (*SpecialFormCallback)(List_sp, T_sp);
 typedef void (*MakePackageCallback)(string const &packageName, Lisp_sp);
 typedef void (*ExportSymbolCallback)(Symbol_sp symbol, Lisp_sp);
 
-class Package_O;
-typedef gctools::smart_ptr<Package_O> Package_sp;
 
 /* A few symbols associated with error handling that everything needs */
 extern Symbol_sp& _sym_error;

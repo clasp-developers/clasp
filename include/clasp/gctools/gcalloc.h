@@ -91,7 +91,60 @@ class root_allocator : public traceable_allocator<T> {};
 
 
 namespace gctools {
+#ifdef USE_BOEHM
+  inline Header_s* do_boehm_atomic_allocation(Stamp the_stamp, kind_t the_kind, size_t size) 
+  {
+    size_t true_size = size;
+#ifdef DEBUG_GUARD
+    size_t tail_size = ((rand()%8)+1)*Alignment();
+    true_size += tail_size;
+#endif
+    Header_s* header = reinterpret_cast<Header_s*>(GC_MALLOC_ATOMIC(true_size));
+#ifdef DEBUG_GUARD
+    memset(header,0x00,true_size);
+    new (header) Header_s(the_stamp,the_kind,size,tail_size,true_size);
+#else
+    new (header) Header_s(the_stamp,the_kind);
+#endif
+    return header;
+  };
+  inline Header_s* do_boehm_normal_allocation(Stamp the_stamp, kind_t the_kind, size_t size) 
+  {
+    size_t true_size = size;
+#ifdef DEBUG_GUARD
+    size_t tail_size = ((rand()%8)+1)*Alignment();
+    true_size += tail_size;
+#endif
+    Header_s* header = reinterpret_cast<Header_s*>(GC_MALLOC(true_size));
+#ifdef DEBUG_GUARD
+    memset(header,0x00,true_size);
+    new (header) Header_s(the_stamp,the_kind,size,tail_size,true_size);
+#else
+    new (header) Header_s(the_stamp,the_kind);
+#endif
+    return header;
+  };
+  inline Header_s* do_boehm_uncollectable_allocation(Stamp the_stamp, kind_t the_kind, size_t size) 
+  {
+    size_t true_size = size;
+#ifdef DEBUG_GUARD
+    size_t tail_size = ((rand()%8)+1)*Alignment();
+    true_size += tail_size;
+#endif
+    Header_s* header = reinterpret_cast<Header_s*>(GC_MALLOC_UNCOLLECTABLE(true_size));
+#ifdef DEBUG_GUARD
+    memset(header,0x00,true_size);
+    new (header) Header_s(the_stamp,the_kind,size,tail_size,true_size);
+#else
+    new (header) Header_s(the_stamp,the_kind);
+#endif
+    return header;
+  };
+#endif
+};
 
+
+namespace gctools {
 #ifdef USE_MPS
   template <typename Cons, typename... ARGS>
     inline smart_ptr<Cons> cons_mps_allocation(mps_ap_t& allocation_point,
@@ -228,8 +281,7 @@ namespace gctools {
       static gctools::tagged_pointer<T> allocate_kind(Stamp the_stamp, kind_t the_kind, size_t size, ARGS &&... args) {
 #ifdef USE_BOEHM
         monitor_allocation(the_kind,size);
-        Header_s *base = reinterpret_cast<Header_s *>(GC_MALLOC_UNCOLLECTABLE(size));
-        new (base) Header_s(the_stamp, the_kind);
+        Header_s* base = do_boehm_uncollectable_allocation(the_stamp,the_kind,size);
         T *obj = BasePtrToMostDerivedPtr<T>(base);
         new (obj) T(std::forward<ARGS>(args)...);
         poll_signals();
@@ -299,44 +351,9 @@ namespace gctools {
 #endif
     }
   };
-
-#if 0
-  template <class T>
-    struct ClassAllocator {
-      template <class... ARGS>
-      static tagged_pointer<T> allocate_class(ARGS &&... args) {
-        return ClassAllocator<T>::allocate_class_kind(GCKind<T>::Kind,sizeof_with_header<T>(),std::forward<ARGS>(args)...);
-      };
-
-      
-  /*! Allocate regular C++ classes that will be garbage collected as soon as nothing points to them */
-      template <class... ARGS>
-      static tagged_pointer<T> allocate_class_kind(kind_t the_kind, size_t size, ARGS &&... args) {
-#ifdef USE_BOEHM
-        monitor_allocation(the_kind,size);
-        Header_s *base = reinterpret_cast<Header_s *>(GC_MALLOC(size));
-        new (base) Header_s(the_kind);
-        T *obj = BasePtrToMostDerivedPtr<T>(base);
-        new (obj) T(std::forward<ARGS>(args)...);
-        poll_signals();
-        return tagged_pointer<T>(obj);
-#endif
-#ifdef USE_MPS
-        monitor_allocation(the_kind,size);
-        mps_ap_t obj_ap = GCAllocationPoint<T>::get();
-        tagged_pointer<T> tagged_obj =
-          do_mps_allocation<tagged_pointer<T>>(the_kind,size,obj_ap,"AP",
-                                               globalMpsMetrics.unknownAllocations,
-                                               std::forward<ARGS>(args)...);
-        return tagged_obj;
-#endif
-      }
-    };
-#endif
 };
 
 namespace gctools {
-
   template <class OT, GCInfo_policy Policy = normal>
     struct GCObjectAppropriatePoolAllocator {
       typedef OT value_type;
@@ -346,10 +363,7 @@ namespace gctools {
       static smart_pointer_type allocate_in_appropriate_pool_kind(Stamp the_stamp, kind_t the_kind, size_t size, ARGS &&... args) {
 #ifdef USE_BOEHM
         monitor_allocation(the_kind,size);
-    // By default allocate in the normal pool for objects that contain pointers
-    // to other objects.
-        Header_s *base = reinterpret_cast<Header_s *>(GC_MALLOC(size));
-        new (base) Header_s(the_stamp, the_kind);
+        Header_s* base = do_boehm_normal_allocation(the_stamp,the_kind,size);
         pointer_type ptr = BasePtrToMostDerivedPtr<OT>(base);
         new (ptr) OT(std::forward<ARGS>(args)...);
         smart_pointer_type sp = smart_ptr<value_type>(ptr);
@@ -381,8 +395,7 @@ namespace gctools {
 #ifdef USE_BOEHM
       monitor_allocation(the_kind,size);
     // Atomic objects (do not contain pointers) are allocated in separate pool
-      Header_s *base = reinterpret_cast<Header_s *>(GC_MALLOC_ATOMIC(size));
-      new (base) Header_s(the_stamp,the_kind);
+      Header_s* base = do_boehm_atomic_allocation(the_stamp,the_kind,size);
       pointer_type ptr = BasePtrToMostDerivedPtr<OT>(base);
       new (ptr) OT(std::forward<ARGS>(args)...);
       smart_pointer_type sp = /*gctools::*/ smart_ptr<value_type>(ptr);
@@ -417,10 +430,7 @@ When would I ever want the GC to automatically collect objects but not move them
       static smart_pointer_type allocate_in_appropriate_pool_kind( Stamp the_stamp, kind_t the_kind, size_t size, ARGS &&... args) {
 #ifdef USE_BOEHM
       monitor_allocation(the_kind,size);
-    // By default allocate in the normal pool for objects that contain pointers
-    // to other objects.
-      Header_s *base = reinterpret_cast<Header_s *>(GC_MALLOC(size));
-      new (base) Header_s(the_stamp,the_kind);
+      Header_s* base = do_boehm_normal_allocation(the_stamp,the_kind,size);
       pointer_type ptr = BasePtrToMostDerivedPtr<OT>(base);
       new (ptr) OT(std::forward<ARGS>(args)...);
       smart_pointer_type sp = /*gctools::*/ smart_ptr<value_type>(ptr);
@@ -455,8 +465,7 @@ should not be managed by the GC */
       static smart_pointer_type allocate_in_appropriate_pool_kind( Stamp the_stamp, kind_t the_kind, size_t size, ARGS &&... args) {
 #ifdef USE_BOEHM
       monitor_allocation(the_kind,size);
-      Header_s *base = reinterpret_cast<Header_s *>(GC_MALLOC_UNCOLLECTABLE(size));
-      new (base) Header_s(the_stamp,the_kind);
+      Header_s* base = do_boehm_uncollectable_allocation(the_stamp,the_kind,size);
       OT *obj = BasePtrToMostDerivedPtr<OT>(base);
       new (obj) OT(std::forward<ARGS>(args)...);
       poll_signals();
@@ -554,8 +563,7 @@ namespace gctools {
       static smart_pointer_type root_allocate_kind( Stamp the_stamp, kind_t the_kind, size_t size, ARGS &&... args) {
 #ifdef USE_BOEHM
       monitor_allocation(the_kind,size);
-      Header_s *base = reinterpret_cast<Header_s *>(GC_MALLOC_UNCOLLECTABLE(size));
-      new (base) Header_s(the_stamp,the_kind);
+      Header_s* base = do_boehm_uncollectable_allocation(the_stamp,the_kind,size);
       pointer_type ptr = BasePtrToMostDerivedPtr<OT>(base);
       new (ptr) OT(std::forward<ARGS>(args)...);
       smart_pointer_type sp = /*gctools::*/ smart_ptr<value_type>(ptr);
@@ -658,6 +666,13 @@ namespace gctools {
     }
 
     template <typename... ARGS>
+      static smart_pointer_type never_invoke_allocator( ARGS &&... args) {
+      auto stamp = GCStamp<OT>::TheStamp;
+      auto kind = GCKind<OT>::Kind;
+      return GCObjectAllocator<OT>::allocate_kind(stamp,kind,0, std::forward<ARGS>(args)...);
+    }
+
+    template <typename... ARGS>
       static smart_pointer_type allocate( ARGS &&... args) {
       auto stamp = GCStamp<OT>::TheStamp;
       auto kind = GCKind<OT>::Kind;
@@ -687,9 +702,9 @@ namespace gctools {
       return GCObjectAllocator<OT>::allocate_kind(the_stamp,GCKind<OT>::Kind,size,length,/*initial_element,*/std::forward<ARGS>(args)...);
     }
 
-    template <int BunitWidth,typename... ARGS>
-      static smart_pointer_type allocate_bunit_container( Stamp the_stamp, size_t length, ARGS &&... args) {
-      size_t size = sizeof_bunit_container_with_header<BunitWidth,OT>(length);
+    template <typename... ARGS>
+      static smart_pointer_type allocate_bitunit_container( Stamp the_stamp, size_t length, ARGS &&... args) {
+      size_t size = sizeof_bitunit_container_with_header<OT>(length);
 #if 0
       if ( GCKind<OT>::Kind == 31 && size == 88 ) {
         printf("%s:%d allocate_container  kind = 31\n", __FILE__, __LINE__ );
@@ -756,11 +771,7 @@ public:
 #ifdef USE_BOEHM
     size_t size = sizeof_container_with_header<TY>(num);
     monitor_allocation(the_kind,size);
-    // prepend a one pointer header with a pointer to the typeinfo.name
-    Header_s *base = reinterpret_cast<Header_s *>(GC_MALLOC(size));
-    if (!base)
-      THROW_HARD_ERROR(BF("Out of memory in allocate"));
-    new (base) Header_s(the_stamp,the_kind);
+    Header_s* base = do_boehm_normal_allocation(the_stamp,the_kind,size);
     container_pointer myAddress = BasePtrToMostDerivedPtr<TY>(base);
     poll_signals();
     return gctools::tagged_pointer<container_type>(myAddress);
@@ -796,6 +807,37 @@ public:
   }
 };
 };
+
+
+
+namespace gctools {
+template <class TY>
+class GCAbstractAllocator /* : public GCAlloc<TY> */ {
+public:
+  // type definitions
+  typedef TY container_type;
+  typedef container_type *container_pointer;
+  typedef typename container_type::value_type value_type;
+  typedef value_type *pointer;
+  typedef const value_type *const_pointer;
+  typedef value_type &reference;
+  typedef const value_type &const_reference;
+  typedef std::size_t size_type;
+  /* constructors and destructor
+         * - nothing to do because the allocator has no state
+         */
+  GCAbstractAllocator() throw() {}
+  ~GCAbstractAllocator() throw() {}
+
+    // allocate but don't initialize num elements of type value_type
+  void never_invoke_allocate() {};
+};
+};
+
+
+
+
+
 
 namespace gctools {
 /*! This allocator is for allocating containers that are fixed in position and Capacity.
@@ -836,10 +878,7 @@ public:
     size_t size = sizeof_container_with_header<TY>(num);
     monitor_allocation(the_kind,size);
     // prepend a one pointer header with a pointer to the typeinfo.name
-    Header_s *base = reinterpret_cast<Header_s *>(GC_MALLOC(size));
-    if (!base)
-      THROW_HARD_ERROR(BF("Out of memory in allocate"));
-    new (base) Header_s(the_stamp,the_kind);
+    Header_s* base = do_boehm_normal_allocation(the_stamp,the_kind,size);
     container_pointer myAddress = BasePtrToMostDerivedPtr<TY>(base);
     poll_signals();
     return myAddress;
@@ -875,6 +914,9 @@ public:
 };
 };
 
+
+#if 0
+// depreciated
 namespace gctools {
 template <class TY>
 class GCStringAllocator /* : public GCAlloc<TY> */ {
@@ -938,6 +980,11 @@ public:
   }
 };
 };
+#endif
+
+
+
+
 
 namespace gctools {
 

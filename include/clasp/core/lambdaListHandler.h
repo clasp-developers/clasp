@@ -127,7 +127,7 @@ GCPROTECTED: // instance variables
   gctools::Vec0<KeywordArgument> _KeywordArguments;
   T_sp _AllowOtherKeys;
   gctools::Vec0<AuxArgument> _AuxArguments;
-  gctools::gcstring _Comment;
+  SimpleString_sp _Comment;
   // -- calculated info --
   int _NumberOfLexicalVariables;
   bool _RequiredLexicalArgumentsOnly;
@@ -167,8 +167,8 @@ public: // set up argument handling by hand
 	  (declare (single-dispatch-on {target-symbol})) - sets {target-symbol} as the argument to single dispatch on
 	*/
 
-  void setComment(const string &s) { this->_Comment = s; };
-  string getComment() const { return this->_Comment.asStdString(); };
+  void setComment(const string &s);
+  string getComment() const;
 
   void process_declares(List_sp declares) {
     _OF();

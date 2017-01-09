@@ -25,6 +25,8 @@ THE SOFTWARE.
 */
 /* -^- */
 
+#define DEBUG_LEVEL_NONE
+
 #include <limits>
 #include <clasp/core/common.h>
 #include <clasp/core/corePackage.h>
@@ -509,6 +511,7 @@ gc::Fixnum HashTable_O::sxhashKey(T_sp obj, gc::Fixnum bound, bool willAddKey) c
 List_sp HashTable_O::findAssoc(gc::Fixnum index, T_sp key) const {
   VectorObjects_O* spine = &*(this->_HashTable);
 //  printf("%s:%d:%s  spine->arrayTotalSize() = %ld  index = %ld\n", __FILE__, __LINE__, __FUNCTION__, spine->dimension(), index );
+  LOG(BF("findAssoc at index %ld\n") %index);
   T_sp trib = (*spine)[index];
   List_sp rib = coerce_to_list(trib);
   for (auto cur : rib) {
@@ -611,6 +614,7 @@ bool HashTable_O::remhash(T_sp key) {
 
 CL_LISPIFY_NAME("core:hashTableSetfGethash");
 CL_DEFMETHOD T_sp HashTable_O::hash_table_setf_gethash(T_sp key, T_sp value) {
+  LOG(BF("About to hash_table_setf_gethash for %s@%p -> %s@%p\n") % _rep_(key) % (void*)&(*key) % _rep_(value) % (void*)&(*value));
   List_sp keyValuePair = this->tableRef(key);
   if (keyValuePair.nilp()) {
     gc::Fixnum index = this->safe_sxhashKey(key, cl__length(this->_HashTable), true /*Will add key*/);
@@ -638,7 +642,7 @@ List_sp HashTable_O::rehash(bool expandTable, T_sp findKey) {
   ASSERTF(!clasp_zerop(this->_RehashSize), BF("RehashSize is zero - it shouldn't be"));
   ASSERTF(cl__length(this->_HashTable) != 0, BF("HashTable is empty in expandHashTable - this shouldn't be"));
   List_sp foundKeyValuePair(_Nil<T_O>());
-  LOG(BF("At start of expandHashTable current hash table size: %d") % startSize);
+  LOG(BF("At start of expandHashTable current hash table size: %d") % cl__length(this->_HashTable));
   gc::Fixnum newSize = 0;
   if (expandTable) {
     if (cl__integerp(this->_RehashSize)) {

@@ -29,7 +29,7 @@
 
 namespace core {
     static void
-    write_array_inner(bool vector, T_sp x, T_sp stream) {
+    write_array_inner(bool vector, Array_sp x, T_sp stream) {
 	//	printf("%s:%d write_array_inner\n", __FILE__, __LINE__ );
 	//cl_env_ptr env = ecl_process_env();
 	std::vector<size_t> adims;
@@ -38,14 +38,12 @@ namespace core {
 	Fixnum print_length;
 	Fixnum print_level;
 	bool readably = clasp_print_readably();
-
 	if (vector) {
-	    adims = gc::As<Vector_sp>(x)->arrayDimensionsAsVector();
+	    adims = x->arrayDimensionsAsVector();
 	    n = 1;
 	} else {
-	    Array_sp arr = gc::As<Array_sp>(x);
-	    adims = arr->arrayDimensionsAsVector();
-	    n = arr->rank();
+	    adims = x->arrayDimensionsAsVector();
+	    n = x->rank();
 	}
 	if (readably) {
 	    print_length = MOST_POSITIVE_FIXNUM;
@@ -66,7 +64,7 @@ namespace core {
 	if (readably) {
 	    clasp_write_char('A', stream);
 	    clasp_write_char('(', stream);
-	    write_object(gc::As<Array_sp>(x)->elementTypeAsSymbol(), stream);
+	    write_object(x->elementTypeAsSymbol(), stream);
 	    clasp_write_char(' ', stream);
 	    if (n > 0) {
 		clasp_write_char('(', stream);
@@ -121,7 +119,7 @@ namespace core {
 	    }
 	    /* FIXME: This conses! */
 	    if (print_level >= 0)
-		write_object(gc::As<Array_sp>(x)->rowMajorAref(m), stream);
+		write_object(x->rowMajorAref(m), stream);
 	    else
 		clasp_write_char('#', stream);
 	    j = n - 1;
@@ -212,7 +210,7 @@ namespace core {
 	} else {
 	    cl_index ndx;
 	    writestr_stream("#*", stream);
-	    for (ndx = 0; ndx < this->length(); ndx++)
+	    for (ndx=0; ndx<this->length(); ++ndx)
 		//      if (x->vector.self.bit[(ndx /*+ x->vector.offset*/) / 8] & (0200 >> (ndx /*+ x->vector.offset*/) % 8))
 		if (this->testBit(ndx))
 		    clasp_write_char('1', stream);

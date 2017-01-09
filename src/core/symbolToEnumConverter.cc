@@ -66,8 +66,7 @@ SymbolToEnumConverter_sp SymbolToEnumConverter_O::create(const string &whatDoesE
 }
 
 void SymbolToEnumConverter_O::setWhatTheEnumsRepresent(const string &what) {
-  _OF();
-  this->_WhatTheEnumsRepresent = what;
+  this->_WhatTheEnumsRepresent = SimpleBaseCharString_O::make(what);
 }
 
 Symbol_sp SymbolToEnumConverter_O::addSymbolEnumPair(Symbol_sp asym, Symbol_sp const &archiveSym, int enumIndex) {
@@ -140,7 +139,7 @@ bool SymbolToEnumConverter_O::recognizesSymbol(Symbol_sp sym) {
 string SymbolToEnumConverter_O::__repr__() const {
   stringstream ss;
   ss << "#<" << this->_instanceClass()->classNameAsString() << " ";
-  ss << " :info " << this->_WhatTheEnumsRepresent.c_str() << " ";
+  ss << " :info " << this->_WhatTheEnumsRepresent->get_std_string() << " ";
   this->_EnumToSymbol->mapHash([&ss](T_sp k, T_sp v) {
                 ss << "#<entry " << _rep_(k) << " " <<_rep_(v) << "> ";
   });

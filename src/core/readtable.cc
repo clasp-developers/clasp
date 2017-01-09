@@ -495,7 +495,6 @@ CL_DEFUN T_mv core__sharp_asterisk(T_sp sin, Character_sp ch, T_sp num) {
   int dimcount, dim = 0;
   stringstream pattern;
   ReadTable_sp rtbl = gc::As<ReadTable_sp>(cl::_sym_STARreadtableSTAR->symbolValue());
-
   if (cl::_sym_STARread_suppressSTAR->symbolValue().isTrue()) {
     cl__read(sin, _lisp->_true(), _Nil<T_O>(), _lisp->_true());
     return Values(_Nil<T_O>());
@@ -515,7 +514,7 @@ CL_DEFUN T_mv core__sharp_asterisk(T_sp sin, Character_sp ch, T_sp num) {
                 (clasp_as_claspCharacter(ch) != '0' && clasp_as_claspCharacter(ch) != '1')) {
       READER_ERROR(SimpleBaseCharString_O::make("Character ~:C is not allowed after #*"), Cons_O::create(ch), sin);
     }
-    pattern << clasp_as_claspCharacter(ch);
+    pattern << (char)(clasp_as_claspCharacter(ch));
   }
   if (num.nilp()) {
     dim = dimcount;
@@ -531,14 +530,11 @@ CL_DEFUN T_mv core__sharp_asterisk(T_sp sin, Character_sp ch, T_sp num) {
       READER_ERROR(SimpleBaseCharString_O::make("Cannot fill the bit-vector #*."), _Nil<T_O>(), sin);
   }
   string bitPattern = pattern.str();
-  char last = bitPattern.size() > 0 ? bitPattern[bitPattern.size() - 1] : '0';
+  char last = bitPattern.size() > 0 ? bitPattern[bitPattern.size()-1] : '0';
   SimpleBitVector_sp x = SimpleBitVector_O::make(dim);
   for (int i = 0; i < dim; i++) {
     char elt = (i < dimcount) ? bitPattern[i] : last;
-    if (elt == '0')
-      x->setBit(i, 0);
-    else
-      x->setBit(i, 1);
+    x->setBit(i,elt-'0');
   }
   return Values(x);
 };

@@ -49,7 +49,7 @@ public: // virtual functions inherited from Object
   void initialize();
   string __repr__() const;
 public: // instance variables
-  gctools::gcstring _Name;
+  SimpleString_sp _Name;
   HashTableEqual_sp _InternalSymbols;
   HashTableEqual_sp _ExternalSymbols;
   HashTableEq_sp _Shadowing;
@@ -75,7 +75,7 @@ private:
   Package_sp export_conflict_or_NULL(SimpleString_sp nameKey, Symbol_sp sym);
 
 public:
-  string packageName() const { return this->_Name.asStdString(); };
+  string packageName() const;
 
   T_mv packageHashTables() const;
 
@@ -111,8 +111,8 @@ public:
 
   //	bool areThereNameCollisions(Package_sp otherPackage);
 
-  string getName() const { return this->_Name.asStdString(); };
-  void setName(const string &n) { this->_Name = n; };
+  string getName() const;
+  void setName(const string &n);
 
   bool isExported(Symbol_sp sym);
 

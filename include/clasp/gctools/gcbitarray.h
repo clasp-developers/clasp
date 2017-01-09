@@ -55,4 +55,75 @@ namespace gctools {
 
 } // namespace gctools
 
+
+
+namespace gctools {
+  template <int BitUnitBitWidth, class UnsignedWordType=uintptr_t, class SignedWordType=intptr_t>
+    class GCBitUnitArray_moveable : public GCContainer {
+  public:
+    typedef UnsignedWordType word_type;
+    typedef SignedWordType signed_word_type;
+    static const size_t bits_in_word = sizeof(word_type)*CHAR_BIT;
+    static const size_t bit_unit_bit_width = BitUnitBitWidth;
+    static const size_t number_of_bit_units_in_word = sizeof(word_type)*CHAR_BIT/bit_unit_bit_width;
+    static const size_t number_of_bit_units_in_word_times_bit_unit_bit_width = number_of_bit_units_in_word*bit_unit_bit_width;
+    static const word_type bit_unit_mask = ((0x1<<bit_unit_bit_width)-1);
+    size_t    _Length; // Index one beyond the total number of elements allocated
+    word_type _Data[0];      // Store _Length numbers of bits with multiple bits per T
+  public:
+  GCBitUnitArray_moveable(size_t length, word_type initialValue, bool initialValueSupplied) : _Length(length) {
+      word_type initialFillValue = (initialValue!=0) ? ~0 : 0;
+      size_t numWords = sizeof_for_length(length);
+      for ( size_t i(0); i<numWords; ++i ) this->_Data[i] = initialFillValue;
+    }
+    static size_t sizeof_for_length(size_t length) {
+      size_t numWords = (length+(number_of_bit_units_in_word-1))/number_of_bit_units_in_word;
+      return numWords;
+    }
+  public:
+    /* Word access */
+    word_type &operator[](size_t i) { return this->_Data[i]; };
+    const word_type &operator[](size_t i) const { return this->_Data[i]; };
+    /* Unsigned BitUnit access */
+    void unsignedSetBitUnit(size_t idx, word_type v) {
+      size_t block = idx / number_of_bit_units_in_word;
+      size_t offset = (idx % number_of_bit_units_in_word)*bit_unit_bit_width;
+      word_type mask = ~(bit_unit_mask << offset);
+      word_type packedVal = v << offset;
+      this->_Data[block] = (this->_Data[block] & mask) | packedVal;
+    }
+    word_type unsignedBitUnit(size_t idx) const {
+      size_t block = idx / number_of_bit_units_in_word;
+      size_t offset = (idx % number_of_bit_units_in_word)*bit_unit_bit_width;
+      word_type mask = (bit_unit_mask << offset);
+      GC_LOG(BF("testBit i=%u number_of_bit_units_in_word=%d block=%d offset=%d") % (idx) % number_of_bit_units_in_word % (block) % (offset));
+      GC_LOG(BF("      mask = |%lx|") % mask);
+      GC_LOG(BF("bitunitss[%04d] = |%lx|") % block % this->_Data[block]);
+      word_type result = (this->_Data[block] & mask)>>offset;
+      GC_LOG(BF("    result = |%lx|") % result);
+      return result;
+    }
+    void signedSetBitUnit(size_t idx, signed_word_type v) {
+      size_t block = idx / number_of_bit_units_in_word;
+      size_t offset = (idx % number_of_bit_units_in_word)*bit_unit_bit_width;
+      word_type mask = ~(bit_unit_mask << offset);
+      word_type packedVal = (v&bit_unit_mask) << offset;
+      this->_Data[block] = (this->_Data[block] & mask) | packedVal;
+    }
+    signed_word_type signedBitUnit(size_t idx) const {
+      size_t block = idx / number_of_bit_units_in_word;
+      size_t offset = (idx % number_of_bit_units_in_word)*bit_unit_bit_width;
+      size_t right_shift = bits_in_word-offset-bit_unit_bit_width;
+      word_type mask = (bit_unit_mask << offset);
+      GC_LOG(BF("testBit i=%u number_of_bit_units_in_word=%d block=%d offset=%d") % (idx) % number_of_bit_units_in_word % (block) % (offset));
+      GC_LOG(BF("      mask = |%lx|") % mask);
+      GC_LOG(BF("bitunitss[%04d] = |%lx|") % block % this->_Data[block]);
+      signed_word_type result = (this->_Data[block] & mask)<<right_shift; // logical shift right
+      result = result >> (bits_in_word-bit_unit_bit_width);
+      GC_LOG(BF("    result = |%lx|") % result);
+      return result;
+    }
+  };
+} // namespace gctools
+
 #endif

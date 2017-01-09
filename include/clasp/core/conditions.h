@@ -52,11 +52,11 @@ public:
   static CandoException_sp create(const boost::format &fmt);
 
 GCPRIVATE: // instance variables here
-  gctools::gcstring _message;
+  SimpleString_sp _message;
 
 public: // Functions here
-  void setMessage(const string &msg) { this->_message = msg; };
-  string message() const { return this->_message.asStdString(); };
+  void setMessage(const string &msg);
+  string message() const;
 
 }; // CandoException class
 

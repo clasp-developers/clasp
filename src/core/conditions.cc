@@ -59,6 +59,14 @@ THE SOFTWARE.
 namespace core {
 
 
+void CandoException_O::setMessage(const string &msg) {
+  this->_message = SimpleBaseCharString_O::make(msg);
+};
+
+string CandoException_O::message() const
+{
+  return this->_message->get_std_string();
+};
 
 
 

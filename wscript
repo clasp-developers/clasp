@@ -602,7 +602,7 @@ def configure(cfg):
     cfg.define("CLASP_VERSION",get_clasp_version(cfg))
     cfg.define("CLBIND_DYNAMIC_LINK",1)
     cfg.define("DEBUG_CL_SYMBOLS",1)
-    cfg.define("SOURCE_DEBUG",1)
+#    cfg.define("SOURCE_DEBUG",1)
     cfg.define("USE_SOURCE_DATABASE",1)
     cfg.define("DEBUG_TRACE_INTERPRETED_CLOSURES",1)
 #    cfg.define("EXPAT",1)

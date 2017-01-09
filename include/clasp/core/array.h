@@ -423,7 +423,7 @@ namespace core {
 
 namespace core {
   template <typename MyLeafType, typename ValueType, typename MyParentType >
-    class template_SimpleVector : public MyParentType {
+    class abstract_SimpleVector : public MyParentType {
   public:
     // The types that define what this class does
     typedef MyParentType Base;
@@ -436,8 +436,10 @@ namespace core {
   public:
     vector_type _Data;
   public:
-  template_SimpleVector(size_t length, value_type initialElement=value_type(), bool initialElementSupplied=false, size_t initialContentsSize=0, const value_type* initialContents=NULL)
+  abstract_SimpleVector(size_t length, value_type initialElement=value_type(), bool initialElementSupplied=false, size_t initialContentsSize=0, const value_type* initialContents=NULL)
     : Base(), _Data(length,initialElement,initialElementSupplied,initialContentsSize,initialContents) {};
+  public:
+    static void never_invoke_allocator() {gctools::GCAbstractAllocator<abstract_SimpleVector>::never_invoke_allocator();};
   public:
     value_type& operator[](size_t index) { return this->_Data[index];};
     const value_type& operator[](size_t index) const { return this->_Data[index];};
@@ -505,7 +507,7 @@ struct gctools::GCInfo<core::SimpleBaseCharString_O> {
 };
 namespace core {
   class SimpleBaseCharString_O;
-  typedef template_SimpleVector<SimpleBaseCharString_O,claspChar,SimpleString_O> specialized_SimpleBaseCharString;
+  typedef abstract_SimpleVector<SimpleBaseCharString_O,claspChar,SimpleString_O> specialized_SimpleBaseCharString;
   class SimpleBaseCharString_O : public specialized_SimpleBaseCharString {
     LISP_CLASS(core, ClPkg, SimpleBaseCharString_O, "SimpleBaseCharString",SimpleString_O);
   public:
@@ -567,7 +569,7 @@ struct gctools::GCInfo<core::SimpleCharacterString_O> {
 };
 namespace core {
   class SimpleCharacterString_O;
-  typedef template_SimpleVector<SimpleCharacterString_O,claspCharacter,SimpleString_O> specialized_SimpleCharacterString;
+  typedef abstract_SimpleVector<SimpleCharacterString_O,claspCharacter,SimpleString_O> specialized_SimpleCharacterString;
   class SimpleCharacterString_O : public specialized_SimpleCharacterString {
     LISP_CLASS(core, ClPkg, SimpleCharacterString_O, "simple-character-string",SimpleString_O);
   public:
@@ -637,7 +639,7 @@ struct gctools::GCInfo<core::SimpleVector_O> {
 };
 namespace core {
   class SimpleVector_O;
-  typedef template_SimpleVector<SimpleVector_O,T_sp,SpecializedSimpleVector_O> specialized_SimpleVector;
+  typedef abstract_SimpleVector<SimpleVector_O,T_sp,SpecializedSimpleVector_O> specialized_SimpleVector;
   class SimpleVector_O : public specialized_SimpleVector {
     LISP_CLASS(core, ClPkg, SimpleVector_O, "simple-vector",SpecializedSimpleVector_O);
   public:
@@ -685,14 +687,19 @@ namespace core {
   class SimpleBitVector_O : public BaseSimpleVector_O {
     LISP_CLASS(core, ClPkg, SimpleBitVector_O, "simple-bit-vector",BaseSimpleVector_O);
   public:
-    typedef uintptr_t value_type;
-    static const size_t BitWidth = sizeof(value_type)*8;
-    typedef gctools::GCBitArray_moveable<value_type> vector_type;
+    typedef gctools::GCBitUnitArray_moveable<1> bitunit_array_type;
+    typedef typename bitunit_array_type::word_type value_type;
+    static const size_t BitWidth = bitunit_array_type::number_of_bit_units_in_word;
   public:
-    vector_type _Data;
-  SimpleBitVector_O(size_t length,value_type initialElement) : Base(), _Data(length,initialElement) {};
-    static SimpleBitVector_sp make(size_t length,value_type initialElement=0, bool initialElementSupplied=false) {
-      auto sbv = gctools::GC<SimpleBitVector_O>::allocate_bunit_container<1>(gctools::GCStamp<SimpleBitVector_O>::TheStamp, length,initialElement);
+    bitunit_array_type _Data;
+  SimpleBitVector_O(size_t length,
+                    value_type initialElement,
+                    bool initialElementSupplied)
+    : Base(), _Data(length,initialElement,initialElementSupplied) {};
+    static SimpleBitVector_sp make( size_t length,
+                                    value_type initialElement=0,
+                                    bool initialElementSupplied=false) {
+      auto sbv = gctools::GC<SimpleBitVector_O>::allocate_bitunit_container(gctools::GCStamp<SimpleBitVector_O>::TheStamp,length,initialElement,initialElementSupplied);
       return sbv;
     }
   public:
@@ -716,34 +723,8 @@ namespace core {
       start = 0;
       end = this->length();
     }
-    void setBit(size_t i, uint v) {
-      size_t block;
-      size_t offset;
-      value_type packedVal;
-      value_type mask;
-      value_type omask;
-      block = i / BitWidth;
-      offset = i % BitWidth;
-      omask = ~0;
-      mask = (1 << offset) ^ omask;
-      packedVal = v << offset;
-      this->_Data[block] = (this->_Data[block] & mask) | packedVal;
-    }
-
-    uint testBit(size_t idx) const {
-      size_t block;
-      size_t offset;
-      value_type mask;
-      block = idx / BitWidth;
-      offset = idx % BitWidth;
-      mask = (1 << offset);
-      LOG(BF("testBit i=%u BitWidth=%d block=%d offset=%d") % (idx) % BitWidth % (block) % (offset));
-      LOG(BF("      mask = |%lx|") % mask);
-      LOG(BF("bits[%04d] = |%lx|") % block % this->_Data[block]);
-      value_type result = (this->_Data[block] & mask);
-      LOG(BF("    result = |%lx|") % result);
-      return ((result ? 1 : 0));
-    }
+    void setBit(size_t idx, uint v) {this->_Data.unsignedSetBitUnit(idx,v);}
+    uint testBit(size_t idx) const {return this->_Data.unsignedBitUnit(idx);};
   public:
     // Implement these methods for simple vectors - some are implemented in parent classes
     // for convenience if not speed
@@ -793,7 +774,7 @@ struct gctools::GCInfo<core::SimpleDoubleVector_O> {
 };
 namespace core {
   class SimpleDoubleVector_O;
-  typedef template_SimpleVector<SimpleDoubleVector_O,double,SpecializedSimpleVector_O> specialized_SimpleDoubleVector;
+  typedef abstract_SimpleVector<SimpleDoubleVector_O,double,SpecializedSimpleVector_O> specialized_SimpleDoubleVector;
   class SimpleDoubleVector_O : public specialized_SimpleDoubleVector {
     LISP_CLASS(core, CorePkg, SimpleDoubleVector_O, "SimpleDoubleVector",SpecializedSimpleVector_O);
   public:
@@ -866,7 +847,7 @@ Vector_sp core__make_vector(T_sp element_type,
 
 namespace core {
   template <typename MyArrayType, typename MySimpleType, typename MyParentType >
-    class template_DisplacementHandlingVector : public MyParentType {
+    class abstract_DisplacementHandlingVector : public MyParentType {
   public:
     // The types that define what this class does
     typedef MyParentType Base;
@@ -876,12 +857,15 @@ namespace core {
     typedef gctools::smart_ptr<my_array_type> my_smart_ptr_type;
   public:
     // Pass constructor arguments up
-  template_DisplacementHandlingVector(size_t rank,
+  abstract_DisplacementHandlingVector(size_t rank,
                                       List_sp dimensions,
                                       T_sp fillPointer,
                                       T_sp displacedTo,
                                       size_t displacedIndexOffset)
     : Base(rank,dimensions,fillPointer,displacedTo,displacedIndexOffset) {};
+  public:
+    static void never_invoke_allocator() {gctools::GCAbstractAllocator<abstract_DisplacementHandlingVector>::never_invoke_allocator();};
+  public:
     // Primary functions/operators for operator[] that handle displacement
     // There's a non-const and a const version of each
     value_type& unsafe_indirectReference(size_t index) {
@@ -1014,11 +998,11 @@ namespace core {
 };
 
 namespace core {
-  class Str8Ns_O : public template_DisplacementHandlingVector<Str8Ns_O,SimpleBaseCharString_O,StrNs_O> {
+  class Str8Ns_O : public abstract_DisplacementHandlingVector<Str8Ns_O,SimpleBaseCharString_O,StrNs_O> {
     LISP_CLASS(core, ClPkg, Str8Ns_O, "base-string",StrNs_O);
   public:
     // The types that define what this class does
-    typedef template_DisplacementHandlingVector<Str8Ns_O,SimpleBaseCharString_O,StrNs_O> TemplatedBase;
+    typedef abstract_DisplacementHandlingVector<Str8Ns_O,SimpleBaseCharString_O,StrNs_O> TemplatedBase;
     typedef typename TemplatedBase::value_type value_type;
     typedef typename TemplatedBase::simple_type simple_type;
     typedef value_type* iterator;
@@ -1076,11 +1060,11 @@ namespace core {
 };
 
 namespace core {
-  class StrWNs_O : public template_DisplacementHandlingVector<StrWNs_O,SimpleCharacterString_O,StrNs_O> {
+  class StrWNs_O : public abstract_DisplacementHandlingVector<StrWNs_O,SimpleCharacterString_O,StrNs_O> {
     LISP_CLASS(core, ClPkg, StrWNs_O, "wide-string",StrNs_O);
   public:
     // The types that define what this class does
-    typedef template_DisplacementHandlingVector<StrWNs_O,SimpleCharacterString_O,StrNs_O> TemplatedBase;
+    typedef abstract_DisplacementHandlingVector<StrWNs_O,SimpleCharacterString_O,StrNs_O> TemplatedBase;
     typedef typename TemplatedBase::value_type value_type;
     typedef typename TemplatedBase::simple_type simple_type;
     typedef value_type* iterator;
@@ -1149,10 +1133,10 @@ namespace core {
 }
 
 namespace core {
-  class VectorTNs_O : public template_DisplacementHandlingVector<VectorTNs_O,SimpleVector_O,SpecializedVectorNs_O> {
+  class VectorTNs_O : public abstract_DisplacementHandlingVector<VectorTNs_O,SimpleVector_O,SpecializedVectorNs_O> {
     LISP_CLASS(core, ClPkg, VectorTNs_O, "non-simple-vector-t",SpecializedVectorNs_O);
   public:
-    typedef template_DisplacementHandlingVector<VectorTNs_O,SimpleVector_O,SpecializedVectorNs_O> TemplatedBase;
+    typedef abstract_DisplacementHandlingVector<VectorTNs_O,SimpleVector_O,SpecializedVectorNs_O> TemplatedBase;
     typedef typename TemplatedBase::value_type value_type;
     typedef typename TemplatedBase::simple_type simple_type;
   public:
@@ -1168,7 +1152,7 @@ namespace core {
 };
 
 namespace core {
-  // I can't use the template_DisplacementHandlingVector here because of bitwise access
+  // I can't use the abstract_DisplacementHandlingVector here because of bitwise access
   class BitVectorNs_O : public VectorNs_O {
     LISP_CLASS(core, ClPkg, BitVectorNs_O, "bit-vector",VectorNs_O);
   public:
@@ -1237,7 +1221,7 @@ namespace core {
 
 namespace core {
   template <typename MyArrayType, typename MySimpleType, typename MyParentType >
-    class template_DisplacementHandlingArray : public MyParentType {
+    class abstract_DisplacementHandlingArray : public MyParentType {
   public:
     // The types that define what this class does
     typedef MyParentType Base;
@@ -1247,12 +1231,15 @@ namespace core {
     typedef gctools::smart_ptr<my_array_type> my_smart_ptr_type;
   public:
     // Pass constructor arguments up
-  template_DisplacementHandlingArray(size_t rank,
+  abstract_DisplacementHandlingArray(size_t rank,
                                      List_sp dimensions,
                                      T_sp fillPointer,
                                      T_sp displacedTo,
                                      size_t displacedIndexOffset)
     : Base(rank,dimensions,fillPointer,displacedTo,displacedIndexOffset) {};
+  public:
+    static void never_invoke_allocator() {gctools::GCAbstractAllocator<abstract_DisplacementHandlingArray>::never_invoke_allocator();};
+  public:
     // Primary functions/operators for operator[] that handle displacement
     // There's a non-const and a const version of each
     value_type& unsafe_indirectReference(size_t index) {
@@ -1313,10 +1300,10 @@ namespace core {
 }
 
 namespace core {
-  class ArrayTNs_O : public template_DisplacementHandlingArray<ArrayTNs_O,SimpleVector_O,SpecializedMDArrayNs_O>  {
+  class ArrayTNs_O : public abstract_DisplacementHandlingArray<ArrayTNs_O,SimpleVector_O,SpecializedMDArrayNs_O>  {
     LISP_CLASS(core, ClPkg, ArrayTNs_O, "arraytns",SpecializedMDArrayNs_O);
   public:
-    typedef template_DisplacementHandlingArray<ArrayTNs_O,SimpleVector_O,SpecializedMDArrayNs_O> TemplatedBase;
+    typedef abstract_DisplacementHandlingArray<ArrayTNs_O,SimpleVector_O,SpecializedMDArrayNs_O> TemplatedBase;
   ArrayTNs_O(size_t rank,
              List_sp dimensions,
              T_sp fillPointer,

@@ -196,9 +196,9 @@ gctools::Tagged ltvc_make_array(gctools::ConstantsTable* holder, size_t index,
     }
   if (core::cl__length(dimensions) == 1) // vector
   {
-    val = core::VectorObjects_O::make(oCar(dimensions).unsafe_fixnum(),_Nil<core::T_O>());
+    val = core::SimpleVector_O::make(oCar(dimensions).unsafe_fixnum(),_Nil<core::T_O>(),true);
   } else {
-    val = core::ArrayObjects_O::make(dimensions,_Nil<core::T_O>(),_Nil<core::T_O>(),_Nil<core::T_O>(), 0 );
+    val = core::ArrayTNs_O::make(dimensions,_Nil<core::T_O>(),_Nil<core::T_O>(),_Nil<core::T_O>(), 0 );
   }
   return holder->set(index,val.tagged_());
 }
@@ -750,7 +750,6 @@ extern void attachDebuggingInfoToValueFrame(core::ActivationFrame_sp *resultP,
   ASSERT(debuggingInfoP != NULL);
   ASSERT((*resultP));
   ASSERT((*resultP).isA<ValueFrame_O>());
-  ASSERT((*debuggingInfoP).isA<VectorObjects_O>());
   core::ValueFrame_sp vf = gc::reinterpret_cast_smart_ptr<ValueFrame_O, T_O>((*resultP));
   core::VectorObjects_sp vo = gc::reinterpret_cast_smart_ptr<core::VectorObjects_O, T_O>((*debuggingInfoP));
   vf->attachDebuggingInfo(vo);
@@ -1328,12 +1327,12 @@ void mv_restoreFromMultipleValue0(core::T_mv *resultP) {
   resultP->readFromMultipleValue0();
 }
 
-/*! Copy the current MultipleValues in _lisp->values() into a VectorObjects */
+/*! Copy the current MultipleValues in _lisp->values() into a SimpleVector */
 extern void saveValues(core::T_sp *resultP, core::T_mv *mvP) {
   ASSERT(resultP != NULL);
   ASSERT(mvP != NULL);
   int numValues = (*mvP).number_of_values();
-  core::VectorObjects_sp vo = core::VectorObjects_O::make(numValues,_Nil<core::T_O>());
+  core::SimpleVector_sp vo = core::SimpleVector_O::make(numValues,_Nil<core::T_O>());
   //	printf("intrinsics.cc saveValues numValues = %d\n", numValues );
   if (numValues > 0) {
     vo->rowMajorAset(0, (*mvP));
@@ -1348,17 +1347,17 @@ extern void saveValues(core::T_sp *resultP, core::T_mv *mvP) {
 }
 
 /*! Copy the current MultipleValues in _lisp->values() into a VectorObjects */
-extern void loadValues(core::T_mv *resultP, core::T_sp *vectorObjectsP) {
+extern void loadValues(core::T_mv *resultP, core::T_sp *simpleVectorP) {
   ASSERT(resultP != NULL);
-  ASSERT(vectorObjectsP != NULL);
-  if (!(*vectorObjectsP)) {
+  ASSERT(simpleVectorP != NULL);
+  if (!(*simpleVectorP)) {
     // If there was a non-local exit then *vectorObjectP will be NULL
     // check for that here and if so set the result to gctools::multiple_values<core::T_O>()
     (*resultP) = gctools::multiple_values<core::T_O>();
     return;
   }
-  ASSERTF(*vectorObjectsP, BF("*vectorObjectsP is UNDEFINED"));
-  core::VectorObjects_sp vo = gc::As<core::VectorObjects_sp>((*vectorObjectsP));
+  ASSERTF(*simpleVectorP, BF("*simpleVectorP is UNDEFINED"));
+  core::SimpleVector_sp vo = gc::As<core::SimpleVector_sp>((*simpleVectorP));
   //	printf("intrinsics.cc loadValues vo->length() = %d\n", vo->length() );
   if (vo->length() == 0) {
     (*resultP) = gctools::multiple_values<core::T_O>();
