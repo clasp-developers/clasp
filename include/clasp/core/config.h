@@ -28,6 +28,7 @@ THE SOFTWARE.
 #define core_config_H
 
 #include <cstdint>
+#include <climits>
 
 #define BYTE_SIZE 8
 
