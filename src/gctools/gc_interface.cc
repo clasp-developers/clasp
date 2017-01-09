@@ -34,7 +34,8 @@ typedef bool _Bool;
 #include <llvm/IR/LLVMContext.h>
 #include <llvm/LinkAllPasses.h>
 #include <llvm/CodeGen/LinkAllCodegenComponents.h>
-#include <llvm/Bitcode/ReaderWriter.h>
+#include <llvm/Bitcode/BitcodeReader.h>
+#include <llvm/Bitcode/BitcodeWriter.h>
 #include <llvm/Support/raw_ostream.h>
 #include <llvm/Support/MemoryBuffer.h>
 #include <llvm/IR/Module.h>
