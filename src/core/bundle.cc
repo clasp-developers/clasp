@@ -280,7 +280,7 @@ void Bundle::findContentSubDirectories(boost_filesystem::path contentDir, bool v
             printf("%s:%d Setting up _ResourcesDir = %s\n", __FILE__, __LINE__, this->_Directories->_ResourcesDir.string().c_str());
           }
         } else if (leaf == "lib" && (this->_Directories->_LibDir.empty())) {
-          this->_Directories->_LibDir = dirs->path();
+          this->_Directories->_LibDir = dirs->path() / "fasl";
           if (verbose) {
             printf("%s:%d Setting up _LibDir = %s\n", __FILE__, __LINE__, this->_Directories->_LibDir.string().c_str());
           }
