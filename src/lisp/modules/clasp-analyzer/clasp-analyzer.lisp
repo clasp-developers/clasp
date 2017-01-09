@@ -102,6 +102,18 @@
   metadata
   )
 
+(defstruct instance-field
+  access
+  ctype)
+
+(defstruct (instance-variable (:include instance-field))
+  field-name
+  location)
+
+(defstruct (instance-array-element (:include instance-field))
+  index)
+
+#|
 (defclass instance-field ()
   ((access :initform :public :initarg :access :accessor instance-field-access)
    (ctype :initarg :ctype :accessor instance-field-ctype)))
@@ -115,6 +127,8 @@
 
 (defclass instance-array-element (instance-field)
   ((index :initarg :index :accessor instance-array-element-index)))
+
+|#
 
 (defgeneric instance-field-as-string (x first)
   (:documentation "Return a string that describes this instance-field"))
@@ -331,7 +345,9 @@
 
 (defun generate-dynamic-cast-code (fout analysis)
   (maphash (lambda (key enum) 
-             (when (enum-in-hierarchy enum)
+             (when (and (not (abstract-species-enum-p enum analysis))
+                        (enum-in-hierarchy enum))
+               (format fout "// ~a~%" (build-enum-name enum))
                (format fout "template <typename FP> struct Cast<~a*,FP> {~%" key )
                (format fout "  inline static bool isA(FP client) {~%" key)
                (format fout "      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));~%")
@@ -769,7 +785,7 @@ Generate offsets for every array element that exposes the fields in elements."
     (loop :for index :below number-of-elements
        :append (loop :for element :in elements
                   :collect (let ((element-copy (copy-offset element)))
-                             (push-prefix-field (make-instance 'instance-array-element
+                             (push-prefix-field (make-instance-array-element
                                                                :index index
                                                                :ctype element-type)
                                                 element-copy)
@@ -1235,7 +1251,7 @@ can be saved and reloaded within the project for later analysis"
                            (type (to-canonical-type (cast:get-type field-node))))
                       (gclog "      >> Field: ~30a~%" field-node)
                       (handler-case
-                          (push (make-instance 'instance-variable
+                          (push (make-instance-variable
                                  :location (clang-tool:mtag-loc-start minfo :field)
                                  :field-name (clang-tool:mtag-name minfo :field)
                                  :access (clang-ast:get-access (clang-tool:mtag-node minfo :field))
@@ -1910,7 +1926,13 @@ so that they don't have to be constantly recalculated"
   dump          ;; Function - fills a stringstream with a dump of the species
   index
   )
-  
+
+;;
+;; The abstract-species is a species of class in the class hierarchy
+;; that is never allocated - I currently define template classes in the
+;; Array hierarchy that end up being abstract-species classes.
+;; We don't want to generate certain code for abstract-species classes.
+;;
 (defstruct manager
   abstract-species
   (species nil) ;; a list of species
@@ -2558,10 +2580,16 @@ so that they don't have to be constantly recalculated"
     (format stream "  static gctools::GCKindEnum const Kind = gctools::~a ;~%" enum-name)
     (format stream "};~%")))
 
+(defun abstract-species-enum-p (enum analysis)
+  "Return T if the species of the enum is the abstract-species for the analysis."
+  (let* ((manager (analysis-manager analysis))
+         (abstract-species (manager-abstract-species manager)))
+    (eq (enum-species enum) abstract-species)))
 
 (defun generate-gckind-for-enums (fout anal)
   (maphash (lambda (key enum)
-             (generate-one-gckind-for-enum fout enum))
+             (when (not (abstract-species-enum-p enum anal))
+               (generate-one-gckind-for-enum fout enum)))
            (analysis-enums anal)))
 
 
