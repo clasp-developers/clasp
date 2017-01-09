@@ -519,7 +519,7 @@ def configure(cfg):
     cfg.env["GIT_BINARY"] = cfg.find_program("git", var = "GIT")[0]
     cfg.env["LLVM_BIN_DIR"] = run_llvm_config(cfg, "--bindir")
     print("cfg.env['LTO_OPTION'] = %s" % cfg.env['LTO_OPTION'])
-    if (cfg.env['LTO_OPTION']==None or cfg.env['LTO_OPTION']=='thinlto'):
+    if (cfg.env['LTO_OPTION']==[] or cfg.env['LTO_OPTION']=='thinlto'):
         cfg.env.LTO_FLAG = '-flto=thin'
     elif (cfg.env['LTO_OPTION']=='lto'):
         cfg.env.LTO_FLAG = '-flto'
