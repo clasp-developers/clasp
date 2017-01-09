@@ -72,6 +72,8 @@ BOOST_LIBRARIES = [
             'boost_iostreams']
 
 
+
+    
 def update_submodules(cfg):
     os.system("echo This is where I get submodules")
     os.system("git submodule update --init src/lisp/kernel/contrib/sicl")
@@ -483,7 +485,7 @@ def run_llvm_config_for_libs(cfg, *args):
     return result.strip()
 
 def configure(cfg):
-    def update_exe_search_path():
+    def update_exe_search_path(cfg):
         externals = cfg.env.EXTERNALS_CLASP_DIR
         print("externals = |%s|" % externals)
         assert os.path.isdir(externals), "Please provide a valid EXTERNALS_CLASP_DIR instead of '%s'. See the wscript.config.template file." % externals
@@ -494,7 +496,24 @@ def configure(cfg):
         print("PATH has been prefixed with '%s'" % externals_bin_dir)
         #print("Updated search path for binaries: '%s'" % cfg.environ["PATH"])
 
-    def load_local_config():
+    def check_externals_clasp_version(cfg):
+        print("Hello there - check externals-clasp from here")
+        externals = cfg.env['EXTERNALS_CLASP_DIR']
+        if (externals == []):
+            print("Not checking externals-clasp because EXTERNALS_CLASP_DIR was not set")
+            return
+        print("   externals = %s" % externals)
+        fin = open(externals+"/makefile","r")
+        externals_clasp_llvm_hash = "c54021df3fd4d71d822b3112cba4e43d94927378"
+        correct_version = False
+        for x in fin:
+            if (externals_clasp_llvm_hash in x):
+                correct_version = True
+        fin.close()
+        if (not correct_version):
+            raise Exception("You do not have the correct version of externals-clasp installed - you need the one with the LLVM_COMMIT=%s" % externals_clasp_llvm_hash)
+        
+    def load_local_config(cfg):
         if not os.path.isfile("./wscript.config"):
             print("Please provide the required config for the build; see the wscript.config.template file.")
             sys.exit(1)
@@ -502,12 +521,13 @@ def configure(cfg):
         exec(open("./wscript.config").read(), globals(), local_environment)
         cfg.env.update(local_environment)
 
-    # KLUDGE there should be a better way than this
+        # KLUDGE there should be a better way than this
     cfg.env["BUILD_ROOT"] = os.path.abspath(top)
-    load_local_config()
+    load_local_config(cfg)
     cfg.load("why")
     cfg.check_waf_version(mini = '1.7.5')
-    update_exe_search_path()
+    update_exe_search_path(cfg)
+    check_externals_clasp_version(cfg)
     cfg.env["LLVM_CONFIG_BINARY"] = cfg.find_program("llvm-config", var = "LLVM_CONFIG")[0]
     if (cfg.env.LLVM_CONFIG_DEBUG_PATH):
         print("LLVM_CONFIG_DEBUG_PATH is defined: %s" % cfg.env.LLVM_CONFIG_DEBUG_PATH)
