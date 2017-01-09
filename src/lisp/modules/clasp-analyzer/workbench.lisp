@@ -1,3 +1,27 @@
+(load #P"sys:modules;clang-tool;clang-tool.lisp")
+(load #P"sys:modules;clasp-analyzer;clasp-analyzer.lisp")
+(in-package :clasp-analyzer)
+(defvar *compile-commands* "/Users/meister/Development/clasp/build/mpsprep/compile_commands_small.json")
+(setf *print-pretty* nil)
+(defvar *db* (clasp-analyzer:setup-clasp-analyzer-compilation-tool-database (pathname *compile-commands*)))
+;; Search only
+(clang-tool:with-compilation-tool-database *db*
+  (setf *p* (serial-search-all *db*)))
+;; Search and generate code
+(defvar *p* (search/generate-code *db*))
+;; Analyze project
+(defparameter *a* (analyze-project *p*))
+(clang-tool:with-compilation-tool-database *db*
+  (generate-code *a*))
+
+
+
+
+
+
+
+
+
 
 (require :clasp-analyzer)
 

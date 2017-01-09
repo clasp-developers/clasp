@@ -111,7 +111,7 @@
   (:documentation "Represent an instance variable, it's name, it's source-location and it's classified type"))
 
 (defmethod print-object ((x instance-variable) stream)
-  (format stream "#<~a :field-name ~a>" (class-name (class-of x)) (instance-variable-field-name x)))
+  (format stream "(make-instance 'instance-variable :field-name ~a)" (instance-variable-field-name x)))
 
 (defclass instance-array-element (instance-field)
   ((index :initarg :index :accessor instance-array-element-index)))
@@ -132,6 +132,8 @@
   location
   ctype)
 
+;; Abstract allocations for abstract or template parent classes
+(defstruct (abstractalloc (:include alloc)))
 (defstruct (lispalloc (:include alloc)))
 (defstruct (classalloc (:include alloc)))
 (defstruct (rootclassalloc (:include alloc)))
@@ -145,11 +147,9 @@
 
 (defstruct enum
   key
-  name
   value
   cclass
-  species
-  children
+  species ;; can be nil
   in-hierarchy ;; only generate TaggedCast entry for those in hierarchy
   )
 
@@ -217,6 +217,7 @@
                     first-general))
   (forwards (make-hash-table :test #'equal))
   (enums (make-hash-table :test #'equal))
+  enum-children
   sorted-enums
   (scanner-jump-table-indices-for-enum-names (make-hash-table :test #'equal))
   enum-roots
@@ -263,7 +264,7 @@
     (multiple-value-bind (parent-enum parent-enum-p)
         (gethash class-base-name (analysis-enums analysis))
       (when parent-enum-p
-        (push class-name (enum-children parent-enum))
+        (push class-name (gethash parent-enum (analysis-enum-children analysis)))
         #+(or)(format t "Not informing ~a that it has the child ~a because it is outside of the enum hierarchy~%" class-base-name class-name))
       )))
   
@@ -280,22 +281,27 @@
                (notify-parents node-name analysis))
            (analysis-enums analysis)))
 
-
 (defun traverse (name analysis)
   (let ((enum (gethash name (analysis-enums analysis)))
         (enum-value (analysis-cur-enum-value analysis)))
     (setf (enum-value enum) enum-value)
     (setf (enum-in-hierarchy enum) t)
     (incf (analysis-cur-enum-value analysis))
-    (dolist (child (enum-children enum))
+    (dolist (child (gethash enum (analysis-enum-children analysis)))
       (traverse child analysis))))
 
-(defun assign-enum-values-to-hierarchy (analysis)
+(defun initialize-enum-values (analysis)
+  (setf (analysis-enum-children analysis) (make-hash-table))
+  (setf (analysis-enum-roots analysis) nil)
   (build-hierarchy analysis)
+  (maphash (lambda (k v) (setf (enum-value v) nil)) (analysis-enums analysis))
   (setf (analysis-cur-enum-value analysis)
         (multiple-value-bind (hardwired-kinds ignore-classes first-general)
             (core:hardwired-kinds)
-          first-general))
+          first-general)))
+
+(defun assign-enum-values-to-hierarchy (analysis)
+  (initialize-enum-values analysis)
   (dolist (root (analysis-enum-roots analysis))
     (traverse root analysis)))
 
@@ -313,9 +319,9 @@
 
 (defun hierarchy-end-range (class-name analysis)
   (let ((enum (gethash class-name (analysis-enums analysis))))
-    (if (null (enum-children enum))
+    (if (null (gethash enum (analysis-enum-children analysis)))
         (enum-value enum)
-      (hierarchy-end-range (car (last (enum-children enum))) analysis))))
+      (hierarchy-end-range (car (last (gethash enum (analysis-enum-children analysis)))) analysis))))
 
         
 (defun hierarchy-class-range (class-name analysis)
@@ -572,10 +578,11 @@ to expose."
 
 (defun codegen-variable-part (stream variable-fields analysis)
     (let* ((array (offset-field-with-name variable-fields "_Data"))
-           (capacity (offset-field-with-name variable-fields "_Capacity"))
-           (end (or (offset-field-with-name variable-fields "_End") capacity)))
-      (unless capacity
-        (error "Could not find _Capacity in the variable-fields: ~a with names: ~a of ~a" variable-fields (variable-part-offset-field-names variable-fields) (mapcar (lambda (x) (offset-type-c++-identifier x)) variable-fields)))
+           (length (or (offset-field-with-name variable-fields "_Length")
+                       (offset-field-with-name variable-fields "_Capacity")))
+           (end (or (offset-field-with-name variable-fields "_End") length)))
+      (unless length
+        (error "Could not find _Length in the variable-fields: ~a with names: ~a of ~a" variable-fields (variable-part-offset-field-names variable-fields) (mapcar (lambda (x) (offset-type-c++-identifier x)) variable-fields)))
       (format stream "{  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(~a),~{~a~}), \"~{~a~}\" },~%"
               (offset-base-ctype array)
               (layout-offset-field-names array)
@@ -585,7 +592,7 @@ to expose."
               (offset-base-ctype array)
               (layout-offset-field-names end)
               (offset-base-ctype array)
-              (layout-offset-field-names capacity))
+              (layout-offset-field-names length))
       (dolist (one (elements array))
         (let ((field-names (layout-offset-field-names one)))
             (if field-names
@@ -646,7 +653,8 @@ to expose."
   (codegen-variable-part stream (fixed-part layout) analysis))
 
 (defun codegen-bitunit-container-layout (stream enum key layout analysis)
-  (format stream "{ bitunit_container_kind, ~a, sizeof(~a), ~a, \"~a\" },~%" enum key (species-bitwidth (enum-species enum)) key )
+  (format stream "{ bitunit_container_kind, ~a, sizeof(~a), ~a, \"~a\" },~%" (build-enum-name enum) key (species-bitwidth (enum-species enum)) key )
+  ;; There is no fixed part for bitunits
   (codegen-variable-part stream (fixed-part layout) analysis))
 
 (defun codegen-templated-layout (stream enum key layout analysis)
@@ -1495,6 +1503,7 @@ and the inheritance hierarchy that the garbage collector will need"
                                                       :match-code (function %%containeralloc-matcher-callback))))))
 
 
+
 ;; ----------------------------------------------------------------------
 ;; ----------------------------------------------------------------------
 ;; ----------------------------------------------------------------------
@@ -1877,12 +1886,12 @@ so that they don't have to be constantly recalculated"
                   template-specializers))))
 |#
 
-
-
-
-
-(defun class-enum-name (key species &optional (prefix "KIND"))
-  (let* ((raw-name (format nil "~a_~a_~a" prefix (symbol-name (species-name species)) (copy-seq key)))
+(defun build-enum-name (enum)
+  (let* ((key (enum-key enum))
+         (species (enum-species enum))
+         (species-name (if species (species-name species) :abstract))
+         (prefix "KIND")
+         (raw-name (format nil "~a_~a_~a" prefix (symbol-name species-name) (copy-seq key)))
          (name0 (nsubstitute-if #\_ (lambda (c) (member c '(#\SPACE #\, #\< #\> #\: #\- ))) raw-name))
          (name1 (nsubstitute #\P #\* name0))
          (name2 (nsubstitute #\O #\( name1))
@@ -1893,7 +1902,6 @@ so that they don't have to be constantly recalculated"
 
 (defstruct species
   name
-  preprocessor-guard ;; defines a preprocessor symbol XXX used to wrap #ifdef XXX/#endif around GCKind
   discriminator ;; Function - takes one argument, returns a species index
   (bitwidth 0)  ;; bit(1),crumb(2),nibble(4),byte(8) etc containers length need this to be converted to bytes
   scan          ;; Function - generates scanner for species
@@ -1904,7 +1912,8 @@ so that they don't have to be constantly recalculated"
   )
   
 (defstruct manager
-  (species nil) ;; a single argument lambda that returns an integer index
+  abstract-species
+  (species nil) ;; a list of species
   (next-species-counter 0)
   ignore-discriminator
   )
@@ -1920,7 +1929,6 @@ so that they don't have to be constantly recalculated"
   (incf (manager-next-species-counter manager))
   (push species (manager-species manager))
   species)
-
 
 (defun identify-species (manager aclass)
   (let (hits)
@@ -1945,72 +1953,75 @@ so that they don't have to be constantly recalculated"
         (cclass-template-specializer alloc-class)
         nil)))
 
-(defun make-enum-for-alloc-if-needed (alloc species analysis)
-  (cond
-    ((and (not (containeralloc-p alloc))
-          (alloc-template-specializer-p alloc analysis))
-     ;; We have a templated type - see if we need to construct a templated enum
-     (let* ((class (gethash (alloc-key alloc) (project-classes (analysis-project analysis))))
-            (single-base-key (let ((bases (cclass-bases class)))
-                               (assert (eql (length bases) 1) nil "There can only be one base but class ~a has bases ~a" class bases) ;; there can be only one base
-                               (assert (null (cclass-vbases class))) ;; There can be no vbases
-                               (car bases)))
-            (single-base (gethash single-base-key (project-classes (analysis-project analysis)))))
-       (let* ((key (cclass-key single-base))
-              (tenum (multiple-value-bind (te present-p)
-                         ;; get the templated-enum
-                         (gethash key (analysis-enums analysis))
-                       (if (and present-p (templated-enum-p te))
-                           ;; If its present and a templated-enum then return it
-                           te
-                           ;; If there wasn't a templated-enum in the hash-table - create one
-                           (progn
-                             (when (simple-enum-p te)
-                               (warn "Since ~a is templated it must be a templated-enum - but there is already a simple-enum defined with this key - this error happened probably because you tried to allocate the TemplateBase of templated classes - don't do that!!" key))
-                             (setf (gethash key (analysis-enums analysis))
-                                   (make-templated-enum :key key
-                                                        :name (class-enum-name key species)
-                                                        :value :unassigned ;;(incf (analysis-cur-enum-value analysis))
-                                                        :cclass single-base
-                                                        :species species)))))))
-         ;; save every alloc associated with this templated-enum
-         (push alloc (templated-enum-all-allocs tenum)))))
-    (t ;; It's a simple-enum
-     (let* ((key (alloc-key alloc))
-            (class (gethash key (project-classes (analysis-project analysis)))))
-       (unless class ;; system allocs don't have classes - make a bogus one
-         (setq class (make-cclass :key key)))
-       (if (gethash key (analysis-enums analysis))
-           (warn "There is already an enum defined with the key: ~a - this may happen if you allocate a TemplateBase of template classes directly" key)
-           (setf (gethash key (analysis-enums analysis))
-                 (make-simple-enum :key key
-                                   :name (class-enum-name key species)
-                                   :value :unassigned ;;(incf (analysis-cur-enum-value analysis))
-                                   :cclass class
-                                   :alloc alloc
-                                   :species species)))))))
-
-           
-
-
-(defun analyze-alloc-and-assign-species-and-enum (alloc anal)
-  (let* ((manager (analysis-manager anal))
-         (species (identify-species manager alloc)))
-    (if species
-        (make-enum-for-alloc-if-needed alloc species anal)
-        (error "Could not identify a species for ~a - is that ok???" alloc))))
+(defun ensure-enum-for-ancestors (class-key analysis)
+  (when (and class-key (null (gethash class-key (analysis-enums analysis))))
+    (let* ((project (analysis-project analysis))
+           (class (gethash class-key (project-classes project)))
+           (base-classes (cclass-bases class))
+           (base-class-key (car base-classes)))
+      (when (and base-class-key (not (string= base-class-key "_RootDummyClass")))
+        (ensure-enum-for-ancestors base-class-key analysis))
+      (setf (gethash class-key (analysis-enums analysis))
+            (make-enum :key class-key
+                       :species (manager-abstract-species (analysis-manager analysis))
+                       :cclass class)))))
+  
+(defun ensure-enum-for-alloc-and-parent-classes (alloc analysis)
+  (let* ((manager (analysis-manager analysis))
+         (species (identify-species manager alloc))
+         (class-key (alloc-key alloc))
+         (project (analysis-project analysis))
+         (alloc-enum (gethash class-key (project-classes project)))
+         (base-classes (cclass-bases alloc-enum))
+         (base-class-key (car base-classes)))
+    (unless (string= base-class-key "_RootDummyClass")
+      (ensure-enum-for-ancestors base-class-key analysis))
+    (cond
+      ((and (not (containeralloc-p alloc))
+            (alloc-template-specializer-p alloc analysis))
+       ;; We have a templated type - see if we need to construct a templated enum
+       (let* ((class (gethash class-key (project-classes (analysis-project analysis))))
+              (single-base-key (let ((bases (cclass-bases class)))
+                                 (assert (eql (length bases) 1) nil "There can only be one base but class ~a has bases ~a" class bases) ;; there can be only one base
+                                 (assert (null (cclass-vbases class))) ;; There can be no vbases
+                                 (car bases)))
+              (single-base (gethash single-base-key (project-classes (analysis-project analysis)))))
+         (let* ((key (cclass-key single-base))
+                (tenum (multiple-value-bind (te present-p)
+                           ;; get the templated-enum
+                           (gethash key (analysis-enums analysis))
+                         (if (and present-p (templated-enum-p te))
+                             ;; If its present and a templated-enum then return it
+                             te
+                             ;; If there wasn't a templated-enum in the hash-table - create one
+                             (progn
+                               (when (simple-enum-p te)
+                                 (warn "Since ~a is templated it must be a templated-enum - but there is already a simple-enum defined with this key - this error happened probably because you tried to allocate the TemplateBase of templated classes - don't do that!!" key))
+                               (setf (gethash key (analysis-enums analysis))
+                                     (make-templated-enum :key key
+                                                          :value :unassigned ;;(incf (analysis-cur-enum-value analysis))
+                                                          :cclass single-base
+                                                          :species species)))))))
+           ;; save every alloc associated with this templated-enum
+           (push alloc (templated-enum-all-allocs tenum)))))
+      (t ;; It's a simple-enum
+       (let* ((class (gethash class-key (project-classes (analysis-project analysis)))))
+         (unless class ;; system allocs don't have classes - make a bogus one
+           (setq class (make-cclass :key class-key)))
+         (setf (gethash class-key (analysis-enums analysis))
+               (make-simple-enum :key class-key
+                                 :value :unassigned ;;(incf (analysis-cur-enum-value analysis))
+                                 :cclass class
+                                 :alloc alloc
+                                 :species species)))))))
 
 (defun organize-allocs-into-species-and-create-enums (analysis &aux (project (analysis-project analysis)))
   "Every GCObject and GCContainer is assigned to a species and given a GCKind enum value."
   (let ((project (analysis-project analysis)))
-    (maphash (lambda (k alloc) (analyze-alloc-and-assign-species-and-enum alloc analysis)) (project-lispallocs project))
-    (maphash (lambda (k alloc) (analyze-alloc-and-assign-species-and-enum alloc analysis)) (project-containerallocs project))
-    (maphash (lambda (k alloc) (analyze-alloc-and-assign-species-and-enum alloc analysis)) (project-classallocs project))
-    (maphash (lambda (k alloc) (analyze-alloc-and-assign-species-and-enum alloc analysis)) (project-rootclassallocs project))))
-
-
-
-
+    (maphash (lambda (k alloc) (ensure-enum-for-alloc-and-parent-classes alloc analysis)) (project-lispallocs project))
+    (maphash (lambda (k alloc) (ensure-enum-for-alloc-and-parent-classes alloc analysis)) (project-containerallocs project))
+    (maphash (lambda (k alloc) (ensure-enum-for-alloc-and-parent-classes alloc analysis)) (project-classallocs project))
+    (maphash (lambda (k alloc) (ensure-enum-for-alloc-and-parent-classes alloc analysis)) (project-rootclassallocs project))))
 
 (defgeneric fixer-macro-name (fixer-head))
 (defmethod fixer-macro-name ((x (eql :smart-ptr-fix))) "SMART_PTR_FIX")
@@ -2039,7 +2050,7 @@ so that they don't have to be constantly recalculated"
   (let ((label-gs (gensym)))
     `(let* ((,fout (destination-stream ,dest))
 	    (,label-gs (format nil "~a_~a" (destination-label-prefix ,dest)
-                               (enum-name ,enum)))
+                               (build-enum-name ,enum)))
             (,jump-table-index (length (destination-label-list ,dest))))
        (push (cons (enum-value ,enum) ,label-gs) (destination-label-list ,dest))
        (format ,fout "~a:~%" ,label-gs)
@@ -2063,11 +2074,23 @@ so that they don't have to be constantly recalculated"
               reverse-names
               (format nil "~{~a~^.~}" reverse-names)))))
 
+(defun scanner-for-abstract-species (dest enum anal)
+  nil)
+
+(defun dumper-for-abstract-species (dest enum anal)
+  nil)
+
+(defun finalizer-for-abstract-species (dest enum anal)
+  nil)
+
+(defun deallocator-for-abstract-species (dest enum anal)
+  nil)
+
 (defun scanner-for-lispallocs (dest enum anal)
   (assert (simple-enum-p enum))
   (let* ((alloc (simple-enum-alloc enum))
          (key (alloc-key alloc))
-         (enum-name (enum-name enum)))
+         (enum-name (build-enum-name enum)))
     (gclog "build-mps-scan-for-one-family -> inheritance key[~a]  value[~a]~%" key value)
     (let ((fh (destination-helper-stream dest)))
       (let ((layout
@@ -2078,7 +2101,7 @@ so that they don't have to be constantly recalculated"
   (assert (simple-enum-p enum))
   (let* ((alloc (simple-enum-alloc enum))
          (key (alloc-key alloc))
-         (enum-name (enum-name enum)))
+         (enum-name (build-enum-name enum)))
     (with-jump-table (fout jti dest enum "goto BOTTOM")
       ;;    (format fout "    ~A* ~A = reinterpret_cast<~A*>(client);~%" key +ptr-name+ key)
       (format fout "    typedef ~A type_~A;~%" key enum-name)
@@ -2088,7 +2111,7 @@ so that they don't have to be constantly recalculated"
   (check-type enum simple-enum)
   (let* ((alloc (simple-enum-alloc enum))
          (key (alloc-key alloc))
-         (enum-name (enum-name enum))
+         (enum-name (build-enum-name enum))
          (ns-cn key)
          (cn (strip-all-namespaces-from-name ns-cn)))
     (with-jump-table (fout jti dest enum)
@@ -2103,7 +2126,7 @@ so that they don't have to be constantly recalculated"
   (check-type enum simple-enum)
   (let* ((alloc (simple-enum-alloc enum))
          (key (alloc-key alloc))
-         (enum-name (enum-name enum))
+         (enum-name (build-enum-name enum))
          (ns-cn key)
          (cn (strip-all-namespaces-from-name ns-cn)))
     (with-jump-table (fout jti dest enum)
@@ -2118,7 +2141,7 @@ so that they don't have to be constantly recalculated"
 (defun scanner-for-templated-lispallocs (dest enum anal)
   (assert (templated-enum-p enum))
   (let* ((key (enum-key enum))
-         (enum-name (enum-name enum)))
+         (enum-name (build-enum-name enum)))
     (gclog "build-mps-scan-for-one-family -> inheritance key[~a]  value[~a]~%" key value)
 ;;    (with-jump-table (fout jti dest enum "goto SCAN_ADVANCE")
       (let ((fh (destination-helper-stream dest)))
@@ -2137,7 +2160,7 @@ so that they don't have to be constantly recalculated"
 (defun dumper-for-templated-lispallocs (dest enum anal)
   (assert (templated-enum-p enum))
   (let* ((key (enum-key enum))
-         (enum-name (enum-name enum)))
+         (enum-name (build-enum-name enum)))
     (gclog "build-mps-scan-for-one-family -> inheritance key[~a]  value[~a]~%" key value)
     (with-jump-table (fout jti dest enum "goto BOTTOM")
       (format fout "    ~A* ~A = reinterpret_cast<~A*>(client);~%" key +ptr-name+ key)
@@ -2147,7 +2170,7 @@ so that they don't have to be constantly recalculated"
 (defun finalizer-for-templated-lispallocs (dest enum anal)
   (assert (templated-enum-p enum))
   (let* ((key (enum-key enum))
-         (enum-name (enum-name enum))
+         (enum-name (build-enum-name enum))
          (ns-cn key)
          (cn (strip-all-namespaces-from-name ns-cn)))
     (with-jump-table (fout jti dest enum)
@@ -2159,7 +2182,7 @@ so that they don't have to be constantly recalculated"
 (defun deallocator-for-templated-lispallocs (dest enum anal)
   (assert (templated-enum-p enum))
   (let* ((key (enum-key enum))
-         (enum-name (enum-name enum))
+         (enum-name (build-enum-name enum))
          (ns-cn key)
          (cn (strip-all-namespaces-from-name ns-cn)))
     (with-jump-table (fout jti dest enum)
@@ -2173,7 +2196,7 @@ so that they don't have to be constantly recalculated"
   (let* ((alloc (simple-enum-alloc enum))
          (decl (containeralloc-ctype alloc))
          (key (alloc-key alloc))
-         (enum-name (enum-name enum)))
+         (enum-name (build-enum-name enum)))
     ;;    (with-jump-table (fout jti dest enum "goto SCAN_ADVANCE")
     (let ((fh (destination-helper-stream dest)))
       (if (cxxrecord-ctype-p decl)
@@ -2188,7 +2211,7 @@ so that they don't have to be constantly recalculated"
   (let* ((alloc (simple-enum-alloc enum))
          (decl (containeralloc-ctype alloc))
          (key (alloc-key alloc))
-         (enum-name (enum-name enum)))
+         (enum-name (build-enum-name enum)))
     #+(or)(with-jump-table (fout jti dest enum "goto BOTTOM")
             ;;    (format fout "// processing ~a~%" alloc)
             (if (cxxrecord-ctype-p decl)
@@ -2214,7 +2237,7 @@ so that they don't have to be constantly recalculated"
   (let* ((alloc (simple-enum-alloc enum))
          (decl (containeralloc-ctype alloc))
          (key (alloc-key alloc))
-         (enum-name (enum-name enum)))
+         (enum-name (build-enum-name enum)))
     (with-jump-table (fout jti dest enum)
 ;;    (format fout "// processing ~a~%" alloc)
     (if (cxxrecord-ctype-p decl)
@@ -2232,7 +2255,7 @@ so that they don't have to be constantly recalculated"
   (let* ((alloc (simple-enum-alloc enum))
          (decl (containeralloc-ctype alloc))
          (key (alloc-key alloc))
-         (enum-name (enum-name enum)))
+         (enum-name (build-enum-name enum)))
     (with-jump-table (fout jti dest enum)
 ;;    (format fout "// processing ~a~%" alloc)
     (if (cxxrecord-ctype-p decl)
@@ -2250,7 +2273,7 @@ so that they don't have to be constantly recalculated"
   (assert (simple-enum-p enum))
   (let* ((alloc (simple-enum-alloc enum))
          (key (alloc-key alloc))
-         (enum-name (enum-name enum)))
+         (enum-name (build-enum-name enum)))
     (gclog "build-mps-scan-for-one-family -> inheritance key[~a]  value[~a]~%" key value)
     ;;(with-jump-table (fout jump-table-index dest enum "goto SCAN_ADVANCE")
     (let ((fh (destination-helper-stream dest)))
@@ -2262,7 +2285,7 @@ so that they don't have to be constantly recalculated"
   (let* ((alloc (simple-enum-alloc enum))
          (decl (containeralloc-ctype alloc))
          (key (alloc-key alloc))
-         (enum-name (enum-name enum)))
+         (enum-name (build-enum-name enum)))
     (with-jump-table (fout jti dest enum "goto BOTTOM")
 		      ;;    (format fout "// processing ~a~%" alloc)
 		      (if (cxxrecord-ctype-p decl)
@@ -2282,7 +2305,7 @@ so that they don't have to be constantly recalculated"
   (let* ((alloc (simple-enum-alloc enum))
          (decl (containeralloc-ctype alloc))
          (key (alloc-key alloc))
-         (enum-name (enum-name enum)))
+         (enum-name (build-enum-name enum)))
     (with-jump-table (fout jti dest enum)
 ;;    (format fout "// processing ~a~%" alloc)
     (if (cxxrecord-ctype-p decl)
@@ -2300,7 +2323,7 @@ so that they don't have to be constantly recalculated"
   (let* ((alloc (simple-enum-alloc enum))
          (decl (containeralloc-ctype alloc))
          (key (alloc-key alloc))
-         (enum-name (enum-name enum)))
+         (enum-name (build-enum-name enum)))
     (with-jump-table (fout jti dest enum)
 ;;    (format fout "// processing ~a~%" alloc)
     (if (cxxrecord-ctype-p decl)
@@ -2318,19 +2341,19 @@ so that they don't have to be constantly recalculated"
   (assert (simple-enum-p enum))
   (let* ((alloc (simple-enum-alloc enum))
          (key (alloc-key alloc))
-         (enum-name (enum-name enum)))
+         (enum-name (build-enum-name enum)))
     (gclog "build-mps-scan-for-one-family -> inheritance key[~a]  value[~a]~%" key value)
     ;;(with-jump-table (fout jump-table-index dest enum "goto SCAN_ADVANCE")
     (let ((fh (destination-helper-stream dest)))
       (let ((layout (class-layout (gethash key (project-classes (analysis-project anal))) anal)))
-        (codegen-bitunit-container-layout fh enum-name key layout anal)))))
+        (codegen-bitunit-container-layout fh enum key layout anal)))))
 
 (defun dumper-for-gcbitunit (dest enum anal)
   (check-type enum simple-enum)
   (let* ((alloc (simple-enum-alloc enum))
          (decl (containeralloc-ctype alloc))
          (key (alloc-key alloc))
-         (enum-name (enum-name enum)))
+         (enum-name (build-enum-name enum)))
    (with-jump-table (fout jti dest enum "goto BOTTOM")
     ;;    (format fout "// processing ~a~%" alloc)
     (if (cxxrecord-ctype-p decl)
@@ -2350,7 +2373,7 @@ so that they don't have to be constantly recalculated"
   (let* ((alloc (simple-enum-alloc enum))
          (decl (containeralloc-ctype alloc))
          (key (alloc-key alloc))
-         (enum-name (enum-name enum)))
+         (enum-name (build-enum-name enum)))
    (with-jump-table (fout jti dest enum)
     (format fout "    THROW_HARD_ERROR(BF(\"Should never finalize ~a\"));~%" (record-ctype-key decl)))))
 
@@ -2359,7 +2382,7 @@ so that they don't have to be constantly recalculated"
   (let* ((alloc (simple-enum-alloc enum))
          (decl (containeralloc-ctype alloc))
          (key (alloc-key alloc))
-         (enum-name (enum-name enum)))
+         (enum-name (build-enum-name enum)))
     (with-jump-table (fout jti dest enum)
      (format fout "    THROW_HARD_ERROR(BF(\"Should never deallocate gcbitunits ~a\"));" (record-ctype-key decl)))))
 
@@ -2369,7 +2392,12 @@ so that they don't have to be constantly recalculated"
 
 (defvar *analysis*)
 (defun setup-manager ()
-  (let* ((manager (make-manager)))
+  (let* ((manager (make-manager :abstract-species
+                                (make-species :name :abstract
+                                              :scan 'scanner-for-abstract-species
+                                              :dump 'dumper-for-abstract-species
+                                              :finalize 'finalizer-for-abstract-species
+                                              :deallocator 'deallocator-for-abstract-species))))
     (add-species manager (make-species :name :bootstrap
                                        :discriminator (lambda (x) (and (lispalloc-p x)
                                                                        (gctools::bootstrap-kind-p (alloc-key x))))
@@ -2403,23 +2431,12 @@ so that they don't have to be constantly recalculated"
                                        :dump 'dumper-for-gccontainer
                                        :finalize 'finalizer-for-gccontainer
                                        :deallocator 'deallocator-for-gccontainer))
-    (add-species manager (make-species :name :GCSTRING
-                                       :discriminator (lambda (x) (and (containeralloc-p x) (search "gctools::GCString" (alloc-key x))))
-                                       :scan 'scanner-for-gcstring ;; don't need to scan but do need to calculate size
-                                       :dump 'dumper-for-gcstring
-                                       :finalize 'finalizer-for-gcstring
-                                       :deallocator 'deallocator-for-gcstring))
-    (dolist (bitunit '(1 2 4 7 8 15 16 31 32 62 63 64))
-      (add-species manager (make-species :name (intern (format nil "GCBITUNITCONTAINER~a" bitunit) :keyword)
-                                         :discriminator (lambda (x)
-                                                          (let ((match-string (format nil "gctools::GCBitUnitContainer<~a," bitunit)))
-                                                            (and (containeralloc-p x)
-                                                                 (search match-string (alloc-key x)))))
-                                         :bitwidth bitunit
-                                         :scan 'scanner-for-gcbitunit ;; don't need to scan but do need to calculate size
-                                         :dump 'dumper-for-gcbitunit
-                                         :finalize 'finalizer-for-gcbitunit
-                                         :deallocator 'deallocator-for-gcbitunit)))
+    #+(or)(add-species manager (make-species :name :GCSTRING
+                                             :discriminator (lambda (x) (and (containeralloc-p x) (search "gctools::GCString" (alloc-key x))))
+                                             :scan 'scanner-for-gcstring ;; don't need to scan but do need to calculate size
+                                             :dump 'dumper-for-gcstring
+                                             :finalize 'finalizer-for-gcstring
+                                             :deallocator 'deallocator-for-gcstring))
     (add-species manager (make-species :name :classalloc
                                        :discriminator (lambda (x) (and (classalloc-p x) (not (alloc-template-specializer-p x *analysis*))))
                                        :scan 'scanner-for-lispallocs
@@ -2438,6 +2455,17 @@ so that they don't have to be constantly recalculated"
                                        :dump 'dumper-for-templated-lispallocs
                                        :finalize 'finalizer-for-templated-lispallocs
                                        :deallocator 'deallocator-for-templated-lispallocs))
+    (add-species manager (make-species :name (intern (format nil "GCBITUNITCONTAINER~a" 1) :keyword)
+                                       :discriminator (lambda (x)
+                                                        (let* ((match-string (format nil "gctools::GCBitUnitArray_moveable<~a," 1))
+                                                               (containeralloc (containeralloc-p x))
+                                                               (key-match (search match-string (alloc-key x))))
+                                                          (and containeralloc key-match)))
+                                       :bitwidth 1
+                                       :scan 'scanner-for-gcbitunit ;; don't need to scan but do need to calculate size
+                                       :dump 'dumper-for-gcbitunit
+                                       :finalize 'finalizer-for-gcbitunit
+                                       :deallocator 'deallocator-for-gcbitunit)) 
     manager))
 
 
@@ -2517,10 +2545,8 @@ so that they don't have to be constantly recalculated"
 
 
 (defun generate-one-gckind-for-enum (stream enum)
-  (let* ((enum-name (enum-name enum))
+  (let* ((enum-name (build-enum-name enum))
          (species (enum-species enum)))
-    (when (species-preprocessor-guard species)
-      (format stream "#if defined(~a)~%" (species-preprocessor-guard species)))
     (cond
       ((simple-enum-p enum)
 ;;       (format stream "//GCKind for ~a~%" enum)
@@ -2530,9 +2556,7 @@ so that they don't have to be constantly recalculated"
        (format stream "template <> class gctools::GCKind<~A> {~%" (enum-key enum))))
     (format stream "public:~%")
     (format stream "  static gctools::GCKindEnum const Kind = gctools::~a ;~%" enum-name)
-    (format stream "};~%")
-    (when (species-preprocessor-guard species)
-      (format stream "#endif // #if defined(~a)~%" (species-preprocessor-guard species)))))
+    (format stream "};~%")))
 
 
 (defun generate-gckind-for-enums (fout anal)
@@ -2580,7 +2604,8 @@ Otherwise return nil."
       (let* ((ctype (instance-field-ctype (car var-part)))
              (ctype-key (container-key ctype))
              (container-cclass (gethash ctype-key (project-classes project)))
-             (capacity-field (field-with-name container-cclass "_Capacity")))
+             (capacity-field (or (field-with-name container-cclass "_Capacity")
+                                 (field-with-name container-cclass "_Length"))))
         (format t "      var-part ctype: ~a~%" ctype)
         (format t "           ctype-key: ~a~%" ctype-key)
         (format t "    container-cclass: ~a~%" container-cclass)
@@ -2815,9 +2840,10 @@ Recursively analyze x and return T if x contains fixable pointers."
 
 
 (defun separate-namespace-name (name)
-"Separate a X::Y::Z name into (list X Y Z) - strip any preceeding 'class '"
-  (let* ((full-name (if (string= (subseq name 0 (length "class ")) "class ")
-                        (subseq name (length "class ") (length name))
+  "Separate a X::Y::Z name into (list X Y Z) - strip any preceeding 'class '"
+  (let* ((class-noise "class ")
+         (full-name (if (and (> (length name) (length class-noise)) (string= (subseq name 0 (length class-noise)) class-noise))
+                        (subseq name (length class-noise) (length name))
                         name))
          (colon-pos (search "::" full-name)))
     (if colon-pos
@@ -2949,7 +2975,7 @@ Recursively analyze x and return T if x contains fixable pointers."
     (let ((hardwired-kinds (core:hardwired-kinds)))
       (mapc (lambda (kv) (format fout "KIND_~a = ~a, ~%" (car kv) (cdr kv))) hardwired-kinds))
     (mapc (lambda (enum)
-               (format fout "~A = ~A,~%" (enum-name enum) (enum-value enum))
+               (format fout "~A = ~A,~%" (build-enum-name enum) (enum-value enum))
                (when (> (enum-value enum) maxenum)
                  (setq maxenum (enum-value enum))))
              (analysis-sorted-enums anal)
@@ -2962,7 +2988,7 @@ Recursively analyze x and return T if x contains fixable pointers."
 #+(or) ;; this info is provided by kind info tables
 (defun impl-generate-kind-name-map (dest anal)
   (mapc (lambda (enum)
-          (let* ((enum-name (enum-name enum)))
+          (let* ((enum-name (build-enum-name enum)))
 	    (with-jump-table (fout jti dest enum)
 			      (format fout "return \"~A\";~%" enum-name))))
 	(analysis-sorted-enums anal))
