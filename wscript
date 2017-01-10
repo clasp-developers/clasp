@@ -938,6 +938,12 @@ class link_executable(Task.Task):
                         "-o",
                         self.outputs[0].abspath()] + lto_object_path_lto
         elif (self.env['DEST_OS'] == LINUX_OS ):
+            if (self.env.LTO_FLAG):
+                lto_option_list = [self.env.LTO_FLAG]
+                lto_object_path_lto = []
+            else:
+                lto_option_list = []
+                lto_object_path_lto = []
             cmd = [ self.env.CXX[0],
                     self.inputs[0].abspath(),
                     self.inputs[1].abspath() ] + \
