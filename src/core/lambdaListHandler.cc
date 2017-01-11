@@ -1253,7 +1253,7 @@ string LambdaListHandler_O::__repr__() const {
   {
     ss << this->partsAsString();
   }
-  ss << " :comment \"" << this->_Comment->get_std_string() << "\"";
+  if (this->_Comment) { ss << " :comment \"" << this->_Comment->get_std_string() << "\"";}
   ss << "> ";
   return ss.str();
 }
