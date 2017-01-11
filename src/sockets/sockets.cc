@@ -70,7 +70,7 @@ safe_buffer_pointer(core::T_sp x, uint size) {
   if (core::Str8Ns_sp str = x.asOrNull<core::Str8Ns_O>()) {
     ok = (size <= str->arrayTotalSize());
     address = (void*)&(*str)[0]; // str->addressOfBuffer();
-      } else if (core::SimpleBaseCharString_sp strb = x.asOrNull<core::SimpleBaseCharString_O>()) {
+      } else if (core::SimpleBaseString_sp strb = x.asOrNull<core::SimpleBaseString_O>()) {
     ok = (size <= strb->arrayTotalSize());
     address = (void*)&(*strb)[0]; // str->addressOfBuffer();
   } else if (core::VectorObjects_sp vec = x.asOrNull<core::VectorObjects_O>()) {
@@ -143,7 +143,7 @@ CL_LAMBDA(num);
 CL_DECLARE();
 CL_DOCSTRING("ll_getNameServiceErrorMessage");
 CL_DEFUN core::String_sp sockets_internal__ll_getNameServiceErrorMessage(int num) {
-  return core::SimpleBaseCharString_O::make(strerror(num));
+  return core::SimpleBaseString_O::make(strerror(num));
 };
 
 CL_LAMBDA(host-name host-ent setf-host-ent-name setf-host-ent-aliases setf-host-ent-address-type setf-host-ent-addresses);
@@ -163,11 +163,11 @@ CL_DEFUN core::T_sp sockets_internal__ll_getHostByName(const string &hostName,  
     core::T_sp aliases_list = _Nil<core::T_O>();
     core::T_sp addr_list = _Nil<core::T_O>();
     int length = hostent->h_length;
-    core::eval::funcall(setf_host_ent_name, core::SimpleBaseCharString_O::make(hostent->h_name), tHostEnt);
+    core::eval::funcall(setf_host_ent_name, core::SimpleBaseString_O::make(hostent->h_name), tHostEnt);
     core::eval::funcall(/*#4*/ setf_host_ent_address_type, core::Integer_O::create((gc::Fixnum)hostent->h_addrtype), tHostEnt);
 
     for (aliases = hostent->h_aliases; *aliases != NULL; aliases++) {
-      aliases_list = core::Cons_O::create(core::SimpleBaseCharString_O::make(*aliases), aliases_list);
+      aliases_list = core::Cons_O::create(core::SimpleBaseString_O::make(*aliases), aliases_list);
     }
     core::eval::funcall(/*#3*/ setf_host_ent_aliases, aliases_list, tHostEnt);
 
@@ -213,11 +213,11 @@ CL_DEFUN core::T_sp sockets_internal__ll_getHostByAddress(core::Vector_sp addres
     core::T_sp addr_list = _Nil<core::T_O>();
     int length = hostent->h_length;
 
-    core::eval::funcall(/*#2*/ setf_host_ent_name, core::SimpleBaseCharString_O::make(hostent->h_name), tHostEnt);
+    core::eval::funcall(/*#2*/ setf_host_ent_name, core::SimpleBaseString_O::make(hostent->h_name), tHostEnt);
     core::eval::funcall(/*#4*/ setf_host_ent_address_type, core::Integer_O::create((gc::Fixnum)hostent->h_addrtype), tHostEnt);
 
     for (aliases = hostent->h_aliases; *aliases != NULL; aliases++) {
-      aliases_list = core::Cons_O::create(core::SimpleBaseCharString_O::make(*aliases), aliases_list);
+      aliases_list = core::Cons_O::create(core::SimpleBaseString_O::make(*aliases), aliases_list);
     }
     core::eval::funcall(/*#3*/ setf_host_ent_aliases, aliases_list, tHostEnt);
 
@@ -507,7 +507,7 @@ CL_DEFUN core::T_mv sockets_internal__ll_socketAccept_localSocket(int socketFile
   clasp_enable_interrupts();
   core::T_sp second_ret = _Nil<core::T_O>();
   if (new_fd != -1) {
-    second_ret = core::SimpleBaseCharString_O::make(sockaddr.sun_path);
+    second_ret = core::SimpleBaseString_O::make(sockaddr.sun_path);
   }
   return Values(core::Integer_O::create((gc::Fixnum)new_fd), second_ret);
 }
@@ -545,7 +545,7 @@ CL_DEFUN core::T_sp sockets_internal__socketPeername_localSocket(int fd) {
   clasp_enable_interrupts();
 
   if (ret == 0) {
-    return core::SimpleBaseCharString_O::make(name.sun_path);
+    return core::SimpleBaseString_O::make(name.sun_path);
   } else {
     return _Nil<core::T_O>();
   }
@@ -620,14 +620,14 @@ CL_LAMBDA(num);
 CL_DECLARE();
 CL_DOCSTRING("ll_strerror");
 CL_DEFUN core::String_sp sockets_internal__ll_strerror(int num) {
-  return core::SimpleBaseCharString_O::make(strerror(num));
+  return core::SimpleBaseString_O::make(strerror(num));
 }
 
 CL_LAMBDA();
 CL_DECLARE();
 CL_DOCSTRING("ll_strerror_errno");
 CL_DEFUN core::String_sp sockets_internal__ll_strerror_errno() {
-  return core::SimpleBaseCharString_O::make(strerror(errno));
+  return core::SimpleBaseString_O::make(strerror(errno));
 }
 
 CL_LAMBDA(fd level constant);

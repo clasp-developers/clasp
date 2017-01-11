@@ -147,10 +147,10 @@ void register_foreign_type_spec(core::VectorObjects_sp sp_tst,
 
   ForeignTypeSpec_sp sp_fts =
     ForeignTypeSpec_O::create( lisp_symbol,
-                               core::SimpleBaseCharString_O::make( lisp_name ),
+                               core::SimpleBaseString_O::make( lisp_name ),
                                core::make_fixnum(size),
                                core::make_fixnum(alignment),
-                               core::SimpleBaseCharString_O::make( cxx_name ));
+                               core::SimpleBaseString_O::make( cxx_name ));
   //sp_tst->vectorPushExtend( sp_fts->asSmartPtr() );
   sp_tst->rowMajorAset( n_index, sp_fts->asSmartPtr() );
 };
@@ -523,7 +523,7 @@ core::T_sp PERCENTdlopen( core::T_sp path_designator ) {
   void * p_handle = std::get<0>( result );
 
   if( p_handle == nullptr ) {
-    return ( Values(_Nil<core::T_O>(), core::SimpleBaseCharString_O::make( get<1>( result ))) );
+    return ( Values(_Nil<core::T_O>(), core::SimpleBaseString_O::make( get<1>( result ))) );
   }
 
   sp_handle = ForeignData_O::create( p_handle );
@@ -540,7 +540,7 @@ core::T_sp PERCENTdlclose( ForeignData_sp handle ) {
   int n_rc = std::get<0>( result );
 
   if( n_rc != 0 ) {
-    return ( Values(_Nil<core::T_O>(), core::SimpleBaseCharString_O::make( get<1>( result ))) );
+    return ( Values(_Nil<core::T_O>(), core::SimpleBaseString_O::make( get<1>( result ))) );
   }
   return ( Values( _lisp->_true(), _Nil<core::T_O>()) );
 }
@@ -554,7 +554,7 @@ core::T_sp PERCENTdlsym( core::String_sp name ) {
   void *p_sym = std::get<0>( result );
 
   if( ! p_sym ) {
-    return ( Values(_Nil<core::T_O>(), core::SimpleBaseCharString_O::make( get<1>( result ))) );
+    return ( Values(_Nil<core::T_O>(), core::SimpleBaseString_O::make( get<1>( result ))) );
   }
 
   sp_sym = ForeignData_O::create( p_sym );

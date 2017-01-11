@@ -42,7 +42,7 @@ inline claspCharacter unbox_character(Character_sp c) {
   return c.unsafe_character();
 };
 
-SimpleBaseCharString_sp cl__char_name(Character_sp och);
+SimpleBaseString_sp cl__char_name(Character_sp och);
 
 int clasp_string_case(String_sp s);
 Fixnum clasp_digitp(claspCharacter ch, int basis);

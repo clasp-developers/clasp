@@ -86,12 +86,12 @@ CL_DECLARE();
 CL_DOCSTRING("testVal");
 CL_DEFUN T_sp core__test_val(T_sp v) {
   if (v.fixnump()) { // Fixnum_sp fn = v.asOrNull<Fixnum_O>() ) {
-    return SimpleBaseCharString_O::make("val is fixnum");
+    return SimpleBaseString_O::make("val is fixnum");
   } else if (Symbol_sp sym = v.asOrNull<Symbol_O>()) {
     (void)sym;
-    return SimpleBaseCharString_O::make("arg is symbol");
+    return SimpleBaseString_O::make("arg is symbol");
   }
-  return SimpleBaseCharString_O::make("arg didn't match");
+  return SimpleBaseString_O::make("arg didn't match");
 };
 
   SYMBOL_EXPORT_SC_(CorePkg, isString);

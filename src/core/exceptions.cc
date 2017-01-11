@@ -582,7 +582,7 @@ void af_wrongTypeKeyArg(const string &sourceFile, int lineno,
   eval::funcall(_sym_signalSimpleError,
                 cl::_sym_typeError,           //arg0
                 _Nil<T_O>(),                  // arg1
-                SimpleBaseCharString_O::make(message.str()), // arg2
+                SimpleBaseString_O::make(message.str()), // arg2
                 Cons_O::createList(function, key, value, type),
                 kw::_sym_expectedType, type,
                 kw::_sym_datum, value);
@@ -600,7 +600,7 @@ void af_wrongTypeOnlyArg(const string &sourceFile, int lineno, Symbol_sp functio
     eval::funcall(_sym_signalSimpleError,
                   cl::_sym_typeError,           //arg0
                   _Nil<T_O>(),                  // arg1
-                  SimpleBaseCharString_O::make(message.str()), // arg2
+                  SimpleBaseString_O::make(message.str()), // arg2
                   Cons_O::createList(value, type),
                   kw::_sym_expectedType, type,
                   kw::_sym_datum, value);
@@ -611,7 +611,7 @@ void af_wrongTypeOnlyArg(const string &sourceFile, int lineno, Symbol_sp functio
     eval::funcall(_sym_signalSimpleError,
                   cl::_sym_typeError,           //arg0
                   _Nil<T_O>(),                  // arg1
-                  SimpleBaseCharString_O::make(message.str()), // arg2
+                  SimpleBaseString_O::make(message.str()), // arg2
                   Cons_O::createList(function, value, type),
                   kw::_sym_expectedType, type,
                   kw::_sym_datum, value);
@@ -628,7 +628,7 @@ CL_DEFUN void core__function_wrong_type_argument(Symbol_sp function, T_sp value,
     eval::funcall(_sym_signalSimpleError,
                   cl::_sym_typeError,           //arg0
                   _Nil<T_O>(),                  // arg1
-                  SimpleBaseCharString_O::make(message.str()), // arg2
+                  SimpleBaseString_O::make(message.str()), // arg2
                   Cons_O::createList(value, type),
                   kw::_sym_expectedType, type,
                   kw::_sym_datum, value);
@@ -639,7 +639,7 @@ CL_DEFUN void core__function_wrong_type_argument(Symbol_sp function, T_sp value,
     eval::funcall(_sym_signalSimpleError,
                   cl::_sym_typeError,           //arg0
                   _Nil<T_O>(),                  // arg1
-                  SimpleBaseCharString_O::make(message.str()), // arg2
+                  SimpleBaseString_O::make(message.str()), // arg2
                   Cons_O::createList(function, value, type),
                   kw::_sym_expectedType, type,
                   kw::_sym_datum, value);
@@ -658,7 +658,7 @@ CL_DEFUN void core__wrong_type_argument(const string &sourceFile, int lineno, Sy
     eval::funcall(_sym_signalSimpleError,
                   cl::_sym_typeError,           //arg0
                   _Nil<T_O>(),                  // arg1
-                  SimpleBaseCharString_O::make(message.str()), // arg2
+                  SimpleBaseString_O::make(message.str()), // arg2
                   Cons_O::createList(value, type),
                   kw::_sym_expectedType, type,
                   kw::_sym_datum, value);
@@ -669,7 +669,7 @@ CL_DEFUN void core__wrong_type_argument(const string &sourceFile, int lineno, Sy
     eval::funcall(_sym_signalSimpleError,
                   cl::_sym_typeError,           //arg0
                   _Nil<T_O>(),                  // arg1
-                  SimpleBaseCharString_O::make(message.str()), // arg2
+                  SimpleBaseString_O::make(message.str()), // arg2
                   Cons_O::createList(function, value, type),
                   kw::_sym_expectedType, type,
                   kw::_sym_datum, value);
@@ -688,7 +688,7 @@ CL_DEFUN void core__wrong_type_nth_arg(const string &sourceFile, int lineno, Sym
     eval::funcall(_sym_signalSimpleError,
                   cl::_sym_typeError,           //arg0
                   _Nil<T_O>(),                  // arg1
-                  SimpleBaseCharString_O::make(message.str()), // arg2
+                  SimpleBaseString_O::make(message.str()), // arg2
                   Cons_O::createList(make_fixnum(narg), value, type),
                   kw::_sym_expectedType, type,
                   kw::_sym_datum, value);
@@ -700,7 +700,7 @@ CL_DEFUN void core__wrong_type_nth_arg(const string &sourceFile, int lineno, Sym
     eval::funcall(_sym_signalSimpleError,
                   cl::_sym_typeError,           //arg0
                   _Nil<T_O>(),                  // arg1
-                  SimpleBaseCharString_O::make(message.str()), // arg2
+                  SimpleBaseString_O::make(message.str()), // arg2
                   Cons_O::createList(function, make_fixnum(narg), value, type),
                   kw::_sym_expectedType, type,
                   kw::_sym_datum, value);
@@ -723,7 +723,7 @@ CL_DEFUN void core__wrong_index(const string &sourceFile, int lineno, Symbol_sp 
     T_sp limit = Integer_O::create((gc::Fixnum)(nonincl_limit - 1));
     T_sp type = Cons_O::createList(cl::_sym_Integer_O, make_fixnum(0), limit);
     const char *msg = (which < 0) ? message1 : message2;
-    SimpleBaseCharString_sp message = SimpleBaseCharString_O::make(msg);
+    SimpleBaseString_sp message = SimpleBaseString_O::make(msg);
     eval::funcall(_sym_signalSimpleError,
                   cl::_sym_typeError, //arg0
                   _Nil<T_O>(),        // arg1
@@ -743,7 +743,7 @@ CL_DEFUN void core__wrong_index(const string &sourceFile, int lineno, Symbol_sp 
     T_sp limit = Integer_O::create((gc::Fixnum)(nonincl_limit - 1));
     T_sp type = Cons_O::createList(cl::_sym_Integer_O, make_fixnum(0), limit);
     const char *msg = (which < 0) ? message1 : message2;
-    SimpleBaseCharString_sp message = SimpleBaseCharString_O::make(msg);
+    SimpleBaseString_sp message = SimpleBaseString_O::make(msg);
     eval::funcall(_sym_signalSimpleError,
                   cl::_sym_typeError, //arg0
                   _Nil<T_O>(),        // arg1
@@ -784,7 +784,7 @@ void assert_type_integer(int index, T_sp p) {
 }
 
 void FEerror(const string &fmt, int nargs, ...) {
-  SimpleBaseCharString_sp sfmt = SimpleBaseCharString_O::make(fmt);
+  SimpleBaseString_sp sfmt = SimpleBaseString_O::make(fmt);
   va_list args;
   va_start(args, nargs);
   ql::list l;
@@ -800,8 +800,8 @@ void FEerror(const string &fmt, int nargs, ...) {
 }
 
 void FElibc_error(const char *msg, int nargs, ...) {
-  T_sp error = SimpleBaseCharString_O::make(strerror(errno));
-  SimpleBaseCharString_sp smsg = SimpleBaseCharString_O::make(msg);
+  T_sp error = SimpleBaseString_O::make(strerror(errno));
+  SimpleBaseString_sp smsg = SimpleBaseString_O::make(msg);
   va_list args;
   va_start(args, nargs);
   List_sp l = clasp_grab_rest_args(args, nargs);
@@ -831,7 +831,7 @@ T_sp CEerror(T_sp c, const char *err, int narg, ...) {
   clasp_va_start(args, narg);
   T_sp result = eval::funcall(core::_sym_universalErrorHandler,
                               c,                  // correctable
-                              SimpleBaseCharString_O::make(err), // continue format string
+                              SimpleBaseString_O::make(err), // continue format string
                               clasp_grab_rest_args(args, narg));
   clasp_va_end(args);
   return result;
@@ -849,8 +849,8 @@ void CEpackage_error(const char *fmt,
     fmtargs = Cons_O::create(package);
   eval::funcall(core::_sym_signalSimpleError,
                 cl::_sym_package_error,
-                SimpleBaseCharString_O::make(continue_message),
-                SimpleBaseCharString_O::make(std::string(fmt)),
+                SimpleBaseString_O::make(continue_message),
+                SimpleBaseString_O::make(std::string(fmt)),
                 fmtargs,
                 kw::_sym_package,
                 package);
@@ -868,7 +868,7 @@ void FEpackage_error(const char *fmt,
   eval::funcall(core::_sym_signalSimpleError,
                 cl::_sym_package_error,
                 _Nil<T_O>(),
-                SimpleBaseCharString_O::make(std::string(fmt)),
+                SimpleBaseString_O::make(std::string(fmt)),
                 fmtargs,
                 kw::_sym_package,
                 package);

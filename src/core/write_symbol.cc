@@ -239,7 +239,7 @@ void clasp_write_symbol(Symbol_sp x, T_sp stream) {
         print_package = true;
     }
     if (print_package) {
-      T_sp name = SimpleBaseCharString_O::make(gc::As<Package_sp>(package)->packageName());
+      T_sp name = SimpleBaseString_O::make(gc::As<Package_sp>(package)->packageName());
       write_symbol_string(name, readtable->getReadTableCaseAsEnum(),
                           print_case, stream,
                           needs_to_be_escaped(name, readtable, print_case));

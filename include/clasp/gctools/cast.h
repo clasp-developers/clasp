@@ -18,6 +18,17 @@ namespace cast {
     };
 };
 
+// A few classes need to be forward declared for clasp_gc.cc
+
+namespace gctools {
+  template <class T>
+    class GCArray_moveable;
+  template <class T>
+    class GCVector_moveable;
+  template <int N, class U, class S>
+    class GCBitUnitArray_moveable;
+};
+
 namespace core {
   class T_O;
   class Sequence_V;

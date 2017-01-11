@@ -64,7 +64,7 @@ CL_DEFUN core::Cons_sp gctools__bootstrap_kind_symbols() {
   core::Cons_sp list(_Nil<core::Cons_O>());
   for (int i(gctools__max_bootstrap_kinds() - 1); i > 0; --i) {
     string name = global_HardcodedKinds[i];
-    list = core::Cons_O::create(core::SimpleBaseCharString_O::make(name), list);
+    list = core::Cons_O::create(core::SimpleBaseString_O::make(name), list);
   }
   return list;
 }
@@ -180,9 +180,9 @@ CL_DEFUN core::T_mv core__hardwired_kinds() {
   std::vector<Immediate_info> immediates = get_immediate_info();
   core::List_sp result = _Nil<core::T_O>();
   for ( int i=0; i<immediates.size(); ++i ) {
-    result = core::Cons_O::create(core::Cons_O::create(core::SimpleBaseCharString_O::make(immediates[i]._name), core::clasp_make_fixnum(immediates[i]._kind)),result);
+    result = core::Cons_O::create(core::Cons_O::create(core::SimpleBaseString_O::make(immediates[i]._name), core::clasp_make_fixnum(immediates[i]._kind)),result);
   }
-  core::List_sp ignoreClasses = _Nil<core::T_O>(); // core::Cons_O::createList(SimpleBaseCharString_O::make("core__Cons_O") <-- future when CONS are in their own pool
+  core::List_sp ignoreClasses = _Nil<core::T_O>(); // core::Cons_O::createList(SimpleBaseString_O::make("core__Cons_O") <-- future when CONS are in their own pool
   return Values(result, ignoreClasses, core::clasp_make_fixnum(kind_first_general), core::clasp_make_fixnum(kind_first_alien), core::clasp_make_fixnum(kind_last_alien), core::clasp_make_fixnum(kind_first_instance));
 }
 

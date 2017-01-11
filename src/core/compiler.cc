@@ -297,25 +297,25 @@ CL_LAMBDA(object &optional is-function);
 CL_DECLARE();
 CL_DOCSTRING("mangleName");
 CL_DEFUN T_mv core__mangle_name(Symbol_sp sym, bool is_function) {
-  SimpleBaseCharString_sp name;
+  SimpleBaseString_sp name;
   if (!is_function) {
     if (sym.nilp())
-      name = SimpleBaseCharString_O::make("CLASP_NIL");
+      name = SimpleBaseString_O::make("CLASP_NIL");
     else if (sym == _lisp->_true())
-      name = SimpleBaseCharString_O::make("CLASP_T");
+      name = SimpleBaseString_O::make("CLASP_T");
     else {
       stringstream ss;
       ss << "SYM(" << sym->symbolName()->get() << ")";
-      name = SimpleBaseCharString_O::make(ss.str());
+      name = SimpleBaseString_O::make(ss.str());
     }
     return Values(_Nil<T_O>(), name, make_fixnum(0), make_fixnum(CALL_ARGUMENTS_LIMIT));
   }
   Function_sp fsym = coerce::functionDesignator(sym);
   if ( BuiltinClosure_sp  bcc = fsym.asOrNull<BuiltinClosure_O>()) {
     (void)bcc; // suppress warning
-    return Values(_lisp->_true(), SimpleBaseCharString_O::make("Provide-c-func-name"), make_fixnum(0), make_fixnum(CALL_ARGUMENTS_LIMIT));
+    return Values(_lisp->_true(), SimpleBaseString_O::make("Provide-c-func-name"), make_fixnum(0), make_fixnum(CALL_ARGUMENTS_LIMIT));
   }
-  return Values(_Nil<T_O>(), SimpleBaseCharString_O::make("Provide-func-name"), make_fixnum(0), make_fixnum(CALL_ARGUMENTS_LIMIT));
+  return Values(_Nil<T_O>(), SimpleBaseString_O::make("Provide-func-name"), make_fixnum(0), make_fixnum(CALL_ARGUMENTS_LIMIT));
 }
 
 CL_LAMBDA();
@@ -326,7 +326,7 @@ CL_DEFUN T_sp core__startup_image_pathname() {
   ss << "build:";
   ss << VARIANT_NAME;
   ss << "/image.fasl";
-  String_sp spath = SimpleBaseCharString_O::make(ss.str());
+  String_sp spath = SimpleBaseString_O::make(ss.str());
   Pathname_sp pn = cl__pathname(spath);
   return pn;
 };
@@ -350,16 +350,16 @@ CL_DEFUN T_mv core__load_bundle(T_sp pathDesig, T_sp verbose, T_sp print, T_sp e
   Pathname_sp path = cl__pathname(pathDesig);
   if (cl__probe_file(path).notnilp())
     goto LOAD;
-  path->_Type = SimpleBaseCharString_O::make("bundle");
+  path->_Type = SimpleBaseString_O::make("bundle");
   if (cl__probe_file(path).notnilp())
     goto LOAD;
-  path->_Type = SimpleBaseCharString_O::make("fasl");
+  path->_Type = SimpleBaseString_O::make("fasl");
   if (cl__probe_file(path).notnilp())
     goto LOAD;
-  path->_Type = SimpleBaseCharString_O::make("dylib");
+  path->_Type = SimpleBaseString_O::make("dylib");
   if (cl__probe_file(path).notnilp())
     goto LOAD;
-  path->_Type = SimpleBaseCharString_O::make("so");
+  path->_Type = SimpleBaseString_O::make("so");
   if (cl__probe_file(path).notnilp())
     goto LOAD;
   SIMPLE_ERROR(BF("Could not find bundle %s") % _rep_(pathDesig));
@@ -388,7 +388,7 @@ LOAD:
   if (handle == NULL) {
     string error = dlerror();
     SIMPLE_ERROR(BF("Error in dlopen: %s") % error);
-    //    return (Values(_Nil<T_O>(), SimpleBaseCharString_O::make(error)));
+    //    return (Values(_Nil<T_O>(), SimpleBaseString_O::make(error)));
   }
   _lisp->openDynamicLibraryHandles()[name] = handle;
   if (startup_functions_are_waiting()) {
@@ -419,7 +419,7 @@ CL_DEFUN T_mv core__dlload(T_sp pathDesig) {
   void *handle = dlopen(ts.c_str(), mode);
   if (handle == NULL) {
     string error = dlerror();
-    return (Values(_Nil<T_O>(), SimpleBaseCharString_O::make(error)));
+    return (Values(_Nil<T_O>(), SimpleBaseString_O::make(error)));
   }
   string stem = path->stem();
   size_t dsp = 0;
@@ -508,7 +508,7 @@ CL_DEFUN T_mv core__dlopen(T_sp pathDesig) {
   void * handle = std::get<0>( result );
 
   if( handle == nullptr ) {
-    return (Values(_Nil<T_O>(), SimpleBaseCharString_O::make( get<1>( result ))));
+    return (Values(_Nil<T_O>(), SimpleBaseString_O::make( get<1>( result ))));
   }
   return (Values(Pointer_O::create(handle), _Nil<T_O>()));
 }
@@ -568,7 +568,7 @@ CL_DEFUN T_sp core__dlsym(T_sp ohandle, String_sp name) {
   auto result = do_dlsym(handle, ts.c_str());
   void * p_sym = std::get<0>( result );
   if( p_sym == nullptr ) {
-    return ( Values(_Nil<T_O>(), SimpleBaseCharString_O::make( get<1>( result ))) );
+    return ( Values(_Nil<T_O>(), SimpleBaseString_O::make( get<1>( result ))) );
   }
   return ( Values(Pointer_O::create( p_sym ), _Nil<T_O>()) );
 }
@@ -588,9 +588,9 @@ CL_DEFUN T_mv core__dladdr(Integer_sp addr) {
   if (!ret) {
     return Values(_Nil<T_O>());
   } else {
-    return Values(SimpleBaseCharString_O::make(info.dli_fname),
+    return Values(SimpleBaseString_O::make(info.dli_fname),
                   Pointer_O::create(info.dli_fbase),
-                  SimpleBaseCharString_O::make(info.dli_sname),
+                  SimpleBaseString_O::make(info.dli_sname),
                   Pointer_O::create(info.dli_saddr));
   }
 }
@@ -827,7 +827,7 @@ CL_DEFUN T_mv core__operations_per_second(int op, T_sp arg) {
   default:
     return Values(_Nil<T_O>());
   }
-  return Values(DoubleFloat_O::create(((double)times) / timer.getAccumulatedTime()), SimpleBaseCharString_O::make(name));
+  return Values(DoubleFloat_O::create(((double)times) / timer.getAccumulatedTime()), SimpleBaseString_O::make(name));
 }
 #endif
 #if 0

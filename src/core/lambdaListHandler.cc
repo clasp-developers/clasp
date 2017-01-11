@@ -460,11 +460,11 @@ List_sp LambdaListHandler_O::process_macro_lambda_list(List_sp lambda_list) {
     }
   }
   if (whole_symbol.nilp())
-    whole_symbol = cl__gensym(SimpleBaseCharString_O::make("whole"));
+    whole_symbol = cl__gensym(SimpleBaseString_O::make("whole"));
   if (environment_symbol.nilp())
-    environment_symbol = cl__gensym(SimpleBaseCharString_O::make("environment"));
+    environment_symbol = cl__gensym(SimpleBaseString_O::make("environment"));
 
-  Symbol_sp name_symbol = cl__gensym(SimpleBaseCharString_O::make("macro-name"));
+  Symbol_sp name_symbol = cl__gensym(SimpleBaseString_O::make("macro-name"));
   //	SourceCodeList_sp new_name_ll = SourceCodeCons_O::createWithDuplicateSourceCodeInfo(name_symbol,new_lambda_list,lambda_list,_lisp);
   ql::list sclist; // (af_lineNumber(lambda_list),af_column(lambda_list),core__source_file_info(lambda_list));
   sclist << whole_symbol << environment_symbol << Cons_O::create(name_symbol, new_lambda_list);
@@ -1124,7 +1124,7 @@ LambdaListHandler_sp LambdaListHandler_O::create(List_sp lambda_list, List_sp de
   return ollh;
 }
 
-void LambdaListHandler_O::setComment(const string &s) { this->_Comment = SimpleBaseCharString_O::make(s); };
+void LambdaListHandler_O::setComment(const string &s) { this->_Comment = SimpleBaseString_O::make(s); };
 string LambdaListHandler_O::getComment() const { return this->_Comment->get_std_string(); };
 
 
@@ -1145,7 +1145,7 @@ void LambdaListHandler_O::create_required_arguments(int num, const std::set<int>
   _OF();
   TargetClassifier classifier(skipIndices);
   for (int i = 0, iEnd(num - skipIndices.size()); i < iEnd; ++i) {
-    Symbol_sp name = cl__gensym(SimpleBaseCharString_O::make("arg"));
+    Symbol_sp name = cl__gensym(SimpleBaseString_O::make("arg"));
     RequiredArgument req(name, i);
     this->_RequiredArguments.push_back(req);
     classifier.classifyTarget(req);

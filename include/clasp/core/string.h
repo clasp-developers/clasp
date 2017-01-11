@@ -20,7 +20,7 @@ int template_string_case(const StringType& s) {
 }
 
 inline int clasp_string_case(SimpleString_sp s) {
-  if (SimpleBaseCharString_sp sb = s.asOrNull<SimpleBaseCharString_O>())
+  if (SimpleBaseString_sp sb = s.asOrNull<SimpleBaseString_O>())
     return template_string_case(*sb);
   return template_string_case(*gc::As_unsafe<SimpleCharacterString_sp>(s));
 }

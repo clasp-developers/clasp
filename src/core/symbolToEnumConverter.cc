@@ -66,7 +66,7 @@ SymbolToEnumConverter_sp SymbolToEnumConverter_O::create(const string &whatDoesE
 }
 
 void SymbolToEnumConverter_O::setWhatTheEnumsRepresent(const string &what) {
-  this->_WhatTheEnumsRepresent = SimpleBaseCharString_O::make(what);
+  this->_WhatTheEnumsRepresent = SimpleBaseString_O::make(what);
 }
 
 Symbol_sp SymbolToEnumConverter_O::addSymbolEnumPair(Symbol_sp asym, Symbol_sp const &archiveSym, int enumIndex) {

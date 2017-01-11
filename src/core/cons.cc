@@ -186,7 +186,7 @@ Cons_sp Cons_O::createList(T_sp o1, T_sp o2, T_sp o3, T_sp o4, T_sp o5, T_sp o6,
 	Cons_sp curArg = _Nil<T_O>();
 	for ( int i=0;i!=argc; i++ )
 	{
-          Cons_sp carg = Cons_O::create(SimpleBaseCharString_O::make(argv[i]),_Nil<T_O>());
+          Cons_sp carg = Cons_O::create(SimpleBaseString_O::make(argv[i]),_Nil<T_O>());
 	    if ( curArg.nilp() )
 	    {
 		args = carg;
@@ -215,7 +215,7 @@ T_sp stringToObject(Lisp_sp e, const string &s) {
   }
   if (s == "false" || s == "False")
     return ((_Nil<T_O>()));
-  return (SimpleBaseCharString_O::make(s));
+  return (SimpleBaseString_O::make(s));
 }
 
 #if 1

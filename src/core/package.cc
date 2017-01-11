@@ -204,7 +204,7 @@ CL_DEFUN T_sp cl__delete_package(T_sp pobj)
   pkg->_ExternalSymbols->clrhash();
   pkg->_Shadowing->clrhash();
   string package_name = pkg->packageName();
-  pkg->_Name = SimpleBaseCharString_O::make("");
+  pkg->_Name = SimpleBaseString_O::make("");
   _lisp->remove_package(package_name);
   return _lisp->_true();
 }
@@ -314,7 +314,7 @@ CL_DEFUN T_sp cl__package_name(T_sp pkgDesig) {
     return _Nil<T_O>();
   }
   // TODO support package names with wide character strings
-  return SimpleBaseCharString_O::make(name);
+  return SimpleBaseString_O::make(name);
 };
 
 SYMBOL_EXPORT_SC_(ClPkg, package_use_list);
@@ -355,7 +355,7 @@ string Package_O::packageName() const {
 string Package_O::getName() const
 { return this->packageName(); };
 
-void Package_O::setName(const string &n) { this->_Name = SimpleBaseCharString_O::make(n); };
+void Package_O::setName(const string &n) { this->_Name = SimpleBaseString_O::make(n); };
 
 
 CL_LISPIFY_NAME("core:PackageHashTables");
@@ -446,7 +446,7 @@ Symbol_mv Package_O::findSymbol_SimpleString(SimpleString_sp nameKey) const {
 }
 
 Symbol_mv Package_O::findSymbol(const string &name) const {
-  SimpleBaseCharString_sp sname = SimpleBaseCharString_O::make(name);
+  SimpleBaseString_sp sname = SimpleBaseString_O::make(name);
   return this->findSymbol_SimpleString(sname);
 }
 
@@ -731,7 +731,7 @@ void Package_O::add_symbol_to_package(SimpleString_sp nameKey, Symbol_sp sym, bo
 
 
 void Package_O::bootstrap_add_symbol_to_package(const char *symName, Symbol_sp sym, bool exportp, bool shadowp) {
-  SimpleBaseCharString_sp nameKey = SimpleBaseCharString_O::make(std::string(symName));
+  SimpleBaseString_sp nameKey = SimpleBaseString_O::make(std::string(symName));
   this->add_symbol_to_package(nameKey,sym,exportp);
   if ( shadowp ) {
     this->_Shadowing->setf_gethash(sym,_lisp->_true());

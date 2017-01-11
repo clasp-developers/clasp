@@ -274,7 +274,7 @@ class Array_O : public General_O {
 
 namespace core {
   class MDArray_O : public Array_O {
-    LISP_CLASS(core, ClPkg, MDArray_O, "mdarray",Array_O);
+    LISP_CLASS(core, CorePkg, MDArray_O, "mdarray",Array_O);
   public:
 //! same offset as _fillpointerorlength in nonsimplevector
     size_t      _FillPointerOrLengthOrDummy;
@@ -344,7 +344,7 @@ namespace core {
 //
 namespace core {
   class MDArrayNs_O : public MDArray_O {
-    LISP_CLASS(core, ClPkg, MDArrayNs_O, "mdarrayns",MDArray_O);
+    LISP_CLASS(core, CorePkg, MDArrayNs_O, "MDArrayNs",MDArray_O);
   public:
   MDArrayNs_O(size_t rank,
               List_sp dimensions,
@@ -362,10 +362,10 @@ namespace core {
 };
 
 namespace core {
-  class SpecializedMDArrayNs_O : public MDArrayNs_O {
-    LISP_CLASS(core, ClPkg, SpecializedMDArrayNs_O, "specialized-mdarrayns",MDArrayNs_O);
+  class AbstractMDArrayNs_O : public MDArrayNs_O {
+    LISP_CLASS(core, CorePkg, AbstractMDArrayNs_O, "AbstractMDArrayNs",MDArrayNs_O);
   public:
-  SpecializedMDArrayNs_O(size_t rank,
+  AbstractMDArrayNs_O(size_t rank,
                          List_sp dimensions,
                          T_sp fillPointer,
                          T_sp displacedTo,
@@ -385,7 +385,7 @@ namespace core {
 namespace core {
 
   class BaseSimpleVector_O : public Array_O {
-    LISP_CLASS(core, ClPkg, BaseSimpleVector_O, "base-simple-vector",Array_O);
+    LISP_CLASS(core, CorePkg, BaseSimpleVector_O, "BaseSimpleVector",Array_O);
   public:
     virtual Array_sp data() { return this->asSmartPtr(); };
     virtual size_t arrayTotalSize() const { return this->length(); };
@@ -407,9 +407,9 @@ namespace core {
 };
 
 namespace core {
-  FORWARD(SpecializedSimpleVector);
-  class SpecializedSimpleVector_O : public BaseSimpleVector_O {
-    LISP_CLASS(core, ClPkg, SpecializedSimpleVector_O, "specialized-simple-vector",BaseSimpleVector_O);
+  FORWARD(AbstractSimpleVector);
+  class AbstractSimpleVector_O : public BaseSimpleVector_O {
+    LISP_CLASS(core, CorePkg, AbstractSimpleVector_O, "AbstractSimpleVector",BaseSimpleVector_O);
   public:
      // ranged_sxhash is only appropriate for string and bit-vector
      virtual void ranged_sxhash(HashGenerator& hg, size_t start, size_t end) const final
@@ -498,20 +498,20 @@ namespace core {
   };
 };
 
-namespace core { class SimpleBaseCharString_O; };
+namespace core { class SimpleBaseString_O; };
 template <>
-struct gctools::GCInfo<core::SimpleBaseCharString_O> {
+struct gctools::GCInfo<core::SimpleBaseString_O> {
   static bool constexpr NeedsInitialization = false;
   static bool constexpr NeedsFinalization = false;
   static GCInfo_policy constexpr Policy = atomic;
 };
 namespace core {
-  class SimpleBaseCharString_O;
-  typedef abstract_SimpleVector<SimpleBaseCharString_O,claspChar,SimpleString_O> specialized_SimpleBaseCharString;
-  class SimpleBaseCharString_O : public specialized_SimpleBaseCharString {
-    LISP_CLASS(core, ClPkg, SimpleBaseCharString_O, "SimpleBaseCharString",SimpleString_O);
+  class SimpleBaseString_O;
+  typedef abstract_SimpleVector<SimpleBaseString_O,claspChar,SimpleString_O> specialized_SimpleBaseString;
+  class SimpleBaseString_O : public specialized_SimpleBaseString {
+    LISP_CLASS(core, ClPkg, SimpleBaseString_O, "simple-base-string",SimpleString_O);
   public:
-    typedef specialized_SimpleBaseCharString TemplatedBase;
+    typedef specialized_SimpleBaseString TemplatedBase;
     typedef typename TemplatedBase::leaf_type leaf_type;
     typedef typename TemplatedBase::value_type value_type;
     typedef typename TemplatedBase::vector_type vector_type;
@@ -524,18 +524,18 @@ namespace core {
     static T_sp to_object(const value_type& v) { return clasp_make_character(v); };
   public:
     // Always leave space for \0 at end
-  SimpleBaseCharString_O(size_t length, value_type initialElement=value_type(), bool initialElementSupplied=false, size_t initialContentsSize=0, const value_type* initialContents=NULL) : TemplatedBase(length,initialElement,initialElementSupplied,initialContentsSize,initialContents) {};
-    static SimpleBaseCharString_sp make(size_t length, value_type initialElement='\0', bool initialElementSupplied=false, size_t initialContentsSize=0, const value_type* initialContents=NULL) {
-      // For C/C++ interop make SimpleBaseCharString 1 character longer and append a \0
-      auto bs = gctools::GC<SimpleBaseCharString_O>::allocate_container(gctools::GCStamp<SimpleBaseCharString_O>::TheStamp,
+  SimpleBaseString_O(size_t length, value_type initialElement=value_type(), bool initialElementSupplied=false, size_t initialContentsSize=0, const value_type* initialContents=NULL) : TemplatedBase(length,initialElement,initialElementSupplied,initialContentsSize,initialContents) {};
+    static SimpleBaseString_sp make(size_t length, value_type initialElement='\0', bool initialElementSupplied=false, size_t initialContentsSize=0, const value_type* initialContents=NULL) {
+      // For C/C++ interop make SimpleBaseString 1 character longer and append a \0
+      auto bs = gctools::GC<SimpleBaseString_O>::allocate_container(gctools::GCStamp<SimpleBaseString_O>::TheStamp,
                                                                         length+1,length,initialElement,initialElementSupplied,initialContentsSize,initialContents);
       (*bs)[length] = '\0';
       return bs;
     }
-    static SimpleBaseCharString_sp make(const std::string& str) {
-      return SimpleBaseCharString_O::make(str.size(),'\0',true,str.size(),(const claspChar*)str.c_str());
+    static SimpleBaseString_sp make(const std::string& str) {
+      return SimpleBaseString_O::make(str.size(),'\0',true,str.size(),(const claspChar*)str.c_str());
     }
-  //SimpleBaseCharString_O(size_t total_size) : Base(), _Data('\0',total_size+1) {};
+  //SimpleBaseString_O(size_t total_size) : Base(), _Data('\0',total_size+1) {};
   public:
     virtual T_sp type_as_symbol() const final { return cl::_sym_simple_base_string; };
     virtual T_sp arrayElementType() const final { return cl::_sym_base_char; };
@@ -571,7 +571,7 @@ namespace core {
   class SimpleCharacterString_O;
   typedef abstract_SimpleVector<SimpleCharacterString_O,claspCharacter,SimpleString_O> specialized_SimpleCharacterString;
   class SimpleCharacterString_O : public specialized_SimpleCharacterString {
-    LISP_CLASS(core, ClPkg, SimpleCharacterString_O, "simple-character-string",SimpleString_O);
+    LISP_CLASS(core, CorePkg, SimpleCharacterString_O, "SimpleCharacterString",SimpleString_O);
   public:
     typedef specialized_SimpleCharacterString TemplatedBase;
     typedef typename TemplatedBase::leaf_type leaf_type;
@@ -639,9 +639,9 @@ struct gctools::GCInfo<core::SimpleVector_O> {
 };
 namespace core {
   class SimpleVector_O;
-  typedef abstract_SimpleVector<SimpleVector_O,T_sp,SpecializedSimpleVector_O> specialized_SimpleVector;
+  typedef abstract_SimpleVector<SimpleVector_O,T_sp,AbstractSimpleVector_O> specialized_SimpleVector;
   class SimpleVector_O : public specialized_SimpleVector {
-    LISP_CLASS(core, ClPkg, SimpleVector_O, "simple-vector",SpecializedSimpleVector_O);
+    LISP_CLASS(core, ClPkg, SimpleVector_O, "simple-vector",AbstractSimpleVector_O);
   public:
     typedef specialized_SimpleVector TemplatedBase;
     typedef typename TemplatedBase::leaf_type leaf_type;
@@ -774,9 +774,9 @@ struct gctools::GCInfo<core::SimpleDoubleVector_O> {
 };
 namespace core {
   class SimpleDoubleVector_O;
-  typedef abstract_SimpleVector<SimpleDoubleVector_O,double,SpecializedSimpleVector_O> specialized_SimpleDoubleVector;
+  typedef abstract_SimpleVector<SimpleDoubleVector_O,double,AbstractSimpleVector_O> specialized_SimpleDoubleVector;
   class SimpleDoubleVector_O : public specialized_SimpleDoubleVector {
-    LISP_CLASS(core, CorePkg, SimpleDoubleVector_O, "SimpleDoubleVector",SpecializedSimpleVector_O);
+    LISP_CLASS(core, CorePkg, SimpleDoubleVector_O, "SimpleDoubleVector",AbstractSimpleVector_O);
   public:
     typedef specialized_SimpleDoubleVector TemplatedBase;
     typedef typename TemplatedBase::leaf_type leaf_type;
@@ -945,7 +945,7 @@ namespace core {
 
 namespace core {
   class VectorNs_O : public MDArray_O {
-    LISP_CLASS(core, ClPkg, VectorNs_O, "non-simple-vector",MDArray_O);
+    LISP_CLASS(core, CorePkg, VectorNs_O, "VectorNs",MDArray_O);
   public:
   VectorNs_O(size_t rank,
              List_sp dimensions,
@@ -977,7 +977,7 @@ namespace core {
 
 namespace core {
   class StrNs_O : public VectorNs_O {
-    LISP_CLASS(core, ClPkg, StrNs_O, "StrNs",VectorNs_O);
+    LISP_CLASS(core, CorePkg, StrNs_O, "StrNs",VectorNs_O);
   public:
   StrNs_O(size_t rank,
           List_sp dimensions,
@@ -998,11 +998,11 @@ namespace core {
 };
 
 namespace core {
-  class Str8Ns_O : public abstract_DisplacementHandlingVector<Str8Ns_O,SimpleBaseCharString_O,StrNs_O> {
-    LISP_CLASS(core, ClPkg, Str8Ns_O, "base-string",StrNs_O);
+  class Str8Ns_O : public abstract_DisplacementHandlingVector<Str8Ns_O,SimpleBaseString_O,StrNs_O> {
+    LISP_CLASS(core, CorePkg, Str8Ns_O, "Str8Ns",StrNs_O);
   public:
     // The types that define what this class does
-    typedef abstract_DisplacementHandlingVector<Str8Ns_O,SimpleBaseCharString_O,StrNs_O> TemplatedBase;
+    typedef abstract_DisplacementHandlingVector<Str8Ns_O,SimpleBaseString_O,StrNs_O> TemplatedBase;
     typedef typename TemplatedBase::value_type value_type;
     typedef typename TemplatedBase::simple_type simple_type;
     typedef value_type* iterator;
@@ -1016,13 +1016,13 @@ namespace core {
     static Str8Ns_sp make(size_t dimension, claspChar initElement='\0', bool initialElementSuppliedP = false, T_sp fillPointer=_Nil<T_O>(), T_sp displacedTo=_Nil<T_O>(), size_t displacedIndexOffset=0 ) {
       GC_ALLOCATE_VARIADIC(Str8Ns_O,s,dimension,fillPointer,displacedTo,displacedIndexOffset);
       if (LIKELY(displacedTo.nilp())) {
-        SimpleBaseCharString_sp sb = SimpleBaseCharString_O::make(dimension,initElement,initialElementSuppliedP);
+        SimpleBaseString_sp sb = SimpleBaseString_O::make(dimension,initElement,initialElementSuppliedP);
         s->set_data(sb);
       }
       return s;
     }
     static Str8Ns_sp make(const string& nm) {
-      auto ss = SimpleBaseCharString_O::make(nm);
+      auto ss = SimpleBaseString_O::make(nm);
       auto result = Str8Ns_O::make(nm.size());
       result->set_data(ss);
       return result;
@@ -1061,7 +1061,7 @@ namespace core {
 
 namespace core {
   class StrWNs_O : public abstract_DisplacementHandlingVector<StrWNs_O,SimpleCharacterString_O,StrNs_O> {
-    LISP_CLASS(core, ClPkg, StrWNs_O, "wide-string",StrNs_O);
+    LISP_CLASS(core, CorePkg, StrWNs_O, "StrWNs",StrNs_O);
   public:
     // The types that define what this class does
     typedef abstract_DisplacementHandlingVector<StrWNs_O,SimpleCharacterString_O,StrNs_O> TemplatedBase;
@@ -1117,10 +1117,10 @@ namespace core {
 
 
 namespace core {
-  class SpecializedVectorNs_O : public VectorNs_O {
-    LISP_CLASS(core, ClPkg, SpecializedVectorNs_O, "specialized-non-simple-vector",VectorNs_O);
+  class AbstractVectorNs_O : public VectorNs_O {
+    LISP_CLASS(core, CorePkg, AbstractVectorNs_O, "AbstractVectorNs",VectorNs_O);
   public:
-  SpecializedVectorNs_O(size_t rank,
+  AbstractVectorNs_O(size_t rank,
                         List_sp dimensions,
                         T_sp fillPointer,
                         T_sp displacedTo,
@@ -1133,10 +1133,10 @@ namespace core {
 }
 
 namespace core {
-  class VectorTNs_O : public abstract_DisplacementHandlingVector<VectorTNs_O,SimpleVector_O,SpecializedVectorNs_O> {
-    LISP_CLASS(core, ClPkg, VectorTNs_O, "non-simple-vector-t",SpecializedVectorNs_O);
+  class VectorTNs_O : public abstract_DisplacementHandlingVector<VectorTNs_O,SimpleVector_O,AbstractVectorNs_O> {
+    LISP_CLASS(core, CorePkg, VectorTNs_O, "VectorTNs",AbstractVectorNs_O);
   public:
-    typedef abstract_DisplacementHandlingVector<VectorTNs_O,SimpleVector_O,SpecializedVectorNs_O> TemplatedBase;
+    typedef abstract_DisplacementHandlingVector<VectorTNs_O,SimpleVector_O,AbstractVectorNs_O> TemplatedBase;
     typedef typename TemplatedBase::value_type value_type;
     typedef typename TemplatedBase::simple_type simple_type;
   public:
@@ -1154,7 +1154,7 @@ namespace core {
 namespace core {
   // I can't use the abstract_DisplacementHandlingVector here because of bitwise access
   class BitVectorNs_O : public VectorNs_O {
-    LISP_CLASS(core, ClPkg, BitVectorNs_O, "bit-vector",VectorNs_O);
+    LISP_CLASS(core, CorePkg, BitVectorNs_O, "BitVectorNs",VectorNs_O);
   public:
     typedef SimpleBitVector_O simple_type;
   BitVectorNs_O(size_t dimension,
@@ -1300,10 +1300,10 @@ namespace core {
 }
 
 namespace core {
-  class ArrayTNs_O : public abstract_DisplacementHandlingArray<ArrayTNs_O,SimpleVector_O,SpecializedMDArrayNs_O>  {
-    LISP_CLASS(core, ClPkg, ArrayTNs_O, "arraytns",SpecializedMDArrayNs_O);
+  class ArrayTNs_O : public abstract_DisplacementHandlingArray<ArrayTNs_O,SimpleVector_O,AbstractMDArrayNs_O>  {
+    LISP_CLASS(core, CorePkg, ArrayTNs_O, "ArrayTNs",AbstractMDArrayNs_O);
   public:
-    typedef abstract_DisplacementHandlingArray<ArrayTNs_O,SimpleVector_O,SpecializedMDArrayNs_O> TemplatedBase;
+    typedef abstract_DisplacementHandlingArray<ArrayTNs_O,SimpleVector_O,AbstractMDArrayNs_O> TemplatedBase;
   ArrayTNs_O(size_t rank,
              List_sp dimensions,
              T_sp fillPointer,

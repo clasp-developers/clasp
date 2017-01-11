@@ -60,7 +60,7 @@ namespace core {
 
 
 void CandoException_O::setMessage(const string &msg) {
-  this->_message = SimpleBaseCharString_O::make(msg);
+  this->_message = SimpleBaseString_O::make(msg);
 };
 
 string CandoException_O::message() const

@@ -557,7 +557,7 @@ parse_word(T_sp s, delim_fn delim, int flags, size_t start,
   case 0:
     if (flags & WORD_EMPTY_IS_NIL)
       return _Nil<T_O>();
-    return SimpleBaseCharString_O::make(""); // cl_core.null_string;
+    return SimpleBaseString_O::make(""); // cl_core.null_string;
   case 1:
       if (cl__char(s, j).unsafe_character() == '*')
       return kw::_sym_wild;
@@ -886,7 +886,7 @@ T_sp cl_logical_pathname(T_sp x) {
   x = cl__pathname(x);
   if (!core__logical_pathname_p(x)) {
     eval::funcall(cl::_sym_simpleTypeError,
-                  kw::_sym_formatControl, SimpleBaseCharString_O::make("~S cannot be coerced to a logical pathname."),
+                  kw::_sym_formatControl, SimpleBaseString_O::make("~S cannot be coerced to a logical pathname."),
                   kw::_sym_formatArguments, lisp_createList(x),
                   kw::_sym_expectedType, cl::_sym_LogicalPathname_O,
                   kw::_sym_datum, x);
@@ -1299,7 +1299,7 @@ CL_DEFUN T_mv cl__parse_namestring(T_sp thing, T_sp host, T_sp tdefaults, Fixnum
     start = make_fixnum(static_cast<uint>(ee));
     if (output.nilp() || ee != p.end) {
       if (junkAllowed) {
-        PARSE_ERROR(SimpleBaseCharString_O::make("Cannot parse the namestring ~S~%from ~S to ~S."),
+        PARSE_ERROR(SimpleBaseString_O::make("Cannot parse the namestring ~S~%from ~S to ~S."),
                     Cons_O::createList(thing, start, end));
       }
       goto OUTPUT;
@@ -1846,7 +1846,7 @@ copy_wildcards(T_sp *wilds_list, T_sp pattern) {
   }
   /* Only create a new string when needed */
   if (new_string) {
-    pattern = SimpleBaseCharString_O::make(token._Buffer->get_std_string());
+    pattern = SimpleBaseString_O::make(token._Buffer->get_std_string());
   }
   //	si_put_buffer_string(token);
   *wilds_list = wilds;

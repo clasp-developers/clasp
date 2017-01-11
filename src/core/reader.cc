@@ -266,7 +266,7 @@ T_sp Reader_O::primitive_read(bool eofErrorP, T_sp eofValue, bool recursiveP) {
         result = _Nil<T_O>();
         goto RETURN;
       }
-      T_sp str = SimpleBaseCharString_O::make(chars);
+      T_sp str = SimpleBaseString_O::make(chars);
       result = str;
       goto RETURN;
     }

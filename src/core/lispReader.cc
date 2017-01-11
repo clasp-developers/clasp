@@ -403,7 +403,7 @@ T_sp interpret_token_or_throw_reader_error(T_sp sin, const vector<trait_chr_type
   case tstart:
     {
       if (cl::_sym_STARread_suppressSTAR->symbolValue().isTrue()) return _Nil<T_O>();
-      SimpleString_sp sym_name = SimpleBaseCharString_O::make("");
+      SimpleString_sp sym_name = SimpleBaseString_O::make("");
       Symbol_sp sym = _lisp->getCurrentPackage()->intern(sym_name);
       return sym;
     }
@@ -474,7 +474,7 @@ T_sp interpret_token_or_throw_reader_error(T_sp sin, const vector<trait_chr_type
     if (cl::_sym_STARread_suppressSTAR->symbolValue().isTrue()) return _Nil<T_O>();
     // interpret :|| keyword
     LOG(BF("Token[:||] interpreted as keyword"));
-    SimpleBaseCharString_sp keyword_name = SimpleBaseCharString_O::make(""); // tokenStr(token, name_marker - token.data());
+    SimpleBaseString_sp keyword_name = SimpleBaseString_O::make(""); // tokenStr(token, name_marker - token.data());
     return _lisp->keywordPackage()->intern(keyword_name);
   } break;
   case tsyme:

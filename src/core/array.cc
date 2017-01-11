@@ -42,10 +42,10 @@ THE SOFTWARE.
 
 extern "C" {
 using namespace core;
-Character_sp SimpleBaseCharString_get(SimpleBaseCharString_sp array, Fixnum_sp idx) {
+Character_sp SimpleBaseString_get(SimpleBaseString_sp array, Fixnum_sp idx) {
   return clasp_make_character((*array)[idx.unsafe_fixnum()]);
 }
-void SimpleBaseCharString_set(SimpleBaseCharString_sp array, Fixnum_sp idx, Character_sp c) {
+void SimpleBaseString_set(SimpleBaseString_sp array, Fixnum_sp idx, Character_sp c) {
   (*array)[idx.unsafe_fixnum()] = c.unsafe_character();
 }
 };
@@ -109,7 +109,7 @@ namespace core {
 bool ranged_bit_vector_EQ_(const SimpleBitVector_O& bvx,const SimpleBitVector_O& bvy, size_t startx, size_t endx, size_t starty, size_t endy) {
   size_t lenx = endx - startx;
   size_t leny = endy - starty;
-  if (lenx==leny) return false;
+  if (lenx!=leny) return false;
   for (size_t ix(startx), iy(starty); ix<endx; ++ix, ++iy ) {
     if (bvx.testBit(ix) != bvy.testBit(iy)) return false;
   }
@@ -1166,8 +1166,8 @@ inline void setup_string_op_arguments(T_sp string1_desig, T_sp string2_desig,
 
 #define TEMPLATE_HALF_STRING_DISPATCHER(_this_,_string2_,_function_,istart1,iend1,istart2,iend2) \
   if (gc::IsA<SimpleString_sp>(_string2_)) {				\
-    if (gc::IsA<SimpleBaseCharString_sp>(_string2_)) { \
-      auto sbcs2 = gc::As_unsafe<SimpleBaseCharString_sp>(_string2_); \
+    if (gc::IsA<SimpleBaseString_sp>(_string2_)) { \
+      auto sbcs2 = gc::As_unsafe<SimpleBaseString_sp>(_string2_); \
       return _function_(*_this_,*sbcs2,istart1,iend1,istart2,iend2); \
     } else {							\
       auto scs2 = gc::As_unsafe<SimpleCharacterString_sp>(_string2_); \
@@ -1186,10 +1186,10 @@ inline void setup_string_op_arguments(T_sp string1_desig, T_sp string2_desig,
 #define TEMPLATE_STRING_DISPATCHER(_string1_,_string2_,_function_,istart1,iend1,istart2,iend2) \
 if (gc::IsA<SimpleString_sp>(_string1_) ) {			    \
   if (gc::IsA<SimpleString_sp>(_string2_)) {				\
-    if (gc::IsA<SimpleBaseCharString_sp>(_string1_)) { \
-      auto sbcs1 =  gc::As_unsafe<SimpleBaseCharString_sp>(_string1_); \
-      if (gc::IsA<SimpleBaseCharString_sp>(_string2_)) { \
-        auto sbcs2 = gc::As_unsafe<SimpleBaseCharString_sp>(_string2_); \
+    if (gc::IsA<SimpleBaseString_sp>(_string1_)) { \
+      auto sbcs1 =  gc::As_unsafe<SimpleBaseString_sp>(_string1_); \
+      if (gc::IsA<SimpleBaseString_sp>(_string2_)) { \
+        auto sbcs2 = gc::As_unsafe<SimpleBaseString_sp>(_string2_); \
         return _function_(*sbcs1,*sbcs2,istart1,iend1,istart2,iend2); \
       } else {							\
         auto scs2 = gc::As_unsafe<SimpleCharacterString_sp>(_string2_); \
@@ -1197,8 +1197,8 @@ if (gc::IsA<SimpleString_sp>(_string1_) ) {			    \
       } \
     } else { \
       auto scs1 = gc::As_unsafe<SimpleCharacterString_sp>(_string1_); \
-      if (gc::IsA<SimpleBaseCharString_sp>(_string2_)) { \
-        auto sbcs2 = gc::As_unsafe<SimpleBaseCharString_sp>(_string2_); \
+      if (gc::IsA<SimpleBaseString_sp>(_string2_)) { \
+        auto sbcs2 = gc::As_unsafe<SimpleBaseString_sp>(_string2_); \
         return _function_(*scs1,*sbcs2,istart1,iend1,istart2,iend2); \
       } else { \
         auto scs2 = gc::As_unsafe<SimpleCharacterString_sp>(_string2_); \
@@ -1206,8 +1206,8 @@ if (gc::IsA<SimpleString_sp>(_string1_) ) {			    \
       } \
     } \
   } else { \
-    if (gc::IsA<SimpleBaseCharString_sp>(_string1_)) { \
-      auto sbcs1 = gc::As_unsafe<SimpleBaseCharString_sp>(_string1_); \
+    if (gc::IsA<SimpleBaseString_sp>(_string1_)) { \
+      auto sbcs1 = gc::As_unsafe<SimpleBaseString_sp>(_string1_); \
       if (gc::IsA<Str8Ns_sp>(_string2_)) { \
         auto ns82 = gc::As_unsafe<Str8Ns_sp>(_string2_); \
         return _function_(*sbcs1,*ns82,istart1,iend1,istart2,iend2);	\
@@ -1231,8 +1231,8 @@ if (gc::IsA<SimpleString_sp>(_string1_) ) {			    \
     /* _string2_ is a SimpleString_sp */ \
     if (gc::IsA<Str8Ns_sp>(_string1_)) { \
       auto ns81 = gc::As_unsafe<Str8Ns_sp>(_string1_); \
-      if (gc::IsA<SimpleBaseCharString_sp>(_string2_)) { \
-        auto sbcs2 = gc::As_unsafe<SimpleBaseCharString_sp>(_string2_); \
+      if (gc::IsA<SimpleBaseString_sp>(_string2_)) { \
+        auto sbcs2 = gc::As_unsafe<SimpleBaseString_sp>(_string2_); \
         return _function_(*ns81,*sbcs2,istart1,iend1,istart2,iend2); \
       } else { \
         auto scs2 = gc::As_unsafe<SimpleCharacterString_sp>(_string2_); \
@@ -1240,8 +1240,8 @@ if (gc::IsA<SimpleString_sp>(_string1_) ) {			    \
       } \
     } else { \
       auto nsw1 = gc::As_unsafe<StrWNs_sp>(_string1_); \
-      if (gc::IsA<SimpleBaseCharString_sp>(_string2_)) { \
-        auto sbcs2 = gc::As_unsafe<SimpleBaseCharString_sp>(_string2_); \
+      if (gc::IsA<SimpleBaseString_sp>(_string2_)) { \
+        auto sbcs2 = gc::As_unsafe<SimpleBaseString_sp>(_string2_); \
         return _function_(*nsw1,*sbcs2,istart1,iend1,istart2,iend2); \
       } else { \
         auto scs2 = gc::As_unsafe<SimpleCharacterString_sp>(_string2_); \
@@ -1425,7 +1425,7 @@ CL_DEFUN T_sp cl__make_string(Fixnum_sp size, T_sp initial_element, T_sp element
     if (!clasp_base_char_p(initial_element)) {
       TYPE_ERROR(initial_element,cl::_sym_base_char);
     }
-    SimpleBaseCharString_sp s = SimpleBaseCharString_O::make(size.unsafe_fixnum(),initial_element.unsafe_character());
+    SimpleBaseString_sp s = SimpleBaseString_O::make(size.unsafe_fixnum(),initial_element.unsafe_character());
     return s;
   }
   SimpleCharacterString_sp s = SimpleCharacterString_O::make(size.unsafe_fixnum(),initial_element.unsafe_character());
@@ -1438,7 +1438,7 @@ CL_LAMBDA(str index);
 CL_DECLARE();
 CL_DOCSTRING("CLHS schar");
 CL_DEFUN Character_sp cl__schar(BaseSimpleVector_sp str, size_t idx) {
-  if (SimpleBaseCharString_sp sb = str.asOrNull<SimpleBaseCharString_O>()) {
+  if (SimpleBaseString_sp sb = str.asOrNull<SimpleBaseString_O>()) {
     return clasp_make_character((*sb)[idx]);
   } else if (SimpleCharacterString_sp sc = str.asOrNull<SimpleCharacterString_O>()) {
     return clasp_make_character((*sc)[idx]);
@@ -1451,7 +1451,7 @@ CL_LAMBDA(str idx);
 CL_DOCSTRING("Common lisp char");
 CL_DEFUN Character_sp cl__char(String_sp str, size_t idx) {
 /* Return the character at idx - ignore fill pointers */
-  if ( SimpleBaseCharString_sp sb = str.asOrNull<SimpleBaseCharString_O>() ) {
+  if ( SimpleBaseString_sp sb = str.asOrNull<SimpleBaseString_O>() ) {
     return clasp_make_character((*sb)[idx]);
   } else if (Str8Ns_sp s8 = str.asOrNull<Str8Ns_O>() ) {
     return clasp_make_character((*s8)[idx]);
@@ -1467,7 +1467,7 @@ CL_LAMBDA(str index c);
 CL_DECLARE();
 CL_DOCSTRING("CLHS (setf char)");
 CL_DEFUN Character_sp core__char_set(String_sp str, size_t idx, Character_sp c) {
-  if ( SimpleBaseCharString_sp sb = str.asOrNull<SimpleBaseCharString_O>() ) {
+  if ( SimpleBaseString_sp sb = str.asOrNull<SimpleBaseString_O>() ) {
     (*sb)[idx] = c.unsafe_character();
   } else if (Str8Ns_sp s8 = str.asOrNull<Str8Ns_O>() ) {
     (*s8)[idx] = c.unsafe_character();
@@ -1630,7 +1630,7 @@ CL_DEFUN T_mv cl__parse_integer(String_sp str, Fixnum start, T_sp end, uint radi
       return (Values(_Nil<T_O>(), make_fixnum(cur)));
     }
   }
-  PARSE_ERROR(SimpleBaseCharString_O::make("Could not parse integer from ~S"), Cons_O::create(str));
+  PARSE_ERROR(SimpleBaseString_O::make("Could not parse integer from ~S"), Cons_O::create(str));
   UNREACHABLE();
 };
 
@@ -1655,14 +1655,14 @@ SYMBOL_EXPORT_SC_(ClPkg, parseInteger);
 
 // ------------------------------------------------------------
 //
-// Class SpecializedSimpleVector_O
+// Class AbstractSimpleVector_O
 //
 
-bool SpecializedSimpleVector_O::equalp(T_sp other) const {
+bool AbstractSimpleVector_O::equalp(T_sp other) const {
   if (&*other==this) return true;
   if (!other.generalp()) return false;
-  if (gc::IsA<SpecializedSimpleVector_sp>(other)) {
-    SpecializedSimpleVector_sp svother = gc::As_unsafe<SpecializedSimpleVector_sp>(other);
+  if (gc::IsA<AbstractSimpleVector_sp>(other)) {
+    AbstractSimpleVector_sp svother = gc::As_unsafe<AbstractSimpleVector_sp>(other);
     if (svother->length()!=this->length()) return false;
     for (size_t i(0),iEnd(this->length()); i<iEnd; ++i ) {
       if (!cl__equalp(this->rowMajorAref(i),svother->rowMajorAref(i))) return false;
@@ -1681,18 +1681,18 @@ bool SpecializedSimpleVector_O::equalp(T_sp other) const {
 
 // ------------------------------------------------------------
 //
-// Class SimpleBaseCharString_O
+// Class SimpleBaseString_O
 //
 
 
     // (element_type == cl::_sym_base_char)
-typename SimpleBaseCharString_O::value_type SimpleBaseCharString_O::initial_element_from_object(T_sp obj, bool initialElementSuppliedP) {
-  typename SimpleBaseCharString_O::value_type initialBaseChar = '\0';
+typename SimpleBaseString_O::value_type SimpleBaseString_O::initial_element_from_object(T_sp obj, bool initialElementSuppliedP) {
+  typename SimpleBaseString_O::value_type initialBaseChar = '\0';
   if (initialElementSuppliedP) {
     if (obj.characterp() ) {
       Character_sp initCharacter = gc::As_unsafe<Character_sp>(obj);
       if (clasp_base_char_p(initCharacter)) {
-        return (typename SimpleBaseCharString_O::value_type)initCharacter.unsafe_character();
+        return (typename SimpleBaseString_O::value_type)initCharacter.unsafe_character();
       }
     }
     TYPE_ERROR(obj,cl::_sym_base_char);
@@ -1700,12 +1700,12 @@ typename SimpleBaseCharString_O::value_type SimpleBaseCharString_O::initial_elem
   return '\0';
 }
 
-bool SimpleBaseCharString_O::equal(T_sp other) const {
+bool SimpleBaseString_O::equal(T_sp other) const {
   if (&*other==this) return true;
   if (!other.generalp()) return false;
   if (gc::IsA<SimpleString_sp>(other)) {
-    if (gc::IsA<SimpleBaseCharString_sp>(other)) {
-      auto so = gc::As_unsafe<SimpleBaseCharString_sp>(other);
+    if (gc::IsA<SimpleBaseString_sp>(other)) {
+      auto so = gc::As_unsafe<SimpleBaseString_sp>(other);
       return template_string_EQ_equal(*this,*so,0,this->length(),0,so->length());
     } else {
       auto so = gc::As_unsafe<SimpleCharacterString_sp>(other);
@@ -1723,7 +1723,7 @@ bool SimpleBaseCharString_O::equal(T_sp other) const {
   return false;
 };
 
-bool SimpleBaseCharString_O::equalp(T_sp other) const {
+bool SimpleBaseString_O::equalp(T_sp other) const {
   if (&*other==this) return true;
   if (!other.generalp()) return false;
   if (!cl__stringp(other)) return false;
@@ -1774,8 +1774,8 @@ bool SimpleCharacterString_O::equal(T_sp other) const {
   if (&*other==this) return true;
   if (!other.generalp()) return false;
   if (gc::IsA<SimpleString_sp>(other)) {
-    if (gc::IsA<SimpleBaseCharString_sp>(other)) {
-      auto so = gc::As_unsafe<SimpleBaseCharString_sp>(other);
+    if (gc::IsA<SimpleBaseString_sp>(other)) {
+      auto so = gc::As_unsafe<SimpleBaseString_sp>(other);
       return template_string_EQ_equal(*this,*so,0,this->length(),0,so->length());
     } else {
       auto so = gc::As_unsafe<SimpleCharacterString_sp>(other);
@@ -1835,7 +1835,7 @@ bool SimpleVector_O::equalp(T_sp other) const {
     }
     return true;
   }
-  return this->SpecializedSimpleVector_O::equalp(other);
+  return this->AbstractSimpleVector_O::equalp(other);
 }
 
 
@@ -1937,8 +1937,8 @@ void VectorNs_O::ensureSpaceAfterFillPointer(T_sp init_element, size_t size) {
 bool VectorNs_O::equalp(T_sp other) const {
   if (&*other==this) return true;
   if (!other.generalp()) return false;
-  if (gc::IsA<SpecializedSimpleVector_sp>(other)) {
-    SpecializedSimpleVector_sp svother = gc::As_unsafe<SpecializedSimpleVector_sp>(other);
+  if (gc::IsA<AbstractSimpleVector_sp>(other)) {
+    AbstractSimpleVector_sp svother = gc::As_unsafe<AbstractSimpleVector_sp>(other);
     if (svother->length()!=this->length()) return false;
     for (size_t i(0),iEnd(this->length()); i<iEnd; ++i ) {
       if (!cl__equalp(this->rowMajorAref(i),svother->rowMajorAref(i))) return false;
@@ -2039,8 +2039,8 @@ bool Str8Ns_O::equal(T_sp other) const {
   if (&*other==this) return true;
   if (!other.generalp()) return false;
   if (gc::IsA<SimpleString_sp>(other)) {
-    if (gc::IsA<SimpleBaseCharString_sp>(other)) {
-      auto so = gc::As_unsafe<SimpleBaseCharString_sp>(other);
+    if (gc::IsA<SimpleBaseString_sp>(other)) {
+      auto so = gc::As_unsafe<SimpleBaseString_sp>(other);
       return template_string_EQ_equal(*this,*so,0,this->length(),0,so->length());
     } else {
       auto so = gc::As_unsafe<SimpleCharacterString_sp>(other);
@@ -2060,14 +2060,14 @@ bool Str8Ns_O::equal(T_sp other) const {
 
 // Creators - depreciate these once the new array stuff is working better
 Str8Ns_sp Str8Ns_O::create(const string& nm) {
-  auto ss = SimpleBaseCharString_O::make(nm.size(),'\0',true,nm.size(),(const claspChar*)nm.c_str());
+  auto ss = SimpleBaseString_O::make(nm.size(),'\0',true,nm.size(),(const claspChar*)nm.c_str());
   GC_ALLOCATE_VARIADIC(Str8Ns_O,result,nm.size(),_Nil<T_O>(),_Nil<T_O>(),0);
   result->set_data(ss);
   return result;
 }
 
 Str8Ns_sp Str8Ns_O::create(const char* nm,size_t len) {
-  SimpleBaseCharString_sp ss = SimpleBaseCharString_O::make(len,'\0',true,len,(const claspChar*)nm);
+  SimpleBaseString_sp ss = SimpleBaseString_O::make(len,'\0',true,len,(const claspChar*)nm);
   GC_ALLOCATE_VARIADIC(Str8Ns_O,result,len,_Nil<T_O>(),_Nil<T_O>(),0);
   result->set_data(ss);
   return result;
@@ -2079,7 +2079,7 @@ Str8Ns_sp Str8Ns_O::create(const char* nm) {
 }
 
 Str8Ns_sp Str8Ns_O::create(size_t len) {
-  SimpleBaseCharString_sp ss = SimpleBaseCharString_O::make(len,'\0',true);
+  SimpleBaseString_sp ss = SimpleBaseString_O::make(len,'\0',true);
   GC_ALLOCATE_VARIADIC(Str8Ns_O,result,len,_Nil<T_O>(),_Nil<T_O>(),0);
   result->set_data(ss);
   return result;
@@ -2087,7 +2087,7 @@ Str8Ns_sp Str8Ns_O::create(size_t len) {
 
 Str8Ns_sp Str8Ns_O::create(Str8Ns_sp other) {
   size_t len = other->length();
-  SimpleBaseCharString_sp ss = SimpleBaseCharString_O::make(len,'\0',true,len,&(*other)[0]);
+  SimpleBaseString_sp ss = SimpleBaseString_O::make(len,'\0',true,len,&(*other)[0]);
   GC_ALLOCATE_VARIADIC(Str8Ns_O,result,len,_Nil<T_O>(),_Nil<T_O>(),0);
   result->set_data(ss);
   return result;
@@ -2112,7 +2112,7 @@ void Str8Ns_O::vectorPushExtend_claspChar(claspChar newElement, size_t extension
 
 
 SimpleString_sp Str8Ns_O::asMinimalSimpleString() const {
-  SimpleBaseCharString_sp str8 = SimpleBaseCharString_O::make(this->length());
+  SimpleBaseString_sp str8 = SimpleBaseString_O::make(this->length());
   str8->unsafe_setf_subseq(0,this->length(),this->asSmartPtr());
   return str8;
 }
@@ -2136,8 +2136,8 @@ bool StrWNs_O::equal(T_sp other) const {
   if (&*other==this) return true;
   if (!other.generalp()) return false;
   if (gc::IsA<SimpleString_sp>(other)) {
-    if (gc::IsA<SimpleBaseCharString_sp>(other)) {
-      auto so = gc::As_unsafe<SimpleBaseCharString_sp>(other);
+    if (gc::IsA<SimpleBaseString_sp>(other)) {
+      auto so = gc::As_unsafe<SimpleBaseString_sp>(other);
       return template_string_EQ_equal(*this,*so,0,this->length(),0,so->length());
     } else {
       auto so = gc::As_unsafe<SimpleCharacterString_sp>(other);
@@ -2185,7 +2185,7 @@ void StrWNs_O::vectorPushExtend_claspCharacter(claspCharacter newElement, size_t
 
 SimpleString_sp StrWNs_O::asMinimalSimpleString() const {
   if (this->all_base_char_p()) {
-    SimpleBaseCharString_sp str8 = SimpleBaseCharString_O::make(this->length());
+    SimpleBaseString_sp str8 = SimpleBaseString_O::make(this->length());
     str8->unsafe_setf_subseq(0,this->length(),this->asSmartPtr());
     return str8;
   } else {
@@ -2197,7 +2197,7 @@ SimpleString_sp StrWNs_O::asMinimalSimpleString() const {
 
 // ------------------------------------------------------------
 //
-// Class SpecializedVectorNs
+// Class AbstractVectorNs
 //
 
 // ------------------------------------------------------------
@@ -2273,7 +2273,7 @@ bool BitVectorNs_O::equal(T_sp other) const {
 
 // ----------------------------------------------------------------------
 //
-// SpecializedArrayNs
+// AbstractArrayNs
 //
 
 
@@ -2336,8 +2336,8 @@ string string_get_std_string(T_sp str) {
   };
   return gc::As<String_sp>(str)->get_std_string();
 };
-T_sp str_create(const string &str) { return SimpleBaseCharString_O::make(str); };
-T_sp str_create(const char *str) { return SimpleBaseCharString_O::make(std::string(str)); };
+T_sp str_create(const string &str) { return SimpleBaseString_O::make(str); };
+T_sp str_create(const char *str) { return SimpleBaseString_O::make(std::string(str)); };
 
 
 };
@@ -2394,9 +2394,9 @@ CL_DEFUN Vector_sp core__make_vector(T_sp element_type,
       if (adjustable) return StrWNs_O::make(dimension,initialCharacter,initialElementSuppliedP,fillPointer,displacedTo,displacedIndexOffset);
       else return SimpleCharacterString_O::make(dimension,initialCharacter,initialElementSuppliedP);
     }
-    claspChar initialChar = SimpleBaseCharString_O::initial_element_from_object(initialElement,initialElementSuppliedP);
+    claspChar initialChar = SimpleBaseString_O::initial_element_from_object(initialElement,initialElementSuppliedP);
     if (adjustable) return Str8Ns_O::make(dimension,initialChar,initialElementSuppliedP,fillPointer,displacedTo,displacedIndexOffset);
-    else return SimpleBaseCharString_O::make(dimension,initialChar,initialElementSuppliedP);
+    else return SimpleBaseString_O::make(dimension,initialChar,initialElementSuppliedP);
   } else if ( element_type == cl::_sym_T_O ) {
     if (adjustable) return VectorTNs_O::make(dimension,initialElement,fillPointer,displacedTo,displacedIndexOffset);
     return SimpleVector_O::make(dimension,initialElement,true);
@@ -2486,7 +2486,7 @@ CL_DEFUN T_sp core__base_string_concatenate(VaList_sp vargs) {
     String_sp ssp = coerce::stringDesignator(csp);
     ss << ssp->get_std_string();
   }
-  return SimpleBaseCharString_O::make(ss.str());
+  return SimpleBaseString_O::make(ss.str());
 };
 
 

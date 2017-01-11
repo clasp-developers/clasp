@@ -159,7 +159,7 @@ Symbol_O::Symbol_O(bool dummy) : _HomePackage(_Nil<T_O>()),
 }
 
 Symbol_O::Symbol_O() : Base(),
-                       _Name(gctools::smart_ptr<SimpleBaseCharString_O>()),
+                       _Name(gctools::smart_ptr<SimpleBaseString_O>()),
                        _HomePackage(gctools::smart_ptr<Package_O>()),
                        _Value(gctools::smart_ptr<T_O>()),
                        _Function(gctools::smart_ptr<Function_O>()),
@@ -192,7 +192,7 @@ Symbol_sp Symbol_O::create_at_boot(const string &nm) {
     THROW_HARD_ERROR(BF("Illegal name for symbol[%s]") % nm);
   }
 #endif
-  n->_Name = SimpleBaseCharString_O::make(nm.size(),'\0',true,nm.size(),(const claspChar*)nm.c_str());
+  n->_Name = SimpleBaseString_O::make(nm.size(),'\0',true,nm.size(),(const claspChar*)nm.c_str());
   return n;
 };
 
@@ -200,7 +200,7 @@ Symbol_sp Symbol_O::create_from_string(const string &nm) {
   // This is used to allocate roots that are pointed
   // to by global variable _sym_XXX  and will never be collected
   Symbol_sp n = gctools::GC<Symbol_O>::root_allocate(true);
-  SimpleString_sp snm = SimpleBaseCharString_O::make(nm);
+  SimpleString_sp snm = SimpleBaseString_O::make(nm);
   n->setf_name(snm);
   ASSERTF(nm != "", BF("You cannot create a symbol without a name"));
 #if VERBOSE_SYMBOLS

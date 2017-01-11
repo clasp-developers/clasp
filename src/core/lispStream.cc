@@ -5468,7 +5468,7 @@ static T_sp
 not_a_file_stream(T_sp strm) {
   cl__error(cl::_sym_simpleTypeError,
            Cons_O::createList(kw::_sym_formatControl,
-                              SimpleBaseCharString_O::make("~A is not an file stream"),
+                              SimpleBaseString_O::make("~A is not an file stream"),
                               kw::_sym_formatArguments, Cons_O::createList(strm),
                               kw::_sym_expectedType, cl::_sym_FileStream_O,
                               kw::_sym_datum, strm));
@@ -5478,7 +5478,7 @@ not_a_file_stream(T_sp strm) {
 static void
 not_an_input_stream(T_sp strm) {
   cl__error(cl::_sym_simpleTypeError, Cons_O::createList(kw::_sym_formatControl,
-                                                        SimpleBaseCharString_O::make("~A is not an input stream"),
+                                                        SimpleBaseString_O::make("~A is not an input stream"),
                                                         kw::_sym_formatArguments, Cons_O::createList(strm),
                                                         kw::_sym_expectedType,
                                                         Cons_O::createList(cl::_sym_satisfies, cl::_sym_input_stream_p),
@@ -5488,7 +5488,7 @@ not_an_input_stream(T_sp strm) {
 static void
 not_an_output_stream(T_sp strm) {
   cl__error(cl::_sym_simpleTypeError, Cons_O::createList(kw::_sym_formatControl,
-                                                        SimpleBaseCharString_O::make("~A is not an output stream"),
+                                                        SimpleBaseString_O::make("~A is not an output stream"),
                                                         kw::_sym_formatArguments, Cons_O::createList(strm),
                                                         kw::_sym_expectedType, Cons_O::createList(cl::_sym_satisfies, cl::_sym_output_stream_p),
                                                         kw::_sym_datum, strm));
@@ -5497,7 +5497,7 @@ not_an_output_stream(T_sp strm) {
 static void
 not_a_character_stream(T_sp s) {
   cl__error(cl::_sym_simpleTypeError, Cons_O::createList(kw::_sym_formatControl,
-                                                        SimpleBaseCharString_O::make("~A is not a character stream"),
+                                                        SimpleBaseString_O::make("~A is not a character stream"),
                                                         kw::_sym_formatArguments, Cons_O::createList(s),
                                                         kw::_sym_expectedType, cl::_sym_character,
                                                         kw::_sym_datum, cl_stream_element_type(s)));
@@ -5506,7 +5506,7 @@ not_a_character_stream(T_sp s) {
 static void
 not_a_binary_stream(T_sp s) {
   cl__error(cl::_sym_simpleTypeError, Cons_O::createList(kw::_sym_formatControl,
-                                                        SimpleBaseCharString_O::make("~A is not a binary stream"),
+                                                        SimpleBaseString_O::make("~A is not a binary stream"),
                                                         kw::_sym_formatArguments, Cons_O::createList(s),
                                                         kw::_sym_expectedType, cl::_sym_Integer_O,
                                                         kw::_sym_datum, cl_stream_element_type(s)));
@@ -5521,15 +5521,15 @@ static void
 file_libc_error(T_sp error_type, T_sp stream,
                 const char *msg, int narg, ...) {
   clasp_va_list args;
-  T_sp error = SimpleBaseCharString_O::make(std::string(strerror(errno)));
+  T_sp error = SimpleBaseString_O::make(std::string(strerror(errno)));
   clasp_va_start(args, narg);
   T_sp rest = clasp_grab_rest_args(args, narg);
   clasp_va_end(args);
 
   eval::funcall(core::_sym_signalSimpleError,
                 error_type, _Nil<T_O>(),
-                SimpleBaseCharString_O::make("~?~%C library explanation: ~A."),
-                Cons_O::createList(SimpleBaseCharString_O::make(std::string(msg)), rest,
+                SimpleBaseString_O::make("~?~%C library explanation: ~A."),
+                Cons_O::createList(SimpleBaseString_O::make(std::string(msg)), rest,
                                    error));
 }
 
@@ -5563,7 +5563,7 @@ restartable_io_error(T_sp strm, const char *s) {
   if (old_errno == EINTR) {
     return 1;
   } else {
-    String_sp temp = SimpleBaseCharString_O::make(std::string(s, strlen(s)));
+    String_sp temp = SimpleBaseString_O::make(std::string(s, strlen(s)));
     file_libc_error(cl::_sym_streamError, strm,
                     "C operation (~A) signaled an error.",
                     1, temp.raw_());
@@ -5661,7 +5661,7 @@ wsock_error(const char *err_msg, T_sp strm) {
 	flags = CLASP_STREAM_DEFAULT_FORMAT;
 #endif
 
-	null_stream = clasp_make_stream_from_FILE(SimpleBaseCharString_O::make("/dev/null"),
+	null_stream = clasp_make_stream_from_FILE(SimpleBaseString_O::make("/dev/null"),
 						NULL, clasp_smm_io, 8, flags, external_format);
 	generic_close(null_stream);
 	null_stream = cl__make_two_way_stream(null_stream, cl_make_broadcast_stream(0));
@@ -5750,7 +5750,7 @@ T_sp clasp_filename(T_sp strm, bool errorp) {
     if (errorp) {
       SIMPLE_ERROR(BF("The stream %s does not have a filename") % _rep_(strm));
     } else {
-      return SimpleBaseCharString_O::make("-no-name-");
+      return SimpleBaseString_O::make("-no-name-");
     }
   }
   return fn;

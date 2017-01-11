@@ -368,7 +368,7 @@ Pathname_sp generate_pathname(const boost::filesystem::path& path)
   ss << "**";
   ss << DIR_SEPARATOR;
   ss << "*.*";
-  return cl__pathname(SimpleBaseCharString_O::make(ss.str()));
+  return cl__pathname(SimpleBaseString_O::make(ss.str()));
 }
 
 
@@ -384,7 +384,7 @@ Pathname_sp Bundle::getAppContentsResourcesPathname() {
   ss << "Resources";
   ss << DIR_SEPARATOR;
   ss << "**/*.*";
-  return cl__pathname(SimpleBaseCharString_O::make(ss.str()));
+  return cl__pathname(SimpleBaseString_O::make(ss.str()));
 }
 
 void Bundle::setup_pathname_translations()
@@ -393,69 +393,69 @@ void Bundle::setup_pathname_translations()
   if ( !this->_Directories->_LispSourceDir.empty() ) {
     Cons_sp pts =
       Cons_O::createList(
-                         Cons_O::createList(SimpleBaseCharString_O::make("sys:**;*.*"),
+                         Cons_O::createList(SimpleBaseString_O::make("sys:**;*.*"),
                                             generate_pathname(this->_Directories->_LispSourceDir))
         /* ,  more here */
                          );
-    core__pathname_translations(SimpleBaseCharString_O::make("sys"), _lisp->_true(), pts);
+    core__pathname_translations(SimpleBaseString_O::make("sys"), _lisp->_true(), pts);
   }
       // setup the LISP-SOURCE logical-pathname-translations
   if ( !this->_Directories->_LispSourceDir.empty() ) {
     Cons_sp pts =
       Cons_O::createList(
-                         Cons_O::createList(SimpleBaseCharString_O::make("LISP-SOURCE:**;*.*"),
+                         Cons_O::createList(SimpleBaseString_O::make("LISP-SOURCE:**;*.*"),
                                             generate_pathname(this->_Directories->_LispSourceDir)));
-    core__pathname_translations(SimpleBaseCharString_O::make("LISP-SOURCE"), _lisp->_true(), pts);
+    core__pathname_translations(SimpleBaseString_O::make("LISP-SOURCE"), _lisp->_true(), pts);
   }
   if ( !this->_Directories->_SourceDir.empty() ) {
     Cons_sp pts =
       Cons_O::createList(
-                         Cons_O::createList(SimpleBaseCharString_O::make("SOURCE-DIR:**;*.*"),
+                         Cons_O::createList(SimpleBaseString_O::make("SOURCE-DIR:**;*.*"),
                                             generate_pathname(this->_Directories->_SourceDir)));
-    core__pathname_translations(SimpleBaseCharString_O::make("SOURCE-DIR"), _lisp->_true(), pts);
+    core__pathname_translations(SimpleBaseString_O::make("SOURCE-DIR"), _lisp->_true(), pts);
   }
   if ( !this->_Directories->_GeneratedDir.empty() ) {
     Cons_sp pts =
       Cons_O::createList(
-                         Cons_O::createList(SimpleBaseCharString_O::make("GENERATED:**;*.*"),
+                         Cons_O::createList(SimpleBaseString_O::make("GENERATED:**;*.*"),
                                             generate_pathname(this->_Directories->_GeneratedDir)));
-    core__pathname_translations(SimpleBaseCharString_O::make("GENERATED"), _lisp->_true(), pts);
+    core__pathname_translations(SimpleBaseString_O::make("GENERATED"), _lisp->_true(), pts);
   }
   if ( !this->_Directories->_LibDir.empty() ) {
     Cons_sp pts =
       Cons_O::createList(
-                         Cons_O::createList(SimpleBaseCharString_O::make("LIB:**;*.*"),
+                         Cons_O::createList(SimpleBaseString_O::make("LIB:**;*.*"),
                                             generate_pathname(this->_Directories->_LibDir)));
-    core__pathname_translations(SimpleBaseCharString_O::make("LIB"), _lisp->_true(), pts);
+    core__pathname_translations(SimpleBaseString_O::make("LIB"), _lisp->_true(), pts);
   }
     // setup the TMP logical-pathname-translations
-  Cons_sp entryTmp = Cons_O::createList(SimpleBaseCharString_O::make("tmp:**;*.*"),
-                                        cl__pathname(SimpleBaseCharString_O::make("/tmp/**/*.*")));
+  Cons_sp entryTmp = Cons_O::createList(SimpleBaseString_O::make("tmp:**;*.*"),
+                                        cl__pathname(SimpleBaseString_O::make("/tmp/**/*.*")));
   Cons_sp ptsTmp = Cons_O::createList(entryTmp
                                         /* ,  more here */
                                       );
-  core__pathname_translations(SimpleBaseCharString_O::make("tmp"), _lisp->_true(), ptsTmp);
+  core__pathname_translations(SimpleBaseString_O::make("tmp"), _lisp->_true(), ptsTmp);
 
             // setup the APP-EXECUTABLE logical-pathname-translations
   {
     Cons_sp appc =
-      Cons_O::createList(Cons_O::createList(SimpleBaseCharString_O::make("app-executable:**;*.*"),
+      Cons_O::createList(Cons_O::createList(SimpleBaseString_O::make("app-executable:**;*.*"),
                                             generate_pathname(this->_Directories->_ExecutableDir)));
-    core__pathname_translations(SimpleBaseCharString_O::make("app-executable"), _lisp->_true(), appc);
+    core__pathname_translations(SimpleBaseString_O::make("app-executable"), _lisp->_true(), appc);
   }
 
     // setup the APP-CONTENTS logical-pathname-translations
   if ( !this->_Directories->_ContentsDir.empty() ) {
     Cons_sp appc =
-      Cons_O::createList(Cons_O::createList(SimpleBaseCharString_O::make("app-contents:**;*.*"),
+      Cons_O::createList(Cons_O::createList(SimpleBaseString_O::make("app-contents:**;*.*"),
                                             generate_pathname(this->_Directories->_ContentsDir)));
-    core__pathname_translations(SimpleBaseCharString_O::make("app-contents"), _lisp->_true(), appc);
+    core__pathname_translations(SimpleBaseString_O::make("app-contents"), _lisp->_true(), appc);
   }
   if ( !this->_Directories->_ResourcesDir.empty() ) {
     Cons_sp appc =
-      Cons_O::createList(Cons_O::createList(SimpleBaseCharString_O::make("app-resources:**;*.*"),
+      Cons_O::createList(Cons_O::createList(SimpleBaseString_O::make("app-resources:**;*.*"),
                                             generate_pathname(this->_Directories->_ResourcesDir)));
-    core__pathname_translations(SimpleBaseCharString_O::make("app-resources"), _lisp->_true(), appc);
+    core__pathname_translations(SimpleBaseString_O::make("app-resources"), _lisp->_true(), appc);
   }
 }
 

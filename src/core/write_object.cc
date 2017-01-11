@@ -153,13 +153,13 @@ T_sp write_object(T_sp x, T_sp stream) {
       /* Object is referenced twice. We print its definition */
       stringstream ss;
       ss << '#' << -code << '=';
-      SimpleBaseCharString_sp out = SimpleBaseCharString_O::make(ss.str());
+      SimpleBaseString_sp out = SimpleBaseString_O::make(ss.str());
       clasp_writeString(out, stream);
     } else {
       /* Second reference to the object */
       stringstream ss;
       ss << '#' << code << '#';
-      SimpleBaseCharString_sp out = SimpleBaseCharString_O::make(ss.str());
+      SimpleBaseString_sp out = SimpleBaseString_O::make(ss.str());
       clasp_writeString(out, stream);
       goto OUTPUT;
     }

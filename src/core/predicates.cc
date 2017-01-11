@@ -68,7 +68,7 @@ CL_DEFUN bool core__bignump(T_sp obj) {
 
 // XXX: this should be adjusted whenever unicode is implemented
 CL_DEFUN bool core__base_string_p(T_sp obj) {
-  return gc::IsA<Str8Ns_sp>(obj) || gc::IsA<SimpleBaseCharString_sp>(obj);
+  return gc::IsA<Str8Ns_sp>(obj) || gc::IsA<SimpleBaseString_sp>(obj);
 };
 
 CL_DEFUN bool cl__stringp(T_sp obj) {
@@ -227,7 +227,7 @@ CL_LAMBDA(arg);
 CL_DECLARE();
 CL_DOCSTRING("bitVectorP");
 CL_DEFUN bool cl__bit_vector_p(T_sp obj) {
-  return gc::IsA<BitVector_sp>(obj);
+  return gc::IsA<SimpleBitVector_sp>(obj)||gc::IsA<BitVector_sp>(obj);
 };
 
 CL_LAMBDA(arg);

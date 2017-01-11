@@ -83,7 +83,7 @@ struct _TRACE {
     THROW_NEVER_REACH();                                                                  \
   }
 #define SIMPLE_WARN(_boost_fmt_) \
-  core::eval::funcall(cl::_sym_warn, core::SimpleBaseCharString_O::make((_boost_fmt_).str()));
+  core::eval::funcall(cl::_sym_warn, core::SimpleBaseString_O::make((_boost_fmt_).str()));
 #define ERROR(_type_, _initializers_)                                               \
   {                                                                                 \
     lisp_error( _type_, _initializers_); \

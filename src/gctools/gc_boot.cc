@@ -214,7 +214,7 @@ CL_DEFUN core::T_mv gctools__kind_field_layout_entry(size_t idx)
   core::Fixnum_sp data2 = core::clasp_make_fixnum(code.data2);
   core::Symbol_sp description = _Nil<core::T_O>();
   if ( code.description ) {
-    core::SimpleBaseCharString_sp desc = core::SimpleBaseCharString_O::make(code.description);
+    core::SimpleBaseString_sp desc = core::SimpleBaseString_O::make(code.description);
     core::Package_sp pkg = gctools::As<core::Package_sp>(core::_sym_STARclasp_packageSTAR->symbolValue());
     description = pkg->intern(desc);
   }

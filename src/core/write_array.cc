@@ -219,7 +219,7 @@ namespace core {
 	}
     }
 
-    void unsafe_write_SimpleBaseCharString(SimpleBaseCharString_sp str, size_t start, size_t end, T_sp stream) {
+    void unsafe_write_SimpleBaseString(SimpleBaseString_sp str, size_t start, size_t end, T_sp stream) {
 	cl_index ndx;
 	if (!clasp_print_escape() && !clasp_print_readably()) {
 	    for (ndx = start; ndx < end; ndx++) {
@@ -254,16 +254,16 @@ namespace core {
 	    clasp_write_char('"', stream);
 	}
     }
-    void SimpleBaseCharString_O::__write__(T_sp stream) const {
-	unsafe_write_SimpleBaseCharString(this->asSmartPtr(),0,this->length(),stream);
+    void SimpleBaseString_O::__write__(T_sp stream) const {
+	unsafe_write_SimpleBaseString(this->asSmartPtr(),0,this->length(),stream);
     }
             
     void Str8Ns_O::__write__(T_sp stream) const {
 	size_t start, end;
 	BaseSimpleVector_sp str;
 	this->asBaseSimpleVectorRange(str,start,end);
-	SimpleBaseCharString_sp sb = gc::As<SimpleBaseCharString_sp>(str);
-	unsafe_write_SimpleBaseCharString(sb,start,end,stream);
+	SimpleBaseString_sp sb = gc::As<SimpleBaseString_sp>(str);
+	unsafe_write_SimpleBaseString(sb,start,end,stream);
     }
     void SimpleCharacterString_O::__write__(T_sp stream) const {
 	unsafe_write_SimpleCharacterString(this->asSmartPtr(),0,this->length(),stream);

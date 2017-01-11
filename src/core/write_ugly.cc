@@ -119,7 +119,7 @@ void Pathname_O::__write__(T_sp strm) const {
 	} else {
 	    clasp_write_string("#\\",stream);
 	    if (i < 32 || i >= 127) {
-		SimpleBaseCharString_sp name = gc::As<SimpleBaseCharString_sp>(eval::funcall(cl::_sym_char_name,char));
+		SimpleBaseString_sp name = gc::As<SimpleBaseString_sp>(eval::funcall(cl::_sym_char_name,char));
 		clasp_write_string(name->get(),stream);
 	    } else {
 		clasp_write_char(i,stream);
@@ -459,7 +459,7 @@ void write_character(T_sp strm, T_sp chr) {
   } else {
     clasp_write_string("#\\", strm);
     if (i < 32 || i >= 127) {
-      SimpleBaseCharString_sp name = cl__char_name(clasp_make_character(i));
+      SimpleBaseString_sp name = cl__char_name(clasp_make_character(i));
       clasp_write_string(name->get(), strm);
     } else {
       clasp_write_char(i, strm);

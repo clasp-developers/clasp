@@ -123,8 +123,8 @@ void cc_allocate_roots(gctools::ConstantsTable* holder, core::T_sp* root_address
 
 void ltvc_assign_source_file_info_handle(const char *moduleName, const char *sourceDebugPathname, size_t sourceDebugOffset, int useLineno, int *sourceFileInfoHandleP) {
   //	printf("%s:%d assignSourceFileInfoHandle %s\n", __FILE__, __LINE__, moduleName );
-  core::SimpleBaseCharString_sp mname = core::SimpleBaseCharString_O::make(moduleName);
-  core::SimpleBaseCharString_sp struename = core::SimpleBaseCharString_O::make(sourceDebugPathname);
+  core::SimpleBaseString_sp mname = core::SimpleBaseString_O::make(moduleName);
+  core::SimpleBaseString_sp struename = core::SimpleBaseString_O::make(sourceDebugPathname);
   SourceFileInfo_mv sfi_mv = core::core__source_file_info(mname, struename, sourceDebugOffset, useLineno ? true : false);
   int sfindex = unbox_fixnum(gc::As<core::Fixnum_sp>(sfi_mv.valueGet_(1)));
 #if 0
@@ -231,7 +231,7 @@ gctools::Tagged ltvc_make_fixnum(gctools::ConstantsTable* holder, size_t index, 
 }
 
 gctools::Tagged ltvc_make_bignum(gctools::ConstantsTable* holder, size_t index, gctools::Tagged bignum_string_t) {
-  core::SimpleBaseCharString_sp bignum_string = gctools::As<core::SimpleBaseCharString_sp>(core::T_sp(bignum_string_t));
+  core::SimpleBaseString_sp bignum_string = gctools::As<core::SimpleBaseString_sp>(core::T_sp(bignum_string_t));
   core::T_sp val = core::Bignum_O::make(bignum_string->get());
   return holder->set(index,val.tagged_());
 }
@@ -256,7 +256,7 @@ gctools::Tagged ltvc_make_character(gctools::ConstantsTable* holder, size_t inde
 }
 
 gctools::Tagged ltvc_make_base_string(gctools::ConstantsTable* holder, size_t index, const char* str) {
-  core::T_sp v = core::SimpleBaseCharString_O::make(str);
+  core::T_sp v = core::SimpleBaseString_O::make(str);
   return holder->set(index,v.tagged_());
 }
 
@@ -278,7 +278,7 @@ gctools::Tagged ltvc_make_pathname(gctools::ConstantsTable* holder, size_t index
 }
 
 gctools::Tagged ltvc_make_package(gctools::ConstantsTable* holder, size_t index, gctools::Tagged package_name_t ) {
-  core::SimpleBaseCharString_sp package_name(package_name_t);
+  core::SimpleBaseString_sp package_name(package_name_t);
   core::T_sp tpkg = _lisp->findPackage(package_name->get(),false);
   if ( tpkg.nilp() ) {
     // If we don't find the package - just make it
@@ -290,7 +290,7 @@ gctools::Tagged ltvc_make_package(gctools::ConstantsTable* holder, size_t index,
 }
 
 gctools::Tagged ltvc_make_random_state(gctools::ConstantsTable* holder, size_t index, gctools::Tagged random_state_string_t) {
-  core::SimpleBaseCharString_sp random_state_string(random_state_string_t);
+  core::SimpleBaseString_sp random_state_string(random_state_string_t);
   core::RandomState_sp rs = core::RandomState_O::create();
   rs->random_state_set(random_state_string->get());
   core::T_sp val = rs;
@@ -615,7 +615,7 @@ void makeBignum(core::T_sp *fnP, const char *cP) {
 void makeString(core::T_sp *fnP, const char *str) {
   // placement new into memory passed into this function
   ASSERT(fnP != NULL);
-  core::SimpleBaseCharString_sp ns = core::SimpleBaseCharString_O::make(str);
+  core::SimpleBaseString_sp ns = core::SimpleBaseString_O::make(str);
   (*fnP) = ns;
 }
 
@@ -623,7 +623,7 @@ void makePathname(core::T_sp *fnP, const char *cstr) {
   // placement new into memory passed into this function
   ASSERT(fnP != NULL);
 
-  core::SimpleBaseCharString_sp str = core::SimpleBaseCharString_O::make(cstr);
+  core::SimpleBaseString_sp str = core::SimpleBaseString_O::make(cstr);
   core::Pathname_sp ns = core::cl__pathname(str);
   (*fnP) = ns;
 }
@@ -677,7 +677,7 @@ void invokeTopLevelFunction(core::T_mv *resultP,
                             size_t column,
                             core::LoadTimeValues_O **ltvPP) {
   ASSERT(ltvPP != NULL);
-  core::SimpleBaseCharString_sp name = core::SimpleBaseCharString_O::make(cpname);
+  core::SimpleBaseString_sp name = core::SimpleBaseString_O::make(cpname);
   FunctionClosure_sp tc = FunctionClosure_O::create(name, kw::_sym_function, *sourceFileInfoHandleP, filePos, lineno, column);
 #define TIME_TOP_LEVEL_FUNCTIONS
 #ifdef TIME_TOP_LEVEL_FUNCTIONS
