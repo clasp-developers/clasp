@@ -1606,7 +1606,7 @@ T_sp type_of(T_sp x) {
       Symbol_sp tt;
       if (sx->adjustableArrayP() || sx->arrayHasFillPointerP() || sx->displacedToP()) tt = cl::_sym_array;
       else tt = cl::_sym_simple_array;
-      return Cons_O::createList(tt,sx->elementTypeAsSymbol(),Cons_O::createList(make_fixnum(1), make_fixnum(cl__length(sx))));
+      return Cons_O::createList(tt,sx->elementTypeAsSymbol(),Cons_O::create(make_fixnum(cl__length(sx))));
     } else if (gc::IsA<BaseSimpleVector_sp>(x)) {
       BaseSimpleVector_sp bx = gc::As_unsafe<BaseSimpleVector_sp>(x);
       return Cons_O::createList(cl::_sym_simple_array, bx->elementTypeAsSymbol(), clasp_make_fixnum(bx->length()));

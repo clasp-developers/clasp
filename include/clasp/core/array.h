@@ -366,10 +366,9 @@ namespace core {
     LISP_CLASS(core, CorePkg, AbstractMDArrayNs_O, "AbstractMDArrayNs",MDArrayNs_O);
   public:
   AbstractMDArrayNs_O(size_t rank,
-                         List_sp dimensions,
-                         T_sp fillPointer,
-                         T_sp displacedTo,
-                         size_t displacedIndexOffset) : Base(rank,dimensions,fillPointer,displacedTo,displacedIndexOffset) {};
+                      List_sp dimensions,
+                      T_sp displacedTo,
+                      size_t displacedIndexOffset) : Base(rank,dimensions,_Nil<T_O>(),displacedTo,displacedIndexOffset) {};
   public:
     virtual T_sp type_as_symbol() const final { return cl::_sym_array; };
   };
@@ -1233,10 +1232,9 @@ namespace core {
     // Pass constructor arguments up
   abstract_DisplacementHandlingArray(size_t rank,
                                      List_sp dimensions,
-                                     T_sp fillPointer,
                                      T_sp displacedTo,
                                      size_t displacedIndexOffset)
-    : Base(rank,dimensions,fillPointer,displacedTo,displacedIndexOffset) {};
+    : Base(rank,dimensions,displacedTo,displacedIndexOffset) {};
   public:
     static void never_invoke_allocator() {gctools::GCAbstractAllocator<abstract_DisplacementHandlingArray>::never_invoke_allocator();};
   public:
@@ -1306,11 +1304,10 @@ namespace core {
     typedef abstract_DisplacementHandlingArray<ArrayTNs_O,SimpleVector_O,AbstractMDArrayNs_O> TemplatedBase;
   ArrayTNs_O(size_t rank,
              List_sp dimensions,
-             T_sp fillPointer,
              T_sp displacedTo,
-             size_t displacedIndexOffset) : TemplatedBase(rank,dimensions,fillPointer,displacedTo,displacedIndexOffset) {};
+             size_t displacedIndexOffset) : TemplatedBase(rank,dimensions,displacedTo,displacedIndexOffset) {};
   public:
-    static ArrayTNs_sp make(T_sp dim_desig, T_sp initialElement, T_sp fillPointer, T_sp displacedTo, size_t displacedIndexOffset);
+    static ArrayTNs_sp make(T_sp dim_desig, T_sp initialElement, T_sp displacedTo, size_t displacedIndexOffset);
   public:
     virtual void internalAdjustSize_(size_t size, T_sp initElement=_Nil<T_O>(), bool initElementSupplied=false ) final {
       IMPLEMENT_MEF(BF("Add support for internalAdjustSize for ArrayTNs when you see this"));

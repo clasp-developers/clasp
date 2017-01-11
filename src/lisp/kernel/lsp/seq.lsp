@@ -67,12 +67,12 @@
       #-unicode
       ((STRING SIMPLE-STRING)
        (setq elt-type 'BASE-CHAR
-	     length (if (endp args) '* (first args))))
-      #+unicode
-      ((BASE-STRING BASE-SIMPLE-STRING)
+             length (if (endp args) '* (first args))))
+      #+(or unicode clasp)
+      ((BASE-STRING SIMPLE-BASE-STRING)
        (setq elt-type 'BASE-CHAR
 	     length (if (endp args) '* (first args))))
-      #+unicode
+      #+(or unicode clasp)
       ((STRING SIMPLE-STRING)
        (setq elt-type 'CHARACTER
 	     length (if (endp args) '* (first args))))
@@ -80,13 +80,15 @@
        (setq elt-type 'BIT
 	     length (if (endp args) '* (first args))))
       ((ARRAY SIMPLE-ARRAY)
-       (when (or (endp (rest args))
-		 (atom (setq length (second args)))
-		 (endp length)
-		 (not (endp (rest length))))
-	 (error-sequence-type type))
-       (setq elt-type (upgraded-array-element-type (first args))
-	     length (first (second args))))
+       (let ((dimension-spec (second args)))
+         (cond
+           ((eql dimension-spec 1)
+            (setf length '*))
+           ((and (consp dimension-spec)
+                 (null (cdr dimension-spec)))
+            (setf length (car dimension-spec)))
+           (T (error-sequence-type type))))
+       (setq elt-type (upgraded-array-element-type (first args))))
       (t
        ;; We arrive here when the sequence type is not easy to parse.
        ;; We give up trying to guess the length of the sequence.
@@ -119,21 +121,19 @@ ELEMENT is given, then it becomes the elements of the created sequence.  The
 default value of INITIAL-ELEMENT depends on TYPE."
   (multiple-value-bind (element-type length)
       (closest-sequence-type type)
-;;    (blog "In make-sequence type[%s]  element-type[%s]" type element-type)
     (cond ((eq element-type 'LIST)
-	   (setq sequence (make-list size :initial-element initial-element))
-	   (unless (subtypep 'LIST type)
-	     (when (or (and (subtypep type 'NULL) (plusp size))
-		       (and (subtypep type 'CONS) (zerop size)))
-	       (error-sequence-length (make-list size :initial-element initial-element) type 0))))
-	  (t
-;;	   (blog "About to make-vector element-type => %s size => %d" element-type size)
-	   (setq sequence (sys:make-vector (if (eq element-type '*) T element-type)
-					   size nil nil nil nil))
-	   (when iesp
- 	     (si::fill-array-with-elt sequence initial-element 0 nil))
-	   (unless (or (eql length '*) (eql length size))
-	     (error-sequence-length sequence type size))))
+           (setq sequence (make-list size :initial-element initial-element))
+           (unless (subtypep 'LIST type)
+             (when (or (and (subtypep type 'NULL) (plusp size))
+                       (and (subtypep type 'CONS) (zerop size)))
+               (error-sequence-length (make-list size :initial-element initial-element) type 0))))
+          (t
+           (setq sequence (sys:make-vector (if (eq element-type '*) T element-type)
+                                           size nil nil nil nil))
+           (when iesp
+             (si::fill-array-with-elt sequence initial-element 0 nil))
+           (unless (or (eql length '*) (eql length size))
+             (error-sequence-length sequence type size))))
     sequence))
 
 
@@ -192,8 +192,8 @@ default value of INITIAL-ELEMENT depends on TYPE."
         (v-list values-list))
        ((null v-list)
         values-list)
-    (let* ((it (car it-list))
-           (sequence (car seq-list)))
+    (let* ((it (cons-car it-list))
+           (sequence (cons-car seq-list)))
       (cond ((null it)
              (return nil))
             ((fixnump it)
@@ -204,7 +204,7 @@ default value of INITIAL-ELEMENT depends on TYPE."
             ((atom it)
              (error-not-a-sequence it))
             (t
-             (rplaca v-list (car it))
+             (rplaca v-list (cons-car it))
              (unless (listp (setf it (cons-cdr it)))
                (error-not-a-sequence it))
              (rplaca it-list it)))
@@ -242,15 +242,11 @@ default value of INITIAL-ELEMENT depends on TYPE."
   "Args: (type &rest sequences)
 Returns a new sequence of the specified type, consisting of all elements of
 SEQUENCEs."
-;;  (blog "concatenate result-type--> %s   sequences --> %s" result-type sequences )
   (do* ((length-list (mapcar #'length sequences) (rest length-list))
 	(output (make-sequence result-type (apply #'+ length-list)))
         (sequences sequences (rest sequences))
         (i (make-seq-iterator output)))
       ((null sequences) output)
-;;    (blog "concatenate output-->|%s|" output)
-;;    (blog "concatenate sequences left --> %s" sequences)
-;;    (blog "concatenate i --> %d" i)
     (do* ((s (first sequences))
 	  (j (make-seq-iterator s) (seq-iterator-next s j)))
 	 ((null j))

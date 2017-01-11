@@ -273,6 +273,15 @@ CL_DEFUN List_sp cl__arrayDimensions(Array_sp array)
   return indices;
 }
 
+CL_LISPIFY_NAME("cl:array-dimension");
+CL_DEFUN size_t cl__arrayDimension(Array_sp array, size_t idx)
+{
+  if (idx >= array->rank()) {
+    SIMPLE_ERROR(BF("array-dimension index %lu is out of bounds - must be less than %lu") % idx % array->rank());
+  }
+  return array->arrayDimension(idx);
+}
+
 // ------------------------------------------------------------
 //
 // MDArray_O
@@ -2281,7 +2290,7 @@ bool BitVectorNs_O::equal(T_sp other) const {
 //
 // ArrayNs
 namespace core {
-ArrayTNs_sp ArrayTNs_O::make(T_sp dim_desig, T_sp initialElement, T_sp fillPointer, T_sp displacedTo, size_t displacedIndexOffset) {
+ArrayTNs_sp ArrayTNs_O::make(T_sp dim_desig, T_sp initialElement, T_sp displacedTo, size_t displacedIndexOffset) {
   size_t rank = cl__length(dim_desig);
   List_sp dim;
   if (dim_desig.nilp()) {
@@ -2292,7 +2301,7 @@ ArrayTNs_sp ArrayTNs_O::make(T_sp dim_desig, T_sp initialElement, T_sp fillPoint
   } else {
     dim = dim_desig;
   }
-  GC_ALLOCATE_VARIADIC(ArrayTNs_O, array, rank, dim, fillPointer, displacedTo, displacedIndexOffset);
+  GC_ALLOCATE_VARIADIC(ArrayTNs_O, array, rank, dim, displacedTo, displacedIndexOffset);
   LIKELY_if (displacedTo.nilp()) {
     SimpleVector_sp sb = SimpleVector_O::make(array->arrayTotalSize(),initialElement,true);
     array->set_data(sb);
@@ -2417,12 +2426,7 @@ CL_DEFUN MDArray_sp core__make_mdarray(List_sp dimensions,
                                        size_t displacedIndexOffset,
                                        T_sp initialElement,
                                        bool initialElementSuppliedP) {
-#if 0
-  if ( element_type == cl::_sym_T_O ) {
-    return ArrayTNs_O::make(dimensions,initialElement,initialElementSuppliedP,displacedTo,displacedIndexOffset);
-  }
-#endif
-  IMPLEMENT_MEF(BF("Handle creating an MDArray"));
+    return ArrayTNs_O::make(dimensions,initialElement,displacedTo,displacedIndexOffset);
 };
 
 

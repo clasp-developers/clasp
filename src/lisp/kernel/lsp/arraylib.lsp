@@ -142,8 +142,6 @@ contiguous block."
                             initial-element-supplied-p)))
        (when (and displaced-to initial-element-supplied-p)
          (fill-array-with-elt x initial-element 0 nil))
-       (when initial-contents
-         (error "Handle initial-contents for make-mdarray"))
        x))
     (t (error "Illegal dimensions ~a for make-array" dimensions ))))
 
