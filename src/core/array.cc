@@ -1892,10 +1892,10 @@ bool SimpleVector_O::equalp(T_sp other) const {
 //
 
 SimpleBitVector_sp SimpleBitVector_O::make(const string& bv) {
-  size_t dim = bv.size();
+  size_t dim = bv.size()-2;
   SimpleBitVector_sp x = SimpleBitVector_O::make(dim);
-  for (int i = 2; i < dim; i++) {
-    char elt = bv[i];
+  for (int i = 0; i<dim; i++) {
+    char elt = bv[i+2];
     x->setBit(i,elt-'0');
   }
   return x;
