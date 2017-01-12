@@ -1891,6 +1891,16 @@ bool SimpleVector_O::equalp(T_sp other) const {
 // Class SimpleBitVector
 //
 
+SimpleBitVector_sp SimpleBitVector_O::make(const string& bv) {
+  size_t dim = bv.size();
+  SimpleBitVector_sp x = SimpleBitVector_O::make(dim);
+  for (int i = 2; i < dim; i++) {
+    char elt = bv[i];
+    x->setBit(i,elt-'0');
+  }
+  return x;
+}
+
 Array_sp SimpleBitVector_O::unsafe_subseq(size_t start, size_t end) const {
   SimpleBitVector_sp sbv = SimpleBitVector_O::make(end-start);
   for (size_t i(0),iEnd(end-start);i<iEnd;++i) {

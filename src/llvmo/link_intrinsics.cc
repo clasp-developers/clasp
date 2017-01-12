@@ -236,6 +236,12 @@ gctools::Tagged ltvc_make_bignum(gctools::ConstantsTable* holder, size_t index, 
   return holder->set(index,val.tagged_());
 }
 
+gctools::Tagged ltvc_make_bitvector(gctools::ConstantsTable* holder, size_t index, gctools::Tagged bitvector_string_t) {
+  core::SimpleBaseString_sp bitvector_string = gctools::As<core::SimpleBaseString_sp>(core::T_sp(bitvector_string_t));
+  core::T_sp val = core::SimpleBitVector_O::make(bitvector_string->get());
+  return holder->set(index,val.tagged_());
+}
+
 gctools::Tagged ltvc_make_symbol(gctools::ConstantsTable* holder, size_t index, gctools::Tagged name_t,
                                  gctools::Tagged package_t ) {
   core::T_sp package(package_t);

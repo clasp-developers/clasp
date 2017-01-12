@@ -737,6 +737,7 @@ namespace core {
       auto sbv = gctools::GC<SimpleBitVector_O>::allocate_bitunit_container(gctools::GCStamp<SimpleBitVector_O>::TheStamp,length,initialElement,initialElementSupplied);
       return sbv;
     }
+    static SimpleBitVector_sp make(const string& bv);
   public:
     static value_type initial_element_from_object(T_sp initialElement, bool initialElementSupplied) {
       if (initialElementSupplied) {

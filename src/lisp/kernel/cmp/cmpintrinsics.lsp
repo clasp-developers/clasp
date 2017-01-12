@@ -593,6 +593,7 @@ and initialize it with an array consisting of one function pointer."
   (primitive-nounwind module "ltvc_make_fixnum" +t*+ (list +constants-table*+ +size_t+ +uintptr_t+))
   (primitive-nounwind module "ltvc_make_package" +t*+ (list +constants-table*+ +size_t+ +t*+))
   (primitive-nounwind module "ltvc_make_bignum" +t*+ (list +constants-table*+ +size_t+ +t*+))
+  (primitive-nounwind module "ltvc_make_bitvector" +t*+ (list +constants-table*+ +size_t+ +t*+))
   (primitive-nounwind module "ltvc_make_random_state" +t*+ (list +constants-table*+ +size_t+ +t*+))
   (primitive-nounwind module "ltvc_make_symbol" +t*+ (list +constants-table*+ +size_t+ +t*+ +t*+))
   (primitive-nounwind module "ltvc_make_character" +t*+ (list +constants-table*+ +size_t+ +uintptr_t+))
