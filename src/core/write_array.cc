@@ -64,7 +64,7 @@ namespace core {
 	if (readably) {
 	    clasp_write_char('A', stream);
 	    clasp_write_char('(', stream);
-	    write_object(x->elementTypeAsSymbol(), stream);
+	    write_object(x->element_type(), stream);
 	    clasp_write_char(' ', stream);
 	    if (n > 0) {
 		clasp_write_char('(', stream);

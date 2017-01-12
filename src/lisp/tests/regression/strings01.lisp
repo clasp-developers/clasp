@@ -10,7 +10,7 @@
 (test (string= (copy-seq (concatenate 'string (make-string 3 :initial-element #\Nul) "abc")) (bformat nil "%c%c%cabc" #\nul #\nul #\nul)))
 (test (string= (substitute #\X #\Nul (subseq (concatenate 'string "a" (make-string 3 :initial-element #\Nul) "bcd") 0)) "aXXXbcd"))
 (test (multiple-value-bind (val pos) (parse-integer "123 456") (and (= val 123) (= pos 3))))
-(test (equalp (type-of "abc") '(simple-array base-char (3))))
+(test (subtypep (type-of "abc") '(simple-array base-char (3))))
 
 
 (test (equal (core:copy-to-simple-base-string (make-array 3 :element-type 'character :adjustable nil :initial-element #\C)) "CCC"))

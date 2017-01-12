@@ -168,18 +168,6 @@ void Array_O::fillInitialContents(T_sp ic) {
   }
 }
 
-Symbol_sp Array_O::elementTypeAsSymbol() const {
-  // If this fails we need a different way of doing this
-  Symbol_sp elementType = this->arrayElementType();
-  if ( cl__symbolp(elementType) ) {
-    return elementType;
-  }
-  if (elementType == _lisp->_true()) {
-    return cl::_sym_T;
-  }
-  SIMPLE_ERROR(BF("Handle more array types - the current array type is: %s") % _rep_(elementType));
-}
-
 size_t Array_O::index_vector_int(const vector<int> &indices) const {
   size_t offset = 0;
   size_t oneIndex = 0;

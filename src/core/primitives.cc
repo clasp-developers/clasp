@@ -1525,7 +1525,7 @@ CL_DEFUN Symbol_mv core__type_to_symbol(T_sp x) {
 #if 1
     else if (Array_sp ax = gx.asOrNull<Array_O>())
       // Handle all of the array subclasses using type_as_symbol()
-      return Values(ax->type_as_symbol());
+      return Values(ax->array_type());
 #else
     return (Values(cl::_sym_Array_O));
     else if (SimpleVector_sp vx = gx.asOrNull<SimpleVector_O>())
@@ -1601,24 +1601,8 @@ T_sp type_of(T_sp x) {
       return cl::_sym_keyword;
     return cl::_sym_symbol;
   } else if (gc::IsA<Array_sp>(x)) {
-    if (cl__stringp(x)) {
-      String_sp sx = gc::As_unsafe<String_sp>(x);
-      Symbol_sp tt;
-      if (sx->adjustableArrayP() || sx->arrayHasFillPointerP() || sx->displacedToP()) tt = cl::_sym_array;
-      else tt = cl::_sym_simple_array;
-      return Cons_O::createList(tt,sx->elementTypeAsSymbol(),Cons_O::create(make_fixnum(cl__length(sx))));
-    } else if (gc::IsA<BaseSimpleVector_sp>(x)) {
-      BaseSimpleVector_sp bx = gc::As_unsafe<BaseSimpleVector_sp>(x);
-      return Cons_O::createList(cl::_sym_simple_array, bx->elementTypeAsSymbol(), clasp_make_fixnum(bx->length()));
-    } else if (gc::IsA<VectorNs_sp>(x)) {
-      VectorNs_sp vx = gc::As_unsafe<VectorNs_sp>(x);
-      return Cons_O::createList(cl::_sym_vector,vx->elementTypeAsSymbol(),clasp_make_fixnum(vx->length()));
-    } else if (gc::IsA<MDArrayNs_sp>(x)) {
-      MDArrayNs_sp ax = gc::As_unsafe<MDArrayNs_sp>(x);
-      Symbol_sp tt = cl::_sym_simple_array;
-      if (ax->adjustableArrayP()||ax->displacedToP()) tt = cl::_sym_array;
-      return Cons_O::createList(tt,ax->elementTypeAsSymbol(),cl__arrayDimensions(ax));
-    }
+    Array_sp ax = gc::As_unsafe<Array_sp>(x);
+    return ax->type_of();
   } else if (WrappedPointer_sp pp = x.asOrNull<WrappedPointer_O>()) {
     return pp->_instanceClass()->className();
   } else if (core__structurep(x)) {

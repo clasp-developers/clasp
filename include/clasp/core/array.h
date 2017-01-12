@@ -92,6 +92,7 @@ namespace cl {
   extern core::Symbol_sp& _sym_single_float;
   extern core::Symbol_sp& _sym_T_O;
   extern core::Symbol_sp& _sym_simple_string;
+  extern core::Symbol_sp& _sym_simple_array;
 };
 namespace core {
   extern core::Symbol_sp& _sym_replaceArray;
@@ -99,11 +100,15 @@ namespace core {
   extern core::Symbol_sp& _sym_fillPointerSet;
   extern core::Symbol_sp& _sym_fillArrayWithElt;
   extern core::Symbol_sp& _sym_setf_subseq;
-  extern core::Symbol_sp& _sym_simple_double_vector;
   extern void clasp_write_string(const string &str, T_sp strm );
   extern claspCharacter clasp_write_char(claspCharacter c, T_sp strm);
 };
-  
+
+namespace core {
+
+  List_sp cl__arrayDimensions(Array_sp array);
+
+};
 
 namespace core {
 
@@ -224,7 +229,10 @@ class Array_O : public General_O {
   virtual void* rowMajorAddressOfElement_(size_t index) const = 0;
   virtual void asBaseSimpleVectorRange(BaseSimpleVector_sp& sv, size_t& start, size_t& end) const = 0;
  public: // Functions here
-  virtual T_sp type_as_symbol() const = 0;
+  virtual T_sp type_of() const { return Cons_O::createList(this->array_type(),this->element_type(),cl__arrayDimensions(this->asSmartPtr()));};
+  virtual T_sp array_type() const = 0;
+  /*! This replicates ECL ecl__elttype_to_symbol in array.d */
+  virtual T_sp element_type() const = 0;
   /*! length() doesn't dispatch - it reaches into the subclass
       through the _Length[0] array to read the first size_t element
       which is the Length/FillPointer for vectors and a Dummy value for arrays */
@@ -258,8 +266,6 @@ class Array_O : public General_O {
   virtual bool arrayHasFillPointerP() const { return false; };
   virtual void fillPointerSet(size_t f) {noFillPointerError(cl::_sym_fillPointer,this->asSmartPtr());};
   virtual size_t fillPointer() const {noFillPointerError(cl::_sym_fillPointer,this->asSmartPtr());};
-  /*! This replicates ECL ecl__elttype_to_symbol in array.d */
-  virtual Symbol_sp elementTypeAsSymbol() const = 0;
   virtual size_t displacedIndexOffset() const = 0;
   /*! Return the array dimension along the axis-number */
   virtual size_t arrayDimension(size_t axisNumber) const = 0;
@@ -323,6 +329,9 @@ namespace core {
               T_sp displacedTo,
               size_t displacedIndexOffset);
   public:
+    virtual T_sp array_type() const override {return cl::_sym_array; };
+    virtual T_sp element_type() const override { return this->_Data->element_type(); };
+  public:
     virtual Array_sp data() const { return this->_Data;};
     void set_data(Array_sp a);
   public:
@@ -338,7 +347,6 @@ namespace core {
     };
 
     virtual size_t rank() const override { return this->_Dimensions._Length; };
-    virtual Symbol_sp elementTypeAsSymbol() const override { return this->_Data->elementTypeAsSymbol(); };
     virtual size_t arrayDimension(size_t axisNumber) const override {
       LIKELY_if (axisNumber<this->_Dimensions._Length) return this->_Dimensions[axisNumber];
       badAxisNumberError(cl::_sym_arrayDimension,this->_Dimensions._Length,axisNumber);
@@ -402,8 +410,6 @@ namespace core {
                       List_sp dimensions,
                       T_sp displacedTo,
                       size_t displacedIndexOffset) : Base(rank,dimensions,_Nil<T_O>(),displacedTo,displacedIndexOffset) {};
-  public:
-    virtual T_sp type_as_symbol() const final { return cl::_sym_array; };
   };
 };
 
@@ -418,6 +424,8 @@ namespace core {
 
   class BaseSimpleVector_O : public Array_O {
     LISP_CLASS(core, CorePkg, BaseSimpleVector_O, "BaseSimpleVector",Array_O);
+  public:
+    virtual T_sp array_type() const override { return cl::_sym_simple_array; };
   public:
     virtual Array_sp data() { return this->asSmartPtr(); };
     virtual size_t arrayTotalSize() const { return this->length(); };
@@ -569,10 +577,12 @@ namespace core {
     }
   //SimpleBaseString_O(size_t total_size) : Base(), _Data('\0',total_size+1) {};
   public:
+    virtual T_sp type_of() const final { return Cons_O::createList(cl::_sym_simple_base_string,clasp_make_fixnum(this->length()));};
+    virtual T_sp array_type() const final { return cl::_sym_simple_array; };
+    virtual T_sp element_type() const final { return cl::_sym_base_char; };
+  public:
     virtual clasp_elttype elttype() const { return clasp_aet_bc; };
-    virtual T_sp type_as_symbol() const final { return cl::_sym_simple_base_string; };
     virtual T_sp arrayElementType() const final { return cl::_sym_base_char; };
-    virtual Symbol_sp elementTypeAsSymbol() const final { return cl::_sym_base_char; };
     virtual bool equal(T_sp other) const final;
     virtual bool equalp(T_sp other) const final;
     virtual void __write__(T_sp strm) const final; // implemented in write_array.cc
@@ -634,10 +644,11 @@ namespace core {
     }
   //SimpleCharacterString_O(size_t total_size) : Base(), _Data('\0',total_size+1) {};
   public:
+    virtual T_sp array_type() const final { return cl::_sym_simple_array; };
+    virtual T_sp element_type() const final { return cl::_sym_character; };
+  public:
     virtual clasp_elttype elttype() const { return clasp_aet_ch; };
-    virtual T_sp type_as_symbol() const final { return cl::_sym_simple_string; };
     virtual T_sp arrayElementType() const override { return cl::_sym_character; };
-    virtual Symbol_sp elementTypeAsSymbol() const override { return cl::_sym_character; };
   public:
     // Implement these methods for simple vectors - some are implemented in parent classes
     // for convenience if not speed
@@ -699,10 +710,12 @@ namespace core {
     // Specific to SimpleVector_O
     virtual void __write__(T_sp stream) const final;
   public:
+    virtual T_sp type_of() const final {return Cons_O::createList(cl::_sym_simple_vector,clasp_make_fixnum(this->length()));};
+    virtual T_sp array_type() const final { return cl::_sym_simple_array; };
+    virtual T_sp element_type() const override { return cl::_sym_T_O; };
+  public:
     virtual clasp_elttype elttype() const { return clasp_aet_object; };
-    virtual T_sp type_as_symbol() const final { return cl::_sym_simple_vector; };
     virtual T_sp arrayElementType() const override { return cl::_sym_T_O; };
-    virtual Symbol_sp elementTypeAsSymbol() const override { return cl::_sym_T_O; };
   public:
     // Implement these methods for simple vectors - some are implemented in parent classes
     // for convenience if not speed
@@ -750,10 +763,12 @@ namespace core {
       return 0;
     }
   public:
+    virtual T_sp type_of() const final { return Cons_O::createList(cl::_sym_simple_bit_vector,clasp_make_fixnum(this->length()));};
+    virtual T_sp array_type() const final { return cl::_sym_simple_array; };
+    virtual T_sp element_type() const override { return cl::_sym_bit; };
+public:
     virtual clasp_elttype elttype() const { return clasp_aet_bit; };
-    virtual T_sp type_as_symbol() const final { return cl::_sym_simple_bit_vector; };
     virtual T_sp arrayElementType() const override { return cl::_sym_bit; };
-    virtual Symbol_sp elementTypeAsSymbol() const override { return cl::_sym_bit; };
   public:
     void asBaseSimpleVectorRange(BaseSimpleVector_sp& sv, size_t& start, size_t& end) const override {
       sv = this->asSmartPtr();
@@ -797,8 +812,6 @@ namespace core {
     }
   };
 };
-
-SYMBOL_EXPORT_SC_(CorePkg,simple_double_vector);
 
 namespace core {
   FORWARD(SimpleDoubleVector);
@@ -847,10 +860,11 @@ namespace core {
     // Specific to SimpleDoubleVector_O
 //    virtual void __write__(T_sp stream) const final;
   public:
+    virtual T_sp array_type() const final { return cl::_sym_simple_array; };
+    virtual T_sp element_type() const override { return cl::_sym_double_float;};
+  public:
     virtual clasp_elttype elttype() const { return clasp_aet_df; };
-    virtual T_sp type_as_symbol() const final { return core::_sym_simple_double_vector; };
     virtual T_sp arrayElementType() const override { return cl::_sym_double_float; };
-    virtual Symbol_sp elementTypeAsSymbol() const override { return gc::As_unsafe<Symbol_sp>(this->arrayElementType()); };
   public:
     // Implement these methods for simple vectors - some are implemented in parent classes
     // for convenience if not speed
@@ -1024,7 +1038,6 @@ namespace core {
           size_t displacedIndexOffset)
     : Base(rank,dimensions,fillPointer,displacedTo,displacedIndexOffset) {};
   public:
-    virtual T_sp type_as_symbol() const = 0;
     virtual void sxhash_(HashGenerator& hg) const final {
       BaseSimpleVector_sp svec;
       size_t start,end;
@@ -1079,7 +1092,6 @@ namespace core {
   static Str8Ns_sp create(Str8Ns_sp orig);
   public:
     virtual clasp_elttype elttype() const { return clasp_aet_bc; };
-    virtual T_sp type_as_symbol() const final { return cl::_sym_base_string; };
   public:
     virtual bool equal(T_sp other) const final;
   public:
@@ -1133,7 +1145,6 @@ namespace core {
     };
   public:
     virtual clasp_elttype elttype() const { return clasp_aet_ch; };
-    virtual T_sp type_as_symbol() const final{ return cl::_sym_string; };
   public:
     virtual bool equal(T_sp other) const final;
   public:
@@ -1167,7 +1178,6 @@ namespace core {
                         size_t displacedIndexOffset)
     : Base(rank,dimensions,fillPointer,displacedTo,displacedIndexOffset) {};
   public:
-    virtual T_sp type_as_symbol() const final { return cl::_sym_vector; };
     virtual void sxhash_(HashGenerator& hg) const final {this->General_O::sxhash_(hg);}
   };
 }
@@ -1240,7 +1250,6 @@ namespace core {
     }
   public:
     virtual clasp_elttype elttype() const { return clasp_aet_bit; };
-    virtual T_sp type_as_symbol() const final { return cl::_sym_bit_vector; };
     virtual bool equal(T_sp other) const final;
     virtual bool equalp(T_sp other) const final { return this->equal(other);};
     virtual void internalAdjustSize_(size_t size, T_sp init_element=_Nil<T_O>(), bool initElementSupplied=false ) override;
@@ -1377,9 +1386,6 @@ T_mv clasp_vectorStartEnd(Symbol_sp fn, T_sp thing, Fixnum_sp start, Fixnum_sp e
 //
 
 namespace core {
-
-  List_sp cl__arrayDimensions(Array_sp array);
-
 
   String_sp cl__string(T_sp str);
   SimpleString_sp cl__string_upcase(T_sp arg);
