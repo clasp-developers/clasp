@@ -4,13 +4,19 @@
 
 (in-package :clasp-tests)
 
+(defparameter *passes* 0)
+(defparameter *fails* 0)
+
 (defmacro test (foo &key description )
   `(if ,foo
-       (format t "Passed ~s~%" (if ,description ,description ',foo))
        (progn
+         (format t "Passed ~s~%" (if ,description ,description ',foo))
+         (incf *passes*))
+       (progn
+         (incf *fails*)
          (format t "The test ~s failed~%" ',foo)
          (when ,description (format t "~s~%" ,description))
-         (error "Regression test ~s failed!" ,description))))
+         (format t "FAILED: test ~s!" ,description))))
 
 (defun expand-test-expect-error (fn)
   (handler-case
@@ -24,7 +30,7 @@
              (progn
                ,foo
                nil)
-           (error (err) t)) :description ,description))
+           (error (err) t)) :description ,description)))))
        
 ;;; ------------------------------------------------------------
 ;;; Run tests
@@ -34,3 +40,5 @@
 (load (compile-file "sys:tests;regression;strings01.lisp"))
 (load (compile-file "sys:tests;regression;sequences01.lisp"))
 (load (compile-file "sys:tests;regression;clos.lisp"))
+(format t "Passes: ~a~%" *passes*)
+(format t "Fails:  ~a~%" *fails*)

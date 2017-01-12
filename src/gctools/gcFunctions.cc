@@ -702,6 +702,8 @@ CL_DEFUN core::T_sp gctools__stack_depth() {
 CL_DEFUN void gctools__garbage_collect() {
 #ifdef USE_BOEHM
   GC_gcollect();
+//  BFORMAT_T(BF("GC_invoke_finalizers\n"));
+  GC_invoke_finalizers();
 #endif
 //        printf("%s:%d Starting garbage collection of arena\n", __FILE__, __LINE__ );
 #ifdef USE_MPS
