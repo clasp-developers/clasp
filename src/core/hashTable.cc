@@ -420,7 +420,19 @@ void HashTable_O::sxhash_equalp(HashGenerator &hg, T_sp obj, LocationDependencyP
 }
 
 bool HashTable_O::equalp(T_sp other) const {
-  IMPLEMENT_MEF(BF("Implement HashTable_O::equalp"));
+  if (this == &(*other)) return true;
+  if (!other.generalp()) return false;
+  if (!gc::IsA<HashTable_sp>(other)) return false;
+  HashTable_sp hto = gc::As_unsafe<HashTable_sp>(other);
+  if (this->hashTableTest() != hto->hashTableTest()) return false;
+  if (this->hashTableCount() != hto->hashTableCount()) return false;
+  this->map_while_true( [&hto] (T_sp key, T_sp val)->bool const {
+      T_sp other_value = hto->gethash(key);
+      if (!cl__equalp(val,other_value)) return false;
+      return true;
+    }
+    );
+  return true;
 }
 
 List_sp HashTable_O::keysAsCons() {
@@ -763,7 +775,7 @@ void HashTable_O::mapHash(std::function<void(T_sp, T_sp)> const &fn) {
   }
 }
 
-void HashTable_O::map_while_true(std::function<bool(T_sp, T_sp)> const &fn) {
+void HashTable_O::map_while_true(std::function<bool(T_sp, T_sp)> const &fn) const {
   //        HASH_TABLE_LOCK();
   VectorObjects_sp table = this->_HashTable;
   for (size_t it(0), itEnd(cl__length(table)); it < itEnd; ++it) {
@@ -825,6 +837,13 @@ string HashTable_O::keysAsString() {
   });
   return ss.str();
 }
+
+T_mv clasp_gethash_safe(T_sp key, T_sp thashTable, T_sp default_) {
+  HashTable_sp hashTable = gc::As<HashTable_sp>(thashTable);
+  return hashTable->gethash(key,default_);
+}
+
+
 
   SYMBOL_EXPORT_SC_(ClPkg, make_hash_table);
   SYMBOL_EXPORT_SC_(ClPkg, maphash);
