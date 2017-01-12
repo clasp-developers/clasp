@@ -546,7 +546,7 @@ def configure(cfg):
     elif (cfg.env['LTO_OPTION']=='obj'):
         cfg.env.LTO_FLAG = []
     else:
-        raise Exception("LTO_OPTION can only be 'thinlto'(default), 'lto', or 'obj'")
+        raise Exception("LTO_OPTION can only be 'thinlto'(default), 'lto', or 'obj' - you provided %s" % cfg.env['LTO_OPTION'])
     print("default cfg.env.LTO_OPTION = %s" % cfg.env.LTO_OPTION)
     print("default cfg.env.LTO_FLAG = %s" % cfg.env.LTO_FLAG)
     run_llvm_config(cfg, "--version") # make sure we fail early
