@@ -60,6 +60,7 @@ THE SOFTWARE.
 #include <clasp/core/fileSystem.h>
 #include <clasp/core/array.h>
 #include <clasp/core/evaluator.h>
+#include <clasp/core/designators.h>
 #include <clasp/core/sequence.h>
 #include <clasp/core/primitives.h>
 #include <clasp/core/lispStream.h>
@@ -178,8 +179,8 @@ translate_component_case(T_sp str, T_sp fromcase, T_sp tocase) {
     return str;
   } else if (!gc::IsA<String_sp>(str)) {
 #ifdef CLASP_UNICODE
-    if (CLASP_EXTENDED_STRING_P(str) && brcl_fits_in_base_string(str)) {
-      str = si_coerce_to_base_string(str);
+    if (core__extended_string_p(str) && core__fits_in_base_string(str)) {
+      str = coerce::coerce_to_base_string(str);
       return translate_component_case(str, fromcase, tocase);
     }
 #endif
@@ -277,9 +278,9 @@ BEGIN:
     } else if (cl__stringp(item)) {
       size_t l = cl__length(item);
 #ifdef CLASP_UNICODE
-//		if (clasp_fits_in_base_string(item)) {
-//		    item = si_copy_to_simple_base_string(item);
-//		} else {
+      if (core__fits_in_base_string(item)) {
+        item = core__copy_to_simple_base_string(item);
+      } else
 #endif
       item = cl__copy_seq(gc::As<T_sp>(item));
       gc::As<Cons_sp>(ptr)->rplaca(item);
@@ -1123,7 +1124,7 @@ T_sp clasp_namestring(T_sp tx, int flags) {
   Pathname_sp x = cl__pathname(tx);
 
   /* INV: Pathnames can only be created by mergin, parsing namestrings
-	 * or using clasp_make_pathname(). In all of these cases BRCL will complain
+	 * or using clasp_make_pathname(). In all of these cases Clasp will complain
 	 * at creation time if the pathname has wrong components.
 	 */
   T_sp buffer = clasp_make_string_output_stream(); //(128, 1);
@@ -1253,13 +1254,13 @@ NO_DIRECTORY:
   }
   String_sp sbuffer = gc::As<String_sp>(cl__get_output_stream_string(buffer));
 #ifdef CLASP_UNICODE
-  if (CLASP_EXTENDED_STRING_P(buffer) &&
+  if (core__extended_string_p(buffer) &&
       (flags & CLASP_NAMESTRING_FORCE_BASE_STRING)) {
-    unlikely_if(!clasp_fits_in_base_string(buffer))
+    unlikely_if(!core__fits_in_base_string(buffer))
         FEerror("The filesystem does not accept filenames "
                 "with extended characters: ~S",
-                1, buffer);
-    buffer = si_copy_to_simple_base_string(buffer);
+                1, buffer.tagged_());
+    buffer = core__copy_to_simple_base_string(buffer);
   }
 #endif
   return sbuffer;
@@ -1291,7 +1292,7 @@ CL_DEFUN T_mv cl__parse_namestring(T_sp thing, T_sp host, T_sp tdefaults, Fixnum
       default_host = gc::As<Pathname_sp>(tempdefaults)->_Host;
     }
 #ifdef CLASP_UNICODE
-    thing = si_coerce_to_base_string(thing);
+    thing = coerce::coerce_to_base_string(thing);
 #endif
     p = sequenceKeywordStartEnd(cl::_sym_parse_namestring,
                          gc::As<String_sp>(thing), start, end);

@@ -271,7 +271,7 @@ void Integer_O::__write__(T_sp stream) const {
         const char *prefix;
         T_sp tag;
         union cl_lispunion str;
-#ifdef ECL_UNICODE
+#ifdef CLASP_UNICODE
         ecl__character buffer[10];
 #else
         ecl_base_char buffer[10];
@@ -357,7 +357,7 @@ void Integer_O::__write__(T_sp stream) const {
 	    buffer[ndx++] = 0;
 	    prefix = "closed string-input stream from";
 	    tag = &str;
-#ifdef ECL_UNICODE
+#ifdef CLASP_UNICODE
 	    tag->string.t = t_string;
 	    tag->string.self = buffer;
 #else

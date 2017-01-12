@@ -402,9 +402,6 @@ Fixnum clasp_digitp(claspCharacter ch, int basis) {
     return ch - 'A' + 10;
   if (('a' <= ch) && (10 < basis) && (ch < 'a' + (basis - 10)))
     return ch - 'a' + 10;
-#ifdef CLASP_UNICODE
-  IMPLEMENT_MEF(BF("Handle Unicode"));
-#endif
   return -1;
 }
 

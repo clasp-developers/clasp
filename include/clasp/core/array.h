@@ -34,6 +34,38 @@ THE SOFTWARE.
 #include <clasp/core/sequence.fwd.h>
 #include <clasp/core/corePackage.fwd.h>
 
+namespace core {
+  typedef enum {                  /*  array element type  */
+      clasp_aet_object,         /*  t                */
+      clasp_aet_sf,             /*  single-float     */
+      clasp_aet_df,             /*  double-float     */
+      clasp_aet_bit,            /*  bit              */
+      clasp_aet_fix,            /*  cl_fixnum        */
+      clasp_aet_index,          /*  cl_index         */
+        /* Below here, list types accepted by streams (i.e. OPEN) */
+      clasp_aet_b8,             /*  byte8            */
+      clasp_aet_i8,             /*  integer8         */
+#ifdef clasp_uint16_t
+      clasp_aet_b16,
+      clasp_aet_i16,
+#endif
+#ifdef clasp_uint32_t
+      clasp_aet_b32,
+      clasp_aet_i32,
+#endif
+#ifdef clasp_uint64_t
+      clasp_aet_b64,
+      clasp_aet_i64,
+#endif
+#ifdef CLASP_UNICODE
+      clasp_aet_ch,                     /*  character        */
+#endif
+      clasp_aet_bc,                     /*  base-char        */
+      clasp_aet_last_type = clasp_aet_bc
+  } clasp_elttype;
+
+};
+
 namespace cl {
   extern core::Symbol_sp& _sym_General_O;
   extern core::Symbol_sp& _sym_sequence;
@@ -187,6 +219,7 @@ class Array_O : public General_O {
   size_t       _Length[0];
  public:
   // Low level functions for access to contents
+  virtual clasp_elttype elttype() const = 0;
   virtual size_t elementSizeInBytes() const = 0;
   virtual void* rowMajorAddressOfElement_(size_t index) const = 0;
   virtual void asBaseSimpleVectorRange(BaseSimpleVector_sp& sv, size_t& start, size_t& end) const = 0;
@@ -325,7 +358,7 @@ namespace core {
     virtual std::string get_std_string() const {notStringError(this->asSmartPtr()); }
     virtual vector<size_t> arrayDimensionsAsVector() const {
       vector<size_t> dims;
-      for (size_t i; i<this->_Dimensions._Length; ++i ) {
+      for (size_t i(0); i<this->_Dimensions._Length; ++i ) {
         dims.push_back(this->_Dimensions[i]);
       }
       return dims;
@@ -536,6 +569,7 @@ namespace core {
     }
   //SimpleBaseString_O(size_t total_size) : Base(), _Data('\0',total_size+1) {};
   public:
+    virtual clasp_elttype elttype() const { return clasp_aet_bc; };
     virtual T_sp type_as_symbol() const final { return cl::_sym_simple_base_string; };
     virtual T_sp arrayElementType() const final { return cl::_sym_base_char; };
     virtual Symbol_sp elementTypeAsSymbol() const final { return cl::_sym_base_char; };
@@ -600,6 +634,7 @@ namespace core {
     }
   //SimpleCharacterString_O(size_t total_size) : Base(), _Data('\0',total_size+1) {};
   public:
+    virtual clasp_elttype elttype() const { return clasp_aet_ch; };
     virtual T_sp type_as_symbol() const final { return cl::_sym_simple_string; };
     virtual T_sp arrayElementType() const override { return cl::_sym_character; };
     virtual Symbol_sp elementTypeAsSymbol() const override { return cl::_sym_character; };
@@ -664,6 +699,7 @@ namespace core {
     // Specific to SimpleVector_O
     virtual void __write__(T_sp stream) const final;
   public:
+    virtual clasp_elttype elttype() const { return clasp_aet_object; };
     virtual T_sp type_as_symbol() const final { return cl::_sym_simple_vector; };
     virtual T_sp arrayElementType() const override { return cl::_sym_T_O; };
     virtual Symbol_sp elementTypeAsSymbol() const override { return cl::_sym_T_O; };
@@ -713,6 +749,7 @@ namespace core {
       return 0;
     }
   public:
+    virtual clasp_elttype elttype() const { return clasp_aet_bit; };
     virtual T_sp type_as_symbol() const final { return cl::_sym_simple_bit_vector; };
     virtual T_sp arrayElementType() const override { return cl::_sym_bit; };
     virtual Symbol_sp elementTypeAsSymbol() const override { return cl::_sym_bit; };
@@ -809,6 +846,7 @@ namespace core {
     // Specific to SimpleDoubleVector_O
 //    virtual void __write__(T_sp stream) const final;
   public:
+    virtual clasp_elttype elttype() const { return clasp_aet_df; };
     virtual T_sp type_as_symbol() const final { return core::_sym_simple_double_vector; };
     virtual T_sp arrayElementType() const override { return cl::_sym_double_float; };
     virtual Symbol_sp elementTypeAsSymbol() const override { return gc::As_unsafe<Symbol_sp>(this->arrayElementType()); };
@@ -1039,6 +1077,7 @@ namespace core {
   static Str8Ns_sp create(size_t numChars);
   static Str8Ns_sp create(Str8Ns_sp orig);
   public:
+    virtual clasp_elttype elttype() const { return clasp_aet_bc; };
     virtual T_sp type_as_symbol() const final { return cl::_sym_base_string; };
   public:
     virtual bool equal(T_sp other) const final;
@@ -1092,6 +1131,7 @@ namespace core {
       return StrWNs_O::make(bufferSize, value_type()/*' '*/, true, clasp_make_fixnum(0));
     };
   public:
+    virtual clasp_elttype elttype() const { return clasp_aet_ch; };
     virtual T_sp type_as_symbol() const final{ return cl::_sym_string; };
   public:
     virtual bool equal(T_sp other) const final;
@@ -1147,6 +1187,7 @@ namespace core {
     static VectorTNs_sp make(size_t dimension, T_sp initElement=_Nil<T_O>(), T_sp fillPointer=_Nil<T_O>(), T_sp displacedTo=_Nil<T_O>(), size_t displacedIndexOffset=0 );
     static VectorTNs_sp create(const gctools::Vec0<T_sp> &objs);
     virtual bool equalp(T_sp o) const final;
+    virtual clasp_elttype elttype() const { return clasp_aet_object; };
   };
 };
 
@@ -1197,6 +1238,7 @@ namespace core {
       end = this->length()+this->_DisplacedIndexOffset;
     }
   public:
+    virtual clasp_elttype elttype() const { return clasp_aet_bit; };
     virtual T_sp type_as_symbol() const final { return cl::_sym_bit_vector; };
     virtual bool equal(T_sp other) const final;
     virtual bool equalp(T_sp other) const final { return this->equal(other);};
@@ -1312,6 +1354,7 @@ namespace core {
     virtual void internalAdjustSize_(size_t size, T_sp initElement=_Nil<T_O>(), bool initElementSupplied=false ) final {
       IMPLEMENT_MEF(BF("Add support for internalAdjustSize for ArrayTNs when you see this"));
     };
+    virtual clasp_elttype elttype() const { return clasp_aet_object; };
   };
 
 };
@@ -1362,6 +1405,9 @@ namespace core {
   T_sp cl__string_EQ_(T_sp strdes1, T_sp strdes2, Fixnum_sp start1=clasp_make_fixnum(0), T_sp end1=_Nil<T_O>(), Fixnum_sp start2=clasp_make_fixnum(0), T_sp end2=_Nil<T_O>());
 
   T_sp core__search_string(String_sp sub, size_t sub_start, T_sp sub_end, String_sp outer, size_t outer_start, T_sp outer_end );
+  bool core__fits_in_base_string(T_sp str);
+  T_sp core__copy_to_simple_base_string(T_sp buffer);
+  clasp_elttype clasp_array_elttype(T_sp array);
 };
 
 

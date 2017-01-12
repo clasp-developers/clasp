@@ -640,6 +640,7 @@ namespace core {
   List_sp encode(T_sp);
 };
 
+
 #include <clasp/core/glue.h>
 
 

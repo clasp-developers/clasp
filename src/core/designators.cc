@@ -243,6 +243,20 @@ T_sp outputStreamDesignator(T_sp obj) {
 }
 
 
+T_sp coerce_to_base_string(T_sp str) {
+  if (gc::IsA<SimpleBaseString_sp>(str)) {
+    return str;
+  } else if (gc::IsA<Str8Ns_sp>(str)) {
+    return str;
+  } else if (gc::IsA<SimpleCharacterString_sp>(str)) {
+    return core__copy_to_simple_base_string(str);
+  } else if (gc::IsA<StrWNs_sp>(str)) {
+    return core__copy_to_simple_base_string(str);
+  }
+  SIMPLE_ERROR(BF("Cannot coerce %s to base-string") % _rep_(str));
+}
+
+
 
 
 }; /* coerce */

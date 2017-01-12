@@ -57,6 +57,7 @@ THE SOFTWARE.
 #include <clasp/core/readtable.h>
 #include <clasp/core/lispDefinitions.h>
 #include <clasp/core/instance.h>
+#include <clasp/core/hashTable.h>
 #include <clasp/core/pathname.h>
 #include <clasp/core/primitives.h>
 #include <clasp/core/multipleValues.h>
@@ -332,7 +333,7 @@ static int restartable_io_error(T_sp strm, const char *s);
 static void unread_error(T_sp strm);
 static void unread_twice(T_sp strm);
 static void io_error(T_sp strm) NO_RETURN;
-#ifdef ECL_UNICODE
+#ifdef CLASP_UNICODE
 static cl_index encoding_error(T_sp strm, unsigned char *buffer, claspCharacter c);
 static claspCharacter decoding_error(T_sp strm, unsigned char *buffer, int length);
 #endif
@@ -700,7 +701,11 @@ generic_write_vector(T_sp strm, T_sp data, cl_index start, cl_index end) {
   const FileOps &ops = stream_dispatch_table(strm);
   Vector_sp vec = gc::As<Vector_sp>(data);
   T_sp elementType = vec->arrayElementType();
-  if (elementType == cl::_sym_base_char && cl__characterp(vec->rowMajorAref(0))) {
+  if (elementType == cl::_sym_base_char ||
+#ifdef CLASP_UNICODE
+      elementType == cl::_sym_character ||
+#endif
+      (elementType == cl::_sym_T && cl__characterp(vec->rowMajorAref(0)))) {
     claspCharacter (*write_char)(T_sp, claspCharacter) = ops.write_char;
     for (; start < end; start++) {
       write_char(strm, clasp_as_claspCharacter(gc::As<Character_sp>((vec->rowMajorAref(start)))));
@@ -712,24 +717,22 @@ generic_write_vector(T_sp strm, T_sp data, cl_index start, cl_index end) {
     }
   }
 
-#if 0 // Currently we don't support
-        cl__elttype elttype = clasp_array_elttype(data);
-	if (elttype == clasp_aet_bc ||
-#ifdef ECL_UNICODE
-	    elttype == clasp_aet_ch ||
+  clasp_elttype elttype = clasp_array_elttype(data);
+  if (elttype == clasp_aet_bc ||
+#ifdef CLASP_UNICODE
+      elttype == clasp_aet_ch ||
 #endif
-	    (elttype == clasp_aet_object && CLASPCHARACTERP(clasp_elt(data, 0)))) {
-            claspCharacter (*write_char)(T_sp, claspCharacter) = ops.write_char;
-            for (; start < end; start++) {
-                write_char(strm, clasp_as_claspCharacter(clasp_elt(data, start)));
-            }
-	} else {
-            void (*write_byte)(T_sp, T_sp) = ops.write_byte;
-            for (; start < end; start++) {
-                write_byte(clasp_elt(data, start), strm);
-            }
-	}
-#endif
+      (elttype == clasp_aet_object && cl__elt(data, 0).characterp())) {
+    claspCharacter (*write_char)(T_sp, claspCharacter) = ops.write_char;
+    for (; start < end; start++) {
+      write_char(strm, clasp_as_claspCharacter(cl__elt(data, start)));
+    }
+  } else {
+    void (*write_byte)(T_sp, T_sp) = ops.write_byte;
+    for (; start < end; start++) {
+      write_byte(cl__elt(data, start), strm);
+    }
+  }
   return start;
 }
 
@@ -921,7 +924,7 @@ passthrough_decoder(T_sp stream) {
 
 static int
 passthrough_encoder(T_sp stream, unsigned char *buffer, claspCharacter c) {
-#ifdef ECL_UNICODE
+#ifdef CLASP_UNICODE
   unlikely_if(c > 0xFF) {
     return encoding_error(stream, buffer, c);
   }
@@ -930,7 +933,7 @@ passthrough_encoder(T_sp stream, unsigned char *buffer, claspCharacter c) {
   return 1;
 }
 
-#ifdef ECL_UNICODE
+#ifdef CLASP_UNICODE
 /*
  * US ASCII, that is the 128 (0-127) lowest codes of Unicode
  */
@@ -1013,27 +1016,29 @@ ucs_4le_encoder(T_sp stream, unsigned char *buffer, claspCharacter c) {
  */
 
 static claspCharacter
-ucs_4_decoder(T_sp stream) {
+ucs_4_decoder(T_sp strm) {
+  Stream_sp stream = gc::As<Stream_sp>(strm);
   gctools::Fixnum c = ucs_4be_decoder(stream);
   if (c == 0xFEFF) {
     StreamDecoder(stream) = ucs_4be_decoder;
-    stream->stream.encoder = ucs_4be_encoder;
+    stream->_Encoder = ucs_4be_encoder;
     return ucs_4be_decoder(stream);
   } else if (c == 0xFFFE0000) {
     StreamDecoder(stream) = ucs_4le_decoder;
-    stream->stream.encoder = ucs_4le_encoder;
+    stream->_Encoder = ucs_4le_encoder;
     return ucs_4le_decoder(stream);
   } else {
     StreamDecoder(stream) = ucs_4be_decoder;
-    stream->stream.encoder = ucs_4be_encoder;
+    stream->_Encoder = ucs_4be_encoder;
     return c;
   }
 }
 
 static int
-ucs_4_encoder(T_sp stream, unsigned char *buffer, claspCharacter c) {
+ucs_4_encoder(T_sp tstream, unsigned char *buffer, claspCharacter c) {
+  Stream_sp stream = gc::As<Stream_sp>(tstream);
   StreamDecoder(stream) = ucs_4be_decoder;
-  stream->stream.encoder = ucs_4be_encoder;
+  stream->_Encoder = ucs_4be_encoder;
   buffer[0] = 0xFF;
   buffer[1] = 0xFE;
   buffer[2] = buffer[3] = 0;
@@ -1127,27 +1132,29 @@ ucs_2le_encoder(T_sp stream, unsigned char *buffer, claspCharacter c) {
  */
 
 static claspCharacter
-ucs_2_decoder(T_sp stream) {
+ucs_2_decoder(T_sp tstream) {
+  Stream_sp stream = gc::As<Stream_sp>(tstream);
   claspCharacter c = ucs_2be_decoder(stream);
   if (c == 0xFEFF) {
     StreamDecoder(stream) = ucs_2be_decoder;
-    stream->stream.encoder = ucs_2be_encoder;
+    stream->_Encoder = ucs_2be_encoder;
     return ucs_2be_decoder(stream);
   } else if (c == 0xFFFE) {
     StreamDecoder(stream) = ucs_2le_decoder;
-    stream->stream.encoder = ucs_2le_encoder;
+    stream->_Encoder = ucs_2le_encoder;
     return ucs_2le_decoder(stream);
   } else {
     StreamDecoder(stream) = ucs_2be_decoder;
-    stream->stream.encoder = ucs_2be_encoder;
+    stream->_Encoder = ucs_2be_encoder;
     return c;
   }
 }
 
 static int
-ucs_2_encoder(T_sp stream, unsigned char *buffer, claspCharacter c) {
+ucs_2_encoder(T_sp tstream, unsigned char *buffer, claspCharacter c) {
+  Stream_sp stream = gc::As<Stream_sp>(tstream);
   StreamDecoder(stream) = ucs_2be_decoder;
-  stream->stream.encoder = ucs_2be_encoder;
+  stream->_Encoder = ucs_2be_encoder;
   buffer[0] = 0xFF;
   buffer[1] = 0xFE;
   return 2 + ucs_2be_encoder(stream, buffer + 2, c);
@@ -1158,15 +1165,16 @@ ucs_2_encoder(T_sp stream, unsigned char *buffer, claspCharacter c) {
  */
 
 static claspCharacter
-user_decoder(T_sp stream) {
-  T_sp table = stream->stream.format_table;
+user_decoder(T_sp tstream) {
+  Stream_sp stream = gc::As<Stream_sp>(tstream);
+  T_sp table = stream->_FormatTable;
   T_sp character;
   unsigned char buffer[2];
   if (clasp_read_byte8(stream, buffer, 1) < 1) {
     return EOF;
   }
   character = clasp_gethash_safe(clasp_make_fixnum(buffer[0]), table, _Nil<T_O>());
-  unlikely_if(Null(character)) {
+  unlikely_if(character.nilp()) {
     return decoding_error(stream, buffer, 1);
   }
   if (character == _lisp->_true()) {
@@ -1175,18 +1183,19 @@ user_decoder(T_sp stream) {
     } else {
       gctools::Fixnum byte = (buffer[0] << 8) + buffer[1];
       character = clasp_gethash_safe(clasp_make_fixnum(byte), table, _Nil<T_O>());
-      unlikely_if(Null(character)) {
+      unlikely_if(character.nilp()) {
         return decoding_error(stream, buffer, 2);
       }
     }
   }
-  return CLASP_CHAR_CODE(character);
+  return character.unsafe_character();
 }
 
 static int
-user_encoder(T_sp stream, unsigned char *buffer, claspCharacter c) {
-  T_sp byte = clasp_gethash_safe(ECL_CODE_CHAR(c), stream->stream.format_table, _Nil<T_O>());
-  if (Null(byte)) {
+user_encoder(T_sp tstream, unsigned char *buffer, claspCharacter c) {
+  Stream_sp stream = gc::As<Stream_sp>(tstream);
+  T_sp byte = clasp_gethash_safe(clasp_make_character(c), stream->_FormatTable, _Nil<T_O>());
+  if (byte.nilp()) {
     return encoding_error(stream, buffer, c);
   } else {
     gctools::Fixnum code = clasp_fixnum(byte);
@@ -1207,8 +1216,9 @@ user_encoder(T_sp stream, unsigned char *buffer, claspCharacter c) {
  */
 
 static claspCharacter
-user_multistate_decoder(T_sp stream) {
-  T_sp table_list = stream->stream.format_table;
+user_multistate_decoder(T_sp tstream) {
+  Stream_sp stream = gc::As<Stream_sp>(tstream);
+  T_sp table_list = stream->_FormatTable;
   T_sp table = oCar(table_list);
   T_sp character;
   gctools::Fixnum i, j;
@@ -1219,19 +1229,19 @@ user_multistate_decoder(T_sp stream) {
     }
     j = (j << 8) | buffer[i];
     character = clasp_gethash_safe(clasp_make_fixnum(j), table, _Nil<T_O>());
-    if (CLASPCHARACTERP(character)) {
-      return CLASP_CHAR_CODE(character);
+    if (character.characterp()) {
+      return character.unsafe_character();
     }
-    unlikely_if(Null(character)) {
+    unlikely_if(character.nilp()) {
       return decoding_error(stream, buffer, i);
     }
     if (character == _lisp->_true()) {
       /* Need more characters */
       continue;
     }
-    if (CONSP(character)) {
+    if (character.consp()) {
       /* Changed the state. */
-      stream->stream.format_table = table_list = character;
+      stream->_FormatTable = table_list = character;
       table = oCar(table_list);
       i = j = 0;
       continue;
@@ -1239,28 +1249,30 @@ user_multistate_decoder(T_sp stream) {
     break;
   }
   FEerror("Internal error in decoder table.", 0);
+  UNREACHABLE();
 }
 
 static int
-user_multistate_encoder(T_sp stream, unsigned char *buffer, claspCharacter c) {
-  T_sp table_list = stream->stream.format_table;
+user_multistate_encoder(T_sp tstream, unsigned char *buffer, claspCharacter c) {
+  Stream_sp stream = gc::As<Stream_sp>(tstream);
+  T_sp table_list = stream->_FormatTable;
   T_sp p = table_list;
   do {
     T_sp table = oCar(p);
-    T_sp byte = clasp_gethash_safe(ECL_CODE_CHAR(c), table, _Nil<T_O>());
-    if (!Null(byte)) {
+    T_sp byte = clasp_gethash_safe(clasp_make_character(c), table, _Nil<T_O>());
+    if (!byte.nilp()) {
       gctools::Fixnum code = clasp_fixnum(byte);
       claspCharacter n = 0;
       if (p != table_list) {
         /* Must output a escape sequence */
         T_sp x = clasp_gethash_safe(_lisp->_true(), table, _Nil<T_O>());
-        while (!Null(x)) {
+        while (!x.nilp()) {
           buffer[0] = clasp_fixnum(oCar(x));
           buffer++;
-          x = ECL_cons_cdr(x);
+          x = oCdr(x);
           n++;
         }
-        stream->stream.format_table = p;
+        stream->_FormatTable = p;
       }
       if (code > 0xFF) {
         buffer[1] = code & 0xFF;
@@ -1272,7 +1284,7 @@ user_multistate_encoder(T_sp stream, unsigned char *buffer, claspCharacter c) {
         return n + 1;
       }
     }
-    p = ECL_cons_cdr(p);
+    p = oCdr(p);
   } while (p != table_list);
   /* Exhausted all lists */
   return encoding_error(stream, buffer, c);
@@ -1562,10 +1574,9 @@ str_out_write_char(T_sp strm, claspCharacter c) {
 
 static T_sp
 str_out_element_type(T_sp strm) {
-  T_sp string = StringOutputStreamOutputString(strm);
-  if (cl__simple_string_p(string))
-    return cl::_sym_base_char;
-  return cl::_sym_character;
+  T_sp tstring = StringOutputStreamOutputString(strm);
+  ASSERT(cl__stringp(tstring));
+  return gc::As_unsafe<String_sp>(tstring)->arrayElementType();
 }
 
 T_sp str_out_get_position(T_sp strm) {
@@ -1643,7 +1654,7 @@ CL_DEFUN T_sp core__make_string_output_stream_from_string(T_sp s) {
   StreamMode(strm) = clasp_smm_string_output;
   StringOutputStreamOutputString(strm) = s;
   StreamOutputColumn(strm) = 0;
-#if !defined(ECL_UNICODE)
+#if !defined(CLASP_UNICODE)
   StreamFormat(strm) = kw::_sym_passThrough;
   StreamFlags(strm) = CLASP_STREAM_DEFAULT_FORMAT;
   StreamByteSize(strm) = 8;
@@ -1683,13 +1694,13 @@ CL_DEFUN T_sp cl__make_string_output_stream(Symbol_sp elementType) {
   if (elementType == cl::_sym_base_char) {
     (void)0;
   } else if (elementType == cl::_sym_character) {
-#ifdef ECL_UNICODE
+#ifdef CLASP_UNICODE
     extended = 1;
 #endif
   } else if (!T_sp(eval::funcall(cl::_sym_subtypep, elementType, cl::_sym_base_char)).nilp()) {
     (void)0;
   } else if (!T_sp(eval::funcall(cl::_sym_subtypep, elementType, cl::_sym_character)).nilp()) {
-#ifdef ECL_UNICODE
+#ifdef CLASP_UNICODE
     extended = 1;
 #endif
   } else {
@@ -1759,10 +1770,9 @@ str_in_listen(T_sp strm) {
 
 static T_sp
 str_in_element_type(T_sp strm) {
-  T_sp string = StringInputStreamInputString(strm);
-  if (cl__simple_string_p(string))
-    return cl::_sym_base_char;
-  return cl::_sym_character;
+  T_sp tstring = StringOutputStreamOutputString(strm);
+  ASSERT(cl__stringp(tstring));
+  return gc::As_unsafe<String_sp>(tstring)->arrayElementType();
 }
 
 static T_sp
@@ -1826,12 +1836,12 @@ T_sp clasp_make_string_input_stream(T_sp strng, cl_index istart, cl_index iend) 
   StringInputStreamInputString(strm) = strng;
   StringInputStreamInputPosition(strm) = istart;
   StringInputStreamInputLimit(strm) = iend;
-#if !defined(ECL_UNICODE)
+#if !defined(CLASP_UNICODE)
   StreamFormat(strm) = kw::_sym_passThrough;
   StreamFlags(strm) = CLASP_STREAM_DEFAULT_FORMAT;
   StreamByteSize(strm) = 8;
 #else
-  if (cl__simple_string_p(strng) == t_base_string) {
+  if ( core__base_string_p(strng) /*cl__simple_string_p(strng) == t_base_string*/) {
     StreamFormat(strm) = kw::_sym_latin_1;
     StreamFlags(strm) = CLASP_STREAM_LATIN_1;
     StreamByteSize(strm) = 8;
@@ -2003,7 +2013,7 @@ CL_DEFUN T_sp cl__make_two_way_stream(T_sp istrm, T_sp ostrm) {
   if (!clasp_output_stream_p(ostrm))
     not_an_output_stream(ostrm);
   strm = TwoWayStream_O::create();
-  StreamFormat(strm) = cl_stream_external_format(istrm);
+  StreamFormat(strm) = cl__stream_external_format(istrm);
   StreamMode(strm) = clasp_smm_two_way;
   StreamOps(strm) = duplicate_dispatch_table(two_way_ops);
   TwoWayStreamInput(strm) = istrm;
@@ -2338,7 +2348,7 @@ CL_DEFUN T_sp cl__make_echo_stream(T_sp strm1, T_sp strm2) {
   unlikely_if(!clasp_output_stream_p(strm2))
       not_an_output_stream(strm2);
   strm = EchoStream_O::create();
-  StreamFormat(strm) = cl_stream_external_format(strm1);
+  StreamFormat(strm) = cl__stream_external_format(strm1);
   StreamMode(strm) = clasp_smm_echo;
   StreamOps(strm) = duplicate_dispatch_table(echo_ops);
   EchoStreamInput(strm) = strm1;
@@ -2475,7 +2485,7 @@ CL_DEFUN T_sp cl__make_concatenated_stream(List_sp ap) {
   if (streams.nilp()) {
     StreamFormat(x) = kw::_sym_passThrough;
   } else {
-    StreamFormat(x) = cl_stream_external_format(oCar(streams));
+    StreamFormat(x) = cl__stream_external_format(oCar(streams));
   }
   StreamMode(x) = clasp_smm_concatenated;
   StreamOps(x) = duplicate_dispatch_table(concatenated_ops);
@@ -3081,8 +3091,23 @@ const FileOps input_file_ops = {
     generic_column,
     io_file_close};
 
+
+
+SYMBOL_EXPORT_SC_(KeywordPkg,utf_8);
+SYMBOL_EXPORT_SC_(KeywordPkg,ucs_2);
+SYMBOL_EXPORT_SC_(KeywordPkg,ucs_2be);
+SYMBOL_EXPORT_SC_(KeywordPkg,ucs_2le) 
+SYMBOL_EXPORT_SC_(KeywordPkg,ucs_4);
+SYMBOL_EXPORT_SC_(KeywordPkg,ucs_4be);
+SYMBOL_EXPORT_SC_(KeywordPkg,ucs_4le);
+SYMBOL_EXPORT_SC_(KeywordPkg,iso_8859_1);
+SYMBOL_EXPORT_SC_(KeywordPkg,latin_1);
+SYMBOL_EXPORT_SC_(KeywordPkg,us_ascii);
+SYMBOL_EXPORT_SC_(ExtPkg,make_encoding);
+
 static int
-parse_external_format(T_sp stream, T_sp format, int flags) {
+parse_external_format(T_sp tstream, T_sp format, int flags) {
+  Stream_sp stream = gc::As<Stream_sp>(tstream);
   if (format == kw::_sym_default) {
     format = ext::_sym_STARdefault_external_formatSTAR->symbolValue();
   }
@@ -3091,7 +3116,7 @@ parse_external_format(T_sp stream, T_sp format, int flags) {
     format = oCar(format);
   }
   if (format == _lisp->_true()) {
-#ifdef ECL_UNICODE
+#ifdef CLASP_UNICODE
     return (flags & ~CLASP_STREAM_FORMAT) | CLASP_STREAM_UTF_8;
 #else
     return (flags & ~CLASP_STREAM_FORMAT) | CLASP_STREAM_DEFAULT_FORMAT;
@@ -3116,53 +3141,53 @@ parse_external_format(T_sp stream, T_sp format, int flags) {
     return flags & ~CLASP_STREAM_LITTLE_ENDIAN;
   }
   if (format == kw::_sym_passThrough) {
-#ifdef ECL_UNICODE
+#ifdef CLASP_UNICODE
     return (flags & ~CLASP_STREAM_FORMAT) | CLASP_STREAM_LATIN_1;
 #else
     return (flags & ~CLASP_STREAM_FORMAT) | CLASP_STREAM_DEFAULT_FORMAT;
 #endif
   }
-#ifdef ECL_UNICODE
+#ifdef CLASP_UNICODE
 PARSE_SYMBOLS:
-  if (format == @':utf-8') {
+  if (format == kw::_sym_utf_8) {
     return (flags & ~CLASP_STREAM_FORMAT) | CLASP_STREAM_UTF_8;
   }
-  if (format == @':ucs-2') {
+  if (format == kw::_sym_ucs_2) {
     return (flags & ~CLASP_STREAM_FORMAT) | CLASP_STREAM_UCS_2;
   }
-  if (format == @':ucs-2be') {
+  if (format == kw::_sym_ucs_2be) {
     return (flags & ~CLASP_STREAM_FORMAT) | CLASP_STREAM_UCS_2BE;
   }
-  if (format == @':ucs-2le') {
+  if (format == kw::_sym_ucs_2le) {
     return (flags & ~CLASP_STREAM_FORMAT) | CLASP_STREAM_UCS_2LE;
   }
   if (format == kw::_sym_ucs_4) {
     return (flags & ~CLASP_STREAM_FORMAT) | CLASP_STREAM_UCS_4;
   }
-  if (format == @':ucs-4be') {
+  if (format == kw::_sym_ucs_4be) {
     return (flags & ~CLASP_STREAM_FORMAT) | CLASP_STREAM_UCS_4BE;
   }
-  if (format == @':ucs-4le') {
+  if (format == kw::_sym_ucs_4le) {
     return (flags & ~CLASP_STREAM_FORMAT) | CLASP_STREAM_UCS_4LE;
   }
-  if (format == @':iso-8859-1') {
+  if (format == kw::_sym_iso_8859_1) {
     return (flags & ~CLASP_STREAM_FORMAT) | CLASP_STREAM_ISO_8859_1;
   }
   if (format == kw::_sym_latin_1) {
     return (flags & ~CLASP_STREAM_FORMAT) | CLASP_STREAM_LATIN_1;
   }
-  if (format == @':us-ascii') {
+  if (format == kw::_sym_us_ascii) {
     return (flags & ~CLASP_STREAM_FORMAT) | CLASP_STREAM_US_ASCII;
   }
-  if (ECL_HASH_TABLE_P(format)) {
-    stream->stream.format_table = format;
+  if (gc::IsA<HashTable_sp>(format)) {
+    stream->_FormatTable = format;
     return (flags & ~CLASP_STREAM_FORMAT) | CLASP_STREAM_USER_FORMAT;
   }
-  if (ECL_SYMBOLP(format)) {
-    format = si_make_encoding(format);
-    if (ECL_SYMBOLP(format))
-      goto PARSE_SYMBOLS;
-    stream->stream.format_table = format;
+  if (gc::IsA<Symbol_sp>(format)) {
+    ASSERT(format.notnilp());
+    format = eval::funcall(ext::_sym_make_encoding, format);
+    if (gc::IsA<Symbol_sp>(format)) goto PARSE_SYMBOLS;
+    stream->_FormatTable = format;
     return (flags & ~CLASP_STREAM_FORMAT) | CLASP_STREAM_USER_FORMAT;
   }
 #endif
@@ -3171,9 +3196,10 @@ PARSE_SYMBOLS:
 }
 
 static void
-set_stream_elt_type(T_sp stream, gctools::Fixnum byte_size, int flags,
+set_stream_elt_type(T_sp tstream, gctools::Fixnum byte_size, int flags,
                     T_sp external_format) {
   T_sp t;
+  Stream_sp stream = gc::As<Stream_sp>(tstream);
   if (byte_size < 0) {
     byte_size = -byte_size;
     flags |= CLASP_STREAM_SIGNED_BYTES;
@@ -3192,78 +3218,78 @@ set_stream_elt_type(T_sp stream, gctools::Fixnum byte_size, int flags,
     StreamOps(stream).read_char = not_character_read_char;
     StreamOps(stream).write_char = not_character_write_char;
     break;
-#ifdef ECL_UNICODE
+#ifdef CLASP_UNICODE
   /*case ECL_ISO_8859_1:*/
   case CLASP_STREAM_LATIN_1:
     FileStreamEltType(stream) = cl::_sym_base_char;
     byte_size = 8;
     StreamFormat(stream) = kw::_sym_latin_1;
-    stream->stream.encoder = passthrough_encoder;
+    stream->_Encoder = passthrough_encoder;
     StreamDecoder(stream) = passthrough_decoder;
     break;
   case CLASP_STREAM_UTF_8:
     FileStreamEltType(stream) = cl::_sym_character;
     byte_size = 8;
-    StreamFormat(stream) = @':utf-8';
-    stream->stream.encoder = utf_8_encoder;
+    StreamFormat(stream) = kw::_sym_utf_8;
+    stream->_Encoder = utf_8_encoder;
     StreamDecoder(stream) = utf_8_decoder;
     break;
   case CLASP_STREAM_UCS_2:
     FileStreamEltType(stream) = cl::_sym_character;
     byte_size = 8 * 2;
-    StreamFormat(stream) = @':ucs-2';
-    stream->stream.encoder = ucs_2_encoder;
+    StreamFormat(stream) = kw::_sym_ucs_2;
+    stream->_Encoder = ucs_2_encoder;
     StreamDecoder(stream) = ucs_2_decoder;
     break;
   case CLASP_STREAM_UCS_2BE:
     FileStreamEltType(stream) = cl::_sym_character;
     byte_size = 8 * 2;
     if (flags & CLASP_STREAM_LITTLE_ENDIAN) {
-      StreamFormat(stream) = @':ucs-2le';
-      stream->stream.encoder = ucs_2le_encoder;
+      StreamFormat(stream) = kw::_sym_ucs_2le;
+      stream->_Encoder = ucs_2le_encoder;
       StreamDecoder(stream) = ucs_2le_decoder;
     } else {
-      StreamFormat(stream) = @':ucs-2be';
-      stream->stream.encoder = ucs_2be_encoder;
+      StreamFormat(stream) = kw::_sym_ucs_2be;
+      stream->_Encoder = ucs_2be_encoder;
       StreamDecoder(stream) = ucs_2be_decoder;
     }
     break;
   case CLASP_STREAM_UCS_4:
     FileStreamEltType(stream) = cl::_sym_character;
     byte_size = 8 * 4;
-    StreamFormat(stream) = @':ucs-4be';
-    stream->stream.encoder = ucs_4_encoder;
+    StreamFormat(stream) = kw::_sym_ucs_4be;
+    stream->_Encoder = ucs_4_encoder;
     StreamDecoder(stream) = ucs_4_decoder;
     break;
   case CLASP_STREAM_UCS_4BE:
     FileStreamEltType(stream) = cl::_sym_character;
     byte_size = 8 * 4;
     if (flags & CLASP_STREAM_LITTLE_ENDIAN) {
-      StreamFormat(stream) = @':ucs-4le';
-      stream->stream.encoder = ucs_4le_encoder;
+      StreamFormat(stream) = kw::_sym_ucs_4le;
+      stream->_Encoder = ucs_4le_encoder;
       StreamDecoder(stream) = ucs_4le_decoder;
     } else {
-      StreamFormat(stream) = @':ucs-4be';
-      stream->stream.encoder = ucs_4be_encoder;
+      StreamFormat(stream) = kw::_sym_ucs_4be;
+      stream->_Encoder = ucs_4be_encoder;
       StreamDecoder(stream) = ucs_4be_decoder;
     }
     break;
   case CLASP_STREAM_USER_FORMAT:
     FileStreamEltType(stream) = cl::_sym_character;
     byte_size = 8;
-    StreamFormat(stream) = StreamFormat(stream) _table;
+    StreamFormat(stream) = stream->_FormatTable;
     if ((StreamFormat(stream)).consp()) {
-      stream->stream.encoder = user_multistate_encoder;
+      stream->_Encoder = user_multistate_encoder;
       StreamDecoder(stream) = user_multistate_decoder;
     } else {
-      stream->stream.encoder = user_encoder;
+      stream->_Encoder = user_encoder;
       StreamDecoder(stream) = user_decoder;
     }
     break;
   case CLASP_STREAM_US_ASCII:
     FileStreamEltType(stream) = cl::_sym_base_char;
     byte_size = 8;
-    StreamFormat(stream) = @':us-ascii';
+    StreamFormat(stream) = kw::_sym_us_ascii;
     StreamEncoder(stream) = ascii_encoder;
     StreamDecoder(stream) = ascii_decoder;
     break;
@@ -4318,7 +4344,7 @@ CL_DEFUN T_sp core__file_stream_fd(T_sp s) {
     seq_in_set_position(T_sp strm, T_sp pos)
     {
 	gctools::Fixnum disp;
-	if (Null(pos)) {
+	if (pos.nilp()) {
             disp = SEQ_INPUT_LIMIT(strm);
 	}  else {
             disp = clasp_toSize(pos);
@@ -4387,12 +4413,12 @@ CL_DEFUN T_sp core__file_stream_fd(T_sp s) {
 	StreamOps(strm) = duplicate_dispatch_table(seq_in_ops);
 	StreamMode(strm) = clasp_smm_sequence_input;
         if (!byte_size) {
-#if defined(ECL_UNICODE)
+#if defined(CLASP_UNICODE)
             if (cl__simple_string_p(vector)) {
-                if (Null(external_format))
+              if (external_format.nilp())
                     external_format = kw::_sym_default;
             } else {
-                if (Null(external_format)) {
+              if (external_format.nilp()) {
 #ifdef WORDS_BIGENDIAN
                     external_format = @':ucs-4be';
 #else
@@ -4401,7 +4427,7 @@ CL_DEFUN T_sp core__file_stream_fd(T_sp s) {
                 }
             }
 #else
-            if (Null(external_format)) {
+            if (external_format.nilp()) {
                 external_format = kw::_sym_default;
             }
 #endif
@@ -4466,7 +4492,7 @@ CL_DEFUN T_sp core__file_stream_fd(T_sp s) {
     {
 	T_sp vector = SEQ_OUTPUT_VECTOR(strm);
 	gctools::Fixnum disp;
-	if (Null(pos)) {
+	if (pos.nilp()) {
             disp = vector->vector.fillp;
 	} else {
             disp = clasp_toSize(pos);
@@ -4534,12 +4560,12 @@ CL_DEFUN T_sp core__file_stream_fd(T_sp s) {
 	StreamOps(strm) = duplicate_dispatch_table(seq_out_ops);
 	StreamMode(strm) = clasp_smm_sequence_output;
         if (!byte_size) {
-#if defined(ECL_UNICODE)
+#if defined(CLASP_UNICODE)
             if (cl__simple_string_p(vector)) {
-                if (Null(external_format))
+              if (external_format.nilp())
                     external_format = kw::_sym_default;
             } else {
-                if (Null(external_format)) {
+              if (external_format.nilp()) {
 #ifdef WORDS_BIGENDIAN
                     external_format = @':ucs-4be';
 #else
@@ -4548,7 +4574,7 @@ CL_DEFUN T_sp core__file_stream_fd(T_sp s) {
                 }
             }
 #else
-            if (Null(external_format)) {
+            if (external_format.nilp()) {
                 external_format = kw::_sym_default;
             }
 #endif
@@ -4807,7 +4833,7 @@ CL_DEFUN T_sp core__do_write_sequence(T_sp seq, T_sp stream, T_sp s, T_sp e) {
   if (start < end) {
     const FileOps &ops = stream_dispatch_table(stream);
     if (cl__listp(seq)) {
-      T_sp elt_type = cl_stream_element_type(stream);
+      T_sp elt_type = cl__stream_element_type(stream);
       bool ischar = (elt_type == cl::_sym_base_char) || (elt_type == cl::_sym_character);
       T_sp s = cl__nthcdr(start, seq);
       T_sp orig = s;
@@ -4863,7 +4889,7 @@ T_sp si_do_read_sequence(T_sp seq, T_sp stream, T_sp s, T_sp e) {
   if (start < end) {
     const FileOps &ops = stream_dispatch_table(stream);
     if (cl__listp(seq)) {
-      T_sp elt_type = cl_stream_element_type(stream);
+      T_sp elt_type = cl__stream_element_type(stream);
       bool ischar = (elt_type == cl::_sym_base_char) || (elt_type == cl::_sym_character);
       seq = cl__nthcdr(start, seq);
       T_sp orig = seq;
@@ -4975,11 +5001,11 @@ CL_DEFUN T_sp cl__open_stream_p(T_sp strm) {
   return (StreamClosed(strm) ? _Nil<T_O>() : _lisp->_true());
 }
 
-T_sp cl_stream_element_type(T_sp strm) {
+CL_DEFUN T_sp cl__stream_element_type(T_sp strm) {
   return clasp_stream_element_type(strm);
 }
 
-T_sp cl_stream_external_format(T_sp strm) {
+CL_DEFUN T_sp cl__stream_external_format(T_sp strm) {
   T_sp output;
 AGAIN:
   if (Instance_sp instance = strm.asOrNull<Instance_O>()) {
@@ -5500,7 +5526,7 @@ not_a_character_stream(T_sp s) {
                                                         SimpleBaseString_O::make("~A is not a character stream"),
                                                         kw::_sym_formatArguments, Cons_O::createList(s),
                                                         kw::_sym_expectedType, cl::_sym_character,
-                                                        kw::_sym_datum, cl_stream_element_type(s)));
+                                                        kw::_sym_datum, cl__stream_element_type(s)));
 }
 
 static void
@@ -5509,7 +5535,7 @@ not_a_binary_stream(T_sp s) {
                                                         SimpleBaseString_O::make("~A is not a binary stream"),
                                                         kw::_sym_formatArguments, Cons_O::createList(s),
                                                         kw::_sym_expectedType, cl::_sym_Integer_O,
-                                                        kw::_sym_datum, cl_stream_element_type(s)));
+                                                        kw::_sym_datum, cl__stream_element_type(s)));
 }
 
 static void
@@ -5586,13 +5612,15 @@ wrong_file_handler(T_sp strm) {
   FEerror("Internal error: stream ~S has no valid C file handler.", 1, strm.raw_());
 }
 
-#ifdef ECL_UNICODE
+SYMBOL_EXPORT_SC_(ExtPkg,encoding_error);
+
+#ifdef CLASP_UNICODE
 static cl_index
 encoding_error(T_sp stream, unsigned char *buffer, claspCharacter c) {
-  T_sp code = eval::funcall(@'ext::encoding-error', stream,
+  T_sp code = eval::funcall(ext::_sym_encoding_error, stream,
                             StreamExternalFormat(stream),
-                            Integer_O::create(c));
-  if (Null(code)) {
+                            Integer_O::create((Fixnum)c));
+  if (code.nilp()) {
     /* Output nothing */
     return 0;
   } else {
@@ -5601,16 +5629,17 @@ encoding_error(T_sp stream, unsigned char *buffer, claspCharacter c) {
   }
 }
 
+SYMBOL_EXPORT_SC_(ExtPkg,decoding_error);
 static claspCharacter
 decoding_error(T_sp stream, unsigned char *buffer, int length) {
   T_sp octets = _Nil<T_O>(), code;
   while (length > 0) {
-    octets = CONS(make_fixnum(buffer[--length]), octets);
+    octets = Cons_O::create(make_fixnum(buffer[--length]), octets);
   }
-  code = eval::funcall(@'ext::decoding-error', stream,
+  code = eval::funcall(ext::_sym_decoding_error, stream,
                        StreamExternalFormat(stream),
                        octets);
-  if (Null(code)) {
+  if (code.nilp()) {
     /* Go for next character */
     return StreamDecoder(stream)(stream);
   } else {
@@ -5650,7 +5679,7 @@ wsock_error(const char *err_msg, T_sp strm) {
 	T_sp null_stream;
 	T_sp external_format = _Nil<T_O>();
 #if defined(CLASP_MS_WINDOWS_HOST)
-#ifdef ECL_UNICODE
+#ifdef CLASP_UNICODE
 	external_format = Cons_O::createList( kw::_sym_latin_1, kw::_sym_crlf);
 	flags = 0;
 #else
@@ -6278,7 +6307,7 @@ CL_DEFUN T_sp cl__write_sequence(T_sp seq, T_sp stream, Fixnum_sp fstart, T_sp t
   }
   const FileOps &ops = stream_dispatch_table(stream);
   if (cl__listp(seq)) {
-    T_sp elt_type = cl_stream_element_type(stream);
+    T_sp elt_type = cl__stream_element_type(stream);
     bool ischar = (elt_type == cl::_sym_base_char) || (elt_type == cl::_sym_character);
     T_sp s = cl__nthcdr(start, seq);
     for (;; s = cons_cdr(s)) {

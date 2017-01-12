@@ -624,6 +624,7 @@ def configure(cfg):
     cfg.define("DEBUG_CL_SYMBOLS",1)
 #    cfg.define("SOURCE_DEBUG",1)
     cfg.define("USE_SOURCE_DATABASE",1)
+    cfg.define("CLASP_UNICODE",1)
     cfg.define("DEBUG_TRACE_INTERPRETED_CLOSURES",1)
 #    cfg.define("EXPAT",1)
     cfg.define("INCLUDED_FROM_CLASP",1)
@@ -1198,8 +1199,7 @@ class scrape_with_preproc_scan(Task.Task):
     # This is kept for reference, it got converted into a run(self) method below.
     #run_str = '../../src/common/preprocess-to-sif ${TGT[0].abspath()} ${CXX} -E -DSCRAPING ${ARCH_ST:ARCH} ${CXXFLAGS} ${CPPFLAGS} ${FRAMEWORKPATH_ST:FRAMEWORKPATH} ${CPPPATH_ST:INCPATHS} ${DEFINES_ST:DEFINES} ${CXX_SRC_F}${SRC}'
     ext_out = ['.sif']
-    shell = False
-
+    shell = True
     def run(self):
         env = self.env
         preproc_args = [] + env.CXX + ["-E -DSCRAPING"] + self.colon("ARCH_ST", "ARCH") + env.CXXFLAGS + env.CPPFLAGS + \
@@ -1212,7 +1212,7 @@ class scrape_with_preproc_scan(Task.Task):
             "--eval", "(cscrape:generate-one-sif \"%s\" #P\"%s\")" % (preproc_args, self.outputs[0].abspath()),
             "--eval", "(quit)"]
 #        print("scrape = %s" % cmd)
-        return self.exec_command(cmd, shell = False)
+        return self.exec_command(cmd, shell = True)
 
     def scan(self):
         saved_env = self.env

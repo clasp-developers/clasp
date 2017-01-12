@@ -165,7 +165,7 @@ namespace core {
 	    write_array_inner(0, this->asSmartPtr(), stream);
 	}
     }
-
+#if 0
 #ifdef CLASP_UNICODE
     void _clasp_write_string(T_sp x, T_sp stream) {
 	cl_index ndx;
@@ -184,7 +184,8 @@ namespace core {
 	}
     }
 #endif
-
+#endif
+    
     void BitVector_O::__write__(T_sp stream) const {
 	if (!clasp_print_array() && !clasp_print_readably()) {
 	    writestr_stream("#<bit-vector ", stream);

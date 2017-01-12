@@ -273,6 +273,13 @@ CL_DEFUN List_sp cl__arrayDimensions(Array_sp array)
   return indices;
 }
 
+CL_LISPIFY_NAME("cl:adjustable-array-p");
+CL_DEFUN bool cl__adjustable_array_p(Array_sp array)
+{
+  return (gc::IsA<MDArray_sp>(array));
+}
+
+
 CL_LISPIFY_NAME("cl:array-dimension");
 CL_DEFUN size_t cl__arrayDimension(Array_sp array, size_t idx)
 {
@@ -1173,6 +1180,25 @@ inline void setup_string_op_arguments(T_sp string1_desig, T_sp string2_desig,
   iend2 = MIN(end2.nilp() ? cl__length(string2) : unbox_fixnum(gc::As<Fixnum_sp>(end2)), cl__length(string2));
 }
 
+#define TEMPLATE_SINGLE_STRING_DISPATCHER(_string_,_function_,istart,iend) \
+  if (gc::IsA<SimpleString_sp>(_string_)) {				\
+    if (gc::IsA<SimpleBaseString_sp>(_string_)) { \
+      auto sbcs2 = gc::As_unsafe<SimpleBaseString_sp>(_string_); \
+      return _function_(*sbcs2,istart,iend); \
+    } else {							\
+      auto scs2 = gc::As_unsafe<SimpleCharacterString_sp>(_string_); \
+      return _function_(*scs2,istart,iend); \
+    } \
+  } else { \
+    if (gc::IsA<Str8Ns_sp>(_string_)) { \
+      auto ns82 = gc::As_unsafe<Str8Ns_sp>(_string_); \
+      return _function_(*ns82,istart,iend); \
+    } else { \
+      auto nsw2 = gc::As_unsafe<StrWNs_sp>(_string_); \
+      return _function_(*nsw2,istart,iend); \
+    } \
+  }
+    
 #define TEMPLATE_HALF_STRING_DISPATCHER(_this_,_string2_,_function_,istart1,iend1,istart2,iend2) \
   if (gc::IsA<SimpleString_sp>(_string2_)) {				\
     if (gc::IsA<SimpleBaseString_sp>(_string2_)) { \
@@ -1712,6 +1738,10 @@ typename SimpleBaseString_O::value_type SimpleBaseString_O::initial_element_from
 bool SimpleBaseString_O::equal(T_sp other) const {
   if (&*other==this) return true;
   if (!other.generalp()) return false;
+  if (!cl__stringp(other)) return false;
+  String_sp sother = gc::As_unsafe<String_sp>(other);
+  TEMPLATE_HALF_STRING_DISPATCHER(this,sother,template_string_EQ_equal,0,this->length(),0,sother->length());
+#if 0
   if (gc::IsA<SimpleString_sp>(other)) {
     if (gc::IsA<SimpleBaseString_sp>(other)) {
       auto so = gc::As_unsafe<SimpleBaseString_sp>(other);
@@ -1730,6 +1760,7 @@ bool SimpleBaseString_O::equal(T_sp other) const {
     }
   }
   return false;
+#endif
 };
 
 bool SimpleBaseString_O::equalp(T_sp other) const {
@@ -2426,7 +2457,7 @@ CL_DEFUN MDArray_sp core__make_mdarray(List_sp dimensions,
                                        size_t displacedIndexOffset,
                                        T_sp initialElement,
                                        bool initialElementSuppliedP) {
-    return ArrayTNs_O::make(dimensions,initialElement,displacedTo,displacedIndexOffset);
+  return ArrayTNs_O::make(dimensions,initialElement,displacedTo,displacedIndexOffset);
 };
 
 
@@ -2531,5 +2562,86 @@ CL_DEFUN List_sp core__split(const string& all, const string &chars) {
   return first;
 }
 
+
+clasp_elttype clasp_array_elttype(T_sp a)
+{
+  return gc::As<Array_sp>(a)->elttype();
+}
+
+
+
+
+CL_DEFUN T_sp core__copy_to_simple_base_string(T_sp x)
+{
+ AGAIN:
+  if (x.characterp()) {
+    x = cl__string(x);
+    goto AGAIN;
+  } else if (gc::IsA<Symbol_sp>(x)) {
+    x = gc::As_unsafe<Symbol_sp>(x)->symbolName();
+    goto AGAIN;
+  }
+#ifdef CLASP_UNICODE
+  unlikely_if (gc::IsA<StrWNs_sp>(x)) {
+    StrWNs_sp wx = gc::As_unsafe<StrWNs_sp>(x);
+    BaseSimpleVector_sp bsv;
+    size_t start, end;
+    wx->asBaseSimpleVectorRange(bsv,start,end);
+    SimpleCharacterString_sp swx = gc::As_unsafe<SimpleCharacterString_sp>(bsv);
+    SimpleBaseString_sp y = SimpleBaseString_O::make(wx->length());
+    for (size_t index(0); index < wx->length(); ++index ) {
+      claspCharacter c = (*swx)[index+start];
+      if (!clasp_base_char_p(c)) {
+        SIMPLE_ERROR(BF("Cannot coerce string %s to a base-string") % _rep_(x));
+      }
+      (*y)[index] = c;
+    }
+    return y;
+  }
+  unlikely_if (gc::IsA<SimpleCharacterString_sp>(x)) {
+    SimpleCharacterString_sp sx = gc::As_unsafe<SimpleCharacterString_sp>(x);
+    SimpleBaseString_sp y = SimpleBaseString_O::make(sx->length());
+    for (size_t index(0); index < sx->length(); ++index ) {
+      claspCharacter c = (*sx)[index];
+      if (!clasp_base_char_p(c)) {
+        SIMPLE_ERROR(BF("Cannot coerce string %s to a base-string") % _rep_(x));
+      }
+      (*y)[index] = c;
+    }
+    return y;
+  }
+#endif
+  if (core__base_string_p(x)) {
+    String_sp sx = gc::As_unsafe<String_sp>(x);
+    BaseSimpleVector_sp bsv;
+    size_t start, end;
+    sx->asBaseSimpleVectorRange(bsv,start,end);
+    SimpleBaseString_sp swx = gc::As_unsafe<SimpleBaseString_sp>(bsv);
+    SimpleBaseString_sp y = SimpleBaseString_O::make(sx->length());
+    memcpy(&(*y)[0],&(*swx)[start],sx->length());
+    return y;
+  }
+  SIMPLE_ERROR(BF("Could not copy %s to simple-base-string") % _rep_(x));
+}
+
+
+template <typename T1>
+bool template_fits_in_base_string(const T1& sub, size_t start, size_t end)
+{
+  // The std::search convention is reversed -->  std::search(outer,sub,...)
+  const typename T1::value_type* s_cps = &sub[start];
+  const typename T1::value_type* s_cpe = &sub[end];
+  for ( ; s_cps != s_cpe; ++s_cps ) {
+    if ( !clasp_base_char_p(*s_cps) ) {
+      return false;
+    }
+  }
+  return true;
+}
+
+bool core__fits_in_base_string(T_sp tstr) {
+  String_sp str = gc::As<String_sp>(tstr);
+  TEMPLATE_SINGLE_STRING_DISPATCHER(str,template_fits_in_base_string,0,str->length());
+}
 
 }; /* core */

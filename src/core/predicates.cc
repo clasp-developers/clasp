@@ -84,6 +84,13 @@ CL_DEFUN bool cl__simple_string_p(T_sp obj) {
 
 CL_LAMBDA(arg);
 CL_DECLARE();
+CL_DOCSTRING("Return true if argument is a simple-string");
+CL_DEFUN bool core__extended_string_p(T_sp obj) {
+  return gc::IsA<SimpleCharacterString_sp>(obj)||gc::IsA<StrWNs_sp>(obj);
+};
+
+CL_LAMBDA(arg);
+CL_DECLARE();
 CL_DOCSTRING("doubleFloatP");
 CL_DEFUN bool core__double_float_p(T_sp obj) {
   return gc::IsA<DoubleFloat_sp>(obj);

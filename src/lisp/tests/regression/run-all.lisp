@@ -6,11 +6,11 @@
 
 (defmacro test (foo &key description )
   `(if ,foo
-       (format t "Passed ~a~%" (if ,description ,description ',foo))
+       (format t "Passed ~s~%" (if ,description ,description ',foo))
        (progn
-         (format t "The test ~a failed~%" ',foo)
-         (when ,description (format t "~a~%" ,description))
-         (error "Regression test ~a failed!" ,description))))
+         (format t "The test ~s failed~%" ',foo)
+         (when ,description (format t "~s~%" ,description))
+         (error "Regression test ~s failed!" ,description))))
 
 (defun expand-test-expect-error (fn)
   (handler-case
@@ -28,8 +28,8 @@
        
 ;;; ------------------------------------------------------------
 ;;; Run tests
-(load "sys:tests;regression;array0.lisp")
-(load "sys:tests;regression;tests01.lisp")
-(load "sys:tests;regression;finalizers.lisp")
-(load "sys:tests;regression;strings01.lisp")
-(load "sys:tests;regression;sequences01.lisp")
+(load (compile-file "sys:tests;regression;array0.lisp"))
+(load (compile-file "sys:tests;regression;tests01.lisp"))
+(load (compile-file "sys:tests;regression;finalizers.lisp"))
+(load (compile-file "sys:tests;regression;strings01.lisp"))
+(load (compile-file "sys:tests;regression;sequences01.lisp"))

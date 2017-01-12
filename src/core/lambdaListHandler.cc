@@ -1125,7 +1125,7 @@ LambdaListHandler_sp LambdaListHandler_O::create(List_sp lambda_list, List_sp de
 }
 
 void LambdaListHandler_O::setComment(const string &s) { this->_Comment = SimpleBaseString_O::make(s); };
-string LambdaListHandler_O::getComment() const { return this->_Comment->get_std_string(); };
+string LambdaListHandler_O::getComment() const { if (this->_Comment) return this->_Comment->get_std_string(); else return ""; };
 
 
 LambdaListHandler_sp LambdaListHandler_O::create(int numArgs, const std::set<int> &skipIndices) {

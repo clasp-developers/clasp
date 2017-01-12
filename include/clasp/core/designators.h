@@ -83,6 +83,9 @@ T_sp outputStreamDesignator(T_sp obj);
  void inBoundsOrError(cl_index index, cl_index start, cl_index end);
  void inBoundsBelowEndOrError(cl_index index, cl_index start, cl_index end);
 #endif
+
+
+ T_sp coerce_to_base_string(T_sp str);
  
 }; /* designators */
 

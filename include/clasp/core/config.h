@@ -45,7 +45,7 @@ typedef uintptr_t cl_intptr_t;
 #define CHAR_CODE_LIMIT 256 /* ASCII or unicode character code limit */
 
 typedef unsigned char claspChar;
-typedef unsigned int  claspCharacter;
+typedef int  claspCharacter;
 #define CLASP_CHAR(x) ((x)&0xff)
 
 #define IS_DIR_SEPARATOR(c) ((c) == '/')

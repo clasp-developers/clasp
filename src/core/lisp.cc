@@ -1234,6 +1234,9 @@ void Lisp_O::parseCommandLineArguments(int argc, char *argv[], const CommandLine
   features = Cons_O::create(_lisp->internKeyword("LINUX"), features);
   features = Cons_O::create(_lisp->internKeyword("X86-64"), features);
 #endif
+#ifdef CLASP_UNICODE
+  features = Cons_O::create(_lisp->internKeyword("UNICODE"), features);
+#endif
 #if (LLVM_VERSION_X100>=380)
   features = Cons_O::create(_lisp->internKeyword("LLVM38"), features);
 #endif
