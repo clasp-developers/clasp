@@ -307,6 +307,7 @@ LCC_RETURN generic_function_dispatch(Instance_sp gf, VaList_sp vargs) {
   return standard_dispatch(gf, vargs, cache);
 }
 
+#if 0
 /*! Reproduces functionality in ecl_slot_reader_dispatch */
 LCC_RETURN slot_reader_dispatch(Instance_sp gf, VaList_sp vargs) {
   Cache_sp cache = _lisp->slotCachePtr();
@@ -320,6 +321,7 @@ LCC_RETURN slot_writer_dispatch(Instance_sp gf, VaList_sp vargs) {
   // Should I use standard_dispatch or do something special for slots?
   return standard_dispatch(gf, vargs, cache);
 }
+#endif
 
 /*! Reproduces functionality in user_function_dispatch */
 LCC_RETURN user_function_dispatch(Instance_sp gf, VaList_sp vargs) {
