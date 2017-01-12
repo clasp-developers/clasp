@@ -318,10 +318,8 @@ CL_LAMBDA(arg);
 CL_DECLARE();
 CL_DOCSTRING("genericFunctionP");
 CL_DEFUN bool core__generic_function_p(T_sp o) {
-  if (Function_sp cf = o.asOrNull<Function_O>()) {
-    (void)cf;
-    IMPLEMENT_MEF(BF("I should have a more sophisticated test here"));
-    return true;
+  if (gc::IsA<Instance_sp>(o)) {
+    return gc::As_unsafe<Instance_sp>(o)->isgf();
   }
   return false;
 };

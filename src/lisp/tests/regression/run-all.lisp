@@ -33,3 +33,4 @@
 (load (compile-file "sys:tests;regression;finalizers.lisp"))
 (load (compile-file "sys:tests;regression;strings01.lisp"))
 (load (compile-file "sys:tests;regression;sequences01.lisp"))
+(load (compile-file "sys:tests;regression;clos.lisp"))

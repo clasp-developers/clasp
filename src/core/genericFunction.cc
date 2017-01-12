@@ -30,6 +30,7 @@ THE SOFTWARE.
 #include <clasp/core/object.h>
 #include <clasp/core/lisp.h>
 #include <clasp/core/instance.h>
+#include <clasp/core/bformat.h>
 #include <clasp/core/primitives.h>
 #include <clasp/core/evaluator.h>
 #include <clasp/core/vectorObjects.h>
@@ -323,6 +324,7 @@ LCC_RETURN slot_writer_dispatch(Instance_sp gf, VaList_sp vargs) {
 /*! Reproduces functionality in user_function_dispatch */
 LCC_RETURN user_function_dispatch(Instance_sp gf, VaList_sp vargs) {
   Function_sp func = gc::As<Function_sp>(gf->instanceRef(gf->numberOfSlots()-1));
+  BFORMAT_T(BF("%s:%d a user-dispatch generic-function %s is being invoked\n") % __FILE__ % __LINE__ % _rep_(gf->name()) );
   return core::funcall_consume_valist_<core::Function_O>(func.tagged_(),vargs); // cl__apply(func,vargs).as_return_type();
 }
 
