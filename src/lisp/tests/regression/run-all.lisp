@@ -16,7 +16,10 @@
          (incf *fails*)
          (format t "The test ~s failed~%" ',foo)
          (when ,description (format t "~s~%" ,description))
-         (format t "FAILED: test ~s!" ,description))))
+         (format t "FAILED: test ~s!~%" ,description))))
+
+(defmacro test-type (t1 t2)
+  `(test (and (subtypep ,t1 ,t2) (subtypep ,t2 ,t1))))
 
 (defun expand-test-expect-error (fn)
   (handler-case

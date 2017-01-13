@@ -30,6 +30,7 @@ THE SOFTWARE.
 #include <clasp/core/clasp_gmpxx.h>
 #include <clasp/core/foundation.h>
 #include <clasp/core/numbers.h>
+#include <clasp/core/translators.h>
 #include <clasp/core/character.fwd.h>
 #include <clasp/core/sequence.fwd.h>
 #include <clasp/core/corePackage.fwd.h>
@@ -501,20 +502,20 @@ namespace core {
     }
     virtual void unsafe_fillArrayWithElt(T_sp initialElement, size_t start, size_t end) override {
       for (size_t i(start); i<end; ++i ) {
-        (*this)[i] = leaf_type::from_object(initialElement);
+        (*this)[i] = translate::from_object<typename leaf_type::value_type>(initialElement)._v;
       }
     };
     virtual Array_sp reverse() const final { return templated_ranged_reverse<leaf_type>(*reinterpret_cast<const leaf_type*>(this),0,this->length()); };
     virtual Array_sp nreverse() final { return templated_ranged_nreverse(*this,0,this->length()); };
-    CL_METHOD_OVERLOAD virtual void rowMajorAset(size_t idx, T_sp value) final {(*this)[idx] = leaf_type::from_object(value);}
-    CL_METHOD_OVERLOAD virtual T_sp rowMajorAref(size_t idx) const final {return leaf_type::to_object((*this)[idx]);}
+    CL_METHOD_OVERLOAD virtual void rowMajorAset(size_t idx, T_sp value) final {(*this)[idx] = translate::from_object<typename leaf_type::value_type>(value)._v;}
+    CL_METHOD_OVERLOAD virtual T_sp rowMajorAref(size_t idx) const final {return translate::to_object<typename leaf_type::value_type>::convert((*this)[idx]);}
     virtual Array_sp unsafe_subseq(size_t start, size_t end) const final {
       return leaf_type::make(end-start,value_type(),true,end-start,&(*this)[start]);
     }
     virtual Array_sp unsafe_setf_subseq(size_t start, size_t end, Array_sp newSubseq) final {
       // TODO: Write specialized versions of this to speed it up
       for ( size_t i(start),ni(0); i<end; ++i,++ni ) {
-        (*this)[i] = leaf_type::from_object(newSubseq->rowMajorAref(ni));
+        (*this)[i] = translate::from_object<typename leaf_type::value_type>(newSubseq->rowMajorAref(ni))._v;
       }
       return newSubseq;
     }
@@ -560,8 +561,6 @@ namespace core {
     typedef value_type container_value_type;
   public:
     static value_type initial_element_from_object(T_sp obj, bool supplied);
-    static value_type from_object(T_sp obj) {return obj.unsafe_character();}
-    static T_sp to_object(const value_type& v) { return clasp_make_character(v); };
   public:
     // Always leave space for \0 at end
   SimpleBaseString_O(size_t length, value_type initialElement=value_type(), bool initialElementSupplied=false, size_t initialContentsSize=0, const value_type* initialContents=NULL) : TemplatedBase(length,initialElement,initialElementSupplied,initialContentsSize,initialContents) {};
@@ -625,8 +624,6 @@ namespace core {
     typedef value_type container_value_type;
   public:
     static value_type initial_element_from_object(T_sp obj, bool supplied);
-    static value_type from_object(T_sp obj) {return obj.unsafe_character();}
-    static T_sp to_object(const value_type& v) { return clasp_make_character(v); };
   public:
     // Always leave space for \0 at end
   SimpleCharacterString_O(size_t length, value_type initialElement=value_type(), bool initialElementSupplied=false, size_t initialContentsSize=0, const value_type* initialContents=NULL) : TemplatedBase(length,initialElement,initialElementSupplied,initialContentsSize,initialContents) {};
@@ -697,8 +694,6 @@ namespace core {
     typedef value_type container_value_type;
   public:
     static value_type initial_element_from_object(T_sp obj, bool supplied) {return supplied ? obj : _Nil<T_O>();};
-    static value_type from_object(T_sp obj) {return obj; };
-    static T_sp to_object(const value_type& v) { return v; };
   public:
   SimpleVector_O(size_t length, value_type initialElement=value_type(), bool initialElementSupplied=false, size_t initialContentsSize=0, const value_type* initialContents=NULL) : TemplatedBase(length,initialElement,initialElementSupplied,initialContentsSize,initialContents) {};
     static SimpleVector_sp make(size_t length, T_sp initialElement=_Nil<T_O>(), bool initialElementSupplied=false, size_t initialContentsSize=0, const T_sp* initialContents=NULL) {
@@ -847,8 +842,6 @@ namespace core {
       }
       return 0.0;
     }
-    static value_type from_object(T_sp obj) { if (gc::IsA<DoubleFloat_sp>(obj)) return gc::As_unsafe<DoubleFloat_sp>(obj)->get(); TYPE_ERROR(obj,cl::_sym_double_float); };
-    static T_sp to_object(const value_type& v) { return DoubleFloat_O::create(v); };
   public:
   SimpleDoubleVector_O(size_t length, value_type initialElement=value_type(), bool initialElementSupplied=false, size_t initialContentsSize=0, const value_type* initialContents=NULL) : TemplatedBase(length,initialElement,initialElementSupplied,initialContentsSize,initialContents) {};
     static SimpleDoubleVector_sp make(size_t length, value_type initialElement=value_type(), bool initialElementSupplied=false, size_t initialContentsSize=0, const value_type* initialContents=NULL) {
@@ -966,7 +959,7 @@ namespace core {
       this->this_asBaseSimpleVectorRange(basesv,start,end);
       gctools::smart_ptr<simple_type> sv = gc::As_unsafe<gctools::smart_ptr<simple_type>>(basesv);
       size_t initialContentsSize = MIN(this->length(),size);
-      my_smart_ptr_type newData = simple_type::make(size,simple_type::from_object(initElement),true,initialContentsSize,&(*sv)[start]);
+      my_smart_ptr_type newData = simple_type::make(size,translate::from_object<typename simple_type::value_type>(initElement)._v,true,initialContentsSize,&(*sv)[start]);
       this->set_data(newData);
 //      printf("%s:%d:%s  original size=%lu new size=%lu  copied %lu elements\n", __FILE__, __LINE__, __FUNCTION__, this->_ArrayTotalSize, size, initialContentsSize );
       this->_ArrayTotalSize = size;
@@ -988,8 +981,8 @@ namespace core {
       }
       return false;
     }
-    CL_METHOD_OVERLOAD virtual void rowMajorAset(size_t idx, T_sp value) final {(*this)[idx] = simple_type::from_object(value);}
-    CL_METHOD_OVERLOAD virtual T_sp rowMajorAref(size_t idx) const final {return simple_type::to_object((*this)[idx]);}
+    CL_METHOD_OVERLOAD virtual void rowMajorAset(size_t idx, T_sp value) final {(*this)[idx] = translate::from_object<typename simple_type::value_type>(value)._v;}
+    CL_METHOD_OVERLOAD virtual T_sp rowMajorAref(size_t idx) const final {return translate::to_object<typename simple_type::value_type>::convert((*this)[idx]);}
     bool equal(T_sp obj) const override { return this->eq(obj); };
   };
 };
@@ -1343,8 +1336,8 @@ namespace core {
       return false;
     }
   public:
-    CL_METHOD_OVERLOAD virtual void rowMajorAset(size_t idx, T_sp value) final {(*this)[idx] = simple_type::from_object(value);}
-    CL_METHOD_OVERLOAD virtual T_sp rowMajorAref(size_t idx) const final {return simple_type::to_object((*this)[idx]);}
+    CL_METHOD_OVERLOAD virtual void rowMajorAset(size_t idx, T_sp value) final {(*this)[idx] = translate::from_object<typename simple_type::value_type>(value)._v;}
+    CL_METHOD_OVERLOAD virtual T_sp rowMajorAref(size_t idx) const final {return translate::to_object<typename simple_type::value_type>::convert((*this)[idx]);}
 
   };
 }

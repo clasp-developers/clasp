@@ -21,6 +21,9 @@
 (test (equal (core:copy-to-simple-base-string #\C) "C"))
 
 
-
-;;(test (= (count-occurances "azazbza" "ab") 4))
-
+(test (typep (make-sequence 'simple-base-string 10) 'simple-base-string))
+(test (not (typep (make-sequence 'simple-string 10) 'simple-base-string)))
+(test (eq (core::closest-sequence-type 'simple-base-string) 'base-char))
+(test (eq (core::closest-sequence-type 'simple-string) 'character))
+(test-type (type-of (make-sequence 'simple-base-string 10)) '(simple-base-string 10))
+(test-type (type-of (make-sequence 'simple-base-string 10)) '(simple-base-string 10))

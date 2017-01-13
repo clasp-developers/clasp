@@ -39,6 +39,11 @@ THE SOFTWARE.
 #include <clasp/core/pointer.h>
 #include <clasp/core/array.fwd.h>
 
+
+namespace cl {
+  extern core::Symbol_sp& _sym_fixnum;
+};
+
 namespace translate {
 #if 0
     template <>
@@ -185,6 +190,22 @@ struct from_object<bool, std::true_type> {
   typedef bool DeclareType;
   DeclareType _v;
   from_object(T_P o) : _v(!o.nilp()){};
+};
+
+ template <>
+struct from_object<unsigned char, std::true_type> {
+  typedef unsigned char ExpectedType;
+  typedef unsigned char DeclareType;
+  DeclareType _v;
+ from_object(core::T_sp o) : _v(o.unsafe_character()){};
+};
+
+  template <>
+struct from_object<unsigned char, std::false_type> {
+  typedef unsigned char ExpectedType;
+  typedef unsigned char DeclareType;
+  DeclareType _v;
+ from_object(core::T_sp o) : _v(o.unsafe_character()){};
 };
 
 template <>
