@@ -484,7 +484,7 @@ namespace core {
     value_type& operator[](size_t index) { return this->_Data[index];};
     const value_type& operator[](size_t index) const { return this->_Data[index];};
     iterator begin() { return &this->_Data[0];};
-    iterator end() { return &this->_Data[this->_Data._Capacity]; }
+    iterator end() { return &this->_Data[this->_Data._Length]; }
     const_iterator begin() const { return &this->_Data[0];};
     const_iterator end() const { return &this->_Data[this->_Data._Length]; }
     virtual size_t elementSizeInBytes() const override {return sizeof(value_type); };
