@@ -725,7 +725,7 @@ CL_DEFUN void llvm_sys__writeBitcodeToFile(Module_sp module, core::String_sp pat
 
   CL_DEFUN Module_sp llvm_sys__parseBitcodeFile(core::String_sp filename, LLVMContext_sp context) {
   //	printf("%s:%d af_parseBitcodeFile %s\n", __FILE__, __LINE__, filename->c_str() );
-#if 1
+#if 0
     llvm::SMDiagnostic smd;
     std::unique_ptr<llvm::Module> module = llvm::parseIRFile(filename->get(),smd,*(context->wrappedPtr()));
     llvm::Module* m = module.release();
@@ -743,19 +743,7 @@ CL_DEFUN void llvm_sys__writeBitcodeToFile(Module_sp module, core::String_sp pat
     if (!eom) {
       SIMPLE_ERROR(BF("Could not parse bitcode for file %s - there was an error") % filename->get());
     }
-
-#if 0
-    if ( engine->hasNamedModule(filename->get()))
-    {
-      engine->removeNamedModule(filename->get());
-      LOG(BF("Removed existing module: %s") % filename->get());
-    }
-    Module_sp omodule = core::RP_Create_wrapped<Module_O,llvm::Module*>(m);
-    engine->addNamedModule(filename->get(),omodule);
-    LOG(BF("Added module: %s") % filename->get());
-#else
     Module_sp omodule = core::RP_Create_wrapped<Module_O, llvm::Module *>((*eom).release());
-#endif
 #endif
     return omodule;
   };
