@@ -526,22 +526,14 @@ as a STRUCTURE doc and can be retrieved by (documentation 'NAME 'structure)."
 						      slot-descriptions))
 				constructors)))
       `(progn
-	 (eval-when (:compile-toplevel :load-toplevel)
+         ,(ext::register-with-pde whole)
+	 (eval-when (:compile-toplevel :load-toplevel :execute)
 	   ,core
-	   ,(ext::register-with-pde whole)
-	   ,@(subst `#+ecl(load-time-value (find-class ',name)) #+clasp(find-class ',name)
-		    '.structure-constructor-class.
-		    constructors))
-	 (eval-when (:execute)
-           ,core
-           (let (#+clos
+	   (let (#+clos
                  ,@(and (not type)
                         `((.structure-constructor-class. (find-class ',name)))))
              ,@constructors))
 	 ',name))))
-
-
-
 
 ;; Return
 #||(defun structure-subtype-p (x y)
