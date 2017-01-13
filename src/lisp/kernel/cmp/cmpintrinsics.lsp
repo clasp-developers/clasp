@@ -81,6 +81,13 @@ Set this to other IRBuilders to make code go where you want")
 (defvar +fn-ctor*+ (llvm-sys:type-get-pointer-to +fn-ctor+)
   "A pointer to the ctor function prototype")
 
+(defvar +fn-start-up+
+  (llvm-sys:function-type-get +void+ nil)
+  "A run-all void ()* function prototype")
+(defvar +fn-start-up-argument-names+ nil)
+(defvar +fn-start-up*+ (llvm-sys:type-get-pointer-to +fn-start-up+)
+  "A pointer to the run-all function prototype")
+
 
 (defvar +global-ctors-struct+ (llvm-sys:struct-type-get *llvm-context* (list +i32+ +fn-ctor*+ +i8*+) nil))
 (defvar +global-ctors-struct[1]+ (llvm-sys:array-type-get +global-ctors-struct+ 1)
@@ -393,7 +400,7 @@ have it call the main-function"
                              :function-type +fn-ctor+
                              :return-void t
                              :argument-names +fn-ctor-argument-names+ )
-                (let* ((bc-bf (irc-bit-cast main-function +fn-prototype*+ "fnptr-pointer")))
+                (let* ((bc-bf (irc-bit-cast main-function +fn-start-up*+ "fnptr-pointer")))
                   (irc-intrinsic "cc_register_startup_function" bc-bf)))))
       fn)))
 
@@ -671,7 +678,7 @@ and initialize it with an array consisting of one function pointer."
   (primitive          module "prependMultipleValues" +void+ (list +tsp*-or-tmv*+ +tmv*+))
 
   (primitive          module "invokeTopLevelFunction" +void+ (list +tmv*+ +fn-prototype*+ +i8*+ +i32*+ +size_t+ +size_t+ +size_t+ +ltv**+))
-  (primitive          module "cc_register_startup_function" +void+ (list +fn-prototype*+))
+  (primitive          module "cc_register_startup_function" +void+ (list +fn-start-up*+))
 
   (primitive-nounwind module "activationFrameSize" +i32+ (list +afsp*+))
 

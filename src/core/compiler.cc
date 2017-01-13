@@ -128,9 +128,9 @@ namespace core {
 #define STARTUP_FUNCTION_CAPACITY_MULTIPLIER 2
 size_t global_startup_capacity = 0;
 size_t global_startup_count = 0;
-fnLispCallingConvention* global_startup_functions = NULL;
+fnStartUp* global_startup_functions = NULL;
 
-void register_startup_function(fnLispCallingConvention fptr)
+void register_startup_function(fnStartUp fptr)
 {
 #ifdef DEBUG_STARTUP
   printf("%s:%d In register_startup_function --> %p\n", __FILE__, __LINE__, fptr);
@@ -138,11 +138,11 @@ void register_startup_function(fnLispCallingConvention fptr)
   if ( global_startup_functions == NULL ) {
     global_startup_capacity = STARTUP_FUNCTION_CAPACITY_INIT;
     global_startup_count = 0;
-    global_startup_functions = (fnLispCallingConvention*)malloc(global_startup_capacity*sizeof(fnLispCallingConvention));
+    global_startup_functions = (fnStartUp*)malloc(global_startup_capacity*sizeof(fnStartUp));
   } else {
     if ( global_startup_count == global_startup_capacity ) {
       global_startup_capacity = global_startup_capacity*STARTUP_FUNCTION_CAPACITY_MULTIPLIER;
-      global_startup_functions = (fnLispCallingConvention*)realloc(global_startup_functions,global_startup_capacity*sizeof(fnLispCallingConvention));
+      global_startup_functions = (fnStartUp*)realloc(global_startup_functions,global_startup_capacity*sizeof(fnStartUp));
     }
   }
   global_startup_functions[global_startup_count] = fptr;
@@ -163,7 +163,7 @@ void startup_functions_invoke()
 {
   // Save the current list
   size_t startup_count = global_startup_count;
-  fnLispCallingConvention* startup_functions = global_startup_functions;
+  fnStartUp* startup_functions = global_startup_functions;
   // Prepare to accumulate a new list
   global_startup_count = 0;
   global_startup_capacity = 0;
@@ -173,17 +173,18 @@ void startup_functions_invoke()
 #ifdef DEBUG_STARTUP
     printf("%s:%d In startup_functions_invoke - there are %lu startup functions\n", __FILE__, __LINE__, startup_count );
     for ( size_t i = 0; i<startup_count; ++i ) {
-      fnLispCallingConvention fn = startup_functions[i];
+      fnStartUp fn = startup_functions[i];
       printf("%s:%d     Startup fn[%lu]@%p\n", __FILE__, __LINE__, i, fn );
     }
     printf("%s:%d Starting to call the startup functions\n", __FILE__, __LINE__ );
 #endif
     for ( size_t i = 0; i<startup_count; ++i ) {
-      fnLispCallingConvention fn = startup_functions[i];
+      fnStartUp fn = startup_functions[i];
 #ifdef DEBUG_STARTUP
       printf("%s:%d     About to invoke fn@%p\n", __FILE__, __LINE__, fn );
 #endif
-      T_mv result = (fn)(LCC_PASS_MAIN());
+//      T_mv result = (fn)(LCC_PASS_MAIN());
+      (fn)(); // invoke the startup function
     }
 #ifdef DEBUG_STARTUP
     printf("%s:%d Done with startup_functions_invoke()\n", __FILE__, __LINE__ );
