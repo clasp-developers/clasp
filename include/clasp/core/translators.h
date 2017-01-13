@@ -44,6 +44,10 @@ namespace cl {
   extern core::Symbol_sp& _sym_fixnum;
 };
 
+namespace core {
+  Character_sp clasp_make_character(claspCharacter c);
+};
+
 namespace translate {
 #if 0
     template <>
@@ -260,6 +264,14 @@ struct to_object<bool> {
   }
 };
 
+ template <>
+struct to_object<unsigned char> {
+  typedef unsigned char GivenType;
+  static core::T_sp convert(GivenType v) {
+    return core::clasp_make_character(v);
+  }
+};
+
 template <>
 struct to_object<double> {
   typedef double GivenType;
@@ -347,15 +359,6 @@ struct to_object<int> {
   typedef int GivenType;
   static core::T_sp convert(GivenType v) {
     _G();
-    core::Fixnum_sp oi = core::make_fixnum(v);
-    return oi;
-  }
-};
-
- template <>
-struct to_object<uchar> {
-  typedef uchar GivenType;
-  static core::T_sp convert(GivenType v) {
     core::Fixnum_sp oi = core::make_fixnum(v);
     return oi;
   }
