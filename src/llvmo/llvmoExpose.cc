@@ -34,6 +34,7 @@ THE SOFTWARE.
 #include <llvm/CodeGen/LinkAllCodegenComponents.h>
 #include <llvm/Bitcode/BitcodeWriter.h>
 #include <llvm/Bitcode/BitcodeReader.h>
+#include <llvm/IRReader/IRReader.h>
 #include <llvm/Support/raw_ostream.h>
 #include <llvm/Support/MemoryBuffer.h>
 #include <llvm/Support/FileSystem.h>
@@ -146,7 +147,7 @@ CL_DEFUN core::T_mv llvm_sys__link_in_module(Linker_sp linker, Module_sp module)
   module->reset_wrappedPtr();
   std::unique_ptr<llvm::Module> u_module(mptr);
   bool res = linker->wrappedPtr()->linkInModule(std::move(u_module));
-  return Values(_lisp->_boolean(res), core::SimpleBaseCharString_O::make(errorMsg));
+  return Values(_lisp->_boolean(res), core::SimpleBaseString_O::make(errorMsg));
 };
 
 
@@ -695,7 +696,7 @@ CL_DEFUN core::T_mv llvm_sys__verifyModule(Module_sp module, core::Symbol_sp act
   llvm::raw_string_ostream ei(errorInfo);
   llvm::Module *m = module->wrappedPtr();
   bool result = llvm::verifyModule(*m, &ei);
-  return Values(_lisp->_boolean(result), core::SimpleBaseCharString_O::make(ei.str()));
+  return Values(_lisp->_boolean(result), core::SimpleBaseString_O::make(ei.str()));
 };
 
 CL_DEFUN core::T_mv llvm_sys__verifyFunction(Function_sp function) {
@@ -703,7 +704,7 @@ CL_DEFUN core::T_mv llvm_sys__verifyFunction(Function_sp function) {
   string errorInfo;
   llvm::raw_string_ostream ei(errorInfo);
   bool result = llvm::verifyFunction(*f, &ei);
-  return Values(_lisp->_boolean(result), core::SimpleBaseCharString_O::make(ei.str()));
+  return Values(_lisp->_boolean(result), core::SimpleBaseString_O::make(ei.str()));
 };
 
 CL_LAMBDA(module pathname &optional (use-thin-lto t));
@@ -724,6 +725,16 @@ CL_DEFUN void llvm_sys__writeBitcodeToFile(Module_sp module, core::String_sp pat
 
   CL_DEFUN Module_sp llvm_sys__parseBitcodeFile(core::String_sp filename, LLVMContext_sp context) {
   //	printf("%s:%d af_parseBitcodeFile %s\n", __FILE__, __LINE__, filename->c_str() );
+#if 0
+    llvm::SMDiagnostic smd;
+    std::unique_ptr<llvm::Module> module = llvm::parseIRFile(filename->get(),smd,*(context->wrappedPtr()));
+    llvm::Module* m = module.release();
+    if (!m) {
+      std::string message = smd.getMessage();
+      SIMPLE_ERROR(BF("Could not load bitcode for file %s - error: %s") % filename->get() % message );
+    }
+    Module_sp omodule = core::RP_Create_wrapped<Module_O,llvm::Module*>(module.release());
+#else
     llvm::ErrorOr<std::unique_ptr<llvm::MemoryBuffer>> eo_membuf = llvm::MemoryBuffer::getFile(filename->get());
     if (std::error_code ec = eo_membuf.getError()) {
       SIMPLE_ERROR(BF("Could not load bitcode for file %s - error: %s") % filename->get() % ec.message());
@@ -732,17 +743,6 @@ CL_DEFUN void llvm_sys__writeBitcodeToFile(Module_sp module, core::String_sp pat
     if (!eom) {
       SIMPLE_ERROR(BF("Could not parse bitcode for file %s - there was an error") % filename->get());
     }
-
-#if 0
-    if ( engine->hasNamedModule(filename->get()))
-    {
-      engine->removeNamedModule(filename->get());
-      LOG(BF("Removed existing module: %s") % filename->get());
-    }
-    Module_sp omodule = core::RP_Create_wrapped<Module_O,llvm::Module*>(m);
-    engine->addNamedModule(filename->get(),omodule);
-    LOG(BF("Added module: %s") % filename->get());
-#else
     Module_sp omodule = core::RP_Create_wrapped<Module_O, llvm::Module *>((*eom).release());
 #endif
     return omodule;
@@ -1045,7 +1045,7 @@ void Module_O::initialize() {
 
 CL_LISPIFY_NAME("getOrCreateUniquedStringGlobalVariable");
 CL_DEFMETHOD GlobalVariable_sp Module_O::getOrCreateUniquedStringGlobalVariable(const string &value, const string &name) {
-  core::SimpleBaseCharString_sp nameKey = core::SimpleBaseCharString_O::make(name);
+  core::SimpleBaseString_sp nameKey = core::SimpleBaseString_O::make(name);
   core::List_sp it = this->_UniqueGlobalVariableStrings->gethash(nameKey);
   //	map<string,GlobalVariableStringHolder>::iterator it = this->_UniqueGlobalVariableStrings.find(name);
   llvm::GlobalVariable *GV;
@@ -1062,7 +1062,7 @@ CL_DEFMETHOD GlobalVariable_sp Module_O::getOrCreateUniquedStringGlobalVariable(
     GV->setName(name);
     GV->setUnnamedAddr(llvm::GlobalValue::UnnamedAddr::Global);
     //	    GlobalVariableStringHolder holder;
-    core::SimpleBaseCharString_sp first = core::SimpleBaseCharString_O::make(value);
+    core::SimpleBaseString_sp first = core::SimpleBaseString_O::make(value);
     GlobalVariable_sp second = core::RP_Create_wrapped<GlobalVariable_O, llvm::GlobalVariable *>(GV);
     core::Cons_sp pair = core::Cons_O::create(first, second);
     this->_UniqueGlobalVariableStrings->setf_gethash(nameKey, pair);
@@ -1112,7 +1112,7 @@ CL_DEFMETHOD core::List_sp ExecutionEngine_O::dependentModuleNames() const {
 }
 
 void ExecutionEngine_O::addNamedModule(const string &name, Module_sp module) {
-  core::SimpleBaseCharString_sp key = core::SimpleBaseCharString_O::make(name);
+  core::SimpleBaseString_sp key = core::SimpleBaseString_O::make(name);
   if (this->_DependentModules->contains(key)) {
     //	if ( this->_DependentModules.count(name) != 0 )
     SIMPLE_ERROR(BF("A module named %s is already in this ExecutionEngine - remove it first before adding another") % name);
@@ -1126,13 +1126,13 @@ void ExecutionEngine_O::addNamedModule(const string &name, Module_sp module) {
 
 CL_LISPIFY_NAME("hasNamedModule");
 CL_DEFMETHOD bool ExecutionEngine_O::hasNamedModule(const string &name) {
-  if (this->_DependentModules->contains(core::SimpleBaseCharString_O::make(name)))
+  if (this->_DependentModules->contains(core::SimpleBaseString_O::make(name)))
     return true;
   return false;
 }
 
 void ExecutionEngine_O::removeNamedModule(const string &name) {
-  core::SimpleBaseCharString_sp key = core::SimpleBaseCharString_O::make(name);
+  core::SimpleBaseString_sp key = core::SimpleBaseString_O::make(name);
   core::T_mv mi = this->_DependentModules->gethash(key);
   //	core::StringMap<Module_O>::iterator mi = this->_DependentModules.find(name);
   if (mi.valueGet_(1).nilp()) // == this->_DependentModules.end() )
@@ -2969,7 +2969,7 @@ CL_DEFUN core::T_mv TargetRegistryLookupTarget(const std::string &ArchName, Trip
   string message;
   llvm::Target *target = const_cast<llvm::Target *>(llvm::TargetRegistry::lookupTarget(ArchName, *triple->wrappedPtr(), message));
   if (target == NULL) {
-    return Values(_Nil<core::T_O>(), core::SimpleBaseCharString_O::make(message));
+    return Values(_Nil<core::T_O>(), core::SimpleBaseString_O::make(message));
   }
   Target_sp targeto = core::RP_Create_wrapped<Target_O, llvm::Target *>(target);
   return Values(targeto, _Nil<core::T_O>());
@@ -2981,7 +2981,7 @@ CL_DEFUN core::T_mv TargetRegistryLookupTarget_string(const std::string& Triple)
   string message;
   llvm::Target *target = const_cast<llvm::Target *>(llvm::TargetRegistry::lookupTarget(Triple,message));
   if (target == NULL) {
-    return Values(_Nil<core::T_O>(), core::SimpleBaseCharString_O::make(message));
+    return Values(_Nil<core::T_O>(), core::SimpleBaseString_O::make(message));
   }
   Target_sp targeto = core::RP_Create_wrapped<Target_O, llvm::Target *>(target);
   return Values(targeto, _Nil<core::T_O>());

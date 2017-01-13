@@ -28,6 +28,7 @@ THE SOFTWARE.
 #define core_config_H
 
 #include <cstdint>
+#include <climits>
 
 #define BYTE_SIZE 8
 
@@ -41,10 +42,8 @@ typedef uintptr_t cl_intptr_t;
 typedef uintptr_t cl_intptr_t;
 #endif // POINTER_BITS
 
-#define CHAR_CODE_LIMIT 256 /* ASCII or unicode character code limit */
-
 typedef unsigned char claspChar;
-typedef unsigned int  claspCharacter;
+typedef int  claspCharacter;
 #define CLASP_CHAR(x) ((x)&0xff)
 
 #define IS_DIR_SEPARATOR(c) ((c) == '/')
@@ -94,7 +93,7 @@ typedef unsigned int  claspCharacter;
 /*! Maximum number of arguments that can be passed */
 #define CALL_ARGUMENTS_LIMIT 64
 
-#define CHAR_CODE_LIMIT 16777216
+#define CHAR_CODE_LIMIT 1114112
 
 #define CLASP_INTERNAL_TIME_UNITS_PER_SECOND 1000
 #endif

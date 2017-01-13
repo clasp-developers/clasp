@@ -25,6 +25,8 @@ THE SOFTWARE.
 */
 /* -^- */
 
+#define DEBUG_LEVEL_NONE
+
 #include <limits>
 #include <clasp/core/common.h>
 #include <clasp/core/corePackage.h>
@@ -418,7 +420,19 @@ void HashTable_O::sxhash_equalp(HashGenerator &hg, T_sp obj, LocationDependencyP
 }
 
 bool HashTable_O::equalp(T_sp other) const {
-  IMPLEMENT_MEF(BF("Implement HashTable_O::equalp"));
+  if (this == &(*other)) return true;
+  if (!other.generalp()) return false;
+  if (!gc::IsA<HashTable_sp>(other)) return false;
+  HashTable_sp hto = gc::As_unsafe<HashTable_sp>(other);
+  if (this->hashTableTest() != hto->hashTableTest()) return false;
+  if (this->hashTableCount() != hto->hashTableCount()) return false;
+  this->map_while_true( [&hto] (T_sp key, T_sp val)->bool const {
+      T_sp other_value = hto->gethash(key);
+      if (!cl__equalp(val,other_value)) return false;
+      return true;
+    }
+    );
+  return true;
 }
 
 List_sp HashTable_O::keysAsCons() {
@@ -509,6 +523,7 @@ gc::Fixnum HashTable_O::sxhashKey(T_sp obj, gc::Fixnum bound, bool willAddKey) c
 List_sp HashTable_O::findAssoc(gc::Fixnum index, T_sp key) const {
   VectorObjects_O* spine = &*(this->_HashTable);
 //  printf("%s:%d:%s  spine->arrayTotalSize() = %ld  index = %ld\n", __FILE__, __LINE__, __FUNCTION__, spine->dimension(), index );
+  LOG(BF("findAssoc at index %ld\n") %index);
   T_sp trib = (*spine)[index];
   List_sp rib = coerce_to_list(trib);
   for (auto cur : rib) {
@@ -611,6 +626,7 @@ bool HashTable_O::remhash(T_sp key) {
 
 CL_LISPIFY_NAME("core:hashTableSetfGethash");
 CL_DEFMETHOD T_sp HashTable_O::hash_table_setf_gethash(T_sp key, T_sp value) {
+  LOG(BF("About to hash_table_setf_gethash for %s@%p -> %s@%p\n") % _rep_(key) % (void*)&(*key) % _rep_(value) % (void*)&(*value));
   List_sp keyValuePair = this->tableRef(key);
   if (keyValuePair.nilp()) {
     gc::Fixnum index = this->safe_sxhashKey(key, cl__length(this->_HashTable), true /*Will add key*/);
@@ -638,7 +654,7 @@ List_sp HashTable_O::rehash(bool expandTable, T_sp findKey) {
   ASSERTF(!clasp_zerop(this->_RehashSize), BF("RehashSize is zero - it shouldn't be"));
   ASSERTF(cl__length(this->_HashTable) != 0, BF("HashTable is empty in expandHashTable - this shouldn't be"));
   List_sp foundKeyValuePair(_Nil<T_O>());
-  LOG(BF("At start of expandHashTable current hash table size: %d") % startSize);
+  LOG(BF("At start of expandHashTable current hash table size: %d") % cl__length(this->_HashTable));
   gc::Fixnum newSize = 0;
   if (expandTable) {
     if (cl__integerp(this->_RehashSize)) {
@@ -759,7 +775,7 @@ void HashTable_O::mapHash(std::function<void(T_sp, T_sp)> const &fn) {
   }
 }
 
-void HashTable_O::map_while_true(std::function<bool(T_sp, T_sp)> const &fn) {
+void HashTable_O::map_while_true(std::function<bool(T_sp, T_sp)> const &fn) const {
   //        HASH_TABLE_LOCK();
   VectorObjects_sp table = this->_HashTable;
   for (size_t it(0), itEnd(cl__length(table)); it < itEnd; ++it) {
@@ -821,6 +837,13 @@ string HashTable_O::keysAsString() {
   });
   return ss.str();
 }
+
+T_mv clasp_gethash_safe(T_sp key, T_sp thashTable, T_sp default_) {
+  HashTable_sp hashTable = gc::As<HashTable_sp>(thashTable);
+  return hashTable->gethash(key,default_);
+}
+
+
 
   SYMBOL_EXPORT_SC_(ClPkg, make_hash_table);
   SYMBOL_EXPORT_SC_(ClPkg, maphash);

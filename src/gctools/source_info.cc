@@ -13,8 +13,8 @@ NOINLINE void define_source_info(source_info_kind kind,
   std::string package_part, symbol_part;
   core::colon_split(lisp_name,package_part,symbol_part);
   core::Symbol_sp sym = core::lisp_intern(symbol_part,package_part);
-  core::SimpleBaseCharString_sp sourceFile = core::SimpleBaseCharString_O::make(file);
-  core::SimpleBaseCharString_sp docs = core::SimpleBaseCharString_O::make(docstring);
+  core::SimpleBaseString_sp sourceFile = core::SimpleBaseString_O::make(file);
+  core::SimpleBaseString_sp docs = core::SimpleBaseString_O::make(docstring);
   if ( kind == code_kind ) {
     core::Function_sp func = core::coerce::functionDesignator(sym);
     func->setSourcePosInfo(sourceFile, character_offset, line, 0 );
@@ -24,7 +24,7 @@ NOINLINE void define_source_info(source_info_kind kind,
     core::List_sp info = core__get_sysprop(sym,core::_sym_cxx_method_source_location);
     info = core::Cons_O::create(core::Cons_O::createList(sourceFile,core::clasp_make_fixnum(character_offset)),info);
     core::core__put_sysprop(sym,core::_sym_cxx_method_source_location,info);
-    core::SimpleBaseCharString_sp docs = core::SimpleBaseCharString_O::make(docstring);
+    core::SimpleBaseString_sp docs = core::SimpleBaseString_O::make(docstring);
     ext__annotate(sym,cl::_sym_documentation,cl::_sym_method, docs);
   } else if ( kind == class_kind ) {
     core::List_sp info = core::Cons_O::createList(sourceFile,core::clasp_make_fixnum(character_offset));

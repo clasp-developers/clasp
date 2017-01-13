@@ -60,6 +60,7 @@ THE SOFTWARE.
 #include <clasp/core/fileSystem.h>
 #include <clasp/core/array.h>
 #include <clasp/core/evaluator.h>
+#include <clasp/core/designators.h>
 #include <clasp/core/sequence.h>
 #include <clasp/core/primitives.h>
 #include <clasp/core/lispStream.h>
@@ -178,8 +179,8 @@ translate_component_case(T_sp str, T_sp fromcase, T_sp tocase) {
     return str;
   } else if (!gc::IsA<String_sp>(str)) {
 #ifdef CLASP_UNICODE
-    if (CLASP_EXTENDED_STRING_P(str) && brcl_fits_in_base_string(str)) {
-      str = si_coerce_to_base_string(str);
+    if (core__extended_string_p(str) && core__fits_in_base_string(str)) {
+      str = coerce::coerce_to_base_string(str);
       return translate_component_case(str, fromcase, tocase);
     }
 #endif
@@ -277,9 +278,9 @@ BEGIN:
     } else if (cl__stringp(item)) {
       size_t l = cl__length(item);
 #ifdef CLASP_UNICODE
-//		if (clasp_fits_in_base_string(item)) {
-//		    item = si_copy_to_simple_base_string(item);
-//		} else {
+      if (core__fits_in_base_string(item)) {
+        item = core__copy_to_simple_base_string(item);
+      } else
 #endif
       item = cl__copy_seq(gc::As<T_sp>(item));
       gc::As<Cons_sp>(ptr)->rplaca(item);
@@ -557,7 +558,7 @@ parse_word(T_sp s, delim_fn delim, int flags, size_t start,
   case 0:
     if (flags & WORD_EMPTY_IS_NIL)
       return _Nil<T_O>();
-    return SimpleBaseCharString_O::make(""); // cl_core.null_string;
+    return SimpleBaseString_O::make(""); // cl_core.null_string;
   case 1:
       if (cl__char(s, j).unsafe_character() == '*')
       return kw::_sym_wild;
@@ -886,7 +887,7 @@ T_sp cl_logical_pathname(T_sp x) {
   x = cl__pathname(x);
   if (!core__logical_pathname_p(x)) {
     eval::funcall(cl::_sym_simpleTypeError,
-                  kw::_sym_formatControl, SimpleBaseCharString_O::make("~S cannot be coerced to a logical pathname."),
+                  kw::_sym_formatControl, SimpleBaseString_O::make("~S cannot be coerced to a logical pathname."),
                   kw::_sym_formatArguments, lisp_createList(x),
                   kw::_sym_expectedType, cl::_sym_LogicalPathname_O,
                   kw::_sym_datum, x);
@@ -1123,7 +1124,7 @@ T_sp clasp_namestring(T_sp tx, int flags) {
   Pathname_sp x = cl__pathname(tx);
 
   /* INV: Pathnames can only be created by mergin, parsing namestrings
-	 * or using clasp_make_pathname(). In all of these cases BRCL will complain
+	 * or using clasp_make_pathname(). In all of these cases Clasp will complain
 	 * at creation time if the pathname has wrong components.
 	 */
   T_sp buffer = clasp_make_string_output_stream(); //(128, 1);
@@ -1253,13 +1254,13 @@ NO_DIRECTORY:
   }
   String_sp sbuffer = gc::As<String_sp>(cl__get_output_stream_string(buffer));
 #ifdef CLASP_UNICODE
-  if (CLASP_EXTENDED_STRING_P(buffer) &&
+  if (core__extended_string_p(buffer) &&
       (flags & CLASP_NAMESTRING_FORCE_BASE_STRING)) {
-    unlikely_if(!clasp_fits_in_base_string(buffer))
+    unlikely_if(!core__fits_in_base_string(buffer))
         FEerror("The filesystem does not accept filenames "
                 "with extended characters: ~S",
-                1, buffer);
-    buffer = si_copy_to_simple_base_string(buffer);
+                1, buffer.tagged_());
+    buffer = core__copy_to_simple_base_string(buffer);
   }
 #endif
   return sbuffer;
@@ -1291,7 +1292,7 @@ CL_DEFUN T_mv cl__parse_namestring(T_sp thing, T_sp host, T_sp tdefaults, Fixnum
       default_host = gc::As<Pathname_sp>(tempdefaults)->_Host;
     }
 #ifdef CLASP_UNICODE
-    thing = si_coerce_to_base_string(thing);
+    thing = coerce::coerce_to_base_string(thing);
 #endif
     p = sequenceKeywordStartEnd(cl::_sym_parse_namestring,
                          gc::As<String_sp>(thing), start, end);
@@ -1299,7 +1300,7 @@ CL_DEFUN T_mv cl__parse_namestring(T_sp thing, T_sp host, T_sp tdefaults, Fixnum
     start = make_fixnum(static_cast<uint>(ee));
     if (output.nilp() || ee != p.end) {
       if (junkAllowed) {
-        PARSE_ERROR(SimpleBaseCharString_O::make("Cannot parse the namestring ~S~%from ~S to ~S."),
+        PARSE_ERROR(SimpleBaseString_O::make("Cannot parse the namestring ~S~%from ~S to ~S."),
                     Cons_O::createList(thing, start, end));
       }
       goto OUTPUT;
@@ -1846,7 +1847,7 @@ copy_wildcards(T_sp *wilds_list, T_sp pattern) {
   }
   /* Only create a new string when needed */
   if (new_string) {
-    pattern = SimpleBaseCharString_O::make(token._Buffer->get_std_string());
+    pattern = SimpleBaseString_O::make(token._Buffer->get_std_string());
   }
   //	si_put_buffer_string(token);
   *wilds_list = wilds;

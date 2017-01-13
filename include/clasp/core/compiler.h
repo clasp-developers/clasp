@@ -56,13 +56,21 @@ functionality but before any Common Lisp startup functions are invoked. */
     }
   };
 
-  void register_startup_function(fnLispCallingConvention fptr);
+
   size_t startup_functions_are_waiting();
   void startup_functions_invoke();
+
 
   std::tuple< void *, string > do_dlopen(const string& str_path, const int n_mode);
   std::tuple< int, string > do_dlclose(void * p_handle);
   std::tuple< void *, string > do_dlsym( void * p_handle, const char * pc_symbol );
 
 };
+
+typedef void*(*fnStartUp)();
+
+namespace core {
+void register_startup_function(fnStartUp fptr);
+}
+
 #endif /* _compiler_H_ */

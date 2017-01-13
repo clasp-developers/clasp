@@ -42,10 +42,10 @@ load-time-value manager (true - in COMPILE-FILE) or not (false - in COMPILE)."
   (let ((irbuilder-alloca (gensym "ltv-irbuilder-alloca"))
 	(irbuilder-body (gensym "ltv-irbuilder-body")))
     `(let ((,run-all-fn (irc-simple-function-create core:+run-all-function-name+
-                                                    +fn-prototype+
+                                                    +fn-start-up+
                                                     'llvm-sys:internal-linkage
                                                     *the-module*
-                                                    :argument-names +fn-prototype-argument-names+))
+                                                    :argument-names +fn-start-up-argument-names+))
            (,irbuilder-alloca (llvm-sys:make-irbuilder *llvm-context*))
            (,irbuilder-body (llvm-sys:make-irbuilder *llvm-context*)))
        (let* ((*run-all-function* ,run-all-fn)
@@ -69,7 +69,7 @@ load-time-value manager (true - in COMPILE-FILE) or not (false - in COMPILE)."
                  (llvm-sys:set-insert-point-instruction ,irbuilder-alloca entry-branch)
                  (with-irbuilder (,irbuilder-body)
                    (progn ,@body)
-                   (irc-ret (irc-undef-value-get +tmv+))))))))
+                   (irc-ret-void)))))))
        (values ,run-all-fn))))
 
 

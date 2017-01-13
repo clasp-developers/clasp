@@ -60,18 +60,18 @@ template <>
 struct to_object<const llvm::StringRef &> {
   static core::T_sp convert(llvm::StringRef const &sr) {
     _G();
-    return (Values(core::SimpleBaseCharString_O::make(sr.data())));
+    return (Values(core::SimpleBaseString_O::make(sr.data())));
   }
 };
 
 template <>
 struct to_object<llvm::StringRef &> {
-  static core::T_sp convert(llvm::StringRef &sr) { return core::SimpleBaseCharString_O::make(sr.data()); }
+  static core::T_sp convert(llvm::StringRef &sr) { return core::SimpleBaseString_O::make(sr.data()); }
 };
 
 template <>
 struct to_object<llvm::StringRef> {
-  static core::T_sp convert(const llvm::StringRef &sr) { return core::SimpleBaseCharString_O::make(sr.data()); }
+  static core::T_sp convert(const llvm::StringRef &sr) { return core::SimpleBaseString_O::make(sr.data()); }
 };
 
  template <>

@@ -147,7 +147,7 @@ ecl_type_to_symbol(cl_type t) {
     return @'vector';
   case t_bitvector:
     return @'bit-vector';
-#ifdef ECL_UNICODE
+#ifdef CLASP_UNICODE
   case t_string:
     return @'string';
 #endif
@@ -293,7 +293,7 @@ cl__type_of(cl_object x) {
       t = Cons_O::createList(@'simple-vector', ecl_make_fixnum(x->vector.dim));
     }
     break;
-#ifdef ECL_UNICODE
+#ifdef CLASP_UNICODE
   case t_string:
     if (ECL_ADJUSTABLE_ARRAY_P(x) ||
         ECL_ARRAY_HAS_FILL_POINTER_P(x) ||

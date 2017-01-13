@@ -96,7 +96,6 @@ typedef enum {
 #ifndef CLASP_UNICODE
   CLASP_STREAM_DEFAULT_FORMAT = 1,
 #else
-  #error "Handle this"
   CLASP_STREAM_DEFAULT_FORMAT = 2,
   CLASP_STREAM_ISO_8859_1 = 1,
   CLASP_STREAM_LATIN_1 = 1,
@@ -161,8 +160,8 @@ int clasp_interactive_stream_p(T_sp strm);
 T_sp clasp_off_t_to_integer(clasp_off_t offset);
 clasp_off_t clasp_integer_to_off_t(T_sp i);
 
-T_sp cl_stream_element_type(T_sp strm);
-T_sp cl_stream_external_format(T_sp strm);
+T_sp cl__stream_element_type(T_sp strm);
+T_sp cl__stream_external_format(T_sp strm);
 
 T_sp clasp_make_stream_from_FILE(T_sp fname, FILE *f, enum StreamMode smm, gctools::Fixnum byte_size = 8, int flags = CLASP_STREAM_DEFAULT_FORMAT, T_sp external_format = _Nil<T_O>());
 
@@ -292,6 +291,7 @@ public:
   List_sp _ByteStack; // For unget in input streams
   cl_eformat_encoder _Encoder;
   cl_eformat_decoder _Decoder;
+  T_sp _FormatTable;
   Fixnum _LastCode[2];
   claspCharacter _EofChar;
   int _LastOp;
@@ -301,7 +301,7 @@ public:
   StreamCursor _InputCursor;
 
 public:
-  Stream_O() : _Closed(0), _Buffer(NULL), _Format(_Nil<Symbol_O>()), _ByteSize(8), _Flags(0), _ByteStack(_Nil<T_O>()), _Encoder(NULL), _Decoder(NULL), _LastCode{EOF, EOF}, _EofChar(EOF), _ExternalFormat(_Nil<T_O>()), _OutputColumn(0){};
+ Stream_O() : _Closed(0), _Buffer(NULL), _Format(_Nil<Symbol_O>()), _ByteSize(8), _Flags(0), _ByteStack(_Nil<T_O>()), _Encoder(NULL), _Decoder(NULL), _FormatTable(_Nil<T_O>()), _LastCode{EOF, EOF}, _EofChar(EOF), _ExternalFormat(_Nil<T_O>()), _OutputColumn(0){};
   virtual ~Stream_O(); // nontrivial
 
 public:

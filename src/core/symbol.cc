@@ -159,7 +159,7 @@ Symbol_O::Symbol_O(bool dummy) : _HomePackage(_Nil<T_O>()),
 }
 
 Symbol_O::Symbol_O() : Base(),
-                       _Name(gctools::smart_ptr<SimpleBaseCharString_O>()),
+                       _Name(gctools::smart_ptr<SimpleBaseString_O>()),
                        _HomePackage(gctools::smart_ptr<Package_O>()),
                        _Value(gctools::smart_ptr<T_O>()),
                        _Function(gctools::smart_ptr<Function_O>()),
@@ -192,7 +192,7 @@ Symbol_sp Symbol_O::create_at_boot(const string &nm) {
     THROW_HARD_ERROR(BF("Illegal name for symbol[%s]") % nm);
   }
 #endif
-  n->_Name = SimpleBaseCharString_O::make(nm.size(),'\0',true,nm.size(),(const claspChar*)nm.c_str());
+  n->_Name = SimpleBaseString_O::make(nm.size(),'\0',true,nm.size(),(const claspChar*)nm.c_str());
   return n;
 };
 
@@ -200,7 +200,7 @@ Symbol_sp Symbol_O::create_from_string(const string &nm) {
   // This is used to allocate roots that are pointed
   // to by global variable _sym_XXX  and will never be collected
   Symbol_sp n = gctools::GC<Symbol_O>::root_allocate(true);
-  SimpleString_sp snm = SimpleBaseCharString_O::make(nm);
+  SimpleString_sp snm = SimpleBaseString_O::make(nm);
   n->setf_name(snm);
   ASSERTF(nm != "", BF("You cannot create a symbol without a name"));
 #if VERBOSE_SYMBOLS
@@ -351,8 +351,18 @@ string Symbol_O::formattedName(bool prefixAlways) const { //no guard
       ss << ":" << this->_Name->get();
     } else {
       Package_sp currentPackage = _lisp->getCurrentPackage();
-      if (currentPackage->findSymbol_SimpleString(this->_Name).notnilp() && !prefixAlways) {
-        ss << this->_Name->get();
+      LIKELY_if (currentPackage) {
+        SimpleString_sp name = this->_Name;
+        Symbol_sp sym = currentPackage->findSymbol_SimpleString(name);
+        if (sym.notnilp() && !prefixAlways) {
+          ss << name->get_std_string();
+        } else {
+          if (myPackage->isExported(this->const_sharedThis<Symbol_O>())) {
+            ss << myPackage->getName() << ":" << this->_Name->get();
+          } else {
+            ss << myPackage->getName() << "::" << this->_Name->get();
+          }
+        } 
       } else {
         if (myPackage->isExported(this->const_sharedThis<Symbol_O>())) {
           ss << myPackage->getName() << ":" << this->_Name->get();
@@ -375,7 +385,6 @@ string Symbol_O::formattedName(bool prefixAlways) const { //no guard
     ss << "/lexical";
   }
 #endif
-
   return ss.str();
 };
 
@@ -416,6 +425,7 @@ T_sp Symbol_O::funcall() {
 #endif
 
 string Symbol_O::__repr__() const {
+  unlikely_if(!this->_Name) return "UNITIALIZED-SYMBOL";
   return this->formattedName(false);
 };
 

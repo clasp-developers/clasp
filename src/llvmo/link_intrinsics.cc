@@ -123,8 +123,8 @@ void cc_allocate_roots(gctools::ConstantsTable* holder, core::T_sp* root_address
 
 void ltvc_assign_source_file_info_handle(const char *moduleName, const char *sourceDebugPathname, size_t sourceDebugOffset, int useLineno, int *sourceFileInfoHandleP) {
   //	printf("%s:%d assignSourceFileInfoHandle %s\n", __FILE__, __LINE__, moduleName );
-  core::SimpleBaseCharString_sp mname = core::SimpleBaseCharString_O::make(moduleName);
-  core::SimpleBaseCharString_sp struename = core::SimpleBaseCharString_O::make(sourceDebugPathname);
+  core::SimpleBaseString_sp mname = core::SimpleBaseString_O::make(moduleName);
+  core::SimpleBaseString_sp struename = core::SimpleBaseString_O::make(sourceDebugPathname);
   SourceFileInfo_mv sfi_mv = core::core__source_file_info(mname, struename, sourceDebugOffset, useLineno ? true : false);
   int sfindex = unbox_fixnum(gc::As<core::Fixnum_sp>(sfi_mv.valueGet_(1)));
 #if 0
@@ -196,9 +196,9 @@ gctools::Tagged ltvc_make_array(gctools::ConstantsTable* holder, size_t index,
     }
   if (core::cl__length(dimensions) == 1) // vector
   {
-    val = core::VectorObjects_O::make(oCar(dimensions).unsafe_fixnum(),_Nil<core::T_O>());
+    val = core::SimpleVector_O::make(oCar(dimensions).unsafe_fixnum(),_Nil<core::T_O>(),true);
   } else {
-    val = core::ArrayObjects_O::make(dimensions,_Nil<core::T_O>(),_Nil<core::T_O>(),_Nil<core::T_O>(), 0 );
+    val = core::ArrayTNs_O::make(dimensions,_Nil<core::T_O>(),_Nil<core::T_O>(), 0 );
   }
   return holder->set(index,val.tagged_());
 }
@@ -231,8 +231,14 @@ gctools::Tagged ltvc_make_fixnum(gctools::ConstantsTable* holder, size_t index, 
 }
 
 gctools::Tagged ltvc_make_bignum(gctools::ConstantsTable* holder, size_t index, gctools::Tagged bignum_string_t) {
-  core::SimpleBaseCharString_sp bignum_string = gctools::As<core::SimpleBaseCharString_sp>(core::T_sp(bignum_string_t));
+  core::SimpleBaseString_sp bignum_string = gctools::As<core::SimpleBaseString_sp>(core::T_sp(bignum_string_t));
   core::T_sp val = core::Bignum_O::make(bignum_string->get());
+  return holder->set(index,val.tagged_());
+}
+
+gctools::Tagged ltvc_make_bitvector(gctools::ConstantsTable* holder, size_t index, gctools::Tagged bitvector_string_t) {
+  core::SimpleBaseString_sp bitvector_string = gctools::As<core::SimpleBaseString_sp>(core::T_sp(bitvector_string_t));
+  core::T_sp val = core::SimpleBitVector_O::make(bitvector_string->get());
   return holder->set(index,val.tagged_());
 }
 
@@ -256,7 +262,7 @@ gctools::Tagged ltvc_make_character(gctools::ConstantsTable* holder, size_t inde
 }
 
 gctools::Tagged ltvc_make_base_string(gctools::ConstantsTable* holder, size_t index, const char* str) {
-  core::T_sp v = core::SimpleBaseCharString_O::make(str);
+  core::T_sp v = core::SimpleBaseString_O::make(str);
   return holder->set(index,v.tagged_());
 }
 
@@ -278,7 +284,7 @@ gctools::Tagged ltvc_make_pathname(gctools::ConstantsTable* holder, size_t index
 }
 
 gctools::Tagged ltvc_make_package(gctools::ConstantsTable* holder, size_t index, gctools::Tagged package_name_t ) {
-  core::SimpleBaseCharString_sp package_name(package_name_t);
+  core::SimpleBaseString_sp package_name(package_name_t);
   core::T_sp tpkg = _lisp->findPackage(package_name->get(),false);
   if ( tpkg.nilp() ) {
     // If we don't find the package - just make it
@@ -290,7 +296,7 @@ gctools::Tagged ltvc_make_package(gctools::ConstantsTable* holder, size_t index,
 }
 
 gctools::Tagged ltvc_make_random_state(gctools::ConstantsTable* holder, size_t index, gctools::Tagged random_state_string_t) {
-  core::SimpleBaseCharString_sp random_state_string(random_state_string_t);
+  core::SimpleBaseString_sp random_state_string(random_state_string_t);
   core::RandomState_sp rs = core::RandomState_O::create();
   rs->random_state_set(random_state_string->get());
   core::T_sp val = rs;
@@ -615,7 +621,7 @@ void makeBignum(core::T_sp *fnP, const char *cP) {
 void makeString(core::T_sp *fnP, const char *str) {
   // placement new into memory passed into this function
   ASSERT(fnP != NULL);
-  core::SimpleBaseCharString_sp ns = core::SimpleBaseCharString_O::make(str);
+  core::SimpleBaseString_sp ns = core::SimpleBaseString_O::make(str);
   (*fnP) = ns;
 }
 
@@ -623,7 +629,7 @@ void makePathname(core::T_sp *fnP, const char *cstr) {
   // placement new into memory passed into this function
   ASSERT(fnP != NULL);
 
-  core::SimpleBaseCharString_sp str = core::SimpleBaseCharString_O::make(cstr);
+  core::SimpleBaseString_sp str = core::SimpleBaseString_O::make(cstr);
   core::Pathname_sp ns = core::cl__pathname(str);
   (*fnP) = ns;
 }
@@ -677,7 +683,7 @@ void invokeTopLevelFunction(core::T_mv *resultP,
                             size_t column,
                             core::LoadTimeValues_O **ltvPP) {
   ASSERT(ltvPP != NULL);
-  core::SimpleBaseCharString_sp name = core::SimpleBaseCharString_O::make(cpname);
+  core::SimpleBaseString_sp name = core::SimpleBaseString_O::make(cpname);
   FunctionClosure_sp tc = FunctionClosure_O::create(name, kw::_sym_function, *sourceFileInfoHandleP, filePos, lineno, column);
 #define TIME_TOP_LEVEL_FUNCTIONS
 #ifdef TIME_TOP_LEVEL_FUNCTIONS
@@ -717,7 +723,7 @@ void invokeTopLevelFunction(core::T_mv *resultP,
 /*! Invoke the main functions from the main function array.
 If isNullTerminatedArray is 1 then there is a NULL terminated array of functions to call.
 Otherwise there is just one. */
-void cc_register_startup_function(fnLispCallingConvention fptr) {
+void cc_register_startup_function(fnStartUp fptr) {
   register_startup_function(fptr);
 }
 
@@ -750,7 +756,6 @@ extern void attachDebuggingInfoToValueFrame(core::ActivationFrame_sp *resultP,
   ASSERT(debuggingInfoP != NULL);
   ASSERT((*resultP));
   ASSERT((*resultP).isA<ValueFrame_O>());
-  ASSERT((*debuggingInfoP).isA<VectorObjects_O>());
   core::ValueFrame_sp vf = gc::reinterpret_cast_smart_ptr<ValueFrame_O, T_O>((*resultP));
   core::VectorObjects_sp vo = gc::reinterpret_cast_smart_ptr<core::VectorObjects_O, T_O>((*debuggingInfoP));
   vf->attachDebuggingInfo(vo);
@@ -1328,12 +1333,12 @@ void mv_restoreFromMultipleValue0(core::T_mv *resultP) {
   resultP->readFromMultipleValue0();
 }
 
-/*! Copy the current MultipleValues in _lisp->values() into a VectorObjects */
+/*! Copy the current MultipleValues in _lisp->values() into a SimpleVector */
 extern void saveValues(core::T_sp *resultP, core::T_mv *mvP) {
   ASSERT(resultP != NULL);
   ASSERT(mvP != NULL);
   int numValues = (*mvP).number_of_values();
-  core::VectorObjects_sp vo = core::VectorObjects_O::make(numValues,_Nil<core::T_O>());
+  core::SimpleVector_sp vo = core::SimpleVector_O::make(numValues,_Nil<core::T_O>());
   //	printf("intrinsics.cc saveValues numValues = %d\n", numValues );
   if (numValues > 0) {
     vo->rowMajorAset(0, (*mvP));
@@ -1348,17 +1353,17 @@ extern void saveValues(core::T_sp *resultP, core::T_mv *mvP) {
 }
 
 /*! Copy the current MultipleValues in _lisp->values() into a VectorObjects */
-extern void loadValues(core::T_mv *resultP, core::T_sp *vectorObjectsP) {
+extern void loadValues(core::T_mv *resultP, core::T_sp *simpleVectorP) {
   ASSERT(resultP != NULL);
-  ASSERT(vectorObjectsP != NULL);
-  if (!(*vectorObjectsP)) {
+  ASSERT(simpleVectorP != NULL);
+  if (!(*simpleVectorP)) {
     // If there was a non-local exit then *vectorObjectP will be NULL
     // check for that here and if so set the result to gctools::multiple_values<core::T_O>()
     (*resultP) = gctools::multiple_values<core::T_O>();
     return;
   }
-  ASSERTF(*vectorObjectsP, BF("*vectorObjectsP is UNDEFINED"));
-  core::VectorObjects_sp vo = gc::As<core::VectorObjects_sp>((*vectorObjectsP));
+  ASSERTF(*simpleVectorP, BF("*simpleVectorP is UNDEFINED"));
+  core::SimpleVector_sp vo = gc::As<core::SimpleVector_sp>((*simpleVectorP));
   //	printf("intrinsics.cc loadValues vo->length() = %d\n", vo->length() );
   if (vo->length() == 0) {
     (*resultP) = gctools::multiple_values<core::T_O>();

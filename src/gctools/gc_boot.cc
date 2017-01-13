@@ -43,6 +43,7 @@ void build_kind_field_layout_tables()
     }
     if ( codes[idx].cmd == class_kind ||
          codes[idx].cmd == container_kind ||
+         codes[idx].cmd == bitunit_container_kind ||
          codes[idx].cmd == templated_kind ) {
       if ( global_kind_max < codes[idx].data0 ) {
         global_kind_max = codes[idx].data0;
@@ -54,6 +55,12 @@ void build_kind_field_layout_tables()
                     || codes[idx].data0 == TAGGED_POINTER_OFFSET
                     || codes[idx].data0 == POINTER_OFFSET )) {
       ++number_of_fixable_fields;
+    } else if ((codes[idx].cmd == fixed_field)
+               && (codes[idx].data0 == CONSTANT_ARRAY_OFFSET)) {
+      // Ignore the Array_O size_t _Length[0] array
+      if (strcmp(codes[idx].description,"_Length")!=0) {
+//        printf("%s:%d There is an unknown CONSTANT_ARRAY named %s that the static analyzer identified - deal with it\n", __FILE__, __LINE__, codes[idx].description );
+      }
     } else if ( codes[idx].cmd == variable_array0 ) {
       ++number_of_containers;
     }
@@ -88,6 +95,7 @@ void build_kind_field_layout_tables()
         global_kind_layout[cur_kind].field_layout_start = NULL;
         global_kind_layout[cur_kind].container_layout = NULL;
         global_kind_layout[cur_kind].number_of_fields = 0;
+        global_kind_layout[cur_kind].bits_per_bitunit = 0;
         global_kind_layout[cur_kind].size = codes[idx].data1;
         global_kind_info[cur_kind].name = codes[idx].description;
         global_kind_info[cur_kind].field_info_ptr = NULL;
@@ -114,6 +122,19 @@ void build_kind_field_layout_tables()
         global_kind_layout[cur_kind].layout_op = class_container_op;
         global_kind_layout[cur_kind].number_of_fields = 0;
         global_kind_layout[cur_kind].size = codes[idx].data1;
+        global_kind_layout[cur_kind].bits_per_bitunit = 0;
+        global_kind_layout[cur_kind].field_layout_start = NULL;
+        global_kind_layout[cur_kind].container_layout = NULL;
+        global_kind_info[cur_kind].name = codes[idx].description;
+        global_kind_info[cur_kind].field_info_ptr = NULL;
+        global_kind_info[cur_kind].container_info_ptr = NULL;
+        break;
+    case bitunit_container_kind:
+        cur_kind = codes[idx].data0;
+        global_kind_layout[cur_kind].layout_op = bitunit_container_op;
+        global_kind_layout[cur_kind].number_of_fields = 0;
+        global_kind_layout[cur_kind].size = codes[idx].data1;
+        global_kind_layout[cur_kind].bits_per_bitunit = codes[idx].data2;
         global_kind_layout[cur_kind].field_layout_start = NULL;
         global_kind_layout[cur_kind].container_layout = NULL;
         global_kind_info[cur_kind].name = codes[idx].description;
@@ -193,7 +214,7 @@ CL_DEFUN core::T_mv gctools__kind_field_layout_entry(size_t idx)
   core::Fixnum_sp data2 = core::clasp_make_fixnum(code.data2);
   core::Symbol_sp description = _Nil<core::T_O>();
   if ( code.description ) {
-    core::SimpleBaseCharString_sp desc = core::SimpleBaseCharString_O::make(code.description);
+    core::SimpleBaseString_sp desc = core::SimpleBaseString_O::make(code.description);
     core::Package_sp pkg = gctools::As<core::Package_sp>(core::_sym_STARclasp_packageSTAR->symbolValue());
     description = pkg->intern(desc);
   }

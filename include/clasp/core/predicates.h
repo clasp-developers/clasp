@@ -94,6 +94,8 @@ bool cl__realP(T_sp obj);
 bool cl__simple_bit_vector_p(T_sp obj);
 bool cl__simple_string_p(T_sp obj);
 bool cl__stringp(T_sp obj);
+ bool core__base_string_p(T_sp obj);
+ bool core__extended_string_p(T_sp obj);
 bool cl__vectorp(T_sp obj);
 bool core__activation_frame_p(T_sp obj);
 bool core__array_objects_p(T_sp obj);

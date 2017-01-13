@@ -83,7 +83,7 @@ struct _TRACE {
     THROW_NEVER_REACH();                                                                  \
   }
 #define SIMPLE_WARN(_boost_fmt_) \
-  core::eval::funcall(cl::_sym_warn, core::SimpleBaseCharString_O::make((_boost_fmt_).str()));
+  core::eval::funcall(cl::_sym_warn, core::SimpleBaseString_O::make((_boost_fmt_).str()));
 #define ERROR(_type_, _initializers_)                                               \
   {                                                                                 \
     lisp_error( _type_, _initializers_); \
@@ -735,7 +735,7 @@ void assert_type_integer(T_sp p, int idx);
 
 T_sp core__signal_simple_error(T_sp baseCondition, T_sp continueMessage, T_sp formatControl, T_sp formatArgs, T_sp args);
 
-void FEerror(const string &fmt, int numArgs, ...);
+[[noreturn]] void FEerror(const string &fmt, int numArgs, ...);
 void FEtype_error_list(T_sp thing);
 void FElibc_error(const char *fmt, int nargs, ...);
 void FEcannot_open(T_sp fn);

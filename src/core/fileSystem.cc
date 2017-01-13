@@ -235,7 +235,7 @@ CL_DEFMETHOD List_sp Path_O::parts() const {
   bf::path::iterator it;
   ql::list l(_lisp);
   for (it = this->_Path.begin(); it != this->_Path.end(); ++it) {
-    l << SimpleBaseCharString_O::make(it->native());
+    l << SimpleBaseString_O::make(it->native());
   }
   return l.cons();
 }
@@ -588,10 +588,10 @@ CL_DEFMETHOD bool FileStatus_O::isOther() {
 
 Pathname_sp getcwd(bool change_d_p_d) {
   boost::filesystem::path cwd = boost::filesystem::current_path();
-  SimpleBaseCharString_sp namestring = SimpleBaseCharString_O::make(cwd.string());
+  SimpleBaseString_sp namestring = SimpleBaseString_O::make(cwd.string());
   size_t i = namestring->length();
   if (!IS_DIR_SEPARATOR(clasp_as_claspCharacter(namestring->rowMajorAref(i - 1))))
-    namestring = SimpleBaseCharString_O::make(namestring->get() + DIR_SEPARATOR);
+    namestring = SimpleBaseString_O::make(namestring->get() + DIR_SEPARATOR);
   Pathname_sp pathname = cl__parse_namestring(namestring);
   if (change_d_p_d) {
     cl::_sym_STARdefaultPathnameDefaultsSTAR->setf_symbolValue(pathname);
@@ -602,7 +602,7 @@ Pathname_sp getcwd(bool change_d_p_d) {
 /*! Translated from ecl>homedir_pathname */
 Pathname_sp homedirPathname(T_sp tuser) {
   int i;
-  SimpleBaseCharString_sp namestring;
+  SimpleBaseString_sp namestring;
   const char *h;
   if (cl__stringp(tuser)) {
     String_sp user = gc::As_unsafe<String_sp>(tuser);
@@ -622,11 +622,11 @@ Pathname_sp homedirPathname(T_sp tuser) {
     if (pwent == NULL) {
       SIMPLE_ERROR(BF("Unknown user %s.") % p);
     }
-    namestring = SimpleBaseCharString_O::make(pwent->pw_dir);
+    namestring = SimpleBaseString_O::make(pwent->pw_dir);
 #endif
     SIMPLE_ERROR(BF("Unknown user %s.") % p);
   } else if ((h = getenv("HOME"))) {
-    namestring = SimpleBaseCharString_O::make(h);
+    namestring = SimpleBaseString_O::make(h);
 #if 0 //defined(CLASP_MS_WINDOWS_HOST)
 	} else if ((h = getenv("HOMEPATH")) && (d = getenv("HOMEDRIVE"))) {
 	    namestring =
@@ -635,14 +635,14 @@ Pathname_sp homedirPathname(T_sp tuser) {
 					   make_constant_base_string(h));
 #endif
   } else {
-    namestring = SimpleBaseCharString_O::make("/");
+    namestring = SimpleBaseString_O::make("/");
   }
   if ((*namestring)[0] == '~') {
     SIMPLE_ERROR(BF("Not a valid home pathname %s") % _rep_(namestring));
   }
   i = namestring->length();
   if (!IS_DIR_SEPARATOR(namestring->rowMajorAref(i - 1).unsafe_character()))
-    namestring = SimpleBaseCharString_O::make(namestring->get() + DIR_SEPARATOR);
+    namestring = SimpleBaseString_O::make(namestring->get() + DIR_SEPARATOR);
   return cl__parse_namestring(namestring);
 }
 };

@@ -103,7 +103,7 @@ core::Package_sp packageDesignator(core::T_sp obj) {
     stringstream ss;
     // TODO Handle package names of any string type
     ss << (clasp_as_claspCharacter(chr)&0xFF);
-    packageName = SimpleBaseCharString_O::make(ss.str());
+    packageName = SimpleBaseString_O::make(ss.str());
     goto PACKAGE_NAME;
   }
   TYPE_ERROR(obj, Cons_O::createList(cl::_sym_or, cl::_sym_string, cl::_sym_Symbol_O, cl::_sym_character));
@@ -180,7 +180,7 @@ SimpleString_sp simple_string(T_sp obj) {
     return cl__symbol_name(sym);
   } else if (Character_sp chr = obj.asOrNull<Character_O>()) {
     if (clasp_base_char_p(chr)) {
-      return SimpleBaseCharString_O::make(1,chr.unsafe_character());
+      return SimpleBaseString_O::make(1,chr.unsafe_character());
     }
     return SimpleCharacterString_O::make(1,chr.unsafe_character());
   }
@@ -194,7 +194,7 @@ String_sp stringDesignator(T_sp obj) {
     return cl__symbol_name(sym);
   } else if (Character_sp chr = obj.asOrNull<Character_O>()) {
     if (clasp_base_char_p(chr)) {
-      return SimpleBaseCharString_O::make(1,chr.unsafe_character());
+      return SimpleBaseString_O::make(1,chr.unsafe_character());
     }
     return SimpleCharacterString_O::make(1,chr.unsafe_character());
   }
@@ -240,6 +240,20 @@ T_sp outputStreamDesignator(T_sp obj) {
     return obj;
   }
   SIMPLE_ERROR(BF("Cannot convert object[%s] into a Stream") % _rep_(obj));
+}
+
+
+T_sp coerce_to_base_string(T_sp str) {
+  if (gc::IsA<SimpleBaseString_sp>(str)) {
+    return str;
+  } else if (gc::IsA<Str8Ns_sp>(str)) {
+    return str;
+  } else if (gc::IsA<SimpleCharacterString_sp>(str)) {
+    return core__copy_to_simple_base_string(str);
+  } else if (gc::IsA<StrWNs_sp>(str)) {
+    return core__copy_to_simple_base_string(str);
+  }
+  SIMPLE_ERROR(BF("Cannot coerce %s to base-string") % _rep_(str));
 }
 
 

@@ -53,7 +53,7 @@ GCPRIVATE: // instance variables
            /*! Store what the the enumIndex values represent
 		 * Used when errors are thrown
 		 */
-  gctools::gcstring _WhatTheEnumsRepresent;
+  SimpleString_sp _WhatTheEnumsRepresent;
   HashTableEql_sp _EnumToSymbol;
   HashTableEq_sp _ArchiveSymbolToEnum;
   HashTableEql_sp _EnumToArchiveSymbol;

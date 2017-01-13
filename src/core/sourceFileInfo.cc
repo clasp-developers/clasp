@@ -312,7 +312,7 @@ SourceFileInfo_sp SourceFileInfo_O::create(Pathname_sp path, int handle, T_sp so
 }
 
 SourceFileInfo_sp SourceFileInfo_O::create(const string &str, int handle, T_sp truename, size_t offset, bool useLineno) {
-  Pathname_sp pn = cl__pathname(SimpleBaseCharString_O::make(str));
+  Pathname_sp pn = cl__pathname(SimpleBaseString_O::make(str));
   return SourceFileInfo_O::create(pn, handle, truename, offset, useLineno);
 }
 

@@ -117,7 +117,7 @@ SYMBOL_EXPORT_SC_(KeywordPkg, wild);
 namespace core {
 
 String_sp clasp_strerror(int e) {
-  return SimpleBaseCharString_O::make(std::string(strerror(e)));
+  return SimpleBaseString_O::make(std::string(strerror(e)));
 }
 
 static String_sp coerce_to_posix_filename(T_sp pathname) {
@@ -127,7 +127,7 @@ static String_sp coerce_to_posix_filename(T_sp pathname) {
 	 */
   ASSERT(pathname);
   String_sp sfilename = core__coerce_to_filename(pathname);
-  return cl__string_right_trim(SimpleBaseCharString_O::make(DIR_SEPARATOR), sfilename);
+  return cl__string_right_trim(SimpleBaseString_O::make(DIR_SEPARATOR), sfilename);
 }
 
 static int
@@ -407,7 +407,7 @@ enter_directory(Pathname_sp base_dir, T_sp subdir, bool ignore_if_failure) {
     /* Nothing to do */
     return base_dir;
   } else if (subdir == kw::_sym_up) {
-    aux = SimpleBaseCharString_O::make("..");
+    aux = SimpleBaseString_O::make("..");
   } else if (!cl__stringp(subdir)) {
     SIMPLE_ERROR(BF("Directory component %s found in pathname %s"
                     "is not allowed in TRUENAME or DIRECTORY") %
@@ -615,7 +615,7 @@ int clasp_backup_open(const char *filename, int option, int mode) {
 #endif
   if (rename(filename, backupfilename.c_str())) {
     clasp_enable_interrupts();
-    SIMPLE_ERROR(BF("Cannot rename the file %s to %s.") % _rep_(SimpleBaseCharString_O::make(std::string(filename))) % backupfilename);
+    SIMPLE_ERROR(BF("Cannot rename the file %s to %s.") % _rep_(SimpleBaseString_O::make(std::string(filename))) % backupfilename);
   }
   clasp_enable_interrupts();
   return open(filename, option, mode);
@@ -657,7 +657,7 @@ CL_DEFUN T_mv cl__rename_file(T_sp oldn, T_sp newn, T_sp if_exists) {
                                 cl::_sym_fileError, /* condition */
                                 kw::_sym_supersede, /* continuable */
                                 /* format */
-                                SimpleBaseCharString_O::make(msg),
+                                SimpleBaseString_O::make(msg),
                                 Cons_O::createList(oldn, new_filename), /* format args */
                                 kw::_sym_pathname,                      /* file-error options */
                                 new_filename);
@@ -731,7 +731,7 @@ FAILURE_CLOBBER:
     eval::funcall(_sym_signalSimpleError,
                   cl::_sym_fileError,                      /* condition */
                   _Nil<T_O>(),                             /* continuable */
-                  SimpleBaseCharString_O::make(msg),                      /* format */
+                  SimpleBaseString_O::make(msg),                      /* format */
                   Cons_O::createList(oldn, newn, c_error), /* format args */
                   kw::_sym_pathname,                       /* file-error options */
                   oldn);
@@ -769,7 +769,7 @@ CL_DEFUN T_sp cl__delete_file(T_sp file) {
     eval::funcall(_sym_signalSimpleError,
                   cl::_sym_fileError,
                   _lisp->_true(),                    // continuable
-                  SimpleBaseCharString_O::make(msg),                // format
+                  SimpleBaseString_O::make(msg),                // format
                   Cons_O::createList(file, c_error), // format args
                   kw::_sym_pathname,                 /* file-error options */
                   file);
@@ -819,7 +819,7 @@ CL_DEFUN T_sp cl__file_author(T_sp file) {
     eval::funcall(_sym_signalSimpleError,
                   cl::_sym_fileError,                /* condition */
                   _lisp->_true(),                    /* continuable */
-                  SimpleBaseCharString_O::make(msg),                /* format */
+                  SimpleBaseString_O::make(msg),                /* format */
                   Cons_O::createList(file, c_error), /* format args */
                   kw::_sym_pathname,                 /* file-error options */
                   file);
@@ -830,7 +830,7 @@ CL_DEFUN T_sp cl__file_author(T_sp file) {
     clasp_disable_interrupts();
     pwent = ::getpwuid(filestatus.st_uid);
     clasp_enable_interrupts();
-    output = SimpleBaseCharString_O::make(pwent->pw_name);
+    output = SimpleBaseString_O::make(pwent->pw_name);
   }
 #else
   output = make_constant_base_string("UNKNOWN");
@@ -853,7 +853,7 @@ Pathname_sp clasp_homedir_pathname(T_sp tuser) {
     char *p;
     /* This ensures that our string has the right length
 	   and it is terminated with a '\0' */
-    user = SimpleBaseCharString_O::make(user->get());
+    user = SimpleBaseString_O::make(user->get());
     std::string suser = user->get_std_string();
     p = (char *)suser.c_str();
     i = user->length();
@@ -868,11 +868,11 @@ Pathname_sp clasp_homedir_pathname(T_sp tuser) {
     if (pwent == NULL) {
       SIMPLE_ERROR(BF("Unknown user %s.") % p);
     }
-    namestring = SimpleBaseCharString_O::make(std::string(pwent->pw_dir));
+    namestring = SimpleBaseString_O::make(std::string(pwent->pw_dir));
 #endif
     SIMPLE_ERROR(BF("Unknown user %s.") % p);
   } else if ((h = getenv("HOME"))) {
-    namestring = SimpleBaseCharString_O::make(std::string(h));
+    namestring = SimpleBaseString_O::make(std::string(h));
 #if defined(CLASP_MS_WINDOWS_HOST)
   } else if ((h = getenv("HOMEPATH")) && (d = getenv("HOMEDRIVE"))) {
     namestring =
@@ -881,14 +881,14 @@ Pathname_sp clasp_homedir_pathname(T_sp tuser) {
                                    make_constant_base_string(h));
 #endif
   } else {
-    namestring = SimpleBaseCharString_O::make("/");
+    namestring = SimpleBaseString_O::make("/");
   }
   if (namestring->get_std_string().c_str()[0] == '~') {
     SIMPLE_ERROR(BF("Not a valid home pathname %s") % namestring->get());
   }
   i = namestring->length();
   if (!IS_DIR_SEPARATOR(namestring->get_std_string().c_str()[i - 1]))
-    namestring = SimpleBaseCharString_O::make(namestring->get() + DIR_SEPARATOR);
+    namestring = SimpleBaseString_O::make(namestring->get() + DIR_SEPARATOR);
   return cl__parse_namestring(namestring);
 }
 
@@ -986,7 +986,7 @@ list_directory(T_sp base_dir, T_sp text_mask, T_sp pathname_mask, int flags) {
       continue;
     if (!string_match(text, text_mask))
       continue;
-    component = SimpleBaseCharString_O::make(std::string(text));
+    component = SimpleBaseString_O::make(std::string(text));
 #if 1
     stringstream concat;
     String_sp str_prefix = coerce::stringDesignator(prefix);
@@ -994,7 +994,7 @@ list_directory(T_sp base_dir, T_sp text_mask, T_sp pathname_mask, int flags) {
     String_sp str_component = coerce::stringDesignator(component);
     concat << str_component->get_std_string();
     // TODO Support proper strings
-    component = SimpleBaseCharString_O::make(concat.str());
+    component = SimpleBaseString_O::make(concat.str());
 #else
     component = base_string_concatenate(LCC_PASS_ARGS2_ELLIPSIS(prefix.raw_(), component.raw_()));
 #endif
@@ -1088,7 +1088,7 @@ CL_DEFUN T_sp core__mkstemp(String_sp thetemplate) {
     output = _Nil<T_O>();
   } else {
     close(fd);
-    output = cl__truename(SimpleBaseCharString_O::make(outname));
+    output = cl__truename(SimpleBaseString_O::make(outname));
   }
 #endif
   return output;
@@ -1177,7 +1177,7 @@ si_get_library_pathname(void)
 			      cl::_sym_fileError, /* condition */
 			      _lisp->_true(), /* continuable */
 			      /* format */
-			      SimpleBaseCharString_O::make(msg),
+			      SimpleBaseString_O::make(msg),
 			      Cons_O::createList( directory, c_error), /* format args */
 			      kw::_sym_pathname, /* file-error options */
 			      directory);
@@ -1273,7 +1273,7 @@ CL_DEFUN void core__chmod(T_sp file, T_sp mode) {
                   cl::_sym_fileError, /* condition */
                   _lisp->_true(),     /* continuable */
                                       /* format */
-                  SimpleBaseCharString_O::make(msg),
+                  SimpleBaseString_O::make(msg),
                   Cons_O::createList(file, mode, c_error), /* format args */
                   kw::_sym_pathname,                       /* file-error options */
                   file);
@@ -1519,7 +1519,7 @@ CL_DEFUN T_sp core__mkdir(T_sp directory, T_sp mode) {
                   cl::_sym_fileError, /* condition */
                   _lisp->_true(),     /* continuable */
                   /* format */
-                  SimpleBaseCharString_O::make(msg),
+                  SimpleBaseString_O::make(msg),
                   Cons_O::createList(filename, c_error), /* format args */
                   kw::_sym_pathname,                     /* file-error options */
                   filename);

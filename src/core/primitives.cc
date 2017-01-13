@@ -110,7 +110,7 @@ CL_LAMBDA();
 CL_DECLARE();
 CL_DOCSTRING("lispImplementationType");
 CL_DEFUN T_sp cl__lisp_implementation_type() {
-  return SimpleBaseCharString_O::make(program_name());
+  return SimpleBaseString_O::make(program_name());
 };
 
 CL_LAMBDA();
@@ -131,7 +131,7 @@ CL_DEFUN T_sp cl__lisp_implementation_version() {
   ss << "boehm-";
 #endif
   ss << CLASP_VERSION;
-  return SimpleBaseCharString_O::make(ss.str());
+  return SimpleBaseString_O::make(ss.str());
 };
 
 CL_LAMBDA(pow);
@@ -205,7 +205,7 @@ CL_DEFUN T_sp core__lisp_implementation_id() {
   } else {
     rightChars = all;
   }
-  return SimpleBaseCharString_O::make(rightChars);
+  return SimpleBaseString_O::make(rightChars);
 };
 
 CL_LAMBDA(obj);
@@ -230,7 +230,7 @@ CL_DECLARE();
 CL_DOCSTRING("softwareVersion");
 CL_DEFUN T_sp cl__software_version() {
   string all = CLASP_VERSION;
-  return SimpleBaseCharString_O::make(all);
+  return SimpleBaseString_O::make(all);
 };
 
 CL_LAMBDA();
@@ -264,9 +264,9 @@ CL_DEFUN int core__argc() {
 CL_LAMBDA(idx);
 CL_DECLARE();
 CL_DOCSTRING("argv");
-CL_DEFUN SimpleBaseCharString_sp core__argv(int idx) {
-  if ( idx < _lisp->_Argc ) return SimpleBaseCharString_O::make(_lisp->_Argv[idx]);
-  return SimpleBaseCharString_O::make("");
+CL_DEFUN SimpleBaseString_sp core__argv(int idx) {
+  if ( idx < _lisp->_Argc ) return SimpleBaseString_O::make(_lisp->_Argv[idx]);
+  return SimpleBaseString_O::make("");
 };
 
 CL_LAMBDA(sym value);
@@ -354,7 +354,7 @@ CL_DEFUN T_mv ext__system(String_sp cmd) {
   if (ret == 0) {
     return Values(core::make_fixnum(0));
   } else {
-    return Values(core::make_fixnum(ret), SimpleBaseCharString_O::make(std::strerror(errno)));
+    return Values(core::make_fixnum(ret), SimpleBaseString_O::make(std::strerror(errno)));
   }
 }
 
@@ -416,19 +416,19 @@ CL_DEFUN T_mv ext__vfork_execvp(List_sp call_and_arguments, T_sp return_stream) 
         if ( bReturnStream ) {
           int flags = fcntl(filedes[0],F_GETFL,0);
           fcntl(filedes[0],F_SETFL,flags|O_NONBLOCK);
-          T_sp stream = clasp_make_file_stream_from_fd(SimpleBaseCharString_O::make("execvp"), filedes[0], clasp_smm_input_file, 8, CLASP_STREAM_DEFAULT_FORMAT, _Nil<T_O>());
+          T_sp stream = clasp_make_file_stream_from_fd(SimpleBaseString_O::make("execvp"), filedes[0], clasp_smm_input_file, 8, CLASP_STREAM_DEFAULT_FORMAT, _Nil<T_O>());
           return Values(_Nil<T_O>(), clasp_make_fixnum(child_PID),stream);
         }
         return Values(_Nil<T_O>(),clasp_make_fixnum(child_PID),_Nil<T_O>());
       }
       // error
-      return Values(clasp_make_fixnum(errno), SimpleBaseCharString_O::make(std::strerror(errno)),_Nil<T_O>());
+      return Values(clasp_make_fixnum(errno), SimpleBaseString_O::make(std::strerror(errno)),_Nil<T_O>());
     }
   } else {
     // Clean up args
     for (int i(0); i < execvp_args.size() - 1; ++i)
       free((void *)execvp_args[i]);
-    return Values(clasp_make_fixnum(-1), SimpleBaseCharString_O::make(std::strerror(errno)),_Nil<T_O>());
+    return Values(clasp_make_fixnum(-1), SimpleBaseString_O::make(std::strerror(errno)),_Nil<T_O>());
   }
 }
 
@@ -492,19 +492,19 @@ CL_DEFUN T_mv ext__fork_execvp(List_sp call_and_arguments, T_sp return_stream) {
         if ( bReturnStream ) {
           int flags = fcntl(filedes[0],F_GETFL,0);
           fcntl(filedes[0],F_SETFL,flags|O_NONBLOCK);
-          T_sp stream = clasp_make_file_stream_from_fd(SimpleBaseCharString_O::make("execvp"), filedes[0], clasp_smm_input_file, 8, CLASP_STREAM_DEFAULT_FORMAT, _Nil<T_O>());
+          T_sp stream = clasp_make_file_stream_from_fd(SimpleBaseString_O::make("execvp"), filedes[0], clasp_smm_input_file, 8, CLASP_STREAM_DEFAULT_FORMAT, _Nil<T_O>());
           return Values(_Nil<T_O>(), clasp_make_fixnum(child_PID),stream);
         }
         return Values(_Nil<T_O>(),clasp_make_fixnum(child_PID),_Nil<T_O>());
       }
       // error
-      return Values(clasp_make_fixnum(errno), SimpleBaseCharString_O::make(std::strerror(errno)),_Nil<T_O>());
+      return Values(clasp_make_fixnum(errno), SimpleBaseString_O::make(std::strerror(errno)),_Nil<T_O>());
     }
   } else {
     // Clean up args
     for (int i(0); i < execvp_args.size() - 1; ++i)
       free((void *)execvp_args[i]);
-    return Values(clasp_make_fixnum(-1), SimpleBaseCharString_O::make(std::strerror(errno)),_Nil<T_O>());
+    return Values(clasp_make_fixnum(-1), SimpleBaseString_O::make(std::strerror(errno)),_Nil<T_O>());
   }
 }
 
@@ -517,13 +517,13 @@ CL_DEFUN T_sp ext__getenv(String_sp arg) {
   if (sres == NULL) {
     return _Nil<T_O>();
   }
-  return SimpleBaseCharString_O::make(sres);
+  return SimpleBaseString_O::make(sres);
 };
 
 
 CL_DOCSTRING(R"doc(Return a string representing the llvm version (eg: 3.6.0))doc");
 CL_DEFUN T_sp ext__llvm_version() {
-  return core::SimpleBaseCharString_O::make(LLVM_VERSION);
+  return core::SimpleBaseString_O::make(LLVM_VERSION);
 }
 
 
@@ -1525,7 +1525,7 @@ CL_DEFUN Symbol_mv core__type_to_symbol(T_sp x) {
 #if 1
     else if (Array_sp ax = gx.asOrNull<Array_O>())
       // Handle all of the array subclasses using type_as_symbol()
-      return Values(ax->type_as_symbol());
+      return Values(ax->array_type());
 #else
     return (Values(cl::_sym_Array_O));
     else if (SimpleVector_sp vx = gx.asOrNull<SimpleVector_O>())
@@ -1601,24 +1601,8 @@ T_sp type_of(T_sp x) {
       return cl::_sym_keyword;
     return cl::_sym_symbol;
   } else if (gc::IsA<Array_sp>(x)) {
-    if (cl__stringp(x)) {
-      String_sp sx = gc::As_unsafe<String_sp>(x);
-      Symbol_sp tt;
-      if (sx->adjustableArrayP() || sx->arrayHasFillPointerP() || sx->displacedToP()) tt = cl::_sym_array;
-      else tt = cl::_sym_simple_array;
-      return Cons_O::createList(tt,sx->elementTypeAsSymbol(),Cons_O::createList(make_fixnum(1), make_fixnum(cl__length(sx))));
-    } else if (gc::IsA<BaseSimpleVector_sp>(x)) {
-      BaseSimpleVector_sp bx = gc::As_unsafe<BaseSimpleVector_sp>(x);
-      return Cons_O::createList(cl::_sym_simple_array, bx->elementTypeAsSymbol(), clasp_make_fixnum(bx->length()));
-    } else if (gc::IsA<VectorNs_sp>(x)) {
-      VectorNs_sp vx = gc::As_unsafe<VectorNs_sp>(x);
-      return Cons_O::createList(cl::_sym_vector,vx->elementTypeAsSymbol(),clasp_make_fixnum(vx->length()));
-    } else if (gc::IsA<MDArrayNs_sp>(x)) {
-      MDArrayNs_sp ax = gc::As_unsafe<MDArrayNs_sp>(x);
-      Symbol_sp tt = cl::_sym_simple_array;
-      if (ax->adjustableArrayP()||ax->displacedToP()) tt = cl::_sym_array;
-      return Cons_O::createList(tt,ax->elementTypeAsSymbol(),cl__arrayDimensions(ax));
-    }
+    Array_sp ax = gc::As_unsafe<Array_sp>(x);
+    return ax->type_of();
   } else if (WrappedPointer_sp pp = x.asOrNull<WrappedPointer_O>()) {
     return pp->_instanceClass()->className();
   } else if (core__structurep(x)) {

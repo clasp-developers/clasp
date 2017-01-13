@@ -144,7 +144,7 @@ CL_DEFMETHOD   double hashTableRehashThreshold() const { return this->_RehashThr
   void maphash(std::function<void(T_sp, T_sp)> const &fn) { this->mapHash(fn); };
 
   /*! maps function across a hash table until the function returns false */
-  void /*terminatingMapHash*/ map_while_true(std::function<bool(T_sp, T_sp)> const &fn);
+  void /*terminatingMapHash*/ map_while_true(std::function<bool(T_sp, T_sp)> const &fn) const;
 
   /*! Return the number of entries in the HashTable Vector0 */
   int hashTableNumberOfHashes() const;
@@ -161,6 +161,9 @@ CL_DEFMETHOD   double hashTableRehashThreshold() const { return this->_RehashThr
 
 //HashTable_mv af_make_hash_table(T_sp test, Fixnum_sp size, Number_sp rehash_size, DoubleFloat_sp orehash_threshold);
 
+
+ T_mv clasp_gethash_safe(T_sp key, T_sp hashTable, T_sp default_);
+ 
 }; /* core */
 
 

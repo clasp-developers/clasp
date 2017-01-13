@@ -748,7 +748,7 @@ void test_mps_allocation() {
   printf("Starting test_mps_allocation -> allocating %d objects\n", numAllocations);
   size_t finalizations;
   for (int i = 0; i < numAllocations; ++i) {
-    core::SimpleBaseCharString_sp ss = core::SimpleBaseCharString_O::make("Hi there, this is a test");
+    core::SimpleBaseString_sp ss = core::SimpleBaseString_O::make("Hi there, this is a test");
     processMpsMessages(finalizations);
   }
   printf("Done test_mps_allocation - allocated %d objects\n", numAllocations);

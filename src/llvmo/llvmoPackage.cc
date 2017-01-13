@@ -107,7 +107,7 @@ CL_DEFUN bool llvm_sys__load_bitcode(core::Pathname_sp filename, bool verbose, b
   return true;
 }
 
-CL_DEFUN core::SimpleBaseCharString_sp llvm_sys__mangleSymbolName(core::String_sp name) {
+CL_DEFUN core::SimpleBaseString_sp llvm_sys__mangleSymbolName(core::String_sp name) {
   ASSERT(cl__stringp(name));
   stringstream sout;
   const char *cur = name->get().c_str();
@@ -123,7 +123,7 @@ CL_DEFUN core::SimpleBaseCharString_sp llvm_sys__mangleSymbolName(core::String_s
     first = false;
     ++cur;
   }
-  return SimpleBaseCharString_O::make(sout.str());
+  return SimpleBaseString_O::make(sout.str());
 };
 
 /*! Return an a-list containing lots of values that define C++ objects that Clasp needs to know about */

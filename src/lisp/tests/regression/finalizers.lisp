@@ -34,6 +34,7 @@
 ;;; Test finalizing general objects
 (defun bar (n) (defparameter *a* (bformat nil "Hi there %s" n)))
 (bar 5)
+(format t "*a* -> ~a~%" *a*)
 (defparameter *count* 0)
 (gctools:finalize *a* #'(lambda (a) (setq *count* (+ 1 *count*))))
 (gctools:finalize *a* #'(lambda (a) (setq *count* (+ 1 *count*))))
@@ -42,6 +43,7 @@
 (gctools:finalize *a* #'(lambda (a) (setq *count* (+ 1 *count*))))
 (setq *a* nil)
 (gctools:garbage-collect)
+(format t "*count* --> ~a~%" *count*)
 (test (= *count* 5) :description "Check if list of general finalizers were executed")
 
 (setq *count* 0)
@@ -53,5 +55,5 @@
 (gctools:finalize *a* #'(lambda (a) (setq *count* (+ 1 *count*))))
 (gctools:definalize *a*)
 (setq *a* nil)
-(gctools:garbage-collect)
+(dotimes (i 100) (gctools:garbage-collect))
 (test (= *count* 0) :description "Check if list of general finalizers were discarded")

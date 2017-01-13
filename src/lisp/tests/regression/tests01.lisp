@@ -17,5 +17,20 @@ Instance_O specialization of TaggedCast")
 (setf (sbit *bitvec* 5) 0)
 (test (equalp *bitvec* #*1111101111))
 
-(test (string= (core:bignum-to-string 23482395823512381241927312749127418274918273) "23482395823512381241927312749127418274918273"))
-(test (string= (core:bignum-to-string -23482395823512381241927312749127418274918273) "-23482395823512381241927312749127418274918273"))
+(defparameter *bn* 23482395823512381241927312749127418274918273)
+(defparameter *s* (make-array 256 :element-type 'base-char :fill-pointer 0))
+(core:integer-to-string *s* *bn* 10 nil nil)
+(test (string= *s* "23482395823512381241927312749127418274918273"))
+(defparameter *s* (make-array 256 :element-type 'base-char :fill-pointer 0))
+(core:integer-to-string *s* (- *bn*) 10 nil nil)
+(test (string= *s* "-23482395823512381241927312749127418274918273"))
+
+
+(defmethod class-check ((x vector)) 'vector)
+(defmethod class-check ((x string)) 'string)
+(defmethod class-check ((x bit-vector)) 'bit-vector)
+
+(test (eq (class-check (make-array 5 :element-type 'bit)) 'bit-vector))
+(test (eq (class-check (make-array 5 :element-type 'bit :adjustable t)) 'bit-vector))
+(test (eq (class-check (make-array 5 :element-type 'base-char)) 'string))
+

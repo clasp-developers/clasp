@@ -134,6 +134,7 @@ contiguous block."
            (fill-array-with-elt x initial-element 0 nil))
          x)))
     ((listp dimensions)
+     (when fill-pointer (error "Multi-dimensional arrays don't allow fill-pointer"))
      (let ((x (make-mdarray dimensions
                             (upgraded-array-element-type element-type)
                             displaced-to
@@ -142,8 +143,6 @@ contiguous block."
                             initial-element-supplied-p)))
        (when (and displaced-to initial-element-supplied-p)
          (fill-array-with-elt x initial-element 0 nil))
-       (when initial-contents
-         (error "Handle initial-contents for make-mdarray"))
        x))
     (t (error "Illegal dimensions ~a for make-array" dimensions ))))
 

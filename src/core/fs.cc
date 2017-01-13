@@ -86,7 +86,7 @@ CL_DEFUN Cons_sp core__directory(Path_sp rpath) {
   tail = list;
   bf::directory_iterator end_iter;
   for (bf::directory_iterator itr(p); itr != end_iter; itr++) {
-    tail->setCdr(Cons_O::create(this->env(), SimpleBaseCharString_O::make(itr->path().string()), _Nil<T_O>()));
+    tail->setCdr(Cons_O::create(this->env(), SimpleBaseString_O::make(itr->path().string()), _Nil<T_O>()));
     tail = tail->cdr();
   }
   return list->cdr();

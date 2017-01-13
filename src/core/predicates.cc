@@ -68,7 +68,7 @@ CL_DEFUN bool core__bignump(T_sp obj) {
 
 // XXX: this should be adjusted whenever unicode is implemented
 CL_DEFUN bool core__base_string_p(T_sp obj) {
-  return gc::IsA<Str8Ns_sp>(obj) || gc::IsA<SimpleBaseCharString_sp>(obj);
+  return gc::IsA<Str8Ns_sp>(obj) || gc::IsA<SimpleBaseString_sp>(obj);
 };
 
 CL_DEFUN bool cl__stringp(T_sp obj) {
@@ -80,6 +80,13 @@ CL_DECLARE();
 CL_DOCSTRING("Return true if argument is a simple-string");
 CL_DEFUN bool cl__simple_string_p(T_sp obj) {
   return gc::IsA<SimpleString_sp>(obj);
+};
+
+CL_LAMBDA(arg);
+CL_DECLARE();
+CL_DOCSTRING("Return true if argument is a simple-string");
+CL_DEFUN bool core__extended_string_p(T_sp obj) {
+  return gc::IsA<SimpleCharacterString_sp>(obj)||gc::IsA<StrWNs_sp>(obj);
 };
 
 CL_LAMBDA(arg);
@@ -227,7 +234,7 @@ CL_LAMBDA(arg);
 CL_DECLARE();
 CL_DOCSTRING("bitVectorP");
 CL_DEFUN bool cl__bit_vector_p(T_sp obj) {
-  return gc::IsA<BitVector_sp>(obj);
+  return gc::IsA<SimpleBitVector_sp>(obj)||gc::IsA<BitVector_sp>(obj);
 };
 
 CL_LAMBDA(arg);
@@ -311,10 +318,8 @@ CL_LAMBDA(arg);
 CL_DECLARE();
 CL_DOCSTRING("genericFunctionP");
 CL_DEFUN bool core__generic_function_p(T_sp o) {
-  if (Function_sp cf = o.asOrNull<Function_O>()) {
-    (void)cf;
-    IMPLEMENT_MEF(BF("I should have a more sophisticated test here"));
-    return true;
+  if (gc::IsA<Instance_sp>(o)) {
+    return gc::As_unsafe<Instance_sp>(o)->isgf();
   }
   return false;
 };

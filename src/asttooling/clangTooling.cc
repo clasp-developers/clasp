@@ -205,7 +205,7 @@ CL_DEFUN core::Symbol_sp ast_tooling__intern_matcher_keyword(const string& orig_
 SYMBOL_EXPORT_SC_(AstToolingPkg,STARmatcher_namesSTAR);
 void add_matcher_name(const string& name, core::Symbol_sp symbol)
 {
-  core::List_sp one = core::Cons_O::createList(symbol,core::SimpleBaseCharString_O::make(name));
+  core::List_sp one = core::Cons_O::createList(symbol,core::SimpleBaseString_O::make(name));
   _sym_STARmatcher_namesSTAR->defparameter(core::Cons_O::create(one,_sym_STARmatcher_namesSTAR->symbolValue()));
 }
 
@@ -547,7 +547,7 @@ namespace asttooling {
 #define DECL_ast_tooling__clangVersionString ""
 #define DOCS_ast_tooling__clangVersionString "clangVersionString"
 CL_DEFUN core::T_sp ast_tooling__clangVersionString() {
-  core::T_sp version = core::SimpleBaseCharString_O::make(CLANG_VERSION_STRING);
+  core::T_sp version = core::SimpleBaseString_O::make(CLANG_VERSION_STRING);
   return version;
 };
 
@@ -750,7 +750,7 @@ CL_DEFUN core::T_mv ast_tooling__wrapped_JSONCompilationDatabase_loadFromFile(co
   clang::tooling::JSONCommandLineSyntax syntax = translate::from_object<clang::tooling::JSONCommandLineSyntax>(ssyntax)._v;
   std::string ErrorMessage;
   std::unique_ptr<clang::tooling::JSONCompilationDatabase> result = clang::tooling::JSONCompilationDatabase::loadFromFile(gc::As<core::String_sp>(FilePath)->get(),ErrorMessage,syntax);
-  return Values(translate::to_object<clang::tooling::JSONCompilationDatabase*,translate::adopt_pointer>::convert(result.release()), core::SimpleBaseCharString_O::make(ErrorMessage));
+  return Values(translate::to_object<clang::tooling::JSONCompilationDatabase*,translate::adopt_pointer>::convert(result.release()), core::SimpleBaseString_O::make(ErrorMessage));
 }
 
 

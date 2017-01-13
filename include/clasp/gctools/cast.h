@@ -11,11 +11,22 @@ namespace cast {
   // Very few Cast's should default back to this one.
   // Maybe keep a count of how often it gets called?
       inline static bool isA(FromType client) {
-        printf("%s:%d Add support for Cast::isA for this type\n", __FILE__, __LINE__);
+        printf("%s:%d Add support for Cast::isA for type %s\n", __FILE__, __LINE__, typeid(FromType).name());
         return false;
     //return (dynamic_cast<ToType>(client) != NULL);
       }
     };
+};
+
+// A few classes need to be forward declared for clasp_gc.cc
+
+namespace gctools {
+  template <class T>
+    class GCArray_moveable;
+  template <class T>
+    class GCVector_moveable;
+  template <int N, class U, class S>
+    class GCBitUnitArray_moveable;
 };
 
 namespace core {

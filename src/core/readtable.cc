@@ -52,7 +52,7 @@ namespace core {
 //
 
 void extra_argument(char macro, T_sp sin, T_sp arg) {
-  READER_ERROR(SimpleBaseCharString_O::make("~S is an extra argument for the #~C readmacro."),
+  READER_ERROR(SimpleBaseString_O::make("~S is an extra argument for the #~C readmacro."),
                Cons_O::createList(arg, clasp_make_character(macro)), sin);
 }
 
@@ -425,7 +425,7 @@ CL_DEFUN T_sp core__sharp_dot(T_sp sin, Character_sp ch, T_sp num) {
   T_sp object = cl__read(sin, _lisp->_true(), _Nil<T_O>(), _lisp->_true());
   if (!cl::_sym_STARread_suppressSTAR->symbolValue().isTrue()) {
     if (!cl::_sym_STARread_evalSTAR->symbolValue().isTrue()) {
-      READER_ERROR(SimpleBaseCharString_O::make("Cannot evaluate the form #.~S"),
+      READER_ERROR(SimpleBaseString_O::make("Cannot evaluate the form #.~S"),
                    Cons_O::create(object),
                    sin);
     }
@@ -495,7 +495,6 @@ CL_DEFUN T_mv core__sharp_asterisk(T_sp sin, Character_sp ch, T_sp num) {
   int dimcount, dim = 0;
   stringstream pattern;
   ReadTable_sp rtbl = gc::As<ReadTable_sp>(cl::_sym_STARreadtableSTAR->symbolValue());
-
   if (cl::_sym_STARread_suppressSTAR->symbolValue().isTrue()) {
     cl__read(sin, _lisp->_true(), _Nil<T_O>(), _lisp->_true());
     return Values(_Nil<T_O>());
@@ -513,9 +512,9 @@ CL_DEFUN T_mv core__sharp_asterisk(T_sp sin, Character_sp ch, T_sp num) {
     unlikely_if(syntaxType == kw::_sym_single_escape_character ||
                 syntaxType == kw::_sym_multiple_escape_character ||
                 (clasp_as_claspCharacter(ch) != '0' && clasp_as_claspCharacter(ch) != '1')) {
-      READER_ERROR(SimpleBaseCharString_O::make("Character ~:C is not allowed after #*"), Cons_O::create(ch), sin);
+      READER_ERROR(SimpleBaseString_O::make("Character ~:C is not allowed after #*"), Cons_O::create(ch), sin);
     }
-    pattern << clasp_as_claspCharacter(ch);
+    pattern << (char)(clasp_as_claspCharacter(ch));
   }
   if (num.nilp()) {
     dim = dimcount;
@@ -523,22 +522,19 @@ CL_DEFUN T_mv core__sharp_asterisk(T_sp sin, Character_sp ch, T_sp num) {
     dim = unbox_fixnum(gc::As<Fixnum_sp>(num));
     unlikely_if(dim < 0 ||
                 (dim > CLASP_ARRAY_DIMENSION_LIMIT)) {
-      READER_ERROR(SimpleBaseCharString_O::make("Wrong vector dimension size ~D in #*."), Cons_O::create(num), sin);
+      READER_ERROR(SimpleBaseString_O::make("Wrong vector dimension size ~D in #*."), Cons_O::create(num), sin);
     }
     unlikely_if(dimcount > dim)
-      READER_ERROR(SimpleBaseCharString_O::make("Too many elements in #*."), _Nil<T_O>(), sin);
+      READER_ERROR(SimpleBaseString_O::make("Too many elements in #*."), _Nil<T_O>(), sin);
     unlikely_if(dim && (dimcount == 0))
-      READER_ERROR(SimpleBaseCharString_O::make("Cannot fill the bit-vector #*."), _Nil<T_O>(), sin);
+      READER_ERROR(SimpleBaseString_O::make("Cannot fill the bit-vector #*."), _Nil<T_O>(), sin);
   }
   string bitPattern = pattern.str();
-  char last = bitPattern.size() > 0 ? bitPattern[bitPattern.size() - 1] : '0';
+  char last = bitPattern.size() > 0 ? bitPattern[bitPattern.size()-1] : '0';
   SimpleBitVector_sp x = SimpleBitVector_O::make(dim);
   for (int i = 0; i < dim; i++) {
     char elt = (i < dimcount) ? bitPattern[i] : last;
-    if (elt == '0')
-      x->setBit(i, 0);
-    else
-      x->setBit(i, 1);
+    x->setBit(i,elt-'0');
   }
   return Values(x);
 };

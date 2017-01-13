@@ -72,6 +72,8 @@ BOOST_LIBRARIES = [
             'boost_iostreams']
 
 
+
+    
 def update_submodules(cfg):
     os.system("echo This is where I get submodules")
     os.system("git submodule update --init src/lisp/kernel/contrib/sicl")
@@ -483,7 +485,7 @@ def run_llvm_config_for_libs(cfg, *args):
     return result.strip()
 
 def configure(cfg):
-    def update_exe_search_path():
+    def update_exe_search_path(cfg):
         externals = cfg.env.EXTERNALS_CLASP_DIR
         print("externals = |%s|" % externals)
         assert os.path.isdir(externals), "Please provide a valid EXTERNALS_CLASP_DIR instead of '%s'. See the wscript.config.template file." % externals
@@ -494,7 +496,24 @@ def configure(cfg):
         print("PATH has been prefixed with '%s'" % externals_bin_dir)
         #print("Updated search path for binaries: '%s'" % cfg.environ["PATH"])
 
-    def load_local_config():
+    def check_externals_clasp_version(cfg):
+        print("Hello there - check externals-clasp from here")
+        externals = cfg.env['EXTERNALS_CLASP_DIR']
+        if (externals == []):
+            print("Not checking externals-clasp because EXTERNALS_CLASP_DIR was not set")
+            return
+        print("   externals = %s" % externals)
+        fin = open(externals+"/makefile","r")
+        externals_clasp_llvm_hash = "c54021df3fd4d71d822b3112cba4e43d94927378"
+        correct_version = False
+        for x in fin:
+            if (externals_clasp_llvm_hash in x):
+                correct_version = True
+        fin.close()
+        if (not correct_version):
+            raise Exception("You do not have the correct version of externals-clasp installed - you need the one with the LLVM_COMMIT=%s" % externals_clasp_llvm_hash)
+        
+    def load_local_config(cfg):
         if not os.path.isfile("./wscript.config"):
             print("Please provide the required config for the build; see the wscript.config.template file.")
             sys.exit(1)
@@ -502,12 +521,13 @@ def configure(cfg):
         exec(open("./wscript.config").read(), globals(), local_environment)
         cfg.env.update(local_environment)
 
-    # KLUDGE there should be a better way than this
+        # KLUDGE there should be a better way than this
     cfg.env["BUILD_ROOT"] = os.path.abspath(top)
-    load_local_config()
+    load_local_config(cfg)
     cfg.load("why")
     cfg.check_waf_version(mini = '1.7.5')
-    update_exe_search_path()
+    update_exe_search_path(cfg)
+    check_externals_clasp_version(cfg)
     cfg.env["LLVM_CONFIG_BINARY"] = cfg.find_program("llvm-config", var = "LLVM_CONFIG")[0]
     if (cfg.env.LLVM_CONFIG_DEBUG_PATH):
         print("LLVM_CONFIG_DEBUG_PATH is defined: %s" % cfg.env.LLVM_CONFIG_DEBUG_PATH)
@@ -518,16 +538,15 @@ def configure(cfg):
     cfg.env["LLVM_AR_BINARY"] = cfg.find_program("llvm-ar", var = "LLVM_AR")[0]
     cfg.env["GIT_BINARY"] = cfg.find_program("git", var = "GIT")[0]
     cfg.env["LLVM_BIN_DIR"] = run_llvm_config(cfg, "--bindir")
-    LTO_OPTION=cfg.env['LTO_OPTION']
-    print("cfg.env['LTO_OPTION'] = %s" % LTO_OPTION)
-    if ( LTO_OPTION==None or LTO_OPTION=='thinlto' or LTO_OPTION==[] ):
+    print("cfg.env['LTO_OPTION'] = %s" % cfg.env['LTO_OPTION'])
+    if (cfg.env['LTO_OPTION']==[] or cfg.env['LTO_OPTION']=='thinlto'):
         cfg.env.LTO_FLAG = '-flto=thin'
     elif (cfg.env['LTO_OPTION']=='lto'):
         cfg.env.LTO_FLAG = '-flto'
     elif (cfg.env['LTO_OPTION']=='obj'):
         cfg.env.LTO_FLAG = []
     else:
-        raise Exception("LTO_OPTION can only be 'thinlto'(default), 'lto', or 'obj'")
+        raise Exception("LTO_OPTION can only be 'thinlto'(default), 'lto', or 'obj' - you provided %s" % cfg.env['LTO_OPTION'])
     print("default cfg.env.LTO_OPTION = %s" % cfg.env.LTO_OPTION)
     print("default cfg.env.LTO_FLAG = %s" % cfg.env.LTO_FLAG)
     run_llvm_config(cfg, "--version") # make sure we fail early
@@ -603,8 +622,9 @@ def configure(cfg):
     cfg.define("CLASP_VERSION",get_clasp_version(cfg))
     cfg.define("CLBIND_DYNAMIC_LINK",1)
     cfg.define("DEBUG_CL_SYMBOLS",1)
-    cfg.define("SOURCE_DEBUG",1)
+#    cfg.define("SOURCE_DEBUG",1)
     cfg.define("USE_SOURCE_DATABASE",1)
+    cfg.define("CLASP_UNICODE",1)
     cfg.define("DEBUG_TRACE_INTERPRETED_CLOSURES",1)
 #    cfg.define("EXPAT",1)
     cfg.define("INCLUDED_FROM_CLASP",1)
@@ -901,13 +921,13 @@ class link_fasl(Task.Task):
 
 class link_executable(Task.Task):
     def run(self):
-        if (self.env.LTO_FLAG):
-            lto_option_list = [self.env.LTO_FLAG]
-            lto_object_path_lto = ["-Wl,-object_path_lto,%s"% self.outputs[1].abspath()]
-        else:
-            lto_option_list = []
-            lto_object_path_lto = []
         if (self.env['DEST_OS'] == DARWIN_OS ):
+            if (self.env.LTO_FLAG):
+                lto_option_list = [self.env.LTO_FLAG]
+                lto_object_path_lto = ["-Wl,-object_path_lto,%s"% self.outputs[1].abspath()]
+            else:
+                lto_option_list = []
+                lto_object_path_lto = []
             cmd = [ self.env.CXX[0],
                     self.inputs[0].abspath(),
                     self.inputs[1].abspath() ] + \
@@ -919,6 +939,12 @@ class link_executable(Task.Task):
                         "-o",
                         self.outputs[0].abspath()] + lto_object_path_lto
         elif (self.env['DEST_OS'] == LINUX_OS ):
+            if (self.env.LTO_FLAG):
+                lto_option_list = [self.env.LTO_FLAG]
+                lto_object_path_lto = []
+            else:
+                lto_option_list = []
+                lto_object_path_lto = []
             cmd = [ self.env.CXX[0],
                     self.inputs[0].abspath(),
                     self.inputs[1].abspath() ] + \
@@ -1173,8 +1199,7 @@ class scrape_with_preproc_scan(Task.Task):
     # This is kept for reference, it got converted into a run(self) method below.
     #run_str = '../../src/common/preprocess-to-sif ${TGT[0].abspath()} ${CXX} -E -DSCRAPING ${ARCH_ST:ARCH} ${CXXFLAGS} ${CPPFLAGS} ${FRAMEWORKPATH_ST:FRAMEWORKPATH} ${CPPPATH_ST:INCPATHS} ${DEFINES_ST:DEFINES} ${CXX_SRC_F}${SRC}'
     ext_out = ['.sif']
-    shell = False
-
+    shell = True
     def run(self):
         env = self.env
         preproc_args = [] + env.CXX + ["-E -DSCRAPING"] + self.colon("ARCH_ST", "ARCH") + env.CXXFLAGS + env.CPPFLAGS + \
@@ -1187,7 +1212,7 @@ class scrape_with_preproc_scan(Task.Task):
             "--eval", "(cscrape:generate-one-sif \"%s\" #P\"%s\")" % (preproc_args, self.outputs[0].abspath()),
             "--eval", "(quit)"]
 #        print("scrape = %s" % cmd)
-        return self.exec_command(cmd, shell = False)
+        return self.exec_command(cmd, shell = True)
 
     def scan(self):
         saved_env = self.env

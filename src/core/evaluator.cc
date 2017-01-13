@@ -180,11 +180,25 @@ CL_LAMBDA(form);
 CL_DECLARE();
 CL_DOCSTRING("eval");
 CL_DEFUN T_mv cl__eval(T_sp form) {
-  if (core::_sym_STARuseInterpreterForEvalSTAR->symbolValue().isTrue()) {
-    return eval::evaluate(form, _Nil<T_O>());
-  } else {
-    return eval::funcall(core::_sym_STAReval_with_env_hookSTAR->symbolValue(), form, _Nil<T_O>());
+  form = cl__macroexpand(form, _Nil<T_O>());
+  if (form.generalp()) {
+    if (gc::IsA<Symbol_sp>(form)) {
+      Symbol_sp sform = gc::As_unsafe<Symbol_sp>(form);
+      if (sform.nilp()) return _Nil<T_O>();
+      return sform->symbolValue();
+    }
+    // Any other general object is an atom
+    return form;
   }
+  if (form.consp()) {
+    if (core::_sym_STARuseInterpreterForEvalSTAR->symbolValue().isTrue()) {
+      return eval::evaluate(form, _Nil<T_O>());
+    } else {
+      return eval::funcall(core::_sym_STAReval_with_env_hookSTAR->symbolValue(), form, _Nil<T_O>());
+    }
+  }
+  // Anything else is an atom
+  return form;
 };
 
 

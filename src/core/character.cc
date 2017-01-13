@@ -333,7 +333,7 @@ void CharacterInfo::initialize() {
 //    printf("%s:%d Adding char: %s  at: %d\n", __FILE__, __LINE__, name, fci);
     this->gNamesToCharacterIndex[name] = fci;
     this->gIndexedCharacters[fci] = clasp_make_standard_character((char)fci);
-    this->gCharacterNames[fci] = SimpleBaseCharString_O::make(std::string(name));
+    this->gCharacterNames[fci] = SimpleBaseString_O::make(std::string(name));
   }
   gNamesToCharacterIndex["NULL"] = 0;
   gNamesToCharacterIndex["LINEFEED"] = 10;
@@ -402,9 +402,6 @@ Fixnum clasp_digitp(claspCharacter ch, int basis) {
     return ch - 'A' + 10;
   if (('a' <= ch) && (10 < basis) && (ch < 'a' + (basis - 10)))
     return ch - 'a' + 10;
-#ifdef CLASP_UNICODE
-  IMPLEMENT_MEF(BF("Handle Unicode"));
-#endif
   return -1;
 }
 
@@ -437,7 +434,7 @@ CL_DEFUN T_mv cl__name_char(T_sp sname) {
 CL_LAMBDA(och);
 CL_DECLARE();
 CL_DOCSTRING("char_name");
-CL_DEFUN SimpleBaseCharString_sp cl__char_name(Character_sp och) {
+CL_DEFUN SimpleBaseString_sp cl__char_name(Character_sp och) {
   claspCharacter ch = clasp_as_claspCharacter(och);
   if (ch<_lisp->characterInfo().gCharacterNames.size()) {
     return _lisp->characterInfo().gCharacterNames[ch];
@@ -446,7 +443,7 @@ CL_DEFUN SimpleBaseCharString_sp cl__char_name(Character_sp och) {
   buffer._Buffer->fillPointerSet(0);
   buffer._Buffer->vectorPushExtend(clasp_make_character('U'));
   core__integer_to_string(buffer._Buffer,Integer_O::create((Fixnum)ch),clasp_make_fixnum(16));
-  auto ret = SimpleBaseCharString_O::make(buffer._Buffer->length(),'\0',false,buffer._Buffer->length(), &(*buffer._Buffer)[0]);
+  auto ret = SimpleBaseString_O::make(buffer._Buffer->length(),'\0',false,buffer._Buffer->length(), &(*buffer._Buffer)[0]);
   return ret;
 };
 

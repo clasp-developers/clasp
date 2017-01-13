@@ -10,6 +10,20 @@
 (test (string= (copy-seq (concatenate 'string (make-string 3 :initial-element #\Nul) "abc")) (bformat nil "%c%c%cabc" #\nul #\nul #\nul)))
 (test (string= (substitute #\X #\Nul (subseq (concatenate 'string "a" (make-string 3 :initial-element #\Nul) "bcd") 0)) "aXXXbcd"))
 (test (multiple-value-bind (val pos) (parse-integer "123 456") (and (= val 123) (= pos 3))))
+(test (subtypep (type-of "abc") '(simple-array base-char (3))))
 
-(test (= (count-occurances "azazbza" "ab") 4))
 
+(test (equal (core:copy-to-simple-base-string (make-array 3 :element-type 'character :adjustable nil :initial-element #\C)) "CCC"))
+(test (equal (core:copy-to-simple-base-string (make-array 3 :element-type 'character :adjustable t :initial-element #\C)) "CCC"))
+(test (equal (core:copy-to-simple-base-string (make-array 3 :element-type 'base-char :adjustable nil :initial-element #\C)) "CCC"))
+(test (equal (core:copy-to-simple-base-string (make-array 3 :element-type 'base-char :adjustable t :initial-element #\C)) "CCC"))
+(test (equal (core:copy-to-simple-base-string :CCC) "CCC"))
+(test (equal (core:copy-to-simple-base-string #\C) "C"))
+
+
+(test (typep (make-sequence 'simple-base-string 10) 'simple-base-string))
+(test (not (typep (make-sequence 'simple-string 10) 'simple-base-string)))
+(test (eq (core::closest-sequence-type 'simple-base-string) 'base-char))
+(test (eq (core::closest-sequence-type 'simple-string) 'character))
+(test-type (type-of (make-sequence 'simple-base-string 10)) '(simple-base-string 10))
+(test-type (type-of (make-sequence 'simple-base-string 10)) '(simple-base-string 10))

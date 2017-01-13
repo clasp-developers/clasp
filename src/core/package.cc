@@ -204,7 +204,7 @@ CL_DEFUN T_sp cl__delete_package(T_sp pobj)
   pkg->_ExternalSymbols->clrhash();
   pkg->_Shadowing->clrhash();
   string package_name = pkg->packageName();
-  pkg->_Name = "";
+  pkg->_Name = SimpleBaseString_O::make("");
   _lisp->remove_package(package_name);
   return _lisp->_true();
 }
@@ -314,7 +314,7 @@ CL_DEFUN T_sp cl__package_name(T_sp pkgDesig) {
     return _Nil<T_O>();
   }
   // TODO support package names with wide character strings
-  return SimpleBaseCharString_O::make(name);
+  return SimpleBaseString_O::make(name);
 };
 
 SYMBOL_EXPORT_SC_(ClPkg, package_use_list);
@@ -348,6 +348,16 @@ void Package_O::initialize() {
   this->_AmpPackage = false;
 }
 
+string Package_O::packageName() const {
+  return this->_Name->get_std_string();
+}
+
+string Package_O::getName() const
+{ return this->packageName(); };
+
+void Package_O::setName(const string &n) { this->_Name = SimpleBaseString_O::make(n); };
+
+
 CL_LISPIFY_NAME("core:PackageHashTables");
 CL_DEFMETHOD T_mv Package_O::hashTables() const {
   List_sp useList = _Nil<List_V>();
@@ -360,7 +370,7 @@ CL_DEFMETHOD T_mv Package_O::hashTables() const {
 
 string Package_O::__repr__() const {
   stringstream ss;
-  ss << "#<" << this->_Name.asStdString() << ">";
+  ss << "#<" << this->_Name->get_std_string() << ">";
   return ss.str();
 }
 
@@ -436,7 +446,7 @@ Symbol_mv Package_O::findSymbol_SimpleString(SimpleString_sp nameKey) const {
 }
 
 Symbol_mv Package_O::findSymbol(const string &name) const {
-  SimpleBaseCharString_sp sname = SimpleBaseCharString_O::make(name);
+  SimpleBaseString_sp sname = SimpleBaseString_O::make(name);
   return this->findSymbol_SimpleString(sname);
 }
 
@@ -690,13 +700,15 @@ void trapSymbol(Package_O *pkg, Symbol_sp sym, const string &name) {
 void Package_O::add_symbol_to_package(SimpleString_sp nameKey, Symbol_sp sym, bool exportp) {
   //trapSymbol(this,sym,symName);
 //  printf("%s:%d add_symbol_to_package  symbol: %s package: %s\n", __FILE__, __LINE__, nameKey->c_str(), this->_Name.c_str());
+#if 0
   if (_lisp->_TrapIntern) {
-    if (strcmp(this->_Name.c_str(), _lisp->_TrapInternPackage.c_str()) == 0) {
+    if (strcmp(this->_Name->get_std_string().c_str(), _lisp->_TrapInternPackage.c_str()) == 0) {
       if (strcmp(nameKey->get_std_string().c_str(), _lisp->_TrapInternName.c_str()) == 0) {
         printf("%s:%d TRAPPED INTERN of symbol %s@%p in package %s\n", __FILE__, __LINE__, nameKey->get_std_string().c_str(), sym.raw_(), this->_Name.c_str() );
       }
     }
   }
+#endif
 #if 0
   if ( strcmp(symName,"CLEAR-GFUN-CACHE") == 0 ) {
     printf("%s:%d Interning POINTER@%p in %s exportp: %d\n", __FILE__, __LINE__, sym.raw_(), this->_Name.c_str(), exportp );
@@ -719,7 +731,7 @@ void Package_O::add_symbol_to_package(SimpleString_sp nameKey, Symbol_sp sym, bo
 
 
 void Package_O::bootstrap_add_symbol_to_package(const char *symName, Symbol_sp sym, bool exportp, bool shadowp) {
-  SimpleBaseCharString_sp nameKey = SimpleBaseCharString_O::make(std::string(symName));
+  SimpleBaseString_sp nameKey = SimpleBaseString_O::make(std::string(symName));
   this->add_symbol_to_package(nameKey,sym,exportp);
   if ( shadowp ) {
     this->_Shadowing->setf_gethash(sym,_lisp->_true());
@@ -862,7 +874,7 @@ void Package_O::mapInternals(KeyValueMapper *mapper) {
 void Package_O::dumpSymbols() {
   _OF();
   string all = this->allSymbols();
-  printf("%s:%d Package %s\n", __FILE__, __LINE__, this->_Name.c_str());
+  printf("%s:%d Package %s\n", __FILE__, __LINE__, this->_Name->get_std_string().c_str());
   printf("%s\n", all.c_str());
 }
 

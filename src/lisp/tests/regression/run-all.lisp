@@ -4,13 +4,22 @@
 
 (in-package :clasp-tests)
 
+(defparameter *passes* 0)
+(defparameter *fails* 0)
+
 (defmacro test (foo &key description )
   `(if ,foo
-       (format t "Passed ~a~%" (if ,description ,description ',foo))
        (progn
-         (format t "The test ~a failed~%" ',foo)
-         (when ,description (format t "~a~%" ,description))
-         (error "Regression test ~a failed!" ,description))))
+         (format t "Passed ~s~%" (if ,description ,description ',foo))
+         (incf *passes*))
+       (progn
+         (incf *fails*)
+         (format t "The test ~s failed~%" ',foo)
+         (when ,description (format t "~s~%" ,description))
+         (format t "FAILED: test ~s!~%" ,description))))
+
+(defmacro test-type (t1 t2)
+  `(test (and (subtypep ,t1 ,t2) (subtypep ,t2 ,t1))))
 
 (defun expand-test-expect-error (fn)
   (handler-case
@@ -24,11 +33,15 @@
              (progn
                ,foo
                nil)
-           (error (err) t)) :description ,description))
+           (error (err) t)) :description ,description)))))
        
 ;;; ------------------------------------------------------------
 ;;; Run tests
-(load "sys:tests;regression;tests01.lisp")
-(load "sys:tests;regression;finalizers.lisp")
-(load "sys:tests;regression;strings01.lisp")
-(load "sys:tests;regression;sequences01.lisp")
+(load (compile-file "sys:tests;regression;array0.lisp"))
+(load (compile-file "sys:tests;regression;tests01.lisp"))
+(load (compile-file "sys:tests;regression;finalizers.lisp"))
+(load (compile-file "sys:tests;regression;strings01.lisp"))
+(load (compile-file "sys:tests;regression;sequences01.lisp"))
+(load (compile-file "sys:tests;regression;clos.lisp"))
+(format t "Passes: ~a~%" *passes*)
+(format t "Fails:  ~a~%" *fails*)

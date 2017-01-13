@@ -42,7 +42,7 @@ inline claspCharacter unbox_character(Character_sp c) {
   return c.unsafe_character();
 };
 
-SimpleBaseCharString_sp cl__char_name(Character_sp och);
+SimpleBaseString_sp cl__char_name(Character_sp och);
 
 int clasp_string_case(String_sp s);
 Fixnum clasp_digitp(claspCharacter ch, int basis);
@@ -76,20 +76,6 @@ inline short clasp_digit_char(Fixnum w, Fixnum r) {
 }; /* core */
 
 namespace translate {
-template <>
-struct from_object<claspChar, std::true_type> {
-  typedef claspChar DeclareType;
-  DeclareType _v;
-  from_object(T_P o) {
-    if (o.characterp()) {
-      if (o.unsafe_character()<=255) {
-        this->_v = o.unsafe_character();
-        return;
-      }
-    }
-    SIMPLE_ERROR(BF("Could not convert %s to claspChar") % _rep_(o));
-  }
-};
 
 template <>
 struct to_object<char> {
