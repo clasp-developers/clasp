@@ -38,9 +38,6 @@ THE SOFTWARE.
 #include <clasp/clbind/clbind_wrappers.h>
 #include <clasp/clbind/clbind_taggedCast.h>
 
-namespace clbind {
 
-//    extern map<const type_info*,core::Symbol_sp> 	globalRttiToClassSymbol;
-};
 
 #endif // clbind_h

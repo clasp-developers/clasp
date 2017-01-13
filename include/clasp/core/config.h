@@ -42,8 +42,6 @@ typedef uintptr_t cl_intptr_t;
 typedef uintptr_t cl_intptr_t;
 #endif // POINTER_BITS
 
-#define CHAR_CODE_LIMIT 256 /* ASCII or unicode character code limit */
-
 typedef unsigned char claspChar;
 typedef int  claspCharacter;
 #define CLASP_CHAR(x) ((x)&0xff)
