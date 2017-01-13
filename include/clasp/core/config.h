@@ -95,7 +95,7 @@ typedef int  claspCharacter;
 /*! Maximum number of arguments that can be passed */
 #define CALL_ARGUMENTS_LIMIT 64
 
-#define CHAR_CODE_LIMIT 16777216
+#define CHAR_CODE_LIMIT 1114112
 
 #define CLASP_INTERNAL_TIME_UNITS_PER_SECOND 1000
 #endif
