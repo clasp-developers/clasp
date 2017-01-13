@@ -81,15 +81,6 @@
     (add-method gf method)
     method))
 
-(defun wrapped-method-function-from-defun (method-function)
-  "The function-to-method function in fixup.lsp converts regular functions
-into methods.   Methods have the lambda-list (.method-args. .next-methods. &rest args)
-but the defun functions just take args - so wrap it"
-  #'(lambda (.method-args. .next-methods. &rest args)
-      (declare (ignore .method-args. .next-methods.)
-               (core:lambda-name wrapped-method-function-from-defun.lambda))
-      (apply method-function args)))
-
 ;;; ----------------------------------------------------------------------
 ;;;                                                         early versions
 
