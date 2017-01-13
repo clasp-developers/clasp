@@ -1415,6 +1415,14 @@ namespace core {
   bool core__fits_in_base_string(T_sp str);
   T_sp core__copy_to_simple_base_string(T_sp buffer);
   clasp_elttype clasp_array_elttype(T_sp array);
+
+
+  void SimpleBitVector_inPlaceOr(SimpleBitVector_sp x, SimpleBitVector_sp y);
+  void SimpleBitVector_inPlaceAnd(SimpleBitVector_sp x, SimpleBitVector_sp y);
+  void SimpleBitVector_inPlaceXor(SimpleBitVector_sp x, SimpleBitVector_sp y);
+  void SimpleBitVector_getOnIndices(SimpleBitVector_sp x, vector<size_t> &res);
+  size_t SimpleBitVector_lowestIndex(SimpleBitVector_sp x);
+  bool SimpleBitVector_isZero(SimpleBitVector_sp x);
 };
 
 

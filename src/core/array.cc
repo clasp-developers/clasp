@@ -1958,6 +1958,57 @@ Array_sp SimpleBitVector_O::nreverse() {
   return this->asSmartPtr();
 }
 
+
+void SimpleBitVector_inPlaceOr(SimpleBitVector_sp x, SimpleBitVector_sp y) {
+  size_t i;
+  if (x->length() != y->length()) SIMPLE_ERROR(BF("BitVectors aren't the same length for operation"));
+  for (size_t i = 0; i<x->_Data.number_of_words(); ++i ) {
+    (*x)._Data[i] |= (*y)._Data[i];
+  }
+}
+
+void SimpleBitVector_inPlaceAnd(SimpleBitVector_sp x, SimpleBitVector_sp y) {
+  size_t i;
+  if (x->length() != y->length()) SIMPLE_ERROR(BF("BitVectors aren't the same length for operation"));
+  for (size_t i = 0; i<x->_Data.number_of_words(); ++i ) {
+    (*x)._Data[i] &= (*y)._Data[i];
+  }
+}
+
+void SimpleBitVector_inPlaceXor(SimpleBitVector_sp x, SimpleBitVector_sp y) {
+  size_t i;
+  if (x->length() != y->length()) SIMPLE_ERROR(BF("BitVectors aren't the same length for operation"));
+  for (size_t i = 0; i<x->_Data.number_of_words(); ++i ) {
+    (*x)._Data[i] ^= (*y)._Data[i];
+  }
+}
+
+void SimpleBitVector_getOnIndices(SimpleBitVector_sp x, vector<size_t> &res) {
+  size_t i;
+  res.clear();
+  for (i = 0; i != x->length(); i++) {
+    if (x->testBit(i)) {
+      res.push_back(i);
+    }
+  }
+}
+
+size_t SimpleBitVector_lowestIndex(SimpleBitVector_sp x) {
+  size_t i;
+  for (i = 0; i < x->length(); i++) {
+    if (x->testBit(i)) {
+      return i;
+    }
+  }
+  return i;
+}
+bool SimpleBitVector_isZero(SimpleBitVector_sp x) {
+  size_t i;
+  for (i = 0; i < x->length(); i++) {
+    if (x->testBit(i)) return false;
+  }
+  return true;
+}
 // ------------------------------------------------------------
 //
 // Class VectorNs
