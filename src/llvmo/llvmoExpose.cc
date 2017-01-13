@@ -34,6 +34,7 @@ THE SOFTWARE.
 #include <llvm/CodeGen/LinkAllCodegenComponents.h>
 #include <llvm/Bitcode/BitcodeWriter.h>
 #include <llvm/Bitcode/BitcodeReader.h>
+#include <llvm/IRReader/IRReader.h>
 #include <llvm/Support/raw_ostream.h>
 #include <llvm/Support/MemoryBuffer.h>
 #include <llvm/Support/FileSystem.h>
@@ -724,6 +725,16 @@ CL_DEFUN void llvm_sys__writeBitcodeToFile(Module_sp module, core::String_sp pat
 
   CL_DEFUN Module_sp llvm_sys__parseBitcodeFile(core::String_sp filename, LLVMContext_sp context) {
   //	printf("%s:%d af_parseBitcodeFile %s\n", __FILE__, __LINE__, filename->c_str() );
+#if 1
+    llvm::SMDiagnostic smd;
+    std::unique_ptr<llvm::Module> module = llvm::parseIRFile(filename->get(),smd,*(context->wrappedPtr()));
+    llvm::Module* m = module.release();
+    if (!m) {
+      std::string message = smd.getMessage();
+      SIMPLE_ERROR(BF("Could not load bitcode for file %s - error: %s") % filename->get() % message );
+    }
+    Module_sp omodule = core::RP_Create_wrapped<Module_O,llvm::Module*>(module.release());
+#else
     llvm::ErrorOr<std::unique_ptr<llvm::MemoryBuffer>> eo_membuf = llvm::MemoryBuffer::getFile(filename->get());
     if (std::error_code ec = eo_membuf.getError()) {
       SIMPLE_ERROR(BF("Could not load bitcode for file %s - error: %s") % filename->get() % ec.message());
@@ -744,6 +755,7 @@ CL_DEFUN void llvm_sys__writeBitcodeToFile(Module_sp module, core::String_sp pat
     LOG(BF("Added module: %s") % filename->get());
 #else
     Module_sp omodule = core::RP_Create_wrapped<Module_O, llvm::Module *>((*eom).release());
+#endif
 #endif
     return omodule;
   };
