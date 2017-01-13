@@ -381,9 +381,9 @@ Return files."
 (defun compile-cclasp* (output-file system)
   "Turn off generation of inlining code until its turned back on by the source code.
 Compile the cclasp source code."
-  (let ((ensure-adjacent (select-source-files #P"src/lisp/kernel/inline-prep" #P"src/lisp/kernel/auto-compile" :system system)))
+  (let ((ensure-adjacent (select-source-files #P"src/lisp/kernel/cleavir/inline-prep" #P"src/lisp/kernel/cleavir/auto-compile" :system system)))
     (or (= (length ensure-adjacent) 2) (error "src/lisp/kernel/inline-prep MUST immediately preceed src/lisp/kernel/auto-compile - currently the order is: ~a" ensure-adjacent)))
-  (let ((files (append (out-of-date-bitcodes #P"src/lisp/kernel/tag/start" #P"src/lisp/kernel/inline-prep" :system system)
+  (let ((files (append (out-of-date-bitcodes #P"src/lisp/kernel/tag/start" #P"src/lisp/kernel/cleavir/inline-prep" :system system)
                        (select-source-files #P"src/lisp/kernel/cleavir/auto-compile"
                                             #P"src/lisp/kernel/tag/cclasp"
                                             :system system))))
