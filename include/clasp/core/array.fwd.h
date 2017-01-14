@@ -38,10 +38,10 @@ namespace core {
   FORWARD(SimpleString);
   FORWARD(SimpleBaseString);
   FORWARD(SimpleCharacterString);
-  FORWARD(MDArrayNs);
   FORWARD(StrNs);
   FORWARD(Str8Ns);
   FORWARD(StrWNs);
+  FORWARD(MDArrayT);
 }; /* core */
 
 

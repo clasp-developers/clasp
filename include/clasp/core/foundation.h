@@ -579,11 +579,9 @@ typedef gctools::smart_ptr<BuiltinClosure_O> BuiltinClosure_sp;
 };
 
 namespace core {
-  class VectorNs_O;
-  class VectorTNs_O;
   class Array_O;
   class MDArray_O;
-  class ArrayTNs_O;
+  class MDArrayT_O;
   class Str8Ns_O;
   class SimpleBaseString_O;
   class SimpleVector_O;
@@ -592,30 +590,28 @@ namespace core {
   // The common root class of Vector_O, String_O and BitVector_O is Array_O
   typedef Array_O Vector_O;
   typedef Array_O String_O;
-  typedef VectorTNs_O VectorObjects_O;
-  typedef ArrayTNs_O ArrayObjects_O;
   typedef MDArray_O StringNs_O;
+  typedef MDArrayT_O VectorObjects_O;
+  typedef MDArrayT_O VectorTNs_O;
   typedef BitVectorNs_O BitVector_O;
   typedef Str8Ns_O Str_O;
   typedef gc::smart_ptr<Array_O> Array_sp;
-  typedef gc::smart_ptr<VectorNs_O> VectorNs_sp;
   typedef gc::smart_ptr<MDArray_O> MDArray_sp;
   typedef gc::smart_ptr<SimpleBaseString_O> SimpleBaseString_sp;
   typedef gc::smart_ptr<SimpleBitVector_O> SimpleBitVector_sp;
   typedef gc::smart_ptr<SimpleVector_O> SimpleVector_sp;
   typedef gc::smart_ptr<BitVectorNs_O> BitVectorNs_sp;
   typedef gc::smart_ptr<Str8Ns_O> Str8Ns_sp;
-  typedef gc::smart_ptr<VectorTNs_O> VectorTNs_sp;
-  typedef gc::smart_ptr<ArrayTNs_O> ArrayTNs_sp;
+  typedef gc::smart_ptr<MDArrayT_O> MDArrayT_sp;
   // Use typedef to assign new smart_ptr to old types
   // FIXME: Remove all of the old smart_ptr names and use the new ones everywhere
   typedef Array_sp String_sp;
   typedef MDArray_sp StringNs_sp;
-  typedef VectorTNs_sp VectorObjects_sp;
-  typedef ArrayTNs_sp ArrayObjects_sp;
   typedef BitVectorNs_sp BitVector_sp;
   typedef Str8Ns_sp Str_sp;
   typedef Array_sp Vector_sp;
+  typedef MDArrayT_sp VectorObjects_sp;
+  typedef MDArrayT_sp VectorTNs_sp;
 };
 
 #include <clasp/gctools/containers.h>

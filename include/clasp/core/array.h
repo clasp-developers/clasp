@@ -136,8 +136,8 @@ namespace core {
   template <typename T1,typename T2>
     bool template_string_EQ_equal(const T1& string1, const T2& string2, size_t start1, size_t end1, size_t start2, size_t end2)
   {
-    const typename T1::value_type* cp1(&string1[start1]);
-    const typename T2::value_type* cp2(&string2[start2]);
+    const typename T1::simple_element_type* cp1(&string1[start1]);
+    const typename T2::simple_element_type* cp2(&string2[start2]);
     size_t num1 = end1 - start1;
     size_t num2 = end2 - start2;
 //    printf("%s:%d:%s string1@%p string2=@%p sizeof(*cp1)=%lu sizeof(*cp2)=%lu cp1=%p cp2=%p start1=%lu end1=%lu start2=%lu end2=%lu num1=%lu num2=%lu\n", __FILE__, __LINE__, __FUNCTION__, (void*)&string1, (void*)&string2, sizeof(*cp1), sizeof(*cp2), (void*)cp1, (void*)cp2, start1, end1, start2, end2, num1, num2);
@@ -177,7 +177,7 @@ namespace core {
   }
   template <class T>
     void templated_swapElements(T& x, size_t xi, size_t yi) {
-    typename T::value_type u = x[xi];
+    typename T::simple_element_type u = x[xi];
     x[xi] = x[yi];
     x[yi] = u;
   }
@@ -312,8 +312,12 @@ class Array_O : public General_O {
 
 
 namespace core {
+  struct Rank1 {};
   class MDArray_O : public Array_O {
     LISP_CLASS(core, CorePkg, MDArray_O, "mdarray",Array_O);
+  public:
+    typedef size_t value_type; // this is container - needs value_type
+    typedef gctools::GCArray_moveable<value_type> vector_type;
   public:
 //! same offset as _fillpointerorlength in nonsimplevector
     size_t      _FillPointerOrLengthOrDummy;
@@ -322,12 +326,18 @@ namespace core {
     size_t      _DisplacedIndexOffset;
     bool        _DisplacedToP;
     bool        _FillPointerP;
-    gctools::GCArray_moveable<size_t> _Dimensions;
+    vector_type _Dimensions;
+    // One dimension vector
+    MDArray_O(Rank1 dummy_rank,
+              size_t dimension,
+              T_sp fillPointer,
+              Array_sp data,
+              T_sp displacedIndexOffset);
+    // multiple dimensions
     MDArray_O(size_t rank,
               List_sp dimensions,
-              T_sp fillPointer,
-              T_sp displacedTo,
-              size_t displacedIndexOffset);
+              Array_sp data,
+              T_sp displacedIndexOffset);
   public:
     virtual T_sp array_type() const override {return cl::_sym_array; };
     virtual T_sp element_type() const override { return this->_Data->element_type(); };
@@ -356,6 +366,7 @@ namespace core {
     virtual T_sp arrayElementType() const override { return this->_Data->arrayElementType();};
     virtual bool arrayHasFillPointerP() const override { return this->_FillPointerP; };
     virtual T_sp replaceArray(T_sp other) override { this->set_data(gc::As<Array_sp>(other)); return this->asSmartPtr(); };
+    virtual void sxhash_(HashGenerator& hg) const;
     void fillPointerSet(size_t idx) {
       this->_FillPointerOrLengthOrDummy = idx;
     };
@@ -363,7 +374,8 @@ namespace core {
       return this->_FillPointerOrLengthOrDummy;
     };
     virtual void __write__(T_sp strm) const override;
-    virtual std::string get_std_string() const {notStringError(this->asSmartPtr()); }
+     virtual bool equalp(T_sp other) const override;
+     virtual std::string get_std_string() const {notStringError(this->asSmartPtr()); }
     virtual vector<size_t> arrayDimensionsAsVector() const {
       vector<size_t> dims;
       for (size_t i(0); i<this->_Dimensions._Length; ++i ) {
@@ -376,6 +388,11 @@ namespace core {
     {
       this->_Data->unsafe_fillArrayWithElt(element,start+this->_DisplacedIndexOffset,end+this->_DisplacedIndexOffset);
     }
+    void ensureSpaceAfterFillPointer(T_sp init_element, size_t size);
+    virtual T_sp vectorPush(T_sp newElement) final;
+    virtual Fixnum_sp vectorPushExtend(T_sp newElement, size_t extension = 16) final;
+    virtual Array_sp unsafe_subseq(size_t start, size_t end) const override;
+    virtual Array_sp unsafe_setf_subseq(size_t start, size_t end, Array_sp newSubseq) override;
   };
 };
 
@@ -383,6 +400,7 @@ namespace core {
 //
 // here go specialized mdarrays
 //
+#if 0
 namespace core {
   class MDArrayNs_O : public MDArray_O {
     LISP_CLASS(core, CorePkg, MDArrayNs_O, "MDArrayNs",MDArray_O);
@@ -413,7 +431,7 @@ namespace core {
   };
 };
 
-
+#endif
 
 
 // ----------------------------------------------------------------------
@@ -469,6 +487,7 @@ namespace core {
     typedef MyParentType Base;
     typedef MyLeafType /* eg: SimpleVector_O*/ leaf_type;
     typedef ValueType  /*eg: T_sp*/ value_type;
+    typedef ValueType  /*eg: T_sp*/ simple_element_type;
     typedef gctools::smart_ptr<leaf_type> leaf_smart_ptr_type;
     typedef gctools::GCArray_moveable<value_type> vector_type;
     typedef value_type* iterator;
@@ -554,6 +573,7 @@ namespace core {
     typedef specialized_SimpleBaseString TemplatedBase;
     typedef typename TemplatedBase::leaf_type leaf_type;
     typedef typename TemplatedBase::value_type value_type;
+    typedef typename TemplatedBase::simple_element_type simple_element_type;
     typedef typename TemplatedBase::vector_type vector_type;
     typedef typename TemplatedBase::iterator iterator;
     typedef typename TemplatedBase::const_iterator const_iterator;
@@ -619,6 +639,7 @@ namespace core {
     typedef specialized_SimpleCharacterString TemplatedBase;
     typedef typename TemplatedBase::leaf_type leaf_type;
     typedef typename TemplatedBase::value_type value_type;
+    typedef typename TemplatedBase::simple_element_type simple_element_type;
     typedef typename TemplatedBase::vector_type vector_type;
     typedef typename TemplatedBase::iterator iterator;
     typedef typename TemplatedBase::const_iterator const_iterator;
@@ -691,6 +712,7 @@ namespace core {
     typedef specialized_SimpleVector TemplatedBase;
     typedef typename TemplatedBase::leaf_type leaf_type;
     typedef typename TemplatedBase::value_type value_type;
+    typedef typename TemplatedBase::simple_element_type simple_element_type;
     typedef typename TemplatedBase::vector_type vector_type;
     typedef typename TemplatedBase::iterator iterator;
     typedef typename TemplatedBase::const_iterator const_iterator;
@@ -831,6 +853,7 @@ namespace core {
     typedef specialized_SimpleDoubleVector TemplatedBase;
     typedef typename TemplatedBase::leaf_type leaf_type;
     typedef typename TemplatedBase::value_type value_type;
+    typedef typename TemplatedBase::simple_element_type simple_element_type;
     typedef typename TemplatedBase::vector_type vector_type;
     typedef typename TemplatedBase::iterator iterator;
     typedef typename TemplatedBase::const_iterator const_iterator;
@@ -873,18 +896,6 @@ namespace core {
   };
 };
 
-
-
-
-
-
-
-
-
-
-
-
-
 namespace core {
 Vector_sp core__make_vector(T_sp element_type,
                             size_t dimension,
@@ -899,49 +910,55 @@ Vector_sp core__make_vector(T_sp element_type,
 
 namespace core {
   template <typename MyArrayType, typename MySimpleType, typename MyParentType >
-    class abstract_DisplacementHandlingVector : public MyParentType {
+    class abstract_Array : public MyParentType {
   public:
     // The types that define what this class does
     typedef MyParentType Base;
     typedef MyArrayType /*eg: VectorTNs_O*/ my_array_type;
     typedef MySimpleType /*eg: SimpleVector_O*/ simple_type;
-    typedef typename simple_type::value_type /*eg: T_sp*/ value_type;
+    typedef typename simple_type::simple_element_type /*eg: T_sp*/ simple_element_type;
     typedef gctools::smart_ptr<my_array_type> my_smart_ptr_type;
+    typedef gctools::GCArray_moveable<simple_element_type> simple_vector_type;
+    typedef typename MDArray_O::value_type dimension_element_type;
   public:
-    // Pass constructor arguments up
-  abstract_DisplacementHandlingVector(size_t rank,
-                                      List_sp dimensions,
-                                      T_sp fillPointer,
-                                      T_sp displacedTo,
-                                      size_t displacedIndexOffset)
-    : Base(rank,dimensions,fillPointer,displacedTo,displacedIndexOffset) {};
-  public:
-    static void never_invoke_allocator() {gctools::GCAbstractAllocator<abstract_DisplacementHandlingVector>::never_invoke_allocator();};
+    // vector
+  abstract_Array(Rank1 dummy,
+                 size_t dimension,
+                 T_sp fillPointer,
+                 Array_sp data,
+                 T_sp displacedIndexOffset)
+    : Base(dummy,dimension,fillPointer,data,displacedIndexOffset) {};
+    // multidimensional array
+  abstract_Array(size_t rank,
+                 List_sp dimensions,
+                 Array_sp data,
+                 T_sp displacedIndexOffset)
+    : Base(rank,dimensions,data,displacedIndexOffset) {};
   public:
     // Primary functions/operators for operator[] that handle displacement
     // There's a non-const and a const version of each
-    value_type& unsafe_indirectReference(size_t index) {
+    simple_element_type& unsafe_indirectReference(size_t index) {
       my_array_type& vecns = *reinterpret_cast<my_array_type*>(&*this->_Data);
       return vecns[this->_DisplacedIndexOffset+index];
     }
-    value_type& operator[](size_t index) {
+    simple_element_type& operator[](size_t index) {
       unlikely_if (gc::IsA<my_smart_ptr_type>(this->_Data)) return this->unsafe_indirectReference(index);
       return (*reinterpret_cast<simple_type*>(&*(this->_Data)))[this->_DisplacedIndexOffset+index];
     }
-    const value_type& unsafe_indirectReference(size_t index) const {
+    const simple_element_type& unsafe_indirectReference(size_t index) const {
       my_array_type& vecns = *reinterpret_cast<my_array_type*>(&*this->_Data);
       return vecns[this->_DisplacedIndexOffset+index];
     }
-    const value_type& operator[](size_t index) const {
+    const simple_element_type& operator[](size_t index) const {
       unlikely_if (gc::IsA<my_smart_ptr_type>(this->_Data)) return this->unsafe_indirectReference(index);
       return (*reinterpret_cast<simple_type*>(&*(this->_Data)))[this->_DisplacedIndexOffset+index];
     }
   public:
     // Iterators
-    value_type* begin() { return &(*this)[0]; };
-    value_type* end() { return &(*this)[this->length()]; };
-    const value_type* begin() const { return &(*this)[0]; };
-    const value_type* end() const { return &(*this)[this->length()]; };
+    simple_element_type* begin() { return &(*this)[0]; };
+    simple_element_type* end() { return &(*this)[this->length()]; };
+    const simple_element_type* begin() const { return &(*this)[0]; };
+    const simple_element_type* end() const { return &(*this)[this->length()]; };
   public:
     void this_asBaseSimpleVectorRange(BaseSimpleVector_sp& sv, size_t& start, size_t& end) const  {
       unlikely_if (gc::IsA<my_smart_ptr_type>(this->_Data)) {
@@ -994,7 +1011,7 @@ namespace core {
   };
 };
 
-
+#if 0
 namespace core {
   class VectorNs_O : public MDArray_O {
     LISP_CLASS(core, CorePkg, VectorNs_O, "VectorNs",MDArray_O);
@@ -1026,17 +1043,25 @@ namespace core {
     virtual bool equalp(T_sp other) const;
   };
 }
+#endif
+
+
 
 namespace core {
-  class StrNs_O : public VectorNs_O {
-    LISP_CLASS(core, CorePkg, StrNs_O, "StrNs",VectorNs_O);
+  class StrNs_O : public MDArray_O {
+    LISP_CLASS(core, CorePkg, StrNs_O, "StrNs",MDArray_O);
   public:
+  StrNs_O(Rank1 dummy,
+          size_t dimension,
+          T_sp fillPointer,
+          Array_sp data,
+          T_sp displacedIndexOffset)
+    : Base(dummy,dimension,fillPointer,data,displacedIndexOffset) {};
   StrNs_O(size_t rank,
           List_sp dimensions,
-          T_sp fillPointer,
-          T_sp displacedTo,
-          size_t displacedIndexOffset)
-    : Base(rank,dimensions,fillPointer,displacedTo,displacedIndexOffset) {};
+          Array_sp data,
+          T_sp displacedIndexOffset)
+    : Base(rank,dimensions,data,displacedIndexOffset) {};
   public:
     virtual void sxhash_(HashGenerator& hg) const final {
       BaseSimpleVector_sp svec;
@@ -1049,27 +1074,29 @@ namespace core {
 };
 
 namespace core {
-  class Str8Ns_O : public abstract_DisplacementHandlingVector<Str8Ns_O,SimpleBaseString_O,StrNs_O> {
+  class Str8Ns_O : public abstract_Array<Str8Ns_O,SimpleBaseString_O,StrNs_O> {
     LISP_CLASS(core, CorePkg, Str8Ns_O, "Str8Ns",StrNs_O);
   public:
     // The types that define what this class does
-    typedef abstract_DisplacementHandlingVector<Str8Ns_O,SimpleBaseString_O,StrNs_O> TemplatedBase;
-    typedef typename TemplatedBase::value_type value_type;
+    typedef abstract_Array<Str8Ns_O,SimpleBaseString_O,StrNs_O> TemplatedBase;
+    typedef typename TemplatedBase::simple_element_type simple_element_type;
     typedef typename TemplatedBase::simple_type simple_type;
-    typedef value_type* iterator;
-    typedef const value_type* const_iterator;
+    typedef typename TemplatedBase::dimension_element_type value_type;
+    typedef simple_element_type* iterator;
+    typedef const simple_element_type* const_iterator;
   public:
-  Str8Ns_O(size_t dimension,
+  Str8Ns_O(size_t dummy_rank_1,
+           size_t dimension,
            T_sp fillPointer,
-           T_sp displacedTo,
-           size_t displacedIndexOffset)
-    : TemplatedBase(1,Cons_O::createList(clasp_make_fixnum(dimension)),fillPointer,displacedTo,displacedIndexOffset) {};
-    static Str8Ns_sp make(size_t dimension, claspChar initElement='\0', bool initialElementSuppliedP = false, T_sp fillPointer=_Nil<T_O>(), T_sp displacedTo=_Nil<T_O>(), size_t displacedIndexOffset=0 ) {
-      GC_ALLOCATE_VARIADIC(Str8Ns_O,s,dimension,fillPointer,displacedTo,displacedIndexOffset);
-      if (LIKELY(displacedTo.nilp())) {
-        SimpleBaseString_sp sb = SimpleBaseString_O::make(dimension,initElement,initialElementSuppliedP);
-        s->set_data(sb);
+           Array_sp data,
+           T_sp displacedIndexOffset)
+    : TemplatedBase(Rank1(),dimension,fillPointer,data,displacedIndexOffset) {};
+    static Str8Ns_sp make(size_t dimension, claspChar initElement='\0', bool initialElementSuppliedP = false, T_sp fillPointer=_Nil<T_O>(), T_sp dataOrDisplacedTo=_Nil<T_O>(), T_sp displacedIndexOffset=_Nil<T_O>() ) {
+//      GC_ALLOCATE_VARIADIC(Str8Ns_O,s,dimension,fillPointer,displacedTo,displacedIndexOffset);
+      if (LIKELY(dataOrDisplacedTo.nilp())) {
+        dataOrDisplacedTo = SimpleBaseString_O::make(dimension,initElement,initialElementSuppliedP);
       }
+      auto s = gctools::GC<Str8Ns_O>::allocate_container(gctools::GCStamp<Str8Ns_O>::TheStamp,1,1,dimension,fillPointer,gc::As<Array_sp>(dataOrDisplacedTo),displacedIndexOffset);
       return s;
     }
     static Str8Ns_sp make(const string& nm) {
@@ -1081,7 +1108,7 @@ namespace core {
   public:
     // move all the constructors into here
   static Str8Ns_sp createBufferString(size_t bufferSize = BUFFER_STRING_SIZE) {
-    return Str8Ns_O::make(bufferSize, value_type()/*' '*/, true, clasp_make_fixnum(0));
+    return Str8Ns_O::make(bufferSize, simple_element_type()/*' '*/, true, clasp_make_fixnum(0));
   };
   public:
   static Str8Ns_sp create(const string &nm);
@@ -1111,27 +1138,28 @@ namespace core {
 };
 
 namespace core {
-  class StrWNs_O : public abstract_DisplacementHandlingVector<StrWNs_O,SimpleCharacterString_O,StrNs_O> {
+  class StrWNs_O : public abstract_Array<StrWNs_O,SimpleCharacterString_O,StrNs_O> {
     LISP_CLASS(core, CorePkg, StrWNs_O, "StrWNs",StrNs_O);
   public:
     // The types that define what this class does
-    typedef abstract_DisplacementHandlingVector<StrWNs_O,SimpleCharacterString_O,StrNs_O> TemplatedBase;
-    typedef typename TemplatedBase::value_type value_type;
+    typedef abstract_Array<StrWNs_O,SimpleCharacterString_O,StrNs_O> TemplatedBase;
+    typedef typename TemplatedBase::simple_element_type simple_element_type;
     typedef typename TemplatedBase::simple_type simple_type;
-    typedef value_type* iterator;
-    typedef const value_type* const_iterator;
+    typedef simple_element_type* iterator;
+    typedef const simple_element_type* const_iterator;
   public:
-  StrWNs_O(size_t dimension,
+  StrWNs_O(size_t dummy_rank_1,
+           size_t dimension,
           T_sp fillPointer,
-          T_sp displacedTo,
-          size_t displacedIndexOffset)
-    : TemplatedBase(1,Cons_O::createList(clasp_make_fixnum(dimension)),fillPointer,displacedTo,displacedIndexOffset) {};
-    static StrWNs_sp make(size_t dimension, claspCharacter initElement='\0', bool initialElementSuppliedP=false, T_sp fillPointer=_Nil<T_O>(), T_sp displacedTo=_Nil<T_O>(), size_t displacedIndexOffset=0 ) {
-      GC_ALLOCATE_VARIADIC(StrWNs_O,s,dimension,fillPointer,displacedTo,displacedIndexOffset);
-      LIKELY_if (displacedTo.nilp()) {
-        SimpleCharacterString_sp sb = SimpleCharacterString_O::make(dimension,initElement,initialElementSuppliedP);
-        s->set_data(sb);
+          Array_sp data,
+          T_sp displacedIndexOffset)
+    : TemplatedBase(Rank1(),dimension,fillPointer,data,displacedIndexOffset) {};
+    static StrWNs_sp make(size_t dimension, claspCharacter initElement='\0', bool initialElementSuppliedP=false, T_sp fillPointer=_Nil<T_O>(), T_sp dataOrDisplacedTo=_Nil<T_O>(), T_sp displacedIndexOffset=_Nil<T_O>() ) {
+      //GC_ALLOCATE_VARIADIC(StrWNs_O,s,dimension,fillPointer,displacedTo,displacedIndexOffset);
+      LIKELY_if (dataOrDisplacedTo.nilp()) {
+        dataOrDisplacedTo = SimpleCharacterString_O::make(dimension,initElement,initialElementSuppliedP);
       }
+      auto s = gctools::GC<StrWNs_O>::allocate_container(gctools::GCStamp<StrWNs_O>::TheStamp,1,1,dimension,fillPointer,gc::As<Array_sp>(dataOrDisplacedTo),displacedIndexOffset);
       return s;
     }
     static StrWNs_sp make(const string& nm) {
@@ -1141,7 +1169,7 @@ namespace core {
       return result;
     }
     static StrWNs_sp createBufferString(size_t bufferSize = BUFFER_STRING_SIZE) {
-      return StrWNs_O::make(bufferSize, value_type()/*' '*/, true, clasp_make_fixnum(0));
+      return StrWNs_O::make(bufferSize, simple_element_type()/*' '*/, true, clasp_make_fixnum(0));
     };
   public:
     virtual clasp_elttype elttype() const { return clasp_aet_ch; };
@@ -1167,58 +1195,52 @@ namespace core {
 };
 
 
-namespace core {
-  class AbstractVectorNs_O : public VectorNs_O {
-    LISP_CLASS(core, CorePkg, AbstractVectorNs_O, "AbstractVectorNs",VectorNs_O);
-  public:
-  AbstractVectorNs_O(size_t rank,
-                        List_sp dimensions,
-                        T_sp fillPointer,
-                        T_sp displacedTo,
-                        size_t displacedIndexOffset)
-    : Base(rank,dimensions,fillPointer,displacedTo,displacedIndexOffset) {};
-  public:
-    virtual void sxhash_(HashGenerator& hg) const final {this->General_O::sxhash_(hg);}
-  };
-}
 
 namespace core {
-  class VectorTNs_O : public abstract_DisplacementHandlingVector<VectorTNs_O,SimpleVector_O,AbstractVectorNs_O> {
-    LISP_CLASS(core, CorePkg, VectorTNs_O, "VectorTNs",AbstractVectorNs_O);
+  class MDArrayT_O : public abstract_Array<MDArrayT_O,SimpleVector_O,MDArray_O> {
+    LISP_CLASS(core, CorePkg, MDArrayT_O, "MDArrayT",MDArray_O);
   public:
-    typedef abstract_DisplacementHandlingVector<VectorTNs_O,SimpleVector_O,AbstractVectorNs_O> TemplatedBase;
-    typedef typename TemplatedBase::value_type value_type;
+    typedef abstract_Array<MDArrayT_O,SimpleVector_O,MDArray_O> TemplatedBase;
+    typedef typename TemplatedBase::simple_element_type simple_element_type;
     typedef typename TemplatedBase::simple_type simple_type;
+  public: // make vector
+  MDArrayT_O(size_t dummy_rank_1,
+             size_t dimension,
+             T_sp fillPointer,
+             Array_sp data,
+             T_sp displacedIndexOffset) : TemplatedBase(Rank1(),dimension,fillPointer,data,displacedIndexOffset) {};
+    static MDArrayT_sp make(size_t dimension, T_sp initElement=_Nil<T_O>(), T_sp fillPointer=_Nil<T_O>(), T_sp dataOrDisplacedTo=_Nil<T_O>(), T_sp displacedIndexOffset=_Nil<T_O>() );
+    static MDArrayT_sp create(const gctools::Vec0<T_sp> &objs);
+  public: // make array
+  MDArrayT_O(size_t rank,
+             List_sp dimensions,
+             Array_sp data,
+             T_sp displacedIndexOffset) : TemplatedBase(rank,dimensions,data,displacedIndexOffset) {};
+    static MDArrayT_sp make_multi_dimensional(List_sp dim_desig, T_sp initialElement, T_sp dataOrDisplacedTo, T_sp displacedIndexOffset);
   public:
-  VectorTNs_O(size_t dimension,
-              T_sp fillPointer,
-              T_sp displacedTo,
-              size_t displacedIndexOffset)
-    : TemplatedBase(1,Cons_O::createList(clasp_make_fixnum(dimension)),fillPointer,displacedTo,displacedIndexOffset) {};
-    static VectorTNs_sp make(size_t dimension, T_sp initElement=_Nil<T_O>(), T_sp fillPointer=_Nil<T_O>(), T_sp displacedTo=_Nil<T_O>(), size_t displacedIndexOffset=0 );
-    static VectorTNs_sp create(const gctools::Vec0<T_sp> &objs);
     virtual bool equalp(T_sp o) const final;
     virtual clasp_elttype elttype() const { return clasp_aet_object; };
   };
 };
 
 namespace core {
-  // I can't use the abstract_DisplacementHandlingVector here because of bitwise access
-  class BitVectorNs_O : public VectorNs_O {
-    LISP_CLASS(core, CorePkg, BitVectorNs_O, "BitVectorNs",VectorNs_O);
+  // I can't use the abstract_Array here because of bitwise access
+  class BitVectorNs_O : public MDArray_O {
+    LISP_CLASS(core, CorePkg, BitVectorNs_O, "BitVectorNs",MDArray_O);
   public:
     typedef SimpleBitVector_O simple_type;
-  BitVectorNs_O(size_t dimension,
+  BitVectorNs_O(size_t dummy_rank_1,
+                size_t dimension,
                 T_sp fillPointer,
-                T_sp displacedTo,
-                size_t displacedIndexOffset)
-    : Base(1,Cons_O::createList(clasp_make_fixnum(dimension)),fillPointer,displacedTo,displacedIndexOffset) {};
-    static BitVectorNs_sp make(size_t length, SimpleBitVector_O::value_type initialElement, bool initialElementSuppliedP, T_sp fillPointer, T_sp displacedTo, size_t displacedIndexOffset ) {
-      GC_ALLOCATE_VARIADIC(BitVectorNs_O, bv, length, fillPointer, displacedTo, displacedIndexOffset );
-      LIKELY_if (displacedTo.nilp()) {
-        SimpleBitVector_sp sbv = SimpleBitVector_O::make(length,initialElement,initialElementSuppliedP);
-        bv->set_data(sbv);
+                Array_sp data,
+                T_sp displacedIndexOffset)
+    : Base(Rank1(),dimension,fillPointer,data,displacedIndexOffset) {};
+    static BitVectorNs_sp make(size_t length, SimpleBitVector_O::value_type initialElement, bool initialElementSuppliedP, T_sp fillPointer, T_sp dataOrDisplacedTo, T_sp displacedIndexOffset ) {
+//      GC_ALLOCATE_VARIADIC(BitVectorNs_O, bv, length, fillPointer, displacedTo, displacedIndexOffset );
+      LIKELY_if (dataOrDisplacedTo.nilp()) {
+        dataOrDisplacedTo = SimpleBitVector_O::make(length,initialElement,initialElementSuppliedP);
       }
+      auto bv = gctools::GC<BitVectorNs_O>::allocate_container(gctools::GCStamp<BitVectorNs_O>::TheStamp,1,1,length,fillPointer,gc::As<Array_sp>(dataOrDisplacedTo),displacedIndexOffset);
       return bv;
     }
   public:
@@ -1269,7 +1291,7 @@ namespace core {
   };
 };
 
-
+#if 0
 namespace core {
   template <typename MyArrayType, typename MySimpleType, typename MyParentType >
     class abstract_DisplacementHandlingArray : public MyParentType {
@@ -1278,7 +1300,7 @@ namespace core {
     typedef MyParentType Base;
     typedef MyArrayType /*eg: VectorTNs_O*/ my_array_type;
     typedef MySimpleType /*eg: SimpleVector_O*/ simple_type;
-    typedef typename simple_type::value_type /*eg: T_sp*/ value_type;
+    typedef typename simple_type::simple_element_type /*eg: T_sp*/ simple_element_type;
     typedef gctools::smart_ptr<my_array_type> my_smart_ptr_type;
   public:
     // Pass constructor arguments up
@@ -1292,28 +1314,28 @@ namespace core {
   public:
     // Primary functions/operators for operator[] that handle displacement
     // There's a non-const and a const version of each
-    value_type& unsafe_indirectReference(size_t index) {
+    simple_element_type& unsafe_indirectReference(size_t index) {
       my_array_type& vecns = *reinterpret_cast<my_array_type*>(&*this->_Data);
       return vecns[this->_DisplacedIndexOffset+index];
     }
-    value_type& operator[](size_t index) {
+    simple_element_type& operator[](size_t index) {
       unlikely_if (gc::IsA<my_smart_ptr_type>(this->_Data)) return this->unsafe_indirectReference(index);
       return (*reinterpret_cast<simple_type*>(&*(this->_Data)))[this->_DisplacedIndexOffset+index];
     }
-    const value_type& unsafe_indirectReference(size_t index) const {
+    const simple_element_type& unsafe_indirectReference(size_t index) const {
       my_array_type& vecns = *reinterpret_cast<my_array_type*>(&*this->_Data);
       return vecns[this->_DisplacedIndexOffset+index];
     }
-    const value_type& operator[](size_t index) const {
+    const simple_element_type& operator[](size_t index) const {
       unlikely_if (gc::IsA<my_smart_ptr_type>(this->_Data)) return this->unsafe_indirectReference(index);
       return (*reinterpret_cast<simple_type*>(&*(this->_Data)))[this->_DisplacedIndexOffset+index];
     }
   public:
     // Iterators
-    value_type* begin() { return &(*this)[0]; };
-    value_type* end() { return &(*this)[this->arrayTotalSize()]; };
-    const value_type* begin() const { return &(*this)[0]; };
-    const value_type* end() const { return &(*this)[this->arrayTotalSize()]; };
+    simple_element_type* begin() { return &(*this)[0]; };
+    simple_element_type* end() { return &(*this)[this->arrayTotalSize()]; };
+    const simple_element_type* begin() const { return &(*this)[0]; };
+    const simple_element_type* end() const { return &(*this)[this->arrayTotalSize()]; };
   public:
     void asBaseSimpleVectorRange(BaseSimpleVector_sp& sv, size_t& start, size_t& end) const final {
       unlikely_if (gc::IsA<my_smart_ptr_type>(this->_Data)) {
@@ -1368,7 +1390,7 @@ namespace core {
   };
 
 };
-
+#endif
 
 
 

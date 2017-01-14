@@ -394,8 +394,8 @@ void run_quick_tests() {
   printf("%s:%d   sizeof(claspCharacter) -> %lu   typeid(claspCharacter).name() -> %s\n", __FILE__, __LINE__, sizeof(claspCharacter), typeid(claspCharacter).name() );
   printf("%s:%d   sizeof(SimpleBaseString_O::value_type) -> %lu   typeid(SimpleBaseString_O::value_type).name() -> %s\n", __FILE__, __LINE__, sizeof(SimpleBaseString_O::value_type), typeid(SimpleBaseString_O::value_type).name() );
   printf("%s:%d   sizeof(SimpleCharacterString_O::value_type) -> %lu   typeid(SimpleCharacterString_O::value_type).name() -> %s\n", __FILE__, __LINE__, sizeof(SimpleCharacterString_O::value_type), typeid(SimpleCharacterString_O::value_type).name() );
-  printf("%s:%d   sizeof(Str8Ns_O::value_type) -> %lu   typeid(Str8Ns_O::value_type).name() -> %s\n", __FILE__, __LINE__, sizeof(Str8Ns_O::value_type), typeid(Str8Ns_O::value_type).name() );
-  printf("%s:%d   sizeof(StrWNs_O::value_type) -> %lu   typeid(StrWNs_O::value_type).name() -> %s\n", __FILE__, __LINE__, sizeof(StrWNs_O::value_type), typeid(StrWNs_O::value_type).name() );
+  printf("%s:%d   sizeof(Str8Ns_O::value_type) -> %lu   typeid(Str8Ns_O::value_type).name() -> %s\n", __FILE__, __LINE__, sizeof(Str8Ns_O::simple_element_type), typeid(Str8Ns_O::simple_element_type).name() );
+  printf("%s:%d   sizeof(StrWNs_O::value_type) -> %lu   typeid(StrWNs_O::value_type).name() -> %s\n", __FILE__, __LINE__, sizeof(StrWNs_O::simple_element_type), typeid(StrWNs_O::simple_element_type).name() );
 #define PRINT_STRING(x) { claspCharacter c = (*x)[1]; printf("%s:%d %s -> %s  &(*x)[0]->%p (*x)[1]=%c/0x%X)\n", __FILE__, __LINE__, #x, _rep_(x).c_str(), (void*)&(*x)[0], c, c); }
   PRINT_STRING(sbcsTest);
   PRINT_STRING(scsTest);
