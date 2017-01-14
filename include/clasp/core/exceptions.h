@@ -380,11 +380,11 @@ struct CxxFunctionInvocationLogger {
 #define FIX_ME() SIMPLE_ERROR(BF("Fix me!!! function(%s) file(%s) lineNumber(%s)") % __FUNCTION__ % __FILE__ % __LINE__);
 #define IMPLEMENT_ME() SIMPLE_ERROR(BF("Implement me!!! function(%s) file(%s) lineNumber(%s)") % __FUNCTION__ % __FILE__ % __LINE__);
 #define IMPLEMENT_MEF(bfmsg) SIMPLE_ERROR(BF("Implement me!!! %s\nfunction(%s) file(%s) lineNumber(%s)") % (bfmsg).str() % __FUNCTION__ % __FILE__ % __LINE__);
-#define DEPRECIATED() SIMPLE_ERROR(BF("Depreciated!!! function(%s) file(%s) lineNumber(%d)") % __FUNCTION__ % __FILE__ % __LINE__);
+#define DEPRECATED() SIMPLE_ERROR(BF("Depreciated!!! function(%s) file(%s) lineNumber(%d)") % __FUNCTION__ % __FILE__ % __LINE__);
 #define STUB() printf("%s:%d>%s  stub\n", __FILE__, __LINE__, __FUNCTION__ )
 
-#define MAY_BE_DEPRECIATED() printf("%s\n", (BF("May be depreciated!!! function(%s) file(%s) lineNumber(%d)") % __FUNCTION__ % __FILE__ % __LINE__).str().c_str());
-#define DEPRECIATEDP(s) SIMPLE_ERROR(BF("Depreciated!!! function(%s) file(%s) lineNumber(%d) %s") % __FUNCTION__ % __FILE__ % __LINE__ % (s));
+#define MAY_BE_DEPRECATED() printf("%s\n", (BF("May be depreciated!!! function(%s) file(%s) lineNumber(%d)") % __FUNCTION__ % __FILE__ % __LINE__).str().c_str());
+#define DEPRECATEDP(s) SIMPLE_ERROR(BF("Depreciated!!! function(%s) file(%s) lineNumber(%d) %s") % __FUNCTION__ % __FILE__ % __LINE__ % (s));
 
 FORWARD(Cons);
 

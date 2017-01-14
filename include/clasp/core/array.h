@@ -398,45 +398,7 @@ namespace core {
 
 // ----------------------------------------------------------------------
 //
-// here go specialized mdarrays
-//
-#if 0
-namespace core {
-  class MDArrayNs_O : public MDArray_O {
-    LISP_CLASS(core, CorePkg, MDArrayNs_O, "MDArrayNs",MDArray_O);
-  public:
-  MDArrayNs_O(size_t rank,
-              List_sp dimensions,
-              T_sp fillPointer,
-              T_sp displacedTo,
-              size_t displacedIndexOffset) : Base(rank,dimensions,fillPointer,displacedTo,displacedIndexOffset) {};
-  public:
-    virtual Array_sp reverse() const final {notSequenceError(this->asSmartPtr());};
-    virtual Array_sp nreverse() final {notSequenceError(this->asSmartPtr());};
-    virtual T_sp vectorPush(T_sp newElement)  override {notVectorError(this->asSmartPtr());};;
-    virtual Fixnum_sp vectorPushExtend(T_sp newElement, size_t extension = 0)  override {notVectorError(this->asSmartPtr());};
-    virtual Array_sp unsafe_subseq(size_t start, size_t end) const override {notVectorError(this->asSmartPtr());};
-    virtual Array_sp unsafe_setf_subseq(size_t start, size_t end, Array_sp newSubseq) override {notVectorError(this->asSmartPtr());};
-  };
-};
-
-namespace core {
-  class AbstractMDArrayNs_O : public MDArrayNs_O {
-    LISP_CLASS(core, CorePkg, AbstractMDArrayNs_O, "AbstractMDArrayNs",MDArrayNs_O);
-  public:
-  AbstractMDArrayNs_O(size_t rank,
-                      List_sp dimensions,
-                      T_sp displacedTo,
-                      size_t displacedIndexOffset) : Base(rank,dimensions,_Nil<T_O>(),displacedTo,displacedIndexOffset) {};
-  };
-};
-
-#endif
-
-
-// ----------------------------------------------------------------------
-//
-// here go Vector and Simple vectors
+// here go Simple vectors
 //
 namespace core {
 
@@ -1011,40 +973,6 @@ namespace core {
   };
 };
 
-#if 0
-namespace core {
-  class VectorNs_O : public MDArray_O {
-    LISP_CLASS(core, CorePkg, VectorNs_O, "VectorNs",MDArray_O);
-  public:
-  VectorNs_O(size_t rank,
-             List_sp dimensions,
-             T_sp fillPointer,
-             T_sp displacedTo,
-             size_t displacedIndexOffset)
-    : Base(rank,dimensions,fillPointer,displacedTo,displacedIndexOffset) {};
-  public:
-    virtual Array_sp unsafe_subseq(size_t start, size_t iend) const
-    {
-      return this->_Data->unsafe_subseq(start+this->_DisplacedIndexOffset,iend+this->_DisplacedIndexOffset);
-    }
-    virtual Array_sp unsafe_setf_subseq(size_t start, size_t iend, Array_sp new_subseq)
-    {
-      return this->_Data->unsafe_setf_subseq(start+this->_DisplacedIndexOffset,iend+this->_DisplacedIndexOffset,new_subseq);
-    }
-
-    void ensureSpaceAfterFillPointer(T_sp init_element, size_t size);
-    T_sp vectorPush(T_sp newElement);
-    Fixnum_sp vectorPushExtend(T_sp newElement, size_t extension = 0);
-
-    // The class needs to provide something to resize the
-    // vector until adjust-array is available
-    // Was setSize
-    virtual void sxhash_(HashGenerator& hg) const override {this->General_O::sxhash_(hg);}
-    virtual bool equalp(T_sp other) const;
-  };
-}
-#endif
-
 
 
 namespace core {
@@ -1290,107 +1218,6 @@ namespace core {
     }
   };
 };
-
-#if 0
-namespace core {
-  template <typename MyArrayType, typename MySimpleType, typename MyParentType >
-    class abstract_DisplacementHandlingArray : public MyParentType {
-  public:
-    // The types that define what this class does
-    typedef MyParentType Base;
-    typedef MyArrayType /*eg: VectorTNs_O*/ my_array_type;
-    typedef MySimpleType /*eg: SimpleVector_O*/ simple_type;
-    typedef typename simple_type::simple_element_type /*eg: T_sp*/ simple_element_type;
-    typedef gctools::smart_ptr<my_array_type> my_smart_ptr_type;
-  public:
-    // Pass constructor arguments up
-  abstract_DisplacementHandlingArray(size_t rank,
-                                     List_sp dimensions,
-                                     T_sp displacedTo,
-                                     size_t displacedIndexOffset)
-    : Base(rank,dimensions,displacedTo,displacedIndexOffset) {};
-  public:
-    static void never_invoke_allocator() {gctools::GCAbstractAllocator<abstract_DisplacementHandlingArray>::never_invoke_allocator();};
-  public:
-    // Primary functions/operators for operator[] that handle displacement
-    // There's a non-const and a const version of each
-    simple_element_type& unsafe_indirectReference(size_t index) {
-      my_array_type& vecns = *reinterpret_cast<my_array_type*>(&*this->_Data);
-      return vecns[this->_DisplacedIndexOffset+index];
-    }
-    simple_element_type& operator[](size_t index) {
-      unlikely_if (gc::IsA<my_smart_ptr_type>(this->_Data)) return this->unsafe_indirectReference(index);
-      return (*reinterpret_cast<simple_type*>(&*(this->_Data)))[this->_DisplacedIndexOffset+index];
-    }
-    const simple_element_type& unsafe_indirectReference(size_t index) const {
-      my_array_type& vecns = *reinterpret_cast<my_array_type*>(&*this->_Data);
-      return vecns[this->_DisplacedIndexOffset+index];
-    }
-    const simple_element_type& operator[](size_t index) const {
-      unlikely_if (gc::IsA<my_smart_ptr_type>(this->_Data)) return this->unsafe_indirectReference(index);
-      return (*reinterpret_cast<simple_type*>(&*(this->_Data)))[this->_DisplacedIndexOffset+index];
-    }
-  public:
-    // Iterators
-    simple_element_type* begin() { return &(*this)[0]; };
-    simple_element_type* end() { return &(*this)[this->arrayTotalSize()]; };
-    const simple_element_type* begin() const { return &(*this)[0]; };
-    const simple_element_type* end() const { return &(*this)[this->arrayTotalSize()]; };
-  public:
-    void asBaseSimpleVectorRange(BaseSimpleVector_sp& sv, size_t& start, size_t& end) const final {
-      unlikely_if (gc::IsA<my_smart_ptr_type>(this->_Data)) {
-        this->asBaseSimpleVectorRange(sv,start,end);
-        start += this->_DisplacedIndexOffset;
-        end = this->arrayTotalSize()+this->_DisplacedIndexOffset;
-        return;
-      }
-      sv = gc::As<SimpleVector_sp>(this->_Data);
-      start = this->_DisplacedIndexOffset;
-      end = this->arrayTotalSize()+this->_DisplacedIndexOffset;
-    }
-    virtual void sxhash_(HashGenerator& hg) const final {this->General_O::sxhash_(hg);}
-    virtual bool equal(T_sp other) const override { return this->eq(other);};
-    bool equalp(T_sp o) const final {
-      if (&*o == this) return true;
-      if (my_smart_ptr_type other = o.asOrNull<my_array_type>()) {
-        if (this->rank() != other->rank() ) return false;
-        for (size_t i(0); i<this->rank(); ++i ) {
-          if (this->_Dimensions[i] != other->_Dimensions[i]) return false;
-        }
-        for (size_t i(0),iEnd(this->arrayTotalSize()); i<iEnd; ++i) {
-          if (!cl__equalp((*this)[i], (*other)[i])) return false;
-        }
-        return true;
-      }
-      return false;
-    }
-  public:
-    CL_METHOD_OVERLOAD virtual void rowMajorAset(size_t idx, T_sp value) final {(*this)[idx] = simple_type::from_object(value);}
-    CL_METHOD_OVERLOAD virtual T_sp rowMajorAref(size_t idx) const final {return simple_type::to_object((*this)[idx]);}
-
-  };
-}
-
-namespace core {
-  class ArrayTNs_O : public abstract_DisplacementHandlingArray<ArrayTNs_O,SimpleVector_O,AbstractMDArrayNs_O>  {
-    LISP_CLASS(core, CorePkg, ArrayTNs_O, "ArrayTNs",AbstractMDArrayNs_O);
-  public:
-    typedef abstract_DisplacementHandlingArray<ArrayTNs_O,SimpleVector_O,AbstractMDArrayNs_O> TemplatedBase;
-  ArrayTNs_O(size_t rank,
-             List_sp dimensions,
-             T_sp displacedTo,
-             size_t displacedIndexOffset) : TemplatedBase(rank,dimensions,displacedTo,displacedIndexOffset) {};
-  public:
-    static ArrayTNs_sp make(T_sp dim_desig, T_sp initialElement, T_sp displacedTo, size_t displacedIndexOffset);
-  public:
-    virtual void internalAdjustSize_(size_t size, T_sp initElement=_Nil<T_O>(), bool initElementSupplied=false ) final {
-      IMPLEMENT_MEF(BF("Add support for internalAdjustSize for ArrayTNs when you see this"));
-    };
-    virtual clasp_elttype elttype() const { return clasp_aet_object; };
-  };
-
-};
-#endif
 
 
 

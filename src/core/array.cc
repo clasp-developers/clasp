@@ -1812,26 +1812,6 @@ bool SimpleBaseString_O::equal(T_sp other) const {
   if (!cl__stringp(other)) return false;
   String_sp sother = gc::As_unsafe<String_sp>(other);
   TEMPLATE_HALF_STRING_DISPATCHER(this,sother,template_string_EQ_equal,0,this->length(),0,sother->length());
-#if 0
-  if (gc::IsA<SimpleString_sp>(other)) {
-    if (gc::IsA<SimpleBaseString_sp>(other)) {
-      auto so = gc::As_unsafe<SimpleBaseString_sp>(other);
-      return template_string_EQ_equal(*this,*so,0,this->length(),0,so->length());
-    } else {
-      auto so = gc::As_unsafe<SimpleCharacterString_sp>(other);
-      return template_string_EQ_equal(*this,*so,0,this->length(),0,so->length());
-    }
-  } else {
-    if (gc::IsA<Str8Ns_sp>(other)) {
-      auto so = gc::As_unsafe<Str8Ns_sp>(other);
-      return template_string_EQ_equal(*this,*so,0,this->length(),0,so->length());
-    } else {
-      auto so = gc::As_unsafe<StrWNs_sp>(other);
-      return template_string_EQ_equal(*this,*so,0,this->length(),0,so->length());
-    }
-  }
-  return false;
-#endif
 };
 
 bool SimpleBaseString_O::equalp(T_sp other) const {
@@ -1841,27 +1821,6 @@ bool SimpleBaseString_O::equalp(T_sp other) const {
   String_sp sother = gc::As_unsafe<String_sp>(other);
   TEMPLATE_HALF_STRING_DISPATCHER(this,sother,template_string_equalp_bool,0,this->length(),0,sother->length());
 }
-
-
-#if 0
-void SimpleString8_O::__write__(T_sp stream) const {
-  cl_index ndx;
-  if (!clasp_print_escape() && !clasp_print_readably()) {
-    for (ndx = 0; ndx < this->length(); ndx++) {
-      clasp_write_char((*this)[ndx], stream);
-    }
-  } else {
-    clasp_write_char('"', stream);
-    for (ndx = 0; ndx < this->length(); ndx++) {
-      char c = (*this)[ndx];
-      if (c == '"' || c == '\\')
-        clasp_write_char('\\', stream);
-      clasp_write_char(c, stream);
-    }
-    clasp_write_char('"', stream);
-  }
-}
-#endif
 
 
 // ------------------------------------------------------------
@@ -2100,50 +2059,8 @@ bool SimpleBitVector_isZero(SimpleBitVector_sp x) {
 namespace core {
 
 };
-// ------------------------------------------------------------
-//
-// Class VectorTNs
-//
 
-#if 0
-VectorTNs_sp VectorTNs_O::make(size_t dimension, T_sp initElement, T_sp fillPointer, T_sp displacedTo, size_t displacedIndexOffset ) {
-  GC_ALLOCATE_VARIADIC(VectorTNs_O,s,dimension,fillPointer,displacedTo,displacedIndexOffset);
-  LIKELY_if (displacedTo.nilp()) {
-    SimpleVector_sp sb = SimpleVector_O::make(dimension,initElement,true);
-    s->set_data(sb);
-  }
-  return s;
-}
 
-VectorTNs_sp VectorTNs_O::create(const gc::Vec0<T_sp>& objs) {
-  size_t len = objs.size();
-  SimpleVector_sp ss = SimpleVector_O::make(len,_Nil<T_O>(),true,len,&(objs[0]));
-  VectorTNs_sp result = VectorTNs_O::make(len);
-  result->set_data(ss);
-  return result;
-}
-
-bool VectorTNs_O::equalp(T_sp other) const {
-  if (&*other==this) return true;
-  if (!other.generalp()) return false;
-  if (gc::IsA<SimpleVector_sp>(other)) {
-    SimpleVector_sp svother = gc::As_unsafe<SimpleVector_sp>(other);
-    if (svother->length()!=this->length()) return false;
-    for (size_t i(0),iEnd(this->length()); i<iEnd; ++i ) {
-      if (!cl__equalp((*this)[i],(*svother)[i])) return false;
-    }
-    return true;
-  } else if (gc::IsA<VectorTNs_sp>(other)) {
-    VectorTNs_sp vother = gc::As_unsafe<VectorTNs_sp>(other);
-    if (vother->length()!=this->length()) return false;
-    for (size_t i(0),iEnd(this->length()); i<iEnd; ++i ) {
-      if (!cl__equalp((*this)[i],(*vother)[i])) return false;
-    }
-    return true;
-  }
-  return false;
-}
-#endif
 // ------------------------------------------------------------
 //
 // Class Str8Ns
@@ -2449,10 +2366,6 @@ void StringPushSubString(String_sp buffer, String_sp str, size_t start, size_t e
   }
 }
 
-#if 0
-CL_LISPIFY_NAME(push-string);
-CL_DEFMETHOD
-#endif
 void StringPushString(String_sp buffer, String_sp other) {
   StringPushSubString(buffer, other, 0, cl__length(other));
 }
@@ -2546,32 +2459,8 @@ CL_DEFUN MDArray_sp core__make_mdarray(List_sp dimensions,
   return MDArrayT_O::make_multi_dimensional(dimensions,initialElement,displacedTo,displacedIndexOffset);
 };
 
-
-
-
-#if 0 // DEPRECIATED
-CL_LAMBDA(array dimensions initial-element); //initial-contents);
-CL_DECLARE();
-CL_DOCSTRING("adjustVector");
-CL_DEFUN T_sp core__adjust_vector(T_sp array, int new_dimensions, T_sp initialElement /*, List_sp initial_contents*/) {
-  if (VectorObjects_sp vo = array.asOrNull<VectorObjects_O>()) {
-    vo->adjust(initialElement,/*initial_contents,*/ new_dimensions);
-    return vo;
-  }
-  IMPLEMENT_MEF(BF("Implement adjustVector for: %s") % _rep_(array));
-};
-#endif
-
-  
-
 // ------------------------------------------------------------
 // ------------------------------------------------------------
-
-
-
-
-
-
 
 CL_LAMBDA(newElement vector);
 CL_DECLARE();

@@ -279,7 +279,7 @@ CL_DEFUN Integer_sp core__cxx_fibn(Fixnum_sp reps, Fixnum_sp num) {
 }
 
 T_sp varArgsList(int n_args, ...) {
-  DEPRECIATED();
+  DEPRECATED();
   va_list ap;
   va_start(ap, n_args);
   Cons_O::CdrType_sp first = _Nil<Cons_O::CdrType_O>();

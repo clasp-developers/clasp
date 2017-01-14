@@ -498,7 +498,7 @@ void NamednewFunction_sp(core::Function_sp *sharedP) {
 }
 
 NOINLINE extern void copyArgs(core::T_sp *destP, int nargs, core::T_O *arg0, core::T_O *arg1, core::T_O *arg2, va_list args) {
-  DEPRECIATED();
+  DEPRECATED();
   //        printf("%s:%d copyArgs destP=%p  nargs=%d\n", __FILE__, __LINE__, destP, nargs);
   switch (nargs) {
   case 0:
@@ -529,7 +529,7 @@ NOINLINE extern void copyArgs(core::T_sp *destP, int nargs, core::T_O *arg0, cor
 }
 
 void resetTmv(core::T_mv *sharedP) {
-  MAY_BE_DEPRECIATED();
+  MAY_BE_DEPRECATED();
   ASSERT(sharedP != NULL);
   (*sharedP).reset_();
 }
@@ -1739,7 +1739,7 @@ void cc_throw(T_O* tag, T_O* result_func)
     */
 #if 0
 void cc_throw(T_O *tag) {
-  MAY_BE_DEPRECIATED();
+  MAY_BE_DEPRECATED();
 #ifdef DEBUG_FLOW_CONTROL
   if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp() ) {
     printf("%s:%d In cc_tag tag@%p\n\n", __FILE__, __LINE__, tag);

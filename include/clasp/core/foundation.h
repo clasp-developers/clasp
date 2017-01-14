@@ -1234,8 +1234,8 @@ namespace core {
 #include <clasp/core/exceptions.h>
 
 #define DISABLE_NEW()                                                                        \
-  void *operator new(size_t s) { DEPRECIATEDP("Disabled new"); };                            \
-  void *operator new(size_t s, const std::nothrow_t &tag) { DEPRECIATEDP("Disabled new"); }; \
+  void *operator new(size_t s) { DEPRECATEDP("Disabled new"); };                            \
+  void *operator new(size_t s, const std::nothrow_t &tag) { DEPRECATEDP("Disabled new"); }; \
   void *operator new(size_t s, void *ptr) { return ptr; };
 
 namespace kw {

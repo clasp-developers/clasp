@@ -657,7 +657,7 @@ namespace core {
 #if 0
     static LongFloat_sp create(LongFloat nm) {
       return DoubleFloat_O::create(nm);
-      DEPRECIATED();
+      DEPRECATED();
       GC_ALLOCATE(LongFloat_O, v);
       v->_Value = nm;
       return v;

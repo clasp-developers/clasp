@@ -281,7 +281,7 @@ void Lisp_O::addToStarModulesStar(Symbol_sp sym) {
 
 template <class oclass>
 void setup_static_classSymbol(BootStrapCoreSymbolMap const &sidMap) {
-  DEPRECIATED();
+  DEPRECATED();
   oclass::___set_static_ClassSymbol(sidMap.find_symbol(oclass::static_packageName(), oclass::static_className()));
 }
 
@@ -810,7 +810,7 @@ LoadTimeValues_sp Lisp_O::findLoadTimeValues(const string &name) {
   return gc::As<LoadTimeValues_sp>(it);
 }
 LoadTimeValues_sp Lisp_O::findLoadTimeValuesWithNameContaining(const string &sname, int &count) {
-  DEPRECIATED(); // We should get rid of LoadTimeValues
+  DEPRECATED(); // We should get rid of LoadTimeValues
 #if 0
   LoadTimeValues_sp result = _Nil<LoadTimeValues_O>();
   count = 0;
@@ -2479,7 +2479,7 @@ CL_DEFUN void Lisp_O::forget_all_single_dispatch_generic_functions() {
 #if 0
     Class_sp Lisp_O::classFromClassSymbol(Symbol_sp cid) const
     {
-	DEPRECIATED();
+	DEPRECATED();
 #if 0
 	return this->findClass(cid,true);
 #endif
@@ -2487,7 +2487,7 @@ CL_DEFUN void Lisp_O::forget_all_single_dispatch_generic_functions() {
 #endif
 
 string Lisp_O::classNameFromClassSymbol(Symbol_sp cid) {
-  DEPRECIATED();
+  DEPRECATED();
 #if 0
 	Class_sp mc = this->classFromClassSymbol(cid);
 	return mc->getPackagedName();
@@ -2496,7 +2496,7 @@ string Lisp_O::classNameFromClassSymbol(Symbol_sp cid) {
 
 Class_sp Lisp_O::classFromClassName(const string &name) {
   _OF();
-  DEPRECIATED();
+  DEPRECATED();
   //    return sym->symbolValue().as<Class_O>();
 }
 

@@ -856,7 +856,7 @@ bool lisp_BuiltInClassesInitialized() {
 #endif
 
 void lisp_exposeClass(const string &className, ExposeCandoFunction exposeCandoFunction, ExposePythonFunction exposePythonFunction) {
-  DEPRECIATED();
+  DEPRECATED();
   //    ASSERTP(lisp.notnilp(),"In lisp_exposeClass env can not be nil");
   bool exposed = false;
   {
@@ -888,7 +888,7 @@ void lisp_addClass(Symbol_sp classSymbol,
   _lisp->addClass(classSymbol, cb, base1ClassSymbol); //, base2ClassSymbol);
 }
 void lisp_addClass(Symbol_sp classSymbol) {
-  DEPRECIATED();
+  DEPRECATED();
   //	_lisp->addClass(classSymbol);
 }
 

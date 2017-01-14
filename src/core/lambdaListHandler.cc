@@ -542,7 +542,7 @@ void LambdaListHandler_O::recursively_build_handlers_count_arguments(List_sp dec
     for (gctools::Vec0<OptionalArgument>::iterator it = this->_OptionalArguments.begin();
          it != this->_OptionalArguments.end(); it++) {
       if (it->_lambdaListP()) {
-        DEPRECIATED();
+        DEPRECATED();
         //		    throw_if_not_destructuring_context(context);
         List_sp sub_lambda_list = it->lambda_list();
         LambdaListHandler_sp sub_handler = LambdaListHandler_O::createRecursive_(sub_lambda_list, declares, context, classifier);
@@ -561,7 +561,7 @@ void LambdaListHandler_O::recursively_build_handlers_count_arguments(List_sp dec
     for (gctools::Vec0<KeywordArgument>::iterator it = this->_KeywordArguments.begin();
          it != this->_KeywordArguments.end(); it++) {
       if (it->_lambdaListP()) {
-        DEPRECIATED();
+        DEPRECATED();
         //		    throw_if_not_destructuring_context(context);
         List_sp sub_lambda_list = it->lambda_list();
         LambdaListHandler_sp sub_handler = LambdaListHandler_O::createRecursive_(sub_lambda_list, declares, context, classifier);
