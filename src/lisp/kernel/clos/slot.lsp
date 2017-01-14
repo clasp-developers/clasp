@@ -29,7 +29,7 @@
     (slotd class
 	   :name name
 	   :initform initform
-	   :initfunction (if (listp initfunction) (eval initfunction) initfunction)
+	   :initfunction initfunction
 	   :type type
 	   :allocation allocation
 	   :initargs initargs
