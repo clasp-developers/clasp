@@ -41,7 +41,7 @@ void MultipleValues::initialize(){};
 
 
 void multipleValuesSaveToVector(T_mv values, SimpleVector_sp save) {
-  DEPRECIATED();
+  DEPRECATED();
   core::MultipleValues &mv = core::lisp_multipleValues();
   save->operator[](MultipleValues::MultipleValuesLimit) = clasp_make_fixnum(values.number_of_values());
   if (values.number_of_values() > 0) {
@@ -53,12 +53,12 @@ void multipleValuesSaveToVector(T_mv values, SimpleVector_sp save) {
 }
 
 size_t multipleValuesLength(SimpleVector_sp values) {
-  DEPRECIATED();
+  DEPRECATED();
   return (values->operator[](MultipleValues::MultipleValuesLimit)).unsafe_fixnum();
 }
 
 T_mv multipleValuesLoadFromVector(VectorObjects_sp load) {
-  DEPRECIATED();
+  DEPRECATED();
   if (cl__length(load) > 0) {
     T_mv mvn(load->operator[](0), cl__length(load));
     core::MultipleValues &mv = lisp_multipleValues();

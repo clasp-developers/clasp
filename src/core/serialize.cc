@@ -50,7 +50,7 @@ SYMBOL_EXPORT_SC_(KeywordPkg, podSymbolMap);
 
 
 SNode_sp SNode_O::makeAppropriateSNode(T_sp val, HashTable_sp objToSNodeMap) {
-  DEPRECIATED();
+  DEPRECATED();
 #if 0
   if (val.nilp() ||
       gc::IsA<Fixnum_sp>(val) ||
@@ -219,7 +219,7 @@ void BranchSNode_O::saveVector(gctools::Vec0<T_sp> const &vec) {
 }
 
 T_sp BranchSNode_O::createObject(HashTable_sp snodeToObject) {
-  DEPRECIATED();
+  DEPRECATED();
 #if 0
   SYMBOL_EXPORT_SC_(CorePkg, serialize);
   Class_sp cl = cl__find_class(this->_Kind);
@@ -402,7 +402,7 @@ void LoadArchive_O::needsFinalization(SNode_sp node) {
 }
 
 void LoadArchive_O::finalizeObjects() {
-  DEPRECIATED();
+  DEPRECATED();
 #if 0
   T_sp obj;
   this->_NodesToFinalize->mapHash([&obj](T_sp node, T_sp dummy) {

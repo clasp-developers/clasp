@@ -84,20 +84,14 @@
 			 +slot-definition-slots+)
     (let* ((table (make-hash-table :size (if slots 24 0)))
 	   (location-table (make-hash-table :size (if slots 24 0)))
-	   (slots (let ((ps (parse-slots slots)))
-                    ps))
-	   (direct-slots (progn
-			   (loop for slotd in slots
-			    collect (apply #'make-simple-slotd
-				     (find-class 'standard-direct-slot-definition)
-				     slotd)))
-	     )
+           (direct-slot-class (find-class 'standard-direct-slot-definition nil))
+	   (direct-slots (loop for slotd in slots
+                               collect (apply #'make-simple-slotd direct-slot-class slotd)))
+           (effective-slot-class (find-class 'standard-effective-slot-definition nil))
 	   (effective-slots (loop for i from 0
 			       for slotd in slots
 			       for name = (getf slotd :name)
-			       for s = (apply #'make-simple-slotd
-					(find-class 'standard-effective-slot-definition)
-					slotd)
+			       for s = (apply #'make-simple-slotd effective-slot-class slotd)
 			       do (setf (slot-definition-location s) i
 					(gethash name location-table) i
 					(gethash name table) s)
@@ -106,11 +100,10 @@
 	    (class-direct-slots class) direct-slots
 	    (class-size class) (length slots)
 	    (slot-table class) table)
-      (setf (class-location-table class) location-table)
-      )))
+      (setf (class-location-table class) location-table))))
 
 
-;; 1) Create the classes
+;; Create the classes
 ;;
 ;; Notice that, due to circularity in the definition, STANDARD-CLASS has
 ;; itself as metaclass. ENSURE-BOOT-CLASS takes care of that.
@@ -127,60 +120,57 @@
 
 #+(or)(defmacro dbg-boot (fmt &rest fmt-args)
   `(bformat t ,fmt ,@fmt-args))
+(defmacro boot-hierarchy ()
+  `(progn
+     ,@(loop for (class . options) in +class-hierarchy+
+             for direct-slots = (getf options :direct-slots)
+             collect
+             (if direct-slots
+                 `(apply #'ensure-boot-class ',class
+                         :direct-slots ,(parse-slots direct-slots)
+                         ',(let ((copy (copy-list options)))
+                             (remf copy :direct-slots)
+                             copy))
+                 `(apply #'ensure-boot-class ',class ',options)))))
 
-;;;
-;;; ENSURE-BOOT-CLASS compiles a lot of code using EVAL
-;;;
-;;; This is being run every time Clasp starts up!
-;;; We have to figure out how ECL avoids this.
-;;;
+(boot-hierarchy)
 (dbg-boot "About to start block\n")
-(let* ((class-hierarchy '#.+class-hierarchy+))
-  ;; The loop is expensive and slows down startup
-  (dbg-boot "About to accumulate classes\n")
-  (let ((all-classes (loop for c in class-hierarchy
-			for class = (progn
-                                      (dbg-boot "About to accumulate class %s\n" c)
-                                      #+(or)(if (eq (car c) 'standard-generic-function)
-                                                (core:gdb "About to trap problem in ENSURE-BOOT-CLASS of STANDARD-GENERIC-FUNCTION"))
-                                      (apply #'ensure-boot-class c))
-                        collect class)))
-    #+ecl
-    (progn
-      (defconstant +the-t-class+ (find-class 't nil))
-      (defconstant +the-class+ (find-class 'class nil))
-      (defconstant +the-std-class+ (find-class 'std-class nil))
-      (defconstant +the-funcallable-standard-class+
-	(find-class 'funcallable-standard-class nil)))
-    #+clasp
-    (progn
-      (dbg-boot "About to setq stuff\n")
-      (setq +the-t-class+ (find-class 't nil))
-      (setq +the-class+ (find-class 'class nil))
-      (setq +the-std-class+ (find-class 'std-class nil))
-      (setq +the-funcallable-standard-class+
-	    (find-class 'funcallable-standard-class nil)))
-    ;;
-    ;; 2) Class T had its metaclass wrong. Fix it.
-    ;;
-    #-clasp
-    (si:instance-class-set (find-class 't) (find-class 'built-in-class))
-    ;;
-    ;; 3) Finalize
-    ;;
-    ;;
-    ;; 4) This is needed for further optimization
-    ;;
-    (dbg-boot "About to set slot-value for method-combination\n")
-    (setf (slot-value (find-class 'method-combination) 'sealedp) t)
-    ;;
-    ;; 5) This is needed so that slot-definition objects are not marked
-    ;;    obsolete and need to be updated
-    ;;
-    (with-early-accessors (+standard-class-slots+)
-      (loop for c in all-classes
-         do (dbg-boot "About to set slots for: %s\n" c)
-	 do (loop for s in (class-direct-slots c)
-	       do (si::instance-sig-set s))
-	 do (loop for s in (class-slots c)
-	       do (si::instance-sig-set s))))))
+
+#+ecl
+(progn
+  (defconstant +the-t-class+ (find-class 't nil))
+  (defconstant +the-class+ (find-class 'class nil))
+  (defconstant +the-std-class+ (find-class 'std-class nil))
+  (defconstant +the-funcallable-standard-class+
+    (find-class 'funcallable-standard-class nil)))
+#+clasp
+(progn
+  (dbg-boot "About to setq stuff\n")
+  (setq +the-t-class+ (find-class 't nil))
+  (setq +the-class+ (find-class 'class nil))
+  (setq +the-std-class+ (find-class 'std-class nil))
+  (setq +the-funcallable-standard-class+
+        (find-class 'funcallable-standard-class nil)))
+;;
+;; Class T had its metaclass wrong. Fix it.
+;;
+#-clasp
+(si:instance-class-set (find-class 't) (find-class 'built-in-class))
+;;
+;; Finalize
+;;
+;;
+;; This is needed for further optimization
+;;
+(dbg-boot "About to set slot-value for method-combination\n")
+(setf (slot-value (find-class 'method-combination) 'sealedp) t)
+;; This is needed so that slot-definition objects are not marked
+;; obsolete and need to be updated
+(let ()
+ (with-early-accessors (+standard-class-slots+)
+   (loop for (class-name) in +class-hierarchy+
+         for class = (find-class class-name)
+         do (loop for s in (class-slots class)
+                  do (si::instance-sig-set s))
+            (loop for s in (class-direct-slots class)
+                  do (si::instance-sig-set s)))))

@@ -245,7 +245,7 @@ CL_DEFUN core::String_sp ext__getcwd() {
   StringPushStringCharStar(output, ok);
   ::free((void*)ok);
 #else
-  DEPRECIATED();
+  DEPRECATED();
   size_t size = 128;
   core::String_sp output(core::Str8Ns_O::create_with_fill_pointer(' ', 32, 0, true));
   do {

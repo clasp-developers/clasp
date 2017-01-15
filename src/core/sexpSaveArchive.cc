@@ -56,7 +56,7 @@ const char *keywords_saveArchive[] = {":debug", ""};
 
 
 void SexpSaveArchive_O::write(SNode_sp snode, HashTable_sp snodeToRef, T_sp stream) {
-  DEPRECIATED();
+  DEPRECATED();
 #if 0
   if (snode->refCount() > 1) {
     T_sp ref = snodeToRef->gethash(snode, _Nil<T_O>());

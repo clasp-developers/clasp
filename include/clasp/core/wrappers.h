@@ -213,7 +213,7 @@ public:
 #if 0
 	    if ( lisp_boot_findClassBySymbolOrNil(OT::static_classSymbol()).nilp())
 	    {
-                DEPRECIATED();
+                DEPRECATED();
 		LOG(BF("Adding class(%s) to environment")% OT::static_className() );
 		lisp_addClass(/*_lisp,OT::static_packageName(),
 				OT::static_className(), */

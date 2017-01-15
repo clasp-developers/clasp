@@ -284,38 +284,41 @@
                   (sixth new-slot) (sixth old-slot))))
       (push new-slot output))))
 
+#+clos
+(defun define-structure-class (name type include slot-descriptions
+                               print-function print-object)
+  `(progn
+     ,@(unless type
+         `((defclass ,name ,(and include (list include))
+             ,(mapcar
+               #'(lambda (sd)
+                   (if sd
+                       (list* (first sd)
+                              :initform (second sd)
+                              :initarg 
+                              (intern (symbol-name (first sd))
+                                      (find-package 'KEYWORD))
+                              (when (third sd) (list :type (third sd))))
+                       nil))            ; for initial offset slots
+               slot-descriptions)
+             (:metaclass structure-class))))
+
+     ,@(when print-function
+         `((defmethod print-object ((obj ,name) stream)
+             (,print-function obj stream 0)
+             obj)))
+     ,@(when print-object
+         `((defmethod print-object ((obj ,name) stream)
+             (,print-object obj stream)
+             obj)))))
+
 (defun define-structure (name conc-name type named slots slot-descriptions
-			 copier include print-function print-object constructors
+			 copier include print-function constructors
 			 offset name-offset documentation predicate)
   (create-type-name name)
   ;; We are going to modify this list!!!
   (setf slot-descriptions (copy-tree slot-descriptions))
-  #+clos
-  (unless type
-    (eval `(defclass ,name ,(and include (list include))
-	     ,(mapcar
-	       #'(lambda (sd)
-		   (if sd
-		       (list* (first sd)
-			      :initform (second sd)
-			      :initarg 
-			      (intern (symbol-name (first sd))
-				      (find-package 'KEYWORD))
-			      (when (third sd) (list :type (third sd))))
-		       nil))		; for initial offset slots
-	       slot-descriptions)
-	     (:metaclass structure-class))))
-  ;; FIXME! We can do the same with INSTALL-METHOD!
-  #+clos
-  (when print-function
-    (eval `(defmethod print-object ((obj ,name) stream)
-	     (,print-function obj stream 0)
-	     obj)))
-  #+clos
-  (when print-object
-    (eval `(defmethod print-object ((obj ,name) stream)
-             (,print-object obj stream)
-             obj)))
+
   (when predicate
     (fset predicate (make-predicate name type named name-offset)))
   (put-sysprop name 'DEFSTRUCT-FORM `(defstruct ,name ,@slots))
@@ -333,16 +336,9 @@
   (dolist (x slot-descriptions)
     (and x
 	 (not (eql (car x) 'TYPED-STRUCTURE-NAME))
-	 (funcall #'make-access-function name conc-name type named x)))
+	 (make-access-function name conc-name type named x)))
   (when copier
-    (fset copier #'copy-structure))
-  #+clos
-  (unless type
-    (find-class name))
-  #+(and clasp (not clos))
-  (unless type
-    ;; See ensure-structure-class above
-    (find-class name)))
+    (fset copier #'copy-structure)))
 
 ;;; The DEFSTRUCT macro.
 
@@ -516,29 +512,28 @@ as a STRUCTURE doc and can be retrieved by (documentation 'NAME 'structure)."
     ;; toplevel forms in the file - so we can't depend on ANY toplevel forms
     ;; to define values required by LOAD-TIME-VALUEs
     ;;
-    (let ((core `(define-structure ',name ',conc-name ',type ',named ',slots
-				',slot-descriptions ',copier ',include
-				',print-function ',print-object ',constructors
-				',offset ',name-offset
-				',documentation ',predicate))
+    (let ((core `(progn
+                   #+clos
+                   ,(define-structure-class name type include
+                      slot-descriptions print-function print-object)
+                   (define-structure ',name ',conc-name ',type ',named ',slots
+                     ',slot-descriptions ',copier ',include
+                     ',print-function ',constructors
+                     ',offset ',name-offset
+                     ',documentation ',predicate)))
 	  (constructors (mapcar #'(lambda (constructor)
 				    (make-constructor name constructor type named
 						      slot-descriptions))
 				constructors)))
       `(progn
-	 (eval-when (:compile-toplevel :load-toplevel)
+         ,(ext::register-with-pde whole)
+	 (eval-when (:compile-toplevel :load-toplevel :execute)
 	   ,core
-	   ,(ext::register-with-pde whole)
-	   ,@(subst `#+ecl(load-time-value (find-class ',name)) #+clasp(find-class ',name)
-		    '.structure-constructor-class.
-		    constructors))
-	 (eval-when (:execute)
-	   (let ((.structure-constructor-class. ,core))
-	     ,@constructors))
+	   (let (#+clos
+                 ,@(and (not type)
+                        `((.structure-constructor-class. (find-class ',name)))))
+             ,@constructors))
 	 ',name))))
-
-
-
 
 ;; Return
 #||(defun structure-subtype-p (x y)

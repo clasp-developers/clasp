@@ -692,7 +692,7 @@ CL_DEFUN T_mv core__separate_pair_list(List_sp listOfPairs) {
   return (Values(tfirsts, seconds.cons()));
 }
 
-#if DEPRECIATED_C_FUNCTION
+#if DEPRECATED_C_FUNCTION
 CL_LAMBDA(sym);
 CL_DECLARE();
 CL_DOCSTRING("c_function");
@@ -1576,7 +1576,7 @@ T_sp type_of(T_sp x) {
       t = mcl->className();
     } else if (Instance_sp icl = cl.asOrNull<Instance_O>()) {
       (void)icl;
-      DEPRECIATEDP("Classes of instances should always be of Class_O type, not Instance_O");
+      DEPRECATEDP("Classes of instances should always be of Class_O type, not Instance_O");
       //	    t = icl->_CLASS_NAME();
     } else {
       SIMPLE_ERROR(BF("Illegal class %s for instance class of %s") % _rep_(cl) % _rep_(instance));

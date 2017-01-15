@@ -74,7 +74,7 @@ class InvocationHistoryFrame //: public gctools::StackRoot
   //	InvocationHistoryFrame(int sourceFileInfoHandle, int lineno, int column, ActivationFrame_sp env=_Nil<ActivationFrame_O>());
   VaList_sp valist_sp() const { return VaList_sp((gc::Tagged)this->_RawArgList); };
   InvocationHistoryFrame *previous() { return this->_Previous; };
-  VectorObjects_sp arguments() const;
+  SimpleVector_sp arguments() const;
   string argumentsAsString(int maxWidth) const;
   void dump(int index) const;
   virtual string asString(int index) const;

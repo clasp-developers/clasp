@@ -29,7 +29,7 @@
     (slotd class
 	   :name name
 	   :initform initform
-	   :initfunction (if (listp initfunction) (eval initfunction) initfunction)
+	   :initfunction initfunction
 	   :type type
 	   :allocation allocation
 	   :initargs initargs
@@ -70,33 +70,20 @@
 ;;; a slot in DEFCLASS.
 ;;;
 
-(defun make-function-initform (form)
-  ;; INITFORM is a form that is to be evaluated at runtime. If it is a
-  ;; constant value, we output simply a quoted form. If it is not,
-  ;; we output a function that can be invoked at runtime to retrieve
-  ;; the value.
-  ;;
-  ;; Output => (FUNCTION (LAMBDA () form))
-  ;;        => (QUOTE ...)
-  ;;
-  (if (constantp form)
-      `(constantly ,form)
-      `#'(lambda () ,form)))
-
-(defun parse-slot (slot &optional (full nil))
+(defun parse-slot (slot)
   (declare (si::c-local))
   (if (symbolp slot)
-      (list* :name slot
-	     (when full (list :initform '+INITFORM-UNSUPPLIED+ :initfunction nil
-			      :initargs nil :readers nil :writers nil
-			      :allocation :instance :documentation nil
-			      :type 'T)))
-      (do* ((output (parse-slot (first slot) full))
+      `(list :name ',slot)
+      (do* (output
 	    (options (rest slot))
 	    (value nil)
-	    (extra nil))
+	    (extra nil)
+            (initfunction))
 	   ((null options)
-	    (nconc output extra))
+            (let ((result (nconc output extra)))
+              (if initfunction
+                  `(list* :name ',(first slot) :initfunction ,initfunction ',result)
+                  `(list* :name ',(first slot) ',result))))
 	(let ((option (pop options)))
 	  (when (endp options)
 	    (si::simple-program-error
@@ -111,10 +98,10 @@
 	    (case option
 	      (:initarg    (push value (getf output :initargs)))
 	      (:initform   (setf (getf output :initform) value
-				 (getf output :initfunction)
-				 (make-function-initform value)))
+                                 initfunction
+				 `(lambda () ,value)))
 	      (:accessor   (push value (getf output :readers))
-			   (push `(setf ,value) (getf output :writers)))
+                           (push `(setf ,value) (getf output :writers)))
 	      (:reader     (push value (getf output :readers)))
 	      (:writer     (push value (getf output :writers)))
 	      (:allocation (setf (getf output :allocation) value))
@@ -128,11 +115,12 @@
 (defun parse-slots (slots)
   (do ((scan slots (cdr scan))
        (collect))
-      ((null scan) (nreverse collect))
+      ((null scan)
+       `(list ,@(nreverse collect)))
     (let* ((slotd (parse-slot (first scan)))
-	   (name (getf slotd :name)))
+	   (name (getf (cdr slotd) :name)))
       (dolist (other-slotd collect)
-	(when (eq name (getf other-slotd :name))
+	(when (eq name (getf (cdr other-slotd) :name))
 	  (si::simple-program-error
 	   "A definition for the slot ~S appeared twice in a DEFCLASS form"
 	   name)))

@@ -5,7 +5,7 @@
 
 
 
-#error "DEPRECIATED"
+#error "DEPRECATED"
 
 
 

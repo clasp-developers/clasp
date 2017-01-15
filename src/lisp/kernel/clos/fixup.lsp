@@ -201,14 +201,18 @@ their lambda lists ~A and ~A are not congruent."
   (register-method-with-specializers method)
   gf)
 
-(defun function-to-method (name signature)
-  (let* ((aux-name 'temp-method)
-         (method (eval `(defmethod ,aux-name ,signature)))
-         (generic-function (fdefinition aux-name)))
-    (setf (method-function method) (wrapped-method-function-from-defun (fdefinition name)))
-    (setf (fdefinition name) generic-function)
-    (setf (generic-function-name generic-function) name)
-    (fmakunbound aux-name)))
+(defun function-to-method (name specializers lambda-list)
+  (let ((function (fdefinition name)))
+    (install-method 'function-to-method-temp
+                    nil
+                    specializers
+                    lambda-list
+                    (lambda (.method-args. .next-methods. &rest args)
+                      (apply function args)))
+    (setf (fdefinition name) #'function-to-method-temp
+          (generic-function-name #'function-to-method-temp) name)
+    (fmakunbound 'function-to-method-temp)
+    (maybe-augment-generic-function-lambda-list name lambda-list)))
 
 (defun remove-method (gf method)
   (setf (generic-function-methods gf)
@@ -224,14 +228,13 @@ their lambda lists ~A and ~A are not congruent."
 
 
 ;;(setq cmp:*debug-compiler* t)
-(function-to-method 'add-method '((gf standard-generic-function)
-                                  (method standard-method)))
+(function-to-method 'add-method '(standard-generic-function standard-method)
+                    '(gf method))
+(function-to-method 'remove-method '(standard-generic-function standard-method)
+                    '(gf method))
 
-(function-to-method 'remove-method '((gf standard-generic-function)
-				     (method standard-method)))
-
-(function-to-method 'find-method '((gf standard-generic-function)
-				   qualifiers specializers &optional error))
+(function-to-method 'find-method '(standard-generic-function t t)
+                    '(gf qualifiers specializers &optional error))
 
 ;;; COMPUTE-APPLICABLE-METHODS is used by the core in various places,
 ;;; including instance initialization. This means we cannot just redefine it.
@@ -272,7 +275,8 @@ their lambda lists ~A and ~A are not congruent."
   (std-compute-applicable-methods-using-classes gf classes))
 
 (function-to-method 'compute-effective-method
-                    '((gf standard-generic-function) method-combination applicable-methods))
+                    '(standard-generic-function t t)
+                    '(gf method-combination applicable-methods))
 
 ;;; ----------------------------------------------------------------------
 ;;; Error messages
@@ -362,16 +366,18 @@ their lambda lists ~A and ~A are not congruent."
 
 
 (function-to-method 'make-method-lambda
-  '((gf standard-generic-function) (method standard-method) lambda-form environment))
+                    '(standard-generic-function standard-method t t)
+                    '(gf method lambda-form environment))
 
 (function-to-method 'compute-discriminating-function
-  '((gf standard-generic-function)))
+                    '(standard-generic-function) '(gf))
 
 (function-to-method 'generic-function-method-class
-  '((gf standard-generic-function)))
+                    '(standard-generic-function) '(gf))
 
 (function-to-method 'find-method-combination
-  '((gf standard-generic-function) method-combination-type-name method-combination-options))
+                    '(standard-generic-function t t)
+                    '(gf method-combination-type-name method-combination-options))
 
 
 

@@ -1457,7 +1457,7 @@ CL_DEFMETHOD int TagbodyEnvironment_O::addTag(Symbol_sp tag, List_sp ip) {
 
 List_sp TagbodyEnvironment_O::find(Symbol_sp tag) const {
   _OF();
-  DEPRECIATED();
+  DEPRECATED();
   return this->_Tags->find(tag);
 }
 
@@ -1623,7 +1623,7 @@ CL_DEFUN StackValueEnvironment_sp StackValueEnvironment_O::make(T_sp parent) {
 }
 
 bool StackValueEnvironment_O::_findValue(T_sp sym, int &depth, int &index, ValueKind &valueKind, T_sp &value) const {
-  DEPRECIATED();
+  DEPRECATED();
 #if 0
 	LOG(BF("Looking for binding for symbol(%s)") % _rep_(sym) );
 	value = this->_Values->find(sym);

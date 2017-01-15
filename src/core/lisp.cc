@@ -280,7 +280,7 @@ void Lisp_O::addToStarModulesStar(Symbol_sp sym) {
 
 template <class oclass>
 void setup_static_classSymbol(BootStrapCoreSymbolMap const &sidMap) {
-  DEPRECIATED();
+  DEPRECATED();
   oclass::___set_static_ClassSymbol(sidMap.find_symbol(oclass::static_packageName(), oclass::static_className()));
 }
 
@@ -393,8 +393,8 @@ void run_quick_tests() {
   printf("%s:%d   sizeof(claspCharacter) -> %lu   typeid(claspCharacter).name() -> %s\n", __FILE__, __LINE__, sizeof(claspCharacter), typeid(claspCharacter).name() );
   printf("%s:%d   sizeof(SimpleBaseString_O::value_type) -> %lu   typeid(SimpleBaseString_O::value_type).name() -> %s\n", __FILE__, __LINE__, sizeof(SimpleBaseString_O::value_type), typeid(SimpleBaseString_O::value_type).name() );
   printf("%s:%d   sizeof(SimpleCharacterString_O::value_type) -> %lu   typeid(SimpleCharacterString_O::value_type).name() -> %s\n", __FILE__, __LINE__, sizeof(SimpleCharacterString_O::value_type), typeid(SimpleCharacterString_O::value_type).name() );
-  printf("%s:%d   sizeof(Str8Ns_O::value_type) -> %lu   typeid(Str8Ns_O::value_type).name() -> %s\n", __FILE__, __LINE__, sizeof(Str8Ns_O::value_type), typeid(Str8Ns_O::value_type).name() );
-  printf("%s:%d   sizeof(StrWNs_O::value_type) -> %lu   typeid(StrWNs_O::value_type).name() -> %s\n", __FILE__, __LINE__, sizeof(StrWNs_O::value_type), typeid(StrWNs_O::value_type).name() );
+  printf("%s:%d   sizeof(Str8Ns_O::value_type) -> %lu   typeid(Str8Ns_O::value_type).name() -> %s\n", __FILE__, __LINE__, sizeof(Str8Ns_O::simple_element_type), typeid(Str8Ns_O::simple_element_type).name() );
+  printf("%s:%d   sizeof(StrWNs_O::value_type) -> %lu   typeid(StrWNs_O::value_type).name() -> %s\n", __FILE__, __LINE__, sizeof(StrWNs_O::simple_element_type), typeid(StrWNs_O::simple_element_type).name() );
 #define PRINT_STRING(x) { claspCharacter c = (*x)[1]; printf("%s:%d %s -> %s  &(*x)[0]->%p (*x)[1]=%c/0x%X)\n", __FILE__, __LINE__, #x, _rep_(x).c_str(), (void*)&(*x)[0], c, c); }
   PRINT_STRING(sbcsTest);
   PRINT_STRING(scsTest);
@@ -809,7 +809,7 @@ LoadTimeValues_sp Lisp_O::findLoadTimeValues(const string &name) {
   return gc::As<LoadTimeValues_sp>(it);
 }
 LoadTimeValues_sp Lisp_O::findLoadTimeValuesWithNameContaining(const string &sname, int &count) {
-  DEPRECIATED(); // We should get rid of LoadTimeValues
+  DEPRECATED(); // We should get rid of LoadTimeValues
 #if 0
   LoadTimeValues_sp result = _Nil<LoadTimeValues_O>();
   count = 0;
@@ -2478,7 +2478,7 @@ CL_DEFUN void Lisp_O::forget_all_single_dispatch_generic_functions() {
 #if 0
     Class_sp Lisp_O::classFromClassSymbol(Symbol_sp cid) const
     {
-	DEPRECIATED();
+	DEPRECATED();
 #if 0
 	return this->findClass(cid,true);
 #endif
@@ -2486,7 +2486,7 @@ CL_DEFUN void Lisp_O::forget_all_single_dispatch_generic_functions() {
 #endif
 
 string Lisp_O::classNameFromClassSymbol(Symbol_sp cid) {
-  DEPRECIATED();
+  DEPRECATED();
 #if 0
 	Class_sp mc = this->classFromClassSymbol(cid);
 	return mc->getPackagedName();
@@ -2495,7 +2495,7 @@ string Lisp_O::classNameFromClassSymbol(Symbol_sp cid) {
 
 Class_sp Lisp_O::classFromClassName(const string &name) {
   _OF();
-  DEPRECIATED();
+  DEPRECATED();
   //    return sym->symbolValue().as<Class_O>();
 }
 
