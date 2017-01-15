@@ -34,7 +34,7 @@ THE SOFTWARE.
 
 
 namespace core {
-  FORWARD(BaseSimpleVector);
+  FORWARD(AbstractSimpleVector);
   FORWARD(SimpleString);
   FORWARD(SimpleBaseString);
   FORWARD(SimpleCharacterString);

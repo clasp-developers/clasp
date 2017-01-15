@@ -261,8 +261,8 @@ namespace core {
             
     void Str8Ns_O::__write__(T_sp stream) const {
 	size_t start, end;
-	BaseSimpleVector_sp str;
-	this->asBaseSimpleVectorRange(str,start,end);
+	AbstractSimpleVector_sp str;
+	this->asAbstractSimpleVectorRange(str,start,end);
 	SimpleBaseString_sp sb = gc::As<SimpleBaseString_sp>(str);
 	unsafe_write_SimpleBaseString(sb,start,end,stream);
     }
@@ -271,8 +271,8 @@ namespace core {
     }
     void StrWNs_O::__write__(T_sp stream) const {
 	size_t start, end;
-	BaseSimpleVector_sp str;
-	this->asBaseSimpleVectorRange(str,start,end);
+	AbstractSimpleVector_sp str;
+	this->asAbstractSimpleVectorRange(str,start,end);
 	SimpleCharacterString_sp sc = gc::As<SimpleCharacterString_sp>(str);
 	unsafe_write_SimpleCharacterString(sc,start,end,stream);
     }

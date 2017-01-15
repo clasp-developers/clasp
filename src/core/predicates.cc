@@ -215,7 +215,7 @@ CL_DEFUN bool cl__floatp(T_sp obj) {
 };
 
 CL_DEFUN bool cl__vectorp(T_sp obj) {
-  return gc::IsA<BaseSimpleVector_sp>(obj)
+  return gc::IsA<AbstractSimpleVector_sp>(obj)
     || (gc::IsA<MDArray_sp>(obj)&&gc::As_unsafe<MDArray_sp>(obj)->rank()==1);
 };
 

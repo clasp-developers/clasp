@@ -165,15 +165,15 @@ SimpleString_sp simple_string(T_sp obj) {
       return gc::As_unsafe<SimpleString_sp>(obj);
     } else if (gc::IsA<Str8Ns_sp>(obj)) {
       Str8Ns_sp s8 = gc::As_unsafe<Str8Ns_sp>(obj);
-      BaseSimpleVector_sp base;
+      AbstractSimpleVector_sp base;
       size_t start, end;
-      s8->asBaseSimpleVectorRange(base,start,end);
+      s8->asAbstractSimpleVectorRange(base,start,end);
       return gc::As_unsafe<SimpleString_sp>(base->unsafe_subseq(start,end));
     }
     StrWNs_sp sw = gc::As_unsafe<StrWNs_sp>(obj);
-    BaseSimpleVector_sp base;
+    AbstractSimpleVector_sp base;
     size_t start, end;
-    sw->asBaseSimpleVectorRange(base,start,end);
+    sw->asAbstractSimpleVectorRange(base,start,end);
     return gc::As_unsafe<SimpleString_sp>(base->unsafe_subseq(start,end));
     SIMPLE_ERROR(BF("This should never happen - the string %s was not recognized as a concrete string type") % _rep_(obj));
   } else if (Symbol_sp sym = obj.asOrNull<Symbol_O>()) {

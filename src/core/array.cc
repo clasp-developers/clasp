@@ -1544,7 +1544,7 @@ SYMBOL_EXPORT_SC_(ClPkg,simple_string);
 CL_LAMBDA(str index);
 CL_DECLARE();
 CL_DOCSTRING("CLHS schar");
-CL_DEFUN Character_sp cl__schar(BaseSimpleVector_sp str, size_t idx) {
+CL_DEFUN Character_sp cl__schar(AbstractSimpleVector_sp str, size_t idx) {
   if (SimpleBaseString_sp sb = str.asOrNull<SimpleBaseString_O>()) {
     return clasp_make_character((*sb)[idx]);
   } else if (SimpleCharacterString_sp sc = str.asOrNull<SimpleCharacterString_O>()) {
@@ -1947,9 +1947,9 @@ Array_sp SimpleBitVector_O::unsafe_setf_subseq(size_t start, size_t end, Array_s
     }
     return this->asSmartPtr();
   } else if (BitVectorNs_sp bv = other.asOrNull<BitVectorNs_O>()) {
-    BaseSimpleVector_sp bsv;
+    AbstractSimpleVector_sp bsv;
     size_t ostart, oend;
-    bv->asBaseSimpleVectorRange(bsv,ostart,oend);
+    bv->asAbstractSimpleVectorRange(bsv,ostart,oend);
     SimpleBitVector_sp sbv = gc::As_unsafe<SimpleBitVector_sp>(bsv);
     for ( size_t i(start),io(ostart); i<end; ++i, ++io) {
       this->setBit(i,sbv->testBit(io));
@@ -1982,9 +1982,9 @@ bool SimpleBitVector_O::equal(T_sp other) const {
     return ranged_bit_vector_EQ_(*this,*sbv,0,this->length(),0,sbv->length());
   } else if (BitVectorNs_sp bvns = other.asOrNull<BitVectorNs_O>()) {
     if (this->length()!=sbv->length()) return false;
-    BaseSimpleVector_sp sv;
+    AbstractSimpleVector_sp sv;
     size_t start, end;
-    bvns->asBaseSimpleVectorRange(sv,start,end);
+    bvns->asAbstractSimpleVectorRange(sv,start,end);
     SimpleBitVector_O& sbv = *gc::As<SimpleBitVector_sp>(sv);
     return ranged_bit_vector_EQ_(*this,sbv,0,this->length(),start,end);
   }
@@ -2219,25 +2219,15 @@ SimpleString_sp StrWNs_O::asMinimalSimpleString() const {
 
 // ------------------------------------------------------------
 //
-// Class AbstractVectorNs
-//
-
-// ------------------------------------------------------------
-//
-// Class VectorTNs
-//
-
-// ------------------------------------------------------------
-//
 // Class BitVectorNs
 //
 //
 
 void BitVectorNs_O::internalAdjustSize_(size_t size, T_sp initElement, bool initElementSupplied) {
   if (size == this->_ArrayTotalSize) return;
-  BaseSimpleVector_sp basesv;
+  AbstractSimpleVector_sp basesv;
   size_t start, end;
-  this->asBaseSimpleVectorRange(basesv,start,end);
+  this->asAbstractSimpleVectorRange(basesv,start,end);
   gctools::smart_ptr<simple_type> sv = gc::As_unsafe<gctools::smart_ptr<simple_type>>(basesv);
   size_t initialContentsSize = MIN(this->length(),size);
   smart_ptr_type newData = simple_type::make(size,0);
@@ -2253,17 +2243,17 @@ void BitVectorNs_O::internalAdjustSize_(size_t size, T_sp initElement, bool init
 
 
 Array_sp BitVectorNs_O::reverse() const {
-  BaseSimpleVector_sp basesv;
+  AbstractSimpleVector_sp basesv;
   size_t start, end;
-  this->asBaseSimpleVectorRange(basesv,start,end);
+  this->asAbstractSimpleVectorRange(basesv,start,end);
   gctools::smart_ptr<simple_type> sv = gc::As_unsafe<gctools::smart_ptr<simple_type>>(basesv);
   return ranged_bit_vector_reverse(sv,start,end);
 }
 
 Array_sp BitVectorNs_O::nreverse() {
-  BaseSimpleVector_sp basesv;
+  AbstractSimpleVector_sp basesv;
   size_t start, end;
-  this->asBaseSimpleVectorRange(basesv,start,end);
+  this->asAbstractSimpleVectorRange(basesv,start,end);
   gctools::smart_ptr<simple_type> sv = gc::As_unsafe<gctools::smart_ptr<simple_type>>(basesv);
   ranged_bit_vector_nreverse(sv,start,end);
   return this->asSmartPtr();
@@ -2273,19 +2263,19 @@ bool BitVectorNs_O::equal(T_sp other) const {
   if (&*other==this) return true;
   if (!other.generalp()) return false;
   if (BitVectorNs_sp strns = other.asOrNull<BitVectorNs_O>()) {
-    BaseSimpleVector_sp bme;
+    AbstractSimpleVector_sp bme;
     size_t mstart, mend;
-    this->asBaseSimpleVectorRange(bme,mstart,mend);
+    this->asAbstractSimpleVectorRange(bme,mstart,mend);
     simple_type* me = reinterpret_cast<simple_type*>(&*bme);
-    BaseSimpleVector_sp bso;
+    AbstractSimpleVector_sp bso;
     size_t ostart, oend;
-    strns->asBaseSimpleVectorRange(bso,ostart,oend);
+    strns->asAbstractSimpleVectorRange(bso,ostart,oend);
     simple_type* so = reinterpret_cast<simple_type*>(&*bso);
     return ranged_bit_vector_EQ_(*me,*so,mstart,mend,ostart,oend);
   } else if (SimpleBitVector_sp ss = other.asOrNull<SimpleBitVector_O>()) {
-    BaseSimpleVector_sp bme;
+    AbstractSimpleVector_sp bme;
     size_t mstart, mend;
-    this->asBaseSimpleVectorRange(bme,mstart,mend);
+    this->asAbstractSimpleVectorRange(bme,mstart,mend);
     simple_type* me = reinterpret_cast<simple_type*>(&*bme);
     return ranged_bit_vector_EQ_(*me,*ss,mstart,mend,0,ss->length());
   }
@@ -2293,24 +2283,37 @@ bool BitVectorNs_O::equal(T_sp other) const {
 };
 
 
-// ----------------------------------------------------------------------
-//
-// AbstractArrayNs
-//
-
-
 // ------------------------------------------------------------
 //
-// ArrayNs
+// MDArrayT
+
+
 namespace core {
+
+size_t calculateArrayTotalSizeAndValidateDimensions(List_sp dim_desig, size_t& rank) {
+  size_t arrayTotalSize = 1;
+  size_t irank = 0;
+   // dimensions has to be right
+   // This code cannot call error handlers
+   // we are in an allocator here
+  for ( auto cur : dim_desig ) {
+    T_sp tdim = oCar(cur);
+    Fixnum fdim = tdim.unsafe_fixnum();
+    if (fdim<0) SIMPLE_ERROR(BF("Array dimensions %ld must be positive") % fdim);
+    size_t dim = fdim;
+    arrayTotalSize *= dim;
+  }
+  return arrayTotalSize;
+}
+
 MDArrayT_sp MDArrayT_O::make_multi_dimensional(List_sp dim_desig, T_sp initialElement, T_sp dataOrDisplacedTo, T_sp displacedIndexOffset) {
   ASSERT(dim_desig.consp()||dim_desig.nilp());
-  size_t rank = cl__length(dim_desig);
-  MDArrayT_sp array = gctools::GC<MDArrayT_O>::allocate_container(gctools::GCStamp<MDArrayT_O>::TheStamp,rank,rank,dim_desig,gc::As_unsafe<Array_sp>(dataOrDisplacedTo),displacedIndexOffset);
+  size_t rank;
+  size_t arrayTotalSize = calculateArrayTotalSizeAndValidateDimensions(dim_desig,rank);
   if (dataOrDisplacedTo.nilp()) {
-    SimpleVector_sp sb = SimpleVector_O::make(array->arrayTotalSize(),initialElement,true);
-    array->set_data(sb);
+    dataOrDisplacedTo = SimpleVector_O::make(arrayTotalSize,initialElement,true);
   }
+  MDArrayT_sp array = gctools::GC<MDArrayT_O>::allocate_container(gctools::GCStamp<MDArrayT_O>::TheStamp,rank,rank,dim_desig,gc::As<Array_sp>(dataOrDisplacedTo),displacedIndexOffset);
   return array;
 }
 
@@ -2559,9 +2562,9 @@ CL_DEFUN T_sp core__copy_to_simple_base_string(T_sp x)
 #ifdef CLASP_UNICODE
   unlikely_if (gc::IsA<StrWNs_sp>(x)) {
     StrWNs_sp wx = gc::As_unsafe<StrWNs_sp>(x);
-    BaseSimpleVector_sp bsv;
+    AbstractSimpleVector_sp bsv;
     size_t start, end;
-    wx->asBaseSimpleVectorRange(bsv,start,end);
+    wx->asAbstractSimpleVectorRange(bsv,start,end);
     SimpleCharacterString_sp swx = gc::As_unsafe<SimpleCharacterString_sp>(bsv);
     SimpleBaseString_sp y = SimpleBaseString_O::make(wx->length());
     for (size_t index(0); index < wx->length(); ++index ) {
@@ -2588,9 +2591,9 @@ CL_DEFUN T_sp core__copy_to_simple_base_string(T_sp x)
 #endif
   if (core__base_string_p(x)) {
     String_sp sx = gc::As_unsafe<String_sp>(x);
-    BaseSimpleVector_sp bsv;
+    AbstractSimpleVector_sp bsv;
     size_t start, end;
-    sx->asBaseSimpleVectorRange(bsv,start,end);
+    sx->asAbstractSimpleVectorRange(bsv,start,end);
     SimpleBaseString_sp swx = gc::As_unsafe<SimpleBaseString_sp>(bsv);
     SimpleBaseString_sp y = SimpleBaseString_O::make(sx->length());
     memcpy(&(*y)[0],&(*swx)[start],sx->length());
