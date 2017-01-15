@@ -216,6 +216,7 @@ namespace core {
 namespace core {
 class Array_O : public General_O {
   LISP_CLASS(core, ClPkg, Array_O, "array",General_O);
+  virtual ~Array_O() {};
  public:
   /*! A hackish (clever?) way to get at the first element of all subclasses
       - which will be the FillPointer/Length for vectors and a Dummy for Arrays.
@@ -315,6 +316,7 @@ namespace core {
   struct Rank1 {};
   class MDArray_O : public Array_O {
     LISP_CLASS(core, CorePkg, MDArray_O, "mdarray",Array_O);
+    virtual ~MDArray_O() {};
   public:
     typedef size_t value_type; // this is container - needs value_type
     typedef gctools::GCArray_moveable<value_type> vector_type;
@@ -404,6 +406,7 @@ namespace core {
 
   class AbstractSimpleVector_O : public Array_O {
     LISP_CLASS(core, CorePkg, AbstractSimpleVector_O, "AbstractSimpleVector",Array_O);
+    virtual ~AbstractSimpleVector_O() {};
   public:
     virtual T_sp array_type() const override { return cl::_sym_simple_array; };
   public:
@@ -507,6 +510,7 @@ struct gctools::GCInfo<core::SimpleString_O> {
 namespace core {
   class SimpleString_O : public AbstractSimpleVector_O {
     LISP_CLASS(core, ClPkg, SimpleString_O, "simple-string",AbstractSimpleVector_O);
+    virtual ~SimpleString_O() {};
   };
 };
 
@@ -522,6 +526,7 @@ namespace core {
   typedef template_SimpleVector<SimpleBaseString_O,claspChar,SimpleString_O> specialized_SimpleBaseString;
   class SimpleBaseString_O : public specialized_SimpleBaseString {
     LISP_CLASS(core, ClPkg, SimpleBaseString_O, "simple-base-string",SimpleString_O);
+    virtual ~SimpleBaseString_O() {};
   public:
     typedef specialized_SimpleBaseString TemplatedBase;
     typedef typename TemplatedBase::leaf_type leaf_type;
@@ -588,6 +593,7 @@ namespace core {
   typedef template_SimpleVector<SimpleCharacterString_O,claspCharacter,SimpleString_O> specialized_SimpleCharacterString;
   class SimpleCharacterString_O : public specialized_SimpleCharacterString {
     LISP_CLASS(core, CorePkg, SimpleCharacterString_O, "SimpleCharacterString",SimpleString_O);
+    virtual ~SimpleCharacterString_O() {};
   public:
     typedef specialized_SimpleCharacterString TemplatedBase;
     typedef typename TemplatedBase::leaf_type leaf_type;
@@ -661,6 +667,7 @@ namespace core {
   typedef template_SimpleVector<SimpleVector_O,T_sp,AbstractSimpleVector_O> specialized_SimpleVector;
   class SimpleVector_O : public specialized_SimpleVector {
     LISP_CLASS(core, ClPkg, SimpleVector_O, "simple-vector",AbstractSimpleVector_O);
+    virtual ~SimpleVector_O() {};
   public:
     typedef specialized_SimpleVector TemplatedBase;
     typedef typename TemplatedBase::leaf_type leaf_type;
@@ -709,6 +716,7 @@ struct gctools::GCInfo<core::SimpleBitVector_O> {
 namespace core {
   class SimpleBitVector_O : public AbstractSimpleVector_O {
     LISP_CLASS(core, ClPkg, SimpleBitVector_O, "simple-bit-vector",AbstractSimpleVector_O);
+    virtual ~SimpleBitVector_O() {};
   public:
     typedef gctools::GCBitUnitArray_moveable<1> bitunit_array_type;
     typedef typename bitunit_array_type::word_type value_type;
@@ -802,6 +810,7 @@ namespace core {
   typedef template_SimpleVector<SimpleDoubleVector_O,double,AbstractSimpleVector_O> specialized_SimpleDoubleVector;
   class SimpleDoubleVector_O : public specialized_SimpleDoubleVector {
     LISP_CLASS(core, CorePkg, SimpleDoubleVector_O, "SimpleDoubleVector",AbstractSimpleVector_O);
+    virtual ~SimpleDoubleVector_O() {};
   public:
     typedef specialized_SimpleDoubleVector TemplatedBase;
     typedef typename TemplatedBase::leaf_type leaf_type;
@@ -969,6 +978,7 @@ namespace core {
 namespace core {
   class StrNs_O : public MDArray_O {
     LISP_CLASS(core, CorePkg, StrNs_O, "StrNs",MDArray_O);
+    virtual ~StrNs_O() {};
   public:
   StrNs_O(Rank1 dummy,
           size_t dimension,
@@ -995,6 +1005,7 @@ namespace core {
 namespace core {
   class Str8Ns_O : public template_Array<Str8Ns_O,SimpleBaseString_O,StrNs_O> {
     LISP_CLASS(core, CorePkg, Str8Ns_O, "Str8Ns",StrNs_O);
+    virtual ~Str8Ns_O() {};
   public:
     // The types that define what this class does
     typedef template_Array<Str8Ns_O,SimpleBaseString_O,StrNs_O> TemplatedBase;
@@ -1059,6 +1070,7 @@ namespace core {
 namespace core {
   class StrWNs_O : public template_Array<StrWNs_O,SimpleCharacterString_O,StrNs_O> {
     LISP_CLASS(core, CorePkg, StrWNs_O, "StrWNs",StrNs_O);
+    virtual ~StrWNs_O() {};
   public:
     // The types that define what this class does
     typedef template_Array<StrWNs_O,SimpleCharacterString_O,StrNs_O> TemplatedBase;
@@ -1119,6 +1131,7 @@ namespace core {
   // I can't use the template_Array here because of bitwise access
   class BitVectorNs_O : public MDArray_O {
     LISP_CLASS(core, CorePkg, BitVectorNs_O, "BitVectorNs",MDArray_O);
+    virtual ~BitVectorNs_O() {};
   public:
     typedef SimpleBitVector_O simple_type;
   BitVectorNs_O(size_t dummy_rank_1,
@@ -1189,6 +1202,7 @@ namespace core {
 namespace core {
   class MDArrayT_O : public template_Array<MDArrayT_O,SimpleVector_O,MDArray_O> {
     LISP_CLASS(core, CorePkg, MDArrayT_O, "MDArrayT",MDArray_O);
+    virtual ~MDArrayT_O() {};
   public:
     typedef template_Array<MDArrayT_O,SimpleVector_O,MDArray_O> TemplatedBase;
     typedef typename TemplatedBase::simple_element_type simple_element_type;

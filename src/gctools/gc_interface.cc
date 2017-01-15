@@ -389,7 +389,6 @@ extern "C" {
 using namespace gctools;
 /*! I'm using a format_header so MPS gives me the object-pointer */
 mps_addr_t obj_skip(mps_addr_t client) {
-  IMPLEMENT_MEF(BF("Handle SimpleBitVector - it's capacity will be in bits rather than record size"));
   mps_addr_t oldClient = client;
   size_t size = 0;
 // The client must have a valid header
@@ -412,6 +411,9 @@ mps_addr_t obj_skip(mps_addr_t client) {
       size = kind_layout.size;
       if ( kind_layout.container_layout ) {
         Container_layout& container_layout = *kind_layout.container_layout;
+        if (kind_layout.bits_per_bitunit!=0) {
+          printf("%s:%d A bitvector was encountered with kind_layout.bits_per_bitunit = %lu\n", __FILE__, __LINE__, kind_layout.bits_per_bitunit );
+        }
         size_t capacity = *(size_t*)((const char*)client + container_layout.capacity_offset);
         size = container_layout.element_size*capacity + container_layout.data_offset;
       }
@@ -456,7 +458,6 @@ GC_RESULT obj_scan(mps_ss_t ss, mps_addr_t client, mps_addr_t limit) {
   GC_TELEMETRY2(telemetry::label_obj_scan_start,
                 (uintptr_t)client,
                 (uintptr_t)limit);
-  IMPLEMENT_MEF(BF("Handle SimpleBitVector - it's capacity will be in bits rather than record size"));
   mps_addr_t original_client;
   size_t size = 0;  // Used to store the size of the object
 #ifndef RUNNING_GC_BUILDER
@@ -483,6 +484,9 @@ GC_RESULT obj_scan(mps_ss_t ss, mps_addr_t client, mps_addr_t limit) {
         if ( kind_layout.field_layout_start ) {
           int num_fields = kind_layout.number_of_fields;
           Field_layout* field_layout_cur = kind_layout.field_layout_start;
+          if (kind_layout.bits_per_bitunit!=0) {
+            printf("%s:%d A bitvector was encountered with kind_layout.bits_per_bitunit = %lu\n", __FILE__, __LINE__, kind_layout.bits_per_bitunit );
+          }
           for ( int i=0; i<num_fields; ++i ) {
             core::T_O** field = (core::T_O**)((const char*)client + field_layout_cur->field_offset);
             POINTER_FIX(field);
