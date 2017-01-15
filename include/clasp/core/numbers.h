@@ -1243,7 +1243,8 @@ namespace core {
     }
     return x->as_mpz_();
   }
-  inline unsigned long long clasp_to_unsigned_long_long(Integer_sp i) {
+
+  inline unsigned long long clasp_to_ulonglong(Integer_sp i) {
     if (i.fixnump()) {
       gc::Fixnum f = i.unsafe_fixnum();
       if (f >= 0 && f <= gc::most_positive_unsigned_long_long) {
