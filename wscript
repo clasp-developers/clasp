@@ -270,7 +270,7 @@ class variant(object):
             cfg.env.append_value('LINKFLAGS', os.getenv("CLASP_RELEASE_LINKFLAGS").split())
     def configure_for_debug(self,cfg):
         cfg.define("_DEBUG_BUILD",1)
-#        cfg.define("DEBUG_GUARD",1)
+        cfg.define("DEBUG_GUARD",1)
 #        cfg.env.append_value('CXXFLAGS', [ '-O0', '-g' ])
         cfg.env.append_value('CXXFLAGS', [ '-O0', '-g' ])
         print("cfg.env.LTO_FLAG = %s" % cfg.env.LTO_FLAG)
