@@ -44,7 +44,7 @@ THE SOFTWARE.
 #include <clasp/core/object.h>
 #include <clasp/core/bundle.h>
 #include <clasp/core/sourceFileInfo.h>
-#include <clasp/core/str.h>
+#include <clasp/core/array.h>
 #include <clasp/core/pathname.h>
 #include <clasp/core/lisp.h>
 #include <boost/filesystem.hpp>
@@ -120,7 +120,7 @@ Bundle::Bundle(const string &raw_argv0, const string &appDirName) {
   if (verbose) {
     printf("%s:%d   Climb one level up from _ExecutablePath = %s\n", __FILE__, __LINE__, appDir.string().c_str());
   }
-  
+
   // Check if there is a 'src' directory in _ExecutableDir - if so we are building
   bf::path srcPath = this->_Directories->_ExecutableDir / "src";
   if (bf::exists(srcPath)) {

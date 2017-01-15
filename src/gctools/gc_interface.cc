@@ -89,9 +89,6 @@ typedef bool _Bool;
 
 #include <clasp/gctools/telemetry.h>
 #include <clasp/core/symbolTable.h>
-#include <clasp/core/symbolTable.h>
-#include <clasp/core/symbolTable.h>
-#include <clasp/core/symbolTable.h>
 
 #include <clasp/gctools/gctoolsPackage.h>
 #include <clasp/gctools/gcStack.h>
@@ -129,12 +126,10 @@ typedef bool _Bool;
 #include <clasp/core/structureObject.h>
 #include <clasp/core/forwardReferencedClass.h>
 #include <clasp/core/standardClass.h>
+#include <clasp/core/array.h>
 #include <clasp/core/readtable.h>
 #include <clasp/core/nativeVector.h>
-#include <clasp/core/intArray.h>
-#include <clasp/core/array.h>
 #include <clasp/core/lispStream.h>
-#include <clasp/core/lispVector.h>
 #include <clasp/core/primitives.h>
 #include <clasp/core/singleDispatchMethod.h>
 #include <clasp/core/fileSystem.h>
@@ -145,7 +140,6 @@ typedef bool _Bool;
 #include <clasp/core/smallMap.h>
 #include <clasp/core/pathname.h>
 #include <clasp/core/sharpEqualWrapper.h>
-#include <clasp/core/str.h>
 #include <clasp/core/weakHashTable.h>
 #include <clasp/core/fli.h>
 #include <clasp/gctools/gc_boot.h>

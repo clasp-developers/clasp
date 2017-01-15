@@ -82,10 +82,10 @@ typedef int mode_t;
 #include <errno.h>
 
 #include <clasp/core/pathname.h>
-#include <clasp/core/str.h>
+#include <clasp/core/array.h>
 #include <clasp/core/fileSystem.h>
 #include <clasp/core/character.h>
-#include <clasp/core/str.h>
+#include <clasp/core/array.h>
 #include <clasp/core/symbolTable.h>
 #include <clasp/core/designators.h>
 #include <clasp/core/numbers.h>

@@ -38,11 +38,8 @@ THE SOFTWARE.
 #include <clasp/core/hashTableEql.h>
 #include <clasp/core/hashTableEqual.h>
 #include <clasp/core/hashTableEqualp.h>
-#include <clasp/core/vectorObjects.h>
-#include <clasp/core/str.h>
-#include <clasp/core/lispString.h>
+#include <clasp/core/array.h>
 #include <clasp/core/instance.h>
-#include <clasp/core/bitVector.h>
 #include <clasp/core/fileSystem.h>
 #include <clasp/core/serialize.h>
 #include <clasp/core/evaluator.h>

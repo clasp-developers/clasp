@@ -4,14 +4,14 @@
 
 /*
 Copyright (c) 2014, Christian E. Schafmeister
- 
+
 CLASP is free software; you can redistribute it and/or
 modify it under the terms of the GNU Library General Public
 License as published by the Free Software Foundation; either
 version 2 of the License, or (at your option) any later version.
- 
+
 See directory 'clasp/licenses' for full details.
- 
+
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
 
@@ -34,8 +34,7 @@ THE SOFTWARE.
 #include <clasp/core/hashTableEql.h>
 #include <clasp/core/primitives.h>
 #include <clasp/core/package.h>
-#include <clasp/core/str.h>
-#include <clasp/core/vectorObjects.h>
+#include <clasp/core/array.h>
 #include <clasp/core/documentation.h>
 #include <clasp/core/multipleValues.h>
 #include <clasp/core/lambdaListHandler.h>
@@ -258,7 +257,7 @@ Function_sp SingleDispatchGenericFunctionClosure_O::computeEffectiveMethodFuncti
   }
   // For now I'm going to just return the first method
   SingleDispatchMethod_sp cur_method = gc::As<SingleDispatchMethod_sp>(oCar(applicableMethodsList));
-  List_sp befores = _Nil<T_O>();  
+  List_sp befores = _Nil<T_O>();
   List_sp primaries = Cons_O::create(cur_method->_body,_Nil<T_O>());
   List_sp afters = _Nil<T_O>();
   Function_sp emf = gctools::GC<SingleDispatchEffectiveMethodFunction_O>::allocate(this->name(),befores,primaries,afters);
@@ -386,7 +385,7 @@ public:
             // Then I don't need to convert it back into an activation frame on the receiving end
     ValueFrame_sp method_function_args(ValueFrame_O::create_fill(frame,this->_next_emfun,_Nil<ActivationFrame_O>()));
     return this->_method_function->INVOKE(method_function_args);
-	    
+
   }
 };
 

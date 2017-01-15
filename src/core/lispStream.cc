@@ -49,7 +49,7 @@ THE SOFTWARE.
 #include <clasp/core/common.h>
 #include <clasp/core/fileSystem.h>
 #include <clasp/core/lispStream.h>
-#include <clasp/core/str.h>
+#include <clasp/core/array.h>
 #include <clasp/core/symbolTable.h>
 #include <clasp/core/sourceFileInfo.h>
 #include <clasp/core/symbolTable.h>
@@ -63,7 +63,7 @@ THE SOFTWARE.
 #include <clasp/core/multipleValues.h>
 #include <clasp/core/evaluator.h>
 #include <clasp/core/lispList.h>
-#include <clasp/core/str.h>
+#include <clasp/core/array.h>
 #include <clasp/core/designators.h>
 #include <clasp/core/unixfsys.h>
 #include <clasp/core/reader.h>

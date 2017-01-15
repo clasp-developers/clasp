@@ -1,6 +1,6 @@
 #include <clasp/core/foundation.h>
 #include <clasp/gctools/gctoolsPackage.fwd.h>
-#include <clasp/core/str.h>
+#include <clasp/core/array.h>
 #include <clasp/gctools/gc_boot.h>
 #include <clasp/core/lisp.h>
 #include <clasp/core/package.h>
@@ -88,7 +88,7 @@ void build_kind_field_layout_tables()
   for ( idx=0; idx<num_codes; ++idx ) {
 //    printf("%s:%d idx = %d\n", __FILE__, __LINE__, idx);
     switch (codes[idx].cmd) {
-    case class_kind: 
+    case class_kind:
         cur_kind = codes[idx].data0;
 //        printf("%s:%d  cur_kind = %d\n", __FILE__, __LINE__, cur_kind);
         global_kind_layout[cur_kind].layout_op = class_container_op;
@@ -161,7 +161,7 @@ void build_kind_field_layout_tables()
         cur_field_layout->field_offset = codes[idx].data2;
         ++cur_field_layout;
         ++global_kind_layout[cur_kind].container_layout->number_of_fields;
-        if ( global_kind_info[cur_kind].container_info_ptr == NULL ) 
+        if ( global_kind_info[cur_kind].container_info_ptr == NULL )
           global_kind_info[cur_kind].container_info_ptr = &global_container_info[cur_container_info_idx++];
         GCTOOLS_ASSERT(cur_container_info_idx<=number_of_containers);
         global_kind_info[cur_kind].container_info_ptr->field_name = codes[idx].description;
@@ -223,4 +223,3 @@ CL_DEFUN core::T_mv gctools__kind_field_layout_entry(size_t idx)
 
 
 };
-

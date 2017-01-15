@@ -31,7 +31,7 @@ THE SOFTWARE.
 #include <boost/algorithm/string.hpp>
 #pragma clang diagnostic pop
 #include <clasp/core/common.h>
-#include <clasp/core/str.h>
+#include <clasp/core/array.h>
 #include <clasp/core/symbolTable.h>
 #include <clasp/core/environment.h>
 #include <clasp/core/designators.h>

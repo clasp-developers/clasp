@@ -4,14 +4,14 @@
 
 /*
 Copyright (c) 2014, Christian E. Schafmeister
- 
+
 CLASP is free software; you can redistribute it and/or
 modify it under the terms of the GNU Library General Public
 License as published by the Free Software Foundation; either
 version 2 of the License, or (at your option) any later version.
- 
+
 See directory 'clasp/licenses' for full details.
- 
+
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
 
@@ -40,7 +40,6 @@ THE SOFTWARE.
 #include <clasp/core/designators.h>
 #include <clasp/core/builtInClass.h>
 #include <clasp/core/lambdaListHandler.h>
-#include <clasp/core/vectorObjects.h>
 #include <clasp/core/predicates.h>
 #include <clasp/core/standardClass.h>
 #include <clasp/core/standardObject.h>
@@ -53,7 +52,7 @@ THE SOFTWARE.
 #include <clasp/core/multipleValues.h>
 #include <clasp/core/primitives.h>
 //#include "debugger.h"
-#include <clasp/core/str.h>
+#include <clasp/core/array.h>
 #include <clasp/core/wrappers.h>
 
 namespace cl {
@@ -363,7 +362,7 @@ CL_DEFUN T_sp core__lookup_symbol_macro(Symbol_sp sym, T_sp env) {
 CL_LAMBDA(variables declared-specials);
 CL_DECLARE();
 CL_DOCSTRING("classifyLetVariablesAndDeclares - return (values classified-variables num-lexicals) - For each variable name in variables and declared-specials classify each as special-var, lexical-var or declared-special using the declared-specials list");
-CL_DEFUN 
+CL_DEFUN
 T_mv core__classify_let_variables_and_declares(List_sp variables, List_sp declaredSpecials) {
   HashTableEq_sp specialsSet = HashTableEq_O::create_default();
   for (auto cur : declaredSpecials)
@@ -2026,7 +2025,7 @@ struct SafeTopLevelFormStack {
     _sym_STARtop_level_form_stackSTAR->setf_symbolValue(oCdr(_sym_STARtop_level_form_stackSTAR->symbolValue()));
   };
 };
-       
+
 T_mv t1Evaluate(T_sp exp, T_sp environment) {
   if ((exp).consp()) {
     SafeTopLevelFormStack topLevelForm(exp);
@@ -2131,7 +2130,7 @@ T_mv evaluate(T_sp exp, T_sp environment) {
 
     T_sp theadFunc = af_interpreter_lookup_macro(headSym, environment);
     if (theadFunc.notnilp()) {
-      /* Macro expansion should be done immediately after the reader - 
+      /* Macro expansion should be done immediately after the reader -
 		       - done here the macros are expanded again and again and again
 		    */
       T_sp expanded = _Nil<T_O>();

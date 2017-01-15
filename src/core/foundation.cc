@@ -62,7 +62,7 @@ THE SOFTWARE.
 #include <clasp/core/documentation.h>
 #include <clasp/core/structureClass.h>
 #include <clasp/core/structureObject.h>
-#include <clasp/core/str.h>
+#include <clasp/core/array.h>
 #include <clasp/core/pointer.h>
 #include <clasp/core/wrappedPointer.h>
 #include <clasp/core/debugger.h>

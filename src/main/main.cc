@@ -58,7 +58,7 @@ THE SOFTWARE.
 #include <clasp/core/object.h>
 #include <clasp/core/lisp.h>
 #include <clasp/core/evaluator.h>
-#include <clasp/core/str.h>
+#include <clasp/core/array.h>
 #include <clasp/core/symbolTable.h>
 #include <clasp/core/candoOpenMp.h>
 #include <clasp/core/cons.h>

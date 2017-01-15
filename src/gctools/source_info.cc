@@ -3,7 +3,7 @@
 #include <clasp/core/designators.h>
 #include <clasp/core/documentation.h>
 #include <clasp/core/sysprop.h>
-#include <clasp/core/str.h>
+#include <clasp/core/array.h>
 
 typedef enum { code_kind, method_kind, class_kind, variable_kind, unknown_kind } source_info_kind;
 NOINLINE void define_source_info(source_info_kind kind,
@@ -51,4 +51,3 @@ void initialize_source_info() {
 #endif
 #undef SOURCE_INFO
 };
-

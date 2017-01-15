@@ -35,7 +35,7 @@ THE SOFTWARE.
 #include <clasp/core/fileSystem.h>
 #include <clasp/core/lispStream.h>
 #include <clasp/core/character.h>
-#include <clasp/core/str.h>
+#include <clasp/core/array.h>
 #include <clasp/core/wrappers.h>
 namespace core {
 

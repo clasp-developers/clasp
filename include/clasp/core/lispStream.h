@@ -4,14 +4,14 @@
 
 /*
 Copyright (c) 2014, Christian E. Schafmeister
- 
+
 CLASP is free software; you can redistribute it and/or
 modify it under the terms of the GNU Library General Public
 License as published by the Free Software Foundation; either
 version 2 of the License, or (at your option) any later version.
- 
+
 See directory 'clasp/licenses' for full details.
- 
+
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
 
@@ -48,11 +48,9 @@ THE SOFTWARE.
 #include <clasp/core/object.h>
 #include <clasp/core/numerics.h>
 #include <clasp/core/character.h>
-#include <clasp/core/lispString.fwd.h>
-#include <clasp/core/pathname.fwd.h>
-#include <clasp/core/lispVector.fwd.h>
-#include <clasp/core/sourceFileInfo.fwd.h>
 #include <clasp/core/array.fwd.h>
+#include <clasp/core/pathname.fwd.h>
+#include <clasp/core/sourceFileInfo.fwd.h>
 #include <clasp/core/intStackQueue.h>
 
 #define OPEN_R "rb"
@@ -63,60 +61,60 @@ THE SOFTWARE.
 
 namespace core {
 
-enum StreamMode {                          /*  stream mode  */
-                  clasp_smm_input,         /*  input  */
-                  clasp_smm_input_file,    /*  input  */
-                  clasp_smm_output,        /*  output  */
-                  clasp_smm_output_file,   /*  output  */
-                  clasp_smm_io,            /*  input-output  */
-                  clasp_smm_io_file,       /*  input-output  */
-                  clasp_smm_synonym,       /*  synonym  */
-                  clasp_smm_broadcast,     /*  broadcast  */
-                  clasp_smm_concatenated,  /*  concatenated  */
-                  clasp_smm_two_way,       /*  two way  */
-                  clasp_smm_echo,          /*  echo  */
-                  clasp_smm_string_input,  /*  string input  */
-                  clasp_smm_string_output, /*  string output  */
-                  clasp_smm_probe,         /*  probe (only used in open_stream())  */
+  enum StreamMode {                          /*  stream mode  */
+      clasp_smm_input,         /*  input  */
+      clasp_smm_input_file,    /*  input  */
+      clasp_smm_output,        /*  output  */
+      clasp_smm_output_file,   /*  output  */
+      clasp_smm_io,            /*  input-output  */
+      clasp_smm_io_file,       /*  input-output  */
+      clasp_smm_synonym,       /*  synonym  */
+      clasp_smm_broadcast,     /*  broadcast  */
+      clasp_smm_concatenated,  /*  concatenated  */
+      clasp_smm_two_way,       /*  two way  */
+      clasp_smm_echo,          /*  echo  */
+      clasp_smm_string_input,  /*  string input  */
+      clasp_smm_string_output, /*  string output  */
+      clasp_smm_probe,         /*  probe (only used in open_stream())  */
 #if defined(ECL_WSOCK)
-                  clasp_smm_input_wsock,  /*  input socket (Win32) */
-                  clasp_smm_output_wsock, /*  output socket (Win32) */
-                  clasp_smm_io_wsock,     /*  input/output socket (Win32) */
+      clasp_smm_input_wsock,  /*  input socket (Win32) */
+      clasp_smm_output_wsock, /*  output socket (Win32) */
+      clasp_smm_io_wsock,     /*  input/output socket (Win32) */
 #endif
 #if defined(CLASP_MS_WINDOWS_HOST)
-                  clasp_smm_io_wcon, /*  windows console (Win32) */
+      clasp_smm_io_wcon, /*  windows console (Win32) */
 #endif
-                  clasp_smm_sequence_input, /*  sequence input  */
-                  clasp_smm_sequence_output /*  sequence output  */
-};
+      clasp_smm_sequence_input, /*  sequence input  */
+      clasp_smm_sequence_output /*  sequence output  */
+  };
 
-typedef enum {
-  CLASP_STREAM_BINARY = 0,
-  CLASP_STREAM_FORMAT = 0xF,
+  typedef enum {
+      CLASP_STREAM_BINARY = 0,
+      CLASP_STREAM_FORMAT = 0xF,
 #ifndef CLASP_UNICODE
-  CLASP_STREAM_DEFAULT_FORMAT = 1,
+      CLASP_STREAM_DEFAULT_FORMAT = 1,
 #else
-  CLASP_STREAM_DEFAULT_FORMAT = 2,
-  CLASP_STREAM_ISO_8859_1 = 1,
-  CLASP_STREAM_LATIN_1 = 1,
-  CLASP_STREAM_UTF_8 = 2,
-  CLASP_STREAM_UCS_2 = 3,
-  CLASP_STREAM_UCS_2LE = 5 + 128,
-  CLASP_STREAM_UCS_2BE = 5,
-  CLASP_STREAM_UCS_4 = 6,
-  CLASP_STREAM_UCS_4LE = 7 + 128,
-  CLASP_STREAM_UCS_4BE = 7,
-  CLASP_STREAM_USER_FORMAT = 8,
-  CLASP_STREAM_US_ASCII = 10,
+      CLASP_STREAM_DEFAULT_FORMAT = 2,
+      CLASP_STREAM_ISO_8859_1 = 1,
+      CLASP_STREAM_LATIN_1 = 1,
+      CLASP_STREAM_UTF_8 = 2,
+      CLASP_STREAM_UCS_2 = 3,
+      CLASP_STREAM_UCS_2LE = 5 + 128,
+      CLASP_STREAM_UCS_2BE = 5,
+      CLASP_STREAM_UCS_4 = 6,
+      CLASP_STREAM_UCS_4LE = 7 + 128,
+      CLASP_STREAM_UCS_4BE = 7,
+      CLASP_STREAM_USER_FORMAT = 8,
+      CLASP_STREAM_US_ASCII = 10,
 #endif
-  CLASP_STREAM_CR = 16,
-  CLASP_STREAM_LF = 32,
-  CLASP_STREAM_SIGNED_BYTES = 64,
-  CLASP_STREAM_LITTLE_ENDIAN = 128,
-  CLASP_STREAM_C_STREAM = 256,
-  CLASP_STREAM_MIGHT_SEEK = 512,
-  CLASP_STREAM_CLOSE_COMPONENTS = 1024
-} StreamFlagsEnum;
+      CLASP_STREAM_CR = 16,
+      CLASP_STREAM_LF = 32,
+      CLASP_STREAM_SIGNED_BYTES = 64,
+      CLASP_STREAM_LITTLE_ENDIAN = 128,
+      CLASP_STREAM_C_STREAM = 256,
+      CLASP_STREAM_MIGHT_SEEK = 512,
+      CLASP_STREAM_CLOSE_COMPONENTS = 1024
+  } StreamFlagsEnum;
 }
 namespace core {
 cl_index clasp_read_byte8(T_sp stream, unsigned char *c, cl_index n);

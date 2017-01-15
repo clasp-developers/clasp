@@ -32,7 +32,7 @@ THE SOFTWARE.
 #include <clasp/core/object.h>
 #include <clasp/core/lisp.h>
 #include <clasp/core/symbolTable.h>
-#include <clasp/core/str.h>
+#include <clasp/core/array.h>
 #include <clasp/core/lispStream.h>
 #include <clasp/core/corePackage.h>
 #include <clasp/core/allClSymbols.h>
@@ -62,7 +62,6 @@ THE SOFTWARE.
 #include <clasp/asttooling/astVisitor.h>
 #include <clasp/clbind/class_registry.h>
 #include <clasp/core/serialize.h>
-#include <clasp/core/array.h>
 #include <clasp/core/conditions.h>
 #include <clasp/core/character.h>
 #include <clasp/core/cons.h>
@@ -116,14 +115,10 @@ THE SOFTWARE.
 //#include <clasp/core/singleDispatchEffectiveMethodFunction.h>
 #include <clasp/core/singleDispatchGenericFunction.h>
 #include <clasp/core/specialForm.h>
-#include <clasp/core/lispVector.h>
-#include <clasp/core/bitVector.h>
 #include <clasp/core/sexpLoadArchive.h>
 #include <clasp/core/sexpSaveArchive.h>
 #include <clasp/core/specializer.h>
-#include <clasp/core/lispString.h>
 #include <clasp/core/metaClass.h>
-#include <clasp/core/str.h>
 #include <clasp/core/bignum.h>
 #include <clasp/core/builtInClass.h>
 #include <clasp/core/cxxClass.h>
@@ -894,7 +889,7 @@ void CoreExposer_O::expose(core::Lisp_sp lisp, WhatToExpose what) const {
     break;
   }
 }
-  
+
 void CoreExposer_O::define_essential_globals(Lisp_sp lisp) {
   {
     this->package()->usePackage(gc::As<Package_sp>(_lisp->findPackage("CL", true)));

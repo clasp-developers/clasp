@@ -1,6 +1,6 @@
 #include <clasp/core/foundation.h>
 #include <clasp/gctools/telemetry.h>
-#include <clasp/core/str.h>
+#include <clasp/core/array.h>
 #include <clasp/core/pathname.h>
 #include <clasp/core/wrappers.h>
 

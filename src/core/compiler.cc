@@ -46,7 +46,7 @@ THE SOFTWARE.
 #include <clasp/core/designators.h>
 #include <clasp/core/evaluator.h>
 #include <clasp/core/symbolTable.h>
-#include <clasp/core/str.h>
+#include <clasp/core/array.h>
 #include <clasp/core/character.h>
 #include <clasp/core/compiler.h>
 #include <clasp/core/sequence.h>

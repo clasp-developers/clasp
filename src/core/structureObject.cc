@@ -31,7 +31,7 @@ THE SOFTWARE.
 #include <clasp/core/symbolTable.h>
 #include <clasp/core/numbers.h>
 #include <clasp/core/evaluator.h>
-#include <clasp/core/str.h>
+#include <clasp/core/array.h>
 #include <clasp/core/builtInClass.h>
 #include <clasp/core/sysprop.h>
 #include <clasp/core/instance.h>

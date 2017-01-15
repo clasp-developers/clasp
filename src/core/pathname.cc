@@ -56,7 +56,6 @@ THE SOFTWARE.
 #include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
 #include <clasp/core/symbolTable.h>
-#include <clasp/core/lispString.h>
 #include <clasp/core/fileSystem.h>
 #include <clasp/core/array.h>
 #include <clasp/core/evaluator.h>

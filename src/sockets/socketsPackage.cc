@@ -4,14 +4,14 @@
 
 /*
 Copyright (c) 2014, Christian E. Schafmeister
- 
+
 CLASP is free software; you can redistribute it and/or
 modify it under the terms of the GNU Library General Public
 License as published by the Free Software Foundation; either
 version 2 of the License, or (at your option) any later version.
- 
+
 See directory 'clasp/licenses' for full details.
- 
+
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
 
@@ -33,7 +33,7 @@ THE SOFTWARE.
 #include <clasp/core/builtInClass.h>
 #include <clasp/sockets/socketsPackage.h>
 #include <clasp/sockets/sockets.h>
-#include <clasp/core/str.h>
+#include <clasp/core/array.h>
 #include <clasp/core/wrappers.h>
 
 namespace sockets {
@@ -83,4 +83,3 @@ void SocketsExposer_O::expose(core::Lisp_sp lisp, core::Exposer_O::WhatToExpose 
   }
 }
 };
-

@@ -83,7 +83,7 @@ THE SOFTWARE.
 //#i n c l u d e "setfExpander.h"
 #include <clasp/core/standardObject.h>
 #include <clasp/core/ql.h>
-#include <clasp/core/str.h>
+#include <clasp/core/array.h>
 #include <clasp/core/commonLispPackage.h>
 #include <clasp/core/keywordPackage.h>
 #include <clasp/core/fileSystem.h>
@@ -119,7 +119,6 @@ THE SOFTWARE.
 #include <clasp/core/designators.h>
 #include <clasp/core/unixfsys.h>
 #include <clasp/core/sort.h>
-#include <clasp/core/bitVector.h>
 #include <clasp/core/character.h>
 #include <clasp/core/predicates.h>
 #include <clasp/core/primitives.h>
@@ -366,7 +365,7 @@ void run_quick_tests() {
   MATCH_PAIR(fn,d,a); \
   MATCH_PAIR(fn,d,b); \
   MATCH_PAIR(fn,d,c); \
-  MATCH_PAIR(fn,d,d); 
+  MATCH_PAIR(fn,d,d);
 #define MATCH_PAIRS_notnilp(fn,a,b,c,d) \
   printf("%s:%d Running %s\n", __FILE__, __LINE__, #fn);\
   MATCH_PAIR_notnilp(fn,a,a); \
@@ -384,7 +383,7 @@ void run_quick_tests() {
   MATCH_PAIR_notnilp(fn,d,a); \
   MATCH_PAIR_notnilp(fn,d,b); \
   MATCH_PAIR_notnilp(fn,d,c); \
-  MATCH_PAIR_notnilp(fn,d,d); 
+  MATCH_PAIR_notnilp(fn,d,d);
   auto sbcsTest = SimpleBaseString_O::make("ABCDEFGHIJ");
   auto sbcs2Test = SimpleBaseString_O::make("ABCDEFGHIJ");
   auto scsTest = SimpleCharacterString_O::make("ABCDEFGHIJ");
@@ -621,7 +620,7 @@ void Lisp_O::startupLispEnvironment(Bundle *bundle) {
   {
     // Setup the pathname translation
     this->_Bundle->setup_pathname_translations();
-      
+
   }
   coreExposer->expose(_lisp, Exposer_O::candoFunctions);
   coreExposer->expose(_lisp, Exposer_O::candoGlobals);
@@ -2720,7 +2719,7 @@ void Lisp_O::run() {
 #include INITIALIZERS_INC_H
 #undef ALL_INITIALIZERS_CALLS
 #endif
-  
+
 #ifdef DEBUG_PROGRESS
   printf("%s:%d run\n", __FILE__, __LINE__ );
 #endif

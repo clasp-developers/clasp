@@ -71,7 +71,7 @@ THE SOFTWARE.
 #include <clasp/core/symbolTable.h>
 #include <clasp/core/fli.h>
 #include <clasp/core/numbers.h>
-#include <clasp/core/str.h>
+#include <clasp/core/array.h>
 #include <clasp/core/designators.h>
 #include <clasp/core/wrappers.h> // last include is wrappers.h
 

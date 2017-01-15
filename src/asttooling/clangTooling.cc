@@ -4,14 +4,14 @@
 
 /*
 Copyright (c) 2014, Christian E. Schafmeister
- 
+
 CLASP is free software; you can redistribute it and/or
 modify it under the terms of the GNU Library General Public
 License as published by the Free Software Foundation; either
 version 2 of the License, or (at your option) any later version.
- 
+
 See directory 'clasp/licenses' for full details.
- 
+
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
 
@@ -58,7 +58,7 @@ THE SOFTWARE.
 #include <clasp/core/evaluator.h>
 #include <clasp/core/symbolTable.h>
 #include <clasp/core/translators.h>
-#include <clasp/core/str.h>
+#include <clasp/core/array.h>
 #include <clasp/core/arguments.h>
 #include <clasp/clbind/clbind.h>
 #include <clasp/llvmo/translators.h>
@@ -145,7 +145,7 @@ struct from_object<clang::tooling::ArgumentsAdjuster> {
                         core::VaList_S onearg_valist_s(onearg);
                         core::T_O* lcc_arglist = onearg_valist_s.asTaggedPtr();
 			result = fptr(LCC_PASS_ENV_ARGS1_VA_LIST(closedEnvironment,targs.raw_()));
-			// Should resolve to const vector<string>& 
+			// Should resolve to const vector<string>&
 			translate::from_object<const clang::tooling::CommandLineArguments&> cresult(result);
 			return cresult._v;
           // Convert args to CL object
@@ -172,8 +172,8 @@ struct from_object<clang::tooling::ArgumentsAdjuster> {
 namespace asttooling {
 /*! Many ASTMatchers like recordDecl() were renamed to cxxRecordDecl() with
 messes with Clasp's name lispification.  lispify(cxxRecordDecl) --> CXX-RECORD-DECL
-But the class that cxxRecordDecl() is supposed to match is CXXRECORD-DECL (lispify(CXXRecordDecl)) 
-So I'll fix it here by converting names that start with "cxx" to start with "CXX" 
+But the class that cxxRecordDecl() is supposed to match is CXXRECORD-DECL (lispify(CXXRecordDecl))
+So I'll fix it here by converting names that start with "cxx" to start with "CXX"
 Also fix up CUDA and RV.*/
 CL_DEFUN std::string ast_tooling__fix_matcher_name(const string& orig_name)
 {
@@ -849,7 +849,7 @@ void initialize_clangTooling() {
      .def("toString", &clang::tooling::Replacement::toString)
      .def("replacement-apply", &clang::tooling::Replacement::apply),
      class_<clang::tooling::Range>("Range", no_default_constructor),
-     
+
      class_<clang::tooling::Replacements>("Replacements", no_default_constructor),
      def("Replacements-add", &ast_tooling__Replacements_add) // I have to wrap this one by hand - the overloads for std::set::insert are too many and too complicated
      ,

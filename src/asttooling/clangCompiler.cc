@@ -4,14 +4,14 @@
 
 /*
 Copyright (c) 2014, Christian E. Schafmeister
- 
+
 CLASP is free software; you can redistribute it and/or
 modify it under the terms of the GNU Library General Public
 License as published by the Free Software Foundation; either
 version 2 of the License, or (at your option) any later version.
- 
+
 See directory 'clasp/licenses' for full details.
- 
+
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
 
@@ -34,7 +34,7 @@ THE SOFTWARE.
 #include <clasp/core/evaluator.h>
 #include <clasp/core/symbolTable.h>
 #include <clasp/core/translators.h>
-#include <clasp/core/str.h>
+#include <clasp/core/array.h>
 #include <clasp/core/arguments.h>
 #include <clasp/clbind/clbind.h>
 #include <clasp/llvmo/translators.h>
@@ -73,7 +73,7 @@ class DerivableFoo : public clbind::Derivable<Foo> {
 public:
   typedef Foo Base;
   static gctools::smart_ptr<DerivableFoo> CreateFoo() { GC_ALLOCATE(DerivableFoo,f); return f;};
-  
+
 };
 };
 DERIVABLE_TRANSLATE(clang_compile::Foo);
@@ -85,7 +85,7 @@ void initialize_clang_compile() {
   // overloaded functions that had trouble resolving
   package(ClangCompilePkg, {"CLANG-COMPILER"}, {"CL", "CORE"})
     [
-    /* -- */                                                               
+    /* -- */
      class_<clang::DiagnosticOptions>("DiagnosticOptions") //, no_default_constructor)
      ,
      class_<clang::DiagnosticIDs>("DiagnosticIds")

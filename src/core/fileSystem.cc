@@ -45,7 +45,7 @@ THE SOFTWARE.
 #include <clasp/core/environment.h>
 #include <clasp/core/pathname.h>
 #include <clasp/core/multipleValues.h>
-#include <clasp/core/str.h>
+#include <clasp/core/array.h>
 #include <clasp/core/hashTable.h>
 #include <clasp/core/wrappers.h>
 #include <string>

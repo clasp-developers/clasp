@@ -30,7 +30,7 @@ THE SOFTWARE.
 #include <clasp/core/lispStream.h>
 #include <clasp/core/symbolTable.h>
 #include <clasp/core/arguments.h>
-#include <clasp/core/str.h>
+#include <clasp/core/array.h>
 #include <clasp/core/lispStream.h>
 #include <clasp/core/lambdaListHandler.h>
 #include <clasp/core/primitives.h>

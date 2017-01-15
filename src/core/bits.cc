@@ -1,7 +1,7 @@
 #include <clasp/core/foundation.h>
 #include <clasp/core/corePackage.h>
 #include <clasp/core/symbolTable.h>
-#include <clasp/core/bitVector.h>
+#include <clasp/core/array.h>
 #include <clasp/core/bits.h>
 #include <clasp/core/wrappers.h>
 

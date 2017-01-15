@@ -20,12 +20,9 @@
 #include <clasp/core/corePackage.fwd.h>
 #include <clasp/core/print.h>
 #include <clasp/core/array.h>
-#include <clasp/core/lispVector.h>
 #include <clasp/core/lispStream.h>
 #include <clasp/core/write_ugly.h>
-#include <clasp/core/str.h>
 #include <clasp/core/numberToString.h>
-#include <clasp/core/bitVector.h>
 
 namespace core {
     static void
@@ -185,7 +182,7 @@ namespace core {
     }
 #endif
 #endif
-    
+
     void BitVector_O::__write__(T_sp stream) const {
 	if (!clasp_print_array() && !clasp_print_readably()) {
 	    writestr_stream("#<bit-vector ", stream);
@@ -258,7 +255,7 @@ namespace core {
     void SimpleBaseString_O::__write__(T_sp stream) const {
 	unsafe_write_SimpleBaseString(this->asSmartPtr(),0,this->length(),stream);
     }
-            
+
     void Str8Ns_O::__write__(T_sp stream) const {
 	size_t start, end;
 	BaseSimpleVector_sp str;
