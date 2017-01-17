@@ -60,7 +60,9 @@
               else
               return (cclasp-eval form penv)))
          (eval-compile (form)
-           (funcall (cclasp-compile-in-env nil `(lambda () ,form) env))))
+           (funcall (cclasp-compile-in-env nil
+                                           ;; PROGN is needed to avoid processing DECLARE as a declaration
+                                           `(lambda () (progn ,form)) env))))
     (let ((form (macroexpand form env)))
       (typecase form
         (symbol
@@ -106,7 +108,6 @@
                        (let ((ml-env (augment-environment-with-symbol-macrolet macros env)))
                          (eval-progn macrolet-body (augment-environment-with-declares declares ml-env)))))
                  (t (eval-compile form))))))))))
-
 
 (defmethod cclasp-eval-with-env (form (env core:value-frame))
   (cclasp-eval-with-env form (core:get-parent-environment env)))
