@@ -42,6 +42,9 @@ namespace core {
   FORWARD(Str8Ns);
   FORWARD(StrWNs);
   FORWARD(MDArrayT);
+  FORWARD(SimpleMDArrayT);
+  FORWARD(MDArrayDouble);
+  FORWARD(SimpleMDArrayDouble);
 }; /* core */
 
 

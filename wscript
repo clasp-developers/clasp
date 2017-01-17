@@ -271,6 +271,7 @@ class variant(object):
     def configure_for_debug(self,cfg):
         cfg.define("_DEBUG_BUILD",1)
         cfg.define("DEBUG_GUARD",1)
+        cfg.define("CONFIG_VAR_COOL",1)
 #        cfg.env.append_value('CXXFLAGS', [ '-O0', '-g' ])
         cfg.env.append_value('CXXFLAGS', [ '-O0', '-g' ])
         print("cfg.env.LTO_FLAG = %s" % cfg.env.LTO_FLAG)

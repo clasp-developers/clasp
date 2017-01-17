@@ -64,7 +64,8 @@ contiguous block."
                      (initial-element nil initial-element-supplied-p)
                      (initial-contents nil initial-contents-supplied-p)
                      adjustable fill-pointer
-                     displaced-to (displaced-index-offset 0))
+                     displaced-to
+                     (displaced-index-offset 0))
   "Args: (dimensions &key (element-type t) initial-element (initial-contents nil)
 		    (adjustable nil) (fill-pointer nil) (displaced-to nil)
 		    (displaced-index-offset 0) (static nil))
@@ -111,7 +112,8 @@ contiguous block."
                                         adjustable
                                         fill-pointer
                                         displaced-to
-                                        displaced-index-offset)
+                                        &optional
+                                          (displaced-index-offset 0))
   ;;  (when element-type (inform "Add support for element-type in make-array\n"))
   (if (and (consp element-type)
 	   (null initial-element)
@@ -124,7 +126,7 @@ contiguous block."
         (error "Cannot displace the array, because the element types don't match")))
   (cond
     ((null dimensions)
-     (make-mdarray dimensions (upgraded-array-element-type element-type) displaced-to displaced-index-offset initial-element initial-element-supplied-p))
+     (make-mdarray dimensions (upgraded-array-element-type element-type) adjustable displaced-to displaced-index-offset initial-element initial-element-supplied-p))
     ((or (fixnump dimensions) (and (consp dimensions) (eql 1 (length dimensions))))
      (let ((dim (if (fixnump dimensions)
 		    dimensions
@@ -137,6 +139,7 @@ contiguous block."
      (when fill-pointer (error "Multi-dimensional arrays don't allow fill-pointer"))
      (let ((x (make-mdarray dimensions
                             (upgraded-array-element-type element-type)
+                            adjustable
                             displaced-to
                             displaced-index-offset
                             initial-element

@@ -362,6 +362,7 @@ and is not adjustable."
 (dolist (l +known-typep-predicates+)
   (put-sysprop (car l) 'TYPE-PREDICATE (cdr l)))
 
+#+ecl
 (defconstant +upgraded-array-element-types+
   '#.(append '(NIL BASE-CHAR #+unicode CHARACTER BIT EXT:BYTE8 EXT:INTEGER8)
              #+:uint16-t '(EXT:BYTE16 EXT:INTEGER16)
@@ -371,7 +372,10 @@ and is not adjustable."
              (when (< 64 #+ecl cl-fixnum-bits #+clasp core:cl-fixnum-bits) '(EXT::CL-INDEX FIXNUM))
              '(SINGLE-FLOAT DOUBLE-FLOAT T)))
 
-#+ecl
+#+clasp
+(defconstant +upgraded-array-element-types+
+  '#.(append '(nil base-char #+unicode character bit double-float T)))
+
 (defun upgraded-array-element-type (element-type &optional env)
   (declare (ignore env))
   (let* ((hash (logand 127 (si:hash-eql element-type)))
@@ -389,7 +393,7 @@ and is not adjustable."
                            (cons element-type answer))
 	  answer))))
 
-#+clasp
+#+(or) ;; was #+clasp
 (defun upgraded-array-element-type (element-type &optional env)
   (cond
     ((eq element-type t) 't)
