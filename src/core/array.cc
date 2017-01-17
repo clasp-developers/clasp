@@ -34,6 +34,7 @@ THE SOFTWARE.
 #include <clasp/core/primitives.h>
 #include <clasp/core/designators.h>
 #include <clasp/core/lispStream.h>
+#include <clasp/core/bformat.h>
 #include <clasp/core/vectorObjects.h>
 #include <clasp/core/array.h>
 #include <clasp/core/character.h>
@@ -338,6 +339,15 @@ MDArray_O::MDArray_O(size_t rank,
   this->_ArrayTotalSize = arrayTotalSize;
 }
 
+T_sp MDArray_O::replaceArray(T_sp other)
+{
+  MDArray_sp mdo = gc::As<MDArray_sp>(other);
+  *this = *mdo;
+  for ( size_t i(0); i<mdo->_Dimensions._Length; ++i ) {
+    this->_Dimensions[i] = mdo->_Dimensions[i];
+  }
+  return this->asSmartPtr();
+}
 
 
 void MDArray_O::set_data(Array_sp a) {
@@ -459,6 +469,20 @@ CL_DEFUN size_t core__arrayFlags(Array_sp a)
     return mda->_Flags._Flags;
   }
   SIMPLE_ERROR(BF("Cannot get array-flags of %s") % _rep_(a));
+}
+
+CL_DEFUN void core__mdarray_dump(Array_sp a)
+{
+  MDArray_sp mda = gc::As<MDArray_sp>(a);
+  BFORMAT_T(BF("MDArray address = %p\n") % (void*)&*mda);
+  BFORMAT_T(BF("MDArray _ArrayTotalSize = %lu\n") % mda->_ArrayTotalSize);
+  BFORMAT_T(BF("MDArray _Data = %p\n") % (void*)&*(mda->_Data));
+  BFORMAT_T(BF("MDArray _DisplacedIndexOffset = %lu\n") % mda->_DisplacedIndexOffset);
+  BFORMAT_T(BF("MDArray _Flags = %lu\n") % mda->_Flags._Flags);
+  BFORMAT_T(BF("MDArray _Dimensions._Length = %lu\n") % mda->_Dimensions._Length);
+  for ( size_t i(0); i<mda->_Dimensions._Length; ++i ) {
+    BFORMAT_T(BF("MDArray _Dimensions[%lu] = %lu\n") % i % mda->_Dimensions[i]);
+  }
 }
 
 CL_NAME("FILL-POINTER-SET");
@@ -2323,6 +2347,22 @@ size_t calculateArrayTotalSizeAndValidateDimensions(List_sp dim_desig, size_t& r
 }
 };
 
+// ----------------------------------------------------------------------
+//
+// ArrayT functions
+//
+
+namespace core {
+#if 0
+bool MDArrayBit_O::equalp(T_sp other) const {
+  IMPLEMENT_ME();
+}
+
+bool SimpleMDArrayBit_O::equalp(T_sp other) const {
+  IMPLEMENT_ME();
+}
+#endif
+};
 
 // ----------------------------------------------------------------------
 //
@@ -2338,61 +2378,7 @@ MDArrayT_sp MDArrayT_O::create(const gc::Vec0<T_sp>& objs) {
   return result;
 }
 
-bool MDArrayT_O::equalp(T_sp other) const {
-  if (&*other==this) return true;
-  if (!other.generalp()) return false;
-  if (gc::IsA<SimpleVector_sp>(other)) {
-    SimpleVector_sp svother = gc::As_unsafe<SimpleVector_sp>(other);
-    if (svother->length()!=this->length()) return false;
-    for (size_t i(0),iEnd(this->length()); i<iEnd; ++i ) {
-      if (!cl__equalp((*this)[i],(*svother)[i])) return false;
-    }
-    return true;
-  } else if (gc::IsA<SimpleMDArrayT_sp>(other)) {
-    SimpleMDArrayT_sp vother = gc::As_unsafe<SimpleMDArrayT_sp>(other);
-    if (vother->length()!=this->length()) return false;
-    for (size_t i(0),iEnd(this->length()); i<iEnd; ++i ) {
-      if (!cl__equalp((*this)[i],(*vother)[i])) return false;
-    }
-    return true;
-  } else if (gc::IsA<MDArrayT_sp>(other)) {
-    MDArrayT_sp vother = gc::As_unsafe<MDArrayT_sp>(other);
-    if (vother->length()!=this->length()) return false;
-    for (size_t i(0),iEnd(this->length()); i<iEnd; ++i ) {
-      if (!cl__equalp((*this)[i],(*vother)[i])) return false;
-    }
-    return true;
-  }
-  return false;
-}
 
-bool SimpleMDArrayT_O::equalp(T_sp other) const {
-  if (&*other==this) return true;
-  if (!other.generalp()) return false;
-  if (gc::IsA<SimpleVector_sp>(other)) {
-    SimpleVector_sp svother = gc::As_unsafe<SimpleVector_sp>(other);
-    if (svother->length()!=this->length()) return false;
-    for (size_t i(0),iEnd(this->length()); i<iEnd; ++i ) {
-      if (!cl__equalp((*this)[i],(*svother)[i])) return false;
-    }
-    return true;
-  } else if (gc::IsA<SimpleMDArrayT_sp>(other)) {
-    SimpleMDArrayT_sp vother = gc::As_unsafe<SimpleMDArrayT_sp>(other);
-    if (vother->length()!=this->length()) return false;
-    for (size_t i(0),iEnd(this->length()); i<iEnd; ++i ) {
-      if (!cl__equalp((*this)[i],(*vother)[i])) return false;
-    }
-    return true;
-  } else if (gc::IsA<MDArrayT_sp>(other)) {
-    MDArrayT_sp vother = gc::As_unsafe<MDArrayT_sp>(other);
-    if (vother->length()!=this->length()) return false;
-    for (size_t i(0),iEnd(this->length()); i<iEnd; ++i ) {
-      if (!cl__equalp((*this)[i],(*vother)[i])) return false;
-    }
-    return true;
-  }
-  return false;
-}
 
 
 
@@ -2511,9 +2497,20 @@ CL_DEFUN MDArray_sp core__make_mdarray(List_sp dimensions,
     else return SimpleMDArrayT_O::make_multi_dimensional(dimensions,initialElement,_Nil<T_O>());
   } else if (element_type == cl::_sym_double_float) {
     double initialValue = SimpleVectorDouble_O::initial_element_from_object(initialElement,initialElementSuppliedP);
-
     if (adjustable) return MDArrayDouble_O::make_multi_dimensional(dimensions,initialValue,displacedTo,displacedTo.notnilp(),displacedIndexOffset);
     else return SimpleMDArrayDouble_O::make_multi_dimensional(dimensions,initialValue,_Nil<T_O>());
+  } else if (element_type == cl::_sym_bit) {
+    uint initialValue = SimpleBitVector_O::initial_element_from_object(initialElement,initialElementSuppliedP);
+    if (adjustable) return MDArrayBit_O::make_multi_dimensional(dimensions,initialValue,displacedTo,displacedTo.notnilp(),displacedIndexOffset);
+    else return SimpleMDArrayBit_O::make_multi_dimensional(dimensions,initialValue,_Nil<T_O>());
+  } else if (element_type == cl::_sym_base_char) {
+    claspChar initialValue = SimpleBaseString_O::initial_element_from_object(initialElement,initialElementSuppliedP);
+    if (adjustable) return MDArrayBaseChar_O::make_multi_dimensional(dimensions,initialValue,displacedTo,displacedTo.notnilp(),displacedIndexOffset);
+    else return SimpleMDArrayBaseChar_O::make_multi_dimensional(dimensions,initialValue,_Nil<T_O>());
+  } else if (element_type == cl::_sym_character) {
+    claspCharacter initialValue = SimpleCharacterString_O::initial_element_from_object(initialElement,initialElementSuppliedP);
+    if (adjustable) return MDArrayCharacter_O::make_multi_dimensional(dimensions,initialValue,displacedTo,displacedTo.notnilp(),displacedIndexOffset);
+    else return SimpleMDArrayCharacter_O::make_multi_dimensional(dimensions,initialValue,_Nil<T_O>());
   }
   SIMPLE_ERROR(BF("Handle creation of multi-dimensional array of type %s") % _rep_(element_type));
 };

@@ -6,4 +6,4 @@
 (test (typep (make-array '(10 10)) 'simple-array))
 (test (typep (make-array '(10 10) :adjustable t) 'array))
 (test (null (typep (make-array '(10 10) :adjustable t) 'simple-array)))
-
+(test (equalp (adjust-array #2A((1 2) (3 4)) '(3 3)) #2A((1 2 nil) (3 4 nil) (nil nil nil))))

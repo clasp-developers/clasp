@@ -43,6 +43,12 @@ namespace core {
   FORWARD(StrWNs);
   FORWARD(MDArrayT);
   FORWARD(SimpleMDArrayT);
+  FORWARD(MDArrayBit);
+  FORWARD(SimpleMDArrayBit);
+  FORWARD(MDArrayBaseChar);
+  FORWARD(SimpleMDArrayBaseChar);
+  FORWARD(MDArrayCharacter);
+  FORWARD(SimpleMDArrayCharacter);
   FORWARD(MDArrayDouble);
   FORWARD(SimpleMDArrayDouble);
 }; /* core */
