@@ -36,7 +36,14 @@
   (let* ((cleavir-generate-ast:*compiler* 'cl:compile)
          (core:*use-cleavir-compiler* t)
          (clasp-cleavir:*code-walker* code-walker-function))
-    (cleavir-generate-ast:generate-ast form env *clasp-system*)))
+    (handler-bind
+        ((cleavir-env:no-variable-info
+           (lambda (condition)
+             (invoke-restart 'cleavir-generate-ast:consider-special)))
+         (cleavir-env:no-function-info
+           (lambda (condition)
+             (invoke-restart 'cleavir-generate-ast:consider-global))))
+      (cleavir-generate-ast:generate-ast form env *clasp-system*))))
 
 (export 'code-walk-using-cleavir)
 
