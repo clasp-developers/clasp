@@ -1741,7 +1741,6 @@ namespace core {
 // ----------------------------------------------------------------------
 // Arrays specialized for size_t
 //
-
 namespace core {
   FORWARD(SimpleVector_size_t);
 };
@@ -1751,6 +1750,7 @@ struct gctools::GCInfo<core::SimpleVector_size_t_O> {
   static bool constexpr NeedsFinalization = false;
   static GCInfo_policy constexpr Policy = atomic;
 };
+
 namespace core {
   class SimpleVector_size_t_O;
   typedef template_SimpleVector<SimpleVector_size_t_O,size_t,AbstractSimpleVector_O> specialized_SimpleVector_size_t;
