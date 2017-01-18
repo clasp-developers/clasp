@@ -49,9 +49,15 @@ namespace core {
   FORWARD(SimpleMDArrayBaseChar);
   FORWARD(MDArrayCharacter);
   FORWARD(SimpleMDArrayCharacter);
+  //
+  FORWARD(SimpleVectorDouble);
   FORWARD(MDArrayDouble);
   FORWARD(SimpleMDArrayDouble);
-}; /* core */
+  //
+  FORWARD(SimpleVector_size_t);
+  FORWARD(MDArray_size_t);
+  FORWARD(SimpleMDArray_size_t);
+  }; /* core */
 
 
 
