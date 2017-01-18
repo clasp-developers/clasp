@@ -155,8 +155,7 @@ Symbol_O::Symbol_O(bool dummy) : _HomePackage(_Nil<T_O>()),
                                  _IsSpecial(false),
                                  _IsConstant(false),
                                  _ReadOnlyFunction(false),
-                                 _PropertyList(_Nil<List_V>()) { //no guard
-}
+                                 _PropertyList(_Nil<List_V>()) {};
 
 Symbol_O::Symbol_O() : Base(),
                        _Name(gctools::smart_ptr<SimpleBaseString_O>()),
@@ -166,11 +165,8 @@ Symbol_O::Symbol_O() : Base(),
                        _SetfFunction(gctools::smart_ptr<Function_O>()),
                        _IsSpecial(false),
                        _IsConstant(false),
-                       _ReadOnlyFunction(false)
-                       // ,_PropertyList(gctools::smart_ptr<Cons_O>())
-{
-                        // nothing
-};
+                       _ReadOnlyFunction(false),
+                       _PropertyList(_Nil<List_V>()) {};
 
 void Symbol_O::finish_setup(Package_sp pkg, bool exportp, bool shadowp) {
   ASSERTF(pkg, BF("The package is UNDEFINED"));

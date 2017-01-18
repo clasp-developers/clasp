@@ -2050,7 +2050,7 @@ namespace core {
 
 CL_LAMBDA(function);
 CL_DECLARE();
-CL_DOCSTRING("functionLambdaList");
+CL_DOCSTRING("Return the lambda-list of a function");
 CL_DEFUN T_mv core__function_lambda_list(T_sp obj) {
   if (obj.nilp()) {
     return Values(_Nil<T_O>(), _Nil<T_O>());
