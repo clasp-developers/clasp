@@ -1799,11 +1799,13 @@ SYMBOL_EXPORT_SC_(ClPkg, parseInteger);
 };
 
 
+
 // ------------------------------------------------------------
 //
 // Class AbstractSimpleVector_O
 //
 
+namespace core {
 bool AbstractSimpleVector_O::equalp(T_sp other) const {
   if (&*other==this) return true;
   if (!other.generalp()) return false;
@@ -1816,12 +1818,12 @@ bool AbstractSimpleVector_O::equalp(T_sp other) const {
     return true;
   }
   MDArray_sp mdother = gc::As_unsafe<MDArray_sp>(other);
-    if (mdother->rank()!=1) return false;
-    if (mdother->length()!=this->length()) return false;
-    for (size_t i(0),iEnd(this->length()); i<iEnd; ++i ) {
-      if (!cl__equalp(this->rowMajorAref(i),mdother->rowMajorAref(i))) return false;
-    }
-    return true;
+  if (mdother->rank()!=1) return false;
+  if (mdother->length()!=this->length()) return false;
+  for (size_t i(0),iEnd(this->length()); i<iEnd; ++i ) {
+    if (!cl__equalp(this->rowMajorAref(i),mdother->rowMajorAref(i))) return false;
+  }
+  return true;
 }
 
 // ------------------------------------------------------------
@@ -2156,7 +2158,7 @@ Str8Ns_sp Str8Ns_O::create(Str8Ns_sp other) {
 
 SYMBOL_EXPORT_SC_(CorePkg,vectorPushExtend_claspCharacter);
 void Str8Ns_O::vectorPushExtend_claspChar(claspChar newElement, size_t extension) {
-  unlikely_if (!this->_Flags.fillPointerP()) noFillPointerError(core::_sym_vectorPushExtend_claspCharacter,this->asSmartPtr());
+  unlikely_if (!this->_Flags.fillPointerP()) noFillPointerError(_sym_vectorPushExtend_claspCharacter,this->asSmartPtr());
   cl_index idx = this->_FillPointerOrLengthOrDummy;
   unlikely_if (idx >= this->_ArrayTotalSize) {
     if (extension <= 0) extension = 32;
@@ -2229,7 +2231,7 @@ std::string StrWNs_O::__repr__() const {
 
 SYMBOL_EXPORT_SC_(CorePkg,vectorPushExtend_claspCharacter);
 void StrWNs_O::vectorPushExtend_claspCharacter(claspCharacter newElement, size_t extension) {
-  unlikely_if (!this->_Flags.fillPointerP()) noFillPointerError(core::_sym_vectorPushExtend_claspCharacter,this->asSmartPtr());
+  unlikely_if (!this->_Flags.fillPointerP()) noFillPointerError(_sym_vectorPushExtend_claspCharacter,this->asSmartPtr());
   cl_index idx = this->_FillPointerOrLengthOrDummy;
   unlikely_if (idx >= this->_ArrayTotalSize) {
     if (extension <= 0) extension = 32;
@@ -2321,7 +2323,7 @@ bool BitVectorNs_O::equal(T_sp other) const {
   return false;
 };
 
-
+};
 // ------------------------------------------------------------
 //
 // MDArrayT
@@ -2410,6 +2412,9 @@ void StringPushStringCharStar(String_sp buffer, const char *cPtr) {
   }
 }
 
+
+
+
 string string_get_std_string(String_sp str) { return str->get_std_string(); };
 string string_get_std_string(T_sp str) {
   if (str.nilp()) {
@@ -2422,7 +2427,6 @@ T_sp str_create(const char *str) { return SimpleBaseString_O::make(std::string(s
 
 
 };
-
 
 
 ////////////////////////////////////////////////////////////
@@ -2574,15 +2578,15 @@ SYMBOL_EXPORT_SC_(CorePkg,search_string);
 CL_LAMBDA(sub sub_start sub_end outer outer_start outer_end);
 CL_DOCSTRING("search for the first occurance of sub in outer");
 CL_DEFUN T_sp core__search_string(String_sp sub, size_t sub_start, T_sp sub_end, String_sp outer, size_t outer_start, T_sp outer_end) {
-  size_t_pair psub = sequenceStartEnd(core::_sym_search_string,sub->length(),sub_start,sub_end);
-  size_t_pair pouter = sequenceStartEnd(core::_sym_search_string,outer->length(),outer_start,outer_end);
+  size_t_pair psub = sequenceStartEnd(_sym_search_string,sub->length(),sub_start,sub_end);
+  size_t_pair pouter = sequenceStartEnd(_sym_search_string,outer->length(),outer_start,outer_end);
   TEMPLATE_STRING_DISPATCHER(sub,outer,template_search_string,psub.start,psub.end,pouter.start,pouter.end);
 };
 
 
 CL_LISPIFY_NAME("core:split");
 CL_DEFUN List_sp core__split(const string& all, const string &chars) {
-  vector<string> parts = core::split(all, chars);
+  vector<string> parts = split(all, chars);
   T_sp first = _Nil<T_O>();
   T_sp* cur = &first;
   for (vector<string>::iterator it = parts.begin(); it != parts.end(); it++) {
