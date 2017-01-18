@@ -58,7 +58,14 @@
 (defun defun-inline-hook (name function-form)
   (when (core:declared-global-inline-p name)
     (let* ((cleavir-generate-ast:*compiler* 'cl:compile)
-           (ast (cleavir-generate-ast:generate-ast function-form *clasp-env* *clasp-system*)))
+           (ast (handler-bind
+                    ((cleavir-env:no-variable-info
+                       (lambda (condition)
+                         (invoke-restart 'cleavir-generate-ast:consider-special)))
+                     (cleavir-env:no-function-info
+                       (lambda (condition)
+                         (invoke-restart 'cleavir-generate-ast:consider-global))))
+                  (cleavir-generate-ast:generate-ast function-form *clasp-env* *clasp-system*))))
       `(eval-when (:compile-toplevel :load-toplevel :execute)
          (when (core:declared-global-inline-p ',name)
            (when (fboundp ',name)
