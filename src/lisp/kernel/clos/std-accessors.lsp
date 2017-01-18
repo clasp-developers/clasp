@@ -162,20 +162,22 @@
 				 (apply #'writer-method-class standard-class slotd
 					writer-args))))
 	  (dolist (fname readers)
-	    (let ((method (make-method reader-class nil `(,standard-class) '(self)
+	    (let ((method (make-method reader-class nil `(,standard-class) '(object)
 				       reader
 				       options)))
 	      (safe-add-method fname method)
+              (maybe-augment-generic-function-lambda-list fname '(object))
 	      ;; This is redundant, but we need it at boot time because
 	      ;; the early MAKE-METHOD does not use the options field.
 	      (unless *clos-booted*
 		(setf (slot-value method 'slot-definition) slotd))))
 	  (dolist (fname writers)
 	    (let ((method (make-method writer-class nil
-				       `(,(find-class t) ,standard-class) '(value self)
+				       `(,(find-class t) ,standard-class) '(value object)
 				       writer
 				       options)))
 	      (safe-add-method fname method)
+              (maybe-augment-generic-function-lambda-list fname '(value object))
 	      ;; This is redundant, but we need it at boot time because
 	      ;; the early MAKE-METHOD does not use the options field.
 	      (unless *clos-booted*
