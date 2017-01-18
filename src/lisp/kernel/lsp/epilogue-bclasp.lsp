@@ -1,5 +1,5 @@
 #+bclasp(eval-when (:load-toplevel)
           (cl:in-package :cl-user)
-          (process-command-line-load-eval-sequence)
           (let ((core:*use-interpreter-for-eval* nil))
+            (process-command-line-load-eval-sequence)
             (when (member :interactive *features*) (core:run-repl))))

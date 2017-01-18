@@ -132,7 +132,7 @@ SimpleVector_sp InvocationHistoryFrame::arguments() const {
 }
 
 string InvocationHistoryFrame::argumentsAsString(int maxWidth) const {
-  VectorObjects_sp vargs = this->arguments();
+  SimpleVector_sp vargs = this->arguments();
   T_sp sout = clasp_make_string_output_stream();
   int nargs = cl__length(vargs);
   for (int i(0); i < nargs; ++i) {

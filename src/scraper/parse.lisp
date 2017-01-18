@@ -55,13 +55,15 @@ and not a simple-function so return (values name class::name nil)"
                                        (char= c #\space)
                                        (char= c #\tab)))
                        tsig))
-         (open-paren (position #\( tsig :test #'char=))
-         (full-function-name (string-left-trim '(#\newline #\space #\tab #\*)
-                                                (string-right-trim '(#\newline #\space #\tab) (subseq tsig first-space open-paren))))
-         (colon-colon-pos (search "::" full-function-name)))
-    (if colon-colon-pos
-        (values (subseq full-function-name (+ 2 colon-colon-pos)) full-function-name nil)
-	(values full-function-name full-function-name t))))
+         (open-paren (position #\( tsig :test #'char=)))
+    (when (> first-space open-paren)
+      (error "The function signature \"~a\"has a problem - it may be missing a return type~%" tsig))
+    (let* ((full-function-name (string-left-trim '(#\newline #\space #\tab #\*)
+                                                 (string-right-trim '(#\newline #\space #\tab) (subseq tsig first-space open-paren))))
+           (colon-colon-pos (search "::" full-function-name)))
+      (if colon-colon-pos
+          (values (subseq full-function-name (+ 2 colon-colon-pos)) full-function-name nil)
+          (values full-function-name full-function-name t)))))
 
 (defun maybe-remove-cast (str)
   (let* ((tstr (string-trim '(#\newline #\space #\tab) str))

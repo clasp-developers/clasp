@@ -218,7 +218,7 @@ public:
   int index();
   T_sp functionName();
   Function_sp function();
-  Vector_sp arguments();
+  SimpleVector_sp arguments();
   T_sp environment();
   InvocationHistoryFrameIterator_sp copy() {
     return InvocationHistoryFrameIterator_O::create(this->_Frame,this->_Index);

@@ -129,7 +129,7 @@ default value of INITIAL-ELEMENT depends on TYPE."
                (error-sequence-length (make-list size :initial-element initial-element) type 0))))
           (t
            (setq sequence (sys:make-vector (if (eq element-type '*) T element-type)
-                                           size nil nil nil nil))
+                                           size nil nil nil #+ecl nil #+clasp 0))
            (when iesp
              (si::fill-array-with-elt sequence initial-element 0 nil))
            (unless (or (eql length '*) (eql length size))

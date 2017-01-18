@@ -265,7 +265,7 @@ CL_DEFUN List_sp cl__arrayDimensions(Array_sp array)
 CL_LISPIFY_NAME("cl:adjustable-array-p");
 CL_DEFUN bool cl__adjustable_array_p(Array_sp array)
 {
-  return (gc::IsA<MDArray_sp>(array));
+  return array->adjustableArrayP();
 }
 
 
@@ -288,12 +288,12 @@ MDArray_O::MDArray_O(Rank1 dummy,
                      size_t dimension,
                      T_sp fillPointer,
                      Array_sp data,
-                     T_sp displacedIndexOffset )
+                     bool displacedToP,
+                     Fixnum_sp displacedIndexOffset )
   : _FillPointerOrLengthOrDummy(dimension),
     _Data(data), // It better be an array
-    _DisplacedIndexOffset(displacedIndexOffset.nilp() ? 0 : displacedIndexOffset.unsafe_fixnum()),
-    _DisplacedToP(displacedIndexOffset.notnilp()),
-    _FillPointerP(fillPointer.notnilp()),
+    _DisplacedIndexOffset(displacedIndexOffset.unsafe_fixnum()),
+    _Flags(fillPointer.notnilp(),displacedToP),
     _Dimensions(1,dimension,true) {
   size_t arrayTotalSize = dimension;
   this->_ArrayTotalSize = arrayTotalSize;
@@ -308,12 +308,12 @@ MDArray_O::MDArray_O(Rank1 dummy,
 MDArray_O::MDArray_O(size_t rank,
                      List_sp dimensions,
                      Array_sp data,
-                     T_sp displacedIndexOffset )
+                     bool displacedToP,
+                     Fixnum_sp displacedIndexOffset )
   : _FillPointerOrLengthOrDummy(0xDEADBEEF01234567),
     _Data(data), // It better be an array
-    _DisplacedIndexOffset(displacedIndexOffset.nilp() ? 0 : displacedIndexOffset.unsafe_fixnum()),
-    _DisplacedToP(displacedIndexOffset.notnilp()),
-    _FillPointerP(false),
+    _DisplacedIndexOffset(displacedIndexOffset.unsafe_fixnum()),
+    _Flags(false,displacedToP),
     _Dimensions(rank,0,true) {
   size_t arrayTotalSize = 1;
   size_t irank = 0;
@@ -332,6 +332,15 @@ MDArray_O::MDArray_O(size_t rank,
   this->_ArrayTotalSize = arrayTotalSize;
 }
 
+T_sp MDArray_O::replaceArray(T_sp other)
+{
+  MDArray_sp mdo = gc::As<MDArray_sp>(other);
+  *this = *mdo;
+  for ( size_t i(0); i<mdo->_Dimensions._Length; ++i ) {
+    this->_Dimensions[i] = mdo->_Dimensions[i];
+  }
+  return this->asSmartPtr();
+}
 
 
 void MDArray_O::set_data(Array_sp a) {
@@ -385,7 +394,7 @@ bool MDArray_O::equalp(T_sp other) const {
 
 
 T_sp MDArray_O::vectorPush(T_sp newElement) {
-  unlikely_if (!this->_FillPointerP) noFillPointerError(cl::_sym_vectorPush,this->asSmartPtr());
+  unlikely_if (!this->_Flags.fillPointerP()) noFillPointerError(cl::_sym_vectorPush,this->asSmartPtr());
   cl_index idx = this->_FillPointerOrLengthOrDummy;
   unlikely_if (idx >= this->_ArrayTotalSize) {
     return _Nil<T_O>();
@@ -397,7 +406,7 @@ T_sp MDArray_O::vectorPush(T_sp newElement) {
 
 SYMBOL_EXPORT_SC_(ClPkg,vectorPushExtend);
 Fixnum_sp MDArray_O::vectorPushExtend(T_sp newElement, size_t extension) {
-  unlikely_if (!this->_FillPointerP) noFillPointerError(cl::_sym_vectorPushExtend,this->asSmartPtr());
+  unlikely_if (!this->_Flags.fillPointerP()) noFillPointerError(cl::_sym_vectorPushExtend,this->asSmartPtr());
   cl_index idx = this->_FillPointerOrLengthOrDummy;
   unlikely_if (idx >= this->_ArrayTotalSize) {
     if (extension <= 0) extension = 32;
@@ -412,7 +421,6 @@ Fixnum_sp MDArray_O::vectorPushExtend(T_sp newElement, size_t extension) {
   ++this->_FillPointerOrLengthOrDummy;
   return make_fixnum(idx);
 }
-
 
 
 
@@ -443,6 +451,31 @@ CL_LISPIFY_NAME("cl:rowMajorAref");
 CL_DEFUN  T_sp cl__rowMajorAref(Array_sp array, size_t idx)
 {
   return array->rowMajorAref(idx);
+}
+
+CL_DEFUN size_t core__arrayFlags(Array_sp a)
+{
+  if (gc::IsA<AbstractSimpleVector_sp>(a)) {
+    return 0;
+  } else if (gc::IsA<MDArray_sp>(a)) {
+    MDArray_sp mda = gc::As_unsafe<MDArray_sp>(a);
+    return mda->_Flags._Flags;
+  }
+  SIMPLE_ERROR(BF("Cannot get array-flags of %s") % _rep_(a));
+}
+
+CL_DEFUN void core__mdarray_dump(Array_sp a)
+{
+  MDArray_sp mda = gc::As<MDArray_sp>(a);
+  BFORMAT_T(BF("MDArray address = %p\n") % (void*)&*mda);
+  BFORMAT_T(BF("MDArray _ArrayTotalSize = %lu\n") % mda->_ArrayTotalSize);
+  BFORMAT_T(BF("MDArray _Data = %p\n") % (void*)&*(mda->_Data));
+  BFORMAT_T(BF("MDArray _DisplacedIndexOffset = %lu\n") % mda->_DisplacedIndexOffset);
+  BFORMAT_T(BF("MDArray _Flags = %lu\n") % mda->_Flags._Flags);
+  BFORMAT_T(BF("MDArray _Dimensions._Length = %lu\n") % mda->_Dimensions._Length);
+  for ( size_t i(0); i<mda->_Dimensions._Length; ++i ) {
+    BFORMAT_T(BF("MDArray _Dimensions[%lu] = %lu\n") % i % mda->_Dimensions[i]);
+  }
 }
 
 CL_NAME("FILL-POINTER-SET");
@@ -1759,11 +1792,13 @@ SYMBOL_EXPORT_SC_(ClPkg, parseInteger);
 };
 
 
+
 // ------------------------------------------------------------
 //
 // Class AbstractSimpleVector_O
 //
 
+namespace core {
 bool AbstractSimpleVector_O::equalp(T_sp other) const {
   if (&*other==this) return true;
   if (!other.generalp()) return false;
@@ -1776,12 +1811,12 @@ bool AbstractSimpleVector_O::equalp(T_sp other) const {
     return true;
   }
   MDArray_sp mdother = gc::As_unsafe<MDArray_sp>(other);
-    if (mdother->rank()!=1) return false;
-    if (mdother->length()!=this->length()) return false;
-    for (size_t i(0),iEnd(this->length()); i<iEnd; ++i ) {
-      if (!cl__equalp(this->rowMajorAref(i),mdother->rowMajorAref(i))) return false;
-    }
-    return true;
+  if (mdother->rank()!=1) return false;
+  if (mdother->length()!=this->length()) return false;
+  for (size_t i(0),iEnd(this->length()); i<iEnd; ++i ) {
+    if (!cl__equalp(this->rowMajorAref(i),mdother->rowMajorAref(i))) return false;
+  }
+  return true;
 }
 
 // ------------------------------------------------------------
@@ -1910,7 +1945,7 @@ bool SimpleVector_O::equalp(T_sp other) const {
 
 // ------------------------------------------------------------
 //
-// Class SimpleDoubleVector_O
+// Class SimpleVectorDouble_O
 //
 
 
@@ -2091,12 +2126,12 @@ bool Str8Ns_O::equal(T_sp other) const {
 // Creators - depreciate these once the new array stuff is working better
 Str8Ns_sp Str8Ns_O::create(const string& nm) {
   auto ss = SimpleBaseString_O::make(nm.size(),'\0',true,nm.size(),(const claspChar*)nm.c_str());
-  return Str8Ns_O::make(nm.size(),'\0',false,_Nil<T_O>(),ss,_Nil<T_O>());
+  return Str8Ns_O::make(nm.size(),'\0',false,_Nil<T_O>(),ss,false,0);
 }
 
 Str8Ns_sp Str8Ns_O::create(const char* nm,size_t len) {
   SimpleBaseString_sp ss = SimpleBaseString_O::make(len,'\0',true,len,(const claspChar*)nm);
-  return Str8Ns_O::make(len,'\0',false,_Nil<T_O>(),ss,_Nil<T_O>());
+  return Str8Ns_O::make(len,'\0',false,_Nil<T_O>(),ss,false,0);
 }
 
 Str8Ns_sp Str8Ns_O::create(const char* nm) {
@@ -2105,18 +2140,18 @@ Str8Ns_sp Str8Ns_O::create(const char* nm) {
 }
 
 Str8Ns_sp Str8Ns_O::create(size_t len) {
-  return Str8Ns_O::make(len,'\0',true,_Nil<T_O>(),_Nil<T_O>(),_Nil<T_O>());
+  return Str8Ns_O::make(len,'\0',true,_Nil<T_O>(),_Nil<T_O>(),false,0);
 }
 
 Str8Ns_sp Str8Ns_O::create(Str8Ns_sp other) {
   size_t len = other->length();
   SimpleBaseString_sp ss = SimpleBaseString_O::make(len,'\0',true,len,&(*other)[0]);
-  return Str8Ns_O::make(len,'\0',false,_Nil<T_O>(),ss,_Nil<T_O>());
+  return Str8Ns_O::make(len,'\0',false,_Nil<T_O>(),ss,false,0);
 }
 
 SYMBOL_EXPORT_SC_(CorePkg,vectorPushExtend_claspCharacter);
 void Str8Ns_O::vectorPushExtend_claspChar(claspChar newElement, size_t extension) {
-  unlikely_if (!this->_FillPointerP) noFillPointerError(core::_sym_vectorPushExtend_claspCharacter,this->asSmartPtr());
+  unlikely_if (!this->_Flags.fillPointerP()) noFillPointerError(_sym_vectorPushExtend_claspCharacter,this->asSmartPtr());
   cl_index idx = this->_FillPointerOrLengthOrDummy;
   unlikely_if (idx >= this->_ArrayTotalSize) {
     if (extension <= 0) extension = 32;
@@ -2189,7 +2224,7 @@ std::string StrWNs_O::__repr__() const {
 
 SYMBOL_EXPORT_SC_(CorePkg,vectorPushExtend_claspCharacter);
 void StrWNs_O::vectorPushExtend_claspCharacter(claspCharacter newElement, size_t extension) {
-  unlikely_if (!this->_FillPointerP) noFillPointerError(core::_sym_vectorPushExtend_claspCharacter,this->asSmartPtr());
+  unlikely_if (!this->_Flags.fillPointerP()) noFillPointerError(_sym_vectorPushExtend_claspCharacter,this->asSmartPtr());
   cl_index idx = this->_FillPointerOrLengthOrDummy;
   unlikely_if (idx >= this->_ArrayTotalSize) {
     if (extension <= 0) extension = 32;
@@ -2235,9 +2270,9 @@ void BitVectorNs_O::internalAdjustSize_(size_t size, T_sp initElement, bool init
   }
   this->set_data(newData);
   this->_ArrayTotalSize = size;
-  if (!this->_FillPointerP) this->_FillPointerOrLengthOrDummy = size;
+  if (!this->_Flags.fillPointerP()) this->_FillPointerOrLengthOrDummy = size;
   this->_DisplacedIndexOffset = 0;
-  this->_DisplacedToP = false;
+  this->_Flags.set_displacedToP(false);
 }
 
 
@@ -2281,7 +2316,7 @@ bool BitVectorNs_O::equal(T_sp other) const {
   return false;
 };
 
-
+};
 // ------------------------------------------------------------
 //
 // MDArrayT
@@ -2291,7 +2326,7 @@ namespace core {
 
 size_t calculateArrayTotalSizeAndValidateDimensions(List_sp dim_desig, size_t& rank) {
   size_t arrayTotalSize = 1;
-  size_t irank = 0;
+  rank = 0;
    // dimensions has to be right
    // This code cannot call error handlers
    // we are in an allocator here
@@ -2301,62 +2336,53 @@ size_t calculateArrayTotalSizeAndValidateDimensions(List_sp dim_desig, size_t& r
     if (fdim<0) SIMPLE_ERROR(BF("Array dimensions %ld must be positive") % fdim);
     size_t dim = fdim;
     arrayTotalSize *= dim;
+    ++rank;
   }
   return arrayTotalSize;
 }
+};
 
-MDArrayT_sp MDArrayT_O::make_multi_dimensional(List_sp dim_desig, T_sp initialElement, T_sp dataOrDisplacedTo, T_sp displacedIndexOffset) {
-  ASSERT(dim_desig.consp()||dim_desig.nilp());
-  size_t rank;
-  size_t arrayTotalSize = calculateArrayTotalSizeAndValidateDimensions(dim_desig,rank);
-  if (dataOrDisplacedTo.nilp()) {
-    dataOrDisplacedTo = SimpleVector_O::make(arrayTotalSize,initialElement,true);
-  }
-  MDArrayT_sp array = gctools::GC<MDArrayT_O>::allocate_container(gctools::GCStamp<MDArrayT_O>::TheStamp,rank,rank,dim_desig,gc::As<Array_sp>(dataOrDisplacedTo),displacedIndexOffset);
-  return array;
+// ----------------------------------------------------------------------
+//
+// ArrayT functions
+//
+
+namespace core {
+#if 0
+bool MDArrayBit_O::equalp(T_sp other) const {
+  IMPLEMENT_ME();
 }
 
-MDArrayT_sp MDArrayT_O::make(size_t dimension, T_sp initialElement, T_sp fillPointer, T_sp dataOrDisplacedTo, T_sp displacedIndexOffset) {
-  if (dataOrDisplacedTo.nilp()) {
-    dataOrDisplacedTo = SimpleVector_O::make(dimension,initialElement,true);
-  }
-  MDArrayT_sp array = gctools::GC<MDArrayT_O>::allocate_container(gctools::GCStamp<MDArrayT_O>::TheStamp,1,1,dimension,fillPointer,gc::As_unsafe<Array_sp>(dataOrDisplacedTo),displacedIndexOffset);
-  return array;
+bool SimpleMDArrayBit_O::equalp(T_sp other) const {
+  IMPLEMENT_ME();
 }
+#endif
+};
 
+// ----------------------------------------------------------------------
+//
+// ArrayT functions
+//
 
+namespace core {
 
 MDArrayT_sp MDArrayT_O::create(const gc::Vec0<T_sp>& objs) {
   size_t len = objs.size();
   SimpleVector_sp ss = SimpleVector_O::make(len,_Nil<T_O>(),true,len,&(objs[0]));
-  MDArrayT_sp result = MDArrayT_O::make(len,_Nil<T_O>(),_Nil<T_O>(),ss,_Nil<T_O>());
+  MDArrayT_sp result = MDArrayT_O::make(len,_Nil<T_O>(),_Nil<T_O>(),ss,false,clasp_make_fixnum(0));
   return result;
 }
 
-bool MDArrayT_O::equalp(T_sp other) const {
-  if (&*other==this) return true;
-  if (!other.generalp()) return false;
-  if (gc::IsA<SimpleVector_sp>(other)) {
-    SimpleVector_sp svother = gc::As_unsafe<SimpleVector_sp>(other);
-    if (svother->length()!=this->length()) return false;
-    for (size_t i(0),iEnd(this->length()); i<iEnd; ++i ) {
-      if (!cl__equalp((*this)[i],(*svother)[i])) return false;
-    }
-    return true;
-  } else if (gc::IsA<MDArrayT_sp>(other)) {
-    MDArrayT_sp vother = gc::As_unsafe<MDArrayT_sp>(other);
-    if (vother->length()!=this->length()) return false;
-    for (size_t i(0),iEnd(this->length()); i<iEnd; ++i ) {
-      if (!cl__equalp((*this)[i],(*vother)[i])) return false;
-    }
-    return true;
-  }
-  return false;
-}
+
 
 
 
 };
+
+
+
+
+
 
 
 namespace core {
@@ -2379,6 +2405,9 @@ void StringPushStringCharStar(String_sp buffer, const char *cPtr) {
   }
 }
 
+
+
+
 string string_get_std_string(String_sp str) { return str->get_std_string(); };
 string string_get_std_string(T_sp str) {
   if (str.nilp()) {
@@ -2391,7 +2420,6 @@ T_sp str_create(const char *str) { return SimpleBaseString_O::make(std::string(s
 
 
 };
-
 
 
 ////////////////////////////////////////////////////////////
@@ -2412,7 +2440,7 @@ SYMBOL_EXPORT_SC_(ClPkg, subtypep);
 
 
 
-CL_LAMBDA(element_type dimension &optional adjustable fill_pointer displaced_to displaced_index_offset initial_element initial_element_supplied_p);
+CL_LAMBDA(element_type dimension &optional adjustable fill_pointer displaced_to (displaced_index_offset 0) initial_element initial_element_supplied_p);
 CL_DECLARE();
 CL_DOCSTRING("Makes a vector based on the arguments. See si_make_vector in ecl>>array.d");
 CL_DEFUN Vector_sp core__make_vector(T_sp element_type,
@@ -2420,45 +2448,68 @@ CL_DEFUN Vector_sp core__make_vector(T_sp element_type,
                                      bool adjustable,
                                      T_sp fillPointer,
                                      T_sp displacedTo,
-                                     T_sp displacedIndexOffset,
+                                     Fixnum_sp displacedIndexOffset,
                                      T_sp initialElement,
                                      bool initialElementSuppliedP) {
-  if (!(displacedIndexOffset.fixnump()||displacedIndexOffset.nilp())) {
-    TYPE_ERROR(displacedIndexOffset,Cons_O::createList(cl::_sym_or,cl::_sym_null,cl::_sym_integer));
-  }
   if (fillPointer == cl::_sym_T_O) fillPointer = clasp_make_fixnum(dimension);
   if ( fillPointer.notnilp() || displacedTo.notnilp()) adjustable = true;
   if (element_type == cl::_sym_bit) {
     SimpleBitVector_O::value_type init_bit = SimpleBitVector_O::initial_element_from_object(initialElement,initialElementSuppliedP);
-    if (adjustable) return BitVectorNs_O::make(dimension,init_bit,initialElementSuppliedP,fillPointer,displacedTo,displacedIndexOffset);
+    if (adjustable) return BitVectorNs_O::make(dimension,init_bit,initialElementSuppliedP,fillPointer,displacedTo,displacedTo.notnilp(),displacedIndexOffset);
     return SimpleBitVector_O::make(dimension,init_bit,initialElementSuppliedP);
   } else if (element_type == cl::_sym_base_char
              || element_type == cl::_sym_character) {
     unlikely_if (element_type == cl::_sym_character) {
       claspCharacter initialCharacter = SimpleCharacterString_O::initial_element_from_object(initialElement,initialElementSuppliedP);
-      if (adjustable) return StrWNs_O::make(dimension,initialCharacter,initialElementSuppliedP,fillPointer,displacedTo,displacedIndexOffset);
+      if (adjustable) return StrWNs_O::make(dimension,initialCharacter,initialElementSuppliedP,fillPointer,displacedTo,true,displacedIndexOffset);
       else return SimpleCharacterString_O::make(dimension,initialCharacter,initialElementSuppliedP);
     }
     claspChar initialChar = SimpleBaseString_O::initial_element_from_object(initialElement,initialElementSuppliedP);
-    if (adjustable) return Str8Ns_O::make(dimension,initialChar,initialElementSuppliedP,fillPointer,displacedTo,displacedIndexOffset);
+    if (adjustable) return Str8Ns_O::make(dimension,initialChar,initialElementSuppliedP,fillPointer,displacedTo,true,displacedIndexOffset);
     else return SimpleBaseString_O::make(dimension,initialChar,initialElementSuppliedP);
   } else if ( element_type == cl::_sym_T_O ) {
-    if (adjustable) return VectorTNs_O::make(dimension,initialElement,fillPointer,displacedTo,displacedIndexOffset);
+    if (adjustable) return VectorTNs_O::make(dimension,initialElement,fillPointer,displacedTo,displacedTo.notnilp(),displacedIndexOffset);
     return SimpleVector_O::make(dimension,initialElement,true);
+  } else if ( element_type == cl::_sym_double_float ) {
+    double initialValue = SimpleVectorDouble_O::initial_element_from_object(initialElement,initialElementSuppliedP);
+    if (adjustable) return MDArrayDouble_O::make(dimension,initialValue,fillPointer,displacedTo,displacedTo.notnilp(),displacedIndexOffset);
+    return SimpleVectorDouble_O::make(dimension,initialValue,true);
   }
   SIMPLE_ERROR(BF("Handle make-vector :element-type %s") % _rep_(element_type));
 };
 
-CL_LAMBDA(dimensions element_type displaced_to displaced_index_offset initial_element initial_element_supplied_p);
+CL_LAMBDA(dimensions element_type adjustable displaced_to displaced_index_offset initial_element initial_element_supplied_p);
 CL_DECLARE();
 CL_DOCSTRING("Makes a multidimensional array based on the arguments.");
 CL_DEFUN MDArray_sp core__make_mdarray(List_sp dimensions,
                                        T_sp element_type,
+                                       bool adjustable,
                                        T_sp displacedTo,
-                                       T_sp displacedIndexOffset,
+                                       Fixnum_sp displacedIndexOffset,
                                        T_sp initialElement,
                                        bool initialElementSuppliedP) {
-  return MDArrayT_O::make_multi_dimensional(dimensions,initialElement,displacedTo,displacedIndexOffset);
+  if (displacedTo.notnilp()) adjustable = true;
+  if (element_type == cl::_sym_T_O) {
+    if (adjustable) return MDArrayT_O::make_multi_dimensional(dimensions,initialElement,displacedTo,displacedTo.notnilp(),displacedIndexOffset);
+    else return SimpleMDArrayT_O::make_multi_dimensional(dimensions,initialElement,_Nil<T_O>());
+  } else if (element_type == cl::_sym_double_float) {
+    double initialValue = SimpleVectorDouble_O::initial_element_from_object(initialElement,initialElementSuppliedP);
+    if (adjustable) return MDArrayDouble_O::make_multi_dimensional(dimensions,initialValue,displacedTo,displacedTo.notnilp(),displacedIndexOffset);
+    else return SimpleMDArrayDouble_O::make_multi_dimensional(dimensions,initialValue,_Nil<T_O>());
+  } else if (element_type == cl::_sym_bit) {
+    uint initialValue = SimpleBitVector_O::initial_element_from_object(initialElement,initialElementSuppliedP);
+    if (adjustable) return MDArrayBit_O::make_multi_dimensional(dimensions,initialValue,displacedTo,displacedTo.notnilp(),displacedIndexOffset);
+    else return SimpleMDArrayBit_O::make_multi_dimensional(dimensions,initialValue,_Nil<T_O>());
+  } else if (element_type == cl::_sym_base_char) {
+    claspChar initialValue = SimpleBaseString_O::initial_element_from_object(initialElement,initialElementSuppliedP);
+    if (adjustable) return MDArrayBaseChar_O::make_multi_dimensional(dimensions,initialValue,displacedTo,displacedTo.notnilp(),displacedIndexOffset);
+    else return SimpleMDArrayBaseChar_O::make_multi_dimensional(dimensions,initialValue,_Nil<T_O>());
+  } else if (element_type == cl::_sym_character) {
+    claspCharacter initialValue = SimpleCharacterString_O::initial_element_from_object(initialElement,initialElementSuppliedP);
+    if (adjustable) return MDArrayCharacter_O::make_multi_dimensional(dimensions,initialValue,displacedTo,displacedTo.notnilp(),displacedIndexOffset);
+    else return SimpleMDArrayCharacter_O::make_multi_dimensional(dimensions,initialValue,_Nil<T_O>());
+  }
+  SIMPLE_ERROR(BF("Handle creation of multi-dimensional array of type %s") % _rep_(element_type));
 };
 
 // ------------------------------------------------------------
@@ -2520,15 +2571,15 @@ SYMBOL_EXPORT_SC_(CorePkg,search_string);
 CL_LAMBDA(sub sub_start sub_end outer outer_start outer_end);
 CL_DOCSTRING("search for the first occurance of sub in outer");
 CL_DEFUN T_sp core__search_string(String_sp sub, size_t sub_start, T_sp sub_end, String_sp outer, size_t outer_start, T_sp outer_end) {
-  size_t_pair psub = sequenceStartEnd(core::_sym_search_string,sub->length(),sub_start,sub_end);
-  size_t_pair pouter = sequenceStartEnd(core::_sym_search_string,outer->length(),outer_start,outer_end);
+  size_t_pair psub = sequenceStartEnd(_sym_search_string,sub->length(),sub_start,sub_end);
+  size_t_pair pouter = sequenceStartEnd(_sym_search_string,outer->length(),outer_start,outer_end);
   TEMPLATE_STRING_DISPATCHER(sub,outer,template_search_string,psub.start,psub.end,pouter.start,pouter.end);
 };
 
 
 CL_LISPIFY_NAME("core:split");
 CL_DEFUN List_sp core__split(const string& all, const string &chars) {
-  vector<string> parts = core::split(all, chars);
+  vector<string> parts = split(all, chars);
   T_sp first = _Nil<T_O>();
   T_sp* cur = &first;
   for (vector<string>::iterator it = parts.begin(); it != parts.end(); it++) {

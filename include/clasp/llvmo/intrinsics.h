@@ -27,6 +27,11 @@ THE SOFTWARE.
 #ifndef llvmo_intrinsics_H
 #define llvmo_intrinsics_H
 
+namespace llvmo {
+  extern core::T_sp  global_arg0;
+  extern core::T_sp  global_arg1;
+  extern core::T_sp  global_arg2;
+};
 extern "C" {
 
 void cc_call_with_variable_bound(core::T_mv *result, core::T_O *symbol, core::T_O *value, core::T_O *thunk);

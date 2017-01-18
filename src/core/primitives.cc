@@ -1754,7 +1754,7 @@ Function_sp InvocationHistoryFrameIterator_O::function() {
 }
 
 CL_LISPIFY_NAME("frameIteratorArguments");
-CL_DEFMETHOD Vector_sp InvocationHistoryFrameIterator_O::arguments() {
+CL_DEFMETHOD SimpleVector_sp InvocationHistoryFrameIterator_O::arguments() {
   if (!this->isValid()) {
     SIMPLE_ERROR(BF("Invalid InvocationHistoryFrameIterator"));
   }

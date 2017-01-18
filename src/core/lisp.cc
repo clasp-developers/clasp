@@ -411,7 +411,7 @@ void run_quick_tests() {
   VectorTNs_sp vec9 = VectorTNs_O::make(5,_Nil<T_O>(),clasp_make_fixnum(0));
   for (size_t i=0; i<256; ++i) {
     printf("%s:%d    Building string of %lu size\n", __FILE__, __LINE__, i);
-    Str8Ns_sp s9 = Str8Ns_O::make(i,'A',true);
+    Str8Ns_sp s9 = Str8Ns_O::make(i,'A',true,_Nil<T_O>());
     printf("%s:%d     doing vectorPushExtend orig length=%lu total size=%lu\n", __FILE__, __LINE__, vec9->length(),vec9->arrayTotalSize());
     vec9->vectorPushExtend(s9);
     printf("%s:%d     done vectorPushExtend final length=%lu total size=%lu\n", __FILE__, __LINE__, vec9->length(),vec9->arrayTotalSize());

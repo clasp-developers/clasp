@@ -270,7 +270,8 @@ class variant(object):
             cfg.env.append_value('LINKFLAGS', os.getenv("CLASP_RELEASE_LINKFLAGS").split())
     def configure_for_debug(self,cfg):
         cfg.define("_DEBUG_BUILD",1)
-#        cfg.define("DEBUG_GUARD",1)
+        cfg.define("DEBUG_GUARD",1)
+        cfg.define("CONFIG_VAR_COOL",1)
 #        cfg.env.append_value('CXXFLAGS', [ '-O0', '-g' ])
         cfg.env.append_value('CXXFLAGS', [ '-O0', '-g' ])
         print("cfg.env.LTO_FLAG = %s" % cfg.env.LTO_FLAG)
@@ -474,6 +475,7 @@ def get_clasp_version(cfg):
     return run_program(cfg.env.GIT_BINARY, "describe", "--always").strip()
 
 def run_llvm_config(cfg, *args):
+    print( "LLVM_CONFIG_BINARY = %s" % cfg.env.LLVM_CONFIG_BINARY)
     result = run_program(cfg.env.LLVM_CONFIG_BINARY, *args)
     assert len(result) > 0
     return result.strip()
@@ -528,7 +530,10 @@ def configure(cfg):
     cfg.check_waf_version(mini = '1.7.5')
     update_exe_search_path(cfg)
     check_externals_clasp_version(cfg)
-    cfg.env["LLVM_CONFIG_BINARY"] = cfg.find_program("llvm-config", var = "LLVM_CONFIG")[0]
+    if (cfg.env.LLVM_CONFIG_BINARY):
+        pass
+    else:
+        cfg.env["LLVM_CONFIG_BINARY"] = cfg.find_program("llvm-config", var = "LLVM_CONFIG")[0]
     if (cfg.env.LLVM_CONFIG_DEBUG_PATH):
         print("LLVM_CONFIG_DEBUG_PATH is defined: %s" % cfg.env.LLVM_CONFIG_DEBUG_PATH)
         cfg.env["LLVM_CONFIG_BINARY_FOR_LIBS"] = cfg.env.LLVM_CONFIG_DEBUG_PATH

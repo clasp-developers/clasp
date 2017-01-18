@@ -196,7 +196,7 @@ gctools::Tagged ltvc_make_array(gctools::ConstantsTable* holder, size_t index,
   {
     val = core::SimpleVector_O::make(oCar(dimensions).unsafe_fixnum(),_Nil<core::T_O>(),true);
   } else {
-    val = core::MDArrayT_O::make_multi_dimensional(dimensions,_Nil<core::T_O>(),_Nil<core::T_O>(), _Nil<core::T_O>() );
+    val = core::SimpleMDArrayT_O::make_multi_dimensional(dimensions,_Nil<core::T_O>(),_Nil<core::T_O>());
   }
   return holder->set(index,val.tagged_());
 }
