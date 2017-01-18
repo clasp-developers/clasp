@@ -277,40 +277,39 @@ This interprets the tags and generates objects that are used to generate code."
                                              cur-declare
                                              cur-docstring)
              (let* ((packaged-function-name
-                     (maybe-override-name
-                      cur-namespace-tag
-                      cur-name
-                      (packaged-name cur-namespace-tag tag packages)
-                      packages))
-                    (namespace (tags:namespace% cur-namespace-tag))
-                    (signature (tags:signature-text% tag))
-                    (signature-text (tags:signature-text% tag))
-                    (lambda-list (or (tags:maybe-lambda-list cur-lambda)
-                                     (parse-lambda-list-from-signature signature-text)))
-                    (declare-form (tags:maybe-declare cur-declare))
-                    (docstring (tags:maybe-docstring cur-docstring)))
-               (multiple-value-bind (function-name full-function-name simple-function)
-                   (extract-function-name-from-signature signature-text tag)
-                 (declare (ignore function-name))
-                 (pushnew (make-instance 'expose-defun
-                                         :namespace% namespace
-                                         :lisp-name% packaged-function-name
-                                         :function-name% full-function-name
-                                         :file% (tags:file% tag)
-                                         :line% (tags:line% tag)
-                                         :character-offset% (tags:character-offset% tag)
-                                         :lambda-list% lambda-list
-                                         :declare% declare-form
-                                         :docstring% docstring
-                                         :provide-declaration% simple-function
-                                         :signature% signature)
-                          functions
-                          :test #'string=
-                          :key #'lisp-name% ))
-               (setf cur-lambda nil
-                     cur-declare nil
-                     cur-docstring nil
-                     cur-name nil)))
+                     (maybe-override-name cur-namespace-tag
+                                          cur-name
+                                          (packaged-name cur-namespace-tag tag packages)
+                                          packages)))
+               (let* ((namespace (tags:namespace% cur-namespace-tag))
+                     (signature (tags:signature-text% tag))
+                     (signature-text (tags:signature-text% tag))
+                     (lambda-list (or (tags:maybe-lambda-list cur-lambda)
+                                      (parse-lambda-list-from-signature signature-text)))
+                     (declare-form (tags:maybe-declare cur-declare))
+                     (docstring (tags:maybe-docstring cur-docstring)))
+                 (multiple-value-bind (function-name full-function-name simple-function)
+                     (extract-function-name-from-signature signature-text tag)
+                   (declare (ignore function-name))
+                   (pushnew (make-instance 'expose-defun
+                                           :namespace% namespace
+                                           :lisp-name% packaged-function-name
+                                           :function-name% full-function-name
+                                           :file% (tags:file% tag)
+                                           :line% (tags:line% tag)
+                                           :character-offset% (tags:character-offset% tag)
+                                           :lambda-list% lambda-list
+                                           :declare% declare-form
+                                           :docstring% docstring
+                                           :provide-declaration% simple-function
+                                           :signature% signature)
+                            functions
+                            :test #'string=
+                            :key #'lisp-name% ))
+                 (setf cur-lambda nil
+                       cur-declare nil
+                       cur-docstring nil
+                       cur-name nil))))
             (tags:cl-extern-defun-tag
              (error-if-bad-expose-info-setup tag cur-name cur-lambda cur-declare cur-docstring)
              (let* ((packaged-function-name
@@ -571,10 +570,7 @@ This interprets the tags and generates objects that are used to generate code."
           (error "While parsing tag from ~a:~d - ~a"
                  (tags:file% tag)
                  (tags:line% tag)
-                 (apply #'format
-                        nil
-                        (simple-condition-format-control e)
-                        (simple-condition-format-arguments e))))))
+                 e))))
     (values (order-packages-by-use packages-to-create) functions symbols classes enums initializers)))
                                                                                          
                                                                                          
