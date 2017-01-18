@@ -969,9 +969,8 @@ when this is t a lot of graphs will be generated.")
             (let ((cleavir-ir-graphviz::*types* types))
               (quick-draw-hir init-instr "hir-after-ti"))))
       (error (c)
-        (warn "Cannot infer types in ~s: ~s"
-              init-instr
-              c))))
+        nil
+        #+(or)(warn "Cannot infer types in ~s: ~s" init-instr c))))
   ;; delete the-instruction and the-values-instruction
   (cleavir-typed-transforms:delete-the init-instr)
   (quick-draw-hir init-instr "hir-after-delete-the")
