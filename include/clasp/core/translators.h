@@ -24,6 +24,24 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
+
+// PATTERN FOR FROM_OBJECT TRANSLATORS:
+//
+// Fixnum not_fixnum_error(core::T_sp o) {
+//     TYPE_ERROR(o,cl::_sym_fixnum);
+// }
+//
+// template <>
+// struct from_object<unsigned long, std::true_type> {
+//     typedef unsigned long ExpectedType;
+//     typedef unsigned long DeclareType;
+//
+//     DeclareType _v;
+//     from_object() : _v( o.fixnump() ? o.unsafe_fixnum() : not_fixnum_error(o) ) {};
+// };
+
+
+
 #ifndef core_translators_H
 #define core_translators_H
 
@@ -33,6 +51,8 @@ THE SOFTWARE.
 //   From object translators to and from Plain Old Data types
 //
 
+#include <cstdint>
+
 #include <clasp/core/predicates.h>
 #include <clasp/core/clasp_gmpxx.h>
 #include <clasp/core/glue.h>
@@ -40,39 +60,103 @@ THE SOFTWARE.
 #include <clasp/core/numbers.h>
 #include <clasp/core/array.fwd.h>
 
-
-namespace cl {
-  extern core::Symbol_sp& _sym_fixnum;
-};
-
-namespace core {
-  Character_sp clasp_make_character(claspCharacter c);
-};
-
 namespace translate {
-#if 0
-    template <>
-    struct	from_object<long int,std::true_type>
-    {
-	typedef	long int ExpectedType;
-	typedef	long int DeclareType;
-	DeclareType _v;
-#if 0
-        from_object(core::T_sp* oP,std::true_type) : _v((*o)->as<core::Integer_O>()->as<long int>())
-        from_object() : _v(0) {};
-        void set(core::T_sp o) { this->_v = o->as<core::Integer_O>()->as_LongLongInt();};
-	from_object(core::T_sp o)
-	{_G();
-	    if ( core::Fixnum_sp fn = o.asOrNull<core::Fixnum_O>() )
-	    {
-		this->_v = (long int)(fn->get());
-		return;
-	    }
-	    SIMPLE_ERROR(BF("Add support to convert other types to long int"));
-	}
-#endif
-    };
-#endif
+
+  // TYPE ERRORS
+
+  core::Fixnum not_fixnum_error( core::T_sp o )
+  {
+    TYPE_ERROR( o, cl::_sym_fixnum );
+  }
+
+  // FROM_OBJECT TRANSLATORS
+
+  template <>
+  struct from_object< short, std::true_type >
+  {
+    typedef short ExpectedType;
+    typedef short DeclareType;
+
+    DeclareType _v;
+    from_object() : _v( o.fixnump() ? o.unsafe_fixnum() : not_fixnum_error(o) ) {};
+  };
+
+  template <>
+  struct from_object< unsigned short, std::true_type >
+  {
+    typedef unsigned short ExpectedType;
+    typedef unsigned short DeclareType;
+
+    DeclareType _v;
+    from_object() : _v( o.fixnump() ? o.unsafe_fixnum() : not_fixnum_error(o) ) {};
+  };
+
+  template <>
+  struct from_object< int, std::true_type >
+  {
+    typedef int ExpectedType;
+    typedef int DeclareType;
+
+    DeclareType _v;
+    from_object() : _v( o.fixnump() ? o.unsafe_fixnum() : not_fixnum_error(o) ) {};
+  };
+
+  template <>
+  struct from_object< unsigned int, std::true_type >
+  {
+    typedef unsigned int ExpectedType;
+    typedef unsigned int DeclareType;
+
+    DeclareType _v;
+    from_object() : _v( o.fixnump() ? o.unsafe_fixnum() : not_fixnum_error(o) ) {};
+  };
+
+  template <>
+  struct from_object< long, std::true_type >
+  {
+    typedef int ExpectedType;
+    typedef int DeclareType;
+
+    DeclareType _v;
+    from_object() : _v( o.fixnump() ? o.unsafe_fixnum() : not_fixnum_error(o) ) {};
+  };
+
+  template <>
+  struct from_object< unsigned long, std::true_type >
+  {
+    typedef unsigned long ExpectedType;
+    typedef unsigned long DeclareType;
+
+    DeclareType _v;
+    from_object() : _v( o.fixnump() ? o.unsafe_fixnum() : not_fixnum_error(o) ) {};
+  };
+
+  template <>
+  struct from_object< long long, std::true_type >
+  {
+    typedef int ExpectedType;
+    typedef int DeclareType;
+
+    DeclareType _v;
+    from_object() : _v( o.fixnump() ? o.unsafe_fixnum() : clasp_to_longlong( o ) ) {};
+  };
+
+  template <>
+  struct from_object< unsigned long long, std::true_type >
+  {
+    typedef unsigned long long ExpectedType;
+    typedef unsigned long long DeclareType;
+
+    DeclareType _v;
+    from_object() : _v( o.fixnump() ? o.unsafe_fixnum() : clasp_to_ulonglong( o ) ) {};
+  };
+
+
+
+
+
+
+
 
 template <>
 struct from_object<uint, std::true_type> {
@@ -95,71 +179,6 @@ struct from_object<uint, std::true_type> {
  from_object(core::T_sp o) : _v(core::clasp_to_int(gc::As<core::Integer_sp>(o))){};
  };
 
-
- template <>
-   struct from_object<short, std::true_type> {
-   typedef short DeclareType;
-   DeclareType _v;
-   from_object(core::T_sp o) {
-     int v = core::clasp_to_int(gc::As<core::Integer_sp>(o));
-     if (v >= std::numeric_limits<short int>::min() && v <= std::numeric_limits<short int>::max() ) {
-       this->_v = v;
-       return;
-     }
-     SIMPLE_ERROR(BF("Could not convert %d to short") % v);
-   }
- };
-
- template <>
-   struct from_object<ushort, std::true_type> {
-   typedef ushort DeclareType;
-   DeclareType _v;
-   from_object(core::T_sp o) {
-     int v = core::clasp_to_int(gc::As<core::Integer_sp>(o));
-     if (v >= 0 && v <= std::numeric_limits<unsigned short int>::max() ) {
-       this->_v = v;
-       return;
-     }
-     SIMPLE_ERROR(BF("Could not convert %d to ushort") % v);
-   }
- };
-
- template <>
-   struct from_object<gc::Fixnum, std::true_type> {
-   typedef gc::Fixnum DeclareType;
-   DeclareType _v;
- from_object(core::T_sp o) : _v(core::clasp_to_fixnum(core::Fixnum_sp(o))){};
- };
-
-#if 0
- template <>
-   struct	from_object<core::LongLongInt,std::true_type>
- {
-   typedef	core::LongLongInt		ExpectedType;
-   typedef	core::LongLongInt		DeclareType;
-   DeclareType _v;
- from_object() : _v(0) {};
-   void set(core::T_sp o) { this->_v = o.as<core::Integer_O>()->as_LongLongInt();};
-   from_object(core::T_sp o)
-   {_G();
-     if ( core::Fixnum_sp fn = o.asOrNull<core::Fixnum_O>() )
-     {
-       this->_v = fn->get();
-       return;
-     }
-     SIMPLE_ERROR(BF("Add support to convert other types to LongLongInt"));
-   }
- };
-
-#endif
-
- template <>
-   struct from_object<unsigned long long, std::true_type> {
-   typedef unsigned long long ExpectedType;
-   typedef unsigned long long DeclareType;
-   DeclareType _v;
- from_object(T_P o) : _v(core::clasp_to_ulonglong(gc::As<core::Integer_sp>(o))) {}
- };
 
  template <>
    struct from_object<unsigned long, std::true_type> {

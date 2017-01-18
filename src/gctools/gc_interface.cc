@@ -97,7 +97,6 @@ typedef bool _Bool;
 #include <clasp/core/random.h>
 #include <clasp/core/weakKeyMapping.h>
 #include <clasp/core/weakHashTable.h>
-#include <clasp/core/bitVector.h>
 #include <clasp/core/smallMultimap.h>
 #include <clasp/core/funcallableStandardClass.h>
 #include <clasp/core/structureClass.h>
@@ -141,6 +140,7 @@ typedef bool _Bool;
 #include <clasp/core/pathname.h>
 #include <clasp/core/sharpEqualWrapper.h>
 #include <clasp/core/weakHashTable.h>
+#include <clasp/core/intArray.h>
 #include <clasp/core/fli.h>
 #include <clasp/gctools/gc_boot.h>
 

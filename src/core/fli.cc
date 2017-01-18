@@ -75,7 +75,7 @@ THE SOFTWARE.
 #include <clasp/core/fli.h>
 #include <clasp/core/numbers.h>
 #include <clasp/core/character.h>
-#include <clasp/core/str.h>
+#include <clasp/core/array.h>
 #include <clasp/core/designators.h>
 #include <clasp/llvmo/intrinsics.h>
 
