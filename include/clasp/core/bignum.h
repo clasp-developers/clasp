@@ -98,6 +98,7 @@ public:
   Bignum get() const;
   Bignum get_or_if_nil_default(Bignum default_value) const;
   Number_sp abs_() const;
+  Number_sp rational_() const final { return this->asSmartPtr(); };
   void increment(gc::Fixnum i) { this->_value += i; };
   int sign() const { return this->_value > 0 ? 1 : (this->_value < 0 ? -1 : 0); };
 
