@@ -40,6 +40,12 @@ THE SOFTWARE.
 
 namespace core {
 
+CL_DEFUN T_sp clos__getFuncallableInstanceFunction(T_sp obj) {
+  if (Instance_sp iobj = obj.asOrNull<Instance_O>()) {
+    return iobj->userFuncallableInstanceFunction();
+  }
+  SIMPLE_ERROR(BF("You can only call userFuncallableInstanceFunction on instances - you tried to call it on a: %s") % _rep_(obj));
+};
 
 CL_DEFUN T_sp clos__setFuncallableInstanceFunction(T_sp obj, T_sp func) {
   if (Instance_sp iobj = obj.asOrNull<Instance_O>()) {
@@ -307,6 +313,16 @@ T_sp Instance_O::setFuncallableInstanceFunction(T_sp functionOrT) {
     Instance_O::ensureClosure(&user_function_dispatch);
   }
   return ((this->sharedThis<Instance_O>()));
+}
+
+T_sp Instance_O::userFuncallableInstanceFunction() const
+{
+  if (this->_isgf == ECL_USER_DISPATCH) {
+    T_sp user_dispatch_fn = this->_Slots[this->_Slots.size()-1];
+    return user_dispatch_fn;
+  }
+  // Otherwise return NIL
+  return _Nil<T_O>();
 }
 
 bool Instance_O::genericFunctionP() const {
