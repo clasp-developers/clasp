@@ -45,11 +45,12 @@
 
 // Match tags using (ptr&MATCH_TAG_MASK)==MATCH_TAG_EQ
 // These values are used in point
-#define POINTER_GENERAL_TAG 1
-#define POINTER_CONS_TAG    3
-  /*! A test for pointers has the form (potential_ptr&POINTER_TAG_MASK)==POINTER_TAG_EQ) */
-#define POINTER_TAG_MASK    1  
-#define POINTER_TAG_EQ      1
+#define POINTER_GENERAL_TAG 0x01
+#define POINTER_CONS_TAG    0x03
+  /*! A test for pointers has the form (potential_ptr&POINTER_TAG_MASK)==POINTER_TAG_EQ) 
+      This will recognize 0x01 and 0x03 and not 0x05 (VALIST_S)*/
+#define POINTER_TAG_MASK    0x05  
+#define POINTER_TAG_EQ      0x01
 
 ///------------------------------------------------------------
 /// USE_STATIC_ANALYZER_GLOBAL_SYMBOLS

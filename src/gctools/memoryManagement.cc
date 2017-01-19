@@ -51,6 +51,7 @@ std::vector<Immediate_info> get_immediate_info() {
   info.push_back(Immediate_info(kind_single_float,"SINGLE_FLOAT"));
   info.push_back(Immediate_info(kind_character,"CHARACTER"));
   info.push_back(Immediate_info(kind_cons,"CONS"));
+  info.push_back(Immediate_info(kind_va_list_s,"VA_LIST_S"));
   if ( (info.size()+1) != kind_first_general ) {
     printf("get_immediate_info does not set up all of the immediate types\n");
     abort();

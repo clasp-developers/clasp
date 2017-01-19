@@ -110,12 +110,20 @@ Set this to other IRBuilders to make code go where you want")
   (let ((find (assoc name info)))
     (or find (error "Could not find ~a in cxx-data-structures-info --> ~s~%" name info))
     (cdr find)))
+(defvar +fixnum-stamp+ (get-cxx-data-structure-info :fixnum-stamp))
+(defvar +cons-stamp+ (get-cxx-data-structure-info :cons-stamp))
+(defvar +valist_s-stamp+ (get-cxx-data-structure-info :va_list_s-stamp))
+(defvar +character-stamp+ (get-cxx-data-structure-info :character-stamp))
+(defvar +single-float-stamp+ (get-cxx-data-structure-info :single-float-stamp))
+(defvar +stamp-shift+ (get-cxx-data-structure-info :stamp-shift))
+
 (defvar +fixnum-mask+ (get-cxx-data-structure-info :fixnum-mask))
 (defvar +tag-mask+ (get-cxx-data-structure-info :tag-mask))
 (defvar +immediate-mask+ (get-cxx-data-structure-info :immediate-mask))
 (defvar +cons-tag+ (get-cxx-data-structure-info :cons-tag))
-(defvar +valist-tag+ (get-cxx-data-structure-info :valist-tag))
+(defvar +VaList_S-tag+ (get-cxx-data-structure-info :valist-tag))
 (defvar +fixnum-tag+ (get-cxx-data-structure-info :fixnum-tag))
+(defvar +fixnum1-tag+ (get-cxx-data-structure-info :fixnum1-tag))
 (defvar +character-tag+ (get-cxx-data-structure-info :character-tag))
 (defvar +single-float-tag+ (get-cxx-data-structure-info :single-float-tag))
 (defvar +general-tag+ (get-cxx-data-structure-info :general-tag))
@@ -154,10 +162,6 @@ Set this to other IRBuilders to make code go where you want")
       (error "The ~a size ~a is not a multiple of sizeof(void*) ~a"
              type size +void*-size+))
     (make-list num-pointers :initial-element +i8*+)))
-
-(defvar +VaList_S+ (llvm-sys:struct-type-get *llvm-context* (build-list-of-pointers +VaList_S-size+ "VaList") nil))
-;;;(defvar +VaList_S+ (llvm-sys:struct-type-get *llvm-context* (list +vtable*+ +va_list+) nil)) ;; +size_t+ +t*+ +bool+) nil))
-(defvar +VaList_S*+ (llvm-sys:type-get-pointer-to +VaList_S+))
 
 (defvar +sp-counted-base+ (llvm-sys:struct-type-get *llvm-context* (list +i32+ +i32+) nil)) ;; "sp-counted-base-ty"
 (defvar +sp-counted-base-ptr+ (llvm-sys:type-get-pointer-to +sp-counted-base+))
@@ -274,8 +278,28 @@ Boehm and MPS use a single pointer"
 (defvar +afsp+ +tsp+)
 (defvar +afsp*+ +tsp*+)
 
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Stuff needed for generic functions
+;;;
+;;;
+(progn
+  #+X86-64
+  (defvar +va_list+ (llvm-sys:struct-type-get *llvm-context* (list +i32+ +i32+ +i8*+ +i8*+) nil) "X86-64")
+  #-X86-64
+  (error "I need a va_list struct definition for this system")
+
+  (defvar +va_list*+ (llvm-sys:type-get-pointer-to +va_list+))
+  (defvar +VaList_S+ (llvm-sys:struct-type-get *llvm-context* (list +vtable*+ +va_list+) nil))
+  (defvar +VaList_S*+ (llvm-sys:type-get-pointer-to +VaList_S+))
+
+  (defvar +fn-gf+ (llvm-sys:function-type-get +tmv+ (list +t*+ +t*+))
+    "Function prototype for generic functions")
+  (defvar +fn-gf-arguments+ (list "gf" "args"))
+  )
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
@@ -364,6 +388,7 @@ Boehm and MPS use a single pointer"
   "An array of pointers to the function prototype")
 (defvar +fn-prototype*[2]+ (llvm-sys:array-type-get +fn-prototype*+ 2)
   "An array of pointers to the function prototype")
+
 
 ;;
 ;; Define the InvocationHistoryFrame type for LispCompiledFunctionIHF
@@ -742,6 +767,10 @@ and initialize it with an array consisting of one function pointer."
   (primitive-nounwind module "llvm.ssub.with.overflow.i32" +{i32.i1}+ (list +i32+ +i32+))
   (primitive-nounwind module "llvm.ssub.with.overflow.i64" +{i64.i1}+ (list +i64+ +i64+))
   
+  (primitive-nounwind module "llvm.va_copy" +void+ (list +i8*+ +i8*+))
+  (primitive-nounwind module "llvm.va_start" +void+ (list +i8*+))
+  (primitive-nounwind module "llvm.va_end" +void+ (list +i8*+))
+
   (primitive-nounwind module "copyLoadTimeValue" +void+ (list +tsp*-or-tmv*+ +ltv**+ +size_t+))
   (primitive-nounwind module "loadTimeValueReference" +tsp*+ (list +tsp*+ +size_t+))
   (primitive-nounwind module "getLoadTimeValue" +void+ (list +tsp*-or-tmv*+ +ltv**+ +i32+))
@@ -767,6 +796,7 @@ and initialize it with an array consisting of one function pointer."
 
   ;; Primitives for Cleavir code
   
+  (primitive          module "cc_bad_tag" +void+ (list +t*+ +t*+ +t*+)) ;; bad ptr, gf gf-args
   (primitive-nounwind module "cc_getPointer" +i8*+ (list +t*+))
   (primitive-nounwind module "cc_setTmvToNil" +void+ (list +tmv*+))
   (primitive-nounwind module "cc_precalcSymbol" +t*+ (list +ltv**+ +size_t+))

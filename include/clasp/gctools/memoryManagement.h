@@ -170,7 +170,8 @@ calculate IsA relationships using simple GCKindEnum range comparisons.
                  KIND_SINGLE_FLOAT = 2,
                  KIND_CHARACTER = 3,
                  KIND_CONS = 4,
-                 KIND_max = 4 } GCKindEnum; // minimally define this GCKind
+                 KIND_VA_LIST_S = 5,
+                 KIND_max = 5 } GCKindEnum; // minimally define this GCKind
 #else
   typedef
  #define GC_ENUM

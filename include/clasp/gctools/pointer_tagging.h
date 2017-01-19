@@ -121,6 +121,7 @@ namespace gctools {
 /* The rest of the bits are the fixnum */
   static const uintptr_t tag_mask    = ZERO_TAG_MASK; // BOOST_BINARY(111);
   static const uintptr_t fixnum_tag  = BOOST_BINARY(00); // x00 means fixnum
+  static const uintptr_t fixnum1_tag  = BOOST_BINARY(100); // x100 means fixnum odd
   static const uintptr_t fixnum_mask = BOOST_BINARY(11);
 /*! The pointer tags, that point to objects that the GC manages are general_tag and cons_tag
 Robert Strandh suggested a separate tag for CONS cells so that there would be a quick CONSP test
@@ -131,9 +132,6 @@ for a CONS cell*/
   /*! A test for pointers has the form (potential_ptr&POINTER_TAG_MASK)==POINTER_TAG_EQ) */
   static const uintptr_t pointer_tag_mask = POINTER_TAG_MASK; 
   static const uintptr_t pointer_tag_eq   = POINTER_TAG_EQ;
- /*! code_tag is a tag for a raw code in memory - remove the tag and call the resulting pointer
-*/
-  static const uintptr_t unused0_tag = BOOST_BINARY(10);
 
  /*! gc_tag is used for headerless objects to indicate that this word is
 used by the garbage collector */
@@ -148,11 +146,11 @@ ABI dependent behavior into a single header file so that it can be implemented f
 ABI's  */
   static const uintptr_t valist_tag = BOOST_BINARY(101); // means a valist
                                                        /*! Immediate value tags */
-  static const uintptr_t immediate_mask   = BOOST_BINARY(11111);
-  static const uintptr_t character_tag    = BOOST_BINARY(00110); // Character
-  static const uintptr_t character_shift  = 5;
-  static const uintptr_t single_float_tag = BOOST_BINARY(01110); // single-float
-  static const uintptr_t single_float_shift = 5;
+  static const uintptr_t immediate_mask   = BOOST_BINARY(111);
+  static const uintptr_t character_tag    = BOOST_BINARY(010); // Character
+  static const uintptr_t character_shift  = 3;
+  static const uintptr_t single_float_tag = BOOST_BINARY(110); // single-float
+  static const uintptr_t single_float_shift = 3;
   static const uintptr_t single_float_mask = 0x1FFFFFFFFF; // single-floats are in these 32+5bits
 
   struct Immediate_info {
@@ -179,7 +177,8 @@ ABI's  */
   static const uintptr_t kind_single_float = 2;
   static const uintptr_t kind_character = 3;
   static const uintptr_t kind_cons = 4;
-  static const uintptr_t kind_first_general  = 5;
+  static const uintptr_t kind_va_list_s = 5;
+  static const uintptr_t kind_first_general  = 6;
   static const uintptr_t kind_last_general   = 4095;
   static const uintptr_t kind_first_alien    = 4096;
   static const uintptr_t kind_last_alien     = 65535;

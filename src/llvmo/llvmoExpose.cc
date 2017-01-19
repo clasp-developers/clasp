@@ -2450,6 +2450,9 @@ CL_LISPIFY_NAME(CreateGEP0);
 CL_LISPIFY_NAME(CreateGEPArray);
  CL_EXTERN_DEFMETHOD(IRBuilder_O,(llvm::Value *(IRBuilder_O::ExternalType::*) (llvm::Value *, llvm::ArrayRef<llvm::Value *>, const llvm::Twine &) )&IRBuilder_O::ExternalType::CreateGEP);
 
+CL_LISPIFY_NAME(CreateInBoundsGEPType);
+CL_EXTERN_DEFMETHOD(IRBuilder_O,(llvm::Value *(IRBuilder_O::ExternalType::*) (llvm::Type *, llvm::Value *, llvm::ArrayRef<llvm::Value *>, const llvm::Twine &) )&IRBuilder_O::ExternalType::CreateInBoundsGEP);
+
 ;
 
 }; // llvmo

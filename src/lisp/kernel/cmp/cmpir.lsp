@@ -78,10 +78,15 @@
 (defun irc-switch (go-value default-block num-cases)
   (llvm-sys:create-switch *irbuilder* go-value default-block num-cases nil nil))
 
+(defun irc-add-case (switch val block)
+  (llvm-sys:add-case switch val block))
+
 
 (defun irc-gep (array indices &optional (name "gep"))
   (llvm-sys:create-in-bounds-gep *irbuilder* array indices name ))
 
+(defun irc-in-bounds-gep-type (type value indices &optional (label "gep"))
+  (llvm-sys:create-in-bounds-geptype *irbuilder* type value indices label))
 
 (defun irc-exception-typeid** (name)
   (exception-typeid**-from-name name))
@@ -322,13 +327,6 @@
     (when fill-runtime-form
       (funcall fill-runtime-form new-env))
     new-env))
-
-
-
-
-
-
-
 
 
 (defun irc-new-block-environment (old-env &key name)
@@ -595,6 +593,9 @@
 (defun irc-add (lhs rhs &optional (label ""))
   (llvm-sys:create-add *irbuilder* lhs rhs label nil nil))
 
+(defun irc-sub (lhs rhs &optional (label ""))
+  (llvm-sys:create-sub *irbuilder* lhs rhs label nil nil))
+
 (defun irc-load (source &optional (label ""))
   (llvm-sys:create-load-value-twine *irbuilder* source label))
 
@@ -612,7 +613,7 @@
                   (tmv1 (llvm-sys:create-insert-value *irbuilder* tmv0 (jit-constant-uintptr_t 1) '(1) "tmv1")))
              #+(or)(bformat t "irc-store of val %s -> tmv1 %s to %s\n" val tmv1 destination)
              (llvm-sys:create-store *irbuilder* tmv1 destination nil)))
-          (t (error "!!! Mismatch in irc-store between val type %s and destination type %s\n" val-type dest-type))))))
+          (t (error "!!! Mismatch in irc-store between val type ~a and destination type ~a\n" val-type dest-type))))))
 
 (defun irc-phi (return-type num-reserved-values &optional (label "phi"))
   (llvm-sys:create-phi *irbuilder* return-type num-reserved-values label))
@@ -630,6 +631,11 @@
   (llvm-sys:create-trunc *irbuilder* value type label))
 
 
+(defun irc-and (x y &optional (label "and"))
+  (llvm-sys:create-and-value-value *irbuilder* x y label))
+
+(defun irc-va_arg (valist type &optional (name "vaarg"))
+  (llvm-sys:create-vaarg valist type name))
 
 
 
@@ -850,11 +856,11 @@ and then the irbuilder-alloca, irbuilder-body."
 		(t (break (bformat nil "Unknown cleanup code: %s" h))))
 	      ))))))
 
-(defun irc-pointer-cast (from to &optional (label ""))
-  (llvm-sys:create-pointer-cast *irbuilder* from to label))
+(defun irc-pointer-cast (from totype &optional (label ""))
+  (llvm-sys:create-pointer-cast *irbuilder* from totype label))
 
-(defun irc-bit-cast (from to &optional (label ""))
-  (llvm-sys:create-bit-cast *irbuilder* from to label))
+(defun irc-bit-cast (from totype &optional (label ""))
+  (llvm-sys:create-bit-cast *irbuilder* from totype label))
 
 (defun irc-irbuilder-status (&optional (irbuilder *irbuilder*) (label "current *irbuilder*"))
     (bformat t "%s -> %s\n" label irbuilder))
@@ -890,12 +896,9 @@ and then the irbuilder-alloca, irbuilder-body."
   "Switch to the alloca-insert-point and generate code to alloca a local variable.
 Within the _irbuilder_ dynamic environment...
 - insert the given alloca instruction using the provided irbuilder 
-- insert the initialization code right after the alloca
-- setup the :cleanup code for this alloca
-- finally restore the insert-point to the end of the basic block that we entered this macro with."
+- insert the initialization code (if provided) right after the alloca "
   (let ((alloca-sym (gensym))
-	(found-gs (gensym))
-	(metadata-env-gs (gensym)))
+	(found-gs (gensym)))
     `(with-irbuilder (,irbuilder)
        (let ((,alloca-sym ,alloca))
 	 (when ,init (funcall ,init ,alloca-sym))
@@ -1005,9 +1008,15 @@ Within the _irbuilder_ dynamic environment...
     :alloca (llvm-sys::create-alloca *irbuilder* +size_t+ (jit-constant-size_t 1) label)
     :init (lambda (a) (irc-store (jit-constant-size_t init-val) a))))
 
-(defun irc-alloca-VaList_S (env &key (irbuilder *irbuilder-function-alloca*) (label "VaList_S-"))
+(defun irc-alloca-va_list (&key (irbuilder *irbuilder-function-alloca*) (label "va_list"))
+  "Alloca space for an va_list"
+  (with-alloca-insert-point-no-cleanup irbuilder
+    :alloca (llvm-sys::create-alloca *irbuilder* +va_list+ (jit-constant-size_t 1) label)
+    :init nil))
+
+(defun irc-alloca-VaList_S (&key (irbuilder *irbuilder-function-alloca*) (label "VaList_S"))
   "Alloca space for an VaList_S"
-  (with-alloca-insert-point env irbuilder
+  (with-alloca-insert-point-no-cleanup irbuilder
     :alloca (llvm-sys::create-alloca *irbuilder* +VaList_S+ (jit-constant-size_t 1) label)
     :init nil))
 
@@ -1230,9 +1239,11 @@ If the *primitives* hashtable says that the function with (name) requires a firs
   (let ((primitive-entry (gethash name *primitives*)))
     (unless primitive-entry (error "Could not find function ~a in *primitives*" name))
     (let* ((required-first-argument-type (car (cadr primitive-entry)))
-	   (dispatch-name (dispatch-function-name name (if (and first-argument (equal required-first-argument-type +tsp*-or-tmv*+))
-							   (llvm-sys:get-type first-argument)
-							   nil))))
+	   (dispatch-name (dispatch-function-name
+                           name
+                           (if (and first-argument (equal required-first-argument-type +tsp*-or-tmv*+))
+                               (llvm-sys:get-type first-argument)
+                               nil))))
       (let ((f (llvm-sys:get-function module dispatch-name)))
         (or f (error "Could not llvm-sys:get-function ~a with name: ~a" dispatch-name name))
 	(if (llvm-sys:valid f)
