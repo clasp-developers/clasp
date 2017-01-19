@@ -2022,7 +2022,7 @@ bool SimpleBitVector_O::equal(T_sp other) const {
     if (this->length()!=sbv->length()) return false;
     return ranged_bit_vector_EQ_(*this,*sbv,0,this->length(),0,sbv->length());
   } else if (BitVectorNs_sp bvns = other.asOrNull<BitVectorNs_O>()) {
-    if (this->length()!=sbv->length()) return false;
+    if (this->length()!=bvns->length()) return false;
     AbstractSimpleVector_sp sv;
     size_t start, end;
     bvns->asAbstractSimpleVectorRange(sv,start,end);
