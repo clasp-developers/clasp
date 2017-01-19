@@ -123,9 +123,7 @@ CL_LAMBDA(arg);
 CL_DECLARE();
 CL_DOCSTRING("symbolValue");
 CL_DEFUN T_sp cl__symbol_value(Symbol_sp arg) {
-  if (!arg->boundP()) {
-    SIMPLE_ERROR(BF("Symbol %s@%p is unbound") % _rep_(arg) % (void *)arg.raw_());
-  }
+  if (!arg->boundP()) arg->symbolUnboundError();
   return arg->symbolValue();
 };
 
@@ -209,12 +207,13 @@ Symbol_sp Symbol_O::create_from_string(const string &nm) {
 
 
 CL_LISPIFY_NAME("makunbound");
-CL_DEFMETHOD void Symbol_O::makunbound() {
+CL_DEFMETHOD Symbol_sp Symbol_O::makunbound() {
   this->_Value = _Unbound<T_O>();
+  return this->asSmartPtr();
 }
 
 void Symbol_O::symbolUnboundError() const {
-  SIMPLE_ERROR(BF("Symbol %s is unbound\n") % this->_Name->get_std_string().c_str());
+  UNBOUND_VARIABLE_ERROR(this->_Name);
 }
 
 void Symbol_O::setf_plist(List_sp plist) {

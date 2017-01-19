@@ -158,6 +158,7 @@ struct _TRACE {
 
 #define PRINT_NOT_READABLE_ERROR(obj) ERROR(cl::_sym_printNotReadable, core::lisp_createList(kw::_sym_object, obj));
 #define CELL_ERROR(name) ERROR(cl::_sym_cellError, core::lisp_createList(kw::_sym_name, name))
+#define UNBOUND_VARIABLE_ERROR(name) ERROR(cl::_sym_unboundVariable, core::lisp_createList(kw::_sym_name, name))
 #define KEY_NOT_FOUND_ERROR(_key_) SIMPLE_ERROR(BF("Key %s not found") % _key_)
 #define CONTROL_ERROR() NO_INITIALIZERS_ERROR(cl::_sym_controlError);
 
