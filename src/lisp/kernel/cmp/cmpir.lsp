@@ -635,7 +635,8 @@
   (llvm-sys:create-and-value-value *irbuilder* x y label))
 
 (defun irc-va_arg (valist type &optional (name "vaarg"))
-  (llvm-sys:create-vaarg valist type name))
+  (llvm-sys:create-vaarg *irbuilder* valist type name))
+
 
 
 

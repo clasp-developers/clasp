@@ -146,6 +146,7 @@ Set this to other IRBuilders to make code go where you want")
     ((= 8 +uintptr_t-size+) +i64+)
     ((= 4 +uintptr_t-size+) +i32+)
     (t (error "Add support for size uintptr_t = ~a" sizeof-uintptr_t))))
+(defvar +uintptr_t*+ (llvm-sys:type-get-pointer-to +uintptr_t+))
 (defun make-uintptr_t (x)
   (and (> x most-positive-fixnum) (error "make sure the integer ~s fits in a +i64+" x))
   (cond
