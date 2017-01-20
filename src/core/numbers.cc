@@ -2716,6 +2716,25 @@ Number_sp DoubleFloat_O::sin_() const
     return clasp_make_single_float(_log1p(f));
   }
 
+// translated from ECL cl_rational
+Number_sp DoubleFloat_O::rational(double d) {
+  if (d == 0) {
+    return clasp_make_fixnum(0);
+  }
+  int e;
+  d = frexp(d, &e);
+  e -= DBL_MANT_DIG;
+  Number_sp x = _clasp_double_to_integer(ldexp(d,DBL_MANT_DIG));
+  if (e!=0) {
+    x = clasp_times(clasp_expt(clasp_make_fixnum(FLT_RADIX),
+                               clasp_make_fixnum(e)),
+                    x);
+  }
+  return x;
+}
+
+
+      
   Number_sp DoubleFloat_O::log1p_() const {
     double f = this->as_double_();
     if (std::isnan(f))
@@ -3305,5 +3324,21 @@ Number_sp DoubleFloat_O::sin_() const
   };
 
   // --- END OF TRANSLATORS ---
+
+};
+
+
+namespace core {
+
+CL_DEFUN T_sp cl__rational(T_sp num) {
+  if (num.fixnump()) return num;
+  if (num.single_floatp()) return DoubleFloat_O::rational(num.unsafe_single_float());
+  if (gc::IsA<Number_sp>(num)) return gc::As_unsafe<Number_sp>(num)->rational_();
+  TYPE_ERROR(num,cl::_sym_Number_O);
+};
+
+CL_DEFUN T_sp cl__rationalize(T_sp num) {
+  return cl__rational(num);
+};
 
 };

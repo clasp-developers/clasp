@@ -162,6 +162,8 @@ public: // Functions here
 
   T_sp setFuncallableInstanceFunction(T_sp functionOrT);
 
+  T_sp userFuncallableInstanceFunction() const;
+
   bool genericFunctionP() const;
 
   void describe(T_sp stream);

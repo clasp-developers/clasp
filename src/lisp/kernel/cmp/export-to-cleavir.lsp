@@ -27,7 +27,7 @@
           *the-module*
           +cons-tag+
           +fixnum-tag+
-          +valist-tag+
+          +Valist_S-tag+
           +single-float-tag+
           +character-tag+
           +general-tag+

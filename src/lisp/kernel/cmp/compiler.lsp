@@ -1541,6 +1541,13 @@ We could do more fancy things here - like if cleavir-clasp fails, use the clasp 
                 (compile-in-env name lambda-expression wrapped-env compile-hook)))
              ((compiled-function-p func)
               (values func nil nil))
+             ((core:cxx-instance-p func)
+              (let ((user-func (clos:get-funcallable-instance-function func)))
+                (when user-func
+                  (let ((compiled-user-func (compile nil user-func)))
+                    (when (not (eq user-func compiled-user-func))
+                      (clos:set-funcallable-instance-function func compiled-user-func)))))
+              (values func nil nil))
              (t (error "COMPILE doesn't know how to handle this type of function")))))
         (t (error "Illegal combination of arguments for compile: ~a ~a"
                   name definition)))

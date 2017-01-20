@@ -43,6 +43,7 @@ SYMBOL_EXPORT_SC_(ClosPkg,location_table);
 SYMBOL_EXPORT_SC_(ClosPkg,slot_value_set);
 SYMBOL_EXPORT_SC_(ClosPkg,slot_value);
 SYMBOL_EXPORT_SC_(ClosPkg,update_instance);
+SYMBOL_EXPORT_SC_(ClosPkg,dispatch_miss);
 
 
 

@@ -55,6 +55,7 @@ THE SOFTWARE.
 
 namespace cl {
 extern core::Symbol_sp& _sym_Integer_O; // CL:INTEGER
+extern core::Symbol_sp& _sym_Real_O; // CL:INTEGER
 };
 
 namespace core {
@@ -186,7 +187,7 @@ public:
   virtual Number_sp log1p_() const;
 
   virtual Number_sp sqrt_() const { SUBIMP(); };
-
+  virtual Number_sp rational_() const = 0;
   /*! Add one to the number */
   virtual Number_sp onePlus_() const { SUBIMP(); };
   /*! Subtrace one from the number */
@@ -220,7 +221,8 @@ public:
   virtual Number_sp tanh_() const { SUBIMP(); };
 
   virtual void sxhash_(HashGenerator &hg) const { SUBIMP(); };
-  DEFAULT_CTOR_DTOR(Number_O);
+  Number_O() {};
+  virtual ~Number_O() {};
 };
 
 SMART(Real);
@@ -236,7 +238,8 @@ public:
 
   virtual Number_sp conjugate_() const;
 
-  DEFAULT_CTOR_DTOR(Real_O);
+  Real_O() {};
+  virtual ~Real_O() {};
 };
 
 SMART(Rational);
@@ -261,7 +264,8 @@ public:
   virtual Number_sp cosh_() const;
   virtual Number_sp tanh_() const;
 
-  DEFAULT_CTOR_DTOR(Rational_O);
+  Rational_O() {};
+  virtual ~Rational_O() {};
 };
 
 SMART(Integer);
@@ -447,8 +451,9 @@ namespace core {
      virtual bool isnan_() const { SUBIMP(); };
      virtual bool isinf_() const { SUBIMP(); };
 
-     DEFAULT_CTOR_DTOR(Float_O);
-   };
+    Float_O() {};
+    virtual ~Float_O() {};
+  };
 
    SMART(ShortFloat);
    class ShortFloat_O : public Float_O {
@@ -597,27 +602,21 @@ namespace core {
    class DoubleFloat_O : public Float_O {
      LISP_CLASS(core, ClPkg, DoubleFloat_O, "double-float",Float_O);
 
-   public:
-#if defined(OLD_SERIALIZE)
-     void serialize(serialize::SNode node);
-#endif
-#if defined(XML_ARCHIVE)
-     void archiveBase(ArchiveP node);
-#endif // defined(XML_ARCHIVE)
-   private:
-     double _Value;
-
-   public:
-     static DoubleFloat_sp create(double nm) {
-       _G();
-       GC_ALLOCATE(DoubleFloat_O, v);
-       v->set(nm);
-       return v;
-     };
-
-   public:
-     NumberType number_type_() const { return number_DoubleFloat; };
-     void sxhash_(HashGenerator &hg) const;
+  public:
+  private:
+    double _Value;
+  public:
+    static DoubleFloat_sp create(double nm) {
+      _G();
+      GC_ALLOCATE(DoubleFloat_O, v);
+      v->set(nm);
+      return v;
+    };
+  public:
+    static Number_sp rational(double val);
+  public:
+    NumberType number_type_() const { return number_DoubleFloat; };
+    void sxhash_(HashGenerator &hg) const;
   //	virtual Number_sp copy() const;
      string __repr__() const;
      void set(double val) { this->_Value = val; };
@@ -657,16 +656,17 @@ namespace core {
 
      virtual Number_sp exp_() const;
 
-     virtual Number_sp sin_() const;
-     virtual Number_sp cos_() const;
-     virtual Number_sp tan_() const;
-     virtual Number_sp sinh_() const;
-     virtual Number_sp cosh_() const;
-     virtual Number_sp tanh_() const;
-
-     DEFAULT_CTOR_DTOR(DoubleFloat_O);
-   };
- };
+    virtual Number_sp sin_() const;
+    virtual Number_sp cos_() const;
+    virtual Number_sp tan_() const;
+    virtual Number_sp sinh_() const;
+    virtual Number_sp cosh_() const;
+    virtual Number_sp tanh_() const;
+    virtual Number_sp rational_() const final { return DoubleFloat_O::rational(this->_Value); };
+  DoubleFloat_O() : _Value(0.0) {};
+    virtual ~DoubleFloat_O() {};
+  };
+};
 
  namespace core {
    SMART(LongFloat);
@@ -761,21 +761,17 @@ namespace core {
      Real_sp _real;
      Real_sp _imaginary;
 
-   public:
-     static Complex_sp create(double r, double i) {
-       _G();
-       GC_ALLOCATE(Complex_O, v);
-       v->_real = DoubleFloat_O::create(r);
-       v->_imaginary = DoubleFloat_O::create(i);
-       return v;
-     };
-     static Complex_sp create(Real_sp r, Real_sp i) {
-       _G();
-       GC_ALLOCATE(Complex_O, v);
-       v->_real = r;
-       v->_imaginary = i;
-       return v;
-     }
+  public:
+    static Complex_sp create(double r, double i) {
+      DoubleFloat_sp dfr = DoubleFloat_O::create(r);
+      DoubleFloat_sp dfi = DoubleFloat_O::create(i);
+      GC_ALLOCATE_VARIADIC(Complex_O, v, dfr, dfi );
+      return v;
+    };
+    static Complex_sp create(Real_sp r, Real_sp i) {
+      GC_ALLOCATE_VARIADIC(Complex_O, v, r, i);
+      return v;
+    }
 
    public:
      NumberType number_type_() const { return number_Complex; };
@@ -788,12 +784,12 @@ namespace core {
 
      void sxhash_(HashGenerator &hg) const;
   //	virtual Number_sp copy() const;
-     string __repr__() const;
-     Number_sp signum_() const;
-     Number_sp abs_() const;
-     bool isnan_() const;
-
-   public:
+    string __repr__() const;
+    Number_sp signum_() const;
+    Number_sp abs_() const;
+    bool isnan_() const;
+    Number_sp rational_() const { TYPE_ERROR(this->asSmartPtr(),cl::_sym_Real_O);};
+  public:
   //	virtual	string	valueAsString_() const;
   //	virtual	void	setFromString( const string& str);
   //	virtual	bool	eqn(T_sp obj) const;
@@ -826,8 +822,11 @@ namespace core {
 
      virtual Number_sp conjugate_() const;
 
-     DEFAULT_CTOR_DTOR(Complex_O);
-   };
+  Complex_O(Real_sp r, Real_sp i) : _real(r), _imaginary(i) {};
+  Complex_O() : _real(clasp_make_single_float(0.0)), _imaginary(clasp_make_single_float(0.0)) {};
+    virtual ~Complex_O() {};
+                      
+  };
 
    SMART(Ratio);
    class Ratio_O : public Rational_O {
@@ -840,25 +839,24 @@ namespace core {
 #if defined(XML_ARCHIVE)
      void archiveBase(ArchiveP node);
 #endif // defined(XML_ARCHIVE)
-   GCPRIVATE:
-     Integer_sp _numerator;
-     Integer_sp _denominator;
-
-   public:
-     static Ratio_sp create(Integer_sp num, Integer_sp denom) {
-       GC_ALLOCATE(Ratio_O, v);
-       v->setf_numerator_denominator(num,denom);
-       return v;
-     };
-     static Ratio_sp create(mpz_class const &num, mpz_class const &denom) {
-       return Ratio_O::create(Integer_O::create(num),Integer_O::create(denom));
-     }
-     static Ratio_sp create(const char *str) {
-       GC_ALLOCATE(Ratio_O, r);
-       r->setFromString(str);
-       return r;
-     }
-   public:
+  GCPRIVATE:
+    Integer_sp _numerator;
+    Integer_sp _denominator;
+  public:
+    static Ratio_sp create(Integer_sp num, Integer_sp denom) {
+      GC_ALLOCATE(Ratio_O, v);
+      v->setf_numerator_denominator(num,denom);
+      return v;
+    };
+    static Ratio_sp create(mpz_class const &num, mpz_class const &denom) {
+      return Ratio_O::create(Integer_O::create(num),Integer_O::create(denom));
+    }
+    static Ratio_sp create(const char *str) {
+      GC_ALLOCATE(Ratio_O, r);
+      r->setFromString(str);
+      return r;
+    }
+  public:
     // Only useful for creating Ratio in fasl files.
      void setf_numerator_denominator(core::Integer_sp num, core::Integer_sp denom);
    public:
@@ -874,10 +872,11 @@ namespace core {
 
      void sxhash_(HashGenerator &hg) const;
   //	virtual Number_sp copy() const;
-     string __repr__() const;
-     Number_sp signum_() const;
-     Number_sp abs_() const;
-     bool isnan_() const;
+    string __repr__() const;
+    Number_sp signum_() const;
+    Number_sp abs_() const;
+    Number_sp rational_() const final { return this->asSmartPtr(); };
+    bool isnan_() const;
 
    public:
   //	virtual	string	valueAsString_() const;
@@ -897,12 +896,12 @@ namespace core {
        return clasp_plusp(this->_numerator);
      }
 
-     bool minusp_() const {
-       return clasp_minusp(this->_numerator);
-     }
-
-     DEFAULT_CTOR_DTOR(Ratio_O);
-   };
+    bool minusp_() const {
+      return clasp_minusp(this->_numerator);
+    }
+  Ratio_O() : _numerator(clasp_make_fixnum(0)), _denominator(clasp_make_fixnum(1)) {};
+    virtual ~Ratio_O() {};
+  };
 
    void clasp_deliver_fpe(int status);
 

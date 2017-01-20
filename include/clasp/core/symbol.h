@@ -149,7 +149,7 @@ CL_DEFMETHOD   bool specialP() const { return this->_IsSpecial; };
 
   inline bool boundP() const { return !this->_Value.unboundp(); };
 
-  void makunbound();
+  Symbol_sp makunbound();
 
   T_sp defparameter(T_sp obj);
   T_sp defconstant(T_sp obj);

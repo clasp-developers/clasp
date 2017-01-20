@@ -45,45 +45,6 @@ THE SOFTWARE.
 
 namespace core {
 
-/*! Trying to figure out dispatching.
-      ecl/src/c/eval.d:68 - calls functions in instance.entry
-	case t_instance:
-		switch (fun->instance.isgf) {
-		case ECL_STANDARD_DISPATCH:
-		case ECL_RESTRICTED_DISPATCH:
-			return _ecl_standard_dispatch(frame, fun);
-		case ECL_USER_DISPATCH:
-			fun = fun->instance.slots[fun->instance.length - 1];
-                        goto AGAIN;
-		case ECL_READER_DISPATCH:
-		case ECL_WRITER_DISPATCH:
-			return APPLY(narg, fun->instance.entry, sp);
-		default:
-			FEinvalid_function(fun);
-		}
-
-
-In ecl/src/c/interpreter.d  is the following code
-		case t_instance:
-			switch (reg0->instance.isgf) {
-			case ECL_STANDARD_DISPATCH:
-			case ECL_RESTRICTED_DISPATCH:
-				reg0 = _ecl_standard_dispatch(frame, reg0);
-				break;
-			case ECL_USER_DISPATCH:
-				reg0 = reg0->instance.slots[reg0->instance.length - 1];
-				goto AGAIN;
-			case ECL_READER_DISPATCH:
-			case ECL_WRITER_DISPATCH:
-				the_env->function = reg0;
-				reg0 = APPLY(narg, reg0->instance.entry, frame_aux.base);
-				break;
-			default:
-				FEinvalid_function(reg0);
-			}
-			break;
-    */
-
 SYMBOL_EXPORT_SC_(ClPkg, compute_applicable_methods);
 SYMBOL_SC_(ClosPkg, compute_applicable_methods_using_classes);
 SYMBOL_SC_(ClosPkg, compute_effective_method_function);

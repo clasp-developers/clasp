@@ -352,7 +352,7 @@ will put a value into target-ref."
   (irc-branch-to-and-begin-block (irc-basic-block-create "process-rest-arguments"))
   (if varest
       (with-target-reference-do (rest-ref rest-var new-env)
-        (let ((temp-valist (irc-alloca-VaList_S old-env)))
+        (let ((temp-valist (irc-alloca-VaList_S)))
           (irc-intrinsic "copyTspTptr"
                          rest-ref
                          (irc-intrinsic "cc_gatherVaRestArguments"

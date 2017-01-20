@@ -123,9 +123,7 @@ CL_LAMBDA(arg);
 CL_DECLARE();
 CL_DOCSTRING("symbolValue");
 CL_DEFUN T_sp cl__symbol_value(Symbol_sp arg) {
-  if (!arg->boundP()) {
-    SIMPLE_ERROR(BF("Symbol %s@%p is unbound") % _rep_(arg) % (void *)arg.raw_());
-  }
+  if (!arg->boundP()) arg->symbolUnboundError();
   return arg->symbolValue();
 };
 
@@ -155,8 +153,7 @@ Symbol_O::Symbol_O(bool dummy) : _HomePackage(_Nil<T_O>()),
                                  _IsSpecial(false),
                                  _IsConstant(false),
                                  _ReadOnlyFunction(false),
-                                 _PropertyList(_Nil<List_V>()) { //no guard
-}
+                                 _PropertyList(_Nil<List_V>()) {};
 
 Symbol_O::Symbol_O() : Base(),
                        _Name(gctools::smart_ptr<SimpleBaseString_O>()),
@@ -166,11 +163,8 @@ Symbol_O::Symbol_O() : Base(),
                        _SetfFunction(gctools::smart_ptr<Function_O>()),
                        _IsSpecial(false),
                        _IsConstant(false),
-                       _ReadOnlyFunction(false)
-                       // ,_PropertyList(gctools::smart_ptr<Cons_O>())
-{
-                        // nothing
-};
+                       _ReadOnlyFunction(false),
+                       _PropertyList(_Nil<List_V>()) {};
 
 void Symbol_O::finish_setup(Package_sp pkg, bool exportp, bool shadowp) {
   ASSERTF(pkg, BF("The package is UNDEFINED"));
@@ -213,12 +207,13 @@ Symbol_sp Symbol_O::create_from_string(const string &nm) {
 
 
 CL_LISPIFY_NAME("makunbound");
-CL_DEFMETHOD void Symbol_O::makunbound() {
+CL_DEFMETHOD Symbol_sp Symbol_O::makunbound() {
   this->_Value = _Unbound<T_O>();
+  return this->asSmartPtr();
 }
 
 void Symbol_O::symbolUnboundError() const {
-  SIMPLE_ERROR(BF("Symbol %s is unbound\n") % this->_Name->get_std_string().c_str());
+  UNBOUND_VARIABLE_ERROR(this->_Name);
 }
 
 void Symbol_O::setf_plist(List_sp plist) {
