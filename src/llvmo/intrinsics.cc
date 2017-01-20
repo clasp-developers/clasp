@@ -461,8 +461,39 @@ ALWAYS_INLINE core::T_O *cc_stack_enclose(void* closure_address,
   return functoid.raw_();
 }
 
+
+int cc_eql(core::T_O* x, core::T_O* y) {
+  // The eql part of the test only eq part was handled by caller
+  T_sp tx((gctools::Tagged)x);
+  T_sp ty((gctools::Tagged)y);
+  if (tx.single_floatp()) {
+    if (ty.single_floatp()) {
+      if (tx.unsafe_single_float()==ty.unsafe_single_float()) return 1;
+    }
+  } else if (gc::IsA<core::DoubleFloat_sp>(tx)) {
+    if (gc::IsA<core::DoubleFloat_sp>(ty)) {
+      if (gc::As_unsafe<core::DoubleFloat_sp>(tx)->get() == gc::As_unsafe<core::DoubleFloat_sp>(ty)->get()) {
+        return 1;
+      }
+    }
+  }
+  return 0;
 };
 
+void cc_bad_tag(core::T_O* gf, core::T_O* gf_args)
+{
+  printf("%s:%d  A bad tag was encountered - aborting\n", __FILE__, __LINE__ );
+  abort();
+};
+
+gctools::return_type cc_dispatch_effective_method(core::T_O* teffective_method, core::T_O* tgf, core::T_O* tgf_args_valist_s) {
+  core::T_sp effective_method((gctools::Tagged)teffective_method);
+  core::T_sp gf((gctools::Tagged)tgf);
+  core::T_sp gf_args((gctools::Tagged)tgf_args_valist_s);
+  return core::eval::funcall(effective_method,gf,gf_args);
+}
+
+};
 
 extern "C" {
 int tr_from_object_int(core::T_O* obj) {

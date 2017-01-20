@@ -542,6 +542,12 @@
 (defun irc-icmp-sgt (lhs rhs &optional (name ""))
   (llvm-sys:create-icmp-sgt *irbuilder* lhs rhs name))
 
+(defun irc-icmp-sge (lhs rhs &optional (name ""))
+  (llvm-sys:create-icmp-sge *irbuilder* lhs rhs name))
+
+(defun irc-icmp-sle (lhs rhs &optional (name ""))
+  (llvm-sys:create-icmp-sle *irbuilder* lhs rhs name))
+
 (defun irc-icmp-ne (lhs rhs &optional (name ""))
   (llvm-sys:create-icmp-ne *irbuilder* lhs rhs name))
 

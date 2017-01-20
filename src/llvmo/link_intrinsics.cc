@@ -1892,6 +1892,12 @@ T_mv cc_multiple_value_prog1_function(core::T_mv* result, core::T_O* tfunc1, cor
 #endif
 
 
+gctools::return_type cc_dispatch_miss(core::T_O* gf, core::T_O* gf_valist_s)
+{
+  T_sp tgf((gctools::Tagged)gf);
+  T_sp tgf_valist_s((gctools::Tagged)gf_valist_s);
+  return core::eval::funcall(clos::_sym_dispatch_miss,tgf,tgf_valist_s);
+}
 
 
 void clasp_terminate(const char *file, size_t line, size_t column, const char *func) {
