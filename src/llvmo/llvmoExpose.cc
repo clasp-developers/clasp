@@ -2917,6 +2917,26 @@ CL_DEFUN core::Function_sp finalizeEngineAndRegisterWithGcAndGetCompiledFunction
   return functoid;
 }
 
+
+
+CL_DEFUN core::Function_sp finalizeEngineAndGetDispatchFunction(ExecutionEngine_sp oengine, core::T_sp functionName, Function_sp fn, GlobalVariable_sp literalArray, core::HashTable_sp eql_specializer, core::HashTable_sp effective_methods) {
+  // Stuff to support MCJIT
+  llvm::ExecutionEngine *engine = oengine->wrappedPtr();
+  finalizeEngineAndTime(engine);
+  ASSERTF(fn.notnilp(), BF("The Function must never be nil"));
+  void *p = engine->getPointerToFunction(fn->wrappedPtr());
+  if (!p) {
+    SIMPLE_ERROR(BF("Could not get a pointer to the function finalizeEngineAndGetDispatchFunction: %s") % _rep_(functionName));
+  }
+  void* literal_array_ptr = engine->getPointerToGlobal(literalArray->wrappedPtr());
+  printf("%s:%d:%s    Set up the literals table from the eql_specializers and effective_methods\n", __FILE__, __LINE__, __FUNCTION__ );
+  
+  
+  core::DispatchFunction_fptr_type dispatchFunction = (core::DispatchFunction_fptr_type)(p);
+  gctools::smart_ptr<core::CompiledDispatchFunction_O> functoid = gctools::GC<core::CompiledDispatchFunction_O>::allocate(functionName, kw::_sym_dispatch_function, dispatchFunction );
+  return functoid;
+}
+
 struct CtorStruct {
   int priority;
   void (*ctor)();

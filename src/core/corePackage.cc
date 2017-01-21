@@ -649,6 +649,7 @@ SYMBOL_SC_(CorePkg, anonymous);
 SYMBOL_EXPORT_SC_(ClPkg, declare);
 SYMBOL_EXPORT_SC_(KeywordPkg, macro);
 SYMBOL_EXPORT_SC_(KeywordPkg, function);
+SYMBOL_EXPORT_SC_(KeywordPkg, dispatch_function);
 SYMBOL_SC_(CorePkg, macro);
 SYMBOL_EXPORT_SC_(ClPkg, function);
 SYMBOL_EXPORT_SC_(ClPkg, variable);
