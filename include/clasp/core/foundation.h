@@ -677,6 +677,9 @@ void lisp_throwLispError(const string &str);
 void lisp_throwLispError(const boost::format &fmt);
 };
 
+#define EXTERN_SYMBOL(sym) extern core::Symbol_sp& _sym_##sym;
+
+
 namespace core {
 
 typedef double real; // For now real is double, may be float in the future
