@@ -199,8 +199,8 @@ struct register_foreign_type {
 
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
-inline void setup_endianess_info(void) {
-
+inline void setup_endianess_info(void)
+{
   core::List_sp features = cl::_sym_STARfeaturesSTAR->symbolValue();
 
   if ( htonl(47) == 47 ) {
@@ -222,7 +222,8 @@ void register_foreign_type_spec( core::VectorObjects_sp sp_tst,
                                  const std::string& lisp_name,
                                  const size_t size,
                                  const size_t alignment,
-                                 const std::string& cxx_name ) {
+                                 const std::string& cxx_name )
+{
 
   std::locale loc = std::locale("C");
   std::string tmp_str;
@@ -257,7 +258,7 @@ void register_foreign_type_spec( core::VectorObjects_sp sp_tst,
                                _Nil<core::T_O>(),
                                _Nil<core::T_O>() );
 
-  sp_tst->setf_elt( n_index, sp_fts->asSmartPtr() );
+  sp_tst->rowMajorAset( n_index, sp_fts->asSmartPtr() );
 };
 
 // ---------------------------------------------------------------------------
@@ -266,13 +267,15 @@ void register_foreign_type_spec( core::VectorObjects_sp sp_tst,
 
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
-inline void register_foreign_types( void ) {
+inline void register_foreign_types( void )
+{
 
   uint32_t n_index = 0;
 
   // STEP 1 : REGISTER FOREIGN TYPES
 
-  core::VectorObjects_sp sp_tst = core::VectorObjects_O::make(_Nil<core::T_O>(), _Nil<core::T_O>(), 64, true, cl::_sym_T_O);
+  core::VectorObjects_sp sp_tst =
+    core::VectorObjects_O::make( 64, _Nil<core::T_O>() );
 
   //  - 1.1 : CREATE FOREIGN TYPE SPECS
 
@@ -319,7 +322,8 @@ inline void register_foreign_types( void ) {
 
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
-CL_INITIALIZER void clasp_fli_initialization(void) {
+CL_INITIALIZER void clasp_fli_initialization(void)
+{
 
   // 1 - REGISTER FOREIGN TYPES
 
@@ -343,13 +347,15 @@ ForeignData_O::ForeignData_O() : m_kind(_Nil<T_O>()),
                                  m_ownership_flags(core::ForeignDataFlagEnum::None),
                                  m_size(0),
                                  m_orig_data_ptr(nullptr),
-                                 m_raw_data(nullptr) {
+                                 m_raw_data(nullptr)
+{
   // NOTHIHG TO DO
 }
 
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
-ForeignData_O::~ForeignData_O() {
+ForeignData_O::~ForeignData_O()
+{
   if ( this->m_ownership_flags & core::ForeignDataFlagEnum::DeleteOnDtor ) {
     this->free();
   }
@@ -357,7 +363,8 @@ ForeignData_O::~ForeignData_O() {
 
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
-inline string ForeignData_O::__repr__() const {
+inline string ForeignData_O::__repr__() const
+{
 
   stringstream ss;
 
@@ -378,13 +385,15 @@ inline string ForeignData_O::__repr__() const {
 
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
-void * ForeignData_O::externalObject() const {
+void * ForeignData_O::externalObject() const
+{
   return this->m_raw_data;
 }
 
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
-bool ForeignData_O::eql_(core::T_sp obj) const {
+bool ForeignData_O::eql_(core::T_sp obj) const
+{
   if (core__external_object_p(obj)) {
     return (gc::As<core::ExternalObject_sp>(obj)->externalObject() == this->externalObject());
   }
@@ -393,31 +402,35 @@ bool ForeignData_O::eql_(core::T_sp obj) const {
 
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
-void ForeignData_O::allocate(core::T_sp kind, core::ForeignDataFlagEnum ownership_flags, size_t size) {
+void ForeignData_O::allocate(core::T_sp kind, core::ForeignDataFlagEnum ownership_flags, size_t size)
+{
   this->m_kind = kind;
   this->m_ownership_flags = ownership_flags;
   this->m_size = size;
-  this->m_raw_data = (void *)core::clasp_alloc_atomic(size);
+  this->m_raw_data = (void *) gctools::clasp_alloc_atomic(size);
   this->m_orig_data_ptr = this->m_raw_data;
 }
 
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
-void ForeignData_O::free() {
-  core::clasp_dealloc( (char *)this->m_orig_data_ptr );
+void ForeignData_O::free()
+{
+  gctools::clasp_dealloc( (char *)this->m_orig_data_ptr );
   this->m_orig_data_ptr = nullptr;
   this->m_size          = 0;
 }
 
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
-inline bool ForeignData_O::null_pointer_p() {
+inline bool ForeignData_O::null_pointer_p()
+{
   return ( this->raw_data() == nullptr );
 }
 
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
-core::T_sp ForeignData_O::PERCENTkind() {
+core::T_sp ForeignData_O::PERCENTkind()
+{
   return this->kind();
 }
 
@@ -680,7 +693,7 @@ core::T_sp PERCENTdlclose( ForeignData_sp handle ) {
 
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
-core::T_sp PERCENTdlsym( core::Str_sp name ) {
+core::T_sp PERCENTdlsym( core::String_sp name ) {
 
   ForeignData_sp sp_sym;
   auto result = core::do_dlsym( RTLD_DEFAULT, name->get().c_str() );
@@ -748,13 +761,13 @@ inline string ForeignTypeSpec_O::__repr__() const {
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
 ForeignTypeSpec_sp ForeignTypeSpec_O::create( core::Symbol_sp   lisp_symbol,
-                                              core::Str_sp      lisp_name,
+                                              core::String_sp      lisp_name,
                                               core::Integer_sp  size,
                                               core::Fixnum_sp   alignment,
-                                              core::Str_sp      cxx_name,
+                                              core::String_sp      cxx_name,
                                               core::Symbol_sp   llvm_type_symbol,
-                                              core::Str_sp      to_object_fn_name,
-                                              core::Str_sp      from_object_fn_name,
+                                              core::String_sp      to_object_fn_name,
+                                              core::String_sp      from_object_fn_name,
                                               ForeignData_sp to_object_fn_ptr,
                                               ForeignData_sp from_object_fn_ptr)
 {
@@ -1165,14 +1178,16 @@ core::T_sp PERCENTmem_set_ssize( core::Integer_sp address, core::T_sp value ) {
   return mk_ssize( tmp );
 }
 
-core::T_sp PERCENTmem_set_ptrdiff( core::Integer_sp address, core::T_sp value ) {
+core::T_sp PERCENTmem_set_ptrdiff( core::Integer_sp address, core::T_sp value )
+{
   ptrdiff_t tmp;
   translate::from_object< ptrdiff_t > v( value );
   tmp = mem_set< ptrdiff_t >( core::clasp_to_cl_intptr_t( address ), v._v );
   return mk_ptrdiff( tmp );
 }
 
-core::T_sp PERCENTmem_set_char( core::Integer_sp address, core::T_sp value ) {
+core::T_sp PERCENTmem_set_char( core::Integer_sp address, core::T_sp value )
+{
   char tmp;
   translate::from_object< char > v( value );
   tmp = mem_set< char >( core::clasp_to_cl_intptr_t( address ), v._v );

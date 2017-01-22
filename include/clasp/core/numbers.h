@@ -24,8 +24,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#ifndef _core_numbers_H //[
-#define _core_numbers_H
+#if !defined( __CLASP_CORE_NUMBERS_H__ ) //[
+#define __CLASP_CORE_NUMBERS_H__
 
 #include <clasp/core/clasp_gmpxx.h>
 #include <cmath>
@@ -54,8 +54,8 @@ THE SOFTWARE.
 #define CLASP_PI2_L 1.57079632679489661923132169163975144l
 
 namespace cl {
-extern core::Symbol_sp& _sym_Integer_O; // CL:INTEGER
-extern core::Symbol_sp& _sym_Real_O; // CL:INTEGER
+  extern core::Symbol_sp& _sym_Integer_O; // CL:INTEGER
+  extern core::Symbol_sp& _sym_Real_O; // CL:INTEGER
 };
 
 namespace core {
@@ -127,13 +127,11 @@ bool clasp_float_infinity_p(Float_sp num);
 NumberType clasp_t_of(Number_sp num);
 Integer_sp clasp_shift(Integer_sp num, int bits);
 gc::Fixnum clasp_integer_length(Integer_sp x);
-mpz_class clasp_to_mpz(Integer_sp x);
-cl_index clasp_to_size(Integer_sp x);
-uint32_t clasp_to_uint32_t(Integer_sp x);
-Fixnum_sp clasp_make_fixnum(gc::Fixnum i);
-SingleFloat_sp clasp_make_single_float(float d);
-DoubleFloat_sp clasp_make_double_float(double d);
-Number_sp clasp_log1_complex_inner(Number_sp r, Number_sp i);
+
+ Fixnum_sp clasp_make_fixnum(gc::Fixnum i);
+ SingleFloat_sp clasp_make_single_float(float d);
+ DoubleFloat_sp clasp_make_double_float(double d);
+ Number_sp clasp_log1_complex_inner(Number_sp r, Number_sp i);
 };
 
 namespace core {
@@ -289,58 +287,87 @@ public:
     mpz_class zv(v);
     return create(zv);
   };
-//	static Integer_sp create(size_t v); // unsigned
-//	static Integer_sp create(uint v);
-#ifndef _TARGET_OS_LINUX
-  static Integer_sp create(int64_t v);
-  static Integer_sp create(uint64_t v);
+
+  static Integer_sp create( int8_t v);
+  static Integer_sp create( uint8_t v);
+
+  static Integer_sp create( int16_t v);
+  static Integer_sp create( uint16_t v);
+
+  static Integer_sp create( int32_t v );
+  static Integer_sp create( uint32_t v );
+
+#if !defined( _TARGET_OS_LINUX )
+  static Integer_sp create( int64_t v );
+  static Integer_sp create( uint64_t v );
 #endif
-  static Integer_sp create(cl_intptr_t v); // ADDED, frgo 2016-08-08
-  static Integer_sp create(float f);
-  static Integer_sp create(double f);
-  static Integer_sp createLongFloat(LongFloat f);
+
+  // THOSE ARE ALREADY DEFINED ABOVE
+  // static Integer_sp create( short v );
+  // static Integer_sp create( unsigned short v );
+  //
+  // static Integer_sp create( int v );
+  // static Integer_sp create( unsigned int v );
+  //
+  // static Integer_sp create( long v );
+  // static Integer_sp create( unsigned long v );
+  //
+  // static Integer_sp create( long v );
+  // static Integer_sp create( unsigned long long v );
+
+  static Integer_sp create( float f );
+  static Integer_sp create( double f );
+  static Integer_sp createLongFloat( LongFloat f );
+
+  static Integer_sp create( cl_intptr_t v );
 
  public:
-  virtual bool evenp_() const { SUBIMP(); };
-  virtual bool oddp_() const { SUBIMP(); };
 
-  virtual gc::Fixnum bit_length_() const { SUBIMP(); };
+    virtual bool evenp_() const { SUBIMP(); };
+    virtual bool oddp_() const { SUBIMP(); };
+
+    virtual gc::Fixnum bit_length_() const { SUBIMP(); };
 
   /*! Return the value shifted by BITS bits.
 	  If BITS < 0 shift right, if BITS >0 shift left. */
-  virtual Integer_sp shift_(gc::Fixnum bits) const { SUBIMP(); };
+    virtual Integer_sp shift_(gc::Fixnum bits) const { SUBIMP(); };
 
-  virtual short as_short() const { SUBIMP(); };
-  virtual unsigned short as_ushort() const { SUBIMP(); };
+    virtual short as_short() const { SUBIMP(); };
+    virtual unsigned short as_ushort() const { SUBIMP(); };
 
-  virtual int as_int() const { return this->as_int_(); };
-  virtual unsigned int as_uint() const { SUBIMP(); };
+    virtual int as_int() const { return this->as_int_(); };
+    virtual unsigned int as_uint() const { SUBIMP(); };
 
-  virtual long as_long() const { SUBIMP(); };
-  virtual unsigned long as_ulong() const { SUBIMP(); };
+    virtual long as_long() const { SUBIMP(); };
+    virtual unsigned long as_ulong() const { SUBIMP(); };
 
-  virtual long long as_longlong() const { SUBIMP(); };
-  virtual unsigned long long as_ulonglong() const { SUBIMP(); };
+    virtual long long as_longlong() const { SUBIMP(); };
+    virtual unsigned long long as_ulonglong() const { SUBIMP(); };
 
-  virtual int8_t as_int8_t() const { SUBIMP(); };
-  virtual uint8_t as_uint8_t() const { SUBIMP(); };
+    virtual int8_t as_int8_t() const { SUBIMP(); };
+    virtual uint8_t as_uint8_t() const { SUBIMP(); };
 
-  virtual int16_t as_int16_t() const { SUBIMP(); };
-  virtual uint16_t as_uint16_t() const { SUBIMP(); };
+    virtual int16_t as_int16_t() const { SUBIMP(); };
+    virtual uint16_t as_uint16_t() const { SUBIMP(); };
 
-  virtual int32_t as_int32_t() const { SUBIMP(); };
-  virtual uint32_t as_uint32_t() const { SUBIMP(); };
+    virtual int32_t as_int32_t() const { SUBIMP(); };
+    virtual uint32_t as_uint32_t() const { SUBIMP(); };
 
-  virtual int64_t as_int64_t() const { SUBIMP(); };
-  virtual uint64_t as_uint64_t() const { SUBIMP(); };
+    virtual int64_t as_int64_t() const { SUBIMP(); };
+    virtual uint64_t as_uint64_t() const { SUBIMP(); };
 
-  virtual uint64_t as_uint64_() const { SUBIMP(); };
+    virtual uint64_t as_int64_() const { SUBIMP(); };
+    virtual uint64_t as_uint64_() const { SUBIMP(); };
 
-  virtual cl_intptr_t as_cl_intptr_t() const { SUBIMP(); };// ADDED, frgo 2016-08-08
-  virtual unsigned long long as_unsigned_long_long_() const { SUBIMP(); };
-  virtual void __write__(T_sp strm) const;
-  Integer_O(){};
-  virtual ~Integer_O(){};
+    virtual cl_intptr_t as_cl_intptr_t() const { SUBIMP(); };
+    virtual size_t as_size_t() const { SUBIMP(); };
+    virtual ssize_t as_ssize_t() const { SUBIMP(); };
+
+    virtual ptrdiff_t as_ptrdiff_t() const { SUBIMP(); };
+
+    virtual void __write__(T_sp strm) const;
+    Integer_O(){};
+    virtual ~Integer_O(){};
 };
 }; // namespace core
 
@@ -352,87 +379,6 @@ namespace core {
 
   class Fixnum_dummy_O : public Integer_O {
     LISP_CLASS(core, ClPkg, Fixnum_dummy_O, "fixnum",Integer_O);
-#if 0
-
-   public:
-     friend class boost::serialization::access;
-   public:
-   private:
-     gctools::Fixnum	_Value;
-   public:
-     static Fixnum_sp createFn(gctools::Fixnum nm);
-   public:
-	//	static int number_of_bits();
-   public:
-	// gc::Fixnum get() const { return this->_Value; };
-	// Switch to this in unbox_fixnum() impl while doing source-to-source translation
-     gc::Fixnum get_() const { return this->_Value; };
-
-   public:
-     NumberType number_type_() const { return number_Fixnum;};
-	//	virtual Number_sp copy() const;
-     string __repr__() const;
-     Number_sp abs_() const { return make_fixnum(std::abs(this->_Value)); };
-     Number_sp signum_() const;
-
-	// math routines shared by all numbers
-     virtual bool zerop_() const { return this->_Value == 0; };
-     virtual Number_sp negate_() const { return make_fixnum(-this->_Value);};
-
-	// Shared by real
-     virtual bool plusp_() const { return this->_Value > 0; };
-     virtual bool minusp_() const { return this->_Value < 0; };
-     virtual bool evenp_() const { return !(this->_Value&1); };
-     virtual bool oddp_() const { return (this->_Value&1);};
-
-     virtual	bool eql_(T_sp obj) const;
-
-     virtual Number_sp onePlus_() const
-     {
-       if ( this->_Value == gctools::most_positive_fixnum) {
-         Bignum bn(this->_Value);
-         bn = bn + 1;
-         return Integer_O::create(bn);
-       } else {
-         return make_fixnum(this->_Value+1);
-       }
-     };
-
-     virtual Number_sp oneMinus_() const
-     {
-       if ( this->_Value == gctools::most_negative_fixnum ) {
-         Bignum bn(this->_Value);
-         bn = bn - 1;
-         return Integer_O::create(bn);
-       } else {
-         return make_fixnum(this->_Value-1);
-       }
-     };
-
-   public:
-	//	virtual	string	valueAsString_() const { stringstream ss; ss<<this->_Value;return ss.str();};
-	//	virtual	void	setFromString( const string& strVal ) { this->_Value = atoi(strVal.c_str());};
-
-     int bit_length_() const;
-	/*! Return the value shifted by BITS bits.
-	  If BITS < 0 shift right, if BITS >0 shift left. */
-     Integer_sp shift_(gc::Fixnum bits) const;
-
-     string asChar_() const;
-     virtual gc::Fixnum as_int_() const;
-     virtual uint64_t as_uint64_() const;
-     virtual uint as_uint_() const;
-     virtual Bignum as_mpz_() const;
-     virtual LongLongInt as_LongLongInt_() const;
-     virtual float as_float_() const;
-     virtual double as_double_() const;
-     virtual LongFloat as_long_float_() const;
-     virtual unsigned long long as_unsigned_long_long_() const;
-     void sxhash_(HashGenerator& hg) const;
-
-   Fixnum_dummy_O(gc::Fixnum f) : _Value(f) {};
-   Fixnum_dummy_O() : _Value(0) {};
-#endif
    };
    inline Fixnum_sp make_fixnum(gc::Fixnum x) { return gc::make_tagged_fixnum<core::Fixnum_I>(x); };
    inline gc::Fixnum unbox_fixnum(Fixnum_sp x) { return x.unsafe_fixnum(); };
@@ -459,19 +405,11 @@ namespace core {
    class ShortFloat_O : public Float_O {
      LISP_CLASS(core, ClPkg, ShortFloat_O, "ShortFloat",Float_O);
 
-   public:
-#if defined(OLD_SERIALIZE)
-     void serialize(serialize::SNode node);
-#endif
-#if defined(XML_ARCHIVE)
-     void archiveBase(ArchiveP node);
-#endif // defined(XML_ARCHIVE)
    private:
      float _Value;
 
    public:
      static ShortFloat_sp create(float nm) {
-       _G();
        GC_ALLOCATE(ShortFloat_O, sf);
        sf->_Value = nm;
        return sf;
@@ -518,89 +456,23 @@ namespace core {
    class SingleFloat_dummy_O : public Float_O {
      LISP_CLASS(core, ClPkg, SingleFloat_dummy_O, "SingleFloat",Float_O);
 
-   public:
-#if 0
-     static SingleFloat_sp create(float nm)
-     {_G();
-       GC_ALLOCATE(SingleFloat_O,sf);
-       sf->_Value = nm;
-       return sf;
-     };
-   public:
-#if defined(OLD_SERIALIZE)
-     void	serialize(serialize::SNode node);
-#endif
-#if defined(XML_ARCHIVE)
-     void	archiveBase(ArchiveP node);
-#endif // defined(XML_ARCHIVE)
-   private:
-     float	_Value;
-   public:
-   public:
-     NumberType number_type_() const { return number_SingleFloat;};
-     void sxhash_(HashGenerator& hg) const;
-     float get() const { return this->_Value;};
-     string __repr__() const;
-	//	virtual Number_sp copy() const;
-     Number_sp signum_() const;
-     Number_sp abs_() const;
-     bool isnan_() const {return this->_Value != this->_Value;}; // NaN is supposed to be the only value that != itself!!!!
-   public:
-	//	virtual	string	valueAsString_() const;
-	//	virtual	void	setFromString( const string& strVal );
-	//	virtual	bool	eqn(T_sp obj) const;
-     virtual	bool	eql_(T_sp obj) const;
-
-	// math routines shared by all numbers
-     virtual bool zerop_() const { return this->_Value == 0.0; };
-     virtual Number_sp negate_() const { return make_single_float(-this->_Value);};
-
-	// shared by real
-     virtual bool plusp_() const { return this->_Value > 0.0; };
-     virtual bool minusp_() const { return this->_Value < 0.0; };
-
-	//	virtual Number_sp log1_() const;
-	//	virtual Number_sp log1p_() const;
-     virtual Number_sp sqrt_() const;
-
-     virtual Number_sp onePlus_() const { return create(this->_Value+1.0);};
-     virtual Number_sp oneMinus_() const { return create(this->_Value-1.0);};
-
-     virtual float as_float_() const;
-     virtual double as_double_() const;
-     virtual LongFloat as_long_float_() const;
-
-     virtual Number_sp reciprocal_() const;
-     virtual Number_sp exp_() const;
-
-     virtual Number_sp sin_() const;
-     virtual Number_sp cos_() const;
-     virtual Number_sp tan_() const;
-     virtual Number_sp sinh_() const;
-     virtual Number_sp cosh_() const;
-     virtual Number_sp tanh_() const;
-
-	//Integer_sp castToInteger() const;
-
-     DEFAULT_CTOR_DTOR(SingleFloat_O);
-#endif
    };
 
    inline SingleFloat_sp make_single_float(float x) { return gc::make_tagged_single_float<core::SingleFloat_I>(x); };
    inline float unbox_single_float(SingleFloat_sp x) { return x.unsafe_single_float(); };
  };
 
- template <>
-   struct gctools::GCInfo<core::DoubleFloat_O> {
-   static bool constexpr NeedsInitialization = false;
-   static bool constexpr NeedsFinalization = false;
-   static GCInfo_policy constexpr Policy = atomic;
- };
+template <>
+struct gctools::GCInfo<core::DoubleFloat_O> {
+  static bool constexpr NeedsInitialization = false;
+  static bool constexpr NeedsFinalization = false;
+  static GCInfo_policy constexpr Policy = atomic;
+};
 
- namespace core {
-   SMART(DoubleFloat);
-   class DoubleFloat_O : public Float_O {
-     LISP_CLASS(core, ClPkg, DoubleFloat_O, "double-float",Float_O);
+namespace core {
+  SMART(DoubleFloat);
+  class DoubleFloat_O : public Float_O {
+    LISP_CLASS(core, ClPkg, DoubleFloat_O, "double-float",Float_O);
 
   public:
   private:
@@ -680,86 +552,23 @@ namespace core {
      static DoubleFloat_sp create(LongFloat nm) {
        return DoubleFloat_O::create(nm);
      };
-#if 0
-     static LongFloat_sp create(LongFloat nm) {
-       return DoubleFloat_O::create(nm);
-       DEPRECATED();
-       GC_ALLOCATE(LongFloat_O, v);
-       v->_Value = nm;
-       return v;
-     };
-#endif
+
    public:
      NumberType number_type_() const { return number_LongFloat; };
-#if 0
-     void sxhash_(HashGenerator & hg) const;
-     double get() const { return this->_Value; };
-     LongFloat &ref() { return this->_Value; };
-     string __repr__() const;
-  //	virtual Number_sp copy() const;
-     Number_sp signum_() const;
-     Number_sp abs_() const;
-     bool isnan_() const { return this->_Value != this->_Value; }; // NaN is supposed to be the only value that != itself!!!!
-     bool isinf_() const { return std::isinf(this->_Value); };
-   public:
-  //	virtual	string	valueAsString_() const;
-  //	virtual	void	setFromString( const string& strVal );
-  //	virtual	bool	eqn(T_sp obj) const;
-     virtual bool eql_(T_sp obj) const;
 
-  // math routines shared by all numbers
-     bool zerop_() const { return this->_Value == 0.0; };
-     virtual Number_sp negate_() const { return LongFloat_O::create(-this->_Value); };
-
-  // shared by real
-     bool plusp_() const { return this->_Value > 0.0; };
-     bool minusp_() const { return this->_Value < 0.0; };
-
-     virtual Number_sp reciprocal_() const;
-
-     virtual Number_sp sqrt_() const;
-
-     virtual Number_sp onePlus_() const { return create(this->_Value + 1.0); };
-     virtual Number_sp oneMinus_() const { return create(this->_Value - 1.0); };
-
-     virtual float as_float_() const;
-     virtual double as_double_() const;
-     virtual LongFloat as_long_float_() const;
-
-     Integer_sp castToInteger() const;
-
-#ifdef CLASP_LONG_FLOAT
-     virtual Number_sp log1_() const;
-     virtual Number_sp log1p_() const;
-
-     virtual Number_sp exp_() const;
-     virtual Number_sp sin_() const;
-     virtual Number_sp cos_() const;
-     virtual Number_sp tan_() const;
-     virtual Number_sp sinh_() const;
-     virtual Number_sp cosh_() const;
-     virtual Number_sp tanh_() const;
-#endif
-#endif
      DEFAULT_CTOR_DTOR(LongFloat_O);
    };
  };
 
- namespace core {
-   SMART(Complex);
-   class Complex_O : public Number_O {
-     LISP_CLASS(core, ClPkg, Complex_O, "complex",Number_O);
+namespace core {
+  SMART(Complex);
+  class Complex_O : public Number_O {
+    LISP_CLASS(core, ClPkg, Complex_O, "complex",Number_O);
 
-   public:
-#if defined(OLD_SERIALIZE)
-     void serialize(serialize::SNode node);
-#endif
-#if defined(XML_ARCHIVE)
-     void archiveBase(ArchiveP node);
-#endif // defined(XML_ARCHIVE)
-   GCPRIVATE:
-     Real_sp _real;
-     Real_sp _imaginary;
+  public:
+  GCPRIVATE:
+    Real_sp _real;
+    Real_sp _imaginary;
 
   public:
     static Complex_sp create(double r, double i) {
@@ -825,7 +634,7 @@ namespace core {
   Complex_O(Real_sp r, Real_sp i) : _real(r), _imaginary(i) {};
   Complex_O() : _real(clasp_make_single_float(0.0)), _imaginary(clasp_make_single_float(0.0)) {};
     virtual ~Complex_O() {};
-                      
+
   };
 
    SMART(Ratio);
@@ -833,30 +642,25 @@ namespace core {
      LISP_CLASS(core, ClPkg, Ratio_O, "ratio",Rational_O);
 
    public:
-#if defined(OLD_SERIALIZE)
-     void serialize(serialize::SNode node);
-#endif
-#if defined(XML_ARCHIVE)
-     void archiveBase(ArchiveP node);
-#endif // defined(XML_ARCHIVE)
-  GCPRIVATE:
-    Integer_sp _numerator;
-    Integer_sp _denominator;
-  public:
-    static Ratio_sp create(Integer_sp num, Integer_sp denom) {
-      GC_ALLOCATE(Ratio_O, v);
-      v->setf_numerator_denominator(num,denom);
-      return v;
-    };
-    static Ratio_sp create(mpz_class const &num, mpz_class const &denom) {
-      return Ratio_O::create(Integer_O::create(num),Integer_O::create(denom));
-    }
-    static Ratio_sp create(const char *str) {
-      GC_ALLOCATE(Ratio_O, r);
-      r->setFromString(str);
-      return r;
-    }
-  public:
+
+   GCPRIVATE:
+     Integer_sp _numerator;
+     Integer_sp _denominator;
+   public:
+     static Ratio_sp create(Integer_sp num, Integer_sp denom) {
+       GC_ALLOCATE(Ratio_O, v);
+       v->setf_numerator_denominator(num,denom);
+       return v;
+     };
+     static Ratio_sp create(mpz_class const &num, mpz_class const &denom) {
+       return Ratio_O::create(Integer_O::create(num),Integer_O::create(denom));
+     }
+     static Ratio_sp create(const char *str) {
+       GC_ALLOCATE(Ratio_O, r);
+       r->setFromString(str);
+       return r;
+     }
+   public:
     // Only useful for creating Ratio in fasl files.
      void setf_numerator_denominator(core::Integer_sp num, core::Integer_sp denom);
    public:
@@ -872,11 +676,11 @@ namespace core {
 
      void sxhash_(HashGenerator &hg) const;
   //	virtual Number_sp copy() const;
-    string __repr__() const;
-    Number_sp signum_() const;
-    Number_sp abs_() const;
-    Number_sp rational_() const final { return this->asSmartPtr(); };
-    bool isnan_() const;
+     string __repr__() const;
+     Number_sp signum_() const;
+     Number_sp abs_() const;
+     Number_sp rational_() const final { return this->asSmartPtr(); };
+     bool isnan_() const;
 
    public:
   //	virtual	string	valueAsString_() const;
@@ -896,12 +700,12 @@ namespace core {
        return clasp_plusp(this->_numerator);
      }
 
-    bool minusp_() const {
-      return clasp_minusp(this->_numerator);
-    }
-  Ratio_O() : _numerator(clasp_make_fixnum(0)), _denominator(clasp_make_fixnum(1)) {};
-    virtual ~Ratio_O() {};
-  };
+     bool minusp_() const {
+       return clasp_minusp(this->_numerator);
+     }
+   Ratio_O() : _numerator(clasp_make_fixnum(0)), _denominator(clasp_make_fixnum(1)) {};
+     virtual ~Ratio_O() {};
+   };
 
    void clasp_deliver_fpe(int status);
 
@@ -1050,425 +854,337 @@ namespace core {
 
    gctools::Fixnum fixint(T_sp x);
 
- }; // namespace core
+}; // namespace core
 
-#if 0
-#endif
-#ifdef CLASP_LONG_FLOAT
-#endif
+namespace core {
 
- namespace core {
+  CL_PKG_NAME(ClPkg,plusp);
+  CL_DEFUN inline bool clasp_plusp(Real_sp num) {
+    if (num.fixnump()) {
+      return num.unsafe_fixnum() > 0;
+    } else if (num.single_floatp()) {
+      return num.unsafe_single_float() > 0.0;
+    }
+    return num->plusp_();
+  }
 
-   CL_PKG_NAME(ClPkg,plusp);
-   CL_DEFUN inline bool clasp_plusp(Real_sp num) {
-     if (num.fixnump()) {
-       return num.unsafe_fixnum() > 0;
-     } else if (num.single_floatp()) {
-       return num.unsafe_single_float() > 0.0;
-     }
-     return num->plusp_();
-   }
+  CL_PKG_NAME(ClPkg,minusp);
+  CL_DEFUN inline bool clasp_minusp(Real_sp num) {
+    if (num.fixnump()) {
+      return num.unsafe_fixnum() < 0;
+    } else if (num.single_floatp()) {
+      return num.unsafe_single_float() < 0.0;
+    }
+    return num->minusp_();
+  }
 
-   CL_PKG_NAME(ClPkg,minusp);
-   CL_DEFUN inline bool clasp_minusp(Real_sp num) {
-     if (num.fixnump()) {
-       return num.unsafe_fixnum() < 0;
-     } else if (num.single_floatp()) {
-       return num.unsafe_single_float() < 0.0;
-     }
-     return num->minusp_();
-   }
+  CL_PKG_NAME(ClPkg,evenp);
+  CL_DEFUN inline bool clasp_evenp(Integer_sp num) {
+    if (num.fixnump()) {
+      return (num.unsafe_fixnum() % 2) == 0;
+    }
+    return num->evenp_();
+  }
 
-   CL_PKG_NAME(ClPkg,evenp);
-   CL_DEFUN inline bool clasp_evenp(Integer_sp num) {
-     if (num.fixnump()) {
-       return (num.unsafe_fixnum() % 2) == 0;
-     }
-     return num->evenp_();
-   }
+  CL_PKG_NAME(ClPkg,oddp);
+  CL_DEFUN inline bool clasp_oddp(Integer_sp num) {
+    if (num.fixnump()) {
+      return (num.unsafe_fixnum() % 2) == 1;
+    }
+    return num->oddp_();
+  }
 
-   CL_PKG_NAME(ClPkg,oddp);
-   CL_DEFUN inline bool clasp_oddp(Integer_sp num) {
-     if (num.fixnump()) {
-       return (num.unsafe_fixnum() % 2) == 1;
-     }
-     return num->oddp_();
-   }
+  CL_PKG_NAME(ClPkg,abs);
+  CL_DEFUN inline Number_sp clasp_abs(Number_sp num) {
+    if (num.fixnump()) {
+      return immediate_fixnum<Number_O>(std::abs(num.unsafe_fixnum()));
+    } else if (num.single_floatp()) {
+      return immediate_single_float<Number_O>(std::fabs(num.unsafe_single_float()));
+    }
+    return num->abs_();
+  }
 
-   CL_PKG_NAME(ClPkg,abs);
-   CL_DEFUN inline Number_sp clasp_abs(Number_sp num) {
-     if (num.fixnump()) {
-       return immediate_fixnum<Number_O>(std::abs(num.unsafe_fixnum()));
-     } else if (num.single_floatp()) {
-       return immediate_single_float<Number_O>(std::fabs(num.unsafe_single_float()));
-     }
-     return num->abs_();
-   }
+  CL_PKG_NAME(ClPkg,signum);
+  CL_DEFUN inline Number_sp clasp_signum(Number_sp num) {
+    if (num.fixnump()) {
+      Fixnum fn = num.unsafe_fixnum();
+      if (fn == 0)
+        return immediate_fixnum<Number_O>(0);
+      if (fn > 0)
+        return immediate_fixnum<Number_O>(1);
+      return immediate_fixnum<Number_O>(-1);
+    } else if (num.single_floatp()) {
+      float fl = num.unsafe_single_float();
+      if (fl == 0.0)
+        return immediate_single_float<Number_O>(0.0);
+      if (fl < 0.0)
+        return immediate_single_float<Number_O>(-1.0);
+      return immediate_single_float<Number_O>(1.0);
+    }
+    return num->signum_();
+  }
 
-   CL_PKG_NAME(ClPkg,signum);
-   CL_DEFUN inline Number_sp clasp_signum(Number_sp num) {
-     if (num.fixnump()) {
-       Fixnum fn = num.unsafe_fixnum();
-       if (fn == 0)
-         return immediate_fixnum<Number_O>(0);
-       if (fn > 0)
-         return immediate_fixnum<Number_O>(1);
-       return immediate_fixnum<Number_O>(-1);
-     } else if (num.single_floatp()) {
-       float fl = num.unsafe_single_float();
-       if (fl == 0.0)
-         return immediate_single_float<Number_O>(0.0);
-       if (fl < 0.0)
-         return immediate_single_float<Number_O>(-1.0);
-       return immediate_single_float<Number_O>(1.0);
-     }
-     return num->signum_();
-   }
+  CL_LISPIFY_NAME(onePlus);
+  CL_DEFUN inline Number_sp clasp_one_plus(Number_sp num) {
+    if (num.fixnump()) {
+      return immediate_fixnum<Number_O>(num.unsafe_fixnum() + 1);
+    } else if (num.single_floatp()) {
+      float fl = num.unsafe_single_float();
+      fl += 1.0;
+      return immediate_single_float<Number_O>(fl);
+    }
+    return num->onePlus_();
+  }
 
-   CL_LISPIFY_NAME(onePlus);
-   CL_DEFUN inline Number_sp clasp_one_plus(Number_sp num) {
-     if (num.fixnump()) {
-       return immediate_fixnum<Number_O>(num.unsafe_fixnum() + 1);
-     } else if (num.single_floatp()) {
-       float fl = num.unsafe_single_float();
-       fl += 1.0;
-       return immediate_single_float<Number_O>(fl);
-     }
-     return num->onePlus_();
-   }
+  CL_LISPIFY_NAME(oneMinus);
+  CL_DEFUN inline Number_sp clasp_one_minus(Number_sp num) {
+    if (num.fixnump()) {
+      return immediate_fixnum<Number_O>(num.unsafe_fixnum() - 1);
+    } else if (num.single_floatp()) {
+      float fl = num.unsafe_single_float();
+      fl -= 1.0;
+      return immediate_single_float<Number_O>(fl);
+    }
+    return num->oneMinus_();
+  }
 
-   CL_LISPIFY_NAME(oneMinus);
-   CL_DEFUN inline Number_sp clasp_one_minus(Number_sp num) {
-     if (num.fixnump()) {
-       return immediate_fixnum<Number_O>(num.unsafe_fixnum() - 1);
-     } else if (num.single_floatp()) {
-       float fl = num.unsafe_single_float();
-       fl -= 1.0;
-       return immediate_single_float<Number_O>(fl);
-     }
-     return num->oneMinus_();
-   }
+  inline bool clasp_zerop(Number_sp num) {
+    if (num.fixnump()) {
+      return num.unsafe_fixnum() == 0;
+    } else if (num.single_floatp()) {
+      float fl = num.unsafe_single_float();
+      return fl == 0.0;
+    }
+    return num->zerop_();
+  }
 
-   inline bool clasp_zerop(Number_sp num) {
-     if (num.fixnump()) {
-       return num.unsafe_fixnum() == 0;
-     } else if (num.single_floatp()) {
-       float fl = num.unsafe_single_float();
-       return fl == 0.0;
-     }
-     return num->zerop_();
-   }
+  CL_LISPIFY_NAME(negate);
+  CL_DEFUN inline Number_sp clasp_negate(Number_sp num) {
+    if (num.fixnump()) {
+      return immediate_fixnum<Number_O>(-num.unsafe_fixnum());
+    } else if (num.single_floatp()) {
+      float fl = num.unsafe_single_float();
+      fl = -fl;
+      return immediate_single_float<Number_O>(fl);
+    }
+    return num->negate_();
+  }
 
-   CL_LISPIFY_NAME(negate);
-   CL_DEFUN inline Number_sp clasp_negate(Number_sp num) {
-     if (num.fixnump()) {
-       return immediate_fixnum<Number_O>(-num.unsafe_fixnum());
-     } else if (num.single_floatp()) {
-       float fl = num.unsafe_single_float();
-       fl = -fl;
-       return immediate_single_float<Number_O>(fl);
-     }
-     return num->negate_();
-   }
+  inline NumberType clasp_t_of(Number_sp n) {
+    if (n.fixnump()) {
+      return number_Fixnum;
+    } else if (n.single_floatp()) {
+      return number_SingleFloat;
+    }
+    return n->number_type_();
+  }
 
-   inline NumberType clasp_t_of(Number_sp n) {
-     if (n.fixnump()) {
-       return number_Fixnum;
-     } else if (n.single_floatp()) {
-       return number_SingleFloat;
-     }
-     return n->number_type_();
-   }
+  inline Integer_sp clasp_shift(Integer_sp n, int bits) {
+    if (n.fixnump()) {
+      if (bits < 0) {
+        Fixnum y = n.unsafe_fixnum();
+        bits = -bits;
+        if (bits >= gc::fixnum_bits) {
+          y = (y < 0) ? -1 : 0;
+        } else {
+          y >>= bits;
+        }
+        return immediate_fixnum<Number_O>(y);
+      } else {
+        Bignum val(n.unsafe_fixnum());
+        Bignum res;
+        mpz_mul_2exp(res.get_mpz_t(), val.get_mpz_t(), bits);
+        return Integer_O::create(res);
+      }
+    }
+    return n->shift_(bits);
+  }
 
-   inline Integer_sp clasp_shift(Integer_sp n, int bits) {
-     if (n.fixnump()) {
-       if (bits < 0) {
-         Fixnum y = n.unsafe_fixnum();
-         bits = -bits;
-         if (bits >= gc::fixnum_bits) {
-           y = (y < 0) ? -1 : 0;
-         } else {
-           y >>= bits;
-         }
-         return immediate_fixnum<Number_O>(y);
-       } else {
-         Bignum val(n.unsafe_fixnum());
-         Bignum res;
-         mpz_mul_2exp(res.get_mpz_t(), val.get_mpz_t(), bits);
-         return Integer_O::create(res);
-       }
-     }
-     return n->shift_(bits);
-   }
+  inline gc::Fixnum clasp_integer_length(Integer_sp x) {
+    if (x.fixnump()) {
+      Fixnum i(x.unsafe_fixnum());
+      Fixnum count = 0;
+      if (i < 0)
+        i = ~i;
+      for (; i && (count < FIXNUM_BITS); i >>= 1, count++)
+        ;
+      return count;
+    }
+    return x->bit_length_();
+  }
 
-   inline gc::Fixnum clasp_integer_length(Integer_sp x) {
-     if (x.fixnump()) {
-       Fixnum i(x.unsafe_fixnum());
-       Fixnum count = 0;
-       if (i < 0)
-         i = ~i;
-       for (; i && (count < FIXNUM_BITS); i >>= 1, count++)
-         ;
-       return count;
-     }
-     return x->bit_length_();
-   }
+   // CLASP_TO_... FUNCTIONS
 
-   inline int clasp_to_int(Integer_sp x) {
-     if (x.fixnump()) {
-       Fixnum fn = x.unsafe_fixnum();
-       if (fn < gc::most_negative_int || fn >= gc::most_positive_int) {
-         TYPE_ERROR(x, Cons_O::createList(cl::_sym_Integer_O, make_fixnum(gc::most_negative_int), make_fixnum(gc::most_positive_int)));
-       }
-       return (uint)fn;
-     }
-     return x->as_uint_();
-   }
+  Fixnum              clasp_to_fixnum( core::T_sp );
+  short               clasp_to_short( core::T_sp );
+  unsigned short      clasp_to_ushort( core::T_sp );
+  int                 clasp_to_int( core::T_sp );
+  unsigned int        clasp_to_uint( core::T_sp );
+  long                clasp_to_long( core::T_sp );
+  unsigned long       clasp_to_ulong( core::T_sp );
+  long long           clasp_to_longlong( core::T_sp );
+  unsigned long long  clasp_to_ulonglong( core::T_sp );
+  int8_t              clasp_to_int8_t( core::T_sp );
+  uint8_t             clasp_to_uint8_t( core::T_sp );
+  int16_t             clasp_to_int16_t( core::T_sp );
+  uint16_t            clasp_to_uint16_t( core::T_sp );
+  int32_t             clasp_to_int32_t( core::T_sp );
+  uint32_t            clasp_to_uint32_t( core::T_sp );
+  int64_t             clasp_to_int64_t( core::T_sp );
+  uint64_t            clasp_to_uint64_t( core::T_sp );
 
-   inline uint clasp_to_uint(Integer_sp x) {
-     if (x.fixnump()) {
-       Fixnum fn = x.unsafe_fixnum();
-       if (fn < 0 || fn >= gc::most_positive_uint) {
-         TYPE_ERROR(x, Cons_O::createList(cl::_sym_Integer_O, make_fixnum(0), make_fixnum(gc::most_positive_uint)));
-       }
-       return (uint)fn;
-     }
-     return x->as_uint_();
-   }
+   // THE NEXT TWO FUNCTIONS ARE HERE FOR BACKWARDS COMPATIBILITY
+   // frgo, 2017-01-21
 
-   inline uint64_t clasp_to_uint64(Integer_sp x) {
-     if (x.fixnump()) {
-       Fixnum fn = x.unsafe_fixnum();
-       if (fn >= 0 & fn <= gc::most_positive_uint64) {
-         return (uint64_t)fn;
-       }
-       mpz_class z = clasp_create_mpz_class(gc::most_positive_uint64);
-       TYPE_ERROR(x, Cons_O::createList(cl::_sym_Integer_O, make_fixnum(0), Integer_O::create(z)));
-     }
-     return x->as_uint64_();
-   }
+  inline uint64_t clasp_to_int64(Integer_sp x)
+  {
+    return clasp_to_int64_t( x );
+  }
+  inline uint64_t clasp_to_uint64(Integer_sp x)
+  {
+    return clasp_to_uint64_t( x );
+  }
 
-   inline cl_intptr_t clasp_to_cl_intptr_t(Integer_sp x) {
-     if (x.fixnump()) {
-       Fixnum fn = x.unsafe_fixnum();
-       if (fn >= 0 & fn <= gc::most_positive_uint64) {
-         return (cl_intptr_t)fn;
-       }
-       mpz_class z = clasp_create_mpz_class(gc::most_positive_uint64);
-       TYPE_ERROR(x, Cons_O::createList(cl::_sym_Integer_O, make_fixnum(0), Integer_O::create(z)));
-     }
-     return x->as_cl_intptr_t();
-   }
+  cl_intptr_t         clasp_to_cl_intptr_t( core::T_sp );
+  mpz_class           clasp_to_mpz( core::T_sp );
+  cl_index            clasp_to_size( core::T_sp );
 
-   inline mpz_class clasp_to_mpz(Integer_sp x) {
-     if (x.fixnump()) {
-       Fixnum fn = x.unsafe_fixnum();
-       mpz_class z = fn;
-       return z;
-     }
-     return x->as_mpz_();
-   }
+  float               clasp_to_float( Number_sp );
+  double              clasp_to_double( Number_sp );
+  LongFloat           clasp_to_long_float( Number_sp );
+  LongFloat           clasp_to_long_double( Number_sp );
 
-   inline unsigned long long clasp_to_ulonglong(Integer_sp i) {
-     if (i.fixnump()) {
-       gc::Fixnum f = i.unsafe_fixnum();
-       if (f >= 0 && f <= gc::most_positive_unsigned_long_long) {
-         return (unsigned long long)f;
-       }
-    // unsigned long int must == unsigned long long int
-       mpz_class z = clasp_create_mpz_class(gc::most_positive_unsigned_long_long);
-       TYPE_ERROR(i, Cons_O::createList(cl::_sym_Integer_O, make_fixnum(0),
-                                        Integer_O::create(z)));
-     }
-     return i->as_unsigned_long_long_();
-   };
+  // END OF CLASP_TO_... FUNCTIONS
 
-   inline Fixnum clasp_to_fixnum(Integer_sp i) {
-     if (i.fixnump()) {
-       gc::Fixnum f = i.unsafe_fixnum();
-       if (f >= gc::most_negative_fixnum && f <= gc::most_positive_fixnum) {
-         return f;
-       }
-       TYPE_ERROR(i, Cons_O::createList(cl::_sym_Integer_O, make_fixnum(gc::most_negative_fixnum), make_fixnum(gc::most_positive_fixnum)));
-     }
-     return i->as_int_();
-   };
+  inline Number_sp clasp_sqrt( Number_sp z )
+  {
+    if ( z.fixnump() )
+    {
+      float f = z.unsafe_fixnum();
+      return float_sqrt(f);
+    } else if (z.single_floatp()) {
+      float f = z.unsafe_single_float();
+      return float_sqrt(f);
+    }
+    return z->sqrt_();
+  }
 
-   inline cl_index clasp_to_size(Integer_sp i) {
-     if (i.fixnump()) {
-       gc::Fixnum f = i.unsafe_fixnum();
-       if (f >= 0 && f <= gc::most_positive_fixnum) {
-         return f;
-       }
-       TYPE_ERROR(i, Cons_O::createList(cl::_sym_Integer_O, make_fixnum(0), make_fixnum(gc::most_positive_fixnum)));
-     }
-     gc::Fixnum f = i->as_int_();
-     if (f >= 0)
-       return f;
-     TYPE_ERROR(i, Cons_O::createList(cl::_sym_Integer_O, make_fixnum(0), make_fixnum(gc::most_positive_fixnum)));
-   };
+  inline Number_sp clasp_reciprocal(Number_sp x) {
+    if (x.fixnump() ) {
+      if ( x.unsafe_fixnum() == 1 ) return x;
+      return Ratio_O::create(clasp_make_fixnum(1),x);
+    } else if (x.single_floatp()) {
+      float f = x.unsafe_single_float();
+      return clasp_make_single_float(1.0 / f);
+    }
+    return x->reciprocal_();
+  }
 
-   inline uint32_t clasp_to_uint32_t(Integer_sp i) {
-     if (i.fixnump()) {
-       gc::Fixnum f = i.unsafe_fixnum();
-       if (f >= 0 && f <= gc::most_positive_uint32) {
-         return f;
-       }
-       TYPE_ERROR(i, Cons_O::createList(cl::_sym_Integer_O, make_fixnum(0), make_fixnum(gc::most_positive_uint32)));
-     }
-     TYPE_ERROR(i, Cons_O::createList(cl::_sym_Integer_O, make_fixnum(0), make_fixnum(gc::most_positive_uint32)));
-   };
+  inline Number_sp clasp_exp(Number_sp x) {
+    if (x.fixnump()) {
+      float f = x.unsafe_fixnum();
+      return clasp_make_single_float(expf(f));
+    } else if (x.single_floatp()) {
+      float f = x.unsafe_single_float();
+      return clasp_make_single_float(expf(f));
+    }
+    return x->exp_();
+  }
 
-   inline float clasp_to_float(Number_sp x) {
-     if (x.fixnump()) {
-       float d = x.unsafe_fixnum();
-       return d;
-     } else if (x.single_floatp()) {
-       float d = x.unsafe_single_float();
-       return d;
-     }
-     return x->as_float_();
-   };
-   inline double clasp_to_double(Number_sp x) {
-     if (x.fixnump()) {
-       double d = x.unsafe_fixnum();
-       return d;
-     } else if (x.single_floatp()) {
-       double d = x.unsafe_single_float();
-       return d;
-     }
-     return x->as_double_();
-   };
-   inline LongFloat clasp_to_long_float(Number_sp x) { return x->as_long_float_(); };
-   inline LongFloat clasp_to_long_double(Number_sp x) { return x->as_long_float_(); };
+  inline Number_sp clasp_sin(Number_sp x) {
+    if (x.fixnump()) {
+      float f = x.unsafe_fixnum();
+      return clasp_make_single_float(sinf(f));
+    } else if (x.single_floatp())
+      return clasp_make_single_float(sinf(x.unsafe_single_float()));
+    return x->sin_();
+  }
+  inline Number_sp clasp_cos(Number_sp x) {
+    if (x.fixnump()) {
+      float f = x.unsafe_fixnum();
+      return clasp_make_single_float(cosf(f));
+    } else if (x.single_floatp())
+      return clasp_make_single_float(cosf(x.unsafe_single_float()));
+    return x->cos_();
+  }
+  inline Number_sp clasp_tan(Number_sp x) {
+    if (x.fixnump()) {
+      float f = x.unsafe_fixnum();
+      return clasp_make_single_float(tanf(f));
+    } else if (x.single_floatp())
+      return clasp_make_single_float(tanf(x.unsafe_single_float()));
+    return x->tan_();
+  }
 
-   inline Number_sp clasp_sqrt(Number_sp z) {
-     if (z.fixnump()) {
-       float f = z.unsafe_fixnum();
-       return float_sqrt(f);
-     } else if (z.single_floatp()) {
-       float f = z.unsafe_single_float();
-       return float_sqrt(f);
-     }
-     return z->sqrt_();
-   }
+  inline Number_sp clasp_sinh(Number_sp x) {
+    if (x.fixnump()) {
+      float f = x.unsafe_fixnum();
+      return clasp_make_single_float(sinhf(f));
+    } else if (x.single_floatp())
+      return clasp_make_single_float(sinhf(x.unsafe_single_float()));
+    return x->sinh_();
+  }
+  inline Number_sp clasp_cosh(Number_sp x) {
+    if (x.fixnump()) {
+      float f = x.unsafe_fixnum();
+      return clasp_make_single_float(coshf(f));
+    } else if (x.single_floatp())
+      return clasp_make_single_float(coshf(x.unsafe_single_float()));
+    return x->cosh_();
+  }
+  inline Number_sp clasp_tanh(Number_sp x) {
+    if (x.fixnump()) {
+      float f = x.unsafe_fixnum();
+      return clasp_make_single_float(tanhf(f));
+    } else if (x.single_floatp())
+      return clasp_make_single_float(tanhf(x.unsafe_single_float()));
+    return x->tanh_();
+  }
 
-   inline Number_sp clasp_reciprocal(Number_sp x) {
-     if (x.fixnump() ) {
-       if ( x.unsafe_fixnum() == 1 ) return x;
-       return Ratio_O::create(clasp_make_fixnum(1),x);
-     } else if (x.single_floatp()) {
-       float f = x.unsafe_single_float();
-       return clasp_make_single_float(1.0 / f);
-     }
-     return x->reciprocal_();
-   }
+  inline Number_sp clasp_conjugate(Number_sp x) {
+    if (x.fixnump())
+      return x;
+    if (x.single_floatp())
+      return x;
+    return x->conjugate_();
+  }
 
-   inline Number_sp clasp_exp(Number_sp x) {
-     if (x.fixnump()) {
-       float f = x.unsafe_fixnum();
-       return clasp_make_single_float(expf(f));
-     } else if (x.single_floatp()) {
-       float f = x.unsafe_single_float();
-       return clasp_make_single_float(expf(f));
-     }
-     return x->exp_();
-   }
+  inline bool clasp_float_nan_p(Float_sp num) {
+    if (num.single_floatp()) {
+      float f = num.unsafe_single_float();
+      return f != f;
+    }
+    return num->isnan_();
+  }
 
-   inline Number_sp clasp_sin(Number_sp x) {
-     if (x.fixnump()) {
-       float f = x.unsafe_fixnum();
-       return clasp_make_single_float(sinf(f));
-     } else if (x.single_floatp())
-       return clasp_make_single_float(sinf(x.unsafe_single_float()));
-     return x->sin_();
-   }
-   inline Number_sp clasp_cos(Number_sp x) {
-     if (x.fixnump()) {
-       float f = x.unsafe_fixnum();
-       return clasp_make_single_float(cosf(f));
-     } else if (x.single_floatp())
-       return clasp_make_single_float(cosf(x.unsafe_single_float()));
-     return x->cos_();
-   }
-   inline Number_sp clasp_tan(Number_sp x) {
-     if (x.fixnump()) {
-       float f = x.unsafe_fixnum();
-       return clasp_make_single_float(tanf(f));
-     } else if (x.single_floatp())
-       return clasp_make_single_float(tanf(x.unsafe_single_float()));
-     return x->tan_();
-   }
-
-   inline Number_sp clasp_sinh(Number_sp x) {
-     if (x.fixnump()) {
-       float f = x.unsafe_fixnum();
-       return clasp_make_single_float(sinhf(f));
-     } else if (x.single_floatp())
-       return clasp_make_single_float(sinhf(x.unsafe_single_float()));
-     return x->sinh_();
-   }
-   inline Number_sp clasp_cosh(Number_sp x) {
-     if (x.fixnump()) {
-       float f = x.unsafe_fixnum();
-       return clasp_make_single_float(coshf(f));
-     } else if (x.single_floatp())
-       return clasp_make_single_float(coshf(x.unsafe_single_float()));
-     return x->cosh_();
-   }
-   inline Number_sp clasp_tanh(Number_sp x) {
-     if (x.fixnump()) {
-       float f = x.unsafe_fixnum();
-       return clasp_make_single_float(tanhf(f));
-     } else if (x.single_floatp())
-       return clasp_make_single_float(tanhf(x.unsafe_single_float()));
-     return x->tanh_();
-   }
-
-   inline Number_sp clasp_conjugate(Number_sp x) {
-     if (x.fixnump())
-       return x;
-     if (x.single_floatp())
-       return x;
-     return x->conjugate_();
-   }
-
-   inline bool clasp_float_nan_p(Float_sp num) {
-     if (num.single_floatp()) {
-       float f = num.unsafe_single_float();
-       return f != f;
-     }
-     return num->isnan_();
-   }
-
-   inline bool clasp_float_infinity_p(Float_sp num) {
-     if (num.single_floatp()) {
-       float f = num.unsafe_single_float();
-       return std::isinf(f);
-     }
-     return num->isnan_();
-   }
+  inline bool clasp_float_infinity_p(Float_sp num) {
+    if (num.single_floatp()) {
+      float f = num.unsafe_single_float();
+      return std::isinf(f);
+    }
+    return num->isnan_();
+  }
 
 
-   CL_LISPIFY_NAME(general-two-arg-_PLUS_);
-   CL_EXTERN_DEFUN(&core::contagen_add);
-   CL_LISPIFY_NAME(general-two-arg-_MINUS_);
-   CL_EXTERN_DEFUN(&core::contagen_sub);
-   CL_LISPIFY_NAME(general-two-arg-_TIMES_);
-   CL_EXTERN_DEFUN(&core::contagen_mul);
-   CL_LISPIFY_NAME(general-two-arg-_DIVIDE_);
-   CL_EXTERN_DEFUN(&core::contagen_div);
-   CL_LISPIFY_NAME(general-two-arg-_LT_);
-   CL_EXTERN_DEFUN(&core::two_arg__LT_);
-   CL_LISPIFY_NAME(general-two-arg-_LE_);
-   CL_EXTERN_DEFUN(&core::two_arg__LE_);
-   CL_LISPIFY_NAME(general-two-arg-_GT_);
-   CL_EXTERN_DEFUN(&core::two_arg__GT_);
-   CL_LISPIFY_NAME(general-two-arg-_GE_);
-   CL_EXTERN_DEFUN(&core::two_arg__GE_);
-   CL_LISPIFY_NAME(general-two-arg-_EQ_);
-   CL_EXTERN_DEFUN(&core::two_arg__EQ_);
+  CL_LISPIFY_NAME(general-two-arg-_PLUS_);
+  CL_EXTERN_DEFUN(&core::contagen_add);
+  CL_LISPIFY_NAME(general-two-arg-_MINUS_);
+  CL_EXTERN_DEFUN(&core::contagen_sub);
+  CL_LISPIFY_NAME(general-two-arg-_TIMES_);
+  CL_EXTERN_DEFUN(&core::contagen_mul);
+  CL_LISPIFY_NAME(general-two-arg-_DIVIDE_);
+  CL_EXTERN_DEFUN(&core::contagen_div);
+  CL_LISPIFY_NAME(general-two-arg-_LT_);
+  CL_EXTERN_DEFUN(&core::two_arg__LT_);
+  CL_LISPIFY_NAME(general-two-arg-_LE_);
+  CL_EXTERN_DEFUN(&core::two_arg__LE_);
+  CL_LISPIFY_NAME(general-two-arg-_GT_);
+  CL_EXTERN_DEFUN(&core::two_arg__GT_);
+  CL_LISPIFY_NAME(general-two-arg-_GE_);
+  CL_EXTERN_DEFUN(&core::two_arg__GE_);
+  CL_LISPIFY_NAME(general-two-arg-_EQ_);
+  CL_EXTERN_DEFUN(&core::two_arg__EQ_);
 
- };
+};
 
 #endif //]

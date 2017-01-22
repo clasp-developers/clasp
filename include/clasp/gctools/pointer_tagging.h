@@ -116,9 +116,9 @@ namespace gctools {
   static const unsigned long most_positive_ulong = std::numeric_limits<unsigned long>::max();
 
   // --- LONG LONG ---
-  static const long long most_negative_long_long = std::numeric_limits<long long>::min();
-  static const long long most_positive_long_long = std::numeric_limits<long long>::max();
-  static const unsigned long long most_positive_unsigned_long_long = std::numeric_limits<unsigned long long>::max();
+  static const long long most_negative_longlong = std::numeric_limits<long long>::min();
+  static const long long most_positive_longlong = std::numeric_limits<long long>::max();
+  static const unsigned long long most_positive_ulonglong = std::numeric_limits<unsigned long long>::max();
 
   // --- INT8 ---
   static const int8_t most_negative_int8 = std::numeric_limits<int8_t>::min();

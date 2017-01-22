@@ -225,7 +225,7 @@ inline unsigned long Bignum_O::as_ulong() const {
 // -- LONG LONG --
 
 inline long long Bignum_O::as_longlong() const {
-  if(( this->get().get_si() >= gc::most_negative_long_long ) && ( this->get().get_si() <= gc::most_positive_long_long )) {
+  if(( this->get().get_si() >= gc::most_negative_longlong ) && ( this->get().get_si() <= gc::most_positive_longlong )) {
     return (long long) this->get().get_si();
   }
 
@@ -233,7 +233,7 @@ inline long long Bignum_O::as_longlong() const {
 }
 
 inline unsigned long long Bignum_O::as_ulonglong() const {
-  if( this->get().get_ui() <= gc::most_positive_long_long ) {
+  if( this->get().get_ui() <= gc::most_positive_longlong ) {
     return (unsigned long long) this->get().get_ui();
   }
 

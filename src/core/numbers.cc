@@ -1409,6 +1409,234 @@ T_sp Integer_O::makeIntegerType(gc::Fixnum low, gc::Fixnum hi) {
   return Cons_O::createList(cl::_sym_Integer_O, Integer_O::create(low), Integer_O::create(hi));
 }
 
+Integer_sp Integer_O::create( gctools::Fixnum v )
+{
+  if ( v >= gc::most_negative_fixnum && v <= gc::most_positive_fixnum )
+  {
+    return make_fixnum(v);
+  }
+
+  Bignum z( v );
+  return Bignum_O::create( z );
+}
+
+Integer_sp Integer_O::create( int8_t v)
+{
+  if(( v >= gc::most_negative_fixnum) && (v <= gc::most_positive_fixnum ))
+  {
+    return Integer_O::create( (Fixnum) v );
+  }
+
+  Bignum z;
+  mpz_import(z.get_mpz_t(), 2, _lisp->integer_ordering()._mpz_import_word_order,
+             _lisp->integer_ordering()._mpz_import_size,
+             _lisp->integer_ordering()._mpz_import_endian, 0, &v);
+  return Bignum_O::create( z );
+}
+
+Integer_sp Integer_O::create( uint8_t v )
+{
+  if ( v <= gc::most_positive_fixnum )
+  {
+    return Integer_O::create((Fixnum)v);
+  }
+  Bignum z;
+  mpz_import(z.get_mpz_t(), 2, _lisp->integer_ordering()._mpz_import_word_order,
+             _lisp->integer_ordering()._mpz_import_size,
+             _lisp->integer_ordering()._mpz_import_endian, 0, &v);
+  return Bignum_O::create( z );
+}
+
+Integer_sp Integer_O::create( int16_t v)
+{
+  if(( v >= gc::most_negative_fixnum) && (v <= gc::most_positive_fixnum ))
+  {
+    return Integer_O::create( (Fixnum) v );
+  }
+
+  Bignum z;
+  mpz_import(z.get_mpz_t(), 2, _lisp->integer_ordering()._mpz_import_word_order,
+             _lisp->integer_ordering()._mpz_import_size,
+             _lisp->integer_ordering()._mpz_import_endian, 0, &v);
+  return Bignum_O::create( z );
+}
+
+Integer_sp Integer_O::create( uint16_t v )
+{
+  if ( v <= gc::most_positive_fixnum )
+  {
+    return Integer_O::create((Fixnum)v);
+  }
+  Bignum z;
+  mpz_import(z.get_mpz_t(), 2, _lisp->integer_ordering()._mpz_import_word_order,
+             _lisp->integer_ordering()._mpz_import_size,
+             _lisp->integer_ordering()._mpz_import_endian, 0, &v);
+  return Bignum_O::create( z );
+}
+
+Integer_sp Integer_O::create( int32_t v)
+{
+  if(( v >= gc::most_negative_fixnum) && (v <= gc::most_positive_fixnum ))
+  {
+    return Integer_O::create( (Fixnum) v );
+  }
+
+  Bignum z;
+  mpz_import(z.get_mpz_t(), 2, _lisp->integer_ordering()._mpz_import_word_order,
+             _lisp->integer_ordering()._mpz_import_size,
+             _lisp->integer_ordering()._mpz_import_endian, 0, &v);
+  return Bignum_O::create( z );
+}
+
+Integer_sp Integer_O::create( uint32_t v )
+{
+  if ( v <= gc::most_positive_fixnum )
+  {
+    return Integer_O::create((Fixnum)v);
+  }
+  Bignum z;
+  mpz_import(z.get_mpz_t(), 2, _lisp->integer_ordering()._mpz_import_word_order,
+             _lisp->integer_ordering()._mpz_import_size,
+             _lisp->integer_ordering()._mpz_import_endian, 0, &v);
+  return Bignum_O::create( z );
+}
+
+#ifndef _TARGET_OS_LINUX
+
+Integer_sp Integer_O::create(int64_t v) {
+  if(( v >= gc::most_negative_fixnum) && (v <= gc::most_positive_fixnum )) {
+    return Integer_O::create((Fixnum)v);
+  }
+  Bignum z;
+  mpz_import(z.get_mpz_t(), 2, _lisp->integer_ordering()._mpz_import_word_order,
+             _lisp->integer_ordering()._mpz_import_size,
+             _lisp->integer_ordering()._mpz_import_endian, 0, &v);
+  return Bignum_O::create(z);
+}
+
+Integer_sp Integer_O::create(uint64_t v) {
+  if (v <= gc::most_positive_fixnum) {
+    return Integer_O::create((Fixnum)v);
+  }
+  Bignum z;
+  mpz_import(z.get_mpz_t(), 2, _lisp->integer_ordering()._mpz_import_word_order,
+             _lisp->integer_ordering()._mpz_import_size,
+             _lisp->integer_ordering()._mpz_import_endian, 0, &v);
+  return Bignum_O::create(z);
+}
+
+#endif
+
+// THOSE FNS ARE ALERADY IMPLEMENTED ABOVE
+
+// Integer_sp Integer_O::create( short v)
+// {
+//   if(( v >= gc::most_negative_fixnum) && (v <= gc::most_positive_fixnum ))
+//   {
+//     return Integer_O::create( (Fixnum) v );
+//   }
+
+//   Bignum z;
+//   mpz_import(z.get_mpz_t(), 2, _lisp->integer_ordering()._mpz_import_word_order,
+//              _lisp->integer_ordering()._mpz_import_size,
+//              _lisp->integer_ordering()._mpz_import_endian, 0, &v);
+//   return Bignum_O::create( z );
+// }
+
+// Integer_sp Integer_O::create( unsigned short v )
+// {
+//   if ( v <= gc::most_positive_fixnum )
+//   {
+//     return Integer_O::create((Fixnum)v);
+//   }
+//   Bignum z;
+//   mpz_import(z.get_mpz_t(), 2, _lisp->integer_ordering()._mpz_import_word_order,
+//              _lisp->integer_ordering()._mpz_import_size,
+//              _lisp->integer_ordering()._mpz_import_endian, 0, &v);
+//   return Bignum_O::create( z );
+// }
+
+// Integer_sp Integer_O::create( int v)
+// {
+//   if(( v >= gc::most_negative_fixnum) && (v <= gc::most_positive_fixnum ))
+//   {
+//     return Integer_O::create( (Fixnum) v );
+//   }
+
+//   Bignum z;
+//   mpz_import(z.get_mpz_t(), 2, _lisp->integer_ordering()._mpz_import_word_order,
+//              _lisp->integer_ordering()._mpz_import_size,
+//              _lisp->integer_ordering()._mpz_import_endian, 0, &v);
+//   return Bignum_O::create( z );
+// }
+
+// Integer_sp Integer_O::create( unsigned int v )
+// {
+//   if ( v <= gc::most_positive_fixnum )
+//   {
+//     return Integer_O::create((Fixnum)v);
+//   }
+//   Bignum z;
+//   mpz_import(z.get_mpz_t(), 2, _lisp->integer_ordering()._mpz_import_word_order,
+//              _lisp->integer_ordering()._mpz_import_size,
+//              _lisp->integer_ordering()._mpz_import_endian, 0, &v);
+//   return Bignum_O::create( z );
+// }
+
+// Integer_sp Integer_O::create( long v)
+// {
+//   if(( v >= gc::most_negative_fixnum) && (v <= gc::most_positive_fixnum ))
+//   {
+//     return Integer_O::create( (Fixnum) v );
+//   }
+
+//   Bignum z;
+//   mpz_import(z.get_mpz_t(), 2, _lisp->integer_ordering()._mpz_import_word_order,
+//              _lisp->integer_ordering()._mpz_import_size,
+//              _lisp->integer_ordering()._mpz_import_endian, 0, &v);
+//   return Bignum_O::create( z );
+// }
+
+// Integer_sp Integer_O::create( unsigned long v )
+// {
+//   if ( v <= gc::most_positive_fixnum )
+//   {
+//     return Integer_O::create((Fixnum)v);
+//   }
+//   Bignum z;
+//   mpz_import(z.get_mpz_t(), 2, _lisp->integer_ordering()._mpz_import_word_order,
+//              _lisp->integer_ordering()._mpz_import_size,
+//              _lisp->integer_ordering()._mpz_import_endian, 0, &v);
+//   return Bignum_O::create( z );
+// }
+
+// Integer_sp Integer_O::create( long long v)
+// {
+//   if(( v >= gc::most_negative_fixnum) && (v <= gc::most_positive_fixnum ))
+//   {
+//     return Integer_O::create( (Fixnum) v );
+//   }
+
+//   Bignum z;
+//   mpz_import(z.get_mpz_t(), 2, _lisp->integer_ordering()._mpz_import_word_order,
+//              _lisp->integer_ordering()._mpz_import_size,
+//              _lisp->integer_ordering()._mpz_import_endian, 0, &v);
+//   return Bignum_O::create( z );
+// }
+
+// Integer_sp Integer_O::create( unsigned long long v )
+// {
+//   if ( v <= gc::most_positive_fixnum )
+//   {
+//     return Integer_O::create((Fixnum)v);
+//   }
+//   Bignum z;
+//   mpz_import(z.get_mpz_t(), 2, _lisp->integer_ordering()._mpz_import_word_order,
+//              _lisp->integer_ordering()._mpz_import_size,
+//              _lisp->integer_ordering()._mpz_import_endian, 0, &v);
+//   return Bignum_O::create( z );
+// }
+
 Integer_sp Integer_O::create(float v) {
   if (v > (float)(std::numeric_limits<int>::min()) && v < (float)(std::numeric_limits<int>::max())) {
     return make_fixnum((int)v);
@@ -1444,38 +1672,6 @@ Integer_sp Integer_O::create(const mpz_class &v) {
   return Bignum_O::create(v);
 }
 
-Integer_sp Integer_O::create(gctools::Fixnum v) {
-  if (v >= gc::most_negative_fixnum && v <= gc::most_positive_fixnum) {
-    return make_fixnum(v);
-  }
-  Bignum z(v);
-  return Bignum_O::create(z);
-}
-
-#ifndef _TARGET_OS_LINUX
-Integer_sp Integer_O::create(int64_t v) {
-  if(( v >= gc::most_negative_fixnum) && (v <= gc::most_positive_fixnum )) {
-    return Integer_O::create((Fixnum)v);
-  }
-  Bignum z;
-  mpz_import(z.get_mpz_t(), 2, _lisp->integer_ordering()._mpz_import_word_order,
-             _lisp->integer_ordering()._mpz_import_size,
-             _lisp->integer_ordering()._mpz_import_endian, 0, &v);
-  return Bignum_O::create(z);
-}
-
-Integer_sp Integer_O::create(uint64_t v) {
-  if (v <= gc::most_positive_fixnum) {
-    return Integer_O::create((Fixnum)v);
-  }
-  Bignum z;
-  mpz_import(z.get_mpz_t(), 2, _lisp->integer_ordering()._mpz_import_word_order,
-             _lisp->integer_ordering()._mpz_import_size,
-             _lisp->integer_ordering()._mpz_import_endian, 0, &v);
-  return Bignum_O::create(z);
-}
-
-#endif
 Integer_sp Integer_O::create(cl_intptr_t v) {
   if (v <= gc::most_positive_fixnum) {
     return Integer_O::create((Fixnum)v);
@@ -2734,7 +2930,7 @@ Number_sp DoubleFloat_O::rational(double d) {
 }
 
 
-      
+
   Number_sp DoubleFloat_O::log1p_() const {
     double f = this->as_double_();
     if (std::isnan(f))
@@ -2847,44 +3043,25 @@ Number_sp DoubleFloat_O::rational(double d) {
   SYMBOL_EXPORT_SC_(CorePkg, log1p);
   SYMBOL_EXPORT_SC_(ClPkg, expt);
   SYMBOL_EXPORT_SC_(ClPkg, exp);
-#if 0
-  CL_LISPIFY_NAME(general-two-arg-_PLUS_);
-  CL_EXTERN_DEFUN(&core::contagen_add);
-  CL_LISPIFY_NAME(general-two-arg-_MINUS_);
-  CL_EXTERN_DEFUN(&core::contagen_sub);
-  CL_LISPIFY_NAME(general-two-arg-_TIMES_);
-  CL_EXTERN_DEFUN(&core::contagen_mul);
-  CL_LISPIFY_NAME(general-two-arg-_DIVIDE_);
-  CL_EXTERN_DEFUN(&core::contagen_div);
-  CL_LISPIFY_NAME(general-two-arg-_LT_);
-  CL_EXTERN_DEFUN(&core::two_arg__LT_);
-  CL_LISPIFY_NAME(general-two-arg-_LE_);
-  CL_EXTERN_DEFUN(&core::two_arg__LE_);
-  CL_LISPIFY_NAME(general-two-arg-_GT_);
-  CL_EXTERN_DEFUN(&core::two_arg__GT_);
-  CL_LISPIFY_NAME(general-two-arg-_GE_);
-  CL_EXTERN_DEFUN(&core::two_arg__GE_);
-  CL_LISPIFY_NAME(general-two-arg-_EQ_);
-  CL_EXTERN_DEFUN(&core::two_arg__EQ_);
-#endif
 
   // === CLASP_TO- TRANSLATORS ===
 
+  // --- FIXNUM ---
 
-  ALWAYS_INLINE gc::Fixnum clasp_to_fixnum( core::T_sp x )
+  ALWAYS_INLINE Fixnum clasp_to_fixnum( core::T_sp x )
   {
     if ( x.fixnump() )
     {
-      gctools::Fixnum farg = x.unsafe_fixnum();
-
-      if (farg < gc::most_negative_fixnum || farg > gc::most_positive_fixnum)
+      gc::Fixnum f = x.unsafe_fixnum();
+      if (f >= gc::most_negative_fixnum && f <= gc::most_positive_fixnum)
       {
-        TYPE_ERROR(x, Cons_O::createList(cl::_sym_Integer_O, make_fixnum(gc::most_negative_fixnum), make_fixnum(gc::most_positive_fixnum)));
+        return f;
       }
-      return farg;
+      TYPE_ERROR( x, Cons_O::createList(cl::_sym_Integer_O, make_fixnum(gc::most_negative_fixnum), make_fixnum(gc::most_positive_fixnum)));
     }
-    TYPE_ERROR(x, Cons_O::createList(cl::_sym_Integer_O, make_fixnum(gc::most_negative_fixnum), make_fixnum(gc::most_positive_fixnum)));
-  }
+    return (gc::As< Integer_sp >(x))->as_int_();
+  };
+
 
   // --- SHORT ---
 
@@ -2992,9 +3169,9 @@ Number_sp DoubleFloat_O::rational(double d) {
     {
       gctools::Fixnum farg = x.unsafe_fixnum();
 
-      if (farg < gc::most_negative_long_long || farg > gc::most_positive_long_long)
+      if (farg < gc::most_negative_longlong || farg > gc::most_positive_longlong)
       {
-        TYPE_ERROR(x, Cons_O::createList(cl::_sym_Integer_O, make_fixnum(gc::most_negative_long_long), make_fixnum(gc::most_positive_long_long)));
+        TYPE_ERROR(x, Cons_O::createList(cl::_sym_Integer_O, make_fixnum(gc::most_negative_longlong), make_fixnum(gc::most_positive_longlong)));
       }
       return (long long) farg;
     }
@@ -3007,9 +3184,9 @@ Number_sp DoubleFloat_O::rational(double d) {
     {
       gctools::Fixnum farg = x.unsafe_fixnum();
 
-      if (farg < 0 || farg > gc::most_positive_unsigned_long_long)
+      if (farg < 0 || farg > gc::most_positive_ulonglong)
       {
-        TYPE_ERROR(x, Cons_O::createList(cl::_sym_Integer_O, make_fixnum(0), make_fixnum(gc::most_positive_unsigned_long_long)));
+        TYPE_ERROR(x, Cons_O::createList(cl::_sym_Integer_O, make_fixnum(0), make_fixnum(gc::most_positive_ulonglong)));
       }
       return (unsigned long long) farg;
     }
@@ -3185,7 +3362,7 @@ Number_sp DoubleFloat_O::rational(double d) {
 
   // --- MPZ ---
 
-  ALWAYS_INLINE mpz_class clasp_to_mpz(Integer_sp x)
+  ALWAYS_INLINE mpz_class clasp_to_mpz( core::T_sp x )
   {
     if (x.fixnump())
     {
@@ -3193,41 +3370,31 @@ Number_sp DoubleFloat_O::rational(double d) {
       mpz_class z = fn;
       return z;
     }
-    return x->as_mpz_();
+    return (gc::As< Integer_sp >(x))->as_mpz_();
   }
 
   // --- LONG LONG ---
 
-  ALWAYS_INLINE unsigned long long clasp_to_unsigned_long_long(Integer_sp i) {
-    if (i.fixnump()) {
-      gc::Fixnum f = i.unsafe_fixnum();
-      if (f >= 0 && f <= gc::most_positive_unsigned_long_long) {
+  ALWAYS_INLINE unsigned long long clasp_to_unsigned_long_long( core::T_sp x )
+  {
+    if ( x.fixnump() )
+    {
+      gc::Fixnum f = x.unsafe_fixnum();
+      if (f >= 0 && f <= gc::most_positive_ulonglong)
+      {
         return (unsigned long long)f;
       }
-    // unsigned long int must == unsigned long long int
-      mpz_class z = clasp_create_mpz_class(gc::most_positive_unsigned_long_long);
-      TYPE_ERROR(i, Cons_O::createList(cl::_sym_Integer_O, make_fixnum(0),
+    // unsigned long int must be == unsigned long long int
+      mpz_class z = clasp_create_mpz_class(gc::most_positive_ulonglong);
+      TYPE_ERROR( x, Cons_O::createList(cl::_sym_Integer_O, make_fixnum(0),
                                        Integer_O::create(z)));
     }
-    return i->as_ulonglong();
-  };
-
-  // --- FIXNUM ---
-
-  ALWAYS_INLINE Fixnum clasp_to_fixnum(Integer_sp i) {
-    if (i.fixnump()) {
-      gc::Fixnum f = i.unsafe_fixnum();
-      if (f >= gc::most_negative_fixnum && f <= gc::most_positive_fixnum) {
-        return f;
-      }
-      TYPE_ERROR(i, Cons_O::createList(cl::_sym_Integer_O, make_fixnum(gc::most_negative_fixnum), make_fixnum(gc::most_positive_fixnum)));
-    }
-    return i->as_int_();
+    return (gc::As< Integer_sp >(x))->as_ulonglong();
   };
 
   // --- SIZE ---
 
-  ALWAYS_INLINE size_t clasp_to_size_t( T_sp x )
+  ALWAYS_INLINE size_t clasp_to_size_t( core::T_sp x )
   {
     if ( x.fixnump() )
     {
@@ -3243,14 +3410,14 @@ Number_sp DoubleFloat_O::rational(double d) {
     SIMPLE_ERROR(BF("Cannot convert cl_intptr_t to size_t"));
   }
 
-  ALWAYS_INLINE cl_index clasp_to_size( T_sp x )
+  ALWAYS_INLINE cl_index clasp_to_size( core::T_sp x )
   {
     return clasp_to_size_t( x );
   }
 
   // --- SSIZE ---
 
-  ALWAYS_INLINE ssize_t clasp_to_ssize_t( T_sp x )
+  ALWAYS_INLINE ssize_t clasp_to_ssize_t( core::T_sp x )
   {
     if ( x.fixnump() )
     {
@@ -3263,21 +3430,21 @@ Number_sp DoubleFloat_O::rational(double d) {
       return (ssize_t) farg;
     }
 
-    Integer_sp sp_i = gc::AsOrNull< Integer_sp >( x );
+    Integer_sp sp_i = gc::As< Integer_sp >( x );
     if( sp_i )
       return sp_i->as_size_t();
     else
       SIMPLE_ERROR(BF("Cannot convert cl_intptr_t to char."));
   }
 
-  ALWAYS_INLINE ssize_t clasp_to_ssize( T_sp x )
+  ALWAYS_INLINE ssize_t clasp_to_ssize( core::T_sp x )
   {
     return clasp_to_size_t( x );
   }
 
   // --- FLOAT ---
 
-  ALWAYS_INLINE float clasp_to_float( T_sp x )
+  ALWAYS_INLINE float clasp_to_float( core::T_sp x )
   {
     if (x.fixnump())
     {
@@ -3291,13 +3458,13 @@ Number_sp DoubleFloat_O::rational(double d) {
         return d;
       }
 
-    Integer_sp sp_i = gc::AsOrNull< Integer_sp >( x );
+    Integer_sp sp_i = gc::As< Integer_sp >( x );
     return sp_i->as_float_();
   }
 
   // --- DOUBLE ---
 
-  ALWAYS_INLINE double clasp_to_double( T_sp x )
+  ALWAYS_INLINE double clasp_to_double( core::T_sp x )
   {
     if (x.fixnump())
     {
@@ -3311,15 +3478,17 @@ Number_sp DoubleFloat_O::rational(double d) {
        return d;
       }
 
-    Integer_sp sp_i = gc::AsOrNull< Integer_sp >( x );
+    Integer_sp sp_i = gc::As< Integer_sp >( x );
     return sp_i->as_double_();
   };
 
-  ALWAYS_INLINE LongFloat clasp_to_long_float(Number_sp x) {
+  ALWAYS_INLINE LongFloat clasp_to_long_float(Number_sp x)
+  {
     return x->as_long_float_();
   };
 
-  ALWAYS_INLINE LongFloat clasp_to_long_double(Number_sp x) {
+  ALWAYS_INLINE LongFloat clasp_to_long_double(Number_sp x)
+  {
     return x->as_long_float_();
   };
 

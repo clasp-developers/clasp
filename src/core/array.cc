@@ -28,6 +28,7 @@ THE SOFTWARE.
 
 #include <clasp/core/common.h>
 #include <clasp/core/corePackage.h>
+#include <clasp/core/bformat.h>
 #include <clasp/core/symbolTable.h>
 #include <clasp/core/evaluator.h>
 #include <clasp/core/numbers.h>

@@ -501,6 +501,8 @@ gctools::return_type cc_dispatch_effective_method(core::T_O* teffective_method, 
 
 };
 
+extern "C" {
+
 // ----------------------------------------------------------------------------
 // ----------------------------------------------------------------------------
 // M K -FUNCTIONS
@@ -1362,7 +1364,7 @@ ALWAYS_INLINE core::T_O* tr_from_object_pointer( core::T_O* obj )
 
 ALWAYS_INLINE core::T_O* to_object_pointer( void * x )
 {
-  return translate::to_object< void * >::convert(x).raw_();
+  return translate::to_object< void * >::convert( x ).raw_();
 }
 
 ALWAYS_INLINE core::T_O* tr_to_object_pointer( core::T_O* raw_ )
@@ -1386,12 +1388,13 @@ void initialize_raw_translators( void )
 
 } // initialize_raw_translators
 
-}; // namespace llvmo
-
-namespace llvmo {
-void initialize_intrinsics() {
+void initialize_intrinsics( void )
+{
   // Do nothing
+
+  return;
 }
-};
+
+}; // namespace llvmo
 
 #pragma GCC visibility pop

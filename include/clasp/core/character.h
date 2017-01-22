@@ -4,14 +4,14 @@
 
 /*
 Copyright (c) 2014, Christian E. Schafmeister
- 
+
 CLASP is free software; you can redistribute it and/or
 modify it under the terms of the GNU Library General Public
 License as published by the Free Software Foundation; either
 version 2 of the License, or (at your option) any later version.
- 
+
 See directory 'clasp/licenses' for full details.
- 
+
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
 
@@ -36,7 +36,7 @@ namespace core {
   // Utility
   void notCharacterError();
   void handleWideCharactersError(claspCharacter cc);
-  
+
 Character_sp clasp_make_standard_character(claspCharacter c);
 inline claspCharacter unbox_character(Character_sp c) {
   return c.unsafe_character();
@@ -72,19 +72,37 @@ inline short clasp_digit_char(Fixnum w, Fixnum r) {
             the_type == cl::_sym_extended_char ||
             the_type == cl::_sym_standard_char );
  }
- 
+
 }; /* core */
 
 namespace translate {
 
-template <>
-struct to_object<char> {
-  typedef uint GivenType;
-  static core::T_sp convert(GivenType v) {
-    _G();
-    return core::clasp_make_character(v);
-  }
-};
+  template <>
+    struct from_object< char, std::true_type >
+  {
+    typedef char DeclareType;
+
+    DeclareType _v;
+  from_object( core::T_sp o ) : _v( o.unsafe_character() ){};
+  };
+
+  // template <>
+  //   struct from_object< unsigned char, std::true_type >
+  // {
+  //   typedef unsigned char DeclareType;
+
+  //   DeclareType _v;
+  // from_object( core::T_sp o ) : _v( o.unsafe_character() ){};
+  // };
+
+  template <>
+    struct to_object<char> {
+    typedef uint GivenType;
+    static core::T_sp convert(GivenType v) {
+      _G();
+      return core::clasp_make_character(v);
+    }
+  };
 };
 
 namespace core {
@@ -123,7 +141,7 @@ inline bool clasp_alphanumericp(claspCharacter i) {
  inline bool clasp_base_char_p(Character_sp c) {
    return c.unsafe_character()>=0 && c.unsafe_character()<=255;
  }
- 
+
  inline bool clasp_isupper(claspCharacter cc) {
    // FIXME : handle unicode
     unlikely_if (cc>255) handleWideCharactersError(cc);
@@ -136,7 +154,7 @@ inline bool clasp_alphanumericp(claspCharacter i) {
     return islower(cc);
  }
 
-   
+
 inline Character_sp clasp_make_standard_character(claspCharacter c) {
   return gc::make_tagged_character(c);
 }
