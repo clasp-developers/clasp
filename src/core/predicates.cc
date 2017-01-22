@@ -4,14 +4,14 @@
 
 /*
 Copyright (c) 2014, Christian E. Schafmeister
- 
+
 CLASP is free software; you can redistribute it and/or
 modify it under the terms of the GNU Library General Public
 License as published by the Free Software Foundation; either
 version 2 of the License, or (at your option) any later version.
- 
+
 See directory 'clasp/licenses' for full details.
- 
+
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
 
@@ -24,20 +24,19 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#define DEBUG_LEVEL_FULL
+//#define DEBUG_LEVEL_FULL
 
 #include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
 #include <clasp/core/lispList.h>
 #include <clasp/core/metaClass.h>
+#include <clasp/core/array.h>
 #include <clasp/core/package.h>
 #include <clasp/core/bignum.h>
 #include <clasp/core/closPackage.h>
-#include <clasp/core/bitVector.h>
 #include <clasp/core/pathname.h>
 #include <clasp/core/hashTable.h>
 #include <clasp/core/random.h>
-#include <clasp/core/vectorObjects.h>
 //#ifndef CLOS
 #include <clasp/core/structureObject.h>
 //#else
@@ -50,7 +49,6 @@ THE SOFTWARE.
 #include <clasp/core/externalObject.h>
 #include <clasp/core/lispStream.h>
 #include <clasp/core/fileSystem.h>
-#include <clasp/core/str.h>
 #include <clasp/core/wrappers.h>
 
 namespace core {
@@ -59,27 +57,34 @@ CL_LAMBDA(arg);
 CL_DECLARE();
 CL_DOCSTRING("baseCharP");
 CL_DEFUN bool core__base_char_p(T_sp arg) {
-  if (Character_sp c = arg.asOrNull<Character_O>()) {
-    (void)c;
-    return true;
-  }
-  return false;
+  return (arg.characterp()&&clasp_base_char_p(arg.unsafe_character()));
 };
 
 CL_DEFUN bool core__bignump(T_sp obj) {
   return gc::IsA<Bignum_sp>(obj);
 };
 
+// XXX: this should be adjusted whenever unicode is implemented
+CL_DEFUN bool core__base_string_p(T_sp obj) {
+  return gc::IsA<Str8Ns_sp>(obj) || gc::IsA<SimpleBaseString_sp>(obj);
+};
 
 CL_DEFUN bool cl__stringp(T_sp obj) {
-  return gc::IsA<String_sp>(obj);
+  return gc::IsA<SimpleString_sp>(obj) || gc::IsA<StrNs_sp>(obj);
 };
 
 CL_LAMBDA(arg);
 CL_DECLARE();
 CL_DOCSTRING("Return true if argument is a simple-string");
-CL_DEFUN bool core__simple_string_p(T_sp obj) {
-  return gc::IsA<Str_sp>(obj);
+CL_DEFUN bool cl__simple_string_p(T_sp obj) {
+  return gc::IsA<SimpleString_sp>(obj);
+};
+
+CL_LAMBDA(arg);
+CL_DECLARE();
+CL_DOCSTRING("Return true if argument is a simple-string");
+CL_DEFUN bool core__extended_string_p(T_sp obj) {
+  return gc::IsA<SimpleCharacterString_sp>(obj)||gc::IsA<StrWNs_sp>(obj);
 };
 
 CL_LAMBDA(arg);
@@ -153,7 +158,7 @@ CL_LAMBDA(arg);
 CL_DECLARE();
 CL_DOCSTRING("numberP");
 CL_DEFUN bool cl__numberp(T_sp obj) {
-  return gc::IsA<Number_sp>(obj);
+  return obj.fixnump()||obj.single_floatp()||gc::IsA<Number_sp>(obj);
 };
 
 CL_DEFUN bool cl__complexp(T_sp obj) {
@@ -175,7 +180,7 @@ CL_DEFUN bool cl__random_state_p(T_sp obj) {
 };
 
 CL_DEFUN bool cl__rationalp(T_sp obj) {
-  return gc::IsA<Rational_sp>(obj);
+  return obj.fixnump()||gc::IsA<Rational_sp>(obj);
 };
 
 CL_LAMBDA(arg);
@@ -196,19 +201,20 @@ CL_LAMBDA(arg);
 CL_DECLARE();
 CL_DOCSTRING("singleFloatP");
 CL_DEFUN bool core__single_float_p(T_sp obj) {
-  return gc::IsA<SingleFloat_sp>(obj);
+  return obj.single_floatp();
 };
 
 CL_DEFUN bool cl__realp(T_sp obj) {
-  return gc::IsA<Real_sp>(obj);
+  return obj.fixnump()||obj.single_floatp()||gc::IsA<Real_sp>(obj);
 };
 
 CL_DEFUN bool cl__floatp(T_sp obj) {
-  return gc::IsA<Float_sp>(obj);
+  return obj.single_floatp()||gc::IsA<Float_sp>(obj);
 };
 
 CL_DEFUN bool cl__vectorp(T_sp obj) {
-  return gc::IsA<Vector_sp>(obj);
+  return gc::IsA<AbstractSimpleVector_sp>(obj)
+    || (gc::IsA<MDArray_sp>(obj)&&gc::As_unsafe<MDArray_sp>(obj)->rank()==1);
 };
 
 CL_DEFUN bool cl__integerp(T_sp obj) {
@@ -222,18 +228,12 @@ CL_DEFUN bool cl__keywordp(T_sp obj) {
   return false;
 };
 
-CL_LAMBDA(arg);
-CL_DECLARE();
-CL_DOCSTRING("pathP");
-CL_DEFUN bool core__path_p(T_sp obj) {
-  return gc::IsA<Path_sp>(obj);
-};
 
 CL_LAMBDA(arg);
 CL_DECLARE();
 CL_DOCSTRING("bitVectorP");
 CL_DEFUN bool cl__bit_vector_p(T_sp obj) {
-  return gc::IsA<BitVector_sp>(obj);
+  return gc::IsA<SimpleBitVector_sp>(obj)||gc::IsA<BitVector_sp>(obj);
 };
 
 CL_LAMBDA(arg);
@@ -292,22 +292,14 @@ CL_LAMBDA(arg);
 CL_DECLARE();
 CL_DOCSTRING("simple_bit_vector_p");
 CL_DEFUN bool cl__simple_bit_vector_p(T_sp o) {
-  if (SimpleBitVector_sp sbv = o.asOrNull<SimpleBitVector_O>()) {
-    (void)sbv;
-    return true;
-  }
-  return false;
+  return gc::IsA<SimpleBitVector_sp>(o);
 };
 
 CL_LAMBDA(arg);
 CL_DECLARE();
 CL_DOCSTRING("simple_vector_p");
 CL_DEFUN bool cl__simple_vector_p(T_sp o) {
-  if (VectorObjects_sp vo = o.asOrNull<VectorObjects_O>()) {
-    (void)vo;
-    return true;
-  }
-  return false;
+  return gc::IsA<SimpleVector_sp>(o);
 };
 
 CL_LAMBDA(arg);
@@ -325,10 +317,8 @@ CL_LAMBDA(arg);
 CL_DECLARE();
 CL_DOCSTRING("genericFunctionP");
 CL_DEFUN bool core__generic_function_p(T_sp o) {
-  if (Function_sp cf = o.asOrNull<Function_O>()) {
-    (void)cf;
-    IMPLEMENT_MEF(BF("I should have a more sophisticated test here"));
-    return true;
+  if (gc::IsA<Instance_sp>(o)) {
+    return gc::As_unsafe<Instance_sp>(o)->isgf();
   }
   return false;
 };

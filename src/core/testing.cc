@@ -4,14 +4,14 @@
 
 /*
 Copyright (c) 2014, Christian E. Schafmeister
- 
+
 CLASP is free software; you can redistribute it and/or
 modify it under the terms of the GNU Library General Public
 License as published by the Free Software Foundation; either
 version 2 of the License, or (at your option) any later version.
- 
+
 See directory 'clasp/licenses' for full details.
- 
+
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
 
@@ -24,7 +24,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#define DEBUG_LEVEL_FULL
+//#define DEBUG_LEVEL_FULL
 
 #include <clasp/core/common.h>
 #include <clasp/core/corePackage.h>
@@ -36,7 +36,6 @@ THE SOFTWARE.
 #include <clasp/core/readtable.h>
 #include <clasp/core/instance.h>
 //#include "core/structureObject.h"
-#include <clasp/core/bitVector.h>
 #include <clasp/core/genericFunction.h>
 #include <clasp/core/pointer.h>
 #include <clasp/core/lispMath.h>
@@ -44,7 +43,7 @@ THE SOFTWARE.
 #include <clasp/core/null.h>
 //#include "debugger.h"
 #include <clasp/core/ql.h>
-#include <clasp/core/str.h>
+#include <clasp/core/array.h>
 #include <clasp/core/numbers.h>
 #include <clasp/core/evaluator.h>
 #include <clasp/core/compiler.h>
@@ -69,16 +68,6 @@ THE SOFTWARE.
 #include <clasp/core/wrappers.h>
 namespace core {
 
-CL_LAMBDA(arg);
-CL_DECLARE();
-CL_DOCSTRING("isString");
-CL_DEFUN void core__is_string(T_sp arg) {
-  if (Str_sp s = arg.asOrNull<Str_O>()) {
-    printf("The object |%s| is a string\n", s->get().c_str());
-  } else {
-    printf("The object is not a string\n");
-  }
-};
 
 CL_LAMBDA(arg);
 CL_DECLARE();
@@ -96,12 +85,12 @@ CL_DECLARE();
 CL_DOCSTRING("testVal");
 CL_DEFUN T_sp core__test_val(T_sp v) {
   if (v.fixnump()) { // Fixnum_sp fn = v.asOrNull<Fixnum_O>() ) {
-    return Str_O::create("val is fixnum");
+    return SimpleBaseString_O::make("val is fixnum");
   } else if (Symbol_sp sym = v.asOrNull<Symbol_O>()) {
     (void)sym;
-    return Str_O::create("arg is symbol");
+    return SimpleBaseString_O::make("arg is symbol");
   }
-  return Str_O::create("arg didn't match");
+  return SimpleBaseString_O::make("arg didn't match");
 };
 
   SYMBOL_EXPORT_SC_(CorePkg, isString);

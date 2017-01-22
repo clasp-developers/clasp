@@ -4,14 +4,14 @@
 
 /*
 Copyright (c) 2014, Christian E. Schafmeister
- 
+
 CLASP is free software; you can redistribute it and/or
 modify it under the terms of the GNU Library General Public
 License as published by the Free Software Foundation; either
 version 2 of the License, or (at your option) any later version.
- 
+
 See directory 'clasp/licenses' for full details.
- 
+
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
 
@@ -24,7 +24,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#define DEBUG_LEVEL_FULL
+//#define DEBUG_LEVEL_FULL
 
 //#i n c l u d e <boost/graph/properties.hpp>
 #pragma clang diagnostic push
@@ -44,7 +44,7 @@ THE SOFTWARE.
 #include <clasp/core/cons.h>
 #include <clasp/core/lambdaListHandler.h>
 #include <clasp/core/lispList.h>
-#include <clasp/core/vectorObjectsWithFillPtr.h>
+#include <clasp/core/array.h>
 #include <clasp/core/instance.h>
 #include <clasp/core/evaluator.h>
 #include <clasp/core/hashTable.h>
@@ -86,23 +86,31 @@ CL_DEFUN void core__inherit_default_allocator(Class_sp cl, T_sp directSuperclass
 
 CL_LAMBDA(original meta-class slots &optional name);
 CL_DECLARE();
-CL_DOCSTRING("allocateRawClass - behaves like ECL instance::allocate_raw_instance, The allocator for the new class is taken from (allocatorPrototype).  If (allocatorPrototype) is nil then use the allocator for Instance_O.");
-CL_DEFUN T_sp core__allocate_raw_class(T_sp orig, Class_sp metaClass, int slots, T_sp className) {
+CL_DOCSTRING(R"doc(allocate-raw-class - behaves like ECL instance::allocate_raw_instance)doc");
+CL_DEFUN T_sp core__allocate_raw_class(T_sp orig, T_sp tMetaClass, int slots, T_sp className) {
+//  printf("%s:%d core__allocate_raw_class  tMetaClass: %s   className: %s\n", __FILE__, __LINE__, _rep_(tMetaClass).c_str(), _rep_(className).c_str());
   if (orig.notnilp()) {
     SIMPLE_ERROR(BF("Deal with non-nil orig class in allocateRawClass"));
     // Check out ecl/src/c/instance.d/si_allocate_raw_instance
   }
-  ASSERTF(metaClass->hasCreator(), BF("The metaClass allocator should always be defined - for class %s it hasn't been") % _rep_(metaClass));
-  Class_sp newClass = gc::As<Class_sp>(metaClass->allocate_newNil());
-  newClass->initialize();
-  newClass->initializeSlots(slots);
+  if ( Class_sp cMetaClass = tMetaClass.asOrNull<Class_O>() ) {
+    T_sp tNewClass = cMetaClass->allocate_newNil();
+    if ( Class_sp newClass = tNewClass.asOrNull<Class_O>() ) {
+      newClass->initialize();
+      newClass->initializeSlots(slots);
 #if DEBUG_CLOS >= 2
-  printf("\nMLOG allocate-raw-CLASS    %p number_of_slots[%d]\n", (void *)(newClass.get()), slots);
+      printf("\nMLOG allocate-raw-CLASS    %p number_of_slots[%d]\n", (void *)(newClass.get()), slots);
 #endif
-  return newClass;
+      return newClass;
+    } else if ( Instance_sp iNewClass = tNewClass.asOrNull<Instance_O>() ) {
+      SIMPLE_ERROR(BF("Creating an instance of %s resulted in an instance of Instance_O") % _rep_(cMetaClass) );
+    } else {
+      SIMPLE_ERROR(BF("Creating an instance of %s resulted in something unexpected -> %s") % _rep_(cMetaClass) % _rep_(tNewClass) );
+    }
+  }
+  SIMPLE_ERROR(BF("I don't know how to make class named %s with metaclass %s") % _rep_(className) % _rep_(tMetaClass));
 };
 
-Class_O::Class_O() : Class_O::Base(), _Signature_ClassSlots(_Unbound<T_O>()), _theCreator(){};
 
 void Class_O::initializeSlots(int slots) {
   if (slots < Class_O::NumberOfClassSlots) {
@@ -131,34 +139,42 @@ gc::Nilable<Class_sp> identifyCxxDerivableAncestorClass(Class_sp aClass) {
 
 void Class_O::inheritDefaultAllocator(List_sp superclasses) {
   // If this class already has an allocator then leave it alone
-  if (this->hasCreator())
-    return;
+  if (this->has_creator()) return;
   Class_sp aCxxDerivableAncestorClass_unsafe; // Danger!  Unitialized!
   for (auto cur : superclasses) {
-    Class_sp aSuperClass = gc::As<Class_sp>(oCar(cur));
-    if (aSuperClass->cxxClassP() && !aSuperClass->cxxDerivableClassP()) {
-      SIMPLE_ERROR(BF("You cannot derive from the non-derivable C++ class %s\n"
-                      "any C++ class you want to derive from must inherit from clbind::Adapter") %
-                   _rep_(aSuperClass->className()));
-    }
-    gc::Nilable<Class_sp> aPossibleCxxDerivableAncestorClass = identifyCxxDerivableAncestorClass(aSuperClass);
-    if (aPossibleCxxDerivableAncestorClass.notnilp()) {
-      if (!aCxxDerivableAncestorClass_unsafe) {
-        aCxxDerivableAncestorClass_unsafe = aPossibleCxxDerivableAncestorClass;
-      } else {
-        SIMPLE_ERROR(BF("Only one derivable C++ class is allowed to be"
-                        " derived from at a time instead we have two %s and %s ") %
-                     _rep_(aCxxDerivableAncestorClass_unsafe->className()) % _rep_(aPossibleCxxDerivableAncestorClass->className()));
+    T_sp tsuper = oCar(cur);
+    if (Class_sp aSuperClass = tsuper.asOrNull<Class_O>() ) {
+      if (aSuperClass->cxxClassP() && !aSuperClass->cxxDerivableClassP()) {
+        SIMPLE_ERROR(BF("You cannot derive from the non-derivable C++ class %s\n"
+                        "any C++ class you want to derive from must inherit from clbind::Adapter") %
+                     _rep_(aSuperClass->className()));
       }
+      gc::Nilable<Class_sp> aPossibleCxxDerivableAncestorClass = identifyCxxDerivableAncestorClass(aSuperClass);
+      if (aPossibleCxxDerivableAncestorClass.notnilp()) {
+        if (!aCxxDerivableAncestorClass_unsafe) {
+          aCxxDerivableAncestorClass_unsafe = aPossibleCxxDerivableAncestorClass;
+        } else {
+          SIMPLE_ERROR(BF("Only one derivable C++ class is allowed to be"
+                          " derived from at a time instead we have two %s and %s ") %
+                       _rep_(aCxxDerivableAncestorClass_unsafe->className()) % _rep_(aPossibleCxxDerivableAncestorClass->className()));
+        }
+      }
+    } else if ( Instance_sp iSuperClass = tsuper.asOrNull<Instance_O>() ) {
+      SIMPLE_ERROR(BF("In Clasp, Instances are never Classes - so this error should never occur.  If it does - figure out why tsuper is an Instance"));
+      // I don't think I do anything here
+      // If aCxxDerivableAncestorClass_unsafe is left unchanged then
+      // an InstanceCreator_O will be created for this class.
     }
   }
   if (aCxxDerivableAncestorClass_unsafe) {
     // Here aCxxDerivableAncestorClass_unsafe has a value - so it's ok to dereference it
-    Creator_sp aCxxAllocator(aCxxDerivableAncestorClass_unsafe->getCreator());
+    Creator_sp aCxxAllocator(gctools::As<Creator_sp>(aCxxDerivableAncestorClass_unsafe->class_creator()));
     Creator_sp dup = aCxxAllocator->duplicateForClassName(this->name());
     this->setCreator(dup); // this->setCreator(dup.get());
   } else {
-    InstanceCreator_sp instanceAllocator = gc::GC<InstanceCreator_O>::allocate(this->name());
+    // I think this is the most common outcome -
+//    printf("%s:%d   Creating an InstanceCreator_O for the class: %s\n", __FILE__, __LINE__, _rep_(this->name()).c_str());
+    InstanceCreator_sp instanceAllocator = gc::GC<InstanceCreator_O>::allocate(this->asSmartPtr());
     //gctools::StackRootedPointer<InstanceCreator> instanceAllocator(new InstanceCreator(this->name()));
     this->setCreator(instanceAllocator); // this->setCreator(instanceAllocator.get());
   }
@@ -177,7 +193,7 @@ string Class_O::classNameAsString() const {
 
 T_sp Class_O::allocate_newNil() {
   ASSERTF(this->_theCreator, BF("The class %s does not have a creator defined") % this->classNameAsString() );
-  T_sp newObject = this->_theCreator->allocate();
+  T_sp newObject = this->_theCreator->creator_allocate();
   return newObject;
 }
 
@@ -242,7 +258,7 @@ string Class_O::dumpInfo() {
   for (auto cc : this->directSuperclasses()) {
     ss << "Base class: " << gc::As<Class_sp>(oCar(cc))->instanceClassName() << std::endl;
   }
-  ss << boost::format("this.instanceCreator* = %p") % (void *)(&*this->getCreator()) << std::endl;
+  ss << boost::format("this.instanceCreator* = %p") % (void *)(&*this->class_creator()) << std::endl;
   return ss.str();
 }
 
@@ -250,14 +266,14 @@ string Class_O::getPackagedName() const {
   return this->name()->formattedName(false);
 }
 
-void Class_O::accumulateSuperClasses(HashTableEq_sp supers, VectorObjectsWithFillPtr_sp arrayedSupers, Class_sp mc) {
+void Class_O::accumulateSuperClasses(HashTableEq_sp supers, VectorObjects_sp arrayedSupers, Class_sp mc) {
   if (IS_SYMBOL_UNDEFINED(mc->className()))
     return;
   //	printf("%s:%d accumulateSuperClasses of: %s\n", __FILE__, __LINE__, _rep_(mc->className()).c_str() );
   if (supers->contains(mc))
     return;
-  Fixnum_sp arraySuperLength = make_fixnum(arrayedSupers->length());
-  supers->setf_gethash(mc, arraySuperLength);
+  Fixnum arraySuperLength = arrayedSupers->length();
+  supers->setf_gethash(mc, clasp_make_fixnum(arraySuperLength));
   arrayedSupers->vectorPushExtend(mc);
   List_sp directSuperclasses = mc->directSuperclasses();
   //	printf("%s:%d accumulateSuperClasses arraySuperLength = %d\n", __FILE__, __LINE__, arraySuperLength->get());
@@ -288,7 +304,7 @@ namespace core {
 void Class_O::lowLevel_calculateClassPrecedenceList() {
   using namespace boost;
   HashTableEq_sp supers = HashTableEq_O::create_default();
-  VectorObjectsWithFillPtr_sp arrayedSupers(VectorObjectsWithFillPtr_O::make(_Nil<T_O>(), _Nil<T_O>(), 16, 0, true, cl::_sym_T_O));
+  VectorObjects_sp arrayedSupers(VectorObjects_O::make(16, _Nil<T_O>(), clasp_make_fixnum(0)));
   this->accumulateSuperClasses(supers, arrayedSupers, this->sharedThis<Class_O>());
   vector<list<int>> graph(cl__length(arrayedSupers));
 
@@ -461,7 +477,7 @@ void Class_O::describe(T_sp stream) {
       ss << (BF("directSuperclasses: %s\n") % gc::As<Class_sp>(oCar(cc))->instanceClassName().c_str()).str();
     }
   }
-  ss << (BF(" this.instanceCreator* = %p\n") % (void *)(this->getCreator().raw_())).str();
+  ss << (BF(" this.instanceCreator* = %p\n") % (void *)(this->class_creator().raw_())).str();
   ss << (BF("cxxClassP[%d]  cxxDerivableClassP[%d]   primaryCxxDerivableClassP[%d]\n") % this->cxxClassP() % this->cxxDerivableClassP() % this->primaryCxxDerivableClassP()).str();
   clasp_write_string(ss.str(), stream);
 }

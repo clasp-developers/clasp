@@ -4,14 +4,14 @@
 
 /*
 Copyright (c) 2014, Christian E. Schafmeister
- 
+
 CLASP is free software; you can redistribute it and/or
 modify it under the terms of the GNU Library General Public
 License as published by the Free Software Foundation; either
 version 2 of the License, or (at your option) any later version.
- 
+
 See directory 'clasp/licenses' for full details.
- 
+
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
 
@@ -24,10 +24,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#define DEBUG_LEVEL_FULL
+//#define DEBUG_LEVEL_FULL
 #include <clasp/core/foundation.h>
 #include <clasp/core/lisp.h>
-#include <clasp/core/str.h>
+#include <clasp/core/array.h>
 #include <clasp/core/symbolTable.h>
 #include <clasp/core/standardObject.h>
 #include <clasp/core/package.h>
@@ -36,7 +36,6 @@ THE SOFTWARE.
 #include <clasp/core/designators.h>
 #include <clasp/core/primitives.h>
 #include <clasp/core/instance.h>
-#include <clasp/core/vectorObjects.h>
 #include <clasp/core/sourceFileInfo.h>
 #include <clasp/core/activationFrame.h>
 #include <clasp/core/lambdaListHandler.h>
@@ -93,7 +92,8 @@ string Closure_O::nameAsString() const {
     ss << gc::As<Symbol_sp>(oCadr(cname))->symbolNameAsString();
     ss << ")";
     return ss.str();
-  } else if (Str_sp strname = this->_name.asOrNull<Str_O>()) {
+  } else if (cl__stringp(this->_name)) {
+    String_sp strname = gc::As_unsafe<String_sp>(this->_name);
     stringstream ss;
     ss << "Function-name(string-";
     ss << strname->get();
@@ -117,11 +117,24 @@ List_sp FunctionClosure_O::source_info() const {
 
 void FunctionClosure_O::set_source_info(List_sp source_info)
 {
-  T_sp sourceFileInfoHandle = oCar(source_info);
+  T_sp sourceFileInfo = oCar(source_info);
   T_sp filePos = oCadr(source_info);
   T_sp lineno = oCaddr(source_info);
   T_sp column = oCadddr(source_info);
-  this->_sourceFileInfoHandle = sourceFileInfoHandle.fixnump() ? sourceFileInfoHandle.unsafe_fixnum() : 0;
+  if (sourceFileInfo.fixnump()) {
+    this->_sourceFileInfoHandle = sourceFileInfo.unsafe_fixnum();
+  } else if (Symbol_sp sym = sourceFileInfo.asOrNull<Symbol_O>()) {
+    // do nothing - leave the sourceFileInfoHandle alone
+    if ( sym == _sym_current_source_file ) {
+      // Do nothing, leave the sourceFileInfo alone
+    } else {
+      printf("%s:%d Illegal source file name designator: %s\n", __FILE__, __LINE__, _rep_(sym).c_str());
+    }
+  } else if (cl__stringp(sourceFileInfo)) {
+    String_sp str = gc::As_unsafe<String_sp>(sourceFileInfo);
+    this->_sourceFileInfoHandle = _lisp->getOrRegisterSourceFileInfo(str->get_std_string());
+    printf("%s:%d  Function is having its source-info file set after the fact to: %s  filePos: %s\n", __FILE__,__LINE__,str->get().c_str(), _rep_(filePos).c_str());
+  }
   this->_filePos = filePos.fixnump() ? filePos.unsafe_fixnum() : 0;
   this->_lineno = lineno.fixnump() ? lineno.unsafe_fixnum() : 0;
   this->_column = column.fixnump() ? column.unsafe_fixnum() : 0;
@@ -171,7 +184,7 @@ CL_DEFUN size_t core__closure_with_slots_size(size_t number_of_slots)
 CL_DEFUN size_t core__closure_length(Closure_sp tclosure)
 {
   if ( ClosureWithSlots_sp closure = tclosure.asOrNull<ClosureWithSlots_O>() ) {
-    return closure->_Slots._Capacity;
+    return closure->_Slots._Length;
   } else if ( ClosureWithFrame_sp closure = tclosure.asOrNull<ClosureWithFrame_O>() ) {
     T_sp env = closure->closedEnvironment();
     if ( ValueEnvironment_sp ve = env.asOrNull<ValueEnvironment_O>() ) {
@@ -187,8 +200,8 @@ CL_DEFUN size_t core__closure_length(Closure_sp tclosure)
 CL_DEFUN T_sp core__closure_ref(Closure_sp tclosure, size_t index)
 {
   if ( ClosureWithSlots_sp closure = tclosure.asOrNull<ClosureWithSlots_O>() ) {
-    if ( index >= closure->_Slots._Capacity ) {
-      SIMPLE_ERROR(BF("Out of bounds closure reference - there are only %d slots") % closure->_Slots._Capacity );
+    if ( index >= closure->_Slots._Length ) {
+      SIMPLE_ERROR(BF("Out of bounds closure reference - there are only %d slots") % closure->_Slots._Length );
     }
     return closure->_Slots[index];
   } else if ( ClosureWithFrame_sp closure = tclosure.asOrNull<ClosureWithFrame_O>() ) {
@@ -294,4 +307,3 @@ LCC_RETURN InstanceClosure_O::LISP_CALLING_CONVENTION() {
 
 
 };
-

@@ -77,7 +77,7 @@ Setup the compilation-tool-database."
 
 ;;; Load a subset of the ASTs for quick testing.
 (defun load-subset-asts ()
-  (setf (clang-tool:source-namestrings *db*) (clang-tool:select-source-namestrings *db* ".*str\.cc.*"))
+  (setf (clang-tool:source-namestrings *db*) (clang-tool:select-source-namestrings *db* "str.cc"))
   (clang-tool:load-asts *db*))
 ;;; Run the matcher on the subset of ASTs
 (defun run-matcher-on-subset ()

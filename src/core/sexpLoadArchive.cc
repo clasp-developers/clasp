@@ -4,14 +4,14 @@
 
 /*
 Copyright (c) 2014, Christian E. Schafmeister
- 
+
 CLASP is free software; you can redistribute it and/or
 modify it under the terms of the GNU Library General Public
 License as published by the Free Software Foundation; either
 version 2 of the License, or (at your option) any later version.
- 
+
 See directory 'clasp/licenses' for full details.
- 
+
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
 
@@ -24,7 +24,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#define DEBUG_LEVEL_FULL
+//#define DEBUG_LEVEL_FULL
 
 #include <clasp/core/foundation.h>
 #include <clasp/core/serialize.h>
@@ -37,7 +37,7 @@ THE SOFTWARE.
 #include <clasp/core/arguments.h>
 #include <clasp/core/write_object.h>
 #include <clasp/core/symbolTable.h>
-#include <clasp/core/str.h>
+#include <clasp/core/array.h>
 #include <clasp/core/numbers.h>
 #include <clasp/core/symbol.h>
 #include <clasp/core/wrappers.h>
@@ -87,10 +87,10 @@ SNode_sp parseNode(HashTable_sp objToNode, T_sp obj) {
       VectorObjects_sp vresult(_Nil<VectorObjects_O>());
       if (oCddr(consObj).notnilp()) {
         Vector_sp vdata = gc::As<Vector_sp>(oThird(consObj));
-        vresult = VectorObjects_O::make(_Nil<T_O>(), _Nil<T_O>(), vdata->length(), true, cl::_sym_T_O);
+        vresult = VectorObjects_O::make(vdata->length(),_Nil<T_O>());
         for (int i = 0, iEnd(vdata->length()); i < iEnd; ++i) {
-          SNode_sp data = parseNode(objToNode, vdata->elt(i));
-          vresult->setf_elt(i, data);
+          SNode_sp data = parseNode(objToNode, vdata->rowMajorAref(i));
+          vresult->rowMajorAset(i, data);
         }
       }
       snode->setKind(head);

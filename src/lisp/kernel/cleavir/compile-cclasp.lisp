@@ -12,7 +12,7 @@
 (defun compile-system (first-file last-file &key recompile reload (system *cleavir-system*))
 ;;  (if *target-backend* nil (error "*target-backend* is undefined"))
   (format t "compile-system  from: ~a  to: ~a\n" first-file last-file)
-  (let* ((files (core:select-source-files last-file :first-file first-file :system system))
+  (let* ((files (core:select-source-files first-file last-file :system system))
 	 (cur files)
          bitcode-files)
     (tagbody
@@ -35,7 +35,7 @@ p  (core:pathname-translations "cclasp-boehm" '(("**;*.*" #P"SYS:build;system;cc
     (setf (symbol-value compiler-symbol) 'cl:compile-file)
     #+(or)(core:load-system :start :all :interp t )
     (if dry-run
-	(format t "Compiling files: ~a~%" (core:select-source-files to-mod :first-file from-mod :system system))
+	(format t "Compiling files: ~a~%" (core:select-source-files from-mod to-mod :system system))
 	(let* ((cmp:*cleavir-compile-file-hook* (fdefinition (find-symbol "CLEAVIR-COMPILE-FILE-FORM" "CLASP-CLEAVIR")))
 	       (bitcode-files (core:compile-system from-mod to-mod :force-recompile recompile :reload reload :system system)))
 	  (unless dont-link
@@ -87,7 +87,7 @@ p  (core:pathname-translations "cclasp-boehm" '(("**;*.*" #P"SYS:build;system;cc
                                                             (if (member :use-mps *features*) "MPS" "Boehm" ) (software-version))))
                          :epilogue-form '(progn
                                           (cl:in-package :cl-user)
-                                          (core:load-clasprc)
+                                          (core:maybe-load-clasprc)
                                           (core:process-command-line-load-eval-sequence)
                                           (let ((core:*use-interpreter-for-eval* nil))
                                             (when (member :interactive *features*) (core:top-level)))))))

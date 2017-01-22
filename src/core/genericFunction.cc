@@ -4,14 +4,14 @@
 
 /*
 Copyright (c) 2014, Christian E. Schafmeister
- 
+
 CLASP is free software; you can redistribute it and/or
 modify it under the terms of the GNU Library General Public
 License as published by the Free Software Foundation; either
 version 2 of the License, or (at your option) any later version.
- 
+
 See directory 'clasp/licenses' for full details.
- 
+
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
 
@@ -24,18 +24,18 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#define DEBUG_LEVEL_FULL
+//#define DEBUG_LEVEL_FULL
 
 #include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
 #include <clasp/core/lisp.h>
 #include <clasp/core/instance.h>
+#include <clasp/core/bformat.h>
 #include <clasp/core/primitives.h>
 #include <clasp/core/evaluator.h>
 #include <clasp/core/multipleValues.h>
-#include <clasp/core/str.h>
+#include <clasp/core/array.h>
 #include <clasp/core/predicates.h>
-#include <clasp/core/vectorObjectsWithFillPtr.h>
 #include <clasp/core/cache.h>
 #include <clasp/core/symbolTable.h>
 #include <clasp/core/genericFunction.h>
@@ -44,45 +44,6 @@ THE SOFTWARE.
 #define CACHE_METHOD_LOOKUP
 
 namespace core {
-
-/*! Trying to figure out dispatching.
-      ecl/src/c/eval.d:68 - calls functions in instance.entry
-	case t_instance:
-		switch (fun->instance.isgf) {
-		case ECL_STANDARD_DISPATCH:
-		case ECL_RESTRICTED_DISPATCH:
-			return _ecl_standard_dispatch(frame, fun);
-		case ECL_USER_DISPATCH:
-			fun = fun->instance.slots[fun->instance.length - 1];
-                        goto AGAIN;
-		case ECL_READER_DISPATCH:
-		case ECL_WRITER_DISPATCH:
-			return APPLY(narg, fun->instance.entry, sp);
-		default:
-			FEinvalid_function(fun);
-		}
-
-
-In ecl/src/c/interpreter.d  is the following code
-		case t_instance:
-			switch (reg0->instance.isgf) {
-			case ECL_STANDARD_DISPATCH:
-			case ECL_RESTRICTED_DISPATCH:
-				reg0 = _ecl_standard_dispatch(frame, reg0);
-				break;
-			case ECL_USER_DISPATCH:
-				reg0 = reg0->instance.slots[reg0->instance.length - 1];
-				goto AGAIN;
-			case ECL_READER_DISPATCH:
-			case ECL_WRITER_DISPATCH:
-				the_env->function = reg0;
-				reg0 = APPLY(narg, reg0->instance.entry, frame_aux.base);
-				break;
-			default:
-				FEinvalid_function(reg0);
-			}
-			break;
-    */
 
 SYMBOL_EXPORT_SC_(ClPkg, compute_applicable_methods);
 SYMBOL_SC_(ClosPkg, compute_applicable_methods_using_classes);
@@ -306,28 +267,32 @@ LCC_RETURN generic_function_dispatch(Instance_sp gf, VaList_sp vargs) {
   return standard_dispatch(gf, vargs, cache);
 }
 
+#if 0
 /*! Reproduces functionality in ecl_slot_reader_dispatch */
-LCC_RETURN slotReaderDispatch(Instance_sp gf, VaList_sp vargs) {
+LCC_RETURN slot_reader_dispatch(Instance_sp gf, VaList_sp vargs) {
   Cache_sp cache = _lisp->slotCachePtr();
   // Should I use standard_dispatch or do something special for slots?
   return standard_dispatch(gf, vargs, cache);
 }
 
 /*! Reproduces functionality in ecl_slot_writer_dispatch */
-LCC_RETURN slotWriterDispatch(Instance_sp gf, VaList_sp vargs) {
+LCC_RETURN slot_writer_dispatch(Instance_sp gf, VaList_sp vargs) {
   Cache_sp cache = _lisp->slotCachePtr();
   // Should I use standard_dispatch or do something special for slots?
   return standard_dispatch(gf, vargs, cache);
 }
+#endif
 
 /*! Reproduces functionality in user_function_dispatch */
-LCC_RETURN userFunctionDispatch(Instance_sp gf, VaList_sp vargs) {
-  IMPLEMENT_MEF(BF("Implement userFunctionDispatch"));
+LCC_RETURN user_function_dispatch(Instance_sp gf, VaList_sp vargs) {
+  Function_sp func = gc::As<Function_sp>(gf->instanceRef(gf->numberOfSlots()-1));
+  BFORMAT_T(BF("%s:%d a user-dispatch generic-function %s is being invoked\n") % __FILE__ % __LINE__ % _rep_(gf->name()) );
+  return core::funcall_consume_valist_<core::Function_O>(func.tagged_(),vargs); // cl__apply(func,vargs).as_return_type();
 }
 
 /*! Reproduces functionality in FEnot_funcallable_vararg */
-LCC_RETURN notFuncallableDispatch(Instance_sp gf, VaList_sp vargs) {
-  IMPLEMENT_MEF(BF("Implement notFuncallableDispatch"));
+LCC_RETURN not_funcallable_dispatch(Instance_sp gf, VaList_sp vargs) {
+  SIMPLE_ERROR(BF("Not a funcallable instance %s") % _rep_(gf));
 }
 
 CL_LAMBDA(what);

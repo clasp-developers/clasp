@@ -74,7 +74,7 @@
 (in-package :ext)
 
 (defun run-ld (args &key output-file-name)
-  (cmp:safe-system `("ld" ,@args :output-file-name output-file-name)))
+  (safe-system `("ld" ,@args :output-file-name output-file-name)))
 
 (export 'run-ld)
 
@@ -89,14 +89,18 @@
                                       in-all-names
                                     (list in-all-names))))
         (bundle-file (ensure-string in-bundle-file)))
+    #+(or)(warn "Linking fasl with -fvisibility=default - use an exported symbol list in the future")
     (cond
      ((member :target-os-darwin *features*)
       (ext:run-clang `(,@options
                        ,@all-object-files
 ;;;                                 "-macosx_version_min" "10.10"
                        "-flto=thin"
-                       "-flat_namespace" 
+                       "-flat_namespace"
+                       #+(or)"-fvisibility=default"
                        "-undefined" "suppress"
+                       ,@*debug-link-options*
+                       #+(or)"-Wl,-save-temps"
                        "-bundle"
 ;;;                        ,@link-flags
 ;;;                        ,(bformat nil "-Wl,-object_path_lto,%s.lto.o" exec-file)
@@ -105,11 +109,13 @@
                      :output-file-name bundle-file))
      ((member :target-os-linux *features*)
       ;; Linux needs to use clang to link
-      (ext:run-clang `("-v"
+      (ext:run-clang `(#+(or)"-v"
                        ,@options
                        ,@all-object-files
                        "-flto=thin"
                        "-fuse-ld=gold"
+                       ,@*debug-link-options*
+                       #+(or)"-fvisibility=default"
                        "-shared"
                        "-o"
                        ,bundle-file)
@@ -205,7 +211,7 @@
 (defun boot-bitcode-pathnames (last-file &key first-file target-backend)
   (or first-file (error "You must provide first-file"))
   (let* ((source-files (mapcan #'(lambda (part) (and (not (keywordp part)) (list (core::get-pathname-with-type part "lsp"))))
-                               (core::select-source-files last-file :first-file first-file)))
+                               (core::select-source-files first-file last-file )))
          (bitcode-files (mapcar (lambda (k) (compile-file-pathname k :target-backend target-backend))
                                 source-files)))
     bitcode-files))

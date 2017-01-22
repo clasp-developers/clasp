@@ -37,48 +37,35 @@ class GCArray_moveable : public GCContainer {
  typedef T value_type;
  typedef T *pointer_type;
  typedef value_type &reference;
+ typedef value_type container_value_type;
  typedef T *iterator;
  typedef T const *const_iterator;
- size_t _Capacity; // Index one beyond the total number of elements allocated
- T _Data[];      // Store _Capacity numbers of T structs/classes starting here
- template <typename... ARGS>
-   GCArray_moveable(const T& initial_element, size_t capacity, ARGS &&... args) : _Capacity(capacity)/*, _Data{args...}*/ {
-   GCTOOLS_ASSERT(sizeof...(ARGS)<=capacity);
-#if 0
-   // It would be so much better if I could initialize _Data[] this way or
-   // in the initializer list above rather than assigning everything to a temporary
-   // array and copying it
-   this->_Data[] = {args...};
-#else
-   // This is stupid - see comment above
-   T temp_Data[sizeof...(ARGS)] = {args...};
-   for ( size_t h(0); h<sizeof...(ARGS); ++h ) {
-     this->_Data[h] = temp_Data[h];
+ size_t _Length; // Index one beyond the total number of elements allocated
+ T _Data[0];      // Store _Length numbers of T structs/classes starting here
+ GCArray_moveable(size_t length, const T& initialElement,bool initialElementSupplied,
+                  size_t initialContentsSize=0, const T* initialContents=NULL) : _Length(length) {
+   GCTOOLS_ASSERT(initialContentsSize<=length);
+   for ( size_t h(0); h<initialContentsSize; ++h ) {
+     this->_Data[h] = initialContents[h];
    }
-#endif
-   for ( size_t i(sizeof...(ARGS)); i<this->_Capacity; ++i ) {
-     new(&(this->_Data[i])) value_type(initial_element);
+   // If initialElementSupplied is false and we are in an Atomic pool then
+   // we don't need to initialize all elements - otherwise we do.
+   // For now just initialize all elements
+   for ( size_t i(initialContentsSize); i<this->_Length; ++i ) {
+     new(&(this->_Data[i])) value_type(initialElement);
    }
  }
- GCArray_moveable() : _Capacity(0) {};
- GCArray_moveable(const T& initial_element,size_t capacity) : _Capacity(capacity) {
-   for ( size_t i=0; i<this->_Capacity; ++ i ) {
-     new(&(this->_Data[i])) value_type(initial_element);
-   };
- }
-
-
-
+ GCArray_moveable() : _Length(0) {};
  public:
- inline size_t size() const { return this->capacity(); };
- inline size_t capacity() const { return this->_Capacity; };
+ inline size_t size() const { return this->length(); };
+ inline size_t length() const { return this->_Length; };
  value_type *data() { return this->_Data; };
  value_type &operator[](size_t i) { return this->_Data[i]; };
  const value_type &operator[](size_t i) const { return this->_Data[i]; };
  iterator begin() { return &this->_Data[0]; };
- iterator end() { return &this->_Data[this->_Capacity]; };
+ iterator end() { return &this->_Data[this->_Length]; };
  const_iterator begin() const { return &this->_Data[0]; };
- const_iterator end() const { return &this->_Data[this->_Capacity]; };
+ const_iterator end() const { return &this->_Data[this->_Length]; };
 };
 
 template <class T, typename Allocator>
@@ -123,17 +110,15 @@ private:
   };
 
 public:
-  GCArray() : _Contents(){};
-  ~GCArray() {}
-
+ GCArray() : _Contents() {};
   void clear() { this->_Contents = NULL; };
 
-  template <typename... ARGS>
-  void allocate(const value_type &initial_element, size_t capacity, ARGS &&... args) {
+#if 1
+  void allocate(const value_type &initial_element, size_t length,bool initElementSupplied=true) {
     GCTOOLS_ASSERTF(!(this->_Contents), BF("GCArray allocate called and array is already defined"));
     allocator_type alloc;
-    tagged_pointer_to_moveable implAddress = alloc.allocate_kind(GCKind<impl_type>::Kind,capacity);
-    new (&*implAddress) GCArray_moveable<value_type>(initial_element, capacity, std::forward<ARGS>(args)...);
+    tagged_pointer_to_moveable implAddress = alloc.allocate_kind(GCStamp<impl_type>::TheStamp,GCKind<impl_type>::Kind,length);
+    new (&*implAddress) GCArray_moveable<value_type>(length,initial_element,initElementSupplied );
 #if 0
     for (size_t i(sizeof...(ARGS)); i < (sizeof...(ARGS)+numExtraArgs); ++i) {
       T *p = &((*implAddress)[i]);
@@ -143,32 +128,59 @@ public:
     this->_Contents = implAddress;
   }
 
-  size_t size() const { return this->capacity(); };
-  size_t capacity() const { return this->_Contents ? this->_Contents->_Capacity : 0; };
+#else
+  template <typename... ARGS>
+    void allocate(const value_type &initial_element, size_t length), ARGS &&... args) {
+    GCTOOLS_ASSERTF(!(this->_Contents), BF("GCArray allocate called and array is already defined"));
+    allocator_type alloc;
+    tagged_pointer_to_moveable implAddress = alloc.allocate_kind(GCStamp<impl_type>::TheStamp,GCKind<impl_type>::Kind,length);
+    new (&*implAddress) GCArray_moveable<value_type>(initial_element, length, std::forward<ARGS>(args)...);
+#if 0
+    for (size_t i(sizeof...(ARGS)); i < (sizeof...(ARGS)+numExtraArgs); ++i) {
+      T *p = &((*implAddress)[i]);
+      alloc.construct(p, initialElement);
+    }
+#endif
+    this->_Contents = implAddress;
+  }
+#endif
+  size_t size() const { return this->length(); };
+  size_t length() const { return this->_Contents ? this->_Contents->_Length : 0; };
   bool alivep() const { return true; };
 
   T &operator[](size_t n) { return this->_Contents ? (*this->_Contents)[n] : this->errorEmpty(); };
-  const T &operator[](size_t n) const { return this->_Contents ? (*this->_Contents)[n] : this->errorEmpty(); };
+   const T &operator[](size_t n) const { return this->_Contents ? (*this->_Contents)[n] : this->errorEmpty(); };
 
   pointer_type data() const { return this->_Contents ? this->_Contents->data() : NULL; };
 
   iterator begin() { return this->_Contents ? &(*this->_Contents)[0] : NULL; }
-  iterator end() { return this->_Contents ? &(*this->_Contents)[this->_Contents->_Capacity] : NULL; };
+  iterator end() { return this->_Contents ? &(*this->_Contents)[this->_Contents->_Length] : NULL; };
 
   const_iterator begin() const { return this->_Contents ? &(*this->_Contents)[0] : NULL; }
-  const_iterator end() const { return this->_Contents ? &(*this->_Contents)[this->_Contents->_Capacity] : NULL; }
+  const_iterator end() const { return this->_Contents ? &(*this->_Contents)[this->_Contents->_Length] : NULL; }
+
+
+    /*! Resize the vector so that it contains AT LEAST n elements */
+  void resize(size_t n, const value_type &x = value_type()) {
+    printf("%s:%d How do I resize an array\n", __FILE__, __LINE__ );
+  }
+
 };
 
 template <typename Array>
 void Array0_dump(const Array &v, const char *head = "") {
-  printf("%s Array0@%p _C[%zu]", head, v.contents(), v.capacity());
+  printf("%s Array0@%p _C[%zu]", head, v.contents(), v.length());
   size_t i;
-  for (i = 0; i < v.capacity(); ++i) {
+  for (i = 0; i < v.length(); ++i) {
     printf("[%zu]=", i);
     printf("%s ", _rep_(v[i]).c_str());
   }
   printf("\n");
 }
+
+
+ typedef gctools::GCArray<uintptr_t, gctools::GCContainerAllocator<gctools::GCArray_moveable<uintptr_t> > > gcbitvector;
+
 
 } // namespace gctools
 

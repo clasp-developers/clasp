@@ -4,14 +4,14 @@
 
 /*
 Copyright (c) 2014, Christian E. Schafmeister
- 
+
 CLASP is free software; you can redistribute it and/or
 modify it under the terms of the GNU Library General Public
 License as published by the Free Software Foundation; either
 version 2 of the License, or (at your option) any later version.
- 
+
 See directory 'clasp/licenses' for full details.
- 
+
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
 
@@ -31,9 +31,12 @@ THE SOFTWARE.
 #include <clasp/gctools/gcalloc.h>
 #include <clasp/core/object.h>
 #include <clasp/core/numbers.h>
+#include <clasp/core/array.h>
 #include <clasp/core/debugger.h>
+#include <clasp/core/evaluator.h>
 #include <clasp/gctools/telemetry.h>
 #include <clasp/gctools/gc_boot.h>
+#include <clasp/gctools/gcFunctions.h>
 #include <clasp/gctools/memoryManagement.h>
 //#include "main/allHeaders.cc"
 
@@ -48,6 +51,7 @@ std::vector<Immediate_info> get_immediate_info() {
   info.push_back(Immediate_info(kind_single_float,"SINGLE_FLOAT"));
   info.push_back(Immediate_info(kind_character,"CHARACTER"));
   info.push_back(Immediate_info(kind_cons,"CONS"));
+  info.push_back(Immediate_info(kind_va_list_s,"VA_LIST_S"));
   if ( (info.size()+1) != kind_first_general ) {
     printf("get_immediate_info does not set up all of the immediate types\n");
     abort();
@@ -56,7 +60,72 @@ std::vector<Immediate_info> get_immediate_info() {
 };
 };
 
+
+
 namespace gctools {
+
+// false == SIGABRT invokes debugger, true == terminate (used in core__exit)
+bool global_debuggerOnSIGABRT = true;
+#define INITIAL_GLOBAL_POLL_TICKS_PER_CLEANUP 16386
+int global_pollTicksPerCleanup = INITIAL_GLOBAL_POLL_TICKS_PER_CLEANUP;
+int global_signalTrap = 0;
+int global_pollTicksGC = INITIAL_GLOBAL_POLL_TICKS_PER_CLEANUP;
+
+void do_pollSignals() {
+  int signo = global_signalTrap;
+  SET_SIGNAL(0);
+  if (signo == SIGINT) {
+    printf("You pressed Ctrl+C\n");
+    core::eval::funcall(cl::_sym_break, core::SimpleBaseString_O::make("Break on Ctrl+C"));
+      //    core__invoke_internal_debugger(_Nil<core::T_O>());
+    printf("Resuming after Ctrl+C\n");
+  } else if (signo == SIGCHLD) {
+      //            printf("A child terminated\n");
+  } else if (signo == SIGFPE) {
+    printf("%s:%d A floating point error occurred\n", __FILE__, __LINE__);
+    core__invoke_internal_debugger(_Nil<core::T_O>());
+  } else if (signo == SIGABRT) {
+    printf("ABORT was called!!!!!!!!!!!!\n");
+    core__invoke_internal_debugger(_Nil<core::T_O>());
+      //    core:eval::funcall(cl::_sym_break,core::SimpleBaseString_O::make("ABORT was called"));
+  }
+#ifdef USE_MPS
+  if (--global_pollTicksGC == 0 ) {
+    global_pollTicksGC = global_pollTicksPerCleanup;
+    gctools::gctools__cleanup();
+  }
+#endif
+}
+
+
+char *clasp_alloc_atomic(size_t buffer) {
+  return (char *)malloc(buffer);
+}
+
+void clasp_dealloc(char* buffer) {
+  if (buffer) {
+    free(buffer);
+  }
+}
+
+
+};
+
+
+
+
+namespace gctools {
+
+/*! See NextStamp(...) definition in memoryManagement.h.
+  global_NextBuiltInStamp starts at KIND_max+1
+  so that it doesn't use any stamps that correspond to KIND values
+   assigned by the static analyzer. */
+Stamp   global_NextStamp = KIND_max+1;
+
+void OutOfStamps() {
+    printf("%s:%d Hello future entity!  Congratulations! - you have run clasp long enough to run out of STAMPs - %lu are allowed - change the clasp header layout or add another word for the stamp\n", __FILE__, __LINE__, Header_s::largest_possible_stamp );
+    abort();
+}
 
 GCStack _ThreadLocalStack;
 const char *_global_stack_marker;
@@ -70,12 +139,14 @@ kind_t global_next_header_kind = (kind_t)KIND_max+1;
 #endif
 };
 
+#if 0
 #ifdef USE_BOEHM
 #include "boehmGarbageCollection.cc"
 #endif
 
 #if defined(USE_MPS)
 #include "mpsGarbageCollection.cc"
+#endif
 #endif
 
 namespace gctools {
@@ -98,7 +169,7 @@ void handle_signals(int signo) {
   //
   SET_SIGNAL(signo);
   telemetry::global_telemetry_search->flush();
-  if (signo == SIGABRT && core::global_debuggerOnSIGABRT) {
+  if (signo == SIGABRT && global_debuggerOnSIGABRT) {
     printf("%s:%d Trapped SIGABRT - starting debugger\n", __FILE__, __LINE__);
     core::LispDebugger debugger(_Nil<core::T_O>());
     debugger.invoke();
@@ -128,6 +199,17 @@ void setupSignals() {
   if (signal(SIGABRT, handle_signals) == SIG_ERR) {
     printf("failed to register SIGABRT signal-handler with kernel\n");
   }
+#if 0
+#ifdef _TARGET_OS_LINUX
+  feenableexcept(FE_INVALID | FE_DIVBYZERO | FE_OVERFLOW | FE_UNDERFLOW);
+#endif
+#ifdef _TARGET_OS_DARWIN
+  feenableexcept(FE_INVALID | FE_DIVBYZERO | FE_OVERFLOW | FE_UNDERFLOW);
+#endif
+  if (signal(SIGFPE, handle_signals) == SIG_ERR) {
+    printf("failed to register SIGFPE signal-handler with kernel\n");
+  }
+#endif
   llvm::install_fatal_error_handler(fatal_error_handler, NULL);
 }
 
@@ -190,9 +272,45 @@ CL_DEFUN core::Fixnum gctools__next_header_kind()
     return ensure_fixnum(next);
 }
 
+void register_constants_table(ConstantsTable* constants_table, core::T_sp* root_address, size_t num_roots ) {
+  core::T_sp* shadow_mem = NULL;
+#ifdef USE_BOEHM
+  shadow_mem = reinterpret_cast<core::T_sp*>(boehm_create_shadow_table(num_roots));
+#endif
+#ifdef USE_MPS
+  gctools::mps_register_roots(root_address, num_roots);
+#endif
+  new(constants_table) ConstantsTable(shadow_mem,root_address,num_roots);
+}
+
+CL_LAMBDA(address args);
+CL_DEFUN void gctools__register_roots(core::T_sp taddress, core::List_sp args) {
+  core::T_sp* shadow_mem = NULL;
+  size_t nargs = core::cl__length(args);
+#ifdef USE_BOEHM
+  shadow_mem = reinterpret_cast<core::T_sp*>(boehm_create_shadow_table(nargs));
+#endif
+  // Get the address of the memory space in the llvm::Module
+  uintptr_t address = translate::from_object<uintptr_t>(taddress)._v;
+  core::T_sp* module_mem = reinterpret_cast<core::T_sp*>(address);
+//  printf("%s:%d:%s address=%p nargs=%lu\n", __FILE__, __LINE__, __FUNCTION__, (void*)address, nargs);
+//  printf("%s:%d:%s constants-table contents: vvvvv\n", __FILE__, __LINE__, __FUNCTION__ );
+  // Create a ConstantsTable structure to write the constants with
+  ConstantsTable ct(reinterpret_cast<void*>(shadow_mem),reinterpret_cast<void*>(module_mem),nargs);
+  size_t i = 0;
+  for ( auto c : args ) {
+    core::T_sp arg = oCar(c);
+    ct.set(i,arg.tagged_());
+    ++i;
+  }
+#ifdef USE_MPS
+  // MPS registers the roots with the GC and doesn't need a shadow table
+  mps_register_roots(reinterpret_cast<void*>(module_mem),nargs);
+#endif
+}
 
 int startupGarbageCollectorAndSystem(MainFunctionType startupFn, int argc, char *argv[], size_t stackMax, bool mpiEnabled, int mpiRank, int mpiSize) {
-  int stackMarker = 0;
+  void* stackMarker = NULL;
   gctools::_global_stack_marker = (const char*)&stackMarker;
   gctools::_global_stack_max_size = stackMax;
 //  printf("%s:%d       global_stack_marker = %p\n", __FILE__, __LINE__, gctools::_global_stack_marker );
@@ -213,7 +331,7 @@ int startupGarbageCollectorAndSystem(MainFunctionType startupFn, int argc, char 
   }
 
   build_kind_field_layout_tables();
-  
+
   setupSignals();
 
   telemetry::global_telemetry_search = new telemetry::Telemetry();
@@ -237,6 +355,7 @@ int startupGarbageCollectorAndSystem(MainFunctionType startupFn, int argc, char 
 #endif
 
 #if defined(USE_BOEHM)
+  GC_set_java_finalization(1);
   GC_set_all_interior_pointers(1); // tagged pointers require this
                                    //printf("%s:%d Turning on interior pointers\n",__FILE__,__LINE__);
   GC_set_warn_proc(clasp_warn_proc);
@@ -249,5 +368,14 @@ int startupGarbageCollectorAndSystem(MainFunctionType startupFn, int argc, char 
 #endif
   telemetry::global_telemetry_search->close();
   return exitCode;
+}
+
+Tagged ConstantsTable::set(size_t index, Tagged val) {
+#ifdef USE_BOEHM
+  // shadow_memory is only used by Boehm
+  reinterpret_cast<core::T_sp*>(this->_shadow_memory)[index] = core::T_sp(val);
+#endif
+  reinterpret_cast<core::T_sp*>(this->_module_memory)[index] = core::T_sp(val);
+  return val;
 }
 };

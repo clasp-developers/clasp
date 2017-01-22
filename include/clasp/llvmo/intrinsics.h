@@ -4,14 +4,14 @@
 
 /*
 Copyright (c) 2014, Christian E. Schafmeister
- 
+
 CLASP is free software; you can redistribute it and/or
 modify it under the terms of the GNU Library General Public
 License as published by the Free Software Foundation; either
 version 2 of the License, or (at your option) any later version.
- 
+
 See directory 'clasp/licenses' for full details.
- 
+
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
 
@@ -27,6 +27,11 @@ THE SOFTWARE.
 #ifndef llvmo_intrinsics_H
 #define llvmo_intrinsics_H
 
+namespace llvmo {
+  extern core::T_sp  global_arg0;
+  extern core::T_sp  global_arg1;
+  extern core::T_sp  global_arg2;
+};
 extern "C" {
 
 void cc_call_with_variable_bound(core::T_mv *result, core::T_O *symbol, core::T_O *value, core::T_O *thunk);
@@ -35,26 +40,154 @@ void cc_catch(core::T_mv *result, core::T_O *tag, core::T_O *func);
 void cc_throw(core::T_O *tag, core::T_O *resultP);
 
 void cc_invoke_startup_functions();
+
+// ----------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
+// HELPER FUNCTIONS FOR MAKING CLASP LISP OBJECTS
+//
+// These functions are part of the Foreign Language Interface and are
+// referenced from the FLI functions in fli.cc.
+
+core::T_sp mk_fixnum_short( short value );
+core::T_sp mk_fixnum_ushort( unsigned short value );
+core::T_sp mk_fixnum_int( int value );
+core::T_sp mk_fixnum_uint( unsigned int value );
+core::T_sp mk_fixnum_int8( int8_t value );
+core::T_sp mk_fixnum_uint8( uint8_t value );
+core::T_sp mk_fixnum_int16( int16_t value );
+core::T_sp mk_fixnum_uint16( uint16_t value );
+core::T_sp mk_fixnum_int32( int32_t value );
+core::T_sp mk_fixnum_uint32( uint32_t value );
+core::T_sp mk_integer_int64( int64_t value );
+core::T_sp mk_integer_uint64( uint64_t value );
+core::T_sp mk_integer_long( long value );
+core::T_sp mk_integer_ulong( unsigned long value );
+core::T_sp mk_integer_longlong( long long value );
+core::T_sp mk_integer_ulonglong( unsigned long long value );
+core::T_sp mk_double_float( double value );
+core::T_sp mk_single_float( float value );
+core::T_sp mk_long_double( long double value );
+core::T_sp mk_time( time_t value );
+core::T_sp mk_pointer( void * value );
+core::T_sp mk_size( size_t value );
+core::T_sp mk_ssize( ssize_t value );
+core::T_sp mk_ptrdiff( ptrdiff_t value );
+core::T_sp mk_char( char value );
+
+// ----------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
+// T R A N S L A T O R S
+//
+// These functions are part of the Foreign Language Interface and are
+// referenced from the FLI functions in fli.cc.
+
+gctools::Fixnum from_object_fixnum( core::T_O* obj );
+core::T_O* tr_from_object_fixnum( core::T_O* obj );
+core::T_O* to_object_fixnum( gctools::Fixnum x );
+core::T_O* tr_to_object_fixnum( core::T_O* raw_ );
+short from_object_short( core::T_O* obj );
+core::T_O* tr_from_object_short( core::T_O* obj );
+core::T_O* to_object_short( short x );
+core::T_O* tr_to_object_short( core::T_O* raw_ );
+int from_object_int( core::T_O* obj );
+core::T_O* tr_from_object_int( core::T_O* obj );
+core::T_O* to_object_int( int x );
+core::T_O* tr_to_object_int( core::T_O* raw_ );
+unsigned int from_object_unsigned_int( core::T_O* obj );
+core::T_O* tr_from_object_unsigned_int( core::T_O* obj );
+core::T_O* to_object_unsigned_int( unsigned int x );
+core::T_O* tr_to_object_unsigned_int( core::T_O* raw_ );
+long from_object_long( core::T_O* obj );
+core::T_O* tr_from_object_long( core::T_O* obj );
+core::T_O* to_object_long( long x );
+core::T_O* tr_to_object_long( core::T_O* raw_ );
+unsigned long from_object_unsigned_long( core::T_O* obj );
+core::T_O* tr_from_object_unsigned_long( core::T_O* obj );
+core::T_O* to_object_unsigned_long( unsigned long x );
+core::T_O* tr_to_object_unsigned_long( core::T_O* raw_ );
+int8_t from_object_int8( core::T_O* obj );
+core::T_O* tr_from_object_int8( core::T_O* obj );
+core::T_O* to_object_int8( int8_t x );
+core::T_O* tr_to_object_int8( core::T_O* raw_ );
+uint8_t from_object_uint8( core::T_O* obj );
+core::T_O* tr_from_object_uint8( core::T_O* obj );
+core::T_O* to_object_uint8( uint8_t x );
+core::T_O* tr_to_object_uint8( core::T_O* raw_ );
+int16_t from_object_int16( core::T_O* obj );
+core::T_O* tr_from_object_int16( core::T_O* obj );
+core::T_O* to_object_int16( int16_t x );
+core::T_O* tr_to_object_int16( core::T_O* raw_ );
+uint16_t from_object_uint16( core::T_O* obj );
+core::T_O* tr_from_object_uint16( core::T_O* obj );
+core::T_O* to_object_uint16( uint16_t x );
+core::T_O* tr_to_object_uint16( core::T_O* raw_ );
+int32_t from_object_int32( core::T_O* obj );
+core::T_O* tr_from_object_int32( core::T_O* obj );
+core::T_O* to_object_int32( int32_t x );
+core::T_O* tr_to_object_int32( core::T_O* raw_ );
+uint32_t from_object_uint32( core::T_O* obj );
+core::T_O* tr_from_object_uint32( core::T_O* obj );
+core::T_O* to_object_uint32( uint32_t x );
+core::T_O* tr_to_object_uint32( core::T_O* raw_ );
+int64_t from_object_int64( core::T_O* obj );
+core::T_O* tr_from_object_int64( core::T_O* obj );
+core::T_O* to_object_int64( int64_t x );
+core::T_O* tr_to_object_int64( core::T_O* raw_ );
+uint64_t from_object_uint64( core::T_O* obj );
+core::T_O* tr_from_object_uint64( core::T_O* obj );
+core::T_O* to_object_uint64( uint64_t x );
+core::T_O* tr_to_object_uint64( core::T_O* raw_ );
+long long from_object_long_long( core::T_O* obj );
+core::T_O* tr_from_object_long_long( core::T_O* obj );
+core::T_O* to_object_long_long( long long x );
+core::T_O* tr_to_object_long_long4( core::T_O* raw_ );
+unsigned long long from_object_unsigned_long_long( core::T_O* obj );
+core::T_O* tr_from_object_unsigned_long_long( core::T_O* obj );
+core::T_O* to_object_unsigned_long_long( unsigned long long x );
+core::T_O* tr_to_object_unsigned_long_long( core::T_O* raw_ );
+size_t from_object_size( core::T_O* obj );
+core::T_O* tr_from_object_size( core::T_O* obj );
+core::T_O* to_object_size( size_t x );
+core::T_O* tr_to_object_size( core::T_O* raw_ );
+size_t from_object_ssize( core::T_O* obj );
+core::T_O* tr_from_object_ssize( core::T_O* obj );
+core::T_O* to_object_ssize( ssize_t x );
+core::T_O* tr_to_object_ssize( core::T_O* raw_ );
+ptrdiff_t from_object_ptrdiff( core::T_O* obj );
+core::T_O* tr_from_object_ptrdiff( core::T_O* obj );
+core::T_O* to_object_ptrdiff( ptrdiff_t x );
+core::T_O* tr_to_object_ptrdiff( core::T_O* raw_ );
+time_t from_object_time( core::T_O* obj );
+core::T_O* tr_from_object_time( core::T_O* obj );
+core::T_O* to_object_time( time_t x );
+core::T_O* tr_to_object_time( core::T_O* raw_ );
+char from_object_char( core::T_O* obj );
+core::T_O* tr_from_object_char( core::T_O* obj );
+core::T_O* to_object_char( char x );
+core::T_O* tr_to_object_char( core::T_O* raw_ );
+
 };
 
 namespace llvmo {
 
-void redirect_llvm_interface_addSymbol();
+  void redirect_llvm_interface_addSymbol();
 
-void initialize_intrinsics();
-void initialize_link_intrinsics();
+  void initialize_intrinsics();
+  void initialize_link_intrinsics();
 
-typedef enum { noFunctionBoundToSymbol,
-               badKeywordArgument,
-               couldNotCoerceToClosure,
-               destinationMustBeActivationFrame,
-               invalidIndexForFunctionFrame,
-               unboundSymbolValue,
-               unboundSymbolFunction,
-               unboundSymbolSetfFunction
-} ErrorCode;
+  typedef enum { noFunctionBoundToSymbol,
+                 badKeywordArgument,
+                 couldNotCoerceToClosure,
+                 destinationMustBeActivationFrame,
+                 invalidIndexForFunctionFrame,
+                 unboundSymbolValue,
+                 unboundSymbolFunction,
+                 unboundSymbolSetfFunction
+  } ErrorCode;
 
-extern void intrinsic_error(ErrorCode err, core::T_sp arg0 = _Nil<core::T_O>(), core::T_sp arg1 = _Nil<core::T_O>(), core::T_sp arg2 = _Nil<core::T_O>());
+  extern void intrinsic_error(ErrorCode err, core::T_sp arg0 = _Nil<core::T_O>(), core::T_sp arg1 = _Nil<core::T_O>(), core::T_sp arg2 = _Nil<core::T_O>());
+
+  void initialize_raw_translators( void );
 }
 
 #endif

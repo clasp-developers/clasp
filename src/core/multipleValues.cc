@@ -4,14 +4,14 @@
 
 /*
 Copyright (c) 2014, Christian E. Schafmeister
- 
+
 CLASP is free software; you can redistribute it and/or
 modify it under the terms of the GNU Library General Public
 License as published by the Free Software Foundation; either
 version 2 of the License, or (at your option) any later version.
- 
+
 See directory 'clasp/licenses' for full details.
- 
+
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
 
@@ -24,14 +24,14 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#define DEBUG_LEVEL_FULL
+//#define DEBUG_LEVEL_FULL
 
 #include <clasp/core/foundation.h>
 #include <clasp/core/common.h>
 #include <clasp/core/environment.h>
 #include <clasp/core/evaluator.h>
 #include <clasp/core/multipleValues.h>
-#include <clasp/core/vectorObjects.h>
+#include <clasp/core/array.h>
 #include <clasp/core/wrappers.h>
 namespace core {
 
@@ -40,9 +40,10 @@ const int MultipleValues::MultipleValuesLimit;
 void MultipleValues::initialize(){};
 
 
-void multipleValuesSaveToVector(T_mv values, VectorObjects_sp save) {
+void multipleValuesSaveToVector(T_mv values, SimpleVector_sp save) {
+  DEPRECATED();
   core::MultipleValues &mv = core::lisp_multipleValues();
-  save->adjust(_Nil<T_O>(), _Nil<T_O>(), values.number_of_values());
+  save->operator[](MultipleValues::MultipleValuesLimit) = clasp_make_fixnum(values.number_of_values());
   if (values.number_of_values() > 0) {
     save->operator[](0) = values;
   }
@@ -51,7 +52,13 @@ void multipleValuesSaveToVector(T_mv values, VectorObjects_sp save) {
   }
 }
 
+size_t multipleValuesLength(SimpleVector_sp values) {
+  DEPRECATED();
+  return (values->operator[](MultipleValues::MultipleValuesLimit)).unsafe_fixnum();
+}
+
 T_mv multipleValuesLoadFromVector(VectorObjects_sp load) {
+  DEPRECATED();
   if (cl__length(load) > 0) {
     T_mv mvn(load->operator[](0), cl__length(load));
     core::MultipleValues &mv = lisp_multipleValues();

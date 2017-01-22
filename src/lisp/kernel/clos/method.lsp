@@ -78,7 +78,8 @@
   (declare (notinline make-method-lambda))
   (let* ((*print-length* 3)
 	 (*print-depth* 2)
-	 (qualifiers (loop while (and args (not (listp (first args))))
+         #+clasp(source-location (ext:current-source-location))
+         (qualifiers (loop while (and args (not (listp (first args))))
 			collect (pop args)))
 	 (specialized-lambda-list
 	  (if args
@@ -114,7 +115,7 @@
                     (install-method ',name ',qualifiers
                                     ,(specializers-expression specializers)
                                     ',lambda-list
-                                    ,(maybe-remove-block wrapped-lambda)
+                                    ,(maybe-remove-block wrapped-lambda #+clasp source-location)
                                     ,@(mapcar #-clasp #'si::maybe-quote
                                               #+clasp #'ext::maybe-quote
                                               options))
@@ -131,7 +132,7 @@
 				       (eval value)
 				       (list 'si::unquote value))))))))
 
-(defun maybe-remove-block (method-lambda)
+(defun maybe-remove-block (method-lambda #+clasp source-location)
   (when (eq (first method-lambda) 'lambda)
     (multiple-value-bind (declarations body documentation)
 	(si::find-declarations (cddr method-lambda))
@@ -144,7 +145,11 @@
 					,@declarations
 					,@(cddr block))
 		#+clasp(lambda ,(second method-lambda)
-			 (declare (core:lambda-name ,(second block)))
+			 (declare (core:lambda-name ,(second block)
+                                                    ,(if source-location (source-file-pos-filepos source-location) 0)
+                                                    ,(if source-location (source-file-pos-lineno source-location) 0)
+                                                    ,(if source-location (source-file-pos-column source-location) 0)
+                                                    ))
 			 ,@declarations
 			 (block ,(if (symbolp (second block)) (second block) (error "The block name ~a is not a symbol" (second block)))
 			   ,@(cddr block))))
@@ -226,7 +231,7 @@ and wraps it in an flet |#
     (multiple-value-bind (declarations body doc)
         (process-declarations (cddr method-lambda) t) ; We expect docstring
       (values `(lambda (.method-args. .next-methods. ,@(cadr method-lambda))
-                 (declare (core:lambda-name make-method-lambda.lambda) ,@declarations)
+                 (declare #+(or)(core:lambda-name make-method-lambda.lambda) ,@declarations)
                  ,doc
                  (flet (,@(and call-next-method-p
                                `((call-next-method (&rest args)
@@ -308,22 +313,30 @@ and wraps it in an flet |#
 	;; stepping, compiler-env-p = t and execute = nil, so that the
 	;; form does not get executed.
 	(si::eval-with-env method-lambda env nil t t ))
-      ;; bclasp uses *code-walk-hook* (set in cmpwalk.lsp)
-      ;; To walk to method lambda and figure out if a closure
-      ;; is needed or not.
-      #+bclasp
-      (cmp:code-walk-using-compiler
-       method-lambda env
-       :code-walker-function #'code-walker)
-      #+cclasp
-      (if (fboundp 'clasp-cleavir:code-walk-using-cleavir)
-          (clasp-cleavir:code-walk-using-cleavir
-           method-lambda env
-           :code-walker-function #'code-walker)
-          ;; If we don't have code-walk-using-cleavier available
-          ;; then assume the worst
-          (setq call-next-method-p t
-                next-method-p-p t)))
+      ;; Determine how to walk the code in clasp
+      ;; Either use the bclasp compiler or if clasp-cleavir is available
+      ;; then use the clasp-cleavir compiler
+      #+clasp
+      (let ((clasp-cleavir-pkg (find-package :clasp-cleavir)))
+        (if (not core:*use-cleavir-compiler*)
+            ;; The clasp-cleavir package is not available - we are
+            ;; using the bclasp compiler to walk code
+            (cmp:code-walk-using-bclasp
+             method-lambda env
+             :code-walker-function #'code-walker)
+            ;; The clasp-cleavir package is available, if the
+            ;; clasp-cleavir:code-walk-using-cleavir symbol is fboundp
+            ;; then use it to walk the code.
+            (let ((code-walk-using-cleavir
+                   (find-symbol "CODE-WALK-USING-CLEAVIR" clasp-cleavir-pkg)))
+              (if (fboundp code-walk-using-cleavir)
+                  (funcall (fdefinition code-walk-using-cleavir)
+                           method-lambda env
+                           :code-walker-function #'code-walker)
+                  ;; If we don't have code-walk-using-cleavier available
+                  ;; then assume the worst
+                  (setq call-next-method-p t
+                        next-method-p-p t))))))
     (values call-next-method-p next-method-p-p)))
                                    
 

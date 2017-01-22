@@ -150,7 +150,7 @@ public:
   template <class... ARGS>
   static ValueFrame_sp create_fill_capacity(int capacity, T_sp parent, ARGS &&... args) {
     ASSERT(sizeof...(ARGS) <= capacity);
-    ValueFrame_sp vf = gc::GC<ValueFrame_O>::allocate_container(capacity,parent,std::forward<ARGS>(args)...);
+    ValueFrame_sp vf = gc::GC<ValueFrame_O>::allocate_container(gctools::GCStamp<ValueFrame_O>::TheStamp,capacity,capacity,parent,std::forward<ARGS>(args)...);
     return vf;
   }
 
@@ -180,12 +180,10 @@ public:
   ValueFrame_O() = delete;
  public:
   template <typename...ARGS>
-    ValueFrame_O(size_t capacity, /*const T_sp& initial_element,*/ T_sp parent, ARGS && ...args)
+    ValueFrame_O(size_t capacity, /*const T_sp& initial_element,*/ T_sp parent, size_t initialContentsSize=0, T_sp* initialContents=NULL)
     : Base(parent)
     , _DebuggingInfo(_Nil<T_O>())
-    ,_Objects(_Unbound<T_O>(),capacity,std::forward<ARGS>(args)...) /*GCArray_moveable ctor*/ {
-    ASSERT(sizeof...(ARGS)<=capacity);
-  };
+    ,_Objects(capacity,_Unbound<T_O>(),true,initialContentsSize,initialContents) /*GCArray_moveable ctor*/ {};
   virtual ~ValueFrame_O(){
       //            printf("%s::%d dtor ValueFrame@%p\n", __FILE__, __LINE__, this);
   };
@@ -203,19 +201,19 @@ public:
 
 public:
   inline T_sp &operator[](int idx) {
-    ASSERT(idx>=0 && idx<this->_Objects._Capacity);
+    ASSERT(idx>=0 && idx<this->_Objects._Length);
 #ifdef DEBUG_FRAME_BOUNDS
-    if ( idx<0 || idx >= this->_Objects._Capacity) {
-      printf("%s:%d Caught out of bounds access to ValueFrame_O idx=%d capacity=%d\n", __FILE__, __LINE__, idx, this->_Objects._Capacity );
+    if ( idx<0 || idx >= this->_Objects._Length) {
+      printf("%s:%d Caught out of bounds access to ValueFrame_O idx=%d capacity=%d\n", __FILE__, __LINE__, idx, this->_Objects._Length );
     }
 #endif
     return this->_Objects[idx];
   };
   inline const T_sp &operator[](int idx) const {
-    ASSERT(idx>=0 && idx<this->_Objects._Capacity);
+    ASSERT(idx>=0 && idx<this->_Objects._Length);
 #ifdef DEBUG_FRAME_BOUNDS
-    if ( idx<0 || idx >= this->_Objects._Capacity) {
-      printf("%s:%d Caught out of bounds access to ValueFrame_O idx=%d capacity=%d\n", __FILE__, __LINE__, idx, this->_Objects._Capacity );
+    if ( idx<0 || idx >= this->_Objects._Length) {
+      printf("%s:%d Caught out of bounds access to ValueFrame_O idx=%d capacity=%d\n", __FILE__, __LINE__, idx, this->_Objects._Length );
     }
 #endif
     return this->_Objects[idx];
@@ -224,7 +222,7 @@ public:
 //  T_sp *argArray() { return this->_Objects.data(); };
 
   /*! Return the number of arguments */
-  size_t length() const { return this->_Objects.capacity(); };
+  size_t length() const { return this->_Objects.length(); };
 
 //  T_sp _lookupValue(int depth, int index);
 //  T_sp &lookupValueReference(int depth, int index);
@@ -274,7 +272,7 @@ GCPRIVATE:
   gctools::GCArray_moveable<value_type> _Objects;
 public:
   static FunctionFrame_sp create(int numArgs, T_sp parent) {
-    FunctionFrame_sp vf = gc::GC<FunctionFrame_O>::allocate_container(numArgs,parent);
+    FunctionFrame_sp vf = gc::GC<FunctionFrame_O>::allocate_container(gctools::GCStamp<FunctionFrame_O>::TheStamp,numArgs,numArgs,parent);
     return vf;
   }
 
@@ -291,36 +289,36 @@ public:
 
   template <class... ARGS>
   static FunctionFrame_sp create_fill(T_sp parent, ARGS &&... args) {
-    FunctionFrame_sp vf = gc::GC<FunctionFrame_O>::allocate_container(sizeof...(ARGS),parent,std::forward<ARGS>(args)...);
+    FunctionFrame_sp vf = gc::GC<FunctionFrame_O>::allocate_container(sizeof...(ARGS),sizeof...(ARGS),parent,std::forward<ARGS>(args)...);
     return vf;
   }
  private:
   FunctionFrame_O() = delete;
  public:
   template <typename...ARGS>
-    FunctionFrame_O(size_t size, T_sp parent, ARGS && ...args) : Base(parent),_Objects(_Unbound<T_O>(),size,std::forward<ARGS>(args)...) {};
+    FunctionFrame_O(size_t size, T_sp parent, ARGS && ...args) : Base(parent),_Objects(size,_Unbound<T_O>(),true,std::forward<ARGS>(args)...) {};
   /*! FunctionFrames must always be initialized with _Unbound !!!!! */
   virtual ~FunctionFrame_O() {}
 public:
   /*! Return the number of arguments */
-  size_t length() const { return this->_Objects.capacity(); };
+  size_t length() const { return this->_Objects.length(); };
   //	T_sp* argArray() { return this->_Objects.argArray(); };
 
 
   inline T_sp &operator[](int idx) {
-    ASSERT(idx>=0 && idx<this->_Objects._Capacity);
+    ASSERT(idx>=0 && idx<this->_Objects._Length);
 #ifdef DEBUG_FRAME_BOUNDS
-    if ( idx<0 || idx >= this->_Objects._Capacity) {
-      printf("%s:%d Caught out of bounds access to ValueFrame_O idx=%d capacity=%d\n", __FILE__, __LINE__, idx, this->_Objects._Capacity );
+    if ( idx<0 || idx >= this->_Objects._Length) {
+      printf("%s:%d Caught out of bounds access to ValueFrame_O idx=%d capacity=%d\n", __FILE__, __LINE__, idx, this->_Objects._Length );
     }
 #endif
     return this->_Objects[idx];
   };
   inline const T_sp &operator[](int idx) const {
-    ASSERT(idx>=0 && idx<this->_Objects._Capacity);
+    ASSERT(idx>=0 && idx<this->_Objects._Length);
 #ifdef DEBUG_FRAME_BOUNDS
-    if ( idx<0 || idx >= this->_Objects._Capacity) {
-      printf("%s:%d Caught out of bounds access to ValueFrame_O idx=%d capacity=%d\n", __FILE__, __LINE__, idx, this->_Objects._Capacity );
+    if ( idx<0 || idx >= this->_Objects._Length) {
+      printf("%s:%d Caught out of bounds access to ValueFrame_O idx=%d capacity=%d\n", __FILE__, __LINE__, idx, this->_Objects._Length );
     }
 #endif
     return this->_Objects[idx];
@@ -383,15 +381,13 @@ namespace core {
   {
     while (true) {
       if ( depth == 0 ) {
-        if (activationFrame.isA<ValueFrame_O>()) {
-          ValueFrame_sp vf = gc::reinterpret_cast_smart_ptr<ValueFrame_O,T_O>(activationFrame);
+        ASSERT(activationFrame.isA<ValueFrame_O>());
+        ValueFrame_sp vf = gc::reinterpret_cast_smart_ptr<ValueFrame_O,T_O>(activationFrame);
 #ifdef DEBUG_ASSERTS
-          if ( index >= vf->_Objects.capacity() )
-            error_frame_range("ValueFrame",index,vf->_Objects.capacity());
+        if ( index >= vf->_Objects.length() )
+          error_frame_range("ValueFrame",index,vf->_Objects.length());
 #endif
-          return vf->_Objects[index];
-        }
-        error_end_of_frame_list("ValueFrame");
+        return vf->_Objects[index];
       }
       --depth;
       activationFrame = activationFrame->_Parent;
@@ -405,8 +401,8 @@ namespace core {
         if (activationFrame.isA<FunctionFrame_O>()) {
           FunctionFrame_sp ff = gc::reinterpret_cast_smart_ptr<FunctionFrame_O,T_O>(activationFrame);
 #ifdef DEBUG_ASSERTS
-          if ( index >= ff->_Objects.capacity() )
-            error_frame_range("ValueFrame",index,ff->_Objects.capacity());
+          if ( index >= ff->_Objects.length() )
+            error_frame_range("ValueFrame",index,ff->_Objects.length());
 #endif
           return ff->_Objects[index];
         }

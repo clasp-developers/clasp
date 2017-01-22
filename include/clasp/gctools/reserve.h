@@ -45,19 +45,19 @@ THE SOFTWARE.
   while (!mps_commit(gctools::_global_obj_allocation_point, __reserve_addr, sizeof_with_header<_class_>())) \
     ;
 
-#define _GC_RESERVE_FINALIZE() mps_finalize(gctools::_global_arena, &__reserve_addr)
+#define _GC_RESERVE_FINALIZE() mps_finalize(global_arena, &__reserve_addr)
 
 #define _GC_RESERVE_END_FINALyes_INITno(_class_, _obj_) \
   _GC_RESERVE_END_BASE(_class_);                        \
   _GC_RESERVE_FINALIZE();                               \
   }                                                     \
-  POLL_SIGNALS()
+  poll_signals()
 #define _GC_RESERVE_END_FINALyes_INITyes(_class_, _obj_) \
   _GC_RESERVE_END_BASE(_class_);                         \
   _GC_RESERVE_FINALIZE();                                \
   _obj_->initialize();                                   \
   }                                                      \
-  POLL_SIGNALS()
+  poll_signals()
 
 #define GC_RESERVE_BEGIN(_class_, _obj_) _GC_RESERVE_BEGIN_BASE(_class_, _obj_)
 #define GC_RESERVE_GET(_class_, _obj_) _GC_RESERVE_GET_BASE(_class_, _class_::static_Kind, _obj_) _class_();

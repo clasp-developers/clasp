@@ -4,14 +4,14 @@
 
 /*
 Copyright (c) 2014, Christian E. Schafmeister
- 
+
 CLASP is free software; you can redistribute it and/or
 modify it under the terms of the GNU Library General Public
 License as published by the Free Software Foundation; either
 version 2 of the License, or (at your option) any later version.
- 
+
 See directory 'clasp/licenses' for full details.
- 
+
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
 
@@ -44,7 +44,7 @@ THE SOFTWARE.
 #include <clang/Frontend/FrontendActions.h>
 
 #include <clasp/core/object.h>
-#include <clasp/core/str.h>
+#include <clasp/core/array.h>
 #include <clasp/core/lispStream.h>
 #include <clasp/core/package.h>
 
@@ -793,16 +793,16 @@ CLBIND_TRANSLATE_SYMBOL_TO_ENUM(clang::AccessSpecifier, asttooling::_sym_STARcla
 namespace asttooling {
 void initialize_astExpose() {
   core::Package_sp pkg = _lisp->findPackage(ClangAstPkg); //, {"CAST"}, {}); //{"CAST"},{"CL","CORE","AST_TOOLING"});
-  pkg->shadow(core::Str_O::create("TYPE"));
+  pkg->shadow(core::SimpleBaseString_O::make("TYPE"));
   package(ClangAstPkg)[ //,{"CAST"},{"CL","CORE","AST-TOOLING"}) [
     class_<clang::Decl>("Decl", no_default_constructor)
-        .def("getGlobalID", &clang::Decl::getGlobalID)
-        .def("isImplicit", &clang::Decl::isImplicit)
-        .def("setImplicit", &clang::Decl::setImplicit)
-        .def("dump", (void (clang::Decl::*)() const) & clang::Decl::dump)
-        .def("getLocStart", &clang::Decl::getLocStart)
-        .def("getLocEnd", &clang::Decl::getLocEnd)
-    .def("getAccess",&clang::Decl::getAccess)
+     .def("getGlobalID", &clang::Decl::getGlobalID)
+     .def("isImplicit", &clang::Decl::isImplicit)
+     .def("setImplicit", &clang::Decl::setImplicit)
+     .def("dump", (void (clang::Decl::*)() const) & clang::Decl::dump)
+     .def("getLocStart", &clang::Decl::getLocStart)
+     .def("getLocEnd", &clang::Decl::getLocEnd)
+     .def("getAccess",&clang::Decl::getAccess)
     .enum_<clang::AccessSpecifier>(asttooling::_sym_STARclangAccessSpecifierSTAR)[
       value("AS_public", clang::AS_public),
       value("AS_protected", clang::AS_protected),
@@ -1084,7 +1084,7 @@ void initialize_astExpose() {
 
     ,
     class_<Type>("Type", no_default_constructor)
-        .def("dump", &clang::Type::dump)
+    .def("dump", (void(clang::Type::*)() const)&clang::Type::dump)
         //            .  def("getAsCXXRecordDecl",&clang::Type::getAsCXXRecordDecl)
         //            .  def("getAsStructureType",&clang::Type::getAsStructureType)
         .def("getAsTemplateSpecializationType", &clang::Type::getAs<clang::TemplateSpecializationType>, policies<>(), "", "", "Specialization of getAs<TemplateSpecializationType>")

@@ -4,14 +4,14 @@
 
 /*
 Copyright (c) 2014, Christian E. Schafmeister
- 
+
 CLASP is free software; you can redistribute it and/or
 modify it under the terms of the GNU Library General Public
 License as published by the Free Software Foundation; either
 version 2 of the License, or (at your option) any later version.
- 
+
 See directory 'clasp/licenses' for full details.
- 
+
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
 
@@ -24,7 +24,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#define DEBUG_LEVEL_FULL
+//#define DEBUG_LEVEL_FULL
 
 #include <csignal>
 #include <execinfo.h>
@@ -40,7 +40,7 @@ THE SOFTWARE.
 #include <clasp/core/environment.h>
 #include <clasp/core/debugger.h>
 #include <clasp/core/primitives.h>
-#include <clasp/core/vectorObjects.h>
+#include <clasp/core/array.h>
 #include <clasp/core/write_ugly.h>
 #include <clasp/core/lispStream.h>
 #include <clasp/core/wrappers.h>
@@ -87,14 +87,14 @@ T_sp LispDebugger::invoke() {
        && cl::_sym_STARfeaturesSTAR->symbolValue()
        && cl::_sym_STARfeaturesSTAR->symbolValue().consp()
        && !gctools::As<Cons_sp>(cl::_sym_STARfeaturesSTAR->symbolValue())->memberEq(kw::_sym_interactive)) {
-    printf("This is not an interactive list and the low-level debugger was entered - aborting\n");
+    printf("This is not an interactive session and the low-level debugger was entered - aborting\n");
     abort();
   }
   ++global_low_level_debugger_depth;
-  if ( global_low_level_debugger_depth > 20 ) {
-    printf("This is not an interactive list and the low-level debugger was entered - aborting\n");
-    abort();
-  }    
+  if ( global_low_level_debugger_depth > 10 ) {
+    printf("This is not an interactive session and the low-level debugger was entered too many times - exiting\n");
+    exit(1);
+  }
   //	DebuggerIHF debuggerStack(my_thread->invocationHistoryStack(),_Nil<ActivationFrame_O>());
   if (this->_Condition.notnilp()) {
     _lisp->print(BF("Debugger entered with condition: %s") % _rep_(this->_Condition));
@@ -415,7 +415,7 @@ CL_DEFUN void core__print_current_ihs_frame_environment() {
   if (args.notnilp()) {
     VectorObjects_sp vargs = gc::As<VectorObjects_sp>(args);
     for (int i = 0; i < cl__length(vargs); ++i) {
-      _lisp->print(BF("arg%s --> %s") % i % _rep_(vargs->elt(i)));
+      _lisp->print(BF("arg%s --> %s") % i % _rep_(vargs->rowMajorAref(i)));
     }
   } else {
     _lisp->print(BF("Args not available"));
@@ -464,9 +464,9 @@ void dbg_lowLevelDescribe(T_sp obj) {
   } else if (obj.characterp()) {
     printf("character: %d #\\%c\n", obj.unsafe_character(), obj.unsafe_character());
   } else if (obj.generalp()) {
-    printf("other_tag: %p  typeid: %s\n", &*obj, typeid(obj).name());
-    printf("More info:\n");
-    printf("%s\n", _rep_(obj).c_str());
+    printf("other_tag: %p  typeid: %s\n", &*obj, typeid(obj.unsafe_general()).name());
+    printf("className-> %s\n", obj.unsafe_general()->className().c_str());
+    printf("contents-> [%s]\n", _rep_(obj).c_str());
     if ( Closure_sp closure = obj.asOrNull<Closure_O>() ) {
       core__closure_slots_dump(closure);
     }

@@ -4,14 +4,14 @@
 
 /*
 Copyright (c) 2014, Christian E. Schafmeister
- 
+
 CLASP is free software; you can redistribute it and/or
 modify it under the terms of the GNU Library General Public
 License as published by the Free Software Foundation; either
 version 2 of the License, or (at your option) any later version.
- 
+
 See directory 'clasp/licenses' for full details.
- 
+
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
 
@@ -24,7 +24,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#define DEBUG_LEVEL_FULL
+//#define DEBUG_LEVEL_FULL
 // This should be the last TURN_DEBUG_off turned off when compiling production code
 
 //
@@ -39,13 +39,14 @@ THE SOFTWARE.
 #include <string>
 #include <set>
 #include <vector>
+
 #include <clasp/core/common.h>
 #include <clasp/core/exceptions.h>
 #include <clasp/core/symbolTable.h>
 #include <clasp/core/lispStream.h>
 #include <clasp/core/bformat.h>
 #include <clasp/core/evaluator.h>
-#include <clasp/core/str.h>
+#include <clasp/core/array.h>
 #include <clasp/core/object.h>
 #include <clasp/core/lisp.h>
 #include <clasp/core/wrappers.h>
@@ -59,6 +60,14 @@ THE SOFTWARE.
 namespace core {
 
 
+void CandoException_O::setMessage(const string &msg) {
+  this->_message = SimpleBaseString_O::make(msg);
+};
+
+string CandoException_O::message() const
+{
+  return this->_message->get_std_string();
+};
 
 
 
@@ -102,7 +111,7 @@ CL_DOCSTRING("make-condition while brcl is booting - replace this once ");
 CL_DEFUN T_sp cl__make_condition(T_sp type, List_sp slot_initializations) {
   GC_ALLOCATE(CandoException_O, condition);
   Cons_sp all = Cons_O::createList(type, slot_initializations);
-  Str_sp msg = gc::As<Str_sp>(core__bformat(_Nil<T_O>(), "%s %s", all));
+  String_sp msg = gc::As<String_sp>(core__bformat(_Nil<T_O>(), "%s %s", all));
   condition->setMessage(msg->get());
   return condition;
 };
@@ -116,26 +125,8 @@ CL_DEFUN string core__condition_message(T_sp condition) {
   }
   T_sp sout = clasp_make_string_output_stream();
   eval::funcall(cl::_sym_printObject, condition, sout);
-  return gc::As<Str_sp>(cl__get_output_stream_string(sout))->get();
+  return gc::As<String_sp>(cl__get_output_stream_string(sout))->get();
 }
-
-#if 0
-CL_LAMBDA(cond file function line);
-CL_DECLARE();
-CL_DOCSTRING("setThrowPosition");
-CL_DEFUN     void core__set_throw_position(T_sp cond, Str_sp file, Str_sp function, Fixnum_sp line)
-    {
-	if ( CandoException_sp ce = cond.asOrNull<CandoException_O>() )
-	{
-	    string ts = file->get();
-	    string fg = function->get();
-	    ce->setThrowPosition(ts.c_str(), fg.c_str(), line->get());
-	    return ;
-	}
-	string cs = _rep_(cond);
-	printf("%s:%d - Add setThrowPosition for %s\n", __FILE__, __LINE__, cs.c_str());
-    };
-#endif
 
   SYMBOL_EXPORT_SC_(ClPkg, makeCondition);
   SYMBOL_SC_(CorePkg, conditionMessage);

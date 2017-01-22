@@ -7,8 +7,11 @@
     :licence "LGPL-3.0"
     :depends-on (:cleavir-generate-ast
 		 :cleavir-ir
+                 :cleavir-compilation-policy
 		 :cleavir-ast-to-hir
 		 :cleavir-ast-transformations
+                 :cleavir-type-inference
+                 :cleavir-typed-transforms
 		 :cleavir-hir-transformations
                  :cleavir-remove-useless-instructions
 		 :cleavir-hir-to-mir
@@ -19,9 +22,11 @@
                  ;;                 (:file "compile-cclasp")
                  (:file "cleavir-fixups-and-hacks")
 		 (:file "system")
+                 (:file "policy")
 		 (:file "ast")
 		 (:file "convert-form")
 		 (:file "convert-special")
+                 (:file "eliminate-ltvs")
 		 (:file "hir")
 		 (:file "introduce-invoke")
                  (:file "toplevel")
@@ -36,4 +41,6 @@
                  (:file "closure-optimize")
 		 (:file "translate")
                  (:file "inline-prep")
+;;                 (:file "auto-compile")
+;;                 (:file "inline")
 		 ))

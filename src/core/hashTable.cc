@@ -25,6 +25,8 @@ THE SOFTWARE.
 */
 /* -^- */
 
+#define DEBUG_LEVEL_NONE
+
 #include <limits>
 #include <clasp/core/common.h>
 #include <clasp/core/corePackage.h>
@@ -36,11 +38,8 @@ THE SOFTWARE.
 #include <clasp/core/hashTableEql.h>
 #include <clasp/core/hashTableEqual.h>
 #include <clasp/core/hashTableEqualp.h>
-#include <clasp/core/vectorObjects.h>
-#include <clasp/core/str.h>
-#include <clasp/core/lispString.h>
+#include <clasp/core/array.h>
 #include <clasp/core/instance.h>
-#include <clasp/core/bitVector.h>
 #include <clasp/core/fileSystem.h>
 #include <clasp/core/serialize.h>
 #include <clasp/core/evaluator.h>
@@ -56,14 +55,14 @@ struct HashTableLocker {
   HashTableLocker() {
     if (LockDepth == 0) {
       //                printf("%s:%d clamping the arena\n", __FILE__, __LINE__ );
-      mps_arena_clamp(gctools::_global_arena);
+      mps_arena_clamp(global_arena);
     }
     ++LockDepth;
   };
   ~HashTableLocker() {
     if (LockDepth == 1) {
       //                printf("%s:%d releasing the arena\n", __FILE__, __LINE__ );
-      mps_arena_release(gctools::_global_arena);
+      mps_arena_release(global_arena);
     }
     --LockDepth;
   }
@@ -248,7 +247,7 @@ void HashTable_O::sxhash_eq(HashGenerator &hg, T_sp obj, LocationDependencyPtrT 
   if (obj.objectp()) {
     volatile void* address = &(*obj);
 #ifdef USE_MPS
-    if (ld) mps_ld_add(ld, gctools::_global_arena, (mps_addr_t)address );
+    if (ld) mps_ld_add(ld, global_arena, (mps_addr_t)address );
 #endif
     hg.addPart((Fixnum)(((uintptr_t)address)>>gctools::tag_shift));
     return;
@@ -278,7 +277,7 @@ void HashTable_O::sxhash_eql(HashGenerator &hg, T_sp obj, LocationDependencyPtrT
   }
   volatile void* address = &(*obj);
 #ifdef USE_MPS
-  if (ld) mps_ld_add(ld, gctools::_global_arena, (mps_addr_t)address );
+  if (ld) mps_ld_add(ld, global_arena, (mps_addr_t)address );
 #endif
   hg.addPart((Fixnum)(((uintptr_t)address)>>gctools::tag_shift));
   return;
@@ -307,8 +306,8 @@ void HashTable_O::sxhash_equal(HashGenerator &hg, T_sp obj, LocationDependencyPt
         str_obj->sxhash_(hg);
       return;
     } else if (BitVector_sp bv_obj = obj.asOrNull<BitVector_O>()) {
-      (void)bv_obj;
-      IMPLEMENT_MEF(BF("Hash bit-vectors"));
+      if (hg.isFilling()) bv_obj->sxhash_(hg);
+      return;
     } else if (Pathname_sp pobj = obj.asOrNull<Pathname_O>()) {
       if (hg.isFilling())
         HashTable_O::sxhash_equal(hg, pobj->_Host, ld);
@@ -333,7 +332,7 @@ void HashTable_O::sxhash_equal(HashGenerator &hg, T_sp obj, LocationDependencyPt
   }
   volatile void* address = &(*obj);
 #ifdef USE_MPS
-  if (ld) mps_ld_add(ld, gctools::_global_arena, (mps_addr_t)address );
+  if (ld) mps_ld_add(ld, global_arena, (mps_addr_t)address );
 #endif
   hg.addPart((Fixnum)(((uintptr_t)address)>>gctools::tag_shift));
   return;
@@ -358,8 +357,8 @@ void HashTable_O::sxhash_equalp(HashGenerator &hg, T_sp obj, LocationDependencyP
       hg.hashObject(obj);
       return;
     }
-    if (Str_sp str = obj.asOrNull<Str_O>()) {
-      Str_sp upstr = cl__string_upcase(str);
+    if (cl__stringp(obj)) {
+      SimpleString_sp upstr = cl__string_upcase(obj);
       hg.hashObject(upstr);
       return;
     } else if (cl__numberp(obj)) {
@@ -397,7 +396,7 @@ void HashTable_O::sxhash_equalp(HashGenerator &hg, T_sp obj, LocationDependencyP
             HashTable_O::sxhash_equalp(hg, iobj->_Slots[i], ld);
         }
         return;
-      } else if (BitVector_sp bv_obj = gobj.asOrNull<Array_O>()) {
+      } else if (BitVector_sp bv_obj = gobj.asOrNull<BitVector_O>()) {
         (void)bv_obj; // silence warning
         IMPLEMENT_MEF(BF("Handle HashTable_O::sxhash_equalp for BitVector"));
       } else if (Array_sp aobj = gobj.asOrNull<Array_O>()) {
@@ -411,14 +410,26 @@ void HashTable_O::sxhash_equalp(HashGenerator &hg, T_sp obj, LocationDependencyP
   }
   volatile void* address = &(*obj);
 #ifdef USE_MPS
-  if (ld) mps_ld_add(ld, gctools::_global_arena, (mps_addr_t)address );
+  if (ld) mps_ld_add(ld, global_arena, (mps_addr_t)address );
 #endif
   hg.addPart((Fixnum)(((uintptr_t)address)>>gctools::tag_shift));
   return;
 }
 
 bool HashTable_O::equalp(T_sp other) const {
-  IMPLEMENT_MEF(BF("Implement HashTable_O::equalp"));
+  if (this == &(*other)) return true;
+  if (!other.generalp()) return false;
+  if (!gc::IsA<HashTable_sp>(other)) return false;
+  HashTable_sp hto = gc::As_unsafe<HashTable_sp>(other);
+  if (this->hashTableTest() != hto->hashTableTest()) return false;
+  if (this->hashTableCount() != hto->hashTableCount()) return false;
+  this->map_while_true( [&hto] (T_sp key, T_sp val)->bool const {
+      T_sp other_value = hto->gethash(key);
+      if (!cl__equalp(val,other_value)) return false;
+      return true;
+    }
+    );
+  return true;
 }
 
 List_sp HashTable_O::keysAsCons() {
@@ -451,8 +462,8 @@ void HashTable_O::fields(Record_sp node) {
     node->field(INTERN_(core, data), keyValueVec);
     this->clrhash();
     for (size_t i(0), iEnd(cl__length(keyValueVec)); i < iEnd; ++++i) {
-      T_sp key = (*keyValueVec)[i + 0];
-      T_sp val = (*keyValueVec)[i + 1];
+      T_sp key = keyValueVec->rowMajorAref(i + 0);
+      T_sp val = keyValueVec->rowMajorAref(i + 1);
       this->hash_table_setf_gethash(key, val);
     };
   } break;
@@ -460,8 +471,8 @@ void HashTable_O::fields(Record_sp node) {
     Vector_sp keyValueVec = core__make_vector(cl::_sym_T_O, 2 * this->hashTableCount());
     size_t idx = 0;
     this->mapHash([&idx, &keyValueVec](T_sp key, T_sp val) {
-        (*keyValueVec)[idx++] = key;
-        (*keyValueVec)[idx++] = val;
+        keyValueVec->rowMajorAset(idx++,key);
+        keyValueVec->rowMajorAset(idx++,val);
     });
     node->field(INTERN_(core, data), keyValueVec);
   } break;
@@ -472,11 +483,10 @@ void HashTable_O::fields(Record_sp node) {
 }
 
 uint HashTable_O::resizeEmptyTable(uint sz) {
-  if (sz < 4)
-    sz = 4;
-  this->_HashTable = VectorObjects_O::make(_Nil<T_O>(), _Nil<T_O>(), sz, false, cl::_sym_T_O);
+  if (sz < 16) sz = 16;
+  this->_HashTable = VectorObjects_O::make(sz, _Nil<T_O>() );
 #ifdef USE_MPS
-  mps_ld_reset(const_cast<mps_ld_t>(&(this->_LocationDependency)), gctools::_global_arena);
+  mps_ld_reset(const_cast<mps_ld_t>(&(this->_LocationDependency)), global_arena);
 #endif
   return sz;
 }
@@ -508,7 +518,11 @@ gc::Fixnum HashTable_O::sxhashKey(T_sp obj, gc::Fixnum bound, bool willAddKey) c
 }
 
 List_sp HashTable_O::findAssoc(gc::Fixnum index, T_sp key) const {
-  List_sp rib = coerce_to_list((*this->_HashTable)[index]);
+  VectorObjects_O* spine = &*(this->_HashTable);
+//  printf("%s:%d:%s  spine->arrayTotalSize() = %ld  index = %ld\n", __FILE__, __LINE__, __FUNCTION__, spine->dimension(), index );
+  LOG(BF("findAssoc at index %ld\n") %index);
+  T_sp trib = (*spine)[index];
+  List_sp rib = coerce_to_list(trib);
   for (auto cur : rib) {
     List_sp pair = oCar(cur);
     if (this->keyTest(oCar(pair), key)) {
@@ -529,7 +543,9 @@ CL_DEFUN T_mv cl__gethash(T_sp key, T_sp hashTable, T_sp default_value) {
 
 List_sp HashTable_O::bucketsFind(T_sp key) const {
   ASSERT(this->_HashTable);
-  gc::Fixnum index = this->safe_sxhashKey(key, cl__length(this->_HashTable), false);
+  cl_index length = cl__length(this->_HashTable);
+//  printf("%s:%d:%s  _HashTable length = %ld\n", __FILE__, __LINE__, __FUNCTION__, length );
+  cl_index index = this->safe_sxhashKey(key, length, false);
   List_sp keyValueCons = this->findAssoc(index, key);
   return keyValueCons;
 }
@@ -542,7 +558,7 @@ List_sp HashTable_O::tableRef(T_sp key) {
   // Location dependency test if key is stale
   if (key.objectp()) {
     void *blockAddr = &(*key);
-    if (mps_ld_isstale(const_cast<mps_ld_t>(&(this->_LocationDependency)), gctools::_global_arena, blockAddr)) {
+    if (mps_ld_isstale(const_cast<mps_ld_t>(&(this->_LocationDependency)), global_arena, blockAddr)) {
       keyValueCons = this->rehash(false, key);
     }
   }
@@ -607,6 +623,7 @@ bool HashTable_O::remhash(T_sp key) {
 
 CL_LISPIFY_NAME("core:hashTableSetfGethash");
 CL_DEFMETHOD T_sp HashTable_O::hash_table_setf_gethash(T_sp key, T_sp value) {
+  LOG(BF("About to hash_table_setf_gethash for %s@%p -> %s@%p\n") % _rep_(key) % (void*)&(*key) % _rep_(value) % (void*)&(*value));
   List_sp keyValuePair = this->tableRef(key);
   if (keyValuePair.nilp()) {
     gc::Fixnum index = this->safe_sxhashKey(key, cl__length(this->_HashTable), true /*Will add key*/);
@@ -634,7 +651,7 @@ List_sp HashTable_O::rehash(bool expandTable, T_sp findKey) {
   ASSERTF(!clasp_zerop(this->_RehashSize), BF("RehashSize is zero - it shouldn't be"));
   ASSERTF(cl__length(this->_HashTable) != 0, BF("HashTable is empty in expandHashTable - this shouldn't be"));
   List_sp foundKeyValuePair(_Nil<T_O>());
-  LOG(BF("At start of expandHashTable current hash table size: %d") % startSize);
+  LOG(BF("At start of expandHashTable current hash table size: %d") % cl__length(this->_HashTable));
   gc::Fixnum newSize = 0;
   if (expandTable) {
     if (cl__integerp(this->_RehashSize)) {
@@ -755,7 +772,7 @@ void HashTable_O::mapHash(std::function<void(T_sp, T_sp)> const &fn) {
   }
 }
 
-void HashTable_O::map_while_true(std::function<bool(T_sp, T_sp)> const &fn) {
+void HashTable_O::map_while_true(std::function<bool(T_sp, T_sp)> const &fn) const {
   //        HASH_TABLE_LOCK();
   VectorObjects_sp table = this->_HashTable;
   for (size_t it(0), itEnd(cl__length(table)); it < itEnd; ++it) {
@@ -817,6 +834,13 @@ string HashTable_O::keysAsString() {
   });
   return ss.str();
 }
+
+T_mv clasp_gethash_safe(T_sp key, T_sp thashTable, T_sp default_) {
+  HashTable_sp hashTable = gc::As<HashTable_sp>(thashTable);
+  return hashTable->gethash(key,default_);
+}
+
+
 
   SYMBOL_EXPORT_SC_(ClPkg, make_hash_table);
   SYMBOL_EXPORT_SC_(ClPkg, maphash);

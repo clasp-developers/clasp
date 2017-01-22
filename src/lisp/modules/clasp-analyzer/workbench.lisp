@@ -1,3 +1,27 @@
+(load #P"sys:modules;clang-tool;clang-tool.lisp")
+(load #P"sys:modules;clasp-analyzer;clasp-analyzer.lisp")
+(in-package :clasp-analyzer)
+(defvar *compile-commands* "/Users/meister/Development/clasp/build/mpsprep/compile_commands_small.json")
+(setf *print-pretty* nil)
+(defvar *db* (clasp-analyzer:setup-clasp-analyzer-compilation-tool-database (pathname *compile-commands*)))
+;; Search only
+(clang-tool:with-compilation-tool-database *db*
+  (setf *p* (serial-search-all *db*)))
+;; Search and generate code
+(defvar *p* (search/generate-code *db*))
+;; Analyze project
+(defparameter *a* (analyze-project *p*))
+(clang-tool:with-compilation-tool-database *db*
+  (generate-code *a*))
+
+
+
+
+
+
+
+
+
 
 (require :clasp-analyzer)
 
@@ -8,7 +32,7 @@
 (defparameter *db*
   (clasp-analyzer:setup-clasp-analyzer-compilation-tool-database
    #P"lib:compile_commands.json"
-   :selection-pattern ".*gc_interface\.cc.*"))
+   :selection-pattern "gc_interface.cc"))
 
 (time (clasp-analyzer:search/generate-code *db*))
 
@@ -32,7 +56,7 @@
 (defparameter *db*
   (clasp-analyzer:setup-clasp-analyzer-compilation-tool-database
    #P"app-resources:build-databases;clasp_compile_commands.json"
-   :selection-pattern ".*hashTable.cc.*"))
+   :selection-pattern "hashTable.cc"))
 
 (clasp-analyzer:search/generate-code *db*)
 
@@ -91,7 +115,7 @@
 (defparameter *db*
   (clasp-analyzer:setup-clasp-analyzer-compilation-tool-database
    #P"app-resources:build-databases;clasp_compile_commands.json"
-   :selection-pattern ".*activationFrame.cc.*"))
+   :selection-pattern "activationFrame.cc"))
 
 (find "aNO-NAME" '("a" "b" "NO-NAME" "c") :test #'string=)
 (null (search "NO-NAME" "_PackageName.__r_.__first_.NO-NAME.__l.__cap_"))

@@ -178,6 +178,7 @@ public:
 
   /*! Return the raw smart_ptr value interpreted as a T_O* */
   inline core::T_O *raw_() const { return reinterpret_cast<core::T_O *>(this->theObject); }
+  inline gctools::Tagged tagged_() const { return reinterpret_cast<gctools::Tagged>(this->theObject); }
 
   inline void setRaw_(Tagged p) { this->theObject = reinterpret_cast<core::T_O *>(p); }
 
@@ -278,14 +279,14 @@ class smart_ptr /*: public tagged_ptr<T>*/ {
     inline smart_ptr<o_class> as() {
     smart_ptr<o_class> ret = this->asOrNull<o_class>();
     if (ret) return ret;
-    lisp_errorCast<o_class, Type>(this->theObject);
+    core::lisp_errorCast<o_class, Type>(this->theObject);
   }
 
   template <class o_class>
     inline smart_ptr<o_class> as() const {
     smart_ptr<o_class> ret = this->asOrNull<o_class>();
     if (ret) return ret;
-    lisp_errorCast<o_class, Type>(this->theObject);
+    core::lisp_errorCast<o_class, Type>(this->theObject);
   }
  
   template <class o_class>
@@ -386,6 +387,7 @@ class smart_ptr /*: public tagged_ptr<T>*/ {
 
   /*! Return the raw smart_ptr value interpreted as a T_O* */
   inline core::T_O *raw_() const { return reinterpret_cast<core::T_O *>(this->theObject); }
+  inline gctools::Tagged tagged_() const { return reinterpret_cast<gctools::Tagged>(this->theObject); }
 
   inline void setRaw_(Tagged p) { this->theObject = reinterpret_cast<Type *>(p); }
 
@@ -526,7 +528,7 @@ DO NOT CHANGE THE ORDER OF THESE OBJECTS WITHOUT UPDATING THE DEFINITION OF +va_
 namespace gctools {
 //////////////////////////////////////////////////////////////////////
 //
-// Declare AsOrNull and As converters
+// Declare As converters
 //
 template <typename To_SP>
 inline bool IsA(return_type const &rhs) {
@@ -536,7 +538,8 @@ template <typename To_SP, typename From_SP>
 inline bool IsA(From_SP const &rhs) {
   return TaggedCast<typename To_SP::Type *, typename From_SP::Type *>::isA(reinterpret_cast<typename From_SP::Type *>(rhs.raw_()));
 };
-template <typename To_SP, typename From_SP>
+#if 0
+ template <typename To_SP, typename From_SP>
 inline To_SP AsOrNull(From_SP const &rhs) {
   if (LIKELY(rhs.generalp())) {
     typename To_SP::Type *cast = TaggedCast<typename To_SP::Type *, typename From_SP::Type *>::castOrNULL(untag_general<typename From_SP::Type *>(reinterpret_cast<typename From_SP::Type *>(rhs.raw_())));
@@ -554,11 +557,14 @@ inline To_SP AsOrNull(From_SP const &rhs) {
   // If the cast didn't work then signal a type error
   class_id expected_typ = reg::registered_class<typename To_SP::Type>::id;
   class_id this_typ = reg::registered_class<typename From_SP::Type>::id;
-  lisp_errorBadCast(expected_typ, this_typ, rhs.raw_());
+  core::lisp_errorBadCast(expected_typ, this_typ, rhs.raw_());
   // unreachable
   HARD_UNREACHABLE();
 };
-template <typename To_SP, typename From_SP>
+#endif
+
+ 
+ template <typename To_SP, typename From_SP>
 inline To_SP As(From_SP const &rhs) {
   if (IsA<To_SP>(rhs)) {
     To_SP ret((Tagged)rhs.raw_());
@@ -632,7 +638,7 @@ public:
     smart_ptr<o_class> ret = this->asOrNull<o_class>();
     if (ret)
       return ret;
-    lisp_errorCast<o_class, Type>(this->theObject);
+    core::lisp_errorCast<o_class, Type>(this->theObject);
   }
 
   template <class o_class>
@@ -640,7 +646,7 @@ public:
     smart_ptr<o_class> ret = this->asOrNull<o_class>();
     if (ret)
       return ret;
-    lisp_errorCast<o_class, Type>(this->theObject);
+    core::lisp_errorCast<o_class, Type>(this->theObject);
   }
 
   template <class o_class>
@@ -700,6 +706,7 @@ public:
   inline bool objectp() const { return this->generalp() || this->consp(); };
   inline Fixnum unsafe_fixnum() const { return untag_fixnum(this->theObject); };
   inline core::T_O *raw_() const { return reinterpret_cast<core::T_O *>(this->theObject); };
+  inline gctools::Tagged tagged_() const { return reinterpret_cast<gctools::Tagged>(this->theObject); }
 };
 };
 
@@ -847,6 +854,7 @@ public:
   bool sameAsKeyP() const { return tagged_sameAsKeyp(this->theObject); }
   /*! Return the raw smart_ptr value interpreted as a T_O* */
   inline core::T_O *raw_() const { return reinterpret_cast<core::T_O *>(this->theObject); }
+  inline gctools::Tagged tagged_() const { return reinterpret_cast<gctools::Tagged>(this->theObject); }
 
   inline void setRaw_(Tagged p) { this->theObject = reinterpret_cast<Type *>(p); }
 
@@ -972,7 +980,8 @@ public:
     return *(this->untag_object());
   };
 
-  core::T_O *raw_() const { return reinterpret_cast<core::T_O *>(this->theObject); }
+  inline core::T_O *raw_() const { return reinterpret_cast<core::T_O *>(this->theObject); }
+  inline gctools::Tagged tagged_() const { return reinterpret_cast<gctools::Tagged>(this->theObject); }
   bool _NULLp() const { return this->theObject == NULL; };
 
   template <class U>
@@ -1113,6 +1122,7 @@ public:
   };
 
   core::T_O *raw_() const { return reinterpret_cast<Type *>(this->theObject); }
+  inline gctools::Tagged tagged_() const { return reinterpret_cast<gctools::Tagged>(this->theObject); }
   bool _NULLp() const { return this->theObject == NULL; };
 
   template <class U>
@@ -1609,7 +1619,7 @@ public:
     }
     this->theObject = TaggedCast<U *, Type *>::castOrNULL(other.theObject);
     if (!this->theObject) {
-      lisp_errorCast<U *, Type *>(other.theObject);
+      core::lisp_errorCast<U *, Type *>(other.theObject);
     }
   }
 
@@ -1621,7 +1631,7 @@ public:
     }
     this->theObject = TaggedCast<U *, Type *>::castOrNULL(other.theObject);
     if (!this->theObject) {
-      lisp_errorCast<U *, Type *>(other.theObject);
+      core::lisp_errorCast<U *, Type *>(other.theObject);
     }
     return;
   }
@@ -1688,7 +1698,7 @@ public:
     if (!tagged_nilp(this->theObject))
       return smart_ptr<Type>(*this);
     class_id this_typ = reg::registered_class<Type>::id;
-    lisp_errorUnexpectedNil(this_typ);
+    core::lisp_errorUnexpectedNil(this_typ);
     HARD_UNREACHABLE();
   }
 };

@@ -24,7 +24,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#define DEBUG_LEVEL_FULL
+//#define DEBUG_LEVEL_FULL
 
 #include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
@@ -34,11 +34,18 @@ THE SOFTWARE.
 #include <clasp/core/evaluator.h>
 #include <clasp/core/standardClass.h>
 #include <clasp/core/genericFunction.h>
+#include <clasp/core/accessor.h>
 #include <clasp/core/instance.h>
 #include <clasp/core/wrappers.h>
 
 namespace core {
 
+CL_DEFUN T_sp clos__getFuncallableInstanceFunction(T_sp obj) {
+  if (Instance_sp iobj = obj.asOrNull<Instance_O>()) {
+    return iobj->userFuncallableInstanceFunction();
+  }
+  SIMPLE_ERROR(BF("You can only call userFuncallableInstanceFunction on instances - you tried to call it on a: %s") % _rep_(obj));
+};
 
 CL_DEFUN T_sp clos__setFuncallableInstanceFunction(T_sp obj, T_sp func) {
   if (Instance_sp iobj = obj.asOrNull<Instance_O>()) {
@@ -88,11 +95,11 @@ T_sp Instance_O::oinstancepSTAR() const {
 /*! See ECL>>instance.d>>si_allocate_instance */
 T_sp Instance_O::allocateInstance(T_sp theClass, int numberOfSlots) {
   Class_sp cl = gc::As<Class_sp>(theClass);
-  if (!cl->hasCreator()) {
+  if (!cl->has_creator()) {
     IMPLEMENT_MEF(BF("Handle no allocator class: %s slots: %d") % _rep_(theClass) % numberOfSlots);
   }
-  Creator_sp allocator = (cl->getCreator());
-  T_sp obj = allocator->allocate();
+  Creator_sp creator = gctools::As<Creator_sp>(cl->class_creator());
+  T_sp obj = creator->creator_allocate();
   ASSERT(obj);
   ASSERT(obj.notnilp());
   if (obj.generalp()) {
@@ -284,21 +291,18 @@ T_sp Instance_O::setFuncallableInstanceFunction(T_sp functionOrT) {
     Instance_O::ensureClosure(&generic_function_dispatch);
   } else if (functionOrT.nilp()) {
     this->_isgf = ECL_NOT_FUNCALLABLE;
-    Instance_O::ensureClosure(&notFuncallableDispatch);
+    Instance_O::ensureClosure(&not_funcallable_dispatch);
   } else if (functionOrT == clos::_sym_standardOptimizedReaderMethod) {
     /* WARNING: We assume that f(a,...) behaves as f(a,b) */
     this->_isgf = ECL_READER_DISPATCH;
     // TODO: Switch to using slotReaderDispatch like ECL for improved performace
     //	    this->_Entry = &slotReaderDispatch;
     //Instance_O::ensureClosure(&generic_function_dispatch);
-    Instance_O::ensureClosure(&slotReaderDispatch);
+    Instance_O::ensureClosure(&optimized_slot_reader_dispatch);
   } else if (functionOrT == clos::_sym_standardOptimizedWriterMethod) {
     /* WARNING: We assume that f(a,...) behaves as f(a,b) */
     this->_isgf = ECL_WRITER_DISPATCH;
-    // TODO: Switch to using slotWriterDispatch like ECL for improved performace
-    //	    this->_Entry = &slotWriterDispatch;
-    //Instance_O::ensureClosure(&generic_function_dispatch);
-    Instance_O::ensureClosure(&slotReaderDispatch);
+    Instance_O::ensureClosure(&optimized_slot_writer_dispatch);
   } else if (!cl__functionp(functionOrT)) {
     TYPE_ERROR(functionOrT, cl::_sym_function);
     //SIMPLE_ERROR(BF("Wrong type argument: %s") % functionOrT->__repr__());
@@ -306,11 +310,19 @@ T_sp Instance_O::setFuncallableInstanceFunction(T_sp functionOrT) {
     this->reshapeInstance(+1);
     this->_Slots[this->_Slots.size() - 1] = functionOrT;
     this->_isgf = ECL_USER_DISPATCH;
-    // TODO: Switch to using userFunctionDispatch like ECL for improved performace
-    //	    this->_Entry = &userFunctionDispatch;
-    Instance_O::ensureClosure(&generic_function_dispatch);
+    Instance_O::ensureClosure(&user_function_dispatch);
   }
   return ((this->sharedThis<Instance_O>()));
+}
+
+T_sp Instance_O::userFuncallableInstanceFunction() const
+{
+  if (this->_isgf == ECL_USER_DISPATCH) {
+    T_sp user_dispatch_fn = this->_Slots[this->_Slots.size()-1];
+    return user_dispatch_fn;
+  }
+  // Otherwise return NIL
+  return _Nil<T_O>();
 }
 
 bool Instance_O::genericFunctionP() const {

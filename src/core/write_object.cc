@@ -26,13 +26,13 @@ THE SOFTWARE.
 /* -^- */
 /* This is copied from ECL write_object.c and modified for C++ */
 
-#define DEBUG_LEVEL_FULL
+//#define DEBUG_LEVEL_FULL
 
 #include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
 #include <clasp/core/cons.h>
 #include <clasp/core/symbolTable.h>
-#include <clasp/core/str.h>
+#include <clasp/core/array.h>
 #include <clasp/core/designators.h>
 #include <clasp/core/predicates.h>
 #include <clasp/core/lispStream.h>
@@ -153,13 +153,13 @@ T_sp write_object(T_sp x, T_sp stream) {
       /* Object is referenced twice. We print its definition */
       stringstream ss;
       ss << '#' << -code << '=';
-      Str_sp out = Str_O::create(ss.str());
+      SimpleBaseString_sp out = SimpleBaseString_O::make(ss.str());
       clasp_writeString(out, stream);
     } else {
       /* Second reference to the object */
       stringstream ss;
       ss << '#' << code << '#';
-      Str_sp out = Str_O::create(ss.str());
+      SimpleBaseString_sp out = SimpleBaseString_O::make(ss.str());
       clasp_writeString(out, stream);
       goto OUTPUT;
     }

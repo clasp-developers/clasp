@@ -64,7 +64,7 @@ Symbol_sp BootStrapCoreSymbolMap::maybe_allocate_unique_symbol(string const &pkg
       return ((this->_IndexToSymbol[it->second]._Symbol));
     }
   }
-  Symbol_sp sym = Symbol_O::create(symbolName);
+  Symbol_sp sym = Symbol_O::create_from_string(symbolName);
 #if 0
   if ( symbolName == "POINTER" ) {
     printf("%s:%d BootStrapCoreSymbolMap --> adding symbol %s to package: %s export: %d\n", __FILE__, __LINE__, symbolName.c_str(), pkgName.c_str(), exportp );

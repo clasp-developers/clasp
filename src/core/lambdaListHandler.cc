@@ -34,8 +34,7 @@ THE SOFTWARE.
 #include <clasp/core/lambdaListHandler.h>
 #include <clasp/core/lispList.h>
 #include <clasp/core/primitives.h>
-#include <clasp/core/str.h>
-#include <clasp/core/vectorObjects.h>
+#include <clasp/core/array.h>
 #include <clasp/core/multipleValues.h>
 #include <clasp/core/evaluator.h>
 #include <clasp/core/hashTableEq.h>
@@ -86,7 +85,7 @@ CL_DEFUN bool core__is_a_type(T_sp form)
   }
   return false;
 }
-  
+
 /*! Canonicalize one declare.
 * Arguments
 - decl :: A list.
@@ -121,9 +120,9 @@ List_sp maybe_canonicalize_optimize_declaration( List_sp decl, List_sp canon )
 }
 
 /*! Canonicalize the following declarations
-dynamic-extent  ignore     optimize  
-ftype           inline     special   
-ignorable       notinline  type      
+dynamic-extent  ignore     optimize
+ftype           inline     special
+ignorable       notinline  type
 And my own special one:    core:_sym_lambda_name
 */
 CL_DEFUN List_sp canonicalize_declarations(List_sp decls)
@@ -131,7 +130,7 @@ CL_DEFUN List_sp canonicalize_declarations(List_sp decls)
   List_sp canon = _Nil<T_O>();
   for ( auto decl : decls ) {
     Cons_sp d = gc::As<Cons_sp>(oCar(decl));
-    Symbol_sp head = gc::As<Symbol_sp>(oCar(d));
+    T_sp head = oCar(d);
     if (head == cl::_sym_dynamic_extent
         || head == cl::_sym_ignore
         || head == cl::_sym_inline
@@ -187,7 +186,7 @@ CL_DEFUN List_sp canonicalize_declarations(List_sp decls)
   }
   return canon;
 }
-    
+
 
 void lambdaListHandler_createBindings(Closure_sp closure, core::LambdaListHandler_sp llh, core::DynamicScopeManager &scope, LCC_ARGS_VA_LIST) {
   if (llh->requiredLexicalArgumentsOnlyP()) {
@@ -460,18 +459,20 @@ List_sp LambdaListHandler_O::process_macro_lambda_list(List_sp lambda_list) {
     }
   }
   if (whole_symbol.nilp())
-    whole_symbol = cl__gensym(Str_O::create("whole"));
+    whole_symbol = cl__gensym(SimpleBaseString_O::make("whole"));
   if (environment_symbol.nilp())
-    environment_symbol = cl__gensym(Str_O::create("environment"));
+    environment_symbol = cl__gensym(SimpleBaseString_O::make("environment"));
 
-  Symbol_sp name_symbol = cl__gensym(Str_O::create("macro-name"));
+  Symbol_sp name_symbol = cl__gensym(SimpleBaseString_O::make("macro-name"));
   //	SourceCodeList_sp new_name_ll = SourceCodeCons_O::createWithDuplicateSourceCodeInfo(name_symbol,new_lambda_list,lambda_list,_lisp);
   ql::list sclist; // (af_lineNumber(lambda_list),af_column(lambda_list),core__source_file_info(lambda_list));
   sclist << whole_symbol << environment_symbol << Cons_O::create(name_symbol, new_lambda_list);
   List_sp macro_ll = sclist.cons();
+#if 0
   if (_lisp->sourceDatabase().notnilp()) {
     gc::As<SourceManager_sp>(_lisp->sourceDatabase())->duplicateSourcePosInfo(lambda_list, macro_ll);
   }
+#endif
   return macro_ll;
 }
 
@@ -526,7 +527,7 @@ void LambdaListHandler_O::recursively_build_handlers_count_arguments(List_sp dec
     for (gctools::Vec0<RequiredArgument>::iterator it = this->_RequiredArguments.begin();
          it != this->_RequiredArguments.end(); it++) {
       if (it->_lambdaListP()) {
-        DEPRECIATED();
+        SIMPLE_ERROR(BF("A nested lambda list was discovered while building handler for %s") % this->__repr__());
         List_sp sub_lambda_list = it->lambda_list();
         //		    throw_if_not_destructuring_context(context);
         LambdaListHandler_sp sub_handler = LambdaListHandler_O::createRecursive_(sub_lambda_list, declares, context, classifier);
@@ -540,7 +541,7 @@ void LambdaListHandler_O::recursively_build_handlers_count_arguments(List_sp dec
     for (gctools::Vec0<OptionalArgument>::iterator it = this->_OptionalArguments.begin();
          it != this->_OptionalArguments.end(); it++) {
       if (it->_lambdaListP()) {
-        DEPRECIATED();
+        DEPRECATED();
         //		    throw_if_not_destructuring_context(context);
         List_sp sub_lambda_list = it->lambda_list();
         LambdaListHandler_sp sub_handler = LambdaListHandler_O::createRecursive_(sub_lambda_list, declares, context, classifier);
@@ -559,7 +560,7 @@ void LambdaListHandler_O::recursively_build_handlers_count_arguments(List_sp dec
     for (gctools::Vec0<KeywordArgument>::iterator it = this->_KeywordArguments.begin();
          it != this->_KeywordArguments.end(); it++) {
       if (it->_lambdaListP()) {
-        DEPRECIATED();
+        DEPRECATED();
         //		    throw_if_not_destructuring_context(context);
         List_sp sub_lambda_list = it->lambda_list();
         LambdaListHandler_sp sub_handler = LambdaListHandler_O::createRecursive_(sub_lambda_list, declares, context, classifier);
@@ -1122,6 +1123,10 @@ LambdaListHandler_sp LambdaListHandler_O::create(List_sp lambda_list, List_sp de
   return ollh;
 }
 
+void LambdaListHandler_O::setComment(const string &s) { this->_Comment = SimpleBaseString_O::make(s); };
+string LambdaListHandler_O::getComment() const { if (this->_Comment) return this->_Comment->get_std_string(); else return ""; };
+
+
 LambdaListHandler_sp LambdaListHandler_O::create(int numArgs, const std::set<int> &skipIndices) {
   GC_ALLOCATE(LambdaListHandler_O, ollh);
   ollh->create_required_arguments(numArgs, skipIndices);
@@ -1139,7 +1144,7 @@ void LambdaListHandler_O::create_required_arguments(int num, const std::set<int>
   _OF();
   TargetClassifier classifier(skipIndices);
   for (int i = 0, iEnd(num - skipIndices.size()); i < iEnd; ++i) {
-    Symbol_sp name = cl__gensym(Str_O::create("arg"));
+    Symbol_sp name = cl__gensym(SimpleBaseString_O::make("arg"));
     RequiredArgument req(name, i);
     this->_RequiredArguments.push_back(req);
     classifier.classifyTarget(req);
@@ -1247,7 +1252,7 @@ string LambdaListHandler_O::__repr__() const {
   {
     ss << this->partsAsString();
   }
-  ss << " :comment \"" << this->_Comment.c_str() << "\"";
+  if (this->_Comment) { ss << " :comment \"" << this->_Comment->get_std_string() << "\"";}
   ss << "> ";
   return ss.str();
 }
@@ -1327,7 +1332,8 @@ CL_DEFMETHOD List_sp LambdaListHandler_O::namesOfLexicalVariables() const {
 
 void LambdaListHandler_O::calculateNamesOfLexicalVariablesForDebugging() {
   List_sp names = this->namesOfLexicalVariables();
-  this->_LexicalVariableNamesForDebugging = VectorObjects_O::make(_Nil<T_O>(), names, cl__length(names), false, cl::_sym_T_O);
+  this->_LexicalVariableNamesForDebugging = VectorObjects_O::make(cl__length(names),_Nil<T_O>());
+  gc::As<VectorObjects_sp>(this->_LexicalVariableNamesForDebugging)->fillInitialContents(names);
 }
 
 CL_LISPIFY_NAME("namesOfLexicalVariablesForDebugging");
@@ -1353,4 +1359,3 @@ LambdaListHandler_O::LambdaListHandler_O() : _SpecialSymbolSet(_Nil<T_O>()), _Le
 
 
 }; /* core */
-

@@ -41,6 +41,7 @@ public:
   typedef value_type &reference;
   typedef T *iterator;
   typedef T const *const_iterator;
+  typedef value_type container_value_type;
 
   GCString_moveable(size_t num, size_t e = 0) : _Capacity(num){};
   size_t _Capacity; // Index one beyond the total number of elements allocated
@@ -106,6 +107,7 @@ private:
 #endif
 
 public:
+// \0 terminated string
   GCString(const char *chars) : _Contents() {
     size_t sz = strlen(chars);
     this->reserve(sz + GCStringPad);
@@ -115,14 +117,14 @@ public:
     THROW_IF_ILLEGAL_CHARACTERS(this);
   };
   /*! Construct and don't initialize contents */
-  GCString(int sz) : _Contents() {
+  GCString(size_t sz) : _Contents() {
     this->reserve(sz + GCStringPad);
     this->_Contents->_End = sz;
     GCTOOLS_ASSERT(this->_Contents->_End <= this->_Contents->_Capacity);
   };
   GCString(const char *chars, int sz) : _Contents() {
     this->reserve(sz + GCStringPad);
-    strncpy(this->_Contents->data(), chars, sz);
+    memcpy(this->_Contents->data(), chars, sz);
     this->_Contents->_End = sz;
     GCTOOLS_ASSERT(this->_Contents->_End <= this->_Contents->_Capacity);
     THROW_IF_ILLEGAL_CHARACTERS(this);
@@ -130,7 +132,7 @@ public:
 
   GCString(const string &str) : _Contents() {
     this->reserve(str.size() + GCStringPad);
-    strncpy(this->data(), str.data(), str.size());
+    memcpy(this->data(), str.data(), str.size());
     this->_Contents->_End = str.size();
     GCTOOLS_ASSERT(this->_Contents->_End <= this->_Contents->_Capacity);
     THROW_IF_ILLEGAL_CHARACTERS(this);
@@ -166,7 +168,7 @@ public:
       }
       if ((bool)that._Contents) {
         allocator_type alloc;
-        tagged_pointer_to_moveable vec = alloc.allocate_kind(GCKind<impl_type>::Kind,that._Contents->_Capacity);
+        tagged_pointer_to_moveable vec = alloc.allocate_kind(GCStamp<impl_type>::TheStamp,GCKind<impl_type>::Kind,that._Contents->_Capacity);
         memcpy(vec->_Data, that._Contents->_Data, that._Contents->_End * sizeof(value_type));
         vec->_End = that._Contents->_End;
         this->_Contents = vec;
@@ -217,7 +219,7 @@ public:
     if (!this->_Contents) {
       tagged_pointer_to_moveable vec;
       size_t newCapacity = (n == 0 ? GCStringPad : n);
-      vec = alloc.allocate_kind(GCKind<impl_type>::Kind,newCapacity);
+      vec = alloc.allocate_kind(GCStamp<impl_type>::TheStamp,GCKind<impl_type>::Kind,newCapacity);
       vec->_End = 0;
       this->_Contents = vec;
       GCTOOLS_ASSERT(newCapacity == this->_Contents->_Capacity);
@@ -228,7 +230,7 @@ public:
     if (n > this->_Contents->_Capacity) {
       tagged_pointer_to_moveable vec(this->_Contents);
       size_t newCapacity = n;
-      vec = alloc.allocate_kind(GCKind<impl_type>::Kind,newCapacity);
+      vec = alloc.allocate_kind(GCStamp<impl_type>::TheStamp,GCKind<impl_type>::Kind,newCapacity);
       memcpy(vec->_Data, this->_Contents->_Data, this->_Contents->_End * sizeof(value_type));
       vec->_End = this->_Contents->_End;
       //                pointer_to_moveable oldVec(this->_Contents);
@@ -256,7 +258,7 @@ public:
     if (!this->_Contents) {
       tagged_pointer_to_moveable vec;
       size_t newCapacity = (n == 0 ? GCStringPad : n * GCStringGrow);
-      vec = alloc.allocate_kind(GCKind<impl_type>::Kind,newCapacity);
+      vec = alloc.allocate_kind(GCStamp<impl_type>::TheStamp,GCKind<impl_type>::Kind,newCapacity);
       // the array at newAddress is undefined - placement new to copy
       for (size_t i(0); i < n; ++i)
         (*vec)[i] = x;
@@ -276,7 +278,7 @@ public:
       if (n > this->_Contents->_Capacity) {
         // We need to expand
         size_t newCapacity = n * GCStringGrow;
-        vec = alloc.allocate_kind(GCKind<impl_type>::Kind,newCapacity);
+        vec = alloc.allocate_kind(GCStamp<impl_type>::TheStamp,GCKind<impl_type>::Kind,newCapacity);
         new (&*vec) GCString_moveable<T>(newCapacity);
         memcpy(vec->_Data, this->_Contents->_Data, this->_Contents->_End * sizeof(value_type));
         // fill the new elements with x

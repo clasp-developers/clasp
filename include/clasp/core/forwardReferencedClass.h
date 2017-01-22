@@ -43,16 +43,16 @@ class ForwardReferencedClass_O : public Class_O {
   LISP_CLASS(core, CorePkg, ForwardReferencedClass_O, "ForwardReferencedClass",Class_O);
   //    DECLARE_ARCHIVE();
 public: // Simple default ctor/dtor
-  DEFAULT_CTOR_DTOR(ForwardReferencedClass_O);
+ ForwardReferencedClass_O(gctools::Stamp is) : Class_O(is) {};
 
 public:
   void initialize();
 
 GCPRIVATE: // instance variables here
-  BuiltInClass_sp _InstanceCoreClass;
+//  BuiltInClass_sp _InstanceCoreClass;
 
 public: // Functions here
-  void setInstanceCoreClass(BuiltInClass_sp bic);
+//  void setInstanceCoreClass(BuiltInClass_sp bic);
 
   void defineYourSlotsFromBinderArchiveNode(ArchiveP binderNode);
 };

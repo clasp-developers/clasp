@@ -94,10 +94,11 @@ struct maybe_delete<OT, false> {
 namespace clbind {
 
 /*! Wrappers wrap external pointers - 
-      The wrapper does not own the pointer unless the HolderType is a std::unique_ptr or some other
+      The wrapper does not own the pointer unless the HolderType 
+      is a std::unique_ptr or some other
       smart_ptr type */
 template <class OT, class HolderType = OT *>
-class Wrapper : public core::WrappedPointer_O /*, public gctools::GC_MergeKinds*/ {
+  class Wrapper : public core::WrappedPointer_O {
 public:
   typedef core::WrappedPointer_O TemplatedBase;
 
@@ -626,7 +627,16 @@ template <typename T>
 struct from_object<T> {
   typedef T DeclareType;
   DeclareType _v;
-  from_object(core::T_sp o) : _v(*(from_object<T *>(o)._v)){};
+  from_object(core::T_sp o) : _v(*(from_object<T *>(o)._v)) {
+    /*!!!!!!!! Did a EXC_BAD_ACCESS happen here???
+      !!!!!!!! If it did - maybe this isn't the right from_object translator
+      !!!!!!!! and you need to implement a more specialized one.
+      !!!!!!!! And you need to make sure it's visible when the function that
+      !!!!!!!! uses it is exposed.
+      !!!!!!!! See from_object<llvm::DIFile::ChecksumKind,std::true_type> 
+      !!!!!!!! for an example where a specific translator was implemented
+    */
+  };
 };
 };
 

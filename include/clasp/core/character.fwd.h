@@ -39,6 +39,13 @@ struct CharacterInfo {
   void initialize();
 };
 
-Character_sp clasp_make_character(claspCharacter c);
+inline Character_sp clasp_make_character(claspCharacter c) {
+  return gc::make_tagged_character(c);
+}
+
+ inline claspCharacter clasp_as_claspCharacter(Character_sp c) {
+  return c.unsafe_character();
+}
+
 }
 #endif

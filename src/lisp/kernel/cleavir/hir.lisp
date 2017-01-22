@@ -22,23 +22,69 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
-;;; Instruction INTRINSIC-CALL-INSTRUCTION
+;;; Instruction multiple-value-foreign-CALL-INSTRUCTION
 ;;;
-;;; This instruction is an INTRINSIC-CALL-INSTRUCTION that prints a message
+;;; This instruction is an multiple-value-foreign-CALL-INSTRUCTION that prints a message
 
 
-(defclass intrinsic-call-instruction (cleavir-ir:instruction cleavir-ir:one-successor-mixin)
+(defclass multiple-value-foreign-call-instruction (cleavir-ir:instruction cleavir-ir:one-successor-mixin)
   ((%function-name :initarg :function-name :accessor function-name)))
 
 
-(defmethod cleavir-ir-graphviz:label ((instr intrinsic-call-instruction))
+(defmethod cleavir-ir-graphviz:label ((instr multiple-value-foreign-call-instruction))
   (with-output-to-string (s)
-    (format s "intrinsic-call(~a)" (function-name instr))))
+    (format s "multiple-value-foreign-call(~a)" (function-name instr))))
 
-(defmethod make-intrinsic-call-instruction
+(defmethod make-multiple-value-foreign-call-instruction
     (function-name inputs outputs &optional (successor nil successor-p))
-  (make-instance 'intrinsic-call-instruction
+  (make-instance 'multiple-value-foreign-call-instruction
                  :function-name function-name
+                 :inputs inputs
+                 :outputs outputs
+                 :successors (if successor-p (list successor) '())))
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Instruction FOREIGN-call-INSTRUCTION
+;;;
+;;; This instruction is an FOREIGN-call-INSTRUCTION that prints a message
+
+
+(defclass foreign-call-instruction (cleavir-ir:instruction cleavir-ir:one-successor-mixin)
+  ((%function-name :initarg :function-name :accessor function-name)))
+
+
+(defmethod cleavir-ir-graphviz:label ((instr foreign-call-instruction))
+  (with-output-to-string (s)
+    (format s "foreign-call(~a)" (function-name instr))))
+
+(defmethod make-foreign-call-instruction
+    (function-name inputs outputs &optional (successor nil successor-p))
+  (make-instance 'foreign-call-instruction
+                 :function-name function-name
+                 :inputs inputs
+                 :outputs outputs
+                 :successors (if successor-p (list successor) '())))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Instruction foreign-call-pointer-INSTRUCTION
+;;;
+;;; This instruction is an foreign-call-pointer-INSTRUCTION that prints a message
+
+
+(defclass foreign-call-pointer-instruction (cleavir-ir:instruction cleavir-ir:one-successor-mixin)
+  ())
+
+
+(defmethod cleavir-ir-graphviz:label ((instr foreign-call-pointer-instruction))
+  (with-output-to-string (s)
+    (format s "foreign-call-pointer")))
+
+(defmethod make-foreign-call-pointer-instruction
+    (inputs outputs &optional (successor nil successor-p))
+  (make-instance 'foreign-call-pointer-instruction
                  :inputs inputs
                  :outputs outputs
                  :successors (if successor-p (list successor) '())))
@@ -70,41 +116,6 @@
     (format s "named-enter(~a)" (lambda-name instr))))
 
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;
-;;; Instruction LANDING-PAD-NAMED-ENTER-INSTRUCTION
-;;;
-;;; This instruction is an ENTER-INSTRUCTION that keeps
-;;; track of the lambda-name
-
-
-(defclass landing-pad-named-enter-instruction (clasp-cleavir-hir:named-enter-instruction)
-  ((%landing-pad :initarg :landing-pad :accessor landing-pad)))
-
-(defun make-landing-pad-named-enter-instruction
-    (lambda-list lambda-name landing-pad &optional (successor nil successor-p))
-  (let ((oe (if successor-p
-		(cleavir-ir:make-enter-instruction lambda-list successor)
-		(cleavir-ir:make-enter-instruction lambda-list))))
-    (change-class oe 'landing-pad-named-enter-instruction :lambda-name lambda-name
-		  :landing-pad landing-pad)))
-
-
-(defmethod cleavir-ir-graphviz:label ((instr landing-pad-named-enter-instruction))
-  (with-output-to-string (s)
-    (format s "landing-pad-named-enter(~a)" (lambda-name instr))))
-
-
-
-(defun frame-holder (enter)
-  (or (typep enter 'landing-pad-named-enter-instruction) (error "~a does not have a frame holder"))
-  ;; The frame holder is the last output
-  (car (last (cleavir-ir:outputs enter))))
-
-(defun (setf frame-holder) (frame-holder enter)
-  (or (typep enter 'landing-pad-named-enter-instruction) (error "~a does not have a frame holder"))
-  (setf (cleavir-ir:outputs enter) (append (cleavir-ir:outputs enter) (list frame-holder))))
-
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -112,6 +123,7 @@
 ;;;
 ;;; This instruction is an RETURN-INSTRUCTION that keeps
 ;;; track of the landing-pad
+
 
 
 (defclass landing-pad-return-instruction (cleavir-ir:return-instruction)
@@ -122,6 +134,14 @@
   (with-output-to-string (s)
     (format s "landing-pad-return")))
 
+
+
+(defun frame-holder (enter)
+  ;; The frame holder is the last output
+  (car (last (cleavir-ir:outputs enter))))
+
+(defun (setf frame-holder) (frame-holder enter)
+  (setf (cleavir-ir:outputs enter) (append (cleavir-ir:outputs enter) (list frame-holder))))
 
 
 
@@ -164,48 +184,6 @@
 
 (defmethod cleavir-ir-graphviz:label ((instr pop-special-binding-instruction))
   "pop-special-binding")
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;
-;;; Instruction PRECALC-SYMBOL-INSTRUCTION.
-;;;
-;;; This instruction is used to lookup a precalculated value
-;;; in a precalculated symbol or value vector
-;;; Represented as a vector containing an entry for each
-;;; precalculated value.  
-;;;
-;;; This instruction takes two inputs.  The first input is a simple vector
-;;; that holds the precalculated values.  The second
-;;; input is an immediate input containing a non-negative integer and
-;;; which serves as an index into the vector.  This
-;;; instruction has a single output, which is a dynamic lexical
-;;; location.
-
-(defclass precalc-symbol-instruction (cleavir-ir:instruction cleavir-ir:one-successor-mixin)
-  ((%original-object :initarg :original-object :accessor precalc-symbol-instruction-original-object)))
-
-(defun make-precalc-symbol-instruction
-    (index-input output &key successor original-object)
-  (make-instance 'precalc-symbol-instruction
-    :inputs (list index-input)
-    :outputs (list output)
-    :successors (if (null successor) nil (list successor))
-    :original-object original-object))
-
-
-(defun escaped-string (str)
-  (with-output-to-string (s) (loop for c across str do (when (member c '(#\\ #\")) (princ #\\ s)) (princ c s))))
-
-(defmethod cleavir-ir-graphviz:label ((instr precalc-symbol-instruction))
-  (with-output-to-string (s)
-    (format s "precalc-symbol-ref ; ")
-    (let ((original-object (escaped-string
-			 (format nil "~s" (precalc-symbol-instruction-original-object instr)))))
-      (if (> (length original-object) 30)
-	  (format s "~a..." (subseq original-object 0 30))
-	  (princ original-object s)))))
-
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -383,8 +361,6 @@
 (defmethod cleavir-remove-useless-instructions:instruction-may-be-removed-p ((instruction push-special-binding-instruction)) nil)
 
 (defmethod cleavir-remove-useless-instructions:instruction-may-be-removed-p ((instruction pop-special-binding-instruction)) nil)
-
-;(defmethod cleavir-remove-useless-instructions:instruction-may-be-removed-p ((instruction precalc-symbol-instruction)) t)
 
 ;(defmethod cleavir-remove-useless-instructions:instruction-may-be-removed-p ((instruction precalc-value-instruction)) t)
 

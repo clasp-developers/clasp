@@ -40,6 +40,7 @@ private:
 #include <clasp/gctools/gcSmallMultimap.h>
 #include <clasp/gctools/gcSmallSet.h>
 #include <clasp/gctools/gcarray.h>
+#include <clasp/gctools/gcbitarray.h>
 
 namespace gctools {
 

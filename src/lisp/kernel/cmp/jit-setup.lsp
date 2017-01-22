@@ -141,8 +141,6 @@ Return the module and the global variable that represents the load-time-value-ho
 
 (defvar *run-time-module* nil)
 
-;;;(defvar *load-time-value-holder-name* "load-time-value-vector")
-
 (defvar *the-module* nil "This stores the module into which compile puts its stuff")
 (defvar *run-time-execution-engine* nil)
 (defvar *the-function-pass-manager* nil "the function-pass-manager applied to runtime functions")
@@ -194,8 +192,8 @@ No DIBuilder is defined for the default module")
 
 
 (defun jit-constant-i64 (val)
-  "Create an i1 constant in the current context"
-  (let ((ap-arg (llvm-sys:make-apint64 val)))
+  "Create an i64 constant in the current context"
+  (let ((ap-arg (llvm-sys:make-apint-width val 64 t)))
     (llvm-sys:constant-int-get *llvm-context* ap-arg)))
 
 
@@ -206,6 +204,13 @@ No DIBuilder is defined for the default module")
       ((= 4 sizeof_size_t) (jit-constant-i32 val))
       (t (error "Add support for size_t sizeof = ~a" sizeof-size_t)))))
 
+(defun jit-constant-uintptr_t (val)
+  (let ((sizeof-size_t (cdr (assoc 'core:size-t (llvm-sys:cxx-data-structures-info)))))
+    (cond
+      ((= 8 sizeof-size_t) (jit-constant-i64 val))
+      ((= 4 sizeof_size_t) (jit-constant-i32 val))
+      (t (error "Add support for size_t sizeof = ~a" sizeof-size_t)))))
+
 (defun jit-constant-size_t (val)
   (let ((sizeof-size_t (cdr (assoc 'core:size-t (llvm-sys:cxx-data-structures-info)))))
     (cond
@@ -214,29 +219,30 @@ No DIBuilder is defined for the default module")
       (t (error "Add support for size_t sizeof = ~a" sizeof-size_t)))))
 
 
-(defun jit-constant-unique-string-ptr (sn &optional (label "unique-str"))
+(defun jit-constant-unique-string-ptr (str &optional (label "unique-str"))
   "Get or create a unique string within the module and return a GEP i8* pointer to it"
   (or *the-module* (error "jit-constant-unique-string-ptr *the-module* is NIL"))
-  (let* ((sn-gv (llvm-sys:get-or-create-uniqued-string-global-variable
-		 *the-module* sn
-		 (bformat nil "str-%s" sn)))
-	 (sn-value-ptr (llvm-sys:create-in-bounds-gep
-			*irbuilder* sn-gv (list (jit-constant-i32 0) (jit-constant-i32 0)) "sn")))
-    sn-value-ptr))
+  (let* ((str-gv (llvm-sys:get-or-create-uniqued-string-global-variable
+                 *the-module* str
+                 (bformat nil "str-%s" str))))
+    (llvm-sys:create-const-gep2-64 *irbuilder* str-gv 0 0 "str")))
 
 
-(defun jit-make-global-string-ptr (str &optional (label "global-str"))
+(defun jit-make-global-string (str &optional (label "global-str"))
   "A function for creating unique strings within the module - return an LLVM pointer to the string"
   (or *the-module* (error "jit-make-global-string-ptr *the-module* is NIL"))
-  (let ((unique-string-global-variable (llvm-sys:get-or-create-uniqued-string-global-variable *the-module* str (bformat nil ":::global-str-%s" str))))
-;;    (llvm-sys:create-in-bounds-gep *irbuilder* unique-string-global-variable (list (jit-constant-i32 0) (jit-constant-i32 0)) label )
-    (llvm-sys:constant-expr-get-in-bounds-get-element-ptr
-     nil
-     unique-string-global-variable
-     (list (jit-constant-i32 0) (jit-constant-i32 0)))
-    )
-)
-
+  (let* ((unique-string-global-variable
+          (llvm-sys:get-or-create-uniqued-string-global-variable
+           *the-module* str (bformat nil ":::global-str-%s" str)))
+         (string-type (llvm-sys:array-type-get (llvm-sys:type-get-int8-ty *llvm-context*) (1+ (length str)))))
+    unique-string-global-variable))
+#|
+    (let ((gep (llvm-sys:constant-expr-get-in-bounds-get-element-ptr
+                string-type
+                unique-string-global-variable
+                (list (jit-constant-i32 0) (jit-constant-i32 0)))))
+      gep)))
+|#
 
 
 
@@ -276,7 +282,7 @@ No DIBuilder is defined for the default module")
             (pkg-name (if sym-pkg
                           (string (package-name sym-pkg))
                           "NIL")))
-       (bformat nil "FN/%s::%s" pkg-name sym-name)))
+       (bformat nil "FN_%s::%s" pkg-name sym-name)))
     ((and (consp lname) (eq (car lname) 'setf))
      (let* ((sn (cadr lname))
             (sym-pkg (symbol-package sn))
@@ -286,7 +292,7 @@ No DIBuilder is defined for the default module")
                           "NIL")))
        (bformat nil "FN-SETF/%s::%s" pkg-name sym-name)))
     ((consp lname)
-     (bformat nil "FN/%s" lname))
+     (bformat nil "FN_%s" lname))
     (t (error "Illegal lisp function name[~a]" lname))))
 (export 'jit-function-name)
 

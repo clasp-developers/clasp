@@ -24,12 +24,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#define DEBUG_LEVEL_FULL
+//#define DEBUG_LEVEL_FULL
 
 #include <clasp/core/useBoostPython.h>
 #include <clasp/core/common.h>
 #include <clasp/core/symbol.h>
-#include <clasp/core/str.h>
+#include <clasp/core/array.h>
 #include <clasp/core/symbolTable.h>
 #include <clasp/core/hashTable.h>
 #include <clasp/core/numbers.h>
@@ -115,7 +115,7 @@ CL_DEFUN Function_sp cl__symbol_function(Symbol_sp sym) {
 CL_LAMBDA(arg);
 CL_DECLARE();
 CL_DOCSTRING("symbolName");
-CL_DEFUN Str_sp cl__symbol_name(Symbol_sp arg) {
+CL_DEFUN SimpleString_sp cl__symbol_name(Symbol_sp arg) {
   return arg->symbolName();
 }
 
@@ -123,9 +123,7 @@ CL_LAMBDA(arg);
 CL_DECLARE();
 CL_DOCSTRING("symbolValue");
 CL_DEFUN T_sp cl__symbol_value(Symbol_sp arg) {
-  if (!arg->boundP()) {
-    SIMPLE_ERROR(BF("Symbol %s@%p is unbound") % _rep_(arg) % (void *)arg.raw_());
-  }
+  if (!arg->boundP()) arg->symbolUnboundError();
   return arg->symbolValue();
 };
 
@@ -139,9 +137,9 @@ CL_DEFUN T_sp core__symbol_value_address(Symbol_sp arg) {
 CL_LAMBDA(name);
 CL_DECLARE();
 CL_DOCSTRING("make_symbol");
-CL_DEFUN Symbol_mv cl__make_symbol(Str_sp name) {
-  Symbol_sp sym = Symbol_O::create(name->get());
-  return (Values(sym));
+CL_DEFUN Symbol_sp cl__make_symbol(SimpleString_sp name) {
+  Symbol_sp sym = Symbol_O::create(name);
+  return sym;
 };
 };
 
@@ -155,23 +153,18 @@ Symbol_O::Symbol_O(bool dummy) : _HomePackage(_Nil<T_O>()),
                                  _IsSpecial(false),
                                  _IsConstant(false),
                                  _ReadOnlyFunction(false),
-                                 _PropertyList(_Nil<List_V>()) { //no guard
-  //  this->_Name = Str_O::create(name);
-}
+                                 _PropertyList(_Nil<List_V>()) {};
 
 Symbol_O::Symbol_O() : Base(),
-                       _Name(gctools::smart_ptr<Str_O>()),
+                       _Name(gctools::smart_ptr<SimpleBaseString_O>()),
                        _HomePackage(gctools::smart_ptr<Package_O>()),
                        _Value(gctools::smart_ptr<T_O>()),
                        _Function(gctools::smart_ptr<Function_O>()),
                        _SetfFunction(gctools::smart_ptr<Function_O>()),
                        _IsSpecial(false),
                        _IsConstant(false),
-                       _ReadOnlyFunction(false)
-                       // ,_PropertyList(gctools::smart_ptr<Cons_O>())
-                       {
-                        // nothing
-                       };
+                       _ReadOnlyFunction(false),
+                       _PropertyList(_Nil<List_V>()) {};
 
 void Symbol_O::finish_setup(Package_sp pkg, bool exportp, bool shadowp) {
   ASSERTF(pkg, BF("The package is UNDEFINED"));
@@ -193,15 +186,15 @@ Symbol_sp Symbol_O::create_at_boot(const string &nm) {
     THROW_HARD_ERROR(BF("Illegal name for symbol[%s]") % nm);
   }
 #endif
-  n->_Name = Str_O::create(nm);
+  n->_Name = SimpleBaseString_O::make(nm.size(),'\0',true,nm.size(),(const claspChar*)nm.c_str());
   return n;
 };
 
-Symbol_sp Symbol_O::create(const string &nm) {
+Symbol_sp Symbol_O::create_from_string(const string &nm) {
   // This is used to allocate roots that are pointed
   // to by global variable _sym_XXX  and will never be collected
   Symbol_sp n = gctools::GC<Symbol_O>::root_allocate(true);
-  Str_sp snm = Str_O::create(nm);
+  SimpleString_sp snm = SimpleBaseString_O::make(nm);
   n->setf_name(snm);
   ASSERTF(nm != "", BF("You cannot create a symbol without a name"));
 #if VERBOSE_SYMBOLS
@@ -209,20 +202,18 @@ Symbol_sp Symbol_O::create(const string &nm) {
     THROW_HARD_ERROR(BF("Illegal name for symbol[%s]") % nm);
   }
 #endif
-#if 0
-	n->_Name = Str_O::create(nm);
-#endif
   return n;
 };
 
 
 CL_LISPIFY_NAME("makunbound");
-CL_DEFMETHOD void Symbol_O::makunbound() {
+CL_DEFMETHOD Symbol_sp Symbol_O::makunbound() {
   this->_Value = _Unbound<T_O>();
+  return this->asSmartPtr();
 }
 
 void Symbol_O::symbolUnboundError() const {
-  SIMPLE_ERROR(BF("Symbol %s is unbound\n") % this->_Name->c_str());
+  UNBOUND_VARIABLE_ERROR(this->_Name);
 }
 
 void Symbol_O::setf_plist(List_sp plist) {
@@ -237,7 +228,7 @@ void Symbol_O::sxhash_(HashGenerator &hg) const {
 CL_LISPIFY_NAME("cl:copy_symbol");
 CL_LAMBDA(symbol &optional copy-properties);
 CL_DEFMETHOD Symbol_sp Symbol_O::copy_symbol(T_sp copy_properties) const {
-  Symbol_sp new_symbol = Symbol_O::create(this->_Name->get());
+  Symbol_sp new_symbol = Symbol_O::create(this->_Name);
   if (copy_properties.isTrue()) {
     ASSERT(this->_Function);
     new_symbol->_Value = this->_Value;
@@ -355,8 +346,18 @@ string Symbol_O::formattedName(bool prefixAlways) const { //no guard
       ss << ":" << this->_Name->get();
     } else {
       Package_sp currentPackage = _lisp->getCurrentPackage();
-      if (currentPackage->_findSymbol(this->_Name).notnilp() && !prefixAlways) {
-        ss << this->_Name->get();
+      LIKELY_if (currentPackage) {
+        SimpleString_sp name = this->_Name;
+        Symbol_sp sym = currentPackage->findSymbol_SimpleString(name);
+        if (sym.notnilp() && !prefixAlways) {
+          ss << name->get_std_string();
+        } else {
+          if (myPackage->isExported(this->const_sharedThis<Symbol_O>())) {
+            ss << myPackage->getName() << ":" << this->_Name->get();
+          } else {
+            ss << myPackage->getName() << "::" << this->_Name->get();
+          }
+        } 
       } else {
         if (myPackage->isExported(this->const_sharedThis<Symbol_O>())) {
           ss << myPackage->getName() << ":" << this->_Name->get();
@@ -369,7 +370,7 @@ string Symbol_O::formattedName(bool prefixAlways) const { //no guard
 // Sometimes its useful to add the address of the symbol to
 // the name for debugging - uncomment the following line if you want that
 #if 0
-        ss << "@" << (void*)(this);
+  ss << "@" << (void*)(this);
 #endif
 
 #if VERBOSE_SYMBOLS
@@ -379,7 +380,6 @@ string Symbol_O::formattedName(bool prefixAlways) const { //no guard
     ss << "/lexical";
   }
 #endif
-
   return ss.str();
 };
 
@@ -420,6 +420,7 @@ T_sp Symbol_O::funcall() {
 #endif
 
 string Symbol_O::__repr__() const {
+  unlikely_if(!this->_Name) return "UNITIALIZED-SYMBOL";
   return this->formattedName(false);
 };
 
@@ -498,5 +499,11 @@ void Symbol_O::dump() {
   printf("%s", ss.str().c_str());
 }
 
+void Symbol_O::remove_package(Package_sp pkg)
+{
+  if (this->_HomePackage == pkg) {
+    this->_HomePackage = _Nil<T_O>();
+  }
+}
 
 };

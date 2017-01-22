@@ -25,7 +25,7 @@ THE SOFTWARE.
 */
 /* -^- */
 #undef USEBOOSTPYTHON
-#define DEBUG_LEVEL_FULL
+//#define DEBUG_LEVEL_FULL
 
 #include <clasp/core/foundation.h>
 

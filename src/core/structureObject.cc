@@ -24,14 +24,14 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#define DEBUG_LEVEL_FULL
+//#define DEBUG_LEVEL_FULL
 
 #include <clasp/core/lisp.h>
 #include <clasp/core/structureObject.h>
 #include <clasp/core/symbolTable.h>
 #include <clasp/core/numbers.h>
 #include <clasp/core/evaluator.h>
-#include <clasp/core/str.h>
+#include <clasp/core/array.h>
 #include <clasp/core/builtInClass.h>
 #include <clasp/core/sysprop.h>
 #include <clasp/core/instance.h>

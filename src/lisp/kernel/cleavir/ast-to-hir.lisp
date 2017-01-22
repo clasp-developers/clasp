@@ -73,7 +73,7 @@
 
 
 
-(defmethod cleavir-ast-to-hir::compile-ast ((ast clasp-cleavir-ast:intrinsic-call-ast) context)
+(defmethod cleavir-ast-to-hir::compile-ast ((ast clasp-cleavir-ast:multiple-value-foreign-call-ast) context)
   (with-accessors ((results cleavir-ast-to-hir::results)
 		   (successors cleavir-ast-to-hir::successors))
       context
@@ -85,13 +85,13 @@
        (ecase (length successors)
 	 (1
 	  (if (typep results 'cleavir-ir:values-location)
-                (make-instance 'clasp-cleavir-hir:intrinsic-call-instruction
+                (make-instance 'clasp-cleavir-hir:multiple-value-foreign-call-instruction
                              :function-name (clasp-cleavir-ast:function-name ast)
                              :inputs temps
                              :outputs (list results)
                              :successors successors)
 	      (let* ((values-temp (make-instance 'cleavir-ir:values-location)))
-		(make-instance 'clasp-cleavir-hir:intrinsic-call-instruction
+		(make-instance 'clasp-cleavir-hir:multiple-value-foreign-call-instruction
                                :function-name (clasp-cleavir-ast:function-name ast)
                                :inputs temps
                                :outputs (list values-temp)
@@ -99,22 +99,63 @@
                                (list (cleavir-ir:make-multiple-to-fixed-instruction
                                       values-temp results (first successors)))))))
 	 (2
-	  (error "INTRINSIC-CALL-AST appears in a Boolean context.")))
+	  (error "MULTIPLE-VALUE-FOREIGN-CALL-AST appears in a Boolean context.")))
        (cleavir-ast-to-hir::invocation context)))))
 
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;
-;;; Compile precalculated value AST nodes to HIR
-;;;
-(defmethod cleavir-ast-to-hir::compile-ast ((ast clasp-cleavir-ast:precalc-symbol-reference-ast) context)
+(defmethod cleavir-ast-to-hir::compile-ast ((ast clasp-cleavir-ast:foreign-call-ast) context)
   (cleavir-ast-to-hir::check-context-for-one-value-ast context)
-  (clasp-cleavir-hir:make-precalc-symbol-instruction
-   (cleavir-ir:make-immediate-input (clasp-cleavir-ast:precalc-symbol-reference-index ast))
-   (first (cleavir-ast-to-hir::results context))
-   :successor (first (cleavir-ast-to-hir::successors context))
-   :original-object (clasp-cleavir-ast:precalc-symbol-reference-ast-original-object ast)
-   ))
+  (with-accessors ((results cleavir-ast-to-hir::results)
+		   (successors cleavir-ast-to-hir::successors))
+      context
+    (let* ((all-args (clasp-cleavir-ast:argument-asts ast))
+	   (temps (cleavir-ast-to-hir::make-temps all-args)))
+      (cleavir-ast-to-hir:compile-arguments
+       all-args
+       temps
+       (ecase (length successors)
+	 (1
+	  (if (typep (car results) 'cleavir-ir:lexical-location)
+              (make-instance 'clasp-cleavir-hir:foreign-call-instruction
+                             :function-name (clasp-cleavir-ast:function-name ast)
+                             :inputs temps
+                             :outputs results
+                             :successors successors)
+	      (let* ((result-temp (cleavir-ir:new-temporary))) ;; make-instance 'cleavir-ir:lexical-location)))
+		(make-instance 'clasp-cleavir-hir:foreign-call-instruction
+                               :function-name (clasp-cleavir-ast:function-name ast)
+                               :inputs temps
+                               :outputs (list result-temp)
+                               :successors successors))))
+	 (2
+	  (error "FOREIGN-call-AST appears in a Boolean context.")))
+       (cleavir-ast-to-hir::invocation context)))))
+
+(defmethod cleavir-ast-to-hir::compile-ast ((ast clasp-cleavir-ast:foreign-call-pointer-ast) context)
+  (cleavir-ast-to-hir::check-context-for-one-value-ast context)
+  (with-accessors ((results cleavir-ast-to-hir::results)
+		   (successors cleavir-ast-to-hir::successors))
+      context
+    (let* ((all-args (clasp-cleavir-ast:argument-asts ast))
+	   (temps (cleavir-ast-to-hir::make-temps all-args)))
+      (cleavir-ast-to-hir:compile-arguments
+       all-args
+       temps
+       (ecase (length successors)
+	 (1
+	  (if (typep (car results) 'cleavir-ir:lexical-location)
+              (make-instance 'clasp-cleavir-hir:foreign-call-pointer-instruction
+                             :inputs temps
+                             :outputs results
+                             :successors successors)
+	      (let* ((result-temp (cleavir-ir:new-temporary))) ;; make-instance 'cleavir-ir:lexical-location)))
+		(make-instance 'clasp-cleavir-hir:foreign-call-pointer-instruction
+                               :inputs temps
+                               :outputs (list result-temp)
+                               :successors successors))))
+	 (2
+	  (error "foreign-call-pointer-AST appears in a Boolean context.")))
+       (cleavir-ast-to-hir::invocation context)))))
+
 
 
 (defmethod cleavir-ast-to-hir::compile-ast ((ast clasp-cleavir-ast:precalc-value-reference-ast) context)
@@ -137,35 +178,6 @@
 ;;;
 (defvar *landing-pad* nil)
 
-#+(or)
-(defmethod cleavir-ast-to-hir::compile-ast ((ast clasp-cleavir-ast:unwind-protect-ast) context)
-  (with-accessors ((results cleavir-ast-to-hir::results)
-		   (successors cleavir-ast-to-hir::successors)
-		   (invocation cleavir-ast-to-hir::invocation))
-      context
-    ;;  (cleavir-ast-to-hir::check-context-for-one-value-ast context)
-    (let* ((save-temp (cleavir-ast-to-hir::make-temp))
-	   (restore-mv (clasp-cleavir-hir:make-restore-multiple-values-return-instruction save-temp results (first successors)))
-	   (cleanup-form (cleavir-ast-to-hir::compile-ast
-                          (clasp-cleavir-ast:cleanup-ast ast) 
-                          (cleavir-ast-to-hir::context nil
-                                                       (list restore-mv)
-                                                       (cleavir-ast-to-hir::invocation context))))
-	   (values-temp (make-instance 'cleavir-ir:values-location))
-	   (save-mv (clasp-cleavir-hir:make-save-multiple-values-return-instruction values-temp save-temp cleanup-form))
-	   (cleanup-instr (clasp-cleavir-hir:make-cleanup-instruction save-mv))
-	   (landing-pad (clasp-cleavir-hir:make-landing-pad-instruction cleanup-instr))
-	   (*landing-pad* landing-pad)
-	   ;; Compile the protected form but use invokes rather than calls
-	   (protected-form (cleavir-ast-to-hir::compile-ast (clasp-cleavir-ast:protected-ast ast)
-							   (cleavir-ast-to-hir::context values-temp
-										       (list save-mv)
-										       (cleavir-ast-to-hir::invocation context))))
-	   (try-instr (clasp-cleavir-hir:make-try-instruction 123456789 protected-form))
-	   )
-      try-instr)))
-
-
 
 (defun make-call/invoke (&key inputs outputs successors (landing-pad *landing-pad*))
   (if landing-pad
@@ -179,9 +191,6 @@
 		     :inputs inputs
 		     :outputs outputs
 		     :successors successors)))
-      
-
-
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;

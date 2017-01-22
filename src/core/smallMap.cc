@@ -24,7 +24,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#define DEBUG_LEVEL_FULL
+//#define DEBUG_LEVEL_FULL
 
 //
 // (C) 2004 Christian E. Schafmeister
@@ -49,6 +49,39 @@ CL_DEFUN SmallMap_sp core__make_small_map() {
   GC_ALLOCATE(SmallMap_O, sm);
   return sm;
 };
+
+void SmallMap_O::fields(Record_sp node) {
+  // this->Base::fields(node);
+  switch (node->stage()) {
+  case Record_O::initializing:
+  case Record_O::loading: {
+    Vector_sp keyValueVec;
+    node->field(INTERN_(core, data), keyValueVec);
+    this->map.clear();
+    for (size_t i(0), iEnd(this->size()); i < iEnd; ++++i) {
+      T_sp key = keyValueVec->rowMajorAref(i + 0);
+      T_sp val = keyValueVec->rowMajorAref(i + 1);
+      this->setf(key, val);
+    };
+  } break;
+  case Record_O::saving: {
+    Vector_sp keyValueVec = core__make_vector(cl::_sym_T_O, 2 * this->size());
+    size_t idx = 0;
+    for ( auto it : this->map ) {
+      T_sp key = it.first;
+      T_sp val = it.second;
+      keyValueVec->rowMajorAset(idx++,key);
+      keyValueVec->rowMajorAset(idx++,val);
+    }
+    node->field(INTERN_(core, data), keyValueVec);
+  } break;
+  case Record_O::patching: {
+    IMPLEMENT_MEF(BF("Add support to patch SmallMap"));
+  } break;
+  }
+}
+
+
 
 CL_LISPIFY_NAME("map_find");
 CL_DEFMETHOD T_sp SmallMap_O::find(T_sp key, T_sp defval) {

@@ -205,7 +205,7 @@ struct ThreadInfo {
 #endif
 
 class Lisp_O {
-  friend T_mv core__source_file_info(T_sp sourceFile, Str_sp truename, size_t offset, bool useLineno);
+  friend T_mv core__source_file_info(T_sp sourceFile, String_sp truename, size_t offset, bool useLineno);
   friend gctools::Layout_code* gctools::get_kind_layout_codes();
   struct GCRoots //: public gctools::HeapRoot
       {
@@ -460,8 +460,10 @@ public:
   int mpiSize() { return this->_MpiSize; }
 
 public:
-  StrWithFillPtr_sp get_buffer_string();
-  void put_buffer_string(StrWithFillPtr_sp str);
+  Str8Ns_sp get_Str8Ns_buffer_string();
+  void put_Str8Ns_buffer_string(Str8Ns_sp str);
+  StrWNs_sp get_StrWNs_buffer_string();
+  void put_StrWNs_buffer_string(StrWNs_sp str);
 
 public:
   IntegerOrdering const &integer_ordering() const { return this->_IntegerOrdering; };
@@ -494,7 +496,7 @@ public:
 public:
   /*! Get the LoadTimeValues_sp that corresponds to the name.
 	  If it doesn't exist then make one and return it. */
-  LoadTimeValues_sp getOrCreateLoadTimeValues(const string &name, int numberOfLoadTimeValues = 0, int numberOfLoadTimeSymbols = 0);
+  LoadTimeValues_sp getOrCreateLoadTimeValues(const string &name, size_t numberOfLoadTimeValues = 0);
   List_sp loadTimeValuesIds() const;
   T_sp loadTimeValue(const string &name, int idx);
   Symbol_sp loadTimeSymbol(const string &name, int idx);
@@ -906,6 +908,7 @@ public:
   void mapNameToPackage(const string &name, Package_sp pkg);
   void unmapNameToPackage(const string &name);
   Package_sp makePackage(const string &packageName, list<string> const &nicknames, list<string> const &usePackages, list<string> const& shadow = {});
+  void remove_package(const string& package_name);
   bool usePackage(const string &packageName);
 
   List_sp getBackTrace() const;
@@ -989,13 +992,25 @@ public:
  /*! Use RAII to safely allocate a buffer */
  
 struct SafeBuffer {
-  StrWithFillPtr_sp _Buffer;
+  Str8Ns_sp _Buffer;
   SafeBuffer() {
-    this->_Buffer = _lisp->get_buffer_string();
+    this->_Buffer = _lisp->get_Str8Ns_buffer_string();
   };
   ~SafeBuffer() {
-    _lisp->put_buffer_string(this->_Buffer);
+    _lisp->put_Str8Ns_buffer_string(this->_Buffer);
   };
+  Str8Ns_sp string() const {return this->_Buffer;};
+};
+
+ struct SafeBufferStrWNs {
+  StrWNs_sp _Buffer;
+  SafeBufferStrWNs() {
+    this->_Buffer = _lisp->get_StrWNs_buffer_string();
+  };
+  ~SafeBufferStrWNs() {
+    _lisp->put_StrWNs_buffer_string(this->_Buffer);
+  };
+  StrWNs_sp string() const {return this->_Buffer;};
 };
 
 

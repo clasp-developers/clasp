@@ -30,7 +30,7 @@ THE SOFTWARE.
 #include <clasp/core/lispStream.h>
 #include <clasp/core/symbolTable.h>
 #include <clasp/core/arguments.h>
-#include <clasp/core/str.h>
+#include <clasp/core/array.h>
 #include <clasp/core/lispStream.h>
 #include <clasp/core/lambdaListHandler.h>
 #include <clasp/core/primitives.h>
@@ -73,7 +73,6 @@ CL_DEFUN T_sp core__load_source(T_sp source, bool verbose, bool print, core::T_s
   DynamicScopeManager scope(_sym_STARcurrentSourceFileInfoSTAR, sfi);
   Pathname_sp pathname = cl__pathname(source);
   ASSERTF(pathname.objectp(), BF("Problem getting pathname of [%s] in loadSource") % _rep_(source));
-  ;
   Pathname_sp truename = cl__truename(source);
   ASSERTF(truename.objectp(), BF("Problem getting truename of [%s] in loadSource") % _rep_(source));
   ;
@@ -89,11 +88,9 @@ CL_DEFUN T_sp core__load_source(T_sp source, bool verbose, bool print, core::T_s
       DynamicScopeManager innerScope(_sym_STARsourceDatabaseSTAR, _Nil<T_O>());
 #endif
     //    printf("%s:%d  Pushing stream source pos for strm@%p   tagged-ptr: %p\n", __FILE__, __LINE__, &strm, strm.raw_());
-    innerScope.pushSpecialVariableAndSet(_sym_STARcurrentSourcePosInfoSTAR, core__input_stream_source_pos_info(strm));
     T_sp x = cl__read(strm, _Nil<T_O>(), _Unbound<T_O>(), _Nil<T_O>());
     if (x.unboundp())
       break;
-    _sym_STARcurrentSourcePosInfoSTAR->setf_symbolValue(core__walk_to_find_source_pos_info(x, _sym_STARcurrentSourcePosInfoSTAR->symbolValue()));
     if (echoReplRead) {
       _lisp->print(BF("Read: %s\n") % _rep_(x));
     }
@@ -125,6 +122,11 @@ CL_DEFUN T_sp cl__load(T_sp source, T_sp verbose, T_sp print, T_sp if_does_not_e
   bool not_a_filename = false;
 
   //        printf("%s:%d cl__load source= %s\n", __FILE__, __LINE__, _rep_(source).c_str());
+  if (verbose.notnilp()) {
+    eval::funcall(cl::_sym_format, _lisp->_true(),
+                  SimpleBaseString_O::make("~&;;; Loading ~s~%"),
+                  source);
+  }
 
   /* If source is a stream, read conventional lisp code from it */
   if (cl__streamp(source)) {
@@ -196,11 +198,6 @@ CL_DEFUN T_sp cl__load(T_sp source, T_sp verbose, T_sp print, T_sp if_does_not_e
     }
   }
 NOT_A_FILENAME:
-  if (verbose.notnilp()) {
-    eval::funcall(cl::_sym_format, _lisp->_true(),
-                  Str_O::create("~&;;; Loading ~s~%"),
-                  filename);
-  }
   DynamicScopeManager scope(cl::_sym_STARpackageSTAR, cl__symbol_value(cl::_sym_STARpackageSTAR));
   scope.pushSpecialVariableAndSet(cl::_sym_STARreadtableSTAR, cl__symbol_value(cl::_sym_STARreadtableSTAR));
   scope.pushSpecialVariableAndSet(cl::_sym_STARloadPathnameSTAR, not_a_filename ? _Nil<T_O>() : source);
@@ -218,7 +215,7 @@ NOT_A_FILENAME:
   }
   if (print.notnilp()) {
     eval::funcall(cl::_sym_format, _lisp->_true(),
-                  Str_O::create("~&;;; Loading ~s~%"),
+                  SimpleBaseString_O::make("~&;;; Loading ~s~%"),
                   filename);
   }
   return _lisp->_true();

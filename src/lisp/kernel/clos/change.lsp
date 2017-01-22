@@ -163,7 +163,8 @@
 
 (defmethod reinitialize-instance ((class class) &rest initargs
 				  &key (direct-superclasses () direct-superclasses-p)
-				       (direct-slots nil direct-slots-p))
+                                    (direct-slots nil direct-slots-p))
+  #+clasp(core:reinitialize-class class)
   (let ((name (class-name class)))
     (when (member name '(CLASS BUILT-IN-CLASS) :test #'eq)
       (error "The kernel CLOS class ~S cannot be changed." name)))

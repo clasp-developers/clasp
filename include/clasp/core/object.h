@@ -261,8 +261,8 @@ namespace core {
   gctools::smart_ptr<oClass> asSmartPtr()                               \
   { return this->sharedThis<oClass>(); };                               \
  public:                                                                \
-  typedef oClass ThisClass;                                             \
-  typedef gctools::smart_ptr<oClass> smart_ptr;                         \
+  typedef oClass my_type;                                               \
+  typedef gctools::smart_ptr<oClass> smart_ptr_type;                 \
  public:                                                                \
   static core::Symbol_sp static_class_symbol;                           \
   static core::Class_sp static_class;                                   \
@@ -414,7 +414,7 @@ namespace core {
     virtual void decode(core::List_sp);
     virtual void initialize(core::List_sp alist);
     virtual bool fieldsp() const { return false; };
-    virtual void fields(Record_sp record) { SUBIMP(); };
+    virtual void fields(Record_sp record);
   /*! Return true if the two objects are the same object.
 	 * If they aren't the same object for numbers and values
 	 * the values are compared.
@@ -500,8 +500,7 @@ namespace core {
 namespace core {
   template <class oclass>
     inline T_sp new_LispObject() {
-    _G();
-    T_sp obj = oclass::static_creator->allocate();
+    T_sp obj = oclass::static_creator->creator_allocate();
   //	GC_ALLOCATE(oclass,obj );
     return obj;
   };
@@ -641,6 +640,7 @@ namespace core {
   List_sp encode(T_sp);
 };
 
+
 #include <clasp/core/glue.h>
 
 
@@ -652,7 +652,7 @@ namespace core {
 
 #include <clasp/core/metaClass.h>
 #include <clasp/core/sourceFileInfo.h>
-#include <clasp/core/lispVector.h>
+#include <clasp/core/array.h>
 #include <clasp/core/tagged_cast_specializations.h>
 #include <clasp/core/cxxObject.h>
 

@@ -1,6 +1,0 @@
-#! /bin/bash
-sif_file=$1
-shift
-#echo $*
-sbcl --noinform --dynamic-space-size 4096 --lose-on-corruption --disable-ldb --disable-debugger --load $CLASP_HOME/src/scraper/scraper.lisp --eval "(progn (cscrape:generate-one-sif \"$*\" #P\"$sif_file\")(quit))"
-

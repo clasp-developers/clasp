@@ -871,8 +871,8 @@ that caused the error.  CONTINUE-FORMAT-STRING and ERROR-FORMAT-STRING are the
 format strings of the error message.  ARGS are the arguments to the format
 bstrings."
   (declare (inline apply) ;; So as not to get bogus frames in debugger
-;;	   #-ecl-min (c::policy-debug-ihs-frame)
-	   )
+	   #-(or ecl-min clasp)
+           (c::policy-debug-ihs-frame))
   (let ((condition (coerce-to-condition datum args 'simple-error 'error))
         (*stack-top-hint* (1- (ihs-top))))
     (cond

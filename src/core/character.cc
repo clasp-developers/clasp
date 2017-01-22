@@ -24,43 +24,34 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#define DEBUG_LEVEL_FULL
+//#define DEBUG_LEVEL_FULL
 
 #pragma clang diagnostic push
 //#pragma clang diagnostic ignored "-Wunused-local-typedef"
 #include <boost/algorithm/string.hpp>
 #pragma clang diagnostic pop
 #include <clasp/core/common.h>
-#include <clasp/core/str.h>
+#include <clasp/core/array.h>
 #include <clasp/core/symbolTable.h>
 #include <clasp/core/environment.h>
 #include <clasp/core/designators.h>
 #include <clasp/core/character.h>
+#include <clasp/core/numberToString.h>
 #include <clasp/core/wrappers.h>
 
 namespace core {
 
-int clasp_string_case(Str_sp s) {
-  int upcase = 0;
-  for (Str_O::iterator it = s->begin(); it != s->end(); ++it) {
-    if (isupper(*it)) {
-      if (upcase < 0)
-        return 0;
-      upcase = +1;
-    } else if (islower(*it)) {
-      if (upcase > 0)
-        return 0;
-      upcase = -1;
-    }
-  }
-  return upcase;
+
+void handleWideCharactersError(claspCharacter cc)
+{
+  SIMPLE_ERROR(BF("A wide character with the value %d was encountered in a function that needed a base-char") % cc);
 }
 
 /*! Return -1 if a<b
       0 if a == b
       +1 if a > b
     */
-int char_basic_compare(int na, int nb) {
+inline int claspCharacter_basic_compare(claspCharacter na, claspCharacter nb) {
   if (na < nb)
     return -1;
   if (na == nb)
@@ -69,19 +60,16 @@ int char_basic_compare(int na, int nb) {
 }
 
 T_sp monotonic(int s, int t, List_sp args, bool preserve_case = true) {
-  char c = clasp_as_char(gc::As<Character_sp>(oCar(args)));
-  if (!preserve_case)
-    c = toupper(c);
-  char d;
+  claspCharacter c = clasp_as_claspCharacter(gc::As<Character_sp>(oCar(args)));
+  if (!preserve_case) c = claspCharacter_upcase(c);
+  claspCharacter d;
   int dir;
   args = oCdr(args);
   while (args.notnilp()) {
-    d = clasp_as_char(gc::As<Character_sp>(oCar(args)));
-    if (!preserve_case)
-      d = toupper(d);
-    dir = s * char_basic_compare(c, d);
-    if (dir < t)
-      return _Nil<T_O>();
+    d = clasp_as_claspCharacter(gc::As<Character_sp>(oCar(args)));
+    if (!preserve_case) d = claspCharacter_upcase(d);
+    dir = s * claspCharacter_basic_compare(c, d);
+    if (dir < t) return _Nil<T_O>();
     c = d;
     args = oCdr(args);
   }
@@ -92,31 +80,31 @@ CL_LAMBDA(arg);
 CL_DECLARE();
 CL_DOCSTRING("lower_case_p");
 CL_DEFUN bool cl__lower_case_p(Character_sp c) {
-  claspCharacter x = clasp_char_code(c);
-  return islower(x);
+  claspCharacter x = clasp_as_claspCharacter(c);
+  return clasp_islower(x);
 };
 
 CL_LAMBDA(arg);
 CL_DECLARE();
 CL_DOCSTRING("upper_case_p");
 CL_DEFUN bool cl__upper_case_p(Character_sp c) {
-  claspCharacter x = clasp_char_code(c);
-  return isupper(x);
+  claspCharacter x = clasp_as_claspCharacter(c);
+  return clasp_isupper(x);
 };
 
 CL_LAMBDA(arg);
 CL_DECLARE();
 CL_DOCSTRING("both_case_p");
 CL_DEFUN bool cl__both_case_p(Character_sp c) {
-  claspCharacter x = clasp_char_code(c);
-  return isupper(x) || islower(x);
+  claspCharacter x = clasp_as_claspCharacter(c);
+  return clasp_isupper(x) || clasp_islower(x);
 };
 
 CL_LAMBDA(char);
 CL_DECLARE();
 CL_DOCSTRING("alphanumericp");
 CL_DEFUN bool cl__alphanumericp(Character_sp ch) {
-  claspCharacter x = clasp_char_code(ch);
+  claspCharacter x = clasp_as_claspCharacter(ch);
   if (x < 128) {
     return isalpha(x) || isdigit(x);
   }
@@ -126,15 +114,15 @@ CL_DEFUN bool cl__alphanumericp(Character_sp ch) {
 CL_LAMBDA(char);
 CL_DECLARE();
 CL_DOCSTRING("charUpcase");
-CL_DEFUN char cl__char_upcase(Character_sp ch) {
-  return toupper(clasp_as_char(ch));
+CL_DEFUN Character_sp cl__char_upcase(Character_sp ch) {
+  return clasp_make_character(claspCharacter_upcase(clasp_as_claspCharacter(ch)));
 };
 
 CL_LAMBDA(char);
 CL_DECLARE();
 CL_DOCSTRING("charDowncase");
-CL_DEFUN char cl__char_downcase(Character_sp ch) {
-  return tolower(clasp_as_char(ch));
+CL_DEFUN Character_sp cl__char_downcase(Character_sp ch) {
+  return clasp_make_character(claspCharacter_downcase(clasp_as_claspCharacter(ch)));
 };
 
 CL_LAMBDA(&rest args);
@@ -198,9 +186,9 @@ CL_DECLARE();
 CL_DOCSTRING("NE_");
 CL_DEFUN T_sp cl__char_NE_(List_sp args) {
   while (args.notnilp()) {
-    int a = clasp_as_character(gc::As<Character_sp>(oCar(args)));
+    claspCharacter a = clasp_as_claspCharacter(gc::As<Character_sp>(oCar(args)));
     for (List_sp cur = oCdr(args); cur.notnilp(); cur = oCdr(cur)) {
-      int b = clasp_as_character(gc::As<Character_sp>(oCar(cur)));
+      claspCharacter b = clasp_as_claspCharacter(gc::As<Character_sp>(oCar(cur)));
       if (a == b)
         return ((_Nil<T_O>()));
     }
@@ -215,10 +203,10 @@ CL_DOCSTRING("EQ_");
 CL_DEFUN T_sp cl__char_EQ_(List_sp args) {
   if (args.nilp())
     return ((_lisp->_true()));
-  int a = clasp_as_character(gc::As<Character_sp>(oCar(args)));
+  claspCharacter a = clasp_as_claspCharacter(gc::As<Character_sp>(oCar(args)));
   args = oCdr(args);
   while (args.notnilp()) {
-    int b = clasp_as_character(gc::As<Character_sp>(oCar(args)));
+    claspCharacter b = clasp_as_claspCharacter(gc::As<Character_sp>(oCar(args)));
     if (a != b)
       return ((_Nil<T_O>()));
     args = oCdr(args);
@@ -231,29 +219,25 @@ CL_DECLARE();
 CL_DOCSTRING("Like char_NE_ but ignore case");
 CL_DEFUN T_mv cl__char_not_equal(List_sp args) {
   while (args.notnilp()) {
-    int a = clasp_as_character(gc::As<Character_sp>(oCar(args)));
-    a = toupper(a);
+    claspCharacter a = clasp_as_claspCharacter(gc::As<Character_sp>(oCar(args)));
+    a = claspCharacter_upcase(a);
     for (List_sp cur = oCdr(args); cur.notnilp(); cur = oCdr(cur)) {
-      int b = clasp_as_character(gc::As<Character_sp>(oCar(cur)));
-      b = toupper(b);
-      if (a == b)
-        return (Values(_Nil<T_O>()));
+      claspCharacter b = clasp_as_claspCharacter(gc::As<Character_sp>(oCar(cur)));
+      b = claspCharacter_upcase(b);
+      if (a == b) return (Values(_Nil<T_O>()));
     }
     args = oCdr(args);
   }
-  return (Values(_lisp->_true()));
+  return Values(_lisp->_true());
 }
 
 bool clasp_charEqual2(T_sp x, T_sp y) {
   if (x.characterp() && y.characterp()) {
-    int cx = toupper(x.unsafe_character());
-    int cy = toupper(y.unsafe_character());
+    claspCharacter cx = claspCharacter_upcase(x.unsafe_character());
+    claspCharacter cy = claspCharacter_upcase(y.unsafe_character());
     return cx == cy;
   }
-  // Get rid of this when we lose Character_O
-  int icx = toupper(clasp_as_character(gc::As<Character_sp>(x)));
-  int icy = toupper(clasp_as_character(gc::As<Character_sp>(y)));
-  return icx == icy;
+  return false;
 }
 
 CL_LAMBDA(&rest args);
@@ -262,14 +246,13 @@ CL_DOCSTRING("Like char_EQ_, ignore case");
 CL_DEFUN bool cl__char_equal(List_sp args) {
   if (args.nilp())
     return true;
-  int a = clasp_as_character(gc::As<Character_sp>(oCar(args)));
-  a = toupper(a);
+  claspCharacter a = clasp_as_claspCharacter(gc::As<Character_sp>(oCar(args)));
+  a = claspCharacter_upcase(a);
   args = oCdr(args);
   while (args.notnilp()) {
-    int b = clasp_as_character(gc::As<Character_sp>(oCar(args)));
-    b = toupper(b);
-    if (a != b)
-      return false;
+    claspCharacter b = clasp_as_claspCharacter(gc::As<Character_sp>(oCar(args)));
+    b = claspCharacter_upcase(b);
+    if (a != b) return false;
     args = oCdr(args);
   }
   return true;
@@ -350,7 +333,7 @@ void CharacterInfo::initialize() {
 //    printf("%s:%d Adding char: %s  at: %d\n", __FILE__, __LINE__, name, fci);
     this->gNamesToCharacterIndex[name] = fci;
     this->gIndexedCharacters[fci] = clasp_make_standard_character((char)fci);
-    this->gCharacterNames[fci] = Str_O::create(name);
+    this->gCharacterNames[fci] = SimpleBaseString_O::make(std::string(name));
   }
   gNamesToCharacterIndex["NULL"] = 0;
   gNamesToCharacterIndex["LINEFEED"] = 10;
@@ -360,7 +343,8 @@ CL_LAMBDA(ch);
 CL_DECLARE();
 CL_DOCSTRING("See CLHS: standard_char_p");
 CL_DEFUN bool cl__standard_char_p(Character_sp ch) {
-  char c = clasp_as_char(ch);
+  claspCharacter c = clasp_as_claspCharacter(ch);
+  if (c>127) return false;
   if (c == 10)
     return true; // NEWLINE
   if (c == ' ')
@@ -408,19 +392,16 @@ CL_LAMBDA(ch);
 CL_DECLARE();
 CL_DOCSTRING("alpha_char_p");
 CL_DEFUN bool cl__alpha_char_p(Character_sp ch) {
-  return isalpha(clasp_as_char(ch));
+  return isalpha(clasp_as_claspCharacter(ch));
 };
 
-Fixnum clasp_digitp(int ch, int basis) {
+Fixnum clasp_digitp(claspCharacter ch, int basis) {
   if (('0' <= ch) && (ch <= '9') && (ch < '0' + basis))
     return ch - '0';
   if (('A' <= ch) && (10 < basis) && (ch < 'A' + (basis - 10)))
     return ch - 'A' + 10;
   if (('a' <= ch) && (10 < basis) && (ch < 'a' + (basis - 10)))
     return ch - 'a' + 10;
-#ifdef CLASP_UNICODE
-  IMPLEMENT_MEF(BF("Handle Unicode"));
-#endif
   return -1;
 }
 
@@ -432,18 +413,16 @@ CL_DEFUN T_sp cl__digit_char_p(Character_sp c, Fixnum_sp radix) {
   if (basis < 2 || basis > 36) {
     QERROR_WRONG_TYPE_NTH_ARG(2, radix, Integer_O::makeIntegerType(2, 36));
   }
-  Fixnum value = clasp_digitp(clasp_as_character(c), basis);
-  if (value < 0) {
-    return _Nil<T_O>();
-  }
+  Fixnum value = clasp_digitp(clasp_as_claspCharacter(c), basis);
+  if (value < 0) return _Nil<T_O>();
   return make_fixnum(value);
 };
 
 CL_LAMBDA(sname);
 CL_DECLARE();
 CL_DOCSTRING("name_char");
-CL_DEFUN T_mv cl__name_char(Str_sp sname) {
-  Str_sp name = coerce::stringDesignator(sname);
+CL_DEFUN T_mv cl__name_char(T_sp sname) {
+  String_sp name = coerce::stringDesignator(sname);
   string upname = stringUpper(name->get());
   map<string, int>::const_iterator it = _lisp->characterInfo().gNamesToCharacterIndex.find(upname);
   if (it != _lisp->characterInfo().gNamesToCharacterIndex.end()) {
@@ -455,18 +434,26 @@ CL_DEFUN T_mv cl__name_char(Str_sp sname) {
 CL_LAMBDA(och);
 CL_DECLARE();
 CL_DOCSTRING("char_name");
-CL_DEFUN Str_sp cl__char_name(Character_sp och) {
-  char ch = clasp_as_char(och);
-  return (_lisp->characterInfo().gCharacterNames[ch]);
+CL_DEFUN SimpleBaseString_sp cl__char_name(Character_sp och) {
+  claspCharacter ch = clasp_as_claspCharacter(och);
+  if (ch<_lisp->characterInfo().gCharacterNames.size()) {
+    return _lisp->characterInfo().gCharacterNames[ch];
+  }
+  SafeBuffer buffer;
+  buffer._Buffer->fillPointerSet(0);
+  buffer._Buffer->vectorPushExtend(clasp_make_character('U'));
+  core__integer_to_string(buffer._Buffer,Integer_O::create((Fixnum)ch),clasp_make_fixnum(16));
+  auto ret = SimpleBaseString_O::make(buffer._Buffer->length(),'\0',false,buffer._Buffer->length(), &(*buffer._Buffer)[0]);
+  return ret;
 };
 
 CL_LAMBDA(och);
 CL_DECLARE();
 CL_DOCSTRING("char_code");
 CL_DEFUN Fixnum_sp cl__char_code(Character_sp och) {
-  int ch = clasp_as_char(och);
+  claspCharacter ch = clasp_as_claspCharacter(och);
   if (ch < CHAR_CODE_LIMIT) {
-    return make_fixnum((int)ch);
+    return make_fixnum((Fixnum)ch);
   }
   SIMPLE_ERROR(BF("Character is beyon CHAR_CODE_LIMIT: %d") % CHAR_CODE_LIMIT);
 };
@@ -475,8 +462,8 @@ CL_LAMBDA(och);
 CL_DECLARE();
 CL_DOCSTRING("char_int");
 CL_DEFUN Fixnum_sp cl__char_int(Character_sp och) {
-  char ch = clasp_as_char(och);
-  return make_fixnum((int)ch);
+  claspCharacter ch = clasp_as_claspCharacter(och);
+  return make_fixnum((Fixnum)ch);
 };
 
 CL_LAMBDA(och);
@@ -490,10 +477,6 @@ CL_DEFUN Character_sp cl__code_char(Integer_sp ich) {
   return _Nil<Character_O>();
 };
 
-claspChar clasp_charCode(T_sp c) {
-  Character_sp cc = gc::As<Character_sp>(c);
-  return clasp_as_char(cc);
-}
 
 // ----------------------------------------------------------------------
 //
@@ -526,330 +509,5 @@ claspChar clasp_charCode(T_sp c) {
   SYMBOL_EXPORT_SC_(ClPkg, digitCharP);
 
 
-
-
-#if 0
-    Character_sp Character_O::create(gctools::Fixnum c)
-    {
-	StandardChar_sp sc = clasp_make_standard_character(CLASP_CHAR(c));
-	return sc;
-    }
-
-    Character_sp Character_O::create(T_sp val)
-    {
-	if ( core__fixnump(val) )
-	{
-	    int v = unbox_fixnum(gc::As<Fixnum_sp>(val));
-	    return clasp_make_character(v);
-	}
-	SIMPLE_ERROR(BF("Cannot create Character from %s") % _rep_(val) );
-    }
-
-#if 0
-#if defined(OLD_SERIALIZE)
-    void Character_O::serialize(::serialize::SNodeP node)
-    {
-        this->Bases::serialize(node);
-	// Archive other instance variables here
-    }
-#endif
-#endif
-
-#if defined(XML_ARCHIVE)
-void Character_O::archiveBase(::core::ArchiveP node)
-    {
-        this->Base::archiveBase(node);
-	// Archive other instance variables here
-    }
-#endif // defined(XML_ARCHIVE)
-
-    void Character_O::initialize()
-    {_OF();
-        this->Base::initialize();
-    }
-
-    bool Character_O::equal(T_sp other) const
-    {_OF();
-	return this->eql_(other);
-    }
-
-
-    bool Character_O::equalp(T_sp other) const
-    {_OF();
-        if ( other.nilp() ) return false;
-	if ( Character_sp cother = gc::As<Character_sp>(other) ) {
-	    return ( toupper(clasp_as_char(cother)) == toupper(this->asChar()) );
-	}
-	return false;
-    }
-
-
-
-
-
-
-
-
-
-
-
-
-    void BaseChar_O::exposePython(::core::Lisp_sp lisp)
-
-
-
-    void BaseChar_O::initialize()
-    {_OF();
-        this->Base::initialize();
-    }
-
-
-
-
-
-
-
-
-
-
-
-
-    void StandardChar_O::exposePython(Lisp_sp lisp)
-
-
-
-
-
-    StandardChar_sp clasp_make_standard_character(char c)
-    {
-        GC_ALLOCATE(StandardChar_O,v );
-	v->set(c);
-	return v;
-    }
-
-#if defined(OLD_SERIALIZE)
-    void StandardChar_O::serialize(serialize::SNode node)
-    {
-	if ( node->saving() )
-	{
-//	    node.setObject(this->sharedThis<StandardChar_O>());
-	} else
-	{
-	    IMPLEMENT_ME();
-	}
-    }
-#endif
-
-#if defined(XML_ARCHIVE)
-void StandardChar_O::archiveBase(ArchiveP node)
-    {
-	this->Base::archiveBase(node);
-	node->attribute("val",this->_Value);
-    }
-#endif // defined(XML_ARCHIVE)
-
-    string StandardChar_O::__repr__() const
-    {
-	stringstream ss;
-	ss << "#\\";
-	if ( this->_Value >= ' ' )
-	{
-	    ss << this->_Value;
-	} else
-	{
-	    ss << _rep_(cl__char_name(this->const_sharedThis<StandardChar_O>()));
-	}
-	return ss.str();
-    }
-
-    void StandardChar_O::sxhash_(HashGenerator& hg) const
-    {
-	hg.addPart(this->_Value);
-    }
-
-
-
-    T_sp StandardChar_O::deepCopy() const
-    {_OF();
-	return this->const_sharedThis<StandardChar_O>();
-    }
-
-
-
-    void StandardChar_O::setFromString(const string& strVal)
-    {
-	this->_Value = strVal[0];
-    }
-
-
-    string StandardChar_O::valueAsString() const
-    {
-	stringstream ss;
-	ss << (unsigned char)(this->_Value);
-	return ss.str();
-    }
-
-    bool StandardChar_O::operator>=(T_sp obj) const
-    {_OF();
-	if ( cl__characterp(obj) )
-	{
-	    Character_sp wn = gc::As<Character_sp>(obj);
-	    char v = clasp_as_char(wn);
-	    return this->_Value >= v;
-	}
-	SIMPLE_ERROR(BF("Wrong format for ge with Char"));
-    }
-
-
-
-    bool StandardChar_O::operator<=(T_sp obj) const
-    {_OF();
-	if ( cl__characterp(obj) )
-	{
-	    Character_sp wn = gc::As<Character_sp>(obj);
-	    char v = clasp_as_char(wn);
-	    return this->_Value <= v;
-	}
-	SIMPLE_ERROR(BF("Wrong format for le with Char"));
-    }
-
-
-    bool StandardChar_O::operator<(T_sp obj) const
-    {_OF();
-	if ( cl__characterp(obj) )
-	{
-	    Character_sp wn = gc::As<Character_sp>(obj);
-	    char v = clasp_as_char(wn);
-	    return this->_Value < v;
-	}
-	SIMPLE_ERROR(BF("Wrong format for le with Char"));
-    }
-
-    bool StandardChar_O::eqn(T_sp obj) const
-    {_OF();
-	if ( obj.nilp() ) return false;
-	if ( obj.get() == this ) return true;
-	if ( cl__characterp(obj) )
-	{
-	    Character_sp wn = gc::As<Character_sp>(obj);
-	    char v = clasp_as_char(wn);
-	    return this->_Value == v;
-	}
-	SIMPLE_ERROR(BF("Wrong format for comparison with Char"));
-    }
-
-    bool StandardChar_O::eql_(T_sp obj) const
-    {_OF();
-	if ( obj.nilp() ) return false;
-	if ( Character_sp wn = obj.asOrNull<Character_O>() )
-	{
-	    char v = clasp_as_char(wn);
-	    return this->_Value == v;
-	}
-	return false;
-    }
-
-    bool StandardChar_O::operator>(T_sp obj) const
-    {_OF();
-	if ( cl__characterp(obj) )
-	{
-	    Character_sp wn = gc::As<Character_sp>(obj);
-	    char v = clasp_as_char(wn);
-	    return this->_Value > v;
-	}
-	SIMPLE_ERROR(BF("Wrong format for comparison with Char"));
-    }
-
-
-    Character_sp StandardChar_O::char_upcase() const
-    {_OF();
-	unsigned char uc = toupper(this->_Value);
-	return clasp_make_standard_character(uc);
-    }
-
-    Character_sp StandardChar_O::char_downcase() const
-    {_OF();
-	unsigned char uc = tolower(this->_Value);
-	return clasp_make_standard_character(uc);
-    }
-
-
-    bool StandardChar_O::upper_case_p() const
-    {_OF();
-	return isupper(this->_Value);
-    }
-
-
-    bool StandardChar_O::lower_case_p() const
-    {_OF();
-	return islower(this->_Value);
-    }
-
-    bool StandardChar_O::both_case_p() const
-    {_OF();
-	return isalpha(this->_Value);
-    }
-
-    bool StandardChar_O::alpha_char_p() const
-    {_OF();
-	return isalpha(this->_Value);
-    }
-
-    bool StandardChar_O::alphanumericp() const
-    {_OF();
-	return isalpha(this->_Value) || isdigit(this->_Value);
-    }
-
-    bool StandardChar_O::graphicCharP() const
-    {
-	return this->_Value!='\n';
-    }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    void ExtendedChar_O::exposePython(::core::Lisp_sp lisp)
-
-#if 0
-#if defined(OLD_SERIALIZE)
-    void ExtendedChar_O::serialize(::serialize::SNodeP node)
-    {
-        this->Base::serialize(node);
-	// Archive other instance variables here
-    }
-#endif
-#endif
-
-#if defined(XML_ARCHIVE)
-void ExtendedChar_O::archiveBase(::core::ArchiveP node)
-    {
-        this->Base::archiveBase(node);
-	// Archive other instance variables here
-    }
-#endif // defined(XML_ARCHIVE)
-
-    void ExtendedChar_O::initialize()
-    {_OF();
-        this->Base::initialize();
-    }
-
-#endif
 
 }; /* core */

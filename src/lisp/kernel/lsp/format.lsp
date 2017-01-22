@@ -264,11 +264,13 @@
 		  :start (format-directive-start struct)
 		  :end (format-directive-end struct))))
 
+(defconstant +format-directive-limit+ (1+ (char-code #\~)))
+
 #+formatter
 (defparameter *format-directive-expanders*
-  (make-array char-code-limit :initial-element nil))
+  (make-array +format-directive-limit+ :initial-element nil))
 (defparameter *format-directive-interpreters*
-  (make-array char-code-limit :initial-element nil))
+  (make-array +format-directive-limit+ :initial-element nil))
 
 (defparameter *default-format-error-control-string* nil)
 (defparameter *default-format-error-offset* nil)
@@ -506,43 +508,28 @@
       (let ((directive (car directives)))
 	(etypecase directive
 	  (simple-string
-	   (fmt-log "directive is simple-string ")
 	   (write-string directive stream)
-	   (fmt-log "line 510 args:" args)
-	   (interpret-directive-list stream (cdr directives) orig-args args)
-	   )
+	   (interpret-directive-list stream (cdr directives) orig-args args))
 	  (#-(or ecl clasp) format-directive #+(or ecl clasp) vector
-		 (multiple-value-bind
-		       (new-directives new-args)
-		     (let ((function
-			    (svref *format-directive-interpreters*
-				   (char-code (format-directive-character
-					       directive))))
-			   (*default-format-error-offset*
-			    (1- (format-directive-end directive))))
-		       (unless function
-			 (error 'format-error
-				:complaint "Unknown format directive."))
-		       (multiple-value-bind
-			     (new-directives new-args)
-			   (progn
-			     (fmt-log "line 529 orig-args: " orig-args " args:" args)
-			     (fmt-log "line 530 directive: " directive )
-			     (funcall function stream directive
-				      (cdr directives) orig-args args))
-			 (fmt-log "------> line 533 new-directives: " new-directives " new-args: " new-args )
-;;			 #+clasp(core:ihs-backtrace "line534")
-			 (values new-directives new-args))
-		       )
-		   (progn
-		     (fmt-log "line 535 args: " args)
-		     (fmt-log "line 536 new-args: " new-args)
-		     (interpret-directive-list stream new-directives
-					       orig-args new-args))))))
-      (progn
-	(fmt-log "line 542 interpret-directive-list returning: " args)
-;;	#+clasp(core:ihs-backtrace "line 543 interpret-directive-list returning")
-	args)))
+             (multiple-value-bind
+                   (new-directives new-args)
+                 (let* ((code (char-code (format-directive-character directive)))
+                        (function
+                         (and (< code +format-directive-limit+)
+                              (svref *format-directive-interpreters* code)))
+                        (*default-format-error-offset*
+                         (1- (format-directive-end directive))))
+                   (unless function
+                     (error 'format-error
+                            :complaint "Unknown format directive."))
+                   (multiple-value-bind
+                         (new-directives new-args)
+                       (funcall function stream directive
+                                (cdr directives) orig-args args)
+                     (values new-directives new-args)))
+               (interpret-directive-list stream new-directives
+                                         orig-args new-args)))))
+      args))
 
 
 ;;;; FORMATTER
@@ -613,15 +600,16 @@
      (values `(write-string ,directive stream)
 	     more-directives))
     (format-directive
-     (let ((expander
-	    (aref *format-directive-expanders*
-		  (char-code (format-directive-character directive))))
-	   (*default-format-error-offset*
-	    (1- (format-directive-end directive))))
+     (let* ((code (char-code (format-directive-character directive)))
+            (expander
+             (and (< code +format-directive-limit+)
+                  (svref *format-directive-expanders* code)))
+            (*default-format-error-offset*
+             (1- (format-directive-end directive))))
        (if expander
-	   (funcall expander directive more-directives)
-	   (error 'format-error
-		  :complaint "Unknown directive."))))))
+           (funcall expander directive more-directives)
+           (error 'format-error
+                  :complaint "Unknown directive."))))))
 
 (defun expand-next-arg (&optional offset)
   (declare (si::c-local))

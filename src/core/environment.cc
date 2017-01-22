@@ -4,14 +4,14 @@
 
 /*
 Copyright (c) 2014, Christian E. Schafmeister
- 
+
 CLASP is free software; you can redistribute it and/or
 modify it under the terms of the GNU Library General Public
 License as published by the Free Software Foundation; either
 version 2 of the License, or (at your option) any later version.
- 
+
 See directory 'clasp/licenses' for full details.
- 
+
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
 
@@ -31,7 +31,7 @@ THE SOFTWARE.
 // this is not set
 #define USE_STATIC_CAST_FOR_ENVIRONMENT 1
 
-#define DEBUG_LEVEL_FULL
+//#define DEBUG_LEVEL_FULL
 
 #include <string.h>
 #include <clasp/core/common.h>
@@ -42,7 +42,7 @@ THE SOFTWARE.
 #include <clasp/core/standardObject.h>
 #include <clasp/core/multipleValues.h>
 #include <clasp/core/sequence.h>
-#include <clasp/core/vectorObjects.h>
+#include <clasp/core/array.h>
 #include <clasp/core/primitives.h>
 #include <clasp/core/hashTableEqual.h>
 #include <clasp/core/hashTableEq.h>
@@ -97,13 +97,13 @@ CL_DEFUN T_sp core__environment_debug_values(T_sp frame) {
     return _Nil<T_O>();
   else if (ValueFrame_sp vf = frame.asOrNull<ValueFrame_O>()) {
     int iEnd = vf->length();
-    VectorObjects_sp vo = VectorObjects_O::create(_Nil<T_O>(), iEnd, _Nil<T_O>());
+    VectorObjects_sp vo = VectorObjects_O::make(iEnd,_Nil<T_O>());
     for (int i(0); i < iEnd; ++i) {
       T_sp val = (*vf)[i];
       if (val.unboundp()) {
         val = _sym__BANG_unbound_BANG_;
       }
-      vo->setf_elt(i, val);
+      vo->rowMajorAset(i, val);
     }
     return vo;
   } else if (ActivationFrame_sp af = frame.asOrNull<ActivationFrame_O>()) {
@@ -288,7 +288,6 @@ void Environment_O::_environmentStackFill(int level, stringstream &sout) {
 
 CL_LISPIFY_NAME("environmentStackAsString");
 CL_DEFMETHOD string Environment_O::environmentStackAsString() {
-  _OF();
   stringstream sout;
   this->_environmentStackFill(1, sout);
   return sout.str();
@@ -312,7 +311,7 @@ CL_DEFUN void core__environment_dump(T_sp env)
   }
   SIMPLE_ERROR(BF("The argument %s was not an environment") % _rep_(env));
 }
-  
+
 List_sp Environment_O::clasp_gather_metadata(T_sp env, Symbol_sp key) {
   if (env.nilp())
     return _Nil<T_O>();
@@ -672,7 +671,6 @@ CL_DEFMETHOD int Environment_O::countFunctionContainerEnvironments() const {
 
 CL_LISPIFY_NAME("find_block_named_environment");
 CL_DEFMETHOD T_sp Environment_O::find_block_named_environment(Symbol_sp blockName) const {
-  _OF();
   T_sp parent = this->getParentEnvironment();
   if (parent.nilp()) {
     SIMPLE_ERROR(BF("Could not find block with name[%s]") % _rep_(blockName));
@@ -682,13 +680,11 @@ CL_DEFMETHOD T_sp Environment_O::find_block_named_environment(Symbol_sp blockNam
 
 CL_LISPIFY_NAME("find_unwindable_environment");
 CL_DEFMETHOD T_sp Environment_O::find_unwindable_environment() const {
-  _OF();
   return Environment_O::clasp_find_unwindable_environment(this->getParentEnvironment());
 }
 
 CL_LISPIFY_NAME("find_tagbody_tag_environment");
 CL_DEFMETHOD T_sp Environment_O::find_tagbody_tag_environment(Symbol_sp tag) const {
-  _OF();
   return Environment_O::clasp_find_tagbody_tag_environment(this->getParentEnvironment(), tag);
 }
 
@@ -1461,7 +1457,7 @@ CL_DEFMETHOD int TagbodyEnvironment_O::addTag(Symbol_sp tag, List_sp ip) {
 
 List_sp TagbodyEnvironment_O::find(Symbol_sp tag) const {
   _OF();
-  DEPRECIATED();
+  DEPRECATED();
   return this->_Tags->find(tag);
 }
 
@@ -1627,7 +1623,7 @@ CL_DEFUN StackValueEnvironment_sp StackValueEnvironment_O::make(T_sp parent) {
 }
 
 bool StackValueEnvironment_O::_findValue(T_sp sym, int &depth, int &index, ValueKind &valueKind, T_sp &value) const {
-  DEPRECIATED();
+  DEPRECATED();
 #if 0
 	LOG(BF("Looking for binding for symbol(%s)") % _rep_(sym) );
 	value = this->_Values->find(sym);

@@ -1,5 +1,7 @@
 (in-package :cscrape)
 
+(defvar +white-space+ '(#\space #\return #\tab))
+
 (defun maybe-remove-one-prefix-from-start (instr prefixes)
   (let ((str (string-trim '(#\newline #\space #\tab) instr)))
     (block done
@@ -9,6 +11,30 @@
               (when (= pos 0)
                   (return-from done (string-trim '(#\newline #\space #\tab) (subseq str (length prefix))))))))
       str)))
+
+
+(defun backwards-space (str pos)
+  (let ((pos (position-if (lambda (c) (or (char= c #\space) (char= c #\tab) (char= c #\newline))) str :from-end t :end pos)))
+    (or pos -1)))
+    
+
+(defun backwards-not-space (str pos)
+  (let ((pos (position-if (lambda (c) (not (or (char= c #\space) (char= c #\tab) (char= c #\newline)))) str :from-end t :end pos)))
+    (or pos -1)))
+
+(defun type-and-name-from-signature (sig)
+  "* Arguments
+- sig :: A string.
+* Description
+Split a signature like 'a b c d(...' and return (values c d)"
+  (let* ((close-paren (position #\( sig))
+	 (cur (backwards-not-space sig close-paren))
+	 (name-end (1+ cur))
+	 (cur (backwards-space sig cur))
+	 (name-start (1+ cur))
+	 (type-end (1+ (backwards-not-space sig cur)))
+	 (type-start (1+ (backwards-space sig cur))))
+    (values (subseq sig type-start type-end) (subseq sig name-start name-end))))
 
 (defun extract-function-name-from-signature (raw-sig tag)
   "* Arguments
@@ -21,7 +47,7 @@ Extract the function name from the signature.  If the function name does not con
 return the (values function-name function-name T).
 If the name has the form: class::name then it's a static class method 
 and not a simple-function so return (values name class::name nil)"
-  (declare (optimize (debug 3)) (ignore tag))
+  (declare (optimize (speed 3)) (ignore tag))
   (let* ((sig (maybe-remove-one-prefix-from-start raw-sig '("inline" "static")))
 	 (tsig (string-trim '(#\newline #\space #\tab) sig))
          (first-space (position-if
@@ -29,13 +55,15 @@ and not a simple-function so return (values name class::name nil)"
                                        (char= c #\space)
                                        (char= c #\tab)))
                        tsig))
-         (open-paren (position #\( tsig :test #'char=))
-         (full-function-name (string-left-trim '(#\newline #\space #\tab #\*)
-                                                (string-right-trim '(#\newline #\space #\tab) (subseq tsig first-space open-paren))))
-         (colon-colon-pos (search "::" full-function-name)))
-    (if colon-colon-pos
-        (values (subseq full-function-name (+ 2 colon-colon-pos)) full-function-name nil)
-	(values full-function-name full-function-name t))))
+         (open-paren (position #\( tsig :test #'char=)))
+    (when (> first-space open-paren)
+      (error "The function signature \"~a\"has a problem - it may be missing a return type~%" tsig))
+    (let* ((full-function-name (string-left-trim '(#\newline #\space #\tab #\*)
+                                                 (string-right-trim '(#\newline #\space #\tab) (subseq tsig first-space open-paren))))
+           (colon-colon-pos (search "::" full-function-name)))
+      (if colon-colon-pos
+          (values (subseq full-function-name (+ 2 colon-colon-pos)) full-function-name nil)
+          (values full-function-name full-function-name t)))))
 
 (defun maybe-remove-cast (str)
   (let* ((tstr (string-trim '(#\newline #\space #\tab) str))
@@ -43,7 +71,16 @@ and not a simple-function so return (values name class::name nil)"
     (if close-paren
         (string-trim '(#\newline #\space #\tab) (subseq tstr (1+ close-paren)))
         tstr)))
-        
+
+(defun extract-class-method-name-from-signature (sig)
+  (multiple-value-bind (return-type class-method-name)
+      (type-and-name-from-signature sig)
+    (let ((colon-colon-pos (search "::" class-method-name)))
+      (if colon-colon-pos
+          (values (subseq class-method-name 0 colon-colon-pos)
+                  (subseq class-method-name (+ 2 colon-colon-pos)))
+          (values nil class-method-name)))))
+    
 (defun extract-method-name-from-signature (sig)
   (declare (optimize (debug 3)))
   (let* ((tsig (maybe-remove-one-prefix-from-start sig '("virtual" "inline")))
@@ -66,7 +103,6 @@ and not a simple-function so return (values name class::name nil)"
         (values (subseq class-method 0 colon-colon-pos)
                 (subseq class-method (+ 2 colon-colon-pos)))
         (values nil class-method))))
-
 
 (defun extract-function-name-from-pointer (typed-pointer tag)
   (declare (optimize debug))
@@ -99,17 +135,15 @@ if there were an empty string between them."
      collect (string-trim '(#\space #\return #\tab) (subseq string i j))
      while j))
 
-(defvar +white-space+ '(#\space #\return #\tab))
-
 (defun split-type-name (type-name)
   "* Arguments
 - type-name :: A string.
 * Description
 Split a string like \"const string &b\" into (values \"const string &\" \"b\") pair.  
 Trim whitespace from each member of the pair."
-  (declare (optimize (debug 3)))
+  (declare (optimize (speed 3)))
   (let* ((name-start (position-if #'(lambda (c)
-                                      (not (alphanumericp c)))
+                                      (not (or (alphanumericp c) (char= c #\_))))
                                   type-name
                                   :from-end t))
          (first (subseq type-name 0 (1+ name-start)))
@@ -122,7 +156,7 @@ Trim whitespace from each member of the pair."
 * Description
 Split the typed arguments (int a, int b, string c)
 into two lists (int int string) and (a b c) and return as two values"
-  (declare (optimize (debug 3)))
+  (declare (optimize (speed 3)))
   (if (or (string= typed-arguments "")
           (string= typed-arguments "void"))
       ""

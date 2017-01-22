@@ -27,25 +27,29 @@
 (in-package :cmp)
 
 ;;
-;; The code-walker-function must return a form or an altered form to continue
-;; compilation
-(defun code-walk-using-compiler (form env &key code-walker-function)
+;; The code-walker-function must return a form or an altered form to continue compilation
+;;
+;; The macros that are invoked here must be the same macros that are used
+;; in compile-file to set up the environment that the code needs to compile forms
+;; as compile-file does.
+(defun code-walk-using-bclasp (form env &key code-walker-function)
   "This is used in clos/method.lsp to code walk defmethod bodies"
+  (and core:*use-cleavir-compiler* (error "The core:*use-cleavir-compiler* is set to T"))
   (let* ((module (llvm-create-module "code-walk-for-defmethod"))
 	 (*code-walker* code-walker-function))
     (define-primitives-in-module module)
     (with-compilation-unit ()
       (with-module ( :module module
                              :optimize nil
-                             :source-namestring "code-walk-using-compiler")
+                             :source-namestring "code-walk-using-bclasp")
         (with-debug-info-generator (:module module
                                             :pathname #P"/dev/null")
-          (with-compile-file-dynamic-variables-and-load-time-value-unit (ltv-init-fn)
-            (compile-in-env nil form env nil)))
+          (with-make-new-run-all (run-all-function)
+            (with-constants-table
+                (let ((fn (literal:with-top-level-form (compile-thunk 'walk-thunk form env))))
+                  ;; Do nothing (irc-create-call "ltvc_toplevel_funcall" (list fn))
+                  ))))
         (llvm-sys::module-delete module)))))
 
-(export 'code-walk-using-compiler)
+(export 'code-walk-using-bclasp)
 
-
-(defvar *code-walk-hook* 'code-walk-using-compiler)
-(export '*code-walk-hook*)

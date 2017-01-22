@@ -32,42 +32,48 @@ namespace core {
     virtual bool allocates() const { return true; };
   /*! If this is the allocator for a primary CxxAdapter class then return true, */
     virtual int duplicationLevel() const { return 0; };
-    virtual size_t templatedSizeof() const = 0;
+    CL_NAME("CORE:CREATOR-TEMPLATED-SIZE");
+    CL_DEFMETHOD virtual size_t templatedSizeof() const = 0;
     virtual Creator_sp duplicateForClassName(core::Symbol_sp className) {
       printf("Subclass must implement Creator::duplicateForClassName\n");
       abort();
     };
-    virtual void describe() const = 0;
-    virtual core::T_sp allocate() = 0;
+    CL_NAME("CORE:CREATOR-DESCRIBE");
+    CL_DEFMETHOD virtual void describe() const = 0;
+    virtual core::T_sp creator_allocate() = 0;
+    virtual ~Creator_O() {};
   };
 
 
 
-    template <class _W_>
-    class LispObjectCreator : public core::Creator_O {
+  template <class _W_>
+    class BuiltInObjectCreator : public core::Creator_O {
   public:
     typedef core::Creator_O TemplatedBase;
   public:
     DISABLE_NEW();
-    size_t templatedSizeof() const { return sizeof(LispObjectCreator<_W_>); };
+    size_t templatedSizeof() const { return sizeof(BuiltInObjectCreator<_W_>); };
     virtual void describe() const {
-      printf("LispObjectCreator for class %s  sizeof_instances-> %zu\n", _rep_(reg::lisp_classSymbol<_W_>()).c_str(), sizeof(_W_));
+      printf("BuiltInObjectCreator for class %s  sizeof_instances-> %zu\n", _rep_(reg::lisp_classSymbol<_W_>()).c_str(), sizeof(_W_));
     }
-    virtual core::T_sp allocate() {
+    virtual core::T_sp creator_allocate() {
       GC_ALLOCATE(_W_, obj);
       return obj;
     }
     virtual void searcher(){};
   };
+
+
+
 };
 
 template <typename T>
-class gctools::GCKind<core::LispObjectCreator<T>> {
+class gctools::GCKind<core::BuiltInObjectCreator<T>> {
  public:
-  static gctools::GCKindEnum const Kind = gctools::GCKind<typename core::LispObjectCreator<T>::TemplatedBase>::Kind;
+  static gctools::GCKindEnum const Kind = gctools::GCKind<typename core::BuiltInObjectCreator<T>::TemplatedBase>::Kind;
 };
 template <typename T>
-struct gctools::GCInfo<core::LispObjectCreator<T>> {
+struct gctools::GCInfo<core::BuiltInObjectCreator<T>> {
   static bool constexpr NeedsInitialization = false;
   static bool constexpr NeedsFinalization = false;
   static GCInfo_policy constexpr Policy = normal;
@@ -77,13 +83,13 @@ namespace core {
   class InstanceCreator_O : public Creator_O {
     LISP_CLASS(core,CorePkg,InstanceCreator_O,"InstanceCreator",Creator_O);
   public:
-    Symbol_sp _className;
+    Class_sp _class;
   public:
-  InstanceCreator_O(Symbol_sp className) : _className(className){};
+  InstanceCreator_O(Class_sp class_) : _class(class_){};
     void describe() const {
-      printf("InstanceAllocatorFunctor for class %s\n", _rep_(this->_className).c_str());
+      printf("InstanceAllocatorFunctor for class %s\n", _rep_(this->_class).c_str());
     };
-    T_sp allocate();
+    T_sp creator_allocate();
     virtual size_t templatedSizeof() const { return sizeof(InstanceCreator_O); };
   };
 };

@@ -30,14 +30,16 @@ bool treat_as_special_operator_p(core::T_sp form)
   if ( form == cl::_sym_catch ) return false;
   if ( form == cl::_sym_throw ) return false;
   if ( form == core::_sym_debug_message ) return true;
-  if ( form == core::_sym_intrinsic_call ) return true;
+  if ( form == core::_sym_multiple_value_foreign_call ) return true;
+  if ( form == core::_sym_foreign_call ) return true;
+  if ( form == core::_sym_foreign_call_pointer ) return true;
   return cl__special_operator_p(form);
 }
 
 core::T_mv separate_ordinary_body(core::List_sp body)
 {
   core::List_sp declares;
-  gc::Nilable<core::Str_sp> dummy_doc;
+  gc::Nilable<core::String_sp> dummy_doc;
   core::List_sp code;
   core::List_sp specials;
   core::eval::extract_declares_docstring_code_specials(body,declares,false,dummy_doc,code,specials);

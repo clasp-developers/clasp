@@ -24,7 +24,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#define DEBUG_LEVEL_FULL
+//#define DEBUG_LEVEL_FULL
 #include <limits.h>
 #include <float.h>
 #include <stdio.h>
@@ -32,7 +32,7 @@ THE SOFTWARE.
 #include <clasp/core/object.h>
 #include <clasp/core/lisp.h>
 #include <clasp/core/symbolTable.h>
-#include <clasp/core/str.h>
+#include <clasp/core/array.h>
 #include <clasp/core/lispStream.h>
 #include <clasp/core/corePackage.h>
 #include <clasp/core/allClSymbols.h>
@@ -62,8 +62,6 @@ THE SOFTWARE.
 #include <clasp/asttooling/astVisitor.h>
 #include <clasp/clbind/class_registry.h>
 #include <clasp/core/serialize.h>
-#include <clasp/core/array.h>
-#include <clasp/core/binder.h>
 #include <clasp/core/conditions.h>
 #include <clasp/core/character.h>
 #include <clasp/core/cons.h>
@@ -88,7 +86,6 @@ THE SOFTWARE.
 #include <clasp/core/readtable.h>
 #include <clasp/core/reader.h>
 #include <clasp/core/record.h>
-#include <clasp/core/regex.h>
 #include <clasp/core/singleDispatchMethod.h>
 #include <clasp/core/smallMap.h>
 #include <clasp/core/smallMultimap.h>
@@ -108,8 +105,6 @@ THE SOFTWARE.
 #include <clasp/llvmo/debugLoc.h>
 #include <clasp/llvmo/insertPoint.h>
 #include <clasp/core/activationFrame.h>
-#include <clasp/core/arrayDisplaced.h>
-#include <clasp/core/arrayObjects.h>
 #include <clasp/core/hashTableEq.h>
 #include <clasp/core/hashTableEql.h>
 #include <clasp/core/hashTableEqual.h>
@@ -120,23 +115,15 @@ THE SOFTWARE.
 //#include <clasp/core/singleDispatchEffectiveMethodFunction.h>
 #include <clasp/core/singleDispatchGenericFunction.h>
 #include <clasp/core/specialForm.h>
-#include <clasp/core/lispVector.h>
-#include <clasp/core/bitVector.h>
 #include <clasp/core/sexpLoadArchive.h>
 #include <clasp/core/sexpSaveArchive.h>
 #include <clasp/core/specializer.h>
-#include <clasp/core/lispString.h>
-#include <clasp/core/vectorDisplaced.h>
-#include <clasp/core/newVectorObjects.h>
 #include <clasp/core/metaClass.h>
-#include <clasp/core/str.h>
-#include <clasp/core/newVectorObjectsWithFillPtr.h>
 #include <clasp/core/bignum.h>
 #include <clasp/core/builtInClass.h>
 #include <clasp/core/cxxClass.h>
 #include <clasp/core/forwardReferencedClass.h>
 #include <clasp/core/stdClass.h>
-#include <clasp/core/strWithFillPtr.h>
 #include <clasp/core/structureClass.h>
 #include <clasp/clbind/class_rep.h>
 #include <clasp/core/funcallableStandardClass.h>
@@ -153,11 +140,20 @@ namespace core {
 const char *CorePkg_nicknames[] = {
     "SYSTEM", "sys", "SYS", "si", "SI", "" /*guard*/
 };
+SYMBOL_EXPORT_SC_(CorePkg, STARuse_cleavir_compilerSTAR);  // nil (clasp) or T (cleavir)
 
+SYMBOL_EXPORT_SC_(KeywordPkg, verbose);
+SYMBOL_EXPORT_SC_(KeywordPkg, pause_pid);
+SYMBOL_EXPORT_SC_(KeywordPkg, exit_backtrace);
+SYMBOL_EXPORT_SC_(CorePkg, STARdebug_accessorsSTAR);
+SYMBOL_EXPORT_SC_(CorePkg, STARexit_backtraceSTAR);
+SYMBOL_EXPORT_SC_(CorePkg, make_source_pos_info);
 SYMBOL_EXPORT_SC_(ExtPkg, STARclasp_clang_pathSTAR);
+SYMBOL_EXPORT_SC_(CorePkg, make_source_pos_info);
+SYMBOL_EXPORT_SC_(CorePkg, STARtop_level_form_stackSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARsyspropsSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARloadHooksSTAR);
-SYMBOL_EXPORT_SC_(CorePkg, STARinvoke_debugger_hookSTAR);
+SYMBOL_EXPORT_SC_(ExtPkg, STARinvoke_debugger_hookSTAR);
 SYMBOL_EXPORT_SC_(CorePkg,variable_source_location)
 SYMBOL_EXPORT_SC_(CorePkg,class_source_location)
 SYMBOL_EXPORT_SC_(CorePkg,cxx_method_source_location);
@@ -174,9 +170,15 @@ SYMBOL_EXPORT_SC_(CorePkg,function_boundary);
 SYMBOL_EXPORT_SC_(CorePkg,type_assertions);
 SYMBOL_EXPORT_SC_(ExtPkg,assume_no_errors);
 
+SYMBOL_EXPORT_SC_(ClPkg, float);
+SYMBOL_EXPORT_SC_(ClPkg, double_float);
+SYMBOL_EXPORT_SC_(ClPkg, single_float);
+SYMBOL_EXPORT_SC_(ClPkg, parse_namestring);
+SYMBOL_EXPORT_SC_(ClPkg, make_instance);
 SYMBOL_EXPORT_SC_(ClPkg, class);
 SYMBOL_EXPORT_SC_(ClPkg, printNotReadableObject);
 SYMBOL_EXPORT_SC_(ClPkg, simple_base_string);
+SYMBOL_EXPORT_SC_(ClPkg, base_string);
 SYMBOL_EXPORT_SC_(ClPkg, provide);
 SYMBOL_EXPORT_SC_(ClPkg, condition);
 SYMBOL_EXPORT_SC_(ClPkg, seriousCondition);
@@ -229,9 +231,14 @@ SYMBOL_EXPORT_SC_(ClPkg, fixnum);
 SYMBOL_EXPORT_SC_(ClPkg, bit);
 SYMBOL_EXPORT_SC_(ClPkg, documentation);
 SYMBOL_EXPORT_SC_(ClPkg, substitute);
+SYMBOL_EXPORT_SC_(ClPkg, subtypep);
+SYMBOL_EXPORT_SC_(ClPkg, subseq);
 
+SYMBOL_EXPORT_SC_(CorePkg, setf_subseq);
 SYMBOL_EXPORT_SC_(CorePkg,STARextension_startup_loadsSTAR);
-SYMBOL_EXPORT_SC_(CorePkg, intrinsic_call);
+SYMBOL_EXPORT_SC_(CorePkg, multiple_value_foreign_call);
+SYMBOL_EXPORT_SC_(CorePkg, foreign_call);
+SYMBOL_EXPORT_SC_(CorePkg, foreign_call_pointer);
 SYMBOL_EXPORT_SC_(CorePkg, STARclasp_packageSTAR );
 SYMBOL_EXPORT_SC_(CorePkg, single_dispatch_method);
 SYMBOL_EXPORT_SC_(CorePkg, setf_documentation);
@@ -270,7 +277,7 @@ SYMBOL_EXPORT_SC_(KeywordPkg, cclasp);
 SYMBOL_EXPORT_SC_(KeywordPkg, bclasp);
 SYMBOL_EXPORT_SC_(KeywordPkg, load);
 SYMBOL_EXPORT_SC_(KeywordPkg, eval);
-SYMBOL_EXPORT_SC_(KeywordPkg, ecl_min);
+SYMBOL_EXPORT_SC_(KeywordPkg, clasp_min);
 SYMBOL_EXPORT_SC_(KeywordPkg, use_mps);
 SYMBOL_EXPORT_SC_(KeywordPkg, use_boehmdc);
 SYMBOL_EXPORT_SC_(KeywordPkg, use_boehm);
@@ -467,6 +474,7 @@ SYMBOL_EXPORT_SC_(ClPkg, two_way_stream_output_stream);
 SYMBOL_EXPORT_SC_(ClPkg, two_way_stream);
 SYMBOL_EXPORT_SC_(ClPkg, make_two_way_stream);
 SYMBOL_EXPORT_SC_(ClPkg, make_synonym_stream);
+SYMBOL_EXPORT_SC_(ClPkg, make_string_input_stream);
 SYMBOL_EXPORT_SC_(ClPkg, invoke_restart);
 SYMBOL_EXPORT_SC_(ClPkg, get);
 SYMBOL_EXPORT_SC_(ClPkg, find_restart);
@@ -532,8 +540,17 @@ SYMBOL_SC_(CorePkg, unrecognizedKeywordArgumentError);
 SYMBOL_SC_(CorePkg, invalidKeywordArgumentError);
 SYMBOL_EXPORT_SC_(ClPkg, fileError);
 SYMBOL_EXPORT_SC_(ClPkg, satisfies);
+SYMBOL_EXPORT_SC_(ClPkg, fillPointer);
+SYMBOL_EXPORT_SC_(ClPkg, arrayDimension);
 SYMBOL_EXPORT_SC_(ClPkg, array_has_fill_pointer_p);
+SYMBOL_EXPORT_SC_(ClPkg, simple_bit_vector);
+SYMBOL_EXPORT_SC_(ClPkg, bit_vector);
 
+
+SYMBOL_EXPORT_SC_(CorePkg, replaceArray);
+SYMBOL_EXPORT_SC_(CorePkg, fillArrayWithElt );
+SYMBOL_EXPORT_SC_(CorePkg, fillPointerSet );
+SYMBOL_EXPORT_SC_(CorePkg, swapElements );
 SYMBOL_EXPORT_SC_(CorePkg, _PLUS_llvmTargetTriple_PLUS_);
 SYMBOL_EXPORT_SC_(CorePkg, _PLUS_variant_name_PLUS_);
 SYMBOL_EXPORT_SC_(CorePkg, _PLUS_bitcode_name_PLUS_);
@@ -546,7 +563,7 @@ SYMBOL_EXPORT_SC_(CorePkg, _PLUS_run_all_function_name_PLUS_);
 SYMBOL_EXPORT_SC_(CorePkg, _PLUS_clasp_ctor_function_name_PLUS_);
 SYMBOL_EXPORT_SC_(CorePkg, STARcodeWalkerSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARcurrentSourceFileInfoSTAR);
-SYMBOL_EXPORT_SC_(CorePkg, STARcurrentSourcePosInfoSTAR);
+SYMBOL_EXPORT_SC_(CorePkg, current_source_file);
 SYMBOL_SC_(CorePkg, STARdebugMacroexpandSTAR);
 SYMBOL_EXPORT_SC_(ClPkg, T);
 SYMBOL_EXPORT_SC_(ClPkg, method);
@@ -676,6 +693,7 @@ SYMBOL_SC_(CorePkg, element_type);
 SYMBOL_SC_(CorePkg, initial_element);
 SYMBOL_SC_(CorePkg, adjustable);
 
+SYMBOL_EXPORT_SC_(ClPkg, adjust_array);
 SYMBOL_EXPORT_SC_(ClPkg, gethash);
 SYMBOL_SC_(CorePkg, object);
 SYMBOL_EXPORT_SC_(ClPkg, eq);
@@ -729,6 +747,7 @@ SYMBOL_EXPORT_SC_(ClPkg, quote);
 SYMBOL_EXPORT_SC_(ClPkg, function);
 SYMBOL_SC_(CorePkg, slot);
 SYMBOL_EXPORT_SC_(ClPkg, slot_value);
+SYMBOL_EXPORT_SC_(ClPkg, slot_unbound);
 SYMBOL_EXPORT_SC_(ClPkg, values);
 SYMBOL_SC_(CorePkg, item);
 SYMBOL_SC_(CorePkg, alist);
@@ -783,28 +802,28 @@ void testConses() {
   }
 };
 
-void setNilable(gc::Nilable<Str_sp> &val, bool s) {
+void setNilable(gc::Nilable<String_sp> &val, bool s) {
   if (!s) {
-    val = _Nil<T_O>();
+    val = _Nil<String_O>();
   } else {
-    val = Str_O::create("Yahoo");
+    val = gc::As_unsafe<String_sp>(SimpleBaseString_O::make("Yahoo"));
   }
 }
 
-gc::Nilable<Str_sp> getNilable(bool s) {
-  gc::Nilable<Str_sp> val;
+gc::Nilable<String_sp> getNilable(bool s) {
+  gc::Nilable<String_sp> val;
   if (!s) {
-    val = _Nil<T_O>();
+    val = _Nil<String_O>();
   } else {
-    val = Str_O::create("Yahoo");
+    val = gc::As_unsafe<String_sp>(SimpleBaseString_O::make("Yahoo"));
   }
   return val;
 }
 
 void testNilable() {
-  gc::Nilable<Str_sp> foo;
+  gc::Nilable<String_sp> foo;
   printf("%s:%d initialized foo = %s\n", __FILE__, __LINE__, _rep_(static_cast<T_sp>(foo)).c_str());
-  foo = Str_O::create("This is a test");
+  foo = gc::As_unsafe<String_sp>(SimpleBaseString_O::make("This is a test"));
   printf("%s:%d assigned foo = %s  nilp=%d\n", __FILE__, __LINE__, _rep_(foo).c_str(), foo.nilp());
   foo = _Nil<T_O>();
   printf("%s:%d nil'd foo = %s  nilp=%d\n", __FILE__, __LINE__, _rep_(foo).c_str(), foo.nilp());
@@ -870,7 +889,7 @@ void CoreExposer_O::expose(core::Lisp_sp lisp, WhatToExpose what) const {
     break;
   }
 }
-  
+
 void CoreExposer_O::define_essential_globals(Lisp_sp lisp) {
   {
     this->package()->usePackage(gc::As<Package_sp>(_lisp->findPackage("CL", true)));
@@ -885,14 +904,14 @@ void CoreExposer_O::define_essential_globals(Lisp_sp lisp) {
   };
   /* Set the values of some essential global symbols */
   cl::_sym_nil = gctools::smart_ptr<core::Symbol_O>((gctools::Tagged)gctools::global_tagged_Symbol_OP_nil); //->initialize();
-  cl::_sym_nil->_Name = Str_O::create("NIL");
+  cl::_sym_nil->_Name = SimpleBaseString_O::make("NIL");
   //        printf("%s:%d About to add NIL to the COMMON-LISP package - is it defined at this point\n", __FILE__, __LINE__ );
   //	_lisp->_Roots._CommonLispPackage->add_symbol_to_package("NIL"cl::_sym_nil);
   cl::_sym_nil->_HomePackage = _lisp->_Roots._CommonLispPackage;
   cl::_sym_nil->setf_symbolValue(_Nil<T_O>());
   cl::_sym_nil->makeSpecial();
   cl::_sym_nil->exportYourself();
-  _lisp->commonLispPackage()->add_symbol_to_package(Str_O::create("NIL"), _Nil<Symbol_O>(), true);
+  _lisp->commonLispPackage()->add_symbol_to_package(SimpleBaseString_O::make("NIL"), _Nil<Symbol_O>(), true);
   _lisp->_Roots._TrueObject = cl::_sym_T_O;
   cl::_sym_T_O->exportYourself()->defparameter(_lisp->_Roots._TrueObject);
   cl::_sym_T_O->setReadOnly(true);
@@ -977,7 +996,7 @@ void CoreExposer_O::define_essential_globals(Lisp_sp lisp) {
   cl::_sym_STARtrace_outputSTAR->defparameter(SynonymStream_O::make(ext::_sym__PLUS_processErrorOutput_PLUS_));
   cl::_sym_STARdebug_ioSTAR->defparameter(TwoWayStream_O::make(stdin_stream, stdout_stream));
   cl::_sym_STARquery_ioSTAR->defparameter(TwoWayStream_O::make(stdin_stream, stdout_stream));
-  _sym_STARdocumentation_poolSTAR->defparameter(Cons_O::createList(HashTableEql_O::create_default(), Str_O::create("help_file.dat")));
+  _sym_STARdocumentation_poolSTAR->defparameter(Cons_O::createList(HashTableEql_O::create_default(), SimpleBaseString_O::make("help_file.dat")));
   _sym_STARdocumentation_poolSTAR->exportYourself();
   TwoWayStream_sp terminal = TwoWayStream_O::make(stdin_stream, stdout_stream);
   _lisp->_Roots._TerminalIO = terminal;
@@ -986,21 +1005,20 @@ void CoreExposer_O::define_essential_globals(Lisp_sp lisp) {
   cl::_sym_STARmacroexpand_hookSTAR->defparameter(_sym_macroexpand_default);
   _sym_STARsharp_equal_final_tableSTAR->defparameter(_Nil<T_O>());
   _sym__PLUS_activationFrameNil_PLUS_->defconstant(_Nil<T_O>());
-  _sym__PLUS_variant_name_PLUS_->defconstant(Str_O::create(VARIANT_NAME));
-  _sym__PLUS_bitcode_name_PLUS_->defconstant(Str_O::create(BITCODE_NAME));
-  _sym__PLUS_executable_name_PLUS_->defconstant(Str_O::create(EXECUTABLE_NAME));
-  _sym__PLUS_application_name_PLUS_->defconstant(Str_O::create(APP_NAME));
-  _sym_STARbuild_libSTAR->defconstant(Str_O::create(BUILD_LIB));
-  _sym_STARbuild_stlibSTAR->defconstant(Str_O::create(BUILD_STLIB));
-  _sym_STARbuild_linkflagsSTAR->defconstant(Str_O::create(BUILD_LINKFLAGS));
-  _sym__PLUS_run_all_function_name_PLUS_->defconstant(Str_O::create(RUN_ALL_FUNCTION_NAME));
-  _sym__PLUS_clasp_ctor_function_name_PLUS_->defconstant(Str_O::create(CLASP_CTOR_FUNCTION_NAME));
+  _sym__PLUS_variant_name_PLUS_->defconstant(SimpleBaseString_O::make(VARIANT_NAME));
+  _sym__PLUS_bitcode_name_PLUS_->defconstant(SimpleBaseString_O::make(BITCODE_NAME));
+  _sym__PLUS_executable_name_PLUS_->defconstant(SimpleBaseString_O::make(EXECUTABLE_NAME));
+  _sym__PLUS_application_name_PLUS_->defconstant(SimpleBaseString_O::make(APP_NAME));
+  _sym_STARbuild_libSTAR->defconstant(SimpleBaseString_O::make(BUILD_LIB));
+  _sym_STARbuild_stlibSTAR->defconstant(SimpleBaseString_O::make(BUILD_STLIB));
+  _sym_STARbuild_linkflagsSTAR->defconstant(SimpleBaseString_O::make(BUILD_LINKFLAGS));
+  _sym__PLUS_run_all_function_name_PLUS_->defconstant(SimpleBaseString_O::make(RUN_ALL_FUNCTION_NAME));
+  _sym__PLUS_clasp_ctor_function_name_PLUS_->defconstant(SimpleBaseString_O::make(CLASP_CTOR_FUNCTION_NAME));
   SYMBOL_SC_(CorePkg, cArgumentsLimit);
   _sym_cArgumentsLimit->defconstant(make_fixnum(Lisp_O::MaxFunctionArguments));
   _sym_STARdebugMacroexpandSTAR->defparameter(_Nil<T_O>());
   _sym_STARclassNameHashTableSTAR->defparameter(HashTable_O::create(cl::_sym_eq));
   _sym_STARcurrentSourceFileInfoSTAR->defparameter(_Nil<T_O>());
-  _sym_STARcurrentSourcePosInfoSTAR->defparameter(_Nil<T_O>());
   _sym_STARcodeWalkerSTAR->defparameter(_Nil<T_O>());
   _sym_STARsharpEqContextSTAR->defparameter(_Nil<T_O>());
   cl::_sym_STARreadDefaultFloatFormatSTAR->defparameter(cl::_sym_single_float);
@@ -1038,36 +1056,37 @@ void CoreExposer_O::define_essential_globals(Lisp_sp lisp) {
   _sym_STARdebugEvalSTAR->defparameter(_Nil<T_O>());
   _sym_STARdebugStartupSTAR->defparameter(_Nil<T_O>());
   _sym_STARdebugInterpretedFunctionsSTAR->defparameter(_Nil<T_O>());
-  _sym_STARuseInterpreterForEvalSTAR->defparameter(_Nil<T_O>());
+  _sym_STARuseInterpreterForEvalSTAR->defparameter(_lisp->_true());
   _sym_STARcxxDocumentationSTAR->defparameter(_Nil<T_O>());
   _sym_STARnotify_on_compileSTAR->defparameter(_Nil<T_O>());
   _sym_STARtrace_startupSTAR->defparameter(_Nil<T_O>());
   _sym_STARinterpreterTraceSTAR->defparameter(_Nil<T_O>());
-  _sym_STARllvmVersionSTAR->defparameter(Str_O::create(LLVM_VERSION));
+  gctools::_sym_STARfinalizersSTAR->defparameter(WeakKeyHashTable_O::create());
+  _sym_STARllvmVersionSTAR->defparameter(SimpleBaseString_O::make(LLVM_VERSION));
   _sym__PLUS_numberOfFixedArguments_PLUS_->defconstant(make_fixnum(LCC_ARGS_IN_REGISTERS));
   cl::_sym_STARrandom_stateSTAR->defparameter(RandomState_O::create());
   comp::_sym_STARllvm_contextSTAR->defparameter(llvmo::LLVMContext_O::get_global_context());
-  comp::_sym_STARload_time_value_holder_nameSTAR->defparameter(core::Str_O::create("load-time-value-vector"));
+  comp::_sym_STARload_time_value_holder_nameSTAR->defparameter(core::SimpleBaseString_O::make("[VALUES-TABLE]"));
   List_sp hooks = _Nil<T_O>();
-  hooks = Cons_O::create(Cons_O::create(Str_O::create("fasl"), _sym_loadBundle), hooks);
-  hooks = Cons_O::create(Cons_O::create(Str_O::create("bundle"), _sym_loadBundle), hooks);
-  hooks = Cons_O::create(Cons_O::create(Str_O::create("dylib"), _sym_loadBundle), hooks);
-  hooks = Cons_O::create(Cons_O::create(Str_O::create("so"), _sym_loadBundle), hooks);
-  hooks = Cons_O::create(Cons_O::create(Str_O::create("bc"), llvmo::_sym_loadBitcode), hooks);
-  hooks = Cons_O::create(Cons_O::create(Str_O::create("lbc"), llvmo::_sym_loadBitcode), hooks);
-  hooks = Cons_O::create(Cons_O::create(Str_O::create("l"), _sym_loadSource), hooks);
-  hooks = Cons_O::create(Cons_O::create(Str_O::create("L"), _sym_loadSource), hooks);
-  hooks = Cons_O::create(Cons_O::create(Str_O::create("lsp"), _sym_loadSource), hooks);
-  hooks = Cons_O::create(Cons_O::create(Str_O::create("LSP"), _sym_loadSource), hooks);
-  hooks = Cons_O::create(Cons_O::create(Str_O::create("asd"), _sym_loadSource), hooks);
-  hooks = Cons_O::create(Cons_O::create(Str_O::create("ASD"), _sym_loadSource), hooks);
-  hooks = Cons_O::create(Cons_O::create(Str_O::create("lisp"), _sym_loadSource), hooks);
-  hooks = Cons_O::create(Cons_O::create(Str_O::create("LISP"), _sym_loadSource), hooks);
-  hooks = Cons_O::create(Cons_O::create(Str_O::create("clasprc"), _sym_loadSource), hooks);
+  hooks = Cons_O::create(Cons_O::create(SimpleBaseString_O::make("fasl"), _sym_loadBundle), hooks);
+  hooks = Cons_O::create(Cons_O::create(SimpleBaseString_O::make("bundle"), _sym_loadBundle), hooks);
+  hooks = Cons_O::create(Cons_O::create(SimpleBaseString_O::make("dylib"), _sym_loadBundle), hooks);
+  hooks = Cons_O::create(Cons_O::create(SimpleBaseString_O::make("so"), _sym_loadBundle), hooks);
+  hooks = Cons_O::create(Cons_O::create(SimpleBaseString_O::make("bc"), llvmo::_sym_loadBitcode), hooks);
+  hooks = Cons_O::create(Cons_O::create(SimpleBaseString_O::make("lbc"), llvmo::_sym_loadBitcode), hooks);
+  hooks = Cons_O::create(Cons_O::create(SimpleBaseString_O::make("l"), _sym_loadSource), hooks);
+  hooks = Cons_O::create(Cons_O::create(SimpleBaseString_O::make("L"), _sym_loadSource), hooks);
+  hooks = Cons_O::create(Cons_O::create(SimpleBaseString_O::make("lsp"), _sym_loadSource), hooks);
+  hooks = Cons_O::create(Cons_O::create(SimpleBaseString_O::make("LSP"), _sym_loadSource), hooks);
+  hooks = Cons_O::create(Cons_O::create(SimpleBaseString_O::make("asd"), _sym_loadSource), hooks);
+  hooks = Cons_O::create(Cons_O::create(SimpleBaseString_O::make("ASD"), _sym_loadSource), hooks);
+  hooks = Cons_O::create(Cons_O::create(SimpleBaseString_O::make("lisp"), _sym_loadSource), hooks);
+  hooks = Cons_O::create(Cons_O::create(SimpleBaseString_O::make("LISP"), _sym_loadSource), hooks);
+  hooks = Cons_O::create(Cons_O::create(SimpleBaseString_O::make("clasprc"), _sym_loadSource), hooks);
   _sym_STARloadHooksSTAR->defparameter(hooks);
   ext::_sym_STARdefault_external_formatSTAR->defparameter(_lisp->_true());
   ext::_sym_STARinspectorHookSTAR->defparameter(_Nil<T_O>());
-  ext::_sym_STARclasp_clang_pathSTAR->defparameter(Str_O::create(CLASP_CLANG_PATH));
+  ext::_sym_STARclasp_clang_pathSTAR->defparameter(SimpleBaseString_O::make(CLASP_CLANG_PATH));
   _sym_STARloadSearchListSTAR->defparameter(_Nil<T_O>());
   _sym_STARdebugInterpretedClosureSTAR->defparameter(_Nil<T_O>());
   _sym_STARdebugFlowControlSTAR->defparameter(_Nil<T_O>());
@@ -1076,11 +1095,16 @@ void CoreExposer_O::define_essential_globals(Lisp_sp lisp) {
   _sym_STARfunctions_to_notinlineSTAR->defparameter(HashTableEqual_O::create_default());
   _sym_STARextension_startup_loadsSTAR->defparameter(_Nil<T_O>());
   _sym_STARsyspropsSTAR->defparameter(HashTableEql_O::create_default());
+  _sym_STARdebug_accessorsSTAR->defparameter(_Nil<T_O>());
+
   std::list<string> nicknames;
   std::list<string> use_packages;
   _sym_STARclasp_packageSTAR->defparameter(_lisp->makePackage("CLASP!",nicknames,use_packages));
   _sym_STARdebug_fsetSTAR->defparameter(_Nil<core::T_O>());
-  _sym_STARinvoke_debugger_hookSTAR->defparameter(_Nil<core::T_O>());
+  _sym_STARtop_level_form_stackSTAR->defparameter(_Nil<core::T_O>());
+  ext::_sym_STARinvoke_debugger_hookSTAR->defparameter(_Nil<core::T_O>());
+  _sym_STARuse_cleavir_compilerSTAR->defparameter(_Nil<core::T_O>());
+  _sym_STARexit_backtraceSTAR->defparameter(_Nil<core::T_O>());
 #if defined(__x86_64__)
   SYMBOL_EXPORT_SC_(KeywordPkg, address_model_64);
   Symbol_sp address_model = kw::_sym_address_model_64;

@@ -72,8 +72,10 @@
                        (format +warn-format+))))
 
 (defun compiler-error (form message &rest args)
-  (multiple-value-bind (source-dir source-file file-pos lineno column)
-      (walk-form-for-source-info form)
+  (let* ((cspi (ext:current-source-location))
+         (source-path (source-file-info-pathname (source-file-info cspi)))
+         (source-dir (directory-namestring source-path))
+         (source-file (file-namestring source-path)))
     (let ((err (make-compiler-error :message (apply #'core:bformat nil message args)
                                     :lineno lineno
                                     :source-dir source-dir
@@ -158,7 +160,7 @@
 	 (*irbuilder-function-alloca* nil)
 	 (*irbuilder-function-body* nil)
 	 (*generate-compile-file-load-time-values* nil)
-	 (*next-load-time-value-index* nil)
+	 (*table-index* nil)
 	 (*load-time-value-holder-global-var* nil)
 	 (*load-time-value-coalesce* nil)
 	 (*load-time-initializer-environment* nil)

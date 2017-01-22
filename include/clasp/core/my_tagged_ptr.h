@@ -1,3 +1,21 @@
+
+
+
+
+
+
+
+#error "DEPRECATED"
+
+
+
+
+
+
+
+
+
+
 /*
     File: my_tagged_ptr.h
 */

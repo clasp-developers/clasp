@@ -34,6 +34,6 @@ namespace core {
 // Initialize classes without WxWidgets
 //
 void initializePackagesAndClasses(Lisp_sp lisp) {
-  DEPRECIATED();
+  DEPRECATED();
 };
 };

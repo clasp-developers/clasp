@@ -251,7 +251,7 @@ inline cl_intptr_t hash_word(cl_intptr_t c, cl_intptr_t w) {
   hash_mix(a, b, c);
   return c;
 }
-
+#if 0
 inline cl_intptr_t hash_base_string(const char *s, int len, cl_intptr_t h) {
   cl_intptr_t a = GOLDEN_RATIO, b = GOLDEN_RATIO, i;
   for (i = len; i >= 3; i -= 3) {
@@ -276,8 +276,8 @@ inline cl_intptr_t hash_base_string(const char *s, int len, cl_intptr_t h) {
   return h;
 }
 
-#ifdef ECL_UNICODE
-static cl_intptr_t hash_full_string(const ecl__character *s, int len, int h) {
+#ifdef CLASP_UNICODE
+static cl_intptr_t hash_full_string(const claspCharacter *s, int len, int h) {
   cl_intptr_t a = GOLDEN_RATIO, b = GOLDEN_RATIO, i;
   for (i = len; i >= 3; i -= 3) {
     a += (*s);
@@ -301,4 +301,5 @@ static cl_intptr_t hash_full_string(const ecl__character *s, int len, int h) {
   return h;
 }
 #endif
+#endif // #if 0
 #endif

@@ -25,9 +25,9 @@ THE SOFTWARE.
 */
 /* -^- */
 
-#define DEBUG_LEVEL_FULL
+//#define DEBUG_LEVEL_FULL
 #include <clasp/core/common.h>
-#include <clasp/core/str.h>
+#include <clasp/core/array.h>
 #include <clasp/core/symbolTable.h>
 #include <clasp/core/hashTable.h>
 #include <clasp/core/hashTableEql.h>
@@ -62,7 +62,7 @@ CL_DEFUN T_sp core__record_field(List_sp record, T_sp key, T_sp sub_key) {
 CL_LAMBDA(record key sub-key value);
 CL_DECLARE();
 CL_DOCSTRING("set_record_field");
-CL_DEFUN T_sp core__set_record_field(List_sp record, T_sp key, T_sp sub_key, Str_sp value) {
+CL_DEFUN T_sp core__set_record_field(List_sp record, T_sp key, T_sp sub_key, String_sp value) {
   List_sp field = gc::As<List_sp>(core__record_cons(record, key, sub_key));
   if (field.notnilp()) {
     field.asCons()->setCdr(value);
@@ -95,7 +95,7 @@ CL_DEFUN T_sp core__rem_record_field(List_sp record, T_sp key, T_sp sub_key) {
 CL_LAMBDA(object key sub-key value);
 CL_DECLARE();
 CL_DOCSTRING("annotate - see ecl>>helpfile.lsp>>annotate; key is either 'documentation or 'setf-documentation and I currently think (object) must be a symbol");
-CL_DEFUN T_mv ext__annotate(T_sp object, T_sp key, T_sp sub_key, Str_sp value) {
+CL_DEFUN T_mv ext__annotate(T_sp object, T_sp key, T_sp sub_key, String_sp value) {
   HashTable_sp dict = gc::As<HashTable_sp>(oCar(_sym_STARdocumentation_poolSTAR->symbolValue()));
   List_sp record = coerce_to_list(dict->gethash(object, _Nil<T_O>()));
   record = coerce_to_list(core__set_record_field(record, key, sub_key, value));
@@ -107,7 +107,7 @@ SYMBOL_EXPORT_SC_(ClPkg, documentation);
 CL_LAMBDA(sub-key symbol value);
 CL_DECLARE();
 CL_DOCSTRING("ensure_documentation");
-CL_DEFUN void core__ensure_documentation(T_sp sub_key, Symbol_sp symbol, Str_sp value) {
+CL_DEFUN void core__ensure_documentation(T_sp sub_key, Symbol_sp symbol, String_sp value) {
   ext__annotate(symbol, cl::_sym_documentation, sub_key, value);
 };
 

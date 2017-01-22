@@ -77,6 +77,8 @@ CommandLineOptions::CommandLineOptions(int argc, char *argv[])
              "-- {ARGS}*           - Trailing are added to core:*command-line-arguments*\n"
              "*feature* settings\n"
              "  debug-startup      - Print a message for every top level form at startup\n"
+             "  exit-backtrace     - Print a backtrace if a non-zero exit code is used to exit\n"
+             "  pause-pid          - Print the PID and pause at startup for a debugger to attach\n"
              "  ignore-extensions  - Ignore any extensions startup scripts\n"
              "Environment variables:\n"
              "export CLASP_HOME=<dir>   Define where clasp source code lives\n"

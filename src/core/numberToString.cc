@@ -40,7 +40,7 @@ THE SOFTWARE.
 #include <float.h>
 #include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
-#include <clasp/core/strWithFillPtr.h>
+#include <clasp/core/array.h>
 #include <clasp/core/numbers.h>
 #include <clasp/core/symbolTable.h>
 #include <clasp/core/bignum.h>
@@ -52,58 +52,57 @@ namespace core {
 CL_LAMBDA(buffer x base);
 CL_DECLARE();
 CL_DOCSTRING("bignumToString");
-CL_DEFUN StrWithFillPtr_sp core__bignum_to_string(StrWithFillPtr_sp buffer, const Bignum &bn, Fixnum_sp base) {
+CL_DEFUN Str8Ns_sp core__bignum_to_string(Str8Ns_sp buffer, const Bignum &bn, Fixnum_sp base) {
+  ASSERT(gc::IsA<Str8Ns_sp>(buffer));
   if (unbox_fixnum(base) < 2 || unbox_fixnum(base) > 36) {
     QERROR_WRONG_TYPE_NTH_ARG(3, base, Cons_O::createList(cl::_sym_integer, make_fixnum(2), make_fixnum(36)));
   }
   int ibase = unbox_fixnum(base);
   size_t str_size = mpz_sizeinbase(bn.get_mpz_t(), ibase);
-  if (bn < 0)
-    str_size++;
-  buffer->ensureSpaceAfterFillPointer(str_size + 1);
-  char *bufferStart = static_cast<char *>(buffer->addressOfFillPtr());
+  if (bn < 0) str_size++;
+  buffer->ensureSpaceAfterFillPointer(clasp_make_character('\0'),str_size + 2);
+  char *bufferStart = (char*)&(*buffer)[buffer->fillPointer()];
   mpz_get_str(bufferStart, -unbox_fixnum(base), bn.get_mpz_t());
-  //	printf("%s:%d str_size = %zu\n    bufferStart[str_size-1] = %d  bufferStart[str_size] = %d bufferStart=[%s]\n", __FILE__, __LINE__, str_size, bufferStart[str_size-1], bufferStart[str_size], bufferStart);
   if (bufferStart[str_size - 1] == '\0') {
-    buffer->incrementFillPointer(str_size - 1);
+    buffer->fillPointerSet(buffer->fillPointer()+str_size-1);
   } else {
-    buffer->incrementFillPointer(str_size);
+    buffer->fillPointerSet(buffer->fillPointer()+str_size);
   }
   return buffer;
 }
 
-static void write_base_prefix(StrWithFillPtr_sp buffer, int base) {
+static void write_base_prefix(StrNs_sp buffer, int base) {
   if (base == 2) {
-    buffer->pushStringCharStar("#b");
+    StringPushStringCharStar(buffer,"#b");
   } else if (base == 8) {
-    buffer->pushStringCharStar("#o");
+    StringPushStringCharStar(buffer,"#o");
   } else if (base == 16) {
-    buffer->pushStringCharStar("#x");
+    StringPushStringCharStar(buffer,"#x");
   } else if (base >= 10) {
     string prefix = "#00r";
     prefix[1] = base / 10 + '0';
     prefix[2] = base % 10 + '0';
-    buffer->pushStringCharStar(prefix.c_str());
+    StringPushStringCharStar(buffer,prefix.c_str());
   } else {
     string prefix = "#0r";
     prefix[1] = base + '0';
-    buffer->pushStringCharStar(prefix.c_str());
+    StringPushStringCharStar(buffer,prefix.c_str());
   }
 }
 
 CL_LAMBDA(buffer integer base radix decimalp);
 CL_DECLARE();
 CL_DOCSTRING("integerToString");
-CL_DEFUN StrWithFillPtr_sp core__integer_to_string(StrWithFillPtr_sp buffer, Integer_sp integer,
-                                       Fixnum_sp base, bool radix, bool decimalp) {
+CL_DEFUN StrNs_sp core__integer_to_string(StrNs_sp buffer, Integer_sp integer,
+                                           Fixnum_sp base, bool radix, bool decimalp) {
   if (radix) {
     if (!decimalp || unbox_fixnum(base) != 10) {
-      buffer->ensureSpaceAfterFillPointer(10);
+      buffer->ensureSpaceAfterFillPointer(clasp_make_character('\0'),10);
       write_base_prefix(buffer, unbox_fixnum(base));
     }
     buffer = core__integer_to_string(buffer, integer, base, false, false);
     if (decimalp && unbox_fixnum(base) == 10) {
-      buffer->pushCharExtend('.');
+      buffer->vectorPushExtend(clasp_make_character('.'));
     }
     return buffer;
   }
@@ -113,15 +112,15 @@ CL_DEFUN StrWithFillPtr_sp core__integer_to_string(StrWithFillPtr_sp buffer, Int
     switch (unbox_fixnum(base)) {
     case 8:
       sprintf(txt, "%lo", fn);
-      buffer->pushStringCharStar(txt);
+      StringPushStringCharStar(buffer,txt);
       break;
     case 10:
       sprintf(txt, "%ld", fn);
-      buffer->pushStringCharStar(txt);
+      StringPushStringCharStar(buffer,txt);
       break;
     case 16:
       sprintf(txt, "%lX", fn);
-      buffer->pushStringCharStar(txt);
+      StringPushStringCharStar(buffer,txt);
       break;
     default:
       Bignum bn(fn);

@@ -7,7 +7,7 @@
              (format stream "Bad C++ function name: ~a" (name condition)))))
 
 (defun group-expose-functions-by-namespace (functions)
-  (declare (optimize (debug 3)))
+  (declare (optimize (speed 3)))
   (let ((ns-hashes (make-hash-table :test #'equal)))
     (dolist (func functions)
       (let* ((namespace (namespace% func))
@@ -22,7 +22,7 @@
              (format sout "namespace ~a {~%" ns)
              (maphash (lambda (name f)
                         (declare (ignore name))
-                        (when (and (typep f 'expose-internal-function)
+                        (when (and (typep f 'expose-defun)
                                    (provide-declaration% f))
                           (format sout "    ~a;~%" (signature% f))))
                       func-ht)
@@ -31,7 +31,7 @@
   (format sout "#endif // EXPOSE_FUNCTION_SIGNATURES~%"))
 
 #+(or)(defun split-c++-name (name)
-        (declare (optimize (debug 3)))
+        (declare (optimize (speed 3)))
         (let ((under (search "__" name :test #'string=)))
           (unless under
             (error 'bad-c++-name :name name))
@@ -44,19 +44,19 @@
       (format nil "(~a)" ll)
       ll))
 (defun generate-expose-function-bindings (sout ns-grouped-expose-functions)
-  (declare (optimize (debug 3)))
+  (declare (optimize (speed 3)))
   (flet ((expose-one (f ns index)
            (let ((name (format nil "expose_function_~d_helper" index)))
              (format sout "NOINLINE void ~a() {~%" name)
              (etypecase f
-               (expose-internal-function
+               (expose-defun
                 (format sout "  expose_function(~a,~a,&~a::~a,~s);~%"
                         (lisp-name% f)
                         "true"
                         ns
                         (function-name% f)
                         (maybe-wrap-lambda-list (lambda-list% f))))
-               (expose-external-function
+               (expose-extern-defun
                 (format sout "  expose_function(~a,~a,~a,~s);~%"
                         (lisp-name% f)
                         "true"
@@ -90,6 +90,7 @@
          (docstring (docstring% obj))
          (kind (cond
                  ((typep obj 'function-mixin) "code_kind")
+                 ((typep obj 'class-method-mixin) "code_kind")
                  ((typep obj 'method-mixin) "method_kind")
                  ((typep obj 'exposed-class) "class_kind")
                  (t "unknown_kind")))
@@ -110,7 +111,9 @@
     (maphash (lambda (k class)
                (push (generate-expose-one-source-info-helper sout class (incf index)) helpers)
                (dolist (method (methods% class))
-                 (push (generate-expose-one-source-info-helper sout method (incf index)) helpers)))
+                 (push (generate-expose-one-source-info-helper sout method (incf index)) helpers))
+               (dolist (class-method (class-methods% class))
+                 (push (generate-expose-one-source-info-helper sout class-method (incf index)) helpers)))
            classes)
     (format sout "#endif // SOURCE_INFO_HELPERS~%")
     (format sout "#ifdef SOURCE_INFO~%")
@@ -124,7 +127,7 @@
 
 
 #+(or)(defun generate-tags-file (tags-file-name tags)
-        (declare (optimize (debug 3)))
+        (declare (optimize (speed 3)))
         (let* ((source-info-tags (extract-unique-source-info-tags tags))
                (file-ht (make-hash-table :test #'equal)))
           (dolist (tag source-info-tags)
@@ -150,7 +153,7 @@
                        tags-data-ht)))))
 
 (defun generate-code-for-init-functions (functions)
-  (declare (optimize (debug 3)))
+  (declare (optimize (speed 3)))
   (with-output-to-string (sout)
     (let ((ns-grouped (group-expose-functions-by-namespace functions)))
       (generate-expose-function-signatures sout ns-grouped)
@@ -169,7 +172,7 @@ Convert colons to underscores"
   (format c-code "// Do nothing yet for function ~a of type ~a~%" (function-name% func) (type-of func))
   (format cl-code ";;; Do nothing yet for function ~a of type ~a~%" (function-name% func) (type-of func)))
 
-(defmethod direct-call-function (c-code cl-code (func expose-internal-function) c-code-info cl-code-info)
+(defmethod direct-call-function (c-code cl-code (func expose-defun) c-code-info cl-code-info)
   (multiple-value-bind (return-type arg-types)
       (parse-types-from-signature (signature% func))
     (let* ((wrapped-name (mangle-and-wrap-name (function-name% func)))
@@ -203,6 +206,27 @@ Convert colons to underscores"
             (get-output-stream-string c-code-info)
             (get-output-stream-string cl-code-info))))
 
+(define-condition broken-inheritance (error)
+    ((class-with-missing-parent :initarg :class-with-missing-parent :accessor class-with-missing-parent)
+     (starting-possible-child-class :initarg :starting-possible-child-class :accessor starting-possible-child-class)
+     (possible-ancestor-class :initarg :possible-ancestor-class :accessor possible-ancestor-class))
+  (:report (lambda (condition stream)
+             (format stream "While testing if the ancestor of ~a is ~a ~%   the chain of inheritance was broken when no parent could be found for ~a~%"
+                     (starting-possible-child-class condition)
+                     (possible-ancestor-class condition)
+                     (class-with-missing-parent condition)))))
+
+(define-condition possible-recursive-inheritance (error)
+    ((class-with-missing-parent :initarg :class-with-missing-parent :accessor class-with-missing-parent)
+     (starting-possible-child-class :initarg :starting-possible-child-class :accessor starting-possible-child-class)
+     (possible-ancestor-class :initarg :possible-ancestor-class :accessor possible-ancestor-class))
+  (:report (lambda (condition stream)
+             (format stream "While testing if the ancestor of ~a is ~a ~%   the chain of inheritance was broken when no parent could be found for ~a~%"
+                     (starting-possible-child-class condition)
+                     (possible-ancestor-class condition)
+                     (class-with-missing-parent condition)))))
+
+      
 (defun inherits-from* (x-name y-name inheritance)
   (let ((depth 0)
         ancestor
@@ -214,12 +238,15 @@ Convert colons to underscores"
        (when (string= ancestor +root-dummy-class+)
          (return-from inherits-from* nil))
        (unless ancestor
-         (error "Could not find ancestor of ~a - could not find a parent of ~a"  entry-x-name prev-ancestor))
+         (error 'broken-inheritance
+                :class-with-missing-parent x-name
+                :starting-possible-child-class entry-x-name
+                :possible-ancestor-class y-name))
        (if (string= ancestor y-name)
            (return-from inherits-from* t))
        (incf depth)
        (when (> depth 20)
-         (error "inherits-from* depth ~a exceeds max with ~a and ~a" depth x-name y-name))
+         (error "While testing if ~a inherits from ~a the maximum depth test was hit - current class is ~a - check for recursive class definition of ~a" entry-x-name y-name x-name entry-x-name))
        (setf x-name ancestor))))
 
 (defun inherits-from (x y inheritance)
@@ -241,11 +268,19 @@ Convert colons to underscores"
              exposed-classes)
     (setf *classes* classes)
     (setf *inheritance* inheritance)
-    (sort classes (lambda (x y)
-                    (not (inherits-from x y inheritance))))))
+    (handler-case
+        (sort classes (lambda (x y)
+                        (not (inherits-from x y inheritance))))
+      (broken-inheritance (e)
+        (print-object e t)
+        (let ((x (starting-possible-child-class e)))
+          (error "~a~%    The info for ~a is ~a"
+                 (with-output-to-string (sout) (print-object e sout))
+                 x
+                 (gethash x exposed-classes)))))))
 
 (defun generate-code-for-init-classes-class-symbols (exposed-classes sout)
-  (declare (optimize (debug 3)))
+  (declare (optimize (speed 3)))
   (let ((sorted-classes (sort-classes-by-inheritance exposed-classes))
         cur-package)
     (format sout "#ifdef SET_CLASS_SYMBOLS~%")
@@ -260,7 +295,7 @@ Convert colons to underscores"
   (format nil "~a_~a_var" ns name))
 
 (defun generate-code-for-init-classes-and-methods (exposed-classes)
-  (declare (optimize (debug 3)))
+  (declare (optimize (speed 3)))
   (with-output-to-string (sout)
     (let ((sorted-classes (sort-classes-by-inheritance exposed-classes))
           cur-package)
@@ -341,7 +376,7 @@ Convert colons to underscores"
                         "core::class_")
                     (tags:name% class-tag))
             (dolist (method (methods% exposed-class))
-              (if (typep method 'expose-internal-method)
+              (if (typep method 'expose-defmethod)
                   (let* ((lisp-name (lisp-name% method))
                          (class-name (tags:name% class-tag))
                          (method-name (method-name% method))
@@ -365,9 +400,20 @@ Convert colons to underscores"
                             (if (string/= lambda-list "")
                                 (format nil "(~a)" lambda-list)
                                 lambda-list)
-                            declare-form))
-                  ))
+                            declare-form))))
             (format sout "     ;~%")
+            (dolist (class-method (class-methods% exposed-class))
+              (if (typep class-method 'expose-def-class-method)
+                  (let* ((lisp-name (lisp-name% class-method))
+                         (class-name (tags:name% class-tag))
+                         (method-name (method-name% class-method))
+                         (lambda-list (lambda-list% class-method))
+                         (declare-form (declare% class-method)))
+                    (format sout " expose_function(~a,true,&~a::~a,R\"lambda(~a)lambda\");~%"
+                            lisp-name
+                            class-name
+                            method-name
+                            (maybe-wrap-lambda-list lambda-list)))))
             (format sout "}~%")
             (format sout "};~%")))
         (format sout "#endif // EXPOSE_METHODS~%")))))
@@ -376,7 +422,7 @@ Convert colons to underscores"
 (defparameter *symbols-by-package* nil)
 (defparameter *symbols-by-namespace* nil)
 (defun generate-code-for-symbols (packages-to-create symbols)
-  (declare (optimize (debug 3)))
+  (declare (optimize (speed 3)))
   ;; Uniqify the symbols
   (with-output-to-string (sout)
     (let ((symbols-by-package (make-hash-table :test #'equal))
@@ -505,7 +551,7 @@ Convert colons to underscores"
                    symbols-by-package))))))
 
 (defun generate-code-for-enums (enums)
-  (declare (optimize (debug 3)))
+  (declare (optimize (speed 3)))
   ;; Uniqify the symbols
   (with-output-to-string (sout)
     (format sout "#ifdef ALL_ENUMS~%")
@@ -522,7 +568,7 @@ Convert colons to underscores"
     (format sout "#endif //ifdef ALL_ENUMS~%")))
 
 (defun generate-code-for-initializers (initializers)
-  (declare (optimize (debug 3)))
+  (declare (optimize (speed 3)))
   (let ((initializers-by-namespace (make-hash-table :test #'equal)))
     (dolist (i initializers)
       (push i (gethash (namespace% i) initializers-by-namespace)))

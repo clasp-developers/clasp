@@ -42,8 +42,8 @@
 (defparameter *datum-table* nil)
 
 (defun datum-id (datum)
-  (clasp-cleavir:datum-gid datum))
-;;  (gethash datum *datum-table*))
+  #+(or)(clasp-cleavir:datum-gid datum)
+  (gethash datum *datum-table*))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -110,8 +110,8 @@
 (defparameter *instruction-table* nil)
 
 (defun instruction-id (instruction)
-  (clasp-cleavir:instruction-gid instruction))
-;;  (gethash instruction *instruction-table*))
+  #+(or)(clasp-cleavir:instruction-gid instruction)
+  (gethash instruction *instruction-table*))
 
 (defgeneric draw-instruction (instruction stream))
 
@@ -188,8 +188,7 @@
 		when (null (gethash datum *datum-table*))
 		do (let ((tid (incf id)))
 		     (setf (gethash datum *datum-table*) tid)
-		     (push datum datums))
-		  )))
+		     (push datum datums)))))
 	 initial-instruction)
 	(dolist (instr instructions)
 	  (draw-instruction instr stream))
@@ -389,37 +388,55 @@
 
 (defmethod label ((instruction slot-write-instruction)) "slot-write")
 
-(defmethod label ((instruction t-aref-instruction)) "t aref")
+(defmethod label ((instruction simple-t-aref-instruction)) "t aref")
 
-(defmethod label ((instruction t-aset-instruction)) "t aset")
+(defmethod label ((instruction simple-t-aset-instruction)) "t aset")
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
 ;;; Integer array accessors.
 
-(defmethod label ((instruction bit-aref-instruction)) "bit aref")
+(defmethod label ((instruction simple-bit-aref-instruction)) "bit aref")
 
-(defmethod label ((instruction bit-aset-instruction)) "bit aset")
+(defmethod label ((instruction simple-bit-aset-instruction)) "bit aset")
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
 ;;; Floating-point array accessors.
+(defmethod label ((instruction simple-short-float-aref-instruction)) "shf aref")
 
-(defmethod label ((instruction short-float-aref-instruction)) "shf aref")
+(defmethod label ((instruction simple-single-float-aref-instruction)) "sf aref")
 
-(defmethod label ((instruction single-float-aref-instruction)) "sf aref")
+(defmethod label ((instruction simple-double-float-aref-instruction)) "df aref")
 
-(defmethod label ((instruction double-float-aref-instruction)) "df aref")
+(defmethod label ((instruction simple-long-float-aref-instruction)) "lf aref")
 
-(defmethod label ((instruction long-float-aref-instruction)) "lf aref")
+(defmethod label ((instruction simple-short-float-aset-instruction)) "shf aset")
 
-(defmethod label ((instruction short-float-aset-instruction)) "shf aset")
+(defmethod label ((instruction simple-single-float-aset-instruction)) "sf aset")
 
-(defmethod label ((instruction single-float-aset-instruction)) "sf aset")
+(defmethod label ((instruction simple-double-float-aset-instruction)) "df aset")
 
-(defmethod label ((instruction double-float-aset-instruction)) "df aset")
+(defmethod label ((instruction simple-long-float-aset-instruction)) "lf aset")
 
-(defmethod label ((instruction long-float-aset-instruction)) "lf aset")
+
+
+
+(defmethod label ((instruction non-simple-short-float-aref-instruction)) "non-shf aref")
+
+(defmethod label ((instruction non-simple-single-float-aref-instruction)) "non-sf aref")
+
+(defmethod label ((instruction non-simple-double-float-aref-instruction)) "non-df aref")
+
+(defmethod label ((instruction non-simple-long-float-aref-instruction)) "non-lf aref")
+
+(defmethod label ((instruction non-simple-short-float-aset-instruction)) "non-shf aset")
+
+(defmethod label ((instruction non-simple-single-float-aset-instruction)) "non-sf aset")
+
+(defmethod label ((instruction non-simple-double-float-aset-instruction)) "non-df aset")
+
+(defmethod label ((instruction non-simple-long-float-aset-instruction)) "non-lf aset")
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;

@@ -77,7 +77,7 @@ public: // Functions here
   uint dimension() const { return this->_Values->size(); };
   virtual void rowMajorAset(cl_index idx, T_sp value);
   virtual T_sp rowMajorAref(cl_index idx) const;
-  virtual int arrayRowMajorIndex(List_sp indices) const;
+  virtual cl_index arrayRowMajorIndex(List_sp indices) const;
 
   T_sp &operator[](uint index) { return (*this->_Values)[index]; }
 

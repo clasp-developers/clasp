@@ -196,11 +196,20 @@
 	      (list sequence)
 	        (cons list)
 	    (array)
-	      (vector array sequence)
+           (vector array sequence)
+           #+clasp(simple-vector vector)
+           #+clasp(core:mdarray-t array)
 	        (string vector)
                 #+(or unicode clasp)
 	   (base-string string vector)
-	        (bit-vector vector)
+           #+clasp(simple-base-string base-string)
+           #+clasp(core:str8ns base-string)
+           #+clasp(string vector)
+           #+clasp(core:simple-character-string string)
+           #+clasp(core:str-wns string)
+           (bit-vector vector)
+           #+clasp(cl:simple-bit-vector bit-vector)
+           #+clasp(core:bit-vector-ns bit-vector)
 	    (stream)
 	   (ext:ansi-stream stream)
 	   (file-stream ext:ansi-stream)
@@ -276,6 +285,10 @@
 ;;; 	standard-class			(class)
 ;;; 	funcallable-standard-class	(class)
 ;;;
+;;;#+cclasp
+#+(or)(eval-when (:compile-toplevel :execute :load-toplevel)
+  (setq clasp-cleavir:*use-type-inference* nil))
+
 (eval-when (eval #+clasp :compile-toplevel #+clasp :load-toplevel  )
   (defconstant +class-hierarchy+
     `((standard-class)
@@ -392,4 +405,9 @@
        :metaclass structure-class
        :direct-superclasses (t))
       )))
+
+;;;#+cclasp
+#+(or)(eval-when (:compile-toplevel :execute :load-toplevel)
+  (setq clasp-cleavir:*use-type-inference* t))
+
 

@@ -24,7 +24,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#define DEBUG_LEVEL_FULL
+//#define DEBUG_LEVEL_FULL
 
 #include <clasp/core/foundation.h>
 #include <clasp/core/standardClass.h>
@@ -47,7 +47,7 @@ FuncallableStandardClass_sp FuncallableStandardClass_O::create(Class_sp mc) {
 void FuncallableStandardClass_O::initialize() {
   _OF();
   this->Base::initialize();
-  this->_InstanceCoreClass = _Nil<Class_O>();
+//  this->_InstanceCoreClass = _Nil<Class_O>();
 }
 
 #if defined(XML_ARCHIVE)
@@ -77,7 +77,7 @@ void FuncallableStandardClass_O::archiveBase(ArchiveP node) {
 	this->Base::initialize();
 //    this->_InstanceVariableNames = _Nil<T_O>();
 //	this->_SlotSpecifiers.clear();
-	this->_InstanceCoreClass = _Nil<FuncallableStandardClass_O>();
+//	this->_InstanceCoreClass = _Nil<FuncallableStandardClass_O>();
     }
 
     FuncallableStandardClass_sp FuncallableStandardClass_O::create(Lisp_sp lisp,Symbol_sp name /*, uint instanceClassSymbol */)
@@ -120,16 +120,17 @@ void FuncallableStandardClass_O::archiveBase(ArchiveP node) {
 
 
 
-    BuiltInClass_sp FuncallableStandardClass_O::getInstanceCoreClass() const
-    {_OF();
-	return this->_InstanceCoreClass;
-    }
+#if 0
+BuiltInClass_sp FuncallableStandardClass_O::getInstanceCoreClass() const
+{_OF();
+  return this->_InstanceCoreClass;
+}
 
-    void FuncallableStandardClass_O::setInstanceCoreClass(BuiltInClass_sp mc)
+void FuncallableStandardClass_O::setInstanceCoreClass(BuiltInClass_sp mc)
     {_OF();
 	this->_InstanceCoreClass = mc;
     }
-
+#endif
     void	FuncallableStandardClass_O::describe()
     {
 	IMPLEMENT_ME();

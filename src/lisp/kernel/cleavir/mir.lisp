@@ -28,6 +28,33 @@
 	  (cleavir-ir-graphviz::instruction-id instruction)))
 
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; CHARACTERP-INSTRUCTION
+;;;
+;;; Generates code for characterp
+;;;
+
+(defclass characterp-instruction (cleavir-ir:instruction cleavir-ir:two-successors-mixin) ())
+
+(defun make-characterp-instruction (input successors)
+  (make-instance 'characterp-instruction
+                 :inputs (list input)
+                 :successors (list successor)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; SINGLE-FLOAT-P-INSTRUCTION
+;;;
+;;; Generates code for single-float-p
+;;;
+
+(defclass single-float-p-instruction (cleavir-ir:instruction cleavir-ir:two-successors-mixin) ())
+
+(defun make-single-float-p-instruction (input successors)
+  (make-instance 'single-float-p-instruction
+                 :inputs (list input)
+                 :successors (list successor)))
 
 
 

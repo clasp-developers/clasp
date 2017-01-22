@@ -143,7 +143,7 @@ endef
 
 all:
 	make configure
-	make build_cboehmdc
+	make build_cboehm
 
 configure:
 	make submodules
@@ -157,11 +157,14 @@ build_cboehmdc:
 	./waf -j $(PJOBS) build_cboehmdc
 
 
+redeye-clean:
+	./waf -j $(PJOBS) clean_impsprep
+
 redeye-prep:
-	./waf -j $(PJOBS) clean_impsprep build_impsprep build_cboehmdc
+	./waf -j $(PJOBS) build_impsprep build_cboehmdc
 
 redeye-run:
-	(./build/clasp -f ignore-extensions \
+	(./build/boehmdc/iclasp-boehmdc -i ./build/boehmdc/cclasp-boehmdc-image.fasl -f ignore-extensions \
 			-e "(require :clasp-analyzer)" \
 			-e "(defparameter *compile-commands* \"`pwd`/build/mpsprep/compile_commands.json\")" \
 			-e "(time (clasp-analyzer:search/generate-code (clasp-analyzer:setup-clasp-analyzer-compilation-tool-database (pathname *compile-commands*))))" \
@@ -170,7 +173,7 @@ redeye-run:
 redeye:
 	make redeye-prep
 	make redeye-run
-	./waf build_boehm
+	./waf build_cboehm
 
 
 pump:
@@ -184,6 +187,7 @@ submodules:
 submodules-other:
 	-git submodule update --init src/lisp/kernel/contrib/sicl
 	-git submodule update --init src/lisp/modules/asdf
+	-git submodule update --init src/lisp/kernel/contrib/Acclimation
 #	-(cd src/lisp/modules/asdf; git checkout master; git pull origin master)
 
 submodules-mps:

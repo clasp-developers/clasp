@@ -24,7 +24,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#define DEBUG_LEVEL_FULL
+//#define DEBUG_LEVEL_FULL
 
 #include <clasp/core/foundation.h>
 #include <clasp/core/serialize.h>
@@ -34,7 +34,7 @@ THE SOFTWARE.
 #include <clasp/core/symbolTable.h>
 #include <clasp/core/write_ugly.h>
 #include <clasp/core/designators.h>
-#include <clasp/core/str.h>
+#include <clasp/core/array.h>
 #include <clasp/core/lispStream.h>
 #include <clasp/core/numbers.h>
 #include <clasp/core/symbol.h>
@@ -56,7 +56,7 @@ const char *keywords_saveArchive[] = {":debug", ""};
 
 
 void SexpSaveArchive_O::write(SNode_sp snode, HashTable_sp snodeToRef, T_sp stream) {
-  DEPRECIATED();
+  DEPRECATED();
 #if 0
   if (snode->refCount() > 1) {
     T_sp ref = snodeToRef->gethash(snode, _Nil<T_O>());
@@ -97,7 +97,7 @@ void SexpSaveArchive_O::write(SNode_sp snode, HashTable_sp snodeToRef, T_sp stre
       write_ugly_object(make_fixnum(bsnode->_VectorSNodes->length()), stream);
       clasp_write_string("( ", stream);
       for (int i(0), iEnd(bsnode->_VectorSNodes->length()); i < iEnd; ++i) {
-        SNode_sp snode = gc::As<SNode_sp>(bsnode->_VectorSNodes->elt(i));
+        SNode_sp snode = gc::As<SNode_sp>(bsnode->_VectorSNodes->rowMajorAref(i));
         this->write(snode, snodeToRef, stream);
         clasp_write_char(' ', stream);
       }

@@ -173,7 +173,7 @@ namespace core {
     template <class T>
       static List_sp createFromVec0(const gctools::Vec0<T> &vec) {
       List_sp res = _Nil<T_O>();
-      for (int i(vec.size() - 1); i >= 0; --i) {
+      for (cl_index i(vec.size() - 1); i >= 0; --i) {
         res = Cons_O::create(vec[i], res);
       }
       return res;
@@ -235,11 +235,11 @@ namespace core {
       return this->asSmartPtr();
     };
 
-    T_sp onth(int idx) const;
-    List_sp onthcdr(int idx) const;
+    T_sp onth(cl_index idx) const;
+    List_sp onthcdr(cl_index idx) const;
 
-    T_sp elt(int index) const;
-    T_sp setf_elt(int index, T_sp value);
+    T_sp elt(cl_index index) const;
+    T_sp setf_elt(cl_index index, T_sp value);
 
     CdrType_sp *cdrPtr() { return &(this->_Cdr); };
 
@@ -293,7 +293,7 @@ namespace core {
     bool equal(T_sp obj) const;
     bool equalp(T_sp obj) const;
 
-    T_sp setf_nth(int index, T_sp val);
+    T_sp setf_nth(cl_index index, T_sp val);
 
   /*! Return a Cons that has all the same elements
 	 * in the same order but with nil objects removed.
@@ -303,12 +303,6 @@ namespace core {
   /*! Return a new list by combinding the given list of elements to our list
 	 */
     List_sp extend(List_sp rest);
-
-  /*! Return the reversed list */
-    List_sp reverse();
-
-  /*! Return the reversed list */
-    List_sp nreverse();
 
     List_sp revappend(T_sp tail);
     List_sp nreconc(T_sp tail);
@@ -323,7 +317,7 @@ namespace core {
     };
   /*! Return the last cons (not the last element) of list.
 	  If we are nil then return nil */
-    List_sp last(int idx = 1) const;
+    List_sp last(cl_index idx = 1) const;
 
   /*! Like Common Lisp copy-list */
     List_sp copyList() const;
@@ -368,10 +362,10 @@ namespace core {
 #endif
 
   /*! Return an arbitrary member of the list or an empty member*/
-    T_sp olistref(int index);
+    T_sp olistref(cl_index index);
 
   /*! Return an arbitrary member of the list or an empty member - used only for passing arguments from Lisp to C++*/
-    T_sp olistrefArgument(int index);
+    T_sp olistrefArgument(cl_index index);
 
   /*! Lookup the association given a key 
 	 * (associations are two element lists or KeyedObjects)
@@ -379,6 +373,9 @@ namespace core {
     T_sp olookupKeyObject(Symbol_sp key);
 
     T_sp olookupKeyObjectDefault(Symbol_sp key, T_sp dflt);
+
+    List_sp reverse();
+    List_sp nreverse();
 
     List_sp memberEq(T_sp item) const;
     List_sp memberEql(T_sp item) const;
@@ -432,9 +429,8 @@ namespace core {
       }
       return false;
     }
-    List_sp subseq(int start, T_sp end) const;
-    T_sp setf_subseq(int start, T_sp end, T_sp new_subseq) {
-      _G();
+    List_sp subseq(cl_index start, T_sp end) const;
+    T_sp setf_subseq(cl_index start, T_sp end, T_sp new_subseq) {
       IMPLEMENT_ME();
     };
 
@@ -578,7 +574,7 @@ namespace core {
 template <typename T>
 List_sp asCons(const gctools::Vec0<T> &vec) {
   List_sp res(_Nil<T_O>());
-  for (int i(vec.size() - 1); i >= 0; --i) {
+  for (cl_index i(vec.size() - 1); i >= 0; --i) {
     res = Cons_O::create(vec[i], res);
   }
   return res;
@@ -631,5 +627,6 @@ void fillVec0(core::List_sp c, gctools::Vec0<T> &vec) {
     vec.emplace_back(gc::As<T>(me->_Car));
   }
 }
+
 };
 #endif //]

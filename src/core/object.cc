@@ -24,7 +24,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#define DEBUG_LEVEL_FULL
+//#define DEBUG_LEVEL_FULL
 
 #include <clasp/core/useBoostPython.h>
 
@@ -338,6 +338,18 @@ void General_O::initialize(core::List_sp alist) {
   record->errorIfInvalidArguments();
 }
 
+void General_O::fields(Record_sp record) {
+  if (record->stage() == Record_O::saving && record->data().nilp()) {
+    // Signal that the subclass should implement fields
+    // if nothing has been saved yet
+    SUBIMP();
+  } else if ( record->stage() == Record_O::loading && record->seen().nilp() ) {
+    // Signal that the subclass should implement fields
+    // if nothing has been seen
+    SUBIMP();
+  }
+}
+
 List_sp General_O::encode() {
   Record_sp record = Record_O::create_encoder();
   this->fields(record);
@@ -356,8 +368,10 @@ string General_O::className() const {
 }
 
 void General_O::sxhash_(HashGenerator &hg) const {
-  Fixnum res = (Fixnum)((((uintptr_t)this) >> gctools::tag_shift));
-  hg.addPart(res);
+  if (hg.isFilling()) {
+    Fixnum res = (Fixnum)((((uintptr_t)this) >> gctools::tag_shift));
+    hg.addPart(res);
+  }
 }
 
 T_sp General_O::deepCopy() const {
@@ -449,17 +463,13 @@ string General_O::descriptionOfContents() const {
 };
 
 string General_O::description() const {
-  _OF();
   stringstream ss;
   if (this == _lisp->_true().get()) {
     ss << "t";
   } else {
     General_O *me_gc_safe = const_cast<General_O *>(this);
     ss << "#<" << me_gc_safe->_instanceClass()->classNameAsString() << " ";
-
-//    ss << "@" << std::hex << this << std::dec;
-    ss << ")";
-    ss << this->descriptionOfContents() << " > ";
+    ss << this->descriptionOfContents() << ">";
   }
   return ss.str();
 };

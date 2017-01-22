@@ -24,7 +24,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#define DEBUG_LEVEL_FULL
+//#define DEBUG_LEVEL_FULL
 
 #include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
@@ -37,19 +37,18 @@ THE SOFTWARE.
 
 namespace llvmo {
 
-#if 0
-CL_NAME(debug-loc-get);
-CL_DEFUN DebugLoc_sp DebugLoc_O::get(int lineno, int column, DebugInfo_sp debugInfo) {
+
+CL_LISPIFY_NAME(DebugLoc_get);
+CL_DEFUN DebugLoc_sp DebugLoc_O::get(int lineno, int column, MDNode_sp scope) {
   GC_ALLOCATE(DebugLoc_O, oip);
-  llvm::DebugLoc dl = llvm::DebugLoc::get(lineno, column, debugInfo->operator llvm::MDNode *());
+  llvm::DebugLoc dl = llvm::DebugLoc::get(lineno, column, scope->wrappedPtr()); //debugInfo->operator llvm::MDNode *());
   oip->_DebugLoc = dl;
   return oip;
 }
 
 CL_LISPIFY_NAME("getScope");
-CL_DEFMETHOD MDNode_sp DebugLoc_O::getScope(LLVMContext_sp context) const {
-  return translate::to_object<llvm::MDNode *>::convert(this->_DebugLoc.getScope(*(context->wrappedPtr())));
+CL_DEFMETHOD MDNode_sp DebugLoc_O::getScope() const {
+  return translate::to_object<llvm::MDNode *>::convert(this->_DebugLoc.getScope());
 }
-#endif
 
 };

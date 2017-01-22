@@ -117,7 +117,6 @@ public: // Generic function ECL macros are replicated here
   virtual LambdaListHandler_sp lambdaListHandler() const { IMPLEMENT_ME(); };
   virtual void setAssociatedFunctions(List_sp funcs) { NOT_APPLICABLE(); };
 public: // The hard-coded indexes above are defined below to be used by Class
-protected:
   void initializeSlots(int numberOfSlots);
   void ensureClosure(GenericFunctionPtr entryPoint);
   virtual void setf_lambda_list(List_sp lambda_list) { this->_lambda_list = lambda_list; };
@@ -139,7 +138,7 @@ public: // Functions here
   /*! Return number of slots if not nil otherwise nil */
   T_sp oinstancep() const;
 
-  int isgf() const { return this->_isgf; };
+  CL_DEFMETHOD int isgf() const { return this->_isgf; };
 
   Class_sp _instanceClass() const { return this->_Class; };
 
@@ -162,6 +161,8 @@ public: // Functions here
   T_sp copyInstance() const;
 
   T_sp setFuncallableInstanceFunction(T_sp functionOrT);
+
+  T_sp userFuncallableInstanceFunction() const;
 
   bool genericFunctionP() const;
 

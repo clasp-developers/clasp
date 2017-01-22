@@ -30,8 +30,51 @@ THE SOFTWARE.
 #ifndef _core_Array_fwd_H
 #define _core_Array_fwd_H
 
+
+
+
 namespace core {
-FORWARD(Array);
+  FORWARD(AbstractSimpleVector);
+  FORWARD(SimpleString);
+  FORWARD(SimpleBaseString);
+  FORWARD(SimpleCharacterString);
+  FORWARD(StrNs);
+  FORWARD(Str8Ns);
+  FORWARD(StrWNs);
+  FORWARD(MDArrayT);
+  FORWARD(SimpleMDArrayT);
+  FORWARD(MDArrayBit);
+  FORWARD(SimpleMDArrayBit);
+  FORWARD(MDArrayBaseChar);
+  FORWARD(SimpleMDArrayBaseChar);
+  FORWARD(MDArrayCharacter);
+  FORWARD(SimpleMDArrayCharacter);
+  //
+  FORWARD(SimpleVectorDouble);
+  FORWARD(MDArrayDouble);
+  FORWARD(SimpleMDArrayDouble);
+  //
+  FORWARD(SimpleVector_size_t);
+  FORWARD(MDArray_size_t);
+  FORWARD(SimpleMDArray_size_t);
+  }; /* core */
+
+
+
+
+namespace core {
+  // ------------------------------------------------------------
+  //  Convert 8-bit strings
+  
+/*! Access functions to avoid having to include the entire class */
+string string_get_std_string(T_sp str);
+string string_get_std_string(String_sp str);
+
+/*! Create a SimpleBaseString_O object */
+T_sp str_create(const string &val);
+
+/*! Create a SimpleBaseString_O object from a const char* */
+T_sp str_create(const char *val);
 
 }; /* core */
 

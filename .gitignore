@@ -1,3 +1,6 @@
+GPATH
+GRTAGS
+GTAGS
 .waf*/
 .svn/
 .git/
@@ -13,9 +16,10 @@
 *.out
 boost_build_v2/b2
 boost_build_v2/bjam
-local.config
+wscript.config
 boost_build_v2/engine/bin.linuxx86_64
 boost_build_v2/engine/bootstrap
 build/
 projects/
 build2/
+/.lock-waf_linux*_build

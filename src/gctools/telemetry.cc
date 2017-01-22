@@ -1,6 +1,6 @@
 #include <clasp/core/foundation.h>
 #include <clasp/gctools/telemetry.h>
-#include <clasp/core/str.h>
+#include <clasp/core/array.h>
 #include <clasp/core/pathname.h>
 #include <clasp/core/wrappers.h>
 
@@ -19,9 +19,9 @@ CL_DECLARE();
 CL_DOCSTRING("");
 CL_DEFUN void core__telemetry_open(core::T_sp tpathname) {
   core::Pathname_sp pathname = core::cl__pathname(tpathname);
-  core::Str_sp filename = core::cl__namestring(pathname);
+  core::String_sp filename = core::cl__namestring(pathname);
   global_telemetry_search = new Telemetry();
-  global_telemetry_search->open_read(filename->c_str());
+  global_telemetry_search->open_read(filename->get_std_string().c_str());
   if (global_telemetry_search->_File == NULL ) {
     printf("Could not open file: %s\n", _rep_(pathname).c_str());
   }
@@ -203,7 +203,7 @@ CL_DEFUN void core__telemetry_dump(core::T_sp begin, core::T_sp end) {
     std::string entry = global_telemetry_search->entry_as_string(label, num_read, data);
     printf("%s\n", entry.c_str());
     if ((global_telemetry_search->_Index % 1000000) == 0 ) {
-      POLL_SIGNALS();
+      gctools::poll_signals();
       printf("%s:%d Searching record index %lu at file offset %lu\n", __FILE__, __LINE__, global_telemetry_search->_Index, global_telemetry_search->_ThisRecordPos);
     }
   }
@@ -225,7 +225,7 @@ CL_DEFUN size_t core__telemetry_count() {
     if (global_telemetry_search->process_header(header)) continue;
     size_t num_read = global_telemetry_search->read_data(label, MAX_WORDS, data);
     if ((global_telemetry_search->_Index % 1000000) == 0 ) {
-      POLL_SIGNALS();
+      gctools::poll_signals();
       printf("%s:%d Searching record index %lu at file offset %lu\n", __FILE__, __LINE__, global_telemetry_search->_Index, global_telemetry_search->_ThisRecordPos);
     }
   }

@@ -70,7 +70,9 @@ namespace clbind {
 
 
 ClassRep_O::ClassRep_O(type_id const &type, const std::string &name, bool derivable)
-    : m_type(type), m_name(name)
+  : BuiltInClass_O(gctools::NextStamp()),
+    m_type(type),
+    m_name(name)
       //	, m_class_type(cpp_class)
       //	, m_operator_cache(0)
       ,
@@ -110,7 +112,8 @@ ClassRep_O::ClassRep_O(type_id const &type, const std::string &name, bool deriva
 }
 
 ClassRep_O::ClassRep_O(const std::string &name, bool derivable)
-    : m_type(typeid(reg::null_type)), m_name(name)
+    : BuiltInClass_O(gctools::NextStamp()),
+      m_type(typeid(reg::null_type)), m_name(name)
       //	, m_class_type(cl_class)
       //	, m_operator_cache(0)
       ,
@@ -146,9 +149,6 @@ ClassRep_O::ClassRep_O(const std::string &name, bool derivable)
         m_classes = static_cast<class_id_map*>(cl_touserdata(L, -1));
         cl_pop(L, 1);
 #endif
-}
-
-ClassRep_O::~ClassRep_O() {
 }
 
 #if 0

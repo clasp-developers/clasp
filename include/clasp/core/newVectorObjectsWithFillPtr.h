@@ -28,7 +28,7 @@ THE SOFTWARE.
 #define _core_VectorObjectsWithFillPtr_H
 #include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
-#include <clasp/core/vectorObjects.h>
+#include <clasp/core/array.h>
 #include <clasp/core/corePackage.fwd.h>
 
 namespace core {
@@ -49,13 +49,13 @@ private: // instance variables here
   int _FillPtr;
 
 public:
-  static VectorObjectsWithFillPtr_sp make(T_sp initial_element, T_sp initial_values, int dimension, int fillPtr, bool adjustable);
+  static VectorObjects_sp make(T_sp initial_element, T_sp initial_values, int dimension, int fillPtr, bool adjustable);
 
 public: // Functions here
   uint length() const { return this->_FillPtr; };
 
   virtual bool arrayHasFillPointerP() const { return true; };
-  virtual T_sp &operator[](uint index);
+  T_sp &operator[](uint index);
 
   virtual T_sp elt(int index) const;
   virtual T_sp setf_elt(int index, T_sp value);

@@ -27,7 +27,7 @@ THE SOFTWARE.
 
 // #define EXPOSE_DLOPEN
 // #define EXPOSE_DLLOAD
-#define DEBUG_LEVEL_FULL
+//#define DEBUG_LEVEL_FULL
 
 #include <dlfcn.h>
 #ifdef _TARGET_OS_DARWIN
@@ -46,7 +46,8 @@ THE SOFTWARE.
 #include <clasp/core/designators.h>
 #include <clasp/core/evaluator.h>
 #include <clasp/core/symbolTable.h>
-#include <clasp/core/str.h>
+#include <clasp/core/array.h>
+#include <clasp/core/character.h>
 #include <clasp/core/compiler.h>
 #include <clasp/core/sequence.h>
 #include <clasp/core/pathname.h>
@@ -128,9 +129,9 @@ namespace core {
 #define STARTUP_FUNCTION_CAPACITY_MULTIPLIER 2
 size_t global_startup_capacity = 0;
 size_t global_startup_count = 0;
-fnLispCallingConvention* global_startup_functions = NULL;
+fnStartUp* global_startup_functions = NULL;
 
-void register_startup_function(fnLispCallingConvention fptr)
+void register_startup_function(fnStartUp fptr)
 {
 #ifdef DEBUG_STARTUP
   printf("%s:%d In register_startup_function --> %p\n", __FILE__, __LINE__, fptr);
@@ -138,11 +139,11 @@ void register_startup_function(fnLispCallingConvention fptr)
   if ( global_startup_functions == NULL ) {
     global_startup_capacity = STARTUP_FUNCTION_CAPACITY_INIT;
     global_startup_count = 0;
-    global_startup_functions = (fnLispCallingConvention*)malloc(global_startup_capacity*sizeof(fnLispCallingConvention));
+    global_startup_functions = (fnStartUp*)malloc(global_startup_capacity*sizeof(fnStartUp));
   } else {
     if ( global_startup_count == global_startup_capacity ) {
       global_startup_capacity = global_startup_capacity*STARTUP_FUNCTION_CAPACITY_MULTIPLIER;
-      global_startup_functions = (fnLispCallingConvention*)realloc(global_startup_functions,global_startup_capacity*sizeof(fnLispCallingConvention));
+      global_startup_functions = (fnStartUp*)realloc(global_startup_functions,global_startup_capacity*sizeof(fnStartUp));
     }
   }
   global_startup_functions[global_startup_count] = fptr;
@@ -163,7 +164,7 @@ void startup_functions_invoke()
 {
   // Save the current list
   size_t startup_count = global_startup_count;
-  fnLispCallingConvention* startup_functions = global_startup_functions;
+  fnStartUp* startup_functions = global_startup_functions;
   // Prepare to accumulate a new list
   global_startup_count = 0;
   global_startup_capacity = 0;
@@ -173,17 +174,18 @@ void startup_functions_invoke()
 #ifdef DEBUG_STARTUP
     printf("%s:%d In startup_functions_invoke - there are %lu startup functions\n", __FILE__, __LINE__, startup_count );
     for ( size_t i = 0; i<startup_count; ++i ) {
-      fnLispCallingConvention fn = startup_functions[i];
+      fnStartUp fn = startup_functions[i];
       printf("%s:%d     Startup fn[%lu]@%p\n", __FILE__, __LINE__, i, fn );
     }
     printf("%s:%d Starting to call the startup functions\n", __FILE__, __LINE__ );
 #endif
     for ( size_t i = 0; i<startup_count; ++i ) {
-      fnLispCallingConvention fn = startup_functions[i];
+      fnStartUp fn = startup_functions[i];
 #ifdef DEBUG_STARTUP
       printf("%s:%d     About to invoke fn@%p\n", __FILE__, __LINE__, fn );
 #endif
-      T_mv result = (fn)(LCC_PASS_MAIN());
+//      T_mv result = (fn)(LCC_PASS_MAIN());
+      (fn)(); // invoke the startup function
     }
 #ifdef DEBUG_STARTUP
     printf("%s:%d Done with startup_functions_invoke()\n", __FILE__, __LINE__ );
@@ -223,7 +225,7 @@ CL_DECLARE();
 CL_DOCSTRING("Print info about booting");
 CL_DEFUN void core__help_booting() {
   printf("Useful *features*\n"
-         ":ecl-min (should be clasp-min),  :bclasp, :cclasp  -- Tells Clasp what stage it's in and where to get its init file.\n"
+         ":clasp-min,  :bclasp, :cclasp  -- Tells Clasp what stage it's in and where to get its init file.\n"
          ":notify-on-compile (core:*notify-on-compile*) - prints messages whenever COMPILE is invoked at startup\n"
          ":trace-startup (core:*trace-startup*) - prints messages and timing for running the main function of the compiled code of each system file at startup\n"
          ":debug-startup (core:*debug-startup*) - prints a message and timing for running each top level function\n"
@@ -278,7 +280,7 @@ CL_DEFUN Integer_sp core__cxx_fibn(Fixnum_sp reps, Fixnum_sp num) {
 }
 
 T_sp varArgsList(int n_args, ...) {
-  DEPRECIATED();
+  DEPRECATED();
   va_list ap;
   va_start(ap, n_args);
   Cons_O::CdrType_sp first = _Nil<Cons_O::CdrType_O>();
@@ -297,36 +299,36 @@ CL_LAMBDA(object &optional is-function);
 CL_DECLARE();
 CL_DOCSTRING("mangleName");
 CL_DEFUN T_mv core__mangle_name(Symbol_sp sym, bool is_function) {
-  Str_sp name;
+  SimpleBaseString_sp name;
   if (!is_function) {
     if (sym.nilp())
-      name = Str_O::create("CLASP_NIL");
+      name = SimpleBaseString_O::make("CLASP_NIL");
     else if (sym == _lisp->_true())
-      name = Str_O::create("CLASP_T");
+      name = SimpleBaseString_O::make("CLASP_T");
     else {
       stringstream ss;
       ss << "SYM(" << sym->symbolName()->get() << ")";
-      name = Str_O::create(ss.str());
+      name = SimpleBaseString_O::make(ss.str());
     }
     return Values(_Nil<T_O>(), name, make_fixnum(0), make_fixnum(CALL_ARGUMENTS_LIMIT));
   }
   Function_sp fsym = coerce::functionDesignator(sym);
   if ( BuiltinClosure_sp  bcc = fsym.asOrNull<BuiltinClosure_O>()) {
     (void)bcc; // suppress warning
-    return Values(_lisp->_true(), Str_O::create("Provide-c-func-name"), make_fixnum(0), make_fixnum(CALL_ARGUMENTS_LIMIT));
+    return Values(_lisp->_true(), SimpleBaseString_O::make("Provide-c-func-name"), make_fixnum(0), make_fixnum(CALL_ARGUMENTS_LIMIT));
   }
-  return Values(_Nil<T_O>(), Str_O::create("Provide-func-name"), make_fixnum(0), make_fixnum(CALL_ARGUMENTS_LIMIT));
+  return Values(_Nil<T_O>(), SimpleBaseString_O::make("Provide-func-name"), make_fixnum(0), make_fixnum(CALL_ARGUMENTS_LIMIT));
 }
 
 CL_LAMBDA();
 CL_DECLARE();
-CL_DOCSTRING("startupImagePathname - returns a pathname based on *features* :ECL-MIN, :USE-MPS, :BCLASP");
+CL_DOCSTRING("startupImagePathname - returns a pathname based on *features* :CLASP-MIN, :USE-MPS, :BCLASP");
 CL_DEFUN T_sp core__startup_image_pathname() {
   stringstream ss;
   ss << "build:";
   ss << VARIANT_NAME;
   ss << "/image.fasl";
-  Str_sp spath = Str_O::create(ss.str());
+  String_sp spath = SimpleBaseString_O::make(ss.str());
   Pathname_sp pn = cl__pathname(spath);
   return pn;
 };
@@ -351,32 +353,32 @@ CL_DEFUN T_mv core__load_bundle(T_sp pathDesig, T_sp verbose, T_sp print, T_sp e
   Pathname_sp path = cl__pathname(pathDesig);
   if (cl__probe_file(path).notnilp())
     goto LOAD;
-  path->_Type = Str_O::create("bundle");
+  path->_Type = SimpleBaseString_O::make("bundle");
   if (cl__probe_file(path).notnilp())
     goto LOAD;
-  path->_Type = Str_O::create("fasl");
+  path->_Type = SimpleBaseString_O::make("fasl");
   if (cl__probe_file(path).notnilp())
     goto LOAD;
-  path->_Type = Str_O::create("dylib");
+  path->_Type = SimpleBaseString_O::make("dylib");
   if (cl__probe_file(path).notnilp())
     goto LOAD;
-  path->_Type = Str_O::create("so");
+  path->_Type = SimpleBaseString_O::make("so");
   if (cl__probe_file(path).notnilp())
     goto LOAD;
   SIMPLE_ERROR(BF("Could not find bundle %s") % _rep_(pathDesig));
 LOAD:
-  Str_sp nameStr = cl__namestring(cl__probe_file(path));
+  String_sp nameStr = cl__namestring(cl__probe_file(path));
   string name = nameStr->get();
 
   /* Look up the initialization function. */
-  string stem = cl__string_downcase(gc::As<Str_sp>(path->_Name))->get();
+  string stem = cl__string_downcase(gc::As<String_sp>(path->_Name))->get();
   size_t dsp = 0;
   if ((dsp = stem.find("_d")) != string::npos)
     stem = stem.substr(0, dsp);
   else if ((dsp = stem.find("_o")) != string::npos)
     stem = stem.substr(0, dsp);
 
-  int mode = RTLD_NOW | RTLD_LOCAL; // | RTLD_FIRST;
+  int mode = RTLD_NOW | RTLD_GLOBAL; // | RTLD_FIRST;
   // Check if we already have this dynamic library loaded
   map<string, void *>::iterator handleIt = _lisp->openDynamicLibraryHandles().find(name);
   if (handleIt != _lisp->openDynamicLibraryHandles().end()) {
@@ -389,7 +391,7 @@ LOAD:
   if (handle == NULL) {
     string error = dlerror();
     SIMPLE_ERROR(BF("Error in dlopen: %s") % error);
-    //    return (Values(_Nil<T_O>(), Str_O::create(error)));
+    //    return (Values(_Nil<T_O>(), SimpleBaseString_O::make(error)));
   }
   _lisp->openDynamicLibraryHandles()[name] = handle;
   if (startup_functions_are_waiting()) {
@@ -412,7 +414,7 @@ CL_DEFUN T_mv core__dlload(T_sp pathDesig) {
 #ifdef _TARGET_OS_LINUX
   lib_extension = ".so";
 #endif
-  int mode = RTLD_NOW | RTLD_LOCAL;
+  int mode = RTLD_NOW | RTLD_GLOBAL;
   Path_sp path = coerce::pathDesignator(pathDesig);
   Path_sp pathWithProperExtension = path->replaceExtension(lib_extension);
   string ts = pathWithProperExtension->asString();
@@ -420,7 +422,7 @@ CL_DEFUN T_mv core__dlload(T_sp pathDesig) {
   void *handle = dlopen(ts.c_str(), mode);
   if (handle == NULL) {
     string error = dlerror();
-    return (Values(_Nil<T_O>(), Str_O::create(error)));
+    return (Values(_Nil<T_O>(), SimpleBaseString_O::make(error)));
   }
   string stem = path->stem();
   size_t dsp = 0;
@@ -501,7 +503,7 @@ std::tuple< int, string > do_dlclose(void * p_handle) {
 CL_DOCSTRING("dlopen - Open a dynamic library and return the handle. Returns (values returned-value error-message(or nil if no error))");
 CL_DEFUN T_mv core__dlopen(T_sp pathDesig) {
 
-  int mode = RTLD_NOW | RTLD_LOCAL;
+  int mode = RTLD_NOW | RTLD_GLOBAL;
   Path_sp path = coerce::pathDesignator(pathDesig);
   string ts0 = path->asString();
 
@@ -509,7 +511,7 @@ CL_DEFUN T_mv core__dlopen(T_sp pathDesig) {
   void * handle = std::get<0>( result );
 
   if( handle == nullptr ) {
-    return (Values(_Nil<T_O>(), Str_O::create( get<1>( result ))));
+    return (Values(_Nil<T_O>(), SimpleBaseString_O::make( get<1>( result ))));
   }
   return (Values(Pointer_O::create(handle), _Nil<T_O>()));
 }
@@ -532,7 +534,7 @@ std::tuple< void *, string > do_dlsym( void * p_handle, const char * pc_symbol )
 // -----------------------------------------------------------------------------
 // -----------------------------------------------------------------------------
 CL_DOCSTRING("(dlsym handle name) handle is pointer from dlopen or :rtld-next, :rtld-self, :rtld-default or :rtld-main-only (see dlsym man page) returns ptr or nil if not found.");
-CL_DEFUN T_sp core__dlsym(T_sp ohandle, Str_sp name) {
+CL_DEFUN T_sp core__dlsym(T_sp ohandle, String_sp name) {
   void *handle = NULL;
   if (ohandle.nilp()) {
     SIMPLE_ERROR(BF("Invalid ohandle passed -> nil"));
@@ -565,11 +567,11 @@ CL_DEFUN T_sp core__dlsym(T_sp ohandle, Str_sp name) {
     SIMPLE_ERROR(BF("Illegal handle argument[%s] for dlsym only a pointer or :rtld-next :rtld-self :rtld-default :rtld-main-only are allowed") % _rep_(ohandle));
   }
 //  printf("%s:%d handle = %p\n", __FILE__, __LINE__, handle);
-  string ts = name->get();
+  string ts = name->get_std_string();
   auto result = do_dlsym(handle, ts.c_str());
   void * p_sym = std::get<0>( result );
   if( p_sym == nullptr ) {
-    return ( Values(_Nil<T_O>(), Str_O::create( get<1>( result ))) );
+    return ( Values(_Nil<T_O>(), SimpleBaseString_O::make( get<1>( result ))) );
   }
   return ( Values(Pointer_O::create( p_sym ), _Nil<T_O>()) );
 }
@@ -589,9 +591,9 @@ CL_DEFUN T_mv core__dladdr(Integer_sp addr) {
   if (!ret) {
     return Values(_Nil<T_O>());
   } else {
-    return Values(Str_O::create(info.dli_fname),
+    return Values(SimpleBaseString_O::make(info.dli_fname),
                   Pointer_O::create(info.dli_fbase),
-                  Str_O::create(info.dli_sname),
+                  SimpleBaseString_O::make(info.dli_sname),
                   Pointer_O::create(info.dli_saddr));
   }
 }
@@ -603,9 +605,11 @@ CL_DEFUN T_mv compiler__implicit_compile_hook_default(T_sp form, T_sp env) {
   Cons_sp code = Cons_O::create(form, _Nil<T_O>());
   T_sp source_manager = _lisp->sourceDatabase();
   T_sp sourcePosInfo = _Nil<T_O>();
+#if 0
   if ( SourceManager_sp db = source_manager.asOrNull<SourceManager_O>() ) {
     sourcePosInfo = db->duplicateSourcePosInfo(form, code);
   }
+#endif
   stringstream ss;
   ss << "repl" << _lisp->nextReplCounter();
   Symbol_sp name = _lisp->intern(ss.str());
@@ -659,147 +663,6 @@ __attribute__((noinline)) int callByConstRef(const core::T_sp &v1, const core::T
 };
 
 namespace core {
-
-
-
-#if 0
-CL_LAMBDA(stage fn &rest args);
-CL_DECLARE();
-CL_DOCSTRING("globalFuncallCyclesPerSecond");
-CL_DEFUN     T_sp core__global_funcall_cycles_per_second(int stage, Symbol_sp fn, List_sp args )
-    {
-        LightTimer timer;
-        int nargs = cl__length(args);
-        T_sp v1, v2, v3;
-        T_O* rawArgs[64];
-        int nargs = af_length(args);
-        Cons_sp cur = args;
-        for ( int i=0; i<nargs; ++i ) {
-            rawArgs[i] = oCar(cur).raw_();
-            cur=cCdr(cur);
-        }
-        ALLOC_STACK_VALUE_FRAME(frameImpl,frame,nargs);
-        for ( int pow=0; pow<16; ++pow ) {
-            int times = 1 << pow*2;  // the number of times to run the inner loop
-            timer.reset();
-            timer.start();   // Wrap a timer around the repeated inner loop
-            T_sp cur = args;
-            // Fill frame here
-            for ( int i(0); i<times; ++i ) {
-                // Compare to call by value
-                callByValue(v1,v2,v3,v4);
-                if ( stage>=1 ) {
-                    closure = va_symbolFunction(&fn);
-                    if ( stage>=2 ) {
-                        switch (nargs) {
-                        case 0:
-                            mv_FUNCALL(&result_mv,closure,NULL,NULL,NULL);
-                            break;
-                        case 1:
-                            mv_FUNCALL(&result_mv,closure,rawArg[0],NULL,NULL);
-                            break;
-                        case 2:
-                            mv_FUNCALL(&result_mv,closure,rawArg[0],rawArg[1],NULL);
-                            break;
-                        case 3:
-                            mv_FUNCALL(&result_mv,closure,rawArg[0],rawArg[1],rawArg[2]);
-                            break;
-
-                        mv_FUNCALL(&result_mv,closure,
-                        int nargs = cl__length(args);
-                        if ( stage>=3 ) { // This is expensive
-                            ValueFrame_sp frame(ValueFrame_O::create_fill_numExtraArgs(nargs,_Nil<ActivationFrame_O>()));
-                            if ( stage>=4 ) {
-                                Cons_sp cur = args;
-                                for ( int i=nargs; i<nargs; ++i ) {
-                                    frame->operator[](i) = oCar(cur);
-                                    cur=cCdr(cur);
-                                }
-                                if ( stage >= 5) {
-                                    Closure* closureP = func->closure;
-                                    ASSERTF(closureP,BF("In applyToActivationFrame the closure for %s is NULL") % _rep_(fn));
-                                    eval::applyClosureToActivationFrame(closureP,frame);
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-            timer.stop();
-            if ( timer.getAccumulatedTime() > 0.1 ) {
-                return DoubleFloat_O::create(((double)times)/timer.getAccumulatedTime());
-            }
-        }
-        printf("%s:%d The function %s is too fast\n", __FILE__, __LINE__, _rep_(fn).c_str());
-        return _Nil<T_O>();
-    }
-#endif
-
-#if 0
-CL_LAMBDA(stage fn args);
-CL_DECLARE();
-CL_DOCSTRING("partialApplysPerSecond");
-CL_DEFUN T_sp core__partial_applys_per_second(int stage, T_sp fn, List_sp args) {
-  LightTimer timer;
-  int nargs = cl__length(args);
-  T_sp v1, v2, v3, v4;
-  ALLOC_STACK_VALUE_FRAME(frameImpl, frame, nargs);
-  for (int pow = 0; pow < 16; ++pow) {
-    int times = 1 << pow * 2; // the number of times to run the inner loop
-    timer.reset();
-    timer.start(); // Wrap a timer around the repeated inner loop
-    // Fill frame here
-    for (int i(0); i < times; ++i) {
-      // Compare to call by value
-      callByValue(v1, v2, v3, v4);
-      if (stage >= 1) {
-#if 0
-                    Function_O* func = reinterpret_cast<NamedFunction_O*>(fn.px_ref());
-#else
-
-        Function_sp func;
-        func = eval::lookupFunction(fn, _Nil<T_O>());
-#endif
-        if (stage >= 2) {
-#if 0 // This is the fastest alternative I can think of relative to cl__length()
-                        int nargs;
-                        if ( args.nilp() ) {
-                            nargs = 0;
-                        } else {
-                            nargs = args->fastUnsafeLength();
-                        }
-#else
-          int nargs = cl__length(args);
-#endif
-          if (stage >= 3) { // This is expensive
-#if 1 // heap based frame
-            ValueFrame_sp frame(ValueFrame_O::create_fill_numExtraArgs(nargs, _Nil<ActivationFrame_O>()));
-            if (stage >= 4) {
-              List_sp cur = args;
-              for (int i = 0; i < nargs; ++i) {
-                frame->operator[](i) = oCar(cur);
-                cur = oCdr(cur);
-              }
-#endif
-              if (stage >= 5) {
-                Closure_sp closureP = func->closure;
-                ASSERTF(closureP, BF("In applyToActivationFrame the closure for %s is NULL") % _rep_(fn));
-                eval::applyClosureToActivationFrame(closureP, frame);
-              }
-            }
-          }
-        }
-      }
-    }
-    timer.stop();
-    if (timer.getAccumulatedTime() > 0.1) {
-      return DoubleFloat_O::create(((double)times) / timer.getAccumulatedTime());
-    }
-  }
-  printf("%s:%d The function %s is too fast\n", __FILE__, __LINE__, _rep_(fn).c_str());
-  return _Nil<T_O>();
-}
-#endif
 
 T_sp allocFixnum() {
   Fixnum_sp fn = make_fixnum(3);
@@ -967,7 +830,7 @@ CL_DEFUN T_mv core__operations_per_second(int op, T_sp arg) {
   default:
     return Values(_Nil<T_O>());
   }
-  return Values(DoubleFloat_O::create(((double)times) / timer.getAccumulatedTime()), Str_O::create(name));
+  return Values(DoubleFloat_O::create(((double)times) / timer.getAccumulatedTime()), SimpleBaseString_O::make(name));
 }
 #endif
 #if 0
@@ -1084,7 +947,9 @@ CL_DEFUN T_mv core__funwind_protect(T_sp protected_fn, T_sp cleanup_fn) {
 #ifdef DEBUG_FLOW_CONTROL
     if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp()) {
       printf("%s:%d In funwind_protect try\n", __FILE__, __LINE__);
-      printf("   %s\n", my_thread->exceptionStack().summary().c_str());
+      if (core::_sym_STARdebugFlowControlSTAR->symbolValue() == kw::_sym_verbose ) {
+        printf("   %s\n", my_thread->exceptionStack().summary().c_str());
+      }
     }
 #endif
     Closure_sp closure = protected_fn.asOrNull<core::Closure_O>();
@@ -1095,7 +960,9 @@ CL_DEFUN T_mv core__funwind_protect(T_sp protected_fn, T_sp cleanup_fn) {
 #ifdef DEBUG_FLOW_CONTROL
     if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp()) {
       printf("%s:%d In funwind_protect catch(...) just caught\n", __FILE__, __LINE__);
-      printf("   %s\n", my_thread->exceptionStack().summary().c_str());
+      if (core::_sym_STARdebugFlowControlSTAR->symbolValue() == kw::_sym_verbose ) {
+        printf("   %s\n", my_thread->exceptionStack().summary().c_str());
+      }
     }
 #endif
 // Save any return value that may be in the multiple value return array
@@ -1117,7 +984,9 @@ CL_DEFUN T_mv core__funwind_protect(T_sp protected_fn, T_sp cleanup_fn) {
 #ifdef DEBUG_FLOW_CONTROL
     if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp()) {
       printf("%s:%d In funwind_protect catch(...)    about to rethrow\n", __FILE__, __LINE__);
-      printf("   %s\n", my_thread->exceptionStack().summary().c_str());
+      if (core::_sym_STARdebugFlowControlSTAR->symbolValue() == kw::_sym_verbose ) {
+        printf("   %s\n", my_thread->exceptionStack().summary().c_str());
+      }
     }
 #endif
     throw;
@@ -1125,7 +994,9 @@ CL_DEFUN T_mv core__funwind_protect(T_sp protected_fn, T_sp cleanup_fn) {
 #ifdef DEBUG_FLOW_CONTROL
   if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp()) {
     printf("%s:%d In funwind_protect  normal exit\n", __FILE__, __LINE__);
-    printf("   %s\n", my_thread->exceptionStack().summary().c_str());
+    if (core::_sym_STARdebugFlowControlSTAR->symbolValue() == kw::_sym_verbose ) {
+      printf("   %s\n", my_thread->exceptionStack().summary().c_str());
+    }
   }
 #endif
   gctools::Vec0<T_sp> savemv;
@@ -1192,7 +1063,9 @@ CL_DEFUN T_mv core__catch_function(T_sp tag, Function_sp thunk) {
 #ifdef DEBUG_FLOW_CONTROL
   if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp()) {
     printf("%s:%d In cc_catch tag@%p thisFrame: %d\n", __FILE__, __LINE__, tag.raw_(), frame);
-    printf("   %s\n", my_thread->exceptionStack().summary().c_str());
+    if (core::_sym_STARdebugFlowControlSTAR->symbolValue() == kw::_sym_verbose ) {
+      printf("   %s\n", my_thread->exceptionStack().summary().c_str());
+    }
   }
 #endif
   try {
@@ -1222,7 +1095,9 @@ CL_DEFUN T_mv core__catch_function(T_sp tag, Function_sp thunk) {
 #ifdef DEBUG_FLOW_CONTROL
   if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp()) {
     printf("%s:%d  After cc_catch unwind\n", __FILE__, __LINE__);
-    printf("   %s\n", my_thread->exceptionStack().summary().c_str());
+    if (core::_sym_STARdebugFlowControlSTAR->symbolValue() == kw::_sym_verbose ) {
+      printf("   %s\n", my_thread->exceptionStack().summary().c_str());
+    }
   }
 #endif
   return result;
@@ -1239,7 +1114,9 @@ CL_DEFUN void core__throw_function(T_sp tag, T_sp result_form) {
 #ifdef DEBUG_FLOW_CONTROL
   if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp()) {
     printf("%s:%d In cc_throw     throwing CatchThrow to reach targetFrame[%d]\n", __FILE__, __LINE__, frame);
-    printf("   %s\n", my_thread->exceptionStack().summary().c_str());
+    if (core::_sym_STARdebugFlowControlSTAR->symbolValue() == kw::_sym_verbose ) {
+      printf("   %s\n", my_thread->exceptionStack().summary().c_str());
+    }
   }
 #endif
   T_mv result;
@@ -1283,12 +1160,30 @@ CL_DEFUN T_mv core__progv_function(List_sp symbols, List_sp values, Function_sp 
  SYMBOL_SC_(CorePkg, dlopen);
  SYMBOL_SC_(CorePkg, dlsym);
  SYMBOL_SC_(CorePkg, dladdr);
-  SYMBOL_EXPORT_SC_(CorePkg, callWithVariableBound);
+ SYMBOL_EXPORT_SC_(CorePkg, callWithVariableBound);
 
 void initialize_compiler_primitives(Lisp_sp lisp) {
-  //	SYMBOL_SC_(CorePkg,processDeclarations);
+
+  // Initialize raw object translators needed for Foreign Language Interface support 
+  llvmo::initialize_raw_translators(); // See file intrinsics.cc!
+
   comp::_sym_STARimplicit_compile_hookSTAR->defparameter(comp::_sym_implicit_compile_hook_default->symbolFunction());
   cleavirPrimops::_sym_callWithVariableBound->setf_symbolFunction(_sym_callWithVariableBound->symbolFunction());
+
+  return;
 }
 
 }; /* namespace */
+
+
+extern "C" {
+
+void clasp_trap(core::T_O* val) {
+  printf("%s:%d  clasp_trap called with %p\n", __FILE__, __LINE__, val);
+}
+
+void clasp_silent_trap(core::T_O* obj) {
+  // Do nothing
+}
+
+};

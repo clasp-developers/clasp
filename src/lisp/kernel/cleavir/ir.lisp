@@ -1,5 +1,21 @@
 (in-package :clasp-cleavir)
 
+(defun %literal-index (value &optional read-only-p)
+  (let ((*debug-cleavir* *debug-cleavir-literals*))
+    (literal:reference-literal value read-only-p)))
+
+(defun %literal-ref (value &optional read-only-p)
+  (let* ((index (%literal-index value read-only-p))
+         (gep (llvm-sys:create-const-gep2-64 cmp:*irbuilder* 
+                                             (cmp:ltv-global)
+                                             0 index
+                                             (bformat nil "values-table[%d]" index))))
+    gep))
+
+(defun %literal-value (value &optional label)
+  (let ((ref (%literal-ref value)))
+    (cmp::irc-smart-ptr-extract (cmp:irc-load ref))))
+
 (defun %i1 (num)
   (cmp:jit-constant-i1 num))
 
@@ -23,7 +39,9 @@
 (defmethod %default-int-type ((abi abi-x86-32)) cmp:+i32+)
 
 (defun %literal (lit &optional (label "literal"))
-  (llvm-sys:create-extract-value cmp:*irbuilder* (cmp:irc-load (cmp:compile-reference-to-literal lit nil)) (list 0) label))
+  (llvm-sys:create-extract-value
+   cmp:*irbuilder*
+   (cmp:irc-load (literal:compile-reference-to-literal lit)) (list 0) label))
 
 (defun %extract (val index &optional (label "extract"))
   (llvm-sys:create-extract-value cmp:*irbuilder* val (list index) label))
@@ -82,7 +100,8 @@
       (let ((store-fn (llvm-sys:get-name (instruction-llvm-function instr)))
 	    (target-fn (llvm-sys:get-name (instruction-llvm-function target))))
 	(unless (string= store-fn target-fn)
-	  (error "Mismatch in store function vs target function - you are attempting to store a value in a target where the store instruction is in a different LLVM function(~a) from the target value(~a)" store-fn target-fn))))))
+	  (error "Mismatch in store function vs target function - you are attempting to store a value in a target where the store instruction is in a different LLVM function(~a) from the target value(~a)" store-fn target-fn))))
+    instr))
 
 (defun %bit-cast (val type &optional (label ""))
   (llvm-sys:create-bit-cast cmp:*irbuilder* val type label))
@@ -105,6 +124,8 @@
 
 (defun %icmp-eq (x y &optional (label ""))
   (llvm-sys:create-icmp-eq cmp:*irbuilder* x y label))
+(defun %icmp-ne (x y &optional (label ""))
+  (llvm-sys:create-icmp-ne cmp:*irbuilder* x y label))
 (defun %icmp-slt (x y &optional (label ""))
   (llvm-sys:create-icmp-slt cmp:*irbuilder* x y label))
 (defun %icmp-slt (x y &optional (label ""))
@@ -121,21 +142,15 @@
 
 (defgeneric %sadd.with-overflow (x y abi))
 (defmethod %sadd.with-overflow (x y (abi abi-x86-64))
-  (cmp:irc-intrinsic "llvm.sadd.with.overflow.i64" x y))
+  (cmp:irc-create-call "llvm.sadd.with.overflow.i64" (list x y)))
 (defmethod %sadd.with-overflow (x y (abi abi-x86-32))
-  (cmp:irc-intrinsic "llvm.sadd.with.overflow.i32" x y))
+  (cmp:irc-create-call "llvm.sadd.with.overflow.i32" (list x y)))
 
 (defgeneric %ssub.with-overflow (x y abi))
 (defmethod %ssub.with-overflow (x y (abi abi-x86-64))
-  (cmp:irc-intrinsic "llvm.ssub.with.overflow.i64" x y))
+  (cmp:irc-create-call "llvm.ssub.with.overflow.i64" (list x y)))
 (defmethod %ssub.with-overflow (x y (abi abi-x86-32))
-  (cmp:irc-intrinsic "llvm.ssub.with.overflow.i32" x y))
-
-#||
-(defun %precalc-value (ltv-global** index)
-  (let* ((ltva (%load ltv-global**))
-         (
-||#
+  (cmp:irc-create-call "llvm.ssub.with.overflow.i32" (list x y)))
 
    
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -167,7 +182,7 @@
   (unless *function-current-multiple-value-array-address*
     (with-entry-ir-builder
 	(setq *function-current-multiple-value-array-address* 
-	      (cmp:irc-intrinsic "cc_multipleValuesArrayAddress"))))
+	      (cmp:irc-create-call "cc_multipleValuesArrayAddress" nil))))
   *function-current-multiple-value-array-address*)
 
 
@@ -247,29 +262,57 @@
           (%store result-in-registers return-value))))))
 
 
-(defun unsafe-intrinsic-call (call-or-invoke intrinsic-name return-value arg-allocas abi &key (label "") landing-pad)
+(defun unsafe-multiple-value-foreign-call (call-or-invoke intrinsic-name return-value arg-allocas abi &key (label "") landing-pad)
   ;; Write excess arguments into the multiple-value array
   (let* ((arguments (mapcar (lambda (x) (%load x)) arg-allocas))
-         (real-args (if (< (length arguments) core:+number-of-fixed-arguments+)
-                        (append arguments (make-list (- core:+number-of-fixed-arguments+ (length arguments)) :initial-element (cmp:null-t-ptr)))
-                        arguments)))
+         (real-args arguments
+           ;; I used to pad the number of real-args using the code below - why?????
+           ;; If Clasp works without this then delete the code below
+           #+(or)(if (< (length arguments) core:+number-of-fixed-arguments+)
+                              (append arguments (make-list (- core:+number-of-fixed-arguments+ (length arguments)) :initial-element (cmp:null-t-ptr)))
+                              arguments)))
     (with-return-values (return-vals return-value abi)
       (let* ((args (list* real-args))
-             (func (llvm-sys:get-function cmp:*the-module* intrinsic-name)))
-        (unless func
-          (let ((arg-types (make-list (length args) :initial-element cmp:+t*+))
-                (varargs nil))
-            (setq func (llvm-sys:function-create
-                        (llvm-sys:function-type-get cmp:+return_type+ arg-types varargs)
-                        'llvm-sys::External-linkage
-                        intrinsic-name
-                        cmp:*the-module*)))
-          (let ((result-in-registers
-                 (llvm-sys:create-call-array-ref cmp:*irbuilder* func args "intrinsic"))
-                #+(or)(if (eq call-or-invoke :call)
-                          (cmp:irc-create-call intrinsic-name args label)
-                          (cmp:irc-create-invoke intrinsic-name args landing-pad label)))
-            (%store result-in-registers return-value)))))))
+             (func (or (llvm-sys:get-function cmp:*the-module* intrinsic-name)
+                       (let ((arg-types (make-list (length args) :initial-element cmp:+t*+))
+                             (varargs nil))
+                         (setq func (cmp:irc-function-create
+                                     (llvm-sys:function-type-get cmp:+return_type+ arg-types varargs)
+                                     'llvm-sys::External-linkage
+                                     intrinsic-name
+                                     cmp:*the-module*)))))
+             (result-in-registers
+              (llvm-sys:create-call-array-ref cmp:*irbuilder* func args "intrinsic")))
+        (%store result-in-registers return-value)))))
+
+(defun unsafe-foreign-call (call-or-invoke foreign-name output arg-allocas abi &key (label "") landing-pad)
+  ;; Write excess arguments into the multiple-value array
+  (let* ((arguments (mapcar #'%load arg-allocas))
+         (func (or (llvm-sys:get-function cmp:*the-module* foreign-name)
+                   (let* ((arg-types (make-list (length arguments) :initial-element cmp:+t*+))
+                          (varargs nil))
+                     (cmp:irc-function-create
+                      (llvm-sys:function-type-get cmp:+t*+ arg-types varargs)
+                      'llvm-sys::External-linkage
+                      foreign-name
+                      cmp:*the-module*))))
+         (result-in-registers
+          (llvm-sys:create-call-array-ref cmp:*irbuilder* func arguments "foreign-call-result")))
+    (%store result-in-registers output)))
+
+
+(defun unsafe-foreign-call-pointer (call-or-invoke pointer output arg-allocas abi &key (label "") landing-pad)
+  ;; Write excess arguments into the multiple-value array
+  (let* ((arguments (mapcar #'%load arg-allocas)))
+    (let* ((arg-types (make-list (length arguments) :initial-element cmp:+t*+))
+           (varargs nil)
+           (function-type (llvm-sys:function-type-get cmp:+t*+ arg-types varargs))
+           (function-pointer-type (llvm-sys:type-get-pointer-to function-type))
+           (pointer-t* pointer)
+           (function-pointer (%bit-cast (cmp:irc-create-call "cc_getPointer" (list pointer-t*)) function-pointer-type "cast-function-pointer"))
+           (result-in-registers
+            (llvm-sys:create-call-function-pointer cmp:*irbuilder* function-type function-pointer arguments "function-pointer")))
+      (%store result-in-registers output))))
 
 
 

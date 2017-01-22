@@ -4,14 +4,14 @@
 
 /*
 Copyright (c) 2014, Christian E. Schafmeister
- 
+
 CLASP is free software; you can redistribute it and/or
 modify it under the terms of the GNU Library General Public
 License as published by the Free Software Foundation; either
 version 2 of the License, or (at your option) any later version.
- 
+
 See directory 'clasp/licenses' for full details.
- 
+
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
 
@@ -28,7 +28,7 @@ THE SOFTWARE.
 #include <map>
 #include <clasp/core/foundation.h>
 #include <clasp/core/package.h>
-#include <clasp/core/str.h>
+#include <clasp/core/array.h>
 #include <clasp/core/allClSymbols.h>
 
 #ifdef DEBUG_CL_SYMBOLS
@@ -56,7 +56,7 @@ CL_DEFUN T_sp core__calculate_missing_common_lisp_symbols() {
     T_mv sym = commonLispPackage->findSymbol(it.first);
     T_sp found = sym.valueGet_(1);
     if (found.nilp()) {
-      missing = Cons_O::create(Str_O::create(it.first), missing);
+      missing = Cons_O::create(SimpleBaseString_O::make(it.first), missing);
     }
   }
   return missing;
@@ -65,7 +65,7 @@ CL_DEFUN T_sp core__calculate_missing_common_lisp_symbols() {
 void initializeAllClSymbols(Package_sp commonLispPkg) {
 #define AddClSymbol(name)                        \
   {                                              \
-    Symbol_sp sym = commonLispPkg->intern(Str_O::create(name)); \
+    Symbol_sp sym = commonLispPkg->intern(SimpleBaseString_O::make(name)); \
     commonLispPkg->_export2(sym);                \
   }
   AddClSymbol("&ALLOW-OTHER-KEYS");

@@ -109,15 +109,6 @@ public:
       lisp_addClass(OT::static_classSymbol(),
                     OT::static_creator,
                     OT::Bases::baseClass1Id() );
-#if 0
-      ,
-        OT::Bases::baseClass2Id());
-#endif
-    }
-    if (makerName != "") {
-      // use make-<className>
-      DEPRECIATED();
-      af_def(OT::static_packageName(), makerName, &new_LispObject<OT>);
     }
   }
 

@@ -4,14 +4,14 @@
 
 /*
 Copyright (c) 2014, Christian E. Schafmeister
- 
+
 CLASP is free software; you can redistribute it and/or
 modify it under the terms of the GNU Library General Public
 License as published by the Free Software Foundation; either
 version 2 of the License, or (at your option) any later version.
- 
+
 See directory 'clasp/licenses' for full details.
- 
+
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
 
@@ -28,7 +28,7 @@ THE SOFTWARE.
 #include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
 #include <clasp/core/lisp.h>
-#include <clasp/core/vectorObjectsWithFillPtr.h>
+#include <clasp/core/array.h>
 #include <clasp/core/newhash.h>
 #include <clasp/core/cache.h>
 #include <clasp/core/wrappers.h>
@@ -127,10 +127,10 @@ void Cache_O::search_cache(CacheRecord *&min_e) {
       }
       /* Else we only know that the record has been
 	 * deleted, but we might find our data ahead. */
-    } else if (argno == gctools::reinterpret_cast_smart_ptr<VectorObjects_O>(hkey)->_Values.size()) {
+    } else if (argno == (reinterpret_cast<VectorObjects_O*>(&*hkey))->length()) {
       int n;                                                         // cl_index n;
       for (n = 0; n < argno; n++) {
-        if (keys[n] != gctools::reinterpret_cast_smart_ptr<VectorObjects_O>(hkey)->_Values[n])
+        if (keys[n] != (*reinterpret_cast<VectorObjects_O*>(&*hkey))[n])
           // if (keys->vector.self.t[n] != hkey->vector.self.t[n])
           goto NO_MATCH;
       }

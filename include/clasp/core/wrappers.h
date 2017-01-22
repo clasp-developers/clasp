@@ -36,12 +36,27 @@ THE SOFTWARE.
 
 namespace core {
 
-template <typename FN>
-class VariadicFunctor : public BuiltinClosure_O {
-public:
-  typedef BuiltinClosure_O TemplatedBase;
-  virtual size_t templatedSizeof() const { return sizeof(VariadicFunctor<FN>); };
-};
+  class TranslationFunctor : public BuiltinClosure_O {
+  public:
+    typedef core::T_O* (*Type)(core::T_O* arg);
+    Type fptr;
+  public:
+  TranslationFunctor(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : BuiltinClosure_O(name,funcType,SOURCE_INFO_PASS), fptr(ptr) {};
+  public:
+    typedef BuiltinClosure_O TemplatedBase;
+    virtual size_t templatedSizeof() const { return sizeof(TranslationFunctor); };
+    inline LCC_RETURN LISP_CALLING_CONVENTION() {
+      return gctools::return_type((this->fptr)(lcc_fixed_arg0),1);
+    }
+  };
+
+
+  template <typename FN>
+    class VariadicFunctor : public BuiltinClosure_O {
+  public:
+    typedef BuiltinClosure_O TemplatedBase;
+    virtual size_t templatedSizeof() const { return sizeof(VariadicFunctor<FN>); };
+  };
 };
 
 
@@ -72,24 +87,23 @@ public:
 
 namespace core {
 
-template <typename RT, typename... ARGS>
-void af_def(const string &packageName, const string &name, RT (*fp)(ARGS...), const string &arguments = "", const string &declares = "", const string &docstring = "", const string &sourceFile = "", int sourceLine = 0) {
-  _G();
+  inline void wrap_translator(const string &packageName, const string &name, core::T_O* (*fp)(core::T_O*), const string &arguments = "", const string &declares = "", const string &docstring = "", const string &sourceFile = "", int sourceLine = 0) {
   Symbol_sp symbol = lispify_intern(name, packageName);
   SourcePosInfo_sp spi = lisp_createSourcePosInfo(sourceFile, 0, sourceLine);
-  BuiltinClosure_sp f = gctools::GC<VariadicFunctor<RT(ARGS...)>>::allocate(symbol, kw::_sym_function, fp, SOURCE_POS_INFO_FIELDS(spi));
-  lisp_defun(symbol, packageName, f, arguments, declares, docstring, sourceFile, sourceLine, true, sizeof...(ARGS));
+  BuiltinClosure_sp f = gctools::GC<TranslationFunctor>::allocate(symbol, kw::_sym_function, fp, SOURCE_POS_INFO_FIELDS(spi));
+  lisp_defun(symbol, packageName, f, arguments, declares, docstring, sourceFile, sourceLine, true, 1);
 }
 
+
+
+// this is used in gc_interface.cc expose_function
  template <typename RT, typename... ARGS>
 void wrap_function(const string &packageName, const string &name, RT (*fp)(ARGS...), const string &arguments = "", const string &declares = "", const string &docstring = "", const string &sourceFile = "", int sourceLine = 0) {
-  _G();
   Symbol_sp symbol = _lisp->intern(name, packageName);
   SourcePosInfo_sp spi = lisp_createSourcePosInfo(sourceFile, 0, sourceLine);
   BuiltinClosure_sp f = gctools::GC<VariadicFunctor<RT(ARGS...)>>::allocate(symbol, kw::_sym_function, fp, SOURCE_POS_INFO_FIELDS(spi));
   lisp_defun(symbol, packageName, f, arguments, declares, docstring, sourceFile, sourceLine, true, sizeof...(ARGS));
 }
-
 
 };
 
@@ -199,7 +213,7 @@ public:
 #if 0
 	    if ( lisp_boot_findClassBySymbolOrNil(OT::static_classSymbol()).nilp())
 	    {
-                DEPRECIATED();
+                DEPRECATED();
 		LOG(BF("Adding class(%s) to environment")% OT::static_className() );
 		lisp_addClass(/*_lisp,OT::static_packageName(),
 				OT::static_className(), */
@@ -211,7 +225,11 @@ public:
 #endif
     if (makerName != "") {
       // use make-<className>
-      af_def(OT::static_packageName(), makerName, &new_LispObject<OT>);
+      std::string magic_maker_name = core::magic_name(makerName,OT::static_packageName());
+      std::string pkg_part;
+      std::string symbol_part;
+      core::colon_split( magic_maker_name, pkg_part, symbol_part);
+      wrap_function(pkg_part,symbol_part, &new_LispObject<OT>);
     }
   }
 
@@ -234,9 +252,15 @@ public:
   // non-const function dispatch on parameter 0
   template <typename RT, class... ARGS>
   class_ &def(string const &name, RT (OT::*mp)(ARGS...),
-              string const &lambda_list = "", const string &declares = "", const string &docstring = "", bool autoExport = true) {
-    _G();
-    Symbol_sp symbol = lispify_intern(name, symbol_packageName(this->_ClassSymbol));
+              string const &lambda_list = "", const string &declares = "", const string &docstring = "", bool autoExport = true)
+  {
+    std::string pkgName;
+    std::string symbolName;
+    core::colon_split(name,pkgName,symbolName);
+    if (pkgName == "") {
+      pkgName = symbol_packageName(this->_ClassSymbol);
+    }
+    Symbol_sp symbol = _lisp->intern(symbolName,pkgName);
     BuiltinClosure_sp m = gc::GC<VariadicMethoid<0, RT (OT::*)(ARGS...)>>::allocate(symbol, mp);
     lisp_defineSingleDispatchMethod(symbol, this->_ClassSymbol, m, 0, lambda_list, declares, docstring, autoExport, sizeof...(ARGS)+1);
     return *this;
@@ -245,9 +269,15 @@ public:
   // const function dispatch on parameter 0
   template <typename RT, class... ARGS>
   class_ &def(string const &name, RT (OT::*mp)(ARGS...) const,
-              string const &lambda_list = "", const string &declares = "", const string &docstring = "", bool autoExport = true) {
-    _G();
-    Symbol_sp symbol = lispify_intern(name, symbol_packageName(this->_ClassSymbol));
+              string const &lambda_list = "", const string &declares = "", const string &docstring = "", bool autoExport = true)
+  {
+    std::string pkgName;
+    std::string symbolName;
+    core::colon_split(name,pkgName,symbolName);
+    if (pkgName == "") {
+      pkgName = symbol_packageName(this->_ClassSymbol);
+    }
+    Symbol_sp symbol = _lisp->intern(symbolName,pkgName);
     BuiltinClosure_sp m = gc::GC<VariadicMethoid<0, RT (OT::*)(ARGS...) const>>::allocate(symbol, mp);
     lisp_defineSingleDispatchMethod(symbol, this->_ClassSymbol, m, 0, lambda_list, declares, docstring, autoExport, sizeof...(ARGS)+1);
     return *this;

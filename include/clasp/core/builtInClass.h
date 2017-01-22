@@ -55,7 +55,7 @@ public:
   /*! The normal BuiltInClass creator used once the Lisp environment has been bootstrapped */
   static BuiltInClass_sp create(Symbol_sp instanceClassSymbol);
   /*! Create a BuiltInClass_sp that will always be considered a root object */
-  static BuiltInClass_sp createUncollectable();
+  static BuiltInClass_sp createUncollectable(gctools::Stamp is);
 
 public:
   virtual void describe(T_sp stream);
@@ -65,7 +65,7 @@ public:
   /*! Allocate and initialize an instance of this class
          */
   T_sp allocateAndInitialize();
-  explicit BuiltInClass_O(){};
+  explicit BuiltInClass_O(gctools::Stamp is) : Class_O(is) {};
   virtual ~BuiltInClass_O(){};
 };
 };
@@ -76,4 +76,27 @@ struct gctools::GCInfo<core::BuiltInClass_O> {
   static GCInfo_policy constexpr Policy = normal;
 };
 
+namespace core {
+  // Specialize BuiltInObjectCreator for BuiltInClass_O
+  template <>
+    class BuiltInObjectCreator<BuiltInClass_O> : public core::Creator_O {
+  public:
+    typedef core::Creator_O TemplatedBase;
+  public:
+    DISABLE_NEW();
+    size_t templatedSizeof() const { return sizeof(BuiltInObjectCreator<BuiltInClass_O>); };
+    virtual void describe() const {
+      printf("BuiltInObjectCreator for class %s  sizeof_instances-> %zu\n", _rep_(reg::lisp_classSymbol<BuiltInClass_O>()).c_str(), sizeof(BuiltInClass_O));
+    }
+    virtual core::T_sp creator_allocate() {
+      // BuiltInObjectCreator<BuiltInClass_O> uses a different allocation method
+      // that assigns the NextStamp to the new BuiltInClass
+      GC_ALLOCATE_VARIADIC(BuiltInClass_O, obj, gctools::NextStamp() );
+      return obj;
+    }
+    virtual void searcher(){};
+  };
+
+
+};
 #endif //]

@@ -4,14 +4,14 @@
 
 /*
 Copyright (c) 2014, Christian E. Schafmeister
- 
+
 CLASP is free software; you can redistribute it and/or
 modify it under the terms of the GNU Library General Public
 License as published by the Free Software Foundation; either
 version 2 of the License, or (at your option) any later version.
- 
+
 See directory 'clasp/licenses' for full details.
- 
+
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
 
@@ -25,7 +25,7 @@ THE SOFTWARE.
 */
 /* -^- */
 
-#define DEBUG_LEVEL_FULL
+//#define DEBUG_LEVEL_FULL
 #include <clasp/core/foundation.h>
 #include <clasp/core/common.h>
 #include <clasp/core/environment.h>
@@ -33,9 +33,8 @@ THE SOFTWARE.
 #include <clasp/core/hashTable.h>
 #include <clasp/core/hashTableEql.h>
 #include <clasp/core/primitives.h>
-#include <clasp/core/vectorObjectsWithFillPtr.h>
 #include <clasp/core/package.h>
-#include <clasp/core/str.h>
+#include <clasp/core/array.h>
 #include <clasp/core/documentation.h>
 #include <clasp/core/multipleValues.h>
 #include <clasp/core/lambdaListHandler.h>
@@ -75,7 +74,7 @@ CL_DEFUN T_sp core__ensure_single_dispatch_generic_function(Symbol_sp gfname, La
 CL_LAMBDA("gfname receiver-class &key lambda-list-handler declares (docstring \"\") body ");
 CL_DECLARE();
 CL_DOCSTRING("ensureSingleDispatchMethod creates a method and adds it to the single-dispatch-generic-function");
-CL_DEFUN void core__ensure_single_dispatch_method(Symbol_sp gfname, Class_sp receiver_class, LambdaListHandler_sp lambda_list_handler, List_sp declares, gc::Nilable<Str_sp> docstring, Function_sp body) {
+CL_DEFUN void core__ensure_single_dispatch_method(Symbol_sp gfname, Class_sp receiver_class, LambdaListHandler_sp lambda_list_handler, List_sp declares, gc::Nilable<String_sp> docstring, Function_sp body) {
   //	string docstr = docstring->get();
   if (!gfname->fboundp()) {
     SIMPLE_ERROR(BF("single-dispatch-generic-function %s is not defined") % _rep_(gfname));
@@ -236,7 +235,8 @@ Function_sp SingleDispatchGenericFunctionClosure_O::slowMethodLookup(Class_sp mc
   }
   /* Sort the methods from most applicable to least applicable */
   SingleDispatch_OrderByClassPrecedence sort_by_class_precedence;
-  sort::quickSort(applicableMethods.begin(), applicableMethods.end(), sort_by_class_precedence);
+//  sort::quickSort(applicableMethods.begin(), applicableMethods.end(), sort_by_class_precedence);
+  sort::quickSortVec0(applicableMethods,0,applicableMethods.size(),sort_by_class_precedence);
   List_sp applicableMethodsList = _Nil<T_O>();
   for ( int i=applicableMethods.size()-1; i>=0; --i ) {
     applicableMethodsList = Cons_O::create(applicableMethods[i],applicableMethodsList);
@@ -257,13 +257,13 @@ Function_sp SingleDispatchGenericFunctionClosure_O::computeEffectiveMethodFuncti
   }
   // For now I'm going to just return the first method
   SingleDispatchMethod_sp cur_method = gc::As<SingleDispatchMethod_sp>(oCar(applicableMethodsList));
-  List_sp befores = _Nil<T_O>();  
+  List_sp befores = _Nil<T_O>();
   List_sp primaries = Cons_O::create(cur_method->_body,_Nil<T_O>());
   List_sp afters = _Nil<T_O>();
   Function_sp emf = gctools::GC<SingleDispatchEffectiveMethodFunction_O>::allocate(this->name(),befores,primaries,afters);
   return emf;
 #if 1
-  printf("%s:%d   in computeEffectiveMethodFunction name: %s  contains %d methods\n", __FILE__, __LINE__, _rep_(this->name()).c_str(), core::cl__length(applicableMethodsList) );
+  printf("%s:%d   in computeEffectiveMethodFunction name: %s  contains %zu methods\n", __FILE__, __LINE__, _rep_(this->name()).c_str(), core::cl__length(applicableMethodsList) );
   int i = 0;
   for ( auto cur : applicableMethodsList ) {
     SingleDispatchMethod_sp method = gctools::As<SingleDispatchMethod_sp>(oCar(cur));
@@ -385,7 +385,7 @@ public:
             // Then I don't need to convert it back into an activation frame on the receiving end
     ValueFrame_sp method_function_args(ValueFrame_O::create_fill(frame,this->_next_emfun,_Nil<ActivationFrame_O>()));
     return this->_method_function->INVOKE(method_function_args);
-	    
+
   }
 };
 

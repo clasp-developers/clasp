@@ -29,7 +29,7 @@ THE SOFTWARE.
 
 #include <clasp/core/common.h>
 #include <clasp/core/symbolToEnumConverter.h>
-#include <clasp/core/str.h>
+#include <clasp/core/array.h>
 #include <clasp/core/ql.h>
 //#include "llvm/DataLayout.h"
 
@@ -59,10 +59,9 @@ THE SOFTWARE.
 #include <clasp/core/object.h>
 #include <clasp/core/metaClass.fwd.h>
 #include <clasp/core/externalObject.h>
-#include <clasp/core/lispVector.h>
+#include <clasp/core/array.h>
 #include <clasp/llvmo/debugInfoExpose.fwd.h>
 #include <clasp/core/loadTimeValues.fwd.h>
-#include <clasp/core/vectorObjectsWithFillPtr.fwd.h>
 #include <clasp/llvmo/insertPoint.fwd.h>
 #include <clasp/llvmo/debugLoc.fwd.h>
 #include <clasp/llvmo/llvmoPackage.h>
@@ -655,9 +654,14 @@ struct from_object<llvm::DIBuilder &, std::true_type> {
   from_object(T_P object) : _v(*gc::As<llvmo::DIBuilder_sp>(object)->wrappedPtr()){};
 };
 };
-    ;
-/* to_object translators */
 
-;
+
+// ------------------------------------------------------------
+//
+// Translators for other types
+//
+
+ENUM_FROM_OBJECT_TRANSLATOR(llvm::DIFile::ChecksumKind,llvmo::_sym_CSKEnum);
+
 
 #endif // debugInfo expose

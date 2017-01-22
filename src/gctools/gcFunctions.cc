@@ -18,6 +18,7 @@ int gcFunctions_after;
 #include <stdint.h>
 
 #include <clasp/core/object.h>
+#include <clasp/core/bformat.h>
 #include <clasp/core/lisp.h>
 #include <clasp/core/instance.h>
 #include <clasp/core/builtInClass.h>
@@ -29,7 +30,7 @@ int gcFunctions_after;
 #include <clasp/core/hashTableEq.h>
 #include <clasp/core/structureClass.h>
 #include <clasp/core/lispStream.h>
-#include <clasp/core/str.h>
+#include <clasp/core/array.h>
 #include <clasp/core/symbolTable.h>
 #include <clasp/gctools/gctoolsPackage.h>
 #include <clasp/core/wrappers.h>
@@ -42,7 +43,7 @@ size_t global_next_unused_kind = KIND_max+1;
  */
 
 const char *global_HardcodedKinds[] = {
-    "", "core::T_O", "core::StandardObject_O", "core::Metaobject_O", "core::Specializer_O", "core::Class_O", "core::BuiltInClass_O", "core::StdClass_O", "core::StandardClass_O", "core::StructureClass_O", "core::Symbol_O", "core::Str_O"};
+    "", "core::T_O", "core::StandardObject_O", "core::Metaobject_O", "core::Specializer_O", "core::Class_O", "core::BuiltInClass_O", "core::StdClass_O", "core::StandardClass_O", "core::StructureClass_O", "core::Symbol_O"};
 
 CL_DEFUN int gctools__max_bootstrap_kinds() {
   return sizeof(global_HardcodedKinds) / sizeof(global_HardcodedKinds[0]);
@@ -58,28 +59,12 @@ int iBootstrapKind(const string &name) {
   SIMPLE_ERROR(BF("Illegal bootstrap-kind %s") % name);
 }
 
-void initialize_bootstrap_kinds() {
-  DEPRECIATED();
-// Hard-coded bootstrap kinds
-#define SetupKind(_x_) _x_::static_Kind = iBootstrapKind(#_x_)
-  SetupKind(core::T_O);
-  SetupKind(core::StandardObject_O);
-  SetupKind(core::Metaobject_O);
-  SetupKind(core::Specializer_O);
-  SetupKind(core::Class_O);
-  SetupKind(core::BuiltInClass_O);
-  SetupKind(core::StdClass_O);
-  SetupKind(core::StandardClass_O);
-  SetupKind(core::StructureClass_O);
-  SetupKind(core::Symbol_O);
-  SetupKind(core::Str_O);
-}
 
 CL_DEFUN core::Cons_sp gctools__bootstrap_kind_symbols() {
   core::Cons_sp list(_Nil<core::Cons_O>());
   for (int i(gctools__max_bootstrap_kinds() - 1); i > 0; --i) {
     string name = global_HardcodedKinds[i];
-    list = core::Cons_O::create(core::Str_O::create(name), list);
+    list = core::Cons_O::create(core::SimpleBaseString_O::make(name), list);
   }
   return list;
 }
@@ -113,6 +98,39 @@ CL_DEFUN size_t core__next_unused_kind() {
   size_t next = global_next_unused_kind;
   ++global_next_unused_kind;
   return next;
+}
+
+CL_DOCSTRING("Return the header stamp for the object");
+CL_DEFUN Fixnum core__header_stamp(core::T_sp obj)
+{
+  if (obj.consp()) {
+    return KIND_CONS;
+  } else if (obj.fixnump()) {
+    return KIND_FIXNUM;
+  } else if (obj.generalp()) {
+    void *mostDerived = gctools::untag_general<void *>(obj.raw_());
+    gctools::Header_s *header = reinterpret_cast<gctools::Header_s *>(ClientPtrToBasePtr(mostDerived));
+    return header->getStamp();
+  } else if (obj.single_floatp()) {
+    return KIND_SINGLE_FLOAT;
+  } else if (obj.characterp()) {
+    return KIND_CHARACTER;
+  } else if (obj.valistp()) {
+    return KIND_VA_LIST_S;
+  }
+  printf("%s:%d HEADER-KIND requested for a non-general object - Clasp needs to define hard-coded kinds for non-general objects - returning -1 for now", __FILE__, __LINE__);
+  return core::clasp_make_fixnum(-1);
+}
+
+CL_DOCSTRING("Set the header stamp for the object");
+CL_DEFUN void core__header_stamp_set(core::T_sp obj, core::T_sp stamp)
+{
+  ASSERT(stamp.fixnump());
+  if (obj.generalp()) {
+    void *mostDerived = gctools::untag_general<void *>(obj.raw_());
+    gctools::Header_s *header = reinterpret_cast<gctools::Header_s *>(ClientPtrToBasePtr(mostDerived));
+    return header->setStamp(stamp.unsafe_fixnum());
+  }
 }
 
 CL_DOCSTRING("Return the header kind for the object");
@@ -164,9 +182,9 @@ CL_DEFUN core::T_mv core__hardwired_kinds() {
   std::vector<Immediate_info> immediates = get_immediate_info();
   core::List_sp result = _Nil<core::T_O>();
   for ( int i=0; i<immediates.size(); ++i ) {
-    result = core::Cons_O::create(core::Cons_O::create(core::Str_O::create(immediates[i]._name), core::clasp_make_fixnum(immediates[i]._kind)),result);
+    result = core::Cons_O::create(core::Cons_O::create(core::SimpleBaseString_O::make(immediates[i]._name), core::clasp_make_fixnum(immediates[i]._kind)),result);
   }
-  core::List_sp ignoreClasses = _Nil<core::T_O>(); // core::Cons_O::createList(Str_O::create("core__Cons_O") <-- future when CONS are in their own pool
+  core::List_sp ignoreClasses = _Nil<core::T_O>(); // core::Cons_O::createList(SimpleBaseString_O::make("core__Cons_O") <-- future when CONS are in their own pool
   return Values(result, ignoreClasses, core::clasp_make_fixnum(kind_first_general), core::clasp_make_fixnum(kind_first_alien), core::clasp_make_fixnum(kind_last_alien), core::clasp_make_fixnum(kind_first_instance));
 }
 
@@ -174,76 +192,76 @@ CL_DEFUN core::T_mv core__hardwired_kinds() {
 #define ARGS_af_testVec0 "()"
 #define DECL_af_testVec0 ""
 #define DOCS_af_testVec0 "testVec0"
-    void af_testVec0()
-    {
-        int N = 4;
-        printf("Creating vec(4)\n");
-        gctools::Vec0<TestingClass> v;
-        v.resize(4);
-        vector_dump(v);
-        printf("About to Push_back TestingClass(2)\n");
-        v.push_back(TestingClass(2));
-        vector_dump(v);
-        printf("About to Push_back %d times TestingClass(i)\n", N);
-        for ( int i(0); i<N; ++i ) {v.push_back(TestingClass(i));}
-        vector_dump(v); 
-        printf("About to Push_back %d times TestingClass(i+10)\n", N);
-        for ( int i(0); i<N; ++i )
-        {
-            v.push_back(TestingClass(i+10));
-            vector_dump(v,"step");
-        }
-        vector_dump(v,"done"); 
-        printf("Start again");
-        gctools::Vec0<TestingClass> u;
-        u.resize(4);
-        vector_dump(u,"new");
-        u.resize(8,TestingClass(-8));
-        vector_dump(u,"resized to 8 ");
-        u.resize(16,TestingClass(-16));
-        vector_dump(u,"resized to 16");
-        u.resize(4,TestingClass(-99999));
-        vector_dump(u,"resized to 4 ");
-        printf("Test emplace and erase\n");
-        gctools::Vec0<TestingClass> w;
-        for ( int zi(0); zi<20; ++zi ) {
-            w.emplace(w.begin(),zi);
-        }
-        vector_dump(w,"after 10 emplace");
-        w.erase(w.begin()+4);
-        vector_dump(w,"removed begin()+4");
-        for ( int zz(0); zz<5; ++zz ) w.erase(w.begin()+4);
-        vector_dump(w,"removed begin()+4 4 times");
-        w.erase(w.begin()+13);
-        vector_dump(w,"removed begin()+13 times");
-    }
+void af_testVec0()
+{
+  int N = 4;
+  printf("Creating vec(4)\n");
+  gctools::Vec0<TestingClass> v;
+  v.resize(4);
+  vector_dump(v);
+  printf("About to Push_back TestingClass(2)\n");
+  v.push_back(TestingClass(2));
+  vector_dump(v);
+  printf("About to Push_back %d times TestingClass(i)\n", N);
+  for ( int i(0); i<N; ++i ) {v.push_back(TestingClass(i));}
+  vector_dump(v);
+  printf("About to Push_back %d times TestingClass(i+10)\n", N);
+  for ( int i(0); i<N; ++i )
+  {
+    v.push_back(TestingClass(i+10));
+    vector_dump(v,"step");
+  }
+  vector_dump(v,"done");
+  printf("Start again");
+  gctools::Vec0<TestingClass> u;
+  u.resize(4);
+  vector_dump(u,"new");
+  u.resize(8,TestingClass(-8));
+  vector_dump(u,"resized to 8 ");
+  u.resize(16,TestingClass(-16));
+  vector_dump(u,"resized to 16");
+  u.resize(4,TestingClass(-99999));
+  vector_dump(u,"resized to 4 ");
+  printf("Test emplace and erase\n");
+  gctools::Vec0<TestingClass> w;
+  for ( int zi(0); zi<20; ++zi ) {
+    w.emplace(w.begin(),zi);
+  }
+  vector_dump(w,"after 10 emplace");
+  w.erase(w.begin()+4);
+  vector_dump(w,"removed begin()+4");
+  for ( int zz(0); zz<5; ++zz ) w.erase(w.begin()+4);
+  vector_dump(w,"removed begin()+4 4 times");
+  w.erase(w.begin()+13);
+  vector_dump(w,"removed begin()+13 times");
+}
 #endif
 
 #if 0
 #define ARGS_af_testArray0 "()"
 #define DECL_af_testArray0 ""
 #define DOCS_af_testArray0 "testArray0"
-    void af_testArray0()
-    {
+void af_testArray0()
+{
 //        int N = 4;
-        printf("Creating Array0(4)\n");
-        gctools::Array0<core::core::T_sp> v;
-        v.allocate(4,_Nil<core::T_O>());
-        Array0_dump(v,"Nil*4");
-        gctools::Array0<core::core::T_sp> w;
-        w.allocate(4,_Nil<core::T_O>());
-        for (int i(0); i<4; ++i ) {
-            w[i] = core::make_fixnum(i);
-        }
-        Array0_dump(w,"Fixnum*4");
-        printf("Creating ValueFrame\n");
-        core::ValueFrame_sp vf = ValueFrame_O::create_fill_args(_Nil<core::ActivationFrame_O>(),core::make_fixnum(1), core::make_fixnum(2), core::make_fixnum(3));
-        printf("Creating another 1 ValueFrame\n");
-        vf = ValueFrame_O::create_fill_args(_Nil<core::ActivationFrame_O>(),core::make_fixnum(1), core::make_fixnum(2), core::make_fixnum(3));
-        printf("Creating another 2 ValueFrame\n");
-        vf = ValueFrame_O::create_fill_args(_Nil<core::ActivationFrame_O>(),core::make_fixnum(1), core::make_fixnum(2), core::make_fixnum(3));
-        printf("Leaving scope\n");
-    }
+  printf("Creating Array0(4)\n");
+  gctools::Array0<core::core::T_sp> v;
+  v.allocate(4,_Nil<core::T_O>());
+  Array0_dump(v,"Nil*4");
+  gctools::Array0<core::core::T_sp> w;
+  w.allocate(4,_Nil<core::T_O>());
+  for (int i(0); i<4; ++i ) {
+    w[i] = core::make_fixnum(i);
+  }
+  Array0_dump(w,"Fixnum*4");
+  printf("Creating ValueFrame\n");
+  core::ValueFrame_sp vf = ValueFrame_O::create_fill_args(_Nil<core::ActivationFrame_O>(),core::make_fixnum(1), core::make_fixnum(2), core::make_fixnum(3));
+  printf("Creating another 1 ValueFrame\n");
+  vf = ValueFrame_O::create_fill_args(_Nil<core::ActivationFrame_O>(),core::make_fixnum(1), core::make_fixnum(2), core::make_fixnum(3));
+  printf("Creating another 2 ValueFrame\n");
+  vf = ValueFrame_O::create_fill_args(_Nil<core::ActivationFrame_O>(),core::make_fixnum(1), core::make_fixnum(2), core::make_fixnum(3));
+  printf("Leaving scope\n");
+}
 #endif
 };
 
@@ -273,28 +291,6 @@ struct ReachableClass {
   }
 };
 
-#if 0
-struct ReachableContainer {
-  ReachableContainer() : typeidName(NULL){};
-  ReachableContainer(const char *tn) : typeidName(tn), instances(0), totalSize(0), largest(0) {}
-  void update(size_t sz) {
-    ++this->instances;
-    this->totalSize += sz;
-    if (sz > this->largest) {
-      this->largest = sz;
-    }
-  };
-  const char *typeidName;
-  size_t instances;
-  size_t totalSize;
-  size_t largest;
-  size_t print(const std::string &shortName) {
-    printf("%s: total_size: %10lu count: %8lu  avg.sz: %8lu  largest: %8lu %s\n", shortName.c_str(),
-           this->totalSize, this->instances, this->totalSize / this->instances, this->largest, this->typeidName);
-    return this->totalSize;
-  }
-};
-#endif
 
 typedef map<gctools::GCKindEnum, ReachableClass> ReachableClassMap;
 static ReachableClassMap *static_ReachableClassKinds;
@@ -303,20 +299,18 @@ int globalSearchMarker = 0;
 extern "C" {
 void boehm_callback_reachable_object(void *ptr, size_t sz, void *client_data) {
   gctools::Header_s *h = reinterpret_cast<gctools::Header_s *>(ptr);
-  if (h->isValid()) {
-    if (h->markerMatches(globalSearchMarker)) {
-      ReachableClassMap::iterator it = static_ReachableClassKinds->find(h->kind());
-      if (it == static_ReachableClassKinds->end()) {
-        ReachableClass reachableClass(h->kind());
-        reachableClass.update(sz);
-        (*static_ReachableClassKinds)[h->kind()] = reachableClass;
-      } else {
-        it->second.update(sz);
-      }
+//  if (h->markerMatches(globalSearchMarker)) {
+    ReachableClassMap::iterator it = static_ReachableClassKinds->find(h->kind());
+    if (it == static_ReachableClassKinds->end()) {
+      ReachableClass reachableClass(h->kind());
+      reachableClass.update(sz);
+      (*static_ReachableClassKinds)[h->kind()] = reachableClass;
+    } else {
+      it->second.update(sz);
     }
-  } else {
-    invalidHeaderTotalSize += sz;
-  }
+//  } else {
+//    invalidHeaderTotalSize += sz;
+//  }
 }
 };
 
@@ -337,7 +331,7 @@ size_t dumpResults(const std::string &name, const std::string &shortName, T *dat
     totalSize += it.print(shortName);
     idx += 1;
     if ( idx % 100 == 0 ) {
-      POLL_SIGNALS();
+      gctools::poll_signals();
     }
   }
   return totalSize;
@@ -388,7 +382,7 @@ size_t dumpMPSResults(const std::string &name, const std::string &shortName, vec
     totalSize += it.print(shortName);
     idx += 1;
     if ( idx % 100 == 0 ) {
-      POLL_SIGNALS();
+      gctools::poll_signals();
     }
 
   }
@@ -486,13 +480,14 @@ CL_DECLARE();
 CL_DOCSTRING("room - Return info about the reachable objects.  x can be T, nil, :default - as in ROOM.  marker can be a fixnum (0 - matches everything, any other number/only objects with that marker)");
 CL_DEFUN core::T_mv cl__room(core::T_sp x, core::Fixnum_sp marker, core::T_sp tmsg) {
   string smsg = "Total";
-  if (core::Str_sp msg = tmsg.asOrNull<core::Str_O>()) {
+  if (cl__stringp(tmsg)) {
+    core::String_sp msg = gc::As_unsafe<core::String_sp>(tmsg);
     smsg = msg->get();
   }
 #ifdef USE_MPS
-  mps_word_t numCollections = mps_collections(gctools::_global_arena);
-  size_t arena_committed = mps_arena_committed(gctools::_global_arena);
-  size_t arena_reserved = mps_arena_reserved(gctools::_global_arena);
+  mps_word_t numCollections = mps_collections(global_arena);
+  size_t arena_committed = mps_arena_committed(global_arena);
+  size_t arena_reserved = mps_arena_reserved(global_arena);
   vector<ReachableMPSObject> reachables;
   for (int i = 0; i < gctools::KIND_max; ++i) {
     reachables.push_back(ReachableMPSObject(i));
@@ -580,18 +575,18 @@ CL_DEFUN void gctools__function_call_count_profiler(core::T_sp func) {
   mps_amc_apply(_global_amc_pool, amc_apply_function_call_counter, &*func_counters_start, 0);
 #endif
 #ifdef USE_BOEHM
-  #ifdef BOEHM_GC_ENUMERATE_REACHABLE_OBJECTS_INNER_AVAILABLE
+#ifdef BOEHM_GC_ENUMERATE_REACHABLE_OBJECTS_INNER_AVAILABLE
   GC_enumerate_reachable_objects_inner(boehm_callback_function_call_counter, &*func_counters_start);
-  #endif
+#endif
 #endif
   core::eval::funcall(func);
 #ifdef USE_MPS
   mps_amc_apply(_global_amc_pool, amc_apply_function_call_counter, &*func_counters_end, 0);
 #endif
 #ifdef USE_BOEHM
-  #ifdef BOEHM_GC_ENUMERATE_REACHABLE_OBJECTS_INNER_AVAILABLE
+#ifdef BOEHM_GC_ENUMERATE_REACHABLE_OBJECTS_INNER_AVAILABLE
   GC_enumerate_reachable_objects_inner(boehm_callback_function_call_counter, &*func_counters_end);
-  #endif
+#endif
 #endif
   func_counters_start->mapHash([func_counters_end](core::T_sp f, core::T_sp start_value) {
       core::T_sp end_value = func_counters_end->gethash(f);
@@ -608,7 +603,7 @@ CL_DEFUN void gctools__function_call_count_profiler(core::T_sp func) {
         results = core::Cons_O::create(core::Cons_O::create(core::clasp_make_fixnum(diff),f),results);
       }
     });
-  printf("%s:%d There are %d results\n", __FILE__, __LINE__, core::cl__length(results));
+  printf("%s:%d There are %zu results\n", __FILE__, __LINE__, core::cl__length(results));
   results = core::cl__sort(results,cl::_sym__LT_,cl::_sym_car);
   for ( auto cur : results ) {
     core::T_sp one = oCar(cur);
@@ -621,6 +616,49 @@ CL_DEFUN void gctools__function_call_count_profiler(core::T_sp func) {
 };
 };
 #endif // DEBUG_FUNCTION_CALL_COUNTER
+
+
+namespace gctools {
+
+SYMBOL_EXPORT_SC_(GcToolsPkg,STARfinalizersSTAR);
+
+CL_DEFUN void gctools__finalize(core::T_sp object, core::T_sp finalizer_callback) {
+  //printf("%s:%d making a finalizer for %p calling %p\n", __FILE__, __LINE__, (void*)object.tagged_(), (void*)finalizer_callback.tagged_());
+  core::WeakKeyHashTable_sp ht = As<core::WeakKeyHashTable_sp>(_sym_STARfinalizersSTAR->symbolValue());
+  core::List_sp orig_finalizers = ht->gethash(object,_Nil<core::T_O>());
+  core::List_sp finalizers = core::Cons_O::create(finalizer_callback,orig_finalizers);
+//  printf("%s:%d      Adding finalizer to list new length --> %d   list head %p\n", __FILE__, __LINE__, core::cl__length(finalizers), (void*)finalizers.tagged_());
+  ht->setf_gethash(object,finalizers);
+    // Register the finalizer with the GC
+#ifdef USE_BOEHM
+  boehm_set_finalizer_list(object.tagged_(),finalizers.tagged_());
+#endif
+#ifdef USE_MPS
+  if (object.generalp() || object.consp()) {
+    my_mps_finalize((void*)&*object);
+  }
+#endif
+};
+
+CL_DEFUN void gctools__definalize(core::T_sp object) {
+//  printf("%s:%d erasing finalizers for %p\n", __FILE__, __LINE__, (void*)object.tagged_());
+  core::WeakKeyHashTable_sp ht = As<core::WeakKeyHashTable_sp>(_sym_STARfinalizersSTAR->symbolValue());
+  if (ht->gethash(object)) {
+    ht->remhash(object);
+  }
+#ifdef USE_BOEHM
+  boehm_clear_finalizer_list(object.tagged_());
+#endif
+  #ifdef USE_MPS
+  // Don't use mps_definalize here - definalize is taken care of by erasing the weak-key-hash-table
+  // entry above.  We may still need to get a finalization message if this class needs
+  // its destructor be called.
+  #endif
+}
+
+};
+
+
 
 extern "C" {
 void dbg_room() {
@@ -666,21 +704,38 @@ CL_DEFUN core::T_sp gctools__stack_depth() {
 CL_DEFUN void gctools__garbage_collect() {
 #ifdef USE_BOEHM
   GC_gcollect();
+//  BFORMAT_T(BF("GC_invoke_finalizers\n"));
+  GC_invoke_finalizers();
 #endif
 //        printf("%s:%d Starting garbage collection of arena\n", __FILE__, __LINE__ );
 #ifdef USE_MPS
-  mps_arena_collect(_global_arena);
-  processMpsMessages();
-  mps_arena_release(_global_arena);
+  mps_arena_collect(global_arena);
+  size_t finalizations;
+  processMpsMessages(finalizations);
+  mps_arena_release(global_arena);
 #endif
   //        printf("Garbage collection done\n");
 };
 
-CL_DEFUN void gctools__cleanup() {
+CL_DOCSTRING("Process finalizers");
+CL_LAMBDA(&optional verbose)
+CL_DEFUN void gctools__cleanup(bool verbose) {
 #ifdef USE_MPS
-  processMpsMessages();
+  size_t finalizations;
+  size_t messages = processMpsMessages(finalizations);
+  if (verbose) {
+    BFORMAT_T(BF("Processed %lu finalization messages and %lu total messages\n") % messages % finalizations );
+  }
 #endif
-};
+}
+
+  CL_DOCSTRING("Set the number of signal polling ticks per GC cleanup and message processing.");
+  CL_LAMBDA(&optional verbose);
+  CL_DEFUN void gctools__poll_ticks_per_cleanup(int ticks) {
+#ifdef USE_MPS
+    global_pollTicksPerCleanup = ticks;
+#endif
+  };
 
 
 

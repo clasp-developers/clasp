@@ -24,7 +24,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#define DEBUG_LEVEL_FULL
+//#define DEBUG_LEVEL_FULL
 
 #include <clasp/core/foundation.h>
 
@@ -38,14 +38,14 @@ THE SOFTWARE.
 #include <clasp/core/corePackage.h>
 #include <clasp/core/evaluator.h>
 #include <clasp/core/ql.h>
-#include <clasp/core/useBoostRegex.h>
+//#include <clasp/core/useBoostRegex.h>
 #include <clasp/core/fileSystem.h>
 #include <clasp/core/symbolTable.h>
 #include <clasp/core/designators.h>
 #include <clasp/core/environment.h>
 #include <clasp/core/pathname.h>
 #include <clasp/core/multipleValues.h>
-#include <clasp/core/str.h>
+#include <clasp/core/array.h>
 #include <clasp/core/hashTable.h>
 #include <clasp/core/wrappers.h>
 #include <string>
@@ -60,33 +60,6 @@ void assertion_failed_msg(char const *expr, char const *msg,
 } // namespace boost
 
 namespace core {
-
-/*! Return a list of Path objects representing the contents of the directory
-  that match the fileNameRegex */
-List_sp directory(Path_sp rpath, const string &fileNameRegex) {
-  bf::path p(rpath->getPath());
-  Cons_sp first;
-  List_sp tail;
-  Str_sp fileName;
-  boost::regex ex(fileNameRegex);
-  first = Cons_O::create(_Nil<T_O>(), _Nil<T_O>());
-  tail = first;
-  bf::directory_iterator end_iter;
-  for (bf::directory_iterator itr(p); itr != end_iter; itr++) {
-    // the fileName is all we match to
-    string testName = itr->path().filename().string();
-    LOG(BF("Checking name: %s") % testName.c_str());
-    if (regex_match(testName, ex)) {
-      LOG(BF("It matches"));
-      tail.asCons()->setCdr(Cons_O::create(Path_O::create(itr->path()),
-                                           _Nil<T_O>()));
-      tail = oCdr(tail);
-    } else {
-      LOG(BF("It doesnt match"));
-    }
-  }
-  return oCdr(first);
-}
 
 void rename_file(Path_sp rpath1, Path_sp rpath2) {
   return bf::rename(rpath1->getPath(), rpath2->getPath());
@@ -167,7 +140,7 @@ Path_sp Path_O::create(boost_filesystem::path p) {
 Path_mv af_makePath(List_sp args) {
   Path_sp me(Path_O::create());
   while (args.notnilp()) {
-    me->path_append(gc::As<Str_sp>(oCar(args))->get());
+    me->path_append(gc::As<String_sp>(oCar(args))->get());
     args = oCdr(args);
   }
   return (Values(me));
@@ -189,7 +162,7 @@ Path_O &Path_O::operator/=(string const &pp) {
 void Path_O::sxhash_(HashGenerator &hg) const {
   _OF();
   string ts = this->_Path.string();
-  Bignum bn = Str_O::stringToBignum(ts.c_str());
+  Bignum bn = CStrToBignum(ts.c_str());
   hg.addPart(bn);
 }
 
@@ -262,7 +235,7 @@ CL_DEFMETHOD List_sp Path_O::parts() const {
   bf::path::iterator it;
   ql::list l(_lisp);
   for (it = this->_Path.begin(); it != this->_Path.end(); ++it) {
-    l << Str_O::create(it->native());
+    l << SimpleBaseString_O::make(it->native());
   }
   return l.cons();
 }
@@ -383,7 +356,7 @@ void DirectoryIterator_O::setupCurrentIterator() {
   if (this->_CurrentIterator != NULL) {
     delete (this->_CurrentIterator);
   }
-  TRY() {
+  try {
     this->_CurrentIterator = new boost_filesystem::directory_iterator(this->_Path->getPath());
   }
   catch (boost_filesystem::filesystem_error &err) {
@@ -482,7 +455,7 @@ void RecursiveDirectoryIterator_O::setupCurrentIterator() {
   if (this->_CurrentIterator != NULL) {
     delete (this->_CurrentIterator);
   }
-  TRY() {
+  try {
     this->_CurrentIterator = new boost_filesystem::recursive_directory_iterator(this->_Path->getPath());
   }
   catch (boost_filesystem::filesystem_error &err) {
@@ -615,10 +588,10 @@ CL_DEFMETHOD bool FileStatus_O::isOther() {
 
 Pathname_sp getcwd(bool change_d_p_d) {
   boost::filesystem::path cwd = boost::filesystem::current_path();
-  Str_sp namestring = Str_O::create(cwd.string());
+  SimpleBaseString_sp namestring = SimpleBaseString_O::make(cwd.string());
   size_t i = namestring->length();
-  if (!IS_DIR_SEPARATOR(namestring->schar(i - 1)))
-    namestring = Str_O::create(namestring->get() + DIR_SEPARATOR);
+  if (!IS_DIR_SEPARATOR(clasp_as_claspCharacter(namestring->rowMajorAref(i - 1))))
+    namestring = SimpleBaseString_O::make(namestring->get() + DIR_SEPARATOR);
   Pathname_sp pathname = cl__parse_namestring(namestring);
   if (change_d_p_d) {
     cl::_sym_STARdefaultPathnameDefaultsSTAR->setf_symbolValue(pathname);
@@ -629,9 +602,10 @@ Pathname_sp getcwd(bool change_d_p_d) {
 /*! Translated from ecl>homedir_pathname */
 Pathname_sp homedirPathname(T_sp tuser) {
   int i;
-  Str_sp namestring;
+  SimpleBaseString_sp namestring;
   const char *h;
-  if (Str_sp user = tuser.asOrNull<Str_O>()) {
+  if (cl__stringp(tuser)) {
+    String_sp user = gc::As_unsafe<String_sp>(tuser);
 #ifdef HAVE_PWD_H
     struct passwd *pwent = NULL;
 #endif
@@ -648,11 +622,11 @@ Pathname_sp homedirPathname(T_sp tuser) {
     if (pwent == NULL) {
       SIMPLE_ERROR(BF("Unknown user %s.") % p);
     }
-    namestring = Str_O::create(pwent->pw_dir);
+    namestring = SimpleBaseString_O::make(pwent->pw_dir);
 #endif
     SIMPLE_ERROR(BF("Unknown user %s.") % p);
   } else if ((h = getenv("HOME"))) {
-    namestring = Str_O::create(h);
+    namestring = SimpleBaseString_O::make(h);
 #if 0 //defined(CLASP_MS_WINDOWS_HOST)
 	} else if ((h = getenv("HOMEPATH")) && (d = getenv("HOMEDRIVE"))) {
 	    namestring =
@@ -661,14 +635,14 @@ Pathname_sp homedirPathname(T_sp tuser) {
 					   make_constant_base_string(h));
 #endif
   } else {
-    namestring = Str_O::create("/");
+    namestring = SimpleBaseString_O::make("/");
   }
   if ((*namestring)[0] == '~') {
     SIMPLE_ERROR(BF("Not a valid home pathname %s") % _rep_(namestring));
   }
   i = namestring->length();
-  if (!IS_DIR_SEPARATOR(namestring->schar(i - 1)))
-    namestring = Str_O::create(namestring->get() + DIR_SEPARATOR);
+  if (!IS_DIR_SEPARATOR(namestring->rowMajorAref(i - 1).unsafe_character()))
+    namestring = SimpleBaseString_O::make(namestring->get() + DIR_SEPARATOR);
   return cl__parse_namestring(namestring);
 }
 };

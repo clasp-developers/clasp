@@ -49,7 +49,7 @@ THE SOFTWARE.
 #include <clasp/core/unixfsys.h>
 #include <clasp/core/environment.h>
 #include <clasp/core/lispStream.h>
-#include <clasp/core/str.h>
+#include <clasp/core/array.h>
 #include <clasp/core/wrappers.h>
 
 using namespace core;
@@ -94,7 +94,7 @@ CL_DEFUN bool llvm_sys__load_bitcode(core::Pathname_sp filename, bool verbose, b
   if (comp::_sym_STARllvm_contextSTAR->symbolValue().nilp()) {
     SIMPLE_ERROR(BF("The cmp:*llvm-context* is NIL"));
   }
-  core::Str_sp namestring = gctools::As<core::Str_sp>(tnamestring);
+  core::String_sp namestring = gctools::As<core::String_sp>(tnamestring);
   Module_sp m = llvm_sys__parseBitcodeFile(namestring,comp::_sym_STARllvm_contextSTAR->symbolValue());
   EngineBuilder_sp engineBuilder = EngineBuilder_O::make(m);
   TargetOptions_sp targetOptions = TargetOptions_O::make();
@@ -103,13 +103,12 @@ CL_DEFUN bool llvm_sys__load_bitcode(core::Pathname_sp filename, bool verbose, b
   if (comp::_sym_STARload_time_value_holder_nameSTAR->symbolValue().nilp() ) {
     SIMPLE_ERROR(BF("The cmp:*load-time-value-holder-name* is nil"));
   }
-  finalizeEngineAndRegisterWithGcAndRunMainFunctions(executionEngine,
-                                                     comp::_sym_STARload_time_value_holder_nameSTAR->symbolValue(),
-                                                     namestring);
+  finalizeEngineAndRegisterWithGcAndRunMainFunctions(executionEngine, namestring);
   return true;
 }
 
-CL_DEFUN core::Str_sp llvm_sys__mangleSymbolName(core::Str_sp name) {
+CL_DEFUN core::SimpleBaseString_sp llvm_sys__mangleSymbolName(core::String_sp name) {
+  ASSERT(cl__stringp(name));
   stringstream sout;
   const char *cur = name->get().c_str();
   bool first = true;
@@ -124,7 +123,7 @@ CL_DEFUN core::Str_sp llvm_sys__mangleSymbolName(core::Str_sp name) {
     first = false;
     ++cur;
   }
-  return Str_O::create(sout.str());
+  return SimpleBaseString_O::make(sout.str());
 };
 
 /*! Return an a-list containing lots of values that define C++ objects that Clasp needs to know about */
@@ -135,13 +134,18 @@ CL_DEFUN core::T_sp llvm_sys__cxxDataStructuresInfo() {
   list = Cons_O::create(Cons_O::create(_sym_invocationHistoryFrame, make_fixnum((int)sizeof(InvocationHistoryFrame))), list);
   list = Cons_O::create(Cons_O::create(_sym_size_t, make_fixnum((int)sizeof(size_t))), list);
   list = Cons_O::create(Cons_O::create(_sym_threadInfo, make_fixnum((int)sizeof(ThreadLocalState))), list);
+  list = Cons_O::create(Cons_O::create(lisp_internKeyword("VALUE-FRAME-PARENT-OFFSET"), make_fixnum((int)offsetof(core::ValueFrame_O,_Parent))),list);
+  list = Cons_O::create(Cons_O::create(lisp_internKeyword("VALUE-FRAME-ELEMENT0-OFFSET"), make_fixnum((int)offsetof(core::ValueFrame_O,_Objects._Data[0]))),list);
+  list = Cons_O::create(Cons_O::create(lisp_internKeyword("VALUE-FRAME-ELEMENT-SIZE"), make_fixnum((int)sizeof(core::ValueFrame_O::value_type))),list);
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("LCC-ARGS-IN-REGISTERS"), make_fixnum((int)sizeof(LCC_ARGS_IN_REGISTERS))), list);
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("FIXNUM-MASK"), make_fixnum((int)gctools::fixnum_mask)), list);
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("TAG-MASK"), make_fixnum((int)gctools::tag_mask)), list);
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("IMMEDIATE-MASK"), make_fixnum((int)gctools::immediate_mask)), list);
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("GENERAL-TAG"), make_fixnum((int)gctools::general_tag)), list);
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("FIXNUM-TAG"), make_fixnum((int)gctools::fixnum_tag)), list);
+  list = Cons_O::create(Cons_O::create(lisp_internKeyword("FIXNUM1-TAG"), make_fixnum((int)gctools::fixnum1_tag)), list);
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("CONS-TAG"), make_fixnum((int)gctools::cons_tag)), list);
+  list = Cons_O::create(Cons_O::create(lisp_internKeyword("VALIST-TAG"), make_fixnum((int)gctools::valist_tag)), list);
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("CHARACTER-TAG"), make_fixnum((int)gctools::character_tag)), list);
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("SINGLE-FLOAT-TAG"), make_fixnum((int)gctools::single_float_tag)), list);
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("MULTIPLE-VALUES-LIMIT"), make_fixnum((int)MultipleValues::MultipleValuesLimit)), list);
@@ -153,21 +157,26 @@ CL_DEFUN core::T_sp llvm_sys__cxxDataStructuresInfo() {
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("REGISTER-SAVE-AREA-SIZE"), make_fixnum(LCC_TOTAL_REGISTERS*sizeof(void*))), list);
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("ALIGNMENT"),make_fixnum(gctools::Alignment())),list);
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("VOID*-SIZE"),make_fixnum(sizeof(void*))),list);
-#define ENTRY(list, name, code) list = Cons_O::create(Cons_O::create(lisp_internKeyword(#name), code), list)
+#define ENTRY(list, name, code) list = Cons_O::create(Cons_O::create(lisp_internKeyword(name), code), list)
   LoadTimeValues_O tempLtv;
-  ENTRY(list, LOAD - TIME - VALUES - OBJECTS - OFFSET, make_fixnum((char *)&tempLtv._Objects - (char *)&tempLtv));
-  ENTRY(list, LOAD - TIME - VALUES - SYMBOLS - OFFSET, make_fixnum((char *)&tempLtv._Symbols - (char *)&tempLtv));
+  ENTRY(list, "LOAD-TIME-VALUES-OBJECTS-OFFSET", make_fixnum((char *)&tempLtv._Objects - (char *)&tempLtv));
   gc::Vec0<T_sp> tempVec0Tsp;
-  ENTRY(list, VEC0 - VECTOR - OFFSET, make_fixnum((char *)&tempVec0Tsp._Vector - (char *)&tempVec0Tsp));
+  ENTRY(list, "VEC0-VECTOR-OFFSET", make_fixnum((char *)&tempVec0Tsp._Vector - (char *)&tempVec0Tsp));
   gc::GCVector_moveable<T_O *> tempGCVector(1, 0);
-  ENTRY(list, GCVECTOR - CAPACITY - OFFSET, make_fixnum((char *)&tempGCVector._Capacity - (char *)&tempGCVector));
-  ENTRY(list, GCVECTOR - END - OFFSET, make_fixnum((char *)&tempGCVector._End - (char *)&tempGCVector));
-  ENTRY(list, GCVECTOR - DATA0 - OFFSET, make_fixnum((char *)&tempGCVector._Data[0] - (char *)&tempGCVector));
+  ENTRY(list, "GCVECTOR-CAPACITY-OFFSET", make_fixnum((char *)&tempGCVector._Capacity - (char *)&tempGCVector));
+  ENTRY(list, "GCVECTOR-END-OFFSET", make_fixnum((char *)&tempGCVector._End - (char *)&tempGCVector));
+  ENTRY(list, "GCVECTOR-DATA0-OFFSET", make_fixnum((char *)&tempGCVector._Data[0] - (char *)&tempGCVector));
+  ENTRY(list, "FIXNUM-STAMP", make_fixnum(gctools::KIND_FIXNUM));
+  ENTRY(list, "CONS-STAMP", make_fixnum(gctools::KIND_CONS));
+  ENTRY(list, "VA_LIST_S-STAMP", make_fixnum(gctools::KIND_VA_LIST_S));
+  ENTRY(list, "CHARACTER-STAMP", make_fixnum(gctools::KIND_CHARACTER));
+  ENTRY(list, "SINGLE-FLOAT-STAMP", make_fixnum(gctools::KIND_SINGLE_FLOAT)); 
+  ENTRY(list, "STAMP-SHIFT", make_fixnum(gctools::Header_s::stamp_shift));
   return list;
 }
 
-CL_LAMBDA(&key tsp tmv ihf);
-CL_DEFUN void llvm_sys__throwIfMismatchedStructureSizes(core::Fixnum_sp tspSize, core::Fixnum_sp tmvSize, gc::Nilable<core::Fixnum_sp> givenIhfSize) {
+CL_LAMBDA(&key tsp tmv ihf contab);
+CL_DEFUN void llvm_sys__throwIfMismatchedStructureSizes(core::Fixnum_sp tspSize, core::Fixnum_sp tmvSize, gc::Nilable<core::Fixnum_sp> givenIhfSize, core::T_sp contabSize) {
   int T_sp_size = sizeof(core::T_sp);
   if (unbox_fixnum(tspSize) != T_sp_size) {
     SIMPLE_ERROR(BF("Mismatch between tsp size[%d] and core::T_sp size[%d]") % unbox_fixnum(tspSize) % T_sp_size);
@@ -182,7 +191,18 @@ CL_DEFUN void llvm_sys__throwIfMismatchedStructureSizes(core::Fixnum_sp tspSize,
                     " and sizeof(LispCompiledFunctionIHF)=[%d]") %
                  _rep_(givenIhfSize) % InvocationHistoryFrame_size);
   }
-};
+  if ( contabSize.notnilp() ) {
+    int contab_size = sizeof(gctools::ConstantsTable);
+    if (contabSize.fixnump()) {
+      if (contab_size != contabSize.unsafe_fixnum()) {
+        SIMPLE_ERROR(BF("ConstantTable size %lu mismatch with Common Lisp code %lu") % contab_size % contabSize.unsafe_fixnum());
+      }
+    } else {
+      SIMPLE_ERROR(BF("contab keyword argument expects a fixnum"));
+    }
+  }
+}
+
 
 #if 0
     core::Symbol_sp* getOrCreateMemoryLockedSymbolForLlvm(core::Symbol_sp sym)
@@ -256,6 +276,24 @@ void dump_funcs(core::Function_sp compiledFunction) {
   } else {
     STDOUT_BFORMAT(BF("There were no associated functions available for disassembly\n"));
   }
+}
+
+CL_LAMBDA(module &optional (stream t))
+CL_DEFUN void dump_module(Module_sp module, core::T_sp tstream) {
+  core::T_sp stream = core::coerce::outputStreamDesignator(tstream);
+  string outstr;
+  llvm::raw_string_ostream sout(outstr);
+  module->wrappedPtr()->print(sout,NULL);
+  core::clasp_write_string(outstr,stream);
+}
+
+CL_LAMBDA(function &optional (stream t))
+CL_DEFUN void dump_function(Function_sp function, core::T_sp tstream) {
+  core::T_sp stream = core::coerce::outputStreamDesignator(tstream);
+  string outstr;
+  llvm::raw_string_ostream sout(outstr);
+  function->wrappedPtr()->print(sout,NULL);
+  core::clasp_write_string(outstr,stream);
 }
 
 CL_DEFUN void llvm_sys__disassembleSTAR(core::Function_sp cf) {
@@ -348,4 +386,3 @@ void LlvmoExposer_O::expose(core::Lisp_sp lisp, core::Exposer_O::WhatToExpose wh
 #undef NAMESPACE_llvmo
 #endif
 #endif
-

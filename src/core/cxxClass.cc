@@ -24,7 +24,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#define DEBUG_LEVEL_FULL
+//#define DEBUG_LEVEL_FULL
 
 #include <clasp/core/foundation.h>
 #include <clasp/core/cxxClass.h>
@@ -44,8 +44,8 @@ CxxClass_sp CxxClass_O::create(Symbol_sp instanceClassSymbol) {
   return ((oclass));
 }
 
-CxxClass_sp CxxClass_O::createUncollectable() {
-  GC_ALLOCATE_UNCOLLECTABLE(CxxClass_O, oclass);
+CxxClass_sp CxxClass_O::createUncollectable(gctools::Stamp is) {
+  GC_ALLOCATE_UNCOLLECTABLE(CxxClass_O, oclass, is);
   return ((oclass));
 }
 

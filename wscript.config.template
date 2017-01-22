@@ -1,0 +1,36 @@
+#-*- mode: python; coding: utf-8-unix -*-
+
+#### Clasp build configuration file.
+###
+### This file has to be named `wscript.config` to be
+### recognised by the build system.
+
+# It contains some external dependencies for clasp. The end
+# goal is that it won't be needed anymore and the default
+# packages of the host OS are found and utilized. Unfortunately
+# version constraints make that ideal sometimes unreachable.
+#EXTERNALS_CLASP_DIR = '/path/externals-clasp/'
+
+# To link to llvm debug libraries set a path to the llvm-config for the llvm debug build
+# LLVM_CONFIG_DEBUG_PATH = "/full/path/externals-clasp/build/debug/bin/llvm-config"
+
+# Where to install clasp. Defaults to '/usr/local/'.
+#INSTALL_PATH_PREFIX = '/opt/clasp/'
+
+# SBCL is used at build time. Defaults to 'sbcl'.
+#SBCL                = '/path/sbcl/run-sbcl.sh'
+
+# Optional clasp binary. It is used only when rebuilding
+# clasp, e.g. with the './waf rebuild_cboehm' command.
+#CLASP               = '/path/cclasp-boehm'
+
+# This is how you can specify non-standard locations
+#INCLUDES = "/opt/boost_1_62_0/include"
+#LINKFLAGS = ["-L/opt/boost_1_62_0/lib", "-Wl,-rpath=/opt/boost_1_62_0/lib"]
+
+# This turns on build with address sanitizer
+# ADDRESS_SANITIZER = True
+
+# This controls how whether LTO is used and what kind ("thinlto"(default) or "lto" or "obj" (no lto))
+# 'obj' is faster for debugging
+# LTO_OPTION = 'obj'

@@ -67,7 +67,7 @@ public:
 
   void append(int val);
 
-  uint size() { return this->_Ints.size(); };
+  cl_index size() { return this->_Ints.size(); };
 
   int get(unsigned idx);
   void put(unsigned idx, int val);

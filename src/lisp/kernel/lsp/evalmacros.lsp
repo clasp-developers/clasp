@@ -138,21 +138,30 @@ VARIABLE doc and can be retrieved by (DOCUMENTATION 'SYMBOL 'VARIABLE)."
                 ;; Documentation in help.lsp
                 (multiple-value-bind (decls body doc-string) 
                     (process-declarations body t)
-                  (let* ((doclist (when doc-string (list doc-string)))
+                  (let* ((loc (ext:current-source-location))
+                         (filepos (if loc (source-file-pos-filepos loc) 0))
+                         (lineno (if loc (source-file-pos-lineno loc) 0))
+                         (column (if loc (source-file-pos-column loc) 0))
+                         (fn (gensym))
+                         (doclist (when doc-string (list doc-string)))
                          (global-function `#'(lambda ,vl 
-                                               (declare (core:lambda-name ,name) ,@decls) 
+                                               (declare (core:lambda-name ,name core:current-source-file ,filepos ,lineno ,column) ,@decls) 
                                                ,@doclist (block ,(si::function-block-name name) ,@body))))
+                    ;;(bformat t "macro expansion of defun current-source-location -> %s\n" current-source-location)
                     ;;(bformat t "DEFUN global-function --> %s\n" global-function )
-                    `(progn
-                       ,(ext:register-with-pde whole `(si::fset ',name ,global-function nil t ',vl))
-                       ,@(si::expand-set-documentation name 'function doc-string)
-                       ,(and *defun-inline-hook*
-                             (funcall *defun-inline-hook* name global-function))
-                       ',name)))))
+                    `(let () ',*special-defun-symbol* ',name
+                          (let ((,fn ,global-function))
+                            ',*special-defun-symbol* ',name
+                            ;;(bformat t "Performing DEFUN   core:*current-source-pos-info* -> %s\n" core:*current-source-pos-info*)
+                            ,(ext:register-with-pde whole `(si::fset ',name ,fn nil t ',vl))
+                            (core:set-source-info ,fn ',(list 'core:current-source-file filepos lineno column))
+                            ,@(si::expand-set-documentation name 'function doc-string)
+                            ,(and *defun-inline-hook*
+                                  (funcall *defun-inline-hook* name global-function))
+                            ',name))))))
           t
           nil
           '(name lambda-list &body body))
-
 
 ;;;
 ;;; This is a no-op unless the compiler is installed
@@ -230,7 +239,7 @@ terminated by a non-local exit."
 		  (block ,(si::function-block-name name) ,@body))))
 ; assignment
 
-#-ecl-min
+#-clasp-min
 (defmacro psetq (&rest args)
   "Syntax: (psetq {var form}*)
 Similar to SETQ, but evaluates all FORMs first, and then assigns each value to

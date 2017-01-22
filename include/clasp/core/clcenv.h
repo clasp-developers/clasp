@@ -70,6 +70,8 @@ It's something to dispatch on */
     core::T_sp _Identity;
   public:
     /*METHODS*/
+    CL_LISPIFY_NAME("CLCENV:INFO-IDENTITY");
+    CL_DEFMETHOD     virtual core::T_sp identity() const { return this->_Identity; };
   public:
   LexicalVariable_O() : _Name(_Unbound<core::T_O>()), _Identity(_Unbound<core::T_O>()) {};
   LexicalVariable_O(core::T_sp env, core::T_sp name, core::T_sp identity) :
@@ -148,6 +150,8 @@ is encountered */
     core::T_sp _Identity;
   public:
     /*METHODS*/
+    CL_LISPIFY_NAME("CLCENV:INFO-IDENTITY");
+    CL_DEFMETHOD     virtual core::T_sp identity() const { return this->_Identity; };
   public:
     explicit Function_O() : _Name(_Unbound<core::T_O>())
       ,_Identity(_Unbound<core::T_O>())
@@ -187,6 +191,8 @@ is encountered */
     core::T_sp _Identity;
   public:
     /*METHODS*/
+    CL_LISPIFY_NAME("CLCENV:INFO-IDENTITY");
+    CL_DEFMETHOD     virtual core::T_sp identity() const { return this->_Identity; };
   public:
   explicit Block_O() : _Name(_Unbound<core::T_O>())
       ,_Identity(_Unbound<core::T_O>())
@@ -206,6 +212,8 @@ is encountered */
     core::T_sp _Identity;
   public:
     /*METHODS*/
+    CL_LISPIFY_NAME("CLCENV:INFO-IDENTITY");
+    CL_DEFMETHOD     virtual core::T_sp identity() const { return this->_Identity; };
   public:
   Tag_O() : _Name(_Unbound<core::T_O>())
       ,_Identity(_Unbound<core::T_O>())
@@ -391,9 +399,14 @@ namespace clcenv {
   class Info_O : public core::CxxObject_O {
     LISP_CLASS(clcenv,ClcenvPkg,Info_O,"Info",core::CxxObject_O);
   public:
-    virtual core::T_sp name() const { SUBIMP(); };
-    virtual core::T_sp type() const { SUBIMP(); };
-    virtual core::T_sp inline_() const { SUBIMP(); };
+    CL_LISPIFY_NAME("CLCENV:INFO-NAME");
+    CL_DEFMETHOD virtual core::T_sp name() const { SUBIMP(); };
+    CL_LISPIFY_NAME("CLCENV:INFO-TYPE");
+    CL_DEFMETHOD virtual core::T_sp type() const { SUBIMP(); };
+    CL_LISPIFY_NAME("CLCENV:INFO-INLINE");
+    CL_DEFMETHOD virtual core::T_sp inline_() const { SUBIMP(); };
+    CL_LISPIFY_NAME("CLCENV:INFO-IDENTITY");
+    CL_DEFMETHOD virtual core::T_sp identity() const { SUBIMP(); };
     Info_O() {};
     virtual ~Info_O() {};
 //    virtual clc::Ast_sp convert_form(ARGS_form_env_rest);
@@ -433,6 +446,8 @@ namespace clcenv {
   public:
     /*METHODS*/
     core::T_sp name() const override { return this->_Name; };
+    CL_LISPIFY_NAME("CLCENV:INFO-IDENTITY");
+    CL_DEFMETHOD     virtual core::T_sp identity() const { return this->_Identity; };
   public:
   LexicalVariableInfo_O() :
     _Name(_Unbound<core::T_O>())
@@ -518,6 +533,8 @@ namespace clcenv {
     /*METHODS*/
     core::T_sp name() const override { return this->_Name; };
     core::T_sp inline_() const override { return this->_Inline; };
+    CL_LISPIFY_NAME("CLCENV:INFO-IDENTITY");
+    CL_DEFMETHOD     virtual core::T_sp identity() const { return this->_Identity; };
   public:
   LocalFunctionInfo_O() :
     _Name(_Unbound<core::T_O>())
@@ -633,6 +650,8 @@ namespace clcenv {
   public:
     /*METHODS*/
     core::T_sp name() const override { return this->_Name; };
+    CL_LISPIFY_NAME("CLCENV:INFO-IDENTITY");
+    CL_DEFMETHOD     virtual core::T_sp identity() const { return this->_Identity; };
   public:
   BlockInfo_O() :
     _Name(_Unbound<core::T_O>())
@@ -792,10 +811,10 @@ namespace clcenv {
   core::T_sp global_environment(core::T_sp environment);
 
 
-  core::T_mv variable_is_special_p(core::T_sp variable, core::List_sp declarations, Entry_sp env );
+  core::T_mv clcenv__variable_is_special_p(core::T_sp variable, core::List_sp declarations, Entry_sp env );
 
-  Entry_sp augment_environment_with_variable(core::T_sp variable, core::List_sp declarations, Entry_sp env, Entry_sp orig_env );
-  Entry_sp augment_environment_with_declarations(Entry_sp environment, core::List_sp canonicalized_dspecs);
+  Entry_sp clcenv__augment_environment_with_variable(core::T_sp variable, core::List_sp declarations, Entry_sp env, Entry_sp orig_env );
+  Entry_sp clcenv__augment_environment_with_declarations(Entry_sp environment, core::List_sp canonicalized_dspecs);
 };
 #endif
 

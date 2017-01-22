@@ -4,14 +4,14 @@
 
 /*
 Copyright (c) 2014, Christian E. Schafmeister
- 
+
 CLASP is free software; you can redistribute it and/or
 modify it under the terms of the GNU Library General Public
 License as published by the Free Software Foundation; either
 version 2 of the License, or (at your option) any later version.
- 
+
 See directory 'clasp/licenses' for full details.
- 
+
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
 
@@ -24,16 +24,15 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#define DEBUG_LEVEL_FULL
+//#define DEBUG_LEVEL_FULL
 
 #include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
 #include <clasp/core/hashTable.h>
-#include <clasp/core/str.h>
+#include <clasp/core/array.h>
 #include <clasp/core/arguments.h>
 #include <clasp/core/hashTableEq.h>
 #include <clasp/core/symbolTable.h>
-#include <clasp/core/vectorObjectsWithFillPtr.h>
 #include <clasp/core/evaluator.h>
 #include <clasp/core/record.h>
 
@@ -49,17 +48,17 @@ T_sp record_circle_subst(T_sp replacement_table, T_sp tree) {
 
 Record_O::Record_O(RecordStage stage, bool dummy, List_sp data) : _stage(stage), _alist(data), _Seen(_Nil<T_O>()) {
   if (stage == initializing) {
-    this->_Seen = VectorObjectsWithFillPtr_O::make(_Nil<T_O>(), _Nil<T_O>(), 16, 0, true, cl::_sym_T_O);
+    this->_Seen = VectorObjects_O::make(16, _Nil<T_O>(), clasp_make_fixnum(0));
   }
 }
 
 void Record_O::flagSeen(Cons_sp pair) {
-  VectorObjectsWithFillPtr_sp vvec = gc::As<VectorObjectsWithFillPtr_sp>(this->_Seen);
+  VectorObjects_sp vvec = gc::As<VectorObjects_sp>(this->_Seen);
   vvec->vectorPushExtend(pair);
 }
 
 void Record_O::errorIfInvalidArguments() {
-  VectorObjectsWithFillPtr_sp seenvec = gc::As<VectorObjectsWithFillPtr_sp>(this->_Seen);
+  VectorObjects_sp seenvec = gc::As<VectorObjects_sp>(this->_Seen);
   //  printf("%s:%d arguments seen: %s\n", __FILE__, __LINE__, _rep_(seenvec).c_str());
   //  printf("       arguments passed: %s\n", _rep_(this->_alist).c_str());
   List_sp badArgs(_Nil<T_O>());

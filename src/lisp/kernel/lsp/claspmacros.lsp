@@ -153,3 +153,17 @@
   `(progn ,@body))
 (export 'with-lock)
 (in-package :core)
+
+#+(or)
+(progn
+  (declaim (inline char))
+  (defun char (str idx)
+    (declare (type (string str)))
+    (if (eql safety 0)
+        (if (or (minusp idx) (>= idx (length str)))
+            (error "Index ~a must be positive and less than ~a" idx (length str))))
+    (etypecase (str)
+      (core:simple-base-char-string (intrinsic-call "SimpleBaseCharString_get" str idx))
+      (core:simple-character-string (intrinsic-call "SimpleCharacterString_get" str idx))
+      (core:str8-ns (intrinsic-call "Str8Ns_get" str idx))
+      (core:str-w-ns (intrinsic-call "StrWNs_get" str idx)))))

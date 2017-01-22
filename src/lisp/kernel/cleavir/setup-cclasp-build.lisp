@@ -22,18 +22,29 @@
   (with-open-file (fout filename :direction :output)
     (print system fout)))
 
+(defun save-partial-system-python (filename system)
+  "Save the list of files in (system) to filename as a python file"
+  (format t "Saving system to ~a~%" filename)
+  (with-open-file (fout filename :direction :output :if-exists :rename)
+    (format fout "cleavir_parts = [~%")
+    (format fout "~&    ~s" (namestring (car system)))
+    (dolist (one-file (cdr system))
+      (format fout ",~&    ~s" (namestring one-file)))
+    (format fout "~&]~%")))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
 ;;; Save the current list of Cleavir files
 
-(format t "Saving Cleavir files to source-dir:src;lisp;kernel;cleavir-system.lsp~%")
-(save-partial-system #P"source-dir:src;lisp;kernel;cleavir-system.lsp"
-                     (append
-                      (asdf-system-groveler:determine-complete-set-of-asdf-source-files (list :clasp-cleavir))
-                      (list :pre-inline
-                            ;; auto-compile must preceed inline because the Cleavir compiler
-                            ;; needs to be the default compiler before inlining is used to
-                            ;; replace CL functions like CONSP, CAR, CDR, RPLACA etc
-                            #P"src/lisp/kernel/cleavir/auto-compile"
-                            #P"src/lisp/kernel/cleavir/inline")))
+(save-partial-system-python
+ #P"source-dir:src;lisp;kernel;cleavir.py"
+ (append
+  (asdf-system-groveler:determine-complete-set-of-asdf-source-files (list :clasp-cleavir))
+  (list
+   ;; auto-compile must preceed inline because the Cleavir compiler
+   ;; needs to be the default compiler before inlining is used to
+   ;; replace CL functions like CONSP, CAR, CDR, RPLACA etc
+   ;;#P"src/lisp/kernel/tags/pre-auto"
+   #P"src/lisp/kernel/cleavir/auto-compile"
+   #P"src/lisp/kernel/cleavir/inline")))
 (format t "Done~%")

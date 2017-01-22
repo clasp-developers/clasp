@@ -17,7 +17,7 @@
   (format *query-io* "~&Type a form to be evaluated:~%")
   (list (eval (read *query-io*))))
 
-#-ecl-min
+#-clasp-min
 (defun wrong-type-argument (object type &optional place function)
   #-ecl-min
   (declare (policy-debug-ihs-frame))
@@ -50,12 +50,12 @@ of the specified type.  STRING-FORM, if given, is evaluated only once and the
 value is used to indicate the expected type in the error message."
   (let ((aux (gensym)))
     `(let ((,aux ,place))
-       (declare (:read-only ,aux))
+       #-clasp(declare (:read-only ,aux))
        (unless (typep ,aux ',type)
 	 (setf ,place (do-check-type ,aux ',type ',type-string ',place)))
        nil)))
 
-#-ecl-min
+#-clasp-min
 (defun do-check-type (value type type-string place)
   (tagbody again
      (unless (typep value type)
@@ -118,7 +118,7 @@ signals an error."
        (case ,key ,@clauses
 	 (t (si::ecase-error ,key ',(accumulate-cases clauses nil)))))))
 
-#-ecl-min
+#-clasp-min
 (defun ccase-error (keyform key values)
   (restart-case (error 'CASE-FAILURE
 		       :name 'CCASE
@@ -200,7 +200,7 @@ the last FORM.  If not, signals an error."
        )
    )
 
-#-ecl-min
+#-clasp-min
 (defun ctypecase-error (keyplace value types)
   (restart-case (error 'CASE-FAILURE
 		       :name 'CTYPECASE

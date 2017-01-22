@@ -29,6 +29,7 @@
 (defvar *debug-attach-debugging-info-to-value-frames* t)
 
 
+
 ;; Use the DebugIRPass to add self referencing debugging informato to IR
 (defvar *debug-ir* nil)
 
@@ -43,9 +44,10 @@
 (defvar *verify-llvm-functions* nil)
 
 
-(defvar *dump-module-on-completion* nil)
+(defvar *compile-file-debug-dump-module* nil)
+(defvar *compile-debug-dump-module* nil)
 
-
+(defvar *debug-link-options* nil)
 
 
 ;; Generate a bitcode file for the llvm-ir prior to running optimization passes on it
@@ -91,15 +93,13 @@ Options are :tagbody :go :all :eh-landing-pads
 ;;; Turn off compiler debugging code once we are confident it works
 ;;;
 ;;;
-#-(or)
 (progn
   (defmacro debug-print-i32 (num) nil)
   (defmacro cmp-log-dump (fn) nil)
   (defmacro cmp-log (fmt &rest args ) nil)
-  (defun is-debug-compiler-on () nil)
-  )
+  (defun is-debug-compiler-on () nil))
 
-
+#+(or)
 (progn
   (defun is-debug-compiler-on ()
     *debug-compiler*)
@@ -108,11 +108,11 @@ Options are :tagbody :go :all :eh-landing-pads
 	 (irc-intrinsic "debugPrintI32" (jit-constant-i32 ,num))
 	 nil))
   (defmacro cmp-log (fmt &rest args)
-    `(if (is-debug-compiler-on)
-	 (progn
-	   (bformat t "%s:%s " (source-file-name) (source-line-column))
-	   (bformat t ,fmt ,@args))
-	 nil))
+      `(if (is-debug-compiler-on)
+           (progn
+             (bformat t "CMP-LOG ")
+             (bformat t ,fmt ,@args))
+           nil)))
   (defmacro cmp-log-dump (fn-or-module)
     `(if (is-debug-compiler-on)
 	 (llvm-sys:dump ,fn-or-module)
@@ -126,5 +126,4 @@ Options are :tagbody :go :all :eh-landing-pads
 ;; and nil otherwise
 (defvar *cleavir-compile-hook* nil)
 (defvar *cleavir-compile-file-hook* nil)
-
 

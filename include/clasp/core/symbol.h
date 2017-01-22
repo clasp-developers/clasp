@@ -35,6 +35,7 @@ THE SOFTWARE.
 #include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
 #include <clasp/core/cons.h>
+#include <clasp/core/array.h>
 #include <clasp/core/activationFrame.h>
 #include <clasp/core/environment.fwd.h>
 //#include <clasp/core/lisp.h>
@@ -52,7 +53,7 @@ class Symbol_O : public General_O {
   struct metadata_gc_do_not_move {};
 
 public:
-  Str_sp _Name;
+  SimpleString_sp _Name;
   T_sp _HomePackage; // NIL or Package
   T_sp _Value;
   T_sp _Function;
@@ -82,8 +83,8 @@ public:
   /*! Only used when creating special symbols at boot time.
 	  Before NIL, UNBOUND etc are defined */
   static Symbol_sp create_at_boot(const string &nm);
-  static Symbol_sp create(const string &nm);
-  static Symbol_sp create(Str_sp snm) {
+  static Symbol_sp create_from_string(const string &nm);
+  static Symbol_sp create(SimpleString_sp snm) {
   // This is used to allocate roots that are pointed
   // to by global variable _sym_XXX  and will never be collected
     Symbol_sp n = gctools::GC<Symbol_O>::root_allocate(true);
@@ -110,7 +111,7 @@ public:
   /*! Return a pointer to the value cell */
   inline T_sp *valueReference() { return &(this->_Value); };
 
-  void setf_name(Str_sp nm) { this->_Name = nm; };
+  void setf_name(SimpleString_sp nm) { this->_Name = nm; };
 
   List_sp plist() const { return this->_PropertyList; };
   void setf_plist(List_sp plist);
@@ -148,7 +149,7 @@ CL_DEFMETHOD   bool specialP() const { return this->_IsSpecial; };
 
   inline bool boundP() const { return !this->_Value.unboundp(); };
 
-  void makunbound();
+  Symbol_sp makunbound();
 
   T_sp defparameter(T_sp obj);
   T_sp defconstant(T_sp obj);
@@ -180,8 +181,7 @@ CL_DEFMETHOD   bool specialP() const { return this->_IsSpecial; };
 
   string symbolNameAsString() const;
 
-  Str_sp symbolName() const { return this->_Name; };
-  Str_sp identifierName() const { return this->symbolName(); };
+  SimpleString_sp symbolName() const { return this->_Name; };
 
   T_sp getPackage() const;
   T_sp homePackage() const { return this->getPackage(); };
@@ -229,13 +229,14 @@ public: // ctor/dtor for classes with shared virtual base
     return this->symbolNameAsString() < other.symbolNameAsString();
   }
 
+  void remove_package(Package_sp pkg);
 public:
   explicit Symbol_O();
   virtual ~Symbol_O(){};
 };
 
 T_sp cl__symbol_value(const Symbol_sp sym);
-Str_sp cl__symbol_name(Symbol_sp sym);
+SimpleString_sp cl__symbol_name(Symbol_sp sym);
 T_sp cl__symbol_package(Symbol_sp sym);
 Function_sp cl__symbol_function(Symbol_sp sym);
 bool cl__boundp(Symbol_sp sym);

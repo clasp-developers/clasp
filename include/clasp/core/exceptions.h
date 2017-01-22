@@ -82,6 +82,8 @@ struct _TRACE {
     lisp_error( _type_, _Nil<core::Cons_O>()); \
     THROW_NEVER_REACH();                                                                  \
   }
+#define SIMPLE_WARN(_boost_fmt_) \
+  core::eval::funcall(cl::_sym_warn, core::SimpleBaseString_O::make((_boost_fmt_).str()));
 #define ERROR(_type_, _initializers_)                                               \
   {                                                                                 \
     lisp_error( _type_, _initializers_); \
@@ -92,7 +94,12 @@ struct _TRACE {
     ::core::lisp_error_simple(__FUNCTION__, __FILE__, __LINE__, _boost_fmt_); \
     THROW_NEVER_REACH();                                                      \
   }
-#define NOT_ENVIRONMENT_ERROR(e) SIMPLE_ERROR(BF("Not an environment"))
+#define NOT_ENVIRONMENT_ERROR(_e_)                                                                  \
+  ERROR(cl::_sym_simpleTypeError,                                                                      \
+        core::lisp_createList(kw::_sym_formatControl, core::lisp_createStr("~S is not a bclasp environment"), \
+                              kw::_sym_formatArguments, core::lisp_createList(_e_),                  \
+                              kw::_sym_expectedType, core::_sym_Environment_O, \
+                              kw::_sym_datum, _e_));
 #define SIMPLE_ERROR_BF(_str_) SIMPLE_ERROR(BF(_str_))
 
 /*! Error for when an index is out of range - eg: beyond the end of a string */
@@ -151,10 +158,13 @@ struct _TRACE {
 
 #define PRINT_NOT_READABLE_ERROR(obj) ERROR(cl::_sym_printNotReadable, core::lisp_createList(kw::_sym_object, obj));
 #define CELL_ERROR(name) ERROR(cl::_sym_cellError, core::lisp_createList(kw::_sym_name, name))
+#define UNBOUND_VARIABLE_ERROR(name) ERROR(cl::_sym_unboundVariable, core::lisp_createList(kw::_sym_name, name))
 #define KEY_NOT_FOUND_ERROR(_key_) SIMPLE_ERROR(BF("Key %s not found") % _key_)
 #define CONTROL_ERROR() NO_INITIALIZERS_ERROR(cl::_sym_controlError);
 
 #define WRONG_TYPE_ARG(_datum_, _expectedType_) core__wrong_type_argument(__FILE__, __LINE__, core::lisp_intern(__FUNCTION__, CurrentPkg), _datum_, _expectedType_)
+
+#define FUNCTION_WRONG_TYPE_ARG(function_name, _datum_, _expectedType_) core__function_wrong_type_argument( function_name, _datum_, _expectedType_)
 
 #define ERROR_WRONG_TYPE_KEY_ARG(_fn_, _key_, _value_, _type_) af_wrongTypeKeyArg(__FILE__, __LINE__, _fn_, _key_, _value_, _type_)
 
@@ -371,11 +381,11 @@ struct CxxFunctionInvocationLogger {
 #define FIX_ME() SIMPLE_ERROR(BF("Fix me!!! function(%s) file(%s) lineNumber(%s)") % __FUNCTION__ % __FILE__ % __LINE__);
 #define IMPLEMENT_ME() SIMPLE_ERROR(BF("Implement me!!! function(%s) file(%s) lineNumber(%s)") % __FUNCTION__ % __FILE__ % __LINE__);
 #define IMPLEMENT_MEF(bfmsg) SIMPLE_ERROR(BF("Implement me!!! %s\nfunction(%s) file(%s) lineNumber(%s)") % (bfmsg).str() % __FUNCTION__ % __FILE__ % __LINE__);
-#define DEPRECIATED() SIMPLE_ERROR(BF("Depreciated!!! function(%s) file(%s) lineNumber(%d)") % __FUNCTION__ % __FILE__ % __LINE__);
+#define DEPRECATED() SIMPLE_ERROR(BF("Depreciated!!! function(%s) file(%s) lineNumber(%d)") % __FUNCTION__ % __FILE__ % __LINE__);
 #define STUB() printf("%s:%d>%s  stub\n", __FILE__, __LINE__, __FUNCTION__ )
 
-#define MAY_BE_DEPRECIATED() printf("%s\n", (BF("May be depreciated!!! function(%s) file(%s) lineNumber(%d)") % __FUNCTION__ % __FILE__ % __LINE__).str().c_str());
-#define DEPRECIATEDP(s) SIMPLE_ERROR(BF("Depreciated!!! function(%s) file(%s) lineNumber(%d) %s") % __FUNCTION__ % __FILE__ % __LINE__ % (s));
+#define MAY_BE_DEPRECATED() printf("%s\n", (BF("May be depreciated!!! function(%s) file(%s) lineNumber(%d)") % __FUNCTION__ % __FILE__ % __LINE__).str().c_str());
+#define DEPRECATEDP(s) SIMPLE_ERROR(BF("Depreciated!!! function(%s) file(%s) lineNumber(%d) %s") % __FUNCTION__ % __FILE__ % __LINE__ % (s));
 
 FORWARD(Cons);
 
@@ -516,7 +526,7 @@ void debugSuppressMessages(bool s);
 // char*	internal=BufferPrintf( const char* fmt, ... );
 
 #ifdef DEBUG_ON
-#error "TURN OFF DEBUG_ON"
+//#error "TURN OFF DEBUG_ON"
 #define TESTMEMORY()
 
 #define HARD_BREAK_POINT() __asm int 3;
@@ -672,7 +682,6 @@ extern string _stackTraceAsString();
   LOG_CXX_FUNCTION_INVOCATION(); \
   _PROFILE_FUNCTION();
 
-#error "TURN CALLSTACK_ON off"
 #define _OF() _G();
 #define _lisp_BLOCK_TRACEF(__f) \
   {} // core::_StackTrace _B_stackTrace(__FILE__,"LexicalScope",__LINE__,0,DEBUG_CPP_BLOCK,__f)
@@ -708,6 +717,8 @@ public:
   T_mv returnObject() { return this->_ReturnObject; };
 };
 
+void core__function_wrong_type_argument(Symbol_sp function, T_sp value, T_sp type);
+
 void core__wrong_type_argument(const string &sourceFile, int lineno, Symbol_sp function, T_sp value, T_sp type);
 
 void af_wrongTypeKeyArg(const string &sourceFile, int lineno, Symbol_sp function, T_sp key, T_sp value, T_sp type);
@@ -719,13 +730,13 @@ void af_wrongTypeOnlyArg(const string &sourceFile, int lineno, Symbol_sp functio
 void core__wrong_index(const string &sourceFile, int lineno, Symbol_sp function, T_sp array, int which, T_sp index, int noninc_index);
 
 void cl__reader_error(const string &sourceFile, uint lineno, Symbol_sp function,
-                    Str_sp fmt, List_sp fmtargs, T_sp stream = _Nil<T_O>());
+                    String_sp fmt, List_sp fmtargs, T_sp stream = _Nil<T_O>());
 
 void assert_type_integer(T_sp p, int idx);
 
 T_sp core__signal_simple_error(T_sp baseCondition, T_sp continueMessage, T_sp formatControl, T_sp formatArgs, T_sp args);
 
-void FEerror(const string &fmt, int numArgs, ...);
+[[noreturn]] void FEerror(const string &fmt, int numArgs, ...);
 void FEtype_error_list(T_sp thing);
 void FElibc_error(const char *fmt, int nargs, ...);
 void FEcannot_open(T_sp fn);

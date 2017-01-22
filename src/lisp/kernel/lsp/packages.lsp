@@ -21,7 +21,7 @@
             default-target-backend
             load-system
             compile-system
-            load-clasprc
+            maybe-load-clasprc
             process-command-line-load-eval-sequence
             top-level
             run-repl

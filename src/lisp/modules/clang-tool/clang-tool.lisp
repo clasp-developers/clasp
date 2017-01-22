@@ -405,21 +405,20 @@ Find directories that look like them and replace the ones defined in the constan
 
 
 (defconstant +isystem-dir+ 
-  #+target-os-darwin "/Applications/Xcode-beta.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/8.0.0"
+  #+target-os-darwin "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/8.0.0"
   #+target-os-linux "/usr/include/clang/3.6/include"
   "Define the -isystem command line option for Clang compiler runs")
 
 (defconstant +resource-dir+ 
-  #+target-os-darwin "/Applications/Xcode-beta.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/8.0.0"
+  #+target-os-darwin "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/8.0.0"  ; Used
   #+target-os-linux (format nil "/home/meister/Dev/externals-clasp/build/release/bin/../lib/clang/~a.0" (ext::llvm-short-version))
-  #+(or)"/home/meister/Development/externals-clasp/build/release/lib/clang/3.6.2"
   "Define the -resource-dir command line option for Clang compiler runs")
 (defconstant +additional-arguments+
-  #+target-os-darwin (vector
-                      "-I/Applications/Xcode-beta.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.12.sdk/usr/include"
-                      "-I/Applications/Xcode-beta.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include"
-                      #+(or)"-I/Applications/Xcode-beta.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/7.0.2/include"
-                      "-I/Applications/Xcode-beta.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.12.sdk/System/Library/Frameworks")
+  #+target-os-darwin (vector "GARBAGE2")
+  #+(or)(vector
+         "-I/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.12.sdk/usr/include"
+         "-I/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include"
+         "-I/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.12.sdk/System/Library/Frameworks")
   #-target-os-darwin (vector
                       #+(or)"-I/home/meister/local/gcc-4.8.3/include/c++/4.8.3"
                       #+(or)"-I/home/meister/local/gcc-4.8.3/include/c++/4.8.3/x86_64-redhat-linux"
@@ -550,8 +549,9 @@ Otherwise the value of convert-relative-includes-to-absolute is used.
 * Description
 Load the compilation database and return it. If source-path-identifier is defined then every match will have it's source location checked to see if the 
 it contains the string source-path-identifier.  So /a/b/c/d.cc will match /b/"
-  (let* ((db (ast-tooling:jsoncompilation-database-load-from-file
-              (namestring (or (probe-file pathname) (error "Could not find file: ~a" pathname)))))
+  (let* ((db (ast-tooling:wrapped-jsoncompilation-database-load-from-file
+              (namestring (or (probe-file pathname) (error "Could not find file: ~a" pathname)))
+              :auto-detect))
          (all-files (map 'list #'identity (ast-tooling:get-all-files db)))
          (ctd (make-instance 'compilation-tool-database
                              :clang-database db
@@ -571,15 +571,16 @@ Return the pathname of the directory that contains the main source file. This is
   (translate-logical-pathname #P"source-dir:src/main/"))
 
 
-(defun select-source-namestrings (compilation-tool-database &optional (pattern ".*"))
+(defun select-source-namestrings (compilation-tool-database &optional (pattern nil))
   "* Arguments
 - compilation-tool-database :: The compilation database.
-- pattern :: A regex pattern for selecting file names from the database.
+- pattern :: A string for selecting file names from the database that contain that string.
 * Description
 Select a subset (or all) source file names from the compilation database and return them as a list."
-  (let ((re (core:make-regex pattern))
-        (list-names (map 'list #'identity (ast-tooling:get-all-files (clang-database compilation-tool-database)))))
-    (remove-if-not #'(lambda (x) (core:regex-matches re x)) list-names)))
+  (let ((list-names (map 'list #'identity (ast-tooling:get-all-files (clang-database compilation-tool-database)))))
+    (if pattern
+        (remove-if-not #'(lambda (x) (search pattern x)) list-names)
+        list-names)))
 
 
 (defparameter *match-refactoring-tool* nil)
@@ -749,7 +750,7 @@ c      (funcall (start-of-translation-unit-code self)))))
 
 
 (defclass source-loc-match-callback (code-match-callback)
-  ((comments-regex-list :accessor comments-regex-list :initarg :comments-regex-list)))
+  ((comments-substring-list :accessor comments-substring-list :initarg :comments-substring-list)))
 
 
 (defun source-loc-equal (match-info source-loc-match-callback node)
@@ -763,8 +764,8 @@ Return true if the node describes source code that matches source-loc-match-call
         one-matches)
     (if comment
         (progn
-          (dolist (comment-regex (comments-regex-list source-loc-match-callback))
-            (when (core:regex-matches comment-regex comment)
+          (dolist (comment-substring (comments-substring-list source-loc-match-callback))
+            (when (search comment-substring comment)
               (format t "Comment match: ~a  ~%" comment)
               (setq one-matches t)))
           one-matches)
@@ -957,7 +958,7 @@ for the node corresponding to tag in match-info."
 	    (,rep-gs (new-replacement (source-manager ,match-info) ,rep-range-gs ,rep-src-gs)))
        (if *match-refactoring-tool*
            (let ((,replacements-gs (ast-tooling:get-replacements *match-refactoring-tool*)))
-             (ast-tooling:replacements-insert ,replacements-gs ,rep-gs))
+             (ast-tooling:replacements-add ,replacements-gs ,rep-gs))
            (format t "Replacing: ~a~%     with: ~a~%" (clang-tool:mtag-source ,match-info ,tag) ,rep-src-gs)))))
 
 
@@ -1179,7 +1180,7 @@ Dump the matches - if :tag is supplied then dump the given tag, otherwise :whole
 (defun match-comments-loaded-asts (match-sexp &key match-comments code &allow-other-keys)
   "* Arguments
 - match-sexp :: A matcher in s-expression form.
-- match-comments :: A regular expression to match to comments.
+- match-comments :: A substring or list of substrings to match within comments.
 - code :: A function to run.
 * Description
 I'm guessing at what this function does!!!!!
@@ -1187,9 +1188,9 @@ Run the match-sexp on the loaded ASTs and for each match, extract the associated
 and match them to the match-comments regex.  If they match, run the code."
   (with-unmanaged-object (callback (make-instance
                                     'source-loc-match-callback
-                                    :comments-regex-list (if (atom match-comments)
-                                                             (list (core:make-regex match-comments))
-                                                             (mapcar #'(lambda (str) (core:make-regex str)) match-comments))
+                                    :comments-substring-list (if (atom match-comments)
+                                                             (list match-comments)
+                                                             match-comments)
                                     :code code))
     (let ((*match-source-location* nil))
       (time (run-matcher-on-loaded-asts match-sexp

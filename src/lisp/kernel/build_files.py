@@ -1,11 +1,14 @@
 import cleavir
 
-def aclasp():
-    return [
+def aclasp(wrappers):
+    result = [
         "src/lisp/kernel/tag/start",
-        "src/lisp/kernel/lsp/prologue",
-        "src/lisp/kernel/lsp/direct-calls",
-        "generated/cl-wrappers",
+        "src/lisp/kernel/lsp/prologue"]
+    if (wrappers):
+        result = result + [
+            "src/lisp/kernel/lsp/direct-calls",
+            "generated/cl-wrappers" ]
+    result = result + [  
         "src/lisp/kernel/tag/min-start",
         "src/lisp/kernel/init",
         "src/lisp/kernel/tag/after-init",
@@ -20,7 +23,6 @@ def aclasp():
         "src/lisp/kernel/lsp/claspmacros",
         "src/lisp/kernel/lsp/source-transformations",
         "src/lisp/kernel/lsp/testing",
-        "src/lisp/kernel/lsp/makearray",
         "src/lisp/kernel/lsp/arraylib",
         "src/lisp/kernel/lsp/setf",
         "src/lisp/kernel/lsp/listlib",
@@ -34,7 +36,7 @@ def aclasp():
         "src/lisp/kernel/lsp/iolib",
         "src/lisp/kernel/lsp/logging",
         "src/lisp/kernel/lsp/trace",
-        "src/lisp/kernel/cmp/packages",
+        "src/lisp/kernel/cmp/cmpexports",
         "src/lisp/kernel/cmp/cmpsetup",
         "src/lisp/kernel/cmp/cmpglobals",
         "src/lisp/kernel/cmp/cmptables",
@@ -46,7 +48,8 @@ def aclasp():
         "src/lisp/kernel/cmp/debuginfo",
         "src/lisp/kernel/cmp/lambdalistva",
         "src/lisp/kernel/cmp/cmpvars",
-        "src/lisp/kernel/cmp/cmpquote",
+        "src/lisp/kernel/cmp/cmprunall",
+        "src/lisp/kernel/cmp/cmpliteral",
         "src/lisp/kernel/cmp/cmpobj",
         "src/lisp/kernel/cmp/compiler",
         "src/lisp/kernel/cmp/compilefile",
@@ -56,12 +59,14 @@ def aclasp():
         "src/lisp/kernel/tag/min-pre-epilogue",
         "src/lisp/kernel/lsp/epilogue-aclasp",
         "src/lisp/kernel/tag/min-end"]
+    return result
 
-def bclasp():
-    files = aclasp() + [
+def bclasp(wrappers):
+    files = aclasp(wrappers) + [
+        "src/lisp/kernel/tag/bclasp-start",
         "src/lisp/kernel/cmp/cmpwalk",
-        "src/lisp/kernel/lsp/sharpmacros",
         "src/lisp/kernel/lsp/assert",
+        "src/lisp/kernel/lsp/sharpmacros",
         "src/lisp/kernel/lsp/numlib",
         "src/lisp/kernel/lsp/describe",
         "src/lisp/kernel/lsp/module",
@@ -97,16 +102,29 @@ def bclasp():
         "src/lisp/kernel/clos/streams",
         "src/lisp/kernel/lsp/pprint",
         "src/lisp/kernel/clos/inspect",
-        "src/lisp/kernel/lsp/ffi",
+        "src/lisp/kernel/lsp/fli",
         "src/lisp/modules/sockets/sockets",
         "src/lisp/kernel/lsp/top",
+        "src/lisp/kernel/cmp/export-to-cleavir",
         "src/lisp/kernel/lsp/epilogue-bclasp",
         "src/lisp/kernel/tag/bclasp"
     ]
     return files
 
-def cclasp():
-    return bclasp() + cleavir.cleavir_parts + [
+def cclasp(wrappers):
+    return bclasp(wrappers) + cleavir.cleavir_parts + [
         "src/lisp/kernel/lsp/epilogue-cclasp",
         "src/lisp/kernel/tag/cclasp" ]
 
+def dump_names(l):
+    for x in l:
+        print("%s" % x),
+    print("")
+if __name__ == '__main__':
+    print("Running from command line")
+    print("aclasp: ")
+    dump_names(aclasp(False))
+    print("bclasp: ")
+    dump_names(bclasp(False))
+    print("cclasp: ")
+    dump_names(cclasp(False))

@@ -504,6 +504,7 @@ because it contains a reference to the undefined class~%  ~A"
 	   (change-class class metaclass))
 	  ((not (eq (class-of class) metaclass))
 	   (error "When redefining a class, the metaclass can not change.")))
+    ;;; In Clasp reinitialize-instance of a class requires that a new stamp is chosen
     (setf class (apply #'reinitialize-instance class :name name options))
     (when name
       (si:create-type-name name)

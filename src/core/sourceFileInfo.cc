@@ -4,14 +4,14 @@
 
 /*
 Copyright (c) 2014, Christian E. Schafmeister
- 
+
 CLASP is free software; you can redistribute it and/or
 modify it under the terms of the GNU Library General Public
 License as published by the Free Software Foundation; either
 version 2 of the License, or (at your option) any later version.
- 
+
 See directory 'clasp/licenses' for full details.
- 
+
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
 
@@ -24,13 +24,13 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#define DEBUG_LEVEL_FULL
+//#define DEBUG_LEVEL_FULL
 
 #include <string.h>
 #include <clasp/core/foundation.h>
 #include <clasp/core/fileSystem.h>
-#include <clasp/core/str.h>
 #include <clasp/core/numbers.h>
+#include <clasp/core/array.h>
 #include <clasp/core/lispStream.h>
 #include <clasp/core/hashTableEq.h>
 #include <clasp/core/pathname.h>
@@ -85,14 +85,14 @@ CL_DOCSTRING("sourceFileInfo given a source name (string) or pathname or integer
 CL_DEFUN T_mv core__source_file_info(T_sp sourceFile, T_sp sourceDebugNamestring, size_t sourceDebugOffset, bool useLineno) {
   if (sourceFile.nilp()) {
     return core__source_file_info(make_fixnum(0));
-  } else if (Str_sp strSourceFile = sourceFile.asOrNull<Str_O>()) {
-    return _lisp->getOrRegisterSourceFileInfo(strSourceFile->get(), sourceDebugNamestring, sourceDebugOffset, useLineno);
+  } else if (cl__stringp(sourceFile)) {
+    return _lisp->getOrRegisterSourceFileInfo(gc::As<String_sp>(sourceFile)->get_std_string(), sourceDebugNamestring, sourceDebugOffset, useLineno);
   } else if (Pathname_sp pnSourceFile = sourceFile.asOrNull<Pathname_O>()) {
     T_sp ns = cl__namestring(pnSourceFile);
     if (ns.nilp()) {
       SIMPLE_ERROR(BF("No namestring could be generated for %s") % _rep_(pnSourceFile));
     }
-    return _lisp->getOrRegisterSourceFileInfo(gc::As<Str_sp>(ns)->get(), sourceDebugNamestring, sourceDebugOffset, useLineno);
+    return _lisp->getOrRegisterSourceFileInfo(gc::As<String_sp>(ns)->get_std_string(), sourceDebugNamestring, sourceDebugOffset, useLineno);
   } else if (sourceFile.fixnump()) { // Fixnum_sp fnSourceFile = sourceFile.asOrNull<Fixnum_O>() ) {
     Fixnum_sp fnSourceFile(gc::As<Fixnum_sp>(sourceFile));
     size_t idx = unbox_fixnum(fnSourceFile);
@@ -253,6 +253,22 @@ CL_DEFUN void core__walk_to_assign_source_pos_info(T_sp obj, SourcePosInfo_sp to
   }
 }
 
+CL_DOCSTRING("Lookup the form in the source manager and return its source position or NIL if not known");
+CL_DEFUN T_sp core__source_manager_lookup(T_sp source_manager, T_sp form) {
+  if (source_manager.notnilp() && form.consp()) {
+    SourceManager_sp sm = gctools::As<SourceManager_sp>(source_manager);
+    T_sp tspi = sm->lookupSourcePosInfo(form);
+    if (SourcePosInfo_sp spi = tspi.asOrNull<SourcePosInfo_O>() ) {
+      return spi;
+    }
+    return _Nil<T_O>();
+  }
+//  printf("%s:%d  source_manager.nilp() --> %d\n", __FILE__, __LINE__, source_manager.nilp());
+//  printf("%s:%d  form --> %s\n", __FILE__,__LINE__, _rep_(form).c_str());
+  return _Nil<T_O>();
+}
+
+
 CL_LAMBDA(arg &optional default-spi);
 CL_DECLARE();
 CL_DOCSTRING("Walk down the tree and find the first source info you can");
@@ -278,22 +294,6 @@ CL_DEFUN T_sp core__walk_to_find_source_pos_info(T_sp obj, T_sp defaultSpi) {
   return defaultSpi;
 };
 
-#if 0
-#define ARGS_af_SourceFileInfoGetOrCreate "(arg)"
-#define DECL_af_SourceFileInfoGetOrCreate ""
-#define DOCS_af_SourceFileInfoGetOrCreate "SourceFileInfoGetOrCreate"
-    T_sp af_SourceFileInfoGetOrCreate(T_sp arg)
-    {
-	if ( Str_sp sarg = arg.asOrNull<Str_O>() )
-	{
-	    return SourceFileInfo_O::getOrCreate(sarg->get());
-	} else if ( Pathname_sp parg = arg.asOrNull<Pathname_O>() )
-	{
-	    return SourceFileInfo_O::getOrCreate(parg);
-	}
-	SIMPLE_ERROR(BF("Illegal argument for source-file-info-get-or-create"));
-    }
-#endif
 
 SourceFileInfo_O::SourceFileInfo_O() : Base(), _PermanentPathName(NULL), _PermanentFileName(NULL){};
 
@@ -312,7 +312,7 @@ SourceFileInfo_sp SourceFileInfo_O::create(Pathname_sp path, int handle, T_sp so
 }
 
 SourceFileInfo_sp SourceFileInfo_O::create(const string &str, int handle, T_sp truename, size_t offset, bool useLineno) {
-  Pathname_sp pn = cl__pathname(Str_O::create(str));
+  Pathname_sp pn = cl__pathname(SimpleBaseString_O::make(str));
   return SourceFileInfo_O::create(pn, handle, truename, offset, useLineno);
 }
 
@@ -331,24 +331,24 @@ string SourceFileInfo_O::__repr__() const {
 CL_LISPIFY_NAME("SourceFileInfo-sourceDebugNamestring");
 CL_DEFMETHOD string SourceFileInfo_O::sourceDebugNamestring() const {
   if (this->_SourceDebugNamestring.notnilp()) {
-    return gc::As<Str_sp>(this->_SourceDebugNamestring)->get();
+    return gc::As<String_sp>(this->_SourceDebugNamestring)->get_std_string();
   }
   return this->namestring();
 }
 
 string SourceFileInfo_O::fileName() const {
-  Str_sp s = cl__file_namestring(this->_pathname);
-  return s->get();
+  String_sp s = gc::As<String_sp>(cl__file_namestring(this->_pathname));
+  return s->get_std_string();
 }
 
 string SourceFileInfo_O::namestring() const {
-  Str_sp s = cl__namestring(this->_pathname);
-  return s->get();
+  String_sp s = gc::As<String_sp>(cl__namestring(this->_pathname));
+  return s->get_std_string();
 }
 
 string SourceFileInfo_O::parentPathName() const {
-  Str_sp s = cl__directory_namestring(this->_pathname);
-  return s->get();
+  String_sp s = gc::As<String_sp>(cl__directory_namestring(this->_pathname));
+  return s->get_std_string();
 }
 
 const char *SourceFileInfo_O::permanentPathName() {
@@ -376,6 +376,12 @@ const char *SourceFileInfo_O::permanentFileName() {
 
 
 
+SourcePosInfo_sp SourcePosInfo_O::make(const string& filename, size_t filepos, size_t lineno, size_t column)
+{
+  SourceFileInfo_mv sfi = _lisp->getOrRegisterSourceFileInfo(filename);
+  uint sfi_handle = sfi->fileHandle();
+  return SourcePosInfo_O::create(sfi_handle,filepos,lineno,column);
+}
 
 
 string SourcePosInfo_O::__repr__() const {
@@ -409,16 +415,21 @@ CL_DEFUN void core__dump_source_manager(T_sp dumpAll) {
 
 
 
+CL_DEFUN void core__source_manager_empty(T_sp obj)
+{
+  if (SourceManager_sp sm = obj.asOrNull<SourceManager_O>() ) {
+    sm->empty();
+  }
+}
+
+
+
 CL_LAMBDA();
 CL_DECLARE();
 CL_DOCSTRING("makeSourceManager");
 CL_DEFUN T_sp core__make_source_manager() {
-#ifdef USE_SOURCE_DATABASE
   SourceManager_sp sm = SourceManager_O::create();
   return sm;
-#else
-  return _Nil<T_O>();
-#endif
 };
 
   SYMBOL_EXPORT_SC_(CorePkg, lookupSourceFileInfo);

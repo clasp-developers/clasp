@@ -25,6 +25,7 @@ THE SOFTWARE.
 */
 /* -^- */
 typedef bool _Bool;
+#ifndef SCRAPING // #endif at bottom
 #include <clasp/core/foundation.h>
 #include <type_traits>
 //#include <llvm/Support/system_error.h>
@@ -33,10 +34,12 @@ typedef bool _Bool;
 #include <llvm/IR/LLVMContext.h>
 #include <llvm/LinkAllPasses.h>
 #include <llvm/CodeGen/LinkAllCodegenComponents.h>
-#include <llvm/Bitcode/ReaderWriter.h>
+#include <llvm/Bitcode/BitcodeReader.h>
+#include <llvm/Bitcode/BitcodeWriter.h>
 #include <llvm/Support/raw_ostream.h>
 #include <llvm/Support/MemoryBuffer.h>
 #include <llvm/IR/Module.h>
+#include <llvm/IR/DebugInfoMetadata.h>
 #include <llvm/IR/DerivedTypes.h>
 #include <llvm/IR/Constants.h>
 #include <llvm/IR/GlobalVariable.h>
@@ -86,9 +89,6 @@ typedef bool _Bool;
 
 #include <clasp/gctools/telemetry.h>
 #include <clasp/core/symbolTable.h>
-#include <clasp/core/symbolTable.h>
-#include <clasp/core/symbolTable.h>
-#include <clasp/core/symbolTable.h>
 
 #include <clasp/gctools/gctoolsPackage.h>
 #include <clasp/gctools/gcStack.h>
@@ -97,7 +97,6 @@ typedef bool _Bool;
 #include <clasp/core/random.h>
 #include <clasp/core/weakKeyMapping.h>
 #include <clasp/core/weakHashTable.h>
-#include <clasp/core/bitVector.h>
 #include <clasp/core/smallMultimap.h>
 #include <clasp/core/funcallableStandardClass.h>
 #include <clasp/core/structureClass.h>
@@ -122,20 +121,17 @@ typedef bool _Bool;
 #include <clasp/core/character.h>
 #include <clasp/core/reader.h>
 //#include <clasp/core/singleDispatchEffectiveMethodFunction.h>
-#include <clasp/core/regex.h>
+//#include <clasp/core/regex.h>
 #include <clasp/core/structureObject.h>
 #include <clasp/core/forwardReferencedClass.h>
 #include <clasp/core/standardClass.h>
+#include <clasp/core/array.h>
 #include <clasp/core/readtable.h>
-#include <clasp/core/arrayObjects.h>
-#include <clasp/core/arrayDisplaced.h>
-#include <clasp/core/intArray.h>
+#include <clasp/core/nativeVector.h>
 #include <clasp/core/lispStream.h>
 #include <clasp/core/primitives.h>
 #include <clasp/core/singleDispatchMethod.h>
-#include <clasp/core/binder.h>
 #include <clasp/core/fileSystem.h>
-#include <clasp/core/vectorDisplaced.h>
 #include <clasp/core/null.h>
 #include <clasp/core/multiStringBuffer.h>
 #include <clasp/core/posixTime.h>
@@ -143,8 +139,8 @@ typedef bool _Bool;
 #include <clasp/core/smallMap.h>
 #include <clasp/core/pathname.h>
 #include <clasp/core/sharpEqualWrapper.h>
-#include <clasp/core/strWithFillPtr.h>
 #include <clasp/core/weakHashTable.h>
+#include <clasp/core/intArray.h>
 #include <clasp/core/fli.h>
 #include <clasp/gctools/gc_boot.h>
 
@@ -266,8 +262,8 @@ NOINLINE void define_source_info(source_info_kind kind,
   std::string package_part, symbol_part;
   core::colon_split(lisp_name,package_part,symbol_part);
   core::Symbol_sp sym = core::lisp_intern(symbol_part,package_part);
-  core::Str_sp sourceFile = core::Str_O::create(file);
-  core::Str_sp docs = core::Str_O::create(docstring);
+  core::SimpleBaseString_sp sourceFile = core::SimpleBaseString_O::make(file);
+  core::SimpleBaseString_sp docs = core::SimpleBaseString_O::make(docstring);
   if ( kind == code_kind ) {
     core::Function_sp func = core::coerce::functionDesignator(sym);
     func->setSourcePosInfo(sourceFile, character_offset, line, 0 );
@@ -277,7 +273,7 @@ NOINLINE void define_source_info(source_info_kind kind,
     core::List_sp info = core__get_sysprop(sym,core::_sym_cxx_method_source_location);
     info = core::Cons_O::create(core::Cons_O::createList(sourceFile,core::clasp_make_fixnum(character_offset)),info);
     core::core__put_sysprop(sym,core::_sym_cxx_method_source_location,info);
-    core::Str_sp docs = core::Str_O::create(docstring);
+    core::SimpleBaseString_sp docs = core::SimpleBaseString_O::make(docstring);
     ext__annotate(sym,cl::_sym_documentation,cl::_sym_method, docs);
   } else if ( kind == class_kind ) {
     core::List_sp info = core::Cons_O::createList(sourceFile,core::clasp_make_fixnum(character_offset));
@@ -409,6 +405,9 @@ mps_addr_t obj_skip(mps_addr_t client) {
       size = kind_layout.size;
       if ( kind_layout.container_layout ) {
         Container_layout& container_layout = *kind_layout.container_layout;
+        if (kind_layout.bits_per_bitunit!=0) {
+          printf("%s:%d A bitvector was encountered with kind_layout.bits_per_bitunit = %lu\n", __FILE__, __LINE__, kind_layout.bits_per_bitunit );
+        }
         size_t capacity = *(size_t*)((const char*)client + container_layout.capacity_offset);
         size = container_layout.element_size*capacity + container_layout.data_offset;
       }
@@ -479,6 +478,9 @@ GC_RESULT obj_scan(mps_ss_t ss, mps_addr_t client, mps_addr_t limit) {
         if ( kind_layout.field_layout_start ) {
           int num_fields = kind_layout.number_of_fields;
           Field_layout* field_layout_cur = kind_layout.field_layout_start;
+          if (kind_layout.bits_per_bitunit!=0) {
+            printf("%s:%d A bitvector was encountered with kind_layout.bits_per_bitunit = %lu\n", __FILE__, __LINE__, kind_layout.bits_per_bitunit );
+          }
           for ( int i=0; i<num_fields; ++i ) {
             core::T_O** field = (core::T_O**)((const char*)client + field_layout_cur->field_offset);
             POINTER_FIX(field);
@@ -536,123 +538,6 @@ GC_RESULT obj_scan(mps_ss_t ss, mps_addr_t client, mps_addr_t limit) {
 #endif // ifdef USE_MPS
 
 
-extern "C" {
-/*!
- * client_validate_internal
- *
- * Validate this client and the clients that it points to.
- */
-#if 0
-void client_validate_internal(void* tagged_client) {
-#ifndef RUNNING_GC_BUILDER
-#define GC_OBJ_VALIDATE_TABLE
-#include CLASP_GC_FILENAME
-#undef GC_OBJ_VALIDATE_TABLE
-#endif
-  if (!gctools::tagged_objectp(tagged_client)) return;
-  GCKindEnum kind;
-      // The client must have a valid header
-  void* client = gctools::untag_object(tagged_client);
-  DEBUG_THROW_IF_INVALID_CLIENT(client);
-  gctools::Header_s *header = reinterpret_cast<gctools::Header_s *>(ClientPtrToBasePtr(client));
-#ifdef DEBUG_VALIDATE_GUARD
-  header->validate();
-#endif
-  if (header->kindP()) {
-    kind = header->kind();
-    const Kind_layout& kind_layout = global_kind_layout[kind];
-    if (kind_layout.layout_operation == class_operation) {
-#ifndef RUNNING_GC_BUILDER
-      const Class_layout& class_layout = kind_layout.class_;
-      int num_fields = class_layout.number_of_fields;
-      Field_layout* field_layout_cur = class_layout.field_layout_start;
-      for ( int i=0; i<num_fields; ++i ) {
-        core::T_O* child_client = *(core::T_O**)((const char*)client + field_layout_cur->field_offset);
-        client_validate(child_client);
-        ++field_layout_cur;
-      }
-#endif RUNNING_GC_BUILDER
-    } else {
-          // Container or templated_class - special case - use jump table
-      size_t jump_table_index = global_kind_layout[kind].jump.jump_table_index;
-#ifndef RUNNING_GC_BUILDER
-      goto *(OBJ_VALIDATE_table[jump_table_index]);
-#define SMART_PTR_VALIDATE(x) client_validate((x).rawRef_())
-#define TAGGED_POINTER_VALIDATE(x) client_validate((x).rawRef_())
-#define GC_OBJ_VALIDATE
-#include CLASP_GC_FILENAME
-#undef GC_OBJ_VALIDATE
-#undef SMART_PTR_VALIDATE
-#undef TAGGED_PTR_VALIDATE
-    VALIDATE_ADVANCE:
-#endif // #ifndef RUNNING_GC_BUILDER
-    }
-  }
-};
-#endif // #if 0
-
-/*!
- * client_validate_recursive
- *
- * Recursively walk the tagged pointers within this client and validate them.
- * Keep track of which tagged pointers have been seen using the _seen_ set.
- */
-#if 0
-void client_validate_recursive(void* tagged_client, std::set<void*>& seen) {
-#ifndef RUNNING_GC_BUILDER
-#define GC_OBJ_VALIDATE_TABLE
-#include CLASP_GC_FILENAME
-#undef GC_OBJ_VALIDATE_TABLE
-#endif
-  if ( !gctools::tagged_objectp(tagged_client) ) return;
-  GCKindEnum kind;
-      // The client must have a valid header
-  core::T_O* client = gctools::untag_object(tagged_client);
-  DEBUG_THROW_IF_INVALID_CLIENT(client);
-  gctools::Header_s *header = reinterpret_cast<gctools::Header_s *>(ClientPtrToBasePtr(client));
-#ifdef DEBUG_VALIDATE_GUARD
-  header->validate();
-#endif
-  if (header->kindP()) {
-    kind = header->kind();
-    const Kind_layout& kind_layout = global_kind_layout[kind];
-    if (kind_layout.layout_operation == class_operation) {
-#ifndef RUNNING_GC_BUILDER
-      const Class_layout& class_layout = kind_layout.class_;
-      int num_fields = class_layout.number_of_fields;
-      Field_layout* field_layout_cur = class_layout.field_layout_start;
-      for ( int i=0; i<num_fields; ++i ) {
-        core::T_O* child_client = *(core::T_O**)((const char*)client + field_layout_cur->field_offset);
-        if ( !seen.count(child_client) ) {
-          client_validate_recursive(child_client,seen);
-          seen.insert(child_client);
-        }
-        ++field_layout_cur;
-      }
-#endif RUNNING_GC_BUILDER
-    } else {
-          // Container or templated_class - special case - use jump table
-      size_t jump_table_index = global_kind_layout[kind].jump.jump_table_index;
-#ifndef RUNNING_GC_BUILDER
-      goto *(OBJ_VALIDATE_table[jump_table_index]);
-#define SMART_PTR_VALIDATE(x) {if (!seen.count(x.rawRef_())) { seen.insert((x).rawRef_()); client_validate_recursive((x).rawRef_(),seen);}};
-#define TAGGED_POINTER_VALIDATE(x) {if (!seen.count(x.rawRef_())) { seen.insert((x).rawRef_()); client_validate_recursive((x).rawRef_(),seen);}};
-#define GC_OBJ_VALIDATE
-#include CLASP_GC_FILENAME
-#undef GC_OBJ_VALIDATE
-#undef SMART_PTR_VALIDATE
-#undef TAGGED_PTR_VALIDATE
-    VALIDATE_ADVANCE:
-#endif // #ifndef RUNNING_GC_BUILDER
-    }
-  }
-};
-#endif // #if 0
-};
-
-
-
-
 #ifdef USE_MPS
 extern "C" {
 /*! I'm using a format_header so MPS gives me the object-pointer */
@@ -660,6 +545,8 @@ extern "C" {
 void obj_finalize(mps_addr_t client) {
   // The client must have a valid header
   DEBUG_THROW_IF_INVALID_CLIENT(client);
+  mps_addr_t next_client = obj_skip(client);
+  size_t block_size = (char*)next_client-(char*)client;
   #ifndef RUNNING_GC_BUILDER
     #define GC_OBJ_FINALIZE_TABLE
     #include CLASP_GC_FILENAME
@@ -677,30 +564,29 @@ void obj_finalize(mps_addr_t client) {
     #include CLASP_GC_FILENAME
     #undef GC_OBJ_FINALIZE
   #endif // ifndef RUNNING_GC_BUILDER
+ finalize_done:
+  // Now replace the object with a pad object
+  header->setPadSize(block_size);
+  header->setPad(Header_s::pad_tag);
 }; // obj_finalize
 }; // extern "C"
   #undef GC_FINALIZE_METHOD
 #endif // ifdef USE_MPS
 
 
-#ifdef USE_MPS
-extern "C" {
-vector<core::LoadTimeValues_O **> globalLoadTimeValuesRoots;
-
-void registerLoadTimeValuesRoot(core::LoadTimeValues_O **ptr) {
-  globalLoadTimeValuesRoots.push_back(ptr);
-}
-};
-#endif // ifdef USE_MPS
 
 #ifdef USE_MPS
 extern "C" {
 mps_res_t main_thread_roots_scan(mps_ss_t ss, void *gc__p, size_t gc__s) {
   MPS_SCAN_BEGIN(GC_SCAN_STATE) {
+#if 0
+    // We don't scan global load-time-value tables any more here
+    // they are added as tables of roots as they are created
     GC_TELEMETRY0(telemetry::label_root_scan_start);
-    for (auto &it : globalLoadTimeValuesRoots) {
+    for (auto &it : global_roots) {
       POINTER_FIX(it);
     }
+#endif
 #ifndef RUNNING_GC_BUILDER
 #define GC_GLOBALS
 #include CLASP_GC_FILENAME
@@ -817,13 +703,13 @@ void allocate_symbols(core::BootStrapCoreSymbolMap* symbols)
 template <class TheClass, class Metaclass>
 NOINLINE  gc::smart_ptr<Metaclass> allocate_one_class()
 {
-  gc::smart_ptr<Metaclass> class_val = Metaclass::createUncollectable();
+  gc::smart_ptr<Metaclass> class_val = Metaclass::createUncollectable(gctools::NextStamp(gctools::GCKind<TheClass>::Kind));
   class_val->__setup_stage1_with_sharedPtr_lisp_sid(class_val,_lisp,TheClass::static_classSymbol());
   reg::lisp_associateClassIdWithClassSymbol(reg::registered_class<TheClass>::id,TheClass::static_classSymbol());
   TheClass::static_class = class_val;
   TheClass::static_Kind = gctools::GCKind<TheClass>::Kind;
   core::core__setf_find_class(class_val,TheClass::static_classSymbol(),true,_Nil<core::T_O>());
-  gctools::smart_ptr<core::LispObjectCreator<TheClass>> cb = gctools::GC<core::LispObjectCreator<TheClass>>::allocate();
+  gctools::smart_ptr<core::BuiltInObjectCreator<TheClass>> cb = gctools::GC<core::BuiltInObjectCreator<TheClass>>::allocate();
   TheClass::set_static_creator(cb);
   class_val->setCreator(TheClass::static_creator);
   return class_val;
@@ -961,3 +847,4 @@ extern "C" {
 #include C_WRAPPERS
 #endif
 };
+#endif // #ifndef SCRAPING at top

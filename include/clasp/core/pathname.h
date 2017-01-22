@@ -73,7 +73,7 @@ Pathname_sp cl__translate_logical_pathname(T_sp x);
 bool cl__wild_pathname_p(T_sp pathname, T_sp component);
 
 Pathname_sp core__coerce_to_physical_pathname(T_sp x);
-Str_sp core__coerce_to_filename(T_sp pathname_orig);
+String_sp core__coerce_to_filename(T_sp pathname_orig);
 Pathname_sp core__coerce_to_file_pathname(T_sp tpathname);
 
 };
@@ -87,7 +87,7 @@ class Pathname_O : public General_O {
   friend bool cl__wild_pathname_p(T_sp tpathname, T_sp component);
   friend Pathname_sp core__coerce_to_physical_pathname(T_sp x);
   friend Pathname_sp core__coerce_to_file_pathname(T_sp x);
-  friend Str_sp core__coerce_to_filename(T_sp pathname);
+  friend String_sp core__coerce_to_filename(T_sp pathname);
   friend T_sp clasp_namestring(T_sp tx, int flags);
   friend Pathname_mv cl__parse_namestring(T_sp thing, T_sp host, T_sp defaults, Fixnum_sp start, Fixnum_sp end, bool junk_allowed);
   friend Pathname_sp cl__make_pathname(T_sp host, bool hostp, T_sp device, bool devicep, T_sp directory, bool directoryp, T_sp name, bool namep, T_sp type, bool typep, T_sp version, bool versionp, T_sp scase, T_sp defaults);
@@ -97,10 +97,10 @@ class Pathname_O : public General_O {
   friend T_sp cl__pathname_name(T_sp tpname, Symbol_sp scase);
   friend T_sp cl__pathname_type(T_sp tpname, Symbol_sp scase);
   friend T_sp cl__pathname_version(T_sp tpname);
-  friend Str_sp cl__file_namestring(T_sp tpname);
-  friend Str_sp cl__directory_namestring(T_sp tpname);
-  friend Str_sp cl__host_namestring(T_sp tpname);
-  friend Str_sp cl__enough_namestring(T_sp tpath, T_sp tdefaults);
+  friend T_sp cl__file_namestring(T_sp tpname);
+  friend T_sp cl__directory_namestring(T_sp tpname);
+  friend T_sp cl__host_namestring(T_sp tpname);
+  friend T_sp cl__enough_namestring(T_sp tpath, T_sp tdefaults);
   friend bool cl__pathname_match_p(T_sp tpath, T_sp tmask);
   friend Pathname_sp cl__translate_pathname(T_sp tsource, T_sp tfrom, T_sp tto, T_sp scase);
   friend Pathname_sp cl__translate_logical_pathname(T_sp tsource);
@@ -167,10 +167,10 @@ Pathname_sp clasp_mergePathnames(T_sp path, T_sp def, T_sp defaultVersion);
 
 bool cl__pathname_match_p(T_sp path, T_sp mask);
 T_sp cl__namestring(T_sp x);
-Str_sp cl__file_namestring(T_sp tpname);
-Str_sp cl__directory_namestring(T_sp tpname);
-Str_sp cl__host_namestring(T_sp tpname);
-Str_sp cl__enough_namestring(T_sp tpath, T_sp tdefaults);
+T_sp cl__file_namestring(T_sp tpname);
+T_sp cl__directory_namestring(T_sp tpname);
+T_sp cl__host_namestring(T_sp tpname);
+T_sp cl__enough_namestring(T_sp tpath, T_sp tdefaults);
 
 T_sp core__pathname_translations(T_sp host, T_sp hostp, T_sp set);
 
@@ -183,7 +183,7 @@ T_sp core__pathname_translations(T_sp host, T_sp hostp, T_sp set);
 							     false, // directoryp 
 							     _Nil<T_O>(), // name 
 							     false, // namep 
-							     Str_O::create(this->_OriginalPathname->_Type.as<Str_O>()->get()+"Backup"), //type
+							     <string>, // string
 							     true, // typep 
 							     _Nil<T_O>(), // version 
 							     false, // versionp 

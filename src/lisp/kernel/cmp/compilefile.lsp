@@ -46,7 +46,7 @@
 		   (let* ((given-name (llvm-sys:get-name main-fn)))
 		     (irc-low-level-trace)
 		     (cmp-log "About to add invokeMainFunction for ltv-manager-fn\n")
-		     (irc-intrinsic "invokeMainFunction" *gv-source-namestring* ltv-manager-fn)
+		     (irc-intrinsic "invokeMainFunction" (irc-constant-string-ptr *gv-source-namestring*) ltv-manager-fn)
                      (irc-intrinsic "cc_setTmvToNil" fn-result)))))
     ;;    (cmp-log-dump main-fn)
     (cmp-log "Done compile-main-function")
@@ -64,14 +64,15 @@
                 (*compilation-unit-module-index* 0)
                 (*all-functions-for-one-compile* nil))
 	   (unwind-protect (do-compilation-unit closure)
-             (dolist (action *pending-actions*)
-               (funcall action)))))
+             (progn
+               (dolist (action *pending-actions*)
+               (funcall action))))))
 	(t
 	 (funcall closure))))
 
 (export 'do-compilation-unit)
 (defmacro with-compilation-unit ((&rest options) &body body)
- `(do-compilation-unit #'(lambda () ,@body) ,@options))
+  `(do-compilation-unit #'(lambda () ,@body) ,@options))
 
 
 
@@ -79,8 +80,8 @@
 (defvar *compilation-messages* nil)
 (defvar *compilation-warnings-p* nil)
 (defvar *compilation-failures-p* nil)
-         #+ecl-min (progn ,@body)
-         #-ecl-min (handler-bind
+         #+clasp-min (progn ,@body)
+         #-clasp-min (handler-bind
                        ((error #'(lambda (c)
                                    (invoke-restart 'record-failure c)))
                         (warning #'(lambda (c)
@@ -96,34 +97,32 @@
      (let* ((name (cadr (cadr form)))
 	    (is-macro (cadddr form))
 	    (header (if is-macro
-			"defmacro"
-			"defun")))
+			"DEFMACRO"
+			"DEFUN")))
        (bformat t ";    %s %s\n" header name)))
-    #+(or)((consp form)
-     (let* ((second-part (bformat nil "%s" (cadr form)))
-            (trimmed-second-part (if (> (length second-part) 32)
-                                     (bformat nil "%s..." (subseq second-part 0 32))
+    ((and (consp form)
+          (eq (first form) 'cl:let)
+          (and (let ((x (third form)))
+                 (and (consp x) (eq 'cl:quote (first x))
+                      (eq core::*special-defun-symbol* (second x))))))
+     (bformat t ";    DEFUN %s\n" (second (fourth form))))
+    ((and (consp form)
+          (eq (first form) 'core::do-defsetf))
+     (bformat t ";    DEFSETF %s\n" (third form)))
+    ((and (consp form)
+          (eq (first form) 'core::do-deftype))
+     (bformat t ";    DEFTYPE %s\n" (third form)))
+    ((and *compile-verbose* (consp form))
+     (let* ((second-part (bformat nil "%s %s %s" (second form) (third form) (fourth form)))
+            (trimmed-second-part (if (> (length second-part) 60)
+                                     (bformat nil "%s..." (subseq second-part 0 60))
                                      second-part)))
-       (bformat t";    %s %s\n" (car form) trimmed-second-part)))
-    (t nil)))
+       (bformat t";    %s %s\n" (car form) trimmed-second-part)))))
 
 (defun compile-top-level (form)
   (when *compile-print*
     (describe-form form))
-  (let ((fn (compile-thunk 'repl form nil)))
-    (with-ltv-function-codegen (result ltv-env)
-      (irc-intrinsic "invokeTopLevelFunction" 
-		     result 
-		     fn 
-		     (irc-renv ltv-env)
-		     (jit-constant-unique-string-ptr "top-level")
-                     *gv-source-file-info-handle*
-		     (irc-size_t-*current-source-pos-info*-filepos)
-		     (irc-size_t-*current-source-pos-info*-lineno)
-		     (irc-size_t-*current-source-pos-info*-column)
-		     *load-time-value-holder-global-var*
-                     ))))
-
+  (literal:with-top-level-form (compile-thunk 'repl form nil)))
 
 (defun t1progn (rest env)
   "All forms in progn at top level are top level forms"
@@ -143,10 +142,7 @@
       ;; Each subform is a top-level form
       (dolist (subform body)
 	(t1expr subform env))
-      (cmp-log "Done compiling body due to :load-toplevel\n")
-      )
-    ))
-
+      (cmp-log "Done compiling body due to :load-toplevel\n")))) 
 
 #+(or)(defun t1locally (rest env)
   (multiple-value-bind (declares code docstring specials)
@@ -206,69 +202,42 @@
             macros)
       (t1progn body (augment-environment-with-declares macro-env declares)))))
 
+
 (defun t1expr (form &optional env)
   (cmp-log "t1expr-> %s\n" form)
-  (let ((head (if (atom form) form (car form))))
-    (cond
-      ((eq head 'cl:eval-when) (t1eval-when (cdr form) env))
-      ((eq head 'cl:progn) (t1progn (cdr form) env))
-      ((eq head 'cl:locally) (t1locally (cdr form) env))
-      ((eq head 'cl:macrolet) (t1macrolet (cdr form) env))
-      ((eq head 'cl:symbol-macrolet) (t1symbol-macrolet (cdr form) env))
-      ((and (listp form)
-            ;;(symbolp (car form))
-            (not (core:lexical-function (car form) env))
-            (not (core:lexical-macro-function (car form) env))
-            (not (core:declared-global-notinline-p (car form)))
-            (let ((expansion (core:compiler-macroexpand form env)))
-              (if (eq expansion form)
-                  nil
-                  (progn
-                    (t1expr expansion env)
-                    t)))))
-      ((macro-function head env)
-       (let ((expanded (macroexpand form env)))
-         (t1expr expanded env)))
-      (t (compile-top-level form)))))
+  (push form core:*top-level-form-stack*)
+  (unwind-protect
+       (let ((head (if (atom form) form (car form))))
+         (cond
+           ((eq head 'cl:eval-when) (t1eval-when (cdr form) env))
+           ((eq head 'cl:progn) (t1progn (cdr form) env))
+           ((eq head 'cl:locally) (t1locally (cdr form) env))
+           ((eq head 'cl:macrolet) (t1macrolet (cdr form) env))
+           ((eq head 'cl:symbol-macrolet) (t1symbol-macrolet (cdr form) env))
+           ((and (listp form)
+                 ;;(symbolp (car form))
+                 (not (core:lexical-function (car form) env))
+                 (not (core:lexical-macro-function (car form) env))
+                 (not (core:declared-global-notinline-p (car form)))
+                 (let ((expansion (core:compiler-macroexpand form env)))
+                   (if (eq expansion form)
+                       nil
+                       (progn
+                         (t1expr expansion env)
+                         t)))))
+           ((macro-function head env)
+            (let ((expanded (macroexpand form env)))
+              (t1expr expanded env)))
+           (t (compile-top-level form))))
+    (pop core:*top-level-form-stack*)))
 
-(defun compile-file-t1expr (form compile-file-hook)
+
+(defun compile-file-form (form compile-file-hook)
   ;; If the Cleavir compiler hook is set up then use that
   ;; to generate code 
   (if compile-file-hook
       (funcall compile-file-hook form)
       (t1expr form)))
-
-#+(or)
-(defun compile-form-into-module (form name &key epilogue-module-p)
-  "* Arguments
-- form :: A form.
-- name :: The name of the module
-- epilogue-module-p :: T or NIL
-* Description
-This is used to generate a module from a single form - specifically
-to compile prologue and epilogue code when linking modules.
-If epilogue-module-p is T then tell make-boot-function-global-variable
-to append a NULL function to the list of main functions."
-  (let* ((module (create-llvm-module-for-compile-file name))
-         conditions
-	 (*compile-file-pathname* nil)
-	 (*compile-file-truename* name)
-	 (*compile-print* nil)
-	 (*compile-verbose* nil)	 )
-    (with-compiler-env (conditions)
-      (with-module (:module module
-                            :source-namestring (namestring (string name)))
-        (with-debug-info-generator (:module *the-module*
-                                            :pathname *compile-file-truename*)
-          (with-compile-file-dynamic-variables-and-load-time-value-unit (ltv-init-fn)
-            (compile-top-level form)
-            (make-boot-function-global-variable *the-module* ltv-init-fn)
-            #+(or)(let ((main-fn (compile-main-function name ltv-init-fn )))
-                    (make-boot-function-global-variable *the-module* main-fn)
-                    #+(or)(add-main-function *the-module*)))
-          )))
-    module))
-
 
 (defun cfp-output-extension (output-type)
   (cond
@@ -326,11 +295,9 @@ and the pathname of the source file - this will also be used as the module initi
         (t (error "Illegal condition ~a" cond))))
     (values output-file warnings-p failures-p)))
 
-
-
 (defvar *debug-compile-file* nil)
 
-(defun compile-file-to-module (given-input-pathname output-path &key compile-file-hook type source-debug-namestring (source-debug-offset 0) epilogue-module-p )
+(defun compile-file-to-module (given-input-pathname output-path &key compile-file-hook type source-debug-namestring (source-debug-offset 0))
   "* Arguments
 - given-input-pathname :: A pathname.
 - output-path :: A pathname.
@@ -338,7 +305,6 @@ and the pathname of the source file - this will also be used as the module initi
 - type :: :kernel or :user (I'm not sure this is useful anymore
 - source-debug-namestring :: A namestring.
 - source-debug-offset :: An integer.
-- epilogue-module-p :: T if this is an epilogue module.
 Compile a lisp source file into an LLVM module.  type can be :kernel or :user"
   ;; TODO: Save read-table and package with unwind-protect
   (let* ((clasp-source-root (translate-logical-pathname "source-dir:"))
@@ -349,7 +315,6 @@ Compile a lisp source file into an LLVM module.  type can be :kernel or :user"
               given-input-pathname))
          (input-pathname (probe-file given-input-pathname))
 	 (source-sin (open input-pathname :direction :input))
-	 (eof-value (gensym))
 	 (module (create-llvm-module-for-compile-file (namestring input-pathname)))
 	 (module-name (cf-module-name type given-input-pathname))
 	 warnings-p failure-p)
@@ -369,43 +334,35 @@ Compile a lisp source file into an LLVM module.  type can be :kernel or :user"
                                 :source-namestring (namestring source-location)
                                 :source-debug-namestring source-debug-namestring
                                 :source-debug-offset source-debug-offset)
-	    (let* ()
-	      (with-debug-info-generator (:module *the-module*
-						  :pathname *compile-file-truename*)
-		(or *the-module* (error "*the-module* is NIL"))
-		(with-compile-file-dynamic-variables-and-load-time-value-unit (ltv-init-fn)
-		  (loop
-		     (let* ((core:*source-database* (core:make-source-manager))
-			    (top-source-pos-info (core:input-stream-source-pos-info source-sin))
-			    (form (read source-sin nil eof-value)))
-		       (if (eq form eof-value)
-			   (return nil)
-			   (progn
-			     (if *debug-compile-file* (bformat t "compile-file: %s\n" form))
-			     ;; If the form contains source-pos-info then use that
-			     ;; otherwise fall back to using *current-source-pos-info*
-			     (let ((core:*current-source-pos-info* 
-				    (core:walk-to-find-source-pos-info form top-source-pos-info)))
-			       (compile-file-t1expr form compile-file-hook))))))
-                  (make-boot-function-global-variable *the-module* ltv-init-fn)
-		  #+(or)(let ((main-fn (compile-main-function output-path ltv-init-fn )))
-                          (make-boot-function-global-variable *the-module* main-fn)
-                          #+(or)(add-main-function *the-module*))))
-	      (cmp-log "About to verify the module\n")
-	      (cmp-log-dump *the-module*)
-	      (if *dump-module-on-completion*
-		  (llvm-sys:dump *the-module*))
-	      (multiple-value-bind (found-errors error-message)
-		  (progn
-		    (cmp-log "About to verify module prior to writing bitcode\n")
-		    (irc-verify-module *the-module* 'llvm-sys::return-status-action))
-		(if found-errors
-		    (progn
-		      (format t "Module error: ~a~%" error-message)
-		      (break "Verify module found errors"))))))))
-      module)))
+            (with-debug-info-generator (:module *the-module*
+                                                :pathname *compile-file-truename*)
+              (or *the-module* (error "*the-module* is NIL"))
+              (let ((eof-value (gensym)))
+                (with-make-new-run-all (run-all-function)
+                  (with-run-all-body-codegen ;;(result)
+                      (irc-intrinsic "ltvc_assign_source_file_info_handle"
+                                     (irc-constant-string-ptr *gv-source-namestring*)
+                                     (irc-constant-string-ptr *gv-source-debug-namestring*)
+                                     (jit-constant-i64 *source-debug-offset*)
+                                     (jit-constant-i32 (if *source-debug-use-lineno* 1 0))
+                                     *gv-source-file-info-handle*))
+                  (with-constants-table
+                      (loop
+                         (let* ((top-source-pos-info (core:input-stream-source-pos-info source-sin))
+                                (form (read source-sin nil eof-value)))
+                           (when *debug-compile-file* (bformat t "compile-file: %s\n" form))
+                           (if (eq form eof-value)
+                               (return nil)
+                               (compile-file-form form compile-file-hook))))
+                    (make-boot-function-global-variable *the-module* run-all-function)))))
+            (cmp-log "About to verify the module\n")
+            (cmp-log-dump *the-module*)
+            (irc-verify-module-safe *the-module*)
+            (quick-module-dump *the-module* "preoptimize"))
+          (quick-module-dump module "postoptimize")
+          module)))))
 
-
+(defvar *compile-file-output-pathname* nil)
 (defun compile-file* (compile-file-hook
                       given-input-pathname
                       &key
@@ -424,11 +381,9 @@ Compile a lisp source file into an LLVM module.  type can be :kernel or :user"
                         (output-type :fasl)
 ;;; type can be either :kernel or :user
                         (type :user)
-                        epilogue-module-p
                       &aux conditions
                         )
-  "See CLHS compile-file. If epilogue-module-p is T then compile-file an 
-epilogue module - one that terminates a series of linked modules. "
+  "See CLHS compile-file."
   (if system-p-p (error "I don't support system-p keyword argument - use output-type"))
   (if (not output-file-p) (setq output-file (cfp-output-file-default given-input-pathname output-type)))
   (with-compiler-env (conditions)
@@ -436,12 +391,12 @@ epilogue module - one that terminates a series of linked modules. "
 	  (*compile-verbose* verbose))
       ;; Do the different kind of compile-file here
       (let* ((output-path (compile-file-pathname given-input-pathname :output-file output-file :output-type output-type ))
+             (*compile-file-output-pathname* output-path)
 	     (module (compile-file-to-module given-input-pathname output-path 
 					     :type type 
 					     :source-debug-namestring source-debug-namestring 
 					     :source-debug-offset source-debug-offset
-                                             :compile-file-hook compile-file-hook
-                                             :epilogue-module-p epilogue-module-p)))
+                                             :compile-file-hook compile-file-hook)))
 	(cond
 	  ((eq output-type :object)
 	   (when verbose (bformat t "Writing object to %s\n" (core:coerce-to-filename output-path)))
@@ -458,10 +413,11 @@ epilogue module - one that terminates a series of linked modules. "
 	  ((eq output-type :fasl)
 	   (ensure-directories-exist output-path)
 	   (let ((temp-bitcode-file (compile-file-pathname given-input-pathname :output-file output-file :output-type :bitcode)))
-	     (bformat t "Writing fasl file to: %s\n" output-file)
 	     (ensure-directories-exist temp-bitcode-file)
+	     (bformat t "Writing temporary bitcode file to: %s\n" temp-bitcode-file)
 	     (llvm-sys:write-bitcode-to-file module (core:coerce-to-filename temp-bitcode-file))
-	     (cmp:llvm-link output-file
+	     (bformat t "Writing fasl file to: %s\n" output-file)
+	     (llvm-link output-file
                             :lisp-bitcode-files (list temp-bitcode-file))))
 	  (t ;; fasl
 	   (error "Add support to file of type: ~a" output-type)))
@@ -473,11 +429,13 @@ epilogue module - one that terminates a series of linked modules. "
   ;; Use the *cleavir-compile-file-hook* to determine which compiler to use
   ;; if nil == bclasp
   ;; if #'clasp-cleavir:cleavir-compile-file-form  == cclasp
+  (gctools:garbage-collect)
   (apply #'compile-file* *cleavir-compile-file-hook* args))
 
 
 (defun bclasp-compile-file (input-file &rest args &key &allow-other-keys)
-  (let ((cmp:*cleavir-compile-file-hook* nil))
+  (let ((*cleavir-compile-file-hook* nil)
+        (core:*use-cleavir-compiler* nil))
     (apply #'compile-file input-file args)))
 
 (export 'compile-file)

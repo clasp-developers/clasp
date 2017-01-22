@@ -74,7 +74,7 @@
                                       (and .next-methods. t)))
                                ,(second form)))))
           ((eq first 'CALL-METHOD)
-           (combine-method-functions
+           (combine-method-functions1
             (effective-method-function (second form))
             (mapcar #'effective-method-function (third form))))
           (top-level
@@ -91,11 +91,28 @@
 ;;; of the remaining methods. The resulting closure (or effective method)
 ;;; is the equivalent of (CALL-METHOD method rest-methods)
 ;;;
-(defun combine-method-functions (method rest-methods)
+;;; This function is called from three different places and for debugging
+;;; I'm duplicating the function and giving the resulting lambda-function
+;;; a different name to track down problems
+(defun combine-method-functions1 (method rest-methods)
   (declare (si::c-local))
   #'(lambda (.method-args. .next-methods. #|no-next-methods|#)
       (declare (ignorable .next-methods. #|no-next-methods|#)
-               (core:lambda-name combine-method-functions.lambda))
+               (core:lambda-name combine-method-functions1.lambda))
+      (apply method .method-args. rest-methods .method-args.))) 
+
+(defun combine-method-functions2 (method rest-methods)
+  (declare (si::c-local))
+  #'(lambda (.method-args. .next-methods. #|no-next-methods|#)
+      (declare (ignorable .next-methods. #|no-next-methods|#)
+               (core:lambda-name combine-method-functions2.lambda))
+      (apply method .method-args. rest-methods .method-args.))) 
+
+(defun combine-method-functions3 (method rest-methods)
+  (declare (si::c-local))
+  #'(lambda (.method-args. .next-methods. #|no-next-methods|#)
+      (declare (ignorable .next-methods. #|no-next-methods|#)
+               (core:lambda-name combine-method-functions3.lambda))
       (apply method .method-args. rest-methods .method-args.))) 
 
 (defmacro call-method (method &optional rest-methods)
@@ -161,11 +178,11 @@
 			   (standard-main-effective-method before primary after))
 			  primary)))
 	    (setf around (nreverse around))
-	    (combine-method-functions (first around)
+	    (combine-method-functions2 (first around)
 				      (nconc (rest around) main)))
 	  (if (or before after)
 	      (standard-main-effective-method before primary after)
-	      (combine-method-functions (first primary) (rest primary)))))))
+	      (combine-method-functions3 (first primary) (rest primary)))))))
 
 ;; ----------------------------------------------------------------------
 ;; DEFINE-METHOD-COMBINATION

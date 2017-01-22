@@ -53,21 +53,32 @@ GCPRIVATE: // instance variables
            /*! Store what the the enumIndex values represent
 		 * Used when errors are thrown
 		 */
-  gctools::gcstring _WhatTheEnumsRepresent;
+  SimpleString_sp _WhatTheEnumsRepresent;
   HashTableEql_sp _EnumToSymbol;
   HashTableEq_sp _ArchiveSymbolToEnum;
   HashTableEql_sp _EnumToArchiveSymbol;
   HashTableEq_sp _SymbolToEnum;
 
 public:
+  List_sp enumSymbolsAsList() const;
+  
   void setWhatTheEnumsRepresent(const string &represent);
 
   /*!Associate the symbol with the enum
 	  If the symbol is nil then create a new one with the archiveString and return it */
   Symbol_sp addSymbolEnumPair(Symbol_sp sym, Symbol_sp const &archiveSymbol, int enumIndex);
-  int enumIndexForSymbol(Symbol_sp sym);
-  /*! Return the enum associated with the symbol
-		 */
+
+  int enumIndexForSymbol(T_sp sym);
+
+    /*! Return the enum associated with the obj signal a type-error if 
+        its not a symbol and it's not a member of the allowed set of symbols*/
+  template <typename T>
+  T enumForSymbol(T_sp obj) {
+    int index = this->enumIndexForSymbol(obj);
+    return ((T)(index));
+  };
+
+  /*! Return the enum associated with the symbol or signal a type-error*/
   template <typename T>
   T enumForSymbol(Symbol_sp sym) {
     int index = this->enumIndexForSymbol(sym);
@@ -101,6 +112,14 @@ public:
 };
 };
 
+#define ENUM_FROM_OBJECT_TRANSLATOR(enumType,converterSymbol) \
+  namespace translate { \
+    template <> struct from_object<enumType, std::true_type> {                                                         \
+    typedef enumType DeclareType;                                                                                    \
+    DeclareType _v;                                                                                                  \
+    from_object(core::T_sp o) : _v(gc::As<core::SymbolToEnumConverter_sp>(converterSymbol->symbolValue())->enumForSymbol<DeclareType>(o)) {}; \
+    };};
+
 #define ENUM_TRANSLATOR(enumType, converterSymbol)                                                                   \
   namespace translate {                                                                                              \
   template <> struct to_object<enumType> {                                                                           \
@@ -110,17 +129,9 @@ public:
       core::SymbolToEnumConverter_sp converter = converterSymbol->symbolValue().as<core::SymbolToEnumConverter_O>(); \
       return converter->symbolForEnum(val);                                                                          \
     }                                                                                                                \
-  };                                                                                                                 \
-                                                                                                                     \
-  template <> struct from_object<enumType, std::true_type> {                                                         \
-    typedef enumType DeclareType;                                                                                    \
-    DeclareType _v;                                                                                                  \
-    from_object(T_P o) {                                                                                             \
-      core::SymbolToEnumConverter_sp converter = converterSymbol->symbolValue().as<core::SymbolToEnumConverter_O>(); \
-      _v = converter->enumForSymbol<enumType>(o.as<core::Symbol_O>());                                               \
-    }                                                                                                                \
-  };                                                                                                                 \
-  };
+  };};                                                                                                                 \
+  ENUM_FROM_OBJECT_TRANSLATOR(enumType,converterSymbol);
+
 
 #define DECLARE_SYMBOL_TO_ENUM_CONVERTER(assocArray, description, package, converterSymbol)                                 \
   {                                                                                                                         \

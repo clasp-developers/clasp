@@ -4,14 +4,14 @@
 
 /*
 Copyright (c) 2014, Christian E. Schafmeister
- 
+
 CLASP is free software; you can redistribute it and/or
 modify it under the terms of the GNU Library General Public
 License as published by the Free Software Foundation; either
 version 2 of the License, or (at your option) any later version.
- 
+
 See directory 'clasp/licenses' for full details.
- 
+
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
 
@@ -48,11 +48,9 @@ THE SOFTWARE.
 #include <clasp/core/object.h>
 #include <clasp/core/numerics.h>
 #include <clasp/core/character.h>
-#include <clasp/core/lispString.fwd.h>
+#include <clasp/core/array.fwd.h>
 #include <clasp/core/pathname.fwd.h>
-#include <clasp/core/lispVector.fwd.h>
 #include <clasp/core/sourceFileInfo.fwd.h>
-#include <clasp/core/strWithFillPtr.fwd.h>
 #include <clasp/core/intStackQueue.h>
 
 #define OPEN_R "rb"
@@ -63,60 +61,60 @@ THE SOFTWARE.
 
 namespace core {
 
-enum StreamMode {                          /*  stream mode  */
-                  clasp_smm_input,         /*  input  */
-                  clasp_smm_input_file,    /*  input  */
-                  clasp_smm_output,        /*  output  */
-                  clasp_smm_output_file,   /*  output  */
-                  clasp_smm_io,            /*  input-output  */
-                  clasp_smm_io_file,       /*  input-output  */
-                  clasp_smm_synonym,       /*  synonym  */
-                  clasp_smm_broadcast,     /*  broadcast  */
-                  clasp_smm_concatenated,  /*  concatenated  */
-                  clasp_smm_two_way,       /*  two way  */
-                  clasp_smm_echo,          /*  echo  */
-                  clasp_smm_string_input,  /*  string input  */
-                  clasp_smm_string_output, /*  string output  */
-                  clasp_smm_probe,         /*  probe (only used in open_stream())  */
+  enum StreamMode {                          /*  stream mode  */
+      clasp_smm_input,         /*  input  */
+      clasp_smm_input_file,    /*  input  */
+      clasp_smm_output,        /*  output  */
+      clasp_smm_output_file,   /*  output  */
+      clasp_smm_io,            /*  input-output  */
+      clasp_smm_io_file,       /*  input-output  */
+      clasp_smm_synonym,       /*  synonym  */
+      clasp_smm_broadcast,     /*  broadcast  */
+      clasp_smm_concatenated,  /*  concatenated  */
+      clasp_smm_two_way,       /*  two way  */
+      clasp_smm_echo,          /*  echo  */
+      clasp_smm_string_input,  /*  string input  */
+      clasp_smm_string_output, /*  string output  */
+      clasp_smm_probe,         /*  probe (only used in open_stream())  */
 #if defined(ECL_WSOCK)
-                  clasp_smm_input_wsock,  /*  input socket (Win32) */
-                  clasp_smm_output_wsock, /*  output socket (Win32) */
-                  clasp_smm_io_wsock,     /*  input/output socket (Win32) */
+      clasp_smm_input_wsock,  /*  input socket (Win32) */
+      clasp_smm_output_wsock, /*  output socket (Win32) */
+      clasp_smm_io_wsock,     /*  input/output socket (Win32) */
 #endif
 #if defined(CLASP_MS_WINDOWS_HOST)
-                  clasp_smm_io_wcon, /*  windows console (Win32) */
+      clasp_smm_io_wcon, /*  windows console (Win32) */
 #endif
-                  clasp_smm_sequence_input, /*  sequence input  */
-                  clasp_smm_sequence_output /*  sequence output  */
-};
+      clasp_smm_sequence_input, /*  sequence input  */
+      clasp_smm_sequence_output /*  sequence output  */
+  };
 
-typedef enum {
-  CLASP_STREAM_BINARY = 0,
-  CLASP_STREAM_FORMAT = 0xF,
-#ifndef ECL_UNICODE
-  CLASP_STREAM_DEFAULT_FORMAT = 1,
+  typedef enum {
+      CLASP_STREAM_BINARY = 0,
+      CLASP_STREAM_FORMAT = 0xF,
+#ifndef CLASP_UNICODE
+      CLASP_STREAM_DEFAULT_FORMAT = 1,
 #else
-  CLASP_STREAM_DEFAULT_FORMAT = 2,
-  CLASP_STREAM_ISO_8859_1 = 1,
-  CLASP_STREAM_LATIN_1 = 1,
-  CLASP_STREAM_UTF_8 = 2,
-  CLASP_STREAM_UCS_2 = 3,
-  CLASP_STREAM_UCS_2LE = 5 + 128,
-  CLASP_STREAM_UCS_2BE = 5,
-  CLASP_STREAM_UCS_4 = 6,
-  CLASP_STREAM_UCS_4LE = 7 + 128,
-  CLASP_STREAM_UCS_4BE = 7,
-  CLASP_STREAM_USER_FORMAT = 8,
-  CLASP_STREAM_US_ASCII = 10,
+      CLASP_STREAM_DEFAULT_FORMAT = 2,
+      CLASP_STREAM_ISO_8859_1 = 1,
+      CLASP_STREAM_LATIN_1 = 1,
+      CLASP_STREAM_UTF_8 = 2,
+      CLASP_STREAM_UCS_2 = 3,
+      CLASP_STREAM_UCS_2LE = 5 + 128,
+      CLASP_STREAM_UCS_2BE = 5,
+      CLASP_STREAM_UCS_4 = 6,
+      CLASP_STREAM_UCS_4LE = 7 + 128,
+      CLASP_STREAM_UCS_4BE = 7,
+      CLASP_STREAM_USER_FORMAT = 8,
+      CLASP_STREAM_US_ASCII = 10,
 #endif
-  CLASP_STREAM_CR = 16,
-  CLASP_STREAM_LF = 32,
-  CLASP_STREAM_SIGNED_BYTES = 64,
-  CLASP_STREAM_LITTLE_ENDIAN = 128,
-  CLASP_STREAM_C_STREAM = 256,
-  CLASP_STREAM_MIGHT_SEEK = 512,
-  CLASP_STREAM_CLOSE_COMPONENTS = 1024
-} StreamFlagsEnum;
+      CLASP_STREAM_CR = 16,
+      CLASP_STREAM_LF = 32,
+      CLASP_STREAM_SIGNED_BYTES = 64,
+      CLASP_STREAM_LITTLE_ENDIAN = 128,
+      CLASP_STREAM_C_STREAM = 256,
+      CLASP_STREAM_MIGHT_SEEK = 512,
+      CLASP_STREAM_CLOSE_COMPONENTS = 1024
+  } StreamFlagsEnum;
 }
 namespace core {
 cl_index clasp_read_byte8(T_sp stream, unsigned char *c, cl_index n);
@@ -160,8 +158,8 @@ int clasp_interactive_stream_p(T_sp strm);
 T_sp clasp_off_t_to_integer(clasp_off_t offset);
 clasp_off_t clasp_integer_to_off_t(T_sp i);
 
-T_sp cl_stream_element_type(T_sp strm);
-T_sp cl_stream_external_format(T_sp strm);
+T_sp cl__stream_element_type(T_sp strm);
+T_sp cl__stream_external_format(T_sp strm);
 
 T_sp clasp_make_stream_from_FILE(T_sp fname, FILE *f, enum StreamMode smm, gctools::Fixnum byte_size = 8, int flags = CLASP_STREAM_DEFAULT_FORMAT, T_sp external_format = _Nil<T_O>());
 
@@ -172,8 +170,9 @@ T_sp clasp_make_file_stream_from_fd(T_sp fname, int fd, enum StreamMode smm, gct
 T_sp cl__make_synonym_stream(T_sp sym);
 T_sp cl__make_two_way_stream(T_sp in, T_sp out);
 
-T_sp cl__make_string_input_stream(Str_sp strng, Fixnum_sp istart, T_sp iend);
+T_sp cl__make_string_input_stream(String_sp strng, Fixnum_sp istart, T_sp iend);
 T_sp clasp_make_string_output_stream(cl_index line_length = 128, bool extended = false);
+ T_sp cl__make_string_output_stream(Symbol_sp elementType);
 T_sp cl__get_output_stream_string(T_sp strm);
 
 T_sp cl__close(T_sp strm, T_sp abort = _Nil<T_O>());
@@ -267,8 +266,14 @@ public:
 };
 };
 
-namespace core {
+template <>
+struct gctools::GCInfo<core::Stream_O> {
+  static bool constexpr NeedsInitialization = false;
+  static bool constexpr NeedsFinalization = true;
+  static GCInfo_policy constexpr Policy = normal;
+};
 
+namespace core {
 SMART(Stream);
 class Stream_O : public General_O {
   LISP_CLASS(core, ClPkg, Stream_O, "stream",General_O);
@@ -284,6 +289,7 @@ public:
   List_sp _ByteStack; // For unget in input streams
   cl_eformat_encoder _Encoder;
   cl_eformat_decoder _Decoder;
+  T_sp _FormatTable;
   Fixnum _LastCode[2];
   claspCharacter _EofChar;
   int _LastOp;
@@ -293,7 +299,7 @@ public:
   StreamCursor _InputCursor;
 
 public:
-  Stream_O() : _Closed(0), _Buffer(NULL), _Format(_Nil<Symbol_O>()), _ByteSize(8), _Flags(0), _ByteStack(_Nil<T_O>()), _Encoder(NULL), _Decoder(NULL), _LastCode{EOF, EOF}, _EofChar(EOF), _ExternalFormat(_Nil<T_O>()), _OutputColumn(0){};
+ Stream_O() : _Closed(0), _Buffer(NULL), _Format(_Nil<Symbol_O>()), _ByteSize(8), _Flags(0), _ByteStack(_Nil<T_O>()), _Encoder(NULL), _Decoder(NULL), _FormatTable(_Nil<T_O>()), _LastCode{EOF, EOF}, _EofChar(EOF), _ExternalFormat(_Nil<T_O>()), _OutputColumn(0){};
   virtual ~Stream_O(); // nontrivial
 
 public:
@@ -301,12 +307,6 @@ public:
   virtual int lineno() const;
   virtual int column() const;
 };
-};
-template <>
-struct gctools::GCInfo<core::Stream_O> {
-  static bool constexpr NeedsInitialization = false;
-  static bool constexpr NeedsFinalization = true;
-  static GCInfo_policy constexpr Policy = normal;
 };
 
 namespace core {
@@ -335,13 +335,23 @@ public: // Functions here
   virtual string __repr__() const;
   T_sp filename() const { return this->_Filename; };
 }; // FileStream class
+};
 
+template <>
+struct gctools::GCInfo<core::IOFileStream_O> {
+  static bool constexpr NeedsInitialization = false;
+  static bool constexpr NeedsFinalization = true;
+  static GCInfo_policy constexpr Policy = normal;
+};
+
+namespace core {
 class IOFileStream_O : public FileStream_O {
   friend int &IOFileStreamDescriptor(T_sp);
   LISP_CLASS(core, CorePkg, IOFileStream_O, "iofile-stream",FileStream_O);
   //    DECLARE_ARCHIVE();
 public: // Simple default ctor/dtor
   IOFileStream_O(){};
+  ~IOFileStream_O();
 
 private: // instance variables here
   int _FileDescriptor;
@@ -362,21 +372,22 @@ public:
   int fileDescriptor() const { return this->_FileDescriptor; };
 };
 };
+
 template <>
-struct gctools::GCInfo<core::IOFileStream_O> {
+struct gctools::GCInfo<core::IOStreamStream_O> {
   static bool constexpr NeedsInitialization = false;
   static bool constexpr NeedsFinalization = true;
   static GCInfo_policy constexpr Policy = normal;
 };
 
 namespace core {
-class IOStreamStream_O : public FileStream_O {
+  class IOStreamStream_O : public FileStream_O {
   friend FILE *&IOStreamStreamFile(T_sp strm);
   LISP_CLASS(core, CorePkg, IOStreamStream_O, "iostream-stream",FileStream_O);
   //    DECLARE_ARCHIVE();
 public: // Simple default ctor/dtor
   IOStreamStream_O(){};
-
+  ~IOStreamStream_O();
 private: // instance variables here
   FILE *_File;
 
@@ -395,12 +406,7 @@ public:
   FILE *file() const { return this->_File; };
 };
 }; // core namespace
-template <>
-struct gctools::GCInfo<core::IOStreamStream_O> {
-  static bool constexpr NeedsInitialization = false;
-  static bool constexpr NeedsFinalization = true;
-  static GCInfo_policy constexpr Policy = normal;
-};
+
 
 namespace core {
 class StringStream_O : public AnsiStream_O {
@@ -416,8 +422,18 @@ public: // ctor/dtor for classes with shared virtual base
 public: // Functions here
 };      // StringStream class
 
+};
+
+template <>
+struct gctools::GCInfo<core::StringOutputStream_O> {
+  static bool constexpr NeedsInitialization = false;
+  static bool constexpr NeedsFinalization = false;
+  static GCInfo_policy constexpr Policy = normal;
+};
+
+namespace core {
 class StringOutputStream_O : public StringStream_O {
-  friend StrWithFillPtr_sp &StringOutputStreamOutputString(T_sp);
+  friend String_sp &StringOutputStreamOutputString(T_sp);
   LISP_CLASS(core, CorePkg, StringOutputStream_O, "string-output-stream",StringStream_O);
   //    DECLARE_ARCHIVE();
 public: // Simple default ctor/dtor
@@ -427,25 +443,25 @@ public: // ctor/dtor for classes with shared virtual base
         //    explicit StringStream_O(core::Class_sp const& mc) : T_O(mc),AnsiStream(mc) {};
         //    virtual ~StringStream_O() {};
 public: // instance variables here
-  StrWithFillPtr_sp _Contents;
+  String_sp _Contents;
 
 public: // Functions here
   void fill(const string &data);
-  StrWithFillPtr_sp getAndReset();
+  String_sp getAndReset();
 }; // StringStream class
 };
+
 template <>
-struct gctools::GCInfo<core::StringOutputStream_O> {
+struct gctools::GCInfo<core::StringInputStream_O> {
   static bool constexpr NeedsInitialization = false;
-  static bool constexpr NeedsFinalization = true;
+  static bool constexpr NeedsFinalization = false;
   static GCInfo_policy constexpr Policy = normal;
 };
-
 namespace core {
 class StringInputStream_O : public StringStream_O {
   friend gctools::Fixnum &StringInputStreamInputPosition(T_sp strm);
   friend gctools::Fixnum &StringInputStreamInputLimit(T_sp strm);
-  friend Str_sp &StringInputStreamInputString(T_sp strm);
+  friend String_sp &StringInputStreamInputString(T_sp strm);
   LISP_CLASS(core, CorePkg, StringInputStream_O, "string-input-stream",StringStream_O);
   //    DECLARE_ARCHIVE();
 public: // Simple default ctor/dtor
@@ -454,8 +470,8 @@ public: // Simple default ctor/dtor
 public:    // ctor/dtor for classes with shared virtual base
            //    explicit StringStream_O(core::Class_sp const& mc) : T_O(mc),AnsiStream(mc) {};
            //    virtual ~StringStream_O() {};
-GCPRIVATE: // instance variables here
-  Str_sp _Contents;
+private: // instance variables here
+  String_sp _Contents;
   gctools::Fixnum _InputPosition;
   gctools::Fixnum _InputLimit;
 
@@ -463,13 +479,13 @@ public: // Functions here
   static T_sp make(const string &str);
 }; // StringStream class
 };
+
 template <>
-struct gctools::GCInfo<core::StringInputStream_O> {
+struct gctools::GCInfo<core::SynonymStream_O> {
   static bool constexpr NeedsInitialization = false;
-  static bool constexpr NeedsFinalization = true;
+  static bool constexpr NeedsFinalization = false;
   static GCInfo_policy constexpr Policy = normal;
 };
-
 namespace core {
 class SynonymStream_O : public AnsiStream_O {
   friend Symbol_sp &SynonymStreamSymbol(T_sp strm);
@@ -478,7 +494,6 @@ class SynonymStream_O : public AnsiStream_O {
   //    DECLARE_ARCHIVE();
 public: // Simple default ctor/dtor
   SynonymStream_O() : _SynonymSymbol(_Nil<Symbol_O>()){};
-  virtual ~SynonymStream_O(){};
 
 GCPROTECTED: // instance variables here
   Symbol_sp _SynonymSymbol;
@@ -494,10 +509,11 @@ public: // Functions here
 }; // SynonymStream class
 
 }; // core namespace
+
 template <>
-struct gctools::GCInfo<core::SynonymStream_O> {
+struct gctools::GCInfo<core::TwoWayStream_O> {
   static bool constexpr NeedsInitialization = false;
-  static bool constexpr NeedsFinalization = true;
+  static bool constexpr NeedsFinalization = false;
   static GCInfo_policy constexpr Policy = normal;
 };
 
@@ -509,7 +525,6 @@ class TwoWayStream_O : public AnsiStream_O {
   //    DECLARE_ARCHIVE();
 public: // Simple default ctor/dtor
   TwoWayStream_O() : _In(_Nil<T_O>()), _Out(_Nil<T_O>()){};
-  virtual ~TwoWayStream_O(){};
 GCPROTECTED: // instance variables here
   T_sp _In;
   T_sp _Out;
@@ -521,13 +536,13 @@ public:
 }; // TwoWayStream class
 
 }; // core namespace
+
 template <>
-struct gctools::GCInfo<core::TwoWayStream_O> {
+struct gctools::GCInfo<core::BroadcastStream_O> {
   static bool constexpr NeedsInitialization = false;
-  static bool constexpr NeedsFinalization = true;
+  static bool constexpr NeedsFinalization = false;
   static GCInfo_policy constexpr Policy = normal;
 };
-
 namespace core {
 FORWARD(BroadcastStream);
 class BroadcastStream_O : public AnsiStream_O {
@@ -544,10 +559,11 @@ public: // Functions here
 };      // BroadcastStream class
 
 }; // core namespace
+
 template <>
-struct gctools::GCInfo<core::BroadcastStream_O> {
+struct gctools::GCInfo<core::ConcatenatedStream_O> {
   static bool constexpr NeedsInitialization = false;
-  static bool constexpr NeedsFinalization = true;
+  static bool constexpr NeedsFinalization = false;
   static GCInfo_policy constexpr Policy = normal;
 };
 
@@ -565,10 +581,11 @@ public: // Functions here
 };      // ConcatenatedStream class
 
 }; // core namespace
+
 template <>
-struct gctools::GCInfo<core::ConcatenatedStream_O> {
+struct gctools::GCInfo<core::EchoStream_O> {
   static bool constexpr NeedsInitialization = false;
-  static bool constexpr NeedsFinalization = true;
+  static bool constexpr NeedsFinalization = false;
   static GCInfo_policy constexpr Policy = normal;
 };
 
@@ -588,25 +605,19 @@ GCPRIVATE: // instance variables here
 public: // Functions here
 };      // EchoStream class
 };
-template <>
-struct gctools::GCInfo<core::EchoStream_O> {
-  static bool constexpr NeedsInitialization = false;
-  static bool constexpr NeedsFinalization = true;
-  static GCInfo_policy constexpr Policy = normal;
-};
 
 namespace core {
 
 T_sp cl__peek_char(T_sp peek_type, T_sp strm, T_sp eof_errorp, T_sp eof_value, T_sp recursivep);
 T_sp cl__read_char(T_sp ostrm, T_sp eof_error_p, T_sp eof_value, T_sp recursive_p);
 
-Str_sp cl__write_string(Str_sp str, T_sp stream, int start, T_sp end);
+T_sp cl__write_string(T_sp str, T_sp stream, int start, T_sp end);
 
 T_sp cl__write_sequence(T_sp seq, T_sp stream, Fixnum_sp start, T_sp end);
 
 bool cl__streamp(T_sp strm);
 
-Str_sp clasp_writeString(Str_sp str, T_sp stream, int istart = 0, T_sp end = _Nil<T_O>());
+String_sp clasp_writeString(String_sp str, T_sp stream, int istart = 0, T_sp end = _Nil<T_O>());
 
 //    int core__stream_linenumber(T_sp strm);
 //    int core__stream_column(T_sp strm);

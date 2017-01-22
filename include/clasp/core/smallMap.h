@@ -37,30 +37,32 @@ THE SOFTWARE.
 #include <set>
 #include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
-#include <clasp/core/lispVector.h>
+#include <clasp/core/array.h>
 #include <clasp/core/hashTableEq.h>
 #include <clasp/core/cons.h>
 #include <clasp/core/corePackage.fwd.h>
 
 namespace core {
-using namespace core;
-SMART(SmallMap);
-class SmallMap_O : public General_O {
-  LISP_CLASS(core, CorePkg, SmallMap_O, "SmallMap",General_O);
-GCPRIVATE:
-  typedef gctools::SmallMap<T_sp, T_sp> map_type;
-  map_type map;
+  using namespace core;
+  SMART(SmallMap);
+  class SmallMap_O : public General_O {
+    LISP_CLASS(core, CorePkg, SmallMap_O, "SmallMap",General_O);
+  private:
+    typedef gctools::SmallMap<T_sp, T_sp> map_type;
+    map_type map;
+  public:
+    bool fieldsp() const { return true; };
+    void fields(Record_sp node);
+  public:
+    T_sp find(T_sp key, T_sp defval);
+    void setf(T_sp key, T_sp val);
+    CL_LISPIFY_NAME("map_size");
+    CL_DEFMETHOD   int size() const { return this->map.size(); };
+    CL_LISPIFY_NAME("map_capacity");
+    CL_DEFMETHOD   int capacity() const { return this->map.capacity(); };
 
-public:
-  T_sp find(T_sp key, T_sp defval);
-  void setf(T_sp key, T_sp val);
-CL_LISPIFY_NAME("map_size");
-CL_DEFMETHOD   int size() const { return this->map.size(); };
-CL_LISPIFY_NAME("map_capacity");
-CL_DEFMETHOD   int capacity() const { return this->map.capacity(); };
-
-  DEFAULT_CTOR_DTOR(SmallMap_O);
-};
+    DEFAULT_CTOR_DTOR(SmallMap_O);
+  };
 };
 
 #endif

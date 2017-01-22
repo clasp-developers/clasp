@@ -4,7 +4,6 @@
 	  *load-time-value-holder-global-var*
 	  irc-intrinsic
 	  irc-branch-to-and-begin-block
-	  with-ltv-function-codegen
 	  +fn-prototype-argument-names+
 	  jit-function-name
 	  *the-module*
@@ -22,16 +21,15 @@
 	  *current-function*
 	  *gv-current-function-name*
 	  *current-function-name*
-	  jit-make-global-string-ptr
+	  jit-make-global-string
 	  *run-time-literal-holder*
 	  cmp-log
 	  cmp-log-dump
 	  *run-time-execution-engine*
 	  create-run-time-execution-engine
 	  irc-environment-activation-frame
-	  *run-time-literals-external-name*
+	  *run-time-values-table-name*
 	  *all-functions-for-one-compile*
-	  *dump-module-on-completion*
 	  irc-intrinsic-args
 	  set-associated-funcs
 	  *block-name-prefix*

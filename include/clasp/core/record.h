@@ -3,8 +3,7 @@
 
 #include <clasp/core/foundation.h>
 #include <clasp/core/symbolTable.h>
-#include <clasp/core/lispVector.h>
-#include <clasp/core/vectorObjectsWithFillPtr.fwd.h>
+#include <clasp/core/array.h>
 
 namespace core {
 #if 0
@@ -56,6 +55,7 @@ public:
 
 public:
   List_sp data() const { return this->_alist; };
+  T_sp seen() const { return this->_Seen; };
   RecordStage stage() const { return this->_stage; };
 
   void flagSeen(Cons_sp apair);
@@ -132,7 +132,7 @@ public:
       Vector_sp vec_value = core__make_vector(cl::_sym_T_O, value.size());
       size_t idx(0);
       for (auto it : value)
-        vec_value->operator[](idx++) = it;
+        vec_value->rowMajorAset(idx++,it);
       RECORD_LOG(BF("saving entry: %s") % _rep_(vec_value));
       Cons_sp apair = core::Cons_O::create(name, vec_value);
       this->_alist = core::Cons_O::create(apair, this->_alist);
@@ -150,7 +150,7 @@ public:
       RECORD_LOG(BF("vec_value: %s") % _rep_(vec_value));
       value.resize(cl__length(vec_value));
       for (size_t i(0), iEnd(cl__length(vec_value)); i < iEnd; ++i) {
-        T_sp val = (*vec_value)[i];
+        T_sp val = vec_value->rowMajorAref(i);
         RECORD_LOG(BF("Loading vec0[%d] new@%p: %s\n") % i % (void *)(val.raw_()) % _rep_(val));
         value[i] = val;
       }

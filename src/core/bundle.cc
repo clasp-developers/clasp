@@ -24,7 +24,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#define DEBUG_LEVEL_FULL
+//#define DEBUG_LEVEL_FULL
 #include <clasp/core/foundation.h>
 
 
@@ -44,7 +44,7 @@ THE SOFTWARE.
 #include <clasp/core/object.h>
 #include <clasp/core/bundle.h>
 #include <clasp/core/sourceFileInfo.h>
-#include <clasp/core/str.h>
+#include <clasp/core/array.h>
 #include <clasp/core/pathname.h>
 #include <clasp/core/lisp.h>
 #include <boost/filesystem.hpp>
@@ -120,7 +120,7 @@ Bundle::Bundle(const string &raw_argv0, const string &appDirName) {
   if (verbose) {
     printf("%s:%d   Climb one level up from _ExecutablePath = %s\n", __FILE__, __LINE__, appDir.string().c_str());
   }
-  
+
   // Check if there is a 'src' directory in _ExecutableDir - if so we are building
   bf::path srcPath = this->_Directories->_ExecutableDir / "src";
   if (bf::exists(srcPath)) {
@@ -280,7 +280,7 @@ void Bundle::findContentSubDirectories(boost_filesystem::path contentDir, bool v
             printf("%s:%d Setting up _ResourcesDir = %s\n", __FILE__, __LINE__, this->_Directories->_ResourcesDir.string().c_str());
           }
         } else if (leaf == "lib" && (this->_Directories->_LibDir.empty())) {
-          this->_Directories->_LibDir = dirs->path();
+          this->_Directories->_LibDir = dirs->path() / "fasl";
           if (verbose) {
             printf("%s:%d Setting up _LibDir = %s\n", __FILE__, __LINE__, this->_Directories->_LibDir.string().c_str());
           }
@@ -368,7 +368,7 @@ Pathname_sp generate_pathname(const boost::filesystem::path& path)
   ss << "**";
   ss << DIR_SEPARATOR;
   ss << "*.*";
-  return cl__pathname(Str_O::create(ss.str()));
+  return cl__pathname(SimpleBaseString_O::make(ss.str()));
 }
 
 
@@ -384,7 +384,7 @@ Pathname_sp Bundle::getAppContentsResourcesPathname() {
   ss << "Resources";
   ss << DIR_SEPARATOR;
   ss << "**/*.*";
-  return cl__pathname(Str_O::create(ss.str()));
+  return cl__pathname(SimpleBaseString_O::make(ss.str()));
 }
 
 void Bundle::setup_pathname_translations()
@@ -393,69 +393,69 @@ void Bundle::setup_pathname_translations()
   if ( !this->_Directories->_LispSourceDir.empty() ) {
     Cons_sp pts =
       Cons_O::createList(
-                         Cons_O::createList(Str_O::create("sys:**;*.*"),
+                         Cons_O::createList(SimpleBaseString_O::make("sys:**;*.*"),
                                             generate_pathname(this->_Directories->_LispSourceDir))
         /* ,  more here */
                          );
-    core__pathname_translations(Str_O::create("sys"), _lisp->_true(), pts);
+    core__pathname_translations(SimpleBaseString_O::make("sys"), _lisp->_true(), pts);
   }
       // setup the LISP-SOURCE logical-pathname-translations
   if ( !this->_Directories->_LispSourceDir.empty() ) {
     Cons_sp pts =
       Cons_O::createList(
-                         Cons_O::createList(Str_O::create("LISP-SOURCE:**;*.*"),
+                         Cons_O::createList(SimpleBaseString_O::make("LISP-SOURCE:**;*.*"),
                                             generate_pathname(this->_Directories->_LispSourceDir)));
-    core__pathname_translations(Str_O::create("LISP-SOURCE"), _lisp->_true(), pts);
+    core__pathname_translations(SimpleBaseString_O::make("LISP-SOURCE"), _lisp->_true(), pts);
   }
   if ( !this->_Directories->_SourceDir.empty() ) {
     Cons_sp pts =
       Cons_O::createList(
-                         Cons_O::createList(Str_O::create("SOURCE-DIR:**;*.*"),
+                         Cons_O::createList(SimpleBaseString_O::make("SOURCE-DIR:**;*.*"),
                                             generate_pathname(this->_Directories->_SourceDir)));
-    core__pathname_translations(Str_O::create("SOURCE-DIR"), _lisp->_true(), pts);
+    core__pathname_translations(SimpleBaseString_O::make("SOURCE-DIR"), _lisp->_true(), pts);
   }
   if ( !this->_Directories->_GeneratedDir.empty() ) {
     Cons_sp pts =
       Cons_O::createList(
-                         Cons_O::createList(Str_O::create("GENERATED:**;*.*"),
+                         Cons_O::createList(SimpleBaseString_O::make("GENERATED:**;*.*"),
                                             generate_pathname(this->_Directories->_GeneratedDir)));
-    core__pathname_translations(Str_O::create("GENERATED"), _lisp->_true(), pts);
+    core__pathname_translations(SimpleBaseString_O::make("GENERATED"), _lisp->_true(), pts);
   }
   if ( !this->_Directories->_LibDir.empty() ) {
     Cons_sp pts =
       Cons_O::createList(
-                         Cons_O::createList(Str_O::create("LIB:**;*.*"),
+                         Cons_O::createList(SimpleBaseString_O::make("LIB:**;*.*"),
                                             generate_pathname(this->_Directories->_LibDir)));
-    core__pathname_translations(Str_O::create("LIB"), _lisp->_true(), pts);
+    core__pathname_translations(SimpleBaseString_O::make("LIB"), _lisp->_true(), pts);
   }
     // setup the TMP logical-pathname-translations
-  Cons_sp entryTmp = Cons_O::createList(Str_O::create("tmp:**;*.*"),
-                                        cl__pathname(Str_O::create("/tmp/**/*.*")));
+  Cons_sp entryTmp = Cons_O::createList(SimpleBaseString_O::make("tmp:**;*.*"),
+                                        cl__pathname(SimpleBaseString_O::make("/tmp/**/*.*")));
   Cons_sp ptsTmp = Cons_O::createList(entryTmp
                                         /* ,  more here */
                                       );
-  core__pathname_translations(Str_O::create("tmp"), _lisp->_true(), ptsTmp);
+  core__pathname_translations(SimpleBaseString_O::make("tmp"), _lisp->_true(), ptsTmp);
 
             // setup the APP-EXECUTABLE logical-pathname-translations
   {
     Cons_sp appc =
-      Cons_O::createList(Cons_O::createList(Str_O::create("app-executable:**;*.*"),
+      Cons_O::createList(Cons_O::createList(SimpleBaseString_O::make("app-executable:**;*.*"),
                                             generate_pathname(this->_Directories->_ExecutableDir)));
-    core__pathname_translations(Str_O::create("app-executable"), _lisp->_true(), appc);
+    core__pathname_translations(SimpleBaseString_O::make("app-executable"), _lisp->_true(), appc);
   }
 
     // setup the APP-CONTENTS logical-pathname-translations
   if ( !this->_Directories->_ContentsDir.empty() ) {
     Cons_sp appc =
-      Cons_O::createList(Cons_O::createList(Str_O::create("app-contents:**;*.*"),
+      Cons_O::createList(Cons_O::createList(SimpleBaseString_O::make("app-contents:**;*.*"),
                                             generate_pathname(this->_Directories->_ContentsDir)));
-    core__pathname_translations(Str_O::create("app-contents"), _lisp->_true(), appc);
+    core__pathname_translations(SimpleBaseString_O::make("app-contents"), _lisp->_true(), appc);
   }
   if ( !this->_Directories->_ResourcesDir.empty() ) {
     Cons_sp appc =
-      Cons_O::createList(Cons_O::createList(Str_O::create("app-resources:**;*.*"),
+      Cons_O::createList(Cons_O::createList(SimpleBaseString_O::make("app-resources:**;*.*"),
                                             generate_pathname(this->_Directories->_ResourcesDir)));
-    core__pathname_translations(Str_O::create("app-resources"), _lisp->_true(), appc);
+    core__pathname_translations(SimpleBaseString_O::make("app-resources"), _lisp->_true(), appc);
   }
 }
 

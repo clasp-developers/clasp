@@ -24,7 +24,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#define DEBUG_LEVEL_FULL
+//#define DEBUG_LEVEL_FULL
 
 //
 // (C) 2004 Christian E. Schafmeister
@@ -62,15 +62,13 @@ THE SOFTWARE.
 #include <clasp/core/documentation.h>
 #include <clasp/core/structureClass.h>
 #include <clasp/core/structureObject.h>
-#include <clasp/core/str.h>
-#include <clasp/core/binder.h>
+#include <clasp/core/array.h>
 #include <clasp/core/pointer.h>
 #include <clasp/core/wrappedPointer.h>
 #include <clasp/core/debugger.h>
 //#i n c l u d e "setfExpander.h"
 #include <clasp/core/environment.h>
 #include <clasp/core/primitives.h>
-#include <clasp/core/vectorObjectsWithFillPtr.h>
 #include <clasp/core/conditions.h>
 
 #ifdef darwin
@@ -155,7 +153,7 @@ CL_DEFUN void core__dump_class_ids()
 {
   reg::dump_class_ids();
 }
-};
+
 
 
 void lisp_errorIllegalDereference(void *v) {
@@ -201,7 +199,7 @@ void lisp_errorUnexpectedType(class_id expectedTyp, class_id givenTyp, core::T_O
 
 void lisp_errorBadCastToFixnum(class_id from_typ, core::T_O *objP) {
   class_id to_typ = reg::registered_class<core::Fixnum_I>::id;
-  lisp_errorUnexpectedType(to_typ, from_typ, objP);
+  core::lisp_errorUnexpectedType(to_typ, from_typ, objP);
 }
 
 void lisp_errorBadCast(class_id toType, class_id fromType, core::T_O *objP) {
@@ -235,6 +233,7 @@ void lisp_errorUnexpectedNil(class_id expectedTyp) {
   TYPE_ERROR(_Nil<core::T_O>(), expectedSym);
 }
 
+};
 namespace boost {
 using namespace core;
 void assertion_failed(char const *expr, char const *function, char const *file, long line) {
@@ -256,7 +255,7 @@ namespace llvm_interface {
 ::llvm_interface::llvmAddSymbolCallbackType addSymbol = NULL;
 };
 
-void dbg_hook(const char *error) {
+NOINLINE void dbg_hook(const char *error) {
   // Do nothing
   // set a break point here to catch every error
   //
@@ -270,59 +269,12 @@ void dbg_hook(const char *error) {
 namespace core {
 
 void lisp_vectorPushExtend(T_sp vec, T_sp obj) {
-  VectorObjectsWithFillPtr_sp vvec = gc::As<VectorObjectsWithFillPtr_sp>(vec);
+  VectorObjects_sp vvec = gc::As<VectorObjects_sp>(vec);
   vvec->vectorPushExtend(obj);
 }
 };
 
 namespace core {
-
-// false == SIGABRT invokes debugger, true == terminate (used in core__exit)
-bool global_debuggerOnSIGABRT = true;
-
-int global_signalTrap = 0;
-int global_pollTicksGC = 0;
-
-void lisp_pollSignals() {
-  int signo = core::global_signalTrap;
-  SET_SIGNAL(0);
-  if (signo == SIGINT) {
-    printf("You pressed Ctrl+C\n");
-    try {
-      core::eval::funcall(cl::_sym_break, core::Str_O::create("Break on Ctrl+C"));
-    } catch (...) {
-      throw;
-    }
-      //    core__invoke_internal_debugger(_Nil<core::T_O>());
-    printf("Resuming after Ctrl+C\n");
-  } else if (signo == SIGCHLD) {
-      //            printf("A child terminated\n");
-  } else if (signo == SIGABRT) {
-    printf("ABORT was called!!!!!!!!!!!!\n");
-    core__invoke_internal_debugger(_Nil<core::T_O>());
-      //    core:eval::funcall(cl::_sym_break,core::Str_O::create("ABORT was called"));
-  }
-#if 0
-#ifdef USE_MPS
-  ++global_pollTicksGC;
-  if (core::_sym_STARpollTicksPerGcSTAR && !core::_sym_STARpollTicksPerGcSTAR.unboundp() && !core::_sym_STARpollTicksPerGcSTAR->symbolValueUnsafe().unboundp() && global_pollTicksGC >= unbox_fixnum(core::_sym_STARpollTicksPerGcSTAR->symbolValue())) {
-    global_pollTicksGC = 0;
-    gctools::gctools__cleanup();
-  }
-#endif
-#endif
-}
-
-
-char *clasp_alloc_atomic(size_t buffer) {
-  return (char *)malloc(buffer);
-}
-
-void clasp_dealloc(char *buffer) {
-  if (buffer) {
-    free(buffer);
-  }
-}
 
 List_sp clasp_grab_rest_args(va_list args, int nargs) {
   ql::list l;
@@ -352,21 +304,6 @@ Symbol_sp lisp_symbolNil() {
   return _Nil<Symbol_O>();
 }
 
-bool lisp_search(T_sp seq, T_sp obj, int &index) {
-  if (seq.nilp()) {
-    return false;
-  } else if (Vector_sp vec = seq.asOrNull<Vector_O>()) {
-    for (int i(0), iEnd(vec->dimension()); i < iEnd; ++i) {
-      if (vec->elt(i) == obj) {
-        index = i;
-        return true;
-      }
-    }
-    return false;
-  }
-  SIMPLE_ERROR(BF("Add support for lisp_search to search %s") % _rep_(seq));
-}
-
 #if 0
     extern "C"
     {
@@ -381,10 +318,10 @@ bool lisp_search(T_sp seq, T_sp obj, int &index) {
 CL_LAMBDA(name);
 CL_DECLARE();
 CL_DOCSTRING("lispifyName");
-CL_DEFUN Str_sp core__lispify_name(Str_sp name) {
+CL_DEFUN String_sp core__lispify_name(String_sp name) {
   ASSERT(name.notnilp());
   string lispified = lispify_symbol_name(name->get());
-  return Str_O::create(lispified);
+  return SimpleBaseString_O::make(lispified);
 };
 
 /*!
@@ -415,7 +352,7 @@ CL_DEFUN Symbol_sp core__magic_intern(const string& name, const string& package)
   std::string pkg;
   colon_split(pkg_sym,pkg,sym);
   Package_sp p = _lisp->findPackage(pkg);
-  return p->intern(Str_O::create(sym));
+  return p->intern(SimpleBaseString_O::make(sym));
 }
 
 
@@ -480,7 +417,7 @@ CL_DEFUN T_mv core__magic_name(const std::string& name, const std::string& packa
   std::string sym;
   std::string pkg;
   colon_split(pkg_sym,pkg,sym);
-  return Values(Str_O::create(pkg_sym),Str_O::create(pkg),Str_O::create(sym));
+  return Values(SimpleBaseString_O::make(pkg_sym),SimpleBaseString_O::make(pkg),SimpleBaseString_O::make(sym));
 };
 
 
@@ -765,24 +702,11 @@ Class_sp lisp_instance_class(T_sp o) {
       return core::Null_O::static_class;
     }
     return go->_instanceClass();
-#if 0
-    if (Instance_sp iobj = go.asOrNull<Instance_O>()) {
-      return iobj->_instanceClass();
-    } else if (WrappedPointer_sp exobj = go.asOrNull<WrappedPointer_O>()) {
-      return exobj->_instanceClass();
-    } else if (StructureObject_sp sobj = go.asOrNull<StructureObject_O>()) {
-      return sobj->_instanceClass();
-    } else if (Class_sp cobj = go.asOrNull<Class_O>()) {
-      return cobj->_instanceClass();
-    } else if (go.nilp()) {
-      return core::Null_O::static_class;
-    } else return go->__class(); // lisp_static_class()
-#endif
   } else if (o.valistp()) {
     // What do I return for this?
     return core::VaList_dummy_O::static_class;
   }
-  SIMPLE_ERROR(BF("Add support for unknown (immediate?) object to lisp_instance_class"));
+  SIMPLE_ERROR(BF("Add support for unknown (immediate?) object to lisp_instance_class obj = %p") % (void*)(o.raw_()));
 }
 
 Class_sp lisp_static_class(T_sp o) {
@@ -822,7 +746,7 @@ string _rep_(T_sp obj) {
 #if defined(USE_WRITE_OBJECT)
   T_sp sout = clasp_make_string_output_stream();
   write_object(obj, sout);
-  return cl__get_output_stream_string(sout).as<Str_O>()->get();
+  return cl__get_output_stream_string(sout).as<String_O>()->get();
 #else
   if (obj.fixnump()) {
     stringstream ss;
@@ -932,7 +856,7 @@ bool lisp_BuiltInClassesInitialized() {
 #endif
 
 void lisp_exposeClass(const string &className, ExposeCandoFunction exposeCandoFunction, ExposePythonFunction exposePythonFunction) {
-  DEPRECIATED();
+  DEPRECATED();
   //    ASSERTP(lisp.notnilp(),"In lisp_exposeClass env can not be nil");
   bool exposed = false;
   {
@@ -964,7 +888,7 @@ void lisp_addClass(Symbol_sp classSymbol,
   _lisp->addClass(classSymbol, cb, base1ClassSymbol); //, base2ClassSymbol);
 }
 void lisp_addClass(Symbol_sp classSymbol) {
-  DEPRECIATED();
+  DEPRECATED();
   //	_lisp->addClass(classSymbol);
 }
 
@@ -973,7 +897,7 @@ List_sp lisp_parse_arguments(const string &packageName, const string &args) {
     return _Nil<T_O>();
   Package_sp pkg = gc::As<Package_sp>(_lisp->findPackage(packageName, true));
   ChangePackage changePackage(pkg);
-  Str_sp ss = Str_O::create(args);
+  SimpleBaseString_sp ss = SimpleBaseString_O::make(args);
   Stream_sp str = cl__make_string_input_stream(ss, make_fixnum(0), _Nil<T_O>());
   Reader_sp reader = Reader_O::create(str);
   T_sp osscons = reader->primitive_read(true, _Nil<T_O>(), false);
@@ -986,7 +910,7 @@ List_sp lisp_parse_declares(const string &packageName, const string &declarestri
     return _Nil<T_O>();
   Package_sp pkg = gc::As<Package_sp>(_lisp->findPackage(packageName, true));
   ChangePackage changePackage(pkg);
-  Str_sp ss = Str_O::create(declarestring);
+  SimpleBaseString_sp ss = SimpleBaseString_O::make(declarestring);
   Stream_sp str = cl__make_string_input_stream(ss, make_fixnum(0), _Nil<T_O>());
   Reader_sp reader = Reader_O::create(str);
   List_sp sscons = reader->primitive_read(true, _Nil<T_O>(), false);
@@ -1074,7 +998,7 @@ void lisp_defineSingleDispatchMethod(Symbol_sp sym,
   if (autoExport)
     sym->exportYourself();
   LOG(BF("Interned method in class[%s]@%p with symbol[%s] arguments[%s] - autoexport[%d]") % receiver_class->instanceClassName() % (receiver_class.get()) % sym->fullName() % arguments % autoExport);
-  Str_sp docStr = Str_O::create(docstring);
+  SimpleBaseString_sp docStr = SimpleBaseString_O::make(docstring);
   T_sp gfn = core__ensure_single_dispatch_generic_function(sym, llhandler); // Ensure the single dispatch generic function exists
   (void)gfn;                                                         // silence compiler warning
   LOG(BF("Attaching single_dispatch_method symbol[%s] receiver_class[%s]  method_body@%p") % _rep_(sym) % _rep_(receiver_class) % ((void *)(method_body)));
@@ -1157,15 +1081,15 @@ void lisp_defun(Symbol_sp sym,
     llh = lisp_function_lambda_list_handler(ll, _Nil<T_O>(), skipIndices);
   }
   fc->finishSetup(llh, kw::_sym_function);
-  fc->setSourcePosInfo(Str_O::create(sourceFile), 0, lineNumber, 0);
+  fc->setSourcePosInfo(SimpleBaseString_O::make(sourceFile), 0, lineNumber, 0);
   Function_sp func = fc;
   sym->setf_symbolFunction(func);
   if (autoExport)
     sym->exportYourself();
   else
     sym->setReadOnlyFunction(false);
-  core::ext__annotate(sym,cl::_sym_documentation,cl::_sym_function, core::Str_O::create(docstring));
-  core::ext__annotate(func,cl::_sym_documentation,cl::_sym_function, core::Str_O::create(docstring));
+  core::ext__annotate(sym,cl::_sym_documentation,cl::_sym_function, core::SimpleBaseString_O::make(docstring));
+  core::ext__annotate(func,cl::_sym_documentation,cl::_sym_function, core::SimpleBaseString_O::make(docstring));
 
 }
 
@@ -1300,6 +1224,7 @@ void lisp_debugLogWrite(char const *fileName, const char *functionName, uint lin
     return;
   }
   _lisp->debugLog().beginNode(DEBUG_LOG, fileName, functionName, lineNumber, 0, fmt_str);
+  _lisp->debugLog().writeRaw("~~~");
   _lisp->debugLog().endNode(DEBUG_LOG);
 }
 
@@ -1549,7 +1474,7 @@ string lisp_symbolNameAsString(Symbol_sp sym) {
 }
 
 T_sp lisp_createStr(const string &s) {
-  return Str_O::create(s);
+  return SimpleBaseString_O::make(s);
 }
 
 T_sp lisp_createFixnum(int fn) {
@@ -1557,7 +1482,7 @@ T_sp lisp_createFixnum(int fn) {
 }
 
 SourcePosInfo_sp lisp_createSourcePosInfo(const string &fileName, size_t filePos, int lineno) {
-  Str_sp fn = Str_O::create(fileName);
+  SimpleBaseString_sp fn = SimpleBaseString_O::make(fileName);
   SourceFileInfo_mv sfi_mv = core__source_file_info(fn);
   SourceFileInfo_sp sfi = sfi_mv;
   Fixnum_sp handle = gc::As<Fixnum_sp>(sfi_mv.valueGet_(1));
@@ -1597,7 +1522,7 @@ struct ErrorSimpleDepthCounter {
   }
 };
 
-void lisp_error_simple(const char *functionName, const char *fileName, int lineNumber, const boost::format &fmt) {
+NOINLINE void lisp_error_simple(const char *functionName, const char *fileName, int lineNumber, const boost::format &fmt) {
   if (telemetry::global_telemetry_search)
     telemetry::global_telemetry_search->flush();
   stringstream ss;
@@ -1622,7 +1547,7 @@ void lisp_error_simple(const char *functionName, const char *fileName, int lineN
   eval::funcall(_sym_signalSimpleError,
                 cl::_sym_programError,    //arg0
                 _Nil<T_O>(),              // arg1
-                Str_O::create(fmt.str()), // arg2
+                SimpleBaseString_O::make(fmt.str()), // arg2
                 _Nil<T_O>());
 }
 
@@ -1640,7 +1565,7 @@ void lisp_error_condition(const char *functionName, const char *fileName, int li
   eval::applyLastArgsPLUSFirst(_sym_signalSimpleError, initializers // initializers is a LIST and the last argument to APPLY!!!!!
                                // this allows us to include a variable number of arguments next
                                ,
-                               baseCondition, _Nil<T_O>() );// Str_O::create(ss.str()), _Nil<T_O>());
+                               baseCondition, _Nil<T_O>() );// SimpleBaseString_O::make(ss.str()), _Nil<T_O>());
 }
 
 void lisp_error(T_sp datum, T_sp arguments) {

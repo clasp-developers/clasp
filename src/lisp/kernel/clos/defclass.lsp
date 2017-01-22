@@ -29,7 +29,7 @@
 	  (si::simple-program-error "~S is duplicated in :DEFAULT-INITARGS form ~S"
 				    slot-name default-initargs)
 	  (push slot-name already-supplied))
-      (push `(list ',slot-name ',initform ,(make-function-initform initform))
+      (push `(list ',slot-name ',initform (lambda () ,initform))
 	    output-list))))
 
 (defmacro defclass (&whole form &rest args)
@@ -47,44 +47,8 @@
        ,(ext:register-with-pde
 	 form
 	 `(load-defclass ',name ',superclasses
-			 ,(compress-slot-forms slots)
+                         ,(parse-slots slots)
 			 ,(process-class-options options))))))
-
-(defun compress-slot-forms (slot-definitions)
-  (declare (si::c-local))
-  ;; Here we compose the final form. The slots list, and the default initargs
-  ;; may contain object that need to be evaluated. Hence, it cannot be always
-  ;; quoted.
-  (let ((const '())
-	(output '())
-	(non-const nil))
-    (dolist (slotd (parse-slots slot-definitions))
-      (let* ((initfun (getf slotd :initfunction nil))
-	     (copy (copy-list slotd)))
-	(remf copy :initfunction)
-	(cond ((atom initfun)
-	       (push copy const)
-	       (push (ext:maybe-quote copy) output))
-	      ((eq (first initfun) 'constantly)
-	       (push copy const)
-	       (push (ext:maybe-quote copy) output))
-	      (t
-	       (push `(list* :initfunction ,initfun ,(ext:maybe-quote copy))
-		     output)
-	       (setf non-const t)))))
-    (if non-const
-	`(list ,@(nreverse output))
-	(ext:maybe-quote (nreverse const)))))
-
-(defun uncompress-slot-forms (slot-definitions)
-  (loop for slotd in slot-definitions
-     for initform = (getf slotd :initform slotd)
-     collect (if (eq initform slotd)
-		 slotd
-		 (if (getf slotd :initfunction)
-		     slotd
-		     (list* :initfunction (constantly (eval initform))
-			    slotd)))))
 
 (defun process-class-options (class-args)
   (let ((options '())
@@ -112,25 +76,22 @@
   
 (defun load-defclass (name superclasses slot-definitions options)
   (apply #'ensure-class name :direct-superclasses superclasses
-	 :direct-slots (uncompress-slot-forms slot-definitions)
-	 options))
+                             :direct-slots slot-definitions options))
 
 ;;; ----------------------------------------------------------------------
 ;;; ENSURE-CLASS
 ;;;
 (defun ensure-class (name &rest initargs)
-  (let* ((old-class nil)
-	 new-class)
-    ;; Only classes which have a PROPER name are redefined. If a class
-    ;; with the same name is register, but the name of the class does not
-    ;; correspond to the registered name, a new class is returned.
-    ;; [Hyperspec 7.7 for DEFCLASS]
-    (when name
-      (when (and (setf old-class (find-class name nil))
-		 (not (eq (class-name old-class) name)))
-	(setf old-class nil)))
-    (setf new-class (apply #'ensure-class-using-class old-class name initargs))
-    new-class))
+  (apply #'ensure-class-using-class
+         (let ((class (and name
+                           (find-class name nil))))
+           ;; Only classes which have a PROPER name are redefined. If a class
+           ;; with the same name is register, but the name of the class does not
+           ;; correspond to the registered name, a new class is returned.
+           ;; [Hyperspec 7.7 for DEFCLASS]
+           (when (and class (eq name (class-name class)))
+             class))
+         name initargs))
 
 #+(or) ;#+cross
 (eval-when (compile)

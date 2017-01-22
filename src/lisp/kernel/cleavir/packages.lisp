@@ -10,13 +10,21 @@
   (:use #:common-lisp #:core)
   (:nicknames #:cc)
   (:export
+   #:%literal-index
+   #:*use-type-inference*
    #:cleavir-compile-eval
+   #:compile-form
    #:clasp
    #:invoke-instruction
    #:invoke-multiple-value-call-instruction
    #:*debug-log*
+   #:*debug-final-gml*
+   #:*debug-cleavir*
+   #:*debug-cleavir-literals*
    #:instruction-gid
-   #:unsafe-intrinsic-call
+   #:unsafe-multiple-value-foreign-call
+   #:unsafe-foreign-call
+   #:unsafe-foreign-call-pointer
    #:datum-gid
    #:create-landing-pad
    #:translate-datum
@@ -29,6 +37,7 @@
    #:*function-inline-asts*
    #:*clasp-env*
    #:*clasp-system*
+   #:*code-walker*
    #:alloca-i8
 ))
 
@@ -45,7 +54,9 @@
    #:make-precalc-vector-function-ast
    #:named-function-ast
    #:debug-message-ast
-   #:intrinsic-call-ast
+   #:multiple-value-foreign-call-ast
+   #:foreign-call-ast
+   #:foreign-call-pointer-ast
    #:argument-asts
    #:function-name
    #:make-throw-ast
@@ -53,9 +64,6 @@
    #:make-setf-fdefinition-ast
    #:lambda-name
    #:debug-message
-   #:precalc-symbol-reference-ast
-   #:precalc-symbol-reference-index
-   #:precalc-symbol-reference-ast-original-object
    #:precalc-value-reference-ast
    #:precalc-value-reference-index
    #:precalc-value-reference-ast-original-object
@@ -71,7 +79,6 @@
   (:export 
    #:precalc-reference-instruction
    #:named-enter-instruction
-   #:landing-pad-named-enter-instruction
    #:frame-holder
    #:indexed-unwind-instruction
    #:landing-pad-instruction
@@ -80,21 +87,22 @@
    #:jump-id
    #:make-named-enter-instruction
    #:debug-message-instruction
-   #:intrinsic-call-instruction
+   #:multiple-value-foreign-call-instruction
+   #:foreign-call-instruction
+   #:foreign-call-pointer-instruction
    #:function-name
-   #:make-intrinsic-call-instruction
-   #:make-precalc-symbol-instruction
+   #:make-multiple-value-foreign-call-instruction
+   #:make-foreign-call-instruction
+   #:make-foreign-call-pointer-instruction
    #:make-precalc-value-instruction
    #:invoke-instruction
    #:make-setf-fdefinition-instruction
    #:make-throw-instruction
    #:lambda-name
-   #:precalc-symbol-instruction
    #:precalc-value-instruction
    #:debug-message
    #:setf-fdefinition-instruction
    #:throw-instruction
-   #:precalc-symbol-instruction-original-object
    #:precalc-value-instruction-original-object
    #:instruction-id
    #:push-special-binding-instruction
@@ -122,6 +130,10 @@
   (:export
    #:stack-enclose-instruction
    #:make-stack-enclose-instruction
+   #:characterp-instruction
+   #:make-characterp-instruction
+   #:single-float-p-instruction
+   #:make-single-float-p-instruction
    #:enter-instruction
    #:closure-pointer-dynamic-lexical-location
    #:describe-mir

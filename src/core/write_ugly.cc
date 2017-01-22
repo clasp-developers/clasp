@@ -4,14 +4,14 @@
 
 /*
 Copyright (c) 2014, Christian E. Schafmeister
- 
+
 CLASP is free software; you can redistribute it and/or
 modify it under the terms of the GNU Library General Public
 License as published by the Free Software Foundation; either
 version 2 of the License, or (at your option) any later version.
- 
+
 See directory 'clasp/licenses' for full details.
- 
+
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
 
@@ -32,7 +32,7 @@ THE SOFTWARE.
     Copyright (c) 1984, Taiichi Yuasa and Masami Hagiya.
     Copyright (c) 1990, Giuseppe Attardi.
     Copyright (c) 2001, Juan Jose Garcia Ripoll.
-    Copyright (c) 2013, Christian E. Schafmeister 
+    Copyright (c) 2013, Christian E. Schafmeister
 
     ECL is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -46,19 +46,18 @@ THE SOFTWARE.
 
 */
 
-#define DEBUG_LEVEL_FULL
+//#define DEBUG_LEVEL_FULL
 
 #include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
 #include <clasp/core/cons.h>
 #include <clasp/core/symbolTable.h>
 #include <clasp/core/designators.h>
-#include <clasp/core/str.h>
+#include <clasp/core/array.h>
 #include <clasp/core/evaluator.h>
 #include <clasp/core/pathname.h>
 #include <clasp/core/lispStream.h>
 #include <clasp/core/instance.h>
-#include <clasp/core/strWithFillPtr.h>
 #include <clasp/core/structureObject.h>
 #include <clasp/core/sysprop.h>
 #include <clasp/core/numberToString.h>
@@ -68,9 +67,7 @@ THE SOFTWARE.
 #include <clasp/core/float_to_string.h>
 #include <clasp/core/write_symbol.h>
 #include <clasp/core/write_ugly.h>
-
 #include <clasp/core/character.h>
-
 #include <clasp/core/wrappers.h>
 
 namespace core {
@@ -119,7 +116,7 @@ void Pathname_O::__write__(T_sp strm) const {
 	} else {
 	    clasp_write_string("#\\",stream);
 	    if (i < 32 || i >= 127) {
-		Str_sp name = gc::As<Str_sp>(eval::funcall(cl::_sym_char_name,char));
+		SimpleBaseString_sp name = gc::As<SimpleBaseString_sp>(eval::funcall(cl::_sym_char_name,char));
 		clasp_write_string(name->get(),stream);
 	    } else {
 		clasp_write_char(i,stream);
@@ -131,18 +128,20 @@ void Pathname_O::__write__(T_sp strm) const {
 void Instance_O::__write__(T_sp stream) const {
   if ( cl::_sym_printObject->fboundp() ) {
     eval::funcall(cl::_sym_printObject, this->const_sharedThis<Instance_O>(), stream);
+  } else {
+    std::string str = _rep_(this->asSmartPtr());
+    clasp_write_string(str,stream);
   }
-  std::string str = _rep_(this->asSmartPtr());
-  clasp_write_string(str,stream);
 }
 
 void StructureObject_O::__write__(T_sp stream) const {
   //  printf("%s:%d StructureObject_O::__write__\n", __FILE__, __LINE__);
-  if (UNLIKELY(!gc::IsA<Symbol_sp>(this->_Type)))
-    SIMPLE_ERROR(BF("Found a corrupt structure with an invalid type name~%  ~S") % _rep_(this->_Type));
+  if (UNLIKELY(!gc::IsA<Class_sp>(this->_Type)))
+    SIMPLE_ERROR(BF("Found a corrupt structure with an invalid type %s") % _rep_(this->_Type));
+  Symbol_sp type_name = this->_Type->className();
   SYMBOL_EXPORT_SC_(CorePkg, structure_print_function);
   SYMBOL_EXPORT_SC_(CorePkg, STARprint_structureSTAR);
-  T_sp print_function = core__get_sysprop(this->_Type, _sym_structure_print_function);
+  T_sp print_function = core__get_sysprop(type_name, _sym_structure_print_function);
   if (print_function.nilp() || !_sym_STARprint_structureSTAR->symbolValue().isTrue()) {
     clasp_write_string("#S", stream);
     /* structure_to_list conses slot names and values into
@@ -269,7 +268,7 @@ void Integer_O::__write__(T_sp stream) const {
         const char *prefix;
         T_sp tag;
         union cl_lispunion str;
-#ifdef ECL_UNICODE
+#ifdef CLASP_UNICODE
         ecl__character buffer[10];
 #else
         ecl_base_char buffer[10];
@@ -355,7 +354,7 @@ void Integer_O::__write__(T_sp stream) const {
 	    buffer[ndx++] = 0;
 	    prefix = "closed string-input stream from";
 	    tag = &str;
-#ifdef ECL_UNICODE
+#ifdef CLASP_UNICODE
 	    tag->string.t = t_string;
 	    tag->string.self = buffer;
 #else
@@ -444,10 +443,9 @@ void write_single_float(T_sp strm, SingleFloat_sp i) {
 
 void
 write_float(T_sp f, T_sp stream) {
-  StrWithFillPtr_sp s = _lisp->get_buffer_string();
-  s = core_float_to_string_free(s, f, clasp_make_fixnum(-3), clasp_make_fixnum(8));
-  cl__write_sequence(s, stream, clasp_make_fixnum(0), _Nil<T_O>());
-  _lisp->put_buffer_string(s);
+  SafeBuffer s;
+  StrNs_sp result = core_float_to_string_free(s.string(), f, clasp_make_fixnum(-3), clasp_make_fixnum(8));
+  cl__write_sequence(result, stream, clasp_make_fixnum(0), _Nil<T_O>());
 }
 
 void write_character(T_sp strm, T_sp chr) {
@@ -458,7 +456,7 @@ void write_character(T_sp strm, T_sp chr) {
   } else {
     clasp_write_string("#\\", strm);
     if (i < 32 || i >= 127) {
-      Str_sp name = cl__char_name(clasp_make_character(i));
+      SimpleBaseString_sp name = cl__char_name(clasp_make_character(i));
       clasp_write_string(name->get(), strm);
     } else {
       clasp_write_char(i, strm);

@@ -1,9 +1,50 @@
 (in-package :clasp-cleavir)
 
+#+(or)
+(defmacro debug-inline (msg &rest msg-args)
+  `(progn
+     (format t "debug-inline>> ")
+     (format t ,msg ,@msg-args)
+     (format t "~%")
+     (finish-output)))
+(defmacro debug-inline (msg &rest msg-args)
+  nil)
+
+
+;;; Use typeq
 (progn
   (declaim (inline cl:consp))
   (defun cl:consp (x)
-    (if (cleavir-primop:consp x) t nil)))
+    (if (cleavir-primop:typeq x cons) t nil)))
+
+(debug-inline "null")
+
+(progn
+  (declaim (inline cl:null))
+  (defun cl:null (x)
+    (eq x nil)))
+;; if (cleavir-primop:typeq x null) t nil)))
+
+(debug-inline "fixnump")
+
+(progn
+  (declaim (inline core:fixnump))
+  (defun core:fixnump (x)
+    (if (cleavir-primop:typeq x cl:fixnum) t nil)))
+
+#+(or)
+(progn
+  (declaim (inline cl:characterp))
+  (defun cl:characterp (x)
+    (if (cleavir-primop:typeq x cl:character) t nil)))
+
+#+(or)
+(progn
+  (declaim (inline core:single-float-p))
+  (defun core:single-float-p (x)
+    (if (cleavir-primop:typeq x cl:single-float) t nil)))
+
+(debug-inline "car")
 
 (progn
   (declaim (inline cl:car))
@@ -12,21 +53,25 @@
         (cleavir-primop:car x)
         (if (null x)
             nil
-            (error "Cannot get car of non-list ~s" x)))))
+            (error "Cannot get car of non-list ~s of type ~a" x (type-of x))))))
+
+(debug-inline "cdr")
 
 (progn
   (declaim (inline cl:cdr))
   (defun cl:cdr (x)
-    (if (consp x)
+    (if (cleavir-primop:typeq x cons) ;; (consp x)
         (cleavir-primop:cdr x)
         (if (null x)
             nil
             (error "Cannot get cdr of non-list ~s" x)))))
 
+(debug-inline "rplaca")
+
 (progn
   (declaim (inline cl:rplaca))
   (defun cl:rplaca (p v)
-    (if (consp p)
+    (if (cleavir-primop:typeq p cons)
         (progn
           (cleavir-primop:rplaca p v)
           p)
@@ -35,12 +80,14 @@
 (progn
   (declaim (inline cl:rplacd))
   (defun cl:rplacd (p v)
-    (if (consp p)
+    (if (cleavir-primop:typeq p cons)
         (progn
           (cleavir-primop:rplacd p v)
           p)
         (error "Cannot rplacd non-cons ~s" p))))
 
+
+(debug-inline "primop")
 
 (defpackage "PRIMOP"
   (:export #:convert-to-bignum
@@ -131,3 +178,35 @@
     `(primop:inlined-two-arg-+ ,x 1))
   (define-compiler-macro 1- (x)
     `(primop:inlined-two-arg-- ,x 1)))
+
+
+
+;;; ------------------------------------------------------------
+;;;
+;;;  Copied from clasp/src/lisp/kernel/lsp/assorted.lsp
+;;;    and put here so that the inline definition is available
+;;;
+(declaim (inline coerce-fdesignator)
+	 (ftype (function ((or function symbol)) function) fdesignator))
+(defun coerce-fdesignator (fdesignator)
+  "Take a CL function designator and spit out a function."
+  (etypecase fdesignator
+    (function fdesignator)
+    (symbol (fdefinition fdesignator))))
+
+
+;;; ------------------------------------------------------------
+;;;
+;;;  Copied from clasp/src/lisp/kernel/lsp/pprint.lsp
+;;;    and put here so that the inline definition is available
+;;;
+(declaim (inline index-posn posn-index posn-column))
+(defun index-posn (index stream)
+  (declare (type index index) (type pretty-stream stream))
+  (+ index (pretty-stream-buffer-offset stream)))
+(defun posn-index (posn stream)
+  (declare (type posn posn) (type pretty-stream stream))
+  (- posn (pretty-stream-buffer-offset stream)))
+(defun posn-column (posn stream)
+  (declare (type posn posn) (type pretty-stream stream))
+  (index-column (posn-index posn stream) stream))

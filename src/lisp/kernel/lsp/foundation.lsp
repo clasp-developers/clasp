@@ -70,7 +70,7 @@
       t)
 
 #| --- loose this - its in evalmacros where ecl had it |#
-#+ecl-min
+#+clasp-min
 (si::fset 'psetq #'(lambda (whole env)
 		     "Syntax: (psetq {var form}*)
 Similar to SETQ, but evaluates all FORMs first, and then assigns each value to

@@ -24,7 +24,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#define DEBUG_LEVEL_FULL
+//#define DEBUG_LEVEL_FULL
 
 #include <boost/format.hpp>
 #include <clasp/core/common.h>
@@ -46,7 +46,7 @@ CL_DEFUN RandomState_sp RandomState_O::make(T_sp state) {
     RandomState_sp currentState = gc::As<RandomState_sp>(cl::_sym_STARrandom_stateSTAR->symbolValue());
     return RandomState_O::create(currentState);
   } else if (state == _lisp->_true()) {
-    return RandomState_O::create();
+    return RandomState_O::create_random();
   }
   SIMPLE_ERROR(BF("Illegal argument for make-random-state: ~a") % _rep_(state));
 }
@@ -56,7 +56,7 @@ CL_DECLARE();
 CL_DOCSTRING("random");
 CL_DEFUN T_sp cl__random(T_sp olimit, RandomState_sp random_state) {
   if (olimit.fixnump()) {
-    boost::random::uniform_int_distribution<> range(0, olimit.unsafe_fixnum() - 1);
+    boost::random::uniform_int_distribution<uint64_t> range(0, olimit.unsafe_fixnum() - 1);
     return make_fixnum(range(random_state->_Producer));
   } else if (gc::IsA<Bignum_sp>(olimit)) {
     IMPLEMENT_MEF(BF("Implement generating Bignum random numbers"));

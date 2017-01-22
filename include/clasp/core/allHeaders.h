@@ -4,14 +4,14 @@
 
 /*
 Copyright (c) 2014, Christian E. Schafmeister
- 
+
 CLASP is free software; you can redistribute it and/or
 modify it under the terms of the GNU Library General Public
 License as published by the Free Software Foundation; either
 version 2 of the License, or (at your option) any later version.
- 
+
 See directory 'clasp/licenses' for full details.
- 
+
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
 
@@ -33,16 +33,12 @@ THE SOFTWARE.
 #include <clasp/core/arguments.h>
 #include <clasp/core/array.fwd.h>
 #include <clasp/core/array.h>
-#include <clasp/core/arrayObjects.fwd.h>
-#include <clasp/core/arrayObjects.h>
 #include <clasp/core/backquote.h>
 #include <clasp/core/bformat.h>
 #include <clasp/core/bignum.fwd.h>
 #include <clasp/core/bignum.h>
 #include <clasp/core/binder.fwd.h>
 #include <clasp/core/binder.h>
-#include <clasp/core/bitVector.fwd.h>
-#include <clasp/core/bitVector.h>
 #include <clasp/core/bootStrapCoreSymbolMap.h>
 #include <clasp/core/builtInClass.fwd.h>
 #include <clasp/core/builtInClass.h>
@@ -102,8 +98,6 @@ THE SOFTWARE.
 #include <clasp/core/initializeClasses.h>
 #include <clasp/core/instance.fwd.h>
 #include <clasp/core/instance.h>
-#include <clasp/core/intArray.fwd.h>
-#include <clasp/core/intArray.h>
 #include <clasp/core/intStackQueue.h>
 #include <clasp/core/iterator.fwd.h>
 #include <clasp/core/iterator.h>
@@ -120,9 +114,6 @@ THE SOFTWARE.
 #include <clasp/core/lispReader.h>
 #include <clasp/core/lispStream.fwd.h>
 #include <clasp/core/lispStream.h>
-#include <clasp/core/lispString.fwd.h>
-#include <clasp/core/lispString.h>
-#include <clasp/core/lispVector.h>
 #include <clasp/core/loadTimeValues.fwd.h>
 #include <clasp/core/loadTimeValues.h>
 #include <clasp/core/mathDispatch.h>
@@ -195,10 +186,6 @@ THE SOFTWARE.
 #include <clasp/core/standardObject.h>
 #include <clasp/core/stdClass.fwd.h>
 #include <clasp/core/stdClass.h>
-#include <clasp/core/str.fwd.h>
-#include <clasp/core/str.h>
-#include <clasp/core/strWithFillPtr.fwd.h>
-#include <clasp/core/strWithFillPtr.h>
 #include <clasp/core/stringList.fwd.h>
 #include <clasp/core/stringList.h>
 #include <clasp/core/stringSet.fwd.h>
@@ -224,9 +211,5 @@ THE SOFTWARE.
 #include <core/tagged_intrusive_ptr.h>
 #include <clasp/core/tnc.h>
 #include <clasp/core/translators.h>
-#include <clasp/core/vectorObjects.fwd.h>
-#include <clasp/core/vectorObjects.h>
-#include <clasp/core/vectorObjectsWithFillPtr.fwd.h>
-#include <clasp/core/vectorObjectsWithFillPtr.h>
 #include <core/weakReference.h>
 #include <clasp/core/wrappers.h>

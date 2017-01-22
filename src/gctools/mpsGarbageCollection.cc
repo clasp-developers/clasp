@@ -4,14 +4,14 @@
 
 /*
 Copyright (c) 2014, Christian E. Schafmeister
- 
+
 CLASP is free software; you can redistribute it and/or
 modify it under the terms of the GNU Library General Public
 License as published by the Free Software Foundation; either
 version 2 of the License, or (at your option) any later version.
- 
+
 See directory 'clasp/licenses' for full details.
- 
+
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
 
@@ -51,24 +51,29 @@ templated_class_jump_table_index, jump_table_index, NULL
 //#define MPS_LOVEMORE 1
 
 #include <clasp/core/foundation.h>
+
 #include <clasp/core/object.h>
 #include <clasp/core/numbers.h>
-#include <clasp/core/str.h>
+#include <clasp/core/array.h>
 #include <clasp/core/builtInClass.h>
 #include <clasp/core/loadTimeValues.h>
 #include <clasp/core/posixTime.h> // was core/posixTime.cc???
 #include <clasp/core/symbolTable.h>
 #include <clasp/core/standardClass.h>
 #include <clasp/core/structureClass.h>
+#include <clasp/core/evaluator.h>
 #include <clasp/gctools/globals.h>
 #include <clasp/core/wrappers.h>
 #include <clasp/gctools/gc_interface.fwd.h>
+
+#ifdef USE_MPS
 
 extern "C" {
 #include "clasp/mps/code/mpscawl.h" // MVFF pool
 #include "clasp/mps/code/mpscmvff.h" // MVFF pool
 #include "clasp/mps/code/mpscamc.h" // AMC pool
 #include "clasp/mps/code/mpscsnc.h" // SNC pool
+#include <clasp/gctools/mygc.h>
 };
 
 #include <clasp/gctools/gctoolsPackage.h>
@@ -89,6 +94,11 @@ void pointerSearcherAddRef(PointerSearcher *searcher, mps_addr_t ref) {
 extern void memory_find_ref(mps_arena_t arena, mps_addr_t ref, PointerSearcher *searcher);
 };
 
+
+extern "C" {
+mps_arena_t global_arena;
+};
+
 namespace gctools {
 
 MpsMetrics globalMpsMetrics;
@@ -107,7 +117,6 @@ bool global_underscanning = DEBUG_MPS_UNDERSCANNING_INITIAL;
 bool global_underscanning = false;
 #endif
 
-mps_arena_t _global_arena;
 //    mps_pool_t _global_mvff_pool;
 mps_pool_t _global_amc_pool;
 mps_pool_t global_amc_cons_pool;
@@ -125,6 +134,62 @@ mps_pool_t global_unmanaged_pool;
 mps_ap_t global_non_moving_ap;
 size_t global_sizeof_fwd;
 
+};
+
+namespace gctools {
+struct root_list {
+  mps_root_t _root;
+  root_list* _next;
+  root_list(mps_root_t root, root_list* next) :_root(root), _next(next) {};
+};
+
+root_list* global_root_list = NULL;
+
+};
+
+extern "C" {
+// The following is defined in mygc.c
+mps_res_t clasp_scan_area_tagged(mps_ss_t ss,
+                                 void* base, void* limit,
+                                 void* closure);
+};
+
+namespace gctools {
+void mps_register_roots(void* roots_begin, size_t num_roots) {
+  mps_root_t mps_root;
+  mps_res_t res;
+  void* roots_end = reinterpret_cast<void*>(reinterpret_cast<char*>(roots_begin)+num_roots*sizeof(core::T_sp));
+//  printf("%s:%d About to mps_root_create_area_tagged %lu roots -> roots_begin@%p roots_end@%p\n", __FILE__, __LINE__, num_roots, roots_begin, roots_end );
+  res = mps_root_create_area_tagged(&mps_root,
+                                    global_arena,
+                                    mps_rank_exact(),
+                                    0, // DLM suggested this because MPS_RM_PROT will have problems with two roots on same memory page
+                                    roots_begin,
+                                    roots_end,
+                                    clasp_scan_area_tagged,
+                                    gctools::tag_mask,  // #b111
+                                    0 ); // DLM says this will be ignored
+  if ( res != MPS_RES_OK ) {
+    SIMPLE_ERROR(BF("Could not mps_root_create_area_tagged - error: %d") % res );
+  }
+  // Save the root list in a linked list
+  root_list* rl = new root_list(mps_root, global_root_list);
+  global_root_list = rl;
+}
+
+// Delete all of the mps roots.
+// This happens in reverse order of how they were created because - you know - linked list.
+void delete_my_roots() {
+  root_list* rl = global_root_list;
+  while (rl) {
+    mps_root_destroy(rl->_root);
+    rl = rl->_next;
+  }
+  global_root_list = NULL;
+};
+};
+namespace gctools {
+
 #ifdef DEBUG_GUARD
 size_t random_tail_size() {
   size_t ts = ((rand() % 8) + 1) * Alignment();
@@ -138,7 +203,7 @@ void Header_s::validate() const {
     abort();
   } else if ( this->kindP() ) {
     if ( this->guard != 0x0FEEAFEEBFEECFEED) {
-      printf("%s:%d  INVALID object  this->guard is bad value->%p\n", __FILE__, __LINE__, this->guard );
+      printf("%s:%d  INVALID object  this->guard is bad value->%p\n", __FILE__, __LINE__, (void*)this->guard );
       telemetry::global_telemetry_flush();
       abort();
     }
@@ -148,17 +213,17 @@ void Header_s::validate() const {
       abort();
     }
     if ( this->tail_start & 0xffffffffff000000 ) {
-      printf("%s:%d   header->tail_start is not a reasonable value -> %p\n", this->tail_start);
+      printf("%s:%d   header->tail_start is not a reasonable value -> %x\n", __FILE__,__LINE__, this->tail_start);
     }
     if ( this->tail_size & 0xffffffffff000000 ) {
-      printf("%s:%d   header->tail_size is not a reasonable value -> %p\n", this->tail_size);
+      printf("%s:%d   header->tail_size is not a reasonable value -> %x\n", __FILE__, __LINE__, this->tail_size);
     }
     if ( this->data[0] != 0xDEADBEEF01234567 ) {
-      printf("%s:%d  INVALID object  this->data[0]@%p->%p != %p\n", __FILE__, __LINE__, &this->data[0],this->data[0],0xDEADBEEF01234567 );
+      printf("%s:%d  INVALID object  this->data[0]@%p->%p != %p\n", __FILE__, __LINE__, &this->data[0],(void*)this->data[0],(void*)0xDEADBEEF01234567 );
       telemetry::global_telemetry_flush();
       abort();
     }
-    for ( unsigned char *cp=((unsigned char*)(this)+this->tail_start), 
+    for ( unsigned char *cp=((unsigned char*)(this)+this->tail_start),
             *cpEnd((unsigned char*)(this)+this->tail_start+this->tail_size); cp < cpEnd; ++cp ) {
       if (*cp!=0xcc) {
         printf("%s:%d INVALID tail header@%p bad tail byte@%p -> %x\n", __FILE__, __LINE__, (void*)this, cp, *cp );
@@ -168,11 +233,11 @@ void Header_s::validate() const {
     }
   } else if ( this->fwdP() ) {
     if ( this->guard != 0x0FEEAFEEBFEECFEED) {
-      printf("%s:%d  INVALID object  this->guard is bad value->%p\n", __FILE__, __LINE__, this->guard );
+      printf("%s:%d  INVALID object  this->guard is bad value->%p\n", __FILE__, __LINE__, (void*)this->guard );
       telemetry::global_telemetry_flush();
       abort();
     }
-    for ( unsigned char *cp=((unsigned char*)(this)+this->tail_start), 
+    for ( unsigned char *cp=((unsigned char*)(this)+this->tail_start),
             *cpEnd((unsigned char*)(this)+this->tail_start+this->tail_size); cp < cpEnd; ++cp ) {
       if (*cp!=0xcc) {
         printf("%s:%d INVALID tail header@%p bad tail byte@%p -> %x\n", __FILE__, __LINE__, (void*)this, cp, *cp );
@@ -182,7 +247,7 @@ void Header_s::validate() const {
     }
   }
 }
-  
+
 #endif
 
 
@@ -203,11 +268,11 @@ void rawHeaderDescribe(uintptr_t *headerP) {
     printf("  0x%p : 0x%lu\n", headerP, *headerP);
     printf("  0x%p : 0x%lu\n", (headerP+1), *(headerP+1));
 #ifdef DEBUG_GUARD
-    printf("  0x%p : 0x%p\n", (headerP+2), *(headerP+2));
-    printf("  0x%p : 0x%p\n", (headerP+3), *(headerP+3));
-    printf("  0x%p : 0x%p\n", (headerP+4), *(headerP+4));
-    printf("  0x%p : 0x%p\n", (headerP+5), *(headerP+5));
-#endif    
+    printf("  0x%p : 0x%p\n", (headerP+2), (void*)*(headerP+2));
+    printf("  0x%p : 0x%p\n", (headerP+3), (void*)*(headerP+3));
+    printf("  0x%p : 0x%p\n", (headerP+4), (void*)*(headerP+4));
+    printf("  0x%p : 0x%p\n", (headerP+5), (void*)*(headerP+5));
+#endif
     gctools::GCKindEnum kind = (gctools::GCKindEnum)((*headerP) >> 2);
     printf(" Kind tag - kind: %d", kind);
     fflush(stdout);
@@ -266,7 +331,7 @@ string gcResultToString(GC_RESULT res) {
 
 void searchMemoryForAddress(mps_addr_t addr) {
   PointerSearcher searcher;
-  //        memory_find_ref(_global_arena, addr, &searcher );
+  //        memory_find_ref(global_arena, addr, &searcher );
 
   // Search the stack
   const char* sptr = reinterpret_cast<const char *>(&searcher) + 1;
@@ -370,7 +435,7 @@ GC_RESULT cons_scan(mps_ss_t ss, mps_addr_t client, mps_addr_t limit) {
       } else if (cons->padP()) {
         client = (char *)(client) + cons->padSize();
       } else {
-        printf("Bad object in cons_scan");
+        printf("%s:%d CONS in cons_scan (it's not a CONS or any of MPS fwd/pad1/pad2 car=%p cdr=%p\n", __FILE__, __LINE__, cons->_Car.raw_(), cons->_Cdr.raw_());
         abort();
       }
     };
@@ -535,7 +600,7 @@ void mpsAllocateStack(gctools::GCStack *stack) {
     MPS_ARGS_ADD(args, MPS_KEY_FMT_SCAN, stack_frame_scan);
     MPS_ARGS_ADD(args, MPS_KEY_FMT_SKIP, stack_frame_skip);
     MPS_ARGS_ADD(args, MPS_KEY_FMT_PAD, stack_frame_pad);
-    res = mps_fmt_create_k(&stack->_ObjectFormat, _global_arena, args);
+    res = mps_fmt_create_k(&stack->_ObjectFormat, global_arena, args);
     if (res != MPS_RES_OK)
       THROW_HARD_ERROR(BF("Couldn't create stack frame format"));
   }
@@ -543,7 +608,7 @@ void mpsAllocateStack(gctools::GCStack *stack) {
 
   MPS_ARGS_BEGIN(args) {
     MPS_ARGS_ADD(args, MPS_KEY_FORMAT, stack->_ObjectFormat);
-    res = mps_pool_create_k(&stack->_Pool, _global_arena, mps_class_snc(), args);
+    res = mps_pool_create_k(&stack->_Pool, global_arena, mps_class_snc(), args);
     if (res != MPS_RES_OK)
       THROW_HARD_ERROR(BF("Couldn't create stack frame pool"));
   }
@@ -564,11 +629,11 @@ void mpsDeallocateStack(gctools::GCStack *stack) {
     THROW_HARD_ERROR(BF("mpsDeallocateStack called on a stack that is not completely empty - it contains %u bytes") % stack->_TotalSize);
   }
   stack->_IsActive = false;
-  mps_arena_park(_global_arena);
+  mps_arena_park(global_arena);
   mps_ap_destroy(stack->_AllocationPoint);
   mps_pool_destroy(stack->_Pool);
   mps_fmt_destroy(stack->_ObjectFormat);
-  mps_arena_release(_global_arena);
+  mps_arena_release(global_arena);
   //  printf("%s:%d deallocateStack\n", __FILE__, __LINE__ );
 };
 #endif
@@ -580,17 +645,29 @@ void mpsDeallocateStack(gctools::GCStack *stack) {
 
 extern "C" {
 
-int processMpsMessages(void) {
-  int messages(0);
-  int mFinalize(0);
+size_t global_finalization_requests = 0;
+void my_mps_finalize(void* client) {
+  mps_finalize(global_arena,&client);
+  ++gctools::globalMpsMetrics.finalizationRequests;
+  ++global_finalization_requests;
+  if (global_finalization_requests>16) {
+    size_t finalizations;
+    processMpsMessages(finalizations);
+    global_finalization_requests = 0;
+  }
+}
+
+size_t processMpsMessages(size_t& finalizations) {
+  size_t messages(0);
+  finalizations = 0;
   int mGcStart(0);
   int mGc(0);
   core::Number_sp startTime = gc::As<core::Number_sp>(core::cl__get_internal_run_time());
   mps_message_type_t type;
-  while (mps_message_queue_type(&type, gctools::_global_arena)) {
+  while (mps_message_queue_type(&type, global_arena)) {
     mps_message_t message;
     mps_bool_t b;
-    b = mps_message_get(&message, gctools::_global_arena, type);
+    b = mps_message_get(&message, global_arena, type);
     ++messages;
     assert(b); /* we just checked there was one */
     if (type == mps_message_type_gc_start()) {
@@ -599,25 +676,58 @@ int processMpsMessages(void) {
       ++mGc;
 #if 0
                 printf("Message: mps_message_type_gc()\n");
-                size_t live = mps_message_gc_live_size(_global_arena, message);
-                size_t condemned = mps_message_gc_condemned_size(_global_arena, message);
-                size_t not_condemned = mps_message_gc_not_condemned_size(_global_arena, message);
+                size_t live = mps_message_gc_live_size(global_arena, message);
+                size_t condemned = mps_message_gc_condemned_size(global_arena, message);
+                size_t not_condemned = mps_message_gc_not_condemned_size(global_arena, message);
                 printf("Collection finished.\n");
                 printf("    live %lu\n", (unsigned long)live);
                 printf("    condemned %lu\n", (unsigned long)condemned);
                 printf("    not_condemned %lu\n", (unsigned long)not_condemned);
-                printf("    clock: %lu\n", (unsigned long)mps_message_clock(_global_arena, message));
+                printf("    clock: %lu\n", (unsigned long)mps_message_clock(global_arena, message));
 #endif
     } else if (type == mps_message_type_finalization()) {
-      ++mFinalize;
+      ++finalizations;
       //                printf("%s:%d mps_message_type_finalization received\n", __FILE__, __LINE__);
       mps_addr_t ref_o;
-      mps_message_finalization_ref(&ref_o, gctools::_global_arena, message);
-      obj_finalize(ref_o);
+      mps_message_finalization_ref(&ref_o, global_arena, message);
+      // Figure out what pool the pointer belonged to and recreate the
+      //   original tagged object pointer
+      //   For general objects the object may already have been destructed (dead_object)
+      //   and replaced with a PAD tag - if so - skip the whole finalization process
+      mps_pool_t pool = clasp_pool_of_addr(ref_o);
+      core::T_sp obj;
+      bool dead_object = false;
+      if (pool == gctools::global_amc_cons_pool) {
+        obj = gctools::smart_ptr<core::Cons_O>((core::Cons_O*)ref_o);
+      } else {
+        gctools::Header_s* header = (gctools::Header_s*)((char*)ref_o - sizeof(gctools::Header_s));
+        dead_object = !(header->kindP());
+        obj = gctools::smart_ptr<core::T_O>((core::T_O*)ref_o);
+      }
+      printf("%s:%d finalization message for %p reconstituted tagged ptr = %p\n", __FILE__, __LINE__, (void*)ref_o, (void*)obj.tagged_() );
+#if 1
+      if (!dead_object) {
+        bool invoked_finalizer = false;
+        auto ht = gctools::As<core::WeakKeyHashTable_sp>(gctools::_sym_STARfinalizersSTAR->symbolValue());
+        core::T_mv res = ht->gethash(obj);
+        if (res.second().notnilp()) {
+          printf("%s:%d           Trying to pass object %p to finalizer at %p\n", __FILE__, __LINE__, (void*)obj.tagged_(), (void*)res.tagged_());
+          core::List_sp finalizers = res;
+          for ( auto cur : finalizers ) {
+            core::T_sp finalizer = oCar(cur);
+            core::eval::funcall(finalizer,obj);
+            printf("%s:%d Ran finalizer callback.\n", __FILE__, __LINE__ );
+          }
+          ht->remhash(obj);
+          invoked_finalizer = true;
+        }
+#endif
+        if (!invoked_finalizer && obj.generalp()) obj_finalize(ref_o);
+      }
     } else {
       printf("Message: UNKNOWN!!!!!\n");
     }
-    mps_message_discard(gctools::_global_arena, message);
+    mps_message_discard(global_arena, message);
   }
 #if 0
 //        printf("%s:%d Leaving processMpsMessages\n",__FILE__,__LINE__);
@@ -636,9 +746,10 @@ namespace gctools {
 void test_mps_allocation() {
   int numAllocations = 10000;
   printf("Starting test_mps_allocation -> allocating %d objects\n", numAllocations);
+  size_t finalizations;
   for (int i = 0; i < numAllocations; ++i) {
-    core::Str_sp ss = core::Str_O::create("Hi there, this is a test");
-    processMpsMessages();
+    core::SimpleBaseString_sp ss = core::SimpleBaseString_O::make("Hi there, this is a test");
+    processMpsMessages(finalizations);
   }
   printf("Done test_mps_allocation - allocated %d objects\n", numAllocations);
 }
@@ -725,12 +836,10 @@ void run_quick_tests()
   core::List_sp l3 = core::Cons_O::create(core::clasp_make_fixnum(1),l2);
   core::List_sp l4 = core::Cons_O::create(core::clasp_make_fixnum(1),l3);
 }
-  
+
 #define LENGTH(array) (sizeof(array) / sizeof(array[0]))
 
 int initializeMemoryPoolSystem(MainFunctionType startupFn, int argc, char *argv[], bool mpiEnabled, int mpiRank, int mpiSize) {
-
-  
   if (Alignment() == 16) {
     //            printf("%s:%d WARNING   Alignment is 16 - it should be 8 - check the Alignment() function\n!\n!\n!\n!\n",__FILE__,__LINE__);
   }
@@ -745,7 +854,7 @@ int initializeMemoryPoolSystem(MainFunctionType startupFn, int argc, char *argv[
   size_t generation1Kb = CHAIN_SIZE * 4;
   size_t generation1MortalityPercent = 50;
   size_t keyExtendByKb = 64;  // 64K
-  
+
   // Try something like   export CLASP_MPS_CONFIG="32 32 16 80 32 80 64"   to debug MPS
   maybeParseClaspMpsConfig(arenaSizeMb, spareCommitLimitMb, nurseryKb, nurseryMortalityPercent, generation1Kb, generation1MortalityPercent, keyExtendByKb );
 
@@ -768,14 +877,14 @@ int initializeMemoryPoolSystem(MainFunctionType startupFn, int argc, char *argv[
 #endif
     MPS_ARGS_ADD(args, MPS_KEY_PAUSE_TIME, 100.0); // accept up to 0.1 seconds pause time
     MPS_ARGS_ADD(args, MPS_KEY_ARENA_SIZE, arenaSizeMb * 1024 * 1024);
-    res = mps_arena_create_k(&_global_arena, mps_arena_class_vm(), args);
+    res = mps_arena_create_k(&global_arena, mps_arena_class_vm(), args);
   }
   MPS_ARGS_END(args);
   if (res != MPS_RES_OK)
     GC_RESULT_ERROR(res, "Could not create MPS arena");
 
   // David suggested this - it never gives back memory to the OS
-  mps_arena_spare_commit_limit_set(_global_arena, spareCommitLimitMb * 1024 * 1024);
+  mps_arena_spare_commit_limit_set(global_arena, spareCommitLimitMb * 1024 * 1024);
 
   mps_fmt_t obj_fmt;
   MPS_ARGS_BEGIN(args) {
@@ -786,7 +895,7 @@ int initializeMemoryPoolSystem(MainFunctionType startupFn, int argc, char *argv[
     MPS_ARGS_ADD(args, MPS_KEY_FMT_FWD, obj_fwd);
     MPS_ARGS_ADD(args, MPS_KEY_FMT_ISFWD, obj_isfwd);
     MPS_ARGS_ADD(args, MPS_KEY_FMT_PAD, obj_pad);
-    res = mps_fmt_create_k(&obj_fmt, _global_arena, args);
+    res = mps_fmt_create_k(&obj_fmt, global_arena, args);
   }
   MPS_ARGS_END(args);
   if (res != MPS_RES_OK)
@@ -794,7 +903,7 @@ int initializeMemoryPoolSystem(MainFunctionType startupFn, int argc, char *argv[
 
   mps_chain_t general_chain;
   res = mps_chain_create(&general_chain,
-                         _global_arena,
+                         global_arena,
                          LENGTH(gen_params),
                          gen_params);
   if (res != MPS_RES_OK)
@@ -806,7 +915,7 @@ int initializeMemoryPoolSystem(MainFunctionType startupFn, int argc, char *argv[
       "free", 4,
   };
 #endif
-  
+
   // Create the AMC pool
   MPS_ARGS_BEGIN(args) {
     MPS_ARGS_ADD(args, MPS_KEY_FORMAT, obj_fmt);
@@ -817,7 +926,7 @@ int initializeMemoryPoolSystem(MainFunctionType startupFn, int argc, char *argv[
     MPS_ARGS_ADD(args, MPS_KEY_INTERIOR, 1);
     MPS_ARGS_ADD(args, MPS_KEY_EXTEND_BY,keyExtendByKb*1024);
     MPS_ARGS_ADD(args, MPS_KEY_LARGE_SIZE,keyExtendByKb*1024);
-    res = mps_pool_create_k(&_global_amc_pool, _global_arena, mps_class_amc(), args);
+    res = mps_pool_create_k(&_global_amc_pool, global_arena, mps_class_amc(), args);
   }
   MPS_ARGS_END(args);
   if (res != MPS_RES_OK)
@@ -837,7 +946,7 @@ int initializeMemoryPoolSystem(MainFunctionType startupFn, int argc, char *argv[
     MPS_ARGS_ADD(args, MPS_KEY_FMT_FWD, cons_fwd);
     MPS_ARGS_ADD(args, MPS_KEY_FMT_ISFWD, cons_isfwd);
     MPS_ARGS_ADD(args, MPS_KEY_FMT_PAD, cons_pad);
-    res = mps_fmt_create_k(&cons_fmt, _global_arena, args);
+    res = mps_fmt_create_k(&cons_fmt, global_arena, args);
   }
   MPS_ARGS_END(args);
   if (res != MPS_RES_OK)
@@ -845,7 +954,7 @@ int initializeMemoryPoolSystem(MainFunctionType startupFn, int argc, char *argv[
 
   mps_chain_t cons_chain;
   res = mps_chain_create(&cons_chain,
-                         _global_arena,
+                         global_arena,
                          LENGTH(gen_params),
                          gen_params);
   if (res != MPS_RES_OK)
@@ -859,19 +968,19 @@ int initializeMemoryPoolSystem(MainFunctionType startupFn, int argc, char *argv[
 #endif
     MPS_ARGS_ADD(args, MPS_KEY_EXTEND_BY,keyExtendByKb*1024);
     MPS_ARGS_ADD(args, MPS_KEY_LARGE_SIZE,keyExtendByKb*1024);
-    res = mps_pool_create_k(&global_amc_cons_pool, _global_arena, mps_class_amc(), args);
+    res = mps_pool_create_k(&global_amc_cons_pool, global_arena, mps_class_amc(), args);
   }
   MPS_ARGS_END(args);
   if (res != MPS_RES_OK)
     GC_RESULT_ERROR(res, "Could not create amc cons pool");
 
-  
+
   /* Objects that can not move but are managed by the garbage collector
-     go in the global_non_moving_pool.  
+     go in the global_non_moving_pool.
      Use an AWL pool rather than an AMS pool until the AMS pool becomes a production pool */
   MPS_ARGS_BEGIN(args) {
     MPS_ARGS_ADD(args, MPS_KEY_FORMAT, obj_fmt);
-    res = mps_pool_create_k(&global_non_moving_pool, _global_arena, mps_class_awl(), args);
+    res = mps_pool_create_k(&global_non_moving_pool, global_arena, mps_class_awl(), args);
   }
   MPS_ARGS_END(args);
   if (res != MPS_RES_OK)
@@ -888,12 +997,12 @@ int initializeMemoryPoolSystem(MainFunctionType startupFn, int argc, char *argv[
 /* ------------------------------------------------------------------------
    Create a pool for objects that aren't moved and arent managed by the GC.
 */
-#if 0   
+#if 0
   MPS_ARGS_BEGIN(args) {
     MPS_ARGS_ADD(args, MPS_KEY_FORMAT, obj_fmt);
     MPS_ARGS_ADD(args, MPS_KEY_CHAIN, general_chain);
     MPS_ARGS_ADD(args, MPS_KEY_AWL_FIND_DEPENDENT, dummyAwlFindDependent);
-    res = mps_pool_create_k(&global_non_moving_pool, _global_arena, mps_class_awl(), args);
+    res = mps_pool_create_k(&global_non_moving_pool, global_arena, mps_class_awl(), args);
   }
   MPS_ARGS_END(args);
   if (res != MPS_RES_OK)
@@ -907,13 +1016,13 @@ int initializeMemoryPoolSystem(MainFunctionType startupFn, int argc, char *argv[
     GC_RESULT_ERROR(res, "Couldn't create global_non_moving_ap");
 #endif
 
-  
+
   // Create the AMCZ pool
   mps_pool_t _global_amcz_pool;
   MPS_ARGS_BEGIN(args) {
     MPS_ARGS_ADD(args, MPS_KEY_FORMAT, obj_fmt);
     MPS_ARGS_ADD(args, MPS_KEY_CHAIN, general_chain);
-    res = mps_pool_create_k(&_global_amcz_pool, _global_arena, mps_class_amcz(), args);
+    res = mps_pool_create_k(&_global_amcz_pool, global_arena, mps_class_amcz(), args);
   }
   MPS_ARGS_END(args);
 
@@ -927,7 +1036,7 @@ int initializeMemoryPoolSystem(MainFunctionType startupFn, int argc, char *argv[
     MPS_ARGS_ADD(args, MPS_KEY_FMT_ISFWD, weak_obj_isfwd);
     MPS_ARGS_ADD(args, MPS_KEY_FMT_PAD, weak_obj_pad);
 #endif
-    res = mps_fmt_create_k(&weak_obj_fmt, _global_arena, args);
+    res = mps_fmt_create_k(&weak_obj_fmt, global_arena, args);
   }
   MPS_ARGS_END(args);
   if (res != MPS_RES_OK)
@@ -938,7 +1047,7 @@ int initializeMemoryPoolSystem(MainFunctionType startupFn, int argc, char *argv[
     MPS_ARGS_ADD(args, MPS_KEY_FORMAT, weak_obj_fmt);
     MPS_ARGS_ADD(args, MPS_KEY_CHAIN, general_chain);
     MPS_ARGS_ADD(args, MPS_KEY_AWL_FIND_DEPENDENT, awlFindDependent);
-    res = mps_pool_create_k(&_global_awl_pool, _global_arena, mps_class_awl(), args);
+    res = mps_pool_create_k(&_global_awl_pool, global_arena, mps_class_awl(), args);
   }
   MPS_ARGS_END(args);
   if (res != MPS_RES_OK)
@@ -979,7 +1088,7 @@ int initializeMemoryPoolSystem(MainFunctionType startupFn, int argc, char *argv[
 
   // register the current and only thread
   mps_thr_t global_thread;
-  res = mps_thread_reg(&global_thread, _global_arena);
+  res = mps_thread_reg(&global_thread, global_arena);
   if (res != MPS_RES_OK)
     GC_RESULT_ERROR(res, "Could not register thread");
 
@@ -987,7 +1096,7 @@ int initializeMemoryPoolSystem(MainFunctionType startupFn, int argc, char *argv[
   mps_root_t global_stack_root;
   // use mask
   res = mps_root_create_thread_tagged(&global_stack_root,
-                                      _global_arena,
+                                      global_arena,
                                       mps_rank_ambig(),
                                       0,
                                       global_thread,
@@ -999,9 +1108,9 @@ int initializeMemoryPoolSystem(MainFunctionType startupFn, int argc, char *argv[
     GC_RESULT_ERROR(res, "Could not create stack root");
 
   /* Deal with finalization!!!! */
-  mps_message_type_enable(_global_arena, mps_message_type_finalization());
-  mps_message_type_enable(_global_arena, mps_message_type_gc());
-  mps_message_type_enable(_global_arena, mps_message_type_gc_start());
+  mps_message_type_enable(global_arena, mps_message_type_finalization());
+  mps_message_type_enable(global_arena, mps_message_type_gc());
+  mps_message_type_enable(global_arena, mps_message_type_gc_start());
 
   // register the main thread roots in static and heap space
 
@@ -1015,7 +1124,7 @@ int initializeMemoryPoolSystem(MainFunctionType startupFn, int argc, char *argv[
 
   mps_root_t global_scan_root;
   res = mps_root_create(&global_scan_root,
-                        _global_arena,
+                        global_arena,
                         mps_rank_exact(),
                         0,
                         main_thread_roots_scan,
@@ -1024,9 +1133,9 @@ int initializeMemoryPoolSystem(MainFunctionType startupFn, int argc, char *argv[
   if (res != MPS_RES_OK)
     GC_RESULT_ERROR(res, "Could not create scan root");
 
-  registerLoadTimeValuesRoot(&globalTaggedRunTimeValues);
+//  mps_register_root(reinterpret_cast<gctools::Tagged*>(&globalTaggedRunTimeValues));
 
-  _ThreadLocalStack.allocateStack(gc::thread_local_cl_stack_min_size);
+  threadLocalStack()->allocateStack(gc::thread_local_cl_stack_min_size);
 
 #ifdef RUNNING_GC_BUILDER
   printf("%s:%d mps-prep version of clasp started up\n", __FILE__, __LINE__);
@@ -1045,10 +1154,11 @@ int initializeMemoryPoolSystem(MainFunctionType startupFn, int argc, char *argv[
   exit_code = 0;
   #endif
 #endif
-  processMpsMessages();
+  size_t finalizations;
+  processMpsMessages(finalizations);
 
-  _ThreadLocalStack.deallocateStack();
-
+  delete_my_roots();
+  threadLocalStack()->deallocateStack();
   mps_root_destroy(global_scan_root);
   mps_root_destroy(global_stack_root);
   mps_thread_dereg(global_thread);
@@ -1063,13 +1173,13 @@ int initializeMemoryPoolSystem(MainFunctionType startupFn, int argc, char *argv[
   mps_pool_destroy(global_non_moving_pool);
   mps_pool_destroy(global_amc_cons_pool);
   mps_pool_destroy(_global_amc_pool);
-  mps_arena_park(_global_arena);
+  mps_arena_park(global_arena);
   mps_chain_destroy(cons_chain);
   mps_chain_destroy(general_chain);
   mps_fmt_destroy(weak_obj_fmt);
   mps_fmt_destroy(obj_fmt);
   mps_fmt_destroy(cons_fmt);
-  mps_arena_destroy(_global_arena);
+  mps_arena_destroy(global_arena);
 
   return exit_code;
 };
@@ -1094,7 +1204,7 @@ void client_validate(void *taggedClient) {
     header->validate();
   } else if (gctools::tagged_consp(taggedClient)) {
     // Nothing can be done to validate CONSes, they are too compact.
-  }    
+  }
 };
 
 
@@ -1126,9 +1236,11 @@ void header_describe(gctools::Header_s* headerP) {
 
 
 void check_all_clients() {
-  mps_arena_park(gctools::_global_arena);
+  mps_arena_park(global_arena);
   // Add code to walk the pool and check everything
-  mps_arena_release(gctools::_global_arena);
+  mps_arena_release(global_arena);
 }
 
 };
+
+#endif // whole file #ifdef USE_MPS
