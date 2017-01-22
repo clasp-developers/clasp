@@ -127,6 +127,7 @@ CL_DEFUN T_sp cl__format(T_sp destination, T_sp control, List_sp args) {
   }
   string ts = gc::As<String_sp>(control)->get_std_string();
   const char *cur = ts.c_str();
+  bool success = true;
   while (*cur) {
     if (*cur == '~') {
       ++cur;
@@ -152,9 +153,8 @@ CL_DEFUN T_sp cl__format(T_sp destination, T_sp control, List_sp args) {
         tf << std::endl;
         break;
       default: {
-        stringstream serr;
-        serr << "Add support to BFORMAT to translate FORMAT control <tilde>" << *cur << " format control: " << ts ;
-        SIMPLE_ERROR(BF("%s") % (serr.str()));
+        success = false;
+        printf("%s:%d Could not translate FORMAT control string %s into a BFORMAT control string because of ~%c control\n",__FILE__, __LINE__, ts.c_str(), *cur);
       } break;
       }
       ++cur;
@@ -165,6 +165,9 @@ CL_DEFUN T_sp cl__format(T_sp destination, T_sp control, List_sp args) {
       tf << *cur;
       ++cur;
     }
+  }
+  if (!success) {
+    return core__bformat(destination,"(failed-format <stream> %s %s)", Cons_O::createList(control,args));
   }
   return core__bformat(destination, tf.str(), args);
 };
