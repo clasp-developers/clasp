@@ -62,13 +62,6 @@ THE SOFTWARE.
 
 namespace translate {
 
-  // TYPE ERRORS
-
-  core::Fixnum not_fixnum_error( core::T_sp o )
-  {
-    TYPE_ERROR( o, cl::_sym_fixnum );
-  }
-
   // FROM_OBJECT TRANSLATORS
 
   // template <>
@@ -113,7 +106,7 @@ namespace translate {
     typedef int DeclareType;
 
     DeclareType _v;
-  from_object( core::T_sp o ) : _v( o.fixnump() ? o.unsafe_fixnum() : not_fixnum_error(o) ) {};
+    from_object( core::T_sp o ) : _v( o.fixnump() ? o.unsafe_fixnum() : core::not_fixnum_error( o ) ) {};
   };
 
   template <>
@@ -122,7 +115,7 @@ namespace translate {
     typedef unsigned long DeclareType;
 
     DeclareType _v;
-  from_object( core::T_sp o ) : _v( o.fixnump() ? o.unsafe_fixnum() : not_fixnum_error(o) ) {};
+    from_object( core::T_sp o ) : _v( o.fixnump() ? o.unsafe_fixnum() : core::not_fixnum_error( o ) ) {};
   };
 
   // template <>
@@ -149,7 +142,7 @@ namespace translate {
     typedef int8_t DeclareType;
 
     DeclareType _v;
-  from_object( core::T_sp o ) : _v( o.fixnump() ? o.unsafe_fixnum() : not_fixnum_error (o ) ) {};
+    from_object( core::T_sp o ) : _v( o.fixnump() ? o.unsafe_fixnum() : core::not_fixnum_error( o ) ) {};
   };
 
   template <>
@@ -158,7 +151,7 @@ namespace translate {
     typedef uint8_t DeclareType;
 
     DeclareType _v;
-  from_object( core::T_sp o ) : _v( o.fixnump() ? o.unsafe_fixnum() : not_fixnum_error (o ) ) {};
+    from_object( core::T_sp o ) : _v( o.fixnump() ? o.unsafe_fixnum() : core::not_fixnum_error( o ) ) {};
   };
 
   template <>
@@ -167,7 +160,7 @@ namespace translate {
     typedef int16_t DeclareType;
 
     DeclareType _v;
-  from_object( core::T_sp o ) : _v( o.fixnump() ? o.unsafe_fixnum() : not_fixnum_error (o ) ) {};
+    from_object( core::T_sp o ) : _v( o.fixnump() ? o.unsafe_fixnum() : core::not_fixnum_error( o ) ) {};
   };
 
   template <>
@@ -176,7 +169,7 @@ namespace translate {
     typedef uint16_t DeclareType;
 
     DeclareType _v;
-  from_object( core::T_sp o ) : _v( o.fixnump() ? o.unsafe_fixnum() : not_fixnum_error (o ) ) {};
+    from_object( core::T_sp o ) : _v( o.fixnump() ? o.unsafe_fixnum() : core::not_fixnum_error( o ) ) {};
   };
 
   template <>
@@ -185,7 +178,7 @@ namespace translate {
     typedef int32_t DeclareType;
 
     DeclareType _v;
-  from_object( core::T_sp o ) : _v( o.fixnump() ? o.unsafe_fixnum() : not_fixnum_error (o ) ) {};
+    from_object( core::T_sp o ) : _v( o.fixnump() ? o.unsafe_fixnum() : core::not_fixnum_error( o ) ) {};
   };
 
   template <>
@@ -194,7 +187,7 @@ namespace translate {
     typedef uint32_t DeclareType;
 
     DeclareType _v;
-  from_object( core::T_sp o ) : _v( o.fixnump() ? o.unsafe_fixnum() : not_fixnum_error (o ) ) {};
+    from_object( core::T_sp o ) : _v( o.fixnump() ? o.unsafe_fixnum() : core::not_fixnum_error( o ) ) {};
   };
 
   template <>

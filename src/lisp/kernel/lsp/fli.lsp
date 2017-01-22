@@ -91,6 +91,46 @@
     (error "Unknown FLI lisp type ~S - cannot determine type spec." lisp-type-kw))
   ) ;; eval-when
 
+;;; %FOREIGN-TYPE-SIZE
+(eval-when (:compile-toplevel :load-toplevel :execute)
+
+  (defgeneric %foreign-type-size (lisp-type-kw))
+
+  (defmacro generate-foreign-type-size-functions ()
+    `(progn
+       ;; type -> type spec
+       ,@(loop for spec across *foreign-type-spec-table*
+            for idx from 0 to (1- (length *foreign-type-spec-table*))
+            when spec
+            collect
+              `(defmethod %foreign-type-size ((lisp-type-kw (eql ',(%lisp-symbol spec))))
+                 (%size (elt *foreign-type-spec-table* ,idx))))
+       ))
+
+  (defmethod %foreign-type-size (lisp-type-kw)
+    (error "Unknown FLI lisp type ~S - cannot determine foreign size." lisp-type-kw))
+  ) ;; eval-when
+
+;;; %FOREIGN-TYPE-ALIGNMENT
+(eval-when (:compile-toplevel :load-toplevel :execute)
+
+  (defgeneric %foreign-type-alignment (lisp-type-kw))
+
+  (defmacro generate-foreign-type-alignment-functions ()
+    `(progn
+       ;; type -> type spec
+       ,@(loop for spec across *foreign-type-spec-table*
+            for idx from 0 to (1- (length *foreign-type-spec-table*))
+            when spec
+            collect
+              `(defmethod %foreign-type-alignment ((lisp-type-kw (eql ',(%lisp-symbol spec))))
+                 (%alignment (elt *foreign-type-spec-table* ,idx))))
+       ))
+
+  (defmethod %foreign-type-alignment (lisp-type-kw)
+    (error "Unknown FLI lisp type ~S - cannot determine foreign alignment." lisp-type-kw))
+  ) ;; eval-when
+
 ;;; === T R A N S L A T O R    S U P O R T ===
 
 (defgeneric %lisp-type->llvm-type-symbol (lisp-type-kw))
@@ -177,10 +217,6 @@
   ) ;; eval-when
 
 ;;; === B U I LT - I N   O P E R A T I O N S ===
-
-;;; Implemented directly in C++:
-;;; - %foreign-type-size
-;;; - %foreign-type-alignment
 
 ;;; === P O I N T E R   O P E R A T I O N S ===
 
@@ -364,6 +400,8 @@
   (generate-llvm-type-symbol-accessor-functions)
   (generate-mem-ref-accessor-functions)
   (generate-mem-set-accessor-functions)
+  (generate-foreign-type-size-functions)
+  (generate-foreign-type-alignment-functions)
   (values))
 
 ;;;----------------------------------------------------------------------------

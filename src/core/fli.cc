@@ -476,13 +476,15 @@ ForeignData_sp PERCENTallocate_foreign_object(core::T_sp kind) {
 
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
-void ForeignData_O::PERCENTfree_foreign_object() {
+void ForeignData_O::PERCENTfree_foreign_object()
+{
   this->free();
 }
 
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
-ForeignData_sp PERCENTallocate_foreign_data(core::Integer_sp size) {
+ForeignData_sp PERCENTallocate_foreign_data(core::Integer_sp size)
+{
   size_t _size = unbox_fixnum( size );
   GC_ALLOCATE(ForeignData_O, self);
   self->allocate( kw::_sym_clasp_foreign_data_kind_data, core::DeleteOnDtor, _size);
@@ -491,13 +493,15 @@ ForeignData_sp PERCENTallocate_foreign_data(core::Integer_sp size) {
 
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
-void ForeignData_O::PERCENTfree_foreign_data() {
+void ForeignData_O::PERCENTfree_foreign_data()
+{
   this->free();
 }
 
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
-ForeignData_sp ForeignData_O::create(cl_intptr_t address) {
+ForeignData_sp ForeignData_O::create(cl_intptr_t address)
+{
   GC_ALLOCATE(ForeignData_O, self);
   self->m_raw_data = reinterpret_cast<void *>( address );
   self->set_kind( kw::_sym_clasp_foreign_data_kind_pointer );
@@ -506,7 +510,8 @@ ForeignData_sp ForeignData_O::create(cl_intptr_t address) {
 
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
-ForeignData_sp ForeignData_O::create(void * p_address) {
+ForeignData_sp ForeignData_O::create(void * p_address)
+{
   GC_ALLOCATE(ForeignData_O, self);
   self->m_raw_data = p_address;
   self->set_kind( kw::_sym_clasp_foreign_data_kind_pointer );
@@ -515,7 +520,15 @@ ForeignData_sp ForeignData_O::create(void * p_address) {
 
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
-ForeignData_sp PERCENTmake_pointer(core::Integer_sp address) {
+ForeignData_sp make_pointer( void * p_address )
+{
+  return ForeignData_O::create( p_address );
+}
+
+// ---------------------------------------------------------------------------
+// ---------------------------------------------------------------------------
+ForeignData_sp PERCENTmake_pointer(core::Integer_sp address)
+{
   ForeignData_sp ptr = ForeignData_O::create( core::clasp_to_cl_intptr_t( address ) );
   ptr->set_kind( kw::_sym_clasp_foreign_data_kind_pointer );
   return ptr;
@@ -523,7 +536,8 @@ ForeignData_sp PERCENTmake_pointer(core::Integer_sp address) {
 
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
-ForeignData_sp PERCENTmake_nullpointer() {
+ForeignData_sp PERCENTmake_nullpointer()
+{
   ForeignData_sp ptr = ForeignData_O::create( (cl_intptr_t) 0 );
   ptr->set_kind( kw::_sym_clasp_foreign_data_kind_pointer );
   return ptr;
@@ -531,52 +545,61 @@ ForeignData_sp PERCENTmake_nullpointer() {
 
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
-core::Pointer_sp PERCENTcore_pointer_from_foreign_data( ForeignData_sp fd_ptr ) {
+core::Pointer_sp PERCENTcore_pointer_from_foreign_data( ForeignData_sp fd_ptr )
+{
   return core::Pointer_O::create( fd_ptr->ptr() );
 }
 
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
-core::T_sp PERCENTforeign_data_pointerp( core::T_sp obj ) {
-
+core::T_sp PERCENTforeign_data_pointerp( core::T_sp obj )
+{
   ForeignData_sp sp_foreign_data = obj.asOrNull<ForeignData_O>();
 
-  if( sp_foreign_data.nilp() ) {
+  if( sp_foreign_data.nilp() )
+  {
     return _Nil<core::T_O>();
   }
-  else {
+  else
+  {
     return _lisp->_true();
   }
 }
 
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
-core::T_sp PERCENTpointerp( core::T_sp obj ) {
-
+core::T_sp PERCENTpointerp( core::T_sp obj )
+{
   ForeignData_sp sp_foreign_data = obj.asOrNull<ForeignData_O>();
 
-  if( sp_foreign_data.nilp() ) {
+  if( sp_foreign_data.nilp() )
+  {
     return _Nil<core::T_O>();
   }
-  else {
+  else
+  {
     return _lisp->_true();
   }
 }
 
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
-core::T_sp PERCENTnull_pointer_p( core::T_sp obj ) {
-
+core::T_sp PERCENTnull_pointer_p( core::T_sp obj )
+{
   ForeignData_sp sp_foreign_data = obj.asOrNull<ForeignData_O>();
 
-  if( sp_foreign_data.nilp() ) {
+  if( sp_foreign_data.nilp() )
+  {
     return _Nil<core::T_O>();
   }
-  else {
-    if( sp_foreign_data->null_pointer_p() ) {
+  else
+  {
+    if( sp_foreign_data->null_pointer_p() )
+    {
       return _lisp->_true();
     }
-    else {
+    else
+    {
       return _Nil<core::T_O>();
     }
   }
@@ -584,7 +607,8 @@ core::T_sp PERCENTnull_pointer_p( core::T_sp obj ) {
 
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
-ForeignData_sp ForeignData_O::PERCENTinc_pointer( core::Integer_sp offset) {
+ForeignData_sp ForeignData_O::PERCENTinc_pointer( core::Integer_sp offset)
+{
   cl_intptr_t new_address = 0;
   cl_intptr_t raw_data_address = reinterpret_cast<cl_intptr_t>( this->raw_data() );
   cl_intptr_t offset_ = core::clasp_to_cl_intptr_t( offset );
@@ -597,8 +621,8 @@ ForeignData_sp ForeignData_O::PERCENTinc_pointer( core::Integer_sp offset) {
 
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
-core::Fixnum_sp PERCENTforeign_type_alignment(core::Symbol_sp atype) {
-
+core::Fixnum_sp PERCENTforeign_type_alignment(core::Symbol_sp atype)
+{
   core::Fixnum_sp result = nullptr;
 
   core::VectorObjects_sp sp_tst = _sym_STARforeign_type_spec_tableSTAR->symbolValue();
@@ -625,8 +649,8 @@ RETURN_FROM_CORE__PERCENT_FOREIGN_TYPE_ALIGNMENT:
 
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
-core::Fixnum_sp PERCENTforeign_type_size(core::Symbol_sp atype) {
-
+core::Fixnum_sp PERCENTforeign_type_size(core::Symbol_sp atype)
+{
   core::Fixnum_sp result = nullptr;
 
   core::VectorObjects_sp sp_tst = _sym_STARforeign_type_spec_tableSTAR->symbolValue();
@@ -657,8 +681,8 @@ RETURN_FROM_CORE__PERCENT_FOREIGN_TYPE_SIZE:
 
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
-core::T_sp PERCENTdlopen( core::T_sp path_designator ) {
-
+core::T_sp PERCENTdlopen( core::T_sp path_designator )
+{
   ForeignData_sp sp_handle;
   int n_mode = RTLD_NOW | RTLD_GLOBAL;
 
@@ -680,8 +704,8 @@ core::T_sp PERCENTdlopen( core::T_sp path_designator ) {
 
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
-core::T_sp PERCENTdlclose( ForeignData_sp handle ) {
-
+core::T_sp PERCENTdlclose( ForeignData_sp handle )
+{
   auto result = core::do_dlclose( handle->raw_data() );
   int n_rc = std::get<0>( result );
 
@@ -760,16 +784,16 @@ inline string ForeignTypeSpec_O::__repr__() const {
 
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
-ForeignTypeSpec_sp ForeignTypeSpec_O::create( core::Symbol_sp   lisp_symbol,
-                                              core::String_sp      lisp_name,
-                                              core::Integer_sp  size,
-                                              core::Fixnum_sp   alignment,
-                                              core::String_sp      cxx_name,
-                                              core::Symbol_sp   llvm_type_symbol,
-                                              core::String_sp      to_object_fn_name,
-                                              core::String_sp      from_object_fn_name,
-                                              ForeignData_sp to_object_fn_ptr,
-                                              ForeignData_sp from_object_fn_ptr)
+ForeignTypeSpec_sp ForeignTypeSpec_O::create( core::Symbol_sp  lisp_symbol,
+                                              core::String_sp  lisp_name,
+                                              core::Integer_sp size,
+                                              core::Fixnum_sp  alignment,
+                                              core::String_sp  cxx_name,
+                                              core::Symbol_sp  llvm_type_symbol,
+                                              core::String_sp  to_object_fn_name,
+                                              core::String_sp  from_object_fn_name,
+                                              ForeignData_sp   to_object_fn_ptr,
+                                              ForeignData_sp   from_object_fn_ptr)
 {
   GC_ALLOCATE(ForeignTypeSpec_O, self);
 
@@ -797,35 +821,46 @@ bool ForeignTypeSpec_O::eql_(ForeignTypeSpec_sp sp_obj) const {
     return false;
 }
 
+void ForeignTypeSpec_O::PERCENTset_llvm_type_symbol( core::Symbol_sp llvm_type_symbol )
+{
+  this->m_llvm_type_symbol = llvm_type_symbol;
+}
+
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
 
-core::Integer_sp PERCENToffset_address_as_integer( core::T_sp address_or_foreign_data_ptr, core::Integer_sp offset ) {
-
+core::Integer_sp PERCENToffset_address_as_integer( core::T_sp address_or_foreign_data_ptr, core::Integer_sp offset )
+{
   cl_intptr_t n_address = 0;
   cl_intptr_t n_offset  = 0;
   cl_intptr_t n_result  = 0;
 
   // Check if 1st param is NIL -> not allowed!
-  if( address_or_foreign_data_ptr.nilp() ) {
+  if( address_or_foreign_data_ptr.nilp() )
+  {
     SIMPLE_ERROR(BF("Invalid parameter type for address!"));
     return _Nil<core::T_O>();
   }
 
   // If offset is not NIL then get v
-  if( offset.notnilp() ) {
-    if( offset.fixnump() ) {
+  if( offset.notnilp() )
+  {
+    if( offset.fixnump() )
+    {
       n_offset = unbox_fixnum( offset );
     }
-    else {
+    else
+    {
       n_offset = core::clasp_to_cl_intptr_t( offset );
     }
   }
 
-  if( address_or_foreign_data_ptr.fixnump() ) {
+  if( address_or_foreign_data_ptr.fixnump() )
+  {
     n_address = unbox_fixnum( address_or_foreign_data_ptr );
   }
-  else {
+  else
+  {
     ForeignData_sp sp_fd = _Nil<core::T_O>();
 
     sp_fd = address_or_foreign_data_ptr.asOrNull<ForeignData_O>();
@@ -834,14 +869,17 @@ core::Integer_sp PERCENToffset_address_as_integer( core::T_sp address_or_foreign
       core::Integer_sp sp_address = _Nil<core::T_O>();
 
       sp_address = sp_fd->PERCENTforeign_data_address();
-      if( sp_address.fixnump() ) {
+      if( sp_address.fixnump() )
+      {
         n_address = unbox_fixnum( sp_address );
       }
-      else {
+      else
+      {
         n_address = core::clasp_to_cl_intptr_t( sp_address );
       }
     }
-    else {
+    else
+    {
       SIMPLE_ERROR(BF("Invalid parameter type for address!"));
       return _Nil<core::T_O>();
     }
@@ -855,7 +893,8 @@ core::Integer_sp PERCENToffset_address_as_integer( core::T_sp address_or_foreign
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
 template<class T>
-inline T mem_ref( cl_intptr_t address ) {
+inline T mem_ref( cl_intptr_t address )
+{
   T *ptr = reinterpret_cast< T*>( address );
   return (*ptr);
 }
@@ -864,128 +903,159 @@ inline T mem_ref( cl_intptr_t address ) {
 // ---------------------------------------------------------------------------
 // MEM-REF
 
-core::T_sp PERCENTmem_ref_short( core::Integer_sp address ) {
+core::T_sp PERCENTmem_ref_short( core::Integer_sp address )
+{
   short v = mem_ref<short>( core::clasp_to_cl_intptr_t( address ) );
   return mk_fixnum_short( v );
 }
 
-core::T_sp PERCENTmem_ref_unsigned_short( core::Integer_sp address ) {
+core::T_sp PERCENTmem_ref_unsigned_short( core::Integer_sp address )
+{
   unsigned short v = mem_ref<unsigned short>( core::clasp_to_cl_intptr_t( address ) );
   return mk_fixnum_ushort( v );
 }
 
-core::T_sp PERCENTmem_ref_int( core::Integer_sp address ) {
+core::T_sp PERCENTmem_ref_int( core::Integer_sp address )
+{
   int v = mem_ref<int>( core::clasp_to_cl_intptr_t( address ) );
   return mk_fixnum_int( v );
 }
 
-core::T_sp PERCENTmem_ref_unsigned_int( core::Integer_sp address ) {
+core::T_sp PERCENTmem_ref_unsigned_int( core::Integer_sp address )
+{
   unsigned int v = mem_ref<unsigned int>( core::clasp_to_cl_intptr_t( address ) );
   return mk_fixnum_uint( v );
 }
 
-core::T_sp PERCENTmem_ref_int8( core::Integer_sp address ) {
+core::T_sp PERCENTmem_ref_int8( core::Integer_sp address )
+{
   int8_t v = mem_ref<int8_t>( core::clasp_to_cl_intptr_t( address ) );
   return mk_fixnum_int8( v );
 }
 
-core::T_sp PERCENTmem_ref_uint8( core::Integer_sp address ) {
+core::T_sp PERCENTmem_ref_uint8( core::Integer_sp address )
+{
   int8_t v = mem_ref<int8_t>( core::clasp_to_cl_intptr_t( address ) );
   return mk_fixnum_uint8( v );
 }
 
-core::T_sp PERCENTmem_ref_int16( core::Integer_sp address ) {
+core::T_sp PERCENTmem_ref_int16( core::Integer_sp address )
+{
   int16_t v = mem_ref<int16_t>( core::clasp_to_cl_intptr_t( address ) );
   return mk_fixnum_int16( v );
 }
 
-core::T_sp PERCENTmem_ref_uint16( core::Integer_sp address ) {
+core::T_sp PERCENTmem_ref_uint16( core::Integer_sp address )
+{
   uint16_t v = mem_ref<uint16_t>( core::clasp_to_cl_intptr_t( address ) );
   return mk_fixnum_uint16( v );
 }
 
-core::T_sp PERCENTmem_ref_int32( core::Integer_sp address ) {
+core::T_sp PERCENTmem_ref_int32( core::Integer_sp address )
+{
   int32_t v = mem_ref<int32_t>( core::clasp_to_cl_intptr_t( address ) );
   return mk_fixnum_int32( v );
 }
 
-core::T_sp PERCENTmem_ref_uint32( core::Integer_sp address ) {
+core::T_sp PERCENTmem_ref_uint32( core::Integer_sp address )
+{
   uint32_t v = mem_ref<uint32_t>( core::clasp_to_cl_intptr_t( address ) );
   return mk_fixnum_uint32( v );
 }
 
-core::T_sp PERCENTmem_ref_int64( core::Integer_sp address ) {
+core::T_sp PERCENTmem_ref_int64( core::Integer_sp address )
+{
   int64_t v = mem_ref<int64_t>( core::clasp_to_cl_intptr_t( address ) );
   return mk_integer_int64( v );
 }
 
-core::T_sp PERCENTmem_ref_uint64( core::Integer_sp address ) {
+core::T_sp PERCENTmem_ref_uint64( core::Integer_sp address )
+{
   uint64_t v = mem_ref<uint64_t>( core::clasp_to_cl_intptr_t( address ) );
   return mk_integer_uint64( v );
 }
 
-core::T_sp PERCENTmem_ref_long( core::Integer_sp address ) {
+core::T_sp PERCENTmem_ref_long( core::Integer_sp address )
+{
   long v = mem_ref<long>( core::clasp_to_cl_intptr_t( address ) );
   return mk_integer_long( v );
 }
 
-core::T_sp PERCENTmem_ref_unsigned_long( core::Integer_sp address ) {
+core::T_sp PERCENTmem_ref_unsigned_long( core::Integer_sp address )
+{
   unsigned long v = mem_ref<unsigned long>( core::clasp_to_cl_intptr_t( address ) );
   return mk_integer_ulong( v );
 }
 
-core::T_sp PERCENTmem_ref_long_long( core::Integer_sp address ) {
+core::T_sp PERCENTmem_ref_long_long( core::Integer_sp address )
+{
   long long v = mem_ref<long long>( core::clasp_to_cl_intptr_t( address ) );
   return mk_integer_longlong( v );
 }
 
-core::T_sp PERCENTmem_ref_unsigned_long_long( core::Integer_sp address ) {
+core::T_sp PERCENTmem_ref_unsigned_long_long( core::Integer_sp address )
+{
   unsigned long long v = mem_ref<unsigned long long>( core::clasp_to_cl_intptr_t( address ) );
   return mk_integer_ulonglong( v );
 }
 
-core::T_sp PERCENTmem_ref_double( core::Integer_sp address ) {
+core::T_sp PERCENTmem_ref_double( core::Integer_sp address )
+{
   double v = mem_ref<double>( core::clasp_to_cl_intptr_t( address ) );
   return mk_double_float( v );
 }
 
-core::T_sp PERCENTmem_ref_float( core::Integer_sp address ) {
+core::T_sp PERCENTmem_ref_float( core::Integer_sp address )
+{
   float v = mem_ref<float>( core::clasp_to_cl_intptr_t( address ) );
   return mk_single_float( v );
 }
 
-core::T_sp PERCENTmem_ref_long_double( core::Integer_sp address ) {
+core::T_sp PERCENTmem_ref_long_double( core::Integer_sp address )
+{
   long double v = mem_ref<long double>( core::clasp_to_cl_intptr_t( address ) );
   return mk_long_double( v );
 }
 
-core::T_sp PERCENTmem_ref_time( core::Integer_sp address ) {
+core::T_sp PERCENTmem_ref_time( core::Integer_sp address )
+{
   time_t v = mem_ref<time_t>( core::clasp_to_cl_intptr_t( address ) );
   return mk_time( v );
 }
 
-core::T_sp PERCENTmem_ref_pointer( core::Integer_sp address ) {
+core::T_sp PERCENTmem_ref_pointer( core::Integer_sp address )
+{
   ForeignData_sp ptr = PERCENTmake_pointer( address );
   return ptr;
 }
 
-core::T_sp PERCENTmem_ref_size( core::Integer_sp address ) {
+core::T_sp PERCENTmem_ref_size( core::Integer_sp address )
+{
   size_t v = mem_ref<size_t>( core::clasp_to_cl_intptr_t( address ) );
   return mk_size( v );
 }
 
-core::T_sp PERCENTmem_ref_ssize( core::Integer_sp address ) {
+core::T_sp PERCENTmem_ref_ssize( core::Integer_sp address )
+{
   ssize_t v = mem_ref<ssize_t>( core::clasp_to_cl_intptr_t( address ) );
   return mk_ssize( v );
 }
 
-core::T_sp PERCENTmem_ref_ptrdiff( core::Integer_sp address ) {
+core::T_sp PERCENTmem_ref_ptrdiff( core::Integer_sp address )
+{
   ptrdiff_t v = mem_ref<ptrdiff_t>( core::clasp_to_cl_intptr_t( address ) );
   return mk_ptrdiff( v );
 }
 
-core::T_sp PERCENTmem_ref_char( core::Integer_sp address ) {
+core::T_sp PERCENTmem_ref_char( core::Integer_sp address )
+{
   char v = mem_ref<char>( core::clasp_to_cl_intptr_t( address ) );
+  return mk_char( v );
+}
+
+core::T_sp PERCENTmem_ref_unsigned_char( core::Integer_sp address )
+{
+  unsigned char v = mem_ref<unsigned char>( core::clasp_to_cl_intptr_t( address ) );
   return mk_char( v );
 }
 
@@ -1012,7 +1082,8 @@ void * clasp_to_void_pointer( ForeignData_sp sp_lisp_value )
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
 template<typename T>
-inline T mem_set( cl_intptr_t address, T value ) {
+inline T mem_set( cl_intptr_t address, T value )
+{
   * (reinterpret_cast< T * >( address )) = value;
   return * (reinterpret_cast< T * >( address ));
 }
@@ -1020,140 +1091,160 @@ inline T mem_set( cl_intptr_t address, T value ) {
 // ---------------------------------------------------------------------------
 // MEM-SET
 
-core::T_sp PERCENTmem_set_short( core::Integer_sp address, core::T_sp value ) {
+core::T_sp PERCENTmem_set_short( core::Integer_sp address, core::T_sp value )
+{
   short tmp;
   translate::from_object< short > v( value );
   tmp = mem_set< short >( core::clasp_to_cl_intptr_t( address ), v._v );
   return mk_fixnum_short( tmp );
 }
 
-core::T_sp PERCENTmem_set_unsigned_short( core::Integer_sp address, core::T_sp value ) {
+core::T_sp PERCENTmem_set_unsigned_short( core::Integer_sp address, core::T_sp value )
+{
   unsigned short tmp;
   translate::from_object< unsigned short > v( value );
   tmp = mem_set< unsigned short >( core::clasp_to_cl_intptr_t( address ), v._v );
   return mk_fixnum_ushort( tmp );
 }
 
-core::T_sp PERCENTmem_set_int( core::Integer_sp address, core::T_sp value ) {
+core::T_sp PERCENTmem_set_int( core::Integer_sp address, core::T_sp value )
+{
   int tmp;
   translate::from_object< int > v( value );
   tmp = mem_set< int >( core::clasp_to_cl_intptr_t( address ), v._v );
   return mk_fixnum_int( tmp );
 }
 
-core::T_sp PERCENTmem_set_unsigned_int( core::Integer_sp address, core::T_sp value ) {
+core::T_sp PERCENTmem_set_unsigned_int( core::Integer_sp address, core::T_sp value )
+{
   unsigned int tmp;
   translate::from_object< unsigned int > v( value );
   tmp = mem_set< int >( core::clasp_to_cl_intptr_t( address ), v._v );
   return mk_fixnum_uint( tmp );
 }
 
-core::T_sp PERCENTmem_set_int8( core::Integer_sp address, core::T_sp value ) {
+core::T_sp PERCENTmem_set_int8( core::Integer_sp address, core::T_sp value )
+{
   int8_t tmp;
   translate::from_object< int8_t > v( value );
   tmp = mem_set< int8_t >( core::clasp_to_cl_intptr_t( address ), v._v );
   return mk_fixnum_int8( tmp );
 }
 
-core::T_sp PERCENTmem_set_uint8( core::Integer_sp address, core::T_sp value ) {
+core::T_sp PERCENTmem_set_uint8( core::Integer_sp address, core::T_sp value )
+{
   uint8_t tmp;
   translate::from_object< uint8_t > v( value );
   tmp = mem_set< uint8_t >( core::clasp_to_cl_intptr_t( address ), v._v );
   return mk_fixnum_uint8( tmp );
 }
 
-core::T_sp PERCENTmem_set_int16( core::Integer_sp address, core::T_sp value ) {
+core::T_sp PERCENTmem_set_int16( core::Integer_sp address, core::T_sp value )
+{
   int16_t tmp;
   translate::from_object< int16_t > v( value );
   tmp = mem_set< int16_t >( core::clasp_to_cl_intptr_t( address ), v._v );
   return mk_fixnum_int16( tmp );
 }
 
-core::T_sp PERCENTmem_set_uint16( core::Integer_sp address, core::T_sp value ) {
+core::T_sp PERCENTmem_set_uint16( core::Integer_sp address, core::T_sp value )
+{
   uint16_t tmp;
   translate::from_object< uint16_t > v( value );
   tmp = mem_set< uint16_t >( core::clasp_to_cl_intptr_t( address ), v._v );
   return mk_fixnum_uint16( tmp );
 }
 
-core::T_sp PERCENTmem_set_int32( core::Integer_sp address, core::T_sp value ) {
+core::T_sp PERCENTmem_set_int32( core::Integer_sp address, core::T_sp value )
+{
   int32_t tmp;
   translate::from_object< int32_t > v( value );
   tmp = mem_set< int32_t >( core::clasp_to_cl_intptr_t( address ), v._v );
   return mk_fixnum_int32( tmp );
 }
 
-core::T_sp PERCENTmem_set_uint32( core::Integer_sp address, core::T_sp value ) {
+core::T_sp PERCENTmem_set_uint32( core::Integer_sp address, core::T_sp value )
+{
   uint32_t tmp;
   translate::from_object< uint32_t > v( value );
   tmp = mem_set< uint32_t >( core::clasp_to_cl_intptr_t( address ), v._v );
   return mk_fixnum_uint32( tmp );
 }
 
-core::T_sp PERCENTmem_set_int64( core::Integer_sp address, core::T_sp value ) {
+core::T_sp PERCENTmem_set_int64( core::Integer_sp address, core::T_sp value )
+{
   int64_t tmp;
   translate::from_object< int64_t > v( value );
   tmp = mem_set< int64_t >( core::clasp_to_cl_intptr_t( address ), v._v );
   return mk_integer_int64( tmp );
 }
 
-core::T_sp PERCENTmem_set_uint64( core::Integer_sp address, core::T_sp value ) {
+core::T_sp PERCENTmem_set_uint64( core::Integer_sp address, core::T_sp value )
+{
   uint64_t tmp;
   translate::from_object< uint64_t > v( value );
   tmp = mem_set< uint64_t >( core::clasp_to_cl_intptr_t( address ), v._v );
   return mk_integer_uint64( tmp );
 }
 
-core::T_sp PERCENTmem_set_long( core::Integer_sp address, core::T_sp value ) {
+core::T_sp PERCENTmem_set_long( core::Integer_sp address, core::T_sp value )
+{
   long tmp;
   translate::from_object< long > v( value );
   tmp = mem_set< long >( core::clasp_to_cl_intptr_t( address ), v._v );
   return mk_integer_long( tmp );
 }
 
-core::T_sp PERCENTmem_set_unsigned_long( core::Integer_sp address, core::T_sp value ) {
+core::T_sp PERCENTmem_set_unsigned_long( core::Integer_sp address, core::T_sp value )
+{
   unsigned long tmp;
   translate::from_object< unsigned long > v( value );
   tmp = mem_set< unsigned long >( core::clasp_to_cl_intptr_t( address ), v._v );
   return mk_integer_ulong( tmp );
 }
 
-core::T_sp PERCENTmem_set_long_long( core::Integer_sp address, core::T_sp value ) {
+core::T_sp PERCENTmem_set_long_long( core::Integer_sp address, core::T_sp value )
+{
   long long tmp;
   translate::from_object< long long > v( value );
   tmp = mem_set< long long >( core::clasp_to_cl_intptr_t( address ), v._v );
   return mk_integer_longlong( tmp );
 }
 
-core::T_sp PERCENTmem_set_unsigned_long_long( core::Integer_sp address, core::T_sp value ) {
+core::T_sp PERCENTmem_set_unsigned_long_long( core::Integer_sp address, core::T_sp value )
+{
   unsigned long long tmp;
   translate::from_object< unsigned long long > v( value );
   tmp = mem_set< unsigned long long >( core::clasp_to_cl_intptr_t( address ), v._v );
   return mk_integer_ulonglong( tmp );
 }
 
-core::T_sp PERCENTmem_set_double( core::Integer_sp address, core::T_sp value ) {
+core::T_sp PERCENTmem_set_double( core::Integer_sp address, core::T_sp value )
+{
   double tmp;
   translate::from_object< double > v( value );
   tmp = mem_set< double >( core::clasp_to_cl_intptr_t( address ), v._v );
   return mk_double_float( tmp );
 }
 
-core::T_sp PERCENTmem_set_float( core::Integer_sp address, core::T_sp value ) {
+core::T_sp PERCENTmem_set_float( core::Integer_sp address, core::T_sp value )
+{
   float tmp;
   translate::from_object< float > v( value );
   tmp = mem_set< float >( core::clasp_to_cl_intptr_t( address ), v._v );
   return mk_single_float( tmp );
 }
 
-core::T_sp PERCENTmem_set_long_double( core::Integer_sp address, core::T_sp value ) {
+core::T_sp PERCENTmem_set_long_double( core::Integer_sp address, core::T_sp value )
+{
   long double tmp;
   translate::from_object< long double > v( value );
   tmp = mem_set< long double >( core::clasp_to_cl_intptr_t( address ), v._v );
   return mk_long_double( tmp );
 }
 
-core::T_sp PERCENTmem_set_time( core::Integer_sp address, core::T_sp value ) {
+core::T_sp PERCENTmem_set_time( core::Integer_sp address, core::T_sp value )
+{
   time_t tmp;
   translate::from_object< time_t > v( value );
   tmp = mem_set< time_t >( core::clasp_to_cl_intptr_t( address ), v._v );
@@ -1164,14 +1255,16 @@ core::T_sp PERCENTmem_set_pointer( core::Integer_sp address, core::T_sp value ) 
   IMPLEMENT_ME();
 }
 
-core::T_sp PERCENTmem_set_size( core::Integer_sp address, core::T_sp value ) {
+core::T_sp PERCENTmem_set_size( core::Integer_sp address, core::T_sp value )
+{
   size_t tmp;
   translate::from_object< size_t > v( value );
   tmp = mem_set< size_t >( core::clasp_to_cl_intptr_t( address ), v._v );
   return mk_size( tmp );
 }
 
-core::T_sp PERCENTmem_set_ssize( core::Integer_sp address, core::T_sp value ) {
+core::T_sp PERCENTmem_set_ssize( core::Integer_sp address, core::T_sp value )
+{
   ssize_t tmp;
   translate::from_object< ssize_t > v( value );
   tmp = mem_set< ssize_t >( core::clasp_to_cl_intptr_t( address ), v._v );
@@ -1191,6 +1284,14 @@ core::T_sp PERCENTmem_set_char( core::Integer_sp address, core::T_sp value )
   char tmp;
   translate::from_object< char > v( value );
   tmp = mem_set< char >( core::clasp_to_cl_intptr_t( address ), v._v );
+  return mk_char( tmp );
+}
+
+core::T_sp PERCENTmem_set_unsigned_char( core::Integer_sp address, core::T_sp value )
+{
+  unsigned char tmp;
+  translate::from_object< unsigned char > v( value );
+  tmp = mem_set< unsigned char >( core::clasp_to_cl_intptr_t( address ), v._v );
   return mk_char( tmp );
 }
 
