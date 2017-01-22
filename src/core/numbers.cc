@@ -49,6 +49,7 @@ THE SOFTWARE.
 #include <clasp/core/wrappers.h>
 
 
+
 namespace core {
 
 core::Fixnum not_fixnum_error( core::T_sp o )
@@ -3468,20 +3469,16 @@ ALWAYS_INLINE float clasp_to_float( core::Number_sp x )
 
 ALWAYS_INLINE double clasp_to_double( core::Number_sp x )
 {
-  if (x.fixnump())
-  {
+  if (x.fixnump()) {
     double d = x.unsafe_fixnum();
     return d;
+  } else if (x.single_floatp()) {
+    double d = x.unsafe_single_float();
+    return d;
+  } else {
+    return x->as_double_();
   }
-  else
-    if (x.single_floatp())
-    {
-      double d = x.unsafe_single_float();
-      return d;
-    }
-
-  Integer_sp sp_i = gc::As< Integer_sp >( x );
-  return sp_i->as_double_();
+  TYPE_ERROR(x,cl::_sym_Number_O);
 };
 
 ALWAYS_INLINE LongFloat clasp_to_long_float(Number_sp x)
