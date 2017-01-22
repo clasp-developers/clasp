@@ -67,7 +67,7 @@
 (defun install-method (name qualifiers specializers lambda-list fun &rest options)
   (declare (notinline ensure-generic-function))
 ;  (record-definition 'method `(method ,name ,@qualifiers ,specializers))
-  (let* ((gf (ensure-generic-function name))
+  (let* ((gf (ensure-generic-function name #+clasp :lambda-list #+clasp lambda-list))
 	 (specializers (mapcar #'(lambda (x)
 				   (cond ((consp x) (intern-eql-specializer (second x)))
 					 ((typep x 'specializer) x)

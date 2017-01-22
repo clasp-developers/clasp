@@ -46,33 +46,37 @@
 
 #+clasp
 (defun maybe-augment-generic-function-lambda-list (name method-lambda-list)
-  (let* ((gf (fdefinition name))
-         (gf-lambda-list-all (core:function-lambda-list gf))
-         (has-aok (member '&allow-other-keys gf-lambda-list-all))
-         (gf-lambda-list (if has-aok (butlast gf-lambda-list-all 1)
-                             gf-lambda-list-all)))
-    (if gf-lambda-list
-        (flet ((match-key (entry)
-                 (cond
-                   ((symbolp entry)
-                    (intern (string entry) :keyword))
-                   ((and (consp entry) (consp (car entry)))
-                    (car (car entry)))
-                   ((consp entry)
-                    (intern (string (car entry)) :keyword))
-                   (t (error "Illegal keyword parameter ~a" entry)))))
-          (let* ((key-old (member '&key gf-lambda-list)))
-            (when key-old
-              (let ((key-new (member '&key method-lambda-list))
-                    append-keys)
-                (dolist (k (cdr key-new))
-                  (when (not (member (match-key k) key-old :key #'match-key))
-                    (push k append-keys)))
-                (let ((new-ll (append gf-lambda-list append-keys
-                                      (if has-aok (list '&allow-other-keys) nil))))
-                  (core:setf-lambda-list gf new-ll))))))
-        (progn
-          (core:setf-lambda-list gf method-lambda-list)))))
+  "Add any &key parameters from method-lambda-list that are missing
+in the generic function lambda-list to the generic function lambda-list"
+  (when method-lambda-list
+    (let* ((gf (fdefinition name))
+           (gf-lambda-list-all (core:function-lambda-list gf))
+           (has-aok (member '&allow-other-keys gf-lambda-list-all))
+           (gf-lambda-list (if has-aok
+                               (butlast gf-lambda-list-all 1)
+                               gf-lambda-list-all)))
+      (if (null gf-lambda-list)
+          (core:function-lambda-list-set gf method-lambda-list)
+          (flet ((match-key (entry)
+                   (cond
+                     ((symbolp entry)
+                      (intern (string entry) :keyword))
+                     ((and (consp entry) (consp (car entry)))
+                      (car (car entry)))
+                     ((consp entry)
+                      (intern (string (car entry)) :keyword))
+                     (t (error "Illegal keyword parameter ~a" entry)))))
+            (let* ((keys-gf (member '&key gf-lambda-list)))
+              (when keys-gf
+                (let ((keys-method (member '&key method-lambda-list))
+                      append-keys)
+                  (dolist (k (cdr keys-method))
+                    (when (not (member (match-key k) keys-gf :key #'match-key))
+                      (push k append-keys)))
+                  (when append-keys
+                    (let ((new-ll (append gf-lambda-list append-keys
+                                          (if has-aok (list '&allow-other-keys) nil))))
+                      (core:function-lambda-list-set gf new-ll)))))))))))
 
 (defmacro defmethod (&whole whole name &rest args &environment env)
   (declare (notinline make-method-lambda))
@@ -90,7 +94,7 @@
 	(parse-specialized-lambda-list specialized-lambda-list)
       (multiple-value-bind (lambda-form declarations documentation)
 	  (make-raw-lambda name lambda-list required-parameters specializers body env)
-	(let* ((generic-function (ensure-generic-function name))
+	(let* ((generic-function (ensure-generic-function name #+clasp :lambda-list #+clasp lambda-list))
 	       (method-class (progn
 			       (generic-function-method-class generic-function)))
 	       method)

@@ -2047,24 +2047,45 @@ CL_DEFUN T_sp core__ihs_backtrace(T_sp outputDesignator, T_sp msg) {
 
 namespace core {
 
+SYMBOL_EXPORT_SC_(CorePkg,generic_function_lambda_lists);
+
 
 CL_LAMBDA(function);
 CL_DECLARE();
 CL_DOCSTRING("Return the lambda-list of a function");
-CL_DEFUN T_mv core__function_lambda_list(T_sp obj) {
+CL_DEFUN T_sp core__function_lambda_list(T_sp obj) {
   if (obj.nilp()) {
-    return Values(_Nil<T_O>(), _Nil<T_O>());
+    return _Nil<T_O>();
   } else if (Symbol_sp sym = obj.asOrNull<Symbol_O>()) {
     if (!sym->fboundp()) {
-      return Values(_Nil<T_O>(), _Nil<T_O>());
+      return _Nil<T_O>();
     }
     Function_sp fn = sym->symbolFunction();
-    return Values(fn->lambda_list(), _lisp->_true());
+    return core__function_lambda_list(fn);
+  } else if (gc::IsA<Instance_sp>(obj)) {
+    Instance_sp iobj = gc::As_unsafe<Instance_sp>(obj);
+    if (iobj->isgf()) {
+      return core__get_sysprop(iobj, _sym_generic_function_lambda_lists);
+    }
+    return _Nil<T_O>();
   } else if (NamedFunction_sp func = obj.asOrNull<NamedFunction_O>()) {
-    return Values(func->lambda_list(), _lisp->_true());
+    return func->lambda_list();
   }
-  return Values(_Nil<T_O>(), _Nil<T_O>());
+  return _Nil<T_O>();
 }
+
+CL_LAMBDA(function lambda_list);
+CL_DECLARE();
+CL_DOCSTRING("Set the lambda-list that function-lambda-list would return for the generic function");
+CL_DEFUN void core__function_lambda_list_set(T_sp obj, T_sp lambda_list) {
+  if (gc::IsA<Instance_sp>(obj)) {
+    Instance_sp iobj = gc::As_unsafe<Instance_sp>(obj);
+    if (iobj->isgf()) {
+      core__put_sysprop(iobj, _sym_generic_function_lambda_lists, lambda_list);
+    }
+  }
+}
+
 
 CL_LAMBDA(function);
 CL_DECLARE();
