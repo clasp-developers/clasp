@@ -5,6 +5,16 @@
 #include <clasp/core/object.h>
 #include <clasp/core/symbol.h>
 
+namespace kw {
+  EXTERN_SYMBOL(dispatch_function);
+};
+namespace core {
+  EXTERN_SYMBOL(arguments);
+};
+namespace cl {
+  EXTERN_SYMBOL(generic_function);
+};
+
 namespace core {
   FORWARD(Function);
   FORWARD(NamedFunction);
@@ -17,6 +27,7 @@ namespace core {
   FORWARD(ClosureWithSlots);
   FORWARD(InterpretedClosure);
   FORWARD(CompiledClosure);
+  FORWARD(CompiledDispatchFunction);
 };
 
 template <>
@@ -450,6 +461,39 @@ public:
     core::T_O* tagged_closure = gctools::tag_general(this);
     return (*(this->fptr))(LCC_PASS_ARGS_ENV(tagged_closure));
   };
+};
+};
+
+
+namespace core {
+class CompiledDispatchFunction_O : public core::ClosureWithFrame_O {
+  LISP_CLASS(core,CorePkg,CompiledDispatchFunction_O,"CompiledDispatchFunction",core::ClosureWithFrame_O);
+public:
+  core::DispatchFunction_fptr_type _entryPoint;
+ public:
+  virtual const char *describe() const { return "CompiledDispatchFunction"; };
+  virtual size_t templatedSizeof() const { return sizeof(*this); };
+  virtual void *functionAddress() const { return (void *)this->_entryPoint; }
+public:
+ CompiledDispatchFunction_O(core::T_sp functionName, core::Symbol_sp type, core::DispatchFunction_fptr_type ptr) : Base(functionName,kw::_sym_dispatch_function,_Nil<T_O>(),0,0,0,0), _entryPoint(ptr) {};
+  bool compiledP() const { return true; };
+  DispatchFunction_fptr_type entryPoint() { return this->_entryPoint;};
+  DISABLE_NEW();
+  inline LCC_RETURN LISP_CALLING_CONVENTION() {
+    SIMPLE_ERROR(BF("You cannot invoke compiled-dispatch-functions directly - they can only be used to clos:set-funcallable-instance-function"));
+#if 0
+    ASSERT_LCC_VA_LIST_CLOSURE_DEFINED(lcc_arglist);
+    INCREMENT_FUNCTION_CALL_COUNTER(this);
+#ifdef USE_EXPENSIVE_BACKTRACE
+    core::InvocationHistoryFrame _frame(lcc_arglist);
+#endif
+    core::T_O* tagged_closure = gctools::tag_general(this);
+    return (*(this->_entryPoint))(LCC_PASS_ARGS_ENV(tagged_closure));
+#endif
+  };
+  core::T_sp lambda_list() const { return Cons_O::createList(cl::_sym_generic_function, core::_sym_arguments); };
+  void setf_lambda_list(core::List_sp lambda_list) { SIMPLE_ERROR(BF("You cannot set the lambda-list of a compiled-dispatch-function")); };
+
 };
 };
 

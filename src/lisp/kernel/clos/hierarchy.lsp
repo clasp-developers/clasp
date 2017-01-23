@@ -125,6 +125,14 @@
       (method-combination 
        :initarg :method-combination :initform (find-method-combination (class-prototype (find-class 'standard-generic-function)) 'standard nil)
        :accessor generic-function-method-combination)
+      #+clasp(compiled-dispatch-function
+              :initarg :compiled-dispatch-function
+              :initform nil
+              :accessor generic-function-compiled-dispatch-function)
+      #+clasp(call-history
+              :initarg :call-history
+              :initform nil
+              :accessor generic-function-call-history)
       (lambda-list :initarg :lambda-list
        :accessor generic-function-lambda-list)
       (argument-precedence-order 

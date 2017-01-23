@@ -271,45 +271,48 @@ void Instance_O::reshapeInstance(int delta) {
 SYMBOL_SC_(ClosPkg, standardOptimizedReaderMethod);
 SYMBOL_SC_(ClosPkg, standardOptimizedWriterMethod);
 
-void Instance_O::ensureClosure(GenericFunctionPtr entryPoint) {
+void Instance_O::ensureClosure(DispatchFunction_fptr_type entryPoint) {
   this->_entryPoint = entryPoint;
 };
 
 T_sp Instance_O::setFuncallableInstanceFunction(T_sp functionOrT) {
-  if (this->_isgf == ECL_USER_DISPATCH) {
+  if (this->_isgf == CLASP_USER_DISPATCH) {
     this->reshapeInstance(-1);
-    this->_isgf = ECL_NOT_FUNCALLABLE;
+    this->_isgf = CLASP_NOT_FUNCALLABLE;
   }
   SYMBOL_EXPORT_SC_(ClPkg, standardGenericFunction);
   SYMBOL_SC_(ClosPkg, standardOptimizedReaderFunction);
   SYMBOL_SC_(ClosPkg, standardOptimizedWriterFunction);
   if (functionOrT == _lisp->_true()) {
-    this->_isgf = ECL_STANDARD_DISPATCH;
+    this->_isgf = CLASP_STANDARD_DISPATCH;
     Instance_O::ensureClosure(&generic_function_dispatch);
   } else if (functionOrT == cl::_sym_standardGenericFunction) {
-    this->_isgf = ECL_RESTRICTED_DISPATCH;
+    this->_isgf = CLASP_RESTRICTED_DISPATCH;
     Instance_O::ensureClosure(&generic_function_dispatch);
   } else if (functionOrT.nilp()) {
-    this->_isgf = ECL_NOT_FUNCALLABLE;
+    this->_isgf = CLASP_NOT_FUNCALLABLE;
     Instance_O::ensureClosure(&not_funcallable_dispatch);
   } else if (functionOrT == clos::_sym_standardOptimizedReaderMethod) {
     /* WARNING: We assume that f(a,...) behaves as f(a,b) */
-    this->_isgf = ECL_READER_DISPATCH;
+    this->_isgf = CLASP_READER_DISPATCH;
     // TODO: Switch to using slotReaderDispatch like ECL for improved performace
     //	    this->_Entry = &slotReaderDispatch;
     //Instance_O::ensureClosure(&generic_function_dispatch);
     Instance_O::ensureClosure(&optimized_slot_reader_dispatch);
   } else if (functionOrT == clos::_sym_standardOptimizedWriterMethod) {
     /* WARNING: We assume that f(a,...) behaves as f(a,b) */
-    this->_isgf = ECL_WRITER_DISPATCH;
+    this->_isgf = CLASP_WRITER_DISPATCH;
     Instance_O::ensureClosure(&optimized_slot_writer_dispatch);
+  } else if (gc::IsA<CompiledDispatchFunction_sp>(functionOrT)) {
+    this->_isgf = CLASP_STRANDH_DISPATCH;
+    Instance_O::ensureClosure(gc::As_unsafe<CompiledDispatchFunction_sp>(functionOrT)->entryPoint());
   } else if (!cl__functionp(functionOrT)) {
     TYPE_ERROR(functionOrT, cl::_sym_function);
     //SIMPLE_ERROR(BF("Wrong type argument: %s") % functionOrT->__repr__());
   } else {
     this->reshapeInstance(+1);
     this->_Slots[this->_Slots.size() - 1] = functionOrT;
-    this->_isgf = ECL_USER_DISPATCH;
+    this->_isgf = CLASP_USER_DISPATCH;
     Instance_O::ensureClosure(&user_function_dispatch);
   }
   return ((this->sharedThis<Instance_O>()));
@@ -317,7 +320,7 @@ T_sp Instance_O::setFuncallableInstanceFunction(T_sp functionOrT) {
 
 T_sp Instance_O::userFuncallableInstanceFunction() const
 {
-  if (this->_isgf == ECL_USER_DISPATCH) {
+  if (this->_isgf == CLASP_USER_DISPATCH) {
     T_sp user_dispatch_fn = this->_Slots[this->_Slots.size()-1];
     return user_dispatch_fn;
   }
