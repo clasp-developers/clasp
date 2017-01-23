@@ -150,6 +150,7 @@ SYMBOL_EXPORT_SC_(CorePkg, STARuse_cleavir_compilerSTAR);  // nil (clasp) or T (
 SYMBOL_EXPORT_SC_(KeywordPkg, verbose);
 SYMBOL_EXPORT_SC_(KeywordPkg, pause_pid);
 SYMBOL_EXPORT_SC_(KeywordPkg, exit_backtrace);
+SYMBOL_EXPORT_SC_(CorePkg, arguments );
 SYMBOL_EXPORT_SC_(CorePkg, STARdebug_accessorsSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARexit_backtraceSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, make_source_pos_info);

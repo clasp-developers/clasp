@@ -8,6 +8,12 @@
 namespace kw {
   EXTERN_SYMBOL(dispatch_function);
 };
+namespace core {
+  EXTERN_SYMBOL(arguments);
+};
+namespace cl {
+  EXTERN_SYMBOL(generic_function);
+};
 
 namespace core {
   FORWARD(Function);
@@ -485,6 +491,9 @@ public:
     return (*(this->_entryPoint))(LCC_PASS_ARGS_ENV(tagged_closure));
 #endif
   };
+  core::T_sp lambda_list() const { return Cons_O::createList(cl::_sym_generic_function, core::_sym_arguments); };
+  void setf_lambda_list(core::List_sp lambda_list) { SIMPLE_ERROR(BF("You cannot set the lambda-list of a compiled-dispatch-function")); };
+
 };
 };
 
