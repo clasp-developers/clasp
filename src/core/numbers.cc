@@ -3450,18 +3450,15 @@ ALWAYS_INLINE float clasp_to_float( core::Number_sp x )
 {
   if (x.fixnump())
   {
-    float d = x.unsafe_fixnum();
-    return d;
+    return (float) x.unsafe_fixnum();
   }
-  else
-    if (x.single_floatp())
-    {
-      float d = x.unsafe_single_float();
-      return d;
-    }
 
-  Integer_sp sp_i = gc::As< Integer_sp >( x );
-  return sp_i->as_float_();
+  if (x.single_floatp())
+  {
+    return (float) x.unsafe_single_float();
+  }
+
+  return (gc::As< Integer_sp >( x ))->as_float_();
 }
 
 // --- DOUBLE ---
@@ -3470,18 +3467,20 @@ ALWAYS_INLINE double clasp_to_double( core::Number_sp x )
 {
   if (x.fixnump())
   {
-    double d = x.unsafe_fixnum();
-    return d;
+    return (double) x.unsafe_fixnum();
   }
-  else
-    if (x.single_floatp())
-    {
-      double d = x.unsafe_single_float();
-      return d;
-    }
 
-  Integer_sp sp_i = gc::As< Integer_sp >( x );
-  return sp_i->as_double_();
+  if(  x.single_floatp() )
+  {
+    return (double) x.unsafe_single_float();
+  }
+
+  if( gc::IsA< DoubleFloat_sp >( x ) )
+  {
+    return (gc::As< DoubleFloat_sp >( x ))->get();
+  }
+
+  return (gc::As< Integer_sp >( x ))->as_double_();
 };
 
 ALWAYS_INLINE LongFloat clasp_to_long_float(Number_sp x)
