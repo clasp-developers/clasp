@@ -166,6 +166,7 @@
     (%set-llvm-type-symbol (%lisp-type->type-spec :ulong) 'cmp::+i64+)
 
     (%set-llvm-type-symbol (%lisp-type->type-spec :long-long) 'cmp::+i128+)
+    (%set-llvm-type-symbol (%lisp-type->type-spec :llong) 'cmp::+i128+)
     (%set-llvm-type-symbol (%lisp-type->type-spec :unsigned-long-long) 'cmp::+i128+)
     (%set-llvm-type-symbol (%lisp-type->type-spec :ullong) 'cmp::+i128+)
 
@@ -532,7 +533,6 @@
 ;;;----------------------------------------------------------------------------
 ;;; T E S T I N G
 
-(format *debug-io* "Compiling TEST-FFI~&")
 (defun test-ffi ()
 
   (format *debug-io* "*** TEST 1: %MEM-SET and %MEM-REF ...~&")
@@ -566,6 +566,5 @@
 
   )
 
-(format *debug-io* "Compiling DBG-NUMERIC-LIMITS~&")
 (defun dbg-numeric-limits ()
   (%foreign-funcall "info_numeric_limits"))
