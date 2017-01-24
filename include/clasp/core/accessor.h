@@ -34,9 +34,9 @@ namespace core {
 
 // Arguments are passed in the multiple_values structure
 
-LCC_RETURN optimized_slot_reader_dispatch(Instance_sp gf, VaList_sp vargs);
+  LCC_RETURN optimized_slot_reader_dispatch(gctools::Tagged tgf, gctools::Tagged tvargs);
 
-LCC_RETURN optimized_slot_writer_dispatch(Instance_sp gf, VaList_sp vargs);
+  LCC_RETURN optimized_slot_writer_dispatch(gctools::Tagged tgf, gctools::Tagged tvargs);
 
 };
 #endif /* _core_accessor_H_ */

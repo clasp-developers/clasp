@@ -66,7 +66,7 @@ THE SOFTWARE.
 #define CLASP_WRITER_DISPATCH 4
 #define CLASP_USER_DISPATCH 5
 #define CLASP_STRANDH_DISPATCH 6
-#define CLASP_INVALIDATED_STRANDH_DISPATCH 7
+#define CLASP_INVALIDATED_DISPATCH 7
 
 namespace core {
 
@@ -192,7 +192,7 @@ INCREMENT_FUNCTION_CALL_COUNTER(this);
 // Copy the arguments passed in registers into the multiple_values array and those
 // will be processed by the generic function
 LCC_MAKE_VA_LIST_SP(gfargs);
-return (this->_entryPoint)(this->asSmartPtr(), gfargs);
+ return (this->_entryPoint)(this->asSmartPtr().tagged_(), gfargs.tagged_());
 }
 
 }; // Instance class

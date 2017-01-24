@@ -42,9 +42,26 @@ namespace core {
 
 CL_DEFUN T_sp clos__getFuncallableInstanceFunction(T_sp obj) {
   if (Instance_sp iobj = obj.asOrNull<Instance_O>()) {
-    return iobj->userFuncallableInstanceFunction();
+    switch (iobj->_isgf) {
+    case CLASP_STANDARD_DISPATCH:
+        return _lisp->_true();
+    case CLASP_RESTRICTED_DISPATCH:
+        return cl::_sym_standardGenericFunction;
+    case CLASP_READER_DISPATCH:
+        return clos::_sym_standardOptimizedReaderMethod;
+    case CLASP_WRITER_DISPATCH:
+        return clos::_sym_standardOptimizedWriterMethod;
+    case CLASP_USER_DISPATCH:
+        return iobj->userFuncallableInstanceFunction();
+    case CLASP_STRANDH_DISPATCH:
+        return iobj->GFUN_DISPATCHER();
+    case CLASP_INVALIDATED_DISPATCH:
+        return clos::_sym_invalidated_dispatch_function;
+    default:
+        SIMPLE_ERROR(BF("Add support to return funcallable-instance-function for _isgf=%d") % iobj->_isgf);
+    }
   }
-  SIMPLE_ERROR(BF("You can only call userFuncallableInstanceFunction on instances - you tried to call it on a: %s") % _rep_(obj));
+  return _Nil<T_O>();
 };
 
 CL_DEFUN T_sp clos__setFuncallableInstanceFunction(T_sp obj, T_sp func) {
@@ -283,12 +300,16 @@ T_sp Instance_O::setFuncallableInstanceFunction(T_sp functionOrT) {
   SYMBOL_EXPORT_SC_(ClPkg, standardGenericFunction);
   SYMBOL_SC_(ClosPkg, standardOptimizedReaderFunction);
   SYMBOL_SC_(ClosPkg, standardOptimizedWriterFunction);
+  SYMBOL_SC_(ClosPkg, invalidated_dispatch_function );
   if (functionOrT == _lisp->_true()) {
     this->_isgf = CLASP_STANDARD_DISPATCH;
     Instance_O::ensureClosure(&generic_function_dispatch);
   } else if (functionOrT == cl::_sym_standardGenericFunction) {
     this->_isgf = CLASP_RESTRICTED_DISPATCH;
     Instance_O::ensureClosure(&generic_function_dispatch);
+  } else if (functionOrT == clos::_sym_invalidated_dispatch_function) {
+    this->_isgf = CLASP_INVALIDATED_DISPATCH;
+    Instance_O::ensureClosure(&invalidated_dispatch);
   } else if (functionOrT.nilp()) {
     this->_isgf = CLASP_NOT_FUNCALLABLE;
     Instance_O::ensureClosure(&not_funcallable_dispatch);

@@ -263,14 +263,24 @@ generic_function_dispatch_vararg(cl_narg narg, ...)
         return output;
 }
  */
-LCC_RETURN generic_function_dispatch(Instance_sp gf, VaList_sp vargs) {
+LCC_RETURN generic_function_dispatch(gctools::Tagged tgf, gctools::Tagged tvargs) {
+  Instance_sp gf(tgf);
+  VaList_sp vargs(tvargs);
   Cache_sp cache = _lisp->methodCachePtr();
   return standard_dispatch(gf, vargs, cache);
 }
 
+LCC_RETURN invalidated_dispatch(gctools::Tagged tgf, gctools::Tagged tvargs) {
+  Instance_sp gf(tgf);
+  VaList_sp vargs(tvargs);
+  return eval::funcall(clos::_sym_invalidated_dispatch_function,gf,vargs);
+}
+
 #if 0
 /*! Reproduces functionality in ecl_slot_reader_dispatch */
-LCC_RETURN slot_reader_dispatch(Instance_sp gf, VaList_sp vargs) {
+LCC_RETURN slot_reader_dispatch(gctools::Tagged tgf, gctools::Tagged tvargs) {
+  Instance_sp gf(tgf);
+  VaList_sp vargs(tvargs);
   Cache_sp cache = _lisp->slotCachePtr();
   // Should I use standard_dispatch or do something special for slots?
   return standard_dispatch(gf, vargs, cache);
@@ -285,14 +295,18 @@ LCC_RETURN slot_writer_dispatch(Instance_sp gf, VaList_sp vargs) {
 #endif
 
 /*! Reproduces functionality in user_function_dispatch */
-LCC_RETURN user_function_dispatch(Instance_sp gf, VaList_sp vargs) {
+LCC_RETURN user_function_dispatch(gctools::Tagged tgf, gctools::Tagged tvargs) {
+  Instance_sp gf(tgf);
+  VaList_sp vargs(tvargs);
   Function_sp func = gc::As<Function_sp>(gf->instanceRef(gf->numberOfSlots()-1));
   BFORMAT_T(BF("%s:%d a user-dispatch generic-function %s is being invoked\n") % __FILE__ % __LINE__ % _rep_(gf->name()) );
   return core::funcall_consume_valist_<core::Function_O>(func.tagged_(),vargs); // cl__apply(func,vargs).as_return_type();
 }
 
 /*! Reproduces functionality in FEnot_funcallable_vararg */
-LCC_RETURN not_funcallable_dispatch(Instance_sp gf, VaList_sp vargs) {
+LCC_RETURN not_funcallable_dispatch(gctools::Tagged tgf, gctools::Tagged tvargs) {
+  Instance_sp gf(tgf);
+  VaList_sp vargs(tvargs);
   SIMPLE_ERROR(BF("Not a funcallable instance %s") % _rep_(gf));
 }
 

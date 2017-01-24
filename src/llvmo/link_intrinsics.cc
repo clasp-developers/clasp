@@ -38,6 +38,7 @@ extern "C" {
 #include <clasp/core/bignum.h>
 #include <clasp/core/character.h>
 #include <clasp/core/symbolTable.h>
+#include <clasp/core/instance.h>
 #include <clasp/core/arrayObjects.h>
 #include <clasp/core/vectorObjects.h>
 #include <clasp/core/arguments.h>
@@ -1894,9 +1895,10 @@ T_mv cc_multiple_value_prog1_function(core::T_mv* result, core::T_O* tfunc1, cor
 
 gctools::return_type cc_dispatch_miss(core::T_O* gf, core::T_O* gf_valist_s)
 {
-  T_sp tgf((gctools::Tagged)gf);
-  T_sp tgf_valist_s((gctools::Tagged)gf_valist_s);
-  return core::eval::funcall(clos::_sym_dispatch_miss,tgf,tgf_valist_s);
+  core::Instance_sp tgf((gctools::Tagged)gf);
+  core::VaList_sp tgf_valist_s((gctools::Tagged)gf_valist_s);
+  List_sp args = core::core__list_from_va_list(tgf_valist_s);
+  return core::eval::funcall(clos::_sym_dispatch_miss,tgf,args);
 }
 
 

@@ -799,6 +799,7 @@ and initialize it with an array consisting of one function pointer."
 
   (primitive-nounwind module "cc_eql" +i32+ (list +t*+ +t*+)) ;; eql test
   (primitive          module "cc_bad_tag" +void+ (list +t*+ +t*+)) ;; gf gf-args
+  (primitive          module "cc_dispatch_invalid" +return_type+ (list +t*+ +t*+)) ;; gf gf-args
   (primitive          module "cc_dispatch_miss" +return_type+ (list +t*+ +t*+)) ;; gf gf-args
   (primitive          module "cc_dispatch_effective_method"   +return_type+ (list +t*+ +t*+ +t*+)) ; effective-method gf gf-args
   

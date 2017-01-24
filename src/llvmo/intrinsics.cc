@@ -490,7 +490,9 @@ gctools::return_type cc_dispatch_effective_method(core::T_O* teffective_method, 
   core::T_sp effective_method((gctools::Tagged)teffective_method);
   core::T_sp gf((gctools::Tagged)tgf);
   core::T_sp gf_args((gctools::Tagged)tgf_args_valist_s);
-  return core::eval::funcall(effective_method,gf,gf_args);
+//  printf("%s:%d  Invoking effective-method %s with arguments %s\n", __FILE__, __LINE__,
+  // Arguments are .method-args. .next-methods.
+  return core::eval::funcall(effective_method,gf_args,_Nil<core::T_O>());
 }
 
 };

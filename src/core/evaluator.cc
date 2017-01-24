@@ -73,8 +73,8 @@ void errorApplyZeroArguments() {
   SIMPLE_ERROR(BF("Illegal to have zero arguments for APPLY"));
 }
 
-void errorApplyLastArgumentNotList() {
-  SIMPLE_ERROR(BF("Last argument of APPLY is not a list/frame/activation-frame"));
+void errorApplyLastArgumentNotList(T_sp lastArg ) {
+  SIMPLE_ERROR(BF("Last argument of APPLY is not a list/frame/activation-frame - passed %s") % _rep_(lastArg));
 }
 
 
@@ -170,7 +170,8 @@ CL_DEFUN T_mv cl__apply(T_sp head, VaList_sp args) {
     VaList_sp valist(&valist_struct); // = frame.setupVaList(valist_struct);;
     return funcall_consume_valist_<core::Function_O>(func.tagged_(), valist);
   }
-  eval::errorApplyLastArgumentNotList();
+  T_sp lastArg((gc::Tagged)lastArgRaw);
+  eval::errorApplyLastArgumentNotList(lastArg);
   UNREACHABLE();
 }
 

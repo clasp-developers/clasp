@@ -125,6 +125,9 @@ public:
 };
 
 
+void __attribute__ ((noinline)) foo(gctools::smart_ptr<core::T_O> x) {
+  printf("In foo    x -> %p\n", (void*)x.tagged_());
+}
 
 int main(int argc, char *argv[]) { // Do not touch debug log until after MPI init
   // debugging stuff - delete if not needed
@@ -160,6 +163,12 @@ int main(int argc, char *argv[]) { // Do not touch debug log until after MPI ini
     }
   }
 
+#if 0
+  // Use this to check if smart_ptr<core::T_O> is being passed by value or reference
+  gctools::smart_ptr<core::T_O> x((gctools::Tagged)0xDEADBEEF);
+  foo(x);
+#endif
+  
   core::CommandLineOptions options(argc, argv);
   int exitCode = 0;
   try {

@@ -167,8 +167,10 @@ ensure_up_to_date_instance(T_sp tinstance)
 
 
 
-LCC_RETURN optimized_slot_reader_dispatch(Instance_sp gf, VaList_sp vargs) 
+LCC_RETURN optimized_slot_reader_dispatch(gctools::Tagged tgf, gctools::Tagged tvargs) 
 {
+  Instance_sp gf(tgf);
+  VaList_sp vargs(tvargs);
 #ifdef DEBUG_ACCESSORS
   if (DEBUG_ACCESSORS_ON()) {
     printf("%s:%d optimized_slot_reader_dispatch gf=%s\n", __FILE__, __LINE__, _rep_(gf).c_str() );
@@ -231,8 +233,10 @@ LCC_RETURN optimized_slot_reader_dispatch(Instance_sp gf, VaList_sp vargs)
   UNREACHABLE();
 }
 
-LCC_RETURN optimized_slot_writer_dispatch(Instance_sp gf, VaList_sp vargs) 
+LCC_RETURN optimized_slot_writer_dispatch(gctools::Tagged tgf, gctools::Tagged tvargs) 
 {
+  Instance_sp gf(tgf);
+  VaList_sp vargs(tvargs);
 #ifdef DEBUG_ACCESSORS
   if (DEBUG_ACCESSORS_ON()) {
     printf("%s:%d optimized_slot_writer_dispatch gf=%s\n", __FILE__, __LINE__, _rep_(gf).c_str() );

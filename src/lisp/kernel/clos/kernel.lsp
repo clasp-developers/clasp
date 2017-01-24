@@ -123,22 +123,16 @@
 	(t)))
 
 (defun compute-discriminating-function (generic-function)
-;;  (print (list "HUNT compute-discriminating-function gf: " generic-function))
   (values #'(lambda (&rest args)
-;;	      (print "HUNT compute-discriminating-function line 140")
 	      (multiple-value-bind (method-list ok)
 		  (compute-applicable-methods-using-classes
 		   generic-function
 		   (mapcar #'class-of args))
-;;		(print "HUNT compute-discriminating-function line 145")
 		(unless ok
-;;		  (print "HUNT compute-discriminating-function line 147")
 		  (setf method-list
 			(compute-applicable-methods generic-function args))
-;;		  (print "HUNT compute-discriminating-function line 150")
 		  (unless method-list
 		    (no-applicable-methods generic-function args)))
-;;		(print "HUNT compute-discriminating-function line 153")
 		(funcall (compute-effective-method-function
 			  generic-function
 			  (generic-function-method-combination generic-function)
