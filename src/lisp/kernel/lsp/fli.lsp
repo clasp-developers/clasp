@@ -525,6 +525,8 @@
             %load-foreign-library
             %close-foreign-library
             %foreign-symbol-pointer
+            %foreign-type-size
+            %foreign-type-alignment
             %defcallback
             %callback
             %get-callback)))
