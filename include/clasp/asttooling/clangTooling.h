@@ -188,19 +188,19 @@ public:
   };
 
   virtual void onStartOfTranslationUnit() {
-    //            printf("%s:%d entered onStartOfTranslationUnit funcalling\n", __FILE__, __LINE__);
+    printf("%s:%d entered onStartOfTranslationUnit funcalling\n", __FILE__, __LINE__);
     core::eval::funcall(_sym_onStartOfTranslationUnit, this->asSmartPtr());
   }
   void default_onStartOfTranslationUnit() {
-    //            printf("%s:%d entered default_onStartOfTranslationUnit\n", __FILE__, __LINE__);
+    printf("%s:%d entered default_onStartOfTranslationUnit\n", __FILE__, __LINE__);
     this->AlienBase::onStartOfTranslationUnit();
   }
   virtual void onEndOfTranslationUnit() {
-    //            printf("%s:%d entered onEndOfTranslationUnit funcalling\n", __FILE__, __LINE__);
+    printf("%s:%d entered onEndOfTranslationUnit funcalling\n", __FILE__, __LINE__);
     core::eval::funcall(_sym_onEndOfTranslationUnit, this->asSmartPtr());
   }
   void default_onEndOfTranslationUnit() {
-    //            printf("%s:%d entered default_onEndOfTranslationUnit\n", __FILE__, __LINE__);
+    printf("%s:%d entered default_onEndOfTranslationUnit\n", __FILE__, __LINE__);
     this->AlienBase::onEndOfTranslationUnit();
   }
 
@@ -216,8 +216,8 @@ public:
     printf("alien pointer = %p\n", this->pointerToAlienWithin());
     printf("isgf %d\n", this->_isgf);
     printf("_Class: %s\n", _rep_(this->_Class).c_str());
-    for (int i(0); i < this->_Slots.size(); ++i) {
-      printf("_Slots[%d]: %s\n", i, _rep_(this->_Slots[i]).c_str());
+    for (size_t i(0); i < this->numberOfSlots(); ++i) {
+      printf("_Slots[%lu]: %s\n", i, _rep_(this->instanceRef(i)).c_str());
     }
   }
   virtual ~DerivableMatchCallback() {

@@ -131,6 +131,10 @@ Return the module and the global variable that represents the load-time-value-ho
   (let ((engine-builder (llvm-sys:make-engine-builder module))
 	(target-options (llvm-sys:make-target-options)))
     (llvm-sys:set-target-options engine-builder target-options)
+    (if (member :use-orc *features*)
+        (progn
+          (llvm-sys:set-use-orc-mcjitreplacement engine-builder t)
+          (bformat t "Using ORC\n")))
     (llvm-sys:create engine-builder)))
 
 
@@ -186,14 +190,19 @@ No DIBuilder is defined for the default module")
     gep))
 
 
-
-
-
-
-
 (defun jit-constant-i64 (val)
   "Create an i64 constant in the current context"
   (let ((ap-arg (llvm-sys:make-apint-width val 64 t)))
+    (llvm-sys:constant-int-get *llvm-context* ap-arg)))
+
+(defun jit-constant-ui32 (val)
+  "Create an unsigned i32 constant in the current context"
+  (let ((ap-arg (llvm-sys:make-apint-width val 32 nil)))
+    (llvm-sys:constant-int-get *llvm-context* ap-arg)))
+
+(defun jit-constant-ui64 (val)
+  "Create an unsigned i64 constant in the current context"
+  (let ((ap-arg (llvm-sys:make-apint-width val 64 nil)))
     (llvm-sys:constant-int-get *llvm-context* ap-arg)))
 
 
@@ -207,15 +216,15 @@ No DIBuilder is defined for the default module")
 (defun jit-constant-uintptr_t (val)
   (let ((sizeof-size_t (cdr (assoc 'core:size-t (llvm-sys:cxx-data-structures-info)))))
     (cond
-      ((= 8 sizeof-size_t) (jit-constant-i64 val))
-      ((= 4 sizeof_size_t) (jit-constant-i32 val))
+      ((= 8 sizeof-size_t) (jit-constant-ui64 val))
+      ((= 4 sizeof_size_t) (jit-constant-ui32 val))
       (t (error "Add support for size_t sizeof = ~a" sizeof-size_t)))))
 
 (defun jit-constant-size_t (val)
   (let ((sizeof-size_t (cdr (assoc 'core:size-t (llvm-sys:cxx-data-structures-info)))))
     (cond
-      ((= 8 sizeof-size_t) (jit-constant-i64 val))
-      ((= 4 sizeof_size_t) (jit-constant-i32 val))
+      ((= 8 sizeof-size_t) (jit-constant-ui64 val))
+      ((= 4 sizeof_size_t) (jit-constant-ui32 val))
       (t (error "Add support for size_t sizeof = ~a" sizeof-size_t)))))
 
 

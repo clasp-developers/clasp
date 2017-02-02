@@ -425,16 +425,15 @@ ALWAYS_INLINE core::T_O *cc_stack_enclose(void* closure_address,
                             std::size_t numCells, ...) {
   core::T_sp tlambdaName = gctools::smart_ptr<core::T_O>((gc::Tagged)lambdaName);
   gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(closure_address);
-  const gctools::Stamp closure_stamp = gctools::GCStamp<core::ClosureWithSlots_O>::TheStamp;
   const gctools::GCKindEnum closure_kind = gctools::GCKind<core::ClosureWithSlots_O>::Kind;
   size_t size = gctools::sizeof_container_with_header<core::ClosureWithSlots_O>(numCells);
   
 //  gctools::global_stack_closure_bytes_allocated += size;
 
 #ifdef DEBUG_GUARD
-  new (header) gctools::GCHeader<core::ClosureWithSlots_O>::HeaderType(closure_stamp,closure_kind,size,0,size);
+  new (header) gctools::GCHeader<core::ClosureWithSlots_O>::HeaderType(closure_kind,size,0,size);
 #else
-  new (header) gctools::GCHeader<core::ClosureWithSlots_O>::HeaderType(closure_stamp,closure_kind);
+  new (header) gctools::GCHeader<core::ClosureWithSlots_O>::HeaderType(closure_kind);
 #endif
   auto obj = gctools::BasePtrToMostDerivedPtr<typename gctools::smart_ptr<core::ClosureWithSlots_O>::Type>(closure_address);
   new (obj) (typename gctools::smart_ptr<core::ClosureWithSlots_O>::Type)(numCells,

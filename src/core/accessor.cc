@@ -197,7 +197,7 @@ LCC_RETURN optimized_slot_reader_dispatch(gctools::Tagged tgf, gctools::Tagged t
     }
     index = e->_value;
     if (index.fixnump()) {
-      value = instance->_Slots[index.unsafe_fixnum()];
+      value = instance->instanceRef(index.unsafe_fixnum());
 #ifdef DEBUG_ACCESSORS
   if (DEBUG_ACCESSORS_ON()) {
     printf("%s:%d optimized_slot_reader_dispatch getting slot[index = %s] value = %s\n", __FILE__, __LINE__, _rep_(index).c_str(), _rep_(value).c_str() );
@@ -268,7 +268,7 @@ LCC_RETURN optimized_slot_writer_dispatch(gctools::Tagged tgf, gctools::Tagged t
     printf("%s:%d optimized_slot_writer_dispatch setting slot[index = %s]  value = %s\n", __FILE__, __LINE__, _rep_(index).c_str(), _rep_(value).c_str() );
   }
 #endif
-      instance->_Slots[index.unsafe_fixnum()] = value;
+  instance->instanceSet(index.unsafe_fixnum(),value);
     } else if (!index.asOrNull<Cons_O>()) {
 #ifdef DEBUG_ACCESSORS
   if (DEBUG_ACCESSORS_ON()) {

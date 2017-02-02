@@ -43,6 +43,7 @@
 ;; been bootstrapped
 (setq *features* (cons :clasp-boot *features*)) ;; When bootstrapping in stages
 
+
 ;; Set up a few things for the CLOS package
 (eval-when (:execute :compile-toplevel :load-toplevel)
   (core::select-package :clos))

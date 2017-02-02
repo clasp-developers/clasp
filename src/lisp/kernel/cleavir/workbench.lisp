@@ -2,6 +2,8 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(push :strandh-dispatch *features*)
+
 ;;; Running slime from bclasp+cleavir - don't load inline.lsp or auto-compile
 ;;;  --- Testing defun-inline-hook
 (print "Starting")
@@ -21,7 +23,40 @@
 
 (apropos "dump-module")
 
-(clasp-cleavir:cleavir-compile-file "sys:kernel;lsp;pprint.lsp")
+(apropos "invalidated-dispatch-functions")
+
+(let ((clos::*monitor-dispatch* t)
+      (clos::*dispatch-log* nil))
+  (clasp-cleavir:cleavir-compile 'foo '(lambda (x y) (+ x y)))
+  (print "------- dispatch-log----")
+  (print clos::*dispatch-log*))
+
+(let ((clos::*monitor-dispatch* t)
+      (clos::*dispatch-log* nil))
+  (clasp-cleavir:cleavir-compile-file #P"sys:kernel;lsp;foundation.lsp" :print t)
+  (print "------- dispatch-log----")
+  (print clos::*dispatch-log*))
+
+
+
+(dolist (gf (clos::all-generic-functions))
+  (format t "~a  -> ~a~%" gf (clos::generic-function-compiled-dispatch-function gf)))
+
+
+
+
+(apropos "header-stamp")
+(apropos "get-instance-stamp")
+(apropos "instance-class")
+(core:get-instance-stamp (find-class 'cleavir-ir:dynamic-lexical-location))
+(time (clasp-cleavir:cleavir-compile 'foo '(lambda (x y) (+ x y))))
+
+(clos::generic-function-call-history #'cleavir-ir:name)
+(clos::get-funcallable-instance-function #'cleavir-ir:name)
+
+
+
+(clasp-cleavir:cleavir-compile-file "sys:kernel;lsp;pprint.lsp" :print t)
 
 (clasp-cleavir:cleavir-compile-file "sys:kernel;lsp;pprint.lsp")
 
@@ -33,7 +68,8 @@ clasp-cleavir::*pvi*
 (foo 0)
 
 
-(clasp-cleavir:cleavir-compile 'foo '(lambda (priority) (declare (type (or fixnum cons) priority) (optimize (safety 2))) (identity priority)) :debug t)
+(clasp-cleavir:cleavir-compile 'foo '(lambda (priority) (declare (type (or fixnum cons) priority) (optimize (safety 2))) (identity priority)))
+
 
 (clasp-cleavir:cleavir-compile
  'foo
@@ -102,6 +138,14 @@ clasp-cleavir::*pvi*
 
 
 (clasp-cleavir:cleavir-compile 'foo '(lambda (x y) (+ x y)))
+
+(print #'clasp-cleavir:translate-simple-instruction)
+
+
+(foo 1 2)
+
+
+
 (foo 1 2)
 
 (let ((cmp:*compile-file-debug-dump-module* t)) (clasp-cleavir:cleavir-compile-file "sys:tests;ta.lsp"))

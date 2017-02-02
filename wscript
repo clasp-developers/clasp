@@ -270,7 +270,6 @@ class variant(object):
             cfg.env.append_value('LINKFLAGS', os.getenv("CLASP_RELEASE_LINKFLAGS").split())
     def configure_for_debug(self,cfg):
         cfg.define("_DEBUG_BUILD",1)
-        cfg.define("DEBUG_GUARD",1)
         cfg.define("CONFIG_VAR_COOL",1)
 #        cfg.env.append_value('CXXFLAGS', [ '-O0', '-g' ])
         cfg.env.append_value('CXXFLAGS', [ '-O0', '-g' ])
@@ -637,6 +636,7 @@ def configure(cfg):
     cfg.define("LLVM_VERSION_X100",390)
     cfg.define("LLVM_VERSION","3.9")
     cfg.define("NDEBUG",1)
+    
 #    cfg.define("READLINE",1)
     cfg.define("USE_AMC_POOL",1)
     cfg.define("USE_EXPENSIVE_BACKTRACE",1)
@@ -679,6 +679,10 @@ def configure(cfg):
     if (cfg.env.ADDRESS_SANITIZER):
         cfg.env.append_value('CXXFLAGS', ['-fsanitize=address'] )
         cfg.env.append_value('LINKFLAGS', ['-fsanitize=address'])
+    if (cfg.env.DEBUG_GUARD):
+        cfg.define("DEBUG_GUARD",1)
+        cfg.define("DEBUG_GUARD_VALIDATE",1)
+#    cfg.define("DEBUG_ZERO_KIND",1);
     cfg.env.append_value('CXXFLAGS', ['-Wno-macro-redefined'] )
     cfg.env.append_value('CXXFLAGS', ['-Wno-deprecated-register'] )
     cfg.env.append_value('CXXFLAGS', ['-Wno-expansion-to-defined'] )

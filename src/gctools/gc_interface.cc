@@ -87,7 +87,6 @@ typedef bool _Bool;
 #include <clang/ASTMatchers/Dynamic/VariantValue.h>
 #include <clang/ASTMatchers/ASTMatchFinder.h>
 
-#include <clasp/gctools/telemetry.h>
 #include <clasp/core/symbolTable.h>
 #include <clasp/core/symbolTable.h>
 #include <clasp/core/symbolTable.h>
@@ -313,15 +312,15 @@ void initialize_source_info() {
 extern "C" {
 using namespace gctools;
 
-size_t obj_kind(core::T_O *tagged_ptr) {
-  core::T_O *client = untag_object<core::T_O *>(tagged_ptr);
-  Header_s *header = reinterpret_cast<Header_s *>(ClientPtrToBasePtr(client));
+size_t obj_kind( core::T_O *tagged_ptr) {
+  const core::T_O *client = untag_object<const core::T_O *>(tagged_ptr);
+  const Header_s *header = reinterpret_cast<const Header_s *>(ClientPtrToBasePtr(client));
   return (size_t)(header->kind());
 }
 
 const char *obj_kind_name(core::T_O *tagged_ptr) {
   core::T_O *client = untag_object<core::T_O *>(tagged_ptr);
-  Header_s *header = reinterpret_cast<Header_s *>(ClientPtrToBasePtr(client));
+  const Header_s *header = reinterpret_cast<const Header_s *>(ClientPtrToBasePtr(client));
   return obj_name(header->kind());
 }
 
@@ -350,10 +349,9 @@ void obj_deallocate_unmanaged_instance(gctools::smart_ptr<core::T_O> obj ) {
   #endif // USE_CXX_DYNAMIC_CAST
 #endif
 
-  gctools::Header_s *header = reinterpret_cast<gctools::Header_s *>(ClientPtrToBasePtr(client));
+  const gctools::Header_s *header = reinterpret_cast<const gctools::Header_s *>(ClientPtrToBasePtr(client));
   ASSERTF(header->kindP(), BF("obj_deallocate_unmanaged_instance called without a valid object"));
   gctools::GCKindEnum kind = (GCKindEnum)(header->kind());
-  GC_TELEMETRY1(telemetry::label_obj_deallocate_unmanaged_instance, (uintptr_t)client);
 #ifndef RUNNING_GC_BUILDER
   #ifndef USE_CXX_DYNAMIC_CAST
   size_t jump_table_index = (size_t)kind - kind_first_general;
@@ -397,7 +395,7 @@ mps_addr_t obj_skip(mps_addr_t client) {
 #include CLASP_GC_FILENAME
 #undef GC_OBJ_SKIP_TABLE
 #endif
-  gctools::Header_s *header = reinterpret_cast<gctools::Header_s *>(ClientPtrToBasePtr(client));
+  const gctools::Header_s *header = reinterpret_cast<const gctools::Header_s *>(ClientPtrToBasePtr(client));
 #ifdef DEBUG_VALIDATE_GUARD
   header->validate();
 #endif
@@ -433,15 +431,10 @@ mps_addr_t obj_skip(mps_addr_t client) {
   } else if (header->padP()) {
     client = (char *)(client) + header->padSize();
   } else {
-    TELEMETRY_FLUSH();
     BAD_HEADER("obj_skip",header);
     abort();
   }
  FINISH:
-  GC_TELEMETRY3(telemetry::label_obj_skip,
-                (uintptr_t)oldClient,
-                (uintptr_t)client,
-                (uintptr_t)((char *)client - (char *)oldClient));
   return client;
 }
 };
@@ -455,9 +448,6 @@ int trap_obj_scan = 0;
 #ifdef USE_MPS
 extern "C" {
 GC_RESULT obj_scan(mps_ss_t ss, mps_addr_t client, mps_addr_t limit) {
-  GC_TELEMETRY2(telemetry::label_obj_scan_start,
-                (uintptr_t)client,
-                (uintptr_t)limit);
   mps_addr_t original_client;
   size_t size = 0;  // Used to store the size of the object
 #ifndef RUNNING_GC_BUILDER
@@ -470,7 +460,7 @@ GC_RESULT obj_scan(mps_ss_t ss, mps_addr_t client, mps_addr_t limit) {
     while (client < limit) {
       // The client must have a valid header
       DEBUG_THROW_IF_INVALID_CLIENT(client);
-      gctools::Header_s *header = reinterpret_cast<gctools::Header_s *>(ClientPtrToBasePtr(client));
+      const gctools::Header_s *header = reinterpret_cast<const gctools::Header_s *>(ClientPtrToBasePtr(client));
 #ifdef DEBUG_VALIDATE_GUARD
       header->validate();
 #endif
@@ -530,10 +520,6 @@ GC_RESULT obj_scan(mps_ss_t ss, mps_addr_t client, mps_addr_t limit) {
         abort();
       }
     TOP:
-      GC_TELEMETRY3(telemetry::label_obj_scan,
-                    (uintptr_t)original_client,
-                    (uintptr_t)client,
-                    (uintptr_t)kind);
       continue;
     }
   }
@@ -558,11 +544,9 @@ void obj_finalize(mps_addr_t client) {
     #include CLASP_GC_FILENAME
     #undef GC_OBJ_FINALIZE_TABLE
   #endif // ifndef RUNNING_GC_BUILDER
-  gctools::Header_s *header = reinterpret_cast<gctools::Header_s *>(ClientPtrToBasePtr(client));
+  gctools::Header_s *header = reinterpret_cast<gctools::Header_s *>(const_cast<void*>(ClientPtrToBasePtr(client)));
   ASSERTF(header->kindP(), BF("obj_finalized called without a valid object"));
   gctools::GCKindEnum kind = (GCKindEnum)(header->kind());
-  GC_TELEMETRY1(telemetry::label_obj_finalize,
-                (uintptr_t)client);
   #ifndef RUNNING_GC_BUILDER
   size_t table_index = (size_t)kind - kind_first_general;
   goto *(OBJ_FINALIZE_table[table_index]);
@@ -588,7 +572,6 @@ mps_res_t main_thread_roots_scan(mps_ss_t ss, void *gc__p, size_t gc__s) {
 #if 0
     // We don't scan global load-time-value tables any more here
     // they are added as tables of roots as they are created
-    GC_TELEMETRY0(telemetry::label_root_scan_start);
     for (auto &it : global_roots) {
       POINTER_FIX(it);
     }
@@ -627,7 +610,6 @@ mps_res_t main_thread_roots_scan(mps_ss_t ss, void *gc__p, size_t gc__s) {
 #endif
   }
   MPS_SCAN_END(GC_SCAN_STATE);
-  GC_TELEMETRY0(telemetry::label_root_scan_stop);
   return MPS_RES_OK;
 }
 };
@@ -706,14 +688,23 @@ void allocate_symbols(core::BootStrapCoreSymbolMap* symbols)
 #undef ALLOCATE_ALL_SYMBOLS
 };
 
+template <class TheClass>
+NOINLINE void set_one_static_class_Kind() {
+  Stamp the_stamp = gctools::NextStamp(gctools::GCKind<TheClass>::Kind);
+  if (gctools::GCKind<TheClass>::Kind!=0) {
+    TheClass::static_Kind = gctools::GCKind<TheClass>::Kind;
+  } else {
+    TheClass::static_Kind = static_cast<gctools::GCKindEnum>(the_stamp);
+  }
+}
+
 template <class TheClass, class Metaclass>
 NOINLINE  gc::smart_ptr<Metaclass> allocate_one_class()
 {
-  gc::smart_ptr<Metaclass> class_val = Metaclass::createUncollectable(gctools::NextStamp(gctools::GCKind<TheClass>::Kind));
+  gc::smart_ptr<Metaclass> class_val = Metaclass::createUncollectable(TheClass::static_Kind);
   class_val->__setup_stage1_with_sharedPtr_lisp_sid(class_val,_lisp,TheClass::static_classSymbol());
   reg::lisp_associateClassIdWithClassSymbol(reg::registered_class<TheClass>::id,TheClass::static_classSymbol());
   TheClass::static_class = class_val;
-  TheClass::static_Kind = gctools::GCKind<TheClass>::Kind;
   core::core__setf_find_class(class_val,TheClass::static_classSymbol(),true,_Nil<core::T_O>());
   gctools::smart_ptr<core::BuiltInObjectCreator<TheClass>> cb = gctools::GC<core::BuiltInObjectCreator<TheClass>>::allocate();
   TheClass::set_static_creator(cb);
@@ -795,6 +786,15 @@ void initialize_classes_and_methods()
 #else
 #define MPS_LOG(x)
 #endif
+
+void initialize_clasp_Kinds()
+{
+  #define SET_CLASS_KINDS
+  #ifndef SCRAPING
+    #include INIT_CLASSES_INC_H
+  #endif
+  #undef SET_CLASS_KINDS
+}
 
 void initialize_clasp()
 {

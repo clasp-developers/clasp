@@ -29,7 +29,7 @@
 ;;;;   to the value returned.
 ;;;; * (CALL handle) calls the function denoted by HANDLE (returned from COMPILE-FORM)
 
-(defvar *constants-table-holder*)
+(defvar *gcroots-in-module*)
 (defvar *value-table-id* 0)
 (defun next-value-table-holder-name (&optional suffix)
   (if suffix
@@ -287,7 +287,7 @@ the constants-table."
                        (setf (gethash obj *llvm-values*)
                              (irc-create-call (literal:constant-creator-name obj)
                                               (list*
-                                               *constants-table-holder*
+                                               *gcroots-in-module*
                                                (cmp:jit-constant-size_t (constant-creator-index obj))
                                                (fix-args (constant-creator-arguments obj)))
                                               (bformat nil "CONTAB[%d]" (constant-creator-index obj))))))
@@ -295,7 +295,7 @@ the constants-table."
                    "Convert the args from Lisp form into llvm::Value*'s"
                    (mapcar (lambda (x)
                              (cond
-                               ((fixnump x) (jit-constant-size_t x))
+                               ((fixnump x) (jit-constant-i64 x))
                                ((stringp x) (jit-constant-unique-string-ptr x))
                                ((literal:constant-creator-p x) (ensure-llvm-value x))
                                (t x))) ;;(error "Illegal run-all entry ~a" x))))
@@ -339,12 +339,12 @@ Return the index of the load-time-value"
 
 
 (defun do-with-constants-table (body-fn)
-  (let ((*constants-table-holder*
+  (let ((*gcroots-in-module*
          (llvm-sys:make-global-variable *the-module*
-                                        cmp:+constants-table+ ; type
+                                        cmp:+gcroots-in-module+ ; type
                                         nil ; isConstant
                                         'llvm-sys:internal-linkage
-                                        (llvm-sys:undef-value-get cmp:+constants-table+)
+                                        (llvm-sys:undef-value-get cmp:+gcroots-in-module+)
                                         ;; nil ; initializer
                                         "constants-table"))
         (cmp:*load-time-value-holder-global-var*
@@ -395,9 +395,11 @@ Return the index of the load-time-value"
                                                            (cmp:jit-constant-size_t 0)) "table")))
           (llvm-sys:replace-all-uses-with cmp:*load-time-value-holder-global-var* bitcast-correct-size-holder)
           (with-run-all-entry-codegen
-              (cmp:irc-create-call "cc_allocate_roots" (list *constants-table-holder*
-                                                             (irc-pointer-cast correct-size-holder cmp:+tsp*+ "")
-                                                             (cmp:jit-constant-size_t table-entries))))
+              (cmp:irc-create-call "cc_initialize_gcroots_in_module"
+                                   (list *gcroots-in-module*
+                                         (irc-pointer-cast correct-size-holder cmp:+tsp*+ "")
+                                         (cmp:jit-constant-size_t table-entries)
+                                         (cmp:irc-int-to-ptr (cmp:jit-constant-uintptr_t 0) +t*+))))
           ;; Erase the dummy holder
           (llvm-sys:erase-from-parent cmp:*load-time-value-holder-global-var*))))))
 
@@ -406,13 +408,21 @@ Return the index of the load-time-value"
 
 (defmacro with-rtv (&body body)
   "Evaluate the code in the body in an environment where run-time values are assigned integer indices
-(starting from *table-index* into a constants table and the run-time values are accumulated in *run-all-objects*.
+starting from *table-index* into a constants table and the run-time values are accumulated in *run-all-objects*.
 References to the run-time values are relative to the *load-time-value-holder-global-var*.
 Once the body has evaluated, if there were run-time values accumulated then sort them by index and construct a new
 global variable that can hold them all and replace every use of *load-time-value-holder-global-var* with this new constants-table.
 Then erase the global variable in *load-time-value-holder-global-var* whether or not run time values were found
-and  return the sorted values and the constant-table (or (values nil nil)."
+and  return the sorted values and the constant-table or (values nil nil)."
   `(let ((cmp:*generate-compile-file-load-time-values* nil)
+         (*gcroots-in-module*
+          (llvm-sys:make-global-variable *the-module*
+                                         cmp:+gcroots-in-module+ ; type
+                                         nil ; isConstant
+                                         'llvm-sys:internal-linkage
+                                         (llvm-sys:undef-value-get cmp:+gcroots-in-module+)
+					 ;; nil ; initializer
+                                         "constants-table"))
          (*table-index* 0)
          (*load-time-value-holder-global-var*
           (llvm-sys:make-global-variable *the-module*
@@ -445,10 +455,13 @@ Return the orderered-raw-constants-list and the constants-table GlobalVariable"
                                                                'llvm-sys:internal-linkage
                                                                (llvm-sys:undef-value-get array-type)
                                                                (literal:next-value-table-holder-name)))
+
            (let ((bitcast-constant-table (irc-bit-cast constant-table +tsp[0]*+ "bitcast-table")))
              (llvm-sys:replace-all-uses-with *load-time-value-holder-global-var* bitcast-constant-table))))
        (llvm-sys:erase-from-parent *load-time-value-holder-global-var*)
-       (values ordered-raw-constant-list constant-table))))
+       (multiple-value-bind (startup-fn shutdown-fn)
+	   (cmp:codegen-startup-shutdown *gcroots-in-module* constant-table num-elements)
+	 (values ordered-raw-constant-list constant-table startup-fn shutdown-fn)))))
 
 (defun load-time-reference-literal (object read-only-p)
   (multiple-value-bind (similarity creator)

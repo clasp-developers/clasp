@@ -94,12 +94,12 @@ core::T_sp support_instanceSig(...) {
 }
 
 template <class T>
-core::T_sp support_instanceRef(int idx, typename T::enable_slots adapter) {
+core::T_sp support_instanceRef(size_t idx, typename T::enable_slots adapter) {
   return adapter->instanceRef(idx);
 }
 
 template <class T>
-core::T_sp support_instanceRef(int idx, ...) {
+core::T_sp support_instanceRef(size_t idx, ...) {
   throwSlotsNotSupported();
   return _Nil<core::T_O>();
 }

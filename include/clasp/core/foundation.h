@@ -798,12 +798,12 @@ class Environment_O;
 typedef gctools::smart_ptr<Environment_O> Environment_sp;
 class Symbol_O;
 typedef gctools::smart_ptr<Symbol_O> Symbol_sp;
-typedef void (*ExposeCandoFunction)(Lisp_sp);
-typedef void (*ExposePythonFunction)(Lisp_sp);
 typedef T_mv (*SpecialFormCallback)(List_sp, T_sp);
 typedef void (*MakePackageCallback)(string const &packageName, Lisp_sp);
 typedef void (*ExportSymbolCallback)(Symbol_sp symbol, Lisp_sp);
 
+ typedef void (*module_startup_function_type)(gctools::Tagged);
+ typedef void (*module_shutdown_function_type)();
 
 /* A few symbols associated with error handling that everything needs */
 extern Symbol_sp& _sym_error;
@@ -948,13 +948,13 @@ T_sp lisp_lookup_reader_patch(T_sp patches, T_sp key, bool &found);
 bool lisp_BuiltInClassesInitialized();
 void lisp_pushClassSymbolOntoSTARallCxxClassesSTAR(Symbol_sp classSymbol);
 void lisp_symbolSetSymbolValue(Symbol_sp sym, T_sp val);
+ T_sp lisp_symbolValue(Symbol_sp sym);
 string symbol_symbolName(Symbol_sp);
 string symbol_packageName(Symbol_sp);
 string symbol_repr(Symbol_sp);
 Symbol_sp lisp_symbolNil();
  void lisp_errorCannotAllocateInstanceWithMissingDefaultConstructor(T_sp theClassSymbol);
 T_sp lisp_boot_findClassBySymbolOrNil(Symbol_sp sym);
-void lisp_exposeClass(const string &className, ExposeCandoFunction exposeCandoFunction, ExposePythonFunction exposePythonFunction);
  void lisp_addClass(Symbol_sp classSymbol, gctools::smart_ptr<Creator_O> cb, Symbol_sp baseClassSymbol1); //, Symbol_sp baseClassSymbol2 = UNDEFINED_SYMBOL, Symbol_sp baseClassSymbol3 = UNDEFINED_SYMBOL);
 void lisp_addClass(Symbol_sp classSymbol);
 //void lisp_addClassAndInitialize(Symbol_sp classSymbol, gctools::smart_ptr<Creator> cb, Symbol_sp baseClassSymbol1, Symbol_sp baseClassSymbol2 = UNDEFINED_SYMBOL, Symbol_sp baseClassSymbol3 = UNDEFINED_SYMBOL);

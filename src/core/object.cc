@@ -474,11 +474,11 @@ string General_O::description() const {
   return ss.str();
 };
 
-void General_O::initializeSlots(int slots) {
+void General_O::initializeSlots(Fixnum stamp, size_t slots) {
   SIMPLE_ERROR(BF("T_O::initializeSlots invoked - subclass must implement"));
 };
 
-T_sp General_O::instanceRef(int idx) const {
+T_sp General_O::instanceRef(size_t idx) const {
   SIMPLE_ERROR(BF("T_O::instanceRef(%d) invoked on object class[%s] val-->%s") % idx % this->_instanceClass()->classNameAsString() % this->__repr__());
 }
 
@@ -486,7 +486,7 @@ T_sp General_O::instanceClassSet(Class_sp val) {
   SIMPLE_ERROR(BF("T_O::instanceClassSet to class %s invoked on object class[%s] val-->%s - subclass must implement") % _rep_(val) % this->_instanceClass()->classNameAsString() % _rep_(this->asSmartPtr()));
 }
 
-T_sp General_O::instanceSet(int idx, T_sp val) {
+T_sp General_O::instanceSet(size_t idx, T_sp val) {
   SIMPLE_ERROR(BF("T_O::instanceSet(%d,%s) invoked on object class[%s] val-->%s") % idx % _rep_(val) % this->_instanceClass()->classNameAsString() % _rep_(this->asSmartPtr()));
 }
 

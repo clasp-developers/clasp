@@ -193,12 +193,12 @@ public:
     return clbind::support_instanceSig<ExternalType>(this->nakedPtr_gc_ignore);
   }
 
-  core::T_sp instanceRef(int idx) const {
+  core::T_sp instanceRef(size_t idx) const {
     this->throwIfInvalid();
     return clbind::support_instanceRef<ExternalType>(idx, this->nakedPtr_gc_ignore);
   }
 
-  core::T_sp instanceSet(int idx, core::T_sp val) {
+  core::T_sp instanceSet(size_t idx, core::T_sp val) {
     this->throwIfInvalid();
     return clbind::support_instanceSet<ExternalType>(idx, val, this->nakedPtr_gc_ignore);
   }
@@ -503,6 +503,10 @@ struct from_object<std::unique_ptr<T>> {
     } else if ( o.generalp() ) {
       core::General_O* gp = (core::General_O*)&(*o);
       T* v_alien = reinterpret_cast<T*>(gp->pointerToAlienWithin());
+      if (!v_alien) {
+        SIMPLE_ERROR(BF("Could not access the Alien object within the clbind object@%p of type: %s") % (void*)gp % typeid(T).name());
+      }
+
       ASSERT(v_alien);
       this->_v = std::unique_ptr<T>(v_alien);
       return;
@@ -569,7 +573,11 @@ struct from_object<T *> {
       this->_v = static_cast<T *>(pp->ptr());
       return;
     } else if (o.generalp()) {
-      T* v_alien = reinterpret_cast<T*>(o.unsafe_general()->pointerToAlienWithin());
+      core::General_O* gp = o.unsafe_general();
+      T* v_alien = reinterpret_cast<T*>(gp->pointerToAlienWithin());
+      if (!v_alien) {
+        SIMPLE_ERROR(BF("Could not access the Alien object within the clbind object@%p of type: %s") % (void*)gp % typeid(T).name());
+      }
       ASSERT(v_alien);
       this->_v = v_alien;
       return;

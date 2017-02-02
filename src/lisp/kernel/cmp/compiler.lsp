@@ -1420,11 +1420,11 @@ Return the orderered-raw-constants-list and the constants-table GlobalVariable"
 
 (defun compile-to-module-with-run-time-table (definition env pathname)
   (let* (fn function-kind wrapped-env lambda-name warnp failp)
-    (multiple-value-bind (ordered-raw-constants-list constants-table)
+    (multiple-value-bind (ordered-raw-constants-list constants-table startup-fn shutdown-fn)
         (literal:with-rtv
             (multiple-value-setq (fn function-kind wrapped-env lambda-name warnp failp)
               (compile-to-module definition env pathname)))
-      (values fn function-kind wrapped-env lambda-name warnp failp ordered-raw-constants-list constants-table))))
+      (values fn function-kind wrapped-env lambda-name warnp failp ordered-raw-constants-list constants-table startup-fn shutdown-fn))))
 
 (defun describe-constants-table (constants-table)
   (bformat t "constants-table = %s\n" constants-table)
@@ -1438,7 +1438,7 @@ Return the orderered-raw-constants-list and the constants-table GlobalVariable"
 
 (defun bclasp-compile* (bind-to-name &optional definition env pathname)
   "Compile the definition"
-  (multiple-value-bind (fn function-kind wrapped-env lambda-name warnp failp ordered-raw-constants-list constants-table)
+  (multiple-value-bind (fn function-kind wrapped-env lambda-name warnp failp ordered-raw-constants-list constants-table startup-fn shutdown-fn)
       (compile-to-module-with-run-time-table definition env pathname)
     (cmp-log "About to test and maybe set up the *run-time-execution-engine*\n")
     (quick-module-dump *the-module* "preoptimize")
@@ -1465,10 +1465,9 @@ Return the orderered-raw-constants-list and the constants-table GlobalVariable"
              core:*current-source-file-info*
              (core:source-pos-info-filepos cspi)
              (core:source-pos-info-lineno cspi)
-             nil #|lambda-list, NIL for now - but this should be extracted from definition|#)))
-      (when constants-table
-        (let ((constants-table-address (llvm-sys:get-global-value-address *run-time-execution-engine* (llvm-sys:get-name constants-table))))
-          (gctools:register-roots constants-table-address ordered-raw-constants-list)))
+             startup-fn
+             shutdown-fn
+             ordered-raw-constants-list)))
       (values compiled-function warnp failp))))
 
 (defvar *compile-counter* 0)

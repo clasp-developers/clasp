@@ -73,7 +73,7 @@ SMART(SpecialForm);
 SMART(Hierarchy);
 SMART(Environment);
 
-void core__stack_monitor();
+ void core__stack_monitor(T_sp fn=_Nil<T_O>());
 void af_stackSizeWarning(size_t size);
  T_sp cl__sort(List_sp sequence, T_sp predicate, T_sp key=_Nil<core::T_O>() );
  

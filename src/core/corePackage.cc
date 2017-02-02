@@ -156,9 +156,12 @@ SYMBOL_EXPORT_SC_(CorePkg, STARexit_backtraceSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, make_source_pos_info);
 SYMBOL_EXPORT_SC_(ExtPkg, STARclasp_clang_pathSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, make_source_pos_info);
+SYMBOL_EXPORT_SC_(CorePkg, STARinvalidated_dispatch_function_stackSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARtop_level_form_stackSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARsyspropsSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARloadHooksSTAR);
+SYMBOL_EXPORT_SC_(CorePkg, STARmodule_startup_function_nameSTAR);
+SYMBOL_EXPORT_SC_(CorePkg, STARmodule_shutdown_function_nameSTAR);
 SYMBOL_EXPORT_SC_(ExtPkg, STARinvoke_debugger_hookSTAR);
 SYMBOL_EXPORT_SC_(CorePkg,variable_source_location)
 SYMBOL_EXPORT_SC_(CorePkg,class_source_location)
@@ -1103,7 +1106,8 @@ void CoreExposer_O::define_essential_globals(Lisp_sp lisp) {
   _sym_STARextension_startup_loadsSTAR->defparameter(_Nil<T_O>());
   _sym_STARsyspropsSTAR->defparameter(HashTableEql_O::create_default());
   _sym_STARdebug_accessorsSTAR->defparameter(_Nil<T_O>());
-
+  _sym_STARmodule_startup_function_nameSTAR->defparameter(SimpleBaseString_O::make(std::string(MODULE_STARTUP_FUNCTION_NAME)));
+  _sym_STARmodule_shutdown_function_nameSTAR->defparameter(SimpleBaseString_O::make(std::string(MODULE_SHUTDOWN_FUNCTION_NAME)));
   std::list<string> nicknames;
   std::list<string> use_packages;
   _sym_STARclasp_packageSTAR->defparameter(_lisp->makePackage("CLASP!",nicknames,use_packages));
@@ -1112,6 +1116,7 @@ void CoreExposer_O::define_essential_globals(Lisp_sp lisp) {
   ext::_sym_STARinvoke_debugger_hookSTAR->defparameter(_Nil<core::T_O>());
   _sym_STARuse_cleavir_compilerSTAR->defparameter(_Nil<core::T_O>());
   _sym_STARexit_backtraceSTAR->defparameter(_Nil<core::T_O>());
+  _sym_STARinvalidated_dispatch_function_stackSTAR->defparameter(_Nil<core::T_O>());
 #if defined(__x86_64__)
   SYMBOL_EXPORT_SC_(KeywordPkg, address_model_64);
   Symbol_sp address_model = kw::_sym_address_model_64;

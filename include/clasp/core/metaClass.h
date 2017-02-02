@@ -169,9 +169,9 @@ public: // Mimic CLOS classes that are represented by Instance_O
   T_sp instanceClassSet(Class_sp mc);
 
   /*! ECL slot handling, slots are indexed with integers */
-  virtual T_sp instanceRef(int idx) const;
+  virtual T_sp instanceRef(size_t idx) const;
   /*! ECL slot handling, slots are indexed with integers */
-  virtual T_sp instanceSet(int idx, T_sp val);
+  virtual T_sp instanceSet(size_t idx, T_sp val);
 
   /*! I don't know what this does, I'm mimicking ECL ecl>>instance.d>>instance_sig_set */
   virtual T_sp instanceSigSet();

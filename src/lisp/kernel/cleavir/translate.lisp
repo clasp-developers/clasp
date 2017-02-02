@@ -41,7 +41,7 @@ when this is t a lot of graphs will be generated.")
 	    ((typep datum 'cleavir-ir:values-location)
 	     #+(or)(setf var (alloca-mv-struct (string (gensym "v")))) )
 	    ((typep datum 'cleavir-ir:immediate-input)
-	     (setf var (%size_t (cleavir-ir:value datum))))
+	     (setf var (%i64 (cleavir-ir:value datum))))
 	    ((typep datum 'cleavir-ir:dynamic-lexical-location)
 	     (setf var (alloca-t* (string (cleavir-ir:name datum)))))
 	    ((typep datum 'cleavir-ir:static-lexical-location)
@@ -1037,13 +1037,13 @@ that llvm function. This works like compile-lambda-function in bclasp."
 (defun cclasp-compile-to-module-with-run-time-table (form env pathname)
   (cmp:with-debug-info-generator (:module cmp:*the-module* :pathname pathname)
     (let (function lambda-name)
-      (multiple-value-bind (ordered-raw-constants-list constants-table)
+      (multiple-value-bind (ordered-raw-constants-list constants-table startup-fn shutdown-fn)
           (literal:with-rtv
               (multiple-value-bind (mir map-enter-to-landing-pad)
                   (compile-form-to-mir form env)
                 (multiple-value-setq (function lambda-name)
                   (translate mir map-enter-to-landing-pad *abi-x86-64*))))
-        (values function lambda-name ordered-raw-constants-list constants-table)))))
+        (values function lambda-name ordered-raw-constants-list constants-table startup-fn shutdown-fn)))))
 
 
 ;; Set this to T to watch cclasp-compile* run
@@ -1066,7 +1066,7 @@ that llvm function. This works like compile-lambda-function in bclasp."
 ;;;	  (declare (ignore condition))
             #+verbose-compiler(warn "Condition: ~a" condition)
             (invoke-restart 'cleavir-generate-ast::consider-global))))
-      (multiple-value-bind (fn lambda-name ordered-raw-constants-list constants-table)
+      (multiple-value-bind (fn lambda-name ordered-raw-constants-list constants-table startup-fn shutdown-fn)
           (cclasp-compile-to-module-with-run-time-table form env pathname)
         (or fn (error "There was no function returned by compile-lambda-function"))
         (cmp:cmp-log "fn --> %s\n" fn)
@@ -1096,15 +1096,9 @@ that llvm function. This works like compile-lambda-function in bclasp."
                  "repl-fn.txt"
                  4321
                  5678
-                 nil)))
-          (unless (compiled-function-p setup-function)
-            (format t "cleavir-clasp compiled code but it didn't result in a compiled-function - eval --> ~s~%" setup-function)
-            (return-from cclasp-compile* (values nil t)))
-          (when constants-table
-            (let ((constants-table-address (llvm-sys:get-global-value-address
-                                            cmp:*run-time-execution-engine*
-                                            (llvm-sys:get-name constants-table))))
-              (gctools:register-roots constants-table-address ordered-raw-constants-list)))
+                 startup-fn
+                 shutdown-fn
+                 ordered-raw-constants-list)))
           (let ((enclosed-function (funcall setup-function)))
             ;;(format t "*all-functions-for-one-compile* -> ~s~%" cmp:*all-functions-for-one-compile*)
             ;;(cmp:set-associated-funcs enclosed-function cmp:*all-functions-for-one-compile*)

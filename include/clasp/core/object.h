@@ -267,7 +267,7 @@ namespace core {
   static core::Symbol_sp static_class_symbol;                           \
   static core::Class_sp static_class;                                   \
   static gctools::smart_ptr<core::Creator_O> static_creator;            \
-  static int static_Kind;                                               \
+  static gctools::GCKindEnum static_Kind;                                               \
  public:                                                                \
   static void set_static_class_symbol(core::Symbol_sp i)                \
   { oClass::static_class_symbol = i; };                                 \
@@ -457,7 +457,7 @@ namespace core {
     virtual void validate() const {};
 
     //! This is to support Derivable<T> classes in clbind
-    virtual void* pointerToAlienWithin() { return NULL; };
+    virtual void* pointerToAlienWithin() { SUBIMP(); };
   
   public: // Instance protocol
   //! Some Class objects will create instances of classes different from themselves
@@ -466,12 +466,12 @@ namespace core {
     virtual T_sp instanceClassSet(Class_sp mc);
 
   /*! Allocate space for (slots) slots and initialize them */
-    virtual void initializeSlots(int slots);
+    virtual void initializeSlots(Fixnum stamp, size_t slots);
 
   /*! ECL slot handling, slots are indexed with integers */
-    virtual T_sp instanceRef(int idx) const;
+    virtual T_sp instanceRef(size_t idx) const;
   /*! ECL slot handling, slots are indexed with integers */
-    virtual T_sp instanceSet(int idx, T_sp val);
+    virtual T_sp instanceSet(size_t idx, T_sp val);
 
   /*! Set the signature (metaclass slot definitions) for the instance */
     virtual T_sp instanceSigSet();

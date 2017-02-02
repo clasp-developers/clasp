@@ -192,14 +192,6 @@ void boehm_clear_finalizer_list(gctools::Tagged object_tagged)
   int globalBoehmMarker = 0;
 #endif
 
-  void rawHeaderDescribe(uintptr_t *rawheaderP) {
-    Header_s *headerP = reinterpret_cast<Header_s *>(rawheaderP);
-    printf("  0x%p : STAMP: 0x%zu KIND: 0x%u\n", headerP, headerP->getStamp(), headerP->kind());
-    gctools::GCKindEnum kind = headerP->kind();
-    printf(" Kind tag - kind: %d\n", kind);
-    fflush(stdout);
-  };
-
 };
 
 namespace gctools  {
@@ -225,8 +217,9 @@ void* boehm_create_shadow_table(size_t nargs)
 };
 
 };
-
 extern "C" {
+
+#if 0
 void client_describe(void *taggedClient) {
   if (gctools::tagged_generalp(taggedClient)
       || gctools::tagged_consp(taggedClient)
@@ -235,9 +228,9 @@ void client_describe(void *taggedClient) {
     // Currently this assumes that Conses and General objects share the same header
     // this may not be true in the future
     // conses may be moved into a separate pool and dealt with in a different way
-    uintptr_t *headerP;
+    const uintptr_t *headerP;
     if (gctools::tagged_generalp(taggedClient)) {
-      headerP = reinterpret_cast<uintptr_t *>(gctools::ClientPtrToBasePtr(gctools::untag_general(taggedClient)));
+      headerP = reinterpret_cast<const uintptr_t *>(gctools::ClientPtrToBasePtr(gctools::untag_general(taggedClient)));
       gctools::rawHeaderDescribe(headerP);
     } else if (gctools::tagged_consp(taggedClient)) {
       printf("%s:%d A cons pointer\n", __FILE__, __LINE__ );
@@ -248,14 +241,9 @@ void client_describe(void *taggedClient) {
     printf("%s:%d %p is not any kind of tagged pointer - might be immediate value\n", __FILE__, __LINE__, taggedClient );
   };
 };
-
+#endif
 
   
-void client_validate(void *taggedClient)
-{
-}
-
-
 
 };
 #endif // whole file #ifdef USE_BOEHM

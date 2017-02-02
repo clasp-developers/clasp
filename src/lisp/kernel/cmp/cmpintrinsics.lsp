@@ -115,9 +115,13 @@ Set this to other IRBuilders to make code go where you want")
 (defvar +valist_s-stamp+ (get-cxx-data-structure-info :va_list_s-stamp))
 (defvar +character-stamp+ (get-cxx-data-structure-info :character-stamp))
 (defvar +single-float-stamp+ (get-cxx-data-structure-info :single-float-stamp))
-(defvar +stamp-shift+ (get-cxx-data-structure-info :stamp-shift))
+(defvar +instance-rack-stamp-offset+ (get-cxx-data-structure-info :instance-rack-stamp-offset))
+(defvar +instance-rack-offset+ (get-cxx-data-structure-info :instance-rack-offset))
+(defvar +instance-kind+ (get-cxx-data-structure-info :instance-kind))
 
 (defvar +fixnum-mask+ (get-cxx-data-structure-info :fixnum-mask))
+(defvar +fixnum-shift+ (get-cxx-data-structure-info :fixnum-shift))
+(defvar +kind-shift+ (get-cxx-data-structure-info :kind-shift))
 (defvar +tag-mask+ (get-cxx-data-structure-info :tag-mask))
 (defvar +immediate-mask+ (get-cxx-data-structure-info :immediate-mask))
 (defvar +cons-tag+ (get-cxx-data-structure-info :cons-tag))
@@ -231,14 +235,14 @@ Boehm and MPS use a single pointer"
 (defvar +tsp[1]*+ (llvm-sys:type-get-pointer-to +tsp[1]+))
 (defvar +tsp[2]+ (llvm-sys:array-type-get +tsp+ 2))
 (defvar +tsp[2]*+ (llvm-sys:type-get-pointer-to +tsp[2]+))
-(defvar +tsp[DUMMY]+ (llvm-sys:array-type-get +tsp+ 65536))
+(defvar +tsp[DUMMY]+ (llvm-sys:array-type-get +tsp+ 64))
 (defvar +tsp[DUMMY]*+ (llvm-sys:type-get-pointer-to +tsp[DUMMY]+))
 (defvar +tsp*+ (llvm-sys:type-get-pointer-to +tsp+))
 (defvar +tsp**+ (llvm-sys:type-get-pointer-to +tsp*+))
 
 ;; This structure must match the gctools::ConstantsTable structure
-(defvar +constants-table+ (llvm-sys:struct-type-get *llvm-context* (list +i8*+ +i8*+ +size_t+) nil))
-(defvar +constants-table*+ (llvm-sys:type-get-pointer-to +constants-table+))
+(defvar +gcroots-in-module+ (llvm-sys:struct-type-get *llvm-context* (list +i8*+ +i8*+ +size_t+) nil))
+(defvar +gcroots-in-module*+ (llvm-sys:type-get-pointer-to +gcroots-in-module+))
 
 ;; The definition of +tmv+ doesn't quite match T_mv because T_mv inherits from T_sp
 (defvar +tmv+ (llvm-sys:struct-type-get *llvm-context* (smart-pointer-fields +t*+ +size_t+) nil))  ;; "T_mv"
@@ -482,8 +486,8 @@ and initialize it with an array consisting of one function pointer."
          (data-layout (llvm-sys:get-data-layout execution-engine))
          (tsp-size (llvm-sys:data-layout-get-type-alloc-size data-layout +tsp+))
          (tmv-size (llvm-sys:data-layout-get-type-alloc-size data-layout +tmv+))
-         (constants-table-size (llvm-sys:data-layout-get-type-alloc-size data-layout +constants-table+)))
-    (llvm-sys:throw-if-mismatched-structure-sizes :tsp tsp-size :tmv tmv-size :contab constants-table-size)))
+         (gcroots-in-module-size (llvm-sys:data-layout-get-type-alloc-size data-layout +gcroots-in-module+)))
+    (llvm-sys:throw-if-mismatched-structure-sizes :tsp tsp-size :tmv tmv-size :contab gcroots-in-module-size)))
 
 ;;
 ;; Define exception types in the module
@@ -567,6 +571,59 @@ and initialize it with an array consisting of one function pointer."
 	    ""))))
     (bformat nil "%s%s" name-dispatch-prefix name)))
 
+
+
+(defun codegen-startup-shutdown (gcroots-in-module roots-array number-of-roots)
+  (let ((startup-fn (irc-simple-function-create core:*module-startup-function-name*
+                                                (llvm-sys:function-type-get +void+ (list +t*+))
+                                                'llvm-sys::External-linkage
+                                                *the-module*
+                                                :argument-names (list "values" ))))
+    (let* ((irbuilder-alloca (llvm-sys:make-irbuilder *llvm-context*))
+           (irbuilder-body (llvm-sys:make-irbuilder *llvm-context*))
+           (*irbuilder-function-alloca* irbuilder-alloca)
+           (*irbuilder-function-body* irbuilder-body)
+           (*current-function* startup-fn)
+           (entry-bb (irc-basic-block-create "entry" startup-fn))
+           (arguments (llvm-sys:get-argument-list startup-fn))
+           (values (first arguments))
+           (size (second arguments))
+           (gf-args (second arguments)))
+      (llvm-sys:set-insert-point-basic-block irbuilder-alloca entry-bb)
+      (with-irbuilder (irbuilder-alloca)
+        (let ((start (irc-gep roots-array
+                              (list (jit-constant-size_t 0)
+                                    (jit-constant-size_t 0)))))
+          (irc-create-call "cc_initialize_gcroots_in_module" (list gcroots-in-module start (jit-constant-size_t number-of-roots) values))
+          (irc-ret-void))))
+    (let ((shutdown-fn (irc-simple-function-create core:*module-shutdown-function-name*
+                                                   (llvm-sys:function-type-get +void+ nil)
+                                                   'llvm-sys::External-linkage
+                                                   *the-module*)))
+      (let* ((irbuilder-alloca (llvm-sys:make-irbuilder *llvm-context*))
+             (irbuilder-body (llvm-sys:make-irbuilder *llvm-context*))
+             (*irbuilder-function-alloca* irbuilder-alloca)
+             (*irbuilder-function-body* irbuilder-body)
+             (*current-function* shutdown-fn)
+             (entry-bb (irc-basic-block-create "entry" shutdown-fn))
+             (arguments (llvm-sys:get-argument-list shutdown-fn))
+             (values (first arguments))
+             (size (second arguments))
+             (gf-args (second arguments)))
+        (llvm-sys:set-insert-point-basic-block irbuilder-alloca entry-bb)
+        (with-irbuilder (irbuilder-alloca)
+          (let ((start (irc-gep roots-array
+                                (list (jit-constant-size_t 0)
+                                      (jit-constant-size_t 0)))))
+            (irc-create-call "cc_shutdown_gcroots_in_module" (list gcroots-in-module))
+            (irc-ret-void))))
+      (values startup-fn shutdown-fn))))
+
+
+
+
+
+
 ;;;
 ;;; An attempt to inline specific functions from intrinsics.cc
 ;;;
@@ -614,32 +671,32 @@ and initialize it with an array consisting of one function pointer."
 (defun define-primitives-in-module (module)
 
   (primitive-nounwind module "ltvc_assign_source_file_info_handle" +void+ (list +i8*+ +i8*+ +size_t+ +i32+ +i32*+))
-  (primitive-nounwind module "ltvc_make_nil" +t*+ (list +constants-table*+ +size_t+))
-  (primitive-nounwind module "ltvc_make_t" +t*+ (list +constants-table*+ +size_t+))
-  (primitive-nounwind module "ltvc_make_ratio" +t*+ (list +constants-table*+ +size_t+ +t*+ +t*+))
-  (primitive-nounwind module "ltvc_make_cons" +t*+ (list +constants-table*+ +size_t+ +t*+ +t*+))
-  (primitive-nounwind module "ltvc_make_list" +t*+ (list +constants-table*+ +size_t+ +size_t+) :varargs t)
-  (primitive-nounwind module "ltvc_make_array" +t*+ (list +constants-table*+ +size_t+ +t*+ +t*+))
+  (primitive-nounwind module "ltvc_make_nil" +t*+ (list +gcroots-in-module*+ +size_t+))
+  (primitive-nounwind module "ltvc_make_t" +t*+ (list +gcroots-in-module*+ +size_t+))
+  (primitive-nounwind module "ltvc_make_ratio" +t*+ (list +gcroots-in-module*+ +size_t+ +t*+ +t*+))
+  (primitive-nounwind module "ltvc_make_cons" +t*+ (list +gcroots-in-module*+ +size_t+ +t*+ +t*+))
+  (primitive-nounwind module "ltvc_make_list" +t*+ (list +gcroots-in-module*+ +size_t+ +size_t+) :varargs t)
+  (primitive-nounwind module "ltvc_make_array" +t*+ (list +gcroots-in-module*+ +size_t+ +t*+ +t*+))
   (primitive-nounwind module "ltvc_setf_row_major_aref" +t*+ (list +t*+ +size_t+ +t*+))
-  (primitive-nounwind module "ltvc_make_hash_table" +t*+ (list +constants-table*+ +size_t+ +t*+))
+  (primitive-nounwind module "ltvc_make_hash_table" +t*+ (list +gcroots-in-module*+ +size_t+ +t*+))
   (primitive-nounwind module "ltvc_setf_gethash" +t*+ (list +t*+ +t*+ +t*+))
-  (primitive-nounwind module "ltvc_make_fixnum" +t*+ (list +constants-table*+ +size_t+ +uintptr_t+))
-  (primitive-nounwind module "ltvc_make_package" +t*+ (list +constants-table*+ +size_t+ +t*+))
-  (primitive-nounwind module "ltvc_make_bignum" +t*+ (list +constants-table*+ +size_t+ +t*+))
-  (primitive-nounwind module "ltvc_make_bitvector" +t*+ (list +constants-table*+ +size_t+ +t*+))
-  (primitive-nounwind module "ltvc_make_random_state" +t*+ (list +constants-table*+ +size_t+ +t*+))
-  (primitive-nounwind module "ltvc_make_symbol" +t*+ (list +constants-table*+ +size_t+ +t*+ +t*+))
-  (primitive-nounwind module "ltvc_make_character" +t*+ (list +constants-table*+ +size_t+ +uintptr_t+))
-  (primitive-nounwind module "ltvc_make_base_string" +t*+ (list +constants-table*+ +size_t+ +i8*+))
-  (primitive-nounwind module "ltvc_make_pathname" +t*+ (list +constants-table*+ +size_t+ +t*+ +t*+ +t*+ +t*+ +t*+ +t*+))
-  (primitive-nounwind module "ltvc_make_package" +t*+ (list +constants-table*+ +size_t+ +t*+))
-  (primitive-nounwind module "ltvc_make_built_in_class" +t*+ (list +constants-table*+ +size_t+ +t*+))
-  (primitive-nounwind module "ltvc_make_float" +t*+ (list +constants-table*+ +size_t+ +float+))
-  (primitive-nounwind module "ltvc_make_double" +t*+ (list +constants-table*+ +size_t+ +double+))
-  (primitive-nounwind module "ltvc_make_complex" +t*+ (list +constants-table*+ +size_t+ +t*+ +t*+))
-  (primitive          module "ltvc_set_mlf_creator_funcall" +t*+ (list +constants-table*+ +size_t+ +fn-prototype*+))
+  (primitive-nounwind module "ltvc_make_fixnum" +t*+ (list +gcroots-in-module*+ +size_t+ +uintptr_t+))
+  (primitive-nounwind module "ltvc_make_package" +t*+ (list +gcroots-in-module*+ +size_t+ +t*+))
+  (primitive-nounwind module "ltvc_make_bignum" +t*+ (list +gcroots-in-module*+ +size_t+ +t*+))
+  (primitive-nounwind module "ltvc_make_bitvector" +t*+ (list +gcroots-in-module*+ +size_t+ +t*+))
+  (primitive-nounwind module "ltvc_make_random_state" +t*+ (list +gcroots-in-module*+ +size_t+ +t*+))
+  (primitive-nounwind module "ltvc_make_symbol" +t*+ (list +gcroots-in-module*+ +size_t+ +t*+ +t*+))
+  (primitive-nounwind module "ltvc_make_character" +t*+ (list +gcroots-in-module*+ +size_t+ +uintptr_t+))
+  (primitive-nounwind module "ltvc_make_base_string" +t*+ (list +gcroots-in-module*+ +size_t+ +i8*+))
+  (primitive-nounwind module "ltvc_make_pathname" +t*+ (list +gcroots-in-module*+ +size_t+ +t*+ +t*+ +t*+ +t*+ +t*+ +t*+))
+  (primitive-nounwind module "ltvc_make_package" +t*+ (list +gcroots-in-module*+ +size_t+ +t*+))
+  (primitive-nounwind module "ltvc_make_built_in_class" +t*+ (list +gcroots-in-module*+ +size_t+ +t*+))
+  (primitive-nounwind module "ltvc_make_float" +t*+ (list +gcroots-in-module*+ +size_t+ +float+))
+  (primitive-nounwind module "ltvc_make_double" +t*+ (list +gcroots-in-module*+ +size_t+ +double+))
+  (primitive-nounwind module "ltvc_make_complex" +t*+ (list +gcroots-in-module*+ +size_t+ +t*+ +t*+))
+  (primitive          module "ltvc_set_mlf_creator_funcall" +t*+ (list +gcroots-in-module*+ +size_t+ +fn-prototype*+))
   (primitive          module "ltvc_mlf_init_funcall" +t*+ (list +fn-prototype*+))
-  (primitive          module "ltvc_set_ltv_funcall" +t*+ (list +constants-table*+ +size_t+ +fn-prototype*+))
+  (primitive          module "ltvc_set_ltv_funcall" +t*+ (list +gcroots-in-module*+ +size_t+ +fn-prototype*+))
   (primitive          module "ltvc_toplevel_funcall" +t*+ (list +fn-prototype*+))
 
   
@@ -816,7 +873,10 @@ and initialize it with an array consisting of one function pointer."
   (primitive-nounwind module "cc_fetch" +t*+ (list +t*+ +size_t+))
   (primitive-nounwind module "cc_va_arg" +t*+ (list +VaList_S*+))
   (primitive-nounwind module "cc_copy_va_list" +void+ (list +size_t+ +t*[0]*+ +VaList_S*+))
-  (primitive-nounwind module "cc_allocate_roots" +void+ (list +constants-table*+ +tsp*+ +size_t+ ))
+  
+  (primitive-nounwind module "cc_initialize_gcroots_in_module" +void+ (list +gcroots-in-module*+ +tsp*+ +size_t+ +t*+))
+  (primitive-nounwind module "cc_shutdown_gcroots_in_module" +void+ (list +gcroots-in-module*+ ))
+  
   (primitive-nounwind module "cc_enclose" +t*+ (list +t*+ +fn-prototype*+ +i32*+ +size_t+ +size_t+ +size_t+ +size_t+ ) :varargs t)
   (primitive-nounwind module "cc_stack_enclose" +t*+ (list +i8*+ +t*+ +fn-prototype*+ +i32*+ +size_t+ +size_t+ +size_t+ +size_t+ ) :varargs t)
   (primitive-nounwind module "cc_saveThreadLocalMultipleValues" +void+ (list +tmv*+ +mv-struct*+))

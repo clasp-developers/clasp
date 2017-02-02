@@ -30,6 +30,7 @@ THE SOFTWARE.
 #include <clasp/core/object.h>
 #include <clasp/core/lisp.h>
 #include <clasp/core/symbolTable.h>
+#include <clasp/gctools/gcFunctions.h>
 #include <clasp/core/serialize.h>
 #include <clasp/core/evaluator.h>
 #include <clasp/core/standardClass.h>
@@ -57,9 +58,8 @@ CL_DEFUN T_sp clos__getFuncallableInstanceFunction(T_sp obj) {
         return iobj->GFUN_DISPATCHER();
     case CLASP_INVALIDATED_DISPATCH:
         return clos::_sym_invalidated_dispatch_function;
-    default:
-        SIMPLE_ERROR(BF("Add support to return funcallable-instance-function for _isgf=%d") % iobj->_isgf);
     }
+    return clasp_make_fixnum(iobj->_isgf);
   }
   return _Nil<T_O>();
 };
@@ -97,39 +97,39 @@ void Instance_O::set_kind(Symbol_sp k) {
   }
 }
 
-void Instance_O::initializeSlots(int numberOfSlots) {
-  this->_Slots.resize(numberOfSlots, _Unbound<T_O>());
+void Instance_O::initializeSlots(Fixnum stamp, size_t numberOfSlots) {
+  this->_Rack = SimpleVector_O::make(numberOfSlots+1,_Unbound<T_O>(),true);
+  this->stamp_set(stamp);
+#ifdef DEBUG_GUARD_VALIDATE
+  client_validate(this->_Rack);
+#endif
 }
 
 T_sp Instance_O::oinstancep() const {
-  return make_fixnum((gctools::Fixnum)(this->_Slots.size()));
+  return make_fixnum((gctools::Fixnum)(this->numberOfSlots()));
 }
 
 T_sp Instance_O::oinstancepSTAR() const {
-  return make_fixnum((gctools::Fixnum)(this->_Slots.size()));
-}
+    return make_fixnum((gctools::Fixnum)(this->numberOfSlots()));
+  }
 
 /*! See ECL>>instance.d>>si_allocate_instance */
-T_sp Instance_O::allocateInstance(T_sp theClass, int numberOfSlots) {
+T_sp Instance_O::allocateInstance(T_sp theClass, size_t numberOfSlots) {
   Class_sp cl = gc::As<Class_sp>(theClass);
   if (!cl->has_creator()) {
     IMPLEMENT_MEF(BF("Handle no allocator class: %s slots: %d") % _rep_(theClass) % numberOfSlots);
   }
+  //Instance_sp obj = gc::GC<Instance_O>::allocate_kind(gctools::KIND_INSTANCE);
   Creator_sp creator = gctools::As<Creator_sp>(cl->class_creator());
-  T_sp obj = creator->creator_allocate();
-  ASSERT(obj);
-  ASSERT(obj.notnilp());
-  if (obj.generalp()) {
-    General_O* gp = (General_O*)obj.unsafe_general();
-    gp->instanceClassSet(gc::As<Class_sp>(theClass));
-    gp->initializeSlots(numberOfSlots);
-  }
-  return (obj);
+  Instance_sp obj = gctools::As<Instance_sp>(creator->creator_allocate());
+  obj->instanceClassSet(gc::As<Class_sp>(theClass));
+  obj->initializeSlots(cl->get_instance_stamp(),numberOfSlots);
+  return obj;
 }
 
 /*! See ECL>>instance.d>>si_allocate_raw_instance */
 CL_LISPIFY_NAME(allocateRawInstance);
-CL_DEFUN T_sp Instance_O::allocateRawInstance(T_sp orig, T_sp theClass, int numberOfSlots) {
+CL_DEFUN T_sp Instance_O::allocateRawInstance(T_sp orig, T_sp theClass, size_t numberOfSlots) {
   T_sp toutput = Instance_O::allocateInstance(theClass, numberOfSlots);
   Instance_sp output = toutput.asOrNull<Instance_O>();
   if (!output) {
@@ -139,10 +139,18 @@ CL_DEFUN T_sp Instance_O::allocateRawInstance(T_sp orig, T_sp theClass, int numb
     orig = output;
   } else if (Instance_sp iorig = orig.asOrNull<Instance_O>()) {
     iorig->instanceClassSet(gc::As<Class_sp>(theClass));
-    iorig->_Slots = output->_Slots; // orig->adoptSlots(output);
+    iorig->_Rack = output->_Rack; // orig->adoptSlots(output);
   }
   return (orig);
 }
+
+
+size_t Instance_O::rack_stamp_offset() {
+  SimpleVector_O dummy_rack(0);
+  return (char*)&(dummy_rack.operator[](0))-(char*)&dummy_rack;
+}
+
+
 
 void Instance_O::archiveBase(ArchiveP node) {
   if (node->saving()) {
@@ -152,8 +160,8 @@ void Instance_O::archiveBase(ArchiveP node) {
     SYMBOL_EXPORT_SC_(KeywordPkg, iclass);
     //	    Symbol_sp className = this->_Class->name();
     //	    node->attribute(kw::_sym_iclass,className);
-    for (int i(0); i < this->_Slots.size(); ++i) {
-      node->pushVector(this->_Slots[i]);
+    for (int i(1); i < this->_Rack->length(); ++i) {
+      node->pushVector((*this->_Rack)[i]);
     }
   } else {
     this->_isgf = false;
@@ -163,15 +171,15 @@ void Instance_O::archiveBase(ArchiveP node) {
     //	    node->attribute(kw::_sym_iclass,className);
     Class_sp cl = gc::As<Class_sp>(eval::funcall(cl::_sym_findClass, className, _lisp->_true()));
     this->_Class = cl;
-    this->initializeSlots(node->vectorSize());
+    this->initializeSlots(cl->get_instance_stamp(),node->vectorSize());
 #endif
-    int idx(0);
-    if (node->vectorSize() != this->_Slots.size()) {
-      SIMPLE_ERROR(BF("While loading archive class %s mismatch in number of slots - expected %d - loaded %d slots") % _rep_(this->_Class) % this->_Slots.size() % node->vectorSize());
+    size_t idx(1);
+    if (node->vectorSize() != this->numberOfSlots()) {
+      SIMPLE_ERROR(BF("While loading archive class %s mismatch in number of slots - expected %d - loaded %d slots") % _rep_(this->_Class) % this->numberOfSlots() % node->vectorSize());
     }
     node->mapVector([this, &idx](T_sp value) {
-		    this->_Slots[idx++] = value;
-    });
+        (*this->_Rack)[idx++] = value;
+      });
     this->instanceSigSet();
   }
 }
@@ -199,28 +207,37 @@ T_sp Instance_O::instanceSig() const {
 
 
 
-  SYMBOL_EXPORT_SC_(ClosPkg, setFuncallableInstanceFunction);
-  SYMBOL_EXPORT_SC_(CorePkg, instanceClassSet);
+SYMBOL_EXPORT_SC_(ClosPkg, setFuncallableInstanceFunction);
+SYMBOL_EXPORT_SC_(CorePkg, instanceClassSet);
 
 
 
 T_sp Instance_O::instanceClassSet(Class_sp mc) {
   this->_Class = mc;
   return (this->sharedThis<Instance_O>());
+#ifdef DEBUG_GUARD_VALIDATE
+  client_validate(this->_Rack);
+#endif
 }
 
-T_sp Instance_O::instanceRef(int idx) const {
-#if DEBUG_CLOS >= 2
-  printf("\nMLOG INSTANCE-REF[%d] of Instance %p --->%s\n", idx, (void *)(this), this->_Slots[idx]->__repr__().c_str());
+T_sp Instance_O::instanceRef(size_t idx) const {
+#ifdef DEBUG_GUARD_VALIDATE
+  client_validate(this->_Rack);
 #endif
-  return ((this->_Slots[idx]));
+#if DEBUG_CLOS >= 2
+  printf("\nMLOG INSTANCE-REF[%d] of Instance %p --->%s\n", idx, (void *)(this), this->_Rack[idx+1]->__repr__().c_str());
+#endif
+  return ((*this->_Rack)[idx+1]);
 }
-T_sp Instance_O::instanceSet(int idx, T_sp val) {
+T_sp Instance_O::instanceSet(size_t idx, T_sp val) {
 #if DEBUG_CLOS >= 2
   printf("\nMLOG SI-INSTANCE-SET[%d] of Instance %p to val: %s\n", idx, (void *)(this), val->__repr__().c_str());
 #endif
-  this->_Slots[idx] = val;
-  return ((val));
+  (*this->_Rack)[idx+1] = val;
+#ifdef DEBUG_GUARD_VALIDATE
+  client_validate(this->_Rack);
+#endif
+  return val;
 }
 
 string Instance_O::__repr__() const {
@@ -231,11 +248,18 @@ string Instance_O::__repr__() const {
   } else {
     ss << "<ADD SUPPORT FOR INSTANCE _CLASS=" << _rep_(this->_Class) << " >";
   }
+  if (this->isgf()) {
+    if (gc::IsA<String_sp>(this->GFUN_NAME())) {
+      ss << gc::As_unsafe<String_sp>(this->GFUN_NAME())->get_std_string();
+    } else {
+      ss << "Could-not-get-name";
+    }
+  }
   {
-    ss << " #slots[" << this->_Slots.size() << "]";
+    ss << " #slots[" << this->numberOfSlots() << "]";
 #if 0
-    for (int i(0); i < this->_Slots.size(); ++i) {
-      T_sp obj = this->_Slots[i];
+    for (size_t i(1); i < this->numberOfSlots(); ++i) {
+      T_sp obj = this->_Rack[i];
       ss << "        :slot" << i << " ";
       if (obj) {
         stringstream sslot;
@@ -268,15 +292,17 @@ string Instance_O::__repr__() const {
 T_sp Instance_O::copyInstance() const {
   Instance_sp iobj = gc::As<Instance_sp>(Instance_O::allocateInstance(this->_Class));
   iobj->_isgf = this->_isgf;
-  iobj->_Slots = this->_Slots;
+  iobj->_Rack = this->_Rack;
   iobj->_entryPoint = this->_entryPoint;
   iobj->_Sig = this->_Sig;
   return iobj;
 }
 
 void Instance_O::reshapeInstance(int delta) {
-  int size = this->_Slots.size() + delta;
-  this->_Slots.resize(size, _Unbound<T_O>());
+  size_t copySize = this->_Rack->length();
+  if (delta<0) copySize += delta;
+  SimpleVector_sp newRack = SimpleVector_O::make(this->_Rack->length()+delta,_Unbound<T_O>(),true,copySize,&(*this->_Rack)[0]);
+  this->_Rack = newRack;
 }
 /*
   memcpy(aux->instance.slots, x->instance.slots,
@@ -326,13 +352,14 @@ T_sp Instance_O::setFuncallableInstanceFunction(T_sp functionOrT) {
     Instance_O::ensureClosure(&optimized_slot_writer_dispatch);
   } else if (gc::IsA<CompiledDispatchFunction_sp>(functionOrT)) {
     this->_isgf = CLASP_STRANDH_DISPATCH;
+    this->GFUN_DISPATCHER_set(functionOrT);
     Instance_O::ensureClosure(gc::As_unsafe<CompiledDispatchFunction_sp>(functionOrT)->entryPoint());
   } else if (!cl__functionp(functionOrT)) {
     TYPE_ERROR(functionOrT, cl::_sym_function);
     //SIMPLE_ERROR(BF("Wrong type argument: %s") % functionOrT->__repr__());
   } else {
     this->reshapeInstance(+1);
-    this->_Slots[this->_Slots.size() - 1] = functionOrT;
+    (*this->_Rack)[this->_Rack->length() - 1] = functionOrT;
     this->_isgf = CLASP_USER_DISPATCH;
     Instance_O::ensureClosure(&user_function_dispatch);
   }
@@ -342,7 +369,7 @@ T_sp Instance_O::setFuncallableInstanceFunction(T_sp functionOrT) {
 T_sp Instance_O::userFuncallableInstanceFunction() const
 {
   if (this->_isgf == CLASP_USER_DISPATCH) {
-    T_sp user_dispatch_fn = this->_Slots[this->_Slots.size()-1];
+    T_sp user_dispatch_fn = (*this->_Rack)[this->_Rack->length()-1];
     return user_dispatch_fn;
   }
   // Otherwise return NIL
@@ -357,12 +384,10 @@ bool Instance_O::equalp(T_sp obj) const {
   if (!obj.generalp()) return false;
   if (this == obj.unsafe_general()) return true;
   if (Instance_sp iobj = obj.asOrNull<Instance_O>()) {
-    if (this->_Class != iobj->_Class)
-      return false;
-    for (int i(0), iEnd(this->_Slots.size()); i < iEnd; ++i) {
-      if (!cl__equalp(this->_Slots[i], iobj->_Slots[i])) {
-        return false;
-      }
+    if (this->_Class != iobj->_Class) return false;
+    if (this->stamp() != iobj->stamp()) return false;
+    for (size_t i(1), iEnd(this->_Rack->length()); i < iEnd; ++i) {
+      if (!cl__equalp((*this->_Rack)[i], (*iobj->_Rack)[i])) return false;
     }
     return true;
   }
@@ -372,9 +397,9 @@ bool Instance_O::equalp(T_sp obj) const {
 void Instance_O::sxhash_(HashGenerator &hg) const {
   if (hg.isFilling())
     hg.hashObject(this->_Class);
-  for (int i(0), iEnd(this->_Slots.size()); i < iEnd; ++i) {
-    if (!this->_Slots[i].unboundp() && hg.isFilling())
-      hg.hashObject(this->_Slots[i]);
+  for (size_t i(1), iEnd(this->_Rack->length()); i < iEnd; ++i) {
+    if (!(*this->_Rack)[i].unboundp() && hg.isFilling())
+      hg.hashObject((*this->_Rack)[i]);
     else
       break;
   }
@@ -383,9 +408,9 @@ void Instance_O::sxhash_(HashGenerator &hg) const {
 void Instance_O::LISP_INVOKE() {
   IMPLEMENT_ME();
 #if 0
-	ASSERT(this->_Entry!=NULL);
-	LispCompiledFunctionIHF _frame(my_thread->invocationHistoryStack(),this->asSmartPtr());
-	return(( (this->_Entry)(*this,nargs,args)));
+  ASSERT(this->_Entry!=NULL);
+  LispCompiledFunctionIHF _frame(my_thread->invocationHistoryStack(),this->asSmartPtr());
+  return(( (this->_Entry)(*this,nargs,args)));
 #endif
 }
 
@@ -394,9 +419,99 @@ void Instance_O::describe(T_sp stream) {
   ss << (BF("Instance\n")).str();
   ss << (BF("isgf %d\n") % this->_isgf).str();
   ss << (BF("_Class: %s\n") % _rep_(this->_Class).c_str()).str();
-  for (int i(0); i < this->_Slots.size(); ++i) {
-    ss << (BF("_Slots[%d]: %s\n") % i % _rep_(this->_Slots[i]).c_str()).str();
+  for (int i(1); i < this->_Rack->length(); ++i) {
+    ss << (BF("_Rack[%d]: %s\n") % i % _rep_((*this->_Rack)[i]).c_str()).str();
   }
   clasp_write_string(ss.str(), stream);
 }
+
+
+CL_DEFUN bool core__call_history_entry_key_contains_specializer(SimpleVector_sp key, T_sp specializer) {
+  if (specializer.consp()) {
+    Cons_sp eql_spec(gc::As_unsafe<Cons_sp>(specializer));
+    // Check and remove eql specializer
+    for ( size_t i(0); i<key->length(); ++i ) {
+      if (!(*key)[i].consp()) continue;
+      if (cl__eql((*key)[i],oCadr(eql_spec))) return true;
+    }
+  } else {
+    // Check and remove class specializer
+    for ( size_t i(0); i<key->length(); ++i ) {
+      if ((*key)[i].consp()) continue;
+      if ((*key)[i] == specializer) return true;
+    }
+  }
+  return false;
+}
+  
+
+bool key_match(SimpleVector_sp x, SimpleVector_sp y) {
+  if (x->length() != y->length()) return false;
+  for ( size_t i(0); i<x->length(); ++i ) {
+    // If eql specializer then match the specializer value
+    if ((*x)[i].consp()) {
+      if (!(*y)[i].consp()) return false;
+      T_sp eql_spec_x = oCadr((*x)[i]);
+      T_sp eql_spec_y = oCadr((*y)[i]);
+      if (!cl__eql(eql_spec_x,eql_spec_y)) return false;
+    } else {
+      if ((*x)[i] != (*y)[i]) return false;
+    }
+  }
+  return true;
+}
+
+
+
+
+CL_DEFUN List_sp core__call_history_find_key(List_sp generic_function_call_history, SimpleVector_sp key) {
+  for ( auto cur : generic_function_call_history ) {
+    ASSERT(oCar(cur).consp());
+    Cons_sp entry = gc::As_unsafe<Cons_sp>(oCar(cur));
+    ASSERT(gc::IsA<SimpleVector_sp>(oCar(entry)));
+    SimpleVector_sp entry_key = gc::As_unsafe<SimpleVector_sp>(oCar(entry));
+    if (key_match(key,entry_key)) return cur;
+  }
+  return _Nil<T_O>();
+}
+           
+    
+    
+
+CL_DEFUN void core__generic_function_call_history_push_new(Instance_sp generic_function, SimpleVector_sp key, T_sp effective_method )
+{
+  List_sp call_history(generic_function->GFUN_CALL_HISTORY());
+  if (call_history.nilp()) {
+    generic_function->GFUN_CALL_HISTORY_set(Cons_O::createList(Cons_O::create(key,effective_method)));
+    return;
+  }
+  // Search for existing entry
+  List_sp found = core__call_history_find_key(call_history,key);
+  if (found.nilp()) {
+    generic_function->GFUN_CALL_HISTORY_set(Cons_O::create(Cons_O::create(key,effective_method),generic_function->GFUN_CALL_HISTORY()));
+  }
+}
+
+CL_DEFUN void core__generic_function_call_history_remove_entries_with_specializer(Instance_sp generic_function, T_sp specializer ) {
+  printf("%s:%d Remember to remove entries with subclasses of specializer\n", __FILE__, __LINE__);
+  List_sp call_history(generic_function->GFUN_CALL_HISTORY());
+  List_sp edited(_Nil<T_O>());
+  for ( List_sp cur = call_history; cur.consp(); ) {
+    ASSERT(oCar(cur).consp());
+    Cons_sp entry = gc::As_unsafe<Cons_sp>(oCar(cur));
+    ASSERT(gc::IsA<SimpleVector_sp>(oCar(entry)));
+    SimpleVector_sp entry_key = gc::As_unsafe<SimpleVector_sp>(oCar(entry));
+    if (core__call_history_entry_key_contains_specializer(entry_key,specializer)) {
+      cur = oCdr(cur);
+    } else {
+      Cons_sp save = gc::As_unsafe<Cons_sp>(cur);
+      cur = oCdr(cur);
+      save->rplacd(edited);
+      edited = save;
+    }
+  }
+  generic_function->GFUN_CALL_HISTORY_set(edited);
+}
+
 };
+

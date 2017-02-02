@@ -171,12 +171,19 @@ calculate IsA relationships using simple GCKindEnum range comparisons.
                  KIND_CHARACTER = 3,
                  KIND_CONS = 4,
                  KIND_VA_LIST_S = 5,
-                 KIND_max = 5 } GCKindEnum; // minimally define this GCKind
+                 KIND_INSTANCE = 6,
+                 KIND_max = 6 } GCKindEnum; // minimally define this GCKind
 #else
-  typedef
  #define GC_ENUM
+    typedef enum {
  #include CLASP_GC_FILENAME
-    GCKindEnum;
+      KIND_VA_LIST_S = KIND_LISPALLOC_core__VaList_dummy_O, 
+      KIND_CONS = KIND_LISPALLOC_core__Cons_O, 
+      KIND_CHARACTER = KIND_LISPALLOC_core__Character_dummy_O, 
+      KIND_SINGLE_FLOAT = KIND_LISPALLOC_core__SingleFloat_dummy_O, 
+      KIND_FIXNUM = KIND_LISPALLOC_core__Fixnum_dummy_O,
+      KIND_INSTANCE = KIND_LISPALLOC_core__Instance_O
+  } GCKindEnum;
  #undef GC_ENUM
 #endif
 
@@ -200,7 +207,8 @@ namespace gctools {
 //
 //
 
-   /*! Stamp - an integer value less than that is written into the header.
+   /*! Stamp - integer value that is written into the header in normal general objects 
+               and into the Rack for Instance_O objects.
      See Header_s below for a description of the GC Header tag scheme.
      Stamp needs to fit within a Fixnum.
  */
@@ -212,8 +220,8 @@ namespace gctools {
       The header ends with a uintptr_t data[0], an array of uintptr_t which intrudes
       into the client data.
       The structure of the header is...
-                          stamp     kind      tag
-      64 bits total -> | 50 bits | 12 bits | 2 bits |
+                           kind/stamp      tag
+      64 bits total -> |    62 bits     | 2 bits |
       The (header) uintptr_t is a tagged value where the
       two least significant bits are the tag.
 
@@ -227,15 +235,14 @@ namespace gctools {
       1r11 == This indicates that the header contains a pad; check the
       bit at 1r0100 to see if the pad is a pad1 (==0) or a pad (==1)
 
-      The KIND is a 12 bit value (up to 4095 different values, 0==no kind) that tells
+      The KIND is a 62 bit value (0==no kind) that tells
       the MPS GC what the layout of the object is and is used to determine
-      IsA relationships between classes.   4095 may seem like a small number of
-      classes but these are builtin classes with different GC memory layouts 
-      - hopefully it's enough.   Clasp by itself uses ~350.  Cando uses ~650.
+      IsA relationships between classes.
 
-      The STAMP is a 50 bit value used by generic function dispatch.
-      Each time a standard-class is redefined a new STAMP is generated and that
-      is stamped into the header.
+      The STAMP is a 62 bit value used by generic function dispatch.
+      It is the KIND value unless the object is an Instance_O and then it is a value
+      assigned by CLOS and is guaranteed to be larger than KIND_max
+      Each time a standard-class is redefined a new STAMP is generated and that is written into the Instance_O rack.
     */
 
  
@@ -254,29 +261,24 @@ namespace gctools {
     // The kind mask stores 12 bits of info - up to 4096 different KINDs
     //    These are C++ classes managed by the GC.
     static const int kind_shift = 2;
-    static const tagged_kind_t kind_mask    = 0x3FFC; // BOOST_BINARY(11111111111100);
+    static const tagged_kind_t kind_mask    = ~0x3; // BOOST_BINARY(11...111111111100);
     static const tagged_kind_t largest_possible_kind = kind_mask>>kind_shift;
-    static const int stamp_shift = 14;
-    static const tagged_kind_t kind_tag_mask = (kind_mask|tag_mask);
-    static const tagged_kind_t stamp_mask   = ~kind_tag_mask;
-    static const tagged_kind_t stamp_tag_mask = stamp_mask|tag_mask;
-    static const tagged_kind_t largest_possible_stamp = stamp_mask>>stamp_shift;
   public:
     tagged_kind_t header;
 #ifdef DEBUG_GUARD
-    tagged_kind_t guard;
     int tail_start;
     int tail_size;
+    tagged_kind_t guard;
 #endif
     tagged_kind_t data[0]; // The 0th element intrudes into the client data
   public:
 #ifndef DEBUG_GUARD
-  Header_s(Stamp s, kind_t k) : header((s<<stamp_shift)|(((kind_t)k) << kind_shift) | kind_tag) {};
+  Header_s(kind_t k) : header((((kind_t)k) << kind_shift) | kind_tag) {};
     void validate() const {};
 #else
     inline void fill_tail() { memset((void*)(((char*)this)+this->tail_start),0xcc,this->tail_size);};
-  Header_s(Stamp s, kind_t k,size_t tstart, size_t tsize, size_t total_size) 
-    : header((s<<stamp_shift)|(((kind_t)k)<<kind_shift)|kind_tag),
+  Header_s(kind_t k,size_t tstart, size_t tsize, size_t total_size) 
+    : header((((kind_t)k)<<kind_shift)|kind_tag),
       tail_start(tstart),
         tail_size(tsize),
         guard(0x0FEEAFEEBDEADBEEF)
@@ -311,8 +313,6 @@ namespace gctools {
   /*! This writes into the first tagged_kind_t sized word of the client data. */
       void setPadSize(size_t sz) { this->data[0] = sz; };
   /*! Write the stamp to the stamp bits */
-      void setStamp(gctools::Stamp stamp) { this->header = (this->header&kind_tag_mask)|(stamp << stamp_shift); };
-      tagged_kind_t getStamp() const { return (this->header>>stamp_shift); };
       string description() const {
         if (this->kindP()) {
           std::stringstream ss;
@@ -363,7 +363,7 @@ namespace gctools {
   void OutOfStamps();
   inline Stamp NextStamp(Stamp given = KIND_null) {
     if ( given != KIND_null ) return given;
-    if (global_NextStamp < Header_s::largest_possible_stamp) {
+    if (global_NextStamp < Header_s::largest_possible_kind) {
       return global_NextStamp++;
     }
     OutOfStamps();
@@ -451,14 +451,19 @@ namespace gctools {
 
 namespace gctools {
 
+  inline const void *ClientPtrToBasePtr(const void *mostDerived) {
+    const void *ptr = reinterpret_cast<const char *>(mostDerived) - sizeof(Header_s);
+    return ptr;
+  }
+
   inline void *ClientPtrToBasePtr(void *mostDerived) {
     void *ptr = reinterpret_cast<char *>(mostDerived) - sizeof(Header_s);
     return ptr;
   }
 
-  inline Header_s* header_pointer(void* client_pointer)
+  inline const Header_s* header_pointer(const void* client_pointer)
   {
-    Header_s* header = reinterpret_cast<Header_s*>(reinterpret_cast<char*>(client_pointer) - sizeof(Header_s));
+    const Header_s* header = reinterpret_cast<const Header_s*>(reinterpret_cast<const char*>(client_pointer) - sizeof(Header_s));
     return header;
   }
   
@@ -537,10 +542,6 @@ namespace gctools {
                                             // to force compiler errors when the Kind for an object hasn't been declared
 #endif // USE_CXX_DYNAMIC_CAST
 #endif
-    };
-  template <typename T>
-    struct GCStamp {
-      static Stamp const TheStamp = static_cast<Stamp>(GCKind<T>::Kind);
     };
 };
 
@@ -623,13 +624,22 @@ int startupGarbageCollectorAndSystem(MainFunctionType startupFn, int argc, char 
 };
 
 
+namespace gctools {
+  void rawHeaderDescribe(const uintptr_t *headerP);
+};
+
 extern "C" {
 // These must be provided the the garbage collector specific code
+
 
 //! Describe the header of the client
 void client_describe(void *taggedClient);
 //! Validate the client
-void client_validate(void *taggedClient);
+void client_validate_tagged(gctools::Tagged taggedClient);
+//! Must be a General_O ptr - no tag
+void client_validate_General_O_ptr(const core::General_O* client_ptr);
+//! Validate a client smart_ptr - only general objects
+void client_validate(core::T_sp client);
 //! Describe the header
 void header_describe(gctools::Header_s* headerP);
 };
@@ -637,29 +647,33 @@ void header_describe(gctools::Header_s* headerP);
 
 namespace gctools {
 
-  struct ConstantsTable {
-    void* _shadow_memory;
+  /*! Maintains pointers to arrays of roots that are stored in LLVM Modules
+      we add and remove during runtime as Modules are compiled and (in the future) removed.
+      MPS and Boehm have different needs to keep track of roots.
+      MPS just needs one pointer to memory in the module and
+      Boehm needs to maintain a shadow copy in the Boehm managed memory because
+        I wasn't able to get GC_add_roots to work properly.
+        TODO: get GC_add_roots to work
+   */
+  struct GCRootsInModule {
+    void* _boehm_shadow_memory;
     void* _module_memory;
     size_t _num_entries;
 
-    ConstantsTable(void* shadow_mem, void* module_mem, size_t num_entries) {
-      this->_shadow_memory = shadow_mem;
+    GCRootsInModule(void* shadow_mem, void* module_mem, size_t num_entries) {
+      this->_boehm_shadow_memory = shadow_mem;
       this->_module_memory = module_mem;
       this->_num_entries = num_entries;
     }
     gctools::Tagged set(size_t index, gctools::Tagged val);
-
-
-
-#if 0
- /* Register a list of roots with the current GC */
-    void register_roots_with_gc(core::T_sp* address, size_t num);
-#endif
-
+    void* address(size_t index) {
+      return reinterpret_cast<void*>(&reinterpret_cast<core::T_sp*>(this->_module_memory)[index]);
+    }
 
   };
   
-  void register_constants_table(ConstantsTable* constants_table, core::T_sp* root_address, size_t num_roots);
+  void initialize_gcroots_in_module(GCRootsInModule* gcroots_in_module, core::T_sp* root_address, size_t num_roots, gctools::Tagged initial_data);
+  void shutdown_gcroots_in_module(GCRootsInModule* gcroots_in_module);
 };
       
 

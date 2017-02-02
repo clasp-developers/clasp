@@ -394,9 +394,9 @@ void HashTable_O::sxhash_equalp(HashGenerator &hg, T_sp obj, LocationDependencyP
         Instance_sp iobj = gc::As<Instance_sp>(gobj);
         if (hg.isFilling())
           HashTable_O::sxhash_equalp(hg, iobj->_Class->className(), ld);
-        for (int i(0), iEnd(iobj->_Slots.size()); i < iEnd; ++i) {
-          if (!iobj->_Slots[i].unboundp() && hg.isFilling())
-            HashTable_O::sxhash_equalp(hg, iobj->_Slots[i], ld);
+        for (size_t i(0), iEnd(iobj->numberOfSlots()); i < iEnd; ++i) {
+            if (!iobj->instanceRef(i).unboundp() && hg.isFilling())
+              HashTable_O::sxhash_equalp(hg, iobj->instanceRef(i), ld);
         }
         return;
       } else if (BitVector_sp bv_obj = gobj.asOrNull<BitVector_O>()) {

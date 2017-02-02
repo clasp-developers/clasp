@@ -279,6 +279,17 @@ Convert colons to underscores"
                  x
                  (gethash x exposed-classes)))))))
 
+(defun generate-code-for-init-class-kinds (exposed-classes sout)
+  (declare (optimize (speed 3)))
+  (let ((sorted-classes (sort-classes-by-inheritance exposed-classes))
+        cur-package)
+    (format sout "#ifdef SET_CLASS_KINDS~%")
+    (dolist (exposed-class sorted-classes)
+      (format sout "set_one_static_class_Kind<~a::~a>();~%"
+              (tags:namespace% (class-tag% exposed-class))
+              (tags:name% (class-tag% exposed-class))))
+    (format sout "#endif // SET_CLASS_KINDS~%")))
+
 (defun generate-code-for-init-classes-class-symbols (exposed-classes sout)
   (declare (optimize (speed 3)))
   (let ((sorted-classes (sort-classes-by-inheritance exposed-classes))
@@ -299,6 +310,7 @@ Convert colons to underscores"
   (with-output-to-string (sout)
     (let ((sorted-classes (sort-classes-by-inheritance exposed-classes))
           cur-package)
+      (generate-code-for-init-class-kinds exposed-classes sout)
       (generate-code-for-init-classes-class-symbols exposed-classes sout)
       (progn
         (format sout "#ifdef ALLOCATE_ALL_CLASSES~%")
@@ -360,7 +372,7 @@ Convert colons to underscores"
             (format sout "namespace ~a { ~%" (tags:namespace% class-tag))
             (format sout "  core::Symbol_sp ~a::static_class_symbol;~%" (tags:name% class-tag))
             (format sout "  core::Class_sp ~a::static_class;~%" (tags:name% class-tag))
-            (format sout "  int ~a::static_Kind;~%" (tags:name% class-tag))
+            (format sout "  gctools::GCKindEnum ~a::static_Kind;~%" (tags:name% class-tag))
             (format sout "  gctools::smart_ptr<core::Creator_O> ~a::static_creator;~%" (tags:name% class-tag))
             (format sout "};~%")))
         (format sout "#endif // EXPOSE_STATIC_CLASS_VARIABLES~%"))

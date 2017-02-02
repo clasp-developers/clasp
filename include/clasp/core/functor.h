@@ -470,12 +470,14 @@ class CompiledDispatchFunction_O : public core::ClosureWithFrame_O {
   LISP_CLASS(core,CorePkg,CompiledDispatchFunction_O,"CompiledDispatchFunction",core::ClosureWithFrame_O);
 public:
   core::DispatchFunction_fptr_type _entryPoint;
+  core::ShutdownFunction_fptr_type _shutdownFunction;
+  T_sp  _llvmModule;
  public:
   virtual const char *describe() const { return "CompiledDispatchFunction"; };
   virtual size_t templatedSizeof() const { return sizeof(*this); };
   virtual void *functionAddress() const { return (void *)this->_entryPoint; }
 public:
- CompiledDispatchFunction_O(core::T_sp functionName, core::Symbol_sp type, core::DispatchFunction_fptr_type ptr) : Base(functionName,kw::_sym_dispatch_function,_Nil<T_O>(),0,0,0,0), _entryPoint(ptr) {};
+ CompiledDispatchFunction_O(core::T_sp functionName, core::Symbol_sp type, core::DispatchFunction_fptr_type ptr, core::ShutdownFunction_fptr_type shutdownFunction, T_sp module ) : Base(functionName,kw::_sym_dispatch_function,_Nil<T_O>(),0,0,0,0), _entryPoint(ptr), _shutdownFunction(shutdownFunction), _llvmModule(module) {};
   bool compiledP() const { return true; };
   DispatchFunction_fptr_type entryPoint() { return this->_entryPoint;};
   DISABLE_NEW();
@@ -493,7 +495,8 @@ public:
   };
   core::T_sp lambda_list() const { return Cons_O::createList(cl::_sym_generic_function, core::_sym_arguments); };
   void setf_lambda_list(core::List_sp lambda_list) { SIMPLE_ERROR(BF("You cannot set the lambda-list of a compiled-dispatch-function")); };
-
+  CL_DEFMETHOD T_sp llvm_module() const { return this->_llvmModule;};
+  CL_DEFMETHOD void shutdown() const { this->_shutdownFunction(); };
 };
 };
 

@@ -204,6 +204,14 @@ gctools::Vec0<T_sp> &fill_spec_vector(Instance_sp gf, gctools::Vec0<T_sp> &vekto
   return vektor;
 }
 
+
+CL_DEFUN T_sp clos__memoization_key(Instance_sp gf, VaList_sp vargs) {
+  gctools::Vec0<T_sp> key;
+  key.resize((*vargs).remaining_nargs(),_Nil<T_O>());
+  fill_spec_vector(gf,key,vargs);
+  return SimpleVector_O::make(key.size()-1,_Nil<T_O>(),true,key.size()-1,&key[1]);
+}
+
 // Arguments are passed in the multiple_values array
 LCC_RETURN standard_dispatch(T_sp gf, VaList_sp arglist, Cache_sp cache) {
   /* Lookup the generic-function/arguments invocation in a cache and if an effective-method
@@ -230,7 +238,7 @@ LCC_RETURN standard_dispatch(T_sp gf, VaList_sp arglist, Cache_sp cache) {
 	     * compute the applicable methods. We must save
 	     * the keys and recompute the cache location if
 	     * it was filled. */
-    T_sp keys = VectorObjects_O::create(vektor);
+    T_sp keys = SimpleVector_O::make(vektor.size(),_Nil<T_O>(),true,vektor.size(),&(vektor[0])); // VectorObjects_O::create(vektor);
     T_mv mv = compute_applicable_method(gf, arglist);
     func = Function_sp((gc::Tagged)mv.raw_());
     if (mv.valueGet_(1).notnilp()) {
@@ -247,6 +255,10 @@ LCC_RETURN standard_dispatch(T_sp gf, VaList_sp arglist, Cache_sp cache) {
       }
       e->_key = keys;
       e->_value = func;
+      // Save the results in the call history for later optimization
+      // Strip the first element of the key - which from ECL is the generic function
+      T_sp call_history_key = SimpleVector_O::make(vektor.size()-1,_Nil<T_O>(),true,vektor.size()-1,&(vektor[1]));
+      core__generic_function_call_history_push_new(gc::As_unsafe<Instance_sp>(gf), call_history_key, func);
     }
   }
   return eval::funcall(func, arglist, _Nil<T_O>());

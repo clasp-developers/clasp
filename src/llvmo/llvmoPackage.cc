@@ -45,6 +45,7 @@ THE SOFTWARE.
 #include <clasp/llvmo/debugInfoExpose.h>
 #include <clasp/llvmo/intrinsics.h>
 #include <clasp/llvmo/claspLinkPass.h>
+#include <clasp/core/instance.h>
 #include <clasp/core/loadTimeValues.h>
 #include <clasp/core/unixfsys.h>
 #include <clasp/core/environment.h>
@@ -82,7 +83,7 @@ void redirect_llvm_interface_addSymbol() {
 CL_LAMBDA(filename &optional verbose print external_format);
 CL_DEFUN bool llvm_sys__load_bitcode(core::Pathname_sp filename, bool verbose, bool print, core::T_sp externalFormat )
 {
-  core::DynamicScopeManager scope(cl::_sym_STARpackageSTAR, cl::_sym_STARpackageSTAR->symbolValue());
+  core::DynamicScopeManager scope(::cl::_sym_STARpackageSTAR, ::cl::_sym_STARpackageSTAR->symbolValue());
   T_sp tn = cl__truename(filename);
   if ( tn.nilp() ) {
     SIMPLE_ERROR(BF("Could not get truename for %s") % _rep_(filename));
@@ -168,11 +169,15 @@ CL_DEFUN core::T_sp llvm_sys__cxxDataStructuresInfo() {
   ENTRY(list, "GCVECTOR-END-OFFSET", make_fixnum((char *)&tempGCVector._End - (char *)&tempGCVector));
   ENTRY(list, "GCVECTOR-DATA0-OFFSET", make_fixnum((char *)&tempGCVector._Data[0] - (char *)&tempGCVector));
   ENTRY(list, "FIXNUM-STAMP", make_fixnum(gctools::KIND_FIXNUM));
+  ENTRY(list, "FIXNUM-SHIFT", make_fixnum(gctools::fixnum_shift));
+  ENTRY(list, "KIND-SHIFT", make_fixnum(gctools::Header_s::kind_shift));
   ENTRY(list, "CONS-STAMP", make_fixnum(gctools::KIND_CONS));
   ENTRY(list, "VA_LIST_S-STAMP", make_fixnum(gctools::KIND_VA_LIST_S));
   ENTRY(list, "CHARACTER-STAMP", make_fixnum(gctools::KIND_CHARACTER));
   ENTRY(list, "SINGLE-FLOAT-STAMP", make_fixnum(gctools::KIND_SINGLE_FLOAT)); 
-  ENTRY(list, "STAMP-SHIFT", make_fixnum(gctools::Header_s::stamp_shift));
+  ENTRY(list, "INSTANCE-RACK-OFFSET", make_fixnum(offsetof(Instance_O,_Rack)));
+  ENTRY(list, "INSTANCE-RACK-STAMP-OFFSET", make_fixnum(Instance_O::rack_stamp_offset()));
+  ENTRY(list, "INSTANCE-KIND", make_fixnum(static_cast<Fixnum>(gctools::KIND_INSTANCE)));
   return list;
 }
 
@@ -193,10 +198,10 @@ CL_DEFUN void llvm_sys__throwIfMismatchedStructureSizes(core::Fixnum_sp tspSize,
                  _rep_(givenIhfSize) % InvocationHistoryFrame_size);
   }
   if ( contabSize.notnilp() ) {
-    int contab_size = sizeof(gctools::ConstantsTable);
+    int contab_size = sizeof(gctools::GCRootsInModule);
     if (contabSize.fixnump()) {
       if (contab_size != contabSize.unsafe_fixnum()) {
-        SIMPLE_ERROR(BF("ConstantTable size %lu mismatch with Common Lisp code %lu") % contab_size % contabSize.unsafe_fixnum());
+        SIMPLE_ERROR(BF("GCRootsInModule size %lu mismatch with Common Lisp code %lu") % contab_size % contabSize.unsafe_fixnum());
       }
     } else {
       SIMPLE_ERROR(BF("contab keyword argument expects a fixnum"));

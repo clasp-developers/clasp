@@ -17,6 +17,9 @@
 ;;;;    See file '../Copyright' for full details.
 
 (in-package "CLOS")
+#+(or)
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (setf *echo-repl-read* t))
 
 ;;; ----------------------------------------------------------------------
 ;;;                                                                  slots
@@ -269,7 +272,6 @@ and cannot be added to ~A." method other-gf gf)))
 
 (defmethod compute-applicable-methods-using-classes
     ((gf standard-generic-function) classes)
-  ;;  (print (list "HUNT entering compute-applicable-methods-using-classes gf: " gf))
   (std-compute-applicable-methods-using-classes gf classes))
 
 (function-to-method 'compute-effective-method
@@ -378,5 +380,26 @@ and cannot be added to ~A." method other-gf gf)))
                     '(gf method-combination-type-name method-combination-options))
 
 
+#+clasp
+(defun subclasses* (class)
+  (remove-duplicates
+   (cons class
+         (mapappend #'subclasses*
+                    (class-direct-subclasses class)))))
+  
+#+clasp
+(defun all-generic-functions ()
+  (remove-duplicates
+   (mapappend #'specializer-direct-generic-functions
+              (subclasses* (find-class 't)))))
 
+#|
+;;; THIS IS SUPPOSED TO BE AN ACCESSOR of the CLOS:SPECIALIZER class
+#+clasp
+(defun specializer-direct-generic-functions (class)
+  (remove-duplicates
+   (mapcar #'method-generic-function
+           (specializer-direct-methods class))))
+|#
+          
 

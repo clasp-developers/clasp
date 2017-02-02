@@ -115,50 +115,22 @@ struct from_object<clang::tooling::ArgumentsAdjuster> {
   //	clang::tooling::CommandLineArguments(const clang::tooling::CommandLineArguments&)> DeclareType;
   DeclareType _v;
   from_object(core::T_sp o) {
-    printf("%s:%d Entered from_object<clang::tooling::ArgumentsAdjuster>\n", __FILE__, __LINE__);
+    printf("%s:%d Entered from_object<clang::tooling::ArgumentsAdjuster> with arg: %s@%p\n", __FILE__, __LINE__, _rep_(o).c_str(), (void*)o.tagged_());
     if (o.nilp()) {
       SIMPLE_ERROR(BF("You cannot pass nil as a function"));
     } else if (core::Function_sp func = o.asOrNull<core::Function_O>()) {
-#if 1
-      this->_v = [func](const clang::tooling::CommandLineArguments &args, StringRef filename ) -> clang::tooling::CommandLineArguments {
+      void* function_address = func->functionAddress();
+      printf("%s:%d   intermediate from_object<clang::tooling::ArgumentsAdjuster> with Function arg: %s@%p - function_address: %p\n", __FILE__, __LINE__, _rep_(o).c_str(), (void*)o.tagged_(), function_address);
+      this->_v = [func,function_address](const clang::tooling::CommandLineArguments &args, StringRef filename ) -> clang::tooling::CommandLineArguments {
 			// Should resolve to vector<string>
           core::T_sp targs = translate::to_object<clang::tooling::CommandLineArguments>::convert(args);
           core::T_sp tfilename = translate::to_object<StringRef>::convert(filename);
+          printf("%s:%d About to funcall %s[lineno=%d] with targs %s and tfilename %s - it should have function address: %p\n", __FILE__, __LINE__, _rep_(func).c_str(), func->lineNumber(), _rep_(targs).c_str(), _rep_(tfilename).c_str(), function_address);
           core::T_mv result = core::eval::funcall(func,targs,tfilename);;
           translate::from_object<const clang::tooling::CommandLineArguments&> cresult(result);
           return cresult._v;
       };
       return;
-#else
-      // What was I thinking to expose the inner workings of funcall?????
-      if (auto compiledClosure = func.asOrNull<core::CompiledClosure_O>()) {
-        core::CompiledClosure_fptr_type fptr = compiledClosure->fptr;
-        core::T_O* closedEnvironment = compiledClosure->closedEnvironment().raw_();
-        printf("%s:%d WARNING - getting environment from compiledClosure - this won't work with new closures\n", __FILE__, __LINE__ );
-        this->_v = [fptr,closedEnvironment](const clang::tooling::CommandLineArguments &args) -> clang::tooling::CommandLineArguments {
-			// Should resolve to vector<string>
-			core::T_sp targs = translate::to_object<clang::tooling::CommandLineArguments>::convert(args);
-			core::T_mv result;
-			// Call the fptr
-                        STACK_FRAME(buff,onearg,1);
-                        onearg[0] = targs.raw_();
-                        core::VaList_S onearg_valist_s(onearg);
-                        core::T_O* lcc_arglist = onearg_valist_s.asTaggedPtr();
-			result = fptr(LCC_PASS_ENV_ARGS1_VA_LIST(closedEnvironment,targs.raw_()));
-			// Should resolve to const vector<string>& 
-			translate::from_object<const clang::tooling::CommandLineArguments&> cresult(result);
-			return cresult._v;
-          // Convert args to CL object
-          // Call fptr
-          // Convert result to CommandLineArguments and return them
-        };
-        return;
-      } else {
-        auto closure = func.asOrNull<core::NamedFunction_O>();
-        ASSERT(closure);
-        SIMPLE_ERROR(BF("Figure out what to do with the %s Closure %s ") % closure->describe() % _rep_(closure->name()));
-      }
-#endif
     } else if (clang::tooling::ArgumentsAdjuster *argAdj = gc::As<core::WrappedPointer_sp>(o)->cast<clang::tooling::ArgumentsAdjuster>()) {
       this->_v = *argAdj;
       return;

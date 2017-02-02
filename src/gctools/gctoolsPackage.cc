@@ -39,7 +39,6 @@ extern "C" {
 #include <clasp/core/foundation.h>
 #include <clasp/core/symbolTable.h>
 #include <clasp/gctools/gcFunctions.h>
-#include <clasp/gctools/telemetry.h>
 #include <clasp/gctools/gctoolsPackage.h>
 #include <clasp/core/wrappers.h>
 

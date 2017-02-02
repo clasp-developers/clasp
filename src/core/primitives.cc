@@ -2010,17 +2010,20 @@ CL_DEFUN void core__dynamic_binding_stack_dump(std::ostream &out) {
   };
 }
 
-CL_DEFUN List_sp core__list_from_va_list(VaList_sp valist)
+CL_DEFUN List_sp core__list_from_va_list(VaList_sp vorig)
 {
+  VaList_S valist_copy(*vorig);
+  VaList_sp valist(&valist_copy);
+
   ql::list l;
   size_t nargs = valist->remaining_nargs();
-  printf("%s:%d in %s  nargs=%zu\n", __FILE__, __LINE__, __FUNCTION__, nargs);
+//  printf("%s:%d in %s  nargs=%zu\n", __FILE__, __LINE__, __FUNCTION__, nargs);
   for ( size_t i=0; i<nargs; ++i ) {
     T_sp one = valist->next_arg();
     l << one;
   }
   T_sp result = l.cons();
-  printf("%s:%d Returning: %s\n", __FILE__, __LINE__, _rep_(result).c_str()); 
+//  printf("%s:%d Returning: %s\n", __FILE__, __LINE__, _rep_(result).c_str()); 
   return result;
 }
   
