@@ -3480,7 +3480,7 @@ ALWAYS_INLINE double clasp_to_double( core::Number_sp x )
     return (gc::As< DoubleFloat_sp >( x ))->get();
   }
 
-  return (gc::As< Integer_sp >( x ))->as_double_();
+  return (gc::As< Number_sp >( x ))->as_double_();
 };
 
 ALWAYS_INLINE LongFloat clasp_to_long_float(Number_sp x)
