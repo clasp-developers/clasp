@@ -4315,6 +4315,9 @@ void initialize_llvmo_expose();
 
 namespace llvmo {
 
+  FORWARD(ModuleHandle);
+  FORWARD(ClaspJIT);
+  
   using namespace llvm;
   using namespace llvm::orc;
 
@@ -4334,10 +4337,24 @@ namespace llvmo {
 
     TargetMachine &getTargetMachine() { return *TM; }
 
-    ModuleHandle addModule(Module* M);
-    JITSymbol findSymbol(const std::string Name);
-    void removeModule(ModuleHandle H);
+    ModuleHandle_sp addModule(Module_sp M);
+    core::T_sp findSymbol(const std::string& Name);
+    void removeModule(ModuleHandle_sp H);
   };
+
+  class ModuleHandle_O : public core::General_O {
+    LISP_CLASS(llvmo, LlvmoPkg, ModuleHandle_O, "module-handle", core::General_O);
+  public:
+    ClaspJIT_O::ModuleHandle _Handle;
+  public:
+    static ModuleHandle_sp create(const ClaspJIT_O::ModuleHandle& val) {
+      GC_ALLOCATE_VARIADIC(ModuleHandle_O,mh,val);
+      return mh;
+    }
+  public:
+  ModuleHandle_O(const ClaspJIT_O::ModuleHandle& handle) : _Handle(handle) {};
+  };
+
 
 
 };

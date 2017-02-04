@@ -85,6 +85,7 @@ THE SOFTWARE.
 #include <clasp/core/bformat.h>
 #include <clasp/core/pointer.h>
 #include <clasp/core/str.h>
+#include <clasp/core/pointer.h>
 #include <clasp/gctools/gc_interface.fwd.h>
 #include <clasp/llvmo/debugInfoExpose.h>
 #include <clasp/llvmo/llvmoExpose.h>
@@ -3394,8 +3395,9 @@ ClaspJIT_O::ClaspJIT_O() : TM(EngineBuilder().selectTarget()), DL(TM->createData
   llvm::sys::DynamicLibrary::LoadLibraryPermanently(nullptr);
 }
 
-
-ClaspJIT_O::ModuleHandle ClaspJIT_O::addModule(Module* M) {
+CL_LISPIFY_NAME("CLASP-JIT-ADD-MODULE");
+CL_DEFMETHOD ModuleHandle_sp ClaspJIT_O::addModule(Module_sp cM) {
+  Module* M = cM->wrappedPtr();
     // Build our symbol resolver:
     // Lambda 1: Look back into the JIT itself to find symbols that are part of
     //           the same "logical dylib".
@@ -3420,20 +3422,24 @@ ClaspJIT_O::ModuleHandle ClaspJIT_O::addModule(Module* M) {
 
     // Add the set to the JIT with the resolver we created above and a newly
     // created SectionMemoryManager.
-  return CompileLayer.addModuleSet(std::move(Ms),
-                                   make_unique<SectionMemoryManager>(),
-                                   std::move(Resolver));
+  return ModuleHandle_O::create(CompileLayer.addModuleSet(std::move(Ms),
+                                                        make_unique<SectionMemoryManager>(),
+                                                        std::move(Resolver)));
 }
 
-JITSymbol ClaspJIT_O::findSymbol(const std::string Name) {
+CL_LISPIFY_NAME("CLASP-JIT-FIND-SYMBOL");
+CL_DEFMETHOD core::T_sp ClaspJIT_O::findSymbol(const std::string& Name) {
   std::string MangledName;
   raw_string_ostream MangledNameStream(MangledName);
   llvm::Mangler::getNameWithPrefix(MangledNameStream, Name, DL);
-  return CompileLayer.findSymbol(MangledNameStream.str(), true);
+  llvm::JITSymbol sym = CompileLayer.findSymbol(MangledNameStream.str(), true);
+  if (!sym) return _Nil<core::T_O>();
+  return core::Pointer_O::create((void*)sym.getAddress());
 }
 
-void ClaspJIT_O::removeModule(ClaspJIT_O::ModuleHandle H) {
-  CompileLayer.removeModuleSet(H);
+CL_LISPIFY_NAME("CLASP-JIT-REMOVE-MODULE");
+CL_DEFMETHOD void ClaspJIT_O::removeModule(ModuleHandle_sp H) {
+  CompileLayer.removeModuleSet(H->_Handle);
 }
 };
 
