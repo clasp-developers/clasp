@@ -956,7 +956,7 @@ when this is t a lot of graphs will be generated.")
 (defun my-hir-transformations (init-instr implementation processor os)
   (cleavir-typed-transforms:thes->typeqs init-instr)
   (quick-draw-hir init-instr "hir-after-thes-typeqs")
-  (when *enable-type-inference*
+-  (when *enable-type-inference*
     ;; Conditionally use type inference.
     (handler-case
         (let ((types (cleavir-type-inference:infer-types init-instr)))
