@@ -125,6 +125,7 @@ THE SOFTWARE.
 #include <clasp/core/primitives.h>
 #include <clasp/core/package.h>
 #include <clasp/core/symbol.h>
+#include <clasp/core/null.h>
 #include <clasp/core/lambdaListHandler.h>
 #include <clasp/core/sequence.h>
 #include <clasp/core/evaluator.h>
@@ -303,7 +304,7 @@ void dump_info(BuiltInClass_sp co, Lisp_sp lisp) {
 }
 
 void Lisp_O::setupSpecialSymbols() {
-  Symbol_sp symbol_nil = Symbol_O::create_at_boot("NIL");
+  Null_sp symbol_nil = Null_O::create_at_boot("NIL");
   Symbol_sp symbol_unbound = Symbol_O::create_at_boot("UNBOUND");
   Symbol_sp symbol_deleted = Symbol_O::create_at_boot("DELETED");
   Symbol_sp symbol_sameAsKey = Symbol_O::create_at_boot("SAME-AS-KEY");

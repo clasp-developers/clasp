@@ -37,38 +37,17 @@ namespace core {
 //
 
 
-
-
-
-
-#if 0
-    void Null_O::serialize(::serialize::SNodeP node)
-    {
-	IMPLEMENT_ME();
-        this->Bases::serialize(node);
-	// Archive other instance variables here
-    }
-
-#endif
-#if defined(XML_ARCHIVE)
-void Null_O::archiveBase(::core::ArchiveP node) {
-  this->T_O::archiveBase(node);
-  this->Symbol_O::archiveBase(node);
-  this->List_O::archiveBase(node);
-}
-#endif // defined(XML_ARCHIVE)
-
-void Null_O::initialize() {
-  _OF();
-  //        this->T_O::initialize();
-  IMPLEMENT_MEF(BF("Null needs to implement single inheritance"));
-  this->Symbol_O::initialize();
-  //	this->List_O::initialize();
-}
+Null_sp Null_O::create_at_boot(const string &nm) {
+  // This is used to allocate roots that are pointed
+  // to by global variable _sym_XXX  and will never be collected
+  Symbol_sp n = gctools::GC<Null_O>::root_allocate();
+  n->_Name = SimpleBaseString_O::make(nm.size(),'\0',true,nm.size(),(const claspChar*)nm.c_str());
+  return n;
+};
 
 string Null_O::__repr__() const {
   _OF();
-  return "#<NULL--- NON-NULL instance of NULL!!!!!>";
+  return "NIL";
 }
 
 }; /* core */

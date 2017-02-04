@@ -788,10 +788,6 @@ class Lisp_O;
 typedef gctools::tagged_pointer<Lisp_O> Lisp_sp;
 class NamedFunction_O;
 typedef gctools::smart_ptr<NamedFunction_O> NamedFunction_sp;
-#ifdef USE_HEAP_FIXNUM
-class Fixnum_O;
-typedef gctools::smart_ptr<Fixnum_O> Fixnum_sp;
-#endif
 class LambdaListHandler_O;
 typedef gctools::smart_ptr<LambdaListHandler_O> LambdaListHandler_sp;
 class Environment_O;

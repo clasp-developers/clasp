@@ -1729,8 +1729,7 @@ T_mv sp_symbolMacrolet(List_sp args, T_sp env) {
 /*! Returns NIL if no function is found */
 T_sp lookupFunction(T_sp functionDesignator, T_sp env) {
   ASSERTF(functionDesignator, BF("In apply, the head function designator is UNDEFINED"));
-  if (Function_sp exec = functionDesignator.asOrNull<Function_O>())
-    return exec;
+  LIKELY_if (gc::IsA<Function_sp>(functionDesignator)) return functionDesignator;
   Symbol_sp shead = gc::As<Symbol_sp>(functionDesignator);
   T_sp exec = af_interpreter_lookup_function(shead, env);
   return exec;

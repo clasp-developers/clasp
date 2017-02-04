@@ -381,6 +381,8 @@
   ;; Cannot be inlined because it will be a method
   (declare (notinline compute-effective-method))
   (let ((form (compute-effective-method gf method-combination applicable-methods)))
+    (when-monitor-dispatch 
+     (list :compute-effective-method-function form))
     (let ((aux form) f)
       (if (and (listp aux)
 		 (eq (pop aux) 'funcall)

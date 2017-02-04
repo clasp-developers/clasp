@@ -167,7 +167,7 @@ VARIABLE doc and can be retrieved by (DOCUMENTATION 'SYMBOL 'VARIABLE)."
 ;;; This is a no-op unless the compiler is installed
 ;;;
 (defmacro define-compiler-macro (&whole whole name vl &rest body)
-  (or (not (eq name 'funcall)) (error "You currently cannot define a compiler macro named funcall"))
+;  (or (not (eq name 'funcall)) (error "You currently cannot define a compiler macro named funcall"))
   (multiple-value-bind (function pprint doc-string)
       (sys::expand-defmacro name vl body 'cl:define-compiler-macro)
     (declare (ignore pprint))

@@ -121,7 +121,6 @@ void cc_initialize_gcroots_in_module(gctools::GCRootsInModule* holder, core::T_s
 }
 
 void cc_shutdown_gcroots_in_module(gctools::GCRootsInModule* holder) {
-  printf("%s:%d Shutdown the roots here\n", __FILE__, __LINE__ );
   shutdown_gcroots_in_module(holder);
 }
 
@@ -458,8 +457,11 @@ ALWAYS_INLINE T_O *va_lexicalFunction(int depth, int index, core::T_sp *evaluate
 ALWAYS_INLINE LCC_RETURN FUNCALL(LCC_ARGS_FUNCALL_ELLIPSIS) {
   VaList_S lcc_arglist_s;
   va_start(lcc_arglist_s._Args, LCC_VA_START_ARG);
+#ifdef ENABLE_BACKTRACE_ARGS
   LCC_SPILL_REGISTER_ARGUMENTS_TO_VA_LIST(lcc_arglist_s);
+#endif
   core::T_O *lcc_arglist = lcc_arglist_s.asTaggedPtr();
+  
 #ifdef _DEBUG_BUILD
   VaList_S saved_arglist_s(lcc_arglist_s);
   core::T_O* debug_lcc_arglist = saved_arglist_s.asTaggedPtr();

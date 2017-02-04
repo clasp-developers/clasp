@@ -1,3 +1,33 @@
+(error "foo")
+
+(defun gather 
+(let ((CLOS::*TRAP* (cons t nil)))
+  ;; Call c-a-m-u-c once to establish a call-history.  ECL bypasses it
+  (print-object #'print-object *standard-output*)
+  (print-object (core::make-restart) *standard-output*)
+  (print-object (list 1 2 3) *standard-output*)
+  (bformat t "*trap-recursive-dispatch-miss* -> %s\n" clos::*trap*)
+  (print-address-of 'clos::*trap*)
+  (defparameter *newgfs* (mapcar (lambda (gf) (cons gf (clos::calculate-strandh-dispatch-function gf))) (clos::all-generic-functions)))
+  (dolist (ng *newgfs*) (clos:set-funcallable-instance-function (car ng) (cdr ng)))
+  (push :strandh-dispatch *features*)
+  (bformat t "------------done-------------\n"))
+
+(let ((clos::*trap-recursive-dispatch* t))
+  ;; Call c-a-m-u-c once to establish a call-history.  ECL bypasses it
+  (clos::generic-function-compiled-dispatch-function #'print-object)
+  (setf (clos::generic-function-compiled-dispatch-function #'print-object) t)
+  (clos::compute-applicable-methods-using-classes #'print-object (list (find-class T) (find-class 'stream)))
+  (clos:compute-effective-method #'clos:compute-effective-method (clos:generic-function-method-combination #'clos:compute-effective-method) (clos:generic-function-methods #'clos:compute-effective-method))
+  (clos::generic-function-name #'print-object)
+  (print-object #'print-object *standard-output*)
+  (print-object (core::make-restart) *standard-output*)
+  (defparameter *newgfs* (mapcar (lambda (gf) (cons gf (clos::calculate-strandh-dispatch-function gf))) (clos::all-generic-functions))))
+
+
+
+
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -25,17 +55,35 @@
 
 (apropos "invalidated-dispatch-functions")
 
+(clasp-cleavir:cleavir-compile 'foo '(lambda (x y) (+ x y)))
+(time (clasp-cleavir:cleavir-compile-file "sys:kernel;lsp;predlib.lsp"))
+
 (let ((clos::*monitor-dispatch* t)
       (clos::*dispatch-log* nil))
   (clasp-cleavir:cleavir-compile 'foo '(lambda (x y) (+ x y)))
   (print "------- dispatch-log----")
-  (print clos::*dispatch-log*))
+  (print (reverse clos::*dispatch-log*))
+  nil)
 
+(let ((clos::*monitor-dispatch* t)
+      (clos::*dispatch-log* nil))
+  (bar 1)
+  (print "------- dispatch-log----")
+  (print (reverse clos::*dispatch-log*))
+  nil)
+
+(cleavir-generate-ast:convert-special
 (let ((clos::*monitor-dispatch* t)
       (clos::*dispatch-log* nil))
   (clasp-cleavir:cleavir-compile-file #P"sys:kernel;lsp;foundation.lsp" :print t)
   (print "------- dispatch-log----")
   (print clos::*dispatch-log*))
+
+
+
+
+
+(time (clasp-cleavir:cleavir-compile 'myfoo '(lambda (x y) (+ x y))))
 
 
 

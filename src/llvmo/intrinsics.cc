@@ -304,7 +304,9 @@ ALWAYS_INLINE gc::return_type cc_call(LCC_ARGS_CC_CALL_ELLIPSIS) {
   core::Closure_O* closure = gc::untag_general<core::Closure_O *>(tagged_closure);
   VaList_S lcc_arglist_s;
   va_start(lcc_arglist_s._Args, LCC_VA_START_ARG);
+#ifdef ENABLE_BACKTRACE_ARGS  
   LCC_SPILL_REGISTER_ARGUMENTS_TO_VA_LIST(lcc_arglist_s);
+#endif
   core::T_O *lcc_arglist = lcc_arglist_s.asTaggedPtr();
   return closure->invoke_va_list(LCC_PASS_ARGS);
 }

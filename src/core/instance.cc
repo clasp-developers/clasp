@@ -445,17 +445,17 @@ CL_DEFUN bool core__call_history_entry_key_contains_specializer(SimpleVector_sp 
 }
   
 
-bool key_match(SimpleVector_sp x, SimpleVector_sp y) {
-  if (x->length() != y->length()) return false;
+CL_DEFUN bool core__specializer_key_match(SimpleVector_sp x, SimpleVector_sp entry_key) {
+  if (x->length() != entry_key->length()) return false;
   for ( size_t i(0); i<x->length(); ++i ) {
     // If eql specializer then match the specializer value
     if ((*x)[i].consp()) {
-      if (!(*y)[i].consp()) return false;
+      if (!(*entry_key)[i].consp()) return false;
       T_sp eql_spec_x = oCadr((*x)[i]);
-      T_sp eql_spec_y = oCadr((*y)[i]);
-      if (!cl__eql(eql_spec_x,eql_spec_y)) return false;
+      T_sp eql_spec_y = (*entry_key)[i];
+      if (!gc::As_unsafe<Cons_sp>(eql_spec_y)->memberEql(eql_spec_x)) return false;
     } else {
-      if ((*x)[i] != (*y)[i]) return false;
+      if ((*x)[i] != (*entry_key)[i]) return false;
     }
   }
   return true;
@@ -470,7 +470,7 @@ CL_DEFUN List_sp core__call_history_find_key(List_sp generic_function_call_histo
     Cons_sp entry = gc::As_unsafe<Cons_sp>(oCar(cur));
     ASSERT(gc::IsA<SimpleVector_sp>(oCar(entry)));
     SimpleVector_sp entry_key = gc::As_unsafe<SimpleVector_sp>(oCar(entry));
-    if (key_match(key,entry_key)) return cur;
+    if (core__specializer_key_match(key,entry_key)) return cur;
   }
   return _Nil<T_O>();
 }

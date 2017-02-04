@@ -94,7 +94,9 @@ namespace core {
     inline LCC_RETURN operator()(LCC_ARGS_ELLIPSIS) {
       VaList_S lcc_arglist_s;
       va_start(lcc_arglist_s._Args, LCC_VA_START_ARG);
+#ifdef ENABLE_BACKTRACE_ARGS
       LCC_SPILL_REGISTER_ARGUMENTS_TO_VA_LIST(lcc_arglist_s);
+#endif
       T_O* lcc_arglist = lcc_arglist_s.asTaggedPtr();
 #ifdef _DEBUG_BUILD
       VaList_S* vargs = reinterpret_cast<VaList_S*>(gctools::untag_valist(lcc_arglist));

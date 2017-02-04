@@ -682,6 +682,7 @@ def configure(cfg):
     if (cfg.env.DEBUG_GUARD):
         cfg.define("DEBUG_GUARD",1)
         cfg.define("DEBUG_GUARD_VALIDATE",1)
+    cfg.define("ENABLE_BACKTRACE_ARGS",1)
 #    cfg.define("DEBUG_ZERO_KIND",1);
     cfg.env.append_value('CXXFLAGS', ['-Wno-macro-redefined'] )
     cfg.env.append_value('CXXFLAGS', ['-Wno-deprecated-register'] )

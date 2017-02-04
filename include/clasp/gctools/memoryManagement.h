@@ -172,6 +172,15 @@ calculate IsA relationships using simple GCKindEnum range comparisons.
                  KIND_CONS = 4,
                  KIND_VA_LIST_S = 5,
                  KIND_INSTANCE = 6,
+                 // These are defined to support the GCKind<...> specializations below
+                 // when defined(USE_CXX_DYNAMIC_CAST) || defined(RUNNING_GC_BUILDER)
+                 KIND_LISPALLOC_core__VaList_dummy_O = KIND_VA_LIST_S, 
+                 KIND_LISPALLOC_core__Cons_O = KIND_CONS, 
+                 KIND_LISPALLOC_core__Character_dummy_O = KIND_CHARACTER, 
+                 KIND_LISPALLOC_core__SingleFloat_dummy_O = KIND_SINGLE_FLOAT, 
+                 KIND_LISPALLOC_core__Fixnum_dummy_O = KIND_FIXNUM,
+                 KIND_LISPALLOC_core__Instance_O = KIND_INSTANCE,
+                 
                  KIND_max = 6 } GCKindEnum; // minimally define this GCKind
 #else
  #define GC_ENUM
@@ -544,6 +553,46 @@ namespace gctools {
 #endif
     };
 };
+
+
+// ------------------------------------------------------------
+//
+// Specializations when running boehmdc or the static analyzer
+//
+namespace core {
+  class Fixnum_dummy_O;
+  class SingleFloat_dummy_O;
+  class Character_dummy_O;
+  class Cons_O;
+  class VaList_dummy_O;
+  class Instance_O;
+}
+#if defined(USE_CXX_DYNAMIC_CAST) || defined(RUNNING_GC_BUILDER)
+template <> class gctools::GCKind<core::Fixnum_dummy_O> {
+public:
+  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__Fixnum_dummy_O ;
+};
+template <> class gctools::GCKind<core::SingleFloat_dummy_O> {
+public:
+  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__SingleFloat_dummy_O ;
+};
+template <> class gctools::GCKind<core::Character_dummy_O> {
+public:
+  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__Character_dummy_O ;
+};
+template <> class gctools::GCKind<core::Cons_O> {
+public:
+  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__Cons_O ;
+};
+template <> class gctools::GCKind<core::VaList_dummy_O> {
+public:
+  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__VaList_dummy_O ;
+};
+template <> class gctools::GCKind<core::Instance_O> {
+public:
+  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__Instance_O ;
+};
+#endif
 
 namespace gctools {
 
