@@ -645,7 +645,7 @@ def configure(cfg):
     cfg.define("USE_AMC_POOL",1)
     cfg.define("USE_EXPENSIVE_BACKTRACE",1)
     cfg.define("X86_64",1)
-    cfg.define("DEBUG_FUNCTION_CALL_COUNTER",1)
+#    cfg.define("DEBUG_FUNCTION_CALL_COUNTER",1)
     cfg.define("_ADDRESS_MODEL_64",1)
     cfg.define("__STDC_CONSTANT_MACROS",1)
     cfg.define("__STDC_FORMAT_MACROS",1)
