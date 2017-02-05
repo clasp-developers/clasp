@@ -332,7 +332,7 @@ namespace core {
     List_sp copyTreeCar() const;
 
   /*! Return the number of elements in the list*/
-    uint length() const;
+    size_t length() const;
 
   /*! Calculate the length the fastest way I can think of */
     inline uint fastUnsafeLength() const {
