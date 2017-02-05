@@ -358,6 +358,8 @@
 ;; The following chokes in clasp because I don't have the method-combination class defined
 ;; during compilation of the full clasp source code.
 ;; I don't use compiler macros anyway so I'll feature this out
+
+;; TODO: Turn this back on
 #-clasp
 (eval-when (compile :load-toplevel)
   (let* ((class (find-class 'method-combination)))
