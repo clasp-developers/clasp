@@ -1314,7 +1314,16 @@ T_mv sp_foreignCallPointer(List_sp args, T_sp env) {
 
 T_mv sp_multipleValueCall(List_sp args, T_sp env) {
   ASSERT(env.generalp());
-  Function_sp func = gc::As<Function_sp>(eval::evaluate(oCar(args), env));
+  T_sp funcdesig = eval::evaluate(oCar(args),env);
+  Function_sp func;
+  unlikely_if (!gc::IsA<Function_sp>(funcdesig)) {
+    unlikely_if (!gc::IsA<Symbol_sp>(funcdesig)) {
+      TYPE_ERROR(funcdesig,Cons_O::createList(cl::_sym_or,cl::_sym_Function_O,cl::_sym_Symbol_O));
+    }
+    func = gc::As_unsafe<Function_sp>(gc::As_unsafe<Symbol_sp>(funcdesig)->symbolFunction());
+  } else {
+    func = gc::As_unsafe<Function_sp>(funcdesig);
+  }
   List_sp resultList = _Nil<T_O>();
   Cons_sp *cur = reinterpret_cast<Cons_sp *>(&resultList);
   core::MultipleValues& mv = core::lisp_multipleValues();
