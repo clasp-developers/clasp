@@ -1243,8 +1243,6 @@ extern core::Symbol_sp& _sym_macro;
 };
 
 
-#include <boost/random.hpp>
-
 namespace core {
 
 typedef unsigned char ubyte;

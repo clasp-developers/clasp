@@ -1542,14 +1542,13 @@ We could do more fancy things here - like if cleavir-clasp fails, use the clasp 
               (values func nil nil))
              ((core:cxx-instance-p func)
               (let ((user-func (clos:get-funcallable-instance-function func)))
-                (when user-func
+                (when (and user-func (interpreted-function-p user-func))
                   (let ((compiled-user-func (compile nil user-func)))
                     (when (not (eq user-func compiled-user-func))
                       (clos:set-funcallable-instance-function func compiled-user-func)))))
               (values func nil nil))
              (t (error "COMPILE doesn't know how to handle this type of function")))))
-        (t (error "Illegal combination of arguments for compile: ~a ~a"
-                  name definition)))
+        (t (error "Illegal combination of arguments for compile: ~a ~a, class-of definition ~a" name definition (class-of definition))))
     ;; Bind the name if applicable.
     (cond ((and (symbolp name) (macro-function name))
            (setf (macro-function name) function)

@@ -59,7 +59,9 @@ CL_DEFUN T_sp cl__random(T_sp olimit, RandomState_sp random_state) {
     boost::random::uniform_int_distribution<uint64_t> range(0, olimit.unsafe_fixnum() - 1);
     return make_fixnum(range(random_state->_Producer));
   } else if (gc::IsA<Bignum_sp>(olimit)) {
-    IMPLEMENT_MEF(BF("Implement generating Bignum random numbers"));
+    Bignum_sp gbn = gc::As_unsafe<Bignum_sp>(olimit);
+    boost::uniform_int<bmp::mpz_int> gen(0, bmp::mpz_int(gbn->get().get_mpz_t()));
+    return Bignum_O::create(mpz_class(gen(random_state->_Producer)));
   } else if (DoubleFloat_sp df = olimit.asOrNull<DoubleFloat_O>()) {
     boost::random::uniform_real_distribution<> range(0.0, df->get());
     return DoubleFloat_O::create(range(random_state->_Producer));

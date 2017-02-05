@@ -612,7 +612,7 @@ namespace core {
       hg.addPart(obj.unsafe_fixnum());
       return;
     } else if (obj.single_floatp()) {
-      hg.addPart((gc::Fixnum)std::abs(::floor(obj.unsafe_single_float())));
+      hg.addPart((gc::Fixnum)::std::abs((int)::floor(obj.unsafe_single_float())));
       return;
     } else if (obj.characterp()) {
       hg.addPart(obj.unsafe_character());
