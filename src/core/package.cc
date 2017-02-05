@@ -271,11 +271,14 @@ CL_DEFUN T_mv cl__gentemp(T_sp prefix, T_sp package_designator) {
   Package_sp pkg = coerce::packageDesignator(package_designator);
   StrNs_sp ss;
   if (prefix.nilp()) {
-    ss = Str8Ns_O::make("T");
+    SimpleBaseString_sp sbs = SimpleBaseString_O::make("T        ");
+    ss = Str8Ns_O::make(sbs->length(),'\0',true,clasp_make_fixnum(1),sbs,false,clasp_make_fixnum(0));
   } else if (cl__stringp(prefix)) {
     String_sp sprefix = gc::As_unsafe<String_sp>(prefix);
     ss = gc::As_unsafe<StrNs_sp>(core__make_vector(sprefix->arrayElementType(),32,true,clasp_make_fixnum(sprefix->length())));
     ss->unsafe_setf_subseq(0,sprefix->length(),sprefix);
+  } else {
+    TYPE_ERROR(prefix,Cons_O::createList(cl::_sym_or,cl::_sym_string,cl::_sym_Null_O));
   }
   T_sp retval;
   core__integer_to_string(ss,Integer_O::create(static_gentemp_counter),clasp_make_fixnum(10),false,false);
