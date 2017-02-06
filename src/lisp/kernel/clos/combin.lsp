@@ -132,7 +132,7 @@
 
 (defun standard-main-effective-method (before primary after)
   (declare (si::c-local))
-  #'(lambda (.method-args. no-next-method &rest args)
+  #'(lambda (.method-args. no-next-method #|&rest args|#)
       (declare (ignore no-next-method)
                (core:lambda-name standard-main-effective-method.lambda))
       (dolist (i before)

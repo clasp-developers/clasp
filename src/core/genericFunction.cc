@@ -41,6 +41,7 @@ THE SOFTWARE.
 #include <clasp/core/symbolTable.h>
 #include <clasp/core/genericFunction.h>
 #include <clasp/core/wrappers.h>
+#include <clasp/llvmo/intrinsics.h>
 
 #define CACHE_METHOD_LOOKUP
 
@@ -261,7 +262,8 @@ LCC_RETURN standard_dispatch(T_sp gf, VaList_sp arglist, Cache_sp cache) {
       core__generic_function_call_history_push_new(gc::As_unsafe<Instance_sp>(gf), call_history_key, func);
     }
   }
-  return eval::funcall(func, arglist, _Nil<T_O>());
+  return cc_dispatch_effective_method(func.raw_(),gf.raw_(), arglist.raw_());
+//  return eval::funcall(func, arglist, _Nil<T_O>());
 }
 
 /*! Reproduces functionality in generic_function_dispatch_vararg

@@ -232,15 +232,6 @@
            (progn
              ,@body)))))
 
-(defun dbg-attach-debugging-info-to-value-frame (af symbol-list-designator env)
-  (when *dbg-generate-dwarf*
-    (irc-attach-debugging-info-to-value-frame af symbol-list-designator env)))
-
-#+(or)(defun dbg-set-activation-frame-for-ihs-top (renv)
-        (error "Depreciated dbg-set-activation-frame-for-ihs-top")
-        (when *dbg-generate-dwarf*
-          (irc-intrinsic "trace_setActivationFrameForIHSTop" (irc-renv new-env))))
-
 (defun dbg-set-current-source-pos (form)
   (when *dbg-generate-dwarf*
     (setq *dbg-set-current-source-pos* t)

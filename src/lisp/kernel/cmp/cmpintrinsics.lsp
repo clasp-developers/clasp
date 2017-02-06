@@ -751,7 +751,7 @@ and initialize it with an array consisting of one function pointer."
   (primitive-nounwind module "setParentOfActivationFrameFromClosure" +void+ (list +tsp*+ +t*+))
   (primitive-nounwind module "setParentOfActivationFrame" +void+ (list +tsp*+ +tsp*+))
 
-  (primitive-nounwind module "attachDebuggingInfoToValueFrame" +void+ (list +afsp*+ +tsp*+))
+;;  (primitive-nounwind module "attachDebuggingInfoToValueFrame" +void+ (list +afsp*+ +tsp*+))
 
   (primitive-nounwind module "valueFrameReference" +tsp*+ (list +afsp*+ +i32+))
 

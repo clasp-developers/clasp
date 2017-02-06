@@ -142,9 +142,9 @@ inline LCC_RETURN funcall(T_sp fn, ARG0 arg0) {
      need to be made consistent with lispCallingConvention.h */
   ASSERT(3 == LCC_ARGS_IN_REGISTERS);
   T_sp tfunc = lookupFunction(fn, _Nil<T_O>());
-  if (tfunc.nilp())
-    ERROR_UNDEFINED_FUNCTION(fn);
-  Function_sp func = gc::As<Function_sp>(tfunc);
+  if (tfunc.nilp()) ERROR_UNDEFINED_FUNCTION(fn);
+  ASSERT(gc::IsA<Function_sp>(tfunc));
+  Function_sp func = gc::As_unsafe<Function_sp>(tfunc);
   return (*func)(LCC_PASS_ARGS1_ELLIPSIS(func.raw_(),arg0.raw_()));
 }
 
@@ -165,8 +165,8 @@ inline LCC_RETURN funcall(T_sp fn, ARG0 arg0, ARG1 arg1) {
     }
     ERROR_UNDEFINED_FUNCTION(fn);
   }
-  Function_sp func = tfunc.asOrNull<Function_O>();
-  ASSERT(func);
+  ASSERT(gc::IsA<Function_sp>(tfunc));
+  Function_sp func = gc::As_unsafe<Function_sp>(tfunc);
   return (*func)(LCC_PASS_ARGS2_ELLIPSIS(func.raw_(),arg0.raw_(), arg1.raw_()));
 }
 
@@ -176,9 +176,9 @@ inline LCC_RETURN funcall(T_sp fn, ARG0 arg0, ARG1 arg1, ARG2 arg2) {
      need to be made consistent with lispCallingConvention.h */
   ASSERT(3 == LCC_ARGS_IN_REGISTERS);
   T_sp tfunc = lookupFunction(fn, _Nil<T_O>());
-  if (tfunc.nilp())
-    ERROR_UNDEFINED_FUNCTION(fn);
-  Function_sp func = gc::As<Function_sp>(tfunc);
+  if (tfunc.nilp()) ERROR_UNDEFINED_FUNCTION(fn);
+  ASSERT(gc::IsA<Function_sp>(tfunc));
+  Function_sp func = gc::As_unsafe<Function_sp>(tfunc);
   return (*func)(LCC_PASS_ARGS3_ELLIPSIS(func.raw_(),LCC_FROM_SMART_PTR(arg0), LCC_FROM_SMART_PTR(arg1), LCC_FROM_SMART_PTR(arg2)));
 }
 
@@ -189,9 +189,9 @@ inline LCC_RETURN funcall(T_sp fn, ARG0 arg0, ARG1 arg1, ARG2 arg2, ARGS &&... a
      need to be made consistent with lispCallingConvention.h */
   ASSERT(3 == LCC_ARGS_IN_REGISTERS);
   T_sp tfunc = lookupFunction(fn, _Nil<T_O>());
-  if (tfunc.nilp())
-    ERROR_UNDEFINED_FUNCTION(fn);
-  Function_sp func = gc::As<Function_sp>(tfunc);
+  if (tfunc.nilp()) ERROR_UNDEFINED_FUNCTION(fn);
+  ASSERT(gc::IsA<Function_sp>(tfunc));
+  Function_sp func = gc::As_unsafe<Function_sp>(tfunc);
   size_t vnargs = sizeof...(ARGS);
   size_t nargs = vnargs + LCC_FIXED_NUM;
   return (*func)(func.raw_(), NULL, nargs, LCC_FROM_SMART_PTR(arg0), LCC_FROM_SMART_PTR(arg1), LCC_FROM_SMART_PTR(arg2), std::forward<ARGS>(args).raw_()...);

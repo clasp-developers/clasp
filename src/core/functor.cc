@@ -58,6 +58,7 @@ CL_DEFUN Integer_sp core__interpreted_closure_calls() {
 }
 
 #ifdef DEBUG_FUNCTION_CALL_COUNTER
+
 CL_DEFUN size_t core__function_call_counter(Function_sp f)
 {
   return f->_TimesCalled;
@@ -284,6 +285,7 @@ LCC_RETURN InterpretedClosure_O::LISP_CALLING_CONVENTION() {
 
 namespace core {
 
+#ifdef USE_COMPILED_CLOSURE
 core::T_sp CompiledClosure_O::lambda_list() const {
   return this->_lambdaList;
 }
@@ -291,6 +293,8 @@ core::T_sp CompiledClosure_O::lambda_list() const {
 void CompiledClosure_O::setf_lambda_list(core::List_sp lambda_list) {
   this->_lambdaList = lambda_list;
 }
+#endif
+
 
 #if 0
 LCC_RETURN InstanceClosure_O::LISP_CALLING_CONVENTION() {

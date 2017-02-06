@@ -80,9 +80,11 @@
 
 (in-package :cmp)
 
+(defparameter *link-options* (list "-O2"))
+
 (defun execute-link-fasl (in-bundle-file in-all-names)
   ;; options are a list of strings like (list "-v")
-  (let ((options nil)
+  (let ((options *link-options*)
         (all-object-files (mapcar (lambda (n)
                                     (ensure-string n))
                                   (if (listp in-all-names)

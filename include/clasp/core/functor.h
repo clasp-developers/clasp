@@ -429,6 +429,7 @@ namespace core {
   };
 };
 
+#ifdef USE_COMPILED_CLOSURE
 namespace core {
 class CompiledClosure_O : public core::ClosureWithFrame_O {
 //  friend void dump_funcs(core::CompiledFunction_sp compiledFunction);
@@ -465,7 +466,7 @@ public:
   };
 };
 };
-
+#endif
 
 namespace core {
 class CompiledDispatchFunction_O : public core::ClosureWithFrame_O {

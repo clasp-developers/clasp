@@ -282,7 +282,7 @@ namespace gctools {
     tagged_kind_t data[0]; // The 0th element intrudes into the client data
   public:
 #ifndef DEBUG_GUARD
-  Header_s(kind_t k) : header((((kind_t)k) << kind_shift) | kind_tag) {};
+  Header_s(kind_t k) : header((((kind_t)k) << kind_shift) | kind_tag) {}
     void validate() const {};
 #else
     inline void fill_tail() { memset((void*)(((char*)this)+this->tail_start),0xcc,this->tail_size);};

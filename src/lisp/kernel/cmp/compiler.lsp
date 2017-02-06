@@ -91,15 +91,7 @@ The passed module is modified as a side-effect."
                             function-env
                             argument-holder
                             new-env)
-  (dbg-set-current-debug-location-here)
-  ;;  (irc-intrinsic "debugInspectActivationFrame" closed-over-renv)
-  ;;  (irc-intrinsic "debugInspectActivationFrame" (irc-renv new-env))
-  ;;  (irc-intrinsic "gdb")
-  ;;
-  ;; The setParentOfActivationFrame should be set before we compile the lambda-list-code
-  ;; otherwise it won't be able to access the closed over environment
-  ;;  (irc-intrinsic "setParentOfActivationFrame" (irc-renv new-env) closed-over-renv)
-  (dbg-attach-debugging-info-to-value-frame (irc-renv new-env) lambda-list-handler new-env))
+  (dbg-set-current-debug-location-here))
 
 (defparameter *lambda-args-num* 0)
 
@@ -445,9 +437,6 @@ env is the parent environment of the (result-af) value frame"
 ;;      (dbg-set-activation-frame-for-ihs-top (irc-renv new-env))
       (irc-intrinsic "setParentOfActivationFrame" result-af (irc-renv parent-env))
       (dbg-set-current-debug-location-here)
-      (dbg-attach-debugging-info-to-value-frame (irc-renv new-env)
-						lambda-list-handler
-						new-env)
       ;; Save all special variables
       (do* ((cur-req (cdr reqvars) (cdr cur-req))
 	    (classified-target (car cur-req) (car cur-req)))
@@ -493,9 +482,6 @@ env is the parent environment of the (result-af) value frame"
 ;;      (dbg-set-activation-frame-for-ihs-top (irc-renv new-env))
       (irc-intrinsic "setParentOfActivationFrame" result-af (irc-renv parent-env))
       (dbg-set-current-debug-location-here)
-      (dbg-attach-debugging-info-to-value-frame (irc-renv new-env)
-						lambda-list-handler
-						new-env)
       ;; Save all special variables
       (do* ((cur-req (cdr reqvars) (cdr cur-req))
 	    (classified-target (car cur-req) (car cur-req)))

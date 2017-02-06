@@ -26,9 +26,6 @@
 
 (in-package :cmp)
 
-(defvar *debug-attach-debugging-info-to-value-frames* t)
-
-
 
 ;; Use the DebugIRPass to add self referencing debugging informato to IR
 (defvar *debug-ir* nil)

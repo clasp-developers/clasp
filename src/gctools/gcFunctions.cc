@@ -262,12 +262,17 @@ struct ReachableClass {
     core::Fixnum k = this->_Kind;
     stringstream className;
     if (k <= gctools::KIND_max) {
-      className << obj_name(this->_Kind);
+      const char* nm = obj_name(k);
+      if (!nm) {
+        className << "NULL-NAME";
+      } else {
+        className << nm;
+      }
     } else {
-      className << "Unknown";
+      className << "??CONS??";
     }
-    printf("%s: total_size: %10lu count: %8lu avg.sz: %8lu kind: %s/%zu\n", shortName.c_str(),
-           this->totalSize, this->instances, this->totalSize / this->instances, className.str().c_str(), k);
+    BFORMAT_T(BF("%s: total_size: %10d count: %8d avg.sz: %8d kind: %s/%d\n")
+              % shortName % this->totalSize % this->instances % (this->totalSize / this->instances) % className.str().c_str() % k);
     return this->totalSize;
   }
 };
@@ -309,12 +314,15 @@ size_t dumpResults(const std::string &name, const std::string &shortName, T *dat
   });
   size_t idx = 0;
   for (auto it : values) {
-    totalSize += it.print(shortName);
+    size_t sz = it.print(shortName);
+    totalSize += sz;
+    if (sz < 96) break;
     idx += 1;
     if ( idx % 100 == 0 ) {
       gctools::poll_signals();
     }
   }
+  BFORMAT_T(BF("Skipping objects with less than 96 total_size\n"));
   return totalSize;
 }
 
@@ -491,9 +499,9 @@ CL_DEFUN core::T_mv cl__room(core::T_sp x, core::Fixnum_sp marker, core::T_sp tm
   globalSearchMarker = core::unbox_fixnum(marker);
   static_ReachableClassKinds = new (ReachableClassMap);
   invalidHeaderTotalSize = 0;
-  #ifdef BOEHM_GC_ENUMERATE_REACHABLE_OBJECTS_INNER_AVAILABLE
+#ifdef BOEHM_GC_ENUMERATE_REACHABLE_OBJECTS_INNER_AVAILABLE
   GC_enumerate_reachable_objects_inner(boehm_callback_reachable_object, NULL);
-  #endif
+#endif
   printf("Walked LispKinds\n");
   size_t totalSize(0);
   totalSize += dumpResults("Reachable ClassKinds", "class", static_ReachableClassKinds);
@@ -523,7 +531,6 @@ CL_DEFUN core::T_mv cl__room(core::T_sp x, core::Fixnum_sp marker, core::T_sp tm
 
 #ifdef DEBUG_FUNCTION_CALL_COUNTER
 namespace gctools {
-
 void common_function_call_counter(core::General_O* obj, size_t size, void* hash_table_raw) {
   core::HashTableEq_O* hash_table = reinterpret_cast<core::HashTableEq_O*>(hash_table_raw);
   core::T_sp gen = obj->asSmartPtr();
@@ -598,9 +605,7 @@ CL_DEFUN void gctools__function_call_count_profiler(core::T_sp func) {
 };
 #endif // DEBUG_FUNCTION_CALL_COUNTER
 
-
 namespace gctools {
-
 SYMBOL_EXPORT_SC_(GcToolsPkg,STARfinalizersSTAR);
 
 CL_DEFUN void gctools__finalize(core::T_sp object, core::T_sp finalizer_callback) {

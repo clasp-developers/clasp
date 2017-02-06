@@ -488,12 +488,24 @@ void cc_bad_tag(core::T_O* gf, core::T_O* gf_args)
 };
 
 gctools::return_type cc_dispatch_effective_method(core::T_O* teffective_method, core::T_O* tgf, core::T_O* tgf_args_valist_s) {
+#if 1
+  if (gctools::TaggedCast<CompiledClosure_O*,T_O*>::isA(teffective_method)) {
+    core::CompiledClosure_O* ptrFunc = reinterpret_cast<core::CompiledClosure_O*>(gc::untag_general(teffective_method));
+    core::T_O* tagged_closure = gctools::tag_general(ptrFunc);
+    return ptrFunc->fptr(tagged_closure,NULL,2,tgf_args_valist_s,_Nil<core::T_O>().raw_(),NULL);
+  }
+  ASSERT((gctools::TaggedCast<ClosureWithSlots_O*,T_O*>::isA(teffective_method)));
+  core::ClosureWithSlots_O* ptrFunc = reinterpret_cast<core::ClosureWithSlots_O*>(gc::untag_general(teffective_method));
+  core::T_O* tagged_closure = gctools::tag_general(ptrFunc);
+  return ptrFunc->fptr(tagged_closure,NULL,2,tgf_args_valist_s,_Nil<core::T_O>().raw_(),NULL);
+#else
   core::T_sp effective_method((gctools::Tagged)teffective_method);
   core::T_sp gf((gctools::Tagged)tgf);
   core::T_sp gf_args((gctools::Tagged)tgf_args_valist_s);
 //  printf("%s:%d  Invoking effective-method %s with arguments %s\n", __FILE__, __LINE__,
   // Arguments are .method-args. .next-methods.
   return core::eval::funcall(effective_method,gf_args,_Nil<core::T_O>());
+#endif
 }
 
 };

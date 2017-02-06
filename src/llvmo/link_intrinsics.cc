@@ -757,6 +757,7 @@ void cc_invoke_startup_functions() {
 extern "C" {
 
 
+#if 0
 extern void attachDebuggingInfoToValueFrame(core::ActivationFrame_sp *resultP,
                                             core::T_sp *debuggingInfoP) {
   ASSERT(resultP != NULL);
@@ -767,7 +768,7 @@ extern void attachDebuggingInfoToValueFrame(core::ActivationFrame_sp *resultP,
   core::VectorObjects_sp vo = gc::reinterpret_cast_smart_ptr<core::VectorObjects_O, T_O>((*debuggingInfoP));
   vf->attachDebuggingInfo(vo);
 }
-
+#endif
 
 
 

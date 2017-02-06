@@ -611,6 +611,8 @@ def configure(cfg):
 # Check if GC_enumerate_reachable_objects_inner is available
 # If so define  BOEHM_GC_ENUMERATE_REACHABLE_OBJECTS_INNER_AVAILABLE
 #
+    if (cfg.env["BOEHM_GC_ENUMERATE_REACHABLE_OBJECTS_INNER_AVAILABLE"] == True):
+        cfg.define("BOEHM_GC_ENUMERATE_REACHABLE_OBJECTS_INNER_AVAILABLE",1)
     cfg.define("USE_CLASP_DYNAMIC_CAST",1)
     cfg.define("BUILDING_CLASP",1)
     print("cfg.env['DEST_OS'] == %s\n" % cfg.env['DEST_OS'])
@@ -632,6 +634,7 @@ def configure(cfg):
     cfg.define("DEBUG_CL_SYMBOLS",1)
 #    cfg.define("SOURCE_DEBUG",1)
     cfg.define("USE_SOURCE_DATABASE",1)
+    cfg.define("USE_COMPILED_CLOSURE",1)  # disable this in the future and switch to ClosureWithSlots
     cfg.define("CLASP_UNICODE",1)
     cfg.define("DEBUG_TRACE_INTERPRETED_CLOSURES",1)
 #    cfg.define("EXPAT",1)
@@ -645,7 +648,7 @@ def configure(cfg):
     cfg.define("USE_AMC_POOL",1)
     cfg.define("USE_EXPENSIVE_BACKTRACE",1)
     cfg.define("X86_64",1)
-#    cfg.define("DEBUG_FUNCTION_CALL_COUNTER",1)
+    cfg.define("DEBUG_FUNCTION_CALL_COUNTER",1)
     cfg.define("_ADDRESS_MODEL_64",1)
     cfg.define("__STDC_CONSTANT_MACROS",1)
     cfg.define("__STDC_FORMAT_MACROS",1)
@@ -917,12 +920,14 @@ class link_fasl(Task.Task):
     def run(self):
         if (self.env.LTO_FLAG):
             lto_option = self.env.LTO_FLAG
+            lto_optimize_flag = "-O2"
         else:
             lto_option = ""
+            lto_optimize_flag = ""
         if (self.env['DEST_OS'] == DARWIN_OS ):
-            cmd = "%s %s %s %s -flat_namespace -undefined suppress -bundle -o %s" % (self.env.CXX[0],self.inputs[0].abspath(),self.inputs[1].abspath(),lto_option,self.outputs[0].abspath())
+            cmd = "%s %s %s %s %s -flat_namespace -undefined suppress -bundle -o %s" % (self.env.CXX[0],self.inputs[0].abspath(),self.inputs[1].abspath(),lto_option,lto_optimize_flag,self.outputs[0].abspath())
         elif (self.env['DEST_OS'] == LINUX_OS ):
-            cmd = "%s %s %s %s -fuse-ld=gold -shared -o %s" % (self.env.CXX[0],self.inputs[0].abspath(),self.inputs[1].abspath(),lto_option,self.outputs[0].abspath())
+            cmd = "%s %s %s %s %s -fuse-ld=gold -shared -o %s" % (self.env.CXX[0],self.inputs[0].abspath(),self.inputs[1].abspath(),lto_option,lto_optimize_flag,self.outputs[0].abspath())
         else:
             self.fatal("Illegal DEST_OS: %s" % self.env['DEST_OS'])
         print(" link_fasl cmd: %s\n" % cmd)
@@ -937,7 +942,7 @@ class link_executable(Task.Task):
     def run(self):
         if (self.env['DEST_OS'] == DARWIN_OS ):
             if (self.env.LTO_FLAG):
-                lto_option_list = [self.env.LTO_FLAG]
+                lto_option_list = [self.env.LTO_FLAG,"-O2"]
                 lto_object_path_lto = ["-Wl,-object_path_lto,%s"% self.outputs[1].abspath()]
             else:
                 lto_option_list = []
@@ -954,7 +959,7 @@ class link_executable(Task.Task):
                         self.outputs[0].abspath()] + lto_object_path_lto
         elif (self.env['DEST_OS'] == LINUX_OS ):
             if (self.env.LTO_FLAG):
-                lto_option_list = [self.env.LTO_FLAG]
+                lto_option_list = [self.env.LTO_FLAG,"-O2"]
                 lto_object_path_lto = []
             else:
                 lto_option_list = []
