@@ -165,9 +165,10 @@
     (%set-llvm-type-symbol (%lisp-type->type-spec :unsigned-long) 'cmp::+i64+)
     (%set-llvm-type-symbol (%lisp-type->type-spec :ulong) 'cmp::+i64+)
 
-    (%set-llvm-type-symbol (%lisp-type->type-spec :long-long) 'cmp::+i128+)
-    (%set-llvm-type-symbol (%lisp-type->type-spec :unsigned-long-long) 'cmp::+i128+)
-    (%set-llvm-type-symbol (%lisp-type->type-spec :ullong) 'cmp::+i128+)
+;;; Frank - I disabled this because it caused an error  Feb 7   Schafmeister
+#+(or)  (%set-llvm-type-symbol (%lisp-type->type-spec :long-long) 'cmp::+i128+)
+#+(or)  (%set-llvm-type-symbol (%lisp-type->type-spec :unsigned-long-long) 'cmp::+i128+)
+#+(or)  (%set-llvm-type-symbol (%lisp-type->type-spec :ullong) 'cmp::+i128+)
 
     (%set-llvm-type-symbol (%lisp-type->type-spec :int8) 'cmp::+i8+)
     (%set-llvm-type-symbol (%lisp-type->type-spec :uint8) 'cmp::+i8+)
@@ -188,12 +189,15 @@
     (%set-llvm-type-symbol (%lisp-type->type-spec :ssize) 'cmp::+size_t+)
 
     (%set-llvm-type-symbol (%lisp-type->type-spec :single-float) 'cmp::+float+)
-    (%set-llvm-type-symbol (%lisp-type->type-spec :float) 'cmp::+float+)
+;;; Frank - I disabled this because it caused an error  Feb 7   Schafmeister
+#+(or)    (%set-llvm-type-symbol (%lisp-type->type-spec :float) 'cmp::+float+)
     (%set-llvm-type-symbol (%lisp-type->type-spec :double) 'cmp::+double+)
     #+long-float (%set-llvm-type-symbol (%lisp-type->type-spec :long-float) 'cmp::+long-float+)
 
     (%set-llvm-type-symbol (%lisp-type->type-spec :pointer) 'cmp::+i64*+)
-    (%set-llvm-type-symbol (%lisp-type->type-spec :void) 'cmp::+void+)
+
+;;; Frank - I disabled this because it caused an error  Feb 7   Schafmeister
+#+(or)    (%set-llvm-type-symbol (%lisp-type->type-spec :void) 'cmp::+void+)
 
     (%set-llvm-type-symbol (%lisp-type->type-spec :char) 'cmp::+i8+)
     (%set-llvm-type-symbol (%lisp-type->type-spec :unsigned-char) 'cmp::+i8+)
