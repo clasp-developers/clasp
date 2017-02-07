@@ -303,7 +303,7 @@ int main( int argc, char *argv[] )
   rl.rlim_max = 16 * 1024 * 1024; // 16 MB
   rl.rlim_cur = 15 * 1024 * 1024; // 15 MB
 
-  rc = setrlimit( RLIMIT_STACK, &rl );
+  int rc = setrlimit( RLIMIT_STACK, &rl );
   if ( rc != 0 )
   {
     fprintf( stderr, "*** %s (%s:%d): WARNING: Could not set stack size as requested (error code %d - rlim_max = %llu) !\n",
