@@ -1397,7 +1397,6 @@ Return the orderered-raw-constants-list and the constants-table GlobalVariable"
           (or lambda-name (error "Inner lambda-name is nil - this shouldn't happen"))
           (values llvm-function-from-lambda :function env lambda-name)))
     (or lambda-name (error "lambda-name is nil - this shouldn't happen"))
-    (cmp-log "------------  Finished building MCJIT Module - about to finalize-engine  Final module follows...\n")
     (or fn (error "There was no function returned by compile-lambda-function outer: ~a" fn))
     (cmp-log "fn --> %s\n" fn)
     (cmp-log-dump *the-module*)

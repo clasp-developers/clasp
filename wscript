@@ -1032,11 +1032,8 @@ class compile_aclasp(Task.Task):
                       "--eval", '(load "sys:kernel;clasp-builder.lsp")' ]
 #                      "--eval", '(setq cmp:*compile-file-debug-dump-module* t)',
 #                      "--eval", '(setq cmp:*compile-debug-dump-module* t)'
-        if (self.bld.command ):
-            cmd = cmd + [ "--eval", "(load-aclasp)" ]
-        else:
-            cmd = cmd + ["--eval", "(compile-aclasp :output-file #P\"%s\")" % self.outputs[0],
-                         "--eval", "(quit)" ]
+        cmd = cmd + ["--eval", "(compile-aclasp :output-file #P\"%s\")" % self.outputs[0],
+                     "--eval", "(quit)" ]
         cmd = cmd + [ "--" ] + self.bld.clasp_aclasp
         if (self.bld.command ):
             dump_command(cmd)
@@ -1062,11 +1059,8 @@ class compile_bclasp(Task.Task):
                       "--image", self.inputs[1].abspath(),
                       "--feature", "debug-run-clang",
                       "--eval", '(load "sys:kernel;clasp-builder.lsp")' ]
-        if (self.bld.command ):
-            cmd = cmd + [ "--eval", "(load-bclasp)" ]
-        else:
-            cmd = cmd + ["--eval", "(compile-bclasp :output-file #P\"%s\")" % self.outputs[0] ,
-                         "--eval", "(quit)" ]
+        cmd = cmd + ["--eval", "(compile-bclasp :output-file #P\"%s\")" % self.outputs[0] ,
+                     "--eval", "(quit)" ]
         cmd = cmd + [ "--" ] + self.bld.clasp_bclasp
         if (self.bld.command ):
             dump_command(cmd)

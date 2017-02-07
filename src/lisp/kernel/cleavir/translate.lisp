@@ -951,7 +951,10 @@ when this is t a lot of graphs will be generated.")
              (format t ";    eval-when ~a ~a~%" (cadr form) (caddr form)))
       (t ()))))
 
-(defparameter *enable-type-inference* t)
+;;;
+;;; Turn type inference off for now - it slows the build down
+;;;
+(defparameter *enable-type-inference* nil)
 
 (defun my-hir-transformations (init-instr implementation processor os)
   (cleavir-typed-transforms:thes->typeqs init-instr)

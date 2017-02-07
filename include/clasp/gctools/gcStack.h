@@ -130,6 +130,10 @@ DO NOT CHANGE THE ORDER OF THESE OBJECTS WITHOUT UPDATING THE DEFINITION OF +va_
 
   VaList_S(){};
 
+  ~VaList_S() {
+    va_end(this->_Args);
+  }
+
 #if 0  
   void set_from_other_VaList_S_change_nargs(VaList_S *other, size_t nargs_remaining) {
     LCC_SETUP_VA_LIST_FROM_VA_LIST_CHANGE_NARGS(this->_Args, other->_Args, nargs_remaining);
@@ -139,7 +143,6 @@ DO NOT CHANGE THE ORDER OF THESE OBJECTS WITHOUT UPDATING THE DEFINITION OF +va_
     LCC_SETUP_VA_LIST_FROM_VA_LIST(this->_Args, other->_Args);
   }
 
-  virtual ~VaList_S(){}; // Make it polymorphic
   inline size_t total_nargs() const {
     size_t n = LCC_VA_LIST_TOTAL_NUMBER_OF_ARGUMENTS(this);
     return n;

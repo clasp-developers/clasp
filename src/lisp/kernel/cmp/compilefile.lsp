@@ -418,12 +418,13 @@ Compile a lisp source file into an LLVM module.  type can be :kernel or :user"
 	     (llvm-sys:write-bitcode-to-file module (core:coerce-to-filename temp-bitcode-file))
 	     (bformat t "Writing fasl file to: %s\n" output-file)
 	     (llvm-link output-file
-                            :lisp-bitcode-files (list temp-bitcode-file))))
+                        :lisp-bitcode-files (list temp-bitcode-file))))
 	  (t ;; fasl
 	   (error "Add support to file of type: ~a" output-type)))
 	(dolist (c conditions)
 	  (bformat t "conditions: %s\n" c))
-	(compile-file-results output-path conditions)))))
+        (llvm-sys:module-delete module)
+        (compile-file-results output-path conditions))))))
 
 (defun compile-file (&rest args)
   ;; Use the *cleavir-compile-file-hook* to determine which compiler to use

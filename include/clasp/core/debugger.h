@@ -42,45 +42,47 @@ namespace core {
   the single step state to what it was.
 */
 
-void core__low_level_backtrace();
-void core__clib_backtrace(int depth = 999999999);
+  void core__low_level_backtrace();
+  void core__clib_backtrace(int depth = 999999999);
 
-FORWARD(InvocationHistoryFrameIterator);
+  FORWARD(InvocationHistoryFrameIterator);
 
-class LispDebugger {
-private:
-  bool _CanContinue;
-  T_sp _Condition;
+  class LispDebugger {
+  private:
+    bool _CanContinue;
+    T_sp _Condition;
 
-public:
+  public:
   /* Immediatly returns if we are not single stepping or if the step stack level
 	   is less than the current stack level.
 	   Otherwise print the next instruction to be evaluated and wait for
 	   the user to indicate what they want to do. */
-  static void step();
+    static void step();
 
-public:
+  public:
   /*! Print the current expression */
-  void printExpression();
+    void printExpression();
 
   /*! Invoke the debugger,
 	  If the user is allowed to resume and opts to resume then return the resume object 
 	*/
-  T_sp invoke();
+    T_sp invoke();
 
-  InvocationHistoryFrameIterator_sp currentFrame() const;
+    InvocationHistoryFrameIterator_sp currentFrame() const;
 
-  LispDebugger(T_sp condition);
-  LispDebugger();
+    LispDebugger(T_sp condition);
+    LispDebugger();
 
-  virtual ~LispDebugger() {
-    _G();
-    _lisp->decrementDebuggerLevel();
+    virtual ~LispDebugger() {
+      _G();
+      _lisp->decrementDebuggerLevel();
+    };
   };
-};
 
-void af_backtrace();
+  void af_backtrace();
 
+
+  void dbg_describe_tagged_T_Optr(T_O *p);
 
 extern "C" {
 void af_gotoIhsTop();

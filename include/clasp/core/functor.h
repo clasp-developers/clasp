@@ -98,13 +98,6 @@ namespace core {
       LCC_SPILL_REGISTER_ARGUMENTS_TO_VA_LIST(lcc_arglist_s);
 #endif
       T_O* lcc_arglist = lcc_arglist_s.asTaggedPtr();
-#ifdef _DEBUG_BUILD
-      VaList_S* vargs = reinterpret_cast<VaList_S*>(gctools::untag_valist(lcc_arglist));
-      if ( (uintptr_t)LCC_ORIGINAL_VA_LIST_OVERFLOW_ARG_AREA(vargs) < 10000)
-      {
-        printf("%s::%d Caught a bad OVERFLOW_ARG_AREA\n", __FILE__, __LINE__);
-      }
-#endif
       return this->invoke_va_list(LCC_PASS_ARGS);
     }
 
