@@ -400,14 +400,14 @@ int main( int argc, char *argv[] )
   if ( rc != 0 )
   {
     fprintf( stderr, "*** %s (%s:%d): WARNING: Could not set stack size as requested (error code %d - rlim_max = %lu) !\n",
-             exe_name().c_str(), __FILE__, __LINE__, rc, rl.rlim_max );
+             exe_name().c_str(), __FILE__, __LINE__, rc, (unsigned long)rl.rlim_max );
   }
 
   getrlimit( RLIMIT_STACK, &rl_new );
   if( rl.rlim_max != rl_new.rlim_max )
   {
     fprintf( stderr, "*** %s (%s:%d): WARNING: Could not set stack size as requested (error code %d - rlim_max = %lu) !\n",
-             exe_name().c_str(), __FILE__, __LINE__, EXIT_FAILURE, rl_new.rlim_max );
+             exe_name().c_str(), __FILE__, __LINE__, EXIT_FAILURE, (unsigned long)rl_new.rlim_max );
   }
 
   // - MPI ENABLEMENT

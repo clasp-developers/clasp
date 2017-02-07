@@ -1638,6 +1638,7 @@ Integer_sp Integer_O::create(uint64_t v) {
 //   return Bignum_O::create( z );
 // }
 
+#if defined(_TARGET_OS_LINUX)
 Integer_sp Integer_O::create( long long v)
 {
   if(( v >= gc::most_negative_fixnum) && (v <= gc::most_positive_fixnum ))
@@ -1651,7 +1652,9 @@ Integer_sp Integer_O::create( long long v)
              _lisp->integer_ordering()._mpz_import_endian, 0, &v);
   return Bignum_O::create( z );
 }
+#endif
 
+#if defined(_TARGET_OS_LINUX)
 Integer_sp Integer_O::create( unsigned long long v )
 {
   if ( v <= gc::most_positive_fixnum )
@@ -1664,6 +1667,7 @@ Integer_sp Integer_O::create( unsigned long long v )
              _lisp->integer_ordering()._mpz_import_endian, 0, &v);
   return Bignum_O::create( z );
 }
+#endif
 
 Integer_sp Integer_O::create(float v) {
   if (v > (float)(std::numeric_limits<int>::min()) && v < (float)(std::numeric_limits<int>::max())) {

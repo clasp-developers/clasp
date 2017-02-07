@@ -193,6 +193,7 @@ template <>
     from_object( core::T_sp o ) : _v( o.fixnump() ? o.unsafe_fixnum() : core::not_fixnum_error( o ) ) {};
   };
 
+#if defined (_TARGET_OS_LINUX)
   template <>
     struct from_object< int64_t, std::true_type >
   {
@@ -201,7 +202,9 @@ template <>
     DeclareType _v;
   from_object( core::T_sp o ) : _v( o.fixnump() ? o.unsafe_fixnum() : clasp_to_int64( o ) ) {};
   };
-
+#endif
+  
+#if defined (_TARGET_OS_LINUX)
   template <>
     struct from_object< uint64_t, std::true_type >
   {
@@ -210,7 +213,9 @@ template <>
     DeclareType _v;
   from_object( core::T_sp o ) : _v( o.fixnump() ? o.unsafe_fixnum() : clasp_to_uint64( o ) ) {};
   };
+#endif
 
+  
   template <>
     struct from_object< float, std::true_type >
   {

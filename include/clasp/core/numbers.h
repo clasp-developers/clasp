@@ -322,9 +322,10 @@ namespace core {
     // static Integer_sp create( long v );
     // static Integer_sp create( unsigned long v );
     //
+#if defined(_TARGET_OS_LINUX)
     static Integer_sp create( long long v );
     static Integer_sp create( unsigned long long v );
-
+#endif
     static Integer_sp create( float f );
     static Integer_sp create( double f );
     static Integer_sp createLongFloat( LongFloat f );
