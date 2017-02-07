@@ -598,7 +598,7 @@ ALWAYS_INLINE core::T_sp mk_integer_ulong( unsigned long v )
 
 ALWAYS_INLINE core::T_sp mk_integer_longlong( long long v )
 {
-  return core::Integer_O::create( v );
+  return core::Integer_O::create( (long long)v );
 }
 
 ALWAYS_INLINE core::T_sp mk_integer_ulonglong( unsigned long long v )
@@ -1079,7 +1079,8 @@ ALWAYS_INLINE core::T_O* tr_to_object_uint64( core::T_O* raw_ )
 
 ALWAYS_INLINE long long from_object_long_long( core::T_O* obj )
 {
-  long long x = translate::from_object< long long >(gctools::smart_ptr<core::T_O>((gctools::Tagged) obj ))._v;
+  core::T_sp tobj((gctools::Tagged)obj);
+  long long x = translate::from_object< long long >(tobj)._v;//gctools::smart_ptr<core::T_O>((gctools::Tagged) obj ))._v;
   return x;
 }
 

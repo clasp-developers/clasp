@@ -1248,7 +1248,7 @@ core::T_sp PERCENTmem_set_unsigned_long( core::Integer_sp address, core::T_sp va
 core::T_sp PERCENTmem_set_long_long( core::Integer_sp address, core::T_sp value )
 {
   long long tmp;
-  translate::from_object< long long > v( value );
+  translate::from_object< core::Fixnum /*long long*/ > v( value );
   tmp = mem_set< long long >( core::clasp_to_cl_intptr_t( address ), v._v );
   return mk_integer_longlong( tmp );
 }
@@ -1256,7 +1256,7 @@ core::T_sp PERCENTmem_set_long_long( core::Integer_sp address, core::T_sp value 
 core::T_sp PERCENTmem_set_unsigned_long_long( core::Integer_sp address, core::T_sp value )
 {
   unsigned long long tmp;
-  translate::from_object< unsigned long long > v( value );
+  translate::from_object< uint64_t /*unsigned long long*/ > v( value );
   tmp = mem_set< unsigned long long >( core::clasp_to_cl_intptr_t( address ), v._v );
   return mk_integer_ulonglong( tmp );
 }

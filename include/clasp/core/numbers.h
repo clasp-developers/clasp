@@ -307,10 +307,10 @@ namespace core {
     static Integer_sp create( int32_t v );
     static Integer_sp create( uint32_t v );
 
-//#if !defined( _TARGET_OS_LINUX )
+#if !defined( _TARGET_OS_LINUX )
     static Integer_sp create( int64_t v );
     static Integer_sp create( uint64_t v );
-//#endif
+#endif
 
     // THOSE ARE ALREADY DEFINED ABOVE
     // static Integer_sp create( short v );
@@ -322,8 +322,8 @@ namespace core {
     // static Integer_sp create( long v );
     // static Integer_sp create( unsigned long v );
     //
-    // static Integer_sp create( long v );
-    // static Integer_sp create( unsigned long long v );
+    static Integer_sp create( long long v );
+    static Integer_sp create( unsigned long long v );
 
     static Integer_sp create( float f );
     static Integer_sp create( double f );

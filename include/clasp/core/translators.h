@@ -121,23 +121,23 @@ namespace translate {
   };
 #endif
   
-  // template <>
-  //   struct from_object< long long, std::true_type >
-  // {
-  //   typedef int DeclareType;
+template <>
+  struct from_object< long long, std::true_type >
+{
+   typedef long long DeclareType;
 
-  //   DeclareType _v;
-  // from_object( core::T_sp o ) : _v( o.fixnump() ? o.unsafe_fixnum() : core::clasp_to_longlong( o ) ) {};
-  // };
+   DeclareType _v;
+ from_object( core::T_sp o ) : _v( o.fixnump() ? o.unsafe_fixnum() : core::clasp_to_longlong( o ) ) {};
+ };
 
-  // template <>
-  //   struct from_object< unsigned long long, std::true_type >
-  // {
-  //   typedef unsigned long long DeclareType;
+ template <>
+   struct from_object< unsigned long long, std::true_type >
+ {
+   typedef unsigned long long DeclareType;
 
-  //   DeclareType _v;
-  // from_object( core::T_sp o ) : _v( o.fixnump() ? o.unsafe_fixnum() : core::clasp_to_ulonglong( o ) ) {};
-  // };
+    DeclareType _v;
+  from_object( core::T_sp o ) : _v( o.fixnump() ? o.unsafe_fixnum() : core::clasp_to_ulonglong( o ) ) {};
+ };
 
   template <>
     struct from_object< int8_t, std::true_type >
@@ -444,7 +444,7 @@ namespace translate {
     typedef long long DeclareType;
     static core::T_sp convert( DeclareType v )
     {
-      core::Integer_sp oi = core::Integer_O::create( v );
+      core::Integer_sp oi = core::Integer_O::create( (core::Fixnum)v );
       return ( oi );
     }
   };
@@ -455,7 +455,7 @@ namespace translate {
     typedef unsigned long long DeclareType;
     static core::T_sp convert( DeclareType v )
     {
-      core::Integer_sp oi = core::Integer_O::create( v );
+      core::Integer_sp oi = core::Integer_O::create( (uint64_t)v );
       return ( oi );
     }
   };
