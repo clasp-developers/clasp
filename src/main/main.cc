@@ -358,6 +358,7 @@ int main( int argc, char *argv[] )
 
   // CALL LISP STARTUP
 
+  int exit_code = 0;
   try
   {
     exit_code = gctools::startupGarbageCollectorAndSystem( &startup, argc, argv, rl.rlim_max, mpiEnabled, mpiRank, mpiSize );
