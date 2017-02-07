@@ -29,7 +29,7 @@ THE SOFTWARE.
 #include <clasp/core/useBoostPython.h>
 #include <clasp/core/common.h>
 #include <clasp/core/symbol.h>
-#include <clasp/core/str.h>
+#include <clasp/core/array.h>
 #include <clasp/core/symbolTable.h>
 #include <clasp/core/hashTable.h>
 #include <clasp/core/numbers.h>

@@ -32,14 +32,12 @@ THE SOFTWARE.
 #include <clasp/core/hashTableEql.h>
 #include <clasp/core/evaluator.h>
 #include <clasp/core/character.h>
-#include <clasp/core/str.h>
-#include <clasp/core/bitVector.h>
+#include <clasp/core/array.h>
 #include <clasp/core/package.h>
 #include <clasp/core/predicates.h>
 #include <clasp/core/multipleValues.h>
 #include <clasp/core/designators.h>
 #include <clasp/core/lispStream.h>
-#include <clasp/core/vectorObjects.h>
 #include <clasp/core/lispReader.h>
 #include <clasp/core/pathname.h>
 #include <clasp/core/primitives.h>
@@ -917,7 +915,7 @@ T_sp ReadTable_O::set_macro_character(Character_sp ch, T_sp funcDesig, T_sp non_
 string ReadTable_O::__repr__() const {
   stringstream ss;
   ss << "#<" << this->_instanceClass()->classNameAsString();
-  ss << " :case " << _rep_(this->_Case); 
+  ss << " :case " << _rep_(this->_Case);
   ss << "> ";
   return ss.str();
 }

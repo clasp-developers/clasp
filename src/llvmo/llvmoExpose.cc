@@ -82,7 +82,7 @@ THE SOFTWARE.
 #include <clasp/core/compiler.h>
 #include <clasp/core/bformat.h>
 #include <clasp/core/pointer.h>
-#include <clasp/core/str.h>
+#include <clasp/core/array.h>
 #include <clasp/gctools/gc_interface.fwd.h>
 #include <clasp/llvmo/debugInfoExpose.h>
 #include <clasp/llvmo/llvmoExpose.h>
@@ -288,7 +288,7 @@ CL_DEFMETHOD void TargetMachine_O::addPassesToEmitFileAndRunPassManager(PassMana
   CL_VALUE_ENUM(_sym_CodeGenFileType_AssemblyFile, llvm::TargetMachine::CGFT_AssemblyFile);
   CL_VALUE_ENUM(_sym_CodeGenFileType_ObjectFile, llvm::TargetMachine::CGFT_ObjectFile);;
   CL_END_ENUM(_sym_CodeGenFileType);
-  
+
   SYMBOL_EXPORT_SC_(LlvmoPkg, CodeGenOpt);
   SYMBOL_EXPORT_SC_(LlvmoPkg, CodeGenOpt_None);
   SYMBOL_EXPORT_SC_(LlvmoPkg, CodeGenOpt_Less);
@@ -300,7 +300,7 @@ CL_DEFMETHOD void TargetMachine_O::addPassesToEmitFileAndRunPassManager(PassMana
   CL_VALUE_ENUM(_sym_CodeGenOpt_Default, llvm::CodeGenOpt::Default);
   CL_VALUE_ENUM(_sym_CodeGenOpt_Aggressive, llvm::CodeGenOpt::Aggressive);;
   CL_END_ENUM(_sym_CodeGenOpt);
-  
+
   SYMBOL_EXPORT_SC_(LlvmoPkg, RelocModel);
   SYMBOL_EXPORT_SC_(LlvmoPkg, RelocModel_undefined);
   SYMBOL_EXPORT_SC_(LlvmoPkg, RelocModel_Static);
@@ -311,7 +311,7 @@ CL_DEFMETHOD void TargetMachine_O::addPassesToEmitFileAndRunPassManager(PassMana
   CL_VALUE_ENUM(_sym_RelocModel_PIC_, llvm::Reloc::Model::PIC_);
   CL_VALUE_ENUM(_sym_RelocModel_DynamicNoPIC, llvm::Reloc::Model::DynamicNoPIC);;
   CL_END_ENUM(_sym_RelocModel);
-  
+
   SYMBOL_EXPORT_SC_(LlvmoPkg, CodeModel);
   SYMBOL_EXPORT_SC_(LlvmoPkg, CodeModel_Default);
   SYMBOL_EXPORT_SC_(LlvmoPkg, CodeModel_JITDefault);
@@ -333,7 +333,7 @@ CL_DEFMETHOD void TargetMachine_O::addPassesToEmitFileAndRunPassManager(PassMana
 
 namespace llvmo {
 
-  
+
 
 
 CL_LAMBDA(triple-str);
@@ -469,7 +469,7 @@ CL_EXTERN_DEFUN(&llvm::Triple::normalize);
   CL_VALUE_ENUM(_sym_SubArchType_KalimbaSubArch_v4, llvm::Triple::KalimbaSubArch_v4);
   CL_VALUE_ENUM(_sym_SubArchType_KalimbaSubArch_v5, llvm::Triple::KalimbaSubArch_v5);;
   CL_END_ENUM(_sym_SubArchType);
-  
+
   SYMBOL_EXPORT_SC_(LlvmoPkg, VendorType_UnknownVendor);
   SYMBOL_EXPORT_SC_(LlvmoPkg, VendorType_Apple);
   SYMBOL_EXPORT_SC_(LlvmoPkg, VendorType_PC);
@@ -498,7 +498,7 @@ CL_EXTERN_DEFUN(&llvm::Triple::normalize);
   CL_VALUE_ENUM(_sym_VendorType_NVIDIA, llvm::Triple::NVIDIA);
   CL_VALUE_ENUM(_sym_VendorType_CSR, llvm::Triple::CSR);
   CL_END_ENUM(_sym_VendorType);
-  
+
   SYMBOL_EXPORT_SC_(LlvmoPkg, OSType_UnknownOS);
   SYMBOL_EXPORT_SC_(LlvmoPkg, OSType_Darwin);
   SYMBOL_EXPORT_SC_(LlvmoPkg, OSType_DragonFly);
@@ -547,7 +547,7 @@ CL_EXTERN_DEFUN(&llvm::Triple::normalize);
   CL_VALUE_ENUM(_sym_OSType_CUDA, llvm::Triple::CUDA);
   CL_VALUE_ENUM(_sym_OSType_NVCL, llvm::Triple::NVCL);;
   CL_END_ENUM(_sym_OSType);
-  
+
   SYMBOL_EXPORT_SC_(LlvmoPkg, EnvironmentType_UnknownEnvironment);
   SYMBOL_EXPORT_SC_(LlvmoPkg, EnvironmentType_GNU);
   SYMBOL_EXPORT_SC_(LlvmoPkg, EnvironmentType_GNUEABI);
@@ -576,7 +576,7 @@ CL_EXTERN_DEFUN(&llvm::Triple::normalize);
   CL_VALUE_ENUM(_sym_EnvironmentType_Itanium, llvm::Triple::Itanium);
   CL_VALUE_ENUM(_sym_EnvironmentType_Cygnus, llvm::Triple::Cygnus);
   CL_END_ENUM(_sym_EnvironmentType);
-  
+
   SYMBOL_EXPORT_SC_(LlvmoPkg, ObjectFormatType_UnknownObjectFormat);
   SYMBOL_EXPORT_SC_(LlvmoPkg, ObjectFormatType_COFF);
   SYMBOL_EXPORT_SC_(LlvmoPkg, ObjectFormatType_ELF);
@@ -943,7 +943,7 @@ std::string Module_O::__repr__() const {
   ss << this->_Id << ">";
   return ss.str();
 }
-  
+
 CL_DEFUN core::List_sp llvm_sys__module_get_function_list(Module_sp module) {
   ql::list fl(_lisp);
   for (llvm::Function &f : *module->wrappedPtr()) {
@@ -1193,7 +1193,7 @@ CL_DEFMETHOD size_t DataLayout_O::getTypeAllocSize(llvm::Type* ty)
 {
   return this->_DataLayout->getTypeAllocSize(ty);
 }
-  
+
 
 }; // llvmo
 
@@ -3168,7 +3168,7 @@ CL_VALUE_ENUM(_sym_NotAtomic, llvm::AtomicOrdering::NotAtomic);
       //	.value(_sym_AquireRelease,llvm::AtomicOrdering::AquireRelease)
   CL_VALUE_ENUM(_sym_SequentiallyConsistent, llvm::AtomicOrdering::SequentiallyConsistent);;
   CL_END_ENUM(_sym_STARatomic_orderingSTAR);
-  
+
   SYMBOL_EXPORT_SC_(LlvmoPkg, STARsynchronization_scopeSTAR);
   SYMBOL_EXPORT_SC_(LlvmoPkg, SingleThread);
   SYMBOL_EXPORT_SC_(LlvmoPkg, CrossThread);

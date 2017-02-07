@@ -31,7 +31,7 @@ THE SOFTWARE.
 #include <clasp/core/cons.h>
 #include <clasp/core/symbolTable.h>
 #include <clasp/core/designators.h>
-#include <clasp/core/str.h>
+#include <clasp/core/array.h>
 #include <clasp/core/evaluator.h>
 #include <clasp/core/lispStream.h>
 #include <clasp/core/primitives.h>

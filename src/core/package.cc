@@ -41,7 +41,7 @@ THE SOFTWARE.
 #include <clasp/core/hashTableEql.h>
 #include <clasp/core/hashTableEqual.h>
 #include <clasp/core/bignum.h>
-#include <clasp/core/str.h>
+#include <clasp/core/array.h>
 #include <clasp/core/multipleValues.h>
 
 // last include is wrappers.h

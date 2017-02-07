@@ -10,14 +10,14 @@
 
 /*
   Copyright (c) 2014, Christian E. Schafmeister
- 
+
   CLASP is free software; you can redistribute it and/or
   modify it under the terms of the GNU Library General Public
   License as published by the Free Software Foundation; either
   version 2 of the License, or (at your option) any later version.
- 
+
   See directory 'clasp/licenses' for full details.
- 
+
   The above copyright notice and this permission notice shall be included in
   all copies or substantial portions of the Software.
 
@@ -45,16 +45,6 @@
 
 #include <clasp/gctools/globals.h>
 
-//#include "tagged_ptr.h"
-//#define TAGGED_PTR_BASE tagged_ptr
-
-//#define	IsUndefined(x) (x)
-//#define	NotUndefined(x) (!(x))
-
-//#define	_FWPLock(x)	(x)
-
-//#define	TAGGED_PTR core::T_O*
-
 extern void lisp_errorUnexpectedNil(type_info const &toType);
 extern void lisp_errorBadCast(type_info const &toType, type_info const &fromType, core::T_O *objP);
 extern void lisp_errorBadCastFromT_O(type_info const &toType, core::T_O *objP);
@@ -78,6 +68,7 @@ namespace gctools {
   void initialize_smart_pointers();
 
 #ifdef _ADDRESS_MODEL_64
+
   static const uintptr_t alignment = 8;    // 16 byte alignment for all pointers
   static const uintptr_t pointer_size = 8; // 8 byte words 64-bits
 #if defined (CLASP_MS_WINDOWS_HOST)
@@ -86,7 +77,7 @@ namespace gctools {
                                         //! Fixnum definition for 64 bit system
   typedef intptr_t Fixnum;
 #endif
- 
+
   typedef Fixnum cl_fixnum;
 };
 
@@ -100,19 +91,74 @@ namespace gctools {
   static const int tag_shift = 3;
   static const int fixnum_bits = 62;
   static const int fixnum_shift = 2;
+
   static const long int most_positive_fixnum =  2305843009213693951;
   static const long int most_negative_fixnum = -2305843009213693952;
   static const size_t thread_local_cl_stack_min_size = THREAD_LOCAL_CL_STACK_MIN_SIZE;
-  static const int most_positive_int = std::numeric_limits<int>::max();
-  static const int most_negative_int = std::numeric_limits<int>::min();
-  static const uint most_positive_uint = std::numeric_limits<unsigned int>::max();
-  static const uint64_t most_positive_uint32 = std::numeric_limits<uint32_t>::max();
-  static const uint64_t most_positive_uint64 = std::numeric_limits<uint64_t>::max();
-  static const unsigned long long most_positive_unsigned_long_long = std::numeric_limits<unsigned long long>::max();
+
 #define MOST_POSITIVE_FIXNUM gctools::most_positive_fixnum
 #define MOST_NEGATIVE_FIXNUM gctools::most_negative_fixnum
 #define FIXNUM_BITS gctools::fixnum_bits
+
+  // --- SHORT ---
+  static const short most_negative_short = std::numeric_limits<short>::min();
+  static const short most_positive_short = std::numeric_limits<short>::max();
+  static const unsigned short most_positive_ushort = std::numeric_limits<short>::max();
+
+  // --- INT ---
+  static const int most_negative_int = std::numeric_limits<int>::min();
+  static const int most_positive_int = std::numeric_limits<int>::max();
+  static const unsigned int most_positive_uint = std::numeric_limits<unsigned int>::max();
+
+  // --- LONG ---
+  static const long most_negative_long = std::numeric_limits<long>::min();
+  static const long most_positive_long = std::numeric_limits<long>::max();
+  static const unsigned long most_positive_ulong = std::numeric_limits<unsigned long>::max();
+
+  // --- LONG LONG ---
+  static const long long most_negative_longlong = std::numeric_limits<long long>::min();
+  static const long long most_positive_longlong = std::numeric_limits<long long>::max();
+  static const unsigned long long most_positive_ulonglong = std::numeric_limits<unsigned long long>::max();
+
+  // --- INT8 ---
+  static const int8_t most_negative_int8 = std::numeric_limits<int8_t>::min();
+  static const int8_t most_positive_int8 = std::numeric_limits<int8_t>::max();
+  static const uint8_t most_positive_uint8 = std::numeric_limits<uint8_t>::max();
+
+  // --- INT16 ---
+  static const int16_t most_negative_int16 = std::numeric_limits<int16_t>::min();
+  static const int16_t most_positive_int16 = std::numeric_limits<int16_t>::max();
+  static const uint16_t most_positive_uint16 = std::numeric_limits<uint16_t>::max();
+
+  // --- INT32 ---
+  static const int32_t most_negative_int32 = std::numeric_limits<int32_t>::min();
+  static const int32_t most_positive_int32 = std::numeric_limits<int32_t>::max();
+  static const uint32_t most_positive_uint32 = std::numeric_limits<uint32_t>::max();
+
+  // --- INT64 ---
+  static const int64_t most_negative_int64 = std::numeric_limits<int64_t>::min();
+  static const int64_t most_positive_int64 = std::numeric_limits<int64_t>::max();
+  static const uint64_t most_positive_uint64 = std::numeric_limits<uint64_t>::max();
+
+  // -- SIZE ---
+  static const size_t most_negative_size = std::numeric_limits<size_t>::min();
+  static const size_t most_positive_size = std::numeric_limits<size_t>::max();
+
+  // --SSIZE ---
+  static const ssize_t most_negative_ssize = std::numeric_limits<ssize_t>::min();
+  static const ssize_t most_positive_ssize = std::numeric_limits<ssize_t>::max();
+
+  // --- CL_INTPTR_T ---
+  static const cl_intptr_t most_negative_cl_intptr = std::numeric_limits<cl_intptr_t>::min();
+  static const cl_intptr_t most_positive_cl_intptr = std::numeric_limits<cl_intptr_t>::max();
+
+  // --- PTRDIFF_T ---
+  static const ptrdiff_t most_negative_ptrdiff = std::numeric_limits<ptrdiff_t>::min();
+  static const ptrdiff_t most_positive_ptrdiff = std::numeric_limits<ptrdiff_t>::max();
+
+
 #endif
+
 #ifdef _ADDRESS_MODEL_32
 #error "Add support for 32 bits - squeeze, Squeeze, SQUEEZE!"
 #endif
@@ -130,14 +176,14 @@ for a CONS cell*/
   static const uintptr_t general_tag =  POINTER_GENERAL_TAG;  // means a GENERAL pointer
   static const uintptr_t cons_tag    =  POINTER_CONS_TAG;     // means a CONS cell pointer
   /*! A test for pointers has the form (potential_ptr&POINTER_TAG_MASK)==POINTER_TAG_EQ) */
-  static const uintptr_t pointer_tag_mask = POINTER_TAG_MASK; 
+  static const uintptr_t pointer_tag_mask = POINTER_TAG_MASK;
   static const uintptr_t pointer_tag_eq   = POINTER_TAG_EQ;
 
  /*! gc_tag is used for headerless objects to indicate that this word is
 used by the garbage collector */
   static const uintptr_t gc_tag = ZERO_TAG_MASK; //BOOST_BINARY(111);
- 
-/*! valist_tag is a tag for va_list(s) on the stack, it is used by Clasp to 
+
+/*! valist_tag is a tag for va_list(s) on the stack, it is used by Clasp to
 iterate over variable numbers of arguments passed to functions.
 Pointers with this tag are NOT moved in memory, the objects valist_tag'd pointers
 point to are only ever on the stack.
@@ -166,7 +212,7 @@ ABI's  */
        Special objects that don't have headers (fixnum, single_float, character, cons)
        General objects that are stored on the heap and have a header
        Alien objects that are wrapped C++ classes and stored on the heap.
-       Instance objects that are CLOS instances. 
+       Instance objects that are CLOS instances.
        The ranges below define the kind/stamp values allowed for each
        and they allow the GC to quickly determine what kind of an object
        it is dealing with for fixing pointers.
@@ -184,7 +230,19 @@ ABI's  */
   static const uintptr_t kind_last_alien     = 65535;
   static const uintptr_t kind_first_instance = 65536;
   static const uintptr_t kind_last_instance  = ((uintptr_t)most_positive_fixnum)<<1;
-  
+
+  static const std::string tagged_fixnum_str = "FIXNUM";
+  static const std::string tagged_character_str = "CHARACTER";
+  static const std::string tagged_single_float_str = "SINGLE-FLOAT";
+  static const std::string tagged_object_str = "OBJECT";
+  static const std::string tagged_cons_str = "CONS";
+  static const std::string tagged_unbound_str = "UNBOUND";
+  static const std::string tagged_deleted_str = "DELETED";
+  static const std::string tagged_same_as_key_str = "SAME-AS -EY";
+  static const std::string tagged_valist_str = "VALIST";
+  static const std::string tagged_nil_str = "NIL";
+  static const std::string tagged_general_str = "GENERAL";
+
   template <class T>
     T tag(T ptr) { return reinterpret_cast<T>(reinterpret_cast<uintptr_t>(ptr) & tag_mask); };
 
@@ -344,12 +402,90 @@ ABI's  */
     return (reinterpret_cast<uintptr_t>(ptr) & pointer_tag_mask) == pointer_tag_eq;
   }
 
-   
   template <class Type>
     inline Type untag_object(Type tagged_obj) {
     GCTOOLS_ASSERT(tagged_objectp(tagged_obj));
     return reinterpret_cast<Type>((uintptr_t)tagged_obj & ptr_mask);
   }
-};
+
+// This returns a string containing info if and which tagged object is given
+// as parameter.
+  template< typename T >
+    std::string tag_str(T tagged_obj)
+  {
+    if( tagged_consp( tagged_obj )  )
+    {
+      return tagged_cons_str;
+    }
+
+    if( tagged_nilp( tagged_obj )  )
+    {
+      return tagged_nil_str;
+    }
+
+    if( tagged_unboundp( tagged_obj )  )
+    {
+      return tagged_unbound_str;
+    }
+
+    if( tagged_deletedp( tagged_obj )  )
+    {
+      return tagged_deleted_str;
+    }
+
+    if( tagged_sameAsKeyp( tagged_obj )  )
+    {
+      return tagged_same_as_key_str;
+    }
+
+    if( tagged_valistp( tagged_obj )  )
+    {
+      return tagged_valist_str;
+    }
+
+    if( tagged_fixnump( tagged_obj )  )
+    {
+      return tagged_fixnum_str;
+    }
+
+    if( tagged_characterp( tagged_obj )  )
+    {
+      return tagged_character_str;
+    }
+
+    if( tagged_single_floatp( tagged_obj )  )
+    {
+      return tagged_single_float_str;
+    }
+
+    if( tagged_generalp( tagged_obj )  )
+    {
+      return tagged_general_str;
+    }
+
+    if( tagged_objectp( tagged_obj )  )
+    {
+      return tagged_object_str;
+    }
+
+    return "*** UNKNOW_TAG ***";
+
+  }; // tag_str
+
+  template< typename T >
+    std::string tag_info(T tagged_obj)
+  {
+    std::stringstream ss;
+
+    ss << "<object tag info:";
+    ss << " type id: " << typeid( T ).name();
+    ss << " tag: " << tag_str( tagged_obj );
+    ss << ">";
+
+    return ss.str();
+
+  }; // tag_info
+
+}; // namespace gctools
 
 #endif // pointer_tagging

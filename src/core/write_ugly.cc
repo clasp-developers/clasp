@@ -4,14 +4,14 @@
 
 /*
 Copyright (c) 2014, Christian E. Schafmeister
- 
+
 CLASP is free software; you can redistribute it and/or
 modify it under the terms of the GNU Library General Public
 License as published by the Free Software Foundation; either
 version 2 of the License, or (at your option) any later version.
- 
+
 See directory 'clasp/licenses' for full details.
- 
+
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
 
@@ -32,7 +32,7 @@ THE SOFTWARE.
     Copyright (c) 1984, Taiichi Yuasa and Masami Hagiya.
     Copyright (c) 1990, Giuseppe Attardi.
     Copyright (c) 2001, Juan Jose Garcia Ripoll.
-    Copyright (c) 2013, Christian E. Schafmeister 
+    Copyright (c) 2013, Christian E. Schafmeister
 
     ECL is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -53,12 +53,11 @@ THE SOFTWARE.
 #include <clasp/core/cons.h>
 #include <clasp/core/symbolTable.h>
 #include <clasp/core/designators.h>
-#include <clasp/core/str.h>
+#include <clasp/core/array.h>
 #include <clasp/core/evaluator.h>
 #include <clasp/core/pathname.h>
 #include <clasp/core/lispStream.h>
 #include <clasp/core/instance.h>
-#include <clasp/core/str.h>
 #include <clasp/core/structureObject.h>
 #include <clasp/core/sysprop.h>
 #include <clasp/core/numberToString.h>
@@ -68,9 +67,7 @@ THE SOFTWARE.
 #include <clasp/core/float_to_string.h>
 #include <clasp/core/write_symbol.h>
 #include <clasp/core/write_ugly.h>
-
 #include <clasp/core/character.h>
-
 #include <clasp/core/wrappers.h>
 
 namespace core {

@@ -45,7 +45,7 @@ THE SOFTWARE.
 #include <clasp/core/multipleValues.h>
 #include <clasp/core/evaluator.h>
 #include <clasp/core/lispStream.h>
-#include <clasp/core/str.h>
+#include <clasp/core/array.h>
 #include <clasp/core/specialForm.h>
 #include <clasp/core/cons.h>
 //#include "lisp_ParserExtern.h"

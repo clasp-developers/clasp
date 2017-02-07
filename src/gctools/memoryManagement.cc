@@ -4,14 +4,14 @@
 
 /*
 Copyright (c) 2014, Christian E. Schafmeister
- 
+
 CLASP is free software; you can redistribute it and/or
 modify it under the terms of the GNU Library General Public
 License as published by the Free Software Foundation; either
 version 2 of the License, or (at your option) any later version.
- 
+
 See directory 'clasp/licenses' for full details.
- 
+
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
 
@@ -31,9 +31,9 @@ THE SOFTWARE.
 #include <clasp/gctools/gcalloc.h>
 #include <clasp/core/object.h>
 #include <clasp/core/numbers.h>
+#include <clasp/core/array.h>
 #include <clasp/core/debugger.h>
 #include <clasp/core/evaluator.h>
-#include <clasp/core/str.h>
 #include <clasp/gctools/telemetry.h>
 #include <clasp/gctools/gc_boot.h>
 #include <clasp/gctools/gcFunctions.h>
@@ -331,7 +331,7 @@ int startupGarbageCollectorAndSystem(MainFunctionType startupFn, int argc, char 
   }
 
   build_kind_field_layout_tables();
-  
+
   setupSignals();
 
   telemetry::global_telemetry_search = new telemetry::Telemetry();

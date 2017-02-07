@@ -46,7 +46,7 @@ THE SOFTWARE.
 #include <clasp/core/symbol.h>
 #include <clasp/core/lispStream.h>
 #include <clasp/core/character.h>
-#include <clasp/core/str.h>
+#include <clasp/core/array.h>
 #include <clasp/core/package.h>
 #include <clasp/core/symbolTable.h>
 #include <clasp/core/readtable.h>

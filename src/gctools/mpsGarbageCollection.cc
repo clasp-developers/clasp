@@ -4,14 +4,14 @@
 
 /*
 Copyright (c) 2014, Christian E. Schafmeister
- 
+
 CLASP is free software; you can redistribute it and/or
 modify it under the terms of the GNU Library General Public
 License as published by the Free Software Foundation; either
 version 2 of the License, or (at your option) any later version.
- 
+
 See directory 'clasp/licenses' for full details.
- 
+
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
 
@@ -54,7 +54,7 @@ templated_class_jump_table_index, jump_table_index, NULL
 
 #include <clasp/core/object.h>
 #include <clasp/core/numbers.h>
-#include <clasp/core/str.h>
+#include <clasp/core/array.h>
 #include <clasp/core/builtInClass.h>
 #include <clasp/core/loadTimeValues.h>
 #include <clasp/core/posixTime.h> // was core/posixTime.cc???
@@ -223,7 +223,7 @@ void Header_s::validate() const {
       telemetry::global_telemetry_flush();
       abort();
     }
-    for ( unsigned char *cp=((unsigned char*)(this)+this->tail_start), 
+    for ( unsigned char *cp=((unsigned char*)(this)+this->tail_start),
             *cpEnd((unsigned char*)(this)+this->tail_start+this->tail_size); cp < cpEnd; ++cp ) {
       if (*cp!=0xcc) {
         printf("%s:%d INVALID tail header@%p bad tail byte@%p -> %x\n", __FILE__, __LINE__, (void*)this, cp, *cp );
@@ -237,7 +237,7 @@ void Header_s::validate() const {
       telemetry::global_telemetry_flush();
       abort();
     }
-    for ( unsigned char *cp=((unsigned char*)(this)+this->tail_start), 
+    for ( unsigned char *cp=((unsigned char*)(this)+this->tail_start),
             *cpEnd((unsigned char*)(this)+this->tail_start+this->tail_size); cp < cpEnd; ++cp ) {
       if (*cp!=0xcc) {
         printf("%s:%d INVALID tail header@%p bad tail byte@%p -> %x\n", __FILE__, __LINE__, (void*)this, cp, *cp );
@@ -247,7 +247,7 @@ void Header_s::validate() const {
     }
   }
 }
-  
+
 #endif
 
 
@@ -272,7 +272,7 @@ void rawHeaderDescribe(uintptr_t *headerP) {
     printf("  0x%p : 0x%p\n", (headerP+3), (void*)*(headerP+3));
     printf("  0x%p : 0x%p\n", (headerP+4), (void*)*(headerP+4));
     printf("  0x%p : 0x%p\n", (headerP+5), (void*)*(headerP+5));
-#endif    
+#endif
     gctools::GCKindEnum kind = (gctools::GCKindEnum)((*headerP) >> 2);
     printf(" Kind tag - kind: %d", kind);
     fflush(stdout);
@@ -836,7 +836,7 @@ void run_quick_tests()
   core::List_sp l3 = core::Cons_O::create(core::clasp_make_fixnum(1),l2);
   core::List_sp l4 = core::Cons_O::create(core::clasp_make_fixnum(1),l3);
 }
-  
+
 #define LENGTH(array) (sizeof(array) / sizeof(array[0]))
 
 int initializeMemoryPoolSystem(MainFunctionType startupFn, int argc, char *argv[], bool mpiEnabled, int mpiRank, int mpiSize) {
@@ -854,7 +854,7 @@ int initializeMemoryPoolSystem(MainFunctionType startupFn, int argc, char *argv[
   size_t generation1Kb = CHAIN_SIZE * 4;
   size_t generation1MortalityPercent = 50;
   size_t keyExtendByKb = 64;  // 64K
-  
+
   // Try something like   export CLASP_MPS_CONFIG="32 32 16 80 32 80 64"   to debug MPS
   maybeParseClaspMpsConfig(arenaSizeMb, spareCommitLimitMb, nurseryKb, nurseryMortalityPercent, generation1Kb, generation1MortalityPercent, keyExtendByKb );
 
@@ -915,7 +915,7 @@ int initializeMemoryPoolSystem(MainFunctionType startupFn, int argc, char *argv[
       "free", 4,
   };
 #endif
-  
+
   // Create the AMC pool
   MPS_ARGS_BEGIN(args) {
     MPS_ARGS_ADD(args, MPS_KEY_FORMAT, obj_fmt);
@@ -974,9 +974,9 @@ int initializeMemoryPoolSystem(MainFunctionType startupFn, int argc, char *argv[
   if (res != MPS_RES_OK)
     GC_RESULT_ERROR(res, "Could not create amc cons pool");
 
-  
+
   /* Objects that can not move but are managed by the garbage collector
-     go in the global_non_moving_pool.  
+     go in the global_non_moving_pool.
      Use an AWL pool rather than an AMS pool until the AMS pool becomes a production pool */
   MPS_ARGS_BEGIN(args) {
     MPS_ARGS_ADD(args, MPS_KEY_FORMAT, obj_fmt);
@@ -997,7 +997,7 @@ int initializeMemoryPoolSystem(MainFunctionType startupFn, int argc, char *argv[
 /* ------------------------------------------------------------------------
    Create a pool for objects that aren't moved and arent managed by the GC.
 */
-#if 0   
+#if 0
   MPS_ARGS_BEGIN(args) {
     MPS_ARGS_ADD(args, MPS_KEY_FORMAT, obj_fmt);
     MPS_ARGS_ADD(args, MPS_KEY_CHAIN, general_chain);
@@ -1016,7 +1016,7 @@ int initializeMemoryPoolSystem(MainFunctionType startupFn, int argc, char *argv[
     GC_RESULT_ERROR(res, "Couldn't create global_non_moving_ap");
 #endif
 
-  
+
   // Create the AMCZ pool
   mps_pool_t _global_amcz_pool;
   MPS_ARGS_BEGIN(args) {
@@ -1204,7 +1204,7 @@ void client_validate(void *taggedClient) {
     header->validate();
   } else if (gctools::tagged_consp(taggedClient)) {
     // Nothing can be done to validate CONSes, they are too compact.
-  }    
+  }
 };
 
 

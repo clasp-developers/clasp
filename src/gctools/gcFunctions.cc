@@ -30,7 +30,7 @@ int gcFunctions_after;
 #include <clasp/core/hashTableEq.h>
 #include <clasp/core/structureClass.h>
 #include <clasp/core/lispStream.h>
-#include <clasp/core/str.h>
+#include <clasp/core/array.h>
 #include <clasp/core/symbolTable.h>
 #include <clasp/gctools/gctoolsPackage.h>
 #include <clasp/core/wrappers.h>
@@ -204,14 +204,14 @@ void af_testVec0()
   vector_dump(v);
   printf("About to Push_back %d times TestingClass(i)\n", N);
   for ( int i(0); i<N; ++i ) {v.push_back(TestingClass(i));}
-  vector_dump(v); 
+  vector_dump(v);
   printf("About to Push_back %d times TestingClass(i+10)\n", N);
   for ( int i(0); i<N; ++i )
   {
     v.push_back(TestingClass(i+10));
     vector_dump(v,"step");
   }
-  vector_dump(v,"done"); 
+  vector_dump(v,"done");
   printf("Start again");
   gctools::Vec0<TestingClass> u;
   u.resize(4);

@@ -87,13 +87,22 @@
 
 (eval-when (:execute :compile-toplevel :load-toplevel)
   (select-package :core))
-(if (find-package "FFI") nil
-  (make-package "FFI" :use '(:CL :CORE)))
+
+;;; ATTENTION - DEAD CODE AHEAD!
+;;; The package FFI is a remainder from ECL - it is not used by CLASP !
+;;; As ECL FFI code will be loaded still this is required.
+;;; CLASP's FLI code is in package CLASP-FFI !
+;;; frgo, 2016-08-27
+
+(if (find-package "FFI")
+    nil
+    (make-package "FFI" :use '(:CL :CORE)))
 
 ;;; Setup a few things for the EXT package
 ;;; EXT exports
 (eval-when (:execute :compile-toplevel :load-toplevel)
   (select-package :ext))
+
 (export '(*module-provider-functions*
           *source-location-kinds*
           current-source-location

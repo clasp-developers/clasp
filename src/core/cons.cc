@@ -40,7 +40,7 @@ THE SOFTWARE.
 #include <clasp/core/environment.h>
 #include <clasp/core/designators.h>
 #include <clasp/core/numbers.h>
-#include <clasp/core/str.h>
+#include <clasp/core/array.h>
 #include <clasp/core/wrappers.h>
 
 namespace core {

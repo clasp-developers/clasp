@@ -46,7 +46,8 @@ THE SOFTWARE.
 #include <clasp/core/designators.h>
 #include <clasp/core/evaluator.h>
 #include <clasp/core/symbolTable.h>
-#include <clasp/core/str.h>
+#include <clasp/core/array.h>
+#include <clasp/core/character.h>
 #include <clasp/core/compiler.h>
 #include <clasp/core/sequence.h>
 #include <clasp/core/pathname.h>
@@ -346,6 +347,7 @@ CL_DEFUN T_mv core__load_bundle(T_sp pathDesig, T_sp verbose, T_sp print, T_sp e
 #else
   scope.pushSpecialVariableAndSet(_sym_STARsourceDatabaseSTAR, _Nil<T_O>());
 #endif
+  scope.pushSpecialVariableAndSet(_sym_STARcurrentSourcePosInfoSTAR, SourcePosInfo_O::create(0, 0, 0, 0));
   scope.pushSpecialVariableAndSet(cl::_sym_STARreadtableSTAR, cl::_sym_STARreadtableSTAR->symbolValue());
   scope.pushSpecialVariableAndSet(cl::_sym_STARpackageSTAR, cl::_sym_STARpackageSTAR->symbolValue());
   Pathname_sp path = cl__pathname(pathDesig);
@@ -1126,7 +1128,7 @@ CL_DEFUN void core__throw_function(T_sp tag, T_sp result_form) {
   result.saveToMultipleValue0();
   throw CatchThrow(frame);
 }
-        
+
 CL_LAMBDA(symbols values func);
 CL_DECLARE();
 CL_DOCSTRING("progvFunction");
@@ -1158,25 +1160,23 @@ CL_DEFUN T_mv core__progv_function(List_sp symbols, List_sp values, Function_sp 
  SYMBOL_SC_(CorePkg, dlopen);
  SYMBOL_SC_(CorePkg, dlsym);
  SYMBOL_SC_(CorePkg, dladdr);
-  SYMBOL_EXPORT_SC_(CorePkg, callWithVariableBound);
+ SYMBOL_EXPORT_SC_(CorePkg, callWithVariableBound);
 
-  
-                             
 void initialize_compiler_primitives(Lisp_sp lisp) {
-  //	SYMBOL_SC_(CorePkg,processDeclarations);
+
+  // Initialize raw object translators needed for Foreign Language Interface support 
+  llvmo::initialize_raw_translators(); // See file intrinsics.cc!
+
   comp::_sym_STARimplicit_compile_hookSTAR->defparameter(comp::_sym_implicit_compile_hook_default->symbolFunction());
   cleavirPrimops::_sym_callWithVariableBound->setf_symbolFunction(_sym_callWithVariableBound->symbolFunction());
-//  wrap_translator("CORE","FROM-OBJECT<SHORT-INT>", &from_object_short_int);
-//  wrap_translator("CORE","TO-OBJECT<SHORT-INT>", &to_object_short_int);
+
+  return;
 }
 
 }; /* namespace */
 
 
 extern "C" {
-int mul2(int x) {
-  return 2*x;
-}
 
 void clasp_trap(core::T_O* val) {
   printf("%s:%d  clasp_trap called with %p\n", __FILE__, __LINE__, val);
@@ -1185,5 +1185,5 @@ void clasp_trap(core::T_O* val) {
 void clasp_silent_trap(core::T_O* obj) {
   // Do nothing
 }
+
 };
-        

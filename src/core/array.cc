@@ -4,14 +4,14 @@
 
 /*
 Copyright (c) 2014, Christian E. Schafmeister
- 
+
 CLASP is free software; you can redistribute it and/or
 modify it under the terms of the GNU Library General Public
 License as published by the Free Software Foundation; either
 version 2 of the License, or (at your option) any later version.
- 
+
 See directory 'clasp/licenses' for full details.
- 
+
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
 
@@ -28,14 +28,13 @@ THE SOFTWARE.
 
 #include <clasp/core/common.h>
 #include <clasp/core/corePackage.h>
+#include <clasp/core/bformat.h>
 #include <clasp/core/symbolTable.h>
 #include <clasp/core/evaluator.h>
 #include <clasp/core/numbers.h>
 #include <clasp/core/primitives.h>
 #include <clasp/core/designators.h>
 #include <clasp/core/lispStream.h>
-#include <clasp/core/bformat.h>
-#include <clasp/core/vectorObjects.h>
 #include <clasp/core/array.h>
 #include <clasp/core/character.h>
 #include <clasp/core/wrappers.h>
@@ -98,7 +97,7 @@ void noFillPointerError(Symbol_sp fn_name, T_sp thing) {
 
 
 };
-  
+
 
 namespace core {
 
@@ -186,7 +185,7 @@ size_t Array_O::index_vector_int(const vector<int> &indices) const {
 }
 
 size_t Array_O::index_val_(List_sp indices, bool last_value_is_val, T_sp &last_val) const {
-  size_t rank = this->rank(); 
+  size_t rank = this->rank();
   size_t offset = 0;
   size_t idx = 0;
   List_sp cur = indices;;
@@ -304,11 +303,6 @@ MDArray_O::MDArray_O(Rank1 dummy,
   } else {
     this->_FillPointerOrLengthOrDummy = arrayTotalSize;
   }
-#if 0
-  if (displacedToP) {
-    printf("%s:%d Displaced array with displacedIndexOffset = %ld\n", __FILE__, __LINE__, displacedIndexOffset.unsafe_fixnum());
-  }
-#endif
 }
 
 // Multi-dimensional constructor
@@ -501,7 +495,7 @@ CL_DEFUN size_t cl__fillPointer(Array_sp vector)
   return vector->fillPointer();
 }
 
-  
+
 CL_LISPIFY_NAME("cl:array-has-fill-pointer-p");
 CL_DEFUN bool cl__arrayHasFillPointerP(Array_sp array) {
   return array->arrayHasFillPointerP();
@@ -1309,7 +1303,7 @@ inline void setup_string_op_arguments(T_sp string1_desig, T_sp string2_desig,
       return _function_(*nsw2,istart,iend); \
     } \
   }
-    
+
 #define TEMPLATE_HALF_STRING_DISPATCHER(_this_,_string2_,_function_,istart1,iend1,istart2,iend2) \
   if (gc::IsA<SimpleString_sp>(_string2_)) {				\
     if (gc::IsA<SimpleBaseString_sp>(_string2_)) { \
@@ -1328,7 +1322,7 @@ inline void setup_string_op_arguments(T_sp string1_desig, T_sp string2_desig,
       return _function_(*_this_,*nsw2,istart1,iend1,istart2,iend2); \
     } \
   }
-    
+
 #define TEMPLATE_STRING_DISPATCHER(_string1_,_string2_,_function_,istart1,iend1,istart2,iend2) \
 if (gc::IsA<SimpleString_sp>(_string1_) ) {			    \
   if (gc::IsA<SimpleString_sp>(_string2_)) {				\
@@ -2000,7 +1994,7 @@ Array_sp SimpleBitVector_O::unsafe_setf_subseq(size_t start, size_t end, Array_s
   TYPE_ERROR(other,cl::_sym_bit_vector);
 }
 
-void SimpleBitVector_O::unsafe_fillArrayWithElt(T_sp initialElement, size_t start, size_t end) 
+void SimpleBitVector_O::unsafe_fillArrayWithElt(T_sp initialElement, size_t start, size_t end)
 {
   value_type initBlockValue = (initialElement.nilp()) ? 0 : ~0;
   // round up start and round down end

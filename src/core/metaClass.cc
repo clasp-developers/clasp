@@ -4,14 +4,14 @@
 
 /*
 Copyright (c) 2014, Christian E. Schafmeister
- 
+
 CLASP is free software; you can redistribute it and/or
 modify it under the terms of the GNU Library General Public
 License as published by the Free Software Foundation; either
 version 2 of the License, or (at your option) any later version.
- 
+
 See directory 'clasp/licenses' for full details.
- 
+
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
 
@@ -44,12 +44,11 @@ THE SOFTWARE.
 #include <clasp/core/cons.h>
 #include <clasp/core/lambdaListHandler.h>
 #include <clasp/core/lispList.h>
-#include <clasp/core/str.h>
+#include <clasp/core/array.h>
 #include <clasp/core/instance.h>
 #include <clasp/core/evaluator.h>
 #include <clasp/core/hashTable.h>
 #include <clasp/core/builtInClass.h>
-#include <clasp/core/vectorObjects.h>
 #include <clasp/core/hashTableEq.h>
 #include <clasp/core/standardClass.h>
 #include <clasp/core/funcallableStandardClass.h>
@@ -173,7 +172,7 @@ void Class_O::inheritDefaultAllocator(List_sp superclasses) {
     Creator_sp dup = aCxxAllocator->duplicateForClassName(this->name());
     this->setCreator(dup); // this->setCreator(dup.get());
   } else {
-    // I think this is the most common outcome - 
+    // I think this is the most common outcome -
 //    printf("%s:%d   Creating an InstanceCreator_O for the class: %s\n", __FILE__, __LINE__, _rep_(this->name()).c_str());
     InstanceCreator_sp instanceAllocator = gc::GC<InstanceCreator_O>::allocate(this->asSmartPtr());
     //gctools::StackRootedPointer<InstanceCreator> instanceAllocator(new InstanceCreator(this->name()));

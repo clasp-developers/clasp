@@ -45,7 +45,7 @@ THE SOFTWARE.
 #include <clasp/core/exceptions.h>
 #include <clasp/core/symbolTable.h>
 #include <clasp/core/bformat.h>
-#include <clasp/core/str.h>
+#include <clasp/core/array.h>
 #include <clasp/core/lispStream.h>
 #include <clasp/core/sourceFileInfo.h>
 #include <clasp/core/object.h>

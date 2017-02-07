@@ -41,15 +41,14 @@ THE SOFTWARE.
 #include <clasp/core/bignum.h>
 #include <clasp/core/sysprop.h>
 #include <clasp/core/character.h>
+#include <clasp/core/array.h>
 #include <clasp/core/package.h>
 #include <clasp/core/readtable.h>
 #include <clasp/core/instance.h>
-#include <clasp/core/vectorObjects.h>
 #include <clasp/core/backquote.h>
 #include <clasp/core/sequence.h>
 #include <clasp/core/structureObject.h>
 #include <clasp/core/wrappedPointer.h>
-#include <clasp/core/bitVector.h>
 #include <clasp/core/pathname.h>
 #include <clasp/core/unixfsys.h>
 #include <clasp/core/predicates.h>
@@ -61,7 +60,6 @@ THE SOFTWARE.
 #include <clasp/core/null.h>
 //#include "debugger.h"
 #include <clasp/core/ql.h>
-#include <clasp/core/str.h>
 #include <clasp/core/numbers.h>
 #include <clasp/core/evaluator.h>
 #include <clasp/core/compiler.h>
@@ -975,9 +973,9 @@ CL_DOCSTRING(R"doc(* Arguments
 - lambda-list-p : T if lambda-list is passed
 * Description
 Bind a function to the function slot of a symbol
-- handles symbol function-name and (SETF XXXX) names. 
-IS-MACRO defines if the function is a macro or not. 
-PRETTY-PRINT was inherited from ecl - I don't know what its for.  
+- handles symbol function-name and (SETF XXXX) names.
+IS-MACRO defines if the function is a macro or not.
+PRETTY-PRINT was inherited from ecl - I don't know what its for.
 LAMBDA-LIST passes the lambda-list.)doc");
 CL_DEFUN T_sp core__fset(T_sp functionName, Function_sp functor, T_sp is_macro, T_sp pretty_print, T_sp lambda_list, T_sp lambda_list_p) {
   if ( NamedFunction_sp functionObject = functor.asOrNull<NamedFunction_O>() ) {
@@ -1496,7 +1494,7 @@ CL_DEFUN Symbol_mv core__type_to_symbol(T_sp x) {
     return (Values(cl::_sym_fixnum));
   else if ( x.characterp() )
     return (Values(cl::_sym_character));
-  else if ( x.single_floatp() ) 
+  else if ( x.single_floatp() )
     return (Values(cl::_sym_single_float));
   else if (x.consp())
     return (Values(cl::_sym_list));
@@ -1536,7 +1534,7 @@ CL_DEFUN Symbol_mv core__type_to_symbol(T_sp x) {
       return Values(bvx->type_symbol());
     else if (BitVector_sp bvx = gx.asOrNull<BitVector_O>())
       return Values(bvx->type_symbol());
-    else if (cl__stringp(gx)) 
+    else if (cl__stringp(gx))
       return (Values(cl::_sym_string));
 #endif
   //    else if ( x.isA<BaseString_O>() ) return(Values(_sym_BaseString_O));
@@ -2020,10 +2018,10 @@ CL_DEFUN List_sp core__list_from_va_list(VaList_sp valist)
     l << one;
   }
   T_sp result = l.cons();
-  printf("%s:%d Returning: %s\n", __FILE__, __LINE__, _rep_(result).c_str()); 
+  printf("%s:%d Returning: %s\n", __FILE__, __LINE__, _rep_(result).c_str());
   return result;
 }
-  
+
 CL_LAMBDA(&optional (out t) msg);
 CL_DECLARE();
 CL_DOCSTRING("ihsBacktrace");

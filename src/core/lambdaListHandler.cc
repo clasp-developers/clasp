@@ -34,8 +34,7 @@ THE SOFTWARE.
 #include <clasp/core/lambdaListHandler.h>
 #include <clasp/core/lispList.h>
 #include <clasp/core/primitives.h>
-#include <clasp/core/str.h>
-#include <clasp/core/vectorObjects.h>
+#include <clasp/core/array.h>
 #include <clasp/core/multipleValues.h>
 #include <clasp/core/evaluator.h>
 #include <clasp/core/hashTableEq.h>
@@ -86,7 +85,7 @@ CL_DEFUN bool core__is_a_type(T_sp form)
   }
   return false;
 }
-  
+
 /*! Canonicalize one declare.
 * Arguments
 - decl :: A list.
@@ -121,9 +120,9 @@ List_sp maybe_canonicalize_optimize_declaration( List_sp decl, List_sp canon )
 }
 
 /*! Canonicalize the following declarations
-dynamic-extent  ignore     optimize  
-ftype           inline     special   
-ignorable       notinline  type      
+dynamic-extent  ignore     optimize
+ftype           inline     special
+ignorable       notinline  type
 And my own special one:    core:_sym_lambda_name
 */
 CL_DEFUN List_sp canonicalize_declarations(List_sp decls)
@@ -187,7 +186,7 @@ CL_DEFUN List_sp canonicalize_declarations(List_sp decls)
   }
   return canon;
 }
-    
+
 
 void lambdaListHandler_createBindings(Closure_sp closure, core::LambdaListHandler_sp llh, core::DynamicScopeManager &scope, LCC_ARGS_VA_LIST) {
   if (llh->requiredLexicalArgumentsOnlyP()) {
@@ -1360,4 +1359,3 @@ LambdaListHandler_O::LambdaListHandler_O() : _SpecialSymbolSet(_Nil<T_O>()), _Le
 
 
 }; /* core */
-

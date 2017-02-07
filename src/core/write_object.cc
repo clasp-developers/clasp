@@ -32,7 +32,7 @@ THE SOFTWARE.
 #include <clasp/core/object.h>
 #include <clasp/core/cons.h>
 #include <clasp/core/symbolTable.h>
-#include <clasp/core/str.h>
+#include <clasp/core/array.h>
 #include <clasp/core/designators.h>
 #include <clasp/core/predicates.h>
 #include <clasp/core/lispStream.h>

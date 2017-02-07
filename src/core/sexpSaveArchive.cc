@@ -34,7 +34,7 @@ THE SOFTWARE.
 #include <clasp/core/symbolTable.h>
 #include <clasp/core/write_ugly.h>
 #include <clasp/core/designators.h>
-#include <clasp/core/str.h>
+#include <clasp/core/array.h>
 #include <clasp/core/lispStream.h>
 #include <clasp/core/numbers.h>
 #include <clasp/core/symbol.h>

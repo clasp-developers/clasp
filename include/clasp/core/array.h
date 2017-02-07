@@ -4,14 +4,14 @@
 
 /*
 Copyright (c) 2014, Christian E. Schafmeister
- 
+
 CLASP is free software; you can redistribute it and/or
 modify it under the terms of the GNU Library General Public
 License as published by the Free Software Foundation; either
 version 2 of the License, or (at your option) any later version.
- 
+
 See directory 'clasp/licenses' for full details.
- 
+
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
 
@@ -312,7 +312,7 @@ namespace core {
     virtual void unsafe_fillArrayWithElt(T_sp initial_element, size_t start, size_t end) = 0;
   };
 
- 
+
 }; /* core */
 
 
@@ -380,7 +380,7 @@ namespace core {
     virtual size_t arrayDimension(size_t axisNumber) const override {
       LIKELY_if (axisNumber<this->_Dimensions._Length) return this->_Dimensions[axisNumber];
       badAxisNumberError(cl::_sym_arrayDimension,this->_Dimensions._Length,axisNumber);
-      
+
     };
     virtual size_t displacedIndexOffset() const override {return this->_DisplacedIndexOffset;}
     virtual T_sp arrayElementType() const override { return this->_Data->arrayElementType();};
@@ -1163,7 +1163,7 @@ namespace core {
     virtual std::string __repr__() const final;
   public: // StrWNs specific functions
     void vectorPushExtend_claspCharacter(claspCharacter c, size_t extension=32);
-    /*! Return true if all characters are base characters and the string 
+    /*! Return true if all characters are base characters and the string
         can be downgraded to a base-char string */
     bool all_base_char_p() const;
     /*! Return the smallest character simple-string that can hold this */
@@ -1252,26 +1252,40 @@ namespace core {
 // ----------------------------------------------------------------------
 // ArrayT
 //
-namespace core {
-  class MDArrayT_O : public template_Array<MDArrayT_O,SimpleVector_O,MDArray_O> {
+namespace core
+{
+  class MDArrayT_O : public template_Array< MDArrayT_O, SimpleVector_O, MDArray_O >
+  {
     LISP_CLASS(core, CorePkg, MDArrayT_O, "MDArrayT",MDArray_O);
     virtual ~MDArrayT_O() {};
+
   public:
-    typedef template_Array<MDArrayT_O,SimpleVector_O,MDArray_O> TemplatedBase;
+
+    typedef template_Array< MDArrayT_O, SimpleVector_O, MDArray_O> TemplatedBase;
     typedef typename TemplatedBase::simple_element_type simple_element_type;
     typedef typename TemplatedBase::simple_type simple_type;
+
   public: // make vector
-  MDArrayT_O(size_t dummy_rank_1,
-             size_t dimension,
-             T_sp fillPointer,
-             Array_sp data,
-             bool displacedToP,
-             Fixnum_sp displacedIndexOffset) : TemplatedBase(Rank1(),dimension,fillPointer,data,displacedToP,displacedIndexOffset) {};
-    static MDArrayT_sp make(size_t dimension, T_sp initialElement/*=_Nil<T_O>()*/, T_sp fillPointer/*=_Nil<T_O>()*/, T_sp dataOrDisplacedTo/*=_Nil<T_O>()*/, bool displacedToP/*=false*/, Fixnum_sp displacedIndexOffset/*=clasp_make_fixnum(0)*/ ) {
-      LIKELY_if (dataOrDisplacedTo.nilp()) {
+
+  MDArrayT_O( size_t dummy_rank_1,
+              size_t dimension,
+              T_sp fillPointer,
+              Array_sp data,
+              bool displacedToP,
+              Fixnum_sp displacedIndexOffset) : TemplatedBase( Rank1(), dimension, fillPointer, data,displacedToP, displacedIndexOffset ) {};
+
+    static MDArrayT_sp make( size_t dimension,
+                             T_sp initialElement /* =_Nil<T_O>() */,
+                             T_sp fillPointer /* =_Nil<T_O>() */,
+                             T_sp dataOrDisplacedTo /* =_Nil<T_O>() */,
+                             bool displacedToP /* = false */,
+                             Fixnum_sp displacedIndexOffset /* = clasp_make_fixnum(0) */ )
+    {
+      LIKELY_if ( dataOrDisplacedTo.nilp() )
+      {
         dataOrDisplacedTo = SimpleVector_O::make(dimension,initialElement,true);
       }
-      MDArrayT_sp array = gctools::GC<MDArrayT_O>::allocate_container(gctools::GCStamp<MDArrayT_O>::TheStamp,1,1,dimension,fillPointer,gc::As_unsafe<Array_sp>(dataOrDisplacedTo),displacedToP,displacedIndexOffset);
+      MDArrayT_sp array = gctools::GC< MDArrayT_O >::allocate_container( gctools::GCStamp< MDArrayT_O >::TheStamp, 1, 1, dimension, fillPointer, gc::As_unsafe< Array_sp >( dataOrDisplacedTo ), displacedToP, displacedIndexOffset );
       return array;
     }
     static MDArrayT_sp make(size_t dimension, T_sp initialElement) {

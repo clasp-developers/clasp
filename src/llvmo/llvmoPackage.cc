@@ -49,7 +49,7 @@ THE SOFTWARE.
 #include <clasp/core/unixfsys.h>
 #include <clasp/core/environment.h>
 #include <clasp/core/lispStream.h>
-#include <clasp/core/str.h>
+#include <clasp/core/array.h>
 #include <clasp/core/wrappers.h>
 
 using namespace core;
@@ -202,7 +202,7 @@ CL_DEFUN void llvm_sys__throwIfMismatchedStructureSizes(core::Fixnum_sp tspSize,
     }
   }
 }
-        
+
 
 #if 0
     core::Symbol_sp* getOrCreateMemoryLockedSymbolForLlvm(core::Symbol_sp sym)
@@ -386,4 +386,3 @@ void LlvmoExposer_O::expose(core::Lisp_sp lisp, core::Exposer_O::WhatToExpose wh
 #undef NAMESPACE_llvmo
 #endif
 #endif
-

@@ -38,8 +38,7 @@ extern "C" {
 #include <clasp/core/bignum.h>
 #include <clasp/core/character.h>
 #include <clasp/core/symbolTable.h>
-#include <clasp/core/arrayObjects.h>
-#include <clasp/core/vectorObjects.h>
+#include <clasp/core/array.h>
 #include <clasp/core/arguments.h>
 #include <clasp/core/designators.h>
 #include <clasp/core/compPackage.h>
@@ -56,7 +55,6 @@ extern "C" {
 #include <clasp/core/posixTime.h>
 #include <clasp/core/numbers.h>
 #include <clasp/core/activationFrame.h>
-#include <clasp/core/str.h>
 #include <clasp/core/symbolTable.h>
 #include <clasp/llvmo/llvmoExpose.h>
 #include <clasp/llvmo/intrinsics.h>
@@ -183,7 +181,7 @@ gctools::Tagged ltvc_make_list(gctools::ConstantsTable* holder, size_t index, si
   return holder->set(index,val.tagged_());
 }
 
-  
+
 
 gctools::Tagged ltvc_make_array(gctools::ConstantsTable* holder, size_t index,
                                 gctools::Tagged telement_type,
@@ -210,7 +208,7 @@ void ltvc_setf_row_major_aref(gctools::Tagged array_t,
   core::Array_sp array = gc::As<core::Array_sp>(core::T_sp(array_t));
   array->rowMajorAset(row_major_index,core::T_sp(value_t));
 }
-  
+
 gctools::Tagged ltvc_make_hash_table(gctools::ConstantsTable* holder, size_t index,
                                 gctools::Tagged test_t ) {
   return holder->set(index,core::HashTable_O::create(core::T_sp(test_t)).tagged_());
@@ -705,7 +703,7 @@ void invokeTopLevelFunction(core::T_mv *resultP,
 #if 0
   *resultP = fptr(LCC_PASS_ARGS1_VA_LIST(onearg[0])); // Was  (ltvP));
 #else
-  *resultP = fptr(LCC_PASS_ARGS0_VA_LIST(tc.raw_())); 
+  *resultP = fptr(LCC_PASS_ARGS0_VA_LIST(tc.raw_()));
 #endif
 #ifdef TIME_TOP_LEVEL_FUNCTIONS
   if (core::_sym_STARdebugStartupSTAR->symbolValue().notnilp()) {

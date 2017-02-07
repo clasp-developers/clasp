@@ -4,14 +4,14 @@
 
 /*
 Copyright (c) 2014, Christian E. Schafmeister
- 
+
 CLASP is free software; you can redistribute it and/or
 modify it under the terms of the GNU Library General Public
 License as published by the Free Software Foundation; either
 version 2 of the License, or (at your option) any later version.
- 
+
 See directory 'clasp/licenses' for full details.
- 
+
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
 
@@ -29,8 +29,8 @@ THE SOFTWARE.
 #include <string.h>
 #include <clasp/core/foundation.h>
 #include <clasp/core/fileSystem.h>
-#include <clasp/core/str.h>
 #include <clasp/core/numbers.h>
+#include <clasp/core/array.h>
 #include <clasp/core/lispStream.h>
 #include <clasp/core/hashTableEq.h>
 #include <clasp/core/pathname.h>
@@ -268,7 +268,7 @@ CL_DEFUN T_sp core__source_manager_lookup(T_sp source_manager, T_sp form) {
   return _Nil<T_O>();
 }
 
-    
+
 CL_LAMBDA(arg &optional default-spi);
 CL_DECLARE();
 CL_DOCSTRING("Walk down the tree and find the first source info you can");

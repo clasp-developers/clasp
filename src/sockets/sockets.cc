@@ -4,14 +4,14 @@
 
 /*
 Copyright (c) 2014, Christian E. Schafmeister
- 
+
 CLASP is free software; you can redistribute it and/or
 modify it under the terms of the GNU Library General Public
 License as published by the Free Software Foundation; either
 version 2 of the License, or (at your option) any later version.
- 
+
 See directory 'clasp/licenses' for full details.
- 
+
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
 
@@ -50,11 +50,10 @@ THE SOFTWARE.
 #endif
 #include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
-#include <clasp/core/str.h>
+#include <clasp/core/array.h>
 #include <clasp/core/symbolTable.h>
 #include <clasp/core/lispStream.h>
 #include <clasp/core/evaluator.h>
-#include <clasp/core/lispVector.h>
 #include <clasp/sockets/socketsPackage.h>
 #include <clasp/core/symbolTable.h>
 #include <clasp/core/wrappers.h>
@@ -398,7 +397,7 @@ CL_DEFUN core::Integer_sp sockets_internal__ll_socketSendAddress(int fd,        
                                    bool nosignal,     //#c
                                    bool confirm)      //#d
 {
-  /*		 (c-inline (fd buffer length 
+  /*		 (c-inline (fd buffer length
 		 (second address)
 		 (aref (first address) 0)
 		 (aref (first address) 1)

@@ -15,7 +15,7 @@
 #include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
 #include <clasp/core/character.h>
-#include <clasp/core/str.h>
+#include <clasp/core/array.h>
 #include <clasp/core/numbers.h>
 #include <clasp/core/symbolTable.h>
 #include <clasp/core/numerics.h>

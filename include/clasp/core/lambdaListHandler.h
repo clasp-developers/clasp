@@ -33,7 +33,6 @@ THE SOFTWARE.
 #include <set>
 #include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
-#include <clasp/core/vectorObjects.fwd.h>
 #include <clasp/core/ql.h>
 #include <clasp/core/arguments.h>
 #include <clasp/core/lambdaListHandler.fwd.h>
