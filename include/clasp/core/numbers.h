@@ -307,10 +307,10 @@ namespace core {
     static Integer_sp create( int32_t v );
     static Integer_sp create( uint32_t v );
 
-#if !defined( _TARGET_OS_LINUX )
+//#if !defined( _TARGET_OS_LINUX )
     static Integer_sp create( int64_t v );
     static Integer_sp create( uint64_t v );
-#endif
+//#endif
 
     // THOSE ARE ALREADY DEFINED ABOVE
     // static Integer_sp create( short v );

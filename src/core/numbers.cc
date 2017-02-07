@@ -1529,7 +1529,7 @@ Integer_sp Integer_O::create( uint32_t v )
 #endif
 }
 
-#ifndef _TARGET_OS_LINUX
+//#ifndef _TARGET_OS_LINUX
 
 Integer_sp Integer_O::create(int64_t v) {
   if(( v >= gc::most_negative_fixnum) && (v <= gc::most_positive_fixnum )) {
@@ -1553,7 +1553,7 @@ Integer_sp Integer_O::create(uint64_t v) {
   return Bignum_O::create(z);
 }
 
-#endif
+//#endif
 
 // THOSE FNS ARE ALERADY IMPLEMENTED ABOVE
 
