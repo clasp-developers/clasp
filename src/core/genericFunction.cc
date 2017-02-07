@@ -157,7 +157,7 @@ CL_DEFUN T_sp core__maybe_expand_generic_function_arguments(T_sp args) {
 }
 
 T_mv compute_applicable_method(Instance_sp gf, VaList_sp vargs) {
-  if (gc::As<Instance_sp>(gf)->isgf() == ECL_RESTRICTED_DISPATCH) {
+  if (gc::As<Instance_sp>(gf)->isgf() == CLASP_RESTRICTED_DISPATCH) {
     return restricted_compute_applicable_method(gf, vargs);
   } else {
     return generic_compute_applicable_method(gf, vargs);

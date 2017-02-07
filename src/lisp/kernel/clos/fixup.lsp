@@ -165,8 +165,7 @@ and cannot be added to ~A." method other-gf gf)))
     (if (slot-boundp gf 'lambda-list)
 	(let ((old-lambda-list (generic-function-lambda-list gf)))
 	  (unless (congruent-lambda-p old-lambda-list new-lambda-list)
-	    (error "Cannot add the method ~A to the generic function ~A because ~
-their lambda lists ~A and ~A are not congruent."
+	    (error "Cannot add the method ~A to the generic function ~A because their lambda lists ~A and ~A are not congruent."
 		   method gf old-lambda-list new-lambda-list)))
 	(reinitialize-instance gf :lambda-list new-lambda-list)))
   ;;
@@ -211,8 +210,7 @@ their lambda lists ~A and ~A are not congruent."
                       (apply function args)))
     (setf (fdefinition name) #'function-to-method-temp
           (generic-function-name #'function-to-method-temp) name)
-    (fmakunbound 'function-to-method-temp)
-    (maybe-augment-generic-function-lambda-list name lambda-list)))
+    (fmakunbound 'function-to-method-temp)))
 
 (defun remove-method (gf method)
   (setf (generic-function-methods gf)

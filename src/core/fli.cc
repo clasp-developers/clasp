@@ -59,14 +59,18 @@ THE SOFTWARE.
 #include <arpa/inet.h> // for htonl
 
 // ---------------------------------------------------------------------------
+//   DEBUG SETTINGS
+// ---------------------------------------------------------------------------
+
+#define DEBUG_LEVEL_FULL
+
+// ---------------------------------------------------------------------------
 //   LLVM INCLUDES
 // ---------------------------------------------------------------------------
 
 // ---------------------------------------------------------------------------
 //   CLASP INCLUDES
 // ---------------------------------------------------------------------------
-
-#define DEBUG_LEVEL_FULL
 
 #include <clasp/core/foundation.h>
 #include <clasp/core/lisp.h>
@@ -80,6 +84,16 @@ THE SOFTWARE.
 #include <clasp/llvmo/intrinsics.h>
 
 #include <clasp/core/wrappers.h> // last include is wrappers.h
+
+// ---------------------------------------------------------------------------
+//   DEFINES
+// ---------------------------------------------------------------------------
+
+#if defined( DEBUG_LEVEL_FULL )
+#define DEBUG_PRINT(_msg_) BF(_msg_)
+#else
+#defin DEBUG_PRINT(msg)
+#endif
 
 // ---------------------------------------------------------------------------
 //   I M P L E M E N T A T I O N
@@ -288,7 +302,7 @@ inline void register_foreign_types( void )
   CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(sp_tst,n_index++,long,long,kw::_sym_long,"long");
   CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(sp_tst,n_index++,unsigned_long,unsigned long,kw::_sym_unsigned_long,"unsigned long");
   CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(sp_tst,n_index++,long_long,long long,kw::_sym_long_long,"long long");
-  CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(sp_tst,n_index++,unsigned_long_long,unsigned long long,kw::_sym_long_long,"unsigned long long");
+  CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(sp_tst,n_index++,unsigned_long_long,unsigned long long,kw::_sym_unsigned_long_long,"unsigned long long");
   CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(sp_tst,n_index++,unsigned_char,unsigned char,kw::_sym_unsigned_char,"unsigned char");
   CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(sp_tst,n_index++,uchar,unsigned char,kw::_sym_uchar,"uchar");
   CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(sp_tst,n_index++,ushort,unsigned short,kw::_sym_ushort,"ushort");
@@ -305,6 +319,7 @@ inline void register_foreign_types( void )
   CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(sp_tst,n_index++,int64,int64_t,kw::_sym_int64,"int64");
   CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(sp_tst,n_index++,uint64,uint64_t,kw::_sym_uint64,"uint64");
   CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(sp_tst,n_index++,double,double,kw::_sym_double,"double");
+  CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(sp_tst,n_index++,float,float,kw::_sym_float,"float");
   CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(sp_tst,n_index++,single_float,float,kw::_sym_single_float,"float");
   CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(sp_tst,n_index++,long_double,long double,kw::_sym_long_double,"long double");
   CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(sp_tst,n_index++,time,time_t,kw::_sym_time,"time");
@@ -313,6 +328,8 @@ inline void register_foreign_types( void )
   CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(sp_tst,n_index++,size,size_t,kw::_sym_size,"size");
   CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(sp_tst,n_index++,ssize,ssize_t,kw::_sym_ssize,"ssize");
   CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(sp_tst,n_index++,ptrdiff,ptrdiff_t,kw::_sym_ptrdiff,"ptrdiff");
+
+  CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(sp_tst,n_index++,pointer,void *,kw::_sym_void,"void");
 
   //  - 1.2 : ASSIGN FOREGN TYPE SPEC TABLE TO GLOBAL SYMBOL
 
@@ -556,30 +573,26 @@ core::T_sp PERCENTforeign_data_pointerp( core::T_sp obj )
 {
   ForeignData_sp sp_foreign_data = obj.asOrNull<ForeignData_O>();
 
-  if( sp_foreign_data.nilp() )
+  if( sp_foreign_data )
   {
-    return _Nil<core::T_O>();
+    if( sp_foreign_data.nilp() )
+    {
+      return _Nil<core::T_O>();
+    }
+    else
+    {
+      return _lisp->_true();
+    }
   }
-  else
-  {
-    return _lisp->_true();
-  }
+
+  TYPE_ERROR( obj, ForeignData_O::static_classSymbol() );
 }
 
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
 core::T_sp PERCENTpointerp( core::T_sp obj )
 {
-  ForeignData_sp sp_foreign_data = obj.asOrNull<ForeignData_O>();
-
-  if( sp_foreign_data.nilp() )
-  {
-    return _Nil<core::T_O>();
-  }
-  else
-  {
-    return _lisp->_true();
-  }
+  return PERCENTforeign_data_pointerp( obj );
 }
 
 // ---------------------------------------------------------------------------
@@ -588,21 +601,26 @@ core::T_sp PERCENTnull_pointer_p( core::T_sp obj )
 {
   ForeignData_sp sp_foreign_data = obj.asOrNull<ForeignData_O>();
 
-  if( sp_foreign_data.nilp() )
+  if( sp_foreign_data )
   {
-    return _Nil<core::T_O>();
-  }
-  else
-  {
-    if( sp_foreign_data->null_pointer_p() )
-    {
-      return _lisp->_true();
-    }
-    else
+    if( sp_foreign_data.nilp() )
     {
       return _Nil<core::T_O>();
     }
+    else
+    {
+      if( sp_foreign_data->null_pointer_p() )
+      {
+        return _lisp->_true();
+      }
+      else
+      {
+        return _Nil<core::T_O>();
+      }
+    }
   }
+
+  TYPE_ERROR( obj, ForeignData_O::static_classSymbol() );
 }
 
 // ---------------------------------------------------------------------------
@@ -621,31 +639,31 @@ ForeignData_sp ForeignData_O::PERCENTinc_pointer( core::Integer_sp offset)
 
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
-core::Fixnum_sp PERCENTforeign_type_alignment(core::Symbol_sp atype)
-{
-  core::Fixnum_sp result = nullptr;
+// core::Fixnum_sp PERCENTforeign_type_alignment(core::Symbol_sp atype)
+// {
+//   core::Fixnum_sp result = nullptr;
 
-  core::VectorObjects_sp sp_tst = _sym_STARforeign_type_spec_tableSTAR->symbolValue();
-  auto iterator = sp_tst->begin();
-  auto it_end = sp_tst->end();
+//   core::VectorObjects_sp sp_tst = _sym_STARforeign_type_spec_tableSTAR->symbolValue();
+//   auto iterator = sp_tst->begin();
+//   auto it_end = sp_tst->end();
 
-  for (; iterator != it_end; iterator++) {
-    ForeignTypeSpec_sp sp_fts = iterator->asOrNull<ForeignTypeSpec_O>();
-    if ( sp_fts.notnilp() ) {
-      if ( sp_fts->PERCENTlisp_symbol()->eql_( atype ) ) {
-        result = sp_fts->PERCENTalignment();
-        goto RETURN_FROM_CORE__PERCENT_FOREIGN_TYPE_ALIGNMENT;
-      }
-    }
-  }
+//   for (; iterator != it_end; iterator++) {
+//     ForeignTypeSpec_sp sp_fts = iterator->asOrNull<ForeignTypeSpec_O>();
+//     if ( sp_fts.notnilp() ) {
+//       if ( sp_fts->PERCENTlisp_symbol()->eql_( atype ) ) {
+//         result = sp_fts->PERCENTalignment();
+//         goto RETURN_FROM_CORE__PERCENT_FOREIGN_TYPE_ALIGNMENT;
+//       }
+//     }
+//   }
 
-  SIMPLE_ERROR(BF("No foreign type alignment available for %s") % _rep_(atype));
-  return _Nil<core::T_O>();
+//   SIMPLE_ERROR(BF("No foreign type alignment available for %s") % _rep_(atype));
+//   return _Nil<core::T_O>();
 
-RETURN_FROM_CORE__PERCENT_FOREIGN_TYPE_ALIGNMENT:
+// RETURN_FROM_CORE__PERCENT_FOREIGN_TYPE_ALIGNMENT:
 
-  return result;
-}
+//   return result;
+// }
 
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
@@ -906,114 +924,133 @@ inline T mem_ref( cl_intptr_t address )
 core::T_sp PERCENTmem_ref_short( core::Integer_sp address )
 {
   short v = mem_ref<short>( core::clasp_to_cl_intptr_t( address ) );
+  DEBUG_PRINT(BF("%s (%s:%d) | v = %d\n.") % __FUNCTION__ % __FILE__ % __LINE__ % v );
   return mk_fixnum_short( v );
 }
 
 core::T_sp PERCENTmem_ref_unsigned_short( core::Integer_sp address )
 {
   unsigned short v = mem_ref<unsigned short>( core::clasp_to_cl_intptr_t( address ) );
+  DEBUG_PRINT(BF("%s (%s:%d) | v = %d\n.") % __FUNCTION__ % __FILE__ % __LINE__ % v );
   return mk_fixnum_ushort( v );
 }
 
 core::T_sp PERCENTmem_ref_int( core::Integer_sp address )
 {
   int v = mem_ref<int>( core::clasp_to_cl_intptr_t( address ) );
+  DEBUG_PRINT(BF("%s (%s:%d) | v = %d\n.") % __FUNCTION__ % __FILE__ % __LINE__ % v );
   return mk_fixnum_int( v );
 }
 
 core::T_sp PERCENTmem_ref_unsigned_int( core::Integer_sp address )
 {
   unsigned int v = mem_ref<unsigned int>( core::clasp_to_cl_intptr_t( address ) );
+  DEBUG_PRINT(BF("%s (%s:%d) | v = %d\n.") % __FUNCTION__ % __FILE__ % __LINE__ % v );
   return mk_fixnum_uint( v );
 }
 
 core::T_sp PERCENTmem_ref_int8( core::Integer_sp address )
 {
   int8_t v = mem_ref<int8_t>( core::clasp_to_cl_intptr_t( address ) );
+  DEBUG_PRINT(BF("%s (%s:%d) | v = %d\n.") % __FUNCTION__ % __FILE__ % __LINE__ % v );
   return mk_fixnum_int8( v );
 }
 
 core::T_sp PERCENTmem_ref_uint8( core::Integer_sp address )
 {
   int8_t v = mem_ref<int8_t>( core::clasp_to_cl_intptr_t( address ) );
+  DEBUG_PRINT(BF("%s (%s:%d) | v = %d\n.") % __FUNCTION__ % __FILE__ % __LINE__ % v );
   return mk_fixnum_uint8( v );
 }
 
 core::T_sp PERCENTmem_ref_int16( core::Integer_sp address )
 {
   int16_t v = mem_ref<int16_t>( core::clasp_to_cl_intptr_t( address ) );
+  DEBUG_PRINT(BF("%s (%s:%d) | v = %d\n.") % __FUNCTION__ % __FILE__ % __LINE__ % v );
   return mk_fixnum_int16( v );
 }
 
 core::T_sp PERCENTmem_ref_uint16( core::Integer_sp address )
 {
   uint16_t v = mem_ref<uint16_t>( core::clasp_to_cl_intptr_t( address ) );
+  DEBUG_PRINT(BF("%s (%s:%d) | v = %d\n.") % __FUNCTION__ % __FILE__ % __LINE__ % v );
   return mk_fixnum_uint16( v );
 }
 
 core::T_sp PERCENTmem_ref_int32( core::Integer_sp address )
 {
   int32_t v = mem_ref<int32_t>( core::clasp_to_cl_intptr_t( address ) );
+  DEBUG_PRINT(BF("%s (%s:%d) | v = %d\n.") % __FUNCTION__ % __FILE__ % __LINE__ % v );
   return mk_fixnum_int32( v );
 }
 
 core::T_sp PERCENTmem_ref_uint32( core::Integer_sp address )
 {
   uint32_t v = mem_ref<uint32_t>( core::clasp_to_cl_intptr_t( address ) );
+  DEBUG_PRINT(BF("%s (%s:%d) | v = %d\n.") % __FUNCTION__ % __FILE__ % __LINE__ % v );
   return mk_fixnum_uint32( v );
 }
 
 core::T_sp PERCENTmem_ref_int64( core::Integer_sp address )
 {
   int64_t v = mem_ref<int64_t>( core::clasp_to_cl_intptr_t( address ) );
+  DEBUG_PRINT(BF("%s (%s:%d) | v = %l\n.") % __FUNCTION__ % __FILE__ % __LINE__ % v );
   return mk_integer_int64( v );
 }
 
 core::T_sp PERCENTmem_ref_uint64( core::Integer_sp address )
 {
   uint64_t v = mem_ref<uint64_t>( core::clasp_to_cl_intptr_t( address ) );
+  DEBUG_PRINT(BF("%s (%s:%d) | v = %ul\n.") % __FUNCTION__ % __FILE__ % __LINE__ % v );
   return mk_integer_uint64( v );
 }
 
 core::T_sp PERCENTmem_ref_long( core::Integer_sp address )
 {
   long v = mem_ref<long>( core::clasp_to_cl_intptr_t( address ) );
+  DEBUG_PRINT(BF("%s (%s:%d) | v = %l\n.") % __FUNCTION__ % __FILE__ % __LINE__ % v );
   return mk_integer_long( v );
 }
 
 core::T_sp PERCENTmem_ref_unsigned_long( core::Integer_sp address )
 {
   unsigned long v = mem_ref<unsigned long>( core::clasp_to_cl_intptr_t( address ) );
+  DEBUG_PRINT(BF("%s (%s:%d) | v = %ul\n.") % __FUNCTION__ % __FILE__ % __LINE__ % v );
   return mk_integer_ulong( v );
 }
 
 core::T_sp PERCENTmem_ref_long_long( core::Integer_sp address )
 {
   long long v = mem_ref<long long>( core::clasp_to_cl_intptr_t( address ) );
+  DEBUG_PRINT(BF("%s (%s:%d) | v = %ll\n.") % __FUNCTION__ % __FILE__ % __LINE__ % v );
   return mk_integer_longlong( v );
 }
 
 core::T_sp PERCENTmem_ref_unsigned_long_long( core::Integer_sp address )
 {
   unsigned long long v = mem_ref<unsigned long long>( core::clasp_to_cl_intptr_t( address ) );
+  DEBUG_PRINT(BF("%s (%s:%d) | v = %ull\n.") % __FUNCTION__ % __FILE__ % __LINE__ % v );
   return mk_integer_ulonglong( v );
 }
 
 core::T_sp PERCENTmem_ref_double( core::Integer_sp address )
 {
   double v = mem_ref<double>( core::clasp_to_cl_intptr_t( address ) );
+  DEBUG_PRINT(BF("%s (%s:%d) | v = %lf\n.") % __FUNCTION__ % __FILE__ % __LINE__ % v );
   return mk_double_float( v );
 }
 
 core::T_sp PERCENTmem_ref_float( core::Integer_sp address )
 {
   float v = mem_ref<float>( core::clasp_to_cl_intptr_t( address ) );
+  DEBUG_PRINT(BF("%s (%s:%d) | v = %f\n.") % __FUNCTION__ % __FILE__ % __LINE__ % v );
   return mk_single_float( v );
 }
 
 core::T_sp PERCENTmem_ref_long_double( core::Integer_sp address )
 {
   long double v = mem_ref<long double>( core::clasp_to_cl_intptr_t( address ) );
+  DEBUG_PRINT(BF("%s (%s:%d) | v = %dl\n.") % __FUNCTION__ % __FILE__ % __LINE__ % v );
   return mk_long_double( v );
 }
 
@@ -1026,6 +1063,7 @@ core::T_sp PERCENTmem_ref_time( core::Integer_sp address )
 core::T_sp PERCENTmem_ref_pointer( core::Integer_sp address )
 {
   ForeignData_sp ptr = PERCENTmake_pointer( address );
+  DEBUG_PRINT(BF("%s (%s:%d) | v = %p\n.") % __FUNCTION__ % __FILE__ % __LINE__ % ptr );
   return ptr;
 }
 
@@ -1049,14 +1087,18 @@ core::T_sp PERCENTmem_ref_ptrdiff( core::Integer_sp address )
 
 core::T_sp PERCENTmem_ref_char( core::Integer_sp address )
 {
-  char v = mem_ref<char>( core::clasp_to_cl_intptr_t( address ) );
-  return mk_char( v );
+  // char v = mem_ref<char>( core::clasp_to_cl_intptr_t( address ) );
+  // return mk_char( v );
+  int8_t v = mem_ref< int8_t >( core::clasp_to_cl_intptr_t( address ) );
+  return mk_fixnum_int8( v );
 }
 
 core::T_sp PERCENTmem_ref_unsigned_char( core::Integer_sp address )
 {
-  unsigned char v = mem_ref<unsigned char>( core::clasp_to_cl_intptr_t( address ) );
-  return mk_char( v );
+  // unsigned char v = mem_ref<unsigned char>( core::clasp_to_cl_intptr_t( address ) );
+  // return mk_char( v );
+  uint8_t v = mem_ref< uint8_t >( core::clasp_to_cl_intptr_t( address ) );
+  return mk_fixnum_uint8( v );
 }
 
 // ---------------------------------------------------------------------------
@@ -1252,7 +1294,10 @@ core::T_sp PERCENTmem_set_time( core::Integer_sp address, core::T_sp value )
 }
 
 core::T_sp PERCENTmem_set_pointer( core::Integer_sp address, core::T_sp value ) {
-  IMPLEMENT_ME();
+  void * tmp;
+  translate::from_object< void * > v( value );
+  tmp = mem_set< void * >( core::clasp_to_cl_intptr_t( address ), v._v );
+  return ForeignData_O::create( tmp );
 }
 
 core::T_sp PERCENTmem_set_size( core::Integer_sp address, core::T_sp value )
@@ -1281,18 +1326,28 @@ core::T_sp PERCENTmem_set_ptrdiff( core::Integer_sp address, core::T_sp value )
 
 core::T_sp PERCENTmem_set_char( core::Integer_sp address, core::T_sp value )
 {
-  char tmp;
-  translate::from_object< char > v( value );
-  tmp = mem_set< char >( core::clasp_to_cl_intptr_t( address ), v._v );
-  return mk_char( tmp );
+  // char tmp;
+  // translate::from_object< char > v( value );
+  // tmp = mem_set< char >( core::clasp_to_cl_intptr_t( address ), v._v );
+  // return mk_char( tmp );
+
+  int8_t tmp;
+  translate::from_object< int8_t > v( value );
+  tmp = mem_set< int8_t >( core::clasp_to_cl_intptr_t( address ), v._v );
+  return mk_fixnum_int8( tmp );
 }
 
 core::T_sp PERCENTmem_set_unsigned_char( core::Integer_sp address, core::T_sp value )
 {
-  unsigned char tmp;
-  translate::from_object< unsigned char > v( value );
-  tmp = mem_set< unsigned char >( core::clasp_to_cl_intptr_t( address ), v._v );
-  return mk_char( tmp );
+  // unsigned char tmp;
+  // translate::from_object< unsigned char > v( value );
+  // tmp = mem_set< unsigned char >( core::clasp_to_cl_intptr_t( address ), v._v );
+  // return mk_char( tmp );
+
+  uint8_t tmp;
+  translate::from_object< uint8_t > v( value );
+  tmp = mem_set< uint8_t >( core::clasp_to_cl_intptr_t( address ), v._v );
+  return mk_fixnum_uint8( tmp );
 }
 
 }; // namespace clasp_ffi

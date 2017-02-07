@@ -202,12 +202,10 @@
     ((gfun generic-function) name
      &rest args
      &key
-       #+clasp (lambda-list nil lambda-list-p)
        (method-class 'STANDARD-METHOD method-class-p)
        (generic-function-class (class-of gfun))
        (delete-methods nil))
   ;; modify the existing object
-  #+clasp(when lambda-list-p (core:setf-lambda-list gfun lambda-list))
   (setf args (copy-list args))
   (remf args :generic-function-class)
   (remf args :declare)
@@ -235,7 +233,6 @@
 
 (defmethod ensure-generic-function-using-class
     ((gfun null) name &rest args &key
-                                   #+clasp lambda-list
                                    (method-class 'STANDARD-METHOD method-class-p)
                                    (generic-function-class 'STANDARD-GENERIC-FUNCTION)
                                    (delete-methods nil))
@@ -248,10 +245,7 @@
   (remf args :delete-methods)
   (when (and method-class-p (symbolp generic-function-class))
     (setf args (list* :method-class (find-class method-class) args)))
-  #+ecl(apply #'make-instance generic-function-class :name name args)
-  #+clasp(let ((gfun (apply #'make-instance generic-function-class :name name args)))
-           (core:setf-lambda-list gfun lambda-list)
-           gfun))
+  (apply #'make-instance generic-function-class :name name args))
 
 (defun ensure-generic-function (name &rest args &key &allow-other-keys)
   (let ((gfun (si::traced-old-definition name)))
