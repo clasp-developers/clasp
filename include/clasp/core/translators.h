@@ -100,6 +100,8 @@ namespace translate {
   // from_object( core::T_sp o ) : _v( o.fixnump() ? o.unsafe_fixnum() : not_fixnum_error(o) ) {};
   // };
 
+#ifdef _TARGET_OS_DARWIN
+  // linux doesn't like these because they clash with int64_t and uint64_t
   template <>
     struct from_object< long, std::true_type >
   {
@@ -117,7 +119,8 @@ namespace translate {
     DeclareType _v;
     from_object( core::T_sp o ) : _v( o.fixnump() ? o.unsafe_fixnum() : core::not_fixnum_error( o ) ) {};
   };
-
+#endif
+  
   // template <>
   //   struct from_object< long long, std::true_type >
   // {
