@@ -165,10 +165,10 @@
     (%set-llvm-type-symbol (%lisp-type->type-spec :unsigned-long) 'cmp::+i64+)
     (%set-llvm-type-symbol (%lisp-type->type-spec :ulong) 'cmp::+i64+)
 
-;;; Frank - I disabled this because it caused an error  Feb 7   Schafmeister
-#+(or)  (%set-llvm-type-symbol (%lisp-type->type-spec :long-long) 'cmp::+i128+)
-#+(or)  (%set-llvm-type-symbol (%lisp-type->type-spec :unsigned-long-long) 'cmp::+i128+)
-#+(or)  (%set-llvm-type-symbol (%lisp-type->type-spec :ullong) 'cmp::+i128+)
+    (%set-llvm-type-symbol (%lisp-type->type-spec :long-long) 'cmp::+i128+)
+    (%set-llvm-type-symbol (%lisp-type->type-spec :llong) 'cmp::+i128+)
+    (%set-llvm-type-symbol (%lisp-type->type-spec :unsigned-long-long) 'cmp::+i128+)
+    (%set-llvm-type-symbol (%lisp-type->type-spec :ullong) 'cmp::+i128+)
 
     (%set-llvm-type-symbol (%lisp-type->type-spec :int8) 'cmp::+i8+)
     (%set-llvm-type-symbol (%lisp-type->type-spec :uint8) 'cmp::+i8+)
@@ -189,15 +189,13 @@
     (%set-llvm-type-symbol (%lisp-type->type-spec :ssize) 'cmp::+size_t+)
 
     (%set-llvm-type-symbol (%lisp-type->type-spec :single-float) 'cmp::+float+)
-;;; Frank - I disabled this because it caused an error  Feb 7   Schafmeister
-#+(or)    (%set-llvm-type-symbol (%lisp-type->type-spec :float) 'cmp::+float+)
+    (%set-llvm-type-symbol (%lisp-type->type-spec :float) 'cmp::+float+)
     (%set-llvm-type-symbol (%lisp-type->type-spec :double) 'cmp::+double+)
     #+long-float (%set-llvm-type-symbol (%lisp-type->type-spec :long-float) 'cmp::+long-float+)
 
     (%set-llvm-type-symbol (%lisp-type->type-spec :pointer) 'cmp::+i64*+)
 
-;;; Frank - I disabled this because it caused an error  Feb 7   Schafmeister
-#+(or)    (%set-llvm-type-symbol (%lisp-type->type-spec :void) 'cmp::+void+)
+    (%set-llvm-type-symbol (%lisp-type->type-spec :void) 'cmp::+void+)
 
     (%set-llvm-type-symbol (%lisp-type->type-spec :char) 'cmp::+i8+)
     (%set-llvm-type-symbol (%lisp-type->type-spec :unsigned-char) 'cmp::+i8+)
@@ -528,6 +526,8 @@
             %load-foreign-library
             %close-foreign-library
             %foreign-symbol-pointer
+            %foreign-type-size
+            %foreign-type-alignment
             %defcallback
             %callback
             %get-callback)))
@@ -536,7 +536,6 @@
 ;;;----------------------------------------------------------------------------
 ;;; T E S T I N G
 
-(format *debug-io* "Compiling TEST-FFI~&")
 (defun test-ffi ()
 
   (format *debug-io* "*** TEST 1: %MEM-SET and %MEM-REF ...~&")
@@ -570,6 +569,5 @@
 
   )
 
-(format *debug-io* "Compiling DBG-NUMERIC-LIMITS~&")
 (defun dbg-numeric-limits ()
   (%foreign-funcall "info_numeric_limits"))

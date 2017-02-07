@@ -50,7 +50,6 @@
   (%load-foreign-library 'libtest2 (make-lib-pathname 'libtest2))
   (%load-foreign-library 'libfsbv (make-lib-pathname 'libfsbv)))
 
-#-(:and :ecl (:not :dffi))
 (load-test-libraries)
 
 (defun run-clasp-ffi-tests (&key (compiled nil))

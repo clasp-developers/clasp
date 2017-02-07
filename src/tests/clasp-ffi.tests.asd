@@ -26,28 +26,28 @@
 ;;;
 
 (defsystem "clasp-ffi.tests"
-  :description "CLASP unit tests for CFFI."
-  :depends-on ("rt")
-  :components
-  ((:module "fli"
-            :components
-            ((:file "defpackage")
-             (:file "bindings" :depends-on ("defpackage"))
-             (:file "funcall" :depends-on ("bindings"))
-             (:file "execute-tests" :depends-on ("funcall"))
-             #|
-             (:file "callbacks" :depends-on ("bindings"))
-             (:file "foreign-globals" :depends-on ("defpackage"))
-             (:file "memory" :depends-on ("defpackage"))
-             (:file "strings" :depends-on ("defpackage"))
-             (:file "arrays" :depends-on ("defpackage"))
-             (:file "struct" :depends-on ("defpackage"))
-             (:file "union" :depends-on ("defpackage"))
-             (:file "enum" :depends-on ("defpackage"))
-             (:file "fsbv" :depends-on ("bindings" "enum"))
-             (:file "misc-types" :depends-on ("bindings"))
-             (:file "misc" :depends-on ("bindings"))
-             |#
-             ))))
+    :description "CLASP unit tests for CFFI."
+    :depends-on ("rt" "cffi")
+    :components
+    ((:module "fli"
+              :components
+              ((:file "defpackage")
+               (:file "bindings" :depends-on ("defpackage"))
+               (:file "funcall" :depends-on ("bindings"))
+               (:file "memory" :depends-on ("bindings"))
+               (:file "execute-tests" :depends-on ("funcall"))
+               #|
+               (:file "callbacks" :depends-on ("bindings"))
+               (:file "foreign-globals" :depends-on ("defpackage"))
+               (:file "strings" :depends-on ("defpackage"))
+               (:file "arrays" :depends-on ("defpackage"))
+               (:file "struct" :depends-on ("defpackage"))
+               (:file "union" :depends-on ("defpackage"))
+               (:file "enum" :depends-on ("defpackage"))
+               (:file "fsbv" :depends-on ("bindings" "enum"))
+               (:file "misc-types" :depends-on ("bindings"))
+               (:file "misc" :depends-on ("bindings"))
+               |#
+               ))))
 
 ;;; vim: ft=lisp et

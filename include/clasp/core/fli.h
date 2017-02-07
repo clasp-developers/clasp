@@ -98,6 +98,7 @@ namespace clasp_ffi {
 
   // Type Symbols
   SYMBOL_EXPORT_SC_(KeywordPkg,char);
+  SYMBOL_EXPORT_SC_(KeywordPkg,void);
 
 // ---------------------------------------------------------------------------
 //   TYPEDEFS & CLASSES & METHODS & FUNCTIONS
