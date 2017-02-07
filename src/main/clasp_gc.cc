@@ -6532,21 +6532,21 @@ public:
 { class_kind, KIND_LISPALLOC_core__DirectoryEntry_O, sizeof(core::DirectoryEntry_O), 0, "core::DirectoryEntry_O" },
 { class_kind, KIND_LISPALLOC_core__Character_dummy_O, sizeof(core::Character_dummy_O), 0, "core::Character_dummy_O" },
 { class_kind, KIND_LISPALLOC_core__Function_O, sizeof(core::Function_O), 0, "core::Function_O" },
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::Function_O),_TimesCalled), "_TimesCalled" }, // public: (T) fixable: NIL good-name: T
+// {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::Function_O),_TimesCalled), "_TimesCalled" }, // public: (T) fixable: NIL good-name: T
 { class_kind, KIND_LISPALLOC_core__NamedFunction_O, sizeof(core::NamedFunction_O), 0, "core::NamedFunction_O" },
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::NamedFunction_O),_TimesCalled), "_TimesCalled" }, // public: (T) fixable: NIL good-name: T
+// {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::NamedFunction_O),_TimesCalled), "_TimesCalled" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::NamedFunction_O),_name), "_name" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
 { class_kind, KIND_LISPALLOC_core__SpecialForm_O, sizeof(core::SpecialForm_O), 0, "core::SpecialForm_O" },
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SpecialForm_O),_TimesCalled), "_TimesCalled" }, // public: (T) fixable: NIL good-name: T
+// {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SpecialForm_O),_TimesCalled), "_TimesCalled" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::SpecialForm_O),_name), "_name" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
 { class_kind, KIND_LISPALLOC_core__Closure_O, sizeof(core::Closure_O), 0, "core::Closure_O" },
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::Closure_O),_TimesCalled), "_TimesCalled" }, // public: (T) fixable: NIL good-name: T
+// {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::Closure_O),_TimesCalled), "_TimesCalled" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::Closure_O),_name), "_name" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
 { class_kind, KIND_LISPALLOC_core__CompiledFunction_O, sizeof(core::CompiledFunction_O), 0, "core::CompiledFunction_O" },
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::CompiledFunction_O),_TimesCalled), "_TimesCalled" }, // public: (T) fixable: NIL good-name: T
+// {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::CompiledFunction_O),_TimesCalled), "_TimesCalled" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::CompiledFunction_O),_name), "_name" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
 { class_kind, KIND_LISPALLOC_core__FunctionClosure_O, sizeof(core::FunctionClosure_O), 0, "core::FunctionClosure_O" },
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::FunctionClosure_O),_TimesCalled), "_TimesCalled" }, // public: (T) fixable: NIL good-name: T
+// {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::FunctionClosure_O),_TimesCalled), "_TimesCalled" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::FunctionClosure_O),_name), "_name" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Symbol_O>), offsetof(SAFE_TYPE_MACRO(core::FunctionClosure_O),kind), "kind" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::FunctionClosure_O),_cleavir_ast), "_cleavir_ast" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
@@ -6555,7 +6555,7 @@ public:
  {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::FunctionClosure_O),_lineno), "_lineno" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::FunctionClosure_O),_column), "_column" }, // public: (T) fixable: NIL good-name: T
 { class_kind, KIND_LISPALLOC_core__ClosureWithSlots_O, sizeof(core::ClosureWithSlots_O), 0, "core::ClosureWithSlots_O" },
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::ClosureWithSlots_O),_TimesCalled), "_TimesCalled" }, // public: (T) fixable: NIL good-name: T
+// {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::ClosureWithSlots_O),_TimesCalled), "_TimesCalled" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::ClosureWithSlots_O),_name), "_name" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Symbol_O>), offsetof(SAFE_TYPE_MACRO(core::ClosureWithSlots_O),kind), "kind" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::ClosureWithSlots_O),_cleavir_ast), "_cleavir_ast" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
@@ -6570,7 +6570,7 @@ public:
 {  variable_capacity, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::ClosureWithSlots_O),_Slots._Length), offsetof(SAFE_TYPE_MACRO(core::ClosureWithSlots_O),_Slots._Length), NULL },
 {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), 0, "only" },
 { templated_kind, KIND_TEMPLATED_LISPALLOC_core__BuiltinClosure_O, sizeof(core::BuiltinClosure_O), 0, "core::BuiltinClosure_O" },
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::BuiltinClosure_O),_TimesCalled), "_TimesCalled" }, // public: (T) fixable: NIL good-name: T
+// {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::BuiltinClosure_O),_TimesCalled), "_TimesCalled" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::BuiltinClosure_O),_name), "_name" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Symbol_O>), offsetof(SAFE_TYPE_MACRO(core::BuiltinClosure_O),kind), "kind" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::BuiltinClosure_O),_cleavir_ast), "_cleavir_ast" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
@@ -6582,7 +6582,7 @@ public:
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::List_V>), offsetof(SAFE_TYPE_MACRO(core::BuiltinClosure_O),_declares), "_declares" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::BuiltinClosure_O),_docstring), "_docstring" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
 { class_kind, KIND_LISPALLOC_core__TranslationFunctor, sizeof(core::TranslationFunctor), 0, "core::TranslationFunctor" },
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::TranslationFunctor),_TimesCalled), "_TimesCalled" }, // public: (T) fixable: NIL good-name: T
+// {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::TranslationFunctor),_TimesCalled), "_TimesCalled" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::TranslationFunctor),_name), "_name" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Symbol_O>), offsetof(SAFE_TYPE_MACRO(core::TranslationFunctor),kind), "kind" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::TranslationFunctor),_cleavir_ast), "_cleavir_ast" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
@@ -6594,7 +6594,7 @@ public:
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::List_V>), offsetof(SAFE_TYPE_MACRO(core::TranslationFunctor),_declares), "_declares" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::TranslationFunctor),_docstring), "_docstring" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
 { class_kind, KIND_LISPALLOC_core__MacroClosure_O, sizeof(core::MacroClosure_O), 0, "core::MacroClosure_O" },
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MacroClosure_O),_TimesCalled), "_TimesCalled" }, // public: (T) fixable: NIL good-name: T
+// {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MacroClosure_O),_TimesCalled), "_TimesCalled" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::MacroClosure_O),_name), "_name" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Symbol_O>), offsetof(SAFE_TYPE_MACRO(core::MacroClosure_O),kind), "kind" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::MacroClosure_O),_cleavir_ast), "_cleavir_ast" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
@@ -6606,7 +6606,7 @@ public:
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::List_V>), offsetof(SAFE_TYPE_MACRO(core::MacroClosure_O),_declares), "_declares" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::MacroClosure_O),_docstring), "_docstring" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
 { class_kind, KIND_LISPALLOC_core__SingleDispatchCxxEffectiveMethodFunction_O, sizeof(core::SingleDispatchCxxEffectiveMethodFunction_O), 0, "core::SingleDispatchCxxEffectiveMethodFunction_O" },
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SingleDispatchCxxEffectiveMethodFunction_O),_TimesCalled), "_TimesCalled" }, // public: (T) fixable: NIL good-name: T
+// {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SingleDispatchCxxEffectiveMethodFunction_O),_TimesCalled), "_TimesCalled" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::SingleDispatchCxxEffectiveMethodFunction_O),_name), "_name" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Symbol_O>), offsetof(SAFE_TYPE_MACRO(core::SingleDispatchCxxEffectiveMethodFunction_O),kind), "kind" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::SingleDispatchCxxEffectiveMethodFunction_O),_cleavir_ast), "_cleavir_ast" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
@@ -6616,7 +6616,7 @@ public:
  {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::SingleDispatchCxxEffectiveMethodFunction_O),_column), "_column" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::CxxMethodFunction_O>), offsetof(SAFE_TYPE_MACRO(core::SingleDispatchCxxEffectiveMethodFunction_O),_onlyCxxMethodFunction), "_onlyCxxMethodFunction" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
 { class_kind, KIND_LISPALLOC_core__ClosureWithFrame_O, sizeof(core::ClosureWithFrame_O), 0, "core::ClosureWithFrame_O" },
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::ClosureWithFrame_O),_TimesCalled), "_TimesCalled" }, // public: (T) fixable: NIL good-name: T
+// {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::ClosureWithFrame_O),_TimesCalled), "_TimesCalled" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::ClosureWithFrame_O),_name), "_name" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Symbol_O>), offsetof(SAFE_TYPE_MACRO(core::ClosureWithFrame_O),kind), "kind" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::ClosureWithFrame_O),_cleavir_ast), "_cleavir_ast" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
@@ -6626,7 +6626,7 @@ public:
  {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::ClosureWithFrame_O),_column), "_column" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::ClosureWithFrame_O),_closedEnvironment), "_closedEnvironment" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
 { class_kind, KIND_LISPALLOC_core__CompiledClosure_O, sizeof(core::CompiledClosure_O), 0, "core::CompiledClosure_O" },
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::CompiledClosure_O),_TimesCalled), "_TimesCalled" }, // public: (T) fixable: NIL good-name: T
+// {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::CompiledClosure_O),_TimesCalled), "_TimesCalled" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::CompiledClosure_O),_name), "_name" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Symbol_O>), offsetof(SAFE_TYPE_MACRO(core::CompiledClosure_O),kind), "kind" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::CompiledClosure_O),_cleavir_ast), "_cleavir_ast" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
@@ -6639,7 +6639,7 @@ public:
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::CompiledClosure_O),_associatedFunctions), "_associatedFunctions" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::CompiledClosure_O),_lambdaList), "_lambdaList" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
 { class_kind, KIND_LISPALLOC_core__CompiledDispatchFunction_O, sizeof(core::CompiledDispatchFunction_O), 0, "core::CompiledDispatchFunction_O" },
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::CompiledDispatchFunction_O),_TimesCalled), "_TimesCalled" }, // public: (T) fixable: NIL good-name: T
+// {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::CompiledDispatchFunction_O),_TimesCalled), "_TimesCalled" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::CompiledDispatchFunction_O),_name), "_name" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Symbol_O>), offsetof(SAFE_TYPE_MACRO(core::CompiledDispatchFunction_O),kind), "kind" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::CompiledDispatchFunction_O),_cleavir_ast), "_cleavir_ast" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
@@ -6650,7 +6650,7 @@ public:
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::CompiledDispatchFunction_O),_closedEnvironment), "_closedEnvironment" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::CompiledDispatchFunction_O),_llvmModule), "_llvmModule" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
 { class_kind, KIND_LISPALLOC_core__InterpretedClosure_O, sizeof(core::InterpretedClosure_O), 0, "core::InterpretedClosure_O" },
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::InterpretedClosure_O),_TimesCalled), "_TimesCalled" }, // public: (T) fixable: NIL good-name: T
+// {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::InterpretedClosure_O),_TimesCalled), "_TimesCalled" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::InterpretedClosure_O),_name), "_name" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Symbol_O>), offsetof(SAFE_TYPE_MACRO(core::InterpretedClosure_O),kind), "kind" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::InterpretedClosure_O),_cleavir_ast), "_cleavir_ast" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
@@ -6664,7 +6664,7 @@ public:
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::InterpretedClosure_O),_docstring), "_docstring" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::List_V>), offsetof(SAFE_TYPE_MACRO(core::InterpretedClosure_O),_code), "_code" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
 { class_kind, KIND_LISPALLOC_core__SingleDispatchMethodFunction_O, sizeof(core::SingleDispatchMethodFunction_O), 0, "core::SingleDispatchMethodFunction_O" },
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SingleDispatchMethodFunction_O),_TimesCalled), "_TimesCalled" }, // public: (T) fixable: NIL good-name: T
+// {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SingleDispatchMethodFunction_O),_TimesCalled), "_TimesCalled" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::SingleDispatchMethodFunction_O),_name), "_name" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Symbol_O>), offsetof(SAFE_TYPE_MACRO(core::SingleDispatchMethodFunction_O),kind), "kind" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::SingleDispatchMethodFunction_O),_cleavir_ast), "_cleavir_ast" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
@@ -6674,7 +6674,7 @@ public:
  {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::SingleDispatchMethodFunction_O),_column), "_column" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Function_O>), offsetof(SAFE_TYPE_MACRO(core::SingleDispatchMethodFunction_O),_body), "_body" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
 { class_kind, KIND_LISPALLOC_core__CxxMethodFunction_O, sizeof(core::CxxMethodFunction_O), 0, "core::CxxMethodFunction_O" },
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::CxxMethodFunction_O),_TimesCalled), "_TimesCalled" }, // public: (T) fixable: NIL good-name: T
+// {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::CxxMethodFunction_O),_TimesCalled), "_TimesCalled" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::CxxMethodFunction_O),_name), "_name" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Symbol_O>), offsetof(SAFE_TYPE_MACRO(core::CxxMethodFunction_O),kind), "kind" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::CxxMethodFunction_O),_cleavir_ast), "_cleavir_ast" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
@@ -6684,7 +6684,7 @@ public:
  {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::CxxMethodFunction_O),_column), "_column" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Function_O>), offsetof(SAFE_TYPE_MACRO(core::CxxMethodFunction_O),_body), "_body" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
 { class_kind, KIND_LISPALLOC_core__SingleDispatchEffectiveMethodFunction_O, sizeof(core::SingleDispatchEffectiveMethodFunction_O), 0, "core::SingleDispatchEffectiveMethodFunction_O" },
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SingleDispatchEffectiveMethodFunction_O),_TimesCalled), "_TimesCalled" }, // public: (T) fixable: NIL good-name: T
+// {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SingleDispatchEffectiveMethodFunction_O),_TimesCalled), "_TimesCalled" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::SingleDispatchEffectiveMethodFunction_O),_name), "_name" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Symbol_O>), offsetof(SAFE_TYPE_MACRO(core::SingleDispatchEffectiveMethodFunction_O),kind), "kind" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::SingleDispatchEffectiveMethodFunction_O),_cleavir_ast), "_cleavir_ast" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
@@ -6696,7 +6696,7 @@ public:
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::List_V>), offsetof(SAFE_TYPE_MACRO(core::SingleDispatchEffectiveMethodFunction_O),_Primaries), "_Primaries" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::List_V>), offsetof(SAFE_TYPE_MACRO(core::SingleDispatchEffectiveMethodFunction_O),_Afters), "_Afters" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
 { class_kind, KIND_LISPALLOC_core__SingleDispatchGenericFunctionClosure_O, sizeof(core::SingleDispatchGenericFunctionClosure_O), 0, "core::SingleDispatchGenericFunctionClosure_O" },
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SingleDispatchGenericFunctionClosure_O),_TimesCalled), "_TimesCalled" }, // public: (T) fixable: NIL good-name: T
+// {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SingleDispatchGenericFunctionClosure_O),_TimesCalled), "_TimesCalled" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::SingleDispatchGenericFunctionClosure_O),_name), "_name" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Symbol_O>), offsetof(SAFE_TYPE_MACRO(core::SingleDispatchGenericFunctionClosure_O),kind), "kind" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::SingleDispatchGenericFunctionClosure_O),_cleavir_ast), "_cleavir_ast" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
@@ -6707,13 +6707,13 @@ public:
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::List_V>), offsetof(SAFE_TYPE_MACRO(core::SingleDispatchGenericFunctionClosure_O),_Methods), "_Methods" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::LambdaListHandler_O>), offsetof(SAFE_TYPE_MACRO(core::SingleDispatchGenericFunctionClosure_O),_lambdaListHandler), "_lambdaListHandler" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
 { class_kind, KIND_LISPALLOC_core__Instance_O, sizeof(core::Instance_O), 0, "core::Instance_O" },
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::Instance_O),_TimesCalled), "_TimesCalled" }, // public: (T) fixable: NIL good-name: T
+// {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::Instance_O),_TimesCalled), "_TimesCalled" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Class_O>), offsetof(SAFE_TYPE_MACRO(core::Instance_O),_Class), "_Class" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::Instance_O),_isgf), "_isgf" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::SimpleVector_O>), offsetof(SAFE_TYPE_MACRO(core::Instance_O),_Rack), "_Rack" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::Instance_O),_Sig), "_Sig" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
 { class_kind, KIND_LISPALLOC_asttooling__DerivableASTFrontendAction, sizeof(asttooling::DerivableASTFrontendAction), 0, "asttooling::DerivableASTFrontendAction" },
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(asttooling::DerivableASTFrontendAction),_TimesCalled), "_TimesCalled" }, // public: (T) fixable: NIL good-name: T
+// {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(asttooling::DerivableASTFrontendAction),_TimesCalled), "_TimesCalled" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Class_O>), offsetof(SAFE_TYPE_MACRO(asttooling::DerivableASTFrontendAction),_Class), "_Class" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(asttooling::DerivableASTFrontendAction),_isgf), "_isgf" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::SimpleVector_O>), offsetof(SAFE_TYPE_MACRO(asttooling::DerivableASTFrontendAction),_Rack), "_Rack" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
@@ -6724,7 +6724,7 @@ public:
 // not-exposing {  fixed_field, ctype_char, sizeof(char), offsetof(SAFE_TYPE_MACRO(asttooling::DerivableASTFrontendAction),CurrentInput.File.__r_.__first_.NO-NAME.__s.NO-NAME.__lx), "CurrentInput.File.__r_.__first_.NO-NAME.__s.NO-NAME.__lx" }, // public: (NIL NIL NIL NIL T T T T) fixable: NIL good-name: T
 // not-exposing {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(asttooling::DerivableASTFrontendAction),CurrentInput.IsSystem), "CurrentInput.IsSystem" }, // public: (NIL NIL) fixable: NIL good-name: T
 { class_kind, KIND_LISPALLOC_asttooling__DerivableSyntaxOnlyAction, sizeof(asttooling::DerivableSyntaxOnlyAction), 0, "asttooling::DerivableSyntaxOnlyAction" },
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(asttooling::DerivableSyntaxOnlyAction),_TimesCalled), "_TimesCalled" }, // public: (T) fixable: NIL good-name: T
+// {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(asttooling::DerivableSyntaxOnlyAction),_TimesCalled), "_TimesCalled" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Class_O>), offsetof(SAFE_TYPE_MACRO(asttooling::DerivableSyntaxOnlyAction),_Class), "_Class" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(asttooling::DerivableSyntaxOnlyAction),_isgf), "_isgf" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::SimpleVector_O>), offsetof(SAFE_TYPE_MACRO(asttooling::DerivableSyntaxOnlyAction),_Rack), "_Rack" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
@@ -6906,7 +6906,7 @@ public:
 {  variable_capacity, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(gctools::GCArray_moveable<unsigned long>),_Length), offsetof(SAFE_TYPE_MACRO(gctools::GCArray_moveable<unsigned long>),_Length), NULL },
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, "only" },
 { class_kind, KIND_LISPALLOC_asttooling__DerivableMatchCallback, sizeof(asttooling::DerivableMatchCallback), 0, "asttooling::DerivableMatchCallback" },
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(asttooling::DerivableMatchCallback),_TimesCalled), "_TimesCalled" }, // public: (T) fixable: NIL good-name: T
+// {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(asttooling::DerivableMatchCallback),_TimesCalled), "_TimesCalled" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Class_O>), offsetof(SAFE_TYPE_MACRO(asttooling::DerivableMatchCallback),_Class), "_Class" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(asttooling::DerivableMatchCallback),_isgf), "_isgf" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::SimpleVector_O>), offsetof(SAFE_TYPE_MACRO(asttooling::DerivableMatchCallback),_Rack), "_Rack" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
@@ -7013,7 +7013,7 @@ public:
 // not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_PathMax), "_PathMax" }, // public: (NIL) fixable: NIL good-name: T
  {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_LineNumber), "_LineNumber" }, // public: (T) fixable: NIL good-name: T
 { class_kind, KIND_LISPALLOC_asttooling__DerivableFrontendActionFactory, sizeof(asttooling::DerivableFrontendActionFactory), 0, "asttooling::DerivableFrontendActionFactory" },
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(asttooling::DerivableFrontendActionFactory),_TimesCalled), "_TimesCalled" }, // public: (T) fixable: NIL good-name: T
+// {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(asttooling::DerivableFrontendActionFactory),_TimesCalled), "_TimesCalled" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Class_O>), offsetof(SAFE_TYPE_MACRO(asttooling::DerivableFrontendActionFactory),_Class), "_Class" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(asttooling::DerivableFrontendActionFactory),_isgf), "_isgf" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::SimpleVector_O>), offsetof(SAFE_TYPE_MACRO(asttooling::DerivableFrontendActionFactory),_Rack), "_Rack" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
