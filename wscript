@@ -270,7 +270,6 @@ class variant(object):
             cfg.env.append_value('LINKFLAGS', os.getenv("CLASP_RELEASE_LINKFLAGS").split())
     def configure_for_debug(self,cfg):
         cfg.define("_DEBUG_BUILD",1)
-        cfg.define("DEBUG_GUARD",1)
         cfg.define("CONFIG_VAR_COOL",1)
 #        cfg.env.append_value('CXXFLAGS', [ '-O0', '-g' ])
         cfg.env.append_value('CXXFLAGS', [ '-O0', '-g' ])
@@ -546,6 +545,10 @@ def configure(cfg):
     print("cfg.env['LTO_OPTION'] = %s" % cfg.env['LTO_OPTION'])
     if (cfg.env['LTO_OPTION']==[] or cfg.env['LTO_OPTION']=='thinlto'):
         cfg.env.LTO_FLAG = '-flto=thin'
+        if (cfg.env['DEST_OS'] == LINUX_OS ):
+            cfg.env.append_value('LINKFLAGS', '-Wl,-plugin-opt,cache-dir=/tmp')
+        elif (cfg.env['DEST_OS'] == DARWIN_OS ):
+            cfg.env.append_value('LINKFLAGS', '-Wl,-cache_path_lto,/tmp')
     elif (cfg.env['LTO_OPTION']=='lto'):
         cfg.env.LTO_FLAG = '-flto'
     elif (cfg.env['LTO_OPTION']=='obj'):
@@ -608,6 +611,8 @@ def configure(cfg):
 # Check if GC_enumerate_reachable_objects_inner is available
 # If so define  BOEHM_GC_ENUMERATE_REACHABLE_OBJECTS_INNER_AVAILABLE
 #
+    if (cfg.env["BOEHM_GC_ENUMERATE_REACHABLE_OBJECTS_INNER_AVAILABLE"] == True):
+        cfg.define("BOEHM_GC_ENUMERATE_REACHABLE_OBJECTS_INNER_AVAILABLE",1)
     cfg.define("USE_CLASP_DYNAMIC_CAST",1)
     cfg.define("BUILDING_CLASP",1)
     print("cfg.env['DEST_OS'] == %s\n" % cfg.env['DEST_OS'])
@@ -629,6 +634,7 @@ def configure(cfg):
     cfg.define("DEBUG_CL_SYMBOLS",1)
 #    cfg.define("SOURCE_DEBUG",1)
     cfg.define("USE_SOURCE_DATABASE",1)
+    cfg.define("USE_COMPILED_CLOSURE",1)  # disable this in the future and switch to ClosureWithSlots
     cfg.define("CLASP_UNICODE",1)
     cfg.define("DEBUG_TRACE_INTERPRETED_CLOSURES",1)
 #    cfg.define("EXPAT",1)
@@ -637,6 +643,7 @@ def configure(cfg):
     cfg.define("LLVM_VERSION_X100",390)
     cfg.define("LLVM_VERSION","3.9")
     cfg.define("NDEBUG",1)
+    
 #    cfg.define("READLINE",1)
     cfg.define("USE_AMC_POOL",1)
     cfg.define("USE_EXPENSIVE_BACKTRACE",1)
@@ -679,6 +686,11 @@ def configure(cfg):
     if (cfg.env.ADDRESS_SANITIZER):
         cfg.env.append_value('CXXFLAGS', ['-fsanitize=address'] )
         cfg.env.append_value('LINKFLAGS', ['-fsanitize=address'])
+    if (cfg.env.DEBUG_GUARD):
+        cfg.define("DEBUG_GUARD",1)
+        cfg.define("DEBUG_GUARD_VALIDATE",1)
+    cfg.define("ENABLE_BACKTRACE_ARGS",1)
+#    cfg.define("DEBUG_ZERO_KIND",1);
     cfg.env.append_value('CXXFLAGS', ['-Wno-macro-redefined'] )
     cfg.env.append_value('CXXFLAGS', ['-Wno-deprecated-register'] )
     cfg.env.append_value('CXXFLAGS', ['-Wno-expansion-to-defined'] )
@@ -908,12 +920,14 @@ class link_fasl(Task.Task):
     def run(self):
         if (self.env.LTO_FLAG):
             lto_option = self.env.LTO_FLAG
+            lto_optimize_flag = "-O2"
         else:
             lto_option = ""
+            lto_optimize_flag = ""
         if (self.env['DEST_OS'] == DARWIN_OS ):
-            cmd = "%s %s %s %s -flat_namespace -undefined suppress -bundle -o %s" % (self.env.CXX[0],self.inputs[0].abspath(),self.inputs[1].abspath(),lto_option,self.outputs[0].abspath())
+            cmd = "%s %s %s %s %s -flat_namespace -undefined suppress -bundle -o %s" % (self.env.CXX[0],self.inputs[0].abspath(),self.inputs[1].abspath(),lto_option,lto_optimize_flag,self.outputs[0].abspath())
         elif (self.env['DEST_OS'] == LINUX_OS ):
-            cmd = "%s %s %s %s -fuse-ld=gold -shared -o %s" % (self.env.CXX[0],self.inputs[0].abspath(),self.inputs[1].abspath(),lto_option,self.outputs[0].abspath())
+            cmd = "%s %s %s %s %s -fuse-ld=gold -shared -o %s" % (self.env.CXX[0],self.inputs[0].abspath(),self.inputs[1].abspath(),lto_option,lto_optimize_flag,self.outputs[0].abspath())
         else:
             self.fatal("Illegal DEST_OS: %s" % self.env['DEST_OS'])
         print(" link_fasl cmd: %s\n" % cmd)
@@ -928,7 +942,7 @@ class link_executable(Task.Task):
     def run(self):
         if (self.env['DEST_OS'] == DARWIN_OS ):
             if (self.env.LTO_FLAG):
-                lto_option_list = [self.env.LTO_FLAG]
+                lto_option_list = [self.env.LTO_FLAG,"-O2"]
                 lto_object_path_lto = ["-Wl,-object_path_lto,%s"% self.outputs[1].abspath()]
             else:
                 lto_option_list = []
@@ -945,7 +959,7 @@ class link_executable(Task.Task):
                         self.outputs[0].abspath()] + lto_object_path_lto
         elif (self.env['DEST_OS'] == LINUX_OS ):
             if (self.env.LTO_FLAG):
-                lto_option_list = [self.env.LTO_FLAG]
+                lto_option_list = [self.env.LTO_FLAG,"-O2"]
                 lto_object_path_lto = []
             else:
                 lto_option_list = []
@@ -1018,11 +1032,8 @@ class compile_aclasp(Task.Task):
                       "--eval", '(load "sys:kernel;clasp-builder.lsp")' ]
 #                      "--eval", '(setq cmp:*compile-file-debug-dump-module* t)',
 #                      "--eval", '(setq cmp:*compile-debug-dump-module* t)'
-        if (self.bld.command ):
-            cmd = cmd + [ "--eval", "(load-aclasp)" ]
-        else:
-            cmd = cmd + ["--eval", "(compile-aclasp :output-file #P\"%s\")" % self.outputs[0],
-                         "--eval", "(quit)" ]
+        cmd = cmd + ["--eval", "(compile-aclasp :output-file #P\"%s\")" % self.outputs[0],
+                     "--eval", "(quit)" ]
         cmd = cmd + [ "--" ] + self.bld.clasp_aclasp
         if (self.bld.command ):
             dump_command(cmd)
@@ -1048,11 +1059,8 @@ class compile_bclasp(Task.Task):
                       "--image", self.inputs[1].abspath(),
                       "--feature", "debug-run-clang",
                       "--eval", '(load "sys:kernel;clasp-builder.lsp")' ]
-        if (self.bld.command ):
-            cmd = cmd + [ "--eval", "(load-bclasp)" ]
-        else:
-            cmd = cmd + ["--eval", "(compile-bclasp :output-file #P\"%s\")" % self.outputs[0] ,
-                         "--eval", "(quit)" ]
+        cmd = cmd + ["--eval", "(compile-bclasp :output-file #P\"%s\")" % self.outputs[0] ,
+                     "--eval", "(quit)" ]
         cmd = cmd + [ "--" ] + self.bld.clasp_bclasp
         if (self.bld.command ):
             dump_command(cmd)

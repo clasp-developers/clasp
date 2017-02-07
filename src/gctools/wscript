@@ -9,7 +9,6 @@ def build(bld):
             'gctoolsPackage',
             'globals',
             'gcStack',
-            'telemetry',
             'gcalloc',
             'gcweak',
             'memoryManagement']:

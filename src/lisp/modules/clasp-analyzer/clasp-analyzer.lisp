@@ -2991,25 +2991,20 @@ Recursively analyze x and return T if x contains fixable pointers."
       ""))
 
 
-(defun code-enums (stream analysis)
-  (format stream "enum { }~%")
-)
-
-
 
 (defun generate-alloc-enum (&optional (fout t) (anal *analysis*))
   (let ((maxenum 0))
-    (format fout "enum { KIND_null = 0, ~%")
-    (let ((hardwired-kinds (core:hardwired-kinds)))
-      (mapc (lambda (kv) (format fout "KIND_~a = ~a, ~%" (car kv) (cdr kv))) hardwired-kinds))
+    (format fout "KIND_null = 0, ~%")
+    #+(or)(let ((hardwired-kinds (core:hardwired-kinds)))
+            (mapc (lambda (kv) (format fout "KIND_~a = ~a, ~%" (car kv) (cdr kv))) hardwired-kinds))
     (mapc (lambda (enum)
                (format fout "~A = ~A,~%" (build-enum-name enum) (enum-value enum))
                (when (> (enum-value enum) maxenum)
                  (setq maxenum (enum-value enum))))
              (analysis-sorted-enums anal)
              )
-    (format fout "  KIND_max = ~a~%" maxenum)
-    (format fout "}~%" )
+    (format fout "  KIND_max = ~a,~%" maxenum)
+    (format fout "~%" )
     ))
 
 

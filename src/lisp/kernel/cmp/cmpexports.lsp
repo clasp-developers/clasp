@@ -60,8 +60,8 @@
           +t**+
           +tsp[DUMMY]+
           +tsp[DUMMY]*+
-          +constants-table+
-          +constants-table*+
+          +gcroots-in-module+
+          +gcroots-in-module*+
           calling-convention-args
           calling-convention-args.va-arg
           calling-convention-va-list
@@ -85,6 +85,8 @@
           create-run-time-execution-engine
           safe-system
           dbg-set-current-debug-location-here
+          jit-constant-uintptr_t
+          irc-int-to-ptr
           irc-verify-module-safe
           irc-verify-function
           irc-add
@@ -174,6 +176,7 @@
           irc-get-terminate-landing-pad-block
           irc-function-cleanup-and-return
           +RUN-AND-LOAD-TIME-VALUE-HOLDER-GLOBAL-VAR-TYPE+
+          codegen-startup-shutdown
           ))
 
 ;;; exports for runall

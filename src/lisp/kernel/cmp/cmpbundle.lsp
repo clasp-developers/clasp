@@ -80,47 +80,49 @@
 
 (in-package :cmp)
 
+(defparameter *link-options* (list "-O2"))
+
 (defun execute-link-fasl (in-bundle-file in-all-names)
   ;; options are a list of strings like (list "-v")
-  (let ((options nil)
+  (let ((options *link-options*)
         (all-object-files (mapcar (lambda (n)
                                     (ensure-string n))
                                   (if (listp in-all-names)
                                       in-all-names
-                                    (list in-all-names))))
+                                      (list in-all-names))))
         (bundle-file (ensure-string in-bundle-file)))
     #+(or)(warn "Linking fasl with -fvisibility=default - use an exported symbol list in the future")
     (cond
-     ((member :target-os-darwin *features*)
-      (ext:run-clang `(,@options
-                       ,@all-object-files
+      ((member :target-os-darwin *features*)
+       (ext:run-clang `(,@options
+                        ,@all-object-files
 ;;;                                 "-macosx_version_min" "10.10"
-                       "-flto=thin"
-                       "-flat_namespace"
-                       #+(or)"-fvisibility=default"
-                       "-undefined" "suppress"
-                       ,@*debug-link-options*
-                       #+(or)"-Wl,-save-temps"
-                       "-bundle"
+                        "-flto=thin"
+                        "-flat_namespace"
+                        #+(or)"-fvisibility=default"
+                        "-undefined" "suppress"
+                        ,@*debug-link-options*
+                        #+(or)"-Wl,-save-temps"
+                        "-bundle"
 ;;;                        ,@link-flags
 ;;;                        ,(bformat nil "-Wl,-object_path_lto,%s.lto.o" exec-file)
-                       "-o"
-                       ,bundle-file)
-                     :output-file-name bundle-file))
-     ((member :target-os-linux *features*)
-      ;; Linux needs to use clang to link
-      (ext:run-clang `(#+(or)"-v"
-                       ,@options
-                       ,@all-object-files
-                       "-flto=thin"
-                       "-fuse-ld=gold"
-                       ,@*debug-link-options*
-                       #+(or)"-fvisibility=default"
-                       "-shared"
-                       "-o"
-                       ,bundle-file)
-                     :output-file-name bundle-file))
-     (t (error "Add support for this operating system to cmp:generate-link-command")))
+                        "-o"
+                        ,bundle-file)
+                      :output-file-name bundle-file))
+      ((member :target-os-linux *features*)
+       ;; Linux needs to use clang to link
+       (ext:run-clang `(#+(or)"-v"
+                          ,@options
+                          ,@all-object-files
+                          "-flto=thin"
+                          "-fuse-ld=gold"
+                          ,@*debug-link-options*
+                          #+(or)"-fvisibility=default"
+                          "-shared"
+                          "-o"
+                          ,bundle-file)
+                      :output-file-name bundle-file))
+      (t (error "Add support for this operating system to cmp:generate-link-command")))
     (truename in-bundle-file)))
 
 (defun execute-link-executable (output-file-name in-bitcode-names)

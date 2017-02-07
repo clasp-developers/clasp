@@ -108,6 +108,7 @@ extern void client_validate_recursive(void* tagged_client, std::set<void*>& seen
 };
 
 
+void initialize_clasp_Kinds();
 void initialize_clasp();
 
 void initialize_functions();

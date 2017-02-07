@@ -26,9 +26,6 @@
 
 (in-package :cmp)
 
-(defvar *debug-attach-debugging-info-to-value-frames* t)
-
-
 
 ;; Use the DebugIRPass to add self referencing debugging informato to IR
 (defvar *debug-ir* nil)
@@ -44,8 +41,15 @@
 (defvar *verify-llvm-functions* nil)
 
 
+#+compile-file-debug-dump-module
+(progn
+  (defvar *compile-file-debug-dump-module* t))
+#-compile-file-debug-dump-module
 (defvar *compile-file-debug-dump-module* nil)
-(defvar *compile-debug-dump-module* nil)
+
+(defvar *compile-debug-dump-module*
+  #+compile-debug-dump-module t
+  #-compile-debug-dump-module nil)
 
 (defvar *debug-link-options* nil)
 

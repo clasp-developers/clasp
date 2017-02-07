@@ -34,19 +34,21 @@ namespace core {
 
 // Arguments are passed in the multiple_values structure
 
-LCC_RETURN not_funcallable_dispatch(Instance_sp gf, VaList_sp vargs);
+  LCC_RETURN not_funcallable_dispatch(gctools::Tagged tgf, gctools::Tagged tvargs);
 
-LCC_RETURN generic_function_dispatch(Instance_sp gf, VaList_sp vargs);
+  LCC_RETURN generic_function_dispatch(gctools::Tagged tgf, gctools::Tagged tvargs);
+
+  LCC_RETURN invalidated_dispatch(gctools::Tagged tgf, gctools::Tagged tvargs);
 
  // See accessor.h for optimized_slot_reader_dispatch and optimized_slot_writer_dispatch
  
 #if 0
-LCC_RETURN slot_reader_dispatch(Instance_sp gf, VaList_sp vargs);
+  LCC_RETURN slot_reader_dispatch(gctools::Tagged tgf, gctools::Tagged tvargs);
 
-LCC_RETURN slot_writer_dispatch(Instance_sp gf, VaList_sp vargs);
+  LCC_RETURN slot_writer_dispatch(gctools::Tagged tgf, gctools::Tagged tvargs);
 #endif
 
-LCC_RETURN user_function_dispatch(Instance_sp gf, VaList_sp vargs);
+  LCC_RETURN user_function_dispatch(gctools::Tagged tgf, gctools::Tagged tvargs);
 
 };
 #endif /* _core_genericFunction_H_ */

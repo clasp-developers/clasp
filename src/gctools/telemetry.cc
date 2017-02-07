@@ -1,12 +1,9 @@
 #include <clasp/core/foundation.h>
-#include <clasp/gctools/telemetry.h>
-#include <clasp/core/array.h>
 #include <clasp/core/pathname.h>
 #include <clasp/core/wrappers.h>
+#include <clasp/core/telemetry.h>
 
 namespace telemetry {
-
-Telemetry *global_telemetry_search = NULL;
 
 void throw_if_invalid_global_telemetry_search() {
   if (global_telemetry_search == NULL) {

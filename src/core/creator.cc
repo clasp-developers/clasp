@@ -49,11 +49,8 @@ THE SOFTWARE.
 
 namespace core {
 T_sp InstanceCreator_O::creator_allocate() {
-  // TODO: I think I need to replace gctools::GCKind<Instance_O>::Kind with the Kind/Stamp of the class
-  Instance_sp instance = gctools::GCObjectAllocator<Instance_O>::allocate_kind(this->_class->_instance_stamp,gctools::GCKind<Instance_O>::Kind, gctools::sizeof_with_header<Instance_O>());
+  Instance_sp instance = gctools::GCObjectAllocator<Instance_O>::allocate_kind(gctools::KIND_INSTANCE, gctools::sizeof_with_header<Instance_O>());
   return instance;
-//      GC_ALLOCATE(Instance_O, output);
-//      return output;
     };
 
 

@@ -27,35 +27,44 @@ THE SOFTWARE.
 #ifndef _core_random_H_
 #define _core_random_H_
 
+#include <boost/multiprecision/gmp.hpp>
+#include <boost/multiprecision/random.hpp>
+#include <boost/random.hpp>
+
 #include <clasp/core/clasp_gmpxx.h>
 #include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
 #include <clasp/core/numbers.h>
 
 namespace core {
-
+  namespace bmp = boost::multiprecision;
+  
 SMART(RandomState);
 
 class RandomState_O : public General_O {
   LISP_CLASS(core, ClPkg, RandomState_O, "random-state",General_O);
   //    DECLARE_ARCHIVE();
 public: // Simple default ctor/dtor
-  boost::mt11213b _Producer;
+  typedef boost::mt19937 Generator;
+  Generator _Producer;
+//  boost::mt11213b _Producer;
 
 public: // ctor/dtor for classes with shared virtual base
   explicit RandomState_O(bool random = false) {
     if (random) {
       clock_t currentTime;
-      int tt;
 #ifdef darwin
       currentTime = mach_absolute_time();
 #else
       currentTime = clock();
 #endif
+      uint tt = currentTime;
       tt = currentTime % 32768;
-      this->_Producer.seed(static_cast<uint>(tt));
+      Generator temp_gen(static_cast<uint>(tt));
+      this->_Producer = temp_gen; // this->_Producer.seed(tt);
     } else {
-      this->_Producer.seed(0);
+      Generator temp_gen(0);
+      this->_Producer = temp_gen; //this->_Producer.seed(0);
     }
   };
   explicit RandomState_O(const RandomState_O &state) {

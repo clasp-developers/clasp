@@ -750,14 +750,10 @@ List_sp Cons_O::copyTreeCar() const {
   return ((rootCopy));
 }
 
-uint Cons_O::length() const {
-  cl_index sz = 1;
-#pragma GCC diagnostic push
-#pragma clang diagnostic ignored "-Wunused-variable"
-  for (auto p : coerce_to_list(this->_Cdr))
-    ++sz;
-#pragma GCC diagnostic pop
-  return ((sz));
+size_t Cons_O::length() const {
+  size_t sz = 1;
+  for (T_sp cur = this->_Cdr; cur.consp(); cur = gc::As_unsafe<Cons_sp>(cur)->_Cdr) ++sz; 
+  return sz;
 };
 
 T_sp Cons_O::olistref(cl_index idx) {

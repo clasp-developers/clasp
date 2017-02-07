@@ -123,22 +123,16 @@
 	(t)))
 
 (defun compute-discriminating-function (generic-function)
-;;  (print (list "HUNT compute-discriminating-function gf: " generic-function))
   (values #'(lambda (&rest args)
-;;	      (print "HUNT compute-discriminating-function line 140")
 	      (multiple-value-bind (method-list ok)
 		  (compute-applicable-methods-using-classes
 		   generic-function
 		   (mapcar #'class-of args))
-;;		(print "HUNT compute-discriminating-function line 145")
 		(unless ok
-;;		  (print "HUNT compute-discriminating-function line 147")
 		  (setf method-list
 			(compute-applicable-methods generic-function args))
-;;		  (print "HUNT compute-discriminating-function line 150")
 		  (unless method-list
 		    (no-applicable-methods generic-function args)))
-;;		(print "HUNT compute-discriminating-function line 153")
 		(funcall (compute-effective-method-function
 			  generic-function
 			  (generic-function-method-combination generic-function)
@@ -181,6 +175,14 @@
       (set-funcallable-instance-function
        gfun
        (cond
+         #+clasp
+         ((typep (get-funcallable-instance-function gfun) 'core:compiled-dispatch-function)
+          'clos::invalidated-dispatch-function)
+         #+clasp
+         ((eq (get-funcallable-instance-function gfun) 'clos::invalidated-dispatch-function)
+          'clos::invalidated-dispatch-function)
+         ((member :strandh-dispatch *features*)
+          'clos::invalidated-dispatch-function)
 	 ;; Case 1*
 	 ((or (not optimizable)
 	      (> (length (slot-value gfun 'spec-list))
@@ -224,8 +226,9 @@
 ;;;   3. Subclasses of specified classes preserve the slot order in ECL.
 ;;;
 (defun std-compute-applicable-methods (gf args)
-;;  (print (list "HUNT entering std-compute-applicable-methods gf:" gf))
-  (sort-applicable-methods gf (applicable-method-list gf args) args))
+  (sort-applicable-methods gf
+                           (applicable-method-list gf args)
+                           (mapcar #'class-of args)))
 
 (setf (fdefinition 'compute-applicable-methods) #'std-compute-applicable-methods)
 
@@ -248,11 +251,8 @@
 
 (defun std-compute-applicable-methods-using-classes (gf classes)
   (declare (optimize (speed 3)))
-;;  (print (list "HUNT entering std-compute-applicable-methods-using-classes gf:" gf))
   (with-early-accessors (+standard-method-slots+ +eql-specializer-slots+ +standard-generic-function-slots+)
     (flet ((applicable-method-p (method classes)
-;;	     (when (eq (generic-function-name method) 'aux-compute-applicable-methods)
-;;	       (break "Caught aux-compute-applicable-methods"))
 	     (loop for spec in (method-specializers method)
 		for class in classes
 		always (cond ((eql-specializer-flag spec)
@@ -271,32 +271,30 @@
 	       classes)
 	      t))))
 
-(defun sort-applicable-methods (gf applicable-list args)
+(defun sort-applicable-methods (gf applicable-list args-specializers)
   (declare (optimize (safety 0) (speed 3)))
   (with-early-accessors (+standard-method-slots+ +standard-generic-function-slots+)
-    (let ((f (generic-function-a-p-o-function gf))
-	  (args-specializers (mapcar #'class-of args)))
+    (let ((f (generic-function-a-p-o-function gf)))
       ;; reorder args to match the precedence order
       (when f
-	(setf args-specializers
-	      (funcall f (subseq args-specializers 0
-				 (length (generic-function-argument-precedence-order gf))))))
+        (setf args-specializers
+              (funcall f (subseq args-specializers 0
+                                 (length (generic-function-argument-precedence-order gf))))))
       ;; then order the list
       (do* ((scan applicable-list)
-	    (most-specific (first scan) (first scan))
-	    (ordered-list))
-	   ((null (cdr scan))
-	    (when most-specific
-	      ;; at least one method
-	      (let ((result (nreverse
-			     (push most-specific ordered-list))))
-		result)))
-	(dolist (meth (cdr scan))
-	  (when (eq (compare-methods most-specific
-				     meth args-specializers f) #-clasp 2 #+clasp 'spec-2)
-	    (setq most-specific meth)))
-	(setq scan (delete most-specific scan))
-	(push most-specific ordered-list)))))
+            (most-specific (first scan) (first scan))
+            (ordered-list))
+           ((null (cdr scan))
+            (when most-specific
+              ;; at least one method
+              (nreverse
+               (push most-specific ordered-list))))
+        (dolist (meth (cdr scan))
+          (when (eq (compare-methods most-specific
+                                     meth args-specializers f) 2)
+            (setq most-specific meth)))
+        (setq scan (delete most-specific scan))
+        (push most-specific ordered-list)))))
 
 (defun compare-methods (method-1 method-2 args-specializers f)
   (declare (si::c-local))
@@ -313,8 +311,8 @@
     (ecase (compare-specializers (first spec-list-1)
 				 (first spec-list-2)
 				 (first args-specializers))
-      (#-clasp 1 #+clasp 'spec-1 #-clasp '1 #+clasp 'spec-1)
-      (#-clasp 2 #+clasp 'spec-2 #-clasp '2 #+clasp 'spec-2)
+      (1 '1)
+      (2 '2)
       (= 
        (compare-specializers-lists (cdr spec-list-1)
 				   (cdr spec-list-2)
@@ -349,12 +347,12 @@
   (with-early-accessors (+standard-class-slots+ +standard-class-slots+)
     (let* ((cpl (class-precedence-list arg-class)))
       (cond ((eq spec-1 spec-2) '=)
-	    ((fast-subtypep spec-1 spec-2) #-clasp '1 #+clasp 'spec-1)
-	    ((fast-subtypep spec-2 spec-1) #-clasp '2 #+clasp 'spec-2)
-	    ((eql-specializer-flag spec-1) #-clasp '1 #+clasp 'spec-1) ; is this engough?
-	    ((eql-specializer-flag spec-2) #-clasp '2 #+clasp 'spec-2) ; Beppe
-	    ((member spec-1 (member spec-2 cpl)) #-clasp '2 #+clasp 'spec-2)
-	    ((member spec-2 (member spec-1 cpl)) #-clasp '1 #+clasp 'spec-1)
+            ((fast-subtypep spec-1 spec-2) '1)
+            ((fast-subtypep spec-2 spec-1) '2)
+            ((eql-specializer-flag spec-1) '1) ; is this engough?
+            ((eql-specializer-flag spec-2) '2) ; Beppe
+            ((member spec-1 (member spec-2 cpl)) '2)
+            ((member spec-2 (member spec-1 cpl)) '1)
 	    ;; This will force an error in the caller
 	    (t nil)))))
 

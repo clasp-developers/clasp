@@ -91,15 +91,7 @@ The passed module is modified as a side-effect."
                             function-env
                             argument-holder
                             new-env)
-  (dbg-set-current-debug-location-here)
-  ;;  (irc-intrinsic "debugInspectActivationFrame" closed-over-renv)
-  ;;  (irc-intrinsic "debugInspectActivationFrame" (irc-renv new-env))
-  ;;  (irc-intrinsic "gdb")
-  ;;
-  ;; The setParentOfActivationFrame should be set before we compile the lambda-list-code
-  ;; otherwise it won't be able to access the closed over environment
-  ;;  (irc-intrinsic "setParentOfActivationFrame" (irc-renv new-env) closed-over-renv)
-  (dbg-attach-debugging-info-to-value-frame (irc-renv new-env) lambda-list-handler new-env))
+  (dbg-set-current-debug-location-here))
 
 (defparameter *lambda-args-num* 0)
 
@@ -445,9 +437,6 @@ env is the parent environment of the (result-af) value frame"
 ;;      (dbg-set-activation-frame-for-ihs-top (irc-renv new-env))
       (irc-intrinsic "setParentOfActivationFrame" result-af (irc-renv parent-env))
       (dbg-set-current-debug-location-here)
-      (dbg-attach-debugging-info-to-value-frame (irc-renv new-env)
-						lambda-list-handler
-						new-env)
       ;; Save all special variables
       (do* ((cur-req (cdr reqvars) (cdr cur-req))
 	    (classified-target (car cur-req) (car cur-req)))
@@ -493,9 +482,6 @@ env is the parent environment of the (result-af) value frame"
 ;;      (dbg-set-activation-frame-for-ihs-top (irc-renv new-env))
       (irc-intrinsic "setParentOfActivationFrame" result-af (irc-renv parent-env))
       (dbg-set-current-debug-location-here)
-      (dbg-attach-debugging-info-to-value-frame (irc-renv new-env)
-						lambda-list-handler
-						new-env)
       ;; Save all special variables
       (do* ((cur-req (cdr reqvars) (cdr cur-req))
 	    (classified-target (car cur-req) (car cur-req)))
@@ -1411,7 +1397,6 @@ Return the orderered-raw-constants-list and the constants-table GlobalVariable"
           (or lambda-name (error "Inner lambda-name is nil - this shouldn't happen"))
           (values llvm-function-from-lambda :function env lambda-name)))
     (or lambda-name (error "lambda-name is nil - this shouldn't happen"))
-    (cmp-log "------------  Finished building MCJIT Module - about to finalize-engine  Final module follows...\n")
     (or fn (error "There was no function returned by compile-lambda-function outer: ~a" fn))
     (cmp-log "fn --> %s\n" fn)
     (cmp-log-dump *the-module*)
@@ -1420,11 +1405,11 @@ Return the orderered-raw-constants-list and the constants-table GlobalVariable"
 
 (defun compile-to-module-with-run-time-table (definition env pathname)
   (let* (fn function-kind wrapped-env lambda-name warnp failp)
-    (multiple-value-bind (ordered-raw-constants-list constants-table)
+    (multiple-value-bind (ordered-raw-constants-list constants-table startup-fn shutdown-fn)
         (literal:with-rtv
             (multiple-value-setq (fn function-kind wrapped-env lambda-name warnp failp)
               (compile-to-module definition env pathname)))
-      (values fn function-kind wrapped-env lambda-name warnp failp ordered-raw-constants-list constants-table))))
+      (values fn function-kind wrapped-env lambda-name warnp failp ordered-raw-constants-list constants-table startup-fn shutdown-fn))))
 
 (defun describe-constants-table (constants-table)
   (bformat t "constants-table = %s\n" constants-table)
@@ -1438,7 +1423,7 @@ Return the orderered-raw-constants-list and the constants-table GlobalVariable"
 
 (defun bclasp-compile* (bind-to-name &optional definition env pathname)
   "Compile the definition"
-  (multiple-value-bind (fn function-kind wrapped-env lambda-name warnp failp ordered-raw-constants-list constants-table)
+  (multiple-value-bind (fn function-kind wrapped-env lambda-name warnp failp ordered-raw-constants-list constants-table startup-fn shutdown-fn)
       (compile-to-module-with-run-time-table definition env pathname)
     (cmp-log "About to test and maybe set up the *run-time-execution-engine*\n")
     (quick-module-dump *the-module* "preoptimize")
@@ -1465,10 +1450,9 @@ Return the orderered-raw-constants-list and the constants-table GlobalVariable"
              core:*current-source-file-info*
              (core:source-pos-info-filepos cspi)
              (core:source-pos-info-lineno cspi)
-             nil #|lambda-list, NIL for now - but this should be extracted from definition|#)))
-      (when constants-table
-        (let ((constants-table-address (llvm-sys:get-global-value-address *run-time-execution-engine* (llvm-sys:get-name constants-table))))
-          (gctools:register-roots constants-table-address ordered-raw-constants-list)))
+             startup-fn
+             shutdown-fn
+             ordered-raw-constants-list)))
       (values compiled-function warnp failp))))
 
 (defvar *compile-counter* 0)
@@ -1543,14 +1527,13 @@ We could do more fancy things here - like if cleavir-clasp fails, use the clasp 
               (values func nil nil))
              ((core:cxx-instance-p func)
               (let ((user-func (clos:get-funcallable-instance-function func)))
-                (when user-func
+                (when (and user-func (interpreted-function-p user-func))
                   (let ((compiled-user-func (compile nil user-func)))
                     (when (not (eq user-func compiled-user-func))
                       (clos:set-funcallable-instance-function func compiled-user-func)))))
               (values func nil nil))
              (t (error "COMPILE doesn't know how to handle this type of function")))))
-        (t (error "Illegal combination of arguments for compile: ~a ~a"
-                  name definition)))
+        (t (error "Illegal combination of arguments for compile: ~a ~a, class-of definition ~a" name definition (class-of definition))))
     ;; Bind the name if applicable.
     (cond ((and (symbolp name) (macro-function name))
            (setf (macro-function name) function)

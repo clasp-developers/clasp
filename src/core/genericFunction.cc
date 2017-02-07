@@ -40,6 +40,7 @@ THE SOFTWARE.
 #include <clasp/core/symbolTable.h>
 #include <clasp/core/genericFunction.h>
 #include <clasp/core/wrappers.h>
+#include <clasp/llvmo/intrinsics.h>
 
 #define CACHE_METHOD_LOOKUP
 
@@ -203,6 +204,14 @@ gctools::Vec0<T_sp> &fill_spec_vector(Instance_sp gf, gctools::Vec0<T_sp> &vekto
   return vektor;
 }
 
+
+CL_DEFUN T_sp clos__memoization_key(Instance_sp gf, VaList_sp vargs) {
+  gctools::Vec0<T_sp> key;
+  key.resize((*vargs).remaining_nargs(),_Nil<T_O>());
+  fill_spec_vector(gf,key,vargs);
+  return SimpleVector_O::make(key.size()-1,_Nil<T_O>(),true,key.size()-1,&key[1]);
+}
+
 // Arguments are passed in the multiple_values array
 LCC_RETURN standard_dispatch(T_sp gf, VaList_sp arglist, Cache_sp cache) {
   /* Lookup the generic-function/arguments invocation in a cache and if an effective-method
@@ -229,7 +238,7 @@ LCC_RETURN standard_dispatch(T_sp gf, VaList_sp arglist, Cache_sp cache) {
 	     * compute the applicable methods. We must save
 	     * the keys and recompute the cache location if
 	     * it was filled. */
-    T_sp keys = VectorObjects_O::create(vektor);
+    T_sp keys = SimpleVector_O::make(vektor.size(),_Nil<T_O>(),true,vektor.size(),&(vektor[0])); // VectorObjects_O::create(vektor);
     T_mv mv = compute_applicable_method(gf, arglist);
     func = Function_sp((gc::Tagged)mv.raw_());
     if (mv.valueGet_(1).notnilp()) {
@@ -246,9 +255,14 @@ LCC_RETURN standard_dispatch(T_sp gf, VaList_sp arglist, Cache_sp cache) {
       }
       e->_key = keys;
       e->_value = func;
+      // Save the results in the call history for later optimization
+      // Strip the first element of the key - which from ECL is the generic function
+      T_sp call_history_key = SimpleVector_O::make(vektor.size()-1,_Nil<T_O>(),true,vektor.size()-1,&(vektor[1]));
+      core__generic_function_call_history_push_new(gc::As_unsafe<Instance_sp>(gf), call_history_key, func);
     }
   }
-  return eval::funcall(func, arglist, _Nil<T_O>());
+  return cc_dispatch_effective_method(func.raw_(),gf.raw_(), arglist.raw_());
+//  return eval::funcall(func, arglist, _Nil<T_O>());
 }
 
 /*! Reproduces functionality in generic_function_dispatch_vararg
@@ -262,14 +276,24 @@ generic_function_dispatch_vararg(cl_narg narg, ...)
         return output;
 }
  */
-LCC_RETURN generic_function_dispatch(Instance_sp gf, VaList_sp vargs) {
+LCC_RETURN generic_function_dispatch(gctools::Tagged tgf, gctools::Tagged tvargs) {
+  Instance_sp gf(tgf);
+  VaList_sp vargs(tvargs);
   Cache_sp cache = _lisp->methodCachePtr();
   return standard_dispatch(gf, vargs, cache);
 }
 
+LCC_RETURN invalidated_dispatch(gctools::Tagged tgf, gctools::Tagged tvargs) {
+  Instance_sp gf(tgf);
+  VaList_sp vargs(tvargs);
+  return eval::funcall(clos::_sym_invalidated_dispatch_function,gf,vargs);
+}
+
 #if 0
 /*! Reproduces functionality in ecl_slot_reader_dispatch */
-LCC_RETURN slot_reader_dispatch(Instance_sp gf, VaList_sp vargs) {
+LCC_RETURN slot_reader_dispatch(gctools::Tagged tgf, gctools::Tagged tvargs) {
+  Instance_sp gf(tgf);
+  VaList_sp vargs(tvargs);
   Cache_sp cache = _lisp->slotCachePtr();
   // Should I use standard_dispatch or do something special for slots?
   return standard_dispatch(gf, vargs, cache);
@@ -284,14 +308,18 @@ LCC_RETURN slot_writer_dispatch(Instance_sp gf, VaList_sp vargs) {
 #endif
 
 /*! Reproduces functionality in user_function_dispatch */
-LCC_RETURN user_function_dispatch(Instance_sp gf, VaList_sp vargs) {
+LCC_RETURN user_function_dispatch(gctools::Tagged tgf, gctools::Tagged tvargs) {
+  Instance_sp gf(tgf);
+  VaList_sp vargs(tvargs);
   Function_sp func = gc::As<Function_sp>(gf->instanceRef(gf->numberOfSlots()-1));
   BFORMAT_T(BF("%s:%d a user-dispatch generic-function %s is being invoked\n") % __FILE__ % __LINE__ % _rep_(gf->name()) );
   return core::funcall_consume_valist_<core::Function_O>(func.tagged_(),vargs); // cl__apply(func,vargs).as_return_type();
 }
 
 /*! Reproduces functionality in FEnot_funcallable_vararg */
-LCC_RETURN not_funcallable_dispatch(Instance_sp gf, VaList_sp vargs) {
+LCC_RETURN not_funcallable_dispatch(gctools::Tagged tgf, gctools::Tagged tvargs) {
+  Instance_sp gf(tgf);
+  VaList_sp vargs(tvargs);
   SIMPLE_ERROR(BF("Not a funcallable instance %s") % _rep_(gf));
 }
 

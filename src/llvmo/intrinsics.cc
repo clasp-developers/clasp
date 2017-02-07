@@ -310,7 +310,9 @@ ALWAYS_INLINE gc::return_type cc_call(LCC_ARGS_CC_CALL_ELLIPSIS) {
   core::Closure_O* closure = gc::untag_general<core::Closure_O *>(tagged_closure);
   VaList_S lcc_arglist_s;
   va_start(lcc_arglist_s._Args, LCC_VA_START_ARG);
+#ifdef ENABLE_BACKTRACE_ARGS  
   LCC_SPILL_REGISTER_ARGUMENTS_TO_VA_LIST(lcc_arglist_s);
+#endif
   core::T_O *lcc_arglist = lcc_arglist_s.asTaggedPtr();
   return closure->invoke_va_list(LCC_PASS_ARGS);
 }
@@ -431,16 +433,15 @@ ALWAYS_INLINE core::T_O *cc_stack_enclose(void* closure_address,
                             std::size_t numCells, ...) {
   core::T_sp tlambdaName = gctools::smart_ptr<core::T_O>((gc::Tagged)lambdaName);
   gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(closure_address);
-  const gctools::Stamp closure_stamp = gctools::GCStamp<core::ClosureWithSlots_O>::TheStamp;
   const gctools::GCKindEnum closure_kind = gctools::GCKind<core::ClosureWithSlots_O>::Kind;
   size_t size = gctools::sizeof_container_with_header<core::ClosureWithSlots_O>(numCells);
 
 //  gctools::global_stack_closure_bytes_allocated += size;
 
 #ifdef DEBUG_GUARD
-  new (header) gctools::GCHeader<core::ClosureWithSlots_O>::HeaderType(closure_stamp,closure_kind,size,0,size);
+  new (header) gctools::GCHeader<core::ClosureWithSlots_O>::HeaderType(closure_kind,size,0,size);
 #else
-  new (header) gctools::GCHeader<core::ClosureWithSlots_O>::HeaderType(closure_stamp,closure_kind);
+  new (header) gctools::GCHeader<core::ClosureWithSlots_O>::HeaderType(closure_kind);
 #endif
   auto obj = gctools::BasePtrToMostDerivedPtr<typename gctools::smart_ptr<core::ClosureWithSlots_O>::Type>(closure_address);
   new (obj) (typename gctools::smart_ptr<core::ClosureWithSlots_O>::Type)(numCells,
@@ -493,10 +494,24 @@ void cc_bad_tag(core::T_O* gf, core::T_O* gf_args)
 };
 
 gctools::return_type cc_dispatch_effective_method(core::T_O* teffective_method, core::T_O* tgf, core::T_O* tgf_args_valist_s) {
+#if 1
+  if (gctools::TaggedCast<CompiledClosure_O*,T_O*>::isA(teffective_method)) {
+    core::CompiledClosure_O* ptrFunc = reinterpret_cast<core::CompiledClosure_O*>(gc::untag_general(teffective_method));
+    core::T_O* tagged_closure = gctools::tag_general(ptrFunc);
+    return ptrFunc->fptr(tagged_closure,NULL,2,tgf_args_valist_s,_Nil<core::T_O>().raw_(),NULL);
+  }
+  ASSERT((gctools::TaggedCast<ClosureWithSlots_O*,T_O*>::isA(teffective_method)));
+  core::ClosureWithSlots_O* ptrFunc = reinterpret_cast<core::ClosureWithSlots_O*>(gc::untag_general(teffective_method));
+  core::T_O* tagged_closure = gctools::tag_general(ptrFunc);
+  return ptrFunc->fptr(tagged_closure,NULL,2,tgf_args_valist_s,_Nil<core::T_O>().raw_(),NULL);
+#else
   core::T_sp effective_method((gctools::Tagged)teffective_method);
   core::T_sp gf((gctools::Tagged)tgf);
   core::T_sp gf_args((gctools::Tagged)tgf_args_valist_s);
-  return core::eval::funcall(effective_method,gf,gf_args);
+//  printf("%s:%d  Invoking effective-method %s with arguments %s\n", __FILE__, __LINE__,
+  // Arguments are .method-args. .next-methods.
+  return core::eval::funcall(effective_method,gf_args,_Nil<core::T_O>());
+#endif
 }
 
 };

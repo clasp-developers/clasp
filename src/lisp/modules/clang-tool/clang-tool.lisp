@@ -725,7 +725,7 @@ Select a subset (or all) source file names from the compilation database and ret
     (incf *current-file-index*)
     (when (slot-boundp self 'start-of-translation-unit-code)
       (assert (start-of-translation-unit-code self))
-c      (funcall (start-of-translation-unit-code self)))))
+      (funcall (start-of-translation-unit-code self)))))
 
 (core:defvirtual ast-tooling:on-end-of-translation-unit ((self code-match-callback))
   (setf *on-start-translation-unit-depth* 0)

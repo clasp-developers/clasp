@@ -9,6 +9,10 @@ settings in string stream */
   void gctools__cleanup(bool verbose=false);
 
 void initialize_gc_functions();
+
+ Fixnum core__header_kind(core::T_sp obj);
+ Fixnum core__header_stamp(core::T_sp obj);
+ 
 };
 
 #endif

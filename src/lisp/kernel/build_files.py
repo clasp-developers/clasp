@@ -78,6 +78,7 @@ def bclasp(wrappers):
         "src/lisp/kernel/lsp/format",
         "src/lisp/kernel/clos/package",
         "src/lisp/kernel/clos/hierarchy",
+        "src/lisp/kernel/cmp/cmpgf",
         "src/lisp/kernel/clos/cpl",
         "src/lisp/kernel/clos/std-slot-value",
         "src/lisp/kernel/clos/slot",

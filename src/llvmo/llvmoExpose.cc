@@ -38,6 +38,7 @@ THE SOFTWARE.
 #include <llvm/Support/raw_ostream.h>
 #include <llvm/Support/MemoryBuffer.h>
 #include <llvm/Support/FileSystem.h>
+#include <llvm/Support/DynamicLibrary.h>
 #include <llvm/LTO/legacy/ThinLTOCodeGenerator.h>
 #include <llvm/Analysis/ModuleSummaryAnalysis.h>
 #include <llvm/ADT/Triple.h>
@@ -49,6 +50,7 @@ THE SOFTWARE.
 #include <llvm/IR/CallingConv.h>
 #include <llvm/IR/BasicBlock.h>
 #include <llvm/IR/Instructions.h>
+#include <llvm/IR/Mangler.h>
 #include <llvm/Transforms/Instrumentation.h>
 #include <llvm/Transforms/IPO.h>
 #include <llvm/IR/InlineAsm.h>
@@ -94,7 +96,14 @@ THE SOFTWARE.
 #include <clasp/core/wrappers.h>
 #include <clasp/core/symbolTable.h>
 
+
+
+
+
 llvm::Value* llvm_cast_error_ptr;
+
+
+
 namespace llvmo {
 
 
@@ -924,7 +933,7 @@ void convert_sequence_types_to_vector(core::T_sp elements, vector<llvm::Type *> 
     }
     return;
   }
-  QERROR_WRONG_TYPE_NTH_ARG(0, elements, cl::_sym_sequence);
+  QERROR_WRONG_TYPE_NTH_ARG(0, elements, ::cl::_sym_sequence);
 }
 }
 
@@ -1158,6 +1167,12 @@ CL_DEFMETHOD void ExecutionEngine_O::addModule(Module_sp module) {
   ee->addModule(std::move(mod));
 }
 
+CL_LISPIFY_NAME("removeModule");
+CL_DEFMETHOD bool ExecutionEngine_O::removeModule(Module_sp module) {
+  llvm::ExecutionEngine *ee = this->wrappedPtr();
+  return ee->removeModule(module->wrappedPtr());
+}
+
 CL_LISPIFY_NAME("find_function_named");
 CL_DEFMETHOD Function_sp ExecutionEngine_O::find_function_named(core::String_sp name) {
   return translate::to_object<llvm::Function *>::convert(this->wrappedPtr()->FindFunctionNamed(name->get().c_str()));
@@ -1315,6 +1330,10 @@ CL_DEFMETHOD void EngineBuilder_O::setEngineKind(core::Symbol_sp kind) {
   }
 }
 
+    void EngineBuilder_O::setUseOrcMCJITReplacement(bool use)
+    {
+	this->wrappedPtr()->setUseOrcMCJITReplacement(use);
+    }
 #if 0
     void EngineBuilder_O::setUseMCJIT(bool use_mcjit)
     {
@@ -2899,7 +2918,7 @@ void finalizeEngineAndTime(llvm::ExecutionEngine *engine) {
   _sym_STARnumberOfLlvmFinalizationsSTAR->setf_symbolValue(core::make_fixnum(num));
 }
 
-CL_DEFUN core::Function_sp finalizeEngineAndRegisterWithGcAndGetCompiledFunction(ExecutionEngine_sp oengine, core::T_sp functionName, Function_sp fn, core::T_sp activationFrameEnvironment, core::T_sp fileName, size_t filePos, int linenumber, core::T_sp lambdaList) {
+CL_DEFUN core::Function_sp finalizeEngineAndRegisterWithGcAndGetCompiledFunction(ExecutionEngine_sp oengine, core::T_sp functionName, Function_sp fn, core::T_sp activationFrameEnvironment, core::T_sp fileName, size_t filePos, int linenumber, Function_sp startupFn, Function_sp shutdownFn, core::T_sp initial_data) {
   // Stuff to support MCJIT
   llvm::ExecutionEngine *engine = oengine->wrappedPtr();
   finalizeEngineAndTime(engine);
@@ -2913,27 +2932,38 @@ CL_DEFUN core::Function_sp finalizeEngineAndRegisterWithGcAndGetCompiledFunction
   core::SourceFileInfo_mv sfi = core__source_file_info(fileName);
   int sfindex = unbox_fixnum(gc::As<core::Fixnum_sp>(sfi.valueGet_(1)));
   //	printf("%s:%d  Allocating CompiledClosure with name: %s\n", __FILE__, __LINE__, _rep_(sym).c_str() );
-  gctools::smart_ptr<core::CompiledClosure_O> functoid = gctools::GC<core::CompiledClosure_O>::allocate(functionName, kw::_sym_function, lisp_funcPtr, fn, activationFrameEnvironment, associatedFunctions, lambdaList, sfindex, filePos, linenumber, 0);
+  gctools::smart_ptr<core::CompiledClosure_O> functoid = gctools::GC<core::CompiledClosure_O>::allocate(functionName, kw::_sym_function, lisp_funcPtr, fn, activationFrameEnvironment, associatedFunctions, _Nil<core::T_O>() /*lambdaList*/, sfindex, filePos, linenumber, 0);
+  void* pstartup = engine->getPointerToFunction(startupFn->wrappedPtr());
+  if (pstartup==NULL) {
+    printf("%s:%d  Could not find function named %s\n", __FILE__, __LINE__, MODULE_STARTUP_FUNCTION_NAME );
+  }
+  core::module_startup_function_type startup = reinterpret_cast<core::module_startup_function_type>(pstartup);
+  startup(initial_data.tagged_());
   return functoid;
 }
 
 
 
-CL_DEFUN core::Function_sp finalizeEngineAndGetDispatchFunction(ExecutionEngine_sp oengine, core::T_sp functionName, Function_sp fn, GlobalVariable_sp literalArray, core::HashTable_sp eql_specializer, core::HashTable_sp effective_methods) {
+CL_DEFUN core::Function_sp finalizeEngineAndGetDispatchFunction(Module_sp module, ExecutionEngine_sp oengine, core::T_sp functionName, Function_sp fn, Function_sp startupFn, Function_sp shutdownFn, core::T_sp initial_data) {
   // Stuff to support MCJIT
   llvm::ExecutionEngine *engine = oengine->wrappedPtr();
+  std::unique_ptr<llvm::Module> um(module->wrappedPtr());
+  engine->addModule(std::move(um));
   finalizeEngineAndTime(engine);
   ASSERTF(fn.notnilp(), BF("The Function must never be nil"));
   void *p = engine->getPointerToFunction(fn->wrappedPtr());
   if (!p) {
     SIMPLE_ERROR(BF("Could not get a pointer to the function finalizeEngineAndGetDispatchFunction: %s") % _rep_(functionName));
   }
-  void* literal_array_ptr = engine->getPointerToGlobal(literalArray->wrappedPtr());
-  printf("%s:%d:%s    Set up the literals table from the eql_specializers and effective_methods\n", __FILE__, __LINE__, __FUNCTION__ );
-  
-  
   core::DispatchFunction_fptr_type dispatchFunction = (core::DispatchFunction_fptr_type)(p);
-  gctools::smart_ptr<core::CompiledDispatchFunction_O> functoid = gctools::GC<core::CompiledDispatchFunction_O>::allocate(functionName, kw::_sym_dispatch_function, dispatchFunction );
+  core::ShutdownFunction_fptr_type shutdownFunction = (core::ShutdownFunction_fptr_type)(engine->getPointerToFunction(shutdownFn->wrappedPtr()));
+  gctools::smart_ptr<core::CompiledDispatchFunction_O> functoid = gctools::GC<core::CompiledDispatchFunction_O>::allocate(functionName, kw::_sym_dispatch_function, dispatchFunction, shutdownFunction, module  );
+  void* pstartup = engine->getPointerToFunction(startupFn->wrappedPtr());
+  if (pstartup == NULL ) {
+    printf("%s:%d Could not find function named %s\n", __FILE__, __LINE__, MODULE_STARTUP_FUNCTION_NAME);
+  }
+  core::module_startup_function_type startup = reinterpret_cast<core::module_startup_function_type>(pstartup);
+  startup(initial_data.tagged_());
   return functoid;
 }
 
@@ -3351,3 +3381,64 @@ CL_VALUE_ENUM(_sym_NotAtomic, llvm::AtomicOrdering::NotAtomic);
   }
 
 }; // llvmo
+
+
+namespace llvmo {
+
+using namespace llvm;
+using namespace llvm::orc;
+
+
+ClaspJIT_O::ClaspJIT_O() : TM(EngineBuilder().selectTarget()), DL(TM->createDataLayout()),
+                           CompileLayer(ObjectLayer, SimpleCompiler(*TM)) {
+  llvm::sys::DynamicLibrary::LoadLibraryPermanently(nullptr);
+}
+
+CL_LISPIFY_NAME("CLASP-JIT-ADD-MODULE");
+CL_DEFMETHOD ModuleHandle_sp ClaspJIT_O::addModule(Module_sp cM) {
+  Module* M = cM->wrappedPtr();
+    // Build our symbol resolver:
+    // Lambda 1: Look back into the JIT itself to find symbols that are part of
+    //           the same "logical dylib".
+    // Lambda 2: Search for external symbols in the host process.
+  auto Resolver = createLambdaResolver(
+                                       [&](const std::string &Name) {
+                                           if (auto Sym = CompileLayer.findSymbol(Name, false))
+                                             return Sym;
+                                           return JITSymbol(nullptr);
+                                       },
+                                       [](const std::string &Name) {
+                                           if (auto SymAddr =
+                                               RTDyldMemoryManager::getSymbolAddressInProcess(Name))
+                                             return JITSymbol(SymAddr, JITSymbolFlags::Exported);
+                                           return JITSymbol(nullptr);
+                                       });
+
+    // Build a singleton module set to hold our module.
+  std::unique_ptr<Module> uM(M);
+  std::vector<std::unique_ptr<Module>> Ms;
+  Ms.push_back(std::move(uM));
+
+    // Add the set to the JIT with the resolver we created above and a newly
+    // created SectionMemoryManager.
+  return ModuleHandle_O::create(CompileLayer.addModuleSet(std::move(Ms),
+                                                        make_unique<SectionMemoryManager>(),
+                                                        std::move(Resolver)));
+}
+
+CL_LISPIFY_NAME("CLASP-JIT-FIND-SYMBOL");
+CL_DEFMETHOD core::T_sp ClaspJIT_O::findSymbol(const std::string& Name) {
+  std::string MangledName;
+  raw_string_ostream MangledNameStream(MangledName);
+  llvm::Mangler::getNameWithPrefix(MangledNameStream, Name, DL);
+  llvm::JITSymbol sym = CompileLayer.findSymbol(MangledNameStream.str(), true);
+  if (!sym) return _Nil<core::T_O>();
+  return core::Pointer_O::create((void*)sym.getAddress());
+}
+
+CL_LISPIFY_NAME("CLASP-JIT-REMOVE-MODULE");
+CL_DEFMETHOD void ClaspJIT_O::removeModule(ModuleHandle_sp H) {
+  CompileLayer.removeModuleSet(H->_Handle);
+}
+};
+

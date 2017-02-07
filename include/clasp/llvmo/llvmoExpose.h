@@ -55,6 +55,10 @@ THE SOFTWARE.
 #include <llvm/IR/Instructions.h>
 #include <llvm/IR/IRBuilder.h>
 #include <llvm/IR/Constants.h>
+#include <llvm/ExecutionEngine/Orc/CompileUtils.h>
+#include <llvm/ExecutionEngine/Orc/IRCompileLayer.h>
+#include <llvm/ExecutionEngine/Orc/LambdaResolver.h>
+#include <llvm/ExecutionEngine/Orc/ObjectLinkingLayer.h>
 //#include "llvm/Support/IRBuilder.h"
 
 #include <stdio.h>
@@ -74,6 +78,8 @@ THE SOFTWARE.
 #include <clasp/llvmo/insertPoint.fwd.h>
 #include <clasp/llvmo/debugLoc.fwd.h>
 #include <clasp/llvmo/llvmoPackage.h>
+
+
 
 namespace llvmo {
 FORWARD(LLVMContext);
@@ -1635,6 +1641,7 @@ public:
   }
 
   void addModule(Module_sp module);
+  bool removeModule(Module_sp module);
 
   Function_sp find_function_named(core::String_sp name);
 
@@ -2043,6 +2050,7 @@ public:
   }
 CL_LISPIFY_NAME("error_string");
 CL_DEFMETHOD   string error_string() const { return this->_ErrorStr; };
+ CL_DEFMETHOD void setUseOrcMCJITReplacement(bool use);
 
   EngineBuilder_O() : Base(), _ptr(NULL){};
   ~EngineBuilder_O() {
@@ -4302,5 +4310,55 @@ namespace llvmo {
 
 void initialize_llvmo_expose();
 }
+
+
+
+namespace llvmo {
+
+  FORWARD(ModuleHandle);
+  FORWARD(ClaspJIT);
+  
+  using namespace llvm;
+  using namespace llvm::orc;
+
+  class ClaspJIT_O : public core::General_O {
+    LISP_CLASS(llvmo, LlvmoPkg, ClaspJIT_O, "clasp-jit", core::General_O);
+
+  private:
+    std::unique_ptr<llvm::TargetMachine> TM;
+    const llvm::DataLayout DL;
+    ObjectLinkingLayer<> ObjectLayer;
+    IRCompileLayer<decltype(ObjectLayer)> CompileLayer;
+
+  public:
+    typedef decltype(CompileLayer)::ModuleSetHandleT ModuleHandle;
+
+    ClaspJIT_O();
+
+    TargetMachine &getTargetMachine() { return *TM; }
+
+    ModuleHandle_sp addModule(Module_sp M);
+    core::T_sp findSymbol(const std::string& Name);
+    void removeModule(ModuleHandle_sp H);
+  };
+
+  class ModuleHandle_O : public core::General_O {
+    LISP_CLASS(llvmo, LlvmoPkg, ModuleHandle_O, "module-handle", core::General_O);
+  public:
+    ClaspJIT_O::ModuleHandle _Handle;
+  public:
+    static ModuleHandle_sp create(const ClaspJIT_O::ModuleHandle& val) {
+      GC_ALLOCATE_VARIADIC(ModuleHandle_O,mh,val);
+      return mh;
+    }
+  public:
+  ModuleHandle_O(const ClaspJIT_O::ModuleHandle& handle) : _Handle(handle) {};
+  };
+
+
+
+};
+
+
 
 #endif //]

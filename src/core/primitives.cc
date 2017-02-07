@@ -1478,6 +1478,8 @@ CL_DEFUN Symbol_sp cl__gensym(T_sp x) {
     counter = unbox_fixnum(gc::As<Fixnum_sp>(cl::_sym_STARgensym_counterSTAR->symbolValue()));
     core__integer_to_string(ss.string(),gc::As<Integer_sp>(cl::_sym_STARgensym_counterSTAR->symbolValue()),clasp_make_fixnum(10));
     cl::_sym_STARgensym_counterSTAR->setf_symbolValue(make_fixnum(counter + 1));
+  } else {
+    TYPE_ERROR(x,Cons_O::createList(cl::_sym_or,cl::_sym_string,cl::_sym_Null_O,cl::_sym_Integer_O));
   }
   Symbol_sp sym = Symbol_O::create(ss.string()->asMinimalSimpleString());
   sym->setPackage(_Nil<T_O>());
@@ -2008,17 +2010,19 @@ CL_DEFUN void core__dynamic_binding_stack_dump(std::ostream &out) {
   };
 }
 
-CL_DEFUN List_sp core__list_from_va_list(VaList_sp valist)
+CL_DEFUN List_sp core__list_from_va_list(VaList_sp vorig)
 {
+  VaList_S valist_copy(*vorig);
+  VaList_sp valist(&valist_copy);
+
   ql::list l;
   size_t nargs = valist->remaining_nargs();
-  printf("%s:%d in %s  nargs=%zu\n", __FILE__, __LINE__, __FUNCTION__, nargs);
+//  printf("%s:%d in %s  nargs=%zu\n", __FILE__, __LINE__, __FUNCTION__, nargs);
   for ( size_t i=0; i<nargs; ++i ) {
     T_sp one = valist->next_arg();
     l << one;
   }
   T_sp result = l.cons();
-  printf("%s:%d Returning: %s\n", __FILE__, __LINE__, _rep_(result).c_str());
   return result;
 }
 
@@ -2051,25 +2055,25 @@ SYMBOL_EXPORT_SC_(CorePkg,generic_function_lambda_lists);
 CL_LAMBDA(function);
 CL_DECLARE();
 CL_DOCSTRING("Return the lambda-list of a function");
-CL_DEFUN T_sp core__function_lambda_list(T_sp obj) {
+CL_DEFUN T_mv core__function_lambda_list(T_sp obj) {
   if (obj.nilp()) {
-    return _Nil<T_O>();
+    return Values(_Nil<T_O>(),_Nil<T_O>());
   } else if (Symbol_sp sym = obj.asOrNull<Symbol_O>()) {
     if (!sym->fboundp()) {
-      return _Nil<T_O>();
+      return Values(_Nil<T_O>(),_Nil<T_O>());
     }
     Function_sp fn = sym->symbolFunction();
-    return core__function_lambda_list(fn);
+    return Values(core__function_lambda_list(fn),_lisp->_true());
   } else if (gc::IsA<Instance_sp>(obj)) {
     Instance_sp iobj = gc::As_unsafe<Instance_sp>(obj);
     if (iobj->isgf()) {
-      return core__get_sysprop(iobj, _sym_generic_function_lambda_lists);
+      return Values(core__get_sysprop(iobj, _sym_generic_function_lambda_lists),_lisp->_true());
     }
-    return _Nil<T_O>();
+    return Values(_Nil<T_O>(),_Nil<T_O>());
   } else if (NamedFunction_sp func = obj.asOrNull<NamedFunction_O>()) {
-    return func->lambda_list();
+    return Values(func->lambda_list(), _lisp->_true());
   }
-  return _Nil<T_O>();
+  return Values(_Nil<T_O>(),_Nil<T_O>());
 }
 
 CL_LAMBDA(function lambda_list);

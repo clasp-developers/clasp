@@ -166,6 +166,7 @@ core::T_O* tr_from_object_char( core::T_O* obj );
 core::T_O* to_object_char( char x );
 core::T_O* tr_to_object_char( core::T_O* raw_ );
 
+gctools::return_type cc_dispatch_effective_method(core::T_O* teffective_method, core::T_O* tgf, core::T_O* tgf_args_valist_s);
 };
 
 namespace llvmo {

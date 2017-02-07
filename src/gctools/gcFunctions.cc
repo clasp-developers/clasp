@@ -100,79 +100,60 @@ CL_DEFUN size_t core__next_unused_kind() {
   return next;
 }
 
-CL_DOCSTRING("Return the header stamp for the object");
-CL_DEFUN Fixnum core__header_stamp(core::T_sp obj)
-{
+};
+
+
+namespace gctools {
+CL_DOCSTRING("Return the header kind for the object");
+CL_DEFUN Fixnum core__header_kind(core::T_sp obj) {
   if (obj.consp()) {
-    return KIND_CONS;
+    return gctools::KIND_CONS;
   } else if (obj.fixnump()) {
-    return KIND_FIXNUM;
+    return gctools::KIND_FIXNUM;
   } else if (obj.generalp()) {
     void *mostDerived = gctools::untag_general<void *>(obj.raw_());
-    gctools::Header_s *header = reinterpret_cast<gctools::Header_s *>(ClientPtrToBasePtr(mostDerived));
-    return header->getStamp();
+    const gctools::Header_s *header = reinterpret_cast<const gctools::Header_s *>(gctools::ClientPtrToBasePtr(mostDerived));
+    gctools::GCKindEnum kind = header->kind();
+    return (Fixnum)kind;
   } else if (obj.single_floatp()) {
-    return KIND_SINGLE_FLOAT;
+    return gctools::KIND_SINGLE_FLOAT;
   } else if (obj.characterp()) {
-    return KIND_CHARACTER;
+    return gctools::KIND_CHARACTER;
   } else if (obj.valistp()) {
-    return KIND_VA_LIST_S;
+    return gctools::KIND_VA_LIST_S;
   }
   printf("%s:%d HEADER-KIND requested for a non-general object - Clasp needs to define hard-coded kinds for non-general objects - returning -1 for now", __FILE__, __LINE__);
-  return core::clasp_make_fixnum(-1);
+  SIMPLE_ERROR(BF("The object %s doesn't have a stamp") % _rep_(obj));
+}
+
+CL_DOCSTRING("Return the stamp for the object");
+CL_DEFUN Fixnum core__header_stamp(core::T_sp obj)
+{
+  Fixnum kind = core__header_kind(obj);
+  if (kind== gctools::KIND_INSTANCE) {
+    core::Instance_sp iobj = gc::As_unsafe<core::Instance_sp>(obj);
+      return iobj->stamp();
+    }
+  return kind;
 }
 
 CL_DOCSTRING("Set the header stamp for the object");
 CL_DEFUN void core__header_stamp_set(core::T_sp obj, core::T_sp stamp)
 {
   ASSERT(stamp.fixnump());
-  if (obj.generalp()) {
-    void *mostDerived = gctools::untag_general<void *>(obj.raw_());
-    gctools::Header_s *header = reinterpret_cast<gctools::Header_s *>(ClientPtrToBasePtr(mostDerived));
-    return header->setStamp(stamp.unsafe_fixnum());
+  if (gc::IsA<core::Instance_sp>(obj)) {
+    core::Instance_sp iobj = gc::As_unsafe<core::Instance_sp>(obj);
+    return iobj->stamp_set(stamp.unsafe_fixnum());
   }
+  SIMPLE_ERROR(BF("Only Instance objects can have their stamp set") % _rep_(obj));
 }
 
-CL_DOCSTRING("Return the header kind for the object");
-CL_DEFUN Fixnum core__header_kind(core::T_sp obj) {
-  if (obj.consp()) {
-#if defined(USE_BOEHM) && defined(USE_CXX_DYNAMIC_CAST)
-    return reinterpret_cast<Fixnum>(&typeid(*obj));
-#else
-    return gctools::kind_cons;
-#endif
-  } else if (obj.generalp()) {
-#if defined(USE_BOEHM) && defined(USE_CXX_DYNAMIC_CAST)
-    return reinterpret_cast<Fixnum>(&typeid(*obj));
-#else
-    void *mostDerived = gctools::untag_general<void *>(obj.raw_());
-    gctools::Header_s *header = reinterpret_cast<gctools::Header_s *>(ClientPtrToBasePtr(mostDerived));
-#ifdef USE_MPS
-    ASSERT(header->kindP());
-#endif
-    return header->kind();
-#endif
-  } else if (obj.fixnump()) {
-    return kind_fixnum;
-  } else if (obj.single_floatp()) {
-    return kind_single_float;
-  } else if (obj.characterp()) {
-    return kind_character;
-  } else if (obj.consp()) {
-    return kind_cons;
-  }
-  printf("%s:%d HEADER-KIND requested for a non-general object - Clasp needs to define hard-coded kinds for non-general objects - returning -1 for now", __FILE__, __LINE__);
-  return core::clasp_make_fixnum(-1);
-}
 
 CL_LAMBDA(obj);
 CL_DOCSTRING(R"doc(Return true if the object inherits from core:instance based on its header value)doc");
 CL_DEFUN bool core__inherits_from_instance(core::T_sp obj)
 {
-  if (core::Instance_sp iobj = obj.asOrNull<core::Instance_O>() ) {
-    return true;
-  }
-  return false;
+  return (gc::IsA<core::Instance_sp>(obj));
 }
 
 CL_LAMBDA();
@@ -281,12 +262,17 @@ struct ReachableClass {
     core::Fixnum k = this->_Kind;
     stringstream className;
     if (k <= gctools::KIND_max) {
-      className << obj_name(this->_Kind);
+      const char* nm = obj_name(k);
+      if (!nm) {
+        className << "NULL-NAME";
+      } else {
+        className << nm;
+      }
     } else {
-      className << "Unknown";
+      className << "??CONS??";
     }
-    printf("%s: total_size: %10lu count: %8lu avg.sz: %8lu kind: %s/%zu\n", shortName.c_str(),
-           this->totalSize, this->instances, this->totalSize / this->instances, className.str().c_str(), k);
+    BFORMAT_T(BF("%s: total_size: %10d count: %8d avg.sz: %8d kind: %s/%d\n")
+              % shortName % this->totalSize % this->instances % (this->totalSize / this->instances) % className.str().c_str() % k);
     return this->totalSize;
   }
 };
@@ -328,12 +314,15 @@ size_t dumpResults(const std::string &name, const std::string &shortName, T *dat
   });
   size_t idx = 0;
   for (auto it : values) {
-    totalSize += it.print(shortName);
+    size_t sz = it.print(shortName);
+    totalSize += sz;
+    if (sz < 96) break;
     idx += 1;
     if ( idx % 100 == 0 ) {
       gctools::poll_signals();
     }
   }
+  BFORMAT_T(BF("Skipping objects with less than 96 total_size\n"));
   return totalSize;
 }
 
@@ -357,7 +346,7 @@ struct ReachableMPSObject {
 
 extern "C" {
 void amc_apply_stepper(mps_addr_t client, void *p, size_t s) {
-  gctools::Header_s *header = reinterpret_cast<gctools::Header_s *>(gctools::ClientPtrToBasePtr(client));
+  const gctools::Header_s *header = reinterpret_cast<const gctools::Header_s *>(gctools::ClientPtrToBasePtr(client));
   vector<ReachableMPSObject> *reachablesP = reinterpret_cast<vector<ReachableMPSObject> *>(p);
   if (header->kindP()) {
     ReachableMPSObject &obj = (*reachablesP)[header->kind()];
@@ -510,9 +499,9 @@ CL_DEFUN core::T_mv cl__room(core::T_sp x, core::Fixnum_sp marker, core::T_sp tm
   globalSearchMarker = core::unbox_fixnum(marker);
   static_ReachableClassKinds = new (ReachableClassMap);
   invalidHeaderTotalSize = 0;
-  #ifdef BOEHM_GC_ENUMERATE_REACHABLE_OBJECTS_INNER_AVAILABLE
+#ifdef BOEHM_GC_ENUMERATE_REACHABLE_OBJECTS_INNER_AVAILABLE
   GC_enumerate_reachable_objects_inner(boehm_callback_reachable_object, NULL);
-  #endif
+#endif
   printf("Walked LispKinds\n");
   size_t totalSize(0);
   totalSize += dumpResults("Reachable ClassKinds", "class", static_ReachableClassKinds);
@@ -542,7 +531,6 @@ CL_DEFUN core::T_mv cl__room(core::T_sp x, core::Fixnum_sp marker, core::T_sp tm
 
 #ifdef DEBUG_FUNCTION_CALL_COUNTER
 namespace gctools {
-
 void common_function_call_counter(core::General_O* obj, size_t size, void* hash_table_raw) {
   core::HashTableEq_O* hash_table = reinterpret_cast<core::HashTableEq_O*>(hash_table_raw);
   core::T_sp gen = obj->asSmartPtr();
@@ -617,9 +605,7 @@ CL_DEFUN void gctools__function_call_count_profiler(core::T_sp func) {
 };
 #endif // DEBUG_FUNCTION_CALL_COUNTER
 
-
 namespace gctools {
-
 SYMBOL_EXPORT_SC_(GcToolsPkg,STARfinalizersSTAR);
 
 CL_DEFUN void gctools__finalize(core::T_sp object, core::T_sp finalizer_callback) {

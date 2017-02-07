@@ -177,6 +177,7 @@ public:
   void mapInternals(KeyValueMapper *mapper);
 
 public:
+  // Not default constructable
   Package_O() : _Nicknames(_Nil<T_O>()), _ActsLikeKeywordPackage(false){};
   virtual ~Package_O(){};
 };

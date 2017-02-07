@@ -509,6 +509,8 @@ because it contains a reference to the undefined class~%  ~A"
     (when name
       (si:create-type-name name)
       (setf (find-class name) class))
+    #+clasp
+    (clos:invalidate-generic-functions-with-class-selector class)
     class))
 
 (defun coerce-to-class (class-or-symbol &optional (fail nil))

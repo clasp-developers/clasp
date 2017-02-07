@@ -72,8 +72,8 @@ void errorApplyZeroArguments() {
   SIMPLE_ERROR(BF("Illegal to have zero arguments for APPLY"));
 }
 
-void errorApplyLastArgumentNotList() {
-  SIMPLE_ERROR(BF("Last argument of APPLY is not a list/frame/activation-frame"));
+void errorApplyLastArgumentNotList(T_sp lastArg ) {
+  SIMPLE_ERROR(BF("Last argument of APPLY is not a list/frame/activation-frame - passed %s") % _rep_(lastArg));
 }
 
 
@@ -169,7 +169,8 @@ CL_DEFUN T_mv cl__apply(T_sp head, VaList_sp args) {
     VaList_sp valist(&valist_struct); // = frame.setupVaList(valist_struct);;
     return funcall_consume_valist_<core::Function_O>(func.tagged_(), valist);
   }
-  eval::errorApplyLastArgumentNotList();
+  T_sp lastArg((gc::Tagged)lastArgRaw);
+  eval::errorApplyLastArgumentNotList(lastArg);
   UNREACHABLE();
 }
 
@@ -1312,7 +1313,16 @@ T_mv sp_foreignCallPointer(List_sp args, T_sp env) {
 
 T_mv sp_multipleValueCall(List_sp args, T_sp env) {
   ASSERT(env.generalp());
-  Function_sp func = gc::As<Function_sp>(eval::evaluate(oCar(args), env));
+  T_sp funcdesig = eval::evaluate(oCar(args),env);
+  Function_sp func;
+  unlikely_if (!gc::IsA<Function_sp>(funcdesig)) {
+    unlikely_if (!gc::IsA<Symbol_sp>(funcdesig)) {
+      TYPE_ERROR(funcdesig,Cons_O::createList(cl::_sym_or,cl::_sym_Function_O,cl::_sym_Symbol_O));
+    }
+    func = gc::As_unsafe<Function_sp>(gc::As_unsafe<Symbol_sp>(funcdesig)->symbolFunction());
+  } else {
+    func = gc::As_unsafe<Function_sp>(funcdesig);
+  }
   List_sp resultList = _Nil<T_O>();
   Cons_sp *cur = reinterpret_cast<Cons_sp *>(&resultList);
   core::MultipleValues& mv = core::lisp_multipleValues();
@@ -1727,8 +1737,7 @@ T_mv sp_symbolMacrolet(List_sp args, T_sp env) {
 /*! Returns NIL if no function is found */
 T_sp lookupFunction(T_sp functionDesignator, T_sp env) {
   ASSERTF(functionDesignator, BF("In apply, the head function designator is UNDEFINED"));
-  if (Function_sp exec = functionDesignator.asOrNull<Function_O>())
-    return exec;
+  LIKELY_if (gc::IsA<Function_sp>(functionDesignator)) return functionDesignator;
   Symbol_sp shead = gc::As<Symbol_sp>(functionDesignator);
   T_sp exec = af_interpreter_lookup_function(shead, env);
   return exec;

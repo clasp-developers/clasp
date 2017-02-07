@@ -32,7 +32,6 @@ THE SOFTWARE.
 
 #include <csignal>
 
-#include <clasp/gctools/telemetry.h>
 #include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
 #include <clasp/core/lisp.h>
@@ -855,6 +854,7 @@ bool lisp_BuiltInClassesInitialized() {
     }
 #endif
 
+#if 0
 void lisp_exposeClass(const string &className, ExposeCandoFunction exposeCandoFunction, ExposePythonFunction exposePythonFunction) {
   DEPRECATED();
   //    ASSERTP(lisp.notnilp(),"In lisp_exposeClass env can not be nil");
@@ -867,6 +867,7 @@ void lisp_exposeClass(const string &className, ExposeCandoFunction exposeCandoFu
     }
   }
 }
+#endif
 
 T_sp lisp_boot_findClassBySymbolOrNil(Symbol_sp classSymbol) {
   Class_sp mc = gc::As<Class_sp>(eval::funcall(cl::_sym_findClass, classSymbol, _lisp->_true()));
@@ -1467,6 +1468,10 @@ Function_sp lisp_symbolFunction(Symbol_sp sym) {
   return sym->symbolFunction();
 }
 
+T_sp lisp_symbolValue(Symbol_sp sym) {
+  return sym->symbolValue();
+}
+
 string lisp_symbolNameAsString(Symbol_sp sym) {
   if (sym.nilp())
     return "NIL";
@@ -1523,8 +1528,6 @@ struct ErrorSimpleDepthCounter {
 };
 
 NOINLINE void lisp_error_simple(const char *functionName, const char *fileName, int lineNumber, const boost::format &fmt) {
-  if (telemetry::global_telemetry_search)
-    telemetry::global_telemetry_search->flush();
   stringstream ss;
   ss << "In " << functionName << " " << fileName << " line " << lineNumber << std::endl;
   ss << fmt.str();

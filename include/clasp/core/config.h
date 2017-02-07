@@ -117,5 +117,9 @@ typedef int  claspCharacter;
 #define clasp_ftello ftello
 #endif
 
+#define MODULE_STARTUP_FUNCTION_NAME "startup"
+#define MODULE_SHUTDOWN_FUNCTION_NAME "shutdown"
+
+
 // On linux and OS X we have mkstemp so use it
 #define HAVE_MKSTEMP

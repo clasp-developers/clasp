@@ -261,6 +261,17 @@ namespace gctools {
     }
   };
   template <>
+    struct TaggedCast<core::T_O *, core::VaList_S *> {
+    typedef core::T_O *ToType;
+    typedef core::VaList_S *FromType;
+    inline static bool isA(FromType ptr) { return true; }
+    inline static ToType castOrNULL(FromType client) {
+      if (TaggedCast<ToType, FromType>::isA(client))
+        return reinterpret_cast<ToType>(client);
+      return NULL;
+    }
+  };
+  template <>
     struct TaggedCast<core::T_O *, core::SingleFloat_I *> {
     typedef core::T_O *ToType;
     typedef core::SingleFloat_I *FromType;

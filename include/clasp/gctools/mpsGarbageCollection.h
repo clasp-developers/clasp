@@ -31,7 +31,6 @@ THE SOFTWARE.
 #include <type_traits>
 #include <boost/config.hpp>
 #include <boost/utility/binary.hpp>
-#include <clasp/gctools/telemetry.h>
 
 
 
@@ -217,10 +216,6 @@ inline mps_res_t taggedPtrFix(mps_ss_t _ss, mps_word_t _mps_zs, mps_word_t _mps_
 #ifdef DEBUG_TELEMETRY
       // Telemetry only on pointer fixes that change
       if (tagged_obj != obj) {
-        GC_TELEMETRY3(telemetry::label_smart_ptr_fix,
-                      (uintptr_t)taggedP,
-                      (uintptr_t)tagged_obj,
-                      (uintptr_t)obj);
       }
 #endif
       *taggedP = obj;
@@ -244,10 +239,6 @@ inline mps_res_t ptrFix(mps_ss_t _ss, mps_word_t _mps_zs, mps_word_t _mps_w, mps
 #ifdef DEBUG_TELEMETRY
       // Telemetry only on pointer fixes that change
       if (tagged_obj != obj) {
-        GC_TELEMETRY3(telemetry::label_tagged_pointer_fix,
-                      (uintptr_t)taggedP,
-                      (uintptr_t)tagged_obj,
-                      (uintptr_t)obj);
       }
 #endif
       *taggedP = obj;

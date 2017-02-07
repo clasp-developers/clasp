@@ -482,13 +482,13 @@ void Class_O::describe(T_sp stream) {
   clasp_write_string(ss.str(), stream);
 }
 
-T_sp Class_O::instanceRef(int idx) const {
+T_sp Class_O::instanceRef(size_t idx) const {
   ASSERTF(idx >= 0 && idx < this->_MetaClassSlots.size(), BF("Out of range index %d for instanceRef(%d)") % idx % this->_MetaClassSlots.size());
   ASSERT(this->_MetaClassSlots[idx]);
   return this->_MetaClassSlots[idx];
 }
 
-T_sp Class_O::instanceSet(int idx, T_sp val) {
+T_sp Class_O::instanceSet(size_t idx, T_sp val) {
   ASSERTF(idx >= 0 && idx < this->_MetaClassSlots.size(), BF("Out of range index %d for instanceRef(%d)") % idx % this->_MetaClassSlots.size());
   this->_MetaClassSlots[idx] = val;
   return val;

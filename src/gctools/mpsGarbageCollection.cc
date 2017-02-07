@@ -187,122 +187,10 @@ void delete_my_roots() {
   }
   global_root_list = NULL;
 };
+
 };
+
 namespace gctools {
-
-#ifdef DEBUG_GUARD
-size_t random_tail_size() {
-  size_t ts = ((rand() % 8) + 1) * Alignment();
-  return ts;
-}
-
-void Header_s::validate() const {
-  if ( this->invalidP() ) {
-    printf("%s:%d Invalid object header does not have a real tag\n", __FILE__, __LINE__ );
-    telemetry::global_telemetry_flush();
-    abort();
-  } else if ( this->kindP() ) {
-    if ( this->guard != 0x0FEEAFEEBFEECFEED) {
-      printf("%s:%d  INVALID object  this->guard is bad value->%p\n", __FILE__, __LINE__, (void*)this->guard );
-      telemetry::global_telemetry_flush();
-      abort();
-    }
-    if ( this->kind() > KIND_max ) {
-      printf("%s:%d  INVALID object  this->kind()=%d > KIND_max=%d\n", __FILE__, __LINE__, this->kind(), KIND_max );
-      telemetry::global_telemetry_flush();
-      abort();
-    }
-    if ( this->tail_start & 0xffffffffff000000 ) {
-      printf("%s:%d   header->tail_start is not a reasonable value -> %x\n", __FILE__,__LINE__, this->tail_start);
-    }
-    if ( this->tail_size & 0xffffffffff000000 ) {
-      printf("%s:%d   header->tail_size is not a reasonable value -> %x\n", __FILE__, __LINE__, this->tail_size);
-    }
-    if ( this->data[0] != 0xDEADBEEF01234567 ) {
-      printf("%s:%d  INVALID object  this->data[0]@%p->%p != %p\n", __FILE__, __LINE__, &this->data[0],(void*)this->data[0],(void*)0xDEADBEEF01234567 );
-      telemetry::global_telemetry_flush();
-      abort();
-    }
-    for ( unsigned char *cp=((unsigned char*)(this)+this->tail_start),
-            *cpEnd((unsigned char*)(this)+this->tail_start+this->tail_size); cp < cpEnd; ++cp ) {
-      if (*cp!=0xcc) {
-        printf("%s:%d INVALID tail header@%p bad tail byte@%p -> %x\n", __FILE__, __LINE__, (void*)this, cp, *cp );
-        telemetry::global_telemetry_flush();
-        abort();
-      }
-    }
-  } else if ( this->fwdP() ) {
-    if ( this->guard != 0x0FEEAFEEBFEECFEED) {
-      printf("%s:%d  INVALID object  this->guard is bad value->%p\n", __FILE__, __LINE__, (void*)this->guard );
-      telemetry::global_telemetry_flush();
-      abort();
-    }
-    for ( unsigned char *cp=((unsigned char*)(this)+this->tail_start),
-            *cpEnd((unsigned char*)(this)+this->tail_start+this->tail_size); cp < cpEnd; ++cp ) {
-      if (*cp!=0xcc) {
-        printf("%s:%d INVALID tail header@%p bad tail byte@%p -> %x\n", __FILE__, __LINE__, (void*)this, cp, *cp );
-        telemetry::global_telemetry_flush();
-        abort();
-      }
-    }
-  }
-}
-
-#endif
-
-
-
-
-
-
-
-
-void rawHeaderDescribe(uintptr_t *headerP) {
-  uintptr_t headerTag = (*headerP) & Header_s::tag_mask;
-  switch (headerTag) {
-  case 0:
-    printf("  0x%p : 0x%lu 0x%lu\n", headerP, *headerP, *(headerP + 1));
-    printf(" Not an object header!\n");
-    break;
-  case Header_s::kind_tag: {
-    printf("  0x%p : 0x%lu\n", headerP, *headerP);
-    printf("  0x%p : 0x%lu\n", (headerP+1), *(headerP+1));
-#ifdef DEBUG_GUARD
-    printf("  0x%p : 0x%p\n", (headerP+2), (void*)*(headerP+2));
-    printf("  0x%p : 0x%p\n", (headerP+3), (void*)*(headerP+3));
-    printf("  0x%p : 0x%p\n", (headerP+4), (void*)*(headerP+4));
-    printf("  0x%p : 0x%p\n", (headerP+5), (void*)*(headerP+5));
-#endif
-    gctools::GCKindEnum kind = (gctools::GCKindEnum)((*headerP) >> 2);
-    printf(" Kind tag - kind: %d", kind);
-    fflush(stdout);
-    printf("     %s\n", obj_name(kind));
-  } break;
-  case Header_s::fwd_tag: {
-    Header_s *hdr = (Header_s *)headerP;
-    printf("  0x%p : 0x%lu 0x%lu\n", headerP, *headerP, *(headerP + 1));
-    printf(" fwd_tag - fwd address: 0x%lu\n", (*headerP) & Header_s::fwd_ptr_mask);
-    printf("     fwdSize = %lu/0x%lu\n", hdr->fwdSize(), hdr->fwdSize());
-  } break;
-  case Header_s::pad_tag:
-    printf("  0x%p : 0x%lu 0x%lu\n", headerP, *headerP, *(headerP + 1));
-    if (((*headerP) & Header_s::pad1_tag) == Header_s::pad1_tag) {
-      printf("   pad1_tag\n");
-      printf("  0x%p : 0x%lu\n", headerP, *headerP);
-    } else {
-      printf("   pad_tag\n");
-      printf("  0x%p : 0x%lu\n", headerP, *headerP);
-      printf("  0x%p : 0x%lu\n", (headerP+1), *(headerP+1));
-    }
-    break;
-  }
-#if DEBUG_GUARD
-  Header_s* header = (Header_s*)headerP;
-  header->validate();
-  printf("This object passed the validate() test\n");
-#endif
-};
-
 
 string gcResultToString(GC_RESULT res) {
   switch (res) {
@@ -362,44 +250,25 @@ static void obj_fwd(mps_addr_t old_client, mps_addr_t new_client) {
   // I'm assuming both old and new client pointers have valid headers at this point
   DEBUG_THROW_IF_INVALID_CLIENT(old_client);
   DEBUG_THROW_IF_INVALID_CLIENT(new_client);
-  GC_TELEMETRY2(telemetry::label_obj_fwd,
-                (uintptr_t)old_client,
-                (uintptr_t)new_client);
   mps_addr_t limit = obj_skip(old_client);
   size_t size = (char *)limit - (char *)old_client;
   if (size < global_sizeof_fwd) {
     THROW_HARD_ERROR(BF("obj_fwd needs size >= %u") % global_sizeof_fwd);
   }
-  Header_s *header = reinterpret_cast<Header_s *>(ClientPtrToBasePtr(old_client));
+  Header_s *header = reinterpret_cast<Header_s *>(const_cast<void *>(ClientPtrToBasePtr(old_client)));
   header->setFwdSize(size);
   header->setFwdPointer(new_client);
 }
 
 static mps_addr_t obj_isfwd(mps_addr_t client) {
   DEBUG_THROW_IF_INVALID_CLIENT(client);
-  Header_s *header = reinterpret_cast<Header_s *>(ClientPtrToBasePtr(client));
-#ifdef DEBUG_TELEMETRY
-  if (header->fwdP()) {
-    GC_TELEMETRY3(telemetry::label_obj_isfwd_true,
-                  (uintptr_t)client,
-                  (uintptr_t)header,
-                  (uintptr_t)header->fwdPointer());
-  } else {
-    GC_TELEMETRY2(telemetry::label_obj_isfwd_false,
-                  (uintptr_t)client,
-                  (uintptr_t)header);
-  }
-#endif
-  if (header->fwdP())
-    return header->fwdPointer();
+  const Header_s *header = reinterpret_cast<const Header_s *>(ClientPtrToBasePtr(client));
+  if (header->fwdP()) return header->fwdPointer();
   return NULL;
 }
 
 static void obj_pad(mps_addr_t base, size_t size) {
   size_t alignment = Alignment();
-  GC_TELEMETRY2(telemetry::label_obj_pad,
-                (uintptr_t)base,
-                (uintptr_t)size);
   assert(size >= alignment);
   Header_s *header = reinterpret_cast<Header_s *>(base);
   if (size == alignment) {
@@ -410,12 +279,10 @@ static void obj_pad(mps_addr_t base, size_t size) {
   }
 }
 
+
 GC_RESULT cons_scan(mps_ss_t ss, mps_addr_t client, mps_addr_t limit) {
 //  printf("%s:%d in cons_scan\n", __FILE__, __LINE__ );
   mps_addr_t original_client = client;
-  GC_TELEMETRY2(telemetry::label_cons_scan_start,
-                (uintptr_t)client,
-                (uintptr_t)limit);
   MPS_SCAN_BEGIN(GC_SCAN_STATE) {
     while (client<limit) {
       core::Cons_O* cons = reinterpret_cast<core::Cons_O*>(client);
@@ -439,10 +306,6 @@ GC_RESULT cons_scan(mps_ss_t ss, mps_addr_t client, mps_addr_t limit) {
         abort();
       }
     };
-    GC_TELEMETRY3(telemetry::label_cons_scan,
-                  (uintptr_t)original_client,
-                  (uintptr_t)client,
-                  (uintptr_t)kind_cons);
   } MPS_SCAN_END(GC_SCAN_STATE);
   return MPS_RES_OK;
 };
@@ -458,10 +321,6 @@ mps_addr_t cons_skip(mps_addr_t client) {
   } else {
     client = reinterpret_cast<mps_addr_t>((char*)client + sizeof(core::Cons_O));
   }
-  GC_TELEMETRY3(telemetry::label_cons_skip,
-                (uintptr_t)oldClient,
-                (uintptr_t)client,
-                (uintptr_t)((char *)client - (char *)oldClient));
   return client;
 }
 
@@ -469,9 +328,6 @@ mps_addr_t cons_skip(mps_addr_t client) {
 static void cons_fwd(mps_addr_t old_client, mps_addr_t new_client) {
 //  printf("%s:%d in %s\n", __FILE__, __LINE__, __FUNCTION__ );
   // I'm assuming both old and new client pointers have valid headers at this point
-  GC_TELEMETRY2(telemetry::label_cons_fwd,
-                (uintptr_t)old_client,
-                (uintptr_t)new_client);
   mps_addr_t limit = cons_skip(old_client);
   size_t size = (char *)limit - (char *)old_client;
   core::Cons_O* cons = reinterpret_cast<core::Cons_O*>(old_client);
@@ -482,28 +338,14 @@ static mps_addr_t cons_isfwd(mps_addr_t client) {
 //  printf("%s:%d in %s\n", __FILE__, __LINE__, __FUNCTION__ );
   core::Cons_O* cons = reinterpret_cast<core::Cons_O*>(client);
   if (cons->fwdP()) {
-#ifdef DEBUG_TELEMETRY
-    GC_TELEMETRY3(telemetry::label_cons_isfwd_true,
-                  (uintptr_t)client,
-                  (uintptr_t)client,
-                  (uintptr_t)cons->fwdPointer());
-#endif
     return cons->fwdPointer();
   }
-#ifdef DEBUG_TELEMETRY
-  GC_TELEMETRY2(telemetry::label_cons_isfwd_false,
-                (uintptr_t)client,
-                (uintptr_t)client);
-#endif
   return NULL;
 }
 
 static void cons_pad(mps_addr_t base, size_t size) {
 //  printf("%s:%d in %s\n", __FILE__, __LINE__, __FUNCTION__ );
   size_t alignment = Alignment();
-  GC_TELEMETRY2(telemetry::label_cons_pad,
-                (uintptr_t)base,
-                (uintptr_t)size);
   assert(size >= alignment);
   core::Cons_O* cons = reinterpret_cast<core::Cons_O*>(base);
   if (size == alignment) {
@@ -638,10 +480,11 @@ void mpsDeallocateStack(gctools::GCStack *stack) {
 };
 #endif
 
-// -----------------------------------------------------------
-// -----------------------------------------------------------
-// -----------------------------------------------------------
 };
+
+// -----------------------------------------------------------
+// -----------------------------------------------------------
+// -----------------------------------------------------------
 
 extern "C" {
 
@@ -1196,44 +1039,6 @@ CL_DEFUN void gctools__enable_underscanning(bool us)
 };
 
 extern "C" {
-void client_validate(void *taggedClient) {
-  if ( gctools::tagged_generalp(taggedClient))
-  {
-    void* client = gctools::untag_general(taggedClient);
-    gctools::Header_s *header = reinterpret_cast<gctools::Header_s *>(gctools::ClientPtrToBasePtr(client));
-    header->validate();
-  } else if (gctools::tagged_consp(taggedClient)) {
-    // Nothing can be done to validate CONSes, they are too compact.
-  }
-};
-
-
-void client_describe(void *taggedClient) {
-  if (gctools::tagged_generalp(taggedClient) || gctools::tagged_consp(taggedClient)) {
-    printf("%s:%d  GC managed object - describing header\n", __FILE__, __LINE__);
-    // Currently this assumes that Conses and General objects share the same header
-    // this may not be true in the future
-    // conses may be moved into a separate pool and dealt with in a different way
-    uintptr_t *headerP;
-    if (gctools::tagged_generalp(taggedClient)) {
-      headerP = reinterpret_cast<uintptr_t *>(gctools::ClientPtrToBasePtr(gctools::untag_general(taggedClient)));
-    } else {
-      headerP = reinterpret_cast<uintptr_t *>(gctools::ClientPtrToBasePtr(gctools::untag_cons(taggedClient)));
-    }
-    gctools::rawHeaderDescribe(headerP);
-  } else {
-    printf("%s:%d Not a tagged pointer - might be immediate value\n", __FILE__, __LINE__);
-    printf("    Trying to interpret as client pointer\n");
-    uintptr_t* headerP;
-    headerP = reinterpret_cast<uintptr_t*>(gctools::ClientPtrToBasePtr(taggedClient));
-    gctools::rawHeaderDescribe(headerP);
-  }
-};
-
-void header_describe(gctools::Header_s* headerP) {
-  gctools::rawHeaderDescribe((uintptr_t*)headerP);
-};
-
 
 void check_all_clients() {
   mps_arena_park(global_arena);

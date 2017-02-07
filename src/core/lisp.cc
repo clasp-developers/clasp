@@ -124,6 +124,7 @@ THE SOFTWARE.
 #include <clasp/core/primitives.h>
 #include <clasp/core/package.h>
 #include <clasp/core/symbol.h>
+#include <clasp/core/null.h>
 #include <clasp/core/lambdaListHandler.h>
 #include <clasp/core/sequence.h>
 #include <clasp/core/evaluator.h>
@@ -302,7 +303,7 @@ void dump_info(BuiltInClass_sp co, Lisp_sp lisp) {
 }
 
 void Lisp_O::setupSpecialSymbols() {
-  Symbol_sp symbol_nil = Symbol_O::create_at_boot("NIL");
+  Null_sp symbol_nil = Null_O::create_at_boot("NIL");
   Symbol_sp symbol_unbound = Symbol_O::create_at_boot("UNBOUND");
   Symbol_sp symbol_deleted = Symbol_O::create_at_boot("DELETED");
   Symbol_sp symbol_sameAsKey = Symbol_O::create_at_boot("SAME-AS-KEY");
@@ -321,6 +322,7 @@ void Lisp_O::finalizeSpecialSymbols() {
   symbol_nil->setf_symbolValue(_Nil<T_O>());
   symbol_nil->setf_name(SimpleBaseString_O::make("NIL"));
   symbol_nil->setPackage(_lisp->findPackage("COMMON-LISP"));
+  symbol_nil->setf_plist(_Nil<T_O>());
   //    	Symbol_sp symbol_unbound = gctools::smart_ptr<Symbol_O>(gctools::global_Symbol_OP_unbound);
   //    	Symbol_sp symbol_deleted = gctools::smart_ptr<Symbol_O>(gctools::global_Symbol_OP_deleted);
   //    	Symbol_sp symbol_sameAsKey = gctools::smart_ptr<Symbol_O>(gctools::global_Symbol_OP_sameAsKey);
@@ -464,6 +466,7 @@ void run_quick_tests() {
 #endif
 }
 Lisp_sp Lisp_O::createLispEnvironment(bool mpiEnabled, int mpiRank, int mpiSize) {
+  initialize_clasp_Kinds();
   Lisp_O::setupSpecialSymbols();
   ::_lisp = gctools::RootClassAllocator<Lisp_O>::allocate();
   _lisp->initialize();
@@ -1214,6 +1217,13 @@ void Lisp_O::parseCommandLineArguments(int argc, char *argv[], const CommandLine
   }
 
   List_sp features = cl::_sym_STARfeaturesSTAR->symbolValue();
+  const char* environment_features = getenv("CLASP_FEATURES");
+  if (environment_features) {
+    vector<string> features_vector = split(std::string(environment_features)," ");
+    for ( auto feature_name : features_vector ) {
+      features = Cons_O::create(_lisp->internKeyword(feature_name),features);
+    }
+  }
   for (int i = 0; i < options._Features.size(); ++i) {
     features = Cons_O::create(_lisp->internKeyword(lispify_symbol_name(options._Features[i])), features);
   }
@@ -1480,10 +1490,10 @@ void af_stackSizeWarning(size_t stackUsed) {
   }
 };
 
-CL_LAMBDA();
+CL_LAMBDA(&optional fn);
 CL_DECLARE();
 CL_DOCSTRING("monitor stack for problems - warn if getting too large");
-CL_DEFUN void core__stack_monitor() {
+CL_DEFUN void core__stack_monitor(T_sp fn) {
   uint stackUsed = core__stack_used();
   if (stackUsed > _lisp->_StackSampleMax)
     _lisp->_StackSampleMax = stackUsed;
@@ -1499,6 +1509,9 @@ CL_DEFUN void core__stack_monitor() {
     }
   }
   if (stackUsed > _lisp->_StackWarnSize) {
+    if (fn.notnilp()) {
+      eval::funcall(fn);
+    }
     af_stackSizeWarning(stackUsed);
   }
 };

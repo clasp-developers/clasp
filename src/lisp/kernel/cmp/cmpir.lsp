@@ -36,22 +36,6 @@
   (irc-intrinsic "singleStepCallback" ))
 
 
-(defun irc-attach-debugging-info-to-value-frame (af symbol-list-designator env)
-  (let ((symbol-names (cond
-			((lambda-list-handler-p symbol-list-designator)
-			 (names-of-lexical-variables-for-debugging symbol-list-designator))
-			(t (error "Handle symbol-list-designator: ~a" symbol-list-designator)))))
-    (when *debug-attach-debugging-info-to-value-frames*
-      ;;    (break "About to codegen attach-debugging-info")
-      (when symbol-names
-	(let* ((ltv-idx (codegen-literal nil symbol-names env))
-	       (ltv-ref (literal:constants-table-reference ltv-idx)))
-	  (irc-intrinsic "attachDebuggingInfoToValueFrame" af ltv-ref))))))
-
-
-
-
-
 (defun handle-exit-scope (scope-info env)
   (let ((scope-exit-fn (bformat nil "trace_exit%sScope" (cadr scope-info)))
 	(scope-level (caddr scope-info))

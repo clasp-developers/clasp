@@ -48,9 +48,9 @@ void Cache_O::removeOne(T_sp firstKey) {
 
 void Cache_O::clearOneFromCache(T_sp target) {
   for (int i(0); i < this->_table.size(); ++i) {
-    T_sp key = this->_table[i]._key;
-    if (key.notnilp()) {
-      if (target == gc::As<VectorObjects_sp>(key)->operator[](0)) {
+    if (gc::IsA<SimpleVector_sp>(this->_table[i]._key)) {
+      SimpleVector_sp key = gc::As_unsafe<SimpleVector_sp>(this->_table[i]._key);
+      if (target == (*key)[0]) {
         this->_table[i]._key = _Nil<T_O>();
         this->_table[i]._generation = 0;
       }
@@ -127,10 +127,10 @@ void Cache_O::search_cache(CacheRecord *&min_e) {
       }
       /* Else we only know that the record has been
 	 * deleted, but we might find our data ahead. */
-    } else if (argno == (reinterpret_cast<VectorObjects_O*>(&*hkey))->length()) {
+    } else if (argno == (reinterpret_cast<SimpleVector_O*>(&*hkey))->length()) {
       int n;                                                         // cl_index n;
       for (n = 0; n < argno; n++) {
-        if (keys[n] != (*reinterpret_cast<VectorObjects_O*>(&*hkey))[n])
+        if (keys[n] != (*reinterpret_cast<SimpleVector_O*>(&*hkey))[n])
           // if (keys->vector.self.t[n] != hkey->vector.self.t[n])
           goto NO_MATCH;
       }

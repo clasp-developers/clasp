@@ -44,5 +44,5 @@ pump:
 	$(PYTHON2) $(CLASP_HOME)/src/common/pump.py clbind/clbind_functoids.pmp clbind/include/generated/clbind_functoids.h
 	$(PYTHON2) $(CLASP_HOME)/src/common/pump.py clbind/clbind_methoids.pmp clbind/include/generated/clbind_methoids.h
 	$(PYTHON2) $(CLASP_HOME)/src/common/pump.py clbind/clbind_static_members.pmp clbind/include/generated/clbind_static_members.h
-#	$(PYTHON2) $(CLASP_HOME)/src/common/pump.py clbind/constructors.pmp clbind/include/generated/constructors.h
+#	$(PYTHON2) $(CLASP_HOME)/src/common/pump.py core/applyArguments.pmp core/include/generated/applyArguments.h
 

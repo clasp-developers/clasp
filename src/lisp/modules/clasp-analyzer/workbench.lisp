@@ -1,9 +1,38 @@
-(load #P"sys:modules;clang-tool;clang-tool.lisp")
-(load #P"sys:modules;clasp-analyzer;clasp-analyzer.lisp")
+;;
+;; Normal run
+;;
+(compile-file #P"sys:modules;clang-tool;clang-tool.lisp" :print t)
+(compile-file #P"sys:modules;clasp-analyzer;clasp-analyzer.lisp" :print t)
+
+(load #P"sys:modules;clang-tool;clang-tool.fasl")
+(load #P"sys:modules;clasp-analyzer;clasp-analyzer.fasl")
+
+(in-package :clasp-analyzer)
+(defvar *compile-commands* "/Users/meister/Development/clasp/build/mpsprep/compile_commands.json")
+(setf *print-pretty* nil)
+(defvar *db* (clasp-analyzer:setup-clasp-analyzer-compilation-tool-database (pathname *compile-commands*)))
+(defvar *p* (search/generate-code *db*))
+
+
+
+;;
+;; Small run
+;;
+(load #P"sys:modules;clang-tool;clang-tool.fasl")
+(load #P"sys:modules;clasp-analyzer;clasp-analyzer.fasl")
+
 (in-package :clasp-analyzer)
 (defvar *compile-commands* "/Users/meister/Development/clasp/build/mpsprep/compile_commands_small.json")
 (setf *print-pretty* nil)
 (defvar *db* (clasp-analyzer:setup-clasp-analyzer-compilation-tool-database (pathname *compile-commands*)))
+(defvar *p* (search/generate-code *db*))
+
+
+
+
+
+
+
 ;; Search only
 (clang-tool:with-compilation-tool-database *db*
   (setf *p* (serial-search-all *db*)))
@@ -201,3 +230,69 @@
 
 (gethash "core::LogicalPathname_O" (analysis-enums *analysis*))
 T
+
+
+
+(defparameter *db* (ast-tooling:wrapped-jsoncompilation-database-load-from-file (namestring #P"/Users/meister/Development/clasp/build/mpsprep/compile_commands_small.json") :auto-detect))
+(defparameter *files* (ast-tooling:get-all-files *db*))
+(defparameter *tool* (ast-tooling:new-refactoring-tool *db* *files*))
+(ast-tooling:clear-arguments-adjusters *tool*)
+(ast-tooling:append-arguments-adjuster *tool* (ast-tooling:get-clang-syntax-only-adjuster))
+(ast-tooling:append-arguments-adjuster *tool* (ast-tooling:get-clang-strip-output-adjuster))
+(defun concat (&rest vecs)
+  (let ((vec (make-vector t 32 t 0))
+        (vi 0)
+        (curv vecs))
+    (tagbody
+     top
+       (let ((i 0)
+             (v (car curv)))
+         (setq curv (cdr curv))
+         (tagbody
+          inner
+            (vector-push-extend (elt v i) vec)
+            (setq i (+ 1 i))
+            (if (< i (length v))
+                (go inner)))
+         (if curv (go top))))
+    vec))
+(ast-tooling:append-arguments-adjuster *tool* #'(lambda (args filename)
+                                                  (concat args
+                                                          (vector "-isystem" "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/8.0.0"
+                                                                  "-resource-dir" "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/8.0.0"))))
+(defparameter *asts* (ast-tooling:build-asts *tool*))
+
+(bformat t "About to parse-dynamic-matcher\n")
+(defparameter *matcher* (ast-tooling:parse-dynamic-matcher "cxxRecordDecl()"))
+(bformat t "About to new-match-finder\n")
+(defparameter *finder* (ast-tooling:new-match-finder))
+(bformat t "About to with-unmanaged-object\n")
+(defclass match-info ()
+  ((id-to-node-map :initarg :id-to-node-map :accessor id-to-node-map)
+   (ast-context :initarg :ast-context :accessor ast-context)
+   (source-manager :initarg :source-manager :accessor source-manager)))
+(defclass code-match-callback (ast-tooling:match-callback)
+  ((start-of-translation-unit-code :initarg :start-of-translation-unit-code :accessor start-of-translation-unit-code)
+   (timer :initarg :timer
+          :initform (make-instance 'code-match-timer :name (gensym))
+          :accessor timer)
+   (match-code :initarg :match-code :accessor match-code)
+   (end-of-translation-unit-code :initarg :end-of-translation-unit-code :accessor end-of-translation-unit-code)))
+(core:defvirtual ast-tooling:run ((self code-match-callback) match)
+  (let* ((nodes (ast-tooling:nodes match))
+         (match-info (make-instance 'match-info
+                                    :id-to-node-map (ast-tooling:idto-node-map nodes)
+                                    :ast-context (match-result-context match)
+                                    :source-manager (ast-tooling:source-manager match))))
+    (when (match-code self)
+      (start-timer (timer self))
+      (funcall (match-code self) match-info)
+      (stop-timer (timer self))
+      (advance-match-counter))))
+
+(defparameter *callback* (make-instance 'code-match-callback :match-code #'lambda (match-info) (bformat t "match-info -> %s\n" match-info)))
+(bformat t "About to add-dynamic-matcher\n")
+(ast-tooling:add-dynamic-matcher *finder* *matcher* callback)
+(defparameter *factory* (ast-tooling:new-frontend-action-factory *finder*))
+(bformat t "About to run clang-tool\n")
+(ast-tooling:clang-tool-run *tool* *factory*)

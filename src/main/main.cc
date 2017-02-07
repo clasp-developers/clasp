@@ -273,8 +273,6 @@ int main( int argc, char *argv[] )
 {
   // Do not touch debug log until after MPI init
 
-  int rc = 0;
-  int exit_code = EXIT_SUCCESS;
 
   bool mpiEnabled = false;
   int  mpiRank    = 0;
@@ -350,6 +348,12 @@ int main( int argc, char *argv[] )
 
   // - COMMAND LINE OPTONS HANDLING
 
+#if 0
+  // Use this to check if smart_ptr<core::T_O> is being passed by value or reference
+  gctools::smart_ptr<core::T_O> x((gctools::Tagged)0xDEADBEEF);
+  foo(x);
+#endif
+  
   core::CommandLineOptions options(argc, argv);
 
   // CALL LISP STARTUP

@@ -99,21 +99,33 @@
   #'(lambda (.method-args. .next-methods. #|no-next-methods|#)
       (declare (ignorable .next-methods. #|no-next-methods|#)
                (core:lambda-name combine-method-functions1.lambda))
-      (apply method .method-args. rest-methods .method-args.))) 
+      ;; TODO: Optimize this application and GF dispatch should be more efficient
+      ;; .method-args. can be a valist or a regular list
+      (apply method .method-args. rest-methods .method-args.)
+      #+(or)(core:multiple-value-foreign-call "fast_apply_method" method .method-args. rest-methods)
+      ))
 
 (defun combine-method-functions2 (method rest-methods)
   (declare (si::c-local))
   #'(lambda (.method-args. .next-methods. #|no-next-methods|#)
       (declare (ignorable .next-methods. #|no-next-methods|#)
                (core:lambda-name combine-method-functions2.lambda))
-      (apply method .method-args. rest-methods .method-args.))) 
+      ;; TODO: Optimize this application and GF dispatch should be more efficient
+      ;; .method-args. can be a valist or a regular list
+      (apply method .method-args. rest-methods .method-args.)
+      #+(or)(core:multiple-value-foreign-call "fast_apply_method" method .method-args. rest-methods)
+      ))
 
 (defun combine-method-functions3 (method rest-methods)
   (declare (si::c-local))
   #'(lambda (.method-args. .next-methods. #|no-next-methods|#)
       (declare (ignorable .next-methods. #|no-next-methods|#)
                (core:lambda-name combine-method-functions3.lambda))
-      (apply method .method-args. rest-methods .method-args.))) 
+      ;; TODO: Optimize this application and GF dispatch should be more efficient
+      ;; .method-args. can be a valist or a regular list
+      (apply method .method-args. rest-methods .method-args.)
+      #+(or)(core:multiple-value-foreign-call "fast_apply_method" method .method-args. rest-methods)
+      ))
 
 (defmacro call-method (method &optional rest-methods)
   `(apply ,(effective-method-function method)
@@ -132,7 +144,7 @@
 
 (defun standard-main-effective-method (before primary after)
   (declare (si::c-local))
-  #'(lambda (.method-args. no-next-method &rest args)
+  #'(lambda (.method-args. no-next-method #|&rest args|#)
       (declare (ignore no-next-method)
                (core:lambda-name standard-main-effective-method.lambda))
       (dolist (i before)
@@ -358,6 +370,8 @@
 ;; The following chokes in clasp because I don't have the method-combination class defined
 ;; during compilation of the full clasp source code.
 ;; I don't use compiler macros anyway so I'll feature this out
+
+;; TODO: Turn this back on
 #-clasp
 (eval-when (compile :load-toplevel)
   (let* ((class (find-class 'method-combination)))

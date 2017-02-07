@@ -44,6 +44,8 @@ namespace coerce {
 Function_sp functionDesignator(T_sp obj) {
   if (Function_sp fnobj = obj.asOrNull<Function_O>()) {
     return fnobj;
+  } else if (obj.nilp()) {
+    ERROR_UNDEFINED_FUNCTION(obj);
   } else if (Symbol_sp sym = obj.asOrNull<Symbol_O>()) {
     if (!sym->fboundp())
       SIMPLE_ERROR(BF("Function value for %s is unbound") % _rep_(sym));
