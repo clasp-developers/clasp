@@ -125,11 +125,11 @@
       (method-combination 
        :initarg :method-combination :initform (find-method-combination (class-prototype (find-class 'standard-generic-function)) 'standard nil)
        :accessor generic-function-method-combination)
-      #+fast-dispatch(compiled-dispatch-function
+      #+clasp(compiled-dispatch-function
               :initarg :compiled-dispatch-function
               :initform nil
               :accessor generic-function-compiled-dispatch-function)
-      #+fast-dispatch(call-history
+      #+clasp(call-history
               :initarg :call-history
               :initform nil
               :accessor generic-function-call-history)

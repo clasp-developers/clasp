@@ -252,7 +252,7 @@
     (cond ((not (legal-generic-function-name-p name))
 	   (simple-program-error "~A is not a valid generic function name" name))
           ((not (fboundp name))
-;;           (break "About to setf (fdefinition name)")
+           ;;           (break "About to setf (fdefinition name)")
 	   (setf (fdefinition name)
 		 (apply #'ensure-generic-function-using-class gfun name args)))
           ((si::instancep (or gfun (setf gfun (fdefinition name))))
