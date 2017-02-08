@@ -1915,13 +1915,13 @@ void cc_dispatch_debug(int msg_id, uintptr_t val)
       printf("Step %lu\n", val);
       break;
   case 1:
-      printf("Arg #%lu ", val);
+      printf("Arg val[%lu]", val);
       break;
   case 2:
-      printf(" val = %ld\n", val);
+      printf(" tag = %ld\n", val);
       break;
   case 3:
-      printf("Arg list: %s\n", _rep_(VaList_sp((gc::Tagged)val)) );
+      printf("Arg list: %s\n", _rep_(VaList_sp((gc::Tagged)val)).c_str() );
       break;
   }
 }
