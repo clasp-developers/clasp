@@ -39,6 +39,7 @@ extern "C" {
 #include <clasp/core/character.h>
 #include <clasp/core/symbolTable.h>
 #include <clasp/core/array.h>
+#include <clasp/core/bformat.h>
 #include <clasp/core/instance.h>
 #include <clasp/core/arguments.h>
 #include <clasp/core/designators.h>
@@ -1912,17 +1913,19 @@ void cc_dispatch_debug(int msg_id, uintptr_t val)
 {
   switch (msg_id) {
   case 0:
-      printf("Step %lu\n", val);
+      BFORMAT_T(BF("Step %lu\n") % val);
       break;
   case 1:
-      printf("Arg val[%lu]", val);
+      BFORMAT_T(BF("Arg val[%lu]") % val);
       break;
   case 2:
-      printf(" tag = %ld\n", val);
+      BFORMAT_T(BF(" tag = %ld\n") % val);
       break;
   case 3:
-      printf("Arg list: %s\n", _rep_(VaList_sp((gc::Tagged)val)).c_str() );
+      BFORMAT_T(BF("Arg list: %s\n") % _rep_(VaList_sp((gc::Tagged)val)) );
       break;
+  case 4:
+      BFORMAT_T(BF("Ptr: %p\n") % (void*)val );
   }
 }
 

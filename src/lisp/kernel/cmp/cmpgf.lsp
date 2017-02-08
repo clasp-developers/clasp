@@ -7,11 +7,14 @@
 #+debug-cmpgf
 (progn
   (defun insert-message ()
-    (irc-create-call "cc_dispatch_debug" (list (jit-constant-i32 0) (jit-constant-i32 (incf *message-counter*)))))
+    (irc-create-call "cc_dispatch_debug" (list (jit-constant-i32 0) (jit-constant-i64 (incf *message-counter*)))))
   (defun debug-argument (arg arg-tag)
     (insert-message)
     (irc-create-call "cc_dispatch_debug" (list (jit-constant-i32 1) arg))
     (irc-create-call "cc_dispatch_debug" (list (jit-constant-i32 2) arg-tag)))
+  (defun debug-pointer (ptr)
+    (insert-message)
+    (irc-create-call "cc_dispatch_debug" (list (jit-constant-i32 4) ptr)))
   (defun debug-call (fn args)
     (irc-create-call fn args)))
 
@@ -395,10 +398,10 @@
 				   (irc-load (irc-gep *gf-data*
 						      (list (jit-constant-size_t 0)
 							    (jit-constant-size_t gf-data-id))) "load") "extract-sp")))
-            (debug-call "debugPointer" (list (irc-bit-cast
+            (debug-pointer (list (irc-ptr-to-int
                                               (irc-gep *gf-data*
                                                        (list (jit-constant-size_t 0)
-                                                             (jit-constant-size_t gf-data-id))) +i8*+)))
+                                                             (jit-constant-size_t gf-data-id))) +uintptr_t+)))
             (debug-call "debugPointer" (list (irc-bit-cast effective-method +i8*+)))
 	    (irc-create-call "llvm.va_end" (list (irc-pointer-cast args +i8*+ "local-arglist-i8*")))
 	    (irc-ret (irc-create-call "cc_dispatch_effective_method" (list effective-method gf gf-args) "ret")))))))
@@ -562,7 +565,6 @@
 
 (defun codegen-class-specializers (node arg args gf gf-args)
   (let ((arg-stamp (codegen-arg-stamp arg gf gf-args)))
-    (debug-argument arg-stamp)
     (codegen-class-binary-search (node-class-specializers node) arg-stamp args gf gf-args)))
 
 
