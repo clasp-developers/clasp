@@ -43,11 +43,14 @@
 ;; been bootstrapped
 (setq *features* (cons :clasp-boot *features*)) ;; When bootstrapping in stages
 
-
 ;; Set up a few things for the CLOS package
 (eval-when (:execute :compile-toplevel :load-toplevel)
-  (core::select-package :clos))
-(export '(standard-class))
+  (core::select-package :clos)
+;;;(setq *features* (cons :fast-dispatch *features))
+  (sys:*make-special 'clos::*enable-fast-dispatch*)
+  (setq clos::*enable-fast-dispatch* nil)
+)
+(export '(standard-class *enable-fast-dispatch*))
 
 ;; Setup a few things for the GRAY streams package
 (eval-when (:execute :compile-toplevel :load-toplevel)

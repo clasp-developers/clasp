@@ -509,7 +509,7 @@ because it contains a reference to the undefined class~%  ~A"
     (when name
       (si:create-type-name name)
       (setf (find-class name) class))
-    #+clasp
+    #+fast-dispatch
     (clos:invalidate-generic-functions-with-class-selector class)
     class))
 

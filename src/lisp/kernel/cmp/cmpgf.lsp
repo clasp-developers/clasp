@@ -1,6 +1,6 @@
 (in-package :cmp)
 
-#+(or)
+;;#+(or)
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (pushnew :debug-cmpgf *features*))
 
@@ -269,8 +269,8 @@
 	    (class-entries (loop for x in (node-class-specializers node)
 			      collect (list (prog1 idx (incf idx))
 					    (if (single-p x)
-						(format nil "~a;~a" (single-stamp x) (single-class-name x))
-						(format nil "~a-~a;~a" (range-first-stamp x) (range-last-stamp x) (reverse (range-reversed-class-names x))))
+						(format nil "~a;~a" (single-stamp x) (class-name (single-class-name x)))
+						(format nil "~a-~a;~a" (range-first-stamp x) (range-last-stamp x) (mapcar #'class-name (reverse (range-reversed-class-names x)))))
 					    (draw-node fout (match-outcome x)))))
 	    (entries (append eql-entries class-entries)))
        (format fout "~a [shape = record, label = \"~{ <f~a> ~a ~^|~}\" ];~%" nodeid (loop for x in entries
@@ -283,11 +283,11 @@
 	       (format fout "~a [ label = \"~a\"];~%" id node)
 	       id))))
 
-(defun draw-graph (pathname dtree args)
+(defun draw-graph (pathname dtree)
   (with-graph ("G" fout pathname :direction :output)
     (format fout "graph [ rankdir = \"LR\"];~%")
     (let ((startid (gensym)))
-      (format fout "~a [ label = \"Start ~a\", shape = diamond ];~%" startid args)
+      (format fout "~a [ label = \"Start\", shape = diamond ];~%" startid)
       (format fout "~a -> ~a;~%" startid (draw-node fout (dtree-root dtree))))))
 
 
@@ -496,22 +496,28 @@
       (let (fixnum-stamp fixnum1-stamp cons-stamp general-stamp instance-stamp single-float-stamp character-stamp valist_s-stamp)
 	(irc-begin-block fixnum-bb)
 	(setf fixnum-stamp (jit-constant-i64 +fixnum-stamp+))
-	(irc-br done-bb)
+	(insert-message)
+        (irc-br done-bb)
 	(irc-begin-block cons-bb)
 	(setf cons-stamp (jit-constant-i64 +cons-stamp+))
+	(insert-message)
 	(irc-br done-bb)
 	(irc-begin-block single-float-bb)
 	(setf single-float-stamp (jit-constant-i64 +single-float-stamp+))
+	(insert-message)
 	(irc-br done-bb)
 	(irc-begin-block character-bb)
 	(setf character-stamp (jit-constant-i64 +character-stamp+))
+	(insert-message)
 	(irc-br done-bb)
 	(irc-begin-block valist_s-bb)
 	(setf valist_s-stamp (jit-constant-i64 +valist_s-stamp+))
+	(insert-message)
 	(irc-br done-bb)
 	(irc-begin-block general-or-instance-bb)
 	(let* ((header-ptr (irc-int-to-ptr (irc-sub (irc-ptr-to-int arg +uintptr_t+) (jit-constant-uintptr_t (+ +general-tag+ +header-size+)) "sub") +uintptr_t*+ "header-ptr"))
 	       (header-val (irc-load header-ptr "header-val")))
+          (insert-message)
 	  (debug-call "debugPrint_size_t" (list header-val))
 	  (setf general-stamp (llvm-sys:create-lshr-value-uint64 *irbuilder* header-val +kind-shift+ "gstamp" nil))
           (let ((instance-cmp (irc-icmp-eq general-stamp (jit-constant-uintptr_t +instance-kind+))))
@@ -721,7 +727,7 @@
 (defmacro when-monitor-dispatch ((log) &body body)
     `(when *monitor-dispatch*
        (symbol-macrolet ((,log *dispatch-log*))
-         ,@body))))
+         ,@body)))
 
 (defun do-dispatch-miss (generic-function valist-args arguments)
   (when *monitor-dispatch*
@@ -791,6 +797,16 @@
           (cmp::codegen-dispatcher dispatch-tree))
         'clos::invalidated-dispatch-function)))
 
+(defun graph-strandh-dispatch-function (generic-function)
+  (let* ((call-history (clos::generic-function-call-history generic-function)))
+    (if call-history
+        (let ((dispatch-tree (cmp::make-dtree)))
+          (cmp::dtree-add-call-history dispatch-tree call-history)
+          (cmp::draw-graph "/tmp/dispatch.dot" dispatch-tree)
+          (ext:system "dot -Tpdf -O /tmp/dispatch.dot")
+          (sleep 0.2)
+          (ext:system "open /tmp/dispatch.dot.pdf")))))
+  
 
 (defun clos::invalidated-dispatch-function (generic-function va-list-args)
   (core:stack-monitor (lambda () (format t "In clos::invalidated-dispatch-function with generic function ~a~%" (instance-ref generic-function 0))))

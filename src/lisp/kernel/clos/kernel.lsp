@@ -175,13 +175,14 @@
       (set-funcallable-instance-function
        gfun
        (cond
-         #+clasp
+         #+fast-dispatch
          ((typep (get-funcallable-instance-function gfun) 'core:compiled-dispatch-function)
           'clos::invalidated-dispatch-function)
-         #+clasp
+         #+clasp-dispatach
          ((eq (get-funcallable-instance-function gfun) 'clos::invalidated-dispatch-function)
           'clos::invalidated-dispatch-function)
-         ((member :strandh-dispatch *features*)
+         #+fast-dispatch
+         (*enable-fast-dispatch*
           'clos::invalidated-dispatch-function)
 	 ;; Case 1*
 	 ((or (not optimizable)

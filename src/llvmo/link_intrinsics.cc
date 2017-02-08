@@ -1908,6 +1908,23 @@ gctools::return_type cc_dispatch_miss(core::T_O* gf, core::T_O* gf_valist_s)
   return core::eval::funcall(clos::_sym_dispatch_miss,tgf,tgf_valist);
 }
 
+void cc_dispatch_debug(int msg_id, uintptr_t val)
+{
+  switch (msg_id) {
+  case 0:
+      printf("Step %lu\n", val);
+      break;
+  case 1:
+      printf("Arg #%lu ", val);
+      break;
+  case 2:
+      printf(" val = %ld\n", val);
+      break;
+  case 3:
+      printf("Arg list: %s\n", _rep_(VaList_sp((gc::Tagged)val)) );
+      break;
+  }
+}
 
 void clasp_terminate(const char *file, size_t line, size_t column, const char *func) {
   printf("Terminating file: %s  func: %s\n", file, func);
