@@ -2374,12 +2374,27 @@ MDArrayT_sp MDArrayT_O::create(const gc::Vec0<T_sp>& objs) {
   return result;
 }
 
-
-
-
-
 };
 
+
+namespace core {
+SYMBOL_EXPORT_SC_(CorePkg,vectorPushExtend_size_t);
+void Str8Ns_O::vectorPushExtend_size_t(size_t newElement, size_t extension) {
+  unlikely_if (!this->_Flags.fillPointerP()) noFillPointerError(_sym_vectorPushExtend_size_t,this->asSmartPtr());
+  cl_index idx = this->_FillPointerOrLengthOrDummy;
+  unlikely_if (idx >= this->_ArrayTotalSize) {
+    if (extension <= 0) extension = 32;
+    cl_index new_size = this->_ArrayTotalSize+extension;
+    unlikely_if (!cl::_sym_adjust_array || !cl::_sym_adjust_array->boundP()) {
+      this->internalAdjustSize_(new_size);
+    } else {
+      eval::funcall(cl::_sym_adjust_array,this->asSmartPtr(),clasp_make_fixnum(new_size),cl::_sym_fill_pointer,clasp_make_fixnum(this->_FillPointerOrLengthOrDummy));
+    }
+  }
+  (*this)[idx] = newElement;
+  ++this->_FillPointerOrLengthOrDummy;
+}
+};
 
 
 
