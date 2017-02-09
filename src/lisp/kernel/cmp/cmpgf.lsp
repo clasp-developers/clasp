@@ -15,6 +15,9 @@
   (defun debug-pointer (ptr)
     (insert-message)
     (irc-create-call "cc_dispatch_debug" (list (jit-constant-i32 4) ptr)))
+  (defun debug-arglist (ptr)
+    (insert-message)
+    (irc-create-call "cc_dispatch_debug" (list (jit-constant-i32 3) ptr)))
   (defun debug-call (fn args)
     (irc-create-call fn args)))
 
@@ -398,10 +401,10 @@
 				   (irc-load (irc-gep *gf-data*
 						      (list (jit-constant-size_t 0)
 							    (jit-constant-size_t gf-data-id))) "load") "extract-sp")))
-            (debug-pointer (list (irc-ptr-to-int
-                                              (irc-gep *gf-data*
-                                                       (list (jit-constant-size_t 0)
-                                                             (jit-constant-size_t gf-data-id))) +uintptr_t+)))
+            (debug-pointer (irc-ptr-to-int
+                            (irc-gep *gf-data*
+                                     (list (jit-constant-size_t 0)
+                                           (jit-constant-size_t gf-data-id))) +uintptr_t+))
             (debug-call "debugPointer" (list (irc-bit-cast effective-method +i8*+)))
 	    (irc-create-call "llvm.va_end" (list (irc-pointer-cast args +i8*+ "local-arglist-i8*")))
 	    (irc-ret (irc-create-call "cc_dispatch_effective_method" (list effective-method gf gf-args) "ret")))))))
@@ -643,6 +646,7 @@
 		     (va_list-passed (irc-in-bounds-gep-type +VaList_S+ arglist-passed-untagged (list (jit-constant-i32 0) (jit-constant-i32 1)) "va_list-passed")))
 		(insert-message)
 		(irc-create-call "llvm.va_copy" (list (irc-pointer-cast local-arglist +i8*+ "local-arglist-i8*") (irc-pointer-cast va_list-passed +i8*+ "va_list-passed-i8*")))
+                (debug-arglist (irc-ptr-to-int local-arglist +uintptr_t+))
 		(irc-br body-bb)
 		(with-irbuilder (irbuilder-body)
 		  (codegen-node-or-outcome (dtree-root dtree) local-arglist gf gf-args))
@@ -764,6 +768,7 @@
 
 
 (defun clos::dispatch-miss (generic-function valist-args)
+  (format t "Missed~%")
   (core:stack-monitor (lambda () (format t "In clos::dispatch-miss with generic function ~a~%" (clos::generic-function-name generic-function))))
   ;; update instances
   (cmp::gf-log "In clos::dispatch-miss~%")
