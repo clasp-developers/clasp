@@ -47,7 +47,7 @@
 (eval-when (:execute :compile-toplevel :load-toplevel)
   (core::select-package :clos)
   ;; enable the fast-dispatch code
-;;;  (setq *features* (cons :fast-dispatch *features*))
+  (setq *features* (cons :fast-dispatch *features*))
   (sys:*make-special 'clos::*enable-fast-dispatch*)
   (setq clos::*enable-fast-dispatch* nil)
 )
