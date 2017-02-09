@@ -310,16 +310,15 @@ Compile a lisp source file into an LLVM module.  type can be :kernel or :user"
   (let* ((clasp-source-root (translate-logical-pathname "source-dir:"))
          (clasp-source (merge-pathnames (make-pathname :directory '(:relative :wild-inferiors) :name :wild :type :wild) clasp-source-root))
          (source-location
-            (if (pathname-match-p given-input-pathname clasp-source)
-                (enough-namestring given-input-pathname clasp-source-root)
-                given-input-pathname))
+          (if (pathname-match-p given-input-pathname clasp-source)
+              (enough-namestring given-input-pathname clasp-source-root)
+              given-input-pathname))
          (input-pathname (probe-file given-input-pathname))
 	 (source-sin (open input-pathname :direction :input))
          (module (create-llvm-module-for-compile-file (namestring input-pathname)))
 	 (module-name (cf-module-name type given-input-pathname))
 	 warnings-p failure-p)
     (or module (error "module is NIL"))
-;;    (cl-user::class-allocation-counter-start)
     (with-open-stream (sin source-sin)
       ;; If a truename is provided then spoof the file-system to treat input-pathname
       ;; as source-truename with the given offset
@@ -327,7 +326,6 @@ Compile a lisp source file into an LLVM module.  type can be :kernel or :user"
 	(core:source-file-info (namestring input-pathname) source-debug-namestring source-debug-offset nil))
       (when *compile-verbose*
 	(bformat t "; Compiling file: %s\n" (namestring input-pathname)))
-;;      (cl-user::class-allocation-counter-stop)
       (with-one-source-database
 	  (cmp-log "About to start with-compilation-unit\n")
 	(let* ((*compile-file-pathname* (pathname (merge-pathnames given-input-pathname)))
