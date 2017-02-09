@@ -119,7 +119,6 @@ T_sp Instance_O::allocateInstance(T_sp theClass, size_t numberOfSlots) {
   if (!cl->has_creator()) {
     IMPLEMENT_MEF(BF("Handle no allocator class: %s slots: %d") % _rep_(theClass) % numberOfSlots);
   }
-  //Instance_sp obj = gc::GC<Instance_O>::allocate_kind(gctools::KIND_INSTANCE);
   Creator_sp creator = gctools::As<Creator_sp>(cl->class_creator());
   Instance_sp obj = gctools::As<Instance_sp>(creator->creator_allocate());
   obj->instanceClassSet(gc::As<Class_sp>(theClass));

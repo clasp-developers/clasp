@@ -643,6 +643,8 @@ def configure(cfg):
     cfg.define("LLVM_VERSION_X100",390)
     cfg.define("LLVM_VERSION","3.9")
     cfg.define("NDEBUG",1)
+# Keep track of every allocation
+    cfg.define("METER_ALLOCATIONS",1)
     
 #    cfg.define("READLINE",1)
     cfg.define("USE_AMC_POOL",1)

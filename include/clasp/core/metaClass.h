@@ -46,6 +46,8 @@ THE SOFTWARE.
 
 namespace core {
 
+  Fixnum_sp clasp_make_fixnum(gc::Fixnum v);
+  
 //
 //  Class access functions for when we only have a forward
 //  definition for the Class_O class
@@ -128,7 +130,12 @@ public:
 
 public:
   /*! A Fixnum that represents the object stamp(aka KIND) of each instance of this class */
-  gctools::Stamp _instance_stamp; 
+  gctools::Stamp _instance_stamp;
+#ifdef METER_ALLOCATIONS
+  // Keep track of allocations
+  size_t _allocation_counter;
+  size_t _allocation_total_size;
+#endif
   /*! Mimic ECL Instance::sig */
   T_sp _Signature_ClassSlots;
   /*! Callback function to allocate instances */
@@ -267,7 +274,18 @@ public:
           this class is the primary derivable C++ class */
   virtual bool primaryCxxDerivableClassP() const { return false; };
 
-  explicit Class_O(gctools::Stamp is) : Class_O::Base(), _instance_stamp(is), _Signature_ClassSlots(_Unbound<T_O>()), _theCreator(){};
+#ifdef METER_ALLOCATIONS
+  CL_DEFMETHOD T_mv allocation_meter() const {
+    return Values(clasp_make_fixnum(this->_allocation_counter), clasp_make_fixnum(this->_allocation_total_size));
+  }
+#endif
+  explicit Class_O(gctools::Stamp is) : Class_O::Base(), _instance_stamp(is),
+#ifdef METER_ALLOCATIONS
+    _allocation_counter(0),
+    _allocation_total_size(0),
+#endif
+    _Signature_ClassSlots(_Unbound<T_O>()),
+    _theCreator(){};
 
   virtual ~Class_O(){};
 };

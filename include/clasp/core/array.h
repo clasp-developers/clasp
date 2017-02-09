@@ -1822,11 +1822,11 @@ namespace core {
     typedef typename TemplatedBase::simple_type simple_type;
   public: // make vector
   MDArray_size_t_O(size_t dummy_rank_1,
-                  size_t dimension,
-                  T_sp fillPointer,
-                  Array_sp data,
-                  bool displacedToP,
-                  Fixnum_sp displacedIndexOffset) : TemplatedBase(Rank1(),dimension,fillPointer,data,displacedToP,displacedIndexOffset) {};
+                   size_t dimension,
+                   T_sp fillPointer,
+                   Array_sp data,
+                   bool displacedToP,
+                   Fixnum_sp displacedIndexOffset) : TemplatedBase(Rank1(),dimension,fillPointer,data,displacedToP,displacedIndexOffset) {};
     static MDArray_size_t_sp make_vector(size_t dimension, simple_element_type initialElement/*=simple_element_type()*/, T_sp fillPointer/*=_Nil<T_O>()*/, T_sp dataOrDisplacedTo/*=_Nil<T_O>()*/, bool displacedToP/*=false*/, Fixnum_sp displacedIndexOffset/*=clasp_make_fixnum(0)*/ ) {
       LIKELY_if (dataOrDisplacedTo.nilp()) {
         dataOrDisplacedTo = simple_type::make(dimension,initialElement,true);
@@ -1839,10 +1839,10 @@ namespace core {
     }
   public: // make array
   MDArray_size_t_O(size_t rank,
-                  List_sp dimensions,
-                  Array_sp data,
-                  bool displacedToP,
-                  Fixnum_sp displacedIndexOffset) : TemplatedBase(rank,dimensions,data,displacedToP,displacedIndexOffset) {};
+                   List_sp dimensions,
+                   Array_sp data,
+                   bool displacedToP,
+                   Fixnum_sp displacedIndexOffset) : TemplatedBase(rank,dimensions,data,displacedToP,displacedIndexOffset) {};
     static MDArray_size_t_sp make_multi_dimensional(List_sp dim_desig, simple_element_type initialElement, T_sp dataOrDisplacedTo, bool displacedToP, Fixnum_sp displacedIndexOffset) {
       ASSERT(dim_desig.consp()||dim_desig.nilp());
       size_t rank;
@@ -1855,7 +1855,7 @@ namespace core {
     }
   public:
 //    virtual bool equalp(T_sp o) const final;
-    size_t vectorPushExtend_size_t(size_t newElement, size_t extension = 0);
+    void vectorPushExtend_size_t(size_t newElement, size_t extension = 0);
 
   };
 };

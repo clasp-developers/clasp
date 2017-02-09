@@ -49,7 +49,14 @@ THE SOFTWARE.
 
 namespace core {
 T_sp InstanceCreator_O::creator_allocate() {
-  Instance_sp instance = gctools::GCObjectAllocator<Instance_O>::allocate_kind(gctools::KIND_INSTANCE, gctools::sizeof_with_header<Instance_O>());
+  size_t size = gctools::sizeof_with_header<Instance_O>();
+#ifdef METER_ALLOCATIONS
+  if (this->_class) {
+    this->_class->_allocation_counter += 1;
+    this->_class->_allocation_total_size += size;
+  }
+#endif
+  Instance_sp instance = gctools::GC<Instance_O>::allocate_instance(gctools::KIND_INSTANCE, size);
   return instance;
     };
 

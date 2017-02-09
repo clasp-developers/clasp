@@ -675,6 +675,17 @@ namespace gctools {
     template <typename... ARGS>
       static smart_pointer_type allocate_kind( GCKindEnum kind, ARGS &&... args) {
       size_t size = sizeof_with_header<OT>();
+#ifdef METER_ALLOCATIONS
+      if (OT::static_class) {
+        ++OT::static_class->_allocation_counter;
+        OT::static_class->_allocation_total_size += size;
+      }
+#endif
+      return GCObjectAllocator<OT>::allocate_kind(kind,size, std::forward<ARGS>(args)...);
+    }
+
+    template <typename... ARGS>
+      static smart_pointer_type allocate_instance(GCKindEnum kind, size_t size, ARGS &&... args) {
       return GCObjectAllocator<OT>::allocate_kind(kind,size, std::forward<ARGS>(args)...);
     }
 
@@ -682,16 +693,23 @@ namespace gctools {
       static smart_pointer_type allocate( ARGS &&... args) {
       auto kind = OT::static_Kind;
       size_t size = sizeof_with_header<OT>();
+#ifdef METER_ALLOCATIONS
+      if (OT::static_class) {
+        ++OT::static_class->_allocation_counter;
+        OT::static_class->_allocation_total_size += size;
+      }
+#endif
       return GCObjectAllocator<OT>::allocate_kind(kind,size, std::forward<ARGS>(args)...);
     }
 
-#if 0
-    template <typename... ARGS>
-      static smart_pointer_type allocate_with_stamp( ARGS &&... args) {
-      return GCObjectAllocator<OT>::allocate_kind(GCKind<OT>::Kind, sizeof_with_header<OT>(), std::forward<ARGS>(args)...);
-    }
-#endif
+
     static smart_pointer_type allocate_with_default_constructor() {
+#ifdef METER_ALLOCATIONS
+      if (OT::static_class) {
+        ++OT::static_class->_allocation_counter;
+        OT::static_class->_allocation_total_size += sizeof_with_header<OT>();
+      }
+#endif
       return GCObjectDefaultConstructorAllocator<OT,std::is_default_constructible<OT>::value>::allocate(OT::static_Kind);
     }
 
@@ -699,14 +717,10 @@ namespace gctools {
     template <typename... ARGS>
       static smart_pointer_type allocate_container( size_t capacity, size_t length, /*const typename OT::value_type& initial_element,*/ ARGS &&... args) {
       size_t size = sizeof_container_with_header<OT>(capacity);
-#if 0
-      if ( GCKind<OT>::Kind == 31 && size == 88 ) {
-        printf("%s:%d allocate_container  kind = 31\n", __FILE__, __LINE__ );
-        printf("        capacity --> %lu,  sizeof_container_with_header --> %lu\n", capacity, size );
-        printf("        sizeof(Header_s) --> %lu\n", sizeof(Header_s) );
-        printf("        sizeof(OT) --> %lu\n", sizeof(OT) );
-        printf("        sizeof(typename OT::value_type) --> %lu\n", sizeof(typename OT::value_type));
-        printf("        sizeof_container<T>(capacity) --> %lu\n", sizeof_container<OT>(capacity) );
+#ifdef METER_ALLOCATIONS
+      if (OT::static_class) {
+        ++OT::static_class->_allocation_counter;
+        OT::static_class->_allocation_total_size += size;
       }
 #endif
       return GCObjectAllocator<OT>::allocate_kind(OT::static_Kind,size,length,/*initial_element,*/std::forward<ARGS>(args)...);
@@ -715,6 +729,12 @@ namespace gctools {
     template <typename... ARGS>
       static smart_pointer_type allocate_bitunit_container( size_t length, ARGS &&... args) {
       size_t size = sizeof_bitunit_container_with_header<OT>(length);
+#ifdef METER_ALLOCATIONS
+      if (OT::static_class) {
+        ++OT::static_class->_allocation_counter;
+        OT::static_class->_allocation_total_size += size;
+      }
+#endif
 #if 0
       if ( GCKind<OT>::Kind == 31 && size == 88 ) {
         printf("%s:%d allocate_container  kind = 31\n", __FILE__, __LINE__ );

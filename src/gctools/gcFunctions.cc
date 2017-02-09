@@ -842,6 +842,12 @@ bool debugging_configuration(stringstream& ss) {
 #endif
   ss << (BF("DEBUG_FUNCTION_CALL_COUNTER = %s\n") % (debug_function_call_counter ? "defined" : "undefined") ).str();
 
+  bool meter_allocations = false;
+#ifdef METER_ALLOCATIONS
+  meter_allocations = true;
+  debugging = true;
+#endif
+  ss << (BF("METER_ALLOCATIONS = %s\n") % (meter_allocations ? "defined" : "undefined") ).str();
   return debugging;
 }
 
