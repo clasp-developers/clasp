@@ -96,12 +96,25 @@ cl_intptr_t Cache_O::vector_hash_key(gctools::Vec0<T_sp> &keys) {
   return c;
 }
 
+
 /*! TODO: I don't think this cache is location aware - it may need to be tuned to handle a moving garbage collector */
 void Cache_O::search_cache(CacheRecord *&min_e) {
+#ifdef USE_MPS
+  printf("Make this cache location aware because degraded caches really slow things down\n");
+  abort();
+#endif
   ++this->_searches;
   gctools::Vec0<CacheRecord> &table = this->_table;
   gctools::Vec0<T_sp> &keys = this->_keys;
   int argno = keys.size();
+#ifdef DEBUG_CACHE
+  if (this->_debug) {
+    printf("%s:%d ===================  search_cache argno=%d\n", __FILE__, __LINE__, argno);
+    for (size_t zi=0; zi<keys.size(); ++zi ) {
+      printf("%s:%d    key[%lu] -> %s\n", __FILE__, __LINE__, zi, _rep_(keys[zi]).c_str());
+    }
+  }
+#endif
   cl_intptr_t hi = this->vector_hash_key(keys);
   int total_size = table.size();
   int min_gen, gen;
@@ -109,14 +122,22 @@ void Cache_O::search_cache(CacheRecord *&min_e) {
   int k;
   int idx = hi % total_size;
   ASSERTF(idx >= 0, BF("idx must be positive"));
-#if DEBUG_CLOS >= 2
-  printf("MLOG search_cache hash=%ld   hash-index=%d\n", hi, i);
+#ifdef DEBUG_CACHE
+  if (this->_debug) {
+    printf("%s:%d search_cache hash=%ld   hash-index=%d\n", __FILE__, __LINE__, hi, idx);
+  }
 #endif
   //	i = i - (i % 3);
   min_gen = this->_generation;
   for (k = 20; k--; ++this->_total_depth) {
     CacheRecord &e = table.operator[](idx); //cl_object *e = table->vector.self.t + i;
     T_sp &hkey = e._key;                    // cl_object hkey = RECORD_KEY(e);
+#ifdef DEBUG_CACHE
+    if (this->_debug) {
+      printf("%s:%d Hash trial countdown %d idx=%d\n", __FILE__, __LINE__, k, idx);
+      printf("%s:%d    hash key = %s\n", __FILE__, __LINE__, _rep_(hkey).c_str());
+    }
+#endif
     if (hkey.nilp()) {                      // if (hkey == OBJNULL) {
       min_gen = -1;                         // min_gen = -1;
       min_e = &e;                           // min_e.set(&e); // min_e = e;
@@ -128,11 +149,23 @@ void Cache_O::search_cache(CacheRecord *&min_e) {
       /* Else we only know that the record has been
 	 * deleted, but we might find our data ahead. */
     } else if (argno == (reinterpret_cast<SimpleVector_O*>(&*hkey))->length()) {
+#ifdef DEBUG_CACHE
+    if (this->_debug) {
+      printf("%s:%d    argno length matches\n",__FILE__,__LINE__);
+    }
+#endif
       int n;                                                         // cl_index n;
       for (n = 0; n < argno; n++) {
-        if (keys[n] != (*reinterpret_cast<SimpleVector_O*>(&*hkey))[n])
+        if (keys[n] != (*reinterpret_cast<SimpleVector_O*>(&*hkey))[n]) {
+#ifdef DEBUG_CACHE
+    if (this->_debug) {
+      printf("%s:%d    mismatch in arg %d  keys[n]=%p    hkey[n]=%p\n", __FILE__, __LINE__, n, (void*)keys[n].raw_(), (void*)((*reinterpret_cast<SimpleVector_O*>(&*hkey))[n]).raw_());
+    }
+#endif
+
           // if (keys->vector.self.t[n] != hkey->vector.self.t[n])
           goto NO_MATCH;
+        }
       }
       min_e = &e; // min_e.set(&e);
       goto FOUND;
@@ -159,6 +192,10 @@ void Cache_O::search_cache(CacheRecord *&min_e) {
   min_e->_key = _Nil<T_O>(); // RECORD_KEY(min_e) = OBJNULL;
   this->_generation++;       // cache->generation++;
 FOUND:
+#ifdef DEBUG_CACHE
+  if (this->_debug)
+    printf("%s:%d Found!  min_e->_key = %s\n", __FILE__, __LINE__, _rep_(min_e->_key).c_str());
+#endif
   /*
      * Once we have reached here, we set the new generation of
      * this record and perform a global shift so that the total
@@ -182,6 +219,11 @@ FOUND:
       e->_generation = g; // RECORD_GEN_SET(e, g);
     }
   }
+#ifdef DEBUG_CACHE
+  if (this->_debug) fflush(stdout);
+#endif
+
+  return;
 }
 
 CL_LAMBDA();
@@ -192,6 +234,88 @@ CL_DEFUN void core__clear_generic_function_dispatch_cache() {
   _lisp->methodCachePtr()->empty();
 };
 
+
+CL_LAMBDA(pow);
+CL_DECLARE();
+CL_DOCSTRING("cache_resize - Resize the cache to 2^pow");
+CL_DEFUN void core__method_cache_resize(Fixnum pow) {
+  if (pow < 2 || pow > 64) {
+    SIMPLE_ERROR(BF("Cache power must be in the range of 2...64"));
+  }
+  size_t size = 1 << pow;
+  return _lisp->_Roots._MethodCachePtr->setup(Lisp_O::MaxFunctionArguments, size);
+}
+
+CL_LAMBDA(pow);
+CL_DECLARE();
+CL_DOCSTRING("cache_resize - Resize the cache to 2^pow");
+CL_DEFUN void core__slot_cache_resize(Fixnum pow) {
+  if (pow < 2 || pow > 64) {
+    SIMPLE_ERROR(BF("Cache power must be in the range of 2...64"));
+  }
+  size_t size = 1 << pow;
+  return _lisp->_Roots._SlotCachePtr->setup(Lisp_O::MaxClosSlots, size);
+}
+
+CL_LAMBDA(pow);
+CL_DECLARE();
+CL_DOCSTRING("cache_resize - Resize the cache to 2^pow");
+CL_DEFUN void core__single_dispatch_method_cache_resize(Fixnum pow) {
+  if (pow < 2 || pow > 64) {
+    SIMPLE_ERROR(BF("Cache power must be in the range of 2...64"));
+  }
+  size_t size = 1 << pow;
+  return _lisp->_Roots._SingleDispatchMethodCachePtr->setup(2, size);
+}
+
+CL_LAMBDA();
+CL_DECLARE();
+CL_DOCSTRING("cache_status - (values searches misses total-depth)");
+CL_DEFUN T_mv core__method_cache_status() {
+  return Values(clasp_make_fixnum(_lisp->_Roots._MethodCachePtr->_searches),
+                clasp_make_fixnum(_lisp->_Roots._MethodCachePtr->_misses),
+                clasp_make_fixnum(_lisp->_Roots._MethodCachePtr->_total_depth));
+}
+CL_LAMBDA();
+CL_DECLARE();
+CL_DOCSTRING("cache_status - (values searches misses total-depth)");
+CL_DEFUN T_mv core__slot_cache_status() {
+  return Values(clasp_make_fixnum(_lisp->_Roots._SlotCachePtr->_searches),
+                clasp_make_fixnum(_lisp->_Roots._SlotCachePtr->_misses),
+                clasp_make_fixnum(_lisp->_Roots._SlotCachePtr->_total_depth));
+}
+
+CL_LAMBDA();
+CL_DECLARE();
+CL_DOCSTRING("cache_status - (values searches misses total-depth)");
+CL_DEFUN T_mv core__single_dispatch_method_cache_status() {
+  return Values(clasp_make_fixnum(_lisp->_Roots._SingleDispatchMethodCachePtr->_searches),
+                clasp_make_fixnum(_lisp->_Roots._SingleDispatchMethodCachePtr->_misses),
+                clasp_make_fixnum(_lisp->_Roots._SingleDispatchMethodCachePtr->_total_depth));
+}
+
+#ifdef DEBUG_CACHE
+CL_DOCSTRING("Turn debugging on and off for cache");
+CL_DEFUN void core__debug_method_cache(bool debug)
+{
+  _lisp->_Roots._MethodCachePtr->_debug = debug;
+}
+
+CL_DOCSTRING("Turn debugging on and off for cache");
+CL_DEFUN void core__debug_slot_cache(bool debug)
+{
+  _lisp->_Roots._SlotCachePtr->_debug = debug;
+}
+CL_DOCSTRING("Turn debugging on and off for cache");
+CL_DEFUN void core__debug_single_dispatch_method_cache(bool debug)
+{
+  _lisp->_Roots._SingleDispatchMethodCachePtr->_debug = debug;
+}
+#endif
+
+
+   
+                                                                            
 void initialize_cache() {
 }
 };

@@ -49,8 +49,6 @@
     (finish-output)
     nil))
 
-(defun compare-reports (x y)
-  (let ((ht (make-hash-table))
 
 
 (defmacro count-class-allocations (form)

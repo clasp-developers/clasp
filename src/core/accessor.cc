@@ -142,7 +142,7 @@ add_new_index(T_sp gfun, T_sp instance, List_sp args, Cache_sp cache)
     CacheRecord* e;
     gctools::Vec0<T_sp>& vektor = fill_spec_vector(gfun,cache->keys(),instance);
     cache->search_cache(e);
-    T_sp keys = VectorObjects_O::create(vektor);
+    T_sp keys = SimpleVector_O::make(vektor.size(),_Nil<T_O>(),true,vektor.size(),&(vektor[0]));
     e->_key = keys;
     e->_value = index;
     return e;

@@ -210,4 +210,3 @@
 (defun posn-column (posn stream)
   (declare (type posn posn) (type pretty-stream stream))
   (index-column (posn-index posn stream) stream))
-

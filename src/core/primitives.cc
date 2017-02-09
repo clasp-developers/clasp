@@ -132,64 +132,6 @@ CL_DEFUN T_sp cl__lisp_implementation_version() {
   return SimpleBaseString_O::make(ss.str());
 };
 
-CL_LAMBDA(pow);
-CL_DECLARE();
-CL_DOCSTRING("cache_resize - Resize the cache to 2^pow");
-CL_DEFUN void core__method_cache_resize(Fixnum pow) {
-  if (pow < 2 || pow > 64) {
-    SIMPLE_ERROR(BF("Cache power must be in the range of 2...64"));
-  }
-  size_t size = 1 << pow;
-  return _lisp->_Roots._MethodCachePtr->setup(Lisp_O::MaxFunctionArguments, size);
-}
-
-CL_LAMBDA(pow);
-CL_DECLARE();
-CL_DOCSTRING("cache_resize - Resize the cache to 2^pow");
-CL_DEFUN void core__slot_cache_resize(Fixnum pow) {
-  if (pow < 2 || pow > 64) {
-    SIMPLE_ERROR(BF("Cache power must be in the range of 2...64"));
-  }
-  size_t size = 1 << pow;
-  return _lisp->_Roots._SlotCachePtr->setup(Lisp_O::MaxClosSlots, size);
-}
-
-CL_LAMBDA(pow);
-CL_DECLARE();
-CL_DOCSTRING("cache_resize - Resize the cache to 2^pow");
-CL_DEFUN void core__single_dispatch_method_cache_resize(Fixnum pow) {
-  if (pow < 2 || pow > 64) {
-    SIMPLE_ERROR(BF("Cache power must be in the range of 2...64"));
-  }
-  size_t size = 1 << pow;
-  return _lisp->_Roots._SingleDispatchMethodCachePtr->setup(2, size);
-}
-
-CL_LAMBDA();
-CL_DECLARE();
-CL_DOCSTRING("cache_status - (values searches misses total-depth)");
-CL_DEFUN T_mv core__method_cache_status() {
-  return Values(clasp_make_fixnum(_lisp->_Roots._MethodCachePtr->_searches),
-                clasp_make_fixnum(_lisp->_Roots._MethodCachePtr->_misses),
-                clasp_make_fixnum(_lisp->_Roots._MethodCachePtr->_total_depth));
-}
-CL_LAMBDA();
-CL_DECLARE();
-CL_DOCSTRING("cache_status - (values searches misses total-depth)");
-CL_DEFUN T_mv core__slot_cache_status() {
-  return Values(clasp_make_fixnum(_lisp->_Roots._SlotCachePtr->_searches),
-                clasp_make_fixnum(_lisp->_Roots._SlotCachePtr->_misses),
-                clasp_make_fixnum(_lisp->_Roots._SlotCachePtr->_total_depth));
-}
-
-CL_LAMBDA();
-CL_DECLARE();
-CL_DOCSTRING("cache_status - (values searches misses total-depth)");
-CL_DEFUN T_mv core__single_dispatch_method_cache_status() {
-  return Values(clasp_make_fixnum(_lisp->_Roots._SingleDispatchMethodCachePtr->_searches),
-                clasp_make_fixnum(_lisp->_Roots._SingleDispatchMethodCachePtr->_misses),
-                clasp_make_fixnum(_lisp->_Roots._SingleDispatchMethodCachePtr->_total_depth));
-}
 
 CL_LAMBDA();
 CL_DECLARE();

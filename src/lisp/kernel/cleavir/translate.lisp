@@ -951,15 +951,12 @@ when this is t a lot of graphs will be generated.")
              (format t ";    eval-when ~a ~a~%" (cadr form) (caddr form)))
       (t ()))))
 
-;;;
-;;; Turn type inference off for now - it slows the build down
-;;;
-(defparameter *enable-type-inference* nil)
+(defparameter *enable-type-inference* t)
 
 (defun my-hir-transformations (init-instr implementation processor os)
   (cleavir-typed-transforms:thes->typeqs init-instr)
   (quick-draw-hir init-instr "hir-after-thes-typeqs")
--  (when *enable-type-inference*
+  (when *enable-type-inference*
     ;; Conditionally use type inference.
     (handler-case
         (let ((types (cleavir-type-inference:infer-types init-instr)))

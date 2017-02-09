@@ -884,6 +884,13 @@
           switch-to-strandh-dispatch))
 
 
+(defun cache-status ()
+  (format t "                method-cache: ~a~%" (multiple-value-list (core:method-cache-status)))
+  (format t "single-dispatch-method-cache: ~a~%" (multiple-value-list (core:single-dispatch-method-cache-status)))
+  (format t "                  slot-cache: ~a~%" (multiple-value-list (core:slot-cache-status))))
+
+(export 'cache-status)
+  
 #|
 (defun permutations (specializers)
   (if (cdr specializers)

@@ -848,6 +848,15 @@ bool debugging_configuration(stringstream& ss) {
   debugging = true;
 #endif
   ss << (BF("METER_ALLOCATIONS = %s\n") % (meter_allocations ? "defined" : "undefined") ).str();
+
+  bool debug_cache = false;
+#ifdef DEBUG_CACHE
+  debug_cache = true;
+  debugging = true;
+#endif
+  ss << (BF("DEBUG_CACHE = %s\n") % (debug_cache ? "defined" : "undefined") ).str();
+
+
   return debugging;
 }
 

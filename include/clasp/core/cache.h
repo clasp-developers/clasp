@@ -54,7 +54,14 @@ namespace core {
     gctools::Vec0<T_sp> _keys;
     gctools::Vec0<CacheRecord> _table;
     int _generation;
-  Cache_O() : _misses(0), _searches(0), _total_depth(0){};
+#ifdef DEBUG_CACHE
+    bool _debug;
+#endif
+  Cache_O() : _misses(0), _searches(0), _total_depth(0), _generation(0)
+#ifdef DEBUG_CACHE
+      , _debug(0)
+#endif
+    {};
   private:
     void clearOneFromCache(T_sp target);
   public:
