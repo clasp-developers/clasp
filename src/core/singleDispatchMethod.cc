@@ -63,16 +63,6 @@ SingleDispatchMethod_sp SingleDispatchMethod_O::create(Symbol_sp name,
   method->_argument_handler = llh;
   method->_declares = declares;
   method->_docstring = docstr;
-// method->_Function this is what we need to set up NOW.
-// -- this function has to accept two arguments: (args next-emfun)
-// So it's a chainable methoid, it can be called with a next-emfun argument
-// which can be called by applying arguments to the local function "call-next-method"
-#if 0
-	CompiledBody_sp cb_method_function_primitive = CompiledBody_O::create(method_functoid,_Nil<T_O>());
-	LambdaListHandler_sp llh_pass_arguments_through(_Nil<LambdaListHandler_O>());
-	BuiltinClosure* method_functoid = gctools::ClassAllocator<Lambda_method_function>::allocate_class(name,method);
-	method->_method_builtin = BuiltIn_O::make(name,llh_pass_arguments_through,cb_method_function_primitive);
-#endif
   return method;
 }
 
