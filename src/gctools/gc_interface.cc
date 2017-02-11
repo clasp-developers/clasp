@@ -1,3 +1,4 @@
+
 /*
     File: gc_interface.cc
 */
@@ -91,6 +92,7 @@ typedef bool _Bool;
 
 #include <clasp/gctools/gctoolsPackage.h>
 #include <clasp/gctools/gcStack.h>
+#include <clasp/gctools/containers.h>
 #include <clasp/core/weakPointer.h>
 #include <clasp/core/cxxClass.h>
 #include <clasp/core/random.h>

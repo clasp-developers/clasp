@@ -27,6 +27,8 @@ namespace gctools {
     class GCVector_moveable;
   template <int N, class U, class S>
     class GCBitUnitArray_moveable;
+  template <class K>
+    class SmallOrderedSet;
 };
 
 namespace core {
