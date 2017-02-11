@@ -681,7 +681,7 @@
                                              *outcomes*)
                                     (let ((sorted (sort values #'< :key #'car)))
                                       (mapcar #'cdr sorted)))))
-                (let* ((module-handle (jit-add-module-return-function *the-module* disp-fn startup-fn shutdown-fn sorted-roots)))
+                (let* ((compiled-dispatcher (jit-add-module-return-function *the-module* disp-fn startup-fn shutdown-fn sorted-roots)))
                   (gf-log "Compiled dispatcher -> ~a~%" compiled-dispatcher)
                   (gf-log "Dumping module\n")
                   (gf-do (cmp-log-dump *the-module*))
@@ -869,12 +869,12 @@
 	    (setf (clos::generic-function-call-history gf) keep-entries))
        do (maybe-invalidate-generic-function gf))))
 
-(defun switch-to-strandh-dispatch (gf)
+(defun switch-to-fastgf (gf)
   (let ((dispatcher (calculate-strandh-dispatch-function gf)))
     (safe-set-funcallable-instance-function gf dispatcher)))
 
 (export '(invalidate-generic-functions-with-class-selector
-          switch-to-strandh-dispatch))
+          switch-to-fastgf))
 
 
 (defun cache-status ()

@@ -314,6 +314,8 @@ No DIBuilder is defined for the default module")
 
 (defparameter *jit-engine* nil)
 
+(export '(jit-lazy-setup jit-add-module-return-function jit-remove-module))
+
 ;;; Use old execution engine approach
 (progn
   (defun jit-lazy-setup ()
@@ -336,7 +338,3 @@ No DIBuilder is defined for the default module")
   (defun jit-remove-module (handle)
     "Maybe remove the module"
     nil))
-
-(export '(jit-lazy-setup jit-add-module-return-function jit-remove-module))
-
-

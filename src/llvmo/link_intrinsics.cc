@@ -1921,9 +1921,13 @@ void cc_dispatch_debug(int msg_id, uintptr_t val)
   case 2:
       BFORMAT_T(BF(" tag = %ld\n") % val);
       break;
-  case 3:
-      BFORMAT_T(BF("Arg list: %s\n") % _rep_(VaList_sp((gc::Tagged)val)) );
-      break;
+  case 3: {
+    VaList_S vl(0,*reinterpret_cast<va_list*>(val));
+    VaList_sp vls((gc::Tagged)vl.asTaggedPtr());
+    BFORMAT_T(BF("Arg VaList_sp.raw_() = %p list -> %s\n") % (void*)vls.raw_() % _rep_(vls) );
+    dump_VaList_S_ptr(&vl);
+    break;
+  }
   case 4:
       BFORMAT_T(BF("Ptr: %p\n") % (void*)val );
   }
