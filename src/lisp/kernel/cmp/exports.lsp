@@ -224,10 +224,6 @@ jit-function-name
 *the-module*
 with-debug-info-generator
 *the-module*
-*run-time-execution-engine*
-*run-time-execution-engine*
-create-run-time-execution-engine
-*run-time-execution-engine*
 *run-time-literal-holder*
 set-associated-funcs
 *all-functions-for-one-compile*
@@ -355,15 +351,10 @@ cmp-log-dump
 *the-module*
 *the-module*
 cmp-log
-*run-time-execution-engine*
-*run-time-execution-engine*
-create-run-time-execution-engine
-*run-time-execution-engine*
 *the-module*
 cmp-log
 *the-module*
 cmp-log
-*run-time-execution-engine*
 *run-time-values-table-name*
 *run-time-literal-holder*
 set-associated-funcs

@@ -439,8 +439,12 @@ void af_evalPrint(const string &expr) {
   _lisp->readEvalPrintString(expr, env, true);
 };
 
-void dbg_lowLevelDescribe(T_sp obj) {
-  if (obj.valistp()) {
+
+CL_DEFUN void core__lowLevelDescribe(T_sp obj) {
+  dbg_lowLevelDescribe(obj);
+}
+
+void dbg_VaList_sp_describe(T_sp obj) {
     // Convert the T_sp object into a VaList_sp object
     VaList_sp vl = VaList_sp((gc::Tagged)obj.raw_());
     printf("Original va_list at: %p\n", &((VaList_S *)gc::untag_valist(reinterpret_cast<VaList_S *>(obj.raw_())))->_Args);
@@ -454,9 +458,12 @@ void dbg_lowLevelDescribe(T_sp obj) {
         T_sp v = vlcopy->next_arg();
         printf("entry@%p %3zu --> %s\n", v.raw_(), i, _rep_(v).c_str());
       }
-    } else {
-      printf("The arglist is not safe to read - it is not atHead\n");
     }
+}
+
+void dbg_lowLevelDescribe(T_sp obj) {
+  if (obj.valistp()) {
+    dbg_VaList_sp_describe(obj);
   } else if (obj.fixnump()) {
     printf("fixnum_tag: %ld\n", obj.unsafe_fixnum());
   } else if (obj.single_floatp()) {

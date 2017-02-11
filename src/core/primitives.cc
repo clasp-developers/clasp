@@ -1952,6 +1952,23 @@ CL_DEFUN void core__dynamic_binding_stack_dump(std::ostream &out) {
   };
 }
 
+CL_DEFUN size_t core__va_list_length(VaList_sp v)
+{
+//  printf("%s:%d va_list length %lu\n", __FILE__, __LINE__, v->remaining_nargs());
+  return v->remaining_nargs();
+}
+
+CL_DEFUN size_t core__va_list_current_index(VaList_sp v)
+{
+//  printf("%s:%d va_list_current_index = %lu\n", __FILE__, __LINE__, v->current_index());
+  return v->current_index();
+}
+
+CL_DEFUN T_sp core__va_arg(VaList_sp v)
+{
+  return v->next_arg();
+}
+
 CL_DEFUN List_sp core__list_from_va_list(VaList_sp vorig)
 {
   VaList_S valist_copy(*vorig);

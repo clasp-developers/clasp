@@ -61,15 +61,18 @@
           ((atom form)
            (error "Malformed effective method form:~%~A" form))
           ((eq (setf first (first form)) 'MAKE-METHOD)
-           (maybe-compile `(lambda (.method-args. .next-methods.)
+           (maybe-compile `(lambda (.method-args. .next-methods. &va-rest args)
                              (declare (core:lambda-name effective-method-function.make-method))
-                             (flet ((call-next-method (&rest args)
+                             (flet ((call-next-method (&va-rest args)
                                       (if (not .next-methods.)
                                           (error "No next method")
-                                          (apply (car .next-methods.)
-                                                 (or args .method-args)
-                                                 (cdr .next-methods.)
-                                                 (or args .method-args.))))
+                                          (let ((use-args (if (> (va-list-length args) 0) args .method-args.)))
+                                            (core:multiple-value-foreign-call "apply_call_next_method1"
+                                             (car .next-methods.)
+                                             use-args ; (or args .method-args)
+                                             (cdr .next-methods.)
+                                             use-args ; (or args .method-args.)
+                                             ))))
                                     (next-method-p ()
                                       (and .next-methods. t)))
                                ,(second form)))))
@@ -78,7 +81,7 @@
             (effective-method-function (second form))
             (mapcar #'effective-method-function (third form))))
           (top-level
-           (maybe-compile `(lambda (.method-args. .next-methods. #|no-next-methods|#)
+           (maybe-compile `(lambda (.method-args. .next-methods. &va-rest args #|no-next-methods|#)
                              (declare (ignorable .next-methods.)
                                       (core:lambda-name effective-method-function.top-level))
                              ,form)))
@@ -96,44 +99,39 @@
 ;;; a different name to track down problems
 (defun combine-method-functions1 (method rest-methods)
   (declare (si::c-local))
-  #'(lambda (.method-args. .next-methods. #|no-next-methods|#)
+  #'(lambda (.method-args. .next-methods. &va-rest args #|no-next-methods|#)
       (declare (ignorable .next-methods. #|no-next-methods|#)
                (core:lambda-name combine-method-functions1.lambda))
       ;; TODO: Optimize this application and GF dispatch should be more efficient
       ;; .method-args. can be a valist or a regular list
-      (apply method .method-args. rest-methods .method-args.)
-      #+(or)(core:multiple-value-foreign-call "fast_apply_method" method .method-args. rest-methods)
-      ))
+      (core:multiple-value-foreign-call "apply_method1" method .method-args. rest-methods args)))
 
 (defun combine-method-functions2 (method rest-methods)
   (declare (si::c-local))
-  #'(lambda (.method-args. .next-methods. #|no-next-methods|#)
+  #'(lambda (.method-args. .next-methods. &va-rest args #|no-next-methods|#)
       (declare (ignorable .next-methods. #|no-next-methods|#)
                (core:lambda-name combine-method-functions2.lambda))
       ;; TODO: Optimize this application and GF dispatch should be more efficient
       ;; .method-args. can be a valist or a regular list
-      (apply method .method-args. rest-methods .method-args.)
-      #+(or)(core:multiple-value-foreign-call "fast_apply_method" method .method-args. rest-methods)
-      ))
+      (core:multiple-value-foreign-call "apply_method2" method .method-args. rest-methods args)))
 
 (defun combine-method-functions3 (method rest-methods)
   (declare (si::c-local))
-  #'(lambda (.method-args. .next-methods. #|no-next-methods|#)
+  #'(lambda (.method-args. .next-methods. &va-rest args #|no-next-methods|#)
       (declare (ignorable .next-methods. #|no-next-methods|#)
                (core:lambda-name combine-method-functions3.lambda))
       ;; TODO: Optimize this application and GF dispatch should be more efficient
       ;; .method-args. can be a valist or a regular list
-      (apply method .method-args. rest-methods .method-args.)
-      #+(or)(core:multiple-value-foreign-call "fast_apply_method" method .method-args. rest-methods)
-      ))
+      (core:multiple-value-foreign-call "apply_method3" method .method-args. rest-methods args)))
 
 (defmacro call-method (method &optional rest-methods)
-  `(apply ,(effective-method-function method)
-          ;; This is a stab in the dark - I don't know if .method-args.
-          ;; will be defined in the lexical environment
-          .method-args.
-          ',(and rest-methods (mapcar #'effective-method-function rest-methods))
-          .method-args.))
+  `(core:multiple-value-foreign-call "apply_method4"
+                                     ,(effective-method-function method)
+                                     ;; This is a stab in the dark - I don't know if .method-args.
+                                     ;; will be defined in the lexical environment
+                                     .method-args.
+                                     ',(and rest-methods (mapcar #'effective-method-function rest-methods))
+                                     .method-args.))
 
 (defun error-qualifier (m qualifier)
   (declare (si::c-local))
@@ -144,17 +142,17 @@
 
 (defun standard-main-effective-method (before primary after)
   (declare (si::c-local))
-  #'(lambda (.method-args. no-next-method #|&rest args|#)
+  #'(lambda (.method-args. no-next-method #+ecl &rest #+clasp &va-rest args) #|DANGER|#
       (declare (ignore no-next-method)
                (core:lambda-name standard-main-effective-method.lambda))
       (dolist (i before)
-        (apply i .method-args. nil .method-args.))
+        (core:multiple-value-foreign-call "apply_method5" i .method-args. nil .method-args.))
       (if after
 	  (multiple-value-prog1
-              (apply (first primary) .method-args. (rest primary) .method-args.)
+              (core:multiple-value-foreign-call "apply_method6" (first primary) .method-args. (rest primary) .method-args.)
             (dolist (i after)
-              (apply i .method-args. nil .method-args.)))
-          (apply (first primary) .method-args. (rest primary) .method-args.))))
+              (core:multiple-value-foreign-call "apply_method7" i .method-args. nil .method-args.)))
+          (core:multiple-value-foreign-call "apply_method8" (first primary) .method-args. (rest primary) .method-args.))))
 
 
 (defun standard-compute-effective-method (gf methods)
@@ -405,8 +403,9 @@
 	  (effective-method-function form t)))))
 
 (defun compute-effective-method (gf method-combination applicable-methods)
-  `(funcall ,(std-compute-effective-method gf method-combination applicable-methods)
-	    .method-args. .next-methods.))
+  `(core:multiple-value-foreign-call
+    "apply_method9" ,(std-compute-effective-method gf method-combination applicable-methods)
+    .method-args. .next-methods. .method-args.))
 
 ;;
 ;; These method combinations are bytecompiled, for simplicity.

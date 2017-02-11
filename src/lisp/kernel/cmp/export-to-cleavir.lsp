@@ -20,7 +20,6 @@
           *load-time-value-holder-global-var*
           *low-level-trace*
           *low-level-trace-print*
-          *run-time-execution-engine*
           *run-time-literal-holder*
           *run-time-values-table-name*
           *run-time-values-table-global-var*
@@ -63,7 +62,6 @@
           compiler-fatal-error
           compiler-message-file
           compiler-message-file-position
-          create-run-time-execution-engine
           safe-system
           dbg-set-current-debug-location-here
           irc-verify-module-safe

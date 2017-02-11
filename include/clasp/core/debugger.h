@@ -82,6 +82,7 @@ namespace core {
   void af_backtrace();
 
 
+  void dbg_lowLevelDescribe(T_sp obj);
   void dbg_describe_tagged_T_Optr(T_O *p);
 
 extern "C" {

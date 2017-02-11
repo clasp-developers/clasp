@@ -50,5 +50,7 @@ namespace core {
 
   LCC_RETURN user_function_dispatch(gctools::Tagged tgf, gctools::Tagged tvargs);
 
+  extern "C" LCC_RETURN apply_method0(T_O* func_tagged, T_O* arg0_tagged, T_O* arg1_tagged, T_O* rest_args_tagged);
+
 };
 #endif /* _core_genericFunction_H_ */

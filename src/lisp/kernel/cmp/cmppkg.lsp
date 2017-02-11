@@ -25,8 +25,6 @@
 	  *run-time-literal-holder*
 	  cmp-log
 	  cmp-log-dump
-	  *run-time-execution-engine*
-	  create-run-time-execution-engine
 	  irc-environment-activation-frame
 	  *run-time-values-table-name*
 	  *all-functions-for-one-compile*

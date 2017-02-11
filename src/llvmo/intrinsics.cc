@@ -49,6 +49,7 @@ extern "C" {
 #include <clasp/core/package.h>
 #include <clasp/core/hashTable.h>
 #include <clasp/core/evaluator.h>
+#include <clasp/core/genericFunction.h>
 #include <clasp/core/sourceFileInfo.h>
 #include <clasp/core/loadTimeValues.h>
 #include <clasp/core/multipleValues.h>
@@ -56,6 +57,7 @@ extern "C" {
 #include <clasp/core/posixTime.h>
 #include <clasp/core/numbers.h>
 #include <clasp/core/fli.h>
+#include <clasp/core/debugger.h>
 #include <clasp/core/activationFrame.h>
 #include <clasp/core/symbolTable.h>
 #include <clasp/llvmo/llvmoExpose.h>
@@ -249,10 +251,6 @@ ALWAYS_INLINE core::T_O **cc_loadTimeValueReference(core::T_sp* vec, size_t inde
   return &result.rawRef_();
 }
 
-ALWAYS_INLINE core::T_O *cc_va_arg(VaList_S *valist) {
-  VaList_S *vl = reinterpret_cast<VaList_S *>(gc::untag_valist((void *)valist));
-  return va_arg(vl->_Args, core::T_O *);
-}
 
 ALWAYS_INLINE void cc_copy_va_list(size_t nargs, T_O **mvPtr, VaList_S *va_args) {
   VaList_S *vl = reinterpret_cast<VaList_S *>(gc::untag_valist((void *)va_args));
@@ -339,11 +337,33 @@ ALWAYS_INLINE core::T_sp *valueFrameReference(core::ActivationFrame_sp *frameP, 
   return pos_gc_safe;
 }
 
+#if 0
+ALWAYS_INLINE core::T_O *cc_va_arg(VaList_S *valist) {
+  VaList_S *vl = reinterpret_cast<VaList_S *>(gc::untag_valist((void *)valist));
+  return va_arg(vl->_Args, core::T_O *);
+}
+#endif
+ALWAYS_INLINE T_O* cc_va_arg(T_O* list) {
+  VaList_sp va_list_sp((gctools::Tagged)list);
+  LIKELY_if (va_list_sp->remaining_nargs()>0) {
+    return va_list_sp->next_arg_raw();
+  }
+  return _Nil<T_O>().raw_();
+}
+
+ALWAYS_INLINE size_t cc_va_list_length(T_O* list) {
+  VaList_sp va_list_sp((gctools::Tagged)list);
+  return va_list_sp->remaining_nargs();
+}
+
 ALWAYS_INLINE core::T_O *cc_gatherVaRestArguments(std::size_t nargs, VaList_S *tagged_vargs, std::size_t startRest, VaList_S* untagged_vargs_rest) {
   ASSERT(nargs >= startRest);
   VaList_S* untagged_vargs = reinterpret_cast<VaList_S*>(gc::untag_valist(tagged_vargs));
   untagged_vargs_rest->set_from_other_VaList_S(untagged_vargs);
   T_O* result = untagged_vargs_rest->asTaggedPtr();
+//  printf("%s:%d gatherVaRestArguments result = %p\n", __FILE__, __LINE__, (void*)result);
+//  dump_VaList_S_ptr(untagged_vargs_rest);
+//  printf("%s:%d returning result = %p\n", __FILE__, __LINE__, (void*)result);
   return result;
 //  T_sp varest((gctools::Tagged)vargs);
 //  printf("%s:%d in gatherVaRestArguments --> %s\n", __FILE__, __LINE__, _rep_(vargs).c_str());
@@ -494,7 +514,7 @@ void cc_bad_tag(core::T_O* gf, core::T_O* gf_args)
 };
 
 gctools::return_type cc_dispatch_effective_method(core::T_O* teffective_method, core::T_O* tgf, core::T_O* tgf_args_valist_s) {
-#if 1
+#if 0
   if (gctools::TaggedCast<CompiledClosure_O*,T_O*>::isA(teffective_method)) {
     core::CompiledClosure_O* ptrFunc = reinterpret_cast<core::CompiledClosure_O*>(gc::untag_general(teffective_method));
     core::T_O* tagged_closure = gctools::tag_general(ptrFunc);
@@ -510,7 +530,7 @@ gctools::return_type cc_dispatch_effective_method(core::T_O* teffective_method, 
   core::T_sp gf_args((gctools::Tagged)tgf_args_valist_s);
 //  printf("%s:%d  Invoking effective-method %s with arguments %s\n", __FILE__, __LINE__,
   // Arguments are .method-args. .next-methods.
-  return core::eval::funcall(effective_method,gf_args,_Nil<core::T_O>());
+  return apply_method0(effective_method.raw_(),gf_args.raw_(),_Nil<core::T_O>().raw_(),gf_args.raw_());
 #endif
 }
 

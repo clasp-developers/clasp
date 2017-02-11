@@ -339,3 +339,166 @@ CL_DEFUN void core__clear_gfun_hash(T_sp what) {
 };
 
 };
+
+
+namespace core {
+//#define DEBUG_APPLY_METHOD
+#ifdef DEBUG_APPLY_METHOD
+void describe_apply_method(T_O* func_tagged, int nargs, T_O* arg0_tagged, T_O* arg1_tagged, T_O* rest_args_tagged, int call_type ) {
+  Function_sp func((gctools::Tagged)func_tagged);
+  T_sp arg0((gctools::Tagged)arg0_tagged);
+  T_sp arg1((gctools::Tagged)arg1_tagged);
+  T_sp rest_args((gctools::Tagged)rest_args_tagged);
+  stringstream scmd;
+  if (call_type<0) {
+    scmd << "call-next-method.";
+    scmd << -call_type;
+  } else {
+    scmd << "apply-method";
+    scmd << call_type;
+  }
+  stringstream sarg0;
+  sarg0 << _rep_(arg0);
+  if (arg0.valistp()) {
+    VaList_sp varg0 = gc::As_unsafe<VaList_sp>(arg0);
+    sarg0 << " " << _rep_(core__list_from_va_list(varg0));
+  }
+  stringstream srest_args;
+  srest_args << _rep_(rest_args);
+  if (rest_args.valistp()) {
+    VaList_sp vrest_args = gc::As_unsafe<VaList_sp>(rest_args);
+    srest_args << " " << _rep_(core__list_from_va_list(vrest_args));
+  }
+  printf("%s:%d>>> %s  %s\n", __FILE__, __LINE__, scmd.str().c_str(), _rep_(func).c_str());
+  printf("        to %d arguments\n", nargs );
+  printf("        method_args: %s\n", sarg0.str().c_str());
+  if (arg0.valistp()) {
+    dump_VaList_S_ptr(&*arg0);
+  }
+  printf("        next_methods: %s\n", _rep_(arg1).c_str() );
+  printf("        rest_args: %s\n", srest_args.str().c_str() );
+  if (rest_args.valistp()) {
+    dump_VaList_S_ptr(&*rest_args);
+  }
+}
+#endif
+
+LCC_RETURN apply_method(T_O* func_tagged, T_O* arg0_tagged, T_O* arg1_tagged, T_O* rest_args_tagged, int call_type=0) {
+//  int lenTotalArgs = args->total_nargs();
+//  if (lenTotalArgs == 0) eval::errorApplyZeroArguments();
+  T_O* lastArgRaw = rest_args_tagged;
+  int lenTotalArgs;
+  LIKELY_if (gctools::tagged_valistp(rest_args_tagged)) {
+    VaList_sp rest_args_as_VaList_sp((gctools::Tagged)rest_args_tagged);
+    VaList_S va_rest_copy_S(*rest_args_as_VaList_sp);
+    VaList_sp va_rest_args(&va_rest_copy_S);
+    lenTotalArgs = 2+va_rest_args->remaining_nargs();
+#ifdef DEBUG_APPLY_METHOD
+    describe_apply_method(func_tagged,lenTotalArgs,arg0_tagged,arg1_tagged,rest_args_tagged,call_type);
+#endif
+    MAKE_STACK_FRAME( frame, func_tagged, lenTotalArgs);
+    size_t idx = 0;
+    (*frame)[0] = arg0_tagged;
+    (*frame)[1] = arg1_tagged;
+    for (int i(2); i < lenTotalArgs; ++i) {
+      (*frame)[i] = va_rest_args->next_arg_raw();
+    }
+    VaList_S valist_struct(frame);
+    VaList_sp valist(&valist_struct); // = frame.setupVaList(valist_struct);;
+#if 0
+    printf("%s:%d:%s   func_tagged = %p \n", __FILE__, __LINE__, __FUNCTION__, (void*)func_tagged);
+    for (int i(0); i<lenTotalArgs; ++i ) {
+      printf("       %s:%d:%s   (*frame)[%d]=%p\n", __FILE__,__LINE__,__FUNCTION__,i,(*frame)[i]);
+    }
+#endif
+    return funcall_consume_valist_<core::Function_O>((gctools::Tagged)func_tagged, valist);
+  } else if (gctools::tagged_consp(rest_args_tagged)) {
+    Cons_sp cons_rest_args((gctools::Tagged)rest_args_tagged);
+    List_sp list_rest_args((gctools::Tagged)rest_args_tagged);
+    lenTotalArgs = 2+cons_rest_args->length();
+#ifdef DEBUG_APPLY_METHOD
+    describe_apply_method(func_tagged,lenTotalArgs,arg0_tagged,arg1_tagged,rest_args_tagged,call_type);
+#endif
+    MAKE_STACK_FRAME( frame, func_tagged, lenTotalArgs);
+    (*frame)[0] = arg0_tagged;
+    (*frame)[1] = arg1_tagged;
+    for (int i(2); i<lenTotalArgs; ++i ) {
+      (*frame)[i] = oCar(list_rest_args).raw_();
+      list_rest_args = oCdr(list_rest_args);
+    }
+    VaList_S valist_struct(frame);
+    VaList_sp valist(&valist_struct); // = frame.setupVaList(valist_struct);;
+#if 0
+    printf("%s:%d:%s   func_tagged = %p \n", __FILE__, __LINE__, __FUNCTION__, (void*)func_tagged);
+    for (int i(0); i<lenTotalArgs; ++i ) {
+      printf("       %s:%d:%s   (*frame)[%d]=%p\n", __FILE__,__LINE__,__FUNCTION__,i,(*frame)[i]);
+    }
+#endif
+    return funcall_consume_valist_<core::Function_O>((gctools::Tagged)func_tagged, valist);
+  }
+  lenTotalArgs = 2;
+#ifdef DEBUG_APPLY_METHOD
+  describe_apply_method(func_tagged,lenTotalArgs,arg0_tagged,arg1_tagged,rest_args_tagged,call_type);
+#endif
+  Function_O* func = reinterpret_cast<Function_O*>(gctools::untag_general(func_tagged));
+//  printf("%s:%d  func = %p  func_tagged = %p  arg0_tagged=%p arg1_tagged=%p\n", __FILE__, __LINE__, (void*)func, (void*)func_tagged, (void*)arg0_tagged, (void*)arg1_tagged);
+  return (*func)(LCC_PASS_ARGS2_ELLIPSIS(func_tagged,arg0_tagged, arg1_tagged));
+}
+
+
+CL_DEFUN void core__print_object_address(T_sp obj)
+{
+  printf("%s:%d print_object %s @%p\n", __FILE__, __LINE__, _rep_(obj).c_str(), (void*)obj.raw_());
+}
+
+extern "C" {
+
+
+LCC_RETURN apply_method0(T_O* func_tagged, T_O* arg0_tagged, T_O* arg1_tagged, T_O* rest_args_tagged) {
+//  printf("%s:%d:%s   func_tagged=%p arg0_tagged=%p arg1_tagged=%p rest_args_tagged=%p\n", __FILE__, __LINE__, __FUNCTION__, (void*)func_tagged, (void*)arg0_tagged, (void*)arg1_tagged, (void*)rest_args_tagged);
+  return apply_method(func_tagged,arg0_tagged,arg1_tagged,rest_args_tagged,0);
+}
+LCC_RETURN apply_method1(T_O* func_tagged, T_O* arg0_tagged, T_O* arg1_tagged, T_O* rest_args_tagged) {
+  return apply_method(func_tagged,arg0_tagged,arg1_tagged,rest_args_tagged,1);
+}
+LCC_RETURN apply_method2(T_O* func_tagged, T_O* arg0_tagged, T_O* arg1_tagged, T_O* rest_args_tagged) {
+  return apply_method(func_tagged,arg0_tagged,arg1_tagged,rest_args_tagged,2);
+}
+LCC_RETURN apply_method3(T_O* func_tagged, T_O* arg0_tagged, T_O* arg1_tagged, T_O* rest_args_tagged) {
+//  printf("%s:%d:%s   func_tagged=%p arg0_tagged=%p arg1_tagged=%p rest_args_tagged=%p\n", __FILE__, __LINE__, __FUNCTION__, (void*)func_tagged, (void*)arg0_tagged, (void*)arg1_tagged, (void*)rest_args_tagged);
+  return apply_method(func_tagged,arg0_tagged,arg1_tagged,rest_args_tagged,3);
+}
+LCC_RETURN apply_method4(T_O* func_tagged, T_O* arg0_tagged, T_O* arg1_tagged, T_O* rest_args_tagged) {
+  return apply_method(func_tagged,arg0_tagged,arg1_tagged,rest_args_tagged,4);
+}
+LCC_RETURN apply_method5(T_O* func_tagged, T_O* arg0_tagged, T_O* arg1_tagged, T_O* rest_args_tagged) {
+  return apply_method(func_tagged,arg0_tagged,arg1_tagged,rest_args_tagged,5);
+}
+LCC_RETURN apply_method6(T_O* func_tagged, T_O* arg0_tagged, T_O* arg1_tagged, T_O* rest_args_tagged) {
+  return apply_method(func_tagged,arg0_tagged,arg1_tagged,rest_args_tagged,6);
+}
+LCC_RETURN apply_method7(T_O* func_tagged, T_O* arg0_tagged, T_O* arg1_tagged, T_O* rest_args_tagged) {
+  return apply_method(func_tagged,arg0_tagged,arg1_tagged,rest_args_tagged,7);
+}
+LCC_RETURN apply_method8(T_O* func_tagged, T_O* arg0_tagged, T_O* arg1_tagged, T_O* rest_args_tagged) {
+  return apply_method(func_tagged,arg0_tagged,arg1_tagged,rest_args_tagged,8);
+}
+LCC_RETURN apply_method9(T_O* func_tagged, T_O* arg0_tagged, T_O* arg1_tagged, T_O* rest_args_tagged) {
+  return apply_method(func_tagged,arg0_tagged,arg1_tagged,rest_args_tagged,9);
+}
+LCC_RETURN apply_method10(T_O* func_tagged, T_O* arg0_tagged, T_O* arg1_tagged, T_O* rest_args_tagged) {
+  return apply_method(func_tagged,arg0_tagged,arg1_tagged,rest_args_tagged,10);
+}
+LCC_RETURN apply_method11(T_O* func_tagged, T_O* arg0_tagged, T_O* arg1_tagged, T_O* rest_args_tagged) {
+  return apply_method(func_tagged,arg0_tagged,arg1_tagged,rest_args_tagged,11);
+}
+
+LCC_RETURN apply_call_next_method1(T_O* func_tagged, T_O* arg0_tagged, T_O* arg1_tagged, T_O* rest_args_tagged) {
+  return apply_method(func_tagged,arg0_tagged,arg1_tagged,rest_args_tagged,-1);
+}
+LCC_RETURN apply_call_next_method2(T_O* func_tagged, T_O* arg0_tagged, T_O* arg1_tagged, T_O* rest_args_tagged) {
+  return apply_method(func_tagged,arg0_tagged,arg1_tagged,rest_args_tagged,-2);
+}
+};
+
+};

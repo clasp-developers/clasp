@@ -1051,6 +1051,7 @@ that llvm function. This works like compile-lambda-function in bclasp."
 (export '*cleavir-compile-verbose*)
 (in-package :clasp-cleavir)
 (defun cclasp-compile* (name form env pathname)
+  (cmp:jit-lazy-setup)
   (when *cleavir-compile-verbose*
     (format *trace-output* "Cleavir compiling t1expr: ~s~%" form)
     (format *trace-output* "          in environment: ~s~%" env ))
@@ -1073,32 +1074,7 @@ that llvm function. This works like compile-lambda-function in bclasp."
         (cmp:cmp-log-dump cmp:*the-module*)
         (cmp:link-intrinsics-module cmp:*the-module*)
         (cmp:quick-module-dump cmp:*the-module* "cclasp-compile-module-pre-optimize")
-        (cmp:cmp-log "About to test and maybe set up the *run-time-execution-engine*\n")
-        ;; SETUP THE *run-time-execution-engine* here for the first time
-        ;; using the current module in *the-module*
-        ;; At this point the *the-module* will become invalid because
-        ;; the execution-engine will take ownership of it
-        (if (not cmp:*run-time-execution-engine*)
-            (setq cmp:*run-time-execution-engine* (cmp:create-run-time-execution-engine cmp:*the-module*))
-            (llvm-sys:add-module cmp:*run-time-execution-engine* cmp:*the-module*))
-        ;; At this point the Module in *the-module* is invalid because the
-        ;; execution-engine owns it
-        (cmp:cmp-log "The execution-engine now owns the module\n")
-        (setq cmp:*the-module* nil)
-        (cmp:cmp-log "About to finalize-engine with fn %s\n" fn)
-        (let* ((fn-name (llvm-sys:get-name fn)) ;; this is the name of the function - a string
-               (setup-function
-                (llvm-sys:finalize-engine-and-register-with-gc-and-get-compiled-function
-                 cmp:*run-time-execution-engine*
-                 lambda-name	        ; main fn name
-                 fn			; llvm-fn
-                 nil			; environment
-                 "repl-fn.txt"
-                 4321
-                 5678
-                 startup-fn
-                 shutdown-fn
-                 ordered-raw-constants-list)))
+        (let* ((setup-function (cmp:jit-add-module-return-function cmp:*the-module* fn startup-fn shutdown-fn ordered-raw-constants-list)))
           (let ((enclosed-function (funcall setup-function)))
             ;;(format t "*all-functions-for-one-compile* -> ~s~%" cmp:*all-functions-for-one-compile*)
             ;;(cmp:set-associated-funcs enclosed-function cmp:*all-functions-for-one-compile*)

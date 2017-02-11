@@ -146,7 +146,6 @@ Return the module and the global variable that represents the load-time-value-ho
 (defvar *run-time-module* nil)
 
 (defvar *the-module* nil "This stores the module into which compile puts its stuff")
-(defvar *run-time-execution-engine* nil)
 (defvar *the-function-pass-manager* nil "the function-pass-manager applied to runtime functions")
 
 
@@ -307,19 +306,37 @@ No DIBuilder is defined for the default module")
 
 (setq core:*llvm-function-name-hook* #'jit-function-name)
 
-;;; Use the one in llvm-sys
-#+(or)
-(defun load-bitcode (filename &optional verbose print external_format)
-  "Load a bitcode file, link it and execute it"
-  (let* ((*package* *package*)
-         (module (llvm-sys:parse-bitcode-file (namestring (truename filename)) *llvm-context*))
-         (engine-builder (llvm-sys:make-engine-builder module))
-         (target-options (llvm-sys:make-target-options)))
-    (llvm-sys:set-target-options engine-builder target-options)
-;;;	 (llvm-sys:set-use-mcjit engine-builder t)
-    (let* ((execution-engine (llvm-sys:create engine-builder)))
-      (llvm-sys:finalize-engine-and-register-with-gc-and-run-main-functions execution-engine 
-                                                                            *load-time-value-holder-name*
-                                                                            (namestring (truename filename)))
-      t)))
-(export 'load-bitcode)
+
+;;; ------------------------------------------------------------
+;;;
+;;;  JIT facility
+;;;
+
+(defparameter *jit-engine* nil)
+
+;;; Use old execution engine approach
+(progn
+  (defun jit-lazy-setup ()
+    #|For MCJIT do nothing|#
+    )
+  (defun jit-add-module-return-function (module repl-fn startup-fn shutdown-fn literals-list)
+    "Add the module to the jit and return a handle"
+    (if (not *jit-engine*)
+        (setq *jit-engine* (create-run-time-execution-engine module))
+        (llvm-sys:add-module *jit-engine* module))
+    (llvm-sys:finalize-engine-and-register-with-gc-and-get-compiled-function
+     *jit-engine*
+     "JIT"
+     repl-fn
+     (irc-environment-activation-frame nil) 0 0 0
+     startup-fn
+     shutdown-fn
+     literals-list))
+
+  (defun jit-remove-module (handle)
+    "Maybe remove the module"
+    nil))
+
+(export '(jit-lazy-setup jit-add-module-return-function jit-remove-module))
+
+

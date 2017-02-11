@@ -192,13 +192,13 @@ THE SOFTWARE.
 
 #define LCC_VA_LIST_CURRENT_INDEX(_res, _args)                    \
   _res = (((*_args)._Args[0].gp_offset/sizeof(void*))-LCC_ARG0_REGISTER); \
-  if ( _res > LCC_ARGS_PASSED_IN_REGISTERS ) { \
-    _res = LCC_VA_LIST_OVERFLOW_ARG_AREA(_args)-LCC_ORIGINAL_VA_LIST_OVERFLOW_ARG_AREA(_args); \
+  if ( _res >= LCC_ARGS_PASSED_IN_REGISTERS ) { \
+    _res = (LCC_VA_LIST_OVERFLOW_ARG_AREA(_args)-LCC_ORIGINAL_VA_LIST_OVERFLOW_ARG_AREA(_args)) + LCC_ARG0_REGISTER; \
   }
 
 #define LCC_VA_LIST_REMAINING_NUMBER_OF_ARGUMENTS(_res, _args) \
   LCC_VA_LIST_CURRENT_INDEX(_res,_args); \
-  _res = LCC_VA_LIST_TOTAL_NUMBER_OF_ARGUMENTS(_args) - (_res);
+  _res = LCC_VA_LIST_TOTAL_NUMBER_OF_ARGUMENTS(_args) - (_res)
 
 
 #define LCC_VA_LIST_incorrect_INDEXED_ARG(_res, _args, _idx)                    \
@@ -298,14 +298,8 @@ typedef LCC_RETURN (*ShutdownFunction_fptr_type)();
 extern "C" {
 // Return true if the VaList_S is at the head of the list and false if it is used up
 inline bool dump_VaList_S_ptr(VaList_S* args) {
-  printf("va_list dump\n");
+  printf("va_list dump @%p\n", (void*)args);
   bool atHead = ((*args)._Args[0].gp_offset==0x18);
-  printf("           gp_offset = %p (%s)\n", reinterpret_cast<void*>((*args)._Args[0].gp_offset),  atHead ? "at head" : "NOT at head" );
-  printf("           fp_offset = %p\n", reinterpret_cast<void*>((*args)._Args[0].fp_offset) );
-  printf("       reg_save_area = %p\n", reinterpret_cast<void*>((*args)._Args[0].reg_save_area) );
-  void* overflow_arg_area = (*args)._Args[0].overflow_arg_area;
-  void* overflow_save = ((core::T_O* *)(*args)._Args->reg_save_area)[LCC_OVERFLOW_SAVE_REGISTER];
-  printf("   overflow_arg_area = %p (%s)\n", overflow_arg_area, (overflow_arg_area==overflow_save) ? "at OVERFLOW_SAVE" : "NOT at OVERFLOW_SAVE" );
   printf("---Register save area@%p (NOTE: Often in other stack frame)\n", (*args)._Args[0].reg_save_area);
   printf("       CLOSURE_REGISTER@%p = %p\n", reinterpret_cast<void*>(LCC_CLOSURE_REGISTER*8), ((core::T_O* *)(*args)._Args->reg_save_area)[LCC_CLOSURE_REGISTER] );
   printf(" OVERFLOW_SAVE_REGISTER@%p = %p\n", reinterpret_cast<void*>(LCC_OVERFLOW_SAVE_REGISTER*8), ((core::T_O* *)(*args)._Args->reg_save_area)[LCC_OVERFLOW_SAVE_REGISTER] );
@@ -313,6 +307,16 @@ inline bool dump_VaList_S_ptr(VaList_S* args) {
   printf("          ARG0_REGISTER@%p = %p\n", reinterpret_cast<void*>(LCC_ARG0_REGISTER*8), ((core::T_O* *)(*args)._Args->reg_save_area)[LCC_ARG0_REGISTER] );
   printf("          ARG1_REGISTER@%p = %p\n", reinterpret_cast<void*>(LCC_ARG1_REGISTER*8), ((core::T_O* *)(*args)._Args->reg_save_area)[LCC_ARG1_REGISTER] );
   printf("          ARG2_REGISTER@%p = %p\n", reinterpret_cast<void*>(LCC_ARG2_REGISTER*8), ((core::T_O* *)(*args)._Args->reg_save_area)[LCC_ARG2_REGISTER] );
+  const char* atpos = "";
+  if ((*args)._Args[0].gp_offset==0x18) atpos = "atStartReg";
+  else if ((*args)._Args[0].gp_offset==0x30) atpos = "pastEnd";
+  printf("           gp_offset = %p (%s)\n", reinterpret_cast<void*>((*args)._Args[0].gp_offset),  atpos );
+  printf("           fp_offset = %p\n", reinterpret_cast<void*>((*args)._Args[0].fp_offset) );
+  printf("       reg_save_area = %p (this points to the Register save area above ^^^)\n", reinterpret_cast<void*>((*args)._Args[0].reg_save_area) );
+  uintptr_t* overflow_arg_area = reinterpret_cast<uintptr_t*>((*args)._Args[0].overflow_arg_area);
+  uintptr_t* overflow_save = reinterpret_cast<uintptr_t*>(((core::T_O* *)(*args)._Args->reg_save_area)[LCC_OVERFLOW_SAVE_REGISTER]);
+  int overflow_offset = overflow_arg_area-overflow_save;
+  printf("   overflow_arg_area = %p (offset from OVERFLOW_SAVE_REGISTER = %d) \n", (void*)overflow_arg_area, overflow_offset );
   int nargs = ((uintptr_t *)(*args)._Args->reg_save_area)[LCC_NARGS_REGISTER];
   nargs -= 3;
   if (nargs > 0 ) {

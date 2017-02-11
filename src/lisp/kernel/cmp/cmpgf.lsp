@@ -591,6 +591,7 @@
   (let ((*the-module* (create-run-time-module-for-compile)))
     (define-primitives-in-module *the-module*)
     (with-module (:module *the-module*
+                          :optimize nil
 			  :source-namestring "dispatcher"
 			  :source-file-info-handle 0)
       (let ((disp-fn (irc-simple-function-create "gf-dispatcher"
@@ -680,15 +681,7 @@
                                              *outcomes*)
                                     (let ((sorted (sort values #'< :key #'car)))
                                       (mapcar #'cdr sorted)))))
-                (let ((compiled-dispatcher
-                       (llvm-sys:finalize-engine-and-get-dispatch-function
-                        *the-module*
-                        *run-time-execution-engine*
-                        "dispatcher"
-                        disp-fn
-                        startup-fn
-                        shutdown-fn
-                        sorted-roots)))
+                (let* ((module-handle (jit-add-module-return-function *the-module* disp-fn startup-fn shutdown-fn sorted-roots)))
                   (gf-log "Compiled dispatcher -> ~a~%" compiled-dispatcher)
                   (gf-log "Dumping module\n")
                   (gf-do (cmp-log-dump *the-module*))
@@ -792,7 +785,7 @@
       (core:shutdown previous-dispatcher)
       (when *monitor-dispatch*
         (push :shutting-down-previous-dispatcher *dispatch-log*))
-      (let ((removed (llvm-sys:remove-module cmp:*run-time-execution-engine* (core:llvm-module previous-dispatcher))))
+      (let ((removed (jit-remove-module (core:llvm-module previous-dispatcher))))
         (setf (clos::generic-function-compiled-dispatch-function gf) nil)
         (unless removed
           (format t "Could not remove previous dispatcher~%")))))

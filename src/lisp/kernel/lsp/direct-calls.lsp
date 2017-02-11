@@ -21,8 +21,8 @@
              (let ((,source-info (source-info (fdefinition ',lisp-name)))) ;;save source info
                (defun ,lisp-name ,lambda-list
                  (core:multiple-value-foreign-call ,c-name ,@(core:names-of-lexical-variables
-                                                 (core:make-lambda-list-handler
-                                                  lambda-list nil 'function))))
+                                                              (core:make-lambda-list-handler
+                                                               lambda-list nil 'function))))
                (set-source-info (fdefinition ',lisp-name) ,source-info)))
           `(unless core:*silent-startup*
              (bformat t "Will not generate wrapper for %s - the symbol is not available or set up for CL inlining\n" ',lisp-name))))))

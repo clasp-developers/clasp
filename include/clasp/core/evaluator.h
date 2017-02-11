@@ -102,27 +102,17 @@ inline T_mv applyLastArgsPLUSFirst(T_sp fn, List_sp argsPLUS, Args&&... args) {
   return applyClosureToActivationFrame(func, frob);
 }
 
-#if 0
-inline T_mv apply_consume_VaList(Function_sp func, VaList_sp args) {
-  // Either assume that the VaList_sp is not at the start or ensure that it always is
-  // Here I'm assuming that it is not always at the start.   To do it the other way
-  // change cl__apply
-  core::T_O *arg0;
-  core::T_O *arg1;
-  core::T_O *arg2;
-  VaList_S &valist_s = *args;
-  LCC_VA_LIST_INDEXED_ARG(arg0, valist_s, 0);
-  LCC_VA_LIST_INDEXED_ARG(arg1, valist_s, 1);
-  LCC_VA_LIST_INDEXED_ARG(arg2, valist_s, 2);
-  gc::return_type res = (*func).invoke_va_list(NULL,
-                                             args.raw_(),
-                                             LCC_VA_LIST_NUMBER_OF_ARGUMENTS(args),
-                                             arg0,  // LCC_VA_LIST_REGISTER_ARG0(args),
-                                             arg1,  // LCC_VA_LIST_REGISTER_ARG1(args),
-                                             arg2); //LCC_VA_LIST_REGISTER_ARG2(args) );
-  return res;
-}
-#endif
+
+
+
+
+
+
+
+
+
+
+
 
  
 inline LCC_RETURN funcall(T_sp fn) {
@@ -203,6 +193,7 @@ inline LCC_RETURN funcall(T_sp fn, ARG0 arg0, ARG1 arg1, ARG2 arg2, ARGS &&... a
  
  void parse_lambda_body(List_sp body, List_sp &declares, gc::Nilable<String_sp> &docstring, List_sp &code);
  };
+
 
 };
 

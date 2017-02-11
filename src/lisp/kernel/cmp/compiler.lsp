@@ -1118,6 +1118,7 @@ jump to blocks within this tagbody."
   "Evaluate each of the arguments into an alloca and invoke the function"
   ;; setup the ActivationFrame for passing arguments to this function in the setup arena
   (assert-result-isa-llvm-value result)
+  ;;(bformat t "In codegen-multiple-value-foreign-call codegen form: %s\n" form)
   (let* ((intrinsic-name (car form))
          (nargs (length (cdr form)))
          args
@@ -1129,6 +1130,7 @@ jump to blocks within this tagbody."
           (exp (car cur-exp) (car cur-exp))
           (i 0 (+ 1 i)))
          ((endp cur-exp) nil)
+      ;;(bformat t "In codegen-multiple-value-foreign-call codegen arg[%d] -> %d\n" i exp)
       (codegen temp-result exp evaluate-env)
       (push (irc-smart-ptr-extract (irc-load temp-result)) args))
     (let* ((func (or (llvm-sys:get-function *the-module* intrinsic-name)
@@ -1411,48 +1413,13 @@ Return the orderered-raw-constants-list and the constants-table GlobalVariable"
               (compile-to-module definition env pathname)))
       (values fn function-kind wrapped-env lambda-name warnp failp ordered-raw-constants-list constants-table startup-fn shutdown-fn))))
 
-(defun describe-constants-table (constants-table)
-  (bformat t "constants-table = %s\n" constants-table)
-  (bformat t "getGlobalValueAddress = %x\n" (llvm-sys:get-global-value-address *run-time-execution-engine* (llvm-sys:get-name constants-table)))
-  (bformat t "table-address = %s\n" 
-           (llvm-sys:get-or-emit-global-variable
-            *run-time-execution-engine*
-            constants-table))
-  #+(or)(break "Check cmp::*x* - this is where we would get the *load-time-value-holder-name* out of the execution-engine")
-  (bformat t "compiler.lsp:1520 About to fill constants-table with %d entries\n" (length ordered-raw-constants-list)))
-
 (defun bclasp-compile* (bind-to-name &optional definition env pathname)
   "Compile the definition"
+  (jit-lazy-setup)
   (multiple-value-bind (fn function-kind wrapped-env lambda-name warnp failp ordered-raw-constants-list constants-table startup-fn shutdown-fn)
       (compile-to-module-with-run-time-table definition env pathname)
-    (cmp-log "About to test and maybe set up the *run-time-execution-engine*\n")
     (quick-module-dump *the-module* "preoptimize")
-    ;; SETUP THE *run-time-execution-engine* here for the first time
-    ;; using the current module in *the-module*
-    ;; At this point the *the-module* will become invalid because
-    ;; the execution-engine will take ownership of it
-    (if (not *run-time-execution-engine*)
-        (setq *run-time-execution-engine* (create-run-time-execution-engine *the-module*))
-        (llvm-sys:add-module *run-time-execution-engine* *the-module*))
-    ;; At this point the Module in *the-module* is invalid because the
-    ;; execution-engine owns it
-    (cmp-log "The execution-engine now owns the module\n")
-    (setq *the-module* nil)
-    (cmp-log "About to finalize-engine with fn %s\n" fn)
-    (let* ((fn-name (llvm-sys:get-name fn)) ;; this is the name of the function - a string
-           (cspi (ext:current-source-location))
-           (compiled-function
-            (llvm-sys:finalize-engine-and-register-with-gc-and-get-compiled-function
-             *run-time-execution-engine*
-             lambda-name
-             fn ;; This may not be valid anymore
-             (irc-environment-activation-frame wrapped-env)
-             core:*current-source-file-info*
-             (core:source-pos-info-filepos cspi)
-             (core:source-pos-info-lineno cspi)
-             startup-fn
-             shutdown-fn
-             ordered-raw-constants-list)))
+    (let* ((compiled-function (jit-add-module-return-function *the-module* fn startup-fn shutdown-fn ordered-raw-constants-list)))
       (values compiled-function warnp failp))))
 
 (defvar *compile-counter* 0)
@@ -1479,6 +1446,7 @@ We could do more fancy things here - like if cleavir-clasp fails, use the clasp 
 			 (core:source-file-info pathname)
 		       the-handle)))
 	(with-module (:module *the-module*
+                              :optimize nil
                               :source-namestring (namestring pathname)
                               :source-file-info-handle handle)
           (cmp-log "Dumping module\n")

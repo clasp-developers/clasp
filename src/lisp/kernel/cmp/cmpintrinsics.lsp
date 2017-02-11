@@ -882,6 +882,7 @@ and initialize it with an array consisting of one function pointer."
   (primitive-nounwind module "cc_loadTimeValueReference" +t**+ (list +tsp*+ +size_t+))
   (primitive-nounwind module "cc_fetch" +t*+ (list +t*+ +size_t+))
   (primitive-nounwind module "cc_va_arg" +t*+ (list +VaList_S*+))
+  (primitive-nounwind module "cc_va_list_length" +size_t+ (list +VaList_S*+))
   (primitive-nounwind module "cc_copy_va_list" +void+ (list +size_t+ +t*[0]*+ +VaList_S*+))
   
   (primitive-nounwind module "cc_initialize_gcroots_in_module" +void+ (list +gcroots-in-module*+ +tsp*+ +size_t+ +t*+))

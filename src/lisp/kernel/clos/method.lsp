@@ -93,7 +93,7 @@ in the generic function lambda-list to the generic function lambda-list"
     (multiple-value-bind (lambda-list required-parameters specializers)
 	(parse-specialized-lambda-list specialized-lambda-list)
       (multiple-value-bind (lambda-form declarations documentation)
-	  (make-raw-lambda name lambda-list required-parameters specializers body env)
+	  (make-raw-lambda name lambda-list required-parameters specializers body env #+clasp qualifiers)
 	(let* ((generic-function (ensure-generic-function name))
 	       (method-class (progn
 			       (generic-function-method-class generic-function)))
@@ -183,7 +183,7 @@ and wraps it in an flet |#
   (values fn-form t))
 
 
-(defun make-raw-lambda (name lambda-list required-parameters specializers body env)
+(defun make-raw-lambda (name lambda-list required-parameters specializers body env #+clasp qualifiers)
   (declare (si::c-local))
   (multiple-value-bind (declarations real-body documentation)
       (sys::find-declarations body)
@@ -201,6 +201,7 @@ and wraps it in an flet |#
                       '(&allow-other-keys)
                       (and x (subseq lambda-list x))
                       nil))))
+    #+clasp(setf qualifiers (if qualifiers (list qualifiers)))
     (let* ((copied-variables '())
            (class-declarations
             (nconc (when *add-method-argument-declarations*
@@ -221,7 +222,7 @@ and wraps it in an flet |#
             ;; are inserted to communicate the class of the method's
             ;; arguments to the code walk.
             `(lambda ,lambda-list
-               #+clasp(declare (core:lambda-name '(:method ,name ,specializers)))
+               #+clasp(declare (core:lambda-name (method ,name ,@qualifiers ,specializers)))
                ,@(and class-declarations `((declare ,@class-declarations)))
                ,(if copied-variables
                     `(let* ,copied-variables ,block)
@@ -238,7 +239,7 @@ and wraps it in an flet |#
                  (declare #+(or)(core:lambda-name make-method-lambda.lambda) ,@declarations)
                  ,doc
                  (flet (,@(and call-next-method-p
-                               `((call-next-method (&rest args)
+                               `((call-next-method (&va-rest args)    #|DANGER|#
                                                    (if (not .next-methods.)
                                                        ;; But how do I generate code that can be compiled
                                                        ;; that will get access to the current method and
@@ -248,16 +249,19 @@ and wraps it in an flet |#
                                                        #+(or)(apply #'no-next-method ,gf ,method
                                                                     (or args .method-args.))
                                                        (error "No next method") ;; Should be what is above -> (apply #'no-next-method ...)
-                                                       (apply (car .next-methods.)
-                                                              (or args .method-args.)
-                                                              (cdr .next-methods.)
-                                                              (or args .method-args.))))))
+                                                       (let ((use-args (if (> (va-list-length args) 0) args .method-args.)))
+                                                         (core:multiple-value-foreign-call "apply_call_next_method2"
+                                                          (car .next-methods.)
+                                                          use-args ; (or args .method-args.)
+                                                          (cdr .next-methods.)
+                                                          use-args ; (or args .method-args.)
+                                                          ))))))
                         ,@(and next-method-p-p
                                `((next-method-p ()
                                                 (and .next-methods. t)))))
                    ,@body))
               nil)))
-    #+ecl
+  #+ecl
   (multiple-value-bind (call-next-method-p next-method-p-p in-closure-p)
       (walk-method-lambda method-lambda env)
     (values `(lambda (.combined-method-args. *next-methods*)
@@ -268,7 +272,8 @@ and wraps it in an flet |#
                       .combined-method-args.))
             nil)))
 
-;;; Clasp doesn't use this anymore.
+;;; Clasp doesn't use this anymore because we pass the method-args and next-methods as
+;;;       the first two arguments.
 ;;; I think all GF calls are ending up in a closure!
 #+ecl
 (defun add-call-next-method-closure (method-lambda)

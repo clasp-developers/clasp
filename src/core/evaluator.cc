@@ -41,6 +41,7 @@ THE SOFTWARE.
 #include <clasp/core/builtInClass.h>
 #include <clasp/core/lambdaListHandler.h>
 #include <clasp/core/predicates.h>
+#include <clasp/core/debugger.h>
 #include <clasp/core/standardClass.h>
 #include <clasp/core/standardObject.h>
 #include <clasp/core/predicates.h>
@@ -51,7 +52,6 @@ THE SOFTWARE.
 #include <clasp/core/conditions.h>
 #include <clasp/core/multipleValues.h>
 #include <clasp/core/primitives.h>
-//#include "debugger.h"
 #include <clasp/core/array.h>
 #include <clasp/core/wrappers.h>
 
@@ -174,6 +174,115 @@ CL_DEFUN T_mv cl__apply(T_sp head, VaList_sp args) {
   UNREACHABLE();
 }
 
+
+gctools::return_type fast_apply_general(T_O* func_tagged, T_O* args_tagged) {
+  ASSERT(gctools::tagged_consp(args_tagged));
+  Cons_O* cons_args = reinterpret_cast<Cons_O*>(gctools::untag_cons(args_tagged));
+  int front_nargs = 0;
+  Cons_O* cur = cons_args;
+  for ( ; cur->_Cdr.consp(); cur = reinterpret_cast<Cons_O*>(gctools::untag_cons(cur->_Cdr.raw_()))) ++front_nargs;
+  T_O* tail_tagged = cur->_Car.raw_();
+  if (gctools::tagged_consp(tail_tagged)) {
+    Cons_O* cons_tail = reinterpret_cast<Cons_O*>(gctools::untag_cons(tail_tagged));
+    int tail_nargs = 1+cons_tail->length();
+    int nargs = front_nargs+tail_nargs;
+    MAKE_STACK_FRAME( frame, func_tagged, nargs );
+    Cons_O* front_cur = cons_args;
+    for (int i=0; i<front_nargs; ++i ) {
+      (*frame)[i] = front_cur->_Car.raw_();
+      front_cur = reinterpret_cast<Cons_O*>(gctools::untag_cons(front_cur->_Cdr.raw_()));
+    }
+    Cons_O* tail_cur = cons_tail;
+    for (int j=front_nargs; j<nargs; ++j ) {
+      (*frame)[j] = tail_cur->_Car.raw_();
+      tail_cur = reinterpret_cast<Cons_O*>(gctools::untag_cons(tail_cur->_Cdr.raw_()));
+    }
+    VaList_S valist_struct(frame);
+    VaList_sp valist(&valist_struct); // = frame.setupVaList(valist_struct);;
+    return funcall_consume_valist_<core::Function_O>((gc::Tagged)func_tagged, valist);
+  }
+  Cons_O* cons_tail = reinterpret_cast<Cons_O*>(gctools::untag_cons(tail_tagged));
+  int nargs = front_nargs;
+  MAKE_STACK_FRAME( frame, func_tagged, nargs );
+  Cons_O* front_cur = cons_args;
+  for (int i=0; i<front_nargs; ++i ) {
+    (*frame)[i] = front_cur->_Car.raw_();
+    front_cur = reinterpret_cast<Cons_O*>(gctools::untag_cons(front_cur->_Cdr.raw_()));
+  }
+  VaList_S valist_struct(frame);
+  VaList_sp valist(&valist_struct); // = frame.setupVaList(valist_struct);;
+  return funcall_consume_valist_<core::Function_O>((gc::Tagged)func_tagged, valist);
+}
+
+template <typename... FixedArgs>
+LCC_RETURN fast_apply_(T_O* function_tagged, T_O* rest_args_tagged, FixedArgs&&...fixedArgs) {
+  int nargs;
+  LIKELY_if ( gctools::tagged_valistp(rest_args_tagged) ) {
+    VaList_sp rest_args_as_VaList_sp((gctools::Tagged)rest_args_tagged);
+    VaList_S va_rest_copy_S(*rest_args_as_VaList_sp);
+    VaList_sp va_rest_args(&va_rest_copy_S);
+    nargs = sizeof...(FixedArgs)+va_rest_args->remaining_nargs();
+    MAKE_STACK_FRAME( frame, function_tagged, nargs );
+    T_O* _[] = {fixedArgs...};
+    for (int i=0; i<sizeof...(FixedArgs); ++i ) (*frame)[i] = _[i];
+    for (int j=sizeof...(FixedArgs);j<nargs; ++j ) (*frame)[j] = va_rest_copy_S.next_arg_raw();
+    VaList_S valist_struct(frame);
+    VaList_sp valist(&valist_struct); // = frame.setupVaList(valist_struct);;
+    return funcall_consume_valist_<core::Function_O>((gc::Tagged)function_tagged, valist);
+  } else if (gctools::tagged_consp(rest_args_tagged)) {
+    Cons_sp cons_rest_args((gctools::Tagged)rest_args_tagged);
+    List_sp list_rest_args((gctools::Tagged)rest_args_tagged);
+    nargs = sizeof...(FixedArgs)+cons_rest_args->length();
+    MAKE_STACK_FRAME( frame, function_tagged, nargs );
+    T_O* _[] = {fixedArgs...};
+    for (int i=0; i<sizeof...(FixedArgs); ++i ) (*frame)[i] = _[i];
+    for (int j=sizeof...(FixedArgs);j<nargs; ++j ) {
+      (*frame)[j] = oCar(list_rest_args).raw_();
+      list_rest_args = oCdr(list_rest_args);
+    }
+    VaList_S valist_struct(frame);
+    VaList_sp valist(&valist_struct); // = frame.setupVaList(valist_struct);;
+    return funcall_consume_valist_<core::Function_O>((gc::Tagged)function_tagged, valist);
+  }
+  nargs = sizeof...(FixedArgs);
+  MAKE_STACK_FRAME( frame, function_tagged, nargs );
+  T_O* _[] = {fixedArgs...};
+  for (int i=0; i<sizeof...(FixedArgs); ++i ) (*frame)[i] = _[i];
+  VaList_S valist_struct(frame);
+  VaList_sp valist(&valist_struct); // = frame.setupVaList(valist_struct);;
+  return funcall_consume_valist_<core::Function_O>((gc::Tagged)function_tagged, valist);
+}
+
+
+extern "C" {
+gctools::return_type fast_apply0(T_O* function_tagged) {
+  return fast_apply_(function_tagged,_Nil<T_O>().raw_());
+}
+gctools::return_type fast_apply1(T_O* function_tagged, T_O* rest) {
+  return fast_apply_(function_tagged,rest);
+}
+gctools::return_type fast_apply2(T_O* function_tagged, T_O* arg0, T_O* rest) {
+  return fast_apply_(function_tagged,rest,arg0);
+};
+gctools::return_type fast_apply3(T_O* function_tagged, T_O* arg0, T_O* arg1, T_O* rest) {
+  return fast_apply_(function_tagged,rest,arg0,arg1);
+};
+gctools::return_type fast_apply4(T_O* function_tagged, T_O* arg0, T_O* arg1, T_O* arg2, T_O* rest) {
+  return fast_apply_(function_tagged,rest,arg0,arg1,arg2);
+};
+gctools::return_type fast_apply5(T_O* function_tagged, T_O* arg0, T_O* arg1, T_O* arg2, T_O* arg3, T_O* rest) {
+  return fast_apply_(function_tagged,rest,arg0,arg1,arg2,arg3);
+};
+gctools::return_type fast_apply6(T_O* function_tagged, T_O* arg0, T_O* arg1, T_O* arg2, T_O* arg3, T_O* arg4, T_O* rest) {
+  return fast_apply_(function_tagged,rest,arg0,arg1,arg2,arg3,arg4);
+};
+gctools::return_type fast_apply7(T_O* function_tagged, T_O* arg0, T_O* arg1, T_O* arg2, T_O* arg3, T_O* arg4, T_O* arg5, T_O* rest) {
+  return fast_apply_(function_tagged,rest,arg0,arg1,arg2,arg3,arg4,arg5);
+};
+gctools::return_type fast_apply8(T_O* function_tagged, T_O* arg0, T_O* arg1, T_O* arg2, T_O* arg3, T_O* arg4, T_O* arg5, T_O* arg6, T_O* rest) {
+  return fast_apply_(function_tagged,rest,arg0,arg1,arg2,arg3,arg4,arg5,arg6);
+};
+};
 
 
 CL_LAMBDA(form);
@@ -464,12 +573,12 @@ T_sp af_interpreter_lookup_variable(Symbol_sp sym, T_sp env) {
     if (found) {
       switch (valueKind) {
       case Environment_O::lexicalValue:
-        return value;
+          return value;
       case Environment_O::specialValue:
-        return sym->symbolValue();
+          return sym->symbolValue();
       default:
         // do nothing;
-        break;
+          break;
       }
     }
   }
@@ -721,16 +830,16 @@ void extract_declares_docstring_code_specials(List_sp inputBody, List_sp &declar
 #define ARGS_af_extractDeclaresDocstringCode "(body &key (expect-docstring t))"
 #define DECL_af_extractDeclaresDocstringCode ""
 #define DOCS_af_extractDeclaresDocstringCode "extractDeclaresDocstringCode"
-	T_mv af_extractDeclaresDocstringCode(List_sp body, T_sp expectDocStr)
-	{
-	    IMPLEMENT_MEF(BF("Switch to process-declarations"));
-	    List_sp declares;
-	    String_sp docstr;
-	    List_sp code;
-	    List_sp specials;
-	    extract_declares_docstring_code_specials(body,declares,expectDocStr.isTrue(),docstr,code,specials);
-	    return Values(declares,docstr,code,specials);
-	};
+T_mv af_extractDeclaresDocstringCode(List_sp body, T_sp expectDocStr)
+{
+  IMPLEMENT_MEF(BF("Switch to process-declarations"));
+  List_sp declares;
+  String_sp docstr;
+  List_sp code;
+  List_sp specials;
+  extract_declares_docstring_code_specials(body,declares,expectDocStr.isTrue(),docstr,code,specials);
+  return Values(declares,docstr,code,specials);
+};
 #endif
 
 void extract_declares_code(List_sp args, List_sp &declares, List_sp &code) {
@@ -786,8 +895,8 @@ T_mv sp_debug_message(List_sp args, T_sp env) {
   return (Values(_Nil<T_O>()));
 }
 
-  SYMBOL_EXPORT_SC_(KeywordPkg, execute);
-  SYMBOL_EXPORT_SC_(KeywordPkg, load_toplevel);
+SYMBOL_EXPORT_SC_(KeywordPkg, execute);
+SYMBOL_EXPORT_SC_(KeywordPkg, load_toplevel);
 T_mv sp_evalWhen(List_sp args, T_sp environment) {
   ASSERT(environment.generalp());
   List_sp situations = oCar(args);
@@ -868,30 +977,30 @@ T_mv sp_eval_when(List_sp args, T_sp env) {
     if (!when_execute_p(situation))
       body = _Nil<T_O>();
 #if 0
-	    } else if (c_env->lexical_level) {
-                if (!when_execute_p(situation))
-		    body = _Nil<T_O>();
+  } else if (c_env->lexical_level) {
+    if (!when_execute_p(situation))
+      body = _Nil<T_O>();
 #endif
   } else if (mode == FLAG_LOAD) {
     if (!when_load_p(situation)) {
       body = _Nil<T_O>();
     }
 #if 0
-                if (when_compile_p(situation)) {
-		    env->c_env->mode = FLAG_COMPILE;
-		    execute_each_form(env, body);
-		    env->c_env->mode = FLAG_LOAD;
-		    if (!when_load_p(situation))
-			body = _Nil<T_O>();
-                } else
-		    if (when_load_p(situation)) {
-			env->c_env->mode = FLAG_ONLY_LOAD;
-			flags = compile_toplevel_body(env, body, flags);
-			env->c_env->mode = FLAG_LOAD;
-			return flags;
-		    } else {
-			body = _Nil<T_O>();
-		    }
+    if (when_compile_p(situation)) {
+      env->c_env->mode = FLAG_COMPILE;
+      execute_each_form(env, body);
+      env->c_env->mode = FLAG_LOAD;
+      if (!when_load_p(situation))
+        body = _Nil<T_O>();
+    } else
+      if (when_load_p(situation)) {
+        env->c_env->mode = FLAG_ONLY_LOAD;
+        flags = compile_toplevel_body(env, body, flags);
+        env->c_env->mode = FLAG_LOAD;
+        return flags;
+      } else {
+        body = _Nil<T_O>();
+      }
 #endif
   } else if (mode == FLAG_ONLY_LOAD) {
     if (!when_load_p(situation))
@@ -899,16 +1008,16 @@ T_mv sp_eval_when(List_sp args, T_sp env) {
   } else { /* FLAG_COMPILE */
     SIMPLE_ERROR(BF("I don't have a compiler yet"));
 #if 0
-                if (when_execute_p(situation) || when_compile_p(situation)) {
-		    execute_each_form(env, body);
-                }
-		body = _Nil<T_O>();
+    if (when_execute_p(situation) || when_compile_p(situation)) {
+      execute_each_form(env, body);
+    }
+    body = _Nil<T_O>();
 #endif
   }
   return eval::sp_progn(body, env);
 //	    return eval::evaluateListReturnLast(body,env,_lisp);
 #if 0
-	    return compile_toplevel_body(env, body, flags);
+  return compile_toplevel_body(env, body, flags);
 #endif
 };
 
@@ -1020,7 +1129,7 @@ T_mv sp_let(List_sp args, T_sp parentEnvironment) {
   List_sp classified = coerce_to_list(classifiedAndCount);
   int numberOfLexicalVariables = unbox_fixnum(gc::As<Fixnum_sp>(classifiedAndCount.valueGet_(1)));
   ValueEnvironment_sp newEnvironment =
-      ValueEnvironment_O::createForNumberOfEntries(numberOfLexicalVariables, parentEnvironment);
+    ValueEnvironment_O::createForNumberOfEntries(numberOfLexicalVariables, parentEnvironment);
   ValueEnvironmentDynamicScopeManager scope(newEnvironment);
   // Set up the debugging info - it's empty to begin with
   ValueFrame_sp valueFrame = gc::As<ValueFrame_sp>(newEnvironment->getActivationFrame());
@@ -1094,7 +1203,7 @@ T_mv sp_letSTAR(List_sp args, T_sp parentEnvironment) {
   List_sp classified = coerce_to_list(classifiedAndCount);
   int numberOfLexicalVariables = unbox_fixnum(gc::As<Fixnum_sp>(classifiedAndCount.valueGet_(1)));
   ValueEnvironment_sp newEnvironment =
-      ValueEnvironment_O::createForNumberOfEntries(numberOfLexicalVariables, parentEnvironment);
+    ValueEnvironment_O::createForNumberOfEntries(numberOfLexicalVariables, parentEnvironment);
   ValueEnvironmentDynamicScopeManager scope(newEnvironment);
 
   // Set up the debugging info - it's empty to begin with
@@ -1378,8 +1487,8 @@ Function_sp lambda(T_sp name, bool wrap_block, T_sp lambda_list, List_sp body, T
   if (wrap_block) {
     code = Cons_O::create(Cons_O::create(cl::_sym_block,
                                          Cons_O::create(
-                                             core__function_block_name(name),
-                                             code)));
+                                                        core__function_block_name(name),
+                                                        code)));
 #if 0
     if (_lisp->sourceDatabase().notnilp()) {
       gc::As<SourceManager_sp>(_lisp->sourceDatabase())->duplicateSourcePosInfo(body, code);
@@ -1463,22 +1572,22 @@ T_mv sp_function(List_sp args, T_sp environment) {
 }
 
 #if 0
-	T_mv sp_lambda_block( List_sp args, T_sp env)
-	{
-	    ASSERTNOTNULL(args);
-	    Symbol_sp name = args->ocar().as<Symbol_O>();
-	    return lambda(name,true,args->ocadr(),args->cddr(),env);
-	}
+T_mv sp_lambda_block( List_sp args, T_sp env)
+{
+  ASSERTNOTNULL(args);
+  Symbol_sp name = args->ocar().as<Symbol_O>();
+  return lambda(name,true,args->ocadr(),args->cddr(),env);
+}
 #endif
 
 #if 0
-	T_mv sp_lambda_with_handler( List_sp args, T_sp env)
-	{
-	    ASSERTNOTNULL(args);
-	    Symbol_sp name = args->ocar().as<Symbol_O>();
-	    LambdaListHandler_sp llh = eval::evaluate(args->ocadr(),env).as<LambdaListHandler_O>();
-	    return lambda(name,false,llh,args->cddr(),env,_lisp);
-	}
+T_mv sp_lambda_with_handler( List_sp args, T_sp env)
+{
+  ASSERTNOTNULL(args);
+  Symbol_sp name = args->ocar().as<Symbol_O>();
+  LambdaListHandler_sp llh = eval::evaluate(args->ocadr(),env).as<LambdaListHandler_O>();
+  return lambda(name,false,llh,args->cddr(),env,_lisp);
+}
 #endif
 
 /*
@@ -1698,39 +1807,39 @@ T_mv sp_symbolMacrolet(List_sp args, T_sp env) {
   ASSERT(env.generalp());
   return do_symbolMacrolet(args, env, false);
 #if 0
-	    List_sp macros = oCar(args);
-	    SymbolMacroletEnvironment_sp newEnv(SymbolMacroletEnvironment_O::make(env));
-	    List_sp body = oCdr(args);
-	    List_sp cur = macros;
-	    LOG(BF("macros part=%s") % macros->__repr__() );
-	    gc::Nilable<String_sp> docString = _Nil<T_O>();
-	    SYMBOL_SC_(CorePkg,whole);
-	    SYMBOL_SC_(CorePkg,env);
-	    List_sp outer_ll = Cons_O::createList(_sym_whole, _sym_env);
-	    SYMBOL_EXPORT_SC_(ClPkg,ignore);
-	    List_sp declares = Cons_O::createList(cl::_sym_declare,Cons_O::createList(cl::_sym_ignore,_sym_whole,_sym_env));
-	    while ( cur.notnilp() )
-	    {
-		List_sp oneDef = oCar(cur);
-		Symbol_sp name = oCar(oneDef).as<Symbol_O>();
-		List_sp expansion = Cons_O::create(Cons_O::createList(cl::_sym_quote,oCadr(oneDef)),_Nil<T_O>());
-		LambdaListHandler_sp outer_llh = LambdaListHandler_O::create(outer_ll,
-									     oCadr(declares),
-									     cl::_sym_function);
-                printf("%s:%d Creating InterpretedClosure with no source information and empty name- fix this\n", __FILE__, __LINE__ );
-                InterpretedClosure* ic = gctools::ClassAllocator<InterpretedClosure>::allocate_class( _sym_symbolMacroletLambda
-                                                                                                    , _Nil<SourcePosInfo_O>()
-                                                                                                    , kw::_sym_macro
-                                                                                                    , outer_llh
-                                                                                                    , declares
-                                                                                                    , _Nil<T_O>()
-                                                                                                    , newEnv
-                                                                                                    , expansion );
-                Function_sp outer_func = Function_O::make(ic);
-		newEnv->addSymbolMacro(name,outer_func);
-		cur = oCdr(cur);
-	    }
-	    return eval::sp_locally(body,newEnv);
+  List_sp macros = oCar(args);
+  SymbolMacroletEnvironment_sp newEnv(SymbolMacroletEnvironment_O::make(env));
+  List_sp body = oCdr(args);
+  List_sp cur = macros;
+  LOG(BF("macros part=%s") % macros->__repr__() );
+  gc::Nilable<String_sp> docString = _Nil<T_O>();
+  SYMBOL_SC_(CorePkg,whole);
+  SYMBOL_SC_(CorePkg,env);
+  List_sp outer_ll = Cons_O::createList(_sym_whole, _sym_env);
+  SYMBOL_EXPORT_SC_(ClPkg,ignore);
+  List_sp declares = Cons_O::createList(cl::_sym_declare,Cons_O::createList(cl::_sym_ignore,_sym_whole,_sym_env));
+  while ( cur.notnilp() )
+  {
+    List_sp oneDef = oCar(cur);
+    Symbol_sp name = oCar(oneDef).as<Symbol_O>();
+    List_sp expansion = Cons_O::create(Cons_O::createList(cl::_sym_quote,oCadr(oneDef)),_Nil<T_O>());
+    LambdaListHandler_sp outer_llh = LambdaListHandler_O::create(outer_ll,
+                                                                 oCadr(declares),
+                                                                 cl::_sym_function);
+    printf("%s:%d Creating InterpretedClosure with no source information and empty name- fix this\n", __FILE__, __LINE__ );
+    InterpretedClosure* ic = gctools::ClassAllocator<InterpretedClosure>::allocate_class( _sym_symbolMacroletLambda
+                                                                                          , _Nil<SourcePosInfo_O>()
+                                                                                          , kw::_sym_macro
+                                                                                          , outer_llh
+                                                                                          , declares
+                                                                                          , _Nil<T_O>()
+                                                                                          , newEnv
+                                                                                          , expansion );
+    Function_sp outer_func = Function_O::make(ic);
+    newEnv->addSymbolMacro(name,outer_func);
+    cur = oCdr(cur);
+  }
+  return eval::sp_locally(body,newEnv);
 #endif
 }
 
@@ -1754,7 +1863,7 @@ T_mv applyClosureToActivationFrame(Function_sp func, ActivationFrame_sp args) {
 #undef APPLY_TO_ACTIVATION_FRAME
 #undef frame
   default:
-    SIMPLE_ERROR(BF("Illegal number of arguments in call: %s") % nargs);
+      SIMPLE_ERROR(BF("Illegal number of arguments in call: %s") % nargs);
   };
 }
 
@@ -1910,118 +2019,118 @@ T_mv t1Locally(List_sp args, T_sp env) {
 T_mv t1Macrolet(List_sp args, T_sp env) {
   return doMacrolet(args, env, true /*toplevel*/);
 #if 0
-    if ( _sym_STARdebugEvalSTAR && _sym_STARdebugEvalSTAR->symbolValue().notnilp() ) {
-      printf("%s:%d t1Macrolet args: %s\n", __FILE__, __LINE__, _rep_(args).c_str() );
-    }
+  if ( _sym_STARdebugEvalSTAR && _sym_STARdebugEvalSTAR->symbolValue().notnilp() ) {
+    printf("%s:%d t1Macrolet args: %s\n", __FILE__, __LINE__, _rep_(args).c_str() );
+  }
 	    // TODO: handle trace
-    List_sp macros = oCar(args);
-    MacroletEnvironment_sp newEnv(MacroletEnvironment_O::make(env));
-    List_sp body = oCdr(args);
-    List_sp cur = macros;
-    LOG(BF("macros part=%s") % macros->__repr__() );
-    gc::Nilable<String_sp> docString = _Nil<T_O>();
-    while ( cur.notnilp() )
-    {
-      List_sp oneDef = oCar(cur);
-      Symbol_sp name = oCar(oneDef).as<Symbol_O>();
-      T_sp olambdaList = oCadr(oneDef);
-      List_sp inner_body = oCdr(oCdr(oneDef));
-      List_sp outer_func_cons = eval::funcall(core::_sym_parse_macro,name,olambdaList,inner_body);
+  List_sp macros = oCar(args);
+  MacroletEnvironment_sp newEnv(MacroletEnvironment_O::make(env));
+  List_sp body = oCdr(args);
+  List_sp cur = macros;
+  LOG(BF("macros part=%s") % macros->__repr__() );
+  gc::Nilable<String_sp> docString = _Nil<T_O>();
+  while ( cur.notnilp() )
+  {
+    List_sp oneDef = oCar(cur);
+    Symbol_sp name = oCar(oneDef).as<Symbol_O>();
+    T_sp olambdaList = oCadr(oneDef);
+    List_sp inner_body = oCdr(oCdr(oneDef));
+    List_sp outer_func_cons = eval::funcall(core::_sym_parse_macro,name,olambdaList,inner_body);
 #if 1
 //                printf("%s:%d   outer_func_cons = %s\n", __FILE__, __LINE__, _rep_(outer_func_cons).c_str());
-      Function_sp outer_func = eval::funcall(comp::_sym_compileInEnv
-                                             , _Nil<T_O>()
-                                             , outer_func_cons
-                                             ,newEnv ).as<Function_O>();
-      outer_func->setKind(kw::_sym_macro);
+    Function_sp outer_func = eval::funcall(comp::_sym_compileInEnv
+                                           , _Nil<T_O>()
+                                           , outer_func_cons
+                                           ,newEnv ).as<Function_O>();
+    outer_func->setKind(kw::_sym_macro);
 #else
-      List_sp outer_ll = oCaddr(outer_func_cons);
-      List_sp outer_body = cCdddr(outer_func_cons);
-      List_sp declares;
-      String_sp docstring;
-      List_sp code;
-      parse_lambda_body(outer_body,declares,docstring,code);
-      LambdaListHandler_sp outer_llh = LambdaListHandler_O::create(outer_ll,declares,cl::_sym_function);
+    List_sp outer_ll = oCaddr(outer_func_cons);
+    List_sp outer_body = cCdddr(outer_func_cons);
+    List_sp declares;
+    String_sp docstring;
+    List_sp code;
+    parse_lambda_body(outer_body,declares,docstring,code);
+    LambdaListHandler_sp outer_llh = LambdaListHandler_O::create(outer_ll,declares,cl::_sym_function);
                 // TODO: Change these to compiled functions when the compiler is available
 //                printf("%s:%d Creating InterpretedClosure with no source info\n", __FILE__, __LINE__ );
-      InterpretedClosure* ic = gctools::ClassAllocator<InterpretedClosure>::allocate_class(name
-                                                                                          , _Nil<SourcePosInfo_O>()
-                                                                                          , kw::_sym_macro
-                                                                                          , outer_llh
-                                                                                          , declares
-                                                                                          , docstring
-                                                                                          , newEnv
-                                                                                          , code );
-      NamedFunction_sp outer_func = NamedFunction_O::make(ic);
+    InterpretedClosure* ic = gctools::ClassAllocator<InterpretedClosure>::allocate_class(name
+                                                                                         , _Nil<SourcePosInfo_O>()
+                                                                                         , kw::_sym_macro
+                                                                                         , outer_llh
+                                                                                         , declares
+                                                                                         , docstring
+                                                                                         , newEnv
+                                                                                         , code );
+    NamedFunction_sp outer_func = NamedFunction_O::make(ic);
 #endif
-      LOG(BF("func = %s") % outer_func_cons->__repr__() );
+    LOG(BF("func = %s") % outer_func_cons->__repr__() );
 //                printf("%s:%d addMacro name: %s  macro: %s\n", __FILE__, __LINE__, _rep_(name).c_str(), _rep_(outer_func).c_str());
-      newEnv->addMacro(name,outer_func);
+    newEnv->addMacro(name,outer_func);
 //		newEnv->bind_function(name,outer_func);
-      cur = cCdr(cur);
-    }
-    List_sp declares;
-    List_sp code;
-    String_sp docstring;
-    List_sp specials;
-    extract_declares_docstring_code_specials(body,declares,false,docstring,code,specials);
+    cur = cCdr(cur);
+  }
+  List_sp declares;
+  List_sp code;
+  String_sp docstring;
+  List_sp specials;
+  extract_declares_docstring_code_specials(body,declares,false,docstring,code,specials);
 //            printf("%s:%d macrolet evaluating code: %s  in env: %s\n", __FILE__, __LINE__, _rep_(code).c_str(), _rep_(newEnv).c_str());
-    return t1Progn(code,newEnv);
+  return t1Progn(code,newEnv);
 #endif
 }
 
 T_mv t1SymbolMacrolet(List_sp args, T_sp env) {
   return do_symbolMacrolet(args, env, true);
 #if 0
-    List_sp macros = oCar(args);
-    SymbolMacroletEnvironment_sp newEnv(SymbolMacroletEnvironment_O::make(env));
-    List_sp body = cCdr(args);
-    List_sp cur = macros;
-    LOG(BF("macros part=%s") % macros->__repr__() );
-    gc::Nilable<String_sp> docstring = _Nil<T_O>();
-    SYMBOL_SC_(CorePkg,whole);
-    SYMBOL_SC_(CorePkg,env);
-    List_sp outer_ll = Cons_O::createList(_sym_whole, _sym_env);
-    SYMBOL_EXPORT_SC_(ClPkg,ignore);
-    List_sp declares = Cons_O::createList(cl::_sym_declare,Cons_O::createList(cl::_sym_ignore,_sym_whole,_sym_env));
-    while ( cur.notnilp() )
-    {
-      List_sp oneDef = oCar(cur);
-      Symbol_sp name = oCar(oneDef).as<Symbol_O>();
-      List_sp expansion = Cons_O::create(Cons_O::createList(cl::_sym_quote,oCadr(oneDef)),_Nil<T_O>());
+  List_sp macros = oCar(args);
+  SymbolMacroletEnvironment_sp newEnv(SymbolMacroletEnvironment_O::make(env));
+  List_sp body = cCdr(args);
+  List_sp cur = macros;
+  LOG(BF("macros part=%s") % macros->__repr__() );
+  gc::Nilable<String_sp> docstring = _Nil<T_O>();
+  SYMBOL_SC_(CorePkg,whole);
+  SYMBOL_SC_(CorePkg,env);
+  List_sp outer_ll = Cons_O::createList(_sym_whole, _sym_env);
+  SYMBOL_EXPORT_SC_(ClPkg,ignore);
+  List_sp declares = Cons_O::createList(cl::_sym_declare,Cons_O::createList(cl::_sym_ignore,_sym_whole,_sym_env));
+  while ( cur.notnilp() )
+  {
+    List_sp oneDef = oCar(cur);
+    Symbol_sp name = oCar(oneDef).as<Symbol_O>();
+    List_sp expansion = Cons_O::create(Cons_O::createList(cl::_sym_quote,oCadr(oneDef)),_Nil<T_O>());
 //                printf("%s:%d  symbolmacrolet name=%s expansion=%s\n", __FILE__, __LINE__, _rep_(name).c_str(), _rep_(expansion).c_str() );
-      Function_sp outer_func;
+    Function_sp outer_func;
 #if 0
-      T_sp olambdaList = _Nil<T_O>();
-      List_sp inner_body = oCadr(oneDef);
-      List_sp outer_func_cons = eval::funcall(core::_sym_parse_macro,name,olambdaList,inner_body);
-      printf("%s:%d  symbolmacrolet name=%s expansion I can compile=%s\n", __FILE__, __LINE__, _rep_(name).c_str(), _rep_(outer_func_cons).c_str() );
-      printf("%s:%d   outer_func_cons = %s\n", __FILE__, __LINE__, _rep_(outer_func_cons).c_str());
-      outer_func = eval::funcall(comp::_sym_compileInEnv
-                                 , _Nil<T_O>()
-                                 , outer_func_cons
-                                 ,newEnv ).as<Function_O>();
-      outer_func->setKind(kw::_sym_macro);
+    T_sp olambdaList = _Nil<T_O>();
+    List_sp inner_body = oCadr(oneDef);
+    List_sp outer_func_cons = eval::funcall(core::_sym_parse_macro,name,olambdaList,inner_body);
+    printf("%s:%d  symbolmacrolet name=%s expansion I can compile=%s\n", __FILE__, __LINE__, _rep_(name).c_str(), _rep_(outer_func_cons).c_str() );
+    printf("%s:%d   outer_func_cons = %s\n", __FILE__, __LINE__, _rep_(outer_func_cons).c_str());
+    outer_func = eval::funcall(comp::_sym_compileInEnv
+                               , _Nil<T_O>()
+                               , outer_func_cons
+                               ,newEnv ).as<Function_O>();
+    outer_func->setKind(kw::_sym_macro);
 #else
-      LambdaListHandler_sp outer_llh = LambdaListHandler_O::create(outer_ll,
-                                                                   oCadr(declares),
-                                                                   cl::_sym_function);
+    LambdaListHandler_sp outer_llh = LambdaListHandler_O::create(outer_ll,
+                                                                 oCadr(declares),
+                                                                 cl::_sym_function);
                 // TODO: Change these to compiled functions when the compiler is available
-      printf("%s:%d Creating InterpretedClosure for expansion: %s\n", __FILE__, __LINE__, _rep_(expansion).c_str());
-      InterpretedClosure* ic = gctools::ClassAllocator<InterpretedClosure>::allocate_class(_sym_symbolMacroletLambda
-                                                                                          , _Nil<SourcePosInfo_O>()
-                                                                                          , kw::_sym_macro
-                                                                                          , outer_llh
-                                                                                          , declares
-                                                                                          , docstring
-                                                                                          , newEnv
-                                                                                          , expansion );
-      outer_func = Function_O::make(ic);
+    printf("%s:%d Creating InterpretedClosure for expansion: %s\n", __FILE__, __LINE__, _rep_(expansion).c_str());
+    InterpretedClosure* ic = gctools::ClassAllocator<InterpretedClosure>::allocate_class(_sym_symbolMacroletLambda
+                                                                                         , _Nil<SourcePosInfo_O>()
+                                                                                         , kw::_sym_macro
+                                                                                         , outer_llh
+                                                                                         , declares
+                                                                                         , docstring
+                                                                                         , newEnv
+                                                                                         , expansion );
+    outer_func = Function_O::make(ic);
 #endif
-      newEnv->addSymbolMacro(name,outer_func);
-      cur = cCdr(cur);
-    }
-    return t1Locally(body,newEnv);
+    newEnv->addSymbolMacro(name,outer_func);
+    cur = cCdr(cur);
+  }
+  return t1Locally(body,newEnv);
 #endif
 }
 
@@ -2143,22 +2252,22 @@ T_mv evaluate(T_sp exp, T_sp environment) {
 		       - done here the macros are expanded again and again and again
 		    */
       T_sp expanded = _Nil<T_O>();
-        if (_sym_STARinterpreterTraceSTAR->symbolValue().notnilp()) {
-          if (gc::As<HashTable_sp>(_sym_STARinterpreterTraceSTAR->symbolValue())->gethash(headSym).notnilp()) {
-            InterpreterTrace itrace;
-            printf("eval::evaluate Trace [%d] macroexpand > %s\n", global_interpreter_trace_depth, _rep_(form).c_str());
-            expanded = cl__macroexpand(form, environment);
-            printf("eval::evaluate Trace [%d] < (%s ...)\n", global_interpreter_trace_depth, _rep_(headSym).c_str());
-          } else {
-            expanded = cl__macroexpand(form, environment);
-          }
+      if (_sym_STARinterpreterTraceSTAR->symbolValue().notnilp()) {
+        if (gc::As<HashTable_sp>(_sym_STARinterpreterTraceSTAR->symbolValue())->gethash(headSym).notnilp()) {
+          InterpreterTrace itrace;
+          printf("eval::evaluate Trace [%d] macroexpand > %s\n", global_interpreter_trace_depth, _rep_(form).c_str());
+          expanded = cl__macroexpand(form, environment);
+          printf("eval::evaluate Trace [%d] < (%s ...)\n", global_interpreter_trace_depth, _rep_(headSym).c_str());
         } else {
           expanded = cl__macroexpand(form, environment);
         }
-        if (_evaluateVerbosity > 0) {
-          string es = _rep_(expanded);
-          printf("core::eval::evaluate expression is macro - expanded --> %s\n", es.c_str());
-        }
+      } else {
+        expanded = cl__macroexpand(form, environment);
+      }
+      if (_evaluateVerbosity > 0) {
+        string es = _rep_(expanded);
+        printf("core::eval::evaluate expression is macro - expanded --> %s\n", es.c_str());
+      }
       result = eval::evaluate(expanded, environment);
       goto DONE;
     }
@@ -2206,7 +2315,7 @@ T_mv evaluate(T_sp exp, T_sp environment) {
     result = evaluate_lambdaHead(headCons, form, environment);
     goto DONE;
   }
-DONE:
+ DONE:
   if (_evaluateVerbosity > 0) {
     printf("core::eval::evaluate depth[%5d] <---- %p\n", _evaluateDepth, exp.raw_());
   }

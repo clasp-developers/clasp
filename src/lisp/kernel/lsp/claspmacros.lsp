@@ -167,3 +167,42 @@
       (core:simple-character-string (intrinsic-call "SimpleCharacterString_get" str idx))
       (core:str8-ns (intrinsic-call "Str8Ns_get" str idx))
       (core:str-w-ns (intrinsic-call "StrWNs_get" str idx)))))
+
+
+
+#|
+(define-compiler-macro new-apply (function-desig &rest args)
+  (let ((fun (gensym "FUN")))
+    (if (> (length args) 8)
+        `(let ((,fun ,function-desig))
+           (core:multiple-value-foreign-call
+            "fast_apply_general"
+            (if (typep ,fun 'function)
+                ,fun
+                (if (typep ,fun 'symbol)
+                    (symbol-function ,fun)
+                    (error 'type-error :datum ,fun :expected-type '(or symbol function))))
+            ,args))
+        `(let ((,fun ))
+           (core:multiple-value-foreign-call
+            ,(bformat nil "fast_apply%d" (length args))
+            (if (typep ,fun 'function)
+                ,fun
+                (if (typep ,fun 'symbol)
+                    (symbol-function ,fun)
+                    (error 'type-error :datum ,fun :expected-type '(or symbol function))))
+            ,@args)))))
+
+
+(define-compiler-macro apply-general (function-design &rest args)
+  `(let ((,fun ,function-desig))
+     (core:multiple-value-foreign-call
+      "fast_apply_general"
+      (if (typep ,fun 'function)
+          ,fun
+          (if (typep ,fun 'symbol)
+              (symbol-function ,fun)
+              (error 'type-error :datum ,fun :expected-type '(or symbol function))))
+      ,args)))
+|#
+

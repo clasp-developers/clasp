@@ -65,48 +65,6 @@ THE SOFTWARE.
 #include <clasp/llvmo/intrinsics.h>
 #include <clasp/core/wrappers.h>
 
-extern "C" {
-#if 0
-gctools::return_type fast_apply_method(core::T_O* tmethod, core::T_O* method_args, core::T_O* rest_methods)
-{
-  if (gctools::tagged_consp(method_args)) {
-    T_sp method((gctools::Tagged)tmethod);
-    T_sp args((gctools::Tagged)args);
-    T_sp rest((gctools::Tagged)rest_methods);
-    printf("%s:%d Deal with list arguments to method application\n", __FILE__, __LINE__);
-    abort();
-  }
-  core::VaList_sp valast((gctools::Tagged)method_args);
-  core::VaList_S valast_copy(*valast);
-  core::VaList_sp valast_copy_sp(&valast_copy);
-  size_t method_nargs = valast_copy_sp->remaining_nargs();
-  core::Function_O* ptrFunc;
-  ptrFunc = reinterpret_cast<core::Function_O*>(gc::untag_general(tmethod));
-#if 0
-  if (gctools::TaggedCast<core::CompiledClosure_O*,core::T_O*>::isA((core::T_O*)tmethod)) {
-    ptrFunc = reinterpret_cast<core::CompiledClosure_O*>(gc::untag_general(tmethod));
-  } else {
-    ASSERT((gctools::TaggedCast<core::ClosureWithSlots_O*,core::T_O*>::isA(tmethod)));
-    ptrFunc = reinterpret_cast<core::ClosureWithSlots_O*>(gc::untag_general(tmethod));
-  }
-#endif
-  if (gctools::tagged_valistp(method_args)) {
-  switch (method_nargs) {
-  case 0:
-      return ptrFunc->operator()(tmethod,NULL,2,method_args,rest_methods,NULL);
-#define APPLY_ARGUMENTS
-#include <clasp/core/generated/applyArguments.h>
-#undef APPLY_ARGUMENTS
-  default:
-      SIMPLE_ERROR(BF("Exceeded maximum number of arguments with %d arguments") % method_nargs);
-  }
-  } else {
-    SIMPLE_ERROR(BF("method_args was not a list - it's %s\n") % _rep_(core::T_sp((gctools::Tagged)method_args)));
-  }
-}
-#endif
-};
-  
 
 namespace core {
 
