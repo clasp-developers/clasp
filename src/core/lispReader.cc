@@ -24,7 +24,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#define DEBUG_LEVEL_NONE
+#define DEBUG_LEVEL_FULL
 #include <clasp/core/foundation.h>
 #pragma clang diagnostic push
 //#pragma clang diagnostic ignored "-Wunused-local-typedef"
@@ -255,15 +255,32 @@ typedef enum {
   short_float_exp
 } FloatExponentType;
 
-SimpleString_sp tokenStr(const vector<trait_chr_type> &token, size_t start = 0, size_t end = UNDEF_UINT) {
+SimpleString_sp tokenStr(T_sp stream, const vector<trait_chr_type> &token, size_t start = 0, size_t end = UNDEF_UINT, bool only_dots_ok=false) {
   bool extended = false;
   if (end==UNDEF_UINT) end = token.size();
   SafeBufferStrWNs buffer;
-  for (size_t i=start,iEnd(end); i<iEnd; ++i) buffer.string()->vectorPushExtend_claspCharacter(CHR(token[i]));
+  bool only_dots = true;
+  if ((end-start)==0) {
+    printf("%s:%d The tokenStr is empty\n", __FILE__, __LINE__ );
+  }
+  for (size_t i=start,iEnd(end); i<iEnd; ++i) {
+    claspCharacter c = CHR(token[i]);
+    if (c != '.') only_dots = false;
+    buffer.string()->vectorPushExtend_claspCharacter(CHR(token[i]));
+  }
+  if ((end-start)>0) {
+    if (only_dots) {
+      if (!only_dots_ok) {
+        READER_ERROR(SimpleBaseString_O::make("A string of dots was encountered by the reader."),
+                     _Nil<T_O>(), stream);
+      }
+    }
+  }
   return buffer.string()->asMinimalSimpleString();
 }
 
 T_sp interpret_token_or_throw_reader_error(T_sp sin, const vector<trait_chr_type> &token) {
+  LOG(BF("About to interpret_token_or_throw_reader_error"));
   ASSERTF(token.size() > 0, BF("The token is empty!"));
   const trait_chr_type *start = token.data();
   const trait_chr_type *cur = start;
@@ -409,6 +426,7 @@ T_sp interpret_token_or_throw_reader_error(T_sp sin, const vector<trait_chr_type
     }
     SIMPLE_ERROR(BF("There was no token!!!!"));
   case tsymdot:
+      LOG(BF("Returning sym_dot"));
     return _sym_dot;
   case tsyms:
   case tsymf:
@@ -419,9 +437,9 @@ T_sp interpret_token_or_throw_reader_error(T_sp sin, const vector<trait_chr_type
     // interpret symbols in current package
     {
       if (cl::_sym_STARread_suppressSTAR->symbolValue().isTrue()) return _Nil<T_O>();
-      SimpleString_sp sym_name = tokenStr(token, name_marker - token.data());
+      SimpleString_sp sym_name = tokenStr(sin,token, name_marker - token.data());
       Symbol_sp sym = _lisp->getCurrentPackage()->intern(sym_name);
-      LOG(BF("sym->symbolNameAsString() = |%s|") % sym->symbolNameAsString());
+      LOG(BF("sym_name = |%s| sym->symbolNameAsString() = |%s|") % sym_name->get_std_string() % sym->symbolNameAsString());
       return sym;
     }
     break;
@@ -443,7 +461,7 @@ T_sp interpret_token_or_throw_reader_error(T_sp sin, const vector<trait_chr_type
       ++cur;
     }
     // TODO Handle proper string names
-    SimpleString_sp symbol_name_str = tokenStr(token, name_marker - token.data());
+    SimpleString_sp symbol_name_str = tokenStr(sin,token, name_marker - token.data());
     LOG(BF("Interpreting token as packageName[%s] and symbol-name[%s]") % _rep_(packageSin.string()) % symbol_name_str->get_std_string());
     // TODO Deal with proper string package names
     string packageName = packageSin.string()->get_std_string();
@@ -467,14 +485,14 @@ T_sp interpret_token_or_throw_reader_error(T_sp sin, const vector<trait_chr_type
       return _Nil<T_O>();
     // interpret good keywords
     LOG(BF("Token[%s] interpreted as keyword") % name_marker);
-    SimpleString_sp keyword_name = tokenStr(token, name_marker - token.data());
+    SimpleString_sp keyword_name = tokenStr(sin,token, name_marker - token.data());
     return _lisp->keywordPackage()->intern(keyword_name);
   } break;
   case tsymk:{
     if (cl::_sym_STARread_suppressSTAR->symbolValue().isTrue()) return _Nil<T_O>();
     // interpret :|| keyword
     LOG(BF("Token[:||] interpreted as keyword"));
-    SimpleBaseString_sp keyword_name = SimpleBaseString_O::make(""); // tokenStr(token, name_marker - token.data());
+    SimpleBaseString_sp keyword_name = SimpleBaseString_O::make(""); // tokenStr(sin,token, name_marker - token.data());
     return _lisp->keywordPackage()->intern(keyword_name);
   } break;
   case tsyme:
@@ -483,7 +501,7 @@ T_sp interpret_token_or_throw_reader_error(T_sp sin, const vector<trait_chr_type
     if (cl::_sym_STARread_suppressSTAR->symbolValue().isTrue())
       return _Nil<T_O>();
     // interpret failed symbols
-    SIMPLE_ERROR(BF("Error encountered while reading source file %s at character position %s - Could not interpret symbol state(%s) symbol: [%s]") % _rep_(clasp_filename(sin,false)) % _rep_(clasp_file_position(sin)) % stateString(state) % tokenStr(token, start - token.data())->get_std_string());
+    SIMPLE_ERROR(BF("Error encountered while reading source file %s at character position %s - Could not interpret symbol state(%s) symbol: [%s]") % _rep_(clasp_filename(sin,false)) % _rep_(clasp_file_position(sin)) % stateString(state) % tokenStr(sin,token, start - token.data())->get_std_string());
     break;
   case tintt:
   case tintp:
@@ -492,7 +510,7 @@ T_sp interpret_token_or_throw_reader_error(T_sp sin, const vector<trait_chr_type
       ASSERT(cl::_sym_STARread_baseSTAR->symbolValue().fixnump());
       int read_base = cl::_sym_STARread_baseSTAR->symbolValue().unsafe_fixnum();
       ASSERT(read_base>=2 && read_base<=36);
-      SimpleString_sp ssnum = tokenStr(token, start - token.data());
+      SimpleString_sp ssnum = tokenStr(sin,token, start - token.data());
       string num = ssnum->get_std_string();
       if (num[0] == '+') num = num.substr(1,num.size());
       try {
@@ -511,7 +529,7 @@ T_sp interpret_token_or_throw_reader_error(T_sp sin, const vector<trait_chr_type
     break;
   case tratio: {
     // interpret ratio
-    SimpleString_sp sRatioStr = tokenStr(token, start - token.data());
+    SimpleString_sp sRatioStr = tokenStr(sin,token, start - token.data());
     std::string ratioStr = sRatioStr->get_std_string();
     if (ratioStr[0] == '+') {
       Ratio_sp rp = Ratio_O::create(ratioStr.substr(1, ratioStr.size() - 1).c_str());
@@ -530,11 +548,11 @@ T_sp interpret_token_or_throw_reader_error(T_sp sin, const vector<trait_chr_type
       case undefined_exp: {
         char *lastValid = NULL;
         if (cl::_sym_STARreadDefaultFloatFormatSTAR->symbolValue() == cl::_sym_single_float) {
-          string numstr = tokenStr(token, start - token.data())->get_std_string();
+          string numstr = tokenStr(sin,token, start - token.data())->get_std_string();
           double d = ::strtod(numstr.c_str(), &lastValid);
           return clasp_make_single_float(d);
         } else if (cl::_sym_STARreadDefaultFloatFormatSTAR->symbolValue() == cl::_sym_DoubleFloat_O) {
-          string numstr = tokenStr(token, start - token.data())->get_std_string();
+          string numstr = tokenStr(sin,token, start - token.data())->get_std_string();
           double d = ::strtod(numstr.c_str(), &lastValid);
           return DoubleFloat_O::create(d);
         } else {
@@ -543,31 +561,31 @@ T_sp interpret_token_or_throw_reader_error(T_sp sin, const vector<trait_chr_type
       }
       case float_exp: {
         char *lastValid = NULL;
-        string numstr = fix_exponent_char(tokenStr(token, start - token.data())->get_std_string().c_str());
+        string numstr = fix_exponent_char(tokenStr(sin,token, start - token.data())->get_std_string().c_str());
         double d = ::strtod(numstr.c_str(), &lastValid);
         return DoubleFloat_O::create(d);
       }
       case short_float_exp: {
         char *lastValid = NULL;
-        string numstr = fix_exponent_char(tokenStr(token, start - token.data())->get_std_string().c_str());
+        string numstr = fix_exponent_char(tokenStr(sin,token, start - token.data())->get_std_string().c_str());
         double d = ::strtod(numstr.c_str(), &lastValid);
         return clasp_make_single_float(d);
       }
       case single_float_exp: {
         char *lastValid = NULL;
-        string numstr = fix_exponent_char(tokenStr(token, start - token.data())->get_std_string().c_str());
+        string numstr = fix_exponent_char(tokenStr(sin,token, start - token.data())->get_std_string().c_str());
         double d = ::strtod(numstr.c_str(), &lastValid);
         return clasp_make_single_float(d);
       }
       case double_float_exp: {
         char *lastValid = NULL;
-        string numstr = fix_exponent_char(tokenStr(token, start - token.data())->get_std_string().c_str());
+        string numstr = fix_exponent_char(tokenStr(sin,token, start - token.data())->get_std_string().c_str());
         double d = ::strtod(numstr.c_str(), &lastValid);
         return DoubleFloat_O::create(d);
       }
       case long_float_exp: {
         char *lastValid = NULL;
-        string numstr = fix_exponent_char(tokenStr(token, start - token.data())->get_std_string().c_str());
+        string numstr = fix_exponent_char(tokenStr(sin,token, start - token.data())->get_std_string().c_str());
 #ifdef CLASP_LONG_FLOAT
         LongFloat d = ::strtold(numstr.c_str(), &lastValid);
         return LongFloat_O::create(d);
@@ -654,7 +672,8 @@ List_sp read_list(T_sp sin, claspCharacter end_char, bool allow_consing_dot) {
           }
           dotted_object = read_lisp_object(sin, true, _Nil<T_O>(), true);
         } else {
-          SIMPLE_ERROR(BF("Illegal consing dot"));
+          READER_ERROR(SimpleBaseString_O::make("An illegal dot was encountered by the reader."),
+                     _Nil<T_O>(), sin);
         }
       } else {
         if (got_dotted) {
@@ -709,6 +728,10 @@ T_sp read_lisp_object(T_sp sin, bool eofErrorP, T_sp eofValue, bool recursiveP) 
       int ivalues = mv.number_of_values();
       if (ivalues > 0) {
         result = mv;
+        if (result==_sym_dot) {
+          READER_ERROR(SimpleBaseString_O::make("An illegal dot was encountered by the reader."),
+                     _Nil<T_O>(), sin);
+        }
         if (cl::_sym_STARread_suppressSTAR->symbolValue().isTrue()) {
           LOG(BF("read_suppress == true"));
           result = _Nil<T_O>();
@@ -821,13 +844,14 @@ step8:
     LOG(BF("y8_syntax_type=%s") % _rep_(y8_syntax_type));
     if ((y8_syntax_type == kw::_sym_constituent_character) || (y8_syntax_type == kw::_sym_non_terminating_macro_character)) {
       Y = readTable->convert_case(y);
+      LOG(BF("  Pushing back character %lu") % constituentChar(Y));
       token.push_back(constituentChar(Y));
       goto step8;
     }
     if (y8_syntax_type == kw::_sym_single_escape_character) {
       z = gc::As<Character_sp>(cl__read_char(sin, _lisp->_true(), _Nil<T_O>(), _lisp->_true()));
       token.push_back(constituentChar(z, TRAIT_ALPHABETIC));
-      LOG(BF("Single escape read z[%s] accumulated token[%s]") % clasp_as_claspCharacter(z) % tokenStr(token));
+      LOG(BF("Single escape read z[%s] accumulated token[%s]") % clasp_as_claspCharacter(z) % tokenStr(sin,token));
       goto step8;
     }
     if (y8_syntax_type == kw::_sym_multiple_escape_character)
@@ -856,7 +880,7 @@ step9:
     LOG(BF("Step9: Read y[%s] y9_syntax_type[%s]") % clasp_as_claspCharacter(y) % _rep_(y9_syntax_type));
     if ((y9_syntax_type == kw::_sym_constituent_character) || (y9_syntax_type == kw::_sym_non_terminating_macro_character) || (y9_syntax_type == kw::_sym_terminating_macro_character) || (y9_syntax_type == kw::_sym_whitespace_character)) {
       token.push_back(constituentChar(y, TRAIT_ALPHABETIC));
-      LOG(BF("token[%s]") % tokenStr(token));
+      LOG(BF("token[%s]") % tokenStr(sin,token));
       goto step9;
     }
     LOG(BF("About to test y9_syntax_type[%s] single_escape[%s] are equal? ==> %d") % _rep_(y9_syntax_type) % _rep_(kw::_sym_single_escape_character) % (y9_syntax_type == kw::_sym_single_escape_character));
@@ -864,7 +888,7 @@ step9:
       LOG(BF("Handling single_escape_character"));
       z = gc::As<Character_sp>(cl__read_char(sin, _lisp->_true(), _Nil<T_O>(), _lisp->_true()));
       token.push_back(constituentChar(z, TRAIT_ALPHABETIC));
-      LOG(BF("Read z[%s] accumulated token[%s]") % clasp_as_claspCharacter(z) % tokenStr(token));
+      LOG(BF("Read z[%s] accumulated token[%s]") % clasp_as_claspCharacter(z) % tokenStr(sin,token));
       goto step9;
     }
     if (y9_syntax_type == kw::_sym_multiple_escape_character) {
