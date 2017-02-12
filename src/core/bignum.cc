@@ -63,10 +63,10 @@ Bignum Bignum_O::as_mpz_() const {
 }
 
 LongLongInt Bignum_O::as_LongLongInt_() const {
-  if (this->_value.fits_sint_p()) {
+  LIKELY_if (this->_value.fits_sint_p()) {
     return ((this->_value.get_si()));
   }
-  SIMPLE_ERROR(BF("Cannot convert Bignum %s to sint") % this->__repr__());
+  SIMPLE_ERROR(BF("Cannot convert Bignum %s to long long") % this->__repr__());
 }
 
 unsigned long long Bignum_O::as_unsigned_long_long_() const {
@@ -171,127 +171,77 @@ CL_DEFMETHOD bool Bignum_O::fits_sint_p() {
 // -- SHORT --
 
 inline short Bignum_O::as_short() const {
-  if(( this->get().get_si() >= gc::most_negative_short ) && ( this->get().get_si() <= gc::most_positive_short )) {
-    return (short) this->get().get_si();
-  }
-
-  SIMPLE_ERROR(BF("Value %lld out of range for integer type SHORT .") % (long long) this->get().get_si() );
+  return static_cast<short>(this->get().get_si());
 }
 
 inline unsigned short Bignum_O::as_ushort() const {
-  if( this->get().get_ui() <= gc::most_positive_short ) {
-    return (unsigned short) this->get().get_ui();
-  }
-
-  SIMPLE_ERROR(BF("Value %lld out of range for integer type UNSIGNED SHORT.") % (long long) this->get().get_ui() );
+  return static_cast<unsigned short>(this->get().get_ui());
 }
 
 // -- INT --
 
 inline int Bignum_O::as_int() const {
-  if(( this->get().get_si() >= gc::most_negative_int ) && ( this->get().get_si() <= gc::most_positive_int )) {
-    return (int) this->get().get_si();
-  }
-
-SIMPLE_ERROR(BF("Value %lld out of range for integer type INT .") % (long long) this->get().get_si() );
+  return static_cast<int>(this->get().get_si());
 }
 
 inline unsigned int Bignum_O::as_uint() const {
-  if( this->get().get_ui() <= gc::most_positive_int ) {
-    return (unsigned int) this->get().get_ui();
-  }
-
-  SIMPLE_ERROR(BF("Value %lld out of range for integer type UNSIGNED INT.") % (long long) this->get().get_ui() );
+  return static_cast<unsigned int>(this->get().get_ui());
 }
 
 // --  LONG --
 
 inline long Bignum_O::as_long() const {
-  if(( this->get().get_si() >= gc::most_negative_long ) && ( this->get().get_si() <= gc::most_positive_long )) {
-    return (long) this->get().get_si();
-  }
-
-SIMPLE_ERROR(BF("Value %lld out of range for integer type LONG .") % (long long) this->get().get_si() );
+  return static_cast<long>(this->get().get_si());
 }
 
 inline unsigned long Bignum_O::as_ulong() const {
-  if( this->get().get_ui() <= gc::most_positive_long ) {
-    return (unsigned long) this->get().get_ui();
-  }
-
-  SIMPLE_ERROR(BF("Value %lld out of range for integer type UNSIGNED LONG.") % (long long) this->get().get_ui() );
+  return static_cast<unsigned long>(this->get().get_ui());
 }
 
 // -- LONG LONG --
 
 inline long long Bignum_O::as_longlong() const {
-  if(( this->get().get_si() >= gc::most_negative_longlong ) && ( this->get().get_si() <= gc::most_positive_longlong )) {
-    return (long long) this->get().get_si();
-  }
-
-  SIMPLE_ERROR(BF("Value %lld out of range for integer type LONG LONG .") % (long long) this->get().get_si() );
+#ifdef CLASP_MS_WINDOWS_HOST
+#error "Add support for windows and long long bignum conversions"
+#endif
+  return this->as_int64_();
 }
 
 inline unsigned long long Bignum_O::as_ulonglong() const {
-  if( this->get().get_ui() <= gc::most_positive_longlong ) {
-    return (unsigned long long) this->get().get_ui();
-  }
-
-  SIMPLE_ERROR(BF("Value %lld out of range for integer type UNSIGNED LONG LONG.") % (long long) this->get().get_ui() );
+#ifdef CLASP_MS_WINDOWS_HOST
+#error "Add support for windows and unsigned long long bignum conversions"
+#endif
+  return this->as_uint64_();
 }
 
 // -- INT8 --
 
 inline int8_t Bignum_O::as_int8_t() const {
-  if(( this->get().get_si() >= gc::most_negative_int8 ) && ( this->get().get_si() <= gc::most_positive_int8 )) {
-    return (int8_t) this->get().get_si();
-  }
-
-  SIMPLE_ERROR(BF("Value %lld out of range for integer type INT8_T .") % (long long) this->get().get_si() );
+  return static_cast<int8_t>(this->get().get_si());
 }
 
 inline uint8_t Bignum_O::as_uint8_t() const {
-  if( this->get().get_ui() <= gc::most_positive_uint8 ) {
-    return (uint8_t) this->get().get_ui();
-  }
-
-  SIMPLE_ERROR(BF("Value %lld out of range for integer type UINT8_T.") % (long long) this->get().get_ui() );
+  return static_cast<uint8_t>(this->get().get_ui());
 }
 
 // -- INT16 --
 
 inline int16_t Bignum_O::as_int16_t() const {
-  if(( this->get().get_si() >= gc::most_negative_int16 ) && ( this->get().get_si() <= gc::most_positive_int16 )) {
-    return (int16_t) this->get().get_si();
-  }
-
-  SIMPLE_ERROR(BF("Value %lld out of range for integer type INT16_T .") % (long long) this->get().get_si() );
+  return static_cast<int16_t>(this->get().get_si());
 }
 
 inline uint16_t Bignum_O::as_uint16_t() const {
-  if( this->get().get_ui() <= gc::most_positive_uint16 ) {
-    return (uint16_t) this->get().get_ui();
-  }
-
-  SIMPLE_ERROR(BF("Value %lld out of range for integer type UINT16_T.") % (long long) this->get().get_ui() );
+  return static_cast<uint16_t>(this->get().get_ui());
 }
 
 // -- INT32 --
 
 inline int32_t Bignum_O::as_int32_t() const {
-  if(( this->get().get_si() >= gc::most_negative_int32 ) && ( this->get().get_si() <= gc::most_positive_int32 )) {
-    return (int32_t) this->get().get_si();
-  }
-
-  SIMPLE_ERROR(BF("Value %lld out of range for integer type INT32_T .") % (long long) this->get().get_si() );
+  return static_cast<int32_t>(this->get().get_si());
 }
 
 inline uint32_t Bignum_O::as_uint32_t() const {
-  if( this->get().get_ui() <= gc::most_positive_uint32 ) {
-    return (uint32_t) this->get().get_ui();
-  }
-
-  SIMPLE_ERROR(BF("Value %lld out of range for integer type UINT32_T.") % (long long) this->get().get_ui() );
+  return static_cast<uint32_t>(this->get().get_ui());
 }
 
 // -- INT64 --

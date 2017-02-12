@@ -1304,14 +1304,37 @@ ALWAYS_INLINE core::T_O* tr_to_object_unsigned_char( core::T_O* raw_ )
 
 ALWAYS_INLINE float from_object_float( core::T_O* obj )
 {
-  float x = translate::from_object< float >(gctools::smart_ptr<core::T_O>((gctools::Tagged) obj ))._v;
-  return x;
+  // Christian - Feb 12, 2017
+  //
+  // this is correct but it's not the absolute best solution.
+  // The best solution would be a converter from every type to
+  // float. As in:  from_single_float_to_float, from_double_float_to_float, from_fixnum_to_float
+  // and then have type checks in Common Lisp.
+  T_sp tobj((gctools::Tagged)obj);
+  if (gc::IsA<Number_sp>(tobj)) {
+    Number_sp nobj = gc::As_unsafe<Number_sp>(tobj);
+    float x = clasp_to_float(nobj);
+    return x;
+  }
+  TYPE_ERROR(tobj,cl::_sym_Number_O);
 }
 
+
+union T_Optr_to_float {
+  float f;
+  T_O*  ptr;
+};
+  
 ALWAYS_INLINE core::T_O* tr_from_object_float( core::T_O* obj )
 {
+#if 1
+  T_Optr_to_float converter;
+  converter.f = from_object_float(obj);
+  return converter.ptr;
+#else
   static float x =  from_object_float( obj );
   return reinterpret_cast< core::T_O * >( &x );
+#endif
 }
 
 ALWAYS_INLINE core::T_O* to_object_float( float x )
@@ -1321,8 +1344,14 @@ ALWAYS_INLINE core::T_O* to_object_float( float x )
 
 ALWAYS_INLINE core::T_O* tr_to_object_float( core::T_O* raw_ )
 {
+#if 1
+  T_Optr_to_float converter;
+  converter.ptr = raw_;
+  float f = converter.f;
+#else
   float * ptr = (float *) raw_ ;
   float f = * ptr;
+#endif
   return to_object_float( f );
 }
 

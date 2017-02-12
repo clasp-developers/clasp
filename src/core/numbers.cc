@@ -3482,13 +3482,11 @@ ALWAYS_INLINE float clasp_to_float( core::Number_sp x )
   {
     return (float) x.unsafe_fixnum();
   }
-
   if (x.single_floatp())
   {
     return (float) x.unsafe_single_float();
   }
-
-  return (gc::As< Integer_sp >( x ))->as_float_();
+  return x->as_float_();
 }
 
 // --- DOUBLE ---
@@ -3501,10 +3499,8 @@ ALWAYS_INLINE double clasp_to_double( core::Number_sp x )
   } else if (x.single_floatp()) {
     double d = x.unsafe_single_float();
     return d;
-  } else {
-    return x->as_double_();
   }
-  TYPE_ERROR(x,cl::_sym_Number_O);
+  return x->as_double_();
 };
 
 ALWAYS_INLINE LongFloat clasp_to_long_float(Number_sp x)
