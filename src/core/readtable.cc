@@ -763,6 +763,7 @@ HashTable_sp ReadTable_O::create_standard_syntax_table() {
   syntax->setf_gethash(clasp_character_create_from_name("TAB"), kw::_sym_whitespace_character);
   syntax->setf_gethash(clasp_character_create_from_name("NEWLINE"), kw::_sym_whitespace_character);
   syntax->setf_gethash(clasp_character_create_from_name("LINEFEED"), kw::_sym_whitespace_character);
+  syntax->setf_gethash(clasp_character_create_from_name("ESCAPE"), kw::_sym_whitespace_character);
   syntax->setf_gethash(clasp_character_create_from_name("PAGE"), kw::_sym_whitespace_character);
   syntax->setf_gethash(clasp_character_create_from_name("RETURN"), kw::_sym_whitespace_character);
   syntax->setf_gethash(clasp_character_create_from_name("SPACE"), kw::_sym_whitespace_character);

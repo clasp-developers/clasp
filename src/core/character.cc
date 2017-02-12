@@ -261,6 +261,7 @@ CL_DEFUN bool cl__char_equal(List_sp args) {
 #define LINE_FEED_CHAR 10
 #define PAGE_CHAR 12
 #define RETURN_CHAR 13
+#define ESCAPE_CHAR 27
 
 Character_sp clasp_character_create_from_name(string const &name) {
   Character_sp ch;
@@ -275,6 +276,8 @@ Character_sp clasp_character_create_from_name(string const &name) {
     ch = clasp_make_standard_character(PAGE_CHAR);
   else if (ssup == "RETURN")
     ch = clasp_make_standard_character(RETURN_CHAR);
+  else if (ssup == "ESCAPE")
+    ch = clasp_make_standard_character(ESCAPE_CHAR);
   else if (ssup == "SPACE")
     ch = clasp_make_standard_character(' ');
   else if (ssup == "BACKSPACE")
@@ -337,6 +340,7 @@ void CharacterInfo::initialize() {
   }
   gNamesToCharacterIndex["NULL"] = 0;
   gNamesToCharacterIndex["LINEFEED"] = 10;
+  gNamesToCharacterIndex["ESCAPE"] = 27;
 }
 
 CL_LAMBDA(ch);
