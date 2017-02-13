@@ -14,6 +14,9 @@
 
 (in-package "SYSTEM")
 
+#+(or)(eval-when (:load-toplevel :compile-toplevel :execute)
+  (setq *echo-repl-read* t)
+)
 (defun structure-type-error (value slot-type struct-name slot-name)
   (error 'simple-type-error
 	 :format-control "Slot ~A in structure ~A only admits values of type ~A."
@@ -177,12 +180,11 @@
 	      ,@assertions
 	      #-CLOS
               (sys:make-structure ',name ,@slot-names)
-	      #+CLOS
 	      ;; the class is defined by an enclosing LET form
-	      #+clasp(sys:make-structure
+	      #+(and clos clasp)(sys:make-structure
                       (let ((x (load-time-value (list nil))))
                         (or (car x) (car (rplaca x (find-class ',name))))) ,@slot-names)
-              #+ecl(sys:make-structure .structure-constructor-class. ,@slot-names)
+              #+(and clos ecl)(sys:make-structure .structure-constructor-class. ,@slot-names)
               ))
 	  ((subtypep type '(VECTOR T))
 	   `(defun ,constructor-name ,keys

@@ -351,3 +351,28 @@ No DIBuilder is defined for the default module")
   (defun jit-remove-module (handle)
     "Maybe remove the module"
     nil))
+
+
+#+(or)
+(progn
+(defun jit-lazy-setup ()
+  (unless *jit-engine*
+    (setf *jit-engine* (make-cxx-object 'llvm-sys:clasp-jit))))
+
+(defun jit-add-module-return-function (module repl-fn startup-fn shutdown-fn literals-list)
+  (let* ((handle (llvm-sys:clasp-jit-add-module *jit-engine* module))
+	 (repl-name (llvm-sys:get-name repl-fn))
+	 (startup-name (llvm-sys:get-name startup-fn))
+	 (shutdown-name (llvm-sys:get-name shutdown-fn)))
+    (llvm-sys:jit-finalize-repl-function *jit-engine* handle repl-name startup-name shutdown-name literals-list)))
+
+(defun jit-add-module-return-dispatch function (module dispatch-fn startup-fn shutdown-fn literals-list)
+  (let* ((handle (llvm-sys:clasp-jit-add-module *jit-engine* module))
+	 (dispatch-name (llvm-sys:get-name repl-fn))
+	 (startup-name (llvm-sys:get-name startup-fn))
+	 (shutdown-name (llvm-sys:get-name shutdown-fn)))
+    (llvm-sys:jit-finalize-dispatch-function *jit-engine* handle dispatch-name startup-name shutdown-name literals-list)))
+
+  (defun jit-remove-module (handle)
+    "Maybe remove the module"
+    (llvm-sys:jit-remove-module *jit-engine* handle)))

@@ -59,6 +59,7 @@
    #:foreign-call-pointer-ast
    #:argument-asts
    #:function-name
+   #:foreign-types
    #:make-throw-ast
    #:cleanup-ast
    #:make-setf-fdefinition-ast
@@ -91,6 +92,7 @@
    #:foreign-call-instruction
    #:foreign-call-pointer-instruction
    #:function-name
+   #:foreign-types
    #:make-multiple-value-foreign-call-instruction
    #:make-foreign-call-instruction
    #:make-foreign-call-pointer-instruction

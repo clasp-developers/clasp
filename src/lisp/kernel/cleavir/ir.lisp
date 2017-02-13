@@ -244,7 +244,6 @@
 ;;;
 
 (defun closure-call (call-or-invoke intrinsic-name closure return-value arg-allocas abi &key (label "") landing-pad)
-  ;; Write excess arguments into the multiple-value array
   (let* ((arguments (mapcar (lambda (x) (%load x)) arg-allocas))
          (real-args (if (< (length arguments) core:+number-of-fixed-arguments+)
                         (append arguments (make-list (- core:+number-of-fixed-arguments+ (length arguments)) :initial-element (cmp:null-t-ptr)))

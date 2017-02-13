@@ -2967,6 +2967,12 @@ CL_DEFUN core::Function_sp finalizeEngineAndGetDispatchFunction(Module_sp module
   return functoid;
 }
 
+
+
+
+
+
+
 struct CtorStruct {
   int priority;
   void (*ctor)();
@@ -3440,5 +3446,45 @@ CL_LISPIFY_NAME("CLASP-JIT-REMOVE-MODULE");
 CL_DEFMETHOD void ClaspJIT_O::removeModule(ModuleHandle_sp H) {
   CompileLayer.removeModuleSet(H->_Handle);
 }
+
+
+
+CL_DEFUN core::Function_sp llvm_sys__jitFinalizeReplFunction(ClaspJIT_sp jit, ModuleHandle_sp handle, const string& replName, const string& startupName, const string& shutdownName, core::T_sp initialData, Function_sp fn, core::T_sp activationFrameEnvironment) {
+  // Stuff to support MCJIT
+  core::Pointer_sp replSymbol = jit->findSymbol(replName);
+  core::Pointer_sp startupSymbol = jit->findSymbol(startupName);
+  core::Pointer_sp shutdownSymbol = jit->findSymbol(shutdownName);
+  if (!replSymbol->ptr()) SIMPLE_ERROR(BF("Could not resolve repl symbol %s") % replName);
+  if (!startupSymbol->ptr()) SIMPLE_ERROR(BF("Could not resolve startup symbol %s") % startupName);
+  if (!shutdownSymbol->ptr()) SIMPLE_ERROR(BF("Could not resolve shutdown symbol %s") % shutdownName);
+  core::CompiledClosure_fptr_type lisp_funcPtr = (core::CompiledClosure_fptr_type)(replSymbol->ptr());
+  gctools::smart_ptr<core::CompiledClosure_O> functoid = gctools::GC<core::CompiledClosure_O>::allocate(core::SimpleBaseString_O::make(replName), kw::_sym_function, lisp_funcPtr, fn, activationFrameEnvironment, _Nil<core::T_O>(), _Nil<core::T_O>() /*lambdaList*/, 0, 0, 0, 0 );
+  core::module_startup_function_type startup = reinterpret_cast<core::module_startup_function_type>(startupSymbol->ptr());
+  startup(initialData.tagged_());
+  return functoid;
+}
+
+
+
+CL_DEFUN core::Function_sp llvm_sys__jitFinalizeDispatchFunction(ClaspJIT_sp jit, ModuleHandle_sp handle, const string& dispatchName, const string& startupName, const string& shutdownName, core::T_sp initialData ) {
+  // Stuff to support MCJIT
+  core::Pointer_sp dispatchSymbol = jit->findSymbol(dispatchName);
+  core::Pointer_sp startupSymbol = jit->findSymbol(startupName);
+  core::Pointer_sp shutdownSymbol = jit->findSymbol(shutdownName);
+  if (!dispatchSymbol->ptr()) SIMPLE_ERROR(BF("Could not resolve dispatch symbol %s") % dispatchName);
+  if (!startupSymbol->ptr()) SIMPLE_ERROR(BF("Could not resolve startup symbol %s") % startupName);
+  if (!shutdownSymbol->ptr()) SIMPLE_ERROR(BF("Could not resolve shutdown symbol %s") % shutdownName);
+  core::DispatchFunction_fptr_type dispatchFunction = (core::DispatchFunction_fptr_type)(dispatchSymbol->ptr());
+  core::ShutdownFunction_fptr_type shutdownFunction = (core::ShutdownFunction_fptr_type)(shutdownSymbol->ptr());
+  gctools::smart_ptr<core::CompiledDispatchFunction_O> functoid = gctools::GC<core::CompiledDispatchFunction_O>::allocate(core::SimpleBaseString_O::make(dispatchName), kw::_sym_dispatch_function, dispatchFunction, shutdownFunction, handle );
+  void* pstartup = startupSymbol->ptr();
+  if (pstartup == NULL ) {
+    printf("%s:%d Could not find function named %s\n", __FILE__, __LINE__, MODULE_STARTUP_FUNCTION_NAME);
+  }
+  core::module_startup_function_type startup = reinterpret_cast<core::module_startup_function_type>(pstartup);
+  startup(initialData.tagged_());
+  return functoid;
+}
+
 };
 

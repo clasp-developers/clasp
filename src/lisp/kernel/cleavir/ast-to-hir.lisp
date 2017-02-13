@@ -79,6 +79,7 @@
       context
     (let* ((all-args (clasp-cleavir-ast:argument-asts ast))
 	   (temps (cleavir-ast-to-hir::make-temps all-args)))
+      (check-type (clasp-cleavir-ast:function-name ast) string)
       (cleavir-ast-to-hir:compile-arguments
        all-args
        temps
@@ -87,14 +88,12 @@
 	  (if (typep results 'cleavir-ir:values-location)
                 (make-instance 'clasp-cleavir-hir:multiple-value-foreign-call-instruction
                                :function-name (clasp-cleavir-ast:function-name ast)
-                               :foreign-types (clasp-cleavir-ast:foreign-types ast)
                                :inputs temps
                                :outputs (list results)
                                :successors successors)
 	      (let* ((values-temp (make-instance 'cleavir-ir:values-location)))
 		(make-instance 'clasp-cleavir-hir:multiple-value-foreign-call-instruction
                                :function-name (clasp-cleavir-ast:function-name ast)
-                               :foreign-types (clasp-cleavir-ast:foreign-types ast)
                                :inputs temps
                                :outputs (list values-temp)
                                :successors
