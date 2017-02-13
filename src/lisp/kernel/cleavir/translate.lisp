@@ -383,7 +383,7 @@ when this is t a lot of graphs will be generated.")
 (defmethod translate-simple-instruction
     ((instruction clasp-cleavir-hir:foreign-call-instruction) return-value inputs outputs (abi abi-x86-64))
   (cmp:irc-low-level-trace :flow)
-  (let ((call (clasp-cleavir:unsafe-foreign-call :call (clasp-cleavir-hir:function-name instruction) (car outputs) inputs abi)))
+  (let ((call (clasp-cleavir:unsafe-foreign-call :call (clasp-cleavir-hir:foreign-types instruction) (clasp-cleavir-hir:function-name instruction) (car outputs) inputs abi)))
     (cc-dbg-when *debug-log*
 		 (format *debug-log* "    translate-simple-instruction foreign-call-instruction: ~a~%" (cc-mir:describe-mir instruction))
 		 (format *debug-log* "     instruction --> ~a~%" call))))
@@ -392,7 +392,7 @@ when this is t a lot of graphs will be generated.")
 (defmethod translate-simple-instruction
     ((instruction clasp-cleavir-hir:foreign-call-pointer-instruction) return-value inputs outputs (abi abi-x86-64))
   (cmp:irc-low-level-trace :flow)
-  (let ((call (clasp-cleavir:unsafe-foreign-call-pointer :call (%load (car inputs)) (car outputs) (cdr inputs) abi)))
+  (let ((call (clasp-cleavir:unsafe-foreign-call-pointer :call (clasp-cleavir-hir:foreign-types instruction) (%load (car inputs)) (car outputs) (cdr inputs) abi)))
     (cc-dbg-when *debug-log*
 		 (format *debug-log* "    translate-simple-instruction foreign-call-pointer-instruction: ~a~%" (cc-mir:describe-mir instruction))
 		 (format *debug-log* "     instruction --> ~a~%" call))))

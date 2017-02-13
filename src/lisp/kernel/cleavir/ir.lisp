@@ -279,15 +279,15 @@
 (defun unsafe-foreign-call (call-or-invoke foreign-types foreign-name output arg-allocas abi &key (label "") landing-pad)
   ;; Write excess arguments into the multiple-value array
   (let* ((arguments (mapcar (lambda (type arg)
-                              (irc-create-call (clasp-ffi::no-tr-from-translator-name type)
+                              (cmp:irc-create-call (clasp-ffi::no-tr-from-translator-name type)
                                                (list (%load arg))))
                             (second foreign-types) arg-allocas))
          (func (or (llvm-sys:get-function cmp:*the-module* foreign-name)
                    (cmp:irc-function-create
                     (cmp:function-type-create-on-the-fly foreign-types)
                     'llvm-sys::External-linkage
-                    intrinsic-name
-                    *the-module*)))
+                    foreign-name
+                    cmp:*the-module*)))
          (foreign-result (llvm-sys:create-call-array-ref cmp:*irbuilder* func arguments "foreign-call-result"))
          (result-in-t*
           (cmp:irc-create-call (clasp-ffi::no-tr-to-translator-name (first foreign-types))
@@ -298,7 +298,7 @@
 (defun unsafe-foreign-call-pointer (call-or-invoke foreign-types pointer output arg-allocas abi &key (label "") landing-pad)
   ;; Write excess arguments into the multiple-value array
   (let* ((arguments (mapcar (lambda (type arg)
-                              (irc-create-call (clasp-ffi::no-tr-from-translator-name type)
+                              (cmp:irc-create-call (clasp-ffi::no-tr-from-translator-name type)
                                                (list (%load arg))))
                             (second foreign-types) arg-allocas))
          (function-type (cmp:function-type-create-on-the-fly foreign-types))
@@ -309,7 +309,7 @@
          (result-in-t*
           (cmp:irc-create-call (clasp-ffi::no-tr-to-translator-name (first foreign-types))
                                (list foreign-result))))
-    (%store result-in-registers output)))
+    (%store result-in-t* output)))
 
 
 
