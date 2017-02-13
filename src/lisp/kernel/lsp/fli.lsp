@@ -381,11 +381,7 @@
       (extract-signature arguments)
     ;; (fli-debug "%FOREIGN-FUNCALL: ARGS = ~S, RETURN-TYPE = ~S~&"
     ;;         args return-type )
-    ;; QUESTION:  frgo - can we use ,name instead of (ensure-core-pointer (%dlsym ,name))?
-    ;;            using ,name would directly link to the function
-    `(typecase (,name)
-       (string (core:foreign-call ,signature ,name ,@args))
-       (otherwise (core:foreign-call-pointer ,signature (ensure-core-pointer (core:dlsym :rtld-default ,name)) ,@args)))))
+    `(core:foreign-call-pointer ,signature (ensure-core-pointer (core:dlsym :rtld-default ,name)) ,@args)))
 
 (defmacro %foreign-funcall-pointer (ptr &rest arguments)
   (multiple-value-bind (signature args)
