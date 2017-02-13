@@ -383,7 +383,7 @@
     ;;         args return-type )
     ;; QUESTION:  frgo - can we use ,name instead of (ensure-core-pointer (%dlsym ,name))?
     ;;            using ,name would directly link to the function
-    `(core:foreign-call-pointer ,signature (ensure-core-pointer (%dlsym ,name)) ,@args)))
+    `(core:foreign-call-pointer ,signature (ensure-core-pointer (core:dlsym :rtld-default ,name)) ,@args)))
 
 (defmacro %foreign-funcall-pointer (ptr &rest arguments)
   (multiple-value-bind (signature args)
@@ -526,7 +526,8 @@
 
 (defun %get-callback (sym-name)
   (if sym-name
-      (dlsym% (mangled-callback-name sym-name))
+      ;;; CHECKME:   This was dlsym%
+      (%dlsym (mangled-callback-name sym-name))
       nil))
 
 ;;;----------------------------------------------------------------------------
