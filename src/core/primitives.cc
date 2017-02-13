@@ -2081,6 +2081,69 @@ CL_DEFMETHOD T_mv Function_O::functionSourcePos() const {
 
 };
 
+namespace core {
+CL_DEFUN T_sp core__unsigned_short_round_trip(T_sp num) {
+  unsigned short x = translate::from_object<unsigned short>(num)._v;
+  printf("%s:%d   unsigned short value: %u\n", __FILE__, __LINE__, x );
+  T_sp result = translate::to_object<unsigned short>::convert(x);
+  return result;
+}
+
+CL_DEFUN T_sp core__short_round_trip(T_sp num) {
+  short x = translate::from_object<short>(num)._v;
+  printf("%s:%d   short value: %d\n", __FILE__, __LINE__, x );
+  T_sp result = translate::to_object<short>::convert(x);
+  return result;
+}
+
+CL_DEFUN T_sp core__unsigned_int_round_trip(T_sp num) {
+  unsigned int x = translate::from_object<unsigned int>(num)._v;
+  printf("%s:%d   unsigned int value: %u\n", __FILE__, __LINE__, x );
+  T_sp result = translate::to_object<unsigned int>::convert(x);
+  return result;
+}
+
+CL_DEFUN T_sp core__int_round_trip(T_sp num) {
+  int x = translate::from_object<int>(num)._v;
+  printf("%s:%d   int value: %d\n", __FILE__, __LINE__, x );
+  T_sp result = translate::to_object<int>::convert(x);
+  return result;
+}
+
+CL_DEFUN T_sp core__unsigned_long_round_trip(T_sp num) {
+  unsigned long x = translate::from_object<unsigned long>(num)._v;
+  printf("%s:%d   unsigned long value: %lu\n", __FILE__, __LINE__, x );
+  T_sp result = translate::to_object<unsigned long>::convert(x);
+  return result;
+}
+
+CL_DEFUN T_sp core__long_round_trip(T_sp num) {
+  long x = translate::from_object<long>(num)._v;
+  printf("%s:%d   long value: %ld\n", __FILE__, __LINE__, x );
+  T_sp result = translate::to_object<long>::convert(x);
+  return result;
+}
+
+CL_DEFUN T_sp core__unsigned_long_long_round_trip(T_sp num) {
+  unsigned long long x = translate::from_object<unsigned long long>(num)._v;
+  printf("%s:%d   unsigned long long value: %llu\n", __FILE__, __LINE__, x );
+  T_sp result = translate::to_object<unsigned long long>::convert(x);
+  return result;
+}
+
+CL_DEFUN T_sp core__long_long_round_trip(T_sp num) {
+  long long x = translate::from_object< long long>(num)._v;
+  printf("%s:%d   long long value: %lld\n", __FILE__, __LINE__, x );
+  T_sp result = translate::to_object<long long>::convert(x);
+  return result;
+}
+};
+
+extern "C" {
+int add_two_numbers(int x, int y) {
+  return x + y;
+}
+};
 
   SYMBOL_SC_(CorePkg, smartPointerDetails);
   SYMBOL_EXPORT_SC_(ClPkg, null);

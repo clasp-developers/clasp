@@ -19,6 +19,14 @@
 
 (in-package "CLASP-FFI")
 
+;;;----------------------------------------------------------------------------
+;;;----------------------------------------------------------------------------
+;;; Debugging MACROS
+
+(defmacro fli-debug (fmt &rest args) nil)
+#+(or) (defmacro fli-debug (fmt &rest args) `(format *debug-io* ,fmt ,@args))
+  
+
 ;;; ===========================================================================
 ;;; FLI LISP SIDE IMPLEMENTATION
 
@@ -63,14 +71,14 @@
 ;;; Adding built-in foreign types requires adding a type spec to this table!
 
 (defun dbg-print-*foreign-type-spec-table* ()
-  (format *debug-io* "*** DEBUG INFO: clasp-ffi::*foreign-type-spec-table* =>~%~%")
+  (fli-debug "*** DEBUG INFO: clasp-ffi::*foreign-type-spec-table* =>~%~%")
   (loop
      for spec across *foreign-type-spec-table*
      for idx from 0 to (1- (length *foreign-type-spec-table*))
      when spec
      do
-       (format *debug-io* "~d: ~S~&" idx spec))
-  (format *debug-io* "~%*** END OF DEBUG INFO ***~%"))
+       (fli-debug "~d: ~S~&" idx spec))
+  (fli-debug "~%*** END OF DEBUG INFO ***~%"))
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
 
@@ -294,12 +302,27 @@
   (defun from-translator-name (type)
     (translator-name "tr_" "from" type))
 
+  (defun no-tr-to-translator-name (type)
+    (translator-name "" "to" type))
+
+  (defun no-tr-from-translator-name (type)
+    (translator-name "" "from" type))
+
   (defun split-list (list)
     (do ((list list (rest (rest list)))
          (left '() (list* (first list) left))
          (right '() (if (endp (rest list)) right (list* (second list) right))))
         ((endp list) (list (nreverse left) (nreverse right)))))
 
+  (defun extract-signature (arguments)
+    "Converts (:float 16.0 :int 3 :float) -> (values '(:float (:float :int)) (16.0 3))"
+    (let* ((types-args (clasp-ffi::split-list arguments))
+           (types (car types-args))
+           (args (cadr types-args))
+           (arg-types (butlast types))
+           (last (car (last types))))
+      (values (list last arg-types) args)))
+      
   (defun split-arguments (arguments)
     (let* ((splits (split-list arguments))
            (types-and-maybe-return-type (car splits))
@@ -312,13 +335,13 @@
                       (butlast types-and-maybe-return-type 1)
                       types-and-maybe-return-type)))
       #| ;;; debug info output
-      (format *debug-io* "/Users/frgo/swdev/clasp/src/clasp/src/lisp/kernel/lsp/arguments = ~S~&" arguments)
-      (format *debug-io* "splits = ~S~&" splits)
-      (format *debug-io* "types-and-maybe-return-type = ~S~&" types-and-maybe-return-type)
-      (format *debug-io* "args = ~S~&" args)
-      (format *debug-io* "explicit-return-type = ~S~&" explicit-return-type)
-      (format *debug-io* "return-type = ~S~&" return-type)
-      (format *debug-io* "types = ~S~&" types)
+      (fli-debug "/Users/frgo/swdev/clasp/src/clasp/src/lisp/kernel/lsp/arguments = ~S~&" arguments)
+      (fli-debug "splits = ~S~&" splits)
+      (fli-debug "types-and-maybe-return-type = ~S~&" types-and-maybe-return-type)
+      (fli-debug "args = ~S~&" args)
+      (fli-debug "explicit-return-type = ~S~&" explicit-return-type)
+      (fli-debug "return-type = ~S~&" return-type)
+      (fli-debug "types = ~S~&" types)
       |#
       (values (loop for type in types
                  for arg in args
@@ -328,7 +351,7 @@
               return-type)))
 
   (defun process-arguments (arguments)
-    ;; (format *debug-io* "PROCESS-ARGUMENTS: arguments = ~S~&" arguments)
+    ;; (fli-debug "PROCESS-ARGUMENTS: arguments = ~S~&" arguments)
     (cond
 
       ((null arguments)
@@ -354,22 +377,18 @@
   ) ;; EVAL-WHEN
 
 (defmacro %foreign-funcall (name &rest arguments)
-  (multiple-value-bind (args return-type)
-      (process-arguments arguments)
-    ;; (format *debug-io* "%FOREIGN-FUNCALL: ARGS = ~S, RETURN-TYPE = ~S~&"
+  (multiple-value-bind (signature args)
+      (extract-signature arguments)
+    ;; (fli-debug "%FOREIGN-FUNCALL: ARGS = ~S, RETURN-TYPE = ~S~&"
     ;;         args return-type )
-    (if (eq return-type :void)
-        `(core:foreign-call-pointer (ensure-core-pointer (%dlsym ,name)) ,@args)
-        `(core:foreign-call ,(translator-name "tr_" "to" return-type)
-                            (core:foreign-call-pointer (ensure-core-pointer (%dlsym ,name)) ,@args)))))
+    ;; QUESTION:  frgo - can we use ,name instead of (ensure-core-pointer (%dlsym ,name))?
+    ;;            using ,name would directly link to the function
+    `(core:foreign-call-pointer ,signature (ensure-core-pointer (%dlsym ,name)) ,@args)))
 
 (defmacro %foreign-funcall-pointer (ptr &rest arguments)
-  (multiple-value-bind (args return-type)
-      (process-arguments arguments)
-    (if (eq return-type :void)
-        `(core:foreign-call-pointer (ensure-core-pointer, ptr) ,@args)
-        `(core:foreign-call ,(translator-name "tr_" "to" return-type)
-                            (core:foreign-call-pointer (ensure-core-pointer ,ptr) ,@args)))))
+  (multiple-value-bind (signature args)
+      (extract-signature arguments)
+    `(core:foreign-call-pointer ,signature (ensure-core-pointer ,ptr) ,@args)))
 
 ;;; === F O R E I G N   L I B R A R Y   H A N D L I N G ===
 
@@ -419,7 +438,7 @@
 
 (defun %expand-callback-definition (name-and-options return-type-kw argument-symbols argument-type-kws body)
 
-  (format *debug-io* "%expand-callback-definition: name-and-options = ~S, return-tyoe-kw = ~S, argument-symbols = ~S, argument-type-kws = ~S, body = ~S~&"
+  #+(or)(fli-debug "%expand-callback-definition: name-and-options = ~S, return-tyoe-kw = ~S, argument-symbols = ~S, argument-type-kws = ~S, body = ~S~&"
           name-and-options return-type-kw argument-symbols argument-type-kws body )
 
   (multiple-value-bind (function-name convention)
@@ -431,7 +450,7 @@
     ;; Convert type keywords into llvm types ie: :int -> +i32+
     (let* ((body-form `(lambda ,argument-symbols ,@body))
            (argument-names (mapcar (lambda (s)
-                                     (format *debug-io* "s = ~a~%" s) (string s))
+                                     (fli-debug "s = ~a~%" s) (string s))
                                    argument-symbols))
            (mangled-function-name (mangled-callback-name function-name))
            (return-type (safe-translator-type return-type-kw ))
@@ -536,6 +555,7 @@
 ;;;----------------------------------------------------------------------------
 ;;; T E S T I N G
 
+#+(or)
 (defun test-ffi ()
 
   (format *debug-io* "*** TEST 1: %MEM-SET and %MEM-REF ...~&")
@@ -569,5 +589,6 @@
 
   )
 
+#+(or)
 (defun dbg-numeric-limits ()
   (%foreign-funcall "info_numeric_limits"))

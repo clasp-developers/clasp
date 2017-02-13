@@ -1113,7 +1113,7 @@ jump to blocks within this tagbody."
 	(error "Unknown special operator : ~a" head)))
   )
 
-
+;;; ------------------------------------------------------------
 (defun codegen-multiple-value-foreign-call (result form evaluate-env)
   "Evaluate each of the arguments into an alloca and invoke the function"
   ;; setup the ActivationFrame for passing arguments to this function in the setup arena
@@ -1146,59 +1146,77 @@ jump to blocks within this tagbody."
       (irc-store-result result result-in-registers)))
   (irc-low-level-trace :flow))
 
+(defun function-type-create-on-the-fly (foreign-types)
+  (let ((arg-types (mapcar (lambda (type)
+                             (clasp-ffi::safe-translator-type type))
+                           (second foreign-types)))
+        (varargs nil))
+    (llvm-sys:function-type-get (clasp-ffi::safe-translator-type (first foreign-types)) arg-types varargs)))
+
+(defun evaluate-foreign-arguments (fargs foreign-types temp-result evaluate-env)
+  (let (args)
+    (do* ((cur-exp fargs (cdr cur-exp))
+          (exp (car cur-exp) (car cur-exp))
+          (type-cur (second foreign-types) (cdr type-cur))
+          (type (car type-cur) (car type-cur))
+          (i 0 (+ 1 i)))
+         ((endp cur-exp) nil)
+      ;;(bformat t "In codegen-multiple-value-foreign-call codegen arg[%d] -> %d\n" i exp)
+      (codegen temp-result exp evaluate-env)
+      (push (irc-create-call (clasp-ffi::no-tr-from-translator-name type)
+                             (list (irc-smart-ptr-extract (irc-load temp-result)))) args))
+    args))
+
 (defun codegen-foreign-call (result form evaluate-env)
   "Evaluate each of the arguments into an alloca and invoke the function"
   ;; setup the ActivationFrame for passing arguments to this function in the setup arena
   (assert-result-isa-llvm-value result)
-  (let* ((foreign-name (car form))
-         (nargs (length (cdr form)))
-         args
+  ;;(bformat t "In codegen-multiple-value-foreign-call codegen form: %s\n" form)
+  (let* ((foreign-types (first form))
+         (intrinsic-name (second form))
+         (fargs (cddr form))
+         (nargs (length fargs))
          (temp-result (irc-alloca-tsp)))
     (dbg-set-invocation-history-stack-top-source-pos form)
     ;; evaluate the arguments into the array
-    ;;  used to be done by --->    (codegen-evaluate-arguments (cdr form) evaluate-env)
-    (do* ((cur-exp (cdr form) (cdr cur-exp))
-          (exp (car cur-exp) (car cur-exp))
-          (i 0 (+ 1 i)))
-         ((endp cur-exp) nil)
-      (codegen temp-result exp evaluate-env)
-      (push (irc-smart-ptr-extract (irc-load temp-result)) args))
-    (let* ((func (or (llvm-sys:get-function *the-module* foreign-name)
-                     (let ((arg-types (make-list (length args) :initial-element +t*+)))
-                       (irc-function-create
-                        (llvm-sys:function-type-get +t*+ arg-types nil)
-                        'llvm-sys::External-linkage
-                        foreign-name
-                        *the-module*))))
+    ;;  used to be done by --->    (codegen-evaluate-arguments (cddr form) evaluate-env)
+    (let* ((args (evaluate-foreign-arguments fargs foreign-types temp-result evaluate-env))
+           (func (or (llvm-sys:get-function *the-module* intrinsic-name)
+                     (irc-function-create
+                      (function-type-create-on-the-fly foreign-types)
+                      'llvm-sys::External-linkage
+                      intrinsic-name
+                      *the-module*)))
+           (foreign-result
+            (llvm-sys:create-call-array-ref *irbuilder* func (nreverse args) "intrinsic"))
            (result-in-t*
-            (llvm-sys:create-call-array-ref *irbuilder* func (nreverse args) "foreign-function")))
-      (irc-store-result-t* result result-in-t*))))
+            (irc-create-call (clasp-ffi::no-tr-to-translator-name (first foreign-types))
+                             (list foreign-result))))
+      (irc-store-result-t* result result-in-t*)))
+  (irc-low-level-trace :flow))
 
 (defun codegen-foreign-call-pointer (result form evaluate-env)
   "Evaluate each of the arguments into an alloca and invoke the function pointer"
   ;; setup the ActivationFrame for passing arguments to this function in the setup arena
   (assert-result-isa-llvm-value result)
-  (let* ((nargs (length (cdr form)))
-         args
+  (let* ((foreign-types (first form))
+         (func-pointer (second form))
+         (fargs (cddr form))
+         (nargs (length fargs))
          (temp-result (irc-alloca-tsp)))
     (dbg-set-invocation-history-stack-top-source-pos form)
     ;; evaluate the arguments into the array
     ;;  used to be done by --->    (codegen-evaluate-arguments (cdr form) evaluate-env)
-    (do* ((cur-exp (cdr form) (cdr cur-exp))
-          (exp (car cur-exp) (car cur-exp))
-          (i 0 (+ 1 i)))
-         ((endp cur-exp) nil)
-      (codegen temp-result exp evaluate-env)
-      (push (irc-smart-ptr-extract (irc-load temp-result)) args))
-    (codegen temp-result (car form) evaluate-env)
-    (let* ((arg-types (make-list (length args) :initial-element +t*+))
-           (varargs nil)
-           (function-type (llvm-sys:function-type-get +t*+ arg-types varargs))
+    (codegen temp-result func-pointer evaluate-env)
+    (let* ((args (evaluate-foreign-arguments fargs foreign-types temp-result evaluate-env))
+           (function-type (function-type-create-on-the-fly foreign-types))
            (function-pointer-type (llvm-sys:type-get-pointer-to function-type))
            (pointer-t* (irc-smart-ptr-extract (irc-load temp-result)))
            (function-pointer (llvm-sys:create-bit-cast *irbuilder* (irc-intrinsic "cc_getPointer" pointer-t*) function-pointer-type "cast-function-pointer"))
-           (result-in-t*
-            (llvm-sys:create-call-function-pointer *irbuilder* function-type function-pointer (nreverse args) "fn-ptr-call-result")))
+           (foreign-result
+            (llvm-sys:create-call-function-pointer *irbuilder* function-type function-pointer (nreverse args) "fn-ptr-call-result"))
+           (result-in-t* (irc-create-call (clasp-ffi::no-tr-to-translator-name (first foreign-types))
+                                          (list foreign-result))))
       (irc-store-result-t* result result-in-t*))
     (irc-low-level-trace :flow)))
 

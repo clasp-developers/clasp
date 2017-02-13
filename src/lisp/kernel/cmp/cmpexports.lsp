@@ -61,6 +61,8 @@
           +tsp[DUMMY]*+
           +gcroots-in-module+
           +gcroots-in-module*+
+          function-type-create-on-the-fly
+          evaluate-foreign-arguments
           calling-convention-args
           calling-convention-args.va-arg
           calling-convention-va-list

@@ -335,6 +335,19 @@ No DIBuilder is defined for the default module")
      shutdown-fn
      literals-list))
 
+  (defun jit-add-module-return-dispatch-function (module repl-fn startup-fn shutdown-fn literals-list)
+    "Add the module to the jit and return a handle"
+    (if (not *jit-engine*)
+        (setq *jit-engine* (create-run-time-execution-engine module))
+        (llvm-sys:add-module *jit-engine* module))
+    (llvm-sys:finalize-engine-and-get-dispatch-function
+     *jit-engine*
+     "JIT-DISPATCH"
+     repl-fn
+     startup-fn
+     shutdown-fn
+     literals-list))
+
   (defun jit-remove-module (handle)
     "Maybe remove the module"
     nil))

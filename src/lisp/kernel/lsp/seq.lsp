@@ -59,7 +59,7 @@
        ;; array type.
        (setq elt-type 'LIST length '*))
       ((VECTOR)
-       (setq elt-type (if (endp args) 'T (first args))
+       (setq elt-type (if (endp args) 'T (upgraded-array-element-type (first args)))
 	     length (if (endp (rest args)) '* (second args))))
       ((SIMPLE-VECTOR)
        (setq elt-type 'T
