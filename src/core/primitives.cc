@@ -2143,6 +2143,10 @@ extern "C" {
 int add_two_numbers(int x, int y) {
   return x + y;
 }
+
+void print_add_two_numbers(int x, int y) {
+  printf("%s:%d %d + %d -> %d\n", __FILE__, __LINE__, x, y,  x + y );
+}
 };
 
   SYMBOL_SC_(CorePkg, smartPointerDetails);

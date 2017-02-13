@@ -1190,8 +1190,10 @@ jump to blocks within this tagbody."
            (foreign-result
             (llvm-sys:create-call-array-ref *irbuilder* func (nreverse args) "intrinsic"))
            (result-in-t*
-            (irc-create-call (clasp-ffi::no-tr-to-translator-name (first foreign-types))
-                             (list foreign-result))))
+            (if (eq :void (first foreign-types))
+                (irc-create-call (clasp-ffi::no-tr-to-translator-name (first foreign-types)) nil) ; returns :void
+                (irc-create-call (clasp-ffi::no-tr-to-translator-name (first foreign-types))
+                             (list foreign-result)))))
       (irc-store-result-t* result result-in-t*)))
   (irc-low-level-trace :flow))
 
@@ -1206,18 +1208,21 @@ jump to blocks within this tagbody."
          (temp-result (irc-alloca-tsp)))
     (dbg-set-invocation-history-stack-top-source-pos form)
     ;; evaluate the arguments into the array
-    ;;  used to be done by --->    (codegen-evaluate-arguments (cdr form) evaluate-env)
-    (codegen temp-result func-pointer evaluate-env)
-    (let* ((args (evaluate-foreign-arguments fargs foreign-types temp-result evaluate-env))
-           (function-type (function-type-create-on-the-fly foreign-types))
-           (function-pointer-type (llvm-sys:type-get-pointer-to function-type))
-           (pointer-t* (irc-smart-ptr-extract (irc-load temp-result)))
-           (function-pointer (llvm-sys:create-bit-cast *irbuilder* (irc-intrinsic "cc_getPointer" pointer-t*) function-pointer-type "cast-function-pointer"))
-           (foreign-result
-            (llvm-sys:create-call-function-pointer *irbuilder* function-type function-pointer (nreverse args) "fn-ptr-call-result"))
-           (result-in-t* (irc-create-call (clasp-ffi::no-tr-to-translator-name (first foreign-types))
-                                          (list foreign-result))))
-      (irc-store-result-t* result result-in-t*))
+    (let ((args (evaluate-foreign-arguments fargs foreign-types temp-result evaluate-env))
+          (function-type (function-type-create-on-the-fly foreign-types)))
+      ;; evaluate the function pointer
+      (codegen temp-result func-pointer evaluate-env)
+      (let* ((function-pointer-type (llvm-sys:type-get-pointer-to function-type))
+             (pointer-t* (irc-smart-ptr-extract (irc-load temp-result)))
+             (function-pointer (llvm-sys:create-bit-cast *irbuilder* (irc-intrinsic "cc_getPointer" pointer-t*) function-pointer-type "cast-function-pointer"))
+             (foreign-result
+              (llvm-sys:create-call-function-pointer *irbuilder* function-type function-pointer (nreverse args) "fn-ptr-call-result"))
+             (result-in-t*
+              (if (eq :void (first foreign-types))
+                  (irc-create-call (clasp-ffi::no-tr-to-translator-name (first foreign-types)) nil) ; returns :void
+                  (irc-create-call (clasp-ffi::no-tr-to-translator-name (first foreign-types))
+                                   (list foreign-result)))))
+        (irc-store-result-t* result result-in-t*)))
     (irc-low-level-trace :flow)))
 
 (defun codegen-application (result form env)

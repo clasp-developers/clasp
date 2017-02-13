@@ -1071,6 +1071,7 @@ and initialize it with an array consisting of one function pointer."
   ;; Note: using +void*+ causes an error - so we use +i64*+ instead here!
   (primitive          module "from_object_pointer" +i64*+ (list +t*+))
   (primitive          module "to_object_pointer" +t*+ (list +i64*+))
+  (primitive          module "to_object_void" +t*+ (list))
   ;; === END OF TRANSLATORS ===
 
   )

@@ -1404,6 +1404,11 @@ ALWAYS_INLINE core::T_O* to_object_long_double( long double x )
   return translate::to_object< long double >::convert(x).raw_();
 }
 
+ALWAYS_INLINE core::T_O* to_object_void( void )
+{
+  return _Nil<core::T_O>().raw_();
+}
+
 ALWAYS_INLINE core::T_O* tr_to_object_long_double( core::T_O* raw_ )
 {
   long double * ptr = (long double *) raw_ ;
