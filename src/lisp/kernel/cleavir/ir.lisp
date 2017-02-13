@@ -262,7 +262,6 @@
 
 
 (defun unsafe-multiple-value-foreign-call (call-or-invoke intrinsic-name return-value arg-allocas abi &key (label "") landing-pad)
-  ;; Write excess arguments into the multiple-value array
   (with-return-values (return-vals return-value abi)
     (let* ((args (mapcar (lambda (x) (%load x)) arg-allocas))
            (func (or (llvm-sys:get-function cmp:*the-module* intrinsic-name)

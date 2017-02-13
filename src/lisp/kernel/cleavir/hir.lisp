@@ -19,14 +19,6 @@
     (format s "debug-message(~a)" (debug-message instr))))
 
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;
-;;; Instruction base-foreign-CALL-INSTRUCTION
-;;;
-
-(defclass base-foreign-call-instruction (cleavir-ir:instruction cleavir-ir:one-successor-mixin)
-  ((%foreign-types :initarg :foreign-types :accessor foreign-types)))
-
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -35,7 +27,7 @@
 ;;; This instruction is an multiple-value-foreign-CALL-INSTRUCTION that prints a message
 
 
-(defclass multiple-value-foreign-call-instruction (base-foreign-call-instruction)
+(defclass multiple-value-foreign-call-instruction (cleavir-ir:instruction cleavir-ir:one-successor-mixin)
   ((%function-name :initarg :function-name :accessor function-name)))
 
 
@@ -44,13 +36,13 @@
     (format s "multiple-value-foreign-call(~a)" (function-name instr))))
 
 (defmethod make-multiple-value-foreign-call-instruction
-    (function-name foreign-types inputs outputs &optional (successor nil successor-p))
+    (function-name inputs outputs &optional (successor nil successor-p))
   (make-instance 'multiple-value-foreign-call-instruction
                  :function-name function-name
-                 :foreign-types foreign-types
                  :inputs inputs
                  :outputs outputs
                  :successors (if successor-p (list successor) '())))
+
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -59,15 +51,16 @@
 ;;;
 ;;; This instruction is an FOREIGN-call-INSTRUCTION that prints a message
 
-(defclass foreign-call-instruction (base-foreign-call-instruction)
-  ((%function-name :initarg :function-name :accessor function-name)))
+(defclass foreign-call-instruction(cleavir-ir:instruction cleavir-ir:one-successor-mixin)
+  ((%foreign-types :initarg :foreign-types :accessor foreign-types)
+   (%function-name :initarg :function-name :accessor function-name)))
 
 (defmethod cleavir-ir-graphviz:label ((instr foreign-call-instruction))
   (with-output-to-string (s)
     (format s "foreign-call(~a)" (function-name instr))))
 
 (defmethod make-foreign-call-instruction
-    (function-name foreign-types inputs outputs &optional (successor nil successor-p))
+    (foreign-types function-name inputs outputs &optional (successor nil successor-p))
   (make-instance 'foreign-call-instruction
                  :function-name function-name
                  :foreign-types foreign-types
@@ -75,14 +68,15 @@
                  :outputs outputs
                  :successors (if successor-p (list successor) '())))
 
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
 ;;; Instruction foreign-call-pointer-INSTRUCTION
 ;;;
 ;;; This instruction is an foreign-call-pointer-INSTRUCTION that prints a message
 
-(defclass foreign-call-pointer-instruction (base-foreign-call-instruction)
-  ())
+(defclass foreign-call-pointer-instruction cleavir-ir:instruction cleavir-ir:one-successor-mixin)
+  ((%foreign-types :initarg :foreign-types :accessor foreign-types)))
 
 
 (defmethod cleavir-ir-graphviz:label ((instr foreign-call-pointer-instruction))

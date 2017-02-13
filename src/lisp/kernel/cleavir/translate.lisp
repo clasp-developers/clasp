@@ -374,6 +374,7 @@ when this is t a lot of graphs will be generated.")
 (defmethod translate-simple-instruction
     ((instruction clasp-cleavir-hir:multiple-value-foreign-call-instruction) return-value inputs outputs (abi abi-x86-64))
   (cmp:irc-low-level-trace :flow)
+  (check-type (clasp-cleavir-hir:function-name instruction) string)
   (let ((call (clasp-cleavir:unsafe-multiple-value-foreign-call :call (clasp-cleavir-hir:function-name instruction) return-value inputs abi)))
     (cc-dbg-when *debug-log*
 		 (format *debug-log* "    translate-simple-instruction multiple-value-foreign-call-instruction: ~a~%" (cc-mir:describe-mir instruction))

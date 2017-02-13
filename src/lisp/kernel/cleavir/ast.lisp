@@ -151,8 +151,6 @@
 (defclass foreign-call-pointer-ast (base-foreign-call-ast cleavir-ast:one-value-ast-mixin)
   ())
 
-(cleavir-io:define-save-info foreign-call-pointer-ast )
-
 (defmethod cleavir-ast-graphviz::label ((ast foreign-call-pointer-ast))
   (with-output-to-string (s)
     (format s "foreign-call-pointer")))
