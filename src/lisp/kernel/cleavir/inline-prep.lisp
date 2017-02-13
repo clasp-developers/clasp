@@ -55,17 +55,35 @@
 
 ;; Generate an AST and save it for inlining if the
 ;; function is proclaimed as inline
-(defun defun-inline-hook (name function-form)
+(defun defun-inline-hook (name function-form env)
   (when (core:declared-global-inline-p name)
     (let* ((cleavir-generate-ast:*compiler* 'cl:compile)
+           ;; we have to be tricky, because
+           ;; (let ((x ...)) (defun foo ...))
+           ;; means we can't inline, whereas
+           ;; (defun foo ...y...) [where y is unknown]
+           ;; should treat y as a special variable.
+           ;; CLEAVIR-ENV:COMPILE-TIME strips out lexical parts of
+           ;; the environment, so we generate the AST in the stripped
+           ;; environment, and if we run into a gap, check to see
+           ;; whether the real environment has it. If it does,
+           ;; it was stripped, so we're in the first situation and
+           ;; give up.
            (ast (handler-bind
                     ((cleavir-env:no-variable-info
                        (lambda (condition)
-                         (invoke-restart 'cleavir-generate-ast:consider-special)))
+                         (if (cleavir-env:variable-info
+                              env (cleavir-env:name condition))
+                             ;; we could potentially leave a note.
+                             (return-from defun-inline-hook nil)
+                             (invoke-restart 'cleavir-generate-ast:consider-special))))
                      (cleavir-env:no-function-info
                        (lambda (condition)
-                         (invoke-restart 'cleavir-generate-ast:consider-global))))
-                  (cleavir-generate-ast:generate-ast function-form *clasp-env* *clasp-system*))))
+                         (if (cleavir-env:function-info
+                              env (cleavir-env:name condition))
+                             (return-from defun-inline-hook nil)
+                             (invoke-restart 'cleavir-generate-ast:consider-global)))))
+                  (cleavir-generate-ast:generate-ast function-form (cleavir-env:compile-time env) *clasp-system*))))
       `(eval-when (:compile-toplevel :load-toplevel :execute)
          (when (core:declared-global-inline-p ',name)
            (when (fboundp ',name)
