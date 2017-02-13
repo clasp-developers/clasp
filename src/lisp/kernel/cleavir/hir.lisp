@@ -51,7 +51,7 @@
 ;;;
 ;;; This instruction is an FOREIGN-call-INSTRUCTION that prints a message
 
-(defclass foreign-call-instruction(cleavir-ir:instruction cleavir-ir:one-successor-mixin)
+(defclass foreign-call-instruction (cleavir-ir:instruction cleavir-ir:one-successor-mixin)
   ((%foreign-types :initarg :foreign-types :accessor foreign-types)
    (%function-name :initarg :function-name :accessor function-name)))
 
@@ -75,7 +75,7 @@
 ;;;
 ;;; This instruction is an foreign-call-pointer-INSTRUCTION that prints a message
 
-(defclass foreign-call-pointer-instruction cleavir-ir:instruction cleavir-ir:one-successor-mixin)
+(defclass foreign-call-pointer-instruction (cleavir-ir:instruction cleavir-ir:one-successor-mixin)
   ((%foreign-types :initarg :foreign-types :accessor foreign-types)))
 
 
