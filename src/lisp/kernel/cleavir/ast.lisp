@@ -84,24 +84,43 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
+;;; Class BASE-FOREIGN-CALL-AST
+;;;
+;;; This AST is used to represent a call to an intrinsic function inserted into the generated code.
+
+(defclass base-foreign-call-ast (cleavir-ast:ast)
+  ((%foreign-types :initarg :foreign-types :accessor foreign-types)
+   (%argument-asts :initarg :argument-asts :reader argument-asts)))
+
+(cleavir-io:define-save-info base-foreign-call-ast
+  (:foreign-types foreign-types)
+  (:argument-asts argument-asts))
+
+(defmethod cleavir-ast-graphviz::label ((ast base-foreign-call-ast))
+  (with-output-to-string (s)
+    (format s "base-foreign-call ~a" (foreign-types ast))))
+
+(defmethod cleavir-ast:children ((ast base-foreign-call-ast))
+  (argument-asts ast))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
 ;;; Class MULTIPLE-VALUE-FOREIGN-CALL-AST
 ;;;
 ;;; This AST is used to represent a call to an intrinsic function inserted into the generated code.
 
-(defclass multiple-value-foreign-call-ast (cleavir-ast:ast)
-  ((%function-name :initarg :function-name  :accessor function-name)
-   (%argument-asts :initarg :argument-asts :reader argument-asts)))
+(defclass multiple-value-foreign-call-ast (base-foreign-call-ast)
+  ((%function-name :initarg :function-name  :accessor function-name)))
 
 (cleavir-io:define-save-info multiple-value-foreign-call-ast
-    (:function-name function-name)
-  (:argument-asts argument-asts))
+    (:function-name function-name))
 
 (defmethod cleavir-ast-graphviz::label ((ast multiple-value-foreign-call-ast))
   (with-output-to-string (s)
     (format s "multiple-value-foreign-call (~a)" (function-name ast))))
 
 (defmethod cleavir-ast:children ((ast multiple-value-foreign-call-ast))
-  (argument-asts ast))
+  (call-next-method))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -110,13 +129,11 @@
 ;;; This AST is used to represent a call to a named foreign function
 ;;;   inserted into the generated code.
 
-(defclass foreign-call-ast (cleavir-ast:ast cleavir-ast:one-value-ast-mixin)
-  ((%function-name :initarg :function-name :accessor function-name)
-   (%argument-asts :initarg :argument-asts :reader argument-asts)))
+(defclass foreign-call-ast (base-foreign-call-ast cleavir-ast:one-value-ast-mixin)
+  ((%function-name :initarg :function-name :accessor function-name)))
 
 (cleavir-io:define-save-info foreign-call-ast
-    (:function-name function-name)
-  (:argument-asts argument-asts))
+    (:function-name function-name))
 
 (defmethod cleavir-ast-graphviz::label ((ast foreign-call-ast))
   (with-output-to-string (s)
@@ -131,11 +148,10 @@
 ;;;
 ;;; This AST is used to represent a call to an pointer to a function inserted into the generated code.
 
-(defclass foreign-call-pointer-ast (cleavir-ast:ast cleavir-ast:one-value-ast-mixin)
-  ((%argument-asts :initarg :argument-asts :reader argument-asts)))
+(defclass foreign-call-pointer-ast (base-foreign-call-ast cleavir-ast:one-value-ast-mixin)
+  ())
 
-(cleavir-io:define-save-info foreign-call-pointer-ast
-  (:argument-asts argument-asts))
+(cleavir-io:define-save-info foreign-call-pointer-ast )
 
 (defmethod cleavir-ast-graphviz::label ((ast foreign-call-pointer-ast))
   (with-output-to-string (s)

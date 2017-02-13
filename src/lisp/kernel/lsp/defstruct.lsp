@@ -179,7 +179,11 @@
               (sys:make-structure ',name ,@slot-names)
 	      #+CLOS
 	      ;; the class is defined by an enclosing LET form
-	      (sys:make-structure .structure-constructor-class. ,@slot-names)))
+	      #+clasp(sys:make-structure
+                      (let ((x (load-time-value (list nil))))
+                        (or (car x) (car (rplaca x (find-class ',name))))) ,@slot-names)
+              #+ecl(sys:make-structure .structure-constructor-class. ,@slot-names)
+              ))
 	  ((subtypep type '(VECTOR T))
 	   `(defun ,constructor-name ,keys
 	     (vector ,@slot-names)))
@@ -529,10 +533,11 @@ as a STRUCTURE doc and can be retrieved by (documentation 'NAME 'structure)."
          ,(ext::register-with-pde whole)
 	 (eval-when (:compile-toplevel :load-toplevel :execute)
 	   ,core
-	   (let (#+clos
+	   #+ecl(let (#+clos
                  ,@(and (not type)
                         `((.structure-constructor-class. (find-class ',name)))))
-             ,@constructors))
+                  ,@constructors)
+           #+clasp (progn ,@constructors))
 	 ',name))))
 
 ;; Return

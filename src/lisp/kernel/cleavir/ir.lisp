@@ -264,55 +264,54 @@
 
 (defun unsafe-multiple-value-foreign-call (call-or-invoke intrinsic-name return-value arg-allocas abi &key (label "") landing-pad)
   ;; Write excess arguments into the multiple-value array
-  (let* ((arguments (mapcar (lambda (x) (%load x)) arg-allocas))
-         (real-args arguments
-           ;; I used to pad the number of real-args using the code below - why?????
-           ;; If Clasp works without this then delete the code below
-           #+(or)(if (< (length arguments) core:+number-of-fixed-arguments+)
-                              (append arguments (make-list (- core:+number-of-fixed-arguments+ (length arguments)) :initial-element (cmp:null-t-ptr)))
-                              arguments)))
-    (with-return-values (return-vals return-value abi)
-      (let* ((args (list* real-args))
-             (func (or (llvm-sys:get-function cmp:*the-module* intrinsic-name)
-                       (let ((arg-types (make-list (length args) :initial-element cmp:+t*+))
-                             (varargs nil))
-                         (setq func (cmp:irc-function-create
-                                     (llvm-sys:function-type-get cmp:+return_type+ arg-types varargs)
-                                     'llvm-sys::External-linkage
-                                     intrinsic-name
-                                     cmp:*the-module*)))))
-             (result-in-registers
-              (llvm-sys:create-call-array-ref cmp:*irbuilder* func args "intrinsic")))
-        (%store result-in-registers return-value)))))
-
-(defun unsafe-foreign-call (call-or-invoke foreign-name output arg-allocas abi &key (label "") landing-pad)
-  ;; Write excess arguments into the multiple-value array
-  (let* ((arguments (mapcar #'%load arg-allocas))
-         (func (or (llvm-sys:get-function cmp:*the-module* foreign-name)
-                   (let* ((arg-types (make-list (length arguments) :initial-element cmp:+t*+))
-                          (varargs nil))
-                     (cmp:irc-function-create
-                      (llvm-sys:function-type-get cmp:+t*+ arg-types varargs)
-                      'llvm-sys::External-linkage
-                      foreign-name
-                      cmp:*the-module*))))
-         (result-in-registers
-          (llvm-sys:create-call-array-ref cmp:*irbuilder* func arguments "foreign-call-result")))
-    (%store result-in-registers output)))
-
-
-(defun unsafe-foreign-call-pointer (call-or-invoke pointer output arg-allocas abi &key (label "") landing-pad)
-  ;; Write excess arguments into the multiple-value array
-  (let* ((arguments (mapcar #'%load arg-allocas)))
-    (let* ((arg-types (make-list (length arguments) :initial-element cmp:+t*+))
-           (varargs nil)
-           (function-type (llvm-sys:function-type-get cmp:+t*+ arg-types varargs))
-           (function-pointer-type (llvm-sys:type-get-pointer-to function-type))
-           (pointer-t* pointer)
-           (function-pointer (%bit-cast (cmp:irc-create-call "cc_getPointer" (list pointer-t*)) function-pointer-type "cast-function-pointer"))
+  (with-return-values (return-vals return-value abi)
+    (let* ((args (mapcar (lambda (x) (%load x)) arg-allocas))
+           (func (or (llvm-sys:get-function cmp:*the-module* intrinsic-name)
+                     (let ((arg-types (make-list (length args) :initial-element cmp:+t*+))
+                           (varargs nil))
+                       (setq func (cmp:irc-function-create
+                                   (llvm-sys:function-type-get cmp:+return_type+ arg-types varargs)
+                                   'llvm-sys::External-linkage
+                                   intrinsic-name
+                                   cmp:*the-module*)))))
            (result-in-registers
-            (llvm-sys:create-call-function-pointer cmp:*irbuilder* function-type function-pointer arguments "function-pointer")))
-      (%store result-in-registers output))))
+            (llvm-sys:create-call-array-ref cmp:*irbuilder* func args "intrinsic")))
+      (%store result-in-registers return-value))))
+
+(defun unsafe-foreign-call (call-or-invoke foreign-types foreign-name output arg-allocas abi &key (label "") landing-pad)
+  ;; Write excess arguments into the multiple-value array
+  (let* ((arguments (mapcar (lambda (type arg)
+                              (irc-create-call (clasp-ffi::no-tr-from-translator-name type)
+                                               (list (%load arg))))
+                            (second foreign-types) arg-allocas))
+         (func (or (llvm-sys:get-function cmp:*the-module* foreign-name)
+                   (cmp:irc-function-create
+                    (cmp:function-type-create-on-the-fly foreign-types)
+                    'llvm-sys::External-linkage
+                    intrinsic-name
+                    *the-module*)))
+         (foreign-result (llvm-sys:create-call-array-ref cmp:*irbuilder* func arguments "foreign-call-result"))
+         (result-in-t*
+          (cmp:irc-create-call (clasp-ffi::no-tr-to-translator-name (first foreign-types))
+                               (list foreign-result))))
+    (%store result-in-t* output)))
+
+
+(defun unsafe-foreign-call-pointer (call-or-invoke foreign-types pointer output arg-allocas abi &key (label "") landing-pad)
+  ;; Write excess arguments into the multiple-value array
+  (let* ((arguments (mapcar (lambda (type arg)
+                              (irc-create-call (clasp-ffi::no-tr-from-translator-name type)
+                                               (list (%load arg))))
+                            (second foreign-types) arg-allocas))
+         (function-type (cmp:function-type-create-on-the-fly foreign-types))
+         (function-pointer-type (llvm-sys:type-get-pointer-to function-type))
+         (pointer-t* pointer)
+         (function-pointer (%bit-cast (cmp:irc-create-call "cc_getPointer" (list pointer-t*)) function-pointer-type "cast-function-pointer"))
+         (foreign-result (llvm-sys:create-call-function-pointer cmp:*irbuilder* function-type function-pointer arguments "foreign-call-pointer-result"))
+         (result-in-t*
+          (cmp:irc-create-call (clasp-ffi::no-tr-to-translator-name (first foreign-types))
+                               (list foreign-result))))
+    (%store result-in-registers output)))
 
 
 
