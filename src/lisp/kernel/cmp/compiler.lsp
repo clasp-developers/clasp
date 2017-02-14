@@ -1483,8 +1483,10 @@ We could do more fancy things here - like if cleavir-clasp fails, use the clasp 
               (core:set-associated-functions compiled-function *all-functions-for-one-compile*)
               (values compiled-function warnp failp))))))))
 
-
-(defun compile* (compile-hook name &optional definition)
+;;; Use the *cleavir-compile-hook* to determine which compiler to use
+;;; if nil == bclasp
+;;; if #'clasp-cleavir:cleavir-compile-t1expr == cclasp
+(defun compile (name &optional definition)
   (multiple-value-bind (function warnp failp)
       ;; Get the actual compiled function and warnp+failp.
       (cond
@@ -1496,12 +1498,12 @@ We could do more fancy things here - like if cleavir-clasp fails, use the clasp 
          (multiple-value-bind (lambda-expression wrapped-env)
              (generate-lambda-expression-from-interpreted-function definition)
            (cmp-log "About to compile  name: %s  lambda-expression: %s wrapped-env: %s\n" name lambda-expression wrapped-env)
-           (compile-in-env name lambda-expression wrapped-env compile-hook)))
+           (compile-in-env name lambda-expression wrapped-env *cleavir-compile-hook*)))
         ((functionp definition)
          (error "COMPILE doesn't know how to handle this type of function"))
         ((consp definition)
          (cmp-log "compile form: %s\n" definition)
-         (compile-in-env name definition nil compile-hook))
+         (compile-in-env name definition nil *cleavir-compile-hook*))
         ((null definition)
          (let ((func (cond ((fboundp name) (fdefinition name))
                            ((and (symbolp name) (macro-function name)))
@@ -1513,7 +1515,7 @@ We could do more fancy things here - like if cleavir-clasp fails, use the clasp 
               (multiple-value-bind (lambda-expression wrapped-env)
                   (generate-lambda-expression-from-interpreted-function func)
                 (cmp-log "About to compile  name: %s  lambda-expression: %s wrapped-env: %s\n" name lambda-expression wrapped-env)
-                (compile-in-env name lambda-expression wrapped-env compile-hook)))
+                (compile-in-env name lambda-expression wrapped-env *cleavir-compile-hook*)))
              ((compiled-function-p func)
               (values func nil nil))
              ((core:cxx-instance-p func)
@@ -1533,13 +1535,6 @@ We could do more fancy things here - like if cleavir-clasp fails, use the clasp 
            (setf (fdefinition name) function)
            (values name warnp failp))
           (t (values function warnp failp)))))
-
-(defun compile (&rest args)
-  ;; Use the *cleavir-compile-hook* to determine which compiler to use
-  ;; if nil == bclasp
-  ;; if #'clasp-cleavir:cleavir-compile-t1expr == cclasp
-  (apply #'compile* *cleavir-compile-hook* args))
-
 
 (defun bclasp-compile (name form)
   (let ((*cleavir-compile-hook* nil)

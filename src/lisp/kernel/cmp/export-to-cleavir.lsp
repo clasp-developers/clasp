@@ -124,7 +124,6 @@
           compile-reference-to-literal
           ltv-global
           bclasp-compile
-          bclasp-compile-file
           make-uintptr_t
           +cons-car-offset+
           +cons-cdr-offset+
