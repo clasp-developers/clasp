@@ -363,79 +363,69 @@ Compile a lisp source file into an LLVM module.  type can be :kernel or :user"
           module)))))
 
 (defvar *compile-file-output-pathname* nil)
-(defun compile-file* (compile-file-hook
-                      given-input-pathname
-                      &key
-                        (output-file nil output-file-p)
-                        (verbose *compile-verbose*)
-                        (print *compile-print*)
-                        (system-p nil system-p-p)
-                        (external-format :default)
-                        ;; If we are spoofing the source-file system to treat given-input-name
-                        ;; as a part of another file then use source-truename to provide the
-                        ;; truename of the file we want to mimic
-                        source-debug-namestring
-                        ;; This is the offset we want to spoof
-                        (source-debug-offset 0)
-                        ;; output-type can be (or :fasl :bitcode :object)
-                        (output-type :fasl)
-;;; type can be either :kernel or :user
-                        (type :user)
-                      &aux conditions
-                        )
+
+;;; Use the *cleavir-compile-file-hook* to determine which compiler to use
+;;; if nil == bclasp
+;;; if #'clasp-cleavir:cleavir-compile-file-form  == cclasp
+(defun compile-file (input-file
+                     &key
+                       (output-file nil output-file-p)
+                       (verbose *compile-verbose*)
+                       (print *compile-print*)
+                       (system-p nil system-p-p)
+                       (external-format :default)
+                       ;; If we are spoofing the source-file system to treat given-input-name
+                       ;; as a part of another file then use source-truename to provide the
+                       ;; truename of the file we want to mimic
+                       source-debug-namestring
+                       ;; This is the offset we want to spoof
+                       (source-debug-offset 0)
+                       ;; output-type can be (or :fasl :bitcode :object)
+                       (output-type :fasl)
+                       ;; type can be either :kernel or :user
+                       (type :user)
+                     &aux conditions)
   "See CLHS compile-file."
   (if system-p-p (error "I don't support system-p keyword argument - use output-type"))
-  (if (not output-file-p) (setq output-file (cfp-output-file-default given-input-pathname output-type)))
+  (if (not output-file-p) (setq output-file (cfp-output-file-default input-file output-type)))
   (with-compiler-env (conditions)
-    (let ((*compile-print* print)
-	  (*compile-verbose* verbose))
-      ;; Do the different kind of compile-file here
-      (let* ((output-path (compile-file-pathname given-input-pathname :output-file output-file :output-type output-type ))
-             (*compile-file-output-pathname* output-path)
-	     (module (compile-file-to-module given-input-pathname output-path 
-					     :type type 
-					     :source-debug-namestring source-debug-namestring 
-					     :source-debug-offset source-debug-offset
-                                             :compile-file-hook compile-file-hook)))
-	(cond
-	  ((eq output-type :object)
-	   (when verbose (bformat t "Writing object to %s\n" (core:coerce-to-filename output-path)))
-	   (ensure-directories-exist output-path)
-	   (with-open-file (fout output-path :direction :output)
-	     (let ((reloc-model (cond
-				  ((member :target-os-linux *features*) 'llvm-sys:reloc-model-pic-)
-				  (t 'llvm-sys:reloc-model-undefined))))
-	       (generate-obj-asm module fout :file-type 'llvm-sys:code-gen-file-type-object-file :reloc-model reloc-model))))
-	  ((eq output-type :bitcode)
-	   (when verbose (bformat t "Writing bitcode to %s\n" (core:coerce-to-filename output-path)))
-	   (ensure-directories-exist output-path)
-	   (llvm-sys:write-bitcode-to-file module (core:coerce-to-filename output-path)))
-	  ((eq output-type :fasl)
-	   (ensure-directories-exist output-path)
-	   (let ((temp-bitcode-file (compile-file-pathname given-input-pathname :output-file output-file :output-type :bitcode)))
-	     (ensure-directories-exist temp-bitcode-file)
-	     (bformat t "Writing temporary bitcode file to: %s\n" temp-bitcode-file)
-	     (llvm-sys:write-bitcode-to-file module (core:coerce-to-filename temp-bitcode-file))
-	     (bformat t "Writing fasl file to: %s\n" output-file)
-	     (llvm-link output-file
-                        :lisp-bitcode-files (list temp-bitcode-file))))
-	  (t ;; fasl
-	   (error "Add support to file of type: ~a" output-type)))
-	(dolist (c conditions)
-	  (bformat t "conditions: %s\n" c))
-        (llvm-sys:module-delete module)
-        (compile-file-results output-path conditions))))))
-
-(defun compile-file (&rest args)
-  ;; Use the *cleavir-compile-file-hook* to determine which compiler to use
-  ;; if nil == bclasp
-  ;; if #'clasp-cleavir:cleavir-compile-file-form  == cclasp
-  (apply #'compile-file* *cleavir-compile-file-hook* args))
-
-
-(defun bclasp-compile-file (input-file &rest args &key &allow-other-keys)
-  (let ((*cleavir-compile-file-hook* nil)
-        (core:*use-cleavir-compiler* nil))
-    (apply #'compile-file input-file args)))
+    ;; Do the different kind of compile-file here
+    (let* ((*compile-print* print)
+           (*compile-verbose* verbose)
+           (output-path (compile-file-pathname input-file :output-file output-file :output-type output-type ))
+           (*compile-file-output-pathname* output-path)
+           (module (compile-file-to-module input-file output-path
+                                           :type type
+                                           :source-debug-namestring source-debug-namestring
+                                           :source-debug-offset source-debug-offset
+                                           :compile-file-hook *cleavir-compile-file-hook*)))
+      (cond
+        ((eq output-type :object)
+         (when verbose (bformat t "Writing object to %s\n" (core:coerce-to-filename output-path)))
+         (ensure-directories-exist output-path)
+         (with-open-file (fout output-path :direction :output)
+           (let ((reloc-model (cond
+                                ((member :target-os-linux *features*) 'llvm-sys:reloc-model-pic-)
+                                (t 'llvm-sys:reloc-model-undefined))))
+             (generate-obj-asm module fout :file-type 'llvm-sys:code-gen-file-type-object-file :reloc-model reloc-model))))
+        ((eq output-type :bitcode)
+         (when verbose (bformat t "Writing bitcode to %s\n" (core:coerce-to-filename output-path)))
+         (ensure-directories-exist output-path)
+         (llvm-sys:write-bitcode-to-file module (core:coerce-to-filename output-path)))
+        ((eq output-type :fasl)
+         (ensure-directories-exist output-path)
+         (let ((temp-bitcode-file (compile-file-pathname input-file :output-file output-file :output-type :bitcode)))
+           (ensure-directories-exist temp-bitcode-file)
+           (bformat t "Writing temporary bitcode file to: %s\n" temp-bitcode-file)
+           (llvm-sys:write-bitcode-to-file module (core:coerce-to-filename temp-bitcode-file))
+           (bformat t "Writing fasl file to: %s\n" output-file)
+           (llvm-link output-file
+                      :lisp-bitcode-files (list temp-bitcode-file))))
+        (t ;; fasl
+         (error "Add support to file of type: ~a" output-type)))
+      (dolist (c conditions)
+        (bformat t "conditions: %s\n" c))
+      (llvm-sys:module-delete module)
+      (compile-file-results output-path conditions))))
 
 (export 'compile-file)
