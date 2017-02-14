@@ -241,11 +241,9 @@ CL_LAMBDA(sin ch);
 CL_DECLARE();
 CL_DOCSTRING("reader_error_unmatched_close_parenthesis");
 CL_DEFUN T_mv core__reader_error_unmatched_close_parenthesis(T_sp sin, Character_sp ch) {
-#ifdef SOURCE_TRACKING
-#error "There is nothing that uses info"
   SourceFileInfo_sp info = core__source_file_info(sin);
   SIMPLE_ERROR(BF("Unmatched close parenthesis in file: %s line: %s") % info->fileName() % clasp_input_lineno(sin));
-#endif
+
   return (Values(_Nil<T_O>()));
 };
 
