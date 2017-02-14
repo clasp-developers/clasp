@@ -437,7 +437,7 @@
 (defun %expand-callback-definition (name-and-options return-type-kw argument-symbols argument-type-kws body)
 
   #+(or)(fli-debug "%expand-callback-definition: name-and-options = ~S, return-tyoe-kw = ~S, argument-symbols = ~S, argument-type-kws = ~S, body = ~S~&"
-          name-and-options return-type-kw argument-symbols argument-type-kws body )
+                   name-and-options return-type-kw argument-symbols argument-type-kws body )
 
   (multiple-value-bind (function-name convention)
       (if (consp name-and-options)
@@ -480,7 +480,7 @@
                                  (llvm-sys:get-argument-list new-func) argument-names))
                  ;; Call a translator for each c-arg and accumulate a list of cl-args in registers
                  (cl-args (mapcar (lambda (c-arg arg-type-kw arg-name)
-                                    (let* ((to-object-name (safe-translator-to-object-name arg-type-kw))
+                                    (let* ((to-object-name (no-tr-to-translator-name arg-type-kw))
                                            (trans-arg-name (format nil "translated-~a" arg-name))
                                            ;; Create the function declaration on the fly
                                            (to-object-func (cmp::get-function-or-error cmp::*the-module* to-object-name)))
@@ -497,16 +497,18 @@
                    (function-object (if core:*use-cleavir-compiler*
                                         (funcall (find-symbol "COMPILE-LAMBDA-FORM-TO-LLVM-FUNCTION" :clasp-cleavir) body-form)
                                         (cmp::compile-lambda-function body-form)))
+                   (invoke-fn (cmp::get-function-or-error cmp::*the-module* "cc_call_callback"))
+                   (fptr (cmp:irc-bit-cast function-object cmp:+t*+ "fptr-t*"))
                    (cl-result (llvm-sys:create-call-array-ref
                                cmp::*irbuilder*
-                               function-object
-                               (list* (cmp::null-t-ptr) (cmp::null-t-ptr) (cmp:jit-constant-size_t (length cl-args)) real-args) "cl-result")))
+                               invoke-fn
+                               (list* fptr (cmp::null-t-ptr) (cmp:jit-constant-size_t (length cl-args)) real-args) "cl-result")))
               ;; (3) Call the translator for the return value
               (if (eq return-type-kw :void)
                   ;; Return with void
                   (llvm-sys:create-ret-void cmp::*irbuilder*)
                   ;; Return the result
-                  (let* ((from-object-name (safe-translator-from-object-name return-type-kw))
+                  (let* ((from-object-name (no-tr-from-translator-name return-type-kw))
                          (from-object-func (cmp::get-function-or-error cmp::*the-module* from-object-name))
                          (c-result (llvm-sys:create-call-array-ref
                                     cmp::*irbuilder*
@@ -514,7 +516,7 @@
                                     (list (llvm-sys:create-extract-value cmp::*irbuilder* cl-result (list 0) "val0"))
                                     "cl-result" nil)))
                     (llvm-sys:create-ret cmp::*irbuilder* c-result))))))))
-    function-name))
+    `',function-name))
 
 (defmacro %defcallback (name-and-options return-type-kw argument-symbols argument-type-kws &rest body)
   (%expand-callback-definition name-and-options return-type-kw argument-symbols argument-type-kws body))

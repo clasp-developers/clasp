@@ -903,6 +903,9 @@ and initialize it with an array consisting of one function pointer."
   (primitive          module "cc_call"   +return_type+ (list* +t*+ +t*+ +size_t+
                                                               (map 'list (lambda (x) x)
                                                                    (make-array core:+number-of-fixed-arguments+ :initial-element +t*+))) :varargs t)
+  (primitive          module "cc_call_callback"   +return_type+ (list* +t*+ +t*+ +size_t+
+                                                                         (map 'list (lambda (x) x)
+                                                                              (make-array core:+number-of-fixed-arguments+ :initial-element +t*+))) :varargs t)
   (primitive-nounwind module "cc_allowOtherKeywords" +i64+ (list +i64+ +t*+))
   (primitive-nounwind module "cc_matchKeywordOnce" +size_t+ (list +t*+ +t*+ +t*+))
   (primitive          module "cc_ifNotKeywordException" +void+ (list +t*+ +size_t+ +VaList_S*+))

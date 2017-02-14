@@ -47,6 +47,7 @@ extern "C" {
 #include <clasp/core/designators.h>
 #include <clasp/core/compPackage.h>
 #include <clasp/core/package.h>
+#include <clasp/core/fli.h>
 #include <clasp/core/hashTable.h>
 #include <clasp/core/evaluator.h>
 #include <clasp/core/genericFunction.h>
@@ -313,6 +314,19 @@ ALWAYS_INLINE gc::return_type cc_call(LCC_ARGS_CC_CALL_ELLIPSIS) {
 #endif
   core::T_O *lcc_arglist = lcc_arglist_s.asTaggedPtr();
   return closure->invoke_va_list(LCC_PASS_ARGS);
+}
+
+ALWAYS_INLINE gc::return_type cc_call_callback(LCC_ARGS_CC_CALL_ELLIPSIS) {
+  //	core::Function_O* func = gctools::DynamicCast<core::NamedFunction_O*,core::T_O*>::castOrNULL(tfunc);
+  auto closure = reinterpret_cast<CompiledClosure_fptr_type>(lcc_closure);
+  VaList_S lcc_arglist_s;
+  va_start(lcc_arglist_s._Args, LCC_VA_START_ARG);
+#ifdef ENABLE_BACKTRACE_ARGS  
+  LCC_SPILL_REGISTER_ARGUMENTS_TO_VA_LIST(lcc_arglist_s);
+#endif
+  core::T_O *lcc_arglist = lcc_arglist_s.asTaggedPtr();
+  lcc_closure = NULL;
+  return closure(LCC_PASS_ARGS);
 }
 
 ALWAYS_INLINE void makeValueFrame(core::T_sp *resultActivationFrameP, size_t numargs)
@@ -1422,8 +1436,11 @@ ALWAYS_INLINE core::T_O* tr_to_object_long_double( core::T_O* raw_ )
 
 ALWAYS_INLINE void * from_object_pointer( core::T_O* obj )
 {
-  void * x = translate::from_object< void * >(gctools::smart_ptr<core::T_O>((gctools::Tagged) obj ))._v;
-  return x;
+  T_sp tobj((gctools::Tagged)obj);
+  if (gctools::IsA<clasp_ffi::ForeignData_sp>(tobj)) {
+    return gctools::As_unsafe<clasp_ffi::ForeignData_sp>(tobj)->ptr();
+  }
+  SIMPLE_ERROR(BF("Handle from_object_pointer for value: %s") % _rep_(tobj));
 }
 
 ALWAYS_INLINE core::T_O* tr_from_object_pointer( core::T_O* obj )
@@ -1434,7 +1451,7 @@ ALWAYS_INLINE core::T_O* tr_from_object_pointer( core::T_O* obj )
 
 ALWAYS_INLINE core::T_O* to_object_pointer( void * x )
 {
-  return translate::to_object< void * >::convert( x ).raw_();
+  return clasp_ffi::ForeignData_O::create(x).raw_();
 }
 
 ALWAYS_INLINE core::T_O* tr_to_object_pointer( core::T_O* raw_ )

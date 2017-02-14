@@ -59,6 +59,7 @@
           +t**+
           +tsp[DUMMY]+
           +tsp[DUMMY]*+
+          null-t-ptr
           +gcroots-in-module+
           +gcroots-in-module*+
           function-type-create-on-the-fly
