@@ -117,11 +117,10 @@ Options are :tagbody :go :all :eh-landing-pads
              (bformat t "CMP-LOG ")
              (bformat t ,fmt ,@args))
            nil)))
-  (defmacro cmp-log-dump (fn-or-module)
-    `(if (is-debug-compiler-on)
-	 (llvm-sys:dump ,fn-or-module)
-	 nil))
-  )
+(defmacro cmp-log-dump (fn-or-module)
+  `(if (is-debug-compiler-on)
+       (llvm-sys:dump ,fn-or-module)
+       nil))
 
 
 ;; When Cleavir is installed set the value of *cleavir-compile-hook* to use it to compile forms
