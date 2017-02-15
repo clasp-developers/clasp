@@ -324,7 +324,8 @@ Return files."
                          (system (command-line-arguments-as-list)))
   (aclasp-features)
   (if clean (clean-system #P"src/lisp/kernel/tag/min-start" :no-prompt t :system system))
-  (if (out-of-date-bitcodes #P"src/lisp/kernel/tag/min-start" #P"src/lisp/kernel/tag/min-end" :system system)
+  (if (or (out-of-date-bitcodes #P"src/lisp/kernel/tag/min-start" #P"src/lisp/kernel/tag/min-end" :system system)
+          (null (probe-file output-file)))
       (progn
         (load-system #P"src/lisp/kernel/tag/after-init" #P"src/lisp/kernel/tag/min-pre-epilogue" :system system)
         (let* ((*target-backend* target-backend)
@@ -367,7 +368,8 @@ Return files."
   (bclasp-features)
   (if clean (clean-system #P"src/lisp/kernel/tag/start" :no-prompt t :system system))
   (let ((*target-backend* (default-target-backend)))
-    (if (out-of-date-bitcodes #P"src/lisp/kernel/tag/start" #P"src/lisp/kernel/tag/bclasp" :system system)
+    (if (or (out-of-date-bitcodes #P"src/lisp/kernel/tag/start" #P"src/lisp/kernel/tag/bclasp" :system system)
+            (null (probe-file output-file)))
         (progn
           (load-system #P"src/lisp/kernel/tag/start" #P"src/lisp/kernel/tag/bclasp" :interp t :system system)
           (let ((files (out-of-date-bitcodes #P"src/lisp/kernel/tag/start" #P"src/lisp/kernel/tag/bclasp" :system system)))
