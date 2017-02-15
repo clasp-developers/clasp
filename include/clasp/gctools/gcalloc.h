@@ -729,23 +729,25 @@ namespace gctools {
     template <typename... ARGS>
       static smart_pointer_type allocate_bitunit_container( size_t length, ARGS &&... args) {
       size_t size = sizeof_bitunit_container_with_header<OT>(length);
+#ifdef DEBUG_BITUNIT_CONTAINER
+      printf("%s:%d  In allocate_bitunit_container length = %lu  size= %lu\n", __FILE__, __LINE__, length, size );
+#endif
+      
 #ifdef METER_ALLOCATIONS
       if (OT::static_class) {
         ++OT::static_class->_allocation_counter;
         OT::static_class->_allocation_total_size += size;
       }
 #endif
-#if 0
-      if ( GCKind<OT>::Kind == 31 && size == 88 ) {
-        printf("%s:%d allocate_container  kind = 31\n", __FILE__, __LINE__ );
-        printf("        capacity --> %lu,  sizeof_container_with_header --> %lu\n", capacity, size );
-        printf("        sizeof(Header_s) --> %lu\n", sizeof(Header_s) );
-        printf("        sizeof(OT) --> %lu\n", sizeof(OT) );
-        printf("        sizeof(typename OT::value_type) --> %lu\n", sizeof(typename OT::value_type));
-        printf("        sizeof_container<T>(capacity) --> %lu\n", sizeof_container<OT>(capacity) );
+      smart_pointer_type result = GCObjectAllocator<OT>::allocate_kind(GCKind<OT>::Kind,size,length,std::forward<ARGS>(args)...);
+#if DEBUG_BITUNIT_CONTAINER
+      {
+        printf("%s:%d allocate_bitunit_container \n", __FILE__, __LINE__ );
+        printf("            Allocated object tagged ptr = %p\n", (void*)result.raw_());
       }
 #endif
-      return GCObjectAllocator<OT>::allocate_kind(GCKind<OT>::Kind,size,length,std::forward<ARGS>(args)...);
+
+      return result;
     }
     
     static smart_pointer_type copy(const OT &that) {

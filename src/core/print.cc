@@ -109,9 +109,7 @@ Symbol_sp clasp_print_case(void) {
       return soutput;
     }
   }
-  SIMPLE_ERROR(BF("The value of *PRINT-CASE*\n"
-                  "is not of the expected type"
-                  "(MEMBER :UPCASE :DOWNCASE :CAPITALIZE)"));
+  TYPE_ERROR(output,Cons_O::createList(cl::_sym_member,kw::_sym_upcase,kw::_sym_downcase,kw::_sym_capitalize));
 }
 
 bool clasp_print_gensym(void) {

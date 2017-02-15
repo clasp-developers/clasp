@@ -766,12 +766,16 @@ namespace core {
     bitunit_array_type _Data;
   SimpleBitVector_O(size_t length,
                     value_type initialElement,
-                    bool initialElementSupplied)
-    : Base(), _Data(length,initialElement,initialElementSupplied) {};
+                    bool initialElementSupplied,
+                    size_t initialContentsSize=0,
+                    value_type* initialContents=NULL )
+    : Base(), _Data(length,initialElement,initialElementSupplied,initialContentsSize,initialContents) {};
     static SimpleBitVector_sp make( size_t length,
                                     value_type initialElement=0,
-                                    bool initialElementSupplied=false) {
-      auto sbv = gctools::GC<SimpleBitVector_O>::allocate_bitunit_container(length,initialElement,initialElementSupplied);
+                                    bool initialElementSupplied=false,
+                                    size_t initialContentsSize=0,
+                                    value_type* initialContents=NULL) {
+      auto sbv = gctools::GC<SimpleBitVector_O>::allocate_bitunit_container(length,initialElement,initialElementSupplied,initialContentsSize,initialContents);
       return sbv;
     }
     static SimpleBitVector_sp make(const string& bv);
@@ -819,6 +823,8 @@ namespace core {
       return dims;
     }
     virtual void unsafe_fillArrayWithElt(T_sp initialElement, size_t start, size_t end) final;
+  public: 
+    T_sp deepCopy() const;
   public:
     CL_METHOD_OVERLOAD virtual void rowMajorAset(size_t idx, T_sp value) final {this->setBit(idx,value.unsafe_fixnum());};
     CL_METHOD_OVERLOAD virtual T_sp rowMajorAref(size_t idx) const final {return clasp_make_fixnum(this->testBit(idx)); };
@@ -1956,6 +1962,7 @@ namespace core {
   void SimpleBitVector_getOnIndices(SimpleBitVector_sp x, vector<size_t> &res);
   size_t SimpleBitVector_lowestIndex(SimpleBitVector_sp x);
   bool SimpleBitVector_isZero(SimpleBitVector_sp x);
+  SimpleBitVector_sp SimpleBitVector_copy(SimpleBitVector_sp x);
 };
 
 

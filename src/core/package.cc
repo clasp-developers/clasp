@@ -412,10 +412,13 @@ string Package_O::allSymbols() {
 }
 
 Symbol_mv Package_O::findSymbol_SimpleString(SimpleString_sp nameKey) const {
+  client_validate(nameKey);
   T_mv ei = this->_ExternalSymbols->gethash(nameKey, _Nil<T_O>());
+  client_validate(nameKey);
   Symbol_sp val = gc::As<Symbol_sp>(ei);
   bool foundp = ei.second().isTrue();
   if (foundp) {
+    client_validate(val->_Name);
     LOG(BF("Found it in the _ExternalsSymbols list - returning[%s]") % (_rep_(val)));
     return (Values(val, kw::_sym_external));
   }
@@ -742,11 +745,14 @@ void Package_O::bootstrap_add_symbol_to_package(const char *symName, Symbol_sp s
 }
 
 T_mv Package_O::intern(SimpleString_sp name) {
+  client_validate(name);
   Symbol_mv values = this->findSymbol_SimpleString(name);
+  client_validate(values->_Name);
   Symbol_sp sym = values;
   Symbol_sp status = gc::As<Symbol_sp>(values.valueGet_(1));
   if (status.nilp()) {
     sym = Symbol_O::create(name);
+    client_validate(name);
     sym->makunbound();
     status = _Nil<Symbol_O>();
     sym->setPackage(this->sharedThis<Package_O>());

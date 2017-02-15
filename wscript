@@ -691,6 +691,9 @@ def configure(cfg):
     if (cfg.env.DEBUG_GUARD):
         cfg.define("DEBUG_GUARD",1)
         cfg.define("DEBUG_GUARD_VALIDATE",1)
+    if (cfg.env.DEBUG_GUARD_EXHAUSTIVE_VALIDATE):
+        cfg.define("DEBUG_GUARD_EXHAUSTIVE_VALIDATE",1)
+#    cfg.define("DEBUG_BITUNIT_CONTAINER",1)  # prints debug info for bitunit containers
     cfg.define("ENABLE_BACKTRACE_ARGS",1)
 #    cfg.define("DEBUG_ZERO_KIND",1);
     cfg.env.append_value('CXXFLAGS', ['-Wno-macro-redefined'] )
@@ -810,6 +813,7 @@ def build(bld):
 #        print("clasp_aclasp as nodes = %s" % fix_lisp_paths(bld.path,out,variant,bld.clasp_aclasp))
         cmp_aclasp.set_inputs([iclasp_executable,intrinsics_bitcode_node]+fix_lisp_paths(bld.path,out,variant,bld.clasp_aclasp))
         aclasp_common_lisp_bitcode = bld.path.find_or_declare(variant.common_lisp_bitcode_name(stage='a'))
+        print("find_or_declare aclasp_common_lisp_bitcode = %s" % aclasp_common_lisp_bitcode)
         cmp_aclasp.set_outputs(aclasp_common_lisp_bitcode)
         bld.add_to_group(cmp_aclasp)
         lnk_aclasp = link_fasl(env=bld.env)
@@ -1039,6 +1043,7 @@ class compile_aclasp(Task.Task):
         cmd = cmd + [ "--" ] + self.bld.clasp_aclasp
         if (self.bld.command ):
             dump_command(cmd)
+        print("compile_aclasp cmd = %s" % cmd)
         return self.exec_command(cmd)
     def exec_command(self, cmd, **kw):
         kw['stdout'] = sys.stdout

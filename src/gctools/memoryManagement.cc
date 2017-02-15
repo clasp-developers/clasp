@@ -185,11 +185,7 @@ void client_describe(void *taggedClient) {
 };
 };
 
-#ifdef DEBUG_GUARD
 extern "C" {
-
-
-
 
 void client_validate(core::T_sp client) {
   if (client.generalp()) {
@@ -218,51 +214,78 @@ void header_describe(gctools::Header_s* headerP) {
   gctools::rawHeaderDescribe((uintptr_t*)headerP);
 };
 };
-#endif
 
 
 
-#ifdef DEBUG_GUARD
 namespace gctools {
 size_t random_tail_size() {
   size_t ts = ((rand() % 8) + 1) * Alignment();
   return ts;
 }
 
+void Header_s::quick_validate() const {
+#if DEBUG_GUARD_VALIDATE
+  if (this->guard != 0xFEEAFEEBDEADBEEF) {
+    printf("%s:%d  In validate header@%p  header -> %p\n", __FILE__, __LINE__, (void*)this, (void*)this->header);
+    printf("%s:%d   Missing magic value 0x0FEEAFEEBDEADBEEF in object header!!!!! @ %p\n", __FILE__, __LINE__, (void*)this);
+    abort();
+  }
+  const unsigned char* tail = (const unsigned char*)this+this->tail_start;
+  if ((*tail) != 0xcc) {
+    printf("%s:%d  In validate header@%p  header -> %p\n", __FILE__, __LINE__, (void*)this, (void*)this->header);
+    printf("%s:%d bad tail value !!!!! @ %p  value = %x  should be 0xcc\n", __FILE__, __LINE__, (void*)tail, *tail);
+    abort();
+  }
+#endif
+}
+
+
 void Header_s::validate() const {
+  if ( this->header == 0 ) {
+    printf("%s:%d  In validate header@%p  header -> %p\n", __FILE__, __LINE__, (void*)this, (void*)this->header);
+    printf("%s:%d NULL object header!!!!! @ %p\n", __FILE__, __LINE__, (void*)this);
+    abort();
+  }
   if ( this->invalidP() ) {
+    printf("%s:%d  In validate header@%p  header -> %p\n", __FILE__, __LINE__, (void*)this, (void*)this->header);
     printf("%s:%d Invalid object header does not have a real tag\n", __FILE__, __LINE__ );
     abort();
-  } else if ( this->kindP() ) {
-    if ( this->guard != 0x0FEEAFEEBDEADBEEF) {
+  }
+  if ( this->kindP() ) {
+#ifdef DEBUG_GUARD    
+    if ( this->guard != 0xFEEAFEEBDEADBEEF) {
+      printf("%s:%d  In validate header@%p  header -> %p\n", __FILE__, __LINE__, (void*)this, (void*)this->header);
       printf("%s:%d  INVALID object  this->guard@%p is bad guard value->%p\n", __FILE__, __LINE__, (void*)&this->guard, (void*)this->guard );
       abort();
     }
+#endif
     if ( this->kind() > global_NextStamp ) {
       printf("%s:%d  INVALID object  this->kind()=%d > KIND_max=%d\n", __FILE__, __LINE__, this->kind(), KIND_max );
       abort();
     }
+#ifdef DEBUG_GUARD
     if ( this->tail_start & 0xffffffffff000000 ) {
+      printf("%s:%d  In validate header@%p  header -> %p\n", __FILE__, __LINE__, (void*)this, (void*)this->header);
       printf("%s:%d   header->tail_start@%p is not a reasonable value -> %x\n", __FILE__,__LINE__, (void*)&this->tail_start, this->tail_start);
     }
     if ( this->tail_size & 0xffffffffff000000 ) {
+      printf("%s:%d  In validate header@%p  header -> %p\n", __FILE__, __LINE__, (void*)this, (void*)this->header);
       printf("%s:%d   header->tail_size@%p is not a reasonable value -> %x\n", __FILE__, __LINE__, (void*)&this->tail_size,this->tail_size);
     }
-#if 0
-    if ( this->data[0] != 0xDEADBEEF01234567 ) {
-      printf("%s:%d  INVALID object  this->data[0]@%p->%p != %p\n", __FILE__, __LINE__, &this->data[0],(void*)this->data[0],(void*)0xDEADBEEF01234567 );
-      abort();
-    }
-#endif
     for ( unsigned char *cp=((unsigned char*)(this)+this->tail_start), 
             *cpEnd((unsigned char*)(this)+this->tail_start+this->tail_size); cp < cpEnd; ++cp ) {
       if (*cp!=0xcc) {
+        printf("%s:%d  In validate header@%p  header -> %p\n", __FILE__, __LINE__, (void*)this, (void*)this->header);
         printf("%s:%d INVALID tail header@%p bad tail byte@%p -> %x\n", __FILE__, __LINE__, (void*)this, cp, *cp );
         abort();
       }
     }
-  } else if ( this->fwdP() ) {
-    if ( this->guard != 0x0FEEAFEEBDEADBEEF) {
+#endif
+  }
+#ifdef DEBUG_GUARD
+  if ( this->fwdP() ) {
+    if ( this->guard != 0xFEEAFEEBDEADBEEF) {
+      printf("%s:%d  In validate header@%p  header -> %p\n", __FILE__, __LINE__, (void*)this, (void*)this->header);
       printf("%s:%d  INVALID object  this->guard is bad value->%p\n", __FILE__, __LINE__, (void*)this->guard );
       abort();
     }
@@ -274,9 +297,9 @@ void Header_s::validate() const {
       }
     }
   }
+#endif
 }
 };
-#endif
 
 
 

@@ -273,6 +273,9 @@ namespace gctools {
     static const tagged_kind_t kind_mask    = ~0x3; // BOOST_BINARY(11...111111111100);
     static const tagged_kind_t largest_possible_kind = kind_mask>>kind_shift;
   public:
+    void validate() const;
+    void quick_validate() const;
+  public:
     tagged_kind_t header;
 #ifdef DEBUG_GUARD
     int tail_start;
@@ -281,20 +284,19 @@ namespace gctools {
 #endif
     tagged_kind_t data[0]; // The 0th element intrudes into the client data
   public:
-#ifndef DEBUG_GUARD
+#if !defined(DEBUG_GUARD) 
   Header_s(kind_t k) : header((((kind_t)k) << kind_shift) | kind_tag) {}
-    void validate() const {};
-#else
+#endif
+#if defined(DEBUG_GUARD)
     inline void fill_tail() { memset((void*)(((char*)this)+this->tail_start),0xcc,this->tail_size);};
   Header_s(kind_t k,size_t tstart, size_t tsize, size_t total_size) 
     : header((((kind_t)k)<<kind_shift)|kind_tag),
       tail_start(tstart),
         tail_size(tsize),
-        guard(0x0FEEAFEEBDEADBEEF)
+        guard(0xFEEAFEEBDEADBEEF)
         {
           this->fill_tail();
         };
-      void validate() const;
 #endif
       bool invalidP() const { return (this->header & tag_mask) == invalid_tag; };
       bool kindP() const { return (this->header & tag_mask) == kind_tag; };
@@ -431,12 +433,27 @@ namespace gctools {
     size_t classSz = sizeof(Cont_impl);
     size_t dataSz = Cont_impl::bitunit_array_type::sizeof_for_length(n);
     size_t totalSz = classSz + dataSz;
-    return AlignUp(totalSz);
+    size_t aligned_totalSz = AlignUp(totalSz);
+#ifdef DEBUG_BITUNIT_CONTAINER
+    printf("%s:%d classSz = %lu\n", __FILE__, __LINE__, classSz);
+    printf("%s:%d dataSz = %lu\n", __FILE__, __LINE__, dataSz);
+    printf("%s:%d totalSz = %lu\n", __FILE__, __LINE__, totalSz);
+    printf("%s:%d aligned_totalSz = %lu\n", __FILE__, __LINE__, aligned_totalSz);
+#endif
+    return aligned_totalSz;
   };
 
   template <class T>
     inline size_t sizeof_bitunit_container_with_header(size_t num) {
-    return sizeof_bitunit_container<T>(num) + sizeof(Header_s);
+    size_t size_bitunit_container = sizeof_bitunit_container<T>(num);
+    size_t size_header = sizeof(Header_s);
+    size_t sum = size_bitunit_container+size_header;
+#ifdef DEBUG_BITUNIT_CONTAINER
+    printf("%s:%d  In sizeof_bitunit_container_with_header  num = %lu\n", __FILE__, __LINE__, num);
+    printf("%s:%d  In sizeof_bitunit_container_with_header   size_bitunit_container = %lu\n", __FILE__, __LINE__, size_bitunit_container);
+    printf("%s:%d  In sizeof_bitunit_container_with_header   sum = %lu\n", __FILE__, __LINE__, sum);
+#endif
+    return sum;
   };
 
 /* Align size upwards and ensure that it's big enough to store a
@@ -460,13 +477,21 @@ namespace gctools {
 
 namespace gctools {
 
+#ifdef DEBUG_GUARD_EXHAUSTIVE_VALIDATE
+#define EXHAUSTIVE_VALIDATE(ptr) (ptr)->quick_validate();
+#else
+#define EXHAUSTIVE_VALIDATE(ptr)
+#endif
+  
   inline const void *ClientPtrToBasePtr(const void *mostDerived) {
     const void *ptr = reinterpret_cast<const char *>(mostDerived) - sizeof(Header_s);
+    EXHAUSTIVE_VALIDATE(reinterpret_cast<const Header_s*>(ptr));
     return ptr;
   }
 
   inline void *ClientPtrToBasePtr(void *mostDerived) {
     void *ptr = reinterpret_cast<char *>(mostDerived) - sizeof(Header_s);
+    EXHAUSTIVE_VALIDATE(reinterpret_cast<Header_s*>(ptr));
     return ptr;
   }
 

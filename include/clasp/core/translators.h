@@ -359,7 +359,7 @@ template <>
     typedef unsigned char DeclareType;
     static core::T_sp convert( DeclareType v )
     {
-      return ( core::clasp_make_character( v ) );
+      return ( core::clasp_make_fixnum( v ) );
     }
   };
 

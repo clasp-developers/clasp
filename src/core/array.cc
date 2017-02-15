@@ -1600,6 +1600,9 @@ CL_DEFUN Character_sp cl__char(String_sp str, size_t idx) {
   } else if (StrWNs_sp sw = str.asOrNull<StrWNs_O>() ) {
     return clasp_make_character((*sw)[idx]);
   }
+  printf("%s:%d type of str -> %s\n", __FILE__, __LINE__, _rep_(instance_class(str)).c_str());
+  printf("%s:%d   str.asOrNull<SimpleBaseString_O>() -> %p\n", __FILE__, __LINE__, str.asOrNull<SimpleBaseString_O>().raw_());
+  printf("%s:%d    gc::IsA<SimpleBaseString_sp>(str) -> %d\n", __FILE__, __LINE__, gc::IsA<SimpleBaseString_sp>(str));
   TYPE_ERROR(str,cl::_sym_string);
 };
 
@@ -2035,6 +2038,15 @@ Array_sp SimpleBitVector_O::nreverse() {
   return this->asSmartPtr();
 }
 
+
+SimpleBitVector_sp SimpleBitVector_copy(SimpleBitVector_sp orig_sbv)
+{
+  size_t value_type_size = core::SimpleBitVector_O::bitunit_array_type::sizeof_for_length(orig_sbv->length());
+//  printf("%s:%d Copy SimpleBitVector length = %lu   value_type_size = %lu\n", __FILE__, __LINE__, orig_sbv->length(), value_type_size );
+//  fflush(stdout);
+  core::SimpleBitVector_sp sbv = core::SimpleBitVector_O::make(orig_sbv->length(),0,true,value_type_size,&orig_sbv->_Data[0]);
+  return sbv;
+}
 
 void SimpleBitVector_inPlaceOr(SimpleBitVector_sp x, SimpleBitVector_sp y) {
   size_t i;

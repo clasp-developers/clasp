@@ -71,14 +71,37 @@ namespace gctools {
     size_t    _Length; // Index one beyond the total number of elements allocated
     word_type _Data[0];      // Store _Length numbers of bits with multiple bits per T
   public:
-  GCBitUnitArray_moveable(size_t length, word_type initialValue, bool initialValueSupplied) : _Length(length) {
+  
+  GCBitUnitArray_moveable(size_t length, word_type initialValue, bool initialValueSupplied, size_t initialContentsSize = 0, word_type* initialContents=NULL) : _Length(length) {
       word_type initialFillValue = (initialValue!=0) ? ~0 : 0;
-      size_t numWords = sizeof_for_length(length);
-      for ( size_t i(0); i<numWords; ++i ) this->_Data[i] = initialFillValue;
+      // Initialize the contents from an array - but it has to be word_type aligned
+      // if you need other than word aligned add another parameter to this constructor
+      size_t numWords = sizeof_for_length(length)/sizeof(word_type);
+#ifdef DEBUG_BITUNIT_CONTAINER
+      printf("%s:%d ctor for GCBitUnitArray_moveable _Data[0] @%p\n", __FILE__, __LINE__, (void*)&this->_Data[0]);
+      printf("%s:%d      initialContentsSize = %lu\n", __FILE__, __LINE__, initialContentsSize);
+      printf("%s:%d                 numWords = %lu\n", __FILE__, __LINE__, numWords);
+#endif
+      size_t idx;
+      idx = 0;
+      for ( ; idx<initialContentsSize; ++idx) this->_Data[idx] = initialContents[idx];
+      for ( ; idx<numWords; ++idx ) this->_Data[idx] = initialFillValue;
+#ifdef DEBUG_BITUNIT_CONTAINER
+      printf("%s:%d done initialization of data in ctor for GCBitUnitArray_moveable _Data[0] @%p\n", __FILE__, __LINE__, (void*)&this->_Data[0]);
+      printf("%s:%d      final value of idx = %lu\n", __FILE__, __LINE__, idx);
+      printf("%s:%d      wrote up to address: %p\n", __FILE__, __LINE__, (void*)&this->_Data[idx]);
+#endif
     }
     static size_t sizeof_for_length(size_t length) {
       size_t numWords = (length+(number_of_bit_units_in_word-1))/number_of_bit_units_in_word;
-      return numWords;
+      size_t numBytes = numWords*sizeof(word_type);
+#ifdef DEBUG_BITUNIT_CONTAINER
+      printf("%s:%d length = %lu\n", __FILE__, __LINE__, length);
+      printf("%s:%d number_of_bit_units_in_word = %lu\n", __FILE__, __LINE__, number_of_bit_units_in_word);
+      printf("%s:%d numWords = %lu\n", __FILE__, __LINE__, numWords );
+      printf("%s:%d numBytes = %lu\n", __FILE__, __LINE__, numBytes );
+#endif
+      return numBytes;
     }
   public:
     /* Word access */
