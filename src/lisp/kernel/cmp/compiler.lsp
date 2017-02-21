@@ -106,7 +106,7 @@ COMPILE-FILE just throws this away.   Return (values llvm-function lambda-name l
 					 given-name
                                         ; generated from lambda-list
 					 lambda-list-handler
-                                        ; lambda declares as a list of conses 
+                                        ; lambda declares as a list of conses
 					 declares
                                         ; lambda docstring
 					 docstring
@@ -118,7 +118,7 @@ COMPILE-FILE just throws this away.   Return (values llvm-function lambda-name l
 					 &key wrap-block ; wrap code in a block
                                         ; Name of the block to wrap in
                                          block-name )
-  "This is where llvm::Function are generated from code, declares, 
+  "This is where llvm::Function are generated from code, declares,
 lambda-list-handler, environment.
 All code generation comes through here.   Return (llvm:function lambda-name)
 Could return more functions that provide lambda-list for swank for example"
@@ -239,15 +239,15 @@ Return the same things that generate-llvm-function-from-code returns"
               (lambda-list (compile-reference-to-literal lambda-list)))
           ;; TODO:   Here walk the source code in lambda-or-lambda-block and
           ;; get the line-number/column for makeCompiledFunction
-          (irc-intrinsic "makeCompiledFunction" 
-                         result 
-                         compiled-fn 
-                         *gv-source-file-info-handle* 
+          (irc-intrinsic "makeCompiledFunction"
+                         result
+                         compiled-fn
+                         *gv-source-file-info-handle*
                          (irc-size_t-*current-source-pos-info*-filepos)
                          (irc-size_t-*current-source-pos-info*-lineno)
                          (irc-size_t-*current-source-pos-info*-column)
                          (compile-reference-to-literal lambda-name)
-                         funcs 
+                         funcs
                          (irc-renv env)
                          lambda-list)
           (values compiled-fn lambda-name)))))
@@ -350,7 +350,7 @@ Return the same things that generate-llvm-function-from-code returns"
                             ,function-form
                             ,@(mapcar (lambda (x) `#'(lambda () (progn ,x))) forms))
                    env)))))
-          
+
 
 (defun codegen-multiple-value-prog1 (result rest env)
   (with-dbg-lexical-block (rest)
@@ -449,7 +449,7 @@ env is the parent environment of the (result-af) value frame"
 	(do* ((cur-req (cdr reqvars) (cdr cur-req))
 	      (cur-exp exps (cdr cur-exp))
 	      (exp (car cur-exp) (car cur-exp))
-	      (temp (irc-alloca-tsp :label "let") 
+	      (temp (irc-alloca-tsp :label "let")
 		    (irc-alloca-tsp :label "let")))
 	     ((endp cur-req) nil)
 	  (vector-push-extend temp temps)
@@ -563,7 +563,7 @@ env is the parent environment of the (result-af) value frame"
          (tag (llvm-sys:create-and *irbuilder* (llvm-sys:create-bit-cast value +uintptr_t+) (jit-constant-uintptr_t +tag-mask+) "tag-only"))
          (consp-tag-match (llvm-sys:create-icmp-eq tag (jit-constant-uintptr_t +cons-tag+))))
     (
-         
+
          (consp-true-block (irc-basic-block-create "consp-true"))
          (consp-false-block
     (
@@ -822,10 +822,10 @@ jump to blocks within this tagbody."
       (process-declarations raw-body t)
     (when decl (setq decl (list (cons 'declare decl))))
     (when doc (setq doc (list doc)))
-    `(lambda ,lambda-list 
-       ,@doc 
-       (declare (core:lambda-name ,name)) 
-       ,@decl (block ,(si::function-block-name name) 
+    `(lambda ,lambda-list
+       ,@doc
+       (declare (core:lambda-name ,name))
+       ,@decl (block ,(si::function-block-name name)
 		,@body))))
 
 
@@ -1163,7 +1163,7 @@ jump to blocks within this tagbody."
          ((endp cur-exp) nil)
       ;;(bformat t "In codegen-multiple-value-foreign-call codegen arg[%d] -> %d\n" i exp)
       (codegen temp-result exp evaluate-env)
-      (push (irc-create-call (clasp-ffi::no-tr-from-translator-name type)
+      (push (irc-create-call (clasp-ffi::from-translator-name type)
                              (list (irc-smart-ptr-extract (irc-load temp-result)))) args))
     args))
 
@@ -1191,9 +1191,9 @@ jump to blocks within this tagbody."
             (llvm-sys:create-call-array-ref *irbuilder* func (nreverse args) "intrinsic"))
            (result-in-t*
             (if (eq :void (first foreign-types))
-                (irc-create-call (clasp-ffi::no-tr-to-translator-name (first foreign-types)) nil) ; returns :void
-                (irc-create-call (clasp-ffi::no-tr-to-translator-name (first foreign-types))
-                             (list foreign-result)))))
+                (irc-create-call (clasp-ffi::to-translator-name (first foreign-types)) nil) ; returns :void
+                (irc-create-call (clasp-ffi::to-translator-name (first foreign-types))
+                                 (list foreign-result)))))
       (irc-store-result-t* result result-in-t*)))
   (irc-low-level-trace :flow))
 
@@ -1219,8 +1219,8 @@ jump to blocks within this tagbody."
               (llvm-sys:create-call-function-pointer *irbuilder* function-type function-pointer (nreverse args) "fn-ptr-call-result"))
              (result-in-t*
               (if (eq :void (first foreign-types))
-                  (irc-create-call (clasp-ffi::no-tr-to-translator-name (first foreign-types)) nil) ; returns :void
-                  (irc-create-call (clasp-ffi::no-tr-to-translator-name (first foreign-types))
+                  (irc-create-call (clasp-ffi::to-translator-name (first foreign-types)) nil) ; returns :void
+                  (irc-create-call (clasp-ffi::to-translator-name (first foreign-types))
                                    (list foreign-result)))))
         (irc-store-result-t* result result-in-t*)))
     (irc-low-level-trace :flow)))
@@ -1240,7 +1240,7 @@ jump to blocks within this tagbody."
                 (if (eq expansion form)
                     nil
                     (progn
-                      (codegen result expansion env) 
+                      (codegen result expansion env)
                       t)))))
         ;; A regular macro
         ((and (symbolp (car form))
@@ -1250,11 +1250,11 @@ jump to blocks within this tagbody."
              (macroexpand form env)
            (cmp-log "MACROEXPANDed form[%s] expanded to [%s]\n" form expansion )
            (irc-low-level-trace)
-           (codegen result expansion env) 
+           (codegen result expansion env)
            ))
         ;; It's a regular function call
         (t
-         (codegen-call result form env))) 
+         (codegen-call result form env)))
     ))
 
 
@@ -1277,7 +1277,7 @@ jump to blocks within this tagbody."
 
 (defun codegen (result form env)
   (declare (optimize (debug 3)))
-  (assert-result-isa-llvm-value result) 
+  (assert-result-isa-llvm-value result)
   (multiple-value-bind (source-directory source-filename lineno column)
       (dbg-set-current-source-pos form)
     (let* ((*current-form* form)
@@ -1306,7 +1306,7 @@ jump to blocks within this tagbody."
                   ((and head (symbolp head))
                    (codegen-application result form env))
                   (t
-                   (error "Handle codegen of cons: ~a" form))))) 
+                   (error "Handle codegen of cons: ~a" form)))))
         ))))
 
 ;;------------------------------------------------------------
@@ -1325,12 +1325,12 @@ jump to blocks within this tagbody."
                                             result
                                             :function-name name
                                             :parent-env env
-                                            :function-form form) 
+                                            :function-form form)
                           (let* ((given-name (llvm-sys:get-name fn)))
                             ;; Map the function argument names
                             (cmp-log "Creating repl function with name: %s\n" given-name)
                             ;;	(break "codegen repl form")
-                            (dbg-set-current-debug-location-here) 
+                            (dbg-set-current-debug-location-here)
                             (codegen result form fn-env)
                             (dbg-set-current-debug-location-here)))))
     (cmp-log "Dumping the repl function\n")

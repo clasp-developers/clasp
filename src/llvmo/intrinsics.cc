@@ -309,7 +309,7 @@ ALWAYS_INLINE gc::return_type cc_call(LCC_ARGS_CC_CALL_ELLIPSIS) {
   core::Closure_O* closure = gc::untag_general<core::Closure_O *>(tagged_closure);
   VaList_S lcc_arglist_s;
   va_start(lcc_arglist_s._Args, LCC_VA_START_ARG);
-#ifdef ENABLE_BACKTRACE_ARGS  
+#ifdef ENABLE_BACKTRACE_ARGS
   LCC_SPILL_REGISTER_ARGUMENTS_TO_VA_LIST(lcc_arglist_s);
 #endif
   core::T_O *lcc_arglist = lcc_arglist_s.asTaggedPtr();
@@ -321,7 +321,7 @@ ALWAYS_INLINE gc::return_type cc_call_callback(LCC_ARGS_CC_CALL_ELLIPSIS) {
   auto closure = reinterpret_cast<CompiledClosure_fptr_type>(lcc_closure);
   VaList_S lcc_arglist_s;
   va_start(lcc_arglist_s._Args, LCC_VA_START_ARG);
-#ifdef ENABLE_BACKTRACE_ARGS  
+#ifdef ENABLE_BACKTRACE_ARGS
   LCC_SPILL_REGISTER_ARGUMENTS_TO_VA_LIST(lcc_arglist_s);
 #endif
   core::T_O *lcc_arglist = lcc_arglist_s.asTaggedPtr();
@@ -699,50 +699,6 @@ ALWAYS_INLINE core::T_sp mk_char( char v )
 // referenced from the FLI functions in fli.cc.
 
 // ----------------------------------------------------------------------------
-// HELPER FUNCTIONS FOR TRANSLATORS
-// ----------------------------------------------------------------------------
-
-// ALWAYS_INLINE void memcpy_with_endianness_honored( void * target, void * source, size_t num )
-// {
-//   // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-//   // THIS IS A POTENTIALLY DANGEROUS FUNCTION AS IT COPIES MEMORY FROM SOURCE
-//   // TO TAERGET ADDRESS - NO MEMORY BOUNDS CHECKING IS DONE HERE !!!!!!!!!!!!
-//   // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-//   static unsigned char ac_buf[ BUFSIZ ];
-//   std::memset( ac_buf, 0, BUFSIZ );
-
-//   if( num > BUFSIZ )
-//   {
-//     SIMPLE_ERROR(BF("memcpy_with_endianness_honored (%s:%d): Nr of bytes to be copied (%d) exceeds max nr allowed nr of bytes(%d)!") % num % BUFIZ);
-//   }
-
-//   memcpy( ac_buf, source, num );
-
-// #if ( __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__ )
-
-//   for( int i = 0; i < num; i++ )
-//   {
-//     *(target + i) = *(ac_buf + i);
-//   }
-
-// #endif
-
-// #if ( __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__ )
-
-//   for( int i = 0; i < num; i++ )
-//   {
-//     *(target + i) = *(ac_buf + (num - i - 1));
-//   }
-
-// #endif
-
-// #error "Byte order %d not supported !" __BYTE_ORDER__
-
-//   return;
-// }
-
-// ----------------------------------------------------------------------------
 // FIXNUM
 // ----------------------------------------------------------------------------
 
@@ -752,19 +708,9 @@ ALWAYS_INLINE gctools::Fixnum from_object_fixnum( core::T_O* obj )
   return x;
 }
 
-ALWAYS_INLINE core::T_O* tr_from_object_fixnum( core::T_O* obj )
-{
-  return reinterpret_cast< core::T_O * >( from_object_fixnum( obj ) );
-}
-
 ALWAYS_INLINE core::T_O* to_object_fixnum( gctools::Fixnum x )
 {
   return core::make_fixnum( x ).raw_();
-}
-
-ALWAYS_INLINE core::T_O* tr_to_object_fixnum( core::T_O* raw_ )
-{
-  return to_object_fixnum( reinterpret_cast< gctools::Fixnum >( raw_ ) );
 }
 
 // ----------------------------------------------------------------------------
@@ -776,19 +722,9 @@ ALWAYS_INLINE short from_object_short( core::T_O* obj )
   return (short) from_object_fixnum( obj );
 }
 
-ALWAYS_INLINE core::T_O* tr_from_object_short( core::T_O* obj )
-{
-  return tr_from_object_fixnum( obj );
-}
-
 ALWAYS_INLINE core::T_O* to_object_short( short x )
 {
   return to_object_fixnum( (gctools::Fixnum) x );
-}
-
-ALWAYS_INLINE core::T_O* tr_to_object_short( core::T_O* raw_ )
-{
-  return tr_to_object_fixnum( raw_ );
 }
 
 // ----------------------------------------------------------------------------
@@ -800,19 +736,9 @@ ALWAYS_INLINE unsigned short from_object_unsigned_short( core::T_O* obj )
   return (unsigned short) from_object_fixnum( obj );
 }
 
-ALWAYS_INLINE core::T_O* tr_from_object_unsigned_short( core::T_O* obj )
-{
-  return tr_from_object_fixnum( obj );
-}
-
 ALWAYS_INLINE core::T_O* to_object_unsigned_short( short x )
 {
   return to_object_fixnum( (gctools::Fixnum) x );
-}
-
-ALWAYS_INLINE core::T_O* tr_to_object_unsigned_short( core::T_O* raw_ )
-{
-  return tr_to_object_fixnum( raw_ );
 }
 
 // ----------------------------------------------------------------------------
@@ -824,19 +750,9 @@ ALWAYS_INLINE int from_object_int( core::T_O* obj )
   return (int) from_object_fixnum( obj );
 }
 
-ALWAYS_INLINE core::T_O* tr_from_object_int( core::T_O* obj )
-{
-  return tr_from_object_fixnum( obj );
-}
-
 ALWAYS_INLINE core::T_O* to_object_int( int x )
 {
   return to_object_fixnum( (gctools::Fixnum) x );
-}
-
-ALWAYS_INLINE core::T_O* tr_to_object_int( core::T_O* raw_ )
-{
-  return tr_to_object_fixnum( raw_ );
 }
 
 // ----------------------------------------------------------------------------
@@ -848,19 +764,9 @@ ALWAYS_INLINE unsigned int from_object_unsigned_int( core::T_O* obj )
   return (unsigned int) from_object_fixnum( obj );
 }
 
-ALWAYS_INLINE core::T_O* tr_from_object_unsigned_int( core::T_O* obj )
-{
-  return tr_from_object_fixnum( obj );
-}
-
 ALWAYS_INLINE core::T_O* to_object_unsigned_int( unsigned int x )
 {
   return to_object_fixnum( (gctools::Fixnum) x );
-}
-
-ALWAYS_INLINE core::T_O* tr_to_object_unsigned_int( core::T_O* raw_ )
-{
-  return tr_to_object_fixnum( raw_ );
 }
 
 // ----------------------------------------------------------------------------
@@ -873,19 +779,9 @@ ALWAYS_INLINE long from_object_long( core::T_O* obj )
   return x;
 }
 
-ALWAYS_INLINE core::T_O* tr_from_object_long( core::T_O* obj )
-{
-  return reinterpret_cast< core::T_O * >( from_object_long( obj ) );
-}
-
 ALWAYS_INLINE core::T_O* to_object_long( long x )
 {
   return translate::to_object< long >::convert( x ).raw_();
-}
-
-ALWAYS_INLINE core::T_O* tr_to_object_long( core::T_O* raw_ )
-{
-  return to_object_long( reinterpret_cast< long >( raw_ ) );
 }
 
 // ----------------------------------------------------------------------------
@@ -898,19 +794,9 @@ ALWAYS_INLINE unsigned long from_object_unsigned_long( core::T_O* obj )
   return x;
 }
 
-ALWAYS_INLINE core::T_O* tr_from_object_unsigned_long( core::T_O* obj )
-{
-  return reinterpret_cast< core::T_O * >( from_object_unsigned_long( obj ) );
-}
-
 ALWAYS_INLINE core::T_O* to_object_unsigned_long( unsigned long x )
 {
   return translate::to_object< unsigned long >::convert( x ).raw_();
-}
-
-ALWAYS_INLINE core::T_O* tr_to_object_unsigned_long( core::T_O* raw_ )
-{
-  return to_object_unsigned_long( reinterpret_cast< unsigned long >( raw_ ) );
 }
 
 // ----------------------------------------------------------------------------
@@ -922,19 +808,9 @@ ALWAYS_INLINE int8_t from_object_int8( core::T_O* obj )
   return (int8_t) from_object_fixnum( obj );
 }
 
-ALWAYS_INLINE core::T_O* tr_from_object_int8( core::T_O* obj )
-{
-  return tr_from_object_fixnum( obj );
-}
-
 ALWAYS_INLINE core::T_O* to_object_int8( int8_t x )
 {
   return to_object_fixnum( (gctools::Fixnum) x );
-}
-
-ALWAYS_INLINE core::T_O* tr_to_object_int8( core::T_O* raw_ )
-{
-  return tr_to_object_fixnum( raw_ );
 }
 
 // ----------------------------------------------------------------------------
@@ -946,19 +822,9 @@ ALWAYS_INLINE uint8_t from_object_uint8( core::T_O* obj )
   return (uint8_t) from_object_fixnum( obj );
 }
 
-ALWAYS_INLINE core::T_O* tr_from_object_uint8( core::T_O* obj )
-{
-  return tr_from_object_fixnum( obj );
-}
-
 ALWAYS_INLINE core::T_O* to_object_uint8( uint8_t x )
 {
   return to_object_fixnum( (gctools::Fixnum) x );
-}
-
-ALWAYS_INLINE core::T_O* tr_to_object_uint8( core::T_O* raw_ )
-{
-  return tr_to_object_fixnum( raw_ );
 }
 
 // ----------------------------------------------------------------------------
@@ -970,19 +836,9 @@ ALWAYS_INLINE int16_t from_object_int16( core::T_O* obj )
   return (int16_t) from_object_fixnum( obj );
 }
 
-ALWAYS_INLINE core::T_O* tr_from_object_int16( core::T_O* obj )
-{
-  return tr_from_object_fixnum( obj );
-}
-
 ALWAYS_INLINE core::T_O* to_object_int16( int16_t x )
 {
   return to_object_fixnum( (gctools::Fixnum) x );
-}
-
-ALWAYS_INLINE core::T_O* tr_to_object_int16( core::T_O* raw_ )
-{
-  return tr_to_object_fixnum( raw_ );
 }
 
 // ----------------------------------------------------------------------------
@@ -994,19 +850,9 @@ ALWAYS_INLINE uint16_t from_object_uint16( core::T_O* obj )
   return (uint16_t) from_object_fixnum( obj );
 }
 
-ALWAYS_INLINE core::T_O* tr_from_object_uint16( core::T_O* obj )
-{
-  return tr_from_object_fixnum( obj );
-}
-
 ALWAYS_INLINE core::T_O* to_object_uint16( uint16_t x )
 {
   return to_object_fixnum( (gctools::Fixnum) x );
-}
-
-ALWAYS_INLINE core::T_O* tr_to_object_uint16( core::T_O* raw_ )
-{
-  return tr_to_object_fixnum( raw_ );
 }
 
 // ----------------------------------------------------------------------------
@@ -1018,19 +864,9 @@ ALWAYS_INLINE int32_t from_object_int32( core::T_O* obj )
   return (int32_t) from_object_fixnum( obj );
 }
 
-ALWAYS_INLINE core::T_O* tr_from_object_int32( core::T_O* obj )
-{
-  return tr_from_object_fixnum( obj );
-}
-
 ALWAYS_INLINE core::T_O* to_object_int32( int32_t x )
 {
   return to_object_fixnum( (gctools::Fixnum) x );
-}
-
-ALWAYS_INLINE core::T_O* tr_to_object_int32( core::T_O* raw_ )
-{
-  return tr_to_object_fixnum( raw_ );
 }
 
 // ----------------------------------------------------------------------------
@@ -1042,19 +878,9 @@ ALWAYS_INLINE uint32_t from_object_uint32( core::T_O* obj )
   return (uint32_t) from_object_fixnum( obj );
 }
 
-ALWAYS_INLINE core::T_O* tr_from_object_uint32( core::T_O* obj )
-{
-  return tr_from_object_fixnum( obj );
-}
-
 ALWAYS_INLINE core::T_O* to_object_uint32( uint32_t x )
 {
   return to_object_fixnum( (gctools::Fixnum) x );
-}
-
-ALWAYS_INLINE core::T_O* tr_to_object_uint32( core::T_O* raw_ )
-{
-  return tr_to_object_fixnum( raw_ );
 }
 
 // ----------------------------------------------------------------------------
@@ -1067,19 +893,9 @@ ALWAYS_INLINE int64_t from_object_int64( core::T_O* obj )
   return x;
 }
 
-ALWAYS_INLINE core::T_O* tr_from_object_int64( core::T_O* obj )
-{
-  return reinterpret_cast< core::T_O * >( from_object_int64( obj ) );
-}
-
 ALWAYS_INLINE core::T_O* to_object_int64( int64_t x )
 {
   return translate::to_object< int64_t >::convert(x).raw_();
-}
-
-ALWAYS_INLINE core::T_O* tr_to_object_int64( core::T_O* raw_ )
-{
-  return to_object_int64( reinterpret_cast< int64_t >( raw_ ) );
 }
 
 // ----------------------------------------------------------------------------
@@ -1092,19 +908,9 @@ ALWAYS_INLINE uint64_t from_object_uint64( core::T_O* obj )
   return x;
 }
 
-ALWAYS_INLINE core::T_O* tr_from_object_uint64( core::T_O* obj )
-{
-  return reinterpret_cast< core::T_O * >( from_object_uint64( obj ) );
-}
-
 ALWAYS_INLINE core::T_O* to_object_uint64( uint64_t x )
 {
   return translate::to_object< uint64_t >::convert(x).raw_();
-}
-
-ALWAYS_INLINE core::T_O* tr_to_object_uint64( core::T_O* raw_ )
-{
-  return to_object_uint64( reinterpret_cast< uint64_t >( raw_ ) );
 }
 
 // ----------------------------------------------------------------------------
@@ -1118,19 +924,9 @@ ALWAYS_INLINE long long from_object_long_long( core::T_O* obj )
   return x;
 }
 
-ALWAYS_INLINE core::T_O* tr_from_object_long_long( core::T_O* obj )
-{
-  return reinterpret_cast< core::T_O * >( from_object_long_long( obj ) );
-}
-
 ALWAYS_INLINE core::T_O* to_object_long_long( long long x )
 {
   return translate::to_object< long long >::convert(x).raw_();
-}
-
-ALWAYS_INLINE core::T_O* tr_to_object_long_long4( core::T_O* raw_ )
-{
-  return to_object_long_long( reinterpret_cast< long long >( raw_ ) );
 }
 
 // ----------------------------------------------------------------------------
@@ -1143,19 +939,9 @@ ALWAYS_INLINE unsigned long long from_object_unsigned_long_long( core::T_O* obj 
   return x;
 }
 
-ALWAYS_INLINE core::T_O* tr_from_object_unsigned_long_long( core::T_O* obj )
-{
-  return reinterpret_cast< core::T_O * >( from_object_unsigned_long_long( obj ) );
-}
-
 ALWAYS_INLINE core::T_O* to_object_unsigned_long_long( unsigned long long x )
 {
   return translate::to_object< unsigned long long >::convert(x).raw_();
-}
-
-ALWAYS_INLINE core::T_O* tr_to_object_unsigned_long_long( core::T_O* raw_ )
-{
-  return to_object_unsigned_long_long( reinterpret_cast< unsigned long long >( raw_ ) );
 }
 
 // ----------------------------------------------------------------------------
@@ -1168,19 +954,9 @@ ALWAYS_INLINE size_t from_object_size( core::T_O* obj )
   return x;
 }
 
-ALWAYS_INLINE core::T_O* tr_from_object_size( core::T_O* obj )
-{
-  return reinterpret_cast< core::T_O * >( from_object_size( obj ) );
-}
-
 ALWAYS_INLINE core::T_O* to_object_size( size_t x )
 {
   return translate::to_object< size_t >::convert(x).raw_();
-}
-
-ALWAYS_INLINE core::T_O* tr_to_object_size( core::T_O* raw_ )
-{
-  return to_object_size( reinterpret_cast< size_t >( raw_ ) );
 }
 
 // ----------------------------------------------------------------------------
@@ -1193,19 +969,9 @@ ALWAYS_INLINE size_t from_object_ssize( core::T_O* obj )
   return x;
 }
 
-ALWAYS_INLINE core::T_O* tr_from_object_ssize( core::T_O* obj )
-{
-  return reinterpret_cast< core::T_O * >( from_object_ssize( obj ) );
-}
-
 ALWAYS_INLINE core::T_O* to_object_ssize( ssize_t x )
 {
   return translate::to_object< ssize_t >::convert(x).raw_();
-}
-
-ALWAYS_INLINE core::T_O* tr_to_object_ssize( core::T_O* raw_ )
-{
-  return to_object_ssize( reinterpret_cast< ssize_t >( raw_ ) );
 }
 
 // ----------------------------------------------------------------------------
@@ -1218,19 +984,9 @@ ALWAYS_INLINE ptrdiff_t from_object_ptrdiff( core::T_O* obj )
   return x;
 }
 
-ALWAYS_INLINE core::T_O* tr_from_object_ptrdiff( core::T_O* obj )
-{
-  return reinterpret_cast< core::T_O * >( from_object_ptrdiff( obj ) );
-}
-
 ALWAYS_INLINE core::T_O* to_object_ptrdiff( ptrdiff_t x )
 {
   return translate::to_object< ptrdiff_t >::convert(x).raw_();
-}
-
-ALWAYS_INLINE core::T_O* tr_to_object_ptrdiff( core::T_O* raw_ )
-{
-  return to_object_ptrdiff( reinterpret_cast< ssize_t >( raw_ ) );
 }
 
 // ----------------------------------------------------------------------------
@@ -1243,19 +999,9 @@ ALWAYS_INLINE time_t from_object_time( core::T_O* obj )
   return x;
 }
 
-ALWAYS_INLINE core::T_O* tr_from_object_time( core::T_O* obj )
-{
-  return reinterpret_cast< core::T_O * >( from_object_time( obj ) );
-}
-
 ALWAYS_INLINE core::T_O* to_object_time( time_t x )
 {
   return translate::to_object< time_t >::convert(x).raw_();
-}
-
-ALWAYS_INLINE core::T_O* tr_to_object_time( core::T_O* raw_ )
-{
-  return to_object_time( reinterpret_cast< time_t >( raw_ ) );
 }
 
 // ----------------------------------------------------------------------------
@@ -1268,21 +1014,9 @@ ALWAYS_INLINE char from_object_char( core::T_O* obj )
   return x;
 }
 
-ALWAYS_INLINE core::T_O* tr_from_object_char( core::T_O* obj )
-{
-  return reinterpret_cast< core::T_O * >( from_object_char( obj ) );
-}
-
 ALWAYS_INLINE core::T_O* to_object_char( char x )
 {
   return translate::to_object< char >::convert(x).raw_();
-}
-
-ALWAYS_INLINE core::T_O* tr_to_object_char( core::T_O* raw_ )
-{
-  char * ptr = (char *) raw_ ;
-  char c = * ptr;
-  return to_object_char( c );
 }
 
 // ----------------------------------------------------------------------------
@@ -1295,21 +1029,9 @@ ALWAYS_INLINE unsigned char from_object_unsigned_char( core::T_O* obj )
   return x;
 }
 
-ALWAYS_INLINE core::T_O* tr_from_object_unsigned_char( core::T_O* obj )
-{
-  return reinterpret_cast< core::T_O * >( from_object_unsigned_char( obj ) );
-}
-
 ALWAYS_INLINE core::T_O* to_object_unsigned_char( unsigned char x )
 {
   return translate::to_object< unsigned char >::convert(x).raw_();
-}
-
-ALWAYS_INLINE core::T_O* tr_to_object_unsigned_char( core::T_O* raw_ )
-{
-  unsigned char * ptr = (unsigned char *) raw_ ;
-  unsigned char c = * ptr;
-  return to_object_unsigned_char( c );
 }
 
 // ----------------------------------------------------------------------------
@@ -1333,40 +1055,9 @@ ALWAYS_INLINE float from_object_float( core::T_O* obj )
   TYPE_ERROR(tobj,cl::_sym_Number_O);
 }
 
-
-union T_Optr_to_float {
-  float f;
-  T_O*  ptr;
-};
-  
-ALWAYS_INLINE core::T_O* tr_from_object_float( core::T_O* obj )
-{
-#if 1
-  T_Optr_to_float converter;
-  converter.f = from_object_float(obj);
-  return converter.ptr;
-#else
-  static float x =  from_object_float( obj );
-  return reinterpret_cast< core::T_O * >( &x );
-#endif
-}
-
 ALWAYS_INLINE core::T_O* to_object_float( float x )
 {
   return translate::to_object< float >::convert(x).raw_();
-}
-
-ALWAYS_INLINE core::T_O* tr_to_object_float( core::T_O* raw_ )
-{
-#if 1
-  T_Optr_to_float converter;
-  converter.ptr = raw_;
-  float f = converter.f;
-#else
-  float * ptr = (float *) raw_ ;
-  float f = * ptr;
-#endif
-  return to_object_float( f );
 }
 
 // ----------------------------------------------------------------------------
@@ -1379,22 +1070,9 @@ ALWAYS_INLINE double from_object_double( core::T_O* obj )
   return x;
 }
 
-ALWAYS_INLINE core::T_O* tr_from_object_double( core::T_O* obj )
-{
-  static double x =  from_object_double( obj );
-  return reinterpret_cast< core::T_O * >( &x );
-}
-
 ALWAYS_INLINE core::T_O* to_object_double( double x )
 {
   return translate::to_object< double >::convert(x).raw_();
-}
-
-ALWAYS_INLINE core::T_O* tr_to_object_double( core::T_O* raw_ )
-{
-  double * ptr = (double *) raw_ ;
-  double d = * ptr;
-  return to_object_double( d );
 }
 
 // ----------------------------------------------------------------------------
@@ -1407,12 +1085,6 @@ ALWAYS_INLINE long double from_object_long_double( core::T_O* obj )
   return x;
 }
 
-ALWAYS_INLINE core::T_O* tr_from_object_long_double( core::T_O* obj )
-{
-  static long double x =  from_object_long_double( obj );
-  return reinterpret_cast< core::T_O * >( &x );
-}
-
 ALWAYS_INLINE core::T_O* to_object_long_double( long double x )
 {
   return translate::to_object< long double >::convert(x).raw_();
@@ -1421,13 +1093,6 @@ ALWAYS_INLINE core::T_O* to_object_long_double( long double x )
 ALWAYS_INLINE core::T_O* to_object_void( void )
 {
   return _Nil<core::T_O>().raw_();
-}
-
-ALWAYS_INLINE core::T_O* tr_to_object_long_double( core::T_O* raw_ )
-{
-  long double * ptr = (long double *) raw_ ;
-  long double d = * ptr;
-  return to_object_long_double( d );
 }
 
 // ----------------------------------------------------------------------------
@@ -1443,21 +1108,9 @@ ALWAYS_INLINE void * from_object_pointer( core::T_O* obj )
   SIMPLE_ERROR(BF("Handle from_object_pointer for value: %s") % _rep_(tobj));
 }
 
-ALWAYS_INLINE core::T_O* tr_from_object_pointer( core::T_O* obj )
-{
-  void * x = from_object_pointer( obj );
-  return reinterpret_cast< core::T_O * >( x );
-}
-
 ALWAYS_INLINE core::T_O* to_object_pointer( void * x )
 {
   return clasp_ffi::ForeignData_O::create(x).raw_();
-}
-
-ALWAYS_INLINE core::T_O* tr_to_object_pointer( core::T_O* raw_ )
-{
-  void * ptr = (void *) raw_ ;
-  return to_object_pointer( ptr );
 }
 
 // === END OF CORE TRANSLATORS ===
