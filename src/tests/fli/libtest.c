@@ -965,3 +965,65 @@ int call_stdcall_fun(int __attribute__((stdcall)) (*f)(int, int, int))
 
 /* vim: ts=4 et
 */
+
+// ---------------------------------------------------------------------------
+// ---------------------------------------------------------------------------
+// T E S T I N G
+
+#include <limits>
+
+unsigned int CLASP_FLI_TEST_MEM_REF_UNSIGNED_INT = 42;
+int          CLASP_FLI_TEST_MEM_REF_INT          = -42;
+time_t       CLASP_FLI_TEST_MEM_REF_TIME_T       = time( nullptr );
+char         CLASP_FLI_TEST_MEM_REF_CHAR         = 'f';
+
+extern "C" void info_numeric_limits( void )
+{
+  std::cerr << "=============================================================================\n";
+  std::cerr << "SHORT MIN: " << std::numeric_limits< short >::min() << "\n";
+  std::cerr << "SHORT MAX: " << std::numeric_limits< short >::max() << "\n";
+
+  std::cerr << "INT MIN: " << std::numeric_limits< int >::min() << "\n";
+  std::cerr << "INT MAX: " << std::numeric_limits< int >::max() << "\n";
+
+  std::cerr << "LONG MIN: " << std::numeric_limits< long >::min() << "\n";
+  std::cerr << "LONG MAX: " << std::numeric_limits< long >::max() << "\n";
+
+  std::cerr << "LONG LONG MIN: " << std::numeric_limits< long long >::min() << "\n";
+  std::cerr << "LONG LONG MAX: " << std::numeric_limits< long long >::max() << "\n";
+
+  std::cerr << "FLOAT MIN: " << std::numeric_limits< float >::min() << "\n";
+  std::cerr << "FLOAT MAX: " << std::numeric_limits< float >::max() << "\n";
+
+  std::cerr << "DOUBLE MIN: " << std::numeric_limits< double >::min() << "\n";
+  std::cerr << "DOUBLE MAX: " << std::numeric_limits< double >::max() << "\n";
+
+  std::cerr << "LONG DOUBLE MIN: " << std::numeric_limits< long double >::min() << "\n";
+  std::cerr << "LONG DOUBLE MAX: " << std::numeric_limits< long double >::max() << "\n";
+  std::cerr << "=============================================================================\n";
+}
+
+extern "C" int fli_test_add( int a, short b )
+{
+  return a + b;
+}
+
+extern "C" char * fli_test_echo_string( char * pc_str )
+{
+  return pc_str;
+}
+
+extern "C" uint32_t fli_test_mul2_uint32(uint32_t x)
+{
+  return 2 * x;
+}
+
+extern "C" long fli_test_mul2_long(long x)
+{
+  return 2 * x;
+}
+
+extern "C" long long fli_test_mul2_long_long(long long x)
+{
+  return 2 * x;
+}

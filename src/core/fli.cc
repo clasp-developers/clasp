@@ -148,8 +148,8 @@ namespace clasp_ffi {
 //   GLOBAL VARS
 // ---------------------------------------------------------------------------
 
-const std::string TO_OBJECT_FN_NAME_PREFIX( "tr_to_object_" );
-const std::string FROM_OBJECT_FN_NAME_PREFIX( "tr_from_object_" );
+const std::string TO_OBJECT_FN_NAME_PREFIX( "to_object_" );
+const std::string FROM_OBJECT_FN_NAME_PREFIX( "from_object_" );
 
 // ---------------------------------------------------------------------------
 //   FORWARD DECLARATIONS
@@ -639,34 +639,6 @@ ForeignData_sp ForeignData_O::PERCENTinc_pointer( core::Integer_sp offset)
 
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
-// core::Fixnum_sp PERCENTforeign_type_alignment(core::Symbol_sp atype)
-// {
-//   core::Fixnum_sp result = nullptr;
-
-//   core::VectorObjects_sp sp_tst = _sym_STARforeign_type_spec_tableSTAR->symbolValue();
-//   auto iterator = sp_tst->begin();
-//   auto it_end = sp_tst->end();
-
-//   for (; iterator != it_end; iterator++) {
-//     ForeignTypeSpec_sp sp_fts = iterator->asOrNull<ForeignTypeSpec_O>();
-//     if ( sp_fts.notnilp() ) {
-//       if ( sp_fts->PERCENTlisp_symbol()->eql_( atype ) ) {
-//         result = sp_fts->PERCENTalignment();
-//         goto RETURN_FROM_CORE__PERCENT_FOREIGN_TYPE_ALIGNMENT;
-//       }
-//     }
-//   }
-
-//   SIMPLE_ERROR(BF("No foreign type alignment available for %s") % _rep_(atype));
-//   return _Nil<core::T_O>();
-
-// RETURN_FROM_CORE__PERCENT_FOREIGN_TYPE_ALIGNMENT:
-
-//   return result;
-// }
-
-// ---------------------------------------------------------------------------
-// ---------------------------------------------------------------------------
 core::Fixnum_sp PERCENTforeign_type_size(core::Symbol_sp atype)
 {
   core::Fixnum_sp result = nullptr;
@@ -689,10 +661,6 @@ core::Fixnum_sp PERCENTforeign_type_size(core::Symbol_sp atype)
   return _Nil<core::T_O>();
 
 RETURN_FROM_CORE__PERCENT_FOREIGN_TYPE_SIZE:
-
-  // fprintf( stderr, "*** PERCENTforeign_type_size of %s = %ld\n",
-  //          atype->symbolNameAsString().c_str(),
-  //          unbox_fixnum( result ) );
 
   return result;
 }
@@ -735,8 +703,8 @@ core::T_sp PERCENTdlclose( ForeignData_sp handle )
 
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
-core::T_sp PERCENTdlsym( core::String_sp name ) {
-
+core::T_sp PERCENTdlsym( core::String_sp name )
+{
   ForeignData_sp sp_sym;
   auto result = core::do_dlsym( RTLD_DEFAULT, name->get().c_str() );
   void *p_sym = std::get<0>( result );
@@ -924,133 +892,114 @@ inline T mem_ref( cl_intptr_t address )
 core::T_sp PERCENTmem_ref_short( core::Integer_sp address )
 {
   short v = mem_ref<short>( core::clasp_to_cl_intptr_t( address ) );
-  DEBUG_PRINT(BF("%s (%s:%d) | v = %d\n.") % __FUNCTION__ % __FILE__ % __LINE__ % v );
   return mk_fixnum_short( v );
 }
 
 core::T_sp PERCENTmem_ref_unsigned_short( core::Integer_sp address )
 {
   unsigned short v = mem_ref<unsigned short>( core::clasp_to_cl_intptr_t( address ) );
-  DEBUG_PRINT(BF("%s (%s:%d) | v = %d\n.") % __FUNCTION__ % __FILE__ % __LINE__ % v );
   return mk_fixnum_ushort( v );
 }
 
 core::T_sp PERCENTmem_ref_int( core::Integer_sp address )
 {
   int v = mem_ref<int>( core::clasp_to_cl_intptr_t( address ) );
-  DEBUG_PRINT(BF("%s (%s:%d) | v = %d\n.") % __FUNCTION__ % __FILE__ % __LINE__ % v );
   return mk_fixnum_int( v );
 }
 
 core::T_sp PERCENTmem_ref_unsigned_int( core::Integer_sp address )
 {
   unsigned int v = mem_ref<unsigned int>( core::clasp_to_cl_intptr_t( address ) );
-  DEBUG_PRINT(BF("%s (%s:%d) | v = %d\n.") % __FUNCTION__ % __FILE__ % __LINE__ % v );
   return mk_fixnum_uint( v );
 }
 
 core::T_sp PERCENTmem_ref_int8( core::Integer_sp address )
 {
   int8_t v = mem_ref<int8_t>( core::clasp_to_cl_intptr_t( address ) );
-  DEBUG_PRINT(BF("%s (%s:%d) | v = %d\n.") % __FUNCTION__ % __FILE__ % __LINE__ % v );
   return mk_fixnum_int8( v );
 }
 
 core::T_sp PERCENTmem_ref_uint8( core::Integer_sp address )
 {
   int8_t v = mem_ref<int8_t>( core::clasp_to_cl_intptr_t( address ) );
-  DEBUG_PRINT(BF("%s (%s:%d) | v = %d\n.") % __FUNCTION__ % __FILE__ % __LINE__ % v );
   return mk_fixnum_uint8( v );
 }
 
 core::T_sp PERCENTmem_ref_int16( core::Integer_sp address )
 {
   int16_t v = mem_ref<int16_t>( core::clasp_to_cl_intptr_t( address ) );
-  DEBUG_PRINT(BF("%s (%s:%d) | v = %d\n.") % __FUNCTION__ % __FILE__ % __LINE__ % v );
   return mk_fixnum_int16( v );
 }
 
 core::T_sp PERCENTmem_ref_uint16( core::Integer_sp address )
 {
   uint16_t v = mem_ref<uint16_t>( core::clasp_to_cl_intptr_t( address ) );
-  DEBUG_PRINT(BF("%s (%s:%d) | v = %d\n.") % __FUNCTION__ % __FILE__ % __LINE__ % v );
   return mk_fixnum_uint16( v );
 }
 
 core::T_sp PERCENTmem_ref_int32( core::Integer_sp address )
 {
   int32_t v = mem_ref<int32_t>( core::clasp_to_cl_intptr_t( address ) );
-  DEBUG_PRINT(BF("%s (%s:%d) | v = %d\n.") % __FUNCTION__ % __FILE__ % __LINE__ % v );
   return mk_fixnum_int32( v );
 }
 
 core::T_sp PERCENTmem_ref_uint32( core::Integer_sp address )
 {
   uint32_t v = mem_ref<uint32_t>( core::clasp_to_cl_intptr_t( address ) );
-  DEBUG_PRINT(BF("%s (%s:%d) | v = %d\n.") % __FUNCTION__ % __FILE__ % __LINE__ % v );
   return mk_fixnum_uint32( v );
 }
 
 core::T_sp PERCENTmem_ref_int64( core::Integer_sp address )
 {
   int64_t v = mem_ref<int64_t>( core::clasp_to_cl_intptr_t( address ) );
-  DEBUG_PRINT(BF("%s (%s:%d) | v = %l\n.") % __FUNCTION__ % __FILE__ % __LINE__ % v );
   return mk_integer_int64( v );
 }
 
 core::T_sp PERCENTmem_ref_uint64( core::Integer_sp address )
 {
   uint64_t v = mem_ref<uint64_t>( core::clasp_to_cl_intptr_t( address ) );
-  DEBUG_PRINT(BF("%s (%s:%d) | v = %ul\n.") % __FUNCTION__ % __FILE__ % __LINE__ % v );
   return mk_integer_uint64( v );
 }
 
 core::T_sp PERCENTmem_ref_long( core::Integer_sp address )
 {
   long v = mem_ref<long>( core::clasp_to_cl_intptr_t( address ) );
-  DEBUG_PRINT(BF("%s (%s:%d) | v = %l\n.") % __FUNCTION__ % __FILE__ % __LINE__ % v );
   return mk_integer_long( v );
 }
 
 core::T_sp PERCENTmem_ref_unsigned_long( core::Integer_sp address )
 {
   unsigned long v = mem_ref<unsigned long>( core::clasp_to_cl_intptr_t( address ) );
-  DEBUG_PRINT(BF("%s (%s:%d) | v = %ul\n.") % __FUNCTION__ % __FILE__ % __LINE__ % v );
   return mk_integer_ulong( v );
 }
 
 core::T_sp PERCENTmem_ref_long_long( core::Integer_sp address )
 {
   long long v = mem_ref<long long>( core::clasp_to_cl_intptr_t( address ) );
-  DEBUG_PRINT(BF("%s (%s:%d) | v = %ll\n.") % __FUNCTION__ % __FILE__ % __LINE__ % v );
   return mk_integer_longlong( v );
 }
 
 core::T_sp PERCENTmem_ref_unsigned_long_long( core::Integer_sp address )
 {
   unsigned long long v = mem_ref<unsigned long long>( core::clasp_to_cl_intptr_t( address ) );
-  DEBUG_PRINT(BF("%s (%s:%d) | v = %ull\n.") % __FUNCTION__ % __FILE__ % __LINE__ % v );
   return mk_integer_ulonglong( v );
 }
 
 core::T_sp PERCENTmem_ref_double( core::Integer_sp address )
 {
   double v = mem_ref<double>( core::clasp_to_cl_intptr_t( address ) );
-  DEBUG_PRINT(BF("%s (%s:%d) | v = %lf\n.") % __FUNCTION__ % __FILE__ % __LINE__ % v );
   return mk_double_float( v );
 }
 
 core::T_sp PERCENTmem_ref_float( core::Integer_sp address )
 {
   float v = mem_ref<float>( core::clasp_to_cl_intptr_t( address ) );
-  DEBUG_PRINT(BF("%s (%s:%d) | v = %f\n.") % __FUNCTION__ % __FILE__ % __LINE__ % v );
   return mk_single_float( v );
 }
 
 core::T_sp PERCENTmem_ref_long_double( core::Integer_sp address )
 {
   long double v = mem_ref<long double>( core::clasp_to_cl_intptr_t( address ) );
-  DEBUG_PRINT(BF("%s (%s:%d) | v = %dl\n.") % __FUNCTION__ % __FILE__ % __LINE__ % v );
   return mk_long_double( v );
 }
 
@@ -1063,7 +1012,6 @@ core::T_sp PERCENTmem_ref_time( core::Integer_sp address )
 core::T_sp PERCENTmem_ref_pointer( core::Integer_sp address )
 {
   ForeignData_sp ptr = PERCENTmake_pointer( address );
-  DEBUG_PRINT(BF("%s (%s:%d) | v = %p\n.") % __FUNCTION__ % __FILE__ % __LINE__ % ptr );
   return ptr;
 }
 
@@ -1351,65 +1299,3 @@ core::T_sp PERCENTmem_set_unsigned_char( core::Integer_sp address, core::T_sp va
 }
 
 }; // namespace clasp_ffi
-
-// ---------------------------------------------------------------------------
-// ---------------------------------------------------------------------------
-// T E S T I N G
-
-#include <limits>
-
-unsigned int CLASP_FLI_TEST_MEM_REF_UNSIGNED_INT = 42;
-int          CLASP_FLI_TEST_MEM_REF_INT          = -42;
-time_t       CLASP_FLI_TEST_MEM_REF_TIME_T       = time( nullptr );
-char         CLASP_FLI_TEST_MEM_REF_CHAR         = 'f';
-
-extern "C" void info_numeric_limits( void )
-{
-  std::cerr << "=============================================================================\n";
-  std::cerr << "SHORT MIN: " << std::numeric_limits< short >::min() << "\n";
-  std::cerr << "SHORT MAX: " << std::numeric_limits< short >::max() << "\n";
-
-  std::cerr << "INT MIN: " << std::numeric_limits< int >::min() << "\n";
-  std::cerr << "INT MAX: " << std::numeric_limits< int >::max() << "\n";
-
-  std::cerr << "LONG MIN: " << std::numeric_limits< long >::min() << "\n";
-  std::cerr << "LONG MAX: " << std::numeric_limits< long >::max() << "\n";
-
-  std::cerr << "LONG LONG MIN: " << std::numeric_limits< long long >::min() << "\n";
-  std::cerr << "LONG LONG MAX: " << std::numeric_limits< long long >::max() << "\n";
-
-  std::cerr << "FLOAT MIN: " << std::numeric_limits< float >::min() << "\n";
-  std::cerr << "FLOAT MAX: " << std::numeric_limits< float >::max() << "\n";
-
-  std::cerr << "DOUBLE MIN: " << std::numeric_limits< double >::min() << "\n";
-  std::cerr << "DOUBLE MAX: " << std::numeric_limits< double >::max() << "\n";
-
-  std::cerr << "LONG DOUBLE MIN: " << std::numeric_limits< long double >::min() << "\n";
-  std::cerr << "LONG DOUBLE MAX: " << std::numeric_limits< long double >::max() << "\n";
-  std::cerr << "=============================================================================\n";
-}
-
-extern "C" int fli_test_add( int a, short b )
-{
-  return a + b;
-}
-
-extern "C" char * fli_test_echo_string( char * pc_str )
-{
-  return pc_str;
-}
-
-extern "C" uint32_t fli_test_mul2_uint32(uint32_t x)
-{
-  return 2 * x;
-}
-
-extern "C" long fli_test_mul2_long(long x)
-{
-  return 2 * x;
-}
-
-extern "C" long long fli_test_mul2_long_long(long long x)
-{
-  return 2 * x;
-}

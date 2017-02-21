@@ -10,24 +10,15 @@
 ;;;
 ;;; --- END OF IMPLEMEMTATION NOTES ---
 
-;;;----------------------------------------------------------------------------
-;;; ISSUES / KNOWN PROBLEMS
-;;;
-;;;  None so far :-D
-;;;
-;;;----------------------------------------------------------------------------
-
 (in-package "CLASP-FFI")
 
 ;;;----------------------------------------------------------------------------
 ;;;----------------------------------------------------------------------------
 ;;; Debugging MACROS
 
-(defmacro fli-debug (fmt &rest args) nil)
-#+(or) (defmacro fli-debug (fmt &rest args) `(format *debug-io* ,fmt ,@args))
-  
 
-;;; ===========================================================================
+;;;----------------------------------------------------------------------------
+;;;----------------------------------------------------------------------------
 ;;; FLI LISP SIDE IMPLEMENTATION
 
 ;;;----------------------------------------------------------------------------
@@ -60,8 +51,7 @@
 
 ;;; === B U I L T - I N   F O R E I G N   T Y P E S ===
 
-;;; Implemented directly in C++.
-;;; Also: See vector *foreign-type-spec-table* => Vector with all foreign type
+;;; See vector *foreign-type-spec-table* => Vector with all foreign type
 ;;; specs, consisting each of:
 ;;; - Lisp symbol
 ;;; - Lisp name
@@ -71,14 +61,12 @@
 ;;; Adding built-in foreign types requires adding a type spec to this table!
 
 (defun dbg-print-*foreign-type-spec-table* ()
-  (fli-debug "*** DEBUG INFO: clasp-ffi::*foreign-type-spec-table* =>~%~%")
   (loop
      for spec across *foreign-type-spec-table*
      for idx from 0 to (1- (length *foreign-type-spec-table*))
      when spec
      do
-       (fli-debug "~d: ~S~&" idx spec))
-  (fli-debug "~%*** END OF DEBUG INFO ***~%"))
+       (format *debug-io* "~d: ~S~&" idx spec)))
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
 
@@ -300,12 +288,6 @@
     (translator-name "" "to" type))
 
   (defun from-translator-name (type)
-    (translator-name "tr_" "from" type))
-
-  (defun no-tr-to-translator-name (type)
-    (translator-name "" "to" type))
-
-  (defun no-tr-from-translator-name (type)
     (translator-name "" "from" type))
 
   (defun split-list (list)
@@ -322,7 +304,7 @@
            (arg-types (butlast types))
            (last (car (last types))))
       (values (list last arg-types) args)))
-      
+
   (defun split-arguments (arguments)
     (let* ((splits (split-list arguments))
            (types-and-maybe-return-type (car splits))
@@ -334,15 +316,6 @@
            (types (if explicit-return-type
                       (butlast types-and-maybe-return-type 1)
                       types-and-maybe-return-type)))
-      #| ;;; debug info output
-      (fli-debug "/Users/frgo/swdev/clasp/src/clasp/src/lisp/kernel/lsp/arguments = ~S~&" arguments)
-      (fli-debug "splits = ~S~&" splits)
-      (fli-debug "types-and-maybe-return-type = ~S~&" types-and-maybe-return-type)
-      (fli-debug "args = ~S~&" args)
-      (fli-debug "explicit-return-type = ~S~&" explicit-return-type)
-      (fli-debug "return-type = ~S~&" return-type)
-      (fli-debug "types = ~S~&" types)
-      |#
       (values (loop for type in types
                  for arg in args
                  collect `(core:foreign-call
@@ -351,7 +324,6 @@
               return-type)))
 
   (defun process-arguments (arguments)
-    ;; (fli-debug "PROCESS-ARGUMENTS: arguments = ~S~&" arguments)
     (cond
 
       ((null arguments)
@@ -379,8 +351,6 @@
 (defmacro %foreign-funcall (name &rest arguments)
   (multiple-value-bind (signature args)
       (extract-signature arguments)
-    ;; (fli-debug "%FOREIGN-FUNCALL: ARGS = ~S, RETURN-TYPE = ~S~&"
-    ;;         args return-type )
     `(core:foreign-call-pointer ,signature (ensure-core-pointer (core:dlsym :rtld-default ,name)) ,@args)))
 
 (defmacro %foreign-funcall-pointer (ptr &rest arguments)
@@ -436,9 +406,6 @@
 
 (defun %expand-callback-definition (name-and-options return-type-kw argument-symbols argument-type-kws body)
 
-  #+(or)(fli-debug "%expand-callback-definition: name-and-options = ~S, return-tyoe-kw = ~S, argument-symbols = ~S, argument-type-kws = ~S, body = ~S~&"
-                   name-and-options return-type-kw argument-symbols argument-type-kws body )
-
   (multiple-value-bind (function-name convention)
       (if (consp name-and-options)
           (destructuring-bind (name &key convention)
@@ -448,7 +415,7 @@
     ;; Convert type keywords into llvm types ie: :int -> +i32+
     (let* ((body-form `(lambda ,argument-symbols ,@body))
            (argument-names (mapcar (lambda (s)
-                                     (fli-debug "s = ~a~%" s) (string s))
+                                     (string s))
                                    argument-symbols))
            (mangled-function-name (mangled-callback-name function-name))
            (return-type (safe-translator-type return-type-kw ))
@@ -480,7 +447,7 @@
                                  (llvm-sys:get-argument-list new-func) argument-names))
                  ;; Call a translator for each c-arg and accumulate a list of cl-args in registers
                  (cl-args (mapcar (lambda (c-arg arg-type-kw arg-name)
-                                    (let* ((to-object-name (no-tr-to-translator-name arg-type-kw))
+                                    (let* ((to-object-name (to-translator-name arg-type-kw))
                                            (trans-arg-name (format nil "translated-~a" arg-name))
                                            ;; Create the function declaration on the fly
                                            (to-object-func (cmp::get-function-or-error cmp::*the-module* to-object-name)))
@@ -508,7 +475,7 @@
                   ;; Return with void
                   (llvm-sys:create-ret-void cmp::*irbuilder*)
                   ;; Return the result
-                  (let* ((from-object-name (no-tr-from-translator-name return-type-kw))
+                  (let* ((from-object-name (from-translator-name return-type-kw))
                          (from-object-func (cmp::get-function-or-error cmp::*the-module* from-object-name))
                          (c-result (llvm-sys:create-call-array-ref
                                     cmp::*irbuilder*
@@ -526,7 +493,6 @@
 
 (defun %get-callback (sym-name)
   (if sym-name
-      ;;; QUESTION: This was dlsym% - was that a typo?
       (%dlsym (mangled-callback-name sym-name))
       nil))
 
@@ -551,45 +517,3 @@
             %defcallback
             %callback
             %get-callback)))
-
-;;;----------------------------------------------------------------------------
-;;;----------------------------------------------------------------------------
-;;; T E S T I N G
-
-#+(or)
-(defun test-ffi ()
-
-  (format *debug-io* "*** TEST 1: %MEM-SET and %MEM-REF ...~&")
-  (format *debug-io* "    Expected results: a = 47111, b = 47112.~&")
-
-  (let* ((*v1* (%allocate-foreign-object :uint32))
-         (a nil)
-         (b nil)
-         (fa (%foreign-data-address *v1*)))
-
-    ;; --- WITH LOW-LEVEL CALLS ---
-    (%mem-set-uint32 fa 47111)
-    (setq a (%mem-ref-uint32 fa))
-
-    ;; --- WITH HIGH-LEVEL CALLS ---
-    (%mem-set fa :uint32 47112)
-    (setq b (%mem-ref fa :uint32))
-
-    (format *debug-io* "*** a = ~S, b = ~S.~&" a b))
-
-  (format *debug-io* "*** TEST 2: %FOREIGN-FUNCALL ...~&")
-  (format *debug-io* " => (%foreign-funcall \"fli_test_add\" (:int 2 :short 45 :int)) -> ~S~&" (%foreign-funcall "fli_test_add" (:int 2 :short 45 :int)))
-
-  (format *debug-io* "*** TEST 3: %FOREIGN-FUNCALL-POINTER ...~&")
-  (let ((fn-addr (%dlsym "fli_test_mul2_uint32")))
-    (format *debug-io* " => for function fli_test_mul2_uint32: (%foreign-funcall-pointer ~S (:uint32 45 :uint32)) -> ~S~&" fn-addr (%foreign-funcall-pointer fn-addr (:uint32 45 :uint32))))
-
-  (format *debug-io* "*** TEST 4: %FOREIGN-FUNCALL-POINTER ...~&")
-  (let ((fn-addr (%dlsym "fli_test_mul2_long")))
-    (format *debug-io* " => for function fli_test_mul2_long: (%foreign-funcall-pointer ~S (:long 45 :long)) -> ~S~&" fn-addr (%foreign-funcall-pointer fn-addr (:long 45 :long))))
-
-  )
-
-#+(or)
-(defun dbg-numeric-limits ()
-  (%foreign-funcall "info_numeric_limits"))

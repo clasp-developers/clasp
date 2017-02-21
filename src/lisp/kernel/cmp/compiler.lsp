@@ -1162,7 +1162,7 @@ jump to blocks within this tagbody."
          ((endp cur-exp) nil)
       ;;(bformat t "In codegen-multiple-value-foreign-call codegen arg[%d] -> %d\n" i exp)
       (codegen temp-result exp evaluate-env)
-      (push (irc-create-call (clasp-ffi::no-tr-from-translator-name type)
+      (push (irc-create-call (clasp-ffi::from-translator-name type)
                              (list (irc-smart-ptr-extract (irc-load temp-result)))) args))
     args))
 
@@ -1190,9 +1190,9 @@ jump to blocks within this tagbody."
             (llvm-sys:create-call-array-ref *irbuilder* func (nreverse args) "intrinsic"))
            (result-in-t*
             (if (eq :void (first foreign-types))
-                (irc-create-call (clasp-ffi::no-tr-to-translator-name (first foreign-types)) nil) ; returns :void
-                (irc-create-call (clasp-ffi::no-tr-to-translator-name (first foreign-types))
-                             (list foreign-result)))))
+                (irc-create-call (clasp-ffi::to-translator-name (first foreign-types)) nil) ; returns :void
+                (irc-create-call (clasp-ffi::to-translator-name (first foreign-types))
+                                 (list foreign-result)))))
       (irc-store-result-t* result result-in-t*)))
   (irc-low-level-trace :flow))
 
@@ -1218,8 +1218,8 @@ jump to blocks within this tagbody."
               (llvm-sys:create-call-function-pointer *irbuilder* function-type function-pointer (nreverse args) "fn-ptr-call-result"))
              (result-in-t*
               (if (eq :void (first foreign-types))
-                  (irc-create-call (clasp-ffi::no-tr-to-translator-name (first foreign-types)) nil) ; returns :void
-                  (irc-create-call (clasp-ffi::no-tr-to-translator-name (first foreign-types))
+                  (irc-create-call (clasp-ffi::to-translator-name (first foreign-types)) nil) ; returns :void
+                  (irc-create-call (clasp-ffi::to-translator-name (first foreign-types))
                                    (list foreign-result)))))
         (irc-store-result-t* result result-in-t*)))
     (irc-low-level-trace :flow)))
@@ -1239,7 +1239,7 @@ jump to blocks within this tagbody."
                 (if (eq expansion form)
                     nil
                     (progn
-                      (codegen result expansion env) 
+                      (codegen result expansion env)
                       t)))))
         ;; A regular macro
         ((and (symbolp (car form))
@@ -1249,11 +1249,11 @@ jump to blocks within this tagbody."
              (macroexpand form env)
            (cmp-log "MACROEXPANDed form[%s] expanded to [%s]\n" form expansion )
            (irc-low-level-trace)
-           (codegen result expansion env) 
+           (codegen result expansion env)
            ))
         ;; It's a regular function call
         (t
-         (codegen-call result form env))) 
+         (codegen-call result form env)))
     ))
 
 
@@ -1276,7 +1276,7 @@ jump to blocks within this tagbody."
 
 (defun codegen (result form env)
   (declare (optimize (debug 3)))
-  (assert-result-isa-llvm-value result) 
+  (assert-result-isa-llvm-value result)
   (multiple-value-bind (source-directory source-filename lineno column)
       (dbg-set-current-source-pos form)
     (let* ((*current-form* form)
@@ -1305,7 +1305,7 @@ jump to blocks within this tagbody."
                   ((and head (symbolp head))
                    (codegen-application result form env))
                   (t
-                   (error "Handle codegen of cons: ~a" form))))) 
+                   (error "Handle codegen of cons: ~a" form)))))
         ))))
 
 ;;------------------------------------------------------------
@@ -1324,12 +1324,12 @@ jump to blocks within this tagbody."
                                             result
                                             :function-name name
                                             :parent-env env
-                                            :function-form form) 
+                                            :function-form form)
                           (let* ((given-name (llvm-sys:get-name fn)))
                             ;; Map the function argument names
                             (cmp-log "Creating repl function with name: %s\n" given-name)
                             ;;	(break "codegen repl form")
-                            (dbg-set-current-debug-location-here) 
+                            (dbg-set-current-debug-location-here)
                             (codegen result form fn-env)
                             (dbg-set-current-debug-location-here)))))
     (cmp-log "Dumping the repl function\n")
