@@ -2788,9 +2788,8 @@ void Lisp_O::run() {
       //
     this->print(BF("Clasp (copyright Christian E. Schafmeister 2014)\n"));
     this->print(BF("Low level repl\n"));
-    while (1) {
-      this->readEvalPrintInteractive();
-    }
+    this->readEvalPrintInteractive();
+    this->print(BF("\n"));
   }
 };
 
