@@ -74,6 +74,7 @@ THE SOFTWARE.
 #include <clasp/core/environment.h>
 #include <clasp/core/hashTableEqual.h>
 #include <clasp/core/builtInClass.h>
+#include <clasp/core/pathname.h>
 #include <clasp/core/lambdaListHandler.h>
 #include <clasp/core/multipleValues.h>
 #include <clasp/core/environment.h>
@@ -688,17 +689,6 @@ namespace llvmo {
 
 namespace llvmo {
 
-CL_DEFUN void llvm_sys__writeIrToFile(Module_sp module, core::String_sp path) {
-  std::error_code errcode;
-  string pathName = path->get();
-  llvm::raw_fd_ostream OS(pathName.c_str(), errcode, ::llvm::sys::fs::OpenFlags::F_None);
-  if (errcode) {
-    SIMPLE_ERROR(BF("Could not write bitcode to %s - problem: %s") % pathName % errcode.message());
-  }
-  llvm::AssemblyAnnotationWriter *aaw = new llvm::AssemblyAnnotationWriter();
-  module->wrappedPtr()->print(OS, aaw);
-  delete aaw;
-}
 
 CL_DEFUN core::T_mv llvm_sys__verifyModule(Module_sp module, core::Symbol_sp action) {
   string errorInfo;
@@ -716,6 +706,36 @@ CL_DEFUN core::T_mv llvm_sys__verifyFunction(Function_sp function) {
   return Values(_lisp->_boolean(result), core::SimpleBaseString_O::make(ei.str()));
 };
 
+CL_DEFUN void llvm_sys__printFunctionToStream(Function_sp func, core::T_sp stream) {
+  string outstr;
+  llvm::raw_string_ostream sout(outstr);
+  llvm::AssemblyAnnotationWriter *aaw = new llvm::AssemblyAnnotationWriter();
+  func->wrappedPtr()->print(sout, aaw);
+  delete aaw;
+  core::clasp_write_string(outstr,stream);
+}
+
+CL_DEFUN void llvm_sys__printModuleToStream(Module_sp module, core::T_sp stream) {
+  string outstr;
+  llvm::raw_string_ostream sout(outstr);
+  llvm::AssemblyAnnotationWriter *aaw = new llvm::AssemblyAnnotationWriter();
+  module->wrappedPtr()->print(sout, aaw);
+  delete aaw;
+  core::clasp_write_string(outstr,stream);
+}
+
+CL_DEFUN void llvm_sys__writeIrToFile(Module_sp module, core::String_sp path) {
+  std::error_code errcode;
+  string pathName = path->get();
+  llvm::raw_fd_ostream OS(pathName.c_str(), errcode, ::llvm::sys::fs::OpenFlags::F_None);
+  if (errcode) {
+    SIMPLE_ERROR(BF("Could not write bitcode to %s - problem: %s") % pathName % errcode.message());
+  }
+  llvm::AssemblyAnnotationWriter *aaw = new llvm::AssemblyAnnotationWriter();
+  module->wrappedPtr()->print(OS, aaw);
+  delete aaw;
+}
+
 CL_LAMBDA(module pathname &optional (use-thin-lto t));
 CL_DEFUN void llvm_sys__writeBitcodeToFile(Module_sp module, core::String_sp pathname, bool useThinLTO) {
   string pn = pathname->get();
@@ -732,30 +752,38 @@ CL_DEFUN void llvm_sys__writeBitcodeToFile(Module_sp module, core::String_sp pat
   }
 };
 
-  CL_DEFUN Module_sp llvm_sys__parseBitcodeFile(core::String_sp filename, LLVMContext_sp context) {
-  //	printf("%s:%d af_parseBitcodeFile %s\n", __FILE__, __LINE__, filename->c_str() );
-#if 0
-    llvm::SMDiagnostic smd;
-    std::unique_ptr<llvm::Module> module = llvm::parseIRFile(filename->get(),smd,*(context->wrappedPtr()));
-    llvm::Module* m = module.release();
-    if (!m) {
-      std::string message = smd.getMessage();
-      SIMPLE_ERROR(BF("Could not load bitcode for file %s - error: %s") % filename->get() % message );
-    }
-    Module_sp omodule = core::RP_Create_wrapped<Module_O,llvm::Module*>(module.release());
-#else
-    llvm::ErrorOr<std::unique_ptr<llvm::MemoryBuffer>> eo_membuf = llvm::MemoryBuffer::getFile(filename->get());
-    if (std::error_code ec = eo_membuf.getError()) {
-      SIMPLE_ERROR(BF("Could not load bitcode for file %s - error: %s") % filename->get() % ec.message());
-    }
-    llvm::Expected<std::unique_ptr<llvm::Module>> eom = llvm::parseBitcodeFile(eo_membuf.get()->getMemBufferRef(), *(context->wrappedPtr()));
-    if (!eom) {
-      SIMPLE_ERROR(BF("Could not parse bitcode for file %s - there was an error") % filename->get());
-    }
-    Module_sp omodule = core::RP_Create_wrapped<Module_O, llvm::Module *>((*eom).release());
-#endif
-    return omodule;
-  };
+
+CL_DEFUN Module_sp llvm_sys__parseIRFile(core::T_sp tfilename, LLVMContext_sp context) {
+  core::String_sp spathname = core::cl__namestring(core::cl__pathname(tfilename));
+  llvm::ErrorOr<std::unique_ptr<llvm::MemoryBuffer>> eo_membuf = llvm::MemoryBuffer::getFile(spathname->get_std_string());
+  if (std::error_code ec = eo_membuf.getError()) {
+    SIMPLE_ERROR(BF("Could not read the file %s - error: %s") % spathname->get_std_string() % ec.message());
+  }
+  llvm::SMDiagnostic smd;
+  std::unique_ptr<llvm::Module> module =
+    llvm::parseIR(eo_membuf.get()->getMemBufferRef(), smd, *(context->wrappedPtr()));
+  llvm::Module* m = module.release();
+  if (!m) {
+    std::string message = smd.getMessage();
+    SIMPLE_ERROR(BF("Could not load bitcode for file %s - error: %s") % spathname->get_std_string() % message );
+  }
+  Module_sp omodule = core::RP_Create_wrapped<Module_O,llvm::Module*>(m);
+  return omodule;
+};
+
+CL_LAMBDA("filename &optional (context cmp:*llvm-context*)");
+CL_DEFUN Module_sp llvm_sys__parseBitcodeFile(core::T_sp tfilename, LLVMContext_sp context) {
+  core::String_sp spathname = core::cl__namestring(core::cl__pathname(tfilename));
+  llvm::ErrorOr<std::unique_ptr<llvm::MemoryBuffer>> eo_membuf = llvm::MemoryBuffer::getFile(spathname->get_std_string());
+  if (std::error_code ec = eo_membuf.getError()) {
+    SIMPLE_ERROR(BF("Could not load bitcode for file %s - error: %s") % spathname->get_std_string() % ec.message());
+  }
+  llvm::Expected<std::unique_ptr<llvm::Module>> eom =
+    llvm::parseBitcodeFile(eo_membuf.get()->getMemBufferRef(), *(context->wrappedPtr()));
+  if (!eom) SIMPLE_ERROR(BF("Could not parse bitcode for file %s - there was an error") % spathname->get_std_string());
+  Module_sp omodule = core::RP_Create_wrapped<Module_O, llvm::Module *>((*eom).release());
+  return omodule;
+};
 
 
 CL_DEFUN Module_sp llvm_sys__clone_module(Module_sp original)
@@ -2980,7 +3008,7 @@ struct CtorStruct {
 };
 
 
-CL_DEFUN void finalizeEngineAndRegisterWithGcAndRunMainFunctions(ExecutionEngine_sp oengine, core::T_sp fileName) {
+CL_DEFUN void finalizeEngineAndRegisterWithGcAndRunMainFunctions(ExecutionEngine_sp oengine) {
   // Stuff to support MCJIT
   llvm::ExecutionEngine *engine = oengine->wrappedPtr();
 #ifdef DEBUG_STARTUP
@@ -3396,7 +3424,12 @@ using namespace llvm::orc;
 
 
 ClaspJIT_O::ClaspJIT_O() : TM(EngineBuilder().selectTarget()), DL(TM->createDataLayout()),
-                           CompileLayer(ObjectLayer, SimpleCompiler(*TM)) {
+                           CompileLayer(ObjectLayer, SimpleCompiler(*TM)),
+                           OptimizeLayer(CompileLayer,
+                                         [this](std::unique_ptr<Module> M) {
+                                           return optimizeModule(std::move(M));
+                                         }) 
+{
   llvm::sys::DynamicLibrary::LoadLibraryPermanently(nullptr);
 }
 
@@ -3409,7 +3442,7 @@ CL_DEFMETHOD ModuleHandle_sp ClaspJIT_O::addModule(Module_sp cM) {
     // Lambda 2: Search for external symbols in the host process.
   auto Resolver = createLambdaResolver(
                                        [&](const std::string &Name) {
-                                           if (auto Sym = CompileLayer.findSymbol(Name, false))
+                                           if (auto Sym = OptimizeLayer.findSymbol(Name, false))
                                              return Sym;
                                            return JITSymbol(nullptr);
                                        },
@@ -3427,45 +3460,89 @@ CL_DEFMETHOD ModuleHandle_sp ClaspJIT_O::addModule(Module_sp cM) {
 
     // Add the set to the JIT with the resolver we created above and a newly
     // created SectionMemoryManager.
-  return ModuleHandle_O::create(CompileLayer.addModuleSet(std::move(Ms),
+  return ModuleHandle_O::create(OptimizeLayer.addModuleSet(std::move(Ms),
                                                         make_unique<SectionMemoryManager>(),
                                                         std::move(Resolver)));
 }
 
 CL_LISPIFY_NAME("CLASP-JIT-FIND-SYMBOL");
-CL_DEFMETHOD core::T_sp ClaspJIT_O::findSymbol(const std::string& Name) {
+CL_DEFMETHOD core::Pointer_sp ClaspJIT_O::findSymbol(const std::string& Name) {
   std::string MangledName;
   raw_string_ostream MangledNameStream(MangledName);
   llvm::Mangler::getNameWithPrefix(MangledNameStream, Name, DL);
-  llvm::JITSymbol sym = CompileLayer.findSymbol(MangledNameStream.str(), true);
-  if (!sym) return _Nil<core::T_O>();
+  printf("%s:%d ClaspJIT_O::findSymbol looking for symbol: |%s|\n", __FILE__, __LINE__, MangledNameStream.str().c_str());
+  llvm::JITSymbol sym = OptimizeLayer.findSymbol(MangledNameStream.str(), true);
+  printf("          -->   address: %p\n", (void*)sym.getAddress());
+  if (!sym) {
+    SIMPLE_ERROR(BF("Could not find symbol %s") % Name);
+  }
   return core::Pointer_O::create((void*)sym.getAddress());
 }
 
+CL_LISPIFY_NAME("CLASP-JIT-FIND-SYMBOL-IN");
+CL_DEFMETHOD core::Pointer_sp ClaspJIT_O::findSymbolIn(ModuleHandle_sp handle, const std::string& Name, bool exportedSymbolsOnly ) {
+  std::string MangledName;
+  raw_string_ostream MangledNameStream(MangledName);
+  llvm::Mangler::getNameWithPrefix(MangledNameStream, Name, DL);
+//  printf("%s:%d ClaspJIT_O::findSymbolIn looking for symbol: |%s|\n", __FILE__, __LINE__, MangledNameStream.str().c_str());
+  llvm::JITSymbol sym = OptimizeLayer.findSymbolIn(handle->_Handle,MangledNameStream.str(), exportedSymbolsOnly );
+//  printf("          -->   address: %p\n", (void*)sym.getAddress());
+  if (!sym) {
+    printf("%s:%d  Cound not find symbol %s in the module\n", __FILE__, __LINE__, MangledNameStream.str().c_str());
+    SIMPLE_ERROR(BF("Could not find symbol %s in module with handle, exportedSymbolsOnly = %d") % MangledNameStream.str() % exportedSymbolsOnly);
+  }
+  return core::Pointer_O::create((void*)sym.getAddress());
+}
 CL_LISPIFY_NAME("CLASP-JIT-REMOVE-MODULE");
 CL_DEFMETHOD void ClaspJIT_O::removeModule(ModuleHandle_sp H) {
-  CompileLayer.removeModuleSet(H->_Handle);
+  OptimizeLayer.removeModuleSet(H->_Handle);
 }
 
+
+
+std::unique_ptr<llvm::Module> ClaspJIT_O::optimizeModule(std::unique_ptr<llvm::Module> M) {
+  // Create a function pass manager.
+  auto FPM = llvm::make_unique<llvm::legacy::FunctionPassManager>(M.get());
+
+  // Add some optimizations.
+  FPM->add(createInstructionCombiningPass());
+  FPM->add(createReassociatePass());
+  FPM->add(createNewGVNPass());
+  FPM->add(createCFGSimplificationPass());
+//  FPM->add(createFunctionInliningPass());
+  FPM->doInitialization();
+
+  // Run the optimizations over all functions in the module being added to
+  // the JIT.
+  for (auto &F : *M)
+    FPM->run(F);
+
+  llvm::legacy::PassManager my_passes;
+  my_passes.add(llvm::createFunctionInliningPass(4096));
+  my_passes.run(*M);
+  
+  return M;
+}
 
 
 CL_DEFUN core::Function_sp llvm_sys__jitFinalizeReplFunction(ClaspJIT_sp jit, ModuleHandle_sp handle, const string& replName, const string& startupName, const string& shutdownName, core::T_sp initialData, Function_sp fn, core::T_sp activationFrameEnvironment) {
   // Stuff to support MCJIT
+#if 0
   printf("%s:%d     replName = %s\n", __FILE__, __LINE__, replName.c_str() );
   printf("%s:%d  startupName = %s\n", __FILE__, __LINE__, startupName.c_str() );
   printf("%s:%d shutdownName = %s\n", __FILE__, __LINE__, shutdownName.c_str() );
-  core::Pointer_sp replPtr = jit->findSymbol(replName);
-  core::Pointer_sp startupPtr = jit->findSymbol(startupName);
-  core::Pointer_sp shutdownPtr = jit->findSymbol(shutdownName);
-  printf("%s:%d     replPtr = %p\n", __FILE__, __LINE__, (void*)replPtr->ptr());
-  printf("%s:%d  startupPtr = %p\n", __FILE__, __LINE__, (void*)startupPtr->ptr() );
-  printf("%s:%d shutdownPtr = %p\n", __FILE__, __LINE__, (void*)shutdownPtr->ptr() );
-  if (!replPtr->ptr()) SIMPLE_ERROR(BF("Could not resolve repl symbol %s") % replName);
-  if (!startupPtr->ptr()) SIMPLE_ERROR(BF("Could not resolve startup symbol %s") % startupName);
-  if (!shutdownPtr->ptr()) SIMPLE_ERROR(BF("Could not resolve shutdown symbol %s") % shutdownName);
-  core::CompiledClosure_fptr_type lisp_funcPtr = (core::CompiledClosure_fptr_type)(replPtr->ptr());
+#endif
+  core::Pointer_sp replPtr = jit->findSymbolIn(handle,replName,false);
+  core::Pointer_sp startupPtr = jit->findSymbolIn(handle,startupName,false);
+  core::Pointer_sp shutdownPtr = jit->findSymbolIn(handle,shutdownName,false);
+#if 0
+  printf("%s:%d     replPtr = %s\n", __FILE__, __LINE__, _rep_(replPtr).c_str());
+  printf("%s:%d  startupPtr = %s\n", __FILE__, __LINE__, _rep_(startupPtr).c_str());
+  printf("%s:%d shutdownPtr = %s\n", __FILE__, __LINE__, _rep_(shutdownPtr).c_str());
+#endif
+  core::CompiledClosure_fptr_type lisp_funcPtr = (core::CompiledClosure_fptr_type)(gc::As_unsafe<core::Pointer_sp>(replPtr)->ptr());
   gctools::smart_ptr<core::CompiledClosure_O> functoid = gctools::GC<core::CompiledClosure_O>::allocate(core::SimpleBaseString_O::make(replName), kw::_sym_function, lisp_funcPtr, fn, activationFrameEnvironment, _Nil<core::T_O>(), _Nil<core::T_O>() /*lambdaList*/, 0, 0, 0, 0 );
-  core::module_startup_function_type startup = reinterpret_cast<core::module_startup_function_type>(startupPtr->ptr());
+  core::module_startup_function_type startup = reinterpret_cast<core::module_startup_function_type>(gc::As_unsafe<core::Pointer_sp>(startupPtr)->ptr());
   startup(initialData.tagged_());
   return functoid;
 }
@@ -3477,19 +3554,16 @@ CL_DEFUN core::Function_sp llvm_sys__jitFinalizeDispatchFunction(ClaspJIT_sp jit
   printf("%s:%d dispatchName = %s\n", __FILE__, __LINE__, dispatchName.c_str() );
   printf("%s:%d  startupName = %s\n", __FILE__, __LINE__, startupName.c_str() );
   printf("%s:%d shutdownName = %s\n", __FILE__, __LINE__, shutdownName.c_str() );
-  core::Pointer_sp dispatchPtr = jit->findSymbol(dispatchName);
-  core::Pointer_sp startupPtr = jit->findSymbol(startupName);
-  core::Pointer_sp shutdownPtr = jit->findSymbol(shutdownName);
-  printf("%s:%d dispatchPtr = %p\n", __FILE__, __LINE__, (void*)dispatchPtr->ptr());
-  printf("%s:%d  startupPtr = %p\n", __FILE__, __LINE__, (void*)startupPtr->ptr() );
-  printf("%s:%d shutdownPtr = %p\n", __FILE__, __LINE__, (void*)shutdownPtr->ptr() );
-  if (!dispatchPtr->ptr()) SIMPLE_ERROR(BF("Could not resolve dispatch symbol %s") % dispatchName);
-  if (!startupPtr->ptr()) SIMPLE_ERROR(BF("Could not resolve startup symbol %s") % startupName);
-  if (!shutdownPtr->ptr()) SIMPLE_ERROR(BF("Could not resolve shutdown symbol %s") % shutdownName);
-  core::DispatchFunction_fptr_type dispatchFunction = (core::DispatchFunction_fptr_type)(dispatchPtr->ptr());
-  core::ShutdownFunction_fptr_type shutdownFunction = (core::ShutdownFunction_fptr_type)(shutdownPtr->ptr());
+  core::Pointer_sp dispatchPtr = jit->findSymbolIn(handle,dispatchName,false);
+  core::Pointer_sp startupPtr = jit->findSymbolIn(handle,startupName,false);
+  core::Pointer_sp shutdownPtr = jit->findSymbolIn(handle,shutdownName,false);
+  printf("%s:%d dispatchPtr = %p\n", __FILE__, __LINE__, (void*)gc::As_unsafe<core::Pointer_sp>(dispatchPtr)->ptr());
+  printf("%s:%d  startupPtr = %p\n", __FILE__, __LINE__, (void*)gc::As_unsafe<core::Pointer_sp>(startupPtr)->ptr() );
+         printf("%s:%d shutdownPtr = %p\n", __FILE__, __LINE__, (void*)gc::As_unsafe<core::Pointer_sp>(shutdownPtr)->ptr() );
+  core::DispatchFunction_fptr_type dispatchFunction = (core::DispatchFunction_fptr_type)(gc::As_unsafe<core::Pointer_sp>(dispatchPtr)->ptr());
+  core::ShutdownFunction_fptr_type shutdownFunction = (core::ShutdownFunction_fptr_type)(gc::As_unsafe<core::Pointer_sp>(shutdownPtr)->ptr());
   gctools::smart_ptr<core::CompiledDispatchFunction_O> functoid = gctools::GC<core::CompiledDispatchFunction_O>::allocate(core::SimpleBaseString_O::make(dispatchName), kw::_sym_dispatch_function, dispatchFunction, shutdownFunction, handle );
-  void* pstartup = startupPtr->ptr();
+  void* pstartup = gc::As_unsafe<core::Pointer_sp>(startupPtr)->ptr();
   if (pstartup == NULL ) {
     printf("%s:%d Could not find function named %s\n", __FILE__, __LINE__, MODULE_STARTUP_FUNCTION_NAME);
   }
