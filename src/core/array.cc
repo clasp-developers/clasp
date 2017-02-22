@@ -405,12 +405,19 @@ T_sp MDArray_O::vectorPush(T_sp newElement) {
   return clasp_make_fixnum(idx);
 }
 
+size_t calculate_extension(size_t arrayTotalSize)
+{
+  size_t new_size = arrayTotalSize;
+  if (new_size < 8) new_size = 8;
+  return new_size;
+}
+
 SYMBOL_EXPORT_SC_(ClPkg,vectorPushExtend);
 Fixnum_sp MDArray_O::vectorPushExtend(T_sp newElement, size_t extension) {
   unlikely_if (!this->_Flags.fillPointerP()) noFillPointerError(cl::_sym_vectorPushExtend,this->asSmartPtr());
   cl_index idx = this->_FillPointerOrLengthOrDummy;
   unlikely_if (idx >= this->_ArrayTotalSize) {
-    if (extension <= 0) extension = 32;
+    if (extension <= 0) extension = calculate_extension(this->_ArrayTotalSize);
     cl_index new_size = this->_ArrayTotalSize+extension;
     unlikely_if (!cl::_sym_adjust_array || !cl::_sym_adjust_array->boundP()) {
       this->internalAdjustSize_(new_size);
@@ -2042,7 +2049,7 @@ Array_sp SimpleBitVector_O::nreverse() {
 
 SimpleBitVector_sp SimpleBitVector_copy(SimpleBitVector_sp orig_sbv)
 {
-  size_t value_type_size = core::SimpleBitVector_O::bitunit_array_type::sizeof_for_length(orig_sbv->length());
+  size_t value_type_size = core::SimpleBitVector_O::bitunit_array_type::sizeof_for_length(orig_sbv->length())/sizeof(core::SimpleBitVector_O::value_type);
 //  printf("%s:%d Copy SimpleBitVector length = %lu   value_type_size = %lu\n", __FILE__, __LINE__, orig_sbv->length(), value_type_size );
 //  fflush(stdout);
   core::SimpleBitVector_sp sbv = core::SimpleBitVector_O::make(orig_sbv->length(),0,true,value_type_size,&orig_sbv->_Data[0]);
@@ -2051,7 +2058,7 @@ SimpleBitVector_sp SimpleBitVector_copy(SimpleBitVector_sp orig_sbv)
 
 void SimpleBitVector_inPlaceOr(SimpleBitVector_sp x, SimpleBitVector_sp y) {
   size_t i;
-  if (x->length() != y->length()) SIMPLE_ERROR(BF("BitVectors aren't the same length for operation"));
+  if (x->length() != y->length()) SIMPLE_ERROR(BF("BitVectors aren't the same length for in place or - lengths are %lu and %lu") % x->length() % y->length());
   for (size_t i = 0; i<x->_Data.number_of_words(); ++i ) {
     (*x)._Data[i] |= (*y)._Data[i];
   }
@@ -2168,7 +2175,7 @@ void Str8Ns_O::vectorPushExtend_claspChar(claspChar newElement, size_t extension
   unlikely_if (!this->_Flags.fillPointerP()) noFillPointerError(_sym_vectorPushExtend_claspCharacter,this->asSmartPtr());
   cl_index idx = this->_FillPointerOrLengthOrDummy;
   unlikely_if (idx >= this->_ArrayTotalSize) {
-    if (extension <= 0) extension = 32;
+    if (extension <= 0) extension = calculate_extension(this->_ArrayTotalSize);
     cl_index new_size = this->_ArrayTotalSize+extension;
     unlikely_if (!cl::_sym_adjust_array || !cl::_sym_adjust_array->boundP()) {
       this->internalAdjustSize_(new_size);
@@ -2241,7 +2248,7 @@ void StrWNs_O::vectorPushExtend_claspCharacter(claspCharacter newElement, size_t
   unlikely_if (!this->_Flags.fillPointerP()) noFillPointerError(_sym_vectorPushExtend_claspCharacter,this->asSmartPtr());
   cl_index idx = this->_FillPointerOrLengthOrDummy;
   unlikely_if (idx >= this->_ArrayTotalSize) {
-    if (extension <= 0) extension = 32;
+    if (extension <= 0) extension = calculate_extension(this->_ArrayTotalSize);
     cl_index new_size = this->_ArrayTotalSize+extension;
     unlikely_if (!cl::_sym_adjust_array || !cl::_sym_adjust_array->boundP()) {
       this->internalAdjustSize_(new_size);
@@ -2396,7 +2403,7 @@ void MDArray_size_t_O::vectorPushExtend_size_t(size_t newElement, size_t extensi
   unlikely_if (!this->_Flags.fillPointerP()) noFillPointerError(_sym_vectorPushExtend_size_t,this->asSmartPtr());
   cl_index idx = this->_FillPointerOrLengthOrDummy;
   unlikely_if (idx >= this->_ArrayTotalSize) {
-    if (extension <= 0) extension = 32;
+    if (extension <= 0) extension = calculate_extension(this->_ArrayTotalSize);
     cl_index new_size = this->_ArrayTotalSize+extension;
     unlikely_if (!cl::_sym_adjust_array || !cl::_sym_adjust_array->boundP()) {
       this->internalAdjustSize_(new_size);
@@ -2551,7 +2558,7 @@ CL_DEFUN T_sp cl__vector_push(T_sp newElement, Vector_sp vec) {
   return vec->vectorPush(newElement);
 };
 
-CL_LAMBDA(newElement vector &optional (exension 16));
+CL_LAMBDA(newElement vector &optional (exension 0));
 CL_DECLARE();
 CL_DOCSTRING("vectorPushExtend");
 CL_DEFUN Fixnum_sp cl__vector_push_extend(T_sp newElement, Vector_sp vec, size_t extension) {

@@ -105,7 +105,7 @@ namespace gctools {
     }
   public:
     /* Word access */
-  size_t number_of_words() const { return sizeof_for_length(this->_Length);};
+  size_t number_of_words() const { return sizeof_for_length(this->_Length)/sizeof(word_type);};
     word_type &operator[](size_t i) { return this->_Data[i]; };
     const word_type &operator[](size_t i) const { return this->_Data[i]; };
     /* Unsigned BitUnit access */
