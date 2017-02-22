@@ -1561,8 +1561,9 @@ CL_DEFUN T_sp cl__make_string(Fixnum_sp size, T_sp initial_element, T_sp element
   if (!initial_element.characterp()) {
     TYPE_ERROR(initial_element,cl::_sym_character);
   }
+  claspCharacter initial_element_cc = initial_element.unsafe_character();
   if ( element_type == cl::_sym_base_char ) {
-    if (!clasp_base_char_p(initial_element)) {
+    if (!clasp_base_char_p(initial_element_cc)) {
       TYPE_ERROR(initial_element,cl::_sym_base_char);
     }
     SimpleBaseString_sp s = SimpleBaseString_O::make(size.unsafe_fixnum(),initial_element.unsafe_character());
