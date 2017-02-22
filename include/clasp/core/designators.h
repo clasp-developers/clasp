@@ -47,9 +47,11 @@ namespace coerce {
 extern Function_sp functionDesignator(T_sp obj);
 extern Closure_sp closureDesignator(T_sp obj);
 
+#if 0
 /*! Return a Path by interpreting a pathname designator */
 extern Path_sp pathDesignator(T_sp obj);
-
+#endif
+ 
 /*! Return a Package by interpreting a package designator */
 extern Package_sp packageDesignator(T_sp obj);
 
