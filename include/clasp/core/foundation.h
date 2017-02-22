@@ -624,6 +624,32 @@ namespace core {
 
 #include <clasp/core/multipleValues.h>
 
+
+#if 0
+namespace dummy_namespace {
+#pragma clang diagnostic push
+#pragma clang diagnostic error "-Wc++98-compat"
+
+    /*! If this union generates a compile-time error then multiple_values isn't
+      trivial and it will be passed as a pointer to the struct in memory
+      rather than in registers. */
+  union multiple_value_ptr_union_generates_a_compile_time_error_then_multiple_values_isnt_trivial {
+    gctools::multiple_values<core::T_O> _multiple_values;
+    uintptr_t _uintptr;
+  };
+
+  /*! If this union generates a compile-time error then smart_ptr isn't
+      trivial and it will be passed as a pointer to the struct in memory
+      rather than in registers. */
+  union smart_ptr_union_generates_a_compile_time_error_then_smart_ptr_isnt_trivial {
+    gctools::smart_ptr<core::T_O> _smart_ptr;
+    uintptr_t _uintptr;
+  };
+#pragma clang diagnostic pop
+};
+#endif
+
+
 namespace core {
 class Instance_O;
 typedef gc::smart_ptr<Instance_O> Instance_sp;
@@ -1176,6 +1202,12 @@ public:
     return ss.str();
   };
 
+  void validateFrame(size_t frame) {
+    if (frame >= this->_Stack.size()) {
+      printf("%s:%d A request to unwind to frame %lu has been made but there are only %lu frames on the exception stack - the frame won't be found and a crash will occur - aborting now.  Trap abort() in the debugger to investigate\n", __FILE__, __LINE__, frame, this->_Stack.size());
+      abort();
+    }
+  }
   inline size_t push(FrameKind kind, T_sp key) {
     size_t frame = this->_Stack.size();
     this->_Stack.emplace_back(kind, key);
