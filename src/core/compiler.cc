@@ -507,8 +507,8 @@ CL_DOCSTRING("dlopen - Open a dynamic library and return the handle. Returns (va
 CL_DEFUN T_mv core__dlopen(T_sp pathDesig) {
 
   int mode = RTLD_NOW | RTLD_GLOBAL;
-  Path_sp path = coerce::pathDesignator(pathDesig);
-  string ts0 = path->asString();
+  Pathname_sp path = cl__pathname(pathDesig);
+  string ts0 = gc::As<String_sp>(cl__namestring(path))->get_std_string();
 
   auto result = do_dlopen( ts0, mode );
   void * handle = std::get<0>( result );
@@ -959,6 +959,41 @@ CL_DEFUN T_mv core__funwind_protect(T_sp protected_fn, T_sp cleanup_fn) {
     ASSERT(closure);
     MAKE_STACK_FRAME(frame,closure.raw_(),0);
     LCC_CALL_WITH_ARGS_IN_FRAME(result,closure,*frame);
+  } catch (Unwind& unwind) {
+#ifdef DEBUG_FLOW_CONTROL
+    if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp()) {
+      printf("%s:%d In funwind_protect catch(Unwind&) just caught Unwind to frame: %lu\n", __FILE__, __LINE__, gctools::untag_fixnum(unwind.getFrame()));
+      if (core::_sym_STARdebugFlowControlSTAR->symbolValue() == kw::_sym_verbose ) {
+        printf("   %s\n", my_thread->exceptionStack().summary().c_str());
+      }
+    }
+#endif
+// Save any return value that may be in the multiple value return array
+    gctools::Vec0<T_sp> savemv;
+    T_mv tresult;
+    tresult.readFromMultipleValue0();
+    tresult.saveToVec0(savemv);
+    {
+      Closure_sp closure = cleanup_fn.asOrNull<Closure_O>();
+      ASSERT(closure);
+      MAKE_STACK_FRAME(frame,closure.raw_(),0);
+      LCC_CALL_WITH_ARGS_IN_FRAME(tresult,closure,*frame);
+      // T_mv tresult = closure->invoke_va_list(LCC_PASS_ARGS0_VA_LIST(closure.raw_()));
+    }
+#if 1 // See comment above about 22a8d7b1
+    tresult.loadFromVec0(savemv);
+    tresult.saveToMultipleValue0();
+#endif
+#ifdef DEBUG_FLOW_CONTROL
+    if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp()) {
+      printf("%s:%d In funwind_protect catch(Unwind&) about to rethrow to frame: %lu\n", __FILE__, __LINE__,gctools::untag_fixnum(unwind.getFrame()));
+      if (core::_sym_STARdebugFlowControlSTAR->symbolValue() == kw::_sym_verbose ) {
+        printf("   %s\n", my_thread->exceptionStack().summary().c_str());
+      }
+    }
+    my_thread->exceptionStack().validateFrame(gctools::untag_fixnum(unwind.getFrame()));
+#endif
+    throw unwind;
   } catch (...) {
 #ifdef DEBUG_FLOW_CONTROL
     if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp()) {
@@ -994,6 +1029,10 @@ CL_DEFUN T_mv core__funwind_protect(T_sp protected_fn, T_sp cleanup_fn) {
 #endif
     throw;
   }
+
+
+
+  
 #ifdef DEBUG_FLOW_CONTROL
   if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp()) {
     printf("%s:%d In funwind_protect  normal exit\n", __FILE__, __LINE__);
