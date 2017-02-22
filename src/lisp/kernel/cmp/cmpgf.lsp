@@ -681,7 +681,7 @@
                                              *outcomes*)
                                     (let ((sorted (sort values #'< :key #'car)))
                                       (mapcar #'cdr sorted)))))
-                (let* ((compiled-dispatcher (jit-add-module-return-function *the-module* disp-fn startup-fn shutdown-fn sorted-roots)))
+                (let* ((compiled-dispatcher (jit-add-module-return-dispatch-function *the-module* disp-fn startup-fn shutdown-fn sorted-roots)))
                   (gf-log "Compiled dispatcher -> ~a~%" compiled-dispatcher)
                   (gf-log "Dumping module\n")
                   (gf-do (cmp-log-dump *the-module*))

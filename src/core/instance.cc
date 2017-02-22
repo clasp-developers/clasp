@@ -41,27 +41,27 @@ THE SOFTWARE.
 
 namespace core {
 
-CL_DEFUN T_sp clos__getFuncallableInstanceFunction(T_sp obj) {
+CL_DEFUN T_mv clos__getFuncallableInstanceFunction(T_sp obj) {
   if (Instance_sp iobj = obj.asOrNull<Instance_O>()) {
     switch (iobj->_isgf) {
     case CLASP_STANDARD_DISPATCH:
-        return _lisp->_true();
+        return Values(_lisp->_true(),Pointer_O::create((void*)iobj->_entryPoint));
     case CLASP_RESTRICTED_DISPATCH:
-        return cl::_sym_standardGenericFunction;
+        return Values(cl::_sym_standardGenericFunction,Pointer_O::create((void*)iobj->_entryPoint));
     case CLASP_READER_DISPATCH:
-        return clos::_sym_standardOptimizedReaderMethod;
+        return Values(clos::_sym_standardOptimizedReaderMethod,Pointer_O::create((void*)iobj->_entryPoint));
     case CLASP_WRITER_DISPATCH:
-        return clos::_sym_standardOptimizedWriterMethod;
+        return Values(clos::_sym_standardOptimizedWriterMethod,Pointer_O::create((void*)iobj->_entryPoint));
     case CLASP_USER_DISPATCH:
-        return iobj->userFuncallableInstanceFunction();
+        return Values(iobj->userFuncallableInstanceFunction(),Pointer_O::create((void*)iobj->_entryPoint));
     case CLASP_STRANDH_DISPATCH:
-        return iobj->GFUN_DISPATCHER();
+        return Values(iobj->GFUN_DISPATCHER(),Pointer_O::create((void*)iobj->_entryPoint));
     case CLASP_INVALIDATED_DISPATCH:
-        return clos::_sym_invalidated_dispatch_function;
+        return Values(clos::_sym_invalidated_dispatch_function,Pointer_O::create((void*)iobj->_entryPoint));
     }
-    return clasp_make_fixnum(iobj->_isgf);
+    return Values(clasp_make_fixnum(iobj->_isgf),_Nil<T_O>());
   }
-  return _Nil<T_O>();
+  return Values(_Nil<T_O>(),_Nil<T_O>());
 };
 
 CL_DEFUN T_sp clos__setFuncallableInstanceFunction(T_sp obj, T_sp func) {

@@ -50,22 +50,18 @@
   `(do-one-source-database #'(lambda () ,@body)))
 
 
-(defvar *intrinsics-module* nil)
-
 ;;; Don't do anything - memory balloons when intrinsics are linked in like this
 (defun link-intrinsics-module (module)
   "Merge the intrinsics module with the passed module.
 The passed module is modified as a side-effect."
-  ;; Lazily load the intrinsics bitcode
-  ;; and keep an original copy in *intrinsics-module*
-  #+(or)(progn
-          (unless *intrinsics-module*
-            (let ((intrinsics-bitcode-name (namestring (truename (build-intrinsics-bitcode-pathname :compile)))))
-              (setf *intrinsics-module* (llvm-sys:parse-bitcode-file intrinsics-bitcode-name *llvm-context*))))
-          ;; Clone the intrinsics module and link it in
-          (let ((linker (llvm-sys:make-linker module))
-                (intrinsics-clone (llvm-sys:clone-module *intrinsics-module*)))
-            (llvm-sys:link-in-module linker intrinsics-clone)))
+(progn
+  (unless *intrinsics-module*
+    (let ((intrinsics-bitcode-name (namestring (truename (build-intrinsics-bitcode-pathname :compile)))))
+      (setf *intrinsics-module* (llvm-sys:parse-bitcode-file intrinsics-bitcode-name *llvm-context*))))
+  ;; Clone the intrinsics module and link it in
+  (let ((linker (llvm-sys:make-linker module))
+        (intrinsics-clone (llvm-sys:clone-module *intrinsics-module*)))
+    (llvm-sys:link-in-module linker intrinsics-clone)))
     module)
 
 
@@ -117,8 +113,9 @@ COMPILE-FILE just throws this away.   Return (values llvm-function lambda-name l
                                         ; key argument: T if code should be wrapped in a block with block-name
 					 &key wrap-block ; wrap code in a block
                                         ; Name of the block to wrap in
-                                         block-name )
-  "This is where llvm::Function are generated from code, declares,
+                                         block-name
+                                         (linkage 'llvm-sys:internal-linkage))
+  "This is where llvm::Function are generated from code, declares, 
 lambda-list-handler, environment.
 All code generation comes through here.   Return (llvm:function lambda-name)
 Could return more functions that provide lambda-list for swank for example"
@@ -127,7 +124,8 @@ Could return more functions that provide lambda-list for swank for example"
 	 (fn (with-new-function (fn fn-env result
 				    :function-name name
 				    :parent-env env-around-lambda
-				    :function-form code)
+				    :function-form code
+                                    :linkage linkage)
 	       (cmp-log "Starting new function name: %s\n" name)
                ;; The following injects a debugInspectT_sp at the start of the body
                ;; it will print the address of the literal which must correspond to an entry in the
@@ -174,7 +172,7 @@ then compile it and return (values compiled-llvm-function lambda-name)"
 	(docstring (function-docstring fn))
 	(code (function-source-code fn))
 	(env (closed-environment fn)))
-    (generate-llvm-function-from-code nil lambda-list-handler declares docstring code env)))
+    (generate-llvm-function-from-code nil lambda-list-handler declares docstring code env :linkage 'llvm-sys:external-linkage)))
 
 (defun generate-lambda-expression-from-interpreted-function (fn)
   (let* ((lambda-list-handler (function-lambda-list-handler fn))
@@ -198,7 +196,7 @@ then compile it and return (values compiled-llvm-function lambda-name)"
       ((consp name) (bformat nil "%s" name))
       (t (error "Add support for function-name-from-lambda with ~a as arg" name))))
 
-(defun compile-lambda-function (lambda-or-lambda-block &optional env)
+(defun compile-lambda-function (lambda-or-lambda-block &optional env &key (linkage 'llvm-sys:internal-linkage))
   "Compile a lambda form and return an llvm-ir function that evaluates it.
 Return the same things that generate-llvm-function-from-code returns"
   (dbg-set-current-debug-location-here)
@@ -223,9 +221,10 @@ Return the same things that generate-llvm-function-from-code returns"
 					  code
 					  env
 					  :wrap-block wrap-block
-					  :block-name block-name)))))
+					  :block-name block-name
+                                          :linkage linkage)))))
 
-(defun codegen-closure (result lambda-or-lambda-block env)
+(defun codegen-closure (result lambda-or-lambda-block env &key (linkage 'llvm-sys:internal-linkage))
   "codegen a closure.  If result is defined then put the compiled function into result
 - otherwise return the cons of llvm-sys::Function_sp's that were compiled for the lambda"
   (assert-result-isa-llvm-value result)
@@ -239,15 +238,15 @@ Return the same things that generate-llvm-function-from-code returns"
               (lambda-list (compile-reference-to-literal lambda-list)))
           ;; TODO:   Here walk the source code in lambda-or-lambda-block and
           ;; get the line-number/column for makeCompiledFunction
-          (irc-intrinsic "makeCompiledFunction"
-                         result
-                         compiled-fn
-                         *gv-source-file-info-handle*
+          (irc-intrinsic "makeCompiledFunction" 
+                         result 
+                         compiled-fn 
+                         *gv-source-file-info-handle* 
                          (irc-size_t-*current-source-pos-info*-filepos)
                          (irc-size_t-*current-source-pos-info*-lineno)
                          (irc-size_t-*current-source-pos-info*-column)
                          (compile-reference-to-literal lambda-name)
-                         funcs
+                         funcs 
                          (irc-renv env)
                          lambda-list)
           (values compiled-fn lambda-name)))))
@@ -350,7 +349,7 @@ Return the same things that generate-llvm-function-from-code returns"
                             ,function-form
                             ,@(mapcar (lambda (x) `#'(lambda () (progn ,x))) forms))
                    env)))))
-
+          
 
 (defun codegen-multiple-value-prog1 (result rest env)
   (with-dbg-lexical-block (rest)
@@ -449,7 +448,7 @@ env is the parent environment of the (result-af) value frame"
 	(do* ((cur-req (cdr reqvars) (cdr cur-req))
 	      (cur-exp exps (cdr cur-exp))
 	      (exp (car cur-exp) (car cur-exp))
-	      (temp (irc-alloca-tsp :label "let")
+	      (temp (irc-alloca-tsp :label "let") 
 		    (irc-alloca-tsp :label "let")))
 	     ((endp cur-req) nil)
 	  (vector-push-extend temp temps)
@@ -563,7 +562,7 @@ env is the parent environment of the (result-af) value frame"
          (tag (llvm-sys:create-and *irbuilder* (llvm-sys:create-bit-cast value +uintptr_t+) (jit-constant-uintptr_t +tag-mask+) "tag-only"))
          (consp-tag-match (llvm-sys:create-icmp-eq tag (jit-constant-uintptr_t +cons-tag+))))
     (
-
+         
          (consp-true-block (irc-basic-block-create "consp-true"))
          (consp-false-block
     (
@@ -822,10 +821,10 @@ jump to blocks within this tagbody."
       (process-declarations raw-body t)
     (when decl (setq decl (list (cons 'declare decl))))
     (when doc (setq doc (list doc)))
-    `(lambda ,lambda-list
-       ,@doc
-       (declare (core:lambda-name ,name))
-       ,@decl (block ,(si::function-block-name name)
+    `(lambda ,lambda-list 
+       ,@doc 
+       (declare (core:lambda-name ,name)) 
+       ,@decl (block ,(si::function-block-name name) 
 		,@body))))
 
 
@@ -1240,7 +1239,7 @@ jump to blocks within this tagbody."
                 (if (eq expansion form)
                     nil
                     (progn
-                      (codegen result expansion env)
+                      (codegen result expansion env) 
                       t)))))
         ;; A regular macro
         ((and (symbolp (car form))
@@ -1250,11 +1249,11 @@ jump to blocks within this tagbody."
              (macroexpand form env)
            (cmp-log "MACROEXPANDed form[%s] expanded to [%s]\n" form expansion )
            (irc-low-level-trace)
-           (codegen result expansion env)
+           (codegen result expansion env) 
            ))
         ;; It's a regular function call
         (t
-         (codegen-call result form env)))
+         (codegen-call result form env))) 
     ))
 
 
@@ -1277,7 +1276,7 @@ jump to blocks within this tagbody."
 
 (defun codegen (result form env)
   (declare (optimize (debug 3)))
-  (assert-result-isa-llvm-value result)
+  (assert-result-isa-llvm-value result) 
   (multiple-value-bind (source-directory source-filename lineno column)
       (dbg-set-current-source-pos form)
     (let* ((*current-form* form)
@@ -1306,7 +1305,7 @@ jump to blocks within this tagbody."
                   ((and head (symbolp head))
                    (codegen-application result form env))
                   (t
-                   (error "Handle codegen of cons: ~a" form)))))
+                   (error "Handle codegen of cons: ~a" form))))) 
         ))))
 
 ;;------------------------------------------------------------
@@ -1325,12 +1324,12 @@ jump to blocks within this tagbody."
                                             result
                                             :function-name name
                                             :parent-env env
-                                            :function-form form)
+                                            :function-form form) 
                           (let* ((given-name (llvm-sys:get-name fn)))
                             ;; Map the function argument names
                             (cmp-log "Creating repl function with name: %s\n" given-name)
                             ;;	(break "codegen repl form")
-                            (dbg-set-current-debug-location-here)
+                            (dbg-set-current-debug-location-here) 
                             (codegen result form fn-env)
                             (dbg-set-current-debug-location-here)))))
     (cmp-log "Dumping the repl function\n")
@@ -1339,7 +1338,7 @@ jump to blocks within this tagbody."
     top-level-func))
 
 (defvar *optimizations-on* t)
-(defun do-optimization (module &optional (optimize-level :-O0) (size-level 1))
+(defun optimize-module (module &optional (optimize-level :-O0) (size-level 1))
   (declare (type (or null llvm-sys:module) module))
   (when module
     (let* ((pass-manager-builder (llvm-sys:make-pass-manager-builder))
@@ -1362,7 +1361,8 @@ jump to blocks within this tagbody."
         (dolist (func funcs)
           (llvm-sys:function-pass-manager-run fpm func)))
       (llvm-sys:do-finalization fpm)
-      (llvm-sys:pass-manager-run mpm module))))
+      (llvm-sys:pass-manager-run mpm module)))
+  module)
 
 (defmacro with-module (( &key module
                               (optimize t)
@@ -1385,7 +1385,7 @@ jump to blocks within this tagbody."
      (multiple-value-prog1
          (with-irbuilder ((llvm-sys:make-irbuilder *llvm-context*))
            ,@body)
-       (when (and ,optimize ,optimize-level) (do-optimization ,module ,optimize-level )))))
+       (when (and ,optimize ,optimize-level) (optimize-module ,module ,optimize-level )))))
 
 #+(or)
 (defun generate-run-time-table (run-time-values)
@@ -1413,11 +1413,11 @@ Return the orderered-raw-constants-list and the constants-table GlobalVariable"
     (llvm-sys:erase-from-parent *load-time-value-holder-global-var*)
     (values ordered-raw-constant-list constant-table)))
 
-(defun compile-to-module (form env pathname)
+(defun compile-to-module (form env pathname &key (linkage 'llvm-sys:internal-linkage))
   (multiple-value-bind (fn function-kind wrapped-env lambda-name warnp failp)
       (with-debug-info-generator (:module *the-module* :pathname pathname)
         (multiple-value-bind (llvm-function-from-lambda lambda-name)
-            (compile-lambda-function form env)
+            (compile-lambda-function form env :linkage linkage)
           (or llvm-function-from-lambda (error "There was no function returned by compile-lambda-function inner: ~a" llvm-function-from-lambda))
           (or lambda-name (error "Inner lambda-name is nil - this shouldn't happen"))
           (values llvm-function-from-lambda :function env lambda-name)))
@@ -1425,22 +1425,22 @@ Return the orderered-raw-constants-list and the constants-table GlobalVariable"
     (or fn (error "There was no function returned by compile-lambda-function outer: ~a" fn))
     (cmp-log "fn --> %s\n" fn)
     (cmp-log-dump *the-module*)
-    (link-intrinsics-module *the-module*)
+    #+(or)(link-intrinsics-module *the-module*)
     (values fn function-kind wrapped-env lambda-name warnp failp)))
 
-(defun compile-to-module-with-run-time-table (definition env pathname)
+(defun compile-to-module-with-run-time-table (definition env pathname &key (linkage 'llvm-sys:internal-linkage))
   (let* (fn function-kind wrapped-env lambda-name warnp failp)
     (multiple-value-bind (ordered-raw-constants-list constants-table startup-fn shutdown-fn)
         (literal:with-rtv
             (multiple-value-setq (fn function-kind wrapped-env lambda-name warnp failp)
-              (compile-to-module definition env pathname)))
+              (compile-to-module definition env pathname :linkage linkage)))
       (values fn function-kind wrapped-env lambda-name warnp failp ordered-raw-constants-list constants-table startup-fn shutdown-fn))))
 
-(defun bclasp-compile* (bind-to-name &optional definition env pathname)
+(defun bclasp-compile* (bind-to-name &optional definition env pathname &key (linkage 'llvm-sys:internal-linkage))
   "Compile the definition"
   (jit-lazy-setup)
   (multiple-value-bind (fn function-kind wrapped-env lambda-name warnp failp ordered-raw-constants-list constants-table startup-fn shutdown-fn)
-      (compile-to-module-with-run-time-table definition env pathname)
+      (compile-to-module-with-run-time-table definition env pathname :linkage linkage)
     (quick-module-dump *the-module* "preoptimize")
     (let* ((compiled-function (jit-add-module-return-function *the-module* fn startup-fn shutdown-fn ordered-raw-constants-list)))
       (values compiled-function warnp failp))))
@@ -1448,15 +1448,15 @@ Return the orderered-raw-constants-list and the constants-table GlobalVariable"
 (defvar *compile-counter* 0)
 (defvar *compile-duration-ns* 0)
 
-(defun compile-with-hook (compile-hook name &optional definition env pathname)
+(defun compile-with-hook (compile-hook name &optional definition env pathname &key (linkage 'llvm-sys:internal-linkage))
   "Dispatch to clasp compiler or cleavir-clasp compiler if available.
 We could do more fancy things here - like if cleavir-clasp fails, use the clasp compiler as backup."
   (if compile-hook
-      (funcall compile-hook name definition env pathname)
-      (bclasp-compile* name definition env pathname)))
+      (funcall compile-hook name definition env pathname :linkage linkage)
+      (bclasp-compile* name definition env pathname :linkage linkage)))
 
 
-(defun compile-in-env (bind-to-name &optional definition env compile-hook &aux conditions)
+(defun compile-in-env (bind-to-name &optional definition env compile-hook (linkage 'llvm-sys:internal-linkage) &aux conditions)
   "Compile in the given environment"
   (with-compiler-env (conditions)
     (let ((*the-module* (create-run-time-module-for-compile)))
@@ -1476,7 +1476,7 @@ We could do more fancy things here - like if cleavir-clasp fails, use the clasp 
           (cmp-log-dump *the-module*)
           (let ((*all-functions-for-one-compile* nil))
             (multiple-value-bind (compiled-function warnp failp)
-                (compile-with-hook compile-hook bind-to-name definition env pathname)
+                (compile-with-hook compile-hook bind-to-name definition env pathname :linkage linkage)
               (when bind-to-name
                 (let ((lambda-list (cadr definition)))
                   (core:fset bind-to-name compiled-function nil t lambda-list)))
