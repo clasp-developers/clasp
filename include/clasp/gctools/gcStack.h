@@ -178,18 +178,18 @@ namespace gctools {
 /*! Specialization of smart_ptr<T> on core::VaList_S
 */
 template <>
-class smart_ptr<core::VaList_S> : public tagged_ptr<core::VaList_S> {
+  class smart_ptr<core::VaList_S> { // : public tagged_ptr<core::VaList_S> {
 public:
   typedef core::VaList_S Type;
-
+  Type* theObject;
 public:
   //Default constructor, set theObject to NULL
-  smart_ptr() : tagged_ptr<Type>(){};
-  explicit inline smart_ptr(core::VaList_S *ptr) : tagged_ptr<Type>((Tagged)gctools::tag_valist<Type *>(ptr)) {
+ smart_ptr() : theObject((Type*)NULL){};
+  explicit inline smart_ptr(core::VaList_S *ptr) : theObject((Type*)gctools::tag_valist<Type *>(ptr)) {
     GCTOOLS_ASSERT(this->valistp());
   };
   /*! Create a smart pointer from an existing tagged pointer */
-  explicit inline smart_ptr(Tagged ptr) : tagged_ptr<Type>((Tagged)ptr) {
+  explicit inline smart_ptr(Tagged ptr) : theObject((Type*)ptr) {
     GCTOOLS_ASSERT(this->theObject == NULL || this->valistp());
   };
 
@@ -207,6 +207,20 @@ public:
     GCTOOLS_ASSERT(this->valistp());
     return *reinterpret_cast<Type *>(this->unsafe_valist());
   };
+
+  public:
+  inline operator bool() { return this->theObject != NULL; };
+public:
+  inline bool nilp() const { return tagged_nilp(this->theObject); }
+  inline bool notnilp() const { return (!this->nilp()); };
+  inline bool fixnump() const { return tagged_fixnump(this->theObject); };
+  inline bool generalp() const { return tagged_generalp(this->theObject); };
+  inline bool consp() const { return tagged_consp(this->theObject); };
+  inline bool objectp() const { return this->generalp() || this->consp(); };
+  inline Type* unsafe_valist() const { return reinterpret_cast<Type*>(untag_valist(this->theObject)); };
+  inline core::T_O *raw_() const { return reinterpret_cast<core::T_O *>(this->theObject); };
+  inline gctools::Tagged tagged_() const { return reinterpret_cast<gctools::Tagged>(this->theObject); }
+
 };
 };
 
