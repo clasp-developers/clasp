@@ -57,6 +57,7 @@ THE SOFTWARE.
 #include <llvm/IR/Constants.h>
 #include <llvm/ExecutionEngine/Orc/CompileUtils.h>
 #include <llvm/ExecutionEngine/Orc/IRCompileLayer.h>
+#include <llvm/ExecutionEngine/Orc/IRTransformLayer.h>
 #include <llvm/ExecutionEngine/Orc/LambdaResolver.h>
 #include <llvm/ExecutionEngine/Orc/ObjectLinkingLayer.h>
 //#include "llvm/Support/IRBuilder.h"
@@ -4304,9 +4305,10 @@ struct from_object<llvm::CmpInst::Predicate, std::true_type> {
 };
 
 namespace llvmo {
-  void finalizeEngineAndRegisterWithGcAndRunMainFunctions(ExecutionEngine_sp oengine, core::T_sp fileName);
+  void finalizeEngineAndRegisterWithGcAndRunMainFunctions(ExecutionEngine_sp oengine);
 
-  Module_sp llvm_sys__parseBitcodeFile(core::String_sp filename, LLVMContext_sp context);
+  Module_sp llvm_sys__parseBitcodeFile(core::T_sp filename, LLVMContext_sp context);
+  Module_sp llvm_sys__parseIRFile(core::T_sp filename, LLVMContext_sp context);
 
 void initialize_llvmo_expose();
 }
@@ -4329,17 +4331,21 @@ namespace llvmo {
     const llvm::DataLayout DL;
     ObjectLinkingLayer<> ObjectLayer;
     IRCompileLayer<decltype(ObjectLayer)> CompileLayer;
-
+    typedef std::function<std::unique_ptr<Module>(std::unique_ptr<Module>)> OptimizeFunction;
+    IRTransformLayer<decltype(CompileLayer), OptimizeFunction> OptimizeLayer;
   public:
-    typedef decltype(CompileLayer)::ModuleSetHandleT ModuleHandle;
+    typedef decltype(OptimizeLayer)::ModuleSetHandleT ModuleHandle;
 
     ClaspJIT_O();
 
     TargetMachine &getTargetMachine() { return *TM; }
 
     ModuleHandle_sp addModule(Module_sp M);
-    core::T_sp findSymbol(const std::string& Name);
+    core::Pointer_sp findSymbol(const std::string& Name);
+    core::Pointer_sp findSymbolIn(ModuleHandle_sp handle, const std::string& Name, bool exportedSymbolsOnly );
     void removeModule(ModuleHandle_sp H);
+
+    std::unique_ptr<llvm::Module> optimizeModule(std::unique_ptr<llvm::Module> M);
   };
 
   class ModuleHandle_O : public core::General_O {
