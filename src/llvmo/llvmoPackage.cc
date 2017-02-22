@@ -46,6 +46,7 @@ THE SOFTWARE.
 #include <clasp/llvmo/intrinsics.h>
 #include <clasp/llvmo/claspLinkPass.h>
 #include <clasp/core/instance.h>
+#include <clasp/core/pathname.h>
 #include <clasp/core/loadTimeValues.h>
 #include <clasp/core/unixfsys.h>
 #include <clasp/core/environment.h>
@@ -80,7 +81,61 @@ void redirect_llvm_interface_addSymbol() {
   //	llvm_interface::addSymbol = &addSymbolAsGlobal;
 }
 
+
+CL_DOCSTRING("Load an llvm-ir file with either a bc extension or ll extension.");
+CL_LAMBDA(pathname &optional verbose print external_format);
+CL_DEFUN bool llvm_sys__load_ir(core::Pathname_sp filename, bool verbose, bool print, core::T_sp externalFormat )
+{
+  core::Pathname_sp bc_file = core::Pathname_O::makePathname(_Nil<core::T_O>(),_Nil<core::T_O>(),_Nil<core::T_O>(),
+                                                             _Nil<core::T_O>(),core::SimpleBaseString_O::make("bc"),
+                                                             _Nil<core::T_O>(),_Nil<core::T_O>());
+  bc_file = cl__merge_pathnames(bc_file,filename);
+  T_sp found = cl__probe_file(bc_file);
+  if (found.notnilp()) {
+    return llvm_sys__load_bitcode(bc_file,verbose,print,externalFormat);
+  }
+  core::Pathname_sp ll_file = core::Pathname_O::makePathname(_Nil<core::T_O>(),_Nil<core::T_O>(),_Nil<core::T_O>(),
+                                                             _Nil<core::T_O>(),core::SimpleBaseString_O::make("ll"),
+                                                             _Nil<core::T_O>(),_Nil<core::T_O>());
+  ll_file = cl__merge_pathnames(ll_file,filename);
+  found = cl__probe_file(ll_file);
+  if (found.notnilp()) {
+    return llvm_sys__load_bitcode_ll(ll_file,verbose,print,externalFormat);
+  }
+  SIMPLE_ERROR(BF("Could not find llvm-ir file %s with .bc or .ll extension") % _rep_(filename));
+}
+
+  
 CL_LAMBDA(filename &optional verbose print external_format);
+CL_DEFUN bool llvm_sys__load_bitcode_ll(core::Pathname_sp filename, bool verbose, bool print, core::T_sp externalFormat )
+{
+  core::DynamicScopeManager scope(::cl::_sym_STARpackageSTAR, ::cl::_sym_STARpackageSTAR->symbolValue());
+  T_sp tn = cl__truename(filename);
+  if ( tn.nilp() ) {
+    SIMPLE_ERROR(BF("Could not get truename for %s") % _rep_(filename));
+  }
+  core::T_sp tnamestring = cl__namestring(filename);
+  if ( tnamestring.nilp() ) {
+    SIMPLE_ERROR(BF("Could not create namestring for %s") % _rep_(filename));
+  }
+  if (comp::_sym_STARllvm_contextSTAR->symbolValue().nilp()) {
+    SIMPLE_ERROR(BF("The cmp:*llvm-context* is NIL"));
+  }
+  core::String_sp namestring = gctools::As<core::String_sp>(tnamestring);
+  Module_sp m = llvm_sys__parseIRFile(namestring,comp::_sym_STARllvm_contextSTAR->symbolValue());
+  EngineBuilder_sp engineBuilder = EngineBuilder_O::make(m);
+  TargetOptions_sp targetOptions = TargetOptions_O::make();
+  engineBuilder->setTargetOptions(targetOptions);
+  ExecutionEngine_sp executionEngine = engineBuilder->createExecutionEngine();
+  if (comp::_sym_STARload_time_value_holder_nameSTAR->symbolValue().nilp() ) {
+    SIMPLE_ERROR(BF("The cmp:*load-time-value-holder-name* is nil"));
+  }
+  finalizeEngineAndRegisterWithGcAndRunMainFunctions(executionEngine);
+  return true;
+}
+
+
+ CL_LAMBDA(filename &optional verbose print external_format);
 CL_DEFUN bool llvm_sys__load_bitcode(core::Pathname_sp filename, bool verbose, bool print, core::T_sp externalFormat )
 {
   core::DynamicScopeManager scope(::cl::_sym_STARpackageSTAR, ::cl::_sym_STARpackageSTAR->symbolValue());
@@ -104,7 +159,24 @@ CL_DEFUN bool llvm_sys__load_bitcode(core::Pathname_sp filename, bool verbose, b
   if (comp::_sym_STARload_time_value_holder_nameSTAR->symbolValue().nilp() ) {
     SIMPLE_ERROR(BF("The cmp:*load-time-value-holder-name* is nil"));
   }
-  finalizeEngineAndRegisterWithGcAndRunMainFunctions(executionEngine, namestring);
+  finalizeEngineAndRegisterWithGcAndRunMainFunctions(executionEngine);
+  return true;
+}
+
+CL_DOCSTRING("Load a module into the Common Lisp environment as if it were loaded from a bitcode file");
+
+CL_LAMBDA(filename &optional verbose print external_format);
+CL_DEFUN bool llvm_sys__load_module(Module_sp m, bool verbose, bool print, core::T_sp externalFormat )
+{
+  core::DynamicScopeManager scope(::cl::_sym_STARpackageSTAR, ::cl::_sym_STARpackageSTAR->symbolValue());
+  EngineBuilder_sp engineBuilder = EngineBuilder_O::make(m);
+  TargetOptions_sp targetOptions = TargetOptions_O::make();
+  engineBuilder->setTargetOptions(targetOptions);
+  ExecutionEngine_sp executionEngine = engineBuilder->createExecutionEngine();
+  if (comp::_sym_STARload_time_value_holder_nameSTAR->symbolValue().nilp() ) {
+    SIMPLE_ERROR(BF("The cmp:*load-time-value-holder-name* is nil"));
+  }
+  finalizeEngineAndRegisterWithGcAndRunMainFunctions(executionEngine);
   return true;
 }
 
