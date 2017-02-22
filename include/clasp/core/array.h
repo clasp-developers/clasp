@@ -410,7 +410,7 @@ namespace core {
     }
     void ensureSpaceAfterFillPointer(T_sp init_element, size_t size);
     virtual T_sp vectorPush(T_sp newElement) final;
-    virtual Fixnum_sp vectorPushExtend(T_sp newElement, size_t extension = 16) final;
+    virtual Fixnum_sp vectorPushExtend(T_sp newElement, size_t extension = 0) final;
     virtual Array_sp unsafe_subseq(size_t start, size_t end) const override;
     virtual Array_sp unsafe_setf_subseq(size_t start, size_t end, Array_sp newSubseq) override;
   };
@@ -1108,7 +1108,7 @@ namespace core {
     virtual std::string get_std_string() const final { return std::string((const char*)this->begin(),this->length());};
     virtual std::string __repr__() const final { return this->get_std_string(); };
   public: // Str8Ns specific functions
-    void vectorPushExtend_claspChar(claspChar c, size_t extension=32);
+    void vectorPushExtend_claspChar(claspChar c, size_t extension=0);
     std::string get() { /*DEPRECIATE for get_std_string */ return this->get_std_string(); };
     virtual SimpleString_sp asMinimalSimpleString() const final;
   };
@@ -1165,7 +1165,7 @@ namespace core {
     virtual std::string get_std_string() const final;
     virtual std::string __repr__() const final;
   public: // StrWNs specific functions
-    void vectorPushExtend_claspCharacter(claspCharacter c, size_t extension=32);
+    void vectorPushExtend_claspCharacter(claspCharacter c, size_t extension=0);
     /*! Return true if all characters are base characters and the string
         can be downgraded to a base-char string */
     bool all_base_char_p() const;

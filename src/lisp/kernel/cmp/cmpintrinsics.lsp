@@ -944,7 +944,7 @@ and initialize it with an array consisting of one function pointer."
   ;; INT & UNSIGNED INT
   (primitive          module "from_object_int" +i32+ (list +t*+))
   (primitive          module "to_object_int" +t*+ (list +i32+))
-  (primitive          module "from_object_unsigned_int" +t*+ (list +t*+))
+  (primitive          module "from_object_unsigned_int" +i32+ (list +t*+))
   (primitive          module "to_object_unsigned_int" +t*+ (list +i32+))
 
   ;; LONG & UNSIGNED LONG
