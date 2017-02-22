@@ -96,7 +96,15 @@ CL_LAMBDA(pathspec);
 CL_DECLARE();
 CL_DOCSTRING("Look for <path> and return it. If it doesn't exist create every missing directory along the path.");
 CL_DEFUN T_mv cl__ensure_directories_exist(T_sp pathspec) {
-  Path_sp path_to_create = coerce::pathDesignator(pathspec);
+  Path_sp path_to_create;
+  if (cl__stringp(pathspec)) {
+    path_to_create = Path_O::create(gc::As_unsafe<String_sp>(pathspec)->get_std_string());
+  } else if ( Pathname_sp pn = pathspec.asOrNull<Pathname_O>() ) {
+    String_sp spn = cl__namestring(pn);
+    path_to_create = Path_O::create(spn->get());
+  } else {
+    TYPE_ERROR(pathspec, core::Cons_O::createList(cl::_sym_or,cl::_sym_string,cl::_sym_pathname));
+  }
   bf::path parent = path_to_create->getPath().parent_path();
   try {
     bf::create_directories(parent);
