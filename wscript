@@ -696,6 +696,7 @@ def configure(cfg):
 #    cfg.define("DEBUG_BITUNIT_CONTAINER",1)  # prints debug info for bitunit containers
     cfg.define("ENABLE_BACKTRACE_ARGS",1)
 #    cfg.define("DEBUG_ZERO_KIND",1);
+#    cfg.define("DEBUG_FLOW_CONTROL",1)
     cfg.env.append_value('CXXFLAGS', ['-Wno-macro-redefined'] )
     cfg.env.append_value('CXXFLAGS', ['-Wno-deprecated-register'] )
     cfg.env.append_value('CXXFLAGS', ['-Wno-expansion-to-defined'] )
@@ -1197,6 +1198,7 @@ class copy_bitcode(Task.Task):
         for f in self.inputs:
             all_inputs.write(' %s' % f.abspath())
         cmd = "cp %s %s" % (all_inputs.getvalue(), self.outputs[0])
+        print("copy_bitcode cmd: %s" % cmd)
         return self.exec_command(cmd)
     def __str__(self):
         return "copy_bitcode - copy bitcode files."
@@ -1214,6 +1216,28 @@ class link_bitcode(Task.Task):
         return "link_bitcode - linking all object(bitcode) files."
 #        master = self.generator.bld.producer
 #        return "[%d/%d] Processing link_bitcode - all object files\n" % (master.processed-1,master.total)
+
+
+class build_bitcode(Task.Task):
+    # This is kept for reference, it got converted into a run(self) method below.
+    #run_str = '../../src/common/preprocess-to-sif ${TGT[0].abspath()} ${CXX} -E -DSCRAPING ${ARCH_ST:ARCH} ${CXXFLAGS} ${CPPFLAGS} ${FRAMEWORKPATH_ST:FRAMEWORKPATH} ${CPPPATH_ST:INCPATHS} ${DEFINES_ST:DEFINES} ${CXX_SRC_F}${SRC}'
+    ext_out = ['.sif']
+    shell = True
+    def run(self):
+        env = self.env
+        build_args = [] + env.CXX + self.colon("ARCH_ST", "ARCH") + env.CXXFLAGS + env.CPPFLAGS + \
+                     [ '-flto=thin' ] + \
+                       self.colon("FRAMEWORKPATH_ST", "FRAMEWORKPATH") + \
+                       self.colon("CPPPATH_ST", "INCPATHS") + \
+                       self.colon("DEFINES_ST", "DEFINES") + \
+                       [ self.inputs[0].abspath() ] + \
+                       [ '-c' ] + \
+                       [ '-o', self.outputs[0].abspath() ]
+#                       [ '-Wl', '-mllvm' ] + \
+#        build_args = ' '.join(preproc_args) + " " + self.inputs[0].abspath()
+        cmd = build_args
+        print("build_intrinsics bitcode cmd = %s" % cmd)
+        return self.exec_command(cmd, shell = True)
 
 class scrape_with_preproc_scan(Task.Task):
     # This is kept for reference, it got converted into a run(self) method below.
@@ -1285,6 +1309,8 @@ def scrape_task_generator(self):
     for task in self.compiled_tasks:
         if ( task.__class__.__name__ == 'cxx' ):
             for node in task.inputs:
+                if ( node.name[:len('intrinsics.cc')] == 'intrinsics.cc' ):
+                    intrinsics_cc = node
                 sif_node = node.change_ext('.sif')
                 self.create_task('scrape_with_preproc_scan',node,[sif_node])
                 all_sif_files.append(sif_node)
@@ -1314,9 +1340,13 @@ def scrape_task_generator(self):
     cxx_all_bitcode_node = self.path.find_or_declare(variant.cxx_all_bitcode_name())
     intrinsics_bitcode_archive_node = self.path.find_or_declare(variant.intrinsics_bitcode_archive_name())
     intrinsics_bitcode_alone_node = self.path.find_or_declare(variant.intrinsics_bitcode_name())
+    print("intrinsics_cc = %s" % intrinsics_cc )
+    print("intrinsics_o.name = %s" % intrinsics_o.name )
+    print("intrinsics_bitcode_alone_node = %s" % intrinsics_bitcode_alone_node )
+    self.create_task('build_bitcode',[intrinsics_cc]+output_nodes,intrinsics_bitcode_alone_node)
     self.create_task('link_bitcode',all_o_files,cxx_all_bitcode_node)
     self.create_task('link_bitcode',[intrinsics_o],intrinsics_bitcode_archive_node)
-    self.create_task('copy_bitcode',[intrinsics_o],intrinsics_bitcode_alone_node)
+#    self.create_task('build_bitcode',[intrinsics_o],intrinsics_bitcode_alone_node)
     self.bld.install_files('${INSTALL_PATH_PREFIX}/Contents/Resources/lib/', intrinsics_bitcode_archive_node)
     self.bld.install_files('${INSTALL_PATH_PREFIX}/Contents/Resources/lib/', intrinsics_bitcode_alone_node)
     self.bld.install_files('${INSTALL_PATH_PREFIX}/Contents/Resources/lib/', cxx_all_bitcode_node)
