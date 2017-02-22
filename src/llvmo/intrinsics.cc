@@ -123,11 +123,6 @@ ALWAYS_INLINE void mv_lexicalFunctionRead(core::T_mv *resultP, int depth, int in
 }
 
 
-ALWAYS_INLINE core::T_sp *loadTimeValueReference(core::T_sp* vec, size_t index) {
-  core::T_sp &result = vec[index];
-  return &result;
-}
-
 ALWAYS_INLINE void newTsp(core::T_sp *sharedP) {
   ASSERT(sharedP != NULL);
   new (sharedP) core::T_sp();
@@ -246,12 +241,6 @@ ALWAYS_INLINE T_O *cc_precalcValue(core::LoadTimeValues_O **tarray, size_t idx) 
   T_O *res = (*array)[idx].raw_();
   return res;
 }
-
-ALWAYS_INLINE core::T_O **cc_loadTimeValueReference(core::T_sp* vec, size_t index) {
-  core::T_sp &result = vec[index];
-  return &result.rawRef_();
-}
-
 
 ALWAYS_INLINE void cc_copy_va_list(size_t nargs, T_O **mvPtr, VaList_S *va_args) {
   VaList_S *vl = reinterpret_cast<VaList_S *>(gc::untag_valist((void *)va_args));

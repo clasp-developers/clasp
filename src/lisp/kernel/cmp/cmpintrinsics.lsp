@@ -839,7 +839,6 @@ and initialize it with an array consisting of one function pointer."
   (primitive-nounwind module "llvm.va_end" +void+ (list +i8*+))
 
   (primitive-nounwind module "copyLoadTimeValue" +void+ (list +tsp*-or-tmv*+ +ltv**+ +size_t+))
-  (primitive-nounwind module "loadTimeValueReference" +tsp*+ (list +tsp*+ +size_t+))
   (primitive-nounwind module "getLoadTimeValue" +void+ (list +tsp*-or-tmv*+ +ltv**+ +i32+))
   (primitive-nounwind module "dumpLoadTimeValues" +void+ (list +ltv**+))
 
@@ -879,7 +878,6 @@ and initialize it with an array consisting of one function pointer."
   (primitive-nounwind module "cc_readCell" +t*+ (list +t*+))
   (primitive-nounwind module "cc_t_reference" +t**+ nil)
   (primitive-nounwind module "cc_nil_reference" +t**+ nil)
-  (primitive-nounwind module "cc_loadTimeValueReference" +t**+ (list +tsp*+ +size_t+))
   (primitive-nounwind module "cc_fetch" +t*+ (list +t*+ +size_t+))
   (primitive-nounwind module "cc_va_arg" +t*+ (list +VaList_S*+))
   (primitive-nounwind module "cc_va_list_length" +size_t+ (list +VaList_S*+))
