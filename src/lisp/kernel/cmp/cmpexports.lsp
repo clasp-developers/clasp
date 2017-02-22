@@ -73,6 +73,9 @@
           describe-constants-table
           cmp-log
           cmp-log-dump
+          compile-file-to-module
+          link-intrinsics-module
+          optimize-module
           codegen-rtv
           codegen
           compile-error-if-not-enough-arguments
