@@ -628,9 +628,17 @@ namespace core {
 #if 0
 namespace dummy_namespace {
 #pragma clang diagnostic push
-#pragma clang diagnostic error "-Wc++98-compat"
+#pragma clang diagnostic warning "-Wc++98-compat"
+/*! These tests can be used to determine if there is a non-trivial copy constructor
+    or destructor that would prevent smart_ptr and multiple_values from being
+    passed in registers or returned in registers.
 
-    /*! If this union generates a compile-time error then multiple_values isn't
+    Uncomment the #if 0 and look for copy constructors, destructors
+    IGNORE constructors - they are harmless for passing in registers.
+*/
+
+
+/*! If this union generates a compile-time error then multiple_values isn't
       trivial and it will be passed as a pointer to the struct in memory
       rather than in registers. */
   union multiple_value_ptr_union_generates_a_compile_time_error_then_multiple_values_isnt_trivial {
