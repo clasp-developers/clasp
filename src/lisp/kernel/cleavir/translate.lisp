@@ -117,7 +117,7 @@ when this is t a lot of graphs will be generated.")
       (clasp-cleavir-hir:lambda-name instr)
       'TOP-LEVEL))
 
-(defun layout-procedure (initial-instruction abi)
+(defun layout-procedure (initial-instruction abi &key (linkage 'llvm-sys:internal-linkage))
   ;; I think this removes every basic-block that
   ;; isn't owned by this initial-instruction
   (let* ((clasp-cleavir-ast-to-hir:*landing-pad* nil)
@@ -138,7 +138,7 @@ when this is t a lot of graphs will be generated.")
 	   (cmp:*gv-current-function-name* (cmp:jit-make-global-string cmp:*current-function-name* "fn-name"))
 	   (fn (cmp:irc-function-create
 		cmp:+fn-prototype+
-		'llvm-sys:internal-linkage
+		linkage
 		(cmp:jit-function-name main-fn-name) ;cmp:*current-function-name*)
 		cmp:*the-module*))
 	   (cmp:*current-function* fn)
@@ -235,7 +235,7 @@ when this is t a lot of graphs will be generated.")
 (defvar *forms*)
 (defvar *map-enter-to-landing-pad* nil)
 
-(defun translate (initial-instruction map-enter-to-landing-pad &optional (abi *abi-x86-64*))
+(defun translate (initial-instruction map-enter-to-landing-pad &optional (abi *abi-x86-64*) &key (linkage 'llvm-sys:internal-linkage))
   (let* (#+use-ownerships(ownerships
 			  (cleavir-hir-transformations:compute-ownerships initial-instruction)))
     (let* (#+use-ownerships
@@ -1035,7 +1035,7 @@ that llvm function. This works like compile-lambda-function in bclasp."
 (defparameter *debug-final-next-id* 0)
 
 
-(defun cclasp-compile-to-module-with-run-time-table (form env pathname)
+(defun cclasp-compile-to-module-with-run-time-table (form env pathname &key (linkage 'llvm-sys:internal-linkage))
   (cmp:with-debug-info-generator (:module cmp:*the-module* :pathname pathname)
     (let (function lambda-name)
       (multiple-value-bind (ordered-raw-constants-list constants-table startup-fn shutdown-fn)
@@ -1043,7 +1043,7 @@ that llvm function. This works like compile-lambda-function in bclasp."
               (multiple-value-bind (mir map-enter-to-landing-pad)
                   (compile-form-to-mir form env)
                 (multiple-value-setq (function lambda-name)
-                  (translate mir map-enter-to-landing-pad *abi-x86-64*))))
+                  (translate mir map-enter-to-landing-pad *abi-x86-64* :linkage linkage))))
         (values function lambda-name ordered-raw-constants-list constants-table startup-fn shutdown-fn)))))
 
 
@@ -1051,7 +1051,7 @@ that llvm function. This works like compile-lambda-function in bclasp."
 (defvar *cleavir-compile-verbose* nil)
 (export '*cleavir-compile-verbose*)
 (in-package :clasp-cleavir)
-(defun cclasp-compile* (name form env pathname)
+(defun cclasp-compile* (name form env pathname &key (linkage 'llvm-sys:internal-linkage))
   (cmp:jit-lazy-setup)
   (when *cleavir-compile-verbose*
     (format *trace-output* "Cleavir compiling t1expr: ~s~%" form)
@@ -1069,11 +1069,11 @@ that llvm function. This works like compile-lambda-function in bclasp."
             #+verbose-compiler(warn "Condition: ~a" condition)
             (invoke-restart 'cleavir-generate-ast::consider-global))))
       (multiple-value-bind (fn lambda-name ordered-raw-constants-list constants-table startup-fn shutdown-fn)
-          (cclasp-compile-to-module-with-run-time-table form env pathname)
+          (cclasp-compile-to-module-with-run-time-table form env pathname :linkage linkage)
         (or fn (error "There was no function returned by compile-lambda-function"))
         (cmp:cmp-log "fn --> %s\n" fn)
         (cmp:cmp-log-dump cmp:*the-module*)
-        (cmp:link-intrinsics-module cmp:*the-module*)
+        #+(or)(cmp:link-intrinsics-module cmp:*the-module*)
         (cmp:quick-module-dump cmp:*the-module* "cclasp-compile-module-pre-optimize")
         (let* ((setup-function (cmp:jit-add-module-return-function cmp:*the-module* fn startup-fn shutdown-fn ordered-raw-constants-list)))
           (let ((enclosed-function (funcall setup-function)))
