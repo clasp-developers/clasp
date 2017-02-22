@@ -106,7 +106,7 @@ COMPILE-FILE just throws this away.   Return (values llvm-function lambda-name l
 					 given-name
                                         ; generated from lambda-list
 					 lambda-list-handler
-                                        ; lambda declares as a list of conses 
+                                        ; lambda declares as a list of conses
 					 declares
                                         ; lambda docstring
 					 docstring
@@ -239,15 +239,15 @@ Return the same things that generate-llvm-function-from-code returns"
               (lambda-list (compile-reference-to-literal lambda-list)))
           ;; TODO:   Here walk the source code in lambda-or-lambda-block and
           ;; get the line-number/column for makeCompiledFunction
-          (irc-intrinsic "makeCompiledFunction" 
-                         result 
-                         compiled-fn 
-                         *gv-source-file-info-handle* 
+          (irc-intrinsic "makeCompiledFunction"
+                         result
+                         compiled-fn
+                         *gv-source-file-info-handle*
                          (irc-size_t-*current-source-pos-info*-filepos)
                          (irc-size_t-*current-source-pos-info*-lineno)
                          (irc-size_t-*current-source-pos-info*-column)
                          (compile-reference-to-literal lambda-name)
-                         funcs 
+                         funcs
                          (irc-renv env)
                          lambda-list)
           (values compiled-fn lambda-name)))))
@@ -350,7 +350,7 @@ Return the same things that generate-llvm-function-from-code returns"
                             ,function-form
                             ,@(mapcar (lambda (x) `#'(lambda () (progn ,x))) forms))
                    env)))))
-          
+
 
 (defun codegen-multiple-value-prog1 (result rest env)
   (with-dbg-lexical-block (rest)
@@ -449,7 +449,7 @@ env is the parent environment of the (result-af) value frame"
 	(do* ((cur-req (cdr reqvars) (cdr cur-req))
 	      (cur-exp exps (cdr cur-exp))
 	      (exp (car cur-exp) (car cur-exp))
-	      (temp (irc-alloca-tsp :label "let") 
+	      (temp (irc-alloca-tsp :label "let")
 		    (irc-alloca-tsp :label "let")))
 	     ((endp cur-req) nil)
 	  (vector-push-extend temp temps)
@@ -563,7 +563,7 @@ env is the parent environment of the (result-af) value frame"
          (tag (llvm-sys:create-and *irbuilder* (llvm-sys:create-bit-cast value +uintptr_t+) (jit-constant-uintptr_t +tag-mask+) "tag-only"))
          (consp-tag-match (llvm-sys:create-icmp-eq tag (jit-constant-uintptr_t +cons-tag+))))
     (
-         
+
          (consp-true-block (irc-basic-block-create "consp-true"))
          (consp-false-block
     (
@@ -822,10 +822,10 @@ jump to blocks within this tagbody."
       (process-declarations raw-body t)
     (when decl (setq decl (list (cons 'declare decl))))
     (when doc (setq doc (list doc)))
-    `(lambda ,lambda-list 
-       ,@doc 
-       (declare (core:lambda-name ,name)) 
-       ,@decl (block ,(si::function-block-name name) 
+    `(lambda ,lambda-list
+       ,@doc
+       (declare (core:lambda-name ,name))
+       ,@decl (block ,(si::function-block-name name)
 		,@body))))
 
 
