@@ -67,9 +67,10 @@ Closure_sp closureDesignator(T_sp obj) {
   SIMPLE_ERROR(BF("Illegal function designator %s") % _rep_(obj));
 }
 
+#if 0
 core::Path_sp pathDesignator(core::T_sp obj) {
-  if (cl__simple_string_p(obj)) {
-    return Path_O::create(gc::As<String_sp>(obj)->get());
+  if (cl__string_p(obj)) {
+    return Path_O::create(gc::As<String_sp>(obj)->get_std_string());
   } else if ( Pathname_sp pn = obj.asOrNull<Pathname_O>() ) {
     String_sp spn = cl__namestring(pn);
     return Path_O::create(spn->get());
@@ -78,15 +79,19 @@ core::Path_sp pathDesignator(core::T_sp obj) {
   }
   SIMPLE_ERROR(BF("Illegal path designator[%s]") % _rep_(obj));
 }
+#endif
 };
 };
 
+#if 0
 namespace core {
 CL_PKG_NAME(CorePkg,path-designator);
 CL_DEFUN core::Path_sp core__path_designator(core::T_sp obj) {
   return coerce::pathDesignator(obj);
 }
 };
+#endif
+
 
 namespace core {
 namespace coerce {
