@@ -672,8 +672,8 @@ core::T_sp PERCENTdlopen( core::T_sp path_designator )
   ForeignData_sp sp_handle;
   int n_mode = RTLD_NOW | RTLD_GLOBAL;
 
-  core::Path_sp path = core::coerce::pathDesignator( path_designator );
-  string str_path = path->asString();
+  core::Pathname_sp path = core::cl__pathname(path_designator);
+  string str_path = gc::As<core::String_sp>(core::cl__namestring(path))->get_std_string();
 
   auto result = core::do_dlopen( str_path, n_mode );
   void * p_handle = std::get<0>( result );
