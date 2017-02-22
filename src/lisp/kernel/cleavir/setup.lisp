@@ -1,6 +1,7 @@
 (in-package :clasp-cleavir)
 
-
+#+(or)(eval-when (:compile-toplevel :load-toplevel :execute)
+  (setq *echo-repl-read* t))
 
 (defvar *current-function-entry-basic-block*)
 
@@ -166,15 +167,23 @@
     (speed 1)
     (safety 1)))
 
+(eval-when (:compile-toplevel)
+  (format t "abut to compute-policy~%"))
+
 (defvar *global-policy*
   (cleavir-policy:compute-policy *global-optimize* *clasp-env*))
 
+(eval-when (:compile-toplevel)
+  (format t "About to compile cleavir-env:optimize-info~%"))
 
 (defmethod cleavir-env:optimize-info ((environment clasp-global-environment))
   ;; The default values are all 3.
   (make-instance 'cleavir-env:optimize-info
                  :optimize *global-optimize*
                  :policy *global-policy*))
+
+(eval-when (:compile-toplevel)
+  (format t "Done compile cleavir-env:optimize-info~%"))
 
 (defmethod cleavir-env:optimize-info ((environment NULL))
   (cleavir-env:optimize-info *clasp-env*))
@@ -391,7 +400,6 @@
 	       do (format stream "~a~%" (cc-mir:describe-mir instruction)))
 	    (format stream "~a~%" (cc-mir:describe-mir last))))))))
 
-  
 ;;; These should be set up in Cleavir code
 ;;; Remove them once beach implements them
 (defmethod cleavir-remove-useless-instructions:instruction-may-be-removed-p
@@ -404,3 +412,4 @@
 
 (defmethod cleavir-remove-useless-instructions:instruction-may-be-removed-p
     ((instruction cleavir-ir:set-symbol-value-instruction)) nil)
+
