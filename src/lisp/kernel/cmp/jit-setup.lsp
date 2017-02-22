@@ -271,6 +271,7 @@ No DIBuilder is defined for the default module")
 
 (defun jit-function-name (lname)
   "Depending on the type of LNAME an actual LLVM name is generated"
+;;  (break "Check backtrace")
   (cond
     ((pathnamep lname) (bformat nil "MAIN-%s" (string-upcase (pathname-name lname))))
     ((stringp lname)
@@ -306,6 +307,12 @@ No DIBuilder is defined for the default module")
 
 (setq core:*llvm-function-name-hook* #'jit-function-name)
 
+;;; ------------------------------------------------------------
+;;;
+;;; Write IR to files
+;;;
+;;;
+
 
 ;;; ------------------------------------------------------------
 ;;;
@@ -317,6 +324,7 @@ No DIBuilder is defined for the default module")
 (export '(jit-lazy-setup jit-add-module-return-function jit-remove-module))
 
 ;;; Use old execution engine approach
+;;#+(or)
 (progn
   (defun jit-lazy-setup ()
     #|For MCJIT do nothing|#
@@ -352,6 +360,7 @@ No DIBuilder is defined for the default module")
     "Maybe remove the module"
     nil))
 
+(defvar *intrinsics-module* nil)
 
 #+(or)
 (progn
@@ -360,15 +369,13 @@ No DIBuilder is defined for the default module")
       (setf *jit-engine* (make-cxx-object 'llvm-sys:clasp-jit))))
 
   (defun jit-add-module-return-function (module repl-fn startup-fn shutdown-fn literals-list)
-    (bformat t "In jit-add-module-return-function dumping module\n")
-    (llvm-sys:dump module)
-    (bformat t "repl-fn     %s\n" repl-fn)
-    (bformat t "startup-fn  %s\n" startup-fn)
-    (bformat t "shutdown-fn %s\n" shutdown-fn)
-    (let* ((handle (llvm-sys:clasp-jit-add-module *jit-engine* module))
-           (repl-name (llvm-sys:get-name repl-fn))
+;;    (bformat t "In jit-add-module-return-function dumping module\n")
+;;    (llvm-sys:print-module-to-stream module *standard-output*)
+    (let* ((repl-name (llvm-sys:get-name repl-fn))
            (startup-name (llvm-sys:get-name startup-fn))
-           (shutdown-name (llvm-sys:get-name shutdown-fn)))
+           (shutdown-name (llvm-sys:get-name shutdown-fn))
+           (handle (llvm-sys:clasp-jit-add-module *jit-engine* module)))
+      ;;      (bformat t "    repl-name -> |%s|\n" repl-name)
       (llvm-sys:jit-finalize-repl-function *jit-engine* handle repl-name startup-name shutdown-name literals-list repl-fn nil)))
 
   (defun jit-add-module-return-dispatch-function (module dispatch-fn startup-fn shutdown-fn literals-list)
