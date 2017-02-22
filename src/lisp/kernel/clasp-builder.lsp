@@ -180,8 +180,20 @@ Return files."
                    `',result))
              t))
 
+(defun compile-file-and-load (entry)
+  (let* ((filename (entry-filename entry))
+         (pathname (probe-file (build-pathname filename :lisp)))
+         (name (namestring pathname)))
+    (bformat t "Compiling/loading source: %s\n" (namestring name))
+    (let ((m (cmp::compile-file-to-module name :print nil)))
+      #+(or)
+      (progn
+        ;; Linking the intrinsics module is a bad idea - it includes way too much crap
+        (cmp::link-intrinsics-module m)
+        (cmp::optimize-module m))
+      (llvm-sys:load-module m))))
 
-(defun load-system ( first-file last-file &key interp load-bitcode (target-backend *target-backend*) system)
+(defun load-system ( first-file last-file &key compile-file-load interp load-bitcode (target-backend *target-backend*) system)
   #+dbg-print(bformat t "DBG-PRINT  load-system: %s - %s\n" first-file last-file )
   (let* ((*target-backend* target-backend)
          (files (select-source-files first-file last-file :system system))
@@ -192,14 +204,19 @@ Return files."
        (if (not interp)
 	   (if (bitcode-exists-and-up-to-date (car cur))
                (iload (car cur) :load-bitcode load-bitcode)
-               (progn
-                 (setq load-bitcode nil)
-                 (interpreter-iload (car cur))))
+               (if compile-file-load
+                   (compile-file-and-load (car cur))
+                   (progn
+                     (setq load-bitcode nil)
+                     (interpreter-iload (car cur)))))
 	   (interpreter-iload (car cur)))
        (gctools:cleanup)
        (setq cur (cdr cur))
        (go top)
      done)))
+
+
+
 
 (defun compile-system (files &key reload)
   #+dbg-print(bformat t "DBG-PRINT compile-system files: %s\n" files)
@@ -361,7 +378,7 @@ Return files."
             t)
 
 (defun load-bclasp (&key (system (command-line-arguments-as-list)))
-  (load-system #P"src/lisp/kernel/tag/start" #P"src/lisp/kernel/tag/bclasp" :interp t :system system))
+  (load-system #P"src/lisp/kernel/tag/start" #P"src/lisp/kernel/tag/bclasp" :system system))
 
 (export '(load-bclasp compile-bclasp))
 (defun compile-bclasp (&key clean (output-file (build-common-lisp-bitcode-pathname)) (system (command-line-arguments-as-list)))
@@ -371,7 +388,7 @@ Return files."
     (if (or (out-of-date-bitcodes #P"src/lisp/kernel/tag/start" #P"src/lisp/kernel/tag/bclasp" :system system)
             (null (probe-file output-file)))
         (progn
-          (load-system #P"src/lisp/kernel/tag/start" #P"src/lisp/kernel/tag/bclasp" :interp t :system system)
+          (load-system #P"src/lisp/kernel/tag/start" #P"src/lisp/kernel/tag/bclasp" :system system)
           (let ((files (out-of-date-bitcodes #P"src/lisp/kernel/tag/start" #P"src/lisp/kernel/tag/bclasp" :system system)))
             (compile-system files)
             (let ((all-bitcode (bitcode-pathnames #P"src/lisp/kernel/tag/start" #P"src/lisp/kernel/tag/bclasp" :system system)))
@@ -401,7 +418,8 @@ Compile the cclasp source code."
   (compile-cclasp* output-file system))
 
 (defun load-cclasp (&key (system (command-line-arguments-as-list)))
-  (load-system #P"src/lisp/kernel/tag/bclasp" #P"src/lisp/kernel/tag/cclasp" :interp t :system system))
+  (load-system #P"src/lisp/kernel/tag/bclasp" #P"src/lisp/kernel/cleavir/inline-prep" :compile-file-load t :system system)
+  (load-system #P"src/lisp/kernel/cleavir/auto-compile" #P"src/lisp/kernel/tag/cclasp" :compile-file-load nil :system system))
 (export '(load-cclasp))
 
 (defun compile-cclasp (&key clean (output-file (build-common-lisp-bitcode-pathname)) (system (command-line-arguments-as-list)))
@@ -410,7 +428,7 @@ Compile the cclasp source code."
   (let ((*target-backend* (default-target-backend)))
     (time
      (progn
-       (load-system #P"src/lisp/kernel/tag/bclasp" #P"src/lisp/kernel/tag/cclasp" :interp t :system system)
+       (load-cclasp)
        (compile-cclasp* output-file system)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
