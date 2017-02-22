@@ -297,7 +297,7 @@ and the pathname of the source file - this will also be used as the module initi
 
 (defvar *debug-compile-file* nil)
 
-(defun compile-file-to-module (given-input-pathname output-path &key compile-file-hook type source-debug-namestring (source-debug-offset 0))
+(defun compile-file-to-module (given-input-pathname &key compile-file-hook type source-debug-namestring (source-debug-offset 0) (print *compile-print*) (verbose *compile-verbose*))
   "* Arguments
 - given-input-pathname :: A pathname.
 - output-path :: A pathname.
@@ -307,7 +307,10 @@ and the pathname of the source file - this will also be used as the module initi
 - source-debug-offset :: An integer.
 Compile a lisp source file into an LLVM module.  type can be :kernel or :user"
   ;; TODO: Save read-table and package with unwind-protect
-  (let* ((clasp-source-root (translate-logical-pathname "source-dir:"))
+  (let* ((*package* *package*)
+         (*compile-print* print)
+         (*compile-verbose* verbose)
+         (clasp-source-root (translate-logical-pathname "source-dir:"))
          (clasp-source (merge-pathnames (make-pathname :directory '(:relative :wild-inferiors) :name :wild :type :wild) clasp-source-root))
          (source-location
           (if (pathname-match-p given-input-pathname clasp-source)
@@ -395,7 +398,7 @@ Compile a lisp source file into an LLVM module.  type can be :kernel or :user"
            (*all-functions-for-one-compile* nil)
            (output-path (compile-file-pathname input-file :output-file output-file :output-type output-type ))
            (*compile-file-output-pathname* output-path)
-           (module (compile-file-to-module input-file output-path
+           (module (compile-file-to-module input-file
                                            :type type
                                            :source-debug-namestring source-debug-namestring
                                            :source-debug-offset source-debug-offset
@@ -435,7 +438,7 @@ Compile a lisp source file into an LLVM module.  type can be :kernel or :user"
       ;; Do the different kind of compile-file here
       (let* ((output-path (compile-file-pathname given-input-pathname :output-file output-file :output-type output-type ))
              (*compile-file-output-pathname* output-path)
-	     (module (compile-file-to-module given-input-pathname output-path 
+	     (module (compile-file-to-module given-input-pathname
 					     :type type 
 					     :source-debug-namestring source-debug-namestring 
 					     :source-debug-offset source-debug-offset
