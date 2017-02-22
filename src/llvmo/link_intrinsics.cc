@@ -160,7 +160,9 @@ gctools::Tagged ltvc_make_ratio(gctools::GCRootsInModule* holder, size_t index, 
 }
 
 gctools::Tagged ltvc_make_complex(gctools::GCRootsInModule* holder, size_t index, gctools::Tagged real, gctools::Tagged imag) {
-  core::T_sp val = core::Complex_O::create(core::T_sp(real),core::T_sp(imag));
+  core::Number_sp nreal((gctools::Tagged)real);
+  core::Number_sp nimag((gctools::Tagged)imag);
+  core::T_sp val = core::Complex_O::create(clasp_to_double(nreal),clasp_to_double(nimag));
   return holder->set(index,val.tagged_());
 }
 
@@ -1659,17 +1661,11 @@ void cc_unwind(T_O *targetFrame, size_t index) {
   if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp()) {
     printf("- - - - in cc_unwind throwing unwind to reach targetFrame: %ld   unwind=@%p\n", gc::untag_fixnum(targetFrame), &unwind);
   }
-#endif
-  try {
-    throw unwind;
-  } catch (core::Unwind &uw) {
-#ifdef DEBUG_FLOW_CONTROL
-    if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp()) {
-      printf("- - - -  unwind event = %p\n", &uw);
-    }
-#endif
-    throw;
+  if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp()) {
+    printf("- - - -  unwind event address = %p\n", &unwind);
   }
+#endif
+    throw unwind;
 }
 
 #if 0
@@ -1810,6 +1806,12 @@ void cc_popLandingPadFrame(T_O *frameFixnum) {
   }
 #endif
   my_thread->exceptionStack().unwind(frameIndex);
+#ifdef DEBUG_FLOW_CONTROL
+  if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp()) {
+    if (core::_sym_STARdebugFlowControlSTAR->symbolValue() == kw::_sym_verbose )
+      printf("    After unwind of exceptionStack:  %s\n", my_thread->exceptionStack().summary().c_str());
+  }
+#endif
 }
 
 size_t cc_landingpadUnwindMatchFrameElseRethrow(char *exceptionP, core::T_O *thisFrame) {
