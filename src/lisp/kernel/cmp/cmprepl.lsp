@@ -44,7 +44,8 @@
            (multiple-value-bind (compiled-function warn fail)
                (compile-in-env 'repl `(lambda () 
                                         (declare (core:lambda-name from-bclasp-implicit-compile-repl-form))
-                                        ,form) environment nil)
+                                        ,form) environment nil
+                                        :linkage 'llvm-sys:external-linkage)
              (funcall compiled-function))))))
 
 ;;;
