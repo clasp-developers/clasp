@@ -42,10 +42,13 @@
            (bformat t "Compiling form: %s\n" form))
          (with-compilation-unit (:override t)
            (multiple-value-bind (compiled-function warn fail)
-               (compile-in-env 'repl `(lambda () 
-                                        (declare (core:lambda-name from-bclasp-implicit-compile-repl-form))
-                                        ,form) environment nil
-                                        :linkage 'llvm-sys:external-linkage)
+               (compile-in-env 'repl
+                               `(lambda () 
+                                  (declare (core:lambda-name from-bclasp-implicit-compile-repl-form))
+                                  ,form)
+                               environment
+                               nil
+                               'llvm-sys:external-linkage)
              (funcall compiled-function))))))
 
 ;;;

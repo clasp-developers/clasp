@@ -1456,7 +1456,7 @@ We could do more fancy things here - like if cleavir-clasp fails, use the clasp 
       (bclasp-compile* name definition env pathname :linkage linkage)))
 
 
-(defun compile-in-env (bind-to-name &optional definition env compile-hook &key (linkage 'llvm-sys:internal-linkage) &aux conditions)
+(defun compile-in-env (bind-to-name &optional definition env compile-hook (linkage 'llvm-sys:internal-linkage) &aux conditions)
   "Compile in the given environment"
   (with-compiler-env (conditions)
     (let ((*the-module* (create-run-time-module-for-compile)))
