@@ -291,7 +291,7 @@ ABI's  */
     return (reinterpret_cast<void *>(ptr) == global_tagged_Symbol_OP_deleted);
   }
   template <class T>
-    inline bool tagged_sameAsKeyp(T ptr) {
+    inline bool tagged_sameAsKeyP(T ptr) {
     return (reinterpret_cast<void *>(ptr) == global_tagged_Symbol_OP_sameAsKey);
   }
 
@@ -312,7 +312,7 @@ ABI's  */
   }
   template <class T>
     inline T tag_sameAsKey() {
-    GCTOOLS_ASSERT(tagged_sameAsKeyp(global_tagged_Symbol_OP_sameAsKey));
+    GCTOOLS_ASSERT(tagged_sameAsKeyP(global_tagged_Symbol_OP_sameAsKey));
     return reinterpret_cast<T>(global_tagged_Symbol_OP_sameAsKey);
   }
   template <class T>
@@ -433,7 +433,7 @@ ABI's  */
       return std::string( tagged_deleted_str );
     }
 
-    if( tagged_sameAsKeyp( tagged_obj )  )
+    if( tagged_sameAsKeyP( tagged_obj )  )
     {
       return std::string( tagged_same_as_key_str );
     }
