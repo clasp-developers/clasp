@@ -64,6 +64,7 @@
           +gcroots-in-module*+
           function-type-create-on-the-fly
           evaluate-foreign-arguments
+          jit-remove-module
           calling-convention-args
           calling-convention-args.va-arg
           calling-convention-va-list

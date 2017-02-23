@@ -2971,12 +2971,10 @@ CL_DEFUN core::Function_sp finalizeEngineAndRegisterWithGcAndGetCompiledFunction
 }
 
 
+//
+CL_DEFUN core::Function_sp finalizeEngineAndGetDispatchFunction(ExecutionEngine_sp oengine, core::T_sp functionName, Function_sp fn, Function_sp startupFn, Function_sp shutdownFn, core::T_sp initial_data) {
 
-CL_DEFUN core::Function_sp finalizeEngineAndGetDispatchFunction(Module_sp module, ExecutionEngine_sp oengine, core::T_sp functionName, Function_sp fn, Function_sp startupFn, Function_sp shutdownFn, core::T_sp initial_data) {
-  // Stuff to support MCJIT
   llvm::ExecutionEngine *engine = oengine->wrappedPtr();
-  std::unique_ptr<llvm::Module> um(module->wrappedPtr());
-  engine->addModule(std::move(um));
   finalizeEngineAndTime(engine);
   ASSERTF(fn.notnilp(), BF("The Function must never be nil"));
   void *p = engine->getPointerToFunction(fn->wrappedPtr());
@@ -2985,7 +2983,7 @@ CL_DEFUN core::Function_sp finalizeEngineAndGetDispatchFunction(Module_sp module
   }
   core::DispatchFunction_fptr_type dispatchFunction = (core::DispatchFunction_fptr_type)(p);
   core::ShutdownFunction_fptr_type shutdownFunction = (core::ShutdownFunction_fptr_type)(engine->getPointerToFunction(shutdownFn->wrappedPtr()));
-  gctools::smart_ptr<core::CompiledDispatchFunction_O> functoid = gctools::GC<core::CompiledDispatchFunction_O>::allocate(functionName, kw::_sym_dispatch_function, dispatchFunction, shutdownFunction, module  );
+  gctools::smart_ptr<core::CompiledDispatchFunction_O> functoid = gctools::GC<core::CompiledDispatchFunction_O>::allocate(functionName, kw::_sym_dispatch_function, dispatchFunction, shutdownFunction, _Unbound<Module_O>() );
   void* pstartup = engine->getPointerToFunction(startupFn->wrappedPtr());
   if (pstartup == NULL ) {
     printf("%s:%d Could not find function named %s\n", __FILE__, __LINE__, MODULE_STARTUP_FUNCTION_NAME);

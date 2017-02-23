@@ -212,7 +212,7 @@ public:
   string instanceClassName() { return this->getPackagedName(); };
   string instanceClassName() const { return this->getPackagedName(); };
 
-  CL_DEFMETHOD List_sp core__min_class_precedence_list() const { return this->instanceRef(REF_CLASS_PRECEDENCE_LIST);};
+  CL_DEFMETHOD List_sp core__min_class_precedence_list() const { return List_sp(this->instanceRef(REF_CLASS_PRECEDENCE_LIST));};
   
   /*! Return the name of the class with its Package name prefixed
 	 */

@@ -222,7 +222,9 @@ class smart_ptr /*: public tagged_ptr<T>*/ {
     GCTOOLS_ASSERT((reinterpret_cast<uintptr_t>(ptr) & tag_mask) == 0);
   };
   inline smart_ptr(const return_type &rt) : theObject((Type *)rt.ret0){};
+#ifdef SMART_PTR_COPY_CTOR
   inline smart_ptr(const smart_ptr<Type> &obj) : theObject(obj.theObject){};
+#endif
 
 #ifndef DEBUG_ASSERT
   template <class From>
@@ -536,7 +538,9 @@ public:
   explicit inline smart_ptr(Type *ptr) : theObject(ptr) {};
   /*! Create a smart pointer from an existing tagged pointer */
   explicit inline smart_ptr(Tagged ptr) : theObject((Type*)ptr){};
+#ifdef SMART_PTR_COPY_CTOR
   inline smart_ptr(const smart_ptr<Type> &obj) : theObject((Type*)obj.theObject){};
+#endif
   inline smart_ptr(const return_type &rt) : theObject((Type*)rt.ret0){};
   template <class From>
   inline smart_ptr(smart_ptr<From> const &rhs) : theObject((Type*)rhs.theObject){};
@@ -744,7 +748,9 @@ public:
     GCTOOLS_ASSERT((reinterpret_cast<uintptr_t>(ptr) & tag_mask) == 0);
   };
 
+#ifdef SMART_PTR_COPY_CTOR
   inline smart_ptr(const smart_ptr<Type> &obj) : theObject(obj.theObject){};
+#endif
 
   template <class From>
   inline smart_ptr(smart_ptr<From> const &rhs) {
@@ -1020,8 +1026,8 @@ public:
   //! The default constructor returns an invalid smart_ptr
   inline smart_ptr() : theObject(NULL){};
   inline smart_ptr(const return_type &rt) : theObject((Type *)rt.ret0){};
-  inline smart_ptr(const smart_ptr<core::T_O> &other) {
-    if (other.consp()) {
+  inline smart_ptr(smart_ptr<core::T_O> other) {
+    LIKELY_if (other.consp()) {
       this->theObject = other.theObject;
     } else if (other.nilp()) {
       this->theObject = other.theObject;
@@ -1029,8 +1035,7 @@ public:
       lisp_error_condition(__FUNCTION__, __FILE__, __LINE__, cl::_sym_typeError, core::lisp_createList(kw::_sym_datum, other, kw::_sym_expectedType, cl::_sym_list));
     }
   }
-  inline smart_ptr(const smart_ptr<core::Cons_O> &other)
-      : theObject(other.raw_()) {
+  inline smart_ptr(smart_ptr<core::Cons_O> other) : theObject(other.raw_()) {
     GCTOOLS_ASSERT(other.consp());
   };
   // Constructor that takes Cons_O* assumes its untagged

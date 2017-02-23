@@ -1,5 +1,5 @@
 (format t "Starting swank~%")
-(load "/root/slime/swank-loader.lisp")
+(load (bformat nil "%s/swank-loader.lisp" core::*swank-home*))
 (swank-loader:init
  :delete nil
  :reload nil

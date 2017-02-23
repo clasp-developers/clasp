@@ -785,7 +785,7 @@
       (core:shutdown previous-dispatcher)
       (when *monitor-dispatch*
         (push :shutting-down-previous-dispatcher *dispatch-log*))
-      (let ((removed (jit-remove-module (core:llvm-module previous-dispatcher))))
+      (let ((removed (cmp:jit-remove-module (core:llvm-module previous-dispatcher))))
         (setf (clos::generic-function-compiled-dispatch-function gf) nil)
         (unless removed
           (format t "Could not remove previous dispatcher~%")))))
