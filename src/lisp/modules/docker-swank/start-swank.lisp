@@ -1,5 +1,5 @@
 (format t "Starting swank~%")
-(load (bformat nil "%s/swank-loader.lisp" core::*swank-home*))
+(load (format nil "~a/swank-loader.lisp" core::*swank-home*))
 (swank-loader:init
  :delete nil
  :reload nil
