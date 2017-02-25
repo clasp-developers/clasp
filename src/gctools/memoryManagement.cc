@@ -61,6 +61,32 @@ std::vector<Immediate_info> get_immediate_info() {
 };
 
 
+namespace gctools {
+#if 0
+AllocationRecord* allocation_backtrace(size_t kind, uintptr_t stamp, size_t size, AllocationRecord* prev) {
+// Play with Unix backtrace(3)
+#define BACKTRACE_SIZE 1024
+  void *buffer[BACKTRACE_SIZE];
+  char *funcname = (char *)malloc(1024);
+  size_t funcnamesize = 1024;
+  int nptrs;
+  nptrs = backtrace(buffer, BACKTRACE_SIZE);
+  char **strings = backtrace_symbols(buffer, nptrs);
+  AllocationRecord* record = new BacktraceRecord(strings,nptrs,kind,stamp,size,prev);
+  return record;
+};
+
+void dump_allocation_records(AllocationRecord* records, core::T_sp stream)
+{
+  while (records) {
+    BFORMAT(stream, BF("("));
+    if (records->stamp == 0) {
+      
+    BFORMAT(stream, BF("
+
+};
+
+
 
 namespace gctools {
 

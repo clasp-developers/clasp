@@ -45,6 +45,17 @@ THE SOFTWARE.
 #include <clasp/core/holder.h>
 
 namespace core {
+  class Class_O;
+};
+
+template <>
+struct gctools::GCInfo<core::Class_O> {
+  static bool constexpr NeedsInitialization = true;
+  static bool constexpr NeedsFinalization = false;
+  static GCInfo_policy constexpr Policy = normal;
+};
+
+namespace core {
 
   Fixnum_sp clasp_make_fixnum(gc::Fixnum v);
   
@@ -289,12 +300,6 @@ public:
 
   virtual ~Class_O(){};
 };
-};
-template <>
-struct gctools::GCInfo<core::Class_O> {
-  static bool constexpr NeedsInitialization = true;
-  static bool constexpr NeedsFinalization = false;
-  static GCInfo_policy constexpr Policy = normal;
 };
 
 namespace core {
