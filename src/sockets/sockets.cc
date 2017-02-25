@@ -751,6 +751,10 @@ CL_DEFUN bool sockets_internal__ll_setSockoptLinger(int fd, int level, int const
 }
 
 
+CL_DEFUN int sockets_internal__shutdown(int sock_fd, int direction_flag) {
+  return shutdown(sock_fd,direction_flag);
+}
+
 CL_DEFUN int sockets_internal__errno()
 {
   return errno;
