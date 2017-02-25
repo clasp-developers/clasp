@@ -750,6 +750,63 @@ CL_DEFUN bool sockets_internal__ll_setSockoptLinger(int fd, int level, int const
   return (ret == 0) ? true : false;
 }
 
+
+CL_DEFUN int sockets_internal__errno()
+{
+  return errno;
+}
+
+CL_DEFUN gc::Fixnum sockets_internal__fd_setsize() {
+  return FD_SETSIZE;
+}
+
+CL_DEFUN void* sockets_internal__alloc_atomic_sizeof_fd_set() {
+  return (void*)malloc(sizeof(fd_set));
+}
+
+CL_DEFUN void sockets_internal__fdset_zero(core::Pointer_sp p)
+{
+  FD_ZERO((fd_set*)p->ptr());
+}
+
+CL_DEFUN void sockets_internal__fdset_set(gc::Fixnum fd, core::Pointer_sp fdset) {
+  FD_SET(fd,(fd_set*)fdset->ptr());
+}
+
+CL_DEFUN void sockets_internal__fdset_clr(gc::Fixnum fd, core::Pointer_sp fdset) {
+  FD_CLR(fd,(fd_set*)fdset->ptr());
+}
+
+CL_DEFUN bool sockets_internal__fdset_isset(gc::Fixnum fd, core::Pointer_sp fdset) {
+  return FD_ISSET(fd,(fd_set*)fdset->ptr());
+}
+
+CL_DEFUN core::T_sp sockets_internal__get_host_name() {
+  char* buf = (char*)malloc(257);
+  if (gethostname(buf,256) == 0 ) {
+    core::T_sp result = core::SimpleBaseString_O::make(std::string(buf));
+    free(buf);
+    return result;
+  }
+  free(buf);
+  return _Nil<core::T_O>();
+}
+
+CL_DEFUN int sockets_internal__do_select(core::T_sp to_secs,
+                                         unsigned int to_musecs,
+                                         core::Pointer_sp rfds,
+                                         int max_fd) {
+  int count;
+  struct timeval tv;
+  if (to_secs.fixnump()) {
+    tv.tv_sec = to_secs.unsafe_fixnum();
+    tv.tv_usec = to_musecs;
+  }
+  return select(max_fd + 1, (fd_set*)rfds->ptr(), NULL, NULL,
+                (to_secs.fixnump()) ? &tv : NULL);
+}
+
+
 void initialize_sockets_globals() {
   SYMBOL_EXPORT_SC_(SocketsPkg, _PLUS_af_inet_PLUS_);
   _sym__PLUS_af_inet_PLUS_->defconstant(core::Integer_O::create((gc::Fixnum)AF_INET));
