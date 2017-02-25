@@ -193,10 +193,9 @@ Return files."
         (cmp::optimize-module m))
       (llvm-sys:load-module m))))
 
-(defun load-system ( first-file last-file &key compile-file-load interp load-bitcode (target-backend *target-backend*) system)
+(defun load-system (files &key compile-file-load interp load-bitcode (target-backend *target-backend*) system)
   #+dbg-print(bformat t "DBG-PRINT  load-system: %s - %s\n" first-file last-file )
   (let* ((*target-backend* target-backend)
-         (files (select-source-files first-file last-file :system system))
 	 (cur files))
     (tagbody
      top
@@ -331,7 +330,9 @@ Return files."
   (if clean (clean-system #P"src/lisp/kernel/tag/min-start" :no-prompt t :system system))
   (if (out-of-date-bitcodes #P"src/lisp/kernel/tag/min-start" #P"src/lisp/kernel/tag/min-end" :system system)
       (progn
-        (load-system #P"src/lisp/kernel/tag/after-init" #P"src/lisp/kernel/tag/min-pre-epilogue" :system system))))
+        (load-system (select-source-files
+                      #P"src/lisp/kernel/tag/after-init"
+                      #P"src/lisp/kernel/tag/min-pre-epilogue" :system system)))))
 
 
 (export '(compile-aclasp))
@@ -344,7 +345,8 @@ Return files."
   (if (or (out-of-date-bitcodes #P"src/lisp/kernel/tag/min-start" #P"src/lisp/kernel/tag/min-end" :system system)
           (null (probe-file output-file)))
       (progn
-        (load-system #P"src/lisp/kernel/tag/after-init" #P"src/lisp/kernel/tag/min-pre-epilogue" :system system)
+        (load-system
+         (butlast (select-source-files #P"src/lisp/kernel/tag/after-init" #P"src/lisp/kernel/tag/min-pre-epilogue" :system system)))
         (let* ((*target-backend* target-backend)
                (files (out-of-date-bitcodes #P"src/lisp/kernel/tag/min-start" #P"src/lisp/kernel/tag/min-pre-epilogue" :system system))
                (files-with-epilogue (out-of-date-bitcodes #P"src/lisp/kernel/tag/min-start" #P"src/lisp/kernel/tag/min-end" :system system)))
@@ -378,7 +380,7 @@ Return files."
             t)
 
 (defun load-bclasp (&key (system (command-line-arguments-as-list)))
-  (load-system #P"src/lisp/kernel/tag/start" #P"src/lisp/kernel/tag/bclasp" :system system))
+  (load-system (select-source-files #P"src/lisp/kernel/tag/start" #P"src/lisp/kernel/tag/bclasp" :system system)))
 
 (export '(load-bclasp compile-bclasp))
 (defun compile-bclasp (&key clean (output-file (build-common-lisp-bitcode-pathname)) (system (command-line-arguments-as-list)))
@@ -388,7 +390,9 @@ Return files."
     (if (or (out-of-date-bitcodes #P"src/lisp/kernel/tag/start" #P"src/lisp/kernel/tag/bclasp" :system system)
             (null (probe-file output-file)))
         (progn
-          (load-system #P"src/lisp/kernel/tag/start" #P"src/lisp/kernel/tag/bclasp" :system system)
+          (load-system
+           (butlast (select-source-files
+                     #P"src/lisp/kernel/tag/start" #P"src/lisp/kernel/tag/bclasp" :system system)))
           (let ((files (out-of-date-bitcodes #P"src/lisp/kernel/tag/start" #P"src/lisp/kernel/tag/bclasp" :system system)))
             (compile-system files)
             (let ((all-bitcode (bitcode-pathnames #P"src/lisp/kernel/tag/start" #P"src/lisp/kernel/tag/bclasp" :system system)))
@@ -428,7 +432,12 @@ Compile the cclasp source code."
   (let ((*target-backend* (default-target-backend)))
     (time
      (progn
-       (load-cclasp)
+       (load-system
+        (select-source-files #P"src/lisp/kernel/tag/bclasp" #P"src/lisp/kernel/cleavir/inline-prep" :system system)
+        :compile-file-load t )
+       (load-system
+        (select-source-files #P"src/lisp/kernel/cleavir/auto-compile" #P"src/lisp/kernel/tag/cclasp" :system system)
+        :compile-file-load nil )
        (compile-cclasp* output-file system)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
