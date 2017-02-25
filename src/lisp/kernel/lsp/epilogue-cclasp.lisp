@@ -1,3 +1,6 @@
+#+debug-lexical-var-reference-depth
+(eval-when (:compile-toplevel)
+  (report-lexical-var-reference-depth))
 #+cclasp(eval-when (:load-toplevel)
           (cl:in-package :cl-user)
           (core:process-extension-loads)

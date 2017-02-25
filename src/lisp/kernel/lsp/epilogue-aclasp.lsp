@@ -1,3 +1,6 @@
+#+debug-lexical-var-reference-depth
+(eval-when (:compile-toplevel)
+  (report-lexical-var-reference-depth))
 #+(or clasp-min aclasp)
 (eval-when (:load-toplevel)
   (unwind-protect
