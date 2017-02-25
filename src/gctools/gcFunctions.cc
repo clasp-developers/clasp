@@ -875,46 +875,6 @@ CL_DEFUN void gctools__debug_allocations(core::T_sp debugOn) {
   _GlobalDebugAllocations = debugOn.isTrue();
 };
 
-#ifdef USE_GC_REF_COUNT_WRAPPER
-#define ARGS_af_gcheader "(addr &optional (msg \"\") )"
-#define DECL_af_gcheader ""
-#define DOCS_af_gcheader "gcheader"
-void af_gcheader(core::Pointer_sp addr, const string &msg) {
-  GCWrapper<core::T_O>::GCHeader *gch = reinterpret_cast<GCWrapper<core::T_O>::GCHeader *>(addr->ptr());
-  //        printf("%s Kind = %lu   RefCount=%d\n", msg.c_str(), gch->_Kind, gch->_ReferenceCount);
-};
-
-#define ARGS_af_gcaddress "(obj)"
-#define DECL_af_gcaddress ""
-#define DOCS_af_gcaddress "gcaddress"
-core::Pointer_sp af_gcaddress(core::T_sp obj) {
-  core::T_O *ptr = dynamic_cast<core::T_O *>(obj.get());
-  void *hptr = reinterpret_cast<void *>(GCWrapper<core::T_O>::gcHeader(ptr));
-  core::Pointer_sp po = core::Pointer_O::create(hptr);
-  return po;
-};
-
-#define ARGS_af_testReferenceCounting "()"
-#define DECL_af_testReferenceCounting ""
-#define DOCS_af_testReferenceCounting "testReferenceCounting"
-void af_testReferenceCounting() {
-  core::Pointer_sp p;
-  {
-    core::Fixnum_sp fn = core::make_fixnum(20);
-    p = af_gcaddress(fn);
-    af_gcheader(p, "Start");
-    core::Fixnum_sp fn2 = fn;
-    af_gcheader(p, "Assignment");
-    fn2 = fn2;
-    af_gcheader(p, "fn2 = fn2");
-    fn2 = core::make_fixnum(1);
-    af_gcheader(p, "fn2 = make_fixnum(1)");
-    fn = core::make_fixnum(0);
-    //            af_gcheader(p,"fn = make_fixnum(0)");
-  }
-  //        af_gcheader(p,"fn went out of scope");
-};
-#endif
 
 void initialize_gc_functions() {
 
