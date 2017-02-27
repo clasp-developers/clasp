@@ -54,6 +54,12 @@
 
 
 
+;;; ------------------------------------------------------------
+;;;
+;;; BE VERY CAREFUL WHAT YOU DO HERE!!!
+;;; This function must return the result* of evaluating the closure
+;;; I have put things in the wrong place (following the UNWIND-PROTECT
+;;; and it introduced subtle bugs that were very difficult to track down.
 (defun do-compilation-unit (closure &key override)
   (cond (override
 	 (let* ((*active-protection* nil))
@@ -62,11 +68,15 @@
 	 (let* ((*active-protection* t)
 		(*pending-actions* nil)
                 (*compilation-unit-module-index* 0)
-                (*all-functions-for-one-compile* nil))
-	   (unwind-protect (do-compilation-unit closure)
+                (*all-functions-for-one-compile* nil)
+                (*compilation-messages* nil))
+	   (unwind-protect
+                (do-compilation-unit closure) ; --> result*
              (progn
                (dolist (action *pending-actions*)
-               (funcall action))))))
+                 (funcall action))
+               (compilation-unit-finished *compilation-messages*))) ; --> result*
+           ))
 	(t
 	 (funcall closure))))
 
@@ -120,6 +130,7 @@
        (bformat t";    %s %s\n" (car form) trimmed-second-part)))))
 
 (defun compile-top-level (form)
+  (analyze-top-level-form form)
   (when *compile-print*
     (describe-form form))
   (literal:with-top-level-form (compile-thunk 'repl form nil)))
@@ -398,6 +409,7 @@ Compile a lisp source file into an LLVM module.  type can be :kernel or :user"
            (*all-functions-for-one-compile* nil)
            (output-path (compile-file-pathname input-file :output-file output-file :output-type output-type ))
            (*compile-file-output-pathname* output-path)
+           (*compile-file-defs* (make-hash-table))
            (module (compile-file-to-module input-file
                                            :type type
                                            :source-debug-namestring source-debug-namestring

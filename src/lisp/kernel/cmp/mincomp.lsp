@@ -44,7 +44,7 @@
   (let ((sym (variable-get-ast-symbol node))
         (env (variable-get-ast-env node)))
     (bformat t "analyze-variable-get>>Analyze the one variable: %s\n" (variable-get-ast-symbol node))
-    (let ((classified (irc-classify-variable env sym)))
+    (let ((classified (variable-info env sym)))
       (setf (variable-get-ast-classified node) classified))))
 
 (defun analyze-variable-set (node)
@@ -52,7 +52,7 @@
   (bformat t "analyze-variable-set node: %s\n" node)
   (let* ((symbol (variable-set-ast-symbol node))
          (env (variable-set-ast-env node))
-         (classified (irc-classify-variable env symbol)))
+         (classified (variable-info env symbol)))
     (setf (variable-set-ast-classified node) classified))))
 
 (defun analyze-variables (node)
@@ -215,7 +215,7 @@
          (fn-lambda (generate-lambda-block fn-name fn-lambda-list fn-raw-body)))
     (make-flet/lables-function-ast :name fn-name
                                    :lambda (
-         (fn-classified (classify-function-lookup function-env fn-name))
+         (fn-classified (function-info function-env fn-name))
          (fn-index (or (cadddr fn-classified) (error "Could not find lexical function ~a" fn-name)))
          (target (irc-intrinsic "functionFrameReference" result-af (jit-constant-i32 fn-index)
                                 (bformat nil "%s-ref-%d" (llvm-sys:get-name result-af) fn-index) )))
@@ -234,7 +234,7 @@
 	     (fn-lambda-list (cadr fn))
 	     (fn-raw-body (cddr fn))
 	     (fn-lambda (generate-lambda-block fn-name fn-lambda-list fn-raw-body))
-	     (fn-classified (classify-function-lookup function-env fn-name))
+	     (fn-classified (function-info function-env fn-name))
 	     (fn-index (or (cadddr fn-classified) (error "Could not find lexical function ~a" fn-name)))
 	     (target (irc-intrinsic "functionFrameReference" result-af (jit-constant-i32 fn-index)
 			       (bformat nil "%s-ref-%d" (llvm-sys:get-name result-af) fn-index) )))

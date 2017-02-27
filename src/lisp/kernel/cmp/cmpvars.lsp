@@ -110,7 +110,7 @@
 
 (defun codegen-var-lookup (result sym old-env)
   "Return IR code thsym returns the value of a symbol that is either lexical or special"
-  (let ((classified (irc-classify-variable old-env sym)))
+  (let ((classified (variable-info old-env sym)))
     (cmp-log "About to codegen-var-lookup for %s - classified as: %s\n" sym classified)
     (if (eq (car classified) 'ext:special-var)
 	(codegen-special-var-lookup result sym old-env)

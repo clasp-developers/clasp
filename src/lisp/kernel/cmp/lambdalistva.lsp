@@ -43,7 +43,7 @@
 (defun cmp-lookup-function (fn-designator evaluate-env)
   "Return a pointer to a core::Closure"
   (if (atom fn-designator)
-      (let ((classified (classify-function-lookup evaluate-env fn-designator)))
+      (let ((classified (function-info evaluate-env fn-designator)))
 	(if (eq (car classified) 'core::global-function)
 	    (irc-intrinsic "va_symbolFunction" (irc-global-symbol fn-designator evaluate-env))
 	    (irc-intrinsic "va_lexicalFunction"

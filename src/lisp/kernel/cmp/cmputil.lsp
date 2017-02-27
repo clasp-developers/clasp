@@ -26,21 +26,19 @@
 
 (in-package :cmp)
 
+(defvar *compile-defs*)
+(defvar *compilation-messages*)
 
-(defconstant +note-format+  "    %s\n")
-(defconstant +warn-format+  "!   %s\n")
-(defconstant +error-format+ "*   %s\n")
-(defconstant +fatal-format+ "**  %s\n")
-
+(defconstant +note-format+  "Note:        %s")
+(defconstant +warn-format+  "Warning:     %s")
+(defconstant +error-format+ "Error:       %s")
+(defconstant +fatal-format+ "Fatal-error: %s")
 
 (defstruct (compiler-message (:type vector))
   (prefix "Note")
   (format +note-format+)
   message
-  source-dir
-  source-filename
-  lineno
-  column
+  source-pos-info
   top-level-form
   form)
 
@@ -72,14 +70,8 @@
                        (format +warn-format+))))
 
 (defun compiler-error (form message &rest args)
-  (let* ((cspi (ext:current-source-location))
-         (source-path (source-file-info-pathname (source-file-info cspi)))
-         (source-dir (directory-namestring source-path))
-         (source-file (file-namestring source-path)))
-    (let ((err (make-compiler-error :message (apply #'core:bformat nil message args)
-                                    :lineno lineno
-                                    :source-dir source-dir
-                                    :source-filename source-file)))
+  (let* ((cspi (ext:current-source-location)))
+    (let ((err (make-compiler-error :message (apply #'core:bformat nil message args))))
       (push err *compilation-messages*))))
 
 
@@ -147,10 +139,18 @@
 
 ||#
 
-(defun print-compiler-message (c stream)
-  (bformat stream ";;; %s\n" c))
+(defun describe-source-location (cspi)
+  (let* ((lineno (source-pos-info-lineno cspi))
+         (filepos (source-pos-info-filepos cspi))
+         (source-file-info (source-file-info cspi))
+         (pathname (source-file-info-pathname source-file-info)))
+  (core:bformat nil "%s filepos: %d  lineno: %d" (namestring pathname) filepos lineno)))
 
-(defvar *compilation-messages* nil)
+(defun print-compiler-message (c stream)
+  (let ((msg (core:bformat nil (compiler-message-format c) (compiler-message-message c))))
+    (bformat stream ";;; %s" msg)
+    (bformat stream ";;;     at %s \n" (describe-source-location (compiler-message-source-pos-info c)))))
+
 (defmacro with-compiler-env ( (conditions &rest options) &rest body )
   "Initialize the environment to protect nested compilations from each other"
   `(let ((*the-module* nil)
@@ -167,7 +167,70 @@
 	 (*the-module-dibuilder* nil)
 	 (*readtable* *readtable*)
 	 (*package* *package*)
-         (*compilation-messages* nil)
 	 )
-     (unwind-protect (progn ,@body)
-       (setq conditions *compilation-messages*))))
+     (with-compilation-unit ()
+       (unwind-protect (progn ,@body)
+         (setq conditions *compilation-messages*)))))
+
+
+
+
+
+(defstruct (compile-file-def (:type vector) :named)
+  type
+  name
+  source-pos-info)
+
+(defun register-compile-file-def (type name)
+  (when (boundp '*compile-file-defs*)
+    (let ((existing (gethash name *compile-file-defs*)))
+      (if existing
+          (let ((warning (make-compiler-warning
+                          :message (core:bformat nil "The %s %s was previously defined as a %s at %s\n"
+                                                 type
+                                                 name
+                                                 (compile-file-def-type existing)
+                                                 (describe-source-location (compile-file-def-source-pos-info existing)))
+                          :source-pos-info (ext:current-source-location))))
+            (push warning *compilation-messages*))
+          (setf (gethash name *compile-file-defs*) 
+                (make-compile-file-def :type type
+                                       :name name
+                                       :source-pos-info (ext:current-source-location)))))))
+
+(defun function-info (env func)
+  (let ((info (classify-function-lookup env func)))
+;;;    (core:bformat t "function-info: %s   @ %s\n" info (describe-source-location (ext:current-source-location)))
+    info))
+
+(defun variable-info (env var)
+  "Lookup the variable in the lexical environment - if not found then check if it is a special"
+  (let ((info (classify-variable env var)))
+    (unless info
+      (setq info (cons 'ext:special-var var)))
+;;;    (core:bformat t "variable-info: %s   @ %s\n" info (describe-source-location (ext:current-source-location)))
+    info))
+
+(defun analyze-top-level-form (form)
+  (cond
+    ((eq (car form) 'core:fset)
+     (let ((type (if (eq (fourth form) t)
+                     'defmacro
+                     'defun))
+           (name (second form)))
+       (register-compile-file-def type name)))
+    ((and (consp form)
+          (eq (first form) 'cl:let)
+          (and (let ((x (third form)))
+                 (and (consp x) (eq 'cl:quote (first x))
+                      (eq core::*special-defun-symbol* (second x))))))
+     (let ((name (second (fourth form))))
+       (register-compile-file-def 'defun name)))
+    #+(or)(t (core:bformat t "Unknown: %s\n" form))))
+
+(defun compilation-unit-finished (messages)
+  (when messages
+    (bformat t "Compilation-unit finished \n\n")
+    (dolist (m (reverse messages))
+      (print-compiler-message m *debug-io*))))
+

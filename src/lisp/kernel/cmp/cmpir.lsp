@@ -191,23 +191,6 @@
   (lookup-metadata env :terminate-landing-pad-block))
 
 
-
-
-
-(defun irc-classify-variable (env var)
-  "Lookup the variable in the lexical environment - if not found then check if it is a special"
-  (let* ((classified (classify-variable env var)))
-    (if classified
-	classified
-	(cons 'ext:special-var var))))
-#|
-	(if (special-p var)
-	    (cons 'ext:special-var var)
-	    (error "Could not find variable %s in lexical/global environment" var)))))
-|#
-
-
-
 (defun irc-new-unbound-function-value-environment (old-env &key number-of-functions (label "function-frame"))
   "Create a new function environment and a new runtime environment"
   (let* ((new-env (make-function-value-environment number-of-functions old-env))
