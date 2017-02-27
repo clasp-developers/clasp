@@ -688,7 +688,7 @@
 
 ;;; Setup
 
-(eval-when (:compile-toplevel :execute #+clasp!-boot :load-toplevel)
+(eval-when (:compile-toplevel :execute #+clasp :load-toplevel)
   (defconstant +conflicting-symbols+ '(cl:close cl:stream-element-type cl:input-stream-p
 				       cl:open-stream-p cl:output-stream-p cl:streamp)))
 
