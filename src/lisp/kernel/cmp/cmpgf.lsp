@@ -776,7 +776,7 @@
             (push (list :restarting-gf-dispatch generic-function (core:list-from-va-list valist-args)) *dispatch-log*))
           (funcall generic-function valist-args))
         (progn
-          (do-dispatch-miss generic-function valist-args arguments)))))*
+          (do-dispatch-miss generic-function valist-args arguments)))))
 
 
 (defun safe-set-funcallable-instance-function (gf func)
