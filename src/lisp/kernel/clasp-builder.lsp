@@ -459,4 +459,6 @@ Compile the cclasp source code."
 (export '(compile-addons link-addons))
 
 (eval-when (:execute)
-  (bformat t "Loaded clasp-builder.lsp\n"))
+  (bformat t "Loaded clasp-builder.lsp\n")
+  (if (member :clasp-builder-repl *features*)
+      (core:low-level-repl)))
