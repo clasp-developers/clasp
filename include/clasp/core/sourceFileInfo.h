@@ -109,7 +109,7 @@ public:
   size_t filepos() const { return this->_Filepos; };
   uint lineno() const { return this->_Lineno; };
   int column() const { return this->_Column; };
-
+  bool equalp(T_sp obj) const;
 public:
   uint _FileId;
   size_t _Filepos;
