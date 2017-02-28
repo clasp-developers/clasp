@@ -539,7 +539,7 @@ void __attribute__((noreturn)) lisp_errorCast(ObjPtrType objP) {
 namespace core {
   class MultipleValues;
   MultipleValues &lisp_multipleValues();
-  MultipleValues &lisp_callArgs();
+//  MultipleValues &lisp_callArgs();
 };
 
 extern void clasp_mps_debug_allocation(const char *poolName, void *base, void *objAddr, int size, int kind);
@@ -823,7 +823,10 @@ class Instance_O;
 typedef gctools::smart_ptr<Instance_O> Instance_sp;
 
 //    typedef T_mv (*ActivationFrameFunctionPtr)(ActivationFrame_sp);
-
+ class StringOutputStream_O;
+ typedef gctools::smart_ptr<StringOutputStream_O> StringOutputStream_sp;
+ class Bignum_O;
+ typedef gctools::smart_ptr<Bignum_O> Bignum_sp;
 class Lisp_O;
 typedef gctools::tagged_pointer<Lisp_O> Lisp_sp;
 class NamedFunction_O;
@@ -1238,20 +1241,24 @@ namespace core {
   struct InvocationHistoryFrame;
   
   struct ThreadLocalState {
-    ThreadLocalState() {
-      this->_Bindings.reserve(1024);
-      this->_InvocationHistoryStack = NULL;
-      this->_BufferStr8NsPool.reset_(); // Can't use _Nil<core::T_O>(); - too early
-      this->_BufferStrWNsPool.reset_();
-    };
+   ThreadLocalState();
+    void initialize_thread();
     DynamicBindingStack _Bindings;
     InvocationHistoryFrame* _InvocationHistoryStack;
     ExceptionStack _ExceptionStack;
     MultipleValues _MultipleValues;
     List_sp _BufferStr8NsPool;
     List_sp _BufferStrWNsPool;
+    StringOutputStream_sp _BFormatStringOutputStream;
+    Bignum_sp _BignumRegister0;
+    Bignum_sp _BignumRegister1;
+    Bignum_sp _BignumRegister2;
     inline core::DynamicBindingStack& bindings() { return this->_Bindings; };
     inline ExceptionStack& exceptionStack() { return this->_ExceptionStack; };
+    StringOutputStream_sp& bformatStringOutputStream() { return this->_BFormatStringOutputStream;};
+  Bignum_sp bigRegister0() { return this->_BignumRegister0; };
+  Bignum_sp bigRegister1() { return this->_BignumRegister1; };
+  Bignum_sp bigRegister2() { return this->_BignumRegister2; };
   };
 
 };

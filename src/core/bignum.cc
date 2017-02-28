@@ -387,8 +387,8 @@ Integer_mv big_ceiling(Bignum_sp a, Bignum_sp b) {
 }
 
 Integer_mv big_floor(Bignum_sp a, Bignum_sp b) {
-  Bignum_sp q = _lisp->bigRegister0();
-  Bignum_sp r = _lisp->bigRegister1();
+  Bignum_sp q = my_thread->bigRegister0();
+  Bignum_sp r = my_thread->bigRegister1();
   mpz_fdiv_qr(q->ref().get_mpz_t(), r->ref().get_mpz_t(),
               a->ref().get_mpz_t(), b->ref().get_mpz_t());
   return Values(Integer_O::create(q->get()), Integer_O::create(r->get()));

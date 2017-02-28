@@ -84,6 +84,22 @@ THE SOFTWARE.
 
 THREAD_LOCAL core::ThreadLocalState* my_thread;
 
+namespace core {
+ThreadLocalState::ThreadLocalState() {
+      this->_Bindings.reserve(1024);
+      this->_InvocationHistoryStack = NULL;
+      this->_BufferStr8NsPool.reset_(); // Can't use _Nil<core::T_O>(); - too early
+      this->_BufferStrWNsPool.reset_();
+}
+
+void ThreadLocalState::initialize_thread() {
+  printf("%s:%d Initialize all ThreadLocalState things\n",__FILE__, __LINE__);
+  this->_BFormatStringOutputStream = clasp_make_string_output_stream();
+  this->_BignumRegister0 = Bignum_O::create(0);
+  this->_BignumRegister1 = Bignum_O::create(0);
+  this->_BignumRegister2 = Bignum_O::create(0);
+};
+};
 
 namespace reg {
 
@@ -425,11 +441,12 @@ MultipleValues &lisp_multipleValues() {
   return my_thread->_MultipleValues;
 }
 
+#if 0
 MultipleValues &lisp_callArgs() {
   //	return (_lisp->callArgs());
   return my_thread->_MultipleValues;
 }
-
+#endif
 void errorFormatted(boost::format fmt) {
   TRY_BOOST_FORMAT_STRING(fmt, fmt_str);
   dbg_hook(fmt_str.c_str());

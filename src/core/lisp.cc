@@ -203,11 +203,11 @@ public:
 //
 Lisp_O::GCRoots::GCRoots() :
   // _BufferStringPool(_Nil<T_O>()),
-                             _MultipleValuesCur(NULL),
-                             _BignumRegister0(_Unbound<Bignum_O>()),
-                             _BignumRegister1(_Unbound<Bignum_O>()),
-                             _BignumRegister2(_Unbound<Bignum_O>()) ,
-                             _CatchInfo(_Nil<T_O>()),
+//THREAD_CHANGE                             _MultipleValuesCur(NULL),
+//THREAD_CHANGE                             _BignumRegister0(_Unbound<Bignum_O>()),
+//THREAD_CHANGE                             _BignumRegister1(_Unbound<Bignum_O>()),
+//THREAD_CHANGE                             _BignumRegister2(_Unbound<Bignum_O>()) ,
+//THREAD_CHANGE                             _CatchInfo(_Nil<T_O>()),
                              _SpecialForms(_Unbound<HashTableEq_O>()),
                              _NullStream(_Nil<T_O>()),
                              _PathnameTranslations(_Nil<T_O>()) {}
@@ -661,15 +661,23 @@ void Lisp_O::startupLispEnvironment(Bundle *bundle) {
     this->_Roots._LongFloatMinusZero = LongFloat_O::create(-0.0l);
     this->_Roots._LongFloatPlusZero = LongFloat_O::create(0.0l);
 #endif // ifdef CLASP_LONG_FLOAT
+    
+#if 0
+    // THREAD_CHANGE
     this->_Roots._BformatStringOutputStream = clasp_make_string_output_stream();
     this->_Roots._BignumRegister0 = Bignum_O::create(0);
     this->_Roots._BignumRegister1 = Bignum_O::create(0);
     this->_Roots._BignumRegister2 = Bignum_O::create(0);
+#endif
     Real_sp bits = gc::As<Real_sp>(clasp_make_fixnum(gc::fixnum_bits));
     Real_sp two = gc::As<Real_sp>(clasp_make_fixnum(2));
     this->_Roots._IntegerOverflowAdjust = cl__expt(two, bits); // clasp_make_fixnum(2),clasp_make_fixnum(gc::fixnum_bits));
     getcwd(true);                                             // set *default-pathname-defaults*
   };
+  //
+  // Initialize the main thread info
+  //
+  my_thread->initialize_thread();
   {
     _BLOCK_TRACE("Creating Caches for SingleDispatchGenericFunctions");
     this->_Roots._SingleDispatchMethodCachePtr = gc::GC<Cache_O>::allocate();

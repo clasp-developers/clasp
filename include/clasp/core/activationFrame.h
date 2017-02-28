@@ -160,7 +160,7 @@ public:
   }
 
     static ValueFrame_sp createForMultipleValues(const T_sp &parent) {
-    MultipleValues &mv = core::lisp_callArgs();
+    MultipleValues &mv = core::lisp_multipleValues();
     ValueFrame_sp vf = ValueFrame_O::create(mv.getSize(),parent);
     // TODO: This is used for all generic function calls - is there a better way than copying the ValueFrame??????
     for (int i(0); i < mv.getSize(); ++i) {

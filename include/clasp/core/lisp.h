@@ -208,7 +208,7 @@ class Lisp_O {
   friend T_mv core__source_file_info(T_sp sourceFile, String_sp truename, size_t offset, bool useLineno);
   friend gctools::Layout_code* gctools::get_kind_layout_codes();
   struct GCRoots //: public gctools::HeapRoot
-      {
+  {
     //! A pool of strings for string manipulation - must be per thread
         // Now it's in my_thread
 //    List_sp _BufferStringPool;
@@ -216,21 +216,24 @@ class Lisp_O {
         //InvocationHistoryStack _InvocationHistoryStack;
         //ExceptionStack _ExceptionStack;
     /*! Multiple values - this should be per thread */
-    MultipleValues *_MultipleValuesCur;
+//    MultipleValues *_MultipleValuesCur;
     T_sp _TerminalIO;
     /*! bformat_StringOutputStream one per thread */
+#if 0
+        // THREAD_CHANGE
     StringOutputStream_sp _BformatStringOutputStream;
     /*! Bignum registers should be one per thread */
     Bignum_sp _BignumRegister0;
     Bignum_sp _BignumRegister1;
     Bignum_sp _BignumRegister2;
+#endif
     Integer_sp _IntegerOverflowAdjust;
     CharacterInfo charInfo;
     gctools::Vec0<core::Symbol_sp> _ClassSymbolsHolder;
 //    DynamicBindingStack _Bindings;
     gctools::Vec0<SourceFileInfo_sp> _SourceFiles;
     /*! Store CATCH info */
-    List_sp _CatchInfo;
+// THREAD_CHANGE    List_sp _CatchInfo;
     /* The global class table that maps class symbols to classes */
     gctools::Vec0<SymbolClassPair> bootClassTable;
     //	    SymbolDict<Class_O>		_BootClassTable;
@@ -256,9 +259,9 @@ class Lisp_O {
     Cache_sp _SingleDispatchMethodCachePtr;
 #if CLOS
     /*! Generic functions method cache */
-        Cache_sp _MethodCachePtr;
+    Cache_sp _MethodCachePtr;
     /*! Generic functions slot cache */
-        Cache_sp _SlotCachePtr;
+    Cache_sp _SlotCachePtr;
 #endif
     DoubleFloat_sp _RehashSize;
     DoubleFloat_sp _RehashThreshold;
@@ -403,32 +406,7 @@ public:
   map<string, void *> &openDynamicLibraryHandles() { return this->_OpenDynamicLibraryHandles; };
 
 public:
-#if 0
-	/*! callArgs() are where extra arguments are stored when passing them
-	  into a function that takes more arguments than can be passed in registers
-	  See lispCallingConvention.h for more details.
-	  I use the MultipleValues structure to pass arguments into functions.
-	  This must be thread local.
-	*/
-	MultipleValues*		callArgs() {
-	    ASSERT(this->_Roots._MultipleValuesCur!=NULL);
-	    return this->_Roots._MultipleValuesCur;
-	}
-	/*! This is where multiple values are returned in */
-	MultipleValues&		multipleValues() {return *this->_Roots._MultipleValuesCur;}
-	/*! MultipleValues are stored on the stack in a linked list.
-	  This ensures that the objects they contain are not garbage collected and
-	  allows us to occasionally create new MultipleValues structures for when we need to
-	  save the current one temporarily */
-	void setMultipleValues(MultipleValues* mv)
-	{
-	    ASSERT(mv!=NULL);
-//	    printf("%s:%d _lisp->pushMultipleValues(%p)  current= %p\n", __FILE__, __LINE__, mv, this->_Roots._MultipleValuesCur );
-	    this->_Roots._MultipleValuesCur = mv;
-	};
-#endif
-public:
-  StringOutputStream_sp &bformatStringOutputStream() { return this->_Roots._BformatStringOutputStream; };
+//THREAD_CHANGE  StringOutputStream_sp &bformatStringOutputStream() { return this->_Roots._BformatStringOutputStream; };
 
 public:
   /*! Signal a problem if the stack gets too full*/
@@ -586,10 +564,13 @@ protected:
   void setRestartHandlers(List_sp handlers);
 
 public:
+#if 0
+  //THREAD_CHANGE
   Bignum_sp bigRegister0() { return this->_Roots._BignumRegister0; };
   Bignum_sp bigRegister1() { return this->_Roots._BignumRegister1; };
   Bignum_sp bigRegister2() { return this->_Roots._BignumRegister2; };
-  Integer_sp integerOverflowAdjust() { return this->_Roots._IntegerOverflowAdjust; };
+#endif
+Integer_sp integerOverflowAdjust() { return this->_Roots._IntegerOverflowAdjust; };
 
 public:
   bool isEnvironmentInitialized() { return this->_EnvironmentInitialized; };
