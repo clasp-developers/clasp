@@ -88,6 +88,10 @@
           compiler-fatal-error
           compiler-message-file
           compiler-message-file-position
+          compiler-warning-undefined-global-variable
+          register-global-function-def
+          register-global-function-ref
+          analyze-top-level-form
           safe-system
           dbg-set-current-debug-location-here
           jit-constant-uintptr_t

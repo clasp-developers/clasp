@@ -69,7 +69,9 @@
 		(*pending-actions* nil)
                 (*compilation-unit-module-index* 0)
                 (*all-functions-for-one-compile* nil)
-                (*compilation-messages* nil))
+                (*compilation-messages* nil)
+                (*global-function-defs* (make-hash-table))
+                (*global-function-refs* (make-hash-table :test #'equal)))
 	   (unwind-protect
                 (do-compilation-unit closure) ; --> result*
              (progn
@@ -342,39 +344,40 @@ Compile a lisp source file into an LLVM module.  type can be :kernel or :user"
 	(bformat t "; Compiling file: %s\n" (namestring input-pathname)))
       (with-one-source-database
 	  (cmp-log "About to start with-compilation-unit\n")
-	(let* ((*compile-file-pathname* (pathname (merge-pathnames given-input-pathname)))
-	       (*compile-file-truename* (translate-logical-pathname *compile-file-pathname*)))
-	  (with-module (:module module
-                                :source-namestring (namestring source-location)
-                                :source-debug-namestring source-debug-namestring
-                                :source-debug-offset source-debug-offset)
-            (with-debug-info-generator (:module *the-module*
-                                                :pathname *compile-file-truename*)
-              (or *the-module* (error "*the-module* is NIL"))
-              (let ((eof-value (gensym)))
-                (with-make-new-run-all (run-all-function)
-                  (with-run-all-body-codegen ;;(result)
-                      (irc-intrinsic "ltvc_assign_source_file_info_handle"
-                                     (irc-constant-string-ptr *gv-source-namestring*)
-                                     (irc-constant-string-ptr *gv-source-debug-namestring*)
-                                     (jit-constant-i64 *source-debug-offset*)
-                                     (jit-constant-i32 (if *source-debug-use-lineno* 1 0))
-                                     *gv-source-file-info-handle*))
-                  (with-constants-table
-                      (loop
-                         (let* ((top-source-pos-info (core:input-stream-source-pos-info source-sin))
-                                (form (read source-sin nil eof-value)))
-                           (when *debug-compile-file* (bformat t "compile-file: %s\n" form))
-                           (if (eq form eof-value)
-                               (return nil)
-                               (compile-file-form form compile-file-hook))))
-                    (make-boot-function-global-variable *the-module* run-all-function)))))
-            (cmp-log "About to verify the module\n")
-            (cmp-log-dump *the-module*)
-            (irc-verify-module-safe *the-module*)
-            (quick-module-dump *the-module* "preoptimize"))
-          (quick-module-dump module "postoptimize")
-          module)))))
+        (with-compilation-unit ()
+          (let* ((*compile-file-pathname* (pathname (merge-pathnames given-input-pathname)))
+                 (*compile-file-truename* (translate-logical-pathname *compile-file-pathname*)))
+            (with-module (:module module
+                                  :source-namestring (namestring source-location)
+                                  :source-debug-namestring source-debug-namestring
+                                  :source-debug-offset source-debug-offset)
+              (with-debug-info-generator (:module *the-module*
+                                                  :pathname *compile-file-truename*)
+                (or *the-module* (error "*the-module* is NIL"))
+                (let ((eof-value (gensym)))
+                  (with-make-new-run-all (run-all-function)
+                    (with-run-all-body-codegen ;;(result)
+                        (irc-intrinsic "ltvc_assign_source_file_info_handle"
+                                       (irc-constant-string-ptr *gv-source-namestring*)
+                                       (irc-constant-string-ptr *gv-source-debug-namestring*)
+                                       (jit-constant-i64 *source-debug-offset*)
+                                       (jit-constant-i32 (if *source-debug-use-lineno* 1 0))
+                                       *gv-source-file-info-handle*))
+                    (with-constants-table
+                        (loop
+                           (let* ((top-source-pos-info (core:input-stream-source-pos-info source-sin))
+                                  (form (read source-sin nil eof-value)))
+                             (when *debug-compile-file* (bformat t "compile-file: %s\n" form))
+                             (if (eq form eof-value)
+                                 (return nil)
+                                 (compile-file-form form compile-file-hook))))
+                      (make-boot-function-global-variable *the-module* run-all-function)))))
+              (cmp-log "About to verify the module\n")
+              (cmp-log-dump *the-module*)
+              (irc-verify-module-safe *the-module*)
+              (quick-module-dump *the-module* "preoptimize"))
+            (quick-module-dump module "postoptimize")
+            module))))))
 
 (defvar *compile-file-output-pathname* nil)
 
@@ -409,7 +412,6 @@ Compile a lisp source file into an LLVM module.  type can be :kernel or :user"
            (*all-functions-for-one-compile* nil)
            (output-path (compile-file-pathname input-file :output-file output-file :output-type output-type ))
            (*compile-file-output-pathname* output-path)
-           (*compile-file-defs* (make-hash-table))
            (module (compile-file-to-module input-file
                                            :type type
                                            :source-debug-namestring source-debug-namestring

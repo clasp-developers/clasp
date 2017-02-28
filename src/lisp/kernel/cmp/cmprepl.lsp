@@ -41,7 +41,7 @@
          (when *print-implicit-compile-form* 
            (bformat t "Compiling form: %s\n" form)
            (bformat t "*active-protection* --> %s\n" cmp::*active-protection*))
-         (with-compilation-unit (:override t)
+         (with-compilation-unit (:override nil)
            (multiple-value-bind (compiled-function warn fail)
                (compile-in-env 'repl
                                `(lambda () 
