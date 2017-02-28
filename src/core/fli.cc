@@ -1193,11 +1193,15 @@ core::T_sp PERCENTmem_set_unsigned_long( core::Integer_sp address, core::T_sp va
   return mk_integer_ulong( tmp );
 }
 
+// IMPLEMETATION NOTE / PORTING NOTE
+// The functions PERCENTmem_set_long_long and PERCENTmem_set_unsigned_long_long
+// assume a 64 bit length of long long / unsigned long long !
+// frgo, 2017-02-23
 core::T_sp PERCENTmem_set_long_long( core::Integer_sp address, core::T_sp value )
 {
   long long tmp;
-  translate::from_object< core::Fixnum /*long long*/ > v( value );
-  tmp = mem_set< long long >( core::clasp_to_cl_intptr_t( address ), v._v );
+  translate::from_object< int64_t /*long long*/ > v( value );
+  tmp = mem_set< int64_t >( core::clasp_to_cl_intptr_t( address ), v._v );
   return mk_integer_longlong( tmp );
 }
 
@@ -1205,7 +1209,7 @@ core::T_sp PERCENTmem_set_unsigned_long_long( core::Integer_sp address, core::T_
 {
   unsigned long long tmp;
   translate::from_object< uint64_t /*unsigned long long*/ > v( value );
-  tmp = mem_set< unsigned long long >( core::clasp_to_cl_intptr_t( address ), v._v );
+  tmp = mem_set< uint64_t >( core::clasp_to_cl_intptr_t( address ), v._v );
   return mk_integer_ulonglong( tmp );
 }
 
