@@ -5274,12 +5274,21 @@ CL_DEFUN T_sp cl__open(T_sp filename,
   return strm;
 }
 
+
+CL_LAMBDA(strm &key abort);
+CL_DECLARE();
+CL_DOCSTRING("Identical to cl:close but this won't be redefined by gray streams and will be available to call after cl:close is redefined by gray::redefine-cl-functions.");
+CL_DEFUN T_sp core__closeSTAR(T_sp strm, T_sp abort) {
+  return stream_dispatch_table(strm).close(strm);
+}
+
 CL_LAMBDA(strm &key abort);
 CL_DECLARE();
 CL_DOCSTRING("close");
 CL_DEFUN T_sp cl__close(T_sp strm, T_sp abort) {
-  return stream_dispatch_table(strm).close(strm);
+  return core__closeSTAR(strm,abort);
 }
+
 /**********************************************************************
      * BACKEND
      */

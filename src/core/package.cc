@@ -49,6 +49,11 @@ THE SOFTWARE.
 
 namespace core {
 
+CL_DEFUN T_sp core__package_lock(T_sp x, T_sp y) {
+  printf("%s:%d  package-lock doesn't do anything currently\n", __FILE__, __LINE__);
+  return _Nil<T_O>();
+}
+
 CL_LAMBDA(package new-name &optional nick-names);
 CL_DECLARE();
 CL_DOCSTRING("renamePackage");

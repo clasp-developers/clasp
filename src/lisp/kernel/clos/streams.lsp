@@ -315,7 +315,8 @@
   t)
 
 (defmethod close ((stream ansi-stream) &key abort)
-  (cl:close stream :abort abort))
+  ;; To avoid an recursive loop after redefine-cl-symbols - use core:close* here
+  (core:close* stream :abort abort))
 
 (defmethod close ((stream t) &key abort)
   (declare (ignore abort))
