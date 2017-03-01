@@ -1809,4 +1809,5 @@ void bds_bind(ThreadLocalState& env, T_sp symbol, T_sp value ) {
   }
   T_sp& location = env->thread_local
 #endif
+#endif
 };
