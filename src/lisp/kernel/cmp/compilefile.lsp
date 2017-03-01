@@ -135,7 +135,9 @@
   (analyze-top-level-form form)
   (when *compile-print*
     (describe-form form))
-  (literal:with-top-level-form (compile-thunk 'repl form nil)))
+  (literal:with-top-level-form
+   (dbg-set-current-source-pos form)
+   (compile-thunk 'repl form nil)))
 
 (defun t1progn (rest env)
   "All forms in progn at top level are top level forms"
