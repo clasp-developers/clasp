@@ -58,7 +58,7 @@ public:
   T_sp _Value;
   T_sp _Function;
   T_sp _SetfFunction;
-  intptr_t _Binding;
+  uintptr_t _Binding;
   bool _IsSpecial;
   bool _IsConstant;
   bool _ReadOnlyFunction;
