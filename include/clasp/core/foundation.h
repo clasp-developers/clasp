@@ -1244,6 +1244,7 @@ namespace core {
    ThreadLocalState();
     void initialize_thread();
     DynamicBindingStack _Bindings;
+    SimpleVector_sp _ThreadLocalBindings;
     InvocationHistoryFrame* _InvocationHistoryStack;
     ExceptionStack _ExceptionStack;
     MultipleValues _MultipleValues;
