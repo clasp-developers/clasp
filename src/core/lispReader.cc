@@ -437,7 +437,7 @@ T_sp interpret_token_or_throw_reader_error(T_sp sin, const vector<trait_chr_type
     // interpret symbols in current package
     {
       if (cl::_sym_STARread_suppressSTAR->symbolValue().isTrue()) return _Nil<T_O>();
-      SimpleString_sp sym_name = tokenStr(sin,token, name_marker - token.data());
+      SimpleString_sp sym_name = tokenStr(sin,token, name_marker - token.data(),UNDEF_UINT,true );
       Symbol_sp sym = _lisp->getCurrentPackage()->intern(sym_name);
       LOG(BF("sym_name = |%s| sym->symbolNameAsString() = |%s|") % sym_name->get_std_string() % sym->symbolNameAsString());
       return sym;
@@ -461,7 +461,7 @@ T_sp interpret_token_or_throw_reader_error(T_sp sin, const vector<trait_chr_type
       ++cur;
     }
     // TODO Handle proper string names
-    SimpleString_sp symbol_name_str = tokenStr(sin,token, name_marker - token.data());
+    SimpleString_sp symbol_name_str = tokenStr(sin,token, name_marker - token.data(),UNDEF_UINT,true);
     LOG(BF("Interpreting token as packageName[%s] and symbol-name[%s]") % _rep_(packageSin.string()) % symbol_name_str->get_std_string());
     // TODO Deal with proper string package names
     string packageName = packageSin.string()->get_std_string();
@@ -485,7 +485,7 @@ T_sp interpret_token_or_throw_reader_error(T_sp sin, const vector<trait_chr_type
       return _Nil<T_O>();
     // interpret good keywords
     LOG(BF("Token[%s] interpreted as keyword") % name_marker);
-    SimpleString_sp keyword_name = tokenStr(sin,token, name_marker - token.data());
+    SimpleString_sp keyword_name = tokenStr(sin,token, name_marker - token.data(),UNDEF_UINT,true);
     return _lisp->keywordPackage()->intern(keyword_name);
   } break;
   case tsymk:{
