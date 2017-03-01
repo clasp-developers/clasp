@@ -640,8 +640,8 @@ def configure(cfg):
 #    cfg.define("EXPAT",1)
     cfg.define("INCLUDED_FROM_CLASP",1)
     cfg.define("INHERITED_FROM_SRC",1)
-    cfg.define("LLVM_VERSION_X100",390)
-    cfg.define("LLVM_VERSION","3.9")
+    cfg.define("LLVM_VERSION_X100",400)
+    cfg.define("LLVM_VERSION","4.0")
     cfg.define("NDEBUG",1)
 #    cfg.define("DEBUG_CACHE",1)      # Debug the dispatch caches - see cache.cc
 # Keep track of every allocation
