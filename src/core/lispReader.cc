@@ -279,7 +279,7 @@ SimpleString_sp tokenStr(T_sp stream, const vector<trait_chr_type> &token, size_
   return buffer.string()->asMinimalSimpleString();
 }
 
-T_sp interpret_token_or_throw_reader_error(T_sp sin, const vector<trait_chr_type> &token) {
+T_sp interpret_token_or_throw_reader_error(T_sp sin, const vector<trait_chr_type> &token, bool only_dots_ok) {
   LOG(BF("About to interpret_token_or_throw_reader_error"));
   ASSERTF(token.size() > 0, BF("The token is empty!"));
   const trait_chr_type *start = token.data();
@@ -437,7 +437,7 @@ T_sp interpret_token_or_throw_reader_error(T_sp sin, const vector<trait_chr_type
     // interpret symbols in current package
     {
       if (cl::_sym_STARread_suppressSTAR->symbolValue().isTrue()) return _Nil<T_O>();
-      SimpleString_sp sym_name = tokenStr(sin,token, name_marker - token.data(),UNDEF_UINT,true );
+      SimpleString_sp sym_name = tokenStr(sin,token, name_marker - token.data(),UNDEF_UINT,only_dots_ok);
       Symbol_sp sym = _lisp->getCurrentPackage()->intern(sym_name);
       LOG(BF("sym_name = |%s| sym->symbolNameAsString() = |%s|") % sym_name->get_std_string() % sym->symbolNameAsString());
       return sym;
@@ -461,7 +461,7 @@ T_sp interpret_token_or_throw_reader_error(T_sp sin, const vector<trait_chr_type
       ++cur;
     }
     // TODO Handle proper string names
-    SimpleString_sp symbol_name_str = tokenStr(sin,token, name_marker - token.data(),UNDEF_UINT,true);
+    SimpleString_sp symbol_name_str = tokenStr(sin,token, name_marker - token.data(),UNDEF_UINT,only_dots_ok);
     LOG(BF("Interpreting token as packageName[%s] and symbol-name[%s]") % _rep_(packageSin.string()) % symbol_name_str->get_std_string());
     // TODO Deal with proper string package names
     string packageName = packageSin.string()->get_std_string();
@@ -485,7 +485,7 @@ T_sp interpret_token_or_throw_reader_error(T_sp sin, const vector<trait_chr_type
       return _Nil<T_O>();
     // interpret good keywords
     LOG(BF("Token[%s] interpreted as keyword") % name_marker);
-    SimpleString_sp keyword_name = tokenStr(sin,token, name_marker - token.data(),UNDEF_UINT,true);
+    SimpleString_sp keyword_name = tokenStr(sin,token, name_marker - token.data(),UNDEF_UINT,only_dots_ok);
     return _lisp->keywordPackage()->intern(keyword_name);
   } break;
   case tsymk:{
@@ -762,6 +762,7 @@ T_mv lisp_object_query(T_sp sin, bool eofErrorP, T_sp eofValue, bool recursiveP)
   }
   ++monitorReaderStep;
 #endif
+  bool only_dots_ok = false;
   string chars;
   vector<trait_chr_type> token;
   ReadTable_sp readTable = _lisp->getCurrentReadTable();
@@ -819,6 +820,8 @@ step1:
     LOG(BF("step6 - multiple-escape-character char[%c]") % clasp_as_claspCharacter(x));
     LOG(BF("Handling multiple escape - clearing token"));
     token.clear();
+      // |....| or ....|| or ..|.|.. is ok
+    only_dots_ok = true;
     goto step9;
   }
   //    step7:
@@ -854,8 +857,11 @@ step8:
       LOG(BF("Single escape read z[%s] accumulated token[%s]") % clasp_as_claspCharacter(z) % tokenStr(sin,token));
       goto step8;
     }
-    if (y8_syntax_type == kw::_sym_multiple_escape_character)
+    if (y8_syntax_type == kw::_sym_multiple_escape_character) {
+      // |....| or ....|| or ..|.|.. is ok
+      only_dots_ok = true;
       goto step9;
+    }
     if (y8_syntax_type == kw::_sym_invalid_character)
       SIMPLE_ERROR(BF("ReaderError_O::create()"));
     if (y8_syntax_type == kw::_sym_terminating_macro_character) {
@@ -893,6 +899,8 @@ step9:
     }
     if (y9_syntax_type == kw::_sym_multiple_escape_character) {
       LOG(BF("Handling multiple_escape_character"));
+      // |....| or ....|| or ..|.|.. is ok
+      only_dots_ok = true;
       goto step8;
     }
     if (y9_syntax_type == kw::_sym_invalid_character) {
@@ -907,7 +915,7 @@ step10:
   // Throw a ReaderError if the token is not valid syntax
   if (cl::_sym_STARread_suppressSTAR->symbolValue().isTrue())
     return (Values(_Nil<T_O>()));
-  T_sp object = interpret_token_or_throw_reader_error(sin, token);
+  T_sp object = interpret_token_or_throw_reader_error(sin, token,only_dots_ok);
   TRAP_BAD_CONS(object);
   return (Values(object));
 }
