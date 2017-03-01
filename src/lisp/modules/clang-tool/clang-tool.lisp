@@ -410,11 +410,11 @@ Find directories that look like them and replace the ones defined in the constan
   "Define the -isystem command line option for Clang compiler runs")
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
-(defparameter *externals-clasp-pathname* (make-pathname :directory (pathname-directory (pathname ext:*clasp-clang-path*)))))
+           (defparameter *externals-clasp-pathname* (make-pathname :directory (pathname-directory (pathname ext:*clasp-clang-path*)))))
 
 (defconstant +resource-dir+ 
   #+target-os-darwin "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/8.0.0"  ; Used
-  #+target-os-linux (format nil "~a/../lib/clang/~a.0"
+  #+target-os-linux (format nil "~a../lib/clang/~a.0"
                             (namestring *externals-clasp-pathname*)
                             (ext::llvm-short-version))
   "Define the -resource-dir command line option for Clang compiler runs")
