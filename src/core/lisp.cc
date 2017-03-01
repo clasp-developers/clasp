@@ -305,14 +305,17 @@ void dump_info(BuiltInClass_sp co, Lisp_sp lisp) {
 void Lisp_O::setupSpecialSymbols() {
   Null_sp symbol_nil = Null_O::create_at_boot("NIL");
   Symbol_sp symbol_unbound = Symbol_O::create_at_boot("UNBOUND");
+  Symbol_sp symbol_no_thread_local_binding = Symbol_O::create_at_boot("NO-THREAD-LOCAL-BINDING");
   Symbol_sp symbol_deleted = Symbol_O::create_at_boot("DELETED");
   Symbol_sp symbol_sameAsKey = Symbol_O::create_at_boot("SAME-AS-KEY");
   //TODO: Ensure that these globals are updated by the garbage collector
   gctools::global_tagged_Symbol_OP_nil = reinterpret_cast<Symbol_O *>(symbol_nil.raw_());
   gctools::global_tagged_Symbol_OP_unbound = reinterpret_cast<Symbol_O *>(symbol_unbound.raw_());
+  gctools::global_tagged_Symbol_OP_no_thread_local_binding = reinterpret_cast<Symbol_O *>(symbol_no_thread_local_binding.raw_());
   gctools::global_tagged_Symbol_OP_deleted = reinterpret_cast<Symbol_O *>(symbol_deleted.raw_());
   gctools::global_tagged_Symbol_OP_sameAsKey = reinterpret_cast<Symbol_O *>(symbol_sameAsKey.raw_());
   symbol_unbound->_HomePackage = symbol_nil;
+  symbol_no_thread_local_binding->_HomePackage = symbol_nil;
   symbol_deleted->_HomePackage = symbol_nil;
   symbol_sameAsKey->_HomePackage = symbol_nil;
 }

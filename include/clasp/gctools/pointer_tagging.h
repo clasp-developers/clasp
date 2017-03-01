@@ -288,6 +288,10 @@ ABI's  */
     return (reinterpret_cast<void *>(ptr) == global_tagged_Symbol_OP_unbound);
   }
   template <class T>
+    inline bool tagged_no_thread_local_bindingp(T ptr) {
+    return (reinterpret_cast<void *>(ptr) == global_tagged_Symbol_OP_unbound);
+  }
+template <class T>
     inline bool tagged_deletedp(T ptr) {
     return (reinterpret_cast<void *>(ptr) == global_tagged_Symbol_OP_deleted);
   }
@@ -305,6 +309,11 @@ ABI's  */
     inline T tag_unbound() {
     GCTOOLS_ASSERT(tagged_unboundp(global_tagged_Symbol_OP_unbound));
     return reinterpret_cast<T>(global_tagged_Symbol_OP_unbound);
+  }
+  template <class T>
+    inline T tag_no_thread_local_binding() {
+    GCTOOLS_ASSERT(tagged_no_thread_local_bindingp(global_tagged_Symbol_OP_no_thread_local_binding));
+    return reinterpret_cast<T>(global_tagged_Symbol_OP_no_thread_local_binding);
   }
   template <class T>
     inline T tag_deleted() {

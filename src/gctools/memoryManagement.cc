@@ -79,8 +79,6 @@ AllocationRecord* allocation_backtrace(size_t kind, uintptr_t stamp, size_t size
 };
 
 
-
-
 namespace gctools {
 
 // false == SIGABRT invokes debugger, true == terminate (used in core__exit)

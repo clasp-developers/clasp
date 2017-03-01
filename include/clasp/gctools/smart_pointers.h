@@ -1273,6 +1273,12 @@ gctools::smart_ptr<T> _Unbound() {
 }
 
 template <class T>
+gctools::smart_ptr<T> _NoThreadLocalBinding() {
+  gctools::smart_ptr<T> x((gctools::Tagged)gctools::tag_no_thread_local_binding<T *>());
+  return x;
+}
+
+template <class T>
 gctools::smart_ptr<T> _Deleted() {
   gctools::smart_ptr<T> x((gctools::Tagged)gctools::tag_deleted<T *>());
   return x;
