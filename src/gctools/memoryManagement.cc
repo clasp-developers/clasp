@@ -81,6 +81,31 @@ AllocationRecord* allocation_backtrace(size_t kind, uintptr_t stamp, size_t size
 
 namespace gctools {
 
+void register_thread(mp::Process_sp process, void* stack_base) {
+#ifdef USE_BOEHM
+  GC_stack_base gc_stack_base;
+  gc_stack_base.mem_base = stack_base;
+//  GC_register_my_thread(&gc_stack_base);
+#endif
+#ifdef USE_MPS
+#error "add support to add threads for MPS"
+#endif
+};
+
+void unregister_thread(mp::Process_sp process) {
+#ifdef USE_BOEHM
+//  GC_unregister_my_thread();
+#endif
+#ifdef USE_MPS
+#error "add support to add threads for MPS"
+#endif
+};
+
+};
+
+
+namespace gctools {
+
 // false == SIGABRT invokes debugger, true == terminate (used in core__exit)
 bool global_debuggerOnSIGABRT = true;
 #define INITIAL_GLOBAL_POLL_TICKS_PER_CLEANUP 16386
@@ -579,13 +604,15 @@ int startupGarbageCollectorAndSystem(MainFunctionType startupFn, int argc, char 
 
 #if defined(USE_BOEHM)
   GC_set_java_finalization(1);
+//  GC_allow_register_threads();
   GC_set_all_interior_pointers(1); // tagged pointers require this
                                    //printf("%s:%d Turning on interior pointers\n",__FILE__,__LINE__);
   GC_set_warn_proc(clasp_warn_proc);
   //  GC_enable_incremental();
   GC_init();
   _ThreadLocalStack.allocateStack(gc::thread_local_cl_stack_min_size);
-  core::ThreadLocalState thread_local_state;
+  void* topOfStack;
+  core::ThreadLocalState thread_local_state(&topOfStack);
   my_thread = &thread_local_state;
   int exitCode = startupFn(argc, argv, mpiEnabled, mpiRank, mpiSize);
 #endif

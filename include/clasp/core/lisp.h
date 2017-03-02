@@ -331,7 +331,6 @@ public:
   std::string _TrapInternPackage;
   std::string _TrapInternName;
   map<string, void *> _OpenDynamicLibraryHandles;
-  const char *_StackTop;
   uint _StackWarnSize;
   uint _StackSampleCount;
   uint _StackSampleSize;
@@ -413,7 +412,7 @@ public:
   inline void stack_monitor() {
     int x;
     char *xaddr = (char *)(&x);
-    size_t stack = (size_t)(_lisp->_StackTop - xaddr);
+    size_t stack = (size_t)(((const char*)my_thread->_StackTop) - xaddr);
     if (stack > _lisp->_StackWarnSize) {
       af_stackSizeWarning(stack);
     }

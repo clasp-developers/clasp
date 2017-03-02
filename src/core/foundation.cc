@@ -95,7 +95,7 @@ std::vector<size_t> global_BindingIndexPool;
 
 
 
-ThreadLocalState::ThreadLocalState() {
+ThreadLocalState::ThreadLocalState(void* stack_top) : _StackTop(stack_top) {
       this->_Bindings.reserve(1024);
       this->_InvocationHistoryStack = NULL;
       this->_BufferStr8NsPool.reset_(); // Can't use _Nil<core::T_O>(); - too early
@@ -103,7 +103,7 @@ ThreadLocalState::ThreadLocalState() {
 }
 
 void ThreadLocalState::initialize_thread() {
-  printf("%s:%d Initialize all ThreadLocalState things\n",__FILE__, __LINE__);
+  printf("%s:%d Initialize all ThreadLocalState things this->%p\n",__FILE__, __LINE__, (void*)this);
   this->_BFormatStringOutputStream = clasp_make_string_output_stream();
   this->_BignumRegister0 = Bignum_O::create(0);
   this->_BignumRegister1 = Bignum_O::create(0);

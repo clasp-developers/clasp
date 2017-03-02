@@ -31,10 +31,12 @@ THE SOFTWARE.
 // Define compile-time flags that effect structure sizes
 //
 #include <clasp/gctools/configure_memory.h>
-
 #include <clasp/gctools/hardErrors.h>
 
 #ifdef USE_BOEHM
+#ifdef CLASP_THREADS
+  #define GC_THREADS
+#endif
 #include <gc/gc.h>
 #include <gc/gc_allocator.h>
 typedef void *LocationDependencyPtrT;
@@ -718,6 +720,15 @@ void client_validate(core::T_sp client);
 void header_describe(gctools::Header_s* headerP);
 };
 
+
+#include <clasp/core/mpPackage.fwd.h>
+
+namespace gctools {
+  void register_thread(mp::Process_sp process, void* stackTop);
+  void unregister_thread(mp::Process_sp process);
+};
+   
+  
 
 namespace gctools {
 

@@ -1466,11 +1466,11 @@ CL_DOCSTRING("stackUsed");
 CL_DEFUN size_t core__stack_used() {
   int x;
   char *xaddr = (char *)(&x);
-  if ( xaddr > _lisp->_StackTop ) {
-    printf("%s:%d There is a problem with the stack _lisp->_StackTop@%p is below the current stack pointer@%p\n", __FILE__, __LINE__, _lisp->_StackTop, xaddr );
+  if ( xaddr > my_thread->_StackTop ) {
+    printf("%s:%d There is a problem with the stack _lisp->_StackTop@%p is below the current stack pointer@%p\n", __FILE__, __LINE__, my_thread->_StackTop, xaddr );
     abort();
   }
-  size_t stack = (size_t)(_lisp->_StackTop - xaddr);
+  size_t stack = (size_t)((const char*)my_thread->_StackTop - xaddr);
   return stack;
 };
 
@@ -1495,7 +1495,7 @@ void af_stackSizeWarning(size_t stackUsed) {
     printf("%s:%d Stack is getting full currently at %zu bytes - warning at %u bytes  top@%p current@%p\n",
            __FILE__, __LINE__,
            stackUsed, _lisp->_StackWarnSize,
-           _lisp->_StackTop, xaddr );
+           my_thread->_StackTop, xaddr );
     ExceptionSafeResetInvokedInternalDebugger safe;
     core__invoke_internal_debugger(_Nil<core::T_O>());
   }
@@ -2866,7 +2866,6 @@ LispHolder::LispHolder(bool mpiEnabled, int mpiRank, int mpiSize) {
 }
 
 void LispHolder::startup(int argc, char *argv[], const string &appPathEnvironmentVariable) {
-  this->_Lisp->_StackTop = gctools::_global_stack_marker; // (char *)&argc;
   ::_lisp = this->_Lisp;
 
   const char *argv0 = "./";

@@ -1,5 +1,5 @@
 /*
-    File: claspThreads.h
+    File: mpPackage.fwd.h
 */
 
 /*
@@ -24,21 +24,15 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
+#ifndef mpPackage_fwd_H
+#define mpPackage_fwd_H
 
-struct BrclThread {
+PACKAGE_USE("COMMON-LISP");
+NAMESPACE_PACKAGE_ASSOCIATION(mp, MpPkg, "MP")
 
-  // Objects from Lisp object
-  /*! Store the dynamic variable binding stack */
-  DynamicBindingStack _Bindings;
+namespace mp {
 
-  /*! Store Catch info */
-  List_sp _CatchInfo;
-
-  /*! Generic functions method cache */
-  Cache *_MethodCachePtr;
-
-  /*! Generic functions slot cache */
-  Cache *_SlotCachePtr;
-
-  // InvocationStack needs to be here as well
+  class Process_O;
+  typedef gctools::smart_ptr<Process_O> Process_sp;
 };
+#endif

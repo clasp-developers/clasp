@@ -1278,8 +1278,9 @@ namespace core {
   struct InvocationHistoryFrame;
   
   struct ThreadLocalState {
-   ThreadLocalState();
+    ThreadLocalState(void* stack_top);
     void initialize_thread();
+    void* _StackTop;
     DynamicBindingStack _Bindings;
     InvocationHistoryFrame* _InvocationHistoryStack;
     ExceptionStack _ExceptionStack;
@@ -1303,7 +1304,7 @@ namespace core {
 
 
 /*! Should be thread_local on linux or __thread on OS X */
-#define THREAD_LOCAL
+#define THREAD_LOCAL thread_local
 
 /*! Declare this in the top namespace */
 extern THREAD_LOCAL core::ThreadLocalState *my_thread;
