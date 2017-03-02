@@ -283,6 +283,27 @@ T_sp* DynamicBindingStack::reference_raw_(Symbol_O* var) const{
 }
 
 SYMBOL_EXPORT_SC_(CorePkg,STARwatchDynamicBindingStackSTAR);
+void DynamicBindingStack::push_with_value_coming(Symbol_sp var) {
+  T_sp* current_value_ptr = this->reference(var);
+#ifdef CLASP_THREADS
+  if ( var->_Binding == NO_THREAD_LOCAL_BINDINGS )
+    var->_Binding = this->new_binding_index();
+  uintptr_t index = var->_Binding;
+  // If it has a _Binding value but our table is not big enough, then expand the table.
+  unlikely_if (index >= this->_ThreadLocalBindings.size()) {
+    this->_ThreadLocalBindings.resize(index+1,_NoThreadLocalBinding<T_O>());
+  }
+#ifdef DEBUG_DYNAMIC_BINDING_STACK // debugging
+  printf("%s:%d  caught push[%zu] of %s  pushing value: %s\n", __FILE__, __LINE__, this->_Bindings.size(), var->symbolNameAsString().c_str(), _rep_(this->_ThreadLocalBindings[index]).c_str());
+#endif
+  this->_Bindings.emplace_back(var,this->_ThreadLocalBindings[index]);
+  this->_ThreadLocalBindings[index] = *current_value_ptr;
+#else
+  this->_Bindings.emplace_back(var,var->symbolValueUnsafe());
+#endif
+}
+
+
 void DynamicBindingStack::push(Symbol_sp var, T_sp value) {
 #ifdef CLASP_THREADS
   if ( var->_Binding == NO_THREAD_LOCAL_BINDINGS )

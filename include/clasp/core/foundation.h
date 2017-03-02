@@ -1184,6 +1184,7 @@ namespace core {
     Symbol_sp topSymbol() const { return this->_Bindings.back()._Var; };
     Symbol_sp var(size_t i) const { return this->_Bindings[i]._Var; };
     T_sp val(size_t i) const { return this->_Bindings[i]._Val; };
+    ATTR_WEAK void push_with_value_coming(Symbol_sp var);
     ATTR_WEAK void push(Symbol_sp var, T_sp value=_Unbound<T_O>());
     // Push the current value of the symbol onto the DynamicBindingStack
     //   The new value will follow immediately
