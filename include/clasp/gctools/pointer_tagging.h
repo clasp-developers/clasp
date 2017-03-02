@@ -289,7 +289,7 @@ ABI's  */
   }
   template <class T>
     inline bool tagged_no_thread_local_bindingp(T ptr) {
-    return (reinterpret_cast<void *>(ptr) == global_tagged_Symbol_OP_unbound);
+    return (reinterpret_cast<void *>(ptr) == global_tagged_Symbol_OP_no_thread_local_binding);
   }
 template <class T>
     inline bool tagged_deletedp(T ptr) {

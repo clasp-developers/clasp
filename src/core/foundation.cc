@@ -85,6 +85,16 @@ THE SOFTWARE.
 THREAD_LOCAL core::ThreadLocalState* my_thread;
 
 namespace core {
+
+
+#ifdef CLASP_THREADS
+std::atomic<size_t> global_LastBindingIndex = ATOMIC_VAR_INIT(0);
+std::mutex global_BindingIndexPoolMutex;
+std::vector<size_t> global_BindingIndexPool;
+#endif
+
+
+
 ThreadLocalState::ThreadLocalState() {
       this->_Bindings.reserve(1024);
       this->_InvocationHistoryStack = NULL;

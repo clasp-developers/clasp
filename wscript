@@ -627,7 +627,8 @@ def configure(cfg):
 # defines that slow down program execution
 #  There are more defined in clasp/include/gctools/configure_memory.h
     cfg.define("DEBUG_SLOW",1)    # Code runs slower due to checks - undefine to remove checks
-# ----------    
+# ----------
+    cfg.define("CLASP_THREADS",1)
     cfg.define("CLASP_GIT_COMMIT",get_git_commit(cfg))
     cfg.define("CLASP_VERSION",get_clasp_version(cfg))
     cfg.define("CLBIND_DYNAMIC_LINK",1)

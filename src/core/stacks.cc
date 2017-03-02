@@ -228,35 +228,87 @@ string backtrace_as_string() {
 }
 
 
-SYMBOL_EXPORT_SC_(CorePkg, STARwatchDynamicBindingStackSTAR);
-void DynamicBindingStack::push(Symbol_sp var) {
-#if 0 // debugging
-  if ( _sym_STARwatchDynamicBindingStackSTAR->symbolValueUnsafe().notnilp() ) {
-    List_sp assoc = cl__assoc(var,_sym_STARwatchDynamicBindingStackSTAR->symbolValue(),_Nil<T_O>());
-    if ( assoc.notnilp() ) {
-      T_sp funcDesig = oCdr(assoc);
-      if ( funcDesig.notnilp() ) {
-        eval::funcall(funcDesig,var,_lisp->_true());
-      } else {
-        printf("%s:%d  *watch-dynamic-binding-stack* caught push[%zu] of %s\n", __FILE__, __LINE__, this->_Bindings.size(), var->formattedName(true).c_str());
-      }
-    }
+size_t DynamicBindingStack::new_binding_index()
+{
+#ifdef CLASP_THREADS
+  SafeBindingIndexPoolMutex mutex;
+  if ( global_BindingIndexPool.size() != 0 ) {
+    size_t index = global_BindingIndexPool.back();
+    global_BindingIndexPool.pop_back();
+    return index;
   }
+  return global_LastBindingIndex.fetch_add(1);
+#else
+  return 0;
 #endif
-#if 0 // debugging
-  if ( _sym_STARwatchDynamicBindingStackSTAR->symbolValueUnsafe().notnilp() ) {
-	    //	    printf("%s:%d  *watch-dynamic-binding-stack* caught push[%zu] of %s\n", __FILE__, __LINE__, this->_Bindings.size(), var->formattedName(true).c_str());
-    printf("%s:%d  *watch-dynamic-binding-stack* caught push[%zu] of %s\n", __FILE__, __LINE__, this->_Bindings.size(), var->symbolNameAsString().c_str());
-	    //printf("%s:%d  *watch-dynamic-binding-stack* caught push[%zu]\n", __FILE__, __LINE__, this->_Bindings.size() );
-  };
+};
+
+void DynamicBindingStack::release_binding_index(size_t index)
+{
+#ifdef CLASP_THREADS
+  SafeBindingIndexPoolMutex mutex;
+  global_BindingIndexPool.push_back(index);
 #endif
-  DynamicBinding bind(var, var->symbolValueUnsafe());
-  this->_Bindings.push_back(bind);
+};
+
+//#define DEBUG_DYNAMIC_BINDING_STACK 1
+
+T_sp* DynamicBindingStack::reference_raw_(Symbol_O* var) const{
+#ifdef CLASP_THREADS
+  if ( var->_Binding == NO_THREAD_LOCAL_BINDINGS ) {
+#ifdef DEBUG_DYNAMIC_BINDING_STACK
+    printf("%s:%d     reference_raw %s    _GlobalValue   returning-> %p\n", __FILE__, __LINE__, _rep_(var->_Name).c_str(), var->_GlobalValue.raw_());
+#endif
+    return &var->_GlobalValue;
+  }
+  uintptr_t index = var->_Binding;
+  // If it has a _Binding value but our table is not big enough, then expand the table.
+  unlikely_if (index >= this->_ThreadLocalBindings.size()) {
+    this->_ThreadLocalBindings.resize(index+1,_NoThreadLocalBinding<T_O>());
+  }
+  if (gctools::tagged_no_thread_local_bindingp(this->_ThreadLocalBindings[index].raw_())) {
+#ifdef DEBUG_DYNAMIC_BINDING_STACK
+    printf("%s:%d     reference_raw %s    _GlobalValue  but index = %zu   returning -> %p\n", __FILE__, __LINE__, _rep_(var->_Name).c_str(), index , var->_GlobalValue.raw_());
+    fflush(stdout);
+#endif
+    return &var->_GlobalValue;
+  }
+#ifdef DEBUG_DYNAMIC_BINDING_STACK
+  printf("%s:%d     reference_raw %s    _ThreadLocalBindings[%zu]  -> %p\n", __FILE__, __LINE__, _rep_(var->_Name).c_str(), index, this->_ThreadLocalBindings[index].raw_());
+#endif
+  return &this->_ThreadLocalBindings[index];
+#else
+  return &var->_GlobalValue;
+#endif
 }
+
+SYMBOL_EXPORT_SC_(CorePkg,STARwatchDynamicBindingStackSTAR);
+void DynamicBindingStack::push(Symbol_sp var, T_sp value) {
+#ifdef CLASP_THREADS
+  if ( var->_Binding == NO_THREAD_LOCAL_BINDINGS )
+    var->_Binding = this->new_binding_index();
+  uintptr_t index = var->_Binding;
+  // If it has a _Binding value but our table is not big enough, then expand the table.
+  unlikely_if (index >= this->_ThreadLocalBindings.size()) {
+    this->_ThreadLocalBindings.resize(index+1,_NoThreadLocalBinding<T_O>());
+  }
+#ifdef DEBUG_DYNAMIC_BINDING_STACK // debugging
+  printf("%s:%d  caught push[%zu] of %s  pushing value: %s\n", __FILE__, __LINE__, this->_Bindings.size(), var->symbolNameAsString().c_str(), _rep_(this->_ThreadLocalBindings[index]).c_str());
+#endif
+  this->_Bindings.emplace_back(var,this->_ThreadLocalBindings[index]);
+  this->_ThreadLocalBindings[index] = value;
+#else
+  this->_Bindings.emplace_back(var,var->symbolValueUnsafe());
+  this->_GlobalValue = value;
+#endif
+}
+
+
 
 void DynamicBindingStack::pop() {
   DynamicBinding &bind = this->_Bindings.back();
-#if 0 // debugging
+#ifdef DEBUG_DYNAMIC_BINDING_STACK // debugging
+#if 1
   if ( _sym_STARwatchDynamicBindingStackSTAR->symbolValue().notnilp() ) {
     List_sp assoc = cl__assoc(bind._Var,_sym_STARwatchDynamicBindingStackSTAR->symbolValue(),_Nil<T_O>());
     if ( assoc.notnilp() ) {
@@ -269,15 +321,16 @@ void DynamicBindingStack::pop() {
     }
   }
 #endif
-#if 0 // debugging
-  if ( _sym_STARwatchDynamicBindingStackSTAR->symbolValueUnsafe().notnilp() ) {
-	    //	    printf("%s:%d  *watch-dynamic-binding-stack* caught pop[%zu] of %s\n", __FILE__, __LINE__, this->_Bindings.size()-1, bind._Var->formattedName(true).c_str());
-    printf("%s:%d  *watch-dynamic-binding-stack* caught pop[%zu] of %s\n", __FILE__, __LINE__, this->_Bindings.size(), bind._Var->symbolNameAsString().c_str());
-	    //printf("%s:%d  *watch-dynamic-binding-stack* caught pop[%zu]\n", __FILE__, __LINE__, this->_Bindings.size() );
-  }
+  printf("%s:%d  DynamicBindingStack::pop %s -> %s\n", __FILE__, __LINE__, _rep_(bind._Var).c_str(), _rep_(bind._Val).c_str());
 #endif
+#ifdef CLASP_THREADS
+  ASSERT(this->_ThreadLocalBindings.size()>bind._Var->_Binding); 
+  this->_ThreadLocalBindings[bind._Var->_Binding] = bind._Val;
+  this->_Bindings.pop_back();
+#else
   bind._Var->setf_symbolValue(bind._Val);
   this->_Bindings.pop_back();
+#endif
 }
 
 

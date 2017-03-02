@@ -85,6 +85,7 @@ class type_info;
 
 #define DLL_PUBLIC __attribute__((visibility("default")))
 
+#include <atomic>
 #include <map>
 
 #define VARARGS
@@ -1152,20 +1153,51 @@ namespace core {
 };
 
 namespace core {
+#ifdef CLASP_THREADS
+  /*! Keep track of binding indices for symbols */
+  extern std::mutex global_BindingIndexPoolMutex;
+  extern std::vector<size_t> global_BindingIndexPool;
+  extern std::atomic<size_t> global_LastBindingIndex;
+  struct SafeBindingIndexPoolMutex {
+    SafeBindingIndexPoolMutex() {
+      global_BindingIndexPoolMutex.lock();
+    };
+    ~SafeBindingIndexPoolMutex() {
+      global_BindingIndexPoolMutex.unlock();
+    }
+  };
+#endif
 
 #pragma GCC visibility push(default)
   class DynamicBindingStack {
   public:
     gctools::Vec0<DynamicBinding> _Bindings;
+    mutable gctools::Vec0<T_sp>           _ThreadLocalBindings;
   public:
-    inline int top() const { return this->_Bindings.size() - 1; }
+    size_t new_binding_index();
+    void release_binding_index(size_t index);
+    inline size_t top() const { return this->_Bindings.size() - 1; }
     Symbol_sp topSymbol() const { return this->_Bindings.back()._Var; };
-    Symbol_sp var(int i) const { return this->_Bindings[i]._Var; };
-    T_sp val(int i) const { return this->_Bindings[i]._Val; };
-    ATTR_WEAK void push(Symbol_sp var);
+    Symbol_sp var(size_t i) const { return this->_Bindings[i]._Var; };
+    T_sp val(size_t i) const { return this->_Bindings[i]._Val; };
+    ATTR_WEAK void push(Symbol_sp var, T_sp value=_Unbound<T_O>());
+    // Push the current value of the symbol onto the DynamicBindingStack
+    //   The new value will follow immediately
     ATTR_WEAK void pop();
-    void reserve(int x) { this->_Bindings.reserve(x); };
-    int size() const { return this->_Bindings.size(); };
+    void reserve(size_t x) { this->_Bindings.reserve(x); };
+    size_t size() const { return this->_Bindings.size(); };
+    void expandThreadLocalBindings(size_t index);
+    // Dynamic symbol access
+    /*! Return a pointer to the value slot for the symbol.  
+        USE THIS IMMEDIATELY AND THEN DISCARD.
+        DO NOT DO STORE THIS OR KEEP THIS FOR ANY LENGTH OF TIME. */
+    T_sp* reference_raw_(Symbol_O* varP) const;
+    const T_sp* reference_raw(const Symbol_O* varP) const { return const_cast<const T_sp*>(this->reference_raw_(const_cast<Symbol_O*>(varP)));};
+    T_sp* reference_raw(Symbol_O* varP) { return this->reference_raw_(varP);};
+    T_sp* reference(Symbol_sp var) { return const_cast<T_sp*>(this->reference_raw(&*var));};
+    const T_sp* reference(Symbol_sp var) const { return this->reference_raw(&*var);};
+    T_sp  value(Symbol_sp var) const { return *this->reference(var);};
+    void  setf_value(Symbol_sp var, T_sp value) { *this->reference(var) = value;};
   };
 #pragma GCC visibility pop
 };
@@ -1244,7 +1276,6 @@ namespace core {
    ThreadLocalState();
     void initialize_thread();
     DynamicBindingStack _Bindings;
-    SimpleVector_sp _ThreadLocalBindings;
     InvocationHistoryFrame* _InvocationHistoryStack;
     ExceptionStack _ExceptionStack;
     MultipleValues _MultipleValues;

@@ -1432,7 +1432,7 @@ extern "C" {
 
 void pushDynamicBinding(core::T_sp *tsymbolP) {
   core::Symbol_sp sym((gctools::Tagged)(tsymbolP->raw_()));
-  my_thread->bindings().push(sym);
+  my_thread->bindings().push(sym,_Unbound<T_O>());
   //	printf("%s:%d - pushDynamicBinding symbol: %s  value: %s\n", __FILE__, __LINE__, sym->__repr__().c_str(), sym->symbolValueOrUnbound()->__repr__().c_str() );
 }
 
