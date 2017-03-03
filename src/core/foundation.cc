@@ -89,7 +89,7 @@ namespace core {
 
 #ifdef CLASP_THREADS
 std::atomic<size_t> global_LastBindingIndex = ATOMIC_VAR_INIT(0);
-std::mutex global_BindingIndexPoolMutex;
+pthread_mutex_t global_BindingIndexPoolMutex = PTHREAD_MUTEX_INITIALIZER;
 std::vector<size_t> global_BindingIndexPool;
 #endif
 

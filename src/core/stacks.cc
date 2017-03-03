@@ -34,6 +34,7 @@ THE SOFTWARE.
 #include <clasp/core/designators.h>
 #include <clasp/core/array.h>
 #include <clasp/core/instance.h>
+#include <clasp/core/mpPackage.h>
 #include <clasp/core/primitives.h>
 #include <clasp/core/sourceFileInfo.h>
 #include <clasp/core/write_ugly.h>

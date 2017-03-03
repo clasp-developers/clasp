@@ -1157,19 +1157,22 @@ namespace core {
 
 #ifdef CLASP_THREADS
   struct SafeMutex {
-  SafeMutex(std::mutex& m) : _Mutex(m) {
-      m.lock();
+  SafeMutex(pthread_mutex_t& m) : _Mutex(m) {
+    pthread_mutex_lock(&m);
     };
-    std::mutex& _Mutex;
+    pthread_mutex_t& _Mutex;
     ~SafeMutex() {
-      this->_Mutex.unlock();
+      pthread_mutex_unlock(&this->_Mutex);
     }
   };
+#endif
+#ifdef CLASP_THREADS
+#include <atomic>
 #endif
 namespace core {
 #ifdef CLASP_THREADS
   /*! Keep track of binding indices for symbols */
-  extern std::mutex global_BindingIndexPoolMutex;
+  extern pthread_mutex_t global_BindingIndexPoolMutex;
   extern std::vector<size_t> global_BindingIndexPool;
   extern std::atomic<size_t> global_LastBindingIndex;
 #endif
