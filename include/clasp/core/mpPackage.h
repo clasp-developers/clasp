@@ -28,7 +28,7 @@ THE SOFTWARE.
 #ifndef _clasp_mpPackage_H
 #define _clasp_mpPackage_H
 #include <thread>
-
+#include <condition_variable>
 #include <clasp/core/mpPackage.fwd.h>
 
 namespace mp {
