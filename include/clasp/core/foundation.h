@@ -86,8 +86,7 @@ class type_info;
 #define DLL_PUBLIC __attribute__((visibility("default")))
 
 #ifdef CLASP_THREADS
-#include <atomic>
-#include <mutex>
+#include <pthread.h>
 #endif
 
 #include <map>

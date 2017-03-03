@@ -44,7 +44,8 @@ SYMBOL_SC_(MpPkg, aSingleMpSymbol);
 SYMBOL_EXPORT_SC_(MpPkg, roo);
 
 
-void start_thread(Process_sp process, core::T_sp function) {
+void* start_thread(void* claspProcess) {
+  Process_O* my_claspProcess = (Process_O*)claspProcess;
   void* stack_base;
   core::ThreadLocalState my_thread_local_state(&stack_base);
   printf("%s:%d entering start_thread  &my_thread -> %p \n", __FILE__, __LINE__, (void*)&my_thread);
@@ -59,7 +60,15 @@ void start_thread(Process_sp process, core::T_sp function) {
 #error "add support to add threads for MPS"
 #endif
 //  gctools::register_thread(process,stack_base);
-  core::eval::funcall(function);
+  core::List_sp args = my_claspProcess->_Arguments;
+  core::T_mv result_mv = core::eval::applyLastArgsPLUSFirst(my_claspProcess->_Function,args);
+  core::T_sp result0 = result_mv;
+  core::List_sp result_list = _Nil<core::T_O>();
+  for ( int i=result_mv.number_of_values(); i>0; --i ) {
+    result_list = core::Cons_O::create(result_mv.valueGet_(i),result_list);
+  }
+  result_list = core::Cons_O::create(result0,result_list);
+  my_claspProcess->_ReturnValuesList = result_list;
 //  gctools::unregister_thread(process);
   printf("%s:%d leaving start_thread\n", __FILE__, __LINE__);
 #ifdef USE_BOEHM
@@ -68,7 +77,14 @@ void start_thread(Process_sp process, core::T_sp function) {
 #ifdef USE_MPS
 #error "add support to add threads for MPS"
 #endif
+  return NULL;
 }
 
+
+
+CL_DEFUN int mp__process_enable(Process_sp process)
+{
+  return process->enable();
+};
 
 };

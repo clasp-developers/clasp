@@ -11,7 +11,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <malloc/malloc.h>
-#include <atomic>
 // Taken from dyld-interposing.h
 
 #define DYLD_INTERPOSE(_replacment,_replacee) \

@@ -38,6 +38,7 @@ THE SOFTWARE.
 #include <clasp/gctools/gc_boot.h>
 #include <clasp/gctools/gcFunctions.h>
 #include <clasp/gctools/memoryManagement.h>
+#include <clasp/core/mpPackage.h>
 //#include "main/allHeaders.cc"
 
 #ifdef _TARGET_OS_LINUX
@@ -629,6 +630,7 @@ int startupGarbageCollectorAndSystem(MainFunctionType startupFn, int argc, char 
   GC_unregister_my_thread();
 #endif
 #endif
+  mp::ClaspThreads_exit(); // run pthreads_exit
   return exitCode;
 }
 
