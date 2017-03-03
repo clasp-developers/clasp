@@ -57,7 +57,8 @@ void* start_thread(void* claspProcess) {
   GC_register_my_thread(&gc_stack_base);
 #endif
 #ifdef USE_MPS
-#error "add support to add threads for MPS"
+  printf("%s:%d Handle threads for MPS\n", __FILE__, __LINE__ );
+  abort();
 #endif
 //  gctools::register_thread(process,stack_base);
   core::List_sp args = my_claspProcess->_Arguments;
@@ -75,7 +76,8 @@ void* start_thread(void* claspProcess) {
   GC_unregister_my_thread();
 #endif
 #ifdef USE_MPS
-#error "add support to add threads for MPS"
+  printf("%s:%d Handle threads for MPS\n", __FILE__, __LINE__ );
+  abort();
 #endif
   return NULL;
 }
