@@ -1156,20 +1156,23 @@ namespace core {
 
 };
 
+#ifdef CLASP_THREADS
+  struct SafeMutex {
+  SafeMutex(std::mutex& m) : _Mutex(m) {
+      m.lock();
+    };
+    std::mutex& _Mutex;
+    ~SafeMutex() {
+      this->_Mutex.unlock();
+    }
+  };
+#endif
 namespace core {
 #ifdef CLASP_THREADS
   /*! Keep track of binding indices for symbols */
   extern std::mutex global_BindingIndexPoolMutex;
   extern std::vector<size_t> global_BindingIndexPool;
   extern std::atomic<size_t> global_LastBindingIndex;
-  struct SafeBindingIndexPoolMutex {
-    SafeBindingIndexPoolMutex() {
-      global_BindingIndexPoolMutex.lock();
-    };
-    ~SafeBindingIndexPoolMutex() {
-      global_BindingIndexPoolMutex.unlock();
-    }
-  };
 #endif
 
 #pragma GCC visibility push(default)
@@ -1280,6 +1283,7 @@ namespace core {
   struct ThreadLocalState {
     ThreadLocalState(void* stack_top);
     void initialize_thread();
+    mp::Process_sp _Process;
     void* _StackTop;
     DynamicBindingStack _Bindings;
     InvocationHistoryFrame* _InvocationHistoryStack;

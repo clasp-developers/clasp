@@ -36,20 +36,25 @@ namespace mp {
   FORWARD(Mutex);
   FORWARD(RecursiveMutex);
   FORWARD(ConditionVariable);
+
+  void start_thread(Process_sp process, core::T_sp function);
+
+    
   class Process_O : public core::CxxObject_O {
     LISP_CLASS(mp, MpPkg, Process_O, "Process",core::CxxObject_O);
   public:
     CL_LISPIFY_NAME("make_process");
-    CL_DEF_CLASS_METHOD static Process_sp make_process(core::T_sp function) {
-      GC_ALLOCATE_VARIADIC(Process_O,p,function);
+    CL_DEF_CLASS_METHOD static Process_sp make_process(core::T_sp name, core::T_sp function) {
+      GC_ALLOCATE_VARIADIC(Process_O,p,name,function);
       return p;
     };
   public:
+    core::T_sp  _Name;
     core::T_sp  _Function;
+    core::T_sp  _ReturnValuesList;
     std::thread _Thread;
-    
-    Process_O(core::T_sp function);
-
+    std::mutex  _ExitBarrier;
+    Process_O(core::T_sp name, core::T_sp function) : _Name(name), _Function(function), _ReturnValuesList(_Nil<core::T_O>()), _Thread(start_thread,this->asSmartPtr(),function) {};
   };
 };
 

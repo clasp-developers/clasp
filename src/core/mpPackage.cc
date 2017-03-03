@@ -71,14 +71,4 @@ void start_thread(Process_sp process, core::T_sp function) {
 }
 
 
-Process_O::Process_O(core::T_sp function) : _Function(function), _Thread(start_thread,this->asSmartPtr(),function) {};
-  
-#if 0
-void initialize_mpPackage() {
-  list<string> lnicknames;
-  list<string> luse = {"COMMON-LISP"};
-  _lisp->makePackage("MP", lnicknames, luse);
-  // We don't have to create the MP symbols here - it's done in bootStrapCoreSymbolMap
-}
-#endif
 };

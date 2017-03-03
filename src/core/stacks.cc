@@ -231,7 +231,7 @@ string backtrace_as_string() {
 size_t DynamicBindingStack::new_binding_index()
 {
 #ifdef CLASP_THREADS
-  SafeBindingIndexPoolMutex mutex;
+  SafeMutex mutex(global_BindingIndexPoolMutex);
   if ( global_BindingIndexPool.size() != 0 ) {
     size_t index = global_BindingIndexPool.back();
     global_BindingIndexPool.pop_back();
@@ -246,7 +246,7 @@ size_t DynamicBindingStack::new_binding_index()
 void DynamicBindingStack::release_binding_index(size_t index)
 {
 #ifdef CLASP_THREADS
-  SafeBindingIndexPoolMutex mutex;
+  SafeMutex mutex(global_BindingIndexPoolMutex);
   global_BindingIndexPool.push_back(index);
 #endif
 };
