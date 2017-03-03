@@ -51,10 +51,12 @@ void* start_thread(void* claspProcess) {
   printf("%s:%d entering start_thread  &my_thread -> %p \n", __FILE__, __LINE__, (void*)&my_thread);
   my_thread = &my_thread_local_state;
   my_thread->initialize_thread();
+#if 0
 #ifdef USE_BOEHM
   GC_stack_base gc_stack_base;
   GC_get_stack_base(&gc_stack_base);
   GC_register_my_thread(&gc_stack_base);
+#endif
 #endif
 #ifdef USE_MPS
   printf("%s:%d Handle threads for MPS\n", __FILE__, __LINE__ );
@@ -72,13 +74,16 @@ void* start_thread(void* claspProcess) {
   my_claspProcess->_ReturnValuesList = result_list;
 //  gctools::unregister_thread(process);
   printf("%s:%d leaving start_thread\n", __FILE__, __LINE__);
+#if 0
 #ifdef USE_BOEHM
   GC_unregister_my_thread();
+#endif
 #endif
 #ifdef USE_MPS
   printf("%s:%d Handle threads for MPS\n", __FILE__, __LINE__ );
   abort();
 #endif
+  printf("%s:%d  really leaving start_thread\n", __FILE__, __LINE__ );
   return NULL;
 }
 

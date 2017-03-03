@@ -40,7 +40,35 @@ namespace mp {
 
 namespace mp {
 
-  struct ClaspProcess;
+  struct GlobalMutex {
+    pthread_mutex_t _Mutex;
+    GlobalMutex() {
+      this->_Mutex = PTHREAD_MUTEX_INITIALIZER;
+    };
+    void lock() { pthread_mutex_lock(&this->_Mutex); };
+    void unlock() { pthread_mutex_lock(&this->_Mutex); };
+    bool try_lock() { return pthread_mutex_trylock(&this->_Mutex)==0; };
+    ~GlobalMutex() {
+    };
+  };
+
+  struct GlobalRecursiveMutex {
+    pthread_mutex_t _Mutex;
+    GlobalRecursiveMutex() {
+#if defined(_TARGET_OS_LINUX)
+      this->_Mutex = PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP;
+#elif defined(_TARGET_OS_DARWIN)
+      this->_Mutex = PTHREAD_RECURSIVE_MUTEX_INITIALIZER;
+#else
+      #error "You need to initialize this->_Mutex"
+#endif
+    };
+    void lock() { pthread_mutex_lock(&this->_Mutex); };
+    void unlock() { pthread_mutex_lock(&this->_Mutex); };
+    bool try_lock() { return pthread_mutex_trylock(&this->_Mutex)==0; };
+    ~GlobalRecursiveMutex() {
+    };
+  };
 
   void* start_thread(void* claspProcess);
 
