@@ -50,10 +50,24 @@ void start_thread(Process_sp process, core::T_sp function) {
   printf("%s:%d entering start_thread  &my_thread -> %p \n", __FILE__, __LINE__, (void*)&my_thread);
   my_thread = &my_thread_local_state;
   my_thread->initialize_thread();
-  gctools::register_thread(process,stack_base);
+#ifdef USE_BOEHM
+  GC_stack_base gc_stack_base;
+  GC_get_stack_base(&gc_stack_base);
+  GC_register_my_thread(&gc_stack_base);
+#endif
+#ifdef USE_MPS
+#error "add support to add threads for MPS"
+#endif
+//  gctools::register_thread(process,stack_base);
   core::eval::funcall(function);
-  gctools::unregister_thread(process);
+//  gctools::unregister_thread(process);
   printf("%s:%d leaving start_thread\n", __FILE__, __LINE__);
+#ifdef USE_BOEHM
+  GC_unregister_my_thread();
+#endif
+#ifdef USE_MPS
+#error "add support to add threads for MPS"
+#endif
 }
 
 

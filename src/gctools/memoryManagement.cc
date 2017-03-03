@@ -83,8 +83,9 @@ namespace gctools {
 
 void register_thread(mp::Process_sp process, void* stack_base) {
 #ifdef USE_BOEHM
-  GC_stack_base gc_stack_base;
-  gc_stack_base.mem_base = stack_base;
+  // ----   Boehm stuff needs to be done in the thread function
+//  GC_stack_base gc_stack_base;
+//  GC_get_stack_base(&gc_stack_base);
 //  GC_register_my_thread(&gc_stack_base);
 #endif
 #ifdef USE_MPS
@@ -94,6 +95,7 @@ void register_thread(mp::Process_sp process, void* stack_base) {
 
 void unregister_thread(mp::Process_sp process) {
 #ifdef USE_BOEHM
+  // ----   Boehm stuff needs to be done in the thread function
 //  GC_unregister_my_thread();
 #endif
 #ifdef USE_MPS
@@ -603,6 +605,8 @@ int startupGarbageCollectorAndSystem(MainFunctionType startupFn, int argc, char 
 #endif
 
 #if defined(USE_BOEHM)
+  GC_INIT();
+  GC_allow_register_threads();
   GC_set_java_finalization(1);
 //  GC_allow_register_threads();
   GC_set_all_interior_pointers(1); // tagged pointers require this
@@ -614,7 +618,16 @@ int startupGarbageCollectorAndSystem(MainFunctionType startupFn, int argc, char 
   void* topOfStack;
   core::ThreadLocalState thread_local_state(&topOfStack);
   my_thread = &thread_local_state;
+#if 0
+  // I'm not sure if this needs to be done for the main thread
+  GC_stack_base gc_stack_base;
+  GC_get_stack_base(&gc_stack_base);
+  GC_register_my_thread(&gc_stack_base);
+#endif
   int exitCode = startupFn(argc, argv, mpiEnabled, mpiRank, mpiSize);
+#if 0
+  GC_unregister_my_thread();
+#endif
 #endif
   return exitCode;
 }
