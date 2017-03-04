@@ -37,7 +37,17 @@ THE SOFTWARE.
 
 
 
+
+
 namespace mp {
+
+
+
+#ifdef CLASP_THREADS
+std::atomic<size_t> global_LastBindingIndex = ATOMIC_VAR_INIT(0);
+GlobalMutex global_BindingIndexPoolMutex;
+std::vector<size_t> global_BindingIndexPool;
+#endif
 
 
 SYMBOL_SC_(MpPkg, aSingleMpSymbol);

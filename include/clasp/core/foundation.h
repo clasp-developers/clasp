@@ -1155,27 +1155,12 @@ namespace core {
 
 };
 
-#ifdef CLASP_THREADS
-  struct SafeMutex {
-  SafeMutex(pthread_mutex_t& m) : _Mutex(m) {
-    pthread_mutex_lock(&m);
-    };
-    pthread_mutex_t& _Mutex;
-    ~SafeMutex() {
-      pthread_mutex_unlock(&this->_Mutex);
-    }
-  };
-#endif
+
 #ifdef CLASP_THREADS
 #include <atomic>
+
 #endif
 namespace core {
-#ifdef CLASP_THREADS
-  /*! Keep track of binding indices for symbols */
-  extern pthread_mutex_t global_BindingIndexPoolMutex;
-  extern std::vector<size_t> global_BindingIndexPool;
-  extern std::atomic<size_t> global_LastBindingIndex;
-#endif
 
 #pragma GCC visibility push(default)
   class DynamicBindingStack {
