@@ -46,7 +46,7 @@ namespace mp {
       this->_Mutex = PTHREAD_MUTEX_INITIALIZER;
     };
     void lock() { pthread_mutex_lock(&this->_Mutex); };
-    void unlock() { pthread_mutex_lock(&this->_Mutex); };
+    void unlock() { pthread_mutex_unlock(&this->_Mutex); };
     bool try_lock() { return pthread_mutex_trylock(&this->_Mutex)==0; };
     ~GlobalMutex() {
     };
@@ -115,7 +115,9 @@ namespace mp {
   void* start_thread(void* claspProcess);
 
   inline void ClaspThreads_exit() {
-    pthread_exit(NULL);
+//    printf("%s:%d Exiting pthread\n", __FILE__, __LINE__ );
+//    pthread_exit(NULL);
+//    printf("%s:%d Done pthread\n", __FILE__, __LINE__ );
   }
 };
 
