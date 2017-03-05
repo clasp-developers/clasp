@@ -2,4 +2,5 @@
 
 (asdf:defsystem :sockets
     :components
-  ((:file "sockets")))
+  ((:file "package")
+   (:file "sockets")))

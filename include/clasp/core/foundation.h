@@ -85,6 +85,10 @@ class type_info;
 
 #define DLL_PUBLIC __attribute__((visibility("default")))
 
+#ifdef CLASP_THREADS
+#include <pthread.h>
+#endif
+
 #include <map>
 
 #define VARARGS
@@ -539,7 +543,7 @@ void __attribute__((noreturn)) lisp_errorCast(ObjPtrType objP) {
 namespace core {
   class MultipleValues;
   MultipleValues &lisp_multipleValues();
-  MultipleValues &lisp_callArgs();
+//  MultipleValues &lisp_callArgs();
 };
 
 extern void clasp_mps_debug_allocation(const char *poolName, void *base, void *objAddr, int size, int kind);
@@ -823,7 +827,10 @@ class Instance_O;
 typedef gctools::smart_ptr<Instance_O> Instance_sp;
 
 //    typedef T_mv (*ActivationFrameFunctionPtr)(ActivationFrame_sp);
-
+ class StringOutputStream_O;
+ typedef gctools::smart_ptr<StringOutputStream_O> StringOutputStream_sp;
+ class Bignum_O;
+ typedef gctools::smart_ptr<Bignum_O> Bignum_sp;
 class Lisp_O;
 typedef gctools::tagged_pointer<Lisp_O> Lisp_sp;
 class NamedFunction_O;
@@ -1148,21 +1155,44 @@ namespace core {
 
 };
 
+
+#ifdef CLASP_THREADS
+#include <atomic>
+
+#endif
 namespace core {
 
 #pragma GCC visibility push(default)
   class DynamicBindingStack {
   public:
     gctools::Vec0<DynamicBinding> _Bindings;
+    mutable gctools::Vec0<T_sp>           _ThreadLocalBindings;
   public:
-    inline int top() const { return this->_Bindings.size() - 1; }
+    size_t new_binding_index();
+    void release_binding_index(size_t index);
+    inline size_t top() const { return this->_Bindings.size() - 1; }
     Symbol_sp topSymbol() const { return this->_Bindings.back()._Var; };
-    Symbol_sp var(int i) const { return this->_Bindings[i]._Var; };
-    T_sp val(int i) const { return this->_Bindings[i]._Val; };
-    ATTR_WEAK void push(Symbol_sp var);
+    Symbol_sp var(size_t i) const { return this->_Bindings[i]._Var; };
+    T_sp val(size_t i) const { return this->_Bindings[i]._Val; };
+    ATTR_WEAK void push_with_value_coming(Symbol_sp var);
+    ATTR_WEAK void push(Symbol_sp var, T_sp value=_Unbound<T_O>());
+    // Push the current value of the symbol onto the DynamicBindingStack
+    //   The new value will follow immediately
     ATTR_WEAK void pop();
-    void reserve(int x) { this->_Bindings.reserve(x); };
-    int size() const { return this->_Bindings.size(); };
+    void reserve(size_t x) { this->_Bindings.reserve(x); };
+    size_t size() const { return this->_Bindings.size(); };
+    void expandThreadLocalBindings(size_t index);
+    // Dynamic symbol access
+    /*! Return a pointer to the value slot for the symbol.  
+        USE THIS IMMEDIATELY AND THEN DISCARD.
+        DO NOT DO STORE THIS OR KEEP THIS FOR ANY LENGTH OF TIME. */
+    T_sp* reference_raw_(Symbol_O* varP) const;
+    const T_sp* reference_raw(const Symbol_O* varP) const { return const_cast<const T_sp*>(this->reference_raw_(const_cast<Symbol_O*>(varP)));};
+    T_sp* reference_raw(Symbol_O* varP) { return this->reference_raw_(varP);};
+    T_sp* reference(Symbol_sp var) { return const_cast<T_sp*>(this->reference_raw(&*var));};
+    const T_sp* reference(Symbol_sp var) const { return this->reference_raw(&*var);};
+    T_sp  value(Symbol_sp var) const { return *this->reference(var);};
+    void  setf_value(Symbol_sp var, T_sp value) { *this->reference(var) = value;};
   };
 #pragma GCC visibility pop
 };
@@ -1238,20 +1268,26 @@ namespace core {
   struct InvocationHistoryFrame;
   
   struct ThreadLocalState {
-    ThreadLocalState() {
-      this->_Bindings.reserve(1024);
-      this->_InvocationHistoryStack = NULL;
-      this->_BufferStr8NsPool.reset_(); // Can't use _Nil<core::T_O>(); - too early
-      this->_BufferStrWNsPool.reset_();
-    };
+    ThreadLocalState(void* stack_top);
+    void initialize_thread();
+    mp::Process_sp _Process;
+    void* _StackTop;
     DynamicBindingStack _Bindings;
     InvocationHistoryFrame* _InvocationHistoryStack;
     ExceptionStack _ExceptionStack;
     MultipleValues _MultipleValues;
     List_sp _BufferStr8NsPool;
     List_sp _BufferStrWNsPool;
+    StringOutputStream_sp _BFormatStringOutputStream;
+    Bignum_sp _BignumRegister0;
+    Bignum_sp _BignumRegister1;
+    Bignum_sp _BignumRegister2;
     inline core::DynamicBindingStack& bindings() { return this->_Bindings; };
     inline ExceptionStack& exceptionStack() { return this->_ExceptionStack; };
+    StringOutputStream_sp& bformatStringOutputStream() { return this->_BFormatStringOutputStream;};
+  Bignum_sp bigRegister0() { return this->_BignumRegister0; };
+  Bignum_sp bigRegister1() { return this->_BignumRegister1; };
+  Bignum_sp bigRegister2() { return this->_BignumRegister2; };
   };
 
 };
@@ -1259,7 +1295,7 @@ namespace core {
 
 
 /*! Should be thread_local on linux or __thread on OS X */
-#define THREAD_LOCAL
+#define THREAD_LOCAL thread_local
 
 /*! Declare this in the top namespace */
 extern THREAD_LOCAL core::ThreadLocalState *my_thread;

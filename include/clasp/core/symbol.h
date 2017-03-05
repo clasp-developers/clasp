@@ -43,7 +43,7 @@ THE SOFTWARE.
 #define KW(s) (_lisp->internKeyword(s))
 
 namespace core {
-
+#define NO_THREAD_LOCAL_BINDINGS std::numeric_limits<size_t>::max()
 SMART(Package);
 SMART(NamedFunction);
 
@@ -55,9 +55,10 @@ class Symbol_O : public General_O {
 public:
   SimpleString_sp _Name;
   T_sp _HomePackage; // NIL or Package
-  T_sp _Value;
+  T_sp _GlobalValue;
   T_sp _Function;
   T_sp _SetfFunction;
+  mutable size_t _Binding;
   bool _IsSpecial;
   bool _IsConstant;
   bool _ReadOnlyFunction;
@@ -109,7 +110,21 @@ public:
   bool amp_symbol_p() const;
 
   /*! Return a pointer to the value cell */
-  inline T_sp *valueReference() { return &(this->_Value); };
+  inline T_sp *valueReference() {
+#ifdef CLASP_THREADS
+    return my_thread->_Bindings.reference_raw(this);
+#else
+    return &(this->_GlobalValue);
+#endif
+  };
+
+  inline const T_sp *valueReference() const {
+#ifdef CLASP_THREADS
+    return my_thread->_Bindings.reference_raw(this);
+#else
+    return &(this->_GlobalValue);
+#endif
+  };
 
   void setf_name(SimpleString_sp nm) { this->_Name = nm; };
 
@@ -133,21 +148,22 @@ CL_DEFMETHOD   bool specialP() const { return this->_IsSpecial; };
   
   /*! Return the value slot of the symbol - throws if unbound */
   inline T_sp symbolValue() const {
-    if (this->_Value.unboundp()) this->symbolUnboundError();
-    return this->_Value;
+    T_sp val = *this->valueReference();
+    if (val.unboundp()) this->symbolUnboundError();
+    return val;
   }
 
   /*! Return the address of the value slot of the symbol */
-  inline T_sp &symbolValueRef() { return this->_Value; };
+  inline T_sp &symbolValueRef() { return *this->valueReference();};
 
   /*! Return the value slot of the symbol or UNBOUND if unbound */
-  inline T_sp symbolValueUnsafe() const { return this->_Value;};
+  inline T_sp symbolValueUnsafe() const { return *this->valueReference();};
 
   void makeSpecial();
 
   void makeConstant(T_sp val);
 
-  inline bool boundP() const { return !this->_Value.unboundp(); };
+  inline bool boundP() const { return !(*this->valueReference()).unboundp(); };
 
   Symbol_sp makunbound();
 
@@ -155,7 +171,7 @@ CL_DEFMETHOD   bool specialP() const { return this->_IsSpecial; };
   T_sp defconstant(T_sp obj);
 
   inline T_sp setf_symbolValue(T_sp obj) {
-    this->_Value = obj;
+    *this->valueReference() = obj;
     return obj;
   }
 
@@ -232,7 +248,13 @@ public: // ctor/dtor for classes with shared virtual base
   void remove_package(Package_sp pkg);
 public:
   explicit Symbol_O();
-  virtual ~Symbol_O(){};
+  virtual ~Symbol_O(){
+#ifdef CLASP_THREAD
+    if (this->_Binding != NO_THREAD_LOCAL_BINDINGS) {
+      my_thread->_Bindings->release_binding_index(this->_Binding);
+    }
+#endif
+  };
 };
 
 T_sp cl__symbol_value(const Symbol_sp sym);

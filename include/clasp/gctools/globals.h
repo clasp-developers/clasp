@@ -34,6 +34,8 @@ namespace gctools {
 extern core::Symbol_O *global_tagged_Symbol_OP_nil;
 /*! Tagged pointer to the global UNBOUND */
 extern core::Symbol_O *global_tagged_Symbol_OP_unbound;
+ /*! No thread local binding */
+extern core::Symbol_O *global_tagged_Symbol_OP_no_thread_local_binding;
 /*! Tagged pointer to the global DELETED - used in weak hash tables */
 extern core::Symbol_O *global_tagged_Symbol_OP_deleted;
 /*! Tagged pointer to the global SAME-AS-KEY - used in weak hash tables */

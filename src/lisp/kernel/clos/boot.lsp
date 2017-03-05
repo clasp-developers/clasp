@@ -22,6 +22,11 @@
 ;;; DIRECT-SLOTS, etc are empty and therefore SLOT-VALUE does not work.
 #+clasp(defvar +the-standard-class+)
 
+#+(or)(defmacro debug-boot (msg &rest args)
+  `(format t ,msg ,@args))
+(defmacro debug-boot (msg &rest args))
+
+
 (defun ensure-boot-class (name &key (metaclass 'standard-class)
                                  direct-superclasses direct-slots index)
   #+(or)(format t "ensure-boot-class for ~s metaclass: ~s direct-superclasses: ~s :direct-slots ~s :index ~s~%"
@@ -32,6 +37,7 @@
                     (core:allocate-raw-class nil the-metaclass #.(length +standard-class-slots+) name)
                     #-clasp
                     (si:allocate-raw-instance nil the-metaclass #.(length +standard-class-slots+)))))
+    (debug-boot "About to with-early-accessors -> macroexpand = ~a~%" (macroexpand '(with-early-accessors (+standard-class-slots+) (setf (class-id                  class) name))))
     (with-early-accessors (+standard-class-slots+)
       (let ((existing-slots (class-slots class)))
         (when (and (typep existing-slots 'list)
@@ -44,6 +50,9 @@
 	#+ecl(defconstant +the-standard-class+ class)
 	#+clasp(setq +the-standard-class+ class)
 	(si:instance-class-set class class))
+      (debug-boot "  (get-setf-expansion '(class-id class) ENV) -> ~a~%" (macrolet ((hack (form &environment e) `',(multiple-value-list (get-setf-expansion form e)))) (hack '(class-id class))))
+      (setf (class-id                  class) name)
+      (debug-boot "    (class-id class) -> ~a    name -> ~a~%" (class-id class) name)
       (setf (class-id                  class) name
 	    (class-direct-subclasses   class) nil
 	    (class-direct-default-initargs class) nil

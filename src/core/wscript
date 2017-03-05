@@ -2,6 +2,7 @@ def build(bld):
     for name in [
             'dummy', 
             'clcenv',
+            'mpPackage',
             'nativeVector',
             'environment',
             'activationFrame',

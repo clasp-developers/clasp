@@ -82,7 +82,7 @@ string lisp_rep(T_sp obj);
 
 namespace gctools {
 
-#ifdef USE_BOEHM
+#if defined(USE_BOEHM) &&  !defined(CLASP_THREADS)
 #define call_with_alloc_lock GC_call_with_alloc_lock
 #else
 typedef void *(*fn_type)(void *client_data);
@@ -348,6 +348,12 @@ public:
     other._Values = tempValues;
   }
 
+  bool fullp_not_safe() const {
+    bool fp;
+    fp = (*this->_Keys).used() >= (*this->_Keys).length()/2;
+    return fp;
+  }
+
   bool fullp() const {
     bool fp;
     safeRun<void()>([&fp, this]() -> void {
@@ -368,6 +374,7 @@ public:
     return result;
   }
 
+  int rehash_not_safe(size_t newLength, const value_type &key, size_t &key_bucket);
   int rehash(size_t newLength, const value_type &key, size_t &key_bucket);
   int trySet(core::T_sp tkey, core::T_sp value);
 

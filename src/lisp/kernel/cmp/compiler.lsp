@@ -264,14 +264,14 @@ Return the same things that generate-llvm-function-from-code returns"
 
 (defun codegen-function-symbol-lookup (result func env)
   "Classify the function and look it up and put it in result"
-  (let* ((classified (classify-function-lookup env func)))
+  (let* ((classified (function-info env func)))
     (if (eq (car classified) 'core::global-function)
 	(codegen-global-function-lookup result func env)
 	(codegen-lexical-function-lookup result (caddr classified) (cadddr classified) env))))
 
 (defun codegen-function-setf-symbol-lookup (result setf-func env)
   "Classify the (setf XXXX) function and put it in the result"
-  (let* ((classified (classify-function-lookup env setf-func)))
+  (let* ((classified (function-info env setf-func)))
     (if (eq (car classified) 'core::global-function)
 	(codegen-global-setf-function-lookup result setf-func env)
 	(codegen-lexical-function-lookup result (caddr classified) (cadddr classified) env))))
@@ -391,7 +391,7 @@ Return the same things that generate-llvm-function-from-code returns"
 		;; symbol was not macroexpanded use SETQ
 		(progn
 		  (cmp-log "The symbol[%s] was not macroexpanded - using SETQ to set it\n" cur-var)
-		  (let* ((classified (irc-classify-variable env cur-var))
+		  (let* ((classified (variable-info env cur-var))
 			 (target-ref (if (eq (car classified) 'ext:special-var)
 					 (codegen-special-var-reference cur-var env)
 					 (let ((depth-index (cddr classified)))
@@ -843,7 +843,7 @@ jump to blocks within this tagbody."
 	     (fn-lambda-list (cadr fn))
 	     (fn-raw-body (cddr fn))
 	     (fn-lambda (generate-lambda-block fn-name fn-lambda-list fn-raw-body))
-	     (fn-classified (classify-function-lookup function-env fn-name))
+	     (fn-classified (function-info function-env fn-name))
 	     (fn-index (or (cadddr fn-classified) (error "Could not find lexical function ~a" fn-name)))
 	     (target (irc-intrinsic "functionFrameReference" result-af (jit-constant-i32 fn-index)
 			       (bformat nil "%s-ref-%d" (llvm-sys:get-name result-af) fn-index) )))

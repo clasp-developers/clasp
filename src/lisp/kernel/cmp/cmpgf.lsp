@@ -646,7 +646,9 @@
 		     (arglist-passed-untagged (irc-int-to-ptr (irc-sub (irc-ptr-to-int gf-args +uintptr_t+ "iargs") (jit-constant-uintptr_t +Valist_S-tag+) "sub") +Valist_S*+ "arglist-passed-untagged"))
 		     (va_list-passed (irc-in-bounds-gep-type +VaList_S+ arglist-passed-untagged (list (jit-constant-i32 0) (jit-constant-i32 1)) "va_list-passed")))
 		(insert-message)
+                (debug-arglist (irc-ptr-to-int va_list-passed +uintptr_t+))
 		(irc-create-call "llvm.va_copy" (list (irc-pointer-cast local-arglist +i8*+ "local-arglist-i8*") (irc-pointer-cast va_list-passed +i8*+ "va_list-passed-i8*")))
+		(insert-message)
                 (debug-arglist (irc-ptr-to-int local-arglist +uintptr_t+))
 		(irc-br body-bb)
 		(with-irbuilder (irbuilder-body)
@@ -774,7 +776,7 @@
             (push (list :restarting-gf-dispatch generic-function (core:list-from-va-list valist-args)) *dispatch-log*))
           (funcall generic-function valist-args))
         (progn
-          (do-dispatch-miss generic-function valist-args arguments)))))*
+          (do-dispatch-miss generic-function valist-args arguments)))))
 
 
 (defun safe-set-funcallable-instance-function (gf func)
@@ -785,7 +787,7 @@
       (core:shutdown previous-dispatcher)
       (when *monitor-dispatch*
         (push :shutting-down-previous-dispatcher *dispatch-log*))
-      (let ((removed (jit-remove-module (core:llvm-module previous-dispatcher))))
+      (let ((removed (cmp:jit-remove-module (core:llvm-module previous-dispatcher))))
         (setf (clos::generic-function-compiled-dispatch-function gf) nil)
         (unless removed
           (format t "Could not remove previous dispatcher~%")))))

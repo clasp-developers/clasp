@@ -409,9 +409,14 @@ Find directories that look like them and replace the ones defined in the constan
   #+target-os-linux "/usr/include/clang/3.6/include"
   "Define the -isystem command line option for Clang compiler runs")
 
+(eval-when (:compile-toplevel :load-toplevel :execute)
+           (defparameter *externals-clasp-pathname* (make-pathname :directory (pathname-directory (pathname ext:*clasp-clang-path*)))))
+
 (defconstant +resource-dir+ 
   #+target-os-darwin "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/8.0.0"  ; Used
-  #+target-os-linux (format nil "/home/meister/Dev/externals-clasp/build/release/bin/../lib/clang/~a.0" (ext::llvm-short-version))
+  #+target-os-linux (format nil "~a../lib/clang/~a.0"
+                            (namestring *externals-clasp-pathname*)
+                            (ext::llvm-short-version))
   "Define the -resource-dir command line option for Clang compiler runs")
 (defconstant +additional-arguments+
   #+target-os-darwin (vector "GARBAGE2")
@@ -419,11 +424,7 @@ Find directories that look like them and replace the ones defined in the constan
          "-I/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.12.sdk/usr/include"
          "-I/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include"
          "-I/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.12.sdk/System/Library/Frameworks")
-  #-target-os-darwin (vector
-                      #+(or)"-I/home/meister/local/gcc-4.8.3/include/c++/4.8.3"
-                      #+(or)"-I/home/meister/local/gcc-4.8.3/include/c++/4.8.3/x86_64-redhat-linux"
-                      #+(or)"-I/home/meister/local/gcc-4.8.3/include/c++/4.8.3/tr1"
-                      #+(or)"-I/home/meister/local/gcc-4.8.3/lib/gcc/x86_64-redhat-linux/4.8.3/include"))
+  #-target-os-darwin (vector))
 
 (defmacro with-unmanaged-object ((var obj) &body body)
   `(let ((,var ,obj))

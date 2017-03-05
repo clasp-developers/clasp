@@ -315,7 +315,8 @@
   t)
 
 (defmethod close ((stream ansi-stream) &key abort)
-  (cl:close stream :abort abort))
+  ;; To avoid an recursive loop after redefine-cl-symbols - use core:close* here
+  (core:close* stream :abort abort))
 
 (defmethod close ((stream t) &key abort)
   (declare (ignore abort))
@@ -688,7 +689,7 @@
 
 ;;; Setup
 
-(eval-when (:compile-toplevel :execute #+clasp!-boot :load-toplevel)
+(eval-when (:compile-toplevel :execute #+clasp :load-toplevel)
   (defconstant +conflicting-symbols+ '(cl:close cl:stream-element-type cl:input-stream-p
 				       cl:open-stream-p cl:output-stream-p cl:streamp)))
 

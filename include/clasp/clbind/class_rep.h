@@ -72,11 +72,25 @@ THE SOFTWARE.
 #include <clasp/clbind/typeid.h>
 //#include <clasp/clbind/detail/ref.hpp>
 
+
+
 namespace clbind {
 namespace detail {
 class cast_graph;
 class class_id_map;
 };
+};
+
+
+namespace clbind {
+  class ClassRep_O;
+};
+
+template <>
+struct gctools::GCInfo<clbind::ClassRep_O> {
+  static bool constexpr NeedsInitialization = true;
+  static bool constexpr NeedsFinalization = false;
+  static GCInfo_policy constexpr Policy = normal;
 };
 
 namespace clbind {
@@ -189,12 +203,6 @@ GCPRIVATE:
 
 bool is_class_rep(core::Lisp_sp L, int index);
 }
-template <>
-struct gctools::GCInfo<clbind::ClassRep_O> {
-  static bool constexpr NeedsInitialization = true;
-  static bool constexpr NeedsFinalization = false;
-  static GCInfo_policy constexpr Policy = normal;
-};
 
 //#include <clasp/clbind/detail/overload_rep_impl.hpp>
 

@@ -185,15 +185,6 @@ T_sp DynamicScopeManager::lexenv() const {
   SIMPLE_ERROR(BF("A ValueEnvironment was requested from a DynamicScopeManager - only ValueEnvironmentDynamicScopeManagers have those"));
 }
 
-#if 0
-DynamicScopeManager::~DynamicScopeManager() {
-  DynamicBindingStack &bindings = my_thread->bindings();
-  int numBindings = this->_endTop - this->_beginTop;
-  for (int i = 0; i < numBindings; ++i) {
-    bindings.pop();
-  }
-}
-#endif
 
 bool ValueEnvironmentDynamicScopeManager::lexicalElementBoundP(const Argument &argument) {
   return ((this->_Environment->activationFrameElementBoundP(argument._ArgTargetFrameIndex)));

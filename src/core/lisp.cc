@@ -203,11 +203,11 @@ public:
 //
 Lisp_O::GCRoots::GCRoots() :
   // _BufferStringPool(_Nil<T_O>()),
-                             _MultipleValuesCur(NULL),
-                             _BignumRegister0(_Unbound<Bignum_O>()),
-                             _BignumRegister1(_Unbound<Bignum_O>()),
-                             _BignumRegister2(_Unbound<Bignum_O>()) ,
-                             _CatchInfo(_Nil<T_O>()),
+//THREAD_CHANGE                             _MultipleValuesCur(NULL),
+//THREAD_CHANGE                             _BignumRegister0(_Unbound<Bignum_O>()),
+//THREAD_CHANGE                             _BignumRegister1(_Unbound<Bignum_O>()),
+//THREAD_CHANGE                             _BignumRegister2(_Unbound<Bignum_O>()) ,
+//THREAD_CHANGE                             _CatchInfo(_Nil<T_O>()),
                              _SpecialForms(_Unbound<HashTableEq_O>()),
                              _NullStream(_Nil<T_O>()),
                              _PathnameTranslations(_Nil<T_O>()) {}
@@ -305,14 +305,17 @@ void dump_info(BuiltInClass_sp co, Lisp_sp lisp) {
 void Lisp_O::setupSpecialSymbols() {
   Null_sp symbol_nil = Null_O::create_at_boot("NIL");
   Symbol_sp symbol_unbound = Symbol_O::create_at_boot("UNBOUND");
+  Symbol_sp symbol_no_thread_local_binding = Symbol_O::create_at_boot("NO-THREAD-LOCAL-BINDING");
   Symbol_sp symbol_deleted = Symbol_O::create_at_boot("DELETED");
   Symbol_sp symbol_sameAsKey = Symbol_O::create_at_boot("SAME-AS-KEY");
   //TODO: Ensure that these globals are updated by the garbage collector
   gctools::global_tagged_Symbol_OP_nil = reinterpret_cast<Symbol_O *>(symbol_nil.raw_());
   gctools::global_tagged_Symbol_OP_unbound = reinterpret_cast<Symbol_O *>(symbol_unbound.raw_());
+  gctools::global_tagged_Symbol_OP_no_thread_local_binding = reinterpret_cast<Symbol_O *>(symbol_no_thread_local_binding.raw_());
   gctools::global_tagged_Symbol_OP_deleted = reinterpret_cast<Symbol_O *>(symbol_deleted.raw_());
   gctools::global_tagged_Symbol_OP_sameAsKey = reinterpret_cast<Symbol_O *>(symbol_sameAsKey.raw_());
   symbol_unbound->_HomePackage = symbol_nil;
+  symbol_no_thread_local_binding->_HomePackage = symbol_nil;
   symbol_deleted->_HomePackage = symbol_nil;
   symbol_sameAsKey->_HomePackage = symbol_nil;
 }
@@ -661,15 +664,23 @@ void Lisp_O::startupLispEnvironment(Bundle *bundle) {
     this->_Roots._LongFloatMinusZero = LongFloat_O::create(-0.0l);
     this->_Roots._LongFloatPlusZero = LongFloat_O::create(0.0l);
 #endif // ifdef CLASP_LONG_FLOAT
+    
+#if 0
+    // THREAD_CHANGE
     this->_Roots._BformatStringOutputStream = clasp_make_string_output_stream();
     this->_Roots._BignumRegister0 = Bignum_O::create(0);
     this->_Roots._BignumRegister1 = Bignum_O::create(0);
     this->_Roots._BignumRegister2 = Bignum_O::create(0);
+#endif
     Real_sp bits = gc::As<Real_sp>(clasp_make_fixnum(gc::fixnum_bits));
     Real_sp two = gc::As<Real_sp>(clasp_make_fixnum(2));
     this->_Roots._IntegerOverflowAdjust = cl__expt(two, bits); // clasp_make_fixnum(2),clasp_make_fixnum(gc::fixnum_bits));
     getcwd(true);                                             // set *default-pathname-defaults*
   };
+  //
+  // Initialize the main thread info
+  //
+  my_thread->initialize_thread();
   {
     _BLOCK_TRACE("Creating Caches for SingleDispatchGenericFunctions");
     this->_Roots._SingleDispatchMethodCachePtr = gc::GC<Cache_O>::allocate();
@@ -1368,7 +1379,7 @@ T_mv Lisp_O::readEvalPrint(T_sp stream, T_sp environ, bool printResults, bool pr
             SIMPLE_ERROR(BF("*read-suppress* is true but the following expression was read: %s") % _rep_(expression));
           }
         }
-        this->print(BF(";;--read-%s-------------\n#|\n%s\n|#----------\n") % suppress.c_str() % _rep_(expression));
+        BFORMAT_T(BF(";;--read-%s-------------\n#|\n%s\n----------|#\n") % suppress.c_str() % _rep_(expression));
       }
       _BLOCK_TRACEF(BF("---REPL read[%s]") % expression->__repr__());
       if (cl__keywordp(expression)) {
@@ -1455,11 +1466,11 @@ CL_DOCSTRING("stackUsed");
 CL_DEFUN size_t core__stack_used() {
   int x;
   char *xaddr = (char *)(&x);
-  if ( xaddr > _lisp->_StackTop ) {
-    printf("%s:%d There is a problem with the stack _lisp->_StackTop@%p is below the current stack pointer@%p\n", __FILE__, __LINE__, _lisp->_StackTop, xaddr );
+  if ( xaddr > my_thread->_StackTop ) {
+    printf("%s:%d There is a problem with the stack _lisp->_StackTop@%p is below the current stack pointer@%p\n", __FILE__, __LINE__, my_thread->_StackTop, xaddr );
     abort();
   }
-  size_t stack = (size_t)(_lisp->_StackTop - xaddr);
+  size_t stack = (size_t)((const char*)my_thread->_StackTop - xaddr);
   return stack;
 };
 
@@ -1484,7 +1495,7 @@ void af_stackSizeWarning(size_t stackUsed) {
     printf("%s:%d Stack is getting full currently at %zu bytes - warning at %u bytes  top@%p current@%p\n",
            __FILE__, __LINE__,
            stackUsed, _lisp->_StackWarnSize,
-           _lisp->_StackTop, xaddr );
+           my_thread->_StackTop, xaddr );
     ExceptionSafeResetInvokedInternalDebugger safe;
     core__invoke_internal_debugger(_Nil<core::T_O>());
   }
@@ -2855,7 +2866,6 @@ LispHolder::LispHolder(bool mpiEnabled, int mpiRank, int mpiSize) {
 }
 
 void LispHolder::startup(int argc, char *argv[], const string &appPathEnvironmentVariable) {
-  this->_Lisp->_StackTop = gctools::_global_stack_marker; // (char *)&argc;
   ::_lisp = this->_Lisp;
 
   const char *argv0 = "./";

@@ -1087,13 +1087,16 @@ that llvm function. This works like compile-lambda-function in bclasp."
         (lambda (condition)
 ;;;	  (declare (ignore condition))
           #+verbose-compiler(warn "Condition: ~a" condition)
+          (cmp:compiler-warning-undefined-global-variable (cleavir-environment:name condition))
           (invoke-restart 'cleavir-generate-ast::consider-special)))
        (cleavir-env:no-function-info
         (lambda (condition)
 ;;;	  (declare (ignore condition))
           #+verbose-compiler(warn "Condition: ~a" condition)
+          (cmp:register-global-function-ref (cleavir-environment:name condition))
           (invoke-restart 'cleavir-generate-ast::consider-global))))
     (when *compile-print* (describe-form form))
+    (cmp:analyze-top-level-form form)
     (multiple-value-bind (mir map-enter-to-landing-pad)
         (compile-form-to-mir form *clasp-env*)
       (translate mir map-enter-to-landing-pad *abi-x86-64*))))
@@ -1101,7 +1104,9 @@ that llvm function. This works like compile-lambda-function in bclasp."
 (defun cleavir-compile-file-form (form)
   (let ((cleavir-generate-ast:*compiler* 'cl:compile-file)
         (core:*use-cleavir-compiler* t))
-    (literal:with-top-level-form (compile-form form))))
+    (literal:with-top-level-form
+     (cmp:dbg-set-current-source-pos form)
+     (compile-form form))))
 
 (defun cclasp-compile-in-env (name form &optional env)
   (let ((cleavir-generate-ast:*compiler* 'cl:compile)

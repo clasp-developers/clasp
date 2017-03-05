@@ -45,6 +45,17 @@ THE SOFTWARE.
 #include <clasp/core/holder.h>
 
 namespace core {
+  class Class_O;
+};
+
+template <>
+struct gctools::GCInfo<core::Class_O> {
+  static bool constexpr NeedsInitialization = true;
+  static bool constexpr NeedsFinalization = false;
+  static GCInfo_policy constexpr Policy = normal;
+};
+
+namespace core {
 
   Fixnum_sp clasp_make_fixnum(gc::Fixnum v);
   
@@ -212,7 +223,7 @@ public:
   string instanceClassName() { return this->getPackagedName(); };
   string instanceClassName() const { return this->getPackagedName(); };
 
-  CL_DEFMETHOD List_sp core__min_class_precedence_list() const { return this->instanceRef(REF_CLASS_PRECEDENCE_LIST);};
+  CL_DEFMETHOD List_sp core__min_class_precedence_list() const { return List_sp(this->instanceRef(REF_CLASS_PRECEDENCE_LIST));};
   
   /*! Return the name of the class with its Package name prefixed
 	 */
@@ -289,12 +300,6 @@ public:
 
   virtual ~Class_O(){};
 };
-};
-template <>
-struct gctools::GCInfo<core::Class_O> {
-  static bool constexpr NeedsInitialization = true;
-  static bool constexpr NeedsFinalization = false;
-  static GCInfo_policy constexpr Policy = normal;
 };
 
 namespace core {

@@ -183,6 +183,7 @@ SYMBOL_EXPORT_SC_(ClPkg, parse_namestring);
 SYMBOL_EXPORT_SC_(ClPkg, make_instance);
 SYMBOL_EXPORT_SC_(ClPkg, class);
 SYMBOL_EXPORT_SC_(ClPkg, printNotReadableObject);
+SYMBOL_EXPORT_SC_(ClPkg, read_char);
 SYMBOL_EXPORT_SC_(ClPkg, simple_base_string);
 SYMBOL_EXPORT_SC_(ClPkg, base_string);
 SYMBOL_EXPORT_SC_(ClPkg, provide);

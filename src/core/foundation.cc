@@ -84,6 +84,25 @@ THE SOFTWARE.
 
 THREAD_LOCAL core::ThreadLocalState* my_thread;
 
+namespace core {
+
+
+
+ThreadLocalState::ThreadLocalState(void* stack_top) : _StackTop(stack_top) {
+      this->_Bindings.reserve(1024);
+      this->_InvocationHistoryStack = NULL;
+      this->_BufferStr8NsPool.reset_(); // Can't use _Nil<core::T_O>(); - too early
+      this->_BufferStrWNsPool.reset_();
+}
+
+void ThreadLocalState::initialize_thread() {
+  printf("%s:%d Initialize all ThreadLocalState things this->%p\n",__FILE__, __LINE__, (void*)this);
+  this->_BFormatStringOutputStream = clasp_make_string_output_stream();
+  this->_BignumRegister0 = Bignum_O::create(0);
+  this->_BignumRegister1 = Bignum_O::create(0);
+  this->_BignumRegister2 = Bignum_O::create(0);
+};
+};
 
 namespace reg {
 
@@ -425,11 +444,12 @@ MultipleValues &lisp_multipleValues() {
   return my_thread->_MultipleValues;
 }
 
+#if 0
 MultipleValues &lisp_callArgs() {
   //	return (_lisp->callArgs());
   return my_thread->_MultipleValues;
 }
-
+#endif
 void errorFormatted(boost::format fmt) {
   TRY_BOOST_FORMAT_STRING(fmt, fmt_str);
   dbg_hook(fmt_str.c_str());
@@ -1779,4 +1799,18 @@ void throwIfClassesNotInitialized(const Lisp_sp &lisp) {
 #endif
 #endif
 
+};
+
+
+namespace core {
+#if 0
+void bds_bind(ThreadLocalState& env, T_sp symbol, T_sp value ) {
+#ifdef CLASP_THREADS
+  cl_index index = symbol->_Binding;
+  if ( index >= env->thread_local_bindings_size() ) {
+    index = invalid_or_too_large_binding_index(env,symbol);
+  }
+  T_sp& location = env->thread_local
+#endif
+#endif
 };

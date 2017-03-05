@@ -59,7 +59,6 @@ public: // instance variables
   bool _AmpPackage;
   bool _ActsLikeKeywordPackage;
   List_sp _Nicknames;
-
 public: // Creation class functions
   static Package_sp create(const string &p);
 

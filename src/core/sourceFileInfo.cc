@@ -395,8 +395,16 @@ string SourcePosInfo_O::__repr__() const {
   return ss.str();
 }
 
-
-
+bool SourcePosInfo_O::equalp(T_sp other) const {
+  if (this == &*other) { return true; };
+  if (!gc::IsA<SourcePosInfo_sp>(other)) return false;
+  SourcePosInfo_sp spi_other = gc::As_unsafe<SourcePosInfo_sp>(other);
+  if (this->_FileId != spi_other->_FileId) return false;
+  if (this->_Filepos != spi_other->_Filepos) return false;
+  if (this->_Lineno != spi_other->_Lineno) return false;
+  if (this->_Column != spi_other->_Column) return false;
+  return true;
+}
 
 CL_LAMBDA(dumpAll);
 CL_DECLARE();

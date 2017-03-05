@@ -272,7 +272,7 @@ T_sp clasp_boole(int op, T_sp x, T_sp y) {
       gctools::Fixnum z = fixnum_operations[op](unbox_fixnum(fnx), unbox_fixnum(fny));
       return make_fixnum(z);
     } else if (Bignum_sp bny = y.asOrNull<Bignum_O>()) {
-      Bignum_sp x_copy = _lisp->bigRegister0();
+      Bignum_sp x_copy = my_thread->bigRegister0();
       x_copy->setFixnum(unbox_fixnum(fnx));
       (bignum_operations[op])(x_copy, x_copy, bny);
       return _clasp_big_register_normalize(x_copy);
@@ -280,10 +280,10 @@ T_sp clasp_boole(int op, T_sp x, T_sp y) {
       ERROR_WRONG_TYPE_NTH_ARG(cl::_sym_boole, 2, y, cl::_sym_integer);
     }
   } else if (Bignum_sp bnx = x.asOrNull<Bignum_O>()) {
-    Bignum_sp x_copy = _lisp->bigRegister0();
+    Bignum_sp x_copy = my_thread->bigRegister0();
     if (y.fixnump()) { // Fixnum_sp fny = y.asOrNull<Fixnum_O>() ) {
       Fixnum_sp fny(gc::As<Fixnum_sp>(y));
-      Bignum_sp bny = _lisp->bigRegister1();
+      Bignum_sp bny = my_thread->bigRegister1();
       bny->setFixnum(unbox_fixnum(fny));
       (bignum_operations[op])(x_copy, bnx, bny);
       clasp_big_register_free(bny);

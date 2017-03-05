@@ -3214,7 +3214,7 @@ Setup all of the ASTMatcher tools for the clasp-analyzer."
         (push (subseq list start end) result)))
     result))
 
-(defparameter *max-parallel-searches* (parse-integer (ext:getenv "PJOBS")))
+#+(or)(defparameter *max-parallel-searches* (let ((pjobs (ext:getenv "PJOBS"))) (if pjobs (parse-integer pjobs) 1)))
 
 (defun split-jobs (job-list num-parallel)
   (let ((jobvec (make-array num-parallel)))

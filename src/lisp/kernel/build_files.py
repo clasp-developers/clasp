@@ -114,6 +114,7 @@ def bclasp(wrappers):
 
 def cclasp(wrappers):
     return bclasp(wrappers) + cleavir.cleavir_parts + [
+        "src/lisp/kernel/tag/pre-epilogue-cclasp",
         "src/lisp/kernel/lsp/epilogue-cclasp",
         "src/lisp/kernel/tag/cclasp" ]
 

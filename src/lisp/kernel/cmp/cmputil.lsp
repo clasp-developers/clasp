@@ -26,21 +26,21 @@
 
 (in-package :cmp)
 
+(defvar *global-function-defs*)
+(defvar *global-function-refs*)
+(defvar *compilation-messages*)
 
-(defconstant +note-format+  "    %s\n")
-(defconstant +warn-format+  "!   %s\n")
-(defconstant +error-format+ "*   %s\n")
-(defconstant +fatal-format+ "**  %s\n")
-
+(defconstant +note-format+        "Note:          %s")
+(defconstant +style-warn-format+  "Style warning: %s")
+(defconstant +warn-format+        "Warning:       %s")
+(defconstant +error-format+       "Error:         %s")
+(defconstant +fatal-format+       "Fatal-error:   %s")
 
 (defstruct (compiler-message (:type vector))
   (prefix "Note")
   (format +note-format+)
   message
-  source-dir
-  source-filename
-  lineno
-  column
+  source-pos-info
   top-level-form
   form)
 
@@ -69,17 +69,27 @@
              (:type vector)
              (:include compiler-warning
                        (prefix "Style Warning")
-                       (format +warn-format+))))
+                       (format +style-warn-format+))))
 
 (defun compiler-error (form message &rest args)
-  (let* ((cspi (ext:current-source-location))
-         (source-path (source-file-info-pathname (source-file-info cspi)))
-         (source-dir (directory-namestring source-path))
-         (source-file (file-namestring source-path)))
+  (let* ((cspi (ext:current-source-location)))
     (let ((err (make-compiler-error :message (apply #'core:bformat nil message args)
-                                    :lineno lineno
-                                    :source-dir source-dir
-                                    :source-filename source-file)))
+                                    :source-pos-info cspi
+                                    :form form)))
+      (push err *compilation-messages*))))
+
+(defun compiler-warning (form message &rest args)
+  (let* ((cspi (ext:current-source-location)))
+    (let ((err (make-compiler-warning :message (apply #'core:bformat nil message args)
+                                      :source-pos-info cspi
+                                      :form form)))
+      (push err *compilation-messages*))))
+
+(defun compiler-style-warning (form message &rest args)
+  (let* ((cspi (ext:current-source-location)))
+    (let ((err (make-compiler-style-warning :message (apply #'core:bformat nil message args)
+                                            :source-pos-info cspi
+                                            :form form)))
       (push err *compilation-messages*))))
 
 
@@ -147,10 +157,18 @@
 
 ||#
 
-(defun print-compiler-message (c stream)
-  (bformat stream ";;; %s\n" c))
+(defun describe-source-location (cspi)
+  (let* ((lineno (source-pos-info-lineno cspi))
+         (filepos (source-pos-info-filepos cspi))
+         (source-file-info (source-file-info cspi))
+         (pathname (source-file-info-pathname source-file-info)))
+  (core:bformat nil "%s filepos: %d  lineno: %d" (namestring pathname) filepos lineno)))
 
-(defvar *compilation-messages* nil)
+(defun print-compiler-message (c stream)
+  (let ((msg (core:bformat nil (compiler-message-format c) (compiler-message-message c))))
+    (bformat stream ";;; %s\n" msg)
+    (bformat stream ";;;     at %s \n" (describe-source-location (compiler-message-source-pos-info c)))))
+
 (defmacro with-compiler-env ( (conditions &rest options) &rest body )
   "Initialize the environment to protect nested compilations from each other"
   `(let ((*the-module* nil)
@@ -166,8 +184,93 @@
 	 (*load-time-initializer-environment* nil)
 	 (*the-module-dibuilder* nil)
 	 (*readtable* *readtable*)
-	 (*package* *package*)
-         (*compilation-messages* nil)
-	 )
-     (unwind-protect (progn ,@body)
-       (setq conditions *compilation-messages*))))
+	 (*package* *package*))
+     (with-compilation-unit ()
+       (unwind-protect (progn ,@body)
+         (setq conditions *compilation-messages*)))))
+
+
+(defstruct (global-function-def (:type vector) :named)
+  type
+  name
+  source-pos-info)
+
+
+(defstruct (global-function-ref (:type vector) :named)
+  name
+  source-pos-info)
+
+(defun register-global-function-def (type name)
+  (when (boundp '*global-function-defs*)
+    (let ((existing (gethash name *global-function-defs*)))
+      (if existing
+          (compiler-warning name "The %s %s was previously defined as a %s at %s\n"
+                            type
+                            name
+                            (global-function-def-type existing)
+                            (describe-source-location (global-function-def-source-pos-info existing)))
+          (setf (gethash name *global-function-defs*) 
+                (make-global-function-def :type type
+                                       :name name
+                                       :source-pos-info (ext:current-source-location)))))))
+
+(defun register-global-function-ref (name)
+  (let ((refs (gethash name *global-function-refs*)))
+    (push (make-global-function-ref :name name
+                                    :source-pos-info (ext:current-source-location)) refs)
+    (setf (gethash name *global-function-refs*) refs)))
+
+(defun compiler-warning-undefined-global-variable (var)
+  (unless (boundp var)
+    (compiler-warning var "Undefined variable %s" var)))
+
+(defun function-info (env func)
+  (let ((info (classify-function-lookup env func)))
+;;;    (core:bformat t "function-info: %s   @ %s\n" info (describe-source-location (ext:current-source-location)))
+    (when (eq (car info) 'core::global-function) (register-global-function-ref func))
+    info))
+
+(defun variable-info (env var)
+  "Lookup the variable in the lexical environment - if not found then check if it is a special"
+  (let ((info (classify-variable env var)))
+    (unless info
+      (setq info (cons 'ext:special-var var))
+      (unless (boundp var)
+        (compiler-warning-undefined-global-variable var)))
+;;;    (core:bformat t "variable-info: %s   @ %s\n" info (describe-source-location (ext:current-source-location)))
+    info))
+
+(defun analyze-top-level-form (form)
+  (cond
+    ((eq (car form) 'core:fset)
+     (let ((type (if (eq (fourth form) t)
+                     'defmacro
+                     'defun))
+           (name (second form)))
+       (register-global-function-def type name)))
+    ((and (consp form)
+          (eq (first form) 'cl:let)
+          (and (let ((x (third form)))
+                 (and (consp x) (eq 'cl:quote (first x))
+                      (eq core::*special-defun-symbol* (second x))))))
+     (let ((name (second (fourth form))))
+       (register-global-function-def 'defun name)))
+    #+(or)(t (core:bformat t "Unknown: %s\n" form))))
+
+(defun compilation-unit-finished (messages)
+  (when messages
+    (bformat t "Compilation-unit finished \n\n")
+    ;; Add messages for global function references that were never satisfied
+    (maphash (lambda (name references)
+               (unless (or (fboundp name)
+                           (gethash name *global-function-defs*))
+                 (dolist (ref references)
+                   (pushnew (make-compiler-style-warning
+                             :message (core:bformat nil "Undefined function %s" name)
+                             :source-pos-info (global-function-ref-source-pos-info ref)
+                             :form name)
+                            messages :test #'equalp))))
+             *global-function-refs*)
+    (dolist (m (reverse messages))
+      (print-compiler-message m *debug-io*))))
+

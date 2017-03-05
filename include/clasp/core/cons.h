@@ -46,8 +46,8 @@ extern core::Symbol_sp& _sym_expectedType;
 
 namespace core {
 
-T_sp oCar(List_sp obj);
-T_sp oCdr(List_sp obj);
+T_sp oCar(T_sp obj);
+T_sp oCdr(T_sp obj);
 T_sp oCaar(T_sp o);
 T_sp oCadr(T_sp o);
 T_sp oCdar(T_sp o);
@@ -110,8 +110,8 @@ namespace core {
   class Cons_O : public T_O {
     LISP_ABSTRACT_CLASS(core, ClPkg, Cons_O, "Cons",T_O);
 
-    friend T_sp oCar(List_sp o);
-    friend T_sp oCdr(List_sp o);
+    friend T_sp oCar(T_sp o);
+    friend T_sp oCdr(T_sp o);
 #ifdef USE_MPS
   public: // Garbage collector functions
     uintptr_t& rawRef(int idx) {return *(uintptr_t*)((uintptr_t*)this+idx);};
@@ -172,7 +172,7 @@ namespace core {
   public:
     template <class T>
       static List_sp createFromVec0(const gctools::Vec0<T> &vec) {
-      List_sp res = _Nil<T_O>();
+      List_sp res(_Nil<T_O>());
       for (cl_index i(vec.size() - 1); i >= 0; --i) {
         res = Cons_O::create(vec[i], res);
       }
@@ -461,7 +461,7 @@ namespace core {
   } LispParserPos;
 
  CL_PKG_NAME(ClPkg,car);
-CL_DEFUN inline core::T_sp oCar(List_sp obj) {
+CL_DEFUN inline core::T_sp oCar(T_sp obj) {
    if (obj.consp())
      return obj.unsafe_cons()->_Car;
    if (obj.nilp())
@@ -469,7 +469,7 @@ CL_DEFUN inline core::T_sp oCar(List_sp obj) {
    TYPE_ERROR(obj, cl::_sym_Cons_O);
  };
  CL_PKG_NAME(ClPkg,cdr);
- CL_DEFUN inline T_sp oCdr(List_sp obj) {
+ CL_DEFUN inline T_sp oCdr(T_sp obj) {
   if (obj.consp())
     return obj.unsafe_cons()->_Cdr;
   if (obj.nilp())

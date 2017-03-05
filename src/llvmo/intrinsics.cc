@@ -189,12 +189,12 @@ ALWAYS_INLINE void makeCons(core::T_sp *resultConsP, core::T_sp *carP, core::T_s
 
 ALWAYS_INLINE void sp_symbolValueRead(core::T_sp *resultP, const core::T_sp *tsymP) {
   Symbol_sp sym((gctools::Tagged)(tsymP->raw_()));
-  T_sp sv = sym->_Value;
+  T_sp sv = sym->symbolValueUnsafe();
   if (sv.unboundp()) sym->symbolUnboundError();
   *resultP = sv;
 }
 ALWAYS_INLINE void mv_symbolValueRead(core::T_mv *resultP, const core::Symbol_sp *symP) {
-  T_sp sv = (*symP)->_Value;
+  T_sp sv = (*symP)->symbolValueUnsafe();
   if (sv.unboundp()) (*symP)->symbolUnboundError();
   *resultP = sv;
 }

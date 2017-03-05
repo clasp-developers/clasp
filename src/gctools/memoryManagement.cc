@@ -38,6 +38,7 @@ THE SOFTWARE.
 #include <clasp/gctools/gc_boot.h>
 #include <clasp/gctools/gcFunctions.h>
 #include <clasp/gctools/memoryManagement.h>
+#include <clasp/core/mpPackage.h>
 //#include "main/allHeaders.cc"
 
 #ifdef _TARGET_OS_LINUX
@@ -60,6 +61,51 @@ std::vector<Immediate_info> get_immediate_info() {
 };
 };
 
+
+namespace gctools {
+#if 0
+AllocationRecord* allocation_backtrace(size_t kind, uintptr_t stamp, size_t size, AllocationRecord* prev) {
+// Play with Unix backtrace(3)
+#define BACKTRACE_SIZE 1024
+  void *buffer[BACKTRACE_SIZE];
+  char *funcname = (char *)malloc(1024);
+  size_t funcnamesize = 1024;
+  int nptrs;
+  nptrs = backtrace(buffer, BACKTRACE_SIZE);
+  char **strings = backtrace_symbols(buffer, nptrs);
+  AllocationRecord* record = new BacktraceRecord(strings,nptrs,kind,stamp,size,prev);
+  return record;
+};
+#endif
+};
+
+
+namespace gctools {
+
+void register_thread(mp::Process_sp process, void* stack_base) {
+#ifdef USE_BOEHM
+  // ----   Boehm stuff needs to be done in the thread function
+//  GC_stack_base gc_stack_base;
+//  GC_get_stack_base(&gc_stack_base);
+//  GC_register_my_thread(&gc_stack_base);
+#endif
+#ifdef USE_MPS
+  printf("%s:%d  add support to add threads for MPS\n", __FILE__, __LINE__ );
+//#error "add support to add threads for MPS"
+#endif
+};
+
+void unregister_thread(mp::Process_sp process) {
+#ifdef USE_BOEHM
+  // ----   Boehm stuff needs to be done in the thread function
+//  GC_unregister_my_thread();
+#endif
+#ifdef USE_MPS
+  printf("%s:%d  add support to add threads for MPS\n", __FILE__, __LINE__ );
+#endif
+};
+
+};
 
 
 namespace gctools {
@@ -561,17 +607,31 @@ int startupGarbageCollectorAndSystem(MainFunctionType startupFn, int argc, char 
 #endif
 
 #if defined(USE_BOEHM)
+  GC_INIT();
+  GC_allow_register_threads();
   GC_set_java_finalization(1);
+//  GC_allow_register_threads();
   GC_set_all_interior_pointers(1); // tagged pointers require this
                                    //printf("%s:%d Turning on interior pointers\n",__FILE__,__LINE__);
   GC_set_warn_proc(clasp_warn_proc);
   //  GC_enable_incremental();
   GC_init();
   _ThreadLocalStack.allocateStack(gc::thread_local_cl_stack_min_size);
-  core::ThreadLocalState thread_local_state;
+  void* topOfStack;
+  core::ThreadLocalState thread_local_state(&topOfStack);
   my_thread = &thread_local_state;
-  int exitCode = startupFn(argc, argv, mpiEnabled, mpiRank, mpiSize);
+#if 0
+  // I'm not sure if this needs to be done for the main thread
+  GC_stack_base gc_stack_base;
+  GC_get_stack_base(&gc_stack_base);
+  GC_register_my_thread(&gc_stack_base);
 #endif
+  int exitCode = startupFn(argc, argv, mpiEnabled, mpiRank, mpiSize);
+#if 0
+  GC_unregister_my_thread();
+#endif
+#endif
+  mp::ClaspThreads_exit(); // run pthreads_exit
   return exitCode;
 }
 

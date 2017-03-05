@@ -147,9 +147,10 @@ namespace core {
 
 /*! Construct a symbol that is incomplete, it has no Class or Package */
 Symbol_O::Symbol_O(bool dummy) : _HomePackage(_Nil<T_O>()),
-                                 _Value(_Unbound<T_O>()),
+                                 _GlobalValue(_Unbound<T_O>()),
                                  _Function(_Unbound<T_O>()),
                                  _SetfFunction(_Unbound<T_O>()),
+                                 _Binding(NO_THREAD_LOCAL_BINDINGS),
                                  _IsSpecial(false),
                                  _IsConstant(false),
                                  _ReadOnlyFunction(false),
@@ -158,9 +159,10 @@ Symbol_O::Symbol_O(bool dummy) : _HomePackage(_Nil<T_O>()),
 Symbol_O::Symbol_O() : Base(),
                        _Name(gctools::smart_ptr<SimpleBaseString_O>()),
                        _HomePackage(gctools::smart_ptr<Package_O>()),
-                       _Value(gctools::smart_ptr<T_O>()),
+                       _GlobalValue(gctools::smart_ptr<T_O>()),
                        _Function(gctools::smart_ptr<Function_O>()),
                        _SetfFunction(gctools::smart_ptr<Function_O>()),
+                       _Binding(NO_THREAD_LOCAL_BINDINGS),
                        _IsSpecial(false),
                        _IsConstant(false),
                        _ReadOnlyFunction(false),
@@ -169,7 +171,7 @@ Symbol_O::Symbol_O() : Base(),
 void Symbol_O::finish_setup(Package_sp pkg, bool exportp, bool shadowp) {
   ASSERTF(pkg, BF("The package is UNDEFINED"));
   this->_HomePackage = pkg;
-  this->_Value = _Unbound<T_O>();
+  this->_GlobalValue = _Unbound<T_O>();
   this->_Function = _Unbound<T_O>();
   this->_SetfFunction = _Unbound<T_O>();
   pkg->bootstrap_add_symbol_to_package(this->symbolName()->get().c_str(), this->sharedThis<Symbol_O>(), exportp, shadowp);
@@ -208,7 +210,7 @@ Symbol_sp Symbol_O::create_from_string(const string &nm) {
 
 CL_LISPIFY_NAME("makunbound");
 CL_DEFMETHOD Symbol_sp Symbol_O::makunbound() {
-  this->_Value = _Unbound<T_O>();
+  *my_thread->_Bindings.reference_raw(this) = _Unbound<T_O>();
   return this->asSmartPtr();
 }
 
@@ -231,7 +233,7 @@ CL_DEFMETHOD Symbol_sp Symbol_O::copy_symbol(T_sp copy_properties) const {
   Symbol_sp new_symbol = Symbol_O::create(this->_Name);
   if (copy_properties.isTrue()) {
     ASSERT(this->_Function);
-    new_symbol->_Value = this->_Value;
+    new_symbol->_GlobalValue = this->symbolValue();
     new_symbol->_Function = this->_Function;
     new_symbol->_IsConstant = this->_IsConstant;
     new_symbol->_ReadOnlyFunction = this->_ReadOnlyFunction;
@@ -293,7 +295,7 @@ CL_DEFMETHOD void Symbol_O::makeSpecial() {
 
 CL_LISPIFY_NAME("core:STARmakeConstant");
 CL_DEFMETHOD void Symbol_O::makeConstant(T_sp val) {
-  this->_Value = val;
+  this->setf_symbolValue(val);
   this->_IsSpecial = true;
   this->_IsConstant = true;
 }
@@ -313,12 +315,13 @@ T_sp Symbol_O::defparameter(T_sp val) {
   return result;
 }
 
+#if 0
 void Symbol_O::setf_symbolValueReadOnlyOverRide(T_sp val) {
   _OF();
   this->_IsConstant = true;
   this->_Value = val;
 }
-
+#endif
 
 CL_LISPIFY_NAME("core:setf_symbolFunction");
 CL_DEFMETHOD void Symbol_O::setf_symbolFunction(T_sp exec) {
@@ -468,14 +471,15 @@ void Symbol_O::dump() {
       ss << "Package: ";
       ss << _rep_(this->_HomePackage) << std::endl;
     }
-    if (!this->_Value) {
+    T_sp val = this->symbolValueUnsafe();
+    if (!val) {
       ss << "VALUE: NULL" << std::endl;
-    } else if (this->_Value.unboundp()) {
+    } else if (val.unboundp()) {
       ss << "Value: UNBOUND" << std::endl;
-    } else if (this->_Value.nilp()) {
+    } else if (val.nilp()) {
       ss << "Value: nil" << std::endl;
     } else {
-      ss << "Value: " << _rep_(this->_Value) << std::endl;
+      ss << "Value: " << _rep_(val) << std::endl;
     }
     if (!this->_Function) {
       ss << "Function: NULL" << std::endl;

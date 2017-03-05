@@ -149,61 +149,66 @@ int WeakHashTable::find(gctools::tagged_pointer<KeyBucketsType> keys, const valu
   } while (i != h);
   return result;
 }
-
-int WeakHashTable::rehash(size_t newLength, const value_type &key, size_t &key_bucket) {
+int WeakHashTable::rehash_not_safe(size_t newLength, const value_type &key, size_t &key_bucket) {
   int result;
-  safeRun<void()>([&result, this, newLength, &key, &key_bucket]() -> void {
-		GCWEAK_LOG(BF("entered rehash newLength = %d") % newLength );
-		size_t i, length;
+  GCWEAK_LOG(BF("entered rehash newLength = %d") % newLength );
+  size_t i, length;
 		// buckets_t new_keys, new_values;
-		result = 0;
-		length = this->_Keys->length();
-		MyType newHashTable(newLength);
-                newHashTable.initialize();
+  result = 0;
+  length = this->_Keys->length();
+  MyType newHashTable(newLength);
+  newHashTable.initialize();
 		//new_keys = make_buckets(newLength, this->key_ap);
 		//new_values = make_buckets(newLength, this->value_ap);
 		//new_keys->dependent = new_values;
 		//new_values->dependent = new_keys;
 #ifdef USE_MPS
-		GCWEAK_LOG(BF("Calling mps_ld_reset"));
-		mps_ld_reset(&this->_LocationDependency,global_arena);
+  GCWEAK_LOG(BF("Calling mps_ld_reset"));
+  mps_ld_reset(&this->_LocationDependency,global_arena);
 #endif
-		for (i = 0; i < length; ++i) {
-		    value_type& old_key = (*this->_Keys)[i];
-		    if (!old_key.unboundp() && !old_key.deletedp() && old_key.raw_() ) {
-			int found;
-			size_t b;
+  for (i = 0; i < length; ++i) {
+    value_type& old_key = (*this->_Keys)[i];
+    if (!old_key.unboundp() && !old_key.deletedp() && old_key.raw_() ) {
+      int found;
+      size_t b;
 #ifdef USE_MPS
-			found = WeakHashTable::find(newHashTable._Keys, old_key, &this->_LocationDependency, b);
+      found = WeakHashTable::find(newHashTable._Keys, old_key, &this->_LocationDependency, b);
 #else
-			found = WeakHashTable::find(newHashTable._Keys, old_key, b);
+      found = WeakHashTable::find(newHashTable._Keys, old_key, b);
 #endif
-			GCTOOLS_ASSERT(found);// assert(found);            /* new table shouldn't be full */
-			if ( !(*newHashTable._Keys)[b].unboundp() ) {
-			    printf("%s:%d About to copy key: %12p   at index %zu    to newHashTable at index: %zu\n", __FILE__, __LINE__,
-				   old_key.raw_(), i, b );
-			    printf("Key = %s\n", core::lisp_rep(old_key).c_str());
-			    printf("    original value@%p = %s\n", (*this->_Values)[i].raw_(), core::lisp_rep((*this->_Values)[i]).c_str());
-			    printf("newHashTable value@%p = %s\n", (*newHashTable._Values)[b].raw_(), core::lisp_rep((*newHashTable._Values)[b]).c_str());
-			    printf("--------- Original table\n");
-			    printf("%s\n", this->dump("Original").c_str());
-			    printf("--------- New table\n");
-			    printf("%s\n", newHashTable.dump("Copy").c_str());
-			}
-			GCTOOLS_ASSERT((*newHashTable._Keys)[b].unboundp()); /* shouldn't be in new table */
-			newHashTable._Keys->set(b,old_key);
-			(*newHashTable._Values)[b] = (*this->_Values)[i];
-			if (key && old_key == key ) {
-			    key_bucket = b;
-			    result = 1;
-			}
-			(*newHashTable._Keys).setUsed((*newHashTable._Keys).used()+1); // TAG_COUNT(UNTAG_COUNT(new_keys->used) + 1);
-		    }
-		}
-		GCTOOLS_ASSERT( (*newHashTable._Keys).used() == (newHashTable.tableSize()) );
+      GCTOOLS_ASSERT(found);// assert(found);            /* new table shouldn't be full */
+      if ( !(*newHashTable._Keys)[b].unboundp() ) {
+        printf("%s:%d About to copy key: %12p   at index %zu    to newHashTable at index: %zu\n", __FILE__, __LINE__,
+               old_key.raw_(), i, b );
+        printf("Key = %s\n", core::lisp_rep(old_key).c_str());
+        printf("    original value@%p = %s\n", (*this->_Values)[i].raw_(), core::lisp_rep((*this->_Values)[i]).c_str());
+        printf("newHashTable value@%p = %s\n", (*newHashTable._Values)[b].raw_(), core::lisp_rep((*newHashTable._Values)[b]).c_str());
+        printf("--------- Original table\n");
+        printf("%s\n", this->dump("Original").c_str());
+        printf("--------- New table\n");
+        printf("%s\n", newHashTable.dump("Copy").c_str());
+      }
+      GCTOOLS_ASSERT((*newHashTable._Keys)[b].unboundp()); /* shouldn't be in new table */
+      newHashTable._Keys->set(b,old_key);
+      (*newHashTable._Values)[b] = (*this->_Values)[i];
+      if (key && old_key == key ) {
+        key_bucket = b;
+        result = 1;
+      }
+      (*newHashTable._Keys).setUsed((*newHashTable._Keys).used()+1); // TAG_COUNT(UNTAG_COUNT(new_keys->used) + 1);
+    }
+  }
+  GCTOOLS_ASSERT( (*newHashTable._Keys).used() == (newHashTable.tableSize()) );
 		// assert(UNTAG_COUNT(new_keys->used) == table_size(tbl));
-		this->swap(newHashTable);
-  });
+  this->swap(newHashTable);
+  return result;
+}
+
+int WeakHashTable::rehash(size_t newLength, const value_type &key, size_t &key_bucket) {
+  int result;
+  safeRun<void()>([&result, this, newLength, &key, &key_bucket]() -> void {
+      result = this->rehash_not_safe(newLength,key,key_bucket);
+    });
   return result;
 }
 
@@ -426,7 +431,7 @@ core::T_mv WeakHashTable::gethash(core::T_sp tkey, core::T_sp defaultValue) {
 
 void WeakHashTable::set(core::T_sp key, core::T_sp value) {
   safeRun<void()>([key, value, this]() -> void {
-		if (this->fullp() || !this->trySet(key,value) ) {
+		if (this->fullp_not_safe() || !this->trySet(key,value) ) {
 		    int res;
 		    value_type dummyKey;
 		    size_t dummyPos;

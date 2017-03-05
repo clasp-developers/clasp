@@ -63,10 +63,33 @@
     #+(or)(let ((orig (irc-intrinsic "lexicalValueReference" (jit-constant-i32 0) (jit-constant-i32 index) renv)))
       (irc-int-to-ptr (irc-intrinsic "debug_match_two_uintptr_t" (irc-ptr-to-int entry-ptr +uintptr_t+) (irc-ptr-to-int orig +uintptr_t+)) +tsp*+))
     entry-ptr))
-    
+
+;;; ------------------------------------------------------------
+;;;
+;;; Add :debug-lexical-var-reference-depth to *features* to get a report
+;;; on the number of times lexical variables are accessed from different
+;;; activation frame depths.  This will help inform me (meister) if
+;;; I need to add more code to access activation frames.
+#+debug-lexical-var-reference-depth
+(eval-when (:compile-toplevel :execute)
+  (core:bformat t "keeping track of lexical var reference depth - remove this code for production\n")
+  (defvar *lexical-var-reference-counter* (make-hash-table :test #'eql))
+  (defun record-lexical-var-reference-depth (depth)
+    (let ((cur (gethash depth *lexical-var-reference-counter* 0)))
+      (core:hash-table-setf-gethash *lexical-var-reference-counter* depth (+ cur 1))))
+  (defun report-lexical-var-reference-depth ()
+    (core:bformat t "Lexical-var-reference-depth references\n")
+    (let (results)
+      (maphash (lambda (depth count)
+                 (push (cons depth count) results))
+               *lexical-var-reference-counter*)
+      (let ((counts (sort results #'< :key #'car)))
+        (dolist (entry counts)
+          (core:bformat t "Depth %d -> %d references\n" (car entry) (cdr entry)))))))
 
 (defun codegen-lexical-var-reference (depth index renv)
   #+(or)(irc-intrinsic "lexicalValueReference" (jit-constant-i32 depth) (jit-constant-i32 index) renv)
+  #+debug-lexical-var-reference-depth(record-lexical-var-reference-depth depth)
   (if (= depth 0)
       (codegen-local-lexical-var-reference index renv)
       (irc-intrinsic "lexicalValueReference" (jit-constant-i32 depth) (jit-constant-i32 index) renv)))
@@ -87,7 +110,7 @@
 
 (defun codegen-var-lookup (result sym old-env)
   "Return IR code thsym returns the value of a symbol that is either lexical or special"
-  (let ((classified (irc-classify-variable old-env sym)))
+  (let ((classified (variable-info old-env sym)))
     (cmp-log "About to codegen-var-lookup for %s - classified as: %s\n" sym classified)
     (if (eq (car classified) 'ext:special-var)
 	(codegen-special-var-lookup result sym old-env)

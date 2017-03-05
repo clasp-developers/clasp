@@ -627,7 +627,8 @@ def configure(cfg):
 # defines that slow down program execution
 #  There are more defined in clasp/include/gctools/configure_memory.h
     cfg.define("DEBUG_SLOW",1)    # Code runs slower due to checks - undefine to remove checks
-# ----------    
+# ----------
+    cfg.define("CLASP_THREADS",1)
     cfg.define("CLASP_GIT_COMMIT",get_git_commit(cfg))
     cfg.define("CLASP_VERSION",get_clasp_version(cfg))
     cfg.define("CLBIND_DYNAMIC_LINK",1)
@@ -640,8 +641,8 @@ def configure(cfg):
 #    cfg.define("EXPAT",1)
     cfg.define("INCLUDED_FROM_CLASP",1)
     cfg.define("INHERITED_FROM_SRC",1)
-    cfg.define("LLVM_VERSION_X100",390)
-    cfg.define("LLVM_VERSION","3.9")
+    cfg.define("LLVM_VERSION_X100",400)
+    cfg.define("LLVM_VERSION","4.0")
     cfg.define("NDEBUG",1)
 #    cfg.define("DEBUG_CACHE",1)      # Debug the dispatch caches - see cache.cc
 # Keep track of every allocation
@@ -894,8 +895,12 @@ def build(bld):
         lnk_cclasp_exec.set_inputs([cxx_all_bitcode_node,cclasp_common_lisp_bitcode])
         cclasp_executable = bld.path.find_or_declare(variant.executable_name(stage='c'))
         if ( bld.env['DEST_OS'] == DARWIN_OS ):
-            cclasp_lto_o = bld.path.find_or_declare('%s.lto.o' % variant.executable_name(stage='c'))
-            lnk_cclasp_exec.set_outputs([cclasp_executable,cclasp_lto_o])
+            if (bld.env.LTO_FLAG):
+                cclasp_lto_o = bld.path.find_or_declare('%s.lto.o' % variant.executable_name(stage='c'))
+                lnk_cclasp_exec.set_outputs([cclasp_executable,cclasp_lto_o])
+            else:
+                cclasp_lto_o = None
+                lnk_cclasp_exec.set_outputs([cclasp_executable])
         elif (bld.env['DEST_OS'] == LINUX_OS ):
             cclasp_lto_o = None
             lnk_cclasp_exec.set_outputs(cclasp_executable)
@@ -905,7 +910,10 @@ def build(bld):
             cclasp_dsym_files = generate_dsym_files(variant.executable_name(stage='c'),cclasp_dsym)
             print("cclasp_dsym_files = %s" % cclasp_dsym_files)
             dsymutil_cclasp = dsymutil(env=bld.env)
-            dsymutil_cclasp.set_inputs([cclasp_executable,cclasp_lto_o])
+            if (cclasp_lto_o):
+                dsymutil_cclasp.set_inputs([cclasp_executable,cclasp_lto_o])
+            else:
+                dsymutil_cclasp.set_inputs([cclasp_executable])
             dsymutil_cclasp.set_outputs(cclasp_dsym_files)
             bld.add_to_group(dsymutil_cclasp)
             bld.install_files('${INSTALL_PATH_PREFIX}/%s/%s' % (executable_dir, cclasp_dsym.name), cclasp_dsym_files, relative_trick = True, cwd = cclasp_dsym)
