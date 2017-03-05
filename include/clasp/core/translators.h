@@ -449,7 +449,7 @@ template <>
     typedef long long DeclareType;
     static core::T_sp convert( DeclareType v )
     {
-      core::Integer_sp oi = core::Integer_O::create( (core::Fixnum)v );
+      core::Integer_sp oi = core::Integer_O::create( (int64_t)v );
       return ( oi );
     }
   };

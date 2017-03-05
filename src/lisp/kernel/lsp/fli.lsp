@@ -233,7 +233,8 @@
 
 (declaim (inline %foreign-free))
 (defun %foreign-free (ptr)
-  (%free-foreign-data ptr))
+  (%free-foreign-data ptr)
+  nil)
 
 ;;; These code lines were debugged with the help of drneister, stassats and
 ;;; Shinmera on 2016-09-22 as a joint effort on IRC channel #clasp. Thx again!!

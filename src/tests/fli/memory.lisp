@@ -123,7 +123,7 @@
 (deftest lisp-string-to-foreign.empty
     (cffi:with-foreign-pointer (str 2)
       (setf (cffi:mem-ref str :unsigned-char) 42)
-      (lisp-string-to-foreign "" str 1)
+      (cffi:lisp-string-to-foreign "" str 1)
       (cffi:mem-ref str :unsigned-char))
   0)
 
@@ -157,7 +157,7 @@
 ;;; actually test anything!
 (defun %mem-ref-left-to-right ()
   (let ((result nil))
-    (with-foreign-object (p :char)
+    (cffi:with-foreign-object (p :char)
       (%mem-set 42 p :char)
       (%mem-ref (progn (push 1 result) p) :char (progn (push 2 result) 0))
       (nreverse result))))

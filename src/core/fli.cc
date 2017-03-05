@@ -881,8 +881,8 @@ core::Integer_sp PERCENToffset_address_as_integer( core::T_sp address_or_foreign
 template<class T>
 inline T mem_ref( cl_intptr_t address )
 {
-  T *ptr = reinterpret_cast< T*>( address );
-  return (*ptr);
+  T * ptr = reinterpret_cast< T * >( address );
+  return ( *ptr );
 }
 
 // ---------------------------------------------------------------------------
@@ -921,7 +921,7 @@ core::T_sp PERCENTmem_ref_int8( core::Integer_sp address )
 
 core::T_sp PERCENTmem_ref_uint8( core::Integer_sp address )
 {
-  int8_t v = mem_ref<int8_t>( core::clasp_to_cl_intptr_t( address ) );
+  uint8_t v = mem_ref<uint8_t>( core::clasp_to_cl_intptr_t( address ) );
   return mk_fixnum_uint8( v );
 }
 
@@ -1202,6 +1202,8 @@ core::T_sp PERCENTmem_set_long_long( core::Integer_sp address, core::T_sp value 
   long long tmp;
   translate::from_object< int64_t /*long long*/ > v( value );
   tmp = mem_set< int64_t >( core::clasp_to_cl_intptr_t( address ), v._v );
+  fprintf( stderr, "\n*** PERCENTmem_set_long_long(): tmp = %lld, v._v = %lld\n",
+           tmp, v._v );
   return mk_integer_longlong( tmp );
 }
 
