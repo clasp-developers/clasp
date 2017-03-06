@@ -12,6 +12,10 @@
 
 (in-package "CLOS")
 
+#+(or)
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (setq *echo-repl-read* t))
+
 (defconstant +builtin-classes-pre-array+
   (make-array (1+ #.(length +builtin-classes-list+))))
 
@@ -29,10 +33,10 @@
 
 (defun ensure-boot-class (name &key (metaclass 'standard-class)
                                  direct-superclasses direct-slots index)
-  #+(or)(format t "ensure-boot-class for ~s metaclass: ~s direct-superclasses: ~s :direct-slots ~s :index ~s~%"
+  (debug-boot "ensure-boot-class for ~s metaclass: ~s direct-superclasses: ~s :direct-slots ~s :index ~s~%"
                 name metaclass direct-superclasses direct-slots index)
-  (let* ((the-metaclass (the class (gethash metaclass si::*class-name-hash-table*)))
-         (class (or (gethash name si::*class-name-hash-table*)
+  (let* ((the-metaclass (the class #+clasp(core:lookup-class metaclass nil) #+ecl(gethash metaclass si::*class-name-hash-table*)))
+         (class (or #+clasp(core:lookup-class name nil) #+ecl(gethash name si::*class-name-hash-table*)
                     #+clasp
                     (core:allocate-raw-class nil the-metaclass #.(length +standard-class-slots+) name)
                     #-clasp
@@ -60,8 +64,12 @@
 	    (class-finalized-p         class) t
 	    (eql-specializer-flag      class) nil
 	    (specializer-direct-methods class) nil
-	    (specializer-direct-generic-functions class) nil
-	    (gethash name si::*class-name-hash-table*) class
+	    (specializer-direct-generic-functions class) nil)
+      (debug-boot "    About to setf class name -> ~a  class -> ~a~%" name class)
+      #+clasp(core:set-class class name)
+      #+ecl(setf (gethash name si::*class-name-hash-table*) class)
+      (debug-boot "    Done setf class name -> ~a  class -> ~a~%" name class)
+      (setf
 	    (class-sealedp             class) nil
 	    (class-dependents          class) nil
 	    (class-valid-initargs      class) nil)

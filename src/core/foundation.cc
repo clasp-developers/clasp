@@ -101,6 +101,12 @@ void ThreadLocalState::initialize_thread() {
   this->_BignumRegister0 = Bignum_O::create(0);
   this->_BignumRegister1 = Bignum_O::create(0);
   this->_BignumRegister2 = Bignum_O::create(0);
+  this->_SingleDispatchMethodCachePtr = gc::GC<Cache_O>::allocate();
+  this->_SingleDispatchMethodCachePtr->setup(2, Lisp_O::SingleDispatchMethodCacheSize);
+  this->_MethodCachePtr = gctools::GC<Cache_O>::allocate();
+  this->_MethodCachePtr->setup(Lisp_O::MaxFunctionArguments, Lisp_O::ClosCacheSize);
+  this->_SlotCachePtr = gctools::GC<Cache_O>::allocate();
+  this->_SlotCachePtr->setup(Lisp_O::MaxClosSlots, Lisp_O::ClosCacheSize);
 };
 };
 

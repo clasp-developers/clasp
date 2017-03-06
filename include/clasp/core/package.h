@@ -36,64 +36,64 @@ THE SOFTWARE.
 #include <clasp/core/hashTable.fwd.h>
 #include <clasp/core/bignum.fwd.h>
 #include <clasp/core/holder.h>
+#include <clasp/core/mpPackage.h>
 #include <clasp/core/wrappers.h>
 
 namespace core {
+
+#define WITH_PACKAGE_READ_LOCK(pkg) WITH_READ_LOCK(pkg->_Lock)
+#define WITH_PACKAGE_READ_WRITE_LOCK(pkg) WITH_READ_WRITE_LOCK(pkg->_Lock)
+
 
 SMART(Package);
 class Package_O : public General_O {
   LISP_CLASS(core, ClPkg, Package_O, "Package",General_O);
   friend T_sp cl__unexport(Symbol_sp sym, Package_sp package);
   friend T_sp cl__delete_package(T_sp pobj);
-public: // virtual functions inherited from Object
+ public: // virtual functions inherited from Object
   void initialize();
   string __repr__() const;
-public: // instance variables
-  SimpleString_sp _Name;
+ public: // instance variables
   HashTableEqual_sp _InternalSymbols;
   HashTableEqual_sp _ExternalSymbols;
   HashTableEq_sp _Shadowing;
+  std::atomic<SimpleString_sp> _Name;
   gctools::Vec0<Package_sp> _UsingPackages;
   gctools::Vec0<Package_sp> _PackagesUsedBy;
-  bool _KeywordPackage;
-  bool _AmpPackage;
-  bool _ActsLikeKeywordPackage;
+  std::atomic<bool> _KeywordPackage;
+  std::atomic<bool> _AmpPackage;
+  std::atomic<bool> _ActsLikeKeywordPackage;
   List_sp _Nicknames;
-public: // Creation class functions
+#ifdef CLASP_THREADS
+  mutable mp::SharedRecursiveMutex _Lock;
+#endif
+ public: // Creation class functions
   static Package_sp create(const string &p);
 
-public:
+ public:
   /*! Very low level - add to internal symbols unless keyword
 	  package, in that case add to external symbols */
   void add_symbol_to_package(SimpleString_sp nameKey, Symbol_sp sym, bool exportp = false);
   void bootstrap_add_symbol_to_package(const char *symName, Symbol_sp sym, bool exportp = false, bool shadowp = false);
 
-private:
+ private:
   // This returns a NULL smart_ptr if it doesn't find a conflict
   // so that it can be used within the expression of an if statement
   Package_sp export_conflict_or_NULL(SimpleString_sp nameKey, Symbol_sp sym);
 
-public:
+ public:
   string packageName() const;
 
   T_mv packageHashTables() const;
 
-  void setNicknames(List_sp nicknames) { this->_Nicknames = nicknames; };
-  List_sp getNicknames() const { return this->_Nicknames; };
-#if 0
-    symbolIterator beginExternals() { return this->_ExternalSymbols.begin();};
-    symbolIterator endExternals() { return this->_ExternalSymbols.end();};
-
-    const_symbolIterator beginExternals() const { return this->_ExternalSymbols.begin();};
-    const_symbolIterator endExternals() const { return this->_ExternalSymbols.end();};
-
-    symbolIterator beginInternals() { return this->_InternalSymbols.begin();};
-    symbolIterator endInternals() { return this->_InternalSymbols.end();};
-
-    const_symbolIterator beginInternals() const { return this->_InternalSymbols.begin();};
-    const_symbolIterator endInternals() const { return this->_InternalSymbols.end();};
-#endif
-
+  void setNicknames(List_sp nicknames) {
+    WITH_PACKAGE_READ_WRITE_LOCK(this);
+    this->_Nicknames = nicknames;
+  };
+  List_sp getNicknames() const {
+    WITH_PACKAGE_READ_LOCK(this);
+    return this->_Nicknames;
+  };
   void setKeywordPackage(bool b) { this->_KeywordPackage = b; };
   bool isKeywordPackage() const { return this->_KeywordPackage; };
   // Cando makes a package that acts like the keyword package (symbol values are symbols and all symbols extern)
@@ -175,12 +175,13 @@ public:
   /*! Map over the Internal key/value pairs */
   void mapInternals(KeyValueMapper *mapper);
 
-public:
+ public:
   // Not default constructable
-  Package_O() : _Nicknames(_Nil<T_O>()), _ActsLikeKeywordPackage(false){};
+ Package_O() : _Nicknames(_Nil<T_O>()), _ActsLikeKeywordPackage(false){};
   virtual ~Package_O(){};
 };
 
+ 
 T_mv cl__find_symbol(String_sp symbolName, T_sp packageDesig);
 };
 #endif //]

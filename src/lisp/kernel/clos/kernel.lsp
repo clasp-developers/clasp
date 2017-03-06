@@ -41,8 +41,11 @@
 	 (error "The class associated to the CL specifier ~S cannot be changed."
 		name)))
       ((classp new-value)
-       (setf (gethash name si:*class-name-hash-table*) new-value))
-      ((null new-value) (remhash name si:*class-name-hash-table*))
+       #+clasp(core:set-class new-value name)
+       #+ecl(setf (gethash name si:*class-name-hash-table*) new-value))
+      ((null new-value)
+       #+clasp(core:set-class nil name)
+       #+ecl(remhash name si:*class-name-hash-table*))
       (t (error "~A is not a class." new-value))))
   new-value)
 

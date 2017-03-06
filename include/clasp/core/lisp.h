@@ -37,6 +37,7 @@ THE SOFTWARE.
 #include <clasp/core/lispStream.fwd.h>
 #include <clasp/core/character.fwd.h>
 #include <clasp/core/cons.h>
+#include <clasp/core/mpPackage.fwd.h>
 #include <clasp/core/numbers.h>
 #include <clasp/core/pointer.fwd.h>
 #include <clasp/core/hashTable.fwd.h>
@@ -209,29 +210,34 @@ class Lisp_O {
   friend gctools::Layout_code* gctools::get_kind_layout_codes();
   struct GCRoots //: public gctools::HeapRoot
   {
-    //! A pool of strings for string manipulation - must be per thread
-        // Now it's in my_thread
-//    List_sp _BufferStringPool;
-    /*! The invocation history stack this should be per thread */
-        //InvocationHistoryStack _InvocationHistoryStack;
-        //ExceptionStack _ExceptionStack;
-    /*! Multiple values - this should be per thread */
-//    MultipleValues *_MultipleValuesCur;
     T_sp _TerminalIO;
-    /*! bformat_StringOutputStream one per thread */
-#if 0
-        // THREAD_CHANGE
-    StringOutputStream_sp _BformatStringOutputStream;
-    /*! Bignum registers should be one per thread */
-    Bignum_sp _BignumRegister0;
-    Bignum_sp _BignumRegister1;
-    Bignum_sp _BignumRegister2;
+    //! Threads
+#ifdef CLASP_THREADS
+    List_sp _ActiveThreads;
+    mutable mp::SharedMutex _ActiveThreadsMutex;
+#endif
+#ifdef CLASP_THREADS
+    mutable mp::SharedMutex _SyspropMutex;
+#endif
+    HashTable_sp _Sysprop;
+    // ---------
+    //! Associate class names with classes
+    HashTable_sp _ClassTable;
+#ifdef CLASP_THREADS
+    //! Protect _ClassTable
+    mutable mp::SharedMutex _ClassTableMutex;
 #endif
     Integer_sp _IntegerOverflowAdjust;
     CharacterInfo charInfo;
     gctools::Vec0<core::Symbol_sp> _ClassSymbolsHolder;
 //    DynamicBindingStack _Bindings;
     gctools::Vec0<SourceFileInfo_sp> _SourceFiles;
+    map<string, int> _SourceFileIndices; // map<string,SourceFileInfo_sp> 	_SourceFiles;
+#ifdef CLASP_THREADS
+    //! Protect _SourceFiles
+    mutable mp::SharedMutex _SourceFilesMutex;
+#endif
+
     /*! Store CATCH info */
 // THREAD_CHANGE    List_sp _CatchInfo;
     /* The global class table that maps class symbols to classes */
@@ -240,11 +246,20 @@ class Lisp_O {
     /*! When compiled files are loaded, they need to create
 	      LOAD-TIME-VALUEs and QUOTEd objects using C++ calls at runtime.
 	      Those objects are stored here as a map on the compiled file name. */
-    HashTableEqual_sp _LoadTimeValueArrays; // map<string,LoadTimeValues_sp> _LoadTimeValueArrays;
+//    HashTableEqual_sp _LoadTimeValueArrays; // map<string,LoadTimeValues_sp> _LoadTimeValueArrays;
     List_sp _CommandLineArguments;
+    //! Package names to packages
     gctools::Vec0<Package_sp> _Packages;
-    /*SymbolMap<Function_O>	        _SetfDefinitions; */
+    map<string, int> _PackageNameIndexMap;
+#ifdef CLASP_THREADS
+    mutable mp::SharedMutex _PackagesMutex;
+#endif
+#if 0
     HashTableEq_sp _SetfDefinitions;
+#ifdef CLASP_THREADS
+    mutable mp::SharedMutex _SetfDefinitionsMutex;
+#endif
+#endif
     Package_sp _CorePackage;
     Package_sp _KeywordPackage;
     Package_sp _CommonLispPackage;
@@ -252,21 +267,19 @@ class Lisp_O {
     /*! Store a table of generic functions - should this be a HashTable?  What about (setf XXX) generic functions? Aug2013 */
     /*SymbolMap<SingleDispatchGenericFunction_O> 	_SingleDispatchGenericFunctionTable;*/
     HashTableEq_sp _SingleDispatchGenericFunctionTable;
+#ifdef CLASP_THREADS
+    mutable mp::SharedMutex _SingleDispatchGenericFunctionTableMutex;
+#endif
     /*! True object */
     T_sp _TrueObject;
-
-    /*! SingleDispatchGenericFunction cache */
-    Cache_sp _SingleDispatchMethodCachePtr;
-#if CLOS
-    /*! Generic functions method cache */
-    Cache_sp _MethodCachePtr;
-    /*! Generic functions slot cache */
-    Cache_sp _SlotCachePtr;
-#endif
+    //-----
     DoubleFloat_sp _RehashSize;
     DoubleFloat_sp _RehashThreshold;
     T_sp _NullStream;
-    List_sp _PathnameTranslations; /* alist */
+    List_sp _ThePathnameTranslations; /* alist */
+#ifdef CLASP_THREADS
+    mutable mp::SharedRecursiveMutex _ThePathnameTranslationsMutex;
+#endif
     Complex_sp _ImaginaryUnit;
     Complex_sp _ImaginaryUnitNegative;
     Ratio_sp _PlusHalf;
@@ -346,9 +359,14 @@ public:
   /*! Raw argv */
   vector<string> _Argv;
 
+ public:
+#ifdef CLASP_THREADS
+  void add_process(mp::Process_sp process);
+  void remove_process(mp::Process_sp process);
+  List_sp processes() const;
+#endif
 public:
   /*! Map source file path strings to SourceFileInfo_sp */
-  map<string, int> _SourceFileIndices; // map<string,SourceFileInfo_sp> 	_SourceFiles;
   uint _Mode;
   uint _ReplCounter;
   /*! Store paths to important directories */
@@ -376,7 +394,6 @@ public:
   string _RCFileName;
   bool _IgnoreInitImage;
   bool _IgnoreInitLsp; // true if the startup shouldn't be loaded
-  map<string, int> _PackageNameIndexMap;
   /*! Keep track of every new environment that is created */
   uint _EnvironmentId;
 
@@ -453,8 +470,8 @@ public:
   //	void catchUnwindTag(List_sp catchStore);
   //	List_sp catchFindTag(T_sp tag);
 public:
-  List_sp pathnameTranslations() const { return this->_Roots._PathnameTranslations; };
-  void setPathnameTranslations(List_sp pnt) { this->_Roots._PathnameTranslations = pnt; };
+  List_sp pathnameTranslations_() const { return this->_Roots._ThePathnameTranslations; };
+  void setPathnameTranslations_(List_sp pnt) { this->_Roots._ThePathnameTranslations = pnt; };
   /*! Return the maximum path length for the system */
   int pathMax() const { return this->_PathMax; };
 
@@ -473,12 +490,12 @@ public:
 public:
   /*! Get the LoadTimeValues_sp that corresponds to the name.
 	  If it doesn't exist then make one and return it. */
-  LoadTimeValues_sp getOrCreateLoadTimeValues(const string &name, size_t numberOfLoadTimeValues = 0);
-  List_sp loadTimeValuesIds() const;
-  T_sp loadTimeValue(const string &name, int idx);
-  Symbol_sp loadTimeSymbol(const string &name, int idx);
-  LoadTimeValues_sp findLoadTimeValues(const string &name);
-  LoadTimeValues_sp findLoadTimeValuesWithNameContaining(const string &name, int &count);
+//NEW_LTV  LoadTimeValues_sp getOrCreateLoadTimeValues(const string &name, size_t numberOfLoadTimeValues = 0);
+//NEW_LTV  List_sp loadTimeValuesIds() const;
+//NEW_LTV  T_sp loadTimeValue(const string &name, int idx);
+//NEW_LTV  Symbol_sp loadTimeSymbol(const string &name, int idx);
+//NEW_LTV  LoadTimeValues_sp findLoadTimeValues(const string &name);
+  //NEW_LTV LoadTimeValues_sp findLoadTimeValuesWithNameContaining(const string &name, int &count);
 
 public:
   /*! Keep track of every source file that is read by the system */
@@ -514,10 +531,11 @@ public: // numerical constants
   LongFloat_sp longFloatOne() const { return this->_Roots._LongFloatOne; };
 #endif // ifdef CLASP_LONG_FLOAT
 public:
+#if 0
   Cache_sp singleDispatchMethodCachePtr() const { return this->_Roots._SingleDispatchMethodCachePtr; };
   Cache_sp methodCachePtr() const { return this->_Roots._MethodCachePtr; };
   Cache_sp slotCachePtr() const { return this->_Roots._SlotCachePtr; };
-
+#endif
 public:
   /*! Setup makePackage and exportSymbol callbacks */
   void setMakePackageAndExportSymbolCallbacks(MakePackageCallback mpc, ExportSymbolCallback esc);
@@ -881,6 +899,7 @@ public:
   //	bool subClassOrder(Symbol_sp baseClassSymbol,Symbol_sp classSymbol);
 
   bool recognizesPackage(const string &packageName) const;
+  T_sp findPackage_no_lock(const string &packageName, bool errorp = false) const;
   T_sp findPackage(const string &packageName, bool errorp = false) const;
   void inPackage(const string &packageName);
   void selectPackage(Package_sp pack);
@@ -1042,7 +1061,7 @@ T_mv cl__macroexpand(T_sp form, T_sp env);
 List_sp cl__assoc(T_sp item, List_sp alist, T_sp key, T_sp test = cl::_sym_eq, T_sp test_not = _Nil<T_O>());
 
 Class_mv cl__find_class(Symbol_sp symbol, bool errorp = true, T_sp env = _Nil<T_O>());
-Class_mv core__setf_find_class(T_sp newValue, Symbol_sp name, bool errorp, T_sp env);
+Class_mv core__setf_find_class(T_sp newValue, Symbol_sp name);
 
 void cl__error(T_sp err, List_sp initializers);
 };

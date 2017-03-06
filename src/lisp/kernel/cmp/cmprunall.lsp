@@ -19,8 +19,8 @@ load-time-value manager (true - in COMPILE-FILE) or not (false - in COMPILE)."
 ;;; Set up the run-time-values-table
 ;;;  set-run-time-values-table MUST be called to set the
 ;;;  global
-(defvar *run-time-values-table* (core:load-time-value-array *run-time-values-table-name* 0))
-(core:set-run-time-values-table *run-time-values-table-name*)
+#+(or)(defvar *run-time-values-table* (core:load-time-value-array *run-time-values-table-name* 0))
+#+(or)(core:set-run-time-values-table *run-time-values-table-name*)
 
 (defvar *load-time-value-holder-global-var* nil
   "Store the current load-time-value data structure for COMPILE-FILE")

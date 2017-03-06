@@ -184,7 +184,7 @@ LCC_RETURN SingleDispatchGenericFunctionClosure_O::LISP_CALLING_CONVENTION() {
   INCREMENT_FUNCTION_CALL_COUNTER(this);
   ASSERT_LCC_VA_LIST_CLOSURE_DEFINED(lcc_arglist);
   Function_sp func;
-  Cache_sp cache = _lisp->singleDispatchMethodCachePtr();
+  Cache_sp cache = my_thread->_SingleDispatchMethodCachePtr;
   gctools::Vec0<T_sp> &vektor = cache->keys();
   vektor[0] = this->name();
   Class_sp dispatchArgClass = vektor[1] = lisp_instance_class(LCC_ARG0());

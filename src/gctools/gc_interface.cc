@@ -702,7 +702,7 @@ NOINLINE  gc::smart_ptr<Metaclass> allocate_one_class()
   class_val->__setup_stage1_with_sharedPtr_lisp_sid(class_val,_lisp,TheClass::static_classSymbol());
   reg::lisp_associateClassIdWithClassSymbol(reg::registered_class<TheClass>::id,TheClass::static_classSymbol());
   TheClass::static_class = class_val;
-  core::core__setf_find_class(class_val,TheClass::static_classSymbol(),true,_Nil<core::T_O>());
+  core::core__setf_find_class(class_val,TheClass::static_classSymbol()); //,true,_Nil<core::T_O>());
   gctools::smart_ptr<core::BuiltInObjectCreator<TheClass>> cb = gctools::GC<core::BuiltInObjectCreator<TheClass>>::allocate();
   TheClass::set_static_creator(cb);
   class_val->setCreator(TheClass::static_creator);

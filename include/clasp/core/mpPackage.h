@@ -39,89 +39,6 @@ namespace mp {
 
 
 namespace mp {
-
-  struct GlobalMutex {
-    pthread_mutex_t _Mutex;
-    GlobalMutex() {
-      this->_Mutex = PTHREAD_MUTEX_INITIALIZER;
-    };
-    void lock() { pthread_mutex_lock(&this->_Mutex); };
-    void unlock() { pthread_mutex_unlock(&this->_Mutex); };
-    bool try_lock() { return pthread_mutex_trylock(&this->_Mutex)==0; };
-    ~GlobalMutex() {
-    };
-  };
-
-  struct GlobalRecursiveMutex {
-    pthread_mutex_t _Mutex;
-    GlobalRecursiveMutex() {
-#if defined(_TARGET_OS_LINUX)
-      this->_Mutex = PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP;
-#elif defined(_TARGET_OS_DARWIN)
-      this->_Mutex = PTHREAD_RECURSIVE_MUTEX_INITIALIZER;
-#else
-      #error "You need to initialize this->_Mutex"
-#endif
-    };
-    void lock() { pthread_mutex_lock(&this->_Mutex); };
-    void unlock() { pthread_mutex_lock(&this->_Mutex); };
-    bool try_lock() { return pthread_mutex_trylock(&this->_Mutex)==0; };
-    ~GlobalRecursiveMutex() {
-    };
-  };
-  
-  struct Mutex {
-    pthread_mutex_t _Mutex;
-    Mutex() {
-      pthread_mutex_init(&this->_Mutex,NULL);
-    };
-    void lock() { pthread_mutex_lock(&this->_Mutex); };
-    void unlock() { pthread_mutex_lock(&this->_Mutex); };
-    bool try_lock() { return pthread_mutex_trylock(&this->_Mutex)==0; };
-    ~Mutex() {
-      pthread_mutex_destroy(&this->_Mutex);
-    };
-  };
-
-  struct RecursiveMutex {
-    pthread_mutex_t _Mutex;
-    RecursiveMutex() {
-      pthread_mutexattr_t Attr;
-      pthread_mutexattr_init(&Attr);
-      pthread_mutexattr_settype(&Attr, PTHREAD_MUTEX_RECURSIVE);
-      pthread_mutex_init(&this->_Mutex,&Attr);
-      pthread_mutexattr_destroy(&Attr);
-    };
-    void lock() { pthread_mutex_lock(&this->_Mutex); };
-    void unlock() { pthread_mutex_lock(&this->_Mutex); };
-    bool try_lock() { return pthread_mutex_trylock(&this->_Mutex)==0; };
-    ~RecursiveMutex() {
-      pthread_mutex_destroy(&this->_Mutex);
-    };
-  };
-
-  struct ConditionVariable {
-    pthread_cond_t _ConditionVariable;
-    ConditionVariable() {
-      pthread_cond_init(&this->_ConditionVariable,NULL);
-    };
-    ~ConditionVariable() {
-      pthread_cond_destroy(&this->_ConditionVariable);
-    };
-  };
-
-
-  
-  void* start_thread(void* claspProcess);
-
-  inline void ClaspThreads_exit() {
-//    printf("%s:%d Exiting pthread\n", __FILE__, __LINE__ );
-//    pthread_exit(NULL);
-//    printf("%s:%d Done pthread\n", __FILE__, __LINE__ );
-  }
-};
-
-namespace mp {
 #ifdef CLASP_THREADS
   /*! Keep track of binding indices for symbols */
   extern GlobalMutex global_BindingIndexPoolMutex;
@@ -132,11 +49,11 @@ namespace mp {
 
 #ifdef CLASP_THREADS
 template <typename T>
-struct SafeMutex {
-SafeMutex(T& m) : _Mutex(m) {
+struct RAIILock {
+RAIILock(T& m) : _Mutex(m) {
   this->_Mutex.lock();
 };
-  ~SafeMutex() {
+  ~RAIILock() {
     this->_Mutex.unlock();
   }
   T& _Mutex;

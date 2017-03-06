@@ -54,7 +54,7 @@ class Symbol_O : public General_O {
 
 public:
   SimpleString_sp _Name;
-  T_sp _HomePackage; // NIL or Package
+  std::atomic<T_sp> _HomePackage; // NIL or Package
   T_sp _GlobalValue;
   T_sp _Function;
   T_sp _SetfFunction;

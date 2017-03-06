@@ -307,8 +307,11 @@ and cannot be added to ~A." method other-gf gf)))
       ((member name '(CLASS BUILT-IN-CLASS) :test #'eq)
        (error "The kernel CLOS class ~S cannot be changed." name))
       ((classp new-value)
-       (setf (gethash name si:*class-name-hash-table*) new-value))
-      ((null new-value) (remhash name si:*class-name-hash-table*))
+       #+clasp(core:set-class new-value name)
+       #+ecl(setf (gethash name si:*class-name-hash-table*) new-value))
+      ((null new-value)
+       #+clasp(core:set-class nil name) ; removes class
+       #+ecl(remhash name si:*class-name-hash-table*))
       (t (error "~A is not a class." new-value))))
   new-value)
 )
@@ -345,9 +348,14 @@ and cannot be added to ~A." method other-gf gf)))
 (setf *clos-booted* 'map-dependents)
 
 
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (format t "Before initargs-updaterIn fixup.lsp~%"))
+
 (defclass initargs-updater ()
   ())
 
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (format t "In fixup.lsp~%"))
 
 
 (defun recursively-update-classes (a-class)

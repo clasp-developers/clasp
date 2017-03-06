@@ -184,7 +184,7 @@ LCC_RETURN optimized_slot_reader_dispatch(gctools::Tagged tgf, gctools::Tagged t
   T_sp index;
   T_sp tinstance = vargs->next_arg();
   if (Instance_sp instance = tinstance.asOrNull<Instance_O>() ) {
-    Cache_sp cache = _lisp->slotCachePtr();
+    Cache_sp cache = my_thread->_SlotCachePtr;
     e = search_slot_index(gf,instance,cache);
     unlikely_if (e->_key.nilp()) {
       List_sp args = Cons_O::createList(instance);
@@ -250,7 +250,7 @@ LCC_RETURN optimized_slot_writer_dispatch(gctools::Tagged tgf, gctools::Tagged t
   T_sp value = vargs->next_arg();
   T_sp tinstance = vargs->next_arg();
   if (Instance_sp instance = tinstance.asOrNull<Instance_O>() ) {
-    Cache_sp cache = _lisp->slotCachePtr();
+    Cache_sp cache = my_thread->_SlotCachePtr;
     e = search_slot_index(gf,instance,cache);
     unlikely_if (e->_key.nilp()) {
       List_sp args = Cons_O::createList(value,instance);
