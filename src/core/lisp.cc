@@ -163,8 +163,8 @@ __thread ThreadInfo *threadLocalInfoPtr;
 
 const int Lisp_O::MaxFunctionArguments = 64; //<! See ecl/src/c/main.d:163 ecl_make_cache(64,4096)
 const int Lisp_O::MaxClosSlots = 3;          //<! See ecl/src/c/main.d:164 ecl_make_cache(3,4096)
-const int Lisp_O::ClosCacheSize = 1024 * 4;
-const int Lisp_O::SingleDispatchMethodCacheSize = 1024 * 4;
+const int Lisp_O::ClosCacheSize = 1024 * 32;
+const int Lisp_O::SingleDispatchMethodCacheSize = 1024 * 32;
 
 extern void lispScannerDebug(std::istream &sin);
 extern string getLispError();
