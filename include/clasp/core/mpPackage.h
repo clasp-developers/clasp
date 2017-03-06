@@ -110,16 +110,17 @@ namespace mp {
     LISP_CLASS(mp, MpPkg, Mutex_O, "Mutex",core::CxxObject_O);
   public:
     CL_LISPIFY_NAME("make_mutex");
-    CL_DEF_CLASS_METHOD static Mutex_sp make_mutex() {
-      GC_ALLOCATE_VARIADIC(Mutex_O,l);
+    CL_LAMBDA(&optional name)
+      CL_DEF_CLASS_METHOD static Mutex_sp make_mutex(core::T_sp name) {
+      GC_ALLOCATE_VARIADIC(Mutex_O,l,name,false);
       return l;
     };
   public:
+    core::T_sp  _Name;
     Mutex _Mutex;
-    Mutex_O() {};
-    CL_DEFMETHOD void lock() { this->_Mutex.lock(); };
-    CL_DEFMETHOD void unlock() { this->_Mutex.unlock(); };
-    CL_DEFMETHOD bool try_lock() { return this->_Mutex.try_lock(); };
+  Mutex_O(core::T_sp name, bool recursive) : _Name(name), _Mutex(recursive) {};
+    CL_DEFMETHOD bool lock(bool waitp) { return this->_Mutex.lock(waitp); };
+    CL_DEFMETHOD void unlock() { return this->_Mutex.unlock(); };
   };
 };
 
@@ -134,19 +135,15 @@ struct gctools::GCInfo<mp::RecursiveMutex_O> {
 namespace mp {
 
   FORWARD(RecursiveMutex);
-  class RecursiveMutex_O : public core::CxxObject_O {
-    LISP_CLASS(mp, MpPkg, RecursiveMutex_O, "RecursiveMutex",core::CxxObject_O);
+  class RecursiveMutex_O : public Mutex_O {
+    LISP_CLASS(mp, MpPkg, RecursiveMutex_O, "RecursiveMutex",Mutex_O);
   public:
-    CL_DEF_CLASS_METHOD static RecursiveMutex_sp make_recursive_mutex() {
-      GC_ALLOCATE_VARIADIC(RecursiveMutex_O,l);
+    CL_LAMBDA(&optional name);
+    CL_DEF_CLASS_METHOD static RecursiveMutex_sp make_recursive_mutex(core::T_sp name) {
+      GC_ALLOCATE_VARIADIC(RecursiveMutex_O,l, name);
       return l;
     };
-  public:
-    RecursiveMutex _Mutex;
-    RecursiveMutex_O() {};
-    CL_DEFMETHOD void lock() { this->_Mutex.lock(); };
-    CL_DEFMETHOD void unlock() { this->_Mutex.unlock(); };
-    CL_DEFMETHOD bool try_lock() { return this->_Mutex.try_lock(); };
+  RecursiveMutex_O(core::T_sp name) :Mutex_O(name,true) {};
   };
 
 };
@@ -166,14 +163,15 @@ namespace mp {
     LISP_CLASS(mp, MpPkg, ConditionVariable_O, "ConditionVariable",core::CxxObject_O);
   public:
     ConditionVariable_sp make_condition_variable();
-    CL_DEF_CLASS_METHOD static ConditionVariable_sp make_ConditionVariable() {
-      GC_ALLOCATE_VARIADIC(ConditionVariable_O,l);
+    CL_LAMBDA(&optional name)
+    CL_DEF_CLASS_METHOD static ConditionVariable_sp make_ConditionVariable(core::T_sp name) {
+      GC_ALLOCATE_VARIADIC(ConditionVariable_O,l,name);
       return l;
     };
   public:
     ConditionVariable _ConditionVariable;
-    
-    ConditionVariable_O() {};
+    core::T_sp _Name;
+  ConditionVariable_O(core::T_sp name) : _Name(name) {};
 //    CL_DEFMETHOD void notify_one() { this->_ConditionVariable.notify_one(); };
 //    CL_DEFMETHOD void notify_all() { this->_ConditionVariable.notify_all(); };
 //    CL_DEFMETHOD void wait(Mutex_sp m) { this->_ConditionVariable.wait(m->_UniqueMutex); };

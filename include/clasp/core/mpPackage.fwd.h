@@ -42,19 +42,11 @@ namespace mp {
 
   struct GlobalMutex {
     pthread_mutex_t _Mutex;
-    GlobalMutex() {
-      this->_Mutex = PTHREAD_MUTEX_INITIALIZER;
-    };
-    void lock() { pthread_mutex_lock(&this->_Mutex); };
-    void unlock() { pthread_mutex_unlock(&this->_Mutex); };
-    bool try_lock() { return pthread_mutex_trylock(&this->_Mutex)==0; };
-    ~GlobalMutex() {
-    };
-  };
-
-  struct GlobalRecursiveMutex {
-    pthread_mutex_t _Mutex;
-    GlobalRecursiveMutex() {
+    bool _Recursive;
+    GlobalMutex(bool recursive) : _Recursive(recursive) {
+      if (!recursive) {
+        this->_Mutex = PTHREAD_MUTEX_INITIALIZER;
+      } else {
 #if defined(_TARGET_OS_LINUX)
       this->_Mutex = PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP;
 #elif defined(_TARGET_OS_DARWIN)
@@ -62,49 +54,62 @@ namespace mp {
 #else
       #error "You need to initialize this->_Mutex"
 #endif
+      }
     };
-    void lock() { pthread_mutex_lock(&this->_Mutex); };
+    bool lock(bool waitp=true) {
+       if (waitp) return pthread_mutex_lock(&this->_Mutex)==0;
+       return pthread_mutex_trylock(&this->_Mutex)==0;
+    }
     void unlock() { pthread_mutex_unlock(&this->_Mutex); };
-    bool try_lock() { return pthread_mutex_trylock(&this->_Mutex)==0; };
-    ~GlobalRecursiveMutex() {
+    bool recursive_lock_p() {
+      return this->_Recursive;
+    }
+    ~GlobalMutex() {
     };
+  };
+
+  struct GlobalRecursiveMutex : public GlobalMutex {
+    pthread_mutex_t _Mutex;
+  GlobalRecursiveMutex() : GlobalMutex(true) {};
+    ~GlobalRecursiveMutex() {};
   };
   
   struct Mutex {
     pthread_mutex_t _Mutex;
-    Mutex() {
+    bool _Recursive;
+  Mutex() : _Recursive(false) {
+    pthread_mutex_init(&this->_Mutex,NULL);
+  }
+  Mutex(bool recursive) : _Recursive(recursive) {
+      if (!recursive) {
 //      printf("%s:%d Creating Mutex@%p\n", __FILE__, __LINE__, (void*)&this->_Mutex);
-      pthread_mutex_init(&this->_Mutex,NULL);
+        pthread_mutex_init(&this->_Mutex,NULL);
+      } else {
+        pthread_mutexattr_t Attr;
+        pthread_mutexattr_init(&Attr);
+        pthread_mutexattr_settype(&Attr, PTHREAD_MUTEX_RECURSIVE);
+        pthread_mutex_init(&this->_Mutex,&Attr);
+        pthread_mutexattr_destroy(&Attr);
+      }
     };
-    void lock() {
+    bool lock(bool waitp=true) {
 //      printf("%s:%d locking Mutex@%p\n", __FILE__, __LINE__, (void*)&this->_Mutex);
-      pthread_mutex_lock(&this->_Mutex);
+      if (waitp) {
+        return (pthread_mutex_lock(&this->_Mutex)==0);
+      }
+      return pthread_mutex_trylock(&this->_Mutex)==0;
     };
     void unlock() {
 //      printf("%s:%d unlocking Mutex@%p\n", __FILE__, __LINE__, (void*)&this->_Mutex);
       pthread_mutex_unlock(&this->_Mutex);
     };
-    bool try_lock() { return pthread_mutex_trylock(&this->_Mutex)==0; };
     ~Mutex() {
       pthread_mutex_destroy(&this->_Mutex);
     };
   };
 
-  struct RecursiveMutex {
-    pthread_mutex_t _Mutex;
-    RecursiveMutex() {
-      pthread_mutexattr_t Attr;
-      pthread_mutexattr_init(&Attr);
-      pthread_mutexattr_settype(&Attr, PTHREAD_MUTEX_RECURSIVE);
-      pthread_mutex_init(&this->_Mutex,&Attr);
-      pthread_mutexattr_destroy(&Attr);
-    };
-    void lock() { pthread_mutex_lock(&this->_Mutex); };
-    void unlock() { pthread_mutex_unlock(&this->_Mutex); };
-    bool try_lock() { return pthread_mutex_trylock(&this->_Mutex)==0; };
-    ~RecursiveMutex() {
-      pthread_mutex_destroy(&this->_Mutex);
-    };
+  struct RecursiveMutex : public Mutex {
+  RecursiveMutex() : Mutex(true) {};
   };
 
 
@@ -112,34 +117,34 @@ namespace mp {
     mp::Mutex _r;
     mp::Mutex _g;
     size_t _b;
-    SharedMutex() {};
+  SharedMutex() : _r(false), _g(false) {};
     // shared access
     void shared_lock() {
-      this->_r.lock();
+      this->_r.lock(false);
       ++this->_b;
-      if (this->_b==1) this->_g.lock();
+      if (this->_b==1) this->_g.lock(false);
       this->_r.unlock();
     }
     void shared_unlock() {
-      this->_r.lock();
+      this->_r.lock(false);
       --this->_b;
       if (this->_b==0) this->_g.unlock();
       this->_r.unlock();
     }
     // exclusive access
     void lock() {
-      this->_g.lock();
+      this->_g.lock(false);
     }
     void unlock() {
       this->_g.unlock();
     }
   };
 
-    struct SharedRecursiveMutex {
+  struct SharedRecursiveMutex {
     mp::Mutex _r;
     mp::RecursiveMutex _g;
     size_t _b;
-    SharedRecursiveMutex() {};
+  SharedRecursiveMutex() : _r(false){};
     // shared access
     void shared_lock() {
       this->_r.lock();

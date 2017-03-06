@@ -45,7 +45,7 @@ namespace mp {
 
 #ifdef CLASP_THREADS
 std::atomic<size_t> global_LastBindingIndex = ATOMIC_VAR_INIT(0);
-GlobalMutex global_BindingIndexPoolMutex;
+GlobalMutex global_BindingIndexPoolMutex(false);
 std::vector<size_t> global_BindingIndexPool;
 #endif
 
@@ -53,9 +53,21 @@ std::vector<size_t> global_BindingIndexPool;
 SYMBOL_SC_(MpPkg, aSingleMpSymbol);
 SYMBOL_EXPORT_SC_(MpPkg, roo);
 
+struct SafeRegisterDeregisterProcessWithLisp {
+  Process_sp _Process;
+  SafeRegisterDeregisterProcessWithLisp(Process_sp p) : _Process(p)
+  {
+    _lisp->add_process(_Process);
+  }
+  ~SafeRegisterDeregisterProcessWithLisp() {
+    _lisp->remove_process(_Process);
+  }
+};
 
 void* start_thread(void* claspProcess) {
   Process_O* my_claspProcess = (Process_O*)claspProcess;
+  Process_sp p(my_claspProcess);
+  SafeRegisterDeregisterProcessWithLisp reg(p);
   void* stack_base;
   core::ThreadLocalState my_thread_local_state(&stack_base);
   printf("%s:%d entering start_thread  &my_thread -> %p \n", __FILE__, __LINE__, (void*)&my_thread);
@@ -103,5 +115,30 @@ CL_DEFUN int mp__process_enable(Process_sp process)
 {
   return process->enable();
 };
+
+CL_DEFUN core::List_sp mp__all_processes() {
+  return _lisp->processes();
+}
+
+CL_DEFUN Process_sp mp__current_process() {
+  return my_thread->_Process;
+}
+
+CL_DEFUN core::T_sp mp__process_name(Process_sp p) {
+  return p->_Name;
+}
+
+CL_DEFUN core::T_sp mp__mutex_name(Mutex_sp m) {
+  return m->_Name;
+}
+
+CL_DEFUN bool mp__get_lock(Mutex_sp m, bool waitp) {
+  return m->lock(waitp);
+}
+
+CL_DEFUN bool mp__giveup_lock(Mutex_sp m) {
+   m->unlock();
+   return true;
+}
 
 };

@@ -348,15 +348,8 @@ and cannot be added to ~A." method other-gf gf)))
 (setf *clos-booted* 'map-dependents)
 
 
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (format t "Before initargs-updaterIn fixup.lsp~%"))
-
 (defclass initargs-updater ()
   ())
-
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (format t "In fixup.lsp~%"))
-
 
 (defun recursively-update-classes (a-class)
   (slot-makunbound a-class 'valid-initargs)
