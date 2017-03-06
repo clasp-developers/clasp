@@ -30,8 +30,10 @@ THE SOFTWARE.
 
 // Define compile-time flags that effect structure sizes
 //
+#include <atomic>
 #include <clasp/gctools/configure_memory.h>
 #include <clasp/gctools/hardErrors.h>
+#include <clasp/core/foundation.h>
 
 #ifdef USE_BOEHM
 #ifdef CLASP_THREADS

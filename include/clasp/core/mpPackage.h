@@ -60,7 +60,27 @@ RAIILock(T& m) : _Mutex(m) {
 };
 #endif
 
-      
+
+namespace mp {
+  inline core::T_sp atomic_get_and_set_to_Nil(std::atomic<core::T_sp>& slot) noexcept {
+      core::T_sp old;
+      do {
+        old = slot.load();
+      } while (!slot.compare_exchange_weak(old,_Nil<core::T_O>()));
+      return old;
+    }
+  inline void atomic_push(std::atomic<core::T_sp>& slot, core::T_sp object) {
+      core::Cons_sp cons = core::Cons_O::create(object,_Nil<core::T_O>());
+      core::T_sp tcons = cons;
+      core::T_sp car;
+      do {
+        car = slot.load();
+        cons->rplaca(car);
+      } while (!slot.compare_exchange_weak(car,tcons));
+    }
+
+};
+
 namespace mp {
     
   class Process_O : public core::CxxObject_O {

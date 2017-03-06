@@ -183,23 +183,6 @@ namespace core {
     static void IncrementConsAllocations();
 #endif
 
-    inline static T_sp atomic_get_and_set_to_Nil(std::atomic<T_sp>& slot) {
-      T_sp old;
-      do {
-        old = slot.load();
-      } while (!slot.compare_exchange_weak(old,_Nil<T_O>()));
-      return old;
-    }
-    inline static void atomic_push(std::atomic<T_sp>& slot, T_sp object) {
-      Cons_sp cons = Cons_O::create(object,_Nil<T_O>());
-      T_sp tcons = cons;
-      T_sp car;
-      do {
-        car = slot.load();
-        cons->rplaca(car);
-      } while (!slot.compare_exchange_weak(car,tcons));
-    }
-
     static Cons_sp createFrom_va_list(va_list &va_args);
     static Cons_sp createList(T_sp o1);
     static Cons_sp createList(T_sp o1, T_sp o2);
