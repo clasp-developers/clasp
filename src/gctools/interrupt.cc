@@ -23,7 +23,7 @@ inline bool interrupts_disabled_by_C(core::ThreadLocalState* thread) {
 }
 
 inline bool interrupts_disabled_by_lisp(core::ThreadLocalState* thread) {
-  return thread->_Bindings.value(ext::_sym_STARinterrupts_enabledSTAR).notnilp();
+  return thread->_Bindings.value(core::_sym_STARinterrupts_enabledSTAR).notnilp();
 }
 
 void handle_signal_now( core::T_sp signal_code, core::T_sp process ) {

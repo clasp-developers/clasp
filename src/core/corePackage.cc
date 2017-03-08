@@ -150,7 +150,8 @@ SYMBOL_EXPORT_SC_(CorePkg, STARdebug_accessorsSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARexit_backtraceSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, make_source_pos_info);
 SYMBOL_EXPORT_SC_(ExtPkg, STARclasp_clang_pathSTAR);
-SYMBOL_EXPORT_SC_(ExtPkg, STARinterrupts_enabledSTAR);
+SYMBOL_EXPORT_SC_(CorePkg, STARinterrupts_enabledSTAR);
+SYMBOL_EXPORT_SC_(CorePkg, STARallow_with_interruptsSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, make_source_pos_info);
 SYMBOL_EXPORT_SC_(CorePkg, STARinvalidated_dispatch_function_stackSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARtop_level_form_stackSTAR);
@@ -1118,7 +1119,8 @@ void CoreExposer_O::define_essential_globals(Lisp_sp lisp) {
   _sym_STARtop_level_form_stackSTAR->defparameter(_Nil<core::T_O>());
   ext::_sym_STARinvoke_debugger_hookSTAR->defparameter(_Nil<core::T_O>());
   _sym_STARuse_cleavir_compilerSTAR->defparameter(_Nil<core::T_O>());
-  ext::_sym_STARinterrupts_enabledSTAR->defparameter(_lisp->_true());
+  _sym_STARinterrupts_enabledSTAR->defparameter(_lisp->_true());
+  _sym_STARallow_with_interruptsSTAR->defparameter(_lisp->_true());
   _sym_STARexit_backtraceSTAR->defparameter(_Nil<core::T_O>());
   _sym_STARinvalidated_dispatch_function_stackSTAR->defparameter(_Nil<core::T_O>());
 #if defined(__x86_64__)
