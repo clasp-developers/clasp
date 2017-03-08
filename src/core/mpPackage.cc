@@ -86,7 +86,9 @@ void* start_thread(void* claspProcess) {
 #endif
 //  gctools::register_thread(process,stack_base);
   core::List_sp args = my_claspProcess->_Arguments;
+  claspProcess->_Phase = Active;
   core::T_mv result_mv = core::eval::applyLastArgsPLUSFirst(my_claspProcess->_Function,args);
+  claspProcess->_Phase = Exiting;
   core::T_sp result0 = result_mv;
   core::List_sp result_list = _Nil<core::T_O>();
   for ( int i=result_mv.number_of_values(); i>0; --i ) {
@@ -139,6 +141,9 @@ CL_DEFUN core::T_sp mp__make_lock(core::T_sp name, bool recursive) {
   return RecursiveMutex_O::make_recursive_mutex(name);
 }
   
+CL_DEFUN core::T_sp mp__process_active_p(Process_sp p) {
+  return p->_Phase ? _lisp->_true() : _Nil<T_O>();
+}
 
 CL_DEFUN core::T_sp mp__mutex_name(Mutex_sp m) {
   return m->_Name;
