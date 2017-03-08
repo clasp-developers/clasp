@@ -131,6 +131,15 @@ CL_DEFUN core::T_sp mp__process_name(Process_sp p) {
   return p->_Name;
 }
 
+CL_LAMBDA(&key name (recursive nil))
+CL_DEFUN core::T_sp mp__make_lock(core::T_sp name, bool recursive) {
+  if (!recursive) {
+    return Mutex_O::make_mutex(name);
+  }
+  return RecursiveMutex_O::make_recursive_mutex(name);
+}
+  
+
 CL_DEFUN core::T_sp mp__mutex_name(Mutex_sp m) {
   return m->_Name;
 }
@@ -139,9 +148,18 @@ CL_DEFUN bool mp__get_lock(Mutex_sp m, bool waitp) {
   return m->lock(waitp);
 }
 
+
+
 CL_DEFUN bool mp__giveup_lock(Mutex_sp m) {
    m->unlock();
    return true;
 }
 
+CL_DEFUN core::Fixnum_sp mp__lock_count(Mutex_sp m) {
+  return core::clasp_make_fixnum(m->counter());
+}
+CL_LAMBDA(&key name)
+CL_DEFUN core::T_sp mp__make_condition_variable(core::T_sp name) {
+  return ConditionVariable_O::make_ConditionVariable(name);
+}
 };

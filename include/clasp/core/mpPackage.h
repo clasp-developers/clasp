@@ -82,7 +82,9 @@ namespace mp {
 };
 
 namespace mp {
-    
+
+  typedef enum {Inactive=0,Active,Booting,Exiting} ProcessPhase;
+  
   class Process_O : public core::CxxObject_O {
     LISP_CLASS(mp, MpPkg, Process_O, "Process",core::CxxObject_O);
   public:
@@ -97,11 +99,12 @@ namespace mp {
     core::T_sp _Function;
     core::T_sp _Arguments;
     core::T_sp  _ReturnValuesList;
+    ProcessPhase  _Phase;
     size_t _StackSize;
     pthread_t _Thread;
-//    pthread_mutex_t  _ExitBarrier;
+    Mutex _ExitBarrier;
   public:
-  Process_O(core::T_sp name, core::T_sp function, core::T_sp arguments, size_t stack_size=8*1024*1024) : _Name(name), _Function(function), _Arguments(arguments), _ReturnValuesList(_Nil<core::T_O>()), _StackSize(stack_size) {};
+  Process_O(core::T_sp name, core::T_sp function, core::T_sp arguments, size_t stack_size=8*1024*1024) : _Name(name), _Function(function), _Arguments(arguments), _ReturnValuesList(_Nil<core::T_O>()), _StackSize(stack_size), _Phase(Booting) {};
     
     int enable() {
       pthread_attr_t attr;
@@ -149,6 +152,9 @@ namespace mp {
       this->_Owner = _Nil<T_O>();
       this->_Mutex.unlock();
     };
+    gctools::Fixnum counter() {
+      return this->_Mutex.counter();
+    }
   };
 };
 
@@ -176,7 +182,6 @@ namespace mp {
 
 };
 
-#if 0
 template <>
 struct gctools::GCInfo<mp::ConditionVariable_O> {
   static bool constexpr NeedsInitialization = false;
@@ -201,10 +206,9 @@ namespace mp {
     ConditionVariable_O(core::T_sp name) : _Name(name) {};
     bool wait(Mutex_sp m) {return this->_ConditionVariable.wait(m->_Mutex);};
     bool timed_wait(Mutex_sp m,size_t timeout) {return this->_ConditionVariable.timed_wait(m->_Mutex,timeout);};
-    void signal() { return this->_ConditionVariable.signal();};
+    void signal() { this->_ConditionVariable.signal();};
   };
 
 };
-#endif
 
 #endif
