@@ -260,9 +260,9 @@
 	    #+threads (mp::lock)
 	    #+threads (mp::rwlock)
 	    #+threads (mp::condition-variable)
-	    #+threads (mp::semaphore)
-	    #+threads (mp::barrier)
-	    #+threads (mp::mailbox)
+	    #+(and ecl threads) (mp::semaphore)
+	    #+(and ecl threads) (mp::barrier)
+	    #+(and ecl threads) (mp::mailbox)
 	    #+sse2 (ext::sse-pack))))
 
 ;;; FROM AMOP:

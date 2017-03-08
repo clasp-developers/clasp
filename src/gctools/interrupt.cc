@@ -164,6 +164,11 @@ void lisp_check_pending_interrupts(core::ThreadLocalState* thread)
 }
 
 
+CL_DEFUN void core__check_pending_interrupts() {
+  handle_all_queued(my_thread);
+}
+
+
 void fatal_error_handler(void *user_data, const std::string &reason, bool gen_crash_diag) {
   printf("Hit a fatal error in llvm/clang: %s\n", reason.c_str());
   printf("Clasp is terminating via abort(0)\n");
