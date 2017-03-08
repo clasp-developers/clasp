@@ -26,7 +26,6 @@ THE SOFTWARE.
 /* -^- */
 //
 
-#include <llvm/Support/ErrorHandling.h>
 #include <clasp/core/foundation.h>
 #include <clasp/gctools/gcalloc.h>
 #include <clasp/core/object.h>
@@ -109,39 +108,6 @@ void unregister_thread(mp::Process_sp process) {
 
 
 namespace gctools {
-
-// false == SIGABRT invokes debugger, true == terminate (used in core__exit)
-bool global_debuggerOnSIGABRT = true;
-#define INITIAL_GLOBAL_POLL_TICKS_PER_CLEANUP 16386
-int global_pollTicksPerCleanup = INITIAL_GLOBAL_POLL_TICKS_PER_CLEANUP;
-int global_signalTrap = 0;
-int global_pollTicksGC = INITIAL_GLOBAL_POLL_TICKS_PER_CLEANUP;
-
-void do_pollSignals() {
-  int signo = global_signalTrap;
-  SET_SIGNAL(0);
-  if (signo == SIGINT) {
-    printf("You pressed Ctrl+C\n");
-    core::eval::funcall(cl::_sym_break, core::SimpleBaseString_O::make("Break on Ctrl+C"));
-      //    core__invoke_internal_debugger(_Nil<core::T_O>());
-    printf("Resuming after Ctrl+C\n");
-  } else if (signo == SIGCHLD) {
-      //            printf("A child terminated\n");
-  } else if (signo == SIGFPE) {
-    printf("%s:%d A floating point error occurred\n", __FILE__, __LINE__);
-    core__invoke_internal_debugger(_Nil<core::T_O>());
-  } else if (signo == SIGABRT) {
-    printf("ABORT was called!!!!!!!!!!!!\n");
-    core__invoke_internal_debugger(_Nil<core::T_O>());
-      //    core:eval::funcall(cl::_sym_break,core::SimpleBaseString_O::make("ABORT was called"));
-  }
-#ifdef USE_MPS
-  if (--global_pollTicksGC == 0 ) {
-    global_pollTicksGC = global_pollTicksPerCleanup;
-    gctools::gctools__cleanup();
-  }
-#endif
-}
 
 
 char *clasp_alloc_atomic(size_t buffer) {
@@ -398,23 +364,6 @@ void monitorAllocation(kind_t k, size_t sz) {
   global_monitorAllocations.counter++;
 }
 
-void handle_signals(int signo) {
-  //
-  // Indicate that a signal was caught and handle it at a safe-point
-  //
-  SET_SIGNAL(signo);
-  if (signo == SIGABRT && global_debuggerOnSIGABRT) {
-    printf("%s:%d Trapped SIGABRT - starting debugger\n", __FILE__, __LINE__);
-    core::LispDebugger debugger(_Nil<core::T_O>());
-    debugger.invoke();
-  }
-}
-
-void fatal_error_handler(void *user_data, const std::string &reason, bool gen_crash_diag) {
-  printf("Hit a fatal error in llvm/clang: %s\n", reason.c_str());
-  printf("Clasp is terminating via abort(0)\n");
-  abort();
-}
 
 #ifdef USE_BOEHM
 void clasp_warn_proc(char *msg, GC_word arg) {
@@ -423,29 +372,6 @@ void clasp_warn_proc(char *msg, GC_word arg) {
 }
 #endif
 
-void setupSignals() {
-  if (signal(SIGINT, handle_signals) == SIG_ERR) {
-    printf("failed to register SIGINT signal-handler with kernel\n");
-  }
-  if (signal(SIGCHLD, handle_signals) == SIG_ERR) {
-    printf("failed to register SIGCHLD signal-handler with kernel\n");
-  }
-  if (signal(SIGABRT, handle_signals) == SIG_ERR) {
-    printf("failed to register SIGABRT signal-handler with kernel\n");
-  }
-#if 0
-#ifdef _TARGET_OS_LINUX
-  feenableexcept(FE_INVALID | FE_DIVBYZERO | FE_OVERFLOW | FE_UNDERFLOW);
-#endif
-#ifdef _TARGET_OS_DARWIN
-  feenableexcept(FE_INVALID | FE_DIVBYZERO | FE_OVERFLOW | FE_UNDERFLOW);
-#endif
-  if (signal(SIGFPE, handle_signals) == SIG_ERR) {
-    printf("failed to register SIGFPE signal-handler with kernel\n");
-  }
-#endif
-  llvm::install_fatal_error_handler(fatal_error_handler, NULL);
-}
 
 gc::GCStack *threadLocalStack() {
   return &_ThreadLocalStack;
@@ -599,7 +525,7 @@ int startupGarbageCollectorAndSystem(MainFunctionType startupFn, int argc, char 
 
   build_kind_field_layout_tables();
 
-  setupSignals();
+  gctools::initialize_signals();
 
 
 #if defined(USE_MPS)
@@ -618,8 +544,8 @@ int startupGarbageCollectorAndSystem(MainFunctionType startupFn, int argc, char 
   GC_init();
   _ThreadLocalStack.allocateStack(gc::thread_local_cl_stack_min_size);
   void* topOfStack;
+  // ctor sets up my_thread
   core::ThreadLocalState thread_local_state(&topOfStack);
-  my_thread = &thread_local_state;
 #if 0
   // I'm not sure if this needs to be done for the main thread
   GC_stack_base gc_stack_base;

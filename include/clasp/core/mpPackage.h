@@ -137,10 +137,18 @@ namespace mp {
     };
   public:
     core::T_sp  _Name;
+    core::T_sp  _Owner;
     Mutex _Mutex;
-  Mutex_O(core::T_sp name, bool recursive) : _Name(name), _Mutex(recursive) {};
-    CL_DEFMETHOD bool lock(bool waitp) { return this->_Mutex.lock(waitp); };
-    CL_DEFMETHOD void unlock() { return this->_Mutex.unlock(); };
+  Mutex_O(core::T_sp name, bool recursive) : _Name(name), _Owner(_Nil<T_O>()), _Mutex(recursive) {};
+    CL_DEFMETHOD bool lock(bool waitp) {
+      bool locked = this->_Mutex.lock(waitp);
+      if (locked) this->_Owner = my_thread->_Process;
+      return locked;
+    };
+    CL_DEFMETHOD void unlock() {
+      this->_Owner = _Nil<T_O>();
+      this->_Mutex.unlock();
+    };
   };
 };
 
@@ -182,7 +190,6 @@ namespace mp {
   class ConditionVariable_O : public core::CxxObject_O {
     LISP_CLASS(mp, MpPkg, ConditionVariable_O, "ConditionVariable",core::CxxObject_O);
   public:
-    ConditionVariable_sp make_condition_variable();
     CL_LAMBDA(&optional name)
     CL_DEF_CLASS_METHOD static ConditionVariable_sp make_ConditionVariable(core::T_sp name) {
       GC_ALLOCATE_VARIADIC(ConditionVariable_O,l,name);
@@ -191,10 +198,10 @@ namespace mp {
   public:
     ConditionVariable _ConditionVariable;
     core::T_sp _Name;
-  ConditionVariable_O(core::T_sp name) : _Name(name) {};
-//    CL_DEFMETHOD void notify_one() { this->_ConditionVariable.notify_one(); };
-//    CL_DEFMETHOD void notify_all() { this->_ConditionVariable.notify_all(); };
-//    CL_DEFMETHOD void wait(Mutex_sp m) { this->_ConditionVariable.wait(m->_UniqueMutex); };
+    ConditionVariable_O(core::T_sp name) : _Name(name) {};
+    bool wait(Mutex_sp m) {return this->_ConditionVariable.wait(m->_Mutex);};
+    bool timed_wait(Mutex_sp m,size_t timeout) {return this->_ConditionVariable.timed_wait(m->_Mutex,timeout);};
+    void signal() { return this->_ConditionVariable.signal();};
   };
 
 };

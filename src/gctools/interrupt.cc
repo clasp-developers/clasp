@@ -1,38 +1,55 @@
-
+#include <llvm/Support/ErrorHandling.h>
+#include <clasp/core/foundation.h>
+#include <clasp/core/symbol.h>
+#include <clasp/core/symbolTable.h>
+#include <clasp/core/lisp.h>
+#include <clasp/gctools/processes.h>
+#include <clasp/core/evaluator.h>
+#include <clasp/core/lispList.h>
+#include <clasp/gctools/interrupt.h>
 
 namespace gctools {
 
+void lisp_enable_interrupts(core::ThreadLocalState* thread) {
+  thread->_DisableInterrupts = false;
+}
 
-void handle_signal_now( core::T_sp signal_code, T_sp process ) {
+void lisp_disable_interrupts(core::ThreadLocalState* thread) {
+  thread->_DisableInterrupts = true;
+}
+
+inline bool interrupts_disabled_by_C(core::ThreadLocalState* thread) {
+  return thread->_DisableInterrupts;
+}
+
+inline bool interrupts_disabled_by_lisp(core::ThreadLocalState* thread) {
+  return thread->_Bindings.value(ext::_sym_STARinterrupts_enabledSTAR).notnilp();
+}
+
+void handle_signal_now( core::T_sp signal_code, core::T_sp process ) {
   if ( signal_code.fixnump() ) {
-    cl__cerror(ext::_sym_ignore_signal->symbolValue(),ext::_sym_unix_signal_received,
-               kw::_sym_code, signal_code);
-  } else if (gc::IsA<Signal_sp>(signal_code)) {
-    if (cl__find_class(signal_code,false,_Nil<T_O>()).notnilp()) {
-      cl__cerror(ext::_sym_ignore_signal->symbolValue(),signal_code);
+    core::cl__cerror(ext::_sym_ignore_signal->symbolValue(),ext::_sym_unix_signal_received,
+                     core::Cons_O::createList(kw::_sym_code, signal_code));
+  } else if (gc::IsA<core::Symbol_sp>(signal_code)) {
+    if (core::cl__find_class(signal_code,false,_Nil<core::T_O>()).notnilp()) {
+      core::cl__cerror(ext::_sym_ignore_signal->symbolValue(),signal_code,_Nil<core::T_O>());
     } else if (process.notnilp()) {
       core::eval::funcall(signal_code,kw::_sym_process,process);
     } else {
       core::eval::funcall(signal_code);
     }
-  } else if (gc::IsA<Function_sp>(signal_code)) {
+  } else if (gc::IsA<core::Function_sp>(signal_code)) {
     core::eval::funcall(signal_code);
   }
-  printf("%s:%d Hit the bottom of handle_signal_now with unknown object: %s\n", __FILE__, __LINE__, __rep__(signal_code).c_str());
+  printf("%s:%d Hit the bottom of handle_signal_now with unknown object: %s\n", __FILE__, __LINE__, _rep_(signal_code).c_str());
 }
 
 
-static void handle_all_queued(ThreadLocalState* thread)
-{
-  while (thread->pending_interrupt.notnilp()) {
-    handle_signal_now(pop_signal(thread), thread->_Process);
-  }
-}
 
-static void queue_signal(ThreadLocalState* thread, T_sp code, bool allocate)
+static void queue_signal(core::ThreadLocalState* thread, core::T_sp code, bool allocate)
 {
-  SafeSpinlock spinlock(thread->_SparePendingInterruptRecordsSpinlock);
-  T_sp record;
+  mp::SafeSpinLock spinlock(thread->_SparePendingInterruptRecordsSpinLock);
+  core::T_sp record;
   if (allocate) {
     record = core::Cons_O::create(_Nil<core::T_O>(),_Nil<core::T_O>());
   } else {
@@ -43,19 +60,19 @@ static void queue_signal(ThreadLocalState* thread, T_sp code, bool allocate)
   }
   if (record.consp()) {
     record.unsafe_cons()->_Car = record;
-    thread->_PendingInterrupt = clasp_nconc(thread->_PendingInterrupt,record);
+    thread->_PendingInterrupts = clasp_nconc(thread->_PendingInterrupts,record);
   }
 }
 
-T_sp pop_signal(ThreadLocalState* thread) {
-  T_sp record, value;
-  if (!thread->_PendingInterrupt.consp()) return _Nil<core::T_O>();
+core::T_sp pop_signal(core::ThreadLocalState* thread) {
+  core::T_sp record, value;
+  if (!thread->_PendingInterrupts.consp()) return _Nil<core::T_O>();
   {
-    SafeSpinLock spinlock(thread->_SparePendingInterruptRecordsSpinlock);
-    record = thread->_PendingInterrupt;
+    mp::SafeSpinLock spinlock(thread->_SparePendingInterruptRecordsSpinLock);
+    record = thread->_PendingInterrupts;
     value = record.unsafe_cons()->_Car;
-    thread->_PendingInterrupt = record.unsafe_cons()->_Cdr;
-    if (value.fixnump() || gc::IsA<Symbol_sp>(value)) {
+    thread->_PendingInterrupts = record.unsafe_cons()->_Cdr;
+    if (value.fixnump() || gc::IsA<core::Symbol_sp>(value)) {
       // Conses that contain fixnum or symbol values are recycled onto the
       // _SparePendingInterruptRecords stack
       record.unsafe_cons()->_Cdr = thread->_SparePendingInterruptRecords;
@@ -64,21 +81,34 @@ T_sp pop_signal(ThreadLocalState* thread) {
   }
   return value;
 }
+static void handle_all_queued(core::ThreadLocalState* thread)
+{
+  unlikely_if (!thread->_PendingInterrupts) {
+    // While initializing thread->_PendingInterrupts will be 0x00
+    // and we will ignore it until it is set up properly
+    return;
+  }
+  while (thread->_PendingInterrupts.notnilp()) {
+    core::T_sp sig = pop_signal(thread);
+    printf("%s:%d  handle_all_queued  sig = %s\n", __FILE__, __LINE__, _rep_(sig).c_str());
+    handle_signal_now(sig, thread->_Process);
+  }
+}
 
-void handle_or_queue(ThreadLocalState* thread, core::T_sp signal_code, int code ) {
+void handle_or_queue(core::ThreadLocalState* thread, core::T_sp signal_code ) {
   if (signal_code.nilp() || !signal_code) return;
   if (interrupts_disabled_by_lisp(thread)) {
     queue_signal(thread,signal_code,false);
   }
   else if(interrupts_disabled_by_C(thread)) {
-    thread->disable_interrupts = 3;
+    thread->_DisableInterrupts = 3;
     queue_signal(thread,signal_code,false);
-    set_guard_page(thread);
+//    set_guard_page(thread);
   }
   else {
-    if (code) unblock_signal(thread,code);
-    si_trap_fpe(cl::_sym_last,_lisp->_true());
-    handle_signal_now(signal_code,thread->own_process);
+//    if (code) unblock_signal(thread,code);
+//    si_trap_fpe(cl::_sym_last,_lisp->_true());
+    handle_signal_now(signal_code,thread->_Process);
   }
 }
   
@@ -128,11 +158,17 @@ void handle_signals(int signo) {
 
 
 
-void check_pending_interrupts(ThreadLocalState* thread)
+void lisp_check_pending_interrupts(core::ThreadLocalState* thread)
 {
   handle_all_queued(thread);
 }
 
+
+void fatal_error_handler(void *user_data, const std::string &reason, bool gen_crash_diag) {
+  printf("Hit a fatal error in llvm/clang: %s\n", reason.c_str());
+  printf("Clasp is terminating via abort(0)\n");
+  abort();
+}
 
 
 

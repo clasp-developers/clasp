@@ -94,6 +94,7 @@ namespace gctools {
 #ifdef USE_BOEHM
   inline Header_s* do_boehm_atomic_allocation(kind_t the_kind, size_t size) 
   {
+    RAII_DISABLE_INTERRUPTS();
 #ifdef DEBUG_ZERO_KIND
       if (the_kind == 0) {
         printf("%s:%d the_kind cannot have a value of zero\n", __FILE__, __LINE__ );
@@ -116,6 +117,7 @@ namespace gctools {
   };
   inline Header_s* do_boehm_normal_allocation(kind_t the_kind, size_t size) 
   {
+    RAII_DISABLE_INTERRUPTS();
 #ifdef DEBUG_ZERO_KIND
       if (the_kind == 0) {
         printf("%s:%d the_kind cannot have a value of zero\n", __FILE__, __LINE__ );
@@ -138,6 +140,7 @@ namespace gctools {
   };
   inline Header_s* do_boehm_uncollectable_allocation(kind_t the_kind, size_t size) 
   {
+    RAII_DISABLE_INTERRUPTS();
 #ifdef DEBUG_ZERO_KIND
       if (the_kind == 0) {
         printf("%s:%d the_kind cannot have a value of zero\n", __FILE__, __LINE__ );
@@ -169,20 +172,22 @@ namespace gctools {
                                         const char* ap_name,
                                         size_t& globalMpsMetrics_countAllocations,
                                         ARGS &&... args) {
-    mps_addr_t addr;
-    gc::smart_ptr<Cons> tagged_obj;
-    Cons* cons;
-    do {
-      mps_res_t res = mps_reserve(&addr, allocation_point, sizeof(Cons));
-      if ( res != MPS_RES_OK ) {
-        printf("%s:%d Bad mps_reserve\n", __FILE__, __LINE__ );
-      }
-      cons = reinterpret_cast<Cons*>(addr);
-      new (cons) Cons(std::forward<ARGS>(args)...);
-      tagged_obj = smart_ptr<Cons>((Tagged)tag_cons(cons));
-    } while (!mps_commit(allocation_point, addr, sizeof(Cons)));
+    { RAII_DISABLE_INTERRUPTS();
+      mps_addr_t addr;
+      gc::smart_ptr<Cons> tagged_obj;
+      Cons* cons;
+      do {
+        mps_res_t res = mps_reserve(&addr, allocation_point, sizeof(Cons));
+        if ( res != MPS_RES_OK ) {
+          printf("%s:%d Bad mps_reserve\n", __FILE__, __LINE__ );
+        }
+        cons = reinterpret_cast<Cons*>(addr);
+        new (cons) Cons(std::forward<ARGS>(args)...);
+        tagged_obj = smart_ptr<Cons>((Tagged)tag_cons(cons));
+      } while (!mps_commit(allocation_point, addr, sizeof(Cons)));
+    }
     DEBUG_MPS_UNDERSCANNING_TESTS();
-    poll_signals();
+    lisp_check_pending_interrupts(my_thread);
     globalMpsMetrics.totalMemoryAllocated += sizeof(Cons);
     ++globalMpsMetrics_countAllocations;
     return tagged_obj;
@@ -213,27 +218,29 @@ namespace gctools {
     true_size += tail_size;
 #endif
     HeadT *header;
-    do {
-      mps_res_t res = mps_reserve(&addr, allocation_point, true_size);
-      if ( res != MPS_RES_OK ) {
-        printf("%s:%d Bad mps_reserve\n", __FILE__, __LINE__ );
-      }
-      header = reinterpret_cast<HeadT *>(addr);
+    { RAII_DISABLE_INTERRUPTS(); 
+      do {
+        mps_res_t res = mps_reserve(&addr, allocation_point, true_size);
+        if ( res != MPS_RES_OK ) {
+          printf("%s:%d Bad mps_reserve\n", __FILE__, __LINE__ );
+        }
+        header = reinterpret_cast<HeadT *>(addr);
 #ifdef DEBUG_GUARD
-      memset(header,0x00,true_size);
-      new (header) HeadT(the_kind,size,tail_size, true_size);
+        memset(header,0x00,true_size);
+        new (header) HeadT(the_kind,size,tail_size, true_size);
 #else
-      new (header) HeadT(the_kind);
+        new (header) HeadT(the_kind);
 #endif
-      obj = BasePtrToMostDerivedPtr<typename PTR_TYPE::Type>(addr);
-      new (obj) (typename PTR_TYPE::Type)(std::forward<ARGS>(args)...);
-      tagged_obj = PTR_TYPE(obj);
-    } while (!mps_commit(allocation_point, addr, true_size));
+        obj = BasePtrToMostDerivedPtr<typename PTR_TYPE::Type>(addr);
+        new (obj) (typename PTR_TYPE::Type)(std::forward<ARGS>(args)...);
+        tagged_obj = PTR_TYPE(obj);
+      } while (!mps_commit(allocation_point, addr, true_size));
+    }
 #ifdef DEBUG_VALIDATE_GUARD
     header->validate();
 #endif
     DEBUG_MPS_UNDERSCANNING_TESTS();
-    poll_signals();
+    lisp_check_pending_interrupts(my_thread);
     globalMpsMetrics.totalMemoryAllocated += true_size;
     ++globalMpsMetrics_countAllocations;
     return tagged_obj;
@@ -251,17 +258,20 @@ namespace gctools {
     PTR_TYPE tagged_obj;
     mps_addr_t addr;
     T* myAddress;
-    do {
-      mps_res_t res = mps_reserve(&addr, allocation_point, size);
-      if (res != MPS_RES_OK)
-        THROW_HARD_ERROR(BF("Out of memory"));
-      GC_LOG(("allocated @%p %zu bytes\n", addr, size));
-      myAddress = reinterpret_cast<T*>(addr);
-      if (!myAddress)
-        THROW_HARD_ERROR(BF("NULL address in allocate!"));
-      new (myAddress) T(std::forward<ARGS>(args)...);
-      tagged_obj = PTR_TYPE(myAddress);
-    } while (!mps_commit(allocation_point, addr, size));
+    { RAII_DISABLE_INTERRUPTS();
+      do {
+        mps_res_t res = mps_reserve(&addr, allocation_point, size);
+        if (res != MPS_RES_OK)
+          THROW_HARD_ERROR(BF("Out of memory"));
+        GC_LOG(("allocated @%p %zu bytes\n", addr, size));
+        myAddress = reinterpret_cast<T*>(addr);
+        if (!myAddress)
+          THROW_HARD_ERROR(BF("NULL address in allocate!"));
+        new (myAddress) T(std::forward<ARGS>(args)...);
+        tagged_obj = PTR_TYPE(myAddress);
+      } while (!mps_commit(allocation_point, addr, size));
+    }
+    lisp_check_pending_interrupts(my_thread);
     DEBUG_MPS_UNDERSCANNING_TESTS();
     if (!myAddress)
       THROW_HARD_ERROR(BF("Could not allocate from GCBucketAllocator<Buckets<VT,VT,WeakLinks>>"));
@@ -286,7 +296,7 @@ namespace gctools {
         Header_s* base = do_boehm_uncollectable_allocation(the_kind,size);
         T *obj = BasePtrToMostDerivedPtr<T>(base);
         new (obj) T(std::forward<ARGS>(args)...);
-        poll_signals();
+        lisp_check_pending_interrupts(my_thread);
         gctools::tagged_pointer<T> tagged_obj(obj);
         return tagged_obj;
 #endif
@@ -335,10 +345,13 @@ namespace gctools {
     template <class... ARGS>
     static smart_ptr<Cons> allocate(ARGS &&... args) {
 #ifdef USE_BOEHM
-      monitor_allocation(kind_cons,sizeof(Cons));
-      Cons* cons = reinterpret_cast<Cons*>(GC_MALLOC(sizeof(Cons)));
-      new (cons) Cons(std::forward<ARGS>(args)...);
-      poll_signals();
+      Cons* cons;
+      { RAII_DISABLE_INTERRUPTS();
+        monitor_allocation(kind_cons,sizeof(Cons));
+        cons = reinterpret_cast<Cons*>(GC_MALLOC(sizeof(Cons)));
+        new (cons) Cons(std::forward<ARGS>(args)...);
+      }
+      lisp_check_pending_interrupts(my_thread);
       return smart_ptr<Cons>((Tagged)tag_cons(cons));
 #endif
 #ifdef USE_MPS
@@ -469,7 +482,7 @@ should not be managed by the GC */
       Header_s* base = do_boehm_uncollectable_allocation(the_kind,size);
       OT *obj = BasePtrToMostDerivedPtr<OT>(base);
       new (obj) OT(std::forward<ARGS>(args)...);
-      poll_signals();
+      lisp_check_pending_interrupts(my_thread);
       gctools::smart_ptr<OT> sp(obj);
       return sp;
 #endif
@@ -576,7 +589,7 @@ namespace gctools {
       smart_pointer_type sp = GCObjectAppropriatePoolAllocator<OT, GCInfo<OT>::Policy>::allocate_in_appropriate_pool_kind(the_kind,size,std::forward<ARGS>(args)...);
       GCObjectInitializer<OT, GCInfo<OT>::NeedsInitialization>::initializeIfNeeded(sp);
       GCObjectFinalizer<OT, GCInfo<OT>::NeedsFinalization>::finalizeIfNeeded(sp);
-      poll_signals();
+      lisp_check_pending_interrupts(my_thread);
       return sp;
 #endif
     };
@@ -588,7 +601,7 @@ namespace gctools {
       GCObjectInitializer<OT, /*gctools::*/ GCInfo<OT>::NeedsInitialization>::initializeIfNeeded(sp);
       GCObjectFinalizer<OT, /*gctools::*/ GCInfo<OT>::NeedsFinalization>::finalizeIfNeeded(sp);
     //            printf("%s:%d About to return allocate result ptr@%p\n", __FILE__, __LINE__, sp.px_ref());
-      poll_signals();
+      lisp_check_pending_interrupts(my_thread);
       return sp;
 #endif
 #ifdef USE_MPS
@@ -596,7 +609,7 @@ namespace gctools {
       GCObjectInitializer<OT, GCInfo<OT>::NeedsInitialization>::initializeIfNeeded(sp);
       GCObjectFinalizer<OT, GCInfo<OT>::NeedsFinalization>::finalizeIfNeeded(sp);
     //            printf("%s:%d About to return allocate result ptr@%p\n", __FILE__, __LINE__, sp.px_ref());
-      poll_signals();
+      lisp_check_pending_interrupts(my_thread);
       return sp;
 #endif
     };
@@ -801,7 +814,7 @@ public:
     monitor_allocation(the_kind,size);
     Header_s* base = do_boehm_normal_allocation(the_kind,size);
     container_pointer myAddress = BasePtrToMostDerivedPtr<TY>(base);
-    poll_signals();
+    lisp_check_pending_interrupts(my_thread);
     return gctools::tagged_pointer<container_type>(myAddress);
 #endif
 #ifdef USE_MPS
@@ -908,7 +921,7 @@ public:
     // prepend a one pointer header with a pointer to the typeinfo.name
     Header_s* base = do_boehm_normal_allocation(the_kind,size);
     container_pointer myAddress = BasePtrToMostDerivedPtr<TY>(base);
-    poll_signals();
+    lisp_check_pending_interrupts(my_thread);
     return myAddress;
 #endif
 #ifdef USE_MPS
@@ -980,13 +993,15 @@ public:
     size_t sz = sizeof_container_with_header<container_type>(num);
     monitor_allocation(the_kind,sz);
     // prepend a one pointer header with a pointer to the typeinfo.name
-    Header_s *base = reinterpret_cast<Header_s *>(GC_MALLOC_ATOMIC(sz));
-    if (!base)
-      THROW_HARD_ERROR(BF("Out of memory in allocate"));
-    new (base) Header_s(the_kind);
-    container_pointer myAddress = BasePtrToMostDerivedPtr<TY>(base);
-    new (myAddress) TY(num);
-    poll_signals();
+    { RAII_DISABLE_INTERRUPTS();
+      Header_s *base = reinterpret_cast<Header_s *>(GC_MALLOC_ATOMIC(sz));
+      if (!base)
+        THROW_HARD_ERROR(BF("Out of memory in allocate"));
+      new (base) Header_s(the_kind);
+      container_pointer myAddress = BasePtrToMostDerivedPtr<TY>(base);
+      new (myAddress) TY(num);
+    }
+    lisp_check_pending_interrupts(my_thread);
     return gctools::tagged_pointer<container_type>(myAddress);
 #endif
 #if defined(USE_MPS)

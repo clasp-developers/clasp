@@ -295,7 +295,7 @@ class Lisp_O {
     LongFloat_sp _LongFloatPlusZero;
     LongFloat_sp _LongFloatOne;
 #endif // ifdef CLASP_LONG_FLOAT
-
+    bool _Booted;
     GCRoots();
   };
 
@@ -1055,15 +1055,16 @@ public:
 
 namespace core {
 
-T_mv cl__macroexpand_1(T_sp form, T_sp env);
-T_mv cl__macroexpand(T_sp form, T_sp env);
+  void cl__cerror(T_sp cformat, T_sp eformat, List_sp arguments);
+  T_mv cl__macroexpand_1(T_sp form, T_sp env);
+  T_mv cl__macroexpand(T_sp form, T_sp env);
 
-List_sp cl__assoc(T_sp item, List_sp alist, T_sp key, T_sp test = cl::_sym_eq, T_sp test_not = _Nil<T_O>());
+  List_sp cl__assoc(T_sp item, List_sp alist, T_sp key, T_sp test = cl::_sym_eq, T_sp test_not = _Nil<T_O>());
 
-Class_mv cl__find_class(Symbol_sp symbol, bool errorp = true, T_sp env = _Nil<T_O>());
-Class_mv core__setf_find_class(T_sp newValue, Symbol_sp name);
+  Class_mv cl__find_class(Symbol_sp symbol, bool errorp = true, T_sp env = _Nil<T_O>());
+  Class_mv core__setf_find_class(T_sp newValue, Symbol_sp name);
 
-void cl__error(T_sp err, List_sp initializers);
+  void cl__error(T_sp err, List_sp initializers);
 };
 
 //TRANSLATE(core::Lisp_O);

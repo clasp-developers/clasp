@@ -646,11 +646,7 @@ struct GCInfo {
 
 #include <clasp/gctools/smart_pointers.h>
 
-
-namespace core {
-  class T_O;
-  typedef gctools::smart_ptr<T_O> T_sp;
-};
+#include <clasp/core/coretypes.h>
 
 
 namespace gctools {
@@ -668,6 +664,35 @@ void *SmartPtrToBasePtr(smart_ptr<T> obj) {
   return ptr;
 }
 };
+
+
+namespace core {
+  class ThreadLocalState;
+};
+namespace gctools {
+  void lisp_disable_interrupts(core::ThreadLocalState* t);
+  void lisp_enable_interrupts(core::ThreadLocalState* t);
+  void lisp_check_pending_interrupts(core::ThreadLocalState* thread);
+};
+
+namespace core {
+  struct RAIIDisableInterrupts {
+    ThreadLocalState* this_thread;
+  RAIIDisableInterrupts(ThreadLocalState* t) : this_thread(t) {
+    gctools::lisp_disable_interrupts(this->this_thread);
+  }
+    ~RAIIDisableInterrupts() {
+      gctools::lisp_enable_interrupts(this->this_thread);
+    }
+  };
+};
+
+
+/*! Should be thread_local on linux or __thread on OS X */
+#define THREAD_LOCAL thread_local
+/*! Declare this in the top namespace */
+extern THREAD_LOCAL core::ThreadLocalState *my_thread;
+#define RAII_DISABLE_INTERRUPTS() core::RAIIDisableInterrupts disable_interrupts__(my_thread)
 
 
 namespace gctools {
@@ -722,14 +747,8 @@ void client_validate(core::T_sp client);
 void header_describe(gctools::Header_s* headerP);
 };
 
+#include <clasp/gctools/containers.h>
 
-#include <clasp/core/mpPackage.fwd.h>
-
-namespace gctools {
-  void register_thread(mp::Process_sp process, void* stackTop);
-  void unregister_thread(mp::Process_sp process);
-};
-   
   
 
 namespace gctools {

@@ -135,7 +135,10 @@ namespace core {
   typedef MDArrayT_sp VectorTNs_sp;
 };
 
-
+namespace mp {
+  class Process_O;
+  typedef gctools::smart_ptr<Process_O> Process_sp;
+};
 
 
 #endif

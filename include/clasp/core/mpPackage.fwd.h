@@ -40,6 +40,33 @@ namespace mp {
 
 namespace mp {
 
+  struct SpinLock {
+  public:
+    void lock()
+    {
+      while(lck.test_and_set(std::memory_order_acquire))
+      {}
+    }
+ 
+    void unlock()
+    {
+      lck.clear(std::memory_order_release);
+    }
+ 
+  private:
+    std::atomic_flag lck = ATOMIC_FLAG_INIT;
+  };
+
+  struct SafeSpinLock {
+    SpinLock& _SpinLock;
+  SafeSpinLock(SpinLock& l) : _SpinLock(l) {
+    _SpinLock.lock();
+  };
+    ~SafeSpinLock() {
+      _SpinLock.unlock();
+    }
+  };
+      
   struct GlobalMutex {
     pthread_mutex_t _Mutex;
     bool _Recursive;
@@ -197,6 +224,17 @@ namespace mp {
     ~ConditionVariable() {
       pthread_cond_destroy(&this->_ConditionVariable);
     };
+    bool wait(Mutex& m) {
+      return pthread_cond_wait(&this->_ConditionVariable,&m._Mutex)==0;
+    }
+    bool timed_wait(Mutex& m, size_t timeout) {
+      printf("%s:%d Implement timed_wait\n", __FILE__, __LINE__ );
+      abort();
+    }
+    bool signal() {
+      return pthread_cond_signal(&this->_ConditionVariable)==0;
+    }
+      
   };
 
 #ifdef CLASP_THREADS

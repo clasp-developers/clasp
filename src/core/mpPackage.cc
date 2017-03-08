@@ -37,11 +37,11 @@ THE SOFTWARE.
 
 
 
-
-
 namespace mp {
 
+};
 
+namespace mp {
 
 #ifdef CLASP_THREADS
 std::atomic<size_t> global_LastBindingIndex = ATOMIC_VAR_INIT(0);
@@ -110,6 +110,9 @@ void* start_thread(void* claspProcess) {
 }
 
 
+CL_DEFUN Process_sp mp__lock_owner(Mutex_sp m) {
+  return m->_Owner;
+}
 
 CL_DEFUN int mp__process_enable(Process_sp process)
 {

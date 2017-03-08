@@ -207,7 +207,8 @@ Lisp_O::GCRoots::GCRoots() :
 #endif
   _SpecialForms(_Unbound<HashTableEq_O>()),
   _NullStream(_Nil<T_O>()),
-  _ThePathnameTranslations(_Nil<T_O>()) {}
+  _ThePathnameTranslations(_Nil<T_O>()),
+  _Booted(false) {}
 
 Lisp_O::Lisp_O() : _StackWarnSize(gctools::_global_stack_max_size * 0.9), // 6MB default stack size before warnings
                    _StackSampleCount(0),
@@ -235,6 +236,7 @@ Lisp_O::Lisp_O() : _StackWarnSize(gctools::_global_stack_max_size * 0.9), // 6MB
 }
 
 void Lisp_O::shutdownLispEnvironment() {
+  this->_Roots._Booted = false;
   if (this->_DebugStream != NULL) {
     this->_DebugStream->beginNode(DEBUG_TOPLEVEL);
   }
@@ -630,11 +632,6 @@ void Lisp_O::startupLispEnvironment(Bundle *bundle) {
       (*ic)(_lisp);
     }
   }
-#if 0
-  Path_sp startupWorkingDir = Path_O::create(bundle->getStartupWorkingDir());
-  this->defconstant(_sym_STARcurrent_working_directorySTAR, _Nil<Path_O>());
-  this->setCurrentWorkingDirectory(startupWorkingDir);
-#endif
   this->switchToClassNameHashTable();
   {
     _BLOCK_TRACE("Setup system values");
@@ -1315,7 +1312,9 @@ void Lisp_O::parseCommandLineArguments(int argc, char *argv[], const CommandLine
 #ifdef USE_EXPENSIVE_BACKTRACE
   features = Cons_O::create(_lisp->internKeyword("USE-EXPENSIVE-BACKTRACE"), features);
 #endif
-
+#ifdef CLASP_THREADS
+  features = Cons_O::create(_lisp->internKeyword("THREADS"),features);
+#endif
   cl::_sym_STARfeaturesSTAR->setf_symbolValue(features);
 
   SYMBOL_EXPORT_SC_(CorePkg, STARprintVersionOnStartupSTAR);
@@ -2889,13 +2888,14 @@ void LispHolder::startup(int argc, char *argv[], const string &appPathEnvironmen
   Bundle *bundle = new Bundle(argv0,options._ResourceDir);
   this->_Lisp->startupLispEnvironment(bundle);
 #if 0
-	if (_lisp->mpiEnabled())
-	{
-	    stringstream ss;
-	    ss << "P"<<_lisp->mpiRank()<<":";
-	    printvPushPrefix(ss.str());
-	}
+  if (_lisp->mpiEnabled())
+  {
+    stringstream ss;
+    ss << "P"<<_lisp->mpiRank()<<":";
+    printvPushPrefix(ss.str());
+  }
 #endif
+  _lisp->_Roots._Booted = true;
   _lisp->parseCommandLineArguments(argc, argv, options);
 }
 

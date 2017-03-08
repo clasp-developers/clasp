@@ -1,6 +1,7 @@
 #ifndef gctools_processes_H
 #define gctools_processes_H
 
+#include <clasp/core/mpPackage.fwd.h>
 
 namespace core {
   class DynamicBinding {
@@ -67,84 +68,75 @@ namespace core {
 #pragma GCC visibility pop
 };
 
+namespace core {
 
-class ExceptionStack {
-public:
-  gctools::Vec0<ExceptionEntry> _Stack;
-public:
-  ExceptionEntry &operator[](int i) { return this->_Stack[i]; };
-  size_t size() const { return this->_Stack.size(); };
-  string summary() {
-    std::stringstream ss;
-    ss << "ExceptionStackSummary: depth[" << this->size() << "] ";
-    for (int idx = this->size() - 1; idx >= 0; --idx) {
-      FrameKind fk = this->_Stack[idx]._FrameKind;
-      char frameChar;
-      switch (fk) {
-      case NullFrame:
-        frameChar = 'N';
-        break;
-      case CatchFrame:
-        frameChar = 'C';
-        break;
-      case BlockFrame:
-        frameChar = 'B';
-        break;
-      case TagbodyFrame:
-        frameChar = 'T';
-        break;
-      case LandingPadFrame:
-        frameChar = 'L';
-        break;
-      default:
-        frameChar = 'u';
-        break;
-      }
-      ss << frameChar << idx;
-      if (this->_Stack[idx]._Key.notnilp()) {
-        ss << "{@" << (void *)this->_Stack[idx]._Key.raw_() << "}";
-      }
-      ss << " ";
+  class ExceptionStack {
+  public:
+    gctools::Vec0<ExceptionEntry> _Stack;
+  public:
+    ExceptionEntry &operator[](int i) { return this->_Stack[i]; };
+    size_t size() const { return this->_Stack.size(); };
+    string summary() {
+      std::stringstream ss;
+      ss << "ExceptionStackSummary: depth[" << this->size() << "] ";
+      for (int idx = this->size() - 1; idx >= 0; --idx) {
+        FrameKind fk = this->_Stack[idx]._FrameKind;
+        char frameChar;
+        switch (fk) {
+        case NullFrame:
+            frameChar = 'N';
+            break;
+        case CatchFrame:
+            frameChar = 'C';
+            break;
+        case BlockFrame:
+            frameChar = 'B';
+            break;
+        case TagbodyFrame:
+            frameChar = 'T';
+            break;
+        case LandingPadFrame:
+            frameChar = 'L';
+            break;
+        default:
+            frameChar = 'u';
+            break;
+        }
+        ss << frameChar << idx;
+        if (this->_Stack[idx]._Key.notnilp()) {
+          ss << "{@" << (void *)this->_Stack[idx]._Key.raw_() << "}";
+        }
+        ss << " ";
+      };
+      return ss.str();
     };
-    return ss.str();
-  };
 
-  void validateFrame(size_t frame) {
-    if (frame >= this->_Stack.size()) {
-      printf("%s:%d A request to unwind to frame %lu has been made but there are only %lu frames on the exception stack - the frame won't be found and a crash will occur - aborting now.  Trap abort() in the debugger to investigate\n", __FILE__, __LINE__, frame, this->_Stack.size());
-      abort();
+    void validateFrame(size_t frame) {
+      if (frame >= this->_Stack.size()) {
+        printf("%s:%d A request to unwind to frame %lu has been made but there are only %lu frames on the exception stack - the frame won't be found and a crash will occur - aborting now.  Trap abort() in the debugger to investigate\n", __FILE__, __LINE__, frame, this->_Stack.size());
+        abort();
+      }
     }
-  }
-  inline size_t push(FrameKind kind, T_sp key) {
-    size_t frame = this->_Stack.size();
-    this->_Stack.emplace_back(kind, key);
-    return frame;
-  }
-  inline void pop() {
-    this->_Stack.pop_back();
-  };
+    inline size_t push(FrameKind kind, T_sp key) {
+      size_t frame = this->_Stack.size();
+      this->_Stack.emplace_back(kind, key);
+      return frame;
+    }
+    inline void pop() {
+      this->_Stack.pop_back();
+    };
   /*! Return the index of the stack entry with the matching key.
           If return -1 then the key wasn't found */
-  int findKey(FrameKind kind, T_sp key);
-  T_sp backKey() const { return this->_Stack.back()._Key; };
-  void unwind(size_t newTop) { this->_Stack.resize(newTop); };
-  Vector_sp backtrace();
-};
+    int findKey(FrameKind kind, T_sp key);
+    T_sp backKey() const { return this->_Stack.back()._Key; };
+    void unwind(size_t newTop) { this->_Stack.resize(newTop); };
+    Vector_sp backtrace();
+  };
 };
 
 
 namespace core {
   struct InvocationHistoryFrame;
-  struct RAIIDisableInterrupts {
-    ThreadLocalState& this_thread;
-  RAIIDisableInterrupts(ThreadLocalState& t) : this_thread(t) {
-    this_thread->_DisableInterrupts = true;
-  }
-    ~RAIIDisableInterrupts() {
-      this_thread->_DisableInterrupts = false;
-    }
-  };
-#define RAII_DISABLE_INTERRUPTS() core::RAIIDisableInterrupts disable_interrupts__(my_thread)
   struct ThreadLocalState {
     ThreadLocalState(void* stack_top);
     void initialize_thread();
@@ -166,7 +158,7 @@ namespace core {
     /*! Save CONS records so we don't need to do allocations
         to add to _PendingInterrupts */
     List_sp _SparePendingInterruptRecords; // signal_queue on ECL
-    mp::Spinlock _SparePendingInterrupRecordsSpinlock;
+    mp::SpinLock _SparePendingInterruptRecordsSpinLock;
     /*------- per-thread data */
     List_sp _BufferStr8NsPool;
     List_sp _BufferStrWNsPool;
@@ -183,14 +175,6 @@ namespace core {
   };
 
 };
-
-
-
-/*! Should be thread_local on linux or __thread on OS X */
-#define THREAD_LOCAL thread_local
-
-/*! Declare this in the top namespace */
-extern THREAD_LOCAL core::ThreadLocalState *my_thread;
 
 
 
