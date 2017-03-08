@@ -17,7 +17,8 @@
 (progn
   (defpackage "MP"
     (:use "CL")
-    (:export "WITH-LOCK"))
+    (:export "WITH-LOCK" "WITHOUT-INTERRUPTS" "WITH-INTERRUPTS"
+             "WITH-LOCAL-INTERRUPTS" "WITH-RESTORED-INTERRUPTS" "ALLOW-WITH-INTERRUPTS"))
 
   (in-package "MP")
 
@@ -129,7 +130,7 @@ by ALLOW-WITH-INTERRUPTS."
                                    (with-restored-interrupts
                                     (mp::get-lock ,lock)
                                     (locally ,@body))
-                                 (let ((,process (mp:current-process)))
+                                 (let ((,process mp:*current-process*))
                                    (declare (optimize (speed 3) (safety 0) (debug 0)))
                                    (when (and (eq ,process (mp:lock-owner ,lock))
                                               (or (not (eq ,owner ,process))

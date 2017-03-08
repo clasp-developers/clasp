@@ -142,7 +142,9 @@ THE SOFTWARE.
 #include <clasp/llvmo/intrinsics.h>
 #include <clasp/core/wrappers.h>
 #include <clasp/core/python_wrappers.h>
-
+#ifdef CLASP_THREADS
+#include <clasp/core/mpPackage.h>
+#endif
 #ifdef READLINE
 extern "C" char *readline(const char *prompt);
 extern "C" void add_history(char *line);
@@ -670,6 +672,7 @@ void Lisp_O::startupLispEnvironment(Bundle *bundle) {
   //
   // Initialize the main thread info
   //
+  
   my_thread->initialize_thread();
   {
     _BLOCK_TRACE("Start printing symbols properly");
@@ -2887,6 +2890,7 @@ void LispHolder::startup(int argc, char *argv[], const string &appPathEnvironmen
   CommandLineOptions options(argc, argv);
   Bundle *bundle = new Bundle(argv0,options._ResourceDir);
   this->_Lisp->startupLispEnvironment(bundle);
+  DynamicScopeManager(mp::_sym_STARcurrent_processSTAR,my_thread->_Process);
 #if 0
   if (_lisp->mpiEnabled())
   {

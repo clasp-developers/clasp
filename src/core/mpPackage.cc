@@ -51,6 +51,7 @@ std::vector<size_t> global_BindingIndexPool;
 
 
 SYMBOL_SC_(MpPkg, aSingleMpSymbol);
+SYMBOL_EXPORT_SC_(MpPkg, STARcurrent_processSTAR);
 SYMBOL_EXPORT_SC_(MpPkg, roo);
 
 struct SafeRegisterDeregisterProcessWithLisp {
@@ -73,6 +74,8 @@ void* start_thread(void* claspProcess) {
   printf("%s:%d entering start_thread  &my_thread -> %p \n", __FILE__, __LINE__, (void*)&my_thread);
   my_thread = &my_thread_local_state;
   my_thread->initialize_thread();
+  // Set the mp:*current-process* variable to the current process
+  core::DynamicScopeManager scope(_sym_STARcurrent_processSTAR,p);
 #if 0
 #ifdef USE_BOEHM
   GC_stack_base gc_stack_base;
@@ -86,9 +89,9 @@ void* start_thread(void* claspProcess) {
 #endif
 //  gctools::register_thread(process,stack_base);
   core::List_sp args = my_claspProcess->_Arguments;
-  claspProcess->_Phase = Active;
+  p->_Phase = Active;
   core::T_mv result_mv = core::eval::applyLastArgsPLUSFirst(my_claspProcess->_Function,args);
-  claspProcess->_Phase = Exiting;
+  p->_Phase = Exiting;
   core::T_sp result0 = result_mv;
   core::List_sp result_list = _Nil<core::T_O>();
   for ( int i=result_mv.number_of_values(); i>0; --i ) {
@@ -125,10 +128,6 @@ CL_DEFUN core::List_sp mp__all_processes() {
   return _lisp->processes();
 }
 
-CL_DEFUN Process_sp mp__current_process() {
-  return my_thread->_Process;
-}
-
 CL_DEFUN core::T_sp mp__process_name(Process_sp p) {
   return p->_Name;
 }
@@ -142,8 +141,21 @@ CL_DEFUN core::T_sp mp__make_lock(core::T_sp name, bool recursive) {
 }
   
 CL_DEFUN core::T_sp mp__process_active_p(Process_sp p) {
-  return p->_Phase ? _lisp->_true() : _Nil<T_O>();
+  return p->_Phase ? _lisp->_true() : _Nil<core::T_O>();
 }
+
+
+CL_DEFUN void mp__process_suspend(Process_sp process) {
+  printf("%s:%d  process_suspend - implement me\n", __FILE__, __LINE__ );
+};
+
+CL_DEFUN void mp__process_resume(Process_sp process) {
+  printf("%s:%d  process_resume - implement me\n", __FILE__, __LINE__ );
+};
+
+CL_DEFUN void mp__interrupt_process(Process_sp process, core::T_sp func) {
+  printf("%s:%d  interrupt-process - implement me\n", __FILE__, __LINE__ );
+};
 
 CL_DEFUN core::T_sp mp__mutex_name(Mutex_sp m) {
   return m->_Name;
@@ -156,8 +168,8 @@ CL_DEFUN bool mp__get_lock(Mutex_sp m, bool waitp) {
 
 
 CL_DEFUN bool mp__giveup_lock(Mutex_sp m) {
-   m->unlock();
-   return true;
+  m->unlock();
+  return true;
 }
 
 CL_DEFUN core::Fixnum_sp mp__lock_count(Mutex_sp m) {
@@ -167,4 +179,16 @@ CL_LAMBDA(&key name)
 CL_DEFUN core::T_sp mp__make_condition_variable(core::T_sp name) {
   return ConditionVariable_O::make_ConditionVariable(name);
 }
+
+CL_DEFUN bool mp__condition_variable_wait(ConditionVariable_sp cv, Mutex_sp mutex) {
+  return cv->wait(mutex);
 };
+
+CL_DEFUN void mp__condition_variable_signal(ConditionVariable_sp cv) {
+  cv->signal();
+};
+
+
+};
+
+
