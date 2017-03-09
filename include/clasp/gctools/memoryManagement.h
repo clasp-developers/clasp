@@ -401,6 +401,10 @@ namespace gctools {
 #endif
 
 
+namespace core {
+  class BuiltinClosure_O;
+};
+
 
 #include <clasp/gctools/cast.h>
 #include <clasp/gctools/tagged_cast.h>
