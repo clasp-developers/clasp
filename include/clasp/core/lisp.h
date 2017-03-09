@@ -296,6 +296,7 @@ class Lisp_O {
     LongFloat_sp _LongFloatOne;
 #endif // ifdef CLASP_LONG_FLOAT
     bool _Booted;
+    HashTableEq_sp _KnownSignals;
     GCRoots();
   };
 

@@ -25,6 +25,7 @@ THE SOFTWARE.
 */
 /* -^- */
 
+#include <sched.h>
 #include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
 #include <clasp/core/lisp.h>
@@ -34,6 +35,7 @@ THE SOFTWARE.
 #include <clasp/core/multipleValues.h>
 #include <clasp/core/primitives.h>
 #include <clasp/core/package.h>
+#include <clasp/gctools/interrupt.h>
 #include <clasp/core/evaluator.h>
 
 
@@ -79,12 +81,12 @@ struct SafeRegisterDeregisterProcessWithLisp {
 void* start_thread(void* claspProcess) {
   Process_O* my_claspProcess = (Process_O*)claspProcess;
   Process_sp p(my_claspProcess);
-  SafeRegisterDeregisterProcessWithLisp reg(p);
   void* stack_base;
   core::ThreadLocalState my_thread_local_state(&stack_base);
   printf("%s:%d entering start_thread  &my_thread -> %p \n", __FILE__, __LINE__, (void*)&my_thread);
   my_thread = &my_thread_local_state;
   my_thread->initialize_thread();
+  p->_ThreadInfo = my_thread;
   // Set the mp:*current-process* variable to the current process
   core::DynamicScopeManager scope(_sym_STARcurrent_processSTAR,p);
 #if 0
@@ -103,6 +105,7 @@ void* start_thread(void* claspProcess) {
   p->_Phase = Active;
   core::T_mv result_mv;
   {
+    SafeRegisterDeregisterProcessWithLisp reg(p);
     RAIIMutexLock exitBarrier(p->_ExitBarrier);
     result_mv = core::eval::applyLastArgsPLUSFirst(my_claspProcess->_Function,args);
   }
@@ -128,6 +131,8 @@ void* start_thread(void* claspProcess) {
   printf("%s:%d  really leaving start_thread\n", __FILE__, __LINE__ );
   return NULL;
 }
+
+
 
 
 CL_DEFUN Process_sp mp__lock_owner(Mutex_sp m) {
@@ -168,21 +173,27 @@ CL_DEFUN void mp__process_resume(Process_sp process) {
   printf("%s:%d  process_resume - implement me\n", __FILE__, __LINE__ );
 };
 
-CL_DEFUN void mp__process_yield(Process_sp process) {
-  core::clasp_musleep(0.0,true);
+CL_DEFUN void mp__process_yield() {
+  int res = sched_yield();
+//  core::clasp_musleep(0.0,true);
 }
 
 CL_DEFUN core::T_mv mp__process_join(Process_sp process) {
   // ECL has a much more complicated process_join function
-  RAIIMutexLock join_(process->_ExitBarrier);
+  if (process->_Phase>0) {
+    RAIIMutexLock join_(process->_ExitBarrier);
+  }
   return cl__values_list(process->_ReturnValuesList);
 }
 
 
     
-CL_DEFUN void mp__interrupt_process(Process_sp process, core::T_sp func) {
-  
-  printf("%s:%d  interrupt-process - implement me\n", __FILE__, __LINE__ );
+CL_DEFUN core::T_sp mp__interrupt_process(Process_sp process, core::T_sp func) {
+  unlikely_if (mp__process_active_p(process).nilp()) {
+    FEerror("Cannot interrupt the inactive process ~A", 1, process);
+  }
+  clasp_interrupt_process(process,func);
+  return _lisp->_true();
 };
 
 CL_DEFUN core::T_sp mp__mutex_name(Mutex_sp m) {

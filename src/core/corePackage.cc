@@ -1118,6 +1118,7 @@ void CoreExposer_O::define_essential_globals(Lisp_sp lisp) {
   std::list<string> use_packages;
   _sym_STARclasp_packageSTAR->defparameter(_lisp->makePackage("CLASP!",nicknames,use_packages));
   _sym_STARdebug_fsetSTAR->defparameter(_Nil<core::T_O>());
+  ext::_sym_ignore_signal->defparameter(SimpleBaseString_O::make("Ignore signal"));
   _sym_STARtop_level_form_stackSTAR->defparameter(_Nil<core::T_O>());
   ext::_sym_STARinvoke_debugger_hookSTAR->defparameter(_Nil<core::T_O>());
   _sym_STARuse_cleavir_compilerSTAR->defparameter(_Nil<core::T_O>());

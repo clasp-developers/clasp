@@ -83,7 +83,7 @@ namespace mp {
 
 namespace mp {
 
-  typedef enum {Inactive=0,Active,Booting,Exiting} ProcessPhase;
+  typedef enum {Inactive=0,Booting,Active,Exiting} ProcessPhase;
   
   class Process_O : public core::CxxObject_O {
     LISP_CLASS(mp, MpPkg, Process_O, "Process",core::CxxObject_O);
@@ -99,6 +99,7 @@ namespace mp {
     core::T_sp _Function;
     core::T_sp _Arguments;
     core::T_sp  _ReturnValuesList;
+    core::ThreadLocalState* _ThreadInfo;
     ProcessPhase  _Phase;
     size_t _StackSize;
     pthread_t _Thread;

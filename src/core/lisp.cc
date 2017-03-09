@@ -210,7 +210,8 @@ Lisp_O::GCRoots::GCRoots() :
   _SpecialForms(_Unbound<HashTableEq_O>()),
   _NullStream(_Nil<T_O>()),
   _ThePathnameTranslations(_Nil<T_O>()),
-  _Booted(false) {}
+  _Booted(false),
+  _KnownSignals(_Unbound<HashTableEq_O>()) {}
 
 Lisp_O::Lisp_O() : _StackWarnSize(gctools::_global_stack_max_size * 0.9), // 6MB default stack size before warnings
                    _StackSampleCount(0),
@@ -2891,6 +2892,7 @@ void LispHolder::startup(int argc, char *argv[], const string &appPathEnvironmen
   Bundle *bundle = new Bundle(argv0,options._ResourceDir);
   this->_Lisp->startupLispEnvironment(bundle);
   mp::_sym_STARcurrent_processSTAR->defparameter(my_thread->_Process);
+  this->_Lisp->add_process(my_thread->_Process);
 #if 0
   if (_lisp->mpiEnabled())
   {
@@ -2899,6 +2901,7 @@ void LispHolder::startup(int argc, char *argv[], const string &appPathEnvironmen
     printvPushPrefix(ss.str());
   }
 #endif
+  gctools::initialize_signal_constants();
   _lisp->_Roots._Booted = true;
   _lisp->parseCommandLineArguments(argc, argv, options);
 }

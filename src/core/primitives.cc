@@ -98,6 +98,8 @@ void clasp_musleep(double dsec, bool alertable) {
     int old_errno = errno;
     if (code < 0 && old_errno == EINTR && !alertable) {
       goto AGAIN;
+    } else if (code<0) {
+      printf("%s:%d nanosleep returned code = %d  errno = %d\n", __FILE__, __LINE__, code, errno);
     }
   }
 }
