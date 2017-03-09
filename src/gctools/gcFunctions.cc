@@ -318,9 +318,11 @@ size_t dumpResults(const std::string &name, const std::string &shortName, T *dat
     totalSize += sz;
     if (sz < 96) break;
     idx += 1;
+#if 0
     if ( idx % 100 == 0 ) {
       gctools::poll_signals();
     }
+#endif
   }
   BFORMAT_T(BF("Skipping objects with less than 96 total_size\n"));
   return totalSize;

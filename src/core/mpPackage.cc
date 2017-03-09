@@ -50,6 +50,8 @@ struct RAIIMutexLock {
   }
 };
 
+};
+
 namespace mp {
 
 #ifdef CLASP_THREADS
@@ -170,7 +172,7 @@ CL_DEFUN void mp__process_yield(Process_sp process) {
   core::clasp_musleep(0.0,true);
 }
 
-CL_DEFUN void mp__process_join(Process_sp process) {
+CL_DEFUN core::T_mv mp__process_join(Process_sp process) {
   // ECL has a much more complicated process_join function
   RAIIMutexLock join_(process->_ExitBarrier);
   return cl__values_list(process->_ReturnValuesList);
@@ -216,5 +218,4 @@ CL_DEFUN void mp__condition_variable_signal(ConditionVariable_sp cv) {
 
 
 };
-
 
