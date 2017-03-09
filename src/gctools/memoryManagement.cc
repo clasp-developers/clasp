@@ -525,8 +525,12 @@ int startupGarbageCollectorAndSystem(MainFunctionType startupFn, int argc, char 
 
   build_kind_field_layout_tables();
 
-  gctools::initialize_signals();
-
+#ifdef SIGRTMIN
+# define DEFAULT_THREAD_INTERRUPT_SIGNAL SIGRTMIN + 2
+#else
+# define DEFAULT_THREAD_INTERRUPT_SIGNAL SIGUSR1
+#endif
+  gctools::initialize_signals(DEFAULT_THREAD_INTERRUPT_SIGNAL);
 
 #if defined(USE_MPS)
   int exitCode = gctools::initializeMemoryPoolSystem(startupFn, argc, argv, mpiEnabled, mpiRank, mpiSize);

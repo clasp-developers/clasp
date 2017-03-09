@@ -83,6 +83,25 @@ THE SOFTWARE.
 #include <clasp/core/wrappers.h>
 namespace core {
 
+
+void clasp_musleep(double dsec, bool alertable) {
+  double seconds = floor(dsec);
+  double frac_seconds = dsec - seconds;
+  double nanoseconds = (frac_seconds * 1000000000.0);
+  timespec ts;
+  ts.tv_sec = seconds;
+  ts.tv_nsec = nanoseconds;
+  int code;
+ AGAIN:
+  code = nanosleep(&ts, &ts);
+  {
+    int old_errno = errno;
+    if (code < 0 && old_errno == EINTR && !alertable) {
+      goto AGAIN;
+    }
+  }
+}
+
 CL_LAMBDA(seconds);
 CL_DECLARE();
 CL_DOCSTRING("sleep");
@@ -95,13 +114,7 @@ CL_DEFUN void cl__sleep(T_sp oseconds) {
   if (dsec < 0.0) {
     SIMPLE_ERROR(BF("You cannot sleep for < 0 seconds"));
   }
-  double seconds = floor(dsec);
-  double frac_seconds = dsec - seconds;
-  double nanoseconds = (frac_seconds * 1000000000.0);
-  timespec ts;
-  ts.tv_sec = seconds;
-  ts.tv_nsec = nanoseconds;
-  nanosleep(&ts, NULL);
+  clasp_musleep(dsec,false);
 }
 
 CL_LAMBDA();

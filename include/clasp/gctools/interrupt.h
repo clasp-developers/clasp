@@ -4,7 +4,7 @@
 namespace gctools {
 
   void handle_or_queue(core::ThreadLocalState* thread, core::T_sp signal_code /*, int code */);
-  void initialize_signals();
+  void initialize_signals(int clasp_signal);
   
 };
 

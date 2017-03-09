@@ -32,6 +32,7 @@ THE SOFTWARE.
 #include <clasp/core/symbol.h>
 #include <clasp/core/mpPackage.h>
 #include <clasp/core/multipleValues.h>
+#include <clasp/core/primitives.h>
 #include <clasp/core/package.h>
 #include <clasp/core/evaluator.h>
 
@@ -39,6 +40,14 @@ THE SOFTWARE.
 
 namespace mp {
 
+struct RAIIMutexLock {
+  Mutex _Mutex;
+  RAIIMutexLock(Mutex& m) : _Mutex(m) {
+    this->_Mutex.lock();
+  };
+  ~RAIIMutexLock() {
+    this->_Mutex.unlock();
+  }
 };
 
 namespace mp {
@@ -90,7 +99,11 @@ void* start_thread(void* claspProcess) {
 //  gctools::register_thread(process,stack_base);
   core::List_sp args = my_claspProcess->_Arguments;
   p->_Phase = Active;
-  core::T_mv result_mv = core::eval::applyLastArgsPLUSFirst(my_claspProcess->_Function,args);
+  core::T_mv result_mv;
+  {
+    RAIIMutexLock exitBarrier(p->_ExitBarrier);
+    result_mv = core::eval::applyLastArgsPLUSFirst(my_claspProcess->_Function,args);
+  }
   p->_Phase = Exiting;
   core::T_sp result0 = result_mv;
   core::List_sp result_list = _Nil<core::T_O>();
@@ -153,6 +166,16 @@ CL_DEFUN void mp__process_resume(Process_sp process) {
   printf("%s:%d  process_resume - implement me\n", __FILE__, __LINE__ );
 };
 
+CL_DEFUN void mp__process_yield(Process_sp process) {
+  core::clasp_musleep(0.0,true);
+}
+
+CL_DEFUN void mp__process_join(Process_sp process) {
+  RAIIMutexLock join_(process->_ExitBarrier);
+}
+
+
+    
 CL_DEFUN void mp__interrupt_process(Process_sp process, core::T_sp func) {
   
   printf("%s:%d  interrupt-process - implement me\n", __FILE__, __LINE__ );

@@ -1,3 +1,4 @@
+#include <signal.h>
 #include <llvm/Support/ErrorHandling.h>
 #include <signal.h>
 #include <clasp/core/foundation.h>
@@ -10,6 +11,9 @@
 #include <clasp/gctools/interrupt.h>
 
 namespace gctools {
+
+/*! The value of the signal that clasp uses to interrupt threads */
+int global_signal = 0;
 
 void lisp_enable_interrupts(core::ThreadLocalState* thread) {
   thread->_DisableInterrupts = false;
@@ -181,7 +185,11 @@ void fatal_error_handler(void *user_data, const std::string &reason, bool gen_cr
 
 
 
-void initialize_signals() {
+void initialize_signals(int clasp_signal) {
+  global_signal = clasp_signal;
+  if (signal(global_signal, handle_signals) == SIG_ERR) {
+    printf("failed to register SIGABRT signal-handler with kernel\n");
+  }
   if (signal(SIGINT, handle_signals) == SIG_ERR) {
     printf("failed to register SIGINT signal-handler with kernel\n");
   }
