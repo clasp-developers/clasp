@@ -370,10 +370,11 @@ size_t dumpMPSResults(const std::string &name, const std::string &shortName, vec
   for (auto it : values) {
     totalSize += it.print(shortName);
     idx += 1;
+#if 0
     if ( idx % 100 == 0 ) {
       gctools::poll_signals();
     }
-
+#endif
   }
   return totalSize;
 }

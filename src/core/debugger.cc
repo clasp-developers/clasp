@@ -572,12 +572,14 @@ void dbg_printTPtr(uintptr_t raw, bool print_pretty) {
   clasp_force_output(sout);
 }
 
+#if 0
 /*! Sets the flag that controlC has been pressed so that when
       the process continues it will drop into the debugging repl */
 void dbg_controlC() {
   SET_SIGNAL(SIGINT);
   printf("%s:%d   Simulating SIGINT (Control-C) signal - debugging REPL will start up when you continue\n", __FILE__, __LINE__);
 }
+#endif
 };
 
 namespace core {
