@@ -2890,7 +2890,7 @@ void LispHolder::startup(int argc, char *argv[], const string &appPathEnvironmen
   CommandLineOptions options(argc, argv);
   Bundle *bundle = new Bundle(argv0,options._ResourceDir);
   this->_Lisp->startupLispEnvironment(bundle);
-  DynamicScopeManager(mp::_sym_STARcurrent_processSTAR,my_thread->_Process);
+  mp::_sym_STARcurrent_processSTAR->defparameter(my_thread->_Process);
 #if 0
   if (_lisp->mpiEnabled())
   {

@@ -154,6 +154,7 @@ CL_DEFUN void mp__process_resume(Process_sp process) {
 };
 
 CL_DEFUN void mp__interrupt_process(Process_sp process, core::T_sp func) {
+  
   printf("%s:%d  interrupt-process - implement me\n", __FILE__, __LINE__ );
 };
 
