@@ -172,9 +172,9 @@ namespace gctools {
                                         const char* ap_name,
                                         size_t& globalMpsMetrics_countAllocations,
                                         ARGS &&... args) {
+    gc::smart_ptr<Cons> tagged_obj;
     { RAII_DISABLE_INTERRUPTS();
       mps_addr_t addr;
-      gc::smart_ptr<Cons> tagged_obj;
       Cons* cons;
       do {
         mps_res_t res = mps_reserve(&addr, allocation_point, sizeof(Cons));

@@ -142,10 +142,12 @@ extern void obj_dump_base(void *base);
 namespace gctools {
   extern int global_signalTrap;
   extern bool global_debuggerOnSIGABRT; // If this is false then SIGABRT is processed normally and it will lead to termination of the program. See core__exit!
+#if 0
   void do_pollSignals();
 
 #define SET_SIGNAL(s) { gctools::global_signalTrap = s; }
   inline void poll_signals() { if (gctools::global_signalTrap) gctools::do_pollSignals();};
+#endif
 };
 
 namespace gctools {

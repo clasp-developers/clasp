@@ -1,4 +1,5 @@
 #include <llvm/Support/ErrorHandling.h>
+#include <signal.h>
 #include <clasp/core/foundation.h>
 #include <clasp/core/symbol.h>
 #include <clasp/core/symbolTable.h>
@@ -119,6 +120,8 @@ int global_pollTicksPerCleanup = INITIAL_GLOBAL_POLL_TICKS_PER_CLEANUP;
 int global_signalTrap = 0;
 int global_pollTicksGC = INITIAL_GLOBAL_POLL_TICKS_PER_CLEANUP;
 
+
+#if 0
 void do_pollSignals() {
   int signo = global_signalTrap;
   SET_SIGNAL(0);
@@ -146,6 +149,7 @@ void do_pollSignals() {
   }
 #endif
 }
+#endif
 
 
 void handle_signals(int signo) {
