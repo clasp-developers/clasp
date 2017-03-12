@@ -30,8 +30,10 @@ THE SOFTWARE.
 
 // Define compile-time flags that effect structure sizes
 //
+#include <atomic>
 #include <clasp/gctools/configure_memory.h>
 #include <clasp/gctools/hardErrors.h>
+#include <clasp/core/foundation.h>
 
 #ifdef USE_BOEHM
 #ifdef CLASP_THREADS
@@ -368,7 +370,7 @@ namespace gctools {
   /*! global_NextBuiltInStamp starts at KIND_max+1
       See definition in memoryManagement.cc
       This is so that it doesn't use any stamps that were set by the static analyzer. */
-  extern Stamp global_NextStamp;
+  extern std::atomic<Stamp> global_NextStamp;
   /*! Return a new stamp for BuiltIn classes.
       If given != KIND_null then simply return give as the stamp.
       Otherwise return the global_NextBuiltInStamp and advance it
@@ -376,8 +378,8 @@ namespace gctools {
   void OutOfStamps();
   inline Stamp NextStamp(Stamp given = KIND_null) {
     if ( given != KIND_null ) return given;
-    if (global_NextStamp < Header_s::largest_possible_kind) {
-      return global_NextStamp++;
+    if (global_NextStamp.load() < Header_s::largest_possible_kind) {
+      return global_NextStamp.fetch_add(1);
     }
     OutOfStamps();
     abort();

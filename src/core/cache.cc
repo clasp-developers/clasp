@@ -30,6 +30,7 @@ THE SOFTWARE.
 #include <clasp/core/lisp.h>
 #include <clasp/core/array.h>
 #include <clasp/core/newhash.h>
+#include <clasp/core/mpPackage.h>
 #include <clasp/core/cache.h>
 #include <clasp/core/wrappers.h>
 
@@ -43,7 +44,12 @@ void Cache_O::setup(int keySize, int cacheSize) {
 
 void Cache_O::removeOne(T_sp firstKey) {
   // For multithreading ecl_cache_remove_one does an ecl__atomic_push
+#ifdef CLASP_THREADS
+  std::atomic<T_sp>& slot(this->_clear_list);
+  mp::atomic_push(slot,firstKey);
+#else
   this->clearOneFromCache(firstKey);
+#endif
 }
 
 void Cache_O::clearOneFromCache(T_sp target) {
@@ -57,6 +63,26 @@ void Cache_O::clearOneFromCache(T_sp target) {
     }
   }
 }
+
+#ifdef CLASP_THREADS
+void Cache_O::clearListFromCache()
+{
+  T_sp tlist = mp::atomic_get_and_set_to_Nil(this->_clear_list);
+  if (tlist.consp()) {
+    Cons_O* list = tlist.unsafe_cons();
+    gctools::Vec0<CacheRecord>& table = this->_table;
+    for (int i(0); i < this->_table.size(); ++i) {
+      if (gc::IsA<SimpleVector_sp>(this->_table[i]._key)) {
+        SimpleVector_sp key = gc::As_unsafe<SimpleVector_sp>(this->_table[i]._key);
+        if (list->memberEq((*key)[0])) {
+          this->_table[i]._key = _Nil<T_O>();
+          this->_table[i]._generation = 0;
+        }
+      }
+    }
+  }
+}
+#endif
 
 void Cache_O::empty() {
   this->_generation = 0;
@@ -102,6 +128,11 @@ void Cache_O::search_cache(CacheRecord *&min_e) {
 #ifdef USE_MPS
   printf("Make this cache location aware because degraded caches really slow things down\n");
   abort();
+#endif
+#ifdef CLASP_THREADS
+  if (this->_clear_list.load().notnilp()) {
+    this->clearListFromCache();
+  }
 #endif
   ++this->_searches;
   gctools::Vec0<CacheRecord> &table = this->_table;
@@ -231,7 +262,7 @@ CL_DECLARE();
 CL_DOCSTRING("clearGenericFunctionDispatchCache");
 CL_DEFUN void core__clear_generic_function_dispatch_cache() {
   printf("%s:%d Clearing generic function dispatch cache\n", __FILE__, __LINE__);
-  _lisp->methodCachePtr()->empty();
+  my_thread->_MethodCachePtr->empty();
 };
 
 
@@ -243,7 +274,7 @@ CL_DEFUN void core__method_cache_resize(Fixnum pow) {
     SIMPLE_ERROR(BF("Cache power must be in the range of 2...64"));
   }
   size_t size = 1 << pow;
-  return _lisp->_Roots._MethodCachePtr->setup(Lisp_O::MaxFunctionArguments, size);
+  return my_thread->_MethodCachePtr->setup(Lisp_O::MaxFunctionArguments, size);
 }
 
 CL_LAMBDA(pow);
@@ -254,7 +285,7 @@ CL_DEFUN void core__slot_cache_resize(Fixnum pow) {
     SIMPLE_ERROR(BF("Cache power must be in the range of 2...64"));
   }
   size_t size = 1 << pow;
-  return _lisp->_Roots._SlotCachePtr->setup(Lisp_O::MaxClosSlots, size);
+  return my_thread->_SlotCachePtr->setup(Lisp_O::MaxClosSlots, size);
 }
 
 CL_LAMBDA(pow);
@@ -265,51 +296,51 @@ CL_DEFUN void core__single_dispatch_method_cache_resize(Fixnum pow) {
     SIMPLE_ERROR(BF("Cache power must be in the range of 2...64"));
   }
   size_t size = 1 << pow;
-  return _lisp->_Roots._SingleDispatchMethodCachePtr->setup(2, size);
+  return my_thread->_SingleDispatchMethodCachePtr->setup(2, size);
 }
 
 CL_LAMBDA();
 CL_DECLARE();
 CL_DOCSTRING("cache_status - (values searches misses total-depth)");
 CL_DEFUN T_mv core__method_cache_status() {
-  return Values(clasp_make_fixnum(_lisp->_Roots._MethodCachePtr->_searches),
-                clasp_make_fixnum(_lisp->_Roots._MethodCachePtr->_misses),
-                clasp_make_fixnum(_lisp->_Roots._MethodCachePtr->_total_depth));
+  return Values(clasp_make_fixnum(my_thread->_MethodCachePtr->_searches),
+                clasp_make_fixnum(my_thread->_MethodCachePtr->_misses),
+                clasp_make_fixnum(my_thread->_MethodCachePtr->_total_depth));
 }
 CL_LAMBDA();
 CL_DECLARE();
 CL_DOCSTRING("cache_status - (values searches misses total-depth)");
 CL_DEFUN T_mv core__slot_cache_status() {
-  return Values(clasp_make_fixnum(_lisp->_Roots._SlotCachePtr->_searches),
-                clasp_make_fixnum(_lisp->_Roots._SlotCachePtr->_misses),
-                clasp_make_fixnum(_lisp->_Roots._SlotCachePtr->_total_depth));
+  return Values(clasp_make_fixnum(my_thread->_SlotCachePtr->_searches),
+                clasp_make_fixnum(my_thread->_SlotCachePtr->_misses),
+                clasp_make_fixnum(my_thread->_SlotCachePtr->_total_depth));
 }
 
 CL_LAMBDA();
 CL_DECLARE();
 CL_DOCSTRING("cache_status - (values searches misses total-depth)");
 CL_DEFUN T_mv core__single_dispatch_method_cache_status() {
-  return Values(clasp_make_fixnum(_lisp->_Roots._SingleDispatchMethodCachePtr->_searches),
-                clasp_make_fixnum(_lisp->_Roots._SingleDispatchMethodCachePtr->_misses),
-                clasp_make_fixnum(_lisp->_Roots._SingleDispatchMethodCachePtr->_total_depth));
+  return Values(clasp_make_fixnum(my_thread->_SingleDispatchMethodCachePtr->_searches),
+                clasp_make_fixnum(my_thread->_SingleDispatchMethodCachePtr->_misses),
+                clasp_make_fixnum(my_thread->_SingleDispatchMethodCachePtr->_total_depth));
 }
 
 #ifdef DEBUG_CACHE
 CL_DOCSTRING("Turn debugging on and off for cache");
 CL_DEFUN void core__debug_method_cache(bool debug)
 {
-  _lisp->_Roots._MethodCachePtr->_debug = debug;
+  my_thread->_MethodCachePtr->_debug = debug;
 }
 
 CL_DOCSTRING("Turn debugging on and off for cache");
 CL_DEFUN void core__debug_slot_cache(bool debug)
 {
-  _lisp->_Roots._SlotCachePtr->_debug = debug;
+  my_thread->_SlotCachePtr->_debug = debug;
 }
 CL_DOCSTRING("Turn debugging on and off for cache");
 CL_DEFUN void core__debug_single_dispatch_method_cache(bool debug)
 {
-  _lisp->_Roots._SingleDispatchMethodCachePtr->_debug = debug;
+  my_thread->_SingleDispatchMethodCachePtr->_debug = debug;
 }
 #endif
 

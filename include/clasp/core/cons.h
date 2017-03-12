@@ -182,7 +182,7 @@ namespace core {
 #ifdef METER_ALLOCATIONS
     static void IncrementConsAllocations();
 #endif
-    
+
     static Cons_sp createFrom_va_list(va_list &va_args);
     static Cons_sp createList(T_sp o1);
     static Cons_sp createList(T_sp o1, T_sp o2);
@@ -384,6 +384,8 @@ namespace core {
     List_sp reverse();
     List_sp nreverse();
 
+    
+    
     List_sp memberEq(T_sp item) const;
     List_sp memberEql(T_sp item) const;
 

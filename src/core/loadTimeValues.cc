@@ -38,6 +38,7 @@ namespace core {
 // ----------------------------------------------------------------------
 //
 
+#if 0
 CL_LAMBDA(name);
 CL_DECLARE();
 CL_DOCSTRING("setRunTimeValuesVector - return true if its set and false if it was already set");
@@ -74,31 +75,9 @@ CL_DEFUN T_sp core__lookup_load_time_value(const string &name, int idx) {
   }
   return ltva->data_element(idx);
 };
-
-
-#if 0
-CL_LAMBDA(name idx);
-CL_DECLARE();
-CL_DOCSTRING("Return the load-time-value associated with array NAME and IDX");
-CL_DEFUN Symbol_sp core__lookup_load_time_symbol(const string &name, int idx) {
-  int count = 0;
-  T_sp tltva = _lisp->findLoadTimeValuesWithNameContaining(name, count);
-  if (tltva.nilp()) {
-    SIMPLE_ERROR(BF("Could not find load-time-values %s") % name);
-  }
-  LoadTimeValues_sp ltva = gc::As<LoadTimeValues_sp>(tltva);
-  if (count != 1) {
-    SIMPLE_ERROR(BF("There is more than one load-time-values object with a name that contains: %s") % name);
-  }
-  if (idx < 0 || idx >= ltva->numberOfValues()) {
-    SIMPLE_ERROR(BF("Illegal index %d for load-time-symbol") % idx);
-  }
-  return ltva->symbols_element(idx);
-};
-
 #endif
 
-
+#if 0
 CL_LAMBDA();
 CL_DECLARE();
 CL_DOCSTRING("Return a cons of the load-time-values ids");
@@ -150,30 +129,9 @@ CL_DEFUN void core__load_time_values_dump_values(T_sp nameOrLtv, T_sp indices) {
   parseIndices(vi, indices);
   ltv->dumpValues(vi);
 };
-
-
-#if 0
-CL_LAMBDA(name-or-ltv &optional indices);
-CL_DECLARE();
-CL_DOCSTRING("Dump the load-time-values for the id _name_(string).");
-CL_DEFUN void core__load_time_values_dump_symbols(T_sp nameOrLtv, T_sp indices) {
-  LoadTimeValues_sp ltv;
-  if (cl__stringp(nameOrLtv)) {
-    int count = 0;
-    ltv = _lisp->findLoadTimeValuesWithNameContaining(gc::As<String_sp>(nameOrLtv)->get(), count);
-    if (count != 1) {
-      SIMPLE_ERROR(BF("There is more than one load-time-values object with a name that contains: %s") % gc::As<String_sp>(nameOrLtv)->get());
-    }
-  } else {
-    ltv = gc::As<LoadTimeValues_sp>(nameOrLtv);
-  }
-  vector<gctools::Fixnum> vi;
-  parseIndices(vi, indices);
-  ltv->dumpSymbols(vi);
-};
 #endif
 
-
+#if 0
 CL_LISPIFY_NAME(make-load-time-values);
 CL_DEFUN LoadTimeValues_sp LoadTimeValues_O::make(size_t dataDimension) {
   GC_ALLOCATE(LoadTimeValues_O, vo);
@@ -181,6 +139,9 @@ CL_DEFUN LoadTimeValues_sp LoadTimeValues_O::make(size_t dataDimension) {
 //  vo->_Symbols.resize(symbolsDimension, _Nil<Symbol_O>());
   return vo;
 }
+#endif
+
+
 
 SYMBOL_SC_(CorePkg, loadTimeValuesIds);
 SYMBOL_SC_(CorePkg, loadTimeValueArray);
@@ -191,7 +152,7 @@ SYMBOL_EXPORT_SC_(CorePkg, setRunTimeValuesVector);
 
 
 
-
+#if 0
 void dumpOneValue(stringstream &ss, T_sp val) {
   if (val.nilp()) {
     ss << "NIL";
@@ -223,29 +184,10 @@ void LoadTimeValues_O::dumpValues(vector<gctools::Fixnum> &indices) {
     }
   }
 }
-
-#if 0
-void LoadTimeValues_O::dumpSymbols(vector<gctools::Fixnum> &indices) {
-  printf("%s:%d  Dumping Symbols  LTV@%p  size %lu  LTS size %lu\n", __FILE__, __LINE__, this, this->_Objects.size(), this->_Symbols.size());
-  if (indices.size() == 0) {
-    for (int i = 0, iEnd(this->_Symbols.size()); i < iEnd; i++) {
-      Symbol_sp &obj = this->_Symbols[i];
-      stringstream ss;
-      dumpOneValue(ss, obj);
-      printf("LTS[%4d]@%p --> %s(base@%p)\n", i, (void *)(&this->_Symbols[i]), ss.str().c_str(), obj.objectp() ? obj.raw_() : NULL);
-    }
-  } else {
-    for (int i = 0, iEnd(indices.size()); i < iEnd; ++i) {
-      int idx = indices[i];
-      Symbol_sp &obj = this->_Symbols[idx];
-      stringstream ss;
-      dumpOneValue(ss, obj);
-      printf("LTS[%4d]@%p --> %s(base@%p)\n", idx, (void *)(&this->_Symbols[idx]), ss.str().c_str(), obj.objectp() ? obj.raw_() : NULL);
-    }
-  }
-}
 #endif
 
+
+#if 0
 /*! Ignore extension */
 CL_LISPIFY_NAME("data_vectorPushExtend");
 CL_DEFMETHOD size_t LoadTimeValues_O::data_vectorPushExtend(T_sp val, size_t extension) {
@@ -253,7 +195,7 @@ CL_DEFMETHOD size_t LoadTimeValues_O::data_vectorPushExtend(T_sp val, size_t ext
   this->_Objects.push_back(val);
   return idx;
 }
-
+#endif
 
 
 

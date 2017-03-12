@@ -68,6 +68,10 @@ THE SOFTWARE.
 #define RUN_ALL_FUNCTION_NAME "RUN-ALL"
 #define CLASP_CTOR_FUNCTION_NAME "CLASP-CTOR"
 
+#ifdef CLASP_THREADS
+#include <atomic>
+#endif
+
 namespace std {
 class type_info;
 };
@@ -831,6 +835,8 @@ typedef gctools::smart_ptr<Instance_O> Instance_sp;
  typedef gctools::smart_ptr<StringOutputStream_O> StringOutputStream_sp;
  class Bignum_O;
  typedef gctools::smart_ptr<Bignum_O> Bignum_sp;
+ class Cache_O;
+ typedef gctools::smart_ptr<Cache_O> Cache_sp;
 class Lisp_O;
 typedef gctools::tagged_pointer<Lisp_O> Lisp_sp;
 class NamedFunction_O;
@@ -1156,10 +1162,6 @@ namespace core {
 };
 
 
-#ifdef CLASP_THREADS
-#include <atomic>
-
-#endif
 namespace core {
 
 #pragma GCC visibility push(default)
@@ -1276,6 +1278,13 @@ namespace core {
     InvocationHistoryFrame* _InvocationHistoryStack;
     ExceptionStack _ExceptionStack;
     MultipleValues _MultipleValues;
+    /*! SingleDispatchGenericFunction cache */
+    Cache_sp _SingleDispatchMethodCachePtr;
+    /*! Generic functions method cache */
+    Cache_sp _MethodCachePtr;
+    /*! Generic functions slot cache */
+    Cache_sp _SlotCachePtr;
+
     List_sp _BufferStr8NsPool;
     List_sp _BufferStrWNsPool;
     StringOutputStream_sp _BFormatStringOutputStream;

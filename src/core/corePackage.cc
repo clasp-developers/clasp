@@ -153,7 +153,6 @@ SYMBOL_EXPORT_SC_(ExtPkg, STARclasp_clang_pathSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, make_source_pos_info);
 SYMBOL_EXPORT_SC_(CorePkg, STARinvalidated_dispatch_function_stackSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARtop_level_form_stackSTAR);
-SYMBOL_EXPORT_SC_(CorePkg, STARsyspropsSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARloadHooksSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARmodule_startup_function_nameSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARmodule_shutdown_function_nameSTAR);
@@ -1025,7 +1024,7 @@ void CoreExposer_O::define_essential_globals(Lisp_sp lisp) {
   SYMBOL_SC_(CorePkg, cArgumentsLimit);
   _sym_cArgumentsLimit->defconstant(make_fixnum(Lisp_O::MaxFunctionArguments));
   _sym_STARdebugMacroexpandSTAR->defparameter(_Nil<T_O>());
-  _sym_STARclassNameHashTableSTAR->defparameter(HashTable_O::create(cl::_sym_eq));
+  _lisp->_Roots._ClassTable = HashTable_O::create(cl::_sym_eq);
   _sym_STARcurrentSourceFileInfoSTAR->defparameter(_Nil<T_O>());
   _sym_STARcodeWalkerSTAR->defparameter(_Nil<T_O>());
   _sym_STARsharpEqContextSTAR->defparameter(_Nil<T_O>());
@@ -1102,7 +1101,7 @@ void CoreExposer_O::define_essential_globals(Lisp_sp lisp) {
   _sym_STARfunctions_to_inlineSTAR->defparameter(HashTableEqual_O::create_default());
   _sym_STARfunctions_to_notinlineSTAR->defparameter(HashTableEqual_O::create_default());
   _sym_STARextension_startup_loadsSTAR->defparameter(_Nil<T_O>());
-  _sym_STARsyspropsSTAR->defparameter(HashTableEql_O::create_default());
+  _lisp->_Roots._Sysprop = HashTableEql_O::create_default();
   _sym_STARdebug_accessorsSTAR->defparameter(_Nil<T_O>());
   _sym_STARmodule_startup_function_nameSTAR->defparameter(SimpleBaseString_O::make(std::string(MODULE_STARTUP_FUNCTION_NAME)));
   _sym_STARmodule_shutdown_function_nameSTAR->defparameter(SimpleBaseString_O::make(std::string(MODULE_SHUTDOWN_FUNCTION_NAME)));

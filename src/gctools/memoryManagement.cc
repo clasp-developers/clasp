@@ -355,7 +355,7 @@ namespace gctools {
   global_NextBuiltInStamp starts at KIND_max+1
   so that it doesn't use any stamps that correspond to KIND values
    assigned by the static analyzer. */
-Stamp   global_NextStamp = KIND_max+1;
+std::atomic<Stamp>   global_NextStamp = ATOMIC_VAR_INIT(KIND_max+1);
 
 void OutOfStamps() {
     printf("%s:%d Hello future entity!  Congratulations! - you have run clasp long enough to run out of STAMPs - %lu are allowed - change the clasp header layout or add another word for the stamp\n", __FILE__, __LINE__, Header_s::largest_possible_kind );

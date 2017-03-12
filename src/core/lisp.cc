@@ -163,8 +163,8 @@ __thread ThreadInfo *threadLocalInfoPtr;
 
 const int Lisp_O::MaxFunctionArguments = 64; //<! See ecl/src/c/main.d:163 ecl_make_cache(64,4096)
 const int Lisp_O::MaxClosSlots = 3;          //<! See ecl/src/c/main.d:164 ecl_make_cache(3,4096)
-const int Lisp_O::ClosCacheSize = 1024 * 16;
-const int Lisp_O::SingleDispatchMethodCacheSize = 1024 * 8;
+const int Lisp_O::ClosCacheSize = 1024 * 4;
+const int Lisp_O::SingleDispatchMethodCacheSize = 1024 * 4;
 
 extern void lispScannerDebug(std::istream &sin);
 extern string getLispError();
@@ -202,15 +202,12 @@ public:
 // Constructor
 //
 Lisp_O::GCRoots::GCRoots() :
-  // _BufferStringPool(_Nil<T_O>()),
-//THREAD_CHANGE                             _MultipleValuesCur(NULL),
-//THREAD_CHANGE                             _BignumRegister0(_Unbound<Bignum_O>()),
-//THREAD_CHANGE                             _BignumRegister1(_Unbound<Bignum_O>()),
-//THREAD_CHANGE                             _BignumRegister2(_Unbound<Bignum_O>()) ,
-//THREAD_CHANGE                             _CatchInfo(_Nil<T_O>()),
-                             _SpecialForms(_Unbound<HashTableEq_O>()),
-                             _NullStream(_Nil<T_O>()),
-                             _PathnameTranslations(_Nil<T_O>()) {}
+#ifdef CLASP_THREADS
+  _ActiveThreads(_Nil<T_O>()),
+#endif
+  _SpecialForms(_Unbound<HashTableEq_O>()),
+  _NullStream(_Nil<T_O>()),
+  _ThePathnameTranslations(_Nil<T_O>()) {}
 
 Lisp_O::Lisp_O() : _StackWarnSize(gctools::_global_stack_max_size * 0.9), // 6MB default stack size before warnings
                    _StackSampleCount(0),
@@ -235,10 +232,6 @@ Lisp_O::Lisp_O() : _StackWarnSize(gctools::_global_stack_max_size * 0.9), // 6MB
   this->_GlobalInitializationCallbacks.clear();
   this->_MakePackageCallback = NULL;
   this->_ExportSymbolCallback = NULL;
-#ifdef CLOS
-  this->_Roots._SlotCachePtr.reset_();
-  this->_Roots._MethodCachePtr.reset_();
-#endif
 }
 
 void Lisp_O::shutdownLispEnvironment() {
@@ -564,8 +557,8 @@ void Lisp_O::startupLispEnvironment(Bundle *bundle) {
   }
   {
     _BLOCK_TRACE("Create some housekeeping objects");
-    this->_Roots._LoadTimeValueArrays = HashTableEqual_O::create_default();
-    this->_Roots._SetfDefinitions = HashTableEq_O::create_default();
+//NEW_LTV    this->_Roots._LoadTimeValueArrays = HashTableEqual_O::create_default();
+//    this->_Roots._SetfDefinitions = HashTableEq_O::create_default();
     this->_Roots._SingleDispatchGenericFunctionTable = HashTableEq_O::create_default();
   }
   this->_EnvironmentInitialized = true;
@@ -682,18 +675,6 @@ void Lisp_O::startupLispEnvironment(Bundle *bundle) {
   //
   my_thread->initialize_thread();
   {
-    _BLOCK_TRACE("Creating Caches for SingleDispatchGenericFunctions");
-    this->_Roots._SingleDispatchMethodCachePtr = gc::GC<Cache_O>::allocate();
-    this->_Roots._SingleDispatchMethodCachePtr->setup(2, SingleDispatchMethodCacheSize);
-  }
-  {
-    _BLOCK_TRACE("Creating Caches for CLOS");
-    this->_Roots._MethodCachePtr = gctools::GC<Cache_O>::allocate();
-    this->_Roots._MethodCachePtr->setup(MaxFunctionArguments, ClosCacheSize);
-    this->_Roots._SlotCachePtr = gctools::GC<Cache_O>::allocate();
-    this->_Roots._SlotCachePtr->setup(MaxClosSlots, ClosCacheSize);
-  }
-  {
     _BLOCK_TRACE("Start printing symbols properly");
     this->_PrintSymbolsProperly = true;
   }
@@ -792,6 +773,36 @@ void Lisp_O::prin1(boost::format fmt) {
   eval::funcall(cl::_sym_prin1, SimpleBaseString_O::make(fmt_str));
 }
 
+#ifdef CLASP_THREADS
+void Lisp_O::add_process(mp::Process_sp process) {
+  WITH_READ_WRITE_LOCK(this->_Roots._ActiveThreadsMutex);
+  this->_Roots._ActiveThreads = Cons_O::create(process,this->_Roots._ActiveThreads);
+}
+
+void Lisp_O::remove_process(mp::Process_sp process) {
+  {
+    WITH_READ_WRITE_LOCK(this->_Roots._ActiveThreadsMutex);
+    T_sp* cur = reinterpret_cast<T_sp*>(&this->_Roots._ActiveThreads);
+    while ((*cur).consp()) {
+      if (oCar(*cur) == process) {
+        *cur = oCdr(*cur);
+        return;
+      }
+      cur = &reinterpret_cast<Cons_O*>(cur)->_Cdr;
+    }
+  }
+  SIMPLE_ERROR(BF("Could not find process %s") % process);
+}
+
+List_sp Lisp_O::processes() const {
+  WITH_READ_LOCK(this->_Roots._ActiveThreadsMutex);
+  return cl__copy_list(this->_Roots._ActiveThreads);
+}
+#endif
+
+
+
+#ifdef NEW_LTV
 List_sp Lisp_O::loadTimeValuesIds() const {
   List_sp names = _Nil<T_O>();
   this->_Roots._LoadTimeValueArrays->mapHash([&names](T_sp key, T_sp val) {
@@ -837,6 +848,8 @@ LoadTimeValues_sp Lisp_O::findLoadTimeValuesWithNameContaining(const string &sna
   return result;
 #endif
 }
+#endif
+
 
 void Lisp_O::defvar(Symbol_sp sym, T_sp obj) {
   _OF();
@@ -883,6 +896,9 @@ T_sp Lisp_O::specialFormOrNil(Symbol_sp sym) {
     return _Nil<T_O>();
   return this->_Roots._SpecialForms->gethash(sym);
 }
+
+
+
 
 CL_LAMBDA();
 CL_DECLARE();
@@ -967,7 +983,7 @@ void Lisp_O::addClass(Symbol_sp classSymbol,
     cc = BuiltInClass_O::create(classSymbol);
   }
   printf("%s:%d --> Adding class[%s]\n", __FILE__, __LINE__, _rep_(classSymbol).c_str());
-  core__setf_find_class(cc, classSymbol, true, _Nil<T_O>());
+  core__setf_find_class(cc, classSymbol);
   if (IS_SYMBOL_DEFINED(base1ClassSymbol)) {
     cc->addInstanceBaseClass(base1ClassSymbol);
   } else {
@@ -990,7 +1006,7 @@ void Lisp_O::addClass(Symbol_sp classSymbol, Class_sp theClass, Creator_sp alloc
   //	printf("%s:%d:%s  Adding class with symbol %s -- _allocator=%p unless we initialize it properly\n", __FILE__,__LINE__,__FUNCTION__,_rep_(classSymbol).c_str(), allocator );
   LOG(BF("Lisp_O::addClass classSymbol(%s)") % _rep_(classSymbol));
   //	printf("%s:%d --> Adding class[%s]\n", __FILE__, __LINE__, _rep_(classSymbol).c_str() );
-  core__setf_find_class(theClass, classSymbol, true, _Nil<T_O>());
+  core__setf_find_class(theClass, classSymbol);
   //        IMPLEMENT_MEF(BF("Pass an AllocateInstanceFunctor"));
   theClass->setCreator(allocator);
 }
@@ -1013,27 +1029,30 @@ void Lisp_O::exportToPython(Symbol_sp sym) const {
 void Lisp_O::mapNameToPackage(const string &name, Package_sp pkg) {
   //TODO Support package names with as regular strings
   int packageIndex;
+  WITH_READ_WRITE_LOCK(this->_Roots._PackagesMutex);
   for (packageIndex = 0; packageIndex < this->_Roots._Packages.size(); ++packageIndex) {
     if (this->_Roots._Packages[packageIndex] == pkg)
       goto FOUND;
   }
   SIMPLE_ERROR(BF("Could not find package with (nick)name: %s") % pkg->getName());
 FOUND:
-  this->_PackageNameIndexMap[name] = packageIndex;
+  this->_Roots._PackageNameIndexMap[name] = packageIndex;
 }
 
 void Lisp_O::unmapNameToPackage(const string &name) {
+  WITH_READ_WRITE_LOCK(this->_Roots._PackagesMutex);
   map<string, int>::iterator it;
-  it = this->_PackageNameIndexMap.find(name);
-  if (it == this->_PackageNameIndexMap.end()) {
+  it = this->_Roots._PackageNameIndexMap.find(name);
+  if (it == this->_Roots._PackageNameIndexMap.end()) {
     SIMPLE_ERROR(BF("Could not find package with (nick)name: %s") % name);
   }
-  this->_PackageNameIndexMap.erase(it);
+  this->_Roots._PackageNameIndexMap.erase(it);
 }
 
 Package_sp Lisp_O::makePackage(const string &name, list<string> const &nicknames, list<string> const &usePackages, list<std::string> const& shadow) {
-  map<string, int>::iterator it = this->_PackageNameIndexMap.find(name);
-  if (it != this->_PackageNameIndexMap.end()) {
+  WITH_READ_WRITE_LOCK(this->_Roots._PackagesMutex);
+  map<string, int>::iterator it = this->_Roots._PackageNameIndexMap.find(name);
+  if (it != this->_Roots._PackageNameIndexMap.end()) {
     SIMPLE_ERROR(BF("There already exists a package with name: %s") % name);
   }
   LOG(BF("Creating package with name[%s]") % name);
@@ -1041,23 +1060,24 @@ Package_sp Lisp_O::makePackage(const string &name, list<string> const &nicknames
   int packageIndex = this->_Roots._Packages.size();
   {
     //            printf("%s:%d Lisp_O::makePackage name: %s   index: %d   newPackage@%p\n", __FILE__, __LINE__, name.c_str(), packageIndex, newPackage.raw_());
-
-    this->_PackageNameIndexMap[name] = packageIndex;
+    this->_Roots._PackageNameIndexMap[name] = packageIndex;
     this->_Roots._Packages.push_back(newPackage);
   }
-  List_sp cnicknames(_Nil<T_O>());
-  for (list<string>::const_iterator it = nicknames.begin(); it != nicknames.end(); it++) {
-    string nickName = *it;
-    if (this->_PackageNameIndexMap.count(nickName) > 0 && nickName != name) {
-      int existingIndex = this->_PackageNameIndexMap[nickName];
-      SIMPLE_ERROR(BF("Package nickname[%s] is already being used by package[%s]") % nickName % this->_Roots._Packages[existingIndex]->getName());
+  {
+    List_sp cnicknames(_Nil<T_O>());
+    for (list<string>::const_iterator it = nicknames.begin(); it != nicknames.end(); it++) {
+      string nickName = *it;
+      if (this->_Roots._PackageNameIndexMap.count(nickName) > 0 && nickName != name) {
+        int existingIndex = this->_Roots._PackageNameIndexMap[nickName];
+        SIMPLE_ERROR(BF("Package nickname[%s] is already being used by package[%s]") % nickName % this->_Roots._Packages[existingIndex]->getName());
+      }
+      this->_Roots._PackageNameIndexMap[nickName] = packageIndex;
+      cnicknames = Cons_O::create(SimpleBaseString_O::make(nickName), cnicknames);
     }
-    this->_PackageNameIndexMap[nickName] = packageIndex;
-    cnicknames = Cons_O::create(SimpleBaseString_O::make(nickName), cnicknames);
+    newPackage->setNicknames(cnicknames);
   }
-  newPackage->setNicknames(cnicknames);
   for (list<string>::const_iterator jit = usePackages.begin(); jit != usePackages.end(); jit++) {
-    Package_sp usePkg = gc::As<Package_sp>(this->findPackage(*jit, true));
+    Package_sp usePkg = gc::As<Package_sp>(this->findPackage_no_lock(*jit, true));
     LOG(BF("Using package[%s]") % usePkg->getName());
     newPackage->usePackage(usePkg);
   }
@@ -1075,10 +1095,10 @@ Package_sp Lisp_O::makePackage(const string &name, list<string> const &nicknames
   return newPackage;
 }
 
-T_sp Lisp_O::findPackage(const string &name, bool errorp) const {
+T_sp Lisp_O::findPackage_no_lock(const string &name, bool errorp) const {
   //        printf("%s:%d Lisp_O::findPackage name: %s\n", __FILE__, __LINE__, name.c_str());
-  map<string, int>::const_iterator fi = this->_PackageNameIndexMap.find(name);
-  if (fi == this->_PackageNameIndexMap.end()) {
+  map<string, int>::const_iterator fi = this->_Roots._PackageNameIndexMap.find(name);
+  if (fi == this->_Roots._PackageNameIndexMap.end()) {
     if (errorp) {
       PACKAGE_ERROR(SimpleBaseString_O::make(name));
     }
@@ -1090,14 +1110,55 @@ T_sp Lisp_O::findPackage(const string &name, bool errorp) const {
   return getPackage;
 }
 
+T_sp Lisp_O::findPackage(const string &name, bool errorp) const {
+  WITH_READ_LOCK(this->_Roots._PackagesMutex);
+  return this->findPackage_no_lock(name,errorp);
+}
+
 
 void Lisp_O::remove_package(const string& name ) {
+  WITH_READ_WRITE_LOCK(this->_Roots._PackagesMutex);
   //        printf("%s:%d Lisp_O::findPackage name: %s\n", __FILE__, __LINE__, name.c_str());
-  map<string, int>::const_iterator fi = this->_PackageNameIndexMap.find(name);
-  if (fi == this->_PackageNameIndexMap.end()) {
+  map<string, int>::const_iterator fi = this->_Roots._PackageNameIndexMap.find(name);
+  if (fi == this->_Roots._PackageNameIndexMap.end()) {
     PACKAGE_ERROR(SimpleBaseString_O::make(name));
   }
-  this->_PackageNameIndexMap.erase(name);
+  this->_Roots._PackageNameIndexMap.erase(name);
+}
+
+bool Lisp_O::recognizesPackage(const string &packageName) const {
+  WITH_READ_LOCK(this->_Roots._PackagesMutex);
+  map<string, int>::const_iterator pi = this->_Roots._PackageNameIndexMap.find(packageName);
+  return (pi != this->_Roots._PackageNameIndexMap.end());
+}
+
+List_sp Lisp_O::allPackagesAsCons() const {
+  WITH_READ_LOCK(this->_Roots._PackagesMutex);
+  return asCons(this->_Roots._Packages);
+}
+
+void Lisp_O::inPackage(const string &p) {
+  WITH_READ_LOCK(this->_Roots._PackagesMutex);
+  map<string, int>::const_iterator pi = this->_Roots._PackageNameIndexMap.find(p);
+  if (pi == this->_Roots._PackageNameIndexMap.end()) {
+    ASSERTP(this->recognizesPackage(p), "I do not recognize package: " + p);
+  }
+  this->selectPackage(this->_Roots._Packages[pi->second]);
+}
+
+Package_sp Lisp_O::getCurrentPackage() const {
+  // At startup the *package* symbol may not yet
+  // be defined or bound to a package - in that case just say we are in the core package
+  //
+  Package_sp cur;
+  if (!cl::_sym_STARpackageSTAR || !cl::_sym_STARpackageSTAR->specialP()) {
+    return this->_Roots._CorePackage;
+  }
+  return gc::As<Package_sp>(cl::_sym_STARpackageSTAR->symbolValue());
+}
+
+void Lisp_O::selectPackage(Package_sp pack) {
+  cl::_sym_STARpackageSTAR->setf_symbolValue(pack);
 }
 
 T_sp Lisp_O::sourceDatabase() const {
@@ -1117,44 +1178,6 @@ T_sp Lisp_O::sourceDatabase() const {
   return gc::As<SourceManager_sp>(cur);
 }
 
-Package_sp Lisp_O::getCurrentPackage() const {
-  _OF();
-  // At startup the *package* symbol may not yet
-  // be defined or bound to a package - in that case just say we are in the core package
-  //
-  Package_sp cur;
-  if (IS_SYMBOL_UNDEFINED(cl::_sym_STARpackageSTAR)) {
-    cur = this->_Roots._CorePackage;
-    goto DONE;
-  }
-  if (!cl::_sym_STARpackageSTAR->specialP()) {
-    cur = this->_Roots._CorePackage;
-    goto DONE;
-  }
-  cur = gc::As<Package_sp>(cl::_sym_STARpackageSTAR->symbolValue());
-DONE:
-  ASSERTNOTNULL(cur);
-  return cur;
-}
-
-void Lisp_O::selectPackage(Package_sp pack) {
-  _OF();
-  cl::_sym_STARpackageSTAR->setf_symbolValue(pack);
-}
-
-bool Lisp_O::recognizesPackage(const string &packageName) const {
-  map<string, int>::const_iterator pi = this->_PackageNameIndexMap.find(packageName);
-  return (pi != this->_PackageNameIndexMap.end());
-}
-
-void Lisp_O::inPackage(const string &p) {
-  _OF();
-  map<string, int>::const_iterator pi = this->_PackageNameIndexMap.find(p);
-  if (pi == this->_PackageNameIndexMap.end()) {
-    ASSERTP(this->recognizesPackage(p), "I do not recognize package: " + p);
-  }
-  this->selectPackage(this->_Roots._Packages[pi->second]);
-}
 
 void Lisp_O::throwIfBuiltInClassesNotInitialized() {
   if (this->_BuiltInClassesInitialized)
@@ -1657,48 +1680,72 @@ CL_DEFUN T_mv core__getline(String_sp prompt) {
 CL_LAMBDA(symbol &optional (errorp t) env);
 CL_DECLARE();
 CL_DOCSTRING("find-class");
-CL_DEFUN Class_mv cl__find_class(Symbol_sp symbol, bool errorp, T_sp env) {
+CL_DEFUN Class_mv core__lookup_class(Symbol_sp symbol, bool errorp, T_sp env) {
+  ASSERTF(env.nilp(), BF("Handle non nil environment"));
+  // Should only be single threaded here
   if (_lisp->bootClassTableIsValid()) {
     return Values(_lisp->boot_findClass(symbol, errorp));
   }
-  ASSERTF(env.nilp(), BF("Handle non nil environment"));
   // Use the same global variable that ECL uses
-  SYMBOL_EXPORT_SC_(CorePkg, STARclassNameHashTableSTAR);
-  HashTable_sp classNames = gc::As<HashTable_sp>(_sym_STARclassNameHashTableSTAR->symbolValue());
-  T_mv mc = classNames->gethash(symbol, _Nil<T_O>());
-  T_sp cla = mc;
-  bool foundp = mc.valueGet_(1).notnilp();
-  if (!foundp) {
-    if (errorp) {
-      SIMPLE_ERROR(BF("Could not find class %s") % _rep_(symbol));
+  {
+    WITH_READ_LOCK(_lisp->_Roots._ClassTableMutex);
+    HashTable_sp classNames = _lisp->_Roots._ClassTable;
+    T_mv mc = classNames->gethash(symbol, _Nil<T_O>());
+    T_sp cla = mc;
+    bool foundp = mc.valueGet_(1).notnilp();
+    if (!foundp) {
+      if (errorp) {
+        SIMPLE_ERROR(BF("Could not find class %s") % _rep_(symbol));
+      }
+      return (Values(_Nil<Class_O>()));
     }
-    return (Values(_Nil<Class_O>()));
-  }
-  Class_sp omc = gc::As<Class_sp>(cla);
+    Class_sp omc = gc::As<Class_sp>(cla);
 #if DEBUG_CLOS >= 3
-  printf("\nMLOG find-class returning class %p name--> %s\n", (void *)(result.get()), symbol->__repr__().c_str());
+    printf("\nMLOG find-class returning class %p name--> %s\n", (void *)(result.get()), symbol->__repr__().c_str());
 #endif
-  return (Values(omc));
+    return (Values(omc));
+  }
 }
 
 CL_LAMBDA(new-value name);
 CL_DECLARE();
-CL_DOCSTRING("setf_find_class");
-CL_DEFUN Class_mv core__setf_find_class(T_sp newValue, Symbol_sp name, bool errorp, T_sp env) {
-  if (!clos__classp(newValue)) {
-    SIMPLE_ERROR(BF("Classes in cando have to be subclasses of Class unlike ECL which uses Instances to represent classes - while trying to (setf find-class) of %s you gave: %s") % _rep_(name) % _rep_(newValue));
+CL_DOCSTRING("setf_find_class, set value to NIL to remove the class name ");
+CL_DEFUN Class_mv core__set_class(T_sp newValue, Symbol_sp name) {
+  if (!newValue.nilp() && !clos__classp(newValue)) {
+    SIMPLE_ERROR(BF("Classes in cando have to be subclasses of Class or NIL unlike ECL which uses Instances to represent classes - while trying to (setf find-class) of %s you gave: %s") % _rep_(name) % _rep_(newValue));
   }
   if (_lisp->bootClassTableIsValid()) {
+    if (newValue.nilp()) {
+      printf("%s:%d Trying to (setf-find-class nil %s) when bootClassTableIsValid (while boostrapping)\n", __FILE__, __LINE__, _rep_(name).c_str());
+    }
     return Values(_lisp->boot_setf_findClass(name, gc::As<Class_sp>(newValue)));
   }
-  HashTable_sp ht = gc::As<HashTable_sp>(_sym_STARclassNameHashTableSTAR->symbolValue());
-  T_sp oldClass = eval::funcall(cl::_sym_findClass, name, _Nil<T_O>());
-  if (newValue.nilp()) {
-    ht->remhash(name);
-  } else {
-    ht->hash_table_setf_gethash(name, newValue);
+  {
+    WITH_READ_WRITE_LOCK(_lisp->_Roots._ClassTableMutex);
+    HashTable_sp ht = _lisp->_Roots._ClassTable;
+    T_sp oldClass = ht->gethash(name,ht);
+    if (newValue.nilp()) {
+      if (oldClass.notnilp()) ht->remhash(name);
+    } else {
+     ht->hash_table_setf_gethash(name, newValue);
+    }
+    return Values(newValue);
   }
-  return Values(gc::As<Class_sp>(newValue));
+};
+
+
+CL_LAMBDA(symbol &optional (errorp t) env);
+CL_DECLARE();
+CL_DOCSTRING("find-class");
+CL_DEFUN Class_mv cl__find_class(Symbol_sp symbol, bool errorp, T_sp env) {
+  return core__lookup_class(symbol,errorp,env);
+}
+
+CL_LAMBDA(new-value name);
+CL_DECLARE();
+CL_DOCSTRING("setf_find_class, set value to NIL to remove the class name ");
+CL_DEFUN Class_mv core__setf_find_class(T_sp newValue, Symbol_sp name) {
+  return core__set_class(newValue,name);
 };
 
 /*
@@ -2432,19 +2479,12 @@ Class_sp Lisp_O::boot_findClass(Symbol_sp className, bool errorp) const {
   CLOS starts up because that is where ECL expects to find them. */
 void Lisp_O::switchToClassNameHashTable() {
   ASSERTF(this->_BootClassTableIsValid, BF("switchToClassNameHashTable should only be called once after boot"));
-  HashTable_sp ht = gc::As<HashTable_sp>(_sym_STARclassNameHashTableSTAR->symbolValue());
-#if 0
-	for ( SymbolDict<Class_O>::iterator it=this->_Roots._BootClassTable.begin();
-	      it!=this->_Roots._BootClassTable.end(); it++ )
-	{
-	    ht->hash_table_setf_gethash(it->first,it->second);
-	}
-#else
+  WITH_READ_WRITE_LOCK(this->_Roots._ClassTableMutex);
+  HashTable_sp ht = _lisp->_Roots._ClassTable;
   for (auto it = this->_Roots.bootClassTable.begin(); it != this->_Roots.bootClassTable.end(); ++it) {
     ht->hash_table_setf_gethash(it->symbol, it->theClass);
   }
   this->_Roots.bootClassTable.clear();
-#endif
   this->_BootClassTableIsValid = false;
 }
 
@@ -2452,6 +2492,7 @@ CL_LAMBDA(gf-symbol &optional errorp);
 CL_DOCSTRING("Lookup a single dispatch generic function. If errorp is truen and the generic function isn't found throw an exception");
 CL_LISPIFY_NAME(find_single_dispatch_generic_function);
 CL_DEFUN T_sp Lisp_O::find_single_dispatch_generic_function(Symbol_sp gfSym, bool errorp) {
+  WITH_READ_LOCK(_lisp->_Roots._SingleDispatchGenericFunctionTableMutex);
   T_sp fn = _lisp->_Roots._SingleDispatchGenericFunctionTable->gethash(gfSym, _Nil<T_O>());
   if (fn.nilp()) {
     if (errorp) {
@@ -2466,48 +2507,17 @@ CL_LAMBDA(gf-symbol gf)
 CL_LISPIFY_NAME(setf_find_single_dispatch_generic_function);
 CL_DOCSTRING("Define a single dispatch generic function");
 CL_DEFUN T_sp Lisp_O::setf_find_single_dispatch_generic_function(Symbol_sp gfName, SingleDispatchGenericFunctionClosure_sp gf) {
+  WITH_READ_WRITE_LOCK(_lisp->_Roots._SingleDispatchGenericFunctionTableMutex);
   _lisp->_Roots._SingleDispatchGenericFunctionTable->setf_gethash(gfName, gf);
   return gf;
 }
 
 CL_LISPIFY_NAME(forget_all_single_dispatch_generic_functions);
 CL_DEFUN void Lisp_O::forget_all_single_dispatch_generic_functions() {
+  WITH_READ_WRITE_LOCK(_lisp->_Roots._SingleDispatchGenericFunctionTableMutex);
   _lisp->_Roots._SingleDispatchGenericFunctionTable->clrhash();
 }
 
-#if 0
-    GenericFunction_sp Lisp_O::setf_findGenericFunction(Symbol_sp gfName, GenericFunction_sp mc)
-    {_OF();
-	this->_GenericFunctionTable[gfName] = mc;
-	return mc;
-    }
-
-
-    GenericFunction_sp Lisp_O::findGenericFunction(Symbol_sp gfName, bool errorp) const
-    {_OF();
-	SymbolMap<GenericFunction_O>::const_iterator fi = this->_GenericFunctionTable.find(gfName);
-	if ( fi == this->_GenericFunctionTable.end() )
-	{
-	    if ( errorp )
-	    {
-		SIMPLE_ERROR(BF("No generic function named %s") % gfName->__repr__() );
-	    }
-	    return _Nil<GenericFunction_O>();
-	}
-	return fi->second;
-    }
-
-#endif
-
-#if 0
-    Class_sp Lisp_O::classFromClassSymbol(Symbol_sp cid) const
-    {
-	DEPRECATED();
-#if 0
-	return this->findClass(cid,true);
-#endif
-    }
-#endif
 
 string Lisp_O::classNameFromClassSymbol(Symbol_sp cid) {
   DEPRECATED();
@@ -2663,9 +2673,6 @@ void Lisp_O::dump_apropos(const char *part) const {
   searchForApropos(packages, substring, true);
 }
 
-List_sp Lisp_O::allPackagesAsCons() const {
-  return asCons(this->_Roots._Packages);
-}
 
 #if 0
 InvocationHistoryStack &Lisp_O::invocationHistoryStack() {
@@ -2805,14 +2812,15 @@ void Lisp_O::run() {
 };
 
 SourceFileInfo_mv Lisp_O::getOrRegisterSourceFileInfo(const string &fileName, T_sp sourceDebugNamestring, size_t sourceDebugOffset, bool useLineno) {
-  map<string, int>::iterator it = this->_SourceFileIndices.find(fileName);
-  if (it == this->_SourceFileIndices.end()) {
+  WITH_READ_WRITE_LOCK(this->_Roots._SourceFilesMutex);
+  map<string, int>::iterator it = this->_Roots._SourceFileIndices.find(fileName);
+  if (it == this->_Roots._SourceFileIndices.end()) {
     if (this->_Roots._SourceFiles.size() == 0) {
       SourceFileInfo_sp unknown = SourceFileInfo_O::create("-unknown-file-", 0, sourceDebugNamestring, sourceDebugOffset);
       this->_Roots._SourceFiles.push_back(unknown);
     }
     int idx = this->_Roots._SourceFiles.size();
-    this->_SourceFileIndices[fileName] = idx;
+    this->_Roots._SourceFileIndices[fileName] = idx;
     SourceFileInfo_sp sfi = SourceFileInfo_O::create(fileName, idx, sourceDebugNamestring, sourceDebugOffset, useLineno);
     this->_Roots._SourceFiles.push_back(sfi);
     return Values(sfi, make_fixnum(idx));
@@ -2830,8 +2838,9 @@ CL_LAMBDA();
 CL_DECLARE();
 CL_DOCSTRING("List all of the source files");
 CL_DEFUN List_sp core__all_source_files() {
+  WITH_READ_LOCK(_lisp->_Roots._SourceFilesMutex);
   List_sp list = _Nil<T_O>();
-  for (auto it : _lisp->_SourceFileIndices) {
+  for (auto it : _lisp->_Roots._SourceFileIndices) {
     SimpleBaseString_sp sf = SimpleBaseString_O::make(it.first);
     list = Cons_O::create(sf, list);
   };
@@ -2842,7 +2851,8 @@ void Lisp_O::mapClassNamesAndClasses(KeyValueMapper *mapper) {
   if (this->_BootClassTableIsValid) {
     SIMPLE_ERROR(BF("What do I do here?"));
   } else {
-    HashTable_sp ht = gc::As<HashTable_sp>(_sym_STARclassNameHashTableSTAR->symbolValue());
+    WITH_READ_WRITE_LOCK(_lisp->_Roots._ClassTableMutex);
+    HashTable_sp ht = _lisp->_Roots._ClassTable;
     ht->lowLevelMapHash(mapper);
   }
 }

@@ -39,7 +39,7 @@ mps_res_t mps_scan_LispRoots(mps_ss_t ss, mps_thr_t thr, void *p, size_t s, Lisp
   GCHOLDER_SYMBOLMAP_FIX(this->_BootClassTable);
   STLMAP_SMART_SECOND_FIX(this->_LoadTimeValueArrays);
   SMART_PTR_FIX(this->_Packages);
-  GCHOLDER_SYMBOLMAP_FIX(this->_SetfDefinitions);
+//  GCHOLDER_SYMBOLMAP_FIX(this->_SetfDefinitions);
   SMART_PTR_FIX(this->_CorePackage);
   SMART_PTR_FIX(this->_KeywordPackage);
   SMART_PTR_FIX(this->_HiddenBinder);

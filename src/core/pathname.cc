@@ -96,6 +96,8 @@ typedef int (*delim_fn)(int);
  * and it should translate to _opposite_ of the local case.
  */
 
+static T_sp coerce_to_from_pathname(T_sp x, T_sp host);
+
 static T_sp normalize_case(T_sp path, T_sp cas) {
 
   if (cas == kw::_sym_local) {
@@ -488,6 +490,7 @@ static int is_semicolon(int c) { return c == ';'; }
 static int is_dot(int c) { return c == '.'; }
 static int is_null(int c) { return c == '\0'; }
 
+
 /*
  * Parses a word from string `S' until either:
  *	1) character `DELIM' is found
@@ -617,18 +620,84 @@ parse_directories(T_sp s, int flags, size_t start, size_t end,
   return cl__nreverse(path);
 }
 
+
+
+CL_LAMBDA(&optional (host nil hostp) translation);
+CL_DECLARE();
+CL_DOCSTRING(R"doc(* Arguments
+- host :: A string or nil.
+- translation :: A list or nil.
+* Description
+If host is nil then return all pathname translations.
+If translation is nil then the pathname translation for the host name is returned.
+If translation is not nil then the pathname translation for the host name is set.)doc");
+CL_DEFUN T_sp core__pathname_translations(T_sp host, T_sp hostp, T_sp set) {
+  T_sp pair, l;
+  {
+    WITH_READ_LOCK(_lisp->_Roots._ThePathnameTranslationsMutex);
+    if (hostp.nilp()) return cl__copy_list(_lisp->pathnameTranslations_());
+    size_t parsed_len, len;
+  /* Check that host is a valid host name */
+    if (clasp_unlikely(!cl__stringp(host)))
+      QERROR_WRONG_TYPE_NTH_ARG(1, host, cl::_sym_string);
+    host = cl__string_upcase(host);
+    len = cl__length(host);
+    parse_word(host, is_null, WORD_LOGICAL, 0, len, &parsed_len);
+    if (UNLIKELY(parsed_len < len)) {
+      SIMPLE_ERROR(BF("Wrong host syntax %s") % _rep_(host));
+    }
+  /* Find its translation list */
+    if (cl::_sym_assoc->fboundp()) {
+      pair = eval::funcall(cl::_sym_assoc, host, _lisp->pathnameTranslations_(), kw::_sym_test, cl::_sym_string_equal);
+    } else {
+    // If called before _sym_assoc is setup then invoke assoc directly */
+      if (_lisp->pathnameTranslations_().notnilp()) {
+        pair = _lisp->pathnameTranslations_().asCons()->assoc(host, _Nil<T_O>(), cl::_sym_string_equal, _Nil<T_O>());
+      } else {
+        pair = _Nil<T_O>();
+      }
+    }
+    if (set.nilp()) {
+      return (pair.nilp()) ? _Nil<T_O>() : oCadr(pair);
+    }
+  /* Set the new translation list */
+    if (clasp_unlikely(!cl__listp(set))) {
+      QERROR_WRONG_TYPE_NTH_ARG(2, set, cl::_sym_list);
+    }
+  }
+  {
+    WITH_READ_WRITE_LOCK(_lisp->_Roots._ThePathnameTranslationsMutex);
+    if (pair.nilp()) {
+      pair = Cons_O::create(host, Cons_O::create(_Nil<T_O>(), _Nil<T_O>()));
+      _lisp->setPathnameTranslations_(Cons_O::create(pair, _lisp->pathnameTranslations_()));
+    }
+    for (l = set, set = _Nil<T_O>(); !cl__endp(l); l = CDR(l)) {
+      T_sp item = CAR(l);
+      T_sp from = coerce_to_from_pathname(oCar(item), host);
+      T_sp to = cl__pathname(oCadr(item));
+      set = Cons_O::create(Cons_O::create(from, Cons_O::create(to, _Nil<T_O>())), set);
+    }
+    set = cl__nreverse(set);
+    T_sp savedSet = set;
+    gc::As<Cons_sp>(oCdr(pair))->rplaca(set);
+    return set;
+  }
+}
+
 bool clasp_logical_hostname_p(T_sp host) {
+  WITH_READ_LOCK(_lisp->_Roots._ThePathnameTranslationsMutex);
   if (!cl__stringp(host))
     return false;
   if (cl::_sym_assoc->fboundp()) {
-    return T_sp(eval::funcall(cl::_sym_assoc, host, _lisp->pathnameTranslations(), kw::_sym_test, cl::_sym_string_equal)).notnilp();
+    return T_sp(eval::funcall(cl::_sym_assoc, host, _lisp->pathnameTranslations_(), kw::_sym_test, cl::_sym_string_equal)).notnilp();
   } else {
-    if (_lisp->pathnameTranslations().notnilp()) {
-      return _lisp->pathnameTranslations().asCons()->assoc(host, _Nil<T_O>(), cl::_sym_string_equal, _Nil<T_O>()).notnilp();
+    if (_lisp->pathnameTranslations_().notnilp()) {
+      return _lisp->pathnameTranslations_().asCons()->assoc(host, _Nil<T_O>(), cl::_sym_string_equal, _Nil<T_O>()).notnilp();
     }
   }
   return false;
 }
+
 
 /*
  * Parses a lisp namestring until the whole substring is parsed or an
@@ -1682,62 +1751,6 @@ coerce_to_from_pathname(T_sp x, T_sp host) {
   SIMPLE_ERROR(BF("%s is not a valid from-pathname translation") % _rep_(x));
 }
 
-CL_LAMBDA(&optional (host nil hostp) translation);
-CL_DECLARE();
-CL_DOCSTRING(R"doc(* Arguments
-- host :: A string or nil.
-- translation :: A list or nil.
-* Description
-If host is nil then return all pathname translations.
-If translation is nil then the pathname translation for the host name is returned.
-If translation is not nil then the pathname translation for the host name is set.)doc");
-CL_DEFUN T_sp core__pathname_translations(T_sp host, T_sp hostp, T_sp set) {
-  if (hostp.nilp())
-    return _lisp->pathnameTranslations();
-  size_t parsed_len, len;
-  T_sp pair, l;
-  /* Check that host is a valid host name */
-  if (clasp_unlikely(!cl__stringp(host)))
-    QERROR_WRONG_TYPE_NTH_ARG(1, host, cl::_sym_string);
-  host = cl__string_upcase(host);
-  len = cl__length(host);
-  parse_word(host, is_null, WORD_LOGICAL, 0, len, &parsed_len);
-  if (UNLIKELY(parsed_len < len)) {
-    SIMPLE_ERROR(BF("Wrong host syntax %s") % _rep_(host));
-  }
-  /* Find its translation list */
-  if (cl::_sym_assoc->fboundp()) {
-    pair = eval::funcall(cl::_sym_assoc, host, _lisp->pathnameTranslations(), kw::_sym_test, cl::_sym_string_equal);
-  } else {
-    // If called before _sym_assoc is setup then invoke assoc directly */
-    if (_lisp->pathnameTranslations().notnilp()) {
-      pair = _lisp->pathnameTranslations().asCons()->assoc(host, _Nil<T_O>(), cl::_sym_string_equal, _Nil<T_O>());
-    } else {
-      pair = _Nil<T_O>();
-    }
-  }
-  if (set.nilp()) {
-    return (pair.nilp()) ? _Nil<T_O>() : oCadr(pair);
-  }
-  /* Set the new translation list */
-  if (clasp_unlikely(!cl__listp(set))) {
-    QERROR_WRONG_TYPE_NTH_ARG(2, set, cl::_sym_list);
-  }
-  if (pair.nilp()) {
-    pair = Cons_O::create(host, Cons_O::create(_Nil<T_O>(), _Nil<T_O>()));
-    _lisp->setPathnameTranslations(Cons_O::create(pair, _lisp->pathnameTranslations()));
-  }
-  for (l = set, set = _Nil<T_O>(); !cl__endp(l); l = CDR(l)) {
-    T_sp item = CAR(l);
-    T_sp from = coerce_to_from_pathname(oCar(item), host);
-    T_sp to = cl__pathname(oCadr(item));
-    set = Cons_O::create(Cons_O::create(from, Cons_O::create(to, _Nil<T_O>())), set);
-  }
-  set = cl__nreverse(set);
-  T_sp savedSet = set;
-  gc::As<Cons_sp>(oCdr(pair))->rplaca(set);
-  return set;
-}
 
 static T_sp
 find_wilds(T_sp l, T_sp source, T_sp match) {

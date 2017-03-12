@@ -279,7 +279,7 @@ generic_function_dispatch_vararg(cl_narg narg, ...)
 LCC_RETURN generic_function_dispatch(gctools::Tagged tgf, gctools::Tagged tvargs) {
   Instance_sp gf(tgf);
   VaList_sp vargs(tvargs);
-  Cache_sp cache = _lisp->methodCachePtr();
+  Cache_sp cache = my_thread->_MethodCachePtr;
   return standard_dispatch(gf, vargs, cache);
 }
 
@@ -330,11 +330,11 @@ CL_DEFUN void core__clear_gfun_hash(T_sp what) {
   ASSERT(_lisp->methodCachePtr());
   ASSERT(_lisp->slotCachePtr());
   if ( what == _lisp->_true() ) {
-    _lisp->methodCachePtr()->empty();
-    _lisp->slotCachePtr()->empty();
+    my_thread->_MethodCachePtr->empty();
+    my_thread->_SlotCachePtr->empty();
   } else {
-    _lisp->methodCachePtr()->removeOne(what);
-    _lisp->slotCachePtr()->removeOne(what);
+    my_thread->_MethodCachePtr->removeOne(what);
+    my_thread->_SlotCachePtr->removeOne(what);
   }
 };
 

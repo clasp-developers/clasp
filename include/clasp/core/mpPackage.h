@@ -39,89 +39,6 @@ namespace mp {
 
 
 namespace mp {
-
-  struct GlobalMutex {
-    pthread_mutex_t _Mutex;
-    GlobalMutex() {
-      this->_Mutex = PTHREAD_MUTEX_INITIALIZER;
-    };
-    void lock() { pthread_mutex_lock(&this->_Mutex); };
-    void unlock() { pthread_mutex_unlock(&this->_Mutex); };
-    bool try_lock() { return pthread_mutex_trylock(&this->_Mutex)==0; };
-    ~GlobalMutex() {
-    };
-  };
-
-  struct GlobalRecursiveMutex {
-    pthread_mutex_t _Mutex;
-    GlobalRecursiveMutex() {
-#if defined(_TARGET_OS_LINUX)
-      this->_Mutex = PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP;
-#elif defined(_TARGET_OS_DARWIN)
-      this->_Mutex = PTHREAD_RECURSIVE_MUTEX_INITIALIZER;
-#else
-      #error "You need to initialize this->_Mutex"
-#endif
-    };
-    void lock() { pthread_mutex_lock(&this->_Mutex); };
-    void unlock() { pthread_mutex_lock(&this->_Mutex); };
-    bool try_lock() { return pthread_mutex_trylock(&this->_Mutex)==0; };
-    ~GlobalRecursiveMutex() {
-    };
-  };
-  
-  struct Mutex {
-    pthread_mutex_t _Mutex;
-    Mutex() {
-      pthread_mutex_init(&this->_Mutex,NULL);
-    };
-    void lock() { pthread_mutex_lock(&this->_Mutex); };
-    void unlock() { pthread_mutex_lock(&this->_Mutex); };
-    bool try_lock() { return pthread_mutex_trylock(&this->_Mutex)==0; };
-    ~Mutex() {
-      pthread_mutex_destroy(&this->_Mutex);
-    };
-  };
-
-  struct RecursiveMutex {
-    pthread_mutex_t _Mutex;
-    RecursiveMutex() {
-      pthread_mutexattr_t Attr;
-      pthread_mutexattr_init(&Attr);
-      pthread_mutexattr_settype(&Attr, PTHREAD_MUTEX_RECURSIVE);
-      pthread_mutex_init(&this->_Mutex,&Attr);
-      pthread_mutexattr_destroy(&Attr);
-    };
-    void lock() { pthread_mutex_lock(&this->_Mutex); };
-    void unlock() { pthread_mutex_lock(&this->_Mutex); };
-    bool try_lock() { return pthread_mutex_trylock(&this->_Mutex)==0; };
-    ~RecursiveMutex() {
-      pthread_mutex_destroy(&this->_Mutex);
-    };
-  };
-
-  struct ConditionVariable {
-    pthread_cond_t _ConditionVariable;
-    ConditionVariable() {
-      pthread_cond_init(&this->_ConditionVariable,NULL);
-    };
-    ~ConditionVariable() {
-      pthread_cond_destroy(&this->_ConditionVariable);
-    };
-  };
-
-
-  
-  void* start_thread(void* claspProcess);
-
-  inline void ClaspThreads_exit() {
-//    printf("%s:%d Exiting pthread\n", __FILE__, __LINE__ );
-//    pthread_exit(NULL);
-//    printf("%s:%d Done pthread\n", __FILE__, __LINE__ );
-  }
-};
-
-namespace mp {
 #ifdef CLASP_THREADS
   /*! Keep track of binding indices for symbols */
   extern GlobalMutex global_BindingIndexPoolMutex;
@@ -132,18 +49,38 @@ namespace mp {
 
 #ifdef CLASP_THREADS
 template <typename T>
-struct SafeMutex {
-SafeMutex(T& m) : _Mutex(m) {
+struct RAIILock {
+RAIILock(T& m) : _Mutex(m) {
   this->_Mutex.lock();
 };
-  ~SafeMutex() {
+  ~RAIILock() {
     this->_Mutex.unlock();
   }
   T& _Mutex;
 };
 #endif
 
-      
+
+namespace mp {
+  inline core::T_sp atomic_get_and_set_to_Nil(std::atomic<core::T_sp>& slot) noexcept {
+      core::T_sp old;
+      do {
+        old = slot.load();
+      } while (!slot.compare_exchange_weak(old,_Nil<core::T_O>()));
+      return old;
+    }
+  inline void atomic_push(std::atomic<core::T_sp>& slot, core::T_sp object) {
+      core::Cons_sp cons = core::Cons_O::create(object,_Nil<core::T_O>());
+      core::T_sp tcons = cons;
+      core::T_sp car;
+      do {
+        car = slot.load();
+        cons->rplaca(car);
+      } while (!slot.compare_exchange_weak(car,tcons));
+    }
+
+};
+
 namespace mp {
     
   class Process_O : public core::CxxObject_O {
@@ -193,16 +130,17 @@ namespace mp {
     LISP_CLASS(mp, MpPkg, Mutex_O, "Mutex",core::CxxObject_O);
   public:
     CL_LISPIFY_NAME("make_mutex");
-    CL_DEF_CLASS_METHOD static Mutex_sp make_mutex() {
-      GC_ALLOCATE_VARIADIC(Mutex_O,l);
+    CL_LAMBDA(&optional name)
+      CL_DEF_CLASS_METHOD static Mutex_sp make_mutex(core::T_sp name) {
+      GC_ALLOCATE_VARIADIC(Mutex_O,l,name,false);
       return l;
     };
   public:
+    core::T_sp  _Name;
     Mutex _Mutex;
-    Mutex_O() {};
-    CL_DEFMETHOD void lock() { this->_Mutex.lock(); };
-    CL_DEFMETHOD void unlock() { this->_Mutex.unlock(); };
-    CL_DEFMETHOD bool try_lock() { return this->_Mutex.try_lock(); };
+  Mutex_O(core::T_sp name, bool recursive) : _Name(name), _Mutex(recursive) {};
+    CL_DEFMETHOD bool lock(bool waitp) { return this->_Mutex.lock(waitp); };
+    CL_DEFMETHOD void unlock() { return this->_Mutex.unlock(); };
   };
 };
 
@@ -217,19 +155,15 @@ struct gctools::GCInfo<mp::RecursiveMutex_O> {
 namespace mp {
 
   FORWARD(RecursiveMutex);
-  class RecursiveMutex_O : public core::CxxObject_O {
-    LISP_CLASS(mp, MpPkg, RecursiveMutex_O, "RecursiveMutex",core::CxxObject_O);
+  class RecursiveMutex_O : public Mutex_O {
+    LISP_CLASS(mp, MpPkg, RecursiveMutex_O, "RecursiveMutex",Mutex_O);
   public:
-    CL_DEF_CLASS_METHOD static RecursiveMutex_sp make_recursive_mutex() {
-      GC_ALLOCATE_VARIADIC(RecursiveMutex_O,l);
+    CL_LAMBDA(&optional name);
+    CL_DEF_CLASS_METHOD static RecursiveMutex_sp make_recursive_mutex(core::T_sp name) {
+      GC_ALLOCATE_VARIADIC(RecursiveMutex_O,l, name);
       return l;
     };
-  public:
-    RecursiveMutex _Mutex;
-    RecursiveMutex_O() {};
-    CL_DEFMETHOD void lock() { this->_Mutex.lock(); };
-    CL_DEFMETHOD void unlock() { this->_Mutex.unlock(); };
-    CL_DEFMETHOD bool try_lock() { return this->_Mutex.try_lock(); };
+  RecursiveMutex_O(core::T_sp name) :Mutex_O(name,true) {};
   };
 
 };
@@ -249,14 +183,15 @@ namespace mp {
     LISP_CLASS(mp, MpPkg, ConditionVariable_O, "ConditionVariable",core::CxxObject_O);
   public:
     ConditionVariable_sp make_condition_variable();
-    CL_DEF_CLASS_METHOD static ConditionVariable_sp make_ConditionVariable() {
-      GC_ALLOCATE_VARIADIC(ConditionVariable_O,l);
+    CL_LAMBDA(&optional name)
+    CL_DEF_CLASS_METHOD static ConditionVariable_sp make_ConditionVariable(core::T_sp name) {
+      GC_ALLOCATE_VARIADIC(ConditionVariable_O,l,name);
       return l;
     };
   public:
     ConditionVariable _ConditionVariable;
-    
-    ConditionVariable_O() {};
+    core::T_sp _Name;
+  ConditionVariable_O(core::T_sp name) : _Name(name) {};
 //    CL_DEFMETHOD void notify_one() { this->_ConditionVariable.notify_one(); };
 //    CL_DEFMETHOD void notify_all() { this->_ConditionVariable.notify_all(); };
 //    CL_DEFMETHOD void wait(Mutex_sp m) { this->_ConditionVariable.wait(m->_UniqueMutex); };

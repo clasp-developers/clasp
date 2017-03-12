@@ -29,19 +29,22 @@ THE SOFTWARE.
 #include <clasp/core/hashTableEql.h>
 #include <clasp/core/multipleValues.h>
 #include <clasp/core/symbol.h>
+#include <clasp/core/mpPackage.h>
 #include <clasp/core/sysprop.h>
 #include <clasp/core/wrappers.h>
 
 namespace core {
 
+
 CL_LAMBDA(key area value);
 CL_DECLARE();
 CL_DOCSTRING("put_sysprop - returns value");
 CL_DEFUN T_sp core__put_sysprop(T_sp key, T_sp area, T_sp value) {
-  ASSERT(_sym_STARsyspropsSTAR->symbolValue().notnilp());
-  HashTableEql_sp sysprops = gc::As<HashTableEql_sp>(_sym_STARsyspropsSTAR->symbolValue());
+  ASSERT(_lisp->_Roots._Sysprop.notnilp());
+  WITH_READ_WRITE_LOCK(_lisp->_Roots._SyspropMutex);
+  HashTableEql_sp sysprops = _lisp->_Roots._Sysprop;
   bool foundHashTable = false;
-  const T_mv &values = gc::As<HashTableEql_sp>(sysprops)->gethash(area);
+  T_mv values = sysprops->gethash(area);
   T_sp area_hash_table = values;
   foundHashTable = values.valueGet_(1).isTrue();
   T_sp retval;
@@ -59,10 +62,11 @@ CL_LAMBDA(key area);
 CL_DECLARE();
 CL_DOCSTRING("get_sysprop - returns (values val foundp)");
 CL_DEFUN T_mv core__get_sysprop(T_sp key, T_sp area) {
-  ASSERT(_sym_STARsyspropsSTAR->symbolValue().notnilp());
-  HashTableEql_sp sysprops = gc::As<HashTableEql_sp>(_sym_STARsyspropsSTAR->symbolValue());
+  ASSERT(_lisp->_Roots._Sysprop.notnilp());
+  WITH_READ_WRITE_LOCK(_lisp->_Roots._SyspropMutex);
+  HashTableEql_sp sysprops = _lisp->_Roots._Sysprop;
   if (sysprops.notnilp()) {
-    T_mv values = gc::As<HashTableEql_sp>(sysprops)->gethash(area, _Nil<T_O>());
+    T_mv values = sysprops->gethash(area, _Nil<T_O>());
     T_sp hashTable = values;
     bool foundHashTable = gc::As<T_sp>(values.valueGet_(1)).isTrue();
     if (foundHashTable) {
@@ -76,9 +80,10 @@ CL_LAMBDA(key area);
 CL_DECLARE();
 CL_DOCSTRING("rem_sysprop");
 CL_DEFUN T_sp core__rem_sysprop(T_sp key, T_sp area) {
-  ASSERT(_sym_STARsyspropsSTAR->symbolValue().notnilp());
-  HashTableEql_sp sysprops = gc::As<HashTableEql_sp>(_sym_STARsyspropsSTAR->symbolValue());
-  T_mv mv_values = gc::As<HashTableEql_sp>(sysprops)->gethash(area, _Nil<T_O>());
+  ASSERT(_lisp->_Roots._Sysprop.notnilp());
+  WITH_READ_WRITE_LOCK(_lisp->_Roots._SyspropMutex);
+  HashTableEql_sp sysprops = _lisp->_Roots._Sysprop;
+  T_mv mv_values = sysprops->gethash(area, _Nil<T_O>());
   HashTableEql_sp hashTable = gc::As<HashTableEql_sp>(mv_values);
   bool foundHashTable = gc::As<T_sp>(mv_values.valueGet_(1)).isTrue();
   if (foundHashTable) {

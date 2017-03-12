@@ -32,7 +32,7 @@
           *low-level-trace-print*
           *run-time-literal-holder*
           *run-time-values-table-name*
-          *run-time-values-table*
+;;          *run-time-values-table*
           *run-time-values-table-global-var*
           *the-module*
           +cons-tag+

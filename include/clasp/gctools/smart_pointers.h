@@ -215,7 +215,7 @@ class smart_ptr /*: public tagged_ptr<T>*/ {
 
  public:
   //Default constructor, set theObject to NULL
-  inline smart_ptr() : theObject(NULL){};
+  inline smart_ptr() noexcept : theObject(NULL){};
   /*! Create a smart pointer from an existing tagged pointer */
   explicit inline smart_ptr(Tagged ptr) : theObject(reinterpret_cast<Type *>(ptr)){};
   explicit inline smart_ptr(Type *ptr) : theObject(ptr ? tag_general<Type *>(ptr) : NULL) {
@@ -534,7 +534,7 @@ public:
   Type *theObject;
 public:
   //Default constructor, set theObject to NULL
- smart_ptr() : theObject((Type*)NULL) {};
+ smart_ptr() noexcept : theObject((Type*)NULL) {};
   explicit inline smart_ptr(Type *ptr) : theObject(ptr) {};
   /*! Create a smart pointer from an existing tagged pointer */
   explicit inline smart_ptr(Tagged ptr) : theObject((Type*)ptr){};
@@ -679,7 +679,7 @@ public:
 
 public:
   //Default constructor, set theObject to NULL
-  smart_ptr() : theObject(NULL){};
+  smart_ptr() noexcept : theObject(NULL){};
 
   smart_ptr(Type *fn) : theObject(fn){};
   template <typename From>
@@ -732,7 +732,7 @@ public:
 
 public:
   //Default constructor, set theObject to NULL
-  smart_ptr() : theObject(NULL){};
+  smart_ptr() noexcept : theObject(NULL){};
   //    	explicit smart_ptr(uintptr_t p) : theObject(p) {}; // TODO: this converts ints to smart_ptr's - its dangerous
   //! Construct a FRAME object - I need to get rid of these
   //smart_ptr( core::T_O** p ) : theObject(tag_valist(p)) { /*printf("%s:%d Creating Frame \n", __FILE__, __LINE__ );*/ };
@@ -922,7 +922,7 @@ public:
 
 public:
   //! The default constructor returns an invalid smart_ptr
-  smart_ptr() : theObject(NULL){};
+  smart_ptr() noexcept : theObject(NULL){};
   // Constructor that takes Cons_O* assumes its untagged
   explicit inline smart_ptr(core::Cons_O *ptr) : theObject(ptr ? tag_cons<core::Cons_O *>(ptr) : NULL) {
     GCTOOLS_ASSERT((reinterpret_cast<uintptr_t>(ptr) & tag_mask) == 0);
@@ -1024,7 +1024,7 @@ public:
 
 public:
   //! The default constructor returns an invalid smart_ptr
-  inline smart_ptr() : theObject(NULL){};
+  inline smart_ptr() noexcept : theObject(NULL){};
   inline smart_ptr(const return_type &rt) : theObject((Type *)rt.ret0){};
   inline smart_ptr(smart_ptr<core::T_O> other) {
     LIKELY_if (other.consp()) {

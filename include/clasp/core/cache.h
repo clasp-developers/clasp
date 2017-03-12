@@ -54,16 +54,25 @@ namespace core {
     gctools::Vec0<T_sp> _keys;
     gctools::Vec0<CacheRecord> _table;
     int _generation;
+#ifdef CLASP_THREADS
+    std::atomic<T_sp> _clear_list;
+#endif
 #ifdef DEBUG_CACHE
     bool _debug;
 #endif
   Cache_O() : _misses(0), _searches(0), _total_depth(0), _generation(0)
+#ifdef CLASP_THREADS
+      , _clear_list(_Nil<T_O>())
+#endif
 #ifdef DEBUG_CACHE
       , _debug(0)
 #endif
     {};
   private:
     void clearOneFromCache(T_sp target);
+#ifdef CLASP_THREADS
+    void clearListFromCache();
+#endif
   public:
     void empty();
   /*! Constructor - like ecl_make_cache */

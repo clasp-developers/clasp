@@ -232,7 +232,7 @@ string backtrace_as_string() {
 size_t DynamicBindingStack::new_binding_index()
 {
 #ifdef CLASP_THREADS
-  SafeMutex<mp::GlobalMutex> mutex(mp::global_BindingIndexPoolMutex);
+  RAIILock<mp::GlobalMutex> mutex(mp::global_BindingIndexPoolMutex);
   if ( mp::global_BindingIndexPool.size() != 0 ) {
     size_t index = mp::global_BindingIndexPool.back();
     mp::global_BindingIndexPool.pop_back();
@@ -247,7 +247,7 @@ size_t DynamicBindingStack::new_binding_index()
 void DynamicBindingStack::release_binding_index(size_t index)
 {
 #ifdef CLASP_THREADS
-  SafeMutex<mp::GlobalMutex> mutex(mp::global_BindingIndexPoolMutex);
+  RAIILock<mp::GlobalMutex> mutex(mp::global_BindingIndexPoolMutex);
   mp::global_BindingIndexPool.push_back(index);
 #endif
 };
