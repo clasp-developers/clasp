@@ -58,7 +58,8 @@
 (defvar *eql-specializer-hash*
   (make-hash-table :size 128 :test #'eql))
 
-#-clasp
+;;#-clasp
+#+threads
 (defun intern-eql-specializer (object)
   (let ((table *eql-specializer-hash*))
     (mp:with-lock (*eql-specializer-lock*)
@@ -66,16 +67,13 @@
 	  (setf (gethash object table)
 		(make-instance 'eql-specializer :object object))))))
 
-#+clasp
+;;#+clasp
+#-threads
 (defun intern-eql-specializer (object)
   (let ((table *eql-specializer-hash*))
     (or (gethash object table nil)
 	(setf (gethash object table)
 	      (make-instance 'eql-specializer :object object)))))
-
-
-
-
 
 (defmethod add-direct-method ((spec specializer) (method method))
   (pushnew method (specializer-direct-methods spec))
@@ -92,7 +90,8 @@
 	    (delete gf (specializer-direct-generic-functions spec))))
     (values)))
 
-#-clasp
+;;#-clasp
+#+threads
 (defmethod remove-direct-method ((spec eql-specializer) (method method))
   (mp:with-lock (*eql-specializer-lock*)
     (call-next-method)
@@ -100,7 +99,8 @@
       (remhash spec *eql-specializer-hash*)))
   (values))
 
-#+clasp
+;;#+clasp
+#-threads
 (defmethod remove-direct-method ((spec eql-specializer) (method method))
     (call-next-method)
     (unless (specializer-direct-methods spec)

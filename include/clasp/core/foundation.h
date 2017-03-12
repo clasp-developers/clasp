@@ -417,32 +417,6 @@ typedef long long int LongLongInt;
   if (!N)                           \
     N = new X();
 
-namespace core {
-class T_O;
-typedef T_O FIXNUM;
-class Cons_O;
-class General_O;
-class Pointer_O;
-class Number_O;
-class Package_O;
-class Integer_O;
-class LoadTimeValues_O;
-/* AMS pool classes */
-class Symbol_O;
-class Null_O;
-class Stream_O;
-class SourcePosInfo_O;
-class SourceFileInfo_O;
-class WeakKeyHashTable_O;
-class WeakKeyMapping_O;
-class DynamicScopeManager;
-
-class Function_O;
- class Closure_O;
-class FunctionClosure_O;
-class BuiltinClosure_O;
-class InterpretedClosure_O;
-};
 void dbg_hook(const char *errorString);
 
 namespace core {
@@ -522,7 +496,11 @@ struct registered_class<T const>
 std::string program_name();
 
 namespace core {
-
+  class T_O;
+  class Symbol_O;
+  class Cons_O;
+  class General_O;
+  
 void lisp_errorDereferencedNonPointer(core::T_O *objP);
 void lisp_errorBadCast(class_id toType, class_id fromType, core::T_O *objP);
 void lisp_errorBadCastFromT_O(class_id toType, core::T_O *objP);
@@ -577,60 +555,16 @@ namespace core {
 #include <clasp/core/scrape.h>
 #include <clasp/gctools/memoryManagement.h>
 
-
-namespace core {
-typedef gctools::smart_ptr<T_O> T_sp;
-typedef T_sp SEQUENCE_sp;
-typedef T_sp LIST_sp;
- typedef gctools::smart_ptr<Pointer_O> Pointer_sp;
-typedef gctools::smart_ptr<Cons_O> Cons_sp;
-typedef gctools::smart_ptr<Package_O> Package_sp;
-typedef gctools::smart_ptr<Stream_O> Stream_sp;
-typedef gctools::smart_ptr<SourcePosInfo_O> SourcePosInfo_sp;
-typedef gctools::smart_ptr<SourceFileInfo_O> SourceFileInfo_sp;
-typedef gctools::smart_ptr<Closure_O> Closure_sp;
-typedef gctools::smart_ptr<BuiltinClosure_O> BuiltinClosure_sp;
-};
-
-namespace core {
-  class Array_O;
-  class MDArray_O;
-  class MDArrayT_O;
-  class Str8Ns_O;
-  class SimpleBaseString_O;
-  class SimpleVector_O;
-  class BitVectorNs_O;
-  class SimpleBitVector_O;
-  // The common root class of Vector_O, String_O and BitVector_O is Array_O
-  typedef Array_O Vector_O;
-  typedef Array_O String_O;
-  typedef MDArray_O StringNs_O;
-  typedef MDArrayT_O VectorObjects_O;
-  typedef MDArrayT_O VectorTNs_O;
-  typedef BitVectorNs_O BitVector_O;
-  typedef Str8Ns_O Str_O;
-  typedef gc::smart_ptr<Array_O> Array_sp;
-  typedef gc::smart_ptr<MDArray_O> MDArray_sp;
-  typedef gc::smart_ptr<SimpleBaseString_O> SimpleBaseString_sp;
-  typedef gc::smart_ptr<SimpleBitVector_O> SimpleBitVector_sp;
-  typedef gc::smart_ptr<SimpleVector_O> SimpleVector_sp;
-  typedef gc::smart_ptr<BitVectorNs_O> BitVectorNs_sp;
-  typedef gc::smart_ptr<Str8Ns_O> Str8Ns_sp;
-  typedef gc::smart_ptr<MDArrayT_O> MDArrayT_sp;
-  // Use typedef to assign new smart_ptr to old types
-  // FIXME: Remove all of the old smart_ptr names and use the new ones everywhere
-  typedef Array_sp String_sp;
-  typedef MDArray_sp StringNs_sp;
-  typedef BitVectorNs_sp BitVector_sp;
-  typedef Str8Ns_sp Str_sp;
-  typedef Array_sp Vector_sp;
-  typedef MDArrayT_sp VectorObjects_sp;
-  typedef MDArrayT_sp VectorTNs_sp;
-};
-
-#include <clasp/gctools/containers.h>
-
 #include <clasp/core/multipleValues.h>
+
+#include <clasp/gctools/processes.h>
+#include <clasp/core/mpPackage.fwd.h>
+
+namespace gctools {
+  void register_thread(mp::Process_sp process, void* stackTop);
+  void unregister_thread(mp::Process_sp process);
+};
+   
 
 
 #if 0
@@ -686,37 +620,6 @@ uint lisp_hash(uintptr_t v);
 
 #include <clasp/gctools/gc_interface.h>
 
-#define DEFINE_O_SMART_POINTERS(zclass)                                    \
-  class zclass##_O;                                                        \
-  typedef gctools::smart_ptr<zclass##_O> zclass##_sp; /* Stack pointers */ \
-  typedef gctools::smart_ptr<zclass##_O> zclass##_wp;                      \
-  typedef gctools::multiple_values<zclass##_O> zclass##_mv;
-
-// This ensures that smart pointers are only declared once
-// for each compilation
-#define SMART(zclass) \
-  DEFINE_O_SMART_POINTERS(zclass)
-
-#define FORWARD(zclass) \
-  DEFINE_O_SMART_POINTERS(zclass)
-
-namespace core {
-typedef gctools::smart_ptr</* TODO: use const */ T_O> T_sp;
-
-class Class_O;
-typedef gctools::smart_ptr<Class_O> Class_sp;
-
-class Number_O;
-typedef gctools::smart_ptr<Number_O> Number_sp;
-
-class Symbol_O;
-typedef gctools::smart_ptr<Symbol_O> Symbol_sp;
-
-class Pointer_O;
-typedef gctools::smart_ptr<Pointer_O> Pointer_sp;
-
-void lisp_error_simple(const char *functionName, const char *fileName, int lineNumber, const boost::format &fmt);
-};
 
 class _RootDummyClass;
 
@@ -827,26 +730,6 @@ typedef gctools::smart_ptr<ActivationFrame_O> ActivationFrame_sp;
 typedef core::T_O **ArgArray;
 
 namespace core {
-class Instance_O;
-typedef gctools::smart_ptr<Instance_O> Instance_sp;
-
-//    typedef T_mv (*ActivationFrameFunctionPtr)(ActivationFrame_sp);
- class StringOutputStream_O;
- typedef gctools::smart_ptr<StringOutputStream_O> StringOutputStream_sp;
- class Bignum_O;
- typedef gctools::smart_ptr<Bignum_O> Bignum_sp;
- class Cache_O;
- typedef gctools::smart_ptr<Cache_O> Cache_sp;
-class Lisp_O;
-typedef gctools::tagged_pointer<Lisp_O> Lisp_sp;
-class NamedFunction_O;
-typedef gctools::smart_ptr<NamedFunction_O> NamedFunction_sp;
-class LambdaListHandler_O;
-typedef gctools::smart_ptr<LambdaListHandler_O> LambdaListHandler_sp;
-class Environment_O;
-typedef gctools::smart_ptr<Environment_O> Environment_sp;
-class Symbol_O;
-typedef gctools::smart_ptr<Symbol_O> Symbol_sp;
 typedef T_mv (*SpecialFormCallback)(List_sp, T_sp);
 typedef void (*MakePackageCallback)(string const &packageName, Lisp_sp);
 typedef void (*ExportSymbolCallback)(Symbol_sp symbol, Lisp_sp);
@@ -1014,6 +897,7 @@ Class_sp lisp_instance_class(T_sp obj);
 Class_sp lisp_static_class(T_sp obj);
 Function_sp lisp_symbolFunction(Symbol_sp sym);
 string lisp_symbolNameAsString(Symbol_sp sym);
+void lisp_error_simple(const char *functionName, const char *fileName, int lineNumber, const boost::format &fmt);
 T_sp lisp_createStr(const string &str);
 T_sp lisp_createFixnum(int num);
 T_sp lisp_createList(T_sp a1);
@@ -1132,182 +1016,9 @@ core::T_sp lisp_registerSourcePosInfo(T_sp obj, SourcePosInfo_sp spi);
 
 
 };
-namespace core {
-  class DynamicBinding {
-  public:
-    Symbol_sp _Var;
-    T_sp _Val;
-  DynamicBinding(Symbol_sp sym, T_sp val) : _Var(sym), _Val(val){};
-  };
 
-/*! Exception stack information */
-
-  typedef enum { NullFrame,
-                 CatchFrame,
-                 BlockFrame,
-                 TagbodyFrame,
-                 LandingPadFrame } FrameKind;
-/*! Store the information for the exception 
-      For CatchThrow:   _Obj1
-    */
-  class ExceptionEntry {
-  public:
-  ExceptionEntry() : _FrameKind(NullFrame), _Key(_Nil<T_O>()){};
-  ExceptionEntry(FrameKind k, T_sp key) : _FrameKind(k), _Key(key){};
-    FrameKind _FrameKind;
-    T_sp _Key;
-  };
-
-
-};
-
-
-namespace core {
-
-#pragma GCC visibility push(default)
-  class DynamicBindingStack {
-  public:
-    gctools::Vec0<DynamicBinding> _Bindings;
-    mutable gctools::Vec0<T_sp>           _ThreadLocalBindings;
-  public:
-    size_t new_binding_index();
-    void release_binding_index(size_t index);
-    inline size_t top() const { return this->_Bindings.size() - 1; }
-    Symbol_sp topSymbol() const { return this->_Bindings.back()._Var; };
-    Symbol_sp var(size_t i) const { return this->_Bindings[i]._Var; };
-    T_sp val(size_t i) const { return this->_Bindings[i]._Val; };
-    ATTR_WEAK void push_with_value_coming(Symbol_sp var);
-    ATTR_WEAK void push(Symbol_sp var, T_sp value=_Unbound<T_O>());
-    // Push the current value of the symbol onto the DynamicBindingStack
-    //   The new value will follow immediately
-    ATTR_WEAK void pop();
-    void reserve(size_t x) { this->_Bindings.reserve(x); };
-    size_t size() const { return this->_Bindings.size(); };
-    void expandThreadLocalBindings(size_t index);
-    // Dynamic symbol access
-    /*! Return a pointer to the value slot for the symbol.  
-        USE THIS IMMEDIATELY AND THEN DISCARD.
-        DO NOT DO STORE THIS OR KEEP THIS FOR ANY LENGTH OF TIME. */
-    T_sp* reference_raw_(Symbol_O* varP) const;
-    const T_sp* reference_raw(const Symbol_O* varP) const { return const_cast<const T_sp*>(this->reference_raw_(const_cast<Symbol_O*>(varP)));};
-    T_sp* reference_raw(Symbol_O* varP) { return this->reference_raw_(varP);};
-    T_sp* reference(Symbol_sp var) { return const_cast<T_sp*>(this->reference_raw(&*var));};
-    const T_sp* reference(Symbol_sp var) const { return this->reference_raw(&*var);};
-    T_sp  value(Symbol_sp var) const { return *this->reference(var);};
-    void  setf_value(Symbol_sp var, T_sp value) { *this->reference(var) = value;};
-  };
-#pragma GCC visibility pop
-};
-
-namespace core {
-
-class ExceptionStack {
-public:
-  gctools::Vec0<ExceptionEntry> _Stack;
-public:
-  ExceptionEntry &operator[](int i) { return this->_Stack[i]; };
-  size_t size() const { return this->_Stack.size(); };
-  string summary() {
-    std::stringstream ss;
-    ss << "ExceptionStackSummary: depth[" << this->size() << "] ";
-    for (int idx = this->size() - 1; idx >= 0; --idx) {
-      FrameKind fk = this->_Stack[idx]._FrameKind;
-      char frameChar;
-      switch (fk) {
-      case NullFrame:
-        frameChar = 'N';
-        break;
-      case CatchFrame:
-        frameChar = 'C';
-        break;
-      case BlockFrame:
-        frameChar = 'B';
-        break;
-      case TagbodyFrame:
-        frameChar = 'T';
-        break;
-      case LandingPadFrame:
-        frameChar = 'L';
-        break;
-      default:
-        frameChar = 'u';
-        break;
-      }
-      ss << frameChar << idx;
-      if (this->_Stack[idx]._Key.notnilp()) {
-        ss << "{@" << (void *)this->_Stack[idx]._Key.raw_() << "}";
-      }
-      ss << " ";
-    };
-    return ss.str();
-  };
-
-  void validateFrame(size_t frame) {
-    if (frame >= this->_Stack.size()) {
-      printf("%s:%d A request to unwind to frame %lu has been made but there are only %lu frames on the exception stack - the frame won't be found and a crash will occur - aborting now.  Trap abort() in the debugger to investigate\n", __FILE__, __LINE__, frame, this->_Stack.size());
-      abort();
-    }
-  }
-  inline size_t push(FrameKind kind, T_sp key) {
-    size_t frame = this->_Stack.size();
-    this->_Stack.emplace_back(kind, key);
-    return frame;
-  }
-  inline void pop() {
-    this->_Stack.pop_back();
-  };
-  /*! Return the index of the stack entry with the matching key.
-          If return -1 then the key wasn't found */
-  int findKey(FrameKind kind, T_sp key);
-  T_sp backKey() const { return this->_Stack.back()._Key; };
-  void unwind(size_t newTop) { this->_Stack.resize(newTop); };
-  Vector_sp backtrace();
-};
-};
-
-
-namespace core {
-  struct InvocationHistoryFrame;
-  
-  struct ThreadLocalState {
-    ThreadLocalState(void* stack_top);
-    void initialize_thread();
-    mp::Process_sp _Process;
-    void* _StackTop;
-    DynamicBindingStack _Bindings;
-    InvocationHistoryFrame* _InvocationHistoryStack;
-    ExceptionStack _ExceptionStack;
-    MultipleValues _MultipleValues;
-    /*! SingleDispatchGenericFunction cache */
-    Cache_sp _SingleDispatchMethodCachePtr;
-    /*! Generic functions method cache */
-    Cache_sp _MethodCachePtr;
-    /*! Generic functions slot cache */
-    Cache_sp _SlotCachePtr;
-
-    List_sp _BufferStr8NsPool;
-    List_sp _BufferStrWNsPool;
-    StringOutputStream_sp _BFormatStringOutputStream;
-    Bignum_sp _BignumRegister0;
-    Bignum_sp _BignumRegister1;
-    Bignum_sp _BignumRegister2;
-    inline core::DynamicBindingStack& bindings() { return this->_Bindings; };
-    inline ExceptionStack& exceptionStack() { return this->_ExceptionStack; };
-    StringOutputStream_sp& bformatStringOutputStream() { return this->_BFormatStringOutputStream;};
-  Bignum_sp bigRegister0() { return this->_BignumRegister0; };
-  Bignum_sp bigRegister1() { return this->_BignumRegister1; };
-  Bignum_sp bigRegister2() { return this->_BignumRegister2; };
-  };
-
-};
-
-
-
-/*! Should be thread_local on linux or __thread on OS X */
-#define THREAD_LOCAL thread_local
-
-/*! Declare this in the top namespace */
-extern THREAD_LOCAL core::ThreadLocalState *my_thread;
+#include <clasp/gctools/interrupt.h>
+#include <clasp/gctools/processes.h>
 
 
 namespace core {

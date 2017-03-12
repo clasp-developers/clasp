@@ -142,7 +142,9 @@ THE SOFTWARE.
 #include <clasp/llvmo/intrinsics.h>
 #include <clasp/core/wrappers.h>
 #include <clasp/core/python_wrappers.h>
-
+#ifdef CLASP_THREADS
+#include <clasp/core/mpPackage.h>
+#endif
 #ifdef READLINE
 extern "C" char *readline(const char *prompt);
 extern "C" void add_history(char *line);
@@ -163,8 +165,8 @@ __thread ThreadInfo *threadLocalInfoPtr;
 
 const int Lisp_O::MaxFunctionArguments = 64; //<! See ecl/src/c/main.d:163 ecl_make_cache(64,4096)
 const int Lisp_O::MaxClosSlots = 3;          //<! See ecl/src/c/main.d:164 ecl_make_cache(3,4096)
-const int Lisp_O::ClosCacheSize = 1024 * 4;
-const int Lisp_O::SingleDispatchMethodCacheSize = 1024 * 4;
+const int Lisp_O::ClosCacheSize = 1024 * 32;
+const int Lisp_O::SingleDispatchMethodCacheSize = 1024 * 32;
 
 extern void lispScannerDebug(std::istream &sin);
 extern string getLispError();
@@ -207,7 +209,9 @@ Lisp_O::GCRoots::GCRoots() :
 #endif
   _SpecialForms(_Unbound<HashTableEq_O>()),
   _NullStream(_Nil<T_O>()),
-  _ThePathnameTranslations(_Nil<T_O>()) {}
+  _ThePathnameTranslations(_Nil<T_O>()),
+  _Booted(false),
+  _KnownSignals(_Unbound<HashTableEq_O>()) {}
 
 Lisp_O::Lisp_O() : _StackWarnSize(gctools::_global_stack_max_size * 0.9), // 6MB default stack size before warnings
                    _StackSampleCount(0),
@@ -235,6 +239,7 @@ Lisp_O::Lisp_O() : _StackWarnSize(gctools::_global_stack_max_size * 0.9), // 6MB
 }
 
 void Lisp_O::shutdownLispEnvironment() {
+  this->_Roots._Booted = false;
   if (this->_DebugStream != NULL) {
     this->_DebugStream->beginNode(DEBUG_TOPLEVEL);
   }
@@ -630,11 +635,6 @@ void Lisp_O::startupLispEnvironment(Bundle *bundle) {
       (*ic)(_lisp);
     }
   }
-#if 0
-  Path_sp startupWorkingDir = Path_O::create(bundle->getStartupWorkingDir());
-  this->defconstant(_sym_STARcurrent_working_directorySTAR, _Nil<Path_O>());
-  this->setCurrentWorkingDirectory(startupWorkingDir);
-#endif
   this->switchToClassNameHashTable();
   {
     _BLOCK_TRACE("Setup system values");
@@ -673,6 +673,7 @@ void Lisp_O::startupLispEnvironment(Bundle *bundle) {
   //
   // Initialize the main thread info
   //
+  
   my_thread->initialize_thread();
   {
     _BLOCK_TRACE("Start printing symbols properly");
@@ -1315,7 +1316,9 @@ void Lisp_O::parseCommandLineArguments(int argc, char *argv[], const CommandLine
 #ifdef USE_EXPENSIVE_BACKTRACE
   features = Cons_O::create(_lisp->internKeyword("USE-EXPENSIVE-BACKTRACE"), features);
 #endif
-
+#ifdef CLASP_THREADS
+  features = Cons_O::create(_lisp->internKeyword("THREADS"),features);
+#endif
   cl::_sym_STARfeaturesSTAR->setf_symbolValue(features);
 
   SYMBOL_EXPORT_SC_(CorePkg, STARprintVersionOnStartupSTAR);
@@ -2888,14 +2891,18 @@ void LispHolder::startup(int argc, char *argv[], const string &appPathEnvironmen
   CommandLineOptions options(argc, argv);
   Bundle *bundle = new Bundle(argv0,options._ResourceDir);
   this->_Lisp->startupLispEnvironment(bundle);
+  mp::_sym_STARcurrent_processSTAR->defparameter(my_thread->_Process);
+  this->_Lisp->add_process(my_thread->_Process);
 #if 0
-	if (_lisp->mpiEnabled())
-	{
-	    stringstream ss;
-	    ss << "P"<<_lisp->mpiRank()<<":";
-	    printvPushPrefix(ss.str());
-	}
+  if (_lisp->mpiEnabled())
+  {
+    stringstream ss;
+    ss << "P"<<_lisp->mpiRank()<<":";
+    printvPushPrefix(ss.str());
+  }
 #endif
+  gctools::initialize_signal_constants();
+  _lisp->_Roots._Booted = true;
   _lisp->parseCommandLineArguments(argc, argv, options);
 }
 

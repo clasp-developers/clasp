@@ -5,6 +5,7 @@ def build(bld):
             'mpsGarbageCollection',
             'source_info',
             'gc_boot',
+            'interrupt',
             'gcFunctions',
             'gctoolsPackage',
             'globals',

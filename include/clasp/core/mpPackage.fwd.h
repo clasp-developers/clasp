@@ -40,6 +40,33 @@ namespace mp {
 
 namespace mp {
 
+  struct SpinLock {
+  public:
+    void lock()
+    {
+      while(lck.test_and_set(std::memory_order_acquire))
+      {}
+    }
+ 
+    void unlock()
+    {
+      lck.clear(std::memory_order_release);
+    }
+ 
+  private:
+    std::atomic_flag lck = ATOMIC_FLAG_INIT;
+  };
+
+  struct SafeSpinLock {
+    SpinLock& _SpinLock;
+  SafeSpinLock(SpinLock& l) : _SpinLock(l) {
+    _SpinLock.lock();
+  };
+    ~SafeSpinLock() {
+      _SpinLock.unlock();
+    }
+  };
+      
   struct GlobalMutex {
     pthread_mutex_t _Mutex;
     bool _Recursive;
@@ -76,11 +103,13 @@ namespace mp {
   
   struct Mutex {
     pthread_mutex_t _Mutex;
+    gctools::Fixnum _Counter;
     bool _Recursive;
   Mutex() : _Recursive(false) {
     pthread_mutex_init(&this->_Mutex,NULL);
   }
-  Mutex(bool recursive) : _Recursive(recursive) {
+  Mutex(bool recursive) : _Counter(0), _Recursive(recursive) {
+    
       if (!recursive) {
 //      printf("%s:%d Creating Mutex@%p\n", __FILE__, __LINE__, (void*)&this->_Mutex);
         pthread_mutex_init(&this->_Mutex,NULL);
@@ -95,14 +124,20 @@ namespace mp {
     bool lock(bool waitp=true) {
 //      printf("%s:%d locking Mutex@%p\n", __FILE__, __LINE__, (void*)&this->_Mutex);
       if (waitp) {
-        return (pthread_mutex_lock(&this->_Mutex)==0);
+        bool result = (pthread_mutex_lock(&this->_Mutex)==0);
+        ++this->_Counter;
+        return result;
       }
       return pthread_mutex_trylock(&this->_Mutex)==0;
     };
     void unlock() {
 //      printf("%s:%d unlocking Mutex@%p\n", __FILE__, __LINE__, (void*)&this->_Mutex);
+      --this->_Counter;
       pthread_mutex_unlock(&this->_Mutex);
     };
+    size_t counter() {
+      return this->_Counter;
+    }
     ~Mutex() {
       pthread_mutex_destroy(&this->_Mutex);
     };
@@ -111,7 +146,6 @@ namespace mp {
   struct RecursiveMutex : public Mutex {
   RecursiveMutex() : Mutex(true) {};
   };
-
 
   struct SharedMutex {
     mp::Mutex _r;
@@ -197,6 +231,17 @@ namespace mp {
     ~ConditionVariable() {
       pthread_cond_destroy(&this->_ConditionVariable);
     };
+    bool wait(Mutex& m) {
+      return pthread_cond_wait(&this->_ConditionVariable,&m._Mutex)==0;
+    }
+    bool timed_wait(Mutex& m, size_t timeout) {
+      printf("%s:%d Implement timed_wait\n", __FILE__, __LINE__ );
+      abort();
+    }
+    bool signal() {
+      return pthread_cond_signal(&this->_ConditionVariable)==0;
+    }
+      
   };
 
 #ifdef CLASP_THREADS

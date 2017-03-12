@@ -146,13 +146,10 @@ CL_DEFUN Cons_sp cl__rplacd(Cons_sp c, T_sp o) {
 CL_LAMBDA(osize &key initial-element);
 CL_DECLARE();
 CL_DOCSTRING("make_list");
-CL_DEFUN List_sp cl__make_list(Integer_sp osize, T_sp initial_element) {
-  int size = clasp_to_int(osize);
-  if (size < 0) {
-    SIMPLE_ERROR(BF("Illegal size %d for list") % size);
-  }
+CL_DEFUN List_sp cl__make_list(Fixnum_sp osize, T_sp initial_element) {
+  size_t size = osize.unsafe_fixnum();
   ql::list result(_lisp);
-  for (int i = 0; i < size; i++) {
+  for (size_t i = 0; i < size; i++) {
     result << initial_element;
   }
   return (result.cons());
