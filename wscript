@@ -646,7 +646,7 @@ def configure(cfg):
     cfg.define("NDEBUG",1)
 #    cfg.define("DEBUG_CACHE",1)      # Debug the dispatch caches - see cache.cc
 # Keep track of every allocation
-    cfg.define("METER_ALLOCATIONS",1)
+#    cfg.define("METER_ALLOCATIONS",1)
 #    cfg.define("READLINE",1)
     cfg.define("USE_AMC_POOL",1)
     cfg.define("USE_EXPENSIVE_BACKTRACE",1)

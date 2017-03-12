@@ -695,11 +695,24 @@ NOINLINE void set_one_static_class_Kind() {
   }
 }
 
-template <class TheClass, class Metaclass>
-NOINLINE  gc::smart_ptr<Metaclass> allocate_one_class()
+
+NOINLINE  gc::smart_ptr<core::Class_O> allocate_one_metaclass(core::Symbol_sp classSymbol, core::Class_sp metaClass)
 {
-  gc::smart_ptr<Metaclass> class_val = Metaclass::createUncollectable(TheClass::static_Kind);
-  class_val->__setup_stage1_with_sharedPtr_lisp_sid(class_val,_lisp,TheClass::static_classSymbol());
+  gc::smart_ptr<core::Class_O> class_val = core::Class_O::createUncollectable(core::Class_O::static_Kind,metaClass);
+  class_val->__setup_stage1_with_sharedPtr_lisp_sid(class_val,classSymbol);
+//  reg::lisp_associateClassIdWithClassSymbol(reg::registered_class<TheClass>::id,TheClass::static_classSymbol());
+//  TheClass::static_class = class_val;
+  core::core__setf_find_class(class_val,classSymbol);
+  auto cb = gctools::GC<core::BuiltInObjectCreator<core::Class_O>>::allocate();
+  class_val->setCreator(cb);
+  return class_val;
+}
+
+template <class TheClass>
+NOINLINE  gc::smart_ptr<core::Class_O> allocate_one_class(core::Class_sp metaClass)
+{
+  gc::smart_ptr<core::Class_O> class_val = core::Class_O::createUncollectable(TheClass::static_Kind,metaClass);
+  class_val->__setup_stage1_with_sharedPtr_lisp_sid(class_val,TheClass::static_classSymbol());
   reg::lisp_associateClassIdWithClassSymbol(reg::registered_class<TheClass>::id,TheClass::static_classSymbol());
   TheClass::static_class = class_val;
   core::core__setf_find_class(class_val,TheClass::static_classSymbol()); //,true,_Nil<core::T_O>());
@@ -807,13 +820,22 @@ void initialize_clasp()
   MPS_LOG("initialize_clasp set_static_class_symbols");
   set_static_class_symbols(&bootStrapCoreSymbolMap);
 
+  printf("%s:%d  In gc_interface.cc about to set up metaclasses      cl::_sym_built_in_class->raw_()->%p\n", __FILE__, __LINE__, cl::_sym_built_in_class.raw_());
+  _lisp->_Roots._BuiltInClass = allocate_one_metaclass(cl::_sym_built_in_class,_Unbound<core::Class_O>());
+  _lisp->_Roots._StandardClass = allocate_one_metaclass(cl::_sym_standard_class,_Unbound<core::Class_O>());
+  _lisp->_Roots._StructureClass = allocate_one_metaclass(cl::_sym_structure_class,_Unbound<core::Class_O>());
+  _lisp->_Roots._BuiltInClass->_MetaClass = _lisp->_Roots._StandardClass;
+  _lisp->_Roots._StandardClass->_MetaClass = _lisp->_Roots._StandardClass;
+  _lisp->_Roots._StructureClass->_MetaClass = _lisp->_Roots._StandardClass;
   MPS_LOG("initialize_clasp ALLOCATE_ALL_CLASSES");
   #define ALLOCATE_ALL_CLASSES
   #ifndef SCRAPING
     #include INIT_CLASSES_INC_H
   #endif
   #undef ALLOCATE_ALL_CLASSES
-
+  core_T_O_var->setInstanceBaseClasses(_Nil<core::T_O>());
+  _lisp->_Roots._Class = core_Class_O_var;
+  
   create_packages();
 
   bootStrapCoreSymbolMap.finish_setup_of_symbols();
@@ -831,6 +853,20 @@ void initialize_clasp()
     #include INIT_CLASSES_INC_H
   #endif
   #undef CALCULATE_CLASS_PRECEDENCE_ALL_CLASSES
+
+  _lisp->_Roots._BuiltInClass->instanceSet(core::Class_O::REF_SLOTS,_Nil<core::T_O>());
+  _lisp->_Roots._BuiltInClass->instanceSet(core::Class_O::REF_DIRECT_SLOTS,_Nil<core::T_O>());
+  _lisp->_Roots._BuiltInClass->instanceSet(core::Class_O::REF_DEFAULT_INITARGS,_Nil<core::T_O>());
+  _lisp->_Roots._StandardClass->instanceSet(core::Class_O::REF_SLOTS,_Nil<core::T_O>());
+  _lisp->_Roots._StandardClass->instanceSet(core::Class_O::REF_DIRECT_SLOTS,_Nil<core::T_O>());
+  _lisp->_Roots._StandardClass->instanceSet(core::Class_O::REF_DEFAULT_INITARGS,_Nil<core::T_O>());
+  _lisp->_Roots._StructureClass->instanceSet(core::Class_O::REF_SLOTS,_Nil<core::T_O>());
+  _lisp->_Roots._StructureClass->instanceSet(core::Class_O::REF_DIRECT_SLOTS,_Nil<core::T_O>());
+  _lisp->_Roots._StructureClass->instanceSet(core::Class_O::REF_DEFAULT_INITARGS,_Nil<core::T_O>());
+
+  _lisp->_Roots._BuiltInClass->setInstanceBaseClasses(core::Cons_O::createList(_lisp->_Roots._Class));
+  _lisp->_Roots._StandardClass->setInstanceBaseClasses(core::Cons_O::createList(_lisp->_Roots._Class));
+  _lisp->_Roots._StructureClass->setInstanceBaseClasses(core::Cons_O::createList(_lisp->_Roots._Class));
 
   reg::lisp_registerClassSymbol<core::Character_I>(cl::_sym_character);
   reg::lisp_registerClassSymbol<core::Fixnum_I>(cl::_sym_fixnum);

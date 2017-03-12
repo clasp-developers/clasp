@@ -29,6 +29,7 @@ THE SOFTWARE.
 #include <clasp/core/common.h>
 #include <clasp/core/environment.h>
 #include <clasp/core/forwardReferencedClass.h>
+#include <clasp/core/standardClass.h>
 #include <clasp/core/builtInClass.h>
 #include <clasp/core/wrappers.h>
 namespace core {
@@ -41,38 +42,39 @@ namespace core {
 
 
 
-#if 0
-    void ForwardReferencedClass_O::serialize(::serialize::SNodeP node)
-    {
-	IMPLEMENT_ME();
-        this->Bases::serialize(node);
-	// Archive other instance variables here
-    }
-
-    void ForwardReferencedClass_O::archiveBase(::core::ArchiveP node)
-    {
-	IMPLEMENT_ME();
-        this->Base1::archiveBase(node);
-	// Archive other instance variables here
-    }
-#endif
 
 void ForwardReferencedClass_O::initialize() {
-  _OF();
   this->Base::initialize();
-#if 0
-  this->_InstanceCoreClass = _Nil<BuiltInClass_O>();
-#endif
-}
-#if 0
-void ForwardReferencedClass_O::setInstanceCoreClass(BuiltInClass_sp bic) {
-  _OF();
-  this->_InstanceCoreClass = bic;
 }
 
-void ForwardReferencedClass_O::defineYourSlotsFromBinderArchiveNode(ArchiveP node) {
-  _OF();
-  IMPLEMENT_MEF(BF("Implement %s") % __FUNCTION__);
-}
+
+CL_DEFUN void core__change_to_standard_class(ForwardReferencedClass_sp orig) {
+  // Ok, here I'm going to break a lot of rules.
+  // Classes should be instances of Instance_O - I see that now
+  // but I implemented them as concrete C++ classes - that makes the unchangeable.
+  ForwardReferencedClass_O frc(0);
+  StandardClass_O sc(0);
+  if (sizeof(ForwardReferencedClass_O) != sizeof(StandardClass_O) ) {
+    SIMPLE_ERROR(BF("ForwardReferencedClass_O is not the same size as StandardClass_O and so you cannot change a ForwardReferencedClass_O to a StandardClass_O"));
+  }
+#if 0
+  printf("%s:%d core__change_to_standard_class\n", __FILE__, __LINE__);
+  printf("        ForwardReferencedClass_O size -> %lu\n", sizeof(ForwardReferencedClass_O));
+  printf("        StandardClass_O size -> %lu\n", sizeof(StandardClass_O));
+  printf("        Kind(ForwardReferencedClass_O -> %u\n", gctools::GCKind<ForwardReferencedClass_O>::Kind);
+  printf("        Kind(StandardClass_O -> %u\n", gctools::GCKind<StandardClass_O>::Kind);
+  printf("        vtable(ForwardReferencedClass_O -> %p\n", *(void**)&x);
+  printf("        vtable(StandardClass_O -> %p\n", *(void**)&sc);
 #endif
+  ForwardReferencedClass_O* o = &*orig;
+  gctools::Header_s* header = const_cast<gctools::Header_s*>(gctools::header_pointer((void*)o));
+  printf("        header -> %p\n", *(void**)header);
+  *(void**)&o = *(void**)&sc;
+  header->setKind(gctools::GCKind<StandardClass_O>::Kind);
+#if 0
+  printf("%s:%d After transform\n",__FILE__,__LINE__);
+  printf("        vtable(ForwardReferencedClass_O -> %p\n", *(void**)&o);
+  printf("        *header = %p\n", *(void**)header);;
+#endif
+};
 }; /* core */

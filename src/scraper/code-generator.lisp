@@ -315,8 +315,7 @@ Convert colons to underscores"
       (progn
         (format sout "#ifdef ALLOCATE_ALL_CLASSES~%")
         (dolist (exposed-class sorted-classes)
-          (format sout "gctools::smart_ptr<~a> ~a = allocate_one_class<~a::~a,~a>();~%"
-                  (meta-class% exposed-class)
+          (format sout "gctools::smart_ptr<core::Class_O> ~a = allocate_one_class<~a::~a>(~a);~%"
                   (as-var-name (tags:namespace% (class-tag% exposed-class))
                                (tags:name% (class-tag% exposed-class)))
                   (tags:namespace% (class-tag% exposed-class))

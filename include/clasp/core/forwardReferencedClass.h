@@ -24,6 +24,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
+#if 0
 #ifndef _core_ForwardReferencedClass_H
 #define _core_ForwardReferencedClass_H
 
@@ -66,4 +67,30 @@ struct gctools::GCInfo<core::ForwardReferencedClass_O> {
   static GCInfo_policy constexpr Policy = normal;
 };
 
+
+namespace core {
+  // Specialize BuiltInObjectCreator for ForwardReferencedClass_O
+  template <>
+    class BuiltInObjectCreator<ForwardReferencedClass_O> : public core::Creator_O {
+  public:
+    typedef core::Creator_O TemplatedBase;
+  public:
+    DISABLE_NEW();
+    size_t templatedSizeof() const { return sizeof(BuiltInObjectCreator<ForwardReferencedClass_O>); };
+    virtual void describe() const {
+      printf("BuiltInObjectCreator for class %s  sizeof_instances-> %zu\n", _rep_(reg::lisp_classSymbol<ForwardReferencedClass_O>()).c_str(), sizeof(ForwardReferencedClass_O));
+    }
+    virtual core::T_sp creator_allocate() {
+      // BuiltInObjectCreator<ForwardReferencedClass_O> uses a different allocation method
+      // that assigns the NextStamp to the new ForwardReferencedClass
+      GC_ALLOCATE_VARIADIC(ForwardReferencedClass_O, obj, gctools::NextStamp() );
+      return obj;
+    }
+    virtual void searcher(){};
+  };
+
+
+};
+
 #endif /* _core_ForwardReferencedClass_H */
+#endif

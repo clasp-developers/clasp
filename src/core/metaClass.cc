@@ -72,8 +72,32 @@ struct to_object<core::Creator_sp> {
 };
 };
 #endif
+
+
+namespace core {
+Class_sp Class_O::create(Symbol_sp symbol, Class_sp metaClass ) {
+  DEPRECATED();
+};
+
+Class_sp Class_O::createUncollectable(gctools::Stamp is, Class_sp metaClass) {
+  GC_ALLOCATE_UNCOLLECTABLE(Class_O,oclass,is,metaClass);
+  return oclass;
+};
+
+};
+
+
+
+
 namespace core {
 
+SYMBOL_EXPORT_SC_(ClosPkg,forward_referenced_class);
+SYMBOL_EXPORT_SC_(ClPkg,built_in_class);
+SYMBOL_EXPORT_SC_(ClPkg,standard_class);
+SYMBOL_EXPORT_SC_(CorePkg,std_class);
+SYMBOL_EXPORT_SC_(ClPkg,structure_class);
+SYMBOL_EXPORT_SC_(CorePkg,cxx_class);
+      
 const int Class_O::NumberOfClassSlots;
 
 CL_LAMBDA(class directSuperclasses);
@@ -84,42 +108,55 @@ CL_DEFUN void core__inherit_default_allocator(Class_sp cl, T_sp directSuperclass
   cl->inheritDefaultAllocator(directSuperclasses);
 };
 
-CL_LAMBDA(original meta-class slots &optional name);
+CL_LAMBDA(original meta-class slots &optional name creates-classes);
 CL_DECLARE();
 CL_DOCSTRING(R"doc(allocate-raw-class - behaves like ECL instance::allocate_raw_instance)doc");
-CL_DEFUN T_sp core__allocate_raw_class(T_sp orig, T_sp tMetaClass, int slots, T_sp className) {
-//  printf("%s:%d core__allocate_raw_class  tMetaClass: %s   className: %s\n", __FILE__, __LINE__, _rep_(tMetaClass).c_str(), _rep_(className).c_str());
-  if (orig.notnilp()) {
-    SIMPLE_ERROR(BF("Deal with non-nil orig class in allocateRawClass"));
-    // Check out ecl/src/c/instance.d/si_allocate_raw_instance
-  }
+CL_DEFUN T_sp core__allocate_raw_class(T_sp orig, T_sp tMetaClass, int slots, bool creates_classes) {
   if ( Class_sp cMetaClass = tMetaClass.asOrNull<Class_O>() ) {
     T_sp tNewClass = cMetaClass->allocate_newNil();
     if ( Class_sp newClass = tNewClass.asOrNull<Class_O>() ) {
       newClass->initialize();
-      newClass->initializeSlots(slots);
+      newClass->_MetaClass = cMetaClass;
+      //      newClass->initializeSlots(slots);
 #if DEBUG_CLOS >= 2
       printf("\nMLOG allocate-raw-CLASS    %p number_of_slots[%d]\n", (void *)(newClass.get()), slots);
 #endif
-      return newClass;
+      if (creates_classes) {
+        auto cb = gctools::GC<core::BuiltInObjectCreator<Class_O>>::allocate();
+        newClass->setCreator(cb);
+      };
+      if (orig.nilp()) {
+        orig = newClass;
+      } else if (Class_sp corig = orig.asOrNull<Class_O>()) {
+        corig->_MetaClass = cMetaClass;
+        corig->_MetaClassSlots = newClass->_MetaClassSlots;
+      }
+      return orig;
     } else if ( Instance_sp iNewClass = tNewClass.asOrNull<Instance_O>() ) {
       SIMPLE_ERROR(BF("Creating an instance of %s resulted in an instance of Instance_O") % _rep_(cMetaClass) );
     } else {
       SIMPLE_ERROR(BF("Creating an instance of %s resulted in something unexpected -> %s") % _rep_(cMetaClass) % _rep_(tNewClass) );
     }
+  } else if (tMetaClass.nilp()) {
+    GC_ALLOCATE_UNCOLLECTABLE(Class_O,newClass,gctools::NextStamp(),_lisp->_Roots._StandardClass);
+    newClass->initialize();
+    auto cb = gctools::GC<core::BuiltInObjectCreator<Class_O>>::allocate();
+    newClass->setCreator(cb);
+//    newClass->initializeSlots(slots);
+    return newClass;
   }
-  SIMPLE_ERROR(BF("I don't know how to make class named %s with metaclass %s") % _rep_(className) % _rep_(tMetaClass));
+  SIMPLE_ERROR(BF("I don't know how to make class with metaclass %s") % _rep_(tMetaClass));
 };
 
 
-void Class_O::initializeSlots(int slots) {
+void Class_O::initializeSlots(size_t slots) {
   if (slots < Class_O::NumberOfClassSlots) {
     SIMPLE_ERROR(BF("Classes need at least %d slots - you asked for %d") % Class_O::NumberOfClassSlots % slots);
   }
   this->_MetaClassSlots.resize(slots, _Unbound<T_O>());
   this->instanceSet(REF_DIRECT_SUPERCLASSES, _Nil<T_O>());
   this->instanceSet(REF_DIRECT_DEFAULT_INITARGS, _Nil<T_O>());
-  this->instanceSet(REF_FINALIZED, cl::_sym_T_O);
+  this->instanceSet(REF_FINALIZED, _Nil<T_O>());
 }
 
 gc::Nilable<Class_sp> identifyCxxDerivableAncestorClass(Class_sp aClass) {
@@ -229,6 +266,7 @@ void Class_O::archive(ArchiveP node) {
 
 void Class_O::initialize() {
   this->Base::initialize();
+  this->initializeSlots(REF_NUMBER_OF_SLOTS_IN_CLASSES);
 }
 
 string Class_O::__repr__() const {
@@ -236,7 +274,7 @@ string Class_O::__repr__() const {
     return "#<built-in-class t>";
   }
   stringstream ss;
-  ss << "#<" << _rep_(this->__class()->className()) << " " << this->instanceClassName() << ">";
+  ss << "#<" << _rep_(this->_MetaClass->name()) << " " << this->instanceClassName() << ">";
 
   return ss.str();
 }
@@ -485,7 +523,17 @@ void Class_O::describe(T_sp stream) {
 T_sp Class_O::instanceRef(size_t idx) const {
   ASSERTF(idx >= 0 && idx < this->_MetaClassSlots.size(), BF("Out of range index %d for instanceRef(%d)") % idx % this->_MetaClassSlots.size());
   ASSERT(this->_MetaClassSlots[idx]);
-  return this->_MetaClassSlots[idx];
+  T_sp val = this->_MetaClassSlots[idx];
+#if 0
+  if (val.unboundp()) {
+    if (idx == REF_CLASS_NAME) {
+      printf("%s:%d:%s   WARNING  read slot %lu of a class and it was unbound\n", __FILE__, __LINE__, __FUNCTION__, idx);
+    } else {
+      printf("%s:%d:%s   WARNING  read slot %lu of class %s and it was unbound\n", __FILE__, __LINE__, __FUNCTION__, idx, _rep_(this->instanceRef(REF_CLASS_NAME)).c_str());
+    }
+  }
+#endif
+  return val;
 }
 
 T_sp Class_O::instanceSet(size_t idx, T_sp val) {
@@ -494,6 +542,10 @@ T_sp Class_O::instanceSet(size_t idx, T_sp val) {
   return val;
 }
 
+T_sp Class_O::copyInstance() const {
+  GC_COPY(Class_O,c,*this);
+  return c;
+};
 /*! Return true if every member of subset is in superset */
 bool subsetp(List_sp subset, List_sp superset) {
   ASSERT(subset);
@@ -534,7 +586,7 @@ T_sp Class_O::instanceSig() const {
 }
 
 Class_sp Class_O::_instanceClass() const {
-  return this->__class();
+  return this->_MetaClass;
 }
 
 T_sp Class_O::instanceClassSet(Class_sp mc) {

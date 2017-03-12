@@ -24,10 +24,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
+#if 0
 #ifndef structureClass_fwd_H
 #define structureClass_fwd_H
 namespace core {
-FORWARD(BuiltInClass);
 FORWARD(StructureClass);
 }
+#endif
 #endif

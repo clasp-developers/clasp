@@ -981,7 +981,7 @@ void Lisp_O::addClass(Symbol_sp classSymbol,
     IMPLEMENT_ME(); // WHEN DO StandardClasses get created with addClass?????
   } else {
     LOG(BF("Adding BuiltInClass with classSymbol(%d)") % classSymbol);
-    cc = BuiltInClass_O::create(classSymbol);
+    cc = Class_O::create(classSymbol,_lisp->_Roots._BuiltInClass);
   }
   printf("%s:%d --> Adding class[%s]\n", __FILE__, __LINE__, _rep_(classSymbol).c_str());
   core__setf_find_class(cc, classSymbol);
@@ -1010,11 +1010,6 @@ void Lisp_O::addClass(Symbol_sp classSymbol, Class_sp theClass, Creator_sp alloc
   core__setf_find_class(theClass, classSymbol);
   //        IMPLEMENT_MEF(BF("Pass an AllocateInstanceFunctor"));
   theClass->setCreator(allocator);
-}
-
-StandardClass_sp Lisp_O::defineStandardClass(Symbol_sp name, T_sp baseClassesDesignator, List_sp slotSpecifiers) {
-  _OF();
-  IMPLEMENT_MEF(BF("Implement defineStandardClass"));
 }
 
 void Lisp_O::exportToPython(Symbol_sp sym) const {

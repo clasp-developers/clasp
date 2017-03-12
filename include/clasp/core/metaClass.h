@@ -44,10 +44,6 @@ THE SOFTWARE.
 #include <clasp/core/specializer.h>
 #include <clasp/core/holder.h>
 
-namespace core {
-  class Class_O;
-};
-
 template <>
 struct gctools::GCInfo<core::Class_O> {
   static bool constexpr NeedsInitialization = true;
@@ -77,12 +73,11 @@ SMART(Class);
 
   
 */
-class Class_O : public Specializer_O {
+class Class_O : public StandardObject_O {
   struct metadata_bootstrap_class {};
   struct metadata_gc_do_not_move {};
-
-  LISP_META_CLASS(core::StandardClass_O);
-  LISP_CLASS(core, ClPkg, Class_O, "class",Specializer_O);
+  LISP_META_CLASS(::_lisp->_Roots._StandardClass);
+  LISP_CLASS(core, ClPkg, Class_O, "class",StandardObject_O);
   //
   // Friend functions for bootup
   //
@@ -138,6 +133,9 @@ public:
 	  some slot accesses are redirected to C++ instance variables like _DirectSubClasses.
 	*/
   static const int NumberOfClassSlots = 20; // Corresponds to the number of entries in
+ public:
+  static Class_sp create(Symbol_sp symbol,Class_sp metaClass);
+  static Class_sp createUncollectable(gctools::Stamp is,Class_sp metaClass);
 
 public:
   /*! A Fixnum that represents the object stamp(aka KIND) of each instance of this class */
@@ -147,6 +145,7 @@ public:
   size_t _allocation_counter;
   size_t _allocation_total_size;
 #endif
+  Class_sp  _MetaClass;
   /*! Mimic ECL Instance::sig */
   T_sp _Signature_ClassSlots;
   /*! Callback function to allocate instances */
@@ -159,7 +158,7 @@ public:
   static Class_sp allocateRawClass(Class_sp orig, Class_sp metaClass, int slots);
 
 public:
-  void __setup_stage1_with_sharedPtr_lisp_sid(T_sp theThis, Lisp_sp lisp, Symbol_sp instanceClassSymbol) {
+  void __setup_stage1_with_sharedPtr_lisp_sid(T_sp theThis, Symbol_sp instanceClassSymbol) {
     this->instanceSet(REF_CLASS_NAME, instanceClassSymbol);
   }
 
@@ -175,11 +174,13 @@ public:
   CL_NAME("CORE:GET-INSTANCE-STAMP");
   CL_DEFMETHOD Fixnum get_instance_stamp() const { return this->_instance_stamp;}
   CL_NAME("CORE:REINITIALIZE-CLASS");
-  CL_DEFMETHOD virtual void reinitialize_class() { SUBIMP(); }; 
+  CL_DEFMETHOD virtual void reinitialize_class() {
+    this->_instance_stamp = gctools::NextStamp();
+  }; 
 private:
   void lowLevel_calculateClassPrecedenceList();
 public: // Mimic CLOS classes that are represented by Instance_O
-  void initializeSlots(int slots);
+  void initializeSlots(size_t slots);
 
   /*! Return this classes metaclass */
   virtual Class_sp _instanceClass() const;
@@ -198,6 +199,7 @@ public: // Mimic CLOS classes that are represented by Instance_O
 
   T_sp slots() const { return this->instanceRef(REF_SLOTS); };
 
+  T_sp copyInstance() const;
 public:
   void inheritDefaultAllocator(List_sp directSuperclasses);
   void setCreator(Creator_sp cb) { this->_theCreator = cb; };
@@ -207,6 +209,8 @@ public:
   CL_LISPIFY_NAME("CORE:HAS-CREATOR");
   CL_DEFMETHOD   bool has_creator() const { return (bool)(this->_theCreator); };
 
+
+  CL_DEFMETHOD Class_sp meta_class() const { return this->_MetaClass;};
   /*! I have GOT to clean up all this class-name stuff
 	  Reduce the clutter to one function to get the name and one to set the name */
 
@@ -215,11 +219,6 @@ public:
 
   Symbol_sp className() const;
   string classNameAsString() const;
-#if 0
-	virtual Symbol_sp classNameSymbol() const {return this->name();};
-	virtual Symbol_sp classSymbol() const;
-	virtual Symbol_sp instanceClassSymbol() const { return this->name(); };
-#endif
   string instanceClassName() { return this->getPackagedName(); };
   string instanceClassName() const { return this->getPackagedName(); };
 
@@ -290,16 +289,44 @@ public:
     return Values(clasp_make_fixnum(this->_allocation_counter), clasp_make_fixnum(this->_allocation_total_size));
   }
 #endif
-  explicit Class_O(gctools::Stamp is) : Class_O::Base(), _instance_stamp(is),
+  explicit Class_O(gctools::Stamp is, Class_sp metaClass) : Class_O::Base(), _instance_stamp(is),
 #ifdef METER_ALLOCATIONS
     _allocation_counter(0),
     _allocation_total_size(0),
 #endif
+    _MetaClass(metaClass),
     _Signature_ClassSlots(_Unbound<T_O>()),
-    _theCreator(){};
+    _theCreator()
+    {};
 
   virtual ~Class_O(){};
 };
+};
+
+
+
+namespace core {
+  // Specialize BuiltInObjectCreator for DummyStandardClass_O
+    template <>
+    class BuiltInObjectCreator<Class_O> : public core::Creator_O {
+  public:
+    typedef core::Creator_O TemplatedBase;
+  public:
+    DISABLE_NEW();
+  public:
+    size_t templatedSizeof() const { return sizeof(BuiltInObjectCreator<Class_O>); };
+    bool creates_classes() const { return true; };
+    virtual void describe() const {
+      printf("BuiltInObjectCreator for class %s  sizeof_instances-> %zu\n", _rep_(reg::lisp_classSymbol<Class_O>()).c_str(), sizeof(Class_O));
+    }
+    virtual core::T_sp creator_allocate() {
+      // BuiltInObjectCreator<Class_O> uses a different allocation method
+      // that assigns the next Clos Stamp to the new Class
+      GC_ALLOCATE_VARIADIC(Class_O, obj, gctools::NextStamp(),_Unbound<Class_O>() );
+      return obj;
+    }
+    virtual void searcher(){};
+  };
 };
 
 namespace core {
@@ -310,5 +337,7 @@ bool core__subclassp(T_sp low, T_sp high);
 /*! Return true if the object is of the class _class */
 bool af_ofClassP(T_sp object, T_sp _class);
 
+
+ T_sp core__allocate_raw_class(T_sp orig, T_sp tMetaClass, int slots, bool creates_classes=true);
 };
 #endif

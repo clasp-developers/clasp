@@ -24,24 +24,33 @@
 ;;;
 ;;; We cannot use the functions CREATE-STANDARD-CLASS and others because SLOTS,
 ;;; DIRECT-SLOTS, etc are empty and therefore SLOT-VALUE does not work.
-#+clasp(defvar +the-standard-class+)
 
-#+(or)(defmacro debug-boot (msg &rest args)
+#+(or)
+(defmacro debug-boot (msg &rest args)
   `(format t ,msg ,@args))
 (defmacro debug-boot (msg &rest args))
 
 
 (defun ensure-boot-class (name &key (metaclass 'standard-class)
-                                 direct-superclasses direct-slots index)
-  (debug-boot "ensure-boot-class for ~s metaclass: ~s direct-superclasses: ~s :direct-slots ~s :index ~s~%"
-                name metaclass direct-superclasses direct-slots index)
-  (let* ((the-metaclass (the class #+clasp(core:lookup-class metaclass nil) #+ecl(gethash metaclass si::*class-name-hash-table*)))
-         (class (or #+clasp(core:lookup-class name nil) #+ecl(gethash name si::*class-name-hash-table*)
-                    #+clasp
-                    (core:allocate-raw-class nil the-metaclass #.(length +standard-class-slots+) name)
-                    #-clasp
-                    (si:allocate-raw-instance nil the-metaclass #.(length +standard-class-slots+)))))
-    (debug-boot "About to with-early-accessors -> macroexpand = ~a~%" (macroexpand '(with-early-accessors (+standard-class-slots+) (setf (class-id                  class) name))))
+                                 direct-superclasses direct-slots index
+                                 creates-classes)
+  (debug-boot "!!ensure-boot-class for ~s metaclass: ~s direct-superclasses: ~s :direct-slots ~s :index ~s~%"
+              name metaclass direct-superclasses direct-slots index)
+  (let* ((the-metaclass (progn
+                          (debug-boot "    About to do the~%")
+                          (the class
+                               #+clasp(core:lookup-class metaclass nil)
+                               #+ecl(gethash metaclass si::*class-name-hash-table*))))
+         (class (progn
+                  (debug-boot "    About to allocate-raw-class~%")
+                  (or #+clasp(core:lookup-class name nil)
+                      #+ecl(gethash name si::*class-name-hash-table*)
+                      #+clasp
+                      (core:allocate-raw-class nil the-metaclass #.(length +standard-class-slots+) creates-classes)
+                      #-clasp
+                      (si:allocate-raw-instance nil the-metaclass #.(length +standard-class-slots+))))))
+    ;;    (debug-boot "About to with-early-accessors -> macroexpand = ~a~%" (macroexpand '(with-early-accessors (+standard-class-slots+) (setf (class-id                  class) name))))
+    (debug-boot "    About to with-early-accessors~%")
     (with-early-accessors (+standard-class-slots+)
       (let ((existing-slots (class-slots class)))
         (when (and (typep existing-slots 'list)
@@ -50,46 +59,51 @@
                    (not (zerop (length existing-slots))))
           (error "~S was called on the already instantiated class ~S, but with ~S slots while it already has ~S slots."
                  'ensure-boot-class name (length direct-slots) (length existing-slots))))
-      (when (eq name 'standard-class)
-	#+ecl(defconstant +the-standard-class+ class)
-	#+clasp(setq +the-standard-class+ class)
-	(si:instance-class-set class class))
-      (debug-boot "  (get-setf-expansion '(class-id class) ENV) -> ~a~%" (macrolet ((hack (form &environment e) `',(multiple-value-list (get-setf-expansion form e)))) (hack '(class-id class))))
+      #+ecl(when (eq name 'standard-class)
+             (defconstant +the-standard-class+ class)
+             (si:instance-class-set class class))
+      ;;      (debug-boot "  (get-setf-expansion '(class-id class) ENV) -> ~a~%" (macrolet ((hack (form &environment e) `',(multiple-value-list (get-setf-expansion form e)))) (hack '(class-id class))))
       (setf (class-id                  class) name)
       (debug-boot "    (class-id class) -> ~a    name -> ~a~%" (class-id class) name)
       (setf (class-id                  class) name
-	    (class-direct-subclasses   class) nil
-	    (class-direct-default-initargs class) nil
-	    (class-default-initargs    class) nil
-	    (class-finalized-p         class) t
-	    (eql-specializer-flag      class) nil
-	    (specializer-direct-methods class) nil
-	    (specializer-direct-generic-functions class) nil)
+            (class-direct-subclasses   class) nil
+            (class-direct-default-initargs class) nil
+            (class-default-initargs    class) nil
+            (class-finalized-p         class) t
+            (eql-specializer-flag      class) nil
+            (specializer-direct-methods class) nil
+            (specializer-direct-generic-functions class) nil)
       (debug-boot "    About to setf class name -> ~a  class -> ~a~%" name class)
       #+clasp(core:set-class class name)
       #+ecl(setf (gethash name si::*class-name-hash-table*) class)
       (debug-boot "    Done setf class name -> ~a  class -> ~a~%" name class)
       (setf
-	    (class-sealedp             class) nil
-	    (class-dependents          class) nil
-	    (class-valid-initargs      class) nil)
+       (class-sealedp             class) nil
+       (class-dependents          class) nil
+       (class-valid-initargs      class) nil)
+      (debug-boot "      About to add-slots~%")
       (add-slots class direct-slots)
+      (debug-boot "      About to get superclasses~%")
       (let ((superclasses (loop for name in direct-superclasses
-			     for parent = (find-class name)
-			     do (push class (class-direct-subclasses parent))
-			     collect parent)))
-	(setf (class-direct-superclasses class) superclasses)
-	;; In clasp each class contains a default allocator functor
-	;; that is used to allocate instances of this class
-	;; If a superclass is derived from a C++ adaptor class
-	;; then we must inherit its allocator
-	;; This means that a class can only ever
-	;; inherit from one C++ adaptor class
-	#+clasp(sys:inherit-default-allocator class superclasses)
-	(let ((cpl (compute-clos-class-precedence-list class superclasses)))
-	  (setf (class-precedence-list class) cpl)))
+                             for parent = (find-class name)
+                             do (push class (class-direct-subclasses parent))
+                             collect parent)))
+        (debug-boot "      Collected superclasses~%")
+        (setf (class-direct-superclasses class) superclasses)
+        ;; In clasp each class contains a default allocator functor
+        ;; that is used to allocate instances of this class
+        ;; If a superclass is derived from a C++ adaptor class
+        ;; then we must inherit its allocator
+        ;; This means that a class can only ever
+        ;; inherit from one C++ adaptor class
+        (debug-boot "      inherit-default-allocator~%")
+        #+clasp(sys:inherit-default-allocator class superclasses)
+        (debug-boot "      compute-clos-class-precedence-list  class->~a   superclasses->~a~%" class superclasses)
+        (let ((cpl (compute-clos-class-precedence-list class superclasses)))
+          (setf (class-precedence-list class) cpl)))
+      (debug-boot "      maybe add index~%")
       (when index
-	(setf (aref +builtin-classes-pre-array+ index) class))
+        (setf (aref +builtin-classes-pre-array+ index) class))
       class)))
 
 (defun add-slots (class slots)
@@ -132,11 +146,14 @@
     (defvar +the-std-class+)
     (defvar +the-funcallable-standard-class+))
 
+#+(or)
 (defmacro dbg-boot (fmt &rest fmt-args)
   nil)
 
-#+(or)(defmacro dbg-boot (fmt &rest fmt-args)
+(defmacro dbg-boot (fmt &rest fmt-args)
   `(bformat t ,fmt ,@fmt-args))
+
+
 (defmacro boot-hierarchy ()
   `(progn
      ,@(loop for (class . options) in +class-hierarchy+

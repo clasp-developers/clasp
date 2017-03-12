@@ -39,13 +39,11 @@ THE SOFTWARE.
 
 namespace core {
 
-  SMART(StandardClass);
-
 // Set up this class differently
 
   SMART(StructureObject);
   class StructureObject_O : public General_O {
-    LISP_META_CLASS(core::StructureClass_O);
+    LISP_META_CLASS(::_lisp->_Roots._StructureClass);
     LISP_CLASS(core, ClPkg, StructureObject_O, "structure-object",General_O);
 
   public:

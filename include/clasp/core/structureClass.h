@@ -24,6 +24,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
+#if 0
 #ifndef _core_structureClass_H
 #define _core_structureClass_H
 
@@ -98,3 +99,4 @@ namespace core {
 };
 
 #endif //]
+#endif

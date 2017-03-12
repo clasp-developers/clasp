@@ -38,14 +38,14 @@ THE SOFTWARE.
 
 #include <clasp/core/standardObject.h>
 #include <clasp/core/environment.h>
-
+#if 0
 namespace core {
 
 // Set up this class differently
 
 SMART(Metaobject);
 class Metaobject_O : public StandardObject_O {
-  LISP_META_CLASS(core::StandardClass_O);
+  LISP_META_CLASS(StandardClass);
   LISP_CLASS(core, CorePkg, Metaobject_O, "metaobject",StandardObject_O);
 
 public:
@@ -54,3 +54,4 @@ public:
 };
 };
 #endif //]
+#endif
