@@ -105,7 +105,11 @@ namespace mp {
     pthread_t _Thread;
     Mutex _ExitBarrier;
   public:
-  Process_O(core::T_sp name, core::T_sp function, core::T_sp arguments, size_t stack_size=8*1024*1024) : _Name(name), _Function(function), _Arguments(arguments), _ReturnValuesList(_Nil<core::T_O>()), _StackSize(stack_size), _Phase(Booting) {};
+  Process_O(core::T_sp name, core::T_sp function, core::T_sp arguments, size_t stack_size=8*1024*1024) : _Name(name), _Function(function), _Arguments(arguments), _ReturnValuesList(_Nil<core::T_O>()), _StackSize(stack_size), _Phase(Booting) {
+      if (!function) {
+        printf("%s:%d Trying to create a process and the function is NULL\n", __FILE__, __LINE__ );
+      }
+    };
     
     int enable() {
       pthread_attr_t attr;
