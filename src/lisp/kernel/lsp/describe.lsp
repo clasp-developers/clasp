@@ -137,7 +137,7 @@
                       Type ? followed by #\\Newline for help.~%")
 	 ))))
 
-#+ecl-min
+#+(or ecl-min clasp)
 (defmacro inspect-recursively (label object &optional place)
   (if place
       `(multiple-value-bind (update-flag new-value)
@@ -147,7 +147,8 @@
              (princ "Not updated.")
              (terpri))))
 
-#+ecl-min
+
+#+(or ecl-min clasp)
 (defmacro inspect-print (label object &optional place)
   (if place
       `(multiple-value-bind (update-flag new-value)
