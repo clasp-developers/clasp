@@ -31,6 +31,7 @@ THE SOFTWARE.
 #include <clasp/core/object.h>
 #include <clasp/core/instance.fwd.h>
 
+#if 0
 #define GCINFO_KIND_GCARRAY_gctools__GCArray_moveable_class_mem__smart_ptr_class_core__T_O__0_
 #define GCINFO_KIND_GCARRAY_gctools__GCArray_moveable_class_mem__smart_ptr_class_core__T_O__1_
 #define GCINFO_KIND_GCARRAY_gctools__GCArray_moveable_class_mem__smart_ptr_class_core__T_O__2_
@@ -43,8 +44,10 @@ THE SOFTWARE.
 #define GCINFO_KIND_GCARRAY_gctools__GCArray_moveable_class_mem__smart_ptr_class_core__T_O__9_
 #define GCINFO_KIND_GCARRAY_gctools__GCArray_moveable_class_mem__smart_ptr_class_core__T_O__10_
 #define GCINFO_KIND_GCARRAY_gctools__GCArray_moveable_class_mem__smart_ptr_class_core__T_O__11_
+#endif
 // may need more later
 #include <clasp/gctools/gc_interface.h>
+#if 0
 #undef GCINFO_KIND_GCARRAY_gctools__GCArray_moveable_class_mem__smart_ptr_class_core__T_O__0_
 #undef GCINFO_KIND_GCARRAY_gctools__GCArray_moveable_class_mem__smart_ptr_class_core__T_O__1_
 #undef GCINFO_KIND_GCARRAY_gctools__GCArray_moveable_class_mem__smart_ptr_class_core__T_O__2_
@@ -57,7 +60,7 @@ THE SOFTWARE.
 #undef GCINFO_KIND_GCARRAY_gctools__GCArray_moveable_class_mem__smart_ptr_class_core__T_O__9_
 #undef GCINFO_KIND_GCARRAY_gctools__GCArray_moveable_class_mem__smart_ptr_class_core__T_O__10_
 #undef GCINFO_KIND_GCARRAY_gctools__GCArray_moveable_class_mem__smart_ptr_class_core__T_O__11_
-
+#endif
 /*! Different values for Instance_O.isgf */
 #define CLASP_NOT_FUNCALLABLE 0
 #define CLASP_STANDARD_DISPATCH 1
@@ -132,8 +135,6 @@ namespace core {
     virtual void setf_lambda_list(List_sp lambda_list) { if (!this->_isgf) {SIMPLE_ERROR(BF("Cannot set lambda list of non gf function ll->%s") % _rep_(lambda_list));} this->GFUN_LAMBDA_LIST_set(lambda_list); }; //{ this->_lambda_list = lambda_list; };
     virtual T_sp lambda_list() const { return this->GFUN_LAMBDA_LIST(); };
   public:
-    static T_sp allocateInstance(T_sp _theClass, size_t numberOfSlots = 0);
-    static T_sp allocateRawInstance(T_sp orig, T_sp _theClass, size_t numberOfSlots);
     static size_t rack_stamp_offset();
   private:
     void reshapeInstance(int delta);
@@ -238,6 +239,7 @@ namespace core {
 
   void core__generic_function_call_history_remove_entries_with_specializer(Instance_sp generic_function, T_sp specializer);
 
+  T_sp core__allocateInstance(T_sp theClass, size_t numberOfSlots);
 };
 
 

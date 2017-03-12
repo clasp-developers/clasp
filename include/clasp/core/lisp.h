@@ -68,7 +68,6 @@ SMART(Class);
 SMART(BuiltInClass);
 SMART(Package);
 SMART(Path);
-SMART(StandardClass);
 SMART(Binder);
 SMART(SpecialForm);
 SMART(Hierarchy);
@@ -260,6 +259,10 @@ class Lisp_O {
     mutable mp::SharedMutex _SetfDefinitionsMutex;
 #endif
 #endif
+    Class_sp   _Class;
+    Class_sp   _BuiltInClass;
+    Class_sp   _StandardClass;
+    Class_sp   _StructureClass;
     Package_sp _CorePackage;
     Package_sp _KeywordPackage;
     Package_sp _CommonLispPackage;
@@ -928,11 +931,6 @@ public:
   void parseCommandLineArguments(int argc, char *argv[], const CommandLineOptions& options );
 
   List_sp getCommandLineArguments() { return this->_Roots._CommandLineArguments; };
-
-  /*! Create a StandardClass and leave the baseClass and instance variable
-	 * definition for later
-	 */
-  StandardClass_sp defineStandardClass(Symbol_sp name, T_sp baseClassesDesignator, List_sp slotSpecifier);
 
   T_sp createObjectOfClass(T_sp cl);
   Intrinsic_sp getIntrinsic(const string &name);

@@ -299,27 +299,38 @@
 
 (eval-when (eval #+clasp :compile-toplevel #+clasp :load-toplevel  )
   (defconstant +class-hierarchy+
-    `((standard-class)
+    `((standard-class
+       #+clasp :creates-classes #+clasp t)
 #+clasp
-      (built-in-class)
+      (built-in-class
+       #+clasp :creates-classes #+clasp t)
       (standard-effective-slot-definition)
       (standard-direct-slot-definition)
       (standard-class
        :metaclass nil ; Special-cased in boot.lsp
-       :direct-slots #.+standard-class-slots+)
+       :direct-slots #.+standard-class-slots+
+        #+clasp :creates-classes #+clasp t
+       )
 #+clasp
       (built-in-class
        :metaclass nil ; Special-cased in boot.lsp
-       :direct-slots #.+standard-class-slots+)
+       :direct-slots #.+standard-class-slots+
+        #+clasp :creates-classes #+clasp t
+       )
       (standard-direct-slot-definition
        :direct-slots #3=#.+slot-definition-slots+)
       (standard-effective-slot-definition
        :direct-slots #3#)
       (t
        :index 0)
+#+clasp(class
+        :direct-slots #.+class-slots+
+        #+clasp :creates-classes #+clasp t
+        )
       (standard-object
        :direct-superclasses (t))
-      #+clasp(core:cxx-object
+      #+clasp
+      (core:cxx-object
               :direct-superclasses (t))
       (metaobject
        :direct-superclasses (standard-object))
@@ -352,26 +363,39 @@
        :direct-slots #.+eql-specializer-slots+)
       (class
        :direct-superclasses (specializer)
-       :direct-slots #.+class-slots+)
+       :direct-slots #.+class-slots+
+        #+clasp :creates-classes #+clasp t
+       )
       (forward-referenced-class
        :direct-superclasses (class)
-       :direct-slots #.+class-slots+)
+       :direct-slots #.+class-slots+
+        #+clasp :creates-classes #+clasp t
+       )
       (built-in-class
        :direct-superclasses (class)
-       :direct-slots #1=#.+standard-class-slots+)
+       :direct-slots #1=#.+standard-class-slots+
+       #+clasp :creates-classes #+clasp t)
 #+clasp(core:cxx-class
         :direct-superclasses (class)
-        :direct-slots #1#)
+        :direct-slots #1#
+        #+clasp :creates-classes #+clasp t
+        )
       (std-class
        :direct-superclasses (class)
-       :direct-slots #1#)
+       :direct-slots #1#
+        #+clasp :creates-classes #+clasp t
+       )
       (standard-class
        :direct-superclasses (std-class)
        :direct-slots #1#
-       :metaclass standard-class)
+       :metaclass standard-class
+        #+clasp :creates-classes #+clasp t
+       )
       (funcallable-standard-class
        :direct-superclasses (std-class)
-       :direct-slots #1#)
+       :direct-slots #1#
+        #+clasp :creates-classes #+clasp t
+       )
       ,@(loop for (name . rest) in +builtin-classes-list+
 	   for index from 1
 	   collect (list name :metaclass 'built-in-class

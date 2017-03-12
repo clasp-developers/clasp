@@ -48,6 +48,35 @@
                       #'shared-initialize (list new-data added-slots))))
     (apply #'shared-initialize new-data added-slots initargs)))
 
+(defmethod change-class ((instance forward-referenced-class) (new-class std-class)
+			 &rest initargs)
+  #+(or)
+  (progn
+    (format t "This is where you would change a forward-referenced-class to something else~%")
+    (format t "instance -->   ~a~%" instance)
+    (format t "new-class ->   ~a~%" new-class))
+  (let* ((old-instance (si::copy-instance instance))
+	 (new-size (class-size new-class))
+	 (instance (si::allocate-raw-class instance new-class new-size t)))
+    (si::instance-sig-set instance)
+    ;; "The values of local slots specified by both the class Cto and
+    ;; Cfrom are retained.  If such a local slot was unbound, it remains
+    ;; unbound."
+    ;; "The values of slots specified as shared in the class Cfrom and
+    ;; as local in the class Cto are retained."
+    (let* ((new-local-slotds (class-slots (class-of instance))))
+      (dolist (new-slot new-local-slotds)
+	;; CHANGE-CLASS can only operate on the value of local slots.
+	(when (eq (slot-definition-allocation new-slot) :INSTANCE)
+	  (let ((name (slot-definition-name new-slot)))
+	    (if (and (slot-exists-p old-instance name)
+		     (slot-boundp old-instance name))
+		(setf (slot-value instance name) (slot-value old-instance name))
+		(slot-makunbound instance name))))))
+    (apply #'update-instance-for-different-class old-instance instance
+	   initargs)
+    instance))
+
 (defmethod change-class ((instance standard-object) (new-class std-class)
 			 &rest initargs)
   (let* ((old-instance (si::copy-instance instance))

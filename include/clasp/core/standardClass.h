@@ -36,6 +36,8 @@ THE SOFTWARE.
 #include <clasp/core/stdClass.h>
 #include <clasp/core/holder.h>
 
+#if 0
+
 template <>
 struct gctools::GCInfo<core::StandardClass_O> {
   static bool constexpr NeedsInitialization = true;
@@ -53,13 +55,7 @@ class StandardClass_O : public StdClass_O {
   LISP_CLASS(core, ClPkg, StandardClass_O, "StandardClass",StdClass_O);
 
 public:
-#if defined(XML_ARCHIVE)
-  void archiveBase(ArchiveP node);
-#endif // defined(XML_ARCHIVE)
   void initialize();
-GCPROTECTED:
-//  Class_sp _InstanceCoreClass;
-
 public:
   /*! Special creator used when starting up lisp environment */
   //	static StandardClass_sp create(Class_sp mc);
@@ -105,9 +101,8 @@ namespace core {
     }
     virtual void searcher(){};
   };
-
-
 };
+#endif
 
 
 #endif //]

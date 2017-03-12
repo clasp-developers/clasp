@@ -86,9 +86,17 @@ CL_DEFUN T_sp core__instance_class_set(T_sp obj, Class_sp mc) {
 CL_LAMBDA(obj);
 CL_DECLARE();
 CL_DOCSTRING("copy-instance returns a shallow copy of the instance");
-CL_DEFUN Instance_sp core__copy_instance(Instance_sp obj) {
-  Instance_sp cp = obj->copyInstance();
-  return cp;
+CL_DEFUN T_sp core__copy_instance(T_sp obj) {
+  if (gc::IsA<Instance_sp>(obj)) {
+    Instance_sp iobj = gc::As_unsafe<Instance_sp>(obj);
+    Instance_sp cp = iobj->copyInstance();
+    return cp;
+  } else if (gc::IsA<Class_sp>(obj)) {
+    Class_sp cobj = gc::As_unsafe<Class_sp>(obj);
+    Class_sp cp = cobj->copyInstance();
+    return cp;
+  }
+  SIMPLE_ERROR(BF("copy-instance doesn't support copying %s") % _rep_(obj));
 };
 
 void Instance_O::set_kind(Symbol_sp k) {
@@ -114,7 +122,7 @@ T_sp Instance_O::oinstancepSTAR() const {
   }
 
 /*! See ECL>>instance.d>>si_allocate_instance */
-T_sp Instance_O::allocateInstance(T_sp theClass, size_t numberOfSlots) {
+T_sp core__allocateInstance(T_sp theClass, size_t numberOfSlots) {
   Class_sp cl = gc::As<Class_sp>(theClass);
   if (!cl->has_creator()) {
     IMPLEMENT_MEF(BF("Handle no allocator class: %s slots: %d") % _rep_(theClass) % numberOfSlots);
@@ -127,17 +135,21 @@ T_sp Instance_O::allocateInstance(T_sp theClass, size_t numberOfSlots) {
 }
 
 /*! See ECL>>instance.d>>si_allocate_raw_instance */
-CL_LISPIFY_NAME(allocateRawInstance);
-CL_DEFUN T_sp Instance_O::allocateRawInstance(T_sp orig, T_sp theClass, size_t numberOfSlots) {
-  T_sp toutput = Instance_O::allocateInstance(theClass, numberOfSlots);
+CL_LISPIFY_NAME(allocate_raw_instance);
+CL_DEFUN T_sp core__allocate_raw_instance(T_sp orig, T_sp tclass, size_t numberOfSlots) {
+  Class_sp class_ = gc::As<Class_sp>(tclass);
+  if (class_->_theCreator->creates_classes()) {
+    return core__allocate_raw_class(orig,tclass,numberOfSlots);
+  }
+  T_sp toutput = core__allocateInstance(tclass, numberOfSlots);
   Instance_sp output = toutput.asOrNull<Instance_O>();
   if (!output) {
-    SIMPLE_ERROR(BF("Could not convert a newly allocated instance of %s to Instance_sp - this going to require implementing the new Instance_O derived Kinds") % _rep_(theClass));
+    SIMPLE_ERROR(BF("Could not convert a newly allocated instance of %s to Instance_sp - this going to require implementing the new Instance_O derived Kinds") % _rep_(tclass));
   }
   if (orig.nilp()) {
     orig = output;
   } else if (Instance_sp iorig = orig.asOrNull<Instance_O>()) {
-    iorig->instanceClassSet(gc::As<Class_sp>(theClass));
+    iorig->instanceClassSet(gc::As<Class_sp>(tclass));
     iorig->_Rack = output->_Rack; // orig->adoptSlots(output);
   }
   return (orig);
@@ -289,7 +301,7 @@ string Instance_O::__repr__() const {
 }
 
 T_sp Instance_O::copyInstance() const {
-  Instance_sp iobj = gc::As<Instance_sp>(Instance_O::allocateInstance(this->_Class));
+  Instance_sp iobj = gc::As<Instance_sp>(core__allocateInstance(this->_Class,1));
   iobj->_isgf = this->_isgf;
   iobj->_Rack = this->_Rack;
   iobj->_entryPoint = this->_entryPoint;

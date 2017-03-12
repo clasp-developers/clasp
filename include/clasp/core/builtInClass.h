@@ -35,6 +35,7 @@ THE SOFTWARE.
 #include <clasp/core/object.h>
 #include <clasp/core/holder.h>
 
+#if 0
 namespace core {
 
 SMART(BuiltInClass);
@@ -100,3 +101,4 @@ namespace core {
 
 };
 #endif //]
+#endif

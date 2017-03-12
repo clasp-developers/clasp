@@ -16,14 +16,19 @@
   (setq core:*echo-repl-read* t)
   (setq cl:*features* (cons :compare cl:*features*)))
 
-
 (in-package "CLOS")
+
+#+(or)
+(defmacro dbg-standard (fmt &rest args)
+  `(format t ,fmt ,@args))
+(defmacro dbg-standard (fmt &rest args))
 
 ;;; ----------------------------------------------------------------------
 ;;; INSTANCES INITIALIZATION AND REINITIALIZATION
 ;;;
 
 (defmethod initialize-instance ((instance T) &rest initargs)
+  (dbg-standard "standard.lsp:29  initialize-instance unbound instance ->~a~%" (eq (core:unbound) instance))
   (apply #'shared-initialize instance 'T initargs))
 
 (defmethod reinitialize-instance ((instance T) &rest initargs)
@@ -116,15 +121,18 @@
     (finalize-inheritance class))
   #+clasp(unless *the-class-class*
 	   (setq *the-class-class* (find-class 'class)))
+  (dbg-standard "About to allocate-raw-instance class->~a~%" class)
   (let ((x #-clasp(si::allocate-raw-instance nil class (class-size class))
 	   #+clasp(if (core:subclassp class *the-class-class*)
 		      (ALLOCATE-RAW-CLASS nil class (class-size class))
 		      (si::allocate-raw-instance nil class (class-size class)))
 	   ))
+    (dbg-standard "Done allocate-raw-instance unbound x ->~a~%" (eq (core:unbound) x))
     (si::instance-sig-set x)
     x))
 
 (defmethod make-instance ((class class) &rest initargs)
+  (dbg-standard "standard.lsp:128  make-instance class ->~a~%" class)
   ;; Without finalization we can not find initargs.
   (unless (class-finalized-p class)
     (finalize-inheritance class))
@@ -139,6 +147,7 @@
 			(precompute-valid-initarg-keywords class)))))
     (check-initargs class initargs nil (class-slots class) keywords))
   (let ((instance (apply #'allocate-instance class initargs)))
+    (dbg-standard "standard.lsp:143   allocate-instance class -> ~a  instance checking if unbound -> ~a~%" class (eq instance (core:unbound)))
     (apply #'initialize-instance instance initargs)
     instance))
 
@@ -186,6 +195,7 @@
 
 (defmethod initialize-instance ((class class) &rest initargs &key direct-slots)
   (declare (ignore sealedp))
+  (dbg-standard "standard.lsp:196  initialize-instance class->~a~%" class)
   ;; convert the slots from lists to direct slots
   (apply #'call-next-method class
          :direct-slots
@@ -195,8 +205,10 @@
   (finalize-unless-forward class)
   class)
 
+(defvar *c*)
 (defmethod shared-initialize ((class class) slot-names &rest initargs &key direct-superclasses)
   ;; verify that the inheritance list makes sense
+  (dbg-standard "standard.lsp:200 shared-initialize of class-> ~a direct-superclasses-> ~a~%" class direct-superclasses)
   (let* ((class (apply #'call-next-method class slot-names
 		       :direct-superclasses
 		       (if (slot-boundp class 'direct-superclasses)
@@ -251,6 +263,7 @@
 	(remove child (class-direct-subclasses parent))))
 
 (defun check-direct-superclasses (class supplied-superclasses)
+  (dbg-standard "check-direct-superclasses class -> ~a  supplied-superclasses->~a  (type-of ~a) -> ~a~%" class supplied-superclasses class (type-of class))
   (if supplied-superclasses
       (loop for superclass in supplied-superclasses
 	 ;; Until we process streams.lsp there are some invalid combinations

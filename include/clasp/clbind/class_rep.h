@@ -60,6 +60,7 @@ THE SOFTWARE.
 #include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
 #include <clasp/core/builtInClass.h>
+#include <clasp/core/instance.h>
 #include <clasp/core/numbers.h>
 //#include <clasp/clbind/lua_include.hpp>
 //#include <clasp/clbind/detail/object_rep.hpp>
@@ -92,7 +93,6 @@ struct gctools::GCInfo<clbind::ClassRep_O> {
   static bool constexpr NeedsFinalization = false;
   static GCInfo_policy constexpr Policy = normal;
 };
-
 namespace clbind {
 
 CLBIND_API std::string stack_content_by_name(core::Lisp_sp L, int start_index);
@@ -101,9 +101,9 @@ struct class_registration;
 
 struct conversion_storage;
 
-class ClassRep_O : public core::BuiltInClass_O {
-  LISP_META_CLASS(core::StandardClass_O);
-  LISP_CLASS(clbind, ClbindPkg, ClassRep_O, "ClassRep",core::BuiltInClass_O);
+class ClassRep_O : public core::Class_O {
+  LISP_META_CLASS(::_lisp->_Roots._StandardClass);
+  LISP_CLASS(clbind, ClbindPkg, ClassRep_O, "ClassRep",core::Class_O);
 
   friend struct class_registration;
 
@@ -112,7 +112,7 @@ public:
   bool cxxDerivableClassP() const { return this->m_derivable; };
   bool primaryCxxDerivableClassP() const { return gctools::As<core::Creator_sp>(this->class_creator())->duplicationLevel() == 0; };
 
- ClassRep_O() : BuiltInClass_O(gctools::NextStamp()), m_derivable(false){};
+ ClassRep_O() : Class_O(gctools::NextStamp(),_lisp->_Roots._StandardClass), m_derivable(false){};
 
   ClassRep_O(type_id const &type, const std::string &name, bool derivable);
 

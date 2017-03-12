@@ -32,6 +32,7 @@ namespace core {
     virtual bool allocates() const { return true; };
   /*! If this is the allocator for a primary CxxAdapter class then return true, */
     virtual int duplicationLevel() const { return 0; };
+    virtual bool creates_classes() const { return false; };
     CL_NAME("CORE:CREATOR-TEMPLATED-SIZE");
     CL_DEFMETHOD virtual size_t templatedSizeof() const = 0;
     virtual Creator_sp duplicateForClassName(core::Symbol_sp className) {

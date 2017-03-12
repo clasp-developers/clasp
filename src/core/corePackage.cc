@@ -171,6 +171,7 @@ SYMBOL_EXPORT_SC_(CorePkg,_PLUS_known_typep_predicates_PLUS_);
 SYMBOL_EXPORT_SC_(ExtPkg,check_arguments_type);
 SYMBOL_EXPORT_SC_(ExtPkg,array_index);
 SYMBOL_EXPORT_SC_(CorePkg,index);
+SYMBOL_EXPORT_SC_(CorePkg,cxx_class);
 SYMBOL_EXPORT_SC_(KeywordPkg,read_only);
 SYMBOL_EXPORT_SC_(KeywordPkg,interactive);
 SYMBOL_EXPORT_SC_(CorePkg,function_boundary);
@@ -772,7 +773,6 @@ SYMBOL_SC_(CorePkg, key);
 SYMBOL_SC_(CorePkg, test_not);
 
 SYMBOL_EXPORT_SC_(KeywordPkg, name);
-SYMBOL_EXPORT_SC_(CorePkg, forward_referenced_class);
 SYMBOL_EXPORT_SC_(ClPkg, standard_class);
 SYMBOL_EXPORT_SC_(ClPkg, rest);
 
@@ -1125,6 +1125,7 @@ void CoreExposer_O::define_essential_globals(Lisp_sp lisp) {
   _sym_STARinterrupts_enabledSTAR->defparameter(_lisp->_true());
   _sym_STARallow_with_interruptsSTAR->defparameter(_lisp->_true());
   _sym_STARexit_backtraceSTAR->defparameter(_Nil<core::T_O>());
+  clos::_sym__PLUS_the_standard_class_PLUS_->defparameter(_lisp->_Roots._StandardClass);
   _sym_STARinvalidated_dispatch_function_stackSTAR->defparameter(_Nil<core::T_O>());
 #if defined(__x86_64__)
   SYMBOL_EXPORT_SC_(KeywordPkg, address_model_64);

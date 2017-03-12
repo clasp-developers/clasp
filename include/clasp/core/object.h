@@ -101,7 +101,6 @@ namespace core {
   FORWARD(Class);
   FORWARD(Record);
   FORWARD(BuiltInClass);
-  FORWARD(StandardClass);
   FORWARD(Model);
   FORWARD(LambdaListHandler);
   FORWARD(Binder);

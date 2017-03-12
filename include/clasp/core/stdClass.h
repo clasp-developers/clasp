@@ -24,6 +24,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
+#if 0
 #ifndef core_StdClass_H //[
 #define core_StdClass_H
 
@@ -60,3 +61,4 @@ struct gctools::GCInfo<core::StdClass_O> {
 };
 
 #endif //]
+#endif

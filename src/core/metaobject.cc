@@ -26,19 +26,21 @@ THE SOFTWARE.
 /* -^- */
 //#define DEBUG_LEVEL_FULL
 
+#if 0
+
 #include <clasp/core/lisp.h>
 #include <clasp/core/standardObject.h>
 #include <clasp/core/symbolTable.h>
 #include <clasp/core/evaluator.h>
 #include <clasp/core/metaobject.h>
 #include <clasp/core/wrappers.h>
-
 namespace core {
 
-Metaobject_O::Metaobject_O() : Metaobject_O::Base(){};
+MetaObject_O::Metaobject_O() : Metaobject_O::Base(){};
 
 
 
 
 
 };
+#endif

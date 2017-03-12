@@ -38,13 +38,11 @@ THE SOFTWARE.
 
 namespace core {
 
-SMART(StandardClass);
-
 // Set up this class differently
 
 SMART(StandardObject);
 class StandardObject_O : public General_O {
-  LISP_META_CLASS(core::StandardClass_O);
+  LISP_META_CLASS(::_lisp->_Roots._StandardClass);
   LISP_CLASS(core, ClPkg, StandardObject_O, "standard-object",General_O);
 
 public:
@@ -60,7 +58,7 @@ private:
   //	StandardClass_sp	_InstanceClass;
   //	Vector0<T_O>		_Slots;
 public:
-  static StandardObject_sp create(StandardClass_sp instanceClass);
+  static StandardObject_sp create(Class_sp instanceClass);
 
 public:
   //	static bool static_supportsSlots() {return true;};

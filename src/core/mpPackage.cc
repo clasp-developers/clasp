@@ -45,7 +45,8 @@ namespace mp {
 struct RAIIMutexLock {
   Mutex _Mutex;
   RAIIMutexLock(Mutex& m) : _Mutex(m) {
-    this->_Mutex.lock();
+    int res = this->_Mutex.lock();
+    printf("%s:%d RAIIMutexLock res = %d\n", __FILE__, __LINE__, res );
   };
   ~RAIIMutexLock() {
     this->_Mutex.unlock();
@@ -106,8 +107,10 @@ void* start_thread(void* claspProcess) {
   core::T_mv result_mv;
   {
     SafeRegisterDeregisterProcessWithLisp reg(p);
-    RAIIMutexLock exitBarrier(p->_ExitBarrier);
+//    RAIIMutexLock exitBarrier(p->_ExitBarrier);
+//    printf("%s:%d:%s  process locking the ExitBarrier\n", __FILE__, __LINE__, __FUNCTION__);
     result_mv = core::eval::applyLastArgsPLUSFirst(my_claspProcess->_Function,args);
+//    printf("%s:%d:%s  process releasing the ExitBarrier\n", __FILE__, __LINE__, __FUNCTION__);
   }
   p->_Phase = Exiting;
   core::T_sp result0 = result_mv;
@@ -118,7 +121,7 @@ void* start_thread(void* claspProcess) {
   result_list = core::Cons_O::create(result0,result_list);
   my_claspProcess->_ReturnValuesList = result_list;
 //  gctools::unregister_thread(process);
-  printf("%s:%d leaving start_thread\n", __FILE__, __LINE__);
+//  printf("%s:%d leaving start_thread\n", __FILE__, __LINE__);
 #if 0
 #ifdef USE_BOEHM
   GC_unregister_my_thread();
@@ -128,7 +131,7 @@ void* start_thread(void* claspProcess) {
   printf("%s:%d Handle threads for MPS\n", __FILE__, __LINE__ );
   abort();
 #endif
-  printf("%s:%d  really leaving start_thread\n", __FILE__, __LINE__ );
+//  printf("%s:%d  really leaving start_thread\n", __FILE__, __LINE__ );
   return NULL;
 }
 
@@ -152,7 +155,7 @@ CL_DEFUN core::T_sp mp__process_name(Process_sp p) {
   return p->_Name;
 }
 
-CL_LAMBDA(&key name (recursive nil))
+CL_LAMBDA(&key name recursive)
 CL_DEFUN core::T_sp mp__make_lock(core::T_sp name, bool recursive) {
   if (!recursive) {
     return Mutex_O::make_mutex(name);
@@ -181,7 +184,13 @@ CL_DEFUN void mp__process_yield() {
 CL_DEFUN core::T_mv mp__process_join(Process_sp process) {
   // ECL has a much more complicated process_join function
   if (process->_Phase>0) {
+    pthread_join(process->_Thread,NULL);
+#if 0
+    printf("%s:%d:%s About to lock the ExitBarrier\n", __FILE__,__LINE__,__FUNCTION__);
     RAIIMutexLock join_(process->_ExitBarrier);
+    printf("          ExitBarrier count = %ld\n", join_._Mutex._Counter);
+    printf("%s:%d:%s Releasing the ExitBarrier\n", __FILE__,__LINE__,__FUNCTION__);
+#endif
   }
   return cl__values_list(process->_ReturnValuesList);
 }
@@ -196,6 +205,14 @@ CL_DEFUN core::T_sp mp__interrupt_process(Process_sp process, core::T_sp func) {
   return _lisp->_true();
 };
 
+SYMBOL_EXPORT_SC_(MpPkg,exit_process);
+CL_DEFUN core::T_sp mp__process_kill(Process_sp process)
+{
+  return mp__interrupt_process(process, _sym_exit_process);
+}
+
+
+
 CL_DEFUN core::T_sp mp__mutex_name(Mutex_sp m) {
   return m->_Name;
 }
@@ -204,6 +221,10 @@ CL_DEFUN bool mp__get_lock(Mutex_sp m, bool waitp) {
   return m->lock(waitp);
 }
 
+
+CL_DEFUN bool mp__recursive_lock_p(Mutex_sp m) {
+  return gc::IsA<RecursiveMutex_sp>(m);
+}
 
 
 CL_DEFUN bool mp__giveup_lock(Mutex_sp m) {
@@ -221,6 +242,10 @@ CL_DEFUN core::T_sp mp__make_condition_variable(core::T_sp name) {
 
 CL_DEFUN bool mp__condition_variable_wait(ConditionVariable_sp cv, Mutex_sp mutex) {
   return cv->wait(mutex);
+};
+
+CL_DEFUN bool mp__condition_variable_timedwait(ConditionVariable_sp cv, Mutex_sp mutex, size_t timeout) {
+  return cv->timed_wait(mutex,timeout);
 };
 
 CL_DEFUN void mp__condition_variable_signal(ConditionVariable_sp cv) {
