@@ -170,6 +170,9 @@ void handle_signal_now( core::T_sp signal_code, core::T_sp process ) {
 
 static void queue_signal(core::ThreadLocalState* thread, core::T_sp code, bool allocate)
 {
+  if (!code) {
+    printf("%s:%d queue_signal code = NULL\n", __FILE__, __LINE__ );
+  }
   mp::SafeSpinLock spinlock(thread->_SparePendingInterruptRecordsSpinLock);
   core::T_sp record;
   if (allocate) {
@@ -223,6 +226,9 @@ static void handle_all_queued(core::ThreadLocalState* thread)
 }
 
 void handle_or_queue(core::ThreadLocalState* thread, core::T_sp signal_code ) {
+  if (!signal_code) {
+    printf("%s:%d handle_or_queue   signal_code is NULL\n", __FILE__, __LINE__ );
+  }
   if (signal_code.nilp() || !signal_code) return;
   if (interrupts_disabled_by_lisp(thread)) {
     queue_signal(thread,signal_code,false);
