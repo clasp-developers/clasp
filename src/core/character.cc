@@ -78,6 +78,14 @@ T_sp monotonic(int s, int t, List_sp args, bool preserve_case = true) {
 
 CL_LAMBDA(arg);
 CL_DECLARE();
+CL_DOCSTRING("CLHS: graphic-char-p");
+CL_DEFUN bool cl__graphic_char_p(Character_sp c) {
+  claspCharacter x = clasp_as_claspCharacter(c);
+  return x == ' ' || isgraph(x);
+};
+
+CL_LAMBDA(arg);
+CL_DECLARE();
 CL_DOCSTRING("lower_case_p");
 CL_DEFUN bool cl__lower_case_p(Character_sp c) {
   claspCharacter x = clasp_as_claspCharacter(c);

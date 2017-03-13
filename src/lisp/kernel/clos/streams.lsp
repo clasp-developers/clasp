@@ -330,7 +330,7 @@
   'character)
 
 (defmethod stream-element-type ((stream ansi-stream))
-  (cl:stream-element-type stream))
+  (core:stream-element-type* stream))
 
 (defmethod stream-element-type ((stream t))
   (bug-or-error stream 'stream-element-type))
@@ -383,7 +383,7 @@
   t)
 
 (defmethod input-stream-p ((stream ansi-stream))
-  (cl:input-stream-p stream))
+  (core:input-stream-p* stream))
 
 (defmethod input-stream-p ((stream t))
   (bug-or-error stream 'input-stream-p))
@@ -423,7 +423,7 @@
 ;; OPEN-STREAM-P
 
 (defmethod open-stream-p ((stream ansi-stream))
-  (cl:open-stream-p stream))
+  (core:open-stream-p* stream))
 
 (defmethod open-stream-p ((stream t))
   (bug-or-error stream 'open-stream-p))
@@ -440,7 +440,7 @@
   t)
 
 (defmethod output-stream-p ((stream ansi-stream))
-  (cl:output-stream-p stream))
+  (core:output-stream-p* stream))
 
 (defmethod output-stream-p ((stream t))
   (bug-or-error stream 'output-stream-p))
