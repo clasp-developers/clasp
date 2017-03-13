@@ -44,7 +44,10 @@
 	  CHANGE-CLASS CALL-METHOD ALLOCATE-INSTANCE
 	  ADD-METHOD ))
 
-(export '(UPDATE-DEPENDENT 
+#+clasp
+(export '(metaobject
+          specializer
+          UPDATE-DEPENDENT 
           LOAD-DEFCLASS 
           SLOT-DEFINITION-LOCATION 
           CLASS-PRECEDENCE-LIST 
