@@ -4966,19 +4966,25 @@ CL_DEFUN T_sp cl__file_position(T_sp stream, T_sp position) {
 }
 
 CL_LAMBDA(strm);
-CL_DECLARE();
-CL_DOCSTRING("input_stream_p");
-CL_DEFUN T_sp cl__input_stream_p(T_sp strm) {
+CL_DEFUN T_sp core__input_stream_pSTAR(T_sp strm) {
   ASSERT(strm);
   return (clasp_input_stream_p(strm) ? _lisp->_true() : _Nil<T_O>());
 }
 
+CL_LAMBDA(strm);
+CL_DEFUN T_sp cl__input_stream_p(T_sp strm) {
+  return core__input_stream_pSTAR(strm);
+}
+
 CL_LAMBDA(arg);
-CL_DECLARE();
-CL_DOCSTRING("output_stream_p");
-CL_DEFUN T_sp cl__output_stream_p(T_sp strm) {
+CL_DEFUN T_sp core__output_stream_pSTAR(T_sp strm) {
   ASSERT(strm);
   return (clasp_output_stream_p(strm) ? _lisp->_true() : _Nil<T_O>());
+}
+
+CL_LAMBDA(arg);
+CL_DEFUN T_sp cl__output_stream_p(T_sp strm) {
+  return core__output_stream_pSTAR(strm);
 }
 
 CL_LAMBDA(arg);
@@ -4989,7 +4995,8 @@ CL_DEFUN T_sp cl__interactive_stream_p(T_sp strm) {
   return (stream_dispatch_table(strm).interactive_p(strm) ? _lisp->_true() : _Nil<T_O>());
 }
 
-CL_DEFUN T_sp cl__open_stream_p(T_sp strm) {
+
+CL_DEFUN T_sp core__open_stream_pSTAR(T_sp strm) {
   /* ANSI and Cltl2 specify that open-stream-p should work
 	   on closed streams, and that a stream is only closed
 	   when #'close has been applied on it */
@@ -5001,8 +5008,19 @@ CL_DEFUN T_sp cl__open_stream_p(T_sp strm) {
   return (StreamClosed(strm) ? _Nil<T_O>() : _lisp->_true());
 }
 
-CL_DEFUN T_sp cl__stream_element_type(T_sp strm) {
+CL_DEFUN T_sp cl__open_stream_p(T_sp strm) {
+  /* ANSI and Cltl2 specify that open-stream-p should work
+	   on closed streams, and that a stream is only closed
+	   when #'close has been applied on it */
+  return core__open_stream_pSTAR(strm);
+}
+
+CL_DEFUN T_sp core__stream_element_typeSTAR(T_sp strm) {
   return clasp_stream_element_type(strm);
+}
+
+CL_DEFUN T_sp cl__stream_element_type(T_sp strm) {
+  return core__stream_element_typeSTAR(strm);
 }
 
 CL_DEFUN T_sp cl__stream_external_format(T_sp strm) {
