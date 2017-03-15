@@ -1,0 +1,21 @@
+version: '3'
+services:
+  clasp-externals:
+    image: clasp-externals
+    build:
+      context: tools/dockerfiles/clasp-externals
+      args:
+        EXTERNALS_REVISION: master
+    command: echo Done building clasp-externals.
+  clasp-build:
+    image: clasp-build
+    build:
+      context: .
+      dockerfile: tools/dockerfiles/clasp-build/Dockerfile
+      args:
+        CANDO_REVISION: dev
+    volumes:
+      - ./build:/tmp
+    command: bash -c 'cp -av /home/app/clasp/build/* /tmp/'
+    depends_on:
+      - clasp-externals
