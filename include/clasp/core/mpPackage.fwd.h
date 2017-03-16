@@ -27,6 +27,8 @@ THE SOFTWARE.
 #ifndef mpPackage_fwd_H
 #define mpPackage_fwd_H
 
+#include <sys/time.h>
+
 PACKAGE_USE("COMMON-LISP");
 NAMESPACE_PACKAGE_ASSOCIATION(mp, MpPkg, "MP")
 
@@ -84,10 +86,14 @@ namespace mp {
       }
     };
     bool lock(bool waitp=true) {
+//      printf("%s:%d  locking mutex %p\n", __FILE__, __LINE__, &this->_Mutex); fflush(stdout);
        if (waitp) return pthread_mutex_lock(&this->_Mutex)==0;
        return pthread_mutex_trylock(&this->_Mutex)==0;
     }
-    void unlock() { pthread_mutex_unlock(&this->_Mutex); };
+    void unlock() {
+//      printf("%s:%d  unlocking mutex %p\n", __FILE__, __LINE__, &this->_Mutex); fflush(stdout);
+      pthread_mutex_unlock(&this->_Mutex);
+    };
     bool recursive_lock_p() {
       return this->_Recursive;
     }
@@ -100,12 +106,16 @@ namespace mp {
   GlobalRecursiveMutex() : GlobalMutex(true) {};
     ~GlobalRecursiveMutex() {};
   };
-  
-  struct Mutex {
+
+  struct Mutex;
+  void debug_mutex_lock(Mutex* m);
+  void debug_mutex_unlock(Mutex* m);
+
+    struct Mutex {
     pthread_mutex_t _Mutex;
     gctools::Fixnum _Counter;
     bool _Recursive;
-  Mutex() : _Recursive(false) {
+  Mutex() : _Counter(0), _Recursive(false) {
     pthread_mutex_init(&this->_Mutex,NULL);
   }
   Mutex(bool recursive) : _Counter(0), _Recursive(recursive) {
@@ -122,7 +132,10 @@ namespace mp {
       }
     };
     bool lock(bool waitp=true) {
-//      printf("%s:%d locking Mutex@%p\n", __FILE__, __LINE__, (void*)&this->_Mutex);
+//      printf("%s:%d locking Mutex@%p\n", __FILE__, __LINE__, (void*)&this->_Mutex); fflush(stdout);
+#ifdef DEBUG_THREADS
+      debug_mutex_lock(this);
+#endif
       if (waitp) {
         bool result = (pthread_mutex_lock(&this->_Mutex)==0);
         ++this->_Counter;
@@ -131,7 +144,10 @@ namespace mp {
       return pthread_mutex_trylock(&this->_Mutex)==0;
     };
     void unlock() {
-//      printf("%s:%d unlocking Mutex@%p\n", __FILE__, __LINE__, (void*)&this->_Mutex);
+//      printf("%s:%d unlocking Mutex@%p\n", __FILE__, __LINE__, (void*)&this->_Mutex); fflush(stdout);
+#ifdef DEBUG_THREADS
+      debug_mutex_unlock(this);
+#endif
       --this->_Counter;
       pthread_mutex_unlock(&this->_Mutex);
     };
@@ -143,6 +159,8 @@ namespace mp {
     };
   };
 
+  
+
   struct RecursiveMutex : public Mutex {
   RecursiveMutex() : Mutex(true) {};
   };
@@ -151,78 +169,30 @@ namespace mp {
     mp::Mutex _r;
     mp::Mutex _g;
     size_t _b;
-  SharedMutex() : _r(false), _g(false) {};
+  SharedMutex() : _r(false), _g(false), _b(0) {};
     // shared access
     void shared_lock() {
-      this->_r.lock(false);
+      this->_r.lock(true);
       ++this->_b;
-      if (this->_b==1) this->_g.lock(false);
+      if (this->_b==1) this->_g.lock(true);
       this->_r.unlock();
     }
     void shared_unlock() {
-      this->_r.lock(false);
+      this->_r.lock(true);
       --this->_b;
       if (this->_b==0) this->_g.unlock();
       this->_r.unlock();
     }
     // exclusive access
     void lock() {
-      this->_g.lock(false);
+      this->_g.lock(true);
     }
     void unlock() {
       this->_g.unlock();
     }
   };
 
-  struct SharedRecursiveMutex {
-    mp::Mutex _r;
-    mp::RecursiveMutex _g;
-    size_t _b;
-  SharedRecursiveMutex() : _r(false){};
-    // shared access
-    void shared_lock() {
-      this->_r.lock();
-      ++this->_b;
-      if (this->_b==1) this->_g.lock();
-      this->_r.unlock();
-    }
-    void shared_unlock() {
-      this->_r.lock();
-      --this->_b;
-      if (this->_b==0) this->_g.unlock();
-      this->_r.unlock();
-    }
-    // exclusive access
-    void lock() {
-      this->_g.lock();
-    }
-    void unlock() {
-      this->_g.unlock();
-    }
-  };
 
-    template <typename T>
- struct RAIISharedReadLock {
-   T& _SharedMutex;
- RAIISharedReadLock(T& p) : _SharedMutex(p) {
-   _SharedMutex.shared_lock();
- }
-   ~RAIISharedReadLock() {
-     _SharedMutex.shared_unlock();
-   }
- };
-
-    template <typename T>
- struct RAIISharedReadWriteLock {
-   T& _SharedMutex;
- RAIISharedReadWriteLock(T& p) : _SharedMutex(p) {
-   _SharedMutex.lock();
- }
-   ~RAIISharedReadWriteLock() {
-     _SharedMutex.unlock();
-   }
- };
-  
   struct ConditionVariable {
     pthread_cond_t _ConditionVariable;
     ConditionVariable() {
@@ -234,19 +204,53 @@ namespace mp {
     bool wait(Mutex& m) {
       return pthread_cond_wait(&this->_ConditionVariable,&m._Mutex)==0;
     }
-    bool timed_wait(Mutex& m, size_t timeout) {
-      printf("%s:%d Implement timed_wait\n", __FILE__, __LINE__ );
-      abort();
+    bool timed_wait(Mutex& m, double timeout) {
+      struct timespec timeToWait;
+      struct timeval now;
+      gettimeofday(&now,NULL);
+      size_t timeout_sec = floor(timeout);
+      size_t timeout_nsec = (timeout-timeout_sec)*1000000000;
+      timeToWait.tv_sec = now.tv_sec + timeout_sec;
+      timeToWait.tv_nsec = (now.tv_usec*1000UL*timeout_nsec);
+      m.lock();
+      int rt = pthread_cond_timedwait(&this->_ConditionVariable,&m._Mutex,&timeToWait);
+      m.unlock();
+      return rt==0;
     }
     bool signal() {
       return pthread_cond_signal(&this->_ConditionVariable)==0;
+    }
+    bool broadcast() {
+      return pthread_cond_broadcast(&this->_ConditionVariable)==0;
     }
       
   };
 
 #ifdef CLASP_THREADS
-#define WITH_READ_LOCK(mutex) mp::RAIISharedReadLock<decltype(mutex)> lock__(mutex)
-#define WITH_READ_WRITE_LOCK(mutex) mp::RAIISharedReadWriteLock<decltype(mutex)> lock__(mutex)
+  template <typename T>
+    struct RAIIReadLock {
+      T& _Mutex;
+    RAIIReadLock(T& p) : _Mutex(p) {
+      _Mutex.shared_lock();
+    }
+      ~RAIIReadLock() {
+        _Mutex.shared_unlock();
+      }
+    };
+
+    template <typename T>
+ struct RAIIReadWriteLock {
+   T& _Mutex;
+ RAIIReadWriteLock(T& p) : _Mutex(p) {
+   _Mutex.lock();
+ }
+   ~RAIIReadWriteLock() {
+     _Mutex.unlock();
+   }
+ };
+
+#define WITH_READ_LOCK(mutex) mp::RAIIReadLock<decltype(mutex)> lock__(mutex)
+#define WITH_READ_WRITE_LOCK(mutex) mp::RAIIReadWriteLock<decltype(mutex)> lock__(mutex)
 #else
 #define WITH_READ_LOCK(m)
 #define WITH_READ_WRITE_LOCK(m)

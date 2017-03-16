@@ -634,6 +634,7 @@ If translation is not nil then the pathname translation for the host name is set
 CL_DEFUN T_sp core__pathname_translations(T_sp host, T_sp hostp, T_sp set) {
   T_sp pair, l;
   {
+//    printf("%s:%d WITH_READ_LOCK\n", __FILE__, __LINE__ );
     WITH_READ_LOCK(_lisp->_Roots._ThePathnameTranslationsMutex);
     if (hostp.nilp()) return cl__copy_list(_lisp->pathnameTranslations_());
     size_t parsed_len, len;
@@ -666,25 +667,33 @@ CL_DEFUN T_sp core__pathname_translations(T_sp host, T_sp hostp, T_sp set) {
     }
   }
   {
-    WITH_READ_WRITE_LOCK(_lisp->_Roots._ThePathnameTranslationsMutex);
+//    printf("%s:%d WITH_READ_WRITE_LOCK\n", __FILE__, __LINE__ );
     if (pair.nilp()) {
       pair = Cons_O::create(host, Cons_O::create(_Nil<T_O>(), _Nil<T_O>()));
+      WITH_READ_WRITE_LOCK(_lisp->_Roots._ThePathnameTranslationsMutex);
       _lisp->setPathnameTranslations_(Cons_O::create(pair, _lisp->pathnameTranslations_()));
     }
-    for (l = set, set = _Nil<T_O>(); !cl__endp(l); l = CDR(l)) {
-      T_sp item = CAR(l);
-      T_sp from = coerce_to_from_pathname(oCar(item), host);
-      T_sp to = cl__pathname(oCadr(item));
-      set = Cons_O::create(Cons_O::create(from, Cons_O::create(to, _Nil<T_O>())), set);
+    {
+      WITH_READ_LOCK(_lisp->_Roots._ThePathnameTranslationsMutex);
+      for (l = set, set = _Nil<T_O>(); !cl__endp(l); l = CDR(l)) {
+        T_sp item = CAR(l);
+        T_sp from = coerce_to_from_pathname(oCar(item), host);
+        T_sp to = cl__pathname(oCadr(item));
+        set = Cons_O::create(Cons_O::create(from, Cons_O::create(to, _Nil<T_O>())), set);
+      }
+      set = cl__nreverse(set);
+      T_sp savedSet = set;
     }
-    set = cl__nreverse(set);
-    T_sp savedSet = set;
-    gc::As<Cons_sp>(oCdr(pair))->rplaca(set);
+    {
+      WITH_READ_WRITE_LOCK(_lisp->_Roots._ThePathnameTranslationsMutex);
+      gc::As<Cons_sp>(oCdr(pair))->rplaca(set);
+    }
     return set;
   }
 }
 
 bool clasp_logical_hostname_p(T_sp host) {
+//  printf("%s:%d WITH_READ_LOCK\n", __FILE__, __LINE__ );
   WITH_READ_LOCK(_lisp->_Roots._ThePathnameTranslationsMutex);
   if (!cl__stringp(host))
     return false;

@@ -149,7 +149,6 @@ CL_DOCSTRING("SeeCLHS use-package");
 CL_DEFUN T_sp cl__use_package(T_sp packages_to_use_desig, T_sp package_desig) {
   List_sp packages_to_use = coerce::listOfPackageDesignators(packages_to_use_desig);
   Package_sp package = coerce::packageDesignator(package_desig);
-  WITH_PACKAGE_READ_WRITE_LOCK(package);
   for (auto cur : packages_to_use) {
     Package_sp package_to_use = gc::As<Package_sp>(oCar(cur));
     package->usePackage(package_to_use);
@@ -163,7 +162,6 @@ CL_DOCSTRING("SeeCLHS unuse-package");
 CL_DEFUN T_sp cl__unuse_package(T_sp packages_to_unuse_desig, T_sp package_desig) {
   List_sp packages_to_unuse = coerce::listOfPackageDesignators(packages_to_unuse_desig);
   Package_sp package = coerce::packageDesignator(package_desig);
-  WITH_PACKAGE_READ_WRITE_LOCK(package);
   for (auto cur : packages_to_unuse) {
     Package_sp package_to_unuse = gc::As<Package_sp>(oCar(cur));
     package->unusePackage(package_to_unuse);
@@ -422,8 +420,7 @@ string Package_O::allSymbols() {
   return ss.str();
 }
 
-Symbol_mv Package_O::findSymbol_SimpleString(SimpleString_sp nameKey) const {
-  WITH_PACKAGE_READ_LOCK(this);
+Symbol_mv Package_O::findSymbol_SimpleString_no_lock(SimpleString_sp nameKey) const {
 //  client_validate(nameKey);
   T_mv ei = this->_ExternalSymbols->gethash(nameKey, _Nil<T_O>());
 //  client_validate(nameKey);
@@ -448,7 +445,6 @@ Symbol_mv Package_O::findSymbol_SimpleString(SimpleString_sp nameKey) const {
     _BLOCK_TRACEF(BF("Looking in _UsingPackages"));
     for (auto it = this->_UsingPackages.begin(); it != this->_UsingPackages.end(); it++) {
       Package_sp upkg = *it;
-      WITH_PACKAGE_READ_LOCK(upkg);
       LOG(BF("Looking in package[%s]") % _rep_(upkg));
       T_mv eu = upkg->_ExternalSymbols->gethash(nameKey, _Nil<T_O>());
       val = gc::As<Symbol_sp>(eu);
@@ -460,6 +456,11 @@ Symbol_mv Package_O::findSymbol_SimpleString(SimpleString_sp nameKey) const {
     }
   }
   return Values(_Nil<Symbol_O>(), _Nil<Symbol_O>());
+}
+
+Symbol_mv Package_O::findSymbol_SimpleString(SimpleString_sp nameKey) const {
+  WITH_PACKAGE_READ_LOCK(this);
+  return this->findSymbol_SimpleString_no_lock(nameKey);
 }
 
 Symbol_mv Package_O::findSymbol(const string &name) const {
@@ -504,12 +505,16 @@ T_mv Package_O::packageHashTables() const {
                  usingPackages));
 }
 
-bool Package_O::usingPackageP(Package_sp usePackage) const {
-  WITH_PACKAGE_READ_LOCK(this);
+bool Package_O::usingPackageP_no_lock(Package_sp usePackage) const {
   for (auto it = this->_UsingPackages.begin(); it != this->_UsingPackages.end(); ++it) {
     if ((*it) == usePackage) return true;
   }
   return false;
+}
+
+bool Package_O::usingPackageP(Package_sp usePackage) const {
+  WITH_PACKAGE_READ_LOCK(this);
+  return this->usingPackageP_no_lock(usePackage);
 }
 
   //
@@ -530,22 +535,24 @@ public:
 
 bool Package_O::usePackage(Package_sp usePackage) {
   LOG(BF("In usePackage this[%s]  using package[%s]") % this->getName() % usePackage->getName());
-  WITH_PACKAGE_READ_LOCK(this);
-  if (this->usingPackageP(usePackage)) {
-    LOG(BF("You are already using that package"));
-    return true;
-  }
-  FindConflicts findConflicts(this->asSmartPtr());
   {
-    usePackage->_ExternalSymbols->lowLevelMapHash(&findConflicts);
-    if (findConflicts._conflicts->hashTableCount() > 0) {
-      stringstream ss;
-      findConflicts._conflicts->mapHash([&ss] (T_sp key, T_sp val) {
-          ss << " " << _rep_(key);
-        });
-      SIMPLE_ERROR(BF("Error: Name conflict when importing package[%s]"
-                      " into package[%s]\n - conflicting symbols: %s") %
-                   usePackage->getName() % this->getName() % (ss.str()));
+    WITH_PACKAGE_READ_LOCK(this);
+    if (this->usingPackageP_no_lock(usePackage)) {
+      LOG(BF("You are already using that package"));
+      return true;
+    }
+    FindConflicts findConflicts(this->asSmartPtr());
+    {
+      usePackage->_ExternalSymbols->lowLevelMapHash(&findConflicts);
+      if (findConflicts._conflicts->hashTableCount() > 0) {
+        stringstream ss;
+        findConflicts._conflicts->mapHash([&ss] (T_sp key, T_sp val) {
+            ss << " " << _rep_(key);
+          });
+        SIMPLE_ERROR(BF("Error: Name conflict when importing package[%s]"
+                        " into package[%s]\n - conflicting symbols: %s") %
+                     usePackage->getName() % this->getName() % (ss.str()));
+      }
     }
   }
   {
@@ -623,7 +630,7 @@ void Package_O::_export2(Symbol_sp sym) {
   Export_errors error;
   {
     WITH_PACKAGE_READ_WRITE_LOCK(this);
-    T_mv values = this->findSymbol_SimpleString(nameKey);
+    T_mv values = this->findSymbol_SimpleString_no_lock(nameKey);
     Symbol_sp foundSym = gc::As<Symbol_sp>(values);
     Symbol_sp status = gc::As<Symbol_sp>(values.second());
     if (status.nilp()) {
@@ -639,7 +646,7 @@ void Package_O::_export2(Symbol_sp sym) {
       if (status == kw::_sym_internal) {
         this->_InternalSymbols->remhash(nameKey);
       }
-      this->add_symbol_to_package(nameKey,sym,true);
+      this->add_symbol_to_package_no_lock(nameKey,sym,true);
       error = no_problem;
     }
   } // TO HERE
@@ -669,7 +676,7 @@ bool Package_O::shadow(String_sp ssymbolName) {
   SimpleString_sp symbolName = coerce::simple_string(ssymbolName);
   Symbol_sp shadowSym, status;
   WITH_PACKAGE_READ_WRITE_LOCK(this);
-  Symbol_mv values = this->findSymbol_SimpleString(symbolName);
+  Symbol_mv values = this->findSymbol_SimpleString_no_lock(symbolName);
   shadowSym = values;
   status = gc::As<Symbol_sp>(values.valueGet_(1));
   if (status.nilp() || (status != kw::_sym_internal && status != kw::_sym_external)) {
@@ -677,7 +684,7 @@ bool Package_O::shadow(String_sp ssymbolName) {
     shadowSym->makunbound();
     shadowSym->setPackage(this->sharedThis<Package_O>());
     LOG(BF("Created symbol<%s>") % _rep_(shadowSym));
-    this->add_symbol_to_package(shadowSym->symbolName(), shadowSym, false);
+    this->add_symbol_to_package_no_lock(shadowSym->symbolName(), shadowSym, false);
   }
   this->_Shadowing->setf_gethash(shadowSym, _lisp->_true());
   return true;
@@ -695,7 +702,7 @@ CL_LAMBDA("sym &optional (package *package*)");
 CL_DEFUN T_sp cl__unexport(Symbol_sp sym, Package_sp package) {
   WITH_PACKAGE_READ_WRITE_LOCK(package);
   SimpleString_sp nameKey = sym->_Name;
-  T_mv values = package->findSymbol_SimpleString(nameKey);
+  T_mv values = package->findSymbol_SimpleString_no_lock(nameKey);
   Symbol_sp foundSym = gc::As<Symbol_sp>(values);
   Symbol_sp status = gc::As<Symbol_sp>(values.second());
   Export_errors error = no_problem;
@@ -713,10 +720,9 @@ CL_DEFUN T_sp cl__unexport(Symbol_sp sym, Package_sp package) {
   return _lisp->_true();
 }
 
-void Package_O::add_symbol_to_package(SimpleString_sp nameKey, Symbol_sp sym, bool exportp) {
+void Package_O::add_symbol_to_package_no_lock(SimpleString_sp nameKey, Symbol_sp sym, bool exportp) {
   //trapSymbol(this,sym,symName);
 //  printf("%s:%d add_symbol_to_package  symbol: %s package: %s\n", __FILE__, __LINE__, nameKey->c_str(), this->_Name.c_str());
-  WITH_PACKAGE_READ_WRITE_LOCK(this);
 #if 0
   if (_lisp->_TrapIntern) {
     if (strcmp(this->_Name->get_std_string().c_str(), _lisp->_TrapInternPackage.c_str()) == 0) {
@@ -744,13 +750,17 @@ void Package_O::add_symbol_to_package(SimpleString_sp nameKey, Symbol_sp sym, bo
   }
 }
 
+void Package_O::add_symbol_to_package(SimpleString_sp nameKey, Symbol_sp sym, bool exportp) {
+  WITH_PACKAGE_READ_WRITE_LOCK(this);
+  this->add_symbol_to_package_no_lock(nameKey,sym,exportp);
+}
 
 
 
 void Package_O::bootstrap_add_symbol_to_package(const char *symName, Symbol_sp sym, bool exportp, bool shadowp) {
   SimpleBaseString_sp nameKey = SimpleBaseString_O::make(std::string(symName));
   WITH_PACKAGE_READ_WRITE_LOCK(this);
-  this->add_symbol_to_package(nameKey,sym,exportp);
+  this->add_symbol_to_package_no_lock(nameKey,sym,exportp);
   if ( shadowp ) {
     this->_Shadowing->setf_gethash(sym,_lisp->_true());
   }
@@ -759,7 +769,7 @@ void Package_O::bootstrap_add_symbol_to_package(const char *symName, Symbol_sp s
 T_mv Package_O::intern(SimpleString_sp name) {
   WITH_PACKAGE_READ_WRITE_LOCK(this);
 //  client_validate(name);
-  Symbol_mv values = this->findSymbol_SimpleString(name);
+  Symbol_mv values = this->findSymbol_SimpleString_no_lock(name);
 //  client_validate(values->_Name);
   Symbol_sp sym = values;
   Symbol_sp status = gc::As<Symbol_sp>(values.valueGet_(1));
@@ -770,7 +780,7 @@ T_mv Package_O::intern(SimpleString_sp name) {
     status = _Nil<Symbol_O>();
     sym->setPackage(this->sharedThis<Package_O>());
     LOG(BF("Created symbol<%s>") % _rep_(sym));
-    this->add_symbol_to_package(sym->symbolName(), sym, false);
+    this->add_symbol_to_package_no_lock(sym->symbolName(), sym, false);
   }
   if (this->actsLikeKeywordPackage()) {
     sym->setf_symbolValue(sym);
@@ -781,16 +791,16 @@ T_mv Package_O::intern(SimpleString_sp name) {
   return Values(sym, status);
 }
 
-bool Package_O::unintern(Symbol_sp sym) {
+
+bool Package_O::unintern_no_lock(Symbol_sp sym) {
   // The following is not completely conformant with CLHS
   // unintern should throw an exception if removing a shadowing symbol
   // uncovers a name conflict of the symbol in two packages that are being used
   SimpleString_sp nameKey = sym->_Name;
   {
-    WITH_PACKAGE_READ_WRITE_LOCK(this);
     Symbol_sp sym, status;
     {
-      Symbol_mv values = this->findSymbol_SimpleString(nameKey);
+      Symbol_mv values = this->findSymbol_SimpleString_no_lock(nameKey);
       sym = values;
       status = gc::As<Symbol_sp>(values.valueGet_(1));
     }
@@ -812,13 +822,12 @@ bool Package_O::unintern(Symbol_sp sym) {
     }
   }
   {
-    WITH_PACKAGE_READ_LOCK(this);
     _BLOCK_TRACEF(BF("Looking in _UsingPackages"));
     HashTableEq_sp used_symbols(HashTableEq_O::create());
     for (auto it = this->_UsingPackages.begin(); it != this->_UsingPackages.end(); it++) {
       Symbol_sp uf, status;
       {
-        Symbol_mv values = (*it)->findSymbol_SimpleString(nameKey);
+        Symbol_mv values = (*it)->findSymbol_SimpleString_no_lock(nameKey);
         uf = values;
         status = gc::As<Symbol_sp>(values.valueGet_(1));
       }
@@ -834,6 +843,11 @@ bool Package_O::unintern(Symbol_sp sym) {
   return false;
 }
 
+bool Package_O::unintern(Symbol_sp sym) {
+  WITH_PACKAGE_READ_WRITE_LOCK(this);
+  return this->unintern_no_lock(sym);
+}  
+
 bool Package_O::isExported(Symbol_sp sym) {
   WITH_PACKAGE_READ_LOCK(this);
   SimpleString_sp nameKey = sym->_Name;
@@ -848,13 +862,13 @@ void Package_O::import(List_sp symbols) {
   for (auto cur : symbols) {
     Symbol_sp symbolToImport = gc::As<Symbol_sp>(oCar(cur));
     SimpleString_sp nameKey = symbolToImport->_Name;
-    Symbol_mv values = this->findSymbol_SimpleString(nameKey);
+    Symbol_mv values = this->findSymbol_SimpleString_no_lock(nameKey);
     Symbol_sp foundSymbol = values;
     Symbol_sp status = gc::As<Symbol_sp>(values.valueGet_(1));
     if (status == kw::_sym_external || status == kw::_sym_internal) {
       // do nothing
     } else if (status == kw::_sym_inherited || status.nilp()) {
-      this->add_symbol_to_package(nameKey,symbolToImport,false);
+      this->add_symbol_to_package_no_lock(nameKey,symbolToImport,false);
     } else {
       PACKAGE_ERROR(this->sharedThis<Package_O>());
     }
@@ -866,13 +880,13 @@ void Package_O::shadowingImport(List_sp symbols) {
   for (auto cur : symbols) {
     Symbol_sp symbolToImport = gc::As<Symbol_sp>(oCar(cur));
     SimpleString_sp nameKey = symbolToImport->_Name;
-    Symbol_mv values = this->findSymbol_SimpleString(nameKey);
+    Symbol_mv values = this->findSymbol_SimpleString_no_lock(nameKey);
     Symbol_sp foundSymbol = values;
     Symbol_sp status = gc::As<Symbol_sp>(values.valueGet_(1));
     if (status == kw::_sym_internal || status == kw::_sym_external) {
-      this->unintern(foundSymbol);
+      this->unintern_no_lock(foundSymbol);
     }
-    this->add_symbol_to_package(nameKey,symbolToImport,false);
+    this->add_symbol_to_package_no_lock(nameKey,symbolToImport,false);
     this->_Shadowing->setf_gethash(symbolToImport, _lisp->_true());
   }
 }

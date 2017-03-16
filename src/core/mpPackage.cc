@@ -42,6 +42,27 @@ THE SOFTWARE.
 
 namespace mp {
 
+#ifdef DEBUG_THREADS
+void debug_mutex_lock(Mutex* m) {
+  if (core::_sym_STARdebug_threadsSTAR
+      && !core::_sym_STARdebug_threadsSTAR.unboundp()
+      && core::_sym_STARdebug_threadsSTAR->boundP()
+      && core::_sym_STARdebug_threadsSTAR->symbolValue().notnilp()) {
+    printf("%s:%d     LOCKING mutex@%p\n", __FILE__, __LINE__, (void*)m);
+    fflush(stdout);
+  }
+};
+void debug_mutex_unlock(Mutex* m) {
+  if (core::_sym_STARdebug_threadsSTAR
+      && !core::_sym_STARdebug_threadsSTAR.unboundp()
+      && core::_sym_STARdebug_threadsSTAR->boundP()
+      && core::_sym_STARdebug_threadsSTAR->symbolValue().notnilp()) {
+    printf("%s:%d   Unlocking mutex@%p\n", __FILE__, __LINE__, (void*)m);
+    fflush(stdout);
+  }
+};
+#endif
+
 struct RAIIMutexLock {
   Mutex _Mutex;
   RAIIMutexLock(Mutex& m) : _Mutex(m) {
@@ -86,10 +107,15 @@ void* start_thread(void* claspProcess) {
   core::ThreadLocalState my_thread_local_state(&stack_base);
   printf("%s:%d entering start_thread  &my_thread -> %p \n", __FILE__, __LINE__, (void*)&my_thread);
   my_thread = &my_thread_local_state;
-  my_thread->initialize_thread();
+  my_thread->initialize_thread(p);
   p->_ThreadInfo = my_thread;
   // Set the mp:*current-process* variable to the current process
   core::DynamicScopeManager scope(_sym_STARcurrent_processSTAR,p);
+  core::List_sp reversed_bindings = core::cl__reverse(p->_InitialSpecialBindings);
+  for ( auto cur : reversed_bindings ) {
+    core::Cons_sp pair = gc::As<core::Cons_sp>(oCar(cur));
+    scope.pushSpecialVariableAndSet(pair->_Car,core::eval::evaluate(pair->_Cdr,_Nil<core::T_O>()));
+  }
 #if 0
 #ifdef USE_BOEHM
   GC_stack_base gc_stack_base;
@@ -137,6 +163,17 @@ void* start_thread(void* claspProcess) {
 
 
 
+string Process_O::__repr__() const {
+  stringstream ss;
+  ss << "#<PROCESS ";
+  ss << _rep_(this->_Name);
+#ifdef USE_BOEHM // things don't move in boehm
+  ss << " @" << (void*)(this->asSmartPtr().raw_());
+#endif
+  ss << ">";
+  return ss.str();
+}
+
 
 CL_DEFUN Process_sp mp__lock_owner(Mutex_sp m) {
   return m->_Owner;
@@ -145,6 +182,13 @@ CL_DEFUN Process_sp mp__lock_owner(Mutex_sp m) {
 CL_DEFUN int mp__process_enable(Process_sp process)
 {
   return process->enable();
+};
+
+CL_LAMBDA(name function &optional special_bindings);
+CL_DEFUN Process_sp mp__process_run_function(core::T_sp name, core::T_sp function, core::List_sp special_bindings) {
+  Process_sp p = Process_O::make_process(name,function,_Nil<core::T_O>(),special_bindings,DEFAULT_THREAD_STACK_SIZE);
+  p->enable();
+  return p;
 };
 
 CL_DEFUN core::List_sp mp__all_processes() {
@@ -217,6 +261,7 @@ CL_DEFUN core::T_sp mp__mutex_name(Mutex_sp m) {
   return m->_Name;
 }
 
+CL_LAMBDA(m &optional (waitp t));
 CL_DEFUN bool mp__get_lock(Mutex_sp m, bool waitp) {
   return m->lock(waitp);
 }
@@ -244,13 +289,28 @@ CL_DEFUN bool mp__condition_variable_wait(ConditionVariable_sp cv, Mutex_sp mute
   return cv->wait(mutex);
 };
 
-CL_DEFUN bool mp__condition_variable_timedwait(ConditionVariable_sp cv, Mutex_sp mutex, size_t timeout) {
-  return cv->timed_wait(mutex,timeout);
+CL_DEFUN bool mp__condition_variable_timedwait(ConditionVariable_sp cv, Mutex_sp mutex, double timeout_seconds) {
+  return cv->timed_wait(mutex,timeout_seconds);
 };
 
 CL_DEFUN void mp__condition_variable_signal(ConditionVariable_sp cv) {
   cv->signal();
 };
+
+CL_DEFUN void mp__condition_variable_broadcast(ConditionVariable_sp cv) {
+  cv->broadcast();
+};
+
+CL_DEFUN void mp__push_default_special_binding(core::Symbol_sp symbol, core::T_sp form)
+{
+  _lisp->push_default_special_binding(symbol,form);
+}
+
+CL_DEFUN core::List_sp mp__copy_default_special_bindings()
+{
+  return _lisp->copy_default_special_bindings();
+}
+
 
 
 };

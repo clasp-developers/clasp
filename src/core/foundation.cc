@@ -95,9 +95,10 @@ ThreadLocalState::ThreadLocalState(void* stack_top) :  _DisableInterrupts(false)
   this->_BufferStrWNsPool.reset_();
 }
 
-void ThreadLocalState::initialize_thread() {
+void ThreadLocalState::initialize_thread(mp::Process_sp process) {
   printf("%s:%d Initialize all ThreadLocalState things this->%p\n",__FILE__, __LINE__, (void*)this);
   this->_Bindings.reserve(1024);
+  this->_Process = process;
   this->_BFormatStringOutputStream = clasp_make_string_output_stream();
   this->_BignumRegister0 = Bignum_O::create(0);
   this->_BignumRegister1 = Bignum_O::create(0);
@@ -330,6 +331,11 @@ void lisp_write(const boost::format &fmt, T_sp strm) {
 
 Symbol_sp lisp_symbolNil() {
   return _Nil<Symbol_O>();
+}
+
+
+List_sp lisp_copy_default_special_bindings() {
+  return _lisp->copy_default_special_bindings();
 }
 
 #if 0

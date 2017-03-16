@@ -206,6 +206,7 @@ public:
 Lisp_O::GCRoots::GCRoots() :
 #ifdef CLASP_THREADS
   _ActiveThreads(_Nil<T_O>()),
+  _DefaultSpecialBindings(_Nil<T_O>()),
 #endif
   _SpecialForms(_Unbound<HashTableEq_O>()),
   _NullStream(_Nil<T_O>()),
@@ -673,8 +674,9 @@ void Lisp_O::startupLispEnvironment(Bundle *bundle) {
   //
   // Initialize the main thread info
   //
-  
-  my_thread->initialize_thread();
+  mp::Process_sp main_process = mp::Process_O::make_process(_lisp->intern("MAIN-PROCESS",CorePkg),_Nil<T_O>(),_lisp->copy_default_special_bindings(),_Nil<T_O>(),0);
+  my_thread->initialize_thread(main_process);
+  printf("%s:%d  After my_thread->initialize_thread  my_thread->_Process -> %p\n", __FILE__, __LINE__, (void*)my_thread->_Process.raw_());
   {
     _BLOCK_TRACE("Start printing symbols properly");
     this->_PrintSymbolsProperly = true;
@@ -778,20 +780,48 @@ void Lisp_O::prin1(boost::format fmt) {
 void Lisp_O::add_process(mp::Process_sp process) {
   WITH_READ_WRITE_LOCK(this->_Roots._ActiveThreadsMutex);
   this->_Roots._ActiveThreads = Cons_O::create(process,this->_Roots._ActiveThreads);
+#ifdef DEBUG_ADD_PROCESS
+  printf("%s:%d Added process %s @%p active threads now: %s\n", __FILE__, __LINE__, _rep_(process).c_str(), (void*)process.raw_(), _rep_(this->_Roots._ActiveThreads).c_str());
+  fflush(stdout);
+#endif
 }
 
 void Lisp_O::remove_process(mp::Process_sp process) {
   {
     WITH_READ_WRITE_LOCK(this->_Roots._ActiveThreadsMutex);
     T_sp* cur = reinterpret_cast<T_sp*>(&this->_Roots._ActiveThreads);
+#ifdef DEBUG_ADD_PROCESS
+    printf("%s:%d remove_process %s this->_Roots._ActiveThreads=@%p  from: %s\n", __FILE__, __LINE__, _rep_(process).c_str(), (void*)this->_Roots._ActiveThreads.raw_(), _rep_(this->_Roots._ActiveThreads).c_str());
+    dbg_lowLevelDescribe(this->_Roots._ActiveThreads);
+#endif
     while ((*cur).consp()) {
-      if (oCar(*cur) == process) {
+      mp::Process_sp p = oCar(*cur);
+#ifdef DEBUG_ADD_PROCESS
+      printf("        cur->%p   comparing to process: %s @%p\n", (void*)cur, _rep_(p).c_str(), (void*)p.raw_());
+#endif
+      if (p == process) {
         *cur = oCdr(*cur);
-        return;
+#ifdef DEBUG_ADD_PROCESS
+        printf("         MATCHED to process: %s @%p\n", _rep_(p).c_str(), (void*)p.raw_());
+#endif
+        goto DONE;
       }
-      cur = &reinterpret_cast<Cons_O*>(cur)->_Cdr;
+      cur = &(gctools::reinterpret_cast_smart_ptr<Cons_O>(*cur))->_Cdr;
+#ifdef DEBUG_ADD_PROCESS
+      printf("          Advanced cur to %p (*cur).raw_()->%p  (*cur).consp() -> %d\n", (void*)cur, (void*)(*cur).raw_(), (*cur).consp());
+#endif
     }
+  DONE:
+#ifdef DEBUG_ADD_PROCESS
+    printf("%s:%d  Leaving remove_process this->_Roots._ActiveThreads=%p  threads: %s\n", __FILE__, __LINE__, (void*)this->_Roots._ActiveThreads.raw_(), _rep_(this->_Roots._ActiveThreads).c_str());
+    fflush(stdout);
+#endif
+    return;
   }
+#ifdef DEBUG_ADD_PROCESS
+  printf("%s:%d Fell through the bottom of remove_process\n",__FILE__,__LINE__);
+  fflush(stdout);
+#endif
   SIMPLE_ERROR(BF("Could not find process %s") % process);
 }
 
@@ -799,6 +829,20 @@ List_sp Lisp_O::processes() const {
   WITH_READ_LOCK(this->_Roots._ActiveThreadsMutex);
   return cl__copy_list(this->_Roots._ActiveThreads);
 }
+
+void Lisp_O::push_default_special_binding(Symbol_sp symbol, T_sp form)
+{
+  WITH_READ_WRITE_LOCK(this->_Roots._DefaultSpecialBindingsMutex);
+  Cons_sp pair = Cons_O::create(symbol,form);
+  this->_Roots._DefaultSpecialBindings = Cons_O::create(pair,this->_Roots._DefaultSpecialBindings);
+}
+
+List_sp Lisp_O::copy_default_special_bindings() const {
+  WITH_READ_LOCK(this->_Roots._DefaultSpecialBindingsMutex);
+  return cl__copy_list(this->_Roots._DefaultSpecialBindings);
+}
+
+
 #endif
 
 

@@ -328,9 +328,7 @@ CL_DECLARE();
 CL_DOCSTRING("startupImagePathname - returns a pathname based on *features* :CLASP-MIN, :USE-MPS, :BCLASP");
 CL_DEFUN T_sp core__startup_image_pathname() {
   stringstream ss;
-  ss << "build:";
-  ss << VARIANT_NAME;
-  ss << "/image.fasl";
+  ss << "app-executable:cclasp-" << VARIANT_NAME << "-image.fasl";
   String_sp spath = SimpleBaseString_O::make(ss.str());
   Pathname_sp pn = cl__pathname(spath);
   return pn;
