@@ -159,6 +159,19 @@
 (defmethod cleavir-env:variable-info ((environment core:value-environment) symbol)
   (cleavir-env:variable-info (core:get-parent-environment environment) symbol))
 
+(defmethod cleavir-env:declarations ((environment null))
+  (cleavir-env:declarations *clasp-env*))
+
+;;; TODO: Handle (declaim (declaration ...))
+(defmethod cleavir-env:declarations
+    ((environment clasp-global-environment))
+  '(;; behavior as in convert-form.lisp
+    core:lambda-name
+    ;; unknown, common in kernel/lsp/
+    si::c-local
+    ;; unknown, in kernel/cmp/cmpgf.lsp
+    :read-only))
+
 (defvar *global-optimize*
   ;; initial value, changed by de/proclaim
   '((compilation-speed 1)

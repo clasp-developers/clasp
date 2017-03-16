@@ -1184,8 +1184,9 @@
   (declare (type t type)
            (type (or null function symbol) function)
 	   (type real priority)
-	   (type pprint-dispatch-table table)
+	   #+(or)(type pprint-dispatch-table table)
 	   #.+ecl-safe-declarations+)
+  (format t "In call: Table is ~a~%" table)
   ;; FIXME! This check should be automatically generated when compiling
   ;; with high enough safety mode.
   (unless (typep priority 'real)
@@ -1608,6 +1609,7 @@
 
 (progn
   (let ((*print-pprint-dispatch* (make-pprint-dispatch-table)))
+    (format t "Before call: Table is ~a~%" *print-pprint-dispatch*)
     ;; Printers for regular types.
     (set-pprint-dispatch 'array #'pprint-array)
     (set-pprint-dispatch '(cons (and symbol (satisfies fboundp)))

@@ -94,20 +94,6 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
-;;; Drawing datum DYNAMIC-LEXICAL-LOCATION.
-
-(defmethod label-datum ((datum cleavir-ir:dynamic-lexical-location))
-  (cleavir-ir:name datum))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;
-;;; Drawing datum STATIC-LEXICAL-LOCATION.
-
-(defmethod label-datum ((datum cleavir-ir:static-lexical-location))
-  (cleavir-ir:name datum))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;
 ;;; Drawing datum VALUES-LOCATION.
 
 (defmethod label-datum ((datum cleavir-ir:values-location)) "V")
