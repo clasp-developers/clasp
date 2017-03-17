@@ -1121,11 +1121,12 @@ that llvm function. This works like compile-lambda-function in bclasp."
     (cclasp-compile-in-env name form nil)))
 
 (defun cleavir-compile-file (given-input-pathname &rest args)
+  (format t "Entered cleavir-compile-file~%")
   (let ((*debug-log-index* 0)
 	(cleavir-generate-ast:*compiler* 'cl:compile-file)
         (cmp:*cleavir-compile-file-hook* 'cleavir-compile-file-form)
         (core:*use-cleavir-compiler* t))
-    (apply #'cmp::compile-file* #'cleavir-compile-file-form given-input-pathname args)))
+    (apply #'cmp::compile-file given-input-pathname args)))
 
 (defmacro with-debug-compile-file ((log-file &key debug-log-on) &rest body)
   `(with-open-file (clasp-cleavir::*debug-log* ,log-file :direction :output)

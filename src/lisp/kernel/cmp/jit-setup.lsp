@@ -35,6 +35,10 @@
 
 (defconstant +debug-dwarf-version+ 4)
 
+;;;(defvar *llvm-context* (llvm-sys:create-llvm-context))
+(mp:push-default-special-binding 'cmp:*llvm-context* '(llvm-sys:create-llvm-context))
+
+
 
 (defun generate-target-triple ()
   "Uses *features* to generate the target triple for the current machine
@@ -142,7 +146,6 @@ Return the module and the global variable that represents the load-time-value-ho
 
 
 (llvm-sys:initialize-native-target)
-;;;(defvar *llvm-context* (llvm-sys::get-global-context))
 
 (defvar *run-time-module* nil)
 
