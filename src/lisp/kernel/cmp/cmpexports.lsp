@@ -6,10 +6,10 @@
           quick-module-dump
           quick-message-dump
           *irbuilder*
-          +ltv*+
+          %ltv*%
           irc-function-create
           irc-bclasp-function-create
-          +fn-prototype+
+          %fn-prototype%
           *all-functions-for-one-compile*
           *cleavir-compile-file-hook*
           *cleavir-compile-hook*
@@ -41,27 +41,27 @@
           +single-float-tag+
           +character-tag+
           +general-tag+
-          +i1+
-          +exception-struct+
-          +fn-prototype+
+          %i1%
+          %exception-struct%
+          %fn-prototype%
           +fn-prototype-argument-names+
-          +i32+
-          +i64+
-          +i8*+
-          +i8+
-          +mv-struct+
-          +size_t+
-          +t*+
-          +tsp[0]+
-          +tsp+
-          +tsp[0]*+
-          +tsp*+
-          +t**+
-          +tsp[DUMMY]+
-          +tsp[DUMMY]*+
+          %i32%
+          %i64%
+          %i8*%
+          %i8%
+          %mv-struct%
+          %size_t%
+          %t*%
+          %tsp[0]%
+          %tsp%
+          %tsp[0]*%
+          %tsp*%
+          %t**%
+          %tsp[DUMMY]%
+          %tsp[DUMMY]*%
           null-t-ptr
-          +gcroots-in-module+
-          +gcroots-in-module*+
+          %gcroots-in-module%
+          %gcroots-in-module*%
           function-type-create-on-the-fly
           evaluate-foreign-arguments
           jit-remove-module
@@ -168,9 +168,9 @@
           make-uintptr_t
           +cons-car-offset+
           +cons-cdr-offset+
-          +uintptr_t+
-          +return_type+
-          +VaList_S+
+          %uintptr_t%
+          %return_type%
+          %VaList_S%
           null-t-ptr
           compile-error-if-wrong-number-of-arguments
           compile-error-if-too-many-arguments
@@ -183,7 +183,7 @@
           *source-debug-use-lineno*
           irc-get-terminate-landing-pad-block
           irc-function-cleanup-and-return
-          +RUN-AND-LOAD-TIME-VALUE-HOLDER-GLOBAL-VAR-TYPE+
+          %RUN-AND-LOAD-TIME-VALUE-HOLDER-GLOBAL-VAR-TYPE%
           codegen-startup-shutdown
           ))
 

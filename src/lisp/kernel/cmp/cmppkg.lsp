@@ -1,6 +1,6 @@
 (in-package :cmp)
 
-(export '(+fn-prototype+
+(export '(%fn-prototype%
 	  *load-time-value-holder-global-var*
 	  irc-intrinsic
 	  irc-branch-to-and-begin-block
@@ -32,10 +32,10 @@
 	  set-associated-funcs
 	  *block-name-prefix*
 	  irc-switch
-	  +t*+
-	  +i1+
-	  +size_t+
-	  +i32+
+	  %t*%
+	  %i1%
+	  %size_t%
+	  %i32%
 	  codegen-rts/symbol
 	  irc-begin-block
 	  irc-basic-block-create

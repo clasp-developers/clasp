@@ -50,7 +50,7 @@
 	  (cmp:irc-begin-block not-unwind-exception-bb)
 	  (let* ((exn7 (llvm-sys:create-load-value-twine cmp:*irbuilder* exn.slot-alloca "exn7"))
 		 (sel (cmp:irc-load ehselector.slot-alloca))
-		 (undef (llvm-sys:undef-value-get cmp:+exception-struct+ ))
+		 (undef (llvm-sys:undef-value-get cmp:%exception-struct% ))
 		 (lpad.val (llvm-sys:create-insert-value cmp:*irbuilder*
 							 undef exn7 '(0) "lpad.val"))
 		 (lpad.val8 (llvm-sys:create-insert-value cmp:*irbuilder*

@@ -35,8 +35,8 @@
   (cmp:make-uintptr_t num))
 
 (defgeneric %default-int-type (abi))
-(defmethod %default-int-type ((abi abi-x86-64)) cmp:+i64+)
-(defmethod %default-int-type ((abi abi-x86-32)) cmp:+i32+)
+(defmethod %default-int-type ((abi abi-x86-64)) cmp:%i64%)
+(defmethod %default-int-type ((abi abi-x86-32)) cmp:%i32%)
 
 (defun %literal (lit &optional (label "literal"))
   (llvm-sys:create-extract-value
@@ -51,27 +51,27 @@
   (%literal nil))
 
 (defun alloca-VaList_S (&optional (label "VaList_S"))
-  (llvm-sys:create-alloca *entry-irbuilder* cmp:+VaList_S+ (%i32 1) label))
+  (llvm-sys:create-alloca *entry-irbuilder* cmp:%VaList_S% (%i32 1) label))
 
 (defun alloca-size_t (&optional (label "var"))
-  (llvm-sys:create-alloca *entry-irbuilder* cmp:+size_t+ (%i32 1) label))
+  (llvm-sys:create-alloca *entry-irbuilder* cmp:%size_t% (%i32 1) label))
 
 (defun alloca-i32 (&optional (label "var"))
-  (llvm-sys:create-alloca *entry-irbuilder* cmp:+i32+ (%i32 1) label))
+  (llvm-sys:create-alloca *entry-irbuilder* cmp:%i32% (%i32 1) label))
 
 (defun alloca-i8* (&optional (label "var"))
-  (llvm-sys:create-alloca *entry-irbuilder* cmp:+i8*+ (%i32 1) label))
+  (llvm-sys:create-alloca *entry-irbuilder* cmp:%i8*% (%i32 1) label))
 
 (defun alloca-i8 (num &optional (label "var"))
   "Allocate a block of memory in the stack frame"
-  (llvm-sys:create-alloca *entry-irbuilder* cmp:+i8+ (%i32 num) label))
+  (llvm-sys:create-alloca *entry-irbuilder* cmp:%i8% (%i32 num) label))
 
 (defun alloca-return_type (&optional (label "return-value"))
-  (let ((instr (llvm-sys:create-alloca *entry-irbuilder* cmp:+return_type+ (%i32 1) label)))
+  (let ((instr (llvm-sys:create-alloca *entry-irbuilder* cmp:%return_type% (%i32 1) label)))
     instr))
 
 (defun alloca-t* (&optional (label "var"))
-  (let ((instr (llvm-sys:create-alloca *entry-irbuilder* cmp:+t*+ (%i32 1) label)))
+  (let ((instr (llvm-sys:create-alloca *entry-irbuilder* cmp:%t*% (%i32 1) label)))
     #+(or)(cc-dbg-when *debug-log*
 		       (format *debug-log* "          alloca-t*   *entry-irbuilder* = ~a~%" *entry-irbuilder*)
 		       (format *debug-log* "          Wrote ALLOCA ~a into function ~a~%" instr (llvm-sys:get-name (instruction-llvm-function instr))))
@@ -79,13 +79,13 @@
 
 (defun alloca-mv-struct (&optional (label "V"))
   (cmp:with-irbuilder (*entry-irbuilder*)
-    (llvm-sys:create-alloca cmp:*irbuilder* cmp:+mv-struct+ (%i32 1) label)))
+    (llvm-sys:create-alloca cmp:*irbuilder* cmp:%mv-struct% (%i32 1) label)))
 
 
 (defun %load-or-null (obj)
   (if obj
       (cmp:irc-load obj)
-      (llvm-sys:constant-pointer-null-get cmp:+t*+)))
+      (llvm-sys:constant-pointer-null-get cmp:%t*%)))
 
 
 (defun instruction-llvm-function (instr)
@@ -265,10 +265,10 @@
   (with-return-values (return-vals return-value abi)
     (let* ((args (mapcar (lambda (x) (%load x)) arg-allocas))
            (func (or (llvm-sys:get-function cmp:*the-module* intrinsic-name)
-                     (let ((arg-types (make-list (length args) :initial-element cmp:+t*+))
+                     (let ((arg-types (make-list (length args) :initial-element cmp:%t*%))
                            (varargs nil))
                        (setq func (cmp:irc-function-create
-                                   (llvm-sys:function-type-get cmp:+return_type+ arg-types varargs)
+                                   (llvm-sys:function-type-get cmp:%return_type% arg-types varargs)
                                    'llvm-sys::External-linkage
                                    intrinsic-name
                                    cmp:*the-module*)))))

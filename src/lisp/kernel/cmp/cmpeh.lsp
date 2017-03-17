@@ -45,7 +45,7 @@ For sbcl
 	   (,longjmp-block (irc-basic-block-create "longjmp-block"))
 	   (,cleanup-block (irc-basic-block-create "setjmp-cleanup")))
        ;;       (irc-setjmp.buf-set-jump-address ,env ,jmp-buf-var (llvm-sys:block-address-get *current-function* ,longjmp-block))
-       (let* ((,setjmpret (irc-intrinsic "llvm.eh.sjlj.setjmp" (llvm-sys:create-bit-cast *irbuilder* ,jmp-buf-var +i8*+ "setjmp-buf")))
+       (let* ((,setjmpret (irc-intrinsic "llvm.eh.sjlj.setjmp" (llvm-sys:create-bit-cast *irbuilder* ,jmp-buf-var %i8*% "setjmp-buf")))
 	      (,cmp (irc-icmp-eq ,setjmpret (jit-constant-i32 0))))
 	 (irc-cond-br ,cmp ,body-block ,longjmp-block)
 	 (irc-begin-block ,body-block)
@@ -115,7 +115,7 @@ eg: '(block ((exception var) code...))"
 		 (irc-add-clause landpad (irc-exception-typeid* ct)))))
 	  types)
     (when includes-all-other-exceptions
-      (irc-add-clause landpad (llvm-sys:constant-pointer-null-get +i8*+)))
+      (irc-add-clause landpad (llvm-sys:constant-pointer-null-get %i8*%)))
     ))
 
 

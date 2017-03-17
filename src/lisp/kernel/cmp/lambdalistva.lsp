@@ -251,7 +251,7 @@ will put a value into target-ref."
 	(unbound-cont-block-gs (gensym)))
     `(progn
        (with-target-reference-do (,target-ref ,target ,env)
-	 (let ((,i1-target-is-bound-gs (irc-trunc (irc-intrinsic "isBound" ,target-ref) +i1+))
+	 (let ((,i1-target-is-bound-gs (irc-trunc (irc-intrinsic "isBound" ,target-ref) %i1%))
 	       (,unbound-do-block-gs (irc-basic-block-create "unbound-do"))
 	       (,unbound-cont-block-gs (irc-basic-block-create "unbound-cont"))
 	       )
@@ -390,9 +390,9 @@ will put a value into target-ref."
       (let ((entry-arg-idx_lt_nargs (irc-icmp-slt entry-arg-idx (calling-convention-nargs args))) )
 	(irc-cond-br entry-arg-idx_lt_nargs loop-kw-args-block kw-exit-block))
       (irc-begin-block loop-kw-args-block)
-      (let* ((phi-saw-aok (irc-phi +size_t+ 2 "phi-saw-aok"))
-	     (phi-arg-idx (irc-phi +size_t+ 2 "phi-reg-arg-idx"))
-	     (phi-bad-kw-idx (irc-phi +size_t+ 2 "phi-bad-kw-idx")) )
+      (let* ((phi-saw-aok (irc-phi %size_t% 2 "phi-saw-aok"))
+	     (phi-arg-idx (irc-phi %size_t% 2 "phi-reg-arg-idx"))
+	     (phi-bad-kw-idx (irc-phi %size_t% 2 "phi-bad-kw-idx")) )
 	(irc-phi-add-incoming phi-saw-aok entry-saw-aok kw-start-block)
 	(irc-phi-add-incoming phi-arg-idx entry-arg-idx kw-start-block)
 	(irc-phi-add-incoming phi-bad-kw-idx entry-bad-kw-idx kw-start-block)
@@ -401,7 +401,7 @@ will put a value into target-ref."
                (arg-idx+1 (irc-add phi-arg-idx (jit-constant-size_t 1)))
                (kw-arg-val (calling-convention-args.va-arg args arg-idx+1)))
 	  (irc-intrinsic "cc_ifNotKeywordException" arg-ref phi-arg-idx (calling-convention-va-list args))
-	  (let* ((eq-aok-ref-and-arg-ref (irc-trunc (irc-intrinsic "compareTspTptr" aok-ref arg-ref) +i1+)) ; compare arg-ref to a-o-k
+	  (let* ((eq-aok-ref-and-arg-ref (irc-trunc (irc-intrinsic "compareTspTptr" aok-ref arg-ref) %i1%)) ; compare arg-ref to a-o-k
 		 (aok-block (irc-basic-block-create "aok-block"))
 		 (possible-kw-block (irc-basic-block-create "possible-kw-block"))
 		 (advance-arg-idx-block (irc-basic-block-create "advance-arg-idx-block"))
@@ -459,8 +459,8 @@ will put a value into target-ref."
 	      ;; Now advance the arg-idx, finish up the phi-nodes
 	      ;; and if we ran out of arguments branch out of the loop else branch to the top of the loop
 	      (irc-begin-block advance-arg-idx-block)
-	      (let* ((phi-arg-bad-good-aok (irc-phi +size_t+ 3 "phi-this-was-aok"))
-		     (phi.aok-bad-good.bad-kw-idx (irc-phi +size_t+ 3 "phi.aok-bad-good.bad-kw-idx")))
+	      (let* ((phi-arg-bad-good-aok (irc-phi %size_t% 3 "phi-this-was-aok"))
+		     (phi.aok-bad-good.bad-kw-idx (irc-phi %size_t% 3 "phi.aok-bad-good.bad-kw-idx")))
 		(irc-phi-add-incoming phi-arg-bad-good-aok loop-saw-aok aok-block)
 		(irc-phi-add-incoming phi-arg-bad-good-aok phi-saw-aok bad-kw-block)
 		(irc-phi-add-incoming phi-arg-bad-good-aok phi-saw-aok good-kw-block)
@@ -479,7 +479,7 @@ will put a value into target-ref."
 		  (let ((kw-done-block (irc-basic-block-create "kw-done-block")))
 		    (irc-branch-to-and-begin-block kw-done-block)
 		    (irc-branch-to-and-begin-block kw-exit-block)
-		    (let ((phi-arg-idx-final (irc-phi +size_t+ 2 "phi-arg-idx-final")))
+		    (let ((phi-arg-idx-final (irc-phi %size_t% 2 "phi-arg-idx-final")))
 		      (irc-phi-add-incoming phi-arg-idx-final entry-arg-idx kw-start-block)
 		      (irc-phi-add-incoming phi-arg-idx-final loop-arg-idx kw-done-block)
 		      (irc-low-level-trace)
@@ -657,7 +657,7 @@ lambda-list-handler/env/argument-activation-frame"
           (target (car cur-target) (car cur-target))
           (arg (car cur-fixed-args) (car cur-fixed-args)))
          ((null cur-target))
-      (let ((tsp-arg (irc-insert-value (llvm-sys:undef-value-get +tsp+) arg (list 0) "arg")))
+      (let ((tsp-arg (irc-insert-value (llvm-sys:undef-value-get %tsp%) arg (list 0) "arg")))
         (with-target-reference-do (tref target new-env) (irc-store tsp-arg tref))))))
 
 
