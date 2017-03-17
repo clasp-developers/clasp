@@ -55,7 +55,7 @@
 
 (apropos "invalidated-dispatch-functions")
 
-(clasp-cleavir:cleavir-compile 'foo '(lambda (x y) (+ x y)))
+(clasp-cleavir:cleavir-compile 'foo '(lambda (x y) (+ x y)))ption
 (time (clasp-cleavir:cleavir-compile-file "sys:kernel;lsp;predlib.lsp"))
 
 (let ((clos::*monitor-dispatch* t)

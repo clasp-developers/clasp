@@ -214,6 +214,8 @@ class Lisp_O {
 #ifdef CLASP_THREADS
     List_sp _ActiveThreads;
     mutable mp::SharedMutex _ActiveThreadsMutex;
+    List_sp _DefaultSpecialBindings;
+    mutable mp::SharedMutex _DefaultSpecialBindingsMutex;
 #endif
 #ifdef CLASP_THREADS
     mutable mp::SharedMutex _SyspropMutex;
@@ -281,7 +283,7 @@ class Lisp_O {
     T_sp _NullStream;
     List_sp _ThePathnameTranslations; /* alist */
 #ifdef CLASP_THREADS
-    mutable mp::SharedRecursiveMutex _ThePathnameTranslationsMutex;
+    mutable mp::SharedMutex _ThePathnameTranslationsMutex;
 #endif
     Complex_sp _ImaginaryUnit;
     Complex_sp _ImaginaryUnitNegative;
@@ -368,6 +370,8 @@ public:
   void add_process(mp::Process_sp process);
   void remove_process(mp::Process_sp process);
   List_sp processes() const;
+  void push_default_special_binding(Symbol_sp sym, T_sp form);
+  List_sp copy_default_special_bindings() const;
 #endif
 public:
   /*! Map source file path strings to SourceFileInfo_sp */

@@ -65,7 +65,7 @@ class Package_O : public General_O {
   std::atomic<bool> _ActsLikeKeywordPackage;
   List_sp _Nicknames;
 #ifdef CLASP_THREADS
-  mutable mp::SharedRecursiveMutex _Lock;
+  mutable mp::SharedMutex _Lock;
 #endif
  public: // Creation class functions
   static Package_sp create(const string &p);
@@ -73,6 +73,7 @@ class Package_O : public General_O {
  public:
   /*! Very low level - add to internal symbols unless keyword
 	  package, in that case add to external symbols */
+  void add_symbol_to_package_no_lock(SimpleString_sp nameKey, Symbol_sp sym, bool exportp = false);
   void add_symbol_to_package(SimpleString_sp nameKey, Symbol_sp sym, bool exportp = false);
   void bootstrap_add_symbol_to_package(const char *symName, Symbol_sp sym, bool exportp = false, bool shadowp = false);
 
@@ -121,6 +122,7 @@ class Package_O : public General_O {
   /*! Return the symbol if we contain it directly */
   Symbol_mv findSymbolDirectlyContained(String_sp nameKey) const;
 
+  Symbol_mv findSymbol_SimpleString_no_lock(SimpleString_sp nameKey) const;
   Symbol_mv findSymbol_SimpleString(SimpleString_sp nameKey) const;
 
   /*! Return the (values symbol [:inherited,:external,:internal])
@@ -134,6 +136,8 @@ class Package_O : public General_O {
 		 * and create it and return it if we don't
 		 */
   T_mv intern(SimpleString_sp symbolName);
+
+  bool unintern_no_lock(Symbol_sp sym);
 
   /*! Remove the symbol from the package */
   bool unintern(Symbol_sp sym);
@@ -160,6 +164,7 @@ class Package_O : public General_O {
 		 */
   bool unusePackage(Package_sp usePackage);
 
+  bool usingPackageP_no_lock(Package_sp pkg) const;
   /*! Return true if we are using the package */
   bool usingPackageP(Package_sp pkg) const;
 

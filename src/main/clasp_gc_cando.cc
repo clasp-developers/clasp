@@ -9588,6 +9588,12 @@ public:
  {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._ActiveThreadsMutex._g._Counter), "_Roots._ActiveThreadsMutex._g._Counter" }, // public: (T T T T) fixable: NIL good-name: T
  {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._ActiveThreadsMutex._g._Recursive), "_Roots._ActiveThreadsMutex._g._Recursive" }, // public: (T T T T) fixable: NIL good-name: T
  {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._ActiveThreadsMutex._b), "_Roots._ActiveThreadsMutex._b" }, // public: (T T T) fixable: NIL good-name: T
+ {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::List_V>), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._DefaultSpecialBindings), "_Roots._DefaultSpecialBindings" }, // public: (T T) fixable: SMART-PTR-FIX good-name: T
+ {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._DefaultSpecialBindingsMutex._r._Counter), "_Roots._DefaultSpecialBindingsMutex._r._Counter" }, // public: (T T T T) fixable: NIL good-name: T
+ {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._DefaultSpecialBindingsMutex._r._Recursive), "_Roots._DefaultSpecialBindingsMutex._r._Recursive" }, // public: (T T T T) fixable: NIL good-name: T
+ {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._DefaultSpecialBindingsMutex._g._Counter), "_Roots._DefaultSpecialBindingsMutex._g._Counter" }, // public: (T T T T) fixable: NIL good-name: T
+ {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._DefaultSpecialBindingsMutex._g._Recursive), "_Roots._DefaultSpecialBindingsMutex._g._Recursive" }, // public: (T T T T) fixable: NIL good-name: T
+ {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._DefaultSpecialBindingsMutex._b), "_Roots._DefaultSpecialBindingsMutex._b" }, // public: (T T T) fixable: NIL good-name: T
  {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._SyspropMutex._r._Counter), "_Roots._SyspropMutex._r._Counter" }, // public: (T T T T) fixable: NIL good-name: T
  {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._SyspropMutex._r._Recursive), "_Roots._SyspropMutex._r._Recursive" }, // public: (T T T T) fixable: NIL good-name: T
  {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._SyspropMutex._g._Counter), "_Roots._SyspropMutex._g._Counter" }, // public: (T T T T) fixable: NIL good-name: T
@@ -11554,8 +11560,9 @@ public:
 { class_kind, KIND_LISPALLOC_mp__Process_O, sizeof(mp::Process_O), 0, "mp::Process_O" },
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(mp::Process_O),_Name), "_Name" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(mp::Process_O),_Function), "_Function" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(mp::Process_O),_Arguments), "_Arguments" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(mp::Process_O),_ReturnValuesList), "_ReturnValuesList" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
+ {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::List_V>), offsetof(SAFE_TYPE_MACRO(mp::Process_O),_Arguments), "_Arguments" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
+ {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::List_V>), offsetof(SAFE_TYPE_MACRO(mp::Process_O),_InitialSpecialBindings), "_InitialSpecialBindings" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
+ {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::List_V>), offsetof(SAFE_TYPE_MACRO(mp::Process_O),_ReturnValuesList), "_ReturnValuesList" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(mp::Process_O),_StackSize), "_StackSize" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(mp::Process_O),_Thread), "_Thread" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(mp::Process_O),_ExitBarrier._Counter), "_ExitBarrier._Counter" }, // public: (T T) fixable: NIL good-name: T

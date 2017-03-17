@@ -105,11 +105,12 @@ public:
     /*        if (this->_ptr != NULL ) delete this->_ptr; */
     this->_ptr = ptr;
   }
-  static LLVMContext_sp get_global_context();
+  static LLVMContext_sp create_llvm_context();
   ;
   LLVMContext_O() : Base(), _ptr(NULL){};
   ~LLVMContext_O() {
-    if (_ptr != NULL) { /* delete _ptr;*/
+    if (_ptr != NULL) {
+      delete _ptr;
       _ptr = NULL;
     };
   }

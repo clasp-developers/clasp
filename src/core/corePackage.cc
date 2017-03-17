@@ -151,6 +151,7 @@ SYMBOL_EXPORT_SC_(CorePkg, STARexit_backtraceSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, make_source_pos_info);
 SYMBOL_EXPORT_SC_(ExtPkg, STARclasp_clang_pathSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARinterrupts_enabledSTAR);
+SYMBOL_EXPORT_SC_(CorePkg, STARdebug_threadsSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARallow_with_interruptsSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, signal_servicing);
 SYMBOL_EXPORT_SC_(CorePkg, handle_signal);
@@ -1081,7 +1082,7 @@ void CoreExposer_O::define_essential_globals(Lisp_sp lisp) {
   _sym_STARllvmVersionSTAR->defparameter(SimpleBaseString_O::make(LLVM_VERSION));
   _sym__PLUS_numberOfFixedArguments_PLUS_->defconstant(make_fixnum(LCC_ARGS_IN_REGISTERS));
   cl::_sym_STARrandom_stateSTAR->defparameter(RandomState_O::create());
-  comp::_sym_STARllvm_contextSTAR->defparameter(llvmo::LLVMContext_O::get_global_context());
+  comp::_sym_STARllvm_contextSTAR->defparameter(llvmo::LLVMContext_O::create_llvm_context());
   comp::_sym_STARload_time_value_holder_nameSTAR->defparameter(core::SimpleBaseString_O::make("[VALUES-TABLE]"));
   List_sp hooks = _Nil<T_O>();
   hooks = Cons_O::create(Cons_O::create(SimpleBaseString_O::make("fasl"), _sym_loadBundle), hooks);
@@ -1127,6 +1128,7 @@ void CoreExposer_O::define_essential_globals(Lisp_sp lisp) {
   _sym_STARexit_backtraceSTAR->defparameter(_Nil<core::T_O>());
   clos::_sym__PLUS_the_standard_class_PLUS_->defparameter(_lisp->_Roots._StandardClass);
   _sym_STARinvalidated_dispatch_function_stackSTAR->defparameter(_Nil<core::T_O>());
+  _sym_STARdebug_threadsSTAR->defparameter(_Nil<core::T_O>());
 #if defined(__x86_64__)
   SYMBOL_EXPORT_SC_(KeywordPkg, address_model_64);
   Symbol_sp address_model = kw::_sym_address_model_64;

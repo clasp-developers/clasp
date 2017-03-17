@@ -81,6 +81,7 @@ namespace mp {
 
 };
 
+#define DEFAULT_THREAD_STACK_SIZE 8388608
 namespace mp {
 
   typedef enum {Inactive=0,Booting,Active,Exiting} ProcessPhase;
@@ -89,23 +90,31 @@ namespace mp {
     LISP_CLASS(mp, MpPkg, Process_O, "Process",core::CxxObject_O);
   public:
     CL_LISPIFY_NAME("make_process");
-    CL_LAMBDA(name function &optional arguments (stack-size 8388608))
-    CL_DEF_CLASS_METHOD static Process_sp make_process(core::T_sp name, core::T_sp function, core::T_sp arguments, size_t stack_size) {
-      GC_ALLOCATE_VARIADIC(Process_O,p,name,function,arguments,stack_size);
+    CL_LAMBDA(name function &optional arguments (stack-size 0))
+      CL_DOCSTRING("doc(Create a process that evaluates the function with arguments. The special-bindings are bound in reverse so that earlier bindings override later ones.)doc");
+    CL_DEF_CLASS_METHOD static Process_sp make_process(core::T_sp name, core::T_sp function, core::T_sp arguments, core::T_sp special_bindings, size_t stack_size) {
+      core::List_sp passed_bindings = core::cl__reverse(special_bindings);
+      core::List_sp all_bindings = core::lisp_copy_default_special_bindings();
+      for ( auto cur : passed_bindings) {
+        all_bindings = core::Cons_O::create(oCar(cur),all_bindings);
+      }
+      if (stack_size==0) stack_size = DEFAULT_THREAD_STACK_SIZE;
+      GC_ALLOCATE_VARIADIC(Process_O,p,name,function,arguments,all_bindings,stack_size);
       return p;
     };
   public:
     core::T_sp  _Name;
-    core::T_sp _Function;
-    core::T_sp _Arguments;
-    core::T_sp  _ReturnValuesList;
+    core::T_sp  _Function;
+    core::List_sp  _Arguments;
+    core::List_sp  _InitialSpecialBindings;
+    core::List_sp  _ReturnValuesList;
     core::ThreadLocalState* _ThreadInfo;
     ProcessPhase  _Phase;
     size_t _StackSize;
     pthread_t _Thread;
     Mutex _ExitBarrier;
   public:
-  Process_O(core::T_sp name, core::T_sp function, core::T_sp arguments, size_t stack_size=8*1024*1024) : _Name(name), _Function(function), _Arguments(arguments), _ReturnValuesList(_Nil<core::T_O>()), _StackSize(stack_size), _Phase(Booting) {
+    Process_O(core::T_sp name, core::T_sp function, core::List_sp arguments, core::List_sp initialSpecialBindings=_Nil<core::T_O>(), size_t stack_size=8*1024*1024) : _Name(name), _Function(function), _Arguments(arguments), _InitialSpecialBindings(initialSpecialBindings), _ReturnValuesList(_Nil<core::T_O>()), _StackSize(stack_size), _Phase(Booting) {
       if (!function) {
         printf("%s:%d Trying to create a process and the function is NULL\n", __FILE__, __LINE__ );
       }
@@ -121,6 +130,7 @@ namespace mp {
       pthread_attr_destroy(&attr);
       return result;
     }
+    string __repr__() const;
   };
 };
 
@@ -212,6 +222,7 @@ namespace mp {
     bool wait(Mutex_sp m) {return this->_ConditionVariable.wait(m->_Mutex);};
     bool timed_wait(Mutex_sp m,size_t timeout) {return this->_ConditionVariable.timed_wait(m->_Mutex,timeout);};
     void signal() { this->_ConditionVariable.signal();};
+    void broadcast() { this->_ConditionVariable.broadcast();};
   };
 
 };

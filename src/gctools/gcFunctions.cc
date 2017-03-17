@@ -859,6 +859,12 @@ bool debugging_configuration(stringstream& ss) {
 #endif
   ss << (BF("DEBUG_CACHE = %s\n") % (debug_cache ? "defined" : "undefined") ).str();
 
+  bool debug_threads = false;
+#ifdef DEBUG_THREADS
+  debug_threads = true;
+  debugging = true;
+#endif
+  ss << (BF("DEBUG_THREADS = %s\n") % (debug_threads ? "defined" : "undefined") ).str();
 
   return debugging;
 }

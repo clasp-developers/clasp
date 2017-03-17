@@ -139,7 +139,7 @@ namespace core {
   struct InvocationHistoryFrame;
   struct ThreadLocalState {
     ThreadLocalState(void* stack_top);
-    void initialize_thread();
+    void initialize_thread(mp::Process_sp process);
     int _DisableInterrupts;
     mp::Process_sp _Process;
     void* _StackTop;

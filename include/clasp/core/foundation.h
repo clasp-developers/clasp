@@ -859,6 +859,7 @@ Symbol_sp lispify_intern(const string &name, const string &packageName = "", boo
 Symbol_sp lisp_upcase_intern(string const &name, string const &packageName);
 Symbol_sp lisp_upcase_intern_export(string const &name, string const &packageName);
 
+ List_sp lisp_copy_default_special_bindings();
 /*! Write characters to the stream */
 void lisp_write(const boost::format &fmt, T_sp stream);
 gc::GCStack &lisp_threadLocalStack();

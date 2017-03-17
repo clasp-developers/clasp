@@ -35,6 +35,10 @@
 
 (defconstant +debug-dwarf-version+ 4)
 
+;;;(defvar *llvm-context* (llvm-sys:create-llvm-context))
+(mp:push-default-special-binding 'cmp:*llvm-context* '(llvm-sys:create-llvm-context))
+
+
 
 (defun generate-target-triple ()
   "Uses *features* to generate the target triple for the current machine
@@ -127,6 +131,7 @@ Return the module and the global variable that represents the load-time-value-ho
 \(value module global-run-time-values function-pass-manager\)."
   (llvm-create-module (next-run-time-module-name)))
 
+
 (defun create-run-time-execution-engine (module)
   (let ((engine-builder (llvm-sys:make-engine-builder module))
 	(target-options (llvm-sys:make-target-options)))
@@ -141,7 +146,6 @@ Return the module and the global variable that represents the load-time-value-ho
 
 
 (llvm-sys:initialize-native-target)
-;;;(defvar *llvm-context* (llvm-sys::get-global-context))
 
 (defvar *run-time-module* nil)
 
@@ -323,7 +327,9 @@ No DIBuilder is defined for the default module")
 ;;;  JIT facility
 ;;;
 
-(defparameter *jit-engine* nil)
+(defvar *jit-engine* nil)
+#+threads(defvar *jit-engine-mutex* (mp:make-lock :name 'jit-engine-mutex
+                                                  :recursive t))
 
 (export '(jit-lazy-setup jit-add-module-return-function jit-remove-module))
 
@@ -335,30 +341,41 @@ No DIBuilder is defined for the default module")
     )
   (defun jit-add-module-return-function (module repl-fn startup-fn shutdown-fn literals-list)
     "Add the module to the jit and return a handle"
-    (if (not *jit-engine*)
-        (setq *jit-engine* (create-run-time-execution-engine module))
-        (llvm-sys:add-module *jit-engine* module))
-    (llvm-sys:finalize-engine-and-register-with-gc-and-get-compiled-function
-     *jit-engine*
-     "JIT"
-     repl-fn
-     (irc-environment-activation-frame nil) 0 0 0
-     startup-fn
-     shutdown-fn
-     literals-list))
+    (unwind-protect
+         (progn
+           #+threads(mp:get-lock *jit-engine-mutex*)
+           (if (not *jit-engine*)
+               (setq *jit-engine* (create-run-time-execution-engine module))
+               (llvm-sys:add-module *jit-engine* module))
+           (llvm-sys:finalize-engine-and-register-with-gc-and-get-compiled-function
+            *jit-engine*
+            "JIT"
+            repl-fn
+            (irc-environment-activation-frame nil) 0 0 0
+            startup-fn
+            shutdown-fn
+            literals-list))
+      (progn
+        #+threads(mp:giveup-lock *jit-engine-mutex*))))
 
   (defun jit-add-module-return-dispatch-function (module repl-fn startup-fn shutdown-fn literals-list)
     "Add the module to the jit and return a handle"
-    (if (not *jit-engine*)
-        (setq *jit-engine* (create-run-time-execution-engine module))
-        (llvm-sys:add-module *jit-engine* module))
-    (llvm-sys:finalize-engine-and-get-dispatch-function
-     *jit-engine*
-     "JIT-DISPATCH"
-     repl-fn
-     startup-fn
-     shutdown-fn
-     literals-list))
+    (unwind-protect
+         (progn
+           #+threads(mp:get-lock *jit-engine-mutex*)
+           (if (not *jit-engine*)
+               (setq *jit-engine* (create-run-time-execution-engine module))
+               (llvm-sys:add-module *jit-engine* module))
+           (llvm-sys:finalize-engine-and-get-dispatch-function
+            *jit-engine*
+            "JIT-DISPATCH"
+            repl-fn
+            startup-fn
+            shutdown-fn
+            literals-list))
+      (progn
+        #+threads(mp:giveup-lock)
+        )))
 
   (defun jit-remove-module (handle)
     "Maybe remove the module"

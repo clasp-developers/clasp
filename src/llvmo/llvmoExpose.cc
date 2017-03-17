@@ -123,13 +123,10 @@ CL_DEFUN bool llvm_sys__llvm_value_p(core::T_sp o) {
 };
 
 
-CL_DEFUN LLVMContext_sp LLVMContext_O::get_global_context() {
-  static llvm::LLVMContext* static_llvm_context = NULL;
+CL_DEFUN LLVMContext_sp LLVMContext_O::create_llvm_context() {
   GC_ALLOCATE(LLVMContext_O, context);
-  if ( static_llvm_context == NULL ) {
-    static_llvm_context = new llvm::LLVMContext();
-  }
-  context->_ptr = static_llvm_context;
+  llvm::LLVMContext* lc = new llvm::LLVMContext();
+  context->_ptr = lc;
   return context;
 };
 }
