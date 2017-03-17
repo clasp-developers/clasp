@@ -112,7 +112,7 @@ Set this to other IRBuilders to make code go where you want")
 
 
 (defvar +global-ctors-struct+ (llvm-sys:struct-type-get *llvm-context* (list +i32+ +fn-ctor*+ +i8*+) nil))
-(defvar +global-ctors-struct[1]+ (llvm-sys:array-type-get +global-ctors-struct+ 1)
+;;;(defvar +global-ctors-struct[1]+ (llvm-sys:array-type-get +global-ctors-struct+ 1)
   "An array of pointers to the global-ctors-struct")
 
 
@@ -239,17 +239,17 @@ Boehm and MPS use a single pointer"
 (defvar +t+ (llvm-sys:struct-type-get *llvm-context* nil  nil)) ;; "T_O"
 (defvar +t*+ (llvm-sys:type-get-pointer-to +t+))
 (defvar +t**+ (llvm-sys:type-get-pointer-to +t*+))
-(defvar +t*[0]+ (llvm-sys:array-type-get +t*+ 0))
-(defvar +t*[0]*+ (llvm-sys:type-get-pointer-to +t*[0]+))
+;;;(defvar +t*[0]+ (llvm-sys:array-type-get +t*+ 0))
+;;;(defvar +t*[0]*+ (llvm-sys:type-get-pointer-to +t*[0]+))
 (defvar +tsp+ (llvm-sys:struct-type-get *llvm-context* (smart-pointer-fields +t*+) nil))  ;; "T_sp"
-(defvar +tsp[0]+ (llvm-sys:array-type-get +tsp+ 0))
-(defvar +tsp[0]*+ (llvm-sys:type-get-pointer-to +tsp[0]+))
-(defvar +tsp[1]+ (llvm-sys:array-type-get +tsp+ 1))
-(defvar +tsp[1]*+ (llvm-sys:type-get-pointer-to +tsp[1]+))
-(defvar +tsp[2]+ (llvm-sys:array-type-get +tsp+ 2))
-(defvar +tsp[2]*+ (llvm-sys:type-get-pointer-to +tsp[2]+))
-(defvar +tsp[DUMMY]+ (llvm-sys:array-type-get +tsp+ 64))
-(defvar +tsp[DUMMY]*+ (llvm-sys:type-get-pointer-to +tsp[DUMMY]+))
+;;;(defvar +tsp[0]+ (llvm-sys:array-type-get +tsp+ 0))
+;;;(defvar +tsp[0]*+ (llvm-sys:type-get-pointer-to +tsp[0]+))
+;;;(defvar +tsp[1]+ (llvm-sys:array-type-get +tsp+ 1))
+;;;(defvar +tsp[1]*+ (llvm-sys:type-get-pointer-to +tsp[1]+))
+;;;(defvar +tsp[2]+ (llvm-sys:array-type-get +tsp+ 2))
+;;;(defvar +tsp[2]*+ (llvm-sys:type-get-pointer-to +tsp[2]+))
+;;;(defvar +tsp[DUMMY]+ (llvm-sys:array-type-get +tsp+ 64))
+;;;(defvar +tsp[DUMMY]*+ (llvm-sys:type-get-pointer-to +tsp[DUMMY]+))
 (defvar +tsp*+ (llvm-sys:type-get-pointer-to +tsp+))
 (defvar +tsp**+ (llvm-sys:type-get-pointer-to +tsp*+))
 

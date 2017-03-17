@@ -1,5 +1,5 @@
 (defun cmp-two ()
-  (mp:process-run-function 'cmpa (lambda () (compile-file "sys:tests;ta.lsp" :print t)))
+  (mp:process-run-function 'cmpa (lambda () (compile-file "sys:tests;ta.lsp" :print t))))
   (mp:process-run-function 'cmpb (lambda () (compile-file "sys:tests;tb.lsp" :print t))))
 
 (defvar *mutex-print-mutex* (mp:make-lock :name 'print :recursive t))
@@ -20,3 +20,10 @@
   (mp:process-run-function 'b (lambda () (foo n))))
  
 
+(print mp:*current-process*)
+(eval-when (:compile-toplevel :execute)
+  (print mp:*current-process*))
+
+(defmacro foo () (print mp:*current-process*) ())
+
+(foo)
