@@ -339,7 +339,7 @@
 (defun lookup-eql-selector (eql-test)
   (let ((tagged-immediate (core:create-tagged-immediate-value-or-nil eql-test)))
     (if tagged-immediate
-	(irc-int-to-ptr (jit-constant-i64 tagged-immediate) +t*+)
+	(irc-int-to-ptr (jit-constant-i64 tagged-immediate) %t*%)
 	(let ((eql-selector-id (gethash eql-test *eql-selectors*)))
 	  (unless eql-selector-id
 	    (setf eql-selector-id (prog1 *gf-data-id* (incf *gf-data-id*)))
@@ -404,9 +404,9 @@
             (debug-pointer (irc-ptr-to-int
                             (irc-gep *gf-data*
                                      (list (jit-constant-size_t 0)
-                                           (jit-constant-size_t gf-data-id))) +uintptr_t+))
-            (debug-call "debugPointer" (list (irc-bit-cast effective-method +i8*+)))
-	    (irc-create-call "llvm.va_end" (list (irc-pointer-cast args +i8*+ "local-arglist-i8*")))
+                                           (jit-constant-size_t gf-data-id))) %uintptr_t%))
+            (debug-call "debugPointer" (list (irc-bit-cast effective-method %i8*%)))
+	    (irc-create-call "llvm.va_end" (list (irc-pointer-cast args %i8*% "local-arglist-i8*")))
 	    (irc-ret (irc-create-call "cc_dispatch_effective_method" (list effective-method gf gf-args) "ret")))))))
 
 (defun codegen-class-binary-search (matches stamp-var args gf gf-args)
@@ -480,7 +480,7 @@
 (defun codegen-arg-stamp (arg gf gf-args)
   "Return a uintptr_t llvm::Value that contains the stamp for this object"
   ;; First check the tag
-  (let* ((tagged-ptr (irc-ptr-to-int arg +uintptr_t+))
+  (let* ((tagged-ptr (irc-ptr-to-int arg %uintptr_t%))
          (tag (irc-and tagged-ptr (jit-constant-uintptr_t +tag-mask+))))
     (insert-message)
     (debug-argument tagged-ptr tag)
@@ -527,7 +527,7 @@
           (insert-message)
           (irc-br done-bb)
           (irc-begin-block general-or-instance-bb)
-          (let* ((header-ptr (irc-int-to-ptr (irc-sub (irc-ptr-to-int arg +uintptr_t+) (jit-constant-uintptr_t (+ +general-tag+ +header-size+)) "sub") +uintptr_t*+ "header-ptr"))
+          (let* ((header-ptr (irc-int-to-ptr (irc-sub (irc-ptr-to-int arg %uintptr_t%) (jit-constant-uintptr_t (+ +general-tag+ +header-size+)) "sub") %uintptr_t*% "header-ptr"))
                  (header-val (irc-load header-ptr "header-val")))
             (insert-message)
             (debug-call "debugPrint_size_t" (list header-val))
@@ -536,12 +536,12 @@
               (irc-cond-br instance-cmp instance-bb general-bb))
             (irc-begin-block instance-bb)
             (insert-message)
-            (let* ((rack-ptr-addr-int (irc-add (irc-ptr-to-int arg +uintptr_t+)
+            (let* ((rack-ptr-addr-int (irc-add (irc-ptr-to-int arg %uintptr_t%)
                                                (jit-constant-uintptr_t (- +instance-rack-offset+
                                                                           +general-tag+))))
-                   (rack-ptr-addr (irc-int-to-ptr rack-ptr-addr-int +uintptr_t*+))
+                   (rack-ptr-addr (irc-int-to-ptr rack-ptr-addr-int %uintptr_t*%))
                    (rack-tagged (irc-load rack-ptr-addr))
-                   (stamp-ptr (irc-int-to-ptr (irc-add rack-tagged (jit-constant-uintptr_t (- +instance-rack-stamp-offset+ +general-tag+))) +uintptr_t*+))
+                   (stamp-ptr (irc-int-to-ptr (irc-add rack-tagged (jit-constant-uintptr_t (- +instance-rack-stamp-offset+ +general-tag+))) %uintptr_t*%))
                    (stamp-fixnum (irc-load stamp-ptr))
                    (stamp (llvm-sys:create-lshr-value-uint64 *irbuilder* stamp-fixnum +fixnum-shift+ "stamp" nil)))
               (debug-call "debugPrint_size_t" (list stamp))
@@ -558,7 +558,7 @@
                                 (list valist_s-stamp valist_s-bb)
                                 (list general-stamp general-bb)
                                 (list instance-stamp instance-bb)))
-                 (stamp-phi (irc-phi +i64+ (length phi-bbs) "stamp")))
+                 (stamp-phi (irc-phi %i64% (length phi-bbs) "stamp")))
             (mapc (lambda (val-bb)
                     (let ((val (first val-bb))
                           (bb (second val-bb)))
@@ -572,8 +572,8 @@
 
 
 (defun codegen-node (node args gf gf-args)
-  (let ((arg (irc-va_arg args +t*+)))
-    (debug-call "debugPointer" (list (irc-bit-cast arg +i8*+)))
+  (let ((arg (irc-va_arg args %t*%)))
+    (debug-call "debugPointer" (list (irc-bit-cast arg %i8*%)))
     (insert-message)
     (codegen-eql-specializers node arg args gf gf-args)
     (codegen-class-specializers node arg args gf gf-args)))
@@ -595,10 +595,10 @@
 			  :source-namestring "dispatcher"
 			  :source-file-info-handle 0)
       (let ((disp-fn (irc-simple-function-create "gf-dispatcher"
-						 +fn-gf+
+						 %fn-gf%
 						 'llvm-sys::External-linkage
 						 *the-module*
-						 :argument-names +fn-gf-arguments+ )))
+						 :argument-names %fn-gf-arguments% )))
 	;;(1) Create a function with a gf-function signature
 	;;(2) Allocate space for a va_list and copy the va_list passed into it.
 	;;(3) compile the dispatch function to llvm-ir refering to the eql specializers and stamps and
@@ -612,18 +612,18 @@
 	       (*current-function* disp-fn)
                (*gf-data* 
 		(llvm-sys:make-global-variable *the-module*
-					       cmp:+tsp[DUMMY]+ ; type
+					       cmp:%tsp[DUMMY]% ; type
 					       nil ; isConstant
 					       'llvm-sys:internal-linkage
-					       (llvm-sys:undef-value-get cmp:+tsp[DUMMY]+)
+					       (llvm-sys:undef-value-get cmp:%tsp[DUMMY]%)
 					       ;; nil ; initializer
 					       (next-value-table-holder-name "dummy")))
                (*gcroots-in-module* 
 		(llvm-sys:make-global-variable *the-module*
-					       cmp:+gcroots-in-module+ ; type
+					       cmp:%gcroots-in-module% ; type
 					       nil ; isConstant
 					       'llvm-sys:internal-linkage
-					       (llvm-sys:undef-value-get cmp:+gcroots-in-module+)
+					       (llvm-sys:undef-value-get cmp:%gcroots-in-module%)
 					       ;; nil ; initializer
 					       "GCRootsHolder"))
 	       (*gf-data-id* 0)
@@ -643,31 +643,31 @@
 	    ;; Setup exception handling and cleanup landing pad
 	    (with-irbuilder (irbuilder-alloca)
 	      (let* ((local-arglist (irc-alloca-va_list :label "local-arglist"))
-		     (arglist-passed-untagged (irc-int-to-ptr (irc-sub (irc-ptr-to-int gf-args +uintptr_t+ "iargs") (jit-constant-uintptr_t +Valist_S-tag+) "sub") +Valist_S*+ "arglist-passed-untagged"))
-		     (va_list-passed (irc-in-bounds-gep-type +VaList_S+ arglist-passed-untagged (list (jit-constant-i32 0) (jit-constant-i32 1)) "va_list-passed")))
+		     (arglist-passed-untagged (irc-int-to-ptr (irc-sub (irc-ptr-to-int gf-args %uintptr_t% "iargs") (jit-constant-uintptr_t +Valist_S-tag+) "sub") +Valist_S*+ "arglist-passed-untagged"))
+		     (va_list-passed (irc-in-bounds-gep-type %VaList_S% arglist-passed-untagged (list (jit-constant-i32 0) (jit-constant-i32 1)) "va_list-passed")))
 		(insert-message)
-                (debug-arglist (irc-ptr-to-int va_list-passed +uintptr_t+))
-		(irc-create-call "llvm.va_copy" (list (irc-pointer-cast local-arglist +i8*+ "local-arglist-i8*") (irc-pointer-cast va_list-passed +i8*+ "va_list-passed-i8*")))
+                (debug-arglist (irc-ptr-to-int va_list-passed %uintptr_t%))
+		(irc-create-call "llvm.va_copy" (list (irc-pointer-cast local-arglist %i8*% "local-arglist-i8*") (irc-pointer-cast va_list-passed %i8*% "va_list-passed-i8*")))
 		(insert-message)
-                (debug-arglist (irc-ptr-to-int local-arglist +uintptr_t+))
+                (debug-arglist (irc-ptr-to-int local-arglist %uintptr_t%))
 		(irc-br body-bb)
 		(with-irbuilder (irbuilder-body)
 		  (codegen-node-or-outcome (dtree-root dtree) local-arglist gf gf-args))
 		(irc-begin-block *bad-tag-bb*)
-		(irc-create-call "llvm.va_end" (list (irc-pointer-cast local-arglist +i8*+ "local-arglist-i8*")))
+		(irc-create-call "llvm.va_end" (list (irc-pointer-cast local-arglist %i8*% "local-arglist-i8*")))
 		(irc-create-call "cc_bad_tag" (list gf gf-args))
 		(irc-unreachable)
 		(irc-begin-block miss-bb)
-		(irc-create-call "llvm.va_end" (list (irc-pointer-cast local-arglist +i8*+ "local-arglist-i8*")))
+		(irc-create-call "llvm.va_end" (list (irc-pointer-cast local-arglist %i8*% "local-arglist-i8*")))
 		(irc-ret (irc-create-call "cc_dispatch_miss" (list gf gf-args) "ret")))))
-          (let* ((array-type (llvm-sys:array-type-get cmp:+tsp+ *gf-data-id*))
+          (let* ((array-type (llvm-sys:array-type-get cmp:%tsp% *gf-data-id*))
 		 (correct-size-holder (llvm-sys:make-global-variable *the-module*
 								     array-type
 								     nil ; isConstant
 								     'llvm-sys:internal-linkage
 								     (llvm-sys:undef-value-get array-type)
 								     (bformat nil "CONSTANTS-%d" (incf *dispatcher-count*))))
-		 (bitcast-correct-size-holder (irc-bit-cast correct-size-holder +tsp[DUMMY]*+ "bitcast-table")))
+		 (bitcast-correct-size-holder (irc-bit-cast correct-size-holder %tsp[DUMMY]*% "bitcast-table")))
             (multiple-value-bind (startup-fn shutdown-fn)
                 (codegen-startup-shutdown *gcroots-in-module* correct-size-holder *gf-data-id*)
               (llvm-sys:replace-all-uses-with *gf-data* bitcast-correct-size-holder)

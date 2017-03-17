@@ -137,7 +137,7 @@ when this is t a lot of graphs will be generated.")
 	   (cmp:*current-function-name* (cmp:jit-function-name main-fn-name))
 	   (cmp:*gv-current-function-name* (cmp:jit-make-global-string cmp:*current-function-name* "fn-name"))
 	   (fn (cmp:irc-function-create
-		cmp:+fn-prototype+
+		cmp:%fn-prototype%
 		linkage
 		(cmp:jit-function-name main-fn-name) ;cmp:*current-function-name*)
 		cmp:*the-module*))
@@ -191,7 +191,7 @@ when this is t a lot of graphs will be generated.")
           (cmp:with-dbg-function ("repl-fix"
                                   :linkage-name (llvm-sys:get-name fn)
                                   :function fn
-                                  :function-type cmp:+fn-prototype+
+                                  :function-type cmp:%fn-prototype%
                                   :form *form*)
             (cmp:with-dbg-lexical-block (*form*)
               (cmp:dbg-set-current-source-pos-for-irbuilder *form* *entry-irbuilder*)
@@ -209,7 +209,7 @@ when this is t a lot of graphs will be generated.")
       (cmp:with-dbg-function ("unused-with-dbg-function-name"
                               :linkage-name (llvm-sys:get-name fn)
                               :function fn
-                              :function-type cmp:+fn-prototype+
+                              :function-type cmp:%fn-prototype%
                               :form *form*)
         (cmp:with-dbg-lexical-block (*form*)
           ;;          (cmp:dbg-set-current-source-pos *form*)
@@ -326,7 +326,7 @@ when this is t a lot of graphs will be generated.")
         (output (first outputs)))
     (cond
       ((typep input 'llvm-sys:constant-int)
-       (let ((val (%inttoptr input cmp:+t*+)))
+       (let ((val (%inttoptr input cmp:%t*%)))
          (%store val output)))
       (t
        (let ((load (%load input)))
@@ -554,7 +554,7 @@ when this is t a lot of graphs will be generated.")
       (let* ((loaded-inputs (mapcar (lambda (x) (cmp:irc-load x "cell")) inputs))
              (stack-allocated-closure-space (alloca-i8 (core:closure-with-slots-size (length inputs)) "stack-allocated-closure"))
              (ptr-to-sacs
-              (llvm-sys:create-bit-cast cmp:*irbuilder* stack-allocated-closure-space cmp:+i8*+ "closure-ptr"))
+              (llvm-sys:create-bit-cast cmp:*irbuilder* stack-allocated-closure-space cmp:%i8*% "closure-ptr"))
              (ltv-lambda-name (%literal-value lambda-name (format nil "lambda-name->~a" lambda-name)))
              (result
               (let ()
@@ -624,10 +624,10 @@ when this is t a lot of graphs will be generated.")
     ((instruction cleavir-ir:memref2-instruction) return-value inputs outputs abi)
   (let* ((tptr (%load (first inputs)))
          (offset (second inputs))
-         (ui-tptr (%ptrtoint tptr cmp:+uintptr_t+))
-         (ui-offset (%bit-cast offset cmp:+uintptr_t+)))
+         (ui-tptr (%ptrtoint tptr cmp:%uintptr_t%))
+         (ui-offset (%bit-cast offset cmp:%uintptr_t%)))
     (let* ((uiptr (%add ui-tptr ui-offset))
-           (ptr (%inttoptr uiptr cmp::+t**+))
+           (ptr (%inttoptr uiptr cmp::%t**%))
            (read-val (%load ptr)))
       (%store read-val (first outputs)))))
 
@@ -635,10 +635,10 @@ when this is t a lot of graphs will be generated.")
     ((instruction cleavir-ir:memset2-instruction) return-value inputs outputs abi)
   (let* ((tptr (%load (first inputs)))
          (offset (second inputs))
-         (ui-tptr (%ptrtoint tptr cmp:+uintptr_t+))
-         (ui-offset (%bit-cast offset cmp:+uintptr_t+)))
+         (ui-tptr (%ptrtoint tptr cmp:%uintptr_t%))
+         (ui-offset (%bit-cast offset cmp:%uintptr_t%)))
     (let* ((uiptr (%add ui-tptr ui-offset))
-           (dest (%inttoptr uiptr cmp::+t**+ "memset2-dest"))
+           (dest (%inttoptr uiptr cmp::%t**% "memset2-dest"))
            (val (%load (third inputs) "memset2-val")))
       (%store val dest))))
 
@@ -794,20 +794,20 @@ when this is t a lot of graphs will be generated.")
 (defmethod translate-branch-instruction
     ((instruction cleavir-ir:consp-instruction) return-value inputs outputs successors abi)
   (let* ((x (%load (first inputs)))
-         (tag (%and (%ptrtoint x cmp::+i32+) (%i32 cmp:+tag-mask+) "tag-only"))
+         (tag (%and (%ptrtoint x cmp::%i32%) (%i32 cmp:+tag-mask+) "tag-only"))
          (cmp (%icmp-eq tag (%i32 cmp:+cons-tag+) "consp-test")))
     (%cond-br cmp (first successors) (second successors) :likely-true t)))
 
 (defmethod translate-branch-instruction
     ((instruction cleavir-ir:fixnump-instruction) return-value inputs outputs successors abi)
   (let* ((x (%load (first inputs)))
-         (tag (%and (%ptrtoint x cmp::+i32+) (%i32 cmp:+fixnum-mask+) "fixnum-tag-only"))
+         (tag (%and (%ptrtoint x cmp::%i32%) (%i32 cmp:+fixnum-mask+) "fixnum-tag-only"))
          (cmp (%icmp-eq tag (%i32 cmp:+fixnum-tag+) "fixnump-test")))
     (%cond-br cmp (first successors) (second successors) :likely-true t)))
 
 (defmethod translate-branch-instruction
     ((instruction cc-mir:characterp-instruction) return-value inputs outputs successors abi)
-  (let* ((tag (%and (%ptrtoint value cmp:+uintptr_t+)
+  (let* ((tag (%and (%ptrtoint value cmp:%uintptr_t%)
                     (%uintptr_t cmp:+immediate-mask+) "character-tag-only"))
          (cmp (%icmp-eq tag (%uintptr_t cmp:+character-tag+))))
     (%cond-br cmp (first successors) (second successors) :likely-true t)))
@@ -815,7 +815,7 @@ when this is t a lot of graphs will be generated.")
 
 (defmethod translate-branch-instruction
     ((instruction cc-mir:single-float-p-instruction) return-value inputs outputs successors abi)
-  (let* ((tag (%and (%ptrtoint value cmp:+uintptr_t+)
+  (let* ((tag (%and (%ptrtoint value cmp:%uintptr_t%)
                     (%uintptr_t cmp:+immediate-mask+) "single-float-tag-only"))
          (cmp (%icmp-eq tag (%uintptr_t cmp:+single-float-tag+))))
     (%cond-br cmp (first successors) (second successors) :likely-true t)))
@@ -858,7 +858,7 @@ when this is t a lot of graphs will be generated.")
          (result-with-overflow (%sadd.with-overflow x y abi)))
     (let ((val (%extract result-with-overflow 0 "result"))
           (overflow (%extract result-with-overflow 1 "overflow")))
-      (%store (%inttoptr val cmp:+t*+) (first outputs))
+      (%store (%inttoptr val cmp:%t*%) (first outputs))
       (%cond-br overflow (second successors) (first successors)))))
 
 (defmethod translate-branch-instruction
@@ -868,7 +868,7 @@ when this is t a lot of graphs will be generated.")
          (result-with-overflow (%ssub.with-overflow x y abi)))
     (let ((val (%extract result-with-overflow 0 "result"))
           (overflow (%extract result-with-overflow 1 "overflow")))
-      (%store (%inttoptr val cmp:+t*+) (first outputs))
+      (%store (%inttoptr val cmp:%t*%) (first outputs))
       (%cond-br overflow (second successors) (first successors)))))
 
 (defmethod translate-branch-instruction

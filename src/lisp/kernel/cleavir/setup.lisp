@@ -363,7 +363,7 @@
 
 
 (defmacro with-ir-function ((lisp-function-name
-			     &key (function-type cmp:+fn-prototype+ function-type-p)
+			     &key (function-type cmp:%fn-prototype% function-type-p)
 			     (linkage 'llvm-sys:internal-linkage))
 			       &rest body)
   (let ((fn-gs (gensym "FUNCTION-")))

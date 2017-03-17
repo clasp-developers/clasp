@@ -12,7 +12,7 @@ load-time-value manager (true - in COMPILE-FILE) or not (false - in COMPILE)."
 ;;; Contains the current RUN-ALL, initialization function
 ;;; for the current module
 (defvar *run-all-function*)
-(defvar +run-and-load-time-value-holder-global-var-type+ cmp:+ltv*+) ;; Was +ltvsp*+
+(define-symbol-macro %run-and-load-time-value-holder-global-var-type% cmp:%ltv*%) ;; Was +ltvsp*+
 (defvar *run-time-values-table-name* "run_time_values_table")
 (defvar *run-all-environment*)
 ;;;------
@@ -42,7 +42,7 @@ load-time-value manager (true - in COMPILE-FILE) or not (false - in COMPILE)."
   (let ((irbuilder-alloca (gensym "ltv-irbuilder-alloca"))
 	(irbuilder-body (gensym "ltv-irbuilder-body")))
     `(let ((,run-all-fn (irc-simple-function-create core:+run-all-function-name+
-                                                    +fn-start-up+
+                                                    %fn-start-up%
                                                     'llvm-sys:internal-linkage
                                                     *the-module*
                                                     :argument-names +fn-start-up-argument-names+))
@@ -56,7 +56,7 @@ load-time-value manager (true - in COMPILE-FILE) or not (false - in COMPILE)."
          (cmp:with-dbg-function ("runAll-dummy-name"
                                  :linkage-name (llvm-sys:get-name ,run-all-fn)
                                  :function ,run-all-fn
-                                 :function-type cmp:+fn-prototype+
+                                 :function-type cmp:%fn-prototype%
                                  :form nil) ;; No form for run-all
            ;; Set up dummy debug info for these irbuilders
            (let ((entry-bb (irc-basic-block-create "entry" ,run-all-fn)))

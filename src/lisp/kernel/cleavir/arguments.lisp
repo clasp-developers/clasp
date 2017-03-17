@@ -115,9 +115,9 @@
       (let ((entry-arg-idx_lt_nargs (cmp:irc-icmp-slt entry-arg-idx (cmp:calling-convention-nargs args))) )
 	(cmp:irc-cond-br entry-arg-idx_lt_nargs loop-kw-args-block kw-exit-block))
       (cmp:irc-begin-block loop-kw-args-block)
-      (let* ((phi-saw-aok (cmp:irc-phi cmp:+size_t+ 2 "phi-saw-aok"))
-	     (phi-arg-idx (cmp:irc-phi cmp:+size_t+ 2 "phi-reg-arg-idx"))
-	     (phi-bad-kw-idx (cmp:irc-phi cmp:+size_t+ 2 "phi-bad-kw-idx")) )
+      (let* ((phi-saw-aok (cmp:irc-phi cmp:%size_t% 2 "phi-saw-aok"))
+	     (phi-arg-idx (cmp:irc-phi cmp:%size_t% 2 "phi-reg-arg-idx"))
+	     (phi-bad-kw-idx (cmp:irc-phi cmp:%size_t% 2 "phi-bad-kw-idx")) )
 	(cmp:irc-phi-add-incoming phi-saw-aok entry-saw-aok kw-start-block)
 	(cmp:irc-phi-add-incoming phi-arg-idx entry-arg-idx kw-start-block)
 	(cmp:irc-phi-add-incoming phi-bad-kw-idx entry-bad-kw-idx kw-start-block)
@@ -126,7 +126,7 @@
                (arg-idx+1 (cmp:irc-add phi-arg-idx (cmp:jit-constant-size_t 1)))
                (kw-arg-val (cmp:calling-convention-args.va-arg args arg-idx+1)))
 	  (cmp:irc-create-call "cc_ifNotKeywordException" (list arg-val phi-arg-idx (cmp:calling-convention-va-list args)))
-	  (let* ((eq-aok-val-and-arg-val (cmp:irc-trunc (cmp:irc-icmp-eq aok-val arg-val) cmp:+i1+)) ; compare arg-val to a-o-k
+	  (let* ((eq-aok-val-and-arg-val (cmp:irc-trunc (cmp:irc-icmp-eq aok-val arg-val) cmp:%i1%)) ; compare arg-val to a-o-k
 		 (aok-block (cmp:irc-basic-block-create "aok-block"))
 		 (possible-kw-block (cmp:irc-basic-block-create "possible-kw-block"))
 		 (advance-arg-idx-block (cmp:irc-basic-block-create "advance-arg-idx-block"))
@@ -178,8 +178,8 @@
 		;; Now advance the arg-idx, finish up the phi-nodes
 		;; and if we ran out of arguments branch out of the loop else branch to the top of the loop
 		(cmp:irc-begin-block advance-arg-idx-block)
-		(let* ((phi-arg-bad-good-aok (cmp:irc-phi cmp:+size_t+ 3 "phi-this-was-aok"))
-		       (phi.aok-bad-good.bad-kw-idx (cmp:irc-phi cmp:+size_t+ 3 "phi.aok-bad-good.bad-kw-idx")))
+		(let* ((phi-arg-bad-good-aok (cmp:irc-phi cmp:%size_t% 3 "phi-this-was-aok"))
+		       (phi.aok-bad-good.bad-kw-idx (cmp:irc-phi cmp:%size_t% 3 "phi.aok-bad-good.bad-kw-idx")))
 		  (cmp:irc-phi-add-incoming phi-arg-bad-good-aok loop-saw-aok aok-block)
 		  (cmp:irc-phi-add-incoming phi-arg-bad-good-aok phi-saw-aok bad-kw-block)
 		  (cmp:irc-phi-add-incoming phi-arg-bad-good-aok phi-saw-aok good-kw-block)
@@ -198,7 +198,7 @@
 		    (let ((kw-done-block (cmp:irc-basic-block-create "kw-done-block")))
 		      (cmp:irc-branch-to-and-begin-block kw-done-block)
 		      (cmp:irc-branch-to-and-begin-block kw-exit-block)
-		      (let ((phi-arg-idx-final (cmp:irc-phi cmp:+size_t+ 2 "phi-arg-idx-final")))
+		      (let ((phi-arg-idx-final (cmp:irc-phi cmp:%size_t% 2 "phi-arg-idx-final")))
 			(cmp:irc-phi-add-incoming phi-arg-idx-final entry-arg-idx kw-start-block)
 			(cmp:irc-phi-add-incoming phi-arg-idx-final loop-arg-idx kw-done-block)
 			(cmp:irc-low-level-trace :arguments)

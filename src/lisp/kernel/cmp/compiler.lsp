@@ -559,7 +559,7 @@ env is the parent environment of the (result-af) value frame"
 #||
 #+(or)(defun codegen-primop-consp (result rest env)
   (let* ((value (car rest))
-         (tag (llvm-sys:create-and *irbuilder* (llvm-sys:create-bit-cast value +uintptr_t+) (jit-constant-uintptr_t +tag-mask+) "tag-only"))
+         (tag (llvm-sys:create-and *irbuilder* (llvm-sys:create-bit-cast value %uintptr_t%) (jit-constant-uintptr_t +tag-mask+) "tag-only"))
          (consp-tag-match (llvm-sys:create-icmp-eq tag (jit-constant-uintptr_t +cons-tag+))))
     (
          
@@ -1133,10 +1133,10 @@ jump to blocks within this tagbody."
       (codegen temp-result exp evaluate-env)
       (push (irc-smart-ptr-extract (irc-load temp-result)) args))
     (let* ((func (or (llvm-sys:get-function *the-module* intrinsic-name)
-                     (let ((arg-types (make-list (length args) :initial-element +t*+))
+                     (let ((arg-types (make-list (length args) :initial-element %t*%))
                            (varargs nil))
                        (irc-function-create
-                        (llvm-sys:function-type-get +return_type+ arg-types varargs)
+                        (llvm-sys:function-type-get %return_type% arg-types varargs)
                         'llvm-sys::External-linkage
                         intrinsic-name
                         *the-module*))))
@@ -1397,14 +1397,14 @@ Return the orderered-raw-constants-list and the constants-table GlobalVariable"
           (bformat t "Number of run-time-values: %d\n" (length run-time-values)))
   (let* ((ordered-constant-list (sort run-time-values #'< :key #'constant-runtime-index))
          (ordered-raw-constant-list (mapcar (lambda (x) (constant-runtime-object x)) ordered-constant-list))
-         (array-type (llvm-sys:array-type-get +tsp+ (length ordered-constant-list)))
+         (array-type (llvm-sys:array-type-get %tsp% (length ordered-constant-list)))
          (constant-table (llvm-sys:make-global-variable *the-module*
                                                         array-type
                                                         nil ; isConstant
                                                         'llvm-sys:internal-linkage
                                                         (llvm-sys:undef-value-get array-type)
                                                         (literal:next-value-table-holder-name)))
-         (bitcast-constant-table (llvm-sys:create-bit-cast *irbuilder* constant-table +tsp[0]*+ "bitcast-table"))
+         (bitcast-constant-table (llvm-sys:create-bit-cast *irbuilder* constant-table %tsp[0]*% "bitcast-table"))
          #+(or)(holder-ptr (llvm-sys:create-geparray *irbuilder* constant-table (list (jit-constant-size_t 0) (jit-constant-size_t 0)) "table")))
     #+(or)(progn
             (bformat t "Number of ordered-raw-constant-list: %d\n" (length ordered-raw-constant-list))

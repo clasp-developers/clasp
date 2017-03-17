@@ -49,71 +49,71 @@ Set this to other IRBuilders to make code go where you want")
 ;; - ssize_t
 ;; - time_t
 
-(defvar +i1+ (llvm-sys:type-get-int1-ty *llvm-context*))
+(define-symbol-macro %i1% (llvm-sys:type-get-int1-ty *llvm-context*))
 
-(defvar +i8+ (llvm-sys:type-get-int8-ty *llvm-context*)) ;; -> CHAR / BYTE
-(defvar +i8*+ (llvm-sys:type-get-pointer-to +i8+))
-(defvar +i8**+ (llvm-sys:type-get-pointer-to +i8*+))
+(define-symbol-macro %i8% (llvm-sys:type-get-int8-ty *llvm-context*)) ;; -> CHAR / BYTE
+(define-symbol-macro %i8*% (llvm-sys:type-get-pointer-to %i8%))
+(define-symbol-macro %i8**% (llvm-sys:type-get-pointer-to %i8*%))
 
-(defvar +i16+ (llvm-sys:type-get-int16-ty *llvm-context*)) ;; -> SHORT
-(defvar +i16*+ (llvm-sys:type-get-pointer-to +i16+))
-(defvar +i16**+ (llvm-sys:type-get-pointer-to +i16*+))
+(define-symbol-macro %i16% (llvm-sys:type-get-int16-ty *llvm-context*)) ;; -> SHORT
+(define-symbol-macro %i16*% (llvm-sys:type-get-pointer-to %i16%))
+(define-symbol-macro %i16**% (llvm-sys:type-get-pointer-to %i16*%))
 
-(defvar +i32+ (llvm-sys:type-get-int32-ty *llvm-context*)) ;; -> INT
-(defvar +i32*+ (llvm-sys:type-get-pointer-to +i32+))
-(defvar +i32**+ (llvm-sys:type-get-pointer-to +i32*+))
+(define-symbol-macro %i32% (llvm-sys:type-get-int32-ty *llvm-context*)) ;; -> INT
+(define-symbol-macro %i32*% (llvm-sys:type-get-pointer-to %i32%))
+(define-symbol-macro %i32**% (llvm-sys:type-get-pointer-to %i32*%))
 
-(defvar +i64+ (llvm-sys:type-get-int64-ty *llvm-context*)) ;; -> LONG, LONG LONG
-(defvar +i64*+ (llvm-sys:type-get-pointer-to +i64+))
-(defvar +i64**+ (llvm-sys:type-get-pointer-to +i64*+))
+(define-symbol-macro %i64% (llvm-sys:type-get-int64-ty *llvm-context*)) ;; -> LONG, LONG LONG
+(define-symbol-macro %i64*% (llvm-sys:type-get-pointer-to %i64%))
+(define-symbol-macro %i64**% (llvm-sys:type-get-pointer-to %i64*%))
 
-(defvar +i128+ (llvm-sys:type-get-int128-ty *llvm-context*)) ;; -> NOT USED !!!
+(define-symbol-macro %i128% (llvm-sys:type-get-int128-ty *llvm-context*)) ;; -> NOT USED !!!
 
-(defvar +fixnum+ (if (member :address-model-64 *features*) ;; -> FIXNUM
-                     +i64+
+(define-symbol-macro %fixnum% (if (member :address-model-64 *features*) ;; -> FIXNUM
+                     %i64%
                      (error "Add support for non 64-bit address model")))
 
-(defvar +float+ (llvm-sys:type-get-float-ty *llvm-context*))
-(defvar +double+ (llvm-sys:type-get-double-ty *llvm-context*))
-#+long-float (defvar +long-float+ (llvm-sys:type-get-long-float-ty *llvm-context*))
+(define-symbol-macro %float% (llvm-sys:type-get-float-ty *llvm-context*))
+(define-symbol-macro %double% (llvm-sys:type-get-double-ty *llvm-context*))
+#+long-float (define-symbol-macro %long-float% (llvm-sys:type-get-long-float-ty *llvm-context*))
 
-(defvar +size_t+
+(define-symbol-macro %size_t%
   (let ((sizeof-size_t (cdr (assoc 'core:size-t (llvm-sys:cxx-data-structures-info)))))
     (cond
-      ((= 8 sizeof-size_t) +i64+)
-      ((= 4 sizeof-size_t) +i32+)
+      ((= 8 sizeof-size_t) %i64%)
+      ((= 4 sizeof-size_t) %i32%)
       (t (error "Add support for size_t sizeof = ~a" sizeof-size_t)))))
-(defvar +size_t*+ (llvm-sys:type-get-pointer-to +size_t+))
-(defvar +size_t**+ (llvm-sys:type-get-pointer-to +size_t*+))
+(define-symbol-macro %size_t*% (llvm-sys:type-get-pointer-to %size_t%))
+(define-symbol-macro %size_t**% (llvm-sys:type-get-pointer-to %size_t*%))
 
-(defvar +void+ (llvm-sys:type-get-void-ty *llvm-context*))
-(defvar +void*+ (llvm-sys:type-get-pointer-to +void+))
+(define-symbol-macro %void% (llvm-sys:type-get-void-ty *llvm-context*))
+(define-symbol-macro %void*% (llvm-sys:type-get-pointer-to %void%))
 
-(defvar +vtable*+ +i8*+)
+(define-symbol-macro %vtable*% %i8*%)
 
-;;(defvar +exception-struct+ (llvm-sys:struct-type-get *llvm-context* (list +i8*+ +i32+) "exception-struct" nil))
-(defvar +exception-struct+ (llvm-sys:struct-type-get *llvm-context* (list +i8*+ +i32+) nil))
-(defvar +{i32.i1}+ (llvm-sys:struct-type-get *llvm-context* (list +i32+ +i1+) nil))
-(defvar +{i64.i1}+ (llvm-sys:struct-type-get *llvm-context* (list +i64+ +i1+) nil))
+;;(define-symbol-macro %exception-struct% (llvm-sys:struct-type-get *llvm-context* (list %i8*% %i32%) "exception-struct" nil))
+(define-symbol-macro %exception-struct% (llvm-sys:struct-type-get *llvm-context* (list %i8*% %i32%) nil))
+(define-symbol-macro %{i32.i1}% (llvm-sys:struct-type-get *llvm-context* (list %i32% %i1%) nil))
+(define-symbol-macro %{i64.i1}% (llvm-sys:struct-type-get *llvm-context* (list %i64% %i1%) nil))
 
-(defvar +fn-ctor+
-  (llvm-sys:function-type-get +void+ nil)
-  "A ctor void ()* function prototype")
+;;  "A ctor void ()* function prototype"
+(define-symbol-macro %fn-ctor%
+  (llvm-sys:function-type-get %void% nil))
 (defvar +fn-ctor-argument-names+ nil)
-(defvar +fn-ctor*+ (llvm-sys:type-get-pointer-to +fn-ctor+)
-  "A pointer to the ctor function prototype")
+;;;  "A pointer to the ctor function prototype")
+(define-symbol-macro %fn-ctor*% (llvm-sys:type-get-pointer-to %fn-ctor%))
 
-(defvar +fn-start-up+
-  (llvm-sys:function-type-get +void+ nil)
-  "A run-all void ()* function prototype")
+;;;  "A run-all void ()* function prototype")
+(define-symbol-macro %fn-start-up% (llvm-sys:function-type-get %void% nil))
 (defvar +fn-start-up-argument-names+ nil)
-(defvar +fn-start-up*+ (llvm-sys:type-get-pointer-to +fn-start-up+)
-  "A pointer to the run-all function prototype")
+;;;  "A pointer to the run-all function prototype")
+(define-symbol-macro %fn-start-up*% (llvm-sys:type-get-pointer-to %fn-start-up%))
 
 
-(defvar +global-ctors-struct+ (llvm-sys:struct-type-get *llvm-context* (list +i32+ +fn-ctor*+ +i8*+) nil))
-(defvar +global-ctors-struct[1]+ (llvm-sys:array-type-get +global-ctors-struct+ 1)
-  "An array of pointers to the global-ctors-struct")
+(define-symbol-macro %global-ctors-struct% (llvm-sys:struct-type-get *llvm-context* (list %i32% %fn-ctor*% %i8*%) nil))
+
+;;;  "An array of pointers to the global-ctors-struct")
+(define-symbol-macro %global-ctors-struct[1]% (llvm-sys:array-type-get %global-ctors-struct% 1))
 
 
 
@@ -153,19 +153,19 @@ Set this to other IRBuilders to make code go where you want")
 (defvar +cons-car-offset+ (get-cxx-data-structure-info :cons-car-offset))
 (defvar +cons-cdr-offset+ (get-cxx-data-structure-info :cons-cdr-offset))
 (defvar +uintptr_t-size+ (get-cxx-data-structure-info :uintptr_t-size))
-(defvar +intptr_t+
+(define-symbol-macro %intptr_t%
   (cond
-    ((= 8 +uintptr_t-size+) +i64+)
-    ((= 4 +uintptr_t-size+) +i32+)
+    ((= 8 +uintptr_t-size+) %i64%)
+    ((= 4 +uintptr_t-size+) %i32%)
     (t (error "Add support for size uintptr_t = ~a" sizeof-uintptr_t))))
-(defvar +uintptr_t+
+(define-symbol-macro %uintptr_t%
   (cond
-    ((= 8 +uintptr_t-size+) +i64+)
-    ((= 4 +uintptr_t-size+) +i32+)
+    ((= 8 +uintptr_t-size+) %i64%)
+    ((= 4 +uintptr_t-size+) %i32%)
     (t (error "Add support for size uintptr_t = ~a" sizeof-uintptr_t))))
-(defvar +uintptr_t*+ (llvm-sys:type-get-pointer-to +uintptr_t+))
+(define-symbol-macro %uintptr_t*% (llvm-sys:type-get-pointer-to %uintptr_t%))
 (defun make-uintptr_t (x)
-  (and (> x most-positive-fixnum) (error "make sure the integer ~s fits in a +i64+" x))
+  (and (> x most-positive-fixnum) (error "make sure the integer ~s fits in a %i64%" x))
   (cond
     ((= 8 +uintptr_t-size+) (jit-constant-i64 x))
     ((= 4 +uintptr_t-size+) (jit-constant-i32 x))
@@ -179,11 +179,11 @@ Set this to other IRBuilders to make code go where you want")
     (unless (= remainder 0)
       (error "The ~a size ~a is not a multiple of sizeof(void*) ~a"
              type size +void*-size+))
-    (make-list num-pointers :initial-element +i8*+)))
+    (make-list num-pointers :initial-element %i8*%)))
 
-(defvar +sp-counted-base+ (llvm-sys:struct-type-get *llvm-context* (list +i32+ +i32+) nil)) ;; "sp-counted-base-ty"
-(defvar +sp-counted-base-ptr+ (llvm-sys:type-get-pointer-to +sp-counted-base+))
-(defvar +shared-count+ (llvm-sys:struct-type-get *llvm-context* (list +sp-counted-base-ptr+) nil)) ;; "shared_count"
+(define-symbol-macro %sp-counted-base% (llvm-sys:struct-type-get *llvm-context* (list %i32% %i32%) nil)) ;; "sp-counted-base-ty"
+(define-symbol-macro %sp-counted-base-ptr% (llvm-sys:type-get-pointer-to %sp-counted-base%))
+(define-symbol-macro %shared-count% (llvm-sys:struct-type-get *llvm-context* (list %sp-counted-base-ptr%) nil)) ;; "shared_count"
 
 ;;
 ;; Setup setjmp_buf type
@@ -196,16 +196,16 @@ Set this to other IRBuilders to make code go where you want")
 ;; For TAGBODY/GO Word2 will contain an i32 and the rest is padding
 ;; For BLOCK/RETURN-FROM Word2..4 will contain a T_mv pointer - it should fit
 
-(defvar +setjmp.buf+ (llvm-sys:struct-type-get *llvm-context* (list +i8*+ +i8*+ +i8*+ +i8*+ +i8*+) nil))
-(defvar +setjmp.buf*+ (llvm-sys:type-get-pointer-to +setjmp.buf+))
+(define-symbol-macro %setjmp.buf% (llvm-sys:struct-type-get *llvm-context* (list %i8*% %i8*% %i8*% %i8*% %i8*%) nil))
+(define-symbol-macro %setjmp.buf*% (llvm-sys:type-get-pointer-to %setjmp.buf%))
 
 ;;
 ;; Setup smart-ptr constants
 ;;
 (multiple-value-bind (pointer-type pointer-px-offset pointer-px-size)
     (smart-pointer-details)
-  (defvar +using-intrusive-reference-count+
-    (eq pointer-type 'core::intrusive-reference-counted-pointer))
+  #+(or)(defvar +using-intrusive-reference-count+
+          (eq pointer-type 'core::intrusive-reference-counted-pointer))
   (defvar +smart-ptr-px-offset+ pointer-px-offset))
 
 
@@ -218,83 +218,83 @@ Boehm and MPS use a single pointer"
 ;;
 ;; If I use an opaque type then the symbol type gets duplicated and that causes
 ;; problems - try just using an int
-;;(defvar +sym+ (llvm-sys:struct-type-get *llvm-context* nil nil)) ;; "Symbol_O"
-(defvar +sym+ (llvm-sys:type-get-int32-ty *llvm-context*))
-(defvar +sym-ptr+ (llvm-sys:type-get-pointer-to +sym+))
-(defvar +symsp+ (llvm-sys:struct-type-get *llvm-context* (smart-pointer-fields +sym-ptr+) nil)) ;; "Sym_sp"
-(defvar +symsp*+ (llvm-sys:type-get-pointer-to +symsp+))
+;;(define-symbol-macro %sym% (llvm-sys:struct-type-get *llvm-context* nil nil)) ;; "Symbol_O"
+(define-symbol-macro %sym% (llvm-sys:type-get-int32-ty *llvm-context*))
+(define-symbol-macro %sym-ptr% (llvm-sys:type-get-pointer-to %sym%))
+(define-symbol-macro %symsp% (llvm-sys:struct-type-get *llvm-context* (smart-pointer-fields %sym-ptr%) nil)) ;; "Sym_sp"
+(define-symbol-macro %symsp*% (llvm-sys:type-get-pointer-to %symsp%))
 
 
 ;;
 ;; Store a core::Function_sp pointer
 ;;
-(defvar +Function+ (llvm-sys:type-get-int32-ty *llvm-context*))
-(defvar +Function-ptr+ (llvm-sys:type-get-pointer-to +Function+))
-(defvar +Function_sp+ (llvm-sys:struct-type-get *llvm-context* (smart-pointer-fields +Function-ptr+) nil)) ;; "Cfn_sp"
-(defvar +Function_sp*+ (llvm-sys:type-get-pointer-to +Function_sp+))
+(define-symbol-macro %Function% (llvm-sys:type-get-int32-ty *llvm-context*))
+(define-symbol-macro %Function-ptr% (llvm-sys:type-get-pointer-to %Function%))
+(define-symbol-macro %Function_sp% (llvm-sys:struct-type-get *llvm-context* (smart-pointer-fields %Function-ptr%) nil)) ;; "Cfn_sp"
+(define-symbol-macro %Function_sp*% (llvm-sys:type-get-pointer-to %Function_sp%))
 
 
 
 ;; Define the T_O struct - right now just put in a dummy i32 - later put real fields here
-(defvar +t+ (llvm-sys:struct-type-get *llvm-context* nil  nil)) ;; "T_O"
-(defvar +t*+ (llvm-sys:type-get-pointer-to +t+))
-(defvar +t**+ (llvm-sys:type-get-pointer-to +t*+))
-(defvar +t*[0]+ (llvm-sys:array-type-get +t*+ 0))
-(defvar +t*[0]*+ (llvm-sys:type-get-pointer-to +t*[0]+))
-(defvar +tsp+ (llvm-sys:struct-type-get *llvm-context* (smart-pointer-fields +t*+) nil))  ;; "T_sp"
-(defvar +tsp[0]+ (llvm-sys:array-type-get +tsp+ 0))
-(defvar +tsp[0]*+ (llvm-sys:type-get-pointer-to +tsp[0]+))
-(defvar +tsp[1]+ (llvm-sys:array-type-get +tsp+ 1))
-(defvar +tsp[1]*+ (llvm-sys:type-get-pointer-to +tsp[1]+))
-(defvar +tsp[2]+ (llvm-sys:array-type-get +tsp+ 2))
-(defvar +tsp[2]*+ (llvm-sys:type-get-pointer-to +tsp[2]+))
-(defvar +tsp[DUMMY]+ (llvm-sys:array-type-get +tsp+ 64))
-(defvar +tsp[DUMMY]*+ (llvm-sys:type-get-pointer-to +tsp[DUMMY]+))
-(defvar +tsp*+ (llvm-sys:type-get-pointer-to +tsp+))
-(defvar +tsp**+ (llvm-sys:type-get-pointer-to +tsp*+))
+(define-symbol-macro %t% (llvm-sys:struct-type-get *llvm-context* nil  nil)) ;; "T_O"
+(define-symbol-macro %t*% (llvm-sys:type-get-pointer-to %t%))
+(define-symbol-macro %t**% (llvm-sys:type-get-pointer-to %t*%))
+(define-symbol-macro %t*[0]% (llvm-sys:array-type-get %t*% 0))
+(define-symbol-macro %t*[0]*% (llvm-sys:type-get-pointer-to %t*[0]%))
+(define-symbol-macro %tsp% (llvm-sys:struct-type-get *llvm-context* (smart-pointer-fields %t*%) nil))  ;; "T_sp"
+(define-symbol-macro %tsp[0]% (llvm-sys:array-type-get %tsp% 0))
+(define-symbol-macro %tsp[0]*% (llvm-sys:type-get-pointer-to %tsp[0]%))
+;;;(define-symbol-macro %tsp[1]% (llvm-sys:array-type-get %tsp% 1))
+;;;(define-symbol-macro %tsp[1]*% (llvm-sys:type-get-pointer-to %tsp[1]%))
+;;;(define-symbol-macro %tsp[2]% (llvm-sys:array-type-get %tsp% 2))
+;;;(define-symbol-macro %tsp[2]*% (llvm-sys:type-get-pointer-to %tsp[2]%))
+(define-symbol-macro %tsp[DUMMY]% (llvm-sys:array-type-get %tsp% 64))
+(define-symbol-macro %tsp[DUMMY]*% (llvm-sys:type-get-pointer-to %tsp[DUMMY]%))
+(define-symbol-macro %tsp*% (llvm-sys:type-get-pointer-to %tsp%))
+(define-symbol-macro %tsp**% (llvm-sys:type-get-pointer-to %tsp*%))
 
 ;; This structure must match the gctools::ConstantsTable structure
-(defvar +gcroots-in-module+ (llvm-sys:struct-type-get *llvm-context* (list +i8*+ +i8*+ +size_t+) nil))
-(defvar +gcroots-in-module*+ (llvm-sys:type-get-pointer-to +gcroots-in-module+))
+(define-symbol-macro %gcroots-in-module% (llvm-sys:struct-type-get *llvm-context* (list %i8*% %i8*% %size_t%) nil))
+(define-symbol-macro %gcroots-in-module*% (llvm-sys:type-get-pointer-to %gcroots-in-module%))
 
-;; The definition of +tmv+ doesn't quite match T_mv because T_mv inherits from T_sp
-(defvar +tmv+ (llvm-sys:struct-type-get *llvm-context* (smart-pointer-fields +t*+ +size_t+) nil))  ;; "T_mv"
-(defvar +return_type+ +tmv+)
-(defvar +tmv*+ (llvm-sys:type-get-pointer-to +tmv+))
-(defvar +tmv**+ (llvm-sys:type-get-pointer-to +tmv*+))
+;; The definition of %tmv% doesn't quite match T_mv because T_mv inherits from T_sp
+(define-symbol-macro %tmv% (llvm-sys:struct-type-get *llvm-context* (smart-pointer-fields %t*% %size_t%) nil))  ;; "T_mv"
+(define-symbol-macro %return_type% %tmv%)
+(define-symbol-macro %tmv*% (llvm-sys:type-get-pointer-to %tmv%))
+(define-symbol-macro %tmv**% (llvm-sys:type-get-pointer-to %tmv*%))
 
-(defvar +gcvector-tsp+ (llvm-sys:struct-type-get *llvm-context* (list +size_t+ +size_t+ +tsp+) nil))
-(defvar +gcvector-symsp+ (llvm-sys:struct-type-get *llvm-context*(list +size_t+ +size_t+ +symsp+) nil))
-(defvar +vec0-tsp+ (llvm-sys:struct-type-get *llvm-context*(list +gcvector-tsp+) nil))
-(defvar +vec0-symsp+ (llvm-sys:struct-type-get *llvm-context* (list +gcvector-symsp+) nil))
+(define-symbol-macro %gcvector-tsp% (llvm-sys:struct-type-get *llvm-context* (list %size_t% %size_t% %tsp%) nil))
+(define-symbol-macro %gcvector-symsp% (llvm-sys:struct-type-get *llvm-context*(list %size_t% %size_t% %symsp%) nil))
+(define-symbol-macro %vec0-tsp% (llvm-sys:struct-type-get *llvm-context*(list %gcvector-tsp%) nil))
+(define-symbol-macro %vec0-symsp% (llvm-sys:struct-type-get *llvm-context* (list %gcvector-symsp%) nil))
 
 ;; Define the LoadTimeValue_O struct - right now just put in a dummy i32 - later put real fields here
-(defvar +ltv+ (llvm-sys:struct-type-get *llvm-context* (list +vtable*+ #+(or) +vec0-tsp+)  nil)) ;; "LoadTimeValue_O"
-(defvar +ltv*+ (llvm-sys:type-get-pointer-to +ltv+))
-(defvar +ltv**+ (llvm-sys:type-get-pointer-to +ltv*+))
-(defvar +ltvsp+ (llvm-sys:struct-type-get *llvm-context* (smart-pointer-fields +ltv*+) nil))  ;; "LoadTimeValue_sp"
-#+(or)(defvar +ltvsp*+ (llvm-sys:type-get-pointer-to +ltvsp+))
+(define-symbol-macro %ltv% (llvm-sys:struct-type-get *llvm-context* (list %vtable*% #+(or) %vec0-tsp%)  nil)) ;; "LoadTimeValue_O"
+(define-symbol-macro %ltv*% (llvm-sys:type-get-pointer-to %ltv%))
+(define-symbol-macro %ltv**% (llvm-sys:type-get-pointer-to %ltv*%))
+(define-symbol-macro %ltvsp% (llvm-sys:struct-type-get *llvm-context* (smart-pointer-fields %ltv*%) nil))  ;; "LoadTimeValue_sp"
+#+(or)(defvar +ltvsp*+ (llvm-sys:type-get-pointer-to %ltvsp%))
 #+(or)(defvar +ltvsp**+ (llvm-sys:type-get-pointer-to +ltvsp*+))
 
 
-(defvar +mv-limit+ (cdr (assoc :multiple-values-limit (llvm-sys:cxx-data-structures-info))))
-(defvar +mv-values-array+ (llvm-sys:array-type-get +t*+ +mv-limit+))
-(defvar +mv-struct+ (llvm-sys:struct-type-get *llvm-context* (list +size_t+ +mv-values-array+) nil #|| is-packed ||#))
-(defvar +mv-struct*+ (llvm-sys:type-get-pointer-to +mv-struct+))
-(defvar +thread-info-struct+ (llvm-sys:struct-type-get *llvm-context* (list +mv-struct+) nil))
+(define-symbol-macro %mv-limit% (cdr (assoc :multiple-values-limit (llvm-sys:cxx-data-structures-info))))
+(define-symbol-macro %mv-values-array% (llvm-sys:array-type-get %t*% %mv-limit%))
+(define-symbol-macro %mv-struct% (llvm-sys:struct-type-get *llvm-context* (list %size_t% %mv-values-array%) nil #|| is-packed ||#))
+(define-symbol-macro %mv-struct*% (llvm-sys:type-get-pointer-to %mv-struct%))
+(define-symbol-macro %thread-info-struct% (llvm-sys:struct-type-get *llvm-context* (list %mv-struct%) nil))
 
 
 
 #+(or)(progn
         (defvar +af+ (llvm-sys:struct-type-get *llvm-context* nil  nil)) ;; "ActivationFrame_O"
         (defvar +af-ptr+ (llvm-sys:type-get-pointer-to +af+))
-        (defvar +afsp+ (llvm-sys:struct-type-get *llvm-context* (smart-pointer-fields +af-ptr+)  nil)) ;; "ActivationFrame_sp"
-        (defvar +afsp*+ (llvm-sys:type-get-pointer-to +afsp+))
+        (define-symbol-macro %afsp% (llvm-sys:struct-type-get *llvm-context* (smart-pointer-fields +af-ptr+)  nil)) ;; "ActivationFrame_sp"
+        (define-symbol-macro %afsp*% (llvm-sys:type-get-pointer-to %afsp%))
         )
 
 ;; Substitute afsp* with tsp
-(defvar +afsp+ +tsp+)
-(defvar +afsp*+ +tsp*+)
+(define-symbol-macro %afsp% %tsp%)
+(define-symbol-macro %afsp*% %tsp*%)
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -305,17 +305,17 @@ Boehm and MPS use a single pointer"
 ;;;
 (progn
   #+X86-64
-  (defvar +va_list+ (llvm-sys:struct-type-get *llvm-context* (list +i32+ +i32+ +i8*+ +i8*+) nil) "X86-64")
+  (define-symbol-macro %va_list% (llvm-sys:struct-type-get *llvm-context* (list %i32% %i32% %i8*% %i8*%) nil))
   #-X86-64
   (error "I need a va_list struct definition for this system")
 
-  (defvar +va_list*+ (llvm-sys:type-get-pointer-to +va_list+))
-  (defvar +VaList_S+ (llvm-sys:struct-type-get *llvm-context* (list +vtable*+ +va_list+) nil))
-  (defvar +VaList_S*+ (llvm-sys:type-get-pointer-to +VaList_S+))
+  (define-symbol-macro %va_list*% (llvm-sys:type-get-pointer-to %va_list%))
+  (define-symbol-macro %VaList_S% (llvm-sys:struct-type-get *llvm-context* (list %vtable*% %va_list%) nil))
+  (define-symbol-macro %VaList_S*% (llvm-sys:type-get-pointer-to %VaList_S%))
 
-  (defvar +fn-gf+ (llvm-sys:function-type-get +tmv+ (list +t*+ +t*+))
-    "Function prototype for generic functions")
-  (defvar +fn-gf-arguments+ (list "gf" "args"))
+;;;    "Function prototype for generic functions")
+  (define-symbol-macro %fn-gf% (llvm-sys:function-type-get %tmv% (list %t*% %t*%)))
+  (define-symbol-macro %fn-gf-arguments% (list "gf" "args"))
   )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -365,65 +365,58 @@ Boehm and MPS use a single pointer"
                    "rawarg")))
     (irc-intrinsic "cc_va_arg" (calling-convention-va-list cc))))
 
-  (defvar *register-arg-types* nil)
-  (defvar *register-arg-names* nil)
-  (let (arg-types arg-names)
-    (dotimes (i core:+number-of-fixed-arguments+)
-      (push +t*+ arg-types)
-      (push (bformat nil "farg%d" i) arg-names))
-    ;; va-list arg
-    (setf *register-arg-types* (nreverse arg-types)
-          *register-arg-names* (nreverse arg-names)))
+#+x86-64
+(progn
+;;; X86_64 calling convention The general function prototypes pass the following pass:
+;;; 1) A closed over runtime environment a pointer to a closure.
+;;; 2) A valist of remaining arguments
+;;; 3) The number of arguments %size_t%
+;;; 4) core::+number-of-fixed-arguments+ T_O* pointers,
+;;;    the first arguments passed in registers,
+;;; 5) The remaining arguments are on the stack
+;;;       If no argument is passed then pass NULL.")
+
+  (define-symbol-macro %register-arg-types% (list %t*% %t*% %t*%))
+  (defvar *register-arg-names* (list "farg0" "farg1" "farg2"))
   (defvar +fn-registers-prototype-argument-names+
     (list* "closure-ptr" "va-list" "nargs" *register-arg-names*))
-  (defvar +fn-registers-prototype+
-    (llvm-sys:function-type-get
-     +tmv+
-     (list* +t*+ +VaList_S*+ +size_t+ *register-arg-types*))
-    "X86_64 calling convention The general function prototypes pass the following pass:
-1) A closed over runtime environment a pointer to a closure.
-2) A valist of remaining arguments
-3) The number of arguments +size_t+
-4) core::+number-of-fixed-arguments+ T_O* pointers,
-   the first arguments passed in registers,
-5) The remaining arguments are on the stack
-      If no argument is passed then pass NULL.")
+  (define-symbol-macro %fn-registers-prototype%
+    (llvm-sys:function-type-get %tmv% (list* %t*% %VaList_S*% %size_t% %register-arg-types%))))
+#-(and x86-64)
+(error "Define calling convention for system")
 
-  (progn
-    (defvar +fn-prototype+ +fn-registers-prototype+)
-    (defvar +fn-prototype-argument-names+ +fn-registers-prototype-argument-names+))
+(define-symbol-macro %fn-prototype% %fn-registers-prototype%)
+(defvar +fn-prototype-argument-names+ +fn-registers-prototype-argument-names+)
 
-  (defvar +fn-prototype*+ (llvm-sys:type-get-pointer-to +fn-prototype+)
-    "A pointer to the function prototype")
+;;;  "A pointer to the function prototype"
+(define-symbol-macro %fn-prototype*% (llvm-sys:type-get-pointer-to %fn-prototype%))
+;;;  "A pointer to a pointer to the function prototype"
+(define-symbol-macro %fn-prototype**% (llvm-sys:type-get-pointer-to %fn-prototype*%))
+;;;  "An array of pointers to the function prototype"
+(define-symbol-macro %fn-prototype*[0]% (llvm-sys:array-type-get %fn-prototype*% 0))
+;;;  "An array of pointers to the function prototype"
+(define-symbol-macro %fn-prototype*[1]% (llvm-sys:array-type-get %fn-prototype*% 1))
+;;;  "An array of pointers to the function prototype"
+(define-symbol-macro %fn-prototype*[2]% (llvm-sys:array-type-get %fn-prototype*% 2))
 
-  (defvar +fn-prototype**+ (llvm-sys:type-get-pointer-to +fn-prototype*+)
-    "A pointer to a pointer to the function prototype")
-
-  (defvar +fn-prototype*[0]+ (llvm-sys:array-type-get +fn-prototype*+ 0)
-    "An array of pointers to the function prototype")
-
-  (defvar +fn-prototype*[1]+ (llvm-sys:array-type-get +fn-prototype*+ 1)
-    "An array of pointers to the function prototype")
-  (defvar +fn-prototype*[2]+ (llvm-sys:array-type-get +fn-prototype*+ 2)
-    "An array of pointers to the function prototype")
-
-  ;;
-  ;; Define the InvocationHistoryFrame type for LispCompiledFunctionIHF
-  ;;
-  ;; %"class.core::InvocationHistoryFrame" = type { i32 (...)**, i32, %"class.core::InvocationHistoryStack"*, %"class.core::InvocationHistoryFrame"*, i8, i32 }
-  (defvar +InvocationHistoryStack*+ +i8*+ "Make this a generic pointer")
-  (defparameter +InvocationHistoryFrame+ (llvm-sys:struct-type-create *llvm-context* :name "InvocationHistoryFrame"))
-  (defparameter +InvocationHistoryFrame*+ (llvm-sys:type-get-pointer-to +InvocationHistoryFrame+))
-  (llvm-sys:set-body +InvocationHistoryFrame+ (list +i32**+ +i32+ +InvocationHistoryStack*+ +InvocationHistoryFrame*+ +i8+ +i32+) nil)
-  (defvar +LispFunctionIHF+ (llvm-sys:struct-type-create *llvm-context* :elements (list +InvocationHistoryFrame+ +tsp+ +tsp+ +tsp+ +i32+ +i32+) :name "LispFunctionIHF"))
-  ;; %"class.core::LispCompiledFunctionIHF" = type { %"class.core::LispFunctionIHF" }
-  (defvar +LispCompiledFunctionIHF+ (llvm-sys:struct-type-create *llvm-context* :elements (list +LispFunctionIHF+) :name "LispCompiledFunctionIHF"))
+;;
+;; Define the InvocationHistoryFrame type for LispCompiledFunctionIHF
+;;
+;; %"class.core::InvocationHistoryFrame" = type { i32 (...)**, i32, %"class.core::InvocationHistoryStack"*, %"class.core::InvocationHistoryFrame"*, i8, i32 }
+;;"Make this a generic pointer"
+(define-symbol-macro %InvocationHistoryStack*% %i8*%)
+(define-symbol-macro %InvocationHistoryFrame% (llvm-sys:struct-type-create *llvm-context* :elements (list %i32**% %i32% #|%InvocationHistoryStack*% %InvocationHistoryFrame*%|# %i8*% %i8*% %i8% %i32%) :name "InvocationHistoryFrame"))
+(define-symbol-macro %InvocationHistoryFrame*% (llvm-sys:type-get-pointer-to %InvocationHistoryFrame%))
+;;  (llvm-sys:set-body %InvocationHistoryFrame% (list %i32**% %i32% #|%InvocationHistoryStack*% %InvocationHistoryFrame*%|# %i8*% %i8*% %i8% %i32%) nil)
+(define-symbol-macro %LispFunctionIHF% (llvm-sys:struct-type-create *llvm-context* :elements (list %InvocationHistoryFrame% %tsp% %tsp% %tsp% %i32% %i32%) :name "LispFunctionIHF"))
+;; %"class.core::LispCompiledFunctionIHF" = type { %"class.core::LispFunctionIHF" }
+(define-symbol-macro %LispCompiledFunctionIHF% (llvm-sys:struct-type-create *llvm-context* :elements (list %LispFunctionIHF%) :name "LispCompiledFunctionIHF"))
 
 
   (defun make-gv-source-file-info-handle (module &optional handle)
     (if (null handle) (setq handle -1))
     (llvm-sys:make-global-variable module
-                                   +i32+  ; type
+                                   %i32%  ; type
                                    nil    ; constant
                                    'llvm-sys:internal-linkage
                                    (jit-constant-i32 handle)
@@ -439,10 +432,10 @@ have it call the main-function"
                              :function-name core:+clasp-ctor-function-name+
                              :parent-env nil
                              :linkage 'llvm-sys:internal-linkage
-                             :function-type +fn-ctor+
+                             :function-type %fn-ctor%
                              :return-void t
                              :argument-names +fn-ctor-argument-names+ )
-                (let* ((bc-bf (irc-bit-cast main-function +fn-start-up*+ "fnptr-pointer")))
+                (let* ((bc-bf (irc-bit-cast main-function %fn-start-up*% "fnptr-pointer")))
                   (irc-intrinsic "cc_register_startup_function" bc-bf)))))
       fn)))
 
@@ -460,17 +453,17 @@ have it call the main-function"
   (or global-ctor-function (error "global-ctor-function must not be NIL"))
   (llvm-sys:make-global-variable
    module
-   +global-ctors-struct[1]+
+   %global-ctors-struct[1]%
    nil
    'llvm-sys:appending-linkage
    (llvm-sys:constant-array-get
-    +global-ctors-struct[1]+
+    %global-ctors-struct[1]%
     (list
-     (llvm-sys:constant-struct-get +global-ctors-struct+
+     (llvm-sys:constant-struct-get %global-ctors-struct%
                                    (list
                                     (jit-constant-i32 priority)
                                     global-ctor-function
-                                    (llvm-sys:constant-pointer-null-get +i8*+)))))
+                                    (llvm-sys:constant-pointer-null-get %i8*%)))))
    "llvm.global_ctors"))
 
 (defun make-boot-function-global-variable (module func-ptr)
@@ -496,9 +489,9 @@ and initialize it with an array consisting of one function pointer."
   (llvm-sys:set-target-options engine-builder target-options)
   (let* ((execution-engine (llvm-sys:create engine-builder))
          (data-layout (llvm-sys:get-data-layout execution-engine))
-         (tsp-size (llvm-sys:data-layout-get-type-alloc-size data-layout +tsp+))
-         (tmv-size (llvm-sys:data-layout-get-type-alloc-size data-layout +tmv+))
-         (gcroots-in-module-size (llvm-sys:data-layout-get-type-alloc-size data-layout +gcroots-in-module+)))
+         (tsp-size (llvm-sys:data-layout-get-type-alloc-size data-layout %tsp%))
+         (tmv-size (llvm-sys:data-layout-get-type-alloc-size data-layout %tmv%))
+         (gcroots-in-module-size (llvm-sys:data-layout-get-type-alloc-size data-layout %gcroots-in-module%)))
     (llvm-sys:throw-if-mismatched-structure-sizes :tsp tsp-size :tmv tmv-size :contab gcroots-in-module-size)))
 
 ;;
@@ -528,20 +521,20 @@ and initialize it with an array consisting of one function pointer."
 
 (defun exception-typeid*-from-name (name)
   (let* ((cname (gethash name *exception-types-hash-table*))
-	 (i8* (llvm-sys:get-or-create-external-global *the-module* cname +i8+)))
+	 (i8* (llvm-sys:get-or-create-external-global *the-module* cname %i8%)))
     i8*))
 
 ;;
 ;; Define functions within the module
 ;;
 
-(defparameter *primitives* (make-hash-table :test 'equal))
+(defvar *primitives* (make-hash-table :test 'equal))
 
 
 (defun matching-arguments (required-type given-type arg-index)
   (if (equal required-type +tsp*-or-tmv*+)
       (if (eql arg-index 1)
-	  (if (or (equal given-type +tsp*+) (equal given-type +tmv*+))
+	  (if (or (equal given-type %tsp*%) (equal given-type %tmv*%))
 	      t
 	      nil)
 	  (error ":tsp*-or-tmv* can only be specified as the first argument of an intrinsic function"))
@@ -575,9 +568,9 @@ and initialize it with an array consisting of one function pointer."
 (defun dispatch-function-name (name &optional required-first-argument-type)
   (let ((name-dispatch-prefix
 	 (cond
-	   ((equal required-first-argument-type +tsp*+)
+	   ((equal required-first-argument-type %tsp*%)
 	    "sp_")
-	   ((equal required-first-argument-type +tmv*+)
+	   ((equal required-first-argument-type %tmv*%)
 	    "mv_")
 	   (t
 	    ""))))
@@ -587,7 +580,7 @@ and initialize it with an array consisting of one function pointer."
 
 (defun codegen-startup-shutdown (gcroots-in-module roots-array number-of-roots)
   (let ((startup-fn (irc-simple-function-create core:*module-startup-function-name*
-                                                (llvm-sys:function-type-get +void+ (list +t*+))
+                                                (llvm-sys:function-type-get %void% (list %t*%))
                                                 'llvm-sys::External-linkage
                                                 *the-module*
                                                 :argument-names (list "values" ))))
@@ -609,7 +602,7 @@ and initialize it with an array consisting of one function pointer."
           (irc-create-call "cc_initialize_gcroots_in_module" (list gcroots-in-module start (jit-constant-size_t number-of-roots) values))
           (irc-ret-void))))
     (let ((shutdown-fn (irc-simple-function-create core:*module-shutdown-function-name*
-                                                   (llvm-sys:function-type-get +void+ nil)
+                                                   (llvm-sys:function-type-get %void% nil)
                                                    'llvm-sys::External-linkage
                                                    *the-module*)))
       (let* ((irbuilder-alloca (llvm-sys:make-irbuilder *llvm-context*))
@@ -660,14 +653,14 @@ and initialize it with an array consisting of one function pointer."
   (if (equal (car args-ty) +tsp*-or-tmv*+)
       (progn ;; create two versions of the function - one prefixed with sp_ and the other with mv_
 	(create-primitive-function module
-				   (dispatch-function-name name +tsp*+)
+				   (dispatch-function-name name %tsp*%)
 				   return-ty
-				   (cons +tsp*+ (cdr args-ty))
+				   (cons %tsp*% (cdr args-ty))
 				   varargs does-not-throw does-not-return)
 	(create-primitive-function module
-				   (dispatch-function-name name +tmv*+)
+				   (dispatch-function-name name %tmv*%)
 				   return-ty
-				   (cons +tmv*+ (cdr args-ty))
+				   (cons %tmv*% (cdr args-ty))
 				   varargs does-not-throw does-not-return))
       (create-primitive-function module
 				 name return-ty args-ty varargs does-not-throw does-not-return))
@@ -682,239 +675,239 @@ and initialize it with an array consisting of one function pointer."
 
 (defun define-primitives-in-module (module)
 
-  (primitive-nounwind module "ltvc_assign_source_file_info_handle" +void+ (list +i8*+ +i8*+ +size_t+ +i32+ +i32*+))
-  (primitive-nounwind module "ltvc_make_nil" +t*+ (list +gcroots-in-module*+ +size_t+))
-  (primitive-nounwind module "ltvc_make_t" +t*+ (list +gcroots-in-module*+ +size_t+))
-  (primitive-nounwind module "ltvc_make_ratio" +t*+ (list +gcroots-in-module*+ +size_t+ +t*+ +t*+))
-  (primitive-nounwind module "ltvc_make_cons" +t*+ (list +gcroots-in-module*+ +size_t+ +t*+ +t*+))
-  (primitive-nounwind module "ltvc_make_list" +t*+ (list +gcroots-in-module*+ +size_t+ +size_t+) :varargs t)
-  (primitive-nounwind module "ltvc_make_array" +t*+ (list +gcroots-in-module*+ +size_t+ +t*+ +t*+))
-  (primitive-nounwind module "ltvc_setf_row_major_aref" +t*+ (list +t*+ +size_t+ +t*+))
-  (primitive-nounwind module "ltvc_make_hash_table" +t*+ (list +gcroots-in-module*+ +size_t+ +t*+))
-  (primitive-nounwind module "ltvc_setf_gethash" +t*+ (list +t*+ +t*+ +t*+))
-  (primitive-nounwind module "ltvc_make_fixnum" +t*+ (list +gcroots-in-module*+ +size_t+ +uintptr_t+))
-  (primitive-nounwind module "ltvc_make_package" +t*+ (list +gcroots-in-module*+ +size_t+ +t*+))
-  (primitive-nounwind module "ltvc_make_bignum" +t*+ (list +gcroots-in-module*+ +size_t+ +t*+))
-  (primitive-nounwind module "ltvc_make_bitvector" +t*+ (list +gcroots-in-module*+ +size_t+ +t*+))
-  (primitive-nounwind module "ltvc_make_random_state" +t*+ (list +gcroots-in-module*+ +size_t+ +t*+))
-  (primitive-nounwind module "ltvc_make_symbol" +t*+ (list +gcroots-in-module*+ +size_t+ +t*+ +t*+))
-  (primitive-nounwind module "ltvc_make_character" +t*+ (list +gcroots-in-module*+ +size_t+ +uintptr_t+))
-  (primitive-nounwind module "ltvc_make_base_string" +t*+ (list +gcroots-in-module*+ +size_t+ +i8*+))
-  (primitive-nounwind module "ltvc_make_pathname" +t*+ (list +gcroots-in-module*+ +size_t+ +t*+ +t*+ +t*+ +t*+ +t*+ +t*+))
-  (primitive-nounwind module "ltvc_make_package" +t*+ (list +gcroots-in-module*+ +size_t+ +t*+))
-  (primitive-nounwind module "ltvc_make_built_in_class" +t*+ (list +gcroots-in-module*+ +size_t+ +t*+))
-  (primitive-nounwind module "ltvc_make_float" +t*+ (list +gcroots-in-module*+ +size_t+ +float+))
-  (primitive-nounwind module "ltvc_make_double" +t*+ (list +gcroots-in-module*+ +size_t+ +double+))
-  (primitive-nounwind module "ltvc_make_complex" +t*+ (list +gcroots-in-module*+ +size_t+ +t*+ +t*+))
-  (primitive          module "ltvc_set_mlf_creator_funcall" +t*+ (list +gcroots-in-module*+ +size_t+ +fn-prototype*+))
-  (primitive          module "ltvc_mlf_init_funcall" +t*+ (list +fn-prototype*+))
-  (primitive          module "ltvc_set_ltv_funcall" +t*+ (list +gcroots-in-module*+ +size_t+ +fn-prototype*+))
-  (primitive          module "ltvc_toplevel_funcall" +t*+ (list +fn-prototype*+))
+  (primitive-nounwind module "ltvc_assign_source_file_info_handle" %void% (list %i8*% %i8*% %size_t% %i32% %i32*%))
+  (primitive-nounwind module "ltvc_make_nil" %t*% (list %gcroots-in-module*% %size_t%))
+  (primitive-nounwind module "ltvc_make_t" %t*% (list %gcroots-in-module*% %size_t%))
+  (primitive-nounwind module "ltvc_make_ratio" %t*% (list %gcroots-in-module*% %size_t% %t*% %t*%))
+  (primitive-nounwind module "ltvc_make_cons" %t*% (list %gcroots-in-module*% %size_t% %t*% %t*%))
+  (primitive-nounwind module "ltvc_make_list" %t*% (list %gcroots-in-module*% %size_t% %size_t%) :varargs t)
+  (primitive-nounwind module "ltvc_make_array" %t*% (list %gcroots-in-module*% %size_t% %t*% %t*%))
+  (primitive-nounwind module "ltvc_setf_row_major_aref" %t*% (list %t*% %size_t% %t*%))
+  (primitive-nounwind module "ltvc_make_hash_table" %t*% (list %gcroots-in-module*% %size_t% %t*%))
+  (primitive-nounwind module "ltvc_setf_gethash" %t*% (list %t*% %t*% %t*%))
+  (primitive-nounwind module "ltvc_make_fixnum" %t*% (list %gcroots-in-module*% %size_t% %uintptr_t%))
+  (primitive-nounwind module "ltvc_make_package" %t*% (list %gcroots-in-module*% %size_t% %t*%))
+  (primitive-nounwind module "ltvc_make_bignum" %t*% (list %gcroots-in-module*% %size_t% %t*%))
+  (primitive-nounwind module "ltvc_make_bitvector" %t*% (list %gcroots-in-module*% %size_t% %t*%))
+  (primitive-nounwind module "ltvc_make_random_state" %t*% (list %gcroots-in-module*% %size_t% %t*%))
+  (primitive-nounwind module "ltvc_make_symbol" %t*% (list %gcroots-in-module*% %size_t% %t*% %t*%))
+  (primitive-nounwind module "ltvc_make_character" %t*% (list %gcroots-in-module*% %size_t% %uintptr_t%))
+  (primitive-nounwind module "ltvc_make_base_string" %t*% (list %gcroots-in-module*% %size_t% %i8*%))
+  (primitive-nounwind module "ltvc_make_pathname" %t*% (list %gcroots-in-module*% %size_t% %t*% %t*% %t*% %t*% %t*% %t*%))
+  (primitive-nounwind module "ltvc_make_package" %t*% (list %gcroots-in-module*% %size_t% %t*%))
+  (primitive-nounwind module "ltvc_make_built_in_class" %t*% (list %gcroots-in-module*% %size_t% %t*%))
+  (primitive-nounwind module "ltvc_make_float" %t*% (list %gcroots-in-module*% %size_t% %float%))
+  (primitive-nounwind module "ltvc_make_double" %t*% (list %gcroots-in-module*% %size_t% %double%))
+  (primitive-nounwind module "ltvc_make_complex" %t*% (list %gcroots-in-module*% %size_t% %t*% %t*%))
+  (primitive          module "ltvc_set_mlf_creator_funcall" %t*% (list %gcroots-in-module*% %size_t% %fn-prototype*%))
+  (primitive          module "ltvc_mlf_init_funcall" %t*% (list %fn-prototype*%))
+  (primitive          module "ltvc_set_ltv_funcall" %t*% (list %gcroots-in-module*% %size_t% %fn-prototype*%))
+  (primitive          module "ltvc_toplevel_funcall" %t*% (list %fn-prototype*%))
 
-  (primitive-nounwind module "newFunction_sp" +void+ (list +Function_sp*+))
-  (primitive-nounwind module "newTsp" +void+ (list +tsp*+))
-  (primitive-nounwind module "copyTsp" +void+ (list +tsp*-or-tmv*+ +tsp*+))
-  (primitive-nounwind module "copyTspTptr" +void+ (list +tsp*-or-tmv*+ +t*+))
-  (primitive-nounwind module "compareTspTptr" +i32+ (list +tsp*+ +t*+))
+  (primitive-nounwind module "newFunction_sp" %void% (list %Function_sp*%))
+  (primitive-nounwind module "newTsp" %void% (list %tsp*%))
+  (primitive-nounwind module "copyTsp" %void% (list +tsp*-or-tmv*+ %tsp*%))
+  (primitive-nounwind module "copyTspTptr" %void% (list +tsp*-or-tmv*+ %t*%))
+  (primitive-nounwind module "compareTspTptr" %i32% (list %tsp*% %t*%))
 
-  (primitive-nounwind module "newTmv" +void+ (list +tmv*+))
-  (primitive-nounwind module "resetTmv" +void+ (list +tmv*+))
-  (primitive-nounwind module "copyTmv" +void+ (list +tmv*+ +tmv*+))
-  (primitive-nounwind module "copyTmvOrSlice" +void+ (list +tsp*-or-tmv*+ +tmv*+))
+  (primitive-nounwind module "newTmv" %void% (list %tmv*%))
+  (primitive-nounwind module "resetTmv" %void% (list %tmv*%))
+  (primitive-nounwind module "copyTmv" %void% (list %tmv*% %tmv*%))
+  (primitive-nounwind module "copyTmvOrSlice" %void% (list +tsp*-or-tmv*+ %tmv*%))
 
-  (primitive-nounwind module "isTrue" +i32+ (list +tsp*+))
-  (primitive-nounwind module "isBound" +i32+ (list +tsp*+))
+  (primitive-nounwind module "isTrue" %i32% (list %tsp*%))
+  (primitive-nounwind module "isBound" %i32% (list %tsp*%))
 
-  (primitive-nounwind module "internSymbol_tsp" +void+ (list +tsp*+ +i8*+ +i8*+))
-  (primitive-nounwind module "makeSymbol_tsp" +void+ (list +tsp*+ +i8*+))
+  (primitive-nounwind module "internSymbol_tsp" %void% (list %tsp*% %i8*% %i8*%))
+  (primitive-nounwind module "makeSymbol_tsp" %void% (list %tsp*% %i8*%))
 
-  (primitive-nounwind module "internSymbol_symsp" +void+ (list +symsp*+ +i8*+ +i8*+))
-  (primitive-nounwind module "makeSymbol_symsp" +void+ (list +symsp*+ +i8*+))
+  (primitive-nounwind module "internSymbol_symsp" %void% (list %symsp*% %i8*% %i8*%))
+  (primitive-nounwind module "makeSymbol_symsp" %void% (list %symsp*% %i8*%))
 
-  (primitive-nounwind module "makeNil" +void+ (list +tsp*-or-tmv*+))
-  (primitive-nounwind module "makeT" +void+ (list +tsp*+))
-  (primitive-nounwind module "makeCons" +void+ (list +tsp*+ +tsp*+ +tsp*+))
-  (primitive-nounwind module "makeFixnum" +void+ (list +tsp*+ +fixnum+))
-  (primitive-nounwind module "makeCharacter" +void+ (list +tsp*+ +i32+))
-  (primitive-nounwind module "makeBignum" +void+ (list +tsp*+ +i8*+))
-  #+short-float (primitive-nounwind module "makeShortFloat" +void+ (list +tsp*+ +double+))
-  (primitive-nounwind module "makeSingleFloat" +void+ (list +tsp*+ +float+))
-  (primitive-nounwind module "makeDoubleFloat" +void+ (list +tsp*+ +double+))
+  (primitive-nounwind module "makeNil" %void% (list +tsp*-or-tmv*+))
+  (primitive-nounwind module "makeT" %void% (list %tsp*%))
+  (primitive-nounwind module "makeCons" %void% (list %tsp*% %tsp*% %tsp*%))
+  (primitive-nounwind module "makeFixnum" %void% (list %tsp*% %fixnum%))
+  (primitive-nounwind module "makeCharacter" %void% (list %tsp*% %i32%))
+  (primitive-nounwind module "makeBignum" %void% (list %tsp*% %i8*%))
+  #+short-float (primitive-nounwind module "makeShortFloat" %void% (list %tsp*% %double%))
+  (primitive-nounwind module "makeSingleFloat" %void% (list %tsp*% %float%))
+  (primitive-nounwind module "makeDoubleFloat" %void% (list %tsp*% %double%))
 
-  #+long-float (primitive-nounwind module "makeLongFloat" +void+ (list +tsp*+ +long-float+))
-  (primitive-nounwind module "makeString" +void+ (list +tsp*+ +i8*+))
-  (primitive-nounwind module "makePathname" +void+ (list +tsp*+ +i8*+))
-  (primitive-nounwind module "makeCompiledFunction" +void+ (list +tsp*-or-tmv*+ +fn-prototype*+ +i32*+ +size_t+ +size_t+ +size_t+ +tsp*+ +tsp*+ +afsp*+ +tsp*+))
+  #+long-float (primitive-nounwind module "makeLongFloat" %void% (list %tsp*% %long-float%))
+  (primitive-nounwind module "makeString" %void% (list %tsp*% %i8*%))
+  (primitive-nounwind module "makePathname" %void% (list %tsp*% %i8*%))
+  (primitive-nounwind module "makeCompiledFunction" %void% (list +tsp*-or-tmv*+ %fn-prototype*% %i32*% %size_t% %size_t% %size_t% %tsp*% %tsp*% %afsp*% %tsp*%))
 
-  (primitive          module "symbolValueRead" +void+ (list +tsp*-or-tmv*+ +tsp*+))
-  (primitive-nounwind module "symbolValueReference" +tsp*+ (list +tsp*+))
-  (primitive-nounwind module "lexicalValueReference" +tsp*+ (list +i32+ +i32+ +afsp*+))
-  (primitive-nounwind module "lexicalValueRead" +void+ (list +tsp*-or-tmv*+ +i32+ +i32+ +afsp*+))
-  (primitive-nounwind module "symbolFunctionRead" +void+ (list +tsp*-or-tmv*+ +tsp*+))
-  (primitive-nounwind module "setfSymbolFunctionRead" +void+ (list +tsp*+ +tsp*+))
-  (primitive-nounwind module "lexicalFunctionRead" +void+ (list +tsp*-or-tmv*+ +i32+ +i32+ +afsp*+))
+  (primitive          module "symbolValueRead" %void% (list +tsp*-or-tmv*+ %tsp*%))
+  (primitive-nounwind module "symbolValueReference" %tsp*% (list %tsp*%))
+  (primitive-nounwind module "lexicalValueReference" %tsp*% (list %i32% %i32% %afsp*%))
+  (primitive-nounwind module "lexicalValueRead" %void% (list +tsp*-or-tmv*+ %i32% %i32% %afsp*%))
+  (primitive-nounwind module "symbolFunctionRead" %void% (list +tsp*-or-tmv*+ %tsp*%))
+  (primitive-nounwind module "setfSymbolFunctionRead" %void% (list %tsp*% %tsp*%))
+  (primitive-nounwind module "lexicalFunctionRead" %void% (list +tsp*-or-tmv*+ %i32% %i32% %afsp*%))
 
 
-  (primitive-nounwind module "makeTagbodyFrame" +void+ (list +afsp*+))
-  (primitive-nounwind module "makeValueFrame" +void+ (list +tsp*+ +i64+))
-  (primitive-nounwind module "setParentOfActivationFrameFromClosure" +void+ (list +tsp*+ +t*+))
-  (primitive-nounwind module "setParentOfActivationFrame" +void+ (list +tsp*+ +tsp*+))
+  (primitive-nounwind module "makeTagbodyFrame" %void% (list %afsp*%))
+  (primitive-nounwind module "makeValueFrame" %void% (list %tsp*% %i64%))
+  (primitive-nounwind module "setParentOfActivationFrameFromClosure" %void% (list %tsp*% %t*%))
+  (primitive-nounwind module "setParentOfActivationFrame" %void% (list %tsp*% %tsp*%))
 
-;;  (primitive-nounwind module "attachDebuggingInfoToValueFrame" +void+ (list +afsp*+ +tsp*+))
+;;  (primitive-nounwind module "attachDebuggingInfoToValueFrame" %void% (list %afsp*% %tsp*%))
 
-  (primitive-nounwind module "valueFrameReference" +tsp*+ (list +afsp*+ +i32+))
+  (primitive-nounwind module "valueFrameReference" %tsp*% (list %afsp*% %i32%))
 
-  (primitive          module "makeFunctionFrame" +void+ (list +afsp*+ +i32+ +afsp*+))
-  (primitive          module "functionFrameReference" +tsp*+ (list +afsp*+ +i32+))
+  (primitive          module "makeFunctionFrame" %void% (list %afsp*% %i32% %afsp*%))
+  (primitive          module "functionFrameReference" %tsp*% (list %afsp*% %i32%))
 
-  (primitive          module "prependMultipleValues" +void+ (list +tsp*-or-tmv*+ +tmv*+))
+  (primitive          module "prependMultipleValues" %void% (list +tsp*-or-tmv*+ %tmv*%))
 
-  (primitive          module "invokeTopLevelFunction" +void+ (list +tmv*+ +fn-prototype*+ +i8*+ +i32*+ +size_t+ +size_t+ +size_t+ +ltv**+))
-  (primitive          module "cc_register_startup_function" +void+ (list +fn-start-up*+))
+  (primitive          module "invokeTopLevelFunction" %void% (list %tmv*% %fn-prototype*% %i8*% %i32*% %size_t% %size_t% %size_t% %ltv**%))
+  (primitive          module "cc_register_startup_function" %void% (list %fn-start-up*%))
 
-  (primitive-nounwind module "activationFrameSize" +i32+ (list +afsp*+))
+  (primitive-nounwind module "activationFrameSize" %i32% (list %afsp*%))
 
-  (primitive-nounwind module "copyArgs" +void+ (list +tsp*+ +i32+ +t*+ +t*+ +t*+ +i8*+))
-  (primitive          module "throwTooManyArgumentsException" +void+ (list +i8*+ +afsp*+ +i32+ +i32+))
-  (primitive          module "throwNotEnoughArgumentsException" +void+ (list +i8*+ +afsp*+ +i32+ +i32+))
-  (primitive          module "throwIfExcessKeywordArguments" +void+ (list +i8*+ +afsp*+ +i32+))
-  (primitive-nounwind module "cc_trackFirstUnexpectedKeyword" +size_t+ (list +size_t+ +size_t+))
-  (primitive          module "gdb" +void+ nil)
-  (primitive-nounwind module "debugInvoke" +void+ nil)
-  (primitive-nounwind module "debugInspectActivationFrame" +void+ (list +afsp*+))
-  (primitive-nounwind module "debugInspectT_sp" +void+ (list +tsp*+))
-  (primitive-nounwind module "debugInspectTPtr" +void+ (list +t*+))
-  (primitive-nounwind module "debugInspectT_mv" +void+ (list +tmv*+))
-  (primitive-nounwind module "debugInspect_return_type" +void+ (list +return_type+))
-  (primitive-nounwind module "debugInspect_mvarray" +void+ nil)
-  (primitive-nounwind module "debugPointer" +void+ (list +i8*+))
-  (primitive-nounwind module "debug_VaList_SPtr" +void+ (list +VaList_S*+))
-  (primitive-nounwind module "debugPrintObject" +void+ (list +i8*+ +tsp*+))
-  (primitive-nounwind module "debugMessage" +void+ (list +i8*+))
-  (primitive-nounwind module "debugPrintI32" +void+ (list +i32+))
-  (primitive-nounwind module "debugPrint_size_t" +void+ (list +size_t+))
-  (primitive-nounwind module "debug_match_two_uintptr_t" +uintptr_t+ (list +uintptr_t+ +uintptr_t+))
-  (primitive-nounwind module "lowLevelTrace" +void+ (list +i32+))
-  (primitive-nounwind module "unreachableError" +void+ nil)
+  (primitive-nounwind module "copyArgs" %void% (list %tsp*% %i32% %t*% %t*% %t*% %i8*%))
+  (primitive          module "throwTooManyArgumentsException" %void% (list %i8*% %afsp*% %i32% %i32%))
+  (primitive          module "throwNotEnoughArgumentsException" %void% (list %i8*% %afsp*% %i32% %i32%))
+  (primitive          module "throwIfExcessKeywordArguments" %void% (list %i8*% %afsp*% %i32%))
+  (primitive-nounwind module "cc_trackFirstUnexpectedKeyword" %size_t% (list %size_t% %size_t%))
+  (primitive          module "gdb" %void% nil)
+  (primitive-nounwind module "debugInvoke" %void% nil)
+  (primitive-nounwind module "debugInspectActivationFrame" %void% (list %afsp*%))
+  (primitive-nounwind module "debugInspectT_sp" %void% (list %tsp*%))
+  (primitive-nounwind module "debugInspectTPtr" %void% (list %t*%))
+  (primitive-nounwind module "debugInspectT_mv" %void% (list %tmv*%))
+  (primitive-nounwind module "debugInspect_return_type" %void% (list %return_type%))
+  (primitive-nounwind module "debugInspect_mvarray" %void% nil)
+  (primitive-nounwind module "debugPointer" %void% (list %i8*%))
+  (primitive-nounwind module "debug_VaList_SPtr" %void% (list %VaList_S*%))
+  (primitive-nounwind module "debugPrintObject" %void% (list %i8*% %tsp*%))
+  (primitive-nounwind module "debugMessage" %void% (list %i8*%))
+  (primitive-nounwind module "debugPrintI32" %void% (list %i32%))
+  (primitive-nounwind module "debugPrint_size_t" %void% (list %size_t%))
+  (primitive-nounwind module "debug_match_two_uintptr_t" %uintptr_t% (list %uintptr_t% %uintptr_t%))
+  (primitive-nounwind module "lowLevelTrace" %void% (list %i32%))
+  (primitive-nounwind module "unreachableError" %void% nil)
 
-  (primitive          module "va_tooManyArgumentsException" +void+ (list +i8*+ +size_t+ +size_t+))
-  (primitive          module "va_notEnoughArgumentsException" +void+ (list +i8*+ +size_t+ +size_t+))
-  (primitive          module "va_ifExcessKeywordArgumentsException" +void+ (list +i8*+ +size_t+ +VaList_S*+ +size_t+))
-  (primitive-nounwind module "va_symbolFunction" +t*+ (list +tsp*+)) ;; void va_symbolFunction(core::Function_sp fn, core::Symbol_sp sym)
-  (primitive-nounwind module "va_lexicalFunction" +t*+ (list +i32+ +i32+ +afsp*+))
-  (primitive          module "FUNCALL" +return_type+ (list* +t*+ +t*+ +size_t+ (map 'list (lambda (x) x) (make-array core:+number-of-fixed-arguments+ :initial-element +t*+))) :varargs t)
+  (primitive          module "va_tooManyArgumentsException" %void% (list %i8*% %size_t% %size_t%))
+  (primitive          module "va_notEnoughArgumentsException" %void% (list %i8*% %size_t% %size_t%))
+  (primitive          module "va_ifExcessKeywordArgumentsException" %void% (list %i8*% %size_t% %VaList_S*% %size_t%))
+  (primitive-nounwind module "va_symbolFunction" %t*% (list %tsp*%)) ;; void va_symbolFunction(core::Function_sp fn, core::Symbol_sp sym)
+  (primitive-nounwind module "va_lexicalFunction" %t*% (list %i32% %i32% %afsp*%))
+  (primitive          module "FUNCALL" %return_type% (list* %t*% %t*% %size_t% (map 'list (lambda (x) x) (make-array core:+number-of-fixed-arguments+ :initial-element %t*%))) :varargs t)
 
-  (primitive-nounwind module "cc_gatherRestArguments" +t*+ (list +size_t+ +VaList_S*+ +size_t+ +i8*+))
-  (primitive-nounwind module "cc_gatherVaRestArguments" +t*+ (list +size_t+ +VaList_S*+ +size_t+ +VaList_S*+))
-  (primitive          module "cc_ifBadKeywordArgumentException" +void+ (list +size_t+ +size_t+ +t*+))
+  (primitive-nounwind module "cc_gatherRestArguments" %t*% (list %size_t% %VaList_S*% %size_t% %i8*%))
+  (primitive-nounwind module "cc_gatherVaRestArguments" %t*% (list %size_t% %VaList_S*% %size_t% %VaList_S*%))
+  (primitive          module "cc_ifBadKeywordArgumentException" %void% (list %size_t% %size_t% %t*%))
 
-  (primitive-nounwind module "pushCatchFrame" +size_t+ (list +tsp*+))
-  (primitive-nounwind module "pushBlockFrame" +size_t+ (list +tsp*+))
-  (primitive-nounwind module "pushTagbodyFrame" +size_t+ (list +tsp*+))
+  (primitive-nounwind module "pushCatchFrame" %size_t% (list %tsp*%))
+  (primitive-nounwind module "pushBlockFrame" %size_t% (list %tsp*%))
+  (primitive-nounwind module "pushTagbodyFrame" %size_t% (list %tsp*%))
 
-  (primitive          module "throwCatchThrow" +void+ (list +tsp*+ #| +tmv*+ |#) :does-not-return t)
-  (primitive          module "throwReturnFrom" +void+ (list +tsp*+) :does-not-return t)
-  (primitive          module "throwDynamicGo" +void+ (list +size_t+ +size_t+ +afsp*+) :does-not-return t)
+  (primitive          module "throwCatchThrow" %void% (list %tsp*% #| %tmv*% |#) :does-not-return t)
+  (primitive          module "throwReturnFrom" %void% (list %tsp*%) :does-not-return t)
+  (primitive          module "throwDynamicGo" %void% (list %size_t% %size_t% %afsp*%) :does-not-return t)
 
-  (primitive          module "ifCatchFrameMatchesStoreResultElseRethrow" +void+ (list +tsp*-or-tmv*+ +size_t+ +i8*+))
-  (primitive-nounwind module "exceptionStackUnwind" +void+ (list +size_t+))
-  (primitive          module "blockHandleReturnFrom" +void+ (list +tsp*-or-tmv*+ +i8*+ +size_t+))
-  (primitive          module "tagbodyDynamicGoIndexElseRethrow" +size_t+ (list +i8*+ +size_t+))
-  (primitive          module "throwIllegalSwitchValue" +void+ (list +size_t+ +size_t+) :does-not-return t)
+  (primitive          module "ifCatchFrameMatchesStoreResultElseRethrow" %void% (list +tsp*-or-tmv*+ %size_t% %i8*%))
+  (primitive-nounwind module "exceptionStackUnwind" %void% (list %size_t%))
+  (primitive          module "blockHandleReturnFrom" %void% (list +tsp*-or-tmv*+ %i8*% %size_t%))
+  (primitive          module "tagbodyDynamicGoIndexElseRethrow" %size_t% (list %i8*% %size_t%))
+  (primitive          module "throwIllegalSwitchValue" %void% (list %size_t% %size_t%) :does-not-return t)
 
-  (primitive-nounwind module "clasp_terminate" +void+ (list +i8*+ +size_t+ +size_t+ +i8*+) )
-  (primitive-nounwind module "__gxx_personality_v0" +i32+ nil :varargs t) ;; varargs
-  (primitive-nounwind module "__cxa_begin_catch" +i8*+ (list +i8*+) )
-  (primitive-nounwind module "__cxa_end_catch" +void+ nil) ;; This was a PRIMITIVE
-  (primitive          module "__cxa_rethrow" +void+ nil)
-  (primitive-nounwind module "llvm.eh.typeid.for" +i32+ (list +i8*+))
+  (primitive-nounwind module "clasp_terminate" %void% (list %i8*% %size_t% %size_t% %i8*%) )
+  (primitive-nounwind module "__gxx_personality_v0" %i32% nil :varargs t) ;; varargs
+  (primitive-nounwind module "__cxa_begin_catch" %i8*% (list %i8*%) )
+  (primitive-nounwind module "__cxa_end_catch" %void% nil) ;; This was a PRIMITIVE
+  (primitive          module "__cxa_rethrow" %void% nil)
+  (primitive-nounwind module "llvm.eh.typeid.for" %i32% (list %i8*%))
 
-  (primitive-nounwind module "llvm.sadd.with.overflow.i32" +{i32.i1}+ (list +i32+ +i32+))
-  (primitive-nounwind module "llvm.sadd.with.overflow.i64" +{i64.i1}+ (list +i64+ +i64+))
-  (primitive-nounwind module "llvm.ssub.with.overflow.i32" +{i32.i1}+ (list +i32+ +i32+))
-  (primitive-nounwind module "llvm.ssub.with.overflow.i64" +{i64.i1}+ (list +i64+ +i64+))
+  (primitive-nounwind module "llvm.sadd.with.overflow.i32" %{i32.i1}% (list %i32% %i32%))
+  (primitive-nounwind module "llvm.sadd.with.overflow.i64" %{i64.i1}% (list %i64% %i64%))
+  (primitive-nounwind module "llvm.ssub.with.overflow.i32" %{i32.i1}% (list %i32% %i32%))
+  (primitive-nounwind module "llvm.ssub.with.overflow.i64" %{i64.i1}% (list %i64% %i64%))
   
-  (primitive-nounwind module "llvm.va_copy" +void+ (list +i8*+ +i8*+))
-  (primitive-nounwind module "llvm.va_start" +void+ (list +i8*+))
-  (primitive-nounwind module "llvm.va_end" +void+ (list +i8*+))
+  (primitive-nounwind module "llvm.va_copy" %void% (list %i8*% %i8*%))
+  (primitive-nounwind module "llvm.va_start" %void% (list %i8*%))
+  (primitive-nounwind module "llvm.va_end" %void% (list %i8*%))
 
-  (primitive-nounwind module "copyLoadTimeValue" +void+ (list +tsp*-or-tmv*+ +ltv**+ +size_t+))
-  (primitive-nounwind module "getLoadTimeValue" +void+ (list +tsp*-or-tmv*+ +ltv**+ +i32+))
-  (primitive-nounwind module "dumpLoadTimeValues" +void+ (list +ltv**+))
+  (primitive-nounwind module "copyLoadTimeValue" %void% (list +tsp*-or-tmv*+ %ltv**% %size_t%))
+  (primitive-nounwind module "getLoadTimeValue" %void% (list +tsp*-or-tmv*+ %ltv**% %i32%))
+  (primitive-nounwind module "dumpLoadTimeValues" %void% (list %ltv**%))
 
-  (primitive-nounwind module "debugSourceFileInfoHandle" +void+ (list +i32*+))
+  (primitive-nounwind module "debugSourceFileInfoHandle" %void% (list %i32*%))
 
-  (primitive-nounwind module "saveToMultipleValue0" +void+ (list +tmv*+))
-  (primitive-nounwind module "restoreFromMultipleValue0" +void+ (list +tsp*-or-tmv*+ ))
-  (primitive-nounwind module "saveValues" +void+ (list +tsp*+ +tmv*+))
-  (primitive-nounwind module "loadValues" +void+ (list +tmv*+ +tsp*+))
+  (primitive-nounwind module "saveToMultipleValue0" %void% (list %tmv*%))
+  (primitive-nounwind module "restoreFromMultipleValue0" %void% (list +tsp*-or-tmv*+ ))
+  (primitive-nounwind module "saveValues" %void% (list %tsp*% %tmv*%))
+  (primitive-nounwind module "loadValues" %void% (list %tmv*% %tsp*%))
 
-  (primitive-nounwind module "setjmp_set_jump_address" +void+ (list +setjmp.buf*+ +i8*+) )
+  (primitive-nounwind module "setjmp_set_jump_address" %void% (list %setjmp.buf*% %i8*%) )
 
 
-  (primitive-nounwind module "progvSaveSpecials" +void+ (list +i8**+ +tsp*+ +tsp*+))
-  (primitive-nounwind module "progvRestoreSpecials" +void+ (list +i8**+))
+  (primitive-nounwind module "progvSaveSpecials" %void% (list %i8**% %tsp*% %tsp*%))
+  (primitive-nounwind module "progvRestoreSpecials" %void% (list %i8**%))
 
-  (primitive-nounwind module "pushDynamicBinding" +void+ (list +tsp*+))
-  (primitive-nounwind module "popDynamicBinding" +void+ (list +tsp*+))
+  (primitive-nounwind module "pushDynamicBinding" %void% (list %tsp*%))
+  (primitive-nounwind module "popDynamicBinding" %void% (list %tsp*%))
 
-  (primitive-nounwind module "matchKeywordOnce" +size_t+ (list +tsp*+ +t*+ +i8*+))
+  (primitive-nounwind module "matchKeywordOnce" %size_t% (list %tsp*% %t*% %i8*%))
 
   ;; Primitives for Cleavir code
 
-  (primitive-nounwind module "cc_eql" +i32+ (list +t*+ +t*+)) ;; eql test
-  (primitive          module "cc_bad_tag" +void+ (list +t*+ +t*+)) ;; gf gf-args
-  (primitive          module "cc_dispatch_invalid" +return_type+ (list +t*+ +t*+)) ;; gf gf-args
-  (primitive          module "cc_dispatch_miss" +return_type+ (list +t*+ +t*+)) ;; gf gf-args
-  (primitive          module "cc_dispatch_effective_method"   +return_type+ (list +t*+ +t*+ +t*+)) ; effective-method gf gf-args
-  (primitive          module "cc_dispatch_debug" +void+ (list +i32+ +uintptr_t+))
+  (primitive-nounwind module "cc_eql" %i32% (list %t*% %t*%)) ;; eql test
+  (primitive          module "cc_bad_tag" %void% (list %t*% %t*%)) ;; gf gf-args
+  (primitive          module "cc_dispatch_invalid" %return_type% (list %t*% %t*%)) ;; gf gf-args
+  (primitive          module "cc_dispatch_miss" %return_type% (list %t*% %t*%)) ;; gf gf-args
+  (primitive          module "cc_dispatch_effective_method"   %return_type% (list %t*% %t*% %t*%)) ; effective-method gf gf-args
+  (primitive          module "cc_dispatch_debug" %void% (list %i32% %uintptr_t%))
   
-  (primitive-nounwind module "cc_getPointer" +i8*+ (list +t*+))
-  (primitive-nounwind module "cc_setTmvToNil" +void+ (list +tmv*+))
-  (primitive-nounwind module "cc_precalcSymbol" +t*+ (list +ltv**+ +size_t+))
-  (primitive-nounwind module "cc_precalcValue" +t*+ (list +ltv**+ +size_t+))
-  (primitive-nounwind module "cc_makeCell" +t*+ nil)
-  (primitive-nounwind module "cc_writeCell" +void+ (list +t*+ +t*+))
-  (primitive-nounwind module "cc_readCell" +t*+ (list +t*+))
-  (primitive-nounwind module "cc_t_reference" +t**+ nil)
-  (primitive-nounwind module "cc_nil_reference" +t**+ nil)
-  (primitive-nounwind module "cc_fetch" +t*+ (list +t*+ +size_t+))
-  (primitive-nounwind module "cc_va_arg" +t*+ (list +VaList_S*+))
-  (primitive-nounwind module "cc_va_list_length" +size_t+ (list +VaList_S*+))
-  (primitive-nounwind module "cc_copy_va_list" +void+ (list +size_t+ +t*[0]*+ +VaList_S*+))
+  (primitive-nounwind module "cc_getPointer" %i8*% (list %t*%))
+  (primitive-nounwind module "cc_setTmvToNil" %void% (list %tmv*%))
+  (primitive-nounwind module "cc_precalcSymbol" %t*% (list %ltv**% %size_t%))
+  (primitive-nounwind module "cc_precalcValue" %t*% (list %ltv**% %size_t%))
+  (primitive-nounwind module "cc_makeCell" %t*% nil)
+  (primitive-nounwind module "cc_writeCell" %void% (list %t*% %t*%))
+  (primitive-nounwind module "cc_readCell" %t*% (list %t*%))
+  (primitive-nounwind module "cc_t_reference" %t**% nil)
+  (primitive-nounwind module "cc_nil_reference" %t**% nil)
+  (primitive-nounwind module "cc_fetch" %t*% (list %t*% %size_t%))
+  (primitive-nounwind module "cc_va_arg" %t*% (list %VaList_S*%))
+  (primitive-nounwind module "cc_va_list_length" %size_t% (list %VaList_S*%))
+  (primitive-nounwind module "cc_copy_va_list" %void% (list %size_t% %t*[0]*% %VaList_S*%))
   
-  (primitive-nounwind module "cc_initialize_gcroots_in_module" +void+ (list +gcroots-in-module*+ +tsp*+ +size_t+ +t*+))
-  (primitive-nounwind module "cc_shutdown_gcroots_in_module" +void+ (list +gcroots-in-module*+ ))
+  (primitive-nounwind module "cc_initialize_gcroots_in_module" %void% (list %gcroots-in-module*% %tsp*% %size_t% %t*%))
+  (primitive-nounwind module "cc_shutdown_gcroots_in_module" %void% (list %gcroots-in-module*% ))
   
-  (primitive-nounwind module "cc_enclose" +t*+ (list +t*+ +fn-prototype*+ +i32*+ +size_t+ +size_t+ +size_t+ +size_t+ ) :varargs t)
-  (primitive-nounwind module "cc_stack_enclose" +t*+ (list +i8*+ +t*+ +fn-prototype*+ +i32*+ +size_t+ +size_t+ +size_t+ +size_t+ ) :varargs t)
-  (primitive-nounwind module "cc_saveThreadLocalMultipleValues" +void+ (list +tmv*+ +mv-struct*+))
-  (primitive-nounwind module "cc_loadThreadLocalMultipleValues" +void+ (list +tmv*+ +mv-struct*+))
-  (primitive          module "cc_safe_fdefinition" +t*+ (list +t*+))
-  (primitive-nounwind module "cc_unsafe_fdefinition" +t*+ (list +t*+))
-  (primitive          module "cc_safe_setfdefinition" +t*+ (list +t*+))
-  (primitive-nounwind module "cc_unsafe_setfdefinition" +t*+ (list +t*+))
-  (primitive          module "cc_safe_symbol_value" +t*+ (list +t*+))
-  (primitive-nounwind module "cc_unsafe_symbol_value" +t*+ (list +t*+))
-  (primitive-nounwind module "cc_setSymbolValue" +void+ (list +t*+ +t*+))
-  (primitive          module "cc_call_multipleValueOneFormCall" +return_type+ (list +t*+))
-  (primitive          module "cc_call"   +return_type+ (list* +t*+ +t*+ +size_t+
+  (primitive-nounwind module "cc_enclose" %t*% (list %t*% %fn-prototype*% %i32*% %size_t% %size_t% %size_t% %size_t% ) :varargs t)
+  (primitive-nounwind module "cc_stack_enclose" %t*% (list %i8*% %t*% %fn-prototype*% %i32*% %size_t% %size_t% %size_t% %size_t% ) :varargs t)
+  (primitive-nounwind module "cc_saveThreadLocalMultipleValues" %void% (list %tmv*% %mv-struct*%))
+  (primitive-nounwind module "cc_loadThreadLocalMultipleValues" %void% (list %tmv*% %mv-struct*%))
+  (primitive          module "cc_safe_fdefinition" %t*% (list %t*%))
+  (primitive-nounwind module "cc_unsafe_fdefinition" %t*% (list %t*%))
+  (primitive          module "cc_safe_setfdefinition" %t*% (list %t*%))
+  (primitive-nounwind module "cc_unsafe_setfdefinition" %t*% (list %t*%))
+  (primitive          module "cc_safe_symbol_value" %t*% (list %t*%))
+  (primitive-nounwind module "cc_unsafe_symbol_value" %t*% (list %t*%))
+  (primitive-nounwind module "cc_setSymbolValue" %void% (list %t*% %t*%))
+  (primitive          module "cc_call_multipleValueOneFormCall" %return_type% (list %t*%))
+  (primitive          module "cc_call"   %return_type% (list* %t*% %t*% %size_t%
                                                               (map 'list (lambda (x) x)
-                                                                   (make-array core:+number-of-fixed-arguments+ :initial-element +t*+))) :varargs t)
-  (primitive          module "cc_call_callback"   +return_type+ (list* +t*+ +t*+ +size_t+
+                                                                   (make-array core:+number-of-fixed-arguments+ :initial-element %t*%))) :varargs t)
+  (primitive          module "cc_call_callback"   %return_type% (list* %t*% %t*% %size_t%
                                                                          (map 'list (lambda (x) x)
-                                                                              (make-array core:+number-of-fixed-arguments+ :initial-element +t*+))) :varargs t)
-  (primitive-nounwind module "cc_allowOtherKeywords" +i64+ (list +i64+ +t*+))
-  (primitive-nounwind module "cc_matchKeywordOnce" +size_t+ (list +t*+ +t*+ +t*+))
-  (primitive          module "cc_ifNotKeywordException" +void+ (list +t*+ +size_t+ +VaList_S*+))
-  (primitive-nounwind module "cc_multipleValuesArrayAddress" +t*[0]*+ nil)
-  (primitive          module "cc_unwind" +void+ (list +t*+ +size_t+))
-  (primitive          module "cc_throw" +void+ (list +t*+) :does-not-return t)
-  (primitive-nounwind module "cc_saveMultipleValue0" +void+ (list +tmv*+))
-  (primitive-nounwind module "cc_restoreMultipleValue0" +void+ (list +tmv*+))
-  (primitive-nounwind module "cc_pushLandingPadFrame" +t*+ nil)
-  (primitive-nounwind module "cc_popLandingPadFrame" +void+ (list +t*+))
-  (primitive          module "cc_landingpadUnwindMatchFrameElseRethrow" +size_t+ (list +i8*+ +t*+))
+                                                                              (make-array core:+number-of-fixed-arguments+ :initial-element %t*%))) :varargs t)
+  (primitive-nounwind module "cc_allowOtherKeywords" %i64% (list %i64% %t*%))
+  (primitive-nounwind module "cc_matchKeywordOnce" %size_t% (list %t*% %t*% %t*%))
+  (primitive          module "cc_ifNotKeywordException" %void% (list %t*% %size_t% %VaList_S*%))
+  (primitive-nounwind module "cc_multipleValuesArrayAddress" %t*[0]*% nil)
+  (primitive          module "cc_unwind" %void% (list %t*% %size_t%))
+  (primitive          module "cc_throw" %void% (list %t*%) :does-not-return t)
+  (primitive-nounwind module "cc_saveMultipleValue0" %void% (list %tmv*%))
+  (primitive-nounwind module "cc_restoreMultipleValue0" %void% (list %tmv*%))
+  (primitive-nounwind module "cc_pushLandingPadFrame" %t*% nil)
+  (primitive-nounwind module "cc_popLandingPadFrame" %void% (list %t*%))
+  (primitive          module "cc_landingpadUnwindMatchFrameElseRethrow" %size_t% (list %i8*% %t*%))
 
   ;; === CLASP-FFI TRANSLATORS ===
 
@@ -936,91 +929,91 @@ and initialize it with an array consisting of one function pointer."
   ;; void *       -> i64*         (!)
 
   ;; SHORT & UNSIGNED SHORT
-  (primitive          module "from_object_short" +i16+ (list +t*+))
-  (primitive          module "to_object_short" +t*+ (list +i16+))
-  (primitive          module "from_object_unsigned_short" +i16+ (list +t*+))
-  (primitive          module "to_object_unsigned_short" +t*+ (list +i16+))
+  (primitive          module "from_object_short" %i16% (list %t*%))
+  (primitive          module "to_object_short" %t*% (list %i16%))
+  (primitive          module "from_object_unsigned_short" %i16% (list %t*%))
+  (primitive          module "to_object_unsigned_short" %t*% (list %i16%))
 
   ;; INT & UNSIGNED INT
-  (primitive          module "from_object_int" +i32+ (list +t*+))
-  (primitive          module "to_object_int" +t*+ (list +i32+))
-  (primitive          module "from_object_unsigned_int" +i32+ (list +t*+))
-  (primitive          module "to_object_unsigned_int" +t*+ (list +i32+))
+  (primitive          module "from_object_int" %i32% (list %t*%))
+  (primitive          module "to_object_int" %t*% (list %i32%))
+  (primitive          module "from_object_unsigned_int" %i32% (list %t*%))
+  (primitive          module "to_object_unsigned_int" %t*% (list %i32%))
 
   ;; LONG & UNSIGNED LONG
-  (primitive          module "from_object_long" +i64+ (list +t*+))
-  (primitive          module "to_object_long" +t*+ (list +i64+))
-  (primitive          module "from_object_unsigned_long" +i64+ (list +t*+))
-  (primitive          module "to_object_unsigned_long" +t*+ (list +i64+))
+  (primitive          module "from_object_long" %i64% (list %t*%))
+  (primitive          module "to_object_long" %t*% (list %i64%))
+  (primitive          module "from_object_unsigned_long" %i64% (list %t*%))
+  (primitive          module "to_object_unsigned_long" %t*% (list %i64%))
 
   ;; LONG LONG & UNSIGNED LONG LONG
-  (primitive          module "from_object_long_long" +i64+ (list +t*+))
-  (primitive          module "to_object_long_long" +t*+ (list +i64+))
-  (primitive          module "from_object_unsigned_long_long" +i64+ (list +t*+))
-  (primitive          module "to_object_unsigned_long_long" +t*+ (list +i64+))
+  (primitive          module "from_object_long_long" %i64% (list %t*%))
+  (primitive          module "to_object_long_long" %t*% (list %i64%))
+  (primitive          module "from_object_unsigned_long_long" %i64% (list %t*%))
+  (primitive          module "to_object_unsigned_long_long" %t*% (list %i64%))
 
   ;; INT8 & UINT8
-  (primitive          module "from_object_int8" +i8+ (list +t*+))
-  (primitive          module "to_object_int8" +t*+ (list +i8+))
-  (primitive          module "from_object_uint8" +i8+ (list +t*+))
-  (primitive          module "to_object_uint8" +t*+ (list +i8+))
+  (primitive          module "from_object_int8" %i8% (list %t*%))
+  (primitive          module "to_object_int8" %t*% (list %i8%))
+  (primitive          module "from_object_uint8" %i8% (list %t*%))
+  (primitive          module "to_object_uint8" %t*% (list %i8%))
 
   ;; INT16 & UINT16
-  (primitive          module "from_object_int16" +i16+ (list +t*+))
-  (primitive          module "to_object_int16" +t*+ (list +i16+))
-  (primitive          module "from_object_uint16" +i16+ (list +t*+))
-  (primitive          module "to_object_uint16" +t*+ (list +i16+))
+  (primitive          module "from_object_int16" %i16% (list %t*%))
+  (primitive          module "to_object_int16" %t*% (list %i16%))
+  (primitive          module "from_object_uint16" %i16% (list %t*%))
+  (primitive          module "to_object_uint16" %t*% (list %i16%))
 
   ;; INT32 & UINT32
-  (primitive          module "from_object_int32" +i32+ (list +t*+))
-  (primitive          module "to_object_int32" +t*+ (list +i32+))
-  (primitive          module "from_object_uint32" +i32+ (list +t*+))
-  (primitive          module "to_object_uint32" +t*+ (list +i32+))
+  (primitive          module "from_object_int32" %i32% (list %t*%))
+  (primitive          module "to_object_int32" %t*% (list %i32%))
+  (primitive          module "from_object_uint32" %i32% (list %t*%))
+  (primitive          module "to_object_uint32" %t*% (list %i32%))
 
   ;; INT64 & UINT64
-  (primitive          module "from_object_int64" +i64+ (list +t*+))
-  (primitive          module "to_object_int64" +t*+ (list +i64+))
-  (primitive          module "from_object_uint64" +i64+ (list +t*+))
-  (primitive          module "to_object_uint64" +t*+ (list +i64+))
+  (primitive          module "from_object_int64" %i64% (list %t*%))
+  (primitive          module "to_object_int64" %t*% (list %i64%))
+  (primitive          module "from_object_uint64" %i64% (list %t*%))
+  (primitive          module "to_object_uint64" %t*% (list %i64%))
 
   ;; i128 HANDLING NOT IMPLEMENTED AS IT IS NOT USED
 
   ;; SIZE_T
-  (primitive          module "from_object_size" +size_t+ (list +t*+))
-  (primitive          module "to_object_size" +t*+ (list +size_t+))
+  (primitive          module "from_object_size" %size_t% (list %t*%))
+  (primitive          module "to_object_size" %t*% (list %size_t%))
 
   ;; SSIZE_T
-  (primitive          module "from_object_ssize" +size_t+ (list +t*+))
-  (primitive          module "to_object_ssize" +t*+ (list +size_t+))
+  (primitive          module "from_object_ssize" %size_t% (list %t*%))
+  (primitive          module "to_object_ssize" %t*% (list %size_t%))
 
   ;; PTRDIFF_T, TIME_T
-  ;; (primitive          module "from_object_ptrdiff" +t*+ (list +t*+)) - FIXME !
-  ;; (primitive          module "to_object_ptrdiff" +t*+ (list +uintptr_t+)) - FIXME !
+  ;; (primitive          module "from_object_ptrdiff" %t*% (list %t*%)) - FIXME !
+  ;; (primitive          module "to_object_ptrdiff" %t*% (list %uintptr_t%)) - FIXME !
 
-  ;; (primitive          module "from_object_time" +t*+ (list +t*+)) - FIXME !
-  ;; (primitive          module "to_object_time" +t*+ (list +t*+)) - FIOXME !
+  ;; (primitive          module "from_object_time" %t*% (list %t*%)) - FIXME !
+  ;; (primitive          module "to_object_time" %t*% (list %t*%)) - FIOXME !
 
   ;; CHAR & UNSIGNED CHAR
-  (primitive          module "from_object_char" +i8+ (list +t*+))
-  (primitive          module "to_object_char" +t*+ (list +i8+))
-  (primitive          module "from_object_unsigned_char" +i8+ (list +t*+))
-  (primitive          module "to_object_unsigned_char" +t*+ (list +i8+))
+  (primitive          module "from_object_char" %i8% (list %t*%))
+  (primitive          module "to_object_char" %t*% (list %i8%))
+  (primitive          module "from_object_unsigned_char" %i8% (list %t*%))
+  (primitive          module "to_object_unsigned_char" %t*% (list %i8%))
 
   ;; FLOAT, DOUBLE & LONG FLOAT
-  (primitive          module "from_object_float" +float+ (list +t*+))
-  (primitive          module "to_object_float" +t*+ (list +float+))
-  (primitive          module "from_object_double" +double+ (list +t*+))
-  (primitive          module "to_object_double" +t*+ (list +double+))
-  #+long-float (primitive module "from_object_long_double" +long-float+ (list +t*+))
-  #+long-float (primitive module "to_object_long_double" +t*+ (list +long-float+))
+  (primitive          module "from_object_float" %float% (list %t*%))
+  (primitive          module "to_object_float" %t*% (list %float%))
+  (primitive          module "from_object_double" %double% (list %t*%))
+  (primitive          module "to_object_double" %t*% (list %double%))
+  #+long-float (primitive module "from_object_long_double" %long-float% (list %t*%))
+  #+long-float (primitive module "to_object_long_double" %t*% (list %long-float%))
 
   ;; POINTER / VOID *
 
-  ;;(format *debug-io* "~%*** +VOID+ = ~S, +VOID*+ = ~S~%" +void+ +void*+)
-  ;; Note: using +void*+ causes an error - so we use +i64*+ instead here!
-  (primitive          module "from_object_pointer" +i64*+ (list +t*+))
-  (primitive          module "to_object_pointer" +t*+ (list +i64*+))
-  (primitive          module "to_object_void" +t*+ (list))
+  ;;(format *debug-io* "~%*** +VOID+ = ~S, +VOID*+ = ~S~%" %void% %void*%)
+  ;; Note: using %void*% causes an error - so we use %i64*% instead here!
+  (primitive          module "from_object_pointer" %i64*% (list %t*%))
+  (primitive          module "to_object_pointer" %t*% (list %i64*%))
+  (primitive          module "to_object_void" %t*% (list))
   ;; === END OF TRANSLATORS ===
 
   )

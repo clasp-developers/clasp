@@ -40,7 +40,7 @@
 					     :function-name name
 					     :parent-env nil
 					     :linkage 'llvm-sys:internal-linkage ;; 'llvm-sys:external-linkage
-					     :function-type +fn-prototype+
+					     :function-type %fn-prototype%
 					     :argument-names +fn-prototype-argument-names+)
 		   (irc-low-level-trace :up)
 		   (let* ((given-name (llvm-sys:get-name main-fn)))

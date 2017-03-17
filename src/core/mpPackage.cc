@@ -35,6 +35,7 @@ THE SOFTWARE.
 #include <clasp/core/multipleValues.h>
 #include <clasp/core/primitives.h>
 #include <clasp/core/package.h>
+#include <clasp/core/lispList.h>
 #include <clasp/gctools/interrupt.h>
 #include <clasp/core/evaluator.h>
 
@@ -311,6 +312,9 @@ CL_DEFUN core::List_sp mp__copy_default_special_bindings()
   return _lisp->copy_default_special_bindings();
 }
 
+CL_DEFUN core::List_sp mp__process_initial_special_bindings(Process_sp p) {
+  return core::cl__copy_list(p->_InitialSpecialBindings);
+}
 
 
 };

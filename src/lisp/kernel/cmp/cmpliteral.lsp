@@ -341,18 +341,18 @@ Return the index of the load-time-value"
 (defun do-with-constants-table (body-fn)
   (let ((*gcroots-in-module*
          (llvm-sys:make-global-variable *the-module*
-                                        cmp:+gcroots-in-module+ ; type
+                                        cmp:%gcroots-in-module% ; type
                                         nil ; isConstant
                                         'llvm-sys:internal-linkage
-                                        (llvm-sys:undef-value-get cmp:+gcroots-in-module+)
+                                        (llvm-sys:undef-value-get cmp:%gcroots-in-module%)
                                         ;; nil ; initializer
                                         "constants-table"))
         (cmp:*load-time-value-holder-global-var*
          (llvm-sys:make-global-variable *the-module*
-                                        cmp:+tsp[DUMMY]+ ; type
+                                        cmp:%tsp[DUMMY]% ; type
                                         nil              ; isConstant
                                         'llvm-sys:internal-linkage
-                                        (llvm-sys:undef-value-get cmp:+tsp[DUMMY]+)
+                                        (llvm-sys:undef-value-get cmp:%tsp[DUMMY]%)
                                         ;; nil ; initializer
                                         (next-value-table-holder-name "dummy")))
         (*llvm-values* (make-hash-table))
@@ -382,14 +382,14 @@ Return the index of the load-time-value"
       (when (> table-entries 0)
         ;; We have a new table, replace the old one and generate code to register the new one
         ;; and gc roots tabl
-        (let* ((array-type (llvm-sys:array-type-get cmp:+tsp+ table-entries))
+        (let* ((array-type (llvm-sys:array-type-get cmp:%tsp% table-entries))
                (correct-size-holder (llvm-sys:make-global-variable *the-module*
                                                                    array-type
                                                                    nil ; isConstant
                                                                    'llvm-sys:internal-linkage
                                                                    (llvm-sys:undef-value-get array-type)
                                                                    real-name))
-               (bitcast-correct-size-holder (irc-bit-cast correct-size-holder cmp:+tsp[DUMMY]*+ "bitcast-table"))
+               (bitcast-correct-size-holder (irc-bit-cast correct-size-holder cmp:%tsp[DUMMY]*% "bitcast-table"))
                (holder-ptr (llvm-sys:create-geparray *irbuilder* correct-size-holder
                                                      (list (cmp:jit-constant-size_t 0)
                                                            (cmp:jit-constant-size_t 0)) "table")))
@@ -397,9 +397,9 @@ Return the index of the load-time-value"
           (with-run-all-entry-codegen
               (cmp:irc-create-call "cc_initialize_gcroots_in_module"
                                    (list *gcroots-in-module*
-                                         (irc-pointer-cast correct-size-holder cmp:+tsp*+ "")
+                                         (irc-pointer-cast correct-size-holder cmp:%tsp*% "")
                                          (cmp:jit-constant-size_t table-entries)
-                                         (cmp:irc-int-to-ptr (cmp:jit-constant-uintptr_t 0) +t*+))))
+                                         (cmp:irc-int-to-ptr (cmp:jit-constant-uintptr_t 0) %t*%))))
           ;; Erase the dummy holder
           (llvm-sys:erase-from-parent cmp:*load-time-value-holder-global-var*))))))
 
@@ -417,16 +417,16 @@ and  return the sorted values and the constant-table or (values nil nil)."
   `(let ((cmp:*generate-compile-file-load-time-values* nil)
          (*gcroots-in-module*
           (llvm-sys:make-global-variable *the-module*
-                                         cmp:+gcroots-in-module+ ; type
+                                         cmp:%gcroots-in-module% ; type
                                          nil ; isConstant
                                          'llvm-sys:internal-linkage
-                                         (llvm-sys:undef-value-get cmp:+gcroots-in-module+)
+                                         (llvm-sys:undef-value-get cmp:%gcroots-in-module%)
 					 ;; nil ; initializer
                                          "constants-table"))
          (*table-index* 0)
          (*load-time-value-holder-global-var*
           (llvm-sys:make-global-variable *the-module*
-                                         +tsp[0]+ ; type
+                                         %tsp[0]% ; type
                                          nil      ; isConstant
                                          'llvm-sys:internal-linkage
                                          nil
@@ -446,7 +446,7 @@ Return the orderered-raw-constants-list and the constants-table GlobalVariable"
                (bformat t "Number of run-time-values: %d\n" (length run-time-values)))
        (when (> num-elements 0)
          (let* ((ordered-constant-list (sort run-time-values #'< :key #'constant-runtime-index))
-                (array-type (llvm-sys:array-type-get +tsp+ (length ordered-constant-list))))
+                (array-type (llvm-sys:array-type-get %tsp% (length ordered-constant-list))))
            (setf ordered-raw-constant-list
                  (mapcar (lambda (x) (constant-runtime-object x)) ordered-constant-list)
                  constant-table (llvm-sys:make-global-variable *the-module*
@@ -456,7 +456,7 @@ Return the orderered-raw-constants-list and the constants-table GlobalVariable"
                                                                (llvm-sys:undef-value-get array-type)
                                                                (literal:next-value-table-holder-name)))
 
-           (let ((bitcast-constant-table (irc-bit-cast constant-table +tsp[0]*+ "bitcast-table")))
+           (let ((bitcast-constant-table (irc-bit-cast constant-table %tsp[0]*% "bitcast-table")))
              (llvm-sys:replace-all-uses-with *load-time-value-holder-global-var* bitcast-constant-table))))
        (llvm-sys:erase-from-parent *load-time-value-holder-global-var*)
        (multiple-value-bind (startup-fn shutdown-fn)

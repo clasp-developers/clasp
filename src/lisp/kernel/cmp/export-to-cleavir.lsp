@@ -30,18 +30,18 @@
           +single-float-tag+
           +character-tag+
           +general-tag+
-          +i1+
-          +exception-struct+
-          +fn-prototype+
+          %i1%
+          %exception-struct%
+          %fn-prototype%
           +fn-prototype-argument-names+
-          +i32+
-          +i64+
-          +i8*+
-          +i8+
-          +mv-struct+
-          +size_t+
-          +t*+
-          +t**+
+          %i32%
+          %i64%
+          %i8*%
+          %i8%
+          %mv-struct%
+          %size_t%
+          %t*%
+          %t**%
           calling-convention-args
           calling-convention-args.va-arg
           calling-convention-va-list
@@ -127,9 +127,9 @@
           make-uintptr_t
           +cons-car-offset+
           +cons-cdr-offset+
-          +uintptr_t+
-          +return_type+
-          +VaList_S+
+          %uintptr_t%
+          %return_type%
+          %VaList_S%
           null-t-ptr
           compile-error-if-wrong-number-of-arguments
           compile-error-if-too-many-arguments

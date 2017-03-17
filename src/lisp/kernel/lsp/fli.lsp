@@ -149,53 +149,53 @@
 
   (defun init-translators ()
 
-    (%set-llvm-type-symbol (%lisp-type->type-spec :short) 'cmp::+i16+)
-    (%set-llvm-type-symbol (%lisp-type->type-spec :unsigned-short) 'cmp::+i16+)
-    (%set-llvm-type-symbol (%lisp-type->type-spec :ushort) 'cmp::+i16+)
+    (%set-llvm-type-symbol (%lisp-type->type-spec :short) 'cmp::%i16%)
+    (%set-llvm-type-symbol (%lisp-type->type-spec :unsigned-short) 'cmp::%i16%)
+    (%set-llvm-type-symbol (%lisp-type->type-spec :ushort) 'cmp::%i16%)
 
-    (%set-llvm-type-symbol (%lisp-type->type-spec :int) 'cmp::+i32+)
-    (%set-llvm-type-symbol (%lisp-type->type-spec :unsigned-int) 'cmp::+i32+)
-    (%set-llvm-type-symbol (%lisp-type->type-spec :uint) 'cmp::+i16+)
+    (%set-llvm-type-symbol (%lisp-type->type-spec :int) 'cmp::%i32%)
+    (%set-llvm-type-symbol (%lisp-type->type-spec :unsigned-int) 'cmp::%i32%)
+    (%set-llvm-type-symbol (%lisp-type->type-spec :uint) 'cmp::%i16%)
 
-    (%set-llvm-type-symbol (%lisp-type->type-spec :long) 'cmp::+i64+)
-    (%set-llvm-type-symbol (%lisp-type->type-spec :unsigned-long) 'cmp::+i64+)
-    (%set-llvm-type-symbol (%lisp-type->type-spec :ulong) 'cmp::+i64+)
+    (%set-llvm-type-symbol (%lisp-type->type-spec :long) 'cmp::%i64%)
+    (%set-llvm-type-symbol (%lisp-type->type-spec :unsigned-long) 'cmp::%i64%)
+    (%set-llvm-type-symbol (%lisp-type->type-spec :ulong) 'cmp::%i64%)
 
-    (%set-llvm-type-symbol (%lisp-type->type-spec :long-long) 'cmp::+i128+)
-    (%set-llvm-type-symbol (%lisp-type->type-spec :llong) 'cmp::+i128+)
-    (%set-llvm-type-symbol (%lisp-type->type-spec :unsigned-long-long) 'cmp::+i128+)
-    (%set-llvm-type-symbol (%lisp-type->type-spec :ullong) 'cmp::+i128+)
+    (%set-llvm-type-symbol (%lisp-type->type-spec :long-long) 'cmp::%i128%)
+    (%set-llvm-type-symbol (%lisp-type->type-spec :llong) 'cmp::%i128%)
+    (%set-llvm-type-symbol (%lisp-type->type-spec :unsigned-long-long) 'cmp::%i128%)
+    (%set-llvm-type-symbol (%lisp-type->type-spec :ullong) 'cmp::%i128%)
 
-    (%set-llvm-type-symbol (%lisp-type->type-spec :int8) 'cmp::+i8+)
-    (%set-llvm-type-symbol (%lisp-type->type-spec :uint8) 'cmp::+i8+)
+    (%set-llvm-type-symbol (%lisp-type->type-spec :int8) 'cmp::%i8%)
+    (%set-llvm-type-symbol (%lisp-type->type-spec :uint8) 'cmp::%i8%)
 
-    (%set-llvm-type-symbol (%lisp-type->type-spec :int16) 'cmp::+i16+)
-    (%set-llvm-type-symbol (%lisp-type->type-spec :uint16) 'cmp::+i16+)
+    (%set-llvm-type-symbol (%lisp-type->type-spec :int16) 'cmp::%i16%)
+    (%set-llvm-type-symbol (%lisp-type->type-spec :uint16) 'cmp::%i16%)
 
-    (%set-llvm-type-symbol (%lisp-type->type-spec :int32) 'cmp::+i32+)
-    (%set-llvm-type-symbol (%lisp-type->type-spec :uint32) 'cmp::+i32+)
+    (%set-llvm-type-symbol (%lisp-type->type-spec :int32) 'cmp::%i32%)
+    (%set-llvm-type-symbol (%lisp-type->type-spec :uint32) 'cmp::%i32%)
 
-    (%set-llvm-type-symbol (%lisp-type->type-spec :int64) 'cmp::+i64+)
-    (%set-llvm-type-symbol (%lisp-type->type-spec :uint64) 'cmp::+i64+)
+    (%set-llvm-type-symbol (%lisp-type->type-spec :int64) 'cmp::%i64%)
+    (%set-llvm-type-symbol (%lisp-type->type-spec :uint64) 'cmp::%i64%)
 
-    #+int128 (%set-llvm-type-symbol (%lisp-type->type-spec :int128) 'cmp::+i128+)
-    #+int128 (%set-llvm-type-symbol (%lisp-type->type-spec :uint128) 'cmp::+i128+)
+    #+int128 (%set-llvm-type-symbol (%lisp-type->type-spec :int128) 'cmp::%i128%)
+    #+int128 (%set-llvm-type-symbol (%lisp-type->type-spec :uint128) 'cmp::%i128%)
 
-    (%set-llvm-type-symbol (%lisp-type->type-spec :size) 'cmp::+size_t+)
-    (%set-llvm-type-symbol (%lisp-type->type-spec :ssize) 'cmp::+size_t+)
+    (%set-llvm-type-symbol (%lisp-type->type-spec :size) 'cmp::%size_t%)
+    (%set-llvm-type-symbol (%lisp-type->type-spec :ssize) 'cmp::%size_t%)
 
-    (%set-llvm-type-symbol (%lisp-type->type-spec :single-float) 'cmp::+float+)
-    (%set-llvm-type-symbol (%lisp-type->type-spec :float) 'cmp::+float+)
-    (%set-llvm-type-symbol (%lisp-type->type-spec :double) 'cmp::+double+)
-    #+long-float (%set-llvm-type-symbol (%lisp-type->type-spec :long-float) 'cmp::+long-float+)
+    (%set-llvm-type-symbol (%lisp-type->type-spec :single-float) 'cmp::%float%)
+    (%set-llvm-type-symbol (%lisp-type->type-spec :float) 'cmp::%float%)
+    (%set-llvm-type-symbol (%lisp-type->type-spec :double) 'cmp::%double%)
+    #+long-float (%set-llvm-type-symbol (%lisp-type->type-spec :long-float) 'cmp::%long-float%)
 
-    (%set-llvm-type-symbol (%lisp-type->type-spec :pointer) 'cmp::+i64*+)
+    (%set-llvm-type-symbol (%lisp-type->type-spec :pointer) 'cmp::%i64*%)
 
-    (%set-llvm-type-symbol (%lisp-type->type-spec :void) 'cmp::+void+)
+    (%set-llvm-type-symbol (%lisp-type->type-spec :void) 'cmp::%void%)
 
-    (%set-llvm-type-symbol (%lisp-type->type-spec :char) 'cmp::+i8+)
-    (%set-llvm-type-symbol (%lisp-type->type-spec :unsigned-char) 'cmp::+i8+)
-    (%set-llvm-type-symbol (%lisp-type->type-spec :uchar) 'cmp::+i8+)
+    (%set-llvm-type-symbol (%lisp-type->type-spec :char) 'cmp::%i8%)
+    (%set-llvm-type-symbol (%lisp-type->type-spec :unsigned-char) 'cmp::%i8%)
+    (%set-llvm-type-symbol (%lisp-type->type-spec :uchar) 'cmp::%i8%)
 
     ;; TODO: CHECK & IMPLEMEMT !
     ;; (%set-llvm-type-symbol (%lisp-type->type-spec :time) 'cmp::+time_t+)
@@ -413,7 +413,7 @@
               name-and-options
             (values name convention))
           (values name-and-options :cdecl))
-    ;; Convert type keywords into llvm types ie: :int -> +i32+
+    ;; Convert type keywords into llvm types ie: :int -> %i32%
     (let* ((body-form `(lambda ,argument-symbols ,@body))
            (argument-names (mapcar (lambda (s)
                                      (string s))
@@ -466,7 +466,7 @@
                                         (funcall (find-symbol "COMPILE-LAMBDA-FORM-TO-LLVM-FUNCTION" :clasp-cleavir) body-form)
                                         (cmp::compile-lambda-function body-form)))
                    (invoke-fn (cmp::get-function-or-error cmp::*the-module* "cc_call_callback"))
-                   (fptr (cmp:irc-bit-cast function-object cmp:+t*+ "fptr-t*"))
+                   (fptr (cmp:irc-bit-cast function-object cmp:%t*% "fptr-t*"))
                    (cl-result (llvm-sys:create-call-array-ref
                                cmp::*irbuilder*
                                invoke-fn
