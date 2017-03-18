@@ -101,6 +101,7 @@ public:
   }
 
 public:
+  string __repr__() const;
   void set_wrapped(PointerToExternalType ptr) {
     /*        if (this->_ptr != NULL ) delete this->_ptr; */
     this->_ptr = ptr;

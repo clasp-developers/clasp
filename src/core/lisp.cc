@@ -2814,8 +2814,9 @@ void Lisp_O::run() {
       fflush(stdout);
       getchar();
     }
-
   }
+  Package_sp cluser = _lisp->findPackage("COMMON-LISP-USER");
+  cl::_sym_STARpackageSTAR->defparameter(cluser);
   if (!this->_IgnoreInitImage) {
     if ( startup_functions_are_waiting() ) {
       startup_functions_invoke();

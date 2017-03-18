@@ -27,6 +27,8 @@
 ;;
 (in-package :cmp)
 
+(defvar *compiler-mutex* (mp:make-lock :name 'compiler-mutex :recursive t))
+
 (defun augment-environment-with-declares (env declares)
   (let (specials)
     (mapc (lambda (decl)

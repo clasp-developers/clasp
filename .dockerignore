@@ -3,7 +3,6 @@ GRTAGS
 GTAGS
 .waf*/
 .svn/
-.git/
 *~
 .#*
 *.log

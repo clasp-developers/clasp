@@ -4508,8 +4508,8 @@ template <typename FP> struct Cast<core::Function_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 161 686 
-      return ((161 <= kindVal) && (kindVal <= 686));
+      // low high --> 161 184   //  problem with analyzer puts it at 686 
+      return ((161 <= kindVal) && (kindVal <= 184));
   };
 };
 // KIND_LISPALLOC_chem__TagSet_O

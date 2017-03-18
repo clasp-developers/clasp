@@ -1818,15 +1818,3 @@ void throwIfClassesNotInitialized(const Lisp_sp &lisp) {
 };
 
 
-namespace core {
-#if 0
-void bds_bind(ThreadLocalState& env, T_sp symbol, T_sp value ) {
-#ifdef CLASP_THREADS
-  cl_index index = symbol->_Binding;
-  if ( index >= env->thread_local_bindings_size() ) {
-    index = invalid_or_too_large_binding_index(env,symbol);
-  }
-  T_sp& location = env->thread_local
-#endif
-#endif
-};
