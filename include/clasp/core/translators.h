@@ -106,18 +106,16 @@ namespace translate {
     struct from_object< long, std::true_type >
   {
     typedef int DeclareType;
-
     DeclareType _v;
-    from_object( core::T_sp o ) : _v( o.fixnump() ? o.unsafe_fixnum() : core::not_fixnum_error( o ) ) {};
+  from_object( core::T_sp o ) : _v( o.fixnump() ? o.unsafe_fixnum() : clasp_to_long(o) ) {};
   };
 
   template <>
     struct from_object< unsigned long, std::true_type >
   {
     typedef unsigned long DeclareType;
-
     DeclareType _v;
-    from_object( core::T_sp o ) : _v( o.fixnump() ? o.unsafe_fixnum() : core::not_fixnum_error( o ) ) {};
+  from_object( core::T_sp o ) : _v( o.fixnump() ? o.unsafe_fixnum() : clasp_to_ulong(o)) {};
   };
 #endif
   
