@@ -129,6 +129,12 @@ CL_DEFUN LLVMContext_sp LLVMContext_O::create_llvm_context() {
   context->_ptr = lc;
   return context;
 };
+
+string LLVMContext_O::__repr__() const {
+  stringstream ss;
+  ss << "#<LLVM-CONTEXT " << (void*)this->_ptr << ">";
+  return ss.str();
+}
 }
 
 namespace llvmo {
