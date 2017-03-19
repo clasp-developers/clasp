@@ -217,10 +217,13 @@ inline void setup_endianess_info(void)
 {
   core::List_sp features = cl::_sym_STARfeaturesSTAR->symbolValue();
 
-  if ( htonl(47) == 47 ) {
+  if ( htonl(47) == 47 )
+  {
     // Big Endian
     features = core::Cons_O::create(kw::_sym_big_endian, features);
-  } else {
+  }
+  else
+  {
     // Little Endian.
     features = core::Cons_O::create(kw::_sym_little_endian, features);
   }
@@ -731,7 +734,7 @@ ForeignTypeSpec_O::ForeignTypeSpec_O() : m_lisp_symbol( _Nil<T_O>() ),
                                          m_size( (gc::Fixnum) 0 ),
                                          m_alignment( (gc::Fixnum) 0 ),
                                          m_cxx_name( _Nil<T_O>() ),
-                                         m_llvm_type_symbol( _Nil<T_O>() ),
+                                         m_llvm_type_symbol_fn( _Nil<T_O>() ),
                                          m_to_object_fn_name( _Nil<T_O>() ),
                                          m_from_object_fn_name( _Nil<T_O>() ),
                                          m_to_object_fn_ptr( _Nil<T_O>() ),
@@ -760,7 +763,7 @@ inline string ForeignTypeSpec_O::__repr__() const {
      << " :size "        << this->m_size
      << " :alignment "   << this->m_alignment
      << " :cxx-name "    << this->m_cxx_name
-     << " :llvm-type-symbol " << this->m_llvm_type_symbol
+     << " :llvm-type-symbol-fn " << this->m_llvm_type_symbol_fn
      << " :to-object-fn-name " << this->m_to_object_fn_name
      << " :from-object-fn-name " << this->m_from_object_fn_name
      << ">";
@@ -775,7 +778,7 @@ ForeignTypeSpec_sp ForeignTypeSpec_O::create( core::Symbol_sp  lisp_symbol,
                                               core::Integer_sp size,
                                               core::Fixnum_sp  alignment,
                                               core::String_sp  cxx_name,
-                                              core::Symbol_sp  llvm_type_symbol,
+                                              core::Function_sp  llvm_type_symbol_fn,
                                               core::String_sp  to_object_fn_name,
                                               core::String_sp  from_object_fn_name,
                                               ForeignData_sp   to_object_fn_ptr,
@@ -788,7 +791,7 @@ ForeignTypeSpec_sp ForeignTypeSpec_O::create( core::Symbol_sp  lisp_symbol,
   self->m_size                  = size;
   self->m_alignment             = alignment;
   self->m_cxx_name              = cxx_name;
-  self->m_llvm_type_symbol      = llvm_type_symbol;
+  self->m_llvm_type_symbol_fn   = llvm_type_symbol_fn;
   self->m_to_object_fn_name     = to_object_fn_name;
   self->m_from_object_fn_name   = from_object_fn_name;
   self->m_to_object_fn_ptr      = to_object_fn_ptr;
@@ -807,9 +810,9 @@ bool ForeignTypeSpec_O::eql_(ForeignTypeSpec_sp sp_obj) const {
     return false;
 }
 
-void ForeignTypeSpec_O::PERCENTset_llvm_type_symbol( core::Symbol_sp llvm_type_symbol )
+void ForeignTypeSpec_O::PERCENTset_llvm_type_symbol_fn( core::Function_sp llvm_type_symbol_fn )
 {
-  this->m_llvm_type_symbol = llvm_type_symbol;
+  this->m_llvm_type_symbol_fn = llvm_type_symbol_fn;
 }
 
 // ---------------------------------------------------------------------------

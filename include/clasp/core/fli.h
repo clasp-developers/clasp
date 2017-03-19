@@ -431,7 +431,7 @@ namespace clasp_ffi {
                                       core::Integer_sp  size,
                                       core::Fixnum_sp   alignment,
                                       core::String_sp   cxx_name,
-                                      core::Symbol_sp   llvm_type_symbol,
+                                      core::Function_sp llvm_type_symbol_fn,
                                       core::String_sp   to_object_fn_name,
                                       core::String_sp   from_object_fn_name,
                                       ForeignData_sp    to_object_fn_ptr,
@@ -449,9 +449,9 @@ namespace clasp_ffi {
     CL_DEFMETHOD core::String_sp      PERCENTto_object_fn_ptr() { return m_to_object_fn_ptr; };
     CL_DEFMETHOD core::String_sp      PERCENTfrom_object_fn_ptr() { return m_from_object_fn_ptr; };
 
-    CL_DEFMETHOD core::String_sp      PERCENTllvm_type_symbol() { return m_llvm_type_symbol; };
+    CL_DEFMETHOD core::Function_sp    PERCENTllvm_type_symbol_fn() { return m_llvm_type_symbol_fn; };
 
-    CL_DEFMETHOD void                 PERCENTset_llvm_type_symbol( core::Symbol_sp llvm_type_symbol );
+    CL_DEFMETHOD void                 PERCENTset_llvm_type_symbol_fn( core::Function_sp llvm_type_symbol_fn );
 
     // SLOTS
     core::Symbol_sp       m_lisp_symbol;
@@ -459,7 +459,7 @@ namespace clasp_ffi {
     core::Integer_sp      m_size;
     core::Fixnum_sp       m_alignment;
     core::String_sp       m_cxx_name;
-    core::Symbol_sp       m_llvm_type_symbol;
+    core::Function_sp     m_llvm_type_symbol_fn;
 
     core::String_sp       m_to_object_fn_name;
     core::String_sp       m_from_object_fn_name;

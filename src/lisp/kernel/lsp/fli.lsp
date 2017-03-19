@@ -129,82 +129,136 @@
 
 ;;; === T R A N S L A T O R    S U P O R T ===
 
-(defgeneric %lisp-type->llvm-type-symbol (lisp-type-kw))
+(defgeneric %lisp-type->llvm-type-symbol-fn (lisp-type-kw))
 
-(defmacro generate-llvm-type-symbol-accessor-functions ()
+(defmacro generate-llvm-type-symbol-fn-accessor-functions ()
   `(progn
      ;; type -> llvm type symbol
      ,@(loop for spec across *foreign-type-spec-table*
           for idx from 0 to (1- (length *foreign-type-spec-table*))
           when spec
 	  collect
-	    `(defmethod %lisp-type->llvm-type-symbol ((lisp-type-kw (eql ',(%lisp-symbol spec))))
-               (%llvm-type-symbol (elt *foreign-type-spec-table* ,idx))))
+	    `(defmethod %lisp-type->llvm-type-symbol-fn ((lisp-type-kw (eql ',(%lisp-symbol spec))))
+               (%llvm-type-symbol-fn (elt *foreign-type-spec-table* ,idx))))
      ))
 
-(defmethod %lisp-type->llvm-type-symbol (lisp-type-kw)
-  (error "Unknown FLI lisp type ~S - cannot determine llvm type symbol." lisp-type-kw))
+(defmethod %lisp-type->llvm-type-symbol-fn (lisp-type-kw)
+  (error "Unknown FLI lisp type ~S - cannot determine llvm type symbol function." lisp-type-kw))
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
 
   (defun init-translators ()
 
-    (%set-llvm-type-symbol (%lisp-type->type-spec :short) 'cmp::%i16%)
-    (%set-llvm-type-symbol (%lisp-type->type-spec :unsigned-short) 'cmp::%i16%)
-    (%set-llvm-type-symbol (%lisp-type->type-spec :ushort) 'cmp::%i16%)
+    (%set-llvm-type-symbol-fn
+     (%lisp-type->type-spec :short) (lambda () cmp::%i16%))
 
-    (%set-llvm-type-symbol (%lisp-type->type-spec :int) 'cmp::%i32%)
-    (%set-llvm-type-symbol (%lisp-type->type-spec :unsigned-int) 'cmp::%i32%)
-    (%set-llvm-type-symbol (%lisp-type->type-spec :uint) 'cmp::%i16%)
+    (%set-llvm-type-symbol-fn
+     (%lisp-type->type-spec :unsigned-short) (lambda () cmp::%i16%))
 
-    (%set-llvm-type-symbol (%lisp-type->type-spec :long) 'cmp::%i64%)
-    (%set-llvm-type-symbol (%lisp-type->type-spec :unsigned-long) 'cmp::%i64%)
-    (%set-llvm-type-symbol (%lisp-type->type-spec :ulong) 'cmp::%i64%)
+    (%set-llvm-type-symbol-fn
+     (%lisp-type->type-spec :ushort) (lambda () cmp::%i16%))
 
-    (%set-llvm-type-symbol (%lisp-type->type-spec :long-long) 'cmp::%i128%)
-    (%set-llvm-type-symbol (%lisp-type->type-spec :llong) 'cmp::%i128%)
-    (%set-llvm-type-symbol (%lisp-type->type-spec :unsigned-long-long) 'cmp::%i128%)
-    (%set-llvm-type-symbol (%lisp-type->type-spec :ullong) 'cmp::%i128%)
+    (%set-llvm-type-symbol-fn
+     (%lisp-type->type-spec :int) (lambda () cmp::%i32%))
 
-    (%set-llvm-type-symbol (%lisp-type->type-spec :int8) 'cmp::%i8%)
-    (%set-llvm-type-symbol (%lisp-type->type-spec :uint8) 'cmp::%i8%)
+    (%set-llvm-type-symbol-fn
+     (%lisp-type->type-spec :unsigned-int) (lambda () cmp::%i32%))
 
-    (%set-llvm-type-symbol (%lisp-type->type-spec :int16) 'cmp::%i16%)
-    (%set-llvm-type-symbol (%lisp-type->type-spec :uint16) 'cmp::%i16%)
+    (%set-llvm-type-symbol-fn
+     (%lisp-type->type-spec :uint) (lambda () cmp::%i32%))
 
-    (%set-llvm-type-symbol (%lisp-type->type-spec :int32) 'cmp::%i32%)
-    (%set-llvm-type-symbol (%lisp-type->type-spec :uint32) 'cmp::%i32%)
+    (%set-llvm-type-symbol-fn
+     (%lisp-type->type-spec :long) (lambda () cmp::%i64%))
 
-    (%set-llvm-type-symbol (%lisp-type->type-spec :int64) 'cmp::%i64%)
-    (%set-llvm-type-symbol (%lisp-type->type-spec :uint64) 'cmp::%i64%)
+    (%set-llvm-type-symbol-fn
+     (%lisp-type->type-spec :unsigned-long) (lambda () cmp::%i64%))
 
-    #+int128 (%set-llvm-type-symbol (%lisp-type->type-spec :int128) 'cmp::%i128%)
-    #+int128 (%set-llvm-type-symbol (%lisp-type->type-spec :uint128) 'cmp::%i128%)
+    (%set-llvm-type-symbol-fn
+     (%lisp-type->type-spec :ulong) (lambda () cmp::%i64%))
 
-    (%set-llvm-type-symbol (%lisp-type->type-spec :size) 'cmp::%size_t%)
-    (%set-llvm-type-symbol (%lisp-type->type-spec :ssize) 'cmp::%size_t%)
+    (%set-llvm-type-symbol-fn
+     (%lisp-type->type-spec :long-long) (lambda () cmp::%i128%))
 
-    (%set-llvm-type-symbol (%lisp-type->type-spec :single-float) 'cmp::%float%)
-    (%set-llvm-type-symbol (%lisp-type->type-spec :float) 'cmp::%float%)
-    (%set-llvm-type-symbol (%lisp-type->type-spec :double) 'cmp::%double%)
-    #+long-float (%set-llvm-type-symbol (%lisp-type->type-spec :long-float) 'cmp::%long-float%)
+    (%set-llvm-type-symbol-fn
+     (%lisp-type->type-spec :llong) (lambda () cmp::%i128%))
 
-    (%set-llvm-type-symbol (%lisp-type->type-spec :pointer) 'cmp::%i64*%)
+    (%set-llvm-type-symbol-fn
+     (%lisp-type->type-spec :unsigned-long-long) (lambda () cmp::%i128%))
 
-    (%set-llvm-type-symbol (%lisp-type->type-spec :void) 'cmp::%void%)
+    (%set-llvm-type-symbol-fn
+     (%lisp-type->type-spec :ullong) (lambda () cmp::%i128%))
 
-    (%set-llvm-type-symbol (%lisp-type->type-spec :char) 'cmp::%i8%)
-    (%set-llvm-type-symbol (%lisp-type->type-spec :unsigned-char) 'cmp::%i8%)
-    (%set-llvm-type-symbol (%lisp-type->type-spec :uchar) 'cmp::%i8%)
+    (%set-llvm-type-symbol-fn
+     (%lisp-type->type-spec :int8) (lambda () cmp::%i8%))
+
+    (%set-llvm-type-symbol-fn
+     (%lisp-type->type-spec :uint8) (lambda () cmp::%i8%))
+
+    (%set-llvm-type-symbol-fn
+     (%lisp-type->type-spec :int16) (lambda () cmp::%i16%))
+
+    (%set-llvm-type-symbol-fn
+     (%lisp-type->type-spec :uint16) (lambda () cmp::%i16%))
+
+    (%set-llvm-type-symbol-fn
+     (%lisp-type->type-spec :int32) (lambda () cmp::%i32%))
+
+    (%set-llvm-type-symbol-fn
+     (%lisp-type->type-spec :uint32) (lambda () cmp::%i32%))
+
+    (%set-llvm-type-symbol-fn
+     (%lisp-type->type-spec :int64) (lambda () cmp::%i64%))
+
+    (%set-llvm-type-symbol-fn
+     (%lisp-type->type-spec :uint64) (lambda () cmp::%i64%))
+
+    #+int128 (%set-llvm-type-symbol-fn
+              (%lisp-type->type-spec :int128) (lambda () cmp::%i128%))
+
+    #+int128 (%set-llvm-type-symbol-fn
+              (%lisp-type->type-spec :uint128) (lambda () cmp::%i128%))
+
+    (%set-llvm-type-symbol-fn
+     (%lisp-type->type-spec :size) (lambda () cmp::%size_t%))
+
+    (%set-llvm-type-symbol-fn
+     (%lisp-type->type-spec :ssize) (lambda () cmp::%size_t%))
+
+    (%set-llvm-type-symbol-fn
+     (%lisp-type->type-spec :single-float) (lambda () cmp::%float%))
+
+    (%set-llvm-type-symbol-fn
+     (%lisp-type->type-spec :float) (lambda () cmp::%float%))
+
+    (%set-llvm-type-symbol-fn
+     (%lisp-type->type-spec :double) (lambda () cmp::%double%))
+
+    #+long-float (%set-llvm-type-symbol-fn
+                  (%lisp-type->type-spec :long-float) (lambda () cmp::%long-float%))
+
+    (%set-llvm-type-symbol-fn
+     (%lisp-type->type-spec :pointer) (lambda () cmp::%i64*%))
+
+    (%set-llvm-type-symbol-fn
+     (%lisp-type->type-spec :void) (lambda () cmp::%void%))
+
+    (%set-llvm-type-symbol-fn
+     (%lisp-type->type-spec :char) (lambda () cmp::%i8%))
+
+    (%set-llvm-type-symbol-fn
+     (%lisp-type->type-spec :unsigned-char) (lambda () cmp::%i8%))
+
+    (%set-llvm-type-symbol-fn
+     (%lisp-type->type-spec :uchar) (lambda () cmp::%i8%))
 
     ;; TODO: CHECK & IMPLEMEMT !
-    ;; (%set-llvm-type-symbol (%lisp-type->type-spec :time) 'cmp::+time_t+)
-    ;; (%set-llvm-type-symbol (%lisp-type->type-spec :ptrdiff) 'cmp::+ptrdiff_t+)
+    ;; (%set-llvm-type-symbol-fn (%lisp-type->type-spec :time) (lambda () cmp::+time_t+))
+    ;; (%set-llvm-type-symbol-fn (%lisp-type->type-spec :ptrdiff) (lambda () cmp::+ptrdiff_t+))
 
     )
 
   (defun safe-translator-type (lisp-type-kw)
-    (symbol-value (%lisp-type->llvm-type-symbol lisp-type-kw)))
+    (funcall (%lisp-type->llvm-type-symbol-fn lisp-type-kw)))
 
   (defun safe-translator-to-object-name (lisp-type-kw)
     (%to-object-fn-name (%lisp-type->type-spec lisp-type-kw)))
@@ -387,7 +441,7 @@
 (eval-when (:load-toplevel :execute :compile-toplevel)
   (generate-type-spec-accessor-functions)
   (init-translators)
-  (generate-llvm-type-symbol-accessor-functions)
+  (generate-llvm-type-symbol-fn-accessor-functions)
   (generate-mem-ref-accessor-functions)
   (generate-mem-set-accessor-functions)
   (generate-foreign-type-size-functions)
