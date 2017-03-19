@@ -291,6 +291,7 @@ CL_DEFUN bool mp__condition_variable_wait(ConditionVariable_sp cv, Mutex_sp mute
 };
 
 CL_DEFUN bool mp__condition_variable_timedwait(ConditionVariable_sp cv, Mutex_sp mutex, double timeout_seconds) {
+//  printf("%s:%d   timeout_seconds = %lf\n", __FILE__, __LINE__, timeout_seconds );
   return cv->timed_wait(mutex,timeout_seconds);
 };
 

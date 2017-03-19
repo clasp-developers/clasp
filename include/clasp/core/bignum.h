@@ -35,16 +35,6 @@ THE SOFTWARE.
 
 namespace core {
 
-struct BignumExportBuffer {
-  BignumExportBuffer() : buffer(NULL), bufferSize(0){};
-  ~BignumExportBuffer() {
-    if (this->buffer)
-      free(this->buffer);
-  };
-  unsigned int *buffer = NULL;
-  size_t bufferSize = 0;
-  unsigned int *getOrAllocate(const mpz_class &bignum, int nail);
-};
 
 class Bignum_O : public Integer_O {
   LISP_CLASS(core, ClPkg, Bignum_O, "Bignum",Integer_O);
@@ -170,7 +160,7 @@ public:
   // frgo, 2016-09-06
 
   virtual gc::Fixnum as_int_() const;
-  virtual uint64_t as_int64_() const;
+  virtual int64_t as_int64_() const;
   virtual uint64_t as_uint64_() const;
   string as_uint64_string() const;
 

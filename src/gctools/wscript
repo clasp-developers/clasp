@@ -4,6 +4,7 @@ def build(bld):
             'boehmGarbageCollection',
             'mpsGarbageCollection',
             'source_info',
+            'threadlocal',
             'gc_boot',
             'interrupt',
             'gcFunctions',

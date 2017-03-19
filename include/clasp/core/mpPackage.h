@@ -220,7 +220,7 @@ namespace mp {
     core::T_sp _Name;
     ConditionVariable_O(core::T_sp name) : _Name(name) {};
     bool wait(Mutex_sp m) {return this->_ConditionVariable.wait(m->_Mutex);};
-    bool timed_wait(Mutex_sp m,size_t timeout) {return this->_ConditionVariable.timed_wait(m->_Mutex,timeout);};
+    bool timed_wait(Mutex_sp m,double timeout) {return this->_ConditionVariable.timed_wait(m->_Mutex,timeout);};
     void signal() { this->_ConditionVariable.signal();};
     void broadcast() { this->_ConditionVariable.broadcast();};
   };

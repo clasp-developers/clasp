@@ -37,20 +37,6 @@ THE SOFTWARE.
 
 namespace core {
 
-unsigned int *BignumExportBuffer::getOrAllocate(const mpz_class &bignum, int nail) {
-  size_t size = _lisp->integer_ordering()._mpz_import_size;
-  size_t numb = (size << 3) - nail; // *8
-  size_t count = (mpz_sizeinbase(bignum.get_mpz_t(), 2) + numb - 1) / numb;
-  size_t bytes = count * size;
-  if (bytes > this->bufferSize) {
-    if (this->buffer) {
-      free(this->buffer);
-    }
-    this->buffer = (unsigned int *)malloc(bytes);
-  }
-  return this->buffer;
-};
-
 CL_PKG_NAME(CorePkg,make-bignum);
 CL_DEFUN Bignum_sp Bignum_O::make(const string &value_in_string) {
   GC_ALLOCATE(Bignum_O, bn);
@@ -89,42 +75,45 @@ gc::Fixnum Bignum_O::as_int_() const {
   TYPE_ERROR(this->asSmartPtr(), Cons_O::createList(cl::_sym_Integer_O, make_fixnum(gc::most_negative_int), make_fixnum(gc::most_positive_int)));
 }
 
-static BignumExportBuffer static_Bignum_O_as_int64_buffer;
-
-uint64_t Bignum_O::as_int64_() const {
-  unsigned int *valsP = static_Bignum_O_as_int64_buffer.getOrAllocate(this->_value, 0);
-  size_t count;
-  valsP = (unsigned int *)::mpz_export(valsP, &count,
-                                       _lisp->integer_ordering()._mpz_import_word_order,
-                                       _lisp->integer_ordering()._mpz_import_size,
-                                       _lisp->integer_ordering()._mpz_import_endian,
-                                       0,
-                                       this->_value.get_mpz_t());
-  if (valsP == NULL) {
-    return ((0));
-  } else if (count == 1 || count == 2) {
-    unsigned int val0 = valsP[0];
-    unsigned int val1 = 0;
-    if (count > 1)
-      val1 = valsP[1];
-    if (count == 1) {
-      return ((val0 & 0xfffffffful));
-    } else if (count == 2) {
-      int64_t ret = val1;
-      ret = ret << 32;
-      ret |= val0;
-      return ((ret));
-    }
+int64_t Bignum_O::as_int64_() const {
+  size_t sizeinbase2 = mpz_sizeinbase(this->_value.get_mpz_t(),2);
+  if (sizeinbase2>64) goto BAD;
+  {
+    int64_t val;
+    size_t count;
+    int64_t* valP = (int64_t *)::mpz_export(&val, &count,
+                                            _lisp->integer_ordering()._mpz_import_word_order,
+                                            sizeof(int64_t),//_lisp->integer_ordering()._mpz_import_size,
+                                            _lisp->integer_ordering()._mpz_import_endian,
+                                            0,
+                                            this->_value.get_mpz_t());
+    int sgn = mpz_sgn(this->_value.get_mpz_t());
+    if (sgn<0) val = -val;
+    return val;
   }
-  mpz_class z = (unsigned long)gc::most_positive_int64;
-  TYPE_ERROR(this->asSmartPtr(), Cons_O::createList(cl::_sym_Integer_O, make_fixnum(0), Integer_O::create(z)));
+ BAD:
+  SIMPLE_ERROR(BF("The value %s won't fit into an int64_t") % _rep_(this->asSmartPtr()));
 }
 
 
-static BignumExportBuffer static_Bignum_O_as_uint64_buffer;
-
 uint64_t Bignum_O::as_uint64_() const {
-  unsigned int *valsP = static_Bignum_O_as_uint64_buffer.getOrAllocate(this->_value, 0);
+  size_t sizeinbase2 = mpz_sizeinbase(this->_value.get_mpz_t(),2);
+  if (sizeinbase2>64) goto BAD;
+  {
+    uint64_t val;
+    size_t count;
+    uint64_t* valP = (uint64_t *)::mpz_export(&val, &count,
+                                              _lisp->integer_ordering()._mpz_import_word_order,
+                                              sizeof(uint64_t),//_lisp->integer_ordering()._mpz_import_size,
+                                              _lisp->integer_ordering()._mpz_import_endian,
+                                              0,
+                                              this->_value.get_mpz_t());
+    return val;
+  }
+ BAD:
+  SIMPLE_ERROR(BF("The value %s won't fit into an uint64_t") % _rep_(this->asSmartPtr()));
+#if 0
+  unsigned int *valsP = my_thread->_AsUint64Buffer.getOrAllocate(this->_value, 0);
   size_t count;
   valsP = (unsigned int *)::mpz_export(valsP, &count,
                                        _lisp->integer_ordering()._mpz_import_word_order,
@@ -150,6 +139,7 @@ uint64_t Bignum_O::as_uint64_() const {
   }
   mpz_class z = (unsigned long)gc::most_positive_uint64;
   TYPE_ERROR(this->asSmartPtr(), Cons_O::createList(cl::_sym_Integer_O, make_fixnum(0), Integer_O::create(z)));
+#endif
 }
 
 /*! This helps us debug the as_uint64 function by returning a string representation of the uint64 */
@@ -441,4 +431,28 @@ Bignum CStrToBignum(const char *str) {
   return bn;
 }
 
+
+CL_DEFUN void core__test_bignum_to_int64(Bignum_sp b) {
+  size_t sizeinbase2 = mpz_sizeinbase(b->mpz_ref().get_mpz_t(),2);
+  printf("%s:%d sizeinbase2 = %lu\n", __FILE__, __LINE__, sizeinbase2);
+  if (sizeinbase2>64) goto BAD;
+  {
+    int64_t val;
+    size_t count;
+    int64_t* valP = (int64_t *)::mpz_export(&val, &count,
+                                            _lisp->integer_ordering()._mpz_import_word_order,
+                                            sizeof(int64_t),//_lisp->integer_ordering()._mpz_import_size,
+                                            _lisp->integer_ordering()._mpz_import_endian,
+                                            0,
+                                            b->mpz_ref().get_mpz_t());
+    int sgn = mpz_sgn(b->mpz_ref().get_mpz_t());
+    if (sgn<0) {
+      val = -val;
+    }
+    printf("%s:%d Converted bignum sgn -> %d  val -> %lld\n", __FILE__, __LINE__, sgn, val);
+    return;
+  }
+ BAD:
+  SIMPLE_ERROR(BF("The value %s won't fit into an int64_t") % b);
+};
 };

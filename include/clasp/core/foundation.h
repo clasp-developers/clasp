@@ -557,7 +557,7 @@ namespace core {
 
 #include <clasp/core/multipleValues.h>
 
-#include <clasp/gctools/processes.h>
+#include <clasp/gctools/threadlocal.h>
 #include <clasp/core/mpPackage.fwd.h>
 
 namespace gctools {
@@ -1019,7 +1019,7 @@ core::T_sp lisp_registerSourcePosInfo(T_sp obj, SourcePosInfo_sp spi);
 };
 
 #include <clasp/gctools/interrupt.h>
-#include <clasp/gctools/processes.h>
+#include <clasp/gctools/threadlocal.h>
 
 
 namespace core {
