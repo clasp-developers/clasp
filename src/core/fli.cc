@@ -90,7 +90,7 @@ THE SOFTWARE.
 // ---------------------------------------------------------------------------
 
 #if defined( DEBUG_LEVEL_FULL )
-#define DEBUG_PRINT(_msg_) BF(_msg_)
+#define DEBUG_PRINT(_msg_) printf("%s", (_msg_).str().c_str())
 #else
 #defin DEBUG_PRINT(msg)
 #endif
@@ -1022,14 +1022,14 @@ core::T_sp PERCENTmem_ref_unsigned_long( core::Integer_sp address )
 core::T_sp PERCENTmem_ref_long_long( core::Integer_sp address )
 {
   long long v = mem_ref<long long>( core::clasp_to_cl_intptr_t( address ) );
-  DEBUG_PRINT(BF("%s (%s:%d) | v = %ll\n.") % __FUNCTION__ % __FILE__ % __LINE__ % v );
+  DEBUG_PRINT(BF("%s (%s:%d) | v = %lld\n.") % __FUNCTION__ % __FILE__ % __LINE__ % v );
   return mk_integer_longlong( v );
 }
 
 core::T_sp PERCENTmem_ref_unsigned_long_long( core::Integer_sp address )
 {
   unsigned long long v = mem_ref<unsigned long long>( core::clasp_to_cl_intptr_t( address ) );
-  DEBUG_PRINT(BF("%s (%s:%d) | v = %ull\n.") % __FUNCTION__ % __FILE__ % __LINE__ % v );
+  DEBUG_PRINT(BF("%s (%s:%d) | v = %llu\n.") % __FUNCTION__ % __FILE__ % __LINE__ % v );
   return mk_integer_ulonglong( v );
 }
 
@@ -1248,7 +1248,8 @@ core::T_sp PERCENTmem_set_unsigned_long( core::Integer_sp address, core::T_sp va
 core::T_sp PERCENTmem_set_long_long( core::Integer_sp address, core::T_sp value )
 {
   long long tmp;
-  translate::from_object< core::Fixnum /*long long*/ > v( value );
+  translate::from_object< long long /* gctools::Fixnum */ /*long long*/ > v( value );
+  printf("%s:%d PERCENTmem_set_long_long  v._v -> %lld\n", __FILE__, __LINE__, v._v);
   tmp = mem_set< long long >( core::clasp_to_cl_intptr_t( address ), v._v );
   return mk_integer_longlong( tmp );
 }

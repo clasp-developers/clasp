@@ -1,6 +1,7 @@
 #ifndef gctools_processes_H
 #define gctools_processes_H
 
+#include <clasp/core/clasp_gmpxx.h>
 #include <clasp/core/mpPackage.fwd.h>
 
 namespace core {
@@ -30,6 +31,18 @@ namespace core {
   };
 };
 
+namespace core {
+  struct BignumExportBuffer {
+  BignumExportBuffer() : buffer(NULL), bufferSize(0){};
+    ~BignumExportBuffer() {
+      if (this->buffer)
+        free(this->buffer);
+    };
+    unsigned int *buffer = NULL;
+    size_t bufferSize = 0;
+    unsigned int *getOrAllocate(const mpz_class &bignum, int nail);
+  };
+};
 
 namespace core {
 
@@ -135,6 +148,8 @@ namespace core {
 };
 
 
+
+
 namespace core {
   struct InvocationHistoryFrame;
   struct ThreadLocalState {
@@ -166,6 +181,8 @@ namespace core {
     Bignum_sp _BignumRegister0;
     Bignum_sp _BignumRegister1;
     Bignum_sp _BignumRegister2;
+    BignumExportBuffer _AsInt64Buffer;
+    BignumExportBuffer _AsUint64Buffer;
     inline core::DynamicBindingStack& bindings() { return this->_Bindings; };
     inline ExceptionStack& exceptionStack() { return this->_ExceptionStack; };
     StringOutputStream_sp& bformatStringOutputStream() { return this->_BFormatStringOutputStream;};

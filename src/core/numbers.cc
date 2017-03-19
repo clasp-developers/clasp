@@ -1539,6 +1539,12 @@ Integer_sp Integer_O::create(int64_t v) {
   mpz_import(z.get_mpz_t(), 2, _lisp->integer_ordering()._mpz_import_word_order,
              _lisp->integer_ordering()._mpz_import_size,
              _lisp->integer_ordering()._mpz_import_endian, 0, &v);
+  if (v<0) {
+//    printf("%s:%d Negating number\n",__FILE__, __LINE__ );
+    mpz_class temp;
+    mpz_neg(temp.get_mpz_t(),z.get_mpz_t());
+    return Bignum_O::create(temp);
+  }
   return Bignum_O::create(z);
 }
 
@@ -1645,11 +1651,17 @@ Integer_sp Integer_O::create( long long v)
   {
     return Integer_O::create( (Fixnum) v );
   }
-
+  printf("%s:%d Integer_O::create with v = %lld\n", __FILE__, __LINE__, v);
   Bignum z;
   mpz_import(z.get_mpz_t(), 2, _lisp->integer_ordering()._mpz_import_word_order,
              _lisp->integer_ordering()._mpz_import_size,
              _lisp->integer_ordering()._mpz_import_endian, 0, &v);
+  if (v<0) {
+    printf("%s:%d Negating number\n",__FILE__, __LINE__ );
+    Bignum negz;
+    mpz_neg(negz,z);
+    return Bignum_O::create(negz);
+  }
   return Bignum_O::create( z );
 }
 #endif

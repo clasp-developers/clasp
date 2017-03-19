@@ -6,7 +6,7 @@
 #include <clasp/core/symbolTable.h>
 #include <clasp/core/lisp.h>
 #include <clasp/core/debugger.h>
-#include <clasp/gctools/processes.h>
+#include <clasp/gctools/threadlocal.h>
 #include <clasp/core/evaluator.h>
 #include <clasp/core/hashTableEq.h>
 #include <clasp/core/mpPackage.h>
