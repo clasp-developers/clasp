@@ -202,9 +202,9 @@ namespace clasp_ffi {
   CL_DEFUN core::T_sp PERCENTforeign_data_pointerp( core::T_sp obj );
 
   // ---------------------------------------------------------------------------
-  // FOREIGN TYPE SIZE AND ALIGNMENT
-  core::Fixnum_sp PERCENTforeign_type_alignment(core::Symbol_sp atype);
-  core::Fixnum_sp PERCENTforeign_type_size(core::Symbol_sp atype);
+  // FOREIGN TYPE SIZE - Only needed in C++ land. For Lisp, there is
+  // %foreign-type-size implemented in Lisp
+  core::Fixnum_sp foreign_type_size( core::Symbol_sp atype );
 
   // ---------------------------------------------------------------------------
   // DYNAMIC LIBRARY HANDLING
@@ -216,14 +216,15 @@ namespace clasp_ffi {
 
 // GC Policy Info for ForeignPataPtr_O instances
 template <>
-struct gctools::GCInfo<clasp_ffi::ForeignData_O> {
+struct gctools::GCInfo<clasp_ffi::ForeignData_O>
+{
   static bool constexpr NeedsInitialization = false;
   static bool constexpr NeedsFinalization = true;
   static GCInfo_policy constexpr Policy = normal;
 };
 
-namespace clasp_ffi {
-
+namespace clasp_ffi
+{
   // FOREIGN MEMORY DIRECT ACCESS - MEM REF
   template <typename T>
     T mem_ref(cl_intptr_t address);
@@ -408,7 +409,8 @@ namespace clasp_ffi {
 
   SMART(ForeignTypeSpec);
 
-  class ForeignTypeSpec_O : public core::General_O {
+  class ForeignTypeSpec_O : public core::General_O
+  {
     LISP_CLASS(clasp_ffi, Clasp_ffi_pkg,
                ForeignTypeSpec_O, "ForeignTypeSpec", core::General_O);
 
@@ -472,7 +474,8 @@ namespace clasp_ffi {
 
 // GC Policy Info for ForeignTypeSpec_O instances
 template <>
-struct gctools::GCInfo<clasp_ffi::ForeignTypeSpec_O> {
+struct gctools::GCInfo<clasp_ffi::ForeignTypeSpec_O>
+{
   static bool constexpr NeedsInitialization = false;
   static bool constexpr NeedsFinalization = false;
   static GCInfo_policy constexpr Policy = normal;
