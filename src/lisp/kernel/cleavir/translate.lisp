@@ -652,7 +652,15 @@ when this is t a lot of graphs will be generated.")
        :datum ,(first inputs))))
 ||#
 
-
+(defmethod translate-simple-instruction
+    ((instruction cleavir-ir:dynamic-allocation-instruction)
+     return-value inputs outputs abi)
+  (declare (ignore return-value inputs outputs abi))
+  ;; This instruction is only an indicator for high level analysis,
+  ;; so it doesn't need to have any counterpart in LLVM-IR.
+  ;; But translate-simple-instruction is apparently supposed to
+  ;; return something, so we spuriously return a NIL-maker. FIXME?
+  (%nil))
 
 
 #+(or)
@@ -1123,7 +1131,7 @@ that llvm function. This works like compile-lambda-function in bclasp."
 	(cleavir-generate-ast:*compiler* 'cl:compile-file)
         (cmp:*cleavir-compile-file-hook* 'cleavir-compile-file-form)
         (core:*use-cleavir-compiler* t))
-    (apply #'cmp::compile-file* #'cleavir-compile-file-form given-input-pathname args)))
+    (apply #'cmp::compile-file given-input-pathname args)))
 
 (defmacro with-debug-compile-file ((log-file &key debug-log-on) &rest body)
   `(with-open-file (clasp-cleavir::*debug-log* ,log-file :direction :output)
