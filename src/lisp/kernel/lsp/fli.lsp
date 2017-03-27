@@ -216,7 +216,8 @@
     )
 
   (defun safe-translator-type (lisp-type-kw)
-    (symbol-value (%lisp-type->llvm-type-symbol lisp-type-kw)))
+    ;; frgo will implement a better approach that doesn't use EVAL
+    (EVAL (%lisp-type->llvm-type-symbol lisp-type-kw)))
 
   (defun safe-translator-to-object-name (lisp-type-kw)
     (%to-object-fn-name (%lisp-type->type-spec lisp-type-kw)))

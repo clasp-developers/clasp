@@ -90,7 +90,7 @@ namespace mp {
     LISP_CLASS(mp, MpPkg, Process_O, "Process",core::CxxObject_O);
   public:
     CL_LISPIFY_NAME("make_process");
-    CL_LAMBDA(name function &optional arguments (stack-size 0))
+    CL_LAMBDA(name function &optional arguments special_bindings (stack-size 0))
       CL_DOCSTRING("doc(Create a process that evaluates the function with arguments. The special-bindings are bound in reverse so that earlier bindings override later ones.)doc");
     CL_DEF_CLASS_METHOD static Process_sp make_process(core::T_sp name, core::T_sp function, core::T_sp arguments, core::T_sp special_bindings, size_t stack_size) {
       core::List_sp passed_bindings = core::cl__reverse(special_bindings);
@@ -164,12 +164,15 @@ namespace mp {
       return locked;
     };
     CL_DEFMETHOD void unlock() {
-      this->_Owner = _Nil<T_O>();
+      if (this->_Mutex.counter()==1) {
+        this->_Owner = _Nil<T_O>();
+      }
       this->_Mutex.unlock();
     };
-    gctools::Fixnum counter() {
+    gctools::Fixnum counter() const{
       return this->_Mutex.counter();
     }
+    string __repr__() const;
   };
 };
 
