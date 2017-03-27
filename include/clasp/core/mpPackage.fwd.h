@@ -151,7 +151,7 @@ namespace mp {
       --this->_Counter;
       pthread_mutex_unlock(&this->_Mutex);
     };
-    size_t counter() {
+    size_t counter() const {
       return this->_Counter;
     }
     ~Mutex() {
@@ -220,10 +220,14 @@ namespace mp {
 #endif
       timeToWait.tv_sec += timeout_sec;
       timeToWait.tv_nsec += timeout_nsec;
+      if (timeToWait.tv_nsec>1000000000) {
+        timeToWait.tv_sec++;
+        timeToWait.tv_nsec -= 1000000000;
+      }
 //      printf("%s:%d pthread_cond_timedwait    timeToWait.tv_sec = %lu  timeToWait.tv_nsec = %lu\n", __FILE__, __LINE__, timeToWait.tv_sec, timeToWait.tv_nsec );
-      m.lock();
+//      m.lock();
       int rt = pthread_cond_timedwait(&this->_ConditionVariable,&m._Mutex,&timeToWait);
-      m.unlock();
+//      m.unlock();
       return rt==0;
     }
     bool signal() {

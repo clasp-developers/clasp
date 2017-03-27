@@ -106,7 +106,7 @@ void* start_thread(void* claspProcess) {
   Process_sp p(my_claspProcess);
   void* stack_base;
   core::ThreadLocalState my_thread_local_state(&stack_base);
-  printf("%s:%d entering start_thread  &my_thread -> %p \n", __FILE__, __LINE__, (void*)&my_thread);
+//  printf("%s:%d entering start_thread  &my_thread -> %p \n", __FILE__, __LINE__, (void*)&my_thread);
   my_thread = &my_thread_local_state;
   my_thread->initialize_thread(p);
   p->_ThreadInfo = my_thread;
@@ -160,6 +160,18 @@ void* start_thread(void* claspProcess) {
 #endif
 //  printf("%s:%d  really leaving start_thread\n", __FILE__, __LINE__ );
   return NULL;
+}
+
+string Mutex_O::__repr__() const {
+  stringstream ss;
+  ss << "#<MUTEX ";
+  ss << _rep_(this->_Name);
+  ss << " :owner " << _rep_(this->_Owner) << " :counter " << this->counter();
+#ifdef USE_BOEHM // things don't move in boehm
+  ss << " @" << (void*)(this->asSmartPtr().raw_());
+#endif
+  ss << ">";
+  return ss.str();
 }
 
 
@@ -317,6 +329,9 @@ CL_DEFUN core::List_sp mp__process_initial_special_bindings(Process_sp p) {
   return core::cl__copy_list(p->_InitialSpecialBindings);
 }
 
+CL_DEFUN void mp__check_pending_interrupts() {
+  gctools::lisp_check_pending_interrupts(my_thread);
+}
 
 };
 

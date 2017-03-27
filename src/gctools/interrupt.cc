@@ -54,52 +54,54 @@ core::T_sp safe_signal_handler(int sig) {
 
 static bool do_interrupt_thread(mp::Process_sp process)
 {
+  printf("%s:%d do_interrupt_thread of process %s\n", __FILE__, __LINE__, _rep_(process).c_str());
+  fflush(stdout);
 # ifdef ECL_WINDOWS_THREADS
 #  ifndef ECL_USE_GUARD_PAGE
 #   error "Cannot implement ecl_interrupt_process without guard pages"
 #  endif
-        HANDLE thread = (HANDLE)process->process.thread;
-        CONTEXT context;
-        void *trap_address = process->process.env;
-        DWORD guard = PAGE_GUARD | PAGE_READWRITE;
-        int ok = 1;
-        if (SuspendThread(thread) == (DWORD)-1) {
-                FEwin32_error("Unable to suspend thread ~A", 1,
-                              process);
-                ok = 0;
-                goto EXIT;
-        }
-        process->process.interrupt = ECL_T;
-        if (!VirtualProtect(process->process.env,
-                            sizeof(struct cl_env_struct),
-                            guard,
-                            &guard))
-        {
-                FEwin32_error("Unable to protect memory from thread ~A",
-                              1, process);
-                ok = 0;
-        }
+  HANDLE thread = (HANDLE)process->process.thread;
+  CONTEXT context;
+  void *trap_address = process->process.env;
+  DWORD guard = PAGE_GUARD | PAGE_READWRITE;
+  int ok = 1;
+  if (SuspendThread(thread) == (DWORD)-1) {
+    FEwin32_error("Unable to suspend thread ~A", 1,
+                  process);
+    ok = 0;
+    goto EXIT;
+  }
+  process->process.interrupt = ECL_T;
+  if (!VirtualProtect(process->process.env,
+                      sizeof(struct cl_env_struct),
+                      guard,
+                      &guard))
+  {
+    FEwin32_error("Unable to protect memory from thread ~A",
+                  1, process);
+    ok = 0;
+  }
  RESUME:
-        if (!QueueUserAPC(wakeup_function, thread, 0)) {
-                FEwin32_error("Unable to queue APC call to thread ~A",
-                              1, process);
-                ok = 0;
-        }
-        if (ResumeThread(thread) == (DWORD)-1)  {
-                FEwin32_error("Unable to resume thread ~A", 1,
-                              process);
-                ok = 0;
-                goto EXIT;
-        }
+  if (!QueueUserAPC(wakeup_function, thread, 0)) {
+    FEwin32_error("Unable to queue APC call to thread ~A",
+                  1, process);
+    ok = 0;
+  }
+  if (ResumeThread(thread) == (DWORD)-1)  {
+    FEwin32_error("Unable to resume thread ~A", 1,
+                  process);
+    ok = 0;
+    goto EXIT;
+  }
  EXIT:
-        return ok;
+  return ok;
 # else
-        int signal = global_signal;
-        if (pthread_kill(process->_Thread,signal)) {
-          FElibc_error("Unable to interrupt process ~A", 1,
-                       process);
-        }
-        return 1;
+  int signal = global_signal;
+  if (pthread_kill(process->_Thread,signal)) {
+    FElibc_error("Unable to interrupt process ~A", 1,
+                 process);
+  }
+  return 1;
 # endif
 }
 
@@ -118,7 +120,10 @@ void clasp_interrupt_process(mp::Process_sp process, core::T_sp function)
          * If FUNCTION is NIL, we just intend to wake up the process
          * from some call to ecl_musleep() Queue the interrupt for any
          * process stage that can potentially receive a signal  */
+  printf("%s:%d clasp_interrupt_process process: %s\n", __FILE__, __LINE__, _rep_(process).c_str());
+  fflush(stdout);
   if (function.notnilp() && (process->_Phase >= mp::Booting)) {
+    printf("%s:%d clasp_interrupt_process queuing signal\n", __FILE__, __LINE__);
     function = core::coerce::functionDesignator(function);
     queue_signal(process->_ThreadInfo, function, true);
   }
@@ -296,7 +301,8 @@ void interrupt_handle_signals(int signo) {
   //
   // Indicate that a signal was caught and handle it at a safe-point
   //
-//  printf("%s:%d  Received an interrupt signal %d\n", __FILE__, __LINE__, signo);
+  printf("%s:%d  Process %s received an interrupt signal %d\n", __FILE__, __LINE__, _rep_(my_thread->_Process).c_str(), signo);
+  handle_or_queue(my_thread,core::clasp_make_fixnum(signo));
 }
 
 

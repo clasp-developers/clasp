@@ -223,8 +223,7 @@
     (setf (gethash name *global-function-refs*) refs)))
 
 (defun compiler-warning-undefined-global-variable (var)
-  (unless (boundp var)
-    (compiler-warning var "Undefined variable %s" var)))
+  (compiler-warning var "Undefined variable %s" var))
 
 (defun function-info (env func)
   (let ((info (classify-function-lookup env func)))
@@ -237,7 +236,7 @@
   (let ((info (classify-variable env var)))
     (unless info
       (setq info (cons 'ext:special-var var))
-      (unless (boundp var)
+      (unless (core:specialp var)
         (compiler-warning-undefined-global-variable var)))
 ;;;    (core:bformat t "variable-info: %s   @ %s\n" info (describe-source-location (ext:current-source-location)))
     info))
