@@ -4,30 +4,6 @@
   (cleavir-ir:insert-instruction-after new old)
   new)
 
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;
-;;; STACK-ENCLOSE
-;;;
-;;; Stores a core::ClosureWithSlots* pointer on the stack
-;;;
-
-(defclass stack-enclose-instruction (cleavir-ir:enclose-instruction) ())
-
-(defun make-stack-enclose-instruction (output successor code)
-  (make-instance 'stack-enclose-instruction
-                 :outputs (list output)
-                 :successors (list successor)
-                 :code code))
-
-(defmethod cleavir-ir-graphviz:draw-instruction ((instruction stack-enclose-instruction) stream)
-  (format stream "   ~a [label = \"stack-enclose\"];~%"
-	  (cleavir-ir-graphviz::instruction-id instruction))
-  (format stream "  ~a -> ~a [color = pink, style = dashed];~%"
-	  (gethash (cleavir-ir:code instruction) cleavir-ir-graphviz::*instruction-table*)
-	  (cleavir-ir-graphviz::instruction-id instruction)))
-
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
 ;;; CHARACTERP-INSTRUCTION

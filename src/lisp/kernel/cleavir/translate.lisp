@@ -68,7 +68,6 @@ when this is t a lot of graphs will be generated.")
 
 (defun layout-basic-block (basic-block return-value abi)
   (destructuring-bind (first last owner) basic-block
-    (declare (ignore owner))
     (cc-dbg-when *debug-log*
 			 (format *debug-log* "- - - -  begin layout-basic-block  owner: ~a~%" (cc-mir:describe-mir owner))
 			 (loop for instruction = first
@@ -515,74 +514,46 @@ when this is t a lot of graphs will be generated.")
 
 (defmethod translate-simple-instruction
     ((instruction cleavir-ir:enclose-instruction) return-value inputs outputs abi)
-  (declare (ignore inputs))
   (cmp:irc-low-level-trace :flow)
-  #||
-  (format t "translate-simple-instruction::enclose-instruction~%")
-  (format t "         *current-source-pos-info*: ~a~%" core:*current-source-pos-info*)
-||#
-  (let* ((enter-instruction (cleavir-ir:code instruction)))
-    (multiple-value-bind (enclosed-function lambda-name)
-	(layout-procedure enter-instruction abi)
-      (let* ((loaded-inputs (mapcar (lambda (x) (cmp:irc-load x "cell")) inputs))
-	     (ltv-lambda-name (%literal-value lambda-name (format nil "lambda-name->~a" lambda-name)))
-	     (result (cmp:irc-create-call
-                      "cc_enclose"
-                      (list* ltv-lambda-name
-                             enclosed-function
-                             cmp:*gv-source-file-info-handle*
-                             (cmp:irc-size_t-*current-source-pos-info*-filepos)
-                             (cmp:irc-size_t-*current-source-pos-info*-lineno)
-                             (cmp:irc-size_t-*current-source-pos-info*-column)
-                             (%size_t (length inputs))
-                             loaded-inputs)
-                      (format nil "closure->~a" lambda-name))))
-	(cc-dbg-when *debug-log*
-		     (format *debug-log* "cc_enclose with ~a cells~%" (length inputs))
-		     (format *debug-log* "    inputs: ~a~%" inputs))
-	(%store result (first outputs) nil)))))
-
-(defmethod translate-simple-instruction
-    ((instruction cc-mir:stack-enclose-instruction) return-value inputs outputs abi)
-  (declare (ignore inputs))
-  (cmp:irc-low-level-trace :flow)
-  (let* ((enter-instruction (cleavir-ir:code instruction)))
+  (let ((enter-instruction (cleavir-ir:code instruction)))
     (multiple-value-bind (enclosed-function lambda-name)
         (layout-procedure enter-instruction abi)
       (let* ((loaded-inputs (mapcar (lambda (x) (cmp:irc-load x "cell")) inputs))
-             (stack-allocated-closure-space (alloca-i8 (core:closure-with-slots-size (length inputs)) "stack-allocated-closure"))
-             (ptr-to-sacs
-              (llvm-sys:create-bit-cast cmp:*irbuilder* stack-allocated-closure-space cmp:+i8*+ "closure-ptr"))
              (ltv-lambda-name (%literal-value lambda-name (format nil "lambda-name->~a" lambda-name)))
+             (dx-p (cleavir-ir:dynamic-extent-p instruction))
              (result
-              (let ()
-                (cmp:irc-create-call
-                 "cc_stack_enclose"
-                 (list* ptr-to-sacs
-                        ltv-lambda-name
-                        enclosed-function
-                        cmp:*gv-source-file-info-handle*
-                        (cmp:irc-size_t-*current-source-pos-info*-filepos)
-                        (cmp:irc-size_t-*current-source-pos-info*-lineno)
-                        (cmp:irc-size_t-*current-source-pos-info*-column)
-                        (%size_t (length inputs))
-                        loaded-inputs)
-                 (format nil "closure->~a" lambda-name)))
-               #+(or) (progn
-                        (cmp:irc-intrinsic-args
-                         "cc_enclose"
-                         (list* ltv-lambda-name
-                                enclosed-function
-                                cmp:*gv-source-file-info-handle*
-                                (cmp:irc-size_t-*current-source-pos-info*-filepos)
-                                (cmp:irc-size_t-*current-source-pos-info*-lineno)
-                                (cmp:irc-size_t-*current-source-pos-info*-column)
-                                (%size_t (length inputs))
-                                loaded-inputs)
-                         (format nil "closure->~a" lambda-name)))
-               ))
+               (if dx-p
+                   (cmp:irc-create-call
+                    "cc_stack_enclose"
+                    (list* (llvm-sys:create-bit-cast
+                            cmp:*irbuilder*
+                            ;; space for the stack closure
+                            (alloca-i8 (core:closure-with-slots-size (length inputs)) "stack-allocated-closure")
+                            cmp:+i8*+
+                            "closure-ptr")
+                           ltv-lambda-name
+                           enclosed-function
+                           cmp:*gv-source-file-info-handle*
+                           (cmp:irc-size_t-*current-source-pos-info*-filepos)
+                           (cmp:irc-size_t-*current-source-pos-info*-lineno)
+                           (cmp:irc-size_t-*current-source-pos-info*-column)
+                           (%size_t (length inputs))
+                           loaded-inputs)
+                    (format nil "closure->~a" lambda-name))
+                   (cmp:irc-create-call
+                    "cc_enclose"
+                    (list* ltv-lambda-name
+                           enclosed-function
+                           cmp:*gv-source-file-info-handle*
+                           (cmp:irc-size_t-*current-source-pos-info*-filepos)
+                           (cmp:irc-size_t-*current-source-pos-info*-lineno)
+                           (cmp:irc-size_t-*current-source-pos-info*-column)
+                           (%size_t (length inputs))
+                           loaded-inputs)
+                    (format nil "closure->~a" lambda-name)))))
         (cc-dbg-when *debug-log*
-                     (format *debug-log* "cc_enclose with ~a cells~%" (length inputs))
+                     (format *debug-log* "~:[cc_enclose~;cc_stack_enclose~] with ~a cells~%"
+                             dx-p (length inputs))
                      (format *debug-log* "    inputs: ~a~%" inputs))
         (%store result (first outputs) nil)))))
 
@@ -961,6 +932,11 @@ when this is t a lot of graphs will be generated.")
 (defparameter *enable-type-inference* t)
 
 (defun my-hir-transformations (init-instr implementation processor os)
+  ;; DX analysis
+  (clasp-cleavir:optimize-stack-enclose init-instr) ; see FIXME at definition
+  ;; FIXME: Causes mysterious segfaults at boot :(
+  ;(cleavir-kildall-escape:mark-dynamic-extent init-instr)
+  ;; Type inference
   (cleavir-typed-transforms:thes->typeqs init-instr)
   (quick-draw-hir init-instr "hir-after-thes-typeqs")
   (when *enable-type-inference*
@@ -1007,7 +983,6 @@ COMPILE-FILE will use the default *clasp-env*."
       (my-hir-transformations hir clasp-system nil nil)
       (quick-draw-hir hir "hir-pre-mir")
       (cleavir-ir:hir-to-mir hir clasp-system nil nil)
-      (clasp-cleavir:optimize-stack-enclose hir)
       (cc-mir:assign-mir-instruction-datum-ids hir)
       (clasp-cleavir:finalize-unwind-and-landing-pad-instructions hir map-enter-to-landing-pad)
       (quick-draw-hir hir "mir")

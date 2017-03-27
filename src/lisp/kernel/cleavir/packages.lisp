@@ -130,8 +130,6 @@
 (defpackage #:cc-mir
   (:use #:common-lisp)
   (:export
-   #:stack-enclose-instruction
-   #:make-stack-enclose-instruction
    #:characterp-instruction
    #:make-characterp-instruction
    #:single-float-p-instruction
