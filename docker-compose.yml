@@ -1,10 +1,10 @@
 version: '2'
 services:
-  clasp:
-    image: clasp
+  clasp-run:
+    image: clasp-run
     build:
       context: .
-      dockerfile: tools/dockerfiles/clasp/Dockerfile
+      dockerfile: tools/dockerfiles/clasp-run/Dockerfile
     depends_on:
       - clasp-build
   clasp-build:
