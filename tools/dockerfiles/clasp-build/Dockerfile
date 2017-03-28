@@ -1,6 +1,8 @@
 FROM clasp-externals
 MAINTAINER Christian Schafmeister <meister@temple.edu>
 
+ARG CLASP_REVISION
+ENV CLASP_REVISION=preview
 ARG CANDO_REVISION
 ENV CANDO_REVISION=preview
 
@@ -11,7 +13,7 @@ RUN chown -R app:app ${HOME}/clasp
 USER app
 
 # build clasp as the app user into the /home/app/clasp/build directory
-#RUN git clone -b ${CANDO_REVISION} https://github.com/drmeister/clasp.git ${HOME}
+RUN git clone -b ${CLASP_REVISION} https://github.com/drmeister/clasp.git ${HOME}
 WORKDIR ${HOME}/clasp
 RUN echo "EXTERNALS_CLASP_DIR='$HOME/externals-clasp'" > wscript.config
 RUN git clone -b ${CANDO_REVISION} https://github.com/drmeister/cando.git extensions/cando
