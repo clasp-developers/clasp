@@ -251,11 +251,11 @@ when this is t a lot of graphs will be generated.")
 	    *debug-vars* *vars*)
       (cc-dbg-when 
        *debug-log*
-       (let ((mir-pathname (make-pathname :name (format nil "mir~a" *debug-log-index*) :type "gml" :defaults (pathname *debug-log*))))
+       (let ((mir-pathname (make-pathname :name (format nil "mir~a" (incf *debug-log-index*)) :type "gml" :defaults (pathname *debug-log*))))
 	 (multiple-value-bind (instruction-ids datum-ids)
 	     (cleavir-ir-gml:draw-flowchart initial-instruction (namestring mir-pathname)))
 	 (format *debug-log* "Wrote mir to: ~a~%" (namestring mir-pathname)))
-       (let ((mir-pathname (make-pathname :name (format nil "mir~a" *debug-log-index*) :type "dot" :defaults (pathname *debug-log*))))
+       (let ((mir-pathname (make-pathname :name (format nil "mir~a" (incf *debug-log-index*)) :type "dot" :defaults (pathname *debug-log*))))
 	 (cleavir-ir-graphviz:draw-flowchart initial-instruction (namestring mir-pathname))
 	 (format *debug-log* "Wrote mir to: ~a~%" (namestring mir-pathname))))
       (multiple-value-bind (function lambda-name)
@@ -1137,7 +1137,7 @@ that llvm function. This works like compile-lambda-function in bclasp."
 
 (defmacro open-debug-log (log-file)
   `(eval-when (:compile-toplevel)
-     (setq *debug-log* ,log-file :direction :output)
+     (setq *debug-log* (open (ensure-directories-exist ,log-file) :direction :output))
      (setq *debug-log-on* t)))
 
 (defmacro close-debug-log ()
