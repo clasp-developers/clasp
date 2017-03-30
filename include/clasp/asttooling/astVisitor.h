@@ -27,7 +27,7 @@ THE SOFTWARE.
 #ifndef asttooling_astVisitor_H
 #define asttooling_astVisitor_H
 
-#include <clang/AST/RecursiveASTVisitor.h>
+//#include <clang/AST/RecursiveASTVisitor.h>
 
 #include <clasp/core/foundation.h>
 #include <clasp/core/object.h>

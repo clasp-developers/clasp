@@ -664,8 +664,8 @@ def configure(cfg):
     cfg.define("__STDC_CONSTANT_MACROS",1)
     cfg.define("__STDC_FORMAT_MACROS",1)
     cfg.define("__STDC_LIMIT_MACROS",1)
-#    cfg.env.append_value('CXXFLAGS', ['-v'] )
-#    cfg.env.append_value('CFLAGS', ['-v'] )
+    cfg.env.append_value('CXXFLAGS', ['-v'] )
+    cfg.env.append_value('CFLAGS', ['-v'] )
 #    includes = [ 'include/' ]
 #    includes = includes + cfg.plugins_include_dirs
 #    includes_from_build_dir = []

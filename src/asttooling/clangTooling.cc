@@ -36,7 +36,7 @@ THE SOFTWARE.
 #include <clang/AST/StmtOpenMP.h>
 #include <clang/Basic/Version.h>
 #include <clang/Tooling/JSONCompilationDatabase.h>
-#include <clang/AST/RecursiveASTVisitor.h>
+//#include <clang/AST/RecursiveASTVisitor.h>
 #include <clang/AST/Comment.h>
 #include <clang/AST/RecordLayout.h>
 #include <clang/Tooling/Tooling.h>
