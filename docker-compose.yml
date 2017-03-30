@@ -1,24 +1,24 @@
 version: '2'
 services:
-  clasp:
-    image: clasp
+  clasp-full-run:
+    image: clasp-full-run
     build:
       context: .
-      dockerfile: tools/dockerfiles/clasp/Dockerfile
+      dockerfile: tools/dockerfiles/clasp-full-run/Dockerfile
     depends_on:
-      - clasp-build
-  clasp-build:
-    image: clasp-build
+      - clasp-full-build
+  clasp-full-build:
+    image: clasp-full-build
     build:
       context: .
-      dockerfile: tools/dockerfiles/clasp-build/Dockerfile
+      dockerfile: tools/dockerfiles/clasp-full-build/Dockerfile
       args:
         CANDO_REVISION: dev
     volumes:
       - ./build:/tmp
     command: bash -c 'cp -av /home/app/clasp/build/* /tmp/'
     depends_on:
-      - clasp-externals
+      - clasp-dependencies
   clasp-externals:
     image: clasp-externals
     build:
@@ -26,3 +26,10 @@ services:
       args:
         EXTERNALS_REVISION: master
     command: echo Done building clasp-externals.
+  clasp-dependencies:
+    image: clasp-dependencies
+    build:
+      context: tools/dockerfiles/clasp-dependencies
+      args:
+        EXTERNALS_REVISION: master
+    command: echo Done building clasp-dependencies.

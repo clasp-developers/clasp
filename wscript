@@ -192,13 +192,13 @@ def fix_lisp_paths(bld_path,out,variant,paths):
                 lsp_name = "%s.lisp"%file_name
                 lsp_res = bld_path.find_resource(lsp_name)
 #            print("Looking for file_name with .lsp or .lisp: %s  --> %s" % (file_name,lsp_res))
-            assert lsp_res!=None, "lsp_res could not be resolved for file %s" % lsp_name
+            assert lsp_res!=None, "lsp_res could not be resolved for file %s - did you run ./waf update_submodules" % lsp_name
         else: # generated files
 #            lsp_name = "%s/%s/%s.lisp"%(out,variant.variant_dir(),p)
             lsp_name = "%s.lisp"%(p)
             lsp_res = bld_path.find_or_declare(lsp_name)
 #            print("Looking for generated file with .lisp: %s  --> %s" % (lsp_name,lsp_res))
-            assert lsp_res!=None, "lsp_res could not be resolved for file %s" % lsp_name
+            assert lsp_res!=None, "lsp_res could not be resolved for file %s - did you run ./wfa update_submodules" % lsp_name
         nodes.append(lsp_res)
     return nodes
 
@@ -488,13 +488,15 @@ def run_llvm_config_for_libs(cfg, *args):
 def configure(cfg):
     def update_exe_search_path(cfg):
         externals = cfg.env.EXTERNALS_CLASP_DIR
-        print("externals = |%s|" % externals)
-        assert os.path.isdir(externals), "Please provide a valid EXTERNALS_CLASP_DIR instead of '%s'. See the wscript.config.template file." % externals
-        path = os.getenv("PATH").split(os.pathsep)
-        externals_bin_dir = os.path.join(externals, "build/release/bin/")
-        path.insert(0, externals_bin_dir)
-        cfg.environ["PATH"] = os.pathsep.join(path)
-        print("PATH has been prefixed with '%s'" % externals_bin_dir)
+        if (externals!=[]):
+            print("externals = |%s|" % externals)
+            assert os.path.isdir(externals), "Please provide a valid EXTERNALS_CLASP_DIR instead of '%s'. See the wscript.config.template file." % externals
+            path = os.getenv("PATH").split(os.pathsep)
+            externals_bin_dir = os.path.join(externals, "build/release/bin/")
+            path.insert(0, externals_bin_dir)
+            cfg.environ["PATH"] = os.pathsep.join(path)
+            print("PATH has been prefixed with '%s'" % externals_bin_dir)
+            cfg.env['LLVM_CONFIG_BINARY'] = "%s/build/release/bin/llvm-config" % externals
         #print("Updated search path for binaries: '%s'" % cfg.environ["PATH"])
 
     def check_externals_clasp_version(cfg):
@@ -538,10 +540,11 @@ def configure(cfg):
         cfg.env["LLVM_CONFIG_BINARY_FOR_LIBS"] = cfg.env.LLVM_CONFIG_DEBUG_PATH
     else:
         print("LLVM_CONFIG_DEBUG_PATH is not defined")
-        cfg.env["LLVM_CONFIG_BINARY_FOR_LIBS"] = cfg.find_program("llvm-config", var = "LLVM_CONFIG_FOR_LIBS")[0]
-    cfg.env["LLVM_AR_BINARY"] = cfg.find_program("llvm-ar", var = "LLVM_AR")[0]
-    cfg.env["GIT_BINARY"] = cfg.find_program("git", var = "GIT")[0]
+        cfg.env["LLVM_CONFIG_BINARY_FOR_LIBS"] = cfg.env.LLVM_CONFIG_BINARY
     cfg.env["LLVM_BIN_DIR"] = run_llvm_config(cfg, "--bindir")
+    cfg.env["LLVM_AR_BINARY"] = "%s/llvm-ar" % cfg.env.LLVM_BIN_DIR
+#    cfg.env["LLVM_AR_BINARY"] = cfg.find_program("llvm-ar", var = "LLVM_AR")[0]
+    cfg.env["GIT_BINARY"] = cfg.find_program("git", var = "GIT")[0]
     print("cfg.env['LTO_OPTION'] = %s" % cfg.env['LTO_OPTION'])
     if (cfg.env['LTO_OPTION']==[] or cfg.env['LTO_OPTION']=='thinlto'):
         cfg.env.LTO_FLAG = '-flto=thin'
@@ -573,7 +576,8 @@ def configure(cfg):
         cfg.check_cxx(stlib='gc', cflags='-Wall', uselib_store='BOEHM')
     except ConfigurationError:
         cfg.check_cxx(lib='gc', cflags='-Wall', uselib_store='BOEHM')
-    cfg.check_cxx(stlib='z', cflags='-Wall', uselib_store='Z')
+    #libz
+    cfg.check_cxx(lib='z', cflags='-Wall', uselib_store='Z')
     if (cfg.env['DEST_OS'] == LINUX_OS ):
         cfg.check_cxx(lib='dl', cflags='-Wall', uselib_store='DL')
     cfg.check_cxx(lib='ncurses', cflags='-Wall', uselib_store='NCURSES')
@@ -598,8 +602,12 @@ def configure(cfg):
     print("llvm_lib_dir = %s" % llvm_lib_dir)
     cfg.env.append_value('LINKFLAGS', ["-L%s" % llvm_lib_dir])
     llvm_libraries = strip_libs(run_llvm_config_for_libs(cfg, "--libs"))
-    cfg.check_cxx(stlib = llvm_libraries, cflags = '-Wall', uselib_store = 'LLVM', stlibpath = llvm_lib_dir )
-    cfg.check_cxx(stlib=CLANG_LIBRARIES, cflags='-Wall', uselib_store='CLANG', stlibpath = llvm_lib_dir )
+#dynamic llvm/clang
+    cfg.check_cxx(lib=llvm_libraries, cflags = '-Wall', uselib_store = 'LLVM', libpath = llvm_lib_dir )
+    cfg.check_cxx(lib=CLANG_LIBRARIES, cflags='-Wall', uselib_store='CLANG', libpath = llvm_lib_dir )
+#static llvm/clang
+#    cfg.check_cxx(stlib=llvm_libraries, cflags = '-Wall', uselib_store = 'LLVM', stlibpath = llvm_lib_dir )
+#    cfg.check_cxx(stlib=CLANG_LIBRARIES, cflags='-Wall', uselib_store='CLANG', stlibpath = llvm_lib_dir )
     llvm_include_dir = run_llvm_config_for_libs(cfg, "--includedir")
     print("llvm_include_dir = %s" % llvm_include_dir)
     cfg.env.append_value('CXXFLAGS', ['-I./', '-I' + llvm_include_dir])
@@ -659,6 +667,7 @@ def configure(cfg):
     cfg.define("__STDC_LIMIT_MACROS",1)
 #    cfg.env.append_value('CXXFLAGS', ['-v'] )
 #    cfg.env.append_value('CFLAGS', ['-v'] )
+    cfg.env.append_value('LINKFLAGS', ['-v'] )
 #    includes = [ 'include/' ]
 #    includes = includes + cfg.plugins_include_dirs
 #    includes_from_build_dir = []
@@ -686,6 +695,7 @@ def configure(cfg):
         cfg.env.append_value('LINKFLAGS',["-Wl,-lto_library,%s" % lto_library])
         cfg.env.append_value('LINKFLAGS', ['-lc++'])
         cfg.env.append_value('LINKFLAGS', ['-stdlib=libc++'])
+    cfg.env.append_value('INCLUDES', [ run_llvm_config(cfg,"--includedir") ])
     cfg.env.append_value('INCLUDES', ['/usr/include'] )
     if (cfg.env.ADDRESS_SANITIZER):
         cfg.env.append_value('CXXFLAGS', ['-fsanitize=address'] )
@@ -701,7 +711,7 @@ def configure(cfg):
 #    cfg.define("DEBUG_FLOW_CONTROL",1)
     cfg.env.append_value('CXXFLAGS', ['-Wno-macro-redefined'] )
     cfg.env.append_value('CXXFLAGS', ['-Wno-deprecated-register'] )
-    cfg.env.append_value('CXXFLAGS', ['-Wno-expansion-to-defined'] )
+#    cfg.env.append_value('CXXFLAGS', ['-Wno-expansion-to-defined'] )
     cfg.env.append_value('CXXFLAGS', ['-Wno-return-type-c-linkage'] )
     cfg.env.append_value('CXXFLAGS', ['-Wno-invalid-offsetof'] )
     cfg.env.append_value('CXXFLAGS', ['-Wno-#pragma-messages'] )
@@ -718,9 +728,12 @@ def configure(cfg):
     cfg.env.append_value('STLIB', cfg.env.STLIB_Z)
     if (cfg.env['DEST_OS'] == LINUX_OS ):
         cfg.env.append_value('LIB', cfg.env.LIB_DL)
+    cfg.env.append_value('LIB', cfg.env.LIB_CLANG)
+    cfg.env.append_value('LIB', cfg.env.LIB_LLVM)
     cfg.env.append_value('LIB', cfg.env.LIB_NCURSES)
     cfg.env.append_value('LIB', cfg.env.LIB_M)
     cfg.env.append_value('LIB', cfg.env.LIB_GMP)
+    cfg.env.append_value('LIB', cfg.env.LIB_Z)
     print("cfg.env.STLIB = %s" % cfg.env.STLIB)
     print("cfg.env.LIB = %s" % cfg.env.LIB)
     env_copy = cfg.env.derive()
