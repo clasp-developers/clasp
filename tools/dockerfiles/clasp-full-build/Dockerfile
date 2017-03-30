@@ -9,7 +9,7 @@ ENV CANDO_REVISION=dev
 # build clasp as the app user into the /home/app/clasp/build directory
 RUN git clone --depth=1 -b ${CLASP_REVISION} https://github.com/drmeister/clasp.git ${HOME}/clasp
 WORKDIR ${HOME}/clasp
-RUN echo "LLVM_CONFIG_BIN='/usr/bin/llvm-config-4.0'" > wscript.config
+RUN echo "LLVM_CONFIG_BINARY='/usr/bin/llvm-config-4.0'" > wscript.config
 RUN git clone --depth=1 -b ${CANDO_REVISION} https://github.com/drmeister/cando.git extensions/cando
 
 RUN ./waf update_submodules
