@@ -15,5 +15,5 @@ RUN git clone --depth=1 -b ${CANDO_REVISION} https://github.com/drmeister/cando.
 RUN ./waf update_submodules
 RUN CC=/usr/bin/clang-4.0 CXX=/usr/bin/clang++-4.0 ./waf configure
 
-RUN ./waf -j $(nproc) build_cboehm | tee build/buildlog.txt
+RUN ./waf -j $(nproc) build_cboehm -v | tee build/buildlog.txt
 RUN git clone https://github.com/quicklisp/quicklisp-client.git ~/quicklisp
