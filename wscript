@@ -733,7 +733,7 @@ def configure(cfg):
     cfg.env.append_value('LIB', cfg.env.LIB_NCURSES)
     cfg.env.append_value('LIB', cfg.env.LIB_M)
     cfg.env.append_value('LIB', cfg.env.LIB_GMP)
-    cfg.env.append_value('STLIB', cfg.env.LIB_Z)
+    cfg.env.append_value('LIB', cfg.env.LIB_Z)
     print("cfg.env.STLIB = %s" % cfg.env.STLIB)
     print("cfg.env.LIB = %s" % cfg.env.LIB)
     env_copy = cfg.env.derive()
