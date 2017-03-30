@@ -576,7 +576,8 @@ def configure(cfg):
         cfg.check_cxx(stlib='gc', cflags='-Wall', uselib_store='BOEHM')
     except ConfigurationError:
         cfg.check_cxx(lib='gc', cflags='-Wall', uselib_store='BOEHM')
-    cfg.check_cxx(stlib='z', cflags='-Wall', uselib_store='Z')
+    #libz
+    cfg.check_cxx(lib='z', cflags='-Wall', uselib_store='Z')
     if (cfg.env['DEST_OS'] == LINUX_OS ):
         cfg.check_cxx(lib='dl', cflags='-Wall', uselib_store='DL')
     cfg.check_cxx(lib='ncurses', cflags='-Wall', uselib_store='NCURSES')
@@ -664,8 +665,8 @@ def configure(cfg):
     cfg.define("__STDC_CONSTANT_MACROS",1)
     cfg.define("__STDC_FORMAT_MACROS",1)
     cfg.define("__STDC_LIMIT_MACROS",1)
-    cfg.env.append_value('CXXFLAGS', ['-v'] )
-    cfg.env.append_value('CFLAGS', ['-v'] )
+#    cfg.env.append_value('CXXFLAGS', ['-v'] )
+#    cfg.env.append_value('CFLAGS', ['-v'] )
 #    includes = [ 'include/' ]
 #    includes = includes + cfg.plugins_include_dirs
 #    includes_from_build_dir = []
@@ -730,6 +731,7 @@ def configure(cfg):
     cfg.env.append_value('LIB', cfg.env.LIB_NCURSES)
     cfg.env.append_value('LIB', cfg.env.LIB_M)
     cfg.env.append_value('LIB', cfg.env.LIB_GMP)
+    cfg.env.append_value('STLIB', cfg.env.LIB_Z)
     print("cfg.env.STLIB = %s" % cfg.env.STLIB)
     print("cfg.env.LIB = %s" % cfg.env.LIB)
     env_copy = cfg.env.derive()
