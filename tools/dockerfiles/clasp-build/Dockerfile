@@ -18,7 +18,17 @@ USER root
 RUN chown -R app:app ${HOME}/clasp
 USER app
 
+<<<<<<< HEAD
 RUN ./waf update_submodules && ./waf configure
+=======
+# build clasp as the app user into the /home/app/clasp/build directory
+RUN git clone -b ${CLASP_REVISION} https://github.com/drmeister/clasp.git ${HOME}
+WORKDIR ${HOME}/clasp
+RUN echo "EXTERNALS_CLASP_DIR='$HOME/externals-clasp'" > wscript.config
+RUN git clone -b ${CANDO_REVISION} https://github.com/drmeister/cando.git extensions/cando
+RUN ./waf update_submodules
+RUN CC=/usr/bin/clang-4.0 CXX=/usr/bin/clang++-4.0 ./waf configure
+>>>>>>> Added clasp-dependencies docker files
 RUN ./waf -j $(nproc) build_cboehm | tee build/buildlog.txt
 RUN git clone https://github.com/slime/slime ~/slime
 RUN git clone https://github.com/quicklisp/quicklisp-client.git ~/quicklisp

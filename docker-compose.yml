@@ -26,3 +26,10 @@ services:
       args:
         EXTERNALS_REVISION: master
     command: echo Done building clasp-externals.
+  clasp-dependencies:
+    image: clasp-dependencies
+    build:
+      context: tools/dockerfiles/clasp-dependencies
+      args:
+        EXTERNALS_REVISION: master
+    command: echo Done building clasp-dependencies.
