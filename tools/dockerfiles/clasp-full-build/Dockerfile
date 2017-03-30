@@ -2,15 +2,15 @@ FROM clasp-dependencies
 MAINTAINER Christian Schafmeister <meister@temple.edu>
 
 ARG CLASP_REVISION
-ENV CLASP_REVISION=preview
+ENV CLASP_REVISION=testing
 ARG CANDO_REVISION
-ENV CANDO_REVISION=preview
+ENV CANDO_REVISION=testing
 
 # build clasp as the app user into the /home/app/clasp/build directory
-RUN git clone -b ${CLASP_REVISION} https://github.com/drmeister/clasp.git ${HOME}/clasp
+RUN git clone --depth=1 -b ${CLASP_REVISION} https://github.com/drmeister/clasp.git ${HOME}/clasp
 WORKDIR ${HOME}/clasp
 RUN echo "LLVM_CONFIG_BIN='/usr/bin/llvm-config-4.0'" > wscript.config
-RUN git clone -b ${CANDO_REVISION} https://github.com/drmeister/cando.git extensions/cando
+RUN git clone --depth=1 -b ${CANDO_REVISION} https://github.com/drmeister/cando.git extensions/cando
 
 RUN ./waf update_submodules
 RUN CC=/usr/bin/clang-4.0 CXX=/usr/bin/clang++-4.0 ./waf configure
