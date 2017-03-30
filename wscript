@@ -496,7 +496,7 @@ def configure(cfg):
             path.insert(0, externals_bin_dir)
             cfg.environ["PATH"] = os.pathsep.join(path)
             print("PATH has been prefixed with '%s'" % externals_bin_dir)
-            cfg.env['LLVM_CONFIG_BINARY'] = "%s/release/bin/llvm-config" % externals
+            cfg.env['LLVM_CONFIG_BINARY'] = "%s/build/release/bin/llvm-config" % externals
         #print("Updated search path for binaries: '%s'" % cfg.environ["PATH"])
 
     def check_externals_clasp_version(cfg):
