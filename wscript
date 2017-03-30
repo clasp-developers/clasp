@@ -695,6 +695,7 @@ def configure(cfg):
         cfg.env.append_value('LINKFLAGS', ['-lc++'])
         cfg.env.append_value('LINKFLAGS', ['-stdlib=libc++'])
     cfg.env.append_value('INCLUDES', ['/usr/include'] )
+    cfg.env.append_value('INCLUDES', [ run_llvm_config(cfg,"--includedir") ])
     if (cfg.env.ADDRESS_SANITIZER):
         cfg.env.append_value('CXXFLAGS', ['-fsanitize=address'] )
         cfg.env.append_value('LINKFLAGS', ['-fsanitize=address'])
