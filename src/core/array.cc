@@ -1901,7 +1901,7 @@ bool SimpleCharacterString_O::equal(T_sp other) const {
     if (gc::IsA<Str8Ns_sp>(other)) {
       auto so = gc::As_unsafe<Str8Ns_sp>(other);
       return template_string_EQ_equal(*this,*so,0,this->length(),0,so->length());
-    } else {
+    } else if (gc::IsA<StrWNs_sp>(other)) {
       auto so = gc::As_unsafe<StrWNs_sp>(other);
       return template_string_EQ_equal(*this,*so,0,this->length(),0,so->length());
     }
@@ -2136,7 +2136,7 @@ bool Str8Ns_O::equal(T_sp other) const {
     if (gc::IsA<Str8Ns_sp>(other)) {
       auto so = gc::As_unsafe<Str8Ns_sp>(other);
       return template_string_EQ_equal(*this,*so,0,this->length(),0,so->length());
-    } else {
+    } else if (gc::IsA<StrWNs_sp>(other)){
       auto so = gc::As_unsafe<StrWNs_sp>(other);
       return template_string_EQ_equal(*this,*so,0,this->length(),0,so->length());
     }
@@ -2224,7 +2224,7 @@ bool StrWNs_O::equal(T_sp other) const {
     if (gc::IsA<Str8Ns_sp>(other)) {
       auto so = gc::As_unsafe<Str8Ns_sp>(other);
       return template_string_EQ_equal(*this,*so,0,this->length(),0,so->length());
-    } else {
+    } else if (gc::IsA<StrWNs_sp>(other)){
       auto so = gc::As_unsafe<StrWNs_sp>(other);
       return template_string_EQ_equal(*this,*so,0,this->length(),0,so->length());
     }
