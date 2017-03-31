@@ -711,7 +711,7 @@ def configure(cfg):
 #    cfg.define("DEBUG_FLOW_CONTROL",1)
     cfg.env.append_value('CXXFLAGS', ['-Wno-macro-redefined'] )
     cfg.env.append_value('CXXFLAGS', ['-Wno-deprecated-register'] )
-#    cfg.env.append_value('CXXFLAGS', ['-Wno-expansion-to-defined'] )
+    cfg.env.append_value('CXXFLAGS', ['-Wno-expansion-to-defined'] )
     cfg.env.append_value('CXXFLAGS', ['-Wno-return-type-c-linkage'] )
     cfg.env.append_value('CXXFLAGS', ['-Wno-invalid-offsetof'] )
     cfg.env.append_value('CXXFLAGS', ['-Wno-#pragma-messages'] )
