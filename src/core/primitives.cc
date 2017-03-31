@@ -2149,6 +2149,8 @@ CL_DEFUN T_sp core__unsigned_long_long_round_trip(T_sp num) {
 
 CL_DEFUN T_sp core__long_long_round_trip(T_sp num) {
   long long x = translate::from_object< long long>(num)._v;
+  printf("%s:%d   num.raw_() -> %p\n", __FILE__, __LINE__, num.raw_());
+  printf("%s:%d   num.fixnump() -> %d\n", __FILE__, __LINE__, num.fixnump());
   printf("%s:%d   long long value: %lld\n", __FILE__, __LINE__, x );
   T_sp result = translate::to_object<long long>::convert(x);
   return result;
