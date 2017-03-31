@@ -2,9 +2,9 @@ FROM clasp-dependencies
 MAINTAINER Christian Schafmeister <meister@temple.edu>
 
 ARG CLASP_REVISION
-ENV CLASP_REVISION=dev
+ENV CLASP_REVISION=testing
 ARG CANDO_REVISION
-ENV CANDO_REVISION=dev
+ENV CANDO_REVISION=testing
 
 # build clasp as the app user into the /home/app/clasp/build directory
 RUN git clone --depth=1 -b ${CLASP_REVISION} https://github.com/drmeister/clasp.git ${HOME}/clasp
