@@ -1,0 +1,15 @@
+{
+    "argv": [
+        "/home/app/clasp/build/clasp",
+        "--load",
+        "/home/app/quicklisp/setup.lisp",
+        "--load",
+        "/home/app/quicklisp/local-projects/cl-jupyter/cl-jupyter.lisp",
+        "--",
+        "/home/app/quicklisp/local-projects/cl-jupyter/src",
+        "/home/app/quicklisp/local-projects/cl-jupyter",
+        "{connection_file}"
+    ],
+    "display_name": "Clasp Lisp",
+    "language": "lisp"
+}

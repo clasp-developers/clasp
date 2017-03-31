@@ -18,6 +18,7 @@ RUN [ "/home/app/clasp/build/clasp", "-f", "setup-cando", \
 				 "-e", "(load (format nil \"~a/swank-loader.lisp\" core::*swank-home*))", \
 				 "-e", "(swank-loader:init :delete nil :reload nil :load-contribs nil)", \
 				 "-e", "(quit)"]
+ADD tools/dockerfiles/jupyter/kernel.json /home/app/.local/share/jupyter/kernels/lisp/kernel.json                                 
 CMD [ "/home/app/clasp/build/clasp", "-f", "docker", \
       				 "-e", "(setq core::*swank-home* \"/home/app/slime\")", \
       				 "-e", "(load \"/home/app/clasp/src/lisp/modules/docker-swank/start-swank.lisp\")"]
