@@ -1462,8 +1462,7 @@ Integer_sp Integer_O::create( int64_t v )
     return Integer_O::create(static_cast<Fixnum>(v));
   }
 
-  Bignum z( clasp_create_mpz_class( v ) );
-  return Bignum_O::create( z );
+  return Bignum_O::create( v );
 }
 
 Integer_sp Integer_O::create( uint64_t v )
@@ -1473,8 +1472,7 @@ Integer_sp Integer_O::create( uint64_t v )
     return Integer_O::create(static_cast<Fixnum>(v));
   }
 
-  Bignum z( clasp_create_mpz_class( v ) );
-  return Bignum_O::create( z );
+  return Bignum_O::create( v );
 }
 
 #endif
@@ -1489,13 +1487,8 @@ Integer_sp Integer_O::create( long long v )
     return Integer_O::create( (Fixnum) v );
   }
 
-  Bignum z( clasp_create_mpz_class( v ) );
-  return Bignum_O::create( z );
+  return Bignum_O::create( v );
 }
-
-#endif
-
-#if defined(_TARGET_OS_LINUX)
 
 Integer_sp Integer_O::create( unsigned long long v )
 {
@@ -1504,9 +1497,9 @@ Integer_sp Integer_O::create( unsigned long long v )
     return Integer_O::create((Fixnum)v);
   }
 
-  Bignum z( clasp_create_mpz_class( v ) );
-  return Bignum_O::create( z );
+  return Bignum_O::create( v );
 }
+
 #endif
 
 Integer_sp Integer_O::create(float v) {
