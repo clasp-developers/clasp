@@ -68,13 +68,7 @@ using namespace core;
 
 #pragma GCC visibility push(default)
 
-
-  
 extern "C" {
-
-extern core::T_sp test_call(core::T_sp val) {
-  return val;
-}
 
 ALWAYS_INLINE core::T_sp *symbolValueReference(core::T_sp *symbolP) {
   core::Symbol_sp sym((gctools::Tagged)(symbolP->raw_()));
@@ -304,7 +298,7 @@ ALWAYS_INLINE gc::return_type cc_call(LCC_ARGS_CC_CALL_ELLIPSIS) {
   core::Closure_O* closure = gc::untag_general<core::Closure_O *>(tagged_closure);
   VaList_S lcc_arglist_s;
   va_start(lcc_arglist_s._Args, LCC_VA_START_ARG);
-#ifdef ENABLE_BACKTRACE_ARGS  
+#ifdef ENABLE_BACKTRACE_ARGS
   LCC_SPILL_REGISTER_ARGUMENTS_TO_VA_LIST(lcc_arglist_s);
 #endif
   core::T_O *lcc_arglist = lcc_arglist_s.asTaggedPtr();
@@ -316,7 +310,7 @@ ALWAYS_INLINE gc::return_type cc_call_callback(LCC_ARGS_CC_CALL_ELLIPSIS) {
   auto closure = reinterpret_cast<CompiledClosure_fptr_type>(lcc_closure);
   VaList_S lcc_arglist_s;
   va_start(lcc_arglist_s._Args, LCC_VA_START_ARG);
-#ifdef ENABLE_BACKTRACE_ARGS  
+#ifdef ENABLE_BACKTRACE_ARGS
   LCC_SPILL_REGISTER_ARGUMENTS_TO_VA_LIST(lcc_arglist_s);
 #endif
   core::T_O *lcc_arglist = lcc_arglist_s.asTaggedPtr();
@@ -694,50 +688,6 @@ ALWAYS_INLINE core::T_sp mk_char( char v )
 // referenced from the FLI functions in fli.cc.
 
 // ----------------------------------------------------------------------------
-// HELPER FUNCTIONS FOR TRANSLATORS
-// ----------------------------------------------------------------------------
-
-// ALWAYS_INLINE void memcpy_with_endianness_honored( void * target, void * source, size_t num )
-// {
-//   // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-//   // THIS IS A POTENTIALLY DANGEROUS FUNCTION AS IT COPIES MEMORY FROM SOURCE
-//   // TO TAERGET ADDRESS - NO MEMORY BOUNDS CHECKING IS DONE HERE !!!!!!!!!!!!
-//   // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-//   static unsigned char ac_buf[ BUFSIZ ];
-//   std::memset( ac_buf, 0, BUFSIZ );
-
-//   if( num > BUFSIZ )
-//   {
-//     SIMPLE_ERROR(BF("memcpy_with_endianness_honored (%s:%d): Nr of bytes to be copied (%d) exceeds max nr allowed nr of bytes(%d)!") % num % BUFIZ);
-//   }
-
-//   memcpy( ac_buf, source, num );
-
-// #if ( __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__ )
-
-//   for( int i = 0; i < num; i++ )
-//   {
-//     *(target + i) = *(ac_buf + i);
-//   }
-
-// #endif
-
-// #if ( __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__ )
-
-//   for( int i = 0; i < num; i++ )
-//   {
-//     *(target + i) = *(ac_buf + (num - i - 1));
-//   }
-
-// #endif
-
-// #error "Byte order %d not supported !" __BYTE_ORDER__
-
-//   return;
-// }
-
-// ----------------------------------------------------------------------------
 // FIXNUM
 // ----------------------------------------------------------------------------
 
@@ -746,7 +696,6 @@ ALWAYS_INLINE gctools::Fixnum from_object_fixnum( core::T_O* obj )
   gctools::Fixnum x = gctools::untag_fixnum< T_O * >( obj );
   return x;
 }
-
 
 ALWAYS_INLINE core::T_O* to_object_fixnum( gctools::Fixnum x )
 {
@@ -1095,18 +1044,10 @@ ALWAYS_INLINE float from_object_float( core::T_O* obj )
   TYPE_ERROR(tobj,cl::_sym_Number_O);
 }
 
-
-union T_Optr_to_float {
-  float f;
-  T_O*  ptr;
-};
-  
-
 ALWAYS_INLINE core::T_O* to_object_float( float x )
 {
   return translate::to_object< float >::convert(x).raw_();
 }
-
 
 // ----------------------------------------------------------------------------
 // DOUBLE
@@ -1118,12 +1059,10 @@ ALWAYS_INLINE double from_object_double( core::T_O* obj )
   return x;
 }
 
-
 ALWAYS_INLINE core::T_O* to_object_double( double x )
 {
   return translate::to_object< double >::convert(x).raw_();
 }
-
 
 // ----------------------------------------------------------------------------
 // LONG DOUBLE
@@ -1144,7 +1083,6 @@ ALWAYS_INLINE core::T_O* to_object_void( void )
 {
   return _Nil<core::T_O>().raw_();
 }
-
 
 // ----------------------------------------------------------------------------
 // POINTER

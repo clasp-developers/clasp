@@ -53,18 +53,57 @@ private: // instance variables here
 
 public: // Functions here
   static Bignum_sp make(const string &value_in_string);
-  static Bignum_sp create(gc::Fixnum i) {
+
+  static Bignum_sp create( gc::Fixnum i )
+  {
     GC_ALLOCATE(Bignum_O, b);
     b->_value = i;
     return b;
   };
-  static Bignum_sp create(mpz_class v) {
+
+  static Bignum_sp create( mpz_class v )
+  {
     GC_ALLOCATE(Bignum_O, b);
     b->_value = v;
     return b;
   };
 
-public:
+#if !defined( _TARGET_OS_LINUX )
+
+  static Bignum_sp create( int64_t v )
+  {
+    GC_ALLOCATE(Bignum_O, b);
+    b->_value = (signed long int) v;
+    return b;
+  };
+
+  static Bignum_sp create( uint64_t v )
+  {
+    GC_ALLOCATE(Bignum_O, b);
+    b->_value = (unsigned long int) v;
+    return b;
+  };
+
+#else
+
+  static Bignum_sp create( long long v )
+  {
+    GC_ALLOCATE(Bignum_O, b);
+    b->_value = v;
+    return b;
+  };
+
+  static Bignum_sp create( unsigned long long v )
+  {
+    GC_ALLOCATE(Bignum_O, b);
+    b->_value = v;
+    return b;
+  };
+
+#endif
+
+ public:
+
   NumberType number_type_() const { return number_Bignum; };
 
   mpz_class &ref() { return this->_value; };
@@ -116,7 +155,7 @@ public:
   //	virtual	bool	eqn(T_sp obj) const;
   virtual bool eql_(T_sp obj) const;
 
-public:
+ public:
   virtual string valueAsString() const {
     stringstream ss;
     ss << this->_value;
@@ -239,8 +278,8 @@ namespace core {
   (CLASP_BIGNUM_SIZE(x) < 0 ? -CLASP_BIGNUM_SIZE(x) : CLASP_BIGNUM_SIZE(x))
 
   /*! Parse a cstring to a Bignum */
-  Bignum CStrToBignum(const char* c);
+   Bignum CStrToBignum(const char* c);
 
-};
+ };
 
 #endif /* _bignum_H_ */

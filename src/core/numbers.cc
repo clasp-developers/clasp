@@ -1425,266 +1425,88 @@ Integer_sp Integer_O::create( gctools::Fixnum v )
 
 Integer_sp Integer_O::create( int8_t v)
 {
-  // int8_t will always fit in a fixnum
-  // CHECKME: But will sign extension work?
   return clasp_make_fixnum(static_cast<Fixnum>(v));
-#if 0  
-  if(( v >= gc::most_negative_fixnum) && (v <= gc::most_positive_fixnum ))
-  {
-    return Integer_O::create( (Fixnum) v );
-  }
-
-  Bignum z;
-  mpz_import(z.get_mpz_t(), 2, _lisp->integer_ordering()._mpz_import_word_order,
-             _lisp->integer_ordering()._mpz_import_size,
-             _lisp->integer_ordering()._mpz_import_endian, 0, &v);
-  return Bignum_O::create( z );
-#endif
 }
 
 Integer_sp Integer_O::create( uint8_t v )
 {
-  // CHECKME: This will always fit in a Fixnum, but will sign extension work?
   return clasp_make_fixnum(static_cast<Fixnum>(v));
-#if 0
-  if ( v <= gc::most_positive_fixnum )
-  {
-    return Integer_O::create((Fixnum)v);
-  }
-  Bignum z;
-  mpz_import(z.get_mpz_t(), 2, _lisp->integer_ordering()._mpz_import_word_order,
-             _lisp->integer_ordering()._mpz_import_size,
-             _lisp->integer_ordering()._mpz_import_endian, 0, &v);
-  return Bignum_O::create( z );
-#endif
 }
 
 Integer_sp Integer_O::create( int16_t v)
 {
-  // CHECKME: This will always fit in a Fixnum, but will sign extension work?
   return clasp_make_fixnum(static_cast<Fixnum>(v));
-#if 0
-  if(( v >= gc::most_negative_fixnum) && (v <= gc::most_positive_fixnum ))
-  {
-    return Integer_O::create( (Fixnum) v );
-  }
-
-  Bignum z;
-  mpz_import(z.get_mpz_t(), 2, _lisp->integer_ordering()._mpz_import_word_order,
-             _lisp->integer_ordering()._mpz_import_size,
-             _lisp->integer_ordering()._mpz_import_endian, 0, &v);
-  return Bignum_O::create( z );
-#endif
 }
 
 Integer_sp Integer_O::create( uint16_t v )
 {
-  // CHECKME: This will always fit in a Fixnum, but will sign extension work?
   return clasp_make_fixnum(static_cast<Fixnum>(v));
-#if 0  
-  if ( v <= gc::most_positive_fixnum )
-  {
-    return Integer_O::create((Fixnum)v);
-  }
-  Bignum z;
-  mpz_import(z.get_mpz_t(), 2, _lisp->integer_ordering()._mpz_import_word_order,
-             _lisp->integer_ordering()._mpz_import_size,
-             _lisp->integer_ordering()._mpz_import_endian, 0, &v);
-  return Bignum_O::create( z );
-#endif
 }
 
 Integer_sp Integer_O::create( int32_t v)
 {
-  // CHECKME: This will always fit in a Fixnum, but will sign extension work?
   return clasp_make_fixnum(static_cast<Fixnum>(v));
-#if 0  
-  if(( v >= gc::most_negative_fixnum) && (v <= gc::most_positive_fixnum ))
-  {
-    return Integer_O::create( (Fixnum) v );
-  }
-
-  Bignum z;
-  mpz_import(z.get_mpz_t(), 2, _lisp->integer_ordering()._mpz_import_word_order,
-             _lisp->integer_ordering()._mpz_import_size,
-             _lisp->integer_ordering()._mpz_import_endian, 0, &v);
-  return Bignum_O::create( z );
-#endif
 }
 
 Integer_sp Integer_O::create( uint32_t v )
 {
-  // CHECKME: This will always fit in a Fixnum, but will sign extension work?
   return clasp_make_fixnum(static_cast<Fixnum>(v));
-#if 0  
-  if ( v <= gc::most_positive_fixnum )
-  {
-    return Integer_O::create((Fixnum)v);
-  }
-  Bignum z;
-  mpz_import(z.get_mpz_t(), 2, _lisp->integer_ordering()._mpz_import_word_order,
-             _lisp->integer_ordering()._mpz_import_size,
-             _lisp->integer_ordering()._mpz_import_endian, 0, &v);
-  return Bignum_O::create( z );
-#endif
 }
 
 #ifndef _TARGET_OS_LINUX
 
-Integer_sp Integer_O::create(int64_t v) {
-  if(( v >= gc::most_negative_fixnum) && (v <= gc::most_positive_fixnum )) {
+Integer_sp Integer_O::create( int64_t v )
+{
+  if(( v >= gc::most_negative_fixnum) && (v <= gc::most_positive_fixnum ))
+  {
     return Integer_O::create(static_cast<Fixnum>(v));
   }
-  Bignum z;
-  mpz_import(z.get_mpz_t(), 2, _lisp->integer_ordering()._mpz_import_word_order,
-             _lisp->integer_ordering()._mpz_import_size,
-             _lisp->integer_ordering()._mpz_import_endian, 0, &v);
-  if (v<0) {
-//    printf("%s:%d Negating number\n",__FILE__, __LINE__ );
-    mpz_class temp;
-    mpz_neg(temp.get_mpz_t(),z.get_mpz_t());
-    return Bignum_O::create(temp);
-  }
-  return Bignum_O::create(z);
+
+  return Bignum_O::create( v );
 }
 
-Integer_sp Integer_O::create(uint64_t v) {
-  if (v <= gc::most_positive_fixnum) {
+Integer_sp Integer_O::create( uint64_t v )
+{
+  if (v <= gc::most_positive_fixnum)
+  {
     return Integer_O::create(static_cast<Fixnum>(v));
   }
-  Bignum z;
-  mpz_import(z.get_mpz_t(), 2, _lisp->integer_ordering()._mpz_import_word_order,
-             _lisp->integer_ordering()._mpz_import_size,
-             _lisp->integer_ordering()._mpz_import_endian, 0, &v);
-  return Bignum_O::create(z);
+
+  return Bignum_O::create( v );
 }
 
 #endif
 
-// THOSE FNS ARE ALERADY IMPLEMENTED ABOVE
-
-// Integer_sp Integer_O::create( short v)
-// {
-//   if(( v >= gc::most_negative_fixnum) && (v <= gc::most_positive_fixnum ))
-//   {
-//     return Integer_O::create( (Fixnum) v );
-//   }
-
-//   Bignum z;
-//   mpz_import(z.get_mpz_t(), 2, _lisp->integer_ordering()._mpz_import_word_order,
-//              _lisp->integer_ordering()._mpz_import_size,
-//              _lisp->integer_ordering()._mpz_import_endian, 0, &v);
-//   return Bignum_O::create( z );
-// }
-
-// Integer_sp Integer_O::create( unsigned short v )
-// {
-//   if ( v <= gc::most_positive_fixnum )
-//   {
-//     return Integer_O::create((Fixnum)v);
-//   }
-//   Bignum z;
-//   mpz_import(z.get_mpz_t(), 2, _lisp->integer_ordering()._mpz_import_word_order,
-//              _lisp->integer_ordering()._mpz_import_size,
-//              _lisp->integer_ordering()._mpz_import_endian, 0, &v);
-//   return Bignum_O::create( z );
-// }
-
-// Integer_sp Integer_O::create( int v)
-// {
-//   if(( v >= gc::most_negative_fixnum) && (v <= gc::most_positive_fixnum ))
-//   {
-//     return Integer_O::create( (Fixnum) v );
-//   }
-
-//   Bignum z;
-//   mpz_import(z.get_mpz_t(), 2, _lisp->integer_ordering()._mpz_import_word_order,
-//              _lisp->integer_ordering()._mpz_import_size,
-//              _lisp->integer_ordering()._mpz_import_endian, 0, &v);
-//   return Bignum_O::create( z );
-// }
-
-// Integer_sp Integer_O::create( unsigned int v )
-// {
-//   if ( v <= gc::most_positive_fixnum )
-//   {
-//     return Integer_O::create((Fixnum)v);
-//   }
-//   Bignum z;
-//   mpz_import(z.get_mpz_t(), 2, _lisp->integer_ordering()._mpz_import_word_order,
-//              _lisp->integer_ordering()._mpz_import_size,
-//              _lisp->integer_ordering()._mpz_import_endian, 0, &v);
-//   return Bignum_O::create( z );
-// }
-
-// Integer_sp Integer_O::create( long v)
-// {
-//   if(( v >= gc::most_negative_fixnum) && (v <= gc::most_positive_fixnum ))
-//   {
-//     return Integer_O::create( (Fixnum) v );
-//   }
-
-//   Bignum z;
-//   mpz_import(z.get_mpz_t(), 2, _lisp->integer_ordering()._mpz_import_word_order,
-//              _lisp->integer_ordering()._mpz_import_size,
-//              _lisp->integer_ordering()._mpz_import_endian, 0, &v);
-//   return Bignum_O::create( z );
-// }
-
-// Integer_sp Integer_O::create( unsigned long v )
-// {
-//   if ( v <= gc::most_positive_fixnum )
-//   {
-//     return Integer_O::create((Fixnum)v);
-//   }
-//   Bignum z;
-//   mpz_import(z.get_mpz_t(), 2, _lisp->integer_ordering()._mpz_import_word_order,
-//              _lisp->integer_ordering()._mpz_import_size,
-//              _lisp->integer_ordering()._mpz_import_endian, 0, &v);
-//   return Bignum_O::create( z );
-// }
 
 #if defined(_TARGET_OS_LINUX)
-Integer_sp Integer_O::create( long long v)
+
+Integer_sp Integer_O::create( long long v )
 {
   if(( v >= gc::most_negative_fixnum) && (v <= gc::most_positive_fixnum ))
   {
     return Integer_O::create( (Fixnum) v );
   }
-  printf("%s:%d Integer_O::create with v = %lld\n", __FILE__, __LINE__, v);
-  Bignum z;
-  mpz_import(z.get_mpz_t(), 2, _lisp->integer_ordering()._mpz_import_word_order,
-             _lisp->integer_ordering()._mpz_import_size,
-             _lisp->integer_ordering()._mpz_import_endian, 0, &v);
-  if (v<0) {
-//    printf("%s:%d Negating number\n",__FILE__, __LINE__ );
-    mpz_class temp;
-    mpz_neg(temp.get_mpz_t(),z.get_mpz_t());
-    return Bignum_O::create(temp);
-  }
-  return Bignum_O::create( z );
-}
-#endif
 
-#if defined(_TARGET_OS_LINUX)
+  return Bignum_O::create( v );
+}
+
 Integer_sp Integer_O::create( unsigned long long v )
 {
   if ( v <= gc::most_positive_fixnum )
   {
     return Integer_O::create((Fixnum)v);
   }
-  Bignum z;
-  mpz_import(z.get_mpz_t(), 2, _lisp->integer_ordering()._mpz_import_word_order,
-             _lisp->integer_ordering()._mpz_import_size,
-             _lisp->integer_ordering()._mpz_import_endian, 0, &v);
-  return Bignum_O::create( z );
+
+  return Bignum_O::create( v );
 }
+
 #endif
 
 Integer_sp Integer_O::create(float v) {
   if (v > (float)(std::numeric_limits<int>::min()) && v < (float)(std::numeric_limits<int>::max())) {
     return make_fixnum((int)v);
   }
+
   Bignum rop;
   mpz_set_d(rop.get_mpz_t(), v);
   return Bignum_O::create(rop);
@@ -1720,11 +1542,9 @@ Integer_sp Integer_O::create(cl_intptr_t v) {
   if (v <= gc::most_positive_fixnum) {
     return Integer_O::create((Fixnum)v);
   }
-  Bignum z;
-  mpz_import(z.get_mpz_t(), 2, _lisp->integer_ordering()._mpz_import_word_order,
-             _lisp->integer_ordering()._mpz_import_size,
-             _lisp->integer_ordering()._mpz_import_endian, 0, &v);
-  return Bignum_O::create(z);
+
+  Bignum z( v );
+  return Bignum_O::create( z );
 }
 
 }; // namespace core

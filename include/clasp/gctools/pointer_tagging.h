@@ -231,18 +231,17 @@ ABI's  */
   static const uintptr_t kind_first_instance = 65536;
   static const uintptr_t kind_last_instance  = ((uintptr_t)most_positive_fixnum)<<1;
 
-  static const char* tagged_fixnum_str = "FIXNUM";
-  static const char* tagged_character_str = "CHARACTER";
-  static const char* tagged_single_float_str = "SINGLE-FLOAT";
-  static const char* tagged_object_str = "OBJECT";
-  static const char* tagged_cons_str = "CONS";
-  static const char* tagged_unbound_str = "UNBOUND";
-  static const char* tagged_deleted_str = "DELETED";
-  static const char* tagged_same_as_key_str = "SAME-AS -EY";
-  static const char* tagged_valist_str = "VALIST";
-  static const char* tagged_nil_str = "NIL";
-  static const char* tagged_general_str = "GENERAL";
-
+  static const char * tagged_fixnum_str = "FIXNUM";
+  static const char * tagged_character_str = "CHARACTER";
+  static const char * tagged_single_float_str = "SINGLE-FLOAT";
+  static const char * tagged_object_str = "OBJECT";
+  static const char * tagged_cons_str = "CONS";
+  static const char * tagged_unbound_str = "UNBOUND";
+  static const char * tagged_deleted_str = "DELETED";
+  static const char * tagged_same_as_key_str = "SAME-AS -EY";
+  static const char * tagged_valist_str = "VALIST";
+  static const char * tagged_nil_str = "NIL";
+  static const char * tagged_general_str = "GENERAL";
 
   template <class T>
     T tag(T ptr) { return reinterpret_cast<T>(reinterpret_cast<uintptr_t>(ptr) & tag_mask); };
@@ -425,60 +424,60 @@ template <class T>
   {
     if( tagged_consp( tagged_obj )  )
     {
-      return std::string(tagged_cons_str);
+      return std::string( tagged_cons_str );
     }
 
     if( tagged_nilp( tagged_obj )  )
     {
-      return std::string(tagged_nil_str);
+      return std::string( tagged_nil_str );
     }
 
     if( tagged_unboundp( tagged_obj )  )
     {
-      return std::string(tagged_unbound_str);
+      return std::string( tagged_unbound_str );
     }
 
     if( tagged_deletedp( tagged_obj )  )
     {
-      return std::string(tagged_deleted_str);
+      return std::string( tagged_deleted_str );
     }
 
     if( tagged_sameAsKeyP( tagged_obj )  )
     {
-      return std::string(tagged_same_as_key_str);
+      return std::string( tagged_same_as_key_str );
     }
 
     if( tagged_valistp( tagged_obj )  )
     {
-      return std::string(tagged_valist_str);
+      return std::string( tagged_valist_str );
     }
 
     if( tagged_fixnump( tagged_obj )  )
     {
-      return std::string(tagged_fixnum_str);
+      return std::string( tagged_fixnum_str );
     }
 
     if( tagged_characterp( tagged_obj )  )
     {
-      return std::string(tagged_character_str);
+      return std::string( tagged_character_str );
     }
 
     if( tagged_single_floatp( tagged_obj )  )
     {
-      return std::string(tagged_single_float_str);
+      return std::string( tagged_single_float_str );
     }
 
     if( tagged_generalp( tagged_obj )  )
     {
-      return std::string(tagged_general_str);
+      return std::string( tagged_general_str );
     }
 
     if( tagged_objectp( tagged_obj )  )
     {
-      return std::string(tagged_object_str);
+      return std::string( tagged_object_str );
     }
 
-    return "*** UNKNOW_TAG ***";
+    return std::string( "*** UNKNOW_TAG ***" );
 
   }; // tag_str
 

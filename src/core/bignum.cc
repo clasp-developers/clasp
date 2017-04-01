@@ -246,8 +246,14 @@ inline uint64_t Bignum_O::as_uint64_t() const {
 
 // -- CL_INTPTR_T --
 
-inline cl_intptr_t Bignum_O::as_cl_intptr_t() const {
-  SUBIMP();
+inline cl_intptr_t Bignum_O::as_cl_intptr_t() const
+{
+  if( this->get().get_si() >= 0 )
+  {
+    return (cl_intptr_t) this->get().get_si();
+  }
+
+  SIMPLE_ERROR(BF("Value %llud out of range for type CL_INTPTR_T .") % (unsigned long long) this->get().get_si() );
 }
 
 // -- PTRDIFF_T --

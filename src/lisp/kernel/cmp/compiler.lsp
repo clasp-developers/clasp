@@ -104,7 +104,7 @@ COMPILE-FILE just throws this away.   Return (values llvm-function lambda-name l
 					 given-name
                                         ; generated from lambda-list
 					 lambda-list-handler
-                                        ; lambda declares as a list of conses 
+                                        ; lambda declares as a list of conses
 					 declares
                                         ; lambda docstring
 					 docstring
@@ -1164,7 +1164,7 @@ jump to blocks within this tagbody."
          ((endp cur-exp) nil)
       ;;(bformat t "In codegen-multiple-value-foreign-call codegen arg[%d] -> %d\n" i exp)
       (codegen temp-result exp evaluate-env)
-      (push (irc-create-call (clasp-ffi::no-tr-from-translator-name type)
+      (push (irc-create-call (clasp-ffi::from-translator-name type)
                              (list (irc-smart-ptr-extract (irc-load temp-result)))) args))
     args))
 
@@ -1192,9 +1192,9 @@ jump to blocks within this tagbody."
             (llvm-sys:create-call-array-ref *irbuilder* func (nreverse args) "intrinsic"))
            (result-in-t*
             (if (eq :void (first foreign-types))
-                (irc-create-call (clasp-ffi::no-tr-to-translator-name (first foreign-types)) nil) ; returns :void
-                (irc-create-call (clasp-ffi::no-tr-to-translator-name (first foreign-types))
-                             (list foreign-result)))))
+                (irc-create-call (clasp-ffi::to-translator-name (first foreign-types)) nil) ; returns :void
+                (irc-create-call (clasp-ffi::to-translator-name (first foreign-types))
+                                 (list foreign-result)))))
       (irc-store-result-t* result result-in-t*)))
   (irc-low-level-trace :flow))
 
@@ -1220,8 +1220,8 @@ jump to blocks within this tagbody."
               (llvm-sys:create-call-function-pointer *irbuilder* function-type function-pointer (nreverse args) "fn-ptr-call-result"))
              (result-in-t*
               (if (eq :void (first foreign-types))
-                  (irc-create-call (clasp-ffi::no-tr-to-translator-name (first foreign-types)) nil) ; returns :void
-                  (irc-create-call (clasp-ffi::no-tr-to-translator-name (first foreign-types))
+                  (irc-create-call (clasp-ffi::to-translator-name (first foreign-types)) nil) ; returns :void
+                  (irc-create-call (clasp-ffi::to-translator-name (first foreign-types))
                                    (list foreign-result)))))
         (irc-store-result-t* result result-in-t*)))
     (irc-low-level-trace :flow)))
