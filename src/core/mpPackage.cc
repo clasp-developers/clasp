@@ -136,7 +136,11 @@ void* start_thread(void* claspProcess) {
     SafeRegisterDeregisterProcessWithLisp reg(p);
 //    RAIIMutexLock exitBarrier(p->_ExitBarrier);
 //    printf("%s:%d:%s  process locking the ExitBarrier\n", __FILE__, __LINE__, __FUNCTION__);
-    result_mv = core::eval::applyLastArgsPLUSFirst(my_claspProcess->_Function,args);
+    try {
+      result_mv = core::eval::applyLastArgsPLUSFirst(my_claspProcess->_Function,args);
+    } catch (ExitProcess& e) {
+      // Do nothing - exiting
+    }
 //    printf("%s:%d:%s  process releasing the ExitBarrier\n", __FILE__, __LINE__, __FUNCTION__);
   }
   p->_Phase = Exiting;
@@ -268,6 +272,10 @@ CL_DEFUN core::T_sp mp__process_kill(Process_sp process)
   return mp__interrupt_process(process, _sym_exit_process);
 }
 
+
+CL_DEFUN void mp__exit_process() {
+  throw ExitProcess();
+};
 
 
 CL_DEFUN core::T_sp mp__mutex_name(Mutex_sp m) {
