@@ -16,6 +16,7 @@
 ;;;----------------------------------------------------------------------------
 ;;; Debugging MACROS
 
+(pushnew :clasp-ffi.debug cl:*features*)
 
 ;;;----------------------------------------------------------------------------
 ;;;----------------------------------------------------------------------------
@@ -283,10 +284,13 @@
 
 (declaim (inline %foreign-alloc))
 (defun %foreign-alloc (size)
-  (%allocate-foreign-data size))
+  (let ((result (%allocate-foreign-data size)))
+    #+clasp-ffi.debug (format *debug-io* "*** clasp-ffi::%foreign-alloc - size = ~S, allocated ptr = ~S.~%" size result)
+    result))
 
 (declaim (inline %foreign-free))
 (defun %foreign-free (ptr)
+  #+clasp-ffi.debug (format *debug-io* "*** clasp-ffi::%foreign-free - freeing ~S.~%" ptr)
   (%free-foreign-data ptr)
   nil)
 

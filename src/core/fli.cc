@@ -46,6 +46,28 @@ THE SOFTWARE.
 //
 // --- END OF IMPLEMEMTATION NOTES ---
 
+// --- TODO ---
+//
+// I. PERFORMANCE OPTIMIZATIONS
+//
+// 1. Safety checks being executed twice, e.g. checking if a number is
+//    a fixnum or range checking for numbers. See functions clasp_to_xxx()
+//    in numbers.h / numbers.cc
+//
+// II. MISSING FEATURES
+//
+// 1. File fli.lsp:
+//
+// a) LLVM Type Symbol Fn Initialization:
+//   ;; (%set-llvm-type-symbol-fn (%lisp-type->type-spec :time) (lambda () cmp::+time_t+))
+//    ;; (%set-llvm-type-symbol-fn (%lisp-type->type-spec :ptrdiff) (lambda () cmp::+ptrdiff_t+))
+//
+// b) Redo funnction %expand-callback-function - needs to be re-imlemented due
+//    to changes in function call semantics
+//
+//
+// -------------
+
 // ---------------------------------------------------------------------------
 //   SYSTEM INCLUDES
 // ---------------------------------------------------------------------------
@@ -435,6 +457,7 @@ void ForeignData_O::free( void )
 {
   gctools::clasp_dealloc( (char *) this->m_orig_data_ptr );
   this->m_orig_data_ptr = nullptr;
+  this->m_raw_data      = nullptr;
   this->m_size          = 0;
 }
 
@@ -565,7 +588,7 @@ ForeignData_sp PERCENTmake_pointer( core::Integer_sp address )
 // ---------------------------------------------------------------------------
 ForeignData_sp PERCENTmake_nullpointer( void )
 {
-  ForeignData_sp ptr = ForeignData_O::create( (cl_intptr_t) 0 );
+  ForeignData_sp ptr = make_pointer( nullptr );
   ptr->set_kind( kw::_sym_clasp_foreign_data_kind_pointer );
   return ptr;
 }
@@ -1053,7 +1076,8 @@ core::T_sp PERCENTmem_ref_time( core::Integer_sp address )
 
 core::T_sp PERCENTmem_ref_pointer( core::Integer_sp address )
 {
-  ForeignData_sp ptr = PERCENTmake_pointer( address );
+  void *v = mem_ref< void * >( core::clasp_to_cl_intptr_t( address ) );
+  ForeignData_sp ptr = make_pointer( v );
   DEBUG_PRINT(BF("%s (%s:%d) | v = %p\n.") % __FUNCTION__ % __FILE__ % __LINE__ % ptr );
   return ptr;
 }
