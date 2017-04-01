@@ -39,6 +39,8 @@ namespace mp {
 
 
 namespace mp {
+  struct ExitProcess {};
+  
 #ifdef CLASP_THREADS
   /*! Keep track of binding indices for symbols */
   extern GlobalMutex global_BindingIndexPoolMutex;
