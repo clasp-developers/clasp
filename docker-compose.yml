@@ -7,6 +7,16 @@ services:
       dockerfile: tools/dockerfiles/clasp-full-run/Dockerfile
     depends_on:
       - clasp-full-build
+  clasp-min-install:
+    image: clasp-min-install
+    build:
+      context: .
+      dockerfile: tools/dockerfiles/clasp-min-install/Dockerfile
+      args:
+        CANDO_REVISION: dev
+    depends_on:
+      - clasp-dependencies
+      - clasp-full-build
   clasp-full-build:
     image: clasp-full-build
     build:
