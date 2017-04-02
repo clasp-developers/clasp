@@ -88,8 +88,10 @@ def sync_submodules(cfg):
 
 
 # run this from a completely cold system with:
-# ./waf distclean configure --> cold system
-# ./waf build_cboehmdc build_impsprep analyze_clasp
+# ./waf distclean configure
+# ./waf build_cboehmdc
+# ./waf build_impsprep
+# ./waf analyze_clasp
 # This is the static analyzer - formerly called 'redeye'
 def analyze_clasp(cfg):
     run_program_echo("build/boehmdc/iclasp-boehmdc",

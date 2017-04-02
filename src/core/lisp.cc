@@ -1729,24 +1729,23 @@ CL_DEFUN Class_mv core__lookup_class(Symbol_sp symbol, bool errorp, T_sp env) {
     return Values(_lisp->boot_findClass(symbol, errorp));
   }
   // Use the same global variable that ECL uses
+  bool foundp;
+  T_sp cla;
   {
     WITH_READ_LOCK(_lisp->_Roots._ClassTableMutex);
     HashTable_sp classNames = _lisp->_Roots._ClassTable;
     T_mv mc = classNames->gethash(symbol, _Nil<T_O>());
-    T_sp cla = mc;
-    bool foundp = mc.valueGet_(1).notnilp();
-    if (!foundp) {
-      if (errorp) {
-        SIMPLE_ERROR(BF("Could not find class %s") % _rep_(symbol));
-      }
-      return (Values(_Nil<Class_O>()));
-    }
-    Class_sp omc = gc::As<Class_sp>(cla);
-#if DEBUG_CLOS >= 3
-    printf("\nMLOG find-class returning class %p name--> %s\n", (void *)(result.get()), symbol->__repr__().c_str());
-#endif
-    return (Values(omc));
+    cla = mc;
+    foundp = mc.valueGet_(1).notnilp();
   }
+  if (!foundp) {
+    if (errorp) {
+      SIMPLE_ERROR(BF("Could not find class %s") % _rep_(symbol));
+    }
+    return (Values(_Nil<Class_O>()));
+  }
+  Class_sp omc = gc::As<Class_sp>(cla);
+  return (Values(omc));
 }
 
 CL_LAMBDA(new-value name);
