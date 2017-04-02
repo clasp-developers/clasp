@@ -1371,9 +1371,9 @@ def scrape_task_generator(self):
     self.create_task('link_bitcode',all_o_files,cxx_all_bitcode_node)
     self.create_task('link_bitcode',[intrinsics_o],intrinsics_bitcode_archive_node)
 #    self.create_task('build_bitcode',[intrinsics_o],intrinsics_bitcode_alone_node)
-    self.bld.install_files('${INSTALL_PATH_PREFIX}/Contents/Resources/lib/', intrinsics_bitcode_archive_node)
-    self.bld.install_files('${INSTALL_PATH_PREFIX}/Contents/Resources/lib/', intrinsics_bitcode_alone_node)
-    self.bld.install_files('${INSTALL_PATH_PREFIX}/Contents/Resources/lib/', cxx_all_bitcode_node)
+    self.bld.install_files('${INSTALL_PATH_PREFIX}/Contents/Resources/lib/fasl/', intrinsics_bitcode_archive_node)
+    self.bld.install_files('${INSTALL_PATH_PREFIX}/Contents/Resources/lib/fasl/', intrinsics_bitcode_alone_node)
+    self.bld.install_files('${INSTALL_PATH_PREFIX}/Contents/Resources/lib/fasl/', cxx_all_bitcode_node)
 
 def init(ctx):
     from waflib.Build import BuildContext, CleanContext, InstallContext, UninstallContext
