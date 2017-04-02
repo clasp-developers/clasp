@@ -1,6 +1,6 @@
 {
     "argv": [
-        "/home/app/clasp/build/clasp",
+        "/home/app/clasp/bin/clasp",
         "--load",
         "/home/app/quicklisp/setup.lisp",
         "--load",

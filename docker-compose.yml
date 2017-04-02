@@ -1,19 +1,17 @@
 version: '2'
 services:
-  clasp-full-run:
-    image: clasp-full-run
+  clasp-min-run:
+    image: clasp-min-run
     build:
       context: .
-      dockerfile: tools/dockerfiles/clasp-full-run/Dockerfile
+      dockerfile: tools/dockerfiles/clasp-min-run/Dockerfile
     depends_on:
-      - clasp-full-build
+      - clasp-min-install
   clasp-min-install:
     image: clasp-min-install
     build:
       context: .
       dockerfile: tools/dockerfiles/clasp-min-install/Dockerfile
-      args:
-        CANDO_REVISION: dev
     depends_on:
       - clasp-dependencies
       - clasp-full-build

@@ -7,3 +7,4 @@ USER root
 RUN chown -R app:app ${HOME}/clasp
 USER app
 
+RUN git clone https://github.com/quicklisp/quicklisp-client.git ~/quicklisp
