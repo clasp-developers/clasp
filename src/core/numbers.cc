@@ -1486,9 +1486,8 @@ Integer_sp Integer_O::create( long long v )
 {
   if(( v >= gc::most_negative_fixnum) && (v <= gc::most_positive_fixnum ))
   {
-    return Integer_O::create( (Fixnum) v );
+    return clasp_make_fixum((Fixnum) v );
   }
-
   return Bignum_O::create( v );
 }
 
@@ -1496,9 +1495,8 @@ Integer_sp Integer_O::create( unsigned long long v )
 {
   if ( v <= gc::most_positive_fixnum )
   {
-    return Integer_O::create((Fixnum)v);
+    return clasp_make_fixnum((Fixnum)v);
   }
-
   return Bignum_O::create( v );
 }
 
