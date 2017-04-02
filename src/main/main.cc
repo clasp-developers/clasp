@@ -210,8 +210,10 @@ bool abort_flag( void )
 void set_program_name( std::string program_name = CLASP_DEFAULT_PROGRAM_NAME )
 {
   g_program_name = program_name;
+#if 0
   std::transform( g_program_name.begin(), g_program_name.end(), g_program_name.begin(),
                   [](unsigned char c) { return std::toupper(c); } );
+#endif
 }
 
 std::string program_name()
