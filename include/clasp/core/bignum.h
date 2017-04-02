@@ -89,14 +89,14 @@ public: // Functions here
   static Bignum_sp create( long long v )
   {
     GC_ALLOCATE(Bignum_O, b);
-    b->_value = v;
+    b->_value = (long long)v;
     return b;
   };
 
   static Bignum_sp create( unsigned long long v )
   {
     GC_ALLOCATE(Bignum_O, b);
-    b->_value = v;
+    b->_value = (unsigned long long)v;
     return b;
   };
 
