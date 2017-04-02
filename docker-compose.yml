@@ -15,7 +15,7 @@ services:
       args:
         CANDO_REVISION: dev
     volumes:
-      - ./build:/tmp
+      - /tmp/install:/home/app/install
     command: bash -c 'cp -av /home/app/clasp/build/* /tmp/'
     depends_on:
       - clasp-dependencies

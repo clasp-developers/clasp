@@ -14,6 +14,7 @@ USER app
 
 WORKDIR ${HOME}/clasp
 RUN echo "LLVM_CONFIG_BINARY='/usr/bin/llvm-config-4.0'" > wscript.config
+RUN echo "INSTALL_PATH_PREFIX='/home/app/install'" >> wscript.config
 RUN ./waf update_submodules
 RUN CC=/usr/bin/clang-4.0 CXX=/usr/bin/clang++-4.0 ./waf configure
 
