@@ -285,6 +285,7 @@ namespace core {
     static T_sp makeIntegerType(gc::Fixnum low, gc::Fixnum high);
     static Integer_sp create(const mpz_class &v);
     static Integer_sp create(gctools::Fixnum v);
+    static Integer_sp create(uintptr_clasp_t v);
     static Integer_sp create(const string &v) {
       return Integer_O::create(v.c_str());
     };
@@ -306,12 +307,13 @@ namespace core {
 
     static Integer_sp create( int32_t v );
     static Integer_sp create( uint32_t v );
-
+#ifdef OLD_INTPTR_T
 #if !defined( _TARGET_OS_LINUX )
     static Integer_sp create( int64_t v );
     static Integer_sp create( uint64_t v );
 #endif
-
+#endif
+    
     // THOSE ARE ALREADY DEFINED ABOVE
     // static Integer_sp create( short v );
     // static Integer_sp create( unsigned short v );
@@ -330,7 +332,9 @@ namespace core {
     static Integer_sp create( double f );
     static Integer_sp createLongFloat( LongFloat f );
 
+#ifdef OLD_INTPTR_T
     static Integer_sp create( cl_intptr_t v );
+#endif
 
   public:
 
@@ -1002,7 +1006,7 @@ namespace core {
         }
         return immediate_fixnum<Number_O>(y);
       } else {
-        Bignum val(n.unsafe_fixnum());
+        Bignum val(static_cast<signed long>(n.unsafe_fixnum()));
         Bignum res;
         mpz_mul_2exp(res.get_mpz_t(), val.get_mpz_t(), bits);
         return Integer_O::create(res);

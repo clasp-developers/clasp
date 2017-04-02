@@ -36,7 +36,15 @@ THE SOFTWARE.
 
 #if defined(_ADDRESS_MODEL_64)
 #define INTPTR_BITS 64
-typedef uintptr_t cl_intptr_t;
+typedef uint64_t uintptr_clasp_t;
+typedef int64_t  intptr_clasp_t;
+typedef uintptr_clasp_t cl_intptr_t;
+typedef int64_t Fixnum;
+#define PRu "llu"
+#define PRi "lld"
+#define PRF "lld"
+#define GMP_LONG(z) (static_cast<long>(z))
+#define GMP_ULONG(z) (static_cast<unsigned long>(z))
 #else // POINTER_BITS <=32
 #define INTPTR_BITS 32
 typedef uintptr_t cl_intptr_t;

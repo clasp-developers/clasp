@@ -123,7 +123,7 @@ CL_DEFUN StrNs_sp core__integer_to_string(StrNs_sp buffer, Integer_sp integer,
       StringPushStringCharStar(buffer,txt);
       break;
     default:
-      Bignum bn(fn);
+        Bignum bn(GMP_LONG(fn));
       core__bignum_to_string(buffer, bn, base);
       break;
     }

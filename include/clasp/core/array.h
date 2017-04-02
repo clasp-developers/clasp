@@ -1788,7 +1788,7 @@ namespace core {
       return 0;
     }
     static value_type from_object(T_sp obj) { return clasp_to_size(gc::As<core::Integer_sp>(obj)); };
-    static T_sp to_object(const value_type& v) { return core::Integer_O::create(v); };
+    static T_sp to_object(const value_type& v) {return core::Integer_O::create((uintptr_clasp_t)v); };
   public:
   SimpleVector_size_t_O(size_t length, value_type initialElement=value_type(),
                        bool initialElementSupplied=false,

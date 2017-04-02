@@ -190,7 +190,7 @@ void derivable_class_base::add_inner_scope(scope &s) {
 
 void derivable_class_base::add_cast(
     class_id src, class_id target, cast_function cast) {
-  //            printf("%s:%d:%s   src[%lu] target[%lu]\n", __FILE__,__LINE__,__FUNCTION__,src,target);
+  //            printf("%s:%d:%s   src[%" PRu "] target[%lu]\n", __FILE__,__LINE__,__FUNCTION__,src,target);
   m_registration->m_casts.push_back(cast_entry(src, target, cast));
 }
 }

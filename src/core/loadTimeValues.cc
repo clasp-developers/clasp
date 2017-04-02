@@ -166,7 +166,7 @@ void dumpOneValue(stringstream &ss, T_sp val) {
 }
 
 void LoadTimeValues_O::dumpValues(vector<gctools::Fixnum> &indices) {
-  printf("%s:%d Dumping Values LTV@%p  size %lu\n", __FILE__, __LINE__, this, this->_Objects.size());
+  printf("%s:%d Dumping Values LTV@%p  size %" PRu "\n", __FILE__, __LINE__, this, this->_Objects.size());
   if (indices.size() == 0) {
     for (int i = 0, iEnd(this->_Objects.size()); i < iEnd; i++) {
       T_sp &obj = this->_Objects[i];

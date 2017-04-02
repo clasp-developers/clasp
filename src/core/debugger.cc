@@ -466,7 +466,7 @@ void dbg_lowLevelDescribe(T_sp obj) {
   if (obj.valistp()) {
     dbg_VaList_sp_describe(obj);
   } else if (obj.fixnump()) {
-    printf("fixnum_tag: %ld\n", obj.unsafe_fixnum());
+    printf("fixnum_tag: %" PRF "\n", obj.unsafe_fixnum());
   } else if (obj.single_floatp()) {
     printf("single-float: %f\n", obj.unsafe_single_float());
   } else if (obj.characterp()) {
@@ -545,7 +545,7 @@ void dbg_describeActivationFrame(ActivationFrame_sp obj) {
   printf("dbg_describe: %s\n", ss.str().c_str());
 }
 
-void dbg_describeTPtr(uintptr_t raw) {
+void dbg_describeTPtr(uintptr_clasp_t raw) {
   if (raw == 0) {
     printf("dbg_describe: NULL\n");
     return;
@@ -560,7 +560,7 @@ void dbg_describeTPtr(uintptr_t raw) {
   fflush(stdout);
 }
 
-void dbg_printTPtr(uintptr_t raw, bool print_pretty) {
+void dbg_printTPtr(uintptr_clasp_t raw, bool print_pretty) {
   core::T_sp sout = cl::_sym_STARstandard_outputSTAR->symbolValue();
   T_sp obj = gctools::smart_ptr<T_O>((gc::Tagged)raw);
   clasp_write_string((BF("dbg_printTPtr Raw pointer value: %p\n") % (void *)obj.raw_()).str(), sout);

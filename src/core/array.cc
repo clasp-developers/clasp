@@ -274,7 +274,7 @@ CL_LISPIFY_NAME("cl:array-dimension");
 CL_DEFUN size_t cl__arrayDimension(Array_sp array, size_t idx)
 {
   if (idx >= array->rank()) {
-    SIMPLE_ERROR(BF("array-dimension index %lu is out of bounds - must be less than %lu") % idx % array->rank());
+    SIMPLE_ERROR(BF("array-dimension index %" PRu " is out of bounds - must be less than %lu") % idx % array->rank());
   }
   return array->arrayDimension(idx);
 }
@@ -328,7 +328,7 @@ MDArray_O::MDArray_O(size_t rank,
     arrayTotalSize *= dim;
   }
   if (irank!=rank) {
-    SIMPLE_ERROR(BF("Mismatch in the number of arguments rank = %lu indices = %s") % rank % _rep_(dimensions));
+    SIMPLE_ERROR(BF("Mismatch in the number of arguments rank = %" PRu " indices = %s") % rank % _rep_(dimensions));
   }
   this->_ArrayTotalSize = arrayTotalSize;
 }
@@ -476,13 +476,13 @@ CL_DEFUN void core__mdarray_dump(Array_sp a)
 {
   MDArray_sp mda = gc::As<MDArray_sp>(a);
   BFORMAT_T(BF("MDArray address = %p\n") % (void*)&*mda);
-  BFORMAT_T(BF("MDArray _ArrayTotalSize = %lu\n") % mda->_ArrayTotalSize);
+  BFORMAT_T(BF("MDArray _ArrayTotalSize = %" PRu "\n") % mda->_ArrayTotalSize);
   BFORMAT_T(BF("MDArray _Data = %p\n") % (void*)&*(mda->_Data));
-  BFORMAT_T(BF("MDArray _DisplacedIndexOffset = %lu\n") % mda->_DisplacedIndexOffset);
-  BFORMAT_T(BF("MDArray _Flags = %lu\n") % mda->_Flags._Flags);
-  BFORMAT_T(BF("MDArray _Dimensions._Length = %lu\n") % mda->_Dimensions._Length);
+  BFORMAT_T(BF("MDArray _DisplacedIndexOffset = %" PRu "\n") % mda->_DisplacedIndexOffset);
+  BFORMAT_T(BF("MDArray _Flags = %" PRu "\n") % mda->_Flags._Flags);
+  BFORMAT_T(BF("MDArray _Dimensions._Length = %" PRu "\n") % mda->_Dimensions._Length);
   for ( size_t i(0); i<mda->_Dimensions._Length; ++i ) {
-    BFORMAT_T(BF("MDArray _Dimensions[%lu] = %lu\n") % i % mda->_Dimensions[i]);
+    BFORMAT_T(BF("MDArray _Dimensions[%" PRu "] = %lu\n") % i % mda->_Dimensions[i]);
   }
 }
 
@@ -537,13 +537,13 @@ CL_DOCSTRING("copy_subarray");
 CL_DEFUN void core__copy_subarray(Array_sp dest, Fixnum_sp destStart, Array_sp orig, Fixnum_sp origStart, Fixnum_sp len) {
   // TODO: THIS NEEDS TO BE OPTIMIZED FOR DIFFERENT TYPES OF ARRAYS!!!!!!!
   //       Currently this is very inefficient
-  intptr_t iLen = unbox_fixnum(len);
+  intptr_clasp_t iLen = unbox_fixnum(len);
   if (iLen == 0)
     return;
   ASSERTF(dest->rank() == 1, BF("dest array must be rank 1 - instead it is %d") % dest->rank());
   ASSERTF(orig->rank() == 1, BF("orig array must be rank 1 - instead it is %d") % orig->rank());
-  intptr_t iDestStart = unbox_fixnum(destStart);
-  intptr_t iOrigStart = unbox_fixnum(origStart);
+  intptr_clasp_t iDestStart = unbox_fixnum(destStart);
+  intptr_clasp_t iOrigStart = unbox_fixnum(origStart);
   if ((iLen + iDestStart) >= dest->arrayTotalSize()) iLen = dest->arrayTotalSize()-iDestStart;
   if ((iLen + iOrigStart) >= orig->arrayTotalSize()) iLen = orig->arrayTotalSize()-iOrigStart;
   if (iDestStart < iOrigStart) {
@@ -1698,7 +1698,7 @@ cl_index fsmInteger(mpz_class &result, cl_index &numDigits, bool &sawJunk, Strin
           state = ijunk;
           break;
         }
-        result = result * radix + idigit;
+        result = result * GMP_LONG(radix) + GMP_LONG(idigit);
         ++numDigits;
         state = inum;
         break;
@@ -1720,7 +1720,7 @@ cl_index fsmInteger(mpz_class &result, cl_index &numDigits, bool &sawJunk, Strin
           state = ijunk;
           break;
         }
-        result = result * radix + idigit;
+        result = result * GMP_LONG(radix) + GMP_LONG(idigit);
         ++numDigits;
         state = inum;
         break;
@@ -2050,7 +2050,7 @@ Array_sp SimpleBitVector_O::nreverse() {
 SimpleBitVector_sp SimpleBitVector_copy(SimpleBitVector_sp orig_sbv)
 {
   size_t value_type_size = core::SimpleBitVector_O::bitunit_array_type::sizeof_for_length(orig_sbv->length())/sizeof(core::SimpleBitVector_O::value_type);
-//  printf("%s:%d Copy SimpleBitVector length = %lu   value_type_size = %lu\n", __FILE__, __LINE__, orig_sbv->length(), value_type_size );
+//  printf("%s:%d Copy SimpleBitVector length = %" PRu "   value_type_size = %lu\n", __FILE__, __LINE__, orig_sbv->length(), value_type_size );
 //  fflush(stdout);
   core::SimpleBitVector_sp sbv = core::SimpleBitVector_O::make(orig_sbv->length(),0,true,value_type_size,&orig_sbv->_Data[0]);
   return sbv;
@@ -2058,7 +2058,7 @@ SimpleBitVector_sp SimpleBitVector_copy(SimpleBitVector_sp orig_sbv)
 
 void SimpleBitVector_inPlaceOr(SimpleBitVector_sp x, SimpleBitVector_sp y) {
   size_t i;
-  if (x->length() != y->length()) SIMPLE_ERROR(BF("BitVectors aren't the same length for in place or - lengths are %lu and %lu") % x->length() % y->length());
+  if (x->length() != y->length()) SIMPLE_ERROR(BF("BitVectors aren't the same length for in place or - lengths are %" PRu " and %lu") % x->length() % y->length());
   for (size_t i = 0; i<x->_Data.number_of_words(); ++i ) {
     (*x)._Data[i] |= (*y)._Data[i];
   }

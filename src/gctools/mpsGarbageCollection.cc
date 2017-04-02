@@ -159,7 +159,7 @@ void mps_register_roots(void* roots_begin, size_t num_roots) {
   mps_root_t mps_root;
   mps_res_t res;
   void* roots_end = reinterpret_cast<void*>(reinterpret_cast<char*>(roots_begin)+num_roots*sizeof(core::T_sp));
-//  printf("%s:%d About to mps_root_create_area_tagged %lu roots -> roots_begin@%p roots_end@%p\n", __FILE__, __LINE__, num_roots, roots_begin, roots_end );
+//  printf("%s:%d About to mps_root_create_area_tagged %" PRu " roots -> roots_begin@%p roots_end@%p\n", __FILE__, __LINE__, num_roots, roots_begin, roots_end );
   res = mps_root_create_area_tagged(&mps_root,
                                     global_arena,
                                     mps_rank_exact(),
@@ -224,7 +224,7 @@ void searchMemoryForAddress(mps_addr_t addr) {
   // Search the stack
   const char* sptr = reinterpret_cast<const char *>(&searcher) + 1;
   for (; sptr < _global_stack_marker; ++sptr) {
-    if (*sptr == reinterpret_cast<uintptr_t>(addr)) {
+    if (*sptr == reinterpret_cast<uintptr_clasp_t>(addr)) {
       searcher.stackMatches.push_back(reinterpret_cast<mps_addr_t>(const_cast<char*>(sptr)));
     }
     ++(searcher.stackAddresses);
@@ -364,19 +364,19 @@ static void cons_pad(mps_addr_t base, size_t size) {
 #if 0
 static mps_res_t stack_frame_scan(mps_ss_t ss, mps_addr_t base, mps_addr_t limit) {
   STACK_TELEMETRY2(telemetry::label_stack_frame_scan_start,
-                   (uintptr_t)base,
-                   (uintptr_t)limit);
+                   (uintptr_clasp_t)base,
+                   (uintptr_clasp_t)limit);
   MPS_SCAN_BEGIN(ss) {
     while (base < limit) {
       mps_addr_t original_base = base;
-      uintptr_t *headerAndFrame = (uintptr_t *)base;
+      uintptr_clasp_t *headerAndFrame = (uintptr_clasp_t *)base;
       GCStack::frameType ftype = (GCStack::frameType)FRAME_HEADER_TYPE_FIELD(headerAndFrame);
       size_t sz = FRAME_HEADER_SIZE_FIELD(headerAndFrame);
       switch (ftype) {
       case GCStack::frame_t: {
-        uintptr_t *frameStart = FRAME_START(headerAndFrame);
+        uintptr_clasp_t *frameStart = FRAME_START(headerAndFrame);
         size_t elements = frameStart[gc::IdxNumElements];
-        uintptr_t *taggedPtr = &frameStart[gc::IdxValuesArray];
+        uintptr_clasp_t *taggedPtr = &frameStart[gc::IdxValuesArray];
         for (size_t i = 0; i < elements; ++i) {
           taggedPtrFix(_ss, _mps_zs, _mps_w, _mps_ufs, _mps_wt, reinterpret_cast<gctools::Tagged *>(taggedPtr));
           ++taggedPtr;
@@ -391,9 +391,9 @@ static mps_res_t stack_frame_scan(mps_ss_t ss, mps_addr_t base, mps_addr_t limit
           abort();
       }
       STACK_TELEMETRY3(telemetry::label_stack_frame_scan,
-                       (uintptr_t)original_base,
-                       (uintptr_t)base,
-                       (uintptr_t)ftype);
+                       (uintptr_clasp_t)original_base,
+                       (uintptr_clasp_t)base,
+                       (uintptr_clasp_t)ftype);
     }
   }
   MPS_SCAN_END(ss);
@@ -401,7 +401,7 @@ static mps_res_t stack_frame_scan(mps_ss_t ss, mps_addr_t base, mps_addr_t limit
 };
 
 static mps_addr_t stack_frame_skip(mps_addr_t base) {
-  uintptr_t *headerAndFrame = (uintptr_t *)base;
+  uintptr_clasp_t *headerAndFrame = (uintptr_clasp_t *)base;
   mps_addr_t original_base = base;
   GCStack::frameType ftype = (GCStack::frameType)FRAME_HEADER_TYPE_FIELD(headerAndFrame);
   size_t sz = FRAME_HEADER_SIZE_FIELD(headerAndFrame);
@@ -418,18 +418,18 @@ static mps_addr_t stack_frame_skip(mps_addr_t base) {
       break;
   }
   STACK_TELEMETRY3(telemetry::label_stack_frame_skip,
-                   (uintptr_t)original_base,
-                   (uintptr_t)base,
-                   (uintptr_t)((char *)original_base - (char *)base));
+                   (uintptr_clasp_t)original_base,
+                   (uintptr_clasp_t)base,
+                   (uintptr_clasp_t)((char *)original_base - (char *)base));
   return base;
 }
 
 static void stack_frame_pad(mps_addr_t addr, size_t size) {
   STACK_TELEMETRY2(telemetry::label_stack_frame_pad,
-                   (uintptr_t)addr,
-                   (uintptr_t)size);
-  uintptr_t *obj = reinterpret_cast<uintptr_t *>(addr);
-  GCTOOLS_ASSERT(size >= STACK_ALIGN_UP(sizeof(uintptr_t)));
+                   (uintptr_clasp_t)addr,
+                   (uintptr_clasp_t)size);
+  uintptr_clasp_t *obj = reinterpret_cast<uintptr_clasp_t *>(addr);
+  GCTOOLS_ASSERT(size >= STACK_ALIGN_UP(sizeof(uintptr_clasp_t)));
   FRAME_HEADER_TYPE_FIELD(obj) = (int)GCStack::frameType::pad_t;
   FRAME_HEADER_SIZE_FIELD(obj) = size;
 }
@@ -523,10 +523,10 @@ size_t processMpsMessages(size_t& finalizations) {
                 size_t condemned = mps_message_gc_condemned_size(global_arena, message);
                 size_t not_condemned = mps_message_gc_not_condemned_size(global_arena, message);
                 printf("Collection finished.\n");
-                printf("    live %lu\n", (unsigned long)live);
-                printf("    condemned %lu\n", (unsigned long)condemned);
-                printf("    not_condemned %lu\n", (unsigned long)not_condemned);
-                printf("    clock: %lu\n", (unsigned long)mps_message_clock(global_arena, message));
+                printf("    live %" PRu "\n", (unsigned long)live);
+                printf("    condemned %" PRu "\n", (unsigned long)condemned);
+                printf("    not_condemned %" PRu "\n", (unsigned long)not_condemned);
+                printf("    clock: %" PRu "\n", (unsigned long)mps_message_clock(global_arena, message));
 #endif
     } else if (type == mps_message_type_finalization()) {
       ++finalizations;
@@ -624,7 +624,7 @@ bool maybeParseClaspMpsConfig(size_t &arenaMb, size_t &spareCommitLimitMb, size_
   size_t values[20];
   int numValues = 0;
   if (cur) {
-    printf("Default CLASP_MPS_CONFIG = %lu %lu %lu %lu %lu %lu %lu\n",
+    printf("Default CLASP_MPS_CONFIG = %" PRu " %lu %lu %lu %lu %lu %lu\n",
            arenaMb,
            spareCommitLimitMb,
            nurseryKb,
@@ -655,13 +655,13 @@ bool maybeParseClaspMpsConfig(size_t &arenaMb, size_t &spareCommitLimitMb, size_
     case 1:
         arenaMb = values[0];
         printf("CLASP_MPS_CONFIG...\n");
-        printf("                    arenaMb = %lu\n", arenaMb);
-        printf("         spareCommitLimitMb = %lu\n", spareCommitLimitMb);
-        printf("                  nurseryKb = %lu\n", nurseryKb);
-        printf("    nurseryMortalityPercent = %lu\n", nurseryMortalityPercent);
-        printf("              generation1Kb = %lu\n", generation1Kb);
-        printf("generation1MortalityPercent = %lu\n", generation1MortalityPercent);
-        printf("              keyExtendByKb = %lu\n", keyExtendByKb );
+        printf("                    arenaMb = %" PRu "\n", arenaMb);
+        printf("         spareCommitLimitMb = %" PRu "\n", spareCommitLimitMb);
+        printf("                  nurseryKb = %" PRu "\n", nurseryKb);
+        printf("    nurseryMortalityPercent = %" PRu "\n", nurseryMortalityPercent);
+        printf("              generation1Kb = %" PRu "\n", generation1Kb);
+        printf("generation1MortalityPercent = %" PRu "\n", generation1MortalityPercent);
+        printf("              keyExtendByKb = %" PRu "\n", keyExtendByKb );
         return true;
         break;
     default:
@@ -704,7 +704,7 @@ int initializeMemoryPoolSystem(MainFunctionType startupFn, int argc, char *argv[
   double nurseryMortalityFraction = nurseryMortalityPercent / 100.0;
   double generation1MortalityFraction = generation1MortalityPercent / 100.0;
 
-//        printf( "arenaSizeMb[%lu] spareCommitLimitMb[%lu] nurseryKb[%lu] nurseryMortalityFraction[%f] generation1Kb[%lu] generation1MortalityFraction[%f]\n", arenaSizeMb, spareCommitLimitMb, nurseryKb, nurseryMortalityFraction, generation1Kb, generation1MortalityFraction );
+//        printf( "arenaSizeMb[%" PRu "] spareCommitLimitMb[%lu] nurseryKb[%lu] nurseryMortalityFraction[%f] generation1Kb[%lu] generation1MortalityFraction[%f]\n", arenaSizeMb, spareCommitLimitMb, nurseryKb, nurseryMortalityFraction, generation1Kb, generation1MortalityFraction );
 
 #define AMC_CHAIN_SIZE CHAIN_SIZE
   // Now the generation chain

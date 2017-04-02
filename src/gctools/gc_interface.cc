@@ -407,7 +407,7 @@ mps_addr_t obj_skip(mps_addr_t client) {
       if ( kind_layout.container_layout ) {
         Container_layout& container_layout = *kind_layout.container_layout;
         if (kind_layout.bits_per_bitunit!=0) {
-          printf("%s:%d A bitvector was encountered with kind_layout.bits_per_bitunit = %lu\n", __FILE__, __LINE__, kind_layout.bits_per_bitunit );
+          printf("%s:%d A bitvector was encountered with kind_layout.bits_per_bitunit = %" PRu "\n", __FILE__, __LINE__, kind_layout.bits_per_bitunit );
         }
         size_t capacity = *(size_t*)((const char*)client + container_layout.capacity_offset);
         size = container_layout.element_size*capacity + container_layout.data_offset;
@@ -472,7 +472,7 @@ GC_RESULT obj_scan(mps_ss_t ss, mps_addr_t client, mps_addr_t limit) {
           int num_fields = kind_layout.number_of_fields;
           Field_layout* field_layout_cur = kind_layout.field_layout_start;
           if (kind_layout.bits_per_bitunit!=0) {
-            printf("%s:%d A bitvector was encountered with kind_layout.bits_per_bitunit = %lu\n", __FILE__, __LINE__, kind_layout.bits_per_bitunit );
+            printf("%s:%d A bitvector was encountered with kind_layout.bits_per_bitunit = %" PRu "\n", __FILE__, __LINE__, kind_layout.bits_per_bitunit );
           }
           for ( int i=0; i<num_fields; ++i ) {
             core::T_O** field = (core::T_O**)((const char*)client + field_layout_cur->field_offset);

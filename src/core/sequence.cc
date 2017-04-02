@@ -283,20 +283,20 @@ size_t_pair sequenceStartEnd(Symbol_sp fn_name, size_t vector_length, size_t sta
 #if 0
 void inBoundsBelowEndOrError(cl_index index, cl_index start, cl_index end ) {
   unlikely_if ( index < start ) {
-    SIMPLE_ERROR(BF("The index %ld must be greator or equal to %ld and less than %lu") % index % start % end );
+    SIMPLE_ERROR(BF("The index %ld must be greator or equal to %ld and less than %" PRu "") % index % start % end );
   }
   unlikely_if ( index >= end ) {
-    SIMPLE_ERROR(BF("Out of bounds index %ld must be a value from %lu and less than %lu") % index % start % end );
+    SIMPLE_ERROR(BF("Out of bounds index %ld must be a value from %" PRu " and less than %lu") % index % start % end );
   }
   return;
 }
 
 void inBoundsOrError(Symbol_sp function_name, cl_index index, cl_index start, cl_index end ) {
   unlikely_if ( index < start ) {
-    SIMPLE_ERROR(BF("The index %ld must be greator or equal to %ld and less than %lu") % index % start % end );
+    SIMPLE_ERROR(BF("The index %ld must be greator or equal to %ld and less than %" PRu "") % index % start % end );
   }
   unlikely_if ( index > end ) {
-    SIMPLE_ERROR(BF("Out of bounds index %ld must be less than or equal to %lu") % index % end );
+    SIMPLE_ERROR(BF("Out of bounds index %ld must be less than or equal to %" PRu "") % index % end );
   }
   return;
 }

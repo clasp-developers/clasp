@@ -27,7 +27,7 @@ THE SOFTWARE.
 #define DEBUG_LEVEL_NONE
 
 #include <string.h>
-#include <clasp/core/config.h>
+#include <clasp/core/foundation.h>
 #include <clasp/core/common.h>
 #include <clasp/core/environment.h>
 #include <clasp/core/symbolTable.h>

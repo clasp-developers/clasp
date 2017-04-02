@@ -142,7 +142,7 @@ void Cache_O::search_cache(CacheRecord *&min_e) {
   if (this->_debug) {
     printf("%s:%d ===================  search_cache argno=%d\n", __FILE__, __LINE__, argno);
     for (size_t zi=0; zi<keys.size(); ++zi ) {
-      printf("%s:%d    key[%lu] -> %s\n", __FILE__, __LINE__, zi, _rep_(keys[zi]).c_str());
+      printf("%s:%d    key[%" PRu "] -> %s\n", __FILE__, __LINE__, zi, _rep_(keys[zi]).c_str());
     }
   }
 #endif

@@ -847,7 +847,7 @@ step8:
     LOG(BF("y8_syntax_type=%s") % _rep_(y8_syntax_type));
     if ((y8_syntax_type == kw::_sym_constituent_character) || (y8_syntax_type == kw::_sym_non_terminating_macro_character)) {
       Y = readTable->convert_case(y);
-      LOG(BF("  Pushing back character %lu") % constituentChar(Y));
+      LOG(BF("  Pushing back character %" PRu "") % constituentChar(Y));
       token.push_back(constituentChar(Y));
       goto step8;
     }

@@ -89,7 +89,7 @@ public:
     core::MultipleValues &mv = core::lisp_multipleValues();
     for (int i(1); i < this->_number_of_values; ++i) {
 #ifdef TRAP
-      if ( (((uintptr_t)mv._Values[i])&gctools::tag_mask) == unused0_tag) {
+      if ( (((uintptr_clasp_t)mv._Values[i])&gctools::tag_mask) == unused0_tag) {
         printf("%s:%d Caught bad tagged pointer\n", __FILE__, __LINE__ );
         abort();
       }
@@ -97,7 +97,7 @@ public:
       core::T_sp val((gctools::Tagged)mv._Values[i]);
       values[i] = val;
 #ifdef TRAP
-      if ( (((uintptr_t)values[i].raw_())&gctools::tag_mask) == unused0_tag) {
+      if ( (((uintptr_clasp_t)values[i].raw_())&gctools::tag_mask) == unused0_tag) {
         printf("%s:%d Caught bad tagged pointer\n", __FILE__, __LINE__ );
         abort();
       }
@@ -109,14 +109,14 @@ public:
     core::MultipleValues &mv = core::lisp_multipleValues();
     for (size_t i(1), iEnd(values.size()); i < iEnd; ++i) {
 #ifdef TRAP
-      if ( (((uintptr_t)values[i].raw_())&gctools::tag_mask) == unused0_tag) {
+      if ( (((uintptr_clasp_t)values[i].raw_())&gctools::tag_mask) == unused0_tag) {
         printf("%s:%d Caught bad tagged pointer\n", __FILE__, __LINE__ );
         abort();
       }
 #endif
       mv._Values[i] = values[i].raw_();
 #ifdef TRAP
-      if ( (((uintptr_t)mv._Values[i])&gctools::tag_mask) == unused0_tag) {
+      if ( (((uintptr_clasp_t)mv._Values[i])&gctools::tag_mask) == unused0_tag) {
         printf("%s:%d Caught bad tagged pointer\n", __FILE__, __LINE__ );
         abort();
       }

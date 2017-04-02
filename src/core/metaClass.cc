@@ -527,9 +527,9 @@ T_sp Class_O::instanceRef(size_t idx) const {
 #if 0
   if (val.unboundp()) {
     if (idx == REF_CLASS_NAME) {
-      printf("%s:%d:%s   WARNING  read slot %lu of a class and it was unbound\n", __FILE__, __LINE__, __FUNCTION__, idx);
+      printf("%s:%d:%s   WARNING  read slot %" PRu " of a class and it was unbound\n", __FILE__, __LINE__, __FUNCTION__, idx);
     } else {
-      printf("%s:%d:%s   WARNING  read slot %lu of class %s and it was unbound\n", __FILE__, __LINE__, __FUNCTION__, idx, _rep_(this->instanceRef(REF_CLASS_NAME)).c_str());
+      printf("%s:%d:%s   WARNING  read slot %" PRu " of class %s and it was unbound\n", __FILE__, __LINE__, __FUNCTION__, idx, _rep_(this->instanceRef(REF_CLASS_NAME)).c_str());
     }
   }
 #endif

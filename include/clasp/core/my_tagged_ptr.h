@@ -92,16 +92,16 @@ private:
   typedef tagged_ptr this_type;
 
 protected:
-  static const uintptr_t tag_mask = BOOST_BINARY(0011);
-  static const uintptr_t fixnum_tag = BOOST_BINARY(0000);  // xxx00 means ptr
-  static const uintptr_t special_tag = BOOST_BINARY(0001); // xxx01 means special val
-  static const uintptr_t ptr_tag = BOOST_BINARY(0011);     // xxx11 means fixnum
-  static const uintptr_t ptr_mask = ~tag_mask;
+  static const uintptr_clasp_t tag_mask = BOOST_BINARY(0011);
+  static const uintptr_clasp_t fixnum_tag = BOOST_BINARY(0000);  // xxx00 means ptr
+  static const uintptr_clasp_t special_tag = BOOST_BINARY(0001); // xxx01 means special val
+  static const uintptr_clasp_t ptr_tag = BOOST_BINARY(0011);     // xxx11 means fixnum
+  static const uintptr_clasp_t ptr_mask = ~tag_mask;
 
 public:
-  static const uintptr_t tagged_NULL = BOOST_BINARY(0000) | special_tag;
-  static const uintptr_t tagged_unbound = BOOST_BINARY(0100) | special_tag;
-  static const uintptr_t tagged_nil = BOOST_BINARY(1000) | special_tag;
+  static const uintptr_clasp_t tagged_NULL = BOOST_BINARY(0000) | special_tag;
+  static const uintptr_clasp_t tagged_unbound = BOOST_BINARY(0100) | special_tag;
+  static const uintptr_clasp_t tagged_nil = BOOST_BINARY(1000) | special_tag;
 
 public:
   typedef T element_type;
@@ -122,7 +122,7 @@ public:
     // Do nothing for fixnums
   }
 
-  tagged_ptr(uintptr_t p) : px((T *)p) {
+  tagged_ptr(uintptr_clasp_t p) : px((T *)p) {
   }
 
 #if !defined(BOOST_NO_MEMBER_TEMPLATES) || defined(BOOST_MSVC6_MEMBER_TEMPLATES)
@@ -140,7 +140,7 @@ public:
   //    	: px( rhs.get() )
   {
     // Copy the bit pattern in rhs.px into this->px
-    uintptr_t upx = (uintptr_t)rhs.pxget();
+    uintptr_clasp_t upx = (uintptr_clasp_t)rhs.pxget();
     px = (T *)upx;
   }
 
@@ -197,7 +197,7 @@ public:
 
   /*! Return true if px contains a pointer */
   bool pointerp() const {
-    return ((uintptr_t)(this->px) & tag_mask) == ptr_tag && ((uintptr_t)(this->px) & ptr_mask);
+    return ((uintptr_clasp_t)(this->px) & tag_mask) == ptr_tag && ((uintptr_clasp_t)(this->px) & ptr_mask);
   };
 
   /*! THROW exception if px is not a pointer */
@@ -205,11 +205,11 @@ public:
 
   bool taggedp() const { return (this->px && tag_mask); };
 
-  bool _NULLp() const { return (uintptr_t) this->px == tagged_NULL; };
+  bool _NULLp() const { return (uintptr_clasp_t) this->px == tagged_NULL; };
 
-  bool unboundp() const { return (uintptr_t) this->px == tagged_unbound; };
+  bool unboundp() const { return (uintptr_clasp_t) this->px == tagged_unbound; };
 
-  bool nilp() const { return (uintptr_t) this->px == tagged_nil; };
+  bool nilp() const { return (uintptr_clasp_t) this->px == tagged_nil; };
 
   bool fixnump() const { return ((this->px & tag_mask) == fixnum_tag); };
   // Handle get_fixnum

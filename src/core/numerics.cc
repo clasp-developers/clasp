@@ -103,8 +103,8 @@ CL_DOCSTRING("getUniversalTime");
 CL_DEFUN Integer_sp cl__get_universal_time() {
   time_t current_time;
   time(&current_time);
-  Integer_sp offset = Integer_O::create(2208988800);
-  Integer_sp unix_time = Integer_O::create(current_time);
+  Integer_sp offset = Integer_O::create(static_cast<Fixnum>(2208988800));
+  Integer_sp unix_time = Integer_O::create(static_cast<Fixnum>(current_time));
   Integer_sp utime = contagen_add(unix_time, offset);
   return utime;
 }

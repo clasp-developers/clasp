@@ -285,7 +285,7 @@ CL_DECLARE();
 CL_DOCSTRING("dumpTaggedFixnum");
 CL_DEFUN void core__dump_tagged_fixnum(T_sp val) {
   if (val.fixnump()) {
-    printf("%s:%d Raw TaggedFixnum %p   Untagged %ld\n",
+    printf("%s:%d Raw TaggedFixnum %p   Untagged %" PRF "\n",
            __FILE__, __LINE__, val.raw_(), val.unsafe_fixnum());
   } else
     printf("%s:%d Not a tagged fixnum\n", __FILE__, __LINE__);
@@ -1970,13 +1970,13 @@ CL_DEFUN void core__dynamic_binding_stack_dump(std::ostream &out) {
 
 CL_DEFUN size_t core__va_list_length(VaList_sp v)
 {
-//  printf("%s:%d va_list length %lu\n", __FILE__, __LINE__, v->remaining_nargs());
+//  printf("%s:%d va_list length %" PRu "\n", __FILE__, __LINE__, v->remaining_nargs());
   return v->remaining_nargs();
 }
 
 CL_DEFUN size_t core__va_list_current_index(VaList_sp v)
 {
-//  printf("%s:%d va_list_current_index = %lu\n", __FILE__, __LINE__, v->current_index());
+//  printf("%s:%d va_list_current_index = %" PRu "\n", __FILE__, __LINE__, v->current_index());
   return v->current_index();
 }
 
@@ -2128,7 +2128,7 @@ CL_DEFUN T_sp core__int_round_trip(T_sp num) {
 
 CL_DEFUN T_sp core__unsigned_long_round_trip(T_sp num) {
   unsigned long x = translate::from_object<unsigned long>(num)._v;
-  printf("%s:%d   unsigned long value: %lu\n", __FILE__, __LINE__, x );
+  printf("%s:%d   unsigned long value: %" PRu "\n", __FILE__, __LINE__, x );
   T_sp result = translate::to_object<unsigned long>::convert(x);
   return result;
 }

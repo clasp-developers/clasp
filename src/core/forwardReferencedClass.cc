@@ -59,8 +59,8 @@ CL_DEFUN void core__change_to_standard_class(ForwardReferencedClass_sp orig) {
   }
 #if 0
   printf("%s:%d core__change_to_standard_class\n", __FILE__, __LINE__);
-  printf("        ForwardReferencedClass_O size -> %lu\n", sizeof(ForwardReferencedClass_O));
-  printf("        StandardClass_O size -> %lu\n", sizeof(StandardClass_O));
+  printf("        ForwardReferencedClass_O size -> %" PRu "\n", sizeof(ForwardReferencedClass_O));
+  printf("        StandardClass_O size -> %" PRu "\n", sizeof(StandardClass_O));
   printf("        Kind(ForwardReferencedClass_O -> %u\n", gctools::GCKind<ForwardReferencedClass_O>::Kind);
   printf("        Kind(StandardClass_O -> %u\n", gctools::GCKind<StandardClass_O>::Kind);
   printf("        vtable(ForwardReferencedClass_O -> %p\n", *(void**)&x);

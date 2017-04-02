@@ -57,7 +57,7 @@ Vector_sp ExceptionStack::backtrace() {
   if (this->_Stack.size() == 0) {
     return _Nil<Vector_O>();
   }
-  printf("%s:%d ExceptionStack::backtrace stack size = %lu\n", __FILE__, __LINE__, this->_Stack.size());
+  printf("%s:%d ExceptionStack::backtrace stack size = %zu\n", __FILE__, __LINE__, this->_Stack.size());
   Vector_sp result = core__make_vector(_Nil<T_O>(), this->_Stack.size(), false, make_fixnum((int)(this->_Stack.size())));
   for (int i(0), iEnd(this->_Stack.size()); i < iEnd; ++i) {
     Symbol_sp kind;
@@ -262,7 +262,7 @@ T_sp* DynamicBindingStack::reference_raw_(Symbol_O* var) const{
 #endif
     return &var->_GlobalValue;
   }
-  uintptr_t index = var->_Binding;
+  uintptr_clasp_t index = var->_Binding;
   // If it has a _Binding value but our table is not big enough, then expand the table.
   unlikely_if (index >= this->_ThreadLocalBindings.size()) {
     this->_ThreadLocalBindings.resize(index+1,_NoThreadLocalBinding<T_O>());
@@ -289,7 +289,7 @@ void DynamicBindingStack::push_with_value_coming(Symbol_sp var) {
 #ifdef CLASP_THREADS
   if ( var->_Binding == NO_THREAD_LOCAL_BINDINGS )
     var->_Binding = this->new_binding_index();
-  uintptr_t index = var->_Binding;
+  uintptr_clasp_t index = var->_Binding;
   // If it has a _Binding value but our table is not big enough, then expand the table.
   unlikely_if (index >= this->_ThreadLocalBindings.size()) {
     this->_ThreadLocalBindings.resize(index+1,_NoThreadLocalBinding<T_O>());
@@ -309,7 +309,7 @@ void DynamicBindingStack::push(Symbol_sp var, T_sp value) {
 #ifdef CLASP_THREADS
   if ( var->_Binding == NO_THREAD_LOCAL_BINDINGS )
     var->_Binding = this->new_binding_index();
-  uintptr_t index = var->_Binding;
+  uintptr_clasp_t index = var->_Binding;
   // If it has a _Binding value but our table is not big enough, then expand the table.
   unlikely_if (index >= this->_ThreadLocalBindings.size()) {
     this->_ThreadLocalBindings.resize(index+1,_NoThreadLocalBinding<T_O>());

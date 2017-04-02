@@ -249,7 +249,7 @@ void HashTable_O::sxhash_eq(HashGenerator &hg, T_sp obj, LocationDependencyPtrT 
 #ifdef USE_MPS
     if (ld) mps_ld_add(ld, global_arena, (mps_addr_t)address );
 #endif
-    hg.addPart((Fixnum)(((uintptr_t)address)>>gctools::tag_shift));
+    hg.addPart((Fixnum)(((uintptr_clasp_t)address)>>gctools::tag_shift));
     return;
   }
   SIMPLE_ERROR(BF("sxhash_eq cannot hash object"));
@@ -279,7 +279,7 @@ void HashTable_O::sxhash_eql(HashGenerator &hg, T_sp obj, LocationDependencyPtrT
 #ifdef USE_MPS
   if (ld) mps_ld_add(ld, global_arena, (mps_addr_t)address );
 #endif
-  hg.addPart((Fixnum)(((uintptr_t)address)>>gctools::tag_shift));
+  hg.addPart((Fixnum)(((uintptr_clasp_t)address)>>gctools::tag_shift));
   return;
 }
 
@@ -334,7 +334,7 @@ void HashTable_O::sxhash_equal(HashGenerator &hg, T_sp obj, LocationDependencyPt
 #ifdef USE_MPS
   if (ld) mps_ld_add(ld, global_arena, (mps_addr_t)address );
 #endif
-  hg.addPart((Fixnum)(((uintptr_t)address)>>gctools::tag_shift));
+  hg.addPart((Fixnum)(((uintptr_clasp_t)address)>>gctools::tag_shift));
   return;
 }
 
@@ -412,7 +412,7 @@ void HashTable_O::sxhash_equalp(HashGenerator &hg, T_sp obj, LocationDependencyP
 #ifdef USE_MPS
   if (ld) mps_ld_add(ld, global_arena, (mps_addr_t)address );
 #endif
-  hg.addPart((Fixnum)(((uintptr_t)address)>>gctools::tag_shift));
+  hg.addPart((Fixnum)(((uintptr_clasp_t)address)>>gctools::tag_shift));
   return;
 }
 
