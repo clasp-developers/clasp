@@ -1,6 +1,7 @@
 FROM clasp-full-build
 MAINTAINER Christian Schafmeister <meister@temple.edu>
 
+RUN git clone https://github.com/quicklisp/quicklisp-client.git ~/quicklisp
 RUN git clone https://github.com/slime/slime ~/slime
 RUN ${HOME}/clasp/build/clasp -e "(load \"~/slime/swank-loader.lisp\")" -e "(swank-loader:init :delete nil :reload nil :load-contribs nil)" -e "(quit)"
 
@@ -28,7 +29,6 @@ RUN apt-get -y install ipython ipython-notebook
 RUN pip install jupyter
 ADD tools/dockerfiles/jupyter/kernel.json /home/app/.local/share/jupyter/kernels/lisp/kernel.json
 RUN chown -R app /home/app/.local
-RUN apt-get -y install libzmq3-dev
 USER app
 RUN [ "/home/app/clasp/build/clasp", \
      				 "-e", "(load \"~/quicklisp/setup.lisp\")", \
