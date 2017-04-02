@@ -7,7 +7,7 @@ RUN apt-get update && apt-get upgrade -y && apt-get install -y \
   zlib1g-dev libncurses-dev libboost-filesystem-dev libboost-regex-dev \
   libboost-date-time-dev libboost-program-options-dev libboost-system-dev \
   libboost-iostreams-dev csh flex gfortran zlib1g-dev libbz2-dev patch \
-  git sbcl libexpat-dev wget vim
+  git sbcl libexpat-dev wget vim libzmq-dev
 
 # add app user
 RUN groupadd -g 9999 app && useradd -u 9999 -g 9999 -ms /bin/bash app
