@@ -1,10 +1,11 @@
-FROM clasp-dependencies
+FROM clasp-min-dependencies
 MAINTAINER Christian Schafmeister <meister@temple.edu>
 
-# add full source repo into the 'app' user's $HOME/clasp
-ADD ./install ${HOME}/clasp
-USER root
-RUN chown -R app:app ${HOME}/clasp
-USER app
+ADD ./container/install /home/app/clasp
 
 RUN git clone https://github.com/quicklisp/quicklisp-client.git ~/quicklisp
+
+RUN [ "/home/app/clasp/bin/clasp", "-f", "setup-cando", \
+      				 "-e", "(load \"~/quicklisp/setup.lisp\")", \
+				 "-e", "(quit)"]
+

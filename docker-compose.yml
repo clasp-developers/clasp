@@ -13,7 +13,17 @@ services:
       context: .
       dockerfile: tools/dockerfiles/clasp-min-install/Dockerfile
     depends_on:
-      - clasp-dependencies
+      - clasp-copy-out
+      - clasp-min-dependencies
+  clasp-copy-out:
+    image: clasp-copy-out
+    build:
+      context: .
+      dockerfile: tools/dockerfiles/clasp-copy-out/Dockerfile
+    volumes:
+      - ./container:/tmp/clasp
+    command: cp -av install/ /tmp/clasp/
+    depends_on:
       - clasp-full-build
   clasp-full-build:
     image: clasp-full-build
@@ -23,17 +33,14 @@ services:
       args:
         CANDO_REVISION: dev
     volumes:
-      - /tmp/install:/home/app/install
-    command: bash -c 'cp -av /home/app/clasp/build/* /tmp/'
+      - /tmp/install:/home/app/clasp/install
     depends_on:
       - clasp-dependencies
-  clasp-externals:
-    image: clasp-externals
+  clasp-min-dependencies:
+    image: clasp-min-dependencies
     build:
-      context: tools/dockerfiles/clasp-externals
-      args:
-        EXTERNALS_REVISION: master
-    command: echo Done building clasp-externals.
+      context: tools/dockerfiles/clasp-min-dependencies
+    command: echo Done building clasp-min-dependencies.
   clasp-dependencies:
     image: clasp-dependencies
     build:
