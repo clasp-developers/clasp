@@ -250,7 +250,7 @@ CL_DEFUN Fixnum_sp core__test_tagged_cast(Fixnum_sp pow2) __attribute__((optnone
   Fixnum fpow2 = clasp_to_fixnum(pow2);
   Fixnum times = 1;
   times = times << fpow2;
-  printf("%s:%d  fpow2 = %ld  times = %" PRF "\n", __FILE__, __LINE__, fpow2, times);
+  printf("%s:%d  fpow2 = %" PRF " times = %" PRF "\n", __FILE__, __LINE__, fpow2, times);
   Environment_sp env = ValueEnvironment_O::createForNumberOfEntries(5, _Nil<T_O>());
   Fixnum i;
   Fixnum v = 0;

@@ -111,15 +111,15 @@ CL_DEFUN StrNs_sp core__integer_to_string(StrNs_sp buffer, Integer_sp integer,
     gc::Fixnum fn = unbox_fixnum(gc::As<Fixnum_sp>(integer));
     switch (unbox_fixnum(base)) {
     case 8:
-      sprintf(txt, "%lo", fn);
+      sprintf(txt, "%" PRFoctal, fn);
       StringPushStringCharStar(buffer,txt);
       break;
     case 10:
-      sprintf(txt, "%ld", fn);
+      sprintf(txt, "%" PRF, fn);
       StringPushStringCharStar(buffer,txt);
       break;
     case 16:
-      sprintf(txt, "%lX", fn);
+      sprintf(txt, "%" PRFhex, fn);
       StringPushStringCharStar(buffer,txt);
       break;
     default:

@@ -43,6 +43,8 @@ typedef int64_t Fixnum;
 #define PRu "llu"
 #define PRi "lld"
 #define PRF "lld"
+#define PRFoctal "llo"
+#define PRFhex "llX"
 #define GMP_LONG(z) (static_cast<long>(z))
 #define GMP_ULONG(z) (static_cast<unsigned long>(z))
 #else // POINTER_BITS <=32
