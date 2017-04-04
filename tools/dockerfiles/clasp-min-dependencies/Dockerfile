@@ -8,7 +8,7 @@ RUN apt-get install -y libncurses5
 RUN apt-get install -y libboost-filesystem1.58.0 libboost-regex1.58.0 \
   libboost-date-time1.58.0 libboost-program-options1.58.0 libboost-system1.58.0 \
   libboost-iostreams1.58.0 csh flex gfortran zlib1g libbz2-1.0 patch \
-  libexpat1 vim libzmq-dev
+  libexpat1 vim libzmq3-dev
 
 # add app user
 RUN groupadd -g 9999 app && useradd -u 9999 -g 9999 -ms /bin/bash app

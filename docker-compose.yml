@@ -1,5 +1,12 @@
 version: '2'
 services:
+  cando-min-run:
+    image: cando-min-run
+    build:
+      context: .
+      dockerfile: tools/dockerfiles/cando-min-run/Dockerfile
+    depends_on:
+      - clasp-min-install
   clasp-min-run:
     image: clasp-min-run
     build:
@@ -15,6 +22,11 @@ services:
     depends_on:
       - clasp-copy-out
       - clasp-min-dependencies
+  clasp-min-dependencies:
+    image: clasp-min-dependencies
+    build:
+      context: tools/dockerfiles/clasp-min-dependencies
+    command: echo Done building clasp-min-dependencies.
   clasp-copy-out:
     image: clasp-copy-out
     build:
@@ -32,15 +44,8 @@ services:
       dockerfile: tools/dockerfiles/clasp-full-build/Dockerfile
       args:
         CANDO_REVISION: dev
-    volumes:
-      - /tmp/install:/home/app/clasp/install
     depends_on:
       - clasp-dependencies
-  clasp-min-dependencies:
-    image: clasp-min-dependencies
-    build:
-      context: tools/dockerfiles/clasp-min-dependencies
-    command: echo Done building clasp-min-dependencies.
   clasp-dependencies:
     image: clasp-dependencies
     build:
