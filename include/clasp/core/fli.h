@@ -188,6 +188,7 @@ namespace clasp_ffi {
   // MAKE AND TEST FOREIGN DATA POINTER
   CL_DEFUN ForeignData_sp PERCENTallocate_foreign_object( core::T_sp kind );
   CL_DEFUN ForeignData_sp PERCENTallocate_foreign_data( core::Integer_sp size );
+  ForeignData_sp allocate_foreign_data( uint64_t size );
 
   CL_DEFUN ForeignData_sp PERCENTmake_pointer( core::Integer_sp address );
   ForeignData_sp make_pointer( void * p_address );
