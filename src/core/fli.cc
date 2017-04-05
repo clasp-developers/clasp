@@ -543,6 +543,15 @@ ForeignData_sp PERCENTallocate_foreign_data( core::Integer_sp size )
 
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
+ForeignData_sp allocate_foreign_data( uint64_t size )
+{
+  GC_ALLOCATE(ForeignData_O, self);
+  self->allocate( kw::_sym_clasp_foreign_data_kind_data, core::DeleteOnDtor, size );
+  return self;
+}
+
+// ---------------------------------------------------------------------------
+// ---------------------------------------------------------------------------
 void ForeignData_O::PERCENTfree_foreign_data( void )
 {
   this->free();
@@ -636,20 +645,13 @@ core::T_sp PERCENTnull_pointer_p( core::T_sp obj )
 
   if( sp_foreign_data )
   {
-    if( sp_foreign_data.nilp() )
+    if( sp_foreign_data->null_pointer_p() )
     {
-      return _Nil<core::T_O>();
+      return _lisp->_true();
     }
     else
     {
-      if( sp_foreign_data->null_pointer_p() )
-      {
-        return _lisp->_true();
-      }
-      else
-      {
-        return _Nil<core::T_O>();
-      }
+      return _Nil<core::T_O>();
     }
   }
 
@@ -927,7 +929,7 @@ core::Integer_sp PERCENToffset_address_as_integer( core::T_sp address_or_foreign
 template<class T>
 inline T mem_ref( cl_intptr_t address )
 {
-  T *ptr = reinterpret_cast< T*>( address );
+  T *ptr = reinterpret_cast< T * >( address );
   return (*ptr);
 }
 
@@ -1076,10 +1078,34 @@ core::T_sp PERCENTmem_ref_time( core::Integer_sp address )
 
 core::T_sp PERCENTmem_ref_pointer( core::Integer_sp address )
 {
-  void *v = mem_ref< void * >( core::clasp_to_cl_intptr_t( address ) );
-  ForeignData_sp ptr = make_pointer( v );
-  DEBUG_PRINT(BF("%s (%s:%d) | v = %p\n.") % __FUNCTION__ % __FILE__ % __LINE__ % ptr );
-  return ptr;
+  ForeignData_sp   result         = _Nil<core::T_O>();
+  void            *source_address = reinterpret_cast< void * >( core::clasp_to_cl_intptr_t( address ) );
+  int             *source_content = (int *) source_address;
+
+  DEBUG_PRINT(BF("%s (%s:%d) | source address = %p\n.") % __FUNCTION__ % __FILE__ % __LINE__ % source_address );
+
+  if( *source_content == 0 )
+  {
+    result = PERCENTmake_nullpointer();
+    DEBUG_PRINT(BF("%s (%s:%d) | New null-pointer allocated: %s\n.") % __FUNCTION__ % __FILE__ % __LINE__ % (result->__repr__().c_str()) );
+  }
+  else
+  {
+    void *destination_address = nullptr;
+
+    GC_ALLOCATE(ForeignData_O, result);
+    result->allocate( kw::_sym_clasp_foreign_data_kind_pointer, core::DeleteOnDtor, sizeof( void * ) );
+
+    DEBUG_PRINT(BF("%s (%s:%d) | New pointer allocated: %s\n.") % __FUNCTION__ % __FILE__ % __LINE__ % (result->__repr__().c_str()) );
+
+    destination_address  = result->raw_data();
+
+    DEBUG_PRINT(BF("%s (%s:%d) | destination address = %p\n.") % __FUNCTION__ % __FILE__ % __LINE__ % destination_address );
+
+    memcpy( destination_address, source_address, sizeof( void * ) );
+  }
+
+  return result;
 }
 
 core::T_sp PERCENTmem_ref_size( core::Integer_sp address )
@@ -1307,10 +1333,35 @@ core::T_sp PERCENTmem_set_time( core::Integer_sp address, core::T_sp value )
 }
 
 core::T_sp PERCENTmem_set_pointer( core::Integer_sp address, core::T_sp value ) {
-  void * tmp;
+  ForeignData_sp    result              = _Nil<core::T_O>();
+  void            * source_address      = nullptr;
+  void            * destination_address = nullptr;
+  int             * source_content      = nullptr;
+
   translate::from_object< void * > v( value );
-  tmp = mem_set< void * >( core::clasp_to_cl_intptr_t( address ), v._v );
-  return ForeignData_O::create( tmp );
+
+  destination_address = reinterpret_cast< void * >( core::clasp_to_cl_intptr_t( address ) );
+  source_address = v._v;
+  source_content = (int *) source_address;
+
+  DEBUG_PRINT(BF("%s (%s:%d) | source address = %p\n.") % __FUNCTION__ % __FILE__ % __LINE__ % source_address );
+
+  if( *source_content == 0 )
+  {
+    result = PERCENTmake_nullpointer();
+    DEBUG_PRINT(BF("%s (%s:%d) | New null-pointer allocated: %s\n.") % __FUNCTION__ % __FILE__ % __LINE__ % (result->__repr__().c_str()) );
+  }
+  else
+  {
+    GC_ALLOCATE(ForeignData_O, result);
+    result->allocate( kw::_sym_clasp_foreign_data_kind_pointer, core::DeleteOnDtor, sizeof( void * ) );
+    destination_address = result->raw_data();
+    memcpy( destination_address, source_address, sizeof( void * ) );
+  }
+
+  DEBUG_PRINT(BF("%s (%s:%d) | result: %s\n.") % __FUNCTION__ % __FILE__ % __LINE__ % (result->__repr__().c_str()) );
+
+  return result;
 }
 
 core::T_sp PERCENTmem_set_size( core::Integer_sp address, core::T_sp value )
