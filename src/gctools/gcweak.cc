@@ -60,7 +60,7 @@ void WeakHashTable::initialize() {
   this->_Keys = KeyBucketsAllocatorType::allocate(l);
   this->_Values = ValueBucketsAllocatorType::allocate(l);
   this->_Keys->dependent = this->_Values;
-  //  GCTOOLS_ASSERT((reinterpret_cast<uintptr_t>(this->_Keys->dependent) & 0x3) == 0);
+  //  GCTOOLS_ASSERT((reinterpret_cast<uintptr_clasp_t>(this->_Keys->dependent) & 0x3) == 0);
   this->_Values->dependent = this->_Keys;
 #ifdef USE_MPS
   mps_ld_reset(&this->_LocationDependency, global_arena);
@@ -80,7 +80,7 @@ uint WeakHashTable::sxhashKey(const value_type &key
   }
 #endif
   GCWEAK_LOG(BF("Calling lisp_hash for key: %p") % (void *)key.raw_());
-  return core::lisp_hash(reinterpret_cast<uintptr_t>(key.raw_()));
+  return core::lisp_hash(reinterpret_cast<uintptr_clasp_t>(key.raw_()));
 }
 
 /*! Return 0 if there is no more room in the sequence of entries for the key
@@ -528,7 +528,7 @@ mps_res_t weak_obj_scan(mps_ss_t ss, mps_addr_t base, mps_addr_t limit) {
               obj->dependent->bucket[i] = WeakBucketsObjectType::value_type(gctools::make_tagged_deleted<core::T_O *>());
               obj->bucket[i] = WeakBucketsObjectType::value_type(gctools::make_tagged_deleted<core::T_O *>());
             } else {
-              p = reinterpret_cast<core::T_O *>(reinterpret_cast<uintptr_t>(pobj) | reinterpret_cast<uintptr_t>(tag));
+              p = reinterpret_cast<core::T_O *>(reinterpret_cast<uintptr_clasp_t>(pobj) | reinterpret_cast<uintptr_clasp_t>(tag));
               obj->bucket[i].setRaw_(reinterpret_cast<gc::Tagged>(p)); //reinterpret_cast<gctools::Header_s*>(p);
             }
           }
@@ -547,7 +547,7 @@ mps_res_t weak_obj_scan(mps_ss_t ss, mps_addr_t base, mps_addr_t limit) {
             mps_res_t res = MPS_FIX2(ss, reinterpret_cast<mps_addr_t *>(&pobj));
             if (res != MPS_RES_OK)
               return res;
-            p = reinterpret_cast<core::T_O *>(reinterpret_cast<uintptr_t>(pobj) | reinterpret_cast<uintptr_t>(tag));
+            p = reinterpret_cast<core::T_O *>(reinterpret_cast<uintptr_clasp_t>(pobj) | reinterpret_cast<uintptr_clasp_t>(tag));
             obj->bucket[i].setRaw_((gc::Tagged)(p)); //reinterpret_cast<gctools::Header_s*>(p);
           }
         }
@@ -567,7 +567,7 @@ mps_res_t weak_obj_scan(mps_ss_t ss, mps_addr_t base, mps_addr_t limit) {
             obj->dependent->bucket = WeakBucketsObjectType::value_type(gctools::make_tagged_deleted<core::T_O *>());
             obj->bucket = WeakBucketsObjectType::value_type(gctools::make_tagged_deleted<core::T_O *>());
           } else {
-            p = reinterpret_cast<core::T_O *>(reinterpret_cast<uintptr_t>(pobj) | reinterpret_cast<uintptr_t>(tag));
+            p = reinterpret_cast<core::T_O *>(reinterpret_cast<uintptr_clasp_t>(pobj) | reinterpret_cast<uintptr_clasp_t>(tag));
             obj->bucket.setRaw_((gc::Tagged)(p)); // raw_() = reinterpret_cast<core::T_O*>(p);
           }
         }
@@ -584,7 +584,7 @@ mps_res_t weak_obj_scan(mps_ss_t ss, mps_addr_t base, mps_addr_t limit) {
           mps_res_t res = MPS_FIX2(ss, reinterpret_cast<mps_addr_t *>(&pobj));
           if (res != MPS_RES_OK)
             return res;
-          p = reinterpret_cast<core::T_O *>(reinterpret_cast<uintptr_t>(pobj) | reinterpret_cast<uintptr_t>(tag));
+          p = reinterpret_cast<core::T_O *>(reinterpret_cast<uintptr_clasp_t>(pobj) | reinterpret_cast<uintptr_clasp_t>(tag));
           obj->bucket.setRaw_((gc::Tagged)(p)); //reinterpret_cast<gctools::Header_s*>(p);
         }
         base = (char *)base + sizeof(StrongMappingObjectType);
@@ -599,7 +599,7 @@ mps_res_t weak_obj_scan(mps_ss_t ss, mps_addr_t base, mps_addr_t limit) {
           mps_res_t res = MPS_FIX2(ss, reinterpret_cast<mps_addr_t *>(&pobj));
           if (res != MPS_RES_OK)
             return res;
-          p = reinterpret_cast<core::T_O *>(reinterpret_cast<uintptr_t>(pobj) | reinterpret_cast<uintptr_t>(tag));
+          p = reinterpret_cast<core::T_O *>(reinterpret_cast<uintptr_clasp_t>(pobj) | reinterpret_cast<uintptr_clasp_t>(tag));
           obj->value.setRaw_((gc::Tagged)(p)); //reinterpret_cast<gctools::Header_s*>(p);
         }
         base = (char *)base + sizeof(WeakPointer);

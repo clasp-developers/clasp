@@ -261,7 +261,7 @@ gctools::Tagged ltvc_make_symbol(gctools::GCRootsInModule* holder, size_t index,
   return holder->set(index,val.tagged_());
 }
 
-gctools::Tagged ltvc_make_character(gctools::GCRootsInModule* holder, size_t index, uintptr_t val) {
+gctools::Tagged ltvc_make_character(gctools::GCRootsInModule* holder, size_t index, uintptr_clasp_t val) {
   core::T_sp v = clasp_make_character(val);
   return holder->set(index,v.tagged_());
 }
@@ -987,10 +987,10 @@ void debugMessage(const char *msg) {
   printf("++++++ DEBUG-MESSAGE: %s \n", msg);
 }
 
-uintptr_t debug_match_two_uintptr_t(uintptr_t x, uintptr_t y)
+uintptr_clasp_t debug_match_two_uintptr_clasp_t(uintptr_clasp_t x, uintptr_clasp_t y)
 {
   if ( x == y ) return x;
-  printf("%s:%d !!!!! in debug_match_two_uintptr_t the two pointers %p and %p don't match\n", __FILE__, __LINE__, (void*)x, (void*)y);
+  printf("%s:%d !!!!! in debug_match_two_uintptr_clasp_t the two pointers %p and %p don't match\n", __FILE__, __LINE__, (void*)x, (void*)y);
   gdb();
   UNREACHABLE();
 }
@@ -1003,9 +1003,9 @@ void debug_VaList_SPtr(VaList_S *vargs) {
   VaList_S *args = reinterpret_cast<VaList_S *>(gc::untag_valist((void *)vargs));
   printf("++++++ debug_va_list: reg_save_area @%p \n", args->_Args[0].reg_save_area);
   printf("++++++ debug_va_list: gp_offset %d \n", args->_Args[0].gp_offset);
-  printf("++++++      next reg arg: %p\n", (void *)(((uintptr_t *)((char *)args->_Args[0].reg_save_area + args->_Args[0].gp_offset))[0]));
+  printf("++++++      next reg arg: %p\n", (void *)(((uintptr_clasp_t *)((char *)args->_Args[0].reg_save_area + args->_Args[0].gp_offset))[0]));
   printf("++++++ debug_va_list: overflow_arg_area @%p \n", args->_Args[0].overflow_arg_area);
-  printf("++++++      next overflow arg: %p\n", (void *)(((uintptr_t *)((char *)args->_Args[0].overflow_arg_area))[0]));
+  printf("++++++      next overflow arg: %p\n", (void *)(((uintptr_clasp_t *)((char *)args->_Args[0].overflow_arg_area))[0]));
 }
 
 void debugSymbolPointer(core::Symbol_sp *ptr) {
@@ -1034,7 +1034,7 @@ void debugPrintI32(int i32) {
 }
 
 void debugPrint_size_t(size_t v) {
-  printf("+++DBG-size_t[%lu]\n", v);
+  printf("+++DBG-size_t[%" PRu "]\n", v);
 }
 
 
@@ -1185,7 +1185,7 @@ void exceptionStackUnwind(size_t frame) {
 }
 
 void throwIllegalSwitchValue(size_t val, size_t max) {
-  SIMPLE_ERROR(BF("Illegal switch value %lu - max value is %lu") % val % max);
+  SIMPLE_ERROR(BF("Illegal switch value %" PRu " - max value is %lu") % val % max);
 }
 
 void throw_LexicalGo(int depth, int index) {
@@ -1238,7 +1238,7 @@ int tagbodyLexicalGoIndexElseRethrow(char *exceptionP) {
 size_t tagbodyDynamicGoIndexElseRethrow(char *exceptionP, size_t frame) {
 #ifdef DEBUG_FLOW_CONTROL
   if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp()) {
-    printf("%s:%d tagbodyDynamicGoIndexElseRethrow  frame: %lu\n", __FILE__, __LINE__, frame);
+    printf("%s:%d tagbodyDynamicGoIndexElseRethrow  frame: %" PRu "\n", __FILE__, __LINE__, frame);
     if (core::_sym_STARdebugFlowControlSTAR->symbolValue() == kw::_sym_verbose )
       printf("   %s\n", my_thread->exceptionStack().summary().c_str());
   }
@@ -1247,7 +1247,7 @@ size_t tagbodyDynamicGoIndexElseRethrow(char *exceptionP, size_t frame) {
   if (goExceptionP->getFrame() == frame) {
 #ifdef DEBUG_FLOW_CONTROL
     if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp()) {
-      printf("%s:%d Matched DynamicGo  frame: %lu  index: %lu\n", __FILE__, __LINE__, goExceptionP->getFrame(), goExceptionP->index());
+      printf("%s:%d Matched DynamicGo  frame: %" PRu "  index: %lu\n", __FILE__, __LINE__, goExceptionP->getFrame(), goExceptionP->index());
       if (core::_sym_STARdebugFlowControlSTAR->symbolValue() == kw::_sym_verbose )
         printf("   %s\n", my_thread->exceptionStack().summary().c_str());
     }
@@ -1651,7 +1651,7 @@ T_O **cc_multipleValuesArrayAddress() {
 void cc_unwind(T_O *targetFrame, size_t index) {
 #ifdef DEBUG_FLOW_CONTROL
   if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp()) {
-    printf("%s:%d In cc_unwind targetFrame: %ld  index: %lu\n", __FILE__, __LINE__, gc::untag_fixnum(targetFrame), index);
+    printf("%s:%d In cc_unwind targetFrame: %ld  index: %" PRu "\n", __FILE__, __LINE__, gc::untag_fixnum(targetFrame), index);
     if (core::_sym_STARdebugFlowControlSTAR->symbolValue() == kw::_sym_verbose )
       printf("   %s\n", my_thread->exceptionStack().summary().c_str());
   }
@@ -1787,7 +1787,7 @@ T_O *cc_pushLandingPadFrame() {
   size_t index = my_thread->exceptionStack().push(LandingPadFrame, ptr);
 #ifdef DEBUG_FLOW_CONTROL
   if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp()) {
-    printf("%s:%d pushLandingPadFrame pushed frame: %lu  core::Unwind typeinfo@%p\n", __FILE__, __LINE__, index, (void *)&typeid(core::Unwind));
+    printf("%s:%d pushLandingPadFrame pushed frame: %" PRu "  core::Unwind typeinfo@%p\n", __FILE__, __LINE__, index, (void *)&typeid(core::Unwind));
     if (core::_sym_STARdebugFlowControlSTAR->symbolValue() == kw::_sym_verbose )
       printf("   %s\n", my_thread->exceptionStack().summary().c_str());
   }
@@ -1800,7 +1800,7 @@ void cc_popLandingPadFrame(T_O *frameFixnum) {
   size_t frameIndex = gctools::untag_fixnum(frameFixnum);
 #ifdef DEBUG_FLOW_CONTROL
   if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp()) {
-    printf("%s:%d  popLandingPadFrame   About to unwind exceptionStack to frame: %lu\n", __FILE__, __LINE__, frameIndex);
+    printf("%s:%d  popLandingPadFrame   About to unwind exceptionStack to frame: %" PRu "\n", __FILE__, __LINE__, frameIndex);
     if (core::_sym_STARdebugFlowControlSTAR->symbolValue() == kw::_sym_verbose )
       printf("   %s\n", my_thread->exceptionStack().summary().c_str());
   }
@@ -1820,7 +1820,7 @@ size_t cc_landingpadUnwindMatchFrameElseRethrow(char *exceptionP, core::T_O *thi
 #ifdef DEBUG_FLOW_CONTROL
   size_t frameIndex = gctools::untag_fixnum(thisFrame);
   if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp()) {
-    printf("%s:%d landingpadUnwindMatchFrameElseRethrow targetFrame: %lu thisFrame: %lu  unwindP=%p\n",
+    printf("%s:%d landingpadUnwindMatchFrameElseRethrow targetFrame: %" PRu " thisFrame: %lu  unwindP=%p\n",
            __FILE__, __LINE__, gctools::untag_fixnum(unwindP->getFrame()), frameIndex, unwindP);
     if (unwindP->getFrame() > thisFrame) {
       printf("- - - - - THERE IS A SERIOUS PROBLEM - THE TARGET FRAME HAS BEEN BYPASSED\n");
@@ -1832,14 +1832,14 @@ size_t cc_landingpadUnwindMatchFrameElseRethrow(char *exceptionP, core::T_O *thi
   if (unwindP->getFrame() == thisFrame) {
 #ifdef DEBUG_FLOW_CONTROL
     if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp()) {
-      printf("- - - - - Matched Unwind to targetFrame: %lu  index: %lu\n", gc::untag_fixnum(unwindP->getFrame()), unwindP->index());
+      printf("- - - - - Matched Unwind to targetFrame: %" PRu "  index: %lu\n", gc::untag_fixnum(unwindP->getFrame()), unwindP->index());
     }
 #endif
     return unwindP->index();
   }
 #ifdef DEBUG_FLOW_CONTROL
   if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp()) {
-    printf("- - - - - Rethrowing core::Unwind targetFrame[%lu] index[%zu] (thisFrame is: %lu)\n", gc::untag_fixnum(unwindP->getFrame()), unwindP->index(), frameIndex);
+    printf("- - - - - Rethrowing core::Unwind targetFrame[%" PRu "] index[%zu] (thisFrame is: %lu)\n", gc::untag_fixnum(unwindP->getFrame()), unwindP->index(), frameIndex);
   }
 #endif
   throw * unwindP;
@@ -1911,14 +1911,14 @@ gctools::return_type cc_dispatch_miss(core::T_O* gf, core::T_O* gf_valist_s)
   return core::eval::funcall(clos::_sym_dispatch_miss,tgf,tgf_valist);
 }
 
-void cc_dispatch_debug(int msg_id, uintptr_t val)
+void cc_dispatch_debug(int msg_id, uintptr_clasp_t val)
 {
   switch (msg_id) {
   case 0:
-      BFORMAT_T(BF("Step %lu\n") % val);
+      BFORMAT_T(BF("Step %" PRu "\n") % val);
       break;
   case 1:
-      BFORMAT_T(BF("Arg val[%lu]") % val);
+      BFORMAT_T(BF("Arg val[%" PRu "]") % val);
       break;
   case 2:
       BFORMAT_T(BF(" tag = %ld\n") % val);

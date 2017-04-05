@@ -100,12 +100,12 @@ void dump_class_ids() {
     int status;
     char *ret = abi::__cxa_demangle(fnName, NULL, &length, &status);
     if (status == 0) {
-      printf("  %s --> %lu : %s\n", ret, it.second, _rep_(lisp_classSymbolFromClassId(it.second)).c_str() );
+      printf("  %s --> %" PRu " : %s\n", ret, it.second, _rep_(lisp_classSymbolFromClassId(it.second)).c_str() );
       delete ret;
     } else {
         // demangling failed. Output function name as a C function with
         // no arguments.
-      printf("  %s --> %lu : %s\n", it.first.name(), it.second, _rep_(lisp_classSymbolFromClassId(it.second)).c_str() );
+      printf("  %s --> %" PRu " : %s\n", it.first.name(), it.second, _rep_(lisp_classSymbolFromClassId(it.second)).c_str() );
     }
   }
 }
@@ -220,11 +220,11 @@ void lisp_errorBadCastFromSymbol_O(class_id toType, core::Symbol_O *objP) {
 
 void lisp_errorUnexpectedNil(class_id expectedTyp) {
   if (expectedTyp >= _lisp->classSymbolsHolder().size()) {
-    core::lisp_error_simple(__FUNCTION__, __FILE__, __LINE__, boost::format("expected class_id %lu out of range max[%zu]") % expectedTyp % _lisp->classSymbolsHolder().size());
+    core::lisp_error_simple(__FUNCTION__, __FILE__, __LINE__, boost::format("expected class_id %" PRu " out of range max[%zu]") % expectedTyp % _lisp->classSymbolsHolder().size());
   }
   core::Symbol_sp expectedSym = _lisp->classSymbolsHolder()[expectedTyp];
   if (expectedSym.nilp()) {
-    core::lisp_error_simple(__FUNCTION__, __FILE__, __LINE__, boost::format("expected class_id %lu symbol was not defined") % expectedTyp);
+    core::lisp_error_simple(__FUNCTION__, __FILE__, __LINE__, boost::format("expected class_id %" PRu " symbol was not defined") % expectedTyp);
   }
   TYPE_ERROR(_Nil<core::T_O>(), expectedSym);
 }
@@ -804,7 +804,7 @@ DebugStream *lisp_debugLog() {
   return &(_lisp->debugLog());
 }
 
-uint lisp_hash(uintptr_t x) {
+uint lisp_hash(uintptr_clasp_t x) {
   HashGenerator hg;
   hg.addPart(x);
   return hg.hash();

@@ -264,7 +264,7 @@ CL_DEFUN T_mv cl__shadowing_import(T_sp symbol_names_desig, T_sp package_desig) 
   return Values(_lisp->_true());
 }
 
-static uintptr_t static_gentemp_counter = 1;
+static uintptr_clasp_t static_gentemp_counter = 1;
 CL_LAMBDA(&optional prefix (package *package*));
 CL_DECLARE();
 CL_DOCSTRING("See CLHS gentemp");

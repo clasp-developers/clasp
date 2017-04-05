@@ -123,8 +123,8 @@ struct GCAllocationPoint;
 namespace gctools {
     /*! This is the type of the tagged kind header that is the first
 word of every object in memory managed by the GC */
-  typedef uintptr_t kind_t;
-  typedef uintptr_t tagged_kind_t;
+  typedef uintptr_clasp_t kind_t;
+  typedef uintptr_clasp_t tagged_kind_t;
 
 };
 
@@ -227,25 +227,25 @@ namespace gctools {
      See Header_s below for a description of the GC Header tag scheme.
      Stamp needs to fit within a Fixnum.
  */
-  typedef uintptr_t Stamp;
+  typedef uintptr_clasp_t Stamp;
 
 /*!
 
-      A header is 8 bytes long and consists of one uintptr_t (8 bytes) value.
-      The header ends with a uintptr_t data[0], an array of uintptr_t which intrudes
+      A header is 8 bytes long and consists of one uintptr_clasp_t (8 bytes) value.
+      The header ends with a uintptr_clasp_t data[0], an array of uintptr_clasp_t which intrudes
       into the client data.
       The structure of the header is...
                            kind/stamp      tag
       64 bits total -> |    62 bits     | 2 bits |
-      The (header) uintptr_t is a tagged value where the
+      The (header) uintptr_clasp_t is a tagged value where the
       two least significant bits are the tag.
 
-      The two least-significant bits of the header uintptr_t value describe the data.
+      The two least-significant bits of the header uintptr_clasp_t value describe the data.
       1r00 == This is an illegal setting for the two lsbs.
       1r01 == This tag indicates that the other bits in the header
       represent a Kind value >> 2 (shifted right 2 bits).
       1r10 == This tag indicates that the header contains a forwarding
-      pointer.    The following uintptr_t contains the length of
+      pointer.    The following uintptr_clasp_t contains the length of
       the block from the client pointer.
       1r11 == This indicates that the header contains a pad; check the
       bit at 1r0100 to see if the pad is a pad1 (==0) or a pad (==1)
@@ -734,7 +734,7 @@ int startupGarbageCollectorAndSystem(MainFunctionType startupFn, int argc, char 
 
 
 namespace gctools {
-  void rawHeaderDescribe(const uintptr_t *headerP);
+  void rawHeaderDescribe(const uintptr_clasp_t *headerP);
 };
 
 extern "C" {

@@ -210,8 +210,10 @@ bool abort_flag( void )
 void set_program_name( std::string program_name = CLASP_DEFAULT_PROGRAM_NAME )
 {
   g_program_name = program_name;
+#if 0
   std::transform( g_program_name.begin(), g_program_name.end(), g_program_name.begin(),
                   [](unsigned char c) { return std::toupper(c); } );
+#endif
 }
 
 std::string program_name()
@@ -314,7 +316,7 @@ static int startup(int argc, char *argv[], bool &mpiEnabled, int &mpiRank, int &
   catch (core::DynamicGo &failedGo)
   {
     fprintf( stderr,
-             "%s (%s:%d): A DynamicGo was thrown but not caught - frame[%lu] tag[%lu]\n",
+             "%s (%s:%d): A DynamicGo was thrown but not caught - frame[%" PRu "] tag[%lu]\n",
              exe_name().c_str(), __FILE__, __LINE__, failedGo.getFrame(), failedGo.index());
     exit_code = EXIT_FAILURE;
   }
@@ -323,7 +325,7 @@ static int startup(int argc, char *argv[], bool &mpiEnabled, int &mpiRank, int &
     ASSERT(gctools::tagged_fixnump(failedUnwind.getFrame()));
 
     fprintf( stderr,
-             "%s (%s:%d): An unwind was thrown but not caught - frame[%ld] tag[%lu]\n",
+             "%s (%s:%d): An unwind was thrown but not caught - frame[%ld] tag[%" PRu "]\n",
              exe_name().c_str(), __FILE__, __LINE__, gctools::untag_fixnum( failedUnwind.getFrame() ), failedUnwind.index() );
 
     fprintf( stderr, "*** BACKTRACE:\n" );
@@ -399,14 +401,14 @@ int main( int argc, char *argv[] )
   int rc = setrlimit( RLIMIT_STACK, &rl );
   if ( rc != 0 )
   {
-    fprintf( stderr, "*** %s (%s:%d): WARNING: Could not set stack size as requested (error code %d - rlim_max = %lu) !\n",
+    fprintf( stderr, "*** %s (%s:%d): WARNING: Could not set stack size as requested (error code %d - rlim_max = %" PRu ") !\n",
              exe_name().c_str(), __FILE__, __LINE__, rc, (unsigned long)rl.rlim_max );
   }
 
   getrlimit( RLIMIT_STACK, &rl_new );
   if( rl.rlim_max != rl_new.rlim_max )
   {
-    fprintf( stderr, "*** %s (%s:%d): WARNING: Could not set stack size as requested (error code %d - rlim_max = %lu) !\n",
+    fprintf( stderr, "*** %s (%s:%d): WARNING: Could not set stack size as requested (error code %d - rlim_max = %" PRu ") !\n",
              exe_name().c_str(), __FILE__, __LINE__, EXIT_FAILURE, (unsigned long)rl_new.rlim_max );
   }
 

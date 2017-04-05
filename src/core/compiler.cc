@@ -94,7 +94,7 @@ void register_initializer_function(InitializerFunction fptr)
 /*! Return the number of initializer_functions that are waiting to be run*/
 size_t initializer_functions_are_waiting()
 {
-//  printf("%s:%d initializer_functions_are_waiting returning %lu\n", __FILE__, __LINE__, global_initializer_count );
+//  printf("%s:%d initializer_functions_are_waiting returning %" PRu "\n", __FILE__, __LINE__, global_initializer_count );
   return global_initializer_count;
 };
 
@@ -103,10 +103,10 @@ void initializer_functions_invoke()
 {
   if (global_initializer_count>0) {
 #if 0
-    printf("%s:%d In initializer_functions_invoke - there are %lu initializer functions\n", __FILE__, __LINE__, global_initializer_count );
+    printf("%s:%d In initializer_functions_invoke - there are %" PRu " initializer functions\n", __FILE__, __LINE__, global_initializer_count );
     for ( size_t i = 0; i<global_initializer_count; ++i ) {
       InitializerFunction fn = global_initializer_functions[i];
-      printf("%s:%d     Initializer fn[%lu]@%p\n", __FILE__, __LINE__, i, fn );
+      printf("%s:%d     Initializer fn[%" PRu "]@%p\n", __FILE__, __LINE__, i, fn );
     }
     printf("%s:%d Starting to call the initializer functions\n", __FILE__, __LINE__ );
 #endif
@@ -157,7 +157,7 @@ void register_startup_function(fnStartUp fptr)
 size_t startup_functions_are_waiting()
 {
 #ifdef DEBUG_STARTUP
-  printf("%s:%d startup_functions_are_waiting returning %lu\n", __FILE__, __LINE__, global_startup_count );
+  printf("%s:%d startup_functions_are_waiting returning %" PRu "\n", __FILE__, __LINE__, global_startup_count );
 #endif
   return global_startup_count;
 };
@@ -175,10 +175,10 @@ void startup_functions_invoke()
   // Invoke the current list
   if (startup_count>0) {
 #ifdef DEBUG_STARTUP
-    printf("%s:%d In startup_functions_invoke - there are %lu startup functions\n", __FILE__, __LINE__, startup_count );
+    printf("%s:%d In startup_functions_invoke - there are %" PRu " startup functions\n", __FILE__, __LINE__, startup_count );
     for ( size_t i = 0; i<startup_count; ++i ) {
       fnStartUp fn = startup_functions[i];
-      printf("%s:%d     Startup fn[%lu]@%p\n", __FILE__, __LINE__, i, fn );
+      printf("%s:%d     Startup fn[%" PRu "]@%p\n", __FILE__, __LINE__, i, fn );
     }
     printf("%s:%d Starting to call the startup functions\n", __FILE__, __LINE__ );
 #endif
@@ -250,7 +250,7 @@ CL_DEFUN Fixnum_sp core__test_tagged_cast(Fixnum_sp pow2) __attribute__((optnone
   Fixnum fpow2 = clasp_to_fixnum(pow2);
   Fixnum times = 1;
   times = times << fpow2;
-  printf("%s:%d  fpow2 = %ld  times = %ld\n", __FILE__, __LINE__, fpow2, times);
+  printf("%s:%d  fpow2 = %" PRF " times = %" PRF "\n", __FILE__, __LINE__, fpow2, times);
   Environment_sp env = ValueEnvironment_O::createForNumberOfEntries(5, _Nil<T_O>());
   Fixnum i;
   Fixnum v = 0;
@@ -279,7 +279,7 @@ CL_DEFUN Integer_sp core__cxx_fibn(Fixnum_sp reps, Fixnum_sp num) {
       p1 = z;
     }
   }
-  return Integer_O::create(z);
+  return Integer_O::create((gctools::Fixnum)z);
 }
 
 T_sp varArgsList(int n_args, ...) {
@@ -960,7 +960,7 @@ CL_DEFUN T_mv core__funwind_protect(T_sp protected_fn, T_sp cleanup_fn) {
   } catch (Unwind& unwind) {
 #ifdef DEBUG_FLOW_CONTROL
     if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp()) {
-      printf("%s:%d In funwind_protect catch(Unwind&) just caught Unwind to frame: %lu\n", __FILE__, __LINE__, gctools::untag_fixnum(unwind.getFrame()));
+      printf("%s:%d In funwind_protect catch(Unwind&) just caught Unwind to frame: %" PRu "\n", __FILE__, __LINE__, gctools::untag_fixnum(unwind.getFrame()));
       if (core::_sym_STARdebugFlowControlSTAR->symbolValue() == kw::_sym_verbose ) {
         printf("   %s\n", my_thread->exceptionStack().summary().c_str());
       }
@@ -984,7 +984,7 @@ CL_DEFUN T_mv core__funwind_protect(T_sp protected_fn, T_sp cleanup_fn) {
 #endif
 #ifdef DEBUG_FLOW_CONTROL
     if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp()) {
-      printf("%s:%d In funwind_protect catch(Unwind&) about to rethrow to frame: %lu\n", __FILE__, __LINE__,gctools::untag_fixnum(unwind.getFrame()));
+      printf("%s:%d In funwind_protect catch(Unwind&) about to rethrow to frame: %" PRu "\n", __FILE__, __LINE__,gctools::untag_fixnum(unwind.getFrame()));
       if (core::_sym_STARdebugFlowControlSTAR->symbolValue() == kw::_sym_verbose ) {
         printf("   %s\n", my_thread->exceptionStack().summary().c_str());
       }

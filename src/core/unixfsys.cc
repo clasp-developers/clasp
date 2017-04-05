@@ -89,6 +89,7 @@ typedef int mode_t;
 #include <clasp/core/symbolTable.h>
 #include <clasp/core/designators.h>
 #include <clasp/core/numbers.h>
+#include <clasp/core/bformat.h>
 #include <clasp/core/evaluator.h>
 #include <clasp/core/lispList.h>
 #include <clasp/core/unixfsys.h>
@@ -181,14 +182,19 @@ CL_DEFUN T_sp core__getppid() {
   return pid;
 };
 
-CL_LAMBDA(pathname);
+CL_LAMBDA(pathname &optional change_default_pathname_defaults);
 CL_DECLARE();
-CL_DOCSTRING("chdir");
-CL_DEFUN T_sp ext__chdir(T_sp dir) {
+CL_DOCSTRING("Change the posix current working directory to pathname.  If change-default-pathname-defaults is T then also change *default-pathname-defaults*.");
+CL_DEFUN T_sp ext__chdir(T_sp dir, T_sp change_default_pathname_defaults) {
   T_sp tdir = clasp_namestring(dir, true);
   LIKELY_if (cl__stringp(tdir)) {
     String_sp sdir = gc::As_unsafe<String_sp>(tdir);
-    return Integer_O::create((gc::Fixnum)safe_chdir(sdir->get_std_string().c_str(), _Nil<T_O>()));
+    Integer_sp result = Integer_O::create((gc::Fixnum)safe_chdir(sdir->get_std_string().c_str(), _Nil<T_O>()));
+    if (change_default_pathname_defaults.notnilp()) {
+      BFORMAT_T(BF("Changing *default-pathname-defaults* because change-default-pathname-defaults -> %s\n") % _rep_(change_default_pathname_defaults));
+      core::getcwd(true); // get the current working directory and change *default-pathname-defaults* to it
+    }
+    return result;
   }
   SIMPLE_ERROR(BF("Could not convert %s to a namestring") % _rep_(dir));
 };

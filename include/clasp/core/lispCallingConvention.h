@@ -134,7 +134,7 @@ THE SOFTWARE.
 #define LCC_ABI_ARGS_IN_REGISTERS 6
 
 #define ASSERT_LCC_VA_LIST_AT_START(_valist_s_) \
-  ASSERT((_valist_s_)._Args->gp_offset == sizeof(uintptr_t) * (LCC_ABI_ARGS_IN_REGISTERS - LCC_ARGS_IN_REGISTERS));
+  ASSERT((_valist_s_)._Args->gp_offset == sizeof(uintptr_clasp_t) * (LCC_ABI_ARGS_IN_REGISTERS - LCC_ARGS_IN_REGISTERS));
 
 // Registers are %rdi, %rsi, %rdx, %rcx, %r8, %r9
 #define LCC_CLOSURE_REGISTER 0
@@ -148,7 +148,7 @@ THE SOFTWARE.
 #define LCC_TOTAL_REGISTERS 6
 #define LCC_SPILL_NUMBER_ARGUMENTS_TO_VA_LIST(_valist_s_, _num_)                               \
   {                                                                                            \
-    ((uintptr_t *)(_valist_s_)._Args->reg_save_area)[LCC_NARGS_REGISTER] = (uintptr_t)(_num_); \
+    ((uintptr_clasp_t *)(_valist_s_)._Args->reg_save_area)[LCC_NARGS_REGISTER] = (uintptr_clasp_t)(_num_); \
   }
 #define LCC_SPILL_CLOSURE_TO_VA_LIST(_valist_s_,_closure_)    ((core::T_O* *)(_valist_s_)._Args->reg_save_area)[LCC_CLOSURE_REGISTER] = (core::T_O*)_closure_;
 
@@ -164,9 +164,9 @@ THE SOFTWARE.
     (_valist_s_)._Args->gp_offset = sizeof(core::T_O*) * (LCC_ABI_ARGS_IN_REGISTERS - LCC_ARGS_IN_REGISTERS);                           \
   }
 
-#define private_LCC_VA_LIST_TOTAL_NUMBER_OF_ARGUMENTS(_args) (size_t)(((uintptr_t *)(_args[0].reg_save_area))[LCC_NARGS_REGISTER])
-#define private_LCC_VA_LIST_SET_TOTAL_NUMBER_OF_ARGUMENTS(_args, _n) (((uintptr_t *)(_args[0].reg_save_area))[LCC_NARGS_REGISTER]) = ((uintptr_t)_n)
-#define private_LCC_VA_LIST_DECREMENT_TOTAL_NUMBER_OF_ARGUMENTS(_args) (--((uintptr_t *)(_args[0].reg_save_area))[LCC_NARGS_REGISTER])
+#define private_LCC_VA_LIST_TOTAL_NUMBER_OF_ARGUMENTS(_args) (size_t)(((uintptr_clasp_t *)(_args[0].reg_save_area))[LCC_NARGS_REGISTER])
+#define private_LCC_VA_LIST_SET_TOTAL_NUMBER_OF_ARGUMENTS(_args, _n) (((uintptr_clasp_t *)(_args[0].reg_save_area))[LCC_NARGS_REGISTER]) = ((uintptr_clasp_t)_n)
+#define private_LCC_VA_LIST_DECREMENT_TOTAL_NUMBER_OF_ARGUMENTS(_args) (--((uintptr_clasp_t *)(_args[0].reg_save_area))[LCC_NARGS_REGISTER])
 
 #ifdef DEBUG_ASSERTS
 #define ASSERT_LCC_VA_LIST_CLOSURE_DEFINED(_args) {\
@@ -275,7 +275,7 @@ THE SOFTWARE.
     (_dest_)[0].reg_save_area = (_src_)[0].reg_save_area;                            \
     (_dest_)[0].overflow_arg_area = (_src_)[0].overflow_arg_area;                    \
     /* This is where the number of arguments remaining should be stored*/            \
-    ((uintptr_t *)((_dest_)[0].reg_save_area))[LCC_NARGS_REGISTER] = (_nargs_left_); \
+    ((uintptr_clasp_t *)((_dest_)[0].reg_save_area))[LCC_NARGS_REGISTER] = (_nargs_left_); \
     (_dest_)[0].gp_offset = (_src_)[0].gp_offset;                                    \
     (_dest_)[0].fp_offset = (_src_)[0].fp_offset;                                    \
   }
@@ -313,15 +313,15 @@ inline bool dump_VaList_S_ptr(VaList_S* args) {
   printf("           gp_offset = %p (%s)\n", reinterpret_cast<void*>((*args)._Args[0].gp_offset),  atpos );
   printf("           fp_offset = %p\n", reinterpret_cast<void*>((*args)._Args[0].fp_offset) );
   printf("       reg_save_area = %p (this points to the Register save area above ^^^)\n", reinterpret_cast<void*>((*args)._Args[0].reg_save_area) );
-  uintptr_t* overflow_arg_area = reinterpret_cast<uintptr_t*>((*args)._Args[0].overflow_arg_area);
-  uintptr_t* overflow_save = reinterpret_cast<uintptr_t*>(((core::T_O* *)(*args)._Args->reg_save_area)[LCC_OVERFLOW_SAVE_REGISTER]);
+  uintptr_clasp_t* overflow_arg_area = reinterpret_cast<uintptr_clasp_t*>((*args)._Args[0].overflow_arg_area);
+  uintptr_clasp_t* overflow_save = reinterpret_cast<uintptr_clasp_t*>(((core::T_O* *)(*args)._Args->reg_save_area)[LCC_OVERFLOW_SAVE_REGISTER]);
   int overflow_offset = overflow_arg_area-overflow_save;
   printf("   overflow_arg_area = %p (offset from OVERFLOW_SAVE_REGISTER = %d) \n", (void*)overflow_arg_area, overflow_offset );
-  int nargs = ((uintptr_t *)(*args)._Args->reg_save_area)[LCC_NARGS_REGISTER];
+  int nargs = ((uintptr_clasp_t *)(*args)._Args->reg_save_area)[LCC_NARGS_REGISTER];
   nargs -= 3;
   if (nargs > 0 ) {
     printf("---Overflow arg area@%p contents\n", (*args)._Args[0].overflow_arg_area);
-    for ( int i=0; i< ((uintptr_t *)(*args)._Args->reg_save_area)[LCC_NARGS_REGISTER]-3; ++i ) {
+    for ( int i=0; i< ((uintptr_clasp_t *)(*args)._Args->reg_save_area)[LCC_NARGS_REGISTER]-3; ++i ) {
       core::T_O** addr = &((core::T_O **)(*args)._Args[0].overflow_arg_area)[i];
       core::T_O* _res = ((core::T_O **)(*args)._Args[0].overflow_arg_area)[i];
       printf("     [%d]@%p --> %p\n", i, addr, _res);

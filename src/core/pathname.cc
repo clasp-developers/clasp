@@ -907,9 +907,12 @@ CL_DEFUN Pathname_sp core__safe_default_pathname_defaults(void) {
 	 * this routine might itself try to use the value of this variable. */
   T_sp path = cl__symbol_value(cl::_sym_STARdefaultPathnameDefaultsSTAR);
   unlikely_if(!cl__pathnamep(path)) {
+    cl::_sym_STARdefaultPathnameDefaultsSTAR->setf_symbolValue(Pathname_O::create());
+#if 0    
     // Set *default-pathname-defaults* to a pathname to avoid infinite recursions of errors
     DynamicScopeManager scope(cl::_sym_STARdefaultPathnameDefaultsSTAR, Pathname_O::create());
     ERROR_WRONG_TYPE_KEY_ARG(core::_sym_defaultPathnameDefaults, cl::_sym_STARdefaultPathnameDefaultsSTAR, path, cl::_sym_Pathname_O);
+#endif
   }
   return gc::As<Pathname_sp>(path);
 }

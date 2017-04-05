@@ -20,8 +20,10 @@ wscript.config
 boost_build_v2/engine/bin.linuxx86_64
 boost_build_v2/engine/bootstrap
 # ensure the build directory exists on checkout
+extensions/cando
 build/*
 !build/.gitkeep
 projects/
 build2/
 /.lock-waf_linux*_build
+local.config

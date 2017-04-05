@@ -331,8 +331,8 @@ inline CL_DEFUN Number_sp two_arg__PLUS_FF(Fixnum fa, Fixnum fb)
     return make_fixnum(fc);
   }
     // Overflow case
-  mpz_class za(fa);
-  mpz_class zb(fb);
+  mpz_class za(static_cast<long>(fa));
+  mpz_class zb(static_cast<long>(fb));
   mpz_class zc = za + zb;
   return Integer_O::create(zc);
 }
@@ -341,7 +341,7 @@ CL_NAME("TWO-ARG-+-FIXNUM-BIGNUM");
 inline
 CL_DEFUN Number_sp two_arg__PLUS_FB(Fixnum fx, Bignum_sp by)
 {
-  mpz_class zx(fx);
+  mpz_class zx(static_cast<long>(fx));
   mpz_class zz = zx + by->mpz_ref();
   return Integer_O::create(zz);
 }
@@ -370,7 +370,7 @@ CL_DEFUN Number_sp contagen_add(Number_sp na, Number_sp nb) {
       return DoubleFloat_O::create(clasp_to_double(na) + clasp_to_double(nb));
     }
   case_Bignum_v_Fixnum : {
-      mpz_class zb(unbox_fixnum(gc::As<Fixnum_sp>(nb)));
+      mpz_class zb(GMP_LONG(unbox_fixnum(gc::As<Fixnum_sp>(nb))));
       mpz_class zc = gc::As<Bignum_sp>(na)->ref() + zb;
       return Integer_O::create(zc);
     }
@@ -472,13 +472,13 @@ CL_DEFUN Number_sp contagen_sub(Number_sp na, Number_sp nb) {
         return make_fixnum(fc);
       }
     // Overflow case
-      mpz_class za((Fixnum)unbox_fixnum(gc::As<Fixnum_sp>(na)));
-      mpz_class zb((Fixnum)unbox_fixnum(gc::As<Fixnum_sp>(nb)));
+      mpz_class za(GMP_LONG(unbox_fixnum(gc::As<Fixnum_sp>(na))));
+      mpz_class zb(GMP_LONG(unbox_fixnum(gc::As<Fixnum_sp>(nb))));
       mpz_class zc = za - zb;
       return Integer_O::create(zc);
     }
   case_Fixnum_v_Bignum : {
-      mpz_class za(unbox_fixnum(gc::As<Fixnum_sp>(na)));
+      mpz_class za(GMP_LONG(unbox_fixnum(gc::As<Fixnum_sp>(na))));
       mpz_class zc = za - gc::As<Bignum_sp>(nb)->ref();
       return Integer_O::create(zc);
     }
@@ -498,7 +498,7 @@ CL_DEFUN Number_sp contagen_sub(Number_sp na, Number_sp nb) {
       return DoubleFloat_O::create(clasp_to_double(na) - clasp_to_double(nb));
     }
   case_Bignum_v_Fixnum : {
-      mpz_class zb(unbox_fixnum(gc::As<Fixnum_sp>(nb)));
+      mpz_class zb(GMP_LONG(unbox_fixnum(gc::As<Fixnum_sp>(nb))));
       mpz_class zc = gc::As<Bignum_sp>(na)->ref() - zb;
       return Integer_O::create(zc);
     }
@@ -588,13 +588,13 @@ CL_NAME("TWO-ARG-*");
 CL_DEFUN Number_sp contagen_mul(Number_sp na, Number_sp nb) {
   MATH_DISPATCH_BEGIN(na, nb) {
   case_Fixnum_v_Fixnum : {
-      mpz_class za(unbox_fixnum(gc::As<Fixnum_sp>(na)));
-      mpz_class zb(unbox_fixnum(gc::As<Fixnum_sp>(nb)));
+      mpz_class za(GMP_LONG(unbox_fixnum(gc::As<Fixnum_sp>(na))));
+      mpz_class zb(GMP_LONG(unbox_fixnum(gc::As<Fixnum_sp>(nb))));
       mpz_class zc = za * zb;
       return Integer_O::create(zc);
     }
   case_Fixnum_v_Bignum : {
-      mpz_class za(unbox_fixnum(gc::As<Fixnum_sp>(na)));
+      mpz_class za(GMP_LONG(unbox_fixnum(gc::As<Fixnum_sp>(na))));
       mpz_class zc = za * gc::As<Bignum_sp>(nb)->ref();
       return Integer_O::create(zc);
     }
@@ -612,7 +612,7 @@ CL_DEFUN Number_sp contagen_mul(Number_sp na, Number_sp nb) {
       return DoubleFloat_O::create(clasp_to_double(na) * clasp_to_double(nb));
     }
   case_Bignum_v_Fixnum : {
-      mpz_class zb(unbox_fixnum(gc::As<Fixnum_sp>(nb)));
+      mpz_class zb(GMP_LONG(unbox_fixnum(gc::As<Fixnum_sp>(nb))));
       mpz_class zc = gc::As<Bignum_sp>(na)->ref() * zb;
       return Integer_O::create(zc);
     }
@@ -1001,7 +1001,7 @@ int basic_compare(Number_sp na, Number_sp nb) {
     }
   case_Bignum_v_Fixnum : {
       mpz_class &za(gc::As<Bignum_sp>(na)->ref());
-      mpz_class zb = unbox_fixnum(gc::As<Fixnum_sp>(nb));
+      mpz_class zb = GMP_LONG(unbox_fixnum(gc::As<Fixnum_sp>(nb)));
       if (za < zb)
         return -1;
       if (za == zb)
@@ -1214,7 +1214,7 @@ bool basic_equalp(Number_sp na, Number_sp nb) {
     }
   case_Bignum_v_Fixnum : {
       mpz_class &za(gc::As<Bignum_sp>(na)->ref());
-      mpz_class zb = unbox_fixnum(gc::As<Fixnum_sp>(nb));
+      mpz_class zb = GMP_LONG(unbox_fixnum(gc::As<Fixnum_sp>(nb)));
       return za == zb;
     }
   case_Bignum_v_Bignum : {
@@ -1419,9 +1419,11 @@ Integer_sp Integer_O::create( gctools::Fixnum v )
     return make_fixnum(v);
   }
 
-  Bignum z( v );
+  Bignum z(GMP_LONG(v));
   return Bignum_O::create( z );
 }
+
+
 
 Integer_sp Integer_O::create( int8_t v)
 {
@@ -1453,6 +1455,7 @@ Integer_sp Integer_O::create( uint32_t v )
   return clasp_make_fixnum(static_cast<Fixnum>(v));
 }
 
+#ifdef OLD_INTPTR_T
 #ifndef _TARGET_OS_LINUX
 
 Integer_sp Integer_O::create( int64_t v )
@@ -1476,7 +1479,7 @@ Integer_sp Integer_O::create( uint64_t v )
 }
 
 #endif
-
+#endif
 
 #if defined(_TARGET_OS_LINUX)
 
@@ -1484,9 +1487,8 @@ Integer_sp Integer_O::create( long long v )
 {
   if(( v >= gc::most_negative_fixnum) && (v <= gc::most_positive_fixnum ))
   {
-    return Integer_O::create( (Fixnum) v );
+    return clasp_make_fixnum((Fixnum) v );
   }
-
   return Bignum_O::create( v );
 }
 
@@ -1494,9 +1496,8 @@ Integer_sp Integer_O::create( unsigned long long v )
 {
   if ( v <= gc::most_positive_fixnum )
   {
-    return Integer_O::create((Fixnum)v);
+    return clasp_make_fixnum((Fixnum)v);
   }
-
   return Bignum_O::create( v );
 }
 
@@ -1543,7 +1544,7 @@ Integer_sp Integer_O::create(cl_intptr_t v) {
     return Integer_O::create((Fixnum)v);
   }
 
-  Bignum z( v );
+  Bignum z( GMP_LONG(v) );
   return Bignum_O::create( z );
 }
 
@@ -3231,7 +3232,7 @@ ALWAYS_INLINE mpz_class clasp_to_mpz( core::T_sp x )
   if (x.fixnump())
   {
     Fixnum fn = x.unsafe_fixnum();
-    mpz_class z = fn;
+    mpz_class z = GMP_LONG(fn);
     return z;
   }
   return (gc::As< Integer_sp >(x))->as_mpz_();

@@ -508,7 +508,7 @@ CL_DEFUN core::T_mv cl__room(core::T_sp x, core::Fixnum_sp marker, core::T_sp tm
   printf("Walked LispKinds\n");
   size_t totalSize(0);
   totalSize += dumpResults("Reachable ClassKinds", "class", static_ReachableClassKinds);
-  printf("Done walk of memory  %lu ClassKinds\n", static_ReachableClassKinds->size());
+  printf("Done walk of memory  %" PRu " ClassKinds\n", static_cast<uintptr_clasp_t>(static_ReachableClassKinds->size()));
 #if USE_CXX_DYNAMIC_CAST
   printf("%s live memory total size = %12lu\n", smsg.c_str(), invalidHeaderTotalSize);
 #else
@@ -713,7 +713,7 @@ CL_DEFUN void gctools__cleanup(bool verbose) {
   size_t finalizations;
   size_t messages = processMpsMessages(finalizations);
   if (verbose) {
-    BFORMAT_T(BF("Processed %lu finalization messages and %lu total messages\n") % messages % finalizations );
+    BFORMAT_T(BF("Processed %" PRu " finalization messages and %lu total messages\n") % messages % finalizations );
   }
 #endif
 }

@@ -758,7 +758,7 @@ T_mv lisp_object_query(T_sp sin, bool eofErrorP, T_sp eofValue, bool recursiveP)
 #if 1
   static int monitorReaderStep = 0;
   if ((monitorReaderStep % 1000) == 0 && cl__member(_sym_monitorReader, _sym_STARdebugMonitorSTAR->symbolValue(), _Nil<T_O>()).notnilp()) {
-    printf("%s:%d:%s stream %s -> pos = %ld\n", __FILE__, __LINE__, __FUNCTION__, _rep_(clasp_filename(sin, false)).c_str(), unbox_fixnum(gc::As<Fixnum_sp>(clasp_file_position(sin))));
+    printf("%s:%d:%s stream %s -> pos = %" PRF "\n", __FILE__, __LINE__, __FUNCTION__, _rep_(clasp_filename(sin, false)).c_str(), unbox_fixnum(gc::As<Fixnum_sp>(clasp_file_position(sin))));
   }
   ++monitorReaderStep;
 #endif
@@ -847,7 +847,7 @@ step8:
     LOG(BF("y8_syntax_type=%s") % _rep_(y8_syntax_type));
     if ((y8_syntax_type == kw::_sym_constituent_character) || (y8_syntax_type == kw::_sym_non_terminating_macro_character)) {
       Y = readTable->convert_case(y);
-      LOG(BF("  Pushing back character %lu") % constituentChar(Y));
+      LOG(BF("  Pushing back character %" PRu "") % constituentChar(Y));
       token.push_back(constituentChar(Y));
       goto step8;
     }

@@ -57,7 +57,7 @@ public: // Functions here
   static Bignum_sp create( gc::Fixnum i )
   {
     GC_ALLOCATE(Bignum_O, b);
-    b->_value = i;
+    b->_value = static_cast<long>(i);
     return b;
   };
 
@@ -68,8 +68,8 @@ public: // Functions here
     return b;
   };
 
+#ifdef OLD_INTPTR_T
 #if !defined( _TARGET_OS_LINUX )
-
   static Bignum_sp create( int64_t v )
   {
     GC_ALLOCATE(Bignum_O, b);
@@ -89,19 +89,20 @@ public: // Functions here
   static Bignum_sp create( long long v )
   {
     GC_ALLOCATE(Bignum_O, b);
-    b->_value = v;
+    b->_value = (long long)v;
     return b;
   };
 
   static Bignum_sp create( unsigned long long v )
   {
     GC_ALLOCATE(Bignum_O, b);
-    b->_value = v;
+    b->_value = (unsigned long long)v;
     return b;
   };
 
 #endif
-
+#endif
+  
  public:
 
   NumberType number_type_() const { return number_Bignum; };
@@ -122,13 +123,13 @@ public: // Functions here
     ss << this->_value;
     return ss.str();
   };
-  void set(gc::Fixnum val) { this->_value = val; };
-  void setFixnum(gctools::Fixnum val) { this->_value = val; };
+  void set(gc::Fixnum val) { this->_value = static_cast<long>(val); };
+  void setFixnum(gctools::Fixnum val) { this->_value = static_cast<long>(val); };
   Bignum get() const;
   Bignum get_or_if_nil_default(Bignum default_value) const;
   Number_sp abs_() const;
   Number_sp rational_() const final { return this->asSmartPtr(); };
-  void increment(gc::Fixnum i) { this->_value += i; };
+  void increment(gc::Fixnum i) { this->_value += static_cast<long>(i); };
   int sign() const { return this->_value > 0 ? 1 : (this->_value < 0 ? -1 : 0); };
 
   virtual bool zerop_() const { return ((this->_value == 0)); }

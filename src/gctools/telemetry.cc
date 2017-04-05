@@ -201,7 +201,7 @@ CL_DEFUN void core__telemetry_dump(core::T_sp begin, core::T_sp end) {
     printf("%s\n", entry.c_str());
     if ((global_telemetry_search->_Index % 1000000) == 0 ) {
       gctools::poll_signals();
-      printf("%s:%d Searching record index %lu at file offset %lu\n", __FILE__, __LINE__, global_telemetry_search->_Index, global_telemetry_search->_ThisRecordPos);
+      printf("%s:%d Searching record index %" PRu " at file offset %lu\n", __FILE__, __LINE__, global_telemetry_search->_Index, global_telemetry_search->_ThisRecordPos);
     }
   }
 }
@@ -223,7 +223,7 @@ CL_DEFUN size_t core__telemetry_count() {
     size_t num_read = global_telemetry_search->read_data(label, MAX_WORDS, data);
     if ((global_telemetry_search->_Index % 1000000) == 0 ) {
       gctools::poll_signals();
-      printf("%s:%d Searching record index %lu at file offset %lu\n", __FILE__, __LINE__, global_telemetry_search->_Index, global_telemetry_search->_ThisRecordPos);
+      printf("%s:%d Searching record index %" PRu " at file offset %lu\n", __FILE__, __LINE__, global_telemetry_search->_Index, global_telemetry_search->_ThisRecordPos);
     }
   }
   return global_telemetry_search->_Index;
@@ -286,36 +286,36 @@ std::string Telemetry::entry_as_string(Handle label, size_t num_read, Word data[
 
 void Telemetry::initialize() {
   this->intern("telemetry undefined label", label_undefined);
-  this->intern("mps_allocation base @%p client@%p client_end@%p kind: %lu", label_allocation);
-  this->intern("obj_pad base@%p size: %lu", label_obj_pad);
+  this->intern("mps_allocation base @%p client@%p client_end@%p kind: %" PRu "", label_allocation);
+  this->intern("obj_pad base@%p size: %" PRu "", label_obj_pad);
   this->intern("obj_scan_start client@%p limit@%p", label_obj_scan_start);
-  this->intern("obj_scan client@%p after_client@%p kind: %lu", label_obj_scan);
+  this->intern("obj_scan client@%p after_client@%p kind: %" PRu "", label_obj_scan);
   this->intern("obj_isfwd == TRUE client@%p base@%p forward@%p", label_obj_isfwd_true);
   this->intern("obj_isfwd == FALSE client@%p base@%p", label_obj_isfwd_false);
-  this->intern("obj_skip in-client@%p  out-client@%p size=%lu", label_obj_skip);
+  this->intern("obj_skip in-client@%p  out-client@%p size=%" PRu "", label_obj_skip);
   this->intern("obj_fwd old-client@%p new-client@%p", label_obj_fwd);
   this->intern("obj_finalize addr@%p", label_obj_finalize);
   this->intern("root_scan_start", label_root_scan_start);
   this->intern("root_scan_stop", label_root_scan_stop);
   this->intern("smart_ptr_fix ptr@%p value before@%p after@%p", label_smart_ptr_fix);
   this->intern("tagged_pointer_fix ptr@%p value before@%p after@%p", label_tagged_pointer_fix);
-  this->intern("Message address: %p value: %lu", label_msg);
+  this->intern("Message address: %p value: %" PRu "", label_msg);
   this->intern("label_stack_frame_scan_start base@%p limit@%p", label_stack_frame_scan_start);
-  this->intern("label_stack_frame_scan base@%p base_end@%p type=%lu", label_stack_frame_scan);
-  this->intern("label_stack_frame_skip base@%p base_end@%p size: %lu", label_stack_frame_skip);
-  this->intern("label_stack_frame_pad  base@%p size: %lu", label_stack_frame_pad);
-  this->intern("label_stack_push_prepare ap@%p ap->init@%p ap->alloc@%p ap->limit@%p ap->_frameptr@%p ap->_enabled:%lu ap->_lwpoppending:%lu", label_stack_push_prepare);
-  this->intern("label_stack_push ap@%p frame@%p depth:%lu", label_stack_push);
-  this->intern("label_stack_allocate alloc@%p size: %lu", label_stack_allocate);
+  this->intern("label_stack_frame_scan base@%p base_end@%p type=%" PRu "", label_stack_frame_scan);
+  this->intern("label_stack_frame_skip base@%p base_end@%p size: %" PRu "", label_stack_frame_skip);
+  this->intern("label_stack_frame_pad  base@%p size: %" PRu "", label_stack_frame_pad);
+  this->intern("label_stack_push_prepare ap@%p ap->init@%p ap->alloc@%p ap->limit@%p ap->_frameptr@%p ap->_enabled:%" PRu " ap->_lwpoppending:%lu", label_stack_push_prepare);
+  this->intern("label_stack_push ap@%p frame@%p depth:%" PRu "", label_stack_push);
+  this->intern("label_stack_allocate alloc@%p size: %" PRu "", label_stack_allocate);
   this->intern("label_stack_pop ap@%p frame@%p", label_stack_pop);
   this->intern("obj_deallocate_unmanaged_instance addr@%p", label_obj_deallocate_unmanaged_instance);
-  this->intern("cons_mps_allocation base @%p client@%p client_end@%p kind: %lu", label_cons_allocation);
-    this->intern("cons_pad base@%p size: %lu", label_cons_pad);
+  this->intern("cons_mps_allocation base @%p client@%p client_end@%p kind: %" PRu "", label_cons_allocation);
+    this->intern("cons_pad base@%p size: %" PRu "", label_cons_pad);
   this->intern("cons_scan_start client@%p limit@%p", label_cons_scan_start);
-  this->intern("cons_scan client@%p after_client@%p kind: %lu", label_cons_scan);
+  this->intern("cons_scan client@%p after_client@%p kind: %" PRu "", label_cons_scan);
   this->intern("cons_isfwd == TRUE client@%p base@%p forward@%p", label_cons_isfwd_true);
   this->intern("cons_isfwd == FALSE client@%p base@%p", label_cons_isfwd_false);
-  this->intern("cons_skip in-client@%p  out-client@%p size=%lu", label_cons_skip);
+  this->intern("cons_skip in-client@%p  out-client@%p size=%" PRu "", label_cons_skip);
   this->intern("cons_fwd old-client@%p new-client@%p", label_cons_fwd);
 
 };

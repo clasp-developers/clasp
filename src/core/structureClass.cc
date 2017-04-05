@@ -51,7 +51,7 @@ void StructureClass_O::initialize() {
 
 void StructureClass_O::reinitialize_class() {
   this->_instance_stamp = gctools::NextStamp();
-//  printf("%s:%d StructureClass_O::reinitialize_class setting new stamp -> %lu\n", __FILE__, __LINE__, this->_instance_stamp );
+//  printf("%s:%d StructureClass_O::reinitialize_class setting new stamp -> %" PRu "\n", __FILE__, __LINE__, this->_instance_stamp );
 }
 
 

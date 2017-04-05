@@ -369,7 +369,7 @@ string General_O::className() const {
 
 void General_O::sxhash_(HashGenerator &hg) const {
   if (hg.isFilling()) {
-    Fixnum res = (Fixnum)((((uintptr_t)this) >> gctools::tag_shift));
+    Fixnum res = (Fixnum)((((uintptr_clasp_t)this) >> gctools::tag_shift));
     hg.addPart(res);
   }
 }

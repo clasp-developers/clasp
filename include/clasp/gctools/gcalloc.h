@@ -1324,11 +1324,11 @@ public:
   size_t _TotalAllocations;
 #ifdef USE_BOEHM
 #ifdef BOEHM_ONE_BIG_STACK
-  uintptr_t *_StackCur;
-  uintptr_t *_StackBottom;
+  uintptr_clasp_t *_StackCur;
+  uintptr_clasp_t *_StackBottom;
   size_t _StackMinOffset;
   size_t _StackMiddleOffset;
-  uintptr_t *_StackLimit;
+  uintptr_clasp_t *_StackLimit;
 #else
 // Nothing
 #endif
@@ -1360,9 +1360,9 @@ public:
     bufferSize = STACK_ALIGN_UP(bufferSize);
 #ifdef USE_BOEHM
 #ifdef BOEHM_ONE_BIG_STACK
-    this->_StackBottom = (uintptr_t *)GC_MALLOC(bufferSize);
+    this->_StackBottom = (uintptr_clasp_t *)GC_MALLOC(bufferSize);
     this->_StackMiddleOffset = (bufferSize / 2);
-    this->_StackLimit = (uintptr_t *)((char *)this->_StackBottom + bufferSize);
+    this->_StackLimit = (uintptr_clasp_t *)((char *)this->_StackBottom + bufferSize);
     this->_StackMinOffset = bufferSize;
     this->_StackCur = this->_StackBottom;
     memset(this->_StackBottom, 0, bufferSize);
@@ -1406,8 +1406,8 @@ public:
 #define FRAME_HEADER_SIZE (sizeof(int) * 2)
 #define FRAME_HEADER_TYPE_FIELD(hptr) *(((int *)hptr))
 #define FRAME_HEADER_SIZE_FIELD(hptr) *(((int *)hptr) + 1)
-#define FRAME_START(hptr) (uintptr_t *)(((char *)hptr) + FRAME_HEADER_SIZE)
-#define FRAME_HEADER(fptr) (uintptr_t *)(((char *)fptr) - FRAME_HEADER_SIZE)
+#define FRAME_START(hptr) (uintptr_clasp_t *)(((char *)hptr) + FRAME_HEADER_SIZE)
+#define FRAME_HEADER(fptr) (uintptr_clasp_t *)(((char *)fptr) - FRAME_HEADER_SIZE)
   void *frameImplHeaderAddress(void *frameImpl) {
     return (void *)((char *)frameImpl - FRAME_HEADER_SIZE);
   }
@@ -1428,8 +1428,8 @@ public:
   void *pushFrameImpl(size_t frameSize);
   void popFrameImpl(void *frameImpl) {
 #ifdef USE_BOEHM
-    uintptr_t *frameHeaderP = reinterpret_cast<uintptr_t *>(frameImpl) - 1;
-    uintptr_t headerAndFrameSize = FRAME_HEADER_SIZE_FIELD(frameHeaderP);
+    uintptr_clasp_t *frameHeaderP = reinterpret_cast<uintptr_clasp_t *>(frameImpl) - 1;
+    uintptr_clasp_t headerAndFrameSize = FRAME_HEADER_SIZE_FIELD(frameHeaderP);
     this->_TotalSize = this->_TotalSize - headerAndFrameSize;
 #ifdef BOEHM_ONE_BIG_STACK
     memset(frameHeaderP, 0, headerAndFrameSize);
@@ -1452,8 +1452,8 @@ public:
 #endif
 #endif // USE_BOEHM
 #ifdef USE_MPS
-    uintptr_t *frameHeaderP = FRAME_HEADER(frameImpl);
-    uintptr_t headerAndFrameSize = FRAME_HEADER_SIZE_FIELD(frameHeaderP);
+    uintptr_clasp_t *frameHeaderP = FRAME_HEADER(frameImpl);
+    uintptr_clasp_t headerAndFrameSize = FRAME_HEADER_SIZE_FIELD(frameHeaderP);
     this->_TotalSize -= headerAndFrameSize;
     mps_frame_t frame_o = this->frames.back();
     this->frames.pop_back();
