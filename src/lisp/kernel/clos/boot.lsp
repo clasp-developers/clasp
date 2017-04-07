@@ -146,10 +146,10 @@
     (defvar +the-std-class+)
     (defvar +the-funcallable-standard-class+))
 
-#+(or)
 (defmacro dbg-boot (fmt &rest fmt-args)
   nil)
 
+#++
 (defmacro dbg-boot (fmt &rest fmt-args)
   `(bformat t ,fmt ,@fmt-args))
 
@@ -168,7 +168,6 @@
                  `(apply #'ensure-boot-class ',class ',options)))))
 
 (boot-hierarchy)
-(dbg-boot "About to start block\n")
 
 #+ecl
 (progn
