@@ -37,7 +37,14 @@ namespace core {
 
 T_sp core__load_source(T_sp source, bool verbose, bool print, T_sp externalFormat);
 
-T_sp cl__load(T_sp source,
+T_sp core__load_no_package_set(T_sp source,
+                               T_sp verbose = _Nil<T_O>(),
+                               T_sp print = _Nil<T_O>(),
+                               T_sp if_does_not_exist = _Nil<T_O>(),
+                               T_sp external_format = kw::_sym_default,
+                               T_sp search_list = _Nil<T_O>());
+
+ T_sp cl__load(T_sp source,
              T_sp verbose = _Nil<T_O>(),
              T_sp print = _Nil<T_O>(),
              T_sp if_does_not_exist = _Nil<T_O>(),

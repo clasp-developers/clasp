@@ -2835,7 +2835,7 @@ void Lisp_O::run() {
     {
       _BLOCK_TRACEF(BF("Evaluating initialization code in(%s)") % this->_RCFileName);
       Pathname_sp initPathname = cl__pathname(SimpleBaseString_O::make(this->_RCFileName));
-      T_mv result = eval::funcall(cl::_sym_load, initPathname);
+      T_mv result = core__load_no_package_set(initPathname);
       if (result.nilp()) {
         T_sp err = result.second();
         printf("Could not load %s error: %s\n", _rep_(initPathname).c_str(), _rep_(err).c_str());

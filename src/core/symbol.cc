@@ -514,4 +514,13 @@ void Symbol_O::remove_package(Package_sp pkg)
   T_sp tpkg(pkg);
   this->_HomePackage.compare_exchange_strong(tpkg,_Nil<T_O>());
 };
+
+CL_DEFUN T_sp core__symbol_global_value(Symbol_sp s) {
+  return s->_GlobalValue;
+}
+
+CL_DEFUN void core__symbol_global_value_set(Symbol_sp s, T_sp v) {
+  s->_GlobalValue = v;
+}
+
 };

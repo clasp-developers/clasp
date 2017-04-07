@@ -108,11 +108,9 @@ CL_DEFUN T_sp core__load_source(T_sp source, bool verbose, bool print, core::T_s
   return _lisp->_true();
 }
 
-/*! Translated from from ecl::load.d */
-CL_LAMBDA(source &key (verbose *load-verbose*) (print *load-print*) (if-does-not-exist :error) (external-format :default) (search-list core::*load-search-list*));
-CL_DECLARE();
-CL_DOCSTRING("CLHS: load");
-CL_DEFUN T_sp cl__load(T_sp source, T_sp verbose, T_sp print, T_sp if_does_not_exist, T_sp external_format, T_sp search_list) {
+
+
+CL_DEFUN T_sp core__load_no_package_set(T_sp source, T_sp verbose, T_sp print, T_sp if_does_not_exist, T_sp external_format, T_sp search_list) {
   Pathname_sp pathname;
   T_sp pntype;
   T_sp hooks;
@@ -198,9 +196,7 @@ CL_DEFUN T_sp cl__load(T_sp source, T_sp verbose, T_sp print, T_sp if_does_not_e
     }
   }
 NOT_A_FILENAME:
-  DynamicScopeManager scope(cl::_sym_STARpackageSTAR, cl__symbol_value(cl::_sym_STARpackageSTAR));
-  scope.pushSpecialVariableAndSet(cl::_sym_STARreadtableSTAR, cl__symbol_value(cl::_sym_STARreadtableSTAR));
-  scope.pushSpecialVariableAndSet(cl::_sym_STARloadPathnameSTAR, not_a_filename ? _Nil<T_O>() : source);
+  DynamicScopeManager scope(cl::_sym_STARloadPathnameSTAR, not_a_filename ? _Nil<T_O>() : source);
   T_sp truename = cl__truename(filename);
   scope.pushSpecialVariableAndSet(cl::_sym_STARloadTruenameSTAR, not_a_filename ? _Nil<T_O>() : truename);
   if (!not_a_filename)
@@ -220,6 +216,17 @@ NOT_A_FILENAME:
   }
   return _lisp->_true();
 }
+
+/*! Translated from from ecl::load.d */
+CL_LAMBDA(source &key (verbose *load-verbose*) (print *load-print*) (if-does-not-exist :error) (external-format :default) (search-list core::*load-search-list*));
+CL_DECLARE();
+CL_DOCSTRING("CLHS: load");
+CL_DEFUN T_sp cl__load(T_sp source, T_sp verbose, T_sp print, T_sp if_does_not_exist, T_sp external_format, T_sp search_list) {
+  DynamicScopeManager scope(cl::_sym_STARpackageSTAR, cl__symbol_value(cl::_sym_STARpackageSTAR));
+  scope.pushSpecialVariableAndSet(cl::_sym_STARreadtableSTAR, cl__symbol_value(cl::_sym_STARreadtableSTAR));
+  return core__load_no_package_set(source,verbose,print,if_does_not_exist,external_format,search_list);
+};
+
 
   SYMBOL_EXPORT_SC_(CorePkg, loadSource);
 
