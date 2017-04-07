@@ -382,21 +382,31 @@ handler_fn_prototype(non_evil_signal_handler, int sig, siginfo_t *siginfo, void 
 
 
 void initialize_signals(int clasp_signal) {
-  global_signal = clasp_signal;
-  if (signal(global_signal, interrupt_handle_signals) == SIG_ERR) {
-    printf("failed to register SIGABRT signal-handler with kernel\n");
+  struct sigaction new_action, old_action;
+  /* Set up the structure to specify the new action. */
+  new_action.sa_handler = interrupt_handle_signals;
+  sigemptyset (&new_action.sa_mask);
+  new_action.sa_flags = SA_RESTART;
+  if (sigaction (clasp_signal, &new_action, NULL) != 0) {
+    printf("failed to register clasp_signal signal-handler with kernel error: %s\n", strerror(errno));
   }
-  if (signal(SIGINT, handle_signals) == SIG_ERR) {
-    printf("failed to register SIGINT signal-handler with kernel\n");
+  new_action.sa_handler = handle_signals;
+  sigemptyset (&new_action.sa_mask);
+  new_action.sa_flags = SA_RESTART;
+  if (sigaction (SIGINT, &new_action, NULL) != 0) {
+    printf("failed to register SIGINT signal-handler with kernel error: %s\n", strerror(errno));
+  }
+  new_action.sa_handler = handle_signals;
+  sigemptyset (&new_action.sa_mask);
+  new_action.sa_flags = SA_RESTART;
+  if (sigaction (SIGABRT, &new_action, NULL) != 0) {
+    printf("failed to register SIGABRT signal-handler with kernel error: %s\n", strerror(errno));
   }
 #if 0
   if (signal(SIGCHLD, handle_signals) == SIG_ERR) {
     printf("failed to register SIGCHLD signal-handler with kernel\n");
   }
 #endif
-  if (signal(SIGABRT, handle_signals) == SIG_ERR) {
-    printf("failed to register SIGABRT signal-handler with kernel\n");
-  }
 #if 0
 #ifdef _TARGET_OS_LINUX
   feenableexcept(FE_INVALID | FE_DIVBYZERO | FE_OVERFLOW | FE_UNDERFLOW);
