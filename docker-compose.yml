@@ -4,6 +4,7 @@ version: '2'
 services:
   # first, run: docker-compose run clasp-build
   # this will compile clasp and copy the Linux/ELF binary to ./build/clasp
+  # Note that this takes between 2 and 3 hours!
   clasp-build:
     image: clasp-build
     build:

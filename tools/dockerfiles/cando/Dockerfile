@@ -4,20 +4,21 @@ MAINTAINER Christian Schafmeister <meister@temple.edu>
 RUN apt-get update && apt-get -y install python2.7 python-pip python-dev \
   ipython ipython-notebook git-core
 
+# get quicklisp and slime
 RUN git clone https://github.com/quicklisp/quicklisp-client.git /quicklisp
 RUN git clone https://github.com/slime/slime /slime
 RUN clasp -e '(load "/slime/swank-loader.lisp")'\
           -e "(swank-loader:init :delete nil :reload nil :load-contribs nil)"\
           -e "(quit)"
 
-# get the setup-cando file
+# get the setup-cando file from this repo?
 RUN cd ~/clasp && git pull origin testing --rebase
 RUN cd ~/clasp/extensions/cando && git pull origin dev --rebase
 RUN clasp -f "setup-cando"\
           -e '(load "/quicklisp/setup.lisp")'\
           -e "(quit)"
 
-# get subprojects from quicklisp
+# get subprojects for quicklisp
 WORKDIR /quicklisp/local-projects
 RUN git clone https://github.com/clasp-developers/usocket.git
 RUN git clone https://github.com/clasp-developers/cl-jupyter.git
