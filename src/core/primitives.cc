@@ -31,6 +31,9 @@ THE SOFTWARE.
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <unistd.h>
+#include <pthread.h> // TODO: PORTING - frgo, 2017-08-04
+#include <signal.h>  // TODO: PORTING - frgo, 2017-08-04
+
 #include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
 #include <clasp/core/cons.h>
@@ -81,8 +84,24 @@ THE SOFTWARE.
 #include <clasp/core/designators.h>
 #include <clasp/core/profile.h>
 #include <clasp/core/wrappers.h>
-namespace core {
 
+
+#define DEBUG_LEVEL_FULL
+
+
+#if defined( DEBUG_LEVEL_FULL )
+#define DEBUG_PRINT(_msg_) fprintf( stderr, "%s", (_msg_).str().c_str())
+#else
+#defin DEBUG_PRINT(msg)
+#endif
+
+
+#if defined( _TARGET_OS_DARWIN )
+#define sigthreadmask(HOW,NEW,OLD) sigprocmask((HOW),(NEW),(OLD))
+#endif
+
+
+namespace core {
 
 void clasp_musleep(double dsec, bool alertable) {
   double seconds = floor(dsec);
@@ -318,11 +337,16 @@ CL_LAMBDA(call-and-arguments &optional return-stream);
 CL_DECLARE();
 CL_DOCSTRING("vfork_execvp - set optional return-stream if you want the output stream of the child");
 CL_DEFUN T_mv ext__vfork_execvp(List_sp call_and_arguments, T_sp return_stream) {
-  bool bReturnStream = return_stream.isTrue();
+
   if (call_and_arguments.nilp())
     return Values0<T_O>();
+
+  bool bReturnStream = return_stream.isTrue();
+
   std::vector<char const *> execvp_args(cl__length(call_and_arguments) + 1);
+
   size_t idx = 0;
+
   for (auto cur : call_and_arguments) {
     String_sp sarg = gc::As<String_sp>(oCar(cur));
     size_t sarg_size = sarg->length();
@@ -332,18 +356,23 @@ CL_DEFUN T_mv ext__vfork_execvp(List_sp call_and_arguments, T_sp return_stream) 
     arg[sarg_size] = '\0';
     execvp_args[idx++] = arg;
   }
+
   execvp_args[idx] = NULL;
-  int filedes[2];
+  int filedes[2] = { -1, -1 };
+
   if (bReturnStream) {
     if (pipe(filedes) == -1 ) {
       perror("pipe");
       abort();
     }
   }
+
   pid_t child_PID = vfork();
+
   if (child_PID >= 0) {
     if (child_PID == 0) {
       // Child
+
       if ( bReturnStream ) {
         while ((dup2(filedes[1],STDOUT_FILENO) == -1) && (errno == EINTR)) {}
         close(filedes[1]);
@@ -351,39 +380,116 @@ CL_DEFUN T_mv ext__vfork_execvp(List_sp call_and_arguments, T_sp return_stream) 
         int flags = fcntl(STDOUT_FILENO,F_GETFL,0);
         fcntl(STDOUT_FILENO,F_SETFL,flags|FD_CLOEXEC);
       }
-      execvp(execvp_args[0], (char *const *)execvp_args.data());
-      printf("%s:%d execvp returned with errno=%d   strerror(errno) = %s\n", __FILE__, __LINE__, errno, strerror(errno));
-      for (int i = 0; execvp_args[i] != NULL; ++i) {
-        printf("    arg#%d  %s\n", i, execvp_args[i]);
-      }
-      printf("  cannot continue... exiting... sorry...\n");
-      _exit(0); // Should never reach
-    } else {
-      // Parent
-      int status;
-      pid_t wait_ret = wait(&status);
-      // Clean up args
-      for (int i(0); i < execvp_args.size() - 1; ++i)
-        free((void *)execvp_args[i]);
-      if (wait_ret >= 0) {
-        if (wait_ret != child_PID) {
-          printf("%s:%d wait return PID(%d) that did not match child(%d)\n", __FILE__, __LINE__, wait_ret, child_PID);
+
+      bool b_done = false;
+      sigset_t new_sigset;
+      sigset_t old_sigset;
+
+      while( b_done == false )
+      {
+        int rc = 0;
+
+        sigemptyset( &new_sigset );
+        sigemptyset( &old_sigset );
+        sigaddset( &new_sigset, SIGINT );
+        sigaddset( &new_sigset, SIGCHLD );
+
+        rc = sigthreadmask( SIG_SETMASK, &new_sigset, &old_sigset ); // TODO: Check return value
+        rc = execvp( execvp_args[0], ( char * const * ) execvp_args.data() );
+        sigthreadmask( SIG_SETMASK, &old_sigset, NULL ); // Restore signal mask
+
+        if( rc == -1 ) // An  error has occurred during - we do a retry
+        {
+          if( errno != EINTR )
+            b_done = true;
         }
-        if ( bReturnStream ) {
+      }
+
+      _exit( EXIT_FAILURE ); // Should never reach
+    }
+    else
+    {
+      // Parent
+
+      int   status            = 0;
+      bool  b_done            = false;
+      pid_t wait_ret          = -1;
+      int   child_exit_status = -1;
+
+      while( b_done == false )
+      {
+        errno = 0;
+
+        wait_ret = wait( &status );
+
+        if( WIFEXITED( status ) )
+        {
+          child_exit_status = WEXITSTATUS( status );
+          DEBUG_PRINT(BF("%s (%s:%d) | Child process exited with status %d\n.") % __FUNCTION__ % __FILE__ % __LINE__ % child_exit_status );
+
+          b_done = true;
+        }
+
+        if( WIFSIGNALED( status ) )
+        {
+          int signal = 0;
+
+          signal = WTERMSIG( status );
+          DEBUG_PRINT(BF("%s (%s:%d) | Child process got signal %d\n.") % __FUNCTION__ % __FILE__ % __LINE__ % signal );
+
+          // Continue waiting !
+        }
+      }
+
+      DEBUG_PRINT(BF("%s (%s:%d) | Child process cmd = %s\n.") % __FUNCTION__ % __FILE__ % __LINE__ % execvp_args[ 0 ] );
+      DEBUG_PRINT(BF("%s (%s:%d) | Child process wait(): return code = %d, errno = %d, error = %s\n.") % __FUNCTION__ % __FILE__ % __LINE__ % wait_ret % errno % strerror(errno) );
+
+      // Clean up args
+      for ( int i(0); i < execvp_args.size() - 1; ++i )
+      {
+        free( (void *) execvp_args[ i ] );
+        execvp_args[ i ] = nullptr;
+      }
+
+      if (( wait_ret >= 0 ) ||
+          (( wait_ret == -1 ) && ( errno == EINTR ) && ( child_exit_status == 0 )))
+      {
+        errno = 0;
+
+        if ( bReturnStream )
+        {
           int flags = fcntl(filedes[0],F_GETFL,0);
           fcntl(filedes[0],F_SETFL,flags|O_NONBLOCK);
           T_sp stream = clasp_make_file_stream_from_fd(SimpleBaseString_O::make("execvp"), filedes[0], clasp_smm_input_file, 8, CLASP_STREAM_DEFAULT_FORMAT, _Nil<T_O>());
-          return Values(_Nil<T_O>(), clasp_make_fixnum(child_PID),stream);
+
+          DEBUG_PRINT(BF("%s (%s:%d) | Values( %d %d %p )\n.") % __FUNCTION__ % __FILE__ % __LINE__ % 0 % child_PID % stream );
+
+
+          return Values( clasp_make_fixnum( 0 ), clasp_make_fixnum( child_PID ), stream);
         }
-        return Values(_Nil<T_O>(),clasp_make_fixnum(child_PID),_Nil<T_O>());
+
+          DEBUG_PRINT(BF("%s (%s:%d) | Values( %d %d %d )\n.") % __FUNCTION__ % __FILE__ % __LINE__ % 0 % child_PID % 0 );
+
+          return Values( clasp_make_fixnum( 0 ), clasp_make_fixnum( child_PID ), _Nil<T_O>() );
       }
+
       // error
-      return Values(clasp_make_fixnum(errno), SimpleBaseString_O::make(std::strerror(errno)),_Nil<T_O>());
+      DEBUG_PRINT(BF("%s (%s:%d) | Values( %d %d %d )\n.") % __FUNCTION__ % __FILE__ % __LINE__ % errno % strerror( errno ) % 0 );
+
+      return Values( clasp_make_fixnum( errno ), SimpleBaseString_O::make( std::strerror( errno )), _Nil<T_O>() );
     }
-  } else {
+  }
+  else
+  {
+    // Creating the child failed
+
     // Clean up args
-    for (int i(0); i < execvp_args.size() - 1; ++i)
-      free((void *)execvp_args[i]);
+    for ( int i(0); i < execvp_args.size() - 1; ++i )
+    {
+      free( (void *) execvp_args[ i ] );
+      execvp_args[ i ] = nullptr;
+    }
+
     return Values(clasp_make_fixnum(-1), SimpleBaseString_O::make(std::strerror(errno)),_Nil<T_O>());
   }
 }

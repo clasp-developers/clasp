@@ -43,25 +43,45 @@
     (dolist (c (cdr list-of-args))
       (bformat sout " %s" c))))
 
-(defvar *echo-system* nil)
+(defvar *safe-system-echo* t)
+(defvar *safe-system-max-retries* 20)
+(defvar *safe-system-retry-wait-time* 0.1d0) ;; 100 milliseconds
+;; The wait time will be doubled at each retry!
+
 (defun safe-system (cmd-list &key output-file-name)
-  (if *echo-system*
+
+  (if *safe-system-echo*
       (bformat t "safe-system: %s\n" cmd-list))
+
   (multiple-value-bind (retval error-message)
       (ext:vfork-execvp cmd-list)
-    (when retval
+
+    (unless (eql retval 0)
       (error "Could not execute command with ext:vfork-execvp with ~s~%  return-value: ~d  error-message: ~s~%" cmd-list retval error-message)))
+
   (when output-file-name
-    (unless (probe-file output-file-name)
-      (error "The file ~a was not created by shell command: ~a" output-file-name (as-shell-command cmd-list)))))
+    (let ((sleep-time *safe-system-retry-wait-time*))
+      (loop for n from 1 to *safe-system-max-retries*
+         do
+           (unless (probe-file output-file-name)
+             (if (>= n *safe-system-max-retries*)
+                 (error "The file ~a was not created by shell command: ~a" output-file-name (as-shell-command cmd-list))
+                 (progn
+                   (if *safe-system-echo*
+                       (bformat t "safe-system: Retry count = %d of %d\n" n *safe-system-max-retries*))
+                   (core::sleep sleep-time)
+                   (setq sleep-time (* 2 sleep-time))))))))
+
+  ;; Return T if all went well
+  t)
 
 ;;; This function will compile a bitcode file in PART-BITCODE-PATHNAME with clang and put the output in the
 ;;; same directory as PART-BITCODE-PATHNAME
 (defun generate-object-file (part-bitcode-pathname &key test)
   (let ((output-pathname (compile-file-pathname part-bitcode-pathname :output-type :object))
         (reloc-model (cond
-                      ((member :target-os-linux *features*) 'llvm-sys:reloc-model-pic-)
-                      (t 'llvm-sys:reloc-model-undefined))))
+                       ((member :target-os-linux *features*) 'llvm-sys:reloc-model-pic-)
+                       (t 'llvm-sys:reloc-model-undefined))))
     (bitcode-to-obj-file part-bitcode-pathname output-pathname :reloc-model reloc-model)
     (truename output-pathname)))
 
