@@ -1,19 +1,9 @@
+# docker-compose uses this file to build clasp in 2 steps.
+# To compile clasp, you need to have docker set up, and docker-compose installed.
 version: '2'
 services:
-  cando:
-    image: cando
-    build:
-      context: .
-      dockerfile: tools/dockerfiles/cando/Dockerfile
-    # depends_on:
-    #   - clasp
-  clasp:
-    image: clasp
-    build:
-      context: .
-      dockerfile: tools/dockerfiles/clasp/Dockerfile
-    depends_on:
-      - clasp-build
+  # first, run: docker-compose run clasp-build
+  # this will compile clasp and copy the Linux/ELF binary to ./build/clasp
   clasp-build:
     image: clasp-build
     build:
@@ -22,3 +12,21 @@ services:
     entrypoint: cp -v build/clasp /build/
     volumes:
       - ./build:/build
+  # second, run: docker-compose build clasp
+  # this will "ADD ./build/clasp"
+  # into a smaller base image with the runtime dependencies
+  clasp:
+    image: clasp
+    build:
+      context: .
+      dockerfile: tools/dockerfiles/clasp/Dockerfile
+    depends_on:
+      - clasp-build
+  # cando is in turn built upon the clasp runtime image
+  cando:
+    image: cando
+    build:
+      context: .
+      dockerfile: tools/dockerfiles/cando/Dockerfile
+    # depends_on:
+    #   - clasp
