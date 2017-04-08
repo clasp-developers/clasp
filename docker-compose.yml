@@ -10,7 +10,7 @@ services:
   clasp:
     image: clasp
     build:
-      context: ./build
+      context: .
       dockerfile: tools/dockerfiles/clasp/Dockerfile
     depends_on:
       - clasp-build
@@ -19,6 +19,6 @@ services:
     build:
       context: .
       dockerfile: tools/dockerfiles/clasp-build/Dockerfile
-    command: cp -v build/clasp /home/app/build/
+    entrypoint: cp -v build/clasp /home/app/build/
     volumes:
       - ./build:/home/app/build
