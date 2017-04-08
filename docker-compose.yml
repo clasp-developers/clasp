@@ -1,12 +1,12 @@
 version: '2'
 services:
-  # cando:
-  #   image: cando
-  #   build:
-  #     context: .
-  #     dockerfile: tools/dockerfiles/cando/Dockerfile
-  #   depends_on:
-  #     - clasp
+  cando:
+    image: cando
+    build:
+      context: .
+      dockerfile: tools/dockerfiles/cando/Dockerfile
+    # depends_on:
+    #   - clasp
   clasp:
     image: clasp
     build:
