@@ -1082,12 +1082,12 @@ core::T_sp PERCENTmem_ref_pointer( core::Integer_sp address )
   void            *source_address = reinterpret_cast< void * >( core::clasp_to_cl_intptr_t( address ) );
   int             *source_content = (int *) source_address;
 
-  DEBUG_PRINT(BF("%s (%s:%d) | source address = %p\n.") % __FUNCTION__ % __FILE__ % __LINE__ % source_address );
+  DEBUG_PRINT(BF("+++ %s (%s:%d) | source address = %p\n.") % __FUNCTION__ % __FILE__ % __LINE__ % source_address );
 
   if( *source_content == 0 )
   {
     result = PERCENTmake_nullpointer();
-    DEBUG_PRINT(BF("%s (%s:%d) | New null-pointer allocated: %s\n.") % __FUNCTION__ % __FILE__ % __LINE__ % (result->__repr__().c_str()) );
+    DEBUG_PRINT(BF("+++ %s (%s:%d) | New null-pointer allocated: %s\n.") % __FUNCTION__ % __FILE__ % __LINE__ % (result->__repr__().c_str()) );
   }
   else
   {
@@ -1096,11 +1096,11 @@ core::T_sp PERCENTmem_ref_pointer( core::Integer_sp address )
     GC_ALLOCATE(ForeignData_O, result);
     result->allocate( kw::_sym_clasp_foreign_data_kind_pointer, core::DeleteOnDtor, sizeof( void * ) );
 
-    DEBUG_PRINT(BF("%s (%s:%d) | New pointer allocated: %s\n.") % __FUNCTION__ % __FILE__ % __LINE__ % (result->__repr__().c_str()) );
+    DEBUG_PRINT(BF("+++ %s (%s:%d) | New pointer allocated: %s\n.") % __FUNCTION__ % __FILE__ % __LINE__ % (result->__repr__().c_str()) );
 
     destination_address  = result->raw_data();
 
-    DEBUG_PRINT(BF("%s (%s:%d) | destination address = %p\n.") % __FUNCTION__ % __FILE__ % __LINE__ % destination_address );
+    DEBUG_PRINT(BF("++ %s (%s:%d) | destination address = %p\n.") % __FUNCTION__ % __FILE__ % __LINE__ % destination_address );
 
     memcpy( destination_address, source_address, sizeof( void * ) );
   }
@@ -1332,34 +1332,38 @@ core::T_sp PERCENTmem_set_time( core::Integer_sp address, core::T_sp value )
   return mk_time( tmp );
 }
 
-core::T_sp PERCENTmem_set_pointer( core::Integer_sp address, core::T_sp value ) {
+core::T_sp PERCENTmem_set_pointer( core::Integer_sp address, core::T_sp value )
+{
   ForeignData_sp    result              = _Nil<core::T_O>();
   void            * source_address      = nullptr;
   void            * destination_address = nullptr;
-  int             * source_content      = nullptr;
+  int               source_content      = 0;
 
   translate::from_object< void * > v( value );
 
   destination_address = reinterpret_cast< void * >( core::clasp_to_cl_intptr_t( address ) );
   source_address = v._v;
-  source_content = (int *) source_address;
+  source_content = * ((int *) source_address);
 
-  DEBUG_PRINT(BF("%s (%s:%d) | source address = %p\n.") % __FUNCTION__ % __FILE__ % __LINE__ % source_address );
+  DEBUG_PRINT(BF("*** %s (%s:%d) | source address = %p, source content = %d, %p\n.") % __FUNCTION__ % __FILE__ % __LINE__ % source_address % source_content % source_content);
 
-  if( *source_content == 0 )
+  if( source_content == 0 ) // Null Pointer ?
   {
     result = PERCENTmake_nullpointer();
-    DEBUG_PRINT(BF("%s (%s:%d) | New null-pointer allocated: %s\n.") % __FUNCTION__ % __FILE__ % __LINE__ % (result->__repr__().c_str()) );
+    DEBUG_PRINT(BF("%*** s (%s:%d) | New null-pointer allocated: %s\n.") % __FUNCTION__ % __FILE__ % __LINE__ % (result->__repr__().c_str()) );
   }
   else
   {
-    GC_ALLOCATE(ForeignData_O, result);
-    result->allocate( kw::_sym_clasp_foreign_data_kind_pointer, core::DeleteOnDtor, sizeof( void * ) );
-    destination_address = result->raw_data();
+    GC_ALLOCATE(ForeignData_O, newptr);
+    newptr->allocate( kw::_sym_clasp_foreign_data_kind_pointer, core::DeleteOnDtor, sizeof( void * ) );
+    destination_address = newptr->raw_data();
     memcpy( destination_address, source_address, sizeof( void * ) );
+
+    DEBUG_PRINT(BF("*** %s (%s:%d) | New pointer allocated: %s\n.") % __FUNCTION__ % __FILE__ % __LINE__ % (newptr->__repr__().c_str()) );
+    result = newptr;
   }
 
-  DEBUG_PRINT(BF("%s (%s:%d) | result: %s\n.") % __FUNCTION__ % __FILE__ % __LINE__ % (result->__repr__().c_str()) );
+  DEBUG_PRINT(BF("*** %s (%s:%d) | result: %s\n.") % __FUNCTION__ % __FILE__ % __LINE__ % (result->__repr__().c_str()) );
 
   return result;
 }
