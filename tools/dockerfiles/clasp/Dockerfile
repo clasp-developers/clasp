@@ -1,11 +1,13 @@
 FROM ubuntu:latest
 MAINTAINER Christian Schafmeister <meister@temple.edu>
 
+# add LLVM repo
 RUN apt-get -y update && apt-get -y install wget
 RUN wget -O - http://apt.llvm.org/llvm-snapshot.gpg.key| apt-key add -
 RUN echo 'deb http://apt.llvm.org/xenial/ llvm-toolchain-xenial-4.0 main'\
   >/etc/apt/sources.list.d/llvm4.list
 
+# install clasp runtime dependencies
 RUN apt-get -y update && apt-get -y install \
   libboost-filesystem1.58.0 libboost-date-time1.58.0 libboost-program-options1.58.0 \
   libboost-iostreams1.58.0 libgc1c2 llvm-4.0-runtime libgmpxx4ldbl
