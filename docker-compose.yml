@@ -5,6 +5,8 @@ services:
     build:
       context: .
       dockerfile: tools/dockerfiles/cando-min-run/Dockerfile
+    ports:
+      - "8888:8888"
     depends_on:
       - clasp-min-install
   clasp-min-run:
