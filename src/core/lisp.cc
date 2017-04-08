@@ -337,7 +337,7 @@ Sometimes they get out of sync and this code is designed to trap that.
 void run_quick_tests() {
   SimpleBaseString_sp slow = SimpleBaseString_O::make("Hello");
   String_sp sup = cl__string_upcase(slow);
-  printf("%s:%d slow->%s  sup->%s  cl__length(sup)->%" PRu "\n", __FILE__, __LINE__, slow->get_std_string().c_str(), sup->get_std_string().c_str(), cl__length(sup));
+  printf("%s:%d slow->%s  sup->%s  cl__length(sup)->%lu\n", __FILE__, __LINE__, slow->get_std_string().c_str(), sup->get_std_string().c_str(), cl__length(sup));
   SimpleBaseString_sp s1 = SimpleBaseString_O::make("Hello");
   Str8Ns_sp s2 = Str8Ns_O::create("there");
   Str8Ns_sp s3 = Str8Ns_O::create("Hello");
@@ -443,7 +443,7 @@ void run_quick_tests() {
   printf("%s:%d Adjusting and then dumping \n", __FILE__, __LINE__ );
   vec->internalAdjustSize_(24);
   for ( size_t i(0); i<24; ++i ) {
-    printf("%s:%d   vec[%" PRu "] = %s\n", __FILE__, __LINE__, i, _rep_((*vec)[i]).c_str());
+    printf("%s:%d   vec[%lu] = %s\n", __FILE__, __LINE__, i, _rep_((*vec)[i]).c_str());
   }
 #if 0
 #define TEST_ASSERT_ALWAYS(_x) \
