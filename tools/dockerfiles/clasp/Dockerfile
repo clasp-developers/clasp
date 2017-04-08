@@ -11,7 +11,7 @@ RUN apt-get -y update && apt-get -y install \
   libboost-iostreams1.58.0 libgc1c2 llvm-4.0-runtime libgmpxx4ldbl
 
 # add clasp binaries
-ADD ./clasp /usr/local/bin/clasp
+ADD ./build/clasp /usr/local/bin/clasp
 RUN chmod 0755 /usr/local/bin/clasp
 
-ENTRYPOINT [ "/usr/local/bin/clasp" ]
+ENTRYPOINT [ "clasp" ]
