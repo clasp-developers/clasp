@@ -434,7 +434,7 @@ Bignum CStrToBignum(const char *str) {
 
 CL_DEFUN void core__test_bignum_to_int64(Bignum_sp b) {
   size_t sizeinbase2 = mpz_sizeinbase(b->mpz_ref().get_mpz_t(),2);
-  printf("%s:%d sizeinbase2 = %" PRu "\n", __FILE__, __LINE__, sizeinbase2);
+  printf("%s:%d sizeinbase2 = %lu\n", __FILE__, __LINE__, sizeinbase2);
   if (sizeinbase2>64) goto BAD;
   {
     int64_t val;

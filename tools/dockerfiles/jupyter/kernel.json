@@ -1,10 +1,8 @@
 {
     "argv": [
         "/home/app/clasp/bin/clasp",
-        "--load",
-        "/home/app/quicklisp/setup.lisp",
         "--exec",
-        "(ext:chdir #P\"/work/\" t)"
+        "(ext:chdir #P\"/work/\" t)",
         "--load",
         "/home/app/quicklisp/local-projects/cl-jupyter/cl-jupyter.lisp",
         "--",

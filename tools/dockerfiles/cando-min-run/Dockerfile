@@ -1,15 +1,11 @@
 FROM clasp-min-install
 MAINTAINER Christian Schafmeister <meister@temple.edu>
 
-ADD ./extensions/cando/src/lisp extensions/cando/src/lisp
+ADD ./extensions/cando/src/lisp clasp/Contents/Resources/source-code/extensions/cando/src/lisp
 
 #RUN cd ~/clasp && git pull origin testing --rebase
 #RUN cd ~/clasp/extensions/cando && git pull origin dev --rebase
 
-RUN [ "/home/app/clasp/bin/clasp", "-f", "setup-cando", \
-      				 "-e", "(load \"~/quicklisp/setup.lisp\")", \
-				 "-e", "(quit)"]
-                                 
 RUN git clone https://github.com/slime/slime ~/slime
 RUN cd /home/app/quicklisp/local-projects && git clone https://github.com/clasp-developers/usocket.git
 RUN cd /home/app/quicklisp/local-projects && git clone https://github.com/clasp-developers/cl-jupyter.git
