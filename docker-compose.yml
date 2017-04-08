@@ -19,6 +19,6 @@ services:
     build:
       context: .
       dockerfile: tools/dockerfiles/clasp-build/Dockerfile
-    entrypoint: cp -v build/clasp /home/app/build/
+    entrypoint: cp -v build/clasp /build/
     volumes:
-      - ./build:/home/app/build
+      - ./build:/build

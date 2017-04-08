@@ -18,7 +18,6 @@ boost_build_v2/bjam
 wscript.config
 boost_build_v2/engine/bin.linuxx86_64
 boost_build_v2/engine/bootstrap
-build/*
 projects/
 build2/
 /.lock-waf_linux*_build
