@@ -3,7 +3,7 @@
 version: '2'
 services:
   # first, run: docker-compose run clasp-build
-  # this will compile clasp and copy the Linux/ELF binary to ./build/clasp
+  # this will compile clasp and copy it's build output ./build/clasp.tgz
   # Note that this takes between 2 and 3 hours!
   clasp-build:
     image: clasp-build
@@ -14,8 +14,8 @@ services:
     volumes:
       - ./build:/build
   # second, run: docker-compose build clasp
-  # this will "ADD ./build/clasp"
-  # into a smaller base image with the runtime dependencies
+  # This will start with a smaller base image, that has only the runtime
+  # dependencies, and unpack ./build/clasp.tgz into the directory /home/app
   clasp:
     image: clasp
     build:
