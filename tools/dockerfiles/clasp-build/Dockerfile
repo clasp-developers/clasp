@@ -20,13 +20,12 @@ ENV CC=/usr/bin/clang-4.0 CXX=/usr/bin/clang++-4.0
 # Copy the entire clasp directory less .dockerignore and clean the build dir
 ADD . clasp
 WORKDIR /clasp
-RUN rm -rf build/*
+RUN rm -rf build/* && mkdir -p /out/clasp
 
 # checkout submodules, configure, and build
 RUN echo "LLVM_CONFIG_BINARY='/usr/bin/llvm-config-4.0'" > wscript.config
-RUN echo "INSTALL_PATH_PREFIX='/home/app/clasp/install'" >> wscript.config
+RUN echo "INSTALL_PATH_PREFIX='/out/clasp'" >> wscript.config
 RUN ./waf update_submodules
 RUN ./waf configure
 RUN ./waf -j $(nproc) build_cboehm -v
-
-ENTRYPOINT [ "/clasp/build/clasp" ]
+RUN ./waf install_cboehm
