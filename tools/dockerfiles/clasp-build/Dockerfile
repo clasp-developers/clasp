@@ -29,3 +29,7 @@ RUN ./waf update_submodules
 RUN ./waf configure
 RUN ./waf -j $(nproc) build_cboehm -v
 RUN ./waf install_cboehm
+
+# add app user, to set correct UID and GID on files
+RUN groupadd -g 9999 app && useradd -u 9999 -g 9999 -ms /bin/bash app
+RUN chown -R app:app /out/clasp

@@ -18,7 +18,6 @@ ENV HOME=/home/app
 
 # add clasp build output
 ADD ./build/clasp.tgz ${HOME}/clasp
-RUN chown -R app:app ${HOME}/clasp
 
 USER app
 WORKDIR $HOME
