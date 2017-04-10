@@ -12,8 +12,14 @@ RUN apt-get -y update && apt-get -y install \
   libboost-filesystem1.58.0 libboost-date-time1.58.0 libboost-program-options1.58.0 \
   libboost-iostreams1.58.0 libgc1c2 llvm-4.0-runtime libgmpxx4ldbl
 
-# add clasp binaries
-ADD ./build/clasp /usr/local/bin/clasp
-RUN chmod 0755 /usr/local/bin/clasp
+# add app user
+RUN groupadd -g 9999 app && useradd -u 9999 -g 9999 -ms /bin/bash app
+ENV HOME=/home/app
 
-ENTRYPOINT [ "clasp" ]
+# add clasp build output
+ADD ./build/clasp.tgz ${HOME}/clasp
+RUN chown -R app:app ${HOME}/clasp
+
+USER app
+WORKDIR $HOME
+ENTRYPOINT [ "/home/app/clasp/bin/clasp" ]

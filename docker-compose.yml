@@ -10,7 +10,7 @@ services:
     build:
       context: .
       dockerfile: tools/dockerfiles/clasp-build/Dockerfile
-    entrypoint: cp -v build/clasp /build/
+    entrypoint: tar -cvzf /build/clasp.tgz -C /out/clasp .
     volumes:
       - ./build:/build
   # second, run: docker-compose build clasp
