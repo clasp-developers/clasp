@@ -23,4 +23,5 @@ RUN chown app:app ${HOME}/clasp
 
 USER app
 WORKDIR $HOME
+ENV PATH "$PATH:$HOME/clasp/bin"
 ENTRYPOINT [ "/home/app/clasp/bin/clasp" ]
