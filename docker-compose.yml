@@ -29,5 +29,5 @@ services:
     build:
       context: .
       dockerfile: tools/dockerfiles/cando/Dockerfile
-    # depends_on:
-    #   - clasp
+    depends_on:
+      - clasp

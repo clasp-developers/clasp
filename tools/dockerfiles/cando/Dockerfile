@@ -1,43 +1,50 @@
-FROM benton/clasp
+FROM clasp
 MAINTAINER Christian Schafmeister <meister@temple.edu>
 
-RUN apt-get update && apt-get -y install python2.7 python-pip python-dev \
-  ipython ipython-notebook git-core
+# install Jupyter and its dependencies; configure jupyter kernel
+USER root
+RUN apt-get update && apt-get -y install git-core \
+  python2.7 python-pip python-dev ipython ipython-notebook
+RUN pip install --upgrade pip && pip install jupyter
+ADD tools/dockerfiles/jupyter/kernel.json \
+  /home/app/.local/share/jupyter/kernels/lisp/kernel.json
 
-# get quicklisp and slime
-RUN git clone https://github.com/quicklisp/quicklisp-client.git /quicklisp
-RUN git clone https://github.com/slime/slime /slime
-RUN clasp -e '(load "/slime/swank-loader.lisp")'\
-          -e "(swank-loader:init :delete nil :reload nil :load-contribs nil)"\
+# add cando extension
+ADD extensions/cando/src/lisp $HOME/clasp/extensions/cando/src/lisp
+
+# set ownership and permissions before changing to app user
+RUN chown -R app:app /home/app/.local $HOME/clasp/extensions/cando/src/lisp
+
+# checkout quicklisp and its subprojects
+USER app
+RUN git clone --depth=1 https://github.com/quicklisp/quicklisp-client.git \
+  $HOME/quicklisp
+RUN mkdir $HOME/quicklisp/local-projects
+RUN cd $HOME/quicklisp/local-projects \
+ && git clone --depth=1 https://github.com/clasp-developers/usocket.git \
+ && git clone --depth=1 https://github.com/clasp-developers/cl-jupyter.git \
+ && git clone --depth=1 https://github.com/clasp-developers/bordeaux-threads.git \
+ && git clone --depth=1 https://github.com/clasp-developers/cffi.git
+
+# checkout slime
+RUN git clone --depth=1 https://github.com/slime/slime $HOME/slime
+
+RUN clasp -f "setup-cando"\
+          -e '(load "/home/app/quicklisp/setup.lisp")'\
           -e "(quit)"
 
-# get the setup-cando file from this repo?
-RUN cd ~/clasp && git pull origin testing --rebase
-RUN cd ~/clasp/extensions/cando && git pull origin dev --rebase
 RUN clasp -f "setup-cando"\
-          -e '(load "/quicklisp/setup.lisp")'\
-          -e "(quit)"
-
-# get subprojects for quicklisp
-WORKDIR /quicklisp/local-projects
-RUN git clone https://github.com/clasp-developers/usocket.git
-RUN git clone https://github.com/clasp-developers/cl-jupyter.git
-RUN git clone https://github.com/clasp-developers/bordeaux-threads.git
-RUN git clone https://github.com/clasp-developers/cffi.git
-RUN clasp -f "setup-cando"\
-          -e '(load "/quicklisp/setup.lisp")'\
+          -e '(load "/home/app/quicklisp/setup.lisp")'\
+          -e "(ql:quickload :trivial-http)"\
           -e "(require :inet)"\
           -e '(setq core::*swank-home* "/home/app/slime")'\
           -e '(load (format nil "~a/swank-loader.lisp" core::*swank-home*))'\
           -e "(swank-loader:init :delete nil :reload nil :load-contribs nil)"\
           -e "(quit)"
 
-# install Jupyter
-RUN pip install jupyter
-ADD tools/dockerfiles/jupyter/kernel.json \
-  /root/.local/share/jupyter/kernels/lisp/kernel.json
-RUN clasp -e '(load "/quicklisp/setup.lisp")'\
+RUN clasp -e '(load "/home/app/quicklisp/setup.lisp")'\
           -e "(ql:quickload :cl-jupyter)"\
+          -e "(ql:quickload :pzmq)"\
           -e "(ql:quickload :cffi)"\
           -e "(ql:quickload :cffi-grovel)"\
           -e "(ql:quickload :nibbles)"\
@@ -46,4 +53,5 @@ RUN clasp -e '(load "/quicklisp/setup.lisp")'\
           -e "(ql:quickload :trivial-utf-8)"\
           -e "(quit)"
 
-CMD [ "jupyter", "notebook", "--no-browser", "--ip=0.0.0.0", "--port=8888" ]
+ENTRYPOINT [ "jupyter", "notebook" ]
+CMD        [ "--no-browser", "--ip=0.0.0.0", "--port=8888" ]
