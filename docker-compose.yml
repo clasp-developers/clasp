@@ -1,5 +1,9 @@
-# docker-compose uses this file to build clasp in 2 steps.
+# docker-compose uses this file to build clasp or cando in 2 steps.
 # To compile clasp, you need to have docker set up, and docker-compose installed.
+# To build cando, the cando extension must be present at ./extensions/cando
+# To checkout cando's 'testing' branch, do this:
+#    git clone git@github.com:drmeister/cando.git extensions/cando
+#    cd extensions/cando && git checkout testing && cd -
 version: '2'
 services:
   # first, run: docker-compose run clasp-build
@@ -13,7 +17,7 @@ services:
     entrypoint: tar -cvzf /build/clasp.tgz -C /out/clasp .
     volumes:
       - ./build:/build
-  # second, run: docker-compose build clasp
+  # To build clasp only, run: docker-compose build clasp
   # This will start with a smaller base image, that has only the runtime
   # dependencies, and unpack ./build/clasp.tgz into the directory /home/app
   clasp:
@@ -23,7 +27,8 @@ services:
       dockerfile: tools/dockerfiles/clasp/Dockerfile
     depends_on:
       - clasp-build
-  # cando is in turn built upon the clasp runtime image
+  # To build cando, run: docker-compose run cando --help
+  # this should build the clasp image as a dependency
   cando:
     image: cando
     build:
@@ -31,3 +36,5 @@ services:
       dockerfile: tools/dockerfiles/cando/Dockerfile
     depends_on:
       - clasp
+    ports:
+      - "8888:8888"
