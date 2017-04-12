@@ -42,7 +42,8 @@ RUN clasp -f "setup-cando"\
           -e "(swank-loader:init :delete nil :reload nil :load-contribs nil)"\
           -e "(quit)"
 
-RUN clasp -e '(load "/home/app/quicklisp/setup.lisp")'\
+RUN clasp -f "setup-cando"\
+          -e '(load "/home/app/quicklisp/setup.lisp")'\
           -e "(ql:quickload :cl-jupyter)"\
           -e "(ql:quickload :pzmq)"\
           -e "(ql:quickload :cffi)"\
