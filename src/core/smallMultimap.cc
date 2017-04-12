@@ -33,6 +33,7 @@ THE SOFTWARE.
 #include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
 #include <clasp/core/lisp.h>
+#include <clasp/core/bformat.h>
 #include <clasp/core/smallMultimap.h>
 #include <clasp/core/multipleValues.h>
 #include <clasp/core/environment.h>
@@ -53,7 +54,7 @@ CL_DEFUN SmallMultimap_sp core__make_small_multimap() {
 CL_LISPIFY_NAME("small_multimap_describe");
 CL_DEFMETHOD void SmallMultimap_O::describe() {
   for (auto it = this->map.begin(); it != this->map.end(); ++it) {
-    printf("%s:%d  key: %s   value: %s\n", __FILE__, __LINE__, _rep_(it->first).c_str(), _rep_(it->second).c_str());
+    BFORMAT_T(BF("%s:%d  key: %s   value: %s\n") % __FILE__ % __LINE__ % _rep_(it->first) % _rep_(it->second));
   }
 }
 
@@ -61,7 +62,7 @@ CL_LISPIFY_NAME("small_multimap_describe_range");
 CL_DEFMETHOD void SmallMultimap_O::describeRange(T_sp key) {
   pair<map_type::iterator, map_type::iterator> range = this->map.equal_range(key);
   for (auto it = range.first; it != range.second; ++it) {
-    printf("%s:%d  key: %s   value: %s\n", __FILE__, __LINE__, _rep_(it->first).c_str(), _rep_(it->second).c_str());
+    BFORMAT_T(BF("%s:%d  key: %s   value: %s\n") % __FILE__ % __LINE__ % _rep_(it->first) % _rep_(it->second));
   }
 }
 
@@ -71,7 +72,10 @@ CL_DEFMETHOD void SmallMultimap_O::insert(T_sp key, T_sp val) {
   (void)found;
 }
 
-
+CL_LISPIFY_NAME("small_multimap_contains");
+CL_DEFMETHOD bool SmallMultimap_O::contains(T_sp key) {
+  return this->map.contains(key);
+}
 
 
 

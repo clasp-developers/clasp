@@ -60,7 +60,7 @@ CL_DEFMETHOD   int size() const { return this->map.size(); };
   void erase(T_sp key);
   void describe();
   void describeRange(T_sp key);
-
+  bool contains(T_sp key);
   DEFAULT_CTOR_DTOR(SmallMultimap_O);
 };
 };

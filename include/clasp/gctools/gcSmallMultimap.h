@@ -69,7 +69,7 @@ public:
       int order = key_compare::order(k, it->first);
       if (order == 0)
         return it;
-      if (order == 1)
+      if (order < 0)
         return this->end();
     }
     return it;
@@ -81,7 +81,7 @@ public:
       int order = key_compare::order(k, it->first);
       if (order == 0)
         return it;
-      if (order == 1)
+      if (order < 0 )
         return this->end();
     }
     return it;

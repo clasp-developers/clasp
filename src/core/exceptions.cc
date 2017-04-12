@@ -236,6 +236,10 @@ void debugBreakPoint() {
   // Do nothing
 }
 
+CL_DEFUN void add_debug_filename(const string& name) {
+  lisp_debugLog()->addDebugFileName(name);
+}
+
 DebugStream::DebugStream(int rank) : DebugLogAsXml(false) {
   this->_Enabled = true;
   this->_OutStreamOpen = false;
