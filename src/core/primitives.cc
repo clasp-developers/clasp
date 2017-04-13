@@ -86,13 +86,13 @@ THE SOFTWARE.
 #include <clasp/core/wrappers.h>
 
 
-#define DEBUG_LEVEL_FULL
+#define DEBUG_LEVEL_NONE
 
 
 #if defined( DEBUG_LEVEL_FULL )
 #define DEBUG_PRINT(_msg_) fprintf( stderr, "%s", (_msg_).str().c_str())
 #else
-#defin DEBUG_PRINT(msg)
+#define DEBUG_PRINT(msg)
 #endif
 
 

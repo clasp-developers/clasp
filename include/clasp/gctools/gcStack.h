@@ -186,25 +186,25 @@ public:
   //Default constructor, set theObject to NULL
  smart_ptr() : theObject((Type*)NULL){};
   explicit inline smart_ptr(core::VaList_S *ptr) : theObject((Type*)gctools::tag_valist<Type *>(ptr)) {
-    GCTOOLS_ASSERT(this->valistp());
+//    GCTOOLS_ASSERT(this->valistp());
   };
   /*! Create a smart pointer from an existing tagged pointer */
   explicit inline smart_ptr(Tagged ptr) : theObject((Type*)ptr) {
-    GCTOOLS_ASSERT(this->theObject == NULL || this->valistp());
+//    GCTOOLS_ASSERT(this->theObject == NULL || this->valistp());
   };
 
   inline Type *operator->() {
-    GCTOOLS_ASSERT(this->valistp());
+//    GCTOOLS_ASSERT(this->valistp());
     return reinterpret_cast<Type *>(this->unsafe_valist());
   };
 
   inline const Type *operator->() const {
-    GCTOOLS_ASSERT(this->valistp());
+//    GCTOOLS_ASSERT(this->valistp());
     return reinterpret_cast<Type *>(this->unsafe_valist());
   };
 
   inline Type &operator*() {
-    GCTOOLS_ASSERT(this->valistp());
+//    GCTOOLS_ASSERT(this->valistp());
     return *reinterpret_cast<Type *>(this->unsafe_valist());
   };
 

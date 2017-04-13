@@ -100,12 +100,12 @@ void dump_class_ids() {
     int status;
     char *ret = abi::__cxa_demangle(fnName, NULL, &length, &status);
     if (status == 0) {
-      printf("  %s --> %" PRu " : %s\n", ret, it.second, _rep_(lisp_classSymbolFromClassId(it.second)).c_str() );
+      printf("  %s --> %lu : %s\n", ret, it.second, _rep_(lisp_classSymbolFromClassId(it.second)).c_str() );
       delete ret;
     } else {
         // demangling failed. Output function name as a C function with
         // no arguments.
-      printf("  %s --> %" PRu " : %s\n", it.first.name(), it.second, _rep_(lisp_classSymbolFromClassId(it.second)).c_str() );
+      printf("  %s --> %lu : %s\n", it.first.name(), it.second, _rep_(lisp_classSymbolFromClassId(it.second)).c_str() );
     }
   }
 }

@@ -1,57 +1,40 @@
+# docker-compose uses this file to build clasp or cando in 2 steps.
+# To compile clasp, you need to have docker set up, and docker-compose installed.
+# To build cando, the cando extension must be present at ./extensions/cando
+# To checkout cando's 'testing' branch, do this:
+#    git clone git@github.com:drmeister/cando.git extensions/cando
+#    cd extensions/cando && git checkout testing && cd -
 version: '2'
 services:
-  cando-min-run:
-    image: cando-min-run
+  # first, run: docker-compose run clasp-build
+  # this will compile clasp and copy it's build output ./build/clasp.tgz
+  # Note that this takes between 2 and 3 hours!
+  clasp-build:
+    image: clasp-build
     build:
       context: .
-      dockerfile: tools/dockerfiles/cando-min-run/Dockerfile
+      dockerfile: tools/dockerfiles/clasp-build/Dockerfile
+    entrypoint: tar -cvzf /build/clasp.tgz -C /out/clasp .
+    volumes:
+      - ./build:/build
+  # To build clasp only, run: docker-compose build clasp
+  # This will start with a smaller base image, that has only the runtime
+  # dependencies, and unpack ./build/clasp.tgz into the directory /home/app
+  clasp:
+    image: clasp
+    build:
+      context: .
+      dockerfile: tools/dockerfiles/clasp/Dockerfile
+    depends_on:
+      - clasp-build
+  # To build cando, run: docker-compose run cando --help
+  # this should build the clasp image as a dependency
+  cando:
+    image: cando
+    build:
+      context: .
+      dockerfile: tools/dockerfiles/cando/Dockerfile
+    depends_on:
+      - clasp
     ports:
       - "8888:8888"
-    depends_on:
-      - clasp-min-install
-  clasp-min-run:
-    image: clasp-min-run
-    build:
-      context: .
-      dockerfile: tools/dockerfiles/clasp-min-run/Dockerfile
-    depends_on:
-      - clasp-min-install
-  clasp-min-install:
-    image: clasp-min-install
-    build:
-      context: .
-      dockerfile: tools/dockerfiles/clasp-min-install/Dockerfile
-    depends_on:
-      - clasp-copy-out
-      - clasp-min-dependencies
-  clasp-min-dependencies:
-    image: clasp-min-dependencies
-    build:
-      context: tools/dockerfiles/clasp-min-dependencies
-    command: echo Done building clasp-min-dependencies.
-  clasp-copy-out:
-    image: clasp-copy-out
-    build:
-      context: .
-      dockerfile: tools/dockerfiles/clasp-copy-out/Dockerfile
-    volumes:
-      - ./container:/tmp/clasp
-    command: cp -av install/ /tmp/clasp/
-    depends_on:
-      - clasp-full-build
-  clasp-full-build:
-    image: clasp-full-build
-    build:
-      context: .
-      dockerfile: tools/dockerfiles/clasp-full-build/Dockerfile
-      args:
-        CANDO_REVISION: dev
-    depends_on:
-      - clasp-dependencies
-  clasp-dependencies:
-    image: clasp-dependencies
-    build:
-      context: tools/dockerfiles/clasp-dependencies
-      args:
-        EXTERNALS_REVISION: master
-    command: echo Done building clasp-dependencies.

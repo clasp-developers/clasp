@@ -1034,7 +1034,7 @@ void debugPrintI32(int i32) {
 }
 
 void debugPrint_size_t(size_t v) {
-  printf("+++DBG-size_t[%" PRu "]\n", v);
+  printf("+++DBG-size_t[%lu]\n", v);
 }
 
 

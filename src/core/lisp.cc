@@ -393,12 +393,12 @@ void run_quick_tests() {
   auto scsTest = SimpleCharacterString_O::make("ABCDEFGHIJ");
   auto s8Test = Str8Ns_O::make("ABCDEFGHIJ");
   auto swTest = StrWNs_O::make("ABCDEFGHIJ");
-  printf("%s:%d   sizeof(claspChar) -> %" PRu "   typeid(claspChar).name() -> %s\n", __FILE__, __LINE__, sizeof(claspChar), typeid(claspChar).name() );
-  printf("%s:%d   sizeof(claspCharacter) -> %" PRu "   typeid(claspCharacter).name() -> %s\n", __FILE__, __LINE__, sizeof(claspCharacter), typeid(claspCharacter).name() );
-  printf("%s:%d   sizeof(SimpleBaseString_O::value_type) -> %" PRu "   typeid(SimpleBaseString_O::value_type).name() -> %s\n", __FILE__, __LINE__, sizeof(SimpleBaseString_O::value_type), typeid(SimpleBaseString_O::value_type).name() );
-  printf("%s:%d   sizeof(SimpleCharacterString_O::value_type) -> %" PRu "   typeid(SimpleCharacterString_O::value_type).name() -> %s\n", __FILE__, __LINE__, sizeof(SimpleCharacterString_O::value_type), typeid(SimpleCharacterString_O::value_type).name() );
-  printf("%s:%d   sizeof(Str8Ns_O::value_type) -> %" PRu "   typeid(Str8Ns_O::value_type).name() -> %s\n", __FILE__, __LINE__, sizeof(Str8Ns_O::simple_element_type), typeid(Str8Ns_O::simple_element_type).name() );
-  printf("%s:%d   sizeof(StrWNs_O::value_type) -> %" PRu "   typeid(StrWNs_O::value_type).name() -> %s\n", __FILE__, __LINE__, sizeof(StrWNs_O::simple_element_type), typeid(StrWNs_O::simple_element_type).name() );
+  printf("%s:%d   sizeof(claspChar) -> %lu   typeid(claspChar).name() -> %s\n", __FILE__, __LINE__, sizeof(claspChar), typeid(claspChar).name() );
+  printf("%s:%d   sizeof(claspCharacter) -> %lu   typeid(claspCharacter).name() -> %s\n", __FILE__, __LINE__, sizeof(claspCharacter), typeid(claspCharacter).name() );
+  printf("%s:%d   sizeof(SimpleBaseString_O::value_type) -> %lu   typeid(SimpleBaseString_O::value_type).name() -> %s\n", __FILE__, __LINE__, sizeof(SimpleBaseString_O::value_type), typeid(SimpleBaseString_O::value_type).name() );
+  printf("%s:%d   sizeof(SimpleCharacterString_O::value_type) -> %lu   typeid(SimpleCharacterString_O::value_type).name() -> %s\n", __FILE__, __LINE__, sizeof(SimpleCharacterString_O::value_type), typeid(SimpleCharacterString_O::value_type).name() );
+  printf("%s:%d   sizeof(Str8Ns_O::value_type) -> %lu   typeid(Str8Ns_O::value_type).name() -> %s\n", __FILE__, __LINE__, sizeof(Str8Ns_O::simple_element_type), typeid(Str8Ns_O::simple_element_type).name() );
+  printf("%s:%d   sizeof(StrWNs_O::value_type) -> %lu   typeid(StrWNs_O::value_type).name() -> %s\n", __FILE__, __LINE__, sizeof(StrWNs_O::simple_element_type), typeid(StrWNs_O::simple_element_type).name() );
 #define PRINT_STRING(x) { claspCharacter c = (*x)[1]; printf("%s:%d %s -> %s  &(*x)[0]->%p (*x)[1]=%c/0x%X)\n", __FILE__, __LINE__, #x, _rep_(x).c_str(), (void*)&(*x)[0], c, c); }
   PRINT_STRING(sbcsTest);
   PRINT_STRING(scsTest);
@@ -414,31 +414,31 @@ void run_quick_tests() {
   MATCH_PAIRS_notnilp(cl__string_EQ_,sbcsTest,scsTest,s8Test,swTest);
   VectorTNs_sp vec9 = VectorTNs_O::make(5,_Nil<T_O>(),clasp_make_fixnum(0));
   for (size_t i=0; i<256; ++i) {
-    printf("%s:%d    Building string of %" PRu " size\n", __FILE__, __LINE__, i);
+    printf("%s:%d    Building string of %lu size\n", __FILE__, __LINE__, i);
     Str8Ns_sp s9 = Str8Ns_O::make(i,'A',true,_Nil<T_O>());
-    printf("%s:%d     doing vectorPushExtend orig length=%" PRu " total size=%lu\n", __FILE__, __LINE__, vec9->length(),vec9->arrayTotalSize());
+    printf("%s:%d     doing vectorPushExtend orig length=%lu total size=%lu\n", __FILE__, __LINE__, vec9->length(),vec9->arrayTotalSize());
     vec9->vectorPushExtend(s9);
-    printf("%s:%d     done vectorPushExtend final length=%" PRu " total size=%lu\n", __FILE__, __LINE__, vec9->length(),vec9->arrayTotalSize());
+    printf("%s:%d     done vectorPushExtend final length=%lu total size=%lu\n", __FILE__, __LINE__, vec9->length(),vec9->arrayTotalSize());
   }
-  printf("%s:%d    vec9->length() = %" PRu "\n", __FILE__, __LINE__, vec9->length());
+  printf("%s:%d    vec9->length() = %lu\n", __FILE__, __LINE__, vec9->length());
   VectorTNs_sp vec = VectorTNs_O::make(5,_Nil<T_O>());
-  printf("%s:%d  vec@%p   length = %" PRu "\n", __FILE__, __LINE__, (void*)&*vec, vec->length());
+  printf("%s:%d  vec@%p   length = %lu\n", __FILE__, __LINE__, (void*)&*vec, vec->length());
   printf("%s:%d  vec@%p   vec->_Data = %p\n", __FILE__, __LINE__, (void*)&*vec, (void*)&*(vec->_Data));
   printf("%s:%d  vec@%p   vec.data() = %p\n", __FILE__, __LINE__, (void*)&*vec, (void*)&*(vec->data()));
   printf("%s:%d  vec@%p   vec[0] = %s\n", __FILE__, __LINE__, (void*)&*vec, _rep_((*vec)[0]).c_str());
   for ( size_t i(0); i<5; ++i ) {
     (*vec)[i] = clasp_make_fixnum(i);
-    printf("%s:%d   vec[%" PRu "] = %s\n", __FILE__, __LINE__, i, _rep_((*vec)[i]).c_str());
+    printf("%s:%d   vec[%lu] = %s\n", __FILE__, __LINE__, i, _rep_((*vec)[i]).c_str());
   }
   printf("%s:%d  Adjusting size \n", __FILE__, __LINE__ );
   vec->internalAdjustSize_(17);
   for ( size_t i(0); i<17; ++i ) {
-    printf("%s:%d   vec[%" PRu "] = %s\n", __FILE__, __LINE__, i, _rep_((*vec)[i]).c_str());
+    printf("%s:%d   vec[%lu] = %s\n", __FILE__, __LINE__, i, _rep_((*vec)[i]).c_str());
   }
   printf("%s:%d  Refilling first 17\n", __FILE__, __LINE__ );
   for ( size_t i(0); i<17; ++i ) {
     (*vec)[i] = clasp_make_fixnum(i+100);
-    printf("%s:%d   vec[%" PRu "] = %s\n", __FILE__, __LINE__, i, _rep_((*vec)[i]).c_str());
+    printf("%s:%d   vec[%lu] = %s\n", __FILE__, __LINE__, i, _rep_((*vec)[i]).c_str());
   }
   printf("%s:%d Adjusting and then dumping \n", __FILE__, __LINE__ );
   vec->internalAdjustSize_(24);

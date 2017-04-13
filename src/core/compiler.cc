@@ -398,7 +398,7 @@ LOAD:
   if (startup_functions_are_waiting()) {
     startup_functions_invoke();
   } else {
-    SIMPLE_ERROR(BF("There were no global ctors - there have to be global ctors for load-bundle"));
+    SIMPLE_ERROR(BF("This is not a proper FASL file - there were no global ctors - there have to be global ctors for load-bundle"));
   }
   T_mv result;
   cc_invoke_startup_functions();

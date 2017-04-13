@@ -1,17 +1,27 @@
 FROM ubuntu:latest
 MAINTAINER Christian Schafmeister <meister@temple.edu>
 
-# install all clasp runtime deps
-RUN apt-get update && apt-get upgrade -y && apt-get install -y \
-  libgc libgmp binutils-gold binutils \
-  zlib1g libncurses libboost-filesystem libboost-regex \
-  libboost-date-time libboost-program-options libboost-system \
-  libboost-iostreams csh flex gfortran zlib1g libbz2 patch \
-  git sbcl libexpat
+# add LLVM repo
+RUN apt-get -y update && apt-get -y install wget && apt-get clean
+RUN wget -O - http://apt.llvm.org/llvm-snapshot.gpg.key| apt-key add -
+RUN echo 'deb http://apt.llvm.org/xenial/ llvm-toolchain-xenial-4.0 main'\
+  >/etc/apt/sources.list.d/llvm4.list
 
-# add clasp binaries
-ADD build /clasp/build
+# install clasp runtime dependencies
+RUN apt-get -y update && apt-get -y install \
+  libboost-filesystem1.58.0 libboost-date-time1.58.0 libboost-program-options1.58.0 \
+  libboost-iostreams1.58.0 libgc1c2 llvm-4.0-runtime libgmpxx4ldbl \
+  clang-4.0 binutils python-clang-4.0 lld-4.0 libzmq-dev \
+  && apt-get clean
 
-# install into $PATH
+# add app user
+RUN groupadd -g 9999 app && useradd -u 9999 -g 9999 -ms /bin/bash app
+ENV HOME=/home/app
 
-ENTRYPOINT ['clasp']
+# add clasp build output
+ADD ./build/clasp.tgz ${HOME}/clasp
+
+USER app
+WORKDIR $HOME
+ENV PATH "$PATH:$HOME/clasp/bin"
+ENTRYPOINT [ "clasp" ]
