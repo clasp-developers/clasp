@@ -86,7 +86,7 @@ THE SOFTWARE.
 #include <clasp/core/wrappers.h>
 
 
-#define DEBUG_LEVEL_FULL
+#define DEBUG_LEVEL_NONE
 
 
 #if defined( DEBUG_LEVEL_FULL )
