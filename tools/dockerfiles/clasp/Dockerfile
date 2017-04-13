@@ -11,7 +11,7 @@ RUN echo 'deb http://apt.llvm.org/xenial/ llvm-toolchain-xenial-4.0 main'\
 RUN apt-get -y update && apt-get -y install \
   libboost-filesystem1.58.0 libboost-date-time1.58.0 libboost-program-options1.58.0 \
   libboost-iostreams1.58.0 libgc1c2 llvm-4.0-runtime libgmpxx4ldbl \
-  clang-4.0 binutils python-clang-4.0 lld-4.0 libzmq-dev \
+  clang-4.0 binutils python-clang-4.0 lld-4.0 libzmq3-dev \
   && apt-get clean
 
 # add app user
