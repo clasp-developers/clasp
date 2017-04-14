@@ -15,7 +15,7 @@ ADD tools/dockerfiles/jupyter/kernel.json \
 ADD extensions/cando/src/lisp $HOME/clasp/Contents/Resources/source-code/extensions/cando/src/lisp
 
 # set ownership and permissions before changing to app user
-RUN chown -R app:app /home/app/.local $HOME/clasp/extensions/cando/src/lisp
+RUN chown -R app:app /home/app/.local $HOME/clasp/Contents/Resources/source-code/extensions/cando/src/lisp
 
 # checkout quicklisp and its subprojects
 USER app
