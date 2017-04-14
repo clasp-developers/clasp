@@ -9,8 +9,10 @@ RUN pip install --upgrade pip && pip install jupyter
 ADD tools/dockerfiles/jupyter/kernel.json \
   /home/app/.local/share/jupyter/kernels/lisp/kernel.json
 
-# add cando extension
-ADD extensions/cando/src/lisp $HOME/clasp/extensions/cando/src/lisp
+# Overwrite the clasp-build clasp/Contents/Resources/source-code/extensions/cando/src/lisp directory
+# with whatever new changes have been made in the hosts  extensions/cando/src/lisp/**   hierarchy
+#    This is to refresh the Common Lisp code for Cando
+ADD extensions/cando/src/lisp $HOME/clasp/Contents/Resources/source-code/extensions/cando/src/lisp
 
 # set ownership and permissions before changing to app user
 RUN chown -R app:app /home/app/.local $HOME/clasp/extensions/cando/src/lisp
@@ -49,7 +51,7 @@ RUN clasp -e '(load "/home/app/quicklisp/setup.lisp")'\
           -e "(ql:quickload :trivial-utf-8)"\
           -e "(quit)"
 
-ADD ./examples ./tools/dockerfiles/examples
+ADD tools/dockerfiles/examples /home/app/work/examples
 
 ENTRYPOINT [ "jupyter", "notebook" ]
 CMD        [ "--no-browser", "--ip=0.0.0.0", "--port=8888" ]
