@@ -49,5 +49,7 @@ RUN clasp -e '(load "/home/app/quicklisp/setup.lisp")'\
           -e "(ql:quickload :trivial-utf-8)"\
           -e "(quit)"
 
+ADD ./examples ./tools/dockerfiles/examples
+
 ENTRYPOINT [ "jupyter", "notebook" ]
 CMD        [ "--no-browser", "--ip=0.0.0.0", "--port=8888" ]
