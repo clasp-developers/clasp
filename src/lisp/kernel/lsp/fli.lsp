@@ -16,7 +16,7 @@
 ;;;----------------------------------------------------------------------------
 ;;; Debugging MACROS
 
-(pushnew :clasp-ffi.debug cl:*features*)
+;;; (pushnew :clasp-ffi.debug cl:*features*)
 
 ;;;----------------------------------------------------------------------------
 ;;;----------------------------------------------------------------------------
@@ -178,16 +178,16 @@
      (%lisp-type->type-spec :ulong) (lambda () cmp::%i64%))
 
     (%set-llvm-type-symbol-fn
-     (%lisp-type->type-spec :long-long) (lambda () cmp::%i128%))
+     (%lisp-type->type-spec :long-long) (lambda () cmp::%i64%))
 
     (%set-llvm-type-symbol-fn
-     (%lisp-type->type-spec :llong) (lambda () cmp::%i128%))
+     (%lisp-type->type-spec :llong) (lambda () cmp::%i64%))
 
     (%set-llvm-type-symbol-fn
-     (%lisp-type->type-spec :unsigned-long-long) (lambda () cmp::%i128%))
+     (%lisp-type->type-spec :unsigned-long-long) (lambda () cmp::%i64%))
 
     (%set-llvm-type-symbol-fn
-     (%lisp-type->type-spec :ullong) (lambda () cmp::%i128%))
+     (%lisp-type->type-spec :ullong) (lambda () cmp::%i64%))
 
     (%set-llvm-type-symbol-fn
      (%lisp-type->type-spec :int8) (lambda () cmp::%i8%))
@@ -423,7 +423,11 @@
 (defun %load-foreign-library (name path)
   "Load a foreign library to be found at path. (name is ignored)"
   (declare (ignore name))
-  (%dlopen path))
+  (multiple-value-bind (handle error)
+      (%dlopen path)
+    (if (not handle)
+        (error "~A" error)
+        handle)))
 
 (declaim (inline %close-foreign-library))
 (defun %close-foreign-library (ptr)

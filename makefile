@@ -296,4 +296,4 @@ clang-format:
 docker:
 	docker-compose run clasp-build
 	docker-compose build clasp
-	docker-compose run cando
+	docker-compose build cando

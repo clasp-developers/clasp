@@ -158,8 +158,8 @@
 (defun %mem-ref-left-to-right ()
   (let ((result nil))
     (cffi:with-foreign-object (p :char)
-      (%mem-set 42 p :char)
-      (%mem-ref (progn (push 1 result) p) :char (progn (push 2 result) 0))
+      (setf (cffi:mem-ref p :char) 42)
+      (cffi:mem-ref (progn (push 1 result) p) :char (progn (push 2 result) 0))
       (nreverse result))))
 
 ;;; Test left-to-right evaluation of the arguments to %MEM-REF when
@@ -174,10 +174,12 @@
 (defun %mem-set-left-to-right ()
   (let ((result nil))
     (cffi:with-foreign-object (p :char)
-      (%mem-set (progn (push 1 result) 0)
-                (progn (push 2 result) p)
-                :char
-                (progn (push 3 result) 0))
+      (setf (cffi:mem-ref (progn
+                            (push 1 result)
+                            (push 2 result)
+                            p)
+                          :char)
+            (progn (push 3 result) 0))
       (nreverse result))))
 
 ;;; Test left-to-right evaluation of the arguments to %MEM-SET when

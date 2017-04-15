@@ -114,7 +114,7 @@ THE SOFTWARE.
 #if defined( DEBUG_LEVEL_FULL )
 #define DEBUG_PRINT(_msg_) fprintf( stderr, "%s", (_msg_).str().c_str())
 #else
-#defin DEBUG_PRINT(msg)
+#define DEBUG_PRINT(msg)
 #endif
 
 // ---------------------------------------------------------------------------
@@ -191,7 +191,7 @@ size_t get_fn_address( std::function< T( U... ) > f )
 
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
-template <class T>
+template <typename T>
 struct register_foreign_type
 {
   static void doit( core::VectorObjects_sp sp_tst,
@@ -199,10 +199,10 @@ struct register_foreign_type
                     core::Symbol_sp lisp_symbol,
                     const std::string &cxx_name )
   {
-    size_t size = sizeof(T);
-    size_t alignment = std::alignment_of<T>::value;
+    size_t size = sizeof( T );
+    size_t alignment = std::alignment_of< T >::value;
 
-    // For corrent naming we need to replace all '-' by '_' and make
+    // For correct naming we need to replace all '-' by '_' and make
     // sure we're all lowercase (will be done in Lisp) in lisp_name.
     std::string lisp_name = lisp_symbol->symbolNameAsString();
     std::replace( lisp_name.begin(), lisp_name.end(), '-', '_' );
@@ -294,6 +294,9 @@ void register_foreign_type_spec( core::VectorObjects_sp sp_tst,
                                _Nil<core::T_O>() );
 
   sp_tst->rowMajorAset( n_index, sp_fts->asSmartPtr() );
+
+  DEBUG_PRINT(BF("%s (%s:%d) | Registered type %s with size = %d and alignment = %d\n.") % __FUNCTION__ % __FILE__ % __LINE__ % lisp_name % size % alignment );
+
 };
 
 // ---------------------------------------------------------------------------
@@ -674,9 +677,9 @@ ForeignData_sp ForeignData_O::PERCENTinc_pointer( core::Integer_sp offset )
 
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
-core::Fixnum_sp foreign_type_size( core::Symbol_sp atype )
+int64_t foreign_type_size( core::Symbol_sp atype )
 {
-  core::Fixnum_sp result = nullptr;
+  int64_t result = -1;
 
   core::VectorObjects_sp sp_tst = _sym_STARforeign_type_spec_tableSTAR->symbolValue();
   auto iterator = sp_tst->begin();
@@ -689,18 +692,20 @@ core::Fixnum_sp foreign_type_size( core::Symbol_sp atype )
     {
       if ( sp_fts->PERCENTlisp_symbol()->eql_( atype ) )
       {
-        result = sp_fts->PERCENTsize();
+        result = clasp_to_int64( sp_fts->PERCENTsize() );
         goto RETURN_FROM_CORE__PERCENT_FOREIGN_TYPE_SIZE;
       }
     }
   }
 
-  SIMPLE_ERROR(BF("No foreign type size available for %s") % _rep_(atype));
+  SIMPLE_ERROR(BF("No foreign type size available for %s !") % _rep_(atype));
 
   // This point should never be reached.
-  return _Nil<core::T_O>();
+  return -1;
 
 RETURN_FROM_CORE__PERCENT_FOREIGN_TYPE_SIZE:
+
+  DEBUG_PRINT(BF("%s (%s:%d) | size = %d\n.") % __FUNCTION__ % __FILE__ % __LINE__ % result );
 
   return result;
 }
@@ -1073,68 +1078,49 @@ core::T_sp PERCENTmem_ref_long_double( core::Integer_sp address )
 core::T_sp PERCENTmem_ref_time( core::Integer_sp address )
 {
   time_t v = mem_ref< time_t >( core::clasp_to_cl_intptr_t( address ) );
+  DEBUG_PRINT(BF("%s (%s:%d) | v = %d\n.") % __FUNCTION__ % __FILE__ % __LINE__ % v );
   return mk_time( v );
 }
 
 core::T_sp PERCENTmem_ref_pointer( core::Integer_sp address )
 {
-  ForeignData_sp   result         = _Nil<core::T_O>();
-  void            *source_address = reinterpret_cast< void * >( core::clasp_to_cl_intptr_t( address ) );
-  int             *source_content = (int *) source_address;
-
-  DEBUG_PRINT(BF("+++ %s (%s:%d) | source address = %p\n.") % __FUNCTION__ % __FILE__ % __LINE__ % source_address );
-
-  if( *source_content == 0 )
-  {
-    result = PERCENTmake_nullpointer();
-    DEBUG_PRINT(BF("+++ %s (%s:%d) | New null-pointer allocated: %s\n.") % __FUNCTION__ % __FILE__ % __LINE__ % (result->__repr__().c_str()) );
-  }
-  else
-  {
-    void *destination_address = nullptr;
-
-    GC_ALLOCATE(ForeignData_O, result);
-    result->allocate( kw::_sym_clasp_foreign_data_kind_pointer, core::DeleteOnDtor, sizeof( void * ) );
-
-    DEBUG_PRINT(BF("+++ %s (%s:%d) | New pointer allocated: %s\n.") % __FUNCTION__ % __FILE__ % __LINE__ % (result->__repr__().c_str()) );
-
-    destination_address  = result->raw_data();
-
-    DEBUG_PRINT(BF("++ %s (%s:%d) | destination address = %p\n.") % __FUNCTION__ % __FILE__ % __LINE__ % destination_address );
-
-    memcpy( destination_address, source_address, sizeof( void * ) );
-  }
-
-  return result;
+  void *v = mem_ref< void * >( core::clasp_to_cl_intptr_t( address ) );
+  DEBUG_PRINT(BF("%s (%s:%d) | v = %p\n.") % __FUNCTION__ % __FILE__ % __LINE__ % v );
+  return mk_pointer( v );
 }
 
 core::T_sp PERCENTmem_ref_size( core::Integer_sp address )
 {
   size_t v = mem_ref< size_t >( core::clasp_to_cl_intptr_t( address ) );
+  DEBUG_PRINT(BF("%s (%s:%d) | v = %d\n.") % __FUNCTION__ % __FILE__ % __LINE__ % v );
   return mk_size( v );
 }
 
 core::T_sp PERCENTmem_ref_ssize( core::Integer_sp address )
 {
   ssize_t v = mem_ref< ssize_t >( core::clasp_to_cl_intptr_t( address ) );
+  DEBUG_PRINT(BF("%s (%s:%d) | v = %d\n.") % __FUNCTION__ % __FILE__ % __LINE__ % v );
   return mk_ssize( v );
 }
 
 core::T_sp PERCENTmem_ref_ptrdiff( core::Integer_sp address )
 {
   ptrdiff_t v = mem_ref< ptrdiff_t >( core::clasp_to_cl_intptr_t( address ) );
+  DEBUG_PRINT(BF("%s (%s:%d) | v = %d\n.") % __FUNCTION__ % __FILE__ % __LINE__ % v );
   return mk_ptrdiff( v );
 }
 
 core::T_sp PERCENTmem_ref_char( core::Integer_sp address )
 {
   int8_t v = mem_ref< int8_t >( core::clasp_to_cl_intptr_t( address ) );
+  DEBUG_PRINT(BF("%s (%s:%d) | v = %d\n.") % __FUNCTION__ % __FILE__ % __LINE__ % v );
   return mk_fixnum_int8( v );
 }
 
 core::T_sp PERCENTmem_ref_unsigned_char( core::Integer_sp address )
 {
   uint8_t v = mem_ref< uint8_t >( core::clasp_to_cl_intptr_t( address ) );
+  DEBUG_PRINT(BF("%s (%s:%d) | v = %d\n.") % __FUNCTION__ % __FILE__ % __LINE__ % v );
   return mk_fixnum_uint8( v );
 }
 
@@ -1305,6 +1291,7 @@ core::T_sp PERCENTmem_set_double( core::Integer_sp address, core::T_sp value )
   double tmp;
   translate::from_object< double > v( value );
   tmp = mem_set< double >( core::clasp_to_cl_intptr_t( address ), v._v );
+  DEBUG_PRINT(BF("%s (%s:%d) | v = %d\n.") % __FUNCTION__ % __FILE__ % __LINE__ % v._v );
   return mk_double_float( tmp );
 }
 
@@ -1313,6 +1300,7 @@ core::T_sp PERCENTmem_set_float( core::Integer_sp address, core::T_sp value )
   float tmp;
   translate::from_object< float > v( value );
   tmp = mem_set< float >( core::clasp_to_cl_intptr_t( address ), v._v );
+  DEBUG_PRINT(BF("%s (%s:%d) | v = %d\n.") % __FUNCTION__ % __FILE__ % __LINE__ % v._v );
   return mk_single_float( tmp );
 }
 
@@ -1329,43 +1317,17 @@ core::T_sp PERCENTmem_set_time( core::Integer_sp address, core::T_sp value )
   time_t tmp;
   translate::from_object< time_t > v( value );
   tmp = mem_set< time_t >( core::clasp_to_cl_intptr_t( address ), v._v );
+  DEBUG_PRINT(BF("%s (%s:%d) | v = %d\n.") % __FUNCTION__ % __FILE__ % __LINE__ % v._v );
   return mk_time( tmp );
 }
 
 core::T_sp PERCENTmem_set_pointer( core::Integer_sp address, core::T_sp value )
 {
-  ForeignData_sp    result              = _Nil<core::T_O>();
-  void            * source_address      = nullptr;
-  void            * destination_address = nullptr;
-  int               source_content      = 0;
-
+  void * tmp;
   translate::from_object< void * > v( value );
-
-  destination_address = reinterpret_cast< void * >( core::clasp_to_cl_intptr_t( address ) );
-  source_address = v._v;
-  source_content = * ((int *) source_address);
-
-  DEBUG_PRINT(BF("*** %s (%s:%d) | source address = %p, source content = %d, %p\n.") % __FUNCTION__ % __FILE__ % __LINE__ % source_address % source_content % source_content);
-
-  if( source_content == 0 ) // Null Pointer ?
-  {
-    result = PERCENTmake_nullpointer();
-    DEBUG_PRINT(BF("%*** s (%s:%d) | New null-pointer allocated: %s\n.") % __FUNCTION__ % __FILE__ % __LINE__ % (result->__repr__().c_str()) );
-  }
-  else
-  {
-    GC_ALLOCATE(ForeignData_O, newptr);
-    newptr->allocate( kw::_sym_clasp_foreign_data_kind_pointer, core::DeleteOnDtor, sizeof( void * ) );
-    destination_address = newptr->raw_data();
-    memcpy( destination_address, source_address, sizeof( void * ) );
-
-    DEBUG_PRINT(BF("*** %s (%s:%d) | New pointer allocated: %s\n.") % __FUNCTION__ % __FILE__ % __LINE__ % (newptr->__repr__().c_str()) );
-    result = newptr;
-  }
-
-  DEBUG_PRINT(BF("*** %s (%s:%d) | result: %s\n.") % __FUNCTION__ % __FILE__ % __LINE__ % (result->__repr__().c_str()) );
-
-  return result;
+  tmp = mem_set< void * >( core::clasp_to_cl_intptr_t( address ), v._v );
+  DEBUG_PRINT(BF("%s (%s:%d) | v = %p\n.") % __FUNCTION__ % __FILE__ % __LINE__ % v._v );
+  return mk_pointer( tmp );
 }
 
 core::T_sp PERCENTmem_set_size( core::Integer_sp address, core::T_sp value )
@@ -1373,6 +1335,7 @@ core::T_sp PERCENTmem_set_size( core::Integer_sp address, core::T_sp value )
   size_t tmp;
   translate::from_object< size_t > v( value );
   tmp = mem_set< size_t >( core::clasp_to_cl_intptr_t( address ), v._v );
+  DEBUG_PRINT(BF("%s (%s:%d) | v = %d\n.") % __FUNCTION__ % __FILE__ % __LINE__ % v._v );
   return mk_size( tmp );
 }
 
@@ -1381,6 +1344,7 @@ core::T_sp PERCENTmem_set_ssize( core::Integer_sp address, core::T_sp value )
   ssize_t tmp;
   translate::from_object< ssize_t > v( value );
   tmp = mem_set< ssize_t >( core::clasp_to_cl_intptr_t( address ), v._v );
+  DEBUG_PRINT(BF("%s (%s:%d) | v = %d\n.") % __FUNCTION__ % __FILE__ % __LINE__ % v._v );
   return mk_ssize( tmp );
 }
 
@@ -1389,6 +1353,7 @@ core::T_sp PERCENTmem_set_ptrdiff( core::Integer_sp address, core::T_sp value )
   ptrdiff_t tmp;
   translate::from_object< ptrdiff_t > v( value );
   tmp = mem_set< ptrdiff_t >( core::clasp_to_cl_intptr_t( address ), v._v );
+  DEBUG_PRINT(BF("%s (%s:%d) | v = %d\n.") % __FUNCTION__ % __FILE__ % __LINE__ % v._v );
   return mk_ptrdiff( tmp );
 }
 
@@ -1397,6 +1362,7 @@ core::T_sp PERCENTmem_set_char( core::Integer_sp address, core::T_sp value )
   int8_t tmp;
   translate::from_object< int8_t > v( value );
   tmp = mem_set< int8_t >( core::clasp_to_cl_intptr_t( address ), v._v );
+  DEBUG_PRINT(BF("%s (%s:%d) | v = %d\n.") % __FUNCTION__ % __FILE__ % __LINE__ % v._v );
   return mk_fixnum_int8( tmp );
 }
 
@@ -1405,6 +1371,7 @@ core::T_sp PERCENTmem_set_unsigned_char( core::Integer_sp address, core::T_sp va
   uint8_t tmp;
   translate::from_object< uint8_t > v( value );
   tmp = mem_set< uint8_t >( core::clasp_to_cl_intptr_t( address ), v._v );
+  DEBUG_PRINT(BF("%s (%s:%d) | v = %d\n.") % __FUNCTION__ % __FILE__ % __LINE__ % v._v );
   return mk_fixnum_uint8( tmp );
 }
 
