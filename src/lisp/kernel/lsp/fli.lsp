@@ -423,7 +423,11 @@
 (defun %load-foreign-library (name path)
   "Load a foreign library to be found at path. (name is ignored)"
   (declare (ignore name))
-  (%dlopen path))
+  (multiple-value-bind (handle error)
+      (%dlopen path)
+    (if (not handle)
+        (error "~A" error)
+        handle)))
 
 (declaim (inline %close-foreign-library))
 (defun %close-foreign-library (ptr)
