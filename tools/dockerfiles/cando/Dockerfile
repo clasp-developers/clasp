@@ -3,9 +3,20 @@ MAINTAINER Christian Schafmeister <meister@temple.edu>
 
 # install Jupyter and its dependencies; configure jupyter kernel
 USER root
-RUN apt-get update && apt-get -y install git-core \
-  python2.7 python-pip python-dev ipython ipython-notebook
+RUN apt-get update && apt-get -y install git-core 
+RUN apt-get -y install python2.7 python-pip python-dev ipython ipython-notebook
 RUN pip install --upgrade pip && pip install jupyter
+
+# Install nglview for python 2
+RUN python -m pip install pip --upgrade
+RUN python -m pip install numpy
+RUN python -m pip install nglview==0.6.2.3
+RUN python -m pip install ipywidgets==5.2.2
+RUN python -m pip install pytraj==1.0.9
+RUN python -m jupyter nbextension enable --py --sys-prefix widgetsnbextension
+RUN python -m jupyter nbextension install --py --sys-prefix nglview
+RUN python -m jupyter nbextension enable --py --sys-prefix nglview
+
 ADD tools/dockerfiles/jupyter/kernel.json \
   /home/app/.local/share/jupyter/kernels/lisp/kernel.json
 
