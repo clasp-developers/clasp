@@ -27,7 +27,7 @@ THE SOFTWARE.
 //#define DEBUG_LEVEL_FULL
 
 #include <clasp/core/foundation.h>
-#ifdef DEBUG_CL_SYMBOLS
+#ifdef DEFINE_CL_SYMBOLS
 #include <clasp/core/allClSymbols.h>
 #endif
 #include <clasp/core/symbol.h>
