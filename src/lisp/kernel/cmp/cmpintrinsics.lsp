@@ -157,19 +157,19 @@ Set this to other IRBuilders to make code go where you want")
   (cond
     ((= 8 +uintptr_t-size+) %i64%)
     ((= 4 +uintptr_t-size+) %i32%)
-    (t (error "Add support for size uintptr_t = ~a" sizeof-uintptr_t))))
+    (t (error "Add support for size uintptr_t = ~a" +uintptr_t-size+))))
 (define-symbol-macro %uintptr_t%
   (cond
     ((= 8 +uintptr_t-size+) %i64%)
     ((= 4 +uintptr_t-size+) %i32%)
-    (t (error "Add support for size uintptr_t = ~a" sizeof-uintptr_t))))
+    (t (error "Add support for size uintptr_t = ~a" +uintptr_t-size+))))
 (define-symbol-macro %uintptr_t*% (llvm-sys:type-get-pointer-to %uintptr_t%))
 (defun make-uintptr_t (x)
   (and (> x most-positive-fixnum) (error "make sure the integer ~s fits in a %i64%" x))
   (cond
     ((= 8 +uintptr_t-size+) (jit-constant-i64 x))
     ((= 4 +uintptr_t-size+) (jit-constant-i32 x))
-    (t (error "Add support for size uintptr_t = ~a" sizeof-uintptr_t))))
+    (t (error "Add support for size uintptr_t = ~a" +uintptr_t-size+))))
 
 ;;; DO NOT CHANGE THE FOLLOWING STRUCT!!! IT MUST MATCH VaList_S
 
