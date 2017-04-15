@@ -178,16 +178,16 @@
      (%lisp-type->type-spec :ulong) (lambda () cmp::%i64%))
 
     (%set-llvm-type-symbol-fn
-     (%lisp-type->type-spec :long-long) (lambda () cmp::%i128%))
+     (%lisp-type->type-spec :long-long) (lambda () cmp::%i64%))
 
     (%set-llvm-type-symbol-fn
-     (%lisp-type->type-spec :llong) (lambda () cmp::%i128%))
+     (%lisp-type->type-spec :llong) (lambda () cmp::%i64%))
 
     (%set-llvm-type-symbol-fn
-     (%lisp-type->type-spec :unsigned-long-long) (lambda () cmp::%i128%))
+     (%lisp-type->type-spec :unsigned-long-long) (lambda () cmp::%i64%))
 
     (%set-llvm-type-symbol-fn
-     (%lisp-type->type-spec :ullong) (lambda () cmp::%i128%))
+     (%lisp-type->type-spec :ullong) (lambda () cmp::%i64%))
 
     (%set-llvm-type-symbol-fn
      (%lisp-type->type-spec :int8) (lambda () cmp::%i8%))

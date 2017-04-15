@@ -285,7 +285,6 @@ namespace core {
     static T_sp makeIntegerType(gc::Fixnum low, gc::Fixnum high);
     static Integer_sp create(const mpz_class &v);
     static Integer_sp create(gctools::Fixnum v);
-    static Integer_sp create(uintptr_clasp_t v);
     static Integer_sp create(const string &v) {
       return Integer_O::create(v.c_str());
     };
@@ -307,13 +306,12 @@ namespace core {
 
     static Integer_sp create( int32_t v );
     static Integer_sp create( uint32_t v );
-#ifdef OLD_INTPTR_T
-#if !defined( _TARGET_OS_LINUX )
+
+#if !defined( CLASP_FIXNUM_IS_INT64 )
     static Integer_sp create( int64_t v );
+#endif
     static Integer_sp create( uint64_t v );
-#endif
-#endif
-    
+
     // THOSE ARE ALREADY DEFINED ABOVE
     // static Integer_sp create( short v );
     // static Integer_sp create( unsigned short v );
@@ -324,17 +322,20 @@ namespace core {
     // static Integer_sp create( long v );
     // static Integer_sp create( unsigned long v );
     //
-#if defined(_TARGET_OS_LINUX)
+#if !defined( CLASP_LONG_LONG_IS_INT64 )
     static Integer_sp create( long long v );
+#endif
+#if !defined( CLASP_UNSIGNED_LONG_LONG_IS_UINT64 )
     static Integer_sp create( unsigned long long v );
 #endif
+
+#if !defined( CLASP_UINTPTR_IS_UINT64) && !defined( CLASP_UINTPTR_IS_UINT32 )
+    static Integer_sp create( uintptr_clasp_t v );
+#endif
+
     static Integer_sp create( float f );
     static Integer_sp create( double f );
     static Integer_sp createLongFloat( LongFloat f );
-
-#ifdef OLD_INTPTR_T
-    static Integer_sp create( cl_intptr_t v );
-#endif
 
   public:
 
@@ -1051,7 +1052,7 @@ namespace core {
   // THE NEXT TWO FUNCTIONS ARE HERE FOR BACKWARDS COMPATIBILITY
   // frgo, 2017-01-21
 
-  inline uint64_t clasp_to_int64(Integer_sp x)
+  inline int64_t clasp_to_int64(Integer_sp x)
   {
     return clasp_to_int64_t( x );
   }
@@ -1074,10 +1075,10 @@ namespace core {
   inline Number_sp clasp_sqrt( Number_sp z )
   {
     if ( z.fixnump() )
-      {
-	float f = z.unsafe_fixnum();
-	return float_sqrt(f);
-      } else if (z.single_floatp()) {
+    {
+      float f = z.unsafe_fixnum();
+      return float_sqrt(f);
+    } else if (z.single_floatp()) {
       float f = z.unsafe_single_float();
       return float_sqrt(f);
     }

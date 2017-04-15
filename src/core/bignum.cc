@@ -75,71 +75,70 @@ gc::Fixnum Bignum_O::as_int_() const {
   TYPE_ERROR(this->asSmartPtr(), Cons_O::createList(cl::_sym_Integer_O, make_fixnum(gc::most_negative_int), make_fixnum(gc::most_positive_int)));
 }
 
-int64_t Bignum_O::as_int64_() const {
+int64_t Bignum_O::as_int64_() const
+{
   size_t sizeinbase2 = mpz_sizeinbase(this->_value.get_mpz_t(),2);
-  if (sizeinbase2>64) goto BAD;
+
+  if ( sizeinbase2 > 64 )
   {
-    int64_t val;
-    size_t count;
-    int64_t* valP = (int64_t *)::mpz_export(&val, &count,
-                                            _lisp->integer_ordering()._mpz_import_word_order,
-                                            sizeof(int64_t),//_lisp->integer_ordering()._mpz_import_size,
-                                            _lisp->integer_ordering()._mpz_import_endian,
-                                            0,
-                                            this->_value.get_mpz_t());
-    int sgn = mpz_sgn(this->_value.get_mpz_t());
-    if (sgn<0) val = -val;
+    goto BAD;
+  }
+  else
+  {
+    int64_t   val   = 0;
+    size_t    count = 0;
+    int       sign  = 0;
+
+    int64_t * valP  = (int64_t *)::mpz_export( &val,
+                                               &count,
+                                               _lisp->integer_ordering()._mpz_import_word_order,
+                                               sizeof(int64_t),
+                                               _lisp->integer_ordering()._mpz_import_endian,
+                                               0,
+                                               this->_value.get_mpz_t() );
+
+    sign = mpz_sgn(this->_value.get_mpz_t());
+    if ( sign < 0 )
+    {
+      val = -val;
+    }
+
     return val;
   }
+
  BAD:
+
   SIMPLE_ERROR(BF("The value %s won't fit into an int64_t") % _rep_(this->asSmartPtr()));
+
 }
 
+uint64_t Bignum_O::as_uint64_() const
+{
+  size_t sizeinbase2 = mpz_sizeinbase( this->_value.get_mpz_t(), 2 );
 
-uint64_t Bignum_O::as_uint64_() const {
-  size_t sizeinbase2 = mpz_sizeinbase(this->_value.get_mpz_t(),2);
-  if (sizeinbase2>64) goto BAD;
+  if ( sizeinbase2 > 64 )
   {
-    uint64_t val;
-    size_t count;
-    uint64_t* valP = (uint64_t *)::mpz_export(&val, &count,
-                                              _lisp->integer_ordering()._mpz_import_word_order,
-                                              sizeof(uint64_t),//_lisp->integer_ordering()._mpz_import_size,
-                                              _lisp->integer_ordering()._mpz_import_endian,
-                                              0,
-                                              this->_value.get_mpz_t());
+    goto BAD;
+  }
+  else
+  {
+    uint64_t   val    = 0;
+    size_t     count  = 0;
+
+    uint64_t * valP   = (uint64_t *)::mpz_export( &val,
+                                                  &count,
+                                                  _lisp->integer_ordering()._mpz_import_word_order,
+                                                  sizeof(uint64_t),
+                                                  _lisp->integer_ordering()._mpz_import_endian,
+                                                  0,
+                                                  this->_value.get_mpz_t() );
     return val;
   }
+
  BAD:
+
   SIMPLE_ERROR(BF("The value %s won't fit into an uint64_t") % _rep_(this->asSmartPtr()));
-#if 0
-  unsigned int *valsP = my_thread->_AsUint64Buffer.getOrAllocate(this->_value, 0);
-  size_t count;
-  valsP = (unsigned int *)::mpz_export(valsP, &count,
-                                       _lisp->integer_ordering()._mpz_import_word_order,
-                                       _lisp->integer_ordering()._mpz_import_size,
-                                       _lisp->integer_ordering()._mpz_import_endian,
-                                       0,
-                                       this->_value.get_mpz_t());
-  if (valsP == NULL) {
-    return ((0));
-  } else if (count == 1 || count == 2) {
-    unsigned int val0 = valsP[0];
-    unsigned int val1 = 0;
-    if (count > 1)
-      val1 = valsP[1];
-    if (count == 1) {
-      return ((val0 & 0xfffffffful));
-    } else if (count == 2) {
-      uint64_t ret = val1;
-      ret = ret << 32;
-      ret |= val0;
-      return ((ret));
-    }
-  }
-  mpz_class z = (unsigned long)gc::most_positive_uint64;
-  TYPE_ERROR(this->asSmartPtr(), Cons_O::createList(cl::_sym_Integer_O, make_fixnum(0), Integer_O::create(z)));
-#endif
+
 }
 
 /*! This helps us debug the as_uint64 function by returning a string representation of the uint64 */
@@ -237,11 +236,11 @@ inline uint32_t Bignum_O::as_uint32_t() const {
 // -- INT64 --
 
 inline int64_t Bignum_O::as_int64_t() const {
-  return this->as_int64_();
+  return static_cast<int64_t>( this->as_int64_() );
 }
 
 inline uint64_t Bignum_O::as_uint64_t() const {
-  return this->as_uint64_();
+  return static_cast<uint64_t>( this->as_uint64_() );
 }
 
 // -- CL_INTPTR_T --
@@ -250,7 +249,7 @@ inline cl_intptr_t Bignum_O::as_cl_intptr_t() const
 {
   if( this->get().get_si() >= 0 )
   {
-    return (cl_intptr_t) this->get().get_si();
+    return static_cast<cl_intptr_t>( this->get().get_si() );
   }
 
   SIMPLE_ERROR(BF("Value %llud out of range for type CL_INTPTR_T .") % (unsigned long long) this->get().get_si() );
@@ -260,7 +259,7 @@ inline cl_intptr_t Bignum_O::as_cl_intptr_t() const
 
 inline ptrdiff_t Bignum_O::as_ptrdiff_t() const {
   if( this->get().get_si() >= 0 ) {
-    return (ptrdiff_t) this->get().get_si();
+    return static_cast<ptrdiff_t>(  this->get().get_si() );
   }
   SIMPLE_ERROR(BF("Value %lld out of range for type PTRDIFF_T .") % (long long) this->get().get_si() );
 }
@@ -269,7 +268,7 @@ inline ptrdiff_t Bignum_O::as_ptrdiff_t() const {
 
 inline size_t Bignum_O::as_size_t() const {
   if(( this->get().get_si() >= gc::most_negative_size ) && ( this->get().get_si() <= gc::most_positive_size )) {
-    return (size_t) this->get().get_si();
+    return static_cast<size_t>( this->get().get_si() );
   }
 
   SIMPLE_ERROR(BF("Value %lld out of range for integer type SIZE_T .") % (long long) this->get().get_si() );
@@ -279,7 +278,7 @@ inline size_t Bignum_O::as_size_t() const {
 
 inline ssize_t Bignum_O::as_ssize_t() const {
   if(( this->get().get_si() >= gc::most_negative_ssize ) && ( this->get().get_si() <= gc::most_positive_ssize )) {
-    return (ssize_t) this->get().get_si();
+    return static_cast<ssize_t>( this->get().get_si() );
   }
 
   SIMPLE_ERROR(BF("Value %lld out of range for integer type SSIZE_T .") % (long long) this->get().get_si() );
@@ -288,15 +287,15 @@ inline ssize_t Bignum_O::as_ssize_t() const {
 // --- ---
 
 float Bignum_O::as_float_() const {
-  return ((this->_value.get_d()));
+  return static_cast<float_t>( (this->_value.get_d()) );
 }
 
 double Bignum_O::as_double_() const {
-  return ((this->_value.get_d()));
+  return static_cast<double>( (this->_value.get_d()) );
 }
 
 LongFloat Bignum_O::as_long_float_() const {
-  return ((this->_value.get_d()));
+  return static_cast<LongFloat>( (this->_value.get_d()) );
 }
 
 // --- END OF TRANSLATION METHODS ---

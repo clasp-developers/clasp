@@ -111,6 +111,7 @@ THE SOFTWARE.
 //   DEFINES
 // ---------------------------------------------------------------------------
 
+
 #if defined( DEBUG_LEVEL_FULL )
 #define DEBUG_PRINT(_msg_) fprintf( stderr, "%s", (_msg_).str().c_str())
 #else
@@ -191,7 +192,7 @@ size_t get_fn_address( std::function< T( U... ) > f )
 
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
-template <class T>
+template <typename T>
 struct register_foreign_type
 {
   static void doit( core::VectorObjects_sp sp_tst,
@@ -199,8 +200,8 @@ struct register_foreign_type
                     core::Symbol_sp lisp_symbol,
                     const std::string &cxx_name )
   {
-    size_t size = sizeof(T);
-    size_t alignment = std::alignment_of<T>::value;
+    size_t size = sizeof( T );
+    size_t alignment = std::alignment_of< T >::value;
 
     // For corrent naming we need to replace all '-' by '_' and make
     // sure we're all lowercase (will be done in Lisp) in lisp_name.
@@ -294,6 +295,9 @@ void register_foreign_type_spec( core::VectorObjects_sp sp_tst,
                                _Nil<core::T_O>() );
 
   sp_tst->rowMajorAset( n_index, sp_fts->asSmartPtr() );
+
+  DEBUG_PRINT(BF("%s (%s:%d) | Registered type %s with size = %d and alignment = %d\n.") % __FUNCTION__ % __FILE__ % __LINE__ % lisp_name % size % alignment );
+
 };
 
 // ---------------------------------------------------------------------------
@@ -674,9 +678,9 @@ ForeignData_sp ForeignData_O::PERCENTinc_pointer( core::Integer_sp offset )
 
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
-core::Fixnum_sp foreign_type_size( core::Symbol_sp atype )
+int64_t foreign_type_size( core::Symbol_sp atype )
 {
-  core::Fixnum_sp result = nullptr;
+  int64_t result = -1;
 
   core::VectorObjects_sp sp_tst = _sym_STARforeign_type_spec_tableSTAR->symbolValue();
   auto iterator = sp_tst->begin();
@@ -689,18 +693,20 @@ core::Fixnum_sp foreign_type_size( core::Symbol_sp atype )
     {
       if ( sp_fts->PERCENTlisp_symbol()->eql_( atype ) )
       {
-        result = sp_fts->PERCENTsize();
+        result = clasp_to_int64( sp_fts->PERCENTsize() );
         goto RETURN_FROM_CORE__PERCENT_FOREIGN_TYPE_SIZE;
       }
     }
   }
 
-  SIMPLE_ERROR(BF("No foreign type size available for %s") % _rep_(atype));
+  SIMPLE_ERROR(BF("No foreign type size available for %s !") % _rep_(atype));
 
   // This point should never be reached.
-  return _Nil<core::T_O>();
+  return -1;
 
 RETURN_FROM_CORE__PERCENT_FOREIGN_TYPE_SIZE:
+
+  DEBUG_PRINT(BF("%s (%s:%d) | size = %d\n.") % __FUNCTION__ % __FILE__ % __LINE__ % result );
 
   return result;
 }
@@ -1078,13 +1084,13 @@ core::T_sp PERCENTmem_ref_time( core::Integer_sp address )
 
 core::T_sp PERCENTmem_ref_pointer( core::Integer_sp address )
 {
-  ForeignData_sp   result         = _Nil<core::T_O>();
-  void            *source_address = reinterpret_cast< void * >( core::clasp_to_cl_intptr_t( address ) );
-  int             *source_content = (int *) source_address;
+  ForeignData_sp   result             = _Nil<core::T_O>();
+  void            *source_address     = reinterpret_cast< void * >( core::clasp_to_cl_intptr_t( address ) );
+  int             *source_content_ptr = (int *) source_address;
 
-  DEBUG_PRINT(BF("+++ %s (%s:%d) | source address = %p\n.") % __FUNCTION__ % __FILE__ % __LINE__ % source_address );
+  DEBUG_PRINT(BF("*** %s (%s:%d) | source address = %p, source content = %d, %p\n.") % __FUNCTION__ % __FILE__ % __LINE__ % source_address % *source_content_ptr % (void *)source_content_ptr);
 
-  if( *source_content == 0 )
+  if( *source_content_ptr == 0 )
   {
     result = PERCENTmake_nullpointer();
     DEBUG_PRINT(BF("+++ %s (%s:%d) | New null-pointer allocated: %s\n.") % __FUNCTION__ % __FILE__ % __LINE__ % (result->__repr__().c_str()) );
@@ -1337,17 +1343,17 @@ core::T_sp PERCENTmem_set_pointer( core::Integer_sp address, core::T_sp value )
   ForeignData_sp    result              = _Nil<core::T_O>();
   void            * source_address      = nullptr;
   void            * destination_address = nullptr;
-  int               source_content      = 0;
+  int             * source_content_ptr  = nullptr;
 
   translate::from_object< void * > v( value );
 
   destination_address = reinterpret_cast< void * >( core::clasp_to_cl_intptr_t( address ) );
   source_address = v._v;
-  source_content = * ((int *) source_address);
+  source_content_ptr = (int *) source_address;
 
-  DEBUG_PRINT(BF("*** %s (%s:%d) | source address = %p, source content = %d, %p\n.") % __FUNCTION__ % __FILE__ % __LINE__ % source_address % source_content % source_content);
+  DEBUG_PRINT(BF("*** %s (%s:%d) | source address = %p, source content = %d, %p\n.") % __FUNCTION__ % __FILE__ % __LINE__ % source_address % *source_content_ptr % (void *)source_content_ptr);
 
-  if( source_content == 0 ) // Null Pointer ?
+  if( *source_content_ptr == 0 ) // Null Pointer ?
   {
     result = PERCENTmake_nullpointer();
     DEBUG_PRINT(BF("%*** s (%s:%d) | New null-pointer allocated: %s\n.") % __FUNCTION__ % __FILE__ % __LINE__ % (result->__repr__().c_str()) );

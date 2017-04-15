@@ -621,12 +621,12 @@ ALWAYS_INLINE core::T_sp mk_integer_ulong( unsigned long v )
 
 ALWAYS_INLINE core::T_sp mk_integer_longlong( long long v )
 {
-  return core::Integer_O::create( (long long)v );
+  return core::Integer_O::create( (long long) v );
 }
 
 ALWAYS_INLINE core::T_sp mk_integer_ulonglong( unsigned long long v )
 {
-  return core::Integer_O::create( v );
+  return core::Integer_O::create( (unsigned long long) v );
 }
 
 ALWAYS_INLINE core::T_sp mk_double_float( double v )

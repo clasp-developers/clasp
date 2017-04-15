@@ -1455,9 +1455,7 @@ Integer_sp Integer_O::create( uint32_t v )
   return clasp_make_fixnum(static_cast<Fixnum>(v));
 }
 
-#ifdef OLD_INTPTR_T
-#ifndef _TARGET_OS_LINUX
-
+#if !defined( CLASP_FIXNUM_IS_INT64 )
 Integer_sp Integer_O::create( int64_t v )
 {
   if(( v >= gc::most_negative_fixnum) && (v <= gc::most_positive_fixnum ))
@@ -1467,6 +1465,7 @@ Integer_sp Integer_O::create( int64_t v )
 
   return Bignum_O::create( v );
 }
+#endif
 
 Integer_sp Integer_O::create( uint64_t v )
 {
@@ -1478,11 +1477,7 @@ Integer_sp Integer_O::create( uint64_t v )
   return Bignum_O::create( v );
 }
 
-#endif
-#endif
-
-#if defined(_TARGET_OS_LINUX)
-
+#if !defined( CLASP_LONG_LONG_IS_INT64 )
 Integer_sp Integer_O::create( long long v )
 {
   if(( v >= gc::most_negative_fixnum) && (v <= gc::most_positive_fixnum ))
@@ -1491,7 +1486,9 @@ Integer_sp Integer_O::create( long long v )
   }
   return Bignum_O::create( v );
 }
+#endif
 
+#if !defined( CLASP_UNSIGNED_LONG_LONG_IS_UINT64 )
 Integer_sp Integer_O::create( unsigned long long v )
 {
   if ( v <= gc::most_positive_fixnum )
@@ -1500,8 +1497,19 @@ Integer_sp Integer_O::create( unsigned long long v )
   }
   return Bignum_O::create( v );
 }
-
 #endif
+
+#if !defined( CLASP_UINTPTR_IS_UINT64 ) && !defined( CLASP_UINTPTR_IS_UINT32 )
+Integer_sp Integer_O::create( uintptr_clasp_t v )
+{
+  if ( v <= gc::most_positive_fixnum )
+  {
+    return clasp_make_fixnum((Fixnum)v);
+  }
+  return Bignum_O::create( v );
+}
+#endif
+
 
 Integer_sp Integer_O::create(float v) {
   if (v > (float)(std::numeric_limits<int>::min()) && v < (float)(std::numeric_limits<int>::max())) {
@@ -1537,15 +1545,6 @@ Integer_sp Integer_O::create(const mpz_class &v) {
     return make_fixnum(fv);
   }
   return Bignum_O::create(v);
-}
-
-Integer_sp Integer_O::create(cl_intptr_t v) {
-  if (v <= gc::most_positive_fixnum) {
-    return Integer_O::create((Fixnum)v);
-  }
-
-  Bignum z( GMP_LONG(v) );
-  return Bignum_O::create( z );
 }
 
 }; // namespace core

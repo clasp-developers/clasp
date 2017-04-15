@@ -68,14 +68,16 @@ public: // Functions here
     return b;
   };
 
-#ifdef OLD_INTPTR_T
-#if !defined( _TARGET_OS_LINUX )
+#if !defined( CLASP_FIXNUM_IS_INT64 )
+
   static Bignum_sp create( int64_t v )
   {
     GC_ALLOCATE(Bignum_O, b);
     b->_value = (signed long int) v;
     return b;
   };
+
+#endif
 
   static Bignum_sp create( uint64_t v )
   {
@@ -84,7 +86,7 @@ public: // Functions here
     return b;
   };
 
-#else
+#if !defined( CLASP_LONG_LONG_IS_INT64 )
 
   static Bignum_sp create( long long v )
   {
@@ -92,6 +94,10 @@ public: // Functions here
     b->_value = (long long)v;
     return b;
   };
+
+#endif
+
+#if !defined( CLASP_UNSIGNED_LONG_LONG_IS_UINT64 )
 
   static Bignum_sp create( unsigned long long v )
   {
@@ -101,8 +107,7 @@ public: // Functions here
   };
 
 #endif
-#endif
-  
+
  public:
 
   NumberType number_type_() const { return number_Bignum; };

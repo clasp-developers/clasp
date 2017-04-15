@@ -205,7 +205,7 @@ namespace clasp_ffi {
   // ---------------------------------------------------------------------------
   // FOREIGN TYPE SIZE - Only needed in C++ land. For Lisp, there is
   // %foreign-type-size implemented in Lisp
-  core::Fixnum_sp foreign_type_size( core::Symbol_sp atype );
+  int64_t foreign_type_size( core::Symbol_sp atype );
 
   // ---------------------------------------------------------------------------
   // DYNAMIC LIBRARY HANDLING
