@@ -10,8 +10,6 @@
 (SYS:*MAKE-SPECIAL '*echo-repl-tpl-read*)
 (export '(*echo-repl-tpl-read*
           run-repl
-          *load-current-source-file-info*
-          *load-current-linenumber*
           cons-car
           cons-cdr))
 (sys:*make-special 'core::*notify-on-compile*)
@@ -871,10 +869,6 @@ the stage, the +application-name+ and the +bitcode-name+"
 (export 'my-time)
 
 
-(defun load-pos ()
-  (declare (special core:*load-current-source-file-info* core:*load-current-linenumber*))
-  (bformat t "Load pos: %s %s\n" core:*load-current-source-file-info* core:*load-current-linenumber*))
-(export 'load-pos)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
