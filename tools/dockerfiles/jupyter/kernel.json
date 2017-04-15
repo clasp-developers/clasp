@@ -10,6 +10,6 @@
         "/home/app/quicklisp/local-projects/cl-jupyter",
         "{connection_file}"
     ],
-    "display_name": "Clasp Lisp",
+    "display_name": "CANDO",
     "language": "lisp"
 }

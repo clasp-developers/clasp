@@ -31,7 +31,7 @@ THE SOFTWARE.
 #include <clasp/core/array.h>
 #include <clasp/core/allClSymbols.h>
 
-#ifdef DEBUG_CL_SYMBOLS
+#ifdef DEFINE_CL_SYMBOLS
 
 namespace core {
 

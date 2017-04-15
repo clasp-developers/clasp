@@ -213,21 +213,21 @@ No DIBuilder is defined for the default module")
   (let ((sizeof-size_t (cdr (assoc 'core:size-t (llvm-sys:cxx-data-structures-info)))))
     (cond
       ((= 8 sizeof-size_t) (jit-constant-i64 val))
-      ((= 4 sizeof-size-t) (jit-constant-i32 val))
+      ((= 4 sizeof-size_t) (jit-constant-i32 val))
       (t (error "Add support for size_t sizeof = ~a" sizeof-size_t)))))
 
 (defun jit-constant-uintptr_t (val)
   (let ((sizeof-size_t (cdr (assoc 'core:size-t (llvm-sys:cxx-data-structures-info)))))
     (cond
       ((= 8 sizeof-size_t) (jit-constant-ui64 val))
-      ((= 4 sizeof-size-t) (jit-constant-ui32 val))
+      ((= 4 sizeof-size_t) (jit-constant-ui32 val))
       (t (error "Add support for size_t sizeof = ~a" sizeof-size_t)))))
 
 (defun jit-constant-size_t (val)
   (let ((sizeof-size_t (cdr (assoc 'core:size-t (llvm-sys:cxx-data-structures-info)))))
     (cond
       ((= 8 sizeof-size_t) (jit-constant-ui64 val))
-      ((= 4 sizeof-size-t) (jit-constant-ui32 val))
+      ((= 4 sizeof-size_t) (jit-constant-ui32 val))
       (t (error "Add support for size_t sizeof = ~a" sizeof-size_t)))))
 
 
