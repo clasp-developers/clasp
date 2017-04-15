@@ -552,7 +552,7 @@ void Lisp_O::startupLispEnvironment(Bundle *bundle) {
     _lisp->_Roots._KeywordPackage = gc::As<Package_sp>(_lisp->findPackage(KeywordPkg));
     _lisp->_Roots._KeywordPackage->setKeywordPackage(true);
     _lisp->_Roots._CommonLispPackage = gc::As<Package_sp>(_lisp->findPackage(ClPkg));
-#ifdef DEBUG_CL_SYMBOLS
+#ifdef DEFINE_CL_SYMBOLS
     initializeAllClSymbols(_lisp->_Roots._CommonLispPackage);
 #endif
     coreExposer = gc::GC<CoreExposer_O>::allocate(_lisp);

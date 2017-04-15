@@ -737,12 +737,6 @@ void Package_O::add_symbol_to_package_no_lock(SimpleString_sp nameKey, Symbol_sp
     printf("%s:%d Interning POINTER@%p in %s exportp: %d\n", __FILE__, __LINE__, sym.raw_(), this->_Name.c_str(), exportp );
   }
 #endif
-//  printf("%s:%d Interning symbol %s@%p into %s exportp: %d\n", __FILE__, __LINE__, _rep_(sym).c_str(), sym.raw_(), this->_Name.c_str(), exportp);
-#if 0 // DEBUG_CL_SYMBOLS
-  if (!exportp && sym.notnilp() && this == &(*(_lisp->commonLispPackage()))) {
-    printf("%s:%d Interning an internal symbol %s within COMMON-LISP\n", __FILE__, __LINE__, symName );
-  }
-#endif
   if (this->isKeywordPackage() || this->actsLikeKeywordPackage() || exportp) {
     this->_ExternalSymbols->hash_table_setf_gethash(nameKey, sym);
   } else {
