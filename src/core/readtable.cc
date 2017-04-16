@@ -25,7 +25,7 @@ THE SOFTWARE.
 */
 /* -^- */
 
-//#define DEBUG_LEVEL_FULL
+#define DEBUG_LEVEL_FULL
 #include <clasp/core/common.h>
 #include <clasp/core/environment.h>
 #include <clasp/core/symbolTable.h>
@@ -311,93 +311,13 @@ CL_DEFUN T_mv core__dispatch_macro_character(T_sp sin, Character_sp ch) {
   return eval::funcall(macro_func, sin, subchar, onumarg);
 };
 
-/*! See SACLA reader.lisp::read-ch */
-T_sp read_ch(T_sp sin) {
-  T_sp nc = cl__read_char(sin, _Nil<T_O>(), _Nil<T_O>(), _lisp->_true());
-  return nc;
-}
-
-/*! See SACLA reader.lisp::read-ch-or-die */
-T_sp read_ch_or_die(T_sp sin) {
-  T_sp nc = cl__read_char(sin, _lisp->_true(), _Nil<T_O>(), _lisp->_true());
-  return nc;
-}
-
-/*! See SACLA reader.lisp::unread-ch */
-void unread_ch(T_sp sin, Character_sp c) {
-  clasp_unread_char(clasp_as_claspCharacter(c), sin);
-}
-
-/*! See SACLA reader.lisp::collect-escaped-lexemes */
-List_sp collect_escaped_lexemes(Character_sp c, T_sp sin) {
-  ReadTable_sp readTable = _lisp->getCurrentReadTable();
-  Symbol_sp syntax_type = readTable->syntax_type(c);
-  if (syntax_type == kw::_sym_invalid_character) {
-    SIMPLE_ERROR(BF("invalid-character-error: %s") % _rep_(c));
-  } else if (syntax_type == kw::_sym_multiple_escape_character) {
-    return _Nil<T_O>();
-  } else if (syntax_type == kw::_sym_single_escape_character) {
-    return Cons_O::create(read_ch_or_die(sin), collect_escaped_lexemes(read_ch_or_die(sin), sin));
-  } else if (syntax_type == kw::_sym_constituent_character || syntax_type == kw::_sym_whitespace_character || syntax_type == kw::_sym_terminating_macro_character || syntax_type == kw::_sym_non_terminating_macro_character) {
-    return Cons_O::create(c, collect_escaped_lexemes(read_ch_or_die(sin), sin));
-  }
-  return _Nil<T_O>();
-}
-
-/*! See SACLA reader.lisp::collect-lexemes.
-    Set extended to true if a non base-char is seen.*/
-List_sp collect_lexemes(/*Character_sp*/ T_sp tc, T_sp sin) {
-  if (tc.notnilp()) {
-    Character_sp c = gc::As<Character_sp>(tc);
-    ReadTable_sp readTable = _lisp->getCurrentReadTable();
-    Symbol_sp syntax_type = readTable->syntax_type(c);
-    if (syntax_type == kw::_sym_invalid_character) {
-      SIMPLE_ERROR(BF("invalid-character-error: %s") % _rep_(c));
-    } else if (syntax_type == kw::_sym_whitespace_character) {
-      if (_sym_STARpreserve_whitespace_pSTAR->symbolValue().isTrue()) {
-        unread_ch(sin, c);
-      }
-    } else if (syntax_type == kw::_sym_terminating_macro_character) {
-      unread_ch(sin, c);
-    } else if (syntax_type == kw::_sym_multiple_escape_character) {
-      return Cons_O::create(collect_escaped_lexemes(read_ch_or_die(sin), sin),
-                            collect_lexemes(read_ch(sin), sin));
-    } else if (syntax_type == kw::_sym_single_escape_character) {
-      return Cons_O::create(Cons_O::create(read_ch_or_die(sin)),
-                            collect_lexemes(read_ch(sin), sin));
-    } else if (syntax_type == kw::_sym_constituent_character || syntax_type == kw::_sym_non_terminating_macro_character) {
-      return Cons_O::create(c, collect_lexemes(read_ch(sin), sin));
-    }
-  }
-  return _Nil<T_O>();
-}
-
-/*! Works like SACLA readtable::make-str but accumulates the characters
-      into a stringstream */
-void make_str(StrWNs_sp sout, List_sp cur_char, bool preserveCase = false) {
-  while (cur_char.notnilp()) {
-    T_sp obj = oCar(cur_char);
-    if (obj.consp()) {
-      make_str(sout, obj, preserveCase);
-    } else if (cl__characterp(obj)) {
-      if (preserveCase)
-        sout->vectorPushExtend(obj);
-      else
-        sout->vectorPushExtend(gc::As<ReadTable_sp>(cl::_sym_STARreadtableSTAR->symbolValue())->convert_case(gc::As<Character_sp>(obj)));
-    } else if (obj.nilp()) {
-      // Handling name ||   do nothing
-    }
-    cur_char = oCdr(cur_char);
-  }
-}
-
 CL_LAMBDA(stream ch num);
 CL_DECLARE();
 CL_DOCSTRING("sharp_backslash");
 CL_DEFUN T_mv core__sharp_backslash(T_sp sin, Character_sp ch, T_sp num) {
   SafeBuffer sslexemes;
   List_sp lexemes = collect_lexemes(ch, sin);
-  make_str(sslexemes.string(), lexemes, true);
+  make_str(sslexemes.string(), lexemes);
   if (!cl::_sym_STARread_suppressSTAR->symbolValue().isTrue()) {
     if (sslexemes.string()->length() == 1) {
       return Values(sslexemes.string()->rowMajorAref(0));

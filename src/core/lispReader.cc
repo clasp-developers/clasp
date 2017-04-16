@@ -55,7 +55,7 @@ THE SOFTWARE.
 
 namespace core {
 // Store characters and flags about the characters
-typedef uint64_t trait_chr_type;
+typedef Fixnum trait_chr_type;
 #define TRAIT_DIGIT          0x000100000000
 #define TRAIT_ALPHABETIC     0x000200000000
 #define TRAIT_PACKAGEMARKER  0x000400000000
@@ -67,6 +67,7 @@ typedef uint64_t trait_chr_type;
 #define TRAIT_RATIOMARKER    0x010000000000
 #define TRAIT_EXPONENTMARKER 0x020000000000
 #define TRAIT_INVALID        0x040000000000
+#define TRAIT_ESCAPED        0x080000000000
 #define TRAIT_MASK           0x0FFF00000000
 #define CHAR_MASK            0x0000FFFFFFFF
 #define CHR(x) (static_cast<claspCharacter>((x)&CHAR_MASK))
@@ -87,13 +88,17 @@ typedef uint64_t trait_chr_type;
   }
 #endif
 
+
+
+// -----------------------------------------------------------------
+// -----------
+
 /*! Return a uint that combines the character x with its character TRAITs
       See CLHS 2.1.4.2 */
 trait_chr_type constituentChar(Character_sp ch, trait_chr_type trait = 0) {
   claspCharacter x = ch.unsafe_character();
   ASSERT(x<CHAR_MASK);
-  if (trait != 0)
-    return (x | trait);
+  if (trait != 0) return (x | trait);
   trait_chr_type result = 0;
   trait_chr_type read_base = unbox_fixnum(gc::As<Fixnum_sp>(cl::_sym_STARread_baseSTAR->symbolValue()));
   ASSERT(read_base>=2 && read_base<=36);
@@ -141,6 +146,200 @@ LETTER:
     result |= TRAIT_EXPONENTMARKER;
   return result;
 }
+
+T_sp constituentCharAsFixnum(Character_sp ch, trait_chr_type trait = 0 ) {
+  trait_chr_type ct = constituentChar(ch,trait);
+  return core::make_fixnum((Fixnum)ct);
+}
+
+
+// -----------------------------------------------------------
+//
+// Read symbols for reader macros #: and #\
+//
+
+/*! See SACLA reader.lisp::read-ch */
+T_sp read_ch(T_sp sin) {
+  T_sp nc = cl__read_char(sin, _Nil<T_O>(), _Nil<T_O>(), _lisp->_true());
+  return nc;
+}
+
+/*! See SACLA reader.lisp::read-ch-or-die */
+T_sp read_ch_or_die(T_sp sin) {
+  T_sp nc = cl__read_char(sin, _lisp->_true(), _Nil<T_O>(), _lisp->_true());
+  return nc;
+}
+
+/*! See SACLA reader.lisp::unread-ch */
+void unread_ch(T_sp sin, Character_sp c) {
+  clasp_unread_char(clasp_as_claspCharacter(c), sin);
+}
+
+/*! See SACLA reader.lisp::collect-escaped-lexemes */
+List_sp collect_escaped_lexemes(Character_sp c, T_sp sin) {
+  ReadTable_sp readTable = _lisp->getCurrentReadTable();
+  Symbol_sp syntax_type = readTable->syntax_type(c);
+  if (syntax_type == kw::_sym_invalid_character) {
+    SIMPLE_ERROR(BF("invalid-character-error: %s") % _rep_(c));
+  } else if (syntax_type == kw::_sym_multiple_escape_character) {
+    return _Nil<T_O>();
+  } else if (syntax_type == kw::_sym_single_escape_character) {
+    return Cons_O::create(constituentCharAsFixnum(read_ch_or_die(sin),TRAIT_ESCAPED),
+                          collect_escaped_lexemes(read_ch_or_die(sin), sin));
+  } else if (syntax_type == kw::_sym_constituent_character || syntax_type == kw::_sym_whitespace_character || syntax_type == kw::_sym_terminating_macro_character || syntax_type == kw::_sym_non_terminating_macro_character) {
+    return Cons_O::create(constituentCharAsFixnum(c,TRAIT_ESCAPED), collect_escaped_lexemes(read_ch_or_die(sin), sin));
+  }
+  return _Nil<T_O>();
+}
+
+/*! See SACLA reader.lisp::collect-lexemes.
+    Set extended to true if a non base-char is seen.*/
+List_sp collect_lexemes(/*Character_sp*/ T_sp tc, T_sp sin) {
+  if (tc.notnilp()) {
+    Character_sp c = gc::As<Character_sp>(tc);
+    ReadTable_sp readTable = _lisp->getCurrentReadTable();
+    Symbol_sp syntax_type = readTable->syntax_type(c);
+    if (syntax_type == kw::_sym_invalid_character) {
+      SIMPLE_ERROR(BF("invalid-character-error: %s") % _rep_(c));
+    } else if (syntax_type == kw::_sym_whitespace_character) {
+      if (_sym_STARpreserve_whitespace_pSTAR->symbolValue().isTrue()) {
+        unread_ch(sin, c);
+      }
+    } else if (syntax_type == kw::_sym_terminating_macro_character) {
+      unread_ch(sin, c);
+    } else if (syntax_type == kw::_sym_multiple_escape_character) {
+      return Cons_O::create(collect_escaped_lexemes(read_ch_or_die(sin), sin),
+                            collect_lexemes(read_ch(sin), sin));
+    } else if (syntax_type == kw::_sym_single_escape_character) {
+      return Cons_O::create(Cons_O::create(constituentCharAsFixnum(read_ch_or_die(sin))),
+                            collect_lexemes(read_ch(sin), sin));
+    } else if (syntax_type == kw::_sym_constituent_character || syntax_type == kw::_sym_non_terminating_macro_character) {
+      return Cons_O::create(constituentCharAsFixnum(c), collect_lexemes(read_ch(sin), sin));
+    }
+  }
+  return _Nil<T_O>();
+}
+
+
+typedef enum {undefined, up, down, mixed } UnEscapedCase;
+
+UnEscapedCase case_state(Fixnum c, UnEscapedCase curCase) {
+  if (TRAIT_ESCAPED&c) return curCase;
+  c = CHR(c); // strip traits
+  switch (curCase) {
+  case mixed:
+          // nothing
+      break;
+  case undefined:
+      if (isupper(c)) {
+        return up;
+      } else if (islower(c)) {
+        return down;
+      }
+      break;
+  case up:
+      if (islower(c)) return mixed;
+      break;
+  case down:
+      if (isupper(c)) return mixed;
+  };
+  return curCase;
+}
+
+
+UnEscapedCase check_case(List_sp cur_char, UnEscapedCase curCase) {
+  while (cur_char.notnilp()) {
+    T_sp obj = oCar(cur_char);
+    if (obj.consp()) {
+      return check_case(obj,curCase);
+    } else if (obj.fixnump()) {
+      curCase = case_state(obj.unsafe_fixnum(),curCase);
+    } else if (obj.nilp()) {
+      return curCase;
+    }
+    cur_char = oCdr(cur_char);
+  }
+  return curCase;
+}
+
+
+
+void make_str_upcase(StrWNs_sp sout, List_sp cur_char) {
+  while (cur_char.notnilp()) {
+    T_sp obj = oCar(cur_char);
+    if (obj.consp()) {
+      make_str_upcase(sout, obj);
+    } else if (obj.fixnump()) {
+      if (obj.unsafe_fixnum()&TRAIT_ESCAPED)
+        sout->vectorPushExtend(core::clasp_make_character(CHR(obj.unsafe_fixnum())));
+      else sout->vectorPushExtend(core::clasp_make_character(toupper(CHR(obj.unsafe_fixnum()))));
+    } else if (obj.nilp()) {
+      // Handling name ||   do nothing
+    }
+    cur_char = oCdr(cur_char);
+  }
+}
+
+void make_str_downcase(StrWNs_sp sout, List_sp cur_char) {
+  while (cur_char.notnilp()) {
+    T_sp obj = oCar(cur_char);
+    if (obj.consp()) {
+      make_str_upcase(sout, obj);
+    } else if (obj.fixnump()) {
+      if (obj.unsafe_fixnum()&TRAIT_ESCAPED)
+        sout->vectorPushExtend(core::clasp_make_character(CHR(obj.unsafe_fixnum())));
+      else sout->vectorPushExtend(core::clasp_make_character(tolower(CHR(obj.unsafe_fixnum()))));
+    } else if (obj.nilp()) {
+      // Handling name ||   do nothing
+    }
+    cur_char = oCdr(cur_char);
+  }
+}
+
+void make_str_preserve(StrWNs_sp sout, List_sp cur_char) {
+  while (cur_char.notnilp()) {
+    T_sp obj = oCar(cur_char);
+    if (obj.consp()) {
+      make_str_upcase(sout, obj);
+    } else if (obj.fixnump()) {
+      sout->vectorPushExtend(core::clasp_make_character(CHR(obj.unsafe_fixnum())));
+    } else if (obj.nilp()) {
+      // Handling name ||   do nothing
+    }
+    cur_char = oCdr(cur_char);
+  }
+}
+
+/*! Works like SACLA readtable::make-str but accumulates the characters
+      into a stringstream */
+void make_str(StrWNs_sp sout, List_sp cur_char) {
+  ReadTable_sp readtable = gc::As<ReadTable_sp>(cl::_sym_STARreadtableSTAR->symbolValue());
+  if (readtable->_Case == kw::_sym_invert) {
+    UnEscapedCase strcase = check_case(cur_char,undefined);
+    switch (strcase) {
+      case undefined:
+      case mixed:
+          make_str_preserve(sout,cur_char);
+          return;
+      case up:
+          make_str_downcase(sout,cur_char);
+          return;
+      case down:
+          make_str_upcase(sout,cur_char);
+          return;
+      }
+    UNREACHABLE();
+  } else if (readtable->_Case == kw::_sym_upcase) {
+    make_str_upcase(sout,cur_char);
+  } else if (readtable->_Case == kw::_sym_downcase) {
+    make_str_downcase(sout,cur_char);
+  } else if (readtable->_Case == kw::_sym_preserve) {
+    make_str_preserve(sout,cur_char);
+  } else {
+    SIMPLE_ERROR(BF("Bad readtable case %s") % _rep_(readtable->_Case));
+  }
+}
+
 
 CL_LAMBDA(sin &optional (eof-error-p t) eof-value);
 CL_DECLARE();
@@ -255,6 +454,79 @@ typedef enum {
   short_float_exp
 } FloatExponentType;
 
+
+UnEscapedCase token_check_case(vector<trait_chr_type>&token, size_t start, size_t end) {
+  UnEscapedCase curcase = undefined;
+  for ( size_t i(start); i<end; ++i ) {
+    curcase = case_state(token[i],curcase);
+  }
+  return curcase;
+}
+
+void token_upcase(vector<trait_chr_type>& token, size_t start, size_t end) {
+  for ( size_t i(start); i<end; ++i ) {
+    if (!(token[i]&TRAIT_ESCAPED)) token[i] = (TRAIT_MASK&token[i])|toupper(CHR(token[i]));
+  }
+}
+void token_downcase(vector<trait_chr_type>& token, size_t start, size_t end) {
+  for ( size_t i(start); i<end; ++i ) {
+    if (!(token[i]&TRAIT_ESCAPED)) token[i] = (TRAIT_MASK&token[i])|tolower(CHR(token[i]));
+  }
+}
+
+
+void apply_readtable_case(vector<trait_chr_type>& token, size_t start, size_t end) {
+  ReadTable_sp readtable = gc::As<ReadTable_sp>(cl::_sym_STARreadtableSTAR->symbolValue());
+  if (readtable->_Case == kw::_sym_invert) {
+    UnEscapedCase strcase = token_check_case(token,start,end);
+    switch (strcase) {
+      case undefined:
+      case mixed:
+          return;
+      case up:
+          token_downcase(token,start,end);
+          return;
+      case down:
+          token_upcase(token,start,end);
+          return;
+      }
+    UNREACHABLE();
+  } else if (readtable->_Case == kw::_sym_upcase) {
+    token_upcase(token,start,end);
+  } else if (readtable->_Case == kw::_sym_downcase) {
+    token_downcase(token,start,end);
+  } else if (readtable->_Case == kw::_sym_preserve) {
+    return;
+  } else {
+    SIMPLE_ERROR(BF("Bad readtable case %s") % _rep_(readtable->_Case));
+  }
+}
+
+
+SimpleString_sp symbolTokenStr(T_sp stream, vector<trait_chr_type> &token, size_t start, size_t end, bool only_dots_ok=false) {
+  bool extended = false;
+  SafeBufferStrWNs buffer;
+  apply_readtable_case(token,start,end);
+  bool only_dots = true;
+  if ((end-start)==0) {
+    printf("%s:%d The symbolTokenStr is empty\n", __FILE__, __LINE__ );
+  }
+  for (size_t i=start,iEnd(end); i<iEnd; ++i) {
+    claspCharacter c = CHR(token[i]);
+    if (c != '.') only_dots = false;
+    buffer.string()->vectorPushExtend_claspCharacter(CHR(token[i]));
+  }
+  if ((end-start)>0) {
+    if (only_dots) {
+      if (!only_dots_ok) {
+        READER_ERROR(SimpleBaseString_O::make("A string of dots was encountered by the reader."),
+                     _Nil<T_O>(), stream);
+      }
+    }
+  }
+  return buffer.string()->asMinimalSimpleString();
+}
+
 SimpleString_sp tokenStr(T_sp stream, const vector<trait_chr_type> &token, size_t start = 0, size_t end = UNDEF_UINT, bool only_dots_ok=false) {
   bool extended = false;
   if (end==UNDEF_UINT) end = token.size();
@@ -279,7 +551,7 @@ SimpleString_sp tokenStr(T_sp stream, const vector<trait_chr_type> &token, size_
   return buffer.string()->asMinimalSimpleString();
 }
 
-T_sp interpret_token_or_throw_reader_error(T_sp sin, const vector<trait_chr_type> &token, bool only_dots_ok) {
+T_sp interpret_token_or_throw_reader_error(T_sp sin, vector<trait_chr_type> &token, bool only_dots_ok) {
   LOG(BF("About to interpret_token_or_throw_reader_error"));
   ASSERTF(token.size() > 0, BF("The token is empty!"));
   const trait_chr_type *start = token.data();
@@ -437,7 +709,7 @@ T_sp interpret_token_or_throw_reader_error(T_sp sin, const vector<trait_chr_type
     // interpret symbols in current package
     {
       if (cl::_sym_STARread_suppressSTAR->symbolValue().isTrue()) return _Nil<T_O>();
-      SimpleString_sp sym_name = tokenStr(sin,token, name_marker - token.data(),UNDEF_UINT,only_dots_ok);
+      SimpleString_sp sym_name = symbolTokenStr(sin,token, name_marker - token.data(),token.size(),only_dots_ok);
       Symbol_sp sym = _lisp->getCurrentPackage()->intern(sym_name);
       LOG(BF("sym_name = |%s| sym->symbolNameAsString() = |%s|") % sym_name->get_std_string() % sym->symbolNameAsString());
       return sym;
@@ -451,6 +723,7 @@ T_sp interpret_token_or_throw_reader_error(T_sp sin, const vector<trait_chr_type
     // Get package part
     SafeBufferStrWNs packageSin;
     cur = start;
+    apply_readtable_case(token,0,package_marker-start);
     while (cur != package_marker) {
       packageSin.string()->vectorPushExtend_claspCharacter(CHR(*cur));
       ++cur;
@@ -461,7 +734,7 @@ T_sp interpret_token_or_throw_reader_error(T_sp sin, const vector<trait_chr_type
       ++cur;
     }
     // TODO Handle proper string names
-    SimpleString_sp symbol_name_str = tokenStr(sin,token, name_marker - token.data(),UNDEF_UINT,only_dots_ok);
+    SimpleString_sp symbol_name_str = symbolTokenStr(sin,token, name_marker - token.data(),token.size(),only_dots_ok);
     LOG(BF("Interpreting token as packageName[%s] and symbol-name[%s]") % _rep_(packageSin.string()) % symbol_name_str->get_std_string());
     // TODO Deal with proper string package names
     string packageName = packageSin.string()->get_std_string();
@@ -485,7 +758,7 @@ T_sp interpret_token_or_throw_reader_error(T_sp sin, const vector<trait_chr_type
       return _Nil<T_O>();
     // interpret good keywords
     LOG(BF("Token[%s] interpreted as keyword") % name_marker);
-    SimpleString_sp keyword_name = tokenStr(sin,token, name_marker - token.data(),UNDEF_UINT,only_dots_ok);
+    SimpleString_sp keyword_name = symbolTokenStr(sin,token, name_marker - token.data(),token.size(),only_dots_ok);
     return _lisp->keywordPackage()->intern(keyword_name);
   } break;
   case tsymk:{
@@ -501,7 +774,7 @@ T_sp interpret_token_or_throw_reader_error(T_sp sin, const vector<trait_chr_type
     if (cl::_sym_STARread_suppressSTAR->symbolValue().isTrue())
       return _Nil<T_O>();
     // interpret failed symbols
-    SIMPLE_ERROR(BF("Error encountered while reading source file %s at character position %s - Could not interpret symbol state(%s) symbol: [%s]") % _rep_(clasp_filename(sin,false)) % _rep_(clasp_file_position(sin)) % stateString(state) % tokenStr(sin,token, start - token.data())->get_std_string());
+    SIMPLE_ERROR(BF("Error encountered while reading source file %s at character position %s - Could not interpret symbol state(%s) symbol: [%s]") % _rep_(clasp_filename(sin,false)) % _rep_(clasp_file_position(sin)) % stateString(state) % symbolTokenStr(sin,token, start - token.data(),token.size())->get_std_string());
     break;
   case tintt:
   case tintp:
@@ -829,7 +1102,8 @@ step1:
     LOG(BF("step7 - constituent-character char[%c]") % clasp_as_claspCharacter(x));
     LOG(BF("Handling constituent character"));
     token.clear();
-    X = readTable->convert_case(x);
+    // X = readTable->convert_case(x);
+    X = x; // convert case once the entire token is accumulated
     LOG(BF("Converted case X[%s]") % clasp_as_claspCharacter(X));
     token.push_back(constituentChar(X));
   }
@@ -846,14 +1120,15 @@ step8:
     Symbol_sp y8_syntax_type = readTable->syntax_type(y);
     LOG(BF("y8_syntax_type=%s") % _rep_(y8_syntax_type));
     if ((y8_syntax_type == kw::_sym_constituent_character) || (y8_syntax_type == kw::_sym_non_terminating_macro_character)) {
-      Y = readTable->convert_case(y);
+      // Y = readTable->convert_case(y);
+      Y = y;  // convert case once the entire token is accumulated
       LOG(BF("  Pushing back character %" PRu "") % constituentChar(Y));
       token.push_back(constituentChar(Y));
       goto step8;
     }
     if (y8_syntax_type == kw::_sym_single_escape_character) {
       z = gc::As<Character_sp>(cl__read_char(sin, _lisp->_true(), _Nil<T_O>(), _lisp->_true()));
-      token.push_back(constituentChar(z, TRAIT_ALPHABETIC));
+      token.push_back(constituentChar(z, TRAIT_ALPHABETIC|TRAIT_ESCAPED));
       LOG(BF("Single escape read z[%s] accumulated token[%s]") % clasp_as_claspCharacter(z) % tokenStr(sin,token));
       goto step8;
     }
@@ -885,7 +1160,7 @@ step9:
     Symbol_sp y9_syntax_type = readTable->syntax_type(y);
     LOG(BF("Step9: Read y[%s] y9_syntax_type[%s]") % clasp_as_claspCharacter(y) % _rep_(y9_syntax_type));
     if ((y9_syntax_type == kw::_sym_constituent_character) || (y9_syntax_type == kw::_sym_non_terminating_macro_character) || (y9_syntax_type == kw::_sym_terminating_macro_character) || (y9_syntax_type == kw::_sym_whitespace_character)) {
-      token.push_back(constituentChar(y, TRAIT_ALPHABETIC));
+      token.push_back(constituentChar(y, TRAIT_ALPHABETIC|TRAIT_ESCAPED));
       LOG(BF("token[%s]") % tokenStr(sin,token));
       goto step9;
     }
@@ -893,7 +1168,7 @@ step9:
     if (y9_syntax_type == kw::_sym_single_escape_character) {
       LOG(BF("Handling single_escape_character"));
       z = gc::As<Character_sp>(cl__read_char(sin, _lisp->_true(), _Nil<T_O>(), _lisp->_true()));
-      token.push_back(constituentChar(z, TRAIT_ALPHABETIC));
+      token.push_back(constituentChar(z, TRAIT_ALPHABETIC|TRAIT_ESCAPED));
       LOG(BF("Read z[%s] accumulated token[%s]") % clasp_as_claspCharacter(z) % tokenStr(sin,token));
       goto step9;
     }
