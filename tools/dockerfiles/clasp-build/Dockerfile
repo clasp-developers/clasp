@@ -33,3 +33,4 @@ RUN ./waf install_cboehm
 # add app user, to set correct UID and GID on files
 RUN groupadd -g 9999 app && useradd -u 9999 -g 9999 -ms /bin/bash app
 RUN chown -R app:app /out/clasp
+RUN git clone --depth=1 https://github.com/quicklisp/quicklisp-client.git $HOME/quicklisp
