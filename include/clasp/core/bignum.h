@@ -91,7 +91,11 @@ public: // Functions here
   static Bignum_sp create( long long v )
   {
     GC_ALLOCATE(Bignum_O, b);
+#ifdef _TARGET_OS_DARWIN
     b->_value = (long long)v;
+#else
+    b->_value = (int64_t)v;
+#endif
     return b;
   };
 
@@ -102,7 +106,11 @@ public: // Functions here
   static Bignum_sp create( unsigned long long v )
   {
     GC_ALLOCATE(Bignum_O, b);
+#ifdef _TARGET_OS_DARWIN
     b->_value = (unsigned long long)v;
+#else
+    b->_value = (uint64_t)v;
+#endif
     return b;
   };
 
