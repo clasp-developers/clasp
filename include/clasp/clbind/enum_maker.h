@@ -112,7 +112,7 @@ struct enum_maker {
   explicit enum_maker(From &from, core::Symbol_sp converterSym) : _from(from), _converterSym(converterSym) {}
   From &operator[](const value &val) {
     core::SymbolToEnumConverter_sp converter = core::SymbolToEnumConverter_O::create(this->_converterSym->symbolName());
-    this->_converterSym->setf_symbolValue(converter);
+    this->_converterSym->defparameter(converter);
     core::Symbol_sp nameSym = core::lispify_intern(val.name_, core::lisp_currentPackageName(), true);
     core::lisp_extendSymbolToEnumConverter(converter, nameSym, nameSym, val.val_);
     return _from;
@@ -120,7 +120,7 @@ struct enum_maker {
 
   From &operator[](const value_vector &values) {
     core::SymbolToEnumConverter_sp converter = core::SymbolToEnumConverter_O::create(this->_converterSym->symbolName()->get());
-    this->_converterSym->setf_symbolValue(converter);
+    this->_converterSym->defparameter(converter);
     for (value_vector::const_iterator i = values.begin(); i != values.end(); ++i) {
       core::Symbol_sp nameSym = core::lispify_intern(i->name_, core::lisp_currentPackageName(), true);
       core::lisp_extendSymbolToEnumConverter(converter, nameSym, nameSym, i->val_);

@@ -586,8 +586,43 @@
       (codegen-outcome node-or-outcome args gf gf-args)
       (codegen-node node-or-outcome args gf gf-args)))
 
+;;; --------------------------------------------------
+;;;
+;;; Debugging a generic function dispatcher
+;;;
+(defvar *disp-fn-name*)
+(defvar *startup-fn-name*)
+(defvar *shutdown-fn-name*)
+(defvar *sorted-roots*)
+(defvar *generic-function*)
+
+(defun debug-save-dispatcher (gf module disp-fn startup-fn shutdown-fn sorted-roots)
+  "Save everything about the generic function so that it can be saved to a file and then edited and re-installed"
+  (setq *disp-fn-name* (llvm-sys:get-name disp-fn)
+        *startup-fn-name* (llvm-sys:get-name startup-fn)
+        *shutdown-fn-name* (llvm-sys:get-name shutdown-fn)
+        *sorted-roots* sorted-roots
+        *generic-function* gf)
+  (let* ((output-path #P"/tmp/dispatcher.ll")
+         (fout (open output-path :direction :output)))
+    (unwind-protect (llvm-sys:dump-module module fout)
+      (close fout))))
+
+(defun debug-load-dispatcher (function-name)
+  (let* ((module (llvm-sys:parse-irfile "/tmp/dispatcher.ll" cmp:*llvm-context*))
+         (disp-fn (llvm-sys:get-function module *disp-fn-name*))
+         (startup-fn (llvm-sys:get-function module *startup-fn-name*))
+         (shutdown-fn (llvm-sys:get-function module *shutdown-fn-name*))
+         (compiled-dispatcher (jit-add-module-return-dispatch-function
+                               module
+                               disp-fn startup-fn shutdown-fn *sorted-roots*)))
+    (safe-set-funcallable-instance-function *generic-function* dispatcher)))
+
+
+;;; --------------------------------------------------
+;;;
 (defparameter *dispatcher-count* 0)
-(defun codegen-dispatcher (dtree)
+(defun codegen-dispatcher (dtree gf)
   (let ((*the-module* (create-run-time-module-for-compile)))
     (define-primitives-in-module *the-module*)
     (with-module (:module *the-module*
@@ -643,7 +678,7 @@
 	    ;; Setup exception handling and cleanup landing pad
 	    (with-irbuilder (irbuilder-alloca)
 	      (let* ((local-arglist (irc-alloca-va_list :label "local-arglist"))
-		     (arglist-passed-untagged (irc-int-to-ptr (irc-sub (irc-ptr-to-int gf-args %uintptr_t% "iargs") (jit-constant-uintptr_t +Valist_S-tag+) "sub") +Valist_S*+ "arglist-passed-untagged"))
+		     (arglist-passed-untagged (irc-int-to-ptr (irc-sub (irc-ptr-to-int gf-args %uintptr_t% "iargs") (jit-constant-uintptr_t +Valist_S-tag+) "sub") %Valist_S*% "arglist-passed-untagged"))
 		     (va_list-passed (irc-in-bounds-gep-type %VaList_S% arglist-passed-untagged (list (jit-constant-i32 0) (jit-constant-i32 1)) "va_list-passed")))
 		(insert-message)
                 (debug-arglist (irc-ptr-to-int va_list-passed %uintptr_t%))
@@ -683,11 +718,14 @@
                                              *outcomes*)
                                     (let ((sorted (sort values #'< :key #'car)))
                                       (mapcar #'cdr sorted)))))
+                (debug-save-dispatcher gf *the-module* disp-fn startup-fn shutdown-fn sorted-roots)
                 (let* ((compiled-dispatcher (jit-add-module-return-dispatch-function *the-module* disp-fn startup-fn shutdown-fn sorted-roots)))
                   (gf-log "Compiled dispatcher -> ~a~%" compiled-dispatcher)
                   (gf-log "Dumping module\n")
                   (gf-do (cmp-log-dump *the-module*))
                   compiled-dispatcher)))))))))
+
+
 
 (export '(make-dtree
 	  dtree-add-call-history
@@ -802,7 +840,7 @@
     (if call-history
         (let ((dispatch-tree (cmp::make-dtree)))
           (cmp::dtree-add-call-history dispatch-tree call-history)
-          (cmp::codegen-dispatcher dispatch-tree))
+          (cmp::codegen-dispatcher dispatch-tree generic-function))
         'clos::invalidated-dispatch-function)))
 
 (defun graph-strandh-dispatch-function (generic-function)

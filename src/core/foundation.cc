@@ -288,8 +288,8 @@ void lisp_pushClassSymbolOntoSTARallCxxClassesSTAR(Symbol_sp classSymbol) {
   }
 };
 
-void lisp_symbolSetSymbolValue(Symbol_sp sym, T_sp val) {
-  sym->setf_symbolValue(val);
+void lisp_defparameter(Symbol_sp sym, T_sp val) {
+  sym->defparameter(val);
 }
 
 void lisp_write(const boost::format &fmt, T_sp strm) {

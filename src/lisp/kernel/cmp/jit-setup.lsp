@@ -374,7 +374,7 @@ No DIBuilder is defined for the default module")
             shutdown-fn
             literals-list))
       (progn
-        #+threads(mp:giveup-lock)
+        #+threads(mp:giveup-lock *jit-engine-mutex*)
         )))
 
   (defun jit-remove-module (handle)

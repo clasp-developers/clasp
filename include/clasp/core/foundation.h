@@ -881,7 +881,7 @@ T_sp lisp_lookup_reader_patch(T_sp patches, T_sp key, bool &found);
 //bool lisp_characterP(core::T_sp obj);
 bool lisp_BuiltInClassesInitialized();
 void lisp_pushClassSymbolOntoSTARallCxxClassesSTAR(Symbol_sp classSymbol);
-void lisp_symbolSetSymbolValue(Symbol_sp sym, T_sp val);
+void lisp_defparameter(Symbol_sp sym, T_sp val);
  T_sp lisp_symbolValue(Symbol_sp sym);
 string symbol_symbolName(Symbol_sp);
 string symbol_packageName(Symbol_sp);

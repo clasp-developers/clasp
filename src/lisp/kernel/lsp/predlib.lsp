@@ -644,11 +644,17 @@ Returns T if X belongs to TYPE; NIL otherwise."
 
 #+clos
 (defun of-class-p (object class)
-  (declare (optimize (speed 3) (safety 0)))
+  (declare (optimize (speed 3) (safety 0))
+           #+clasp(special clos::*class-precedence-list-ndx*
+                           clos::*class-name-ndx*))
   (macrolet ((clos::class-precedence-list (x)
-	       `(si::instance-ref ,x clos::+class-precedence-list-ndx+))
+	       `(si::instance-ref ,x
+                                  #+ecl clos::+class-precedence-list-ndx+
+                                  #+clasp clos::*class-precedence-list-ndx*))
 	     (class-name (x)
-	       `(si::instance-ref ,x clos::+class-name-ndx+)))
+	       `(si::instance-ref ,x
+                                  #+ecl clos::+class-name-ndx+
+                                  #+clasp clos::*class-name-ndx*)))
     (let* ((x-class (class-of object)))
       (declare (class x-class))
       (if (eq x-class class)

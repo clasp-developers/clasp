@@ -85,9 +85,9 @@
 
 #+clasp
 (eval-when (:compile-toplevel :execute :load-toplevel)
-  (defconstant +class-name-ndx+
+  (defparameter *class-name-ndx*
     #.(position 'name +class-slots+ :key #'first))
-  (defconstant +class-precedence-list-ndx+
+  (defparameter *class-precedence-list-ndx*
     #.(position 'precedence-list +class-slots+ :key #'first)))
 
 ;;; ----------------------------------------------------------------------

@@ -1131,7 +1131,7 @@ they are dumped into /tmp"
         (let* ((output-name (namestring output-path))
                (fout (open output-name :direction :output)))
           (unwind-protect
-               (llvm-sys:dump-module module fout)
+               (llvm-sys:dump-module *the-module* fout)
             (close fout))))))
 
 
