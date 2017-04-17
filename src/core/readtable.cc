@@ -317,9 +317,9 @@ CL_DOCSTRING("sharp_backslash");
 CL_DEFUN T_mv core__sharp_backslash(T_sp sin, Character_sp ch, T_sp num) {
   SafeBuffer sslexemes;
   List_sp lexemes = collect_lexemes(ch, sin);
-  make_str(sslexemes.string(), lexemes);
+  make_str_preserve_case(sslexemes.string(), lexemes);
   if (!cl::_sym_STARread_suppressSTAR->symbolValue().isTrue()) {
-    if (sslexemes.string()->length() == 1) {
+    if (sslexemes.string()->length() == 1 ) {
       return Values(sslexemes.string()->rowMajorAref(0));
     } else {
       T_sp tch = eval::funcall(cl::_sym_name_char, sslexemes.string());

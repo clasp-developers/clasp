@@ -40,8 +40,11 @@ extern T_mv lisp_object_query(T_sp, bool eofErrorP, T_sp eofValue, bool recursiv
 extern T_sp read_lisp_object(T_sp, bool eofErrorP, T_sp eofValue, bool recursiveP);
 
  void unread_ch(T_sp sin, Character_sp c);
- 
+
+ Character_sp lexeme_character(T_sp lexeme);
  List_sp collect_lexemes(/*Character_sp*/ T_sp tc, T_sp sin);
+ void make_str_preserve_case(StrWNs_sp sout, List_sp cur_char);
+ void make_str_upcase(StrWNs_sp sout, List_sp cur_char);
  void make_str(StrWNs_sp sout, List_sp cur_char);
  
  
