@@ -263,6 +263,12 @@ UnEscapedCase check_case(List_sp cur_char, UnEscapedCase curCase) {
 }
 
 
+Character_sp lexeme_character(T_sp lexeme) {
+  if (lexeme.fixnump()) {
+    return core::clasp_make_character(CHR(lexeme));
+  }
+  SIMPLE_ERROR(BF("Unknown lexeme %s") % _rep_(lexeme));
+}
 
 void make_str_upcase(StrWNs_sp sout, List_sp cur_char) {
   while (cur_char.notnilp()) {
@@ -284,7 +290,7 @@ void make_str_downcase(StrWNs_sp sout, List_sp cur_char) {
   while (cur_char.notnilp()) {
     T_sp obj = oCar(cur_char);
     if (obj.consp()) {
-      make_str_upcase(sout, obj);
+      make_str_downcase(sout, obj);
     } else if (obj.fixnump()) {
       if (obj.unsafe_fixnum()&TRAIT_ESCAPED)
         sout->vectorPushExtend(core::clasp_make_character(CHR(obj.unsafe_fixnum())));
@@ -296,11 +302,11 @@ void make_str_downcase(StrWNs_sp sout, List_sp cur_char) {
   }
 }
 
-void make_str_preserve(StrWNs_sp sout, List_sp cur_char) {
+void make_str_preserve_case(StrWNs_sp sout, List_sp cur_char) {
   while (cur_char.notnilp()) {
     T_sp obj = oCar(cur_char);
     if (obj.consp()) {
-      make_str_upcase(sout, obj);
+      make_str_preserve_case(sout, obj);
     } else if (obj.fixnump()) {
       sout->vectorPushExtend(core::clasp_make_character(CHR(obj.unsafe_fixnum())));
     } else if (obj.nilp()) {
@@ -319,7 +325,7 @@ void make_str(StrWNs_sp sout, List_sp cur_char) {
     switch (strcase) {
       case undefined:
       case mixed:
-          make_str_preserve(sout,cur_char);
+          make_str_preserve_case(sout,cur_char);
           return;
       case up:
           make_str_downcase(sout,cur_char);
@@ -334,7 +340,7 @@ void make_str(StrWNs_sp sout, List_sp cur_char) {
   } else if (readtable->_Case == kw::_sym_downcase) {
     make_str_downcase(sout,cur_char);
   } else if (readtable->_Case == kw::_sym_preserve) {
-    make_str_preserve(sout,cur_char);
+    make_str_preserve_case(sout,cur_char);
   } else {
     SIMPLE_ERROR(BF("Bad readtable case %s") % _rep_(readtable->_Case));
   }
