@@ -466,8 +466,8 @@ std::tuple< void *, string > do_dlopen(const string& str_path, const int n_mode)
 
   if ( ! p_handle ) {
     str_error = dlerror();
-    fprintf( stderr, "%s:%d Could not open %s - error: %s\n",
-             __FILE__, __LINE__, str_path.c_str(), str_error.c_str());
+    // fprintf( stderr, "%s:%d Could not open %s - error: %s\n",
+    //          __FILE__, __LINE__, str_path.c_str(), str_error.c_str());
   }
 
   return std::make_tuple( p_handle, str_error );
@@ -526,8 +526,8 @@ std::tuple< void *, string > do_dlsym( void * p_handle, const char * pc_symbol )
   p_sym = dlsym( p_handle, pc_symbol );
   if( p_sym == nullptr ) {
     str_error = dlerror();
-    fprintf( stderr, "%s:%d Could not get symbol address in dynamic library (handle %p) - error: %s !\n",
-             __FILE__, __LINE__, p_handle, str_error.c_str() );
+    //fprintf( stderr, "%s:%d Could not get symbol address in dynamic library (handle %p) - error: %s !\n",
+    //         __FILE__, __LINE__, p_handle, str_error.c_str() );
   }
   return std::make_tuple( p_sym, str_error );
 }
@@ -1030,7 +1030,7 @@ CL_DEFUN T_mv core__funwind_protect(T_sp protected_fn, T_sp cleanup_fn) {
 
 
 
-  
+
 #ifdef DEBUG_FLOW_CONTROL
   if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp()) {
     printf("%s:%d In funwind_protect  normal exit\n", __FILE__, __LINE__);
@@ -1203,10 +1203,10 @@ CL_DEFUN T_mv core__progv_function(List_sp symbols, List_sp values, Function_sp 
  SYMBOL_EXPORT_SC_(CorePkg, callWithVariableBound);
 
 
-                             
+
 void initialize_compiler_primitives(Lisp_sp lisp) {
 
-  // Initialize raw object translators needed for Foreign Language Interface support 
+  // Initialize raw object translators needed for Foreign Language Interface support
   llvmo::initialize_raw_translators(); // See file intrinsics.cc!
 
   comp::_sym_STARimplicit_compile_hookSTAR->defparameter(comp::_sym_implicit_compile_hook_default->symbolFunction());
