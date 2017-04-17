@@ -65,7 +65,7 @@ RUN clasp -e '(load "/home/app/quicklisp/setup.lisp")'\
 USER root
 ADD tools/dockerfiles/examples /home/app/work/examples
 RUN chown -R app:app /home/app/.jupyter
-RUN chown -R app:app /home/app/clasp
+#RUN chown -R app:app /home/app/clasp
 RUN chown -R app:app /home/app/work
 USER app
 

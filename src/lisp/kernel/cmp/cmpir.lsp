@@ -706,7 +706,7 @@
         ((stringp temp) (llvm-sys:add-fn-attr2string fn temp ""))
         ((and (consp temp) (stringp (car temp)) (stringp (cadr temp)))
          (llvm-sys:add-fn-attr2string fn (car temp) (cadr temp)))
-        (error "Illegal function attribute ~a" temp)))
+        (t (error "Illegal function attribute ~a" temp))))
     fn))
 
 (defun irc-simple-function-create (llvm-function-name function-type linkage module

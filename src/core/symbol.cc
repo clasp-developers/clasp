@@ -313,14 +313,6 @@ T_sp Symbol_O::defparameter(T_sp val) {
   return result;
 }
 
-#if 0
-void Symbol_O::setf_symbolValueReadOnlyOverRide(T_sp val) {
-  _OF();
-  this->_IsConstant = true;
-  this->_Value = val;
-}
-#endif
-
 CL_LISPIFY_NAME("core:setf_symbolFunction");
 CL_DEFMETHOD void Symbol_O::setf_symbolFunction(T_sp exec) {
   _OF();

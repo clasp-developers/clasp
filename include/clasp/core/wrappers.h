@@ -308,7 +308,7 @@ public:
     _G();
     this->_PredefinedConverterSymbolId = symbol;
     this->_Converter = SymbolToEnumConverter_O::create(title);
-    lisp_symbolSetSymbolValue(symbol, this->_Converter);
+    lisp_defparameter(symbol, this->_Converter);
   }
 
   enum_ &value(Symbol_sp const &sym, X value) {

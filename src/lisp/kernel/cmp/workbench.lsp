@@ -1,3 +1,18 @@
+
+(load "sys:kernel;cmp;jit-setup.lsp")
+(load "sys:kernel;cmp;cmpgf.lsp")
+(defmethod foo ((x integer)) :integer)
+(foo 1)
+(clos:switch-to-fastgf #'foo)
+(clos:get-funcallable-instance-function #'foo)
+
+
+
+
+
+
+
+
 (progn
   (defclass bar () ())
   (defclass baz (bar) ())
