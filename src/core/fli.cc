@@ -84,7 +84,7 @@ THE SOFTWARE.
 //   DEBUG SETTINGS
 // ---------------------------------------------------------------------------
 
-#define DEBUG_LEVEL_FULL
+#define DEBUG_LEVEL_NONE
 
 // ---------------------------------------------------------------------------
 //   LLVM INCLUDES
@@ -112,7 +112,7 @@ THE SOFTWARE.
 // ---------------------------------------------------------------------------
 
 #if defined( DEBUG_LEVEL_FULL )
-#define DEBUG_PRINT(_msg_) fprintf( stderr, "%s", (_msg_).str().c_str())
+#define DEBUG_PRINT(_msg_) LOG(_msg_)
 #else
 #define DEBUG_PRINT(msg)
 #endif
