@@ -1,21 +1,28 @@
 #-*- mode: python; coding: utf-8-unix -*-
 
-import subprocess
-from waflib.Tools import c_preproc
-from waflib.Tools.compiler_cxx import cxx_compiler
-from waflib.Tools.compiler_c import c_compiler
-#cxx_compiler['linux'] = ['clang++']
-#c_compiler['linux'] = ['clang']
+# SYSTEM IMPORTS
 
+from __future__ import print_function
 import sys
 import os
+import subprocess
 try:
     from StringIO import StringIO
 except ImportError:
     from io import StringIO
+
+# WAF IMPORTS
+
+from waflib.Tools import c_preproc
+from waflib.Tools.compiler_cxx import cxx_compiler
+from waflib.Tools.compiler_c import c_compiler
 from waflib.extras import clang_compilation_database
 from waflib.Errors import ConfigurationError
 from waflib import Utils
+
+# IMPLEMENTATION
+
+CLASP_WSCRIPT_DEBUG_ENV_VAR = 'CLASP_WSCRIPT_DEBUG'
 
 top = '.'
 out = 'build'
@@ -30,6 +37,7 @@ GCS = [ 'boehm',
         'boehmdc',
         'mpsprep',
         'mps' ]
+
 # DEBUG_CHARS None == optimized
 DEBUG_CHARS = [ None, 'd' ]
 
@@ -71,21 +79,59 @@ BOOST_LIBRARIES = [
             'boost_system',
             'boost_iostreams']
 
+SUBMODULES = [ 'src/lisp/kernel/contrib/sicl',
+               'src/lisp/kernel/contrib/Acclimation',
+               'src/mps',
+               'src/lisp/modules/asdf',
+               'include/clasp/ext/concurrentqueue' ]
 
+MAKE_SUBMODULES = [ 'src/lisp/modules/asdf' ]
 
-    
+# FOR DOCUMENTATION PURPOSES ONLY:
+GIT_REPOS = [ [ 'include/ext/concurrentqueue',
+                'https://github.com/cameron314/concurrentqueue.git',
+                '61d3c07bf14492b312450b25fb69b7708fe33218' ] ]
+
+# HELPER FUNCTIONS
+
+def getenv( env_var_name ):
+    return os.getenv( env_var_name, None )
+
+def dbgprint(*args, **kwargs):
+    if getenv( CLASP_WSCRIPT_DEBUG_ENV_VAR ) != None :
+        print( *args, file=sys.stderr, **kwargs )
+
+def git_repo_path( git_repo_def ):
+    return git_repo_def[ 0 ]
+
+def git_repo_clone_string( git_repo_def ):
+    return git_repo_def[ 1 ]
+
+def git_repo_commit_string( git_repo_def ):
+    return git_repo_def[ 2 ]
+
+def update_submodule( submodule_path ):
+    dbgprint( "*** Updating submodule at path {0}.".format( submodule_path ))
+    os.system( "git submodule update --init {0}".format( submodule_path ))
+
+def make_submodule( submodule_path ):
+    dbgprint( "*** Making submodule at path {0}.".format( submodule_path ))
+    os.system( "(cd {0} && make)".format( submodule_path ))
+
+# CLASP BUILD SYSTEM
+
+def make_submodules(cfg):
+    for submodule in MAKE_SUBMODULES :
+        make_submodule( submodule )
+
 def update_submodules(cfg):
-    os.system("echo This is where I get submodules")
-    os.system("git submodule update --init src/lisp/kernel/contrib/sicl")
-    os.system("git submodule update --init src/lisp/kernel/contrib/Acclimation")
-    os.system("git submodule update --init src/mps")
-    os.system("git submodule update --init src/lisp/modules/asdf")
-    os.system("(cd src/lisp/modules/asdf; make)")
+    for submodule in SUBMODULES :
+        update_submodule( submodule )
+    make_submodules( cfg )
 
 def sync_submodules(cfg):
-    os.system("echo This is where I sync submodules")
+    dbgprint( "*** GIT syncing submodules...")
     os.system("git submodule sync")
-
 
 # run this from a completely cold system with:
 # ./waf distclean configure
@@ -111,14 +157,14 @@ def dump_command(cmd):
         cmdstr.write("%s \\\n" % repr(x))
     cmdstr.write("%s\n" % cmd[-1])
     print("command ========\n%s\n" % cmdstr.getvalue())
-    
+
 def libraries_as_link_flags(fmt,libs):
     all_libs = []
     for x in libs:
         all_libs.append(fmt%"")
         all_libs.append(x)
     return all_libs
-    
+
 def libraries_as_link_flags_as_string(fmt,libs):
     all_libs = StringIO()
     for x in libs:
@@ -517,7 +563,7 @@ def configure(cfg):
         fin.close()
         if (not correct_version):
             raise Exception("You do not have the correct version of externals-clasp installed - you need the one with the LLVM_COMMIT=%s" % externals_clasp_llvm_hash)
-        
+
     def load_local_config(cfg):
         if not os.path.isfile("./wscript.config"):
             print("Please provide the required config for the build; see the wscript.config.template file.")

@@ -11,3 +11,6 @@
 [submodule "src/lisp/kernel/contrib/Acclimation"]
 	path = src/lisp/kernel/contrib/Acclimation
 	url = https://github.com/robert-strandh/Acclimation.git
+[submodule "include/clasp/ext/concurrentqueue"]
+	path = include/clasp/ext/concurrentqueue
+	url = https://github.com/cameron314/concurrentqueue.git
