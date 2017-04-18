@@ -27,7 +27,7 @@ THE SOFTWARE.
 /* -^- */
 
 #if !defined( __CLASP_MP_QUEUE_FWD_H__ )
-#define __CLASP_MP_QEUEUE_FWD_H__
+#define __CLASP_MP_QUEUE_FWD_H__
 
 #include "clasp/core/mpPackage.fwd.h"
 #include "clasp/ext/concurrentqueue/concurrentqueue.h"
@@ -35,7 +35,7 @@ THE SOFTWARE.
 
 namespace mp {
 
-  class Queue_O;
+  FORWARD(Queue);
   typedef gctools::smart_ptr<Queue_O> Queue_sp;
 
 };

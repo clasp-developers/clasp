@@ -34,7 +34,7 @@ THE SOFTWARE.
 
 namespace mp {
 
-  FORWARD(Queue);
+  SMART(Queue);
 
   class Queue_O : public core::CxxObject_O
   {
@@ -45,58 +45,57 @@ namespace mp {
     CL_LISPIFY_NAME("%enqueue");
     CL_LAMBDA(value queue);
     CL_DOCSTRING("doc(Adds VALUE to the end of QUEUE. Returns VALUE.)doc");
-    CL_DEF_CLASS_METHOD static core::Values_sp PERCENTenqueue( core::T_sp value );
+    CL_DEFMETHOD core::T_sp PERCENTenqueue( core::T_sp value );
 
     CL_LISPIFY_NAME("%dequeue");
     CL_LAMBDA(queue);
     CL_DOCSTRING("doc(Retrieves the oldest value in QUEUE and returns it as the primary value, and T as secondary value. If the queue is empty, returns NIL as both primary and secondary value.)doc");
-    CL_DEF_CLASS_METHOD static core::Values_sp PERCENTdequeue( void );
+    CL_DEFMETHOD core::T_sp PERCENTdequeue( void );
 
     CL_LISPIFY_NAME("%count");
     CL_LAMBDA(queue);
     CL_DOCSTRING("doc(Returns the number of objects in QUEUE. Mainly useful for manual examination of queue state, and in PRINT-OBJECT methods: inefficient as it must walk the entire queue.)doc");
-    CL_DEF_CLASS_METHOD static core::Integer_sp PERCENTcount( void );
+    CL_DEFMETHOD core::Integer_sp PERCENTcount( void );
 
   public: // SLOTS
 
-    core::Str_sp                               _Name;
+    core::String_sp                            _Name;
     moodycamel::ConcurrentQueue< core::T_sp >  _Queue;
     core::ThreadLocalState *                   _ThreadInfo;
 
-  public: // CONSSTRUCTORS
+  public: // CONSSTRUCTORS & DESTRUCTORS
 
-    Queue_O( core::T_sp name, core::List_sp initial_contents = _Nil<core::T_O>() );
+    // CTOR & DTOR
+    explicit Queue_O();
+    virtual ~Queue_O(); // non-trivial
+    Queue_O( core::Str_sp name );
 
   public: // C++ METHODS
 
     static Queue_sp create( std::string name );
-    static Queue_sp create( core::T_sp name );
+    static Queue_sp create( core::String_sp name );
 
-    inline uint64_t count( void )
-    {
-      return this->_Queue.size_approx();
-    };
-
-    string __repr__() const;
+    uint64_t count( void ) const;
+    string __repr__( void ) const;
 
   };
 
   Queue_sp make_queue( std::string name );
 
   CL_LISPIFY_NAME("%make_queue");
-  CL_LAMBDA(&key name initial-contents);
+  CL_LAMBDA(&key name);
   CL_DOCSTRING("doc(Returns a new QUEUE with NAME.)doc");
-  CL_DEFUN Queue_sp PERCENTmake_queue( core::T_sp name );
+  CL_DEFUN Queue_sp PERCENTmake_queue( core::String_sp name );
 
-};
+}; // namespace
 
 // GARBAGE COLLECTION CONFIG
 
-  template <>
-    struct gctools::GCInfo<mp::Queue_O> {
-    static bool constexpr NeedsInitialization = false;
-    static bool constexpr NeedsFinalization = true;
-    static GCInfo_policy constexpr Policy = normal;
-  };
+template <>
+struct gctools::GCInfo<mp::Queue_O> {
+  static bool constexpr NeedsInitialization = false;
+  static bool constexpr NeedsFinalization = true;
+  static GCInfo_policy constexpr Policy = normal;
+};
 
 #endif

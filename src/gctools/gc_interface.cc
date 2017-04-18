@@ -144,6 +144,7 @@ typedef bool _Bool;
 #include <clasp/core/weakHashTable.h>
 #include <clasp/core/intArray.h>
 #include <clasp/core/fli.h>
+#include <clasp/core/queue.h>
 #include <clasp/gctools/gc_boot.h>
 
 //#include <clasp/core/clc.h>
@@ -835,7 +836,7 @@ void initialize_clasp()
   #undef ALLOCATE_ALL_CLASSES
   core_T_O_var->setInstanceBaseClasses(_Nil<core::T_O>());
   _lisp->_Roots._Class = core_Class_O_var;
-  
+
   create_packages();
 
   bootStrapCoreSymbolMap.finish_setup_of_symbols();

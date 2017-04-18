@@ -50,7 +50,7 @@
 (defun make-queue (&key name initial-contents)
   "Returns a new QUEUE with NAME and contents of the INITIAL-CONTENTS
 sequence enqueued."
-  (let ((queue (%make-queue name)))
+  (let ((queue (%make-queue :name name)))
     (flet ((enc-1 (x)
              (enqueue x queue)))
       (declare (dynamic-extent #'enc-1))

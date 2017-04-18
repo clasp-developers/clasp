@@ -40,6 +40,8 @@ THE SOFTWARE.
 //
 // Test, test, test ...
 
+#define DEBUG_LEVEL_FULL
+
 // ---------------------------------------------------------------------------
 //   SYSTEM INCLUDES
 // ---------------------------------------------------------------------------
@@ -119,6 +121,20 @@ namespace mp {
 
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
+Queue_O::Queue_O() : _Name( _Nil<T_O>() )
+{
+  DEBUG_PRINT(BF("%s (%s:%d) | Constructor for %s called\n.") % __FUNCTION__ % __FILE__ % __LINE__ % this->__repr__().c_str() );
+}
+
+// ---------------------------------------------------------------------------
+// ---------------------------------------------------------------------------
+Queue_O::~Queue_O()
+{
+  DEBUG_PRINT(BF("%s (%s:%d) | Destructor for %s called\n.") % __FUNCTION__ % __FILE__ % __LINE__ % this->__repr__().c_str() );
+
+}
+// ---------------------------------------------------------------------------
+// ---------------------------------------------------------------------------
 Queue_sp make_queue( std::string name )
 {
   return Queue_O::create( name );
@@ -126,7 +142,7 @@ Queue_sp make_queue( std::string name )
 
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
-Queue_sp PERCENTmake_queue( core::Str_sp name )
+Queue_sp PERCENTmake_queue( core::String_sp name )
 {
   return Queue_O::create( name );
 }
@@ -142,7 +158,7 @@ Queue_sp Queue_O::create( std::string name )
 
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
-Queue_sp Queue_O::create( core::Str_sp name )
+Queue_sp Queue_O::create( core::String_sp name )
 {
   GC_ALLOCATE(Queue_O, self);
   self->_Name = name;
@@ -151,7 +167,7 @@ Queue_sp Queue_O::create( core::Str_sp name )
 
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
-core::Values_sp Queue_O::PERCENTenqueue( core::T_sp value )
+core::T_sp Queue_O::PERCENTenqueue( core::T_sp value )
 {
   if ( this->_Queue.enqueue( value ) == true )
   {
@@ -165,11 +181,11 @@ core::Values_sp Queue_O::PERCENTenqueue( core::T_sp value )
 
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
-core::Values_sp Queue_O::PERCENTdequeue( void )
+core::T_sp Queue_O::PERCENTdequeue( void )
 {
   core::T_sp item;
 
-  if ( this->_Queue.try_dequeue( &item ) == true )
+  if ( this->_Queue.try_dequeue( item ) == true )
   {
     return Values( item, _lisp->_true() );
   }
@@ -181,14 +197,21 @@ core::Values_sp Queue_O::PERCENTdequeue( void )
 
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
-core::Integer_sp Queue_O::PERCENTcount( void )
+inline uint64_t Queue_O::count( void ) const
 {
-  return mk_integer_int64( this->count() );
+  return static_cast< uint64_t >( this->_Queue.size_approx() );
 }
 
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
-string Queue_O::__repr__() const
+core::Integer_sp Queue_O::PERCENTcount( void )
+{
+  return mk_integer_uint64( this->count() );
+}
+
+// ---------------------------------------------------------------------------
+// ---------------------------------------------------------------------------
+inline string Queue_O::__repr__( void ) const
 {
   stringstream ss;
 
