@@ -3,8 +3,8 @@
 */
 
 /*
-Copyright (c) 2017, Christian E. Schafmeister
-Copyright (c) 2017, Frank Goenninger, Goenninger B&T UG, Germany
+Copyright (c) 2016, Christian E. Schafmeister
+Copyright (c) 2016 and beyond, Frank Goenninger
 
 CLASP is free software; you can redistribute it and/or
 modify it under the terms of the GNU Library General Public
@@ -84,7 +84,7 @@ THE SOFTWARE.
 //   DEBUG SETTINGS
 // ---------------------------------------------------------------------------
 
-// #define DEBUG_LEVEL_FULL
+#define DEBUG_LEVEL_NONE
 
 // ---------------------------------------------------------------------------
 //   LLVM INCLUDES
@@ -112,7 +112,7 @@ THE SOFTWARE.
 // ---------------------------------------------------------------------------
 
 #if defined( DEBUG_LEVEL_FULL )
-#define DEBUG_PRINT(_msg_) fprintf( stderr, "%s", (_msg_).str().c_str())
+#define DEBUG_PRINT(_msg_) LOG(_msg_)
 #else
 #define DEBUG_PRINT(msg)
 #endif
