@@ -3,8 +3,8 @@
 */
 
 /*
-Copyright (c) 2016, Christian E. Schafmeister
-Copyright (c) 2016 and beyond, Frank Goenninger
+Copyright (c) 2017, Christian E. Schafmeister
+Copyright (c) 2017, Frank Goenninger, Goenninger B&T UG, Germany
 
 CLASP is free software; you can redistribute it and/or
 modify it under the terms of the GNU Library General Public
