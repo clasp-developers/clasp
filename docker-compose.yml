@@ -38,3 +38,14 @@ services:
       - clasp
     ports:
       - "8888:8888"
+  # to start a Jenkins server with predefined Jobs for all the above steps, run:
+  #   docker-compose up ci
+  # Then visit http://localhost:8080/
+  ci:
+    image: cando-ci
+    build:
+      context: tools/dockerfiles/ci
+    ports:
+      - "8080:8080"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
