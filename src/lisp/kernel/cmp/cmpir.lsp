@@ -678,8 +678,8 @@
                              :function-type ,function-type
                              :form ,function-form )
            (with-dbg-lexical-block (,function-form)
-             (dbg-set-current-source-pos-for-irbuilder ,function-form ,irbuilder-alloca)
-             (dbg-set-current-source-pos-for-irbuilder ,function-form ,irbuilder-body)
+             (dbg-set-current-source-pos-for-irbuilder ,irbuilder-alloca *current-form-lineno*)
+             (dbg-set-current-source-pos-for-irbuilder ,irbuilder-body *current-form-lineno*)
              (with-irbuilder (*irbuilder-function-body*)
 	       (or *the-module* (error "with-new-function *the-module* is NIL"))
 	       (let* ((*gv-current-function-name* (jit-make-global-string *current-function-name* "fn-name"))

@@ -34,6 +34,7 @@ THE SOFTWARE.
 #include <clasp/core/common.h>
 #include <clasp/core/corePackage.h>
 #include <clasp/core/pathname.h>
+#include <clasp/core/bformat.h>
 #include <clasp/core/character.h>
 #include <clasp/core/symbolTable.h>
 #include <clasp/core/numbers.h>
@@ -1029,12 +1030,13 @@ T_sp read_lisp_object(T_sp sin, bool eofErrorP, T_sp eofValue, bool recursiveP) 
   return (result);
 }
 
+
 /*!
       Read a character from the stream and based on what it is continue to process the
       stream until a complete symbol/number of macro is processed.
       Return the result in a MultipleValues object - if it is empty then nothing was read */
 T_mv lisp_object_query(T_sp sin, bool eofErrorP, T_sp eofValue, bool recursiveP) {
-#if 1
+#if 0
   static int monitorReaderStep = 0;
   if ((monitorReaderStep % 1000) == 0 && cl__member(_sym_monitorReader, _sym_STARdebugMonitorSTAR->symbolValue(), _Nil<T_O>()).notnilp()) {
     printf("%s:%d:%s stream %s -> pos = %" PRF "\n", __FILE__, __LINE__, __FUNCTION__, _rep_(clasp_filename(sin, false)).c_str(), unbox_fixnum(gc::As<Fixnum_sp>(clasp_file_position(sin))));
@@ -1042,7 +1044,6 @@ T_mv lisp_object_query(T_sp sin, bool eofErrorP, T_sp eofValue, bool recursiveP)
   ++monitorReaderStep;
 #endif
   bool only_dots_ok = false;
-  string chars;
   vector<trait_chr_type> token;
   ReadTable_sp readTable = _lisp->getCurrentReadTable();
   Character_sp x, y, z, X, Y, Z;

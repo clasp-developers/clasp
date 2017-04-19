@@ -100,10 +100,6 @@ THE SOFTWARE.
 #define sigthreadmask(HOW,NEW,OLD) sigprocmask((HOW),(NEW),(OLD))
 #endif
 
-#if defined( _TARGET_OS_LINUX )
-#define sigthreadmask(HOW,NEW,OLD) sigprocmask((HOW),(NEW),(OLD))
-#endif
-
 
 namespace core {
 

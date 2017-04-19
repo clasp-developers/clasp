@@ -326,26 +326,31 @@ and wraps it in an flet |#
       ;; Either use the bclasp compiler or if clasp-cleavir is available
       ;; then use the clasp-cleavir compiler
       #+clasp
-      (let ((clasp-cleavir-pkg (find-package :clasp-cleavir)))
-        (if (not core:*use-cleavir-compiler*)
-            ;; The clasp-cleavir package is not available - we are
-            ;; using the bclasp compiler to walk code
-            (cmp:code-walk-using-bclasp
-             method-lambda env
-             :code-walker-function #'code-walker)
-            ;; The clasp-cleavir package is available, if the
-            ;; clasp-cleavir:code-walk-using-cleavir symbol is fboundp
-            ;; then use it to walk the code.
-            (let ((code-walk-using-cleavir
-                   (find-symbol "CODE-WALK-USING-CLEAVIR" clasp-cleavir-pkg)))
-              (if (fboundp code-walk-using-cleavir)
-                  (funcall (fdefinition code-walk-using-cleavir)
-                           method-lambda env
-                           :code-walker-function #'code-walker)
-                  ;; If we don't have code-walk-using-cleavier available
-                  ;; then assume the worst
-                  (setq call-next-method-p t
-                        next-method-p-p t))))))
+      (unless (cmp:code-walk method-lambda env :code-walker-function #'code-walker :errorp nil)
+        (setq call-next-method-p t
+              next-method-p-p t))
+      ;;; The following code is carried out by cmp:code-walk
+      #++(let ((clasp-cleavir-pkg (find-package :clasp-cleavir)))
+           (if (not core:*use-cleavir-compiler*)
+               ;; The clasp-cleavir package is not available - we are
+               ;; using the bclasp compiler to walk code
+               (cmp:code-walk-using-bclasp
+                method-lambda env
+                :code-walker-function #'code-walker)
+               ;; The clasp-cleavir package is available, if the
+               ;; clasp-cleavir:code-walk-using-cleavir symbol is fboundp
+               ;; then use it to walk the code.
+               (let ((code-walk-using-cleavir
+                      (find-symbol "CODE-WALK-USING-CLEAVIR" clasp-cleavir-pkg)))
+                 (if (fboundp code-walk-using-cleavir)
+                     (funcall (fdefinition code-walk-using-cleavir)
+                              method-lambda env
+                              :code-walker-function #'code-walker)
+                     ;; If we don't have code-walk-using-cleavier available
+                     ;; then assume the worst
+                     (setq call-next-method-p t
+                           next-method-p-p t)))))
+      )
     (values call-next-method-p next-method-p-p)))
                                    
 

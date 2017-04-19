@@ -367,12 +367,16 @@ Compile a lisp source file into an LLVM module.  type can be :kernel or :user"
                                        *gv-source-file-info-handle*))
                     (with-constants-table
                         (loop
-                           (let* ((top-source-pos-info (core:input-stream-source-pos-info source-sin))
-                                  (form (read source-sin nil eof-value)))
-                             (when *debug-compile-file* (bformat t "compile-file: %s\n" form))
-                             (if (eq form eof-value)
-                                 (return nil)
-                                 (compile-file-form form compile-file-hook))))
+                           (progn
+                             (let ((eof (peek-char t source-sin nil eof-value)))
+                               (unless (eq eof eof-value)
+                                 (let ((pos (core:input-stream-source-pos-info source-sin)))
+                                   (setq *current-form-lineno* (core:source-file-pos-lineno pos)))))
+                             (let ((form (read source-sin nil eof-value)))
+                               (when *debug-compile-file* (bformat t "compile-file: %s\n" form))
+                               (if (eq form eof-value)
+                                   (return nil)
+                                   (compile-file-form form compile-file-hook)))))
                       (make-boot-function-global-variable *the-module* run-all-function)))))
               (cmp-log "About to verify the module\n")
               (cmp-log-dump *the-module*)
@@ -411,6 +415,7 @@ Compile a lisp source file into an LLVM module.  type can be :kernel or :user"
     ;; Do the different kind of compile-file here
     (let* ((*compile-print* print)
            (*compile-verbose* verbose)
+           (*current-form-lineno* 0)
            (*all-functions-for-one-compile* nil)
            (output-path (compile-file-pathname input-file :output-file output-file :output-type output-type ))
            (*compile-file-output-pathname* output-path)

@@ -194,8 +194,8 @@ when this is t a lot of graphs will be generated.")
                                   :function-type cmp:%fn-prototype%
                                   :form *form*)
             (cmp:with-dbg-lexical-block (*form*)
-              (cmp:dbg-set-current-source-pos-for-irbuilder *form* *entry-irbuilder*)
-              (cmp:dbg-set-current-source-pos-for-irbuilder *form* body-irbuilder)
+              (cmp:dbg-set-current-source-pos-for-irbuilder *entry-irbuilder* cmp:*current-form-lineno*)
+              (cmp:dbg-set-current-source-pos-for-irbuilder body-irbuilder cmp:*current-form-lineno*)
               (cmp:irc-low-level-trace :arguments)
               #+use-ownerships(loop for var being each hash-key of *ownerships*
                                  using (hash-value owner)

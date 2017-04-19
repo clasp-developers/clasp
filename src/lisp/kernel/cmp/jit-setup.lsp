@@ -33,6 +33,15 @@
   (core:select-package :cmp))
 
 
+;;;
+;;; Until we have proper source tracking set this to the current source line number
+;;; whenever we read a new form in compile-file or evaluate the DEFUN macro.
+;;; This should give us at least some level of source location information
+;;;
+(defvar *current-form-lineno* 0)
+
+
+
 (defconstant +debug-dwarf-version+ 4)
 
 ;;;(defvar *llvm-context* (llvm-sys:create-llvm-context))

@@ -62,6 +62,7 @@ THE SOFTWARE.
 #include <clasp/core/lisp.h>
 #include <clasp/core/evaluator.h>
 #include <clasp/core/array.h>
+#include <clasp/core/functor.h>
 #include <clasp/core/symbolTable.h>
 #include <clasp/core/candoOpenMp.h>
 #include <clasp/core/cons.h>
@@ -368,6 +369,8 @@ int main( int argc, char *argv[] )
 {
   // Do not touch debug log until after MPI init
 
+
+  printf("%s:%d ClosureWithSlots_O offset_of _Slots._Data->%lu\n", __FILE__, __LINE__, offsetof(core::ClosureWithSlots_O,_Slots._Data));
 
   bool mpiEnabled = false;
   int  mpiRank    = 0;

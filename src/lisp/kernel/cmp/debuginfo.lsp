@@ -232,19 +232,19 @@
            (progn
              ,@body)))))
 
-(defun dbg-set-current-source-pos (form)
+(defun dbg-set-current-source-pos (form &optional (lineno *current-form-lineno*))
   (when *dbg-generate-dwarf*
     (setq *dbg-set-current-source-pos* t)
     (cmp-log "dbg-set-current-source-pos on form: %s\n" form)
-    (multiple-value-bind (source-dir source-file filepos line-number column)
+    #++(multiple-value-bind (source-dir source-file filepos line-number column)
         (walk-form-for-source-info form)
       #+(or)(warn "Dwarf metadata is not currently being generated - the llvm-sys:set-current-debug-location-to-line-column-scope call is disabled")
       (llvm-sys:set-current-debug-location-to-line-column-scope *irbuilder* line-number column *dbg-current-scope*)
-      (values source-dir source-file line-number column))))
+      (values source-dir source-file line-number column))
+    (llvm-sys:set-current-debug-location-to-line-column-scope *irbuilder* lineno 0 *dbg-current-scope*)))
 
-(defun dbg-set-current-source-pos-for-irbuilder (form irbuilder)
-  (with-irbuilder (irbuilder)
-    (dbg-set-current-source-pos form)))
+(defun dbg-set-current-source-pos-for-irbuilder (irbuilder &optional (lineno *current-form-lineno*))
+  (llvm-sys:set-current-debug-location-to-line-column-scope irbuilder lineno 0 *dbg-current-scope*))
 
 (defun check-debug-info-setup (irbuilder)
   "Signal an error if debug-info for the irbuilder is not setup properly for inlining"
