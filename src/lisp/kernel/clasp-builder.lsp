@@ -312,7 +312,8 @@ Return files."
 (export '(aclasp-features with-aclasp-features))
 (defun aclasp-features ()
   (remove-stage-features)
-  (setq *features* (list* :aclasp :clasp-min *features*)))
+  (setq *features* (list* :aclasp :clasp-min *features*))
+  (setq *target-backend* (default-target-backend)))
 (core:fset 'with-aclasp-features
             #'(lambda (whole env)
                 (let* ((body (cdr whole)))
@@ -360,7 +361,8 @@ Return files."
 (export '(bclasp-features with-bclasp-features))
 (defun bclasp-features()
   (remove-stage-features)
-  (setq *features* (list* :clos :bclasp *features*)))
+  (setq *features* (list* :clos :bclasp *features*))
+  (setq *target-backend* (default-target-backend)))
 (core:fset 'with-bclasp-features
             #'(lambda (whole env)
                 (let* ((body (cdr whole)))
@@ -371,7 +373,8 @@ Return files."
 (export '(cclasp-features with-cclasp-features))
 (defun cclasp-features ()
   (remove-stage-features)
-  (setq *features* (list* :clos :cclasp *features*)))
+  (setq *features* (list* :clos :cclasp *features*))
+  (setq *target-backend* (default-target-backend)))
 (core:fset 'with-cclasp-features
             #'(lambda (whole env)
                 (let* ((body (cdr whole)))
@@ -401,6 +404,11 @@ Return files."
 
 (export '(compile-cclasp recompile-cclasp))
 
+
+(defun link-cclasp (&key (output-file (build-common-lisp-bitcode-pathname)) (system (command-line-arguments-as-list)))
+  (let ((all-bitcode (bitcode-pathnames #P"src/lisp/kernel/tag/start" #P"src/lisp/kernel/tag/cclasp" :system system)))
+    (cmp:link-bitcode-modules output-file all-bitcode)))
+
 (defun compile-cclasp* (output-file system)
   "Turn off generation of inlining code until its turned back on by the source code.
 Compile the cclasp source code."
@@ -422,8 +430,8 @@ Compile the cclasp source code."
   (compile-cclasp* output-file system))
 
 (defun load-cclasp (&key (system (command-line-arguments-as-list)))
-  (load-system #P"src/lisp/kernel/tag/bclasp" #P"src/lisp/kernel/cleavir/inline-prep" :compile-file-load t :system system)
-  (load-system #P"src/lisp/kernel/cleavir/auto-compile" #P"src/lisp/kernel/tag/cclasp" :compile-file-load nil :system system))
+  (load-system (select-source-files #P"src/lisp/kernel/tag/bclasp" #P"src/lisp/kernel/cleavir/inline-prep" :system system) :compile-file-load t)
+  (load-system (select-source-files #P"src/lisp/kernel/cleavir/auto-compile" #P"src/lisp/kernel/tag/cclasp" :system system) :compile-file-load nil ))
 (export '(load-cclasp))
 
 (defun compile-cclasp (&key clean (output-file (build-common-lisp-bitcode-pathname)) (system (command-line-arguments-as-list)))
@@ -432,13 +440,11 @@ Compile the cclasp source code."
   (let ((*target-backend* (default-target-backend)))
     (time
      (progn
-       (load-system
-        (select-source-files #P"src/lisp/kernel/tag/bclasp" #P"src/lisp/kernel/cleavir/inline-prep" :system system)
-        :compile-file-load t )
-       (load-system
-        (select-source-files #P"src/lisp/kernel/cleavir/auto-compile" #P"src/lisp/kernel/tag/pre-epilogue-cclasp" :system system)
-        :compile-file-load nil )
+       (progn ;; Use load-cclasp?
+         (load-system (select-source-files #P"src/lisp/kernel/tag/bclasp" #P"src/lisp/kernel/cleavir/inline-prep" :system system) :compile-file-load t )
+         (load-system (select-source-files #P"src/lisp/kernel/cleavir/auto-compile" #P"src/lisp/kernel/tag/pre-epilogue-cclasp" :system system) :compile-file-load nil ))
        (compile-cclasp* output-file system)))))
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
