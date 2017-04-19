@@ -40,7 +40,6 @@
 (defvar *verify-llvm-modules* nil)
 (defvar *verify-llvm-functions* nil)
 
-
 #+compile-file-debug-dump-module
 (progn
   (defvar *compile-file-debug-dump-module* t))

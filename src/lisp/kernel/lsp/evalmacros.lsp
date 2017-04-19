@@ -156,6 +156,7 @@ VARIABLE doc and can be retrieved by (DOCUMENTATION 'SYMBOL 'VARIABLE)."
                             ,(ext:register-with-pde whole `(si::fset ',name ,fn nil t ',vl))
                             (core:set-source-info ,fn ',(list 'core:current-source-file filepos lineno column))
                             ,@(si::expand-set-documentation name 'function doc-string)
+                            (setq cmp::*current-form-lineno* ,lineno)
                             ,(and *defun-inline-hook*
                                   (funcall *defun-inline-hook* name global-function))
                             ',name))))))

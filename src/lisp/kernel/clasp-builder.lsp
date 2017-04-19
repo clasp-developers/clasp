@@ -380,7 +380,7 @@ Return files."
             t)
 
 (defun load-bclasp (&key (system (command-line-arguments-as-list)))
-  (load-system (select-source-files #P"src/lisp/kernel/tag/start" #P"src/lisp/kernel/tag/bclasp" :system system)))
+  (load-system (select-source-files #P"src/lisp/kernel/tag/start" #P"src/lisp/kernel/tag/pre-epilogue-bclasp" :system system)))
 
 (export '(load-bclasp compile-bclasp))
 (defun compile-bclasp (&key clean (output-file (build-common-lisp-bitcode-pathname)) (system (command-line-arguments-as-list)))
