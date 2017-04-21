@@ -932,10 +932,14 @@ when this is t a lot of graphs will be generated.")
 (defparameter *enable-type-inference* t)
 
 (defun my-hir-transformations (init-instr implementation processor os)
+  (quick-draw-hir init-instr "hir-before-transformations")
+  ;; required by most of the below
+  (cleavir-hir-transformations:process-captured-variables init-instr)
+  (quick-draw-hir init-instr "hir-after-pcv")
   ;; DX analysis
   (clasp-cleavir:optimize-stack-enclose init-instr) ; see FIXME at definition
   ;; FIXME: Causes mysterious segfaults at boot :(
-  ;(cleavir-kildall-escape:mark-dynamic-extent init-instr)
+  (cleavir-kildall-escape:mark-dynamic-extent init-instr)
   ;; Type inference
   (cleavir-typed-transforms:thes->typeqs init-instr)
   (quick-draw-hir init-instr "hir-after-thes-typeqs")
@@ -966,8 +970,7 @@ when this is t a lot of graphs will be generated.")
   (quick-draw-hir init-instr "hir-after-eliminate-load-time-value-inputs")
   ;; The following breaks code when inlining takes place
   ;;  (cleavir-hir-transformations:eliminate-superfluous-temporaries init-instr)
-  (cleavir-hir-transformations:process-captured-variables init-instr)
-  (quick-draw-hir init-instr "hir-after-pcv"))
+  )
 
 (defun compile-form-to-mir (FORM &optional (ENV *clasp-env*))
   "Compile a form down to MIR and return it.
