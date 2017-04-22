@@ -937,27 +937,30 @@ when this is t a lot of graphs will be generated.")
   (cleavir-hir-transformations:process-captured-variables init-instr)
   (quick-draw-hir init-instr "hir-after-pcv")
   ;; DX analysis
-  (clasp-cleavir:optimize-stack-enclose init-instr) ; see FIXME at definition
-  ;; FIXME: Causes mysterious segfaults at boot :(
-  (cleavir-kildall-escape:mark-dynamic-extent init-instr)
-  ;; Type inference
-  (cleavir-typed-transforms:thes->typeqs init-instr)
-  (quick-draw-hir init-instr "hir-after-thes-typeqs")
-  (when *enable-type-inference*
-    ;; Conditionally use type inference.
-    (handler-case
-        (let ((types (cleavir-type-inference:infer-types init-instr)))
-          (when *debug-cleavir*
-            (let ((cleavir-ir-graphviz::*types* types))
-              (quick-draw-hir init-instr "hir-before-prune-ti")))
-          ;; prune paths with redundant typeqs
-          (cleavir-typed-transforms:prune-typeqs init-instr types)
-          (when *debug-cleavir*
-            (let ((cleavir-ir-graphviz::*types* types))
-              (quick-draw-hir init-instr "hir-after-ti"))))
-      (error (c)
-        nil
-        #+(or)(warn "Cannot infer types in ~s: ~s" init-instr c))))
+  (let ((liveness (cleavir-liveness:liveness init-instr)))
+    (clasp-cleavir:optimize-stack-enclose init-instr) ; see FIXME at definition
+    (cleavir-escape:mark-dynamic-extent init-instr
+                                        :liveness liveness)
+    ;; Type inference
+    (cleavir-typed-transforms:thes->typeqs init-instr)
+    (quick-draw-hir init-instr "hir-after-thes-typeqs")
+    (when *enable-type-inference*
+      ;; Conditionally use type inference.
+      (handler-case
+          (let ((types (cleavir-type-inference:infer-types
+                        init-instr
+                        :liveness liveness)))
+            (when *debug-cleavir*
+              (let ((cleavir-ir-graphviz::*types* types))
+                (quick-draw-hir init-instr "hir-before-prune-ti")))
+            ;; prune paths with redundant typeqs
+            (cleavir-typed-transforms:prune-typeqs init-instr types)
+            (when *debug-cleavir*
+              (let ((cleavir-ir-graphviz::*types* types))
+                (quick-draw-hir init-instr "hir-after-ti"))))
+        (error (c)
+          nil
+          #+(or)(warn "Cannot infer types in ~s: ~s" init-instr c)))))
   ;; delete the-instruction and the-values-instruction
   (cleavir-typed-transforms:delete-the init-instr)
   (quick-draw-hir init-instr "hir-after-delete-the")
