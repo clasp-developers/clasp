@@ -1981,35 +1981,35 @@ void searchForApropos(List_sp packages, SimpleString_sp insubstring, bool print_
     pkg->mapInternals(&apropos);
   }
   apropos._symbols->mapHash([&print_values](T_sp key, T_sp dummy) {
-                stringstream ss;
-                Symbol_sp sym = gc::As<Symbol_sp>(key);
-                ss << (BF("%50s") % (sym)->fullName()).str();
-                if ( (sym)->specialP() || (sym)->fboundp() ) {
-                    if ( (sym)->fboundp() ) {
-                        ss << " ";
-                        ss << cl__class_of(cl__symbol_function((sym)))->classNameAsString();
-			T_sp tfn = cl__symbol_function(sym);
-                        if ( !tfn.unboundp() && gc::IsA<Function_sp>(tfn)) {
-                          Function_sp fn = gc::As_unsafe<Function_sp>(tfn);
-                          if (fn->macroP()) ss << "(MACRO)";
-                        }
-                    }
-                    if ( !(sym)->symbolValueUnsafe() ) {
-                        ss << " !!UNDEFINED!!";
-                    } else {
-                        if ( (sym)->specialP() || (sym)->symbolValueUnsafe() ) {
-                            ss << " VALUE";
-                            if ( print_values ) {
-                                stringstream sval;
-                                T_sp symVal = (sym)->symbolValueUnsafe();
-                                sval << _rep_(symVal);
-                                ss << ": " << sval.str().substr(0,50);
-                            }
-                        }
-                    }
-                }
-                BFORMAT_T(BF("%s\n") % ss.str());
-  });
+      stringstream ss;
+      Symbol_sp sym = gc::As<Symbol_sp>(key);
+      ss << std::setw(50) << std::setfill(' ') << (sym)->fullName(); 
+      if ( (sym)->specialP() || (sym)->fboundp() ) {
+        if ( (sym)->fboundp() ) {
+          ss << " ";
+          ss << cl__class_of(cl__symbol_function((sym)))->classNameAsString();
+          T_sp tfn = cl__symbol_function(sym);
+          if ( !tfn.unboundp() && gc::IsA<Function_sp>(tfn)) {
+            Function_sp fn = gc::As_unsafe<Function_sp>(tfn);
+            if (fn->macroP()) ss << "(MACRO)";
+          }
+        }
+        if ( !(sym)->symbolValueUnsafe() ) {
+          ss << " !!UNDEFINED!!";
+        } else {
+          if ( (sym)->specialP() || (sym)->symbolValueUnsafe() ) {
+            ss << " VALUE";
+            if ( print_values ) {
+              stringstream sval;
+              T_sp symVal = (sym)->symbolValueUnsafe();
+              sval << _rep_(symVal);
+              ss << ": " << sval.str().substr(0,50);
+            }
+          }
+        }
+      }
+      core::clasp_writeln_string(ss.str());
+    });
 }
 
 /*

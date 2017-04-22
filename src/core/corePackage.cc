@@ -512,6 +512,7 @@ SYMBOL_EXPORT_SC_(ClPkg, count);
 SYMBOL_EXPORT_SC_(ClPkg, compute_restarts);
 SYMBOL_EXPORT_SC_(ClPkg, char);
 
+SYMBOL_EXPORT_SC_(KeywordPkg, fill_pointer);
 SYMBOL_EXPORT_SC_(KeywordPkg, escape);
 SYMBOL_EXPORT_SC_(ClPkg, write);
 SYMBOL_EXPORT_SC_(KeywordPkg, capitalize);
