@@ -33,10 +33,9 @@ RUN apt-get -y update && apt-get -y install \
 RUN groupadd -g 9999 app && useradd -u 9999 -g 9999 -ms /bin/bash app
 ENV HOME=/home/app
 
-# add clasp build output
-ADD ./build/clasp.tgz ${HOME}/clasp
-
 USER app
 WORKDIR $HOME
+# add clasp build output
+ADD ./build/clasp.tgz ${HOME}/clasp
 ENV PATH "$PATH:$HOME/clasp/bin"
 ENTRYPOINT [ "clasp" ]
