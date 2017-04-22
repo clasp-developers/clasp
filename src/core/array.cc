@@ -39,6 +39,31 @@ THE SOFTWARE.
 #include <clasp/core/character.h>
 #include <clasp/core/wrappers.h>
 
+/*! Adding a new specialized array
+
+Look at the specialized array for uint32_t as an example.
+
+1.  Copy all of the template code in array.h for XXX  
+    - This is currently way too much code. I'd like a more streamlined way of
+      declaring new specialized arrays.
+2.  Copy the XXX specific code in array.cc
+2.  change XXX to whatever_new_type in the copied code
+3.  Add SYMBOL_EXPOSE_SC_(CorePkg,whatever_new_type) to array.h
+4.  Add an enum to clasp_elttype for the specialized type
+5.  Add a CL_VALUE_ENUM entry to _sym_clasp_elttype
+6.  Change these methods in array.h
+    virtual T_sp array_type() const final { return cl::_sym_simple_array; };
+    virtual T_sp element_type() const override { return core::_sym_size_t;};
+    virtual T_sp arrayElementType() const override { return core::_sym_size_t; };
+    virtual clasp_elttype elttype() const { return clasp_aet_size_t; };
+7.  Add a new deftype definition to predlib.lsp 
+8.  Edit arraylib.lsp and add the type to +upgraded-array-element-types+
+    Make sure you add it in the right place - if it's an integer type
+    it needs to go before any larger integer types so that the smallest
+    necessary upgraded-array-element-type is chosen every time.
+9.  Add the type test and make_xxxx calls to array.cc make_vector and make_mdarray
+
+*/
 
 extern "C" {
 using namespace core;
@@ -91,6 +116,14 @@ void noFillPointerError(Symbol_sp fn_name, T_sp thing) {
   ERROR(cl::_sym_simpleTypeError,
         core::lisp_createList(kw::_sym_formatControl, core::lisp_createStr("When calling ~S the argument ~S is not an array with a fill pointer."),
                               kw::_sym_formatArguments, core::lisp_createList(fn_name, thing),
+                              kw::_sym_expectedType, core::lisp_createList(cl::_sym_and,cl::_sym_vector,core::lisp_createList(cl::_sym_satisfies,cl::_sym_array_has_fill_pointer_p)),
+                              kw::_sym_datum, thing));
+}
+void noFillPointerSpecializedError(Symbol_sp fn_name, T_sp thing) {
+  Array_sp athing = gc::As<Array_sp>(thing);
+  ERROR(cl::_sym_simpleTypeError,
+        core::lisp_createList(kw::_sym_formatControl, core::lisp_createStr("When calling vectorPushExtend for a ~S specialized array ~S the argument ~S is not an array with a fill pointer."),
+                              kw::_sym_formatArguments, core::lisp_createList(athing->element_type(), thing),
                               kw::_sym_expectedType, core::lisp_createList(cl::_sym_and,cl::_sym_vector,core::lisp_createList(cl::_sym_satisfies,cl::_sym_array_has_fill_pointer_p)),
                               kw::_sym_datum, thing));
 }
