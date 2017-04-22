@@ -529,7 +529,7 @@ when this is t a lot of graphs will be generated.")
                             cmp:*irbuilder*
                             ;; space for the stack closure
                             (alloca-i8 (core:closure-with-slots-size (length inputs)) "stack-allocated-closure")
-                            cmp:+i8*+
+                            cmp:%i8*%
                             "closure-ptr")
                            ltv-lambda-name
                            enclosed-function
