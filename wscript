@@ -281,7 +281,7 @@ class variant(object):
             use_stage = stage
         if (not (use_stage>='a' and use_stage <= 'z')):
             raise Exception("Bad stage: %s"% use_stage)
-        return '%s%s-%s%s-image.fasl' % (use_stage,APP_NAME,self.gc_name,self.debug_extension())
+        return 'fasl/%s%s-%s%s-image.fasl' % (use_stage,APP_NAME,self.gc_name,self.debug_extension())
     def fasl_dir(self,stage=None):
         if ( stage == None ):
             use_stage = self.stage_char
@@ -295,7 +295,7 @@ class variant(object):
             use_stage = stage
         if (not (use_stage>='a' and use_stage <= 'z')):
             raise Exception("Bad stage: %s"% use_stage)
-        return '%s%s-%s-common-lisp.bc' % (use_stage,APP_NAME,self.gc_name)
+        return 'fasl/%s%s-%s-common-lisp.bc' % (use_stage,APP_NAME,self.gc_name)
     def variant_dir(self):
         return "%s%s"%(self.gc_name,self.debug_dir_extension())
     def variant_name(self):
