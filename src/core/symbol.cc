@@ -244,7 +244,7 @@ CL_DEFMETHOD Symbol_sp Symbol_O::copy_symbol(T_sp copy_properties) const {
 
 bool Symbol_O::isKeywordSymbol() {
   if (this->homePackage().nilp()) return false;
-  Package_sp pkg = gc::As<Package_sp>(this->_HomePackage.load()); //
+  Package_sp pkg = gc::As<Package_sp>(this->_HomePackage); //
   return pkg->isKeywordPackage();
 };
 
@@ -276,8 +276,8 @@ void Symbol_O::archiveBase(ArchiveP node) {
 
 CL_LISPIFY_NAME("core:asKeywordSymbol");
 CL_DEFMETHOD Symbol_sp Symbol_O::asKeywordSymbol() {
-  if (this->_HomePackage.load().notnilp()) {
-    Package_sp pkg = gc::As<Package_sp>(this->_HomePackage.load());
+  if (this->_HomePackage.notnilp()) {
+    Package_sp pkg = gc::As<Package_sp>(this->_HomePackage);
     if (pkg->isKeywordPackage())
       return this->asSmartPtr();
   }
@@ -325,7 +325,7 @@ string Symbol_O::symbolNameAsString() const {
 
 string Symbol_O::formattedName(bool prefixAlways) const { //no guard
   stringstream ss;
-  if (this->_HomePackage.load().nilp()) {
+  if (this->_HomePackage.nilp()) {
     ss << "#:";
     ss << this->_Name->get();
   } else {
@@ -387,7 +387,7 @@ bool Symbol_O::isExported() {
 Symbol_sp Symbol_O::exportYourself(bool doit) {
   if (doit) {
     if (!this->isExported()) {
-      if (this->_HomePackage.load().nilp())
+      if (this->_HomePackage.nilp())
         SIMPLE_ERROR(BF("Cannot export - no package"));
       Package_sp pkg = gc::As<Package_sp>(this->getPackage());
       if (!pkg->isKeywordPackage()) {
@@ -429,8 +429,8 @@ CL_DEFMETHOD string Symbol_O::fullName() const {
 }
 
 T_sp Symbol_O::getPackage() const {
-  if (!this->_HomePackage.load()) return _Nil<T_O>();
-  return this->_HomePackage.load();
+  if (!this->_HomePackage) return _Nil<T_O>();
+  return this->_HomePackage;
 }
 
 void Symbol_O::setPackage(T_sp p) {
@@ -454,7 +454,7 @@ void Symbol_O::dump() {
   ss << "Symbol @" << (void *)this << " --->" << std::endl;
   {
     ss << "Name: " << this->_Name->get() << std::endl;
-    if (!this->_HomePackage.load()) {
+    if (!this->_HomePackage) {
       ss << "Package: UNDEFINED" << std::endl;
     } else {
       ss << "Package: ";
@@ -504,7 +504,7 @@ void Symbol_O::remove_package(Package_sp pkg)
 void Symbol_O::remove_package(Package_sp pkg)
 {
   T_sp tpkg(pkg);
-  this->_HomePackage.compare_exchange_strong(tpkg,_Nil<T_O>());
+  this->_HomePackage = _Nil<T_O>();
 };
 
 CL_DEFUN T_sp core__symbol_global_value(Symbol_sp s) {

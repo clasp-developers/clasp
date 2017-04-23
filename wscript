@@ -95,7 +95,7 @@ def sync_submodules(cfg):
 # This is the static analyzer - formerly called 'redeye'
 def analyze_clasp(cfg):
     run_program_echo("build/boehmdc/iclasp-boehmdc",
-                     "-i", "./build/boehmdc/bclasp-boehmdc-image.fasl",
+                     "-i", "./build/boehmdc/fasl/cclasp-boehmdc-image.fasl",
                      "-f", "ignore-extensions",
                      "-e", '(load (compile-file #P"sys:modules;clang-tool;clang-tool.lisp" :print t))',
                      "-e", '(load (compile-file #P"sys:modules;clasp-analyzer;clasp-analyzer.lisp" :print t))',

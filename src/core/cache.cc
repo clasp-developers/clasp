@@ -45,8 +45,7 @@ void Cache_O::setup(int keySize, int cacheSize) {
 void Cache_O::removeOne(T_sp firstKey) {
   // For multithreading ecl_cache_remove_one does an ecl__atomic_push
 #ifdef CLASP_THREADS
-  std::atomic<T_sp>& slot(this->_clear_list);
-  mp::atomic_push(slot,firstKey);
+  mp::atomic_push(this->_clear_list_spinlock,this->_clear_list_safe,firstKey);
 #else
   this->clearOneFromCache(firstKey);
 #endif
@@ -67,7 +66,7 @@ void Cache_O::clearOneFromCache(T_sp target) {
 #ifdef CLASP_THREADS
 void Cache_O::clearListFromCache()
 {
-  T_sp tlist = mp::atomic_get_and_set_to_Nil(this->_clear_list);
+  T_sp tlist = mp::atomic_get_and_set_to_Nil(this->_clear_list_spinlock,this->_clear_list_safe);
   if (tlist.consp()) {
     Cons_O* list = tlist.unsafe_cons();
     gctools::Vec0<CacheRecord>& table = this->_table;
@@ -130,7 +129,7 @@ void Cache_O::search_cache(CacheRecord *&min_e) {
   abort();
 #endif
 #ifdef CLASP_THREADS
-  if (this->_clear_list.load().notnilp()) {
+  if (this->_clear_list_safe.notnilp()) {
     this->clearListFromCache();
   }
 #endif
