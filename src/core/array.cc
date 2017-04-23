@@ -64,7 +64,7 @@ void badAxisNumberError(Symbol_sp fn_name, size_t rank, size_t axisNumber) {
   SIMPLE_ERROR(BF("In %s illegal axis number %d must be less than rank %d") % _rep_(fn_name) % axisNumber % rank );
 }
 void badIndexError(size_t oneIndex, size_t curDimension) {
-  SIMPLE_ERROR(BF("The index %lz must be less than %d") % oneIndex % curDimension );
+  SIMPLE_ERROR(BF("The index %d must be less than %d") % oneIndex % curDimension );
 }
 void indexNotFixnumError(T_sp index) {
   TYPE_ERROR(index,cl::_sym_fixnum);
@@ -274,7 +274,7 @@ CL_LISPIFY_NAME("cl:array-dimension");
 CL_DEFUN size_t cl__arrayDimension(Array_sp array, size_t idx)
 {
   if (idx >= array->rank()) {
-    SIMPLE_ERROR(BF("array-dimension index %" PRu " is out of bounds - must be less than %lu") % idx % array->rank());
+    SIMPLE_ERROR(BF("array-dimension index %d is out of bounds - must be less than %d") % idx % array->rank());
   }
   return array->arrayDimension(idx);
 }
@@ -328,7 +328,7 @@ MDArray_O::MDArray_O(size_t rank,
     arrayTotalSize *= dim;
   }
   if (irank!=rank) {
-    SIMPLE_ERROR(BF("Mismatch in the number of arguments rank = %" PRu " indices = %s") % rank % _rep_(dimensions));
+    SIMPLE_ERROR(BF("Mismatch in the number of arguments rank = %d indices = %s") % rank % _rep_(dimensions));
   }
   this->_ArrayTotalSize = arrayTotalSize;
 }
@@ -476,13 +476,13 @@ CL_DEFUN void core__mdarray_dump(Array_sp a)
 {
   MDArray_sp mda = gc::As<MDArray_sp>(a);
   BFORMAT_T(BF("MDArray address = %p\n") % (void*)&*mda);
-  BFORMAT_T(BF("MDArray _ArrayTotalSize = %" PRu "\n") % mda->_ArrayTotalSize);
+  BFORMAT_T(BF("MDArray _ArrayTotalSize = %d\n") % mda->_ArrayTotalSize);
   BFORMAT_T(BF("MDArray _Data = %p\n") % (void*)&*(mda->_Data));
-  BFORMAT_T(BF("MDArray _DisplacedIndexOffset = %" PRu "\n") % mda->_DisplacedIndexOffset);
-  BFORMAT_T(BF("MDArray _Flags = %" PRu "\n") % mda->_Flags._Flags);
-  BFORMAT_T(BF("MDArray _Dimensions._Length = %" PRu "\n") % mda->_Dimensions._Length);
+  BFORMAT_T(BF("MDArray _DisplacedIndexOffset = %d\n") % mda->_DisplacedIndexOffset);
+  BFORMAT_T(BF("MDArray _Flags = %d\n") % mda->_Flags._Flags);
+  BFORMAT_T(BF("MDArray _Dimensions._Length = %d\n") % mda->_Dimensions._Length);
   for ( size_t i(0); i<mda->_Dimensions._Length; ++i ) {
-    BFORMAT_T(BF("MDArray _Dimensions[%" PRu "] = %lu\n") % i % mda->_Dimensions[i]);
+    BFORMAT_T(BF("MDArray _Dimensions[%d = %d\n") % i % mda->_Dimensions[i]);
   }
 }
 
@@ -1676,7 +1676,7 @@ cl_index fsmInteger(mpz_class &result, cl_index &numDigits, bool &sawJunk, Strin
   cl_index cur = istart;
   while (1) {
     claspCharacter c = clasp_as_claspCharacter(str->rowMajorAref(cur));
-    LOG(BF("fsmInteger str[%ld] -> c = [%d/%c]") % cur  % c % c );
+    LOG(BF("fsmInteger str[%d] -> c = [%d/%c]") % cur  % c % c );
     switch (state) {
       LOG(BF("  top state = %d") % state);
     case iinit:
@@ -1694,7 +1694,7 @@ cl_index fsmInteger(mpz_class &result, cl_index &numDigits, bool &sawJunk, Strin
       } else if (isalnum(c)) {
         cl_index idigit = fsmIntegerDigit(c, radix);
         if (idigit < 0 || idigit >= radix) {
-          LOG(BF("Hit junk at %ld\n") % cur);
+          LOG(BF("Hit junk at %d\n") % cur);
           state = ijunk;
           break;
         }
@@ -1753,7 +1753,7 @@ cl_index fsmInteger(mpz_class &result, cl_index &numDigits, bool &sawJunk, Strin
     mpz_neg(nresult.get_mpz_t(), result.get_mpz_t());
     mpz_swap(nresult.get_mpz_t(), result.get_mpz_t());
   }
-  LOG(BF("Returning with cur=%ld") % cur);
+  LOG(BF("Returning with cur=%d") % cur);
   return cur;
 };
 
@@ -1775,7 +1775,7 @@ CL_DEFUN T_mv cl__parse_integer(String_sp str, Fixnum start, T_sp end, uint radi
     // normal exit
     if (numDigits > 0) {
       Integer_sp iresult = Integer_O::create(result);
-      LOG(BF("Returning parse-integer with result = %s  cur = %ld") % _rep_(iresult) % cur );
+      LOG(BF("Returning parse-integer with result = %s  cur = %d") % _rep_(iresult) % cur );
       return (Values(iresult, make_fixnum(cur)));
     } else {
       return (Values(_Nil<T_O>(), make_fixnum(cur)));
@@ -2058,7 +2058,7 @@ SimpleBitVector_sp SimpleBitVector_copy(SimpleBitVector_sp orig_sbv)
 
 void SimpleBitVector_inPlaceOr(SimpleBitVector_sp x, SimpleBitVector_sp y) {
   size_t i;
-  if (x->length() != y->length()) SIMPLE_ERROR(BF("BitVectors aren't the same length for in place or - lengths are %" PRu " and %lu") % x->length() % y->length());
+  if (x->length() != y->length()) SIMPLE_ERROR(BF("BitVectors aren't the same length for in place or - lengths are %d and %d") % x->length() % y->length());
   for (size_t i = 0; i<x->_Data.number_of_words(); ++i ) {
     (*x)._Data[i] |= (*y)._Data[i];
   }
@@ -2354,7 +2354,7 @@ size_t calculateArrayTotalSizeAndValidateDimensions(List_sp dim_desig, size_t& r
   for ( auto cur : dim_desig ) {
     T_sp tdim = oCar(cur);
     Fixnum fdim = tdim.unsafe_fixnum();
-    if (fdim<0) SIMPLE_ERROR(BF("Array dimensions %ld must be positive") % fdim);
+    if (fdim<0) SIMPLE_ERROR(BF("Array dimensions %d must be positive") % fdim);
     size_t dim = fdim;
     arrayTotalSize *= dim;
     ++rank;

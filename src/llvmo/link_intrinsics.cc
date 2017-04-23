@@ -942,7 +942,8 @@ void debugInspectT_sp(core::T_sp *objP) {
 
 void debugInspectTPtr(core::T_O *tP) {
   core::T_sp obj = gctools::smart_ptr<core::T_O>((gc::Tagged)tP);
-  printf("debugInspectTPtr@%p  obj.px_ref()=%p: %s\n", (void *)tP, obj.raw_(), _rep_(obj).c_str());
+  printf("debugInspectTPtr@%p\n", tP);
+  printf("debugInspectTPtr obj.px_ref()=%p: %s\n", obj.raw_(), _rep_(obj).c_str());
   printf("%s:%d Insert breakpoint here if you want to inspect object\n", __FILE__, __LINE__);
 }
 
@@ -1185,7 +1186,7 @@ void exceptionStackUnwind(size_t frame) {
 }
 
 void throwIllegalSwitchValue(size_t val, size_t max) {
-  SIMPLE_ERROR(BF("Illegal switch value %" PRu " - max value is %lu") % val % max);
+  SIMPLE_ERROR(BF("Illegal switch value %d - max value is %d") % val % max);
 }
 
 void throw_LexicalGo(int depth, int index) {
@@ -1915,24 +1916,30 @@ void cc_dispatch_debug(int msg_id, uintptr_clasp_t val)
 {
   switch (msg_id) {
   case 0:
-      BFORMAT_T(BF("Step %" PRu "\n") % val);
+//      BFORMAT_T(BF("Step %d\n") % val);
+      printf("%s:%d    cc_dispatch_debug step %d\n", __FILE__, __LINE__, val );
       break;
   case 1:
-      BFORMAT_T(BF("Arg val[%" PRu "]") % val);
+//      BFORMAT_T(BF("Arg val[%d]") % val);
+      printf("%s:%d    cc_dispatch_debug arg val[%d]\n", __FILE__, __LINE__, val );
       break;
   case 2:
-      BFORMAT_T(BF(" tag = %ld\n") % val);
-      break;
+//      BFORMAT_T(BF(" tag = %d\n") % val); 
+      printf("%s:%d    cc_dispatch_debug tag [%d]\n", __FILE__, __LINE__, val );
+     break;
   case 3: {
     VaList_S vl(0,*reinterpret_cast<va_list*>(val));
     VaList_sp vls((gc::Tagged)vl.asTaggedPtr());
-    BFORMAT_T(BF("Arg VaList_sp.raw_() = %p list -> %s\n") % (void*)vls.raw_() % _rep_(vls) );
-    dump_VaList_S_ptr(&vl);
+    printf("%s:%d    vaList_sp.raw_() = %p\n", __FILE__, __LINE__, vls.raw_());
+//    BFORMAT_T(BF("Arg VaList_sp.raw_() = %p list -> %s\n") % (void*)vls.raw_() % _rep_(vls) );
+//    dump_VaList_S_ptr(&vl);
     break;
   }
   case 4:
-      BFORMAT_T(BF("Ptr: %p\n") % (void*)val );
+      printf("%s:%d     ptr: %p\n", __FILE__, __LINE__, (void*)val);
+//      BFORMAT_T(BF("Ptr: %p\n") % (void*)val );
   }
+  fflush(stdout);
 }
 
 void clasp_terminate(const char *file, size_t line, size_t column, const char *func) {

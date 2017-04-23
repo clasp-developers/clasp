@@ -1129,7 +1129,7 @@ step8:
     if ((y8_syntax_type == kw::_sym_constituent_character) || (y8_syntax_type == kw::_sym_non_terminating_macro_character)) {
       // Y = readTable->convert_case(y);
       Y = y;  // convert case once the entire token is accumulated
-      LOG(BF("  Pushing back character %" PRu "") % constituentChar(Y));
+      LOG(BF("  Pushing back character %d") % constituentChar(Y));
       token.push_back(constituentChar(Y));
       goto step8;
     }

@@ -145,6 +145,7 @@ Set this to other IRBuilders to make code go where you want")
 (defvar +single-float-tag+ (get-cxx-data-structure-info :single-float-tag))
 (defvar +general-tag+ (get-cxx-data-structure-info :general-tag))
 (defvar +VaList_S-size+ (get-cxx-data-structure-info :VaList_S-size))
+(defvar +VaList_S-valist-offset+ (get-cxx-data-structure-info :VaList_S-valist-offset))
 (defvar +void*-size+ (get-cxx-data-structure-info :void*-size))
 (defvar +alignment+ (get-cxx-data-structure-info :alignment))
 (export '(+fixnum-mask+ +tag-mask+ +immediate-mask+
@@ -310,7 +311,7 @@ Boehm and MPS use a single pointer"
   (error "I need a va_list struct definition for this system")
 
   (define-symbol-macro %va_list*% (llvm-sys:type-get-pointer-to %va_list%))
-  (define-symbol-macro %VaList_S% (llvm-sys:struct-type-get *llvm-context* (list %vtable*% %va_list%) nil))
+  (define-symbol-macro %VaList_S% (llvm-sys:struct-type-get *llvm-context* (list %va_list%) nil))
   (define-symbol-macro %VaList_S*% (llvm-sys:type-get-pointer-to %VaList_S%))
 
 ;;;    "Function prototype for generic functions")
@@ -491,8 +492,10 @@ and initialize it with an array consisting of one function pointer."
          (data-layout (llvm-sys:get-data-layout execution-engine))
          (tsp-size (llvm-sys:data-layout-get-type-alloc-size data-layout %tsp%))
          (tmv-size (llvm-sys:data-layout-get-type-alloc-size data-layout %tmv%))
+         (valist_s-size (llvm-sys:data-layout-get-type-alloc-size data-layout %VaList_S%))
          (gcroots-in-module-size (llvm-sys:data-layout-get-type-alloc-size data-layout %gcroots-in-module%)))
-    (llvm-sys:throw-if-mismatched-structure-sizes :tsp tsp-size :tmv tmv-size :contab gcroots-in-module-size)))
+    (llvm-sys:throw-if-mismatched-structure-sizes :tsp tsp-size :tmv tmv-size :contab gcroots-in-module-size
+                                                   :valist valist_s-size)))
 
 ;;
 ;; Define exception types in the module

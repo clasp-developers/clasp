@@ -603,26 +603,27 @@
         *shutdown-fn-name* (llvm-sys:get-name shutdown-fn)
         *sorted-roots* sorted-roots
         *generic-function* gf)
+  (warn "!~&!~&!~&!~&Saving dispatcher to /tmp/dispatcher.ll!~&!~&!~&")
   (let* ((output-path #P"/tmp/dispatcher.ll")
          (fout (open output-path :direction :output)))
     (unwind-protect (llvm-sys:dump-module module fout)
       (close fout))))
 
 (defun debug-load-dispatcher (function-name)
-  (let* ((module (llvm-sys:parse-irfile "/tmp/dispatcher.ll" cmp:*llvm-context*))
+  (let* ((module (llvm-sys:parse-irfile #P"/tmp/dispatcher.ll" cmp:*llvm-context*))
          (disp-fn (llvm-sys:get-function module *disp-fn-name*))
          (startup-fn (llvm-sys:get-function module *startup-fn-name*))
          (shutdown-fn (llvm-sys:get-function module *shutdown-fn-name*))
          (compiled-dispatcher (jit-add-module-return-dispatch-function
                                module
                                disp-fn startup-fn shutdown-fn *sorted-roots*)))
-    (safe-set-funcallable-instance-function *generic-function* dispatcher)))
+    (clos::safe-set-funcallable-instance-function *generic-function* compiled-dispatcher)))
 
 
 ;;; --------------------------------------------------
 ;;;
 (defparameter *dispatcher-count* 0)
-(defun codegen-dispatcher (dtree gf)
+(defun codegen-dispatcher (dtree the-gf)
   (let ((*the-module* (create-run-time-module-for-compile)))
     (define-primitives-in-module *the-module*)
     (with-module (:module *the-module*
@@ -679,7 +680,7 @@
 	    (with-irbuilder (irbuilder-alloca)
 	      (let* ((local-arglist (irc-alloca-va_list :label "local-arglist"))
 		     (arglist-passed-untagged (irc-int-to-ptr (irc-sub (irc-ptr-to-int gf-args %uintptr_t% "iargs") (jit-constant-uintptr_t +Valist_S-tag+) "sub") %Valist_S*% "arglist-passed-untagged"))
-		     (va_list-passed (irc-in-bounds-gep-type %VaList_S% arglist-passed-untagged (list (jit-constant-i32 0) (jit-constant-i32 1)) "va_list-passed")))
+		     (va_list-passed (irc-int-to-ptr (irc-add (irc-ptr-to-int arglist-passed-untagged %uintptr_t% "VaList_S") (jit-constant-uintptr_t +VaList_S-valist-offset+) "add") %va_list%)))
 		(insert-message)
                 (debug-arglist (irc-ptr-to-int va_list-passed %uintptr_t%))
 		(irc-create-call "llvm.va_copy" (list (irc-pointer-cast local-arglist %i8*% "local-arglist-i8*") (irc-pointer-cast va_list-passed %i8*% "va_list-passed-i8*")))
@@ -718,7 +719,8 @@
                                              *outcomes*)
                                     (let ((sorted (sort values #'< :key #'car)))
                                       (mapcar #'cdr sorted)))))
-                (debug-save-dispatcher gf *the-module* disp-fn startup-fn shutdown-fn sorted-roots)
+                ;; REMOVE THE FOLLOWING IN PRODUCTION CODE
+                (debug-save-dispatcher the-gf *the-module* disp-fn startup-fn shutdown-fn sorted-roots)
                 (let* ((compiled-dispatcher (jit-add-module-return-dispatch-function *the-module* disp-fn startup-fn shutdown-fn sorted-roots)))
                   (gf-log "Compiled dispatcher -> ~a~%" compiled-dispatcher)
                   (gf-log "Dumping module\n")
