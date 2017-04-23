@@ -1184,7 +1184,7 @@
   (declare (type t type)
            (type (or null function symbol) function)
 	   (type real priority)
-	   (type pprint-dispatch-table table)
+	   #+(or)(type pprint-dispatch-table table)
 	   #.+ecl-safe-declarations+)
   ;; FIXME! This check should be automatically generated when compiling
   ;; with high enough safety mode.

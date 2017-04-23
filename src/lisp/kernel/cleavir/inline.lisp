@@ -101,7 +101,6 @@
            ))
 
 (progn
-  (in-package :primop)
   (defun convert-to-bignum (z)
     (if (> z 0)
         (- z (expt 2 63))
@@ -200,6 +199,8 @@
 ;;;  Copied from clasp/src/lisp/kernel/lsp/pprint.lsp
 ;;;    and put here so that the inline definition is available
 ;;;
+(in-package "SI")
+
 (declaim (inline index-posn posn-index posn-column))
 (defun index-posn (index stream)
   (declare (type index index) (type pretty-stream stream))

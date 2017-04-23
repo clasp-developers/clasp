@@ -29,7 +29,11 @@ PROGN."
          (when ,(caar binding-list)
            ,@(bind (cdr binding-list) forms))))))
 
-
+;;; This function finds uses of CLEAVIR-PRIMOP:CALL-WITH-VARIABLE-BOUND and marks the
+;;; closure arguments as stack allocatable (dynamic extent). But TODO/FIXME: c-w-v-b is
+;;; a normal function, and Cleavir's dynamic extent analysis ought to be informed that
+;;; c-w-v-b doesn't save its argument, so that it can mark the argument DX itself and
+;;; this function can be removed.
 (defun optimize-stack-enclose (top-instruction)
   (let (encloses)
     (cleavir-ir:map-instructions
@@ -52,5 +56,5 @@ PROGN."
          (orig (cadr (clasp-cleavir-hir:precalc-value-instruction-original-object cwvb)))
          (is-precalc (typep cwvb 'clasp-cleavir-hir:precalc-value-instruction))
          (found-cwvb (eq orig 'cleavir-primop:call-with-variable-bound)))
-        (change-class enclose 'cc-mir:stack-enclose-instruction)))
+        (setf (cleavir-ir:dynamic-extent-p enclose) t)))
      top-instruction)))
