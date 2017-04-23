@@ -369,6 +369,7 @@ No DIBuilder is defined for the default module")
 
   (defun jit-add-module-return-dispatch-function (module repl-fn startup-fn shutdown-fn literals-list)
     "Add the module to the jit and return a handle"
+    (irc-verify-function repl-fn)
     (unwind-protect
          (progn
            #+threads(mp:get-lock *jit-engine-mutex*)

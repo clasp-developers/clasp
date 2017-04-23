@@ -680,7 +680,7 @@
 	    (with-irbuilder (irbuilder-alloca)
 	      (let* ((local-arglist (irc-alloca-va_list :label "local-arglist"))
 		     (arglist-passed-untagged (irc-int-to-ptr (irc-sub (irc-ptr-to-int gf-args %uintptr_t% "iargs") (jit-constant-uintptr_t +Valist_S-tag+) "sub") %Valist_S*% "arglist-passed-untagged"))
-		     (va_list-passed (irc-int-to-ptr (irc-add (irc-ptr-to-int arglist-passed-untagged %uintptr_t% "VaList_S") (jit-constant-uintptr_t +VaList_S-valist-offset+) "add") %va_list%)))
+		     (va_list-passed (irc-int-to-ptr (irc-add (irc-ptr-to-int arglist-passed-untagged %uintptr_t% "VaList_S") (jit-constant-uintptr_t +VaList_S-valist-offset+) "add") %va_list*%)))
 		(insert-message)
                 (debug-arglist (irc-ptr-to-int va_list-passed %uintptr_t%))
 		(irc-create-call "llvm.va_copy" (list (irc-pointer-cast local-arglist %i8*% "local-arglist-i8*") (irc-pointer-cast va_list-passed %i8*% "va_list-passed-i8*")))
