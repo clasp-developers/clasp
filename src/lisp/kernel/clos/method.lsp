@@ -221,12 +221,15 @@ and wraps it in an flet |#
             ;; second of the method lambda.  The class declarations
             ;; are inserted to communicate the class of the method's
             ;; arguments to the code walk.
-            `(lambda ,lambda-list
-               #+clasp(declare (core:lambda-name (method ,name ,@qualifiers ,specializers)))
-               ,@(and class-declarations `((declare ,@class-declarations)))
-               ,(if copied-variables
-                    `(let* ,copied-variables ,block)
-                    block))))
+            (let* ((loc (ext:current-source-location))
+                   (filepos (if loc (source-file-pos-filepos loc) 0))
+                   (lineno (if loc (source-file-pos-lineno loc) 0)))
+              `(lambda ,lambda-list
+                 #+clasp(declare (core:lambda-name (method ,name ,@qualifiers ,specializers) ,filepos ,lineno))
+                 ,@(and class-declarations `((declare ,@class-declarations)))
+                 ,(if copied-variables
+                      `(let* ,copied-variables ,block)
+                      block)))))
       (values method-lambda declarations documentation))))
 
 (defun make-method-lambda (gf method method-lambda env)
@@ -235,6 +238,7 @@ and wraps it in an flet |#
       (walk-method-lambda method-lambda env)
     (multiple-value-bind (declarations body doc)
         (process-declarations (cddr method-lambda) t) ; We expect docstring
+;; source location here?
       (values `(lambda (.method-args. .next-methods. ,@(cadr method-lambda))
                  (declare #+(or)(core:lambda-name make-method-lambda.lambda) ,@declarations)
                  ,doc

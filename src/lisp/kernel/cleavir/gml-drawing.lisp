@@ -70,20 +70,6 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
-;;; Drawing datum DYNAMIC-LEXICAL-LOCATION.
-
-(defmethod draw-datum ((datum dynamic-lexical-location) stream)
-  (render-node stream (datum-id datum) (name datum) :color :yellow))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;
-;;; Drawing datum STATIC-LEXICAL-LOCATION.
-
-(defmethod draw-datum ((datum static-lexical-location) stream)
-  (render-node stream (datum-id datum) (name datum) :color :yellow :shape :rectangle))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;
 ;;; Drawing datum VALUES-LOCATION.
 
 (defmethod draw-datum ((datum values-location) stream)
@@ -228,6 +214,9 @@
     (format stream "enter ~a"
 	    (mapcar #'format-item (cleavir-ir:lambda-list instruction)))))
 
+(defmethod label ((instruction dynamic-allocation-instruction))
+  "DX")
+
 (defmethod label ((instruction nop-instruction)) "nop")
 
 (defmethod label ((instruction assignment-instruction)) "<-")
@@ -286,23 +275,7 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
-;;; Integer instructions.
-
-(defmethod label ((instruction bit-unbox-instruction)) "bit unbox")
-
-(defmethod label ((instruction bit-box-instruction)) "bit box")
-
-(defmethod label ((instruction unsigned-byte-8-unbox-instruction)) "ub8 unbox")
-
-(defmethod label ((instruction unsigned-byte-8-box-instruction)) "ub8 box")
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;
 ;;; Floating-point arithmetic instructions.
-
-(defmethod label ((instruction short-float-unbox-instruction)) "shf unbox")
-
-(defmethod label ((instruction short-float-box-instruction)) "shf box")
 
 (defmethod label ((instruction short-float-add-instruction)) "shf +")
 
@@ -318,10 +291,6 @@
 
 (defmethod label ((instruction short-float-sqrt-instruction)) "shf sqrt")
 
-(defmethod label ((instruction single-float-unbox-instruction)) "sf unbox")
-
-(defmethod label ((instruction single-float-box-instruction)) "sf box")
-
 (defmethod label ((instruction single-float-add-instruction)) "sf +")
 
 (defmethod label ((instruction single-float-sub-instruction)) "sf -")
@@ -336,10 +305,6 @@
 
 (defmethod label ((instruction single-float-sqrt-instruction)) "sf sqrt")
 
-(defmethod label ((instruction double-float-unbox-instruction)) "df unbox")
-
-(defmethod label ((instruction double-float-box-instruction)) "df box")
-
 (defmethod label ((instruction double-float-add-instruction)) "df +")
 
 (defmethod label ((instruction double-float-sub-instruction)) "df -")
@@ -353,10 +318,6 @@
 (defmethod label ((instruction double-float-cos-instruction)) "df cos")
 
 (defmethod label ((instruction double-float-sqrt-instruction)) "df sqrt")
-
-(defmethod label ((instruction long-float-unbox-instruction)) "df unbox")
-
-(defmethod label ((instruction long-float-box-instruction)) "df box")
 
 (defmethod label ((instruction long-float-add-instruction)) "lf +")
 
@@ -388,56 +349,6 @@
 
 (defmethod label ((instruction slot-write-instruction)) "slot-write")
 
-(defmethod label ((instruction simple-t-aref-instruction)) "t aref")
-
-(defmethod label ((instruction simple-t-aset-instruction)) "t aset")
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;
-;;; Integer array accessors.
-
-(defmethod label ((instruction simple-bit-aref-instruction)) "bit aref")
-
-(defmethod label ((instruction simple-bit-aset-instruction)) "bit aset")
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;
-;;; Floating-point array accessors.
-(defmethod label ((instruction simple-short-float-aref-instruction)) "shf aref")
-
-(defmethod label ((instruction simple-single-float-aref-instruction)) "sf aref")
-
-(defmethod label ((instruction simple-double-float-aref-instruction)) "df aref")
-
-(defmethod label ((instruction simple-long-float-aref-instruction)) "lf aref")
-
-(defmethod label ((instruction simple-short-float-aset-instruction)) "shf aset")
-
-(defmethod label ((instruction simple-single-float-aset-instruction)) "sf aset")
-
-(defmethod label ((instruction simple-double-float-aset-instruction)) "df aset")
-
-(defmethod label ((instruction simple-long-float-aset-instruction)) "lf aset")
-
-
-
-
-(defmethod label ((instruction non-simple-short-float-aref-instruction)) "non-shf aref")
-
-(defmethod label ((instruction non-simple-single-float-aref-instruction)) "non-sf aref")
-
-(defmethod label ((instruction non-simple-double-float-aref-instruction)) "non-df aref")
-
-(defmethod label ((instruction non-simple-long-float-aref-instruction)) "non-lf aref")
-
-(defmethod label ((instruction non-simple-short-float-aset-instruction)) "non-shf aset")
-
-(defmethod label ((instruction non-simple-single-float-aset-instruction)) "non-sf aset")
-
-(defmethod label ((instruction non-simple-double-float-aset-instruction)) "non-df aset")
-
-(defmethod label ((instruction non-simple-long-float-aset-instruction)) "non-lf aset")
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
 ;;; Instructions for multiple values.
@@ -447,6 +358,30 @@
 (defmethod label ((instruction fixed-to-multiple-instruction)) "F->M")
 
 (defmethod label ((instruction multiple-value-call-instruction)) "MVC")
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Instructions for boxing.
+
+(defmethod label ((instruction box-instruction))
+  (format nil "box ~a" (element-type instruction)))
+
+(defmethod label ((instruction unbox-instruction))
+  (format nil "unbox ~a" (element-type instruction)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Array-related instructions.
+
+(defmethod label ((instruction aref-instruction))
+  (format nil "~:[non-simple~;simple~] ~s aref"
+	  (simple-p instruction)
+	  (element-type instruction)))
+
+(defmethod label ((instruction aset-instruction))
+  (format nil "~:[non-simple~;simple~] ~s aset"
+	  (simple-p instruction)
+	  (element-type instruction)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;

@@ -469,7 +469,7 @@ ALWAYS_INLINE core::T_O *cc_stack_enclose(void* closure_address,
   auto obj = gctools::BasePtrToMostDerivedPtr<typename gctools::smart_ptr<core::ClosureWithSlots_O>::Type>(closure_address);
   new (obj) (typename gctools::smart_ptr<core::ClosureWithSlots_O>::Type)(numCells,
                                                                           tlambdaName,
-                                                                          kw::_sym_function,
+                                                                          core::_sym_stack_closure,
                                                                           llvm_func,
                                                                           _Nil<T_O>(),
                                                                           _Nil<T_O>(),
@@ -487,7 +487,7 @@ ALWAYS_INLINE core::T_O *cc_stack_enclose(void* closure_address,
     ++idx;
   }
   va_end(argp);
-//  printf("%s:%d  Allocating closure on stack at %p\n", __FILE__, __LINE__, functoid.raw_());
+//  printf("%s:%d  Allocating closure on stack at %p  stack_closure_p()->%d\n", __FILE__, __LINE__, functoid.raw_(), functoid->stack_closure_p());
   return functoid.raw_();
 }
 

@@ -713,7 +713,7 @@ CL_DEFUN void gctools__cleanup(bool verbose) {
   size_t finalizations;
   size_t messages = processMpsMessages(finalizations);
   if (verbose) {
-    BFORMAT_T(BF("Processed %" PRu " finalization messages and %lu total messages\n") % messages % finalizations );
+    BFORMAT_T(BF("Processed %d finalization messages and %d total messages\n") % messages % finalizations );
   }
 #endif
 }

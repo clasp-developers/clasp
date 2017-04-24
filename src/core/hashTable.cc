@@ -520,7 +520,7 @@ gc::Fixnum HashTable_O::sxhashKey(T_sp obj, gc::Fixnum bound, bool willAddKey) c
 List_sp HashTable_O::findAssoc(gc::Fixnum index, T_sp key) const {
   VectorObjects_O* spine = &*(this->_HashTable);
 //  printf("%s:%d:%s  spine->arrayTotalSize() = %ld  index = %ld\n", __FILE__, __LINE__, __FUNCTION__, spine->dimension(), index );
-  LOG(BF("findAssoc at index %ld\n") %index);
+  LOG(BF("findAssoc at index %d\n") %index);
   T_sp trib = (*spine)[index];
   List_sp rib = coerce_to_list(trib);
   for (auto cur : rib) {

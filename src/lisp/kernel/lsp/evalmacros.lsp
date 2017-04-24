@@ -130,7 +130,6 @@ VARIABLE doc and can be retrieved by (DOCUMENTATION 'SYMBOL 'VARIABLE)."
 #+clasp
 (si::fset 'defun
           #'(lambda (def env)
-              (declare (ignore env))
               (let ((whole def)
                     (name (cadr def))
                     (vl (caddr def))
@@ -158,7 +157,7 @@ VARIABLE doc and can be retrieved by (DOCUMENTATION 'SYMBOL 'VARIABLE)."
                             ,@(si::expand-set-documentation name 'function doc-string)
                             (setq cmp::*current-form-lineno* ,lineno)
                             ,(and *defun-inline-hook*
-                                  (funcall *defun-inline-hook* name global-function))
+                                  (funcall *defun-inline-hook* name global-function env))
                             ',name))))))
           t
           nil

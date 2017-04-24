@@ -233,7 +233,7 @@ CL_DEFUN Pointer_sp cffi_sys__foreign_alloc(core::Integer_sp size) {
   int sz = clasp_to_int(size);
   void *ptr = malloc(sz);
   if (ptr == NULL) {
-    SIMPLE_ERROR(BF("Could not allocate %ld bytes") % sz);
+    SIMPLE_ERROR(BF("Could not allocate %d bytes") % sz);
   }
   Pointer_sp op = Pointer_O::create(ptr);
   return op;

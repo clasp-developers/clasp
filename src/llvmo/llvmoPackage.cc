@@ -227,6 +227,7 @@ CL_DEFUN core::T_sp llvm_sys__cxxDataStructuresInfo() {
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("CONS-CDR-OFFSET"), make_fixnum(core::Cons_O::cdr_offset())), list);
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("UINTPTR_T-SIZE"), make_fixnum(sizeof(uintptr_clasp_t))), list);
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("VALIST_S-SIZE"), make_fixnum(sizeof(VaList_S))), list);
+  list = Cons_O::create(Cons_O::create(lisp_internKeyword("VALIST_S-VALIST-OFFSET"), make_fixnum((int)offsetof(VaList_S,_Args))),list);
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("HEADER-SIZE"), make_fixnum(sizeof(gctools::Header_s))), list);
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("REGISTER-SAVE-AREA-SIZE"), make_fixnum(LCC_TOTAL_REGISTERS*sizeof(void*))), list);
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("ALIGNMENT"),make_fixnum(gctools::Alignment())),list);
@@ -253,8 +254,8 @@ CL_DEFUN core::T_sp llvm_sys__cxxDataStructuresInfo() {
   return list;
 }
 
-CL_LAMBDA(&key tsp tmv ihf contab);
-CL_DEFUN void llvm_sys__throwIfMismatchedStructureSizes(core::Fixnum_sp tspSize, core::Fixnum_sp tmvSize, gc::Nilable<core::Fixnum_sp> givenIhfSize, core::T_sp contabSize) {
+CL_LAMBDA(&key tsp tmv ihf contab valist);
+CL_DEFUN void llvm_sys__throwIfMismatchedStructureSizes(core::Fixnum_sp tspSize, core::Fixnum_sp tmvSize, gc::Nilable<core::Fixnum_sp> givenIhfSize, core::T_sp contabSize, core::T_sp tvalistsize ) {
   int T_sp_size = sizeof(core::T_sp);
   if (unbox_fixnum(tspSize) != T_sp_size) {
     SIMPLE_ERROR(BF("Mismatch between tsp size[%d] and core::T_sp size[%d]") % unbox_fixnum(tspSize) % T_sp_size);
@@ -273,10 +274,16 @@ CL_DEFUN void llvm_sys__throwIfMismatchedStructureSizes(core::Fixnum_sp tspSize,
     int contab_size = sizeof(gctools::GCRootsInModule);
     if (contabSize.fixnump()) {
       if (contab_size != contabSize.unsafe_fixnum()) {
-        SIMPLE_ERROR(BF("GCRootsInModule size %" PRu " mismatch with Common Lisp code %lu") % contab_size % contabSize.unsafe_fixnum());
+        SIMPLE_ERROR(BF("GCRootsInModule size %d mismatch with Common Lisp code %d") % contab_size % contabSize.unsafe_fixnum());
       }
     } else {
       SIMPLE_ERROR(BF("contab keyword argument expects a fixnum"));
+    }
+  }
+  if (tvalistsize.fixnump()) {
+    size_t valistsize = tvalistsize.unsafe_fixnum();
+    if (valistsize != sizeof(VaList_S)) {
+      SIMPLE_ERROR(BF("VaList_S size %d mismatch with Common Lisp code %d") % sizeof(VaList_S) % valistsize);
     }
   }
 }

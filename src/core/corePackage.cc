@@ -155,6 +155,7 @@ SYMBOL_EXPORT_SC_(CorePkg, STARdebug_threadsSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARallow_with_interruptsSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, signal_servicing);
 SYMBOL_EXPORT_SC_(CorePkg, handle_signal);
+SYMBOL_EXPORT_SC_(CorePkg, stack_closure);
 SYMBOL_EXPORT_SC_(CorePkg, make_source_pos_info);
 SYMBOL_EXPORT_SC_(CorePkg, STARinvalidated_dispatch_function_stackSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARtop_level_form_stackSTAR);

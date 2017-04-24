@@ -42,9 +42,7 @@ when this is t a lot of graphs will be generated.")
 	     #+(or)(setf var (alloca-mv-struct (string (gensym "v")))) )
 	    ((typep datum 'cleavir-ir:immediate-input)
 	     (setf var (%i64 (cleavir-ir:value datum))))
-	    ((typep datum 'cleavir-ir:dynamic-lexical-location)
-	     (setf var (alloca-t* (string (cleavir-ir:name datum)))))
-	    ((typep datum 'cleavir-ir:static-lexical-location)
+	    ((typep datum 'cleavir-ir:lexical-location)
 	     (setf var (alloca-t* (string (cleavir-ir:name datum)))))
             (t (error "add support to translate datum: ~a~%" datum)))
 	  (setf (gethash datum *vars*) var))
@@ -70,7 +68,6 @@ when this is t a lot of graphs will be generated.")
 
 (defun layout-basic-block (basic-block return-value abi)
   (destructuring-bind (first last owner) basic-block
-    (declare (ignore owner))
     (cc-dbg-when *debug-log*
 			 (format *debug-log* "- - - -  begin layout-basic-block  owner: ~a~%" (cc-mir:describe-mir owner))
 			 (loop for instruction = first
@@ -517,74 +514,46 @@ when this is t a lot of graphs will be generated.")
 
 (defmethod translate-simple-instruction
     ((instruction cleavir-ir:enclose-instruction) return-value inputs outputs abi)
-  (declare (ignore inputs))
   (cmp:irc-low-level-trace :flow)
-  #||
-  (format t "translate-simple-instruction::enclose-instruction~%")
-  (format t "         *current-source-pos-info*: ~a~%" core:*current-source-pos-info*)
-||#
-  (let* ((enter-instruction (cleavir-ir:code instruction)))
-    (multiple-value-bind (enclosed-function lambda-name)
-	(layout-procedure enter-instruction abi)
-      (let* ((loaded-inputs (mapcar (lambda (x) (cmp:irc-load x "cell")) inputs))
-	     (ltv-lambda-name (%literal-value lambda-name (format nil "lambda-name->~a" lambda-name)))
-	     (result (cmp:irc-create-call
-                      "cc_enclose"
-                      (list* ltv-lambda-name
-                             enclosed-function
-                             cmp:*gv-source-file-info-handle*
-                             (cmp:irc-size_t-*current-source-pos-info*-filepos)
-                             (cmp:irc-size_t-*current-source-pos-info*-lineno)
-                             (cmp:irc-size_t-*current-source-pos-info*-column)
-                             (%size_t (length inputs))
-                             loaded-inputs)
-                      (format nil "closure->~a" lambda-name))))
-	(cc-dbg-when *debug-log*
-		     (format *debug-log* "cc_enclose with ~a cells~%" (length inputs))
-		     (format *debug-log* "    inputs: ~a~%" inputs))
-	(%store result (first outputs) nil)))))
-
-(defmethod translate-simple-instruction
-    ((instruction cc-mir:stack-enclose-instruction) return-value inputs outputs abi)
-  (declare (ignore inputs))
-  (cmp:irc-low-level-trace :flow)
-  (let* ((enter-instruction (cleavir-ir:code instruction)))
+  (let ((enter-instruction (cleavir-ir:code instruction)))
     (multiple-value-bind (enclosed-function lambda-name)
         (layout-procedure enter-instruction abi)
       (let* ((loaded-inputs (mapcar (lambda (x) (cmp:irc-load x "cell")) inputs))
-             (stack-allocated-closure-space (alloca-i8 (core:closure-with-slots-size (length inputs)) "stack-allocated-closure"))
-             (ptr-to-sacs
-              (llvm-sys:create-bit-cast cmp:*irbuilder* stack-allocated-closure-space cmp:%i8*% "closure-ptr"))
              (ltv-lambda-name (%literal-value lambda-name (format nil "lambda-name->~a" lambda-name)))
+             (dx-p (cleavir-ir:dynamic-extent-p instruction))
              (result
-              (let ()
-                (cmp:irc-create-call
-                 "cc_stack_enclose"
-                 (list* ptr-to-sacs
-                        ltv-lambda-name
-                        enclosed-function
-                        cmp:*gv-source-file-info-handle*
-                        (cmp:irc-size_t-*current-source-pos-info*-filepos)
-                        (cmp:irc-size_t-*current-source-pos-info*-lineno)
-                        (cmp:irc-size_t-*current-source-pos-info*-column)
-                        (%size_t (length inputs))
-                        loaded-inputs)
-                 (format nil "closure->~a" lambda-name)))
-               #+(or) (progn
-                        (cmp:irc-intrinsic-args
-                         "cc_enclose"
-                         (list* ltv-lambda-name
-                                enclosed-function
-                                cmp:*gv-source-file-info-handle*
-                                (cmp:irc-size_t-*current-source-pos-info*-filepos)
-                                (cmp:irc-size_t-*current-source-pos-info*-lineno)
-                                (cmp:irc-size_t-*current-source-pos-info*-column)
-                                (%size_t (length inputs))
-                                loaded-inputs)
-                         (format nil "closure->~a" lambda-name)))
-               ))
+               (if dx-p
+                   (cmp:irc-create-call
+                    "cc_stack_enclose"
+                    (list* (llvm-sys:create-bit-cast
+                            cmp:*irbuilder*
+                            ;; space for the stack closure
+                            (alloca-i8 (core:closure-with-slots-size (length inputs)) "stack-allocated-closure")
+                            cmp:%i8*%
+                            "closure-ptr")
+                           ltv-lambda-name
+                           enclosed-function
+                           cmp:*gv-source-file-info-handle*
+                           (cmp:irc-size_t-*current-source-pos-info*-filepos)
+                           (cmp:irc-size_t-*current-source-pos-info*-lineno)
+                           (cmp:irc-size_t-*current-source-pos-info*-column)
+                           (%size_t (length inputs))
+                           loaded-inputs)
+                    (format nil "closure->~a" lambda-name))
+                   (cmp:irc-create-call
+                    "cc_enclose"
+                    (list* ltv-lambda-name
+                           enclosed-function
+                           cmp:*gv-source-file-info-handle*
+                           (cmp:irc-size_t-*current-source-pos-info*-filepos)
+                           (cmp:irc-size_t-*current-source-pos-info*-lineno)
+                           (cmp:irc-size_t-*current-source-pos-info*-column)
+                           (%size_t (length inputs))
+                           loaded-inputs)
+                    (format nil "closure->~a" lambda-name)))))
         (cc-dbg-when *debug-log*
-                     (format *debug-log* "cc_enclose with ~a cells~%" (length inputs))
+                     (format *debug-log* "~:[cc_enclose~;cc_stack_enclose~] with ~a cells~%"
+                             dx-p (length inputs))
                      (format *debug-log* "    inputs: ~a~%" inputs))
         (%store result (first outputs) nil)))))
 
@@ -654,7 +623,15 @@ when this is t a lot of graphs will be generated.")
        :datum ,(first inputs))))
 ||#
 
-
+(defmethod translate-simple-instruction
+    ((instruction cleavir-ir:dynamic-allocation-instruction)
+     return-value inputs outputs abi)
+  (declare (ignore return-value inputs outputs abi))
+  ;; This instruction is only an indicator for high level analysis,
+  ;; so it doesn't need to have any counterpart in LLVM-IR.
+  ;; But translate-simple-instruction is apparently supposed to
+  ;; return something, so we spuriously return a NIL-maker. FIXME?
+  (%nil))
 
 
 #+(or)
@@ -955,23 +932,35 @@ when this is t a lot of graphs will be generated.")
 (defparameter *enable-type-inference* t)
 
 (defun my-hir-transformations (init-instr implementation processor os)
-  (cleavir-typed-transforms:thes->typeqs init-instr)
-  (quick-draw-hir init-instr "hir-after-thes-typeqs")
-  (when *enable-type-inference*
-    ;; Conditionally use type inference.
-    (handler-case
-        (let ((types (cleavir-type-inference:infer-types init-instr)))
-          (when *debug-cleavir*
-            (let ((cleavir-ir-graphviz::*types* types))
-              (quick-draw-hir init-instr "hir-before-prune-ti")))
-          ;; prune paths with redundant typeqs
-          (cleavir-typed-transforms:prune-typeqs init-instr types)
-          (when *debug-cleavir*
-            (let ((cleavir-ir-graphviz::*types* types))
-              (quick-draw-hir init-instr "hir-after-ti"))))
-      (error (c)
-        nil
-        #+(or)(warn "Cannot infer types in ~s: ~s" init-instr c))))
+  (quick-draw-hir init-instr "hir-before-transformations")
+  ;; required by most of the below
+  (cleavir-hir-transformations:process-captured-variables init-instr)
+  (quick-draw-hir init-instr "hir-after-pcv")
+  ;; DX analysis
+  (let ((liveness (cleavir-liveness:liveness init-instr)))
+    (clasp-cleavir:optimize-stack-enclose init-instr) ; see FIXME at definition
+    (cleavir-escape:mark-dynamic-extent init-instr
+                                        :liveness liveness)
+    ;; Type inference
+    (cleavir-typed-transforms:thes->typeqs init-instr)
+    (quick-draw-hir init-instr "hir-after-thes-typeqs")
+    (when *enable-type-inference*
+      ;; Conditionally use type inference.
+      (handler-case
+          (let ((types (cleavir-type-inference:infer-types
+                        init-instr
+                        :liveness liveness)))
+            (when *debug-cleavir*
+              (let ((cleavir-ir-graphviz::*types* types))
+                (quick-draw-hir init-instr "hir-before-prune-ti")))
+            ;; prune paths with redundant typeqs
+            (cleavir-typed-transforms:prune-typeqs init-instr types)
+            (when *debug-cleavir*
+              (let ((cleavir-ir-graphviz::*types* types))
+                (quick-draw-hir init-instr "hir-after-ti"))))
+        (error (c)
+          nil
+          #+(or)(warn "Cannot infer types in ~s: ~s" init-instr c)))))
   ;; delete the-instruction and the-values-instruction
   (cleavir-typed-transforms:delete-the init-instr)
   (quick-draw-hir init-instr "hir-after-delete-the")
@@ -984,8 +973,7 @@ when this is t a lot of graphs will be generated.")
   (quick-draw-hir init-instr "hir-after-eliminate-load-time-value-inputs")
   ;; The following breaks code when inlining takes place
   ;;  (cleavir-hir-transformations:eliminate-superfluous-temporaries init-instr)
-  (cleavir-hir-transformations:process-captured-variables init-instr)
-  (quick-draw-hir init-instr "hir-after-pcv"))
+  )
 
 (defun compile-form-to-mir (FORM &optional (ENV *clasp-env*))
   "Compile a form down to MIR and return it.
@@ -1001,7 +989,6 @@ COMPILE-FILE will use the default *clasp-env*."
       (my-hir-transformations hir clasp-system nil nil)
       (quick-draw-hir hir "hir-pre-mir")
       (cleavir-ir:hir-to-mir hir clasp-system nil nil)
-      (clasp-cleavir:optimize-stack-enclose hir)
       (cc-mir:assign-mir-instruction-datum-ids hir)
       (clasp-cleavir:finalize-unwind-and-landing-pad-instructions hir map-enter-to-landing-pad)
       (quick-draw-hir hir "mir")

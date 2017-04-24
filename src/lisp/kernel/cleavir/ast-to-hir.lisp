@@ -48,7 +48,6 @@
 ;;; REINITIALIZE-INSTANCE on the ENTER-INSTRUCTION to set the slots to
 ;;; their final values.
 (defmethod cleavir-ast-to-hir::compile-ast ((ast clasp-cleavir-ast:named-function-ast) context)
-  (cleavir-ast-to-hir::check-context-for-one-value-ast context)
   (let* ((ll (cleavir-ast-to-hir::translate-lambda-list (cleavir-ast:lambda-list ast)))
 	 (enter (clasp-cleavir-hir:make-named-enter-instruction ll (clasp-cleavir-ast:lambda-name ast)))
 	 (values (cleavir-ir:make-values-location))
@@ -65,7 +64,7 @@
 
 
 (defmethod cleavir-ast-to-hir::compile-ast ((ast clasp-cleavir-ast:debug-message-ast) context)
-  (cleavir-ast-to-hir::check-context-for-one-value-ast context)
+  (cleavir-ast-to-hir::assert-context ast context 1 1)
   (format t "cleavir-ast-to-hir::compile-ast on debug-message-ast successors: ~a~%" (cleavir-ast-to-hir::successors context))
   (make-instance 'clasp-cleavir-hir:debug-message-instruction 
 		 :debug-message (clasp-cleavir-ast:debug-message ast)
@@ -104,7 +103,7 @@
        (cleavir-ast-to-hir::invocation context)))))
 
 (defmethod cleavir-ast-to-hir::compile-ast ((ast clasp-cleavir-ast:foreign-call-ast) context)
-  (cleavir-ast-to-hir::check-context-for-one-value-ast context)
+  (cleavir-ast-to-hir::assert-context ast context 1 1)
   (with-accessors ((results cleavir-ast-to-hir::results)
 		   (successors cleavir-ast-to-hir::successors))
       context
@@ -134,7 +133,7 @@
        (cleavir-ast-to-hir::invocation context)))))
 
 (defmethod cleavir-ast-to-hir::compile-ast ((ast clasp-cleavir-ast:foreign-call-pointer-ast) context)
-  (cleavir-ast-to-hir::check-context-for-one-value-ast context)
+  (cleavir-ast-to-hir::assert-context ast context 1 1)
   (with-accessors ((results cleavir-ast-to-hir::results)
 		   (successors cleavir-ast-to-hir::successors))
       context
@@ -164,7 +163,7 @@
 
 
 (defmethod cleavir-ast-to-hir::compile-ast ((ast clasp-cleavir-ast:precalc-value-reference-ast) context)
-  (cleavir-ast-to-hir::check-context-for-one-value-ast context)
+  (cleavir-ast-to-hir::assert-context ast context 1 1)
   (clasp-cleavir-hir:make-precalc-value-instruction
    (cleavir-ir:make-immediate-input (clasp-cleavir-ast:precalc-value-reference-index ast))
    (first (cleavir-ast-to-hir::results context))
@@ -202,7 +201,7 @@
 ;;; Compile a SETF-FDEFINITION-AST.
 
 (defmethod cleavir-ast-to-hir::compile-ast ((ast clasp-cleavir-ast:setf-fdefinition-ast) context)
-  (cleavir-ast-to-hir::check-context-for-one-value-ast context)
+  (cleavir-ast-to-hir::assert-context ast context 1 1)
   (let ((temp (cleavir-ast-to-hir::make-temp)))
     (cleavir-ast-to-hir::compile-ast
      (cleavir-ast:name-ast ast)

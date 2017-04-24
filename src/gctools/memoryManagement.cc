@@ -418,7 +418,7 @@ kind_t next_header_kind()
 core::Fixnum ensure_fixnum(kind_t val)
 {
   if ( val > most_positive_fixnum || val < most_negative_fixnum ) {
-    SIMPLE_ERROR(BF("The value %lz cannot be converted into a FIXNUM") % val );
+    SIMPLE_ERROR(BF("The value %d cannot be converted into a FIXNUM") % val );
   }
   return (core::Fixnum)val;
 }
@@ -455,7 +455,7 @@ void initialize_gcroots_in_module(GCRootsInModule* roots, core::T_sp* root_addre
     for ( auto c : args ) {
       core::T_sp arg = oCar(c);
       roots->set(i,arg.tagged_());
-    //if (debug) BFORMAT_T(BF("Filling roots table[%" PRu "]@%p -> %p\n") % i % ct.address(i) % (void*)arg.tagged_());
+    //if (debug) BFORMAT_T(BF("Filling roots table[%d]@%p -> %p\n") % i % ct.address(i) % (void*)arg.tagged_());
       ++i;
     }
   }
