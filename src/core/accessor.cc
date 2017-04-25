@@ -59,7 +59,7 @@ static gctools::Vec0<T_sp>&
 fill_spec_vector(T_sp gfun, gctools::Vec0<T_sp>& vektor, T_sp instance)
 {
   vektor[0] = gfun;
-  vektor[1] = instance;
+  vektor[1] = lisp_instance_class(instance); // instance
   vektor.unsafe_set_end(2);
   return vektor;
 }
@@ -105,8 +105,7 @@ static T_mv
 slot_method_index(T_sp gfun, T_sp instance, T_sp args)
 {
   T_sp slot_name = slot_method_name(gfun, args);
-  unlikely_if (slot_name.nilp())
-    return _Nil<T_O>();
+  unlikely_if (slot_name.nilp()) return _Nil<T_O>();
   else {
     T_sp table = eval::funcall(cl::_sym_slot_value,cl__class_of(instance),clos::_sym_location_table);
                 /* The class might not be a standard class. This happens
@@ -120,7 +119,10 @@ slot_method_index(T_sp gfun, T_sp instance, T_sp args)
 }
 
 
-
+CL_DEFUN T_mv core__slot_method_index(T_sp gfun, T_sp instance, T_sp args)
+{
+  return slot_method_index(gfun,instance,args);
+}
 
 
 static CacheRecord*
@@ -198,24 +200,24 @@ LCC_RETURN optimized_slot_reader_dispatch(gctools::Tagged tgf, gctools::Tagged t
     if (index.fixnump()) {
       value = instance->instanceRef(index.unsafe_fixnum());
 #ifdef DEBUG_ACCESSORS
-  if (DEBUG_ACCESSORS_ON()) {
-    printf("%s:%d optimized_slot_reader_dispatch getting slot[index = %s] value = %s\n", __FILE__, __LINE__, _rep_(index).c_str(), _rep_(value).c_str() );
-  }
+      if (DEBUG_ACCESSORS_ON()) {
+        printf("%s:%d optimized_slot_reader_dispatch getting slot[index = %s] value = %s\n", __FILE__, __LINE__, _rep_(index).c_str(), _rep_(value).c_str() );
+      }
 #endif
-    } else if (!index.asOrNull<Cons_O>()) {
+    } else if (!index.consp()) {
       value = eval::funcall( clos::_sym_slot_value, instance, index);
 #ifdef DEBUG_ACCESSORS
-  if (DEBUG_ACCESSORS_ON()) {
-    printf("%s:%d optimized_slot_reader_dispatch getting slot-value index = %s value = %s\n", __FILE__, __LINE__, _rep_(index).c_str(), _rep_(value).c_str() );
-  }
+      if (DEBUG_ACCESSORS_ON()) {
+        printf("%s:%d optimized_slot_reader_dispatch getting slot-value index = %s value = %s\n", __FILE__, __LINE__, _rep_(index).c_str(), _rep_(value).c_str() );
+      }
 #endif
     } else {
-      Cons_sp cindex = gc::As<Cons_sp>(index);
+      Cons_sp cindex = gc::As_unsafe<Cons_sp>(index);
       value = cindex->_Car;
 #ifdef DEBUG_ACCESSORS
-  if (DEBUG_ACCESSORS_ON()) {
-    printf("%s:%d optimized_slot_reader_dispatch getting slot cons index = %s value = %s\n", __FILE__, __LINE__, _rep_(index).c_str(), _rep_(value).c_str() );
-  }
+      if (DEBUG_ACCESSORS_ON()) {
+        printf("%s:%d optimized_slot_reader_dispatch getting slot cons index = %s value = %s\n", __FILE__, __LINE__, _rep_(index).c_str(), _rep_(value).c_str() );
+      }
 #endif
     }
     unlikely_if (value.unboundp()) {
@@ -226,6 +228,8 @@ LCC_RETURN optimized_slot_reader_dispatch(gctools::Tagged tgf, gctools::Tagged t
                             instance,
                             slot_name);
     }
+    T_sp call_history_key = SimpleVector_O::make(cache->_keys.size()-1,_Nil<T_O>(),true,cache->_keys.size()-1,&(cache->_keys[1]));
+    core__generic_function_call_history_push_new(gf,call_history_key,Cons_O::create(core::_sym_optimized_slot_reader,index));
     return value.as_return_type();
   }
   eval::funcall(cl::_sym_no_applicable_method, gf, value, tinstance);
@@ -263,27 +267,29 @@ LCC_RETURN optimized_slot_writer_dispatch(gctools::Tagged tgf, gctools::Tagged t
     index = e->_value;
     if (index.fixnump()) {
 #ifdef DEBUG_ACCESSORS
-  if (DEBUG_ACCESSORS_ON()) {
-    printf("%s:%d optimized_slot_writer_dispatch setting slot[index = %s]  value = %s\n", __FILE__, __LINE__, _rep_(index).c_str(), _rep_(value).c_str() );
-  }
+      if (DEBUG_ACCESSORS_ON()) {
+        printf("%s:%d optimized_slot_writer_dispatch setting slot[index = %s]  value = %s\n", __FILE__, __LINE__, _rep_(index).c_str(), _rep_(value).c_str() );
+      }
 #endif
-  instance->instanceSet(index.unsafe_fixnum(),value);
+      instance->instanceSet(index.unsafe_fixnum(),value);
     } else if (!index.asOrNull<Cons_O>()) {
 #ifdef DEBUG_ACCESSORS
-  if (DEBUG_ACCESSORS_ON()) {
-    printf("%s:%d optimized_slot_writer_dispatch setting slot-value index = %s  value = %s\n", __FILE__, __LINE__, _rep_(index).c_str(), _rep_(value).c_str() );
-  }
+      if (DEBUG_ACCESSORS_ON()) {
+        printf("%s:%d optimized_slot_writer_dispatch setting slot-value index = %s  value = %s\n", __FILE__, __LINE__, _rep_(index).c_str(), _rep_(value).c_str() );
+      }
 #endif
       eval::funcall( clos::_sym_slot_value_set, value, instance, index);
     } else {
 #ifdef DEBUG_ACCESSORS
-  if (DEBUG_ACCESSORS_ON()) {
-    printf("%s:%d optimized_slot_writer_dispatch setting slot cons index = %s value = %s\n", __FILE__, __LINE__, _rep_(index).c_str(), _rep_(value).c_str() );
-  }
+      if (DEBUG_ACCESSORS_ON()) {
+        printf("%s:%d optimized_slot_writer_dispatch setting slot cons index = %s value = %s\n", __FILE__, __LINE__, _rep_(index).c_str(), _rep_(value).c_str() );
+      }
 #endif
       Cons_sp cindex = gc::As<Cons_sp>(index);
       cindex->_Car = value;
     }
+    T_sp call_history_key = SimpleVector_O::make(cache->_keys.size()-1,_Nil<T_O>(),true,cache->_keys.size()-1,&(cache->_keys[1]));
+    core__generic_function_call_history_push_new(gf,call_history_key,Cons_O::create(core::_sym_optimized_slot_writer,index));
     return value.as_return_type();
   }
   eval::funcall(cl::_sym_no_applicable_method, gf, value, tinstance);
