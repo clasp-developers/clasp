@@ -175,7 +175,7 @@ def configure_common(cfg,variant):
     print("cfg.env.LDFLAGS=%s" % cfg.env.LDFLAGS)
     cfg.define("BUILD_LINKFLAGS", ' '.join(cfg.env.LINKFLAGS) + ' ' + ' '.join(cfg.env.LDFLAGS))
 #    cfg.define("DEBUG_STARTUP",1)
-    cfg.define("DEBUG_GFDISPATCH",1)
+#    cfg.define("DEBUG_GFDISPATCH",1)
 
 def strip_libs(libs):
     result = []
