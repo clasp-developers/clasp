@@ -68,6 +68,9 @@ string Function_O::__repr__() const {
   T_sp name = this->name();
   stringstream ss;
   ss << "#<" << this->_instanceClass()->classNameAsString();
+#ifdef USE_BOEHM
+  ss << "@" << (void*)this << " ";
+#endif
   ss << " " << _rep_(name);
   ss << " :ftype " << _rep_(this->getKind());
   ss << " lambda-list: " << _rep_(this->lambda_list());

@@ -256,7 +256,7 @@ when this is t a lot of graphs will be generated.")
 	 (cleavir-ir-graphviz:draw-flowchart initial-instruction (namestring mir-pathname))
 	 (format *debug-log* "Wrote mir to: ~a~%" (namestring mir-pathname))))
       (multiple-value-bind (function lambda-name)
-          (layout-procedure initial-instruction abi)
+          (layout-procedure initial-instruction abi :linkage linkage)
         (values function lambda-name)
         #+(or)(let ((forms (cleavir-ir:forms initial-instruction)))
                 ;; Generate the run-all code here
@@ -1099,7 +1099,7 @@ that llvm function. This works like compile-lambda-function in bclasp."
   (let ((cleavir-generate-ast:*compiler* 'cl:compile)
         (core:*use-cleavir-compiler* t)
 	(cmp:*all-functions-for-one-compile* nil))
-    (cmp:compile-in-env name form env #'cclasp-compile*)))
+    (cmp:compile-in-env name form env #'cclasp-compile* 'llvm-sys:external-linkage)))
         
 	
 (defun cleavir-compile (name form &key (debug *debug-cleavir*))

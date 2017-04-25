@@ -31,6 +31,11 @@
 
 (in-package :clasp-cleavir)
 
+;;; Dump modules to ensure that the proper functions have 'llvm-sys:external-linkage
+#+(or)
+(eval-when (:compile-toplevel :execute)
+  (setq cmp::*jit-dump-module* t))
+
 (eval-when (:compile-toplevel :execute :load-toplevel)
   (setq core:*defun-inline-hook* 'defun-inline-hook)
   (setq core:*proclaim-hook* 'proclaim-hook))

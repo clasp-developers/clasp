@@ -94,6 +94,7 @@ CL_DEFUN T_mv core__source_file_info(T_sp sourceFile, T_sp sourceDebugNamestring
     }
     return _lisp->getOrRegisterSourceFileInfo(gc::As<String_sp>(ns)->get_std_string(), sourceDebugNamestring, sourceDebugOffset, useLineno);
   } else if (sourceFile.fixnump()) { // Fixnum_sp fnSourceFile = sourceFile.asOrNull<Fixnum_O>() ) {
+    WITH_READ_LOCK(_lisp->_Roots._SourceFilesMutex);
     Fixnum_sp fnSourceFile(gc::As<Fixnum_sp>(sourceFile));
     size_t idx = unbox_fixnum(fnSourceFile);
     if (idx >= _lisp->_Roots._SourceFiles.size()) {

@@ -1,6 +1,7 @@
 (in-package :clasp-cleavir)
 
-#+(or)(eval-when (:compile-toplevel :load-toplevel :execute)
+#+(or)
+(eval-when (:compile-toplevel :load-toplevel :execute)
   (setq *echo-repl-read* t))
 
 (defvar *current-function-entry-basic-block*)
