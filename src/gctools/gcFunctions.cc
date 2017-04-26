@@ -866,6 +866,13 @@ bool debugging_configuration(stringstream& ss) {
 #endif
   ss << (BF("DEBUG_THREADS = %s\n") % (debug_threads ? "defined" : "undefined") ).str();
 
+  bool debug_gfdispatch = false;
+#ifdef DEBUG_GFDISPATCH
+  debug_gfdispatch = true;
+  debugging = true;
+#endif
+  ss << (BF("DEBUG_GFDISPATCH = %s\n") % (debug_gfdispatch ? "defined" : "undefined") ).str();
+
   return debugging;
 }
 

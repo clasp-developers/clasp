@@ -1916,28 +1916,28 @@ void cc_dispatch_debug(int msg_id, uintptr_clasp_t val)
 {
   switch (msg_id) {
   case 0:
-//      BFORMAT_T(BF("Step %d\n") % val);
-      printf("%s:%d    cc_dispatch_debug step %d\n", __FILE__, __LINE__, val );
+      BFORMAT_T(BF("Step %d\n") % val);
+//      printf("%s:%d    cc_dispatch_debug step %d\n", __FILE__, __LINE__, val );
       break;
   case 1:
-//      BFORMAT_T(BF("Arg val[%d]") % val);
-      printf("%s:%d    cc_dispatch_debug arg val[%d]\n", __FILE__, __LINE__, val );
+      BFORMAT_T(BF("Arg val[%d]") % val);
+//      printf("%s:%d    cc_dispatch_debug arg val[%d]\n", __FILE__, __LINE__, val );
       break;
   case 2:
-//      BFORMAT_T(BF(" tag = %d\n") % val); 
-      printf("%s:%d    cc_dispatch_debug tag [%d]\n", __FILE__, __LINE__, val );
+      BFORMAT_T(BF(" tag = %d\n") % val); 
+//      printf("%s:%d    cc_dispatch_debug tag [%d]\n", __FILE__, __LINE__, val );
      break;
   case 3: {
     VaList_S vl(0,*reinterpret_cast<va_list*>(val));
     VaList_sp vls((gc::Tagged)vl.asTaggedPtr());
-    printf("%s:%d    vaList_sp.raw_() = %p\n", __FILE__, __LINE__, vls.raw_());
-//    BFORMAT_T(BF("Arg VaList_sp.raw_() = %p list -> %s\n") % (void*)vls.raw_() % _rep_(vls) );
-//    dump_VaList_S_ptr(&vl);
+//    printf("%s:%d    vaList_sp.raw_() = %p\n", __FILE__, __LINE__, vls.raw_());
+    BFORMAT_T(BF("Arg VaList_sp.raw_() = %p list -> %s\n") % (void*)vls.raw_() % _rep_(vls) );
+    dump_VaList_S_ptr(&vl);
     break;
   }
   case 4:
-      printf("%s:%d     ptr: %p\n", __FILE__, __LINE__, (void*)val);
-//      BFORMAT_T(BF("Ptr: %p\n") % (void*)val );
+//      printf("%s:%d     ptr: %p\n", __FILE__, __LINE__, (void*)val);
+      BFORMAT_T(BF("Ptr: %p\n") % (void*)val );
   }
   fflush(stdout);
 }

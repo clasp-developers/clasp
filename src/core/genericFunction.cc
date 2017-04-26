@@ -258,6 +258,11 @@ LCC_RETURN standard_dispatch(T_sp gf, VaList_sp arglist, Cache_sp cache) {
       // Save the results in the call history for later optimization
       // Strip the first element of the key - which from ECL is the generic function
       T_sp call_history_key = SimpleVector_O::make(vektor.size()-1,_Nil<T_O>(),true,vektor.size()-1,&(vektor[1]));
+#ifdef DEBUG_GFDISPATH
+  if (_sym_STARdebug_dispatchSTAR->symbolValue().notnilp()) {
+      printf("%s:%d call_history_key -> %s\n", __FILE__, __LINE__, _rep_(call_history_key).c_str());
+  }
+#endif
       core__generic_function_call_history_push_new(gc::As_unsafe<Instance_sp>(gf), call_history_key, func);
     }
   }

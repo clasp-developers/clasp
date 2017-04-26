@@ -182,7 +182,7 @@
          #+fast-dispatch
          ((typep (get-funcallable-instance-function gfun) 'core:compiled-dispatch-function)
           'clos::invalidated-dispatch-function)
-         #+clasp-dispatach
+         #+fast-dispatch
          ((eq (get-funcallable-instance-function gfun) 'clos::invalidated-dispatch-function)
           'clos::invalidated-dispatch-function)
          #+fast-dispatch

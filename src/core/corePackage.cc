@@ -147,6 +147,7 @@ SYMBOL_EXPORT_SC_(KeywordPkg, pause_pid);
 SYMBOL_EXPORT_SC_(KeywordPkg, exit_backtrace);
 SYMBOL_EXPORT_SC_(CorePkg, arguments );
 SYMBOL_EXPORT_SC_(CorePkg, STARdebug_accessorsSTAR);
+SYMBOL_EXPORT_SC_(CorePkg, STARdebug_dispatchSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARexit_backtraceSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, make_source_pos_info);
 SYMBOL_EXPORT_SC_(ExtPkg, STARclasp_clang_pathSTAR);
@@ -276,6 +277,8 @@ SYMBOL_EXPORT_SC_(CorePkg, bitArrayOp);
 SYMBOL_EXPORT_SC_(CorePkg, lambdaName);
 SYMBOL_EXPORT_SC_(CorePkg, STARfunctions_to_inlineSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARfunctions_to_notinlineSTAR);
+SYMBOL_EXPORT_SC_(CorePkg, optimized_slot_reader);
+SYMBOL_EXPORT_SC_(CorePkg, optimized_slot_writer);
 SYMBOL_SC_(CorePkg, printf);
 
 //SYMBOL_EXPORT_SC_(CorePkg, asin);
@@ -1132,6 +1135,7 @@ void CoreExposer_O::define_essential_globals(Lisp_sp lisp) {
   clos::_sym__PLUS_the_standard_class_PLUS_->defparameter(_lisp->_Roots._StandardClass);
   _sym_STARinvalidated_dispatch_function_stackSTAR->defparameter(_Nil<core::T_O>());
   _sym_STARdebug_threadsSTAR->defparameter(_Nil<core::T_O>());
+  _sym_STARdebug_dispatchSTAR->defparameter(_Nil<core::T_O>());
 #if defined(__x86_64__)
   SYMBOL_EXPORT_SC_(KeywordPkg, address_model_64);
   Symbol_sp address_model = kw::_sym_address_model_64;

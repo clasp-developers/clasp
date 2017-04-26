@@ -99,6 +99,16 @@ CL_DEFUN T_sp core__copy_instance(T_sp obj) {
   SIMPLE_ERROR(BF("copy-instance doesn't support copying %s") % _rep_(obj));
 };
 
+void Instance_O::GFUN_CALL_HISTORY_set(T_sp h) {
+#ifdef DEBUG_GFDISPATCH
+  if (_sym_STARdebug_dispatchSTAR->symbolValue().notnilp()) {
+    printf("%s:%d   GFUN_CALL_HISTORY_set gf: %s\n", __FILE__, __LINE__, this->__repr__().c_str());
+    printf("%s:%d                      history: %s\n", __FILE__, __LINE__, _rep_(h).c_str());
+  }
+#endif
+  this->instanceSet(4,h);
+}
+
 void Instance_O::set_kind(Symbol_sp k) {
   if (k == kw::_sym_macro) {
     SIMPLE_ERROR(BF("You cannot set a generic-function (instance) to macro"));
@@ -260,11 +270,7 @@ string Instance_O::__repr__() const {
     ss << "<ADD SUPPORT FOR INSTANCE _CLASS=" << _rep_(this->_Class) << " >";
   }
   if (this->isgf()) {
-    if (gc::IsA<String_sp>(this->GFUN_NAME())) {
-      ss << gc::As_unsafe<String_sp>(this->GFUN_NAME())->get_std_string();
-    } else {
-      ss << "Could-not-get-name";
-    }
+      ss << _rep_(this->GFUN_NAME());
   }
   {
     ss << " #slots[" << this->numberOfSlots() << "]";
@@ -458,24 +464,57 @@ CL_DEFUN bool core__call_history_entry_key_contains_specializer(SimpleVector_sp 
 
 CL_DEFUN bool core__specializer_key_match(SimpleVector_sp x, SimpleVector_sp entry_key) {
   if (x->length() != entry_key->length()) return false;
+#ifdef DEBUG_GFDISPATCH
+  if (_sym_STARdebug_dispatchSTAR->symbolValue().notnilp()) {
+    printf("%s:%d   specializer_key_match    key: %s\n", __FILE__, __LINE__, _rep_(x).c_str());
+    printf("%s:%d                      entry_key: %s\n", __FILE__, __LINE__, _rep_(entry_key).c_str());
+  }
+#endif
   for ( size_t i(0); i<x->length(); ++i ) {
     // If eql specializer then match the specializer value
+#ifdef DEBUG_GFDISPATCH
+  if (_sym_STARdebug_dispatchSTAR->symbolValue().notnilp()) {
+    printf("%s:%d   arg index %lu\n", __FILE__, __LINE__, i);
+  }
+#endif
     if ((*x)[i].consp()) {
-      if (!(*entry_key)[i].consp()) return false;
-      T_sp eql_spec_x = oCadr((*x)[i]);
-      T_sp eql_spec_y = (*entry_key)[i];
-      if (!gc::As_unsafe<Cons_sp>(eql_spec_y)->memberEql(eql_spec_x)) return false;
+      if (!(*entry_key)[i].consp()) goto NOMATCH;
+      T_sp eql_spec_x = oCar((*x)[i]);
+      T_sp eql_spec_y = oCar((*entry_key)[i]);
+#ifdef DEBUG_GFDISPATCH
+  if (_sym_STARdebug_dispatchSTAR->symbolValue().notnilp()) {
+    printf("%s:%d   eql_spec_x -> %s  eql_spec_y -> %s\n", __FILE__, __LINE__, _rep_(eql_spec_x).c_str(),_rep_(eql_spec_y).c_str());
+  }
+#endif
+      if (!cl__eql(eql_spec_x,eql_spec_y)) goto NOMATCH; //gc::As_unsafe<Cons_sp>(eql_spec_y)->memberEql(eql_spec_x)) goto NOMATCH;
     } else {
-      if ((*x)[i] != (*entry_key)[i]) return false;
+      if ((*x)[i] != (*entry_key)[i]) goto NOMATCH;
     }
   }
+#ifdef DEBUG_GFDISPATCH
+  if (_sym_STARdebug_dispatchSTAR->symbolValue().notnilp()) {
+    printf("%s:%d       MATCHED!!!!\n",__FILE__,__LINE__);
+  }
+#endif
   return true;
+ NOMATCH:
+#ifdef DEBUG_GFDISPATCH
+  if (_sym_STARdebug_dispatchSTAR->symbolValue().notnilp()) {
+    printf("%s:%d       no match\n",__FILE__,__LINE__);
+  }
+#endif
+  return false;
 }
 
 
 
 
 CL_DEFUN List_sp core__call_history_find_key(List_sp generic_function_call_history, SimpleVector_sp key) {
+#ifdef DEBUG_GFDISPATCH
+  if (_sym_STARdebug_dispatchSTAR->symbolValue().notnilp()) {
+    printf("%s:%d   call_history_find_key    key: %s\n", __FILE__, __LINE__, _rep_(key).c_str());
+  }
+#endif
   for ( auto cur : generic_function_call_history ) {
     ASSERT(oCar(cur).consp());
     Cons_sp entry = gc::As_unsafe<Cons_sp>(oCar(cur));
@@ -491,6 +530,11 @@ CL_DEFUN List_sp core__call_history_find_key(List_sp generic_function_call_histo
 
 CL_DEFUN void core__generic_function_call_history_push_new(Instance_sp generic_function, SimpleVector_sp key, T_sp effective_method )
 {
+#ifdef DEBUG_GFDISPATCH
+  if (_sym_STARdebug_dispatchSTAR->symbolValue().notnilp()) {
+    printf("%s:%d   generic_function_call_history_push_new    gf: %s\n        key: %s\n          em: %s\n", __FILE__, __LINE__, _rep_(generic_function).c_str(), _rep_(key).c_str(), _rep_(effective_method).c_str());
+  }
+#endif
   List_sp call_history(generic_function->GFUN_CALL_HISTORY());
   if (call_history.nilp()) {
     generic_function->GFUN_CALL_HISTORY_set(Cons_O::createList(Cons_O::create(key,effective_method)));
@@ -503,26 +547,56 @@ CL_DEFUN void core__generic_function_call_history_push_new(Instance_sp generic_f
   }
 }
 
-CL_DEFUN void core__generic_function_call_history_remove_entries_with_specializer(Instance_sp generic_function, T_sp specializer ) {
-  printf("%s:%d Remember to remove entries with subclasses of specializer\n", __FILE__, __LINE__);
-  List_sp call_history(generic_function->GFUN_CALL_HISTORY());
-  List_sp edited(_Nil<T_O>());
-  for ( List_sp cur = call_history; cur.consp(); ) {
-    ASSERT(oCar(cur).consp());
-    Cons_sp entry = gc::As_unsafe<Cons_sp>(oCar(cur));
-    ASSERT(gc::IsA<SimpleVector_sp>(oCar(entry)));
-    SimpleVector_sp entry_key = gc::As_unsafe<SimpleVector_sp>(oCar(entry));
-    if (core__call_history_entry_key_contains_specializer(entry_key,specializer)) {
-      cur = oCdr(cur);
-    } else {
-      Cons_sp save = gc::As_unsafe<Cons_sp>(cur);
-      cur = oCdr(cur);
-      save->rplacd(edited);
-      edited = save;
-    }
+
+CL_DEFUN void core__generic_function_call_history_remove_entries_with_specializers(Instance_sp generic_function, List_sp specializers ) {
+//  printf("%s:%d Remember to remove entries with subclasses of specializer: %s\n", __FILE__, __LINE__, _rep_(specializer).c_str());
+#ifdef DEBUG_GFDISPATCH
+  if (_sym_STARdebug_dispatchSTAR->symbolValue().notnilp()) {
+    printf("%s:%d   generic-function_call_history_remove_entries_with_specializers   gf: %s\n        specializers: %s\n", __FILE__, __LINE__, _rep_(generic_function).c_str(), _rep_(specializers).c_str());
   }
-  generic_function->GFUN_CALL_HISTORY_set(edited);
+#endif
+  List_sp call_history(generic_function->GFUN_CALL_HISTORY());
+  if (call_history.notnilp()) {
+    for ( auto cur_specializer : specializers ) {
+      List_sp edited(_Nil<T_O>());
+      T_sp one_specializer = oCar(cur_specializer);
+      for ( List_sp cur = call_history; cur.consp(); ) {
+        ASSERT(oCar(cur).consp());
+        Cons_sp entry = gc::As_unsafe<Cons_sp>(oCar(cur));
+        ASSERT(gc::IsA<SimpleVector_sp>(oCar(entry)));
+        SimpleVector_sp entry_key = gc::As_unsafe<SimpleVector_sp>(oCar(entry));
+#ifdef DEBUG_GFDISPATCH
+        if (_sym_STARdebug_dispatchSTAR->symbolValue().notnilp()) {
+          printf("%s:%d         check if entry_key: %s   contains specializer: %s\n", __FILE__, __LINE__, _rep_(entry_key).c_str(), _rep_(one_specializer).c_str());
+        }
+#endif
+        if (core__call_history_entry_key_contains_specializer(entry_key,one_specializer)) {
+#ifdef DEBUG_GFDISPATCH
+        if (_sym_STARdebug_dispatchSTAR->symbolValue().notnilp()) {
+          printf("%s:%d       IT DOES!!!\n", __FILE__, __LINE__ );
+        }
+#endif
+          cur = oCdr(cur);
+        } else {
+#ifdef DEBUG_GFDISPATCH
+        if (_sym_STARdebug_dispatchSTAR->symbolValue().notnilp()) {
+          printf("%s:%d       it does not - keeping entry!!!\n", __FILE__, __LINE__ );
+        }
+#endif
+          Cons_sp save = gc::As_unsafe<Cons_sp>(cur);
+          cur = oCdr(cur);
+          save->rplacd(edited);
+          edited = save;
+        }
+      }
+      call_history = edited;
+    }
+    generic_function->GFUN_CALL_HISTORY_set(call_history);
+  }
 }
+ 
+
+
 
 };
 

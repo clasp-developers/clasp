@@ -22,6 +22,13 @@
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (setf *echo-repl-read* t))
 
+#+clasp
+(defun subclasses* (class)
+  (remove-duplicates
+   (cons class
+         (mapappend #'subclasses*
+                    (class-direct-subclasses class)))))
+
 ;;; ----------------------------------------------------------------------
 ;;;                                                                  slots
 
@@ -382,12 +389,6 @@ and cannot be added to ~A." method other-gf gf)))
                     '(gf method-combination-type-name method-combination-options))
 
 
-#+clasp
-(defun subclasses* (class)
-  (remove-duplicates
-   (cons class
-         (mapappend #'subclasses*
-                    (class-direct-subclasses class)))))
   
 #+clasp
 (defun all-generic-functions ()
