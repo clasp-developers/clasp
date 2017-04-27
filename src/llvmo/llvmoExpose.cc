@@ -3527,12 +3527,19 @@ std::unique_ptr<llvm::Module> ClaspJIT_O::optimizeModule(std::unique_ptr<llvm::M
   return M;
 }
 
+
+// FIXME - this is where JITted code comes to die.
+//     If a ModuleHandle doesn't have a root pointer to it then it will
+//       be collected.   So the *jit-engine* keeps ModuleHandles from JITted code
+//       in a pair of linked lists - one for REPL code and one for fastgf dispatchers.
 ModuleHandle_O::~ModuleHandle_O() {
+//  printf("%s:%d  ModuleHandle_O::~ModuleHandle_O - not removing module until we GC code\n", __FILE__, __LINE__);
+  this->shutdown_module();
   ModuleHandle_sp me = this->asSmartPtr();
   core::eval::funcall(comp::_sym_jit_remove_module,me);
   // From here on the _Handle is invalid
 }
-                      
+
 
 CL_DEFUN core::Function_sp llvm_sys__jitFinalizeReplFunction(ClaspJIT_sp jit, ModuleHandle_sp handle, const string& replName, const string& startupName, const string& shutdownName, core::T_sp initialData, Function_sp fn, core::T_sp activationFrameEnvironment) {
   // Stuff to support MCJIT

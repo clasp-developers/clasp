@@ -327,20 +327,19 @@ No DIBuilder is defined for the default module")
 ;;;  JIT facility
 ;;;
 
-(defvar *jit-engine* nil)
-#+threads(defvar *jit-engine-mutex* (mp:make-lock :name 'jit-engine-mutex :recursive t))
-
-(export '(jit-add-module-return-function jit-add-module-return-dispatch-function jit-remove-module))
-
-(defvar *intrinsics-module* nil)
 
 ;;; ------------------------------------------------------------
 ;;;
 ;;; Using the new ORC JIT engine
 ;;;
 (progn
-  (setf *jit-engine* (make-cxx-object 'llvm-sys:clasp-jit))
+  (defvar *jit-engine* (make-cxx-object 'llvm-sys:clasp-jit))
+  #+threads(defvar *jit-engine-mutex* (mp:make-lock :name 'jit-engine-mutex :recursive t))
+  (export '(jit-add-module-return-function jit-add-module-return-dispatch-function jit-remove-module))
+  (defvar *intrinsics-module* nil)
   (defparameter *jit-dump-module* nil)
+  (defvar *jit-repl-module-handles* nil)
+  (defvar *jit-fastgf-module-handles* nil)
   (defun jit-add-module-return-function (module repl-fn startup-fn shutdown-fn literals-list)
     (unwind-protect
          (progn
@@ -352,6 +351,7 @@ No DIBuilder is defined for the default module")
                   (startup-name (llvm-sys:get-name startup-fn))
                   (shutdown-name (llvm-sys:get-name shutdown-fn))
                   (handle (llvm-sys:clasp-jit-add-module *jit-engine* module)))
+             (setq *jit-repl-module-handles* (cons handle *jit-repl-module-handles*))
 ;;;      (bformat t "    repl-name -> |%s|\n" repl-name)
              (llvm-sys:jit-finalize-repl-function *jit-engine* handle repl-name startup-name shutdown-name literals-list repl-fn nil)))
       (progn
@@ -365,6 +365,7 @@ No DIBuilder is defined for the default module")
                   (startup-name (llvm-sys:get-name startup-fn))
                   (shutdown-name (llvm-sys:get-name shutdown-fn))
                   (handle (llvm-sys:clasp-jit-add-module *jit-engine* module)))
+             (setq *jit-fastgf-module-handles* (cons handle *jit-fastgf-module-handles*))
              (llvm-sys:jit-finalize-dispatch-function *jit-engine* handle dispatch-name startup-name shutdown-name literals-list)))
       (progn
         #+threads(mp:giveup-lock *jit-engine-mutex*))))
