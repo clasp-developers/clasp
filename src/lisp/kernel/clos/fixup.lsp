@@ -396,6 +396,15 @@ and cannot be added to ~A." method other-gf gf)))
    (mapappend #'specializer-direct-generic-functions
               (subclasses* (find-class 't)))))
 
+;;; April 2017  Turn this off for now to debug
+#+(or) ;; #+(and clasp fast-dispatch)
+(eval-when (:execute :compile-toplevel :load-toplevel)
+  ;; This turns on fast-dispatch that uses the code in cmpgf.lsp
+  ;;   Once clos:*enable-fast-dispatch* is set to T
+  ;;     EVERY new generic function starts using
+  ;;     the compiled fast dispatch functions
+  (setf clos:*enable-fast-dispatch* t))
+
 #|
 ;;; THIS IS SUPPOSED TO BE AN ACCESSOR of the CLOS:SPECIALIZER class
 #+clasp

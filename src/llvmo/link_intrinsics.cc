@@ -89,6 +89,12 @@ void intrinsic_error(ErrorCode err, core::T_sp arg0, core::T_sp arg1, core::T_sp
     SIMPLE_ERROR(BF("Destination must be ActivationFrame"));
   case invalidIndexForFunctionFrame:
     SIMPLE_ERROR(BF("Invalid index[%d] for FunctionFrame(size=%d)") % _rep_(arg0) % _rep_(arg1));
+  case no_applicable_reader_method:
+      core::eval::funcall(::cl::_sym_no_applicable_method,arg0,arg1);
+      UNREACHABLE();
+  case no_applicable_writer_method:
+      core::eval::funcall(::cl::_sym_no_applicable_method,arg0,arg1,arg2);
+      UNREACHABLE();
   case unboundSymbolValue:
     {
       core::Symbol_sp sym = gc::As<core::Symbol_sp>(arg0);
@@ -1909,7 +1915,11 @@ gctools::return_type cc_dispatch_miss(core::T_O* gf, core::T_O* gf_valist_s)
     printf("%s:%d The argument to cc_dispatch_miss is not a tagged_valist\n", __FILE__, __LINE__ );
     SIMPLE_ERROR(BF("cc_dispatch_miss did not get a tagged_valist as an argument"));
   }
-  return core::eval::funcall(clos::_sym_dispatch_miss,tgf,tgf_valist);
+  core::T_mv result = core::eval::funcall(clos::_sym_dispatch_miss,tgf,tgf_valist);
+#ifdef DEBUG_GFDISPATCH
+  printf("%s:%d  Returning from cc_dispatch_miss\n", __FILE__, __LINE__ );
+#endif
+  return result.as_return_type();
 }
 
 void cc_dispatch_debug(int msg_id, uintptr_clasp_t val)

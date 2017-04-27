@@ -34,6 +34,10 @@ namespace core {
 
 // Arguments are passed in the multiple_values structure
 
+  LCC_RETURN do_slot_read(gctools::Tagged tindex, gctools::Tagged tgf, gctools::Tagged tinstance);
+  LCC_RETURN do_slot_write(gctools::Tagged tindex, gctools::Tagged tgf, gctools::Tagged tinstance, gctools::Tagged tvalue);
+
+
   LCC_RETURN optimized_slot_reader_dispatch(gctools::Tagged tgf, gctools::Tagged tvargs);
 
   LCC_RETURN optimized_slot_writer_dispatch(gctools::Tagged tgf, gctools::Tagged tvargs);

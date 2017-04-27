@@ -402,6 +402,17 @@
 	  f
 	  (effective-method-function form t)))))
 
+;;; compute-effective-method is called by compute-effective-method-function
+;;; and if you look at it - you will see that it unpacks the form returned
+;;; by compute-effective-method to extract the method from the form.
+;;; compute-effective-method-function is expecting `(funcall fn .method-args. .next-methods.)
+;;; it can't handle (core:multiple-value-foreign-call "apply_method9" fn .method-args .next-methods. .method-args.
+;;; which I wrote for debugging purposes
+(defun compute-effective-method (gf method-combination applicable-methods)
+  `(funcall ,(std-compute-effective-method gf method-combination applicable-methods)
+	    .method-args. .next-methods.))
+
+#+(or)
 (defun compute-effective-method (gf method-combination applicable-methods)
   `(core:multiple-value-foreign-call
     "apply_method9" ,(std-compute-effective-method gf method-combination applicable-methods)

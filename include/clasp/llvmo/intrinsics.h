@@ -181,7 +181,9 @@ namespace llvmo {
                  invalidIndexForFunctionFrame,
                  unboundSymbolValue,
                  unboundSymbolFunction,
-                 unboundSymbolSetfFunction
+                 unboundSymbolSetfFunction,
+                 no_applicable_reader_method,
+                 no_applicable_writer_method
   } ErrorCode;
 
   extern void intrinsic_error(ErrorCode err, core::T_sp arg0 = _Nil<core::T_O>(), core::T_sp arg1 = _Nil<core::T_O>(), core::T_sp arg2 = _Nil<core::T_O>());

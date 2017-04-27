@@ -39,6 +39,8 @@ SYMBOL_SC_(CompPkg, aSingleCompilerSymbol);
 SYMBOL_EXPORT_SC_(CompPkg, STARlowLevelTraceSTAR);
 SYMBOL_EXPORT_SC_(CompPkg, STARthe_moduleSTAR);
 SYMBOL_EXPORT_SC_(CompPkg, STARlowLevelTracePrintSTAR);
+SYMBOL_EXPORT_SC_(CompPkg, jit_remove_module);
+
 void initialize_compPackage() {
   list<string> lnicknames = {"CMP"};
   list<string> luse = {"COMMON-LISP"};

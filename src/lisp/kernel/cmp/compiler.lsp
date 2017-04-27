@@ -1440,7 +1440,6 @@ Return the orderered-raw-constants-list and the constants-table GlobalVariable"
 
 (defun bclasp-compile* (bind-to-name &optional definition env pathname &key (linkage 'llvm-sys:internal-linkage))
   "Compile the definition"
-  (jit-lazy-setup)
   (multiple-value-bind (fn function-kind wrapped-env lambda-name warnp failp ordered-raw-constants-list constants-table startup-fn shutdown-fn)
       (compile-to-module-with-run-time-table definition env pathname :linkage linkage)
     (quick-module-dump *the-module* "preoptimize")

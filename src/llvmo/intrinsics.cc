@@ -47,7 +47,9 @@ extern "C" {
 #include <clasp/core/designators.h>
 #include <clasp/core/compPackage.h>
 #include <clasp/core/package.h>
+#include <clasp/core/accessor.h>
 #include <clasp/core/fli.h>
+#include <clasp/core/instance.h>
 #include <clasp/core/hashTable.h>
 #include <clasp/core/evaluator.h>
 #include <clasp/core/genericFunction.h>
@@ -515,6 +517,35 @@ void cc_bad_tag(core::T_O* gf, core::T_O* gf_args)
   printf("%s:%d  A bad tag was encountered - aborting\n", __FILE__, __LINE__ );
   abort();
 };
+
+gctools::return_type cc_dispatch_slot_reader(core::T_O* tindex, core::T_O* tgf, core::T_O* tvargs) {
+  VaList_sp vargs((gctools::Tagged)tvargs);
+  T_sp tinstance = vargs->next_arg();
+  if (gc::IsA<Instance_sp>(tinstance)) {
+    Instance_sp instance = gc::As_unsafe<Instance_sp>(tinstance);
+    return do_slot_read((gctools::Tagged)tindex,(gctools::Tagged)tgf,instance.tagged_());
+  }
+  Instance_sp gf((gctools::Tagged)tgf);
+  intrinsic_error(llvmo::no_applicable_reader_method, gf, tinstance);
+  UNREACHABLE();
+}
+
+
+gctools::return_type cc_dispatch_slot_writer(core::T_O* tindex, core::T_O* tgf, core::T_O* tvargs) { 
+  VaList_sp vargs((gctools::Tagged)tvargs);
+  T_sp value = vargs->next_arg();
+  T_sp tinstance = vargs->next_arg();
+  if (gc::IsA<Instance_sp>(tinstance)) {
+    Instance_sp instance = gc::As_unsafe<Instance_sp>(tinstance);
+    do_slot_write((gctools::Tagged)tindex,(gctools::Tagged)tgf,instance.tagged_(),value.tagged_());
+    return value.as_return_type();
+  }
+  Instance_sp gf((gctools::Tagged)tgf);
+  intrinsic_error(llvmo::no_applicable_writer_method, gf, value, tinstance);
+  UNREACHABLE();
+}
+
+
 
 gctools::return_type cc_dispatch_effective_method(core::T_O* teffective_method, core::T_O* tgf, core::T_O* tgf_args_valist_s) {
 #if 0

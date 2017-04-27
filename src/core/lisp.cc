@@ -1360,6 +1360,9 @@ void Lisp_O::parseCommandLineArguments(int argc, char *argv[], const CommandLine
 #ifdef CLASP_THREADS
   features = Cons_O::create(_lisp->internKeyword("THREADS"),features);
 #endif
+#ifdef METER_ALLOCATIONS
+  features = Cons_O::create(_lisp->internKeyword("METER-ALLOCATIONS"),features);
+#endif
   cl::_sym_STARfeaturesSTAR->setf_symbolValue(features);
 
   SYMBOL_EXPORT_SC_(CorePkg, STARprintVersionOnStartupSTAR);

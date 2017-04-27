@@ -1039,7 +1039,6 @@ that llvm function. This works like compile-lambda-function in bclasp."
 (export '*cleavir-compile-verbose*)
 (in-package :clasp-cleavir)
 (defun cclasp-compile* (name form env pathname &key (linkage 'llvm-sys:internal-linkage))
-  (cmp:jit-lazy-setup)
   (when *cleavir-compile-verbose*
     (format *trace-output* "Cleavir compiling t1expr: ~s~%" form)
     (format *trace-output* "          in environment: ~s~%" env ))

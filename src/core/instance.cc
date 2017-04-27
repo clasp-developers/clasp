@@ -58,6 +58,8 @@ CL_DEFUN T_mv clos__getFuncallableInstanceFunction(T_sp obj) {
         return Values(iobj->GFUN_DISPATCHER(),Pointer_O::create((void*)iobj->_entryPoint));
     case CLASP_INVALIDATED_DISPATCH:
         return Values(clos::_sym_invalidated_dispatch_function,Pointer_O::create((void*)iobj->_entryPoint));
+    case CLASP_NOT_FUNCALLABLE:
+        return Values(clos::_sym_not_funcallable);
     }
     return Values(clasp_make_fixnum(iobj->_isgf),_Nil<T_O>());
   }

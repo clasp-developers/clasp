@@ -343,3 +343,36 @@ hash table; otherwise it signals that we have reached the end of the hash table.
 
 (defun si::simple-program-error (message &rest datum)
   (signal-simple-error 'program-error nil message datum))
+
+;;; Keep track of what classes of instances are being created while running a block of code.
+;;; This is useful for debugging and reducing consing.
+#+(and clasp meter-allocations)
+(progn
+  (defun run-with-allocation-meters (fun)
+    (let ((classes (clos:subclasses* (find-class t))))
+      (labels ((zero-meters ()
+                 (let ((meters (make-hash-table)))
+                   (dolist (c classes)
+                     (setf (gethash c meters) 0))
+                   meters))
+               (update-meters (meters)
+                 (dolist (c classes)
+                   (setf (gethash c meters) (allocation-meter c)))))
+        (let* ((before (zero-meters))
+               (after (zero-meters))
+               (dummy (zero-meters)))
+          (update-meters before)
+          (funcall fun)
+          (update-meters after)
+          (update-meters dummy)
+          (dolist (c classes)
+            (let ((num (- (gethash c after) (gethash c before) (- (gethash c dummy) (gethash c after)))))
+              (when (> num 0)
+                (format t "~a  ->  ~a~&" c num))))))))
+
+;;; CORE:METER works like CL:TIME
+;;; It prints a list of all classes and the number of instances allocated while evaluating form
+  (defmacro meter (form)
+    `(run-with-allocation-meters (lambda () (progn ,form))))
+
+  (export 'meter))
