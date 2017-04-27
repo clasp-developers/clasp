@@ -39,3 +39,11 @@ services:
     ports:
       - "8888:8888"
       - "4005:4005"
+  ci:
+    image: drmeister/cando-ci
+    build:
+      context: ./tools/dockerfiles/ci
+    ports:
+      - "8080:8080"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
