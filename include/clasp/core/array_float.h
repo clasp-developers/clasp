@@ -4,6 +4,7 @@
 
 namespace core {
   FORWARD(SimpleVectorFloat);
+  FORWARD(SimpleMDArrayFloat);
 };
 template <>
 struct gctools::GCInfo<core::SimpleVectorFloat_O> {
@@ -31,15 +32,15 @@ namespace core {
       if (supplied) {
         if (obj.single_floatp()) {
           return obj.unsafe_single_float();
-        } else if (gc::IsA<FloatFloat_sp>(obj)) {
-          return gc::As_unsafe<FloatFloat_sp>(obj)->get();
+        } else if (gc::IsA<DoubleFloat_sp>(obj)) {
+          return gc::As_unsafe<DoubleFloat_sp>(obj)->get();
         }
         TYPE_ERROR(obj,cl::_sym_single_float);
       }
       return 0.0;
     }
-    static value_type from_object(T_sp obj) { if (gc::IsA<FloatFloat_sp>(obj)) return gc::As_unsafe<FloatFloat_sp>(obj)->get(); TYPE_ERROR(obj,cl::_sym_single_float); };
-    static T_sp to_object(const value_type& v) { return FloatFloat_O::create(v); };
+    static value_type from_object(T_sp obj) { if (obj.single_floatp()) return obj.unsafe_single_float(); TYPE_ERROR(obj,cl::_sym_single_float); };
+    static T_sp to_object(const value_type& v) { return core::clasp_make_single_float(v);};
   public:
   SimpleVectorFloat_O(size_t length, value_type initialElement=value_type(),
                        bool initialElementSupplied=false,
