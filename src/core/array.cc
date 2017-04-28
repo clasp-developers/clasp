@@ -43,25 +43,27 @@ THE SOFTWARE.
 
 Look at the specialized array for uint32_t as an example.
 
-1.  Copy all of the template code in array.h for XXX  
-    - This is currently way too much code. I'd like a more streamlined way of
-      declaring new specialized arrays.
-2.  Copy the XXX specific code in array.cc
-2.  change XXX to whatever_new_type in the copied code
-3.  Add SYMBOL_EXPOSE_SC_(CorePkg,whatever_new_type) to array.h
-4.  Add an enum to clasp_elttype for the specialized type
-5.  Add a CL_VALUE_ENUM entry to _sym_clasp_elttype
-6.  Change these methods in array.h
+1.  For specialized arrays with type that is a multiple of bytes sized...
+    Copy the template code in array_specialized_template.h for to a new header file
+    and change SPECIALIZE_ME to the new specialized type.
+    For anything else - (nibbles, 2bit words, odd sized packed types) you are going to have to 
+    figure it out.
+2.  Add the #include <clasp/core/array-<new-type>.h> to the body of array.h after the rest of them
+3.  Add an enum to clasp_elttype for the specialized type
+4.  Add a CL_VALUE_ENUM entry to array.h  after CL_BEGIN_ENUM(clasp_elttype,_sym_clasp_elttype,"clasp_elttype");
+5.  Add a new deftype definition to predlib.lsp 
+6.  Edit arraylib.lsp and add the type to +upgraded-array-element-types+
+    Make sure you add it in the right place - if it's an integer type
+    it needs to go before any larger integer types so that the smallest
+    necessary upgraded-array-element-type is chosen every time.
+7.  Add the type test and make_xxxx calls to array.cc make_vector and make_mdarray
+
+Check the following...
+1.  Maybe change these methods in array_<new-type>.h
     virtual T_sp array_type() const final { return cl::_sym_simple_array; };
     virtual T_sp element_type() const override { return core::_sym_size_t;};
     virtual T_sp arrayElementType() const override { return core::_sym_size_t; };
     virtual clasp_elttype elttype() const { return clasp_aet_size_t; };
-7.  Add a new deftype definition to predlib.lsp 
-8.  Edit arraylib.lsp and add the type to +upgraded-array-element-types+
-    Make sure you add it in the right place - if it's an integer type
-    it needs to go before any larger integer types so that the smallest
-    necessary upgraded-array-element-type is chosen every time.
-9.  Add the type test and make_xxxx calls to array.cc make_vector and make_mdarray
 
 */
 

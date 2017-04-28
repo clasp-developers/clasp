@@ -52,8 +52,8 @@ namespace core {
 //    virtual void __write__(T_sp stream) const final;
   public:
     virtual T_sp array_type() const final { return cl::_sym_simple_array; };
-    virtual T_sp element_type() const override { return core::_sym_size_t;};
-    virtual T_sp arrayElementType() const override { return core::_sym_size_t; };
+    virtual T_sp element_type() const override { return core::_sym_cl_index;};
+    virtual T_sp arrayElementType() const override { return core::_sym_cl_index; };
     virtual clasp_elttype elttype() const { return clasp_aet_size_t; };
   };
 };

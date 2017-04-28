@@ -232,6 +232,7 @@ CL_DEFUN core::T_sp llvm_sys__cxxDataStructuresInfo() {
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("REGISTER-SAVE-AREA-SIZE"), make_fixnum(LCC_TOTAL_REGISTERS*sizeof(void*))), list);
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("ALIGNMENT"),make_fixnum(gctools::Alignment())),list);
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("VOID*-SIZE"),make_fixnum(sizeof(void*))),list);
+  list = Cons_O::create(Cons_O::create(lisp_internKeyword("SIZE_T-BITS"),make_fixnum(sizeof(size_t)*8)),list);
 #define ENTRY(list, name, code) list = Cons_O::create(Cons_O::create(lisp_internKeyword(name), code), list)
   LoadTimeValues_O tempLtv;
   ENTRY(list, "LOAD-TIME-VALUES-OBJECTS-OFFSET", make_fixnum((char *)&tempLtv._Objects - (char *)&tempLtv));

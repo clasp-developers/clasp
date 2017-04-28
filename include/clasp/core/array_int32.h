@@ -1,26 +1,26 @@
 // ============================================================
-// Arrays specialized for uint32_t
+// Arrays specialized for byte32_t
 //
 namespace core {
-  FORWARD(SimpleVector_uint32_t);
-  FORWARD(MDArray_uint32_t);
-  FORWARD(SimpleMDArray_uint32_t);
+  FORWARD(SimpleVector_byte32_t);
+  FORWARD(MDArray_byte32_t);
+  FORWARD(SimpleMDArray_byte32_t);
 };
 template <>
-struct gctools::GCInfo<core::SimpleVector_uint32_t_O> {
+struct gctools::GCInfo<core::SimpleVector_byte32_t_O> {
   static bool constexpr NeedsInitialization = false;
   static bool constexpr NeedsFinalization = false;
   static GCInfo_policy constexpr Policy = atomic;
 };
 
 namespace core {
-  class SimpleVector_uint32_t_O;
-  typedef template_SimpleVector<SimpleVector_uint32_t_O,uint32_t,AbstractSimpleVector_O> specialized_SimpleVector_uint32_t;
-  class SimpleVector_uint32_t_O : public specialized_SimpleVector_uint32_t {
-    LISP_CLASS(core, CorePkg, SimpleVector_uint32_t_O, "SimpleVector_uint32_t",AbstractSimpleVector_O);
-    virtual ~SimpleVector_uint32_t_O() {};
+  class SimpleVector_byte32_t_O;
+  typedef template_SimpleVector<SimpleVector_byte32_t_O,byte32_t,AbstractSimpleVector_O> specialized_SimpleVector_byte32_t;
+  class SimpleVector_byte32_t_O : public specialized_SimpleVector_byte32_t {
+    LISP_CLASS(core, CorePkg, SimpleVector_byte32_t_O, "SimpleVector_byte32_t",AbstractSimpleVector_O);
+    virtual ~SimpleVector_byte32_t_O() {};
   public:
-    typedef specialized_SimpleVector_uint32_t TemplatedBase;
+    typedef specialized_SimpleVector_byte32_t TemplatedBase;
     typedef typename TemplatedBase::leaf_type leaf_type;
     typedef typename TemplatedBase::value_type value_type;
     typedef typename TemplatedBase::simple_element_type simple_element_type;
@@ -36,7 +36,7 @@ namespace core {
     static value_type from_object(T_sp obj) { return clasp_to_size(gc::As<core::Integer_sp>(obj)); };
     static T_sp to_object(const value_type& v) { return core::Integer_O::create(v); };
   public:
-  SimpleVector_uint32_t_O(size_t length, value_type initialElement=value_type(),
+  SimpleVector_byte32_t_O(size_t length, value_type initialElement=value_type(),
                           bool initialElementSupplied=false,
                           size_t initialContentsSize=0,
                           const value_type* initialContents=NULL)
@@ -51,23 +51,23 @@ namespace core {
     }
   public:
     virtual T_sp array_type() const final { return cl::_sym_simple_array; };
-    virtual T_sp element_type() const override { return core::_sym_uint32_t;};
-    virtual T_sp arrayElementType() const override { return core::_sym_uint32_t; };
-    virtual clasp_elttype elttype() const { return clasp_aet_uint32_t; };
+    virtual T_sp element_type() const override { return core::_sym_byte32;};
+    virtual T_sp arrayElementType() const override { return core::_sym_byte32; };
+    virtual clasp_elttype elttype() const { return clasp_aet_byte32_t; };
   };
 };
 
 
 namespace core {
-  class MDArray_uint32_t_O : public template_Array<MDArray_uint32_t_O,SimpleVector_uint32_t_O,MDArray_O> {
-    LISP_CLASS(core, CorePkg, MDArray_uint32_t_O, "MDArray_uint32_t",MDArray_O);
-    virtual ~MDArray_uint32_t_O() {};
+  class MDArray_byte32_t_O : public template_Array<MDArray_byte32_t_O,SimpleVector_byte32_t_O,MDArray_O> {
+    LISP_CLASS(core, CorePkg, MDArray_byte32_t_O, "MDArray_byte32_t",MDArray_O);
+    virtual ~MDArray_byte32_t_O() {};
   public:
-    typedef template_Array<MDArray_uint32_t_O,SimpleVector_uint32_t_O,MDArray_O> TemplatedBase;
+    typedef template_Array<MDArray_byte32_t_O,SimpleVector_byte32_t_O,MDArray_O> TemplatedBase;
     typedef typename TemplatedBase::simple_element_type simple_element_type;
     typedef typename TemplatedBase::simple_type simple_type;
   public: // make vector
-  MDArray_uint32_t_O(size_t dummy_rank_1,
+  MDArray_byte32_t_O(size_t dummy_rank_1,
                      size_t dimension,
                      T_sp fillPointer,
                      Array_sp data,
@@ -83,7 +83,7 @@ namespace core {
       return make_vector(dimension,0,_Nil<T_O>(),_Nil<T_O>(),false,clasp_make_fixnum(0));
     }
   public: // make array
-  MDArray_uint32_t_O(size_t rank,
+  MDArray_byte32_t_O(size_t rank,
                      List_sp dimensions,
                      Array_sp data,
                      bool displacedToP,
@@ -119,15 +119,15 @@ namespace core {
 };
 
 namespace core {
-  class SimpleMDArray_uint32_t_O : public template_SimpleArray<SimpleMDArray_uint32_t_O,SimpleVector_uint32_t_O,SimpleMDArray_O> {
-    LISP_CLASS(core, CorePkg, SimpleMDArray_uint32_t_O, "SimpleMDArray_uint32_t",SimpleMDArray_O);
-    virtual ~SimpleMDArray_uint32_t_O() {};
+  class SimpleMDArray_byte32_t_O : public template_SimpleArray<SimpleMDArray_byte32_t_O,SimpleVector_byte32_t_O,SimpleMDArray_O> {
+    LISP_CLASS(core, CorePkg, SimpleMDArray_byte32_t_O, "SimpleMDArray_byte32_t",SimpleMDArray_O);
+    virtual ~SimpleMDArray_byte32_t_O() {};
   public:
-    typedef template_SimpleArray<SimpleMDArray_uint32_t_O,SimpleVector_uint32_t_O,SimpleMDArray_O> TemplatedBase;
+    typedef template_SimpleArray<SimpleMDArray_byte32_t_O,SimpleVector_byte32_t_O,SimpleMDArray_O> TemplatedBase;
     typedef typename TemplatedBase::simple_element_type simple_element_type;
     typedef typename TemplatedBase::simple_type simple_type;
   public: // make vector
-  SimpleMDArray_uint32_t_O(size_t rank1, size_t dimension, Array_sp data) : TemplatedBase(dimension,data) {};
+  SimpleMDArray_byte32_t_O(size_t rank1, size_t dimension, Array_sp data) : TemplatedBase(dimension,data) {};
     static smart_ptr_type make(size_t dimension, simple_element_type initialElement/*=_Nil<T_O>()*/, T_sp data/*=_Nil<T_O>()*/) {
       LIKELY_if (data.nilp()) {
         data = simple_type::make(dimension,initialElement,true);
@@ -138,7 +138,7 @@ namespace core {
       return make(dimension,initialElement,_Nil<T_O>());
     }
   public: // make array
-  SimpleMDArray_uint32_t_O(size_t rank,
+  SimpleMDArray_byte32_t_O(size_t rank,
                            List_sp dimensions,
                            Array_sp data) : TemplatedBase(rank,dimensions,data) {};
     static smart_ptr_type make_multi_dimensional(List_sp dim_desig, simple_element_type initialElement, T_sp data) {
@@ -146,7 +146,7 @@ namespace core {
       size_t rank;
       size_t arrayTotalSize = calculateArrayTotalSizeAndValidateDimensions(dim_desig,rank);
       LIKELY_if (data.nilp()) {
-        data = SimpleVector_uint32_t_O::make(arrayTotalSize,initialElement,true);
+        data = SimpleVector_byte32_t_O::make(arrayTotalSize,initialElement,true);
       }
       return gctools::GC<my_type>::allocate_container(rank,rank,dim_desig,gc::As<Array_sp>(data));
     }
@@ -207,8 +207,8 @@ namespace core {
     }
   public:
     virtual T_sp array_type() const final { return cl::_sym_simple_array; };
-    virtual T_sp element_type() const override { return core::_sym_int32_t;};
-    virtual T_sp arrayElementType() const override { return core::_sym_int32_t; };
+    virtual T_sp element_type() const override { return core::_sym_integer32;};
+    virtual T_sp arrayElementType() const override { return core::_sym_integer32; };
     virtual clasp_elttype elttype() const { return clasp_aet_int32_t; };
   };
 };

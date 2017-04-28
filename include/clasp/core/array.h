@@ -46,13 +46,13 @@ namespace core {
       clasp_aet_fix,            /*  cl_fixnum        */
       clasp_aet_index,          /*  cl_index         */
       clasp_aet_size_t,
-      clasp_aet_uint64_t,
+      clasp_aet_byte64_t,
       clasp_aet_int64_t,
-      clasp_aet_uint32_t,
+      clasp_aet_byte32_t,
       clasp_aet_int32_t,
-      clasp_aet_uint16_t,
+      clasp_aet_byte16_t,
       clasp_aet_int16_t,
-      clasp_aet_uint8_t,
+      clasp_aet_byte8_t,
       clasp_aet_int8_t,
 #ifdef CLASP_UNICODE
       clasp_aet_ch,                     /*  character        */
@@ -64,21 +64,39 @@ namespace core {
 };
 
 SYMBOL_EXPORT_SC_(CorePkg,clasp_elttype);
-SYMBOL_EXPORT_SC_(CorePkg,uint32_t);
+SYMBOL_EXPORT_SC_(CorePkg,cl_index);
+SYMBOL_EXPORT_SC_(CorePkg,byte8);
+SYMBOL_EXPORT_SC_(CorePkg,byte16);
+SYMBOL_EXPORT_SC_(CorePkg,byte32);
+SYMBOL_EXPORT_SC_(CorePkg,byte64);
+SYMBOL_EXPORT_SC_(CorePkg,integer8);
+SYMBOL_EXPORT_SC_(CorePkg,integer16);
+SYMBOL_EXPORT_SC_(CorePkg,integer32);
+SYMBOL_EXPORT_SC_(CorePkg,integer64);
+
 CL_BEGIN_ENUM(clasp_elttype,_sym_clasp_elttype,"clasp_elttype");
-CL_VALUE_ENUM(_sym_uint32_t,clasp_aet_uint32_t);
+CL_VALUE_ENUM(cl::_sym_fixnum,      clasp_aet_fix);
+CL_VALUE_ENUM(_sym_cl_index,      clasp_aet_size_t);
+CL_VALUE_ENUM(_sym_byte64,      clasp_aet_byte64_t);
+CL_VALUE_ENUM(_sym_integer64,      clasp_aet_int64_t);
+CL_VALUE_ENUM(_sym_byte32,      clasp_aet_byte32_t);
+CL_VALUE_ENUM(_sym_integer32,      clasp_aet_int32_t);
+CL_VALUE_ENUM(_sym_byte16,      clasp_aet_byte16_t);
+CL_VALUE_ENUM(_sym_integer16,      clasp_aet_int16_t);
+CL_VALUE_ENUM(_sym_byte8,      clasp_aet_byte8_t);
+CL_VALUE_ENUM(_sym_integer8,      clasp_aet_int8_t);
 CL_END_ENUM(_sym_clasp_elttype);
 
 namespace core {
-  extern core::Symbol_sp& _sym_size_t;
-  extern core::Symbol_sp& _sym_uint64_t;
-  extern core::Symbol_sp& _sym_uint32_t;
-  extern core::Symbol_sp& _sym_uint16_t;
-  extern core::Symbol_sp& _sym_uint8_t;
-  extern core::Symbol_sp& _sym_int64_t;
-  extern core::Symbol_sp& _sym_int32_t;
-  extern core::Symbol_sp& _sym_int16_t;
-  extern core::Symbol_sp& _sym_int8_t;
+  extern core::Symbol_sp& _sym_cl_index;
+  extern core::Symbol_sp& _sym_byte64;
+  extern core::Symbol_sp& _sym_byte32;
+  extern core::Symbol_sp& _sym_byte16;
+  extern core::Symbol_sp& _sym_byte8;
+  extern core::Symbol_sp& _sym_integer64;
+  extern core::Symbol_sp& _sym_integer32;
+  extern core::Symbol_sp& _sym_integer16;
+  extern core::Symbol_sp& _sym_integer8;
   
 };
 
