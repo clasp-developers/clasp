@@ -1643,6 +1643,7 @@ namespace core {
 #include <clasp/core/array_double.h>
 #include <clasp/core/array_float.h>
 #include <clasp/core/array_size_t.h>
+#include <clasp/core/array_fixnum.h>
 #include <clasp/core/array_int64.h>
 #include <clasp/core/array_int32.h>
 #include <clasp/core/array_int16.h>
