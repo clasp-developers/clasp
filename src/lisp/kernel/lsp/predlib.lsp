@@ -128,7 +128,7 @@ bignums."
 (deftype ext::integer64 () '(INTEGER #x-8000000000000000 #x7FFFFFFFFFFFFFFF))
 (deftype ext::cl-fixnum () '(SIGNED-BYTE #.sys:CL-FIXNUM-BITS))  ;; Clasp change
 #+ecl(deftype ext::cl-index () '(UNSIGNED-BYTE #.sys:CL-FIXNUM-BITS))
-#+clasp(deftype ext::cl-index () '(UNSIGNED-BYTE (cdr (assoc :cl-index-bits (llvm-sys:cxx-data-structures-info))))) ;; Clasp change
+#+clasp(deftype ext::cl-index () '(UNSIGNED-BYTE #.(cdr (assoc :size_t-bits (llvm-sys:cxx-data-structures-info))))) ;; Clasp change
 
 (deftype real (&optional (start '* start-p) (end '*))
   (if start-p
@@ -376,14 +376,14 @@ and is not adjustable."
 #+clasp
 (defconstant +upgraded-array-element-types+
 ;;  '#.(append '(nil base-char #+unicode character bit double-float T)))
-  '#.(append '(NIL BASE-CHAR #+unicode CHARACTER BIT CORE:BYTE8 CORE:INTEGER8)
-             '(CORE:BYTE16 CORE:INTEGER16)
-             '(CORE:BYTE32 CORE:INTEGER32)
-             (when (= 32 (cdr (assoc :size_t-bits (llvm-sys:cxx-data-structures-info)))) '(core:cl-index))
+  '#.(append '(NIL BASE-CHAR #+unicode CHARACTER BIT EXT:BYTE8 EXT:INTEGER8)
+             '(EXT:BYTE16 EXT:INTEGER16)
+             '(EXT:BYTE32 EXT:INTEGER32)
+             (when (= 32 (cdr (assoc :size_t-bits (llvm-sys:cxx-data-structures-info)))) '(ext:cl-index))
              (when (< 32 core:cl-fixnum-bits 64) '(FIXNUM))
-             '(CORE:BYTE64 CORE:INTEGER64)
-             (when (= 64 (cdr (assoc :size_t-bits (llvm-sys:cxx-data-structures-info)))) '(core:cl-index))
-             (when (< 64 #+ecl cl-fixnum-bits #+clasp core:cl-fixnum-bits) '(#+ecl EXT::CL-INDEX #+clasp CORE::CL-INDEX FIXNUM))
+             '(EXT:BYTE64 EXT:INTEGER64)
+             (when (= 64 (cdr (assoc :size_t-bits (llvm-sys:cxx-data-structures-info)))) '(ext:cl-index))
+             (when (< 64 core:cl-fixnum-bits) '(ext::CL-INDEX FIXNUM))
              '(SINGLE-FLOAT DOUBLE-FLOAT T)))
 
 (defun upgraded-array-element-type (element-type &optional env)
