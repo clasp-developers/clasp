@@ -343,8 +343,6 @@ SYMBOL_EXPORT_SC_(ClPkg, list);
 SYMBOL_EXPORT_SC_(ClPkg, callNextMethod);
 SYMBOL_EXPORT_SC_(ClPkg, nextMethodP);
 SYMBOL_EXPORT_SC_(ExtPkg, STARinspectorHookSTAR);
-SYMBOL_SC_(ExtPkg, integer8);
-SYMBOL_SC_(ExtPkg, byte8);
 SYMBOL_EXPORT_SC_(ExtPkg, float_nan_string);
 SYMBOL_EXPORT_SC_(ExtPkg, float_infinity_string);
 SYMBOL_EXPORT_SC_(ExtPkg, STARdefault_external_formatSTAR);

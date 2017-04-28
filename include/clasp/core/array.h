@@ -63,35 +63,35 @@ namespace core {
 
 };
 
-SYMBOL_EXPORT_SC_(CorePkg,clasp_elttype);
-SYMBOL_EXPORT_SC_(CorePkg,cl_index);
-SYMBOL_EXPORT_SC_(CorePkg,byte8);
-SYMBOL_EXPORT_SC_(CorePkg,byte16);
-SYMBOL_EXPORT_SC_(CorePkg,byte32);
-SYMBOL_EXPORT_SC_(CorePkg,byte64);
-SYMBOL_EXPORT_SC_(CorePkg,integer8);
-SYMBOL_EXPORT_SC_(CorePkg,integer16);
-SYMBOL_EXPORT_SC_(CorePkg,integer32);
-SYMBOL_EXPORT_SC_(CorePkg,integer64);
+SYMBOL_EXPORT_SC_(ExtPkg,clasp_elttype);
+SYMBOL_EXPORT_SC_(ExtPkg,cl_index);
+SYMBOL_EXPORT_SC_(ExtPkg,byte8);
+SYMBOL_EXPORT_SC_(ExtPkg,byte16);
+SYMBOL_EXPORT_SC_(ExtPkg,byte32);
+SYMBOL_EXPORT_SC_(ExtPkg,byte64);
+SYMBOL_EXPORT_SC_(ExtPkg,integer8);
+SYMBOL_EXPORT_SC_(ExtPkg,integer16);
+SYMBOL_EXPORT_SC_(ExtPkg,integer32);
+SYMBOL_EXPORT_SC_(ExtPkg,integer64);
 
-CL_BEGIN_ENUM(clasp_elttype,_sym_clasp_elttype,"clasp_elttype");
+CL_BEGIN_ENUM(clasp_elttype,ext::_sym_clasp_elttype,"clasp_elttype");
 CL_VALUE_ENUM(cl::_sym_fixnum,      clasp_aet_fix);
-CL_VALUE_ENUM(_sym_cl_index,      clasp_aet_size_t);
-CL_VALUE_ENUM(_sym_byte64,      clasp_aet_byte64_t);
-CL_VALUE_ENUM(_sym_integer64,      clasp_aet_int64_t);
-CL_VALUE_ENUM(_sym_byte32,      clasp_aet_byte32_t);
-CL_VALUE_ENUM(_sym_integer32,      clasp_aet_int32_t);
-CL_VALUE_ENUM(_sym_byte16,      clasp_aet_byte16_t);
-CL_VALUE_ENUM(_sym_integer16,      clasp_aet_int16_t);
-CL_VALUE_ENUM(_sym_byte8,      clasp_aet_byte8_t);
-CL_VALUE_ENUM(_sym_integer8,      clasp_aet_int8_t);
-CL_END_ENUM(_sym_clasp_elttype);
+CL_VALUE_ENUM(ext::_sym_cl_index,      clasp_aet_size_t);
+CL_VALUE_ENUM(ext::_sym_byte64,      clasp_aet_byte64_t);
+CL_VALUE_ENUM(ext::_sym_integer64,      clasp_aet_int64_t);
+CL_VALUE_ENUM(ext::_sym_byte32,      clasp_aet_byte32_t);
+CL_VALUE_ENUM(ext::_sym_integer32,      clasp_aet_int32_t);
+CL_VALUE_ENUM(ext::_sym_byte16,      clasp_aet_byte16_t);
+CL_VALUE_ENUM(ext::_sym_integer16,      clasp_aet_int16_t);
+CL_VALUE_ENUM(ext::_sym_byte8,      clasp_aet_byte8_t);
+CL_VALUE_ENUM(ext::_sym_integer8,      clasp_aet_int8_t);
+CL_END_ENUM(ext::_sym_clasp_elttype);
 
 namespace cl {
     extern core::Symbol_sp& _sym_fixnum;
 };
 
-namespace core {
+namespace ext {
   extern core::Symbol_sp& _sym_cl_index;
   extern core::Symbol_sp& _sym_byte64;
   extern core::Symbol_sp& _sym_byte32;

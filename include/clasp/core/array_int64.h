@@ -51,8 +51,8 @@ namespace core {
     }
   public:
     virtual T_sp array_type() const final { return cl::_sym_simple_array; };
-    virtual T_sp element_type() const override { return core::_sym_byte64;};
-    virtual T_sp arrayElementType() const override { return core::_sym_byte64; };
+    virtual T_sp element_type() const override { return ext::_sym_byte64;};
+    virtual T_sp arrayElementType() const override { return ext::_sym_byte64; };
     virtual clasp_elttype elttype() const { return clasp_aet_byte64_t; };
   };
 };
@@ -207,8 +207,8 @@ namespace core {
     }
   public:
     virtual T_sp array_type() const final { return cl::_sym_simple_array; };
-    virtual T_sp element_type() const override { return core::_sym_integer64;};
-    virtual T_sp arrayElementType() const override { return core::_sym_integer64; };
+    virtual T_sp element_type() const override { return ext::_sym_integer64;};
+    virtual T_sp arrayElementType() const override { return ext::_sym_integer64; };
     virtual clasp_elttype elttype() const { return clasp_aet_int64_t; };
   };
 };
