@@ -16,7 +16,7 @@ struct gctools::GCInfo<core::SimpleVector_fixnum_O> {
 
 namespace core {
   class SimpleVector_fixnum_O;
-  typedef template_SimpleVector<SimpleVector_fixnum_O,fixnum,AbstractSimpleVector_O> specialized_SimpleVector_fixnum;
+  typedef template_SimpleVector<SimpleVector_fixnum_O,Fixnum,AbstractSimpleVector_O> specialized_SimpleVector_fixnum;
   class SimpleVector_fixnum_O : public specialized_SimpleVector_fixnum {
     LISP_CLASS(core, CorePkg, SimpleVector_fixnum_O, "SimpleVector_fixnum",AbstractSimpleVector_O);
     virtual ~SimpleVector_fixnum_O() {};

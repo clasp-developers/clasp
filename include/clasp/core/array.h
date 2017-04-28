@@ -87,6 +87,10 @@ CL_VALUE_ENUM(_sym_byte8,      clasp_aet_byte8_t);
 CL_VALUE_ENUM(_sym_integer8,      clasp_aet_int8_t);
 CL_END_ENUM(_sym_clasp_elttype);
 
+namespace cl {
+    extern core::Symbol_sp& _sym_fixnum;
+};
+
 namespace core {
   extern core::Symbol_sp& _sym_cl_index;
   extern core::Symbol_sp& _sym_byte64;
