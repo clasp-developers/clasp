@@ -887,6 +887,8 @@ string symbol_symbolName(Symbol_sp);
 string symbol_packageName(Symbol_sp);
 string symbol_repr(Symbol_sp);
 Symbol_sp lisp_symbolNil();
+ bool lisp_boundp(Symbol_sp s);
+ T_sp lisp_adjust_array(T_sp array, T_sp new_size, T_sp fill_pointer);
  void lisp_errorCannotAllocateInstanceWithMissingDefaultConstructor(T_sp theClassSymbol);
 T_sp lisp_boot_findClassBySymbolOrNil(Symbol_sp sym);
  void lisp_addClass(Symbol_sp classSymbol, gctools::smart_ptr<Creator_O> cb, Symbol_sp baseClassSymbol1); //, Symbol_sp baseClassSymbol2 = UNDEFINED_SYMBOL, Symbol_sp baseClassSymbol3 = UNDEFINED_SYMBOL);

@@ -354,7 +354,7 @@ void Package_O::initialize() {
 }
 
 string Package_O::packageName() const {
-  return this->_Name.load()->get_std_string();
+  return this->_Name->get_std_string();
 }
 
 string Package_O::getName() const
@@ -380,7 +380,7 @@ CL_DEFMETHOD T_mv Package_O::hashTables() const {
 string Package_O::__repr__() const {
   WITH_PACKAGE_READ_LOCK(this);
   stringstream ss;
-  ss << "#<" << this->_Name.load()->get_std_string() << ">";
+  ss << "#<" << this->_Name->get_std_string() << ">";
   return ss.str();
 }
 
@@ -908,7 +908,7 @@ void Package_O::mapInternals(KeyValueMapper *mapper) {
 
 void Package_O::dumpSymbols() {
   string all = this->allSymbols();
-  printf("%s:%d Package %s\n", __FILE__, __LINE__, this->_Name.load()->get_std_string().c_str());
+  printf("%s:%d Package %s\n", __FILE__, __LINE__, this->_Name->get_std_string().c_str());
   printf("%s\n", all.c_str());
 }
 

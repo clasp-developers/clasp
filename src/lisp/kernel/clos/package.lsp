@@ -152,6 +152,9 @@
           SLOT-DEFINITION-INITFUNCTION 
           SLOT-DEFINITION-INITFORM )
         )
+#+clasp
+(export '(invalidate-generic-functions-with-class-selector
+          ))
 
 (export '*environment-contains-closure-hook*)
 

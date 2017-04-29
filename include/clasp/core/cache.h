@@ -55,14 +55,15 @@ namespace core {
     gctools::Vec0<CacheRecord> _table;
     int _generation;
 #ifdef CLASP_THREADS
-    std::atomic<T_sp> _clear_list;
+    mp::SpinLock      _clear_list_spinlock;
+    T_sp              _clear_list_safe;
 #endif
 #ifdef DEBUG_CACHE
     bool _debug;
 #endif
   Cache_O() : _misses(0), _searches(0), _total_depth(0), _generation(0)
 #ifdef CLASP_THREADS
-      , _clear_list(_Nil<T_O>())
+      , _clear_list_safe(_Nil<T_O>())
 #endif
 #ifdef DEBUG_CACHE
       , _debug(0)

@@ -4345,14 +4345,26 @@ namespace llvmo {
     ModuleHandle_sp addModule(Module_sp M);
     core::Pointer_sp findSymbol(const std::string& Name);
     core::Pointer_sp findSymbolIn(ModuleHandle_sp handle, const std::string& Name, bool exportedSymbolsOnly );
-    void removeModule(ModuleHandle_sp H);
+    bool removeModule(ModuleHandle_sp H);
 
     std::unique_ptr<llvm::Module> optimizeModule(std::unique_ptr<llvm::Module> M);
   };
 
+};
+
+template <>
+struct gctools::GCInfo<llvmo::ModuleHandle_O> {
+  static bool constexpr NeedsInitialization = false;
+  static bool constexpr NeedsFinalization = true;
+  static GCInfo_policy constexpr Policy = normal;
+};
+
+
+namespace llvmo {
   class ModuleHandle_O : public core::General_O {
     LISP_CLASS(llvmo, LlvmoPkg, ModuleHandle_O, "module-handle", core::General_O);
   public:
+    core::ShutdownFunction_fptr_type _shutdownFunction;
     ClaspJIT_O::ModuleHandle _Handle;
   public:
     static ModuleHandle_sp create(const ClaspJIT_O::ModuleHandle& val) {
@@ -4360,7 +4372,18 @@ namespace llvmo {
       return mh;
     }
   public:
-  ModuleHandle_O(const ClaspJIT_O::ModuleHandle& handle) : _Handle(handle) {};
+    void set_shutdown_function(core::ShutdownFunction_fptr_type fn) {
+      this->_shutdownFunction = fn;
+    }
+    void shutdown_module() {
+      if (this->_shutdownFunction) {
+        this->_shutdownFunction();
+      }
+    }
+  ModuleHandle_O(const ClaspJIT_O::ModuleHandle& handle) : _shutdownFunction(NULL), _Handle(handle) {};
+    // ModuleHandle's have finalizers installed to clean them up.
+    // The destructor calls cmp:jit-remove-module to achieve this
+    virtual ~ModuleHandle_O();
   };
 
 

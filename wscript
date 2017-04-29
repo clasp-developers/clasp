@@ -141,7 +141,7 @@ def sync_submodules(cfg):
 # This is the static analyzer - formerly called 'redeye'
 def analyze_clasp(cfg):
     run_program_echo("build/boehmdc/iclasp-boehmdc",
-                     "-i", "./build/boehmdc/bclasp-boehmdc-image.fasl",
+                     "-i", "./build/boehmdc/fasl/cclasp-boehmdc-image.fasl",
                      "-f", "ignore-extensions",
                      "-e", '(load (compile-file #P"sys:modules;clang-tool;clang-tool.lisp" :print t))',
                      "-e", '(load (compile-file #P"sys:modules;clasp-analyzer;clasp-analyzer.lisp" :print t))',
@@ -704,7 +704,7 @@ def configure(cfg):
     cfg.define("NDEBUG",1)
 #    cfg.define("DEBUG_CACHE",1)      # Debug the dispatch caches - see cache.cc
 # Keep track of every allocation
-#    cfg.define("METER_ALLOCATIONS",1)
+    cfg.define("METER_ALLOCATIONS",1)
 #    cfg.define("READLINE",1)
     cfg.define("USE_AMC_POOL",1)
     cfg.define("USE_EXPENSIVE_BACKTRACE",1)

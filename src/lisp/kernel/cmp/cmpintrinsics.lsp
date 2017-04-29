@@ -862,6 +862,8 @@ and initialize it with an array consisting of one function pointer."
   (primitive          module "cc_bad_tag" %void% (list %t*% %t*%)) ;; gf gf-args
   (primitive          module "cc_dispatch_invalid" %return_type% (list %t*% %t*%)) ;; gf gf-args
   (primitive          module "cc_dispatch_miss" %return_type% (list %t*% %t*%)) ;; gf gf-args
+  (primitive          module "cc_dispatch_slot_reader"   %return_type% (list %t*% %t*% %t*%)) ; effective-method gf gf-args
+  (primitive          module "cc_dispatch_slot_writer"   %return_type% (list %t*% %t*% %t*%)) ; effective-method gf gf-args
   (primitive          module "cc_dispatch_effective_method"   %return_type% (list %t*% %t*% %t*%)) ; effective-method gf gf-args
   (primitive          module "cc_dispatch_debug" %void% (list %i32% %uintptr_t%))
   

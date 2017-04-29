@@ -167,6 +167,38 @@ ensure_up_to_date_instance(T_sp tinstance)
 
 
 
+LCC_RETURN do_slot_read(gctools::Tagged tindex, gctools::Tagged tgf, gctools::Tagged tinstance)
+{
+  Instance_sp gf(tgf);
+  T_sp index(tindex);
+  Instance_sp instance(tinstance);
+  T_sp value;
+  if (index.fixnump()) {
+    value = instance->instanceRef(index.unsafe_fixnum());
+#ifdef DEBUG_ACCESSORS
+    if (DEBUG_ACCESSORS_ON()) {
+      printf("%s:%d optimized_slot_reader_dispatch getting slot[index = %s] value = %s\n", __FILE__, __LINE__, _rep_(index).c_str(), _rep_(value).c_str() );
+    }
+#endif
+  } else if (!index.consp()) {
+    value = eval::funcall( clos::_sym_slot_value, instance, index);
+#ifdef DEBUG_ACCESSORS
+    if (DEBUG_ACCESSORS_ON()) {
+      printf("%s:%d optimized_slot_reader_dispatch getting slot-value index = %s value = %s\n", __FILE__, __LINE__, _rep_(index).c_str(), _rep_(value).c_str() );
+    }
+#endif
+  } else {
+    Cons_sp cindex = gc::As_unsafe<Cons_sp>(index);
+    value = cindex->_Car;
+#ifdef DEBUG_ACCESSORS
+    if (DEBUG_ACCESSORS_ON()) {
+      printf("%s:%d optimized_slot_reader_dispatch getting slot cons index = %s value = %s\n", __FILE__, __LINE__, _rep_(index).c_str(), _rep_(value).c_str() );
+    }
+#endif
+  }
+  return value.as_return_type();
+}
+
 
 LCC_RETURN optimized_slot_reader_dispatch(gctools::Tagged tgf, gctools::Tagged tvargs) 
 {
@@ -195,31 +227,11 @@ LCC_RETURN optimized_slot_reader_dispatch(gctools::Tagged tgf, gctools::Tagged t
       unlikely_if (e == NULL) {
         SIMPLE_ERROR(BF("What do I do here?  e==NULL"));
       }
+      T_sp call_history_key = SimpleVector_O::make(cache->_keys.size()-1,_Nil<T_O>(),true,cache->_keys.size()-1,&(cache->_keys[1]));
+      core__generic_function_call_history_push_new(gf,call_history_key,Cons_O::create(core::_sym_optimized_slot_reader,index));
     }
     index = e->_value;
-    if (index.fixnump()) {
-      value = instance->instanceRef(index.unsafe_fixnum());
-#ifdef DEBUG_ACCESSORS
-      if (DEBUG_ACCESSORS_ON()) {
-        printf("%s:%d optimized_slot_reader_dispatch getting slot[index = %s] value = %s\n", __FILE__, __LINE__, _rep_(index).c_str(), _rep_(value).c_str() );
-      }
-#endif
-    } else if (!index.consp()) {
-      value = eval::funcall( clos::_sym_slot_value, instance, index);
-#ifdef DEBUG_ACCESSORS
-      if (DEBUG_ACCESSORS_ON()) {
-        printf("%s:%d optimized_slot_reader_dispatch getting slot-value index = %s value = %s\n", __FILE__, __LINE__, _rep_(index).c_str(), _rep_(value).c_str() );
-      }
-#endif
-    } else {
-      Cons_sp cindex = gc::As_unsafe<Cons_sp>(index);
-      value = cindex->_Car;
-#ifdef DEBUG_ACCESSORS
-      if (DEBUG_ACCESSORS_ON()) {
-        printf("%s:%d optimized_slot_reader_dispatch getting slot cons index = %s value = %s\n", __FILE__, __LINE__, _rep_(index).c_str(), _rep_(value).c_str() );
-      }
-#endif
-    }
+    value = do_slot_read(index.tagged_(),tgf,tinstance.tagged_());
     unlikely_if (value.unboundp()) {
       Cons_sp linstance = Cons_O::createList(instance);
       T_sp slot_name = slot_method_name(gf,linstance);
@@ -228,13 +240,45 @@ LCC_RETURN optimized_slot_reader_dispatch(gctools::Tagged tgf, gctools::Tagged t
                             instance,
                             slot_name);
     }
-    T_sp call_history_key = SimpleVector_O::make(cache->_keys.size()-1,_Nil<T_O>(),true,cache->_keys.size()-1,&(cache->_keys[1]));
-    core__generic_function_call_history_push_new(gf,call_history_key,Cons_O::create(core::_sym_optimized_slot_reader,index));
     return value.as_return_type();
   }
-  eval::funcall(cl::_sym_no_applicable_method, gf, value, tinstance);
+  eval::funcall(cl::_sym_no_applicable_method, gf, tinstance);
   UNREACHABLE();
 }
+
+
+
+void do_slot_write(gctools::Tagged tindex, gctools::Tagged tgf, gctools::Tagged tinstance, gctools::Tagged tvalue)
+{
+  Instance_sp gf(tgf);
+  T_sp index(tindex);
+  Instance_sp instance(tinstance);
+  T_sp value(tvalue);
+  if (index.fixnump()) {
+#ifdef DEBUG_ACCESSORS
+    if (DEBUG_ACCESSORS_ON()) {
+      printf("%s:%d optimized_slot_writer_dispatch setting slot[index = %s]  value = %s\n", __FILE__, __LINE__, _rep_(index).c_str(), _rep_(value).c_str() );
+    }
+#endif
+    instance->instanceSet(index.unsafe_fixnum(),value);
+  } else if (!index.asOrNull<Cons_O>()) {
+#ifdef DEBUG_ACCESSORS
+    if (DEBUG_ACCESSORS_ON()) {
+      printf("%s:%d optimized_slot_writer_dispatch setting slot-value index = %s  value = %s\n", __FILE__, __LINE__, _rep_(index).c_str(), _rep_(value).c_str() );
+    }
+#endif
+    eval::funcall( clos::_sym_slot_value_set, value, instance, index);
+  } else {
+#ifdef DEBUG_ACCESSORS
+    if (DEBUG_ACCESSORS_ON()) {
+      printf("%s:%d optimized_slot_writer_dispatch setting slot cons index = %s value = %s\n", __FILE__, __LINE__, _rep_(index).c_str(), _rep_(value).c_str() );
+    }
+#endif
+    Cons_sp cindex = gc::As<Cons_sp>(index);
+    cindex->_Car = value;
+  }
+}
+
 
 LCC_RETURN optimized_slot_writer_dispatch(gctools::Tagged tgf, gctools::Tagged tvargs) 
 {
@@ -265,29 +309,7 @@ LCC_RETURN optimized_slot_writer_dispatch(gctools::Tagged tgf, gctools::Tagged t
       }
     }
     index = e->_value;
-    if (index.fixnump()) {
-#ifdef DEBUG_ACCESSORS
-      if (DEBUG_ACCESSORS_ON()) {
-        printf("%s:%d optimized_slot_writer_dispatch setting slot[index = %s]  value = %s\n", __FILE__, __LINE__, _rep_(index).c_str(), _rep_(value).c_str() );
-      }
-#endif
-      instance->instanceSet(index.unsafe_fixnum(),value);
-    } else if (!index.asOrNull<Cons_O>()) {
-#ifdef DEBUG_ACCESSORS
-      if (DEBUG_ACCESSORS_ON()) {
-        printf("%s:%d optimized_slot_writer_dispatch setting slot-value index = %s  value = %s\n", __FILE__, __LINE__, _rep_(index).c_str(), _rep_(value).c_str() );
-      }
-#endif
-      eval::funcall( clos::_sym_slot_value_set, value, instance, index);
-    } else {
-#ifdef DEBUG_ACCESSORS
-      if (DEBUG_ACCESSORS_ON()) {
-        printf("%s:%d optimized_slot_writer_dispatch setting slot cons index = %s value = %s\n", __FILE__, __LINE__, _rep_(index).c_str(), _rep_(value).c_str() );
-      }
-#endif
-      Cons_sp cindex = gc::As<Cons_sp>(index);
-      cindex->_Car = value;
-    }
+    do_slot_write(index.tagged_(),tgf,instance.tagged_(),value.tagged_());
     T_sp call_history_key = SimpleVector_O::make(cache->_keys.size()-1,_Nil<T_O>(),true,cache->_keys.size()-1,&(cache->_keys[1]));
     core__generic_function_call_history_push_new(gf,call_history_key,Cons_O::create(core::_sym_optimized_slot_writer,index));
     return value.as_return_type();

@@ -57,7 +57,7 @@ class Package_O : public General_O {
   HashTableEqual_sp _InternalSymbols;
   HashTableEqual_sp _ExternalSymbols;
   HashTableEq_sp _Shadowing;
-  std::atomic<SimpleString_sp> _Name;
+  SimpleString_sp _Name;
   gctools::Vec0<Package_sp> _UsingPackages;
   gctools::Vec0<Package_sp> _PackagesUsedBy;
   std::atomic<bool> _KeywordPackage;

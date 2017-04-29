@@ -1724,7 +1724,7 @@ T_mv doMacrolet(List_sp args, T_sp env, bool toplevel) {
     Function_sp outer_func;
     if (comp::_sym_compileInEnv->fboundp()) {
       // If the compiler is set up then compile the outer func
-      outer_func = gc::As<Function_sp>(eval::funcall(comp::_sym_compileInEnv, _Nil<T_O>(), outer_func_cons, newEnv));
+      outer_func = gc::As<Function_sp>(eval::funcall(comp::_sym_compileInEnv, _Nil<T_O>(), outer_func_cons, newEnv,_Nil<T_O>(),llvmo::_sym_ExternalLinkage));
       outer_func->set_kind(kw::_sym_macro);
     } else {
       List_sp outer_ll = oCadr(outer_func_cons);
@@ -2041,7 +2041,10 @@ T_mv t1Macrolet(List_sp args, T_sp env) {
     Function_sp outer_func = eval::funcall(comp::_sym_compileInEnv
                                            , _Nil<T_O>()
                                            , outer_func_cons
-                                           ,newEnv ).as<Function_O>();
+                                           ,newEnv
+                                           ,_Nil<T_O>()
+                                           ,llvmo::_sym_ExternalLinkage
+                                           ).as<Function_O>();
     outer_func->setKind(kw::_sym_macro);
 #else
     List_sp outer_ll = oCaddr(outer_func_cons);
@@ -2109,7 +2112,9 @@ T_mv t1SymbolMacrolet(List_sp args, T_sp env) {
     outer_func = eval::funcall(comp::_sym_compileInEnv
                                , _Nil<T_O>()
                                , outer_func_cons
-                               ,newEnv ).as<Function_O>();
+                               ,newEnv
+                               ,_Nil<T_O>()
+                               ,llvmo::_sym_ExternalLinkage).as<Function_O>();
     outer_func->setKind(kw::_sym_macro);
 #else
     LambdaListHandler_sp outer_llh = LambdaListHandler_O::create(outer_ll,

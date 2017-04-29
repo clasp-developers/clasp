@@ -63,7 +63,7 @@ CL_DECLARE();
 CL_DOCSTRING("get_sysprop - returns (values val foundp)");
 CL_DEFUN T_mv core__get_sysprop(T_sp key, T_sp area) {
   ASSERT(_lisp->_Roots._Sysprop.notnilp());
-  WITH_READ_WRITE_LOCK(_lisp->_Roots._SyspropMutex);
+  WITH_READ_LOCK(_lisp->_Roots._SyspropMutex);
   HashTableEql_sp sysprops = _lisp->_Roots._Sysprop;
   if (sysprops.notnilp()) {
     T_mv values = sysprops->gethash(area, _Nil<T_O>());

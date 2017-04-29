@@ -2976,7 +2976,7 @@ CL_DEFUN core::Function_sp finalizeEngineAndRegisterWithGcAndGetCompiledFunction
 
 //
 CL_DEFUN core::Function_sp finalizeEngineAndGetDispatchFunction(ExecutionEngine_sp oengine, core::T_sp functionName, Function_sp fn, Function_sp startupFn, Function_sp shutdownFn, core::T_sp initial_data) {
-
+  DEPRECATED();
   llvm::ExecutionEngine *engine = oengine->wrappedPtr();
   finalizeEngineAndTime(engine);
   ASSERTF(fn.notnilp(), BF("The Function must never be nil"));
@@ -2986,7 +2986,7 @@ CL_DEFUN core::Function_sp finalizeEngineAndGetDispatchFunction(ExecutionEngine_
   }
   core::DispatchFunction_fptr_type dispatchFunction = (core::DispatchFunction_fptr_type)(p);
   core::ShutdownFunction_fptr_type shutdownFunction = (core::ShutdownFunction_fptr_type)(engine->getPointerToFunction(shutdownFn->wrappedPtr()));
-  gctools::smart_ptr<core::CompiledDispatchFunction_O> functoid = gctools::GC<core::CompiledDispatchFunction_O>::allocate(functionName, kw::_sym_dispatch_function, dispatchFunction, shutdownFunction, _Unbound<Module_O>() );
+  gctools::smart_ptr<core::CompiledDispatchFunction_O> functoid = gctools::GC<core::CompiledDispatchFunction_O>::allocate(functionName, kw::_sym_dispatch_function, dispatchFunction, _Unbound<Module_O>() );
   void* pstartup = engine->getPointerToFunction(startupFn->wrappedPtr());
   if (pstartup == NULL ) {
     printf("%s:%d Could not find function named %s\n", __FILE__, __LINE__, MODULE_STARTUP_FUNCTION_NAME);
@@ -3495,8 +3495,10 @@ CL_DEFMETHOD core::Pointer_sp ClaspJIT_O::findSymbolIn(ModuleHandle_sp handle, c
   return core::Pointer_O::create((void*)sym.getAddress());
 }
 CL_LISPIFY_NAME("CLASP-JIT-REMOVE-MODULE");
-CL_DEFMETHOD void ClaspJIT_O::removeModule(ModuleHandle_sp H) {
+CL_DEFMETHOD bool ClaspJIT_O::removeModule(ModuleHandle_sp H) {
+  H->shutdown_module();
   OptimizeLayer.removeModuleSet(H->_Handle);
+  return true;
 }
 
 
@@ -3526,6 +3528,19 @@ std::unique_ptr<llvm::Module> ClaspJIT_O::optimizeModule(std::unique_ptr<llvm::M
 }
 
 
+// FIXME - this is where JITted code comes to die.
+//     If a ModuleHandle doesn't have a root pointer to it then it will
+//       be collected.   So the *jit-engine* keeps ModuleHandles from JITted code
+//       in a pair of linked lists - one for REPL code and one for fastgf dispatchers.
+ModuleHandle_O::~ModuleHandle_O() {
+//  printf("%s:%d  ModuleHandle_O::~ModuleHandle_O - not removing module until we GC code\n", __FILE__, __LINE__);
+  this->shutdown_module();
+  ModuleHandle_sp me = this->asSmartPtr();
+  core::eval::funcall(comp::_sym_jit_remove_module,me);
+  // From here on the _Handle is invalid
+}
+
+
 CL_DEFUN core::Function_sp llvm_sys__jitFinalizeReplFunction(ClaspJIT_sp jit, ModuleHandle_sp handle, const string& replName, const string& startupName, const string& shutdownName, core::T_sp initialData, Function_sp fn, core::T_sp activationFrameEnvironment) {
   // Stuff to support MCJIT
 #if 0
@@ -3552,18 +3567,19 @@ CL_DEFUN core::Function_sp llvm_sys__jitFinalizeReplFunction(ClaspJIT_sp jit, Mo
 
 CL_DEFUN core::Function_sp llvm_sys__jitFinalizeDispatchFunction(ClaspJIT_sp jit, ModuleHandle_sp handle, const string& dispatchName, const string& startupName, const string& shutdownName, core::T_sp initialData ) {
   // Stuff to support MCJIT
-  printf("%s:%d dispatchName = %s\n", __FILE__, __LINE__, dispatchName.c_str() );
-  printf("%s:%d  startupName = %s\n", __FILE__, __LINE__, startupName.c_str() );
-  printf("%s:%d shutdownName = %s\n", __FILE__, __LINE__, shutdownName.c_str() );
+//  printf("%s:%d dispatchName = %s\n", __FILE__, __LINE__, dispatchName.c_str() );
+//  printf("%s:%d  startupName = %s\n", __FILE__, __LINE__, startupName.c_str() );
+//  printf("%s:%d shutdownName = %s\n", __FILE__, __LINE__, shutdownName.c_str() );
   core::Pointer_sp dispatchPtr = jit->findSymbolIn(handle,dispatchName,false);
   core::Pointer_sp startupPtr = jit->findSymbolIn(handle,startupName,false);
   core::Pointer_sp shutdownPtr = jit->findSymbolIn(handle,shutdownName,false);
-  printf("%s:%d dispatchPtr = %p\n", __FILE__, __LINE__, (void*)gc::As_unsafe<core::Pointer_sp>(dispatchPtr)->ptr());
-  printf("%s:%d  startupPtr = %p\n", __FILE__, __LINE__, (void*)gc::As_unsafe<core::Pointer_sp>(startupPtr)->ptr() );
-         printf("%s:%d shutdownPtr = %p\n", __FILE__, __LINE__, (void*)gc::As_unsafe<core::Pointer_sp>(shutdownPtr)->ptr() );
+//  printf("%s:%d dispatchPtr = %p\n", __FILE__, __LINE__, (void*)gc::As_unsafe<core::Pointer_sp>(dispatchPtr)->ptr());
+//  printf("%s:%d  startupPtr = %p\n", __FILE__, __LINE__, (void*)gc::As_unsafe<core::Pointer_sp>(startupPtr)->ptr() );
+//  printf("%s:%d shutdownPtr = %p\n", __FILE__, __LINE__, (void*)gc::As_unsafe<core::Pointer_sp>(shutdownPtr)->ptr() );
   core::DispatchFunction_fptr_type dispatchFunction = (core::DispatchFunction_fptr_type)(gc::As_unsafe<core::Pointer_sp>(dispatchPtr)->ptr());
   core::ShutdownFunction_fptr_type shutdownFunction = (core::ShutdownFunction_fptr_type)(gc::As_unsafe<core::Pointer_sp>(shutdownPtr)->ptr());
-  gctools::smart_ptr<core::CompiledDispatchFunction_O> functoid = gctools::GC<core::CompiledDispatchFunction_O>::allocate(core::SimpleBaseString_O::make(dispatchName), kw::_sym_dispatch_function, dispatchFunction, shutdownFunction, handle );
+  handle->set_shutdown_function(shutdownFunction);
+  gctools::smart_ptr<core::CompiledDispatchFunction_O> functoid = gctools::GC<core::CompiledDispatchFunction_O>::allocate(core::SimpleBaseString_O::make(dispatchName), kw::_sym_dispatch_function, dispatchFunction, handle );
   void* pstartup = gc::As_unsafe<core::Pointer_sp>(startupPtr)->ptr();
   if (pstartup == NULL ) {
     printf("%s:%d Could not find function named %s\n", __FILE__, __LINE__, MODULE_STARTUP_FUNCTION_NAME);

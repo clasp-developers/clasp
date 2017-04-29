@@ -300,6 +300,14 @@ Symbol_sp lisp_symbolNil() {
   return _Nil<Symbol_O>();
 }
 
+bool lisp_boundp(Symbol_sp s) {
+  return s->boundP();
+}
+
+T_sp lisp_adjust_array(T_sp array, T_sp new_size, T_sp fill_pointer) {
+  return eval::funcall(cl::_sym_adjust_array,array,new_size,kw::_sym_fill_pointer,fill_pointer);
+}
+
 
 List_sp lisp_copy_default_special_bindings() {
   return _lisp->copy_default_special_bindings();

@@ -60,8 +60,15 @@ struct gctools::GCInfo<core::InterpretedClosure_O> {
   static bool constexpr NeedsFinalization = false;
   static GCInfo_policy constexpr Policy = normal;
 };
+
 template <>
 struct gctools::GCInfo<core::CompiledClosure_O> {
+  static bool constexpr NeedsInitialization = false;
+  static bool constexpr NeedsFinalization = false;
+  static GCInfo_policy constexpr Policy = normal;
+};
+template <>
+struct gctools::GCInfo<core::CompiledDispatchFunction_O> {
   static bool constexpr NeedsInitialization = false;
   static bool constexpr NeedsFinalization = false;
   static GCInfo_policy constexpr Policy = normal;
@@ -461,39 +468,57 @@ public:
 };
 #endif
 
-namespace core {
-class CompiledDispatchFunction_O : public core::ClosureWithFrame_O {
-  LISP_CLASS(core,CorePkg,CompiledDispatchFunction_O,"CompiledDispatchFunction",core::ClosureWithFrame_O);
-public:
-  core::DispatchFunction_fptr_type _entryPoint;
-  core::ShutdownFunction_fptr_type _shutdownFunction;
-  T_sp  _llvmModule;
- public:
-  virtual const char *describe() const { return "CompiledDispatchFunction"; };
-  virtual size_t templatedSizeof() const { return sizeof(*this); };
-  virtual void *functionAddress() const { return (void *)this->_entryPoint; }
-public:
- CompiledDispatchFunction_O(core::T_sp functionName, core::Symbol_sp type, core::DispatchFunction_fptr_type ptr, core::ShutdownFunction_fptr_type shutdownFunction, T_sp module ) : Base(functionName,kw::_sym_dispatch_function,_Nil<T_O>(),0,0,0,0), _entryPoint(ptr), _shutdownFunction(shutdownFunction), _llvmModule(module) {};
-  bool compiledP() const { return true; };
-  DispatchFunction_fptr_type entryPoint() { return this->_entryPoint;};
-  DISABLE_NEW();
-  inline LCC_RETURN LISP_CALLING_CONVENTION() {
-    SIMPLE_ERROR(BF("You cannot invoke compiled-dispatch-functions directly - they can only be used to clos:set-funcallable-instance-function"));
-#if 0
-    ASSERT_LCC_VA_LIST_CLOSURE_DEFINED(lcc_arglist);
-    INCREMENT_FUNCTION_CALL_COUNTER(this);
-#ifdef USE_EXPENSIVE_BACKTRACE
-    core::InvocationHistoryFrame _frame(lcc_arglist);
-#endif
-    core::T_O* tagged_closure = gctools::tag_general(this);
-    return (*(this->_entryPoint))(LCC_PASS_ARGS_ENV(tagged_closure));
-#endif
-  };
-  core::T_sp lambda_list() const { return Cons_O::createList(cl::_sym_generic_function, core::_sym_arguments); };
-  void setf_lambda_list(core::List_sp lambda_list) { SIMPLE_ERROR(BF("You cannot set the lambda-list of a compiled-dispatch-function")); };
-  CL_DEFMETHOD T_sp llvm_module() const { return this->_llvmModule;};
-  CL_DEFMETHOD void shutdown() const { this->_shutdownFunction(); };
+namespace llvmo {
+  FORWARD(ModuleHandle);
 };
+
+namespace core {
+  class CompiledDispatchFunction_O : public core::Closure_O {
+    LISP_CLASS(core,CorePkg,CompiledDispatchFunction_O,"CompiledDispatchFunction",core::Closure_O);
+  public:
+    core::DispatchFunction_fptr_type _entryPoint;
+    llvmo::ModuleHandle_sp  _llvmModule;
+  public:
+    virtual const char *describe() const { return "CompiledDispatchFunction"; };
+    virtual size_t templatedSizeof() const { return sizeof(*this); };
+    virtual void *functionAddress() const { return (void *)this->_entryPoint; }
+  public:
+  CompiledDispatchFunction_O(core::T_sp functionName, core::Symbol_sp type, core::DispatchFunction_fptr_type ptr, llvmo::ModuleHandle_sp module ) : Base(functionName), _entryPoint(ptr), _llvmModule(module) {};
+    bool compiledP() const { return true; };
+    DispatchFunction_fptr_type entryPoint() { return this->_entryPoint;};
+    DISABLE_NEW();
+    inline LCC_RETURN LISP_CALLING_CONVENTION() {
+      SIMPLE_ERROR(BF("You cannot invoke compiled-dispatch-functions directly - they can only be used to clos:set-funcallable-instance-function"));
+#if 0
+      ASSERT_LCC_VA_LIST_CLOSURE_DEFINED(lcc_arglist);
+      INCREMENT_FUNCTION_CALL_COUNTER(this);
+#ifdef USE_EXPENSIVE_BACKTRACE
+      core::InvocationHistoryFrame _frame(lcc_arglist);
+#endif
+      core::T_O* tagged_closure = gctools::tag_general(this);
+      return (*(this->_entryPoint))(LCC_PASS_ARGS_ENV(tagged_closure));
+#endif
+    };
+    core::T_sp lambda_list() const { return Cons_O::createList(cl::_sym_generic_function, core::_sym_arguments); };
+    void setf_lambda_list(core::List_sp lambda_list) { SIMPLE_ERROR(BF("You cannot set the lambda-list of a compiled-dispatch-function")); };
+    CL_DEFMETHOD T_sp llvm_module() const { return this->_llvmModule;};
+
+  public:
+    T_sp closedEnvironment() const { return _Nil<T_O>(); };
+    virtual T_sp setSourcePosInfo(T_sp sourceFile, size_t filePos, int lineno, int column) {NOT_APPLICABLE();};
+    virtual T_sp cleavir_ast() const {NOT_APPLICABLE();};
+    virtual void setf_cleavir_ast(T_sp ast) {NOT_APPLICABLE();};
+    T_sp docstring() const { NOT_APPLICABLE();};
+    void set_kind(Symbol_sp k) { NOT_APPLICABLE();};
+    Symbol_sp getKind() const { NOT_APPLICABLE();};
+    virtual int sourceFileInfoHandle() const {NOT_APPLICABLE();};
+    virtual LambdaListHandler_sp lambdaListHandler() const {NOT_APPLICABLE();};
+    virtual void setAssociatedFunctions(List_sp funcs) {NOT_APPLICABLE();};
+    virtual List_sp declares() const {NOT_APPLICABLE();};
+    virtual bool macroP() const {NOT_APPLICABLE();};
+
+    
+  };
 };
 
 namespace core {

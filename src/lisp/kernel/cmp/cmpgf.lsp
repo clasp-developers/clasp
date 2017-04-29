@@ -21,10 +21,19 @@
 
 (in-package :cmp)
 
-;;;#+(or)
+
+;;; ------------------------------------------------------------
+;;;
+;;; Debugging code
+;;;
+;;; Add :DEBUG-CMPGF to *features* and recompile for lots of debugging info
+;;;   during fastgf compilation and execution.
+;;;
+;;#+(or)
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (pushnew :debug-cmpgf *features*))
 
+(defvar *message-counter* nil)
 #+debug-cmpgf
 (progn
   (defun insert-message ()
@@ -58,6 +67,22 @@
 
 (unless (boundp '+header-size+)
   (defparameter +header-size+ 8))
+
+
+;;; ------------------------------------------------------------
+;;;
+;;; Convert a generic function call-history to an internal representation
+;;;   called a DTREE (dispatch-tree) made up of the structs below.
+
+(defvar *accumulated-values* nil
+  "Accumulate values that the dispatch function needs")
+(defvar *outcomes* nil
+  "Map effective methods and symbols to basic-blocks")
+(defvar *gf-data-id* nil)
+(defvar *gf-data* nil
+  "Store the global variable that will store effective methods")
+(defvar *bad-tag-bb*)
+(defvar *eql-selectors*)
 
 (defstruct (outcome (:type vector) :named) outcome)
 (defstruct (match (:type vector) :named) outcome)
@@ -186,12 +211,12 @@
 	node)))
 
 
-(defmacro with-graph ((name fout &rest open-args) &body body)
-  `(with-open-file (,fout ,@open-args)
-     (format ,fout "digraph ~a {~%" ,name)
-     ,@body
-     (format ,fout "}~%")))
 
+
+;;; ------------------------------------------------------------
+;;;
+;;; Generate Common Lisp code for a fastgf dispatcher given a
+;;;   DTREE internal representation
 
 
 (defun compile-remaining-eql-tests (eql-tests arg args orig-args)
@@ -246,6 +271,8 @@
     `(let ((,stamp-var (core:get-instance-stamp (class-of ,arg))))
        ,(compile-class-binary-search (node-class-specializers node) stamp-var args orig-args))))
 
+(defvar *map-tag-outcomes* (make-hash-table))
+
 (defun gather-outcomes (outcome)
   (let ((tag (intern (format nil "T~a" (hash-table-count *map-tag-outcomes*)))))
     (setf (gethash tag *map-tag-outcomes*) outcome)
@@ -265,7 +292,6 @@
       (compile-outcome node-or-outcome args orig-args)
       (compile-node node-or-outcome args orig-args)))
 
-(defvar *map-tag-outcomes* (make-hash-table))
 (defun compiled-dtree-form (dtree)
   (let ((vargs (gensym "VARGS"))
 	(orig-vargs (gensym "ORIG-VARGS"))
@@ -316,48 +342,24 @@
 	       (format fout "~a [ label = \"~a\"];~%" id node)
 	       id))))
 
+
+;;; ------------------------------------------------------------
+;;;
+;;; Generate a graphviz representation of a DTREE
+;;;
+
+(defmacro with-graph ((name fout &rest open-args) &body body)
+  `(with-open-file (,fout ,@open-args)
+     (format ,fout "digraph ~a {~%" ,name)
+     ,@body
+     (format ,fout "}~%")))
+
 (defun draw-graph (pathname dtree)
   (with-graph ("G" fout pathname :direction :output)
     (format fout "graph [ rankdir = \"LR\"];~%")
     (let ((startid (gensym)))
       (format fout "~a [ label = \"Start\", shape = diamond ];~%" startid)
       (format fout "~a -> ~a;~%" startid (draw-node fout (dtree-root dtree))))))
-
-
-
-;;; ------------------------------------------------------------
-;;;
-;;; Compile the dispatcher to llvm-ir
-;;
-;;
-
-;;; Define the va_list structure
-
-(defvar *accumulated-values* nil
-  "Accumulate values that the dispatch function needs")
-(defvar *outcomes* nil
-  "Map effective methods and symbols to basic-blocks")
-(defvar *message-counter* nil)
-(defvar *gf-data-id* nil)
-(defvar *gf-data* nil
-  "Store the global variable that will store effective methods")
-(defvar *bad-tag-bb*)
-(defvar *eql-selectors*)
-(defun compiled-dtree-form (dtree)
-  (let ((vargs (gensym "VARGS"))
-	(orig-vargs (gensym "ORIG-VARGS"))
-	(*map-tag-outcomes* (make-hash-table)))
-    `(lambda (,orig-vargs &aux (,vargs (copy-vargs ,orig-vargs)))
-       (tagbody
-	  ,(codegen-node-or-outcome (dtree-root dtree) vargs `(copy-vargs ,vargs))
-	  ,@(loop for key being the hash-keys of *map-tag-outcomes*
-	       using (hash-value value)
-	       append (list key value))
-	miss
-	  (no-applicable-methods ,vargs)))))
-
-
-
 
 (defun lookup-eql-selector (eql-test)
   (let ((tagged-immediate (core:create-tagged-immediate-value-or-nil eql-test)))
@@ -372,7 +374,12 @@
 						   (list (jit-constant-size_t 0)
 							 (jit-constant-size_t eql-selector-id))) "load") "extract-sp")))
 	    eql-selector)))))
-	
+
+;;; ------------------------------------------------------------
+;;;
+;;; Generate an LLVM Module that codes for the dispatch function
+;;;   described by a DTREE.
+;;;
 
 (defun codegen-remaining-eql-tests (eql-tests eql-fail-branch arg args gf gf-args)
   (if (null eql-tests)
@@ -411,32 +418,84 @@
     (setf (gethash tag *map-tag-outcomes*) outcome)
     tag))
 
+(defun codegen-slot-reader (outcome args gf gf-args)
+;;; If the (cdr outcome) is a fixnum then we can generate code to read the slot
+;;;    directly and remhash the outcome from the *outcomes* hash table.
+;;; otherwise create an entry for the outcome and call the slot reader.
+  (let ((gf-data-id (prog1 *gf-data-id* (incf *gf-data-id*)))
+	(effective-method-block (irc-basic-block-create "effective-method")))
+    (setf (gethash outcome *outcomes*) gf-data-id)
+    (irc-branch-to-and-begin-block effective-method-block)
+    (let ((effective-method
+           (irc-smart-ptr-extract
+            (irc-load (irc-gep *gf-data*
+                               (list (jit-constant-size_t 0)
+                                     (jit-constant-size_t gf-data-id))) "load") "extract-sp")))
+      (debug-pointer (irc-ptr-to-int
+                      (irc-gep *gf-data*
+                               (list (jit-constant-size_t 0)
+                                     (jit-constant-size_t gf-data-id))) %uintptr_t%))
+      (debug-call "debugPointer" (list (irc-bit-cast effective-method %i8*%)))
+      (irc-create-call "llvm.va_end" (list (irc-pointer-cast args %i8*% "local-arglist-i8*")))
+      (irc-ret (irc-create-call "cc_dispatch_slot_reader" (list effective-method gf gf-args) "ret")))))
+
+(defun codegen-slot-writer (outcome args gf gf-args)
+  ;;; If the (cdr outcome) is a fixnum then we can generate code to read the slot
+  ;;;    directly and remhash the outcome from the *outcomes* hash table.
+  ;;; otherwise create an entry for the outcome and call the slot reader.
+  (let ((gf-data-id (prog1 *gf-data-id* (incf *gf-data-id*)))
+	(effective-method-block (irc-basic-block-create "effective-method")))
+    (setf (gethash outcome *outcomes*) gf-data-id)
+    (irc-branch-to-and-begin-block effective-method-block)
+    (let ((effective-method
+           (irc-smart-ptr-extract
+            (irc-load (irc-gep *gf-data*
+                               (list (jit-constant-size_t 0)
+                                     (jit-constant-size_t gf-data-id))) "load") "extract-sp")))
+      (debug-pointer (irc-ptr-to-int
+                      (irc-gep *gf-data*
+                               (list (jit-constant-size_t 0)
+                                     (jit-constant-size_t gf-data-id))) %uintptr_t%))
+      (debug-call "debugPointer" (list (irc-bit-cast effective-method %i8*%)))
+      (irc-create-call "llvm.va_end" (list (irc-pointer-cast args %i8*% "local-arglist-i8*")))
+      (irc-ret (irc-create-call "cc_dispatch_slot_reader" (list effective-method gf gf-args) "ret")))))
+
+(defun codegen-effective-method-call (outcome args gf gf-args)
+  (let ((gf-data-id (prog1 *gf-data-id* (incf *gf-data-id*)))
+	(effective-method-block (irc-basic-block-create "effective-method")))
+    (setf (gethash outcome *outcomes*) gf-data-id)
+    (irc-branch-to-and-begin-block effective-method-block)
+    (let ((effective-method
+           (irc-smart-ptr-extract
+            (irc-load (irc-gep *gf-data*
+                               (list (jit-constant-size_t 0)
+                                     (jit-constant-size_t gf-data-id))) "load") "extract-sp")))
+      (debug-pointer (irc-ptr-to-int
+                      (irc-gep *gf-data*
+                               (list (jit-constant-size_t 0)
+                                     (jit-constant-size_t gf-data-id))) %uintptr_t%))
+      (debug-call "debugPointer" (list (irc-bit-cast effective-method %i8*%)))
+      (irc-create-call "llvm.va_end" (list (irc-pointer-cast args %i8*% "local-arglist-i8*")))
+      ;; This is where I could insert the slot reader if the effective method wraps a single accessor
+      ;; 
+      (irc-ret (irc-create-call "cc_dispatch_effective_method" (list effective-method gf gf-args) "ret")))))
+
+
 (defun codegen-outcome (node args gf gf-args)
   ;; The effective method will be found in a slot in the modules *gf-data* array
   ;;    the slot index will be in gf-data-id
   (let* ((outcome (outcome-outcome node))
-	 (effective-method-block (gethash outcome *outcomes*)))
-    (format t "codegen-outcome  The outcome is: ~a~%" outcome)
-    (if effective-method-block
-	(irc-br effective-method-block)
-	(let* ((effective-method-block (irc-basic-block-create "effective-method"))
-	       (gf-data-id (prog1 *gf-data-id* (incf *gf-data-id*))))
-	  (setf (gethash outcome *outcomes*) gf-data-id)
-	  (irc-branch-to-and-begin-block effective-method-block)
-	  (let ((effective-method (irc-smart-ptr-extract
-				   (irc-load (irc-gep *gf-data*
-						      (list (jit-constant-size_t 0)
-							    (jit-constant-size_t gf-data-id))) "load") "extract-sp")))
-            (debug-pointer (irc-ptr-to-int
-                            (irc-gep *gf-data*
-                                     (list (jit-constant-size_t 0)
-                                           (jit-constant-size_t gf-data-id))) %uintptr_t%))
-            (debug-call "debugPointer" (list (irc-bit-cast effective-method %i8*%)))
-	    (irc-create-call "llvm.va_end" (list (irc-pointer-cast args %i8*% "local-arglist-i8*")))
-            ;; This is where I could insert the slot reader if the effective method wraps a single accessor
-            ;; 
-	    (irc-ret (irc-create-call "cc_dispatch_effective_method" (list effective-method gf gf-args) "ret"))
-            )))))
+         (existing-effective-method-block (gethash outcome *outcomes*)))
+    (if existing-effective-method-block
+	(irc-br existing-effective-method-block)
+        (if (consp outcome)
+            (cond
+              ((eq (car outcome) 'core:optimized-slot-reader)
+               (codegen-slot-reader outcome args gf gf-args))
+              ((eq (car outcome) 'core:optimized-slot-writer)
+               (codegen-slot-writer outcome args gf gf-args))
+              (t (error "Illegal outcome ~a" outcome)))
+            (codegen-effective-method-call outcome args gf gf-args)))))
 
 (defun codegen-class-binary-search (matches stamp-var args gf gf-args)
   (insert-message)
@@ -599,15 +658,12 @@
   (let ((arg-stamp (codegen-arg-stamp arg gf gf-args)))
     (codegen-class-binary-search (node-class-specializers node) arg-stamp args gf gf-args)))
 
-
 (defun codegen-node (node args gf gf-args)
   (let ((arg (irc-va_arg args %t*%)))
     (debug-call "debugPointer" (list (irc-bit-cast arg %i8*%)))
     (insert-message)
     (codegen-eql-specializers node arg args gf gf-args)
     (codegen-class-specializers node arg args gf gf-args)))
-
-
 
 (defun codegen-node-or-outcome (node-or-outcome args gf gf-args)
   (insert-message)
@@ -649,8 +705,28 @@
     (clos::safe-set-funcallable-instance-function *generic-function* compiled-dispatcher)))
 
 
-;;; --------------------------------------------------
-;;;
+(defun gather-sorted-outcomes (eql-selectors outcomes)
+  (labels ((extract-outcome (outcome)
+             ;; An outcome is an effective-method or an optimized slot reader or writer.
+             ;; Figure out which case it is and return the effective-method or the
+             ;;   optimization info necessary to evaluate the slot reader or writer.
+             (let ((oc (cdr outcome)))
+               (if (consp oc)
+                   (cdr oc)
+                   oc))))
+    (let ((values nil))
+      (maphash (lambda (k v)
+                 (push (cons v k) values))
+               eql-selectors)
+      (maphash (lambda (k v)
+                 (unless (eq k :miss)
+                   (push (cons v k) values)))
+               outcomes)
+      (let ((sorted (sort values #'< :key #'car)))
+        (mapcar #'extract-outcome sorted)))))
+
+;;; Keeps track of the number of dispatchers that were compiled and
+;;;   is used to give the roots array in each dispatcher a unique name.
 (defparameter *dispatcher-count* 0)
 (defun codegen-dispatcher (dtree the-gf)
   (let ((*the-module* (create-run-time-module-for-compile)))
@@ -737,19 +813,18 @@
                 (codegen-startup-shutdown *gcroots-in-module* correct-size-holder *gf-data-id*)
               (llvm-sys:replace-all-uses-with *gf-data* bitcast-correct-size-holder)
               (llvm-sys:erase-from-parent *gf-data*)
-              #+debug-cmpgf(llvm-sys:dump *the-module*)
-              (let ((sorted-roots (let ((values nil))
-                                    (maphash (lambda (k v)
-                                               (push (cons v k) values))
-                                             *eql-selectors*)
-                                    (maphash (lambda (k v)
-                                               (unless (eq k :miss)
-                                                 (push (cons v k) values)))
-                                             *outcomes*)
-                                    (let ((sorted (sort values #'< :key #'car)))
-                                      (mapcar #'cdr sorted)))))
+              
+              #+debug-cmpgf(progn
+                             (format t "Dumping the module from codegen-dispatcher~%")
+                             (llvm-sys:dump *the-module*))
+              (let ((sorted-roots (gather-sorted-outcomes *eql-selectors* *outcomes*)))
                 ;; REMOVE THE FOLLOWING IN PRODUCTION CODE
-                (debug-save-dispatcher the-gf *the-module* disp-fn startup-fn shutdown-fn sorted-roots)
+                #+debug-cmpgf
+                (progn
+                  (let ((before-disp-name (llvm-sys:get-name disp-fn)))
+                    (debug-save-dispatcher the-gf *the-module* disp-fn startup-fn shutdown-fn sorted-roots)
+                    (let ((after-disp-name (llvm-sys:get-name disp-fn)))
+                      (format t "Saved dispatcher  before-disp-name -> ~a     after-disp-name -> ~a~%" before-disp-name after-disp-name))))
                 (let* ((compiled-dispatcher (jit-add-module-return-dispatch-function *the-module* disp-fn startup-fn shutdown-fn sorted-roots)))
                   (gf-log "Compiled dispatcher -> ~a~%" compiled-dispatcher)
                   (gf-log "Dumping module\n")
@@ -763,9 +838,15 @@
 	  draw-graph
 	  codegen-dispatcher))
 
+
+
 ;;; --------------------------------------------------
 ;;;
 ;;; Switch to CLOS package here
+;;;
+;;; This section contains code that is called by CLOS to
+;;;   update generic-function-call-history and to call
+;;;   codegen-dispatcher to generate a new dispatch function when needed
 ;;;
 
 (in-package :clos)
@@ -836,11 +917,12 @@
           (core:generic-function-call-history-push-new generic-function memoize-key effective-method-function)
           (cmp::gf-log "Invalidating dispatch function~%")
           (safe-set-funcallable-instance-function generic-function (calculate-strandh-dispatch-function generic-function)) ;;'clos::invalidated-dispatch-function)
-          (funcall effective-method-function arguments nil))))))
+          (cmp::gf-log "Calling effective-method-function ~a~%" effective-method-function)
+          (apply effective-method-function arguments nil arguments))))))
 
 
 (defun clos::dispatch-miss (generic-function valist-args)
-  (format t "Missed~%")
+  (cmp::gf-log t "A dispatch-miss occurred~%")
   (core:stack-monitor (lambda () (format t "In clos::dispatch-miss with generic function ~a~%" (clos::generic-function-name generic-function))))
   ;; update instances
   (cmp::gf-log "In clos::dispatch-miss~%")
@@ -852,23 +934,23 @@
           (when *monitor-dispatch*
             (push (list :restarting-gf-dispatch generic-function (core:list-from-va-list valist-args)) *dispatch-log*))
           (funcall generic-function valist-args))
-        (progn
-          (do-dispatch-miss generic-function valist-args arguments)))))
+        (prog1
+            (do-dispatch-miss generic-function valist-args arguments)
+          (cmp::gf-log "Returned from do-dispatch-miss~%")))))
 
 
 (defun safe-set-funcallable-instance-function (gf func)
-  ;; FIXME: Not thread safe
-  (let ((previous-dispatcher (clos::generic-function-compiled-dispatch-function gf)))
-    (cmp::gf-log "Here we must clean up the old compiled-dispatch-function: ~a~%" (instance-ref gf 0))
-    (when previous-dispatcher
-      (core:shutdown previous-dispatcher)
-      (when *monitor-dispatch*
-        (push :shutting-down-previous-dispatcher *dispatch-log*))
-      (let ((removed (cmp:jit-remove-module (core:llvm-module previous-dispatcher))))
-        (setf (clos::generic-function-compiled-dispatch-function gf) nil)
-        (unless removed
-          (format t "Could not remove previous dispatcher~%")))))
-  (clos:set-funcallable-instance-function gf func))
+  ;; FIXME: Not thread safe and GC safe!!!!
+  ;;   If a generic function dispatcher is being evaluated and on the stack in some other thread
+  ;;   and we replace the dispatcher here - then the GC could collect and remove the code
+  ;;   that is being run in another thread.   I REALLY NEED TO GC CODE!!!!
+  ;;
+  (cmp::gf-log "Here we must clean up the old compiled-dispatch-function: ~a~%" (instance-ref gf 0))
+  ;; old dispatcher removal is now handled by the GC and finalizer
+  (prog1
+      (clos:set-funcallable-instance-function gf func)
+    (setf (clos::generic-function-compiled-dispatch-function gf) func)
+    (cmp::gf-log "Done set-funcallable-instance-function~%")))
 
 ;;; change-class requires removing call-history entries involving the class
 ;;; and invalidating the generic functions
@@ -903,6 +985,7 @@
       (clos::dispatch-miss generic-function va-list-args)
     (let ((dispatcher (calculate-strandh-dispatch-function generic-function)))
       ;; replace the old dispatch function with the new one
+      (cmp::gf-log "replacing funcallable-instance-function~%")
       (safe-set-funcallable-instance-function generic-function dispatcher))))
 
 
@@ -959,7 +1042,6 @@
 (export '(invalidate-generic-functions-with-class-selector
           switch-to-fastgf))
 
-
 (defun cache-status ()
   (format t "                method-cache: ~a~%" (multiple-value-list (core:method-cache-status)))
   (format t "single-dispatch-method-cache: ~a~%" (multiple-value-list (core:single-dispatch-method-cache-status)))
@@ -967,18 +1049,3 @@
 
 (export 'cache-status)
   
-#|
-(defun permutations (specializers)
-  (if (cdr specializers)
-      (let ((rest-specs (permutations (cdr specializers))))
-        (loop for first in (subclasses* (car specializers))
-           nconcing (loop for rest-spec in rest-specs
-                       collect (list first rest-spec))))
-      (subclasses* (car specializers))))
-
-
-(defun satiate-method-specializers (method-specializers)
-  (let* ((all-permutations (loop for spec in method-specializers
-                              collect (permutations spec))))
-    all-permutations))
-|#
