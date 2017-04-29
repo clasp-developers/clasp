@@ -29,7 +29,7 @@
 ;;; Add :DEBUG-CMPGF to *features* and recompile for lots of debugging info
 ;;;   during fastgf compilation and execution.
 ;;;
-#+(or)
+;;#+(or)
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (pushnew :debug-cmpgf *features*))
 
