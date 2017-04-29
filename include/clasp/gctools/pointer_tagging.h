@@ -57,6 +57,10 @@ typedef uint8_t byte8_t;
 typedef uint16_t byte16_t;
 typedef uint32_t byte32_t;
 typedef uint64_t byte64_t;
+typedef int8_t integer8_t;
+typedef int16_t integer16_t;
+typedef int32_t integer32_t;
+typedef int64_t integer64_t;
 
 namespace core {
   class VaList_S;
