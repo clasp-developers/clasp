@@ -263,9 +263,8 @@ template <>
     struct from_object< void *, std::true_type >
   {
     typedef void * DeclareType;
-
     DeclareType _v;
-  from_object( core::T_sp o ) : _v( o.raw_() ) {};
+  from_object( core::T_sp o ) : _v(core::lisp_to_void_ptr(o)) {};
   };
 
   template <>
@@ -324,7 +323,7 @@ template <>
     typedef void * DeclareType;
     static core::T_sp convert( DeclareType v )
     {
-      return core::Pointer_O::create(v);
+      return core::lisp_from_void_ptr(v);
     }
   };
 

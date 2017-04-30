@@ -511,6 +511,17 @@ when this is t a lot of graphs will be generated.")
     (cmp:irc-create-call "cc_setSymbolValue" (list sym val))))
 
 
+#|
+(defmethod translate-simple-instruction
+    ((instruction cleavir-ir:aref-instruction) return-value inputs outputs abi)
+  (let ((array (first inputs))
+        (index (second inputs)))
+    
+  (let ((cell (llvm-sys:create-load-value-twine cmp:*irbuilder* (first inputs) "cell")))
+  (cmp:irc-low-level-trace :flow)
+    (let ((result (cmp:irc-create-call "cc_readCell" (list cell))))
+      (llvm-sys:create-store cmp:*irbuilder* result (first outputs) nil))))
+|#
 
 (defmethod translate-simple-instruction
     ((instruction cleavir-ir:enclose-instruction) return-value inputs outputs abi)

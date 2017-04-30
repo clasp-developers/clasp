@@ -182,6 +182,18 @@
     `(primop:inlined-two-arg-- ,x 1)))
 
 
+;;; ------------------------------------------------------------
+;;;
+;;; Array functions
+;;;
+#+(or)
+(progn
+  (declaim (inline svref))
+  (defun svref (vector index)
+    (cleavir-primop:aref vector index t t t))
+  )
+
+
 
 ;;; ------------------------------------------------------------
 ;;;
