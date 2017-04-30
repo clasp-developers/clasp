@@ -44,6 +44,7 @@ THE SOFTWARE.
 #include <clasp/core/structureClass.h>
 #include <clasp/core/corePackage.h>
 #include <clasp/core/ql.h>
+#include <clasp/core/fli.h>
 #include <clasp/core/lispStream.h>
 //#i n c l u d e "genericFunction.h"
 #include <clasp/gctools/gctoolsPackage.h>
@@ -124,6 +125,7 @@ class_id allocate_class_id(type_id const &cls) {
   return inserted.first->second;
 }
 
+
 void lisp_associateClassIdWithClassSymbol(class_id cid, core::Symbol_sp sym) {
   ASSERT(_lisp);
   // I'm clobbering the memory - add this assert
@@ -140,6 +142,24 @@ core::Symbol_sp lisp_classSymbolFromClassId(class_id cid) {
     return _Unbound<core::Symbol_O>();
   }
   return sym;
+}
+};
+
+
+namespace core {
+/*! Convert valid objects to void*/
+void* lisp_to_void_ptr(T_sp o) {
+  if (gc::IsA<clasp_ffi::ForeignData_sp>(o)) {
+    return gc::As_unsafe<clasp_ffi::ForeignData_sp>(o)->ptr();
+  } else if (gc::IsA<Pointer_sp>(o)) {
+    return gc::As_unsafe<Pointer_sp>(o)->ptr();
+  }
+  SIMPLE_ERROR(BF("The object %s cannot be converted to a void*") % _rep_(o));
+}
+
+/*! Convert void* to a ForeignData_O object */
+T_sp lisp_from_void_ptr(void* p) {
+  return clasp_ffi::ForeignData_O::create(p);
 }
 };
 
