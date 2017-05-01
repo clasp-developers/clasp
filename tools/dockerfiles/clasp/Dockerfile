@@ -22,8 +22,8 @@ RUN apt-get update && apt-get upgrade -y && apt-get install -y \
 
 # install clasp runtime dependencies
 RUN apt-get -y install \
-  libboost-filesystem1.60.0 libboost-date-time1.60.0 libboost-program-options1.60.0 \
-  libboost-iostreams1.60.0 libgc1c2 llvm-4.0-runtime libgmpxx4ldbl \
+  libboost-filesystem1.61.0 libboost-date-time1.61.0 libboost-program-options1.61.0 \
+  libboost-iostreams1.61.0 libgc1c2 llvm-4.0-runtime libgmpxx4ldbl \
   clang-4.0 binutils python-clang-4.0 lld-4.0 libzmq3-dev \
   && apt-get clean
 
