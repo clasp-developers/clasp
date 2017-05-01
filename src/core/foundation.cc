@@ -149,6 +149,9 @@ core::Symbol_sp lisp_classSymbolFromClassId(class_id cid) {
 namespace core {
 /*! Convert valid objects to void*/
 void* lisp_to_void_ptr(T_sp o) {
+  if ( !o ) {
+    SIMPLE_ERROR(BF("The object is invalid (nullptr)!"));
+  }
   if (gc::IsA<clasp_ffi::ForeignData_sp>(o)) {
     return gc::As_unsafe<clasp_ffi::ForeignData_sp>(o)->ptr();
   } else if (gc::IsA<Pointer_sp>(o)) {
@@ -438,7 +441,7 @@ CL_DOCSTRING(R"doc(* Arguments
 - name :: A string.
 - package :: A string
 * Description
-Convert strings that have the form pkg:name or pkg__name into a package name string and a symbol name string, 
+Convert strings that have the form pkg:name or pkg__name into a package name string and a symbol name string,
 run them through lispify_symbol_name and then recombine them as pkg:name.
 Then split them again (sorry) and return (values pkg:sym pkg sym).)doc");
 CL_DEFUN T_mv core__magic_name(const std::string& name, const std::string& package) {
@@ -524,7 +527,7 @@ bool lispify_match(const char *&cur, const char *match, NextCharTest nextCharTes
 }
 
 /*! This checks for names like CXXObject and will convert them to CXX-OBJECT.
-It looks for [A-Z]+[A-Z][a-z] - a run of more than 
+It looks for [A-Z]+[A-Z][a-z] - a run of more than
 two upper case characters followed by a lower case
 alpha character. If it sees this it returns true and the first N-1 characters of the
 upper case sequence and it advances cur to the last upper case character */
@@ -1055,7 +1058,7 @@ Class_sp lisp_classFromClassSymbol(Symbol_sp classSymbol) {
 }
 
 
-  
+
 
 
 /*! If the name has the structure XXX:YYY or XXX::YYY then intern YYY in package XXX either
@@ -1811,5 +1814,3 @@ void throwIfClassesNotInitialized(const Lisp_sp &lisp) {
 #endif
 
 };
-
-

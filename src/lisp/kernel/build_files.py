@@ -105,7 +105,6 @@ def bclasp(wrappers):
         "src/lisp/kernel/lsp/pprint",
         "src/lisp/kernel/clos/inspect",
         "src/lisp/kernel/lsp/fli",
-        "src/lisp/kernel/lsp/queue",
         "src/lisp/modules/sockets/sockets",
         "src/lisp/kernel/lsp/top",
         "src/lisp/kernel/cmp/export-to-cleavir",
