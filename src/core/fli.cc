@@ -411,7 +411,9 @@ inline string ForeignData_O::__repr__() const
 
   ss << "#<"
      << this->_instanceClass()->classNameAsString()
+#ifdef USE_BOEHM // things don't move in boehm
      << " @ " << (BF("%p") % this)
+#endif
      << " :kind " << this->m_kind
      << " :size " << this->m_size
      << " :ownership-flags " << this->m_ownership_flags

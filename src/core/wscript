@@ -129,7 +129,8 @@ def build(bld):
             'intArray',
             'posixTime',
             'clasp_ffi_package',
-            'fli'
+            'fli',
+            'queue'
     ]:
         full_name = name+'.cc'
         node = bld.path.find_node(full_name)

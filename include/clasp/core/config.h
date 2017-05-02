@@ -111,10 +111,16 @@ typedef uintptr_clasp_t cl_intptr_t;
 //  PLATFORM INDEPENDENT CLASP FUNDAMENTAL DEFINITIONS
 // ----------------------------------------------------------------------------
 
+#undef CLASP_LONG_IS_INT64
+#undef CLASP_UNSIGNED_LONG_IS_UINT64
+
 #undef CLASP_LONG_LONG_IS_INT64
 #undef CLASP_UNSIGNED_LONG_LONG_IS_UINT64
 
 #if defined( _TARGET_OS_DARWIN )
+
+#undef CLASP_LONG_IS_INT64
+#undef CLASP_UNSIGNED_LONG_IS_UINT64
 
 #define CLASP_LONG_LONG_IS_INT64 1
 #define CLASP_UNSIGNED_LONG_LONG_IS_UINT64 1
@@ -122,6 +128,9 @@ typedef uintptr_clasp_t cl_intptr_t;
 #endif
 
 #if defined( _TARGET_OS_LINUX )
+
+#define CLASP_LONG_IS_INT64 1
+#define CLASP_UNSIGNED_LONG_IS_UINT64 1
 
 #undef CLASP_LONG_LONG_IS_INT64
 #undef CLASP_UNSIGNED_LONG_LONG_IS_UINT64
