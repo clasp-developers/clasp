@@ -842,14 +842,16 @@ string Cons_O::__repr__() const {
   Cons_sp start = this->asSmartPtr();
   T_sp cdr = start;
   stringstream sout;
+#if 0
   if (oCar(start) == cl::_sym_quote) {
     if ((oCdr(start)).consp()) {
-      sout << "'" << _rep_(oCadr(start)) << " ";
+      sout << "'" << _rep_(oCdr(start)) << " ";
     } else {
       sout << "QUOTE ." << _rep_(oCdr(start)) << " ";
     }
     return ((sout.str()));
   }
+#endif
   sout << "(";
   while (cdr.notnilp()) {
     if ((cdr).consp()) {

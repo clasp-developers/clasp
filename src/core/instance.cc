@@ -267,7 +267,7 @@ string Instance_O::__repr__() const {
   stringstream ss;
   ss << "#S(";
   if (Class_sp mc = this->_Class.asOrNull<Class_O>()) {
-    ss << _rep_(mc) << " ";
+    ss << mc->classNameAsString() << " ";
   } else {
     ss << "<ADD SUPPORT FOR INSTANCE _CLASS=" << _rep_(this->_Class) << " >";
   }
@@ -529,8 +529,8 @@ CL_DEFUN List_sp core__call_history_find_key(List_sp generic_function_call_histo
            
     
     
-
-CL_DEFUN void core__generic_function_call_history_push_new(Instance_sp generic_function, SimpleVector_sp key, T_sp effective_method )
+/*! Return true if an entry was pushed */
+CL_DEFUN bool core__generic_function_call_history_push_new(Instance_sp generic_function, SimpleVector_sp key, T_sp effective_method )
 {
 #ifdef DEBUG_GFDISPATCH
   if (_sym_STARdebug_dispatchSTAR->symbolValue().notnilp()) {
@@ -540,13 +540,15 @@ CL_DEFUN void core__generic_function_call_history_push_new(Instance_sp generic_f
   List_sp call_history(generic_function->GFUN_CALL_HISTORY());
   if (call_history.nilp()) {
     generic_function->GFUN_CALL_HISTORY_set(Cons_O::createList(Cons_O::create(key,effective_method)));
-    return;
+    return true;
   }
   // Search for existing entry
   List_sp found = core__call_history_find_key(call_history,key);
   if (found.nilp()) {
     generic_function->GFUN_CALL_HISTORY_set(Cons_O::create(Cons_O::create(key,effective_method),generic_function->GFUN_CALL_HISTORY()));
+    return true;
   }
+  return false;
 }
 
 

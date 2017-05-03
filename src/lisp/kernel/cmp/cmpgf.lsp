@@ -14,13 +14,11 @@
 ;;;          in the function fill_spec_vector.
 ;;;          https://github.com/drmeister/clasp/blob/dev/src/core/genericFunction.cc#L194
 ;;;
-;;; clos:*enable-fast-dispatch* and :fast-dispatch feature.
-;;;    When the :fast-dispatch feature exists and clos:*enable-fast-dispatch* == t
+;;; clos:*enable-fastgf* and :fast-dispatch feature.
+;;;    When the :fast-dispatch feature exists and clos:*enable-fastgf* == t
 ;;;    then fast dispatch will be used for new generic functions.
 
-
 (in-package :cmp)
-
 
 ;;; ------------------------------------------------------------
 ;;;
@@ -29,9 +27,92 @@
 ;;; Add :DEBUG-CMPGF to *features* and recompile for lots of debugging info
 ;;;   during fastgf compilation and execution.
 ;;;
-;;#+(or)
+#+(or)
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (pushnew :debug-cmpgf *features*))
+#+(or)
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (pushnew :log-cmpgf *features*))
+
+
+#+log-cmpgf
+(progn
+  (ensure-directories-exist "/tmp/dispatch-history/")
+  (defvar *dml* (open "/tmp/dispatch-history/dispatch-miss.log" :direction :output))
+  (defvar *didx* 0)
+  (defvar *dmtrack* (make-hash-table))
+  (defun history-entry (entry)
+    (loop for x from 0 below (length entry)
+       for e = (elt entry x)
+       collect (if (consp e)
+                   (list 'eql (car e))
+                   e)))
+  (defun graph-call-history (generic-function output)
+    (let* ((call-history (clos::optimized-call-history generic-function)))
+      (if call-history
+          (let ((dispatch-tree (cmp::make-dtree)))
+            (cmp::dtree-add-call-history dispatch-tree call-history)
+            (cmp::draw-graph output dispatch-tree)))))
+  (defun log-cmpgf-filename (suffix extension)
+    (pathname (core:bformat nil "/tmp/dispatch-history/dispatch-%s%d.%s" suffix *didx* extension)))
+  (defmacro gf-log-dispatch-graph (gf)
+    `(graph-call-history ,gf (log-cmpgf-filename "graph" "dot")))
+  (defmacro gf-log-dispatch-miss-followup (msg &rest args)
+    `(progn
+       (core:bformat *dml* "------- ")
+       (core:bformat *dml* ,msg ,@args)))
+  (defmacro gf-log-sorted-roots (roots)
+    `(progn
+       (core:bformat *dml* ">>> sorted roots\n")
+       (loop for root in ,roots
+          for x from 0
+            do (core:bformat *dml* "   root[%d]: %s\n" x root))))
+  (defmacro gf-log-dispatch-miss (msg gf va-args)
+    `(progn
+       (incf *didx*)
+       (incf (gethash ,gf *dmtrack* 0))
+       (core:bformat *dml* "------- DIDX:%d %s\n" *didx* ,msg)
+       (core:bformat *dml* "Dispatch miss #%d for %s\n" (gethash ,gf *dmtrack*) (core:instance-ref ,gf 0))
+       (let* ((args-as-list (core:list-from-va-list ,va-args))
+              (call-history (clos::instance-ref ,gf 4))
+              (specializer-profile (clos::instance-ref ,gf 6)))
+         (core:bformat *dml* "      args (num args -> %d):  " (length args-as-list))
+         (dolist (arg args-as-list)
+           (core:bformat *dml* "%s[%d] " arg (core:header-stamp arg)))
+         (core:bformat *dml* "\n")
+         (progn
+           (core:bformat *dml* "    raw call-history (length -> %d):\n" (length call-history))
+           (dolist (entry call-history)
+             (core:bformat *dml* "        entry: (")
+             (dolist (c (history-entry (car entry)))
+               (if (consp c)
+                   (core:bformat *dml* "%s " c)
+                   (core:bformat *dml* "%s[%d] " (class-name c) (get-instance-stamp c))))
+             (core:bformat *dml* ")\n")))
+         (let ((optimized-call-history (clos::optimized-call-history* call-history specializer-profile)))
+           (core:bformat *dml* "    optimized call-history (length -> %d):\n" (length optimized-call-history))
+           (dolist (entry optimized-call-history)
+             (core:bformat *dml* "        entry: (")
+             (let ((history-entry (history-entry (car entry))))
+               ;;(core:bformat *dml* "          ----> %s\n" history-entry)
+               (dolist (c history-entry)
+                 ;;(core:bformat *dml* "    c -> %s   (type-of c) -> %s (consp c) -> %s\n" c (type-of c) (consp c))
+                 (cond
+                   ((consp c) (core:bformat *dml* "%s " c))
+                   ((null c) (core:bformat *dml* "NIL "))
+                   (t (core:bformat *dml* "%s[%d] " (class-name c) (get-instance-stamp c))))))
+             (core:bformat *dml* ")\n")))
+         (finish-output *dml*)
+         #++(when (string= (subseq args 0 2) "''")
+           (break "Check backtrace"))))))
+
+#-log-cmpgf
+(progn
+  (defmacro gf-log-sorted-roots (roots) nil)
+  (defmacro gf-log-dispatch-graph (gf) nil)
+  (defmacro gf-log-dispatch-miss (msg gf va-args) nil)
+  (defmacro gf-log-dispatch-miss-followup (msg &rest args) nil))
+
 
 (defvar *message-counter* nil)
 #+debug-cmpgf
@@ -88,6 +169,7 @@
 (defstruct (match (:type vector) :named) outcome)
 (defstruct (single (:include match) (:type vector) :named) stamp class-name)
 (defstruct (range (:include match) (:type vector) :named) first-stamp last-stamp reversed-class-names)
+(defstruct (skip (:include match) (:type vector) :named))
 (defstruct (node (:type vector) :named) (eql-specializers (make-hash-table :test #'eql) :type hash-table)
            (class-specializers nil :type list))
 
@@ -105,16 +187,21 @@
 #++
 (defun parse-call-history-entry (entry)
   (values (butlast entry) (car (last entry))))
-    
+
 (defun dtree-add-call-history (dtree call-history)
   "Add call-history for one generic-function to the dtree"
   (dolist (one call-history)
     (let ((signature (car one))
 	  (outcome (cdr one)))
       #++(parse-call-history-entry one)
-      (when (null (dtree-root dtree)) (setf (dtree-root dtree) (make-node)))
-      (node-add (dtree-root dtree) (svref signature 0) 1 signature outcome)))
-  (optimize-nodes (dtree-root dtree)))
+      (if (> (length signature) 0)
+          (progn
+            (when (null (dtree-root dtree)) (setf (dtree-root dtree) (make-node)))
+            (node-add (dtree-root dtree) (svref signature 0) 1 signature outcome)
+            (optimize-nodes (dtree-root dtree)))
+          (progn
+            (setf (dtree-root dtree) (make-outcome :outcome outcome)))))))
+
 
 (defun eql-specializer-p (spec)
   "Return t if the spec is an eql specializer - they are represented as CONS cells
@@ -133,67 +220,97 @@
           (cons item lst) 
           (cons (car lst) (insert-sorted item (cdr lst) test key)))))
 
+
+(defun ensure-outcome (sidx specs goal)
+  (if (>= sidx (length specs))
+      (make-outcome :outcome goal)
+      (let ((node (make-node)))
+        (node-add node (svref specs sidx) (1+ sidx) specs goal)
+        node)))
+
 (defun node-class-add (node spec sidx rest-specs goal)
-  (let* ((stamp (core:get-instance-stamp (if (clos:classp spec) spec (find-class spec))))
-	 (match (find stamp (node-class-specializers node) :test #'eql :key #'single-stamp)))
-    (if match
-	(node-add (match-outcome match) (svref rest-specs sidx) (1+ sidx) rest-specs goal)
-	(setf (node-class-specializers node)
-	      (insert-sorted (make-single :stamp stamp
-                                          :class-name spec
-                                          :outcome (ensure-outcome sidx rest-specs goal))
-			     (node-class-specializers node))))))
+  (or (<= sidx (length rest-specs)) (error "Overflow in sidx ~a must be <= ~a" sidx (length rest-specs)))
+  (if spec
+      (let* ((stamp (core:get-instance-stamp (if (clos:classp spec) spec (find-class spec))))
+             (match (find stamp (node-class-specializers node) :test #'eql :key #'single-stamp)))
+        (if match
+            (if (outcome-p (match-outcome match))
+                (warn "The dispatch function has two selectors with different outcomes - rest-specs: ~a goal: ~a" rest-specs goal)
+                (node-add (match-outcome match) (svref rest-specs sidx) (1+ sidx) rest-specs goal))
+            (setf (node-class-specializers node)
+                  (insert-sorted (make-single :stamp stamp
+                                              :class-name spec
+                                              :outcome (ensure-outcome sidx rest-specs goal))
+                                 (node-class-specializers node)))))
+      (let ((match (first (node-class-specializers node))))
+        (if match
+            (node-add (match-outcome match) (svref rest-specs sidx) (1+ sidx) rest-specs goal)
+            (setf (node-class-specializers node)
+                  (list (make-skip :outcome (ensure-outcome sidx rest-specs goal))))))))
 
 (defun node-eql-add (node spec sidx rest-specs goal)
   (let* ((eql-value (car spec))
-	 (eql-ht (node-eql-specializers node)))
-    (let ((outcome (ensure-outcome sidx rest-specs goal)))
-      (setf (gethash eql-value eql-ht) outcome))))
+	 (eql-ht (node-eql-specializers node))
+         (node (gethash eql-value eql-ht nil)))
+    (if node
+        (progn
+          (or (node-p node) (error "The node ~a must be of node type" node))
+          (node-add node (svref rest-specs sidx) (1+ sidx) rest-specs goal))
+        (let ((outcome (ensure-outcome sidx rest-specs goal)))
+          (setf (gethash eql-value eql-ht) outcome)))))
 
 (defun extends-range-p (prev-last-stamp prev-outcome next)
   (and (= (1+ prev-last-stamp) (single-stamp next))
        (equalp prev-outcome (single-outcome next))))
 
+(defun optimize-node-with-class-specializers (node)
+  (let ((class-specializers (node-class-specializers node))
+        merged merged-specializers)
+    (dolist (head class-specializers)
+      (let ((prev (car merged-specializers)))
+        (cond
+          ((null prev)
+           ;; There is no prev head or range
+           (push head merged-specializers))
+          ((and (range-p prev)
+                (extends-range-p (range-last-stamp prev)
+                                 (range-outcome prev)
+                                 head))
+           ;; The new head extends the previous range
+           (incf (range-last-stamp prev))
+           (push (single-class-name head) (range-reversed-class-names prev))
+           (setf merged t))
+          ((range-p prev)
+           ;; The new head doesn't extend the prev range
+           (push head merged-specializers))
+          ((extends-range-p (single-stamp prev)
+                            (single-outcome prev)
+                            head)
+           ;; prev was a single match but with the new head
+           ;; they make a range.  Pop prev from merged-specializers
+           ;; and push a range-match
+           (pop merged-specializers)
+           (push (make-range :first-stamp (single-stamp prev)
+                             :last-stamp (single-stamp head)
+                             :reversed-class-names (list (single-class-name head)
+                                                         (single-class-name prev))
+                             :outcome (single-outcome head))
+                 merged-specializers)
+           (setf merged t))
+          (t (push head merged-specializers)))))
+    (when merged
+      (setf (node-class-specializers node) (nreverse merged-specializers)))))
+
+(defun skip-node-p (node)
+  (let ((class-specializers (node-class-specializers node)))
+    (and (= 1 (length class-specializers)) (skip-p (car class-specializers)))))
+
 (defun optimize-node (node)
   "Create a list from the argument list and merge matches
    that can be considered adjacent into a range object."
-  (let ((class-specializers (node-class-specializers node))
-	(merged-specializers nil)
-	merged)
-    (dolist (head class-specializers)
-      (let ((prev (car merged-specializers)))
-	(cond
-	  ((null prev)
-	   ;; There is no prev head or range
-	   (push head merged-specializers))
-	  ((and (range-p prev)
-		(extends-range-p (range-last-stamp prev)
-				 (range-outcome prev)
-				 head))
-	   ;; The new head extends the previous range
-	   (incf (range-last-stamp prev))
-	   (push (single-class-name head) (range-reversed-class-names prev))
-	   (setf merged t))
-	  ((range-p prev)
-	   ;; The new head doesn't extend the prev range
-	   (push head merged-specializers))
-	  ((extends-range-p (single-stamp prev)
-			    (single-outcome prev)
-			    head)
-	   ;; prev was a single match but with the new head
-	   ;; they make a range.  Pop prev from merged-specializers
-	   ;; and push a range-match
-	   (pop merged-specializers)
-	   (push (make-range :first-stamp (single-stamp prev)
-			     :last-stamp (single-stamp head)
-			     :reversed-class-names (list (single-class-name head)
-							 (single-class-name prev))
-			     :outcome (single-outcome head))
-		 merged-specializers)
-	   (setf merged t))
-	  (t (push head merged-specializers)))))
-    (when merged
-      (setf (node-class-specializers node) (nreverse merged-specializers)))))
+  (if (skip-node-p node)
+      nil ;; There is one class-specializer and it's a skip class-specializer do nothing
+      (optimize-node-with-class-specializers node)))
 
 (defun optimize-nodes (node-or-outcome)
   (when (node-p node-or-outcome)
@@ -202,15 +319,6 @@
 	(optimize-nodes child-node-or-outcome)))
     (optimize-node node-or-outcome)))
 	    
-
-(defun ensure-outcome (sidx specs goal)
-  (if (>= sidx (length specs))
-      (make-outcome :outcome goal)
-      (let ((node (make-node)))
-	(node-add node (svref specs sidx) (1+ sidx) specs goal)
-	node)))
-
-
 
 
 ;;; ------------------------------------------------------------
@@ -303,7 +411,7 @@
 	       using (hash-value value)
 	       append (list key value))
 	miss
-	  (no-applicable-methods ,vargs)))))
+	  (no-applicable-method ,vargs)))))
 
 (defun draw-node (fout node)
   (cond
@@ -315,7 +423,7 @@
      nil)
     ((outcome-p node)
      (let ((nodeid (gensym)))
-       (format fout "~a [shape=ellipse,label=\"~a\"];~%" nodeid (outcome-outcome node))
+       (format fout "~a [shape=ellipse,label=\"~a\"];~%" nodeid "HIT" #++(outcome-outcome node))
        nodeid))
     ((node-p node)
      (let* ((nodeid (gensym))
@@ -327,10 +435,15 @@
 					  (draw-node fout value))))
 	    (class-entries (loop for x in (node-class-specializers node)
 			      collect (list (prog1 idx (incf idx))
-					    (if (single-p x)
-						(format nil "~a;~a" (single-stamp x) (class-name (single-class-name x)))
-						(format nil "~a-~a;~a" (range-first-stamp x) (range-last-stamp x) (mapcar #'class-name (reverse (range-reversed-class-names x)))))
-					    (draw-node fout (match-outcome x)))))
+                                            (cond
+                                              ((single-p x)
+                                               (format nil "~a;~a" (single-stamp x) (class-name (single-class-name x))))
+                                              ((range-p x)
+                                               (format nil "~a-~a;~a" (range-first-stamp x) (range-last-stamp x) (mapcar #'class-name (reverse (range-reversed-class-names x)))))
+                                              ((skip-p x)
+                                               (format nil "SKIP"))
+                                              (t (error "Unknown class-specializer type ~a" x)))
+                                            (draw-node fout (match-outcome x)))))
 	    (entries (append eql-entries class-entries)))
        (format fout "~a [shape = record, label = \"~{ <f~a> ~a ~^|~}\" ];~%" nodeid (loop for x in entries
 											 append (list (first x) (second x))))
@@ -413,7 +526,7 @@
 
 
 
-(defun gather-outcomes (outcome)
+#++(defun gather-outcomes (outcome)
   (let ((tag (intern (format nil "T~a" (hash-table-count *map-tag-outcomes*)))))
     (setf (gethash tag *map-tag-outcomes*) outcome)
     tag))
@@ -458,7 +571,7 @@
                                      (jit-constant-size_t gf-data-id))) %uintptr_t%))
       (debug-call "debugPointer" (list (irc-bit-cast effective-method %i8*%)))
       (irc-create-call "llvm.va_end" (list (irc-pointer-cast args %i8*% "local-arglist-i8*")))
-      (irc-ret (irc-create-call "cc_dispatch_slot_reader" (list effective-method gf gf-args) "ret")))))
+      (irc-ret (irc-create-call "cc_dispatch_slot_writer" (list effective-method gf gf-args) "ret")))))
 
 (defun codegen-effective-method-call (outcome args gf gf-args)
   (let ((gf-data-id (prog1 *gf-data-id* (incf *gf-data-id*)))
@@ -538,32 +651,7 @@
 	 (irc-begin-block lt-branch)
 	 (codegen-class-binary-search left-matches stamp-var args gf gf-args)
 	 (irc-begin-block gt-branch)
-	 (codegen-class-binary-search right-matches stamp-var args gf gf-args)))))
-  #+(or)(cond
-	  ((null matches)
-	   `(no-applicable-method orig-args))
-	  ((= (length matches) 1)
-	   (let ((match (car matches)))
-	     (if (single-p match)
-		 `(if (= ,stamp-var ,(single-stamp match))
-		      ,(codegen-node-or-outcome (single-outcome match) args orig-args)
-		      (go miss))
-		 `(if (>= ,stamp-var ,(range-first-stamp match))
-		      (if (<= ,stamp-var ,(range-last-stamp match))
-			  ,(codegen-node-or-outcome (match-outcome match) args orig-args)
-			  (go miss))))))
-	  (t
-	   (let* ((len-div-2 (floor (length matches) 2))
-		  (left-matches (subseq matches 0 len-div-2))
-		  (right-matches (subseq matches len-div-2))
-		  (right-head (car right-matches))
-		  (right-stamp (if (single-p right-head)
-				   (single-stamp right-head)
-				   (range-first-stamp right-head))))
-	     `(if (< ,stamp-var ,right-stamp)
-		  ,(codegen-class-binary-search left-matches stamp-var args orig-args)
-		  ,(codegen-class-binary-search right-matches stamp-var args orig-args))))))
-
+	 (codegen-class-binary-search right-matches stamp-var args gf gf-args))))))
 
 (defun codegen-arg-stamp (arg gf gf-args)
   "Return a uintptr_t llvm::Value that contains the stamp for this object"
@@ -655,15 +743,26 @@
             stamp-phi))))))
 
 (defun codegen-class-specializers (node arg args gf gf-args)
-  (let ((arg-stamp (codegen-arg-stamp arg gf gf-args)))
-    (codegen-class-binary-search (node-class-specializers node) arg-stamp args gf gf-args)))
+      (let ((arg-stamp (codegen-arg-stamp arg gf gf-args)))
+        (codegen-class-binary-search (node-class-specializers node) arg-stamp args gf gf-args)))
+
+(defun codegen-skip-node (node args gf gf-args)
+  ;;;
+  ;;; Here I could do an optimization.
+  ;;;   If it's skip-nodes all the way to the outcome
+  ;;;    - then just do the outcome
+  (let ((skip-node (first (node-class-specializers node))))
+    (codegen-node-or-outcome (skip-outcome skip-node) args gf gf-args)))
 
 (defun codegen-node (node args gf gf-args)
   (let ((arg (irc-va_arg args %t*%)))
     (debug-call "debugPointer" (list (irc-bit-cast arg %i8*%)))
     (insert-message)
-    (codegen-eql-specializers node arg args gf gf-args)
-    (codegen-class-specializers node arg args gf gf-args)))
+    (if (skip-node-p node)
+        (codegen-skip-node node args gf gf-args)
+        (progn
+          (codegen-eql-specializers node arg args gf gf-args)
+          (codegen-class-specializers node arg args gf gf-args)))))
 
 (defun codegen-node-or-outcome (node-or-outcome args gf gf-args)
   (insert-message)
@@ -681,16 +780,16 @@
 (defvar *sorted-roots*)
 (defvar *generic-function*)
 
-(defun debug-save-dispatcher (gf module disp-fn startup-fn shutdown-fn sorted-roots)
+(defun debug-save-dispatcher (gf module disp-fn startup-fn shutdown-fn sorted-roots &optional (output-path #P"/tmp/dispatcher.ll"))
   "Save everything about the generic function so that it can be saved to a file and then edited and re-installed"
+  (core:bformat t "In debug-save-dispatcher output-path -> %s\n" output-path)
   (setq *disp-fn-name* (llvm-sys:get-name disp-fn)
         *startup-fn-name* (llvm-sys:get-name startup-fn)
         *shutdown-fn-name* (llvm-sys:get-name shutdown-fn)
         *sorted-roots* sorted-roots
         *generic-function* gf)
-  (warn "!~&!~&!~&!~&Saving dispatcher to /tmp/dispatcher.ll!~&!~&!~&")
-  (let* ((output-path #P"/tmp/dispatcher.ll")
-         (fout (open output-path :direction :output)))
+  (cmp::gf-log-sorted-roots sorted-roots)
+  (let ((fout (open output-path :direction :output)))
     (unwind-protect (llvm-sys:dump-module module fout)
       (close fout))))
 
@@ -728,7 +827,7 @@
 ;;; Keeps track of the number of dispatchers that were compiled and
 ;;;   is used to give the roots array in each dispatcher a unique name.
 (defparameter *dispatcher-count* 0)
-(defun codegen-dispatcher (dtree the-gf)
+(defun codegen-dispatcher (dtree the-gf &key output-path)
   (let ((*the-module* (create-run-time-module-for-compile)))
     (define-primitives-in-module *the-module*)
     (with-module (:module *the-module*
@@ -813,7 +912,6 @@
                 (codegen-startup-shutdown *gcroots-in-module* correct-size-holder *gf-data-id*)
               (llvm-sys:replace-all-uses-with *gf-data* bitcast-correct-size-holder)
               (llvm-sys:erase-from-parent *gf-data*)
-              
               #+debug-cmpgf(progn
                              (format t "Dumping the module from codegen-dispatcher~%")
                              (llvm-sys:dump *the-module*))
@@ -825,6 +923,10 @@
                     (debug-save-dispatcher the-gf *the-module* disp-fn startup-fn shutdown-fn sorted-roots)
                     (let ((after-disp-name (llvm-sys:get-name disp-fn)))
                       (format t "Saved dispatcher  before-disp-name -> ~a     after-disp-name -> ~a~%" before-disp-name after-disp-name))))
+                #+log-cmpgf
+                (when output-path
+                  (let ((before-disp-name (llvm-sys:get-name disp-fn)))
+                    (debug-save-dispatcher the-gf *the-module* disp-fn startup-fn shutdown-fn sorted-roots output-path)))
                 (let* ((compiled-dispatcher (jit-add-module-return-dispatch-function *the-module* disp-fn startup-fn shutdown-fn sorted-roots)))
                   (gf-log "Compiled dispatcher -> ~a~%" compiled-dispatcher)
                   (gf-log "Dumping module\n")
@@ -857,7 +959,6 @@
      collect specializer))
 
 (defparameter *trap* nil)
-(defparameter *monitor-dispatch* nil)
 (defparameter *dispatch-log* nil)
 
 (defun maybe-update-instances (arguments)
@@ -872,57 +973,53 @@
               (unless (and (eq s (clos::class-slots (core:instance-class i)))
                            (= (core:header-stamp i) (core:get-instance-stamp (core:instance-class i))))
                 (setf invalid-instance t)
-                (when *monitor-dispatch*
-                  (push (list :update-obsolete-argument (core:header-stamp i) (core:get-instance-stamp (core:instance-class i))) *dispatch-log*))
                 (clos::update-instance i)
                 (core:header-stamp-set i (core:get-instance-stamp (si:instance-class i)))))))))
     invalid-instance))
 
-(defmacro with-gf-debug (exp)
-  `(let ((*monitor-dispatch* t)
-         (*dispatch-log* nil))
-     (multiple-value-prog1
-         ,exp
-       (format t "Log -> ~s~%" (nreverse *dispatch-log*)))))
-
-(defmacro when-monitor-dispatch ((log) &body body)
-    `(when *monitor-dispatch*
-       (symbol-macrolet ((,log *dispatch-log*))
-         ,@body)))
 
 (defun do-dispatch-miss (generic-function valist-args arguments)
-  (when *monitor-dispatch*
-    (push (list :dispatch-miss generic-function arguments (mapcar (lambda (x) (cons (core:header-stamp x) (core:get-instance-stamp (core:instance-class x)))) arguments)) *dispatch-log*))
   (multiple-value-bind (method-list ok)
       (clos::compute-applicable-methods-using-classes
        generic-function
        (mapcar #'class-of arguments))
     ;; If ok is NIL then what do we use as the key
+    (cmp::gf-log "Called compute-applicable-methods-using-classes - returned method-list: ~a  ok: ~a~%" method-list ok)
     (unless ok
+      (cmp::gf-log "compute-applicable-methods-using-classes returned NIL for second argument~%")
       (setf method-list
-            (clos::compute-applicable-methods generic-function arguments))
-      (unless method-list
-        (clos::no-applicable-methods generic-function arguments)))
-    (when method-list
-      (cmp::gf-log "about to call clos:memoization-key valist-args-> ~a" valist-args)
-      ;; If the method list contains a single entry and it is an accessor - then we can
-      ;; create an optimized reader/writer and put that in the call history
-      (cmp::gf-log "        check if method list (1) has one entry (2) is a reader or writer - if so - optimize it%&        method-list -> ~a" method-list)
-      (let ((memoize-key (clos:memoization-key generic-function valist-args)))
-        (let ((effective-method-function (clos::compute-effective-method-function
-                                          generic-function
-                                          (clos::generic-function-method-combination generic-function)
-                                          method-list)))
-          (cmp::gf-log "Memoizing key -> ~a ~%" memoize-key)
-          (core:generic-function-call-history-push-new generic-function memoize-key effective-method-function)
-          (cmp::gf-log "Invalidating dispatch function~%")
-          (safe-set-funcallable-instance-function generic-function (calculate-strandh-dispatch-function generic-function)) ;;'clos::invalidated-dispatch-function)
-          (cmp::gf-log "Calling effective-method-function ~a~%" effective-method-function)
-          (apply effective-method-function arguments nil arguments))))))
+            (clos::compute-applicable-methods generic-function arguments)))
+    (if method-list
+        (progn
+          (cmp::gf-log "about to call clos:memoization-key valist-args-> ~a" valist-args)
+          ;; If the method list contains a single entry and it is an accessor - then we can
+          ;; create an optimized reader/writer and put that in the call history
+          (cmp::gf-log "        check if method list (1) has one entry (2) is a reader or writer - if so - optimize it%&        method-list -> ~a" method-list)
+          (let* ((memoize-key (clos:memoization-key generic-function valist-args))
+                 (effective-method-function (clos::compute-effective-method-function
+                                             generic-function
+                                             (clos::generic-function-method-combination generic-function)
+                                             method-list)))
+            (cmp::gf-log "Memoizing key -> ~a ~%" memoize-key)
+            (cmp::gf-log-dispatch-miss "Adding to history" generic-function valist-args)
+            (let ((pushed (core:generic-function-call-history-push-new generic-function memoize-key effective-method-function)))
+              (unless pushed
+                (warn "The generic-function ~a experienced a dispatch-miss but the call did not result in a new call-history entry - this suggests the fastgf is failing somehow - turn on log-cmpgf in cmpgf.lsp and recompile everything" (core:bformat nil "%s" (core:instance-ref generic-function 0)))
+                (cmp::gf-log-dispatch-miss-followup "!!!!!!  DID NOT MODIFY CALL-HISTORY\n")))
+            (cmp::gf-log "Invalidating dispatch function~%")
+            #+log-cmpgf(cmp::graph-call-history generic-function (cmp::log-cmpgf-filename "graph" "dot"))
+            (safe-set-funcallable-instance-function generic-function (calculate-fastgf-dispatch-function generic-function
+                                                                                                         #+log-cmpgf :output-path
+                                                                                                         #+log-cmpgf (cmp::log-cmpgf-filename "func" "ll"))) ;;'clos::invalidated-dispatch-function)
+            (cmp::gf-log "Calling effective-method-function ~a~%" effective-method-function)
+            (apply effective-method-function arguments nil arguments)))
+        (progn
+          (cmp::gf-log-dispatch-miss "no-applicable-method" generic-function valist-args)
+          (apply #'no-applicable-method generic-function arguments)))))
 
 
 (defun clos::dispatch-miss (generic-function valist-args)
-  (cmp::gf-log t "A dispatch-miss occurred~%")
+  (cmp::gf-log "A dispatch-miss occurred~%")
   (core:stack-monitor (lambda () (format t "In clos::dispatch-miss with generic function ~a~%" (clos::generic-function-name generic-function))))
   ;; update instances
   (cmp::gf-log "In clos::dispatch-miss~%")
@@ -930,10 +1027,7 @@
   (let* ((arguments (core:list-from-va-list valist-args))
          (invalid-instance (maybe-update-instances arguments)))
     (if invalid-instance
-        (progn
-          (when *monitor-dispatch*
-            (push (list :restarting-gf-dispatch generic-function (core:list-from-va-list valist-args)) *dispatch-log*))
-          (funcall generic-function valist-args))
+        (apply generic-function valist-args)
         (prog1
             (do-dispatch-miss generic-function valist-args arguments)
           (cmp::gf-log "Returned from do-dispatch-miss~%")))))
@@ -955,17 +1049,46 @@
 ;;; change-class requires removing call-history entries involving the class
 ;;; and invalidating the generic functions
 
+(defun optimized-call-history* (call-history specializer-profile)
+  (let* ((specializer-length (let ((pos (position-if #'identity specializer-profile :from-end t)))
+                               (if pos
+                                   (1+ pos)
+                                   0)))
+         (profiled (make-hash-table :test #'equalp)))
+    (loop for entry in call-history
+       for key = (car entry)
+       for outcome = (cdr entry)
+       for new-key = (make-array specializer-length :initial-element nil)
+       do (loop for i from 0 below specializer-length
+             do (setf (svref new-key i)
+                      (if (svref specializer-profile i)
+                          (let ((val (svref key i)))
+                            (if (consp val)
+                                (list (car val))
+                                val))
+                          nil)))
+       do (setf (gethash new-key profiled) outcome))
+    (let ((res))
+      (maphash (lambda (k v) (push (cons k v) res)) profiled)
+      res)))
 
-(defun calculate-strandh-dispatch-function (generic-function)
-  (let* ((call-history (clos::generic-function-call-history generic-function)))
+(defun optimized-call-history (generic-function)
+  (let* ((call-history (clos::generic-function-call-history generic-function))
+         (specializer-profile (clos::generic-function-specializer-profile generic-function)))
+    (optimized-call-history* call-history specializer-profile)))
+
+
+(defun calculate-fastgf-dispatch-function (generic-function &key output-path)
+  (let* ((call-history (clos::optimized-call-history generic-function)))
     (if call-history
-        (let ((dispatch-tree (cmp::make-dtree)))
-          (cmp::dtree-add-call-history dispatch-tree call-history)
-          (cmp::codegen-dispatcher dispatch-tree generic-function))
+        (progn
+          (let ((dispatch-tree (cmp::make-dtree)))
+            (cmp::dtree-add-call-history dispatch-tree call-history)
+            (cmp::codegen-dispatcher dispatch-tree generic-function :output-path output-path)))
         'clos::invalidated-dispatch-function)))
 
-(defun graph-strandh-dispatch-function (generic-function)
-  (let* ((call-history (clos::generic-function-call-history generic-function)))
+(defun graph-fastgf-dispatch-function (generic-function)
+  (let* ((call-history (clos::optimized-call-history generic-function)))
     (if call-history
         (let ((dispatch-tree (cmp::make-dtree)))
           (cmp::dtree-add-call-history dispatch-tree call-history)
@@ -977,16 +1100,15 @@
 
 (defun clos::invalidated-dispatch-function (generic-function va-list-args)
   (core:stack-monitor (lambda () (format t "In clos::invalidated-dispatch-function with generic function ~a~%" (instance-ref generic-function 0))))
-  (when *monitor-dispatch*
-    (push (list :invalidated-dispatch-function generic-function) *dispatch-log*))
   (cmp::gf-log "invalidated-dispatch-function generic-function -> ~a   arguments -> ~a~%" (clos::generic-function-name generic-function) va-list-args)
   (maybe-update-instances (core:list-from-va-list va-list-args))
-  (multiple-value-prog1
-      (clos::dispatch-miss generic-function va-list-args)
-    (let ((dispatcher (calculate-strandh-dispatch-function generic-function)))
-      ;; replace the old dispatch function with the new one
-      (cmp::gf-log "replacing funcallable-instance-function~%")
-      (safe-set-funcallable-instance-function generic-function dispatcher))))
+  (clos::dispatch-miss generic-function va-list-args)
+  #+(or)(multiple-value-prog1
+            (clos::dispatch-miss generic-function va-list-args)
+          (let ((dispatcher (calculate-fastgf-dispatch-function generic-function)))
+            ;; replace the old dispatch function with the new one
+            (cmp::gf-log "replacing funcallable-instance-function~%")
+            (safe-set-funcallable-instance-function generic-function dispatcher))))
 
 
 (defun maybe-invalidate-generic-function (gf)
@@ -1036,7 +1158,7 @@
        do (maybe-invalidate-generic-function gf))))
 
 (defun switch-to-fastgf (gf)
-  (let ((dispatcher (calculate-strandh-dispatch-function gf)))
+  (let ((dispatcher (calculate-fastgf-dispatch-function gf)))
     (safe-set-funcallable-instance-function gf dispatcher)))
 
 (export '(invalidate-generic-functions-with-class-selector

@@ -135,6 +135,8 @@
               :accessor generic-function-call-history)
       (lambda-list :initarg :lambda-list
        :accessor generic-function-lambda-list)
+      #+clasp(specializer-profile :initarg :specializer-profile
+       :accessor generic-function-specializer-profile)
       (argument-precedence-order 
        :initarg :argument-precedence-order
        :initform nil

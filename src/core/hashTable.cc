@@ -400,8 +400,15 @@ void HashTable_O::sxhash_equalp(HashGenerator &hg, T_sp obj, LocationDependencyP
         (void)bv_obj; // silence warning
         IMPLEMENT_MEF(BF("Handle HashTable_O::sxhash_equalp for BitVector"));
       } else if (Array_sp aobj = gobj.asOrNull<Array_O>()) {
-        (void)aobj; // silence warning
-        IMPLEMENT_MEF(BF("Handle HashTable_O::sxhash_equalp for Arrays"));
+        for (size_t i = 0; i < aobj->length(); ++i) {
+          if (hg.isFilling()) {
+            T_sp obj = aobj->rowMajorAref(i);
+            HashTable_O::sxhash_equalp(hg,obj,ld);
+          } else {
+            break;
+          }
+        }
+        return;
       } else if (HashTable_sp hobj = gobj.asOrNull<HashTable_O>()) {
         (void)hobj; // silence warning
         IMPLEMENT_MEF(BF("Handle HashTable_O::sxhash_equalp for HashTables"));

@@ -207,7 +207,7 @@ namespace core {
 
   List_sp core__call_history_find_key(List_sp generic_function_call_history, SimpleVector_sp key);
 
-  void core__generic_function_call_history_push_new(Instance_sp generic_function, SimpleVector_sp key, T_sp effective_method);
+  bool core__generic_function_call_history_push_new(Instance_sp generic_function, SimpleVector_sp key, T_sp effective_method);
 
   void core__generic_function_call_history_remove_entries_with_specializer(Instance_sp generic_function, T_sp specializer);
 

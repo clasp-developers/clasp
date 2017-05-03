@@ -135,7 +135,7 @@
 		  (setf method-list
 			(compute-applicable-methods generic-function args))
 		  (unless method-list
-		    (no-applicable-methods generic-function args)))
+		    (apply #'no-applicable-method generic-function args)))
 		(apply (compute-effective-method-function
 			  generic-function
 			  (generic-function-method-combination generic-function)
@@ -185,9 +185,9 @@
          #+fast-dispatch
          ((eq (get-funcallable-instance-function gfun) 'clos::invalidated-dispatch-function)
           'clos::invalidated-dispatch-function)
-         ;; If *enable-fast-dispatch* is T then new generic functions use fastgf
+         ;; If *enable-fastgf* is T then new generic functions use fastgf
          #+fast-dispatch
-         ((and *enable-fast-dispatch* (eq (get-funcallable-instance-function gfun) 'clos::not-funcallable))
+         ((and *enable-fastgf* (eq (get-funcallable-instance-function gfun) 'clos::not-funcallable))
           'clos::invalidated-dispatch-function)
 	 ;; Case 1*
 	 ((or (not optimizable)

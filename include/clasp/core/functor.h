@@ -510,8 +510,8 @@ namespace core {
     virtual void setf_cleavir_ast(T_sp ast) {NOT_APPLICABLE();};
     T_sp docstring() const { NOT_APPLICABLE();};
     void set_kind(Symbol_sp k) { NOT_APPLICABLE();};
-    Symbol_sp getKind() const { NOT_APPLICABLE();};
-    virtual int sourceFileInfoHandle() const {NOT_APPLICABLE();};
+    Symbol_sp getKind() const { return kw::_sym_dispatch_function;};
+    virtual int sourceFileInfoHandle() const {return 0; };
     virtual LambdaListHandler_sp lambdaListHandler() const {NOT_APPLICABLE();};
     virtual void setAssociatedFunctions(List_sp funcs) {NOT_APPLICABLE();};
     virtual List_sp declares() const {NOT_APPLICABLE();};

@@ -156,6 +156,23 @@
                                      (all-keywords keywords2))))
            t))))
 
+#+clasp
+(defun update-specializer-profile (generic-function)
+  (let ((methods (clos:generic-function-methods generic-function)))
+    (if methods
+        (let* ((first-method-specializers (method-specializers (car methods)))
+               (vec (make-array (length first-method-specializers) :initial-element nil))
+               (tc (find-class 't)))
+          (loop for method in methods
+             for specs = (method-specializers method)
+             do (loop for i from 0 below (length vec)
+                   for spec in specs
+                   for specialized = (not (eq spec tc))
+                   when specialized
+                   do (setf (elt vec i) t)))
+          (setf (generic-function-specializer-profile generic-function) vec))
+        (setf (generic-function-specializer-profile generic-function) nil))))
+
 (defun add-method (gf method)
   ;; during boot it's a structure accessor
   (declare (notinline method-qualifiers remove-method))
@@ -207,6 +224,8 @@ and cannot be added to ~A." method other-gf gf)))
   (set-generic-function-dispatch gf)
   ;;  iv) Update dependents.
   (update-dependents gf (list 'add-method method))
+  ;;  Clasp keeps track of which specializers can be ignored
+  (update-specializer-profile gf)
   ;;  v) Register with specializers
   (register-method-with-specializers method)
   gf)
@@ -233,6 +252,8 @@ and cannot be added to ~A." method other-gf gf)))
   (compute-g-f-spec-list gf)
   (set-generic-function-dispatch gf)
   (update-dependents gf (list 'remove-method method))
+  ;;  Clasp keeps track of which specializers can be ignored
+  (update-specializer-profile gf)
   gf)
 
 
@@ -289,11 +310,11 @@ and cannot be added to ~A." method other-gf gf)))
 ;;; ----------------------------------------------------------------------
 ;;; Error messages
 
-(defmethod no-applicable-method (gf args)
-  (error "No applicable method for ~S with arguments of types~{~& ~A~}" 
-	 (generic-function-name gf)
+(defmethod no-applicable-method (gf &rest args)
+  (error "No applicable method for ~S with ~
+          ~:[no arguments~;arguments of types ~:*~{~& ~A~}~]."
+         (generic-function-name gf)
          (mapcar #'type-of args)))
-
 
 (defmethod no-next-method (gf method &rest args)
   (declare (ignore gf))
@@ -396,14 +417,41 @@ and cannot be added to ~A." method other-gf gf)))
    (mapappend #'specializer-direct-generic-functions
               (subclasses* (find-class 't)))))
 
+
+(defun switch-clos-to-fastgf ()
+  (let ((dispatchers (make-hash-table))
+        (count 0))
+    (dolist (x (clos::all-generic-functions))
+      (clos::update-specializer-profile x)
+      (if (member x (list
+                     #'clos::compute-applicable-methods-using-classes
+                     #'clos::add-direct-method
+                     #'clos::compute-effective-method
+                     #'print-object
+                     #'clos::generic-function-name
+                     ))
+          nil
+          (setf (gethash x dispatchers) (clos::calculate-fastgf-dispatch-function x))))
+    (maphash (lambda (gf disp)
+               (clos::safe-set-funcallable-instance-function gf disp)
+               (incf count))
+             dispatchers)
+    count))
+
 ;;; April 2017  Turn this off for now to debug
-#+(or) ;; #+(and clasp fast-dispatch)
 (eval-when (:execute :compile-toplevel :load-toplevel)
   ;; This turns on fast-dispatch that uses the code in cmpgf.lsp
-  ;;   Once clos:*enable-fast-dispatch* is set to T
+  ;;   Once clos:*enable-fastgf* is set to T
   ;;     EVERY new generic function starts using
   ;;     the compiled fast dispatch functions
-  (setf clos:*enable-fast-dispatch* t))
+  (when (member :enable-fastgf *features*)
+    (format t "!!!!!  enable-fastgf is on - loading sys:kernel;clos;fastgf.lsp~%")
+    (load "sys:kernel;clos;fastgf.lsp")
+    (format t "!!!!! Turning on *enable-fastgf*~%")
+    (setf clos:*enable-fastgf* t)
+;;;    (format t "    Switching CLOS functions to fastgf~%")
+    #+(or)(let ((count (switch-clos-to-fastgf)))
+            (format t "        switched ~a functions~%" count))))
 
 #|
 ;;; THIS IS SUPPOSED TO BE AN ACCESSOR of the CLOS:SPECIALIZER class
