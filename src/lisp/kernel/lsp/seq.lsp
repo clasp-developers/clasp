@@ -276,7 +276,7 @@ SEQUENCEs, where K is the minimum length of the given SEQUENCEs."
         (when result-type
           (seq-iterator-set output it value)
           (setf it (seq-iterator-next output it)))))))
-#|
+
 (defun some (predicate sequence &rest more-sequences)
   "Args: (predicate sequence &rest more-sequences)
 Returns T if at least one of the elements in SEQUENCEs satisfies PREDICATE;
@@ -293,9 +293,6 @@ Returns T if every elements of SEQUENCEs satisfy PREDICATE; NIL otherwise."
    (do-sequences (elt-list (cons sequence more-sequences) :output t)
      (unless (apply predicate elt-list)
        (return nil)))))
-|#
-
-
 
 #|
 (def-seq-bool-parser notany
@@ -321,23 +318,18 @@ have the same length; NIL otherwise."
        (apply #'every predicate sequences)))
 
 
-#|
+
 (defun notany (predicate sequence &rest more-sequences)
   "Args: (predicate sequence &rest more-sequences)
 Returns T if none of the elements in SEQUENCEs satisfies PREDICATE; NIL
 otherwise."
   (not (apply #'some predicate sequence more-sequences)))
-|#
 
-#|
 (defun notevery (predicate sequence &rest more-sequences)
   "Args: (predicate sequence &rest more-sequences)
 Returns T if at least one of the elements in SEQUENCEs does not satisfy
 PREDICATE; NIL otherwise."
   (not (apply #'every predicate sequence more-sequences)))
-
-|#
-
 
 
 (defun map-into (result-sequence function &rest sequences)

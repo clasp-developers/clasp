@@ -607,7 +607,8 @@ and initialize it with an array consisting of one function pointer."
     (let ((shutdown-fn (irc-simple-function-create core:*module-shutdown-function-name*
                                                    (llvm-sys:function-type-get %void% nil)
                                                    'llvm-sys::External-linkage
-                                                   *the-module*)))
+                                                   *the-module*
+                                                   :argument-names nil)))
       (let* ((irbuilder-alloca (llvm-sys:make-irbuilder *llvm-context*))
              (irbuilder-body (llvm-sys:make-irbuilder *llvm-context*))
              (*irbuilder-function-alloca* irbuilder-alloca)

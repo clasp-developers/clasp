@@ -590,9 +590,14 @@ CL_DEFUN T_sp core__reader_feature_p(T_sp feature_test) {
     if (features_head == kw::_sym_not) {
       return _lisp->_not(eval::funcall(_sym_reader_feature_p, oSecond(features_cons)));
     } else if (features_head == kw::_sym_and) {
-      return (eval::funcall(cl::_sym_every, _sym_reader_feature_p, oCdr(features_cons)));
+      return (eval::funcall(core::_sym_every_list, _sym_reader_feature_p, oCdr(features_cons)));
     } else if (features_head == kw::_sym_or) {
-      return (eval::funcall(cl::_sym_some, _sym_reader_feature_p, oCdr(features_cons)));
+      List_sp or_features = oCdr(features_cons);
+      if (or_features.consp()) {
+        return (eval::funcall(core::_sym_some_list, _sym_reader_feature_p, oCdr(features_cons)));
+      }
+      // Trivial case of #+(or) returns nil.
+      return _Nil<T_O>();
     }
     SIMPLE_ERROR(BF("Illegal feature test: %s") % _rep_(features_cons));
   }
@@ -725,7 +730,7 @@ ReadTable_sp ReadTable_O::create_standard_readtable() {
                           _Nil<T_O>());
   Character_sp sharp = clasp_make_standard_character('#');
   rt->make_dispatch_macro_character(sharp, _lisp->_true());
-  ql::list dispatchers(_lisp);
+  ql::list dispatchers;
   dispatchers << clasp_make_standard_character('\\') << _sym_sharp_backslash
               << clasp_make_standard_character('\'') << _sym_sharp_single_quote
               << clasp_make_standard_character('(') << _sym_sharp_left_parenthesis
@@ -866,7 +871,7 @@ T_sp ReadTable_O::make_dispatch_macro_character(Character_sp ch, T_sp non_termin
 #if 0
   HashTable_sp syntax = this->_Syntax;
 	List_sp plist = syntax->gethash(ch,_Nil<T_O>());
-	ql::list qplist(_lisp);
+	ql::list qplist;
 	SYMBOL_EXPORT_SC_(KeywordPkg,dispatch_table);
 	// add the :dispatch-table (make-hash-table) property
 	qplist << kw::_sym_dispatch_table

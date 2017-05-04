@@ -1,9 +1,11 @@
-(in-package :cl-user)
+(in-package :clos)
+(defvar *core-clos-generic-functions* (all-generic-functions))
+(defvar *core-classes* )
+(defun calculate-core-classes ()
+  (let ((all-classes (clos::subclasses* (find-class t)))
+        core-classes)
+    (loop for class in all-classes
+         
 (print *package*)
-(cl:format t "Hi there ~a~%" (length (clos::all-generic-functions)))
-(cl:format t "There are ~a generic functions~%" (length (clos::all-generic-functions)))
-(dolist (gf (clos::all-generic-functions))
-  (cl:format t "~10a  ~10a -> ~s~%"
-             (length (clos::generic-function-call-history gf))
-             (length (clos::generic-function-methods gf))
-             (clos::generic-function-name gf)))
+(format t "There are ~a *core-classes*~&" (length *core-classes*))
+(format t "There are ~a *core-clos-generic-functions*~&" (length *core-clos-generic-functions*))

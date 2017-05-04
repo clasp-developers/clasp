@@ -3719,7 +3719,7 @@ template <>
 struct to_object<llvm::Function::ArgumentListType &> {
   static core::List_sp convert(llvm::Function::ArgumentListType &al) {
     _G();
-    ql::list l(_lisp);
+    ql::list l;
     for (llvm::Function::ArgumentListType::iterator it = al.begin(); it != al.end(); it++) {
       l << to_object<llvm::Argument>::convert(*it);
     }

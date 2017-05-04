@@ -737,8 +737,8 @@ CL_LAMBDA(listOfPairs);
 CL_DECLARE();
 CL_DOCSTRING("Split a list of pairs into a pair of lists returned as MultipleValues. The first list is each first element and the second list is each second element or nil if there was no second element");
 CL_DEFUN T_mv core__separate_pair_list(List_sp listOfPairs) {
-  ql::list firsts(_lisp);
-  ql::list seconds(_lisp);
+  ql::list firsts;
+  ql::list seconds;
   for (auto cur : listOfPairs) {
     T_sp element = oCar(cur);
     if (cl__atom(element)) {
@@ -1252,7 +1252,9 @@ ListOfListSteppers::ListOfListSteppers(List_sp sequences) {
   return;
 }
 
+/* Only works on lists of lists - used to support macroexpansion backquote */
 bool test_every_some_notevery_notany(Function_sp predicate, List_sp sequences, bool elementTest, bool elementReturn, bool fallThroughReturn, T_sp &retVal) {
+#if 0
   ListOfSequenceSteppers steppers(sequences);
   ValueFrame_sp frame(ValueFrame_O::create(steppers.size(), _Nil<T_O>()));
 //  printf("%s:%d  %s  frame->length() = %d\n", __FILE__, __LINE__, __FUNCTION__,frame->length());
@@ -1273,12 +1275,40 @@ bool test_every_some_notevery_notany(Function_sp predicate, List_sp sequences, b
   LOG(BF("passed-through - returning %d") % fallThroughReturn);
  FALLTHROUGH:
   return fallThroughReturn;
+#endif
+
+  if (!sequences.consp()) goto FALLTHROUGH;
+  {
+    MAKE_STACK_FRAME(frame,predicate.raw_(),sequences.unsafe_cons()->proper_list_length());
+    bool atend = false;
+    while (!atend) {
+      atend = false;
+      size_t idx = 0;
+      for ( auto cur : sequences ) {
+        List_sp top = CONS_CAR(cur);
+        (*frame)[idx++] = oCar(top).raw_();
+        if (top.consp()) {
+          cur->rplaca(CONS_CDR(top));
+        } else atend = true;
+      }
+      if (!atend) {
+        VaList_S valist_struct(frame);
+        VaList_sp valist(&valist_struct);
+        retVal = funcall_consume_valist_<core::Function_O>(predicate.tagged_(),valist);
+        if (retVal.isTrue() == elementTest) {
+          return elementReturn;
+        }
+      }
+    }
+  }
+ FALLTHROUGH:
+  return fallThroughReturn;
 }
 
 CL_LAMBDA(predicate &rest sequences);
 CL_DECLARE();
 CL_DOCSTRING("See CLHS for every");
-CL_DEFUN T_sp cl__every(T_sp predicate, List_sp sequences) {
+CL_DEFUN T_sp core__every_list(T_sp predicate, List_sp sequences) {
   Function_sp op = coerce::functionDesignator(predicate);
   T_sp dummy;
   bool result = test_every_some_notevery_notany(op, sequences, false, false, true, dummy);
@@ -1288,7 +1318,7 @@ CL_DEFUN T_sp cl__every(T_sp predicate, List_sp sequences) {
 CL_LAMBDA(predicate &rest sequences);
 CL_DECLARE();
 CL_DOCSTRING("See CLHS for some");
-CL_DEFUN T_sp cl__some(T_sp predicate, List_sp sequences) {
+CL_DEFUN T_sp core__some_list(T_sp predicate, List_sp sequences) {
   Function_sp op = coerce::functionDesignator(predicate);
   T_sp retVal;
   bool result = test_every_some_notevery_notany(op, sequences, true, true, false, retVal);
@@ -1300,13 +1330,14 @@ CL_DEFUN T_sp cl__some(T_sp predicate, List_sp sequences) {
 CL_LAMBDA(predicate &rest sequences);
 CL_DECLARE();
 CL_DOCSTRING("See CLHS for notany");
-CL_DEFUN T_sp cl__notany(T_sp predicate, List_sp sequences) {
+CL_DEFUN T_sp core__notany_list(T_sp predicate, List_sp sequences) {
   Function_sp op = coerce::functionDesignator(predicate);
   T_sp dummy;
   bool result = test_every_some_notevery_notany(op, sequences, true, false, true, dummy);
   return _lisp->_boolean(result);
 }
 
+#if 0
 CL_LAMBDA(predicate &rest sequences);
 CL_DECLARE();
 CL_DOCSTRING("See CLHS for notevery");
@@ -1316,6 +1347,7 @@ CL_DEFUN T_sp cl__notevery(T_sp predicate, List_sp sequences) {
   bool result = test_every_some_notevery_notany(op, sequences, false, true, false, dummy);
   return _lisp->_boolean(result);
 }
+#endif
 
 /*
   __BEGIN_DOC(candoScript.general.mapcar)
@@ -1328,16 +1360,29 @@ CL_DECLARE();
 CL_DOCSTRING("See CLHS for mapcar");
 CL_DEFUN T_sp cl__mapcar(T_sp func_desig, List_sp lists) {
   Function_sp func = coerce::functionDesignator(func_desig);
-  ListOfListSteppers steppers(lists);
-  ValueFrame_sp frame(ValueFrame_O::create(steppers.size(), _Nil<ActivationFrame_O>()));
-  ql::list result(_lisp);
-  while (!steppers.atEnd()) {
-    steppers.fillValueFrameUsingCurrentSteppers(frame);
-    T_sp res = eval::applyToActivationFrame(func, frame);
-    result << res;
-    steppers.advanceSteppers();
+  if (lists.consp()) {
+    ql::list result;
+    MAKE_STACK_FRAME(frame,func.raw_(),lists.unsafe_cons()->proper_list_length());
+    bool atend = false;
+    while (!atend) {
+      atend = false;
+      size_t idx = 0;
+      for ( auto cur : lists ) {
+        List_sp top = CONS_CAR(cur);
+        (*frame)[idx++] = oCar(top).raw_();
+        if (top.consp()) {
+          cur->rplaca(CONS_CDR(top));
+        } else atend = true;
+      }
+      if (!atend) {
+        VaList_S valist_struct(frame);
+        VaList_sp valist(&valist_struct);
+        result << funcall_consume_valist_<core::Function_O>(func.tagged_(),valist);
+      }
+    }
+    return result.cons();
   }
-  return result.cons();
+  return _Nil<T_O>();
 }
 
 /*
@@ -1347,100 +1392,111 @@ CL_DEFUN T_sp cl__mapcar(T_sp func_desig, List_sp lists) {
 CL_LAMBDA(op &rest lists);
 CL_DECLARE();
 CL_DOCSTRING("See CLHS mapc");
-CL_DEFUN T_sp cl__mapc(T_sp top, List_sp lists) {
-  Function_sp op = coerce::functionDesignator(top);
-  VectorObjects_sp argumentLists(VectorObjects_O::make(8, _Nil<T_O>(), clasp_make_fixnum(0)));
-  // Copy the arguments into argumentLists
-  for (auto carg : lists) {
-    argumentLists->vectorPushExtend(oCar(carg), 8);
-  }
-  List_sp result, curResult;
-  ValueFrame_sp frame(ValueFrame_O::create(cl__length(argumentLists), _Nil<ActivationFrame_O>()));
-  while (1) {
-    int idx = 0;
-    for (size_t it(0), itEnd(cl__length(argumentLists)); it < itEnd; ++it) {
-      if (argumentLists->operator[](it).nilp()) {
-        // We hit a nil - jump to the end
-        goto RETURN;
+CL_DEFUN T_sp cl__mapc(T_sp func_desig, List_sp lists) {
+  Function_sp func = coerce::functionDesignator(func_desig);
+  if (lists.consp()) {
+    List_sp result = CONS_CAR(lists);
+    MAKE_STACK_FRAME(frame,func.raw_(),lists.unsafe_cons()->proper_list_length());
+    bool atend = false;
+    while (!atend) {
+      atend = false;
+      size_t idx = 0;
+      for ( auto cur : lists ) {
+        List_sp top = CONS_CAR(cur);
+        (*frame)[idx++] = oCar(top).raw_();
+        if (top.consp()) {
+          cur->rplaca(CONS_CDR(top));
+        } else atend = true;
       }
-      frame->set_entry(idx, oCar(argumentLists->operator[](it)));
-      argumentLists->operator[](it) = oCdr(argumentLists->operator[](it));
-      ++idx;
+      if (!atend) {
+        VaList_S valist_struct(frame);
+        VaList_sp valist(&valist_struct);
+        funcall_consume_valist_<core::Function_O>(func.tagged_(),valist);
+      }
     }
-    LOG(BF("About to evaluate map op[%s] on arguments[%s]") % _rep_(op) % _rep_(frame));
-    T_sp res = eval::applyToActivationFrame(op, frame);
+    return result;
   }
- RETURN:
-  return oCar(lists);
+  return _Nil<T_O>();
 }
 
 CL_LAMBDA(func-desig &rest lists);
 CL_DECLARE();
 CL_DOCSTRING("See CLHS maplist");
 CL_DEFUN T_sp cl__maplist(T_sp func_desig, List_sp lists) {
-  //        printf("%s:%d maplist func_desig=%s   lists=%s\n", __FILE__, __LINE__, _rep_(func_desig).c_str(), _rep_(lists).c_str() );
-  Function_sp op = coerce::functionDesignator(func_desig);
-  VectorObjects_sp argumentLists(VectorObjects_O::make(16, _Nil<T_O>(), clasp_make_fixnum(0)));
-  //	vector<List_sp> argumentLists;
-  // Copy the arguments into argumentLists
-  for (auto carg : lists) {
-    argumentLists->vectorPushExtend(oCar(carg), 8);
-    //	    argumentLists.push_back(oCar(carg));
-  }
-  //        printf("%s:%d  argumentLists = %s\n", __FILE__, __LINE__, _rep_(argumentLists).c_str() );
-  List_sp result, curResult;
-  result = Cons_O::create(_Nil<T_O>(), _Nil<T_O>());
-  ValueFrame_sp frame(ValueFrame_O::create(cl__length(argumentLists), _Nil<ActivationFrame_O>()));
-  curResult = result;
-  while (1) {
-    int idx = 0;
-    //            printf("%s:%d  length(argumentLists) = %d   argumentLists->fillPointer()=%d\n", __FILE__, __LINE__, cl__length(argumentLists), argumentLists->fillPointer() );
-    for (int it(0), itEnd(cl__length(argumentLists)); it < itEnd; ++it) {
-      T_sp val = (*argumentLists)[it];
-      if (val.nilp())
-        goto RETURN; // hit nil in arguments - exit
-      frame->set_entry(idx, val);
-      idx++;
+
+  Function_sp func = coerce::functionDesignator(func_desig);
+  if (lists.consp()) {
+    ql::list result;
+    MAKE_STACK_FRAME(frame,func.raw_(),lists.unsafe_cons()->proper_list_length());
+    bool atend = false;
+    while (!atend) {
+      atend = false;
+      size_t idx = 0;
+      for ( auto cur : lists ) {
+        List_sp top = CONS_CAR(cur);
+        (*frame)[idx++] = top.raw_();
+        if (top.consp()) {
+          cur->rplaca(CONS_CDR(top));
+        } else atend = true;
+      }
+      if (!atend) {
+        VaList_S valist_struct(frame);
+        VaList_sp valist(&valist_struct);
+        result << funcall_consume_valist_<core::Function_O>(func.tagged_(),valist);
+      }
     }
-    //            printf("%s:%d op %s on frame: %s\n", __FILE__, __LINE__, _rep_(op).c_str(), _rep_(frame).c_str() );
-    LOG(BF("About to evaluate map op[%s] on arguments[%s]") % _rep_(op) % _rep_(frame));
-    T_sp res = eval::applyToActivationFrame(op, frame);
-    Cons_sp one = Cons_O::create(res);
-    curResult.asCons()->setCdr(one);
-    curResult = one;
-    // Advance to the next element
-    for (int it(0), itEnd(cl__length(argumentLists)); it < itEnd; ++it) {
-      argumentLists->operator[](it) = oCdr(argumentLists->operator[](it));
-      //		*it = cCdr((*it));
-    }
+    return result.cons();
   }
- RETURN:
-  return oCdr(result);
+  return _Nil<T_O>();
 }
 
 CL_LAMBDA(op &rest lists);
 CL_DECLARE();
 CL_DOCSTRING("See CLHS maplist");
-CL_DEFUN T_sp cl__mapl(T_sp top, List_sp lists) {
-  Function_sp op = coerce::functionDesignator(top);
-  cl__maplist(op, lists);
-  return oCar(lists);
+CL_DEFUN T_sp cl__mapl(T_sp func_desig, List_sp lists) {
+  Function_sp func = coerce::functionDesignator(func_desig);
+  if (lists.consp()) {
+    List_sp result = CONS_CAR(lists);
+    MAKE_STACK_FRAME(frame,func.raw_(),lists.unsafe_cons()->proper_list_length());
+    bool atend = false;
+    while (!atend) {
+      atend = false;
+      size_t idx = 0;
+      for ( auto cur : lists ) {
+        List_sp top = CONS_CAR(cur);
+        (*frame)[idx++] = top.raw_();
+        if (top.consp()) {
+          cur->rplaca(CONS_CDR(top));
+        } else atend = true;
+      }
+      if (!atend) {
+        VaList_S valist_struct(frame);
+        VaList_sp valist(&valist_struct);
+        funcall_consume_valist_<core::Function_O>(func.tagged_(),valist);
+      }
+    }
+    return result;
+  }
+  return _Nil<T_O>();
 }
 
+#if 0
 CL_LAMBDA(fun &rest cargs);
 CL_DECLARE();
 CL_DOCSTRING("mapappend is like mapcar except that the results are appended together - see AMOP 280");
 CL_DEFUN T_mv core__mapappend(Function_sp fun, List_sp cargs) {
   IMPLEMENT_MEF(BF("Fix me - I think I'm broken"));
   T_sp testNull = eval::funcall(cl::_sym_some, cl::_sym_null->symbolFunction(), cargs);
-  if (testNull.nilp())
-    return (Values(_Nil<T_O>()));
+  if (testNull.nilp()) return Values(_Nil<T_O>());
   T_sp arg0 = eval::funcall(cl::_sym_mapcar, cl::_sym_car->symbolFunction(), cargs);
   T_sp appendHead = eval::funcall(fun, arg0);
   T_sp arg2 = eval::funcall(cl::_sym_mapcar, cl::_sym_cdr->symbolFunction(), cargs);
   T_sp appendTail = eval::funcall(_sym_mapappend, fun, arg2);
   return eval::funcall(cl::_sym_append, appendHead, appendTail);
 };
+#endif
+
+
 
 CL_LAMBDA(op &rest lists);
 CL_DECLARE();
@@ -1448,7 +1504,7 @@ CL_DOCSTRING("mapcon");
 CL_DEFUN T_mv cl__mapcon(T_sp op, List_sp lists) {
   List_sp parts = cl__maplist(op, lists);
   T_sp result = cl__nconc(parts);
-  return (Values(result));
+  return Values(result);
 };
 
 CL_LAMBDA(op &rest lists);
@@ -1457,11 +1513,7 @@ CL_DOCSTRING("mapcan");
 CL_DEFUN T_mv cl__mapcan(T_sp op, List_sp lists) {
   List_sp parts = cl__mapcar(op, lists);
   T_sp result = cl__nconc(parts);
-#if 0
-  ValueFrame_sp frame(ValueFrame_O::create(parts,_Nil<ActivationFrame_O>()));
-  T_sp result = eval::applyToActivationFrame(cl::_sym_nconc,frame);
-#endif
-  return (Values(result));
+  return Values(result);
 };
 
 
@@ -1621,7 +1673,7 @@ CL_DEFUN Symbol_mv core__type_to_symbol(T_sp x) {
 
 T_sp type_of(T_sp x) {
   if (x.fixnump()) {
-    ql::list res(_lisp);
+    ql::list res;
     res << cl::_sym_integer << x << x;
     return res.cons();
   } else if (x.consp()) {
@@ -1635,7 +1687,7 @@ T_sp type_of(T_sp x) {
       return cl::_sym_standard_char;
     return cl::_sym_character;
   } else if (Integer_sp ix = x.asOrNull<Integer_O>()) {
-    ql::list res(_lisp);
+    ql::list res;
     res << cl::_sym_integer << ix << ix;
     return res.cons();
   }

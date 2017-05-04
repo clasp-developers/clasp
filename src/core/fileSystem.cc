@@ -241,7 +241,7 @@ CL_DOCSTRING("Returns a list of path parts as strings");
 CL_LISPIFY_NAME("path-parts");
 CL_DEFMETHOD List_sp Path_O::parts() const {
   bf::path::iterator it;
-  ql::list l(_lisp);
+  ql::list l;
   for (it = this->_Path.begin(); it != this->_Path.end(); ++it) {
     l << SimpleBaseString_O::make(it->native());
   }
@@ -341,7 +341,7 @@ DirectoryIterator_mv af_makeDirectoryIterator(Path_sp path) {
 #if 0
 	DirectoryIterator_sp me(DirectoryIterator_O::create());
 	SYMBOL_SC_(CorePkg,path);
-	GlueEnvironment_sp env(GlueEnvironment_O::create((ql::list(_lisp) << _sym_path << path ).cons()));
+	GlueEnvironment_sp env(GlueEnvironment_O::create((ql::list << _sym_path << path ).cons()));
 	me->make_init(_Nil<core::Function_O>(),env->args(),env);
 	return(Values(me));
 #endif
@@ -418,32 +418,6 @@ RecursiveDirectoryIterator_sp RecursiveDirectoryIterator_O::create(Path_sp path)
 
 
 
-
-#if 0
-#define ARGS_af_makeRecursiveDirectoryIterator "(path)"
-#define DECL_af_makeRecursiveDirectoryIterator ""
-#define DOCS_af_makeRecursiveDirectoryIterator "make RecursiveDirectoryIterator args: path"
-    RecursiveDirectoryIterator_mv af_makeRecursiveDirectoryIterator(Path_sp path)
-    {
-	RecursiveDirectoryIterator_sp me(RecursiveDirectoryIterator_O::create());
-	GlueEnvironment_sp env(GlueEnvironment_O::create((ql::list(_lisp) << _sym_path << path).cons()) );
-	me->make_init__(core::_Nil<Function_O>(),env->args(),env,_lisp);
-	return me;
-    }
-
-
-    T_sp RecursiveDirectoryIterator_O::make_init__(Function_sp exec, Cons_sp args, Environment_sp bargs, Lisp_sp lisp)
-    {
-	Path_sp path = coerce::pathDesignator(bargs->lookup(_sym_path));
-	if ( path.nilp() )
-	{
-	    SIMPLE_ERROR(BF("You must specify the path"));
-	}
-	this->setPath(path);
-	this->first();
-	return _Nil<T_O>();
-    }
-#endif
 
 void RecursiveDirectoryIterator_O::initialize() {
   this->Base::initialize();

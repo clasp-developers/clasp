@@ -263,7 +263,7 @@ void throw_if_not_destructuring_context(T_sp context) {
 
 CL_LISPIFY_NAME("LambdaListHandler-lambdaList");
 CL_DEFMETHOD T_sp LambdaListHandler_O::lambdaList() {
-  ql::list ll(_lisp);
+  ql::list ll;
   { // required arguments  req = ( num req1 req2 ...)
     for (gctools::Vec0<RequiredArgument>::const_iterator it = this->_RequiredArguments.begin();
          it != this->_RequiredArguments.end(); ++it) {
@@ -1056,28 +1056,28 @@ CL_DEFUN T_mv core__process_lambda_list(List_sp lambdaList, T_sp context) {
                     keys,
                     allow_other_keys,
                     auxs);
-  ql::list lreqs(_lisp);
+  ql::list lreqs;
   { // required arguments  req = ( num req1 req2 ...)
     lreqs << make_fixnum((int)reqs.size());
     for (auto &it : reqs) {
       lreqs << it._ArgTarget;
     }
   }
-  ql::list lopts(_lisp);
+  ql::list lopts;
   { // optional arguments   opts = (num opt1 init1 flag1 ...)
     lopts << make_fixnum((int)optionals.size());
     for (auto &it : optionals) {
       lopts << it._ArgTarget << it._Default << it._Sensor._ArgTarget;
     }
   }
-  ql::list lkeys(_lisp);
+  ql::list lkeys;
   { // optional arguments   keys = (num key1 var1 init1 flag1 ...)
     lkeys << make_fixnum((int)keys.size());
     for (auto &it : keys) {
       lkeys << it._Keyword << it._ArgTarget << it._Default << it._Sensor._ArgTarget;
     }
   }
-  ql::list lauxs(_lisp);
+  ql::list lauxs;
   if (auxs.size() != 0) { // auxes arguments   auxs = (num aux1 init1 ...)
     // !!!! The above is not true auxs = nil or (aux1 init1 aux2 init 2)
     //	    lauxs << make_fixnum((int)auxs.size());
@@ -1260,7 +1260,7 @@ string LambdaListHandler_O::__repr__() const {
 CL_LISPIFY_NAME("processLambdaListHandler");
 CL_DEFMETHOD T_mv LambdaListHandler_O::processLambdaListHandler() const {
 
-  ql::list reqs(_lisp);
+  ql::list reqs;
   { // required arguments  req = ( num req1 req2 ...)
     reqs << make_fixnum((int)this->_RequiredArguments.size());
     for (gctools::Vec0<RequiredArgument>::const_iterator it = this->_RequiredArguments.begin();
@@ -1268,7 +1268,7 @@ CL_DEFMETHOD T_mv LambdaListHandler_O::processLambdaListHandler() const {
       reqs << it->classified();
     }
   }
-  ql::list opts(_lisp);
+  ql::list opts;
   { // optional arguments   opts = (num opt1 init1 flag1 ...)
     opts << make_fixnum((int)this->_OptionalArguments.size());
     for (gctools::Vec0<OptionalArgument>::const_iterator it = this->_OptionalArguments.begin();
@@ -1276,7 +1276,7 @@ CL_DEFMETHOD T_mv LambdaListHandler_O::processLambdaListHandler() const {
       opts << it->classified() << it->_Default << it->_Sensor.classified();
     }
   }
-  ql::list keys(_lisp);
+  ql::list keys;
   bool keyFlag = this->_KeyFlag.notnilp();
   { // optional arguments   keys = (num key1 var1 init1 flag1 ...)
     keys << make_fixnum((int)this->_KeywordArguments.size());
@@ -1286,7 +1286,7 @@ CL_DEFMETHOD T_mv LambdaListHandler_O::processLambdaListHandler() const {
       keyFlag = true;
     }
   }
-  ql::list auxs(_lisp);
+  ql::list auxs;
   { // auxes arguments   auxs = (num aux1 init1 ...)
     auxs << make_fixnum((int)this->_AuxArguments.size());
     for (gctools::Vec0<AuxArgument>::const_iterator it = this->_AuxArguments.begin();

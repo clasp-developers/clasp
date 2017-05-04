@@ -985,7 +985,7 @@ std::string Module_O::__repr__() const {
 }
 
 CL_DEFUN core::List_sp llvm_sys__module_get_function_list(Module_sp module) {
-  ql::list fl(_lisp);
+  ql::list fl;
   for (llvm::Function &f : *module->wrappedPtr()) {
     Function_sp wrapped_func = gc::As<Function_sp>(translate::to_object<const llvm::Function &>::convert(f));
     fl << wrapped_func;
@@ -1121,7 +1121,7 @@ CL_DEFMETHOD GlobalVariable_sp Module_O::getOrCreateUniquedStringGlobalVariable(
 
 CL_LISPIFY_NAME("getGlobalList");
 CL_DEFMETHOD core::List_sp Module_O::getGlobalList() const {
-  ql::list globals(_lisp);
+  ql::list globals;
   llvm::Module *m = this->wrappedPtr();
   for (llvm::Module::global_iterator it = m->global_begin(); it != m->global_end(); it++) {
     globals << core::RP_Create_wrapped<GlobalVariable_O, llvm::GlobalVariable *>(&(*it));
@@ -2615,7 +2615,7 @@ CL_EXTERN_DEFMETHOD(Function_O,&llvm::Function::setDoesNotThrow);
 
 CL_LISPIFY_NAME("getArgumentList");
 CL_DEFMETHOD core::List_sp Function_O::getArgumentList() {
-  ql::list l(_lisp);
+  ql::list l;
   llvm::Function::ArgumentListType &args = this->wrappedPtr()->getArgumentList();
   return translate::to_object<llvm::Function::ArgumentListType &>::convert(args);
 }

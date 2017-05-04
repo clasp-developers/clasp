@@ -453,6 +453,17 @@ and cannot be added to ~A." method other-gf gf)))
     #+(or)(let ((count (switch-clos-to-fastgf)))
             (format t "        switched ~a functions~%" count))))
 
+;;; April 2017  Turn this on to at least use fastgf for
+;;;    generic functions outside of the core
+#+(or)
+(eval-when (:execute :compile-toplevel :load-toplevel)
+  ;; This turns on fast-dispatch that uses the code in cmpgf.lsp
+  ;;   Once clos:*enable-fastgf* is set to T
+  ;;     EVERY new generic function starts using
+  ;;     the compiled fast dispatch functions
+  (setf clos:*enable-fastgf* t))
+
+
 #|
 ;;; THIS IS SUPPOSED TO BE AN ACCESSOR of the CLOS:SPECIALIZER class
 #+clasp

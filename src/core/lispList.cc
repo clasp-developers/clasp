@@ -206,11 +206,8 @@ CL_LAMBDA(arg);
 CL_DECLARE();
 CL_DOCSTRING("copyList");
 CL_DEFUN T_sp cl__copy_list(T_sp arg) {
-  if (arg.nilp())
-    return arg;
-  if (Cons_sp l = arg.asOrNull<Cons_O>()) {
-    return l->copyList();
-  }
+  if (arg.consp()) return arg.unsafe_cons()->copyList();
+  if (arg.nilp()) return arg;
   TYPE_ERROR(arg, cl::_sym_list);
 };
 /*! Code translated from ecl_butlast */
@@ -279,7 +276,7 @@ CL_DEFUN T_sp cl__listSTAR(T_sp tobjects) {
   if (oCdr(objects).nilp())
     return (oCar(objects));
   Cons_sp cur;
-  ql::list result(_lisp);
+  ql::list result;
   for (; oCdr(objects).notnilp(); objects = oCdr(objects)) {
     //	    printf("Adding %s\n", _rep_(oCar(objects)).c_str());
     result << oCar(objects);

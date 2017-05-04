@@ -148,7 +148,7 @@ CL_DECLARE();
 CL_DOCSTRING("make_list");
 CL_DEFUN List_sp cl__make_list(Fixnum_sp osize, T_sp initial_element) {
   size_t size = osize.unsafe_fixnum();
-  ql::list result(_lisp);
+  ql::list result;
   for (size_t i = 0; i < size; i++) {
     result << initial_element;
   }
@@ -413,7 +413,7 @@ List_sp Cons_O::assoc(T_sp item, T_sp key, T_sp test, T_sp testNot) const {
 
 List_sp Cons_O::subseq(cl_index start, T_sp end) const {
   size_t_pair bounds = sequenceStartEnd(cl::_sym_subseq,this->length(),start,end);
-  ql::list l(_lisp);
+  ql::list l;
   List_sp cur = this->onthcdr(start);
   for (size_t start(bounds.start); start < bounds.end; ++start) {
     l << oCar(cur);
@@ -692,7 +692,6 @@ List_sp Cons_O::last(cl_index n) const {
 }
 
 List_sp Cons_O::copyList() const {
-  _OF();
   List_sp first, cur;
   List_sp p = this->asSmartPtr();
   T_sp cdr;
