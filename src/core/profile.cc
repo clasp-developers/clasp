@@ -40,6 +40,7 @@ THE SOFTWARE.
 #include <clasp/core/object.h>
 #include <clasp/core/bignum.h>
 #include <clasp/core/profile.h>
+#include <clasp/core/evaluator.h>
 #include <clasp/core/wrappers.h>
 namespace core {
 
@@ -79,10 +80,20 @@ Bignum profilerTimeNs() {
 CL_LAMBDA();
 CL_DECLARE();
 CL_DOCSTRING("clock_gettime_nanoseconds");
-CL_DEFUN core::Bignum_mv core__clock_gettime_nanoseconds() {
+CL_DEFUN core::Bignum_sp core__clock_gettime_nanoseconds() {
   Bignum ns = profilerTimeNs();
   core::Bignum_sp bn = core::Bignum_O::create(ns);
-  return (Values(bn));
+  return bn;
+};
+
+CL_DOCSTRING("time-nanoseconds");
+CL_DEFUN core::Bignum_sp core__time_nanoseconds(Function_sp f) {
+  Bignum nb = profilerTimeNs();
+  core::eval::funcall(f);
+  Bignum na = profilerTimeNs();
+  Bignum diff = na - nb;
+  core::Bignum_sp bn = core::Bignum_O::create(diff);
+  return bn;
 };
 
 CL_LAMBDA(delay);
