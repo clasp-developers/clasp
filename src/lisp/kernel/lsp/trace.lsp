@@ -318,7 +318,7 @@ for Stepper mode commands."
 	      form)))))
 
 (defun stepper (form)
-  (declare (special *tpl-level* *tpl-commands*))
+  (declare (special *tpl-level* *tpl-commands* break-commands))
   (when (typep form '(or symbol function))
     (return-from stepper (steppable-function (coerce form 'function))))
   (let* ((*step-form* form)

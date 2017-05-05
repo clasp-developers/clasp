@@ -393,10 +393,20 @@ Return files."
     (if (or (out-of-date-bitcodes #P"src/lisp/kernel/tag/start" #P"src/lisp/kernel/tag/bclasp" :system system)
             (null (probe-file output-file)))
         (progn
-          (load-system (select-source-files #P"src/lisp/kernel/tag/start" #P"src/lisp/kernel/tag/pre-epilogue-bclasp" :system system))
-          (let ((files (out-of-date-bitcodes #P"src/lisp/kernel/tag/start" #P"src/lisp/kernel/tag/bclasp" :system system)))
-            (compile-system files)
-            (let ((all-bitcode (bitcode-pathnames #P"src/lisp/kernel/tag/start" #P"src/lisp/kernel/tag/bclasp" :system system)))
+          (load-system (select-source-files #P"src/lisp/kernel/tag/start"
+                                            #P"src/lisp/kernel/tag/pre-epilogue-bclasp" :system system))
+          (let* ((bclasp-files (out-of-date-bitcodes #P"src/lisp/kernel/tag/start"
+                                                    #P"src/lisp/kernel/tag/bclasp"
+                                                    :system system))
+                (cclasp-all (out-of-date-bitcodes #P"src/lisp/kernel/tag/bclasp"
+                                                         #P"src/lisp/kernel/lsp/epilogue-bclasp"
+                                                         :system system))
+                (cclasp-files (butlast cclasp-all))
+                (bclasp-epilogue (last cclasp-all)))
+            (compile-system bclasp-files)
+            (when cclasp-files (compile-system cclasp-files :reload t))
+            (when bclasp-epilogue (compile-system bclasp-epilogue))
+            (let ((all-bitcode (bitcode-pathnames #P"src/lisp/kernel/tag/start" #P"src/lisp/kernel/lsp/epilogue-bclasp" :system system)))
               (if (out-of-date-target output-file all-bitcode)
                     (cmp:link-bitcode-modules output-file all-bitcode))))))))
 
@@ -410,9 +420,10 @@ Return files."
 (defun compile-cclasp* (output-file system)
   "Turn off generation of inlining code until its turned back on by the source code.
 Compile the cclasp source code."
-  (let ((ensure-adjacent (select-source-files #P"src/lisp/kernel/cleavir/inline-prep" #P"src/lisp/kernel/cleavir/auto-compile" :system system)))
+  #+(or)(let ((ensure-adjacent (select-source-files #P"src/lisp/kernel/cleavir/inline-prep" #P"src/lisp/kernel/cleavir/auto-compile" :system system)))
     (or (= (length ensure-adjacent) 2) (error "src/lisp/kernel/inline-prep MUST immediately preceed src/lisp/kernel/auto-compile - currently the order is: ~a" ensure-adjacent)))
-  (let ((files (append (out-of-date-bitcodes #P"src/lisp/kernel/tag/start" #P"src/lisp/kernel/cleavir/inline-prep" :system system)
+  (let ((files (append (out-of-date-bitcodes #P"src/lisp/kernel/tag/start"
+                                             #P"src/lisp/kernel/lsp/epilogue-bclasp" :system system)
                        (select-source-files #P"src/lisp/kernel/cleavir/auto-compile"
                                             #P"src/lisp/kernel/tag/cclasp"
                                             :system system))))
@@ -439,7 +450,7 @@ Compile the cclasp source code."
     (time
      (progn
        (progn ;; Use load-cclasp?
-         (load-system (select-source-files #P"src/lisp/kernel/tag/bclasp" #P"src/lisp/kernel/cleavir/inline-prep" :system system) :compile-file-load t )
+         #+(or)(load-system (select-source-files #P"src/lisp/kernel/tag/bclasp" #P"src/lisp/kernel/cleavir/inline-prep" :system system) :compile-file-load t )
          (load-system (select-source-files #P"src/lisp/kernel/cleavir/auto-compile" #P"src/lisp/kernel/tag/pre-epilogue-cclasp" :system system) :compile-file-load nil ))
        (compile-cclasp* output-file system)))))
 

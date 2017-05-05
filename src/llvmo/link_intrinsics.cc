@@ -937,6 +937,7 @@ void gdb() {
 void debugInspectActivationFrame(core::ActivationFrame_sp *afP) {
   core::ActivationFrame_sp af = (*afP);
   printf("debugInspectActivationFrame: %s\n", _rep_(af).c_str());
+  printf("Parent T_sp : %p\n", af->parentFrame().raw_());
   printf("%s:%d Insert breakpoint here if you want to inspect af\n", __FILE__, __LINE__);
 }
 
@@ -994,7 +995,7 @@ void debugMessage(const char *msg) {
   printf("++++++ DEBUG-MESSAGE: %s \n", msg);
 }
 
-uintptr_clasp_t debug_match_two_uintptr_clasp_t(uintptr_clasp_t x, uintptr_clasp_t y)
+uintptr_clasp_t debug_match_two_uintptr_t(uintptr_clasp_t x, uintptr_clasp_t y)
 {
   if ( x == y ) return x;
   printf("%s:%d !!!!! in debug_match_two_uintptr_clasp_t the two pointers %p and %p don't match\n", __FILE__, __LINE__, (void*)x, (void*)y);
