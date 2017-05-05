@@ -372,13 +372,11 @@ List_sp Cons_O::memberEql(T_sp item) const {
 }
 
 List_sp Cons_O::member(T_sp item, T_sp key, T_sp test, T_sp testNot) const {
-  _OF();
   Tester t(item, key, test, testNot, false);
   for (auto cur : (List_sp) this->asSmartPtr()) {
     LOG(BF("Testing for member with item=%s entry = %s") % item % oCar(cur));
-    T_sp obj = oCar(cur);
-    if (t.test(obj))
-      return ((cur));
+    T_sp obj = CONS_CAR(cur);
+    if (t.test(obj)) return ((cur));
   }
   return ((_Nil<T_O>()));
 }
@@ -390,9 +388,8 @@ List_sp Cons_O::member1(T_sp item, T_sp key, T_sp test, T_sp testNot) const {
   Tester t(item, key, test, testNot, true);
   for (auto cur : (List_sp) this->asSmartPtr()) {
     LOG(BF("Testing for member with item=%s entry = %s") % item % oCar(cur));
-    T_sp obj = oCar(cur);
-    if (t.test(obj))
-      return ((cur));
+    T_sp obj = CONS_CAR(cur);
+    if (t.test(obj)) return ((cur));
   }
   return ((_Nil<T_O>()));
 }
@@ -402,10 +399,10 @@ List_sp Cons_O::assoc(T_sp item, T_sp key, T_sp test, T_sp testNot) const {
   Tester t(item, key, test, testNot, false);
   for (auto cur : (List_sp) this->asSmartPtr()) {
     LOG(BF("Testing for assoc with item=%s entry = %s") % item % oCar(cur));
-    if (oCar(cur).consp()) {
-      T_sp obj = oCar(oCar(cur));
+    if (CONS_CAR(cur).consp()) {
+      T_sp obj = CONS_CAR(CONS_CAR(cur));
       if (t.test(obj))
-        return (coerce_to_list(oCar(cur)));
+        return (coerce_to_list(CONS_CAR(cur)));
     }
   }
   return coerce_to_list(_Nil<T_O>());

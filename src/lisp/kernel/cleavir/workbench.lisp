@@ -32,7 +32,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(push :strandh-dispatch *features*)
+(push :enable-fastgf *features*)
 
 ;;; Running slime from bclasp+cleavir - don't load inline.lsp or auto-compile
 ;;;  --- Testing defun-inline-hook
