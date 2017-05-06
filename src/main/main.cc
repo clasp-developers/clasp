@@ -446,17 +446,12 @@ int main( int argc, char *argv[] )
 
   // - COMMAND LINE OPTONS HANDLING
 
-#if 0
-  // Use this to check if smart_ptr<core::T_O> is being passed by value or reference
-  gctools::smart_ptr<core::T_O> x((gctools::Tagged)0xDEADBEEF);
-  foo(x);
-#endif
-  
   core::CommandLineOptions options(argc, argv);
 
   // CALL LISP STARTUP
 
-  int exit_code = 0;
+  set_exit_code( EXIT_SUCCESS );
+
   try
   {
     exit_code = gctools::startupGarbageCollectorAndSystem( &startup, argc, argv, rl.rlim_max, mpiEnabled, mpiRank, mpiSize );
