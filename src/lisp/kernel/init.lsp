@@ -46,10 +46,10 @@
   (core::select-package :clos)
   ;; enable the fast-dispatch code
   (setq *features* (cons :fast-dispatch *features*))
-  (sys:*make-special 'clos::*enable-fast-dispatch*)
-  (setq clos::*enable-fast-dispatch* nil)
+  (sys:*make-special 'clos::*enable-fastgf*)
+  (setq clos::*enable-fastgf* nil)
 )
-(export '(standard-class *enable-fast-dispatch*))
+(export '(standard-class *enable-fastgf*))
 
 ;; Setup a few things for the GRAY streams package
 (eval-when (:execute :compile-toplevel :load-toplevel)
@@ -66,6 +66,7 @@
   (core::select-package :cmp))
 (export '(llvm-link link-bitcode-modules))
 (sys:*make-special '*compile-file-debug-dump-module*)
+(sys:*make-special '*debug-compile-file*)
 (if (boundp '*compile-file-debug-dump-module*)
     nil
     (setq *compile-file-debug-dump-module* nil))
@@ -73,6 +74,7 @@
 (if (boundp '*compile-debug-dump-module*)
     nil
     (setq *compile-debug-dump-module* nil))
+(setq *debug-compile-file* (member :debug-compile-file *features*))
 (export '(*compile-file-debug-dump-module* *compile-debug-dump-module*))
 (use-package :core)
 

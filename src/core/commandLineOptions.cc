@@ -87,7 +87,7 @@ CommandLineOptions::CommandLineOptions(int argc, char *argv[])
              "export CLASP_VERBOSE_BUNDLE_SETUP   Dump info during bundle setup\n"
              "export CLASP_TELEMETRY_MASK=1  #turn on telemetry for (1=gc,2=stack)\n"
              "export CLASP_TELEMETRY_FILE=/tmp/clasp.tel # (file to write telemetry)\n"
-             "export CLASP_FEATURES=clasp-builder-repl  # Set features in env\n"
+             "export CLASP_FEATURES=clasp-builder-repl  # Set *features* (separate multiple features with spaces)\n"
              "# to control MPS\n"
              "export CLASP_MPS_CONFIG=\"32 32 16 80 32 80 64\" # for lots of GC's\n");
       exit(0);

@@ -157,7 +157,10 @@ SYMBOL_EXPORT_SC_(CorePkg, STARdebug_threadsSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARallow_with_interruptsSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, signal_servicing);
 SYMBOL_EXPORT_SC_(CorePkg, handle_signal);
+SYMBOL_EXPORT_SC_(CorePkg, every_list);
+SYMBOL_EXPORT_SC_(CorePkg, some_list);
 SYMBOL_EXPORT_SC_(CorePkg, stack_closure);
+
 SYMBOL_EXPORT_SC_(CorePkg, make_source_pos_info);
 SYMBOL_EXPORT_SC_(CorePkg, STARinvalidated_dispatch_function_stackSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARtop_level_form_stackSTAR);
@@ -189,6 +192,8 @@ SYMBOL_EXPORT_SC_(KeywordPkg,code);
 
 SYMBOL_EXPORT_SC_(ClPkg, upgraded_array_element_type);
 SYMBOL_EXPORT_SC_(ClPkg, member);
+SYMBOL_EXPORT_SC_(ClPkg, every);
+SYMBOL_EXPORT_SC_(ClPkg, some);
 SYMBOL_EXPORT_SC_(ClPkg, float);
 SYMBOL_EXPORT_SC_(ClPkg, double_float);
 SYMBOL_EXPORT_SC_(ClPkg, single_float);
@@ -1181,7 +1186,7 @@ void CoreExposer_O::define_essential_globals(Lisp_sp lisp) {
 #error Currently only x86_64 and i386 is supported
 #endif
 
-  ql::list features(_lisp);
+  ql::list features;
   features << target_os;
   features << address_model;
 

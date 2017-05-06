@@ -746,7 +746,7 @@ jump to blocks within this tagbody."
 	   (irc-begin-block (irc-basic-block-create "after-go"))
 	   )
 	 ))
-      (error "go to unknown classified tag ~a ~a" tag classified-tag))))
+      (t (error "go to unknown classified tag ~a ~a" tag classified-tag)))))
 
 
 

@@ -106,8 +106,8 @@
 (progn
   (defun convert-to-bignum (z)
     (if (> z 0)
-        (- z (expt 2 63))
-        (+ z (expt 2 63))))
+        (- z (expt 2 cl-fixnum-bits))
+        (+ z (expt 2 cl-fixnum-bits))))
   (defmacro def-inline-arithmetic (inlined-name cleavir-primop generic-name)
     (let ((x (gensym))
           (y (gensym))

@@ -1505,7 +1505,7 @@ T_sp TagbodyEnvironment_O::find_tagbody_tag_environment(Symbol_sp tag) const {
 
 GlueEnvironment_sp GlueEnvironment_O::create(List_sp parts) {
   GlueEnvironment_sp env(GlueEnvironment_O::create());
-  ql::list args(_lisp);
+  ql::list args;
   for (List_sp cur = parts; cur.notnilp(); cur = oCdr(oCdr(cur))) {
     Symbol_sp sym = gc::As<Symbol_sp>(oCar(cur));
     T_sp val = oCadr(cur);

@@ -144,7 +144,7 @@ List_sp listOfPackageDesignators(T_sp obj) {
   if (obj.nilp())
     return _Nil<T_O>();
   if (obj.consp()) {
-    ql::list res(_lisp);
+    ql::list res;
     List_sp lobj = obj;
     for (auto cur : lobj) {
       Package_sp pkg = packageDesignator(oCar(cur));

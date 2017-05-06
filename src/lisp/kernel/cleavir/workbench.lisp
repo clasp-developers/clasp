@@ -32,12 +32,12 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(push :strandh-dispatch *features*)
+(push :enable-fastgf *features*)
 
 ;;; Running slime from bclasp+cleavir - don't load inline.lsp or auto-compile
 ;;;  --- Testing defun-inline-hook
 (print "Starting")
-(time (compile-file "sys:modules;asdf;build;asdf.lisp"))
+(time (compile-file "sys:modules;asdf;build;asdf.lisp" :print t))
 (progn ;; Set up everything for building cclasp from bclasp with auto-compile
   (format t "Loading ASDF system~%")
   (finish-output)

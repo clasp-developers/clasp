@@ -58,8 +58,8 @@ T_sp cl__read_preserving_whitespace(T_sp input_stream_designator, T_sp eof_error
 #endif
 
 T_sp cl__type_of(T_sp x);
-T_sp cl__notany(T_sp predicate, List_sp sequences);
-T_sp cl__every(T_sp predicate, List_sp sequences);
+T_sp core__notany_list(T_sp predicate, List_sp sequences);
+T_sp core__every_list(T_sp predicate, List_sp sequences);
 
 T_sp cl__mapcar(T_sp func_desig, List_sp lists);
 

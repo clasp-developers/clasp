@@ -86,6 +86,7 @@ virtual T_sp currentVisibleEnvironment() const;
   inline void setParentFrame(T_O *parent) {
     this->parentFrameRef_().rawRef_() = parent;
 #ifdef DEBUG_ASSERTS
+    #error "DEBUG_ASSERTS is on - turn it off"
     T_sp p((gctools::Tagged)parent);
     if (!(p.nilp() || p.asOrNull<Environment_O>()) ) {
       SIMPLE_ERROR(BF("Activation frame is not an activation frame - it is a %s") % _rep_(p));
@@ -94,11 +95,6 @@ virtual T_sp currentVisibleEnvironment() const;
   }
   inline void setParentFrame(T_sp p) {
     this->parentFrameRef_() = p;
-#ifdef DEBUG_ASSERTS
-    if (!(p.nilp() || p.asOrNull<Environment_O>()) ) {
-      SIMPLE_ERROR(BF("Activation frame is not an activation frame - it is a %s") % _rep_(p));
-    }
-#endif
   };
 private:
   virtual string asString() const;

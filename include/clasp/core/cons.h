@@ -87,8 +87,8 @@ T_sp oEighth(T_sp o);
 T_sp oNinth(T_sp o);
 T_sp oTenth(T_sp o);
 
-#define CONS_CAR(x) (gctools::reinterpret_cast_smart_ptr<Cons_O>(x)->_Car)
-#define CONS_CDR(x) (gctools::reinterpret_cast_smart_ptr<Cons_O>(x)->_Cdr)
+#define CONS_CAR(x) (gctools::reinterpret_cast_smart_ptr<core::Cons_O>(x)->_Car)
+#define CONS_CDR(x) (gctools::reinterpret_cast_smart_ptr<core::Cons_O>(x)->_Cdr)
 #define CAR(x) oCar(x)
 #define CDR(x) oCdr(x)
 #define CONSP(x) ((x).consp())
@@ -341,25 +341,16 @@ namespace core {
   /*! Return the number of elements in the list*/
     size_t length() const;
 
-  /*! Calculate the length the fastest way I can think of */
-    inline uint fastUnsafeLength() const {
-      TESTING();
-      uint sz = 1;
+  /*! Calculate the length the fastest way I can think of.
+      It only works on proper lists. */
+    inline size_t proper_list_length() const {
+      size_t sz = 1;
       T_sp cur = this->_Cdr;
       while (cur.consp()) {
         ++sz;
         cur = cur.unsafe_cons()->_Cdr;
       }
       return sz;
-#if 0
-      uint sz=1;
-      Cons_O* cur = reinterpret_cast<Cons_O*>(this->_Cdr.px_ref());
-      while (!gctools::tagged_ptr<Cons_O>::tagged_nilp(cur)) {
-        ++sz;
-        cur = reinterpret_cast<Cons_O*>(reinterpret_cast<Cons_O*>(cur)->_Cdr.px_ref());
-      }
-      return sz;
-#endif
     }
 
 #if 0

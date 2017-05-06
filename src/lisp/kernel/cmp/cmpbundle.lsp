@@ -61,16 +61,16 @@
 
   (when output-file-name
     (let ((sleep-time *safe-system-retry-wait-time*))
-      (loop for n from 1 to *safe-system-max-retries*
-         do
-           (unless (probe-file output-file-name)
-             (if (>= n *safe-system-max-retries*)
-                 (error "The file ~a was not created by shell command: ~a" output-file-name (as-shell-command cmd-list))
-                 (progn
-                   (if *safe-system-echo*
-                       (bformat t "safe-system: Retry count = %d of %d\n" n *safe-system-max-retries*))
-                   (core::sleep sleep-time)
-                   (setq sleep-time (* 2 sleep-time))))))))
+      (dotimes (nm1 (- *safe-system-max-retries* 1))
+        (let ((n (+ nm1 1)))
+          (unless (probe-file output-file-name)
+            (if (>= n *safe-system-max-retries*)
+                (error "The file ~a was not created by shell command: ~a" output-file-name (as-shell-command cmd-list))
+                (progn
+                  (if *safe-system-echo*
+                      (bformat t "safe-system: Retry count = %d of %d\n" n *safe-system-max-retries*))
+                  (core::sleep sleep-time)
+                  (setq sleep-time (* 2 sleep-time)))))))))
 
   ;; Return T if all went well
   t)

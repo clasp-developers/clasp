@@ -1295,9 +1295,11 @@ void Lisp_O::parseCommandLineArguments(int argc, char *argv[], const CommandLine
   List_sp features = cl::_sym_STARfeaturesSTAR->symbolValue();
   const char* environment_features = getenv("CLASP_FEATURES");
   if (environment_features) {
-    vector<string> features_vector = split(std::string(environment_features)," ");
+    vector<string> features_vector = split(std::string(environment_features)," ,");
     for ( auto feature_name : features_vector ) {
-      features = Cons_O::create(_lisp->internKeyword(feature_name),features);
+      if (feature_name != "") {
+        features = Cons_O::create(_lisp->internKeyword(feature_name),features);
+      }
     }
   }
   for (int i = 0; i < options._Features.size(); ++i) {

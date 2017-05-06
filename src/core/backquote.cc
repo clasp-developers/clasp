@@ -324,12 +324,12 @@ CL_DEFUN T_sp core__backquote_simplify_args(T_sp x) {
     if (cl__atom(oCar(args))) {
       result = core__backquote_attach_append(_sym_STARbq_appendSTAR, oCar(args), result);
     } else if ((oCaar(args) == _sym_STARbq_listSTAR) &&
-               cl__notany(_sym_backquote_splicing_frob,
-                         Cons_O::create(oCdar(args))).isTrue()) {
+               core__notany_list(_sym_backquote_splicing_frob,
+                                 Cons_O::create(oCdar(args))).isTrue()) {
       result = core__backquote_attach_conses(oCdar(args), result);
     } else if ((oCaar(args) == _sym_STARbq_listSTARSTAR) &&
-               cl__notany(_sym_backquote_splicing_frob,
-                         Cons_O::create(oCdar(args))).isTrue()) {
+               core__notany_list(_sym_backquote_splicing_frob,
+                                 Cons_O::create(oCdar(args))).isTrue()) {
       List_sp rev1 = cl__reverse(oCdar(args));
       List_sp rev2 = cl__reverse(oCdr(rev1));
       List_sp car_last_car_args = oCar(cl__last(oCar(args)));
@@ -390,7 +390,7 @@ CL_LAMBDA(items result);
 CL_DECLARE();
 CL_DOCSTRING("backquote_attach_conses");
 CL_DEFUN List_sp core__backquote_attach_conses(T_sp items, T_sp result) {
-  if (cl__every(_sym_backquote_null_or_quoted, Cons_O::create(items)).isTrue() && core__backquote_null_or_quoted(result).isTrue()) {
+  if (core__every_list(_sym_backquote_null_or_quoted, Cons_O::create(items)).isTrue() && core__backquote_null_or_quoted(result).isTrue()) {
     Cons_sp ti = Cons_O::create(items);
     Cons_sp tl = Cons_O::createList(cl__mapcar(cl::_sym_cadr, ti), oCadr(result));
     return Cons_O::createList(_sym_STARbq_quoteSTAR, core__backquote_append(tl));

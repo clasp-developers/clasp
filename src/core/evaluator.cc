@@ -481,7 +481,7 @@ T_mv core__classify_let_variables_and_declares(List_sp variables, List_sp declar
   HashTable_sp indices = cl__make_hash_table(cl::_sym_eq, make_fixnum(8),
                                             DoubleFloat_O::create(1.5),
                                             DoubleFloat_O::create(1.0));
-  ql::list classified(_lisp);
+  ql::list classified;
   size_t indicesSize = 0;
   for (auto cur : variables) {
     Symbol_sp sym = gc::As<Symbol_sp>(oCar(cur));

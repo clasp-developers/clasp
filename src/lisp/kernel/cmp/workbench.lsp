@@ -1,11 +1,131 @@
 
+(dolist (x (clos::all-generic-functions))
+;;;  (core:bformat t "%s\n" x)
+  (if (member x (list
+                 #'clos::compute-applicable-methods-using-classes
+                 #'clos::add-direct-method
+#|
+                 #'class-name
+                 #'initialize-instance
+                 #'clos:add-direct-subclass
+                 #'clos:validate-superclass
+|#
+                      ))
+;;;      (core:bformat t "     Skipping\n")
+      (progn
+        (clos::update-specializer-profile x)
+        (clos::switch-to-fastgf x))))
+
+
+
+(let ((dispatchers (make-hash-table)))
+  (dolist (x (clos::all-generic-functions))
+    (clos::update-specializer-profile x)
+    (if (member x (list
+                   #'clos::compute-applicable-methods-using-classes
+                   #'clos::add-direct-method
+                   #'clos::compute-effective-method
+                   ))
+        nil
+        (setf (gethash x dispatchers) (clos::calculate-fastgf-dispatch-function x))))
+  (maphash (lambda (gf disp)
+             (clos::safe-set-funcallable-instance-function gf disp))
+           dispatchers))
+
+;;;  (core:bformat t "%s\n" x)
+  (if (member x (list
+                 #'clos::compute-applicable-methods-using-classes
+                 #'clos::add-direct-method
+#|
+                 #'class-name
+                 #'initialize-instance
+                 #'clos:add-direct-subclass
+                 #'clos:validate-superclass
+|#
+                      ))
+;;;      (core:bformat t "     Skipping\n")
+      (progn
+        (clos::update-specializer-profile x)
+        (clos::switch-to-fastgf x))))
+
+
+
+
+(clos::generic-function-call-history #'clos::add-direct-method)
+
+(setq *print-pretty* nil)
+
+(dolist (x (clos::optimized-call-history #'clos::add-direct-method)) (print (car x)))
+(dolist (x (clos::generic-function-call-history #'clos::add-direct-method)) (print (car x)))
+
+
+(trace cmp::node-add cmp::node-class-add)
+(clos::update-specializer-profile #'clos::add-direct-method)
+(clos::graph-fastgf-dispatch-function #'clos::add-direct-method)
+(clos::generic-function-specializer-profile #'clos::add-direct-method)
+
+
+
+
+
+
+(progn
+;  (setq clos::*enable-fastgf* t)
+  (defgeneric foo (w x y))
+  (defmethod foo (w (x (eql 'a)) y) :integer)
+  (defmethod foo (w (x (eql 'b)) y) :symbol)
+  (defmethod foo (w (x (eql 'c)) y) :string))
+
+(foo 8 'a 1 )
+(foo 8 'a :asdf )
+(foo 8 'b "asdf" )
+
+(clos::switch-to-fastgf #'foo)
+
+(foo 8 'c 1)
+
+(graph-fastgf-dispatch-function #'foo)
+
+(defmethod foo ((w string) x y) :goofy)
+(foo "abcd" 'c 1.2)
+(graph-fastgf-dispatch-function #'foo)
+
+(clos::get-funcallable-instance-function #'foo)
+
+
+
+(apropos "node")
+
+
+
+
+
 (load "sys:kernel;cmp;jit-setup.lsp")
 (load "sys:kernel;cmp;cmpgf.lsp")
+
+
 (defmethod foo ((x integer)) :integer)
 (foo 1)
 (clos:switch-to-fastgf #'foo)
+(defmethod foo ((x symbol)) :symbol)
+
+(foo 1.2)
+
+(defclass bar () ((barx :initarg :barx :accessor barx)))
+(defmethod foo ((x bar)) :bar)
+(defparameter b (make-instance 'bar :barx 1))
+(foo b)
+(foo 1.2)
+
+
 (clos:get-funcallable-instance-function #'foo)
 
+
+(defclass bar () ((barx :initarg :barx :accessor barx)
+                  (bary :initarg :bary :accessor bary)))
+
+(defclass baz () ((barx :initarg :barx :accessor barx)
+                  (bazy :initarg :bazy :accessor bazy)))
 
 
 

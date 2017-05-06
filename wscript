@@ -891,7 +891,7 @@ def build(bld):
     if (stage_val >= 2):
         print("About to add compile_bclasp")
         cmp_bclasp = compile_bclasp(env=bld.env)
-        cmp_bclasp.set_inputs([iclasp_executable,aclasp_link_product,intrinsics_bitcode_node]+fix_lisp_paths(bld.path,out,variant,bld.clasp_bclasp))
+        cmp_bclasp.set_inputs([iclasp_executable,aclasp_link_product,intrinsics_bitcode_node]+fix_lisp_paths(bld.path,out,variant,bld.clasp_cclasp)) # bld.clasp_bclasp
         bclasp_common_lisp_bitcode = bld.path.find_or_declare(variant.common_lisp_bitcode_name(stage='b'))
         cmp_bclasp.set_outputs(bclasp_common_lisp_bitcode)
         bld.add_to_group(cmp_bclasp)
@@ -1140,7 +1140,7 @@ class compile_bclasp(Task.Task):
                       "--eval", '(load "sys:kernel;clasp-builder.lsp")' ]
         cmd = cmd + ["--eval", "(compile-bclasp :output-file #P\"%s\")" % self.outputs[0] ,
                      "--eval", "(quit)" ]
-        cmd = cmd + [ "--" ] + self.bld.clasp_bclasp
+        cmd = cmd + [ "--" ] + self.bld.clasp_cclasp    # was self.bld.clasp_bclasp
         if (self.bld.command ):
             dump_command(cmd)
         return self.exec_command(cmd)

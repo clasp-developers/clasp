@@ -227,8 +227,8 @@ LCC_RETURN optimized_slot_reader_dispatch(gctools::Tagged tgf, gctools::Tagged t
       unlikely_if (e == NULL) {
         SIMPLE_ERROR(BF("What do I do here?  e==NULL"));
       }
-      T_sp call_history_key = SimpleVector_O::make(cache->_keys.size()-1,_Nil<T_O>(),true,cache->_keys.size()-1,&(cache->_keys[1]));
-      core__generic_function_call_history_push_new(gf,call_history_key,Cons_O::create(core::_sym_optimized_slot_reader,index));
+      SimpleVector_sp call_history_key = SimpleVector_O::make(1,cache->_keys[1],true);
+      core__generic_function_call_history_push_new(gf,call_history_key,Cons_O::create(core::_sym_optimized_slot_reader,e->_value));
     }
     index = e->_value;
     value = do_slot_read(index.tagged_(),tgf,tinstance.tagged_());
@@ -310,7 +310,8 @@ LCC_RETURN optimized_slot_writer_dispatch(gctools::Tagged tgf, gctools::Tagged t
     }
     index = e->_value;
     do_slot_write(index.tagged_(),tgf,instance.tagged_(),value.tagged_());
-    T_sp call_history_key = SimpleVector_O::make(cache->_keys.size()-1,_Nil<T_O>(),true,cache->_keys.size()-1,&(cache->_keys[1]));
+    SimpleVector_sp call_history_key = SimpleVector_O::make(2,T_O::static_class);
+    (*call_history_key)[1] = cache->_keys[1];
     core__generic_function_call_history_push_new(gf,call_history_key,Cons_O::create(core::_sym_optimized_slot_writer,index));
     return value.as_return_type();
   }

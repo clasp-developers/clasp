@@ -711,7 +711,7 @@
 
 (defun irc-simple-function-create (llvm-function-name function-type linkage module
                                    &key (function-attributes *default-function-attributes* function-attributes-p )
-                                     (argument-names '("result-ptr" "activation-frame-ptr") argument-names-p))
+                                     argument-names) ;;; '("result-ptr" "activation-frame-ptr") argument-names-p))
   "A simple function creator - set personality and arguments and function-attributes.
 But no irbuilders or basic-blocks. Return the fn."
   (let* ((fn (irc-function-create function-type
@@ -720,9 +720,8 @@ But no irbuilders or basic-blocks. Return the fn."
                                   module
                                   :function-attributes function-attributes)))
     (llvm-sys:set-personality-fn fn (irc-personality-function))
-    (let ((args (llvm-sys:get-argument-list fn)))
-      (mapcar #'(lambda (arg argname) (llvm-sys:set-name arg argname))
-	      (llvm-sys:get-argument-list fn) argument-names))
+    (mapcar #'(lambda (arg argname) (llvm-sys:set-name arg argname))
+            (llvm-sys:get-argument-list fn) argument-names)
     fn))
                                    
 (defun irc-bclasp-function-create (lisp-function-name body env
