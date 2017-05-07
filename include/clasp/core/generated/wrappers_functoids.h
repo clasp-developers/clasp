@@ -31,10 +31,11 @@ virtual void* functionAddress() const { return (void*)this->fptr; };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(fargs,this->asSmartPtr().raw_(),18);
 core::StackFrameDynamicScopeManager scope(fargs);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)(*fargs)[0]));
 translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)(*fargs)[1]));
 translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)(*fargs)[2]));
@@ -86,10 +87,11 @@ virtual void* functionAddress() const { return (void*)this->fptr; };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(fargs,this->asSmartPtr().raw_(),17);
 core::StackFrameDynamicScopeManager scope(fargs);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)(*fargs)[0]));
 translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)(*fargs)[1]));
 translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)(*fargs)[2]));
@@ -139,10 +141,11 @@ virtual void* functionAddress() const { return (void*)this->fptr; };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(fargs,this->asSmartPtr().raw_(),16);
 core::StackFrameDynamicScopeManager scope(fargs);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)(*fargs)[0]));
 translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)(*fargs)[1]));
 translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)(*fargs)[2]));
@@ -190,10 +193,11 @@ virtual void* functionAddress() const { return (void*)this->fptr; };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(fargs,this->asSmartPtr().raw_(),15);
 core::StackFrameDynamicScopeManager scope(fargs);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)(*fargs)[0]));
 translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)(*fargs)[1]));
 translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)(*fargs)[2]));
@@ -240,10 +244,11 @@ virtual void* functionAddress() const { return (void*)this->fptr; };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(fargs,this->asSmartPtr().raw_(),14);
 core::StackFrameDynamicScopeManager scope(fargs);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)(*fargs)[0]));
 translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)(*fargs)[1]));
 translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)(*fargs)[2]));
@@ -289,10 +294,11 @@ virtual void* functionAddress() const { return (void*)this->fptr; };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(fargs,this->asSmartPtr().raw_(),13);
 core::StackFrameDynamicScopeManager scope(fargs);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)(*fargs)[0]));
 translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)(*fargs)[1]));
 translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)(*fargs)[2]));
@@ -337,10 +343,11 @@ virtual void* functionAddress() const { return (void*)this->fptr; };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(fargs,this->asSmartPtr().raw_(),12);
 core::StackFrameDynamicScopeManager scope(fargs);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)(*fargs)[0]));
 translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)(*fargs)[1]));
 translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)(*fargs)[2]));
@@ -384,10 +391,11 @@ virtual void* functionAddress() const { return (void*)this->fptr; };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(fargs,this->asSmartPtr().raw_(),11);
 core::StackFrameDynamicScopeManager scope(fargs);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)(*fargs)[0]));
 translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)(*fargs)[1]));
 translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)(*fargs)[2]));
@@ -430,10 +438,11 @@ virtual void* functionAddress() const { return (void*)this->fptr; };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(fargs,this->asSmartPtr().raw_(),10);
 core::StackFrameDynamicScopeManager scope(fargs);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)(*fargs)[0]));
 translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)(*fargs)[1]));
 translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)(*fargs)[2]));
@@ -475,10 +484,11 @@ virtual void* functionAddress() const { return (void*)this->fptr; };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(fargs,this->asSmartPtr().raw_(),9);
 core::StackFrameDynamicScopeManager scope(fargs);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)(*fargs)[0]));
 translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)(*fargs)[1]));
 translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)(*fargs)[2]));
@@ -519,10 +529,11 @@ virtual void* functionAddress() const { return (void*)this->fptr; };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(fargs,this->asSmartPtr().raw_(),8);
 core::StackFrameDynamicScopeManager scope(fargs);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)(*fargs)[0]));
 translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)(*fargs)[1]));
 translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)(*fargs)[2]));
@@ -561,10 +572,11 @@ virtual void* functionAddress() const { return (void*)this->fptr; };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(fargs,this->asSmartPtr().raw_(),7);
 core::StackFrameDynamicScopeManager scope(fargs);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)(*fargs)[0]));
 translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)(*fargs)[1]));
 translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)(*fargs)[2]));
@@ -602,10 +614,11 @@ virtual void* functionAddress() const { return (void*)this->fptr; };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(fargs,this->asSmartPtr().raw_(),6);
 core::StackFrameDynamicScopeManager scope(fargs);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)(*fargs)[0]));
 translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)(*fargs)[1]));
 translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)(*fargs)[2]));
@@ -642,10 +655,11 @@ virtual void* functionAddress() const { return (void*)this->fptr; };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(fargs,this->asSmartPtr().raw_(),5);
 core::StackFrameDynamicScopeManager scope(fargs);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)(*fargs)[0]));
 translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)(*fargs)[1]));
 translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)(*fargs)[2]));
@@ -681,10 +695,11 @@ virtual void* functionAddress() const { return (void*)this->fptr; };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(fargs,this->asSmartPtr().raw_(),4);
 core::StackFrameDynamicScopeManager scope(fargs);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)(*fargs)[0]));
 translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)(*fargs)[1]));
 translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)(*fargs)[2]));
@@ -719,10 +734,11 @@ virtual void* functionAddress() const { return (void*)this->fptr; };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(fargs,this->asSmartPtr().raw_(),3);
 core::StackFrameDynamicScopeManager scope(fargs);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)(*fargs)[0]));
 translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)(*fargs)[1]));
 translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)(*fargs)[2]));
@@ -756,10 +772,11 @@ virtual void* functionAddress() const { return (void*)this->fptr; };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(fargs,this->asSmartPtr().raw_(),2);
 core::StackFrameDynamicScopeManager scope(fargs);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)(*fargs)[0]));
 translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)(*fargs)[1]));
 RT retval =  fptr(a0._v,a1._v);
@@ -792,10 +809,11 @@ virtual void* functionAddress() const { return (void*)this->fptr; };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(fargs,this->asSmartPtr().raw_(),1);
 core::StackFrameDynamicScopeManager scope(fargs);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)(*fargs)[0]));
 RT retval =  fptr(a0._v);
 return Values(translate::to_object<RT>::convert(retval));
@@ -827,6 +845,7 @@ virtual void* functionAddress() const { return (void*)this->fptr; };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 RT retval =  fptr();
 return Values(translate::to_object<RT>::convert(retval));
@@ -861,10 +880,11 @@ virtual void* functionAddress() const { return (void*)this->fptr; };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(fargs,this->asSmartPtr().raw_(),18);
 core::StackFrameDynamicScopeManager scope(fargs);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)(*fargs)[0]));
 translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)(*fargs)[1]));
 translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)(*fargs)[2]));
@@ -915,10 +935,11 @@ virtual void* functionAddress() const { return (void*)this->fptr; };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(fargs,this->asSmartPtr().raw_(),17);
 core::StackFrameDynamicScopeManager scope(fargs);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)(*fargs)[0]));
 translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)(*fargs)[1]));
 translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)(*fargs)[2]));
@@ -967,10 +988,11 @@ virtual void* functionAddress() const { return (void*)this->fptr; };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(fargs,this->asSmartPtr().raw_(),16);
 core::StackFrameDynamicScopeManager scope(fargs);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)(*fargs)[0]));
 translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)(*fargs)[1]));
 translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)(*fargs)[2]));
@@ -1018,10 +1040,11 @@ virtual void* functionAddress() const { return (void*)this->fptr; };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(fargs,this->asSmartPtr().raw_(),15);
 core::StackFrameDynamicScopeManager scope(fargs);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)(*fargs)[0]));
 translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)(*fargs)[1]));
 translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)(*fargs)[2]));
@@ -1068,10 +1091,11 @@ virtual void* functionAddress() const { return (void*)this->fptr; };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(fargs,this->asSmartPtr().raw_(),14);
 core::StackFrameDynamicScopeManager scope(fargs);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)(*fargs)[0]));
 translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)(*fargs)[1]));
 translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)(*fargs)[2]));
@@ -1117,10 +1141,11 @@ virtual void* functionAddress() const { return (void*)this->fptr; };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(fargs,this->asSmartPtr().raw_(),13);
 core::StackFrameDynamicScopeManager scope(fargs);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)(*fargs)[0]));
 translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)(*fargs)[1]));
 translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)(*fargs)[2]));
@@ -1165,10 +1190,11 @@ virtual void* functionAddress() const { return (void*)this->fptr; };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(fargs,this->asSmartPtr().raw_(),12);
 core::StackFrameDynamicScopeManager scope(fargs);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)(*fargs)[0]));
 translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)(*fargs)[1]));
 translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)(*fargs)[2]));
@@ -1212,10 +1238,11 @@ virtual void* functionAddress() const { return (void*)this->fptr; };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(fargs,this->asSmartPtr().raw_(),11);
 core::StackFrameDynamicScopeManager scope(fargs);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)(*fargs)[0]));
 translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)(*fargs)[1]));
 translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)(*fargs)[2]));
@@ -1258,10 +1285,11 @@ virtual void* functionAddress() const { return (void*)this->fptr; };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(fargs,this->asSmartPtr().raw_(),10);
 core::StackFrameDynamicScopeManager scope(fargs);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)(*fargs)[0]));
 translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)(*fargs)[1]));
 translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)(*fargs)[2]));
@@ -1303,10 +1331,11 @@ virtual void* functionAddress() const { return (void*)this->fptr; };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(fargs,this->asSmartPtr().raw_(),9);
 core::StackFrameDynamicScopeManager scope(fargs);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)(*fargs)[0]));
 translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)(*fargs)[1]));
 translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)(*fargs)[2]));
@@ -1346,10 +1375,11 @@ virtual void* functionAddress() const { return (void*)this->fptr; };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(fargs,this->asSmartPtr().raw_(),8);
 core::StackFrameDynamicScopeManager scope(fargs);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)(*fargs)[0]));
 translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)(*fargs)[1]));
 translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)(*fargs)[2]));
@@ -1388,10 +1418,11 @@ virtual void* functionAddress() const { return (void*)this->fptr; };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(fargs,this->asSmartPtr().raw_(),7);
 core::StackFrameDynamicScopeManager scope(fargs);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)(*fargs)[0]));
 translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)(*fargs)[1]));
 translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)(*fargs)[2]));
@@ -1429,10 +1460,11 @@ virtual void* functionAddress() const { return (void*)this->fptr; };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(fargs,this->asSmartPtr().raw_(),6);
 core::StackFrameDynamicScopeManager scope(fargs);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)(*fargs)[0]));
 translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)(*fargs)[1]));
 translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)(*fargs)[2]));
@@ -1469,10 +1501,11 @@ virtual void* functionAddress() const { return (void*)this->fptr; };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(fargs,this->asSmartPtr().raw_(),5);
 core::StackFrameDynamicScopeManager scope(fargs);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)(*fargs)[0]));
 translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)(*fargs)[1]));
 translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)(*fargs)[2]));
@@ -1508,10 +1541,11 @@ virtual void* functionAddress() const { return (void*)this->fptr; };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(fargs,this->asSmartPtr().raw_(),4);
 core::StackFrameDynamicScopeManager scope(fargs);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)(*fargs)[0]));
 translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)(*fargs)[1]));
 translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)(*fargs)[2]));
@@ -1546,10 +1580,11 @@ virtual void* functionAddress() const { return (void*)this->fptr; };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(fargs,this->asSmartPtr().raw_(),3);
 core::StackFrameDynamicScopeManager scope(fargs);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)(*fargs)[0]));
 translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)(*fargs)[1]));
 translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)(*fargs)[2]));
@@ -1583,10 +1618,11 @@ virtual void* functionAddress() const { return (void*)this->fptr; };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(fargs,this->asSmartPtr().raw_(),2);
 core::StackFrameDynamicScopeManager scope(fargs);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)(*fargs)[0]));
 translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)(*fargs)[1]));
 fptr(a0._v,a1._v);
@@ -1619,10 +1655,11 @@ virtual void* functionAddress() const { return (void*)this->fptr; };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(fargs,this->asSmartPtr().raw_(),1);
 core::StackFrameDynamicScopeManager scope(fargs);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)(*fargs)[0]));
 fptr(a0._v);
 return Values0<core::T_O>();
@@ -1654,6 +1691,7 @@ virtual void* functionAddress() const { return (void*)this->fptr; };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 fptr();
 return Values0<core::T_O>();
@@ -1689,10 +1727,11 @@ virtual void* functionAddress() const { return (void*)this->fptr; };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(fargs,this->asSmartPtr().raw_(),18);
 core::StackFrameDynamicScopeManager scope(fargs);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)(*fargs)[0]));
 translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)(*fargs)[1]));
 translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)(*fargs)[2]));
@@ -1746,10 +1785,11 @@ virtual void* functionAddress() const { return (void*)this->fptr; };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(fargs,this->asSmartPtr().raw_(),17);
 core::StackFrameDynamicScopeManager scope(fargs);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)(*fargs)[0]));
 translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)(*fargs)[1]));
 translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)(*fargs)[2]));
@@ -1802,10 +1842,11 @@ virtual void* functionAddress() const { return (void*)this->fptr; };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(fargs,this->asSmartPtr().raw_(),16);
 core::StackFrameDynamicScopeManager scope(fargs);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)(*fargs)[0]));
 translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)(*fargs)[1]));
 translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)(*fargs)[2]));
@@ -1855,10 +1896,11 @@ virtual void* functionAddress() const { return (void*)this->fptr; };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(fargs,this->asSmartPtr().raw_(),15);
 core::StackFrameDynamicScopeManager scope(fargs);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)(*fargs)[0]));
 translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)(*fargs)[1]));
 translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)(*fargs)[2]));
@@ -1907,10 +1949,11 @@ virtual void* functionAddress() const { return (void*)this->fptr; };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(fargs,this->asSmartPtr().raw_(),14);
 core::StackFrameDynamicScopeManager scope(fargs);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)(*fargs)[0]));
 translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)(*fargs)[1]));
 translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)(*fargs)[2]));
@@ -1957,10 +2000,11 @@ virtual void* functionAddress() const { return (void*)this->fptr; };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(fargs,this->asSmartPtr().raw_(),13);
 core::StackFrameDynamicScopeManager scope(fargs);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)(*fargs)[0]));
 translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)(*fargs)[1]));
 translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)(*fargs)[2]));
@@ -2005,10 +2049,11 @@ virtual void* functionAddress() const { return (void*)this->fptr; };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(fargs,this->asSmartPtr().raw_(),12);
 core::StackFrameDynamicScopeManager scope(fargs);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)(*fargs)[0]));
 translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)(*fargs)[1]));
 translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)(*fargs)[2]));
@@ -2052,10 +2097,11 @@ virtual void* functionAddress() const { return (void*)this->fptr; };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(fargs,this->asSmartPtr().raw_(),11);
 core::StackFrameDynamicScopeManager scope(fargs);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)(*fargs)[0]));
 translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)(*fargs)[1]));
 translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)(*fargs)[2]));
@@ -2098,10 +2144,11 @@ virtual void* functionAddress() const { return (void*)this->fptr; };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(fargs,this->asSmartPtr().raw_(),10);
 core::StackFrameDynamicScopeManager scope(fargs);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)(*fargs)[0]));
 translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)(*fargs)[1]));
 translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)(*fargs)[2]));
@@ -2143,10 +2190,11 @@ virtual void* functionAddress() const { return (void*)this->fptr; };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(fargs,this->asSmartPtr().raw_(),9);
 core::StackFrameDynamicScopeManager scope(fargs);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)(*fargs)[0]));
 translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)(*fargs)[1]));
 translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)(*fargs)[2]));
@@ -2187,10 +2235,11 @@ virtual void* functionAddress() const { return (void*)this->fptr; };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(fargs,this->asSmartPtr().raw_(),8);
 core::StackFrameDynamicScopeManager scope(fargs);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)(*fargs)[0]));
 translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)(*fargs)[1]));
 translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)(*fargs)[2]));
@@ -2229,10 +2278,11 @@ virtual void* functionAddress() const { return (void*)this->fptr; };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(fargs,this->asSmartPtr().raw_(),7);
 core::StackFrameDynamicScopeManager scope(fargs);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)(*fargs)[0]));
 translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)(*fargs)[1]));
 translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)(*fargs)[2]));
@@ -2270,10 +2320,11 @@ virtual void* functionAddress() const { return (void*)this->fptr; };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(fargs,this->asSmartPtr().raw_(),6);
 core::StackFrameDynamicScopeManager scope(fargs);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)(*fargs)[0]));
 translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)(*fargs)[1]));
 translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)(*fargs)[2]));
@@ -2310,10 +2361,11 @@ virtual void* functionAddress() const { return (void*)this->fptr; };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(fargs,this->asSmartPtr().raw_(),5);
 core::StackFrameDynamicScopeManager scope(fargs);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)(*fargs)[0]));
 translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)(*fargs)[1]));
 translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)(*fargs)[2]));
@@ -2349,10 +2401,11 @@ virtual void* functionAddress() const { return (void*)this->fptr; };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(fargs,this->asSmartPtr().raw_(),4);
 core::StackFrameDynamicScopeManager scope(fargs);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)(*fargs)[0]));
 translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)(*fargs)[1]));
 translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)(*fargs)[2]));
@@ -2387,10 +2440,11 @@ virtual void* functionAddress() const { return (void*)this->fptr; };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(fargs,this->asSmartPtr().raw_(),3);
 core::StackFrameDynamicScopeManager scope(fargs);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)(*fargs)[0]));
 translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)(*fargs)[1]));
 translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)(*fargs)[2]));
@@ -2424,10 +2478,11 @@ virtual void* functionAddress() const { return (void*)this->fptr; };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(fargs,this->asSmartPtr().raw_(),2);
 core::StackFrameDynamicScopeManager scope(fargs);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)(*fargs)[0]));
 translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)(*fargs)[1]));
 gctools::multiple_values<RT> retval =  fptr(a0._v,a1._v);
@@ -2460,10 +2515,11 @@ virtual void* functionAddress() const { return (void*)this->fptr; };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(fargs,this->asSmartPtr().raw_(),1);
 core::StackFrameDynamicScopeManager scope(fargs);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)(*fargs)[0]));
 gctools::multiple_values<RT> retval =  fptr(a0._v);
 return retval.as_return_type();
@@ -2495,6 +2551,7 @@ virtual void* functionAddress() const { return (void*)this->fptr; };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 gctools::multiple_values<RT> retval =  fptr();
 return retval.as_return_type();

@@ -102,6 +102,17 @@ static std::terminate_handler g_prev_terminate_handler;
 
 // PRINT STACKTRACE PROGRAMMICALLY
 
+
+void test_calling_convention(void* closure, size_t nargs, void* a0, void* a1, void* a2, ...) {
+  va_list vargs;
+  va_start(vargs,a2);
+  printf("&vargs -> %p\n", &vargs);
+  printf("a2 -> %p\n", a2);
+  printf("a3 -> %p\n", va_arg(vargs,void*));
+  va_end(vargs);
+}
+
+  
 static inline void print_stacktrace(FILE *out = stderr, unsigned int max_frames = 63)
 {
     fprintf(out, "stack trace:\n");
@@ -369,9 +380,9 @@ int main( int argc, char *argv[] )
 {
   // Do not touch debug log until after MPI init
 
-
-  printf("%s:%d ClosureWithSlots_O offset_of _Slots._Data->%lu\n", __FILE__, __LINE__, offsetof(core::ClosureWithSlots_O,_Slots._Data));
-
+  int a4 = 5;
+  int a5 = 10;
+  test_calling_convention(NULL,6,NULL,NULL,&a4,&a5);
   bool mpiEnabled = false;
   int  mpiRank    = 0;
   int  mpiSize    = 1;

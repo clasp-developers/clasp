@@ -252,6 +252,7 @@ T_sp LispDebugger::invoke() {
   }
 }
 
+#if 0
 CL_DEFUN void core__test_backtrace() {
   InvocationHistoryFrame *top = my_thread->_InvocationHistoryStack;
   if (top == NULL) {
@@ -266,6 +267,7 @@ CL_DEFUN void core__test_backtrace() {
   }
   printf("----Done\n");
 }
+#endif
 
 CL_LAMBDA();
 CL_DECLARE();

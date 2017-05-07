@@ -110,33 +110,32 @@ CL_DEFUN void core__ensure_single_dispatch_method(Symbol_sp gfname, Class_sp rec
 LCC_RETURN SingleDispatchCxxEffectiveMethodFunction_O::LISP_CALLING_CONVENTION() {
   INCREMENT_FUNCTION_CALL_COUNTER(this);
   ASSERT_LCC_VA_LIST_CLOSURE_DEFINED(lcc_arglist);
-  LCC_MAKE_VA_LIST_SP(sdargs);
-  return (*this->_onlyCxxMethodFunction)(LCC_PASS_ARGS2_ELLIPSIS(this->_onlyCxxMethodFunction.raw_(),sdargs.raw_(),_Nil<T_O>().raw_()));
+  INITIALIZE_VA_LIST();
+  return (*this->_onlyCxxMethodFunction).invoke_va_list(LCC_PASS_ARGS2_ELLIPSIS(this->_onlyCxxMethodFunction.raw_(),lcc_vargs.raw_(),_Nil<T_O>().raw_()));
 };
 
 
 LCC_RETURN SingleDispatchEffectiveMethodFunction_O::LISP_CALLING_CONVENTION() {
   INCREMENT_FUNCTION_CALL_COUNTER(this);
   ASSERT_LCC_VA_LIST_CLOSURE_DEFINED(lcc_arglist);
-  VaList_sp orig_args((gctools::Tagged)lcc_arglist);
-  VaList_S &orig_args_s = *orig_args;
+  INITIALIZE_VA_LIST();
   for ( auto cur : this->_Befores ) {
-    VaList_S before_args_s(orig_args_s);
+    VaList_S before_args_s(*lcc_vargs);
     VaList_sp before_args(&before_args_s);
     Function_sp before((gctools::Tagged)oCar(cur).raw_());
-    (*before)(LCC_PASS_ARGS2_ELLIPSIS(before.raw_(),before_args.raw_(),_Nil<T_O>().raw_()));
+    (*before).invoke_va_list(LCC_PASS_ARGS2_ELLIPSIS(before.raw_(),before_args.raw_(),_Nil<T_O>().raw_()));
   }
   MultipleValues save;
   Function_sp primary0((gctools::Tagged)oCar(this->_Primaries).raw_());
-  VaList_S primary_args_s(orig_args_s);
+  VaList_S primary_args_s(*lcc_vargs);
   VaList_sp primary_args(&primary_args_s);
-  T_mv val0 = (*primary0)(LCC_PASS_ARGS2_ELLIPSIS(primary0.raw_(),primary_args.raw_(),oCdr(this->_Primaries).raw_()));
+  T_mv val0 = (*primary0).invoke_va_list(LCC_PASS_ARGS2_ELLIPSIS(primary0.raw_(),primary_args.raw_(),oCdr(this->_Primaries).raw_()));
   multipleValuesSaveToMultipleValues(val0, &save);
   for ( auto cur : this->_Afters ) {
-    VaList_S after_args_s(orig_args_s);
+    VaList_S after_args_s(*lcc_vargs);
     VaList_sp after_args(&after_args_s);
     Function_sp after((gctools::Tagged)oCar(cur).raw_());
-    (*after)(LCC_PASS_ARGS2_ELLIPSIS(after.raw_(),after_args.raw_(),_Nil<T_O>().raw_()));
+    (*after).invoke_va_list(LCC_PASS_ARGS2_ELLIPSIS(after.raw_(),after_args.raw_(),_Nil<T_O>().raw_()));
   }
   return multipleValuesLoadFromMultipleValues(&save);
 }

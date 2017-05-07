@@ -98,6 +98,7 @@ namespace core {
 #endif
   public:
     virtual const char *describe() const { return "Function - subclass must implement describe()"; };
+#if 0
     inline LCC_RETURN operator()(LCC_ARGS_ELLIPSIS) {
       VaList_S lcc_arglist_s;
       va_start(lcc_arglist_s._Args, LCC_VA_START_ARG);
@@ -107,7 +108,8 @@ namespace core {
       T_O* lcc_arglist = lcc_arglist_s.asTaggedPtr();
       return this->invoke_va_list(LCC_PASS_ARGS);
     }
-
+#endif
+    
     LCC_VIRTUAL LCC_RETURN LISP_CALLING_CONVENTION() {
       INCREMENT_FUNCTION_CALL_COUNTER(this);
       ASSERT_LCC_VA_LIST_CLOSURE_DEFINED(lcc_arglist);
@@ -204,12 +206,14 @@ public:
  Closure_O(T_sp name) : Base(name) {};
 public:
   virtual const char *describe() const { return "Closure"; };
+#if 0
   LCC_VIRTUAL LCC_RETURN LISP_CALLING_CONVENTION() {
     INCREMENT_FUNCTION_CALL_COUNTER(this);
     ASSERT_LCC_VA_LIST_CLOSURE_DEFINED(lcc_arglist);
     printf("Subclass of Closure must implement 'activate'\n");
     abort();
   };
+#endif
   virtual string nameAsString() const;
 };
 };
@@ -242,7 +246,7 @@ namespace core {
     CL_DEFMETHOD void set_source_info(List_sp source_info);
     virtual size_t templatedSizeof() const { return sizeof(*this); };
     virtual const char *describe() const { return "FunctionClosure"; };
-    LCC_VIRTUAL LCC_RETURN LISP_CALLING_CONVENTION() { SIMPLE_ERROR(BF("Subclass must implement")); };
+//    LCC_VIRTUAL LCC_RETURN LISP_CALLING_CONVENTION() { SIMPLE_ERROR(BF("Subclass must implement")); };
     void set_kind(Symbol_sp k) { this->kind = k; };
     Symbol_sp getKind() const { return this->kind; };
     bool macroP() const;
@@ -283,7 +287,7 @@ namespace core {
     virtual void setf_lambda_list(List_sp lambda_list);
     virtual size_t templatedSizeof() const { return sizeof(*this); };
     virtual const char *describe() const { return "BuiltinClosure"; };
-    LCC_VIRTUAL LCC_RETURN LISP_CALLING_CONVENTION();
+//    LCC_VIRTUAL LCC_RETURN LISP_CALLING_CONVENTION();
     bool builtinP() const { return true; };
     LambdaListHandler_sp lambdaListHandler() const { return this->_lambdaListHandler; };
     T_sp docstring() const { return this->_docstring; };
@@ -345,6 +349,7 @@ namespace core {
 #endif
       return this->_Slots[idx];
     };
+#if 0
     inline LCC_RETURN LISP_CALLING_CONVENTION() {
       ASSERT_LCC_VA_LIST_CLOSURE_DEFINED(lcc_arglist);
       INCREMENT_FUNCTION_CALL_COUNTER(this);
@@ -354,8 +359,11 @@ namespace core {
       core::T_O* tagged_closure = gctools::tag_general(this);
       return (*(this->fptr))(LCC_PASS_ARGS_ENV(tagged_closure));
     };
+#endif
   };
 };
+
+
 namespace core {
 class ClosureWithFrame_O : public FunctionClosure_O {
   LISP_CLASS(core,CorePkg,ClosureWithFrame_O,"ClosureWithFrame",FunctionClosure_O);
@@ -455,6 +463,7 @@ public:
   void setf_lambda_list(core::List_sp lambda_list);
   core::LambdaListHandler_sp lambdaListHandler() const { return _Nil<core::LambdaListHandler_O>(); };
   DISABLE_NEW();
+#if 0
   inline LCC_RETURN LISP_CALLING_CONVENTION() {
     ASSERT_LCC_VA_LIST_CLOSURE_DEFINED(lcc_arglist);
     INCREMENT_FUNCTION_CALL_COUNTER(this);
@@ -464,6 +473,7 @@ public:
     core::T_O* tagged_closure = gctools::tag_general(this);
     return (*(this->fptr))(LCC_PASS_ARGS_ENV(tagged_closure));
   };
+#endif
 };
 };
 #endif
@@ -487,6 +497,7 @@ namespace core {
     bool compiledP() const { return true; };
     DispatchFunction_fptr_type entryPoint() { return this->_entryPoint;};
     DISABLE_NEW();
+#if 0
     inline LCC_RETURN LISP_CALLING_CONVENTION() {
       SIMPLE_ERROR(BF("You cannot invoke compiled-dispatch-functions directly - they can only be used to clos:set-funcallable-instance-function"));
 #if 0
@@ -499,6 +510,7 @@ namespace core {
       return (*(this->_entryPoint))(LCC_PASS_ARGS_ENV(tagged_closure));
 #endif
     };
+#endif
     core::T_sp lambda_list() const { return Cons_O::createList(cl::_sym_generic_function, core::_sym_arguments); };
     void setf_lambda_list(core::List_sp lambda_list) { SIMPLE_ERROR(BF("You cannot set the lambda-list of a compiled-dispatch-function")); };
     CL_DEFMETHOD T_sp llvm_module() const { return this->_llvmModule;};

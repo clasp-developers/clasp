@@ -90,8 +90,7 @@ Vector_sp ExceptionStack::backtrace() {
 
 Function_sp InvocationHistoryFrame::function() const
   {
-    VaList_sp args = this->valist_sp();
-    Function_sp res = LCC_VA_LIST_CLOSURE(args);
+    Function_sp res((gctools::Tagged)LCC_REGISTER_SAVE_AREA_CLOSURE(this->_register_save_area));
     if ( !res ) {
       printf("%s:%d Frame was found with no closure\n", __FILE__, __LINE__ );
       abort();
@@ -117,10 +116,11 @@ SimpleVector_sp InvocationHistoryFrame::arguments() const {
 #endif
   return vargs;
 #else
-  VaList_sp orig_args = this->valist_sp();
-  T_O** register_area = LCC_VA_LIST_REGISTER_SAVE_AREA(orig_args);
-  T_O** overflow_area = LCC_ORIGINAL_VA_LIST_OVERFLOW_ARG_AREA(orig_args);
-  size_t numberOfArguments = orig_args->total_nargs(); //    LCC_VA_LIST_NUMBER_OF_ARGUMENTS(orig_args);
+  T_O** register_area = this->_register_save_area;
+  T_O** overflow_area = this->_overflow_area;
+  IMPLEMENT_ME(); // implement a new way to handle args
+#if 0
+  size_t numberOfArguments = orig_args->remaining_nargs();
   SimpleVector_sp vargs = SimpleVector_O::make(numberOfArguments);
   T_O* objRaw;
   for (size_t i(0); i < numberOfArguments; ++i) {
@@ -129,6 +129,7 @@ SimpleVector_sp InvocationHistoryFrame::arguments() const {
     (*vargs)[i] = T_sp((gc::Tagged)objRaw);
   }
   return vargs;
+#endif
 #endif
 }
 

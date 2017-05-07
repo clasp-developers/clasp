@@ -218,7 +218,6 @@ namespace core {
           printf("%s:%d  calculated hash = %lu with part[%d] --> %lu\n", __FILE__, __LINE__, hash, i, this->_Parts[i]);
         }
 #endif
-      //		hash = ((hash << 5) + hash) + this->_Parts[i];
       }
       if (bound)
         return ((cl_intptr_t)hash) % bound;

@@ -194,14 +194,14 @@ typedef int  claspCharacter;
 #define CLASP_ARRAY_RANK_LIMIT 8
 
 /*! Pass four arguments in registers, the rest in memory */
-#define LCC_ARGS_IN_REGISTERS 3
+#define LCC_ARGS_IN_REGISTERS 4
 
 /*! Maximum number of arguments that can be passed */
 #define CALL_ARGUMENTS_LIMIT 64
 
 #define CHAR_CODE_LIMIT 1114112
 
-#define CLASP_INTERNAL_TIME_UNITS_PER_SECOND 1000
+#define CLASP_INTERNAL_TIME_UNITS_PER_SECOND 1000000000
 
 #define CLASP_CHAR_CODE_LINEFEED '\n'
 #define CLASP_CHAR_CODE_NEWLINE '\n'

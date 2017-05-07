@@ -1110,6 +1110,8 @@ void CoreExposer_O::define_essential_globals(Lisp_sp lisp) {
   hooks = Cons_O::create(Cons_O::create(SimpleBaseString_O::make("ASD"), _sym_loadSource), hooks);
   hooks = Cons_O::create(Cons_O::create(SimpleBaseString_O::make("lisp"), _sym_loadSource), hooks);
   hooks = Cons_O::create(Cons_O::create(SimpleBaseString_O::make("LISP"), _sym_loadSource), hooks);
+  hooks = Cons_O::create(Cons_O::create(SimpleBaseString_O::make("cl"), _sym_loadSource), hooks);
+  hooks = Cons_O::create(Cons_O::create(SimpleBaseString_O::make("CL"), _sym_loadSource), hooks);
   hooks = Cons_O::create(Cons_O::create(SimpleBaseString_O::make("clasprc"), _sym_loadSource), hooks);
   _sym_STARloadHooksSTAR->defparameter(hooks);
   ext::_sym_STARdefault_external_formatSTAR->defparameter(_lisp->_true());

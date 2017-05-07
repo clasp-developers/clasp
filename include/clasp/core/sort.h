@@ -219,5 +219,30 @@ public:
     }
   }
 
+
+   // The default sorter, increasing order
+  template <typename ValueType>
+    void quickSortMemory(ValueType* array,ssize_t m, ssize_t en) {
+    ssize_t k;
+    ssize_t n = en - 1;
+  //  typedef typename std::iterator_traits<_RandomAccessIterator>::value_type _ValueType;
+    if (m < n) {
+      ssize_t half = (n - m);
+      half = half / 2;
+      k = m + half; // pivot
+      swap<ValueType>(array[m], array[k]);
+      ssize_t i = m + 1;
+      ssize_t j = n;
+      while (i <= j) {
+        while ((i <= n) && ( array[i] < array[m] )) i++;
+        while ((j >= i) && (!(array[j] < array[m]))) j--;
+        if (i < j) swap<ValueType>(array[i], array[j]);
+      }
+      swap<ValueType>(array[m], array[j]);
+      quickSortMemory(array, m, j);
+      quickSortMemory(array, j + 1, n + 1);
+    }
+  }
+
 };
 #endif //]

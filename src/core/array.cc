@@ -121,7 +121,7 @@ void noFillPointerError(Symbol_sp fn_name, T_sp thing) {
                               kw::_sym_expectedType, core::lisp_createList(cl::_sym_and,cl::_sym_vector,core::lisp_createList(cl::_sym_satisfies,cl::_sym_array_has_fill_pointer_p)),
                               kw::_sym_datum, thing));
 }
-void noFillPointerSpecializedError(Symbol_sp fn_name, T_sp thing) {
+void noFillPointerSpecializedArrayError(T_sp thing) {
   Array_sp athing = gc::As<Array_sp>(thing);
   ERROR(cl::_sym_simpleTypeError,
         core::lisp_createList(kw::_sym_formatControl, core::lisp_createStr("When calling vectorPushExtend for a ~S specialized array ~S the argument ~S is not an array with a fill pointer."),

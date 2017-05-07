@@ -2140,7 +2140,8 @@ CL_DEFUN size_t core__va_list_length(VaList_sp v)
 CL_DEFUN size_t core__va_list_current_index(VaList_sp v)
 {
 //  printf("%s:%d va_list_current_index = %" PRu "\n", __FILE__, __LINE__, v->current_index());
-  return v->current_index();
+  IMPLEMENT_ME();
+//  return v->current_index();
 }
 
 CL_DEFUN T_sp core__va_arg(VaList_sp v)

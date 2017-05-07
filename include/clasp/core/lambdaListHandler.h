@@ -200,16 +200,8 @@ public:
 	  context can be one of 'FUNCTION, 'MACRO and other values */
   virtual void parse_lambda_list_declares(List_sp lambda_list, List_sp declares, T_sp context, TargetClassifier &classifier);
 
-  void createBindingsInScope_af(ActivationFrame_sp args,
-                                DynamicScopeManager &scope);
-  void createBindingsInScope_argArray(int n_args, ArgArray argArray,
-                                      DynamicScopeManager &scope);
-
   void createBindingsInScopeVaList(size_t n_args, VaList_sp argArray,
                                    DynamicScopeManager &scope);
-
-  void createBindingsInScope_argArray_TPtr(int n_args, T_O *argArray[],
-                                           DynamicScopeManager &scope);
 
   /*! Return a list of expressions that can be evaluated in (env) to generate a list of values that would
 	  be put into the classifiedSymbols */

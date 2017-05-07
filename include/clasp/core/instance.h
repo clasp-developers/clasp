@@ -157,10 +157,8 @@ namespace core {
     LCC_VIRTUAL LCC_RETURN LISP_CALLING_CONVENTION() {
       ASSERT_LCC_VA_LIST_CLOSURE_DEFINED(lcc_arglist);
       INCREMENT_FUNCTION_CALL_COUNTER(this);
-// Copy the arguments passed in registers into the multiple_values array and those
-// will be processed by the generic function
-      LCC_MAKE_VA_LIST_SP(gfargs);
-      return (this->_entryPoint)(this->asSmartPtr().tagged_(), gfargs.tagged_());
+      INITIALIZE_VA_LIST();
+      return (this->_entryPoint)(this->asSmartPtr().tagged_(), lcc_vargs.tagged_());
     }
 
   }; // Instance class

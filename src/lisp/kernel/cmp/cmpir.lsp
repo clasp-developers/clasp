@@ -67,7 +67,8 @@
 
 
 (defun irc-gep (array indices &optional (name "gep"))
-  (llvm-sys:create-in-bounds-gep *irbuilder* array indices name ))
+  (let ((indices (mapcar (lambda (x) (if (fixnump x) (jit-constant-size_t x) x)) indices)))
+    (llvm-sys:create-in-bounds-gep *irbuilder* array indices name )))
 
 (defun irc-in-bounds-gep-type (type value indices &optional (label "gep"))
   (llvm-sys:create-in-bounds-geptype *irbuilder* type value indices label))
@@ -760,19 +761,15 @@ and then the irbuilder-alloca, irbuilder-body."
 	     (entry-branch (irc-br body-bb)))
 	(llvm-sys:set-insert-point-instruction irbuilder-alloca entry-branch)
 	(llvm-sys:set-insert-point-basic-block irbuilder-body body-bb)))
-#+(or)    (irc-setup-cleanup-return-block func-env)
+    #+(or)    (irc-setup-cleanup-return-block func-env)
     (irc-setup-cleanup-landing-pad-block func-env) ;; used in irc-function-cleanup-and-return
     (setq cleanup-block (irc-setup-exception-handler-cleanup-block func-env)) ;; used in irc-function-cleanup-and-return
     (irc-setup-exception-handler-resume-block func-env)
     (irc-setup-terminate-landing-pad-block func-env)
     (setf-metadata func-env :cleanup ())
-    (let ((exn.slot (irc-alloca-i8* func-env :irbuilder irbuilder-alloca :label "exn.slot"))
-	  (ehselector.slot (irc-alloca-i32 func-env 0
-					   :irbuilder irbuilder-alloca
-					   :label "ehselector.slot"))
-          (result (irc-alloca-tmv func-env
-                                  :irbuilder irbuilder-alloca
-                                  :label "result")))
+    (let* ((exn.slot             (irc-alloca-i8* func-env :irbuilder irbuilder-alloca :label "exn.slot"))
+           (ehselector.slot      (irc-alloca-i32 func-env 0 :irbuilder irbuilder-alloca :label "ehselector.slot"))
+           (result               (irc-alloca-tmv func-env :irbuilder irbuilder-alloca :label "result")))
       (setf-metadata func-env :exn.slot exn.slot)
       (setf-metadata func-env :ehselector.slot ehselector.slot)
       (values fn func-env cleanup-block irbuilder-alloca irbuilder-body result))))
@@ -844,26 +841,16 @@ and then the irbuilder-alloca, irbuilder-body."
 
 (defun irc-dtor (name obj)
   (declare (special *compiler-suppress-dtors*))
-  (unless *compiler-suppress-dtors* (irc-intrinsic name obj))
-  )
-
-
-
-
-
-
-
+  (unless *compiler-suppress-dtors* (irc-intrinsic name obj)))
 
 (defun irc-push-cleanup (env cleanup-code)
   (multiple-value-bind (cleanup-cur found metadata-env)
       (lookup-metadata env :cleanup)
     (push-metadata metadata-env :cleanup cleanup-code)))
 
-
 (defun irc-push-unwind (env unwind-code)
   "Push code that should be executed when this environment is left"
   (push-metadata env :unwind unwind-code))
-
 
 (defmacro with-alloca-insert-point-no-cleanup (irbuilder &key alloca init)
   "Switch to the alloca-insert-point and generate code to alloca a local variable.
@@ -876,7 +863,6 @@ Within the _irbuilder_ dynamic environment...
        (let ((,alloca-sym ,alloca))
 	 (when ,init (funcall ,init ,alloca-sym))
 	 ,alloca-sym))))
-
 
 (defmacro with-alloca-insert-point (env irbuilder
 				    &key alloca init cleanup)
@@ -985,6 +971,18 @@ Within the _irbuilder_ dynamic environment...
   "Alloca space for an va_list"
   (with-alloca-insert-point-no-cleanup irbuilder
     :alloca (llvm-sys::create-alloca *irbuilder* %va_list% (jit-constant-size_t 1) label)
+    :init nil))
+
+(defun irc-alloca-size_t-no-cleanup (&key (irbuilder *irbuilder-function-alloca*) (label "va_list"))
+  "Alloca space for an va_list"
+  (with-alloca-insert-point-no-cleanup irbuilder
+    :alloca (llvm-sys::create-alloca *irbuilder* %size_t% (jit-constant-size_t 1) label)
+    :init nil))
+
+(defun irc-alloca-register-save-area (&key (irbuilder *irbuilder-function-alloca*) (label "va_list"))
+  "Alloca space for an va_list"
+  (with-alloca-insert-point-no-cleanup irbuilder
+    :alloca (llvm-sys::create-alloca *irbuilder* %register-save-area% (jit-constant-size_t 1) label)
     :init nil))
 
 (defun irc-alloca-VaList_S (&key (irbuilder *irbuilder-function-alloca*) (label "VaList_S"))

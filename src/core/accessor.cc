@@ -41,9 +41,7 @@ THE SOFTWARE.
 #include <clasp/core/genericFunction.h>
 #include <clasp/core/wrappers.h>
 
-//#define DEBUG_ACCESSORS 1
 #define DEBUG_ACCESSORS_ON() (core::_sym_STARdebug_accessorsSTAR->symbolValue().notnilp())
-
 
 namespace core {
 

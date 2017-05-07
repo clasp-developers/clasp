@@ -635,23 +635,23 @@ lambda-list-handler/env/argument-activation-frame"
       )
     ))
 
-
-(defun compile-<=3-required-arguments (reqargs
-                                       old-env
-                                       args
-                                       new-env)
+;;; No &rest, &key or &optional - all arguments are in registers
+(defun compile-all-register-required-arguments (reqargs
+                                                old-env
+                                                callconv
+                                                new-env)
 ;;;				 &aux (nargs (first argument-holder)) (va-list (second argument-holder)))
   "Fill the dest-activation-frame with values using the
 lambda-list-handler/env/argument-activation-frame"
   ;; First save any special values
-  (compile-error-if-wrong-number-of-arguments (calling-convention-nargs args) (car reqargs))
+  (compile-error-if-wrong-number-of-arguments (calling-convention-nargs callconv) (car reqargs))
   (do* ((cur-req (cdr reqargs) (cdr cur-req))
 	(target (car cur-req) (car cur-req)))
        ((endp cur-req) ())
     (compile-save-if-special new-env target))
   ;; Declare the arg-idx i32 that stores the current index in the argument-activation-frame
   (dbg-set-current-debug-location-here)
-  (let ((fixed-args (calling-convention-register-args args)))
+  (let ((fixed-args (calling-convention-register-args callconv)))
     (do* ((cur-target (cdr reqargs) (cdr cur-target))
           (cur-fixed-args fixed-args (cdr cur-fixed-args))
           (target (car cur-target) (car cur-target))
@@ -664,7 +664,7 @@ lambda-list-handler/env/argument-activation-frame"
 
 (defun compile-lambda-list-code (lambda-list-handler
                                  old-env
-                                 args
+                                 callconv
                                  new-env)
   (multiple-value-bind (reqargs optargs rest-var key-flag keyargs allow-other-keys auxargs)
       (process-lambda-list-handler lambda-list-handler)
@@ -677,8 +677,8 @@ lambda-list-handler/env/argument-activation-frame"
           (num-opt (car optargs)))
       (cond
         ;; Special cases (foo) (foo x) (foo x y) (foo x y z)  - passed in registers
-        ((and req-opt-only (<= num-req 3) (eql 0 num-opt) )
-         (compile-<=3-required-arguments reqargs old-env args new-env))
+        ((and req-opt-only (<= num-req (length (calling-convention-register-args calconv))) (eql 0 num-opt) )
+         (compile-all-register-required-arguments reqargs old-env args new-env))
         ;; Test for
         ;; (x &optional y)
         ;; (x y &optional z)

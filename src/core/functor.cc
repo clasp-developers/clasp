@@ -244,10 +244,13 @@ void BuiltinClosure_O::setf_lambda_list(List_sp lambda_list) {
   // Do nothing
 }
 
+#if 0
 LCC_RETURN BuiltinClosure_O::LISP_CALLING_CONVENTION() {
   INCREMENT_FUNCTION_CALL_COUNTER(this);
   IMPLEMENT_MEF(BF("Handle call to BuiltinClosure"));
 };
+#endif
+
 
 InterpretedClosure_O::InterpretedClosure_O(T_sp fn, Symbol_sp k, LambdaListHandler_sp llh, List_sp dec, T_sp doc, T_sp e, List_sp c, SOURCE_INFO)
   : Base(fn, k, e, SOURCE_INFO_PASS), _lambdaListHandler(llh), _declares(dec), _docstring(doc), _code(c) {
@@ -263,6 +266,7 @@ void InterpretedClosure_O::setf_lambda_list(List_sp lambda_list) {
 
 LCC_RETURN InterpretedClosure_O::LISP_CALLING_CONVENTION() {
   INCREMENT_FUNCTION_CALL_COUNTER(this);
+  INITIALIZE_VA_LIST();
   ASSERT_LCC_VA_LIST_CLOSURE_DEFINED(lcc_arglist);
   ++global_interpreted_closure_calls;
   ValueEnvironment_sp newValueEnvironment = ValueEnvironment_O::createForLambdaListHandler(this->_lambdaListHandler, this->_closedEnvironment);
@@ -270,9 +274,9 @@ LCC_RETURN InterpretedClosure_O::LISP_CALLING_CONVENTION() {
 //  newValueEnvironment->dump();
   ValueEnvironmentDynamicScopeManager scope(newValueEnvironment);
 #ifdef USE_EXPENSIVE_BACKTRACE
-  InvocationHistoryFrame _frame(lcc_arglist);
+  InvocationHistoryFrame _frame(&lcc_arglist_s._Args);
 #endif
-  lambdaListHandler_createBindings(this->asSmartPtr(), this->_lambdaListHandler, scope, LCC_PASS_ARGS);
+  lambdaListHandler_createBindings(this->asSmartPtr(), this->_lambdaListHandler, scope, LCC_PASS_ARGS_LLH);
 //  printf("%s:%d     after lambdaListHandler_createbindings\n", __FILE__, __LINE__);
 //  newValueEnvironment->dump();
   ValueFrame_sp newActivationFrame = gc::As<ValueFrame_sp>(newValueEnvironment->getActivationFrame());

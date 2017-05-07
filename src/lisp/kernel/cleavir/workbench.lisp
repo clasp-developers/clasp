@@ -51,6 +51,56 @@
   (time (asdf:load-system "clasp-cleavir"))
   (format t "Done  pid = ~a~%"  (core:getpid)))
 
+(load "~/quicklisp/setup.lisp")
+(ql:quickload "metering")
+(defclass foo () ((x) (y) (z)))
+
+(mon:with-monitoring
+    ( make-instance
+      clos::initialize-instance
+      clos::allocate-instance
+      clos::shared-initialize
+      clos::class-slots
+      class-finalized-p
+      finalize-inheritance
+      add-default-initargs
+      slot-boundp
+      class-valid-initargs
+      precompute-valid-initarg-keywords
+      )
+  ()
+  (dotimes (i 100000) (make-instance 'cl-user::foo)))
+
+
+(mon:with-monitoring
+    (
+     cleavir-environment:variable-info
+     cleavir-environment:function-info
+     clasp-cleavir:cleavir-compile-file
+     clasp-cleavir::compile-form-to-mir
+     cleavir-generate-ast:generate-ast
+     clasp-cleavir-ast:hoist-load-time-value
+     cleavir-ast-to-hir:compile-toplevel
+     clasp-cleavir::my-hir-transformations
+     cleavir-ir:hir-to-mir
+     cc-mir:assign-mir-instruction-datum-ids
+     clasp-cleavir::finalize-unwind-and-landing-pad-instructions
+     clasp-cleavir::translate
+     cleavir-hir-transformations:process-captured-variables
+     cleavir-liveness:liveness
+     clasp-cleavir:optimize-stack-enclose
+     cleavir-escape:mark-dynamic-extent
+     cleavir-typed-transforms:thes->typeqs
+     cleavir-type-inference:infer-types
+     cleavir-typed-transforms:prune-typeqs
+     cleavir-typed-transforms:delete-the
+     cleavir-hir-transformations:eliminate-typeq
+     clasp-cleavir::eliminate-load-time-value-inputs
+     )
+  ()
+  (clasp-cleavir:cleavir-compile-file "sys:kernel;lsp;format.lsp"))
+
+
 (apropos "dump-module")
 
 (apropos "invalidated-dispatch-functions")

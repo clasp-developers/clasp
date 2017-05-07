@@ -70,10 +70,9 @@ The passed module is modified as a side-effect."
 (defun compile-arguments (fn-name	; passed for logging only
 			  lambda-list-handler ; llh for function
 			  function-env
-			  closure
 			  argument-holder
 			  new-env)
-  (cmp-log "compile-arguments closure: %s\n" closure)
+  (cmp-log "compile-arguments closure: %s\n" (calling-convention-closure argument-holder))
   ;; This is where we make the value frame for the passed arguments
   ;;
   ;; keywords:  ESCAPE ANALYSIS escape analysis TODO
@@ -82,7 +81,7 @@ The passed module is modified as a side-effect."
   ;; There should be information in new-env??? that can tell us what
   ;; variables can go on the stack and what variables can go on the heap
   (irc-make-value-frame (irc-renv new-env) (number-of-lexical-variables lambda-list-handler))
-  (irc-intrinsic "setParentOfActivationFrameFromClosure" (irc-renv new-env) closure)
+  (irc-intrinsic "setParentOfActivationFrameFromClosure" (irc-renv new-env) (calling-convention-closure argument-holder))
   (cmp-log "lambda-list-handler for fn %s --> %s\n" fn-name lambda-list-handler)
   (cmp-log "Gathered lexical variables for fn %s --> %s\n" fn-name (names-of-lexical-variables lambda-list-handler))
   (compile-lambda-list-code lambda-list-handler
@@ -133,31 +132,27 @@ Could return more functions that provide lambda-list for swank for example"
                ;; it will print the address of the literal which must correspond to an entry in the
                ;; load time values table
                #+(or)(irc-create-call "debugInspectT_sp" (list (literal:compile-reference-to-literal :This-is-a-test)))
-	       (let ((arguments (llvm-sys:get-argument-list fn))
-                     traceid)
-                 (multiple-value-bind (closure argument-holder)
-                     (parse-function-arguments arguments)
-                   (let ((new-env (progn
-                                    (cmp-log "Creating new-value-environment for arguments\n")
-                                    (irc-new-value-environment
-                                     fn-env
-                                     :lambda-list-handler lambda-list-handler
-                                     :label (bformat nil "lambda-args-%s-" *lambda-args-num*)
-                                     :fill-runtime-form (lambda (lambda-args-env)
-                                                          (compile-arguments name
-                                                                             lambda-list-handler
-                                                                             fn-env
-                                                                             closure
-                                                                             argument-holder
-                                                                             lambda-args-env
-                                                                             ))))))
-                     (dbg-set-current-debug-location-here)
-                     (with-try new-env
-                       (if wrap-block
-                           (codegen-block result (list* block-name code) new-env)
-                           (codegen-progn result code new-env))
-                       ((cleanup)
-                        (irc-unwind-environment new-env)))))))))
+               (let* ((arguments       (llvm-sys:get-argument-list fn))
+                      (argument-holder (parse-function-arguments arguments)))
+                 (let ((new-env (progn
+                                  (cmp-log "Creating new-value-environment for arguments\n")
+                                  (irc-new-value-environment
+                                   fn-env
+                                   :lambda-list-handler lambda-list-handler
+                                   :label (bformat nil "lambda-args-%s-" *lambda-args-num*)
+                                   :fill-runtime-form (lambda (lambda-args-env)
+                                                        (compile-arguments name
+                                                                           lambda-list-handler
+                                                                           fn-env
+                                                                           argument-holder
+                                                                           lambda-args-env))))))
+                   (dbg-set-current-debug-location-here)
+                   (with-try new-env
+                     (if wrap-block
+                         (codegen-block result (list* block-name code) new-env)
+                         (codegen-progn result code new-env))
+                     ((cleanup)
+                      (irc-unwind-environment new-env))))))))
     (cmp-log "About to dump the function constructed by generate-llvm-function-from-code\n")
     (cmp-log-dump fn)
     (irc-verify-function fn)

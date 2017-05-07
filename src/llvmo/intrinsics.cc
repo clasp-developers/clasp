@@ -348,6 +348,7 @@ ALWAYS_INLINE core::T_O *cc_va_arg(VaList_S *valist) {
   return va_arg(vl->_Args, core::T_O *);
 }
 #endif
+#if 0
 ALWAYS_INLINE T_O* cc_va_arg(T_O* list) {
   VaList_sp va_list_sp((gctools::Tagged)list);
   LIKELY_if (va_list_sp->remaining_nargs()>0) {
@@ -355,15 +356,23 @@ ALWAYS_INLINE T_O* cc_va_arg(T_O* list) {
   }
   return _Nil<T_O>().raw_();
 }
+#endif
 
 ALWAYS_INLINE size_t cc_va_list_length(T_O* list) {
+  IMPLEMENT_MEF(BF("This should use the untagged va_list structure"));
   VaList_sp va_list_sp((gctools::Tagged)list);
   return va_list_sp->remaining_nargs();
 }
 
-ALWAYS_INLINE core::T_O *cc_gatherVaRestArguments(std::size_t nargs, VaList_S *tagged_vargs, std::size_t startRest, VaList_S* untagged_vargs_rest) {
+ALWAYS_INLINE core::T_O *cc_gatherVaRestArguments(std::size_t nargs, VaList_S *vargs, std::size_t startRest, VaList_S* untagged_vargs_rest) {
+  IMPLEMENT_ME();
+  printf("%s:%d:%s  Checking if va_list's are tagged\n", __FILE__, __LINE__, __FUNCTION__ );
+  if (gc::tagged_valistp(vargs)) {
+    SIMPLE_ERROR(BF("vargs is tagged"));
+  }
   ASSERT(nargs >= startRest);
-  VaList_S* untagged_vargs = reinterpret_cast<VaList_S*>(gc::untag_valist(tagged_vargs));
+
+  VaList_S* untagged_vargs = vargs;
   untagged_vargs_rest->set_from_other_VaList_S(untagged_vargs);
   T_O* result = untagged_vargs_rest->asTaggedPtr();
 //  printf("%s:%d gatherVaRestArguments result = %p\n", __FILE__, __LINE__, (void*)result);
@@ -521,13 +530,8 @@ void cc_bad_tag(core::T_O* gf, core::T_O* gf_args)
 gctools::return_type cc_dispatch_slot_reader(core::T_O* tindex, core::T_O* tgf, core::T_O* tvargs) {
   VaList_sp vargs((gctools::Tagged)tvargs);
   T_sp tinstance = vargs->next_arg();
-  if (gc::IsA<Instance_sp>(tinstance)) {
-    Instance_sp instance = gc::As_unsafe<Instance_sp>(tinstance);
-    return do_slot_read((gctools::Tagged)tindex,(gctools::Tagged)tgf,instance.tagged_());
-  }
-  Instance_sp gf((gctools::Tagged)tgf);
-  intrinsic_error(llvmo::no_applicable_reader_method, gf, tinstance);
-  UNREACHABLE();
+  Instance_sp instance = gc::As_unsafe<Instance_sp>(tinstance);
+  return do_slot_read((gctools::Tagged)tindex,(gctools::Tagged)tgf,instance.tagged_());
 }
 
 
@@ -535,14 +539,9 @@ gctools::return_type cc_dispatch_slot_writer(core::T_O* tindex, core::T_O* tgf, 
   VaList_sp vargs((gctools::Tagged)tvargs);
   T_sp value = vargs->next_arg();
   T_sp tinstance = vargs->next_arg();
-  if (gc::IsA<Instance_sp>(tinstance)) {
-    Instance_sp instance = gc::As_unsafe<Instance_sp>(tinstance);
-    do_slot_write((gctools::Tagged)tindex,(gctools::Tagged)tgf,instance.tagged_(),value.tagged_());
-    return value.as_return_type();
-  }
-  Instance_sp gf((gctools::Tagged)tgf);
-  intrinsic_error(llvmo::no_applicable_writer_method, gf, value, tinstance);
-  UNREACHABLE();
+  Instance_sp instance = gc::As_unsafe<Instance_sp>(tinstance);
+  do_slot_write((gctools::Tagged)tindex,(gctools::Tagged)tgf,instance.tagged_(),value.tagged_());
+  return value.as_return_type();
 }
 
 

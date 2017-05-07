@@ -175,6 +175,7 @@ def configure_common(cfg,variant):
     print("cfg.env.LDFLAGS=%s" % cfg.env.LDFLAGS)
     cfg.define("BUILD_LINKFLAGS", ' '.join(cfg.env.LINKFLAGS) + ' ' + ' '.join(cfg.env.LDFLAGS))
 #    cfg.define("DEBUG_STARTUP",1)
+#    cfg.define("DEBUG_ACCESSORS",1)
 #    cfg.define("DEBUG_GFDISPATCH",1)
 
 def strip_libs(libs):
@@ -1141,6 +1142,7 @@ class recompile_cclasp(Task.Task):
             raise Exception("To use the recompile targets you need to provide a working clasp executable. See wscript.config and/or set the CLASP env variable.")
         cmd = [ other_clasp ]
         cmd = cmd + [ "--feature", "debug-run-clang",
+                      "--feature", "ignore-extensions",
                       "--resource-dir", "%s/%s/%s" % (self.bld.path.abspath(),out,self.bld.variant_obj.variant_dir()),
                       "--eval", '(load "sys:kernel;clasp-builder.lsp")',
                       "--eval", "(recompile-cclasp :output-file #P\"%s\")" % self.outputs[0],

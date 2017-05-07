@@ -205,7 +205,6 @@
   (finalize-unless-forward class)
   class)
 
-(defvar *c*)
 (defmethod shared-initialize ((class class) slot-names &rest initargs &key direct-superclasses)
   ;; verify that the inheritance list makes sense
   (dbg-standard "standard.lsp:200 shared-initialize of class-> ~a direct-superclasses-> ~a~%" class direct-superclasses)

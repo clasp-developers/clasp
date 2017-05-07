@@ -32,10 +32,11 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),16);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 translate::from_object<ARG1> a1(frame->arg(1));
 translate::from_object<ARG2> a2(frame->arg(2));
@@ -84,10 +85,11 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),15);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 translate::from_object<ARG1> a1(frame->arg(1));
 translate::from_object<ARG2> a2(frame->arg(2));
@@ -133,10 +135,11 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),14);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 translate::from_object<ARG1> a1(frame->arg(1));
 translate::from_object<ARG2> a2(frame->arg(2));
@@ -181,10 +184,11 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),13);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 translate::from_object<ARG1> a1(frame->arg(1));
 translate::from_object<ARG2> a2(frame->arg(2));
@@ -228,10 +232,11 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),12);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 translate::from_object<ARG1> a1(frame->arg(1));
 translate::from_object<ARG2> a2(frame->arg(2));
@@ -274,10 +279,11 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),11);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 translate::from_object<ARG1> a1(frame->arg(1));
 translate::from_object<ARG2> a2(frame->arg(2));
@@ -319,10 +325,11 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),10);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 translate::from_object<ARG1> a1(frame->arg(1));
 translate::from_object<ARG2> a2(frame->arg(2));
@@ -363,10 +370,11 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),9);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 translate::from_object<ARG1> a1(frame->arg(1));
 translate::from_object<ARG2> a2(frame->arg(2));
@@ -406,10 +414,11 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),8);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 translate::from_object<ARG1> a1(frame->arg(1));
 translate::from_object<ARG2> a2(frame->arg(2));
@@ -448,10 +457,11 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),7);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 translate::from_object<ARG1> a1(frame->arg(1));
 translate::from_object<ARG2> a2(frame->arg(2));
@@ -488,10 +498,11 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),6);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 translate::from_object<ARG1> a1(frame->arg(1));
 translate::from_object<ARG2> a2(frame->arg(2));
@@ -527,10 +538,11 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),5);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 translate::from_object<ARG1> a1(frame->arg(1));
 translate::from_object<ARG2> a2(frame->arg(2));
@@ -565,10 +577,11 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),4);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 translate::from_object<ARG1> a1(frame->arg(1));
 translate::from_object<ARG2> a2(frame->arg(2));
@@ -602,10 +615,11 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),3);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 translate::from_object<ARG1> a1(frame->arg(1));
 translate::from_object<ARG2> a2(frame->arg(2));
@@ -638,10 +652,11 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),2);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 translate::from_object<ARG1> a1(frame->arg(1));
 RT retval =  ((*ot.untag_object()).*mptr)(a1._v);
@@ -673,10 +688,11 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),1);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 RT retval =  ((*ot.untag_object()).*mptr)();
 return Values(translate::to_object<RT>::convert(retval));
@@ -709,10 +725,11 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),16);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 translate::from_object<ARG1> a1(frame->arg(1));
 translate::from_object<ARG2> a2(frame->arg(2));
@@ -759,10 +776,11 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),15);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 translate::from_object<ARG1> a1(frame->arg(1));
 translate::from_object<ARG2> a2(frame->arg(2));
@@ -808,10 +826,11 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),14);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 translate::from_object<ARG1> a1(frame->arg(1));
 translate::from_object<ARG2> a2(frame->arg(2));
@@ -856,10 +875,11 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),13);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 translate::from_object<ARG1> a1(frame->arg(1));
 translate::from_object<ARG2> a2(frame->arg(2));
@@ -903,10 +923,11 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),12);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 translate::from_object<ARG1> a1(frame->arg(1));
 translate::from_object<ARG2> a2(frame->arg(2));
@@ -949,10 +970,11 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),11);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 translate::from_object<ARG1> a1(frame->arg(1));
 translate::from_object<ARG2> a2(frame->arg(2));
@@ -994,10 +1016,11 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),10);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 translate::from_object<ARG1> a1(frame->arg(1));
 translate::from_object<ARG2> a2(frame->arg(2));
@@ -1038,10 +1061,11 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),9);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 translate::from_object<ARG1> a1(frame->arg(1));
 translate::from_object<ARG2> a2(frame->arg(2));
@@ -1081,10 +1105,11 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),8);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 translate::from_object<ARG1> a1(frame->arg(1));
 translate::from_object<ARG2> a2(frame->arg(2));
@@ -1122,10 +1147,11 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),7);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 translate::from_object<ARG1> a1(frame->arg(1));
 translate::from_object<ARG2> a2(frame->arg(2));
@@ -1162,10 +1188,11 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),6);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 translate::from_object<ARG1> a1(frame->arg(1));
 translate::from_object<ARG2> a2(frame->arg(2));
@@ -1201,10 +1228,11 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),5);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 translate::from_object<ARG1> a1(frame->arg(1));
 translate::from_object<ARG2> a2(frame->arg(2));
@@ -1239,10 +1267,11 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),4);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 translate::from_object<ARG1> a1(frame->arg(1));
 translate::from_object<ARG2> a2(frame->arg(2));
@@ -1276,10 +1305,11 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),3);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 translate::from_object<ARG1> a1(frame->arg(1));
 translate::from_object<ARG2> a2(frame->arg(2));
@@ -1312,10 +1342,11 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),2);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 translate::from_object<ARG1> a1(frame->arg(1));
 ((*ot.untag_object()).*mptr)(a1._v);
@@ -1347,10 +1378,11 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),1);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 ((*ot.untag_object()).*mptr)();
 return Values0<core::T_O>();
@@ -1385,10 +1417,11 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),16);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 translate::from_object<ARG1> a1(frame->arg(1));
 translate::from_object<ARG2> a2(frame->arg(2));
@@ -1439,10 +1472,11 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),15);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 translate::from_object<ARG1> a1(frame->arg(1));
 translate::from_object<ARG2> a2(frame->arg(2));
@@ -1490,10 +1524,11 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),14);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 translate::from_object<ARG1> a1(frame->arg(1));
 translate::from_object<ARG2> a2(frame->arg(2));
@@ -1539,10 +1574,11 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),13);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 translate::from_object<ARG1> a1(frame->arg(1));
 translate::from_object<ARG2> a2(frame->arg(2));
@@ -1587,10 +1623,11 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),12);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 translate::from_object<ARG1> a1(frame->arg(1));
 translate::from_object<ARG2> a2(frame->arg(2));
@@ -1634,10 +1671,11 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),11);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 translate::from_object<ARG1> a1(frame->arg(1));
 translate::from_object<ARG2> a2(frame->arg(2));
@@ -1679,10 +1717,11 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),10);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 translate::from_object<ARG1> a1(frame->arg(1));
 translate::from_object<ARG2> a2(frame->arg(2));
@@ -1723,10 +1762,11 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),9);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 translate::from_object<ARG1> a1(frame->arg(1));
 translate::from_object<ARG2> a2(frame->arg(2));
@@ -1766,10 +1806,11 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),8);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 translate::from_object<ARG1> a1(frame->arg(1));
 translate::from_object<ARG2> a2(frame->arg(2));
@@ -1808,10 +1849,11 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),7);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 translate::from_object<ARG1> a1(frame->arg(1));
 translate::from_object<ARG2> a2(frame->arg(2));
@@ -1848,10 +1890,11 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),6);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 translate::from_object<ARG1> a1(frame->arg(1));
 translate::from_object<ARG2> a2(frame->arg(2));
@@ -1887,10 +1930,11 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),5);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 translate::from_object<ARG1> a1(frame->arg(1));
 translate::from_object<ARG2> a2(frame->arg(2));
@@ -1925,10 +1969,11 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),4);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 translate::from_object<ARG1> a1(frame->arg(1));
 translate::from_object<ARG2> a2(frame->arg(2));
@@ -1962,10 +2007,11 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),3);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 translate::from_object<ARG1> a1(frame->arg(1));
 translate::from_object<ARG2> a2(frame->arg(2));
@@ -1998,10 +2044,11 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),2);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 translate::from_object<ARG1> a1(frame->arg(1));
 gctools::multiple_values<RT> retval =  ((*ot.untag_object()).*mptr)(a1._v);
@@ -2033,10 +2080,11 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),1);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 gctools::multiple_values<RT> retval =  ((*ot.untag_object()).*mptr)();
 return retval.as_return_type();
@@ -2069,10 +2117,11 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),16);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 translate::from_object<ARG1> a1(frame->arg(1));
 translate::from_object<ARG2> a2(frame->arg(2));
@@ -2121,10 +2170,11 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),15);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 translate::from_object<ARG1> a1(frame->arg(1));
 translate::from_object<ARG2> a2(frame->arg(2));
@@ -2170,10 +2220,11 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),14);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 translate::from_object<ARG1> a1(frame->arg(1));
 translate::from_object<ARG2> a2(frame->arg(2));
@@ -2218,10 +2269,11 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),13);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 translate::from_object<ARG1> a1(frame->arg(1));
 translate::from_object<ARG2> a2(frame->arg(2));
@@ -2265,10 +2317,11 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),12);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 translate::from_object<ARG1> a1(frame->arg(1));
 translate::from_object<ARG2> a2(frame->arg(2));
@@ -2311,10 +2364,11 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),11);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 translate::from_object<ARG1> a1(frame->arg(1));
 translate::from_object<ARG2> a2(frame->arg(2));
@@ -2356,10 +2410,11 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),10);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 translate::from_object<ARG1> a1(frame->arg(1));
 translate::from_object<ARG2> a2(frame->arg(2));
@@ -2400,10 +2455,11 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),9);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 translate::from_object<ARG1> a1(frame->arg(1));
 translate::from_object<ARG2> a2(frame->arg(2));
@@ -2443,10 +2499,11 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),8);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 translate::from_object<ARG1> a1(frame->arg(1));
 translate::from_object<ARG2> a2(frame->arg(2));
@@ -2485,10 +2542,11 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),7);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 translate::from_object<ARG1> a1(frame->arg(1));
 translate::from_object<ARG2> a2(frame->arg(2));
@@ -2525,10 +2583,11 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),6);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 translate::from_object<ARG1> a1(frame->arg(1));
 translate::from_object<ARG2> a2(frame->arg(2));
@@ -2564,10 +2623,11 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),5);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 translate::from_object<ARG1> a1(frame->arg(1));
 translate::from_object<ARG2> a2(frame->arg(2));
@@ -2602,10 +2662,11 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),4);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 translate::from_object<ARG1> a1(frame->arg(1));
 translate::from_object<ARG2> a2(frame->arg(2));
@@ -2639,10 +2700,11 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),3);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 translate::from_object<ARG1> a1(frame->arg(1));
 translate::from_object<ARG2> a2(frame->arg(2));
@@ -2675,10 +2737,11 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),2);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 translate::from_object<ARG1> a1(frame->arg(1));
 RT retval =  ((*ot.untag_object()).*mptr)(a1._v);
@@ -2710,10 +2773,11 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),1);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 RT retval =  ((*ot.untag_object()).*mptr)();
 return Values(translate::to_object<RT>::convert(retval));
@@ -2746,10 +2810,11 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),16);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 translate::from_object<ARG1> a1(frame->arg(1));
 translate::from_object<ARG2> a2(frame->arg(2));
@@ -2796,10 +2861,11 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),15);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 translate::from_object<ARG1> a1(frame->arg(1));
 translate::from_object<ARG2> a2(frame->arg(2));
@@ -2845,10 +2911,11 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),14);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 translate::from_object<ARG1> a1(frame->arg(1));
 translate::from_object<ARG2> a2(frame->arg(2));
@@ -2893,10 +2960,11 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),13);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 translate::from_object<ARG1> a1(frame->arg(1));
 translate::from_object<ARG2> a2(frame->arg(2));
@@ -2940,10 +3008,11 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),12);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 translate::from_object<ARG1> a1(frame->arg(1));
 translate::from_object<ARG2> a2(frame->arg(2));
@@ -2986,10 +3055,11 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),11);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 translate::from_object<ARG1> a1(frame->arg(1));
 translate::from_object<ARG2> a2(frame->arg(2));
@@ -3031,10 +3101,11 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),10);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 translate::from_object<ARG1> a1(frame->arg(1));
 translate::from_object<ARG2> a2(frame->arg(2));
@@ -3075,10 +3146,11 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),9);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 translate::from_object<ARG1> a1(frame->arg(1));
 translate::from_object<ARG2> a2(frame->arg(2));
@@ -3118,10 +3190,11 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),8);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 translate::from_object<ARG1> a1(frame->arg(1));
 translate::from_object<ARG2> a2(frame->arg(2));
@@ -3159,10 +3232,11 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),7);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 translate::from_object<ARG1> a1(frame->arg(1));
 translate::from_object<ARG2> a2(frame->arg(2));
@@ -3199,10 +3273,11 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),6);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 translate::from_object<ARG1> a1(frame->arg(1));
 translate::from_object<ARG2> a2(frame->arg(2));
@@ -3238,10 +3313,11 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),5);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 translate::from_object<ARG1> a1(frame->arg(1));
 translate::from_object<ARG2> a2(frame->arg(2));
@@ -3276,10 +3352,11 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),4);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 translate::from_object<ARG1> a1(frame->arg(1));
 translate::from_object<ARG2> a2(frame->arg(2));
@@ -3313,10 +3390,11 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),3);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 translate::from_object<ARG1> a1(frame->arg(1));
 translate::from_object<ARG2> a2(frame->arg(2));
@@ -3349,10 +3427,11 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),2);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 translate::from_object<ARG1> a1(frame->arg(1));
 ((*ot.untag_object()).*mptr)(a1._v);
@@ -3384,10 +3463,11 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),1);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 ((*ot.untag_object()).*mptr)();
 return Values0<core::T_O>();
@@ -3422,10 +3502,11 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),16);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 translate::from_object<ARG1> a1(frame->arg(1));
 translate::from_object<ARG2> a2(frame->arg(2));
@@ -3476,10 +3557,11 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),15);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 translate::from_object<ARG1> a1(frame->arg(1));
 translate::from_object<ARG2> a2(frame->arg(2));
@@ -3528,10 +3610,11 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),14);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 translate::from_object<ARG1> a1(frame->arg(1));
 translate::from_object<ARG2> a2(frame->arg(2));
@@ -3577,10 +3660,11 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),13);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 translate::from_object<ARG1> a1(frame->arg(1));
 translate::from_object<ARG2> a2(frame->arg(2));
@@ -3625,10 +3709,11 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),12);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 translate::from_object<ARG1> a1(frame->arg(1));
 translate::from_object<ARG2> a2(frame->arg(2));
@@ -3672,10 +3757,11 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),11);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 translate::from_object<ARG1> a1(frame->arg(1));
 translate::from_object<ARG2> a2(frame->arg(2));
@@ -3717,10 +3803,11 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),10);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 translate::from_object<ARG1> a1(frame->arg(1));
 translate::from_object<ARG2> a2(frame->arg(2));
@@ -3761,10 +3848,11 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),9);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 translate::from_object<ARG1> a1(frame->arg(1));
 translate::from_object<ARG2> a2(frame->arg(2));
@@ -3804,10 +3892,11 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),8);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 translate::from_object<ARG1> a1(frame->arg(1));
 translate::from_object<ARG2> a2(frame->arg(2));
@@ -3846,10 +3935,11 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),7);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 translate::from_object<ARG1> a1(frame->arg(1));
 translate::from_object<ARG2> a2(frame->arg(2));
@@ -3886,10 +3976,11 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),6);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 translate::from_object<ARG1> a1(frame->arg(1));
 translate::from_object<ARG2> a2(frame->arg(2));
@@ -3925,10 +4016,11 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),5);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 translate::from_object<ARG1> a1(frame->arg(1));
 translate::from_object<ARG2> a2(frame->arg(2));
@@ -3963,10 +4055,11 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),4);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 translate::from_object<ARG1> a1(frame->arg(1));
 translate::from_object<ARG2> a2(frame->arg(2));
@@ -4000,10 +4093,11 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),3);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 translate::from_object<ARG1> a1(frame->arg(1));
 translate::from_object<ARG2> a2(frame->arg(2));
@@ -4036,10 +4130,11 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),2);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 translate::from_object<ARG1> a1(frame->arg(1));
 gctools::multiple_values<RT> retval =  ((*ot.untag_object()).*mptr)(a1._v);
@@ -4071,10 +4166,11 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),1);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 gctools::multiple_values<RT> retval =  ((*ot.untag_object()).*mptr)();
 return retval.as_return_type();

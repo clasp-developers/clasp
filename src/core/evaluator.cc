@@ -97,7 +97,7 @@ CL_DEFUN T_mv cl__apply(T_sp head, VaList_sp args) {
   int lenTotalArgs = args->total_nargs();
   if (lenTotalArgs == 0) eval::errorApplyZeroArguments();
   T_O* lastArgRaw = args->absolute_indexed_arg(lenTotalArgs-1); // LCC_VA_LIST_INDEXED_ARG(lastArgRaw,args,lenArgs-1);
-  int lenArgs = lenTotalArgs - args->current_index();
+  int lenArgs = args->remaining_nargs(); // lenTotalArgs - args->current_index();
 //  printf("%s:%d  lenTotalArgs = %d lenArgs = %d\n", __FILE__, __LINE__, lenTotalArgs, lenArgs );
   if (gctools::tagged_nilp(lastArgRaw)) {
 //    printf("%s:%d apply with nil last arg\n", __FILE__, __LINE__ );
@@ -1852,6 +1852,7 @@ T_sp lookupFunction(T_sp functionDesignator, T_sp env) {
   return exec;
 }
 
+#if 0
 T_mv applyClosureToActivationFrame(Function_sp func, ActivationFrame_sp args) {
   size_t nargs = args->length();
   ValueFrame_sp vframe = gctools::As_unsafe<ValueFrame_sp>(args);
@@ -1866,9 +1867,9 @@ T_mv applyClosureToActivationFrame(Function_sp func, ActivationFrame_sp args) {
       SIMPLE_ERROR(BF("Illegal number of arguments in call: %s") % nargs);
   };
 }
+#endif
 
-
-
+#if 0
 T_mv applyToActivationFrame(T_sp head, ActivationFrame_sp targs) {
   T_sp tfn = lookupFunction(head, targs);
   ValueFrame_sp args = gctools::As_unsafe<ValueFrame_sp>(targs);
@@ -1886,7 +1887,7 @@ T_mv applyToActivationFrame(T_sp head, ActivationFrame_sp targs) {
   }
   SIMPLE_ERROR(BF("In applyToActivationFrame the closure for %s is NULL and is being applied to arguments: %s") % _rep_(closure) % _rep_(args));
 }
-
+#endif
 
 /*!
  * This method:

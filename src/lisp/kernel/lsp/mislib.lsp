@@ -359,20 +359,24 @@ hash table; otherwise it signals that we have reached the end of the hash table.
                  (dolist (c classes)
                    (setf (gethash c meters) (multiple-value-list (allocation-meter c))))))
         (let* ((before (zero-meters))
-               (after (zero-meters))
-               (dummy (zero-meters)))
+               (after (zero-meters)))
           (update-meters before)
           (funcall fun)
           (update-meters after)
-          (update-meters dummy)
-          (let* ((data (loop for c in classes
-                           for nums = (mapcar (lambda (a b d) (- a b (- d a)))
-                                              (gethash c after) (gethash c before) (gethash c dummy))
-                         when (> (first nums) 0)
-                          collect (list (class-name c) (first nums) (second nums))))
-                 (sorted (sort data #'< :key #'third)))
-            (loop for entry in sorted
-                 do (format t "~s  ~a ~a~&" (first entry) (second entry) (third entry))))))))
+          (let* ((dbefore (zero-meters))
+                 (dafter (zero-meters)))
+            (update-meters dbefore)
+            ;; nothing
+            (update-meters dafter)
+            (let* ((data (loop for c in classes
+                            for nums = (mapcar (lambda (a b da db) (- a b (- da db)))
+                                               (gethash c after) (gethash c before)
+                                               (gethash c dafter) (gethash c dbefore))
+                            when (> (first nums) 0)
+                            collect (list (class-name c) (first nums) (second nums))))
+                   (sorted (sort data #'< :key #'third)))
+              (loop for entry in sorted
+                 do (format t "~s  ~a ~a~&" (first entry) (second entry) (third entry)))))))))
 
 ;;; CORE:METER works like CL:TIME
 ;;; It prints a list of all classes and the number of instances allocated while evaluating form

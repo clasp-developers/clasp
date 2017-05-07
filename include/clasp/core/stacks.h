@@ -52,12 +52,15 @@ class InvocationHistoryFrame //: public gctools::StackRoot
  public:
   InvocationHistoryFrame *_Previous;
   int _Bds;
-  T_O*  _RawArgList;
+  T_O** _register_save_area;
+  T_O** _overflow_area;
+  
  public:
- InvocationHistoryFrame(T_O* rawArgList)
+ InvocationHistoryFrame(va_list* rawArgList)
    : _Previous(my_thread->_InvocationHistoryStack),
-    _Bds(my_thread->bindings().size()),
-    _RawArgList(rawArgList) {
+    _Bds(my_thread->bindings().size()){
+    this->_register_save_area = LCC_VA_LIST_REGISTER_SAVE_AREA(rawArgList);
+    this->_overflow_area = LCC_VA_LIST_OVERFLOW_ARG_AREA(rawArgList);
 #ifdef DEBUG_ASSERTS
       if ( !(gctools::tagged_valistp(rawArgList))) {
         printf("Passed a non valistp to InvocationHistoryFrame\n");
@@ -72,7 +75,7 @@ class InvocationHistoryFrame //: public gctools::StackRoot
   //Closure_sp fc, core::T_O *valist_args, T_sp env = _Nil<T_O>());
 
   //	InvocationHistoryFrame(int sourceFileInfoHandle, int lineno, int column, ActivationFrame_sp env=_Nil<ActivationFrame_O>());
-  VaList_sp valist_sp() const { return VaList_sp((gc::Tagged)this->_RawArgList); };
+//  VaList_sp valist_sp() const { return VaList_sp((gc::Tagged)this->_RawArgList); };
   InvocationHistoryFrame *previous() { return this->_Previous; };
   SimpleVector_sp arguments() const;
   string argumentsAsString(int maxWidth) const;
@@ -96,8 +99,8 @@ namespace core {
 
 #ifdef USE_EXPENSIVE_BACKTRACE
 #define INVOCATION_HISTORY_FRAME() \
-  ASSERT_LCC_VA_LIST_CLOSURE_DEFINED(lcc_arglist);\
-  core::InvocationHistoryFrame zzzFrame(lcc_arglist);
+  ASSERT_LCC_VA_LIST_CLOSURE_DEFINED(lcc_arglist_s);\
+  core::InvocationHistoryFrame zzzFrame(&lcc_arglist_s._Args);
 #else
 #define INVOCATION_HISTORY_FRAME()
 #endif

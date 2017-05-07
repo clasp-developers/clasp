@@ -27,10 +27,11 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),16);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame->arg(0));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
 translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame->arg(1));
@@ -159,10 +160,11 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),15);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame->arg(0));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
 translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame->arg(1));
@@ -284,10 +286,11 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),14);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame->arg(0));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
 translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame->arg(1));
@@ -403,10 +406,11 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),13);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame->arg(0));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
 translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame->arg(1));
@@ -516,10 +520,11 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),12);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame->arg(0));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
 translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame->arg(1));
@@ -623,10 +628,11 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),11);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame->arg(0));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
 translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame->arg(1));
@@ -724,10 +730,11 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),10);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame->arg(0));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
 translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame->arg(1));
@@ -819,10 +826,11 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),9);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame->arg(0));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
 translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame->arg(1));
@@ -908,10 +916,11 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),8);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame->arg(0));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
 translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame->arg(1));
@@ -991,10 +1000,11 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),7);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame->arg(0));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
 translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame->arg(1));
@@ -1067,10 +1077,11 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),6);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame->arg(0));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
 translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame->arg(1));
@@ -1137,10 +1148,11 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),5);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame->arg(0));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
 translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame->arg(1));
@@ -1201,10 +1213,11 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),4);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame->arg(0));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
 translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame->arg(1));
@@ -1259,10 +1272,11 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),3);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame->arg(0));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
 translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame->arg(1));
@@ -1311,10 +1325,11 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),2);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame->arg(0));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
 translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame->arg(1));
@@ -1357,10 +1372,11 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),1);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame->arg(0));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
 RT retval =  fptr(a0._v);
@@ -1397,6 +1413,7 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 RT retval =  fptr();
 int oidx = 1;
@@ -1428,10 +1445,11 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),16);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame->arg(0));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
 translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame->arg(1));
@@ -1558,10 +1576,11 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),15);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame->arg(0));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
 translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame->arg(1));
@@ -1682,10 +1701,11 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),14);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame->arg(0));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
 translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame->arg(1));
@@ -1800,10 +1820,11 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),13);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame->arg(0));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
 translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame->arg(1));
@@ -1912,10 +1933,11 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),12);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame->arg(0));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
 translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame->arg(1));
@@ -2018,10 +2040,11 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),11);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame->arg(0));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
 translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame->arg(1));
@@ -2118,10 +2141,11 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),10);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame->arg(0));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
 translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame->arg(1));
@@ -2212,10 +2236,11 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),9);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame->arg(0));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
 translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame->arg(1));
@@ -2300,10 +2325,11 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),8);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame->arg(0));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
 translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame->arg(1));
@@ -2381,10 +2407,11 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),7);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame->arg(0));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
 translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame->arg(1));
@@ -2456,10 +2483,11 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),6);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame->arg(0));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
 translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame->arg(1));
@@ -2525,10 +2553,11 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),5);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame->arg(0));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
 translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame->arg(1));
@@ -2588,10 +2617,11 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),4);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame->arg(0));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
 translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame->arg(1));
@@ -2645,10 +2675,11 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),3);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame->arg(0));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
 translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame->arg(1));
@@ -2696,10 +2727,11 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),2);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame->arg(0));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
 translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame->arg(1));
@@ -2741,10 +2773,11 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),1);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame->arg(0));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
 fptr(a0._v);
@@ -2780,6 +2813,7 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 fptr();
 return Values0<core::T_O>();
@@ -2812,10 +2846,11 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),16);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame->arg(0));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
 translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame->arg(1));
@@ -2947,10 +2982,11 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),15);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame->arg(0));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
 translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame->arg(1));
@@ -3074,10 +3110,11 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),14);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame->arg(0));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
 translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame->arg(1));
@@ -3194,10 +3231,11 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),13);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame->arg(0));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
 translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame->arg(1));
@@ -3308,10 +3346,11 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),12);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame->arg(0));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
 translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame->arg(1));
@@ -3416,10 +3455,11 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),11);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame->arg(0));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
 translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame->arg(1));
@@ -3518,10 +3558,11 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),10);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame->arg(0));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
 translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame->arg(1));
@@ -3614,10 +3655,11 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),9);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame->arg(0));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
 translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame->arg(1));
@@ -3704,10 +3746,11 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),8);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame->arg(0));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
 translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame->arg(1));
@@ -3788,10 +3831,11 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),7);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame->arg(0));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
 translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame->arg(1));
@@ -3865,10 +3909,11 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),6);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame->arg(0));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
 translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame->arg(1));
@@ -3936,10 +3981,11 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),5);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame->arg(0));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
 translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame->arg(1));
@@ -4001,10 +4047,11 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),4);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame->arg(0));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
 translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame->arg(1));
@@ -4060,10 +4107,11 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),3);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame->arg(0));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
 translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame->arg(1));
@@ -4113,10 +4161,11 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),2);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame->arg(0));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
 translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame->arg(1));
@@ -4160,10 +4209,11 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),1);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame->arg(0));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
 std::unique_ptr<UPRT> retval =  fptr(a0._v);
@@ -4201,6 +4251,7 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INCREMENT_FUNCTION_CALL_COUNTER(this);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 std::unique_ptr<UPRT> retval =  fptr();
 int oidx = 1;

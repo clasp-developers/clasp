@@ -136,14 +136,16 @@ public:
   MacroClosure_O(Symbol_sp name, MacroPtr ptr, SOURCE_INFO) : BuiltinClosure_O(name, kw::_sym_macro, SOURCE_INFO_PASS), mptr(ptr) {}
   size_t templatedSizeof() const { return sizeof(MacroClosure_O); };
   virtual Symbol_sp getKind() const { return kw::_sym_macro; };
+#if 0
   LCC_RETURN LISP_CALLING_CONVENTION() {
     INCREMENT_FUNCTION_CALL_COUNTER(this);
     ASSERT_LCC_VA_LIST_CLOSURE_DEFINED(lcc_arglist);
     List_sp form = gc::As<Cons_sp>(LCC_ARG0());
     T_sp env = gc::As<T_sp>(LCC_ARG1());
-    InvocationHistoryFrame _frame(lcc_arglist); // The environment could be a Non-Clasp Environment (Cleavir)
+    InvocationHistoryFrame _frame(lcc_vargs); // The environment could be a Non-Clasp Environment (Cleavir)
     return ((this->mptr)(form, env)).as_return_type();
   };
+#endif
 };
 
 inline void defmacro(const string &packageName, const string &name, T_mv (*mp)(List_sp, T_sp env), const string &arguments, const string &declares, const string &docstring, const string &sourceFileName, int lineno, bool autoExport = true) {

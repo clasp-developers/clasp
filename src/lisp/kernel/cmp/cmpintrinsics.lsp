@@ -123,6 +123,8 @@ Set this to other IRBuilders to make code go where you want")
   (let ((find (assoc name info)))
     (or find (error "Could not find ~a in cxx-data-structures-info --> ~s~%" name info))
     (cdr find)))
+(defvar +register-save-area-size+ (get-cxx-data-structure-info :register-save-area-size))
+(defvar +void*-size+ (get-cxx-data-structure-info :void*-size))
 (defvar +value-frame-parent-offset+ (get-cxx-data-structure-info :value-frame-parent-offset))
 (defvar +fixnum-stamp+ (get-cxx-data-structure-info :fixnum-stamp))
 (defvar +cons-stamp+ (get-cxx-data-structure-info :cons-stamp))
@@ -306,8 +308,8 @@ Boehm and MPS use a single pointer"
 ;;;
 ;;;
 (progn
-  #+X86-64
-  (define-symbol-macro %va_list% (llvm-sys:struct-type-get *llvm-context* (list %i32% %i32% %i8*% %i8*%) nil))
+  ;; Tack on a size_t to store the number of remaining arguments
+  #+X86-64(define-symbol-macro %va_list% (llvm-sys:struct-type-get *llvm-context* (list %i32% %i32% %i8*% %i8*% %size_t%) nil))
   #-X86-64
   (error "I need a va_list struct definition for this system")
 
@@ -328,19 +330,29 @@ Boehm and MPS use a single pointer"
 ;;
 ;; The last passed-arg is va-list
 (defstruct (calling-convention-impl (:type vector))
-  valist
+  closure
   nargs
   register-args ;; the last passed-arg is a va-list
+  valist
+  remaining-nargs
   )
 
-;; Parse the function arguments into a (values closed-env calling-convention)
+;; Parse the function arguments into a calling-convention
 (defun parse-function-arguments (arguments)
-  (let ((closed-env (first arguments))
-        (cc (make-calling-convention-impl
-             :valist (second arguments)
-             :nargs (third arguments) ;; The number of arguments
-             :register-args (nthcdr 3 arguments))))
-    (values closed-env cc)))
+  (let* ((closed-env            (first arguments))
+         (va-list               (irc-alloca-va_list :label "va-list"))
+         (reg-save-area         (irc-alloca-register-save-area :label "reg-save-area"))
+         (remaining-nargs       (irc-alloca-size_t-no-cleanup :label "remnargs"))
+         (_                     (spill-to-register-save-area arguments va-list reg-save-area)))
+    #| TODO:  Add a InvocationStackEntry here |#
+    (make-calling-convention-impl
+     :nargs (second arguments) ;; The number of arguments
+     :register-args (nthcdr 2 arguments)
+     :valist va-list
+     :remaining-nargs remaining-nargs)))
+
+(defun calling-convention-closure (cc)
+  (calling-convention-impl-closure cc))
 
 (defun calling-convention-nargs (cc)
   (calling-convention-impl-nargs cc))
@@ -348,13 +360,15 @@ Boehm and MPS use a single pointer"
 (defun calling-convention-register-args (cc)
   (calling-convention-impl-register-args cc))
 
-;; If there is no va-list return nil - Why would this ever be so?
+;;; The remaining-nargs is the 4th element of the %va_list%
+#+x86-64(defun calling-convention-remaining-nargs-addr (cc)
+          (irc-gep (calling-convention-impl-valist cc) (list 0 4)))
+
 (defun calling-convention-va-list (cc)
   (calling-convention-impl-valist cc))
 
-
 (defun calling-convention-args.va-end (cc)
-  (irc-intrinsic "llvm.va_end" (calling-convention-va-list cc)))
+  (let* ((irc-intrinsic "llvm.va_end" (calling-convention-va-list cc)))))
 
 ;;;
 ;;; Read the next argument from the va_list
@@ -362,10 +376,16 @@ Boehm and MPS use a single pointer"
 ;;; The arg-idx is not used but it is passed because I used to index into an array
 (defun calling-convention-args.va-arg (cc arg-idx &optional target-idx)
   (declare (ignore arg-idx))
-  (let ((label (if (and target-idx core::*enable-print-pretty*)
-                   (bformat nil "arg-%d" target-idx)
-                   "rawarg")))
-    (irc-intrinsic "cc_va_arg" (calling-convention-va-list cc))))
+  (let* ((label (if (and target-idx core::*enable-print-pretty*)
+                    (bformat nil "arg-%d" target-idx)
+                    "rawarg"))
+         (remaining-nargs-addr (calling-convention-remaining-nargs-addr cc))
+         (remaining-nargs      (irc-load remaining-nargs-addr "rem-nargs"))
+         (rem-nargs-1          (irc-sub  remaining-nargs (jit-constant-size_t 1) "rem-nargs-1"))
+         (_                    (irc-store rem-nargs-1 remaining-nargs-addr))
+         (result               (irc-va_arg (calling-convention-va-list cc))))
+    result))
+
 
 #+x86-64
 (progn
@@ -378,12 +398,43 @@ Boehm and MPS use a single pointer"
 ;;; 5) The remaining arguments are on the stack
 ;;;       If no argument is passed then pass NULL.")
 
-  (define-symbol-macro %register-arg-types% (list %t*% %t*% %t*%))
-  (defvar *register-arg-names* (list "farg0" "farg1" "farg2"))
+  (define-symbol-macro %register-arg-types% (list %t*% %t*% %t*% %t*%))
+  (defvar *register-arg-names* (list "farg0" "farg1" "farg2" "farg3"))
   (defvar +fn-registers-prototype-argument-names+
-    (list* "closure-ptr" "va-list" "nargs" *register-arg-names*))
+    (list* "closure-ptr" "nargs" *register-arg-names*))
   (define-symbol-macro %fn-registers-prototype%
-    (llvm-sys:function-type-get %tmv% (list* %t*% %VaList_S*% %size_t% %register-arg-types%))))
+      (llvm-sys:function-type-get %tmv% (list* %t*% %size_t% %register-arg-types%) T #|VARARGS!|#))
+  (define-symbol-macro %register-save-area% (llvm-sys:array-type-get
+                                             %i8*%
+                                             (/ +register-save-area-size+ +void*-size+)))
+  (defun spill-to-register-save-area (registers va-list register-save-area)
+    (bformat t "In spill-to-register-save-area arguments -> %s\n" registers)
+    (labels ((spill-reg (idx)
+               (let* ((addr-name     (bformat nil "addr%d" idx))
+                      (addr          (irc-gep register-save-area (list (jit-constant-size_t 0) (jit-constant-size_t 0)) addr-name))
+                      (reg-i8*       (irc-bit-cast (elt registers idx) %i8*% "reg-i8*"))
+                      (_             (irc-store reg-i8* addr)))
+                 addr)))
+      (let* (
+             (addr-closure  (spill-reg 0))
+             (addr-nargs    (spill-reg 1))
+             (addr-farg0    (spill-reg 2)) ; this is the first fixed arg currently.
+             (addr-farg1    (spill-reg 3))
+             (addr-farg2    (spill-reg 4))
+             (addr-farg3    (spill-reg 5))))))
+
+  (defun calling-convention-args.va-start (cc)
+    (let* ((irc-intrinsic "llvm.va_start" (calling-convention-va-list cc))
+           (nargs-addr                    (irc-gep (calling-convention-register-save-area cc) (list (jit-constant-size_t 0) (jit-constant-size_t 1)) "nargs-addr"))
+           (nargs-i8*                     (irc-load nargs-addr))
+           (nargs                         (irc-bit-cast nargs-i8* %size_t*))
+           (_                             (irc-store nargs (calling-convention-remaining-args cc)))
+           ;; save the register-save-area ptr
+           (_                             (irc-insert-value va-list (calling-convention-register-save-area cc) (list 3)))
+           ;; set the gp_offset to point to first reg arg
+           (_                             (irc-insert-value va-list (jit-constant-i32 (* 8 2)) (list 0)))))))
+
+
 #-(and x86-64)
 (error "Define calling convention for system")
 
@@ -428,8 +479,14 @@ Boehm and MPS use a single pointer"
   (defun add-global-ctor-function (module main-function)
     "Create a function with the name core:+clasp-ctor-function-name+ and
 have it call the main-function"
-  (let ((*the-module* module))
-    (let ((fn (with-new-function
+    (let* ((*the-module* module)
+           (fn (irc-simple-function-create
+                core::+clasp-ctor-function-name+
+                %fn-ctor%
+                'llvm-sys:internal-linkage
+                *the-module*
+                :argument-names +fn-ctor-argument-names+))
+           #++(with-new-function
                   (ctor-func func-env result
                              :function-name core:+clasp-ctor-function-name+
                              :parent-env nil
@@ -438,8 +495,17 @@ have it call the main-function"
                              :return-void t
                              :argument-names +fn-ctor-argument-names+ )
                 (let* ((bc-bf (irc-bit-cast main-function %fn-start-up*% "fnptr-pointer")))
-                  (irc-intrinsic "cc_register_startup_function" bc-bf)))))
-      fn)))
+                  (irc-intrinsic "cc_register_startup_function" bc-bf))))
+      (let* ((irbuilder-body (llvm-sys:make-irbuilder *llvm-context*))
+             (*current-function* fn)
+             (entry-bb (irc-basic-block-create "entry" fn)))
+        (llvm-sys:set-insert-point-basic-block irbuilder-body entry-bb)
+        (with-irbuilder (irbuilder-body)
+        (let* ((bc-bf (irc-bit-cast main-function %fn-start-up*% "fnptr-pointer"))
+               (_     (irc-intrinsic "cc_register_startup_function" bc-bf))
+               (_     (irc-ret-void))))
+          (llvm-sys:dump fn)
+          fn))))
 
   (defun find-global-ctor-function (module)
     (let ((ctor (llvm-sys:get-function module core:+clasp-ctor-function-name+)))

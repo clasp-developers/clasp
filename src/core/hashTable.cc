@@ -525,155 +525,149 @@ gc::Fixnum HashTable_O::sxhashKey(T_sp obj, gc::Fixnum bound, bool willAddKey) c
 }
 
 List_sp HashTable_O::findAssoc(gc::Fixnum index, T_sp key) const {
-  VectorObjects_O* spine = &*(this->_HashTable);
-//  printf("%s:%d:%s  spine->arrayTotalSize() = %ld  index = %ld\n", __FILE__, __LINE__, __FUNCTION__, spine->dimension(), index );
   LOG(BF("findAssoc at index %d\n") %index);
-  T_sp trib = (*spine)[index];
-  List_sp rib = coerce_to_list(trib);
-  for (auto cur : rib) {
-    List_sp pair = oCar(cur);
-    if (this->keyTest(oCar(pair), key)) {
-      //		LOG(BF("Found match: %s") % cur->__repr__());
-      return pair;
-    }
+  for (auto cur : gc::As_unsafe<List_sp>((*this->_HashTable)[index])) {
+    List_sp pair = CONS_CAR(cur);
+    ASSERT(pair.consp());
+    if (this->keyTest(CONS_CAR(pair), key)) return pair;
   }
   return _Nil<T_O>();
 }
 
-CL_LAMBDA(key hash-table &optional default-value);
-CL_DECLARE();
-CL_DOCSTRING("gethash");
-CL_DEFUN T_mv cl__gethash(T_sp key, T_sp hashTable, T_sp default_value) {
-  HashTable_sp ht = gc::As<HashTable_sp>(hashTable);
-  return ht->gethash(key, default_value);
-};
+  CL_LAMBDA(key hash-table &optional default-value);
+  CL_DECLARE();
+  CL_DOCSTRING("gethash");
+  CL_DEFUN T_mv cl__gethash(T_sp key, T_sp hashTable, T_sp default_value) {
+    HashTable_sp ht = gc::As<HashTable_sp>(hashTable);
+    return ht->gethash(key, default_value);
+  };
 
-List_sp HashTable_O::bucketsFind(T_sp key) const {
-  ASSERT(this->_HashTable);
-  cl_index length = cl__length(this->_HashTable);
+  List_sp HashTable_O::bucketsFind(T_sp key) const {
+    ASSERT(this->_HashTable);
+    cl_index length = cl__length(this->_HashTable);
 //  printf("%s:%d:%s  _HashTable length = %ld\n", __FILE__, __LINE__, __FUNCTION__, length );
-  cl_index index = this->safe_sxhashKey(key, length, false);
-  List_sp keyValueCons = this->findAssoc(index, key);
-  return keyValueCons;
-}
-
-List_sp HashTable_O::tableRef(T_sp key) {
-  List_sp keyValueCons = this->bucketsFind(key);
-  if (keyValueCons.notnilp())
+    cl_index index = this->safe_sxhashKey(key, length, false);
+    List_sp keyValueCons = this->findAssoc(index, key);
     return keyValueCons;
+  }
+
+  List_sp HashTable_O::tableRef(T_sp key) {
+    List_sp keyValueCons = this->bucketsFind(key);
+    if (keyValueCons.notnilp())
+      return keyValueCons;
 #if defined(USE_MPS)
   // Location dependency test if key is stale
-  if (key.objectp()) {
-    void *blockAddr = &(*key);
-    if (mps_ld_isstale(const_cast<mps_ld_t>(&(this->_LocationDependency)), global_arena, blockAddr)) {
-      keyValueCons = this->rehash(false, key);
+    if (key.objectp()) {
+      void *blockAddr = &(*key);
+      if (mps_ld_isstale(const_cast<mps_ld_t>(&(this->_LocationDependency)), global_arena, blockAddr)) {
+        keyValueCons = this->rehash(false, key);
+      }
     }
-  }
 #endif
-  return keyValueCons;
-}
-
-CL_LAMBDA(ht);
-CL_DECLARE();
-CL_DOCSTRING("hashTableForceRehash");
-CL_DEFUN void core__hash_table_force_rehash(HashTable_sp ht) {
-  ht->rehash(false, _Unbound<T_O>());
-}
-
-T_mv HashTable_O::gethash(T_sp key, T_sp default_value) {
-  LOG(BF("gethash looking for key[%s]") % _rep_(key));
-  List_sp keyValuePair = this->tableRef(key);
-  LOG(BF("Found keyValueCons")); // % keyValueCons->__repr__() ); INFINITE-LOOP
-  if (keyValuePair.nilp()) {
-    LOG(BF("valueOrUnbound is unbound - returning default"));
-    return (Values(default_value, _Nil<T_O>()));
+    return keyValueCons;
   }
-  T_sp value = oCdr(keyValuePair);
-  if (value.unboundp()) {
-    LOG(BF("valueOrUnbound is unbound - returning default"));
-    return (Values(default_value, _Nil<T_O>()));
+
+  CL_LAMBDA(ht);
+  CL_DECLARE();
+  CL_DOCSTRING("hashTableForceRehash");
+  CL_DEFUN void core__hash_table_force_rehash(HashTable_sp ht) {
+    ht->rehash(false, _Unbound<T_O>());
   }
-  LOG(BF("Found assoc - returning")); // : %s") % res->__repr__() );  INFINITE-LOOP
-  return (Values(value, _lisp->_true()));
-}
 
-CL_LISPIFY_NAME("core:hashIndex");
-CL_DEFMETHOD gc::Fixnum HashTable_O::hashIndex(T_sp key) const {
-  gc::Fixnum idx = this->safe_sxhashKey(key, cl__length(this->_HashTable), false);
-  return idx;
-}
-
-List_sp HashTable_O::find(T_sp key) {
-  List_sp keyValue = this->tableRef(key);
-  if (keyValue.nilp())
-    return keyValue;
-  if (oCdr(keyValue).unboundp())
-    return _Nil<T_O>();
-  return keyValue;
-}
-
-bool HashTable_O::contains(T_sp key) {
-  List_sp keyValue = this->find(key);
-  if (keyValue.nilp())
-    return false;
-  return true;
-}
-
-bool HashTable_O::remhash(T_sp key) {
-  List_sp keyValuePair = this->tableRef(key);
-  if (keyValuePair.nilp() || oCdr(keyValuePair).unboundp())
-    return false;
-  keyValuePair.asCons()->setCdr(_Unbound<T_O>());
-  this->_HashTableCount--;
-  return true;
-}
-
-CL_LISPIFY_NAME("core:hashTableSetfGethash");
-CL_DEFMETHOD T_sp HashTable_O::hash_table_setf_gethash(T_sp key, T_sp value) {
-  LOG(BF("About to hash_table_setf_gethash for %s@%p -> %s@%p\n") % _rep_(key) % (void*)&(*key) % _rep_(value) % (void*)&(*value));
-  List_sp keyValuePair = this->tableRef(key);
-  if (keyValuePair.nilp()) {
-    gc::Fixnum index = this->safe_sxhashKey(key, cl__length(this->_HashTable), true /*Will add key*/);
-    Cons_sp newKeyValue = Cons_O::create(key, value);
-    //            printf("%s:%d  Inserted newKeyValue@%p\n", __FILE__, __LINE__, newKeyValue.raw_());
-    Cons_sp newEntry = Cons_O::create(newKeyValue, this->_HashTable->operator[](index));
-    this->_HashTable->operator[](index) = newEntry;
-    //            this->_HashTableEntryCount++;
-    ++(this->_HashTableCount);
-  } else if (oCdr(keyValuePair).unboundp()) {
-    keyValuePair.asCons()->setCdr(value);
-    ++(this->_HashTableCount);
-  } else {
-    keyValuePair.asCons()->setCdr(value);
-  }
-  if (this->_HashTableCount > this->_RehashThreshold * cl__length(this->_HashTable)) {
-    LOG(BF("Expanding hash table"));
-    this->rehash(true, _Unbound<T_O>());
-  }
-  return value;
-}
-
-List_sp HashTable_O::rehash(bool expandTable, T_sp findKey) {
-  //        printf("%s:%d rehash of hash-table@%p\n", __FILE__, __LINE__,  this );
-  ASSERTF(!clasp_zerop(this->_RehashSize), BF("RehashSize is zero - it shouldn't be"));
-  ASSERTF(cl__length(this->_HashTable) != 0, BF("HashTable is empty in expandHashTable - this shouldn't be"));
-  List_sp foundKeyValuePair(_Nil<T_O>());
-  LOG(BF("At start of expandHashTable current hash table size: %d") % cl__length(this->_HashTable));
-  gc::Fixnum newSize = 0;
-  if (expandTable) {
-    if (cl__integerp(this->_RehashSize)) {
-      newSize = cl__length(this->_HashTable) + clasp_to_int(gc::As<Integer_sp>(this->_RehashSize));
-    } else if (cl__floatp(this->_RehashSize)) {
-      newSize = cl__length(this->_HashTable) * clasp_to_double(this->_RehashSize);
+  T_mv HashTable_O::gethash(T_sp key, T_sp default_value) {
+    LOG(BF("gethash looking for key[%s]") % _rep_(key));
+    List_sp keyValuePair = this->tableRef(key);
+    LOG(BF("Found keyValueCons")); // % keyValueCons->__repr__() ); INFINITE-LOOP
+    if (keyValuePair.nilp()) {
+      LOG(BF("valueOrUnbound is unbound - returning default"));
+      return (Values(default_value, _Nil<T_O>()));
     }
-  } else {
-    newSize = cl__length(this->_HashTable);
+    T_sp value = oCdr(keyValuePair);
+    if (value.unboundp()) {
+      LOG(BF("valueOrUnbound is unbound - returning default"));
+      return (Values(default_value, _Nil<T_O>()));
+    }
+    LOG(BF("Found assoc - returning")); // : %s") % res->__repr__() );  INFINITE-LOOP
+    return (Values(value, _lisp->_true()));
   }
-  VectorObjects_sp oldTable = this->_HashTable;
-  newSize = this->resizeEmptyTable(newSize);
-  LOG(BF("Resizing table to size: %d") % newSize);
-  size_t oldSize = cl__length(oldTable);
-  for (size_t it(0), itEnd(oldSize); it < itEnd; ++it) {
+
+  CL_LISPIFY_NAME("core:hashIndex");
+  CL_DEFMETHOD gc::Fixnum HashTable_O::hashIndex(T_sp key) const {
+    gc::Fixnum idx = this->safe_sxhashKey(key, cl__length(this->_HashTable), false);
+    return idx;
+  }
+
+  List_sp HashTable_O::find(T_sp key) {
+    List_sp keyValue = this->tableRef(key);
+    if (keyValue.nilp())
+      return keyValue;
+    if (oCdr(keyValue).unboundp())
+      return _Nil<T_O>();
+    return keyValue;
+  }
+
+  bool HashTable_O::contains(T_sp key) {
+    List_sp keyValue = this->find(key);
+    if (keyValue.nilp())
+      return false;
+    return true;
+  }
+
+  bool HashTable_O::remhash(T_sp key) {
+    List_sp keyValuePair = this->tableRef(key);
+    if (keyValuePair.nilp() || oCdr(keyValuePair).unboundp())
+      return false;
+    keyValuePair.asCons()->setCdr(_Unbound<T_O>());
+    this->_HashTableCount--;
+    return true;
+  }
+
+  CL_LISPIFY_NAME("core:hashTableSetfGethash");
+  CL_DEFMETHOD T_sp HashTable_O::hash_table_setf_gethash(T_sp key, T_sp value) {
+    LOG(BF("About to hash_table_setf_gethash for %s@%p -> %s@%p\n") % _rep_(key) % (void*)&(*key) % _rep_(value) % (void*)&(*value));
+    List_sp keyValuePair = this->tableRef(key);
+    if (keyValuePair.nilp()) {
+      gc::Fixnum index = this->safe_sxhashKey(key, cl__length(this->_HashTable), true /*Will add key*/);
+      Cons_sp newKeyValue = Cons_O::create(key, value);
+    //            printf("%s:%d  Inserted newKeyValue@%p\n", __FILE__, __LINE__, newKeyValue.raw_());
+      Cons_sp newEntry = Cons_O::create(newKeyValue, this->_HashTable->operator[](index));
+      this->_HashTable->operator[](index) = newEntry;
+    //            this->_HashTableEntryCount++;
+      ++(this->_HashTableCount);
+    } else if (oCdr(keyValuePair).unboundp()) {
+      keyValuePair.asCons()->setCdr(value);
+      ++(this->_HashTableCount);
+    } else {
+      keyValuePair.asCons()->setCdr(value);
+    }
+    if (this->_HashTableCount > this->_RehashThreshold * cl__length(this->_HashTable)) {
+      LOG(BF("Expanding hash table"));
+      this->rehash(true, _Unbound<T_O>());
+    }
+    return value;
+  }
+
+  List_sp HashTable_O::rehash(bool expandTable, T_sp findKey) {
+  //        printf("%s:%d rehash of hash-table@%p\n", __FILE__, __LINE__,  this );
+    ASSERTF(!clasp_zerop(this->_RehashSize), BF("RehashSize is zero - it shouldn't be"));
+    ASSERTF(cl__length(this->_HashTable) != 0, BF("HashTable is empty in expandHashTable - this shouldn't be"));
+    List_sp foundKeyValuePair(_Nil<T_O>());
+    LOG(BF("At start of expandHashTable current hash table size: %d") % cl__length(this->_HashTable));
+    gc::Fixnum newSize = 0;
+    if (expandTable) {
+      if (cl__integerp(this->_RehashSize)) {
+        newSize = cl__length(this->_HashTable) + clasp_to_int(gc::As<Integer_sp>(this->_RehashSize));
+      } else if (cl__floatp(this->_RehashSize)) {
+        newSize = cl__length(this->_HashTable) * clasp_to_double(this->_RehashSize);
+      }
+    } else {
+      newSize = cl__length(this->_HashTable);
+    }
+    VectorObjects_sp oldTable = this->_HashTable;
+    newSize = this->resizeEmptyTable(newSize);
+    LOG(BF("Resizing table to size: %d") % newSize);
+    size_t oldSize = cl__length(oldTable);
+    for (size_t it(0), itEnd(oldSize); it < itEnd; ++it) {
       for (auto cur : coerce_to_list((*oldTable)[it])) {
         List_sp pair = oCar(cur);
         T_sp key = oCar(pair);
@@ -699,153 +693,153 @@ List_sp HashTable_O::rehash(bool expandTable, T_sp findKey) {
           this->_HashTable->operator[](index) = newCur;
         }
       }
+    }
+    return foundKeyValuePair;
   }
-  return foundKeyValuePair;
-}
 
-string HashTable_O::__repr__() const {
-  stringstream ss;
-  ss << "#<" << this->_instanceClass()->classNameAsString() << " :count " << this->_HashTableCount;
-  ss << " :total-alist-entries " << this->calculateHashTableCount();
-  ss << " @" << (void *)(this) << "> ";
-  return ss.str();
+  string HashTable_O::__repr__() const {
+    stringstream ss;
+    ss << "#<" << this->_instanceClass()->classNameAsString() << " :count " << this->_HashTableCount;
+    ss << " :total-alist-entries " << this->calculateHashTableCount();
+    ss << " @" << (void *)(this) << "> ";
+    return ss.str();
   //	return this->hash_table_dump();
-}
+  }
 
 #define DUMP_LOW_LEVEL 1
 
-void dump_one_entry(HashTable_sp ht, size_t it, stringstream &ss, List_sp first) {
-  for (auto cur : first) {
-    List_sp pair = oCar(cur);
-    T_sp key = oCar(pair);
-    T_sp value = oCdr(pair);
+  void dump_one_entry(HashTable_sp ht, size_t it, stringstream &ss, List_sp first) {
+    for (auto cur : first) {
+      List_sp pair = oCar(cur);
+      T_sp key = oCar(pair);
+      T_sp value = oCdr(pair);
 #ifdef DUMP_LOW_LEVEL
-    ss << "     ( ";
-    size_t hi = ht->hashIndex(key);
-    if (hi != it)
-      ss << "!!!ERROR-wrong bucket!!! hi=" << hi;
-    ss << "hashIndex(key)=" << ht->hashIndex(key) << " ";
-    if ((key).consp()) {
-      List_sp ckey = key;
-      ss << "(cons " << oCar(ckey).raw_() << " . " << oCdr(ckey).raw_() << ")";
-    } else {
-      ss << key.raw_();
-    }
-    ss << ", " << value.raw_() << ")@" << pair.raw_() << " " << std::endl;
+      ss << "     ( ";
+      size_t hi = ht->hashIndex(key);
+      if (hi != it)
+        ss << "!!!ERROR-wrong bucket!!! hi=" << hi;
+      ss << "hashIndex(key)=" << ht->hashIndex(key) << " ";
+      if ((key).consp()) {
+        List_sp ckey = key;
+        ss << "(cons " << oCar(ckey).raw_() << " . " << oCdr(ckey).raw_() << ")";
+      } else {
+        ss << key.raw_();
+      }
+      ss << ", " << value.raw_() << ")@" << pair.raw_() << " " << std::endl;
 #else
-    ss << "     " << _rep_(pair) << std::endl;
+      ss << "     " << _rep_(pair) << std::endl;
 #endif
-  }
-};
-CL_LISPIFY_NAME("core:hashTableDump");
-CL_DEFMETHOD string HashTable_O::hash_table_dump(Fixnum start, T_sp end) const {
-  stringstream ss;
-#ifndef DUMP_LOW_LEVEL
-  ss << "#<" << this->_instanceClass()->classNameAsString() << std::endl;
-#endif
-  int iend(cl__length(this->_HashTable));
-  if (end.notnilp()) {
-    iend = clasp_to_fixnum(gc::As<Fixnum_sp>(end));
-  }
-  if (start < 0 || start >= cl__length(this->_HashTable)) {
-    SIMPLE_ERROR(BF("start must be [0,%d)") % cl__length(this->_HashTable));
-  }
-  if (iend < start || iend > cl__length(this->_HashTable)) {
-    SIMPLE_ERROR(BF("end must be nil or [%d,%d)") % start % cl__length(this->_HashTable));
-  }
-  for (size_t it(start), itEnd(iend); it < itEnd; ++it) {
-    List_sp first = this->_HashTable->operator[](it);
-    ss << "HashTable[" << it << "]: " << std::endl;
-    dump_one_entry(this->asSmartPtr(), it, ss, first);
-  }
-#ifndef DUMP_LOW_LEVEL
-  ss << "> " << std::endl;
-#endif
-  return ss.str();
-}
-
-void HashTable_O::mapHash(std::function<void(T_sp, T_sp)> const &fn) {
-  //        HASH_TABLE_LOCK();
-  VectorObjects_sp table = this->_HashTable;
-  for (size_t it(0), itEnd(cl__length(table)); it < itEnd; ++it) {
-    List_sp first = coerce_to_list((*table)[it]);
-    for (auto cur : first) {
-      List_sp pair = oCar(cur);
-      T_sp key = oCar(pair);
-      T_sp value = oCdr(pair);
-      if (!value.unboundp())
-        fn(key, value);
     }
+  };
+  CL_LISPIFY_NAME("core:hashTableDump");
+  CL_DEFMETHOD string HashTable_O::hash_table_dump(Fixnum start, T_sp end) const {
+    stringstream ss;
+#ifndef DUMP_LOW_LEVEL
+    ss << "#<" << this->_instanceClass()->classNameAsString() << std::endl;
+#endif
+    int iend(cl__length(this->_HashTable));
+    if (end.notnilp()) {
+      iend = clasp_to_fixnum(gc::As<Fixnum_sp>(end));
+    }
+    if (start < 0 || start >= cl__length(this->_HashTable)) {
+      SIMPLE_ERROR(BF("start must be [0,%d)") % cl__length(this->_HashTable));
+    }
+    if (iend < start || iend > cl__length(this->_HashTable)) {
+      SIMPLE_ERROR(BF("end must be nil or [%d,%d)") % start % cl__length(this->_HashTable));
+    }
+    for (size_t it(start), itEnd(iend); it < itEnd; ++it) {
+      List_sp first = this->_HashTable->operator[](it);
+      ss << "HashTable[" << it << "]: " << std::endl;
+      dump_one_entry(this->asSmartPtr(), it, ss, first);
+    }
+#ifndef DUMP_LOW_LEVEL
+    ss << "> " << std::endl;
+#endif
+    return ss.str();
   }
-}
 
-void HashTable_O::map_while_true(std::function<bool(T_sp, T_sp)> const &fn) const {
+  void HashTable_O::mapHash(std::function<void(T_sp, T_sp)> const &fn) {
   //        HASH_TABLE_LOCK();
-  VectorObjects_sp table = this->_HashTable;
-  for (size_t it(0), itEnd(cl__length(table)); it < itEnd; ++it) {
-    List_sp first = (*table)[it];
-    for (auto cur : first) {
-      List_sp pair = oCar(cur);
-      T_sp key = oCar(pair);
-      T_sp value = oCdr(pair);
-      if (!value.unboundp()) {
-        bool cont = fn(key, value);
-        if (!cont)
-          return;
+    VectorObjects_sp table = this->_HashTable;
+    for (size_t it(0), itEnd(cl__length(table)); it < itEnd; ++it) {
+      List_sp first = coerce_to_list((*table)[it]);
+      for (auto cur : first) {
+        List_sp pair = oCar(cur);
+        T_sp key = oCar(pair);
+        T_sp value = oCdr(pair);
+        if (!value.unboundp())
+          fn(key, value);
       }
     }
   }
-}
 
-void HashTable_O::lowLevelMapHash(KeyValueMapper *mapper) const {
+  void HashTable_O::map_while_true(std::function<bool(T_sp, T_sp)> const &fn) const {
   //        HASH_TABLE_LOCK();
-  VectorObjects_sp table = this->_HashTable;
-  for (size_t it(0), itEnd(cl__length(table)); it < itEnd; ++it) {
-    T_sp first = (*table)[it];
-    List_sp l = coerce_to_list(first);
-    for (auto cur : l) {
+    VectorObjects_sp table = this->_HashTable;
+    for (size_t it(0), itEnd(cl__length(table)); it < itEnd; ++it) {
+      List_sp first = (*table)[it];
+      for (auto cur : first) {
+        List_sp pair = oCar(cur);
+        T_sp key = oCar(pair);
+        T_sp value = oCdr(pair);
+        if (!value.unboundp()) {
+          bool cont = fn(key, value);
+          if (!cont)
+            return;
+        }
+      }
+    }
+  }
+
+  void HashTable_O::lowLevelMapHash(KeyValueMapper *mapper) const {
+  //        HASH_TABLE_LOCK();
+    VectorObjects_sp table = this->_HashTable;
+    for (size_t it(0), itEnd(cl__length(table)); it < itEnd; ++it) {
+      T_sp first = (*table)[it];
+      List_sp l = coerce_to_list(first);
+      for (auto cur : l) {
       //Cons_sp cur(*it); //it.asCons());
       //		Cons_sp cur(reinterpret_cast<core::Cons_O*>(it));
 
       //	    for ( auto it = l.begin(); it != l.end(); ++it ) {
       //Cons_sp cur(reinterpret_cast<core::Cons_O*>(&**it));
       //	    	for ( Cons_sp cur=first.as<List_V>(); cur.consp(); cur = cCdr(cur) )
-      Cons_sp pair = gc::As<Cons_sp>(oCar(cur));
-      T_sp key = oCar(pair);
-      T_sp value = oCdr(pair);
-      if (!value.unboundp()) {
-        if (!mapper->mapKeyValue(key, value))
-          goto DONE;
+        Cons_sp pair = gc::As<Cons_sp>(oCar(cur));
+        T_sp key = oCar(pair);
+        T_sp value = oCdr(pair);
+        if (!value.unboundp()) {
+          if (!mapper->mapKeyValue(key, value))
+            goto DONE;
+        }
       }
     }
+  DONE:
+    return;
   }
-DONE:
-  return;
-}
 
-CL_LISPIFY_NAME("core:hashTableNumberOfHashes");
-CL_DEFMETHOD int HashTable_O::hashTableNumberOfHashes() const {
-  return cl__length(this->_HashTable);
-}
+  CL_LISPIFY_NAME("core:hashTableNumberOfHashes");
+  CL_DEFMETHOD int HashTable_O::hashTableNumberOfHashes() const {
+    return cl__length(this->_HashTable);
+  }
 
-CL_LISPIFY_NAME("core:hashTableAlistAtHash");
-CL_DEFMETHOD List_sp HashTable_O::hashTableAlistAtHash(int hash) const {
-  ASSERTF(hash >= 0 && hash < cl__length(this->_HashTable), BF("Illegal hash value[%d] must between [0,%d)") % hash % cl__length(this->_HashTable));
-  return this->_HashTable->operator[](hash);
-}
+  CL_LISPIFY_NAME("core:hashTableAlistAtHash");
+  CL_DEFMETHOD List_sp HashTable_O::hashTableAlistAtHash(int hash) const {
+    ASSERTF(hash >= 0 && hash < cl__length(this->_HashTable), BF("Illegal hash value[%d] must between [0,%d)") % hash % cl__length(this->_HashTable));
+    return this->_HashTable->operator[](hash);
+  }
 
-string HashTable_O::keysAsString() {
-  stringstream ss;
-  this->mapHash([&ss, this](T_sp key, T_sp val) {
-                ss << _rep_(key) << " ";
-  });
-  return ss.str();
-}
+  string HashTable_O::keysAsString() {
+    stringstream ss;
+    this->mapHash([&ss, this](T_sp key, T_sp val) {
+        ss << _rep_(key) << " ";
+      });
+    return ss.str();
+  }
 
-T_mv clasp_gethash_safe(T_sp key, T_sp thashTable, T_sp default_) {
-  HashTable_sp hashTable = gc::As<HashTable_sp>(thashTable);
-  return hashTable->gethash(key,default_);
-}
+  T_mv clasp_gethash_safe(T_sp key, T_sp thashTable, T_sp default_) {
+    HashTable_sp hashTable = gc::As<HashTable_sp>(thashTable);
+    return hashTable->gethash(key,default_);
+  }
 
 
 
