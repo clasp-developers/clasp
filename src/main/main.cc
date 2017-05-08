@@ -367,6 +367,8 @@ static int startup(int argc, char *argv[], bool &mpiEnabled, int &mpiRank, int &
 
 int main( int argc, char *argv[] )
 {
+  int exit_code = EXIT_SUCCESS;
+  
   // Do not touch debug log until after MPI init
 
 
