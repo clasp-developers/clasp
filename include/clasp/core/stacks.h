@@ -52,15 +52,14 @@ class InvocationHistoryFrame //: public gctools::StackRoot
  public:
   InvocationHistoryFrame *_Previous;
   int _Bds;
-  T_O** _register_save_area;
-  T_O** _overflow_area;
-  
+  mutable va_list   _args;
+  size_t _remaining_nargs;
  public:
- InvocationHistoryFrame(va_list* rawArgList)
+ InvocationHistoryFrame(va_list rawArgList, size_t remaining_nargs)
    : _Previous(my_thread->_InvocationHistoryStack),
     _Bds(my_thread->bindings().size()){
-    this->_register_save_area = LCC_VA_LIST_REGISTER_SAVE_AREA(rawArgList);
-    this->_overflow_area = LCC_VA_LIST_OVERFLOW_ARG_AREA(rawArgList);
+    va_copy(this->_args,rawArgList);
+    this->_remaining_nargs = remaining_nargs;
 #ifdef DEBUG_ASSERTS
       if ( !(gctools::tagged_valistp(rawArgList))) {
         printf("Passed a non valistp to InvocationHistoryFrame\n");
@@ -80,9 +79,9 @@ class InvocationHistoryFrame //: public gctools::StackRoot
   SimpleVector_sp arguments() const;
   string argumentsAsString(int maxWidth) const;
   void dump(int index) const;
-  virtual string asString(int index) const;
+  string asString(int index) const;
   string asStringLowLevel(Closure_sp closure,int index) const;
-  virtual int bds() const { return this->_Bds; };
+  int bds() const { return this->_Bds; };
   Function_sp function() const;
 };
 
@@ -100,7 +99,7 @@ namespace core {
 #ifdef USE_EXPENSIVE_BACKTRACE
 #define INVOCATION_HISTORY_FRAME() \
   ASSERT_LCC_VA_LIST_CLOSURE_DEFINED(lcc_arglist_s);\
-  core::InvocationHistoryFrame zzzFrame(&lcc_arglist_s._Args);
+  core::InvocationHistoryFrame zzzFrame(lcc_arglist_s._Args,lcc_arglist_s.remaining_nargs());
 #else
 #define INVOCATION_HISTORY_FRAME()
 #endif

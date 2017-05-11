@@ -172,10 +172,13 @@ public:
   typedef core::Function_O TemplatedBase;
 public:
   enum { NumParams = 0 };
-  DerivableDefaultConstructorFunctor(core::T_sp name) : core::Closure_O(name){};
+ DerivableDefaultConstructorFunctor(core::T_sp name) : core::Closure_O(entry_point,name){};
 public:
   virtual size_t templatedSizeof() const { return sizeof(*this); };
 public:
+  static inline LCC_RETURN LISP_CALLING_CONVENTION() {
+    SIMPLE_ERROR(BF("What do we do when this is called?"));
+  }
 };
 };
 

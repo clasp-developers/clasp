@@ -102,17 +102,23 @@ static std::terminate_handler g_prev_terminate_handler;
 
 // PRINT STACKTRACE PROGRAMMICALLY
 
-
-void test_calling_convention(void* closure, size_t nargs, void* a0, void* a1, void* a2, ...) {
-  va_list vargs;
-  va_start(vargs,a2);
-  printf("&vargs -> %p\n", &vargs);
-  printf("a2 -> %p\n", a2);
-  printf("a3 -> %p\n", va_arg(vargs,void*));
-  va_end(vargs);
+void test_va_list( LCC_ARGS_ELLIPSIS ) {
+  INITIALIZE_VA_LIST(); // now lcc_vargs is a VaList_sp over the arguments
+  printf("%s:%d    relative arg#%d: %p  \n", __FILE__, __LINE__, 0, lcc_vargs->relative_indexed_arg(0));
+  printf("%s:%d    relative arg#%d: %p  \n", __FILE__, __LINE__, 1, lcc_vargs->relative_indexed_arg(1));
+  printf("%s:%d    relative arg#%d: %p  \n", __FILE__, __LINE__, 2, lcc_vargs->relative_indexed_arg(2));
+  printf("%s:%d    relative arg#%d: %p  \n", __FILE__, __LINE__, 3, lcc_vargs->relative_indexed_arg(3));
+  printf("%s:%d    relative arg#%d: %p  \n", __FILE__, __LINE__, 4, lcc_vargs->relative_indexed_arg(4));
+  printf("%s:%d    relative arg#%d: %p  \n", __FILE__, __LINE__, 5, lcc_vargs->relative_indexed_arg(5));
+  printf("%s:%d    Advanced args by one\n", __FILE__, __LINE__ );
+  lcc_vargs->next_arg_raw();
+  printf("%s:%d    relative arg#%d: %p   va_arg: %p\n", __FILE__, __LINE__, 0, lcc_vargs->relative_indexed_arg(0), lcc_vargs->next_arg_raw());
+  printf("%s:%d    relative arg#%d: %p   va_arg: %p\n", __FILE__, __LINE__, 1, lcc_vargs->relative_indexed_arg(0), lcc_vargs->next_arg_raw());
+  printf("%s:%d    relative arg#%d: %p   va_arg: %p\n", __FILE__, __LINE__, 2, lcc_vargs->relative_indexed_arg(0), lcc_vargs->next_arg_raw());
+  printf("%s:%d    relative arg#%d: %p   va_arg: %p\n", __FILE__, __LINE__, 3, lcc_vargs->relative_indexed_arg(0), lcc_vargs->next_arg_raw());
+  printf("%s:%d    relative arg#%d: %p   va_arg: %p\n", __FILE__, __LINE__, 4, lcc_vargs->relative_indexed_arg(0), lcc_vargs->next_arg_raw());
 }
 
-  
 static inline void print_stacktrace(FILE *out = stderr, unsigned int max_frames = 63)
 {
     fprintf(out, "stack trace:\n");
@@ -378,11 +384,18 @@ static int startup(int argc, char *argv[], bool &mpiEnabled, int &mpiRank, int &
 
 int main( int argc, char *argv[] )
 {
+#if 0
+   // A few tests - delete them when not needed anymore
+  test_va_list(NULL,6
+               ,core::clasp_make_fixnum(0).raw_()
+               ,core::clasp_make_fixnum(1).raw_()
+               ,core::clasp_make_fixnum(2).raw_()
+               ,core::clasp_make_fixnum(3).raw_()
+               ,core::clasp_make_fixnum(4).raw_()
+               ,core::clasp_make_fixnum(5).raw_());
+#endif
   // Do not touch debug log until after MPI init
 
-  int a4 = 5;
-  int a5 = 10;
-  test_calling_convention(NULL,6,NULL,NULL,&a4,&a5);
   bool mpiEnabled = false;
   int  mpiRank    = 0;
   int  mpiSize    = 1;

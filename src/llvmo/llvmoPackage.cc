@@ -232,6 +232,8 @@ CL_DEFUN core::T_sp llvm_sys__cxxDataStructuresInfo() {
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("REGISTER-SAVE-AREA-SIZE"), make_fixnum(LCC_TOTAL_REGISTERS*sizeof(void*))), list);
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("ALIGNMENT"),make_fixnum(gctools::Alignment())),list);
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("VOID*-SIZE"),make_fixnum(sizeof(void*))),list);
+  list = Cons_O::create(Cons_O::create(lisp_internKeyword("CLOSURE-ENTRY-POINT-OFFSET"),make_fixnum(offsetof(core::Function_O,entry))),list);
+  list = Cons_O::create(Cons_O::create(lisp_internKeyword("VALIST_S-REMAINING-NARGS-OFFSET"),make_fixnum(offsetof(core::VaList_S,_remaining_nargs))),list);
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("SIZE_T-BITS"),make_fixnum(sizeof(size_t)*8)),list);
 #define ENTRY(list, name, code) list = Cons_O::create(Cons_O::create(lisp_internKeyword(name), code), list)
   LoadTimeValues_O tempLtv;
@@ -256,7 +258,7 @@ CL_DEFUN core::T_sp llvm_sys__cxxDataStructuresInfo() {
 }
 
 CL_LAMBDA(&key tsp tmv ihf contab valist);
-CL_DEFUN void llvm_sys__throwIfMismatchedStructureSizes(core::Fixnum_sp tspSize, core::Fixnum_sp tmvSize, gc::Nilable<core::Fixnum_sp> givenIhfSize, core::T_sp contabSize, core::T_sp tvalistsize ) {
+CL_DEFUN void llvm_sys__throwIfMismatchedStructureSizes(core::Fixnum_sp tspSize, core::Fixnum_sp tmvSize, gc::Nilable<core::Fixnum_sp> givenIhfSize, core::T_sp contabSize, core::T_sp tvalistsize, core::T_sp tInvocationHistoryFrameSize ) {
   int T_sp_size = sizeof(core::T_sp);
   if (unbox_fixnum(tspSize) != T_sp_size) {
     SIMPLE_ERROR(BF("Mismatch between tsp size[%d] and core::T_sp size[%d]") % unbox_fixnum(tspSize) % T_sp_size);
@@ -268,7 +270,7 @@ CL_DEFUN void llvm_sys__throwIfMismatchedStructureSizes(core::Fixnum_sp tspSize,
   int InvocationHistoryFrame_size = sizeof(core::InvocationHistoryFrame);
   if (givenIhfSize.notnilp() && unbox_fixnum(givenIhfSize) != InvocationHistoryFrame_size) {
     SIMPLE_ERROR(BF("Mismatch between IR lisp-compiled-function-ihf size[%d]"
-                    " and sizeof(LispCompiledFunctionIHF)=[%d]") %
+                    " and sizeof(InvocationHistoryFrame)=[%d]") %
                  _rep_(givenIhfSize) % InvocationHistoryFrame_size);
   }
   if ( contabSize.notnilp() ) {

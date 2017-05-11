@@ -882,15 +882,17 @@
 	    (llvm-sys:set-insert-point-basic-block irbuilder-body body-bb)
 	    ;; Setup exception handling and cleanup landing pad
 	    (with-irbuilder (irbuilder-alloca)
-	      (let* ((local-arglist (irc-alloca-va_list :label "local-arglist"))
-		     (arglist-passed-untagged (irc-int-to-ptr (irc-sub (irc-ptr-to-int gf-args %uintptr_t% "iargs") (jit-constant-uintptr_t +Valist_S-tag+) "sub") %Valist_S*% "arglist-passed-untagged"))
-		     (va_list-passed (irc-int-to-ptr (irc-add (irc-ptr-to-int arglist-passed-untagged %uintptr_t% "VaList_S") (jit-constant-uintptr_t +VaList_S-valist-offset+) "add") %va_list*%)))
-		(insert-message)
-                (debug-arglist (irc-ptr-to-int va_list-passed %uintptr_t%))
-		(irc-create-call "llvm.va_copy" (list (irc-pointer-cast local-arglist %i8*% "local-arglist-i8*") (irc-pointer-cast va_list-passed %i8*% "va_list-passed-i8*")))
-		(insert-message)
-                (debug-arglist (irc-ptr-to-int local-arglist %uintptr_t%))
-		(irc-br body-bb)
+	      (let* ((local-arglist-tg             (irc-alloca-va_list :label "local-arglist"))
+                     (gf-args-uint                 (irc-ptr-to-int gf-args %uintptr_t% "local-arglist-uint"))
+                     (gf-args-va_list-uint         (irc-add gf-args-uint (jit-constant-uintptr_t (- +VaList_S-valist-offset+ +VaList_S-tag+)) "gf-args-va_list-uint"))
+                     (gf-args-va_list              (irc-int-to-ptr gf-args-va_list-uint %va_list*% "gf-args-va_list"))
+                     (_                            (insert-message))
+                     (_                            (debug-arglist (irc-ptr-to-int va_list-passed %uintptr_t%)))
+                     (_                            (irc-create-call "llvm.va_copy" (list (irc-pointer-cast local-arglist %i8*% "local-arglist-i8*")
+                                                                                         (irc-pointer-cast va_list-passed %i8*% "va_list-passed-i8*"))))
+                     (_                            (insert-message))
+                     (debug-arglist                (irc-ptr-to-int local-arglist %uintptr_t%))
+                     (_                            (irc-br body-bb)))
 		(with-irbuilder (irbuilder-body)
 		  (codegen-node-or-outcome (dtree-root dtree) local-arglist gf gf-args))
 		(irc-begin-block *bad-tag-bb*)
@@ -932,8 +934,6 @@
                   (gf-log "Dumping module\n")
                   (gf-do (cmp-log-dump *the-module*))
                   compiled-dispatcher)))))))))
-
-
 
 (export '(make-dtree
 	  dtree-add-call-history

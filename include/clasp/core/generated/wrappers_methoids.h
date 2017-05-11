@@ -19,6 +19,8 @@ class VariadicMethoid
 <DispatchOn,RT (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12, ARG13, ARG14, ARG15)  >
 : public BuiltinClosure_O {
 public:
+typedef VariadicMethoid<DispatchOn,RT (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12, ARG13,
+    ARG14, ARG15)  > MyType;
 typedef BuiltinClosure_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
@@ -26,17 +28,18 @@ typedef RT(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG1
 Type mptr;
 public:
 enum { NumParams = 16 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
-INCREMENT_FUNCTION_CALL_COUNTER(this);
+MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
+INCREMENT_FUNCTION_CALL_COUNTER(closure);
 INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
-MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),16);
+MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),16);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
+lambdaListHandler_createBindings(closure->asSmartPtr(),closure->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 translate::from_object<ARG1> a1(frame->arg(1));
 translate::from_object<ARG2> a2(frame->arg(2));
@@ -53,8 +56,8 @@ translate::from_object<ARG12> a12(frame->arg(12));
 translate::from_object<ARG13> a13(frame->arg(13));
 translate::from_object<ARG14> a14(frame->arg(14));
 translate::from_object<ARG15> a15(frame->arg(15));
-RT retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v,a12._v,a13._v,a14._v,
-    a15._v);
+RT retval =  ((*ot.untag_object()).*(closure->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v,a12._v,
+    a13._v,a14._v,a15._v);
 return Values(translate::to_object<RT>::convert(retval));
 }
 };
@@ -72,6 +75,8 @@ class VariadicMethoid
 <DispatchOn,RT (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12, ARG13, ARG14)  >
 : public BuiltinClosure_O {
 public:
+typedef VariadicMethoid<DispatchOn,RT (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12, ARG13,
+    ARG14)  > MyType;
 typedef BuiltinClosure_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
@@ -79,17 +84,18 @@ typedef RT(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG1
 Type mptr;
 public:
 enum { NumParams = 15 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
-INCREMENT_FUNCTION_CALL_COUNTER(this);
+MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
+INCREMENT_FUNCTION_CALL_COUNTER(closure);
 INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
-MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),15);
+MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),15);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
+lambdaListHandler_createBindings(closure->asSmartPtr(),closure->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 translate::from_object<ARG1> a1(frame->arg(1));
 translate::from_object<ARG2> a2(frame->arg(2));
@@ -105,7 +111,8 @@ translate::from_object<ARG11> a11(frame->arg(11));
 translate::from_object<ARG12> a12(frame->arg(12));
 translate::from_object<ARG13> a13(frame->arg(13));
 translate::from_object<ARG14> a14(frame->arg(14));
-RT retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v,a12._v,a13._v,a14._v);
+RT retval =  ((*ot.untag_object()).*(closure->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v,a12._v,
+    a13._v,a14._v);
 return Values(translate::to_object<RT>::convert(retval));
 }
 };
@@ -122,6 +129,8 @@ class VariadicMethoid
 <DispatchOn,RT (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12, ARG13)  >
 : public BuiltinClosure_O {
 public:
+typedef VariadicMethoid<DispatchOn,RT (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12,
+    ARG13)  > MyType;
 typedef BuiltinClosure_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
@@ -129,17 +138,18 @@ typedef RT(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG1
 Type mptr;
 public:
 enum { NumParams = 14 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
-INCREMENT_FUNCTION_CALL_COUNTER(this);
+MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
+INCREMENT_FUNCTION_CALL_COUNTER(closure);
 INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
-MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),14);
+MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),14);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
+lambdaListHandler_createBindings(closure->asSmartPtr(),closure->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 translate::from_object<ARG1> a1(frame->arg(1));
 translate::from_object<ARG2> a2(frame->arg(2));
@@ -154,7 +164,8 @@ translate::from_object<ARG10> a10(frame->arg(10));
 translate::from_object<ARG11> a11(frame->arg(11));
 translate::from_object<ARG12> a12(frame->arg(12));
 translate::from_object<ARG13> a13(frame->arg(13));
-RT retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v,a12._v,a13._v);
+RT retval =  ((*ot.untag_object()).*(closure->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v,a12._v,
+    a13._v);
 return Values(translate::to_object<RT>::convert(retval));
 }
 };
@@ -171,6 +182,7 @@ class VariadicMethoid
 <DispatchOn,RT (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12)  >
 : public BuiltinClosure_O {
 public:
+typedef VariadicMethoid<DispatchOn,RT (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12)  > MyType;
 typedef BuiltinClosure_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
@@ -178,17 +190,18 @@ typedef RT(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG1
 Type mptr;
 public:
 enum { NumParams = 13 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
-INCREMENT_FUNCTION_CALL_COUNTER(this);
+MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
+INCREMENT_FUNCTION_CALL_COUNTER(closure);
 INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
-MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),13);
+MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),13);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
+lambdaListHandler_createBindings(closure->asSmartPtr(),closure->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 translate::from_object<ARG1> a1(frame->arg(1));
 translate::from_object<ARG2> a2(frame->arg(2));
@@ -202,7 +215,7 @@ translate::from_object<ARG9> a9(frame->arg(9));
 translate::from_object<ARG10> a10(frame->arg(10));
 translate::from_object<ARG11> a11(frame->arg(11));
 translate::from_object<ARG12> a12(frame->arg(12));
-RT retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v,a12._v);
+RT retval =  ((*ot.untag_object()).*(closure->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v,a12._v);
 return Values(translate::to_object<RT>::convert(retval));
 }
 };
@@ -219,6 +232,7 @@ class VariadicMethoid
 <DispatchOn,RT (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11)  >
 : public BuiltinClosure_O {
 public:
+typedef VariadicMethoid<DispatchOn,RT (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11)  > MyType;
 typedef BuiltinClosure_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
@@ -226,17 +240,18 @@ typedef RT(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG1
 Type mptr;
 public:
 enum { NumParams = 12 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
-INCREMENT_FUNCTION_CALL_COUNTER(this);
+MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
+INCREMENT_FUNCTION_CALL_COUNTER(closure);
 INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
-MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),12);
+MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),12);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
+lambdaListHandler_createBindings(closure->asSmartPtr(),closure->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 translate::from_object<ARG1> a1(frame->arg(1));
 translate::from_object<ARG2> a2(frame->arg(2));
@@ -249,7 +264,7 @@ translate::from_object<ARG8> a8(frame->arg(8));
 translate::from_object<ARG9> a9(frame->arg(9));
 translate::from_object<ARG10> a10(frame->arg(10));
 translate::from_object<ARG11> a11(frame->arg(11));
-RT retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v);
+RT retval =  ((*ot.untag_object()).*(closure->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v);
 return Values(translate::to_object<RT>::convert(retval));
 }
 };
@@ -266,6 +281,7 @@ class VariadicMethoid
 <DispatchOn,RT (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10)  >
 : public BuiltinClosure_O {
 public:
+typedef VariadicMethoid<DispatchOn,RT (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10)  > MyType;
 typedef BuiltinClosure_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
@@ -273,17 +289,18 @@ typedef RT(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG1
 Type mptr;
 public:
 enum { NumParams = 11 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
-INCREMENT_FUNCTION_CALL_COUNTER(this);
+MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
+INCREMENT_FUNCTION_CALL_COUNTER(closure);
 INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
-MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),11);
+MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),11);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
+lambdaListHandler_createBindings(closure->asSmartPtr(),closure->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 translate::from_object<ARG1> a1(frame->arg(1));
 translate::from_object<ARG2> a2(frame->arg(2));
@@ -295,7 +312,7 @@ translate::from_object<ARG7> a7(frame->arg(7));
 translate::from_object<ARG8> a8(frame->arg(8));
 translate::from_object<ARG9> a9(frame->arg(9));
 translate::from_object<ARG10> a10(frame->arg(10));
-RT retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v);
+RT retval =  ((*ot.untag_object()).*(closure->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v);
 return Values(translate::to_object<RT>::convert(retval));
 }
 };
@@ -312,6 +329,7 @@ class VariadicMethoid
 <DispatchOn,RT (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9)  >
 : public BuiltinClosure_O {
 public:
+typedef VariadicMethoid<DispatchOn,RT (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9)  > MyType;
 typedef BuiltinClosure_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
@@ -319,17 +337,18 @@ typedef RT(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9) ;
 Type mptr;
 public:
 enum { NumParams = 10 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
-INCREMENT_FUNCTION_CALL_COUNTER(this);
+MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
+INCREMENT_FUNCTION_CALL_COUNTER(closure);
 INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
-MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),10);
+MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),10);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
+lambdaListHandler_createBindings(closure->asSmartPtr(),closure->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 translate::from_object<ARG1> a1(frame->arg(1));
 translate::from_object<ARG2> a2(frame->arg(2));
@@ -340,7 +359,7 @@ translate::from_object<ARG6> a6(frame->arg(6));
 translate::from_object<ARG7> a7(frame->arg(7));
 translate::from_object<ARG8> a8(frame->arg(8));
 translate::from_object<ARG9> a9(frame->arg(9));
-RT retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v);
+RT retval =  ((*ot.untag_object()).*(closure->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v);
 return Values(translate::to_object<RT>::convert(retval));
 }
 };
@@ -357,6 +376,7 @@ class VariadicMethoid
 <DispatchOn,RT (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8)  >
 : public BuiltinClosure_O {
 public:
+typedef VariadicMethoid<DispatchOn,RT (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8)  > MyType;
 typedef BuiltinClosure_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
@@ -364,17 +384,18 @@ typedef RT(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8) ;
 Type mptr;
 public:
 enum { NumParams = 9 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
-INCREMENT_FUNCTION_CALL_COUNTER(this);
+MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
+INCREMENT_FUNCTION_CALL_COUNTER(closure);
 INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
-MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),9);
+MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),9);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
+lambdaListHandler_createBindings(closure->asSmartPtr(),closure->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 translate::from_object<ARG1> a1(frame->arg(1));
 translate::from_object<ARG2> a2(frame->arg(2));
@@ -384,7 +405,7 @@ translate::from_object<ARG5> a5(frame->arg(5));
 translate::from_object<ARG6> a6(frame->arg(6));
 translate::from_object<ARG7> a7(frame->arg(7));
 translate::from_object<ARG8> a8(frame->arg(8));
-RT retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v);
+RT retval =  ((*ot.untag_object()).*(closure->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v);
 return Values(translate::to_object<RT>::convert(retval));
 }
 };
@@ -401,6 +422,7 @@ class VariadicMethoid
 <DispatchOn,RT (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7)  >
 : public BuiltinClosure_O {
 public:
+typedef VariadicMethoid<DispatchOn,RT (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7)  > MyType;
 typedef BuiltinClosure_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
@@ -408,17 +430,18 @@ typedef RT(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7) ;
 Type mptr;
 public:
 enum { NumParams = 8 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
-INCREMENT_FUNCTION_CALL_COUNTER(this);
+MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
+INCREMENT_FUNCTION_CALL_COUNTER(closure);
 INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
-MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),8);
+MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),8);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
+lambdaListHandler_createBindings(closure->asSmartPtr(),closure->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 translate::from_object<ARG1> a1(frame->arg(1));
 translate::from_object<ARG2> a2(frame->arg(2));
@@ -427,7 +450,7 @@ translate::from_object<ARG4> a4(frame->arg(4));
 translate::from_object<ARG5> a5(frame->arg(5));
 translate::from_object<ARG6> a6(frame->arg(6));
 translate::from_object<ARG7> a7(frame->arg(7));
-RT retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v);
+RT retval =  ((*ot.untag_object()).*(closure->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v);
 return Values(translate::to_object<RT>::convert(retval));
 }
 };
@@ -444,6 +467,7 @@ class VariadicMethoid
 <DispatchOn,RT (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6)  >
 : public BuiltinClosure_O {
 public:
+typedef VariadicMethoid<DispatchOn,RT (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6)  > MyType;
 typedef BuiltinClosure_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
@@ -451,17 +475,18 @@ typedef RT(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, ARG6) ;
 Type mptr;
 public:
 enum { NumParams = 7 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
-INCREMENT_FUNCTION_CALL_COUNTER(this);
+MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
+INCREMENT_FUNCTION_CALL_COUNTER(closure);
 INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
-MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),7);
+MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),7);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
+lambdaListHandler_createBindings(closure->asSmartPtr(),closure->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 translate::from_object<ARG1> a1(frame->arg(1));
 translate::from_object<ARG2> a2(frame->arg(2));
@@ -469,7 +494,7 @@ translate::from_object<ARG3> a3(frame->arg(3));
 translate::from_object<ARG4> a4(frame->arg(4));
 translate::from_object<ARG5> a5(frame->arg(5));
 translate::from_object<ARG6> a6(frame->arg(6));
-RT retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v);
+RT retval =  ((*ot.untag_object()).*(closure->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v);
 return Values(translate::to_object<RT>::convert(retval));
 }
 };
@@ -485,6 +510,7 @@ class VariadicMethoid
 <DispatchOn,RT (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5)  >
 : public BuiltinClosure_O {
 public:
+typedef VariadicMethoid<DispatchOn,RT (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5)  > MyType;
 typedef BuiltinClosure_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
@@ -492,24 +518,25 @@ typedef RT(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5) ;
 Type mptr;
 public:
 enum { NumParams = 6 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
-INCREMENT_FUNCTION_CALL_COUNTER(this);
+MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
+INCREMENT_FUNCTION_CALL_COUNTER(closure);
 INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
-MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),6);
+MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),6);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
+lambdaListHandler_createBindings(closure->asSmartPtr(),closure->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 translate::from_object<ARG1> a1(frame->arg(1));
 translate::from_object<ARG2> a2(frame->arg(2));
 translate::from_object<ARG3> a3(frame->arg(3));
 translate::from_object<ARG4> a4(frame->arg(4));
 translate::from_object<ARG5> a5(frame->arg(5));
-RT retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v);
+RT retval =  ((*ot.untag_object()).*(closure->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v);
 return Values(translate::to_object<RT>::convert(retval));
 }
 };
@@ -525,6 +552,7 @@ class VariadicMethoid
 <DispatchOn,RT (OT::*)( ARG1, ARG2, ARG3, ARG4)  >
 : public BuiltinClosure_O {
 public:
+typedef VariadicMethoid<DispatchOn,RT (OT::*)( ARG1, ARG2, ARG3, ARG4)  > MyType;
 typedef BuiltinClosure_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
@@ -532,23 +560,24 @@ typedef RT(OT::*Type)(ARG1, ARG2, ARG3, ARG4) ;
 Type mptr;
 public:
 enum { NumParams = 5 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
-INCREMENT_FUNCTION_CALL_COUNTER(this);
+MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
+INCREMENT_FUNCTION_CALL_COUNTER(closure);
 INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
-MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),5);
+MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),5);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
+lambdaListHandler_createBindings(closure->asSmartPtr(),closure->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 translate::from_object<ARG1> a1(frame->arg(1));
 translate::from_object<ARG2> a2(frame->arg(2));
 translate::from_object<ARG3> a3(frame->arg(3));
 translate::from_object<ARG4> a4(frame->arg(4));
-RT retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v);
+RT retval =  ((*ot.untag_object()).*(closure->mptr))(a1._v,a2._v,a3._v,a4._v);
 return Values(translate::to_object<RT>::convert(retval));
 }
 };
@@ -564,6 +593,7 @@ class VariadicMethoid
 <DispatchOn,RT (OT::*)( ARG1, ARG2, ARG3)  >
 : public BuiltinClosure_O {
 public:
+typedef VariadicMethoid<DispatchOn,RT (OT::*)( ARG1, ARG2, ARG3)  > MyType;
 typedef BuiltinClosure_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
@@ -571,22 +601,23 @@ typedef RT(OT::*Type)(ARG1, ARG2, ARG3) ;
 Type mptr;
 public:
 enum { NumParams = 4 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
-INCREMENT_FUNCTION_CALL_COUNTER(this);
+MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
+INCREMENT_FUNCTION_CALL_COUNTER(closure);
 INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
-MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),4);
+MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),4);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
+lambdaListHandler_createBindings(closure->asSmartPtr(),closure->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 translate::from_object<ARG1> a1(frame->arg(1));
 translate::from_object<ARG2> a2(frame->arg(2));
 translate::from_object<ARG3> a3(frame->arg(3));
-RT retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v);
+RT retval =  ((*ot.untag_object()).*(closure->mptr))(a1._v,a2._v,a3._v);
 return Values(translate::to_object<RT>::convert(retval));
 }
 };
@@ -602,6 +633,7 @@ class VariadicMethoid
 <DispatchOn,RT (OT::*)( ARG1, ARG2)  >
 : public BuiltinClosure_O {
 public:
+typedef VariadicMethoid<DispatchOn,RT (OT::*)( ARG1, ARG2)  > MyType;
 typedef BuiltinClosure_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
@@ -609,21 +641,22 @@ typedef RT(OT::*Type)(ARG1, ARG2) ;
 Type mptr;
 public:
 enum { NumParams = 3 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
-INCREMENT_FUNCTION_CALL_COUNTER(this);
+MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
+INCREMENT_FUNCTION_CALL_COUNTER(closure);
 INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
-MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),3);
+MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),3);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
+lambdaListHandler_createBindings(closure->asSmartPtr(),closure->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 translate::from_object<ARG1> a1(frame->arg(1));
 translate::from_object<ARG2> a2(frame->arg(2));
-RT retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v);
+RT retval =  ((*ot.untag_object()).*(closure->mptr))(a1._v,a2._v);
 return Values(translate::to_object<RT>::convert(retval));
 }
 };
@@ -639,6 +672,7 @@ class VariadicMethoid
 <DispatchOn,RT (OT::*)( ARG1)  >
 : public BuiltinClosure_O {
 public:
+typedef VariadicMethoid<DispatchOn,RT (OT::*)( ARG1)  > MyType;
 typedef BuiltinClosure_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
@@ -646,20 +680,21 @@ typedef RT(OT::*Type)(ARG1) ;
 Type mptr;
 public:
 enum { NumParams = 2 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
-INCREMENT_FUNCTION_CALL_COUNTER(this);
+MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
+INCREMENT_FUNCTION_CALL_COUNTER(closure);
 INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
-MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),2);
+MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),2);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
+lambdaListHandler_createBindings(closure->asSmartPtr(),closure->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 translate::from_object<ARG1> a1(frame->arg(1));
-RT retval =  ((*ot.untag_object()).*mptr)(a1._v);
+RT retval =  ((*ot.untag_object()).*(closure->mptr))(a1._v);
 return Values(translate::to_object<RT>::convert(retval));
 }
 };
@@ -675,6 +710,7 @@ class VariadicMethoid
 <DispatchOn,RT (OT::*)( )  >
 : public BuiltinClosure_O {
 public:
+typedef VariadicMethoid<DispatchOn,RT (OT::*)( )  > MyType;
 typedef BuiltinClosure_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
@@ -682,19 +718,20 @@ typedef RT(OT::*Type)() ;
 Type mptr;
 public:
 enum { NumParams = 1 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
-INCREMENT_FUNCTION_CALL_COUNTER(this);
+MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
+INCREMENT_FUNCTION_CALL_COUNTER(closure);
 INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
-MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),1);
+MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),1);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
+lambdaListHandler_createBindings(closure->asSmartPtr(),closure->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
-RT retval =  ((*ot.untag_object()).*mptr)();
+RT retval =  ((*ot.untag_object()).*(closure->mptr))();
 return Values(translate::to_object<RT>::convert(retval));
 }
 };
@@ -712,6 +749,8 @@ class VariadicMethoid
 <DispatchOn,void (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12, ARG13, ARG14, ARG15)  >
 : public BuiltinClosure_O {
 public:
+typedef VariadicMethoid<DispatchOn,void (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12, ARG13,
+    ARG14, ARG15)  > MyType;
 typedef BuiltinClosure_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
@@ -719,17 +758,18 @@ typedef void(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, AR
 Type mptr;
 public:
 enum { NumParams = 16 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
-INCREMENT_FUNCTION_CALL_COUNTER(this);
+MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
+INCREMENT_FUNCTION_CALL_COUNTER(closure);
 INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
-MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),16);
+MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),16);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
+lambdaListHandler_createBindings(closure->asSmartPtr(),closure->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 translate::from_object<ARG1> a1(frame->arg(1));
 translate::from_object<ARG2> a2(frame->arg(2));
@@ -746,7 +786,8 @@ translate::from_object<ARG12> a12(frame->arg(12));
 translate::from_object<ARG13> a13(frame->arg(13));
 translate::from_object<ARG14> a14(frame->arg(14));
 translate::from_object<ARG15> a15(frame->arg(15));
-((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v,a12._v,a13._v,a14._v,a15._v);
+((*ot.untag_object()).*(closure->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v,a12._v,a13._v,a14._v,
+    a15._v);
 return Values0<core::T_O>();
 }
 };
@@ -763,6 +804,8 @@ class VariadicMethoid
 <DispatchOn,void (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12, ARG13, ARG14)  >
 : public BuiltinClosure_O {
 public:
+typedef VariadicMethoid<DispatchOn,void (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12, ARG13,
+    ARG14)  > MyType;
 typedef BuiltinClosure_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
@@ -770,17 +813,18 @@ typedef void(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, AR
 Type mptr;
 public:
 enum { NumParams = 15 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
-INCREMENT_FUNCTION_CALL_COUNTER(this);
+MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
+INCREMENT_FUNCTION_CALL_COUNTER(closure);
 INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
-MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),15);
+MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),15);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
+lambdaListHandler_createBindings(closure->asSmartPtr(),closure->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 translate::from_object<ARG1> a1(frame->arg(1));
 translate::from_object<ARG2> a2(frame->arg(2));
@@ -796,7 +840,7 @@ translate::from_object<ARG11> a11(frame->arg(11));
 translate::from_object<ARG12> a12(frame->arg(12));
 translate::from_object<ARG13> a13(frame->arg(13));
 translate::from_object<ARG14> a14(frame->arg(14));
-((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v,a12._v,a13._v,a14._v);
+((*ot.untag_object()).*(closure->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v,a12._v,a13._v,a14._v);
 return Values0<core::T_O>();
 }
 };
@@ -813,6 +857,8 @@ class VariadicMethoid
 <DispatchOn,void (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12, ARG13)  >
 : public BuiltinClosure_O {
 public:
+typedef VariadicMethoid<DispatchOn,void (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12,
+    ARG13)  > MyType;
 typedef BuiltinClosure_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
@@ -820,17 +866,18 @@ typedef void(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, AR
 Type mptr;
 public:
 enum { NumParams = 14 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
-INCREMENT_FUNCTION_CALL_COUNTER(this);
+MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
+INCREMENT_FUNCTION_CALL_COUNTER(closure);
 INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
-MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),14);
+MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),14);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
+lambdaListHandler_createBindings(closure->asSmartPtr(),closure->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 translate::from_object<ARG1> a1(frame->arg(1));
 translate::from_object<ARG2> a2(frame->arg(2));
@@ -845,7 +892,7 @@ translate::from_object<ARG10> a10(frame->arg(10));
 translate::from_object<ARG11> a11(frame->arg(11));
 translate::from_object<ARG12> a12(frame->arg(12));
 translate::from_object<ARG13> a13(frame->arg(13));
-((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v,a12._v,a13._v);
+((*ot.untag_object()).*(closure->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v,a12._v,a13._v);
 return Values0<core::T_O>();
 }
 };
@@ -862,6 +909,8 @@ class VariadicMethoid
 <DispatchOn,void (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12)  >
 : public BuiltinClosure_O {
 public:
+typedef VariadicMethoid<DispatchOn,void (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11,
+    ARG12)  > MyType;
 typedef BuiltinClosure_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
@@ -869,17 +918,18 @@ typedef void(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, AR
 Type mptr;
 public:
 enum { NumParams = 13 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
-INCREMENT_FUNCTION_CALL_COUNTER(this);
+MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
+INCREMENT_FUNCTION_CALL_COUNTER(closure);
 INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
-MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),13);
+MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),13);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
+lambdaListHandler_createBindings(closure->asSmartPtr(),closure->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 translate::from_object<ARG1> a1(frame->arg(1));
 translate::from_object<ARG2> a2(frame->arg(2));
@@ -893,7 +943,7 @@ translate::from_object<ARG9> a9(frame->arg(9));
 translate::from_object<ARG10> a10(frame->arg(10));
 translate::from_object<ARG11> a11(frame->arg(11));
 translate::from_object<ARG12> a12(frame->arg(12));
-((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v,a12._v);
+((*ot.untag_object()).*(closure->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v,a12._v);
 return Values0<core::T_O>();
 }
 };
@@ -910,6 +960,7 @@ class VariadicMethoid
 <DispatchOn,void (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11)  >
 : public BuiltinClosure_O {
 public:
+typedef VariadicMethoid<DispatchOn,void (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11)  > MyType;
 typedef BuiltinClosure_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
@@ -917,17 +968,18 @@ typedef void(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, AR
 Type mptr;
 public:
 enum { NumParams = 12 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
-INCREMENT_FUNCTION_CALL_COUNTER(this);
+MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
+INCREMENT_FUNCTION_CALL_COUNTER(closure);
 INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
-MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),12);
+MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),12);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
+lambdaListHandler_createBindings(closure->asSmartPtr(),closure->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 translate::from_object<ARG1> a1(frame->arg(1));
 translate::from_object<ARG2> a2(frame->arg(2));
@@ -940,7 +992,7 @@ translate::from_object<ARG8> a8(frame->arg(8));
 translate::from_object<ARG9> a9(frame->arg(9));
 translate::from_object<ARG10> a10(frame->arg(10));
 translate::from_object<ARG11> a11(frame->arg(11));
-((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v);
+((*ot.untag_object()).*(closure->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v);
 return Values0<core::T_O>();
 }
 };
@@ -957,6 +1009,7 @@ class VariadicMethoid
 <DispatchOn,void (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10)  >
 : public BuiltinClosure_O {
 public:
+typedef VariadicMethoid<DispatchOn,void (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10)  > MyType;
 typedef BuiltinClosure_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
@@ -964,17 +1017,18 @@ typedef void(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, AR
 Type mptr;
 public:
 enum { NumParams = 11 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
-INCREMENT_FUNCTION_CALL_COUNTER(this);
+MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
+INCREMENT_FUNCTION_CALL_COUNTER(closure);
 INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
-MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),11);
+MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),11);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
+lambdaListHandler_createBindings(closure->asSmartPtr(),closure->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 translate::from_object<ARG1> a1(frame->arg(1));
 translate::from_object<ARG2> a2(frame->arg(2));
@@ -986,7 +1040,7 @@ translate::from_object<ARG7> a7(frame->arg(7));
 translate::from_object<ARG8> a8(frame->arg(8));
 translate::from_object<ARG9> a9(frame->arg(9));
 translate::from_object<ARG10> a10(frame->arg(10));
-((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v);
+((*ot.untag_object()).*(closure->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v);
 return Values0<core::T_O>();
 }
 };
@@ -1003,6 +1057,7 @@ class VariadicMethoid
 <DispatchOn,void (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9)  >
 : public BuiltinClosure_O {
 public:
+typedef VariadicMethoid<DispatchOn,void (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9)  > MyType;
 typedef BuiltinClosure_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
@@ -1010,17 +1065,18 @@ typedef void(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9) ;
 Type mptr;
 public:
 enum { NumParams = 10 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
-INCREMENT_FUNCTION_CALL_COUNTER(this);
+MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
+INCREMENT_FUNCTION_CALL_COUNTER(closure);
 INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
-MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),10);
+MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),10);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
+lambdaListHandler_createBindings(closure->asSmartPtr(),closure->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 translate::from_object<ARG1> a1(frame->arg(1));
 translate::from_object<ARG2> a2(frame->arg(2));
@@ -1031,7 +1087,7 @@ translate::from_object<ARG6> a6(frame->arg(6));
 translate::from_object<ARG7> a7(frame->arg(7));
 translate::from_object<ARG8> a8(frame->arg(8));
 translate::from_object<ARG9> a9(frame->arg(9));
-((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v);
+((*ot.untag_object()).*(closure->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v);
 return Values0<core::T_O>();
 }
 };
@@ -1048,6 +1104,7 @@ class VariadicMethoid
 <DispatchOn,void (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8)  >
 : public BuiltinClosure_O {
 public:
+typedef VariadicMethoid<DispatchOn,void (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8)  > MyType;
 typedef BuiltinClosure_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
@@ -1055,17 +1112,18 @@ typedef void(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8) ;
 Type mptr;
 public:
 enum { NumParams = 9 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
-INCREMENT_FUNCTION_CALL_COUNTER(this);
+MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
+INCREMENT_FUNCTION_CALL_COUNTER(closure);
 INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
-MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),9);
+MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),9);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
+lambdaListHandler_createBindings(closure->asSmartPtr(),closure->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 translate::from_object<ARG1> a1(frame->arg(1));
 translate::from_object<ARG2> a2(frame->arg(2));
@@ -1075,7 +1133,7 @@ translate::from_object<ARG5> a5(frame->arg(5));
 translate::from_object<ARG6> a6(frame->arg(6));
 translate::from_object<ARG7> a7(frame->arg(7));
 translate::from_object<ARG8> a8(frame->arg(8));
-((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v);
+((*ot.untag_object()).*(closure->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v);
 return Values0<core::T_O>();
 }
 };
@@ -1092,6 +1150,7 @@ class VariadicMethoid
 <DispatchOn,void (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7)  >
 : public BuiltinClosure_O {
 public:
+typedef VariadicMethoid<DispatchOn,void (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7)  > MyType;
 typedef BuiltinClosure_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
@@ -1099,17 +1158,18 @@ typedef void(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7) ;
 Type mptr;
 public:
 enum { NumParams = 8 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
-INCREMENT_FUNCTION_CALL_COUNTER(this);
+MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
+INCREMENT_FUNCTION_CALL_COUNTER(closure);
 INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
-MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),8);
+MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),8);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
+lambdaListHandler_createBindings(closure->asSmartPtr(),closure->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 translate::from_object<ARG1> a1(frame->arg(1));
 translate::from_object<ARG2> a2(frame->arg(2));
@@ -1118,7 +1178,7 @@ translate::from_object<ARG4> a4(frame->arg(4));
 translate::from_object<ARG5> a5(frame->arg(5));
 translate::from_object<ARG6> a6(frame->arg(6));
 translate::from_object<ARG7> a7(frame->arg(7));
-((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v);
+((*ot.untag_object()).*(closure->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v);
 return Values0<core::T_O>();
 }
 };
@@ -1134,6 +1194,7 @@ class VariadicMethoid
 <DispatchOn,void (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6)  >
 : public BuiltinClosure_O {
 public:
+typedef VariadicMethoid<DispatchOn,void (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6)  > MyType;
 typedef BuiltinClosure_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
@@ -1141,17 +1202,18 @@ typedef void(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, ARG6) ;
 Type mptr;
 public:
 enum { NumParams = 7 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
-INCREMENT_FUNCTION_CALL_COUNTER(this);
+MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
+INCREMENT_FUNCTION_CALL_COUNTER(closure);
 INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
-MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),7);
+MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),7);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
+lambdaListHandler_createBindings(closure->asSmartPtr(),closure->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 translate::from_object<ARG1> a1(frame->arg(1));
 translate::from_object<ARG2> a2(frame->arg(2));
@@ -1159,7 +1221,7 @@ translate::from_object<ARG3> a3(frame->arg(3));
 translate::from_object<ARG4> a4(frame->arg(4));
 translate::from_object<ARG5> a5(frame->arg(5));
 translate::from_object<ARG6> a6(frame->arg(6));
-((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v);
+((*ot.untag_object()).*(closure->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v);
 return Values0<core::T_O>();
 }
 };
@@ -1175,6 +1237,7 @@ class VariadicMethoid
 <DispatchOn,void (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5)  >
 : public BuiltinClosure_O {
 public:
+typedef VariadicMethoid<DispatchOn,void (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5)  > MyType;
 typedef BuiltinClosure_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
@@ -1182,24 +1245,25 @@ typedef void(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5) ;
 Type mptr;
 public:
 enum { NumParams = 6 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
-INCREMENT_FUNCTION_CALL_COUNTER(this);
+MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
+INCREMENT_FUNCTION_CALL_COUNTER(closure);
 INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
-MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),6);
+MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),6);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
+lambdaListHandler_createBindings(closure->asSmartPtr(),closure->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 translate::from_object<ARG1> a1(frame->arg(1));
 translate::from_object<ARG2> a2(frame->arg(2));
 translate::from_object<ARG3> a3(frame->arg(3));
 translate::from_object<ARG4> a4(frame->arg(4));
 translate::from_object<ARG5> a5(frame->arg(5));
-((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v);
+((*ot.untag_object()).*(closure->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v);
 return Values0<core::T_O>();
 }
 };
@@ -1215,6 +1279,7 @@ class VariadicMethoid
 <DispatchOn,void (OT::*)( ARG1, ARG2, ARG3, ARG4)  >
 : public BuiltinClosure_O {
 public:
+typedef VariadicMethoid<DispatchOn,void (OT::*)( ARG1, ARG2, ARG3, ARG4)  > MyType;
 typedef BuiltinClosure_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
@@ -1222,23 +1287,24 @@ typedef void(OT::*Type)(ARG1, ARG2, ARG3, ARG4) ;
 Type mptr;
 public:
 enum { NumParams = 5 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
-INCREMENT_FUNCTION_CALL_COUNTER(this);
+MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
+INCREMENT_FUNCTION_CALL_COUNTER(closure);
 INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
-MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),5);
+MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),5);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
+lambdaListHandler_createBindings(closure->asSmartPtr(),closure->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 translate::from_object<ARG1> a1(frame->arg(1));
 translate::from_object<ARG2> a2(frame->arg(2));
 translate::from_object<ARG3> a3(frame->arg(3));
 translate::from_object<ARG4> a4(frame->arg(4));
-((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v);
+((*ot.untag_object()).*(closure->mptr))(a1._v,a2._v,a3._v,a4._v);
 return Values0<core::T_O>();
 }
 };
@@ -1254,6 +1320,7 @@ class VariadicMethoid
 <DispatchOn,void (OT::*)( ARG1, ARG2, ARG3)  >
 : public BuiltinClosure_O {
 public:
+typedef VariadicMethoid<DispatchOn,void (OT::*)( ARG1, ARG2, ARG3)  > MyType;
 typedef BuiltinClosure_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
@@ -1261,22 +1328,23 @@ typedef void(OT::*Type)(ARG1, ARG2, ARG3) ;
 Type mptr;
 public:
 enum { NumParams = 4 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
-INCREMENT_FUNCTION_CALL_COUNTER(this);
+MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
+INCREMENT_FUNCTION_CALL_COUNTER(closure);
 INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
-MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),4);
+MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),4);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
+lambdaListHandler_createBindings(closure->asSmartPtr(),closure->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 translate::from_object<ARG1> a1(frame->arg(1));
 translate::from_object<ARG2> a2(frame->arg(2));
 translate::from_object<ARG3> a3(frame->arg(3));
-((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v);
+((*ot.untag_object()).*(closure->mptr))(a1._v,a2._v,a3._v);
 return Values0<core::T_O>();
 }
 };
@@ -1292,6 +1360,7 @@ class VariadicMethoid
 <DispatchOn,void (OT::*)( ARG1, ARG2)  >
 : public BuiltinClosure_O {
 public:
+typedef VariadicMethoid<DispatchOn,void (OT::*)( ARG1, ARG2)  > MyType;
 typedef BuiltinClosure_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
@@ -1299,21 +1368,22 @@ typedef void(OT::*Type)(ARG1, ARG2) ;
 Type mptr;
 public:
 enum { NumParams = 3 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
-INCREMENT_FUNCTION_CALL_COUNTER(this);
+MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
+INCREMENT_FUNCTION_CALL_COUNTER(closure);
 INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
-MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),3);
+MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),3);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
+lambdaListHandler_createBindings(closure->asSmartPtr(),closure->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 translate::from_object<ARG1> a1(frame->arg(1));
 translate::from_object<ARG2> a2(frame->arg(2));
-((*ot.untag_object()).*mptr)(a1._v,a2._v);
+((*ot.untag_object()).*(closure->mptr))(a1._v,a2._v);
 return Values0<core::T_O>();
 }
 };
@@ -1329,6 +1399,7 @@ class VariadicMethoid
 <DispatchOn,void (OT::*)( ARG1)  >
 : public BuiltinClosure_O {
 public:
+typedef VariadicMethoid<DispatchOn,void (OT::*)( ARG1)  > MyType;
 typedef BuiltinClosure_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
@@ -1336,20 +1407,21 @@ typedef void(OT::*Type)(ARG1) ;
 Type mptr;
 public:
 enum { NumParams = 2 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
-INCREMENT_FUNCTION_CALL_COUNTER(this);
+MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
+INCREMENT_FUNCTION_CALL_COUNTER(closure);
 INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
-MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),2);
+MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),2);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
+lambdaListHandler_createBindings(closure->asSmartPtr(),closure->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 translate::from_object<ARG1> a1(frame->arg(1));
-((*ot.untag_object()).*mptr)(a1._v);
+((*ot.untag_object()).*(closure->mptr))(a1._v);
 return Values0<core::T_O>();
 }
 };
@@ -1365,6 +1437,7 @@ class VariadicMethoid
 <DispatchOn,void (OT::*)( )  >
 : public BuiltinClosure_O {
 public:
+typedef VariadicMethoid<DispatchOn,void (OT::*)( )  > MyType;
 typedef BuiltinClosure_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
@@ -1372,19 +1445,20 @@ typedef void(OT::*Type)() ;
 Type mptr;
 public:
 enum { NumParams = 1 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
-INCREMENT_FUNCTION_CALL_COUNTER(this);
+MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
+INCREMENT_FUNCTION_CALL_COUNTER(closure);
 INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
-MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),1);
+MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),1);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
+lambdaListHandler_createBindings(closure->asSmartPtr(),closure->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
-((*ot.untag_object()).*mptr)();
+((*ot.untag_object()).*(closure->mptr))();
 return Values0<core::T_O>();
 }
 };
@@ -1403,6 +1477,8 @@ class VariadicMethoid
     ARG14, ARG15)  >
 : public BuiltinClosure_O {
 public:
+typedef VariadicMethoid<DispatchOn,gctools::multiple_values<RT> (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9,
+    ARG10, ARG11, ARG12, ARG13, ARG14, ARG15)  > MyType;
 typedef BuiltinClosure_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
@@ -1411,17 +1487,18 @@ typedef gctools::multiple_values<RT>(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, AR
 Type mptr;
 public:
 enum { NumParams = 16 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
-INCREMENT_FUNCTION_CALL_COUNTER(this);
+MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
+INCREMENT_FUNCTION_CALL_COUNTER(closure);
 INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
-MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),16);
+MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),16);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
+lambdaListHandler_createBindings(closure->asSmartPtr(),closure->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 translate::from_object<ARG1> a1(frame->arg(1));
 translate::from_object<ARG2> a2(frame->arg(2));
@@ -1438,8 +1515,8 @@ translate::from_object<ARG12> a12(frame->arg(12));
 translate::from_object<ARG13> a13(frame->arg(13));
 translate::from_object<ARG14> a14(frame->arg(14));
 translate::from_object<ARG15> a15(frame->arg(15));
-gctools::multiple_values<RT> retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,
-    a11._v,a12._v,a13._v,a14._v,a15._v);
+gctools::multiple_values<RT> retval =  ((*ot.untag_object()).*(closure->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,
+    a9._v,a10._v,a11._v,a12._v,a13._v,a14._v,a15._v);
 return retval.as_return_type();
 }
 };
@@ -1458,6 +1535,8 @@ class VariadicMethoid
     ARG14)  >
 : public BuiltinClosure_O {
 public:
+typedef VariadicMethoid<DispatchOn,gctools::multiple_values<RT> (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9,
+    ARG10, ARG11, ARG12, ARG13, ARG14)  > MyType;
 typedef BuiltinClosure_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
@@ -1466,17 +1545,18 @@ typedef gctools::multiple_values<RT>(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, AR
 Type mptr;
 public:
 enum { NumParams = 15 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
-INCREMENT_FUNCTION_CALL_COUNTER(this);
+MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
+INCREMENT_FUNCTION_CALL_COUNTER(closure);
 INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
-MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),15);
+MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),15);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
+lambdaListHandler_createBindings(closure->asSmartPtr(),closure->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 translate::from_object<ARG1> a1(frame->arg(1));
 translate::from_object<ARG2> a2(frame->arg(2));
@@ -1492,8 +1572,8 @@ translate::from_object<ARG11> a11(frame->arg(11));
 translate::from_object<ARG12> a12(frame->arg(12));
 translate::from_object<ARG13> a13(frame->arg(13));
 translate::from_object<ARG14> a14(frame->arg(14));
-gctools::multiple_values<RT> retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,
-    a11._v,a12._v,a13._v,a14._v);
+gctools::multiple_values<RT> retval =  ((*ot.untag_object()).*(closure->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,
+    a9._v,a10._v,a11._v,a12._v,a13._v,a14._v);
 return retval.as_return_type();
 }
 };
@@ -1511,6 +1591,8 @@ class VariadicMethoid
     ARG13)  >
 : public BuiltinClosure_O {
 public:
+typedef VariadicMethoid<DispatchOn,gctools::multiple_values<RT> (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9,
+    ARG10, ARG11, ARG12, ARG13)  > MyType;
 typedef BuiltinClosure_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
@@ -1518,17 +1600,18 @@ typedef gctools::multiple_values<RT>(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, AR
 Type mptr;
 public:
 enum { NumParams = 14 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
-INCREMENT_FUNCTION_CALL_COUNTER(this);
+MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
+INCREMENT_FUNCTION_CALL_COUNTER(closure);
 INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
-MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),14);
+MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),14);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
+lambdaListHandler_createBindings(closure->asSmartPtr(),closure->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 translate::from_object<ARG1> a1(frame->arg(1));
 translate::from_object<ARG2> a2(frame->arg(2));
@@ -1543,8 +1626,8 @@ translate::from_object<ARG10> a10(frame->arg(10));
 translate::from_object<ARG11> a11(frame->arg(11));
 translate::from_object<ARG12> a12(frame->arg(12));
 translate::from_object<ARG13> a13(frame->arg(13));
-gctools::multiple_values<RT> retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,
-    a11._v,a12._v,a13._v);
+gctools::multiple_values<RT> retval =  ((*ot.untag_object()).*(closure->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,
+    a9._v,a10._v,a11._v,a12._v,a13._v);
 return retval.as_return_type();
 }
 };
@@ -1561,6 +1644,8 @@ class VariadicMethoid
 <DispatchOn,gctools::multiple_values<RT> (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12)  >
 : public BuiltinClosure_O {
 public:
+typedef VariadicMethoid<DispatchOn,gctools::multiple_values<RT> (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9,
+    ARG10, ARG11, ARG12)  > MyType;
 typedef BuiltinClosure_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
@@ -1568,17 +1653,18 @@ typedef gctools::multiple_values<RT>(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, AR
 Type mptr;
 public:
 enum { NumParams = 13 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
-INCREMENT_FUNCTION_CALL_COUNTER(this);
+MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
+INCREMENT_FUNCTION_CALL_COUNTER(closure);
 INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
-MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),13);
+MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),13);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
+lambdaListHandler_createBindings(closure->asSmartPtr(),closure->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 translate::from_object<ARG1> a1(frame->arg(1));
 translate::from_object<ARG2> a2(frame->arg(2));
@@ -1592,8 +1678,8 @@ translate::from_object<ARG9> a9(frame->arg(9));
 translate::from_object<ARG10> a10(frame->arg(10));
 translate::from_object<ARG11> a11(frame->arg(11));
 translate::from_object<ARG12> a12(frame->arg(12));
-gctools::multiple_values<RT> retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,
-    a11._v,a12._v);
+gctools::multiple_values<RT> retval =  ((*ot.untag_object()).*(closure->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,
+    a9._v,a10._v,a11._v,a12._v);
 return retval.as_return_type();
 }
 };
@@ -1610,6 +1696,8 @@ class VariadicMethoid
 <DispatchOn,gctools::multiple_values<RT> (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11)  >
 : public BuiltinClosure_O {
 public:
+typedef VariadicMethoid<DispatchOn,gctools::multiple_values<RT> (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9,
+    ARG10, ARG11)  > MyType;
 typedef BuiltinClosure_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
@@ -1617,17 +1705,18 @@ typedef gctools::multiple_values<RT>(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, AR
 Type mptr;
 public:
 enum { NumParams = 12 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
-INCREMENT_FUNCTION_CALL_COUNTER(this);
+MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
+INCREMENT_FUNCTION_CALL_COUNTER(closure);
 INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
-MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),12);
+MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),12);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
+lambdaListHandler_createBindings(closure->asSmartPtr(),closure->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 translate::from_object<ARG1> a1(frame->arg(1));
 translate::from_object<ARG2> a2(frame->arg(2));
@@ -1640,8 +1729,8 @@ translate::from_object<ARG8> a8(frame->arg(8));
 translate::from_object<ARG9> a9(frame->arg(9));
 translate::from_object<ARG10> a10(frame->arg(10));
 translate::from_object<ARG11> a11(frame->arg(11));
-gctools::multiple_values<RT> retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,
-    a11._v);
+gctools::multiple_values<RT> retval =  ((*ot.untag_object()).*(closure->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,
+    a9._v,a10._v,a11._v);
 return retval.as_return_type();
 }
 };
@@ -1658,6 +1747,8 @@ class VariadicMethoid
 <DispatchOn,gctools::multiple_values<RT> (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10)  >
 : public BuiltinClosure_O {
 public:
+typedef VariadicMethoid<DispatchOn,gctools::multiple_values<RT> (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9,
+    ARG10)  > MyType;
 typedef BuiltinClosure_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
@@ -1665,17 +1756,18 @@ typedef gctools::multiple_values<RT>(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, AR
 Type mptr;
 public:
 enum { NumParams = 11 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
-INCREMENT_FUNCTION_CALL_COUNTER(this);
+MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
+INCREMENT_FUNCTION_CALL_COUNTER(closure);
 INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
-MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),11);
+MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),11);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
+lambdaListHandler_createBindings(closure->asSmartPtr(),closure->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 translate::from_object<ARG1> a1(frame->arg(1));
 translate::from_object<ARG2> a2(frame->arg(2));
@@ -1687,7 +1779,8 @@ translate::from_object<ARG7> a7(frame->arg(7));
 translate::from_object<ARG8> a8(frame->arg(8));
 translate::from_object<ARG9> a9(frame->arg(9));
 translate::from_object<ARG10> a10(frame->arg(10));
-gctools::multiple_values<RT> retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v);
+gctools::multiple_values<RT> retval =  ((*ot.untag_object()).*(closure->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,
+    a9._v,a10._v);
 return retval.as_return_type();
 }
 };
@@ -1704,6 +1797,8 @@ class VariadicMethoid
 <DispatchOn,gctools::multiple_values<RT> (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9)  >
 : public BuiltinClosure_O {
 public:
+typedef VariadicMethoid<DispatchOn,gctools::multiple_values<RT> (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8,
+    ARG9)  > MyType;
 typedef BuiltinClosure_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
@@ -1711,17 +1806,18 @@ typedef gctools::multiple_values<RT>(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, AR
 Type mptr;
 public:
 enum { NumParams = 10 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
-INCREMENT_FUNCTION_CALL_COUNTER(this);
+MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
+INCREMENT_FUNCTION_CALL_COUNTER(closure);
 INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
-MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),10);
+MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),10);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
+lambdaListHandler_createBindings(closure->asSmartPtr(),closure->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 translate::from_object<ARG1> a1(frame->arg(1));
 translate::from_object<ARG2> a2(frame->arg(2));
@@ -1732,7 +1828,8 @@ translate::from_object<ARG6> a6(frame->arg(6));
 translate::from_object<ARG7> a7(frame->arg(7));
 translate::from_object<ARG8> a8(frame->arg(8));
 translate::from_object<ARG9> a9(frame->arg(9));
-gctools::multiple_values<RT> retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v);
+gctools::multiple_values<RT> retval =  ((*ot.untag_object()).*(closure->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,
+    a9._v);
 return retval.as_return_type();
 }
 };
@@ -1749,6 +1846,7 @@ class VariadicMethoid
 <DispatchOn,gctools::multiple_values<RT> (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8)  >
 : public BuiltinClosure_O {
 public:
+typedef VariadicMethoid<DispatchOn,gctools::multiple_values<RT> (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8)  > MyType;
 typedef BuiltinClosure_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
@@ -1756,17 +1854,18 @@ typedef gctools::multiple_values<RT>(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, AR
 Type mptr;
 public:
 enum { NumParams = 9 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
-INCREMENT_FUNCTION_CALL_COUNTER(this);
+MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
+INCREMENT_FUNCTION_CALL_COUNTER(closure);
 INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
-MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),9);
+MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),9);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
+lambdaListHandler_createBindings(closure->asSmartPtr(),closure->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 translate::from_object<ARG1> a1(frame->arg(1));
 translate::from_object<ARG2> a2(frame->arg(2));
@@ -1776,7 +1875,7 @@ translate::from_object<ARG5> a5(frame->arg(5));
 translate::from_object<ARG6> a6(frame->arg(6));
 translate::from_object<ARG7> a7(frame->arg(7));
 translate::from_object<ARG8> a8(frame->arg(8));
-gctools::multiple_values<RT> retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v);
+gctools::multiple_values<RT> retval =  ((*ot.untag_object()).*(closure->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v);
 return retval.as_return_type();
 }
 };
@@ -1793,6 +1892,7 @@ class VariadicMethoid
 <DispatchOn,gctools::multiple_values<RT> (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7)  >
 : public BuiltinClosure_O {
 public:
+typedef VariadicMethoid<DispatchOn,gctools::multiple_values<RT> (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7)  > MyType;
 typedef BuiltinClosure_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
@@ -1800,17 +1900,18 @@ typedef gctools::multiple_values<RT>(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, AR
 Type mptr;
 public:
 enum { NumParams = 8 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
-INCREMENT_FUNCTION_CALL_COUNTER(this);
+MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
+INCREMENT_FUNCTION_CALL_COUNTER(closure);
 INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
-MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),8);
+MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),8);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
+lambdaListHandler_createBindings(closure->asSmartPtr(),closure->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 translate::from_object<ARG1> a1(frame->arg(1));
 translate::from_object<ARG2> a2(frame->arg(2));
@@ -1819,7 +1920,7 @@ translate::from_object<ARG4> a4(frame->arg(4));
 translate::from_object<ARG5> a5(frame->arg(5));
 translate::from_object<ARG6> a6(frame->arg(6));
 translate::from_object<ARG7> a7(frame->arg(7));
-gctools::multiple_values<RT> retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v);
+gctools::multiple_values<RT> retval =  ((*ot.untag_object()).*(closure->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v);
 return retval.as_return_type();
 }
 };
@@ -1836,6 +1937,7 @@ class VariadicMethoid
 <DispatchOn,gctools::multiple_values<RT> (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6)  >
 : public BuiltinClosure_O {
 public:
+typedef VariadicMethoid<DispatchOn,gctools::multiple_values<RT> (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6)  > MyType;
 typedef BuiltinClosure_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
@@ -1843,17 +1945,18 @@ typedef gctools::multiple_values<RT>(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, AR
 Type mptr;
 public:
 enum { NumParams = 7 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
-INCREMENT_FUNCTION_CALL_COUNTER(this);
+MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
+INCREMENT_FUNCTION_CALL_COUNTER(closure);
 INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
-MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),7);
+MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),7);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
+lambdaListHandler_createBindings(closure->asSmartPtr(),closure->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 translate::from_object<ARG1> a1(frame->arg(1));
 translate::from_object<ARG2> a2(frame->arg(2));
@@ -1861,7 +1964,7 @@ translate::from_object<ARG3> a3(frame->arg(3));
 translate::from_object<ARG4> a4(frame->arg(4));
 translate::from_object<ARG5> a5(frame->arg(5));
 translate::from_object<ARG6> a6(frame->arg(6));
-gctools::multiple_values<RT> retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v);
+gctools::multiple_values<RT> retval =  ((*ot.untag_object()).*(closure->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v);
 return retval.as_return_type();
 }
 };
@@ -1877,6 +1980,7 @@ class VariadicMethoid
 <DispatchOn,gctools::multiple_values<RT> (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5)  >
 : public BuiltinClosure_O {
 public:
+typedef VariadicMethoid<DispatchOn,gctools::multiple_values<RT> (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5)  > MyType;
 typedef BuiltinClosure_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
@@ -1884,24 +1988,25 @@ typedef gctools::multiple_values<RT>(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5) ;
 Type mptr;
 public:
 enum { NumParams = 6 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
-INCREMENT_FUNCTION_CALL_COUNTER(this);
+MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
+INCREMENT_FUNCTION_CALL_COUNTER(closure);
 INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
-MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),6);
+MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),6);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
+lambdaListHandler_createBindings(closure->asSmartPtr(),closure->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 translate::from_object<ARG1> a1(frame->arg(1));
 translate::from_object<ARG2> a2(frame->arg(2));
 translate::from_object<ARG3> a3(frame->arg(3));
 translate::from_object<ARG4> a4(frame->arg(4));
 translate::from_object<ARG5> a5(frame->arg(5));
-gctools::multiple_values<RT> retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v);
+gctools::multiple_values<RT> retval =  ((*ot.untag_object()).*(closure->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v);
 return retval.as_return_type();
 }
 };
@@ -1917,6 +2022,7 @@ class VariadicMethoid
 <DispatchOn,gctools::multiple_values<RT> (OT::*)( ARG1, ARG2, ARG3, ARG4)  >
 : public BuiltinClosure_O {
 public:
+typedef VariadicMethoid<DispatchOn,gctools::multiple_values<RT> (OT::*)( ARG1, ARG2, ARG3, ARG4)  > MyType;
 typedef BuiltinClosure_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
@@ -1924,23 +2030,24 @@ typedef gctools::multiple_values<RT>(OT::*Type)(ARG1, ARG2, ARG3, ARG4) ;
 Type mptr;
 public:
 enum { NumParams = 5 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
-INCREMENT_FUNCTION_CALL_COUNTER(this);
+MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
+INCREMENT_FUNCTION_CALL_COUNTER(closure);
 INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
-MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),5);
+MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),5);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
+lambdaListHandler_createBindings(closure->asSmartPtr(),closure->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 translate::from_object<ARG1> a1(frame->arg(1));
 translate::from_object<ARG2> a2(frame->arg(2));
 translate::from_object<ARG3> a3(frame->arg(3));
 translate::from_object<ARG4> a4(frame->arg(4));
-gctools::multiple_values<RT> retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v);
+gctools::multiple_values<RT> retval =  ((*ot.untag_object()).*(closure->mptr))(a1._v,a2._v,a3._v,a4._v);
 return retval.as_return_type();
 }
 };
@@ -1956,6 +2063,7 @@ class VariadicMethoid
 <DispatchOn,gctools::multiple_values<RT> (OT::*)( ARG1, ARG2, ARG3)  >
 : public BuiltinClosure_O {
 public:
+typedef VariadicMethoid<DispatchOn,gctools::multiple_values<RT> (OT::*)( ARG1, ARG2, ARG3)  > MyType;
 typedef BuiltinClosure_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
@@ -1963,22 +2071,23 @@ typedef gctools::multiple_values<RT>(OT::*Type)(ARG1, ARG2, ARG3) ;
 Type mptr;
 public:
 enum { NumParams = 4 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
-INCREMENT_FUNCTION_CALL_COUNTER(this);
+MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
+INCREMENT_FUNCTION_CALL_COUNTER(closure);
 INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
-MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),4);
+MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),4);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
+lambdaListHandler_createBindings(closure->asSmartPtr(),closure->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 translate::from_object<ARG1> a1(frame->arg(1));
 translate::from_object<ARG2> a2(frame->arg(2));
 translate::from_object<ARG3> a3(frame->arg(3));
-gctools::multiple_values<RT> retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v);
+gctools::multiple_values<RT> retval =  ((*ot.untag_object()).*(closure->mptr))(a1._v,a2._v,a3._v);
 return retval.as_return_type();
 }
 };
@@ -1994,6 +2103,7 @@ class VariadicMethoid
 <DispatchOn,gctools::multiple_values<RT> (OT::*)( ARG1, ARG2)  >
 : public BuiltinClosure_O {
 public:
+typedef VariadicMethoid<DispatchOn,gctools::multiple_values<RT> (OT::*)( ARG1, ARG2)  > MyType;
 typedef BuiltinClosure_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
@@ -2001,21 +2111,22 @@ typedef gctools::multiple_values<RT>(OT::*Type)(ARG1, ARG2) ;
 Type mptr;
 public:
 enum { NumParams = 3 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
-INCREMENT_FUNCTION_CALL_COUNTER(this);
+MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
+INCREMENT_FUNCTION_CALL_COUNTER(closure);
 INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
-MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),3);
+MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),3);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
+lambdaListHandler_createBindings(closure->asSmartPtr(),closure->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 translate::from_object<ARG1> a1(frame->arg(1));
 translate::from_object<ARG2> a2(frame->arg(2));
-gctools::multiple_values<RT> retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v);
+gctools::multiple_values<RT> retval =  ((*ot.untag_object()).*(closure->mptr))(a1._v,a2._v);
 return retval.as_return_type();
 }
 };
@@ -2031,6 +2142,7 @@ class VariadicMethoid
 <DispatchOn,gctools::multiple_values<RT> (OT::*)( ARG1)  >
 : public BuiltinClosure_O {
 public:
+typedef VariadicMethoid<DispatchOn,gctools::multiple_values<RT> (OT::*)( ARG1)  > MyType;
 typedef BuiltinClosure_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
@@ -2038,20 +2150,21 @@ typedef gctools::multiple_values<RT>(OT::*Type)(ARG1) ;
 Type mptr;
 public:
 enum { NumParams = 2 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
-INCREMENT_FUNCTION_CALL_COUNTER(this);
+MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
+INCREMENT_FUNCTION_CALL_COUNTER(closure);
 INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
-MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),2);
+MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),2);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
+lambdaListHandler_createBindings(closure->asSmartPtr(),closure->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 translate::from_object<ARG1> a1(frame->arg(1));
-gctools::multiple_values<RT> retval =  ((*ot.untag_object()).*mptr)(a1._v);
+gctools::multiple_values<RT> retval =  ((*ot.untag_object()).*(closure->mptr))(a1._v);
 return retval.as_return_type();
 }
 };
@@ -2067,6 +2180,7 @@ class VariadicMethoid
 <DispatchOn,gctools::multiple_values<RT> (OT::*)( )  >
 : public BuiltinClosure_O {
 public:
+typedef VariadicMethoid<DispatchOn,gctools::multiple_values<RT> (OT::*)( )  > MyType;
 typedef BuiltinClosure_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
@@ -2074,19 +2188,20 @@ typedef gctools::multiple_values<RT>(OT::*Type)() ;
 Type mptr;
 public:
 enum { NumParams = 1 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
-INCREMENT_FUNCTION_CALL_COUNTER(this);
+MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
+INCREMENT_FUNCTION_CALL_COUNTER(closure);
 INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
-MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),1);
+MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),1);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
+lambdaListHandler_createBindings(closure->asSmartPtr(),closure->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
-gctools::multiple_values<RT> retval =  ((*ot.untag_object()).*mptr)();
+gctools::multiple_values<RT> retval =  ((*ot.untag_object()).*(closure->mptr))();
 return retval.as_return_type();
 }
 };
@@ -2104,6 +2219,8 @@ class VariadicMethoid
 <DispatchOn,RT (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12, ARG13, ARG14, ARG15) const >
 : public BuiltinClosure_O {
 public:
+typedef VariadicMethoid<DispatchOn,RT (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12, ARG13,
+    ARG14, ARG15) const > MyType;
 typedef BuiltinClosure_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
@@ -2111,17 +2228,18 @@ typedef RT(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG1
 Type mptr;
 public:
 enum { NumParams = 16 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
-INCREMENT_FUNCTION_CALL_COUNTER(this);
+MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
+INCREMENT_FUNCTION_CALL_COUNTER(closure);
 INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
-MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),16);
+MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),16);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
+lambdaListHandler_createBindings(closure->asSmartPtr(),closure->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 translate::from_object<ARG1> a1(frame->arg(1));
 translate::from_object<ARG2> a2(frame->arg(2));
@@ -2138,8 +2256,8 @@ translate::from_object<ARG12> a12(frame->arg(12));
 translate::from_object<ARG13> a13(frame->arg(13));
 translate::from_object<ARG14> a14(frame->arg(14));
 translate::from_object<ARG15> a15(frame->arg(15));
-RT retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v,a12._v,a13._v,a14._v,
-    a15._v);
+RT retval =  ((*ot.untag_object()).*(closure->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v,a12._v,
+    a13._v,a14._v,a15._v);
 return Values(translate::to_object<RT>::convert(retval));
 }
 };
@@ -2157,6 +2275,8 @@ class VariadicMethoid
 <DispatchOn,RT (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12, ARG13, ARG14) const >
 : public BuiltinClosure_O {
 public:
+typedef VariadicMethoid<DispatchOn,RT (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12, ARG13,
+    ARG14) const > MyType;
 typedef BuiltinClosure_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
@@ -2164,17 +2284,18 @@ typedef RT(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG1
 Type mptr;
 public:
 enum { NumParams = 15 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
-INCREMENT_FUNCTION_CALL_COUNTER(this);
+MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
+INCREMENT_FUNCTION_CALL_COUNTER(closure);
 INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
-MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),15);
+MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),15);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
+lambdaListHandler_createBindings(closure->asSmartPtr(),closure->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 translate::from_object<ARG1> a1(frame->arg(1));
 translate::from_object<ARG2> a2(frame->arg(2));
@@ -2190,7 +2311,8 @@ translate::from_object<ARG11> a11(frame->arg(11));
 translate::from_object<ARG12> a12(frame->arg(12));
 translate::from_object<ARG13> a13(frame->arg(13));
 translate::from_object<ARG14> a14(frame->arg(14));
-RT retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v,a12._v,a13._v,a14._v);
+RT retval =  ((*ot.untag_object()).*(closure->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v,a12._v,
+    a13._v,a14._v);
 return Values(translate::to_object<RT>::convert(retval));
 }
 };
@@ -2207,6 +2329,8 @@ class VariadicMethoid
 <DispatchOn,RT (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12, ARG13) const >
 : public BuiltinClosure_O {
 public:
+typedef VariadicMethoid<DispatchOn,RT (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12,
+    ARG13) const > MyType;
 typedef BuiltinClosure_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
@@ -2214,17 +2338,18 @@ typedef RT(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG1
 Type mptr;
 public:
 enum { NumParams = 14 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
-INCREMENT_FUNCTION_CALL_COUNTER(this);
+MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
+INCREMENT_FUNCTION_CALL_COUNTER(closure);
 INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
-MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),14);
+MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),14);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
+lambdaListHandler_createBindings(closure->asSmartPtr(),closure->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 translate::from_object<ARG1> a1(frame->arg(1));
 translate::from_object<ARG2> a2(frame->arg(2));
@@ -2239,7 +2364,8 @@ translate::from_object<ARG10> a10(frame->arg(10));
 translate::from_object<ARG11> a11(frame->arg(11));
 translate::from_object<ARG12> a12(frame->arg(12));
 translate::from_object<ARG13> a13(frame->arg(13));
-RT retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v,a12._v,a13._v);
+RT retval =  ((*ot.untag_object()).*(closure->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v,a12._v,
+    a13._v);
 return Values(translate::to_object<RT>::convert(retval));
 }
 };
@@ -2256,6 +2382,8 @@ class VariadicMethoid
 <DispatchOn,RT (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12) const >
 : public BuiltinClosure_O {
 public:
+typedef VariadicMethoid<DispatchOn,RT (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11,
+    ARG12) const > MyType;
 typedef BuiltinClosure_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
@@ -2263,17 +2391,18 @@ typedef RT(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG1
 Type mptr;
 public:
 enum { NumParams = 13 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
-INCREMENT_FUNCTION_CALL_COUNTER(this);
+MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
+INCREMENT_FUNCTION_CALL_COUNTER(closure);
 INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
-MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),13);
+MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),13);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
+lambdaListHandler_createBindings(closure->asSmartPtr(),closure->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 translate::from_object<ARG1> a1(frame->arg(1));
 translate::from_object<ARG2> a2(frame->arg(2));
@@ -2287,7 +2416,7 @@ translate::from_object<ARG9> a9(frame->arg(9));
 translate::from_object<ARG10> a10(frame->arg(10));
 translate::from_object<ARG11> a11(frame->arg(11));
 translate::from_object<ARG12> a12(frame->arg(12));
-RT retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v,a12._v);
+RT retval =  ((*ot.untag_object()).*(closure->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v,a12._v);
 return Values(translate::to_object<RT>::convert(retval));
 }
 };
@@ -2304,6 +2433,7 @@ class VariadicMethoid
 <DispatchOn,RT (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11) const >
 : public BuiltinClosure_O {
 public:
+typedef VariadicMethoid<DispatchOn,RT (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11) const > MyType;
 typedef BuiltinClosure_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
@@ -2311,17 +2441,18 @@ typedef RT(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG1
 Type mptr;
 public:
 enum { NumParams = 12 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
-INCREMENT_FUNCTION_CALL_COUNTER(this);
+MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
+INCREMENT_FUNCTION_CALL_COUNTER(closure);
 INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
-MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),12);
+MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),12);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
+lambdaListHandler_createBindings(closure->asSmartPtr(),closure->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 translate::from_object<ARG1> a1(frame->arg(1));
 translate::from_object<ARG2> a2(frame->arg(2));
@@ -2334,7 +2465,7 @@ translate::from_object<ARG8> a8(frame->arg(8));
 translate::from_object<ARG9> a9(frame->arg(9));
 translate::from_object<ARG10> a10(frame->arg(10));
 translate::from_object<ARG11> a11(frame->arg(11));
-RT retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v);
+RT retval =  ((*ot.untag_object()).*(closure->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v);
 return Values(translate::to_object<RT>::convert(retval));
 }
 };
@@ -2351,6 +2482,7 @@ class VariadicMethoid
 <DispatchOn,RT (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10) const >
 : public BuiltinClosure_O {
 public:
+typedef VariadicMethoid<DispatchOn,RT (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10) const > MyType;
 typedef BuiltinClosure_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
@@ -2358,17 +2490,18 @@ typedef RT(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG1
 Type mptr;
 public:
 enum { NumParams = 11 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
-INCREMENT_FUNCTION_CALL_COUNTER(this);
+MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
+INCREMENT_FUNCTION_CALL_COUNTER(closure);
 INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
-MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),11);
+MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),11);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
+lambdaListHandler_createBindings(closure->asSmartPtr(),closure->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 translate::from_object<ARG1> a1(frame->arg(1));
 translate::from_object<ARG2> a2(frame->arg(2));
@@ -2380,7 +2513,7 @@ translate::from_object<ARG7> a7(frame->arg(7));
 translate::from_object<ARG8> a8(frame->arg(8));
 translate::from_object<ARG9> a9(frame->arg(9));
 translate::from_object<ARG10> a10(frame->arg(10));
-RT retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v);
+RT retval =  ((*ot.untag_object()).*(closure->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v);
 return Values(translate::to_object<RT>::convert(retval));
 }
 };
@@ -2397,6 +2530,7 @@ class VariadicMethoid
 <DispatchOn,RT (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9) const >
 : public BuiltinClosure_O {
 public:
+typedef VariadicMethoid<DispatchOn,RT (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9) const > MyType;
 typedef BuiltinClosure_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
@@ -2404,17 +2538,18 @@ typedef RT(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9) cons
 Type mptr;
 public:
 enum { NumParams = 10 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
-INCREMENT_FUNCTION_CALL_COUNTER(this);
+MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
+INCREMENT_FUNCTION_CALL_COUNTER(closure);
 INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
-MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),10);
+MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),10);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
+lambdaListHandler_createBindings(closure->asSmartPtr(),closure->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 translate::from_object<ARG1> a1(frame->arg(1));
 translate::from_object<ARG2> a2(frame->arg(2));
@@ -2425,7 +2560,7 @@ translate::from_object<ARG6> a6(frame->arg(6));
 translate::from_object<ARG7> a7(frame->arg(7));
 translate::from_object<ARG8> a8(frame->arg(8));
 translate::from_object<ARG9> a9(frame->arg(9));
-RT retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v);
+RT retval =  ((*ot.untag_object()).*(closure->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v);
 return Values(translate::to_object<RT>::convert(retval));
 }
 };
@@ -2442,6 +2577,7 @@ class VariadicMethoid
 <DispatchOn,RT (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8) const >
 : public BuiltinClosure_O {
 public:
+typedef VariadicMethoid<DispatchOn,RT (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8) const > MyType;
 typedef BuiltinClosure_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
@@ -2449,17 +2585,18 @@ typedef RT(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8) const;
 Type mptr;
 public:
 enum { NumParams = 9 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
-INCREMENT_FUNCTION_CALL_COUNTER(this);
+MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
+INCREMENT_FUNCTION_CALL_COUNTER(closure);
 INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
-MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),9);
+MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),9);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
+lambdaListHandler_createBindings(closure->asSmartPtr(),closure->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 translate::from_object<ARG1> a1(frame->arg(1));
 translate::from_object<ARG2> a2(frame->arg(2));
@@ -2469,7 +2606,7 @@ translate::from_object<ARG5> a5(frame->arg(5));
 translate::from_object<ARG6> a6(frame->arg(6));
 translate::from_object<ARG7> a7(frame->arg(7));
 translate::from_object<ARG8> a8(frame->arg(8));
-RT retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v);
+RT retval =  ((*ot.untag_object()).*(closure->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v);
 return Values(translate::to_object<RT>::convert(retval));
 }
 };
@@ -2486,6 +2623,7 @@ class VariadicMethoid
 <DispatchOn,RT (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7) const >
 : public BuiltinClosure_O {
 public:
+typedef VariadicMethoid<DispatchOn,RT (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7) const > MyType;
 typedef BuiltinClosure_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
@@ -2493,17 +2631,18 @@ typedef RT(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7) const;
 Type mptr;
 public:
 enum { NumParams = 8 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
-INCREMENT_FUNCTION_CALL_COUNTER(this);
+MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
+INCREMENT_FUNCTION_CALL_COUNTER(closure);
 INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
-MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),8);
+MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),8);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
+lambdaListHandler_createBindings(closure->asSmartPtr(),closure->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 translate::from_object<ARG1> a1(frame->arg(1));
 translate::from_object<ARG2> a2(frame->arg(2));
@@ -2512,7 +2651,7 @@ translate::from_object<ARG4> a4(frame->arg(4));
 translate::from_object<ARG5> a5(frame->arg(5));
 translate::from_object<ARG6> a6(frame->arg(6));
 translate::from_object<ARG7> a7(frame->arg(7));
-RT retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v);
+RT retval =  ((*ot.untag_object()).*(closure->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v);
 return Values(translate::to_object<RT>::convert(retval));
 }
 };
@@ -2529,6 +2668,7 @@ class VariadicMethoid
 <DispatchOn,RT (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6) const >
 : public BuiltinClosure_O {
 public:
+typedef VariadicMethoid<DispatchOn,RT (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6) const > MyType;
 typedef BuiltinClosure_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
@@ -2536,17 +2676,18 @@ typedef RT(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, ARG6) const;
 Type mptr;
 public:
 enum { NumParams = 7 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
-INCREMENT_FUNCTION_CALL_COUNTER(this);
+MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
+INCREMENT_FUNCTION_CALL_COUNTER(closure);
 INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
-MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),7);
+MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),7);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
+lambdaListHandler_createBindings(closure->asSmartPtr(),closure->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 translate::from_object<ARG1> a1(frame->arg(1));
 translate::from_object<ARG2> a2(frame->arg(2));
@@ -2554,7 +2695,7 @@ translate::from_object<ARG3> a3(frame->arg(3));
 translate::from_object<ARG4> a4(frame->arg(4));
 translate::from_object<ARG5> a5(frame->arg(5));
 translate::from_object<ARG6> a6(frame->arg(6));
-RT retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v);
+RT retval =  ((*ot.untag_object()).*(closure->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v);
 return Values(translate::to_object<RT>::convert(retval));
 }
 };
@@ -2570,6 +2711,7 @@ class VariadicMethoid
 <DispatchOn,RT (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5) const >
 : public BuiltinClosure_O {
 public:
+typedef VariadicMethoid<DispatchOn,RT (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5) const > MyType;
 typedef BuiltinClosure_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
@@ -2577,24 +2719,25 @@ typedef RT(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5) const;
 Type mptr;
 public:
 enum { NumParams = 6 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
-INCREMENT_FUNCTION_CALL_COUNTER(this);
+MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
+INCREMENT_FUNCTION_CALL_COUNTER(closure);
 INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
-MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),6);
+MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),6);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
+lambdaListHandler_createBindings(closure->asSmartPtr(),closure->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 translate::from_object<ARG1> a1(frame->arg(1));
 translate::from_object<ARG2> a2(frame->arg(2));
 translate::from_object<ARG3> a3(frame->arg(3));
 translate::from_object<ARG4> a4(frame->arg(4));
 translate::from_object<ARG5> a5(frame->arg(5));
-RT retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v);
+RT retval =  ((*ot.untag_object()).*(closure->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v);
 return Values(translate::to_object<RT>::convert(retval));
 }
 };
@@ -2610,6 +2753,7 @@ class VariadicMethoid
 <DispatchOn,RT (OT::*)( ARG1, ARG2, ARG3, ARG4) const >
 : public BuiltinClosure_O {
 public:
+typedef VariadicMethoid<DispatchOn,RT (OT::*)( ARG1, ARG2, ARG3, ARG4) const > MyType;
 typedef BuiltinClosure_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
@@ -2617,23 +2761,24 @@ typedef RT(OT::*Type)(ARG1, ARG2, ARG3, ARG4) const;
 Type mptr;
 public:
 enum { NumParams = 5 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
-INCREMENT_FUNCTION_CALL_COUNTER(this);
+MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
+INCREMENT_FUNCTION_CALL_COUNTER(closure);
 INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
-MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),5);
+MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),5);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
+lambdaListHandler_createBindings(closure->asSmartPtr(),closure->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 translate::from_object<ARG1> a1(frame->arg(1));
 translate::from_object<ARG2> a2(frame->arg(2));
 translate::from_object<ARG3> a3(frame->arg(3));
 translate::from_object<ARG4> a4(frame->arg(4));
-RT retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v);
+RT retval =  ((*ot.untag_object()).*(closure->mptr))(a1._v,a2._v,a3._v,a4._v);
 return Values(translate::to_object<RT>::convert(retval));
 }
 };
@@ -2649,6 +2794,7 @@ class VariadicMethoid
 <DispatchOn,RT (OT::*)( ARG1, ARG2, ARG3) const >
 : public BuiltinClosure_O {
 public:
+typedef VariadicMethoid<DispatchOn,RT (OT::*)( ARG1, ARG2, ARG3) const > MyType;
 typedef BuiltinClosure_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
@@ -2656,22 +2802,23 @@ typedef RT(OT::*Type)(ARG1, ARG2, ARG3) const;
 Type mptr;
 public:
 enum { NumParams = 4 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
-INCREMENT_FUNCTION_CALL_COUNTER(this);
+MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
+INCREMENT_FUNCTION_CALL_COUNTER(closure);
 INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
-MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),4);
+MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),4);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
+lambdaListHandler_createBindings(closure->asSmartPtr(),closure->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 translate::from_object<ARG1> a1(frame->arg(1));
 translate::from_object<ARG2> a2(frame->arg(2));
 translate::from_object<ARG3> a3(frame->arg(3));
-RT retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v);
+RT retval =  ((*ot.untag_object()).*(closure->mptr))(a1._v,a2._v,a3._v);
 return Values(translate::to_object<RT>::convert(retval));
 }
 };
@@ -2687,6 +2834,7 @@ class VariadicMethoid
 <DispatchOn,RT (OT::*)( ARG1, ARG2) const >
 : public BuiltinClosure_O {
 public:
+typedef VariadicMethoid<DispatchOn,RT (OT::*)( ARG1, ARG2) const > MyType;
 typedef BuiltinClosure_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
@@ -2694,21 +2842,22 @@ typedef RT(OT::*Type)(ARG1, ARG2) const;
 Type mptr;
 public:
 enum { NumParams = 3 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
-INCREMENT_FUNCTION_CALL_COUNTER(this);
+MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
+INCREMENT_FUNCTION_CALL_COUNTER(closure);
 INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
-MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),3);
+MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),3);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
+lambdaListHandler_createBindings(closure->asSmartPtr(),closure->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 translate::from_object<ARG1> a1(frame->arg(1));
 translate::from_object<ARG2> a2(frame->arg(2));
-RT retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v);
+RT retval =  ((*ot.untag_object()).*(closure->mptr))(a1._v,a2._v);
 return Values(translate::to_object<RT>::convert(retval));
 }
 };
@@ -2724,6 +2873,7 @@ class VariadicMethoid
 <DispatchOn,RT (OT::*)( ARG1) const >
 : public BuiltinClosure_O {
 public:
+typedef VariadicMethoid<DispatchOn,RT (OT::*)( ARG1) const > MyType;
 typedef BuiltinClosure_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
@@ -2731,20 +2881,21 @@ typedef RT(OT::*Type)(ARG1) const;
 Type mptr;
 public:
 enum { NumParams = 2 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
-INCREMENT_FUNCTION_CALL_COUNTER(this);
+MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
+INCREMENT_FUNCTION_CALL_COUNTER(closure);
 INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
-MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),2);
+MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),2);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
+lambdaListHandler_createBindings(closure->asSmartPtr(),closure->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 translate::from_object<ARG1> a1(frame->arg(1));
-RT retval =  ((*ot.untag_object()).*mptr)(a1._v);
+RT retval =  ((*ot.untag_object()).*(closure->mptr))(a1._v);
 return Values(translate::to_object<RT>::convert(retval));
 }
 };
@@ -2760,6 +2911,7 @@ class VariadicMethoid
 <DispatchOn,RT (OT::*)( ) const >
 : public BuiltinClosure_O {
 public:
+typedef VariadicMethoid<DispatchOn,RT (OT::*)( ) const > MyType;
 typedef BuiltinClosure_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
@@ -2767,19 +2919,20 @@ typedef RT(OT::*Type)() const;
 Type mptr;
 public:
 enum { NumParams = 1 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
-INCREMENT_FUNCTION_CALL_COUNTER(this);
+MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
+INCREMENT_FUNCTION_CALL_COUNTER(closure);
 INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
-MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),1);
+MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),1);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
+lambdaListHandler_createBindings(closure->asSmartPtr(),closure->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
-RT retval =  ((*ot.untag_object()).*mptr)();
+RT retval =  ((*ot.untag_object()).*(closure->mptr))();
 return Values(translate::to_object<RT>::convert(retval));
 }
 };
@@ -2797,6 +2950,8 @@ class VariadicMethoid
 <DispatchOn,void (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12, ARG13, ARG14, ARG15) const >
 : public BuiltinClosure_O {
 public:
+typedef VariadicMethoid<DispatchOn,void (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12, ARG13,
+    ARG14, ARG15) const > MyType;
 typedef BuiltinClosure_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
@@ -2804,17 +2959,18 @@ typedef void(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, AR
 Type mptr;
 public:
 enum { NumParams = 16 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
-INCREMENT_FUNCTION_CALL_COUNTER(this);
+MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
+INCREMENT_FUNCTION_CALL_COUNTER(closure);
 INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
-MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),16);
+MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),16);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
+lambdaListHandler_createBindings(closure->asSmartPtr(),closure->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 translate::from_object<ARG1> a1(frame->arg(1));
 translate::from_object<ARG2> a2(frame->arg(2));
@@ -2831,7 +2987,8 @@ translate::from_object<ARG12> a12(frame->arg(12));
 translate::from_object<ARG13> a13(frame->arg(13));
 translate::from_object<ARG14> a14(frame->arg(14));
 translate::from_object<ARG15> a15(frame->arg(15));
-((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v,a12._v,a13._v,a14._v,a15._v);
+((*ot.untag_object()).*(closure->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v,a12._v,a13._v,a14._v,
+    a15._v);
 return Values0<core::T_O>();
 }
 };
@@ -2848,6 +3005,8 @@ class VariadicMethoid
 <DispatchOn,void (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12, ARG13, ARG14) const >
 : public BuiltinClosure_O {
 public:
+typedef VariadicMethoid<DispatchOn,void (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12, ARG13,
+    ARG14) const > MyType;
 typedef BuiltinClosure_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
@@ -2855,17 +3014,18 @@ typedef void(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, AR
 Type mptr;
 public:
 enum { NumParams = 15 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
-INCREMENT_FUNCTION_CALL_COUNTER(this);
+MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
+INCREMENT_FUNCTION_CALL_COUNTER(closure);
 INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
-MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),15);
+MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),15);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
+lambdaListHandler_createBindings(closure->asSmartPtr(),closure->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 translate::from_object<ARG1> a1(frame->arg(1));
 translate::from_object<ARG2> a2(frame->arg(2));
@@ -2881,7 +3041,7 @@ translate::from_object<ARG11> a11(frame->arg(11));
 translate::from_object<ARG12> a12(frame->arg(12));
 translate::from_object<ARG13> a13(frame->arg(13));
 translate::from_object<ARG14> a14(frame->arg(14));
-((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v,a12._v,a13._v,a14._v);
+((*ot.untag_object()).*(closure->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v,a12._v,a13._v,a14._v);
 return Values0<core::T_O>();
 }
 };
@@ -2898,6 +3058,8 @@ class VariadicMethoid
 <DispatchOn,void (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12, ARG13) const >
 : public BuiltinClosure_O {
 public:
+typedef VariadicMethoid<DispatchOn,void (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12,
+    ARG13) const > MyType;
 typedef BuiltinClosure_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
@@ -2905,17 +3067,18 @@ typedef void(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, AR
 Type mptr;
 public:
 enum { NumParams = 14 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
-INCREMENT_FUNCTION_CALL_COUNTER(this);
+MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
+INCREMENT_FUNCTION_CALL_COUNTER(closure);
 INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
-MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),14);
+MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),14);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
+lambdaListHandler_createBindings(closure->asSmartPtr(),closure->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 translate::from_object<ARG1> a1(frame->arg(1));
 translate::from_object<ARG2> a2(frame->arg(2));
@@ -2930,7 +3093,7 @@ translate::from_object<ARG10> a10(frame->arg(10));
 translate::from_object<ARG11> a11(frame->arg(11));
 translate::from_object<ARG12> a12(frame->arg(12));
 translate::from_object<ARG13> a13(frame->arg(13));
-((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v,a12._v,a13._v);
+((*ot.untag_object()).*(closure->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v,a12._v,a13._v);
 return Values0<core::T_O>();
 }
 };
@@ -2947,6 +3110,8 @@ class VariadicMethoid
 <DispatchOn,void (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12) const >
 : public BuiltinClosure_O {
 public:
+typedef VariadicMethoid<DispatchOn,void (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11,
+    ARG12) const > MyType;
 typedef BuiltinClosure_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
@@ -2954,17 +3119,18 @@ typedef void(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, AR
 Type mptr;
 public:
 enum { NumParams = 13 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
-INCREMENT_FUNCTION_CALL_COUNTER(this);
+MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
+INCREMENT_FUNCTION_CALL_COUNTER(closure);
 INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
-MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),13);
+MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),13);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
+lambdaListHandler_createBindings(closure->asSmartPtr(),closure->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 translate::from_object<ARG1> a1(frame->arg(1));
 translate::from_object<ARG2> a2(frame->arg(2));
@@ -2978,7 +3144,7 @@ translate::from_object<ARG9> a9(frame->arg(9));
 translate::from_object<ARG10> a10(frame->arg(10));
 translate::from_object<ARG11> a11(frame->arg(11));
 translate::from_object<ARG12> a12(frame->arg(12));
-((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v,a12._v);
+((*ot.untag_object()).*(closure->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v,a12._v);
 return Values0<core::T_O>();
 }
 };
@@ -2995,6 +3161,7 @@ class VariadicMethoid
 <DispatchOn,void (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11) const >
 : public BuiltinClosure_O {
 public:
+typedef VariadicMethoid<DispatchOn,void (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11) const > MyType;
 typedef BuiltinClosure_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
@@ -3002,17 +3169,18 @@ typedef void(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, AR
 Type mptr;
 public:
 enum { NumParams = 12 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
-INCREMENT_FUNCTION_CALL_COUNTER(this);
+MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
+INCREMENT_FUNCTION_CALL_COUNTER(closure);
 INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
-MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),12);
+MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),12);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
+lambdaListHandler_createBindings(closure->asSmartPtr(),closure->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 translate::from_object<ARG1> a1(frame->arg(1));
 translate::from_object<ARG2> a2(frame->arg(2));
@@ -3025,7 +3193,7 @@ translate::from_object<ARG8> a8(frame->arg(8));
 translate::from_object<ARG9> a9(frame->arg(9));
 translate::from_object<ARG10> a10(frame->arg(10));
 translate::from_object<ARG11> a11(frame->arg(11));
-((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v);
+((*ot.untag_object()).*(closure->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v);
 return Values0<core::T_O>();
 }
 };
@@ -3042,6 +3210,7 @@ class VariadicMethoid
 <DispatchOn,void (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10) const >
 : public BuiltinClosure_O {
 public:
+typedef VariadicMethoid<DispatchOn,void (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10) const > MyType;
 typedef BuiltinClosure_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
@@ -3049,17 +3218,18 @@ typedef void(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, AR
 Type mptr;
 public:
 enum { NumParams = 11 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
-INCREMENT_FUNCTION_CALL_COUNTER(this);
+MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
+INCREMENT_FUNCTION_CALL_COUNTER(closure);
 INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
-MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),11);
+MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),11);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
+lambdaListHandler_createBindings(closure->asSmartPtr(),closure->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 translate::from_object<ARG1> a1(frame->arg(1));
 translate::from_object<ARG2> a2(frame->arg(2));
@@ -3071,7 +3241,7 @@ translate::from_object<ARG7> a7(frame->arg(7));
 translate::from_object<ARG8> a8(frame->arg(8));
 translate::from_object<ARG9> a9(frame->arg(9));
 translate::from_object<ARG10> a10(frame->arg(10));
-((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v);
+((*ot.untag_object()).*(closure->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v);
 return Values0<core::T_O>();
 }
 };
@@ -3088,6 +3258,7 @@ class VariadicMethoid
 <DispatchOn,void (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9) const >
 : public BuiltinClosure_O {
 public:
+typedef VariadicMethoid<DispatchOn,void (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9) const > MyType;
 typedef BuiltinClosure_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
@@ -3095,17 +3266,18 @@ typedef void(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9) co
 Type mptr;
 public:
 enum { NumParams = 10 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
-INCREMENT_FUNCTION_CALL_COUNTER(this);
+MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
+INCREMENT_FUNCTION_CALL_COUNTER(closure);
 INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
-MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),10);
+MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),10);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
+lambdaListHandler_createBindings(closure->asSmartPtr(),closure->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 translate::from_object<ARG1> a1(frame->arg(1));
 translate::from_object<ARG2> a2(frame->arg(2));
@@ -3116,7 +3288,7 @@ translate::from_object<ARG6> a6(frame->arg(6));
 translate::from_object<ARG7> a7(frame->arg(7));
 translate::from_object<ARG8> a8(frame->arg(8));
 translate::from_object<ARG9> a9(frame->arg(9));
-((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v);
+((*ot.untag_object()).*(closure->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v);
 return Values0<core::T_O>();
 }
 };
@@ -3133,6 +3305,7 @@ class VariadicMethoid
 <DispatchOn,void (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8) const >
 : public BuiltinClosure_O {
 public:
+typedef VariadicMethoid<DispatchOn,void (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8) const > MyType;
 typedef BuiltinClosure_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
@@ -3140,17 +3313,18 @@ typedef void(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8) const;
 Type mptr;
 public:
 enum { NumParams = 9 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
-INCREMENT_FUNCTION_CALL_COUNTER(this);
+MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
+INCREMENT_FUNCTION_CALL_COUNTER(closure);
 INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
-MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),9);
+MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),9);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
+lambdaListHandler_createBindings(closure->asSmartPtr(),closure->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 translate::from_object<ARG1> a1(frame->arg(1));
 translate::from_object<ARG2> a2(frame->arg(2));
@@ -3160,7 +3334,7 @@ translate::from_object<ARG5> a5(frame->arg(5));
 translate::from_object<ARG6> a6(frame->arg(6));
 translate::from_object<ARG7> a7(frame->arg(7));
 translate::from_object<ARG8> a8(frame->arg(8));
-((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v);
+((*ot.untag_object()).*(closure->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v);
 return Values0<core::T_O>();
 }
 };
@@ -3177,6 +3351,7 @@ class VariadicMethoid
 <DispatchOn,void (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7) const >
 : public BuiltinClosure_O {
 public:
+typedef VariadicMethoid<DispatchOn,void (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7) const > MyType;
 typedef BuiltinClosure_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
@@ -3184,17 +3359,18 @@ typedef void(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7) const;
 Type mptr;
 public:
 enum { NumParams = 8 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
-INCREMENT_FUNCTION_CALL_COUNTER(this);
+MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
+INCREMENT_FUNCTION_CALL_COUNTER(closure);
 INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
-MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),8);
+MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),8);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
+lambdaListHandler_createBindings(closure->asSmartPtr(),closure->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 translate::from_object<ARG1> a1(frame->arg(1));
 translate::from_object<ARG2> a2(frame->arg(2));
@@ -3203,7 +3379,7 @@ translate::from_object<ARG4> a4(frame->arg(4));
 translate::from_object<ARG5> a5(frame->arg(5));
 translate::from_object<ARG6> a6(frame->arg(6));
 translate::from_object<ARG7> a7(frame->arg(7));
-((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v);
+((*ot.untag_object()).*(closure->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v);
 return Values0<core::T_O>();
 }
 };
@@ -3219,6 +3395,7 @@ class VariadicMethoid
 <DispatchOn,void (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6) const >
 : public BuiltinClosure_O {
 public:
+typedef VariadicMethoid<DispatchOn,void (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6) const > MyType;
 typedef BuiltinClosure_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
@@ -3226,17 +3403,18 @@ typedef void(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, ARG6) const;
 Type mptr;
 public:
 enum { NumParams = 7 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
-INCREMENT_FUNCTION_CALL_COUNTER(this);
+MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
+INCREMENT_FUNCTION_CALL_COUNTER(closure);
 INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
-MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),7);
+MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),7);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
+lambdaListHandler_createBindings(closure->asSmartPtr(),closure->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 translate::from_object<ARG1> a1(frame->arg(1));
 translate::from_object<ARG2> a2(frame->arg(2));
@@ -3244,7 +3422,7 @@ translate::from_object<ARG3> a3(frame->arg(3));
 translate::from_object<ARG4> a4(frame->arg(4));
 translate::from_object<ARG5> a5(frame->arg(5));
 translate::from_object<ARG6> a6(frame->arg(6));
-((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v);
+((*ot.untag_object()).*(closure->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v);
 return Values0<core::T_O>();
 }
 };
@@ -3260,6 +3438,7 @@ class VariadicMethoid
 <DispatchOn,void (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5) const >
 : public BuiltinClosure_O {
 public:
+typedef VariadicMethoid<DispatchOn,void (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5) const > MyType;
 typedef BuiltinClosure_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
@@ -3267,24 +3446,25 @@ typedef void(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5) const;
 Type mptr;
 public:
 enum { NumParams = 6 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
-INCREMENT_FUNCTION_CALL_COUNTER(this);
+MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
+INCREMENT_FUNCTION_CALL_COUNTER(closure);
 INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
-MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),6);
+MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),6);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
+lambdaListHandler_createBindings(closure->asSmartPtr(),closure->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 translate::from_object<ARG1> a1(frame->arg(1));
 translate::from_object<ARG2> a2(frame->arg(2));
 translate::from_object<ARG3> a3(frame->arg(3));
 translate::from_object<ARG4> a4(frame->arg(4));
 translate::from_object<ARG5> a5(frame->arg(5));
-((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v);
+((*ot.untag_object()).*(closure->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v);
 return Values0<core::T_O>();
 }
 };
@@ -3300,6 +3480,7 @@ class VariadicMethoid
 <DispatchOn,void (OT::*)( ARG1, ARG2, ARG3, ARG4) const >
 : public BuiltinClosure_O {
 public:
+typedef VariadicMethoid<DispatchOn,void (OT::*)( ARG1, ARG2, ARG3, ARG4) const > MyType;
 typedef BuiltinClosure_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
@@ -3307,23 +3488,24 @@ typedef void(OT::*Type)(ARG1, ARG2, ARG3, ARG4) const;
 Type mptr;
 public:
 enum { NumParams = 5 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
-INCREMENT_FUNCTION_CALL_COUNTER(this);
+MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
+INCREMENT_FUNCTION_CALL_COUNTER(closure);
 INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
-MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),5);
+MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),5);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
+lambdaListHandler_createBindings(closure->asSmartPtr(),closure->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 translate::from_object<ARG1> a1(frame->arg(1));
 translate::from_object<ARG2> a2(frame->arg(2));
 translate::from_object<ARG3> a3(frame->arg(3));
 translate::from_object<ARG4> a4(frame->arg(4));
-((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v);
+((*ot.untag_object()).*(closure->mptr))(a1._v,a2._v,a3._v,a4._v);
 return Values0<core::T_O>();
 }
 };
@@ -3339,6 +3521,7 @@ class VariadicMethoid
 <DispatchOn,void (OT::*)( ARG1, ARG2, ARG3) const >
 : public BuiltinClosure_O {
 public:
+typedef VariadicMethoid<DispatchOn,void (OT::*)( ARG1, ARG2, ARG3) const > MyType;
 typedef BuiltinClosure_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
@@ -3346,22 +3529,23 @@ typedef void(OT::*Type)(ARG1, ARG2, ARG3) const;
 Type mptr;
 public:
 enum { NumParams = 4 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
-INCREMENT_FUNCTION_CALL_COUNTER(this);
+MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
+INCREMENT_FUNCTION_CALL_COUNTER(closure);
 INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
-MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),4);
+MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),4);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
+lambdaListHandler_createBindings(closure->asSmartPtr(),closure->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 translate::from_object<ARG1> a1(frame->arg(1));
 translate::from_object<ARG2> a2(frame->arg(2));
 translate::from_object<ARG3> a3(frame->arg(3));
-((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v);
+((*ot.untag_object()).*(closure->mptr))(a1._v,a2._v,a3._v);
 return Values0<core::T_O>();
 }
 };
@@ -3377,6 +3561,7 @@ class VariadicMethoid
 <DispatchOn,void (OT::*)( ARG1, ARG2) const >
 : public BuiltinClosure_O {
 public:
+typedef VariadicMethoid<DispatchOn,void (OT::*)( ARG1, ARG2) const > MyType;
 typedef BuiltinClosure_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
@@ -3384,21 +3569,22 @@ typedef void(OT::*Type)(ARG1, ARG2) const;
 Type mptr;
 public:
 enum { NumParams = 3 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
-INCREMENT_FUNCTION_CALL_COUNTER(this);
+MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
+INCREMENT_FUNCTION_CALL_COUNTER(closure);
 INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
-MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),3);
+MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),3);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
+lambdaListHandler_createBindings(closure->asSmartPtr(),closure->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 translate::from_object<ARG1> a1(frame->arg(1));
 translate::from_object<ARG2> a2(frame->arg(2));
-((*ot.untag_object()).*mptr)(a1._v,a2._v);
+((*ot.untag_object()).*(closure->mptr))(a1._v,a2._v);
 return Values0<core::T_O>();
 }
 };
@@ -3414,6 +3600,7 @@ class VariadicMethoid
 <DispatchOn,void (OT::*)( ARG1) const >
 : public BuiltinClosure_O {
 public:
+typedef VariadicMethoid<DispatchOn,void (OT::*)( ARG1) const > MyType;
 typedef BuiltinClosure_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
@@ -3421,20 +3608,21 @@ typedef void(OT::*Type)(ARG1) const;
 Type mptr;
 public:
 enum { NumParams = 2 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
-INCREMENT_FUNCTION_CALL_COUNTER(this);
+MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
+INCREMENT_FUNCTION_CALL_COUNTER(closure);
 INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
-MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),2);
+MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),2);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
+lambdaListHandler_createBindings(closure->asSmartPtr(),closure->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 translate::from_object<ARG1> a1(frame->arg(1));
-((*ot.untag_object()).*mptr)(a1._v);
+((*ot.untag_object()).*(closure->mptr))(a1._v);
 return Values0<core::T_O>();
 }
 };
@@ -3450,6 +3638,7 @@ class VariadicMethoid
 <DispatchOn,void (OT::*)( ) const >
 : public BuiltinClosure_O {
 public:
+typedef VariadicMethoid<DispatchOn,void (OT::*)( ) const > MyType;
 typedef BuiltinClosure_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
@@ -3457,19 +3646,20 @@ typedef void(OT::*Type)() const;
 Type mptr;
 public:
 enum { NumParams = 1 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
-INCREMENT_FUNCTION_CALL_COUNTER(this);
+MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
+INCREMENT_FUNCTION_CALL_COUNTER(closure);
 INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
-MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),1);
+MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),1);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
+lambdaListHandler_createBindings(closure->asSmartPtr(),closure->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
-((*ot.untag_object()).*mptr)();
+((*ot.untag_object()).*(closure->mptr))();
 return Values0<core::T_O>();
 }
 };
@@ -3488,6 +3678,8 @@ class VariadicMethoid
     ARG14, ARG15) const >
 : public BuiltinClosure_O {
 public:
+typedef VariadicMethoid<DispatchOn,gctools::multiple_values<RT> (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9,
+    ARG10, ARG11, ARG12, ARG13, ARG14, ARG15) const > MyType;
 typedef BuiltinClosure_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
@@ -3496,17 +3688,18 @@ typedef gctools::multiple_values<RT>(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, AR
 Type mptr;
 public:
 enum { NumParams = 16 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
-INCREMENT_FUNCTION_CALL_COUNTER(this);
+MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
+INCREMENT_FUNCTION_CALL_COUNTER(closure);
 INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
-MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),16);
+MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),16);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
+lambdaListHandler_createBindings(closure->asSmartPtr(),closure->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 translate::from_object<ARG1> a1(frame->arg(1));
 translate::from_object<ARG2> a2(frame->arg(2));
@@ -3523,8 +3716,8 @@ translate::from_object<ARG12> a12(frame->arg(12));
 translate::from_object<ARG13> a13(frame->arg(13));
 translate::from_object<ARG14> a14(frame->arg(14));
 translate::from_object<ARG15> a15(frame->arg(15));
-gctools::multiple_values<RT> retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,
-    a11._v,a12._v,a13._v,a14._v,a15._v);
+gctools::multiple_values<RT> retval =  ((*ot.untag_object()).*(closure->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,
+    a9._v,a10._v,a11._v,a12._v,a13._v,a14._v,a15._v);
 return retval.as_return_type();
 }
 };
@@ -3543,6 +3736,8 @@ class VariadicMethoid
     ARG14) const >
 : public BuiltinClosure_O {
 public:
+typedef VariadicMethoid<DispatchOn,gctools::multiple_values<RT> (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9,
+    ARG10, ARG11, ARG12, ARG13, ARG14) const > MyType;
 typedef BuiltinClosure_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
@@ -3551,17 +3746,18 @@ typedef gctools::multiple_values<RT>(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, AR
 Type mptr;
 public:
 enum { NumParams = 15 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
-INCREMENT_FUNCTION_CALL_COUNTER(this);
+MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
+INCREMENT_FUNCTION_CALL_COUNTER(closure);
 INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
-MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),15);
+MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),15);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
+lambdaListHandler_createBindings(closure->asSmartPtr(),closure->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 translate::from_object<ARG1> a1(frame->arg(1));
 translate::from_object<ARG2> a2(frame->arg(2));
@@ -3577,8 +3773,8 @@ translate::from_object<ARG11> a11(frame->arg(11));
 translate::from_object<ARG12> a12(frame->arg(12));
 translate::from_object<ARG13> a13(frame->arg(13));
 translate::from_object<ARG14> a14(frame->arg(14));
-gctools::multiple_values<RT> retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,
-    a11._v,a12._v,a13._v,a14._v);
+gctools::multiple_values<RT> retval =  ((*ot.untag_object()).*(closure->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,
+    a9._v,a10._v,a11._v,a12._v,a13._v,a14._v);
 return retval.as_return_type();
 }
 };
@@ -3596,6 +3792,8 @@ class VariadicMethoid
     ARG13) const >
 : public BuiltinClosure_O {
 public:
+typedef VariadicMethoid<DispatchOn,gctools::multiple_values<RT> (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9,
+    ARG10, ARG11, ARG12, ARG13) const > MyType;
 typedef BuiltinClosure_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
@@ -3604,17 +3802,18 @@ typedef gctools::multiple_values<RT>(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, AR
 Type mptr;
 public:
 enum { NumParams = 14 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
-INCREMENT_FUNCTION_CALL_COUNTER(this);
+MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
+INCREMENT_FUNCTION_CALL_COUNTER(closure);
 INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
-MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),14);
+MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),14);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
+lambdaListHandler_createBindings(closure->asSmartPtr(),closure->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 translate::from_object<ARG1> a1(frame->arg(1));
 translate::from_object<ARG2> a2(frame->arg(2));
@@ -3629,8 +3828,8 @@ translate::from_object<ARG10> a10(frame->arg(10));
 translate::from_object<ARG11> a11(frame->arg(11));
 translate::from_object<ARG12> a12(frame->arg(12));
 translate::from_object<ARG13> a13(frame->arg(13));
-gctools::multiple_values<RT> retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,
-    a11._v,a12._v,a13._v);
+gctools::multiple_values<RT> retval =  ((*ot.untag_object()).*(closure->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,
+    a9._v,a10._v,a11._v,a12._v,a13._v);
 return retval.as_return_type();
 }
 };
@@ -3647,6 +3846,8 @@ class VariadicMethoid
 <DispatchOn,gctools::multiple_values<RT> (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12) const >
 : public BuiltinClosure_O {
 public:
+typedef VariadicMethoid<DispatchOn,gctools::multiple_values<RT> (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9,
+    ARG10, ARG11, ARG12) const > MyType;
 typedef BuiltinClosure_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
@@ -3654,17 +3855,18 @@ typedef gctools::multiple_values<RT>(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, AR
 Type mptr;
 public:
 enum { NumParams = 13 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
-INCREMENT_FUNCTION_CALL_COUNTER(this);
+MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
+INCREMENT_FUNCTION_CALL_COUNTER(closure);
 INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
-MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),13);
+MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),13);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
+lambdaListHandler_createBindings(closure->asSmartPtr(),closure->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 translate::from_object<ARG1> a1(frame->arg(1));
 translate::from_object<ARG2> a2(frame->arg(2));
@@ -3678,8 +3880,8 @@ translate::from_object<ARG9> a9(frame->arg(9));
 translate::from_object<ARG10> a10(frame->arg(10));
 translate::from_object<ARG11> a11(frame->arg(11));
 translate::from_object<ARG12> a12(frame->arg(12));
-gctools::multiple_values<RT> retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,
-    a11._v,a12._v);
+gctools::multiple_values<RT> retval =  ((*ot.untag_object()).*(closure->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,
+    a9._v,a10._v,a11._v,a12._v);
 return retval.as_return_type();
 }
 };
@@ -3696,6 +3898,8 @@ class VariadicMethoid
 <DispatchOn,gctools::multiple_values<RT> (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11) const >
 : public BuiltinClosure_O {
 public:
+typedef VariadicMethoid<DispatchOn,gctools::multiple_values<RT> (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9,
+    ARG10, ARG11) const > MyType;
 typedef BuiltinClosure_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
@@ -3703,17 +3907,18 @@ typedef gctools::multiple_values<RT>(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, AR
 Type mptr;
 public:
 enum { NumParams = 12 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
-INCREMENT_FUNCTION_CALL_COUNTER(this);
+MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
+INCREMENT_FUNCTION_CALL_COUNTER(closure);
 INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
-MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),12);
+MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),12);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
+lambdaListHandler_createBindings(closure->asSmartPtr(),closure->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 translate::from_object<ARG1> a1(frame->arg(1));
 translate::from_object<ARG2> a2(frame->arg(2));
@@ -3726,8 +3931,8 @@ translate::from_object<ARG8> a8(frame->arg(8));
 translate::from_object<ARG9> a9(frame->arg(9));
 translate::from_object<ARG10> a10(frame->arg(10));
 translate::from_object<ARG11> a11(frame->arg(11));
-gctools::multiple_values<RT> retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,
-    a11._v);
+gctools::multiple_values<RT> retval =  ((*ot.untag_object()).*(closure->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,
+    a9._v,a10._v,a11._v);
 return retval.as_return_type();
 }
 };
@@ -3744,6 +3949,8 @@ class VariadicMethoid
 <DispatchOn,gctools::multiple_values<RT> (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10) const >
 : public BuiltinClosure_O {
 public:
+typedef VariadicMethoid<DispatchOn,gctools::multiple_values<RT> (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9,
+    ARG10) const > MyType;
 typedef BuiltinClosure_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
@@ -3751,17 +3958,18 @@ typedef gctools::multiple_values<RT>(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, AR
 Type mptr;
 public:
 enum { NumParams = 11 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
-INCREMENT_FUNCTION_CALL_COUNTER(this);
+MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
+INCREMENT_FUNCTION_CALL_COUNTER(closure);
 INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
-MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),11);
+MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),11);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
+lambdaListHandler_createBindings(closure->asSmartPtr(),closure->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 translate::from_object<ARG1> a1(frame->arg(1));
 translate::from_object<ARG2> a2(frame->arg(2));
@@ -3773,7 +3981,8 @@ translate::from_object<ARG7> a7(frame->arg(7));
 translate::from_object<ARG8> a8(frame->arg(8));
 translate::from_object<ARG9> a9(frame->arg(9));
 translate::from_object<ARG10> a10(frame->arg(10));
-gctools::multiple_values<RT> retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v);
+gctools::multiple_values<RT> retval =  ((*ot.untag_object()).*(closure->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,
+    a9._v,a10._v);
 return retval.as_return_type();
 }
 };
@@ -3790,6 +3999,8 @@ class VariadicMethoid
 <DispatchOn,gctools::multiple_values<RT> (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9) const >
 : public BuiltinClosure_O {
 public:
+typedef VariadicMethoid<DispatchOn,gctools::multiple_values<RT> (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8,
+    ARG9) const > MyType;
 typedef BuiltinClosure_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
@@ -3797,17 +4008,18 @@ typedef gctools::multiple_values<RT>(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, AR
 Type mptr;
 public:
 enum { NumParams = 10 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
-INCREMENT_FUNCTION_CALL_COUNTER(this);
+MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
+INCREMENT_FUNCTION_CALL_COUNTER(closure);
 INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
-MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),10);
+MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),10);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
+lambdaListHandler_createBindings(closure->asSmartPtr(),closure->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 translate::from_object<ARG1> a1(frame->arg(1));
 translate::from_object<ARG2> a2(frame->arg(2));
@@ -3818,7 +4030,8 @@ translate::from_object<ARG6> a6(frame->arg(6));
 translate::from_object<ARG7> a7(frame->arg(7));
 translate::from_object<ARG8> a8(frame->arg(8));
 translate::from_object<ARG9> a9(frame->arg(9));
-gctools::multiple_values<RT> retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v);
+gctools::multiple_values<RT> retval =  ((*ot.untag_object()).*(closure->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,
+    a9._v);
 return retval.as_return_type();
 }
 };
@@ -3835,6 +4048,8 @@ class VariadicMethoid
 <DispatchOn,gctools::multiple_values<RT> (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8) const >
 : public BuiltinClosure_O {
 public:
+typedef VariadicMethoid<DispatchOn,gctools::multiple_values<RT> (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7,
+    ARG8) const > MyType;
 typedef BuiltinClosure_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
@@ -3842,17 +4057,18 @@ typedef gctools::multiple_values<RT>(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, AR
 Type mptr;
 public:
 enum { NumParams = 9 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
-INCREMENT_FUNCTION_CALL_COUNTER(this);
+MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
+INCREMENT_FUNCTION_CALL_COUNTER(closure);
 INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
-MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),9);
+MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),9);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
+lambdaListHandler_createBindings(closure->asSmartPtr(),closure->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 translate::from_object<ARG1> a1(frame->arg(1));
 translate::from_object<ARG2> a2(frame->arg(2));
@@ -3862,7 +4078,7 @@ translate::from_object<ARG5> a5(frame->arg(5));
 translate::from_object<ARG6> a6(frame->arg(6));
 translate::from_object<ARG7> a7(frame->arg(7));
 translate::from_object<ARG8> a8(frame->arg(8));
-gctools::multiple_values<RT> retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v);
+gctools::multiple_values<RT> retval =  ((*ot.untag_object()).*(closure->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v);
 return retval.as_return_type();
 }
 };
@@ -3879,6 +4095,7 @@ class VariadicMethoid
 <DispatchOn,gctools::multiple_values<RT> (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7) const >
 : public BuiltinClosure_O {
 public:
+typedef VariadicMethoid<DispatchOn,gctools::multiple_values<RT> (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7) const > MyType;
 typedef BuiltinClosure_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
@@ -3886,17 +4103,18 @@ typedef gctools::multiple_values<RT>(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, AR
 Type mptr;
 public:
 enum { NumParams = 8 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
-INCREMENT_FUNCTION_CALL_COUNTER(this);
+MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
+INCREMENT_FUNCTION_CALL_COUNTER(closure);
 INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
-MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),8);
+MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),8);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
+lambdaListHandler_createBindings(closure->asSmartPtr(),closure->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 translate::from_object<ARG1> a1(frame->arg(1));
 translate::from_object<ARG2> a2(frame->arg(2));
@@ -3905,7 +4123,7 @@ translate::from_object<ARG4> a4(frame->arg(4));
 translate::from_object<ARG5> a5(frame->arg(5));
 translate::from_object<ARG6> a6(frame->arg(6));
 translate::from_object<ARG7> a7(frame->arg(7));
-gctools::multiple_values<RT> retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v);
+gctools::multiple_values<RT> retval =  ((*ot.untag_object()).*(closure->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v);
 return retval.as_return_type();
 }
 };
@@ -3922,6 +4140,7 @@ class VariadicMethoid
 <DispatchOn,gctools::multiple_values<RT> (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6) const >
 : public BuiltinClosure_O {
 public:
+typedef VariadicMethoid<DispatchOn,gctools::multiple_values<RT> (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6) const > MyType;
 typedef BuiltinClosure_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
@@ -3929,17 +4148,18 @@ typedef gctools::multiple_values<RT>(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, AR
 Type mptr;
 public:
 enum { NumParams = 7 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
-INCREMENT_FUNCTION_CALL_COUNTER(this);
+MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
+INCREMENT_FUNCTION_CALL_COUNTER(closure);
 INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
-MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),7);
+MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),7);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
+lambdaListHandler_createBindings(closure->asSmartPtr(),closure->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 translate::from_object<ARG1> a1(frame->arg(1));
 translate::from_object<ARG2> a2(frame->arg(2));
@@ -3947,7 +4167,7 @@ translate::from_object<ARG3> a3(frame->arg(3));
 translate::from_object<ARG4> a4(frame->arg(4));
 translate::from_object<ARG5> a5(frame->arg(5));
 translate::from_object<ARG6> a6(frame->arg(6));
-gctools::multiple_values<RT> retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v);
+gctools::multiple_values<RT> retval =  ((*ot.untag_object()).*(closure->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v);
 return retval.as_return_type();
 }
 };
@@ -3963,6 +4183,7 @@ class VariadicMethoid
 <DispatchOn,gctools::multiple_values<RT> (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5) const >
 : public BuiltinClosure_O {
 public:
+typedef VariadicMethoid<DispatchOn,gctools::multiple_values<RT> (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5) const > MyType;
 typedef BuiltinClosure_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
@@ -3970,24 +4191,25 @@ typedef gctools::multiple_values<RT>(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5) co
 Type mptr;
 public:
 enum { NumParams = 6 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
-INCREMENT_FUNCTION_CALL_COUNTER(this);
+MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
+INCREMENT_FUNCTION_CALL_COUNTER(closure);
 INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
-MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),6);
+MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),6);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
+lambdaListHandler_createBindings(closure->asSmartPtr(),closure->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 translate::from_object<ARG1> a1(frame->arg(1));
 translate::from_object<ARG2> a2(frame->arg(2));
 translate::from_object<ARG3> a3(frame->arg(3));
 translate::from_object<ARG4> a4(frame->arg(4));
 translate::from_object<ARG5> a5(frame->arg(5));
-gctools::multiple_values<RT> retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v);
+gctools::multiple_values<RT> retval =  ((*ot.untag_object()).*(closure->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v);
 return retval.as_return_type();
 }
 };
@@ -4003,6 +4225,7 @@ class VariadicMethoid
 <DispatchOn,gctools::multiple_values<RT> (OT::*)( ARG1, ARG2, ARG3, ARG4) const >
 : public BuiltinClosure_O {
 public:
+typedef VariadicMethoid<DispatchOn,gctools::multiple_values<RT> (OT::*)( ARG1, ARG2, ARG3, ARG4) const > MyType;
 typedef BuiltinClosure_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
@@ -4010,23 +4233,24 @@ typedef gctools::multiple_values<RT>(OT::*Type)(ARG1, ARG2, ARG3, ARG4) const;
 Type mptr;
 public:
 enum { NumParams = 5 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
-INCREMENT_FUNCTION_CALL_COUNTER(this);
+MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
+INCREMENT_FUNCTION_CALL_COUNTER(closure);
 INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
-MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),5);
+MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),5);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
+lambdaListHandler_createBindings(closure->asSmartPtr(),closure->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 translate::from_object<ARG1> a1(frame->arg(1));
 translate::from_object<ARG2> a2(frame->arg(2));
 translate::from_object<ARG3> a3(frame->arg(3));
 translate::from_object<ARG4> a4(frame->arg(4));
-gctools::multiple_values<RT> retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v);
+gctools::multiple_values<RT> retval =  ((*ot.untag_object()).*(closure->mptr))(a1._v,a2._v,a3._v,a4._v);
 return retval.as_return_type();
 }
 };
@@ -4042,6 +4266,7 @@ class VariadicMethoid
 <DispatchOn,gctools::multiple_values<RT> (OT::*)( ARG1, ARG2, ARG3) const >
 : public BuiltinClosure_O {
 public:
+typedef VariadicMethoid<DispatchOn,gctools::multiple_values<RT> (OT::*)( ARG1, ARG2, ARG3) const > MyType;
 typedef BuiltinClosure_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
@@ -4049,22 +4274,23 @@ typedef gctools::multiple_values<RT>(OT::*Type)(ARG1, ARG2, ARG3) const;
 Type mptr;
 public:
 enum { NumParams = 4 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
-INCREMENT_FUNCTION_CALL_COUNTER(this);
+MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
+INCREMENT_FUNCTION_CALL_COUNTER(closure);
 INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
-MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),4);
+MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),4);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
+lambdaListHandler_createBindings(closure->asSmartPtr(),closure->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 translate::from_object<ARG1> a1(frame->arg(1));
 translate::from_object<ARG2> a2(frame->arg(2));
 translate::from_object<ARG3> a3(frame->arg(3));
-gctools::multiple_values<RT> retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v);
+gctools::multiple_values<RT> retval =  ((*ot.untag_object()).*(closure->mptr))(a1._v,a2._v,a3._v);
 return retval.as_return_type();
 }
 };
@@ -4080,6 +4306,7 @@ class VariadicMethoid
 <DispatchOn,gctools::multiple_values<RT> (OT::*)( ARG1, ARG2) const >
 : public BuiltinClosure_O {
 public:
+typedef VariadicMethoid<DispatchOn,gctools::multiple_values<RT> (OT::*)( ARG1, ARG2) const > MyType;
 typedef BuiltinClosure_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
@@ -4087,21 +4314,22 @@ typedef gctools::multiple_values<RT>(OT::*Type)(ARG1, ARG2) const;
 Type mptr;
 public:
 enum { NumParams = 3 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
-INCREMENT_FUNCTION_CALL_COUNTER(this);
+MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
+INCREMENT_FUNCTION_CALL_COUNTER(closure);
 INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
-MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),3);
+MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),3);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
+lambdaListHandler_createBindings(closure->asSmartPtr(),closure->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 translate::from_object<ARG1> a1(frame->arg(1));
 translate::from_object<ARG2> a2(frame->arg(2));
-gctools::multiple_values<RT> retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v);
+gctools::multiple_values<RT> retval =  ((*ot.untag_object()).*(closure->mptr))(a1._v,a2._v);
 return retval.as_return_type();
 }
 };
@@ -4117,6 +4345,7 @@ class VariadicMethoid
 <DispatchOn,gctools::multiple_values<RT> (OT::*)( ARG1) const >
 : public BuiltinClosure_O {
 public:
+typedef VariadicMethoid<DispatchOn,gctools::multiple_values<RT> (OT::*)( ARG1) const > MyType;
 typedef BuiltinClosure_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
@@ -4124,20 +4353,21 @@ typedef gctools::multiple_values<RT>(OT::*Type)(ARG1) const;
 Type mptr;
 public:
 enum { NumParams = 2 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
-INCREMENT_FUNCTION_CALL_COUNTER(this);
+MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
+INCREMENT_FUNCTION_CALL_COUNTER(closure);
 INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
-MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),2);
+MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),2);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
+lambdaListHandler_createBindings(closure->asSmartPtr(),closure->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 translate::from_object<ARG1> a1(frame->arg(1));
-gctools::multiple_values<RT> retval =  ((*ot.untag_object()).*mptr)(a1._v);
+gctools::multiple_values<RT> retval =  ((*ot.untag_object()).*(closure->mptr))(a1._v);
 return retval.as_return_type();
 }
 };
@@ -4153,6 +4383,7 @@ class VariadicMethoid
 <DispatchOn,gctools::multiple_values<RT> (OT::*)( ) const >
 : public BuiltinClosure_O {
 public:
+typedef VariadicMethoid<DispatchOn,gctools::multiple_values<RT> (OT::*)( ) const > MyType;
 typedef BuiltinClosure_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
@@ -4160,19 +4391,20 @@ typedef gctools::multiple_values<RT>(OT::*Type)() const;
 Type mptr;
 public:
 enum { NumParams = 1 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
-INCREMENT_FUNCTION_CALL_COUNTER(this);
+MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
+INCREMENT_FUNCTION_CALL_COUNTER(closure);
 INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
-MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),1);
+MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),1);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
+lambdaListHandler_createBindings(closure->asSmartPtr(),closure->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
-gctools::multiple_values<RT> retval =  ((*ot.untag_object()).*mptr)();
+gctools::multiple_values<RT> retval =  ((*ot.untag_object()).*(closure->mptr))();
 return retval.as_return_type();
 }
 };

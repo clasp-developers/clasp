@@ -49,6 +49,9 @@ Set this to other IRBuilders to make code go where you want")
 ;; - ssize_t
 ;; - time_t
 
+(defun llvm-print (msg)
+  (irc-intrinsic "debugMessage" (irc-bit-cast (jit-make-global-string msg) %i8*%)))
+
 (define-symbol-macro %i1% (llvm-sys:type-get-int1-ty *llvm-context*))
 
 (define-symbol-macro %i8% (llvm-sys:type-get-int8-ty *llvm-context*)) ;; -> CHAR / BYTE
@@ -126,6 +129,8 @@ Set this to other IRBuilders to make code go where you want")
 (defvar +register-save-area-size+ (get-cxx-data-structure-info :register-save-area-size))
 (defvar +void*-size+ (get-cxx-data-structure-info :void*-size))
 (defvar +value-frame-parent-offset+ (get-cxx-data-structure-info :value-frame-parent-offset))
+(defvar +closure-entry-point-offset+ (get-cxx-data-structure-info :closure-entry-point-offset))
+(defvar +valist_s-remaining-nargs-offset+ (get-cxx-data-structure-info :valist_s-remaining-nargs-offset))
 (defvar +fixnum-stamp+ (get-cxx-data-structure-info :fixnum-stamp))
 (defvar +cons-stamp+ (get-cxx-data-structure-info :cons-stamp))
 (defvar +valist_s-stamp+ (get-cxx-data-structure-info :va_list_s-stamp))
@@ -149,8 +154,10 @@ Set this to other IRBuilders to make code go where you want")
 (defvar +general-tag+ (get-cxx-data-structure-info :general-tag))
 (defvar +VaList_S-size+ (get-cxx-data-structure-info :VaList_S-size))
 (defvar +VaList_S-valist-offset+ (get-cxx-data-structure-info :VaList_S-valist-offset))
+(defvar +VaList_S-remaining-nargs-offset+ (get-cxx-data-structure-info :VaList_S-remaining-nargs-offset))
 (defvar +void*-size+ (get-cxx-data-structure-info :void*-size))
 (defvar +alignment+ (get-cxx-data-structure-info :alignment))
+(defvar +args-in-registers+ (get-cxx-data-structure-info :lcc-args-in-registers))
 (export '(+fixnum-mask+ +tag-mask+ +immediate-mask+
           +cons-tag+ +fixnum-tag+ +character-tag+ +single-float-tag+
           +general-tag+ +VaList_S-size+ +void*-size+ +alignment+ ))
@@ -309,12 +316,12 @@ Boehm and MPS use a single pointer"
 ;;;
 (progn
   ;; Tack on a size_t to store the number of remaining arguments
-  #+X86-64(define-symbol-macro %va_list% (llvm-sys:struct-type-get *llvm-context* (list %i32% %i32% %i8*% %i8*% %size_t%) nil))
+  #+X86-64(define-symbol-macro %va_list% (llvm-sys:struct-type-get *llvm-context* (list %i32% %i32% %i8*% %i8*%) nil))
   #-X86-64
   (error "I need a va_list struct definition for this system")
 
   (define-symbol-macro %va_list*% (llvm-sys:type-get-pointer-to %va_list%))
-  (define-symbol-macro %VaList_S% (llvm-sys:struct-type-get *llvm-context* (list %va_list%) nil))
+  (define-symbol-macro %VaList_S% (llvm-sys:struct-type-get *llvm-context* (list %va_list% %size_t%) nil))
   (define-symbol-macro %VaList_S*% (llvm-sys:type-get-pointer-to %VaList_S%))
 
 ;;;    "Function prototype for generic functions")
@@ -328,31 +335,84 @@ Boehm and MPS use a single pointer"
 ;; Set up the calling convention using core:+number-of-fixed-arguments+ to define the types
 ;; and names of the arguments passed in registers
 ;;
-;; The last passed-arg is va-list
+
+(defstruct (calling-convention-setup (:type vector))
+  use-only-registers
+  invocation-history-frame*
+  VaList_S*
+  register-save-area*)
+
+;; Provide the arguments passed to the function in a convenient manner.
+;; Either the register arguments are available in register-args
+;;   or the va-list/remaining-nargs is used to access the arguments
+;;   one after the other with calling-convention.va-arg
 (defstruct (calling-convention-impl (:type vector))
   closure
   nargs
-  register-args ;; the last passed-arg is a va-list
-  valist
-  remaining-nargs
+  use-only-registers ; If T then use only the register-args
+  register-args ; The arguments that were passed in registers
+  va-list*       ; The address of VaList_S.va_list on the stack
+  remaining-nargs* ; The address of VaList_S._remaining_nargs on the stack
+  register-save-area*
   )
 
 ;; Parse the function arguments into a calling-convention
-(defun parse-function-arguments (arguments)
-  (let* ((closed-env            (first arguments))
-         (va-list               (irc-alloca-va_list :label "va-list"))
-         (reg-save-area         (irc-alloca-register-save-area :label "reg-save-area"))
-         (remaining-nargs       (irc-alloca-size_t-no-cleanup :label "remnargs"))
-         (_                     (spill-to-register-save-area arguments va-list reg-save-area)))
-    #| TODO:  Add a InvocationStackEntry here |#
-    (make-calling-convention-impl
-     :nargs (second arguments) ;; The number of arguments
-     :register-args (nthcdr 2 arguments)
-     :valist va-list
-     :remaining-nargs remaining-nargs)))
+;;
+;; What if we don't want/need to spill the registers to the register-save-area?
+(defun initialize-calling-convention (arguments setup)
+  (if (calling-convention-setup-use-only-registers setup)
+      ;; If only register arguments are available then there is no VaList_S,
+      ;;    no registers are spilled to the register-save-area and no InvocationHistoryFrame
+      ;;    will be available to initialize
+      (progn
+        (make-calling-convention-impl :closure (first arguments)
+                                      :nargs (second arguments)
+                                      :use-only-registers t
+                                      :register-args (nthcdr 2 arguments)
+                                      :register-save-area* (calling-convention-setup-register-save-area* setup)))
+      ;; The register arguments need to be spilled to the register-save-area
+      ;;    and the VaList_S needs to be initialized.
+      ;;    If a InvocationHistoryFrame is available, then initialize it.
+      (progn
+        (let* ((VaList_S                    (calling-convention-setup-VaList_S* setup))
+               #++(_dbg                        (progn
+                                              (llvm-print "VaList_S\n")
+                                              (irc-intrinsic "debugPointer" (irc-bit-cast VaList_S %i8*%))))
+               (register-save-area*         (calling-convention-setup-register-save-area* setup))
+               #++(_dbg                        (progn
+                                              (llvm-print "register-save-area\n")
+                                              (irc-intrinsic "debugPointer" (irc-bit-cast register-save-area* %i8*%))))
+               (VaList_S-addr-uint          (irc-ptr-to-int VaList_S %uintptr_t% "VaList_S-tagged-uint"))
+               (va-list-addr                (irc-add VaList_S-addr-uint (jit-constant-uintptr_t +VaList_S-valist-offset+) "va-list-addr"))
+               (va-list*                    (irc-int-to-ptr va-list-addr %va_list*% "va-list*"))
+               (remaining-nargs*-uint       (irc-add VaList_S-addr-uint (jit-constant-uintptr_t +VaList_S-remaining-nargs-offset+) "remaining-nargs*-uint"))
+               (remaining-nargs*            (irc-int-to-ptr remaining-nargs*-uint %size_t*% "remaining-nargs*"))
+               #++(_dbg                        (irc-intrinsic "debugPointer" (irc-bit-cast remaining-nargs* %i8*%)))
+               (_                           (spill-to-register-save-area arguments register-save-area*))
+               (cc                          (make-calling-convention-impl :closure (first arguments)
+                                                                          :nargs (second arguments) ;; The number of arguments
+                                                                          :register-args (nthcdr 2 arguments)
+                                                                          :use-only-registers (calling-convention-setup-use-only-registers setup)
+                                                                          :va-list* va-list*
+                                                                          :remaining-nargs* remaining-nargs*
+                                                                          :register-save-area* (calling-convention-setup-register-save-area* setup)))
+               (_                           (calling-convention-args.va-start cc))
+               #++(_dbg                        (progn
+                                              (llvm-print "After calling-convention-args.va-start\n")
+                                              (irc-intrinsic "debug_va_list" va-list*)))
+               )
+          (when (calling-convention-setup-invocation-history-frame* setup)
+            (let* ((_              (irc-intrinsic "cc_initialize_InvocationHistoryFrame"
+                                                  (irc-bit-cast va-list %i8*%)
+                                                  (irc-load remaining-nargs*)
+                                                  (irc-bit-cast (calling-convention-setup-invocation-history-frame* setup) %i8*%))))))
+          cc))))
 
 (defun calling-convention-closure (cc)
   (calling-convention-impl-closure cc))
+
+(defun calling-convention-use-only-registers (cc)
+  (calling-convention-impl-use-only-registers cc))
 
 (defun calling-convention-nargs (cc)
   (calling-convention-impl-nargs cc))
@@ -360,30 +420,30 @@ Boehm and MPS use a single pointer"
 (defun calling-convention-register-args (cc)
   (calling-convention-impl-register-args cc))
 
-;;; The remaining-nargs is the 4th element of the %va_list%
-#+x86-64(defun calling-convention-remaining-nargs-addr (cc)
-          (irc-gep (calling-convention-impl-valist cc) (list 0 4)))
+(defun calling-convention-remaining-nargs* (cc)
+  (calling-convention-impl-remaining-nargs* cc))
 
-(defun calling-convention-va-list (cc)
-  (calling-convention-impl-valist cc))
+(defun calling-convention-va-list* (cc)
+  (calling-convention-impl-va-list* cc))
+
+(defun calling-convention-register-save-area* (cc)
+  (calling-convention-impl-register-save-area* cc))
 
 (defun calling-convention-args.va-end (cc)
-  (let* ((irc-intrinsic "llvm.va_end" (calling-convention-va-list cc)))))
+  (let* ((_        (irc-intrinsic "llvm.va_end" (calling-convention-va-list* cc))))))
 
 ;;;
 ;;; Read the next argument from the va_list
 ;;; Everytime the arg-idx is incremented, this function must be called.
-;;; The arg-idx is not used but it is passed because I used to index into an array
-(defun calling-convention-args.va-arg (cc arg-idx &optional target-idx)
-  (declare (ignore arg-idx))
-  (let* ((label (if (and target-idx core::*enable-print-pretty*)
-                    (bformat nil "arg-%d" target-idx)
-                    "rawarg"))
-         (remaining-nargs-addr (calling-convention-remaining-nargs-addr cc))
-         (remaining-nargs      (irc-load remaining-nargs-addr "rem-nargs"))
-         (rem-nargs-1          (irc-sub  remaining-nargs (jit-constant-size_t 1) "rem-nargs-1"))
-         (_                    (irc-store rem-nargs-1 remaining-nargs-addr))
-         (result               (irc-va_arg (calling-convention-va-list cc))))
+(defun calling-convention-args.va-arg (cc &optional target-idx)
+  (let* ((label                 (if (and target-idx core::*enable-print-pretty*)
+                                    (bformat nil "arg-%d" target-idx)
+                                    "rawarg"))
+         (remaining-nargs*-addr (calling-convention-remaining-nargs* cc))
+         (remaining-nargs       (irc-load remaining-nargs*-addr "rem-nargs"))
+         (rem-nargs-1           (irc-sub  remaining-nargs (jit-constant-size_t 1) "rem-nargs-1"))
+         (_                     (irc-store rem-nargs-1 remaining-nargs*-addr))
+         (result                (irc-va_arg (calling-convention-va-list* cc) %t*% )))
     result))
 
 
@@ -407,32 +467,49 @@ Boehm and MPS use a single pointer"
   (define-symbol-macro %register-save-area% (llvm-sys:array-type-get
                                              %i8*%
                                              (/ +register-save-area-size+ +void*-size+)))
-  (defun spill-to-register-save-area (registers va-list register-save-area)
-    (bformat t "In spill-to-register-save-area arguments -> %s\n" registers)
-    (labels ((spill-reg (idx)
+  (defun spill-to-register-save-area (registers register-save-area*)
+    (labels ((spill-reg (idx reg)
                (let* ((addr-name     (bformat nil "addr%d" idx))
-                      (addr          (irc-gep register-save-area (list (jit-constant-size_t 0) (jit-constant-size_t 0)) addr-name))
-                      (reg-i8*       (irc-bit-cast (elt registers idx) %i8*% "reg-i8*"))
+                      (addr          (irc-gep register-save-area* (list (jit-constant-size_t 0) (jit-constant-size_t idx)) addr-name))
+                      (reg-i8*       (irc-bit-cast reg %i8*% "reg-i8*"))
                       (_             (irc-store reg-i8* addr)))
                  addr)))
       (let* (
-             (addr-closure  (spill-reg 0))
-             (addr-nargs    (spill-reg 1))
-             (addr-farg0    (spill-reg 2)) ; this is the first fixed arg currently.
-             (addr-farg1    (spill-reg 3))
-             (addr-farg2    (spill-reg 4))
-             (addr-farg3    (spill-reg 5))))))
+             (addr-closure  (spill-reg 0 (elt registers 0)))
+             (addr-nargs    (spill-reg 1 (irc-int-to-ptr (elt registers 1) %i8*%)))
+             (addr-farg0    (spill-reg 2 (elt registers 2))) ; this is the first fixed arg currently.
+             (addr-farg1    (spill-reg 3 (elt registers 3)))
+             (addr-farg2    (spill-reg 4 (elt registers 4)))
+             (addr-farg3    (spill-reg 5 (elt registers 5)))))))
 
   (defun calling-convention-args.va-start (cc)
-    (let* ((irc-intrinsic "llvm.va_start" (calling-convention-va-list cc))
-           (nargs-addr                    (irc-gep (calling-convention-register-save-area cc) (list (jit-constant-size_t 0) (jit-constant-size_t 1)) "nargs-addr"))
-           (nargs-i8*                     (irc-load nargs-addr))
-           (nargs                         (irc-bit-cast nargs-i8* %size_t*))
-           (_                             (irc-store nargs (calling-convention-remaining-args cc)))
-           ;; save the register-save-area ptr
-           (_                             (irc-insert-value va-list (calling-convention-register-save-area cc) (list 3)))
-           ;; set the gp_offset to point to first reg arg
-           (_                             (irc-insert-value va-list (jit-constant-i32 (* 8 2)) (list 0)))))))
+    "Like va-start - but it rewinds the va-list to start at the third argument. 
+This allows all of the arguments to be accessed with successive calls to calling-convention-args.va-arg.
+eg:  (f closure-ptr nargs a b c d ...)
+                          ^-----  after calling-convention-args.va-start the va-list will point here.
+                                  and remaining-nargs will contain nargs."
+    (let* (
+                                        ; Initialize the va_list - the only valid field will be overflow-area
+           (va-list*                      (calling-convention-va-list* cc))
+           (_                             (irc-intrinsic "llvm.va_start" (irc-bit-cast va-list* %i8*%)))
+           #++(_dbg                          (progn
+                                            (llvm-print "Dumping va_list after llvm.va_start\n")
+                                            (irc-intrinsic "debug_va_list" va-list*)))
+                                        ; Get the second argument - the number of arguments
+           (nargs-addr                    (irc-gep (calling-convention-register-save-area* cc) (list (jit-constant-size_t 0) (jit-constant-size_t 1)) "nargs-addr"))
+           (nargs-addr-%size_t*%          (irc-bit-cast nargs-addr %size_t*% "nargs-addr-%size_t*%"))
+           (nargs                         (irc-load nargs-addr-%size_t*% "nargs"))
+                                        ; write the nargs into the remaining-nargs to keep track of
+                                        ; how many arguments can still be read with va_arg
+           (_                             (irc-store nargs (calling-convention-remaining-nargs* cc)))
+                                        ; write the register-save-area ptr into the va-list
+           (va-list                       (irc-load va-list* "va-list"))
+           (va-list1                      (irc-insert-value va-list (irc-bit-cast (calling-convention-register-save-area* cc) %i8*%) (list 3)))
+                                        ; set the gp_offset to point to first reg arg
+           (va-list2                      (irc-insert-value va-list1 (jit-constant-i32 (* 8 2)) (list 0)))
+           (_                             (irc-store va-list2 va-list*))
+           #++
+           (_                             (irc-intrinsic "debugPointer" (irc-bit-cast va-list* %i8*%)))))))
 
 
 #-(and x86-64)
@@ -458,7 +535,7 @@ Boehm and MPS use a single pointer"
 ;; %"class.core::InvocationHistoryFrame" = type { i32 (...)**, i32, %"class.core::InvocationHistoryStack"*, %"class.core::InvocationHistoryFrame"*, i8, i32 }
 ;;"Make this a generic pointer"
 (define-symbol-macro %InvocationHistoryStack*% %i8*%)
-(define-symbol-macro %InvocationHistoryFrame% (llvm-sys:struct-type-create *llvm-context* :elements (list %i32**% %i32% #|%InvocationHistoryStack*% %InvocationHistoryFrame*%|# %i8*% %i8*% %i8% %i32%) :name "InvocationHistoryFrame"))
+(define-symbol-macro %InvocationHistoryFrame% (llvm-sys:struct-type-create *llvm-context* :elements (list %i8*% %i32% %va_list% %size_t%) :name "InvocationHistoryFrame"))
 (define-symbol-macro %InvocationHistoryFrame*% (llvm-sys:type-get-pointer-to %InvocationHistoryFrame%))
 ;;  (llvm-sys:set-body %InvocationHistoryFrame% (list %i32**% %i32% #|%InvocationHistoryStack*% %InvocationHistoryFrame*%|# %i8*% %i8*% %i8% %i32%) nil)
 (define-symbol-macro %LispFunctionIHF% (llvm-sys:struct-type-create *llvm-context* :elements (list %InvocationHistoryFrame% %tsp% %tsp% %tsp% %i32% %i32%) :name "LispFunctionIHF"))
@@ -501,10 +578,10 @@ have it call the main-function"
              (entry-bb (irc-basic-block-create "entry" fn)))
         (llvm-sys:set-insert-point-basic-block irbuilder-body entry-bb)
         (with-irbuilder (irbuilder-body)
-        (let* ((bc-bf (irc-bit-cast main-function %fn-start-up*% "fnptr-pointer"))
-               (_     (irc-intrinsic "cc_register_startup_function" bc-bf))
-               (_     (irc-ret-void))))
-          (llvm-sys:dump fn)
+          (let* ((bc-bf (irc-bit-cast main-function %fn-start-up*% "fnptr-pointer"))
+                 (_     (irc-intrinsic "cc_register_startup_function" bc-bf))
+                 (_     (irc-ret-void))))
+          ;;(llvm-sys:dump fn)
           fn))))
 
   (defun find-global-ctor-function (module)
@@ -560,9 +637,13 @@ and initialize it with an array consisting of one function pointer."
          (tsp-size (llvm-sys:data-layout-get-type-alloc-size data-layout %tsp%))
          (tmv-size (llvm-sys:data-layout-get-type-alloc-size data-layout %tmv%))
          (valist_s-size (llvm-sys:data-layout-get-type-alloc-size data-layout %VaList_S%))
+         (invocation-history-frame-size (llvm-sys:data-layout-get-type-alloc-size data-layout %InvocationHistoryFrame%))
          (gcroots-in-module-size (llvm-sys:data-layout-get-type-alloc-size data-layout %gcroots-in-module%)))
-    (llvm-sys:throw-if-mismatched-structure-sizes :tsp tsp-size :tmv tmv-size :contab gcroots-in-module-size
-                                                   :valist valist_s-size)))
+    (llvm-sys:throw-if-mismatched-structure-sizes :tsp tsp-size
+                                                  :tmv tmv-size
+                                                  :contab gcroots-in-module-size
+                                                  :valist valist_s-size
+                                                  :ihf invocation-history-frame-size)))
 
 ;;
 ;; Define exception types in the module
@@ -751,6 +832,7 @@ and initialize it with an array consisting of one function pointer."
   (primitive-nounwind module "ltvc_make_t" %t*% (list %gcroots-in-module*% %size_t%))
   (primitive-nounwind module "ltvc_make_ratio" %t*% (list %gcroots-in-module*% %size_t% %t*% %t*%))
   (primitive-nounwind module "ltvc_make_cons" %t*% (list %gcroots-in-module*% %size_t% %t*% %t*%))
+  (primitive-nounwind module "ltvc_nconc" %t*% (list %gcroots-in-module*% %size_t% %t*% %t*%))
   (primitive-nounwind module "ltvc_make_list" %t*% (list %gcroots-in-module*% %size_t% %size_t%) :varargs t)
   (primitive-nounwind module "ltvc_make_array" %t*% (list %gcroots-in-module*% %size_t% %t*% %t*%))
   (primitive-nounwind module "ltvc_setf_row_major_aref" %t*% (list %t*% %size_t% %t*%))
@@ -853,6 +935,7 @@ and initialize it with an array consisting of one function pointer."
   (primitive-nounwind module "debugInspect_mvarray" %void% nil)
   (primitive-nounwind module "debugPointer" %void% (list %i8*%))
   (primitive-nounwind module "debug_VaList_SPtr" %void% (list %VaList_S*%))
+  (primitive-nounwind module "debug_va_list" %void% (list %va_list*%))
   (primitive-nounwind module "debugPrintObject" %void% (list %i8*% %tsp*%))
   (primitive-nounwind module "debugMessage" %void% (list %i8*%))
   (primitive-nounwind module "debugPrintI32" %void% (list %i32%))
@@ -863,13 +946,12 @@ and initialize it with an array consisting of one function pointer."
 
   (primitive          module "va_tooManyArgumentsException" %void% (list %i8*% %size_t% %size_t%))
   (primitive          module "va_notEnoughArgumentsException" %void% (list %i8*% %size_t% %size_t%))
-  (primitive          module "va_ifExcessKeywordArgumentsException" %void% (list %i8*% %size_t% %VaList_S*% %size_t%))
+  (primitive          module "va_ifExcessKeywordArgumentsException" %void% (list %i8*% %size_t% %va_list*% %size_t%))
   (primitive-nounwind module "va_symbolFunction" %t*% (list %tsp*%)) ;; void va_symbolFunction(core::Function_sp fn, core::Symbol_sp sym)
   (primitive-nounwind module "va_lexicalFunction" %t*% (list %i32% %i32% %afsp*%))
-  (primitive          module "FUNCALL" %return_type% (list* %t*% %t*% %size_t% (map 'list (lambda (x) x) (make-array core:+number-of-fixed-arguments+ :initial-element %t*%))) :varargs t)
 
-  (primitive-nounwind module "cc_gatherRestArguments" %t*% (list %size_t% %VaList_S*% %size_t% %i8*%))
-  (primitive-nounwind module "cc_gatherVaRestArguments" %t*% (list %size_t% %VaList_S*% %size_t% %VaList_S*%))
+  (primitive-nounwind module "cc_gatherRestArguments" %t*% (list %va_list*% %size_t*%))
+  (primitive-nounwind module "cc_gatherVaRestArguments" %t*% (list %va_list*% %size_t*% %VaList_S*%))
   (primitive          module "cc_ifBadKeywordArgumentException" %void% (list %size_t% %size_t% %t*%))
 
   (primitive-nounwind module "pushCatchFrame" %size_t% (list %tsp*%))
@@ -934,7 +1016,8 @@ and initialize it with an array consisting of one function pointer."
   (primitive          module "cc_dispatch_slot_writer"   %return_type% (list %t*% %t*% %t*%)) ; effective-method gf gf-args
   (primitive          module "cc_dispatch_effective_method"   %return_type% (list %t*% %t*% %t*%)) ; effective-method gf gf-args
   (primitive          module "cc_dispatch_debug" %void% (list %i32% %uintptr_t%))
-  
+
+  (primitive-nounwind module "cc_ensure_valid_object" %t*% (list %t*%))
   (primitive-nounwind module "cc_getPointer" %i8*% (list %t*%))
   (primitive-nounwind module "cc_setTmvToNil" %void% (list %tmv*%))
   (primitive-nounwind module "cc_precalcSymbol" %t*% (list %ltv**% %size_t%))
@@ -951,7 +1034,9 @@ and initialize it with an array consisting of one function pointer."
   
   (primitive-nounwind module "cc_initialize_gcroots_in_module" %void% (list %gcroots-in-module*% %tsp*% %size_t% %t*%))
   (primitive-nounwind module "cc_shutdown_gcroots_in_module" %void% (list %gcroots-in-module*% ))
-  
+
+  (primitive-nounwind module "cc_initialize_InvocationHistoryFrame" %void% (list %i8*% %size_t% %i8*%))
+
   (primitive-nounwind module "cc_enclose" %t*% (list %t*% %fn-prototype*% %i32*% %size_t% %size_t% %size_t% %size_t% ) :varargs t)
   (primitive-nounwind module "cc_stack_enclose" %t*% (list %i8*% %t*% %fn-prototype*% %i32*% %size_t% %size_t% %size_t% %size_t% ) :varargs t)
   (primitive-nounwind module "cc_saveThreadLocalMultipleValues" %void% (list %tmv*% %mv-struct*%))
@@ -964,15 +1049,15 @@ and initialize it with an array consisting of one function pointer."
   (primitive-nounwind module "cc_unsafe_symbol_value" %t*% (list %t*%))
   (primitive-nounwind module "cc_setSymbolValue" %void% (list %t*% %t*%))
   (primitive          module "cc_call_multipleValueOneFormCall" %return_type% (list %t*%))
-  (primitive          module "cc_call"   %return_type% (list* %t*% %t*% %size_t%
+  (primitive          module "cc_call"   %return_type% (list* %t*% %size_t%
                                                               (map 'list (lambda (x) x)
                                                                    (make-array core:+number-of-fixed-arguments+ :initial-element %t*%))) :varargs t)
-  (primitive          module "cc_call_callback"   %return_type% (list* %t*% %t*% %size_t%
+  (primitive          module "cc_call_callback"   %return_type% (list* %t*% %size_t%
                                                                          (map 'list (lambda (x) x)
                                                                               (make-array core:+number-of-fixed-arguments+ :initial-element %t*%))) :varargs t)
   (primitive-nounwind module "cc_allowOtherKeywords" %i64% (list %i64% %t*%))
   (primitive-nounwind module "cc_matchKeywordOnce" %size_t% (list %t*% %t*% %t*%))
-  (primitive          module "cc_ifNotKeywordException" %void% (list %t*% %size_t% %VaList_S*%))
+  (primitive          module "cc_ifNotKeywordException" %void% (list %t*% %size_t% %va_list*%))
   (primitive-nounwind module "cc_multipleValuesArrayAddress" %t*[0]*% nil)
   (primitive          module "cc_unwind" %void% (list %t*% %size_t%))
   (primitive          module "cc_throw" %void% (list %t*%) :does-not-return t)

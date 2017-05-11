@@ -253,7 +253,7 @@ LCC_RETURN BuiltinClosure_O::LISP_CALLING_CONVENTION() {
 
 
 InterpretedClosure_O::InterpretedClosure_O(T_sp fn, Symbol_sp k, LambdaListHandler_sp llh, List_sp dec, T_sp doc, T_sp e, List_sp c, SOURCE_INFO)
-  : Base(fn, k, e, SOURCE_INFO_PASS), _lambdaListHandler(llh), _declares(dec), _docstring(doc), _code(c) {
+  : Base(interpretedClosureEntryPoint,fn, k, e, SOURCE_INFO_PASS), _lambdaListHandler(llh), _declares(dec), _docstring(doc), _code(c) {
 }
 
 T_sp InterpretedClosure_O::lambda_list() const {
@@ -264,32 +264,37 @@ void InterpretedClosure_O::setf_lambda_list(List_sp lambda_list) {
   // Do nothing - setting the lambdaListHandler is all that's needed
 }
 
-LCC_RETURN InterpretedClosure_O::LISP_CALLING_CONVENTION() {
-  INCREMENT_FUNCTION_CALL_COUNTER(this);
+LCC_RETURN interpretedClosureEntryPoint(LCC_ARGS_FUNCALL_ELLIPSIS) {
+  InterpretedClosure_O* closure = gctools::untag_general<InterpretedClosure_O*>((InterpretedClosure_O*)lcc_closure);
+  INCREMENT_FUNCTION_CALL_COUNTER(closure);
   INITIALIZE_VA_LIST();
-  ASSERT_LCC_VA_LIST_CLOSURE_DEFINED(lcc_arglist);
   ++global_interpreted_closure_calls;
-  ValueEnvironment_sp newValueEnvironment = ValueEnvironment_O::createForLambdaListHandler(this->_lambdaListHandler, this->_closedEnvironment);
+  ValueEnvironment_sp newValueEnvironment = ValueEnvironment_O::createForLambdaListHandler(closure->_lambdaListHandler, closure->_closedEnvironment);
 //  printf("%s:%d ValueEnvironment_O:createForLambdaListHandler llh: %s\n", __FILE__, __LINE__, _rep_(this->_lambdaListHandler).c_str());
 //  newValueEnvironment->dump();
   ValueEnvironmentDynamicScopeManager scope(newValueEnvironment);
 #ifdef USE_EXPENSIVE_BACKTRACE
-  InvocationHistoryFrame _frame(&lcc_arglist_s._Args);
+  INVOCATION_HISTORY_FRAME(); // InvocationHistoryFrame _frame(&lcc_arglist_s._Args);
 #endif
-  lambdaListHandler_createBindings(this->asSmartPtr(), this->_lambdaListHandler, scope, LCC_PASS_ARGS_LLH);
+  lambdaListHandler_createBindings(closure->asSmartPtr(), closure->_lambdaListHandler, scope, LCC_PASS_ARGS_LLH);
 //  printf("%s:%d     after lambdaListHandler_createbindings\n", __FILE__, __LINE__);
 //  newValueEnvironment->dump();
   ValueFrame_sp newActivationFrame = gc::As<ValueFrame_sp>(newValueEnvironment->getActivationFrame());
-  VectorObjects_sp debuggingInfo = _lambdaListHandler->namesOfLexicalVariablesForDebugging();
-  newActivationFrame->attachDebuggingInfo(debuggingInfo);
   //        InvocationHistoryFrame _frame(this,newActivationFrame);
-  return eval::sp_progn(this->_code, newValueEnvironment).as_return_type();
+  return eval::sp_progn(closure->_code, newValueEnvironment).as_return_type();
 };
 
 
 };
 
 namespace core {
+
+
+LCC_RETURN compiledDispatchFunctionDummyEntryPoint(LCC_ARGS_FUNCALL_ELLIPSIS)
+{
+  SIMPLE_ERROR(BF("Dont ever call this"));
+}
+
 
 #ifdef USE_COMPILED_CLOSURE
 core::T_sp CompiledClosure_O::lambda_list() const {
@@ -315,6 +320,16 @@ LCC_RETURN InstanceClosure_O::LISP_CALLING_CONVENTION() {
   return (this->entryPoint)(this->instance, gfargs);
 }
 #endif
+
+LCC_RETURN MacroClosure_O::entry_point(LCC_ARGS_ELLIPSIS) {
+  MacroClosure_O* closure = gctools::untag_general<MacroClosure_O*>((MacroClosure_O*)lcc_closure);
+  INCREMENT_FUNCTION_CALL_COUNTER(closure);
+    ASSERT_LCC_VA_LIST_CLOSURE_DEFINED(lcc_arglist);
+    List_sp form = gc::As<Cons_sp>(LCC_ARG0());
+    T_sp env = gc::As<T_sp>(LCC_ARG1());
+//    InvocationHistoryFrame _frame(lcc_vargs); // The environment could be a Non-Clasp Environment (Cleavir)
+    return ((closure->mptr)(form, env)).as_return_type();
+  };
 
 
 };

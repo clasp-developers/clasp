@@ -967,10 +967,17 @@ Within the _irbuilder_ dynamic environment...
     :alloca (llvm-sys::create-alloca *irbuilder* %size_t% (jit-constant-size_t 1) label)
     :init (lambda (a) (irc-store (jit-constant-size_t init-val) a))))
 
+
 (defun irc-alloca-va_list (&key (irbuilder *irbuilder-function-alloca*) (label "va_list"))
   "Alloca space for an va_list"
   (with-alloca-insert-point-no-cleanup irbuilder
     :alloca (llvm-sys::create-alloca *irbuilder* %va_list% (jit-constant-size_t 1) label)
+    :init nil))
+
+(defun irc-alloca-invocation-history-frame (&key (irbuilder *irbuilder-function-alloca*) (label "va_list"))
+  "Alloca space for an va_list"
+  (with-alloca-insert-point-no-cleanup irbuilder
+    :alloca (llvm-sys::create-alloca *irbuilder* %InvocationHistoryFrame% (jit-constant-size_t 1) label)
     :init nil))
 
 (defun irc-alloca-size_t-no-cleanup (&key (irbuilder *irbuilder-function-alloca*) (label "va_list"))
@@ -985,7 +992,7 @@ Within the _irbuilder_ dynamic environment...
     :alloca (llvm-sys::create-alloca *irbuilder* %register-save-area% (jit-constant-size_t 1) label)
     :init nil))
 
-(defun irc-alloca-VaList_S (&key (irbuilder *irbuilder-function-alloca*) (label "VaList_S"))
+(defun irc-alloca-VaList_S (&key (irbuilder *irbuilder-function-alloca*) (label "va_list"))
   "Alloca space for an VaList_S"
   (with-alloca-insert-point-no-cleanup irbuilder
     :alloca (llvm-sys::create-alloca *irbuilder* %VaList_S% (jit-constant-size_t 1) label)
@@ -1078,13 +1085,25 @@ Write T_O* pointers into the current multiple-values array starting at the (offs
           (irc-store ret-tmv1 result)))))
 
 (defun irc-funcall (result closure args &optional (label ""))
-  (let* ((nargs (length args))
+  (let* ((nargs                  (length args))
+         #+debug-guard-exhaustive-validate
+         (_                      (mapc (lambda (arg) (irc-intrinsic "cc_ensure_valid_object" arg)) args))
 ;;; If there are < core:+number-of-fixed-arguments+ pad the list up to that
-	 (real-args (if (< nargs core:+number-of-fixed-arguments+)
-			(append args (make-list (- core:+number-of-fixed-arguments+ nargs) :initial-element (null-t-ptr)))
-                        args)))
-    (let* ((result-in-registers (irc-intrinsic-args "FUNCALL" (list* closure (null-t-ptr) (jit-constant-size_t nargs) real-args) :label label)))
-      (irc-store-result result result-in-registers))))
+	 (real-args              (if (< nargs core:+number-of-fixed-arguments+)
+                                     (append args (make-list (- core:+number-of-fixed-arguments+ nargs)
+                                                             :initial-element (null-t-ptr)))
+                                     args))
+         (closure-uintptr        (irc-ptr-to-int closure %uintptr_t%))
+         (entry-point-addr-uint  (irc-add closure-uintptr (jit-constant-uintptr_t (- +closure-entry-point-offset+ +general-tag+)) "entry-point-addr-uint"))
+         (entry-point-addr       (irc-int-to-ptr entry-point-addr-uint %fn-prototype**% "entry-point-addr"))
+         (entry-point            (irc-load entry-point-addr "entry-point"))
+         (result-in-registers (llvm-sys:create-call-function-pointer
+                               *irbuilder*
+                               %fn-prototype%
+                               entry-point
+                               (list* closure (jit-constant-size_t nargs) real-args)
+                               label)))
+    (irc-store-result result result-in-registers)))
   
 ;----------------------------------------------------------------------
 

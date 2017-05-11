@@ -53,6 +53,12 @@
 (defun alloca-VaList_S (&optional (label "VaList_S"))
   (llvm-sys:create-alloca *entry-irbuilder* cmp:%VaList_S% (%i32 1) label))
 
+(defun alloca-invocation-history-frame (&optional (label "ihf"))
+  (llvm-sys:create-alloca *entry-irbuilder* cmp:%InvocationHistoryFrame% (%i32 1) label))
+
+(defun alloca-register-save-area (&optional (label "ihf"))
+  (llvm-sys:create-alloca *entry-irbuilder* cmp:%register-save-area% (%i32 1) label))
+
 (defun alloca-size_t (&optional (label "var"))
   (llvm-sys:create-alloca *entry-irbuilder* cmp:%size_t% (%i32 1) label))
 
@@ -243,15 +249,16 @@
 ;;; Arguments are passed in registers and in the multiple-value-array
 ;;;
 
-(defun closure-call (call-or-invoke intrinsic-name closure return-value arg-allocas abi &key (label "") landing-pad)
-  (let* ((arguments (mapcar (lambda (x) (%load x)) arg-allocas))
+(defun closure-call (call-or-invoke closure return-value arg-allocas abi &key (label "") landing-pad)
+  (let* ((intrinsic-name "cc_call")
+         (arguments (mapcar (lambda (x) (%load x)) arg-allocas))
          (real-args (if (< (length arguments) core:+number-of-fixed-arguments+)
                         (append arguments (make-list (- core:+number-of-fixed-arguments+ (length arguments)) :initial-element (cmp:null-t-ptr)))
                         arguments)))
     (with-return-values (return-vals return-value abi)
       (let ((args (list*
                    (cmp:irc-load closure)
-                   (cmp:null-t-ptr)
+;;                   (cmp:null-t-ptr)
                    (%size_t (length arguments))
                    real-args)))
         (let* ((result-in-registers

@@ -2,9 +2,6 @@
 (eval-when (eval compile load) (core:select-package :core))
 
 
-(defparameter *dump-defun-definitions* nil)
-(defparameter *dump-defmacro-definitions* *dump-defun-definitions*)
-
 (defconstant lambda-list-keywords '( &ALLOW-OTHER-KEYS
 				    &AUX &BODY &ENVIRONMENT &KEY
 				    &OPTIONAL &REST

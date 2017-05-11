@@ -132,8 +132,8 @@ Could return more functions that provide lambda-list for swank for example"
                ;; it will print the address of the literal which must correspond to an entry in the
                ;; load time values table
                #+(or)(irc-create-call "debugInspectT_sp" (list (literal:compile-reference-to-literal :This-is-a-test)))
-               (let* ((arguments       (llvm-sys:get-argument-list fn))
-                      (argument-holder (parse-function-arguments arguments)))
+               (let* ((arguments             (llvm-sys:get-argument-list fn))
+                      (argument-holder       (bclasp-setup-calling-convention arguments lambda-list-handler NIL #|DEBUG-ON|#)))
                  (let ((new-env (progn
                                   (cmp-log "Creating new-value-environment for arguments\n")
                                   (irc-new-value-environment
@@ -1220,6 +1220,65 @@ jump to blocks within this tagbody."
                                    (list foreign-result)))))
         (irc-store-result-t* result result-in-t*)))
     (irc-low-level-trace :flow)))
+
+
+
+
+
+
+
+
+
+
+;;--------------------------------------------------
+;;--------------------------------------------------
+;;
+;; Calling functions
+;;
+;;--------------------------------------------------
+;;--------------------------------------------------
+
+
+(defun cmp-lookup-function (fn-designator evaluate-env)
+  "Return a pointer to a core::Closure"
+  (if (atom fn-designator)
+      (let ((classified (function-info evaluate-env fn-designator)))
+	(if (eq (car classified) 'core::global-function)
+	    (irc-intrinsic "va_symbolFunction" (irc-global-symbol fn-designator evaluate-env))
+	    (irc-intrinsic "va_lexicalFunction"
+			   (jit-constant-i32 (caddr classified))
+			   (jit-constant-i32 (cadddr classified))
+			   (irc-renv evaluate-env))))
+      (if (eq (car fn-designator) 'cl:lambda)
+	  (error "Handle lambda expressions at head of form")
+	  (error "Illegal head of form: ~a" fn-designator))))
+
+(defun codegen-call (result form evaluate-env)
+  "Evaluate each of the arguments into an alloca and invoke the function"
+  ;; setup the ActivationFrame for passing arguments to this function in the setup arena
+  (assert-result-isa-llvm-value result)
+  (let* ((head (car form)))
+    (cond
+      ((and (atom head) (symbolp head))
+       (let ((nargs (length (cdr form)))
+             args
+             (temp-result (irc-alloca-tsp)))
+         (dbg-set-invocation-history-stack-top-source-pos form)
+         ;; evaluate the arguments into the array
+         ;;  used to be done by --->    (codegen-evaluate-arguments (cdr form) evaluate-env)
+         (do* ((cur-exp (cdr form) (cdr cur-exp))
+               (exp (car cur-exp) (car cur-exp))
+               (i 0 (+ 1 i)))
+              ((endp cur-exp) nil)
+           (codegen temp-result exp evaluate-env)
+           (push (irc-smart-ptr-extract (irc-load temp-result)) args))
+         (let ((closure (cmp-lookup-function head evaluate-env)))
+	   (irc-low-level-trace :flow)
+           (irc-funcall result closure (reverse args))
+	   (irc-low-level-trace :flow))))
+      ((and (consp head) (eq head 'lambda))
+       (error "Handle lambda applications"))
+      (t (compiler-error form "Illegal head for form %s" head)))))
 
 (defun codegen-application (result form env)
   "A compiler macro function, macro function or a regular function"

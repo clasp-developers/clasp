@@ -18,7 +18,7 @@
 		   (cmp:irc-add arg-idx (%size_t 1) "arg-idx")))
 	 ((endp cur-req) (%store arg-idx arg-idx-alloca))
       (let* ((target-alloca (translate-datum target))
-	     (val (cmp:calling-convention-args.va-arg args arg-idx)))
+	     (val (cmp:calling-convention-args.va-arg args)))
 	(%store val target-alloca)
 	(push target-alloca reqs)))
     (nreverse reqs)))
@@ -45,7 +45,7 @@
 	(cmp:irc-begin-block arg-block)
 	(let ((target-alloca (translate-datum target))
 	      (flag-alloca (translate-datum flag))
-	      (val (cmp:calling-convention-args.va-arg args arg-idx)))
+	      (val (cmp:calling-convention-args.va-arg args)))
 	  (cmp:irc-low-level-trace :arguments)
 	  (%store val target-alloca)
 	  (%store true-val flag-alloca)
@@ -74,14 +74,12 @@
 	   (rest (if varest-p
                      (let ((temp-valist (alloca-VaList_S)))
                        (cmp:irc-create-call "cc_gatherVaRestArguments" 
-                                            (list (cmp:calling-convention-nargs args)
-                                                  (cmp:calling-convention-va-list args)
-                                                  arg-idx
+                                            (list (cmp:calling-convention-va-list* args)
+                                                  (cmp:calling-convention-remaining-nargs* args)
                                                   temp-valist)))
                      (cmp:irc-create-call "cc_gatherRestArguments" 
-                                          (list (cmp:calling-convention-nargs args)
-                                                (cmp:calling-convention-va-list args)
-                                                arg-idx (cmp:irc-constant-string-ptr cmp:*gv-current-function-name*)))))
+                                          (list (cmp:calling-convention-va-list* args)
+                                                (cmp:calling-convention-remaining-nargs* args)))))
            (rest-alloca (translate-datum rest-var)))
       (%store rest rest-alloca)
       rest-alloca)))
@@ -122,10 +120,10 @@
 	(cmp:irc-phi-add-incoming phi-arg-idx entry-arg-idx kw-start-block)
 	(cmp:irc-phi-add-incoming phi-bad-kw-idx entry-bad-kw-idx kw-start-block)
 	(cmp:irc-low-level-trace :arguments)
-	(let* ((arg-val (cmp:calling-convention-args.va-arg args phi-arg-idx))
+	(let* ((arg-val (cmp:calling-convention-args.va-arg args))
                (arg-idx+1 (cmp:irc-add phi-arg-idx (cmp:jit-constant-size_t 1)))
-               (kw-arg-val (cmp:calling-convention-args.va-arg args arg-idx+1)))
-	  (cmp:irc-create-call "cc_ifNotKeywordException" (list arg-val phi-arg-idx (cmp:calling-convention-va-list args)))
+               (kw-arg-val (cmp:calling-convention-args.va-arg args)))
+	  (cmp:irc-create-call "cc_ifNotKeywordException" (list arg-val phi-arg-idx (cmp:calling-convention-va-list* args)))
 	  (let* ((eq-aok-val-and-arg-val (cmp:irc-trunc (cmp:irc-icmp-eq aok-val arg-val) cmp:%i1%)) ; compare arg-val to a-o-k
 		 (aok-block (cmp:irc-basic-block-create "aok-block"))
 		 (possible-kw-block (cmp:irc-basic-block-create "possible-kw-block"))
@@ -258,7 +256,7 @@
     ))
 
 
-(defun compile-<=3-required-arguments (reqargs outputs cc)
+(defun compile-all-register-required-arguments (reqargs outputs cc)
   (cmp:compile-error-if-wrong-number-of-arguments (cmp:calling-convention-nargs cc) (car reqargs))
   (let ((fixed-args (cmp:calling-convention-register-args cc)))
     (do* ((cur-target (cdr reqargs) (cdr cur-target))
@@ -268,43 +266,27 @@
 	  (arg (car cur-fixed-args) (car cur-fixed-args)))
 	 ((null cur-target))
       (let ((dest (translate-datum target)))
-	#+(or)(format t "compile-<=3-required-arguments store: ~a to ~a  target: ~a~%" arg dest target)
+	#+(or)(format t "compile-all-register-required-arguments store: ~a to ~a  target: ~a~%" arg dest target)
 	(llvm-sys:create-store cmp:*irbuilder* arg dest nil)))))
 
 (defun compile-lambda-list-code (lambda-list outputs calling-conv)
   (multiple-value-bind (reqargs optargs rest-var key-flag keyargs allow-other-keys unused-auxs varest-p)
       (core:process-lambda-list lambda-list 'core::function)
-    (let ((req-opt-only (and (not rest-var)
-                             (not key-flag)
-                             (eql 0 (car keyargs))
-                             (not allow-other-keys)))
-          (num-req (car reqargs))
-          (num-opt (car optargs)))
-      #+(or)(progn
-	(format t "lambda-list: ~a~%" lambda-list)
-	(format t "reqs: ~a~%" reqargs)
-	(format t "opts: ~a~%" optargs)
-	(format t "rest: ~a~%" rest-var)
-	(format t "key-flag: ~a~%" key-flag)
-	(format t "keys: ~a~%" keyargs)
-	(format t "allow-other-keys: ~a~%" allow-other-keys))
-      (cond
+    (if (calling-convention-use-only-registers calling-conv)
         ;; Special cases (foo) (foo x) (foo x y) (foo x y z)  - passed in registers
-	((and req-opt-only (<= num-req 3) (eql 0 num-opt) )
-	 (compile-<=3-required-arguments reqargs outputs calling-conv))
+        (compile-all-register-required-arguments reqargs old-env args new-env)
         ;; Test for
         ;; (x &optional y)
         ;; (x y &optional z)
-        (t
-         (compile-general-lambda-list-code reqargs 
-					   optargs 
-					   rest-var
-                                           varest-p
-					   key-flag 
-					   keyargs 
-					   allow-other-keys
-					   outputs
-					   calling-conv ))))))
+        (compile-general-lambda-list-code reqargs 
+                                          optargs 
+                                          rest-var
+                                          varest-p
+                                          key-flag 
+                                          keyargs 
+                                          allow-other-keys
+                                          outputs
+                                          calling-conv ))))
 
 
 ;;; Process arguments for bclasp
@@ -319,37 +301,72 @@
       (dolist (req reqargs)
         (push (irc-alloca-tsp new-env) outputs))
       (dolist (opt optargs)
-        (push (irc-alloca-tsp new-env) outputs)   ;; opt target
-        (push (irc-alloca-tsp new-env) outputs)   ;; opt-p target
+        (push (irc-alloca-tsp new-env) outputs) ;; opt target
+        (push (irc-alloca-tsp new-env) outputs) ;; opt-p target
         )
       (if rest-var
           (push (irc-alloca-tsp new-env) outputs) ;; rest target
           )
       (dolist (key keyargs)
-        (push (irc-alloca-tsp new-env) outputs)   ;; key target
-        (push (irc-alloca-tsp new-env) outputs)   ;; key-p target
+        (push (irc-alloca-tsp new-env) outputs) ;; key target
+        (push (irc-alloca-tsp new-env) outputs) ;; key-p target
         )
       (setq outputs (nreverse outputs))
-      (let ((req-opt-only (and (not rest-var)
-                               (not key-flag)
-                               (eql 0 (car keyargs))
-                               (eql 0 (car auxargs))
-                               (not allow-other-keys)))
-            (num-req (car reqargs))
-            (num-opt (car optargs)))
-        (cond
+      (if (calling-convention-use-only-registers args)
           ;; Special cases (foo) (foo x) (foo x y) (foo x y z)  - passed in registers
-          ((and req-opt-only (<= num-req 3) (eql 0 num-opt) )
-           (compile-<=3-required-arguments reqargs old-env args new-env))
+          (compile-all-register-required-arguments reqargs old-env args new-env)
           ;; Test for
           ;; (x &optional y)
           ;; (x y &optional z)
-          (t
-           (compile-general-lambda-list-code lambda-list-handler
-                                             old-env
-                                             args
-                                             new-env))))
-      ;; Now copy outputs into the targets and generate code for initializers if opt-p or key-p is not defined
-      )))
+          (compile-general-lambda-list-code lambda-list-handler
+                                            old-env
+                                            args
+                                            new-env)))))
+                                                        
 
-        
+(defun cclasp-maybe-alloc-cc-setup (lambda-list-handler debug-on)
+  "Maybe allocate slots in the stack frame to handle the calls
+   depending on what is in the lambda-list-handler (&rest, &key etc) and debug-on.
+   Return a calling-convention-setup object that describes what was allocated.
+   See the bclasp version in lambdalistva.lsp.
+"
+  (multiple-value-bind (reqargs optargs rest-var key-flag keyargs allow-other-keys auxargs)
+      (process-lambda-list-handler lambda-list-handler)
+    ;; Currently if nargs <= +args-in-registers+ required arguments and (null debug-on)
+    ;;      then can optimize and use the arguments in registers directly
+    ;;  If anything else then allocate space to spill the registers
+    ;;
+    ;; Currently only cases:
+    ;; (w)
+    ;; (w x)
+    ;; (w x y)
+    ;; (w x y z)  up to the +args-in-registers+
+    ;;    can use only registers
+    ;; In the future add support for required + optional 
+    ;; (x &optional y)
+    ;; (x y &optional z) etc
+    (let* ((req-opt-only (and (not rest-var)
+                              (not key-flag)
+                              (eql 0 (car keyargs))
+                              (eql 0 (car auxargs))
+                              (not allow-other-keys)))
+           (num-req (car reqargs))
+           (num-opt (car optargs))
+           ;; Currently only required arguments are accepted
+           ;;          and (<= num-req +args-in-register+)
+           ;;          and not debugging
+           ;;     --> Use only register arguments
+           (may-use-only-registers (and req-opt-only (<= num-req +args-in-registers+) (eql 0 num-opt))))
+      (if (and may-use-only-registers (null debug-on))
+          (make-calling-convention-setup
+           :use-only-registers t)
+          (make-calling-convention-setup
+           :use-only-registers may-use-only-registers ; if may-use-only-registers then debug-on is T and we could use only registers
+           :VaList_S* (alloca-VaList_S :label "VaList_S")
+           :register-save-area* (alloca-register-save-area :label "register-save-area")
+           :invocation-history-frame* (and debug-on (alloca-invocation-history-frame :label "invocation-history-frame")))))))
+
+
+(defun cclasp-setup-calling-convention (arguments lambda-list-handler debug-on)
+  (let ((setup (cclasp-maybe-alloc-cc-setup lambda-list-handler debug-on)))
+    (cmp:initialize-calling-convention arguments setup)))

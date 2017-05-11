@@ -4,8 +4,6 @@
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (core:select-package :core))
 
-
-
 (defun strip-root (pn-dir)
   "Remove the SOURCE-DIR: part of the path in l and then
 search for the string 'src', or 'generated' and return the rest of the list that starts with that"
@@ -13,9 +11,6 @@ search for the string 'src', or 'generated' and return the rest of the list that
     (or (member "src" rel :test #'string=)
         (member "generated" rel :test #'string=)
         (error "Could not find \"src\" or \"generated\" in ~a" rel))))
-
-
-
 
 (defun get-pathname-with-type (module &optional (type "lsp"))
   (error "Depreciated get-pathname-with-type")
@@ -164,7 +159,10 @@ Return files."
 	  (let ((cmp::*module-startup-prefix* "kernel"))
             #+dbg-print(bformat t "DBG-PRINT  source-path = %s\n" source-path)
             (apply #'compile-file (probe-file source-path) :output-file bitcode-path
-                   #+build-print :print #+build-print t :verbose nil :output-type :bitcode :type :kernel (entry-compile-file-options entry))
+                   #| #+build-print |# :print #| #+build-print |# t
+                                       :verbose nil
+                                       :output-type :bitcode
+                                       :type :kernel (entry-compile-file-options entry))
 	    (if reload
 		(progn
 		  (bformat t "    Loading newly compiled file: %s\n" bitcode-path)

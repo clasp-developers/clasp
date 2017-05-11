@@ -1,7 +1,6 @@
 
-(defun foo ()
-  (let ((x 1))
-    (flet ((bar () 2))
-      (let ((z 3))
-        (let* ((w 4))
-          z)))))
+
+(defun foo (&rest x)
+  (multiple-value-call #'list (values-list x)))
+;;1 2 3 4 5 6 7 8))) ;; (values-list x)))
+

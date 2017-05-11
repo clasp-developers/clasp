@@ -15,10 +15,6 @@
 (eval-when (eval compile load)
   (si::select-package "SI"))
 
-;;; ----------------------------------------------------------------------
-;;;
-(defparameter *dump-defun-definitions* nil)
-(defparameter *dump-defmacro-definitions* nil)
 
 ;; This is needed only when bootstrapping ECL using ECL-MIN
 (eval-when (eval)

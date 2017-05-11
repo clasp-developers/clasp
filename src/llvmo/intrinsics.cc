@@ -73,7 +73,7 @@ using namespace core;
 extern "C" {
 
 ALWAYS_INLINE core::T_sp *symbolValueReference(core::T_sp *symbolP) {
-  core::Symbol_sp sym((gctools::Tagged)(symbolP->raw_()));
+  core::Symbol_sp sym((gctools::Tagged)ENSURE_VALID_OBJECT(symbolP->raw_()));
   return sym->valueReference();
 }
 
@@ -221,6 +221,10 @@ ALWAYS_INLINE T_O** cc_nil_reference() {
   return &_Nil<core::T_O>().rawRef_();
 }
 
+ALWAYS_INLINE core::T_O* cc_ensure_valid_object(core::T_O* tagged_object) {
+  return ensure_valid_object(tagged_object);
+}
+
 
 ALWAYS_INLINE T_O *cc_precalcSymbol(core::LoadTimeValues_O **tarray, size_t idx) {
   core::LoadTimeValues_O *tagged_ltvP = *tarray;
@@ -298,17 +302,18 @@ ALWAYS_INLINE gc::return_type cc_call(LCC_ARGS_CC_CALL_ELLIPSIS) {
   //	core::Function_O* func = gctools::DynamicCast<core::NamedFunction_O*,core::T_O*>::castOrNULL(tfunc);
   core::Closure_O *tagged_closure = reinterpret_cast<core::Closure_O *>(lcc_closure);
   core::Closure_O* closure = gc::untag_general<core::Closure_O *>(tagged_closure);
+#ifdef ENABLE_BACKTRACE_ARGS
   VaList_S lcc_arglist_s;
   va_start(lcc_arglist_s._Args, LCC_VA_START_ARG);
-#ifdef ENABLE_BACKTRACE_ARGS
   LCC_SPILL_REGISTER_ARGUMENTS_TO_VA_LIST(lcc_arglist_s);
 #endif
   core::T_O *lcc_arglist = lcc_arglist_s.asTaggedPtr();
-  return closure->invoke_va_list(LCC_PASS_ARGS);
+  return closure->entry(LCC_PASS_ARGS);
 }
 
 ALWAYS_INLINE gc::return_type cc_call_callback(LCC_ARGS_CC_CALL_ELLIPSIS) {
   //	core::Function_O* func = gctools::DynamicCast<core::NamedFunction_O*,core::T_O*>::castOrNULL(tfunc);
+  IMPLEMENT_ME();
   auto closure = reinterpret_cast<CompiledClosure_fptr_type>(lcc_closure);
   VaList_S lcc_arglist_s;
   va_start(lcc_arglist_s._Args, LCC_VA_START_ARG);
@@ -364,25 +369,21 @@ ALWAYS_INLINE size_t cc_va_list_length(T_O* list) {
   return va_list_sp->remaining_nargs();
 }
 
-ALWAYS_INLINE core::T_O *cc_gatherVaRestArguments(std::size_t nargs, VaList_S *vargs, std::size_t startRest, VaList_S* untagged_vargs_rest) {
-  IMPLEMENT_ME();
-  printf("%s:%d:%s  Checking if va_list's are tagged\n", __FILE__, __LINE__, __FUNCTION__ );
-  if (gc::tagged_valistp(vargs)) {
-    SIMPLE_ERROR(BF("vargs is tagged"));
+ALWAYS_INLINE core::T_O *cc_gatherVaRestArguments(va_list vargs, std::size_t* nargs, VaList_S* untagged_vargs_rest) {
+  va_copy(untagged_vargs_rest->_Args,vargs);
+#ifdef DEBUG_ENSURE_VALID_OBJECT
+  // Validate the arguments in the va_list
+  va_list validate_vargs;
+  va_copy(validate_vargs,vargs);
+  for ( size_t i(0),iEnd(*nargs); i<iEnd; ++i ) {
+    core::T_O* tobj = va_arg(validate_vargs,core::T_O*);
+    ENSURE_VALID_OBJECT(tobj);
   }
-  ASSERT(nargs >= startRest);
-
-  VaList_S* untagged_vargs = vargs;
-  untagged_vargs_rest->set_from_other_VaList_S(untagged_vargs);
+  va_end(validate_vargs);
+#endif
+  untagged_vargs_rest->_remaining_nargs = *nargs;
   T_O* result = untagged_vargs_rest->asTaggedPtr();
-//  printf("%s:%d gatherVaRestArguments result = %p\n", __FILE__, __LINE__, (void*)result);
-//  dump_VaList_S_ptr(untagged_vargs_rest);
-//  printf("%s:%d returning result = %p\n", __FILE__, __LINE__, (void*)result);
   return result;
-//  T_sp varest((gctools::Tagged)vargs);
-//  printf("%s:%d in gatherVaRestArguments --> %s\n", __FILE__, __LINE__, _rep_(vargs).c_str());
-  //VaList_S *args = reinterpret_cast<VaList_S *>(gc::untag_valist((void *)vargs));
-  //return args->asTaggedPtr();
 }
 
 ALWAYS_INLINE core::T_O *cc_makeCell() {
@@ -393,7 +394,7 @@ ALWAYS_INLINE core::T_O *cc_makeCell() {
   return res.raw_();
 }
 
-ALWAYS_INLINE void cc_writeCell(core::T_O *cell, core::T_O *val) {
+ALWAYS_INLINE void cc_writeCell(core::T_O *cell, core::T_O* val) {
   //	core::Cons_sp c = gctools::smart_ptr<core::Cons_O>(reinterpret_cast<core::Cons_O*>(cell));
   ASSERT(gctools::tagged_consp(cell));
   core::Cons_O* cp = reinterpret_cast<core::Cons_O*>(gctools::untag_cons(cell));
@@ -401,12 +402,15 @@ ALWAYS_INLINE void cc_writeCell(core::T_O *cell, core::T_O *val) {
 #ifdef DEBUG_CC
   printf("%s:%d writeCell cell[%p]  val[%p]\n", __FILE__, __LINE__, cell, val);
 #endif
-  cp->setCar(gctools::smart_ptr<core::T_O>((gc::Tagged)val));
+  cp->setCar(gctools::smart_ptr<core::T_O>((gc::Tagged)ENSURE_VALID_OBJECT(val)));
 }
 
 ALWAYS_INLINE core::T_O *cc_readCell(core::T_O *cell) {
   core::Cons_O* cp = reinterpret_cast<core::Cons_O*>(gctools::untag_cons(cell));
   core::T_sp val = cp->ocar();
+#ifdef DEBUG_ENSURE_VALID_OBJECT
+  ENSURE_VALID_OBJECT(val.raw_());
+#endif
 #ifdef DEBUG_CC
   printf("%s:%d readCell cell[%p] --> value[%p]\n", __FILE__, __LINE__, cell, val.px);
 #endif
@@ -424,6 +428,11 @@ core::T_O *cc_fetch(core::T_O *tagged_closure, std::size_t idx) {
   return (*c)[idx].raw_();
 }
 
+
+ALWAYS_INLINE void cc_initialize_InvocationHistoryFrame(va_list vargs, size_t nargs, void* vframe ) {
+  core::InvocationHistoryFrame* frame = reinterpret_cast<core::InvocationHistoryFrame*>(vframe);
+  new (frame) InvocationHistoryFrame(vargs,nargs);
+}
 
 ALWAYS_INLINE char *cc_getPointer(core::T_O *pointer_object) {
   core::Pointer_O* po = reinterpret_cast<core::Pointer_O*>(gctools::untag_general(pointer_object));
@@ -478,10 +487,10 @@ ALWAYS_INLINE core::T_O *cc_stack_enclose(void* closure_address,
   new (header) gctools::GCHeader<core::ClosureWithSlots_O>::HeaderType(closure_kind);
 #endif
   auto obj = gctools::BasePtrToMostDerivedPtr<typename gctools::smart_ptr<core::ClosureWithSlots_O>::Type>(closure_address);
-  new (obj) (typename gctools::smart_ptr<core::ClosureWithSlots_O>::Type)(numCells,
-                                                                          tlambdaName,
+  new (obj) (typename gctools::smart_ptr<core::ClosureWithSlots_O>::Type)( numCells,
+                                                                           llvm_func,
+                                                                           tlambdaName,
                                                                           core::_sym_stack_closure,
-                                                                          llvm_func,
                                                                           _Nil<T_O>(),
                                                                           _Nil<T_O>(),
                                                                           _Nil<T_O>(),
@@ -493,7 +502,7 @@ ALWAYS_INLINE core::T_O *cc_stack_enclose(void* closure_address,
   va_start(argp, numCells);
   int idx = 0;
   for (; numCells; --numCells) {
-    p = va_arg(argp, core::T_O *);
+    p = ENSURE_VALID_OBJECT(va_arg(argp, core::T_O *));
     (*functoid)[idx] = gctools::smart_ptr<core::T_O>((gc::Tagged)p);
     ++idx;
   }

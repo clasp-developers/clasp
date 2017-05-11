@@ -96,8 +96,8 @@ CL_DEFUN T_mv cl__apply(T_sp head, VaList_sp args) {
   Function_sp func = coerce::functionDesignator(head);
   int lenTotalArgs = args->total_nargs();
   if (lenTotalArgs == 0) eval::errorApplyZeroArguments();
-  T_O* lastArgRaw = args->absolute_indexed_arg(lenTotalArgs-1); // LCC_VA_LIST_INDEXED_ARG(lastArgRaw,args,lenArgs-1);
   int lenArgs = args->remaining_nargs(); // lenTotalArgs - args->current_index();
+  T_O* lastArgRaw = args->relative_indexed_arg(lenArgs-1); // LCC_VA_LIST_INDEXED_ARG(lastArgRaw,args,lenArgs-1);
 //  printf("%s:%d  lenTotalArgs = %d lenArgs = %d\n", __FILE__, __LINE__, lenTotalArgs, lenArgs );
   if (gctools::tagged_nilp(lastArgRaw)) {
 //    printf("%s:%d apply with nil last arg\n", __FILE__, __LINE__ );
@@ -1889,6 +1889,8 @@ T_mv applyToActivationFrame(T_sp head, ActivationFrame_sp targs) {
 }
 #endif
 
+
+
 /*!
  * This method:
  * 1) evaluates the arguments
@@ -2292,7 +2294,7 @@ T_mv evaluate(T_sp exp, T_sp environment) {
     MAKE_STACK_FRAME(callArgs, headFunc.raw_(), nargs);
     size_t argIdx = 0;
     for (auto cur : (List_sp)oCdr(form)) {
-      (*callArgs)[argIdx] = eval::evaluate(oCar(cur), environment).raw_();
+      (*callArgs)[argIdx] = eval::evaluate(CONS_CAR(cur), environment).raw_();
       ++argIdx;
     }
     VaList_S valist_struct(callArgs);
@@ -2464,4 +2466,19 @@ void defineSpecialOperatorsAndMacros(Package_sp pkg) {
   core::_sym_STAReval_with_env_hookSTAR->defparameter(core::_sym_eval_with_env_default->symbolFunction());
 };
 };
+};
+
+
+namespace core {
+gctools::return_type funcall_frame(Function_sp func, gctools::Frame* frame)
+{
+  switch ((*frame).number_of_arguments()) {
+#define APPLY_TO_FRAME
+#include <clasp/core/generated/applyToFrame.h>
+#undef APPLY_TO_FRAME
+  default:
+      SIMPLE_ERROR(BF("Function call with %lu arguments exceeded the call-arguments-limit %lu") % (*frame).number_of_arguments() % CALL_ARGUMENTS_LIMIT);
+  };
+}
+
 };

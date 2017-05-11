@@ -67,7 +67,7 @@
           jit-remove-module
           calling-convention-args
           calling-convention-args.va-arg
-          calling-convention-va-list
+          calling-convention-va-list*
           calling-convention-nargs
           calling-convention-register-args
           calling-convention-write-registers-to-multiple-values
@@ -148,7 +148,7 @@
           llvm-link
           link-intrinsics-module
           load-bitcode
-          parse-function-arguments
+          initialize-calling-convention
           set-associated-funcs
           treat-as-special-operator-p
           typeid-core-unwind
@@ -171,6 +171,8 @@
           %uintptr_t%
           %return_type%
           %VaList_S%
+          %InvocationHistoryFrame%
+          %register-save-area%
           null-t-ptr
           compile-error-if-wrong-number-of-arguments
           compile-error-if-too-many-arguments

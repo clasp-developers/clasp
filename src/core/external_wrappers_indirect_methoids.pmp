@@ -30,6 +30,8 @@ $for isConst [[
       class IndirectVariadicMethoid
       < Pols,OT $if ret==RetVoid [[,void]] $else [[,RT ]](OT::ExternalType::*)( $for Args_ , [[ARG$Args_]]) $if isConst [[const]] >
         : public BuiltinClosure_O {
+        public:
+        typedef IndirectVariadicMethoid < Pols,OT $if ret==RetVoid [[,void]] $else [[,RT ]](OT::ExternalType::*)( $for Args_ , [[ARG$Args_]]) $if isConst [[const]] > MyType;
       public:
       	virtual const char* describe() const {return "IndirectVariadicMethoid";};
         typedef BuiltinClosure_O TemplatedBase;
@@ -39,25 +41,26 @@ $for isConst [[
         Type mptr;
       public:
         enum { NumParams = $numArgs };
-        IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(name), mptr(ptr) {};
+        IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(entry_point,name), mptr(ptr) {};
         DISABLE_NEW();
         virtual size_t templatedSizeof() const { return sizeof(*this); };
-        inline LCC_RETURN LISP_CALLING_CONVENTION()
+        static inline LCC_RETURN LISP_CALLING_CONVENTION()
         {
-          INCREMENT_FUNCTION_CALL_COUNTER(this);
+          MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
+          INCREMENT_FUNCTION_CALL_COUNTER(closure);
           INITIALIZE_VA_LIST();
           INVOCATION_HISTORY_FRAME();
           //int countPureOutValues = CountPureOutValues<Pols>::value;
           //if ( lcc_nargs != $numArgs ) core::wrongNumberOfArguments(lcc_nargs,$numArgs);
           $if numArgs>0 [[
-            MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),$numArgs);
+            MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),$numArgs);
             core::StackFrameDynamicScopeManager scope(frame);
-            lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
+            lambdaListHandler_createBindings(closure->asSmartPtr(),closure->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
           ]]
           $for Args_ [[translate::from_object<ARG$Args_> a$Args_(frame->arg($Args_));
           ]]
           gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame->arg(0)));
-          $if ret==RetVoid [[]] $else [[ RT retval = ]] ((*(ot->wrappedPtr())).*(this->mptr))($for Args_ ,[[a$Args_._v]]);
+          $if ret==RetVoid [[]] $else [[ RT retval = ]] ((*(ot->wrappedPtr())).*(closure->mptr))($for Args_ ,[[a$Args_._v]]);
 $$          $if ret==RetVoid [[
 $$            *lcc_resultP = Values0<core::T_O>();
 $$          ]] $elif ret==RetMV [[

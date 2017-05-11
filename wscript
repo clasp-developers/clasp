@@ -713,6 +713,8 @@ def configure(cfg):
     cfg.define("ENABLE_BACKTRACE_ARGS",1)
 #    cfg.define("DEBUG_ZERO_KIND",1);
 #    cfg.define("DEBUG_FLOW_CONTROL",1)
+#    cfg.define("DEBUG_VALUES",1)   # turn on printing (values x y z) values when core:*debug-values* is not nil
+    cfg.define("DEBUG_ENSURE_VALID_OBJECT",1)
     cfg.env.append_value('CXXFLAGS', ['-Wno-macro-redefined'] )
     cfg.env.append_value('CXXFLAGS', ['-Wno-deprecated-register'] )
     cfg.env.append_value('CXXFLAGS', ['-Wno-expansion-to-defined'] )

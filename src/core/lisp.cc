@@ -1359,6 +1359,12 @@ void Lisp_O::parseCommandLineArguments(int argc, char *argv[], const CommandLine
 #ifdef USE_EXPENSIVE_BACKTRACE
   features = Cons_O::create(_lisp->internKeyword("USE-EXPENSIVE-BACKTRACE"), features);
 #endif
+#ifdef DEBUG_GUARD
+  features = Cons_O::create(_lisp->internKeyword("DEBUG-GUARD"), features);
+#endif
+#ifdef DEBUG_ENSURE_VALID_OBJECT
+  features = Cons_O::create(_lisp->internKeyword("DEBUG-ENSURE-VALID-OBJECT"),features);
+#endif  
 #ifdef CLASP_THREADS
   features = Cons_O::create(_lisp->internKeyword("THREADS"),features);
 #endif

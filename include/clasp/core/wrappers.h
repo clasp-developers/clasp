@@ -41,12 +41,13 @@ namespace core {
     typedef core::T_O* (*Type)(core::T_O* arg);
     Type fptr;
   public:
-  TranslationFunctor(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : BuiltinClosure_O(name,funcType,SOURCE_INFO_PASS), fptr(ptr) {};
+  TranslationFunctor(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : BuiltinClosure_O(TranslationFunctor::entry_point,name,funcType,SOURCE_INFO_PASS), fptr(ptr) {};
   public:
     typedef BuiltinClosure_O TemplatedBase;
     virtual size_t templatedSizeof() const { return sizeof(TranslationFunctor); };
-    inline LCC_RETURN LISP_CALLING_CONVENTION() {
-      return gctools::return_type((this->fptr)(lcc_fixed_arg0),1);
+    static inline LCC_RETURN LISP_CALLING_CONVENTION() {
+      TranslationFunctor* closure = gctools::untag_general<TranslationFunctor*>((TranslationFunctor*)lcc_closure);
+      return gctools::return_type((closure->fptr)(lcc_fixed_arg0),1);
     }
   };
 
@@ -126,27 +127,7 @@ class Function_O;
 //
 //
 // Wrapper for ActivationFrameMacroPtr
-class MacroClosure_O : public BuiltinClosure_O {
-private:
-  typedef T_mv (*MacroPtr)(List_sp, T_sp);
-  MacroPtr mptr;
-public:
-  virtual const char *describe() const { return "MacroClosure"; };
-  // constructor
-  MacroClosure_O(Symbol_sp name, MacroPtr ptr, SOURCE_INFO) : BuiltinClosure_O(name, kw::_sym_macro, SOURCE_INFO_PASS), mptr(ptr) {}
-  size_t templatedSizeof() const { return sizeof(MacroClosure_O); };
-  virtual Symbol_sp getKind() const { return kw::_sym_macro; };
-#if 0
-  LCC_RETURN LISP_CALLING_CONVENTION() {
-    INCREMENT_FUNCTION_CALL_COUNTER(this);
-    ASSERT_LCC_VA_LIST_CLOSURE_DEFINED(lcc_arglist);
-    List_sp form = gc::As<Cons_sp>(LCC_ARG0());
-    T_sp env = gc::As<T_sp>(LCC_ARG1());
-    InvocationHistoryFrame _frame(lcc_vargs); // The environment could be a Non-Clasp Environment (Cleavir)
-    return ((this->mptr)(form, env)).as_return_type();
-  };
-#endif
-};
+   
 
 inline void defmacro(const string &packageName, const string &name, T_mv (*mp)(List_sp, T_sp env), const string &arguments, const string &declares, const string &docstring, const string &sourceFileName, int lineno, bool autoExport = true) {
   _G();
@@ -156,6 +137,7 @@ inline void defmacro(const string &packageName, const string &name, T_mv (*mp)(L
   lisp_defmacro(symbol, packageName, f, arguments, declares, docstring, autoExport);
 }
 
+ 
 template <int N>
 struct DispatchOn {
   enum { value = N };

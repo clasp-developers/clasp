@@ -2963,7 +2963,7 @@ CL_DEFUN core::Function_sp finalizeEngineAndRegisterWithGcAndGetCompiledFunction
   core::SourceFileInfo_mv sfi = core__source_file_info(fileName);
   int sfindex = unbox_fixnum(gc::As<core::Fixnum_sp>(sfi.valueGet_(1)));
   //	printf("%s:%d  Allocating CompiledClosure with name: %s\n", __FILE__, __LINE__, _rep_(sym).c_str() );
-  gctools::smart_ptr<core::CompiledClosure_O> functoid = gctools::GC<core::CompiledClosure_O>::allocate(functionName, kw::_sym_function, lisp_funcPtr, fn, activationFrameEnvironment, associatedFunctions, _Nil<core::T_O>() /*lambdaList*/, sfindex, filePos, linenumber, 0);
+  gctools::smart_ptr<core::CompiledClosure_O> functoid = gctools::GC<core::CompiledClosure_O>::allocate(lisp_funcPtr, fn, functionName, kw::_sym_function, activationFrameEnvironment, associatedFunctions, _Nil<core::T_O>() /*lambdaList*/, sfindex, filePos, linenumber, 0);
   void* pstartup = engine->getPointerToFunction(startupFn->wrappedPtr());
   if (pstartup==NULL) {
     printf("%s:%d  Could not find function named %s\n", __FILE__, __LINE__, MODULE_STARTUP_FUNCTION_NAME );
@@ -3048,7 +3048,7 @@ CL_DEFUN void finalizeClosure(ExecutionEngine_sp oengine, core::Function_sp func
   llvmo::Function_sp llvm_func = closure->llvmFunction;
   void *p = engine->getPointerToFunction(llvm_func->wrappedPtr());
   core::CompiledClosure_fptr_type lisp_funcPtr = (core::CompiledClosure_fptr_type)(p);
-  closure->fptr = lisp_funcPtr;
+  closure->entry = lisp_funcPtr;
 }
 
 
@@ -3557,7 +3557,7 @@ CL_DEFUN core::Function_sp llvm_sys__jitFinalizeReplFunction(ClaspJIT_sp jit, Mo
   printf("%s:%d shutdownPtr = %s\n", __FILE__, __LINE__, _rep_(shutdownPtr).c_str());
 #endif
   core::CompiledClosure_fptr_type lisp_funcPtr = (core::CompiledClosure_fptr_type)(gc::As_unsafe<core::Pointer_sp>(replPtr)->ptr());
-  gctools::smart_ptr<core::CompiledClosure_O> functoid = gctools::GC<core::CompiledClosure_O>::allocate(core::SimpleBaseString_O::make(replName), kw::_sym_function, lisp_funcPtr, fn, activationFrameEnvironment, _Nil<core::T_O>(), _Nil<core::T_O>() /*lambdaList*/, 0, 0, 0, 0 );
+  gctools::smart_ptr<core::CompiledClosure_O> functoid = gctools::GC<core::CompiledClosure_O>::allocate(lisp_funcPtr, core::SimpleBaseString_O::make(replName), kw::_sym_function, fn, activationFrameEnvironment, _Nil<core::T_O>(), _Nil<core::T_O>() /*lambdaList*/, 0, 0, 0, 0 );
   core::module_startup_function_type startup = reinterpret_cast<core::module_startup_function_type>(gc::As_unsafe<core::Pointer_sp>(startupPtr)->ptr());
   startup(initialData.tagged_());
   return functoid;

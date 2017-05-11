@@ -46,8 +46,8 @@ namespace core {
     CxxMethodFunction_sp _onlyCxxMethodFunction;
   public:
     T_sp lambda_list() const { return _Nil<T_O>();};
-  SingleDispatchCxxEffectiveMethodFunction_O(T_sp name, CxxMethodFunction_sp mf) : Base(name), _onlyCxxMethodFunction(mf) {};
-    LCC_RETURN LISP_CALLING_CONVENTION();
+  SingleDispatchCxxEffectiveMethodFunction_O(T_sp name, CxxMethodFunction_sp mf) : Base(SingleDispatchCxxEffectiveMethodFunction_O::entry_point,name), _onlyCxxMethodFunction(mf) {};
+    static LCC_RETURN LISP_CALLING_CONVENTION();
   };
 
   FORWARD(SingleDispatchEffectiveMethodFunction);  
@@ -61,8 +61,8 @@ namespace core {
     List_sp _Afters;
   public:
     T_sp lambda_list() const { return _Nil<T_O>();};
-  SingleDispatchEffectiveMethodFunction_O(T_sp name, List_sp befores, List_sp primaries, List_sp afters) : Base(name), _Befores(befores),_Primaries(primaries),_Afters(afters) {};
-    LCC_RETURN LISP_CALLING_CONVENTION();
+  SingleDispatchEffectiveMethodFunction_O(T_sp name, List_sp befores, List_sp primaries, List_sp afters) : Base(entry_point,name), _Befores(befores),_Primaries(primaries),_Afters(afters) {};
+    static LCC_RETURN LISP_CALLING_CONVENTION();
   };
 };
 
@@ -88,9 +88,9 @@ namespace core {
 public:
     DISABLE_NEW();
   SingleDispatchGenericFunctionClosure_O(T_sp name, Symbol_sp k, SOURCE_INFO)
-    : Base(name, k, SOURCE_INFO_PASS), _Methods(_Nil<T_O>()), _lambdaListHandler(_Nil<LambdaListHandler_O>()){};
+    : Base(entry_point,name, k, SOURCE_INFO_PASS), _Methods(_Nil<T_O>()), _lambdaListHandler(_Nil<LambdaListHandler_O>()){};
   SingleDispatchGenericFunctionClosure_O(T_sp name)
-    : Base(name), _Methods(_Nil<T_O>()), _lambdaListHandler(_Nil<LambdaListHandler_O>()){};
+    : Base(entry_point,name), _Methods(_Nil<T_O>()), _lambdaListHandler(_Nil<LambdaListHandler_O>()){};
     void finishSetup(LambdaListHandler_sp llh, Symbol_sp k) {
       this->_lambdaListHandler = llh;
       this->kind = k;
@@ -99,7 +99,7 @@ public:
     void setf_lambda_list(List_sp lambda_list);
     virtual size_t templatedSizeof() const { return sizeof(*this); };
     virtual const char *describe() const { return "SingleDispatchGenericFunctionClosure"; };
-    LCC_VIRTUAL LCC_RETURN LISP_CALLING_CONVENTION();
+    static LCC_RETURN LISP_CALLING_CONVENTION();
     bool singleDispatchGenericP() const { return true; };
 
   /*! Define a method to this SingleDispatchGenericFunction

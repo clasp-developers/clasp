@@ -39,6 +39,24 @@ const int MultipleValues::MultipleValuesLimit;
 
 void MultipleValues::initialize(){};
 
+void dump_values_pos(T_sp v, const char* name, int n)
+{
+  if (n>4) {
+    if (_sym_STARdebug_valuesSTAR &&
+        _sym_STARdebug_valuesSTAR->boundP() &&
+        _sym_STARdebug_valuesSTAR->symbolValue().notnilp()) {
+      if (strcmp(name,"v0")==0) {
+        printf("--------------------- values dump ---------------\n");
+      }
+      printf("%s:%d  VALUES[%s] -> %s\n",  __FILE__, __LINE__, name, _rep_(v).c_str() );
+#if 0
+      if (strcmp(name,"v1")==0 && v==kw::_sym_internal) {
+        printf("%s:%d  Trapped  VALUES[1] -> :INTERNAL\n",  __FILE__, __LINE__ );
+      }
+#endif
+    }
+  }
+}
 
 void multipleValuesSaveToVector(T_mv values, SimpleVector_sp save) {
   DEPRECATED();

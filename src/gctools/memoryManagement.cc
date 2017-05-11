@@ -235,21 +235,18 @@ size_t random_tail_size() {
   return ts;
 }
 
-void Header_s::quick_validate() const {
-#if DEBUG_GUARD_VALIDATE
-  if (this->guard != 0xFEEAFEEBDEADBEEF) {
-    printf("%s:%d  In validate header@%p  header -> %p\n", __FILE__, __LINE__, (void*)this, (void*)this->header);
-    printf("%s:%d   Missing magic value 0x0FEEAFEEBDEADBEEF in object header!!!!! @ %p\n", __FILE__, __LINE__, (void*)this);
-    abort();
-  }
-  const unsigned char* tail = (const unsigned char*)this+this->tail_start;
-  if ((*tail) != 0xcc) {
-    printf("%s:%d  In validate header@%p  header -> %p\n", __FILE__, __LINE__, (void*)this, (void*)this->header);
-    printf("%s:%d bad tail value !!!!! @ %p  value = %x  should be 0xcc\n", __FILE__, __LINE__, (void*)tail, *tail);
-    abort();
-  }
-#endif
+void Header_s::signal_invalid_object_head(const Header_s* header)
+{
+  printf("%s:%d  Invalidate object with header @ %p the head is bad\n", __FILE__, __LINE__, (void*)header);
+  abort();
 }
+
+void Header_s::signal_invalid_object_tail(const Header_s* header)
+{
+  printf("%s:%d  Invalidate object with header @ %p - the tail is bad\n", __FILE__, __LINE__, (void*)header);
+  abort();
+}
+
 
 
 void Header_s::validate() const {

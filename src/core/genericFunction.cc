@@ -447,7 +447,7 @@ LCC_RETURN apply_method(T_O* func_tagged, T_O* arg0_tagged, T_O* arg1_tagged, T_
 #endif
   Function_O* func = reinterpret_cast<Function_O*>(gctools::untag_general(func_tagged));
 //  printf("%s:%d  func = %p  func_tagged = %p  arg0_tagged=%p arg1_tagged=%p\n", __FILE__, __LINE__, (void*)func, (void*)func_tagged, (void*)arg0_tagged, (void*)arg1_tagged);
-  return (*func).invoke_va_list(LCC_PASS_ARGS2_ELLIPSIS(func_tagged,arg0_tagged, arg1_tagged));
+  return (*func).entry(LCC_PASS_ARGS2_ELLIPSIS(func_tagged,arg0_tagged, arg1_tagged));
 }
 
 

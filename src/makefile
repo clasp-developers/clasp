@@ -36,7 +36,7 @@ mps-submodule:
 
 
 pump:
-	$(PYTHON2) $(CLASP_HOME)/src/common/pump.py core/applyToActivationFrame.pmp core/include/generated/applyToActivationFrame.h
+	$(PYTHON2) $(CLASP_HOME)/src/common/pump.py core/applyToFrame.pmp core/include/generated/applyToFrame.h
 	$(PYTHON2) $(CLASP_HOME)/src/common/pump.py core/wrappers_functoids.pmp core/include/generated/wrappers_functoids.h
 	$(PYTHON2) $(CLASP_HOME)/src/common/pump.py core/wrappers_methoids.pmp core/include/generated/wrappers_methoids.h
 	$(PYTHON2) $(CLASP_HOME)/src/common/pump.py core/external_wrappers_indirect_methoids.pmp core/include/generated/external_wrappers_indirect_methoids.h

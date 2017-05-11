@@ -1092,15 +1092,15 @@ CL_DEFUN T_mv core__process_lambda_list(List_sp lambdaList, T_sp context) {
     }
   }
   T_sp tlreqs = lreqs.cons();
-  return (Values(tlreqs,
-                 lopts.cons(),
-                 restarg._ArgTarget,
-                 key_flag,
-                 lkeys.cons(),
-                 allow_other_keys,
-                 lauxs.cons(),
-                 _lisp->_boolean(restarg.VaRest)
-                 ));
+  return Values(tlreqs,
+                lopts.cons(),
+                restarg._ArgTarget,
+                key_flag,
+                lkeys.cons(),
+                allow_other_keys,
+                lauxs.cons(),
+                _lisp->_boolean(restarg.VaRest)
+                );
 };
 
 /*

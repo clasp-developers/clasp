@@ -33,6 +33,7 @@ $for isConst [[
               < Pols,OT $if ret==RetVoid [[,void]] $elif ret==Ret_unique_ptr [[, std::unique_ptr<UPRT> ]] $else [[,RT ]](OT::*)( $for Args_ , [[ARG$Args_]]) $if isConst [[const]] >
               : public core::BuiltinClosure_O {
               public:
+                  typedef IndirectVariadicMethoid < Pols,OT $if ret==RetVoid [[,void]] $elif ret==Ret_unique_ptr [[, std::unique_ptr<UPRT> ]] $else [[,RT ]](OT::*)( $for Args_ , [[ARG$Args_]]) $if isConst [[const]] > MyType;
                   typedef BuiltinClosure_O TemplatedBase;
               public:
 		    virtual const char* describe() const { return "IndirectVariadicMethoid"; };
@@ -40,25 +41,26 @@ $for isConst [[
               Type mptr;
               public:
               enum { NumParams = $numArgs };
-              IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure_O(name), mptr(ptr) {};
+              IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure_O(entry_point,name), mptr(ptr) {};
               DISABLE_NEW();
               virtual size_t templatedSizeof() const { return sizeof(*this);};
 
-              inline LCC_RETURN LISP_CALLING_CONVENTION()
+              static inline LCC_RETURN LISP_CALLING_CONVENTION()
               {
-                INCREMENT_FUNCTION_CALL_COUNTER(this);
+                MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
+                INCREMENT_FUNCTION_CALL_COUNTER(closure);
                 INITIALIZE_VA_LIST();
                 INVOCATION_HISTORY_FRAME();
                 $if numArgs>0 [[
-                  MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),$numArgs);
+                  MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),$numArgs);
                   core::StackFrameDynamicScopeManager scope(frame);
-                  lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
+                  lambdaListHandler_createBindings(closure->asSmartPtr(),closure->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
                 ]]
                 translate::from_object<OT*> objPtr(frame->arg(0));
                 $for Args_ [[
                   translate::from_object<ARG$Args_,typename DoesNotContain_<Pols,pureOutValue<$Args_> >::type > a$Args_(frame->arg($Args_));
                 ]]
-                $if ret==RetVoid [[]] $elif ret==Ret_unique_ptr [[ std::unique_ptr<UPRT> retval = ]] $else [[ RT retval = ]] ((*objPtr._v).*(this->mptr))($for Args_ ,[[a$Args_._v]]);
+                $if ret==RetVoid [[]] $elif ret==Ret_unique_ptr [[ std::unique_ptr<UPRT> retval = ]] $else [[ RT retval = ]] ((*objPtr._v).*(closure->mptr))($for Args_ ,[[a$Args_._v]]);
                 $if numArgs>0 [[
                   core::MultipleValues& returnValues = core::lisp_multipleValues();
                   returnValues.setSize(0);

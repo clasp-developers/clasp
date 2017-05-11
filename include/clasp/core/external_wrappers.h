@@ -59,9 +59,12 @@ public:
   //        typedef std::function<void (OT& ,)> Type;
   typedef D(C::*MemPtr);
   MemPtr mptr;
-  GetterMethoid(core::T_sp name, MemPtr ptr) : BuiltinClosure_O(name), mptr(ptr){};
+ GetterMethoid(core::T_sp name, MemPtr ptr) : BuiltinClosure_O(entry_point,name), mptr(ptr){};
   DISABLE_NEW();
   virtual size_t templatedSizeof() const { return sizeof(*this); };
+  static inline LCC_RETURN LISP_CALLING_CONVENTION() {
+    SIMPLE_ERROR(BF("What do I do here"));
+  }
 };
 };
 

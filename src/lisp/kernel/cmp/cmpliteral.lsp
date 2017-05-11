@@ -132,14 +132,24 @@ the value is put into *default-load-time-value-vector* and its index is returned
             (load-time-reference-literal (denominator ratio) read-only-p)))
 
 (defun ltv/cons (cons index read-only-p)
-  (if (core:proper-list-p cons)
-      (apply 'add-creator "ltvc_make_list" index
-             (length cons) (mapcar (lambda (x)
-                                     (load-time-reference-literal x read-only-p))
-                                   cons))
-      (add-creator "ltvc_make_cons" index
-                (load-time-reference-literal (car cons) read-only-p)
-                (load-time-reference-literal (cdr cons) read-only-p))))
+  (let ((isproper (core:proper-list-p cons)))
+    (cond
+      ((and isproper (< (length cons) call-arguments-limit))
+       (apply 'add-creator "ltvc_make_list" index
+              (length cons) (mapcar (lambda (x)
+                                      (load-time-reference-literal x read-only-p))
+                                    cons)))
+      ((null isproper)
+       (add-creator "ltvc_make_cons" index
+                    (load-time-reference-literal (car cons) read-only-p)
+                    (load-time-reference-literal (cdr cons) read-only-p)))
+      ;; Too long list
+      (t (let* ((pos (- call-arguments-limit 8))
+                (front (subseq cons 0 pos))
+                (back (nthcdr pos cons)))
+           (add-creator "ltvc_nconc" index
+                        (load-time-reference-literal front read-only-p)
+                        (load-time-reference-literal back read-only-p)))))))
 
 (defun ltv/complex (complex index read-only-p)
   (add-creator "ltvc_make_complex" index
