@@ -1189,7 +1189,7 @@ extern "C" {
 void exceptionStackUnwind(size_t frame) {
 #ifdef DEBUG_FLOW_CONTROL
   if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp()) {
-    printf("Unwinding to exception frame[%d]\n", frame);
+    printf("Unwinding to exception frame[%lu]\n", frame);
   }
 #endif
   my_thread->exceptionStack().unwind(frame);
@@ -1258,7 +1258,7 @@ size_t tagbodyDynamicGoIndexElseRethrow(char *exceptionP, size_t frame) {
   if (goExceptionP->getFrame() == frame) {
 #ifdef DEBUG_FLOW_CONTROL
     if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp()) {
-      printf("%s:%d Matched DynamicGo  frame: %" PRu "  index: %lu\n", __FILE__, __LINE__, goExceptionP->getFrame(), goExceptionP->index());
+      printf("%s:%d Matched DynamicGo  frame: %llu  index: %lu\n", __FILE__, __LINE__, goExceptionP->getFrame(), goExceptionP->index());
       if (core::_sym_STARdebugFlowControlSTAR->symbolValue() == kw::_sym_verbose )
         printf("   %s\n", my_thread->exceptionStack().summary().c_str());
     }

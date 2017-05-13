@@ -2479,10 +2479,12 @@ Symbol_sp Lisp_O::getClassSymbolForClassName(const string &name) {
   return sym;
 }
 
+
 T_sp Lisp_O::createObjectOfClass(T_sp mc) {
   if (clos__classp(mc)) {
     LOG(BF("createObjectOfClass(%s)") % _rep_(mc));
     IMPLEMENT_ME();
+#if 0
     T_sp obj = gc::As<Class_sp>(mc)->allocate_newNil();
     if ( obj.generalp() ) {
       obj.unsafe_general()->initialize();
@@ -2492,6 +2494,7 @@ T_sp Lisp_O::createObjectOfClass(T_sp mc) {
       SIMPLE_ERROR(BF("Add support to initialize %s") % _rep_(cl__class_of(obj)));
     }
     return obj;
+#endif
   }
   SIMPLE_ERROR(BF("Handle createObjectOfClass when mc is not a Class"));
 }

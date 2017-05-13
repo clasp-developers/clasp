@@ -705,7 +705,7 @@ NOINLINE  gc::smart_ptr<core::Class_O> allocate_one_metaclass(core::Symbol_sp cl
 //  reg::lisp_associateClassIdWithClassSymbol(reg::registered_class<TheClass>::id,TheClass::static_classSymbol());
 //  TheClass::static_class = class_val;
   core::core__setf_find_class(class_val,classSymbol);
-  auto cb = gctools::GC<core::BuiltInObjectCreator<TheClass>>::allocate();
+  auto cb = gctools::GC<TheClass>::allocate();
   class_val->setCreator(cb);
   return class_val;
 }
@@ -824,9 +824,9 @@ void initialize_clasp()
   set_static_class_symbols(&bootStrapCoreSymbolMap);
 
   printf("%s:%d  In gc_interface.cc about to set up metaclasses      cl::_sym_built_in_class->raw_()->%p\n", __FILE__, __LINE__, cl::_sym_built_in_class.raw_());
-  _lisp->_Roots._BuiltInClass = allocate_one_metaclass<core::Class_O>(cl::_sym_built_in_class,_Unbound<core::Class_O>());
-  _lisp->_Roots._StandardClass = allocate_one_metaclass<core::Class_O>(cl::_sym_standard_class,_Unbound<core::Class_O>());
-  _lisp->_Roots._StructureClass = allocate_one_metaclass<core::StructureClass_O>(cl::_sym_structure_class,_Unbound<core::Class_O>());
+  _lisp->_Roots._BuiltInClass = allocate_one_metaclass<core::StandardClassCreator_O>(cl::_sym_built_in_class,_Unbound<core::Class_O>());
+  _lisp->_Roots._StandardClass = allocate_one_metaclass<core::StandardClassCreator_O>(cl::_sym_standard_class,_Unbound<core::Class_O>());
+  _lisp->_Roots._StructureClass = allocate_one_metaclass<core::StructureClassCreator_O>(cl::_sym_structure_class,_Unbound<core::Class_O>());
   _lisp->_Roots._BuiltInClass->_MetaClass = _lisp->_Roots._StandardClass;
   _lisp->_Roots._StandardClass->_MetaClass = _lisp->_Roots._StandardClass;
   _lisp->_Roots._StructureClass->_MetaClass = _lisp->_Roots._StandardClass;

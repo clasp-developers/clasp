@@ -114,7 +114,7 @@ CL_DEFUN T_sp core__allocate_raw_class(T_sp orig, T_sp tMetaClass, int slots, bo
     if (slots == 28 ) {
       printf("%s:%d  Creating the class %s with 28 slots\n", __FILE__, __LINE__, cMetaClass->classNameAsString().c_str());
     }
-    T_sp tNewClass = cMetaClass->allocate_newNil();
+    T_sp tNewClass = cMetaClass->allocate_newClass(cMetaClass,slots);
     if ( Class_sp newClass = tNewClass.asOrNull<Class_O>() ) {
       newClass->initialize();
       newClass->_MetaClass = cMetaClass;
@@ -130,7 +130,7 @@ CL_DEFUN T_sp core__allocate_raw_class(T_sp orig, T_sp tMetaClass, int slots, bo
       } else if (Class_sp corig = orig.asOrNull<Class_O>()) {
         corig->_MetaClass = cMetaClass;
         corig->_MetaClassSlots = newClass->_MetaClassSlots;
-        printf("%s:%d Changing the #slots to %lu for metaclass %s\n", __FILE__, __LINE__, cMetaClass->classNameAsString().c_str() );
+        printf("%s:%d Changing the #slots to %d for metaclass %s\n", __FILE__, __LINE__, slots, cMetaClass->classNameAsString().c_str() );
       }
       return orig;
     } else if ( Instance_sp iNewClass = tNewClass.asOrNull<Instance_O>() ) {
@@ -139,7 +139,8 @@ CL_DEFUN T_sp core__allocate_raw_class(T_sp orig, T_sp tMetaClass, int slots, bo
       SIMPLE_ERROR(BF("Creating an instance of %s resulted in something unexpected -> %s") % _rep_(cMetaClass) % _rep_(tNewClass) );
     }
   } else if (tMetaClass.nilp()) {
-    GC_ALLOCATE_UNCOLLECTABLE(Class_O,newClass,gctools::NextStamp(),_lisp->_Roots._StandardClass,REF_CLASS_NUMBER_OF_SLOTS_IN_STANDARD_CLASS);
+    printf("%s:%d   core::allocate-raw-class was invoked with NIL as the meta-class - check out why\n", __FILE__, __LINE__ );
+    GC_ALLOCATE_UNCOLLECTABLE(Class_O,newClass,gctools::NextStamp(),lisp_StandardClass(),REF_CLASS_NUMBER_OF_SLOTS_IN_STANDARD_CLASS);
     newClass->initialize();
     auto cb = gctools::GC<core::BuiltInObjectCreator<Class_O>>::allocate();
     newClass->setCreator(cb);
@@ -230,14 +231,25 @@ string Class_O::classNameAsString() const {
   //    SIMPLE_ERROR(BF("You should use instanceClassName rather than className for classes"));
 }
 
+#if 0
 T_sp Class_O::allocate_newNil() {
   ASSERTF(this->_theCreator, BF("The class %s does not have a creator defined") % this->classNameAsString() );
   T_sp newObject = this->_theCreator->creator_allocate();
   return newObject;
 }
+#endif
+
+T_sp Class_O::allocate_newClass(Class_sp metaClass, int slots) {
+  ASSERTF(this->_theCreator, BF("The class %s does not have a creator defined") % this->classNameAsString() );
+  Class_sp newClass = gc::As<Class_sp>(this->_theCreator->creator_allocate());
+  newClass->_MetaClass = metaClass;
+  newClass->_NumberOfSlots = slots;
+  printf("%s:%d  Initialize class slots here?????\n", __FILE__, __LINE__);
+  return newClass;
+}
 
 T_sp Class_O::make_instance() {
-  T_sp instance = this->allocate_newNil();
+  T_sp instance = this->_theCreator->creator_allocate(); //this->allocate_newNil();
   if (instance.generalp()) {
     instance.unsafe_general()->initialize();
   } else {

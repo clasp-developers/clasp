@@ -27,6 +27,7 @@ THE SOFTWARE.
 #ifndef _core_structureClass_H
 #define _core_structureClass_H
 
+#if 0
 #include <stdio.h>
 #include <string>
 #include <vector>
@@ -90,7 +91,7 @@ namespace core {
     virtual core::T_sp creator_allocate() {
       // BuiltInObjectCreator<StructureClass_O> uses a different allocation method
       // that assigns the next Clos Stamp to the new StandardClass
-      GC_ALLOCATE_VARIADIC(StructureClass_O, obj, gctools::NextStamp(),lisp_StandardClass(),REF_CLASS_NUMBER_OF_SLOTS_IN_STRUCTURE_CLASS );
+      GC_ALLOCATE_VARIADIC(StructureClass_O, obj, gctools::NextStamp());
       return obj;
     }
     virtual void searcher(){};
@@ -98,3 +99,4 @@ namespace core {
 };
 
 #endif //]
+#endif

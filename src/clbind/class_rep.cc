@@ -70,7 +70,7 @@ namespace clbind {
 
 
 ClassRep_O::ClassRep_O(type_id const &type, const std::string &name, bool derivable)
-  : Class_O(gctools::NextStamp(),_lisp->_Roots._StandardClass, REF_CLASS_NUMBER_OF_SLOTS_IN_STANDARD_CLASS),
+  : Class_O(gctools::NextStamp(),core::lisp_StandardClass(),REF_CLASS_NUMBER_OF_SLOTS_IN_STANDARD_CLASS ),
     m_type(type),
     m_name(name)
       //	, m_class_type(cpp_class)
@@ -112,7 +112,7 @@ ClassRep_O::ClassRep_O(type_id const &type, const std::string &name, bool deriva
 }
 
 ClassRep_O::ClassRep_O(const std::string &name, bool derivable)
-  : Class_O(gctools::NextStamp(),_lisp->_Roots._StandardClass, REF_CLASS_NUMBER_OF_SLOTS_IN_STANDARD_CLASS),
+  : Class_O(gctools::NextStamp(),core::lisp_StandardClass(),REF_CLASS_NUMBER_OF_SLOTS_IN_STANDARD_CLASS),
       m_type(typeid(reg::null_type)), m_name(name)
       //	, m_class_type(cl_class)
       //	, m_operator_cache(0)

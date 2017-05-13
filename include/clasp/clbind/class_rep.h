@@ -112,7 +112,7 @@ public:
   bool cxxDerivableClassP() const { return this->m_derivable; };
   bool primaryCxxDerivableClassP() const { return gctools::As<core::Creator_sp>(this->class_creator())->duplicationLevel() == 0; };
 
- ClassRep_O() : Class_O(gctools::NextStamp(),_lisp->_Roots._StandardClass, REF_CLASS_NUMBER_OF_SLOTS_IN_STANDARD_CLASS), m_derivable(false){};
+ ClassRep_O() : Class_O(gctools::NextStamp(),core::lisp_StandardClass(),REF_CLASS_NUMBER_OF_SLOTS_IN_STANDARD_CLASS) {};
 
   ClassRep_O(type_id const &type, const std::string &name, bool derivable);
 

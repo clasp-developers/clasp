@@ -263,8 +263,8 @@ public:
   /*! Allocate an object of this class
 	  But don't call initialize!!!!!
 	*/
-  virtual T_sp allocate_newNil();
-  virtual T_sp allocate_newClass(int slots);
+//  virtual T_sp allocate_newNil();
+  virtual T_sp allocate_newClass(Class_sp metaClass, int slots);
 
   T_sp make_instance();
 
@@ -300,7 +300,7 @@ public:
     return Values(clasp_make_fixnum(this->_allocation_counter), clasp_make_fixnum(this->_allocation_total_size));
   }
 #endif
-  explicit Class_O(gctools::Stamp is, Class_sp metaClass, size_t number_of_slots) : Class_O::Base(), _instance_stamp(is),
+  explicit Class_O(gctools::Stamp is,Class_sp metaClass, size_t slots) : Class_O::Base(), _instance_stamp(is),
 #ifdef METER_ALLOCATIONS
     _allocation_counter(0),
     _allocation_total_size(0),
@@ -308,7 +308,7 @@ public:
     _MetaClass(metaClass),
     _Signature_ClassSlots(_Unbound<T_O>()),
     _theCreator(),
-    _NumberOfSlots(number_of_slots)
+    _NumberOfSlots(slots)
     {};
 
   virtual ~Class_O(){};
@@ -334,7 +334,7 @@ namespace core {
     virtual core::T_sp creator_allocate() {
       // BuiltInObjectCreator<Class_O> uses a different allocation method
       // that assigns the next Clos Stamp to the new Class
-      GC_ALLOCATE_VARIADIC(Class_O, obj, gctools::NextStamp(),_Unbound<Class_O>(),REF_CLASS_NUMBER_OF_SLOTS_IN_STANDARD_CLASS );
+      GC_ALLOCATE_VARIADIC(Class_O, obj, gctools::NextStamp(),lisp_StandardClass(),REF_CLASS_NUMBER_OF_SLOTS_IN_STANDARD_CLASS);
       return obj;
     }
     virtual void searcher(){};
