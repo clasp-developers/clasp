@@ -750,7 +750,7 @@ and initialize it with an array consisting of one function pointer."
         (let ((start (irc-gep roots-array
                               (list (jit-constant-size_t 0)
                                     (jit-constant-size_t 0)))))
-          (irc-create-call "cc_initialize_gcroots_in_module" (list gcroots-in-module start (jit-constant-size_t number-of-roots) values))
+          (irc-intrinsic-call "cc_initialize_gcroots_in_module" (list gcroots-in-module start (jit-constant-size_t number-of-roots) values))
           (irc-ret-void))))
     (let ((shutdown-fn (irc-simple-function-create core:*module-shutdown-function-name*
                                                    (llvm-sys:function-type-get %void% nil)
@@ -772,7 +772,7 @@ and initialize it with an array consisting of one function pointer."
           (let ((start (irc-gep roots-array
                                 (list (jit-constant-size_t 0)
                                       (jit-constant-size_t 0)))))
-            (irc-create-call "cc_shutdown_gcroots_in_module" (list gcroots-in-module))
+            (irc-intrinsic-call "cc_shutdown_gcroots_in_module" (list gcroots-in-module))
             (irc-ret-void))))
       (values startup-fn shutdown-fn))))
 

@@ -59,10 +59,10 @@ namespace core {
     Symbol_sp var(size_t i) const { return this->_Bindings[i]._Var; };
     T_sp val(size_t i) const { return this->_Bindings[i]._Val; };
     ATTR_WEAK void push_with_value_coming(Symbol_sp var);
-    ATTR_WEAK void push(Symbol_sp var, T_sp value=_Unbound<T_O>());
+    ATTR_WEAK void push_binding(Symbol_sp var, T_sp value=_Unbound<T_O>());
     // Push the current value of the symbol onto the DynamicBindingStack
     //   The new value will follow immediately
-    ATTR_WEAK void pop();
+    ATTR_WEAK void pop_binding();
     void reserve(size_t x) { this->_Bindings.reserve(x); };
     size_t size() const { return this->_Bindings.size(); };
     void expandThreadLocalBindings(size_t index);

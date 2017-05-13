@@ -284,7 +284,7 @@ when this is t a lot of graphs will be generated.")
                                                 abi)))
       (cmp:with-irbuilder (*entry-irbuilder*)
         (cmp:irc-low-level-trace :cclasp-eh)
-	(let ((result (cmp:irc-create-call "cc_pushLandingPadFrame" nil)))
+	(let ((result (cmp:irc-intrinsic-call "cc_pushLandingPadFrame" nil)))
 	  (cmp:irc-store result (translate-datum (clasp-cleavir-hir:frame-holder instr)))))))
   (let* ((lambda-list (cleavir-ir:lambda-list instr))
          (fn-args (llvm-sys:get-argument-list cmp:*current-function*))
@@ -441,14 +441,14 @@ when this is t a lot of graphs will be generated.")
   (cmp:irc-low-level-trace :flow)
   (with-return-values (return-vals return-value abi)
     ;; Save whatever is in return-vals in the multiple-value array
-    (cmp:irc-create-call "cc_saveMultipleValue0" (list return-value)) ;; (sret-arg return-vals))
+    (cmp:irc-intrinsic-call "cc_saveMultipleValue0" (list return-value)) ;; (sret-arg return-vals))
     (cmp:irc-low-level-trace :cclasp-eh)
-    (cmp:irc-create-call "cc_unwind" (list (cmp::irc-load (first inputs)) (%size_t (clasp-cleavir-hir:jump-id instruction))))))
+    (cmp:irc-intrinsic-call "cc_unwind" (list (cmp::irc-load (first inputs)) (%size_t (clasp-cleavir-hir:jump-id instruction))))))
 
 (defmethod translate-simple-instruction
     ((instruction cleavir-ir:create-cell-instruction) return-value inputs outputs abi)
   (cmp:irc-low-level-trace :flow)
-  (let ((result (cmp:irc-create-call "cc_makeCell" nil)))
+  (let ((result (cmp:irc-intrinsic-call "cc_makeCell" nil)))
     (%store result (first outputs))))
 
 (defmethod translate-simple-instruction
@@ -456,14 +456,14 @@ when this is t a lot of graphs will be generated.")
   (cmp:irc-low-level-trace :flow)
   (let ((cell (llvm-sys:create-load-value-twine cmp:*irbuilder* (first inputs) "cell"))
 	(val (llvm-sys:create-load-value-twine cmp:*irbuilder* (second inputs) "val")))
-    (cmp:irc-create-call "cc_writeCell" (list cell val))))
+    (cmp:irc-intrinsic-call "cc_writeCell" (list cell val))))
 
 
 (defmethod translate-simple-instruction
     ((instruction cleavir-ir:read-cell-instruction) return-value inputs outputs abi)
   (let ((cell (llvm-sys:create-load-value-twine cmp:*irbuilder* (first inputs) "cell")))
   (cmp:irc-low-level-trace :flow)
-    (let ((result (cmp:irc-create-call "cc_readCell" (list cell))))
+    (let ((result (cmp:irc-intrinsic-call "cc_readCell" (list cell))))
       (llvm-sys:create-store cmp:*irbuilder* result (first outputs) nil))))
 
 (defmethod translate-simple-instruction
@@ -471,7 +471,7 @@ when this is t a lot of graphs will be generated.")
   (cmp:irc-low-level-trace :flow)
   (let ((env (cmp:irc-load (first inputs) "env"))
 	(idx (second inputs)))
-    (let ((result (cmp:irc-create-call "cc_fetch" (list env idx))))
+    (let ((result (cmp:irc-intrinsic-call "cc_fetch" (list env idx))))
       (llvm-sys:create-store cmp:*irbuilder* result (first outputs) nil))))
 
 (defmethod translate-simple-instruction
@@ -480,27 +480,27 @@ when this is t a lot of graphs will be generated.")
   (cmp:irc-low-level-trace :flow)
   (let ((cell (cmp:irc-load (first inputs) "func-name")))
     ;;    (format t "translate-simple-instruction (first inputs) = ~a ~%" (first inputs))
-    (let ((result (cmp:irc-create-call "cc_safe_fdefinition" (list cell) "func")))
+    (let ((result (cmp:irc-intrinsic-call "cc_safe_fdefinition" (list cell) "func")))
       (%store result (first outputs)))))
 
 (defmethod translate-simple-instruction
     ((instruction clasp-cleavir-hir:debug-message-instruction) return-value inputs outputs abi)
   (let ((msg (cmp:jit-constant-unique-string-ptr (clasp-cleavir-hir:debug-message instruction))))
-    (cmp:irc-create-call "debugMessage" (list msg))))
+    (cmp:irc-intrinsic-call "debugMessage" (list msg))))
 	
 
 (defmethod translate-simple-instruction
     ((instruction clasp-cleavir-hir:setf-fdefinition-instruction) return-value inputs outputs abi)
   (cmp:irc-low-level-trace :flow)
   (let ((cell (cmp:irc-load (first inputs) "setf-func-name")))
-    (let ((result (cmp:irc-create-call "cc_safe_setfdefinition" (list cell))))
+    (let ((result (cmp:irc-intrinsic-call "cc_safe_setfdefinition" (list cell))))
       (%store result (first outputs)))))
 
 (defmethod translate-simple-instruction
     ((instruction cleavir-ir:symbol-value-instruction) return-value inputs outputs abi)
   (cmp:irc-low-level-trace :flow)
   (let ((sym (cmp:irc-load (first inputs) "sym-name")))
-    (let ((result (cmp:irc-create-call "cc_safe_symbol_value" (list sym))))
+    (let ((result (cmp:irc-intrinsic-call "cc_safe_symbol_value" (list sym))))
       (%store result (first outputs)))))
 
 (defmethod translate-simple-instruction
@@ -508,7 +508,7 @@ when this is t a lot of graphs will be generated.")
   (cmp:irc-low-level-trace :flow)
   (let ((sym (cmp:irc-load (first inputs) "sym-name"))
 	(val (cmp:irc-load (second inputs) "value")))
-    (cmp:irc-create-call "cc_setSymbolValue" (list sym val))))
+    (cmp:irc-intrinsic-call "cc_setSymbolValue" (list sym val))))
 
 
 #|
@@ -519,7 +519,7 @@ when this is t a lot of graphs will be generated.")
     
   (let ((cell (llvm-sys:create-load-value-twine cmp:*irbuilder* (first inputs) "cell")))
   (cmp:irc-low-level-trace :flow)
-    (let ((result (cmp:irc-create-call "cc_readCell" (list cell))))
+    (let ((result (cmp:irc-intrinsic-call "cc_readCell" (list cell))))
       (llvm-sys:create-store cmp:*irbuilder* result (first outputs) nil))))
 |#
 
@@ -534,7 +534,7 @@ when this is t a lot of graphs will be generated.")
              (dx-p (cleavir-ir:dynamic-extent-p instruction))
              (result
                (if dx-p
-                   (cmp:irc-create-call
+                   (cmp:irc-intrinsic-call
                     "cc_stack_enclose"
                     (list* (llvm-sys:create-bit-cast
                             cmp:*irbuilder*
@@ -551,7 +551,7 @@ when this is t a lot of graphs will be generated.")
                            (%size_t (length inputs))
                            loaded-inputs)
                     (format nil "closure->~a" lambda-name))
-                   (cmp:irc-create-call
+                   (cmp:irc-intrinsic-call
                     "cc_enclose"
                     (list* ltv-lambda-name
                            enclosed-function
@@ -572,8 +572,8 @@ when this is t a lot of graphs will be generated.")
     ((instruction cleavir-ir:multiple-value-call-instruction) return-value inputs outputs abi)
   (cmp:irc-low-level-trace :flow)
   (with-return-values (return-vals return-value abi)
-    (cmp:irc-create-call "cc_saveMultipleValue0" (list return-value)) ;; (sret-arg return-vals))
-    (let ((call-result (cmp:irc-create-call "cc_call_multipleValueOneFormCall" 
+    (cmp:irc-intrinsic-call "cc_saveMultipleValue0" (list return-value)) ;; (sret-arg return-vals))
+    (let ((call-result (cmp:irc-intrinsic-call "cc_call_multipleValueOneFormCall" 
 				     (list (cmp:irc-load (first inputs))))))
       (%store call-result return-value)
       (cc-dbg-when 
@@ -588,7 +588,7 @@ when this is t a lot of graphs will be generated.")
   (cmp:irc-low-level-trace :flow)
   (let* ((lpad (clasp-cleavir::landing-pad instruction)))
     (with-return-values (return-vals return-value abi)
-      (cmp:irc-create-call "cc_saveMultipleValue0" (list return-value)) ;; (sret-arg return-vals))
+      (cmp:irc-intrinsic-call "cc_saveMultipleValue0" (list return-value)) ;; (sret-arg return-vals))
       (let ((call-result (cmp:irc-create-invoke "cc_call_multipleValueOneFormCall" 
 					 (list (cmp:irc-load (first inputs)))
 					 (basic-block lpad))))
@@ -830,13 +830,13 @@ when this is t a lot of graphs will be generated.")
   #+(or)(with-return-values (return-vals return-value abi)
           (cmp:irc-intrinsic "cc_saveMultipleValue0" return-value #|(sret-arg return-vals)|#)
           (cmp:irc-intrinsic "cc_throw" (cmp:irc-load (first inputs))))
-  (cmp:irc-create-call "cc_throw" (list (%load (first inputs)) (%load (second inputs))))
+  (cmp:irc-intrinsic-call "cc_throw" (list (%load (first inputs)) (%load (second inputs))))
   (cmp:irc-unreachable))
 
 (defmethod translate-branch-instruction
     ((instruction clasp-cleavir-hir:landing-pad-return-instruction) return-value inputs outputs successors abi)
   (cmp:irc-low-level-trace :cclasp-eh)
-  (cmp:irc-create-call "cc_popLandingPadFrame" (list (cmp:irc-load (car (last inputs)))))
+  (cmp:irc-intrinsic-call "cc_popLandingPadFrame" (list (cmp:irc-load (car (last inputs)))))
   (call-next-method))
 
 (defmethod translate-branch-instruction

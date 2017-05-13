@@ -64,7 +64,6 @@ public:
   inline static LCC_RETURN LISP_CALLING_CONVENTION() {
     MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
     INCREMENT_FUNCTION_CALL_COUNTER(closure);
-    ASSERT_LCC_VA_LIST_CLOSURE_DEFINED(lcc_arglist);
     OT *objPtr = gc::As<core::WrappedPointer_sp>((LCC_ARG0()))->cast<OT>();
     MemberType &orig = (*objPtr).*(closure->_MemberPtr);
     return Values(translate::to_object<MemberType, translate::dont_adopt_pointer>::convert(orig));
@@ -90,7 +89,6 @@ public:
   static inline LCC_RETURN LISP_CALLING_CONVENTION() {
     MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
     INCREMENT_FUNCTION_CALL_COUNTER(closure);
-    ASSERT_LCC_VA_LIST_CLOSURE_DEFINED(lcc_arglist);
     OT *objPtr = gc::As<core::WrappedPointer_sp>((LCC_ARG0()))->cast<OT>();
     MemberType *ptr = (*objPtr).*(closure->_MemberPtr);
     return translate::to_object<MemberType *, translate::dont_adopt_pointer>::convert(ptr);

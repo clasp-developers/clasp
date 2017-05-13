@@ -310,7 +310,6 @@ void CompiledClosure_O::setf_lambda_list(core::List_sp lambda_list) {
 #if 0
 LCC_RETURN InstanceClosure_O::LISP_CALLING_CONVENTION() {
   INCREMENT_FUNCTION_CALL_COUNTER(this);
-  ASSERT_LCC_VA_LIST_CLOSURE_DEFINED();
 // Copy the arguments passed in registers into the multiple_values array and those
 // will be processed by the generic function
 #ifdef _DEBUG_BUILD
@@ -324,7 +323,6 @@ LCC_RETURN InstanceClosure_O::LISP_CALLING_CONVENTION() {
 LCC_RETURN MacroClosure_O::entry_point(LCC_ARGS_ELLIPSIS) {
   MacroClosure_O* closure = gctools::untag_general<MacroClosure_O*>((MacroClosure_O*)lcc_closure);
   INCREMENT_FUNCTION_CALL_COUNTER(closure);
-    ASSERT_LCC_VA_LIST_CLOSURE_DEFINED(lcc_arglist);
     List_sp form = gc::As<Cons_sp>(LCC_ARG0());
     T_sp env = gc::As<T_sp>(LCC_ARG1());
 //    InvocationHistoryFrame _frame(lcc_vargs); // The environment could be a Non-Clasp Environment (Cleavir)

@@ -73,7 +73,7 @@
           irc-br
           irc-branch-to-and-begin-block
           irc-cond-br
-          irc-create-call
+          irc-intrinsic-call
           irc-create-invoke
           irc-create-invoke-default-unwind
           irc-create-landing-pad
@@ -85,7 +85,6 @@
           irc-icmp-eq
           irc-icmp-slt
           irc-intrinsic
-          irc-intrinsic-args
           irc-load
           irc-low-level-trace
           irc-phi

@@ -654,7 +654,6 @@ CL_DECLARE();
 CL_DOCSTRING("values");
 CL_DEFUN T_mv cl__values(VaList_sp vargs) {
   // returns multiple values
-  ASSERT(vargs.valistp());
   size_t nargs = vargs->remaining_nargs();
   if (nargs >= core::MultipleValues::MultipleValuesLimit) {
     SIMPLE_ERROR(BF("Too many arguments to values - only %d are supported and you tried to return %d values") % core::MultipleValues::MultipleValuesLimit % nargs );
@@ -2143,7 +2142,7 @@ CL_DEFUN void core__dynamic_binding_stack_dump(std::ostream &out) {
   DynamicBindingStack &bd = my_thread->bindings();
   out << "Top of binding stack element " << bd.size() << std::endl;
   for (int i(bd.size()-1); i>=0; --i) {
-    out << "  dbstack[" << i << "] --> " << _rep_(bd.var(i)) << std::endl;
+    out << "  dbstack[" << i << "] --> " << (bd.var(i))->formattedName(true) << std::endl;
   };
 }
 

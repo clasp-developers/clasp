@@ -91,6 +91,7 @@ typedef bool _Bool;
 #include <clasp/core/symbolTable.h>
 
 #include <clasp/gctools/gctoolsPackage.h>
+#include <clasp/core/metaClass.h>
 #include <clasp/gctools/gcStack.h>
 #include <clasp/gctools/containers.h>
 #include <clasp/core/weakPointer.h>
@@ -696,22 +697,24 @@ NOINLINE void set_one_static_class_Kind() {
 }
 
 
+template <class TheClass>
 NOINLINE  gc::smart_ptr<core::Class_O> allocate_one_metaclass(core::Symbol_sp classSymbol, core::Class_sp metaClass)
 {
-  gc::smart_ptr<core::Class_O> class_val = core::Class_O::createUncollectable(core::Class_O::static_Kind,metaClass);
+  gc::smart_ptr<core::Class_O> class_val = core::Class_O::createUncollectable(core::Class_O::static_Kind,metaClass,REF_CLASS_NUMBER_OF_SLOTS_IN_STANDARD_CLASS);
   class_val->__setup_stage1_with_sharedPtr_lisp_sid(class_val,classSymbol);
 //  reg::lisp_associateClassIdWithClassSymbol(reg::registered_class<TheClass>::id,TheClass::static_classSymbol());
 //  TheClass::static_class = class_val;
   core::core__setf_find_class(class_val,classSymbol);
-  auto cb = gctools::GC<core::BuiltInObjectCreator<core::Class_O>>::allocate();
+  auto cb = gctools::GC<core::BuiltInObjectCreator<TheClass>>::allocate();
   class_val->setCreator(cb);
   return class_val;
 }
 
+
 template <class TheClass>
 NOINLINE  gc::smart_ptr<core::Class_O> allocate_one_class(core::Class_sp metaClass)
 {
-  gc::smart_ptr<core::Class_O> class_val = core::Class_O::createUncollectable(TheClass::static_Kind,metaClass);
+  gc::smart_ptr<core::Class_O> class_val = core::Class_O::createUncollectable(TheClass::static_Kind,metaClass,REF_CLASS_NUMBER_OF_SLOTS_IN_STANDARD_CLASS);
   class_val->__setup_stage1_with_sharedPtr_lisp_sid(class_val,TheClass::static_classSymbol());
   reg::lisp_associateClassIdWithClassSymbol(reg::registered_class<TheClass>::id,TheClass::static_classSymbol());
   TheClass::static_class = class_val;
@@ -821,9 +824,9 @@ void initialize_clasp()
   set_static_class_symbols(&bootStrapCoreSymbolMap);
 
   printf("%s:%d  In gc_interface.cc about to set up metaclasses      cl::_sym_built_in_class->raw_()->%p\n", __FILE__, __LINE__, cl::_sym_built_in_class.raw_());
-  _lisp->_Roots._BuiltInClass = allocate_one_metaclass(cl::_sym_built_in_class,_Unbound<core::Class_O>());
-  _lisp->_Roots._StandardClass = allocate_one_metaclass(cl::_sym_standard_class,_Unbound<core::Class_O>());
-  _lisp->_Roots._StructureClass = allocate_one_metaclass(cl::_sym_structure_class,_Unbound<core::Class_O>());
+  _lisp->_Roots._BuiltInClass = allocate_one_metaclass<core::Class_O>(cl::_sym_built_in_class,_Unbound<core::Class_O>());
+  _lisp->_Roots._StandardClass = allocate_one_metaclass<core::Class_O>(cl::_sym_standard_class,_Unbound<core::Class_O>());
+  _lisp->_Roots._StructureClass = allocate_one_metaclass<core::StructureClass_O>(cl::_sym_structure_class,_Unbound<core::Class_O>());
   _lisp->_Roots._BuiltInClass->_MetaClass = _lisp->_Roots._StandardClass;
   _lisp->_Roots._StandardClass->_MetaClass = _lisp->_Roots._StandardClass;
   _lisp->_Roots._StructureClass->_MetaClass = _lisp->_Roots._StandardClass;
@@ -854,15 +857,15 @@ void initialize_clasp()
   #endif
   #undef CALCULATE_CLASS_PRECEDENCE_ALL_CLASSES
 
-  _lisp->_Roots._BuiltInClass->instanceSet(core::Class_O::REF_SLOTS,_Nil<core::T_O>());
-  _lisp->_Roots._BuiltInClass->instanceSet(core::Class_O::REF_DIRECT_SLOTS,_Nil<core::T_O>());
-  _lisp->_Roots._BuiltInClass->instanceSet(core::Class_O::REF_DEFAULT_INITARGS,_Nil<core::T_O>());
-  _lisp->_Roots._StandardClass->instanceSet(core::Class_O::REF_SLOTS,_Nil<core::T_O>());
-  _lisp->_Roots._StandardClass->instanceSet(core::Class_O::REF_DIRECT_SLOTS,_Nil<core::T_O>());
-  _lisp->_Roots._StandardClass->instanceSet(core::Class_O::REF_DEFAULT_INITARGS,_Nil<core::T_O>());
-  _lisp->_Roots._StructureClass->instanceSet(core::Class_O::REF_SLOTS,_Nil<core::T_O>());
-  _lisp->_Roots._StructureClass->instanceSet(core::Class_O::REF_DIRECT_SLOTS,_Nil<core::T_O>());
-  _lisp->_Roots._StructureClass->instanceSet(core::Class_O::REF_DEFAULT_INITARGS,_Nil<core::T_O>());
+  _lisp->_Roots._BuiltInClass->instanceSet(core::Class_O::REF_CLASS_SLOTS,_Nil<core::T_O>());
+  _lisp->_Roots._BuiltInClass->instanceSet(core::Class_O::REF_CLASS_DIRECT_SLOTS,_Nil<core::T_O>());
+  _lisp->_Roots._BuiltInClass->instanceSet(core::Class_O::REF_CLASS_DEFAULT_INITARGS,_Nil<core::T_O>());
+  _lisp->_Roots._StandardClass->instanceSet(core::Class_O::REF_CLASS_SLOTS,_Nil<core::T_O>());
+  _lisp->_Roots._StandardClass->instanceSet(core::Class_O::REF_CLASS_DIRECT_SLOTS,_Nil<core::T_O>());
+  _lisp->_Roots._StandardClass->instanceSet(core::Class_O::REF_CLASS_DEFAULT_INITARGS,_Nil<core::T_O>());
+  _lisp->_Roots._StructureClass->instanceSet(core::Class_O::REF_CLASS_SLOTS,_Nil<core::T_O>());
+  _lisp->_Roots._StructureClass->instanceSet(core::Class_O::REF_CLASS_DIRECT_SLOTS,_Nil<core::T_O>());
+  _lisp->_Roots._StructureClass->instanceSet(core::Class_O::REF_CLASS_DEFAULT_INITARGS,_Nil<core::T_O>());
 
   _lisp->_Roots._BuiltInClass->setInstanceBaseClasses(core::Cons_O::createList(_lisp->_Roots._Class));
   _lisp->_Roots._StandardClass->setInstanceBaseClasses(core::Cons_O::createList(_lisp->_Roots._Class));

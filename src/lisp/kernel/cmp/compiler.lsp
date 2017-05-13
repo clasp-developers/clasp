@@ -131,7 +131,7 @@ Could return more functions that provide lambda-list for swank for example"
                ;; The following injects a debugInspectT_sp at the start of the body
                ;; it will print the address of the literal which must correspond to an entry in the
                ;; load time values table
-               #+(or)(irc-create-call "debugInspectT_sp" (list (literal:compile-reference-to-literal :This-is-a-test)))
+               #+(or)(irc-intrinsic-call "debugInspectT_sp" (list (literal:compile-reference-to-literal :This-is-a-test)))
                (let* ((arguments             (llvm-sys:get-argument-list fn))
                       (argument-holder       (bclasp-setup-calling-convention arguments lambda-list-handler NIL #|DEBUG-ON|#)))
                  (let ((new-env (progn
@@ -1159,7 +1159,7 @@ jump to blocks within this tagbody."
          ((endp cur-exp) nil)
       ;;(bformat t "In codegen-multiple-value-foreign-call codegen arg[%d] -> %d\n" i exp)
       (codegen temp-result exp evaluate-env)
-      (push (irc-create-call (clasp-ffi::from-translator-name type)
+      (push (irc-intrinsic-call (clasp-ffi::from-translator-name type)
                              (list (irc-smart-ptr-extract (irc-load temp-result)))) args))
     args))
 
@@ -1187,8 +1187,8 @@ jump to blocks within this tagbody."
             (llvm-sys:create-call-array-ref *irbuilder* func (nreverse args) "intrinsic"))
            (result-in-t*
             (if (eq :void (first foreign-types))
-                (irc-create-call (clasp-ffi::to-translator-name (first foreign-types)) nil) ; returns :void
-                (irc-create-call (clasp-ffi::to-translator-name (first foreign-types))
+                (irc-intrinsic-call (clasp-ffi::to-translator-name (first foreign-types)) nil) ; returns :void
+                (irc-intrinsic-call (clasp-ffi::to-translator-name (first foreign-types))
                                  (list foreign-result)))))
       (irc-store-result-t* result result-in-t*)))
   (irc-low-level-trace :flow))
@@ -1215,8 +1215,8 @@ jump to blocks within this tagbody."
               (llvm-sys:create-call-function-pointer *irbuilder* function-type function-pointer (nreverse args) "fn-ptr-call-result"))
              (result-in-t*
               (if (eq :void (first foreign-types))
-                  (irc-create-call (clasp-ffi::to-translator-name (first foreign-types)) nil) ; returns :void
-                  (irc-create-call (clasp-ffi::to-translator-name (first foreign-types))
+                  (irc-intrinsic-call (clasp-ffi::to-translator-name (first foreign-types)) nil) ; returns :void
+                  (irc-intrinsic-call (clasp-ffi::to-translator-name (first foreign-types))
                                    (list foreign-result)))))
         (irc-store-result-t* result result-in-t*)))
     (irc-low-level-trace :flow)))
@@ -1344,25 +1344,23 @@ jump to blocks within this tagbody."
       ;; with the current form and environment
       (when *code-walker*
         (setq form (funcall *code-walker* form env)))
-      (prog1
-          (if (atom form)
-              (if (symbolp form)
-                  (codegen-symbol-value result form env)
-                  (codegen-literal result form env))
-              (let ((head (car form))
-                    (rest (cdr form)))
-                (cmp-log "About to codegen special-operator or application for: %s\n" form)
-                ;;  (trace-linenumber-column (walk-to-find-parse-pos form) env)
-                (cond
-                  ((treat-as-special-operator-p head)
-                   (codegen-special-operator result head rest env))
-                  ((and head (consp head) (eq (car head) 'cl:lambda))
-                   (codegen result `(funcall ,head ,@rest) env))
-                  ((and head (symbolp head))
-                   (codegen-application result form env))
-                  (t
-                   (error "Handle codegen of cons: ~a" form))))) 
-        ))))
+      (if (atom form)
+          (if (symbolp form)
+              (codegen-symbol-value result form env)
+              (codegen-literal result form env))
+          (let ((head (car form))
+                (rest (cdr form)))
+            (cmp-log "About to codegen special-operator or application for: %s\n" form)
+            ;;  (trace-linenumber-column (walk-to-find-parse-pos form) env)
+            (cond
+              ((treat-as-special-operator-p head)
+               (codegen-special-operator result head rest env))
+              ((and head (consp head) (eq (car head) 'cl:lambda))
+               (codegen result `(funcall ,head ,@rest) env))
+              ((and head (symbolp head))
+               (codegen-application result form env))
+              (t
+               (error "Handle codegen of cons: ~a" form))))))))
 
 ;;------------------------------------------------------------
 ;;

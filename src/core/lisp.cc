@@ -933,7 +933,6 @@ Symbol_sp Lisp_O::defineSpecialOperator(const string &packageName, const string 
   if (this->_Roots._SpecialForms.unboundp()) {
     this->_Roots._SpecialForms = HashTableEq_O::create_default();
   }
-  ASSERTP(!this->_Roots._SpecialForms->contains(sym), "You cant define a special form with the symbol(" + formName + ") it has already been defined");
   this->_Roots._SpecialForms->setf_gethash(sym, special);
   return sym;
 }
@@ -1020,8 +1019,6 @@ void Lisp_O::addClass(Symbol_sp classSymbol,
 //                      Symbol_sp base3ClassSymbol) {
 {
   LOG(BF("Lisp_O::addClass classSymbol(%s) baseClassSymbol1(%u) baseClassSymbol2(%u)") % _rep_(classSymbol) % base1ClassSymbol % base2ClassSymbol);
-  ASSERTP(IS_SYMBOL_DEFINED(BuiltInClass_O::static_classSymbol()),
-          "You cannot create a BuiltInClass before the BuiltIn!Class is defined");
   Class_sp cc;
   if (classSymbol == StandardObject_O::static_classSymbol()) {
     IMPLEMENT_ME(); // WHEN DO StandardClasses get created with addClass?????
@@ -1183,7 +1180,7 @@ void Lisp_O::inPackage(const string &p) {
   WITH_READ_LOCK(this->_Roots._PackagesMutex);
   map<string, int>::const_iterator pi = this->_Roots._PackageNameIndexMap.find(p);
   if (pi == this->_Roots._PackageNameIndexMap.end()) {
-    ASSERTP(this->recognizesPackage(p), "I do not recognize package: " + p);
+    SIMPLE_ERROR(BF("I do not recognize package: %s") % p );
   }
   this->selectPackage(this->_Roots._Packages[pi->second]);
 }
@@ -2032,7 +2029,7 @@ CL_LAMBDA(string-desig &optional package-desig);
 CL_DECLARE();
 CL_DOCSTRING("apropos");
 CL_DEFUN T_sp cl__apropos(T_sp string_desig, T_sp package_desig) {
-  ASSERT(cl__stringp(string_design));
+  ASSERT(cl__stringp(string_desig));
   // TODO: Switch to proper common lisp strings
   String_sp string = coerce::stringDesignator(string_desig);
   SimpleString_sp substring = coerce::simple_string(string);

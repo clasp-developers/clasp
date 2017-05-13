@@ -79,7 +79,7 @@ public: // Functions here
   virtual T_sp rowMajorAref(cl_index idx) const;
   virtual cl_index arrayRowMajorIndex(List_sp indices) const;
 
-  T_sp &operator[](uint index) { return (*this->_Values)[index]; }
+  T_sp &operator[](uint index) { ASSERT(i<this->_Vector.size()); return (*this->_Values)[index]; }
 
   virtual void swapElements(uint i1, uint i2) {
     T_sp t = (*this->_Values)[i2];

@@ -360,7 +360,7 @@ public:
             }
             pointer_to_moveable vec = this->_Contents;
             Allocator alloc;
-#ifdef DEBUG_ASSERTS
+#ifdef DEBUG_ASSERT
             if ( this->_Contents->_End > this->_Contents->_Capacity ) {
                 THROW_HARD_ERROR(BF("The end should NEVER be beyond the capacity"));
             };
@@ -369,7 +369,7 @@ public:
                 // This is where we grow the Vector
                 size_t newCapacity = this->_Contents->_Capacity * GCStringGrow;
                 GC_LOG(("Increasing capacity to %zu\n", newCapacity));
-#ifdef DEBUG_ASSERTS
+#ifdef DEBUG_ASSERT
                 if ( newCapacity > 65536 ) {
                     printf("%s:%d gcvector capacity is larger than 65536\n", __FILE__, __LINE__ );
                 }
@@ -403,7 +403,7 @@ public:
 
 
         void pop_back() {
-#ifdef DEBUG_ASSERTS
+#ifdef DEBUG_ASSERT
             if (!this->_Contents) this->errorEmpty();
 #endif
             if ( this->_Contents->_End > 0 ) {
@@ -420,7 +420,7 @@ public:
         template <typename...ARGS>
         iterator emplace(const_iterator position, ARGS&&... args)
         {
-#ifdef DEBUG_ASSERTS
+#ifdef DEBUG_ASSERT
             if (!this->_Contents) this->errorEmpty();
 #endif
             Allocator alloc;
@@ -474,7 +474,7 @@ public:
 // zp element_of (3 4 5 ... N-1 )
 // move 3<4 4<5 5<6 6<7 ... N-2<N-1
 // 0 1 2 4 5 6 7
-#ifdef DEBUG_ASSERTS
+#ifdef DEBUG_ASSERT
             if (!this->_Contents) this->errorEmpty();
 #endif
             Allocator alloc;

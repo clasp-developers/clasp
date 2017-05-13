@@ -177,17 +177,6 @@ THE SOFTWARE.
 #define private_LCC_VA_LIST_SET_TOTAL_NUMBER_OF_ARGUMENTS(_args, _n) (((uintptr_clasp_t *)(_args[0].reg_save_area))[LCC_NARGS_REGISTER]) = ((uintptr_clasp_t)_n)
 //#define private_LCC_VA_LIST_DECREMENT_TOTAL_NUMBER_OF_ARGUMENTS(_args) (--((uintptr_clasp_t *)(_args[0].reg_save_area))[LCC_NARGS_REGISTER])
 
-#ifdef DEBUG_ASSERTS
-#define ASSERT_LCC_VA_LIST_CLOSURE_DEFINED(_args) {\
-    gctools::Tagged e = reinterpret_cast<gctools::Tagged*>(reinterpret_cast<core::VaList_S*>(gctools::untag_valist(_args))->_Args->reg_save_area)[LCC_CLOSURE_REGISTER]; \
-    if (!(e && gctools::tagged_generalp(e))) { \
-      printf("%s:%d Closure is not defined\n", __FILE__, __LINE__ ); \
-      abort(); \
-    }}
-#else
-#define ASSERT_LCC_VA_LIST_CLOSURE_DEFINED(_args)
-#endif
-
 #define LCC_VA_LIST_CLOSURE(_args) core::Function_sp((gctools::Tagged)((core::T_O **)(*_args)._Args->reg_save_area)[LCC_CLOSURE_REGISTER])
 #define LCC_VA_LIST_REGISTER_SAVE_AREA(_args) (core::T_O **)(((*_args))[0].reg_save_area)
 #define LCC_VA_LIST_OVERFLOW_ARG_AREA(_args) (core::T_O **)(((*_args))[0].overflow_arg_area)

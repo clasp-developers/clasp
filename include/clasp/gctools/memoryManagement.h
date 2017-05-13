@@ -281,19 +281,22 @@ namespace gctools {
     static const tagged_kind_t kind_mask    = ~0x3; // BOOST_BINARY(11...111111111100);
     static const tagged_kind_t largest_possible_kind = kind_mask>>kind_shift;
   public:
-    static void signal_invalid_object_head(const Header_s* header);
-    static void signal_invalid_object_tail(const Header_s* header);
+    static void signal_invalid_object(const Header_s* header, const char* msg);
   public:
     void validate() const;
     void quick_validate() const {
+#ifdef DEBUG_QUICK_VALIDATE
       if ( this->kindP() ) {
 #ifdef DEBUG_GUARD    
-        if (this->guard != 0xFEEAFEEBDEADBEEF) signal_invalid_object_head(this);
+        if (this->guard != 0xFEEAFEEBDEADBEEF) signal_invalid_object(this,"bad head guard");
         const unsigned char* tail = (const unsigned char*)this+this->tail_start;
-        if ((*tail) != 0xcc) signal_invalid_object_tail(this);
+        if ((*tail) != 0xcc) signal_invalid_object(this,"bad tail not 0xcc");
 #endif
-        if ( this->kind() > global_NextStamp ) signal_invalid_object_head(this);
+        if ( this->kind() > global_NextStamp ) signal_invalid_object(this,"bad kind");
       }
+#else
+      this->validate();
+#endif
     }
 
   public:

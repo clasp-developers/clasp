@@ -99,43 +99,53 @@ public:
 
 public: // The hard-coded indexes above are defined below to be used by Class
   // These must match the +class-slots+ defined in hierarchy.lsp
-  static const int REF_EQL_SPECIALIZER_FLAG = 0;
-  static const int REF_SPECIALIZER_DIRECT_METHODS = 1;
-  static const int REF_SPECIALIZER_DIRECT_GENERIC_FUNCTIONS = 2;
-  static const int REF_CLASS_NAME = 3;
-  static const int REF_DIRECT_SUPERCLASSES = 4;
-  static const int REF_DIRECT_SUBCLASSES = 5;
-  static const int REF_SLOTS = 6;
-  static const int REF_CLASS_PRECEDENCE_LIST = 7;
-  static const int REF_DIRECT_SLOTS = 8;
-  static const int REF_DIRECT_DEFAULT_INITARGS = 9;
-  static const int REF_DEFAULT_INITARGS = 10;
-  static const int REF_FINALIZED = 11;
-  static const int REF_DOCSTRING = 12;
-  static const int REF_SIZE = 13;
-  static const int REF_SEALEDP = 14;
-  static const int REF_PROTOTYPE = 15;
-  static const int REF_DEPENDENTS = 16;
-  static const int REF_VALID_INITARGS = 17;
-  static const int REF_SLOT_TABLE = 18;
-  static const int REF_LOCATION_TABLE = 19;
-  static const int REF_OPTIMIZE_SLOT_ACCESS = 20;
-  static const int REF_FORWARD = 21;
-  static const int REF_NUMBER_OF_SLOTS_IN_CLASSES = 22;
+
+  // These must be exposed in core__class_slot_sanity_check()
+  typedef enum { REF_CLASS_CLASS_NAME = 3,
+                 REF_CLASS_DIRECT_SUPERCLASSES = 4,
+                 REF_CLASS_SLOTS = 6,
+                 REF_CLASS_DIRECT_DEFAULT_INITARGS = 9,
+                 REF_CLASS_FINALIZED = 11,
+                 REF_CLASS_CLASS_PRECEDENCE_LIST = 7,
+                 REF_CLASS_DIRECT_SLOTS = 8,
+                 REF_CLASS_DEFAULT_INITARGS = 10} Slots;
+  
+#define REF_CLASS_NUMBER_OF_SLOTS_IN_STANDARD_CLASS 22
+#define REF_CLASS_NUMBER_OF_SLOTS_IN_STRUCTURE_CLASS 28
+  
+#if 0
+  // If any of these are exposed - then they MUST be added to
+  //    core__class_slot_sanity_check() !!!!!!
+  static const int REF_CLASS_EQL_SPECIALIZER_FLAG = 0;
+  static const int REF_CLASS_SPECIALIZER_DIRECT_METHODS = 1;
+  static const int REF_CLASS_SPECIALIZER_DIRECT_GENERIC_FUNCTIONS = 2;
+  static const int REF_CLASS_CLASS_NAME = 3;
+  static const int REF_CLASS_DIRECT_SUPERCLASSES = 4;
+  static const int REF_CLASS_DIRECT_SUBCLASSES = 5;
+  static const int REF_CLASS_SLOTS = 6;
+  static const int REF_CLASS_CLASS_PRECEDENCE_LIST = 7;
+  static const int REF_CLASS_DIRECT_SLOTS = 8;
+  static const int REF_CLASS_DIRECT_DEFAULT_INITARGS = 9;
+  static const int REF_CLASS_DEFAULT_INITARGS = 10;
+  static const int REF_CLASS_FINALIZED = 11;
+  static const int REF_CLASS_DOCSTRING = 12;
+  static const int REF_CLASS_SIZE = 13;
+  static const int REF_CLASS_SEALEDP = 14;
+  static const int REF_CLASS_PROTOTYPE = 15;
+  static const int REF_CLASS_DEPENDENTS = 16;
+  static const int REF_CLASS_VALID_INITARGS = 17;
+  static const int REF_CLASS_SLOT_TABLE = 18;
+  static const int REF_CLASS_LOCATION_TABLE = 19;
+  static const int REF_CLASS_OPTIMIZE_SLOT_ACCESS = 20;
+  static const int REF_CLASS_FORWARD = 21;
+#endif
 
 private:
   void accumulateSuperClasses(HashTableEq_sp supers, VectorObjects_sp arrayedSupers, Class_sp mc);
 
 public:
-  /*! NumberOfClassSlots has to match the number of entries in
-	  ECL clos::+class-slots+.  This is checked by a call to the function MAKE-SURE-CLOS-CLASS-SLOTS-MATCH-META-CLASS
-	  These slots are accessed with instanceRef and instanceSet methods and
-	  some slot accesses are redirected to C++ instance variables like _DirectSubClasses.
-	*/
-  static const int NumberOfClassSlots = 20; // Corresponds to the number of entries in
- public:
   static Class_sp create(Symbol_sp symbol,Class_sp metaClass);
-  static Class_sp createUncollectable(gctools::Stamp is,Class_sp metaClass);
+  static Class_sp createUncollectable(gctools::Stamp is,Class_sp metaClass, size_t number_of_slots);
 
 public:
   /*! A Fixnum that represents the object stamp(aka KIND) of each instance of this class */
@@ -151,7 +161,7 @@ public:
   /*! Callback function to allocate instances */
   Creator_sp _theCreator;
   gctools::Vec0<T_sp> _MetaClassSlots;
-
+  size_t              _NumberOfSlots;
 public:
   /*! This is a factory function that returns either a BuiltInClass or a StandardClass depending on the
 	  type of metaClass */
@@ -159,7 +169,7 @@ public:
 
 public:
   void __setup_stage1_with_sharedPtr_lisp_sid(T_sp theThis, Symbol_sp instanceClassSymbol) {
-    this->instanceSet(REF_CLASS_NAME, instanceClassSymbol);
+    this->instanceSet(REF_CLASS_CLASS_NAME, instanceClassSymbol);
   }
 
   void __setup_stage2_with_classSymbol(Symbol_sp csid) {
@@ -197,7 +207,7 @@ public: // Mimic CLOS classes that are represented by Instance_O
   /*! I think this should just return the __staticClass->slots() I'm mimicking ECL ecl>>instance.d>>instance_sig */
   virtual T_sp instanceSig() const;
 
-  T_sp slots() const { return this->instanceRef(REF_SLOTS); };
+  T_sp slots() const { return this->instanceRef(REF_CLASS_SLOTS); };
 
   T_sp copyInstance() const;
 public:
@@ -214,15 +224,15 @@ public:
   /*! I have GOT to clean up all this class-name stuff
 	  Reduce the clutter to one function to get the name and one to set the name */
 
-  void setName(Symbol_sp id) { this->instanceSet(REF_CLASS_NAME, id); };
-  Symbol_sp name() const { return gc::As<Symbol_sp>(this->instanceRef(REF_CLASS_NAME)); };
+  void setName(Symbol_sp id) { this->instanceSet(REF_CLASS_CLASS_NAME, id); };
+  Symbol_sp name() const { return gc::As<Symbol_sp>(this->instanceRef(REF_CLASS_CLASS_NAME)); };
 
   Symbol_sp className() const;
   string classNameAsString() const;
   string instanceClassName() { return this->getPackagedName(); };
   string instanceClassName() const { return this->getPackagedName(); };
 
-  CL_DEFMETHOD List_sp core__min_class_precedence_list() const { return List_sp(this->instanceRef(REF_CLASS_PRECEDENCE_LIST));};
+  CL_DEFMETHOD List_sp core__min_class_precedence_list() const { return List_sp(this->instanceRef(REF_CLASS_CLASS_PRECEDENCE_LIST));};
   
   /*! Return the name of the class with its Package name prefixed
 	 */
@@ -254,6 +264,7 @@ public:
 	  But don't call initialize!!!!!
 	*/
   virtual T_sp allocate_newNil();
+  virtual T_sp allocate_newClass(int slots);
 
   T_sp make_instance();
 
@@ -289,14 +300,15 @@ public:
     return Values(clasp_make_fixnum(this->_allocation_counter), clasp_make_fixnum(this->_allocation_total_size));
   }
 #endif
-  explicit Class_O(gctools::Stamp is, Class_sp metaClass) : Class_O::Base(), _instance_stamp(is),
+  explicit Class_O(gctools::Stamp is, Class_sp metaClass, size_t number_of_slots) : Class_O::Base(), _instance_stamp(is),
 #ifdef METER_ALLOCATIONS
     _allocation_counter(0),
     _allocation_total_size(0),
 #endif
     _MetaClass(metaClass),
     _Signature_ClassSlots(_Unbound<T_O>()),
-    _theCreator()
+    _theCreator(),
+    _NumberOfSlots(number_of_slots)
     {};
 
   virtual ~Class_O(){};
@@ -322,7 +334,7 @@ namespace core {
     virtual core::T_sp creator_allocate() {
       // BuiltInObjectCreator<Class_O> uses a different allocation method
       // that assigns the next Clos Stamp to the new Class
-      GC_ALLOCATE_VARIADIC(Class_O, obj, gctools::NextStamp(),_Unbound<Class_O>() );
+      GC_ALLOCATE_VARIADIC(Class_O, obj, gctools::NextStamp(),_Unbound<Class_O>(),REF_CLASS_NUMBER_OF_SLOTS_IN_STANDARD_CLASS );
       return obj;
     }
     virtual void searcher(){};

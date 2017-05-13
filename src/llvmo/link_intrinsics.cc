@@ -859,7 +859,7 @@ extern "C" {
 /*! Invoke a symbol function with the given arguments and put the result in (*resultP) */
 void sp_symbolFunctionRead(core::T_sp *resultP, const core::T_sp *tsymP) {
   ASSERT(resultP != NULL);
-  ASSERTF(symP != NULL, BF("passed symbol is NULL"));
+  ASSERTF(tsymP != NULL, BF("passed symbol is NULL"));
   const core::Symbol_sp* symP = reinterpret_cast<const core::Symbol_sp*>(tsymP);
   ASSERTF((*symP)->fboundp(), BF("There is no function bound to symbol[%s]") % _rep_((*symP)));
   (*resultP) = (*symP)->symbolFunction();
@@ -1187,6 +1187,11 @@ void mv_ifCatchFrameMatchesStoreResultElseRethrow(core::T_mv *resultP, size_t ca
 
 extern "C" {
 void exceptionStackUnwind(size_t frame) {
+#ifdef DEBUG_FLOW_CONTROL
+  if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp()) {
+    printf("Unwinding to exception frame[%d]\n", frame);
+  }
+#endif
   my_thread->exceptionStack().unwind(frame);
 }
 
@@ -1244,7 +1249,7 @@ int tagbodyLexicalGoIndexElseRethrow(char *exceptionP) {
 size_t tagbodyDynamicGoIndexElseRethrow(char *exceptionP, size_t frame) {
 #ifdef DEBUG_FLOW_CONTROL
   if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp()) {
-    printf("%s:%d tagbodyDynamicGoIndexElseRethrow  frame: %" PRu "\n", __FILE__, __LINE__, frame);
+    printf("%s:%d tagbodyDynamicGoIndexElseRethrow  frame: %lu\n", __FILE__, __LINE__, frame);
     if (core::_sym_STARdebugFlowControlSTAR->symbolValue() == kw::_sym_verbose )
       printf("   %s\n", my_thread->exceptionStack().summary().c_str());
   }
@@ -1439,9 +1444,6 @@ extern "C" {
 void pushDynamicBinding(core::T_sp *tsymbolP) {
   core::Symbol_sp sym((gctools::Tagged)(tsymbolP->raw_()));
   my_thread->bindings().push_with_value_coming(sym);
-  // WARNING WARNING WARNING -- Using the following when printing symbols will write into the MULTIPLE-VALUES-ARRAY and
-  //     screw things up
-//  printf("%s:%d - pushDynamicBinding@%lu symbol: %s  value: %s\n", __FILE__, __LINE__, my_thread->bindings().top(),sym->__repr__().c_str(), _rep_(sym->symbolValueUnsafe()).c_str() );
 }
 
 void popDynamicBinding(core::T_sp *tsymbolP) {
@@ -1450,16 +1452,14 @@ void popDynamicBinding(core::T_sp *tsymbolP) {
   if (sym != my_thread->bindings().topSymbol()) {
     stringstream ss;
     ss << __FILE__ << ":" << __LINE__;
-    ss << " popDynamicBinding of " << _rep_(*tsymbolP) << std::endl;
-    ss << "  mismatch with top of dynamic binding stack: " << _rep_(top) << std::endl;
+    ss << " About  to DynamicBindingStack::pop_binding" << my_thread->bindings().top();
+    ss << " of " << sym->formattedName(true) << std::endl;
+    ss << "  mismatch with top of dynamic binding stack: " << top->formattedName(true) << std::endl;
     ss << "  dumping stack: " << std::endl;
     core::core__dynamic_binding_stack_dump(ss);
     SIMPLE_ERROR(BF("Mismatch in popDynamicBinding:\n%s") % ss.str());
   }
-  // WARNING WARNING WARNING -- Using the following when printing symbols will write into the MULTIPLE-VALUES-ARRAY and
-  //     screw things up
-//  printf("%s:%d - popDynamicBinding@%lu symbol: %s  restored value: %s\n", __FILE__, __LINE__, my_thread->bindings().top(), sym->__repr__().c_str(), _rep_(sym->symbolValueUnsafe()).c_str() );
-  my_thread->bindings().pop();
+  my_thread->bindings().pop_binding();
 }
 };
 

@@ -51,7 +51,7 @@ SMART(StandardClass);
 SMART(StringSet);
 SMART(StandardClass);
 class StandardClass_O : public StdClass_O {
-  LISP_META_CLASS(core::StandardClass_O);
+  LISP_META_CLASS(::_lisp->_Roots._StandardClass);
   LISP_CLASS(core, ClPkg, StandardClass_O, "StandardClass",StdClass_O);
 
 public:

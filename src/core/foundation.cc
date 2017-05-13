@@ -188,8 +188,11 @@ void lisp_errorDereferencedUnbound() {
   SIMPLE_ERROR(BF("Tried to dereference unbound"));
 }
 
+Class_sp lisp_StandardClass() {
+  return _lisp->_Roots._StandardClass;
+}
+
 void lisp_errorUnexpectedType(class_id expectedTyp, class_id givenTyp, core::T_O *objP) {
-  ASSERT(_lisp);
   if (!objP) {
     SIMPLE_ERROR(BF("NULL pointer error in lisp_errorUnexpectedType"));
   }
@@ -1037,7 +1040,7 @@ void lisp_defineSingleDispatchMethod(Symbol_sp sym,
   (void)gfn;                                                         // silence compiler warning
   LOG(BF("Attaching single_dispatch_method symbol[%s] receiver_class[%s]  method_body@%p") % _rep_(sym) % _rep_(receiver_class) % ((void *)(method_body)));
   method_body->finishSetup(llhandler, kw::_sym_function);
-  ASSERT(llhandler || llhandler.notnilp())
+  ASSERT(llhandler || llhandler.notnilp());
 #ifdef DEBUG_PROGRESS
     printf("%s:%d lisp_defineSingleDispatchMethod sym: %s\n", __FILE__, __LINE__, _rep_(sym).c_str());
 #endif

@@ -332,8 +332,6 @@ CL_LAMBDA(what);
 CL_DECLARE();
 CL_DOCSTRING("See ecl/src/c/gfun.d:si_clear_gfun_hash. This function clears the generic function call hashes selectively. If what=T then clear the hash completely.  If what=generic_function then clear only these entries.");
 CL_DEFUN void core__clear_gfun_hash(T_sp what) {
-  ASSERT(_lisp->methodCachePtr());
-  ASSERT(_lisp->slotCachePtr());
   if ( what == _lisp->_true() ) {
     my_thread->_MethodCachePtr->empty();
     my_thread->_SlotCachePtr->empty();

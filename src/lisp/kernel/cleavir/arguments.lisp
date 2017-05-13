@@ -73,11 +73,11 @@
     (let* ((arg-idx (cmp:irc-load arg-idx-alloca))
 	   (rest (if varest-p
                      (let ((temp-valist (alloca-VaList_S)))
-                       (cmp:irc-create-call "cc_gatherVaRestArguments" 
+                       (cmp:irc-intrinsic-call "cc_gatherVaRestArguments" 
                                             (list (cmp:calling-convention-va-list* args)
                                                   (cmp:calling-convention-remaining-nargs* args)
                                                   temp-valist)))
-                     (cmp:irc-create-call "cc_gatherRestArguments" 
+                     (cmp:irc-intrinsic-call "cc_gatherRestArguments" 
                                           (list (cmp:calling-convention-va-list* args)
                                                 (cmp:calling-convention-remaining-nargs* args)))))
            (rest-alloca (translate-datum rest-var)))
@@ -123,7 +123,7 @@
 	(let* ((arg-val (cmp:calling-convention-args.va-arg args))
                (arg-idx+1 (cmp:irc-add phi-arg-idx (cmp:jit-constant-size_t 1)))
                (kw-arg-val (cmp:calling-convention-args.va-arg args)))
-	  (cmp:irc-create-call "cc_ifNotKeywordException" (list arg-val phi-arg-idx (cmp:calling-convention-va-list* args)))
+	  (cmp:irc-intrinsic-call "cc_ifNotKeywordException" (list arg-val phi-arg-idx (cmp:calling-convention-va-list* args)))
 	  (let* ((eq-aok-val-and-arg-val (cmp:irc-trunc (cmp:irc-icmp-eq aok-val arg-val) cmp:%i1%)) ; compare arg-val to a-o-k
 		 (aok-block (cmp:irc-basic-block-create "aok-block"))
 		 (possible-kw-block (cmp:irc-basic-block-create "possible-kw-block"))
@@ -132,7 +132,7 @@
 		 (good-kw-block (cmp:irc-basic-block-create "good-kw-block")))
 	    (cmp:irc-cond-br eq-aok-val-and-arg-val aok-block possible-kw-block)
 	    (cmp:irc-begin-block aok-block)
-	    (let* ((loop-saw-aok (cmp:irc-create-call "cc_allowOtherKeywords" (list phi-saw-aok kw-arg-val))))
+	    (let* ((loop-saw-aok (cmp:irc-intrinsic-call "cc_allowOtherKeywords" (list phi-saw-aok kw-arg-val))))
 	      (cmp:irc-br advance-arg-idx-block)
 	      (cmp:irc-begin-block possible-kw-block)
 	      ;; Generate a test for each keyword
@@ -149,7 +149,7 @@
 		(let* ((kw-val (%literal key (string key)))
 		       (target-ref (translate-datum target))
 		       (supplied-ref (translate-datum supplied))
-		       (test-kw-and-arg (cmp:irc-create-call "cc_matchKeywordOnce" (list kw-val arg-val (cmp:irc-load supplied-ref))))
+		       (test-kw-and-arg (cmp:irc-intrinsic-call "cc_matchKeywordOnce" (list kw-val arg-val (cmp:irc-load supplied-ref))))
 		       (no-kw-match (cmp:irc-icmp-eq test-kw-and-arg (%size_t 0)))
 		       (matched-kw-block (cmp:irc-basic-block-create "matched-kw-block"))
 		       (not-seen-before-kw-block (cmp:irc-basic-block-create "not-seen-before-kw-block"))
@@ -166,7 +166,7 @@
                     (cmp:irc-begin-block next-kw-block))))
 	      ;; We fell through all the keyword tests - this might be a unparameterized keyword
 	      (cmp:irc-branch-to-and-begin-block bad-kw-block) ; fall through to here if no kw recognized
-	      (let ((loop-bad-kw-idx (cmp:irc-create-call "cc_trackFirstUnexpectedKeyword"
+	      (let ((loop-bad-kw-idx (cmp:irc-intrinsic-call "cc_trackFirstUnexpectedKeyword"
                                                           (list phi-bad-kw-idx phi-arg-idx))))
 		(cmp:irc-low-level-trace :arguments)
 		(cmp:irc-br advance-arg-idx-block)
@@ -192,7 +192,7 @@
 		    (cmp:irc-phi-add-incoming phi-arg-idx loop-arg-idx advance-arg-idx-block)
 		    (cmp:irc-cond-br loop-arg-idx_lt_nargs loop-kw-args-block loop-cont-block)
 		    (cmp:irc-begin-block loop-cont-block)
-		    (cmp:irc-create-call "cc_ifBadKeywordArgumentException" (list phi-arg-bad-good-aok phi.aok-bad-good.bad-kw-idx arg-val))
+		    (cmp:irc-intrinsic-call "cc_ifBadKeywordArgumentException" (list phi-arg-bad-good-aok phi.aok-bad-good.bad-kw-idx arg-val))
 		    (let ((kw-done-block (cmp:irc-basic-block-create "kw-done-block")))
 		      (cmp:irc-branch-to-and-begin-block kw-done-block)
 		      (cmp:irc-branch-to-and-begin-block kw-exit-block)

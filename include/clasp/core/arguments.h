@@ -132,7 +132,7 @@ public:
   virtual VaList_S &valist() { N_A_(); };
   virtual bool lexicalElementBoundP(const Argument &argument) { N_A_(); };
   inline void pushSpecialVariableAndSet(Symbol_sp sym, T_sp val) {
-    my_thread->bindings().push(sym,val);
+    my_thread->bindings().push_binding(sym,val);
     this->_endTop = my_thread->bindings().top();
 // NEW_DBS    sym->setf_symbolValue(val);
   }
@@ -160,7 +160,7 @@ public:
     DynamicBindingStack &bindings = my_thread->bindings();
     int numBindings = this->_endTop - this->_beginTop;
     for (int i = 0; i < numBindings; ++i) {
-      bindings.pop();
+      bindings.pop_binding();
     }
   }
 };

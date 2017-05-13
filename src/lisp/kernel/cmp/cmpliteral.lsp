@@ -295,7 +295,7 @@ the constants-table."
                    "Lookup or create the llvm::Value for obj"
                    (or (gethash obj *llvm-values*)
                        (setf (gethash obj *llvm-values*)
-                             (irc-create-call (literal:constant-creator-name obj)
+                             (irc-intrinsic-call (literal:constant-creator-name obj)
                                               (list*
                                                *gcroots-in-module*
                                                (cmp:jit-constant-size_t (constant-creator-index obj))
@@ -319,11 +319,11 @@ the constants-table."
                (let* ((fn-name (literal:constant-side-effect-name node))
                       (args (literal:constant-side-effect-arguments node))
                       (fix-args (fix-args args)))
-                 (irc-create-call fn-name fix-args)))
+                 (irc-intrinsic-call fn-name fix-args)))
               (t (error "Unknown run-all node ~a" node)))))
       (cond
         ((eq type :toplevel)
-         (cmp:irc-create-call "ltvc_toplevel_funcall" (list body-return-fn)))
+         (cmp:irc-intrinsic-call "ltvc_toplevel_funcall" (list body-return-fn)))
         ((eq type :ltv) body-return-fn)
         (t (error "bad type"))))))
 
@@ -405,7 +405,7 @@ Return the index of the load-time-value"
                                                            (cmp:jit-constant-size_t 0)) "table")))
           (llvm-sys:replace-all-uses-with cmp:*load-time-value-holder-global-var* bitcast-correct-size-holder)
           (with-run-all-entry-codegen
-              (cmp:irc-create-call "cc_initialize_gcroots_in_module"
+              (cmp:irc-intrinsic-call "cc_initialize_gcroots_in_module"
                                    (list *gcroots-in-module*
                                          (irc-pointer-cast correct-size-holder cmp:%tsp*% "")
                                          (cmp:jit-constant-size_t table-entries)

@@ -24,7 +24,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#if 0
 #ifndef _core_structureClass_H
 #define _core_structureClass_H
 
@@ -55,7 +54,7 @@ namespace core {
  /*! A StructureClass maintains info about StructureObjects within the minimal Common Lisp
 A StructureClass can inherit from one other class but can have any number of mixins */
   class StructureClass_O : public Class_O {
-    LISP_META_CLASS(core::StandardClass_O);
+    LISP_META_CLASS(::_lisp->_Roots._StandardClass);
     LISP_CLASS(core, ClPkg, StructureClass_O, "structure-class",Class_O);
   public:
 #if defined(XML_ARCHIVE)
@@ -71,7 +70,7 @@ A StructureClass can inherit from one other class but can have any number of mix
   public:
   /*! Special creator used when starting up lisp environment, the object returned will be a root */
     static StructureClass_sp createUncollectable(gctools::Stamp is);
-    explicit StructureClass_O(gctools::Stamp is) : Class_O(is) {};
+    explicit StructureClass_O(gctools::Stamp is, Class_sp metaclass, size_t slots) : Class_O(is,metaclass, slots) {};
   };
 };
 
@@ -91,7 +90,7 @@ namespace core {
     virtual core::T_sp creator_allocate() {
       // BuiltInObjectCreator<StructureClass_O> uses a different allocation method
       // that assigns the next Clos Stamp to the new StandardClass
-      GC_ALLOCATE_VARIADIC(StructureClass_O, obj, gctools::NextStamp() );
+      GC_ALLOCATE_VARIADIC(StructureClass_O, obj, gctools::NextStamp(),lisp_StandardClass(),REF_CLASS_NUMBER_OF_SLOTS_IN_STRUCTURE_CLASS );
       return obj;
     }
     virtual void searcher(){};
@@ -99,4 +98,3 @@ namespace core {
 };
 
 #endif //]
-#endif

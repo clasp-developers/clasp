@@ -1131,17 +1131,12 @@ T_mv sp_let(List_sp args, T_sp parentEnvironment) {
   ValueEnvironment_sp newEnvironment =
     ValueEnvironment_O::createForNumberOfEntries(numberOfLexicalVariables, parentEnvironment);
   ValueEnvironmentDynamicScopeManager scope(newEnvironment);
-  // Set up the debugging info - it's empty to begin with
   ValueFrame_sp valueFrame = gc::As<ValueFrame_sp>(newEnvironment->getActivationFrame());
-  VectorObjects_sp debuggingInfo = VectorObjects_O::make(cl__length(valueFrame),_Nil<T_O>());
-  //  valueFrame->attachDebuggingInfo(debuggingInfo);
-
   // Figure out which environment to evaluate in
   List_sp curExp = expressions;
   T_sp evaluateEnvironment;
   // SPECIFIC TO LET FROM HERE ON DOWN
   evaluateEnvironment = parentEnvironment;
-  int debugInfoIndex = 0;
   //		printf("%s:%d In LET\n", __FILE__, __LINE__);
 
   size_t numTemps = cl__length(classified);
@@ -1176,11 +1171,8 @@ T_mv sp_let(List_sp args, T_sp parentEnvironment) {
     } else if (shead == _sym_declaredSpecial) {
       scope.new_special(classified);
     }
-    if (shead == ext::_sym_lexicalVar) {
-      debuggingInfo->rowMajorAset(debugInfoIndex, oCadr(classified));
-      debugInfoIndex++;
-    }
   }
+  EVO(newEnvironment);
   return eval::sp_progn(code, newEnvironment);
 }
 
@@ -1205,35 +1197,26 @@ T_mv sp_letSTAR(List_sp args, T_sp parentEnvironment) {
   ValueEnvironment_sp newEnvironment =
     ValueEnvironment_O::createForNumberOfEntries(numberOfLexicalVariables, parentEnvironment);
   ValueEnvironmentDynamicScopeManager scope(newEnvironment);
-
-  // Set up the debugging info - it's empty to begin with
   ValueFrame_sp valueFrame = gc::As<ValueFrame_sp>(newEnvironment->getActivationFrame());
-  VectorObjects_sp debuggingInfo = VectorObjects_O::make(cl__length(valueFrame),_Nil<T_O>());
-  //  valueFrame->attachDebuggingInfo(debuggingInfo);
-
   // Figure out which environment to evaluate in
   List_sp curExp = expressions;
   T_sp evaluateEnvironment;
   // SPECIFIC TO LET* FROM HERE ON DOWN
   evaluateEnvironment = newEnvironment; // SPECIFIC TO LET*
-  int debugInfoIndex = 0;
   T_sp result;
   for (auto curClassified : classified) {
-    List_sp classified = oCar(curClassified);
-    Symbol_sp shead = gc::As<Symbol_sp>(oCar(classified));
+    List_sp cl = CONS_CAR(curClassified);
+    Symbol_sp shead = gc::As<Symbol_sp>(oCar(cl));
     if (shead == ext::_sym_specialVar || shead == ext::_sym_lexicalVar) {
       T_sp expr = oCar(curExp);
       result = eval::evaluate(expr, evaluateEnvironment);
-      scope.new_variable(classified, result);
+      scope.new_variable(cl, result);
       curExp = oCdr(curExp);
     } else if (shead == _sym_declaredSpecial) {
-      scope.new_special(classified);
-    }
-    if (shead == ext::_sym_lexicalVar) {
-      debuggingInfo->rowMajorAset(debugInfoIndex, oCadr(classified));
-      debugInfoIndex++;
+      scope.new_special(cl);
     }
   }
+  EVO(newEnvironment);
   return eval::sp_progn(code, newEnvironment);
 }
 

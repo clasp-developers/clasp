@@ -389,7 +389,7 @@ struct CxxFunctionInvocationLogger {
 
 FORWARD(Cons);
 
-#ifdef DEBUG_ASSERTS
+#ifdef DEBUG_ASSERT
 #define HARD_ASSERT(t)                                                                   \
   if (!(t)) {                                                                            \
     core::errorFormatted("HARD_ASSERT failed");                                          \
@@ -546,6 +546,7 @@ void debugSuppressMessages(bool s);
   }
 #define SHOUT(___fmt) lisp_SHOUT(___fmt)
 
+#if 0
 #define IF_DEBUG_ON(f) f
 #define DEBUG_ASSERT(x)                                                         \
   if (!(x)) {                                                                   \
@@ -559,7 +560,7 @@ void debugSuppressMessages(bool s);
     ss << "Assertion failed (" << e << " file(" << __FILE__ << ") line(" << __LINE__ << ")"; \
     SIMPLE_ERROR(BF("%s") % ss.str());                                                       \
   };
-
+#endif
 #else //DEBUG_ON
 #define TESTMEMORY()
 #define HARD_BREAK_POINT() \
@@ -573,28 +574,24 @@ void debugSuppressMessages(bool s);
 #define lisp_SHOUT(___fmt) \
   {}
 
+#if 0
 #define IF_DEBUG_ON(f) \
   {}
 #define DEBUG_ASSERT(x)
 #define DEBUG_ASSERTP(x, e)
+#endif
 #endif //DEBUG_ON
 
-#ifdef DEBUG_ASSERTS
-#define lisp_ASSERT(l, x)                                                                    \
-  if (!(x)) {                                                                                \
-    SIMPLE_ERROR(BF("Assertion [%s]  failed file(%s) line(%s)") % #x % __FILE__ % __LINE__); \
-  }
-#define ASSERT(x) lisp_ASSERT(_lisp, x)
-#define lisp_ASSERTP(l, x, e)     \
-  if (!(x)) {                     \
-    SIMPLE_ERROR(BF("%s") % (e)); \
-  }
-#define ASSERTP(x, e) lisp_ASSERTP(_lisp, x, e)
-#define lisp_ASSERTF(l, x, f) \
-  if (!(x)) {                 \
-    SIMPLE_ERROR(f);          \
-  };
-#define ASSERTF(x, f) lisp_ASSERTF(_lisp, x, f)
+
+ void assert_failure(const char* file, size_t line, const char* func, const char* msg);
+ 
+#ifdef DEBUG_ASSERT
+#define lisp_ASSERT(x) if (!(x)) ::core::assert_failure(__FILE__,__LINE__,__FUNCTION__,#x)
+#define ASSERT(x) lisp_ASSERT(x)
+#define lisp_ASSERTP( x, e) if (!(x)) ::core::assert_failure(__FILE__,__LINE__,__FUNCTION__,(e));
+#define ASSERTP(x, e) lisp_ASSERTP(x, e)
+#define lisp_ASSERTF( x, e) if (!(x)) ::core::assert_failure(__FILE__,__LINE__,__FUNCTION__,(e).str().c_str());
+#define ASSERTF(x, f) lisp_ASSERTF(x, f)
 #define ASSERT_eq(x, y)                                                                           \
   if (!(x == y)) {                                                                                \
     SIMPLE_ERROR(BF("Assertion [%s==%s] failed values are (%s) and (%s)") % #x % #y % (x) % (y)); \
@@ -625,7 +622,7 @@ void debugSuppressMessages(bool s);
 
 #define ASSERTNOTNULL(x) ASSERTNOTNULLP(x, "")
 #define ANN(x) ASSERTNOTNULL(x)
-#else // DEBUG_ASSERTS
+#else // DEBUG_ASSERT
 #define lisp_ASSERT(l, x) \
   {}
 #define ASSERT(x) \

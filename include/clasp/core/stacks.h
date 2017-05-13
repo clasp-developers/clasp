@@ -60,14 +60,8 @@ class InvocationHistoryFrame //: public gctools::StackRoot
     _Bds(my_thread->bindings().size()){
     va_copy(this->_args,rawArgList);
     this->_remaining_nargs = remaining_nargs;
-#ifdef DEBUG_ASSERTS
-      if ( !(gctools::tagged_valistp(rawArgList))) {
-        printf("Passed a non valistp to InvocationHistoryFrame\n");
-        abort();
-      }
-#endif
-      my_thread->_InvocationHistoryStack = this;
-    }
+    my_thread->_InvocationHistoryStack = this;
+  }
   ~InvocationHistoryFrame() {
     my_thread->_InvocationHistoryStack = this->_Previous;
   }
@@ -98,7 +92,6 @@ namespace core {
 
 #ifdef USE_EXPENSIVE_BACKTRACE
 #define INVOCATION_HISTORY_FRAME() \
-  ASSERT_LCC_VA_LIST_CLOSURE_DEFINED(lcc_arglist_s);\
   core::InvocationHistoryFrame zzzFrame(lcc_arglist_s._Args,lcc_arglist_s.remaining_nargs());
 #else
 #define INVOCATION_HISTORY_FRAME()

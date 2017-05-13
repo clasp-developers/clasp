@@ -41,7 +41,7 @@ _clasp_string_push_c_string(StrNs_sp s, const char *c) {
 
 static void
 insert_char(StrNs_sp buffer, cl_index where, gc::Fixnum c) {
-    ASSERT(buffer->arrayHasFillPointer());
+    ASSERT(buffer->arrayHasFillPointerP());
     gc::Fixnum end = buffer->fillPointer();
     buffer->vectorPushExtend(clasp_make_character('.'));
     if ( Str8Ns_sp buffer8 = buffer.asOrNull<Str8Ns_O>() ) {
@@ -56,7 +56,7 @@ insert_char(StrNs_sp buffer, cl_index where, gc::Fixnum c) {
 
 static T_sp
 push_base_string(T_sp buffer, StrNs_sp s) {
-    ASSERT(s->arrayHasFillPointer());
+    ASSERT(s->arrayHasFillPointerP());
     buffer = _clasp_ensure_buffer(buffer, s->fillPointer());
     StrNs_sp sbuffer = gc::As<StrNs_sp>(buffer);
     for ( size_t i(0),iEnd(s->length()); i<iEnd; ++i ) {

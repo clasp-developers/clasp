@@ -10,6 +10,7 @@
 ;;;;
 ;;;;    See file '../Copyright' for full details.
 
+
 (in-package "CLOS")
 
 (defmethod class-prototype ((class class))

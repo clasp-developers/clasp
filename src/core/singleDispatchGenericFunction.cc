@@ -111,7 +111,6 @@ CL_DEFUN void core__ensure_single_dispatch_method(Symbol_sp gfname, Class_sp rec
 LCC_RETURN SingleDispatchCxxEffectiveMethodFunction_O::LISP_CALLING_CONVENTION() {
   SETUP_CLOSURE(SingleDispatchCxxEffectiveMethodFunction_O,closure);
   INCREMENT_FUNCTION_CALL_COUNTER(closure);
-  ASSERT_LCC_VA_LIST_CLOSURE_DEFINED(lcc_arglist);
   // INITIALIZE_VA_LIST(); // This was done by the caller
   return (*closure->_onlyCxxMethodFunction).entry(LCC_PASS_ARGS2_ELLIPSIS(closure->_onlyCxxMethodFunction.raw_(),lcc_fixed_arg0,_Nil<T_O>().raw_()));
 };
@@ -120,7 +119,6 @@ LCC_RETURN SingleDispatchCxxEffectiveMethodFunction_O::LISP_CALLING_CONVENTION()
 LCC_RETURN SingleDispatchEffectiveMethodFunction_O::LISP_CALLING_CONVENTION() {
   SETUP_CLOSURE(SingleDispatchEffectiveMethodFunction_O,closure);
   INCREMENT_FUNCTION_CALL_COUNTER(closure);
-  ASSERT_LCC_VA_LIST_CLOSURE_DEFINED(lcc_arglist);
   INITIALIZE_VA_LIST();
   for ( auto cur : closure->_Befores ) {
     VaList_S before_args_s(*lcc_vargs);

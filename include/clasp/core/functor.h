@@ -309,22 +309,12 @@ namespace core {
     core::T_sp lambda_list() const { return this->_lambdaList; };
     void setf_lambda_list(core::List_sp lambda_list) { this->_lambdaList = lambda_list; };
     core::LambdaListHandler_sp lambdaListHandler() const { return _Nil<core::LambdaListHandler_O>(); };
-    inline T_sp &operator[](int idx) {
-      ASSERT(idx>=0 && idx<this->_Slots._Length);
-#ifdef DEBUG_FRAME_BOUNDS
-      if ( idx<0 || idx >= this->_Slots._Length) {
-        printf("%s:%d Caught out of bounds access to ValueFrame_O idx=%d capacity=%d\n", __FILE__, __LINE__, idx, this->_Slots._Length );
-      }
-#endif
+    inline T_sp &operator[](size_t idx) {
+      ASSERT(idx<this->_Slots._Length);
       return this->_Slots[idx];
     };
-    inline const T_sp &operator[](int idx) const {
-      ASSERT(idx>=0 && idx<this->_Slots._Length);
-#ifdef DEBUG_FRAME_BOUNDS
-      if ( idx<0 || idx >= this->_Slots._Length) {
-        printf("%s:%d Caught out of bounds access to ValueFrame_O idx=%d capacity=%d\n", __FILE__, __LINE__, idx, this->_Slots._Length );
-      }
-#endif
+    inline const T_sp &operator[](size_t idx) const {
+      ASSERT(idx<this->_Slots._Length);
       return this->_Slots[idx];
     };
   };

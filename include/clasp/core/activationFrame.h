@@ -85,8 +85,7 @@ virtual T_sp currentVisibleEnvironment() const;
 
   inline void setParentFrame(T_O *parent) {
     this->parentFrameRef_().rawRef_() = parent;
-#ifdef DEBUG_ASSERTS
-    #error "DEBUG_ASSERTS is on - turn it off"
+#ifdef DEBUG_ASSERT
     T_sp p((gctools::Tagged)parent);
     if (!(p.nilp() || p.asOrNull<Environment_O>()) ) {
       SIMPLE_ERROR(BF("Activation frame is not an activation frame - it is a %s") % _rep_(p));
@@ -196,22 +195,12 @@ public:
   }
 
 public:
-  inline T_sp &operator[](int idx) {
-    ASSERT(idx>=0 && idx<this->_Objects._Length);
-#ifdef DEBUG_FRAME_BOUNDS
-    if ( idx<0 || idx >= this->_Objects._Length) {
-      printf("%s:%d Caught out of bounds access to ValueFrame_O idx=%d capacity=%d\n", __FILE__, __LINE__, idx, this->_Objects._Length );
-    }
-#endif
+  inline T_sp &operator[](size_t idx) {
+    ASSERT(idx<this->_Objects._Length);
     return this->_Objects[idx];
   };
-  inline const T_sp &operator[](int idx) const {
-    ASSERT(idx>=0 && idx<this->_Objects._Length);
-#ifdef DEBUG_FRAME_BOUNDS
-    if ( idx<0 || idx >= this->_Objects._Length) {
-      printf("%s:%d Caught out of bounds access to ValueFrame_O idx=%d capacity=%d\n", __FILE__, __LINE__, idx, this->_Objects._Length );
-    }
-#endif
+  inline const T_sp &operator[](size_t idx) const {
+    ASSERT(idx<this->_Objects._Length);
     return this->_Objects[idx];
   };
 
@@ -301,22 +290,12 @@ public:
   //	T_sp* argArray() { return this->_Objects.argArray(); };
 
 
-  inline T_sp &operator[](int idx) {
-    ASSERT(idx>=0 && idx<this->_Objects._Length);
-#ifdef DEBUG_FRAME_BOUNDS
-    if ( idx<0 || idx >= this->_Objects._Length) {
-      printf("%s:%d Caught out of bounds access to ValueFrame_O idx=%d capacity=%d\n", __FILE__, __LINE__, idx, this->_Objects._Length );
-    }
-#endif
+  inline T_sp &operator[](size_t idx) {
+    ASSERT(idx<this->_Objects._Length);
     return this->_Objects[idx];
   };
-  inline const T_sp &operator[](int idx) const {
-    ASSERT(idx>=0 && idx<this->_Objects._Length);
-#ifdef DEBUG_FRAME_BOUNDS
-    if ( idx<0 || idx >= this->_Objects._Length) {
-      printf("%s:%d Caught out of bounds access to ValueFrame_O idx=%d capacity=%d\n", __FILE__, __LINE__, idx, this->_Objects._Length );
-    }
-#endif
+  inline const T_sp &operator[](size_t idx) const {
+    ASSERT(idx<this->_Objects._Length);
     return this->_Objects[idx];
   };
 
@@ -379,7 +358,7 @@ namespace core {
       if ( depth == 0 ) {
         ASSERT(activationFrame.isA<ValueFrame_O>());
         ValueFrame_sp vf = gc::reinterpret_cast_smart_ptr<ValueFrame_O,T_O>(activationFrame);
-#ifdef DEBUG_ASSERTS
+#ifdef DEBUG_ASSERT
         if ( index >= vf->_Objects.length() )
           error_frame_range("ValueFrame",index,vf->_Objects.length());
 #endif
@@ -396,7 +375,7 @@ namespace core {
       if ( depth == 0 ) {
         if (activationFrame.isA<FunctionFrame_O>()) {
           FunctionFrame_sp ff = gc::reinterpret_cast_smart_ptr<FunctionFrame_O,T_O>(activationFrame);
-#ifdef DEBUG_ASSERTS
+#ifdef DEBUG_ASSERT
           if ( index >= ff->_Objects.length() )
             error_frame_range("ValueFrame",index,ff->_Objects.length());
 #endif

@@ -17,7 +17,7 @@
 (defun add-cxx-class (class-symbol)
     (let* ((class (find-class class-symbol))
 	   (supers-names (mapcar #'(lambda (x) (class-name x))
-                                 (core:direct-superclasses class))))
+                                 (clos:direct-superclasses class))))
       (ensure-boot-class class-symbol :metaclass 'core:cxx-class ;; was 'builtin-class
                          :direct-superclasses supers-names)
       (finalize-inheritance class)))

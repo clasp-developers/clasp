@@ -106,7 +106,7 @@
           irc-br
           irc-branch-to-and-begin-block
           irc-cond-br
-          irc-create-call
+          irc-intrinsic-call
           irc-bit-cast
           irc-pointer-cast
           irc-create-invoke
@@ -121,7 +121,6 @@
           irc-icmp-eq
           irc-icmp-slt
           irc-intrinsic
-          irc-intrinsic-args
           irc-load
           irc-low-level-trace
           irc-phi

@@ -251,14 +251,9 @@ void DynamicBindingStack::release_binding_index(size_t index)
 #endif
 };
 
-//#define DEBUG_DYNAMIC_BINDING_STACK 1
-
 T_sp* DynamicBindingStack::reference_raw_(Symbol_O* var) const{
 #ifdef CLASP_THREADS
   if ( var->_Binding == NO_THREAD_LOCAL_BINDINGS ) {
-#ifdef DEBUG_DYNAMIC_BINDING_STACK
-    printf("%s:%d     reference_raw %s    _GlobalValue   returning-> %p\n", __FILE__, __LINE__, _rep_(var->_Name).c_str(), var->_GlobalValue.raw_());
-#endif
     return &var->_GlobalValue;
   }
   uintptr_clasp_t index = var->_Binding;
@@ -267,15 +262,8 @@ T_sp* DynamicBindingStack::reference_raw_(Symbol_O* var) const{
     this->_ThreadLocalBindings.resize(index+1,_NoThreadLocalBinding<T_O>());
   }
   if (gctools::tagged_no_thread_local_bindingp(this->_ThreadLocalBindings[index].raw_())) {
-#ifdef DEBUG_DYNAMIC_BINDING_STACK
-    printf("%s:%d     reference_raw %s    _GlobalValue  but index = %zu   returning -> %p\n", __FILE__, __LINE__, _rep_(var->_Name).c_str(), index , var->_GlobalValue.raw_());
-    fflush(stdout);
-#endif
     return &var->_GlobalValue;
   }
-#ifdef DEBUG_DYNAMIC_BINDING_STACK
-  printf("%s:%d     reference_raw %s    _ThreadLocalBindings[%zu]  -> %p\n", __FILE__, __LINE__, _rep_(var->_Name).c_str(), index, this->_ThreadLocalBindings[index].raw_());
-#endif
   return &this->_ThreadLocalBindings[index];
 #else
   return &var->_GlobalValue;
@@ -294,7 +282,11 @@ void DynamicBindingStack::push_with_value_coming(Symbol_sp var) {
     this->_ThreadLocalBindings.resize(index+1,_NoThreadLocalBinding<T_O>());
   }
 #ifdef DEBUG_DYNAMIC_BINDING_STACK // debugging
-  printf("%s:%d  caught push[%zu] of %s  pushing value: %s\n", __FILE__, __LINE__, this->_Bindings.size(), var->symbolNameAsString().c_str(), _rep_(this->_ThreadLocalBindings[index]).c_str());
+  if (  _sym_STARwatchDynamicBindingStackSTAR &&
+       _sym_STARwatchDynamicBindingStackSTAR->boundP() &&
+       _sym_STARwatchDynamicBindingStackSTAR->symbolValue().notnilp() ) {
+    printf("%s:%d  DynamicBindingStack::push_with_value_coming[%zu] of %s\n", __FILE__, __LINE__, this->_Bindings.size(), var->formattedName(true).c_str());
+  }
 #endif
   this->_Bindings.emplace_back(var,this->_ThreadLocalBindings[index]);
   this->_ThreadLocalBindings[index] = *current_value_ptr;
@@ -304,7 +296,7 @@ void DynamicBindingStack::push_with_value_coming(Symbol_sp var) {
 }
 
 
-void DynamicBindingStack::push(Symbol_sp var, T_sp value) {
+void DynamicBindingStack::push_binding(Symbol_sp var, T_sp value) {
 #ifdef CLASP_THREADS
   if ( var->_Binding == NO_THREAD_LOCAL_BINDINGS )
     var->_Binding = this->new_binding_index();
@@ -314,7 +306,11 @@ void DynamicBindingStack::push(Symbol_sp var, T_sp value) {
     this->_ThreadLocalBindings.resize(index+1,_NoThreadLocalBinding<T_O>());
   }
 #ifdef DEBUG_DYNAMIC_BINDING_STACK // debugging
-  printf("%s:%d  caught push[%zu] of %s  pushing value: %s\n", __FILE__, __LINE__, this->_Bindings.size(), var->symbolNameAsString().c_str(), _rep_(this->_ThreadLocalBindings[index]).c_str());
+  if (  _sym_STARwatchDynamicBindingStackSTAR &&
+       _sym_STARwatchDynamicBindingStackSTAR->boundP() &&
+       _sym_STARwatchDynamicBindingStackSTAR->symbolValue().notnilp() ) {
+    printf("%s:%d  DynamicBindingStack::push_binding[%zu] of %s\n", __FILE__, __LINE__, this->_Bindings.size(), var->formattedName(true).c_str());
+  }
 #endif
   this->_Bindings.emplace_back(var,this->_ThreadLocalBindings[index]);
   this->_ThreadLocalBindings[index] = value;
@@ -326,11 +322,13 @@ void DynamicBindingStack::push(Symbol_sp var, T_sp value) {
 
 
 
-void DynamicBindingStack::pop() {
+void DynamicBindingStack::pop_binding() {
   DynamicBinding &bind = this->_Bindings.back();
 #ifdef DEBUG_DYNAMIC_BINDING_STACK // debugging
-#if 1
-  if ( _sym_STARwatchDynamicBindingStackSTAR->symbolValue().notnilp() ) {
+  if (  _sym_STARwatchDynamicBindingStackSTAR &&
+       _sym_STARwatchDynamicBindingStackSTAR->boundP() &&
+       _sym_STARwatchDynamicBindingStackSTAR->symbolValue().notnilp() ) {
+#if 0
     List_sp assoc = cl__assoc(bind._Var,_sym_STARwatchDynamicBindingStackSTAR->symbolValue(),_Nil<T_O>());
     if ( assoc.notnilp() ) {
       T_sp funcDesig = oCdr(assoc);
@@ -340,9 +338,9 @@ void DynamicBindingStack::pop() {
         printf("%s:%d  *watch-dynamic-binding-stack* caught pop[%zu] of %s  overwriting value = %s\n", __FILE__, __LINE__, this->_Bindings.size()-1, _rep_(bind._Var).c_str(), _rep_(bind._Var->symbolValue()).c_str() );
       }
     }
-  }
 #endif
-  printf("%s:%d  DynamicBindingStack::pop %s -> %s\n", __FILE__, __LINE__, _rep_(bind._Var).c_str(), _rep_(bind._Val).c_str());
+    printf("%s:%d  DynamicBindingStack::pop_binding[%lu]  %s\n", __FILE__, __LINE__, this->_Bindings.size(),bind._Var->formattedName(true).c_str());
+  }
 #endif
 #ifdef CLASP_THREADS
   ASSERT(this->_ThreadLocalBindings.size()>bind._Var->_Binding); 

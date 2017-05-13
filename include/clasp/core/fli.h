@@ -418,7 +418,27 @@ namespace clasp_ffi
   public:
 
     // CTOR & DTOR
-    explicit ForeignTypeSpec_O();
+    explicit ForeignTypeSpec_O( core::Symbol_sp   lisp_symbol,
+                                core::String_sp   lisp_name,
+                                core::Integer_sp  size,
+                                core::Fixnum_sp   alignment,
+                                core::String_sp   cxx_name,
+                                core::Function_sp llvm_type_symbol_fn,
+                                core::String_sp   to_object_fn_name,
+                                core::String_sp   from_object_fn_name,
+                                ForeignData_sp    to_object_fn_ptr,
+                                ForeignData_sp    from_object_fn_ptr )
+      : m_lisp_symbol(lisp_symbol)
+      , m_lisp_name(lisp_name)
+      , m_size(size)
+      , m_alignment(alignment)
+      , m_cxx_name(cxx_name)
+      , m_llvm_type_symbol_fn(llvm_type_symbol_fn)
+      , m_to_object_fn_name(to_object_fn_name)
+      , m_from_object_fn_name(from_object_fn_name)
+      , m_to_object_fn_ptr(to_object_fn_ptr)
+      , m_from_object_fn_ptr(from_object_fn_ptr)
+    {};
     virtual ~ForeignTypeSpec_O();
 
     // OVERLADED FUNCTIONS
@@ -449,8 +469,8 @@ namespace clasp_ffi
 
     CL_DEFMETHOD core::String_sp      PERCENTto_object_fn_name() { return m_to_object_fn_name; };
     CL_DEFMETHOD core::String_sp      PERCENTfrom_object_fn_name() { return m_from_object_fn_name; };
-    CL_DEFMETHOD core::String_sp      PERCENTto_object_fn_ptr() { return m_to_object_fn_ptr; };
-    CL_DEFMETHOD core::String_sp      PERCENTfrom_object_fn_ptr() { return m_from_object_fn_ptr; };
+    CL_DEFMETHOD ForeignData_sp      PERCENTto_object_fn_ptr() { return m_to_object_fn_ptr; };
+    CL_DEFMETHOD ForeignData_sp      PERCENTfrom_object_fn_ptr() { return m_from_object_fn_ptr; };
 
     CL_DEFMETHOD core::Function_sp    PERCENTllvm_type_symbol_fn() { return m_llvm_type_symbol_fn; };
 

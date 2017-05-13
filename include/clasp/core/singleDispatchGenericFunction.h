@@ -154,7 +154,6 @@ public:
   virtual const char *describe() const { return "SingleDispatchGenericFunctoid"; };
   LCC_VIRTUAL LCC_RETURN LISP_CALLING_CONVENTION() {
     INCREMENT_FUNCTION_CALL_COUNTER(this);
-    ASSERT_LCC_VA_LIST_CLOSURE_DEFINED();
     IMPLEMENT_MEF(BF("Handle single dispatch"));
 #if 0            
 	    *lcc_resultP = this->_sdgf->INVOKE(lcc_nargs, nargs,args);

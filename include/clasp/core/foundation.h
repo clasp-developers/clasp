@@ -31,8 +31,8 @@ THE SOFTWARE.
 //#define DEBUG_FLOW_CONTROL 1
 
 /*! Turn this on to force turn on xxx_ASSERT messages in release code*/
-//#ifndef DEBUG_ASSERTS
-//#define DEBUG_ASSERTS
+//#ifndef DEBUG_ASSERT
+//#define DEBUG_ASSERT
 //#endif
 
 // To debug memory usage turn this on and then you can mark
@@ -204,7 +204,7 @@ typedef std::size_t class_id;
  #ifdef DEBUG_LEVEL_FULL //[
   #define DEBUG_ON 1
   #define CALLSTACK_ON 1
-  #define DEBUG_ASSERTS 1
+  #define DEBUG_ASSERT 1
  #else                     //][
   #ifdef DEBUG_LEVEL_SILENT //[
    #define CALLSTACK_SILENT 1
@@ -859,7 +859,7 @@ Symbol_sp lispify_intern(const string &name, const string &packageName = "", boo
 //    Symbol_sp lispify_intern_export(string const& name, string const& packageName);
 Symbol_sp lisp_upcase_intern(string const &name, string const &packageName);
 Symbol_sp lisp_upcase_intern_export(string const &name, string const &packageName);
-
+ Class_sp  lisp_StandardClass();
  void* lisp_to_void_ptr(T_sp o);
  T_sp lisp_from_void_ptr(void* p);
  

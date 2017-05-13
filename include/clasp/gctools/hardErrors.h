@@ -54,7 +54,7 @@ public:
   }
 #define HARD_UNREACHABLE() THROW_HARD_ERROR(BF("Unreachable"));
 #define HARD_SUBCLASS_MUST_IMPLEMENT() THROW_HARD_ERROR(boost::format("Subclass must implement"));
-#ifdef DEBUG_ASSERTS
+#ifdef DEBUG_ASSERT
 #define GCTOOLS_ASSERT(x)                                       \
   {                                                             \
     if (!(x))                                                   \

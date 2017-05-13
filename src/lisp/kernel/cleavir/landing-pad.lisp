@@ -15,7 +15,7 @@
 	(llvm-sys:create-store cmp:*irbuilder* exception-selector ehselector.slot-alloca nil)
 	(let* ((not-unwind-exception-bb (cmp:irc-basic-block-create "not-unwind-exception"))
 	       (unwind-exception-bb (cmp:irc-basic-block-create "match-unwind"))
-	       (typeid (cmp:irc-create-call "llvm.eh.typeid.for"
+	       (typeid (cmp:irc-intrinsic-call "llvm.eh.typeid.for"
                                             (list (cmp:irc-exception-typeid* 'cmp:typeid-core-unwind))))
 	       (matches-type (cmp:irc-icmp-eq exception-selector typeid)))
 	  (cmp:irc-cond-br matches-type unwind-exception-bb not-unwind-exception-bb)
@@ -26,13 +26,13 @@
               (cmp:with-landing-pad terminate-block
                 (cmp:irc-low-level-trace :cclasp-eh)
                 (setq go-index
-                      (cmp:irc-create-call
+                      (cmp:irc-intrinsic-call
                        "cc_landingpadUnwindMatchFrameElseRethrow" 
                        (list exception-ptr 
                              (cmp:irc-load (clasp-cleavir::translate-datum
                                             (clasp-cleavir-hir:frame-holder enter-instruction))))))
                 (with-return-values (return-vals return-value abi)
-                  (cmp:irc-create-call "cc_restoreMultipleValue0" (list return-value)))))
+                  (cmp:irc-intrinsic-call "cc_restoreMultipleValue0" (list return-value)))))
             (let* ((default-block (cmp:irc-basic-block-create "switch-default"))
                    (unwinds (unwinds landing-pad-object))
                    (sw (cmp:irc-switch go-index default-block (length unwinds)))
@@ -44,7 +44,7 @@
                         (incf jump-id))
                     unwinds)
               (cmp:irc-begin-block default-block)
-              (cmp:irc-create-call "throwIllegalSwitchValue"
+              (cmp:irc-intrinsic-call "throwIllegalSwitchValue"
                                    (list go-index (%size_t (length unwinds))))))
 	  (cmp:irc-unreachable)
 	  (cmp:irc-begin-block not-unwind-exception-bb)

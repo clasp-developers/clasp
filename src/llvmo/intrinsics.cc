@@ -103,7 +103,7 @@ ALWAYS_INLINE core::T_sp *functionFrameReference(core::ActivationFrame_sp *frame
   ASSERT(frameP != NULL);
   ASSERT(frameP->objectp());
   core::FunctionFrame_sp frame = gctools::reinterpret_cast_smart_ptr<core::FunctionFrame_O>((*frameP));
-#ifdef DEBUG_ASSERTS
+#ifdef DEBUG_ASSERT
   if (idx < 0 || idx >= frame->length()) {
     intrinsic_error(llvmo::invalidIndexForFunctionFrame, clasp_make_fixnum(idx), clasp_make_fixnum(frame->length()));
   }
