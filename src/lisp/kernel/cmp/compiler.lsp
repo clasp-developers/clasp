@@ -133,7 +133,8 @@ Could return more functions that provide lambda-list for swank for example"
                ;; load time values table
                #+(or)(irc-intrinsic-call "debugInspectT_sp" (list (literal:compile-reference-to-literal :This-is-a-test)))
                (let* ((arguments             (llvm-sys:get-argument-list fn))
-                      (argument-holder       (bclasp-setup-calling-convention arguments lambda-list-handler NIL #|DEBUG-ON|#)))
+                      (argument-holder       (bclasp-setup-calling-convention arguments lambda-list-handler T #|DEBUG-ON|#)))
+                 (calling-convention-maybe-push-invocation-history-frame argument-holder)
                  (let ((new-env (progn
                                   (cmp-log "Creating new-value-environment for arguments\n")
                                   (irc-new-value-environment
@@ -148,10 +149,12 @@ Could return more functions that provide lambda-list for swank for example"
                                                                            lambda-args-env))))))
                    (dbg-set-current-debug-location-here)
                    (with-try new-env
-                     (if wrap-block
-                         (codegen-block result (list* block-name code) new-env)
-                         (codegen-progn result code new-env))
+                     (progn
+                       (if wrap-block
+                           (codegen-block result (list* block-name code) new-env)
+                           (codegen-progn result code new-env)))
                      ((cleanup)
+                      (calling-convention-maybe-pop-invocation-history-frame argument-holder)
                       (irc-unwind-environment new-env))))))))
     (cmp-log "About to dump the function constructed by generate-llvm-function-from-code\n")
     (cmp-log-dump fn)

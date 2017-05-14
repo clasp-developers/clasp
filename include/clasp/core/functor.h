@@ -310,11 +310,11 @@ namespace core {
     void setf_lambda_list(core::List_sp lambda_list) { this->_lambdaList = lambda_list; };
     core::LambdaListHandler_sp lambdaListHandler() const { return _Nil<core::LambdaListHandler_O>(); };
     inline T_sp &operator[](size_t idx) {
-      ASSERT(idx<this->_Slots._Length);
+      BOUNDS_ASSERT(idx<this->_Slots._Length);
       return this->_Slots[idx];
     };
     inline const T_sp &operator[](size_t idx) const {
-      ASSERT(idx<this->_Slots._Length);
+      BOUNDS_ASSERT(idx<this->_Slots._Length);
       return this->_Slots[idx];
     };
   };

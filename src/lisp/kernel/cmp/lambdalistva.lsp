@@ -655,7 +655,6 @@ lambda-list-handler/env/argument-activation-frame"
            :register-save-area* (irc-alloca-register-save-area :label "register-save-area")
            :invocation-history-frame* (and debug-on (irc-alloca-invocation-history-frame :label "invocation-history-frame")))))))
 
-
 (defun bclasp-setup-calling-convention (arguments lambda-list-handler debug-on)
   (let ((setup (bclasp-maybe-alloc-cc-info lambda-list-handler debug-on)))
     (initialize-calling-convention arguments setup)))

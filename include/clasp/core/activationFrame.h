@@ -196,11 +196,11 @@ public:
 
 public:
   inline T_sp &operator[](size_t idx) {
-    ASSERT(idx<this->_Objects._Length);
+    BOUNDS_ASSERT(idx<this->_Objects._Length);
     return this->_Objects[idx];
   };
   inline const T_sp &operator[](size_t idx) const {
-    ASSERT(idx<this->_Objects._Length);
+    BOUNDS_ASSERT(idx<this->_Objects._Length);
     return this->_Objects[idx];
   };
 
@@ -291,11 +291,11 @@ public:
 
 
   inline T_sp &operator[](size_t idx) {
-    ASSERT(idx<this->_Objects._Length);
+    BOUNDS_ASSERT(idx<this->_Objects._Length);
     return this->_Objects[idx];
   };
   inline const T_sp &operator[](size_t idx) const {
-    ASSERT(idx<this->_Objects._Length);
+    BOUNDS_ASSERT(idx<this->_Objects._Length);
     return this->_Objects[idx];
   };
 

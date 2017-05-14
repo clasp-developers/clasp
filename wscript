@@ -275,6 +275,7 @@ class variant(object):
     def configure_for_debug(self,cfg):
         cfg.define("_DEBUG_BUILD",1)
         cfg.define("DEBUG_ASSERT",1)
+        cfg.define("DEBUG_BOUNDS_ASSERT",1)
 #        cfg.define("DEBUG_ASSERT_TYPE_CAST",1)  # checks runtime type casts
         cfg.define("CONFIG_VAR_COOL",1)
 #        cfg.env.append_value('CXXFLAGS', [ '-O0', '-g' ])
@@ -653,6 +654,7 @@ def configure(cfg):
     cfg.define("CLASP_UNICODE",1)
     cfg.define("DEBUG_TRACE_INTERPRETED_CLOSURES",1)
     cfg.define("DEBUG_THREADS",1)
+    cfg.define("DEBUG_BOUNDS_ASSERT",1)
 #    cfg.define("EXPAT",1)
     cfg.define("INCLUDED_FROM_CLASP",1)
     cfg.define("INHERITED_FROM_SRC",1)

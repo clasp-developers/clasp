@@ -57,7 +57,7 @@ public:
     }
   }
 
-  reference operator[](size_type n) { return this->_Data[n]; };
+  reference operator[](size_type n) { BOUNDS_ASSERT(n<this->_Capacity); return this->_Data[n]; };
 
   pointer_my_type push_back_and_maybe_relocate(const value_type &x) {
     pointer_my_type myAddress = this;

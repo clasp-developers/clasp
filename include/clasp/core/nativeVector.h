@@ -15,8 +15,8 @@ namespace core {
       return gctools::GC<NativeVector_int_O>::allocate();
     }
   public:
-    inline int& operator[](size_t i) { ASSERT(i<this->_Vector.size()); return this->_Vector[i]; };
-    inline const int& operator[](size_t i) const { ASSERT(i<this->_Vector.size());return this->_Vector[i]; };
+    inline int& operator[](size_t i) { BOUNDS_ASSERT(i<this->_Vector.size()); return this->_Vector[i]; };
+    inline const int& operator[](size_t i) const { BOUNDS_ASSERT(i<this->_Vector.size());return this->_Vector[i]; };
     CL_LISPIFY_NAME("native-vector<int>-setf-elt");
     CL_DEFMETHOD inline void setf_elt(size_t index, int val) { this->_Vector[index] = val; };
     CL_LISPIFY_NAME("native-vector<int>-elt");
@@ -44,8 +44,8 @@ namespace core {
       return gctools::GC<NativeVector_double_O>::allocate();
     }
   public:
-    inline double& operator[](size_t i) { ASSERT(i<this->_Vector.size());return this->_Vector[i]; };
-    inline const double& operator[](size_t i) const { ASSERT(i<this->_Vector.size());return this->_Vector[i]; };
+    inline double& operator[](size_t i) { BOUNDS_ASSERT(i<this->_Vector.size());return this->_Vector[i]; };
+    inline const double& operator[](size_t i) const { BOUNDS_ASSERT(i<this->_Vector.size());return this->_Vector[i]; };
     CL_LISPIFY_NAME("native-vector<double>-setf-elt");
     CL_DEFMETHOD inline void setf_elt(size_t index, double val) { this->_Vector[index] = val; };
     CL_LISPIFY_NAME("native-vector<double>-elt");
@@ -72,8 +72,8 @@ namespace core {
       return gctools::GC<NativeVector_float_O>::allocate();
     }
   public:
-    inline float& operator[](size_t i) { ASSERT(i<this->_Vector.size());return this->_Vector[i]; };
-    inline const float& operator[](size_t i) const { ASSERT(i<this->_Vector.size());return this->_Vector[i]; };
+    inline float& operator[](size_t i) { BOUNDS_ASSERT(i<this->_Vector.size());return this->_Vector[i]; };
+    inline const float& operator[](size_t i) const { BOUNDS_ASSERT(i<this->_Vector.size());return this->_Vector[i]; };
     CL_LISPIFY_NAME("native-vector<float>-setf-elt");
     CL_DEFMETHOD inline void setf_elt(size_t index, float val) { this->_Vector[index] = val; };
     CL_LISPIFY_NAME("native-vector<float>-elt");

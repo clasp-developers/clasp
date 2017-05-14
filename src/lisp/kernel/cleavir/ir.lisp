@@ -1,8 +1,22 @@
+(eval-when (:compile-toplevel :execute :load-toplevel)
+  (setq *echo-repl-read* t)
+  (setq cmp::*debug-compile-file* t)
+  (format t "About to compile-file ir.lsp~%"))
+
+(eval-when (:compile-toplevel :execute :load-toplevel)
+  (format t "About to compile-file ir.lsp   A~%"))
+
 (in-package :clasp-cleavir)
+
+(eval-when (:compile-toplevel :execute :load-toplevel)
+  (format t "About to compile-file ir.lsp   B~%"))
 
 (defun %literal-index (value &optional read-only-p)
   (let ((*debug-cleavir* *debug-cleavir-literals*))
     (literal:reference-literal value read-only-p)))
+
+(eval-when (:compile-toplevel :execute :load-toplevel)
+  (format t "About to compile-file ir.lsp   C~%"))
 
 (defun %literal-ref (value &optional read-only-p)
   (let* ((index (%literal-index value read-only-p))
@@ -250,7 +264,7 @@
 ;;;
 
 (defun closure-call (call-or-invoke closure return-value arg-allocas abi &key (label "") landing-pad)
-  (let* ((intrinsic-name "cc_call")
+  (let* ((entry-point (cmp::irc-calculate-entry closure)) ;; intrinsic-name "cc_call")
          (arguments (mapcar (lambda (x) (%load x)) arg-allocas))
          (real-args (if (< (length arguments) core:+number-of-fixed-arguments+)
                         (append arguments (make-list (- core:+number-of-fixed-arguments+ (length arguments)) :initial-element (cmp:null-t-ptr)))

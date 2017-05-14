@@ -107,6 +107,10 @@
     nil
     (make-package "FFI" :use '(:CL :CORE)))
 
+(if (find-package "CLASP-CLEAVIR")
+    nil
+    (make-package "CLASP-CLEAVIR" :use '(:CL)))
+
 ;;; Setup a few things for the EXT package
 ;;; EXT exports
 (eval-when (:execute :compile-toplevel :load-toplevel)

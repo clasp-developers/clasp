@@ -51,20 +51,17 @@ class InvocationHistoryFrame //: public gctools::StackRoot
 
  public:
   InvocationHistoryFrame *_Previous;
-  int _Bds;
   mutable va_list   _args;
   size_t _remaining_nargs;
+  size_t _Bds;
  public:
  InvocationHistoryFrame(va_list rawArgList, size_t remaining_nargs)
    : _Previous(my_thread->_InvocationHistoryStack),
-    _Bds(my_thread->bindings().size()){
-    va_copy(this->_args,rawArgList);
-    this->_remaining_nargs = remaining_nargs;
-    my_thread->_InvocationHistoryStack = this;
-  }
-  ~InvocationHistoryFrame() {
-    my_thread->_InvocationHistoryStack = this->_Previous;
-  }
+    _Bds(my_thread->bindings().size())
+    {
+      va_copy(this->_args,rawArgList);
+      this->_remaining_nargs = remaining_nargs;
+    }
   //Closure_sp fc, core::T_O *valist_args, T_sp env = _Nil<T_O>());
 
   //	InvocationHistoryFrame(int sourceFileInfoHandle, int lineno, int column, ActivationFrame_sp env=_Nil<ActivationFrame_O>());

@@ -155,7 +155,7 @@ void Class_O::initializeSlots(size_t slots) {
   if (slots==0) {
     printf("%s:%d initializeSlots slots = 0\n", __FILE__, __LINE__ );
   }
-  if ( _lisp->_PackagesInitialized ) printf("%s:%d Changing the #slots to %lu\n", __FILE__, __LINE__, slots );
+//  if ( _lisp->_PackagesInitialized ) printf("%s:%d Changing the #slots to %lu\n", __FILE__, __LINE__, slots );
   this->_MetaClassSlots.resize(slots, _Unbound<T_O>());
   this->instanceSet(REF_CLASS_DIRECT_SUPERCLASSES, _Nil<T_O>());
   this->instanceSet(REF_CLASS_DIRECT_DEFAULT_INITARGS, _Nil<T_O>());

@@ -588,6 +588,12 @@ void debugSuppressMessages(bool s);
 #ifdef DEBUG_ASSERT
 #define lisp_ASSERT(x) if (!(x)) ::core::assert_failure(__FILE__,__LINE__,__FUNCTION__,#x)
 #define ASSERT(x) lisp_ASSERT(x)
+#endif
+#ifdef DEBUG_BOUNDS_ASSERT
+#define lisp_BOUNDS_ASSERT(x) if (!(x)) ::core::assert_failure(__FILE__,__LINE__,__FUNCTION__,#x)
+#define BOUNDS_ASSERT(x) lisp_BOUNDS_ASSERT(x)
+#endif
+#ifdef DEBUG_ASSERT
 #define lisp_ASSERTP( x, e) if (!(x)) ::core::assert_failure(__FILE__,__LINE__,__FUNCTION__,(e));
 #define ASSERTP(x, e) lisp_ASSERTP(x, e)
 #define lisp_ASSERTF( x, e) if (!(x)) ::core::assert_failure(__FILE__,__LINE__,__FUNCTION__,(e).str().c_str());

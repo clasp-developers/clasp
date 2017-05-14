@@ -1818,6 +1818,18 @@ void throwIfClassesNotInitialized(const Lisp_sp &lisp) {
 };
 
 namespace core {
+size_t  debug_InvocationHistoryFrame = 0;
+
+CL_DEFUN void core__debug_invocation_history_frame(size_t v) {
+  debug_InvocationHistoryFrame = v;
+  printf("   ---------------   InvocationHistoryStack:\n");
+  InvocationHistoryFrame* cur = my_thread->_InvocationHistoryStack;
+  while (cur!=NULL) {
+    printf("         Frame %p\n", cur);
+    cur = cur->previous();
+  }
+}
+  
 };
 
 

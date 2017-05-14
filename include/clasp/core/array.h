@@ -110,6 +110,8 @@ namespace cl {
   extern core::Symbol_sp& _sym_adjust_array;
   extern core::Symbol_sp& _sym_sequence;
   extern core::Symbol_sp& _sym_array;
+  extern core::Symbol_sp& _sym_or;
+  extern core::Symbol_sp& _sym_nil;
   extern core::Symbol_sp& _sym_vector;
   extern core::Symbol_sp& _sym_vectorPush;
   extern core::Symbol_sp& _sym_vectorPushExtend;
@@ -538,8 +540,8 @@ namespace core {
     static void never_invoke_allocator() {gctools::GCAbstractAllocator<template_SimpleVector>::never_invoke_allocator();};
   public:
     // NULL terminated strings use this - so the ASSERT needs to accept it
-    value_type& operator[](size_t index) { ASSERT(index<=this->length());return this->_Data[index];};
-    const value_type& operator[](size_t index) const { ASSERT(index<=this->length());return this->_Data[index];};
+    value_type& operator[](size_t index) { BOUNDS_ASSERT(index<=this->length());return this->_Data[index];};
+    const value_type& operator[](size_t index) const { BOUNDS_ASSERT(index<=this->length());return this->_Data[index];};
     iterator begin() { return &this->_Data[0];};
     iterator end() { return &this->_Data[this->_Data._Length]; }
     const_iterator begin() const { return &this->_Data[0];};
@@ -620,7 +622,14 @@ namespace core {
     typedef value_type container_value_type;
   public:
     static value_type initial_element_from_object(T_sp obj, bool supplied);
-    static value_type from_object(T_sp obj) {return obj.unsafe_character();}
+    static value_type from_object(T_sp obj) {
+      if (obj.characterp()) {
+        return obj.unsafe_character();
+      } else if (obj.nilp()) {
+        return '\0';
+      }
+      TYPE_ERROR(obj,Cons_O::createList(cl::_sym_or,cl::_sym_character,cl::_sym_nil));
+    }
     static T_sp to_object(const value_type& v) { return clasp_make_character(v); };
   public:
     // Always leave space for \0 at end
@@ -693,7 +702,7 @@ namespace core {
       } else if (obj.nilp()) {
         return 0;
       }
-      SIMPLE_ERROR(BF("Cannot convert %s to character\n") % _rep_(obj));
+      TYPE_ERROR(obj,Cons_O::createList(cl::_sym_or,cl::_sym_character,cl::_sym_nil));
     }
     static T_sp to_object(const value_type& v) { return clasp_make_character(v); };
   public:
@@ -939,7 +948,7 @@ namespace core {
       return vecns[this->_DisplacedIndexOffset+index];
     }
     simple_element_type& operator[](size_t index) {
-      ASSERT(index<this->arrayTotalSize());
+      BOUNDS_ASSERT(index<this->arrayTotalSize());
       unlikely_if (gc::IsA<my_smart_ptr_type>(this->_Data)) return this->unsafe_indirectReference(index);
       return (*reinterpret_cast<simple_type*>(&*(this->_Data)))[this->_DisplacedIndexOffset+index];
     }
@@ -948,7 +957,7 @@ namespace core {
       return vecns[this->_DisplacedIndexOffset+index];
     }
     const simple_element_type& operator[](size_t index) const {
-      ASSERT(index<this->arrayTotalSize());
+      BOUNDS_ASSERT(index<this->arrayTotalSize());
       unlikely_if (gc::IsA<my_smart_ptr_type>(this->_Data)) return this->unsafe_indirectReference(index);
       return (*reinterpret_cast<simple_type*>(&*(this->_Data)))[this->_DisplacedIndexOffset+index];
     }
@@ -1034,11 +1043,11 @@ namespace core {
     // Primary functions/operators for operator[] that handle displacement
     // There's a non-const and a const version of each
     simple_element_type& operator[](size_t index) {
-      ASSERT(index<this->arrayTotalSize());
+      BOUNDS_ASSERT(index<this->arrayTotalSize());
       return (*reinterpret_cast<simple_type*>(&*(this->_Data)))[index];
     }
     const simple_element_type& operator[](size_t index) const {
-      ASSERT(index<this->arrayTotalSize());
+      BOUNDS_ASSERT(index<this->arrayTotalSize());
       return (*reinterpret_cast<simple_type*>(&*(this->_Data)))[index];
     }
   public:

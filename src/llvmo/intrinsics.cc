@@ -429,9 +429,52 @@ core::T_O *cc_fetch(core::T_O *tagged_closure, std::size_t idx) {
 }
 
 
-ALWAYS_INLINE void cc_initialize_InvocationHistoryFrame(va_list vargs, size_t nargs, void* vframe ) {
-  core::InvocationHistoryFrame* frame = reinterpret_cast<core::InvocationHistoryFrame*>(vframe);
-  new (frame) InvocationHistoryFrame(vargs,nargs);
+ALWAYS_INLINE void cc_push_InvocationHistoryFrame(InvocationHistoryFrame* frame, va_list va_args, size_t* nargsP) {
+  if (core::debug_InvocationHistoryFrame) {
+    printf("%s:%d:%s     frame @%p     stack @%p\n", __FILE__, __LINE__, __FUNCTION__, frame, my_thread->_InvocationHistoryStack);
+  }
+  if (frame==NULL || nargsP==NULL) {
+    printf("%s:%d   Bad call to cc_push_InvocationHistoryFrame\n", __FILE__, __LINE__);
+    abort();
+  }
+  new (frame) InvocationHistoryFrame(va_args, *nargsP);
+  frame->_Previous = my_thread->_InvocationHistoryStack;
+  if (my_thread->_InvocationHistoryStack != NULL && my_thread->_InvocationHistoryStack < frame) {
+    printf("%s:%d     The stack is messed up  frame @%p   my_thread->_InvocationHistoryStack @%p\n", __FILE__, __LINE__, frame, my_thread->_InvocationHistoryStack );
+    abort();
+  }
+  my_thread->_InvocationHistoryStack = frame;
+}
+
+ALWAYS_INLINE void cc_pop_InvocationHistoryFrame(InvocationHistoryFrame* frame) {
+  if (core::debug_InvocationHistoryFrame) {
+   printf("%s:%d:%s     frame @%p     stack @%p\n", __FILE__, __LINE__, __FUNCTION__, frame, my_thread->_InvocationHistoryStack);
+  }
+  if (my_thread->_InvocationHistoryStack != frame ) {
+    printf("%s:%d  The top of the InvocationHistoryStack @%p does not match the current frame being popped @%p\n", __FILE__, __LINE__, my_thread->_InvocationHistoryStack, frame );
+    printf("   ---------------   From frame:\n");
+    InvocationHistoryFrame* cur = frame;
+    while (cur!=NULL) {
+      printf("         Frame %p\n", cur);
+      if (cur==my_thread->_InvocationHistoryStack) {
+        printf("             < my_thread->_InvocationHistoryStack @%p\n", my_thread->_InvocationHistoryStack);
+      }
+      cur = cur->previous();
+    }
+    cur = my_thread->_InvocationHistoryStack;
+    printf("   ------------------   Current stack:\n");
+    while (cur!=NULL) {
+      printf("         Frame %p\n", cur);
+      if (cur==frame) {
+        printf("             < cc_pop_InvocationHistoryFrame frame @%p\n", frame);
+      }
+
+      cur = cur->previous();
+    }
+    abort();
+  }
+  my_thread->_InvocationHistoryStack = my_thread->_InvocationHistoryStack->_Previous;
+//  frame->~InvocationHistoryFrame();
 }
 
 ALWAYS_INLINE char *cc_getPointer(core::T_O *pointer_object) {
