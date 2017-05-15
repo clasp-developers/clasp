@@ -228,6 +228,30 @@ string backtrace_as_string() {
 }
 
 
+};
+
+extern "C" {
+void dump_backtrace(InvocationHistoryFrame* frame) {
+  std::cout << "--------STACK TRACE--------" << std::endl;
+  int ihsCur = core__ihs_current_frame();
+  core::InvocationHistoryFrame* cur = frame;
+  int i = 0;
+  while (cur) {
+    if (cur == my_thread->_InvocationHistoryStack) {
+      std::cout << "-->";
+    } else {
+      std::cout << "   ";
+    }
+    std::cout << "frame";
+    std::cout << cur->asString(i) << std::endl;
+    cur = cur->_Previous;
+    ++i;
+  }
+}
+};
+
+namespace core {
+
 size_t DynamicBindingStack::new_binding_index()
 {
 #ifdef CLASP_THREADS
