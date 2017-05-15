@@ -1819,9 +1819,12 @@ void throwIfClassesNotInitialized(const Lisp_sp &lisp) {
 
 namespace core {
 size_t  debug_InvocationHistoryFrame = 0;
+uintptr_t debug_InvocationHistoryFrameAddress = 0;
 
 CL_DEFUN void core__debug_invocation_history_frame(size_t v) {
   debug_InvocationHistoryFrame = v;
+  debug_InvocationHistoryFrameAddress = atol(getenv("IHS"));
+  printf("%s:%d     Will trap InvocationHistoryFrame at %p\n",__FILE__,__LINE__,(void*)debug_InvocationHistoryFrameAddress); 
   printf("   ---------------   InvocationHistoryStack:\n");
   InvocationHistoryFrame* cur = my_thread->_InvocationHistoryStack;
   while (cur!=NULL) {

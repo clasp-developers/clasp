@@ -231,9 +231,8 @@ string backtrace_as_string() {
 };
 
 extern "C" {
-void dump_backtrace(InvocationHistoryFrame* frame) {
+void dump_backtrace(core::InvocationHistoryFrame* frame) {
   std::cout << "--------STACK TRACE--------" << std::endl;
-  int ihsCur = core__ihs_current_frame();
   core::InvocationHistoryFrame* cur = frame;
   int i = 0;
   while (cur) {
@@ -242,7 +241,7 @@ void dump_backtrace(InvocationHistoryFrame* frame) {
     } else {
       std::cout << "   ";
     }
-    std::cout << "frame";
+    std::cout << "frame@" << (void*)cur << ": ";
     std::cout << cur->asString(i) << std::endl;
     cur = cur->_Previous;
     ++i;

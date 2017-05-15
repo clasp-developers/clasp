@@ -70,7 +70,12 @@ using namespace core;
 
 #pragma GCC visibility push(default)
 
+namespace core {
+extern uintptr_t debug_InvocationHistoryFrameAddress;
+};
 extern "C" {
+
+extern void dump_backtrace(core::InvocationHistoryFrame* frame);
 
 ALWAYS_INLINE core::T_sp *symbolValueReference(core::T_sp *symbolP) {
   core::Symbol_sp sym((gctools::Tagged)ENSURE_VALID_OBJECT(symbolP->raw_()));
@@ -428,10 +433,31 @@ core::T_O *cc_fetch(core::T_O *tagged_closure, std::size_t idx) {
   return (*c)[idx].raw_();
 }
 
+size_t invocation_history_stack_depth(bool dump)
+{
+  size_t count = 0;
+  printf("    invocation_history_stack_depth -----------------\n");
+  InvocationHistoryFrame* cur = my_thread->_InvocationHistoryStack;
+  while (cur) {
+    if (dump) {
+      printf("    frame[%lu] @%p  function: %s\n", count, cur, _rep_(cur->function()->name()).c_str());
+    }
+    cur = cur->_Previous;
+    ++count;
+  }
+  return count;
+}
 
 ALWAYS_INLINE void cc_push_InvocationHistoryFrame(InvocationHistoryFrame* frame, va_list va_args, size_t* nargsP) {
   if (core::debug_InvocationHistoryFrame) {
-    printf("%s:%d:%s     frame @%p     stack @%p\n", __FILE__, __LINE__, __FUNCTION__, frame, my_thread->_InvocationHistoryStack);
+    if (frame == (InvocationHistoryFrame*)debug_InvocationHistoryFrameAddress) {
+      core::debug_InvocationHistoryFrame = 2;
+    }
+    if (core::debug_InvocationHistoryFrame == 2) {
+      printf("%s:%d:%s  push    frame @%p     stack @%p  stack depth=%lu\n", __FILE__, __LINE__, __FUNCTION__, frame, my_thread->_InvocationHistoryStack, invocation_history_stack_depth(true));
+      dump_backtrace(frame);
+//      printf("          %s\n", frame->asString(0).c_str());
+    }
   }
   if (frame==NULL || nargsP==NULL) {
     printf("%s:%d   Bad call to cc_push_InvocationHistoryFrame\n", __FILE__, __LINE__);
@@ -446,9 +472,13 @@ ALWAYS_INLINE void cc_push_InvocationHistoryFrame(InvocationHistoryFrame* frame,
   my_thread->_InvocationHistoryStack = frame;
 }
 
+
 ALWAYS_INLINE void cc_pop_InvocationHistoryFrame(InvocationHistoryFrame* frame) {
   if (core::debug_InvocationHistoryFrame) {
-   printf("%s:%d:%s     frame @%p     stack @%p\n", __FILE__, __LINE__, __FUNCTION__, frame, my_thread->_InvocationHistoryStack);
+    if (core::debug_InvocationHistoryFrame == 2) {
+      printf("%s:%d:%s  pop    frame @%p     stack @%p  stack depth: %lu\n", __FILE__, __LINE__, __FUNCTION__, frame, my_thread->_InvocationHistoryStack, invocation_history_stack_depth(false));
+//      printf("          %s\n", frame->asString(0).c_str());
+    }
   }
   if (my_thread->_InvocationHistoryStack != frame ) {
     printf("%s:%d  The top of the InvocationHistoryStack @%p does not match the current frame being popped @%p\n", __FILE__, __LINE__, my_thread->_InvocationHistoryStack, frame );
@@ -461,6 +491,7 @@ ALWAYS_INLINE void cc_pop_InvocationHistoryFrame(InvocationHistoryFrame* frame) 
       }
       cur = cur->previous();
     }
+    dump_backtrace(frame);
     cur = my_thread->_InvocationHistoryStack;
     printf("   ------------------   Current stack:\n");
     while (cur!=NULL) {
@@ -468,7 +499,6 @@ ALWAYS_INLINE void cc_pop_InvocationHistoryFrame(InvocationHistoryFrame* frame) 
       if (cur==frame) {
         printf("             < cc_pop_InvocationHistoryFrame frame @%p\n", frame);
       }
-
       cur = cur->previous();
     }
     abort();
