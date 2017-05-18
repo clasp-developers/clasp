@@ -52,7 +52,7 @@ public: // Functions here
   static LoadTimeValues_sp make(size_t dataDimension);
 
 
-  T_sp &operator[](size_t index) { return this->_Objects[index]; }
+  T_sp &operator[](size_t index) { BOUNDS_ASSERT(index<this->_Objects.size()); return this->_Objects[index]; }
 
   int numberOfValues() const { return this->_Objects.size(); };
 //  int numberOfSymbols() const { return this->_Symbols.size(); };

@@ -44,12 +44,13 @@ THE SOFTWARE.
 #define CLASP_INVALIDATED_DISPATCH 7
 
 namespace core {
+
   class Instance_O : public Function_O {
     LISP_CLASS(core, CorePkg, Instance_O, "Instance",Function_O);
     friend class Class_O;
     void archiveBase(ArchiveP node);
   public: // ctor/dtor for classes with shared virtual base
-  Instance_O() : Base(), _isgf(CLASP_NOT_FUNCALLABLE), _entryPoint(NULL), _Class(_Nil<Class_O>()), _Sig(_Nil<T_O>()){};
+  Instance_O() : Base(entry_point), _isgf(CLASP_NOT_FUNCALLABLE), _entryPoint(NULL), _Class(_Nil<Class_O>()), _Sig(_Nil<T_O>()){};
     virtual ~Instance_O(){};
   public:
     Class_sp _Class;
@@ -154,14 +155,7 @@ namespace core {
 
     void __write__(T_sp sout) const; // Look in write_ugly.cc
 
-    LCC_VIRTUAL LCC_RETURN LISP_CALLING_CONVENTION() {
-      ASSERT_LCC_VA_LIST_CLOSURE_DEFINED(lcc_arglist);
-      INCREMENT_FUNCTION_CALL_COUNTER(this);
-// Copy the arguments passed in registers into the multiple_values array and those
-// will be processed by the generic function
-      LCC_MAKE_VA_LIST_SP(gfargs);
-      return (this->_entryPoint)(this->asSmartPtr().tagged_(), gfargs.tagged_());
-    }
+    static  LCC_RETURN LISP_CALLING_CONVENTION();
 
   }; // Instance class
 

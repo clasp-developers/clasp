@@ -65,15 +65,21 @@
           function-type-create-on-the-fly
           evaluate-foreign-arguments
           jit-remove-module
+          calling-convention-closure
+          calling-convention-use-only-registers
           calling-convention-args
           calling-convention-args.va-arg
-          calling-convention-va-list
+          calling-convention-va-list*
+          calling-convention-register-save-area*
           calling-convention-nargs
+          calling-convention-remaining-nargs*
           calling-convention-register-args
           calling-convention-write-registers-to-multiple-values
           describe-constants-table
           cmp-log
           cmp-log-dump
+          irc-create-call
+          irc-create-invoke
           compile-file-to-module
           link-intrinsics-module
           optimize-module
@@ -106,7 +112,8 @@
           irc-br
           irc-branch-to-and-begin-block
           irc-cond-br
-          irc-create-call
+          irc-intrinsic-call
+          irc-intrinsic-invoke
           irc-bit-cast
           irc-pointer-cast
           irc-create-invoke
@@ -121,7 +128,6 @@
           irc-icmp-eq
           irc-icmp-slt
           irc-intrinsic
-          irc-intrinsic-args
           irc-load
           irc-low-level-trace
           irc-phi
@@ -148,7 +154,7 @@
           llvm-link
           link-intrinsics-module
           load-bitcode
-          parse-function-arguments
+          initialize-calling-convention
           set-associated-funcs
           treat-as-special-operator-p
           typeid-core-unwind
@@ -171,6 +177,8 @@
           %uintptr_t%
           %return_type%
           %VaList_S%
+          %InvocationHistoryFrame%
+          %register-save-area%
           null-t-ptr
           compile-error-if-wrong-number-of-arguments
           compile-error-if-too-many-arguments

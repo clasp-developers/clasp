@@ -933,7 +933,6 @@ Symbol_sp Lisp_O::defineSpecialOperator(const string &packageName, const string 
   if (this->_Roots._SpecialForms.unboundp()) {
     this->_Roots._SpecialForms = HashTableEq_O::create_default();
   }
-  ASSERTP(!this->_Roots._SpecialForms->contains(sym), "You cant define a special form with the symbol(" + formName + ") it has already been defined");
   this->_Roots._SpecialForms->setf_gethash(sym, special);
   return sym;
 }
@@ -1020,8 +1019,6 @@ void Lisp_O::addClass(Symbol_sp classSymbol,
 //                      Symbol_sp base3ClassSymbol) {
 {
   LOG(BF("Lisp_O::addClass classSymbol(%s) baseClassSymbol1(%u) baseClassSymbol2(%u)") % _rep_(classSymbol) % base1ClassSymbol % base2ClassSymbol);
-  ASSERTP(IS_SYMBOL_DEFINED(BuiltInClass_O::static_classSymbol()),
-          "You cannot create a BuiltInClass before the BuiltIn!Class is defined");
   Class_sp cc;
   if (classSymbol == StandardObject_O::static_classSymbol()) {
     IMPLEMENT_ME(); // WHEN DO StandardClasses get created with addClass?????
@@ -1183,7 +1180,7 @@ void Lisp_O::inPackage(const string &p) {
   WITH_READ_LOCK(this->_Roots._PackagesMutex);
   map<string, int>::const_iterator pi = this->_Roots._PackageNameIndexMap.find(p);
   if (pi == this->_Roots._PackageNameIndexMap.end()) {
-    ASSERTP(this->recognizesPackage(p), "I do not recognize package: " + p);
+    SIMPLE_ERROR(BF("I do not recognize package: %s") % p );
   }
   this->selectPackage(this->_Roots._Packages[pi->second]);
 }
@@ -1359,6 +1356,12 @@ void Lisp_O::parseCommandLineArguments(int argc, char *argv[], const CommandLine
 #ifdef USE_EXPENSIVE_BACKTRACE
   features = Cons_O::create(_lisp->internKeyword("USE-EXPENSIVE-BACKTRACE"), features);
 #endif
+#ifdef DEBUG_GUARD
+  features = Cons_O::create(_lisp->internKeyword("DEBUG-GUARD"), features);
+#endif
+#ifdef DEBUG_ENSURE_VALID_OBJECT
+  features = Cons_O::create(_lisp->internKeyword("DEBUG-ENSURE-VALID-OBJECT"),features);
+#endif  
 #ifdef CLASP_THREADS
   features = Cons_O::create(_lisp->internKeyword("THREADS"),features);
 #endif
@@ -2026,7 +2029,7 @@ CL_LAMBDA(string-desig &optional package-desig);
 CL_DECLARE();
 CL_DOCSTRING("apropos");
 CL_DEFUN T_sp cl__apropos(T_sp string_desig, T_sp package_desig) {
-  ASSERT(cl__stringp(string_design));
+  ASSERT(cl__stringp(string_desig));
   // TODO: Switch to proper common lisp strings
   String_sp string = coerce::stringDesignator(string_desig);
   SimpleString_sp substring = coerce::simple_string(string);
@@ -2476,10 +2479,12 @@ Symbol_sp Lisp_O::getClassSymbolForClassName(const string &name) {
   return sym;
 }
 
+
 T_sp Lisp_O::createObjectOfClass(T_sp mc) {
   if (clos__classp(mc)) {
     LOG(BF("createObjectOfClass(%s)") % _rep_(mc));
     IMPLEMENT_ME();
+#if 0
     T_sp obj = gc::As<Class_sp>(mc)->allocate_newNil();
     if ( obj.generalp() ) {
       obj.unsafe_general()->initialize();
@@ -2489,6 +2494,7 @@ T_sp Lisp_O::createObjectOfClass(T_sp mc) {
       SIMPLE_ERROR(BF("Add support to initialize %s") % _rep_(cl__class_of(obj)));
     }
     return obj;
+#endif
   }
   SIMPLE_ERROR(BF("Handle createObjectOfClass when mc is not a Class"));
 }

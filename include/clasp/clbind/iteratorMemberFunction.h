@@ -47,7 +47,7 @@ public:
   typedef core::BuiltinClosure_O TemplatedBase;
 
 public:
-  IteratorMethoid(core::T_sp name, Begin begin, End end) : core::BuiltinClosure_O(name), _begin(begin), _end(end){};
+ IteratorMethoid(core::T_sp name, Begin begin, End end) : core::BuiltinClosure_O(entry_point,name), _begin(begin), _end(end){};
 
 private:
   typedef typename BeginReturnType<OT, Begin>::type IteratorType;
@@ -60,14 +60,14 @@ public:
 
 public:
   DISABLE_NEW();
-  LCC_RETURN LISP_CALLING_CONVENTION() {
-    INCREMENT_FUNCTION_CALL_COUNTER(this);
-    ASSERT_LCC_VA_LIST_CLOSURE_DEFINED(lcc_arglist);
+  static LCC_RETURN LISP_CALLING_CONVENTION() {
+    IteratorMethoid* closure = gctools::untag_general<IteratorMethoid*>((IteratorMethoid*)lcc_closure);
+    INCREMENT_FUNCTION_CALL_COUNTER(closure);
     if (lcc_nargs != 1)
       core::wrongNumberOfArguments(lcc_nargs, 1);
     OT *objPtr = gc::As<core::WrappedPointer_sp>((LCC_ARG0()))->cast<OT>();
-    IteratorType itBegin = ((*objPtr).*(this->_begin))();
-    IteratorType itEnd = ((*objPtr).*(this->_end))();
+    IteratorType itBegin = ((*objPtr).*(closure->_begin))();
+    IteratorType itEnd = ((*objPtr).*(closure->_end))();
     GC_ALLOCATE_VARIADIC(WrappedIteratorType, smart_itBegin, itBegin);
     GC_ALLOCATE_VARIADIC(WrappedIteratorType, smart_itEnd, itEnd);
     return Values(smart_itBegin, smart_itEnd);

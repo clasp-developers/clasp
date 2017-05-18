@@ -93,34 +93,27 @@ namespace core {
   class Function_O : public General_O {
     LISP_ABSTRACT_CLASS(core,ClPkg,Function_O,"FUNCTION",General_O);
   public:
+    claspFunction    entry;
 #ifdef DEBUG_FUNCTION_CALL_COUNTER
     size_t _TimesCalled;
 #endif
   public:
     virtual const char *describe() const { return "Function - subclass must implement describe()"; };
-    inline LCC_RETURN operator()(LCC_ARGS_ELLIPSIS) {
-      VaList_S lcc_arglist_s;
-      va_start(lcc_arglist_s._Args, LCC_VA_START_ARG);
-#ifdef ENABLE_BACKTRACE_ARGS
-      LCC_SPILL_REGISTER_ARGUMENTS_TO_VA_LIST(lcc_arglist_s);
-#endif
-      T_O* lcc_arglist = lcc_arglist_s.asTaggedPtr();
-      return this->invoke_va_list(LCC_PASS_ARGS);
-    }
-
-    LCC_VIRTUAL LCC_RETURN LISP_CALLING_CONVENTION() {
-      INCREMENT_FUNCTION_CALL_COUNTER(this);
-      ASSERT_LCC_VA_LIST_CLOSURE_DEFINED(lcc_arglist);
-      printf("Subclass of Functoid must implement 'activate'\n");
-      abort();
-    };
     virtual size_t templatedSizeof() const { return sizeof(*this); };
   public:
-    Function_O()
+    Function_O(claspFunction ptr)
+      : entry(ptr)
 #ifdef DEBUG_FUNCTION_CALL_COUNTER
-      : _TimesCalled(0)
+      , _TimesCalled(0)
 #endif
-    {};
+    {
+#ifdef _DEBUG_BUILD
+      if (((uintptr_t)ptr)&0x7 || !ptr) {
+        printf("%s:%d Something other than a function pointer was passed to initialize Function_O::entry -> %p\n", __FILE__, __LINE__, ptr );
+        abort();
+      }
+#endif
+    };
     virtual T_sp name() const = 0;
     virtual string nameAsString() const {SUBIMP();};
     virtual bool compiledP() const { return false; };
@@ -175,7 +168,7 @@ SMART(NamedFunction);
   LISP_ABSTRACT_CLASS(core, CorePkg, NamedFunction_O, "NamedFunction",Function_O);
 public:
   T_sp _name;
- NamedFunction_O(T_sp name) : _name(name) {};
+ NamedFunction_O(claspFunction fptr,T_sp name) : Function_O(fptr), _name(name) {};
   virtual ~NamedFunction_O(){};
 public:
     T_sp name() const { return this->_name; };
@@ -201,15 +194,9 @@ namespace core {
 class Closure_O : public NamedFunction_O {
     LISP_CLASS(core,CorePkg,Closure_O,"Closure",NamedFunction_O);
 public:
- Closure_O(T_sp name) : Base(name) {};
+ Closure_O(claspFunction fptr, T_sp name ) : Base(fptr,name) {};
 public:
   virtual const char *describe() const { return "Closure"; };
-  LCC_VIRTUAL LCC_RETURN LISP_CALLING_CONVENTION() {
-    INCREMENT_FUNCTION_CALL_COUNTER(this);
-    ASSERT_LCC_VA_LIST_CLOSURE_DEFINED(lcc_arglist);
-    printf("Subclass of Closure must implement 'activate'\n");
-    abort();
-  };
   virtual string nameAsString() const;
 };
 };
@@ -230,19 +217,18 @@ namespace core {
   public:
 #define SOURCE_INFO core::Fixnum sourceFileInfoHandle, core::Fixnum filePos, core::Fixnum lineno, core::Fixnum column
 #define SOURCE_INFO_PASS sourceFileInfoHandle, filePos, lineno, column
-  FunctionClosure_O(T_sp name, Symbol_sp k, SOURCE_INFO)
-    : Closure_O(name), kind(k), _cleavir_ast(_Nil<T_O>()), _sourceFileInfoHandle(sourceFileInfoHandle), _filePos(filePos), _lineno(lineno), _column(column){};
-  FunctionClosure_O(T_sp name)
-    : Closure_O(name), kind(kw::_sym_function), _cleavir_ast(_Nil<T_O>()), _sourceFileInfoHandle(0), _filePos(0), _lineno(0), _column(0){};
-    static FunctionClosure_sp create(T_sp name, T_sp function_kind, SOURCE_INFO ) {
-      FunctionClosure_sp fc = gctools::GC<FunctionClosure_O>::allocate(name,function_kind,SOURCE_INFO_PASS);
+  FunctionClosure_O(claspFunction fptr, T_sp name, Symbol_sp k, SOURCE_INFO)
+    : Closure_O(fptr,name), kind(k), _cleavir_ast(_Nil<T_O>()), _sourceFileInfoHandle(sourceFileInfoHandle), _filePos(filePos), _lineno(lineno), _column(column){};
+  FunctionClosure_O(claspFunction fptr, T_sp name)
+    : Closure_O(fptr,name), kind(kw::_sym_function), _cleavir_ast(_Nil<T_O>()), _sourceFileInfoHandle(0), _filePos(0), _lineno(0), _column(0){};
+    static FunctionClosure_sp create(fnLispCallingConvention fptr, T_sp name, T_sp function_kind, SOURCE_INFO ) {
+      FunctionClosure_sp fc = gctools::GC<FunctionClosure_O>::allocate(fptr,name,function_kind,SOURCE_INFO_PASS);
       return fc;
     }
     CL_DEFMETHOD List_sp source_info() const;
     CL_DEFMETHOD void set_source_info(List_sp source_info);
     virtual size_t templatedSizeof() const { return sizeof(*this); };
     virtual const char *describe() const { return "FunctionClosure"; };
-    LCC_VIRTUAL LCC_RETURN LISP_CALLING_CONVENTION() { SIMPLE_ERROR(BF("Subclass must implement")); };
     void set_kind(Symbol_sp k) { this->kind = k; };
     Symbol_sp getKind() const { return this->kind; };
     bool macroP() const;
@@ -270,10 +256,10 @@ namespace core {
     List_sp _declares;
     T_sp _docstring;
   public:
-  BuiltinClosure_O(T_sp name, Symbol_sp k, SOURCE_INFO)
-    : FunctionClosure_O(name, k, SOURCE_INFO_PASS){};
-  BuiltinClosure_O(T_sp name)
-    : FunctionClosure_O(name) {}
+  BuiltinClosure_O(claspFunction fptr, T_sp name, Symbol_sp k, SOURCE_INFO)
+    : FunctionClosure_O(fptr, name, k, SOURCE_INFO_PASS){};
+  BuiltinClosure_O(claspFunction fptr, T_sp name )
+    : FunctionClosure_O(fptr,name) {}
     void finishSetup(LambdaListHandler_sp llh, Symbol_sp k) {
       this->_lambdaListHandler = llh;
       this->kind = k;
@@ -283,7 +269,6 @@ namespace core {
     virtual void setf_lambda_list(List_sp lambda_list);
     virtual size_t templatedSizeof() const { return sizeof(*this); };
     virtual const char *describe() const { return "BuiltinClosure"; };
-    LCC_VIRTUAL LCC_RETURN LISP_CALLING_CONVENTION();
     bool builtinP() const { return true; };
     LambdaListHandler_sp lambdaListHandler() const { return this->_lambdaListHandler; };
     T_sp docstring() const { return this->_docstring; };
@@ -297,7 +282,6 @@ namespace core {
     LISP_CLASS(core,CorePkg,ClosureWithSlots_O,"ClosureWithSlots",core::FunctionClosure_O);
   public:
     core::T_sp llvmFunction;
-    core::CompiledClosure_fptr_type fptr;
     core::T_sp _associatedFunctions;
     core::T_sp _lambdaList;
   //! Slots must be the last field
@@ -306,18 +290,16 @@ namespace core {
   public:
     virtual const char *describe() const { return "CompiledClosure"; };
     virtual size_t templatedSizeof() const { return sizeof(*this); };
-    virtual void *functionAddress() const { return (void *)this->fptr; }
   public:
   ClosureWithSlots_O(size_t capacity,
+                     claspFunction ptr,
                      core::T_sp functionName,
                      core::Symbol_sp type,
-                     core::CompiledClosure_fptr_type ptr,
                      core::T_sp llvmFunc,
                      core::T_sp assocFuncs,
                      core::T_sp ll,
                      SOURCE_INFO)
-    : Base(functionName, type, SOURCE_INFO_PASS),
-      fptr(ptr),
+    : Base(ptr,functionName, type, SOURCE_INFO_PASS),
       _associatedFunctions(assocFuncs),
       _lambdaList(ll), 
       _Slots(capacity,_Unbound<T_O>(),true) {};
@@ -327,35 +309,18 @@ namespace core {
     core::T_sp lambda_list() const { return this->_lambdaList; };
     void setf_lambda_list(core::List_sp lambda_list) { this->_lambdaList = lambda_list; };
     core::LambdaListHandler_sp lambdaListHandler() const { return _Nil<core::LambdaListHandler_O>(); };
-    inline T_sp &operator[](int idx) {
-      ASSERT(idx>=0 && idx<this->_Slots._Length);
-#ifdef DEBUG_FRAME_BOUNDS
-      if ( idx<0 || idx >= this->_Slots._Length) {
-        printf("%s:%d Caught out of bounds access to ValueFrame_O idx=%d capacity=%d\n", __FILE__, __LINE__, idx, this->_Slots._Length );
-      }
-#endif
+    inline T_sp &operator[](size_t idx) {
+      BOUNDS_ASSERT(idx<this->_Slots._Length);
       return this->_Slots[idx];
     };
-    inline const T_sp &operator[](int idx) const {
-      ASSERT(idx>=0 && idx<this->_Slots._Length);
-#ifdef DEBUG_FRAME_BOUNDS
-      if ( idx<0 || idx >= this->_Slots._Length) {
-        printf("%s:%d Caught out of bounds access to ValueFrame_O idx=%d capacity=%d\n", __FILE__, __LINE__, idx, this->_Slots._Length );
-      }
-#endif
+    inline const T_sp &operator[](size_t idx) const {
+      BOUNDS_ASSERT(idx<this->_Slots._Length);
       return this->_Slots[idx];
-    };
-    inline LCC_RETURN LISP_CALLING_CONVENTION() {
-      ASSERT_LCC_VA_LIST_CLOSURE_DEFINED(lcc_arglist);
-      INCREMENT_FUNCTION_CALL_COUNTER(this);
-#ifdef USE_EXPENSIVE_BACKTRACE
-      core::InvocationHistoryFrame _frame(lcc_arglist);
-#endif
-      core::T_O* tagged_closure = gctools::tag_general(this);
-      return (*(this->fptr))(LCC_PASS_ARGS_ENV(tagged_closure));
     };
   };
 };
+
+// This class may be deprecated
 namespace core {
 class ClosureWithFrame_O : public FunctionClosure_O {
   LISP_CLASS(core,CorePkg,ClosureWithFrame_O,"ClosureWithFrame",FunctionClosure_O);
@@ -363,7 +328,7 @@ public:
   T_sp _closedEnvironment;
 public:
   T_sp closedEnvironment() const { ASSERT(this->_closedEnvironment.generalp()); return this->_closedEnvironment;};
- ClosureWithFrame_O(T_sp fn, Symbol_sp k, T_sp env, SOURCE_INFO) : Base(fn,k,SOURCE_INFO_PASS), _closedEnvironment(env) {
+ ClosureWithFrame_O(claspFunction fptr, T_sp fn, Symbol_sp k, T_sp env, SOURCE_INFO) : Base(fptr,fn,k,SOURCE_INFO_PASS), _closedEnvironment(env) {
     ASSERT(env.nilp() || env.asOrNull<Environment_O>() );
   };
   virtual size_t templatedSizeof() const { return sizeof(*this); };
@@ -377,6 +342,8 @@ namespace core {
   /*! Keeps track of how many InterpretedClosure calls there are
 */
   extern uint64_t global_interpreted_closure_calls;
+
+  LCC_RETURN interpretedClosureEntryPoint(LCC_ARGS_FUNCALL_ELLIPSIS);
   
 class InterpretedClosure_O : public ClosureWithFrame_O {
     LISP_CLASS(core,CorePkg,InterpretedClosure_O,"InterpretedClosure",ClosureWithFrame_O);
@@ -390,7 +357,6 @@ public:
   InterpretedClosure_O(T_sp fn, Symbol_sp k, LambdaListHandler_sp llh, List_sp dec, T_sp doc, T_sp env, List_sp c, SOURCE_INFO);
   virtual size_t templatedSizeof() const { return sizeof(*this); };
   virtual const char *describe() const { return "InterpretedClosure"; };
-  LCC_VIRTUAL LCC_RETURN LISP_CALLING_CONVENTION();
   bool interpretedP() const { return true; };
   T_sp docstring() const { return this->_docstring; };
   List_sp declares() const { return this->_declares; };
@@ -412,7 +378,7 @@ namespace core {
     void archiveBase(ArchiveP node);
 #endif // defined(XML_ARCHIVE)
   public:
-  CompiledFunction_O(T_sp name) : Base(name){};
+  CompiledFunction_O(claspFunction fptr, T_sp name) : Base(fptr, name){};
     virtual ~CompiledFunction_O(){};
 
   public:
@@ -436,18 +402,14 @@ class CompiledClosure_O : public core::ClosureWithFrame_O {
   LISP_CLASS(core,CorePkg,CompiledClosure_O,"CompiledClosure",core::ClosureWithFrame_O);
 public:
   core::T_sp llvmFunction;
-  core::CompiledClosure_fptr_type fptr;
   core::T_sp _associatedFunctions;
   core::T_sp _lambdaList;
  public:
   virtual const char *describe() const { return "CompiledClosure"; };
   virtual size_t templatedSizeof() const { return sizeof(*this); };
-  virtual void *functionAddress() const { return (void *)this->fptr; }
-
 public:
-  CompiledClosure_O(core::T_sp functionName, core::Symbol_sp type, core::CompiledClosure_fptr_type ptr, core::T_sp llvmFunc, core::T_sp renv, core::T_sp assocFuncs,
-                  core::T_sp ll, SOURCE_INFO)
-      : Base(functionName, type, renv, SOURCE_INFO_PASS), fptr(ptr), _associatedFunctions(assocFuncs), _lambdaList(ll){};
+ CompiledClosure_O(claspFunction fptr, core::T_sp functionName, core::Symbol_sp type, core::T_sp llvmFunc, core::T_sp renv, core::T_sp assocFuncs, core::T_sp ll, SOURCE_INFO)
+   : Base(fptr, functionName, type, renv, SOURCE_INFO_PASS), _associatedFunctions(assocFuncs), _lambdaList(ll){};
   void setAssociatedFunctions(core::List_sp assocFuncs) { this->_associatedFunctions = assocFuncs; };
     T_sp associatedFunctions() const { return this->_associatedFunctions; };
   bool compiledP() const { return true; };
@@ -455,15 +417,6 @@ public:
   void setf_lambda_list(core::List_sp lambda_list);
   core::LambdaListHandler_sp lambdaListHandler() const { return _Nil<core::LambdaListHandler_O>(); };
   DISABLE_NEW();
-  inline LCC_RETURN LISP_CALLING_CONVENTION() {
-    ASSERT_LCC_VA_LIST_CLOSURE_DEFINED(lcc_arglist);
-    INCREMENT_FUNCTION_CALL_COUNTER(this);
-#ifdef USE_EXPENSIVE_BACKTRACE
-    core::InvocationHistoryFrame _frame(lcc_arglist);
-#endif
-    core::T_O* tagged_closure = gctools::tag_general(this);
-    return (*(this->fptr))(LCC_PASS_ARGS_ENV(tagged_closure));
-  };
 };
 };
 #endif
@@ -473,32 +426,20 @@ namespace llvmo {
 };
 
 namespace core {
+  LCC_RETURN compiledDispatchFunctionDummyEntryPoint(LCC_ARGS_FUNCALL_ELLIPSIS);
   class CompiledDispatchFunction_O : public core::Closure_O {
     LISP_CLASS(core,CorePkg,CompiledDispatchFunction_O,"CompiledDispatchFunction",core::Closure_O);
   public:
-    core::DispatchFunction_fptr_type _entryPoint;
+    DispatchFunction_fptr_type _dispatchEntryPoint;
     llvmo::ModuleHandle_sp  _llvmModule;
   public:
     virtual const char *describe() const { return "CompiledDispatchFunction"; };
     virtual size_t templatedSizeof() const { return sizeof(*this); };
-    virtual void *functionAddress() const { return (void *)this->_entryPoint; }
   public:
-  CompiledDispatchFunction_O(core::T_sp functionName, core::Symbol_sp type, core::DispatchFunction_fptr_type ptr, llvmo::ModuleHandle_sp module ) : Base(functionName), _entryPoint(ptr), _llvmModule(module) {};
+  CompiledDispatchFunction_O(core::T_sp functionName, core::Symbol_sp type, core::DispatchFunction_fptr_type ptr, llvmo::ModuleHandle_sp module ) : Base(compiledDispatchFunctionDummyEntryPoint,functionName), _dispatchEntryPoint(ptr), _llvmModule(module) {};
     bool compiledP() const { return true; };
-    DispatchFunction_fptr_type entryPoint() { return this->_entryPoint;};
+    DispatchFunction_fptr_type entryPoint() { return this->_dispatchEntryPoint;};
     DISABLE_NEW();
-    inline LCC_RETURN LISP_CALLING_CONVENTION() {
-      SIMPLE_ERROR(BF("You cannot invoke compiled-dispatch-functions directly - they can only be used to clos:set-funcallable-instance-function"));
-#if 0
-      ASSERT_LCC_VA_LIST_CLOSURE_DEFINED(lcc_arglist);
-      INCREMENT_FUNCTION_CALL_COUNTER(this);
-#ifdef USE_EXPENSIVE_BACKTRACE
-      core::InvocationHistoryFrame _frame(lcc_arglist);
-#endif
-      core::T_O* tagged_closure = gctools::tag_general(this);
-      return (*(this->_entryPoint))(LCC_PASS_ARGS_ENV(tagged_closure));
-#endif
-    };
     core::T_sp lambda_list() const { return Cons_O::createList(cl::_sym_generic_function, core::_sym_arguments); };
     void setf_lambda_list(core::List_sp lambda_list) { SIMPLE_ERROR(BF("You cannot set the lambda-list of a compiled-dispatch-function")); };
     CL_DEFMETHOD T_sp llvm_module() const { return this->_llvmModule;};
@@ -522,10 +463,34 @@ namespace core {
 };
 
 namespace core {
-  void core__closure_slots_dump(Closure_sp func);
+
+class MacroClosure_O : public BuiltinClosure_O {
+private:
+  typedef T_mv (*MacroPtr)(List_sp, T_sp);
+  MacroPtr mptr;
+public:
+  virtual const char *describe() const { return "MacroClosure"; };
+  // constructor
+ MacroClosure_O(Symbol_sp name, MacroPtr ptr, SOURCE_INFO) : BuiltinClosure_O(entry_point,name, kw::_sym_macro, SOURCE_INFO_PASS), mptr(ptr) {}
+  size_t templatedSizeof() const { return sizeof(MacroClosure_O); };
+  virtual Symbol_sp getKind() const { return kw::_sym_macro; };
+  static LCC_RETURN LISP_CALLING_CONVENTION();
+};
+
 
 };
 
 
+
+namespace core {
+  void core__closure_slots_dump(Closure_sp func);
+
+};
+
+namespace core {
+#define LCC_FUNCALL
+#include <clasp/core/lispCallingConvention.h>
+#undef LCC_FUNCALL
+};
 #endif
 

@@ -44,7 +44,7 @@
       (bformat sout " %s" c))))
 
 (defvar *safe-system-echo* nil)
-(defvar *safe-system-max-retries* 20)
+(defvar *safe-system-max-retries* 4)
 (defvar *safe-system-retry-wait-time* 0.1d0) ;; 100 milliseconds
 ;; The wait time will be doubled at each retry!
 

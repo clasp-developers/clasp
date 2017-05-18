@@ -42,12 +42,13 @@ namespace core {
     Function_sp _body;
   public:
     core::T_sp lambda_list() const { return _Nil<T_O>(); };
-  SingleDispatchMethodFunction_O(T_sp name, Function_sp body) : Base(name), _body(body) {};
-    inline LCC_RETURN LISP_CALLING_CONVENTION() {
-      ASSERT_FIRST_ARG_IS_VALIST();
-      ASSERT_LCC_VA_LIST_CLOSURE_DEFINED(lcc_arglist);
-      INCREMENT_FUNCTION_CALL_COUNTER(this);
-      return funcall_consume_valist_<core::Function_O>(this->_body.tagged_(),LCC_ARG0_VALIST());
+  SingleDispatchMethodFunction_O(T_sp name, Function_sp body) : Base(entry_point,name), _body(body) {};
+    static inline LCC_RETURN LISP_CALLING_CONVENTION() {
+      SingleDispatchMethodFunction_O* closure = gctools::untag_general<SingleDispatchMethodFunction_O*>((SingleDispatchMethodFunction_O*)lcc_closure);
+      COPY_VA_LIST();
+      INCREMENT_FUNCTION_CALL_COUNTER(closure);
+      return (closure->_body->entry)(LCC_PASS_ARGS_VASLIST(closure->_body.raw_(),lcc_vargs));
+//      return funcall_consume_valist_<core::Function_O>(closure->_body.tagged_(),lcc_vargs);
     };
   };
 

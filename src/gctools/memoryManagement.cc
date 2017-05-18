@@ -235,80 +235,40 @@ size_t random_tail_size() {
   return ts;
 }
 
-void Header_s::quick_validate() const {
-#if DEBUG_GUARD_VALIDATE
-  if (this->guard != 0xFEEAFEEBDEADBEEF) {
-    printf("%s:%d  In validate header@%p  header -> %p\n", __FILE__, __LINE__, (void*)this, (void*)this->header);
-    printf("%s:%d   Missing magic value 0x0FEEAFEEBDEADBEEF in object header!!!!! @ %p\n", __FILE__, __LINE__, (void*)this);
-    abort();
-  }
-  const unsigned char* tail = (const unsigned char*)this+this->tail_start;
-  if ((*tail) != 0xcc) {
-    printf("%s:%d  In validate header@%p  header -> %p\n", __FILE__, __LINE__, (void*)this, (void*)this->header);
-    printf("%s:%d bad tail value !!!!! @ %p  value = %x  should be 0xcc\n", __FILE__, __LINE__, (void*)tail, *tail);
-    abort();
-  }
-#endif
+void Header_s::signal_invalid_object(const Header_s* header, const char* msg)
+{
+  printf("%s:%d  Invalidate object with header @ %p message: %s\n", __FILE__, __LINE__, (void*)header, msg);
+  abort();
 }
 
 
 void Header_s::validate() const {
-  if ( this->header == 0 ) {
-    printf("%s:%d  In validate header@%p  header -> %p\n", __FILE__, __LINE__, (void*)this, (void*)this->header);
-    printf("%s:%d NULL object header!!!!! @ %p\n", __FILE__, __LINE__, (void*)this);
-    abort();
-  }
-  if ( this->invalidP() ) {
-    printf("%s:%d  In validate header@%p  header -> %p\n", __FILE__, __LINE__, (void*)this, (void*)this->header);
-    printf("%s:%d Invalid object header does not have a real tag\n", __FILE__, __LINE__ );
-    abort();
-  }
+  if ( this->header == 0 ) signal_invalid_object(this,"header is 0");
+  if ( this->invalidP() ) signal_invalid_object(this,"header is invalidP");
   if ( this->kindP() ) {
 #ifdef DEBUG_GUARD    
-    if ( this->guard != 0xFEEAFEEBDEADBEEF) {
-      printf("%s:%d  In validate header@%p  header -> %p\n", __FILE__, __LINE__, (void*)this, (void*)this->header);
-      printf("%s:%d  INVALID object  this->guard@%p is bad guard value->%p\n", __FILE__, __LINE__, (void*)&this->guard, (void*)this->guard );
-      abort();
-    }
+    if ( this->guard != 0xFEEAFEEBDEADBEEF) signal_invalid_object(this,"normal object bad header guard");
 #endif
-    if ( this->kind() > global_NextStamp ) {
-      printf("%s:%d  INVALID object  this->kind()=%d > KIND_max=%d\n", __FILE__, __LINE__, this->kind(), KIND_max );
-      abort();
-    }
+    if ( this->kind() > global_NextStamp ) signal_invalid_object(this,"normal object bad header stamp");
 #ifdef DEBUG_GUARD
-    if ( this->tail_start & 0xffffffffff000000 ) {
-      printf("%s:%d  In validate header@%p  header -> %p\n", __FILE__, __LINE__, (void*)this, (void*)this->header);
-      printf("%s:%d   header->tail_start@%p is not a reasonable value -> %x\n", __FILE__,__LINE__, (void*)&this->tail_start, this->tail_start);
-    }
-    if ( this->tail_size & 0xffffffffff000000 ) {
-      printf("%s:%d  In validate header@%p  header -> %p\n", __FILE__, __LINE__, (void*)this, (void*)this->header);
-      printf("%s:%d   header->tail_size@%p is not a reasonable value -> %x\n", __FILE__, __LINE__, (void*)&this->tail_size,this->tail_size);
-    }
+    if ( this->tail_start & 0xffffffffff000000 ) signal_invalid_object(this,"bad tail_start");
+    if ( this->tail_size & 0xffffffffff000000 ) signal_invalid_object(this,"bad tail_size");
     for ( unsigned char *cp=((unsigned char*)(this)+this->tail_start), 
             *cpEnd((unsigned char*)(this)+this->tail_start+this->tail_size); cp < cpEnd; ++cp ) {
-      if (*cp!=0xcc) {
-        printf("%s:%d  In validate header@%p  header -> %p\n", __FILE__, __LINE__, (void*)this, (void*)this->header);
-        printf("%s:%d INVALID tail header@%p bad tail byte@%p -> %x\n", __FILE__, __LINE__, (void*)this, cp, *cp );
-        abort();
-      }
+      if (*cp!=0xcc) signal_invalid_object(this,"bad tail content");
     }
 #endif
   }
+#ifdef USE_MPS
 #ifdef DEBUG_GUARD
   if ( this->fwdP() ) {
-    if ( this->guard != 0xFEEAFEEBDEADBEEF) {
-      printf("%s:%d  In validate header@%p  header -> %p\n", __FILE__, __LINE__, (void*)this, (void*)this->header);
-      printf("%s:%d  INVALID object  this->guard is bad value->%p\n", __FILE__, __LINE__, (void*)this->guard );
-      abort();
-    }
+    if ( this->guard != 0xFEEAFEEBDEADBEEF) signal_invalid_object(this,"bad fwdP guard");
     for ( unsigned char *cp=((unsigned char*)(this)+this->tail_start), 
             *cpEnd((unsigned char*)(this)+this->tail_start+this->tail_size); cp < cpEnd; ++cp ) {
-      if (*cp!=0xcc) {
-        printf("%s:%d INVALID tail header@%p bad tail byte@%p -> %x\n", __FILE__, __LINE__, (void*)this, cp, *cp );
-        abort();
-      }
+      if (*cp!=0xcc) signal_invalid_object(this,"bad tail content");
     }
   }
+#endif
 #endif
 }
 };

@@ -74,9 +74,9 @@ extern void evaluateIntoActivationFrame(ActivationFrame_sp af, List_sp args, T_s
   (functionDesignator) can be a Symbol or an Function
 */
 
-extern T_mv applyClosureToActivationFrame(Function_sp closureP, ActivationFrame_sp af);
+//extern T_mv applyClosureToActivationFrame(Function_sp closureP, ActivationFrame_sp af);
 
-extern T_mv applyToActivationFrame(T_sp functionDesignator, ActivationFrame_sp af);
+//extern T_mv applyToActivationFrame(T_sp functionDesignator, ActivationFrame_sp af);
 
 /*! I want a variadic template function that does APPLY.  C++ variadic template parameter packs
 	  must be the last arguments of a function.   APPLY has as its last arguments argsPLUS.
@@ -84,22 +84,28 @@ extern T_mv applyToActivationFrame(T_sp functionDesignator, ActivationFrame_sp a
 	  the variadic arguments following it */
 template <class... Args>
 inline T_mv applyLastArgsPLUSFirst(T_sp fn, List_sp argsPLUS, Args&&... args) {
-  T_sp tfunc = lookupFunction(fn, _Nil<T_O>());
-  if (tfunc.nilp())
-    ERROR_UNDEFINED_FUNCTION(fn);
-  Function_sp func = tfunc.asOrNull<Function_O>();
-  ASSERT(func);
+  unlikely_if (!gc::IsA<Function_sp>(fn)) {
+    fn = lookupFunction(fn, _Nil<T_O>());
+    if (fn.nilp()) ERROR_UNDEFINED_FUNCTION(fn);
+  }
+  Function_sp func = gc::As_unsafe<Function_sp>(fn);
+  ASSERT(gc::IsA<Function_sp>(func));
   int numArgsPassed = sizeof...(Args);
-  int numArgsPlus = cl__length(argsPLUS);
+  int numArgsPlus = argsPLUS.consp() ? argsPLUS.unsafe_cons()->proper_list_length() : 0;
   int nargs = numArgsPassed + numArgsPlus;
   T_sp initialContents[sizeof...(Args)] = {args...};
-  ValueFrame_sp frob(ValueFrame_O::create_fill_capacity(nargs, _Nil<T_O>(), sizeof...(Args), initialContents ));
-  List_sp cur = argsPLUS;
-  for (int i = numArgsPassed; i < nargs; ++i) {
-    frob->operator[](i) = oCar(cur);
-    cur = oCdr(cur);
+  MAKE_STACK_FRAME( frame, func.raw_(), nargs);
+  size_t i(0);
+  for ( ; i< sizeof...(Args); ++i ) {
+    (*frame)[i] = initialContents[i].raw_();
   }
-  return applyClosureToActivationFrame(func, frob);
+  for ( auto cur : argsPLUS ) {
+    (*frame)[i] = CONS_CAR(cur).raw_();
+    ++i;
+  }
+  VaList_S valist_struct(frame);
+  VaList_sp valist(&valist_struct);
+  return funcall_consume_valist_<core::Function_O>(func.tagged_(),valist);
 }
 
 
@@ -118,31 +124,31 @@ inline T_mv applyLastArgsPLUSFirst(T_sp fn, List_sp argsPLUS, Args&&... args) {
 inline LCC_RETURN funcall(T_sp fn) {
   /* If the following assertion fails then the funcall functions in this header
      need to be made consistent with lispCallingConvention.h */
-  ASSERT(3 == LCC_ARGS_IN_REGISTERS);
+  ASSERT(4 == LCC_ARGS_IN_REGISTERS);
   T_sp tfunc = lookupFunction(fn, _Nil<T_O>());
   if (tfunc.nilp())
     ERROR_UNDEFINED_FUNCTION(fn);
   Function_sp func = gc::As<Function_sp>(tfunc);
-  return (*func)(LCC_PASS_ARGS0_ELLIPSIS(func.raw_()));
+  return (*func).entry(LCC_PASS_ARGS0_ELLIPSIS(func.raw_()));
 }
 
 template <class ARG0>
 inline LCC_RETURN funcall(T_sp fn, ARG0 arg0) {
   /* If the following assertion fails then the funcall functions in this header
      need to be made consistent with lispCallingConvention.h */
-  ASSERT(3 == LCC_ARGS_IN_REGISTERS);
+  ASSERT(4 == LCC_ARGS_IN_REGISTERS);
   T_sp tfunc = lookupFunction(fn, _Nil<T_O>());
   if (tfunc.nilp()) ERROR_UNDEFINED_FUNCTION(fn);
   ASSERT(gc::IsA<Function_sp>(tfunc));
   Function_sp func = gc::As_unsafe<Function_sp>(tfunc);
-  return (*func)(LCC_PASS_ARGS1_ELLIPSIS(func.raw_(),arg0.raw_()));
+  return (*func).entry(LCC_PASS_ARGS1_ELLIPSIS(func.raw_(),arg0.raw_()));
 }
 
 template <class ARG0, class ARG1>
 inline LCC_RETURN funcall(T_sp fn, ARG0 arg0, ARG1 arg1) {
   /* If the following assertion fails then the funcall functions in this header
      need to be made consistent with lispCallingConvention.h */
-  ASSERT(3 == LCC_ARGS_IN_REGISTERS);
+  ASSERT(4 == LCC_ARGS_IN_REGISTERS);
   T_sp tfunc = lookupFunction(fn, _Nil<T_O>());
   //      printf("%s:%d funcall fn=%s arg0=%s arg1=%s\n", __FILE__, __LINE__, _rep_(fn).c_str(), _rep_(arg0).c_str(), _rep_(arg1).c_str() );
   if (tfunc.raw_() == NULL || tfunc.nilp()) {
@@ -157,24 +163,36 @@ inline LCC_RETURN funcall(T_sp fn, ARG0 arg0, ARG1 arg1) {
   }
   ASSERT(gc::IsA<Function_sp>(tfunc));
   Function_sp func = gc::As_unsafe<Function_sp>(tfunc);
-  return (*func)(LCC_PASS_ARGS2_ELLIPSIS(func.raw_(),arg0.raw_(), arg1.raw_()));
+  return (*func).entry(LCC_PASS_ARGS2_ELLIPSIS(func.raw_(),arg0.raw_(), arg1.raw_()));
 }
 
 template <class ARG0, class ARG1, class ARG2>
 inline LCC_RETURN funcall(T_sp fn, ARG0 arg0, ARG1 arg1, ARG2 arg2) {
   /* If the following assertion fails then the funcall functions in this header
      need to be made consistent with lispCallingConvention.h */
-  ASSERT(3 == LCC_ARGS_IN_REGISTERS);
+  ASSERT(4 == LCC_ARGS_IN_REGISTERS);
   T_sp tfunc = lookupFunction(fn, _Nil<T_O>());
   if (tfunc.nilp()) ERROR_UNDEFINED_FUNCTION(fn);
   ASSERT(gc::IsA<Function_sp>(tfunc));
   Function_sp func = gc::As_unsafe<Function_sp>(tfunc);
-  return (*func)(LCC_PASS_ARGS3_ELLIPSIS(func.raw_(),LCC_FROM_SMART_PTR(arg0), LCC_FROM_SMART_PTR(arg1), LCC_FROM_SMART_PTR(arg2)));
+  return (*func).entry(LCC_PASS_ARGS3_ELLIPSIS(func.raw_(),LCC_FROM_SMART_PTR(arg0), LCC_FROM_SMART_PTR(arg1), LCC_FROM_SMART_PTR(arg2)));
+}
+
+ template <class ARG0, class ARG1, class ARG2, class ARG3>
+   inline LCC_RETURN funcall(T_sp fn, ARG0 arg0, ARG1 arg1, ARG2 arg2, ARG3 arg3) {
+  /* If the following assertion fails then the funcall functions in this header
+     need to be made consistent with lispCallingConvention.h */
+  ASSERT(4 == LCC_ARGS_IN_REGISTERS);
+  T_sp tfunc = lookupFunction(fn, _Nil<T_O>());
+  if (tfunc.nilp()) ERROR_UNDEFINED_FUNCTION(fn);
+  ASSERT(gc::IsA<Function_sp>(tfunc));
+  Function_sp func = gc::As_unsafe<Function_sp>(tfunc);
+  return (*func).entry(LCC_PASS_ARGS4_ELLIPSIS(func.raw_(),LCC_FROM_SMART_PTR(arg0), LCC_FROM_SMART_PTR(arg1), LCC_FROM_SMART_PTR(arg2), LCC_FROM_SMART_PTR(arg3)));
 }
 
 // Do I need a variadic funcall???
-template <class ARG0, class ARG1, class ARG2, class... ARGS>
-inline LCC_RETURN funcall(T_sp fn, ARG0 arg0, ARG1 arg1, ARG2 arg2, ARGS &&... args) {
+ template <class ARG0, class ARG1, class ARG2, class ARG3, class... ARGS>
+  inline LCC_RETURN funcall(T_sp fn, ARG0 arg0, ARG1 arg1, ARG2 arg2, ARG3 arg3, ARGS &&... args) {
   /* If the following assertion fails then the funcall functions in this header
      need to be made consistent with lispCallingConvention.h */
   ASSERT(3 == LCC_ARGS_IN_REGISTERS);
@@ -184,7 +202,7 @@ inline LCC_RETURN funcall(T_sp fn, ARG0 arg0, ARG1 arg1, ARG2 arg2, ARGS &&... a
   Function_sp func = gc::As_unsafe<Function_sp>(tfunc);
   size_t vnargs = sizeof...(ARGS);
   size_t nargs = vnargs + LCC_FIXED_NUM;
-  return (*func)(func.raw_(), NULL, nargs, LCC_FROM_SMART_PTR(arg0), LCC_FROM_SMART_PTR(arg1), LCC_FROM_SMART_PTR(arg2), std::forward<ARGS>(args).raw_()...);
+  return (*func).entry(func.raw_(), nargs, LCC_FROM_SMART_PTR(arg0), LCC_FROM_SMART_PTR(arg1), LCC_FROM_SMART_PTR(arg2), LCC_FROM_SMART_PTR(arg3), std::forward<ARGS>(args).raw_()...);
 }
 };
 
@@ -194,6 +212,8 @@ inline LCC_RETURN funcall(T_sp fn, ARG0 arg0, ARG1 arg1, ARG2 arg2, ARGS &&... a
  void parse_lambda_body(List_sp body, List_sp &declares, gc::Nilable<String_sp> &docstring, List_sp &code);
  };
 
+ /*! Funcall with a gctools::Frame of arguments */
+ gctools::return_type funcall_frame(Function_sp func, gctools::Frame* frame);
 
 };
 

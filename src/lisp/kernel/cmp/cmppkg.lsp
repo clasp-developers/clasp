@@ -28,7 +28,6 @@
 	  irc-environment-activation-frame
 	  *run-time-values-table-name*
 	  *all-functions-for-one-compile*
-	  irc-intrinsic-args
 	  set-associated-funcs
 	  *block-name-prefix*
 	  irc-switch

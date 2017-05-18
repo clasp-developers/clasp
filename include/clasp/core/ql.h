@@ -107,7 +107,6 @@ class list {
 
   /*! dot the list argument to the end of the list */
   inline list &dot(core::T_sp arg) {
-    ASSERT(this->_Head.consp());
     (*this->_Tail) = arg;
     return *this;
   }

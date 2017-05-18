@@ -51,36 +51,30 @@ class InvocationHistoryFrame //: public gctools::StackRoot
 
  public:
   InvocationHistoryFrame *_Previous;
-  int _Bds;
-  T_O*  _RawArgList;
+  mutable va_list   _args;
+  size_t _remaining_nargs;
+  size_t _Bds;
  public:
- InvocationHistoryFrame(T_O* rawArgList)
+ InvocationHistoryFrame(va_list rawArgList, size_t remaining_nargs)
    : _Previous(my_thread->_InvocationHistoryStack),
-    _Bds(my_thread->bindings().size()),
-    _RawArgList(rawArgList) {
-#ifdef DEBUG_ASSERTS
-      if ( !(gctools::tagged_valistp(rawArgList))) {
-        printf("Passed a non valistp to InvocationHistoryFrame\n");
-        abort();
-      }
-#endif
-      my_thread->_InvocationHistoryStack = this;
+    _Bds(my_thread->bindings().size())
+    {
+      va_copy(this->_args,rawArgList);
+      this->_remaining_nargs = remaining_nargs;
     }
-  ~InvocationHistoryFrame() {
-    my_thread->_InvocationHistoryStack = this->_Previous;
-  }
   //Closure_sp fc, core::T_O *valist_args, T_sp env = _Nil<T_O>());
 
   //	InvocationHistoryFrame(int sourceFileInfoHandle, int lineno, int column, ActivationFrame_sp env=_Nil<ActivationFrame_O>());
-  VaList_sp valist_sp() const { return VaList_sp((gc::Tagged)this->_RawArgList); };
+//  VaList_sp valist_sp() const { return VaList_sp((gc::Tagged)this->_RawArgList); };
   InvocationHistoryFrame *previous() { return this->_Previous; };
   SimpleVector_sp arguments() const;
   string argumentsAsString(int maxWidth) const;
   void dump(int index) const;
-  virtual string asString(int index) const;
+  string asString(int index) const;
   string asStringLowLevel(Closure_sp closure,int index) const;
-  virtual int bds() const { return this->_Bds; };
+  int bds() const { return this->_Bds; };
   Function_sp function() const;
+  void* register_save_area() const;
 };
 
 #pragma GCC visibility pop
@@ -96,8 +90,7 @@ namespace core {
 
 #ifdef USE_EXPENSIVE_BACKTRACE
 #define INVOCATION_HISTORY_FRAME() \
-  ASSERT_LCC_VA_LIST_CLOSURE_DEFINED(lcc_arglist);\
-  core::InvocationHistoryFrame zzzFrame(lcc_arglist);
+  core::InvocationHistoryFrame zzzFrame(lcc_arglist_s._Args,lcc_arglist_s.remaining_nargs());
 #else
 #define INVOCATION_HISTORY_FRAME()
 #endif

@@ -260,12 +260,13 @@ CL_DEFUN T_sp cl__set(Symbol_sp sym, T_sp val) {
   return val;
 };
 
-CL_LAMBDA(arg);
+CL_LAMBDA(arg &optional msg);
 CL_DECLARE();
-CL_DEFUN void core__print_address_of(T_sp arg) {
+CL_DEFUN T_sp core__print_address_of(T_sp arg, T_sp msg) {
   ASSERT(arg.objectp());
   void *ptr = &(*arg);
   printf("%s:%d  AddressOf = %p\n", __FILE__, __LINE__, ptr);
+  return arg;
 };
 
 CL_LAMBDA(arg);
@@ -653,17 +654,30 @@ CL_DECLARE();
 CL_DOCSTRING("values");
 CL_DEFUN T_mv cl__values(VaList_sp vargs) {
   // returns multiple values
-  ASSERT(vargs.valistp());
   size_t nargs = vargs->remaining_nargs();
   if (nargs >= core::MultipleValues::MultipleValuesLimit) {
     SIMPLE_ERROR(BF("Too many arguments to values - only %d are supported and you tried to return %d values") % core::MultipleValues::MultipleValuesLimit % nargs );
   }
   SUPPRESS_GC();
+#ifdef DEBUG_VALUES
+  if (_sym_STARdebug_valuesSTAR &&
+      _sym_STARdebug_valuesSTAR->boundP() &&
+      _sym_STARdebug_valuesSTAR->symbolValue().notnilp()) {
+    va_list debugl;
+    va_copy(debugl,vargs->_Args);
+    for (size_t di(0); di<nargs; ++di) {
+      T_sp dsp((gctools::Tagged)va_arg(debugl,T_O*));
+      printf("%s:%d   VALUES[%lu] -> %s\n", __FILE__, __LINE__, di, _rep_(dsp).c_str());
+    }
+    va_end(debugl);
+  }
+#endif
   core::MultipleValues &me = (core::lisp_multipleValues());
   me.setSize(0);
   core::T_sp first = vargs->next_arg();
   for (size_t i(1); i< nargs; ++i ) {
-    T_sp csp = vargs->next_arg();//LCC_NEXT_ARG(vargs,i);
+    T_O* tcsp = ENSURE_VALID_OBJECT(vargs->next_arg_raw());
+    T_sp csp((gctools::Tagged)tcsp);
     me.valueSet(i, csp);
   }
   me.setSize(nargs);
@@ -1818,6 +1832,7 @@ void nextInvocationHistoryFrameIteratorThatSatisfiesTest(Fixnum num, InvocationH
 
 int backtrace_length(InvocationHistoryFrame* frame) {
   int length = 0;
+  if (!frame) return 0;
   while ( (frame = frame->previous()) ) {++length;};
   return length;
 }
@@ -2126,8 +2141,9 @@ CL_DECLARE();
 CL_DOCSTRING("dynamicBindingStackDump");
 CL_DEFUN void core__dynamic_binding_stack_dump(std::ostream &out) {
   DynamicBindingStack &bd = my_thread->bindings();
-  for (int i(0), iEnd(bd.size()); i < iEnd; ++i) {
-    out << "  dbstack[" << i << " --> " << _rep_(bd.var(i)) << std::endl;
+  out << "Top of binding stack element " << bd.size() << std::endl;
+  for (int i(bd.size()-1); i>=0; --i) {
+    out << "  dbstack[" << i << "] --> " << (bd.var(i))->formattedName(true) << std::endl;
   };
 }
 
@@ -2140,7 +2156,8 @@ CL_DEFUN size_t core__va_list_length(VaList_sp v)
 CL_DEFUN size_t core__va_list_current_index(VaList_sp v)
 {
 //  printf("%s:%d va_list_current_index = %" PRu "\n", __FILE__, __LINE__, v->current_index());
-  return v->current_index();
+  IMPLEMENT_ME();
+//  return v->current_index();
 }
 
 CL_DEFUN T_sp core__va_arg(VaList_sp v)

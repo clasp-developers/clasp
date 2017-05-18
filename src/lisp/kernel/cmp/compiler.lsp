@@ -70,10 +70,9 @@ The passed module is modified as a side-effect."
 (defun compile-arguments (fn-name	; passed for logging only
 			  lambda-list-handler ; llh for function
 			  function-env
-			  closure
 			  argument-holder
 			  new-env)
-  (cmp-log "compile-arguments closure: %s\n" closure)
+  (cmp-log "compile-arguments closure: %s\n" (calling-convention-closure argument-holder))
   ;; This is where we make the value frame for the passed arguments
   ;;
   ;; keywords:  ESCAPE ANALYSIS escape analysis TODO
@@ -82,7 +81,7 @@ The passed module is modified as a side-effect."
   ;; There should be information in new-env??? that can tell us what
   ;; variables can go on the stack and what variables can go on the heap
   (irc-make-value-frame (irc-renv new-env) (number-of-lexical-variables lambda-list-handler))
-  (irc-intrinsic "setParentOfActivationFrameFromClosure" (irc-renv new-env) closure)
+  (irc-intrinsic "setParentOfActivationFrameFromClosure" (irc-renv new-env) (calling-convention-closure argument-holder))
   (cmp-log "lambda-list-handler for fn %s --> %s\n" fn-name lambda-list-handler)
   (cmp-log "Gathered lexical variables for fn %s --> %s\n" fn-name (names-of-lexical-variables lambda-list-handler))
   (compile-lambda-list-code lambda-list-handler
@@ -122,6 +121,8 @@ lambda-list-handler, environment.
 All code generation comes through here.   Return (llvm:function lambda-name)
 Could return more functions that provide lambda-list for swank for example"
   (setq *lambda-args-num* (1+ *lambda-args-num*))
+  (when (core:extract-dump-module-from-declares declares)
+    (setf *declare-dump-module* t))
   (let* ((name (core:extract-lambda-name-from-declares declares (or given-name 'cl:lambda)))
 	 (fn (with-new-function (fn fn-env result
 				    :function-name name
@@ -132,32 +133,31 @@ Could return more functions that provide lambda-list for swank for example"
                ;; The following injects a debugInspectT_sp at the start of the body
                ;; it will print the address of the literal which must correspond to an entry in the
                ;; load time values table
-               #+(or)(irc-create-call "debugInspectT_sp" (list (literal:compile-reference-to-literal :This-is-a-test)))
-	       (let ((arguments (llvm-sys:get-argument-list fn))
-                     traceid)
-                 (multiple-value-bind (closure argument-holder)
-                     (parse-function-arguments arguments)
-                   (let ((new-env (progn
-                                    (cmp-log "Creating new-value-environment for arguments\n")
-                                    (irc-new-value-environment
-                                     fn-env
-                                     :lambda-list-handler lambda-list-handler
-                                     :label (bformat nil "lambda-args-%s-" *lambda-args-num*)
-                                     :fill-runtime-form (lambda (lambda-args-env)
-                                                          (compile-arguments name
-                                                                             lambda-list-handler
-                                                                             fn-env
-                                                                             closure
-                                                                             argument-holder
-                                                                             lambda-args-env
-                                                                             ))))))
-                     (dbg-set-current-debug-location-here)
-                     (with-try new-env
+               #+(or)(irc-intrinsic-call "debugInspectT_sp" (list (literal:compile-reference-to-literal :This-is-a-test)))
+               (let* ((arguments             (llvm-sys:get-argument-list fn))
+                      (argument-holder       (bclasp-setup-calling-convention arguments lambda-list-handler T #|DEBUG-ON|#)))
+                 (calling-convention-maybe-push-invocation-history-frame argument-holder)
+                 (let ((new-env (progn
+                                  (cmp-log "Creating new-value-environment for arguments\n")
+                                  (irc-new-value-environment
+                                   fn-env
+                                   :lambda-list-handler lambda-list-handler
+                                   :label (bformat nil "lambda-args-%s-" *lambda-args-num*)
+                                   :fill-runtime-form (lambda (lambda-args-env)
+                                                        (compile-arguments name
+                                                                           lambda-list-handler
+                                                                           fn-env
+                                                                           argument-holder
+                                                                           lambda-args-env))))))
+                   (dbg-set-current-debug-location-here)
+                   (with-try new-env
+                     (progn
                        (if wrap-block
                            (codegen-block result (list* block-name code) new-env)
-                           (codegen-progn result code new-env))
-                       ((cleanup)
-                        (irc-unwind-environment new-env)))))))))
+                           (codegen-progn result code new-env)))
+                     ((cleanup)
+                      (calling-convention-maybe-pop-invocation-history-frame argument-holder)
+                      (irc-unwind-environment new-env))))))))
     (cmp-log "About to dump the function constructed by generate-llvm-function-from-code\n")
     (cmp-log-dump fn)
     (irc-verify-function fn)
@@ -1143,7 +1143,7 @@ jump to blocks within this tagbody."
                         intrinsic-name
                         *the-module*))))
            (result-in-registers
-            (llvm-sys:create-call-array-ref *irbuilder* func (nreverse args) "intrinsic")))
+            (irc-call-or-invoke func (nreverse args))))
       (irc-store-result result result-in-registers)))
   (irc-low-level-trace :flow))
 
@@ -1164,7 +1164,7 @@ jump to blocks within this tagbody."
          ((endp cur-exp) nil)
       ;;(bformat t "In codegen-multiple-value-foreign-call codegen arg[%d] -> %d\n" i exp)
       (codegen temp-result exp evaluate-env)
-      (push (irc-create-call (clasp-ffi::from-translator-name type)
+      (push (irc-intrinsic-call (clasp-ffi::from-translator-name type)
                              (list (irc-smart-ptr-extract (irc-load temp-result)))) args))
     args))
 
@@ -1189,11 +1189,11 @@ jump to blocks within this tagbody."
                       intrinsic-name
                       *the-module*)))
            (foreign-result
-            (llvm-sys:create-call-array-ref *irbuilder* func (nreverse args) "intrinsic"))
+            (irc-call-or-invoke func (nreverse args)) #++(llvm-sys:create-call-array-ref *irbuilder* func (nreverse args) "intrinsic"))
            (result-in-t*
             (if (eq :void (first foreign-types))
-                (irc-create-call (clasp-ffi::to-translator-name (first foreign-types)) nil) ; returns :void
-                (irc-create-call (clasp-ffi::to-translator-name (first foreign-types))
+                (irc-intrinsic-call (clasp-ffi::to-translator-name (first foreign-types)) nil) ; returns :void
+                (irc-intrinsic-call (clasp-ffi::to-translator-name (first foreign-types))
                                  (list foreign-result)))))
       (irc-store-result-t* result result-in-t*)))
   (irc-low-level-trace :flow))
@@ -1217,14 +1217,73 @@ jump to blocks within this tagbody."
              (pointer-t* (irc-smart-ptr-extract (irc-load temp-result)))
              (function-pointer (llvm-sys:create-bit-cast *irbuilder* (irc-intrinsic "cc_getPointer" pointer-t*) function-pointer-type "cast-function-pointer"))
              (foreign-result
-              (llvm-sys:create-call-function-pointer *irbuilder* function-type function-pointer (nreverse args) "fn-ptr-call-result"))
+              (irc-create-call-or-invoke function-pointer (nreverse args)) #++(llvm-sys:create-call-function-pointer *irbuilder* function-type function-pointer (nreverse args) "fn-ptr-call-result"))
              (result-in-t*
               (if (eq :void (first foreign-types))
-                  (irc-create-call (clasp-ffi::to-translator-name (first foreign-types)) nil) ; returns :void
-                  (irc-create-call (clasp-ffi::to-translator-name (first foreign-types))
+                  (irc-intrinsic-call (clasp-ffi::to-translator-name (first foreign-types)) nil) ; returns :void
+                  (irc-intrinsic-call (clasp-ffi::to-translator-name (first foreign-types))
                                    (list foreign-result)))))
         (irc-store-result-t* result result-in-t*)))
     (irc-low-level-trace :flow)))
+
+
+
+
+
+
+
+
+
+
+;;--------------------------------------------------
+;;--------------------------------------------------
+;;
+;; Calling functions
+;;
+;;--------------------------------------------------
+;;--------------------------------------------------
+
+
+(defun cmp-lookup-function (fn-designator evaluate-env)
+  "Return a pointer to a core::Closure"
+  (if (atom fn-designator)
+      (let ((classified (function-info evaluate-env fn-designator)))
+	(if (eq (car classified) 'core::global-function)
+	    (irc-intrinsic "va_symbolFunction" (irc-global-symbol fn-designator evaluate-env))
+	    (irc-intrinsic "va_lexicalFunction"
+			   (jit-constant-i32 (caddr classified))
+			   (jit-constant-i32 (cadddr classified))
+			   (irc-renv evaluate-env))))
+      (if (eq (car fn-designator) 'cl:lambda)
+	  (error "Handle lambda expressions at head of form")
+	  (error "Illegal head of form: ~a" fn-designator))))
+
+(defun codegen-call (result form evaluate-env)
+  "Evaluate each of the arguments into an alloca and invoke the function"
+  ;; setup the ActivationFrame for passing arguments to this function in the setup arena
+  (assert-result-isa-llvm-value result)
+  (let* ((head (car form)))
+    (cond
+      ((and (atom head) (symbolp head))
+       (let ((nargs (length (cdr form)))
+             args
+             (temp-result (irc-alloca-tsp)))
+         (dbg-set-invocation-history-stack-top-source-pos form)
+         ;; evaluate the arguments into the array
+         ;;  used to be done by --->    (codegen-evaluate-arguments (cdr form) evaluate-env)
+         (do* ((cur-exp (cdr form) (cdr cur-exp))
+               (exp (car cur-exp) (car cur-exp))
+               (i 0 (+ 1 i)))
+              ((endp cur-exp) nil)
+           (codegen temp-result exp evaluate-env)
+           (push (irc-smart-ptr-extract (irc-load temp-result)) args))
+         (let ((closure (cmp-lookup-function head evaluate-env)))
+	   (irc-low-level-trace :flow)
+           (irc-funcall result closure (reverse args))
+	   (irc-low-level-trace :flow))))
+      ((and (consp head) (eq head 'lambda))
+       (error "Handle lambda applications"))
+      (t (compiler-error form "Illegal head for form %s" head)))))
 
 (defun codegen-application (result form env)
   "A compiler macro function, macro function or a regular function"
@@ -1249,6 +1308,7 @@ jump to blocks within this tagbody."
               (macro-function (car form) env))
          (multiple-value-bind (expansion expanded-p)
              (macroexpand form env)
+           (declare (core:lambda-name codegen-application--about-to-macroexpand))
            (cmp-log "MACROEXPANDed form[%s] expanded to [%s]\n" form expansion )
            (irc-low-level-trace)
            (codegen result expansion env) 
@@ -1290,25 +1350,23 @@ jump to blocks within this tagbody."
       ;; with the current form and environment
       (when *code-walker*
         (setq form (funcall *code-walker* form env)))
-      (prog1
-          (if (atom form)
-              (if (symbolp form)
-                  (codegen-symbol-value result form env)
-                  (codegen-literal result form env))
-              (let ((head (car form))
-                    (rest (cdr form)))
-                (cmp-log "About to codegen special-operator or application for: %s\n" form)
-                ;;  (trace-linenumber-column (walk-to-find-parse-pos form) env)
-                (cond
-                  ((treat-as-special-operator-p head)
-                   (codegen-special-operator result head rest env))
-                  ((and head (consp head) (eq (car head) 'cl:lambda))
-                   (codegen result `(funcall ,head ,@rest) env))
-                  ((and head (symbolp head))
-                   (codegen-application result form env))
-                  (t
-                   (error "Handle codegen of cons: ~a" form))))) 
-        ))))
+      (if (atom form)
+          (if (symbolp form)
+              (codegen-symbol-value result form env)
+              (codegen-literal result form env))
+          (let ((head (car form))
+                (rest (cdr form)))
+            (cmp-log "About to codegen special-operator or application for: %s\n" form)
+            ;;  (trace-linenumber-column (walk-to-find-parse-pos form) env)
+            (cond
+              ((treat-as-special-operator-p head)
+               (codegen-special-operator result head rest env))
+              ((and head (consp head) (eq (car head) 'cl:lambda))
+               (codegen result `(funcall ,head ,@rest) env))
+              ((and head (symbolp head))
+               (codegen-application result form env))
+              (t
+               (error "Handle codegen of cons: ~a" form))))))))
 
 ;;------------------------------------------------------------
 ;;
@@ -1463,7 +1521,8 @@ We could do more fancy things here - like if cleavir-clasp fails, use the clasp 
     (let ((*the-module* (create-run-time-module-for-compile)))
       (define-primitives-in-module *the-module*)
       ;; Link the C++ intrinsics into the module
-      (let* ((pathname (if *load-pathname*
+      (let* ((*declare-dump-module* nil)
+             (pathname (if *load-pathname*
 			   (namestring *load-pathname*)
 			   "repl-code"))
 	     (handle (multiple-value-bind (the-source-file-info the-handle)

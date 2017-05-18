@@ -36,6 +36,11 @@ THE SOFTWARE.
 
 namespace core {
 
+  inline LCC_RETURN specialFormDummyEntryPoint(LCC_ARGS_FUNCALL_ELLIPSIS) {
+    SIMPLE_ERROR(BF("Never call this"));
+  }
+  
+
 SMART(SpecialForm);
 class SpecialForm_O : public NamedFunction_O {
   LISP_CLASS(core, CorePkg, SpecialForm_O, "SpecialForm",NamedFunction_O);
@@ -76,7 +81,7 @@ public: // initialize
 
   SpecialForm_O(const SpecialForm_O &ss); //!< Copy constructor
 
- SpecialForm_O(T_sp name) : Base(name) {};
+ SpecialForm_O(T_sp name) : Base(specialFormDummyEntryPoint,name) {};
   virtual ~SpecialForm_O() {};
 };
 };

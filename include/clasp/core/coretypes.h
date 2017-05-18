@@ -93,6 +93,7 @@ typedef T_sp SEQUENCE_sp;
 typedef T_sp LIST_sp;
  typedef gctools::smart_ptr<Pointer_O> Pointer_sp;
 typedef gctools::smart_ptr<Cons_O> Cons_sp;
+typedef gctools::smart_ptr<Function_O> Function_sp;
 typedef gctools::smart_ptr<Package_O> Package_sp;
 typedef gctools::smart_ptr<Stream_O> Stream_sp;
 typedef gctools::smart_ptr<SourcePosInfo_O> SourcePosInfo_sp;

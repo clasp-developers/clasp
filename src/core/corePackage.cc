@@ -147,6 +147,7 @@ SYMBOL_EXPORT_SC_(KeywordPkg, verbose);
 SYMBOL_EXPORT_SC_(KeywordPkg, pause_pid);
 SYMBOL_EXPORT_SC_(KeywordPkg, exit_backtrace);
 SYMBOL_EXPORT_SC_(CorePkg, arguments );
+SYMBOL_EXPORT_SC_(CorePkg, STARdebug_valuesSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARdebug_accessorsSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARdebug_dispatchSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARexit_backtraceSTAR);
@@ -192,6 +193,7 @@ SYMBOL_EXPORT_SC_(KeywordPkg,code);
 
 SYMBOL_EXPORT_SC_(ClPkg, upgraded_array_element_type);
 SYMBOL_EXPORT_SC_(ClPkg, member);
+SYMBOL_EXPORT_SC_(ClPkg, class_name);
 SYMBOL_EXPORT_SC_(ClPkg, every);
 SYMBOL_EXPORT_SC_(ClPkg, some);
 SYMBOL_EXPORT_SC_(ClPkg, float);
@@ -281,6 +283,7 @@ SYMBOL_EXPORT_SC_(CorePkg, STARdebugStartupSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, _BANG_unbound_BANG_);
 SYMBOL_EXPORT_SC_(CorePkg, bitArrayOp);
 SYMBOL_EXPORT_SC_(CorePkg, lambdaName);
+SYMBOL_EXPORT_SC_(CorePkg, dump_module);
 SYMBOL_EXPORT_SC_(CorePkg, STARfunctions_to_inlineSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARfunctions_to_notinlineSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, optimized_slot_reader);
@@ -1110,6 +1113,8 @@ void CoreExposer_O::define_essential_globals(Lisp_sp lisp) {
   hooks = Cons_O::create(Cons_O::create(SimpleBaseString_O::make("ASD"), _sym_loadSource), hooks);
   hooks = Cons_O::create(Cons_O::create(SimpleBaseString_O::make("lisp"), _sym_loadSource), hooks);
   hooks = Cons_O::create(Cons_O::create(SimpleBaseString_O::make("LISP"), _sym_loadSource), hooks);
+  hooks = Cons_O::create(Cons_O::create(SimpleBaseString_O::make("cl"), _sym_loadSource), hooks);
+  hooks = Cons_O::create(Cons_O::create(SimpleBaseString_O::make("CL"), _sym_loadSource), hooks);
   hooks = Cons_O::create(Cons_O::create(SimpleBaseString_O::make("clasprc"), _sym_loadSource), hooks);
   _sym_STARloadHooksSTAR->defparameter(hooks);
   ext::_sym_STARdefault_external_formatSTAR->defparameter(_lisp->_true());
@@ -1141,6 +1146,7 @@ void CoreExposer_O::define_essential_globals(Lisp_sp lisp) {
   _sym_STARinvalidated_dispatch_function_stackSTAR->defparameter(_Nil<core::T_O>());
   _sym_STARdebug_threadsSTAR->defparameter(_Nil<core::T_O>());
   _sym_STARdebug_dispatchSTAR->defparameter(_Nil<core::T_O>());
+  _sym_STARdebug_valuesSTAR->defparameter(_Nil<core::T_O>());
 #if defined(__x86_64__)
   SYMBOL_EXPORT_SC_(KeywordPkg, address_model_64);
   Symbol_sp address_model = kw::_sym_address_model_64;

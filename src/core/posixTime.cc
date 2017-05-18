@@ -50,21 +50,34 @@ CL_DOCSTRING("getInternalRealTime");
 CL_DEFUN T_sp cl__get_internal_real_time() {
   PosixTime_sp now = PosixTime_O::createNow();
   PosixTimeDuration_sp diff = now->sub(gc::As<PosixTime_sp>(_sym_STARstartRunTimeSTAR->symbolValue()));
-  return Integer_O::create(diff->totalMilliseconds());
+  return Integer_O::create(diff->totalMilliseconds() * (CLASP_INTERNAL_TIME_UNITS_PER_SECOND / 1000 ));
 };
 
+
+CL_LAMBDA();
+CL_DECLARE();
+CL_DOCSTRING("clock_gettime_nanoseconds");
+CL_DEFUN core::Integer_sp core__clock_gettime_nanoseconds() {
+  Bignum ns = profilerTimeNs();
+  core::Integer_sp bn = core::Integer_O::create(ns);
+  return bn;
+};
+  
 CL_LAMBDA();
 CL_DECLARE();
 CL_DOCSTRING("getInternalRunTime");
 CL_DEFUN T_sp cl__get_internal_run_time() {
+  return core__clock_gettime_nanoseconds();
+#if 0
   struct rusage r;
   getrusage(RUSAGE_SELF, &r);
   size_t usec = r.ru_utime.tv_usec;
   size_t sec = r.ru_utime.tv_sec;
   mpz_class bn(sec);
   bn = bn * CLASP_INTERNAL_TIME_UNITS_PER_SECOND;
-  bn = bn + usec / (1000000 / CLASP_INTERNAL_TIME_UNITS_PER_SECOND);
+  bn = bn + usec * ( CLASP_INTERNAL_TIME_UNITS_PER_SECOND / 1000);
   return Integer_O::create(bn);
+#endif
 };
 
 PosixTime_sp PosixTime_O::createNow() {

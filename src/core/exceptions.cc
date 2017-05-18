@@ -57,7 +57,16 @@ THE SOFTWARE.
 
 #define MAX_DEBUG_CALL_DEPTH 200
 
+#ifdef SOURCE_DEBUG
+#error "SOURCE_DEBUG is ON"
+#endif
+
 namespace core {
+
+void assert_failure(const char* file, size_t line, const char* func, const char* msg)
+{
+  SIMPLE_ERROR(BF("%s:%d:%s  Assertion failure: %s") % file % line % func % msg);
+}
 
 /*! These are here just so that the clang compiler
       will assign the __attribute__((weak)) to the vtable of each of these classes

@@ -41,9 +41,7 @@ THE SOFTWARE.
 #include <clasp/core/genericFunction.h>
 #include <clasp/core/wrappers.h>
 
-//#define DEBUG_ACCESSORS 1
 #define DEBUG_ACCESSORS_ON() (core::_sym_STARdebug_accessorsSTAR->symbolValue().notnilp())
-
 
 namespace core {
 
@@ -159,7 +157,7 @@ ensure_up_to_date_instance(T_sp tinstance)
 {
   Instance_sp instance = gc::As<Instance_sp>(tinstance);
   Class_sp clas = cl__class_of(instance);
-  T_sp slots = clas->instanceRef(Class_O::REF_SLOTS);
+  T_sp slots = clas->instanceRef(Class_O::REF_CLASS_SLOTS);
   unlikely_if (!slots.unboundp() && instance->instanceSig() != slots ) {
     eval::funcall(clos::_sym_update_instance,instance);
   }

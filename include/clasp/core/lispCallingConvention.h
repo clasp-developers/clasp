@@ -24,6 +24,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
+
 #ifdef LCC_MACROS
 
 #define LCC_UNUSED NULL
@@ -33,42 +34,48 @@ THE SOFTWARE.
 #define LCC_FROM_ACTIVATION_FRAME_SMART_PTR(x) (x.raw_())
 #define LCC_TO_SMART_PTR(x) (gctools::smart_ptr<core::T_O>((gc::Tagged)x))
 
-#define LCC_UNUSED_rest2() NULL
-#define LCC_UNUSED_rest1() NULL, NULL
-#define LCC_UNUSED_rest0() NULL, NULL, NULL
-
 // Pass a defined number of arguments to operator()
-#define LCC_PASS_ARGS0_ELLIPSIS(funcRaw) funcRaw, NULL, 0, NULL, NULL, NULL
-#define LCC_PASS_ARGS1_ELLIPSIS(funcRaw,a0) funcRaw, NULL, 1, a0, NULL, NULL
-#define LCC_PASS_ARGS2_ELLIPSIS(funcRaw,a0, a1) funcRaw, NULL, 2, a0, a1, NULL
-#define LCC_PASS_ARGS3_ELLIPSIS(funcRaw,a0, a1, a2) funcRaw, NULL, 3, a0, a1, a2
+#define LCC_PASS_ARGS0_ELLIPSIS(funcRaw)                funcRaw, 0, NULL, NULL, NULL, NULL
+#define LCC_PASS_ARGS1_ELLIPSIS(funcRaw,a0)             funcRaw, 1, a0,   NULL, NULL, NULL
+#define LCC_PASS_ARGS2_ELLIPSIS(funcRaw,a0, a1)         funcRaw, 2, a0,   a1,   NULL, NULL
+#define LCC_PASS_ARGS3_ELLIPSIS(funcRaw,a0, a1, a2)     funcRaw, 3, a0,   a1,   a2,   NULL
+#define LCC_PASS_ARGS4_ELLIPSIS(funcRaw,a0, a1, a2, a3) funcRaw, 4, a0,   a1,   a2,   a3
+#define LCC_PASS_ARGS_ELLIPSIS_GENERAL(funcRaw,a0, a1, a2, a3) funcRaw, 4, a0,   a1,   a2,   a3
 
-#define LCC_PASS_MAIN() NULL,NULL, 0, NULL, NULL, NULL
+#define LCC_PASS_MAIN() NULL, 0, NULL, NULL, NULL, NULL
 
 // Don't need lcc_arglist because no arguments are passed
-#define LCC_PASS_ARGS0_VA_LIST(funcRaw) funcRaw, lcc_arglist, 0, NULL, NULL, NULL
-#define LCC_PASS_ARGS1_VA_LIST(funcRaw,a0) funcRaw, lcc_arglist, 1, a0, NULL, NULL
+#define LCC_PASS_ARGS0_VA_LIST(funcRaw) funcRaw, 0, NULL, NULL, NULL, NULL
+#define LCC_PASS_ARGS1_VA_LIST(funcRaw,a0) funcRaw, 1, a0, NULL, NULL, NULL
 
-#define LCC_PASS_ARGS0_ARGLIST(funcRaw) funcRaw, lcc_arglist, 0, NULL, NULL, NULL
-#define LCC_PASS_ARGS1_ARGLIST(funcRaw,a0) funcRaw, lcc_arglist, 1, a0, NULL, NULL
-#define LCC_PASS_ARGS2_ARGLIST(funcRaw,a0, a1) funcRaw, lcc_arglist, 2, a0, a1, NULL
-#define LCC_PASS_ARGS3_ARGLIST(funcRaw,a0, a1, a2) funcRaw, lcc_arglist, 3, a0, a1, a2
-#define LCC_PASS_ARGS3_ARGLIST_GENERAL(funcRaw,arglist, nargs, a0, a1, a2) funcRaw, arglist, nargs, a0, a1, a2
+#define LCC_UNUSED_rest0 NULL, NULL, NULL, NULL
+#if 0
+#define LCC_PASS_ARGS0_ARGLIST(funcRaw) funcRaw, 0, NULL, NULL, NULL, NULL
+#define LCC_PASS_ARGS1_ARGLIST(funcRaw,a0) funcRaw, 1, a0, NULL, NULL, NULL
+#define LCC_PASS_ARGS2_ARGLIST(funcRaw,a0, a1) funcRaw, 2, a0, a1, NULL, NULL
+#define LCC_PASS_ARGS3_ARGLIST(funcRaw,a0, a1, a2) funcRaw, 3, a0, a1, a2, NULL
+#define LCC_PASS_ARGS4_ARGLIST(funcRaw,a0, a1, a2, a3) funcRaw, 4, a0, a1, a2, a3
+#define LCC_PASS_ARGS_ARGLIST_GENERAL(funcRaw, nargs, a0, a1, a2, a3) funcRaw, nargs, a0, a1, a2, a3
+#endif
 
 // To invoke "invoke" methods use these
 
-#define LCC_ARGS_FUNCALL_ELLIPSIS core::T_O *lcc_closure, core::T_O *dummyArgList, std::size_t lcc_nargs, core::T_O *lcc_fixed_arg0, core::T_O *lcc_fixed_arg1, core::T_O *lcc_fixed_arg2, ...
-#define LCC_ARGS_CC_CALL_ELLIPSIS core::T_O *lcc_closure, core::T_O *dummyArgList, std::size_t lcc_nargs, core::T_O *lcc_fixed_arg0, core::T_O *lcc_fixed_arg1, core::T_O *lcc_fixed_arg2, ...
-#define LCC_ARGS_ELLIPSIS core::T_O *lcc_closure, core::T_O *dummyArgList, std::size_t lcc_nargs, core::T_O *lcc_fixed_arg0, core::T_O *lcc_fixed_arg1, core::T_O *lcc_fixed_arg2, ...
-#define LCC_ARGS_VA_LIST core::T_O *lcc_closure, core::T_O *lcc_arglist, std::size_t lcc_nargs, core::T_O *lcc_fixed_arg0, core::T_O *lcc_fixed_arg1, core::T_O *lcc_fixed_arg2
+#define LCC_ARGS_FUNCALL_ELLIPSIS core::T_O *lcc_closure, std::size_t lcc_nargs, core::T_O *lcc_fixed_arg0, core::T_O *lcc_fixed_arg1, core::T_O *lcc_fixed_arg2, core::T_O *lcc_fixed_arg3, ...
+#define LCC_ARGS_CC_CALL_ELLIPSIS core::T_O *lcc_closure, std::size_t lcc_nargs, core::T_O *lcc_fixed_arg0, core::T_O *lcc_fixed_arg1, core::T_O *lcc_fixed_arg2, core::T_O *lcc_fixed_arg3, ...
+#define LCC_ARGS_ELLIPSIS core::T_O *lcc_closure, std::size_t lcc_nargs, core::T_O *lcc_fixed_arg0, core::T_O *lcc_fixed_arg1, core::T_O *lcc_fixed_arg2,  core::T_O *lcc_fixed_arg3, ...
+#define LCC_ARGS_LLH VaList_sp lcc_vargs, std::size_t lcc_nargs, core::T_O *lcc_fixed_arg0, core::T_O *lcc_fixed_arg1, core::T_O *lcc_fixed_arg2, core::T_O* lcc_fixed_arg3
 // When you pass args to another function use LCC_PASS_ARGS
-#define LCC_PASS_ARGS lcc_closure, lcc_arglist, lcc_nargs, lcc_fixed_arg0, lcc_fixed_arg1, lcc_fixed_arg2
-#define LCC_PASS_ARGS_ENV(_env) _env, lcc_arglist, lcc_nargs, lcc_fixed_arg0, lcc_fixed_arg1, lcc_fixed_arg2
+#define LCC_PASS_ARGS lcc_closure, lcc_nargs, lcc_fixed_arg0, lcc_fixed_arg1, lcc_fixed_arg2, lcc_fixed_arg3
+#define LCC_PASS_ARGS_LLH lcc_vargs, lcc_nargs, lcc_fixed_arg0, lcc_fixed_arg1, lcc_fixed_arg2, lcc_fixed_arg3
+#define LCC_PASS_ARGS_VASLIST(_closure,_vaslist) _closure, lcc_nargs, lcc_fixed_arg0, lcc_fixed_arg1, lcc_fixed_arg2, lcc_fixed_arg3, _vaslist
 
+/*! This is a void function */
+#define LISP_CALLING_CONVENTION() entry_point(LCC_ARGS_ELLIPSIS)
+#define LISP_METHOD_CALLING_CONVENTION method_entry_point(LCC_ARGS_ELLIPSIS)
 // Compiled functions get the raw va_list
 #define LCC_VA_LIST(_valist) (*_valist)._Args
-#define LCC_VA_START_ARG lcc_fixed_arg2
-#define LCC_LAST_FIXED_ARG lcc_fixed_arg2
+#define LCC_VA_START_ARG lcc_fixed_arg3
+#define LCC_LAST_FIXED_ARG lcc_fixed_arg3
 
 
 #define LCC_CLOSED_ENVIRONMENT core::T_O *lcc_closedEnvironment
@@ -79,17 +86,9 @@ THE SOFTWARE.
 // Return raw values that can be used to construct a core::T_mv
 #define LCC_RETURN_RAW gctools::return_type
 
-/*! This is a void function */
-#define LISP_CALLING_CONVENTION() invoke_va_list(LCC_ARGS_VA_LIST)
 
 // To invoke functions of type InitFnPtr use these
-#define LCC_PASS_ARGS0_VA_LIST_INITFNPTR() _Nil<core::T_O>().raw_(), NULL, 0, LCC_UNUSED_rest0()
-#if 0
-#define LCC_PASS_ARGS1_VA_LIST_INITFNPTR(a0) NULL, NULL, 1, a0, LCC_UNUSED_rest1()
-#define LCC_PASS_ARGS2_VA_LIST_INITFNPTR(a0, a1) NULL, NULL, 2, a0, a1, LCC_UNUSED_rest2()
-#define LCC_PASS_ARGS3_VA_LIST_INITFNPTR(a0, a1, a2) NULL, NULL, 3, a0, a1, a2
-#endif
-
+#define LCC_PASS_ARGS0_VA_LIST_INITFNPTR() _Nil<core::T_O>().raw_(), 0, LCC_UNUSED_rest0
 
 #define MULTIPLE_VALUES_ARRAY core::lisp_multipleValues()
 
@@ -99,6 +98,7 @@ THE SOFTWARE.
 #define LCC_ARG0() gctools::smart_ptr<core::T_O>((gc::Tagged)lcc_fixed_arg0)
 #define LCC_ARG1() gctools::smart_ptr<core::T_O>((gc::Tagged)lcc_fixed_arg1)
 #define LCC_ARG2() gctools::smart_ptr<core::T_O>((gc::Tagged)lcc_fixed_arg2)
+#define LCC_ARG3() gctools::smart_ptr<core::T_O>((gc::Tagged)lcc_fixed_arg3)
 /*! LCC_ARGS_IN_REGISTERS is defined in src/core/config.h and is currently 4 (four)*/
 #define LCC_FIXED_NUM LCC_ARGS_IN_REGISTERS
 //#define MULTIPLE_VALUES_SETUP() core::T_sp* __multipleValuesPtr = core::lisp_multipleValues().start_address()
@@ -106,6 +106,7 @@ THE SOFTWARE.
   
 /* This is a switch statement that copies passed arguments in registers into the MultipleValues array */
 #define LCC_SWITCH_TO_COPY_PASSED_ARGS_INTO_MULTIPLE_VALUES_ARRAY(_mv) \
+  /* Fix me */ IMPLEMENT_ME(); \
   MultipleValues &_mv = lisp_callArgs();                               \
   _mv.setSize(lcc_nargs);                                              \
   switch (lcc_nargs) {                                                 \
@@ -114,6 +115,8 @@ THE SOFTWARE.
       _mv[_zii] = va_arg(lcc_arglist, LCC_TYPE);                       \
     }                                                                  \
     va_end(lcc_arglist);                                               \
+  case 4:                                                              \
+    _mv[3] = lcc_fixed_arg3;                                           \
   case 3:                                                              \
     _mv[2] = lcc_fixed_arg2;                                           \
   case 2:                                                              \
@@ -138,58 +141,64 @@ THE SOFTWARE.
 
 // Registers are %rdi, %rsi, %rdx, %rcx, %r8, %r9
 #define LCC_CLOSURE_REGISTER 0
-#define LCC_REST_REGISTER 1
-#define LCC_OVERFLOW_SAVE_REGISTER LCC_REST_REGISTER
-#define LCC_NARGS_REGISTER 2
-#define LCC_ARG0_REGISTER 3
-#define LCC_ARGS_PASSED_IN_REGISTERS 3
-#define LCC_ARG1_REGISTER 4
-#define LCC_ARG2_REGISTER 5
-#define LCC_TOTAL_REGISTERS 6
+#define LCC_NARGS_REGISTER 1
+#define LCC_ARG0_REGISTER 2
+#define LCC_ARGS_PASSED_IN_REGISTERS LCC_ARGS_IN_REGISTERS
+#define LCC_ARG1_REGISTER 3
+#define LCC_ARG2_REGISTER 4
+#define LCC_ARG3_REGISTER 5
+#define LCC_TOTAL_REGISTERS LCC_ABI_ARGS_IN_REGISTERS
 #define LCC_SPILL_NUMBER_ARGUMENTS_TO_VA_LIST(_valist_s_, _num_)                               \
   {                                                                                            \
     ((uintptr_clasp_t *)(_valist_s_)._Args->reg_save_area)[LCC_NARGS_REGISTER] = (uintptr_clasp_t)(_num_); \
   }
 #define LCC_SPILL_CLOSURE_TO_VA_LIST(_valist_s_,_closure_)    ((core::T_O* *)(_valist_s_)._Args->reg_save_area)[LCC_CLOSURE_REGISTER] = (core::T_O*)_closure_;
 
+#define LCC_REGISTER_SAVE_AREA_CLOSURE(rsa) ((core::T_O**)rsa[LCC_CLOSURE_REGISTER])
+
 #define LCC_SPILL_REGISTER_ARGUMENTS_TO_VA_LIST(_valist_s_) {                                                                          \
     ((core::T_O* *)(_valist_s_)._Args->reg_save_area)[LCC_CLOSURE_REGISTER] = (core::T_O*)lcc_closure;                                   \
     /* Tricky part!!! write the overflow_arg_area pointer into the reg_save_area */                                                    \
     /* so we can recover the overflow args even after the va_list has been traversed */                                                \
-    ((core::T_O* *)(_valist_s_)._Args->reg_save_area)[LCC_OVERFLOW_SAVE_REGISTER] = (core::T_O*)((_valist_s_)._Args->overflow_arg_area); \
+    /*((core::T_O* *)(_valist_s_)._Args->reg_save_area)[LCC_OVERFLOW_SAVE_REGISTER] = (core::T_O*)((_valist_s_)._Args->overflow_arg_area);*/ \
     ((core::T_O* *)(_valist_s_)._Args->reg_save_area)[LCC_NARGS_REGISTER] = (core::T_O*)lcc_nargs;                                       \
     ((core::T_O* *)(_valist_s_)._Args->reg_save_area)[LCC_ARG0_REGISTER] = (core::T_O*)lcc_fixed_arg0;                                   \
     ((core::T_O* *)(_valist_s_)._Args->reg_save_area)[LCC_ARG1_REGISTER] = (core::T_O*)lcc_fixed_arg1;                                   \
     ((core::T_O* *)(_valist_s_)._Args->reg_save_area)[LCC_ARG2_REGISTER] = (core::T_O*)lcc_fixed_arg2;                                   \
+    ((core::T_O* *)(_valist_s_)._Args->reg_save_area)[LCC_ARG3_REGISTER] = (core::T_O*)lcc_fixed_arg3;                                   \
     (_valist_s_)._Args->gp_offset = sizeof(core::T_O*) * (LCC_ABI_ARGS_IN_REGISTERS - LCC_ARGS_IN_REGISTERS);                           \
   }
 
+#define INITIALIZE_VA_LIST() ::core::VaList_S lcc_arglist_s(lcc_nargs);\
+  va_start(lcc_arglist_s._Args, LCC_VA_START_ARG); \
+  core::VaList_sp lcc_vargs(&lcc_arglist_s); \
+  LCC_SPILL_REGISTER_ARGUMENTS_TO_VA_LIST(lcc_arglist_s); \
+
+#define COPY_VA_LIST() \
+  va_list passed_args; \
+  va_start(passed_args,LCC_VA_START_ARG); \
+  core::T_O* lcc_passed_valist = va_arg(passed_args,core::T_O*); \
+  va_end(passed_args); \
+  ::core::VaList_S lcc_arglist_s(*(VaList_S*)gctools::untag_valist(lcc_passed_valist));\
+  core::VaList_sp lcc_vargs(&lcc_arglist_s); 
+
 #define private_LCC_VA_LIST_TOTAL_NUMBER_OF_ARGUMENTS(_args) (size_t)(((uintptr_clasp_t *)(_args[0].reg_save_area))[LCC_NARGS_REGISTER])
 #define private_LCC_VA_LIST_SET_TOTAL_NUMBER_OF_ARGUMENTS(_args, _n) (((uintptr_clasp_t *)(_args[0].reg_save_area))[LCC_NARGS_REGISTER]) = ((uintptr_clasp_t)_n)
-#define private_LCC_VA_LIST_DECREMENT_TOTAL_NUMBER_OF_ARGUMENTS(_args) (--((uintptr_clasp_t *)(_args[0].reg_save_area))[LCC_NARGS_REGISTER])
-
-#ifdef DEBUG_ASSERTS
-#define ASSERT_LCC_VA_LIST_CLOSURE_DEFINED(_args) {\
-    gctools::Tagged e = reinterpret_cast<gctools::Tagged*>(reinterpret_cast<core::VaList_S*>(gctools::untag_valist(_args))->_Args->reg_save_area)[LCC_CLOSURE_REGISTER]; \
-    if (!(e && gctools::tagged_generalp(e))) { \
-      printf("%s:%d Closure is not defined\n", __FILE__, __LINE__ ); \
-      abort(); \
-    }}
-#else
-#define ASSERT_LCC_VA_LIST_CLOSURE_DEFINED(_args)
-#endif
+//#define private_LCC_VA_LIST_DECREMENT_TOTAL_NUMBER_OF_ARGUMENTS(_args) (--((uintptr_clasp_t *)(_args[0].reg_save_area))[LCC_NARGS_REGISTER])
 
 #define LCC_VA_LIST_CLOSURE(_args) core::Function_sp((gctools::Tagged)((core::T_O **)(*_args)._Args->reg_save_area)[LCC_CLOSURE_REGISTER])
-#define LCC_VA_LIST_REGISTER_SAVE_AREA(_args) (core::T_O **)(((*_args)._Args)[0].reg_save_area)
-#define LCC_VA_LIST_OVERFLOW_ARG_AREA(_args) (core::T_O **)(((*_args)._Args)[0].overflow_arg_area)
-#define LCC_ORIGINAL_VA_LIST_OVERFLOW_ARG_AREA(_args) ((core::T_O***)LCC_VA_LIST_REGISTER_SAVE_AREA(_args))[LCC_OVERFLOW_SAVE_REGISTER]
+#define LCC_VA_LIST_REGISTER_SAVE_AREA(_args) (core::T_O **)(((*_args))[0].reg_save_area)
+#define LCC_VA_LIST_OVERFLOW_ARG_AREA(_args) (core::T_O **)(((*_args))[0].overflow_arg_area)
+//#define LCC_ORIGINAL_VA_LIST_OVERFLOW_ARG_AREA(_args) ((core::T_O***)LCC_VA_LIST_REGISTER_SAVE_AREA(_args))[LCC_OVERFLOW_SAVE_REGISTER]
 #define LCC_VA_LIST_TOTAL_NUMBER_OF_ARGUMENTS(_args) private_LCC_VA_LIST_TOTAL_NUMBER_OF_ARGUMENTS((*_args)._Args)
 #define LCC_VA_LIST_SET_TOTAL_NUMBER_OF_ARGUMENTS(_args, _n) private_LCC_VA_LIST_SET_TOTAL_NUMBER_OF_ARGUMENTS((*_args)._Args, _n)
-#define LCC_VA_LIST_DECREMENT_TOTAL_NUMBER_OF_ARGUMENTS(_args) private_LCC_VA_LIST_DECREMENT_TOTAL_NUMBER_OF_ARGUMENTS((*_args)._Args)
+//#define LCC_VA_LIST_DECREMENT_TOTAL_NUMBER_OF_ARGUMENTS(_args) private_LCC_VA_LIST_DECREMENT_TOTAL_NUMBER_OF_ARGUMENTS((*_args)._Args)
 #define LCC_VA_LIST_REGISTER_ARG0(_args) (((core::T_O **)(((*_args)._Args)[0].reg_save_area))[LCC_ARG0_REGISTER])
 #define LCC_VA_LIST_REGISTER_ARG1(_args) (((core::T_O **)(((*_args)._Args)[0].reg_save_area))[LCC_ARG1_REGISTER])
 #define LCC_VA_LIST_REGISTER_ARG2(_args) (((core::T_O **)(((*_args)._Args)[0].reg_save_area))[LCC_ARG2_REGISTER])
+#define LCC_VA_LIST_REGISTER_ARG3(_args) (((core::T_O **)(((*_args)._Args)[0].reg_save_area))[LCC_ARG3_REGISTER])
 
+#if 0
 #define LCC_VA_LIST_CURRENT_INDEX(_res, _args)                    \
   _res = (((*_args)._Args[0].gp_offset/sizeof(void*))-LCC_ARG0_REGISTER); \
   if ( _res >= LCC_ARGS_PASSED_IN_REGISTERS ) { \
@@ -200,7 +209,10 @@ THE SOFTWARE.
   LCC_VA_LIST_CURRENT_INDEX(_res,_args); \
   _res = LCC_VA_LIST_TOTAL_NUMBER_OF_ARGUMENTS(_args) - (_res)
 
+#endif
 
+
+#if 0
 #define LCC_VA_LIST_incorrect_INDEXED_ARG(_res, _args, _idx)                    \
   {                                                                   \
     int __x = (_idx) - ((48 - ((*_args)._Args[0].gp_offset)) / 8);     \
@@ -210,17 +222,21 @@ THE SOFTWARE.
       _res = ((core::T_O **)(*_args)._Args[0].overflow_arg_area)[__x]; \
     }                                                                 \
   }
+#endif
 
-#define LCC_VA_LIST_ABSOLUTE_INDEXED_ARG(_res, _args, _idx)                    \
-  {                                                                   \
-    int __x = (_idx) - (LCC_ABI_ARGS_IN_REGISTERS - LCC_ARGS_IN_REGISTERS); \
+
+/* Return the indexed argument in the va_list wrt the remaining arguments in the list.
+   This means that if va_arg has already been called on this va_list  then the 0th
+   entry is the next argument that would be returned by va_list */
+#define LCC_VA_LIST_RELATIVE_INDEXED_ARG(_res, _args, _idx) { \
+    int __x = (_idx) - (LCC_ABI_ARGS_IN_REGISTERS - (((*_args)._Args[0].gp_offset)/8)); \
     if (__x < 0) {                                                    \
-      _res = ((core::T_O **)(*_args)._Args[0].reg_save_area)[__x + 6]; \
+      _res = ((core::T_O **)(*_args)._Args[0].reg_save_area)[__x + LCC_ABI_ARGS_IN_REGISTERS]; \
     } else {                                                          \
-      _res = ((core::T_O ***)(*_args)._Args[0].reg_save_area)[LCC_OVERFLOW_SAVE_REGISTER][__x]; \
+      _res = ((core::T_O **)(*_args)._Args[0].overflow_arg_area)[__x]; \
+      /*      _res = ((core::T_O ***)(*_args)._Args[0].reg_save_area)[LCC_OVERFLOW_SAVE_REGISTER][__x]; */ \
     }                                                                 \
   }
-
 
 
 
@@ -236,21 +252,28 @@ THE SOFTWARE.
 
 #define LCC_CALL_WITH_ARGS_IN_FRAME(_result, _closure, _frame)          \
   core::VaList_S valist_s(_frame);                                      \
+  printf("%s:%d  This needs to be reimplemented to handle the new calling convention\n", __FILE__, __LINE__ ); \
   LCC_SPILL_CLOSURE_TO_VA_LIST(valist_s,_closure.raw_());                \
   size_t lcc_nargs = (_frame).number_of_arguments();                    \
   core::T_O *lcc_arglist = valist_s.asTaggedPtr();                      \
   switch (lcc_nargs) {                                                  \
   default:                                                              \
-      _result = _closure->invoke_va_list(LCC_PASS_ARGS3_ARGLIST_GENERAL(_closure.raw_(),lcc_arglist, lcc_nargs, (_frame)[0], (_frame)[1], (_frame)[2])); \
+      _result = _closure->invoke_va_list(LCC_PASS_ARGS_ELLIPSIS_GENERAL(_closure.raw_(), lcc_nargs, (_frame)[0], (_frame)[1], (_frame)[2], (_frame)[3])); \
+    break;                                                              \
+  case 4:                                                               \
+      _result = _closure->invoke_va_list(LCC_PASS_ARGS4_ELLIPSIS(_closure.raw_(),(_frame)[0], (_frame)[1], (_frame)[2], (_frame)[3])); \
+    break;                                                              \
+  case 3:                                                               \
+      _result = _closure->invoke_va_list(LCC_PASS_ARGS3_ELLIPSIS(_closure.raw_(),(_frame)[0], (_frame)[1], (_frame)[2])); \
     break;                                                              \
   case 2:                                                               \
-      _result = _closure->invoke_va_list(LCC_PASS_ARGS2_ARGLIST(_closure.raw_(),(_frame)[0], (_frame)[1])); \
+      _result = _closure->invoke_va_list(LCC_PASS_ARGS2_ELLIPSIS(_closure.raw_(),(_frame)[0], (_frame)[1])); \
     break;                                                              \
   case 1:                                                               \
-      _result = _closure->invoke_va_list(LCC_PASS_ARGS1_ARGLIST(_closure.raw_(),(_frame)[0])); \
+      _result = _closure->invoke_va_list(LCC_PASS_ARGS1_ELLIPSIS(_closure.raw_(),(_frame)[0])); \
     break;                                                              \
   case 0:                                                               \
-      _result = _closure->invoke_va_list(LCC_PASS_ARGS0_ARGLIST(_closure.raw_())); \
+      _result = _closure->invoke_va_list(LCC_PASS_ARGS0_ELLIPSIS(_closure.raw_())); \
     break;                                                              \
   };
 
@@ -268,72 +291,77 @@ THE SOFTWARE.
     (_va_list_)[0].fp_offset = 304; \
   }
 
-#if 0
-/*! Initialize a VaList_S struct from another VaList_S struct */
-#define LCC_SETUP_VA_LIST_FROM_VA_LIST_CHANGE_NARGS(_dest_, _src_, _nargs_left_)                  \
-  {                                                                                  \
-    (_dest_)[0].reg_save_area = (_src_)[0].reg_save_area;                            \
-    (_dest_)[0].overflow_arg_area = (_src_)[0].overflow_arg_area;                    \
-    /* This is where the number of arguments remaining should be stored*/            \
-    ((uintptr_clasp_t *)((_dest_)[0].reg_save_area))[LCC_NARGS_REGISTER] = (_nargs_left_); \
-    (_dest_)[0].gp_offset = (_src_)[0].gp_offset;                                    \
-    (_dest_)[0].fp_offset = (_src_)[0].fp_offset;                                    \
+/*! Initialize a VaList_S struct from a Frame object */
+#define LCC_REWIND_VA_LIST(_va_list_, _register_save_areaP_) { \
+    (_va_list_)[0].reg_save_area = (void*)_register_save_areaP_; \
+    (_va_list_)[0].gp_offset = 16; \
   }
-#endif
 
 #define LCC_SETUP_VA_LIST_FROM_VA_LIST(_dest_,_src_) va_copy(_dest_,_src_)
 
-// Create a VaList_sp from lcc_arglist
-#define LCC_MAKE_VA_LIST_SP(valist_sp) VaList_sp valist_sp((gc::Tagged)lcc_arglist)
+// Create a VaList_sp from lcc_vargs (a va_list)
+//#define LCC_MAKE_VA_LIST_SP(valist_sp) VaList_sp valist_sp(lcc_nargs,lcc_vargs);
 #endif // #ifdef LCC_MACROS
 
-                     
+#define SETUP_CLOSURE_(Type,var) Type* var = gctools::untag_general<Type*>((Type*)lcc_closure);
+#ifdef _DEBUG_BUILD
+#define SETUP_CLOSURE(Type,var) \
+  if (!gc::TaggedCast<Type*,core::T_O*>::isA(lcc_closure)) { \
+    SIMPLE_ERROR(BF("Bad cast of closure %p to type: %s") % (void*)lcc_closure % #Type ); \
+  } \
+  SETUP_CLOSURE_(Type,var);
+#else
+#define SETUP_CLOSURE(Type,var) SETUP_CLOSURE_(Type,var)
+#endif                
 #ifdef LCC_PROTOTYPES
-typedef LCC_RETURN_RAW (*fnLispCallingConvention)(LCC_ARGS_VA_LIST);
-typedef LCC_RETURN_RAW (*CompiledClosure_fptr_type)(LCC_ARGS_VA_LIST);
-typedef LCC_RETURN (*InitFnPtr)(LCC_ARGS_VA_LIST);
+typedef LCC_RETURN_RAW (*claspFunction)(LCC_ARGS_ELLIPSIS);
+typedef LCC_RETURN_RAW (*fnLispCallingConvention)(LCC_ARGS_ELLIPSIS);
+typedef LCC_RETURN_RAW (*CompiledClosure_fptr_type)(LCC_ARGS_ELLIPSIS);
+typedef LCC_RETURN (*InitFnPtr)(LCC_ARGS_ELLIPSIS);
 typedef LCC_RETURN (*DispatchFunction_fptr_type)(gctools::Tagged gf, gctools::Tagged valist_sptr);
 typedef LCC_RETURN (*ShutdownFunction_fptr_type)();
+#endif
 
+
+#ifdef LCC_FUNCALL
 extern "C" {
 // Return true if the VaList_S is at the head of the list and false if it is used up
-inline bool dump_VaList_S_ptr(VaList_S* args) {
-  printf("va_list dump @%p\n", (void*)args);
-  bool atHead = ((*args)._Args[0].gp_offset==0x18);
-  printf("---Register save area@%p (NOTE: Often in other stack frame)\n", (*args)._Args[0].reg_save_area);
-  printf("       CLOSURE_REGISTER@%p = %p\n", reinterpret_cast<void*>(LCC_CLOSURE_REGISTER*8), ((core::T_O* *)(*args)._Args->reg_save_area)[LCC_CLOSURE_REGISTER] );
-  printf(" OVERFLOW_SAVE_REGISTER@%p = %p\n", reinterpret_cast<void*>(LCC_OVERFLOW_SAVE_REGISTER*8), ((core::T_O* *)(*args)._Args->reg_save_area)[LCC_OVERFLOW_SAVE_REGISTER] );
-  printf("         NARGS_REGISTER@%p = %zu\n", reinterpret_cast<void*>(LCC_NARGS_REGISTER*8),reinterpret_cast<size_t>(((core::T_O* *)(*args)._Args->reg_save_area)[LCC_NARGS_REGISTER]) );
-  printf("          ARG0_REGISTER@%p = %p\n", reinterpret_cast<void*>(LCC_ARG0_REGISTER*8), ((core::T_O* *)(*args)._Args->reg_save_area)[LCC_ARG0_REGISTER] );
-  printf("          ARG1_REGISTER@%p = %p\n", reinterpret_cast<void*>(LCC_ARG1_REGISTER*8), ((core::T_O* *)(*args)._Args->reg_save_area)[LCC_ARG1_REGISTER] );
-  printf("          ARG2_REGISTER@%p = %p\n", reinterpret_cast<void*>(LCC_ARG2_REGISTER*8), ((core::T_O* *)(*args)._Args->reg_save_area)[LCC_ARG2_REGISTER] );
+inline bool dump_VaList_S_ptr(VaList_S* args_orig) {
+  VaList_S args(*args_orig);
+  printf("va_list dump @%p\n", (void*)args_orig);
+  printf("va_list remaining_args = %lu\n", args.remaining_nargs());
+  bool atHead = (args.remaining_nargs() != args.total_nargs());
+  printf("---Register save area@%p (NOTE: Often in other stack frame)\n", args._Args[0].reg_save_area);
+  printf("       CLOSURE_REGISTER@%p = %p\n", reinterpret_cast<void*>(LCC_CLOSURE_REGISTER*8), ((core::T_O* *)(args)._Args->reg_save_area)[LCC_CLOSURE_REGISTER] );
+  printf("         NARGS_REGISTER@%p = %zu\n", reinterpret_cast<void*>(LCC_NARGS_REGISTER*8),reinterpret_cast<size_t>(((core::T_O* *)(args)._Args->reg_save_area)[LCC_NARGS_REGISTER]) );
+  printf("          ARG0_REGISTER@%p = %p\n", reinterpret_cast<void*>(LCC_ARG0_REGISTER*8), ((core::T_O* *)(args)._Args->reg_save_area)[LCC_ARG0_REGISTER] );
+  printf("          ARG1_REGISTER@%p = %p\n", reinterpret_cast<void*>(LCC_ARG1_REGISTER*8), ((core::T_O* *)(args)._Args->reg_save_area)[LCC_ARG1_REGISTER] );
+  printf("          ARG2_REGISTER@%p = %p\n", reinterpret_cast<void*>(LCC_ARG2_REGISTER*8), ((core::T_O* *)(args)._Args->reg_save_area)[LCC_ARG2_REGISTER] );
+  printf("          ARG3_REGISTER@%p = %p\n", reinterpret_cast<void*>(LCC_ARG3_REGISTER*8), ((core::T_O* *)(args)._Args->reg_save_area)[LCC_ARG3_REGISTER] );
   const char* atpos = "";
-  if ((*args)._Args[0].gp_offset==0x18) atpos = "atStartReg";
-  else if ((*args)._Args[0].gp_offset==0x30) atpos = "pastEnd";
-  printf("           gp_offset = %p (%s)\n", reinterpret_cast<void*>((*args)._Args[0].gp_offset),  atpos );
-  printf("           fp_offset = %p\n", reinterpret_cast<void*>((*args)._Args[0].fp_offset) );
-  printf("       reg_save_area = %p (this points to the Register save area above ^^^)\n", reinterpret_cast<void*>((*args)._Args[0].reg_save_area) );
-  uintptr_clasp_t* overflow_arg_area = reinterpret_cast<uintptr_clasp_t*>((*args)._Args[0].overflow_arg_area);
-  uintptr_clasp_t* overflow_save = reinterpret_cast<uintptr_clasp_t*>(((core::T_O* *)(*args)._Args->reg_save_area)[LCC_OVERFLOW_SAVE_REGISTER]);
-  int overflow_offset = overflow_arg_area-overflow_save;
-  printf("   overflow_arg_area = %p (offset from OVERFLOW_SAVE_REGISTER = %d) \n", (void*)overflow_arg_area, overflow_offset );
-  int nargs = ((uintptr_clasp_t *)(*args)._Args->reg_save_area)[LCC_NARGS_REGISTER];
-  nargs -= 3;
-  if (nargs > 0 ) {
-    printf("---Overflow arg area@%p contents\n", (*args)._Args[0].overflow_arg_area);
-    for ( int i=0; i< ((uintptr_clasp_t *)(*args)._Args->reg_save_area)[LCC_NARGS_REGISTER]-3; ++i ) {
-      core::T_O** addr = &((core::T_O **)(*args)._Args[0].overflow_arg_area)[i];
-      core::T_O* _res = ((core::T_O **)(*args)._Args[0].overflow_arg_area)[i];
-      printf("     [%d]@%p --> %p\n", i, addr, _res);
-    }
-  } else {
-    printf("--- There are no overflow args\n");
+  if ((args)._Args[0].gp_offset==0x18) atpos = "atStartReg";
+  else if ((args)._Args[0].gp_offset==0x30) atpos = "pastEnd";
+  printf("           gp_offset = %p (%s)\n", reinterpret_cast<void*>((args)._Args[0].gp_offset),  atpos );
+  printf("           fp_offset = %p\n", reinterpret_cast<void*>((args)._Args[0].fp_offset) );
+  printf("       reg_save_area = %p (this points to the Register save area above ^^^)\n", reinterpret_cast<void*>((args)._Args[0].reg_save_area) );
+  int iEnd = args.remaining_nargs();
+  if (iEnd>CALL_ARGUMENTS_LIMIT) {
+    iEnd = 0;
+    printf("%s:%d      args.remaining_nargs()-> %lu !!!!  A BAD VALUE\n", __FILE__, __LINE__, args.remaining_nargs());
+  }
+  for ( int i=0; i<iEnd; ++i ) {
+    T_O* arg = args.next_arg_raw();
+    printf("     [%d] --> %p\n", i, arg);
   }
   return atHead;
 };
 };
 
-    
+
+
+#define APPLY_TO_VA_LIST
+#include <clasp/core/generated/applyToFrame.h>
+#undef APPLY_TO_VA_LIST
     
                        
 
@@ -348,50 +376,17 @@ funcall_consume_valist_<core::Function_O>(tagged_func_ptr,valist_args)
 template <typename Func_O_Type>
 inline gctools::return_type funcall_consume_valist_(gc::Tagged func_tagged,
                                                     VaList_sp args) {
-  core::T_O *arg0;
-  core::T_O *arg1;
-  core::T_O *arg2;
-  size_t current_arg_index;
-  LCC_VA_LIST_CURRENT_INDEX(current_arg_index,args);
-  Func_O_Type* func_object_ptr = reinterpret_cast<Func_O_Type*>(gctools::untag_general(func_tagged));
-  ASSERT_LCC_VA_LIST_CLOSURE_DEFINED(args.tagged_());
-  size_t nargs = LCC_VA_LIST_TOTAL_NUMBER_OF_ARGUMENTS(args)-current_arg_index;
+  gc::smart_ptr<Func_O_Type> func((gc::Tagged)func_tagged);
+  size_t nargs = args->remaining_nargs();
   switch (nargs) {
-    case 3:
-        LCC_VA_LIST_ABSOLUTE_INDEXED_ARG(arg0, args, current_arg_index+0);
-        LCC_VA_LIST_ABSOLUTE_INDEXED_ARG(arg1, args, current_arg_index+1);
-        LCC_VA_LIST_ABSOLUTE_INDEXED_ARG(arg2, args, current_arg_index+2);
-        return func_object_ptr->invoke_va_list(reinterpret_cast<core::T_O*>(func_tagged),
-                                               reinterpret_cast<core::T_O*>(args.tagged_()),
-                                               nargs, arg0,arg1,arg2);
-        break;
-    case 2:
-        LCC_VA_LIST_ABSOLUTE_INDEXED_ARG(arg0, args, current_arg_index+0);
-        LCC_VA_LIST_ABSOLUTE_INDEXED_ARG(arg1, args, current_arg_index+1);
-        return func_object_ptr->invoke_va_list(reinterpret_cast<core::T_O*>(func_tagged),
-                                               reinterpret_cast<core::T_O*>(args.tagged_()),
-                                               nargs, arg0,arg1,NULL);
-        break;
-    case 1:
-        LCC_VA_LIST_ABSOLUTE_INDEXED_ARG(arg0, args, current_arg_index+0);
-        return func_object_ptr->invoke_va_list(reinterpret_cast<core::T_O*>(func_tagged),
-                                               reinterpret_cast<core::T_O*>(args.tagged_()),
-                                               nargs, arg0,NULL,NULL);
-        break;
-    case 0:
-        return func_object_ptr->invoke_va_list(reinterpret_cast<core::T_O*>(func_tagged),
-                                               reinterpret_cast<core::T_O*>(args.tagged_()),
-                                               nargs,NULL,NULL,NULL);
-        break;
-    }
-  LCC_VA_LIST_ABSOLUTE_INDEXED_ARG(arg0, args, current_arg_index+0);
-  LCC_VA_LIST_ABSOLUTE_INDEXED_ARG(arg1, args, current_arg_index+1);
-  LCC_VA_LIST_ABSOLUTE_INDEXED_ARG(arg2, args, current_arg_index+2);
-  return func_object_ptr->invoke_va_list(reinterpret_cast<core::T_O*>(func_tagged),
-                                         reinterpret_cast<core::T_O*>(args.tagged_()),
-                                         nargs,
-                                         arg0,  // LCC_VA_LIST_REGISTER_ARG0(args),
-                                         arg1,  // LCC_VA_LIST_REGISTER_ARG1(args),
-                                         arg2); //LCC_VA_LIST_REGISTER_ARG2(args) );
+#define APPLY_TO_VA_LIST_CASE 1
+    #include <clasp/core/generated/applyToFrame.h>
+#undef APPLY_TO_VA_LIST_CASE
+  default:
+      printf("%s:%d Handle functions with arity %lu for funcall or reduce the number of args in this call\n", __FILE__, __LINE__, nargs);
+      SIMPLE_ERROR(BF("Illegal arity %lu for funcall") % nargs);
+      break;
+  }
+  SIMPLE_ERROR(BF("Unsupported arity %lu must be less than %lu") % nargs % CALL_ARGUMENTS_LIMIT );
 }
-#endif // #ifdef LCC_PROTOTYPES
+#endif // LCC_FUNCALL

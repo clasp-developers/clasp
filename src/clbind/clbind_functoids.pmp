@@ -21,6 +21,7 @@ $var NumArgs = 16
                 < $if ret==RetVoid [[void]] $elif ret==Ret_unique_ptr [[ std::unique_ptr<UPRT> ]] $else [[ RT ]] (*)($for Args_ , [[ARG$Args_]]), Pols>
                 : public core::BuiltinClosure_O {
                 public:
+                typedef VariadicFunctor < $if ret==RetVoid [[void]] $elif ret==Ret_unique_ptr [[ std::unique_ptr<UPRT> ]] $else [[ RT ]] (*)($for Args_ , [[ARG$Args_]]), Pols> MyType;
                 typedef core::BuiltinClosure_O TemplatedBase;
                 public:
                     typedef $if ret==RetVoid [[void]] $elif ret==Ret_unique_ptr [[ std::unique_ptr<UPRT> ]] $else [[RT]](*Type)($for Args_ , [[ARG$Args_]]);
@@ -28,23 +29,25 @@ $var NumArgs = 16
                 public:
 		    virtual const char* describe() const { return "VariadicFunctor"; };
                     enum { NumParams = $numArgs };
-                    VariadicFunctor(core::T_sp name, Type ptr) : core::BuiltinClosure_O(name), fptr(ptr) {};
+                    VariadicFunctor(core::T_sp name, Type ptr) : core::BuiltinClosure_O(entry_point,name), fptr(ptr) {};
                     DISABLE_NEW();
                     virtual size_t templatedSizeof() const { return sizeof(*this);};
-                    inline LCC_RETURN LISP_CALLING_CONVENTION()
+                    static inline LCC_RETURN LISP_CALLING_CONVENTION()
                     {
-                        INCREMENT_FUNCTION_CALL_COUNTER(this);
+                        MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
+                        INCREMENT_FUNCTION_CALL_COUNTER(closure);
+                        INITIALIZE_VA_LIST();
                         INVOCATION_HISTORY_FRAME();
                         $if numArgs>0 [[
-                          MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),$numArgs);
+                          MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),$numArgs);
                           core::StackFrameDynamicScopeManager scope(frame);
-                          lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+                          lambdaListHandler_createBindings(closure->asSmartPtr(),closure->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
                         ]]
                       $for Args_ [[
                         translate::from_object<ARG$Args_,typename DoesNotContain_<Pols,pureOutValue<$(1+Args_)> >::type > a$Args_(frame->arg($Args_));
                         //IncWhen<typename DoesNotContain_<Pols,pureOutValue<$(1+Args_)> >::type >::go(args);
                       ]]
-                      $if ret==RetVoid [[]] $elif ret==Ret_unique_ptr [[ std::unique_ptr<UPRT> retval = ]] $else [[ RT retval = ]] fptr($for Args_ ,[[a$Args_._v]]);
+                      $if ret==RetVoid [[]] $elif ret==Ret_unique_ptr [[ std::unique_ptr<UPRT> retval = ]] $else [[ RT retval = ]] closure->fptr($for Args_ ,[[a$Args_._v]]);
                       $if numArgs>0 [[
                         core::MultipleValues& returnValues = core::lisp_multipleValues();
                         returnValues.setSize(0);

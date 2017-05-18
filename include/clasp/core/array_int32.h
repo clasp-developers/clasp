@@ -238,6 +238,9 @@ namespace core {
     static smart_ptr_type make_vector(size_t dimension) {
       return make_vector(dimension,0,_Nil<T_O>(),_Nil<T_O>(),false,clasp_make_fixnum(0));
     }
+    static smart_ptr_type make_vector_with_fill_pointer(size_t dim, simple_element_type initialElement, size_t fill_pointer) {
+      return make_vector(dim,initialElement,clasp_make_fixnum(fill_pointer),_Nil<T_O>(),false,clasp_make_fixnum(0));
+    }
   public: // make array
   MDArray_int32_t_O(size_t rank,
                      List_sp dimensions,

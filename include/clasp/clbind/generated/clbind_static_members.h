@@ -18,21 +18,24 @@ class IndirectVariadicMethoid
 < Pols,OT ,RT (*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7)  >
 : public core::NamedFunction_O {
 public:
+typedef IndirectVariadicMethoid < Pols,OT ,RT (*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7)  > MyType;
 virtual const char* describe() const { return "IndirectVariadicMethoid"; };
 typedef RT (*Type)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7) ;
 Type mptr;
 public:
 enum { NumParams = 8 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::NamedFunction_O(name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::NamedFunction_O(entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 
-inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
-INCREMENT_FUNCTION_CALL_COUNTER(this);
+MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
+INCREMENT_FUNCTION_CALL_COUNTER(closure);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
-MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),8);
+MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),8);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(closure->asSmartPtr(),closure->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 // translate::from_object<OT*> objPtr(frame->arg(0));
 OT* objPtr = gc::As<core::WrappedPointer_sp>(frame->arg(0))->cast<OT>();
 translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a1(frame->arg(1));
@@ -49,7 +52,7 @@ translate::from_object<ARG6,typename DoesNotContain_<Pols,pureOutValue<6> >::typ
 // IncWhen<typename DoesNotContain_<Pols,pureOutValue<6> >::type >::go(args);
 translate::from_object<ARG7,typename DoesNotContain_<Pols,pureOutValue<7> >::type > a7(frame->arg(7));
 // IncWhen<typename DoesNotContain_<Pols,pureOutValue<7> >::type >::go(args);
-RT retval =  ((*objPtr).*(this->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v);
+RT retval =  ((*objPtr).*(closure->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
 returnValues.setSize(0);
 int oidx = 1;
@@ -100,21 +103,24 @@ class IndirectVariadicMethoid
 < Pols,OT ,RT (*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6)  >
 : public core::NamedFunction_O {
 public:
+typedef IndirectVariadicMethoid < Pols,OT ,RT (*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6)  > MyType;
 virtual const char* describe() const { return "IndirectVariadicMethoid"; };
 typedef RT (*Type)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6) ;
 Type mptr;
 public:
 enum { NumParams = 7 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::NamedFunction_O(name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::NamedFunction_O(entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 
-inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
-INCREMENT_FUNCTION_CALL_COUNTER(this);
+MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
+INCREMENT_FUNCTION_CALL_COUNTER(closure);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
-MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),7);
+MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),7);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(closure->asSmartPtr(),closure->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 // translate::from_object<OT*> objPtr(frame->arg(0));
 OT* objPtr = gc::As<core::WrappedPointer_sp>(frame->arg(0))->cast<OT>();
 translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a1(frame->arg(1));
@@ -129,7 +135,7 @@ translate::from_object<ARG5,typename DoesNotContain_<Pols,pureOutValue<5> >::typ
 // IncWhen<typename DoesNotContain_<Pols,pureOutValue<5> >::type >::go(args);
 translate::from_object<ARG6,typename DoesNotContain_<Pols,pureOutValue<6> >::type > a6(frame->arg(6));
 // IncWhen<typename DoesNotContain_<Pols,pureOutValue<6> >::type >::go(args);
-RT retval =  ((*objPtr).*(this->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v);
+RT retval =  ((*objPtr).*(closure->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
 returnValues.setSize(0);
 int oidx = 1;
@@ -175,21 +181,24 @@ class IndirectVariadicMethoid
 < Pols,OT ,RT (*)( ARG1, ARG2, ARG3, ARG4, ARG5)  >
 : public core::NamedFunction_O {
 public:
+typedef IndirectVariadicMethoid < Pols,OT ,RT (*)( ARG1, ARG2, ARG3, ARG4, ARG5)  > MyType;
 virtual const char* describe() const { return "IndirectVariadicMethoid"; };
 typedef RT (*Type)( ARG1, ARG2, ARG3, ARG4, ARG5) ;
 Type mptr;
 public:
 enum { NumParams = 6 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::NamedFunction_O(name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::NamedFunction_O(entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 
-inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
-INCREMENT_FUNCTION_CALL_COUNTER(this);
+MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
+INCREMENT_FUNCTION_CALL_COUNTER(closure);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
-MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),6);
+MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),6);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(closure->asSmartPtr(),closure->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 // translate::from_object<OT*> objPtr(frame->arg(0));
 OT* objPtr = gc::As<core::WrappedPointer_sp>(frame->arg(0))->cast<OT>();
 translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a1(frame->arg(1));
@@ -202,7 +211,7 @@ translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<4> >::typ
 // IncWhen<typename DoesNotContain_<Pols,pureOutValue<4> >::type >::go(args);
 translate::from_object<ARG5,typename DoesNotContain_<Pols,pureOutValue<5> >::type > a5(frame->arg(5));
 // IncWhen<typename DoesNotContain_<Pols,pureOutValue<5> >::type >::go(args);
-RT retval =  ((*objPtr).*(this->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v);
+RT retval =  ((*objPtr).*(closure->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
 returnValues.setSize(0);
 int oidx = 1;
@@ -244,21 +253,24 @@ class IndirectVariadicMethoid
 < Pols,OT ,RT (*)( ARG1, ARG2, ARG3, ARG4)  >
 : public core::NamedFunction_O {
 public:
+typedef IndirectVariadicMethoid < Pols,OT ,RT (*)( ARG1, ARG2, ARG3, ARG4)  > MyType;
 virtual const char* describe() const { return "IndirectVariadicMethoid"; };
 typedef RT (*Type)( ARG1, ARG2, ARG3, ARG4) ;
 Type mptr;
 public:
 enum { NumParams = 5 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::NamedFunction_O(name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::NamedFunction_O(entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 
-inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
-INCREMENT_FUNCTION_CALL_COUNTER(this);
+MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
+INCREMENT_FUNCTION_CALL_COUNTER(closure);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
-MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),5);
+MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),5);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(closure->asSmartPtr(),closure->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 // translate::from_object<OT*> objPtr(frame->arg(0));
 OT* objPtr = gc::As<core::WrappedPointer_sp>(frame->arg(0))->cast<OT>();
 translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a1(frame->arg(1));
@@ -269,7 +281,7 @@ translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<3> >::typ
 // IncWhen<typename DoesNotContain_<Pols,pureOutValue<3> >::type >::go(args);
 translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a4(frame->arg(4));
 // IncWhen<typename DoesNotContain_<Pols,pureOutValue<4> >::type >::go(args);
-RT retval =  ((*objPtr).*(this->mptr))(a1._v,a2._v,a3._v,a4._v);
+RT retval =  ((*objPtr).*(closure->mptr))(a1._v,a2._v,a3._v,a4._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
 returnValues.setSize(0);
 int oidx = 1;
@@ -307,21 +319,24 @@ class IndirectVariadicMethoid
 < Pols,OT ,RT (*)( ARG1, ARG2, ARG3)  >
 : public core::NamedFunction_O {
 public:
+typedef IndirectVariadicMethoid < Pols,OT ,RT (*)( ARG1, ARG2, ARG3)  > MyType;
 virtual const char* describe() const { return "IndirectVariadicMethoid"; };
 typedef RT (*Type)( ARG1, ARG2, ARG3) ;
 Type mptr;
 public:
 enum { NumParams = 4 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::NamedFunction_O(name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::NamedFunction_O(entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 
-inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
-INCREMENT_FUNCTION_CALL_COUNTER(this);
+MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
+INCREMENT_FUNCTION_CALL_COUNTER(closure);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
-MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),4);
+MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),4);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(closure->asSmartPtr(),closure->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 // translate::from_object<OT*> objPtr(frame->arg(0));
 OT* objPtr = gc::As<core::WrappedPointer_sp>(frame->arg(0))->cast<OT>();
 translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a1(frame->arg(1));
@@ -330,7 +345,7 @@ translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<2> >::typ
 // IncWhen<typename DoesNotContain_<Pols,pureOutValue<2> >::type >::go(args);
 translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a3(frame->arg(3));
 // IncWhen<typename DoesNotContain_<Pols,pureOutValue<3> >::type >::go(args);
-RT retval =  ((*objPtr).*(this->mptr))(a1._v,a2._v,a3._v);
+RT retval =  ((*objPtr).*(closure->mptr))(a1._v,a2._v,a3._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
 returnValues.setSize(0);
 int oidx = 1;
@@ -364,28 +379,31 @@ class IndirectVariadicMethoid
 < Pols,OT ,RT (*)( ARG1, ARG2)  >
 : public core::NamedFunction_O {
 public:
+typedef IndirectVariadicMethoid < Pols,OT ,RT (*)( ARG1, ARG2)  > MyType;
 virtual const char* describe() const { return "IndirectVariadicMethoid"; };
 typedef RT (*Type)( ARG1, ARG2) ;
 Type mptr;
 public:
 enum { NumParams = 3 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::NamedFunction_O(name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::NamedFunction_O(entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 
-inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
-INCREMENT_FUNCTION_CALL_COUNTER(this);
+MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
+INCREMENT_FUNCTION_CALL_COUNTER(closure);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
-MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),3);
+MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),3);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(closure->asSmartPtr(),closure->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 // translate::from_object<OT*> objPtr(frame->arg(0));
 OT* objPtr = gc::As<core::WrappedPointer_sp>(frame->arg(0))->cast<OT>();
 translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a1(frame->arg(1));
 // IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
 translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a2(frame->arg(2));
 // IncWhen<typename DoesNotContain_<Pols,pureOutValue<2> >::type >::go(args);
-RT retval =  ((*objPtr).*(this->mptr))(a1._v,a2._v);
+RT retval =  ((*objPtr).*(closure->mptr))(a1._v,a2._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
 returnValues.setSize(0);
 int oidx = 1;
@@ -415,26 +433,29 @@ class IndirectVariadicMethoid
 < Pols,OT ,RT (*)( ARG1)  >
 : public core::NamedFunction_O {
 public:
+typedef IndirectVariadicMethoid < Pols,OT ,RT (*)( ARG1)  > MyType;
 virtual const char* describe() const { return "IndirectVariadicMethoid"; };
 typedef RT (*Type)( ARG1) ;
 Type mptr;
 public:
 enum { NumParams = 2 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::NamedFunction_O(name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::NamedFunction_O(entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 
-inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
-INCREMENT_FUNCTION_CALL_COUNTER(this);
+MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
+INCREMENT_FUNCTION_CALL_COUNTER(closure);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
-MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),2);
+MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),2);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(closure->asSmartPtr(),closure->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 // translate::from_object<OT*> objPtr(frame->arg(0));
 OT* objPtr = gc::As<core::WrappedPointer_sp>(frame->arg(0))->cast<OT>();
 translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a1(frame->arg(1));
 // IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
-RT retval =  ((*objPtr).*(this->mptr))(a1._v);
+RT retval =  ((*objPtr).*(closure->mptr))(a1._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
 returnValues.setSize(0);
 int oidx = 1;
@@ -460,24 +481,27 @@ class IndirectVariadicMethoid
 < Pols,OT ,RT (*)( )  >
 : public core::NamedFunction_O {
 public:
+typedef IndirectVariadicMethoid < Pols,OT ,RT (*)( )  > MyType;
 virtual const char* describe() const { return "IndirectVariadicMethoid"; };
 typedef RT (*Type)( ) ;
 Type mptr;
 public:
 enum { NumParams = 1 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::NamedFunction_O(name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::NamedFunction_O(entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 
-inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
-INCREMENT_FUNCTION_CALL_COUNTER(this);
+MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
+INCREMENT_FUNCTION_CALL_COUNTER(closure);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
-MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),1);
+MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),1);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(closure->asSmartPtr(),closure->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 // translate::from_object<OT*> objPtr(frame->arg(0));
 OT* objPtr = gc::As<core::WrappedPointer_sp>(frame->arg(0))->cast<OT>();
-RT retval =  ((*objPtr).*(this->mptr))();
+RT retval =  ((*objPtr).*(closure->mptr))();
 core::MultipleValues& returnValues = core::lisp_multipleValues();
 returnValues.setSize(0);
 int oidx = 1;
@@ -500,21 +524,24 @@ class IndirectVariadicMethoid
 < Pols,OT ,void(*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7)  >
 : public core::NamedFunction_O {
 public:
+typedef IndirectVariadicMethoid < Pols,OT ,void(*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7)  > MyType;
 virtual const char* describe() const { return "IndirectVariadicMethoid"; };
 typedef void (*Type)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7) ;
 Type mptr;
 public:
 enum { NumParams = 8 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::NamedFunction_O(name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::NamedFunction_O(entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 
-inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
-INCREMENT_FUNCTION_CALL_COUNTER(this);
+MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
+INCREMENT_FUNCTION_CALL_COUNTER(closure);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
-MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),8);
+MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),8);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(closure->asSmartPtr(),closure->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 // translate::from_object<OT*> objPtr(frame->arg(0));
 OT* objPtr = gc::As<core::WrappedPointer_sp>(frame->arg(0))->cast<OT>();
 translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a1(frame->arg(1));
@@ -531,7 +558,7 @@ translate::from_object<ARG6,typename DoesNotContain_<Pols,pureOutValue<6> >::typ
 // IncWhen<typename DoesNotContain_<Pols,pureOutValue<6> >::type >::go(args);
 translate::from_object<ARG7,typename DoesNotContain_<Pols,pureOutValue<7> >::type > a7(frame->arg(7));
 // IncWhen<typename DoesNotContain_<Pols,pureOutValue<7> >::type >::go(args);
-((*objPtr).*(this->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v);
+((*objPtr).*(closure->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
 returnValues.setSize(0);
 int oidx = 0;                                                                     ReturnValueWhen(returnValues,oidx
@@ -580,21 +607,24 @@ class IndirectVariadicMethoid
 < Pols,OT ,void(*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6)  >
 : public core::NamedFunction_O {
 public:
+typedef IndirectVariadicMethoid < Pols,OT ,void(*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6)  > MyType;
 virtual const char* describe() const { return "IndirectVariadicMethoid"; };
 typedef void (*Type)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6) ;
 Type mptr;
 public:
 enum { NumParams = 7 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::NamedFunction_O(name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::NamedFunction_O(entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 
-inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
-INCREMENT_FUNCTION_CALL_COUNTER(this);
+MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
+INCREMENT_FUNCTION_CALL_COUNTER(closure);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
-MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),7);
+MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),7);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(closure->asSmartPtr(),closure->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 // translate::from_object<OT*> objPtr(frame->arg(0));
 OT* objPtr = gc::As<core::WrappedPointer_sp>(frame->arg(0))->cast<OT>();
 translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a1(frame->arg(1));
@@ -609,7 +639,7 @@ translate::from_object<ARG5,typename DoesNotContain_<Pols,pureOutValue<5> >::typ
 // IncWhen<typename DoesNotContain_<Pols,pureOutValue<5> >::type >::go(args);
 translate::from_object<ARG6,typename DoesNotContain_<Pols,pureOutValue<6> >::type > a6(frame->arg(6));
 // IncWhen<typename DoesNotContain_<Pols,pureOutValue<6> >::type >::go(args);
-((*objPtr).*(this->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v);
+((*objPtr).*(closure->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
 returnValues.setSize(0);
 int oidx = 0;                                                                     ReturnValueWhen(returnValues,oidx
@@ -654,21 +684,24 @@ class IndirectVariadicMethoid
 < Pols,OT ,void(*)( ARG1, ARG2, ARG3, ARG4, ARG5)  >
 : public core::NamedFunction_O {
 public:
+typedef IndirectVariadicMethoid < Pols,OT ,void(*)( ARG1, ARG2, ARG3, ARG4, ARG5)  > MyType;
 virtual const char* describe() const { return "IndirectVariadicMethoid"; };
 typedef void (*Type)( ARG1, ARG2, ARG3, ARG4, ARG5) ;
 Type mptr;
 public:
 enum { NumParams = 6 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::NamedFunction_O(name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::NamedFunction_O(entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 
-inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
-INCREMENT_FUNCTION_CALL_COUNTER(this);
+MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
+INCREMENT_FUNCTION_CALL_COUNTER(closure);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
-MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),6);
+MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),6);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(closure->asSmartPtr(),closure->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 // translate::from_object<OT*> objPtr(frame->arg(0));
 OT* objPtr = gc::As<core::WrappedPointer_sp>(frame->arg(0))->cast<OT>();
 translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a1(frame->arg(1));
@@ -681,7 +714,7 @@ translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<4> >::typ
 // IncWhen<typename DoesNotContain_<Pols,pureOutValue<4> >::type >::go(args);
 translate::from_object<ARG5,typename DoesNotContain_<Pols,pureOutValue<5> >::type > a5(frame->arg(5));
 // IncWhen<typename DoesNotContain_<Pols,pureOutValue<5> >::type >::go(args);
-((*objPtr).*(this->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v);
+((*objPtr).*(closure->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
 returnValues.setSize(0);
 int oidx = 0;                                                                     ReturnValueWhen(returnValues,oidx
@@ -722,21 +755,24 @@ class IndirectVariadicMethoid
 < Pols,OT ,void(*)( ARG1, ARG2, ARG3, ARG4)  >
 : public core::NamedFunction_O {
 public:
+typedef IndirectVariadicMethoid < Pols,OT ,void(*)( ARG1, ARG2, ARG3, ARG4)  > MyType;
 virtual const char* describe() const { return "IndirectVariadicMethoid"; };
 typedef void (*Type)( ARG1, ARG2, ARG3, ARG4) ;
 Type mptr;
 public:
 enum { NumParams = 5 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::NamedFunction_O(name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::NamedFunction_O(entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 
-inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
-INCREMENT_FUNCTION_CALL_COUNTER(this);
+MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
+INCREMENT_FUNCTION_CALL_COUNTER(closure);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
-MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),5);
+MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),5);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(closure->asSmartPtr(),closure->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 // translate::from_object<OT*> objPtr(frame->arg(0));
 OT* objPtr = gc::As<core::WrappedPointer_sp>(frame->arg(0))->cast<OT>();
 translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a1(frame->arg(1));
@@ -747,7 +783,7 @@ translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<3> >::typ
 // IncWhen<typename DoesNotContain_<Pols,pureOutValue<3> >::type >::go(args);
 translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a4(frame->arg(4));
 // IncWhen<typename DoesNotContain_<Pols,pureOutValue<4> >::type >::go(args);
-((*objPtr).*(this->mptr))(a1._v,a2._v,a3._v,a4._v);
+((*objPtr).*(closure->mptr))(a1._v,a2._v,a3._v,a4._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
 returnValues.setSize(0);
 int oidx = 0;                                                                     ReturnValueWhen(returnValues,oidx
@@ -784,21 +820,24 @@ class IndirectVariadicMethoid
 < Pols,OT ,void(*)( ARG1, ARG2, ARG3)  >
 : public core::NamedFunction_O {
 public:
+typedef IndirectVariadicMethoid < Pols,OT ,void(*)( ARG1, ARG2, ARG3)  > MyType;
 virtual const char* describe() const { return "IndirectVariadicMethoid"; };
 typedef void (*Type)( ARG1, ARG2, ARG3) ;
 Type mptr;
 public:
 enum { NumParams = 4 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::NamedFunction_O(name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::NamedFunction_O(entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 
-inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
-INCREMENT_FUNCTION_CALL_COUNTER(this);
+MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
+INCREMENT_FUNCTION_CALL_COUNTER(closure);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
-MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),4);
+MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),4);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(closure->asSmartPtr(),closure->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 // translate::from_object<OT*> objPtr(frame->arg(0));
 OT* objPtr = gc::As<core::WrappedPointer_sp>(frame->arg(0))->cast<OT>();
 translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a1(frame->arg(1));
@@ -807,7 +846,7 @@ translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<2> >::typ
 // IncWhen<typename DoesNotContain_<Pols,pureOutValue<2> >::type >::go(args);
 translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a3(frame->arg(3));
 // IncWhen<typename DoesNotContain_<Pols,pureOutValue<3> >::type >::go(args);
-((*objPtr).*(this->mptr))(a1._v,a2._v,a3._v);
+((*objPtr).*(closure->mptr))(a1._v,a2._v,a3._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
 returnValues.setSize(0);
 int oidx = 0;                                                                     ReturnValueWhen(returnValues,oidx
@@ -840,28 +879,31 @@ class IndirectVariadicMethoid
 < Pols,OT ,void(*)( ARG1, ARG2)  >
 : public core::NamedFunction_O {
 public:
+typedef IndirectVariadicMethoid < Pols,OT ,void(*)( ARG1, ARG2)  > MyType;
 virtual const char* describe() const { return "IndirectVariadicMethoid"; };
 typedef void (*Type)( ARG1, ARG2) ;
 Type mptr;
 public:
 enum { NumParams = 3 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::NamedFunction_O(name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::NamedFunction_O(entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 
-inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
-INCREMENT_FUNCTION_CALL_COUNTER(this);
+MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
+INCREMENT_FUNCTION_CALL_COUNTER(closure);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
-MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),3);
+MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),3);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(closure->asSmartPtr(),closure->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 // translate::from_object<OT*> objPtr(frame->arg(0));
 OT* objPtr = gc::As<core::WrappedPointer_sp>(frame->arg(0))->cast<OT>();
 translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a1(frame->arg(1));
 // IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
 translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a2(frame->arg(2));
 // IncWhen<typename DoesNotContain_<Pols,pureOutValue<2> >::type >::go(args);
-((*objPtr).*(this->mptr))(a1._v,a2._v);
+((*objPtr).*(closure->mptr))(a1._v,a2._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
 returnValues.setSize(0);
 int oidx = 0;                                                                     ReturnValueWhen(returnValues,oidx
@@ -890,26 +932,29 @@ class IndirectVariadicMethoid
 < Pols,OT ,void(*)( ARG1)  >
 : public core::NamedFunction_O {
 public:
+typedef IndirectVariadicMethoid < Pols,OT ,void(*)( ARG1)  > MyType;
 virtual const char* describe() const { return "IndirectVariadicMethoid"; };
 typedef void (*Type)( ARG1) ;
 Type mptr;
 public:
 enum { NumParams = 2 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::NamedFunction_O(name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::NamedFunction_O(entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 
-inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
-INCREMENT_FUNCTION_CALL_COUNTER(this);
+MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
+INCREMENT_FUNCTION_CALL_COUNTER(closure);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
-MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),2);
+MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),2);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(closure->asSmartPtr(),closure->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 // translate::from_object<OT*> objPtr(frame->arg(0));
 OT* objPtr = gc::As<core::WrappedPointer_sp>(frame->arg(0))->cast<OT>();
 translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a1(frame->arg(1));
 // IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
-((*objPtr).*(this->mptr))(a1._v);
+((*objPtr).*(closure->mptr))(a1._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
 returnValues.setSize(0);
 int oidx = 0;                                                                     ReturnValueWhen(returnValues,oidx
@@ -934,24 +979,27 @@ class IndirectVariadicMethoid
 < Pols,OT ,void(*)( )  >
 : public core::NamedFunction_O {
 public:
+typedef IndirectVariadicMethoid < Pols,OT ,void(*)( )  > MyType;
 virtual const char* describe() const { return "IndirectVariadicMethoid"; };
 typedef void (*Type)( ) ;
 Type mptr;
 public:
 enum { NumParams = 1 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::NamedFunction_O(name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::NamedFunction_O(entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 
-inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
-INCREMENT_FUNCTION_CALL_COUNTER(this);
+MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
+INCREMENT_FUNCTION_CALL_COUNTER(closure);
+INITIALIZE_VA_LIST();
 INVOCATION_HISTORY_FRAME();
-MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),1);
+MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),1);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(closure->asSmartPtr(),closure->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
 // translate::from_object<OT*> objPtr(frame->arg(0));
 OT* objPtr = gc::As<core::WrappedPointer_sp>(frame->arg(0))->cast<OT>();
-((*objPtr).*(this->mptr))();
+((*objPtr).*(closure->mptr))();
 core::MultipleValues& returnValues = core::lisp_multipleValues();
 returnValues.setSize(0);
 int oidx = 0;

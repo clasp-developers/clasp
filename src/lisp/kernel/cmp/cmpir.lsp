@@ -67,7 +67,8 @@
 
 
 (defun irc-gep (array indices &optional (name "gep"))
-  (llvm-sys:create-in-bounds-gep *irbuilder* array indices name ))
+  (let ((indices (mapcar (lambda (x) (if (fixnump x) (jit-constant-size_t x) x)) indices)))
+    (llvm-sys:create-in-bounds-gep *irbuilder* array indices name )))
 
 (defun irc-in-bounds-gep-type (type value indices &optional (label "gep"))
   (llvm-sys:create-in-bounds-geptype *irbuilder* type value indices label))
@@ -760,19 +761,15 @@ and then the irbuilder-alloca, irbuilder-body."
 	     (entry-branch (irc-br body-bb)))
 	(llvm-sys:set-insert-point-instruction irbuilder-alloca entry-branch)
 	(llvm-sys:set-insert-point-basic-block irbuilder-body body-bb)))
-#+(or)    (irc-setup-cleanup-return-block func-env)
+    #+(or)    (irc-setup-cleanup-return-block func-env)
     (irc-setup-cleanup-landing-pad-block func-env) ;; used in irc-function-cleanup-and-return
     (setq cleanup-block (irc-setup-exception-handler-cleanup-block func-env)) ;; used in irc-function-cleanup-and-return
     (irc-setup-exception-handler-resume-block func-env)
     (irc-setup-terminate-landing-pad-block func-env)
     (setf-metadata func-env :cleanup ())
-    (let ((exn.slot (irc-alloca-i8* func-env :irbuilder irbuilder-alloca :label "exn.slot"))
-	  (ehselector.slot (irc-alloca-i32 func-env 0
-					   :irbuilder irbuilder-alloca
-					   :label "ehselector.slot"))
-          (result (irc-alloca-tmv func-env
-                                  :irbuilder irbuilder-alloca
-                                  :label "result")))
+    (let* ((exn.slot             (irc-alloca-i8* func-env :irbuilder irbuilder-alloca :label "exn.slot"))
+           (ehselector.slot      (irc-alloca-i32 func-env 0 :irbuilder irbuilder-alloca :label "ehselector.slot"))
+           (result               (irc-alloca-tmv func-env :irbuilder irbuilder-alloca :label "result")))
       (setf-metadata func-env :exn.slot exn.slot)
       (setf-metadata func-env :ehselector.slot ehselector.slot)
       (values fn func-env cleanup-block irbuilder-alloca irbuilder-body result))))
@@ -844,26 +841,16 @@ and then the irbuilder-alloca, irbuilder-body."
 
 (defun irc-dtor (name obj)
   (declare (special *compiler-suppress-dtors*))
-  (unless *compiler-suppress-dtors* (irc-intrinsic name obj))
-  )
-
-
-
-
-
-
-
+  (unless *compiler-suppress-dtors* (irc-intrinsic name obj)))
 
 (defun irc-push-cleanup (env cleanup-code)
   (multiple-value-bind (cleanup-cur found metadata-env)
       (lookup-metadata env :cleanup)
     (push-metadata metadata-env :cleanup cleanup-code)))
 
-
 (defun irc-push-unwind (env unwind-code)
   "Push code that should be executed when this environment is left"
   (push-metadata env :unwind unwind-code))
-
 
 (defmacro with-alloca-insert-point-no-cleanup (irbuilder &key alloca init)
   "Switch to the alloca-insert-point and generate code to alloca a local variable.
@@ -876,7 +863,6 @@ Within the _irbuilder_ dynamic environment...
        (let ((,alloca-sym ,alloca))
 	 (when ,init (funcall ,init ,alloca-sym))
 	 ,alloca-sym))))
-
 
 (defmacro with-alloca-insert-point (env irbuilder
 				    &key alloca init cleanup)
@@ -981,13 +967,32 @@ Within the _irbuilder_ dynamic environment...
     :alloca (llvm-sys::create-alloca *irbuilder* %size_t% (jit-constant-size_t 1) label)
     :init (lambda (a) (irc-store (jit-constant-size_t init-val) a))))
 
+
 (defun irc-alloca-va_list (&key (irbuilder *irbuilder-function-alloca*) (label "va_list"))
   "Alloca space for an va_list"
   (with-alloca-insert-point-no-cleanup irbuilder
     :alloca (llvm-sys::create-alloca *irbuilder* %va_list% (jit-constant-size_t 1) label)
     :init nil))
 
-(defun irc-alloca-VaList_S (&key (irbuilder *irbuilder-function-alloca*) (label "VaList_S"))
+(defun irc-alloca-invocation-history-frame (&key (irbuilder *irbuilder-function-alloca*) (label "va_list"))
+  "Alloca space for an va_list"
+  (with-alloca-insert-point-no-cleanup irbuilder
+    :alloca (llvm-sys::create-alloca *irbuilder* %InvocationHistoryFrame% (jit-constant-size_t 1) label)
+    :init nil))
+
+(defun irc-alloca-size_t-no-cleanup (&key (irbuilder *irbuilder-function-alloca*) (label "va_list"))
+  "Alloca space for an va_list"
+  (with-alloca-insert-point-no-cleanup irbuilder
+    :alloca (llvm-sys::create-alloca *irbuilder* %size_t% (jit-constant-size_t 1) label)
+    :init nil))
+
+(defun irc-alloca-register-save-area (&key (irbuilder *irbuilder-function-alloca*) (label "va_list"))
+  "Alloca space for an va_list"
+  (with-alloca-insert-point-no-cleanup irbuilder
+    :alloca (llvm-sys::create-alloca *irbuilder* %register-save-area% (jit-constant-size_t 1) label)
+    :init nil))
+
+(defun irc-alloca-VaList_S (&key (irbuilder *irbuilder-function-alloca*) (label "va_list"))
   "Alloca space for an VaList_S"
   (with-alloca-insert-point-no-cleanup irbuilder
     :alloca (llvm-sys::create-alloca *irbuilder* %VaList_S% (jit-constant-size_t 1) label)
@@ -1079,24 +1084,38 @@ Write T_O* pointers into the current multiple-values array starting at the (offs
                (ret-tmv1 (llvm-sys:create-insert-value *irbuilder* ret-tmv0 nret '(1) "nret")))
           (irc-store ret-tmv1 result)))))
 
-(defun irc-funcall (result closure args &optional (label ""))
-  (let* ((nargs (length args))
+(defun irc-calculate-entry (closure)
+  (let* ((closure-uintptr        (irc-ptr-to-int closure %uintptr_t%))
+         (entry-point-addr-uint  (irc-add closure-uintptr (jit-constant-uintptr_t (- +closure-entry-point-offset+ +general-tag+)) "entry-point-addr-uint"))
+         (entry-point-addr       (irc-int-to-ptr entry-point-addr-uint %fn-prototype**% "entry-point-addr"))
+         (entry-point            (irc-load entry-point-addr "entry-point")))
+    entry-point))
+
+(defun irc-calculate-real-args (args)
+  (let* ((nargs                  (length args))
+         #+debug-guard-exhaustive-validate
+         (_                      (mapc (lambda (arg) (irc-intrinsic "cc_ensure_valid_object" arg)) args))
 ;;; If there are < core:+number-of-fixed-arguments+ pad the list up to that
-	 (real-args (if (< nargs core:+number-of-fixed-arguments+)
-			(append args (make-list (- core:+number-of-fixed-arguments+ nargs) :initial-element (null-t-ptr)))
-                        args)))
-    (let* ((result-in-registers (irc-intrinsic-args "FUNCALL" (list* closure (null-t-ptr) (jit-constant-size_t nargs) real-args) :label label)))
-      (irc-store-result result result-in-registers))))
-  
+	 (real-args              (if (< nargs core:+number-of-fixed-arguments+)
+                                     (append args (make-list (- core:+number-of-fixed-arguments+ nargs)
+                                                             :initial-element (null-t-ptr)))
+                                     args)))
+    real-args))
+         
+(defun irc-funcall (result closure args &optional (label ""))
+  (let* ((entry-point         (irc-calculate-entry closure))   ; Calculate the function pointer
+         (real-args           (irc-calculate-real-args args))  ; fill in NULL for missing register arguments
+         (result-in-registers (irc-create-invoke entry-point (list* closure (jit-constant-size_t (length args)) real-args) *current-unwind-landing-pad-dest* label))
+         (_                   (irc-store-result result result-in-registers)))))
+
 ;----------------------------------------------------------------------
 
 
-(defun irc-create-invoke (function-name args unwind-dest &optional (label ""))
+(defun irc-create-invoke (entry-point args unwind-dest &optional (label ""))
   ;;  (check-debug-info-setup *irbuilder*)
   (unless unwind-dest (error "unwind-dest should not be nil"))
-  (let ((func (get-function-or-error *the-module* function-name (car args)))
-        (normal-dest (irc-basic-block-create "normal-dest")))
-    (unless normal-dest (error "normal-dest should not be nil"))
+  (unless (null (stringp entry-point)) (error "entry-point for irc-create-invoke cannot be a string - it is ~a" entry-point))
+  (let ((normal-dest (irc-basic-block-create "normal-dest")))
     (if (and unwind-dest (eq (llvm-sys:get-insert-block *irbuilder*) unwind-dest))
         (error "The unwind dest ~a should never be the same as the current block ~a"
                (if unwind-dest
@@ -1105,28 +1124,14 @@ Write T_O* pointers into the current multiple-values array starting at the (offs
                (if (llvm-sys:get-insert-block *irbuilder*)
                    (llvm-sys:get-name (llvm-sys:get-insert-block *irbuilder*))
                    "NIL")))
-    (let ((cur-bb (llvm-sys:get-insert-block *irbuilder*)))
-      (let ((code (llvm-sys:create-invoke *irbuilder* func normal-dest unwind-dest args label) ;; using *irbuilder*
-                   #+(or)(let ((invoke (llvm-sys:create-invoke-instruction-append-to-basic-block func normal-dest unwind-dest args label cur-bb)))
-                           (bformat t "       Created invoke using llvm::InvokeInst::Create -->\n")
-                           (llvm-sys:dump-instruction-pointers invoke)
-                           (bformat t "    Added it to the current basic block -> %s\n" cur-bb)
-                           (bformat t "     Dumping the cur-bb linked list\n")
-                           (llvm-sys:dump-instruction-list cur-bb))))
-        (irc-begin-block normal-dest)
-        (unless code (error "irc-create-invoke returning nil"))
-        (when (llvm-sys:does-not-return func)
-          (irc-unreachable)
-          (irc-begin-block (irc-basic-block-create "from-invoke-that-never-returns")))
-        code))))
-
-
-(defun irc-create-call (function-name args &optional (label ""))
-  (throw-if-mismatched-arguments function-name args)
-  (let* ((func (get-function-or-error *the-module* function-name (car args))))
-    (let ((code (llvm-sys:create-call-array-ref *irbuilder* func args label nil)))
-      (unless code (error "irc-create-call returning nil"))
+    (let ((code (llvm-sys:create-invoke *irbuilder* entry-point normal-dest unwind-dest args label)))
+      (irc-begin-block normal-dest)
+      (unless code (error "irc-create-invoke returning nil"))
       code)))
+
+(defun irc-create-call (entry-point args &optional (label ""))
+  ;;(throw-if-mismatched-arguments function-name args)
+  (llvm-sys:create-call-array-ref *irbuilder* entry-point args label nil))
 
 (defparameter *current-unwind-landing-pad-dest* nil)
 
@@ -1136,37 +1141,47 @@ Write T_O* pointers into the current multiple-values array starting at the (offs
      (let ((*current-unwind-landing-pad-dest* ,unwind-landing-pad-dest))
        ,@body)))
 
-
-                    
-(defun irc-invoke-or-call (function-name args label)
-  "If env is within a lexical unwindable environment (unwind-protect or catch) 
-then create a function invocation that unwinds to the unwindable environments unwind-dest.
-Otherwise just create a function call"
-  (let ((func (get-function-or-error *the-module* function-name (car args))))
-    (or func (error "Could not get function ~a" function-name))
-    (if (or (llvm-sys:does-not-throw func) (null *current-unwind-landing-pad-dest*))
-        (irc-create-call function-name args label)
-        (irc-create-invoke function-name args *current-unwind-landing-pad-dest* label))))
-
 (defun irc-create-invoke-default-unwind (function-name args &optional (label ""))
   (or *current-unwind-landing-pad-dest* (error "irc-create-invoke-default-unwind was called when *current-unwind-landing-pad-dest* was NIL - check the outer with-landing-pad macro"))
   (irc-create-invoke function-name args *current-unwind-landing-pad-dest* label))
 
-(defun irc-intrinsic-args (function-name args &key (label "") suppress-arg-type-checking)
-  ;;  (bformat t "irc-intrinsic-args %s %s\n" function-name args)
+(defun irc-call-or-invoke (function args &optional (landing-pad *current-unwind-landing-pad-dest*) (label "acall"))
+                                        ;  (bformat t "irc-call-or-invoke function: %s\n" function)
+  (if landing-pad
+      (progn
+        (irc-create-invoke function args landing-pad label))
+      (progn
+        (irc-create-call function args label))))
+
+(defun irc-intrinsic-call-or-invoke (function-name real-args label &optional (landing-pad *current-unwind-landing-pad-dest*))
+  "landing-pad is either a landing pad or NIL (depends on function)"
+  (throw-if-mismatched-arguments function-name real-args)
+  (let* ((args            real-args)
+         (the-function    (get-function-or-error *the-module* function-name (car args)))
+         (function-throws (not (llvm-sys:does-not-throw the-function)))
+         (code            (cond
+                            ((and landing-pad function-throws)
+                             (irc-create-invoke the-function args landing-pad label))
+                            (t
+                             (irc-create-call the-function args label))))
+         (_               (when (llvm-sys:does-not-return the-function)
+                            (irc-unreachable)
+                            (irc-begin-block (irc-basic-block-create "from-invoke-that-never-returns")))))
+    code))
+
+(defun irc-intrinsic-call (function-name args &optional (label ""))
+  (irc-intrinsic-call-or-invoke function-name args label nil))
+
+(defun irc-intrinsic-invoke (function-name args &optional (landing-pad *current-unwind-landing-pad-dest*) (label ""))
+  (irc-intrinsic-call-or-invoke function-name args label landing-pad))
+  
+(defun irc-intrinsic (function-name &rest args &aux (label ""))
   (let* ((last-arg (car (last args)))
 	 (real-args args))
     (when (stringp last-arg)
       (setq real-args (nbutlast args))
       (setq label last-arg))
-    (if (not suppress-arg-type-checking)
-        (throw-if-mismatched-arguments function-name real-args))
-    (let* ((args real-args)
-	   (code (irc-invoke-or-call function-name args label)))
-      code)))
-
-(defun irc-intrinsic (function-name &rest args &aux (label ""))
-  (irc-intrinsic-args function-name args :label label))
+    (irc-intrinsic-call-or-invoke function-name args label *current-unwind-landing-pad-dest*)))
 
 ;; Helper functions
 

@@ -59,6 +59,33 @@ T_sp InstanceCreator_O::creator_allocate() {
   Instance_sp instance = gctools::GC<Instance_O>::allocate_instance(gctools::KIND_INSTANCE, size);
   return instance;
     };
+};
+
+
+namespace core {
+T_sp StandardClassCreator_O::creator_allocate() {
+  size_t size = gctools::sizeof_with_header<Class_O>();
+#ifdef METER_ALLOCATIONS
+  Class_sp c = lisp_StandardClass();
+  c->_allocation_counter += 1;
+  c->_allocation_total_size += size;
+#endif
+  GC_ALLOCATE_VARIADIC(Class_O,class_,gctools::NextStamp(),lisp_StandardClass(),REF_CLASS_NUMBER_OF_SLOTS_IN_STANDARD_CLASS);
+  return class_;
+};
+};
+
+namespace core {
+T_sp StructureClassCreator_O::creator_allocate() {
+  size_t size = gctools::sizeof_with_header<Class_O>();
+#ifdef METER_ALLOCATIONS
+  Class_sp c = lisp_StandardClass();
+  c->_allocation_counter += 1;
+  c->_allocation_total_size += size;
+#endif
+  GC_ALLOCATE_VARIADIC(Class_O,class_,gctools::NextStamp(),lisp_StandardClass(),REF_CLASS_NUMBER_OF_SLOTS_IN_STRUCTURE_CLASS);
+  return class_;
+};
 
 
 };

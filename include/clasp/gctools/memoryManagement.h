@@ -211,6 +211,15 @@ calculate IsA relationships using simple GCKindEnum range comparisons.
 
 
 namespace gctools {
+
+   /*! Stamp - integer value that is written into the header in normal general objects 
+               and into the Rack for Instance_O objects.
+     See Header_s below for a description of the GC Header tag scheme.
+     Stamp needs to fit within a Fixnum.
+ */
+  typedef uintptr_clasp_t Stamp;
+  extern std::atomic<Stamp> global_NextStamp;
+
   template <class T>
     inline size_t sizeof_with_header();
 
@@ -221,13 +230,6 @@ namespace gctools {
 // Define Header and stuff that can exist in the header
 //
 //
-
-   /*! Stamp - integer value that is written into the header in normal general objects 
-               and into the Rack for Instance_O objects.
-     See Header_s below for a description of the GC Header tag scheme.
-     Stamp needs to fit within a Fixnum.
- */
-  typedef uintptr_clasp_t Stamp;
 
 /*!
 
@@ -279,8 +281,24 @@ namespace gctools {
     static const tagged_kind_t kind_mask    = ~0x3; // BOOST_BINARY(11...111111111100);
     static const tagged_kind_t largest_possible_kind = kind_mask>>kind_shift;
   public:
+    static void signal_invalid_object(const Header_s* header, const char* msg);
+  public:
     void validate() const;
-    void quick_validate() const;
+    void quick_validate() const {
+#ifdef DEBUG_QUICK_VALIDATE
+      if ( this->kindP() ) {
+#ifdef DEBUG_GUARD    
+        if (this->guard != 0xFEEAFEEBDEADBEEF) signal_invalid_object(this,"bad head guard");
+        const unsigned char* tail = (const unsigned char*)this+this->tail_start;
+        if ((*tail) != 0xcc) signal_invalid_object(this,"bad tail not 0xcc");
+#endif
+        if ( this->kind() > global_NextStamp ) signal_invalid_object(this,"bad kind");
+      }
+#else
+      this->validate();
+#endif
+    }
+
   public:
     tagged_kind_t header;
 #ifdef DEBUG_GUARD
@@ -487,7 +505,7 @@ namespace gctools {
 
 namespace gctools {
 
-#ifdef DEBUG_GUARD_EXHAUSTIVE_VALIDATE
+#ifdef DEBUG_ENSURE_VALID_OBJECT
 #define EXHAUSTIVE_VALIDATE(ptr) (ptr)->quick_validate();
 #else
 #define EXHAUSTIVE_VALIDATE(ptr)
@@ -495,13 +513,11 @@ namespace gctools {
   
   inline const void *ClientPtrToBasePtr(const void *mostDerived) {
     const void *ptr = reinterpret_cast<const char *>(mostDerived) - sizeof(Header_s);
-    EXHAUSTIVE_VALIDATE(reinterpret_cast<const Header_s*>(ptr));
     return ptr;
   }
 
   inline void *ClientPtrToBasePtr(void *mostDerived) {
     void *ptr = reinterpret_cast<char *>(mostDerived) - sizeof(Header_s);
-    EXHAUSTIVE_VALIDATE(reinterpret_cast<Header_s*>(ptr));
     return ptr;
   }
 
@@ -786,7 +802,38 @@ namespace gctools {
   
   void initialize_gcroots_in_module(GCRootsInModule* gcroots_in_module, core::T_sp* root_address, size_t num_roots, gctools::Tagged initial_data);
   void shutdown_gcroots_in_module(GCRootsInModule* gcroots_in_module);
+
+  inline core::T_O* ensure_valid_object(core::T_O* tagged_object) {
+#ifdef DEBUG_ENSURE_VALID_OBJECT
+  // Only validate general objects for now
+    if (tagged_generalp(tagged_object)) {
+      core::T_O* untagged_object = gc::untag_general(tagged_object);
+      Header_s* header = reinterpret_cast<Header_s*>(ClientPtrToBasePtr(untagged_object));
+      header->quick_validate();
+    }
+#endif
+    return tagged_object;
+  }
+  template <typename OT>
+    inline gctools::smart_ptr<OT> ensure_valid_object(gctools::smart_ptr<OT> tagged_object) {
+#ifdef DEBUG_ENSURE_VALID_OBJECT
+  // Only validate general objects for now
+    if (tagged_generalp(tagged_object.raw_())) {
+      core::T_O* untagged_object = gc::untag_general(tagged_object.raw_());
+      Header_s* header = reinterpret_cast<Header_s*>(ClientPtrToBasePtr(untagged_object));
+      header->quick_validate();
+    }
+#endif
+    return tagged_object;
+  }
 };
-      
+
+#ifdef DEBUG_ENSURE_VALID_OBJECT
+#define ENSURE_VALID_OBJECT(x) (gctools::ensure_valid_object(x))
+#define EVO(x) (gctools::ensure_valid_object(x))
+#else
+#define ENSURE_VALID_OBJECT(x) x
+#define EVO(x)
+#endif
 
 //#endif // _clasp_memoryManagement_H

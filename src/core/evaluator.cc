@@ -96,8 +96,8 @@ CL_DEFUN T_mv cl__apply(T_sp head, VaList_sp args) {
   Function_sp func = coerce::functionDesignator(head);
   int lenTotalArgs = args->total_nargs();
   if (lenTotalArgs == 0) eval::errorApplyZeroArguments();
-  T_O* lastArgRaw = args->absolute_indexed_arg(lenTotalArgs-1); // LCC_VA_LIST_INDEXED_ARG(lastArgRaw,args,lenArgs-1);
-  int lenArgs = lenTotalArgs - args->current_index();
+  int lenArgs = args->remaining_nargs(); // lenTotalArgs - args->current_index();
+  T_O* lastArgRaw = args->relative_indexed_arg(lenArgs-1); // LCC_VA_LIST_INDEXED_ARG(lastArgRaw,args,lenArgs-1);
 //  printf("%s:%d  lenTotalArgs = %d lenArgs = %d\n", __FILE__, __LINE__, lenTotalArgs, lenArgs );
   if (gctools::tagged_nilp(lastArgRaw)) {
 //    printf("%s:%d apply with nil last arg\n", __FILE__, __LINE__ );
@@ -414,6 +414,25 @@ CL_DEFUN T_sp core__extract_lambda_name_from_declares(List_sp declares, T_sp def
     }
   }
   return defaultValue;
+}
+
+
+CL_LAMBDA(declare-list);
+CL_DECLARE();
+CL_DOCSTRING("If form has is a list of declares ((function-name xxx) ...) or else looks like `(lambda lambda-list [[declaration* | documentation]] (block xxx form*) ) then return XXX");
+CL_DEFUN T_sp core__extract_dump_module_from_declares(List_sp declares) {
+  // First check for a (declare (core:function-name XXX))
+  for ( auto cur : declares ) {
+    T_sp decl = CONS_CAR(declares);
+    if (decl.consp()) {
+      if (oCar(decl) == core::_sym_dump_module) {
+        return oCadr(decl);
+      } else if (decl == core::_sym_dump_module) {
+        return _lisp->_true();
+      }
+    }
+  }
+  return _Nil<T_O>();
 }
 
 CL_LAMBDA(form &optional default);
@@ -1131,17 +1150,12 @@ T_mv sp_let(List_sp args, T_sp parentEnvironment) {
   ValueEnvironment_sp newEnvironment =
     ValueEnvironment_O::createForNumberOfEntries(numberOfLexicalVariables, parentEnvironment);
   ValueEnvironmentDynamicScopeManager scope(newEnvironment);
-  // Set up the debugging info - it's empty to begin with
   ValueFrame_sp valueFrame = gc::As<ValueFrame_sp>(newEnvironment->getActivationFrame());
-  VectorObjects_sp debuggingInfo = VectorObjects_O::make(cl__length(valueFrame),_Nil<T_O>());
-  //  valueFrame->attachDebuggingInfo(debuggingInfo);
-
   // Figure out which environment to evaluate in
   List_sp curExp = expressions;
   T_sp evaluateEnvironment;
   // SPECIFIC TO LET FROM HERE ON DOWN
   evaluateEnvironment = parentEnvironment;
-  int debugInfoIndex = 0;
   //		printf("%s:%d In LET\n", __FILE__, __LINE__);
 
   size_t numTemps = cl__length(classified);
@@ -1176,11 +1190,8 @@ T_mv sp_let(List_sp args, T_sp parentEnvironment) {
     } else if (shead == _sym_declaredSpecial) {
       scope.new_special(classified);
     }
-    if (shead == ext::_sym_lexicalVar) {
-      debuggingInfo->rowMajorAset(debugInfoIndex, oCadr(classified));
-      debugInfoIndex++;
-    }
   }
+  EVO(newEnvironment);
   return eval::sp_progn(code, newEnvironment);
 }
 
@@ -1205,35 +1216,26 @@ T_mv sp_letSTAR(List_sp args, T_sp parentEnvironment) {
   ValueEnvironment_sp newEnvironment =
     ValueEnvironment_O::createForNumberOfEntries(numberOfLexicalVariables, parentEnvironment);
   ValueEnvironmentDynamicScopeManager scope(newEnvironment);
-
-  // Set up the debugging info - it's empty to begin with
   ValueFrame_sp valueFrame = gc::As<ValueFrame_sp>(newEnvironment->getActivationFrame());
-  VectorObjects_sp debuggingInfo = VectorObjects_O::make(cl__length(valueFrame),_Nil<T_O>());
-  //  valueFrame->attachDebuggingInfo(debuggingInfo);
-
   // Figure out which environment to evaluate in
   List_sp curExp = expressions;
   T_sp evaluateEnvironment;
   // SPECIFIC TO LET* FROM HERE ON DOWN
   evaluateEnvironment = newEnvironment; // SPECIFIC TO LET*
-  int debugInfoIndex = 0;
   T_sp result;
   for (auto curClassified : classified) {
-    List_sp classified = oCar(curClassified);
-    Symbol_sp shead = gc::As<Symbol_sp>(oCar(classified));
+    List_sp cl = CONS_CAR(curClassified);
+    Symbol_sp shead = gc::As<Symbol_sp>(oCar(cl));
     if (shead == ext::_sym_specialVar || shead == ext::_sym_lexicalVar) {
       T_sp expr = oCar(curExp);
       result = eval::evaluate(expr, evaluateEnvironment);
-      scope.new_variable(classified, result);
+      scope.new_variable(cl, result);
       curExp = oCdr(curExp);
     } else if (shead == _sym_declaredSpecial) {
-      scope.new_special(classified);
-    }
-    if (shead == ext::_sym_lexicalVar) {
-      debuggingInfo->rowMajorAset(debugInfoIndex, oCadr(classified));
-      debugInfoIndex++;
+      scope.new_special(cl);
     }
   }
+  EVO(newEnvironment);
   return eval::sp_progn(code, newEnvironment);
 }
 
@@ -1852,6 +1854,7 @@ T_sp lookupFunction(T_sp functionDesignator, T_sp env) {
   return exec;
 }
 
+#if 0
 T_mv applyClosureToActivationFrame(Function_sp func, ActivationFrame_sp args) {
   size_t nargs = args->length();
   ValueFrame_sp vframe = gctools::As_unsafe<ValueFrame_sp>(args);
@@ -1866,9 +1869,9 @@ T_mv applyClosureToActivationFrame(Function_sp func, ActivationFrame_sp args) {
       SIMPLE_ERROR(BF("Illegal number of arguments in call: %s") % nargs);
   };
 }
+#endif
 
-
-
+#if 0
 T_mv applyToActivationFrame(T_sp head, ActivationFrame_sp targs) {
   T_sp tfn = lookupFunction(head, targs);
   ValueFrame_sp args = gctools::As_unsafe<ValueFrame_sp>(targs);
@@ -1886,6 +1889,8 @@ T_mv applyToActivationFrame(T_sp head, ActivationFrame_sp targs) {
   }
   SIMPLE_ERROR(BF("In applyToActivationFrame the closure for %s is NULL and is being applied to arguments: %s") % _rep_(closure) % _rep_(args));
 }
+#endif
+
 
 
 /*!
@@ -2291,7 +2296,7 @@ T_mv evaluate(T_sp exp, T_sp environment) {
     MAKE_STACK_FRAME(callArgs, headFunc.raw_(), nargs);
     size_t argIdx = 0;
     for (auto cur : (List_sp)oCdr(form)) {
-      (*callArgs)[argIdx] = eval::evaluate(oCar(cur), environment).raw_();
+      (*callArgs)[argIdx] = eval::evaluate(CONS_CAR(cur), environment).raw_();
       ++argIdx;
     }
     VaList_S valist_struct(callArgs);
@@ -2463,4 +2468,19 @@ void defineSpecialOperatorsAndMacros(Package_sp pkg) {
   core::_sym_STAReval_with_env_hookSTAR->defparameter(core::_sym_eval_with_env_default->symbolFunction());
 };
 };
+};
+
+
+namespace core {
+gctools::return_type funcall_frame(Function_sp func, gctools::Frame* frame)
+{
+  switch ((*frame).number_of_arguments()) {
+#define APPLY_TO_FRAME
+#include <clasp/core/generated/applyToFrame.h>
+#undef APPLY_TO_FRAME
+  default:
+      SIMPLE_ERROR(BF("Function call with %lu arguments exceeded the call-arguments-limit %lu") % (*frame).number_of_arguments() % CALL_ARGUMENTS_LIMIT);
+  };
+}
+
 };

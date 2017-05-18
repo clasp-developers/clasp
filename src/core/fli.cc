@@ -281,6 +281,7 @@ void register_foreign_type_spec( core::VectorObjects_sp sp_tst,
   }
   from_object_fn_name = from_object_fn_name_stream.str();
 
+  // Frank: Why are the functions being initialized as NIL rather than as functions?
   ForeignTypeSpec_sp sp_fts =
     ForeignTypeSpec_O::create( lisp_symbol,
                                core::Str_O::create( lisp_name ),
@@ -776,6 +777,8 @@ core::T_sp PERCENTdlsym( core::String_sp name ) {
 
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
+#if 0
+// See the ForeignTypeSpec_sp ForeignTypeSpec_O::create method below
 ForeignTypeSpec_O::ForeignTypeSpec_O() : m_lisp_symbol( _Nil<T_O>() ),
                                          m_lisp_name( _Nil<T_O>() ),
                                          m_size( (gc::Fixnum) 0 ),
@@ -789,7 +792,7 @@ ForeignTypeSpec_O::ForeignTypeSpec_O() : m_lisp_symbol( _Nil<T_O>() ),
 {
   // NOTHIHG TO DO
 }
-
+#endif
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
 ForeignTypeSpec_O::~ForeignTypeSpec_O()
@@ -832,8 +835,20 @@ ForeignTypeSpec_sp ForeignTypeSpec_O::create( core::Symbol_sp    lisp_symbol,
                                               ForeignData_sp     to_object_fn_ptr,
                                               ForeignData_sp     from_object_fn_ptr)
 {
-  GC_ALLOCATE(ForeignTypeSpec_O, self);
-
+  // Pass the constructor arguments directly to the allocator
+  //     You probably didn't know about GC_ALLOC_VARIADIC
+  GC_ALLOCATE_VARIADIC(ForeignTypeSpec_O, self,
+                       lisp_symbol,
+                       lisp_name,
+                       size,
+                       alignment,
+                       cxx_name,
+                       llvm_type_symbol_fn,
+                       to_object_fn_name,
+                       from_object_fn_name,
+                       to_object_fn_ptr,
+                       from_object_fn_ptr);
+#if 0  
   self->m_lisp_symbol           = lisp_symbol;
   self->m_lisp_name             = lisp_name;
   self->m_size                  = size;
@@ -844,7 +859,7 @@ ForeignTypeSpec_sp ForeignTypeSpec_O::create( core::Symbol_sp    lisp_symbol,
   self->m_from_object_fn_name   = from_object_fn_name;
   self->m_to_object_fn_ptr      = to_object_fn_ptr;
   self->m_from_object_fn_ptr    = from_object_fn_ptr;
-
+#endif
   return self;
 }
 

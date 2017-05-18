@@ -433,6 +433,13 @@ void Instance_O::LISP_INVOKE() {
 #endif
 }
 
+LCC_RETURN Instance_O::LISP_CALLING_CONVENTION() {
+  SETUP_CLOSURE(Instance_O,closure);
+  INCREMENT_FUNCTION_CALL_COUNTER(closure);
+  INITIALIZE_VA_LIST();
+  return (closure->_entryPoint)(closure->asSmartPtr().tagged_(), lcc_vargs.tagged_());
+}
+
 void Instance_O::describe(T_sp stream) {
   stringstream ss;
   ss << (BF("Instance\n")).str();

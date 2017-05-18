@@ -405,7 +405,7 @@ public:
   /*! Keep track of every new environment that is created */
   uint _EnvironmentId;
 
-private:
+ public:
   /*! Callbacks for making packages and exporting symbols */
   MakePackageCallback _MakePackageCallback;
   ExportSymbolCallback _ExportSymbolCallback;

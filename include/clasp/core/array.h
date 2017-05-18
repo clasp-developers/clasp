@@ -110,6 +110,8 @@ namespace cl {
   extern core::Symbol_sp& _sym_adjust_array;
   extern core::Symbol_sp& _sym_sequence;
   extern core::Symbol_sp& _sym_array;
+  extern core::Symbol_sp& _sym_or;
+  extern core::Symbol_sp& _sym_nil;
   extern core::Symbol_sp& _sym_vector;
   extern core::Symbol_sp& _sym_vectorPush;
   extern core::Symbol_sp& _sym_vectorPushExtend;
@@ -537,8 +539,9 @@ namespace core {
   public:
     static void never_invoke_allocator() {gctools::GCAbstractAllocator<template_SimpleVector>::never_invoke_allocator();};
   public:
-    value_type& operator[](size_t index) { return this->_Data[index];};
-    const value_type& operator[](size_t index) const { return this->_Data[index];};
+    // NULL terminated strings use this - so the ASSERT needs to accept it
+    value_type& operator[](size_t index) { BOUNDS_ASSERT(index<=this->length());return this->_Data[index];};
+    const value_type& operator[](size_t index) const { BOUNDS_ASSERT(index<=this->length());return this->_Data[index];};
     iterator begin() { return &this->_Data[0];};
     iterator end() { return &this->_Data[this->_Data._Length]; }
     const_iterator begin() const { return &this->_Data[0];};
@@ -619,7 +622,14 @@ namespace core {
     typedef value_type container_value_type;
   public:
     static value_type initial_element_from_object(T_sp obj, bool supplied);
-    static value_type from_object(T_sp obj) {return obj.unsafe_character();}
+    static value_type from_object(T_sp obj) {
+      if (obj.characterp()) {
+        return obj.unsafe_character();
+      } else if (obj.nilp()) {
+        return '\0';
+      }
+      TYPE_ERROR(obj,Cons_O::createList(cl::_sym_or,cl::_sym_character,cl::_sym_nil));
+    }
     static T_sp to_object(const value_type& v) { return clasp_make_character(v); };
   public:
     // Always leave space for \0 at end
@@ -627,7 +637,7 @@ namespace core {
     static SimpleBaseString_sp make(size_t length, value_type initialElement='\0', bool initialElementSupplied=false, size_t initialContentsSize=0, const value_type* initialContents=NULL) {
       // For C/C++ interop make SimpleBaseString 1 character longer and append a \0
       auto bs = gctools::GC<SimpleBaseString_O>::allocate_container( length+1,length,initialElement,initialElementSupplied,initialContentsSize,initialContents);
-      (*bs)[length] = '\0';
+      bs->c_style_null_terminate(); // (*bs)[length] = '\0';
       return bs;
     }
     static SimpleBaseString_sp make(const std::string& str) {
@@ -639,12 +649,13 @@ namespace core {
     virtual T_sp array_type() const final { return cl::_sym_simple_array; };
     virtual T_sp element_type() const final { return cl::_sym_base_char; };
   public:
+    void c_style_null_terminate() { this->_Data[this->length()] = '\0'; };
     virtual clasp_elttype elttype() const { return clasp_aet_bc; };
     virtual T_sp arrayElementType() const final { return cl::_sym_base_char; };
     virtual bool equal(T_sp other) const final;
     virtual bool equalp(T_sp other) const final;
     virtual void __write__(T_sp strm) const final; // implemented in write_array.cc
-    virtual std::string get_std_string() const final { return string((char*)&(*this)[0],this->length());};
+    virtual std::string get_std_string() const final { return this->length()==0 ? string("") : string((char*)&(*this)[0],this->length());};
     virtual std::string __repr__() const { return this->get_std_string(); };
     virtual void sxhash_(HashGenerator& hg) const final {this->ranged_sxhash(hg,0,this->length());}
     virtual void ranged_sxhash(HashGenerator& hg, size_t start, size_t end) const final {
@@ -685,7 +696,14 @@ namespace core {
     typedef value_type container_value_type;
   public:
     static value_type initial_element_from_object(T_sp obj, bool supplied);
-    static value_type from_object(T_sp obj) {return obj.unsafe_character();}
+    static value_type from_object(T_sp obj) {
+      if (obj.characterp()) {
+        return obj.unsafe_character();
+      } else if (obj.nilp()) {
+        return 0;
+      }
+      TYPE_ERROR(obj,Cons_O::createList(cl::_sym_or,cl::_sym_character,cl::_sym_nil));
+    }
     static T_sp to_object(const value_type& v) { return clasp_make_character(v); };
   public:
     // Always leave space for \0 at end
@@ -930,6 +948,7 @@ namespace core {
       return vecns[this->_DisplacedIndexOffset+index];
     }
     simple_element_type& operator[](size_t index) {
+      BOUNDS_ASSERT(index<this->arrayTotalSize());
       unlikely_if (gc::IsA<my_smart_ptr_type>(this->_Data)) return this->unsafe_indirectReference(index);
       return (*reinterpret_cast<simple_type*>(&*(this->_Data)))[this->_DisplacedIndexOffset+index];
     }
@@ -938,6 +957,7 @@ namespace core {
       return vecns[this->_DisplacedIndexOffset+index];
     }
     const simple_element_type& operator[](size_t index) const {
+      BOUNDS_ASSERT(index<this->arrayTotalSize());
       unlikely_if (gc::IsA<my_smart_ptr_type>(this->_Data)) return this->unsafe_indirectReference(index);
       return (*reinterpret_cast<simple_type*>(&*(this->_Data)))[this->_DisplacedIndexOffset+index];
     }
@@ -1023,9 +1043,11 @@ namespace core {
     // Primary functions/operators for operator[] that handle displacement
     // There's a non-const and a const version of each
     simple_element_type& operator[](size_t index) {
+      BOUNDS_ASSERT(index<this->arrayTotalSize());
       return (*reinterpret_cast<simple_type*>(&*(this->_Data)))[index];
     }
     const simple_element_type& operator[](size_t index) const {
+      BOUNDS_ASSERT(index<this->arrayTotalSize());
       return (*reinterpret_cast<simple_type*>(&*(this->_Data)))[index];
     }
   public:

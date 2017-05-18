@@ -102,6 +102,23 @@ static std::terminate_handler g_prev_terminate_handler;
 
 // PRINT STACKTRACE PROGRAMMICALLY
 
+void test_va_list( LCC_ARGS_ELLIPSIS ) {
+  INITIALIZE_VA_LIST(); // now lcc_vargs is a VaList_sp over the arguments
+  printf("%s:%d    relative arg#%d: %p  \n", __FILE__, __LINE__, 0, lcc_vargs->relative_indexed_arg(0));
+  printf("%s:%d    relative arg#%d: %p  \n", __FILE__, __LINE__, 1, lcc_vargs->relative_indexed_arg(1));
+  printf("%s:%d    relative arg#%d: %p  \n", __FILE__, __LINE__, 2, lcc_vargs->relative_indexed_arg(2));
+  printf("%s:%d    relative arg#%d: %p  \n", __FILE__, __LINE__, 3, lcc_vargs->relative_indexed_arg(3));
+  printf("%s:%d    relative arg#%d: %p  \n", __FILE__, __LINE__, 4, lcc_vargs->relative_indexed_arg(4));
+  printf("%s:%d    relative arg#%d: %p  \n", __FILE__, __LINE__, 5, lcc_vargs->relative_indexed_arg(5));
+  printf("%s:%d    Advanced args by one\n", __FILE__, __LINE__ );
+  lcc_vargs->next_arg_raw();
+  printf("%s:%d    relative arg#%d: %p   va_arg: %p\n", __FILE__, __LINE__, 0, lcc_vargs->relative_indexed_arg(0), lcc_vargs->next_arg_raw());
+  printf("%s:%d    relative arg#%d: %p   va_arg: %p\n", __FILE__, __LINE__, 1, lcc_vargs->relative_indexed_arg(0), lcc_vargs->next_arg_raw());
+  printf("%s:%d    relative arg#%d: %p   va_arg: %p\n", __FILE__, __LINE__, 2, lcc_vargs->relative_indexed_arg(0), lcc_vargs->next_arg_raw());
+  printf("%s:%d    relative arg#%d: %p   va_arg: %p\n", __FILE__, __LINE__, 3, lcc_vargs->relative_indexed_arg(0), lcc_vargs->next_arg_raw());
+  printf("%s:%d    relative arg#%d: %p   va_arg: %p\n", __FILE__, __LINE__, 4, lcc_vargs->relative_indexed_arg(0), lcc_vargs->next_arg_raw());
+}
+
 static inline void print_stacktrace(FILE *out = stderr, unsigned int max_frames = 63)
 {
     fprintf(out, "stack trace:\n");
@@ -367,12 +384,17 @@ static int startup(int argc, char *argv[], bool &mpiEnabled, int &mpiRank, int &
 
 int main( int argc, char *argv[] )
 {
-  int exit_code = EXIT_SUCCESS;
-  
+#if 0
+   // A few tests - delete them when not needed anymore
+  test_va_list(NULL,6
+               ,core::clasp_make_fixnum(0).raw_()
+               ,core::clasp_make_fixnum(1).raw_()
+               ,core::clasp_make_fixnum(2).raw_()
+               ,core::clasp_make_fixnum(3).raw_()
+               ,core::clasp_make_fixnum(4).raw_()
+               ,core::clasp_make_fixnum(5).raw_());
+#endif
   // Do not touch debug log until after MPI init
-
-
-  printf("%s:%d ClosureWithSlots_O offset_of _Slots._Data->%lu\n", __FILE__, __LINE__, offsetof(core::ClosureWithSlots_O,_Slots._Data));
 
   bool mpiEnabled = false;
   int  mpiRank    = 0;
@@ -448,12 +470,17 @@ int main( int argc, char *argv[] )
 
   // - COMMAND LINE OPTONS HANDLING
 
+#if 0
+  // Use this to check if smart_ptr<core::T_O> is being passed by value or reference
+  gctools::smart_ptr<core::T_O> x((gctools::Tagged)0xDEADBEEF);
+  foo(x);
+#endif
+  
   core::CommandLineOptions options(argc, argv);
 
   // CALL LISP STARTUP
 
-  set_exit_code( EXIT_SUCCESS );
-
+  int exit_code = 0;
   try
   {
     exit_code = gctools::startupGarbageCollectorAndSystem( &startup, argc, argv, rl.rlim_max, mpiEnabled, mpiRank, mpiSize );

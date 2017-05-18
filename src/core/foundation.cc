@@ -149,9 +149,6 @@ core::Symbol_sp lisp_classSymbolFromClassId(class_id cid) {
 namespace core {
 /*! Convert valid objects to void*/
 void* lisp_to_void_ptr(T_sp o) {
-  if ( !o ) {
-    SIMPLE_ERROR(BF("The object is invalid (nullptr)!"));
-  }
   if (gc::IsA<clasp_ffi::ForeignData_sp>(o)) {
     return gc::As_unsafe<clasp_ffi::ForeignData_sp>(o)->ptr();
   } else if (gc::IsA<Pointer_sp>(o)) {
@@ -191,8 +188,11 @@ void lisp_errorDereferencedUnbound() {
   SIMPLE_ERROR(BF("Tried to dereference unbound"));
 }
 
+Class_sp lisp_StandardClass() {
+  return _lisp->_Roots._StandardClass;
+}
+
 void lisp_errorUnexpectedType(class_id expectedTyp, class_id givenTyp, core::T_O *objP) {
-  ASSERT(_lisp);
   if (!objP) {
     SIMPLE_ERROR(BF("NULL pointer error in lisp_errorUnexpectedType"));
   }
@@ -441,7 +441,7 @@ CL_DOCSTRING(R"doc(* Arguments
 - name :: A string.
 - package :: A string
 * Description
-Convert strings that have the form pkg:name or pkg__name into a package name string and a symbol name string,
+Convert strings that have the form pkg:name or pkg__name into a package name string and a symbol name string, 
 run them through lispify_symbol_name and then recombine them as pkg:name.
 Then split them again (sorry) and return (values pkg:sym pkg sym).)doc");
 CL_DEFUN T_mv core__magic_name(const std::string& name, const std::string& package) {
@@ -527,7 +527,7 @@ bool lispify_match(const char *&cur, const char *match, NextCharTest nextCharTes
 }
 
 /*! This checks for names like CXXObject and will convert them to CXX-OBJECT.
-It looks for [A-Z]+[A-Z][a-z] - a run of more than
+It looks for [A-Z]+[A-Z][a-z] - a run of more than 
 two upper case characters followed by a lower case
 alpha character. If it sees this it returns true and the first N-1 characters of the
 upper case sequence and it advances cur to the last upper case character */
@@ -804,7 +804,9 @@ string _rep_(T_sp obj) {
   } else if (obj.unboundp()) {
     return "!UNBOUND!";
   }
-  return "WTF-object";
+  stringstream ss;
+  ss << "WTF-object@" << (void*)obj.raw_();
+  return ss.str();
 #endif
 }
 
@@ -1038,7 +1040,7 @@ void lisp_defineSingleDispatchMethod(Symbol_sp sym,
   (void)gfn;                                                         // silence compiler warning
   LOG(BF("Attaching single_dispatch_method symbol[%s] receiver_class[%s]  method_body@%p") % _rep_(sym) % _rep_(receiver_class) % ((void *)(method_body)));
   method_body->finishSetup(llhandler, kw::_sym_function);
-  ASSERT(llhandler || llhandler.notnilp())
+  ASSERT(llhandler || llhandler.notnilp());
 #ifdef DEBUG_PROGRESS
     printf("%s:%d lisp_defineSingleDispatchMethod sym: %s\n", __FILE__, __LINE__, _rep_(sym).c_str());
 #endif
@@ -1058,7 +1060,7 @@ Class_sp lisp_classFromClassSymbol(Symbol_sp classSymbol) {
 }
 
 
-
+  
 
 
 /*! If the name has the structure XXX:YYY or XXX::YYY then intern YYY in package XXX either
@@ -1814,3 +1816,30 @@ void throwIfClassesNotInitialized(const Lisp_sp &lisp) {
 #endif
 
 };
+
+namespace core {
+size_t  debug_InvocationHistoryFrame = 0;
+const char* debug_InvocationHistoryFrame_name = "";
+
+CL_DEFUN void core__debug_invocation_history_frame(size_t v) {
+  debug_InvocationHistoryFrame = v;
+  const char* ihf = getenv("IHS");
+  if (ihf==NULL) {
+    ihf = "ESTIMATE-CODE-SIZE-1";
+  }
+  debug_InvocationHistoryFrame_name = ihf;
+  printf("%s:%d     Will trap InvocationHistoryFrame at |%s|\n",__FILE__,__LINE__,debug_InvocationHistoryFrame_name); 
+  printf("   ---------------   InvocationHistoryStack:\n");
+  InvocationHistoryFrame* cur = my_thread->_InvocationHistoryStack;
+  size_t count= 0;
+  while (cur!=NULL) {
+    printf("    frame[%lu] @%p  function: %s\n", count, cur, _rep_(cur->function()->name()).c_str());
+    cur = cur->previous();
+    ++count;
+  }
+}
+  
+};
+
+
+

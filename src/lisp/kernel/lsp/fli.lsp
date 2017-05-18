@@ -536,7 +536,8 @@
                    (cl-result (llvm-sys:create-call-array-ref
                                cmp::*irbuilder*
                                invoke-fn
-                               (list* fptr (cmp::null-t-ptr) (cmp:jit-constant-size_t (length cl-args)) real-args) "cl-result")))
+                               (list* fptr #| (cmp::null-t-ptr) not used in new call-conv |#
+                                      (cmp:jit-constant-size_t (length cl-args)) real-args) "cl-result")))
               ;; (3) Call the translator for the return value
               (if (eq return-type-kw :void)
                   ;; Return with void

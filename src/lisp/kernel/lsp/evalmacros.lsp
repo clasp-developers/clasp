@@ -13,6 +13,9 @@
 
 (in-package :sys)
 
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (setq core::*debug-values* t))
+
 (defmacro unless (pred &rest body)
   "Syntax: (unless test {form}*)
 If TEST evaluates to NIL, then evaluates FORMs and returns all values of the
@@ -26,9 +29,9 @@ last FORM.  If not, simply returns NIL."
   (multiple-value-bind (function pprint doc-string)
       (sys::expand-defmacro name vl body)
     (setq function `(function ,function))
-    (when *dump-defun-definitions*
-      (print function)
-      (setq function `(si::bc-disassemble ,function)))
+    (when *dump-defmacro-definitions*
+      (bformat t "ADVANCED evalmacros.lsp defmacro %s --> %s\n" name function)
+      #++(setq function `(si::bc-disassemble ,function)))
     `(eval-when (:compile-toplevel :load-toplevel :execute)
        ,(ext:register-with-pde whole `(si::fset ',name ,function
                                                 t  ; macro

@@ -221,6 +221,7 @@ def configure_common(cfg,variant):
     print("cfg.env.LDFLAGS=%s" % cfg.env.LDFLAGS)
     cfg.define("BUILD_LINKFLAGS", ' '.join(cfg.env.LINKFLAGS) + ' ' + ' '.join(cfg.env.LDFLAGS))
 #    cfg.define("DEBUG_STARTUP",1)
+#    cfg.define("DEBUG_ACCESSORS",1)
 #    cfg.define("DEBUG_GFDISPATCH",1)
 
 def strip_libs(libs):
@@ -319,6 +320,9 @@ class variant(object):
             cfg.env.append_value('LINKFLAGS', os.getenv("CLASP_RELEASE_LINKFLAGS").split())
     def configure_for_debug(self,cfg):
         cfg.define("_DEBUG_BUILD",1)
+        cfg.define("DEBUG_ASSERT",1)
+        cfg.define("DEBUG_BOUNDS_ASSERT",1)
+#        cfg.define("DEBUG_ASSERT_TYPE_CAST",1)  # checks runtime type casts
         cfg.define("CONFIG_VAR_COOL",1)
 #        cfg.env.append_value('CXXFLAGS', [ '-O0', '-g' ])
         cfg.env.append_value('CXXFLAGS', [ '-O0', '-g' ])
@@ -696,6 +700,7 @@ def configure(cfg):
     cfg.define("CLASP_UNICODE",1)
     cfg.define("DEBUG_TRACE_INTERPRETED_CLOSURES",1)
     cfg.define("DEBUG_THREADS",1)
+    cfg.define("DEBUG_BOUNDS_ASSERT",1)
 #    cfg.define("EXPAT",1)
     cfg.define("INCLUDED_FROM_CLASP",1)
     cfg.define("INHERITED_FROM_SRC",1)
@@ -758,6 +763,10 @@ def configure(cfg):
     cfg.define("ENABLE_BACKTRACE_ARGS",1)
 #    cfg.define("DEBUG_ZERO_KIND",1);
 #    cfg.define("DEBUG_FLOW_CONTROL",1)
+#    cfg.define("DEBUG_DYNAMIC_BINDING_STACK",1)
+#    cfg.define("DEBUG_VALUES",1)   # turn on printing (values x y z) values when core:*debug-values* is not nil
+    cfg.define("DEBUG_ENSURE_VALID_OBJECT",1)
+#    cfg.define("DEBUG_QUICK_VALIDATE",1)    # quick/cheap validate if on and comprehensive validate if not
     cfg.env.append_value('CXXFLAGS', ['-Wno-macro-redefined'] )
     cfg.env.append_value('CXXFLAGS', ['-Wno-deprecated-register'] )
     cfg.env.append_value('CXXFLAGS', ['-Wno-expansion-to-defined'] )
@@ -1187,6 +1196,7 @@ class recompile_cclasp(Task.Task):
             raise Exception("To use the recompile targets you need to provide a working clasp executable. See wscript.config and/or set the CLASP env variable.")
         cmd = [ other_clasp ]
         cmd = cmd + [ "--feature", "debug-run-clang",
+                      "--feature", "ignore-extensions",
                       "--resource-dir", "%s/%s/%s" % (self.bld.path.abspath(),out,self.bld.variant_obj.variant_dir()),
                       "--eval", '(load "sys:kernel;clasp-builder.lsp")',
                       "--eval", "(recompile-cclasp :output-file #P\"%s\")" % self.outputs[0],

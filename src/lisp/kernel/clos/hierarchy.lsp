@@ -399,10 +399,10 @@
         #+clasp :creates-classes #+clasp t
        )
       ,@(loop for (name . rest) in +builtin-classes-list+
-	   for index from 1
-	   collect (list name :metaclass 'built-in-class
-			 :index index
-			 :direct-superclasses (or rest '(t))))
+           for index from 1
+           collect (list name :metaclass 'built-in-class
+                         :index index
+                         :direct-superclasses (or rest '(t))))
       (funcallable-standard-object
        :direct-superclasses (standard-object function))
       (generic-function
@@ -444,4 +444,25 @@
 #+(or)(eval-when (:compile-toplevel :execute :load-toplevel)
   (setq clasp-cleavir:*use-type-inference* t))
 
-
+#+clasp
+(eval-when (:compile-toplevel :execute)
+  (WARN "Sanity check class slots")
+  (let ((sanity (core:class-slot-sanity-check)))
+    (dolist (name-slot (core:class-slot-sanity-check))
+      (let* ((name (car name-slot))
+             (core-slot-index (cdr name-slot))
+             (clos-slot-index (position name +standard-class-slots+ :key #'car)))
+        (if clos-slot-index
+            (unless (= core-slot-index clos-slot-index)
+              (format t "There is a mismatch between what clasp thinks the ~a class slot index should be (~a) and where clos says the class slot index is (~a) - update metaClass.h~%" name core-slot-index clos-slot-index)
+              (error "There is a mismatch between what clasp thinks the ~a class slot index should be (~a) and where clos says the class slot index is (~a) - update metaClass.h~%" name core-slot-index clos-slot-index))
+            (cond
+              ((eq name 'number-of-slots-in-standard-class)
+               (unless (= core-slot-index (length +standard-class-slots+))
+                 (error "There is a mismatch between what clasp things should be the number of standard-class slots (~a) and what clos says it is (~a) - update metaClass.h" core-slot-index (length +standard-class-slots+))))
+              ((eq name 'number-of-slots-in-structure-class)
+               (unless (= core-slot-index (length +structure-class-slots+))
+                 (error "There is a mismatch between what clasp things should be the number of structure-class slots (~a) and what clos says it is (~a) - update metaClass.h" core-slot-index (length +structure-class-slots+))))
+              (t (error "The class-slot-sanity-check ~a could not be verified against clos - fix the sanity check at the end of hierarchy.lsp" name-slot))))))))
+        
+            

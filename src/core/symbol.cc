@@ -157,11 +157,6 @@ Symbol_O::Symbol_O(bool dummy) : _HomePackage(_Nil<T_O>()),
                                  _PropertyList(_Nil<List_V>()) {};
 
 Symbol_O::Symbol_O() : Base(),
-                       _Name(gctools::smart_ptr<SimpleBaseString_O>()),
-                       _HomePackage(gctools::smart_ptr<Package_O>()),
-                       _GlobalValue(gctools::smart_ptr<T_O>()),
-                       _Function(gctools::smart_ptr<Function_O>()),
-                       _SetfFunction(gctools::smart_ptr<Function_O>()),
                        _Binding(NO_THREAD_LOCAL_BINDINGS),
                        _IsSpecial(false),
                        _IsConstant(false),
@@ -339,24 +334,10 @@ string Symbol_O::formattedName(bool prefixAlways) const { //no guard
       ss << ":" << this->_Name->get();
     } else {
       Package_sp currentPackage = _lisp->getCurrentPackage();
-      LIKELY_if (currentPackage) {
-        SimpleString_sp name = this->_Name;
-        Symbol_sp sym = currentPackage->findSymbol_SimpleString(name);
-        if (sym.notnilp() && !prefixAlways) {
-          ss << name->get_std_string();
-        } else {
-          if (myPackage->isExported(this->const_sharedThis<Symbol_O>())) {
-            ss << myPackage->getName() << ":" << this->_Name->get();
-          } else {
-            ss << myPackage->getName() << "::" << this->_Name->get();
-          }
-        } 
+      if (prefixAlways) {
+        ss << myPackage->getName() << "::" << this->_Name->get();
       } else {
-        if (myPackage->isExported(this->const_sharedThis<Symbol_O>())) {
-          ss << myPackage->getName() << ":" << this->_Name->get();
-        } else {
-          ss << myPackage->getName() << "::" << this->_Name->get();
-        }
+        ss << this->_Name->get();
       }
     }
   }

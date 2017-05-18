@@ -298,6 +298,16 @@
                 env-part (second env-part))
           (setq env-part (gensym)
                 decls (list* `(declare (ignore ,env-part)) decls)))
+                                        ;(bformat t "About to call multiple-value-call\n")
+      #++
+      (MULTIPLE-VALUE-CALL
+          #'(LAMBDA (&OPTIONAL (PPN) (WHOLE) (DL) (ARG-CHECK) (IGNORABLES) &REST #:G17550)
+              (BFORMAT T "sys::expand-defmacro after multiple-value-bind whole -> %s\n" WHOLE)
+              (VALUES `(LAMBDA (,WHOLE ,ENV-PART &AUX ,@DL)
+                         (DECLARE (IGNORABLE ,@IGNORABLES) (LAMBDA-NAME ,NAME))
+                         ,@DECLS (BLOCK ,(FUNCTION-BLOCK-NAME NAME) ,@ARG-CHECK ,@BODY))
+                      PPN DOC))
+        (DESTRUCTURE VL CONTEXT))
       (multiple-value-bind (ppn whole dl arg-check ignorables)
           (destructure vl context)
         #+ecl(values 
@@ -347,8 +357,8 @@
 		  (declare (ignore doc))
 		  (setq function `(function ,function))
 		  (when *dump-defmacro-definitions*
-		    (print function)
-		    (setq function `(si::bc-disassemble ,function)))
+		    (bformat t "EARLY defmacro.lsp defmacro %s -> %s\n" name function)
+		    #++(setq function `(si::bc-disassemble ,function)))
 		  (ext:register-with-pde def `(si::fset ',name ,function
                                                         t ; macro
                                                         ,pprint ; ecl pprint

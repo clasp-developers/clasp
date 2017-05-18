@@ -188,11 +188,17 @@ CL_DEFUN List_sp canonicalize_declarations(List_sp decls)
 }
 
 
-void lambdaListHandler_createBindings(Closure_sp closure, core::LambdaListHandler_sp llh, core::DynamicScopeManager &scope, LCC_ARGS_VA_LIST) {
+void lambdaListHandler_createBindings(Closure_sp closure, core::LambdaListHandler_sp llh, core::DynamicScopeManager &scope, LCC_ARGS_LLH) {
   if (llh->requiredLexicalArgumentsOnlyP()) {
     size_t numReq = llh->numberOfRequiredArguments();
     if (numReq <= LCC_ARGS_IN_REGISTERS && numReq == lcc_nargs) {
       switch (numReq) {
+      case 4:
+        scope.new_binding(llh->_RequiredArguments[3], T_sp((gc::Tagged)lcc_fixed_arg3));
+        scope.new_binding(llh->_RequiredArguments[2], T_sp((gc::Tagged)lcc_fixed_arg2));
+        scope.new_binding(llh->_RequiredArguments[1], T_sp((gc::Tagged)lcc_fixed_arg1));
+        scope.new_binding(llh->_RequiredArguments[0], T_sp((gc::Tagged)lcc_fixed_arg0));
+        return;
       case 3:
         scope.new_binding(llh->_RequiredArguments[2], T_sp((gc::Tagged)lcc_fixed_arg2));
         scope.new_binding(llh->_RequiredArguments[1], T_sp((gc::Tagged)lcc_fixed_arg1));
@@ -210,7 +216,7 @@ void lambdaListHandler_createBindings(Closure_sp closure, core::LambdaListHandle
     }
   }
   try {
-    llh->createBindingsInScopeVaList(lcc_nargs, VaList_sp((gc::Tagged)lcc_arglist), scope);
+    llh->createBindingsInScopeVaList(lcc_nargs, lcc_vargs, scope);
   } catch (...) {
     handleArgumentHandlingExceptions(closure);
   }
@@ -1086,15 +1092,15 @@ CL_DEFUN T_mv core__process_lambda_list(List_sp lambdaList, T_sp context) {
     }
   }
   T_sp tlreqs = lreqs.cons();
-  return (Values(tlreqs,
-                 lopts.cons(),
-                 restarg._ArgTarget,
-                 key_flag,
-                 lkeys.cons(),
-                 allow_other_keys,
-                 lauxs.cons(),
-                 _lisp->_boolean(restarg.VaRest)
-                 ));
+  return Values(tlreqs,
+                lopts.cons(),
+                restarg._ArgTarget,
+                key_flag,
+                lkeys.cons(),
+                allow_other_keys,
+                lauxs.cons(),
+                _lisp->_boolean(restarg.VaRest)
+                );
 };
 
 /*

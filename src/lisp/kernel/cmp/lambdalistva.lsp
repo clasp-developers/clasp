@@ -27,66 +27,6 @@
 
 (in-package :compiler)
 
-
-  
-
-
-;;--------------------------------------------------
-;;--------------------------------------------------
-;;
-;; Calling functions
-;;
-;;--------------------------------------------------
-;;--------------------------------------------------
-
-
-(defun cmp-lookup-function (fn-designator evaluate-env)
-  "Return a pointer to a core::Closure"
-  (if (atom fn-designator)
-      (let ((classified (function-info evaluate-env fn-designator)))
-	(if (eq (car classified) 'core::global-function)
-	    (irc-intrinsic "va_symbolFunction" (irc-global-symbol fn-designator evaluate-env))
-	    (irc-intrinsic "va_lexicalFunction"
-			   (jit-constant-i32 (caddr classified))
-			   (jit-constant-i32 (cadddr classified))
-			   (irc-renv evaluate-env))))
-      (if (eq (car fn-designator) 'cl:lambda)
-	  (error "Handle lambda expressions at head of form")
-	  (error "Illegal head of form: ~a" fn-designator))))
-
-
-
-(defun codegen-call (result form evaluate-env)
-  "Evaluate each of the arguments into an alloca and invoke the function"
-  ;; setup the ActivationFrame for passing arguments to this function in the setup arena
-  (assert-result-isa-llvm-value result)
-  (let* ((head (car form)))
-    (cond
-      ((and (atom head) (symbolp head))
-       (let ((nargs (length (cdr form)))
-             args
-             (temp-result (irc-alloca-tsp)))
-         (dbg-set-invocation-history-stack-top-source-pos form)
-         ;; evaluate the arguments into the array
-         ;;  used to be done by --->    (codegen-evaluate-arguments (cdr form) evaluate-env)
-         (do* ((cur-exp (cdr form) (cdr cur-exp))
-               (exp (car cur-exp) (car cur-exp))
-               (i 0 (+ 1 i)))
-              ((endp cur-exp) nil)
-           (codegen temp-result exp evaluate-env)
-           (push (irc-smart-ptr-extract (irc-load temp-result)) args))
-         (let ((closure (cmp-lookup-function head evaluate-env)))
-	   (irc-low-level-trace :flow)
-           (irc-funcall result closure (reverse args))
-	   (irc-low-level-trace :flow))))
-      ((and (consp head) (eq head 'lambda))
-       (error "Handle lambda applications"))
-      (t (compiler-error form "Illegal head for form %s" head)))))
-
-
-
-
-
 ;;--------------------------------------------------
 ;;--------------------------------------------------
 ;;
@@ -104,7 +44,7 @@
     (let ((cmp (irc-icmp-slt nargs lv-required-number-of-arguments "enough-args")))
       (irc-cond-br cmp error-block cont-block)
       (irc-begin-block error-block)
-      (irc-create-call "va_notEnoughArgumentsException" (list (irc-constant-string-ptr *gv-current-function-name*) nargs lv-required-number-of-arguments ))
+      (irc-intrinsic-call "va_notEnoughArgumentsException" (list (irc-constant-string-ptr *gv-current-function-name*) nargs lv-required-number-of-arguments ))
       (irc-unreachable)
       (irc-begin-block cont-block)
       )))
@@ -120,7 +60,7 @@
     (irc-cond-br cmp error-block cont-block)
     (irc-begin-block error-block)
     (compile-error-if-not-enough-arguments given-number-of-arguments required-number-of-arguments)
-    (irc-create-call "va_tooManyArgumentsException" (list (irc-constant-string-ptr *gv-current-function-name*) given-number-of-arguments required-number-of-arguments))
+    (irc-intrinsic-call "va_tooManyArgumentsException" (list (irc-constant-string-ptr *gv-current-function-name*) given-number-of-arguments required-number-of-arguments))
     (irc-unreachable)
     (irc-begin-block cont-block)
     ))
@@ -134,7 +74,7 @@
 	 (cmp (irc-icmp-sgt given-number-of-arguments maximum-number-of-arguments "max-num-args")))
     (irc-cond-br cmp error-block cont-block)
     (irc-begin-block error-block)
-    (irc-create-call "va_tooManyArgumentsException" (list (irc-constant-string-ptr *gv-current-function-name*) given-number-of-arguments maximum-number-of-arguments))
+    (irc-intrinsic-call "va_tooManyArgumentsException" (list (irc-constant-string-ptr *gv-current-function-name*) given-number-of-arguments maximum-number-of-arguments))
     (irc-unreachable)
     (irc-begin-block cont-block)
     ))
@@ -286,7 +226,7 @@ will put a value into target-ref."
 	(arg-idx entry-arg-idx (irc-add arg-idx (jit-constant-size_t 1) "arg-idx")))
        ((endp cur-req) arg-idx)
     (let* ((target-idx (cdr target))
-	   (val-ref (calling-convention-args.va-arg args arg-idx target-idx)))
+	   (val-ref (calling-convention-args.va-arg args target-idx)))
       (with-target-reference-do (tref target new-env) ; run-time binding
 	(irc-intrinsic "copyTspTptr" tref val-ref)))))
 
@@ -320,7 +260,7 @@ will put a value into target-ref."
 	  (cmp (irc-icmp-slt arg-idx (calling-convention-nargs args) "enough-given-args")))
       (irc-cond-br cmp arg-block init-block)
       (irc-begin-block arg-block)
-      (let ((val-ref (calling-convention-args.va-arg args arg-idx)))
+      (let ((val-ref (calling-convention-args.va-arg args)))
 	(with-target-reference-no-bind-do (target-ref target new-env) ; run-time af binding
 	  (irc-intrinsic "copyTspTptr" target-ref val-ref))
 	(when flag
@@ -356,17 +296,15 @@ will put a value into target-ref."
           (irc-intrinsic "copyTspTptr"
                          rest-ref
                          (irc-intrinsic "cc_gatherVaRestArguments"
-                                        (calling-convention-nargs args)
-                                        (calling-convention-va-list args)
-                                        entry-arg-idx
+                                        (calling-convention-va-list* args)
+                                        (calling-convention-remaining-nargs* args)
                                         temp-valist))))
       (with-target-reference-do (rest-ref rest-var new-env)
         (irc-intrinsic "copyTspTptr"
                        rest-ref
                        (irc-intrinsic "cc_gatherRestArguments"
-                                      (calling-convention-nargs args)
-                                      (calling-convention-va-list args)
-                                      entry-arg-idx (irc-constant-string-ptr *gv-current-function-name*) )))))
+                                      (calling-convention-va-list* args)
+                                      (calling-convention-remaining-nargs* args))))))
 
 (defun compile-key-arguments-parse-arguments (keyargs
 					      lambda-list-allow-other-keys
@@ -397,10 +335,10 @@ will put a value into target-ref."
 	(irc-phi-add-incoming phi-arg-idx entry-arg-idx kw-start-block)
 	(irc-phi-add-incoming phi-bad-kw-idx entry-bad-kw-idx kw-start-block)
 	(irc-low-level-trace)
-	(let* ((arg-ref (calling-convention-args.va-arg args phi-arg-idx))
+	(let* ((arg-ref (calling-convention-args.va-arg args))
                (arg-idx+1 (irc-add phi-arg-idx (jit-constant-size_t 1)))
-               (kw-arg-val (calling-convention-args.va-arg args arg-idx+1)))
-	  (irc-intrinsic "cc_ifNotKeywordException" arg-ref phi-arg-idx (calling-convention-va-list args))
+               (kw-arg-val (calling-convention-args.va-arg args)))
+	  (irc-intrinsic "cc_ifNotKeywordException" arg-ref phi-arg-idx (calling-convention-va-list* args))
 	  (let* ((eq-aok-ref-and-arg-ref (irc-trunc (irc-intrinsic "compareTspTptr" aok-ref arg-ref) %i1%)) ; compare arg-ref to a-o-k
 		 (aok-block (irc-basic-block-create "aok-block"))
 		 (possible-kw-block (irc-basic-block-create "possible-kw-block"))
@@ -557,10 +495,10 @@ will put a value into target-ref."
       arg-idx)))
 
 (defun compile-throw-if-excess-keyword-arguments ( args arg-idx)
-  (irc-create-call "va_ifExcessKeywordArgumentsException"
+  (irc-intrinsic-call "va_ifExcessKeywordArgumentsException"
                    (list (irc-constant-string-ptr *gv-current-function-name*)
                          (calling-convention-nargs args)
-                         (calling-convention-va-list args) arg-idx)))
+                         (calling-convention-va-list* args) arg-idx)))
 
 (defun compile-aux-arguments (auxargs old-env new-env)
   (let ((aux-arguments-block (irc-basic-block-create "process-aux-arguments")))
@@ -635,23 +573,23 @@ lambda-list-handler/env/argument-activation-frame"
       )
     ))
 
-
-(defun compile-<=3-required-arguments (reqargs
-                                       old-env
-                                       args
-                                       new-env)
+;;; No &rest, &key or &optional - all arguments are in registers
+(defun compile-with-only-register-arguments (reqargs
+                                             old-env
+                                             callconv
+                                             new-env)
 ;;;				 &aux (nargs (first argument-holder)) (va-list (second argument-holder)))
   "Fill the dest-activation-frame with values using the
 lambda-list-handler/env/argument-activation-frame"
   ;; First save any special values
-  (compile-error-if-wrong-number-of-arguments (calling-convention-nargs args) (car reqargs))
+  (compile-error-if-wrong-number-of-arguments (calling-convention-nargs callconv) (car reqargs))
   (do* ((cur-req (cdr reqargs) (cdr cur-req))
 	(target (car cur-req) (car cur-req)))
        ((endp cur-req) ())
     (compile-save-if-special new-env target))
   ;; Declare the arg-idx i32 that stores the current index in the argument-activation-frame
   (dbg-set-current-debug-location-here)
-  (let ((fixed-args (calling-convention-register-args args)))
+  (let ((fixed-args (calling-convention-register-args callconv)))
     (do* ((cur-target (cdr reqargs) (cdr cur-target))
           (cur-fixed-args fixed-args (cdr cur-fixed-args))
           (target (car cur-target) (car cur-target))
@@ -664,23 +602,59 @@ lambda-list-handler/env/argument-activation-frame"
 
 (defun compile-lambda-list-code (lambda-list-handler
                                  old-env
-                                 args
+                                 callconv
                                  new-env)
   (multiple-value-bind (reqargs optargs rest-var key-flag keyargs allow-other-keys auxargs)
       (process-lambda-list-handler lambda-list-handler)
-    (let ((req-opt-only (and (not rest-var)
-                             (not key-flag)
-                             (eql 0 (car keyargs))
-                             (eql 0 (car auxargs))
-                             (not allow-other-keys)))
-          (num-req (car reqargs))
-          (num-opt (car optargs)))
-      (cond
+    (if (calling-convention-use-only-registers callconv)
         ;; Special cases (foo) (foo x) (foo x y) (foo x y z)  - passed in registers
-        ((and req-opt-only (<= num-req 3) (eql 0 num-opt) )
-         (compile-<=3-required-arguments reqargs old-env args new-env))
-        ;; Test for
-        ;; (x &optional y)
-        ;; (x y &optional z)
-        (t
-         (compile-general-lambda-list-code lambda-list-handler old-env args new-env))))))
+        (compile-with-only-register-arguments reqargs old-env callconv new-env)
+        (compile-general-lambda-list-code lambda-list-handler old-env callconv new-env))))
+
+
+
+(defun bclasp-maybe-alloc-cc-info (lambda-list-handler debug-on)
+  "Maybe allocate slots in the stack frame to handle the calls
+   depending on what is in the lambda-list-handler (&rest, &key etc) and debug-on.
+   Return a calling-convention-setup object that describes what was allocated.
+   See the cclasp version in arguments.lisp
+"
+  (multiple-value-bind (reqargs optargs rest-var key-flag keyargs allow-other-keys auxargs)
+      (process-lambda-list-handler lambda-list-handler)
+    ;; Currently if nargs <= +args-in-registers+ required arguments and (null debug-on)
+    ;;      then can optimize and use the arguments in registers directly
+    ;;  If anything else then allocate space to spill the registers
+    ;;
+    ;; Currently only cases:
+    ;; (w)
+    ;; (w x)
+    ;; (w x y)
+    ;; (w x y z)  up to the +args-in-registers+
+    ;;    can use only registers
+    ;; In the future add support for required + optional 
+    ;; (x &optional y)
+    ;; (x y &optional z) etc
+    (let* ((req-opt-only (and (not rest-var)
+                              (not key-flag)
+                              (eql 0 (car keyargs))
+                              (eql 0 (car auxargs))
+                              (not allow-other-keys)))
+           (num-req (car reqargs))
+           (num-opt (car optargs))
+           ;; Currently only required arguments are accepted
+           ;;          and (<= num-req +args-in-register+)
+           ;;          and not debugging
+           ;;     --> Use only register arguments
+           (may-use-only-registers (and req-opt-only (<= num-req +args-in-registers+) (eql 0 num-opt))))
+      (if (and may-use-only-registers (null debug-on))
+          (make-calling-convention-setup
+           :use-only-registers t)
+          (make-calling-convention-setup
+           :use-only-registers may-use-only-registers ; if may-use-only-registers then debug-on is T and we could use only registers
+           :VaList_S* (irc-alloca-VaList_S :label "VaList_S")
+           :register-save-area* (irc-alloca-register-save-area :label "register-save-area")
+           :invocation-history-frame* (and debug-on (irc-alloca-invocation-history-frame :label "invocation-history-frame")))))))
+
+(defun bclasp-setup-calling-convention (arguments lambda-list-handler debug-on)
+  (let ((setup (bclasp-maybe-alloc-cc-info lambda-list-handler debug-on)))
+    (initialize-calling-convention arguments setup)))

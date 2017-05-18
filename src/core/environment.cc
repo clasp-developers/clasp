@@ -1062,7 +1062,7 @@ bool ValueEnvironment_O::_updateValue(Symbol_sp sym, T_sp obj) {
     }
     return af_updateValue(clasp_currentVisibleEnvironment(parent), sym, obj);
   }
-#if 0 // def DEBUG_ASSERTS
+#if 0 // def DEBUG_ASSERT
   if ( sym->symbolNameAsString()== "ENV") {
     if ( !(obj.nilp() || obj.asOrNull<Environment_O>()) ) {
       printf("%s:%d ValueEnvironment_O@%p::_updateValue to lexical ENV --> %s\n",
@@ -1088,7 +1088,7 @@ T_sp ValueEnvironment_O::new_binding(Symbol_sp sym, int idx, T_sp obj) {
     SIMPLE_ERROR(BF("The symbol[%s] is already in the environment") % _rep_(sym));
   }
 #endif
-#if 0 // def DEBUG_ASSERTS
+#if 0 // def DEBUG_ASSERT
   if ( sym->symbolNameAsString()== "ENV") {
     if ( !(obj.nilp() || obj.asOrNull<Environment_O>()) ) {
       printf("%s:%d ValueEnvironment_O@%p::new_binding lexical ENV --> %s\n",

@@ -1,3 +1,12 @@
+;;; ------------------------------------------------------------
+;;; ------------------------------------------------------------
+;;; ------------------------------------------------------------
+;;; ------------------------------------------------------------
+;;;
+;;; generic dispatch tests
+;;;
+;;;
+
 (error "foo")
 
 (defun gather 
@@ -31,6 +40,9 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;;     cleavir tests
+;;;
 
 (push :enable-fastgf *features*)
 
@@ -51,11 +63,11 @@
   (time (asdf:load-system "clasp-cleavir"))
   (format t "Done  pid = ~a~%"  (core:getpid)))
 
-(apropos "dump-module")
 
-(apropos "invalidated-dispatch-functions")
+(clasp-cleavir:cleavir-compile 'foo '(lambda (x y) (+ x y)))
 
-(clasp-cleavir:cleavir-compile 'foo '(lambda (x y) (+ x y)))ption
+
+
 (time (clasp-cleavir:cleavir-compile-file "sys:kernel;lsp;predlib.lsp"))
 
 (let ((clos::*monitor-dispatch* t)

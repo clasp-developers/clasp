@@ -14,9 +14,9 @@ when this is t a lot of graphs will be generated.")
 ;;; 
 ;;; the inputs are forms to be evaluated.  the outputs are symbols
 ;;; that are names of variables.
-(defgeneric translate-simple-instruction (instruction return-value inputs outputs abi))
+(defgeneric translate-simple-instruction (instruction return-value inputs outputs abi landing-pad))
 
-(defgeneric translate-branch-instruction (instruction return-value inputs outputs successors abi))
+(defgeneric translate-branch-instruction (instruction return-value inputs outputs successors abi landing-pad))
 
 
 
@@ -66,7 +66,7 @@ when this is t a lot of graphs will be generated.")
 (defun translate-lambda-list (lambda-list)
   (mapcar #'translate-lambda-list-item lambda-list))
 
-(defun layout-basic-block (basic-block return-value abi)
+(defun layout-basic-block (basic-block return-value abi current-landing-pad)
   (destructuring-bind (first last owner) basic-block
     (cc-dbg-when *debug-log*
 			 (format *debug-log* "- - - -  begin layout-basic-block  owner: ~a~%" (cc-mir:describe-mir owner))
@@ -85,7 +85,7 @@ when this is t a lot of graphs will be generated.")
 		       (format *debug-log* "     ~a~%" (cc-mir:describe-mir instruction)))
 ||#
        collect (translate-simple-instruction
-		instruction return-value input-vars output-vars abi))
+		instruction return-value input-vars output-vars abi current-landing-pad))
     (let* ((inputs (cleavir-ir:inputs last))
 	   (input-vars (mapcar #'translate-datum inputs))
 	   (outputs (cleavir-ir:outputs last))
@@ -97,14 +97,14 @@ when this is t a lot of graphs will be generated.")
 		   (format *debug-log* "     ~a~%" (cc-mir:describe-mir last)))
       (if (= (length successors) 1)
 	  (list (translate-simple-instruction
-		 last return-value input-vars output-vars abi)
+		 last return-value input-vars output-vars abi current-landing-pad)
 		(if (typep (second basic-block) 'cleavir-ir:unwind-instruction)
 		    (cmp:irc-unreachable)
                     (progn
                       (cmp:irc-low-level-trace :flow)
                       (cmp:irc-br (gethash (first successors) *tags*)))))
 	  (list (translate-branch-instruction
-		 last return-value input-vars output-vars successor-tags abi)))
+		 last return-value input-vars output-vars successor-tags abi current-landing-pad)))
       (cc-dbg-when *debug-log*
 		   (format *debug-log* "- - - -  END layout-basic-block  owner: ~a:~a   -->  ~a~%" (cleavir-ir-gml::label owner) (clasp-cleavir:instruction-gid owner) basic-block))
       )))
@@ -114,17 +114,17 @@ when this is t a lot of graphs will be generated.")
       (clasp-cleavir-hir:lambda-name instr)
       'TOP-LEVEL))
 
-(defun layout-procedure (initial-instruction abi &key (linkage 'llvm-sys:internal-linkage))
+
+(defun layout-procedure* (initial-instruction abi &key (linkage 'llvm-sys:internal-linkage))
   ;; I think this removes every basic-block that
   ;; isn't owned by this initial-instruction
   (let* ((clasp-cleavir-ast-to-hir:*landing-pad* nil)
+         (current-landing-pad (gethash initial-instruction *map-enter-to-landing-pad*))
          return-value
-	 (basic-blocks (remove initial-instruction
-			       *basic-blocks*
-			       :test-not #'eq :key #'third))
+         ;; Gather the basic blocks of this procedure in basic-blocks
+	 (basic-blocks (remove initial-instruction *basic-blocks* :test-not #'eq :key #'third))
 	 ;; Hypothesis: This finds the first basic block
-	 (first (find initial-instruction basic-blocks
-		      :test #'eq :key #'first))
+	 (first (find initial-instruction basic-blocks :test #'eq :key #'first))
 	 ;; This gathers the rest of the basic blocks
 	 (rest (remove first basic-blocks :test #'eq))
 	 (lambda-name (get-or-create-lambda-name initial-instruction)))
@@ -161,16 +161,12 @@ when this is t a lot of graphs will be generated.")
 		       (format *debug-log* "     ~a~%" (cc-mir:describe-mir last)))))
       (let ((args (llvm-sys:get-argument-list fn)))
 	(mapcar #'(lambda (arg argname) (llvm-sys:set-name arg argname))
-		(llvm-sys:get-argument-list fn) cmp:+fn-prototype-argument-names+)
-	;; set the first argument attribute to be sret
-	#+(or)(if args
-                  (let ((attribute-set (llvm-sys:attribute-set-get cmp:*llvm-context* 1 (list 'llvm-sys:attribute-struct-ret))))
-                    (llvm-sys:add-attr (first args) attribute-set))))
+		(llvm-sys:get-argument-list fn) cmp:+fn-prototype-argument-names+))
       ;; create a basic-block for every remaining tag
       (loop for block in rest
 	 for instruction = (first block)
 	 do (progn
-	      #+(or)(format t "creating basic block for rest instruction: ~a~%" instruction)
+	      #+(or)(format t "creating basic block for instruction: ~a~%" instruction)
 	      (setf (gethash instruction *tags*) (cmp:irc-basic-block-create "tag"))))
       (llvm-sys:set-insert-point-basic-block *entry-irbuilder* entry-block)
       ;; hypothesis: bind variables for every var owned by this
@@ -181,8 +177,7 @@ when this is t a lot of graphs will be generated.")
         ;; make sure no landing pads are used from outer functions
         (cmp:with-landing-pad nil 
           (setq return-value (alloca-return_type))
-          ;; in case of a non-local exit, zero out the number of returned
-          ;; values
+          ;; in case of a non-local exit, zero out the number of returned values
           (with-return-values (return-values return-value abi)
             (%store (%size_t 0) (number-of-return-values return-values)))
           (cmp:with-dbg-function ("repl-fix"
@@ -213,14 +208,14 @@ when this is t a lot of graphs will be generated.")
           (llvm-sys:set-insert-point-basic-block body-irbuilder body-block)
           (cmp:with-irbuilder (body-irbuilder)
             (cmp:irc-begin-block body-block)
-            (layout-basic-block first return-value abi)
+            (layout-basic-block first return-value abi current-landing-pad)
             (loop for block in rest
                for instruction = (first block)
                do (progn
                     #+(or)(format t "laying out basic block: ~a~%" block)
                     #+(or)(format t "inserting basic block for instruction: ~a~%" instruction)
                     (cmp:irc-begin-block (gethash instruction *tags*))
-                    (layout-basic-block block return-value abi))))
+                    (layout-basic-block block return-value abi current-landing-pad))))
           ;; finish up by jumping from the entry block to the body block
           (cmp:with-irbuilder (*entry-irbuilder*)
             (cmp:irc-low-level-trace :flow)
@@ -228,6 +223,13 @@ when this is t a lot of graphs will be generated.")
           (cc-dbg-when *debug-log*
                        (format *debug-log* "----------end layout-procedure ~a~%" (llvm-sys:get-name fn)))
           (values fn lambda-name))))))
+
+(defun layout-procedure (initial-instruction abi &key (linkage 'llvm-sys:internal-linkage))
+  ;; Determine if the function is supposed to maintain a backtrace record
+  ;;    if so - then tell layout-procedure* that only va-list and nargs are passed
+  ;;    and wrap the inner function with an outer one that maintains the backtrace record
+  (layout-procedure* initial-instruction abi :linkage linkage))
+
 
 (defvar *forms*)
 (defvar *map-enter-to-landing-pad* nil)
@@ -269,51 +271,46 @@ when this is t a lot of graphs will be generated.")
 ;;; Methods on TRANSLATE-SIMPLE-INSTRUCTION.
 
 (defmethod translate-simple-instruction
-    ((instr cleavir-ir:enter-instruction) return-value inputs outputs (abi abi-x86-64))
-  (let ((landing-pad (gethash instr *map-enter-to-landing-pad*)))
-    (when landing-pad
-      (let ((exn.slot (alloca-i8* "exn.slot"))
-	    (ehselector.slot (alloca-i32 "ehselector.slot")))
-	(setf (basic-block landing-pad)
-	      (clasp-cleavir:create-landing-pad exn.slot
-                                                ehselector.slot
-                                                instr
-                                                return-value
-                                                landing-pad
-                                                *tags*
-                                                abi)))
-      (cmp:with-irbuilder (*entry-irbuilder*)
-        (cmp:irc-low-level-trace :cclasp-eh)
-	(let ((result (cmp:irc-create-call "cc_pushLandingPadFrame" nil)))
-	  (cmp:irc-store result (translate-datum (clasp-cleavir-hir:frame-holder instr)))))))
-  (let* ((fn-args (llvm-sys:get-argument-list cmp:*current-function*))
-         (closed-env-dest (first outputs)))
-    (multiple-value-bind (closed-env-arg calling-convention)
-        (cmp:parse-function-arguments fn-args)
-      (llvm-sys:create-store cmp:*irbuilder* closed-env-arg closed-env-dest nil)
-      #+(or)(progn
-              (format t "translate-simple-instruction for enter-instruction~%")
-              (format t " fn-args: ~a~%" fn-args))
-      (let* ((lambda-list (cleavir-ir:lambda-list instr))
-             (static-environment-output (first (cleavir-ir:outputs instr)))
-             (args (cdr (cleavir-ir:outputs instr))))
-        #+(or)(progn
-                (format t "    outputs: ~s~%" args)
-                (format t "translated outputs: ~s~%" (mapcar (lambda (x) (translate-datum x)) args))
-                (format t "lambda-list: ~a~%" lambda-list))
-        (compile-lambda-list-code lambda-list args calling-convention)))))
+    ((instr cleavir-ir:enter-instruction) return-value inputs outputs (abi abi-x86-64) landing-pad)
+  (when landing-pad
+    (let ((exn.slot (alloca-i8* "exn.slot"))
+          (ehselector.slot (alloca-i32 "ehselector.slot")))
+      (setf (basic-block landing-pad)
+            (clasp-cleavir:create-landing-pad exn.slot
+                                              ehselector.slot
+                                              instr
+                                              return-value
+                                              landing-pad
+                                              *tags*
+                                              abi)))
+    (cmp:with-irbuilder (*entry-irbuilder*)
+      (cmp:irc-low-level-trace :cclasp-eh)
+      (let ((result (%intrinsic-call "cc_pushLandingPadFrame" nil)))
+        (cmp:irc-store result (translate-datum (clasp-cleavir-hir:frame-holder instr))))))
+  (let* ((lambda-list (cleavir-ir:lambda-list instr))
+         (fn-args (llvm-sys:get-argument-list cmp:*current-function*))
+         (closed-env-dest (first outputs))
+         (calling-convention (cclasp-setup-calling-convention fn-args lambda-list NIL #|DEBUG-ON|#)))
+    (%store (cmp:calling-convention-closure calling-convention) closed-env-dest)
+    (let* ((static-environment-output (first (cleavir-ir:outputs instr)))
+           (args (cdr (cleavir-ir:outputs instr))))
+      #++(progn
+        (format t "    outputs: ~s~%" args)
+        (format t "translated outputs: ~s~%" (mapcar (lambda (x) (translate-datum x)) args))
+        (format t "lambda-list: ~a~%" lambda-list))
+      (compile-lambda-list-code lambda-list args calling-convention))))
 
 
 
 (defmethod translate-simple-instruction
-    ((instruction cleavir-ir:instruction) return-value inputs outputs abi)
+    ((instruction cleavir-ir:instruction) return-value inputs outputs abi landing-pad)
   (error "Implement instruction: ~a for abi: ~a~%" instruction abi)
   (format t "--------------- translate-simple-instruction ~a~%" instruction)
   (format t "    inputs: ~a~%" inputs)
   (format t "    outputs: ~a~%" outputs))
 
 (defmethod translate-simple-instruction
-    ((instruction cleavir-ir:assignment-instruction) return-value inputs outputs abi)
+    ((instruction cleavir-ir:assignment-instruction) return-value inputs outputs abi landing-pad)
   #+(or)(progn
 	  (format t "--------------- translate-simple-instruction assignment-instruction~%")
 	  (format t "    inputs: ~a~%" inputs)
@@ -330,7 +327,7 @@ when this is t a lot of graphs will be generated.")
          (%store load output))))))
 
 (defmethod translate-simple-instruction
-    ((instruction clasp-cleavir-hir:precalc-value-instruction) return-value inputs outputs abi)
+    ((instruction clasp-cleavir-hir:precalc-value-instruction) return-value inputs outputs abi landing-pad)
   (let ((idx (first inputs)))
     (cmp:irc-low-level-trace :flow)
     (let* ((label (format nil "~s" (clasp-cleavir-hir:precalc-value-instruction-original-object instruction)))
@@ -338,7 +335,7 @@ when this is t a lot of graphs will be generated.")
       (llvm-sys:create-store cmp:*irbuilder* value (first outputs) nil))))
 
 (defmethod translate-simple-instruction
-    ((instruction cleavir-ir:fixed-to-multiple-instruction) return-value inputs outputs (abi abi-x86-64))
+    ((instruction cleavir-ir:fixed-to-multiple-instruction) return-value inputs outputs (abi abi-x86-64) landing-pad)
   ;; Write the first return value into the result
   (with-return-values (return-values return-value abi)
     (%store (%size_t (length inputs)) (number-of-return-values return-values))
@@ -348,7 +345,7 @@ when this is t a lot of graphs will be generated.")
     ))
 
 (defmethod translate-simple-instruction
-    ((instr cleavir-ir:multiple-to-fixed-instruction) return-value inputs outputs (abi abi-x86-64))
+    ((instr cleavir-ir:multiple-to-fixed-instruction) return-value inputs outputs (abi abi-x86-64) landing-pad)
   ;; Create a basic block for each output
   (cmp:irc-low-level-trace :flow)
   (with-return-values (return-vals return-value abi)
@@ -369,7 +366,7 @@ when this is t a lot of graphs will be generated.")
       (cmp:irc-begin-block final-block))))
 
 (defmethod translate-simple-instruction
-    ((instruction clasp-cleavir-hir:multiple-value-foreign-call-instruction) return-value inputs outputs (abi abi-x86-64))
+    ((instruction clasp-cleavir-hir:multiple-value-foreign-call-instruction) return-value inputs outputs (abi abi-x86-64) landing-pad)
   (cmp:irc-low-level-trace :flow)
   (check-type (clasp-cleavir-hir:function-name instruction) string)
   (let ((call (clasp-cleavir:unsafe-multiple-value-foreign-call :call (clasp-cleavir-hir:function-name instruction) return-value inputs abi)))
@@ -378,8 +375,9 @@ when this is t a lot of graphs will be generated.")
 		 (format *debug-log* "     instruction --> ~a~%" call))))
 
 (defmethod translate-simple-instruction
-    ((instruction clasp-cleavir-hir:foreign-call-instruction) return-value inputs outputs (abi abi-x86-64))
+    ((instruction clasp-cleavir-hir:foreign-call-instruction) return-value inputs outputs (abi abi-x86-64) landing-pad)
   (cmp:irc-low-level-trace :flow)
+  ;; FIXME:  If this function has cleanup forms then this needs to be an INVOKE
   (let ((call (clasp-cleavir:unsafe-foreign-call :call (clasp-cleavir-hir:foreign-types instruction) (clasp-cleavir-hir:function-name instruction) (car outputs) inputs abi)))
     (cc-dbg-when *debug-log*
 		 (format *debug-log* "    translate-simple-instruction foreign-call-instruction: ~a~%" (cc-mir:describe-mir instruction))
@@ -387,15 +385,16 @@ when this is t a lot of graphs will be generated.")
 
 
 (defmethod translate-simple-instruction
-    ((instruction clasp-cleavir-hir:foreign-call-pointer-instruction) return-value inputs outputs (abi abi-x86-64))
+    ((instruction clasp-cleavir-hir:foreign-call-pointer-instruction) return-value inputs outputs (abi abi-x86-64) landing-pad)
   (cmp:irc-low-level-trace :flow)
+  ;; FIXME:  If this function has cleanup forms then this needs to be an INVOKE
   (let ((call (clasp-cleavir:unsafe-foreign-call-pointer :call (clasp-cleavir-hir:foreign-types instruction) (%load (car inputs)) (car outputs) (cdr inputs) abi)))
     (cc-dbg-when *debug-log*
 		 (format *debug-log* "    translate-simple-instruction foreign-call-pointer-instruction: ~a~%" (cc-mir:describe-mir instruction))
 		 (format *debug-log* "     instruction --> ~a~%" call))))
 
 (defmethod translate-simple-instruction
-    ((instruction cleavir-ir:funcall-instruction) return-value inputs outputs (abi abi-x86-64))
+    ((instruction cleavir-ir:funcall-instruction) return-value inputs outputs (abi abi-x86-64) landing-pad)
   #+(or)(progn
           (format t "--------------- translate-simple-instruction funcall-instruction~%")
           (format t "       funcall:~a~%" (clasp-cleavir:instruction-gid instruction))
@@ -407,7 +406,7 @@ when this is t a lot of graphs will be generated.")
           (format t "  instance successors: ~a~%" (cleavir-ir:successors instruction))
           )
   (cmp:irc-low-level-trace :flow)
-  (let ((call (closure-call :call "cc_call" (first inputs) return-value (cdr inputs) abi)))
+  (let ((call (closure-call :call (first inputs) return-value (cdr inputs) abi)))
     #+(or)(progn
             (format t "generated call --> ~a~%" call))
     (cc-dbg-when *debug-log*
@@ -419,7 +418,7 @@ when this is t a lot of graphs will be generated.")
 
 
 (defmethod translate-simple-instruction
-    ((instruction clasp-cleavir:invoke-instruction) return-value inputs outputs (abi abi-x86-64))
+    ((instruction clasp-cleavir:invoke-instruction) return-value inputs outputs (abi abi-x86-64) landing-pad)
   #+(or)(progn
 	  (format t "--------------- translate-simple-instruction funcall-instruction~%")
 	  (format t "    inputs: ~a~%" inputs)
@@ -427,88 +426,89 @@ when this is t a lot of graphs will be generated.")
   (let* ((lpad (clasp-cleavir::landing-pad instruction)))
     (or (basic-block lpad) (error "There must be a basic-block defined for the landing-pad"))
     (cmp:irc-low-level-trace :flow)
-    (let ((call (closure-call :invoke "cc_call" (first inputs) return-value (cdr inputs) abi :landing-pad (basic-block lpad))))
+    (let ((call (closure-call :invoke (first inputs) return-value (cdr inputs) abi :landing-pad (basic-block lpad))))
       (cc-dbg-when *debug-log*
 		   (format *debug-log* "    translate-simple-instruction invoke-instruction: ~a~%" (cc-mir:describe-mir instruction))
 		   (format *debug-log* "     instruction --> ~a~%" call)))))
 
 (defmethod translate-simple-instruction
-    ((instruction cleavir-ir:nop-instruction) return-value inputs outputs abi)
+    ((instruction cleavir-ir:nop-instruction) return-value inputs outputs abi landing-pad)
   (%nil))
 
 (defmethod translate-simple-instruction
-    ((instruction clasp-cleavir-hir:indexed-unwind-instruction) return-value inputs outputs abi)
+    ((instruction clasp-cleavir-hir:indexed-unwind-instruction) return-value inputs outputs abi landing-pad)
   (cmp:irc-low-level-trace :flow)
   (with-return-values (return-vals return-value abi)
     ;; Save whatever is in return-vals in the multiple-value array
-    (cmp:irc-create-call "cc_saveMultipleValue0" (list return-value)) ;; (sret-arg return-vals))
+    (%intrinsic-call "cc_saveMultipleValue0" (list return-value)) ;; (sret-arg return-vals))
     (cmp:irc-low-level-trace :cclasp-eh)
-    (cmp:irc-create-call "cc_unwind" (list (cmp::irc-load (first inputs)) (%size_t (clasp-cleavir-hir:jump-id instruction))))))
+    ;; FIXME:  If this function has cleanup forms then this needs to be an INVOKE
+    (%intrinsic-invoke-if-landing-pad-or-call "cc_unwind" (list (cmp::irc-load (first inputs)) (%size_t (clasp-cleavir-hir:jump-id instruction))) landing-pad)))
 
 (defmethod translate-simple-instruction
-    ((instruction cleavir-ir:create-cell-instruction) return-value inputs outputs abi)
+    ((instruction cleavir-ir:create-cell-instruction) return-value inputs outputs abi landing-pad)
   (cmp:irc-low-level-trace :flow)
-  (let ((result (cmp:irc-create-call "cc_makeCell" nil)))
+  (let ((result (%intrinsic-call "cc_makeCell" nil)))
     (%store result (first outputs))))
 
 (defmethod translate-simple-instruction
-    ((instruction cleavir-ir:write-cell-instruction) return-value inputs outputs abi)
+    ((instruction cleavir-ir:write-cell-instruction) return-value inputs outputs abi landing-pad)
   (cmp:irc-low-level-trace :flow)
   (let ((cell (llvm-sys:create-load-value-twine cmp:*irbuilder* (first inputs) "cell"))
 	(val (llvm-sys:create-load-value-twine cmp:*irbuilder* (second inputs) "val")))
-    (cmp:irc-create-call "cc_writeCell" (list cell val))))
+    (%intrinsic-call "cc_writeCell" (list cell val))))
 
 
 (defmethod translate-simple-instruction
-    ((instruction cleavir-ir:read-cell-instruction) return-value inputs outputs abi)
+    ((instruction cleavir-ir:read-cell-instruction) return-value inputs outputs abi landing-pad)
   (let ((cell (llvm-sys:create-load-value-twine cmp:*irbuilder* (first inputs) "cell")))
   (cmp:irc-low-level-trace :flow)
-    (let ((result (cmp:irc-create-call "cc_readCell" (list cell))))
+    (let ((result (%intrinsic-call "cc_readCell" (list cell))))
       (llvm-sys:create-store cmp:*irbuilder* result (first outputs) nil))))
 
 (defmethod translate-simple-instruction
-    ((instruction cleavir-ir:fetch-instruction) return-value inputs outputs abi)
+    ((instruction cleavir-ir:fetch-instruction) return-value inputs outputs abi landing-pad)
   (cmp:irc-low-level-trace :flow)
   (let ((env (cmp:irc-load (first inputs) "env"))
 	(idx (second inputs)))
-    (let ((result (cmp:irc-create-call "cc_fetch" (list env idx))))
+    (let ((result (%intrinsic-call "cc_fetch" (list env idx))))
       (llvm-sys:create-store cmp:*irbuilder* result (first outputs) nil))))
 
 (defmethod translate-simple-instruction
-    ((instruction cleavir-ir:fdefinition-instruction) return-value inputs outputs abi)
+    ((instruction cleavir-ir:fdefinition-instruction) return-value inputs outputs abi landing-pad)
   ;; How do we figure out if we should use safe or unsafe version
   (cmp:irc-low-level-trace :flow)
   (let ((cell (cmp:irc-load (first inputs) "func-name")))
     ;;    (format t "translate-simple-instruction (first inputs) = ~a ~%" (first inputs))
-    (let ((result (cmp:irc-create-call "cc_safe_fdefinition" (list cell) "func")))
+    (let ((result (%intrinsic-invoke-if-landing-pad-or-call "cc_safe_fdefinition" (list cell) landing-pad "func")))
       (%store result (first outputs)))))
 
 (defmethod translate-simple-instruction
-    ((instruction clasp-cleavir-hir:debug-message-instruction) return-value inputs outputs abi)
+    ((instruction clasp-cleavir-hir:debug-message-instruction) return-value inputs outputs abi landing-pad)
   (let ((msg (cmp:jit-constant-unique-string-ptr (clasp-cleavir-hir:debug-message instruction))))
-    (cmp:irc-create-call "debugMessage" (list msg))))
+    (%intrinsic-call "debugMessage" (list msg))))
 	
 
 (defmethod translate-simple-instruction
-    ((instruction clasp-cleavir-hir:setf-fdefinition-instruction) return-value inputs outputs abi)
+    ((instruction clasp-cleavir-hir:setf-fdefinition-instruction) return-value inputs outputs abi landing-pad)
   (cmp:irc-low-level-trace :flow)
   (let ((cell (cmp:irc-load (first inputs) "setf-func-name")))
-    (let ((result (cmp:irc-create-call "cc_safe_setfdefinition" (list cell))))
+    (let ((result (%intrinsic-invoke-if-landing-pad-or-call "cc_safe_setfdefinition" (list cell) landing-pad)))
       (%store result (first outputs)))))
 
 (defmethod translate-simple-instruction
-    ((instruction cleavir-ir:symbol-value-instruction) return-value inputs outputs abi)
+    ((instruction cleavir-ir:symbol-value-instruction) return-value inputs outputs abi landing-pad)
   (cmp:irc-low-level-trace :flow)
   (let ((sym (cmp:irc-load (first inputs) "sym-name")))
-    (let ((result (cmp:irc-create-call "cc_safe_symbol_value" (list sym))))
+    (let ((result (%intrinsic-invoke-if-landing-pad-or-call "cc_safe_symbol_value" (list sym) landing-pad)))
       (%store result (first outputs)))))
 
 (defmethod translate-simple-instruction
-    ((instruction cleavir-ir:set-symbol-value-instruction) return-value inputs outputs abi)
+    ((instruction cleavir-ir:set-symbol-value-instruction) return-value inputs outputs abi landing-pad)
   (cmp:irc-low-level-trace :flow)
   (let ((sym (cmp:irc-load (first inputs) "sym-name"))
 	(val (cmp:irc-load (second inputs) "value")))
-    (cmp:irc-create-call "cc_setSymbolValue" (list sym val))))
+    (%intrinsic-invoke-if-landing-pad-or-call "cc_setSymbolValue" (list sym val) landing-pad)))
 
 
 #|
@@ -519,12 +519,12 @@ when this is t a lot of graphs will be generated.")
     
   (let ((cell (llvm-sys:create-load-value-twine cmp:*irbuilder* (first inputs) "cell")))
   (cmp:irc-low-level-trace :flow)
-    (let ((result (cmp:irc-create-call "cc_readCell" (list cell))))
+    (let ((result (cmp:irc-intrinsic-call "cc_readCell" (list cell))))
       (llvm-sys:create-store cmp:*irbuilder* result (first outputs) nil))))
 |#
 
 (defmethod translate-simple-instruction
-    ((instruction cleavir-ir:enclose-instruction) return-value inputs outputs abi)
+    ((instruction cleavir-ir:enclose-instruction) return-value inputs outputs abi landing-pad)
   (cmp:irc-low-level-trace :flow)
   (let ((enter-instruction (cleavir-ir:code instruction)))
     (multiple-value-bind (enclosed-function lambda-name)
@@ -534,7 +534,7 @@ when this is t a lot of graphs will be generated.")
              (dx-p (cleavir-ir:dynamic-extent-p instruction))
              (result
                (if dx-p
-                   (cmp:irc-create-call
+                   (%intrinsic-call
                     "cc_stack_enclose"
                     (list* (llvm-sys:create-bit-cast
                             cmp:*irbuilder*
@@ -551,7 +551,7 @@ when this is t a lot of graphs will be generated.")
                            (%size_t (length inputs))
                            loaded-inputs)
                     (format nil "closure->~a" lambda-name))
-                   (cmp:irc-create-call
+                   (%intrinsic-call
                     "cc_enclose"
                     (list* ltv-lambda-name
                            enclosed-function
@@ -569,11 +569,12 @@ when this is t a lot of graphs will be generated.")
         (%store result (first outputs) nil)))))
 
 (defmethod translate-simple-instruction
-    ((instruction cleavir-ir:multiple-value-call-instruction) return-value inputs outputs abi)
+    ((instruction cleavir-ir:multiple-value-call-instruction) return-value inputs outputs abi landing-pad)
   (cmp:irc-low-level-trace :flow)
   (with-return-values (return-vals return-value abi)
-    (cmp:irc-create-call "cc_saveMultipleValue0" (list return-value)) ;; (sret-arg return-vals))
-    (let ((call-result (cmp:irc-create-call "cc_call_multipleValueOneFormCall" 
+    (%intrinsic-call "cc_saveMultipleValue0" (list return-value)) ;; (sret-arg return-vals))
+    ;; NOTE: (NOT A FIXME)  This instruction is explicitly for calls.
+    (let ((call-result (%intrinsic-call "cc_call_multipleValueOneFormCall" 
 				     (list (cmp:irc-load (first inputs))))))
       (%store call-result return-value)
       (cc-dbg-when 
@@ -584,14 +585,15 @@ when this is t a lot of graphs will be generated.")
       )))
 
 (defmethod translate-simple-instruction
-    ((instruction clasp-cleavir:invoke-multiple-value-call-instruction) return-value inputs outputs abi)
+    ((instruction clasp-cleavir:invoke-multiple-value-call-instruction) return-value inputs outputs abi landing-pad)
   (cmp:irc-low-level-trace :flow)
   (let* ((lpad (clasp-cleavir::landing-pad instruction)))
     (with-return-values (return-vals return-value abi)
-      (cmp:irc-create-call "cc_saveMultipleValue0" (list return-value)) ;; (sret-arg return-vals))
-      (let ((call-result (cmp:irc-create-invoke "cc_call_multipleValueOneFormCall" 
-					 (list (cmp:irc-load (first inputs)))
-					 (basic-block lpad))))
+      (%intrinsic-call "cc_saveMultipleValue0" (list return-value)) ;; (sret-arg return-vals))
+      (let ((call-result (cmp::irc-intrinsic-call-or-invoke "cc_call_multipleValueOneFormCall" 
+                                                           (list (cmp:irc-load (first inputs)))
+                                                           "mvofc"
+                                                           (basic-block lpad))))
         (%store call-result return-value)
 	(cc-dbg-when 
 	 *debug-log*
@@ -601,7 +603,7 @@ when this is t a lot of graphs will be generated.")
 
 
 (defmethod translate-simple-instruction
-    ((instruction cleavir-ir:memref2-instruction) return-value inputs outputs abi)
+    ((instruction cleavir-ir:memref2-instruction) return-value inputs outputs abi landing-pad)
   (let* ((tptr (%load (first inputs)))
          (offset (second inputs))
          (ui-tptr (%ptrtoint tptr cmp:%uintptr_t%))
@@ -612,7 +614,7 @@ when this is t a lot of graphs will be generated.")
       (%store read-val (first outputs)))))
 
 (defmethod translate-simple-instruction
-    ((instruction cleavir-ir:memset2-instruction) return-value inputs outputs abi)
+    ((instruction cleavir-ir:memset2-instruction) return-value inputs outputs abi landing-pad)
   (let* ((tptr (%load (first inputs)))
          (offset (second inputs))
          (ui-tptr (%ptrtoint tptr cmp:%uintptr_t%))
@@ -624,7 +626,7 @@ when this is t a lot of graphs will be generated.")
 
 
 (defmethod translate-simple-instruction
-    ((instruction cleavir-ir:the-instruction) return-value inputs outputs abi)
+    ((instruction cleavir-ir:the-instruction) return-value inputs outputs abi landing-pad)
   (declare (ignore outputs))
   #+(or) (warn "What should I do with the-instruction")
   )
@@ -636,7 +638,7 @@ when this is t a lot of graphs will be generated.")
 
 (defmethod translate-simple-instruction
     ((instruction cleavir-ir:dynamic-allocation-instruction)
-     return-value inputs outputs abi)
+     return-value inputs outputs abi landing-pad)
   (declare (ignore return-value inputs outputs abi))
   ;; This instruction is only an indicator for high level analysis,
   ;; so it doesn't need to have any counterpart in LLVM-IR.
@@ -648,12 +650,12 @@ when this is t a lot of graphs will be generated.")
 #+(or)
 (progn
   (defmethod translate-simple-instruction
-      ((instruction cleavir-ir:tailcall-instruction) return-value inputs outputs)
+      ((instruction cleavir-ir:tailcall-instruction) return-value inputs outputs abi landing-pad)
     (declare (ignore outputs))
     `(return (funcall ,(first inputs) ,@(rest inputs))))
 
   (defmethod translate-simple-instruction
-      ((instruction cleavir-ir:the-instruction) return-value inputs outputs)
+      ((instruction cleavir-ir:the-instruction) return-value inputs outputs abi landing-pad)
     (declare (ignore outputs))
     `(unless (typep ,(first inputs) ',(cleavir-ir:value-type instruction))
        (error 'type-error
@@ -662,104 +664,104 @@ when this is t a lot of graphs will be generated.")
 
 
   (defmethod translate-simple-instruction
-      ((instruction cleavir-ir:car-instruction) return-value inputs outputs)
+      ((instruction cleavir-ir:car-instruction) return-value inputs outputs abi landing-pad)
     `(setq ,(first outputs)
 	   (car ,(first inputs))))
 
   (defmethod translate-simple-instruction
-      ((instruction cleavir-ir:cdr-instruction) return-value inputs outputs)
+      ((instruction cleavir-ir:cdr-instruction) return-value inputs outputs abi landing-pad)
     `(setq ,(first outputs)
 	   (cdr ,(first inputs))))
 
   (defmethod translate-simple-instruction
-      ((instruction cleavir-ir:rplaca-instruction) return-value inputs outputs)
+      ((instruction cleavir-ir:rplaca-instruction) return-value inputs outputs abi landing-pad)
     (declare (ignore outputs))
     `(rplaca ,(first inputs) ,(second inputs)))
 
   (defmethod translate-simple-instruction
-      ((instruction cleavir-ir:rplacd-instruction) return-value inputs outputs)
+      ((instruction cleavir-ir:rplacd-instruction) return-value inputs outputs abi landing-pad)
     (declare (ignore outputs))
     `(rplacd ,(first inputs) ,(second inputs)))
 
   (defmethod translate-simple-instruction
-      ((instruction cleavir-ir:t-aref-instruction) return-value inputs outputs)
+      ((instruction cleavir-ir:t-aref-instruction) return-value inputs outputs abi landing-pad)
     `(setq ,(first outputs)
 	   (row-major-aref ,(first inputs) ,(second inputs))))
 
   (defmethod translate-simple-instruction
-      ((instruction cleavir-ir:bit-aref-instruction) return-value inputs outputs)
+      ((instruction cleavir-ir:bit-aref-instruction) return-value inputs outputs abi landing-pad)
     `(setq ,(first outputs)
 	   (row-major-aref ,(first inputs) ,(second inputs))))
 
   (defmethod translate-simple-instruction
-      ((instruction cleavir-ir:unsigned-byte-8-aref-instruction) return-value inputs outputs)
+      ((instruction cleavir-ir:unsigned-byte-8-aref-instruction) return-value inputs outputs abi landing-pad)
     `(setq ,(first outputs)
 	   (row-major-aref ,(first inputs) ,(second inputs))))
 
   (defmethod translate-simple-instruction
-      ((instruction cleavir-ir:short-float-aref-instruction) return-value inputs outputs)
+      ((instruction cleavir-ir:short-float-aref-instruction) return-value inputs outputs abi landing-pad)
     `(setq ,(first outputs)
 	   (row-major-aref ,(first inputs) ,(second inputs))))
 
   (defmethod translate-simple-instruction
-      ((instruction cleavir-ir:single-float-aref-instruction) return-value inputs outputs)
+      ((instruction cleavir-ir:single-float-aref-instruction) return-value inputs outputs abi landing-pad)
     `(setq ,(first outputs)
 	   (row-major-aref ,(first inputs) ,(second inputs))))
 
   (defmethod translate-simple-instruction
-      ((instruction cleavir-ir:double-float-aref-instruction) return-value inputs outputs)
+      ((instruction cleavir-ir:double-float-aref-instruction) return-value inputs outputs abi landing-pad)
     `(setq ,(first outputs)
 	   (row-major-aref ,(first inputs) ,(second inputs))))
 
   (defmethod translate-simple-instruction
-      ((instruction cleavir-ir:long-float-aref-instruction) return-value inputs outputs)
+      ((instruction cleavir-ir:long-float-aref-instruction) return-value inputs outputs abi landing-pad)
     `(setq ,(first outputs)
 	   (row-major-aref ,(first inputs) ,(second inputs))))
 
   (defmethod translate-simple-instruction
-      ((instruction cleavir-ir:t-aset-instruction) return-value inputs outputs)
+      ((instruction cleavir-ir:t-aset-instruction) return-value inputs outputs abi landing-pad)
     (declare (ignore outputs))
     `(setf (row-major-aref ,(first inputs) ,(second inputs))
 	   ,(third inputs)))
 
   (defmethod translate-simple-instruction
-      ((instruction cleavir-ir:bit-aset-instruction) return-value inputs outputs)
+      ((instruction cleavir-ir:bit-aset-instruction) return-value inputs outputs abi landing-pad)
     (declare (ignore outputs))
     `(setf (row-major-aref ,(first inputs) ,(second inputs))
 	   ,(third inputs)))
 
   (defmethod translate-simple-instruction
-      ((instruction cleavir-ir:unsigned-byte-8-aset-instruction) return-value inputs outputs)
+      ((instruction cleavir-ir:unsigned-byte-8-aset-instruction) return-value inputs outputs abi landing-pad)
     (declare (ignore outputs))
     `(setf (row-major-aref ,(first inputs) ,(second inputs))
 	   ,(third inputs)))
 
   (defmethod translate-simple-instruction
-      ((instruction cleavir-ir:short-float-aset-instruction) return-value inputs outputs)
+      ((instruction cleavir-ir:short-float-aset-instruction) return-value inputs outputs abi landing-pad)
     (declare (ignore outputs))
     `(setf (row-major-aref ,(first inputs) ,(second inputs))
 	   ,(third inputs)))
 
   (defmethod translate-simple-instruction
-      ((instruction cleavir-ir:single-float-aset-instruction) return-value inputs outputs)
+      ((instruction cleavir-ir:single-float-aset-instruction) return-value inputs outputs abi landing-pad)
     (declare (ignore outputs))
     `(setf (row-major-aref ,(first inputs) ,(second inputs))
 	   ,(third inputs)))
 
   (defmethod translate-simple-instruction
-      ((instruction cleavir-ir:double-float-aset-instruction) return-value inputs outputs)
+      ((instruction cleavir-ir:double-float-aset-instruction) return-value inputs outputs abi landing-pad)
     (declare (ignore outputs))
     `(setf (row-major-aref ,(first inputs) ,(second inputs))
 	   ,(third inputs)))
 
   (defmethod translate-simple-instruction
-      ((instruction cleavir-ir:long-float-aset-instruction) return-value inputs outputs)
+      ((instruction cleavir-ir:long-float-aset-instruction) return-value inputs outputs abi landing-pad)
     (declare (ignore outputs))
     `(setf (row-major-aref ,(first inputs) ,(second inputs))
 	   ,(third inputs)))
 
   (defmethod translate-simple-instruction
-      ((instruction cleavir-ir:multiple-to-fixed-instruction) return-value inputs outputs)
+      ((instruction cleavir-ir:multiple-to-fixed-instruction) return-value inputs outputs abi landing-pad)
     (let ((temp (gensym)))
       `(let ((,temp ,(first inputs)))
 	 (declare (ignorable ,temp))
@@ -767,34 +769,34 @@ when this is t a lot of graphs will be generated.")
 	      collect `(setf ,output (pop ,temp))))))
 
   (defmethod translate-simple-instruction
-      ((instruction cleavir-ir:unwind-instruction) return-value inputs outputs)
+      ((instruction cleavir-ir:unwind-instruction) return-value inputs outputs abi landing-pad)
     (gensym))
   )
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
 ;;; Methods on TRANSLATE-BRANCH-INSTRUCTION.
 (defmethod translate-branch-instruction
-    ((instruction cleavir-ir:eq-instruction) return-value inputs outputs successors abi)
+    ((instruction cleavir-ir:eq-instruction) return-value inputs outputs successors abi landing-pad)
   (let ((ceq (cmp:irc-icmp-eq (cmp:irc-load (first inputs)) (cmp:irc-load (second inputs)))))
     (cmp:irc-low-level-trace :flow)
     (cmp:irc-cond-br ceq (first successors) (second successors))))
 
 (defmethod translate-branch-instruction
-    ((instruction cleavir-ir:consp-instruction) return-value inputs outputs successors abi)
+    ((instruction cleavir-ir:consp-instruction) return-value inputs outputs successors abi landing-pad)
   (let* ((x (%load (first inputs)))
          (tag (%and (%ptrtoint x cmp::%i32%) (%i32 cmp:+tag-mask+) "tag-only"))
          (cmp (%icmp-eq tag (%i32 cmp:+cons-tag+) "consp-test")))
     (%cond-br cmp (first successors) (second successors) :likely-true t)))
 
 (defmethod translate-branch-instruction
-    ((instruction cleavir-ir:fixnump-instruction) return-value inputs outputs successors abi)
+    ((instruction cleavir-ir:fixnump-instruction) return-value inputs outputs successors abi landing-pad)
   (let* ((x (%load (first inputs)))
          (tag (%and (%ptrtoint x cmp::%i32%) (%i32 cmp:+fixnum-mask+) "fixnum-tag-only"))
          (cmp (%icmp-eq tag (%i32 cmp:+fixnum-tag+) "fixnump-test")))
     (%cond-br cmp (first successors) (second successors) :likely-true t)))
 
 (defmethod translate-branch-instruction
-    ((instruction cc-mir:characterp-instruction) return-value inputs outputs successors abi)
+    ((instruction cc-mir:characterp-instruction) return-value inputs outputs successors abi landing-pad)
   (let* ((tag (%and (%ptrtoint value cmp:%uintptr_t%)
                     (%uintptr_t cmp:+immediate-mask+) "character-tag-only"))
          (cmp (%icmp-eq tag (%uintptr_t cmp:+character-tag+))))
@@ -802,7 +804,7 @@ when this is t a lot of graphs will be generated.")
 
 
 (defmethod translate-branch-instruction
-    ((instruction cc-mir:single-float-p-instruction) return-value inputs outputs successors abi)
+    ((instruction cc-mir:single-float-p-instruction) return-value inputs outputs successors abi landing-pad)
   (let* ((tag (%and (%ptrtoint value cmp:%uintptr_t%)
                     (%uintptr_t cmp:+immediate-mask+) "single-float-tag-only"))
          (cmp (%icmp-eq tag (%uintptr_t cmp:+single-float-tag+))))
@@ -810,37 +812,41 @@ when this is t a lot of graphs will be generated.")
 
 
 (defmethod translate-branch-instruction
-    ((instruction cleavir-ir:return-instruction) return-value inputs outputs successors abi)
+    ((instruction cleavir-ir:return-instruction) return-value inputs outputs successors abi landing-pad)
   (declare (ignore successors))
   (cmp:irc-low-level-trace :flow)
   (llvm-sys:create-ret cmp:*irbuilder* (%load return-value)))
 
 (defmethod translate-branch-instruction
-    ((instruction cleavir-ir:funcall-no-return-instruction) return-value inputs outputs successors (abi abi-x86-64))
+    ((instruction cleavir-ir:funcall-no-return-instruction) return-value inputs outputs successors (abi abi-x86-64) landing-pad)
   (declare (ignore successors))
   (cmp:irc-low-level-trace :flow)
-  (closure-call :call "cc_call" (first inputs) return-value (cdr inputs) abi)
+  ;; FIXME:  If this function has cleanup forms then this needs to be an INVOKE
+  (closure-call :call (first inputs) return-value (cdr inputs) abi)
   (cmp:irc-unreachable))
 
 
 (defmethod translate-branch-instruction
-    ((instruction clasp-cleavir-hir:throw-instruction) return-value inputs outputs successors abi)
+    ((instruction clasp-cleavir-hir:throw-instruction) return-value inputs outputs successors abi landing-pad)
   (declare (ignore successors))
   (cmp:irc-low-level-trace :flow)
   #+(or)(with-return-values (return-vals return-value abi)
           (cmp:irc-intrinsic "cc_saveMultipleValue0" return-value #|(sret-arg return-vals)|#)
           (cmp:irc-intrinsic "cc_throw" (cmp:irc-load (first inputs))))
-  (cmp:irc-create-call "cc_throw" (list (%load (first inputs)) (%load (second inputs))))
+  ;;; FIXME   irc-intrinsic-call won't work here because cc_throw needs INVOKE
+  ;;;     HOW DOES THIS EVEN WORK WITH cc_popLandingPadFrame????
+  (%intrinsic-invoke-if-landing-pad-or-call "cc_throw" (list (%load (first inputs)) (%load (second inputs))) landing-pad)
   (cmp:irc-unreachable))
 
 (defmethod translate-branch-instruction
-    ((instruction clasp-cleavir-hir:landing-pad-return-instruction) return-value inputs outputs successors abi)
+    ((instruction clasp-cleavir-hir:landing-pad-return-instruction) return-value inputs outputs successors abi landing-pad)
   (cmp:irc-low-level-trace :cclasp-eh)
-  (cmp:irc-create-call "cc_popLandingPadFrame" (list (cmp:irc-load (car (last inputs)))))
+  ;; TODO - Is this where I can put in the cc_pop_InvocationHistoryFrame????????
+  (%intrinsic-call "cc_popLandingPadFrame" (list (cmp:irc-load (car (last inputs)))))
   (call-next-method))
 
 (defmethod translate-branch-instruction
-    ((instruction cleavir-ir:fixnum-add-instruction) return-value inputs outputs successors abi)
+    ((instruction cleavir-ir:fixnum-add-instruction) return-value inputs outputs successors abi landing-pad)
   (let* ((x (%ptrtoint (%load (first inputs)) (%default-int-type abi)))
          (y (%ptrtoint (%load (second inputs)) (%default-int-type abi)))
          (result-with-overflow (%sadd.with-overflow x y abi)))
@@ -850,7 +856,7 @@ when this is t a lot of graphs will be generated.")
       (%cond-br overflow (second successors) (first successors)))))
 
 (defmethod translate-branch-instruction
-    ((instruction cleavir-ir:fixnum-sub-instruction) return-value inputs outputs successors abi)
+    ((instruction cleavir-ir:fixnum-sub-instruction) return-value inputs outputs successors abi landing-pad)
   (let* ((x (%ptrtoint (%load (first inputs)) (%default-int-type abi)))
          (y (%ptrtoint (%load (second inputs)) (%default-int-type abi)))
          (result-with-overflow (%ssub.with-overflow x y abi)))
@@ -860,21 +866,21 @@ when this is t a lot of graphs will be generated.")
       (%cond-br overflow (second successors) (first successors)))))
 
 (defmethod translate-branch-instruction
-    ((instruction cleavir-ir:fixnum-less-instruction) return-value inputs outputs successors abi)
+    ((instruction cleavir-ir:fixnum-less-instruction) return-value inputs outputs successors abi landing-pad)
   (let* ((x (%ptrtoint (%load (first inputs)) (%default-int-type abi)))
          (y (%ptrtoint (%load (second inputs)) (%default-int-type abi)))
          (cmp-lt (%icmp-slt x y)))
       (%cond-br cmp-lt (first successors) (second successors))))
 
 (defmethod translate-branch-instruction
-    ((instruction cleavir-ir:fixnum-not-greater-instruction) return-value inputs outputs successors abi)
+    ((instruction cleavir-ir:fixnum-not-greater-instruction) return-value inputs outputs successors abi landing-pad)
   (let* ((x (%ptrtoint (%load (first inputs)) (%default-int-type abi)))
          (y (%ptrtoint (%load (second inputs)) (%default-int-type abi)))
          (cmp-lt (%icmp-sle x y)))
       (%cond-br cmp-lt (first successors) (second successors))))
 
 (defmethod translate-branch-instruction
-    ((instruction cleavir-ir:fixnum-equal-instruction) return-value inputs outputs successors abi)
+    ((instruction cleavir-ir:fixnum-equal-instruction) return-value inputs outputs successors abi landing-pad)
   (let* ((x (%ptrtoint (%load (first inputs)) (%default-int-type abi)))
          (y (%ptrtoint (%load (second inputs)) (%default-int-type abi)))
          (cmp-lt (%icmp-eq x y)))
@@ -889,7 +895,7 @@ when this is t a lot of graphs will be generated.")
 ;;; (in addition to the method on TRANSLATE-SIMPLE-INSTRUCTION)
 ;;; specialized to FUNCALL-INSTRUCTION.
 (defmethod translate-branch-instruction
-    ((instruction cleavir-ir:funcall-instruction) return-value inputs outputs successors abi)
+    ((instruction cleavir-ir:funcall-instruction) return-value inputs outputs successors abi landing-pad)
   (declare (ignore outputs successors))
   `(funcall ,(first inputs) ,@(rest inputs)))
 

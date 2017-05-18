@@ -173,7 +173,7 @@ irc-intrinsic
 *current-function*
 irc-load
 irc-load
-irc-create-call
+irc-intrinsic-call
 irc-create-invoke
 irc-basic-block-create
 irc-basic-block-create
@@ -196,7 +196,7 @@ irc-cond-br
 irc-begin-block
 with-catch
 with-landing-pad
-irc-create-call
+irc-intrinsic-call
 irc-load
 irc-basic-block-create
 irc-intrinsic
@@ -273,7 +273,6 @@ irc-low-level-trace
 *irbuilder*
 *irbuilder*
 irc-low-level-trace
-irc-intrinsic-args
 *irbuilder*
 irc-low-level-trace
 irc-intrinsic
@@ -307,7 +306,6 @@ irc-intrinsic
 *irbuilder*
 irc-low-level-trace
 irc-load
-irc-intrinsic-args
 jit-constant-unique-string-ptr
 irc-intrinsic
 irc-low-level-trace
@@ -315,7 +313,7 @@ irc-load
 irc-intrinsic
 irc-low-level-trace
 irc-load
-irc-create-call
+irc-intrinsic-call
 irc-low-level-trace
 irc-load
 irc-load
@@ -324,7 +322,7 @@ irc-low-level-trace
 irc-load
 codegen-literal
 irc-low-level-trace
-irc-create-call
+irc-intrinsic-call
 irc-load
 irc-low-level-trace
 irc-create-invoke

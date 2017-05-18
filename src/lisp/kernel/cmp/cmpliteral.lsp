@@ -132,14 +132,24 @@ the value is put into *default-load-time-value-vector* and its index is returned
             (load-time-reference-literal (denominator ratio) read-only-p)))
 
 (defun ltv/cons (cons index read-only-p)
-  (if (core:proper-list-p cons)
-      (apply 'add-creator "ltvc_make_list" index
-             (length cons) (mapcar (lambda (x)
-                                     (load-time-reference-literal x read-only-p))
-                                   cons))
-      (add-creator "ltvc_make_cons" index
-                (load-time-reference-literal (car cons) read-only-p)
-                (load-time-reference-literal (cdr cons) read-only-p))))
+  (let ((isproper (core:proper-list-p cons)))
+    (cond
+      ((and isproper (< (length cons) call-arguments-limit))
+       (apply 'add-creator "ltvc_make_list" index
+              (length cons) (mapcar (lambda (x)
+                                      (load-time-reference-literal x read-only-p))
+                                    cons)))
+      ((null isproper)
+       (add-creator "ltvc_make_cons" index
+                    (load-time-reference-literal (car cons) read-only-p)
+                    (load-time-reference-literal (cdr cons) read-only-p)))
+      ;; Too long list
+      (t (let* ((pos (- call-arguments-limit 8))
+                (front (subseq cons 0 pos))
+                (back (nthcdr pos cons)))
+           (add-creator "ltvc_nconc" index
+                        (load-time-reference-literal front read-only-p)
+                        (load-time-reference-literal back read-only-p)))))))
 
 (defun ltv/complex (complex index read-only-p)
   (add-creator "ltvc_make_complex" index
@@ -285,7 +295,7 @@ the constants-table."
                    "Lookup or create the llvm::Value for obj"
                    (or (gethash obj *llvm-values*)
                        (setf (gethash obj *llvm-values*)
-                             (irc-create-call (literal:constant-creator-name obj)
+                             (irc-intrinsic-call (literal:constant-creator-name obj)
                                               (list*
                                                *gcroots-in-module*
                                                (cmp:jit-constant-size_t (constant-creator-index obj))
@@ -309,11 +319,11 @@ the constants-table."
                (let* ((fn-name (literal:constant-side-effect-name node))
                       (args (literal:constant-side-effect-arguments node))
                       (fix-args (fix-args args)))
-                 (irc-create-call fn-name fix-args)))
+                 (irc-intrinsic-call fn-name fix-args)))
               (t (error "Unknown run-all node ~a" node)))))
       (cond
         ((eq type :toplevel)
-         (cmp:irc-create-call "ltvc_toplevel_funcall" (list body-return-fn)))
+         (cmp:irc-intrinsic-call "ltvc_toplevel_funcall" (list body-return-fn)))
         ((eq type :ltv) body-return-fn)
         (t (error "bad type"))))))
 
@@ -395,11 +405,11 @@ Return the index of the load-time-value"
                                                            (cmp:jit-constant-size_t 0)) "table")))
           (llvm-sys:replace-all-uses-with cmp:*load-time-value-holder-global-var* bitcast-correct-size-holder)
           (with-run-all-entry-codegen
-              (cmp:irc-create-call "cc_initialize_gcroots_in_module"
-                                   (list *gcroots-in-module*
-                                         (irc-pointer-cast correct-size-holder cmp:%tsp*% "")
-                                         (cmp:jit-constant-size_t table-entries)
-                                         (cmp:irc-int-to-ptr (cmp:jit-constant-uintptr_t 0) %t*%))))
+              (cmp:irc-intrinsic-call "cc_initialize_gcroots_in_module"
+                                      (list *gcroots-in-module*
+                                            (irc-pointer-cast correct-size-holder cmp:%tsp*% "")
+                                            (cmp:jit-constant-size_t table-entries)
+                                            (cmp:irc-int-to-ptr (cmp:jit-constant-uintptr_t 0) %t*%))))
           ;; Erase the dummy holder
           (llvm-sys:erase-from-parent cmp:*load-time-value-holder-global-var*))))))
 

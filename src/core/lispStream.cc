@@ -182,7 +182,7 @@ String_sp &StringOutputStreamOutputString(T_sp strm) {
 }
 
 Fixnum StringFillp(String_sp s) {
-  ASSERT(cl__non_simple_stringp(s));
+  ASSERT(core__non_simple_stringp(s));
   if (!s->arrayHasFillPointerP()) {
     SIMPLE_ERROR(BF("The vector does not have a fill pointer"));
   }

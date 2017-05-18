@@ -226,7 +226,7 @@ class smart_ptr /*: public tagged_ptr<T>*/ {
   inline smart_ptr(const smart_ptr<Type> &obj) : theObject(obj.theObject){};
 #endif
 
-#ifndef DEBUG_ASSERT
+#ifndef DEBUG_ASSERT_TYPE_CAST
   template <class From>
     inline smart_ptr(smart_ptr<From> const &rhs) : theObject(reinterpret_cast<Type*>(rhs.theObject)) {};
 #else
@@ -236,7 +236,7 @@ class smart_ptr /*: public tagged_ptr<T>*/ {
       this->theObject = reinterpret_cast<Type*>(rhs.raw_());//TaggedCast<Type *, From *>::castOrNULL(rhs.theObject); //reinterpret_cast<From*>(rhs.raw_()));
       return;
     }
-    lisp_errorCast<Type, From>(rhs.theObject);
+    core::lisp_errorCast<Type, From>(rhs.theObject);
   }
 #endif
 
@@ -517,8 +517,8 @@ inline To_SP As(const return_type &rhs) {
  // See src/core/record.h
  template <typename To_SP, typename From_SP>
    inline To_SP As_unsafe(From_SP const &rhs) {
-#ifdef DEBUG_ASSERTS
-   GCTOOLS_ASSERT(rhs.template isA<typename To_SP::Type>());
+#ifdef DEBUG_ASSERT
+//   GCTOOLS_ASSERT(TaggedCast<typename To_SP::Type*, typename From_SP::Type*>::isA(rhs));
 #endif
    To_SP ret((Tagged)rhs.raw_());
    return ret;

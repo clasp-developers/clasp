@@ -29,6 +29,7 @@ THE SOFTWARE.
 #include <clasp/core/foundation.h>
 #include <clasp/core/common.h>
 #include <clasp/core/environment.h>
+#include <clasp/core/lispCallingConvention.h>
 #include <clasp/core/symbolTable.h>
 #include <clasp/core/hashTable.h>
 #include <clasp/core/hashTableEql.h>
@@ -108,35 +109,35 @@ CL_DEFUN void core__ensure_single_dispatch_method(Symbol_sp gfname, Class_sp rec
 
 
 LCC_RETURN SingleDispatchCxxEffectiveMethodFunction_O::LISP_CALLING_CONVENTION() {
-  INCREMENT_FUNCTION_CALL_COUNTER(this);
-  ASSERT_LCC_VA_LIST_CLOSURE_DEFINED(lcc_arglist);
-  LCC_MAKE_VA_LIST_SP(sdargs);
-  return (*this->_onlyCxxMethodFunction)(LCC_PASS_ARGS2_ELLIPSIS(this->_onlyCxxMethodFunction.raw_(),sdargs.raw_(),_Nil<T_O>().raw_()));
+  SETUP_CLOSURE(SingleDispatchCxxEffectiveMethodFunction_O,closure);
+  INCREMENT_FUNCTION_CALL_COUNTER(closure);
+  COPY_VA_LIST();
+  // INITIALIZE_VA_LIST(); // This was done by the caller
+  return (closure->_onlyCxxMethodFunction)->entry(LCC_PASS_ARGS_VASLIST(closure->_onlyCxxMethodFunction.raw_(),lcc_vargs));
 };
 
 
 LCC_RETURN SingleDispatchEffectiveMethodFunction_O::LISP_CALLING_CONVENTION() {
-  INCREMENT_FUNCTION_CALL_COUNTER(this);
-  ASSERT_LCC_VA_LIST_CLOSURE_DEFINED(lcc_arglist);
-  VaList_sp orig_args((gctools::Tagged)lcc_arglist);
-  VaList_S &orig_args_s = *orig_args;
-  for ( auto cur : this->_Befores ) {
-    VaList_S before_args_s(orig_args_s);
+  SETUP_CLOSURE(SingleDispatchEffectiveMethodFunction_O,closure);
+  INCREMENT_FUNCTION_CALL_COUNTER(closure);
+  COPY_VA_LIST();
+  for ( auto cur : closure->_Befores ) {
+    VaList_S before_args_s(*lcc_vargs);
     VaList_sp before_args(&before_args_s);
     Function_sp before((gctools::Tagged)oCar(cur).raw_());
-    (*before)(LCC_PASS_ARGS2_ELLIPSIS(before.raw_(),before_args.raw_(),_Nil<T_O>().raw_()));
+    (*before).entry(LCC_PASS_ARGS_VASLIST(before.raw_(),before_args));
   }
   MultipleValues save;
-  Function_sp primary0((gctools::Tagged)oCar(this->_Primaries).raw_());
-  VaList_S primary_args_s(orig_args_s);
+  Function_sp primary0((gctools::Tagged)oCar(closure->_Primaries).raw_());
+  VaList_S primary_args_s(*lcc_vargs);
   VaList_sp primary_args(&primary_args_s);
-  T_mv val0 = (*primary0)(LCC_PASS_ARGS2_ELLIPSIS(primary0.raw_(),primary_args.raw_(),oCdr(this->_Primaries).raw_()));
+  T_mv val0 = (*primary0).entry(LCC_PASS_ARGS_VASLIST(primary0.raw_(),primary_args));
   multipleValuesSaveToMultipleValues(val0, &save);
-  for ( auto cur : this->_Afters ) {
-    VaList_S after_args_s(orig_args_s);
+  for ( auto cur : closure->_Afters ) {
+    VaList_S after_args_s(*lcc_vargs);
     VaList_sp after_args(&after_args_s);
     Function_sp after((gctools::Tagged)oCar(cur).raw_());
-    (*after)(LCC_PASS_ARGS2_ELLIPSIS(after.raw_(),after_args.raw_(),_Nil<T_O>().raw_()));
+    (*after).entry(LCC_PASS_ARGS_VASLIST(after.raw_(),after_args));
   }
   return multipleValuesLoadFromMultipleValues(&save);
 }
@@ -181,33 +182,34 @@ void SingleDispatchGenericFunctionClosure_O::addMethod(SingleDispatchMethod_sp m
       std-compute-discriminating-function (gf) AMOP-303 top
     */
 LCC_RETURN SingleDispatchGenericFunctionClosure_O::LISP_CALLING_CONVENTION() {
-  INCREMENT_FUNCTION_CALL_COUNTER(this);
-  ASSERT_LCC_VA_LIST_CLOSURE_DEFINED(lcc_arglist);
+  SETUP_CLOSURE(SingleDispatchGenericFunctionClosure_O,closure);
+  INCREMENT_FUNCTION_CALL_COUNTER(closure);
+  INITIALIZE_VA_LIST(); //  lcc_vargs now points to argument list
   Function_sp func;
   Cache_sp cache = my_thread->_SingleDispatchMethodCachePtr;
   gctools::Vec0<T_sp> &vektor = cache->keys();
-  vektor[0] = this->name();
+  vektor[0] = closure->name();
   Class_sp dispatchArgClass = vektor[1] = lisp_instance_class(LCC_ARG0());
   CacheRecord *e; //gctools::StackRootedPointer<CacheRecord> e;
   try {
     cache->search_cache(e); // e = ecl_search_cache(cache);
   } catch (CacheError &err) {
     printf("%s:%d - There was an CacheError searching the GF cache for the keys  You should try and get into cache->search_cache to see where the error is\n", __FILE__, __LINE__);
-    SIMPLE_ERROR(BF("Try #1 generic function cache search error looking for %s") % _rep_(this->name()));
+    SIMPLE_ERROR(BF("Try #1 generic function cache search error looking for %s") % _rep_(closure->name()));
   }
   //        printf("%s:%d searched on %s/%s  cache record = %p\n", __FILE__, __LINE__, _rep_(vektor[0]).c_str(), _rep_(vektor[1]).c_str(), e );
   if (e->_key.notnilp()) {
     func = gc::As<Function_sp>(e->_value);
   } else {
-//    printf("%s:%d Cache miss in SingleDispatchGenericFunctionClosure_O for %s\n", __FILE__, __LINE__, _rep_(this->_name).c_str());
-    func = this->slowMethodLookup(dispatchArgClass);
+//    printf("%s:%d Cache miss in SingleDispatchGenericFunctionClosure_O for %s\n", __FILE__, __LINE__, _rep_(closure->_name).c_str());
+    func = closure->slowMethodLookup(dispatchArgClass);
     T_sp keys = SimpleVector_O::make(vektor.size(),_Nil<T_O>(),true,vektor.size(),&(vektor[0]));
     e->_key = keys;
     e->_value = func;
   }
   // WARNING: DO NOT alter contents of _lisp->callArgs() or _lisp->multipleValues() above.
   // LISP_PASS ARGS relys on the extra arguments being passed transparently
-  return func->invoke_va_list(LCC_PASS_ARGS);
+  return func->entry(LCC_PASS_ARGS_VASLIST(func.raw_(),lcc_vargs));
 }
 
 class SingleDispatch_OrderByClassPrecedence {

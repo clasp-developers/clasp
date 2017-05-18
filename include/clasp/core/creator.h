@@ -96,5 +96,32 @@ namespace core {
 };
 
 
+namespace core {
+  class StandardClassCreator_O : public Creator_O {
+    LISP_CLASS(core,CorePkg,StandardClassCreator_O,"StandardClassCreator",Creator_O);
+  public:
+    StandardClassCreator_O() {};
+    void describe() const {
+      printf("StandardClassCreator\n");
+    };
+    T_sp creator_allocate();
+    virtual size_t templatedSizeof() const { return sizeof(StandardClassCreator_O); };
+  };
+};
+
+namespace core {
+  class StructureClassCreator_O : public Creator_O {
+    LISP_CLASS(core,CorePkg,StructureClassCreator_O,"StructureClassCreator",Creator_O);
+  public:
+    StructureClassCreator_O() {};
+    void describe() const {
+      printf("StructureClassCreator\n");
+    };
+    T_sp creator_allocate();
+    virtual size_t templatedSizeof() const { return sizeof(StructureClassCreator_O); };
+  };
+};
+
+
 
 #endif // ifndef creator_h

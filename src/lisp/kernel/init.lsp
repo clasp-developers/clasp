@@ -17,6 +17,10 @@
 (export '*notify-on-compile*)
 (sys:*make-special 'core::*trace-startup*)
 (setq *trace-startup* (member :trace-startup *features*))
+(sys:*make-special 'core::*dump-defmacro-definitions*)
+(setq *dump-defmacro-definitions* NIL)
+(sys:*make-special 'core::*dump-defun-definitions*)
+(setq *dump-defun-definitions* nil)
 (export '*trace-startup*)
 
 
@@ -102,6 +106,10 @@
 (if (find-package "FFI")
     nil
     (make-package "FFI" :use '(:CL :CORE)))
+
+(if (find-package "CLASP-CLEAVIR")
+    nil
+    (make-package "CLASP-CLEAVIR" :use '(:CL)))
 
 ;;; Setup a few things for the EXT package
 ;;; EXT exports

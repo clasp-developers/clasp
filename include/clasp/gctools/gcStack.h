@@ -56,7 +56,7 @@ struct Frame {
   void* overflow_arg_area_ptr() const { return const_cast<void*>(reinterpret_cast<const void*>(&this->_overflow_area[0])); };
   Frame(core::T_O* closure, size_t numArguments) {
     this->_register_save_area[LCC_CLOSURE_REGISTER] = closure;
-    this->_register_save_area[LCC_OVERFLOW_SAVE_REGISTER] = reinterpret_cast<core::T_O*>(&this->_overflow_area[0]);
+//    this->_register_save_area[LCC_OVERFLOW_SAVE_REGISTER] = reinterpret_cast<core::T_O*>(&this->_overflow_area[0]);
     this->_register_save_area[LCC_NARGS_REGISTER] = reinterpret_cast<core::T_O*>(numArguments);
     for ( int i=(LCC_ABI_ARGS_IN_REGISTERS-LCC_ARGS_IN_REGISTERS); i<LCC_ABI_ARGS_IN_REGISTERS; ++i ) {
       this->_register_save_area[i] = gctools::tag_unbound<core::T_O*>();
@@ -110,22 +110,49 @@ struct VaList_S {
 DO NOT CHANGE THE ORDER OF THESE OBJECTS WITHOUT UPDATING THE DEFINITION OF +va_list+ in cmpintrinsics.lsp
 */
   mutable va_list _Args;
+  mutable size_t  _remaining_nargs;
+
+#ifdef _DEBUG_BUILD
+  inline void check_remaining_nargs() const {
+    if (this->_remaining_nargs >CALL_ARGUMENTS_LIMIT) {
+      printf("%s:%d  this->_remaining_nargs has bad value %lu\n", __FILE__, __LINE__, this->_remaining_nargs);
+    }
+  }
+#else
+  inline void check_remaining_nargs() const {};
+#endif
+
   inline core::T_O *asTaggedPtr() {
     return gctools::tag_valist<core::T_O *>(this);
   }
   VaList_S(gc::Frame* frame) {
     LCC_SETUP_VA_LIST_FROM_FRAME(this->_Args, *frame);
+    this->_remaining_nargs = frame->number_of_arguments();
+    this->check_remaining_nargs();
   };
 
   VaList_S(const gc::Frame& frame) {
     LCC_SETUP_VA_LIST_FROM_FRAME(this->_Args, frame);
+    this->_remaining_nargs = frame.number_of_arguments();
+    this->check_remaining_nargs();
   };
 
-  VaList_S(int nargs, va_list vargs) {
+  VaList_S(size_t nargs, va_list vargs) {
     va_copy(this->_Args, vargs);
+    this->_remaining_nargs = nargs;
+    this->check_remaining_nargs();
+  };
+  // The VaList_S._Args must be initialized immediately after this
+  //    using va_start(xxxx._Args,FIRST_ARG)
+  //    See lispCallingConvention.h INITIALIZE_VA_LIST
+  VaList_S(size_t nargs) {
+    this->_remaining_nargs = nargs;
+    this->check_remaining_nargs();
   };
   VaList_S(const VaList_S &other) {
     va_copy(this->_Args, other._Args);
+    this->_remaining_nargs = other._remaining_nargs;
+    this->check_remaining_nargs();
   }
 
   VaList_S(){};
@@ -141,34 +168,45 @@ DO NOT CHANGE THE ORDER OF THESE OBJECTS WITHOUT UPDATING THE DEFINITION OF +va_
 #endif
   void set_from_other_VaList_S(VaList_S *other) {
     LCC_SETUP_VA_LIST_FROM_VA_LIST(this->_Args, other->_Args);
+    this->_remaining_nargs = other->_remaining_nargs;
+    this->check_remaining_nargs();
   }
 
   inline size_t total_nargs() const {
     size_t n = LCC_VA_LIST_TOTAL_NUMBER_OF_ARGUMENTS(this);
     return n;
   }
+
+
+
   inline size_t remaining_nargs() const {
-    size_t n;
-    LCC_VA_LIST_REMAINING_NUMBER_OF_ARGUMENTS(n,this);
-    return n;
+    this->check_remaining_nargs();
+    return this->_remaining_nargs;
   }
+#if 0
   inline size_t current_index() const {
+    printf("%s:%d  implement-me\n", __FILE__, __LINE__ );
     size_t idx;
     LCC_VA_LIST_CURRENT_INDEX(idx,this);
     return idx;
   }
+#endif
   inline core::T_O* next_arg_raw() {
+    --this->_remaining_nargs;
+    this->check_remaining_nargs();
     return LCC_NEXT_ARG_RAW_AND_ADVANCE(this);
   }
 
   inline core::T_sp next_arg() {
+    --this->_remaining_nargs;
+    this->check_remaining_nargs();
     T_O* ptr = LCC_NEXT_ARG_RAW_AND_ADVANCE(this);
     return T_sp(reinterpret_cast<gctools::Tagged>(ptr));
   }
 
-  inline core::T_O *absolute_indexed_arg(size_t idx) const {
+  inline core::T_O *relative_indexed_arg(size_t idx) const {
     core::T_O *res;
-    LCC_VA_LIST_ABSOLUTE_INDEXED_ARG(res, this, idx);
+    LCC_VA_LIST_RELATIVE_INDEXED_ARG(res, this, idx);
     return res;
   }
 };

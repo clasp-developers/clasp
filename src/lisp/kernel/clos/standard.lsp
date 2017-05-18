@@ -10,12 +10,6 @@
 ;;;;
 ;;;;    See file '../Copyright' for full details.
 
-;; Should be commented out
-#+(or)(eval-when (:execute)
-  (format t "!~%!~%!~%!~%!~%In fixup.lsp !~%  Turning on :compare *feature*  for ensure-generic-function~%!~%!~%!~%!~%")
-  (setq core:*echo-repl-read* t)
-  (setq cl:*features* (cons :compare cl:*features*)))
-
 (in-package "CLOS")
 
 #+(or)
@@ -205,7 +199,6 @@
   (finalize-unless-forward class)
   class)
 
-(defvar *c*)
 (defmethod shared-initialize ((class class) slot-names &rest initargs &key direct-superclasses)
   ;; verify that the inheritance list makes sense
   (dbg-standard "standard.lsp:200 shared-initialize of class-> ~a direct-superclasses-> ~a~%" class direct-superclasses)
@@ -619,6 +612,12 @@ because it contains a reference to the undefined class~%  ~A"
 ;;;
 ;;; Standard-object has no slots and inherits only from t:
 ;;; (defclass standard-object (t) ())
+
+#++(eval-when (:compile-toplevel :load-toplevel :execute)
+  (bformat t "About to compile defmethod describe-object\n")
+  (setq core::*debug-flow-control* t)
+  (setq core::*watch-dynamic-binding-stack* t)
+  (setq core:*echo-repl-read* t))
 
 (defmethod describe-object ((obj standard-object) (stream t))
   (let* ((class (si:instance-class obj))

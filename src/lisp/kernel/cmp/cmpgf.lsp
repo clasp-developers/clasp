@@ -118,19 +118,19 @@
 #+debug-cmpgf
 (progn
   (defun insert-message ()
-    (irc-create-call "cc_dispatch_debug" (list (jit-constant-i32 0) (jit-constant-i64 (incf *message-counter*)))))
+    (irc-intrinsic-call "cc_dispatch_debug" (list (jit-constant-i32 0) (jit-constant-i64 (incf *message-counter*)))))
   (defun debug-argument (arg arg-tag)
     (insert-message)
-    (irc-create-call "cc_dispatch_debug" (list (jit-constant-i32 1) arg))
-    (irc-create-call "cc_dispatch_debug" (list (jit-constant-i32 2) arg-tag)))
+    (irc-intrinsic-call "cc_dispatch_debug" (list (jit-constant-i32 1) arg))
+    (irc-intrinsic-call "cc_dispatch_debug" (list (jit-constant-i32 2) arg-tag)))
   (defun debug-pointer (ptr)
     (insert-message)
-    (irc-create-call "cc_dispatch_debug" (list (jit-constant-i32 4) ptr)))
+    (irc-intrinsic-call "cc_dispatch_debug" (list (jit-constant-i32 4) ptr)))
   (defun debug-arglist (ptr)
     (insert-message)
-    (irc-create-call "cc_dispatch_debug" (list (jit-constant-i32 3) ptr)))
+    (irc-intrinsic-call "cc_dispatch_debug" (list (jit-constant-i32 3) ptr)))
   (defun debug-call (fn args)
-    (irc-create-call fn args))
+    (irc-intrinsic-call fn args))
   (defmacro insert-message ())
   (defmacro gf-log (fmt &rest fmt-args) `(format t ,fmt ,@fmt-args))
   (defmacro gf-do (&body code) `(progn ,@code)))
@@ -507,7 +507,7 @@
 	     (else-eql-test (irc-basic-block-create "else-eql-test")))
 	(irc-cond-br eq-cmp eql-branch else-eql-test)
 	(irc-begin-block else-eql-test)
-	(let* ((eql-i32 (irc-create-call "cc_eql" (list arg eql-selector)))
+	(let* ((eql-i32 (irc-intrinsic-call "cc_eql" (list arg eql-selector)))
 	       (eql-cmp (irc-icmp-eq eql-i32 (jit-constant-i32 1)))
 	       (next-eql-test (irc-basic-block-create "next-eql-test")))
 	  (irc-cond-br eql-cmp eql-branch next-eql-test)
@@ -549,8 +549,8 @@
                                (list (jit-constant-size_t 0)
                                      (jit-constant-size_t gf-data-id))) %uintptr_t%))
       (debug-call "debugPointer" (list (irc-bit-cast effective-method %i8*%)))
-      (irc-create-call "llvm.va_end" (list (irc-pointer-cast args %i8*% "local-arglist-i8*")))
-      (irc-ret (irc-create-call "cc_dispatch_slot_reader" (list effective-method gf gf-args) "ret")))))
+      (irc-intrinsic-call "llvm.va_end" (list (irc-pointer-cast args %i8*% "local-arglist-i8*")))
+      (irc-ret (irc-intrinsic-call "cc_dispatch_slot_reader" (list effective-method gf gf-args) "ret")))))
 
 (defun codegen-slot-writer (outcome args gf gf-args)
   ;;; If the (cdr outcome) is a fixnum then we can generate code to read the slot
@@ -570,8 +570,8 @@
                                (list (jit-constant-size_t 0)
                                      (jit-constant-size_t gf-data-id))) %uintptr_t%))
       (debug-call "debugPointer" (list (irc-bit-cast effective-method %i8*%)))
-      (irc-create-call "llvm.va_end" (list (irc-pointer-cast args %i8*% "local-arglist-i8*")))
-      (irc-ret (irc-create-call "cc_dispatch_slot_writer" (list effective-method gf gf-args) "ret")))))
+      (irc-intrinsic-call "llvm.va_end" (list (irc-pointer-cast args %i8*% "local-arglist-i8*")))
+      (irc-ret (irc-intrinsic-call "cc_dispatch_slot_writer" (list effective-method gf gf-args) "ret")))))
 
 (defun codegen-effective-method-call (outcome args gf gf-args)
   (let ((gf-data-id (prog1 *gf-data-id* (incf *gf-data-id*)))
@@ -588,10 +588,10 @@
                                (list (jit-constant-size_t 0)
                                      (jit-constant-size_t gf-data-id))) %uintptr_t%))
       (debug-call "debugPointer" (list (irc-bit-cast effective-method %i8*%)))
-      (irc-create-call "llvm.va_end" (list (irc-pointer-cast args %i8*% "local-arglist-i8*")))
+      (irc-intrinsic-call "llvm.va_end" (list (irc-pointer-cast args %i8*% "local-arglist-i8*")))
       ;; This is where I could insert the slot reader if the effective method wraps a single accessor
       ;; 
-      (irc-ret (irc-create-call "cc_dispatch_effective_method" (list effective-method gf gf-args) "ret")))))
+      (irc-ret (irc-intrinsic-call "cc_dispatch_effective_method" (list effective-method gf gf-args) "ret")))))
 
 
 (defun codegen-outcome (node args gf gf-args)
@@ -882,24 +882,26 @@
 	    (llvm-sys:set-insert-point-basic-block irbuilder-body body-bb)
 	    ;; Setup exception handling and cleanup landing pad
 	    (with-irbuilder (irbuilder-alloca)
-	      (let* ((local-arglist (irc-alloca-va_list :label "local-arglist"))
-		     (arglist-passed-untagged (irc-int-to-ptr (irc-sub (irc-ptr-to-int gf-args %uintptr_t% "iargs") (jit-constant-uintptr_t +Valist_S-tag+) "sub") %Valist_S*% "arglist-passed-untagged"))
-		     (va_list-passed (irc-int-to-ptr (irc-add (irc-ptr-to-int arglist-passed-untagged %uintptr_t% "VaList_S") (jit-constant-uintptr_t +VaList_S-valist-offset+) "add") %va_list*%)))
-		(insert-message)
-                (debug-arglist (irc-ptr-to-int va_list-passed %uintptr_t%))
-		(irc-create-call "llvm.va_copy" (list (irc-pointer-cast local-arglist %i8*% "local-arglist-i8*") (irc-pointer-cast va_list-passed %i8*% "va_list-passed-i8*")))
-		(insert-message)
-                (debug-arglist (irc-ptr-to-int local-arglist %uintptr_t%))
-		(irc-br body-bb)
+	      (let* ((local-arglist-tg             (irc-alloca-va_list :label "local-arglist"))
+                     (gf-args-uint                 (irc-ptr-to-int gf-args %uintptr_t% "local-arglist-uint"))
+                     (gf-args-va_list-uint         (irc-add gf-args-uint (jit-constant-uintptr_t (- +VaList_S-valist-offset+ +VaList_S-tag+)) "gf-args-va_list-uint"))
+                     (gf-args-va_list              (irc-int-to-ptr gf-args-va_list-uint %va_list*% "gf-args-va_list"))
+                     (_                            (insert-message))
+                     (_                            (debug-arglist (irc-ptr-to-int va_list-passed %uintptr_t%)))
+                     (_                            (irc-intrinsic-call "llvm.va_copy" (list (irc-pointer-cast local-arglist %i8*% "local-arglist-i8*")
+                                                                                         (irc-pointer-cast va_list-passed %i8*% "va_list-passed-i8*"))))
+                     (_                            (insert-message))
+                     (debug-arglist                (irc-ptr-to-int local-arglist %uintptr_t%))
+                     (_                            (irc-br body-bb)))
 		(with-irbuilder (irbuilder-body)
 		  (codegen-node-or-outcome (dtree-root dtree) local-arglist gf gf-args))
 		(irc-begin-block *bad-tag-bb*)
-		(irc-create-call "llvm.va_end" (list (irc-pointer-cast local-arglist %i8*% "local-arglist-i8*")))
-		(irc-create-call "cc_bad_tag" (list gf gf-args))
+		(irc-intrinsic-call "llvm.va_end" (list (irc-pointer-cast local-arglist %i8*% "local-arglist-i8*")))
+		(irc-intrinsic-call "cc_bad_tag" (list gf gf-args))
 		(irc-unreachable)
 		(irc-begin-block miss-bb)
-		(irc-create-call "llvm.va_end" (list (irc-pointer-cast local-arglist %i8*% "local-arglist-i8*")))
-		(irc-ret (irc-create-call "cc_dispatch_miss" (list gf gf-args) "ret")))))
+		(irc-intrinsic-call "llvm.va_end" (list (irc-pointer-cast local-arglist %i8*% "local-arglist-i8*")))
+		(irc-ret (irc-intrinsic-call "cc_dispatch_miss" (list gf gf-args) "ret")))))
           (let* ((array-type (llvm-sys:array-type-get cmp:%tsp% *gf-data-id*))
 		 (correct-size-holder (llvm-sys:make-global-variable *the-module*
 								     array-type
@@ -932,8 +934,6 @@
                   (gf-log "Dumping module\n")
                   (gf-do (cmp-log-dump *the-module*))
                   compiled-dispatcher)))))))))
-
-
 
 (export '(make-dtree
 	  dtree-add-call-history

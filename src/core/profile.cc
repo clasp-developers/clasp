@@ -77,15 +77,6 @@ Bignum profilerTimeNs() {
   return mpz_ns;
 }
 
-CL_LAMBDA();
-CL_DECLARE();
-CL_DOCSTRING("clock_gettime_nanoseconds");
-CL_DEFUN core::Bignum_sp core__clock_gettime_nanoseconds() {
-  Bignum ns = profilerTimeNs();
-  core::Bignum_sp bn = core::Bignum_O::create(ns);
-  return bn;
-};
-
 CL_DOCSTRING("time-nanoseconds");
 CL_DEFUN core::Bignum_sp core__time_nanoseconds(Function_sp f) {
   Bignum nb = profilerTimeNs();
