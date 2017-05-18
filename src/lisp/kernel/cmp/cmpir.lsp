@@ -1003,7 +1003,7 @@ Within the _irbuilder_ dynamic environment...
   (with-alloca-insert-point env irbuilder
     :alloca (llvm-sys::create-alloca *irbuilder* %i8*% (jit-constant-i32 1) label)))
 
-
+#++
 (defun irc-allocal-lisp-compiled-function-ihf (env &key (irbuilder *irbuilder-function-alloca*) (label "ihf"))
   "Allocate space for a LispCompiledFunctionIHF structure"
   (with-alloca-insert-point env irbuilder
