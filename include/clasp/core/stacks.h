@@ -74,6 +74,7 @@ class InvocationHistoryFrame //: public gctools::StackRoot
   string asStringLowLevel(Closure_sp closure,int index) const;
   int bds() const { return this->_Bds; };
   Function_sp function() const;
+  void* register_save_area() const;
 };
 
 #pragma GCC visibility pop

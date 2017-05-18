@@ -41,14 +41,14 @@ $for isConst [[
         Type mptr;
       public:
         enum { NumParams = $numArgs };
-        IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(entry_point,name), mptr(ptr) {};
+        IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(method_entry_point,name), mptr(ptr) {};
         DISABLE_NEW();
         virtual size_t templatedSizeof() const { return sizeof(*this); };
-        static inline LCC_RETURN LISP_CALLING_CONVENTION()
+        static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
         {
           MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
           INCREMENT_FUNCTION_CALL_COUNTER(closure);
-          INITIALIZE_VA_LIST();
+          COPY_VA_LIST();
           INVOCATION_HISTORY_FRAME();
           //int countPureOutValues = CountPureOutValues<Pols>::value;
           //if ( lcc_nargs != $numArgs ) core::wrongNumberOfArguments(lcc_nargs,$numArgs);

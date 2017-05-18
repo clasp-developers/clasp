@@ -73,11 +73,11 @@
     (let* ((arg-idx (cmp:irc-load arg-idx-alloca))
 	   (rest (if varest-p
                      (let ((temp-valist (alloca-VaList_S)))
-                       (cmp:irc-intrinsic-call "cc_gatherVaRestArguments" 
+                       (%intrinsic-call "cc_gatherVaRestArguments" 
                                             (list (cmp:calling-convention-va-list* args)
                                                   (cmp:calling-convention-remaining-nargs* args)
                                                   temp-valist)))
-                     (cmp:irc-intrinsic-call "cc_gatherRestArguments" 
+                     (%intrinsic-call "cc_gatherRestArguments" 
                                           (list (cmp:calling-convention-va-list* args)
                                                 (cmp:calling-convention-remaining-nargs* args)))))
            (rest-alloca (translate-datum rest-var)))
@@ -123,7 +123,8 @@
 	(let* ((arg-val (cmp:calling-convention-args.va-arg args))
                (arg-idx+1 (cmp:irc-add phi-arg-idx (cmp:jit-constant-size_t 1)))
                (kw-arg-val (cmp:calling-convention-args.va-arg args)))
-	  (cmp:irc-intrinsic-call "cc_ifNotKeywordException" (list arg-val phi-arg-idx (cmp:calling-convention-va-list* args)))
+          ;;; FIXME: This must INVOKE if the function has cleanup forms.
+	  (%intrinsic-invoke-if-landing-pad-or-call "cc_ifNotKeywordException" (list arg-val phi-arg-idx (cmp:calling-convention-va-list* args)))
 	  (let* ((eq-aok-val-and-arg-val (cmp:irc-trunc (cmp:irc-icmp-eq aok-val arg-val) cmp:%i1%)) ; compare arg-val to a-o-k
 		 (aok-block (cmp:irc-basic-block-create "aok-block"))
 		 (possible-kw-block (cmp:irc-basic-block-create "possible-kw-block"))
@@ -132,7 +133,7 @@
 		 (good-kw-block (cmp:irc-basic-block-create "good-kw-block")))
 	    (cmp:irc-cond-br eq-aok-val-and-arg-val aok-block possible-kw-block)
 	    (cmp:irc-begin-block aok-block)
-	    (let* ((loop-saw-aok (cmp:irc-intrinsic-call "cc_allowOtherKeywords" (list phi-saw-aok kw-arg-val))))
+	    (let* ((loop-saw-aok (%intrinsic-call "cc_allowOtherKeywords" (list phi-saw-aok kw-arg-val))))
 	      (cmp:irc-br advance-arg-idx-block)
 	      (cmp:irc-begin-block possible-kw-block)
 	      ;; Generate a test for each keyword
@@ -149,7 +150,7 @@
 		(let* ((kw-val (%literal key (string key)))
 		       (target-ref (translate-datum target))
 		       (supplied-ref (translate-datum supplied))
-		       (test-kw-and-arg (cmp:irc-intrinsic-call "cc_matchKeywordOnce" (list kw-val arg-val (cmp:irc-load supplied-ref))))
+		       (test-kw-and-arg (%intrinsic-call "cc_matchKeywordOnce" (list kw-val arg-val (cmp:irc-load supplied-ref))))
 		       (no-kw-match (cmp:irc-icmp-eq test-kw-and-arg (%size_t 0)))
 		       (matched-kw-block (cmp:irc-basic-block-create "matched-kw-block"))
 		       (not-seen-before-kw-block (cmp:irc-basic-block-create "not-seen-before-kw-block"))
@@ -166,7 +167,7 @@
                     (cmp:irc-begin-block next-kw-block))))
 	      ;; We fell through all the keyword tests - this might be a unparameterized keyword
 	      (cmp:irc-branch-to-and-begin-block bad-kw-block) ; fall through to here if no kw recognized
-	      (let ((loop-bad-kw-idx (cmp:irc-intrinsic-call "cc_trackFirstUnexpectedKeyword"
+	      (let ((loop-bad-kw-idx (%intrinsic-call "cc_trackFirstUnexpectedKeyword"
                                                           (list phi-bad-kw-idx phi-arg-idx))))
 		(cmp:irc-low-level-trace :arguments)
 		(cmp:irc-br advance-arg-idx-block)
@@ -192,7 +193,8 @@
 		    (cmp:irc-phi-add-incoming phi-arg-idx loop-arg-idx advance-arg-idx-block)
 		    (cmp:irc-cond-br loop-arg-idx_lt_nargs loop-kw-args-block loop-cont-block)
 		    (cmp:irc-begin-block loop-cont-block)
-		    (cmp:irc-intrinsic-call "cc_ifBadKeywordArgumentException" (list phi-arg-bad-good-aok phi.aok-bad-good.bad-kw-idx arg-val))
+                    ;; FIXME    This must be an INVOKE if there is a cleanup clause in the function
+		    (%intrinsic-invoke-if-landing-pad-or-call "cc_ifBadKeywordArgumentException" (list phi-arg-bad-good-aok phi.aok-bad-good.bad-kw-idx arg-val))
 		    (let ((kw-done-block (cmp:irc-basic-block-create "kw-done-block")))
 		      (cmp:irc-branch-to-and-begin-block kw-done-block)
 		      (cmp:irc-branch-to-and-begin-block kw-exit-block)
@@ -272,9 +274,9 @@
 (defun compile-lambda-list-code (lambda-list outputs calling-conv)
   (multiple-value-bind (reqargs optargs rest-var key-flag keyargs allow-other-keys unused-auxs varest-p)
       (core:process-lambda-list lambda-list 'core::function)
-    (if (calling-convention-use-only-registers calling-conv)
+    (if (cmp::calling-convention-use-only-registers calling-conv)
         ;; Special cases (foo) (foo x) (foo x y) (foo x y z)  - passed in registers
-        (compile-all-register-required-arguments reqargs old-env args new-env)
+        (compile-all-register-required-arguments reqargs outputs calling-conv)
         ;; Test for
         ;; (x &optional y)
         ;; (x y &optional z)
@@ -290,6 +292,7 @@
 
 
 ;;; Process arguments for bclasp
+#+(or)
 (defun bclasp-compile-lambda-list-code (lambda-list-handler
                                         old-env
                                         args
@@ -324,14 +327,13 @@
                                             new-env)))))
                                                         
 
-(defun cclasp-maybe-alloc-cc-setup (lambda-list-handler debug-on)
+(defun cclasp-maybe-alloc-cc-setup (lambda-list debug-on)
   "Maybe allocate slots in the stack frame to handle the calls
-   depending on what is in the lambda-list-handler (&rest, &key etc) and debug-on.
+   depending on what is in the lambda-list (&rest, &key etc) and debug-on.
    Return a calling-convention-setup object that describes what was allocated.
-   See the bclasp version in lambdalistva.lsp.
-"
-  (multiple-value-bind (reqargs optargs rest-var key-flag keyargs allow-other-keys auxargs)
-      (process-lambda-list-handler lambda-list-handler)
+   See the bclasp version in lambdalistva.lsp."
+  (multiple-value-bind (reqargs optargs rest-var key-flag keyargs allow-other-keys unused-auxs varest-p)
+      (core:process-lambda-list lambda-list 'core::function)
     ;; Currently if nargs <= +args-in-registers+ required arguments and (null debug-on)
     ;;      then can optimize and use the arguments in registers directly
     ;;  If anything else then allocate space to spill the registers
@@ -348,7 +350,6 @@
     (let* ((req-opt-only (and (not rest-var)
                               (not key-flag)
                               (eql 0 (car keyargs))
-                              (eql 0 (car auxargs))
                               (not allow-other-keys)))
            (num-req (car reqargs))
            (num-opt (car optargs))
@@ -356,17 +357,17 @@
            ;;          and (<= num-req +args-in-register+)
            ;;          and not debugging
            ;;     --> Use only register arguments
-           (may-use-only-registers (and req-opt-only (<= num-req +args-in-registers+) (eql 0 num-opt))))
+           (may-use-only-registers (and req-opt-only (<= num-req cmp::+args-in-registers+) (eql 0 num-opt))))
       (if (and may-use-only-registers (null debug-on))
-          (make-calling-convention-setup
+          (cmp::make-calling-convention-setup
            :use-only-registers t)
-          (make-calling-convention-setup
+          (cmp::make-calling-convention-setup
            :use-only-registers may-use-only-registers ; if may-use-only-registers then debug-on is T and we could use only registers
-           :VaList_S* (alloca-VaList_S :label "VaList_S")
-           :register-save-area* (alloca-register-save-area :label "register-save-area")
-           :invocation-history-frame* (and debug-on (alloca-invocation-history-frame :label "invocation-history-frame")))))))
+           :VaList_S* (alloca-VaList_S "VaList_S")
+           :register-save-area* (alloca-register-save-area "register-save-area")
+           :invocation-history-frame* (and debug-on (alloca-invocation-history-frame "invocation-history-frame")))))))
 
 
-(defun cclasp-setup-calling-convention (arguments lambda-list-handler debug-on)
-  (let ((setup (cclasp-maybe-alloc-cc-setup lambda-list-handler debug-on)))
+(defun cclasp-setup-calling-convention (arguments lambda-list debug-on)
+  (let ((setup (cclasp-maybe-alloc-cc-setup lambda-list debug-on)))
     (cmp:initialize-calling-convention arguments setup)))

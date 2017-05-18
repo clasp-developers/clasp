@@ -111,32 +111,33 @@ CL_DEFUN void core__ensure_single_dispatch_method(Symbol_sp gfname, Class_sp rec
 LCC_RETURN SingleDispatchCxxEffectiveMethodFunction_O::LISP_CALLING_CONVENTION() {
   SETUP_CLOSURE(SingleDispatchCxxEffectiveMethodFunction_O,closure);
   INCREMENT_FUNCTION_CALL_COUNTER(closure);
+  COPY_VA_LIST();
   // INITIALIZE_VA_LIST(); // This was done by the caller
-  return (*closure->_onlyCxxMethodFunction).entry(LCC_PASS_ARGS2_ELLIPSIS(closure->_onlyCxxMethodFunction.raw_(),lcc_fixed_arg0,_Nil<T_O>().raw_()));
+  return (closure->_onlyCxxMethodFunction)->entry(LCC_PASS_ARGS_VASLIST(closure->_onlyCxxMethodFunction.raw_(),lcc_vargs));
 };
 
 
 LCC_RETURN SingleDispatchEffectiveMethodFunction_O::LISP_CALLING_CONVENTION() {
   SETUP_CLOSURE(SingleDispatchEffectiveMethodFunction_O,closure);
   INCREMENT_FUNCTION_CALL_COUNTER(closure);
-  INITIALIZE_VA_LIST();
+  COPY_VA_LIST();
   for ( auto cur : closure->_Befores ) {
     VaList_S before_args_s(*lcc_vargs);
     VaList_sp before_args(&before_args_s);
     Function_sp before((gctools::Tagged)oCar(cur).raw_());
-    (*before).entry(LCC_PASS_ARGS2_ELLIPSIS(before.raw_(),before_args.raw_(),_Nil<T_O>().raw_()));
+    (*before).entry(LCC_PASS_ARGS_VASLIST(before.raw_(),before_args));
   }
   MultipleValues save;
   Function_sp primary0((gctools::Tagged)oCar(closure->_Primaries).raw_());
   VaList_S primary_args_s(*lcc_vargs);
   VaList_sp primary_args(&primary_args_s);
-  T_mv val0 = (*primary0).entry(LCC_PASS_ARGS2_ELLIPSIS(primary0.raw_(),primary_args.raw_(),oCdr(closure->_Primaries).raw_()));
+  T_mv val0 = (*primary0).entry(LCC_PASS_ARGS_VASLIST(primary0.raw_(),primary_args));
   multipleValuesSaveToMultipleValues(val0, &save);
   for ( auto cur : closure->_Afters ) {
     VaList_S after_args_s(*lcc_vargs);
     VaList_sp after_args(&after_args_s);
     Function_sp after((gctools::Tagged)oCar(cur).raw_());
-    (*after).entry(LCC_PASS_ARGS2_ELLIPSIS(after.raw_(),after_args.raw_(),_Nil<T_O>().raw_()));
+    (*after).entry(LCC_PASS_ARGS_VASLIST(after.raw_(),after_args));
   }
   return multipleValuesLoadFromMultipleValues(&save);
 }
@@ -208,7 +209,7 @@ LCC_RETURN SingleDispatchGenericFunctionClosure_O::LISP_CALLING_CONVENTION() {
   }
   // WARNING: DO NOT alter contents of _lisp->callArgs() or _lisp->multipleValues() above.
   // LISP_PASS ARGS relys on the extra arguments being passed transparently
-  return func->entry(LCC_PASS_ARGS1_ELLIPSIS(func.raw_(),lcc_vargs.raw_()));
+  return func->entry(LCC_PASS_ARGS_VASLIST(func.raw_(),lcc_vargs));
 }
 
 class SingleDispatch_OrderByClassPrecedence {

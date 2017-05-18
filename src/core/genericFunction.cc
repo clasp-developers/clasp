@@ -468,7 +468,6 @@ LCC_RETURN apply_method2(T_O* func_tagged, T_O* arg0_tagged, T_O* arg1_tagged, T
   return apply_method(func_tagged,arg0_tagged,arg1_tagged,rest_args_tagged,2);
 }
 LCC_RETURN apply_method3(T_O* func_tagged, T_O* arg0_tagged, T_O* arg1_tagged, T_O* rest_args_tagged) {
-//  printf("%s:%d:%s   func_tagged=%p arg0_tagged=%p arg1_tagged=%p rest_args_tagged=%p\n", __FILE__, __LINE__, __FUNCTION__, (void*)func_tagged, (void*)arg0_tagged, (void*)arg1_tagged, (void*)rest_args_tagged);
   return apply_method(func_tagged,arg0_tagged,arg1_tagged,rest_args_tagged,3);
 }
 LCC_RETURN apply_method4(T_O* func_tagged, T_O* arg0_tagged, T_O* arg1_tagged, T_O* rest_args_tagged) {

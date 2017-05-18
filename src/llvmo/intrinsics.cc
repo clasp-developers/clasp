@@ -71,7 +71,7 @@ using namespace core;
 #pragma GCC visibility push(default)
 
 namespace core {
-extern uintptr_t debug_InvocationHistoryFrameAddress;
+extern const char* debug_InvocationHistoryFrame_name;
 };
 extern "C" {
 
@@ -433,29 +433,60 @@ core::T_O *cc_fetch(core::T_O *tagged_closure, std::size_t idx) {
   return (*c)[idx].raw_();
 }
 
-size_t invocation_history_stack_depth(bool dump)
+void invocation_history_stack_dump(InvocationHistoryFrame* frame, const char* msg)
+{
+  printf("%s\n", msg);
+  InvocationHistoryFrame* cur = frame;
+  size_t count=0;
+  while (cur) {
+    printf("    frame[%lu] @%p  function: %s\n", count, cur, _rep_(cur->function()->name()).c_str());
+    cur = cur->_Previous;
+    ++count;
+  }
+}
+
+size_t invocation_history_stack_depth(InvocationHistoryFrame* frame)
 {
   size_t count = 0;
-  printf("    invocation_history_stack_depth -----------------\n");
-  InvocationHistoryFrame* cur = my_thread->_InvocationHistoryStack;
+  InvocationHistoryFrame* cur = frame;
   while (cur) {
-    if (dump) {
-      printf("    frame[%lu] @%p  function: %s\n", count, cur, _rep_(cur->function()->name()).c_str());
-    }
     cur = cur->_Previous;
     ++count;
   }
   return count;
 }
 
-ALWAYS_INLINE void cc_push_InvocationHistoryFrame(InvocationHistoryFrame* frame, va_list va_args, size_t* nargsP) {
+ALWAYS_INLINE void cc_rewind_va_list(core::T_O* tagged_closure, va_list va_args, size_t* nargsP, void** register_save_areaP) {
+#if 0
+  if (core::debug_InvocationHistoryFrame==3) {
+    printf("%s:%d cc_rewind_va_list     va_args=%p     nargsP = %p      register_save_areaP = %p\n", __FILE__, __LINE__, va_args, nargsP, register_save_areaP );
+  }
+#endif
+  LCC_REWIND_VA_LIST(va_args,register_save_areaP);
+  *nargsP = (uintptr_t)register_save_areaP[1];
+}
+
+ALWAYS_INLINE void cc_push_InvocationHistoryFrame(core::T_O* tagged_closure, InvocationHistoryFrame* frame, va_list va_args, size_t* nargsP) {
+  new (frame) InvocationHistoryFrame(va_args, *nargsP);
+  frame->_Previous = my_thread->_InvocationHistoryStack;
+  my_thread->_InvocationHistoryStack = frame;
+#if 0
   if (core::debug_InvocationHistoryFrame) {
-    if (frame == (InvocationHistoryFrame*)debug_InvocationHistoryFrameAddress) {
+    Closure_sp closure((gc::Tagged)tagged_closure);
+    if ( strcmp(_rep_(frame->function()->name()).c_str(),debug_InvocationHistoryFrame_name)==0) {
+      printf("%s:%d !!!!!!!!!!!!!!!!!!!!!!   Saw %s\n", __FILE__, __LINE__, debug_InvocationHistoryFrame_name);
       core::debug_InvocationHistoryFrame = 2;
     }
-    if (core::debug_InvocationHistoryFrame == 2) {
-      printf("%s:%d:%s  push    frame @%p     stack @%p  stack depth=%lu\n", __FILE__, __LINE__, __FUNCTION__, frame, my_thread->_InvocationHistoryStack, invocation_history_stack_depth(true));
-      dump_backtrace(frame);
+    if (core::debug_InvocationHistoryFrame >= 2) {
+//      printf("%s:%d  --------   Entering closure %s\n", __FILE__, __LINE__, _rep_(closure).c_str());
+//      printf("%s:%d:%s  push    frame @%p   stack @%p\n", __FILE__, __LINE__, __FUNCTION__, frame, my_thread->_InvocationHistoryStack );
+      if (_rep_(frame->function()->name()) == std::string("THROW-FUNCTION")) {
+        core::debug_InvocationHistoryFrame = 3;
+      }
+      if (core::debug_InvocationHistoryFrame == 3) {
+        printf("%s:%d:%s  push    frame @%p     stack @%p\n", __FILE__, __LINE__, __FUNCTION__, frame, my_thread->_InvocationHistoryStack );
+        printf("%s:%d:%s          name: %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(frame->function()->name()).c_str());
+      }
 //      printf("          %s\n", frame->asString(0).c_str());
     }
   }
@@ -463,44 +494,25 @@ ALWAYS_INLINE void cc_push_InvocationHistoryFrame(InvocationHistoryFrame* frame,
     printf("%s:%d   Bad call to cc_push_InvocationHistoryFrame\n", __FILE__, __LINE__);
     abort();
   }
-  new (frame) InvocationHistoryFrame(va_args, *nargsP);
-  frame->_Previous = my_thread->_InvocationHistoryStack;
-  if (my_thread->_InvocationHistoryStack != NULL && my_thread->_InvocationHistoryStack < frame) {
-    printf("%s:%d     The stack is messed up  frame @%p   my_thread->_InvocationHistoryStack @%p\n", __FILE__, __LINE__, frame, my_thread->_InvocationHistoryStack );
-    abort();
-  }
-  my_thread->_InvocationHistoryStack = frame;
+#endif
 }
 
 
-ALWAYS_INLINE void cc_pop_InvocationHistoryFrame(InvocationHistoryFrame* frame) {
+ALWAYS_INLINE void cc_pop_InvocationHistoryFrame(core::T_O* tagged_closure, InvocationHistoryFrame* frame) {
+#if 0
   if (core::debug_InvocationHistoryFrame) {
-    if (core::debug_InvocationHistoryFrame == 2) {
-      printf("%s:%d:%s  pop    frame @%p     stack @%p  stack depth: %lu\n", __FILE__, __LINE__, __FUNCTION__, frame, my_thread->_InvocationHistoryStack, invocation_history_stack_depth(false));
+    Closure_sp closure((gc::Tagged)tagged_closure);
+    if (core::debug_InvocationHistoryFrame >= 3) {
+      printf("%s:%d   leaving closure %s\n", __FILE__, __LINE__, _rep_(closure).c_str());
+      printf("%s:%d:%s  pop    frame @%p     stack @%p  stack depth: %lu\n", __FILE__, __LINE__, __FUNCTION__, frame, my_thread->_InvocationHistoryStack, invocation_history_stack_depth(my_thread->_InvocationHistoryStack));
 //      printf("          %s\n", frame->asString(0).c_str());
     }
   }
-  if (my_thread->_InvocationHistoryStack != frame ) {
-    printf("%s:%d  The top of the InvocationHistoryStack @%p does not match the current frame being popped @%p\n", __FILE__, __LINE__, my_thread->_InvocationHistoryStack, frame );
-    printf("   ---------------   From frame:\n");
-    InvocationHistoryFrame* cur = frame;
-    while (cur!=NULL) {
-      printf("         Frame %p\n", cur);
-      if (cur==my_thread->_InvocationHistoryStack) {
-        printf("             < my_thread->_InvocationHistoryStack @%p\n", my_thread->_InvocationHistoryStack);
-      }
-      cur = cur->previous();
-    }
-    dump_backtrace(frame);
-    cur = my_thread->_InvocationHistoryStack;
-    printf("   ------------------   Current stack:\n");
-    while (cur!=NULL) {
-      printf("         Frame %p\n", cur);
-      if (cur==frame) {
-        printf("             < cc_pop_InvocationHistoryFrame frame @%p\n", frame);
-      }
-      cur = cur->previous();
-    }
+#endif
+  unlikely_if (my_thread->_InvocationHistoryStack != frame ) {
+    printf("%s:%d  The top of the InvocationHistoryStack @%p does not match the current frame being popped @%p - It is very likely that a cleanup form what would have invoked cc_pop_InvocationHistoryFrame was not evaluated - this is usually due to a CALL being used to call a function that throws an exception and unwinds the stack rather than an INVOKE - look at how THROW, RETURN-FROM and GO are implemented - are they using INVOKE or CALL.\n", __FILE__, __LINE__, my_thread->_InvocationHistoryStack, frame );
+    invocation_history_stack_dump(frame,"Stack from frame\n");
+    invocation_history_stack_dump(my_thread->_InvocationHistoryStack,"Stack from my_thread->_InvocationHistoryStack");
     abort();
   }
   my_thread->_InvocationHistoryStack = my_thread->_InvocationHistoryStack->_Previous;

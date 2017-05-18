@@ -33,14 +33,14 @@ typedef RT (OT::ExternalType::*Type)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, 
 Type mptr;
 public:
 enum { NumParams = 16 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(entry_point,name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
-static inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
 MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
 INCREMENT_FUNCTION_CALL_COUNTER(closure);
-INITIALIZE_VA_LIST();
+COPY_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 16 ) core::wrongNumberOfArguments(lcc_nargs,16);
@@ -148,14 +148,14 @@ typedef RT (OT::ExternalType::*Type)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, 
 Type mptr;
 public:
 enum { NumParams = 15 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(entry_point,name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
-static inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
 MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
 INCREMENT_FUNCTION_CALL_COUNTER(closure);
-INITIALIZE_VA_LIST();
+COPY_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 15 ) core::wrongNumberOfArguments(lcc_nargs,15);
@@ -258,14 +258,14 @@ typedef RT (OT::ExternalType::*Type)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, 
 Type mptr;
 public:
 enum { NumParams = 14 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(entry_point,name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
-static inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
 MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
 INCREMENT_FUNCTION_CALL_COUNTER(closure);
-INITIALIZE_VA_LIST();
+COPY_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 14 ) core::wrongNumberOfArguments(lcc_nargs,14);
@@ -364,14 +364,14 @@ typedef RT (OT::ExternalType::*Type)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, 
 Type mptr;
 public:
 enum { NumParams = 13 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(entry_point,name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
-static inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
 MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
 INCREMENT_FUNCTION_CALL_COUNTER(closure);
-INITIALIZE_VA_LIST();
+COPY_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 13 ) core::wrongNumberOfArguments(lcc_nargs,13);
@@ -465,14 +465,14 @@ typedef RT (OT::ExternalType::*Type)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, 
 Type mptr;
 public:
 enum { NumParams = 12 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(entry_point,name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
-static inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
 MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
 INCREMENT_FUNCTION_CALL_COUNTER(closure);
-INITIALIZE_VA_LIST();
+COPY_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 12 ) core::wrongNumberOfArguments(lcc_nargs,12);
@@ -562,14 +562,14 @@ typedef RT (OT::ExternalType::*Type)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, 
 Type mptr;
 public:
 enum { NumParams = 11 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(entry_point,name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
-static inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
 MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
 INCREMENT_FUNCTION_CALL_COUNTER(closure);
-INITIALIZE_VA_LIST();
+COPY_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 11 ) core::wrongNumberOfArguments(lcc_nargs,11);
@@ -655,14 +655,14 @@ typedef RT (OT::ExternalType::*Type)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, 
 Type mptr;
 public:
 enum { NumParams = 10 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(entry_point,name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
-static inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
 MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
 INCREMENT_FUNCTION_CALL_COUNTER(closure);
-INITIALIZE_VA_LIST();
+COPY_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 10 ) core::wrongNumberOfArguments(lcc_nargs,10);
@@ -743,14 +743,14 @@ typedef RT (OT::ExternalType::*Type)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, 
 Type mptr;
 public:
 enum { NumParams = 9 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(entry_point,name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
-static inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
 MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
 INCREMENT_FUNCTION_CALL_COUNTER(closure);
-INITIALIZE_VA_LIST();
+COPY_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 9 ) core::wrongNumberOfArguments(lcc_nargs,9);
@@ -827,14 +827,14 @@ typedef RT (OT::ExternalType::*Type)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7) 
 Type mptr;
 public:
 enum { NumParams = 8 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(entry_point,name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
-static inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
 MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
 INCREMENT_FUNCTION_CALL_COUNTER(closure);
-INITIALIZE_VA_LIST();
+COPY_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 8 ) core::wrongNumberOfArguments(lcc_nargs,8);
@@ -907,14 +907,14 @@ typedef RT (OT::ExternalType::*Type)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6) ;
 Type mptr;
 public:
 enum { NumParams = 7 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(entry_point,name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
-static inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
 MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
 INCREMENT_FUNCTION_CALL_COUNTER(closure);
-INITIALIZE_VA_LIST();
+COPY_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 7 ) core::wrongNumberOfArguments(lcc_nargs,7);
@@ -982,14 +982,14 @@ typedef RT (OT::ExternalType::*Type)( ARG1, ARG2, ARG3, ARG4, ARG5) ;
 Type mptr;
 public:
 enum { NumParams = 6 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(entry_point,name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
-static inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
 MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
 INCREMENT_FUNCTION_CALL_COUNTER(closure);
-INITIALIZE_VA_LIST();
+COPY_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 6 ) core::wrongNumberOfArguments(lcc_nargs,6);
@@ -1053,14 +1053,14 @@ typedef RT (OT::ExternalType::*Type)( ARG1, ARG2, ARG3, ARG4) ;
 Type mptr;
 public:
 enum { NumParams = 5 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(entry_point,name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
-static inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
 MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
 INCREMENT_FUNCTION_CALL_COUNTER(closure);
-INITIALIZE_VA_LIST();
+COPY_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 5 ) core::wrongNumberOfArguments(lcc_nargs,5);
@@ -1120,14 +1120,14 @@ typedef RT (OT::ExternalType::*Type)( ARG1, ARG2, ARG3) ;
 Type mptr;
 public:
 enum { NumParams = 4 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(entry_point,name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
-static inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
 MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
 INCREMENT_FUNCTION_CALL_COUNTER(closure);
-INITIALIZE_VA_LIST();
+COPY_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 4 ) core::wrongNumberOfArguments(lcc_nargs,4);
@@ -1183,14 +1183,14 @@ typedef RT (OT::ExternalType::*Type)( ARG1, ARG2) ;
 Type mptr;
 public:
 enum { NumParams = 3 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(entry_point,name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
-static inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
 MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
 INCREMENT_FUNCTION_CALL_COUNTER(closure);
-INITIALIZE_VA_LIST();
+COPY_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 3 ) core::wrongNumberOfArguments(lcc_nargs,3);
@@ -1242,14 +1242,14 @@ typedef RT (OT::ExternalType::*Type)( ARG1) ;
 Type mptr;
 public:
 enum { NumParams = 2 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(entry_point,name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
-static inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
 MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
 INCREMENT_FUNCTION_CALL_COUNTER(closure);
-INITIALIZE_VA_LIST();
+COPY_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 2 ) core::wrongNumberOfArguments(lcc_nargs,2);
@@ -1297,14 +1297,14 @@ typedef RT (OT::ExternalType::*Type)( ) ;
 Type mptr;
 public:
 enum { NumParams = 1 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(entry_point,name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
-static inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
 MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
 INCREMENT_FUNCTION_CALL_COUNTER(closure);
-INITIALIZE_VA_LIST();
+COPY_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 1 ) core::wrongNumberOfArguments(lcc_nargs,1);
@@ -1354,14 +1354,14 @@ typedef void (OT::ExternalType::*Type)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7
 Type mptr;
 public:
 enum { NumParams = 16 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(entry_point,name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
-static inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
 MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
 INCREMENT_FUNCTION_CALL_COUNTER(closure);
-INITIALIZE_VA_LIST();
+COPY_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 16 ) core::wrongNumberOfArguments(lcc_nargs,16);
@@ -1468,14 +1468,14 @@ typedef void (OT::ExternalType::*Type)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7
 Type mptr;
 public:
 enum { NumParams = 15 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(entry_point,name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
-static inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
 MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
 INCREMENT_FUNCTION_CALL_COUNTER(closure);
-INITIALIZE_VA_LIST();
+COPY_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 15 ) core::wrongNumberOfArguments(lcc_nargs,15);
@@ -1577,14 +1577,14 @@ typedef void (OT::ExternalType::*Type)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7
 Type mptr;
 public:
 enum { NumParams = 14 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(entry_point,name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
-static inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
 MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
 INCREMENT_FUNCTION_CALL_COUNTER(closure);
-INITIALIZE_VA_LIST();
+COPY_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 14 ) core::wrongNumberOfArguments(lcc_nargs,14);
@@ -1682,14 +1682,14 @@ typedef void (OT::ExternalType::*Type)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7
 Type mptr;
 public:
 enum { NumParams = 13 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(entry_point,name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
-static inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
 MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
 INCREMENT_FUNCTION_CALL_COUNTER(closure);
-INITIALIZE_VA_LIST();
+COPY_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 13 ) core::wrongNumberOfArguments(lcc_nargs,13);
@@ -1783,14 +1783,14 @@ typedef void (OT::ExternalType::*Type)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7
 Type mptr;
 public:
 enum { NumParams = 12 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(entry_point,name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
-static inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
 MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
 INCREMENT_FUNCTION_CALL_COUNTER(closure);
-INITIALIZE_VA_LIST();
+COPY_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 12 ) core::wrongNumberOfArguments(lcc_nargs,12);
@@ -1880,14 +1880,14 @@ typedef void (OT::ExternalType::*Type)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7
 Type mptr;
 public:
 enum { NumParams = 11 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(entry_point,name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
-static inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
 MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
 INCREMENT_FUNCTION_CALL_COUNTER(closure);
-INITIALIZE_VA_LIST();
+COPY_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 11 ) core::wrongNumberOfArguments(lcc_nargs,11);
@@ -1973,14 +1973,14 @@ typedef void (OT::ExternalType::*Type)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7
 Type mptr;
 public:
 enum { NumParams = 10 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(entry_point,name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
-static inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
 MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
 INCREMENT_FUNCTION_CALL_COUNTER(closure);
-INITIALIZE_VA_LIST();
+COPY_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 10 ) core::wrongNumberOfArguments(lcc_nargs,10);
@@ -2061,14 +2061,14 @@ typedef void (OT::ExternalType::*Type)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7
 Type mptr;
 public:
 enum { NumParams = 9 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(entry_point,name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
-static inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
 MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
 INCREMENT_FUNCTION_CALL_COUNTER(closure);
-INITIALIZE_VA_LIST();
+COPY_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 9 ) core::wrongNumberOfArguments(lcc_nargs,9);
@@ -2145,14 +2145,14 @@ typedef void (OT::ExternalType::*Type)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7
 Type mptr;
 public:
 enum { NumParams = 8 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(entry_point,name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
-static inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
 MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
 INCREMENT_FUNCTION_CALL_COUNTER(closure);
-INITIALIZE_VA_LIST();
+COPY_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 8 ) core::wrongNumberOfArguments(lcc_nargs,8);
@@ -2224,14 +2224,14 @@ typedef void (OT::ExternalType::*Type)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6) ;
 Type mptr;
 public:
 enum { NumParams = 7 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(entry_point,name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
-static inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
 MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
 INCREMENT_FUNCTION_CALL_COUNTER(closure);
-INITIALIZE_VA_LIST();
+COPY_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 7 ) core::wrongNumberOfArguments(lcc_nargs,7);
@@ -2299,14 +2299,14 @@ typedef void (OT::ExternalType::*Type)( ARG1, ARG2, ARG3, ARG4, ARG5) ;
 Type mptr;
 public:
 enum { NumParams = 6 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(entry_point,name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
-static inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
 MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
 INCREMENT_FUNCTION_CALL_COUNTER(closure);
-INITIALIZE_VA_LIST();
+COPY_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 6 ) core::wrongNumberOfArguments(lcc_nargs,6);
@@ -2370,14 +2370,14 @@ typedef void (OT::ExternalType::*Type)( ARG1, ARG2, ARG3, ARG4) ;
 Type mptr;
 public:
 enum { NumParams = 5 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(entry_point,name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
-static inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
 MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
 INCREMENT_FUNCTION_CALL_COUNTER(closure);
-INITIALIZE_VA_LIST();
+COPY_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 5 ) core::wrongNumberOfArguments(lcc_nargs,5);
@@ -2437,14 +2437,14 @@ typedef void (OT::ExternalType::*Type)( ARG1, ARG2, ARG3) ;
 Type mptr;
 public:
 enum { NumParams = 4 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(entry_point,name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
-static inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
 MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
 INCREMENT_FUNCTION_CALL_COUNTER(closure);
-INITIALIZE_VA_LIST();
+COPY_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 4 ) core::wrongNumberOfArguments(lcc_nargs,4);
@@ -2500,14 +2500,14 @@ typedef void (OT::ExternalType::*Type)( ARG1, ARG2) ;
 Type mptr;
 public:
 enum { NumParams = 3 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(entry_point,name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
-static inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
 MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
 INCREMENT_FUNCTION_CALL_COUNTER(closure);
-INITIALIZE_VA_LIST();
+COPY_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 3 ) core::wrongNumberOfArguments(lcc_nargs,3);
@@ -2559,14 +2559,14 @@ typedef void (OT::ExternalType::*Type)( ARG1) ;
 Type mptr;
 public:
 enum { NumParams = 2 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(entry_point,name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
-static inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
 MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
 INCREMENT_FUNCTION_CALL_COUNTER(closure);
-INITIALIZE_VA_LIST();
+COPY_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 2 ) core::wrongNumberOfArguments(lcc_nargs,2);
@@ -2614,14 +2614,14 @@ typedef void (OT::ExternalType::*Type)( ) ;
 Type mptr;
 public:
 enum { NumParams = 1 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(entry_point,name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
-static inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
 MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
 INCREMENT_FUNCTION_CALL_COUNTER(closure);
-INITIALIZE_VA_LIST();
+COPY_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 1 ) core::wrongNumberOfArguments(lcc_nargs,1);
@@ -2671,14 +2671,14 @@ typedef RT (OT::ExternalType::*Type)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, 
 Type mptr;
 public:
 enum { NumParams = 16 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(entry_point,name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
-static inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
 MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
 INCREMENT_FUNCTION_CALL_COUNTER(closure);
-INITIALIZE_VA_LIST();
+COPY_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 16 ) core::wrongNumberOfArguments(lcc_nargs,16);
@@ -2788,14 +2788,14 @@ typedef RT (OT::ExternalType::*Type)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, 
 Type mptr;
 public:
 enum { NumParams = 15 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(entry_point,name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
-static inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
 MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
 INCREMENT_FUNCTION_CALL_COUNTER(closure);
-INITIALIZE_VA_LIST();
+COPY_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 15 ) core::wrongNumberOfArguments(lcc_nargs,15);
@@ -2898,14 +2898,14 @@ typedef RT (OT::ExternalType::*Type)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, 
 Type mptr;
 public:
 enum { NumParams = 14 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(entry_point,name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
-static inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
 MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
 INCREMENT_FUNCTION_CALL_COUNTER(closure);
-INITIALIZE_VA_LIST();
+COPY_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 14 ) core::wrongNumberOfArguments(lcc_nargs,14);
@@ -3004,14 +3004,14 @@ typedef RT (OT::ExternalType::*Type)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, 
 Type mptr;
 public:
 enum { NumParams = 13 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(entry_point,name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
-static inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
 MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
 INCREMENT_FUNCTION_CALL_COUNTER(closure);
-INITIALIZE_VA_LIST();
+COPY_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 13 ) core::wrongNumberOfArguments(lcc_nargs,13);
@@ -3105,14 +3105,14 @@ typedef RT (OT::ExternalType::*Type)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, 
 Type mptr;
 public:
 enum { NumParams = 12 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(entry_point,name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
-static inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
 MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
 INCREMENT_FUNCTION_CALL_COUNTER(closure);
-INITIALIZE_VA_LIST();
+COPY_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 12 ) core::wrongNumberOfArguments(lcc_nargs,12);
@@ -3202,14 +3202,14 @@ typedef RT (OT::ExternalType::*Type)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, 
 Type mptr;
 public:
 enum { NumParams = 11 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(entry_point,name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
-static inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
 MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
 INCREMENT_FUNCTION_CALL_COUNTER(closure);
-INITIALIZE_VA_LIST();
+COPY_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 11 ) core::wrongNumberOfArguments(lcc_nargs,11);
@@ -3295,14 +3295,14 @@ typedef RT (OT::ExternalType::*Type)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, 
 Type mptr;
 public:
 enum { NumParams = 10 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(entry_point,name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
-static inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
 MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
 INCREMENT_FUNCTION_CALL_COUNTER(closure);
-INITIALIZE_VA_LIST();
+COPY_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 10 ) core::wrongNumberOfArguments(lcc_nargs,10);
@@ -3383,14 +3383,14 @@ typedef RT (OT::ExternalType::*Type)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, 
 Type mptr;
 public:
 enum { NumParams = 9 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(entry_point,name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
-static inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
 MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
 INCREMENT_FUNCTION_CALL_COUNTER(closure);
-INITIALIZE_VA_LIST();
+COPY_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 9 ) core::wrongNumberOfArguments(lcc_nargs,9);
@@ -3467,14 +3467,14 @@ typedef RT (OT::ExternalType::*Type)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7) 
 Type mptr;
 public:
 enum { NumParams = 8 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(entry_point,name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
-static inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
 MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
 INCREMENT_FUNCTION_CALL_COUNTER(closure);
-INITIALIZE_VA_LIST();
+COPY_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 8 ) core::wrongNumberOfArguments(lcc_nargs,8);
@@ -3547,14 +3547,14 @@ typedef RT (OT::ExternalType::*Type)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6) const;
 Type mptr;
 public:
 enum { NumParams = 7 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(entry_point,name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
-static inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
 MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
 INCREMENT_FUNCTION_CALL_COUNTER(closure);
-INITIALIZE_VA_LIST();
+COPY_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 7 ) core::wrongNumberOfArguments(lcc_nargs,7);
@@ -3622,14 +3622,14 @@ typedef RT (OT::ExternalType::*Type)( ARG1, ARG2, ARG3, ARG4, ARG5) const;
 Type mptr;
 public:
 enum { NumParams = 6 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(entry_point,name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
-static inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
 MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
 INCREMENT_FUNCTION_CALL_COUNTER(closure);
-INITIALIZE_VA_LIST();
+COPY_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 6 ) core::wrongNumberOfArguments(lcc_nargs,6);
@@ -3693,14 +3693,14 @@ typedef RT (OT::ExternalType::*Type)( ARG1, ARG2, ARG3, ARG4) const;
 Type mptr;
 public:
 enum { NumParams = 5 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(entry_point,name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
-static inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
 MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
 INCREMENT_FUNCTION_CALL_COUNTER(closure);
-INITIALIZE_VA_LIST();
+COPY_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 5 ) core::wrongNumberOfArguments(lcc_nargs,5);
@@ -3760,14 +3760,14 @@ typedef RT (OT::ExternalType::*Type)( ARG1, ARG2, ARG3) const;
 Type mptr;
 public:
 enum { NumParams = 4 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(entry_point,name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
-static inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
 MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
 INCREMENT_FUNCTION_CALL_COUNTER(closure);
-INITIALIZE_VA_LIST();
+COPY_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 4 ) core::wrongNumberOfArguments(lcc_nargs,4);
@@ -3823,14 +3823,14 @@ typedef RT (OT::ExternalType::*Type)( ARG1, ARG2) const;
 Type mptr;
 public:
 enum { NumParams = 3 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(entry_point,name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
-static inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
 MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
 INCREMENT_FUNCTION_CALL_COUNTER(closure);
-INITIALIZE_VA_LIST();
+COPY_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 3 ) core::wrongNumberOfArguments(lcc_nargs,3);
@@ -3882,14 +3882,14 @@ typedef RT (OT::ExternalType::*Type)( ARG1) const;
 Type mptr;
 public:
 enum { NumParams = 2 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(entry_point,name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
-static inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
 MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
 INCREMENT_FUNCTION_CALL_COUNTER(closure);
-INITIALIZE_VA_LIST();
+COPY_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 2 ) core::wrongNumberOfArguments(lcc_nargs,2);
@@ -3937,14 +3937,14 @@ typedef RT (OT::ExternalType::*Type)( ) const;
 Type mptr;
 public:
 enum { NumParams = 1 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(entry_point,name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
-static inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
 MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
 INCREMENT_FUNCTION_CALL_COUNTER(closure);
-INITIALIZE_VA_LIST();
+COPY_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 1 ) core::wrongNumberOfArguments(lcc_nargs,1);
@@ -3994,14 +3994,14 @@ typedef void (OT::ExternalType::*Type)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7
 Type mptr;
 public:
 enum { NumParams = 16 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(entry_point,name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
-static inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
 MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
 INCREMENT_FUNCTION_CALL_COUNTER(closure);
-INITIALIZE_VA_LIST();
+COPY_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 16 ) core::wrongNumberOfArguments(lcc_nargs,16);
@@ -4110,14 +4110,14 @@ typedef void (OT::ExternalType::*Type)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7
 Type mptr;
 public:
 enum { NumParams = 15 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(entry_point,name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
-static inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
 MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
 INCREMENT_FUNCTION_CALL_COUNTER(closure);
-INITIALIZE_VA_LIST();
+COPY_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 15 ) core::wrongNumberOfArguments(lcc_nargs,15);
@@ -4219,14 +4219,14 @@ typedef void (OT::ExternalType::*Type)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7
 Type mptr;
 public:
 enum { NumParams = 14 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(entry_point,name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
-static inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
 MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
 INCREMENT_FUNCTION_CALL_COUNTER(closure);
-INITIALIZE_VA_LIST();
+COPY_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 14 ) core::wrongNumberOfArguments(lcc_nargs,14);
@@ -4324,14 +4324,14 @@ typedef void (OT::ExternalType::*Type)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7
 Type mptr;
 public:
 enum { NumParams = 13 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(entry_point,name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
-static inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
 MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
 INCREMENT_FUNCTION_CALL_COUNTER(closure);
-INITIALIZE_VA_LIST();
+COPY_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 13 ) core::wrongNumberOfArguments(lcc_nargs,13);
@@ -4425,14 +4425,14 @@ typedef void (OT::ExternalType::*Type)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7
 Type mptr;
 public:
 enum { NumParams = 12 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(entry_point,name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
-static inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
 MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
 INCREMENT_FUNCTION_CALL_COUNTER(closure);
-INITIALIZE_VA_LIST();
+COPY_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 12 ) core::wrongNumberOfArguments(lcc_nargs,12);
@@ -4522,14 +4522,14 @@ typedef void (OT::ExternalType::*Type)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7
 Type mptr;
 public:
 enum { NumParams = 11 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(entry_point,name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
-static inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
 MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
 INCREMENT_FUNCTION_CALL_COUNTER(closure);
-INITIALIZE_VA_LIST();
+COPY_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 11 ) core::wrongNumberOfArguments(lcc_nargs,11);
@@ -4615,14 +4615,14 @@ typedef void (OT::ExternalType::*Type)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7
 Type mptr;
 public:
 enum { NumParams = 10 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(entry_point,name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
-static inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
 MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
 INCREMENT_FUNCTION_CALL_COUNTER(closure);
-INITIALIZE_VA_LIST();
+COPY_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 10 ) core::wrongNumberOfArguments(lcc_nargs,10);
@@ -4704,14 +4704,14 @@ typedef void (OT::ExternalType::*Type)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7
 Type mptr;
 public:
 enum { NumParams = 9 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(entry_point,name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
-static inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
 MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
 INCREMENT_FUNCTION_CALL_COUNTER(closure);
-INITIALIZE_VA_LIST();
+COPY_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 9 ) core::wrongNumberOfArguments(lcc_nargs,9);
@@ -4788,14 +4788,14 @@ typedef void (OT::ExternalType::*Type)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7
 Type mptr;
 public:
 enum { NumParams = 8 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(entry_point,name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
-static inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
 MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
 INCREMENT_FUNCTION_CALL_COUNTER(closure);
-INITIALIZE_VA_LIST();
+COPY_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 8 ) core::wrongNumberOfArguments(lcc_nargs,8);
@@ -4867,14 +4867,14 @@ typedef void (OT::ExternalType::*Type)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6) cons
 Type mptr;
 public:
 enum { NumParams = 7 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(entry_point,name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
-static inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
 MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
 INCREMENT_FUNCTION_CALL_COUNTER(closure);
-INITIALIZE_VA_LIST();
+COPY_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 7 ) core::wrongNumberOfArguments(lcc_nargs,7);
@@ -4942,14 +4942,14 @@ typedef void (OT::ExternalType::*Type)( ARG1, ARG2, ARG3, ARG4, ARG5) const;
 Type mptr;
 public:
 enum { NumParams = 6 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(entry_point,name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
-static inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
 MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
 INCREMENT_FUNCTION_CALL_COUNTER(closure);
-INITIALIZE_VA_LIST();
+COPY_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 6 ) core::wrongNumberOfArguments(lcc_nargs,6);
@@ -5013,14 +5013,14 @@ typedef void (OT::ExternalType::*Type)( ARG1, ARG2, ARG3, ARG4) const;
 Type mptr;
 public:
 enum { NumParams = 5 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(entry_point,name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
-static inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
 MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
 INCREMENT_FUNCTION_CALL_COUNTER(closure);
-INITIALIZE_VA_LIST();
+COPY_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 5 ) core::wrongNumberOfArguments(lcc_nargs,5);
@@ -5080,14 +5080,14 @@ typedef void (OT::ExternalType::*Type)( ARG1, ARG2, ARG3) const;
 Type mptr;
 public:
 enum { NumParams = 4 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(entry_point,name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
-static inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
 MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
 INCREMENT_FUNCTION_CALL_COUNTER(closure);
-INITIALIZE_VA_LIST();
+COPY_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 4 ) core::wrongNumberOfArguments(lcc_nargs,4);
@@ -5143,14 +5143,14 @@ typedef void (OT::ExternalType::*Type)( ARG1, ARG2) const;
 Type mptr;
 public:
 enum { NumParams = 3 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(entry_point,name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
-static inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
 MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
 INCREMENT_FUNCTION_CALL_COUNTER(closure);
-INITIALIZE_VA_LIST();
+COPY_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 3 ) core::wrongNumberOfArguments(lcc_nargs,3);
@@ -5202,14 +5202,14 @@ typedef void (OT::ExternalType::*Type)( ARG1) const;
 Type mptr;
 public:
 enum { NumParams = 2 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(entry_point,name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
-static inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
 MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
 INCREMENT_FUNCTION_CALL_COUNTER(closure);
-INITIALIZE_VA_LIST();
+COPY_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 2 ) core::wrongNumberOfArguments(lcc_nargs,2);
@@ -5257,14 +5257,14 @@ typedef void (OT::ExternalType::*Type)( ) const;
 Type mptr;
 public:
 enum { NumParams = 1 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(entry_point,name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
-static inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
 MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
 INCREMENT_FUNCTION_CALL_COUNTER(closure);
-INITIALIZE_VA_LIST();
+COPY_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 1 ) core::wrongNumberOfArguments(lcc_nargs,1);

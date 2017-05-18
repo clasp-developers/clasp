@@ -111,16 +111,18 @@ CL_DECLARE();
 CL_DOCSTRING(R"doc(allocate-raw-class - behaves like ECL instance::allocate_raw_instance)doc");
 CL_DEFUN T_sp core__allocate_raw_class(T_sp orig, T_sp tMetaClass, int slots, bool creates_classes) {
   if ( Class_sp cMetaClass = tMetaClass.asOrNull<Class_O>() ) {
+#if 0
     if (slots == 28 ) {
-      printf("%s:%d  Creating the class %s with 28 slots\n", __FILE__, __LINE__, cMetaClass->classNameAsString().c_str());
+//      printf("%s:%d  Creating the class %s with 28 slots\n", __FILE__, __LINE__, cMetaClass->classNameAsString().c_str());
     }
+#endif
     T_sp tNewClass = cMetaClass->allocate_newClass(cMetaClass,slots);
     if ( Class_sp newClass = tNewClass.asOrNull<Class_O>() ) {
       newClass->initialize();
       newClass->_MetaClass = cMetaClass;
       newClass->_NumberOfSlots = slots;
       //      newClass->initializeSlots(slots);
-      printf("%s:%d allocate-raw-class %p of metaclass %s number_of_slots[%d]\n", __FILE__, __LINE__, (void *)(newClass.get()), cMetaClass->classNameAsString().c_str(), slots);
+//      printf("%s:%d allocate-raw-class %p of metaclass %s number_of_slots[%d]\n", __FILE__, __LINE__, (void *)(newClass.get()), cMetaClass->classNameAsString().c_str(), slots);
       if (creates_classes) {
         auto cb = gctools::GC<core::BuiltInObjectCreator<Class_O>>::allocate();
         newClass->setCreator(cb);
@@ -244,7 +246,7 @@ T_sp Class_O::allocate_newClass(Class_sp metaClass, int slots) {
   Class_sp newClass = gc::As<Class_sp>(this->_theCreator->creator_allocate());
   newClass->_MetaClass = metaClass;
   newClass->_NumberOfSlots = slots;
-  printf("%s:%d  Initialize class slots here?????\n", __FILE__, __LINE__);
+//  printf("%s:%d  Initialize class slots here?????\n", __FILE__, __LINE__);
   return newClass;
 }
 

@@ -45,9 +45,10 @@ namespace core {
   SingleDispatchMethodFunction_O(T_sp name, Function_sp body) : Base(entry_point,name), _body(body) {};
     static inline LCC_RETURN LISP_CALLING_CONVENTION() {
       SingleDispatchMethodFunction_O* closure = gctools::untag_general<SingleDispatchMethodFunction_O*>((SingleDispatchMethodFunction_O*)lcc_closure);
-      ASSERT_FIRST_ARG_IS_VALIST();
+      COPY_VA_LIST();
       INCREMENT_FUNCTION_CALL_COUNTER(closure);
-      return funcall_consume_valist_<core::Function_O>(closure->_body.tagged_(),LCC_ARG0_VALIST());
+      return (closure->_body->entry)(LCC_PASS_ARGS_VASLIST(closure->_body.raw_(),lcc_vargs));
+//      return funcall_consume_valist_<core::Function_O>(closure->_body.tagged_(),lcc_vargs);
     };
   };
 

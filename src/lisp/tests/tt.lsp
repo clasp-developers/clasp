@@ -1,11 +1,3 @@
 
-
-(defun bar ()
-  (throw 'ttt nil))
-
-(defun foo ()
-  (catch 'ttt
-    (bar)))
-
-(foo)
-
+(defun foo (f x y z l)
+  (core:multiple-value-foreign-call "apply_method3" x y z l))

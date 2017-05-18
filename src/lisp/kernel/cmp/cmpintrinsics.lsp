@@ -425,13 +425,16 @@ Boehm and MPS use a single pointer"
 (defun calling-convention-maybe-push-invocation-history-frame (cc)
   (when (calling-convention-invocation-history-frame* cc)
     (irc-intrinsic "cc_push_InvocationHistoryFrame"
-                   (irc-bit-cast (calling-convention-invocation-history-frame* cc) %i8*%)
-                   (irc-bit-cast (calling-convention-va-list* cc) %i8*%)
-                   (irc-bit-cast (calling-convention-remaining-nargs* cc) %i8*%))))
+                   (calling-convention-closure cc)
+                   (calling-convention-invocation-history-frame* cc)
+                   (calling-convention-va-list* cc)
+                   (calling-convention-remaining-nargs* cc))))
 
 (defun calling-convention-maybe-pop-invocation-history-frame (cc)
   (when (calling-convention-invocation-history-frame* cc)
-    (irc-intrinsic "cc_pop_InvocationHistoryFrame" (irc-bit-cast (calling-convention-invocation-history-frame* cc) %i8*%))))
+    (irc-intrinsic "cc_pop_InvocationHistoryFrame"
+                   (calling-convention-closure cc)
+                   (calling-convention-invocation-history-frame* cc))))
 
 
 
@@ -458,6 +461,18 @@ Boehm and MPS use a single pointer"
          (result                (irc-va_arg (calling-convention-va-list* cc) %t*% )))
     result))
 
+  (defun calling-convention-args.va-start (cc)
+    "Like va-start - but it rewinds the va-list to start at the third argument. 
+This allows all of the arguments to be accessed with successive calls to calling-convention-args.va-arg.
+eg:  (f closure-ptr nargs a b c d ...)
+                          ^-----  after calling-convention-args.va-start the va-list will point here.
+                                  and remaining-nargs will contain nargs."
+    (let* (
+                                        ; Initialize the va_list - the only valid field will be overflow-area
+           (va-list*                      (calling-convention-va-list* cc))
+           (_                             (irc-intrinsic "llvm.va_start" (irc-bit-cast va-list* %i8*%)))
+           (_                             (calling-convention-rewind-va-list-to-start-on-third-argument cc)))))
+
 
 #+x86-64
 (progn
@@ -479,6 +494,7 @@ Boehm and MPS use a single pointer"
   (define-symbol-macro %register-save-area% (llvm-sys:array-type-get
                                              %i8*%
                                              (/ +register-save-area-size+ +void*-size+)))
+  (define-symbol-macro %register-save-area*% (llvm-sys:type-get-pointer-to %register-save-area%))
   (defun spill-to-register-save-area (registers register-save-area*)
     (labels ((spill-reg (idx reg)
                (let* ((addr-name     (bformat nil "addr%d" idx))
@@ -494,20 +510,11 @@ Boehm and MPS use a single pointer"
              (addr-farg2    (spill-reg 4 (elt registers 4)))
              (addr-farg3    (spill-reg 5 (elt registers 5)))))))
 
-  (defun calling-convention-args.va-start (cc)
-    "Like va-start - but it rewinds the va-list to start at the third argument. 
-This allows all of the arguments to be accessed with successive calls to calling-convention-args.va-arg.
-eg:  (f closure-ptr nargs a b c d ...)
-                          ^-----  after calling-convention-args.va-start the va-list will point here.
-                                  and remaining-nargs will contain nargs."
-    (let* (
-                                        ; Initialize the va_list - the only valid field will be overflow-area
-           (va-list*                      (calling-convention-va-list* cc))
-           (_                             (irc-intrinsic "llvm.va_start" (irc-bit-cast va-list* %i8*%)))
 
-           #++(_dbg                          (progn
-                                            (llvm-print "Dumping va_list after llvm.va_start\n")
-                                            (irc-intrinsic "debug_va_list" va-list*)))
+  (defun calling-convention-rewind-va-list-to-start-on-third-argument (cc)
+    ;;; Generate code to do everything
+    #+(or)
+    (let* ((va-list*                      (calling-convention-va-list* cc))
                                         ; Get the second argument - the number of arguments
            (nargs-addr                    (irc-gep (calling-convention-register-save-area* cc) (list (jit-constant-size_t 0) (jit-constant-size_t 1)) "nargs-addr"))
            (nargs-addr-%size_t*%          (irc-bit-cast nargs-addr %size_t*% "nargs-addr-%size_t*%"))
@@ -522,7 +529,16 @@ eg:  (f closure-ptr nargs a b c d ...)
            (va-list2                      (irc-insert-value va-list1 (jit-constant-i32 (* 8 2)) (list 0)))
            (_                             (irc-store va-list2 va-list*))
            #++
-           (_                             (irc-intrinsic "debugPointer" (irc-bit-cast va-list* %i8*%)))))))
+           (_                             (irc-intrinsic "debugPointer" (irc-bit-cast va-list* %i8*%)))))
+    ;;; Use a function
+    (let* ((va-list*                      (calling-convention-va-list* cc))
+           (register-save-area*           (calling-convention-register-save-area* cc))
+           (remaining-nargs*              (calling-convention-remaining-nargs* cc))
+           (closure                       (calling-convention-closure cc))
+           (_                             (irc-intrinsic "cc_rewind_va_list" closure va-list* remaining-nargs* register-save-area*)))))
+    
+;;; end of x86-64 specific stuff
+  )
 
 
 #-(and x86-64)
@@ -650,13 +666,15 @@ and initialize it with an array consisting of one function pointer."
          (tsp-size (llvm-sys:data-layout-get-type-alloc-size data-layout %tsp%))
          (tmv-size (llvm-sys:data-layout-get-type-alloc-size data-layout %tmv%))
          (valist_s-size (llvm-sys:data-layout-get-type-alloc-size data-layout %VaList_S%))
+         (register-save-area-size (llvm-sys:data-layout-get-type-alloc-size data-layout %register-save-area%))
          (invocation-history-frame-size (llvm-sys:data-layout-get-type-alloc-size data-layout %InvocationHistoryFrame%))
          (gcroots-in-module-size (llvm-sys:data-layout-get-type-alloc-size data-layout %gcroots-in-module%)))
     (llvm-sys:throw-if-mismatched-structure-sizes :tsp tsp-size
                                                   :tmv tmv-size
                                                   :contab gcroots-in-module-size
                                                   :valist valist_s-size
-                                                  :ihf invocation-history-frame-size)))
+                                                  :ihf invocation-history-frame-size
+                                                  :register-save-area register-save-area-size)))
 
 ;;
 ;; Define exception types in the module
@@ -1060,8 +1078,9 @@ and initialize it with an array consisting of one function pointer."
   (primitive-nounwind module "cc_unsafe_symbol_value" %t*% (list %t*%))
   (primitive-nounwind module "cc_setSymbolValue" %void% (list %t*% %t*%))
   
-  (primitive-nounwind module "cc_push_InvocationHistoryFrame" %void% (list %i8*% %i8*% %i8*%))
-  (primitive-nounwind module "cc_pop_InvocationHistoryFrame" %void% (list %i8*%))
+  (primitive-nounwind module "cc_rewind_va_list" %void% (list %t*% %va_list*% %size_t*% %register-save-area*%))
+  (primitive-nounwind module "cc_push_InvocationHistoryFrame" %void% (list %t*% %InvocationHistoryFrame*% %va_list*% %size_t*%))
+  (primitive-nounwind module "cc_pop_InvocationHistoryFrame" %void% (list %t*% %InvocationHistoryFrame*%))
   
   (primitive          module "cc_call_multipleValueOneFormCall" %return_type% (list %t*%))
   (primitive          module "cc_call"   %return_type% (list* %t*% %size_t%

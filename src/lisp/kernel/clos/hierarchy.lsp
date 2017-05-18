@@ -299,11 +299,6 @@
 #+(or)(eval-when (:compile-toplevel :execute :load-toplevel)
   (setq clasp-cleavir:*use-type-inference* nil))
 
-(eval-when (:compile-toplevel :execute :load-toplevel)
-  (setq *echo-repl-read* t)
-  (core:debug-invocation-history-frame 1))
-
-
 (eval-when (eval #+clasp :compile-toplevel #+clasp :load-toplevel  )
   (defconstant +class-hierarchy+
     `((standard-class
@@ -403,20 +398,11 @@
        :direct-slots #1#
         #+clasp :creates-classes #+clasp t
        )
-      ,@
-      #++(let ((index 1))
-           (mapcar (lambda (entry)
-                     (let ((name (car entry))
-                           (rest (cdr entry)))
-                       (list name :metaclass 'built-in-class
-                             :index index
-                             :direct-superclasses (or rest '(t)))))
-                   +builtin-classes-list+))
-      (loop for (name . rest) in +builtin-classes-list+
-            for index from 1
-            collect (list name :metaclass 'built-in-class
-                          :index index
-                          :direct-superclasses (or rest '(t))))
+      ,@(loop for (name . rest) in +builtin-classes-list+
+           for index from 1
+           collect (list name :metaclass 'built-in-class
+                         :index index
+                         :direct-superclasses (or rest '(t))))
       (funcallable-standard-object
        :direct-superclasses (standard-object function))
       (generic-function

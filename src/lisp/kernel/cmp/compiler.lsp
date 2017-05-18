@@ -121,6 +121,8 @@ lambda-list-handler, environment.
 All code generation comes through here.   Return (llvm:function lambda-name)
 Could return more functions that provide lambda-list for swank for example"
   (setq *lambda-args-num* (1+ *lambda-args-num*))
+  (when (core:extract-dump-module-from-declares declares)
+    (setf *declare-dump-module* t))
   (let* ((name (core:extract-lambda-name-from-declares declares (or given-name 'cl:lambda)))
 	 (fn (with-new-function (fn fn-env result
 				    :function-name name
@@ -1141,7 +1143,7 @@ jump to blocks within this tagbody."
                         intrinsic-name
                         *the-module*))))
            (result-in-registers
-            (llvm-sys:create-call-array-ref *irbuilder* func (nreverse args) "intrinsic")))
+            (irc-call-or-invoke func (nreverse args))))
       (irc-store-result result result-in-registers)))
   (irc-low-level-trace :flow))
 
@@ -1187,7 +1189,7 @@ jump to blocks within this tagbody."
                       intrinsic-name
                       *the-module*)))
            (foreign-result
-            (llvm-sys:create-call-array-ref *irbuilder* func (nreverse args) "intrinsic"))
+            (irc-call-or-invoke func (nreverse args)) #++(llvm-sys:create-call-array-ref *irbuilder* func (nreverse args) "intrinsic"))
            (result-in-t*
             (if (eq :void (first foreign-types))
                 (irc-intrinsic-call (clasp-ffi::to-translator-name (first foreign-types)) nil) ; returns :void
@@ -1215,7 +1217,7 @@ jump to blocks within this tagbody."
              (pointer-t* (irc-smart-ptr-extract (irc-load temp-result)))
              (function-pointer (llvm-sys:create-bit-cast *irbuilder* (irc-intrinsic "cc_getPointer" pointer-t*) function-pointer-type "cast-function-pointer"))
              (foreign-result
-              (llvm-sys:create-call-function-pointer *irbuilder* function-type function-pointer (nreverse args) "fn-ptr-call-result"))
+              (irc-create-call-or-invoke function-pointer (nreverse args)) #++(llvm-sys:create-call-function-pointer *irbuilder* function-type function-pointer (nreverse args) "fn-ptr-call-result"))
              (result-in-t*
               (if (eq :void (first foreign-types))
                   (irc-intrinsic-call (clasp-ffi::to-translator-name (first foreign-types)) nil) ; returns :void
@@ -1306,6 +1308,7 @@ jump to blocks within this tagbody."
               (macro-function (car form) env))
          (multiple-value-bind (expansion expanded-p)
              (macroexpand form env)
+           (declare (core:lambda-name codegen-application--about-to-macroexpand))
            (cmp-log "MACROEXPANDed form[%s] expanded to [%s]\n" form expansion )
            (irc-low-level-trace)
            (codegen result expansion env) 
@@ -1518,7 +1521,8 @@ We could do more fancy things here - like if cleavir-clasp fails, use the clasp 
     (let ((*the-module* (create-run-time-module-for-compile)))
       (define-primitives-in-module *the-module*)
       ;; Link the C++ intrinsics into the module
-      (let* ((pathname (if *load-pathname*
+      (let* ((*declare-dump-module* nil)
+             (pathname (if *load-pathname*
 			   (namestring *load-pathname*)
 			   "repl-code"))
 	     (handle (multiple-value-bind (the-source-file-info the-handle)

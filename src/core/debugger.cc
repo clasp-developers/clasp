@@ -305,6 +305,42 @@ CL_DEFUN void core__low_level_backtrace() {
 }
 
 
+CL_LAMBDA();
+CL_DECLARE();
+CL_DOCSTRING("lowLevelBacktrace");
+CL_DEFUN void core__low_level_backtrace_with_args() {
+  InvocationHistoryFrame *top = my_thread->_InvocationHistoryStack;
+  if (top == NULL) {
+    printf("Empty InvocationHistoryStack\n");
+    return;
+  }
+  int index = 0;
+  for (InvocationHistoryFrame *cur = top; cur != NULL; cur = cur->_Previous) {
+    string name = "-no-name-";
+    Function_sp closure = cur->function();
+    if (!closure) {
+      name = "-NO-CLOSURE-";
+    } else {
+      if (closure->name().notnilp()) {
+        try {
+          name = _rep_(closure->name());
+        } catch (...) {
+          name = "-BAD-NAME-";
+        }
+      }
+    }
+    /*Nilable?*/ T_sp sfi = core__source_file_info(make_fixnum(closure->sourceFileInfoHandle()));
+    string sourceName = "cannot-determine";
+    if (sfi.notnilp()) {
+      sourceName = gc::As<SourceFileInfo_sp>(sfi)->fileName();
+    }
+    printf("_Index: %4d  %s %3d  %s %s\n", index, sourceName.c_str(), closure->lineNumber(), name.c_str(), _rep_(cur->arguments()).c_str());
+    ++index;
+  }
+  printf("----Done\n");
+}
+
+
 CL_LAMBDA(&optional (depth 0));
 CL_DECLARE();
 CL_DOCSTRING("backtrace");

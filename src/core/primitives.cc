@@ -1832,6 +1832,7 @@ void nextInvocationHistoryFrameIteratorThatSatisfiesTest(Fixnum num, InvocationH
 
 int backtrace_length(InvocationHistoryFrame* frame) {
   int length = 0;
+  if (!frame) return 0;
   while ( (frame = frame->previous()) ) {++length;};
   return length;
 }

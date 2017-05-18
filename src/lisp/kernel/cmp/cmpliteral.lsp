@@ -406,10 +406,10 @@ Return the index of the load-time-value"
           (llvm-sys:replace-all-uses-with cmp:*load-time-value-holder-global-var* bitcast-correct-size-holder)
           (with-run-all-entry-codegen
               (cmp:irc-intrinsic-call "cc_initialize_gcroots_in_module"
-                                   (list *gcroots-in-module*
-                                         (irc-pointer-cast correct-size-holder cmp:%tsp*% "")
-                                         (cmp:jit-constant-size_t table-entries)
-                                         (cmp:irc-int-to-ptr (cmp:jit-constant-uintptr_t 0) %t*%))))
+                                      (list *gcroots-in-module*
+                                            (irc-pointer-cast correct-size-holder cmp:%tsp*% "")
+                                            (cmp:jit-constant-size_t table-entries)
+                                            (cmp:irc-int-to-ptr (cmp:jit-constant-uintptr_t 0) %t*%))))
           ;; Erase the dummy holder
           (llvm-sys:erase-from-parent cmp:*load-time-value-holder-global-var*))))))
 

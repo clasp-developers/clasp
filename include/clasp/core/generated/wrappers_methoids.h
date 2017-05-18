@@ -28,14 +28,14 @@ typedef RT(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG1
 Type mptr;
 public:
 enum { NumParams = 16 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-static inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
 MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
 INCREMENT_FUNCTION_CALL_COUNTER(closure);
-INITIALIZE_VA_LIST();
+COPY_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),16);
 core::StackFrameDynamicScopeManager scope(frame);
@@ -84,14 +84,14 @@ typedef RT(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG1
 Type mptr;
 public:
 enum { NumParams = 15 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-static inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
 MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
 INCREMENT_FUNCTION_CALL_COUNTER(closure);
-INITIALIZE_VA_LIST();
+COPY_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),15);
 core::StackFrameDynamicScopeManager scope(frame);
@@ -138,14 +138,14 @@ typedef RT(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG1
 Type mptr;
 public:
 enum { NumParams = 14 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-static inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
 MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
 INCREMENT_FUNCTION_CALL_COUNTER(closure);
-INITIALIZE_VA_LIST();
+COPY_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),14);
 core::StackFrameDynamicScopeManager scope(frame);
@@ -190,14 +190,14 @@ typedef RT(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG1
 Type mptr;
 public:
 enum { NumParams = 13 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-static inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
 MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
 INCREMENT_FUNCTION_CALL_COUNTER(closure);
-INITIALIZE_VA_LIST();
+COPY_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),13);
 core::StackFrameDynamicScopeManager scope(frame);
@@ -240,14 +240,14 @@ typedef RT(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG1
 Type mptr;
 public:
 enum { NumParams = 12 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-static inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
 MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
 INCREMENT_FUNCTION_CALL_COUNTER(closure);
-INITIALIZE_VA_LIST();
+COPY_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),12);
 core::StackFrameDynamicScopeManager scope(frame);
@@ -289,14 +289,14 @@ typedef RT(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG1
 Type mptr;
 public:
 enum { NumParams = 11 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-static inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
 MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
 INCREMENT_FUNCTION_CALL_COUNTER(closure);
-INITIALIZE_VA_LIST();
+COPY_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),11);
 core::StackFrameDynamicScopeManager scope(frame);
@@ -337,14 +337,14 @@ typedef RT(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9) ;
 Type mptr;
 public:
 enum { NumParams = 10 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-static inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
 MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
 INCREMENT_FUNCTION_CALL_COUNTER(closure);
-INITIALIZE_VA_LIST();
+COPY_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),10);
 core::StackFrameDynamicScopeManager scope(frame);
@@ -384,14 +384,14 @@ typedef RT(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8) ;
 Type mptr;
 public:
 enum { NumParams = 9 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-static inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
 MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
 INCREMENT_FUNCTION_CALL_COUNTER(closure);
-INITIALIZE_VA_LIST();
+COPY_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),9);
 core::StackFrameDynamicScopeManager scope(frame);
@@ -430,14 +430,14 @@ typedef RT(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7) ;
 Type mptr;
 public:
 enum { NumParams = 8 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-static inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
 MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
 INCREMENT_FUNCTION_CALL_COUNTER(closure);
-INITIALIZE_VA_LIST();
+COPY_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),8);
 core::StackFrameDynamicScopeManager scope(frame);
@@ -475,14 +475,14 @@ typedef RT(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, ARG6) ;
 Type mptr;
 public:
 enum { NumParams = 7 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-static inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
 MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
 INCREMENT_FUNCTION_CALL_COUNTER(closure);
-INITIALIZE_VA_LIST();
+COPY_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),7);
 core::StackFrameDynamicScopeManager scope(frame);
@@ -518,14 +518,14 @@ typedef RT(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5) ;
 Type mptr;
 public:
 enum { NumParams = 6 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-static inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
 MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
 INCREMENT_FUNCTION_CALL_COUNTER(closure);
-INITIALIZE_VA_LIST();
+COPY_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),6);
 core::StackFrameDynamicScopeManager scope(frame);
@@ -560,14 +560,14 @@ typedef RT(OT::*Type)(ARG1, ARG2, ARG3, ARG4) ;
 Type mptr;
 public:
 enum { NumParams = 5 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-static inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
 MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
 INCREMENT_FUNCTION_CALL_COUNTER(closure);
-INITIALIZE_VA_LIST();
+COPY_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),5);
 core::StackFrameDynamicScopeManager scope(frame);
@@ -601,14 +601,14 @@ typedef RT(OT::*Type)(ARG1, ARG2, ARG3) ;
 Type mptr;
 public:
 enum { NumParams = 4 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-static inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
 MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
 INCREMENT_FUNCTION_CALL_COUNTER(closure);
-INITIALIZE_VA_LIST();
+COPY_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),4);
 core::StackFrameDynamicScopeManager scope(frame);
@@ -641,14 +641,14 @@ typedef RT(OT::*Type)(ARG1, ARG2) ;
 Type mptr;
 public:
 enum { NumParams = 3 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-static inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
 MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
 INCREMENT_FUNCTION_CALL_COUNTER(closure);
-INITIALIZE_VA_LIST();
+COPY_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),3);
 core::StackFrameDynamicScopeManager scope(frame);
@@ -680,14 +680,14 @@ typedef RT(OT::*Type)(ARG1) ;
 Type mptr;
 public:
 enum { NumParams = 2 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-static inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
 MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
 INCREMENT_FUNCTION_CALL_COUNTER(closure);
-INITIALIZE_VA_LIST();
+COPY_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),2);
 core::StackFrameDynamicScopeManager scope(frame);
@@ -718,14 +718,14 @@ typedef RT(OT::*Type)() ;
 Type mptr;
 public:
 enum { NumParams = 1 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-static inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
 MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
 INCREMENT_FUNCTION_CALL_COUNTER(closure);
-INITIALIZE_VA_LIST();
+COPY_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),1);
 core::StackFrameDynamicScopeManager scope(frame);
@@ -758,14 +758,14 @@ typedef void(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, AR
 Type mptr;
 public:
 enum { NumParams = 16 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-static inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
 MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
 INCREMENT_FUNCTION_CALL_COUNTER(closure);
-INITIALIZE_VA_LIST();
+COPY_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),16);
 core::StackFrameDynamicScopeManager scope(frame);
@@ -813,14 +813,14 @@ typedef void(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, AR
 Type mptr;
 public:
 enum { NumParams = 15 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-static inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
 MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
 INCREMENT_FUNCTION_CALL_COUNTER(closure);
-INITIALIZE_VA_LIST();
+COPY_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),15);
 core::StackFrameDynamicScopeManager scope(frame);
@@ -866,14 +866,14 @@ typedef void(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, AR
 Type mptr;
 public:
 enum { NumParams = 14 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-static inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
 MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
 INCREMENT_FUNCTION_CALL_COUNTER(closure);
-INITIALIZE_VA_LIST();
+COPY_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),14);
 core::StackFrameDynamicScopeManager scope(frame);
@@ -918,14 +918,14 @@ typedef void(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, AR
 Type mptr;
 public:
 enum { NumParams = 13 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-static inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
 MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
 INCREMENT_FUNCTION_CALL_COUNTER(closure);
-INITIALIZE_VA_LIST();
+COPY_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),13);
 core::StackFrameDynamicScopeManager scope(frame);
@@ -968,14 +968,14 @@ typedef void(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, AR
 Type mptr;
 public:
 enum { NumParams = 12 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-static inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
 MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
 INCREMENT_FUNCTION_CALL_COUNTER(closure);
-INITIALIZE_VA_LIST();
+COPY_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),12);
 core::StackFrameDynamicScopeManager scope(frame);
@@ -1017,14 +1017,14 @@ typedef void(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, AR
 Type mptr;
 public:
 enum { NumParams = 11 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-static inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
 MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
 INCREMENT_FUNCTION_CALL_COUNTER(closure);
-INITIALIZE_VA_LIST();
+COPY_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),11);
 core::StackFrameDynamicScopeManager scope(frame);
@@ -1065,14 +1065,14 @@ typedef void(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9) ;
 Type mptr;
 public:
 enum { NumParams = 10 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-static inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
 MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
 INCREMENT_FUNCTION_CALL_COUNTER(closure);
-INITIALIZE_VA_LIST();
+COPY_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),10);
 core::StackFrameDynamicScopeManager scope(frame);
@@ -1112,14 +1112,14 @@ typedef void(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8) ;
 Type mptr;
 public:
 enum { NumParams = 9 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-static inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
 MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
 INCREMENT_FUNCTION_CALL_COUNTER(closure);
-INITIALIZE_VA_LIST();
+COPY_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),9);
 core::StackFrameDynamicScopeManager scope(frame);
@@ -1158,14 +1158,14 @@ typedef void(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7) ;
 Type mptr;
 public:
 enum { NumParams = 8 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-static inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
 MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
 INCREMENT_FUNCTION_CALL_COUNTER(closure);
-INITIALIZE_VA_LIST();
+COPY_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),8);
 core::StackFrameDynamicScopeManager scope(frame);
@@ -1202,14 +1202,14 @@ typedef void(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, ARG6) ;
 Type mptr;
 public:
 enum { NumParams = 7 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-static inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
 MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
 INCREMENT_FUNCTION_CALL_COUNTER(closure);
-INITIALIZE_VA_LIST();
+COPY_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),7);
 core::StackFrameDynamicScopeManager scope(frame);
@@ -1245,14 +1245,14 @@ typedef void(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5) ;
 Type mptr;
 public:
 enum { NumParams = 6 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-static inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
 MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
 INCREMENT_FUNCTION_CALL_COUNTER(closure);
-INITIALIZE_VA_LIST();
+COPY_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),6);
 core::StackFrameDynamicScopeManager scope(frame);
@@ -1287,14 +1287,14 @@ typedef void(OT::*Type)(ARG1, ARG2, ARG3, ARG4) ;
 Type mptr;
 public:
 enum { NumParams = 5 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-static inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
 MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
 INCREMENT_FUNCTION_CALL_COUNTER(closure);
-INITIALIZE_VA_LIST();
+COPY_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),5);
 core::StackFrameDynamicScopeManager scope(frame);
@@ -1328,14 +1328,14 @@ typedef void(OT::*Type)(ARG1, ARG2, ARG3) ;
 Type mptr;
 public:
 enum { NumParams = 4 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-static inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
 MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
 INCREMENT_FUNCTION_CALL_COUNTER(closure);
-INITIALIZE_VA_LIST();
+COPY_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),4);
 core::StackFrameDynamicScopeManager scope(frame);
@@ -1368,14 +1368,14 @@ typedef void(OT::*Type)(ARG1, ARG2) ;
 Type mptr;
 public:
 enum { NumParams = 3 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-static inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
 MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
 INCREMENT_FUNCTION_CALL_COUNTER(closure);
-INITIALIZE_VA_LIST();
+COPY_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),3);
 core::StackFrameDynamicScopeManager scope(frame);
@@ -1407,14 +1407,14 @@ typedef void(OT::*Type)(ARG1) ;
 Type mptr;
 public:
 enum { NumParams = 2 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-static inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
 MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
 INCREMENT_FUNCTION_CALL_COUNTER(closure);
-INITIALIZE_VA_LIST();
+COPY_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),2);
 core::StackFrameDynamicScopeManager scope(frame);
@@ -1445,14 +1445,14 @@ typedef void(OT::*Type)() ;
 Type mptr;
 public:
 enum { NumParams = 1 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-static inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
 MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
 INCREMENT_FUNCTION_CALL_COUNTER(closure);
-INITIALIZE_VA_LIST();
+COPY_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),1);
 core::StackFrameDynamicScopeManager scope(frame);
@@ -1487,14 +1487,14 @@ typedef gctools::multiple_values<RT>(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, AR
 Type mptr;
 public:
 enum { NumParams = 16 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-static inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
 MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
 INCREMENT_FUNCTION_CALL_COUNTER(closure);
-INITIALIZE_VA_LIST();
+COPY_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),16);
 core::StackFrameDynamicScopeManager scope(frame);
@@ -1545,14 +1545,14 @@ typedef gctools::multiple_values<RT>(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, AR
 Type mptr;
 public:
 enum { NumParams = 15 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-static inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
 MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
 INCREMENT_FUNCTION_CALL_COUNTER(closure);
-INITIALIZE_VA_LIST();
+COPY_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),15);
 core::StackFrameDynamicScopeManager scope(frame);
@@ -1600,14 +1600,14 @@ typedef gctools::multiple_values<RT>(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, AR
 Type mptr;
 public:
 enum { NumParams = 14 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-static inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
 MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
 INCREMENT_FUNCTION_CALL_COUNTER(closure);
-INITIALIZE_VA_LIST();
+COPY_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),14);
 core::StackFrameDynamicScopeManager scope(frame);
@@ -1653,14 +1653,14 @@ typedef gctools::multiple_values<RT>(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, AR
 Type mptr;
 public:
 enum { NumParams = 13 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-static inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
 MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
 INCREMENT_FUNCTION_CALL_COUNTER(closure);
-INITIALIZE_VA_LIST();
+COPY_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),13);
 core::StackFrameDynamicScopeManager scope(frame);
@@ -1705,14 +1705,14 @@ typedef gctools::multiple_values<RT>(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, AR
 Type mptr;
 public:
 enum { NumParams = 12 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-static inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
 MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
 INCREMENT_FUNCTION_CALL_COUNTER(closure);
-INITIALIZE_VA_LIST();
+COPY_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),12);
 core::StackFrameDynamicScopeManager scope(frame);
@@ -1756,14 +1756,14 @@ typedef gctools::multiple_values<RT>(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, AR
 Type mptr;
 public:
 enum { NumParams = 11 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-static inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
 MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
 INCREMENT_FUNCTION_CALL_COUNTER(closure);
-INITIALIZE_VA_LIST();
+COPY_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),11);
 core::StackFrameDynamicScopeManager scope(frame);
@@ -1806,14 +1806,14 @@ typedef gctools::multiple_values<RT>(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, AR
 Type mptr;
 public:
 enum { NumParams = 10 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-static inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
 MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
 INCREMENT_FUNCTION_CALL_COUNTER(closure);
-INITIALIZE_VA_LIST();
+COPY_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),10);
 core::StackFrameDynamicScopeManager scope(frame);
@@ -1854,14 +1854,14 @@ typedef gctools::multiple_values<RT>(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, AR
 Type mptr;
 public:
 enum { NumParams = 9 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-static inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
 MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
 INCREMENT_FUNCTION_CALL_COUNTER(closure);
-INITIALIZE_VA_LIST();
+COPY_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),9);
 core::StackFrameDynamicScopeManager scope(frame);
@@ -1900,14 +1900,14 @@ typedef gctools::multiple_values<RT>(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, AR
 Type mptr;
 public:
 enum { NumParams = 8 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-static inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
 MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
 INCREMENT_FUNCTION_CALL_COUNTER(closure);
-INITIALIZE_VA_LIST();
+COPY_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),8);
 core::StackFrameDynamicScopeManager scope(frame);
@@ -1945,14 +1945,14 @@ typedef gctools::multiple_values<RT>(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, AR
 Type mptr;
 public:
 enum { NumParams = 7 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-static inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
 MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
 INCREMENT_FUNCTION_CALL_COUNTER(closure);
-INITIALIZE_VA_LIST();
+COPY_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),7);
 core::StackFrameDynamicScopeManager scope(frame);
@@ -1988,14 +1988,14 @@ typedef gctools::multiple_values<RT>(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5) ;
 Type mptr;
 public:
 enum { NumParams = 6 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-static inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
 MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
 INCREMENT_FUNCTION_CALL_COUNTER(closure);
-INITIALIZE_VA_LIST();
+COPY_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),6);
 core::StackFrameDynamicScopeManager scope(frame);
@@ -2030,14 +2030,14 @@ typedef gctools::multiple_values<RT>(OT::*Type)(ARG1, ARG2, ARG3, ARG4) ;
 Type mptr;
 public:
 enum { NumParams = 5 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-static inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
 MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
 INCREMENT_FUNCTION_CALL_COUNTER(closure);
-INITIALIZE_VA_LIST();
+COPY_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),5);
 core::StackFrameDynamicScopeManager scope(frame);
@@ -2071,14 +2071,14 @@ typedef gctools::multiple_values<RT>(OT::*Type)(ARG1, ARG2, ARG3) ;
 Type mptr;
 public:
 enum { NumParams = 4 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-static inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
 MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
 INCREMENT_FUNCTION_CALL_COUNTER(closure);
-INITIALIZE_VA_LIST();
+COPY_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),4);
 core::StackFrameDynamicScopeManager scope(frame);
@@ -2111,14 +2111,14 @@ typedef gctools::multiple_values<RT>(OT::*Type)(ARG1, ARG2) ;
 Type mptr;
 public:
 enum { NumParams = 3 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-static inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
 MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
 INCREMENT_FUNCTION_CALL_COUNTER(closure);
-INITIALIZE_VA_LIST();
+COPY_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),3);
 core::StackFrameDynamicScopeManager scope(frame);
@@ -2150,14 +2150,14 @@ typedef gctools::multiple_values<RT>(OT::*Type)(ARG1) ;
 Type mptr;
 public:
 enum { NumParams = 2 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-static inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
 MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
 INCREMENT_FUNCTION_CALL_COUNTER(closure);
-INITIALIZE_VA_LIST();
+COPY_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),2);
 core::StackFrameDynamicScopeManager scope(frame);
@@ -2188,14 +2188,14 @@ typedef gctools::multiple_values<RT>(OT::*Type)() ;
 Type mptr;
 public:
 enum { NumParams = 1 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-static inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
 MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
 INCREMENT_FUNCTION_CALL_COUNTER(closure);
-INITIALIZE_VA_LIST();
+COPY_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),1);
 core::StackFrameDynamicScopeManager scope(frame);
@@ -2228,14 +2228,14 @@ typedef RT(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG1
 Type mptr;
 public:
 enum { NumParams = 16 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-static inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
 MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
 INCREMENT_FUNCTION_CALL_COUNTER(closure);
-INITIALIZE_VA_LIST();
+COPY_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),16);
 core::StackFrameDynamicScopeManager scope(frame);
@@ -2284,14 +2284,14 @@ typedef RT(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG1
 Type mptr;
 public:
 enum { NumParams = 15 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-static inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
 MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
 INCREMENT_FUNCTION_CALL_COUNTER(closure);
-INITIALIZE_VA_LIST();
+COPY_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),15);
 core::StackFrameDynamicScopeManager scope(frame);
@@ -2338,14 +2338,14 @@ typedef RT(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG1
 Type mptr;
 public:
 enum { NumParams = 14 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-static inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
 MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
 INCREMENT_FUNCTION_CALL_COUNTER(closure);
-INITIALIZE_VA_LIST();
+COPY_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),14);
 core::StackFrameDynamicScopeManager scope(frame);
@@ -2391,14 +2391,14 @@ typedef RT(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG1
 Type mptr;
 public:
 enum { NumParams = 13 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-static inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
 MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
 INCREMENT_FUNCTION_CALL_COUNTER(closure);
-INITIALIZE_VA_LIST();
+COPY_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),13);
 core::StackFrameDynamicScopeManager scope(frame);
@@ -2441,14 +2441,14 @@ typedef RT(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG1
 Type mptr;
 public:
 enum { NumParams = 12 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-static inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
 MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
 INCREMENT_FUNCTION_CALL_COUNTER(closure);
-INITIALIZE_VA_LIST();
+COPY_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),12);
 core::StackFrameDynamicScopeManager scope(frame);
@@ -2490,14 +2490,14 @@ typedef RT(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG1
 Type mptr;
 public:
 enum { NumParams = 11 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-static inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
 MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
 INCREMENT_FUNCTION_CALL_COUNTER(closure);
-INITIALIZE_VA_LIST();
+COPY_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),11);
 core::StackFrameDynamicScopeManager scope(frame);
@@ -2538,14 +2538,14 @@ typedef RT(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9) cons
 Type mptr;
 public:
 enum { NumParams = 10 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-static inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
 MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
 INCREMENT_FUNCTION_CALL_COUNTER(closure);
-INITIALIZE_VA_LIST();
+COPY_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),10);
 core::StackFrameDynamicScopeManager scope(frame);
@@ -2585,14 +2585,14 @@ typedef RT(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8) const;
 Type mptr;
 public:
 enum { NumParams = 9 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-static inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
 MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
 INCREMENT_FUNCTION_CALL_COUNTER(closure);
-INITIALIZE_VA_LIST();
+COPY_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),9);
 core::StackFrameDynamicScopeManager scope(frame);
@@ -2631,14 +2631,14 @@ typedef RT(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7) const;
 Type mptr;
 public:
 enum { NumParams = 8 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-static inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
 MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
 INCREMENT_FUNCTION_CALL_COUNTER(closure);
-INITIALIZE_VA_LIST();
+COPY_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),8);
 core::StackFrameDynamicScopeManager scope(frame);
@@ -2676,14 +2676,14 @@ typedef RT(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, ARG6) const;
 Type mptr;
 public:
 enum { NumParams = 7 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-static inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
 MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
 INCREMENT_FUNCTION_CALL_COUNTER(closure);
-INITIALIZE_VA_LIST();
+COPY_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),7);
 core::StackFrameDynamicScopeManager scope(frame);
@@ -2719,14 +2719,14 @@ typedef RT(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5) const;
 Type mptr;
 public:
 enum { NumParams = 6 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-static inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
 MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
 INCREMENT_FUNCTION_CALL_COUNTER(closure);
-INITIALIZE_VA_LIST();
+COPY_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),6);
 core::StackFrameDynamicScopeManager scope(frame);
@@ -2761,14 +2761,14 @@ typedef RT(OT::*Type)(ARG1, ARG2, ARG3, ARG4) const;
 Type mptr;
 public:
 enum { NumParams = 5 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-static inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
 MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
 INCREMENT_FUNCTION_CALL_COUNTER(closure);
-INITIALIZE_VA_LIST();
+COPY_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),5);
 core::StackFrameDynamicScopeManager scope(frame);
@@ -2802,14 +2802,14 @@ typedef RT(OT::*Type)(ARG1, ARG2, ARG3) const;
 Type mptr;
 public:
 enum { NumParams = 4 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-static inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
 MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
 INCREMENT_FUNCTION_CALL_COUNTER(closure);
-INITIALIZE_VA_LIST();
+COPY_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),4);
 core::StackFrameDynamicScopeManager scope(frame);
@@ -2842,14 +2842,14 @@ typedef RT(OT::*Type)(ARG1, ARG2) const;
 Type mptr;
 public:
 enum { NumParams = 3 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-static inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
 MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
 INCREMENT_FUNCTION_CALL_COUNTER(closure);
-INITIALIZE_VA_LIST();
+COPY_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),3);
 core::StackFrameDynamicScopeManager scope(frame);
@@ -2881,14 +2881,14 @@ typedef RT(OT::*Type)(ARG1) const;
 Type mptr;
 public:
 enum { NumParams = 2 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-static inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
 MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
 INCREMENT_FUNCTION_CALL_COUNTER(closure);
-INITIALIZE_VA_LIST();
+COPY_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),2);
 core::StackFrameDynamicScopeManager scope(frame);
@@ -2919,14 +2919,14 @@ typedef RT(OT::*Type)() const;
 Type mptr;
 public:
 enum { NumParams = 1 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-static inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
 MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
 INCREMENT_FUNCTION_CALL_COUNTER(closure);
-INITIALIZE_VA_LIST();
+COPY_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),1);
 core::StackFrameDynamicScopeManager scope(frame);
@@ -2959,14 +2959,14 @@ typedef void(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, AR
 Type mptr;
 public:
 enum { NumParams = 16 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-static inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
 MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
 INCREMENT_FUNCTION_CALL_COUNTER(closure);
-INITIALIZE_VA_LIST();
+COPY_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),16);
 core::StackFrameDynamicScopeManager scope(frame);
@@ -3014,14 +3014,14 @@ typedef void(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, AR
 Type mptr;
 public:
 enum { NumParams = 15 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-static inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
 MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
 INCREMENT_FUNCTION_CALL_COUNTER(closure);
-INITIALIZE_VA_LIST();
+COPY_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),15);
 core::StackFrameDynamicScopeManager scope(frame);
@@ -3067,14 +3067,14 @@ typedef void(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, AR
 Type mptr;
 public:
 enum { NumParams = 14 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-static inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
 MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
 INCREMENT_FUNCTION_CALL_COUNTER(closure);
-INITIALIZE_VA_LIST();
+COPY_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),14);
 core::StackFrameDynamicScopeManager scope(frame);
@@ -3119,14 +3119,14 @@ typedef void(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, AR
 Type mptr;
 public:
 enum { NumParams = 13 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-static inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
 MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
 INCREMENT_FUNCTION_CALL_COUNTER(closure);
-INITIALIZE_VA_LIST();
+COPY_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),13);
 core::StackFrameDynamicScopeManager scope(frame);
@@ -3169,14 +3169,14 @@ typedef void(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, AR
 Type mptr;
 public:
 enum { NumParams = 12 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-static inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
 MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
 INCREMENT_FUNCTION_CALL_COUNTER(closure);
-INITIALIZE_VA_LIST();
+COPY_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),12);
 core::StackFrameDynamicScopeManager scope(frame);
@@ -3218,14 +3218,14 @@ typedef void(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, AR
 Type mptr;
 public:
 enum { NumParams = 11 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-static inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
 MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
 INCREMENT_FUNCTION_CALL_COUNTER(closure);
-INITIALIZE_VA_LIST();
+COPY_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),11);
 core::StackFrameDynamicScopeManager scope(frame);
@@ -3266,14 +3266,14 @@ typedef void(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9) co
 Type mptr;
 public:
 enum { NumParams = 10 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-static inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
 MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
 INCREMENT_FUNCTION_CALL_COUNTER(closure);
-INITIALIZE_VA_LIST();
+COPY_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),10);
 core::StackFrameDynamicScopeManager scope(frame);
@@ -3313,14 +3313,14 @@ typedef void(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8) const;
 Type mptr;
 public:
 enum { NumParams = 9 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-static inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
 MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
 INCREMENT_FUNCTION_CALL_COUNTER(closure);
-INITIALIZE_VA_LIST();
+COPY_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),9);
 core::StackFrameDynamicScopeManager scope(frame);
@@ -3359,14 +3359,14 @@ typedef void(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7) const;
 Type mptr;
 public:
 enum { NumParams = 8 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-static inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
 MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
 INCREMENT_FUNCTION_CALL_COUNTER(closure);
-INITIALIZE_VA_LIST();
+COPY_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),8);
 core::StackFrameDynamicScopeManager scope(frame);
@@ -3403,14 +3403,14 @@ typedef void(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, ARG6) const;
 Type mptr;
 public:
 enum { NumParams = 7 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-static inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
 MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
 INCREMENT_FUNCTION_CALL_COUNTER(closure);
-INITIALIZE_VA_LIST();
+COPY_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),7);
 core::StackFrameDynamicScopeManager scope(frame);
@@ -3446,14 +3446,14 @@ typedef void(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5) const;
 Type mptr;
 public:
 enum { NumParams = 6 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-static inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
 MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
 INCREMENT_FUNCTION_CALL_COUNTER(closure);
-INITIALIZE_VA_LIST();
+COPY_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),6);
 core::StackFrameDynamicScopeManager scope(frame);
@@ -3488,14 +3488,14 @@ typedef void(OT::*Type)(ARG1, ARG2, ARG3, ARG4) const;
 Type mptr;
 public:
 enum { NumParams = 5 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-static inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
 MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
 INCREMENT_FUNCTION_CALL_COUNTER(closure);
-INITIALIZE_VA_LIST();
+COPY_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),5);
 core::StackFrameDynamicScopeManager scope(frame);
@@ -3529,14 +3529,14 @@ typedef void(OT::*Type)(ARG1, ARG2, ARG3) const;
 Type mptr;
 public:
 enum { NumParams = 4 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-static inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
 MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
 INCREMENT_FUNCTION_CALL_COUNTER(closure);
-INITIALIZE_VA_LIST();
+COPY_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),4);
 core::StackFrameDynamicScopeManager scope(frame);
@@ -3569,14 +3569,14 @@ typedef void(OT::*Type)(ARG1, ARG2) const;
 Type mptr;
 public:
 enum { NumParams = 3 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-static inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
 MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
 INCREMENT_FUNCTION_CALL_COUNTER(closure);
-INITIALIZE_VA_LIST();
+COPY_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),3);
 core::StackFrameDynamicScopeManager scope(frame);
@@ -3608,14 +3608,14 @@ typedef void(OT::*Type)(ARG1) const;
 Type mptr;
 public:
 enum { NumParams = 2 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-static inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
 MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
 INCREMENT_FUNCTION_CALL_COUNTER(closure);
-INITIALIZE_VA_LIST();
+COPY_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),2);
 core::StackFrameDynamicScopeManager scope(frame);
@@ -3646,14 +3646,14 @@ typedef void(OT::*Type)() const;
 Type mptr;
 public:
 enum { NumParams = 1 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-static inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
 MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
 INCREMENT_FUNCTION_CALL_COUNTER(closure);
-INITIALIZE_VA_LIST();
+COPY_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),1);
 core::StackFrameDynamicScopeManager scope(frame);
@@ -3688,14 +3688,14 @@ typedef gctools::multiple_values<RT>(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, AR
 Type mptr;
 public:
 enum { NumParams = 16 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-static inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
 MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
 INCREMENT_FUNCTION_CALL_COUNTER(closure);
-INITIALIZE_VA_LIST();
+COPY_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),16);
 core::StackFrameDynamicScopeManager scope(frame);
@@ -3746,14 +3746,14 @@ typedef gctools::multiple_values<RT>(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, AR
 Type mptr;
 public:
 enum { NumParams = 15 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-static inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
 MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
 INCREMENT_FUNCTION_CALL_COUNTER(closure);
-INITIALIZE_VA_LIST();
+COPY_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),15);
 core::StackFrameDynamicScopeManager scope(frame);
@@ -3802,14 +3802,14 @@ typedef gctools::multiple_values<RT>(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, AR
 Type mptr;
 public:
 enum { NumParams = 14 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-static inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
 MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
 INCREMENT_FUNCTION_CALL_COUNTER(closure);
-INITIALIZE_VA_LIST();
+COPY_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),14);
 core::StackFrameDynamicScopeManager scope(frame);
@@ -3855,14 +3855,14 @@ typedef gctools::multiple_values<RT>(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, AR
 Type mptr;
 public:
 enum { NumParams = 13 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-static inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
 MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
 INCREMENT_FUNCTION_CALL_COUNTER(closure);
-INITIALIZE_VA_LIST();
+COPY_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),13);
 core::StackFrameDynamicScopeManager scope(frame);
@@ -3907,14 +3907,14 @@ typedef gctools::multiple_values<RT>(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, AR
 Type mptr;
 public:
 enum { NumParams = 12 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-static inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
 MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
 INCREMENT_FUNCTION_CALL_COUNTER(closure);
-INITIALIZE_VA_LIST();
+COPY_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),12);
 core::StackFrameDynamicScopeManager scope(frame);
@@ -3958,14 +3958,14 @@ typedef gctools::multiple_values<RT>(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, AR
 Type mptr;
 public:
 enum { NumParams = 11 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-static inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
 MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
 INCREMENT_FUNCTION_CALL_COUNTER(closure);
-INITIALIZE_VA_LIST();
+COPY_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),11);
 core::StackFrameDynamicScopeManager scope(frame);
@@ -4008,14 +4008,14 @@ typedef gctools::multiple_values<RT>(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, AR
 Type mptr;
 public:
 enum { NumParams = 10 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-static inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
 MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
 INCREMENT_FUNCTION_CALL_COUNTER(closure);
-INITIALIZE_VA_LIST();
+COPY_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),10);
 core::StackFrameDynamicScopeManager scope(frame);
@@ -4057,14 +4057,14 @@ typedef gctools::multiple_values<RT>(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, AR
 Type mptr;
 public:
 enum { NumParams = 9 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-static inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
 MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
 INCREMENT_FUNCTION_CALL_COUNTER(closure);
-INITIALIZE_VA_LIST();
+COPY_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),9);
 core::StackFrameDynamicScopeManager scope(frame);
@@ -4103,14 +4103,14 @@ typedef gctools::multiple_values<RT>(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, AR
 Type mptr;
 public:
 enum { NumParams = 8 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-static inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
 MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
 INCREMENT_FUNCTION_CALL_COUNTER(closure);
-INITIALIZE_VA_LIST();
+COPY_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),8);
 core::StackFrameDynamicScopeManager scope(frame);
@@ -4148,14 +4148,14 @@ typedef gctools::multiple_values<RT>(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, AR
 Type mptr;
 public:
 enum { NumParams = 7 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-static inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
 MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
 INCREMENT_FUNCTION_CALL_COUNTER(closure);
-INITIALIZE_VA_LIST();
+COPY_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),7);
 core::StackFrameDynamicScopeManager scope(frame);
@@ -4191,14 +4191,14 @@ typedef gctools::multiple_values<RT>(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5) co
 Type mptr;
 public:
 enum { NumParams = 6 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-static inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
 MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
 INCREMENT_FUNCTION_CALL_COUNTER(closure);
-INITIALIZE_VA_LIST();
+COPY_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),6);
 core::StackFrameDynamicScopeManager scope(frame);
@@ -4233,14 +4233,14 @@ typedef gctools::multiple_values<RT>(OT::*Type)(ARG1, ARG2, ARG3, ARG4) const;
 Type mptr;
 public:
 enum { NumParams = 5 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-static inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
 MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
 INCREMENT_FUNCTION_CALL_COUNTER(closure);
-INITIALIZE_VA_LIST();
+COPY_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),5);
 core::StackFrameDynamicScopeManager scope(frame);
@@ -4274,14 +4274,14 @@ typedef gctools::multiple_values<RT>(OT::*Type)(ARG1, ARG2, ARG3) const;
 Type mptr;
 public:
 enum { NumParams = 4 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-static inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
 MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
 INCREMENT_FUNCTION_CALL_COUNTER(closure);
-INITIALIZE_VA_LIST();
+COPY_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),4);
 core::StackFrameDynamicScopeManager scope(frame);
@@ -4314,14 +4314,14 @@ typedef gctools::multiple_values<RT>(OT::*Type)(ARG1, ARG2) const;
 Type mptr;
 public:
 enum { NumParams = 3 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-static inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
 MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
 INCREMENT_FUNCTION_CALL_COUNTER(closure);
-INITIALIZE_VA_LIST();
+COPY_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),3);
 core::StackFrameDynamicScopeManager scope(frame);
@@ -4353,14 +4353,14 @@ typedef gctools::multiple_values<RT>(OT::*Type)(ARG1) const;
 Type mptr;
 public:
 enum { NumParams = 2 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-static inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
 MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
 INCREMENT_FUNCTION_CALL_COUNTER(closure);
-INITIALIZE_VA_LIST();
+COPY_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),2);
 core::StackFrameDynamicScopeManager scope(frame);
@@ -4391,14 +4391,14 @@ typedef gctools::multiple_values<RT>(OT::*Type)() const;
 Type mptr;
 public:
 enum { NumParams = 1 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-static inline LCC_RETURN LISP_CALLING_CONVENTION()
+static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
 MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
 INCREMENT_FUNCTION_CALL_COUNTER(closure);
-INITIALIZE_VA_LIST();
+COPY_VA_LIST();
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),1);
 core::StackFrameDynamicScopeManager scope(frame);

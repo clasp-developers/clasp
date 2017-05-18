@@ -257,8 +257,8 @@ CL_DEFUN core::T_sp llvm_sys__cxxDataStructuresInfo() {
   return list;
 }
 
-CL_LAMBDA(&key tsp tmv ihf contab valist);
-CL_DEFUN void llvm_sys__throwIfMismatchedStructureSizes(core::Fixnum_sp tspSize, core::Fixnum_sp tmvSize, gc::Nilable<core::Fixnum_sp> givenIhfSize, core::T_sp contabSize, core::T_sp tvalistsize, core::T_sp tInvocationHistoryFrameSize ) {
+CL_LAMBDA(&key tsp tmv ihf contab valist register-save-area);
+CL_DEFUN void llvm_sys__throwIfMismatchedStructureSizes(core::Fixnum_sp tspSize, core::Fixnum_sp tmvSize, gc::Nilable<core::Fixnum_sp> givenIhfSize, core::T_sp contabSize, core::T_sp tvalistsize, core::T_sp tRegisterSaveAreaSize ) {
   int T_sp_size = sizeof(core::T_sp);
   if (unbox_fixnum(tspSize) != T_sp_size) {
     SIMPLE_ERROR(BF("Mismatch between tsp size[%d] and core::T_sp size[%d]") % unbox_fixnum(tspSize) % T_sp_size);
@@ -287,6 +287,12 @@ CL_DEFUN void llvm_sys__throwIfMismatchedStructureSizes(core::Fixnum_sp tspSize,
     size_t valistsize = tvalistsize.unsafe_fixnum();
     if (valistsize != sizeof(VaList_S)) {
       SIMPLE_ERROR(BF("VaList_S size %d mismatch with Common Lisp code %d") % sizeof(VaList_S) % valistsize);
+    }
+  }
+  if (tRegisterSaveAreaSize.fixnump()) {
+    size_t registerSaveAreaSize = tRegisterSaveAreaSize.unsafe_fixnum();
+    if (registerSaveAreaSize != (sizeof(void*)*LCC_ABI_ARGS_IN_REGISTERS)) {
+      SIMPLE_ERROR(BF("register-save-area size %lu mismatch with Common Lisp code %lu") % (sizeof(void*)*LCC_ABI_ARGS_IN_REGISTERS) % registerSaveAreaSize );
     }
   }
 }

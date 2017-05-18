@@ -416,6 +416,25 @@ CL_DEFUN T_sp core__extract_lambda_name_from_declares(List_sp declares, T_sp def
   return defaultValue;
 }
 
+
+CL_LAMBDA(declare-list);
+CL_DECLARE();
+CL_DOCSTRING("If form has is a list of declares ((function-name xxx) ...) or else looks like `(lambda lambda-list [[declaration* | documentation]] (block xxx form*) ) then return XXX");
+CL_DEFUN T_sp core__extract_dump_module_from_declares(List_sp declares) {
+  // First check for a (declare (core:function-name XXX))
+  for ( auto cur : declares ) {
+    T_sp decl = CONS_CAR(declares);
+    if (decl.consp()) {
+      if (oCar(decl) == core::_sym_dump_module) {
+        return oCadr(decl);
+      } else if (decl == core::_sym_dump_module) {
+        return _lisp->_true();
+      }
+    }
+  }
+  return _Nil<T_O>();
+}
+
 CL_LAMBDA(form &optional default);
 CL_DECLARE();
 CL_DOCSTRING("If form has is a list of declares ((function-name xxx) ...) or else looks like `(lambda lambda-list [[declaration* | documentation]] (block xxx form*) ) then return XXX");

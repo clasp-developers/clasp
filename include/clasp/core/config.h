@@ -197,7 +197,7 @@ typedef int  claspCharacter;
 #define LCC_ARGS_IN_REGISTERS 4
 
 /*! Maximum number of arguments that can be passed */
-#define CALL_ARGUMENTS_LIMIT 64
+#define CALL_ARGUMENTS_LIMIT 136
 
 #define CHAR_CODE_LIMIT 1114112
 

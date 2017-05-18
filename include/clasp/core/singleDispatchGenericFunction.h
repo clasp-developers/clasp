@@ -121,48 +121,6 @@ public:
 
 };
 
-#if 0  
-namespace core {
-  FORWARD(SingleDispatchGenericFunctionClosure);
-  class SingleDispatchGenericFunction_O : public Function_O {
-    LISP_CLASS(core, CorePkg, SingleDispatchGenericFunction_O, "single-dispatch-generic-function",Function_O);
-  //    DECLARE_ARCHIVE();
-    friend class SingleDispatchGenericFunctoid;
-
-  public: // Simple default ctor/dtor
-    DEFAULT_CTOR_DTOR(SingleDispatchGenericFunction_O);
-
-  public: // ctor/dtor for classes with shared virtual base
-        //    explicit SingleDispatchGenericFunction_O(core::Class_sp const& mc) : T_O(mc), Function(mc) {};
-        //    virtual ~SingleDispatchGenericFunction_O() {};
-  public:
-    static SingleDispatchGenericFunction_sp create(T_sp functionName, LambdaListHandler_sp llhandler);
-
-  public: // Functions here
-  /*! Return the Cons of methods attached to this SingleDispatchGenericFunction */
-  }; // SingleDispatchGenericFunction class
-}; // core namespace
-#endif
-
-#if 0
-namespace core {
-class SingleDispatchGenericFunctoid : public Closure_O {
-private:
-  SingleDispatchGenericFunction_sp _sdgf;
-public:
-  DISABLE_NEW();
-  virtual const char *describe() const { return "SingleDispatchGenericFunctoid"; };
-  LCC_VIRTUAL LCC_RETURN LISP_CALLING_CONVENTION() {
-    INCREMENT_FUNCTION_CALL_COUNTER(this);
-    IMPLEMENT_MEF(BF("Handle single dispatch"));
-#if 0            
-	    *lcc_resultP = this->_sdgf->INVOKE(lcc_nargs, nargs,args);
-#endif
-  }
-};
-};
-#endif
-
 
 namespace core {
  

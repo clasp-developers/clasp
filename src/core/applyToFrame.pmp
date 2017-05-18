@@ -1,4 +1,4 @@
-$var MaxArgs = 70  # a few more than call-arguments-limit = 64
+$var MaxArgs = 140  # a few more than call-arguments-limit = 64
 $var FixedArgs = 4
 $range Case_ 0..MaxArgs
 #ifdef APPLY_TO_FRAME

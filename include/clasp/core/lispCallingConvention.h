@@ -67,10 +67,11 @@ THE SOFTWARE.
 // When you pass args to another function use LCC_PASS_ARGS
 #define LCC_PASS_ARGS lcc_closure, lcc_nargs, lcc_fixed_arg0, lcc_fixed_arg1, lcc_fixed_arg2, lcc_fixed_arg3
 #define LCC_PASS_ARGS_LLH lcc_vargs, lcc_nargs, lcc_fixed_arg0, lcc_fixed_arg1, lcc_fixed_arg2, lcc_fixed_arg3
-#define LCC_PASS_ARGS_ENV(_env) _env, lcc_nargs, lcc_fixed_arg0, lcc_fixed_arg1, lcc_fixed_arg2, lcc_fixed_arg3
+#define LCC_PASS_ARGS_VASLIST(_closure,_vaslist) _closure, lcc_nargs, lcc_fixed_arg0, lcc_fixed_arg1, lcc_fixed_arg2, lcc_fixed_arg3, _vaslist
 
 /*! This is a void function */
 #define LISP_CALLING_CONVENTION() entry_point(LCC_ARGS_ELLIPSIS)
+#define LISP_METHOD_CALLING_CONVENTION method_entry_point(LCC_ARGS_ELLIPSIS)
 // Compiled functions get the raw va_list
 #define LCC_VA_LIST(_valist) (*_valist)._Args
 #define LCC_VA_START_ARG lcc_fixed_arg3
@@ -172,6 +173,14 @@ THE SOFTWARE.
   va_start(lcc_arglist_s._Args, LCC_VA_START_ARG); \
   core::VaList_sp lcc_vargs(&lcc_arglist_s); \
   LCC_SPILL_REGISTER_ARGUMENTS_TO_VA_LIST(lcc_arglist_s); \
+
+#define COPY_VA_LIST() \
+  va_list passed_args; \
+  va_start(passed_args,LCC_VA_START_ARG); \
+  core::T_O* lcc_passed_valist = va_arg(passed_args,core::T_O*); \
+  va_end(passed_args); \
+  ::core::VaList_S lcc_arglist_s(*(VaList_S*)gctools::untag_valist(lcc_passed_valist));\
+  core::VaList_sp lcc_vargs(&lcc_arglist_s); 
 
 #define private_LCC_VA_LIST_TOTAL_NUMBER_OF_ARGUMENTS(_args) (size_t)(((uintptr_clasp_t *)(_args[0].reg_save_area))[LCC_NARGS_REGISTER])
 #define private_LCC_VA_LIST_SET_TOTAL_NUMBER_OF_ARGUMENTS(_args, _n) (((uintptr_clasp_t *)(_args[0].reg_save_area))[LCC_NARGS_REGISTER]) = ((uintptr_clasp_t)_n)
@@ -282,6 +291,12 @@ THE SOFTWARE.
     (_va_list_)[0].fp_offset = 304; \
   }
 
+/*! Initialize a VaList_S struct from a Frame object */
+#define LCC_REWIND_VA_LIST(_va_list_, _register_save_areaP_) { \
+    (_va_list_)[0].reg_save_area = (void*)_register_save_areaP_; \
+    (_va_list_)[0].gp_offset = 16; \
+  }
+
 #define LCC_SETUP_VA_LIST_FROM_VA_LIST(_dest_,_src_) va_copy(_dest_,_src_)
 
 // Create a VaList_sp from lcc_vargs (a va_list)
@@ -368,7 +383,8 @@ inline gctools::return_type funcall_consume_valist_(gc::Tagged func_tagged,
     #include <clasp/core/generated/applyToFrame.h>
 #undef APPLY_TO_VA_LIST_CASE
   default:
-      printf("%s:%d Handle more arities for funcall\n", __FILE__, __LINE__ );
+      printf("%s:%d Handle functions with arity %lu for funcall or reduce the number of args in this call\n", __FILE__, __LINE__, nargs);
+      SIMPLE_ERROR(BF("Illegal arity %lu for funcall") % nargs);
       break;
   }
   SIMPLE_ERROR(BF("Unsupported arity %lu must be less than %lu") % nargs % CALL_ARGUMENTS_LIMIT );

@@ -98,6 +98,11 @@ Function_sp InvocationHistoryFrame::function() const
     return res;
   }
 
+void* InvocationHistoryFrame::register_save_area() const
+  {
+    return (this->_args->reg_save_area);
+  }
+
 SimpleVector_sp InvocationHistoryFrame::arguments() const {
 #if 0
   VaList_sp orig_args = this->valist_sp();

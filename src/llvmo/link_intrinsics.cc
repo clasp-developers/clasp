@@ -943,6 +943,10 @@ void debugInspectTPtr(core::T_O *tP) {
   printf("%s:%d Insert breakpoint here if you want to inspect object\n", __FILE__, __LINE__);
 }
 
+void debugInspect_i8STAR(void *p) {
+  printf("debugInspect_i8STAR@%p\n", p);
+}
+
 void debugInspectTPtr_detailed(core::T_O *tP) {
   core::T_sp obj = gctools::smart_ptr<core::T_O>((gc::Tagged)tP);
   printf("debugInspectTPtr@%p  obj.px_ref()=%p: %s\n", (void *)tP, obj.raw_(), _rep_(obj).c_str());
@@ -1594,12 +1598,10 @@ size_t cc_matchKeywordOnce(core::T_O *xP, core::T_O *yP, core::T_O *sawKeyAlread
   return 1;
 }
 
-void cc_ifNotKeywordException(core::T_O *obj, size_t argIdx, VaList_S *valist) {
-  VaList_S *vargs = reinterpret_cast<VaList_S *>(gc::untag_valist((void *)valist));
+void cc_ifNotKeywordException(core::T_O *obj, size_t argIdx, va_list valist) {
   T_sp vobj((gc::Tagged)obj);
   if (!cl__keywordp(vobj)) {
-    size_t numArgs = vargs->total_nargs(); //LCC_VA_LIST_NUMBER_OF_ARGUMENTS(vargs);
-    SIMPLE_ERROR(BF("Expected keyword argument at argument %d of %d got %s") % argIdx % numArgs % _rep_(gctools::smart_ptr<core::T_O>((gc::Tagged)obj)));
+    SIMPLE_ERROR(BF("Expected keyword argument at argument %d got %s") % argIdx % _rep_(gctools::smart_ptr<core::T_O>((gc::Tagged)obj)));
   }
 }
 

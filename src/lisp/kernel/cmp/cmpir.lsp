@@ -1145,28 +1145,35 @@ Write T_O* pointers into the current multiple-values array starting at the (offs
   (or *current-unwind-landing-pad-dest* (error "irc-create-invoke-default-unwind was called when *current-unwind-landing-pad-dest* was NIL - check the outer with-landing-pad macro"))
   (irc-create-invoke function-name args *current-unwind-landing-pad-dest* label))
 
-(defun irc-intrinsic-call-or-invoke (function-name real-args label call-kind)
-  "call-kind can be NIL (depends on function) :call (always call) :invoke (always invoke)"
-  (unless (member call-kind '(nil :call :invoke)) (error "call-kind can be NIL (depends on function) :call (always call) :invoke (always invoke - you gave ~a" call-kind))
+(defun irc-call-or-invoke (function args &optional (landing-pad *current-unwind-landing-pad-dest*) (label "acall"))
+                                        ;  (bformat t "irc-call-or-invoke function: %s\n" function)
+  (if landing-pad
+      (progn
+        (irc-create-invoke function args landing-pad label))
+      (progn
+        (irc-create-call function args label))))
+
+(defun irc-intrinsic-call-or-invoke (function-name real-args label &optional (landing-pad *current-unwind-landing-pad-dest*))
+  "landing-pad is either a landing pad or NIL (depends on function)"
   (throw-if-mismatched-arguments function-name real-args)
   (let* ((args            real-args)
-         (entry-point     (get-function-or-error *the-module* function-name (car args)))
-         (does-not-throw  (or (llvm-sys:does-not-throw entry-point) (null *current-unwind-landing-pad-dest*)))
+         (the-function    (get-function-or-error *the-module* function-name (car args)))
+         (function-throws (not (llvm-sys:does-not-throw the-function)))
          (code            (cond
-                            ((or does-not-throw (eq call-kind :call))
-                             (irc-create-call entry-point args label))
-                            (t          ; (eq call-kind :invoke)
-                             (irc-create-invoke entry-point args *current-unwind-landing-pad-dest* label))))
-         (_               (when (llvm-sys:does-not-return entry-point)
+                            ((and landing-pad function-throws)
+                             (irc-create-invoke the-function args landing-pad label))
+                            (t
+                             (irc-create-call the-function args label))))
+         (_               (when (llvm-sys:does-not-return the-function)
                             (irc-unreachable)
                             (irc-begin-block (irc-basic-block-create "from-invoke-that-never-returns")))))
     code))
 
 (defun irc-intrinsic-call (function-name args &optional (label ""))
-  (irc-intrinsic-call-or-invoke function-name args label :call))
+  (irc-intrinsic-call-or-invoke function-name args label nil))
 
-(defun irc-intrinsic-invoke (function-name args &optional (label ""))
-  (irc-intrinsic-call-or-invoke function-name args label :invoke))
+(defun irc-intrinsic-invoke (function-name args &optional (landing-pad *current-unwind-landing-pad-dest*) (label ""))
+  (irc-intrinsic-call-or-invoke function-name args label landing-pad))
   
 (defun irc-intrinsic (function-name &rest args &aux (label ""))
   (let* ((last-arg (car (last args)))
@@ -1174,7 +1181,7 @@ Write T_O* pointers into the current multiple-values array starting at the (offs
     (when (stringp last-arg)
       (setq real-args (nbutlast args))
       (setq label last-arg))
-    (irc-intrinsic-call-or-invoke function-name args label nil)))
+    (irc-intrinsic-call-or-invoke function-name args label *current-unwind-landing-pad-dest*)))
 
 ;; Helper functions
 

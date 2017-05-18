@@ -4,10 +4,14 @@ def aclasp(wrappers):
     result = [
         "src/lisp/kernel/tag/start",
         "src/lisp/kernel/lsp/prologue"]
-    if (wrappers):
-        result = result + [
-            "src/lisp/kernel/lsp/direct-calls",
-            "generated/cl-wrappers" ]
+    # Don't use wrappers for now - the direct CALL to THROW-FUNCTION needs to use INVOKE and the landing-pad
+    # otherwise the exception handling will break because cleanup forms in the wrapper won't be evaluated
+    # This is a problem if cc_push_InvocationHistoryFrame/cc_pull_InvocationHistoryFrame are used
+#    if (wrappers):
+#        result = result + [
+#            "src/lisp/kernel/lsp/direct-calls",
+#            "generated/cl-wrappers"
+#        ]
     result = result + [  
         "src/lisp/kernel/tag/min-start",
         "src/lisp/kernel/init",
@@ -110,7 +114,7 @@ def bclasp(wrappers):
         "src/lisp/kernel/lsp/top",
         "src/lisp/kernel/cmp/export-to-cleavir",
         "src/lisp/kernel/tag/pre-epilogue-bclasp",
-#        "src/lisp/kernel/lsp/epilogue-bclasp",
+        "src/lisp/kernel/lsp/epilogue-bclasp",
         "src/lisp/kernel/tag/bclasp"
     ]
     return files

@@ -1819,17 +1819,23 @@ void throwIfClassesNotInitialized(const Lisp_sp &lisp) {
 
 namespace core {
 size_t  debug_InvocationHistoryFrame = 0;
-uintptr_t debug_InvocationHistoryFrameAddress = 0;
+const char* debug_InvocationHistoryFrame_name = "";
 
 CL_DEFUN void core__debug_invocation_history_frame(size_t v) {
   debug_InvocationHistoryFrame = v;
-  debug_InvocationHistoryFrameAddress = atol(getenv("IHS"));
-  printf("%s:%d     Will trap InvocationHistoryFrame at %p\n",__FILE__,__LINE__,(void*)debug_InvocationHistoryFrameAddress); 
+  const char* ihf = getenv("IHS");
+  if (ihf==NULL) {
+    ihf = "ESTIMATE-CODE-SIZE-1";
+  }
+  debug_InvocationHistoryFrame_name = ihf;
+  printf("%s:%d     Will trap InvocationHistoryFrame at |%s|\n",__FILE__,__LINE__,debug_InvocationHistoryFrame_name); 
   printf("   ---------------   InvocationHistoryStack:\n");
   InvocationHistoryFrame* cur = my_thread->_InvocationHistoryStack;
+  size_t count= 0;
   while (cur!=NULL) {
-    printf("         Frame %p\n", cur);
+    printf("    frame[%lu] @%p  function: %s\n", count, cur, _rep_(cur->function()->name()).c_str());
     cur = cur->previous();
+    ++count;
   }
 }
   
