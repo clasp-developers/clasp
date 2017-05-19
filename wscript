@@ -654,7 +654,7 @@ def configure(cfg):
     cfg.define("CLASP_UNICODE",1)
     cfg.define("DEBUG_TRACE_INTERPRETED_CLOSURES",1)
     cfg.define("DEBUG_THREADS",1)
-    cfg.define("DEBUG_BOUNDS_ASSERT",1)
+#    cfg.define("DEBUG_BOUNDS_ASSERT",1)
 #    cfg.define("EXPAT",1)
     cfg.define("INCLUDED_FROM_CLASP",1)
     cfg.define("INHERITED_FROM_SRC",1)
