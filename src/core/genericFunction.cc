@@ -467,6 +467,7 @@ LCC_RETURN apply_method1(T_O* func_tagged, T_O* arg0_tagged, T_O* arg1_tagged, T
 LCC_RETURN apply_method2(T_O* func_tagged, T_O* arg0_tagged, T_O* arg1_tagged, T_O* rest_args_tagged) {
   return apply_method(func_tagged,arg0_tagged,arg1_tagged,rest_args_tagged,2);
 }
+
 LCC_RETURN apply_method3(T_O* func_tagged, T_O* arg0_tagged, T_O* arg1_tagged, T_O* rest_args_tagged) {
   return apply_method(func_tagged,arg0_tagged,arg1_tagged,rest_args_tagged,3);
 }
