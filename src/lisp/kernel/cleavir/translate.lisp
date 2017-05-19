@@ -369,7 +369,7 @@ when this is t a lot of graphs will be generated.")
     ((instruction clasp-cleavir-hir:multiple-value-foreign-call-instruction) return-value inputs outputs (abi abi-x86-64) landing-pad)
   (cmp:irc-low-level-trace :flow)
   (check-type (clasp-cleavir-hir:function-name instruction) string)
-  (let ((call (clasp-cleavir:unsafe-multiple-value-foreign-call :call (clasp-cleavir-hir:function-name instruction) return-value inputs abi)))
+  (let ((call (clasp-cleavir:unsafe-multiple-value-foreign-call (clasp-cleavir-hir:function-name instruction) return-value inputs abi :landing-pad landing-pad)))
     (cc-dbg-when *debug-log*
 		 (format *debug-log* "    translate-simple-instruction multiple-value-foreign-call-instruction: ~a~%" (cc-mir:describe-mir instruction))
 		 (format *debug-log* "     instruction --> ~a~%" call))))

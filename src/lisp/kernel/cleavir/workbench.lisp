@@ -62,7 +62,15 @@
   (finish-output)
   (time (asdf:load-system "clasp-cleavir"))
   (format t "Done  pid = ~a~%"  (core:getpid)))
+(progn
+  (in-package :clasp-cleavir)
+  (setq core:*defun-inline-hook* 'clasp-cleavir:defun-inline-hook)
+  (setq core:*proclaim-hook* 'clasp-cleavir:proclaim-hook)
+  (load (clasp-cleavir:cleavir-compile-file "sys:kernel;cleavir;inline.lisp")))
 
+
+
+(clasp-cleavir:cleavir-compile-file "sys:kernel;lsp;mislib.lsp")
 
 (clasp-cleavir:cleavir-compile 'foo '(lambda (x y) (+ x y)))
 
