@@ -89,6 +89,7 @@
 (defun treat-as-special-operator-p (name)
   (cond
     ((cmp:treat-as-special-operator-p name) t)
+    ((eq name 'cleavir-primop::call-with-variable-bound) nil)
     ((eq (symbol-package name) (find-package :cleavir-primop)) t)
     (t nil)))
 
@@ -421,3 +422,11 @@
 (defmethod cleavir-remove-useless-instructions:instruction-may-be-removed-p
     ((instruction cleavir-ir:set-symbol-value-instruction)) nil)
 
+
+
+(setf (fdefinition 'cleavir-primop:call-with-variable-bound) 
+            (fdefinition 'core:call-with-variable-bound))
+
+#++
+(defmacro cleavir-primop:call-with-variable-bound (symbol value thunk)
+  `(clasp-cleavir-hir:multiple-value-foreign-call-instruction "call_with_variable_bound" ,symbol ,value ,thunk))
