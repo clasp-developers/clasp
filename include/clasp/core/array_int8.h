@@ -33,7 +33,7 @@ namespace core {
       if (supplied) return from_object(obj);
       return 0;
     }
-    static value_type from_object(T_sp obj) { return clasp_to_size(gc::As<core::Integer_sp>(obj)); };
+    static value_type from_object(T_sp obj) { return clasp_to_uint8_t(gc::As<core::Integer_sp>(obj)); };
     static T_sp to_object(const value_type& v) { return core::Integer_O::create(v); };
   public:
   SimpleVector_byte8_t_O(size_t length, value_type initialElement=value_type(),
@@ -189,7 +189,7 @@ namespace core {
       if (supplied) return from_object(obj);
       return 0;
     }
-    static value_type from_object(T_sp obj) { return clasp_to_size(gc::As<core::Integer_sp>(obj)); };
+    static value_type from_object(T_sp obj) { return clasp_to_int8_t(gc::As<core::Integer_sp>(obj)); };
     static T_sp to_object(const value_type& v) { return core::Integer_O::create(v); };
   public:
   SimpleVector_int8_t_O(size_t length, value_type initialElement=value_type(),

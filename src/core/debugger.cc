@@ -510,7 +510,7 @@ void dbg_lowLevelDescribe(T_sp obj) {
   } else if (obj.characterp()) {
     printf("character: %d #\\%c\n", obj.unsafe_character(), obj.unsafe_character());
   } else if (obj.generalp()) {
-    printf("other_tag: %p  typeid: %s\n", &*obj, typeid(obj.unsafe_general()).name());
+    printf("vtable-ptr: %p  typeid: %s\n", &*obj, typeid(obj.unsafe_general()).name());
     printf("className-> %s\n", obj.unsafe_general()->className().c_str());
     printf("contents-> [%s]\n", _rep_(obj).c_str());
     if ( Closure_sp closure = obj.asOrNull<Closure_O>() ) {

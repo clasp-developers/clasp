@@ -401,7 +401,10 @@ ALWAYS_INLINE core::T_O *cc_makeCell() {
 
 ALWAYS_INLINE void cc_writeCell(core::T_O *cell, core::T_O* val) {
   //	core::Cons_sp c = gctools::smart_ptr<core::Cons_O>(reinterpret_cast<core::Cons_O*>(cell));
-  ASSERT(gctools::tagged_consp(cell));
+  if (!gc::tagged_consp(cell)) {
+    core::T_sp arg((gc::Tagged)cell);
+    intrinsic_error(llvmo::badCell,arg,_Nil<core::T_O>(),_Nil<core::T_O>());
+  }
   core::Cons_O* cp = reinterpret_cast<core::Cons_O*>(gctools::untag_cons(cell));
 //  core::Cons_sp c = gctools::smart_ptr<core::Cons_O>((gc::Tagged)cell);
 #ifdef DEBUG_CC

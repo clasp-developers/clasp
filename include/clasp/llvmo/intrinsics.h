@@ -176,6 +176,7 @@ namespace llvmo {
 
   typedef enum { noFunctionBoundToSymbol,
                  badKeywordArgument,
+                 badCell,
                  couldNotCoerceToClosure,
                  destinationMustBeActivationFrame,
                  invalidIndexForFunctionFrame,

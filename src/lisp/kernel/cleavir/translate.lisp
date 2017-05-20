@@ -27,9 +27,6 @@ when this is t a lot of graphs will be generated.")
 
 (defvar *entry-irbuilder*)
 
-(setf (fdefinition 'cleavir-primop:call-with-variable-bound) 
-            (fdefinition 'core:call-with-variable-bound))
-
 (defun translate-datum (datum)
   (if (typep datum 'cleavir-ir:constant-input)
       (let* ((value (cleavir-ir:value datum)))

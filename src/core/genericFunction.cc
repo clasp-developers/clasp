@@ -96,8 +96,7 @@ T_mv generic_compute_applicable_method(Instance_sp gf, VaList_sp vargs) {
                             gf, arglist);
     if (methods.nilp()) {
       SYMBOL_EXPORT_SC_(ClPkg, no_applicable_method);
-      T_sp func = eval::funcall(cl::_sym_no_applicable_method,
-                                gf, arglist);
+      T_sp func = eval::applyLastArgsPLUSFirst(cl::_sym_no_applicable_method, arglist, gf);
       // Why was I setting the first argument to NIL???
       // I could use LCC_VA_LIST_REGISTER_ARG0(vargs) = gctools::tag_nil<T_O*>();
       //    args[0] = (T_O *)(gctools::tag_nil<T_O *>());
@@ -122,8 +121,7 @@ T_mv restricted_compute_applicable_method(Instance_sp gf, VaList_sp vargs) {
   //  printf("%s:%d  restricted_compute_applicable_method gf: %s  args: %s\n", __FILE__, __LINE__, _rep_(gf).c_str(), _rep_(arglist).c_str());
   T_sp methods = eval::funcall(clos::_sym_std_compute_applicable_methods, igf, arglist);
   if (methods.nilp()) {
-    Function_sp func = gc::As<Function_sp>(eval::funcall(cl::_sym_no_applicable_method,
-                                                         igf, arglist));
+    T_sp func = eval::applyLastArgsPLUSFirst(cl::_sym_no_applicable_method, arglist, igf);
     // Why was I setting the first argument to NIL???
     // I could use LCC_VA_LIST_REGISTER_ARG0(vargs) = gctools::tag_nil<T_O*>();
     //    args[0] = (T_O *)(gctools::tag_nil<T_O *>());

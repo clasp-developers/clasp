@@ -57,6 +57,7 @@ Look at the specialized array for uint32_t as an example.
     it needs to go before any larger integer types so that the smallest
     necessary upgraded-array-element-type is chosen every time.
 7.  Add the type test and make_xxxx calls to array.cc make_vector and make_mdarray
+8.  Add the class to hierarchy.lsp
 
 Check the following...
 1.  Maybe change these methods in array_<new-type>.h
