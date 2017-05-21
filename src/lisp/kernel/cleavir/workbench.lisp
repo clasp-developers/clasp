@@ -9,7 +9,6 @@
 
 (error "foo")
 
-(defun gather 
 (let ((CLOS::*TRAP* (cons t nil)))
   ;; Call c-a-m-u-c once to establish a call-history.  ECL bypasses it
   (print-object #'print-object *standard-output*)
@@ -62,12 +61,6 @@
   (finish-output)
   (time (asdf:load-system "clasp-cleavir"))
   (format t "Done  pid = ~a~%"  (core:getpid)))
-(progn
-  (in-package :clasp-cleavir)
-  (setq core:*defun-inline-hook* 'clasp-cleavir:defun-inline-hook)
-  (setq core:*proclaim-hook* 'clasp-cleavir:proclaim-hook)
-  (load (clasp-cleavir:cleavir-compile-file "sys:kernel;cleavir;inline.lisp")))
-
 
 
 (clasp-cleavir:cleavir-compile-file "sys:kernel;lsp;mislib.lsp")

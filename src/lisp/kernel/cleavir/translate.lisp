@@ -221,11 +221,45 @@ when this is t a lot of graphs will be generated.")
                        (format *debug-log* "----------end layout-procedure ~a~%" (llvm-sys:get-name fn)))
           (values fn lambda-name))))))
 
+
+
+(defun layout-procedure-with-backtrace-wrapper (initial-instruction abi &key linkage)
+  (let ((fn (cmp:irc-function-create
+             cmp:%fn-prototype%
+             linkage
+             (cmp:jit-function-name main-fn-name) ;cmp:*current-function-name*)
+             cmp:*the-module*))
+        return-value
+        (entry-block (cmp:irc-basic-block-create "entry" fn))
+        (*function-current-multiple-value-array-address* nil)
+        (*entry-irbuilder* (llvm-sys:make-irbuilder cmp:*llvm-context*))
+        (body-irbuilder (llvm-sys:make-irbuilder cmp:*llvm-context*))
+        (body-block (cmp:irc-basic-block-create "body")))
+    (llvm-sys:set-personality-fn fn (cmp:irc-personality-function))
+    (llvm-sys:add-fn-attr fn 'llvm-sys:attribute-uwtable)
+    (push fn cmp:*all-functions-for-one-compile*)
+    (let ((args (llvm-sys:get-argument-list fn)))
+      (mapcar #'(lambda (arg argname) (llvm-sys:set-name arg argname))
+              (llvm-sys:get-argument-list fn) cmp:+fn-prototype-argument-names+))
+    (cmp:with-irbuilder (*entry-irbuilder*)
+      ;; make sure no landing pads are used from outer functions
+      (cmp:with-landing-pad nil 
+        (setq return-value (alloca-return_type))
+;;; Do stuff here to generate the call
+        ))))
+          
+    
+      ;; create a basic-block for every remaining tag
+
+(defparameter *generate-backtrace-wrapper* nil)
+(defun generate-backtrace-wrapper-p (initial-instruction)
+  *generate-backtrace-wrapper*)
+
 (defun layout-procedure (initial-instruction abi &key (linkage 'llvm-sys:internal-linkage))
-  ;; Determine if the function is supposed to maintain a backtrace record
-  ;;    if so - then tell layout-procedure* that only va-list and nargs are passed
-  ;;    and wrap the inner function with an outer one that maintains the backtrace record
-  (layout-procedure* initial-instruction abi :linkage linkage))
+  (if (generate-backtrace-wrapper initial-instruction)
+      (layout-procedure-with-backtrace-wrapper initial-instruction abi :linkage linkage)
+      (layout-procedure* initial-instruction abi :linkage linkage)))
+
 
 
 (defvar *forms*)
