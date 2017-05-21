@@ -488,7 +488,7 @@ eg:  (f closure-ptr nargs a b c d ...)
   (define-symbol-macro %register-arg-types% (list %t*% %t*% %t*% %t*%))
   (define-symbol-macro %reglist-types% (list %t*% %t*% %t*% %t*% %t*%)) ; VaList follows register arguments
   (defvar *register-arg-names* (list "farg0" "farg1" "farg2" "farg3"))
-  (defvar *reglist-names* (list "farg0" "farg1" "farg2" "farg3" "VaList"))
+  (defvar *reglist-arg-names* (list "farg0" "farg1" "farg2" "farg3" "VaList"))
   (defvar +fn-registers-prototype-argument-names+
     (list* "closure-ptr" "nargs" *register-arg-names*))
   (defvar +fn-reglist-prototype-argument-names+
@@ -555,7 +555,7 @@ eg:  (f closure-ptr nargs a b c d ...)
 (defvar +fn-prototype-argument-names+ +fn-registers-prototype-argument-names+)
 ;;; This is the C-style prototype with an extra argument that contains the VaList_S for all arguments
 (define-symbol-macro %fn-va-prototype% %fn-reglist-prototype%)
-(defvar +fn-va-prototype-argument-names% %fn-reglist-prototype-argument-names+
+(defvar +fn-va-prototype-argument-names+ +fn-reglist-prototype-argument-names+)
 
 ;;;  "A pointer to the function prototype"
 (define-symbol-macro %fn-prototype*% (llvm-sys:type-get-pointer-to %fn-prototype%))
