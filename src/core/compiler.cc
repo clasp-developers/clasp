@@ -938,7 +938,8 @@ CL_DECLARE();
 CL_DOCSTRING("callWithVariableBound");
 CL_DEFUN T_mv core__call_with_variable_bound(Symbol_sp sym, T_sp val, T_sp thunk) {
   DynamicScopeManager scope(sym, val);
-  return eval::funcall(thunk);
+  Function_sp func = gc::As_unsafe<Function_sp>(thunk);
+  return (func->entry)(LCC_PASS_ARGS0_ELLIPSIS(func.raw_()));
   // Don't put anything in here - don't mess up the MV return
 }
 
