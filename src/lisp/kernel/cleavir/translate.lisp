@@ -828,17 +828,19 @@ when this is t a lot of graphs will be generated.")
 
 (defmethod translate-branch-instruction
     ((instruction cc-mir:characterp-instruction) return-value inputs outputs successors abi landing-pad)
-  (let* ((tag (%and (%ptrtoint value cmp:%uintptr_t%)
-                    (%uintptr_t cmp:+immediate-mask+) "character-tag-only"))
+  (let* ((value     (%load (first inputs)))
+         (tag       (%and (%ptrtoint value cmp:%uintptr_t%)
+                          (%uintptr_t cmp:+immediate-mask+) "character-tag-only"))
          (cmp (%icmp-eq tag (%uintptr_t cmp:+character-tag+))))
     (%cond-br cmp (first successors) (second successors) :likely-true t)))
 
 
 (defmethod translate-branch-instruction
     ((instruction cc-mir:single-float-p-instruction) return-value inputs outputs successors abi landing-pad)
-  (let* ((tag (%and (%ptrtoint value cmp:%uintptr_t%)
+  (let* ((value     (%load (first inputs)))
+         (tag       (%and (%ptrtoint value cmp:%uintptr_t%)
                     (%uintptr_t cmp:+immediate-mask+) "single-float-tag-only"))
-         (cmp (%icmp-eq tag (%uintptr_t cmp:+single-float-tag+))))
+         (cmp       (%icmp-eq tag (%uintptr_t cmp:+single-float-tag+))))
     (%cond-br cmp (first successors) (second successors) :likely-true t)))
 
 
@@ -1058,6 +1060,7 @@ that llvm function. This works like compile-lambda-function in bclasp."
       (or function-enter-instruction (error "Could not find enter-instruction for enclosed function in ~a" lambda-form))
       (translate function-enter-instruction map-enter-to-landing-pad))))
 
+#++
 (defun find-first-enclosed-enter-instruction (mir)
   (block first-function
     (cleavir-ir:map-instructions-with-owner
