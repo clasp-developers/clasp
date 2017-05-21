@@ -2914,16 +2914,16 @@ SYMBOL_EXPORT_SC_(ClPkg, exp);
 
 ALWAYS_INLINE Fixnum clasp_to_fixnum( core::T_sp x )
 {
-  if ( x.fixnump() )
-  {
-    gc::Fixnum f = x.unsafe_fixnum();
-    if (f >= gc::most_negative_fixnum && f <= gc::most_positive_fixnum)
-    {
-      return f;
+  ASSERT(!x.single_floatp());
+  if ( x.fixnump() ) {
+    return x.unsafe_fixnum();
+  } else if (gc::IsA<Bignum_sp>(x)) {
+    Bignum_sp bx = gc::As_unsafe<Bignum_sp>(x);
+    LIKELY_if ( bx->mpz_ref()>=gc::most_negative_fixnum && bx->mpz_ref() <= gc::most_positive_fixnum) {
+      return static_cast<size_t>(bx->mpz_ref().get_si());
     }
-    TYPE_ERROR( x, Cons_O::createList(cl::_sym_Integer_O, make_fixnum(gc::most_negative_fixnum), make_fixnum(gc::most_positive_fixnum)));
   }
-  return (gc::As< Integer_sp >(x))->as_int_();
+  TYPE_ERROR( x, Cons_O::createList(cl::_sym_Integer_O, make_fixnum(gc::most_negative_fixnum), make_fixnum(gc::most_positive_fixnum)));
 };
 
 
@@ -2931,30 +2931,22 @@ ALWAYS_INLINE Fixnum clasp_to_fixnum( core::T_sp x )
 
 ALWAYS_INLINE short clasp_to_short( core::T_sp x )
 {
-  if ( x.fixnump() )
-  {
+  ASSERT(!x.single_floatp());
+  if ( x.fixnump() ) {
+    ASSERT(farg >= gc::most_negative_short && farg <= gc::most_positive_short);
     gctools::Fixnum farg = x.unsafe_fixnum();
-
-    if (farg < gc::most_negative_short || farg > gc::most_positive_short)
-    {
-      TYPE_ERROR(x, Cons_O::createList(cl::_sym_Integer_O, make_fixnum(gc::most_negative_short), make_fixnum(gc::most_positive_short)));
-    }
-    return (short) farg;
+    return (int) farg;
   }
   return (gc::As< Integer_sp >(x))->as_short();
 }
 
 ALWAYS_INLINE unsigned short clasp_to_ushort( core::T_sp x )
 {
-  if ( x.fixnump() )
-  {
+  ASSERT(!x.single_floatp());
+  if ( x.fixnump() ) {
+    ASSERT(farg >= gc::most_negative_ushort && farg <= gc::most_positive_ushort);
     gctools::Fixnum farg = x.unsafe_fixnum();
-
-    if (farg < 0 || farg > gc::most_positive_ushort)
-    {
-      TYPE_ERROR(x, Cons_O::createList(cl::_sym_Integer_O, make_fixnum(0), make_fixnum(gc::most_positive_ushort)));
-    }
-    return (unsigned short) farg;
+    return (int) farg;
   }
   return (gc::As< Integer_sp >(x))->as_ushort();
 }
@@ -2963,32 +2955,22 @@ ALWAYS_INLINE unsigned short clasp_to_ushort( core::T_sp x )
 
 ALWAYS_INLINE int clasp_to_int( core::T_sp x )
 {
-  if ( x.fixnump() )
-  {
+  ASSERT(!x.single_floatp());
+  if ( x.fixnump() ) {
+    ASSERT(farg >= gc::most_negative_int && farg <= gc::most_positive_int);
     gctools::Fixnum farg = x.unsafe_fixnum();
-
-    if (farg < gc::most_negative_int || farg > gc::most_positive_int)
-    {
-      TYPE_ERROR(x, Cons_O::createList(cl::_sym_Integer_O, make_fixnum(gc::most_negative_int), make_fixnum(gc::most_positive_int)));
-    }
-
     return (int) farg;
   }
-
   return (gc::As< Integer_sp >(x))->as_int();
 }
 
 ALWAYS_INLINE unsigned int clasp_to_uint( core::T_sp x )
 {
-  if ( x.fixnump() )
-  {
+  ASSERT(!x.single_floatp());
+  if ( x.fixnump() ) {
+    ASSERT(farg >= gc::most_negative_uint && farg <= gc::most_positive_uint);
     gctools::Fixnum farg = x.unsafe_fixnum();
-
-    if (farg < 0 || farg > gc::most_positive_uint)
-    {
-      TYPE_ERROR(x, Cons_O::createList(cl::_sym_Integer_O, make_fixnum(0), make_fixnum(gc::most_positive_uint)));
-    }
-    return (unsigned int) farg;
+    return (uint) farg;
   }
   return (gc::As< Integer_sp >(x))->as_uint();
 }
@@ -2997,14 +2979,10 @@ ALWAYS_INLINE unsigned int clasp_to_uint( core::T_sp x )
 
 ALWAYS_INLINE long clasp_to_long( core::T_sp x )
 {
-  if ( x.fixnump() )
-  {
+  ASSERT(!x.single_floatp());
+  if ( x.fixnump() ) {
+    ASSERT(farg >= gc::most_negative_long && farg <= gc::most_positive_long);
     gctools::Fixnum farg = x.unsafe_fixnum();
-
-    if (farg < gc::most_negative_long || farg > gc::most_positive_long)
-    {
-      TYPE_ERROR(x, Cons_O::createList(cl::_sym_Integer_O, make_fixnum(gc::most_negative_long), make_fixnum(gc::most_positive_long)));
-    }
     return (long) farg;
   }
   return (gc::As< Integer_sp >(x))->as_long();
@@ -3012,31 +2990,23 @@ ALWAYS_INLINE long clasp_to_long( core::T_sp x )
 
 ALWAYS_INLINE unsigned long clasp_to_ulong( core::T_sp x )
 {
+  ASSERT(!x.single_floatp());
   if ( x.fixnump() )
   {
+    ASSERT(farg >= gc::most_negative_ulong && farg <= gc::most_positive_ulong);
     gctools::Fixnum farg = x.unsafe_fixnum();
-
-    if (farg < 0 || farg > gc::most_positive_ulong)
-    {
-      TYPE_ERROR(x, Cons_O::createList(cl::_sym_Integer_O, make_fixnum(0), make_fixnum(gc::most_positive_ulong)));
-    }
-    return (unsigned long) farg;
+    return (long) farg;
   }
   return (gc::As< Integer_sp >(x))->as_ulong();
 }
 
-  // --- LONG ---
-
+  // --- long long  ---
 ALWAYS_INLINE long long clasp_to_longlong( core::T_sp x )
 {
   if ( x.fixnump() )
   {
+    ASSERT(farg >= gc::most_negative_longlong && farg <= gc::most_positive_longlong);
     gctools::Fixnum farg = x.unsafe_fixnum();
-
-    if (farg < gc::most_negative_longlong || farg > gc::most_positive_longlong)
-    {
-      TYPE_ERROR(x, Cons_O::createList(cl::_sym_Integer_O, make_fixnum(gc::most_negative_longlong), make_fixnum(gc::most_positive_longlong)));
-    }
     return (long long) farg;
   }
   return (gc::As< Integer_sp >(x))->as_longlong();
@@ -3046,12 +3016,8 @@ ALWAYS_INLINE unsigned long long clasp_to_ulonglong( core::T_sp x )
 {
   if ( x.fixnump() )
   {
+    ASSERT(farg >= gc::most_negative_ulonglong && farg <= gc::most_positive_ulonglong);
     gctools::Fixnum farg = x.unsafe_fixnum();
-
-    if (farg < 0 || farg > gc::most_positive_ulonglong)
-    {
-      TYPE_ERROR(x, Cons_O::createList(cl::_sym_Integer_O, make_fixnum(0), make_fixnum(gc::most_positive_ulonglong)));
-    }
     return (unsigned long long) farg;
   }
   return (gc::As< Integer_sp >(x))->as_ulonglong();
@@ -3061,96 +3027,111 @@ ALWAYS_INLINE unsigned long long clasp_to_ulonglong( core::T_sp x )
 
 ALWAYS_INLINE int8_t clasp_to_int8( core::T_sp x )
 {
-  if ( x.fixnump() )
-  {
-    gctools::Fixnum farg = x.unsafe_fixnum();
-
-    if (farg < gc::most_negative_int8 || farg > gc::most_positive_int8)
-    {
-      TYPE_ERROR(x, Cons_O::createList(cl::_sym_Integer_O, make_fixnum(gc::most_negative_int8), make_fixnum(gc::most_positive_int8)));
-    }
-    return (int8_t) farg;
+  if ( x.fixnump() ) {
+    ASSERT(x.unsafe_fixnum() >=gc::most_negative_int8 && x.unsafe_fixnum() < gc::most_positive_int8);
+    return x.unsafe_fixnum();
+  } else if (gc::IsA<Bignum_sp>(x)) {
+    Bignum_sp bx = gc::As_unsafe<Bignum_sp>(x);
+    return bx->as_int8_t();
   }
-  return (gc::As< Integer_sp >(x))->as_int8_t();
+  TYPE_ERROR( x, Cons_O::createList(cl::_sym_Integer_O,
+                                    Integer_O::create(gc::most_negative_int8),
+                                    Integer_O::create(gc::most_positive_int8)));
 }
 
 ALWAYS_INLINE uint8_t clasp_to_uint8( core::T_sp x )
 {
-  if ( x.fixnump() )
-  {
-    gctools::Fixnum farg = x.unsafe_fixnum();
-
-    if (farg < 0 || farg > gc::most_positive_uint8)
-    {
-      TYPE_ERROR(x, Cons_O::createList(cl::_sym_Integer_O, make_fixnum(0), make_fixnum(gc::most_positive_uint8)));
-    }
-    return (uint8_t) farg;
+  if ( x.fixnump() ) {
+    ASSERT(x.unsafe_fixnum() >=gc::most_negative_uint8 && x.unsafe_fixnum() < gc::most_positive_uint8);
+    return x.unsafe_fixnum();
+  } else if (gc::IsA<Bignum_sp>(x)) {
+    Bignum_sp bx = gc::As_unsafe<Bignum_sp>(x);
+    return bx->as_uint8_t();
   }
-  return (gc::As< Integer_sp >(x))->as_uint8_t();
+  TYPE_ERROR( x, Cons_O::createList(cl::_sym_Integer_O,
+                                    Integer_O::create(0),
+                                    Integer_O::create(gc::most_positive_uint8)));
+}
+
+ALWAYS_INLINE int8_t clasp_to_int8_t( core::T_sp x )
+{
+  return clasp_to_int8(x);
+}
+
+
+ALWAYS_INLINE uint8_t clasp_to_uint8_t( core::T_sp x )
+{
+  return clasp_to_uint8(x);
 }
 
   // --- INT16 ---
 
 ALWAYS_INLINE int16_t clasp_to_int16( core::T_sp x )
 {
-  if ( x.fixnump() )
-  {
-    gctools::Fixnum farg = x.unsafe_fixnum();
-
-    if (farg < gc::most_negative_int16 || farg > gc::most_positive_int16)
-    {
-      TYPE_ERROR(x, Cons_O::createList(cl::_sym_Integer_O, make_fixnum(gc::most_negative_int16), make_fixnum(gc::most_positive_int16)));
-    }
-    return (int16_t) farg;
+  if ( x.fixnump() ) {
+    ASSERT(x.unsafe_fixnum() >=gc::most_negative_int16 && x.unsafe_fixnum() < gc::most_positive_int16);
+    return x.unsafe_fixnum();
+  } else if (gc::IsA<Bignum_sp>(x)) {
+    Bignum_sp bx = gc::As_unsafe<Bignum_sp>(x);
+    return bx->as_int16_t();
   }
-  return (gc::As< Integer_sp >(x))->as_int16_t();
+  TYPE_ERROR( x, Cons_O::createList(cl::_sym_Integer_O,
+                                    Integer_O::create(gc::most_negative_int16),
+                                    Integer_O::create(gc::most_positive_int16)));
 }
 
 ALWAYS_INLINE uint16_t clasp_to_uint16( core::T_sp x )
 {
-  if ( x.fixnump() )
-  {
-    gctools::Fixnum farg = x.unsafe_fixnum();
-
-    if (farg < 0 || farg > gc::most_positive_uint16)
-    {
-      TYPE_ERROR(x, Cons_O::createList(cl::_sym_Integer_O, make_fixnum(0), make_fixnum(gc::most_positive_uint16)));
-    }
-    return (uint16_t) farg;
+  if ( x.fixnump() ) {
+    ASSERT(x.unsafe_fixnum() >=gc::most_negative_uint16 && x.unsafe_fixnum() < gc::most_positive_uint16);
+    return x.unsafe_fixnum();
+  } else if (gc::IsA<Bignum_sp>(x)) {
+    Bignum_sp bx = gc::As_unsafe<Bignum_sp>(x);
+    return bx->as_uint16_t();
   }
-  return (gc::As< Integer_sp >(x))->as_uint16_t();
+  TYPE_ERROR( x, Cons_O::createList(cl::_sym_Integer_O,
+                                    Integer_O::create(0),
+                                    Integer_O::create(gc::most_positive_uint16)));
+}
+
+ALWAYS_INLINE int16_t clasp_to_int16_t( core::T_sp x )
+{
+  return clasp_to_int16(x);
+}
+
+ALWAYS_INLINE uint16_t clasp_to_uint16_t( core::T_sp x )
+{
+  return clasp_to_uint16(x);
 }
 
   // --- INT32 ---
 
 ALWAYS_INLINE int32_t clasp_to_int32( core::T_sp x )
 {
-  if ( x.fixnump() )
-  {
-    gctools::Fixnum farg = x.unsafe_fixnum();
-
-    if (farg < gc::most_negative_int32 || farg > gc::most_positive_int32)
-    {
-      TYPE_ERROR(x, Cons_O::createList(cl::_sym_Integer_O, make_fixnum(gc::most_negative_int32), make_fixnum(gc::most_positive_int32)));
-    }
-    return (int32_t) farg;
+  if ( x.fixnump() ) {
+    ASSERT(x.unsafe_fixnum() >=gc::most_negative_int32 && x.unsafe_fixnum() < gc::most_positive_int32);
+    return x.unsafe_fixnum();
+  } else if (gc::IsA<Bignum_sp>(x)) {
+    Bignum_sp bx = gc::As_unsafe<Bignum_sp>(x);
+    return bx->as_int32_t();
   }
-  return (gc::As< Integer_sp >(x))->as_int32_t();
+  TYPE_ERROR( x, Cons_O::createList(cl::_sym_Integer_O,
+                                    Integer_O::create(gc::most_negative_int32),
+                                    Integer_O::create(gc::most_positive_int32)));
 }
 
 ALWAYS_INLINE uint32_t clasp_to_uint32( core::T_sp x )
 {
-  if ( x.fixnump() )
-  {
-    gctools::Fixnum farg = x.unsafe_fixnum();
-
-    if (farg < 0 || farg >=gc::most_positive_uint32)
-    {
-      TYPE_ERROR(x, Cons_O::createList(cl::_sym_Integer_O, make_fixnum(0), make_fixnum(gc::most_positive_uint32)));
-    }
-    return (uint32_t) farg;
+  if ( x.fixnump() ) {
+    ASSERT(x.unsafe_fixnum() >=gc::most_negative_uint32 && x.unsafe_fixnum() < gc::most_positive_uint32);
+    return x.unsafe_fixnum();
+  } else if (gc::IsA<Bignum_sp>(x)) {
+    Bignum_sp bx = gc::As_unsafe<Bignum_sp>(x);
+    return bx->as_uint32_t();
   }
-  return (gc::As< Integer_sp >(x))->as_uint32_t();
+  TYPE_ERROR( x, Cons_O::createList(cl::_sym_Integer_O,
+                                    Integer_O::create(0),
+                                    Integer_O::create(gc::most_positive_uint32)));
 }
 
 ALWAYS_INLINE uint32_t clasp_to_uint32_t( core::T_sp x )
@@ -3158,54 +3139,57 @@ ALWAYS_INLINE uint32_t clasp_to_uint32_t( core::T_sp x )
   return clasp_to_uint32( x );
 }
 
+ALWAYS_INLINE int32_t clasp_to_int32_t( core::T_sp x )
+{
+  return clasp_to_int32( x );
+}
+
   // --- INT64 ---
 
 ALWAYS_INLINE int64_t clasp_to_int64_t( core::T_sp x )
 {
-  if ( x.fixnump() )
-  {
-    gctools::Fixnum farg = x.unsafe_fixnum();
-
-    if (farg < gc::most_negative_int64 || farg > gc::most_positive_int64)
-    {
-      TYPE_ERROR(x, Cons_O::createList(cl::_sym_Integer_O, make_fixnum(gc::most_negative_int64), make_fixnum(gc::most_positive_int64)));
-    }
-    return (int64_t) farg;
+  if ( x.fixnump() ) {
+    ASSERT(x.unsafe_fixnum() >=gc::most_negative_int64 && x.unsafe_fixnum() < gc::most_positive_int64);
+    return x.unsafe_fixnum();
+  } else if (gc::IsA<Bignum_sp>(x)) {
+    Bignum_sp bx = gc::As_unsafe<Bignum_sp>(x);
+    return bx->as_int64_t();
   }
-  return (gc::As< Integer_sp >(x))->as_int64_t();
+  TYPE_ERROR( x, Cons_O::createList(cl::_sym_Integer_O,
+                                    Integer_O::create(gc::most_negative_int64),
+                                    Integer_O::create(gc::most_positive_int64)));
 }
 
 ALWAYS_INLINE uint64_t clasp_to_uint64_t( core::T_sp x )
 {
-  if ( x.fixnump() )
-  {
-    gctools::Fixnum farg = x.unsafe_fixnum();
-
-    if (farg < 0 || farg > gc::most_positive_uint64)
-    {
-      TYPE_ERROR(x, Cons_O::createList(cl::_sym_Integer_O, make_fixnum(0), make_fixnum(gc::most_positive_uint64)));
-    }
-    return (uint64_t) farg;
+  if ( x.fixnump() ) {
+    ASSERT(x.unsafe_fixnum() >=gc::most_negative_uint64 && x.unsafe_fixnum() < gc::most_positive_uint64);
+    return x.unsafe_fixnum();
+  } else if (gc::IsA<Bignum_sp>(x)) {
+    Bignum_sp bx = gc::As_unsafe<Bignum_sp>(x);
+    return bx->as_uint64_t();
   }
-  return (gc::As< Integer_sp >(x))->as_uint64_t();
+  TYPE_ERROR( x, Cons_O::createList(cl::_sym_Integer_O,
+                                    Integer_O::create(0),
+                                    Integer_O::create(gc::most_positive_uint64)));
 }
+
 
   // --- CL_INTPTR_T ---
-
 ALWAYS_INLINE cl_intptr_t clasp_to_cl_intptr_t( core::T_sp x )
 {
-  if ( x.fixnump() )
-  {
-    gctools::Fixnum farg = x.unsafe_fixnum();
-
-    if (farg < gc::most_negative_cl_intptr || farg > gc::most_positive_cl_intptr)
-    {
-      TYPE_ERROR(x, Cons_O::createList(cl::_sym_Integer_O, make_fixnum(gc::most_negative_cl_intptr), make_fixnum(gc::most_positive_cl_intptr)));
-    }
-    return (cl_intptr_t) farg;
+  if ( x.fixnump() ) {
+    ASSERT(x.unsafe_fixnum() >=gc::most_negative_cl_intptr && x.unsafe_fixnum() < gc::most_positive_cl_intptr);
+    return x.unsafe_fixnum();
+  } else if (gc::IsA<Bignum_sp>(x)) {
+    Bignum_sp bx = gc::As_unsafe<Bignum_sp>(x);
+    return bx->as_cl_intptr_t();
   }
-  return (gc::As< Integer_sp >(x))->as_cl_intptr_t();
+  TYPE_ERROR( x, Cons_O::createList(cl::_sym_Integer_O,
+                                    Integer_O::create(gc::most_negative_cl_intptr),
+                                    Integer_O::create(gc::most_positive_cl_intptr)));
 }
+
 
   // --- PTRDIFF_T ---
 
@@ -3213,12 +3197,8 @@ ALWAYS_INLINE ptrdiff_t clasp_to_ptrdiff_t( core::T_sp x )
 {
   if ( x.fixnump() )
   {
+    ASSERT(!(farg < gc::most_negative_ptrdiff || farg > gc::most_positive_ptrdiff));
     gctools::Fixnum farg = x.unsafe_fixnum();
-
-    if (farg < gc::most_negative_ptrdiff || farg > gc::most_positive_ptrdiff)
-    {
-      TYPE_ERROR(x, Cons_O::createList(cl::_sym_Integer_O, make_fixnum(gc::most_negative_ptrdiff), make_fixnum(gc::most_positive_ptrdiff)));
-    }
     return (ptrdiff_t) farg;
   }
   return (gc::As< Integer_sp >(x))->as_ptrdiff_t();
@@ -3241,17 +3221,12 @@ ALWAYS_INLINE mpz_class clasp_to_mpz( core::T_sp x )
 
 ALWAYS_INLINE unsigned long long clasp_to_unsigned_long_long( core::T_sp x )
 {
+  ASSERT(!x.single_floatp());
   if ( x.fixnump() )
   {
     gc::Fixnum f = x.unsafe_fixnum();
-    if (f >= 0 && f <= gc::most_positive_ulonglong)
-    {
-      return (unsigned long long)f;
-    }
-    // unsigned long int must be == unsigned long long int
-    mpz_class z = clasp_create_mpz_class(gc::most_positive_ulonglong);
-    TYPE_ERROR( x, Cons_O::createList(cl::_sym_Integer_O, make_fixnum(0),
-                                      Integer_O::create(z)));
+    ASSERT(f >= 0 && f <= gc::most_positive_ulonglong);
+    return (unsigned long long)f;
   }
   return (gc::As< Integer_sp >(x))->as_ulonglong();
 };
@@ -3260,18 +3235,16 @@ ALWAYS_INLINE unsigned long long clasp_to_unsigned_long_long( core::T_sp x )
 
 ALWAYS_INLINE size_t clasp_to_size_t( core::T_sp x )
 {
-  if ( x.fixnump() )
-  {
-    gctools::Fixnum farg = x.unsafe_fixnum();
-
-    if (farg < gc::most_negative_size || farg > gc::most_positive_size)
-    {
-      SIMPLE_ERROR(BF("Cannot convert cl_intptr_t to char. Value out of range  for size_t"));
+  if ( x.fixnump() ) {
+    ASSERT(x.unsafe_fixnum() <= gc::most_positive_size);
+    return (size_t) x.unsafe_fixnum();
+  } else if (gc::IsA<Bignum_sp>(x)) {
+    Bignum_sp bx = gc::As_unsafe<Bignum_sp>(x);
+    LIKELY_if ( bx->mpz_ref()>=0 && bx->mpz_ref() <= gc::most_positive_size) {
+      return static_cast<size_t>(bx->mpz_ref().get_ui());
     }
-    return (size_t) farg;
-  }
-
-  SIMPLE_ERROR(BF("Cannot convert cl_intptr_t to size_t"));
+  }    
+  TYPE_ERROR(x, Cons_O::create(cl::_sym_UnsignedByte, Bignum_O::create((uint64_t)gc::most_positive_size)));
 }
 
 ALWAYS_INLINE cl_index clasp_to_size( core::T_sp x )

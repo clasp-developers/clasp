@@ -546,21 +546,6 @@ void debugSuppressMessages(bool s);
   }
 #define SHOUT(___fmt) lisp_SHOUT(___fmt)
 
-#if 0
-#define IF_DEBUG_ON(f) f
-#define DEBUG_ASSERT(x)                                                         \
-  if (!(x)) {                                                                   \
-    stringstream ss;                                                            \
-    ss << "Assertion failed file(" << __FILE__ << ") line(" << __LINE__ << ")"; \
-    SIMPLE_ERROR(BF("%s") % ss.str());                                          \
-  };
-#define DEBUG_ASSERTP(x, e)                                                                  \
-  if (!(x)) {                                                                                \
-    stringstream ss;                                                                         \
-    ss << "Assertion failed (" << e << " file(" << __FILE__ << ") line(" << __LINE__ << ")"; \
-    SIMPLE_ERROR(BF("%s") % ss.str());                                                       \
-  };
-#endif
 #else //DEBUG_ON
 #define TESTMEMORY()
 #define HARD_BREAK_POINT() \
@@ -574,12 +559,6 @@ void debugSuppressMessages(bool s);
 #define lisp_SHOUT(___fmt) \
   {}
 
-#if 0
-#define IF_DEBUG_ON(f) \
-  {}
-#define DEBUG_ASSERT(x)
-#define DEBUG_ASSERTP(x, e)
-#endif
 #endif //DEBUG_ON
 
 
@@ -592,6 +571,8 @@ void debugSuppressMessages(bool s);
 #ifdef DEBUG_BOUNDS_ASSERT
 #define lisp_BOUNDS_ASSERT(x) if (!(x)) ::core::assert_failure(__FILE__,__LINE__,__FUNCTION__,#x)
 #define BOUNDS_ASSERT(x) lisp_BOUNDS_ASSERT(x)
+ #else
+#define BOUNDS_ASSERT(x)
 #endif
 #ifdef DEBUG_ASSERT
 #define lisp_ASSERTP( x, e) if (!(x)) ::core::assert_failure(__FILE__,__LINE__,__FUNCTION__,(e));
@@ -637,6 +618,7 @@ void debugSuppressMessages(bool s);
   {}
 #define ASSERTP(x, e) \
   {}
+#define IF_DEBUG_ON(x)
 #define lisp_ASSERTF(l, x, f) \
   {}
 #define ASSERTF(x, f) \

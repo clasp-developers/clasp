@@ -376,6 +376,9 @@ funcall_consume_valist_<core::Function_O>(tagged_func_ptr,valist_args)
 template <typename Func_O_Type>
 inline gctools::return_type funcall_consume_valist_(gc::Tagged func_tagged,
                                                     VaList_sp args) {
+  if (!gc::tagged_generalp(func_tagged)){
+    printf("%s:%d Bad function - it is missing a tag %p\n", __FILE__, __LINE__, (void*)func_tagged);
+  }
   gc::smart_ptr<Func_O_Type> func((gc::Tagged)func_tagged);
   size_t nargs = args->remaining_nargs();
   switch (nargs) {

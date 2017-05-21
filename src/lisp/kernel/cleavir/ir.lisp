@@ -282,7 +282,7 @@
           (%store result-in-registers return-value))))))
 
 
-(defun unsafe-multiple-value-foreign-call (call-or-invoke intrinsic-name return-value arg-allocas abi &key (label "") landing-pad)
+(defun unsafe-multiple-value-foreign-call (intrinsic-name return-value arg-allocas abi &key (label "") landing-pad)
   (with-return-values (return-vals return-value abi)
     (let* ((args (mapcar (lambda (x) (%load x)) arg-allocas))
            (func (or (llvm-sys:get-function cmp:*the-module* intrinsic-name)
@@ -294,7 +294,9 @@
                                    intrinsic-name
                                    cmp:*the-module*)))))
            (result-in-registers
-            (llvm-sys:create-call-array-ref cmp:*irbuilder* func args "intrinsic")))
+            (if landing-pad
+                (cmp::irc-create-invoke func args (basic-block landing-pad))
+                (cmp::irc-create-call func args))))
       (%store result-in-registers return-value))))
 
 (defun unsafe-foreign-call (call-or-invoke foreign-types foreign-name output arg-allocas abi &key (label "") landing-pad)
@@ -310,6 +312,7 @@
                     'llvm-sys::External-linkage
                     foreign-name
                     cmp:*the-module*))))
+    ;;; FIXME: Do these calls also need an INVOKE version if landing-pad is set????
     (if (eq :void (first foreign-types))
         (progn
           (llvm-sys:create-call-array-ref cmp:*irbuilder* func arguments "")
@@ -328,6 +331,7 @@
          (function-pointer-type (llvm-sys:type-get-pointer-to function-type))
          (pointer-t* pointer)
          (function-pointer (%bit-cast (%intrinsic-call "cc_getPointer" (list pointer-t*)) function-pointer-type "cast-function-pointer")))
+    ;;; FIXME: Do these calls also need an INVOKE version if landing-pad is set????
     (if (eq :void (first foreign-types))
         (progn
           (llvm-sys:create-call-function-pointer cmp:*irbuilder* function-type function-pointer arguments "")

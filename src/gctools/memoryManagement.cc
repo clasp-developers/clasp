@@ -129,17 +129,17 @@ void rawHeaderDescribe(const uintptr_clasp_t *headerP) {
   uintptr_clasp_t headerTag = (*headerP) & Header_s::tag_mask;
   switch (headerTag) {
   case 0:
-    printf("  0x%p : 0x%llu 0x%llu\n", headerP, *headerP, *(headerP + 1));
+      printf("  %p : %llu(%p) %llu(%p)\n", headerP, *headerP, (void*)*headerP, *(headerP + 1), (void*)*(headerP + 1));
     printf(" Not an object header!\n");
     break;
   case Header_s::kind_tag: {
-    printf("  0x%p : 0x%llu\n", headerP, *headerP);
-    printf("  0x%p : 0x%llu\n", (headerP+1), *(headerP+1));
+    printf("  %p : %llu (%p)\n", headerP, *headerP, (void*)*headerP);
+    printf("  %p : %llu (%p)\n", (headerP+1), *(headerP+1), (void*)*(headerP+1));
 #ifdef DEBUG_GUARD
-    printf("  0x%p : 0x%p\n", (headerP+2), (void*)*(headerP+2));
-    printf("  0x%p : 0x%p\n", (headerP+3), (void*)*(headerP+3));
-    printf("  0x%p : 0x%p\n", (headerP+4), (void*)*(headerP+4));
-    printf("  0x%p : 0x%p\n", (headerP+5), (void*)*(headerP+5));
+    printf("  %p : %p\n", (headerP+2), (void*)*(headerP+2));
+    printf("  %p : %p\n", (headerP+3), (void*)*(headerP+3));
+    printf("  %p : %p\n", (headerP+4), (void*)*(headerP+4));
+    printf("  %p : %p\n", (headerP+5), (void*)*(headerP+5));
 #endif    
     gctools::GCKindEnum kind = (gctools::GCKindEnum)((*headerP) >> 2);
     printf(" Kind tag - kind: %d", kind);

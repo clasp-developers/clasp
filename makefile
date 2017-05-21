@@ -50,7 +50,7 @@ export LLVM_CONFIG_DEBUG := $(or $(LLVM_CONFIG_DEBUG),\
                                  $(LLVM_CONFIG))
 else
 # XXX: confirm the necessity of llvm-config* pathsearch!
-export LLVM_CONFIG ?= $(or $(call pathsearch, llvm-config-3.8),\
+export LLVM_CONFIG ?= $(or $(call pathsearch, llvm-config-4.0),\
                            $(call pathsearch, llvm-config),\
                            $(call pathsearch, llvm-config*),\
                            $(error Could not find llvm-config.))

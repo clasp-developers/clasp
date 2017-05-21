@@ -40,7 +40,7 @@ namespace core {
       if (supplied) return from_object(obj);
       return 0;
     }
-    static value_type from_object(T_sp obj) { return clasp_to_size(gc::As<core::Integer_sp>(obj)); };
+    static value_type from_object(T_sp obj) { return clasp_to_SPECIALIZE_ME(gc::As<core::Integer_sp>(obj)); };
     static T_sp to_object(const value_type& v) { return core::Integer_O::create(v); };
   public:
   SimpleVector_SPECIALIZE_ME_O(size_t length, value_type initialElement=value_type(),
