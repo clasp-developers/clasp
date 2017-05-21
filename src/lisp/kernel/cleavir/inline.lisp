@@ -226,3 +226,36 @@
 (defun posn-column (posn stream)
   (declare (type posn posn) (type pretty-stream stream))
   (index-column (posn-index posn stream) stream))
+
+
+;;; --------------------------------------------------
+;;;
+;;; Provided by bike  May 21, 2017
+;;;
+
+(defun mapfoo-macro (iter accum function lists)
+  ;; nothing cleavir-specific here
+  (let ((sfunction (gensym "MAPCAR-FUNCTION"))
+        (syms (loop repeat (length lists)
+                    collect (gensym "MAPCAR-ARGUMENT"))))
+    `(loop named ,(gensym "UNUSED-BLOCK")
+           ;; the loop needs a (gensym) name so that ,function
+           ;; can't refer to it.
+           with ,sfunction = ,function
+           ,@(loop for sym in syms
+                   for list in lists
+                   append `(for ,sym ,iter ,list))
+           ,accum (funcall ,sfunction ,@syms))))
+
+(define-compiler-macro mapc (function list &rest more-lists)
+  (mapfoo-macro 'in 'do function (cons list more-lists)))
+(define-compiler-macro mapcar (function list &rest more-lists)
+  (mapfoo-macro 'in 'collect function (cons list more-lists)))
+(define-compiler-macro mapcan (function list &rest more-lists)
+  (mapfoo-macro 'in 'nconc function (cons list more-lists)))
+(define-compiler-macro mapl (function list &rest more-lists)
+  (mapfoo-macro 'on 'do function (cons list more-lists)))
+(define-compiler-macro mapcan (function list &rest more-lists)
+  (mapfoo-macro 'on 'collect function (cons list more-lists)))
+(define-compiler-macro mapcan (function list &rest more-lists)
+  (mapfoo-macro 'on 'nconc function (cons list more-lists)))
