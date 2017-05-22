@@ -196,6 +196,9 @@ typedef int  claspCharacter;
 /*! Pass four arguments in registers, the rest in memory */
 #define LCC_ARGS_IN_REGISTERS 4
 
+/*! Return 1 pointer in register */
+#define LCC_RETURN_VALUES_IN_REGISTERS 1
+
 /*! Maximum number of arguments that can be passed */
 #define CALL_ARGUMENTS_LIMIT 136
 

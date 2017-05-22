@@ -2933,8 +2933,8 @@ ALWAYS_INLINE short clasp_to_short( core::T_sp x )
 {
   ASSERT(!x.single_floatp());
   if ( x.fixnump() ) {
-    ASSERT(farg >= gc::most_negative_short && farg <= gc::most_positive_short);
     gctools::Fixnum farg = x.unsafe_fixnum();
+    ASSERT(farg >= gc::most_negative_short && farg <= gc::most_positive_short);
     return (int) farg;
   }
   return (gc::As< Integer_sp >(x))->as_short();
@@ -2944,8 +2944,8 @@ ALWAYS_INLINE unsigned short clasp_to_ushort( core::T_sp x )
 {
   ASSERT(!x.single_floatp());
   if ( x.fixnump() ) {
-    ASSERT(farg >= gc::most_negative_ushort && farg <= gc::most_positive_ushort);
     gctools::Fixnum farg = x.unsafe_fixnum();
+    ASSERT(farg >= 0 && farg <= gc::most_positive_ushort);
     return (int) farg;
   }
   return (gc::As< Integer_sp >(x))->as_ushort();
@@ -2957,8 +2957,8 @@ ALWAYS_INLINE int clasp_to_int( core::T_sp x )
 {
   ASSERT(!x.single_floatp());
   if ( x.fixnump() ) {
-    ASSERT(farg >= gc::most_negative_int && farg <= gc::most_positive_int);
     gctools::Fixnum farg = x.unsafe_fixnum();
+    ASSERT(farg >= gc::most_negative_int && farg <= gc::most_positive_int);
     return (int) farg;
   }
   return (gc::As< Integer_sp >(x))->as_int();
@@ -2968,8 +2968,8 @@ ALWAYS_INLINE unsigned int clasp_to_uint( core::T_sp x )
 {
   ASSERT(!x.single_floatp());
   if ( x.fixnump() ) {
-    ASSERT(farg >= gc::most_negative_uint && farg <= gc::most_positive_uint);
     gctools::Fixnum farg = x.unsafe_fixnum();
+    ASSERT(farg >= 0 && farg <= gc::most_positive_uint);
     return (uint) farg;
   }
   return (gc::As< Integer_sp >(x))->as_uint();
@@ -2981,8 +2981,8 @@ ALWAYS_INLINE long clasp_to_long( core::T_sp x )
 {
   ASSERT(!x.single_floatp());
   if ( x.fixnump() ) {
-    ASSERT(farg >= gc::most_negative_long && farg <= gc::most_positive_long);
     gctools::Fixnum farg = x.unsafe_fixnum();
+    ASSERT(farg >= gc::most_negative_long && farg <= gc::most_positive_long);
     return (long) farg;
   }
   return (gc::As< Integer_sp >(x))->as_long();
@@ -2993,9 +2993,9 @@ ALWAYS_INLINE unsigned long clasp_to_ulong( core::T_sp x )
   ASSERT(!x.single_floatp());
   if ( x.fixnump() )
   {
-    ASSERT(farg >= gc::most_negative_ulong && farg <= gc::most_positive_ulong);
     gctools::Fixnum farg = x.unsafe_fixnum();
-    return (long) farg;
+    ASSERT(farg >= 0 && farg <= gc::most_positive_ulong); 
+   return (long) farg;
   }
   return (gc::As< Integer_sp >(x))->as_ulong();
 }
@@ -3005,8 +3005,8 @@ ALWAYS_INLINE long long clasp_to_longlong( core::T_sp x )
 {
   if ( x.fixnump() )
   {
-    ASSERT(farg >= gc::most_negative_longlong && farg <= gc::most_positive_longlong);
     gctools::Fixnum farg = x.unsafe_fixnum();
+    ASSERT(farg >= gc::most_negative_longlong && farg <= gc::most_positive_longlong);
     return (long long) farg;
   }
   return (gc::As< Integer_sp >(x))->as_longlong();
@@ -3016,8 +3016,8 @@ ALWAYS_INLINE unsigned long long clasp_to_ulonglong( core::T_sp x )
 {
   if ( x.fixnump() )
   {
-    ASSERT(farg >= gc::most_negative_ulonglong && farg <= gc::most_positive_ulonglong);
     gctools::Fixnum farg = x.unsafe_fixnum();
+    ASSERT(farg >= 0 && farg <= gc::most_positive_ulonglong);
     return (unsigned long long) farg;
   }
   return (gc::As< Integer_sp >(x))->as_ulonglong();
@@ -3042,7 +3042,7 @@ ALWAYS_INLINE int8_t clasp_to_int8( core::T_sp x )
 ALWAYS_INLINE uint8_t clasp_to_uint8( core::T_sp x )
 {
   if ( x.fixnump() ) {
-    ASSERT(x.unsafe_fixnum() >=gc::most_negative_uint8 && x.unsafe_fixnum() < gc::most_positive_uint8);
+    ASSERT(x.unsafe_fixnum() >= 0 && x.unsafe_fixnum() < gc::most_positive_uint8);
     return x.unsafe_fixnum();
   } else if (gc::IsA<Bignum_sp>(x)) {
     Bignum_sp bx = gc::As_unsafe<Bignum_sp>(x);
@@ -3083,7 +3083,7 @@ ALWAYS_INLINE int16_t clasp_to_int16( core::T_sp x )
 ALWAYS_INLINE uint16_t clasp_to_uint16( core::T_sp x )
 {
   if ( x.fixnump() ) {
-    ASSERT(x.unsafe_fixnum() >=gc::most_negative_uint16 && x.unsafe_fixnum() < gc::most_positive_uint16);
+    ASSERT(x.unsafe_fixnum() >= 0 && x.unsafe_fixnum() < gc::most_positive_uint16);
     return x.unsafe_fixnum();
   } else if (gc::IsA<Bignum_sp>(x)) {
     Bignum_sp bx = gc::As_unsafe<Bignum_sp>(x);
@@ -3123,7 +3123,7 @@ ALWAYS_INLINE int32_t clasp_to_int32( core::T_sp x )
 ALWAYS_INLINE uint32_t clasp_to_uint32( core::T_sp x )
 {
   if ( x.fixnump() ) {
-    ASSERT(x.unsafe_fixnum() >=gc::most_negative_uint32 && x.unsafe_fixnum() < gc::most_positive_uint32);
+    ASSERT(x.unsafe_fixnum() >= 0 && x.unsafe_fixnum() < gc::most_positive_uint32);
     return x.unsafe_fixnum();
   } else if (gc::IsA<Bignum_sp>(x)) {
     Bignum_sp bx = gc::As_unsafe<Bignum_sp>(x);
@@ -3163,7 +3163,7 @@ ALWAYS_INLINE int64_t clasp_to_int64_t( core::T_sp x )
 ALWAYS_INLINE uint64_t clasp_to_uint64_t( core::T_sp x )
 {
   if ( x.fixnump() ) {
-    ASSERT(x.unsafe_fixnum() >=gc::most_negative_uint64 && x.unsafe_fixnum() < gc::most_positive_uint64);
+    ASSERT(x.unsafe_fixnum() >= 0 && x.unsafe_fixnum() < gc::most_positive_uint64);
     return x.unsafe_fixnum();
   } else if (gc::IsA<Bignum_sp>(x)) {
     Bignum_sp bx = gc::As_unsafe<Bignum_sp>(x);
@@ -3197,8 +3197,8 @@ ALWAYS_INLINE ptrdiff_t clasp_to_ptrdiff_t( core::T_sp x )
 {
   if ( x.fixnump() )
   {
-    ASSERT(!(farg < gc::most_negative_ptrdiff || farg > gc::most_positive_ptrdiff));
     gctools::Fixnum farg = x.unsafe_fixnum();
+    ASSERT(!(farg < gc::most_negative_ptrdiff || farg > gc::most_positive_ptrdiff));
     return (ptrdiff_t) farg;
   }
   return (gc::As< Integer_sp >(x))->as_ptrdiff_t();

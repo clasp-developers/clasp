@@ -1093,6 +1093,7 @@ and initialize it with an array consisting of one function pointer."
   (primitive-nounwind module "cc_pop_InvocationHistoryFrame" %void% (list %t*% %InvocationHistoryFrame*%))
   
   (primitive          module "cc_call_multipleValueOneFormCall" %return_type% (list %t*%))
+  (primitive          module "cc_call_multipleValueOneFormCallWithRet0" %return_type% (list %t*% %return_type%))
   (primitive          module "cc_call"   %return_type% (list* %t*% %size_t%
                                                               (map 'list (lambda (x) x)
                                                                    (make-array core:+number-of-fixed-arguments+ :initial-element %t*%))) :varargs t)

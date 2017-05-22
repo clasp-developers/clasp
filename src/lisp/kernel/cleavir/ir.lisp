@@ -185,8 +185,12 @@
      ,@body))
 
 
-
-
+(defun %gep (type object indices &optional (label "gep"))
+  "Check the type against the object type and if they match return the GEP"
+  (let ((converted-indices (mapcar (lambda (x) (%i32 x)) indices)))
+    (if (not (equal type (llvm-sys:get-type object)))
+        (error "%gep expected object of type ~a but got ~a of type ~a" type object (llvm-sys:get-type object))
+        (llvm-sys:create-in-bounds-gep cmp:*irbuilder* object converted-indices label))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -235,6 +239,7 @@
 		 :numvals (llvm-sys:create-in-bounds-gep cmp:*irbuilder* return-sret-arg (list (%i32 0) (%i32 1)) "ret-nvals")
 		 :return-registers (list (llvm-sys:create-in-bounds-gep cmp:*irbuilder* return-sret-arg (list (%i32 0) (%i32 0)) "ret-regs"))))
 
+
 (defun return-values-num (return-vals)
   (number-of-return-values return-vals))
 
@@ -242,18 +247,11 @@
   (if (< idx +pointers-returned-in-registers+)
       (elt (return-registers return-vals) idx)
       (let ((multiple-value-pointer (multiple-value-array-address)))
-	(error "Finish implementing return-value-elt - you need to use gep to index into the array")
-	#||(setf (multiple-value-array-address return-vals) multiple-value-pointer))
-	(multiple-value-array-get multiple-value-pointer idx)||#)))
-
-
-
+        (%gep cmp::%t*[0]*% multiple-value-pointer (list 0 idx)))))
 
 (defmacro with-return-values ((return-vals return-value abi) &body body)
   `(let* ((,return-vals (make-return-values ,return-value ,abi)))
      ,@body))
-
-
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;

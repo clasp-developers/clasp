@@ -1075,13 +1075,15 @@ CL_DEFUN T_mv core__multiple_value_funcall(T_sp funcDesignator, List_sp function
     T_mv result = (func->entry)(LCC_PASS_ARGS0_ELLIPSIS(func.raw_()));
 //    T_mv result = eval::funcall(func);
     ASSERT(idx < MultipleValues::MultipleValuesLimit);
-    (*frame)[idx] = result.raw_();
-    ++idx;
-    for (size_t i = 1, iEnd(result.number_of_values()); i < iEnd; ++i) {
-      ASSERT(idx < MultipleValues::MultipleValuesLimit);
-      (*frame)[idx] = mv._Values[i];
-      ++idx;
-    }
+    if (result.number_of_values() > 0  ) {
+        (*frame)[idx] = result.raw_();
+        ++idx;
+        for (size_t i = 1, iEnd(result.number_of_values()); i < iEnd; ++i) {
+          ASSERT(idx < MultipleValues::MultipleValuesLimit);
+          (*frame)[idx] = mv._Values[i];
+          ++idx;
+        }
+      }
   }
   frame->set_number_of_arguments(idx);
   VaList_S valist_s(frame);

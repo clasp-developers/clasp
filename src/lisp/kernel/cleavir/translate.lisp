@@ -121,9 +121,9 @@ when this is t a lot of graphs will be generated.")
          ;; Gather the basic blocks of this procedure in basic-blocks
 	 (basic-blocks (remove initial-instruction *basic-blocks* :test-not #'eq :key #'third))
 	 ;; Hypothesis: This finds the first basic block
-	 (first (find initial-instruction basic-blocks :test #'eq :key #'first))
+	 (first-basic-block (find initial-instruction basic-blocks :test #'eq :key #'first))
 	 ;; This gathers the rest of the basic blocks
-	 (rest (remove first basic-blocks :test #'eq))
+	 (rest-basic-blocks (remove first-basic-block basic-blocks :test #'eq))
 	 (lambda-name (get-or-create-lambda-name initial-instruction)))
     ;; HYPOTHESIS: This builds a function with no arguments
     ;; that will enclose and set up other functions with arguments
@@ -160,7 +160,7 @@ when this is t a lot of graphs will be generated.")
 	(mapcar #'(lambda (arg argname) (llvm-sys:set-name arg argname))
 		(llvm-sys:get-argument-list fn) cmp:+fn-prototype-argument-names+))
       ;; create a basic-block for every remaining tag
-      (loop for block in rest
+      (loop for block in rest-basic-blocks
 	 for instruction = (first block)
 	 do (progn
 	      #+(or)(format t "creating basic block for instruction: ~a~%" instruction)
@@ -205,8 +205,8 @@ when this is t a lot of graphs will be generated.")
           (llvm-sys:set-insert-point-basic-block body-irbuilder body-block)
           (cmp:with-irbuilder (body-irbuilder)
             (cmp:irc-begin-block body-block)
-            (layout-basic-block first return-value abi current-landing-pad)
-            (loop for block in rest
+            (layout-basic-block first-basic-block return-value abi current-landing-pad)
+            (loop for block in rest-basic-blocks
                for instruction = (first block)
                do (progn
                     #+(or)(format t "laying out basic block: ~a~%" block)
@@ -256,7 +256,7 @@ when this is t a lot of graphs will be generated.")
   *generate-backtrace-wrapper*)
 
 (defun layout-procedure (initial-instruction abi &key (linkage 'llvm-sys:internal-linkage))
-  (if (generate-backtrace-wrapper initial-instruction)
+  (if (generate-backtrace-wrapper-p initial-instruction)
       (layout-procedure-with-backtrace-wrapper initial-instruction abi :linkage linkage)
       (layout-procedure* initial-instruction abi :linkage linkage)))
 
@@ -603,10 +603,10 @@ when this is t a lot of graphs will be generated.")
     ((instruction cleavir-ir:multiple-value-call-instruction) return-value inputs outputs abi landing-pad)
   (cmp:irc-low-level-trace :flow)
   (with-return-values (return-vals return-value abi)
-    (%intrinsic-call "cc_saveMultipleValue0" (list return-value)) ;; (sret-arg return-vals))
+ ;   (%intrinsic-call "cc_saveMultipleValue0" (list return-value)) ;; (sret-arg return-vals))
     ;; NOTE: (NOT A FIXME)  This instruction is explicitly for calls.
-    (let ((call-result (%intrinsic-call "cc_call_multipleValueOneFormCall" 
-				     (list (cmp:irc-load (first inputs))))))
+    (let ((call-result (%intrinsic-call "cc_call_multipleValueOneFormCallWithRet0" 
+				     (list (cmp:irc-load (first inputs)) (%load return-value)))))
       (%store call-result return-value)
       (cc-dbg-when 
        *debug-log*
@@ -620,9 +620,9 @@ when this is t a lot of graphs will be generated.")
   (cmp:irc-low-level-trace :flow)
   (let* ((lpad (clasp-cleavir::landing-pad instruction)))
     (with-return-values (return-vals return-value abi)
-      (%intrinsic-call "cc_saveMultipleValue0" (list return-value)) ;; (sret-arg return-vals))
-      (let ((call-result (cmp::irc-intrinsic-call-or-invoke "cc_call_multipleValueOneFormCall" 
-                                                           (list (cmp:irc-load (first inputs)))
+      ;;(%intrinsic-call "cc_saveMultipleValue0" (list return-value)) ;; (sret-arg return-vals))
+      (let ((call-result (cmp::irc-intrinsic-call-or-invoke "cc_call_multipleValueOneFormCallWithRet0" 
+                                                           (list (cmp:irc-load (first inputs)) (%load return-value))
                                                            "mvofc"
                                                            (basic-block lpad))))
         (%store call-result return-value)

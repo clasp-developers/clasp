@@ -221,7 +221,7 @@ class smart_ptr /*: public tagged_ptr<T>*/ {
   explicit inline smart_ptr(Type *ptr) : theObject(ptr ? tag_general<Type *>(ptr) : NULL) {
     GCTOOLS_ASSERT((reinterpret_cast<uintptr_clasp_t>(ptr) & tag_mask) == 0);
   };
-  inline smart_ptr(const return_type &rt) : theObject((Type *)rt.ret0){};
+  inline smart_ptr(const return_type &rt) : theObject((Type *)rt.ret0[0]){};
 #ifdef SMART_PTR_COPY_CTOR
   inline smart_ptr(const smart_ptr<Type> &obj) : theObject(obj.theObject){};
 #endif
@@ -454,7 +454,7 @@ namespace gctools {
 //
 template <typename To_SP>
 inline bool IsA(return_type const &rhs) {
-  return TaggedCast<typename To_SP::Type *, typename core::T_O *>::isA(rhs.ret0);
+  return TaggedCast<typename To_SP::Type *, typename core::T_O *>::isA(rhs.ret0[0]);
 };
 template <typename To_SP, typename From_SP>
 inline bool IsA(From_SP const &rhs) {
@@ -502,13 +502,13 @@ template <typename To_SP>
 inline To_SP As(const return_type &rhs) {
   GCTOOLS_ASSERT(rhs.nvals == 1);
   if (IsA<To_SP>(rhs)) {
-    To_SP ret((Tagged)rhs.ret0);
+    To_SP ret((Tagged)rhs.ret0[0]);
     return ret;
   }
   // If the cast didn't work then signal a type error
   class_id expected_typ = reg::registered_class<typename To_SP::Type>::id;
   class_id this_typ = reg::registered_class<core::T_O *>::id;
-  lisp_errorBadCast(expected_typ, this_typ, reinterpret_cast<core::T_O *>(rhs.ret0));
+  lisp_errorBadCast(expected_typ, this_typ, reinterpret_cast<core::T_O *>(rhs.ret0[0]));
   HARD_UNREACHABLE();
 }
 
@@ -541,7 +541,7 @@ public:
 #ifdef SMART_PTR_COPY_CTOR
   inline smart_ptr(const smart_ptr<Type> &obj) : theObject((Type*)obj.theObject){};
 #endif
-  inline smart_ptr(const return_type &rt) : theObject((Type*)rt.ret0){};
+  inline smart_ptr(const return_type &rt) : theObject((Type*)rt.ret0[0]){};
   template <class From>
   inline smart_ptr(smart_ptr<From> const &rhs) : theObject((Type*)rhs.theObject){};
 
@@ -1025,7 +1025,7 @@ public:
 public:
   //! The default constructor returns an invalid smart_ptr
   inline smart_ptr() noexcept : theObject(NULL){};
-  inline smart_ptr(const return_type &rt) : theObject((Type *)rt.ret0){};
+  inline smart_ptr(const return_type &rt) : theObject((Type *)rt.ret0[0]){};
   inline smart_ptr(smart_ptr<core::T_O> other) {
     LIKELY_if (other.consp()) {
       this->theObject = other.theObject;

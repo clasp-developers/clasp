@@ -430,17 +430,24 @@ Compile the cclasp source code."
   (load-system (select-source-files #P"src/lisp/kernel/cleavir/auto-compile" #P"src/lisp/kernel/tag/cclasp" :system system) :compile-file-load nil ))
 (export '(load-cclasp))
 
+(defun build-failure (condition)
+  (format t "~&Build aborted.~%Received condition of type: ~A~%~A"
+           (type-of condition)
+           condition)
+  (format t "~&Entering repl~%"))
+
 (defun compile-cclasp (&key clean (output-file (build-common-lisp-bitcode-pathname)) (system (command-line-arguments-as-list)))
-  (cclasp-features)
-  (if clean (clean-system #P"src/lisp/kernel/tag/start" :no-prompt t :system system))
-  (let ((*target-backend* (default-target-backend)))
-    (time
-     (progn
-       (progn ;; Use load-cclasp?
-         (load-system (select-source-files #P"src/lisp/kernel/tag/bclasp" #P"src/lisp/kernel/cleavir/inline-prep" :system system) :compile-file-load t )
-         (load-system (select-source-files #P"src/lisp/kernel/cleavir/auto-compile" #P"src/lisp/kernel/tag/pre-epilogue-cclasp" :system system) :compile-file-load nil ))
-       (compile-cclasp* output-file system))))
-  (gdb "Trap __cxa_throw"))
+  (handler-bind
+      ((error #'build-failure))
+    (cclasp-features)
+    (if clean (clean-system #P"src/lisp/kernel/tag/start" :no-prompt t :system system))
+    (let ((*target-backend* (default-target-backend)))
+      (time
+       (progn
+         (progn ;; Use load-cclasp?
+           (load-system (select-source-files #P"src/lisp/kernel/tag/bclasp" #P"src/lisp/kernel/cleavir/inline-prep" :system system) :compile-file-load t )
+           (load-system (select-source-files #P"src/lisp/kernel/cleavir/auto-compile" #P"src/lisp/kernel/tag/pre-epilogue-cclasp" :system system) :compile-file-load nil ))
+         (compile-cclasp* output-file system))))))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

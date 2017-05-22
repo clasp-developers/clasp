@@ -42,7 +42,7 @@ public:
 
   multiple_values(const smart_ptr<T> &v) : smart_ptr<T>(v), _number_of_values(1){};
 
-  multiple_values(const return_type &v) : smart_ptr<T>((Tagged)v.ret0), _number_of_values(v.nvals){};
+  multiple_values(const return_type &v) : smart_ptr<T>((Tagged)v.ret0[0]), _number_of_values(v.nvals){};
 
   template <class Y>
   multiple_values(const multiple_values<Y> &yy) : smart_ptr<T>(yy), _number_of_values(yy.number_of_values()){};

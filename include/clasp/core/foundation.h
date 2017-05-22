@@ -536,22 +536,9 @@ extern void clasp_mps_debug_fix_after(void *pbase, void *px);
 extern void clasp_mps_debug_container(const char *ctype, const char *name, int size);
 //extern void clasp_mps_debug_scan_object(gctools::GCObject*  obj);
 
-namespace gctools {
-struct return_type {
-  core::T_O *ret0;
-  size_t nvals;
-  return_type() : ret0(NULL), nvals(0){};
-  return_type(core::T_O *r0, size_t nv) : ret0(r0), nvals(nv) {};
-  template <typename T>
-  return_type(T* r0, size_t nv) : ret0(reinterpret_cast<core::T_O*>(r0)), nvals(nv) {};
-};
-};
-
-namespace core {
 #define LCC_MACROS
 #include <clasp/core/lispCallingConvention.h>
 #undef LCC_MACROS
-};
 
 #include <clasp/core/scrape.h>
 #include <clasp/gctools/memoryManagement.h>

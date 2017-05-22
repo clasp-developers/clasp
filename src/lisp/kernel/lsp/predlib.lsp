@@ -522,7 +522,7 @@ and is not adjustable."
 (defun typep (object type &optional env &aux tp i c)
   "Args: (object type)
 Returns T if X belongs to TYPE; NIL otherwise."
-  (declare (ignore env))
+  (declare (ignore env) (notinline funcall))
   (cond ((symbolp type)
 	 (let ((f (get-sysprop type 'TYPE-PREDICATE)))
 	   (cond (f (return-from typep (funcall f object)))
@@ -1461,7 +1461,7 @@ if not possible."
 ;; *ELEMENTARY-TYPES* and *MEMBER-TYPES*.
 ;;
 (defun canonical-type (type)
-  (declare (notinline clos::classp))
+  (declare (notinline clos::classp funcall))
   (cond ((find-registered-tag type))
 	((eq type 'T) -1)
 	((eq type 'NIL) 0)

@@ -27,6 +27,27 @@ THE SOFTWARE.
 
 #ifdef LCC_MACROS
 
+
+
+namespace gctools {
+  struct return_type {
+#if (LCC_RETURN_VALUES_IN_REGISTERS!=1)
+#error "The number of return values in registers does not match core::return_type"
+#endif
+    core::T_O* ret0[LCC_RETURN_VALUES_IN_REGISTERS];  // One for every LCC_RETURN_VALUES_IN_REGISTERS
+    size_t nvals;
+  return_type() : ret0{NULL}, nvals(0){};
+  return_type(core::T_O *r0, size_t nv) : ret0{r0}, nvals(nv) {};
+    template <typename T>
+    return_type(T* r0, size_t nv) : ret0{reinterpret_cast<core::T_O*>(r0)}, nvals(nv) {};
+  };
+};
+
+#define FILL_FRAME_WITH_RETURN_REGISTERS(frame,retval) \
+  for ( size_t _i = 0, _iEnd(MIN(retval.nvals,LCC_RETURN_VALUES_IN_REGISTERS)); _i<_iEnd; ++_i) { \
+    (*frame)[_i] = retval.ret0[_i]; \
+  }
+  
 #define LCC_UNUSED NULL
 #define LCC_FIXED_ARGS LCC_ARGS_IN_REGISTERS
 #define LCC_FROM_SMART_PTR(x) (x.raw_())
@@ -392,4 +413,8 @@ inline gctools::return_type funcall_consume_valist_(gc::Tagged func_tagged,
   }
   SIMPLE_ERROR(BF("Unsupported arity %lu must be less than %lu") % nargs % CALL_ARGUMENTS_LIMIT );
 }
+
+
+   
+
 #endif // LCC_FUNCALL

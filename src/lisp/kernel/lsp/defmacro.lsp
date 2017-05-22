@@ -126,7 +126,9 @@
 	       *current-form*))
       (error "Too few arguments supplied to a inlined lambda form.")))
 
-(defun sys::destructure (vl macro &aux (basis-form (gensym)) (destructure-symbols (list basis-form)))
+(defun sys::destructure (vl macro &optional macro-name
+                         &aux (basis-form (gensym))
+                           (destructure-symbols (list basis-form)))
   (declare (si::c-local)
 	   (special *dl* *arg-check*))
   (labels ((tempsym ()
@@ -149,9 +151,16 @@
                                    ;; Special handling if define-compiler-macro called this
                                    (if (eq macro 'define-compiler-macro)
                                        `(if (and (eq (car ,whole) 'cl:funcall)
-                                                 (eq (caadr ,whole) 'cl:function))
+                                                 (consp (cadr ,whole))
+                                                 (eq (caadr ,whole) 'cl:function)
+                                                 (consp (cdadr ,whole))
+                                                 (eq (second (second ,whole)) ',macro-name))
                                             (cddr (ext:truly-the cons ,whole))
                                             (cdr (ext:truly-the cons ,whole)))
+                                       #+(or)(if (and (eq (car ,whole) 'cl:funcall)
+                                                      (eq (caadr ,whole) 'cl:function))
+                                                 (cddr (ext:truly-the cons ,whole))
+                                                 (cdr (ext:truly-the cons ,whole))) ;; original code for the expr above
                                        `(cdr (ext:truly-the cons ,whole)))
                                    whole))
 		 (dolist (v (cdr reqs))
@@ -299,17 +308,8 @@
           (setq env-part (gensym)
                 decls (list* `(declare (ignore ,env-part)) decls)))
                                         ;(bformat t "About to call multiple-value-call\n")
-      #++
-      (MULTIPLE-VALUE-CALL
-          #'(LAMBDA (&OPTIONAL (PPN) (WHOLE) (DL) (ARG-CHECK) (IGNORABLES) &REST #:G17550)
-              (BFORMAT T "sys::expand-defmacro after multiple-value-bind whole -> %s\n" WHOLE)
-              (VALUES `(LAMBDA (,WHOLE ,ENV-PART &AUX ,@DL)
-                         (DECLARE (IGNORABLE ,@IGNORABLES) (LAMBDA-NAME ,NAME))
-                         ,@DECLS (BLOCK ,(FUNCTION-BLOCK-NAME NAME) ,@ARG-CHECK ,@BODY))
-                      PPN DOC))
-        (DESTRUCTURE VL CONTEXT))
       (multiple-value-bind (ppn whole dl arg-check ignorables)
-          (destructure vl context)
+          (destructure vl context name)
         #+ecl(values 
               `(ext::lambda-block ,name (,whole ,env-part &aux ,@dl)
                                   (declare (ignorable ,@ignorables))

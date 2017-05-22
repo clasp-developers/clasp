@@ -90,7 +90,7 @@
 
 
 
-(defmacro with-catch ((exn.slot exception-ptr env) &rest body)
+(defmacro with-catch ((exn.slot exception-ptr) &rest body)
   (let ((exn-gs (gensym)))
     `(let* ((,exn-gs (llvm-sys:create-load-value-twine *irbuilder* ,exn.slot "exn"))
 	    (,exception-ptr (irc-intrinsic "__cxa_begin_catch" ,exn-gs)))

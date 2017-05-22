@@ -126,7 +126,7 @@ eg: '(block ((exception var) code...))"
 				       next-dispatcher-block
 				       clause
 				       successful-catch-block
-				       exn.slot ehselector.slot env)
+				       exn.slot ehselector.slot)
   (let ((sel-gs (gensym "sel"))
 	(typeid-gs (gensym "typeid"))
 	(matches-type-gs (gensym "matches-type"))
@@ -139,7 +139,7 @@ eg: '(block ((exception var) code...))"
       ((eq (caar clause) 'all-other-exceptions)
        `(progn
 	  (irc-begin-block ,cur-dispatcher-block)
-	  (with-catch (,exn.slot dummy-exception ,env)
+	  (with-catch (,exn.slot dummy-exception)
 	    ,@clause-body
 	    ))
        )
@@ -156,7 +156,7 @@ eg: '(block ((exception var) code...))"
 ;;	    (irc-intrinsic "debugPrintI32" ,typeid-gs)
 	    (irc-cond-br ,matches-type-gs ,handler-block-gs ,next-dispatcher-block)
 	    (irc-begin-block ,handler-block-gs)
-	    (with-catch (,exn.slot ,clause-exception-name ,env)
+	    (with-catch (,exn.slot ,clause-exception-name)
 	      ,@clause-body)
 	    (irc-branch-if-no-terminator-inst ,successful-catch-block) ;; Why is this commented out?
 	    ))
@@ -221,27 +221,15 @@ exceptions to higher levels of the code and unwinding the stack.
 					      (append ',my-clause-types *exception-clause-types-to-handle*)
 					      *exception-clause-types-to-handle*))
 		    (*exception-clause-types-to-handle* ,all-clause-types-gs)
-		    ;; Use *exception-handler-cleanup-block* rather than pulling the exception-handler-cleanup-block
-		    ;; out of the environment
 		    (,parent-cleanup-block-gs *exception-handler-cleanup-block*)
-		    ;;		   #+(or)(,parent-cleanup-block-gs (lookup-metadata
-		    ;;						    (get-parent-environment ,env)
-		    ;;						    ,HIGHER-CLEANUP-BLOCK-NAME))
-
 		    (,landing-pad-block-gs (irc-basic-block-create "landing-pad"))
 		    (,dispatch-header-gs (irc-basic-block-create "dispatch-header"))
 		    (,cont-block-gs (irc-basic-block-create "try-cont"))
-
-		    ;; Use *exception-handler-cleanup-block* rather than the setf-metadata ,env ,HIGHER-CLEANUP-BLOCK-NAME below
-		    (*exception-handler-cleanup-block* ,dispatch-header-gs )
-
-		    )
+		    (*exception-handler-cleanup-block* ,dispatch-header-gs ))
 	       (cmp-log "====>> In TRY --> parent-cleanup-block: %s\n" ,parent-cleanup-block-gs)
 	       (let ,(mapcar #'(lambda (var-name)
 				 (list var-name `(irc-basic-block-create ,(symbol-name var-name))))
 			     dispatcher-block-gensyms)
-		 ;;		 #+(or) (setf-metadata ,env ,HIGHER-CLEANUP-BLOCK-NAME ,dispatch-header-gs)
-		 ;;		 #+(or) (setf-metadata ,env :exception-clause-types ',clause-types)
 		 (with-landing-pad ,landing-pad-block-gs
 		   ,code)
 		 ,(when cleanup-clause-body
@@ -273,10 +261,8 @@ exceptions to higher levels of the code and unwinding the stack.
 									parent-cleanup-block-gs)
 								    (car cur-clause-gs)
 								    cont-block-gs
-								    exn.slot-gs ehselector.slot-gs env)
-				    )
+								    exn.slot-gs ehselector.slot-gs))
 				dispatcher-block-gensyms
-				exception-clauses)
-		     ))
+				exception-clauses)))
 		 (irc-branch-if-no-terminator-inst ,cont-block-gs)
 		 (irc-begin-block ,cont-block-gs))))))))

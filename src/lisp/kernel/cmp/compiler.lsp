@@ -344,8 +344,8 @@ Return the same things that generate-llvm-function-from-code returns"
                 (form (car forms)))
             (codegen funcDesignator function-form env)
             (codegen temp-mv-result form env)
-            (irc-intrinsic "saveToMultipleValue0" temp-mv-result)
-            (let ((register-ret (irc-intrinsic "cc_call_multipleValueOneFormCall" (irc-extract-value (irc-load funcDesignator) (list 0)))))
+;;            (irc-intrinsic "saveToMultipleValue0" temp-mv-result)
+            (let ((register-ret (irc-intrinsic "cc_call_multipleValueOneFormCallWithRet0" (irc-extract-value (irc-load funcDesignator) (list 0)) (irc-load temp-mv-result) )))
               (irc-store-result result register-ret)))
           (codegen result `(core:multiple-value-funcall
                             ,function-form
