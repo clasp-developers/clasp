@@ -1830,7 +1830,7 @@ void nextInvocationHistoryFrameIteratorThatSatisfiesTest(Fixnum num, InvocationH
   } while (num >= 0);
 }
 
-int backtrace_length(InvocationHistoryFrame* frame) {
+int backtrace_length(const InvocationHistoryFrame* frame) {
   int length = 0;
   if (!frame) return 0;
   while ( (frame = frame->previous()) ) {++length;};
@@ -1839,7 +1839,7 @@ int backtrace_length(InvocationHistoryFrame* frame) {
 
 CL_LISPIFY_NAME(make-invocation-history-frame-iterator);
 CL_DEFUN InvocationHistoryFrameIterator_sp InvocationHistoryFrameIterator_O::make(Fixnum first, T_sp test) {
-  InvocationHistoryFrame *top = my_thread->_InvocationHistoryStack;
+  const InvocationHistoryFrame *top = my_thread->_InvocationHistoryStack;
   int length = backtrace_length(top);
   InvocationHistoryFrameIterator_sp iterator = InvocationHistoryFrameIterator_O::create(top,length);
   nextInvocationHistoryFrameIteratorThatSatisfiesTest(first, iterator, test);
@@ -1896,7 +1896,7 @@ CL_DEFMETHOD SimpleVector_sp InvocationHistoryFrameIterator_O::arguments() {
   if (!this->isValid()) {
     SIMPLE_ERROR(BF("Invalid InvocationHistoryFrameIterator"));
   }
-  InvocationHistoryFrame *frame = this->_Frame;
+  const InvocationHistoryFrame *frame = this->_Frame;
   return frame->arguments();
 }
 

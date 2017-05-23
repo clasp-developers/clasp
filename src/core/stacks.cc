@@ -200,7 +200,7 @@ void InvocationHistoryFrame::dump(int index) const {
 
 
 size_t backtrace_size() {
-  InvocationHistoryFrame* frame = my_thread->_InvocationHistoryStack;
+  const InvocationHistoryFrame* frame = my_thread->_InvocationHistoryStack;
   size_t count = 0;
   while (frame) {
     frame = frame->_Previous;
@@ -213,10 +213,10 @@ string backtrace_as_string() {
   stringstream ss;
   ss.str("");
   ss << std::endl;
-  InvocationHistoryFrame* frame = my_thread->_InvocationHistoryStack;
+  const InvocationHistoryFrame* frame = my_thread->_InvocationHistoryStack;
   ss << "--------STACK TRACE--------" << std::endl;
   int ihsCur = core__ihs_current_frame();
-  InvocationHistoryFrame* cur = frame;
+  const InvocationHistoryFrame* cur = frame;
   int i = 0;
   while (cur) {
     if (i == ihsCur) {
@@ -238,7 +238,7 @@ string backtrace_as_string() {
 extern "C" {
 void dump_backtrace(core::InvocationHistoryFrame* frame) {
   std::cout << "--------STACK TRACE--------" << std::endl;
-  core::InvocationHistoryFrame* cur = frame;
+  const core::InvocationHistoryFrame* cur = frame;
   int i = 0;
   while (cur) {
     if (cur == my_thread->_InvocationHistoryStack) {

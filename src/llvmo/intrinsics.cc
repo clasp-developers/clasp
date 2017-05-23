@@ -436,10 +436,10 @@ core::T_O *cc_fetch(core::T_O *tagged_closure, std::size_t idx) {
   return (*c)[idx].raw_();
 }
 
-void invocation_history_stack_dump(InvocationHistoryFrame* frame, const char* msg)
+void invocation_history_stack_dump(const InvocationHistoryFrame* frame, const char* msg)
 {
   printf("%s\n", msg);
-  InvocationHistoryFrame* cur = frame;
+  const InvocationHistoryFrame* cur = frame;
   size_t count=0;
   while (cur) {
     printf("    frame[%lu] @%p  function: %s\n", count, cur, _rep_(cur->function()->name()).c_str());
@@ -448,10 +448,10 @@ void invocation_history_stack_dump(InvocationHistoryFrame* frame, const char* ms
   }
 }
 
-size_t invocation_history_stack_depth(InvocationHistoryFrame* frame)
+size_t invocation_history_stack_depth(const InvocationHistoryFrame* frame)
 {
   size_t count = 0;
-  InvocationHistoryFrame* cur = frame;
+  const InvocationHistoryFrame* cur = frame;
   while (cur) {
     cur = cur->_Previous;
     ++count;
