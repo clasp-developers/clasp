@@ -150,12 +150,13 @@ Could return more functions that provide lambda-list for swank for example"
                                                                            argument-holder
                                                                            lambda-args-env))))))
                    (dbg-set-current-debug-location-here)
-                   (with-try new-env
+                   (with-try
                      (progn
                        (if wrap-block
                            (codegen-block result (list* block-name code) new-env)
                            (codegen-progn result code new-env)))
                      ((cleanup)
+                      (cmp-log "About to calling-convention-maybe-pop-invocation-history-frame\n")
                       (calling-convention-maybe-pop-invocation-history-frame argument-holder)
                       (irc-unwind-environment new-env))))))))
     (cmp-log "About to dump the function constructed by generate-llvm-function-from-code\n")
@@ -319,13 +320,13 @@ Return the same things that generate-llvm-function-from-code returns"
 	(forms (cddr args))
 	(evaluated-symbols (irc-alloca-tsp :label "symbols"))
 	(evaluated-values (irc-alloca-tsp :label "values"))
-	(save-specials (irc-alloca-i8* env :label "specials")))
+	(save-specials (irc-alloca-i8* :label "specials")))
     (cmp-log "Evaluating symbols: %s\n" symbols)
     (codegen evaluated-symbols symbols env)
     (cmp-log "Evaluating values: %s\n" values)
     (codegen evaluated-values values env)
     (cmp-log "About to setup evaluation of forms env: %s\n" env)
-    (with-try env
+    (with-try
       (progn
 	(cmp-log "About to call progvSaveSpecials\n")
 	(irc-intrinsic "progvSaveSpecials" save-specials evaluated-symbols evaluated-values)
@@ -530,7 +531,7 @@ env is the parent environment of the (result-af) value frame"
 				 ((eq operator-symbol 'let*) new-env)
 				 (t (error "let/let* doesn't understand operator symbol[~a]" operator-symbol))))
 		 traceid)
-	    (with-try new-env
+	    (with-try
 	      (progn
 		(irc-branch-to-and-begin-block (irc-basic-block-create
 						(bformat nil "%s-start" (symbol-name operator-symbol))))
@@ -606,7 +607,7 @@ env is the parent environment of the (result-af) value frame"
 	     (elsebb (irc-basic-block-create "else" ))
 	     (mergebb (irc-basic-block-create "ifcont" )))
 	(llvm-sys:create-cond-br *irbuilder* condv thenbb elsebb nil)
-	(irc-set-insert-point thenbb)
+	(irc-set-insert-point-basic-block thenbb)
 	(dbg-set-current-debug-location-here)
 	(irc-low-level-trace)
 	(let ((thenv (progn
@@ -684,7 +685,7 @@ jump to blocks within this tagbody."
     (setf-metadata tagbody-env 'tagbody-function *current-function*)
     (cmp-log "codegen-tagbody tagbody environment: %s\n" tagbody-env)
     (let ((frame (irc-intrinsic "pushTagbodyFrame" (irc-renv tagbody-env))))
-      (with-try tagbody-env
+      (with-try
 	(progn
 	  (let ((go-blocks nil))
 	    (mapl #'(lambda (cur)
@@ -742,7 +743,7 @@ jump to blocks within this tagbody."
 	 (let* ((go-vec (lookup-metadata tagbody-env 'tagbody-blocks))
 		(go-block (elt go-vec index)))
 	   (irc-unwind-into-environment env tagbody-env)
-	   (irc-br go-block)
+	   (irc-br go-block "go-block")
 	   (irc-begin-block (irc-basic-block-create "after-go"))
 	   )
 	 ))
@@ -769,19 +770,19 @@ jump to blocks within this tagbody."
 	      (after-return-block (irc-basic-block-create (bformat nil "after-return-%s-block" (symbol-name block-symbol))))
 	      )
 	  (setf-metadata block-env :local-return-block local-return-block)
-	  (irc-br block-start)
+	  (irc-br block-start "block-start")
 	  (irc-begin-block block-start)
           (let* ((frame (irc-intrinsic "pushBlockFrame" (irc-global-symbol block-symbol block-env))))
-            (with-try block-env
+            (with-try
 	      (codegen-progn result body block-env)
               ((cleanup)
                (irc-unwind-environment block-env))
               ((typeid-core-return-from exception-ptr)
                (irc-intrinsic "blockHandleReturnFrom" result exception-ptr frame)))
-	    (irc-br after-return-block)
+	    (irc-br after-return-block "after-return-block")
 	    (irc-begin-block local-return-block)
 	    (irc-intrinsic "restoreFromMultipleValue0" result)
-	    (irc-br after-return-block)
+	    (irc-br after-return-block "after-return-block-2")
 	    (irc-begin-block after-return-block)
             (irc-intrinsic "exceptionStackUnwind" frame)
 	    ))))))
@@ -811,7 +812,7 @@ jump to blocks within this tagbody."
 		(irc-unwind-into-environment env block-env)
 		(irc-intrinsic "loadValues" temp-mv-result saved-values)
 		(irc-intrinsic "saveToMultipleValue0" temp-mv-result)
-		(irc-br local-return-block)
+		(irc-br local-return-block "local-return-block")
 		(irc-begin-block (irc-basic-block-create "after-return-from"))
 		))
 	  (error "Unrecognized block symbol ~a" block-symbol)))))
@@ -867,7 +868,7 @@ jump to blocks within this tagbody."
 			      ((eq operator-symbol 'labels) function-env)
 			      (t (error "flet/labels doesn't understand operator symbol[~a]" operator-symbol))))
 	      traceid)
-	  (with-try evaluate-env
+	  (with-try
 	    (progn
 	      (irc-branch-to-and-begin-block (irc-basic-block-create
 					      (bformat nil "%s-start"
@@ -978,7 +979,7 @@ jump to blocks within this tagbody."
 	   (saved-values (irc-alloca-tsp :label "unwind-protect-saved-values"))
 	   )
       ;;Codegen the protected-form unwind to the unwind-landing-pad-block
-      (with-try up-env
+      (with-try
 	(progn
 	  (irc-branch-to-and-begin-block (irc-basic-block-create "unwind-protect-start"))
 	  (codegen temp-mv-result protected-form up-env)
@@ -1007,7 +1008,7 @@ jump to blocks within this tagbody."
 	   traceid)
       (codegen tag-store tag catch-env)
       (let ((frame (irc-intrinsic "pushCatchFrame" tag-store)))
-        (with-try catch-env
+        (with-try
           (progn
             (setq traceid (trace-enter-catch-scope catch-env rest))
             (codegen-progn result body catch-env)
@@ -1445,6 +1446,7 @@ jump to blocks within this tagbody."
      (multiple-value-prog1
          (with-irbuilder ((llvm-sys:make-irbuilder *llvm-context*))
            ,@body)
+       (cmp-log "About to optimize-module\n")
        (when (and ,optimize ,optimize-level) (optimize-module ,module ,optimize-level )))))
 
 #+(or)

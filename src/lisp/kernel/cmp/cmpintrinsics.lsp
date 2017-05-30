@@ -615,7 +615,7 @@ have it call the main-function"
       (let* ((irbuilder-body (llvm-sys:make-irbuilder *llvm-context*))
              (*current-function* fn)
              (entry-bb (irc-basic-block-create "entry" fn)))
-        (llvm-sys:set-insert-point-basic-block irbuilder-body entry-bb)
+        (irc-set-insert-point-basic-block entry-bb irbuilder-body)
         (with-irbuilder (irbuilder-body)
           (let* ((bc-bf (irc-bit-cast main-function %fn-start-up*% "fnptr-pointer"))
                  (_     (irc-intrinsic "cc_register_startup_function" bc-bf))
@@ -786,7 +786,7 @@ and initialize it with an array consisting of one function pointer."
            (values (first arguments))
            (size (second arguments))
            (gf-args (second arguments)))
-      (llvm-sys:set-insert-point-basic-block irbuilder-alloca entry-bb)
+      (cmp:irc-set-insert-point-basic-block entry-bb irbuilder-alloca)
       (with-irbuilder (irbuilder-alloca)
         (let ((start (irc-gep roots-array
                               (list (jit-constant-size_t 0)
@@ -808,7 +808,7 @@ and initialize it with an array consisting of one function pointer."
              (values (first arguments))
              (size (second arguments))
              (gf-args (second arguments)))
-        (llvm-sys:set-insert-point-basic-block irbuilder-alloca entry-bb)
+        (irc-set-insert-point-basic-block entry-bb irbuilder-alloca)
         (with-irbuilder (irbuilder-alloca)
           (let ((start (irc-gep roots-array
                                 (list (jit-constant-size_t 0)
@@ -1262,6 +1262,7 @@ It has appending linkage.")
                               "-" name-suffix)
                        :type "ll"
                        :defaults *compile-file-output-pathname*)))
+    (cmp-log "Dumping module to %s\n" output-path)
     (ensure-directories-exist output-path)
     output-path))
 (defun compile-file-quick-module-dump (module file-name-modifier)
@@ -1305,6 +1306,7 @@ they are dumped into /tmp"
   "If called under COMPILE-FILE the modules are dumped into the
 same directory as the COMPILE-FILE output.  If called under COMPILE
 they are dumped into /tmp"
+  (cmp-log "About to dump module\n")
   (if *compile-file-output-pathname*
       (compile-file-quick-module-dump module name-modifier)
       (compile-quick-module-dump module name-modifier)))

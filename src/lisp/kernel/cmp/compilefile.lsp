@@ -137,7 +137,10 @@
     (describe-form form))
   (literal:with-top-level-form
    (dbg-set-current-source-pos form)
-   (compile-thunk 'repl form nil)))
+    (compile-thunk 'repl form nil)
+    ;; After this literals are codegen'd into the RUN-ALL function
+    ;; by with-top-level-form
+    ))
 
 (defun t1progn (rest env)
   "All forms in progn at top level are top level forms"
@@ -312,7 +315,16 @@ and the pathname of the source file - this will also be used as the module initi
 
 (defvar *debug-compile-file* nil)
 
-(defun compile-file-to-module (given-input-pathname &key compile-file-hook type source-debug-namestring (source-debug-offset 0) (print *compile-print*) (verbose *compile-verbose*))
+(defun compile-file-to-module (given-input-pathname
+                               &key
+                                 compile-file-hook
+                                 type
+                                 source-debug-namestring
+                                 (source-debug-offset 0)
+                                 (print *compile-print*)
+                                 (verbose *compile-verbose*)
+                                 (optimize t)
+                                 (optimize-level :|-O3|))
   "* Arguments
 - given-input-pathname :: A pathname.
 - output-path :: A pathname.
@@ -352,7 +364,9 @@ Compile a lisp source file into an LLVM module.  type can be :kernel or :user"
             (with-module (:module module
                                   :source-namestring (namestring source-location)
                                   :source-debug-namestring source-debug-namestring
-                                  :source-debug-offset source-debug-offset)
+                                  :source-debug-offset source-debug-offset
+                                  :optimize optimize
+                                  :optimize-level optimize-level)
               (with-debug-info-generator (:module *the-module*
                                                   :pathname *compile-file-truename*)
                 (or *the-module* (error "*the-module* is NIL"))
@@ -395,6 +409,8 @@ Compile a lisp source file into an LLVM module.  type can be :kernel or :user"
                        (output-file nil output-file-p)
                        (verbose *compile-verbose*)
                        (print *compile-print*)
+                       (optimize t)
+                       (optimize-level :|-O3|)
                        (system-p nil system-p-p)
                        (external-format :default)
                        ;; If we are spoofing the source-file system to treat given-input-name
@@ -423,7 +439,9 @@ Compile a lisp source file into an LLVM module.  type can be :kernel or :user"
                                            :type type
                                            :source-debug-namestring source-debug-namestring
                                            :source-debug-offset source-debug-offset
-                                           :compile-file-hook *cleavir-compile-file-hook*)))
+                                           :compile-file-hook *cleavir-compile-file-hook*
+                                           :optimize optimize
+                                           :optimize-level optimize-level)))
       (cond
         ((eq output-type :object)
          (when verbose (bformat t "Writing object to %s\n" (core:coerce-to-filename output-path)))

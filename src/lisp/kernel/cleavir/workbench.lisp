@@ -53,17 +53,19 @@
   (format t "Loading ASDF system~%")
   (finish-output)
   (time (load "sys:modules;asdf;build;asdf.fasl"))
-  #+(or)(time (require :asdf))
   (load "sys:local-asdf-config.lisp"))
 (progn
-  #+(or)(core::cclasp-features)
   (format t "Loading :clasp-cleavir system~%")
   (finish-output)
   (time (asdf:load-system "clasp-cleavir"))
   (format t "Done  pid = ~a~%"  (core:getpid)))
 
+(let ((cmp:*compile-file-debug-dump-module* t))
+  (clasp-cleavir:cleavir-compile-file "sys:tests;tt.lsp"
+                                      :optimize nil))
 
-(clasp-cleavir:cleavir-compile-file "sys:kernel;lsp;mislib.lsp")
+
+(clasp-cleavir:cleavir-compile-file "sys:kernel;lsp;mislib.lsp" :debug t)
 
 (clasp-cleavir:cleavir-compile 'foo '(lambda (x y) (+ x y)))
 

@@ -499,7 +499,7 @@
       ;;(format t "Created function ~a in ~a~%" (llvm-sys:get-name new-func) cmp:*the-module*)
       ;; Create the entry basic block in the current function
       (let ((bb (cmp::irc-basic-block-create "entry" cmp::*current-function*)))
-        (llvm-sys:set-insert-point-basic-block irbuilder-cur bb)
+        (cmp::irc-set-insert-point-basic-block bb irbuilder-cur)
         ;; Start generating instructions
         (cmp::with-irbuilder (irbuilder-cur)
           ;; (1) Call the translators for every argument returning a value in a llvm register

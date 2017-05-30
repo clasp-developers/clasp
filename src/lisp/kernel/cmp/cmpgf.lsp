@@ -875,11 +875,11 @@
 	       (arguments (llvm-sys:get-argument-list disp-fn))
 	       (gf (first arguments))
 	       (gf-args (second arguments)))
-	  (llvm-sys:set-insert-point-basic-block irbuilder-alloca entry-bb)
+	  (cmp:irc-set-insert-point-basic-block entry-bb irbuilder-alloca)
 	  (let ((body-bb (irc-basic-block-create "body" disp-fn))
 		(miss-bb (irc-basic-block-create "miss" disp-fn)))
 	    (setf (gethash :miss *outcomes*) miss-bb)
-	    (llvm-sys:set-insert-point-basic-block irbuilder-body body-bb)
+	    (irc-set-insert-point-basic-block body-bb irbuilder-body)
 	    ;; Setup exception handling and cleanup landing pad
 	    (with-irbuilder (irbuilder-alloca)
 	      (let* ((local-arglist-tg             (irc-alloca-va_list :label "local-arglist"))

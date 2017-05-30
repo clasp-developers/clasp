@@ -31,27 +31,18 @@
 (defvar *debug-ir* nil)
 
 
-;; Turn on all sorts of debug printing within the compiler
-;;
-(defvar *debug-compiler* nil)
-(export '*debug-compiler*)
 
 ;;; Turn these on to verify llvm modules and functions
 (defvar *verify-llvm-modules* nil)
 (defvar *verify-llvm-functions* nil)
 
-#+compile-file-debug-dump-module
-(progn
-  (defvar *compile-file-debug-dump-module* t))
-#-compile-file-debug-dump-module
-(defvar *compile-file-debug-dump-module* nil)
-
-(defvar *compile-debug-dump-module*
-  #+compile-debug-dump-module t
-  #-compile-debug-dump-module nil)
-
+;; Turn on all sorts of debug printing within the compiler
+;;
+(defvar *debug-compiler* nil)
+(export '*debug-compiler*)
+(defparameter *compile-file-debug-dump-module* (member :compile-file-debug-dump-module *features*))
+(defparameter *compile-debug-dump-module* (member :compile-debug-dump-module *features*))
 (defvar *debug-link-options* nil)
-
 
 ;; Generate a bitcode file for the llvm-ir prior to running optimization passes on it
 ;;
@@ -96,13 +87,20 @@ Options are :tagbody :go :all :eh-landing-pads
 ;;; Turn off compiler debugging code once we are confident it works
 ;;;
 ;;;
+(when *debug-compiler*
+  (setq *compile-file-debug-dump-module* t)
+  (setq *compile-debug-dump-module* t)
+  (bformat t "!\n!\n!\n!  Turning on compiler debugging\n!\n!\n!\n"))
+
+
+#+(or)
 (progn
   (defmacro debug-print-i32 (num) nil)
   (defmacro cmp-log-dump (fn) nil)
   (defmacro cmp-log (fmt &rest args ) nil)
   (defun is-debug-compiler-on () nil))
 
-#+(or)
+;;#+(or)
 (progn
   (defun is-debug-compiler-on ()
     *debug-compiler*)

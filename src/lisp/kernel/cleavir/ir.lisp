@@ -105,10 +105,10 @@
 (defun %intrinsic-call (function-name args &optional (label ""))
   (cmp:irc-intrinsic-call function-name args label))
 
-(defun %intrinsic-invoke-if-landing-pad-or-call (function-name args &optional maybe-landing-pad (label ""))
+(defun %intrinsic-invoke-if-landing-pad-or-call (function-name args &optional (label "") (maybe-landing-pad cmp::*current-unwind-landing-pad-dest*))
   ;; FIXME:   If the current function has a landing pad - then use INVOKE
   (if maybe-landing-pad
-      (cmp:irc-intrinsic-invoke function-name args (basic-block maybe-landing-pad) label)
+      (cmp:irc-intrinsic-invoke function-name args maybe-landing-pad label)
       (cmp:irc-intrinsic-call function-name args label)))
 
 (defun %load (place &optional (label ""))
@@ -261,7 +261,7 @@
 ;;; Arguments are passed in registers and in the multiple-value-array
 ;;;
 
-(defun closure-call (call-or-invoke closure return-value arg-allocas abi &key (label "") landing-pad)
+(defun closure-call-or-invoke (closure return-value arg-allocas abi &key (label ""))
   (let* ((entry-point (cmp::irc-calculate-entry (%load closure))) ;; intrinsic-name "cc_call")
          (arguments (mapcar (lambda (x) (%load x)) arg-allocas))
          (real-args (if (< (length arguments) core:+number-of-fixed-arguments+)
@@ -270,17 +270,17 @@
     (with-return-values (return-vals return-value abi)
       (let ((args (list*
                    (cmp:irc-load closure)
-;;                   (cmp:null-t-ptr)
+                   ;;                   (cmp:null-t-ptr)
                    (%size_t (length arguments))
                    real-args)))
         (let* ((result-in-registers
-               (if (eq call-or-invoke :call)
-                   (cmp:irc-create-call entry-point args label)
-                   (cmp:irc-create-invoke entry-point args landing-pad label))))
+                (if cmp::*current-unwind-landing-pad-dest*
+                    (cmp:irc-create-invoke entry-point args cmp::*current-unwind-landing-pad-dest* label)
+                    (cmp:irc-create-call entry-point args label))))
           (%store result-in-registers return-value))))))
 
 
-(defun unsafe-multiple-value-foreign-call (intrinsic-name return-value arg-allocas abi &key (label "") landing-pad)
+(defun unsafe-multiple-value-foreign-call (intrinsic-name return-value arg-allocas abi &key (label ""))
   (with-return-values (return-vals return-value abi)
     (let* ((args (mapcar (lambda (x) (%load x)) arg-allocas))
            (func (or (llvm-sys:get-function cmp:*the-module* intrinsic-name)
@@ -292,17 +292,15 @@
                                    intrinsic-name
                                    cmp:*the-module*)))))
            (result-in-registers
-            (if landing-pad
-                (cmp::irc-create-invoke func args (basic-block landing-pad))
+            (if cmp::*current-unwind-landing-pad-dest*
+                (cmp::irc-create-invoke func args cmp::*current-unwind-landing-pad-dest*)
                 (cmp::irc-create-call func args))))
       (%store result-in-registers return-value))))
 
-(defun unsafe-foreign-call (call-or-invoke foreign-types foreign-name output arg-allocas abi &key (label "") landing-pad)
+(defun unsafe-foreign-call (call-or-invoke foreign-types foreign-name output arg-allocas abi &key (label ""))
   ;; Write excess arguments into the multiple-value array
   (let* ((arguments (mapcar (lambda (type arg)
-                              (%intrinsic-invoke-if-landing-pad-or-call (clasp-ffi::from-translator-name type)
-                                                                        (list (%load arg))
-                                                                        landing-pad))
+                              (%intrinsic-invoke-if-landing-pad-or-call (clasp-ffi::from-translator-name type) (list (%load arg))))
                             (second foreign-types) arg-allocas))
          (func (or (llvm-sys:get-function cmp:*the-module* foreign-name)
                    (cmp:irc-function-create
@@ -316,14 +314,12 @@
           (llvm-sys:create-call-array-ref cmp:*irbuilder* func arguments "")
           (%store (%intrinsic-invoke-if-landing-pad-or-call (clasp-ffi::to-translator-name (first foreign-types)) nil) output))
         (let ((foreign-result (llvm-sys:create-call-array-ref cmp:*irbuilder* func arguments "foreign-result")))
-          (%store (%intrinsic-invoke-if-landing-pad-or-call (clasp-ffi::to-translator-name (first foreign-types))
-                                       (list foreign-result)) output)))))
+          (%store (%intrinsic-invoke-if-landing-pad-or-call (clasp-ffi::to-translator-name (first foreign-types)) (list foreign-result)) output)))))
 
-(defun unsafe-foreign-call-pointer (call-or-invoke foreign-types pointer output arg-allocas abi &key (label "") landing-pad)
+(defun unsafe-foreign-call-pointer (call-or-invoke foreign-types pointer output arg-allocas abi &key (label ""))
   ;; Write excess arguments into the multiple-value array
   (let* ((arguments (mapcar (lambda (type arg)
-                              (%intrinsic-invoke-if-landing-pad-or-call (clasp-ffi::from-translator-name type)
-                                                   (list (%load arg))))
+                              (%intrinsic-invoke-if-landing-pad-or-call (clasp-ffi::from-translator-name type) (list (%load arg))))
                             (second foreign-types) arg-allocas))
          (function-type (cmp:function-type-create-on-the-fly foreign-types))
          (function-pointer-type (llvm-sys:type-get-pointer-to function-type))
