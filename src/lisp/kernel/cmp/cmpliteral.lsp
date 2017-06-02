@@ -239,9 +239,17 @@ the value is put into *default-load-time-value-vector* and its index is returned
 (defun ltv/mlf (object index read-only-p)
   (multiple-value-bind (create initialize)
       (make-load-form object)
-    (prog1 (add-creator "ltvc_set_mlf_creator_funcall" index (compile-form create))
+    (prog1
+        (let* ((fn (compile-form create))
+               (name (jit-constant-unique-string-ptr (llvm-sys:get-name fn))))
+          (add-creator "ltvc_set_mlf_creator_funcall" index fn name))
       (when initialize
-        (add-side-effect-call "ltvc_mlf_init_funcall" (compile-form initialize))))))
+        (let* ((fn (compile-form initialize))
+               (name (jit-constant-unique-string-ptr (llvm-sys:get-name fn))))
+          (add-side-effect-call "ltvc_mlf_init_funcall" fn name))))
+    #++(prog1 (add-creator "ltvc_set_mlf_creator_funcall" index (compile-form create))
+         (when initialize
+           (add-side-effect-call "ltvc_mlf_init_funcall" (compile-form initialize))))))
 
 (defun object-similarity-table-and-creator (object read-only-p)
   (cond
@@ -497,7 +505,7 @@ Return the orderered-raw-constants-list and the constants-table GlobalVariable"
             index)))))
 
 (defun evaluate-function-into-load-time-value (index fn)
-  (add-creator "ltvc_set_ltv_funcall" index fn)
+  (add-creator "ltvc_set_ltv_funcall" index fn (jit-constant-unique-string-ptr (llvm-sys:get-name fn)))
   index)
 
 

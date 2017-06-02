@@ -893,9 +893,9 @@ and initialize it with an array consisting of one function pointer."
   (primitive-nounwind module "ltvc_make_float" %t*% (list %gcroots-in-module*% %size_t% %float%))
   (primitive-nounwind module "ltvc_make_double" %t*% (list %gcroots-in-module*% %size_t% %double%))
   (primitive-nounwind module "ltvc_make_complex" %t*% (list %gcroots-in-module*% %size_t% %t*% %t*%))
-  (primitive          module "ltvc_set_mlf_creator_funcall" %t*% (list %gcroots-in-module*% %size_t% %fn-prototype*%))
-  (primitive          module "ltvc_mlf_init_funcall" %t*% (list %fn-prototype*%))
-  (primitive          module "ltvc_set_ltv_funcall" %t*% (list %gcroots-in-module*% %size_t% %fn-prototype*%))
+  (primitive          module "ltvc_set_mlf_creator_funcall" %t*% (list %gcroots-in-module*% %size_t% %fn-prototype*% %i8*%))
+  (primitive          module "ltvc_mlf_init_funcall" %t*% (list %fn-prototype*% %i8*%))
+  (primitive          module "ltvc_set_ltv_funcall" %t*% (list %gcroots-in-module*% %size_t% %fn-prototype*% %i8*%))
   (primitive          module "ltvc_toplevel_funcall" %t*% (list %fn-prototype*% %i8*%))
 
   (primitive-nounwind module "newFunction_sp" %void% (list %Function_sp*%))

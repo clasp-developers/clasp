@@ -347,24 +347,30 @@ gctools::Tagged ltvc_make_double(gctools::GCRootsInModule* holder, size_t index,
   return holder->set(index,val.tagged_());
 }
 
-gctools::Tagged ltvc_set_mlf_creator_funcall(gctools::GCRootsInModule* holder, size_t index, fnLispCallingConvention fptr) {
+gctools::Tagged ltvc_set_mlf_creator_funcall(gctools::GCRootsInModule* holder, size_t index, fnLispCallingConvention fptr, const char* name) {
   core::T_O *lcc_arglist = _Nil<core::T_O>().raw_();
-  LCC_RETURN ret = fptr(LCC_PASS_ARGS0_VA_LIST(NULL));
+  Symbol_sp sname = Symbol_O::create_from_string(std::string(name));
+  GC_ALLOCATE_VARIADIC(CompiledClosure_O, toplevel_closure, fptr, sname, kw::_sym_function, _Nil<T_O>(), _Nil<T_O>(), _Nil<T_O>(), _Nil<T_O>(), 0, 0, 0, 0 );
+  LCC_RETURN ret = fptr(LCC_PASS_ARGS0_VA_LIST(toplevel_closure.raw_()));
   core::T_sp res((gctools::Tagged)ret.ret0[0]);
   core::T_sp val = res;
   return holder->set(index,val.tagged_());
 }
 
-gctools::Tagged ltvc_mlf_init_funcall(fnLispCallingConvention fptr) {
+gctools::Tagged ltvc_mlf_init_funcall(fnLispCallingConvention fptr, const char* name) {
   core::T_O *lcc_arglist = _Nil<core::T_O>().raw_();
-  LCC_RETURN ret = fptr(LCC_PASS_ARGS0_VA_LIST(NULL));
+  Symbol_sp sname = Symbol_O::create_from_string(std::string(name));
+  GC_ALLOCATE_VARIADIC(CompiledClosure_O, toplevel_closure, fptr, sname, kw::_sym_function, _Nil<T_O>(), _Nil<T_O>(), _Nil<T_O>(), _Nil<T_O>(), 0, 0, 0, 0 );
+  LCC_RETURN ret = fptr(LCC_PASS_ARGS0_VA_LIST(toplevel_closure.raw_()));
   return reinterpret_cast<gctools::Tagged>(ret.ret0[0]);
 }
 
 // This is exactly like the one above - is it necessary?
-gctools::Tagged ltvc_set_ltv_funcall(gctools::GCRootsInModule* holder, size_t index, fnLispCallingConvention fptr) {
+gctools::Tagged ltvc_set_ltv_funcall(gctools::GCRootsInModule* holder, size_t index, fnLispCallingConvention fptr, const char* name) {
   core::T_O *lcc_arglist = _Nil<core::T_O>().raw_();
-  LCC_RETURN ret = fptr(LCC_PASS_ARGS0_VA_LIST(NULL));
+  Symbol_sp sname = Symbol_O::create_from_string(std::string(name));
+  GC_ALLOCATE_VARIADIC(CompiledClosure_O, toplevel_closure, fptr, sname, kw::_sym_function, _Nil<T_O>(), _Nil<T_O>(), _Nil<T_O>(), _Nil<T_O>(), 0, 0, 0, 0 );
+  LCC_RETURN ret = fptr(LCC_PASS_ARGS0_VA_LIST(toplevel_closure.raw_()));
   core::T_sp res((gctools::Tagged)ret.ret0[0]);
   core::T_sp val = res;
   return holder->set(index,val.tagged_());
