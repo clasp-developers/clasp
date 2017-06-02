@@ -36,6 +36,7 @@ extern "C" {
 #include <clasp/core/foundation.h>
 #include <clasp/core/common.h>
 #include <clasp/core/bignum.h>
+#include <clasp/core/functor.h>
 #include <clasp/core/character.h>
 #include <clasp/core/symbolTable.h>
 #include <clasp/core/array.h>
@@ -370,9 +371,11 @@ gctools::Tagged ltvc_set_ltv_funcall(gctools::GCRootsInModule* holder, size_t in
 }
 
 
-gctools::Tagged ltvc_toplevel_funcall(fnLispCallingConvention fptr) {
+gctools::Tagged ltvc_toplevel_funcall(fnLispCallingConvention fptr, const char* name) {
   core::T_O *lcc_arglist = _Nil<core::T_O>().raw_();
-  LCC_RETURN ret = fptr(LCC_PASS_ARGS0_VA_LIST(NULL));
+  Symbol_sp sname = Symbol_O::create_from_string(std::string(name));
+  GC_ALLOCATE_VARIADIC(CompiledClosure_O, toplevel_closure, fptr, sname, kw::_sym_function, _Nil<T_O>(), _Nil<T_O>(), _Nil<T_O>(), _Nil<T_O>(), 0, 0, 0, 0 );
+  LCC_RETURN ret = fptr(LCC_PASS_ARGS0_VA_LIST(toplevel_closure.raw_()));
   return reinterpret_cast<gctools::Tagged>(ret.ret0[0]);
 }
 
@@ -1048,7 +1051,7 @@ void debugPrintI32(int i32) {
 }
 
 void debugPrint_size_t(size_t v) {
-  printf("+++DBG-size_t[%lu]\n", v);
+  printf("+++DBG-size_t[%lu/%lx]\n", v, v);
 }
 
 

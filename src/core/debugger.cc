@@ -269,11 +269,9 @@ CL_DEFUN void core__test_backtrace() {
 }
 #endif
 
-CL_LAMBDA();
-CL_DECLARE();
-CL_DOCSTRING("lowLevelBacktrace");
-CL_DEFUN void core__low_level_backtrace() {
-  const InvocationHistoryFrame *top = my_thread->_InvocationHistoryStack;
+
+void low_level_backtrace(bool with_args) {
+  const InvocationHistoryFrame *top = my_thread->_InvocationHistoryStackTop;
   if (top == NULL) {
     printf("Empty InvocationHistoryStack\n");
     return;
@@ -281,27 +279,52 @@ CL_DEFUN void core__low_level_backtrace() {
   int index = 0;
   for (const InvocationHistoryFrame *cur = top; cur != NULL; cur = cur->_Previous) {
     string name = "-no-name-";
-    Function_sp closure = cur->function();
-    if (!closure) {
+    T_sp tclosure = cur->function();
+    if (!tclosure) {
       name = "-NO-CLOSURE-";
-    } else {
-      if (closure->name().notnilp()) {
-        try {
-          name = _rep_(closure->name());
-        } catch (...) {
-          name = "-BAD-NAME-";
+    } else if (tclosure.generalp()){
+      General_sp closure = gc::As_unsafe<General_sp>(tclosure);
+      if (closure.nilp()) {
+        name = "NIL";
+      } else if (gc::IsA<Function_sp>(closure)) {
+        Function_sp func = gc::As_unsafe<Function_sp>(closure);
+        if (func->name().notnilp()) {
+          try {
+            name = _rep_(func->name());
+          } catch (...) {
+            name = "-BAD-NAME-";
+          }
         }
+        /*Nilable?*/ T_sp sfi = core__source_file_info(make_fixnum(func->sourceFileInfoHandle()));
+        string sourceName = "cannot-determine";
+        if (sfi.notnilp()) {
+          sourceName = gc::As<SourceFileInfo_sp>(sfi)->fileName();
+        }
+        printf("_Index: %4d  Frame@%p(previous=%p)  closure@%p  closure->name[%40s]  line: %3d  file: %s", index, cur, cur->_Previous, closure.raw_(), name.c_str(), func->lineNumber(), sourceName.c_str());
+        if (with_args) {
+          printf(" args: %s", _rep_(cur->arguments()).c_str());
+        }
+        printf("\n");
+        goto SKIP_PRINT;
+      } else {
+        name = _rep_(closure);
       }
+    } else {
+      name = "-BAD-CLOSURE-";
     }
-    /*Nilable?*/ T_sp sfi = core__source_file_info(make_fixnum(closure->sourceFileInfoHandle()));
-    string sourceName = "cannot-determine";
-    if (sfi.notnilp()) {
-      sourceName = gc::As<SourceFileInfo_sp>(sfi)->fileName();
-    }
-    printf("_Index: %4d  Frame@%p(previous=%p)  closure@%p  closure->name[%40s]  line: %3d  file: %s\n", index, cur, cur->_Previous, closure.raw_(), name.c_str(), closure->lineNumber(), sourceName.c_str());
+    printf("_Index: %4d  Frame@%p(previous=%p)  closure@%p  closure->name[%40s]\n",
+           index, cur, cur->_Previous, tclosure.raw_(), name.c_str() );
+  SKIP_PRINT:
     ++index;
   }
   printf("----Done\n");
+}
+
+CL_LAMBDA(&optional with_args);
+CL_DECLARE();
+CL_DOCSTRING("lowLevelBacktrace");
+CL_DEFUN void core__low_level_backtrace() {
+  low_level_backtrace(false);
 }
 
 
@@ -309,35 +332,7 @@ CL_LAMBDA();
 CL_DECLARE();
 CL_DOCSTRING("lowLevelBacktrace");
 CL_DEFUN void core__low_level_backtrace_with_args() {
-  const InvocationHistoryFrame *top = my_thread->_InvocationHistoryStack;
-  if (top == NULL) {
-    printf("Empty InvocationHistoryStack\n");
-    return;
-  }
-  int index = 0;
-  for (const InvocationHistoryFrame *cur = top; cur != NULL; cur = cur->_Previous) {
-    string name = "-no-name-";
-    Function_sp closure = cur->function();
-    if (!closure) {
-      name = "-NO-CLOSURE-";
-    } else {
-      if (closure->name().notnilp()) {
-        try {
-          name = _rep_(closure->name());
-        } catch (...) {
-          name = "-BAD-NAME-";
-        }
-      }
-    }
-    /*Nilable?*/ T_sp sfi = core__source_file_info(make_fixnum(closure->sourceFileInfoHandle()));
-    string sourceName = "cannot-determine";
-    if (sfi.notnilp()) {
-      sourceName = gc::As<SourceFileInfo_sp>(sfi)->fileName();
-    }
-    printf("_Index: %4d  %s %3d  %s %s\n", index, sourceName.c_str(), closure->lineNumber(), name.c_str(), _rep_(cur->arguments()).c_str());
-    ++index;
-  }
-  printf("----Done\n");
+  low_level_backtrace(true);
 }
 
 

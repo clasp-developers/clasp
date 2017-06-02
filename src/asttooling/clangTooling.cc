@@ -119,7 +119,7 @@ struct from_object<clang::tooling::ArgumentsAdjuster> {
     if (o.nilp()) {
       SIMPLE_ERROR(BF("You cannot pass nil as a function"));
     } else if (core::Function_sp func = o.asOrNull<core::Function_O>()) {
-      void* function_address = func->functionAddress();
+      void* function_address = (void*)func->entry;
       printf("%s:%d   intermediate from_object<clang::tooling::ArgumentsAdjuster> with Function arg: %s@%p - function_address: %p\n", __FILE__, __LINE__, _rep_(o).c_str(), (void*)o.tagged_(), function_address);
       this->_v = [func,function_address](const clang::tooling::CommandLineArguments &args, StringRef filename ) -> clang::tooling::CommandLineArguments {
 			// Should resolve to vector<string>

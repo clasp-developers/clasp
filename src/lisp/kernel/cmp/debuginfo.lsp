@@ -357,8 +357,8 @@
 (defun debug-generate-source-code (form)
   (let ((all-code (bformat nil "%s" form)))
     ;; TODO:  Return only the first XXX characters of all-code
-    (jit-make-global-string (subseq all-code 0 80))
-    (error "This doesn't return a pointer since I changed jit-make-global-string to return the global var")))
+    (module-make-global-string (subseq all-code 0 80))
+    (error "This doesn't return a pointer since I changed module-make-global-string to return the global var")))
 
 
 

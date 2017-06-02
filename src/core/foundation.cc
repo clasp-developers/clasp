@@ -1575,7 +1575,7 @@ NOINLINE void lisp_error_simple(const char *functionName, const char *fileName, 
   if (!_sym_signalSimpleError->fboundp()) {
     printf("%s:%d %s\n", __FILE__, __LINE__, ss.str().c_str());
     dbg_hook(ss.str().c_str());
-    if (my_thread->_InvocationHistoryStack == NULL) {
+    if (my_thread->_InvocationHistoryStackTop == NULL) {
       throw(core::HardError(__FILE__, __FUNCTION__, __LINE__, BF("System starting up - debugger not available yet:  %s") % ss.str()));
     }
     LispDebugger dbg;
@@ -1830,10 +1830,16 @@ CL_DEFUN void core__debug_invocation_history_frame(size_t v) {
   debug_InvocationHistoryFrame_name = ihf;
   printf("%s:%d     Will trap InvocationHistoryFrame at |%s|\n",__FILE__,__LINE__,debug_InvocationHistoryFrame_name); 
   printf("   ---------------   InvocationHistoryStack:\n");
-  const InvocationHistoryFrame* cur = my_thread->_InvocationHistoryStack;
+  const InvocationHistoryFrame* cur = my_thread->_InvocationHistoryStackTop;
   size_t count= 0;
   while (cur!=NULL) {
-    printf("    frame[%lu] @%p  function: %s\n", count, cur, _rep_(cur->function()->name()).c_str());
+    T_sp tfun = cur->function();
+    if (gc::IsA<Function_sp>(tfun)) {
+      Function_sp fun = gc::As_unsafe<Function_sp>(tfun);
+      printf("    frame[%lu] @%p  function: %s\n", count, cur, _rep_(fun->name()).c_str());
+    } else {
+      printf("    frame[%lu] @%p  function: %s\n", count, cur, _rep_(tfun).c_str());
+    }
     cur = cur->previous();
     ++count;
   }

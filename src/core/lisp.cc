@@ -2139,7 +2139,7 @@ CL_DECLARE();
 CL_DOCSTRING("Return the current sourceFileName");
 CL_DEFUN T_mv core__source_file_name() {
   Cons_sp ppcons;
-  const InvocationHistoryFrame *frame = my_thread->_InvocationHistoryStack;
+  const InvocationHistoryFrame *frame = my_thread->_InvocationHistoryStackTop;
   Function_sp closure = frame->function();
   int sourceFileInfoHandle = closure->sourceFileInfoHandle();
   string sourcePath = gc::As<SourceFileInfo_sp>(core__source_file_info(make_fixnum(sourceFileInfoHandle)))->namestring();
@@ -2152,7 +2152,7 @@ CL_LAMBDA();
 CL_DECLARE();
 CL_DOCSTRING("sourceLineColumn");
 CL_DEFUN T_mv core__source_line_column() {
-  const InvocationHistoryFrame *frame = my_thread->_InvocationHistoryStack;
+  const InvocationHistoryFrame *frame = my_thread->_InvocationHistoryStackTop;
   Function_sp closure = frame->function();
   return Values(make_fixnum(closure->lineNumber()), make_fixnum(closure->column()));
 }

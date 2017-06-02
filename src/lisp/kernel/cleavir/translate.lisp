@@ -196,7 +196,7 @@ when this is t a lot of graphs will be generated.")
     ;; that will enclose and set up other functions with arguments
     (let* ((main-fn-name lambda-name) ;;(format nil "cl->~a" lambda-name))
            (cmp:*current-function-name* (cmp:jit-function-name main-fn-name))
-           (cmp:*gv-current-function-name* (cmp:jit-make-global-string cmp:*current-function-name* "fn-name"))
+           (cmp:*gv-current-function-name* (cmp:module-make-global-string cmp:*current-function-name* "fn-name"))
            (the-function (cmp:irc-function-create
                           cmp:%fn-prototype%
                           linkage
@@ -609,7 +609,7 @@ when this is t a lot of graphs will be generated.")
   (with-return-values (return-vals return-value abi)
  ;   (%intrinsic-call "cc_saveMultipleValue0" (list return-value)) ;; (sret-arg return-vals))
     ;; NOTE: (NOT A FIXME)  This instruction is explicitly for calls.
-    (let ((call-result (%intrinsic-call "cc_call_multipleValueOneFormCallWithRet0" 
+    (let ((call-result (%intrinsic-invoke-if-landing-pad-or-call "cc_call_multipleValueOneFormCallWithRet0" 
 				     (list (cmp:irc-load (first inputs)) (%load return-value)))))
       (%store call-result return-value)
       (cc-dbg-when 
@@ -859,6 +859,7 @@ when this is t a lot of graphs will be generated.")
   (declare (ignore successors))
   (cmp:irc-low-level-trace :flow)
   ;; FIXME:  If this function has cleanup forms then this needs to be an INVOKE
+  (evaluate-cleanup-code function-info)
   (closure-call-or-invoke (first inputs) return-value (cdr inputs) abi)
   (cmp:irc-unreachable))
 

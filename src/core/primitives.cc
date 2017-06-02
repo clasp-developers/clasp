@@ -1839,7 +1839,7 @@ int backtrace_length(const InvocationHistoryFrame* frame) {
 
 CL_LISPIFY_NAME(make-invocation-history-frame-iterator);
 CL_DEFUN InvocationHistoryFrameIterator_sp InvocationHistoryFrameIterator_O::make(Fixnum first, T_sp test) {
-  const InvocationHistoryFrame *top = my_thread->_InvocationHistoryStack;
+  const InvocationHistoryFrame *top = my_thread->_InvocationHistoryStackTop;
   int length = backtrace_length(top);
   InvocationHistoryFrameIterator_sp iterator = InvocationHistoryFrameIterator_O::create(top,length);
   nextInvocationHistoryFrameIteratorThatSatisfiesTest(first, iterator, test);
@@ -1880,14 +1880,11 @@ int InvocationHistoryFrameIterator_O::index() {
   return this->_Index;
 }
 
-Function_sp InvocationHistoryFrameIterator_O::function() {
+T_sp InvocationHistoryFrameIterator_O::function() {
   if (!this->isValid()) {
     SIMPLE_ERROR(BF("Invalid InvocationHistoryFrameIterator"));
   }
-  Function_sp closure = this->_Frame->function();
-  if (!closure) {
-    SIMPLE_ERROR(BF("Could not access closure of InvocationHistoryFrame"));
-  }
+  T_sp closure = this->_Frame->function();
   return closure;
 }
 
@@ -2010,8 +2007,7 @@ CL_DECLARE();
 CL_DOCSTRING("ihsFun: return the function in the invocation history stack at i");
 CL_DEFUN T_sp core__ihs_fun(int idx) {
   InvocationHistoryFrameIterator_sp cur = core__get_invocation_history_frame(idx);
-  if (!cur->isValid())
-    return _Nil<T_O>();
+  if (!cur->isValid()) return _Nil<T_O>();
   return cur->function();
 };
 

@@ -50,7 +50,7 @@ Set this to other IRBuilders to make code go where you want")
 ;; - time_t
 
 (defun llvm-print (msg)
-  (irc-intrinsic "debugMessage" (irc-bit-cast (jit-make-global-string msg) %i8*%)))
+  (irc-intrinsic "debugMessage" (irc-bit-cast (module-make-global-string msg) %i8*%)))
 
 (define-symbol-macro %i1% (llvm-sys:type-get-int1-ty *llvm-context*))
 
@@ -896,7 +896,7 @@ and initialize it with an array consisting of one function pointer."
   (primitive          module "ltvc_set_mlf_creator_funcall" %t*% (list %gcroots-in-module*% %size_t% %fn-prototype*%))
   (primitive          module "ltvc_mlf_init_funcall" %t*% (list %fn-prototype*%))
   (primitive          module "ltvc_set_ltv_funcall" %t*% (list %gcroots-in-module*% %size_t% %fn-prototype*%))
-  (primitive          module "ltvc_toplevel_funcall" %t*% (list %fn-prototype*%))
+  (primitive          module "ltvc_toplevel_funcall" %t*% (list %fn-prototype*% %i8*%))
 
   (primitive-nounwind module "newFunction_sp" %void% (list %Function_sp*%))
   (primitive-nounwind module "newTsp" %void% (list %tsp*%))

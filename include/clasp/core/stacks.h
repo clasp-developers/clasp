@@ -50,17 +50,20 @@ class InvocationHistoryFrame //: public gctools::StackRoot
   static const int NoColumn = -1;
 
  public:
-  const InvocationHistoryFrame *_Previous;
+  mutable const InvocationHistoryFrame *_Previous;
   mutable va_list   _args;
   size_t _remaining_nargs;
   size_t _Bds;
  public:
  InvocationHistoryFrame(va_list rawArgList, size_t remaining_nargs)
-   : _Previous(my_thread->_InvocationHistoryStack),
+   : _Previous(NULL),
     _Bds(my_thread->bindings().size())
     {
       va_copy(this->_args,rawArgList);
       this->_remaining_nargs = remaining_nargs;
+#ifdef DEBUG_IHS
+      this->validate();
+#endif
     }
   //Closure_sp fc, core::T_O *valist_args, T_sp env = _Nil<T_O>());
 
@@ -73,8 +76,9 @@ class InvocationHistoryFrame //: public gctools::StackRoot
   string asString(int index) const;
   string asStringLowLevel(Closure_sp closure,int index) const;
   int bds() const { return this->_Bds; };
-  Function_sp function() const;
+  T_sp function() const;
   void* register_save_area() const;
+  void validate() const;
 };
 
 #pragma GCC visibility pop
@@ -88,12 +92,36 @@ namespace core {
 };
 
 namespace core {
+#ifdef DEBUG_IHS
+  extern int global_debug_ihs;
+#endif
+  void invocation_history_stack_dump(const InvocationHistoryFrame* frame, const char* msg);
+  size_t invocation_history_stack_depth(const InvocationHistoryFrame* frame);
+  
+  void validate_InvocationHistoryStack(int pushPop, const InvocationHistoryFrame* frame, const InvocationHistoryFrame* stackTop);
+  void error_InvocationHistoryStack(const InvocationHistoryFrame* frame, const InvocationHistoryFrame* stackTop);
+  inline void push_InvocationHistoryStack(const InvocationHistoryFrame* frame) {
+#ifdef DEBUG_IHS
+    if (global_debug_ihs) validate_InvocationHistoryStack(1,frame,my_thread->_InvocationHistoryStackTop);
+#endif
+    frame->_Previous = my_thread->_InvocationHistoryStackTop;
+    my_thread->_InvocationHistoryStackTop = frame;
+  }
+  inline void pop_InvocationHistoryStack(const InvocationHistoryFrame* frame) {
+#ifdef DEBUG_IHS
+    if (global_debug_ihs) validate_InvocationHistoryStack(0,frame,my_thread->_InvocationHistoryStackTop);
+#endif
+    unlikely_if (frame != my_thread->_InvocationHistoryStackTop) error_InvocationHistoryStack(frame,my_thread->_InvocationHistoryStackTop);
+    my_thread->_InvocationHistoryStackTop = my_thread->_InvocationHistoryStackTop->_Previous;
+  };
+  
   struct SafeUpdateInvocationHistoryStack {
-    SafeUpdateInvocationHistoryStack(InvocationHistoryFrame& ihf) {
-      my_thread->_InvocationHistoryStack = &ihf;
+    const InvocationHistoryFrame* frame;
+  SafeUpdateInvocationHistoryStack(const InvocationHistoryFrame* ihf) : frame(ihf) {
+      push_InvocationHistoryStack(ihf);
     }
     ~SafeUpdateInvocationHistoryStack() {
-      my_thread->_InvocationHistoryStack = my_thread->_InvocationHistoryStack->_Previous;
+      pop_InvocationHistoryStack(this->frame);
     }
   };
 };
@@ -101,7 +129,7 @@ namespace core {
 #ifdef USE_EXPENSIVE_BACKTRACE
 #define INVOCATION_HISTORY_FRAME() \
   core::InvocationHistoryFrame zzzFrame(lcc_arglist_s._Args,lcc_arglist_s.remaining_nargs()); \
-  core::SafeUpdateInvocationHistoryStack zzzStackUpdate(zzzFrame);
+  core::SafeUpdateInvocationHistoryStack zzzStackUpdate(&zzzFrame);
 #else
 #define INVOCATION_HISTORY_FRAME()
 #endif

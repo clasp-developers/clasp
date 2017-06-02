@@ -323,7 +323,8 @@ the constants-table."
               (t (error "Unknown run-all node ~a" node)))))
       (cond
         ((eq type :toplevel)
-         (cmp:irc-intrinsic-call "ltvc_toplevel_funcall" (list body-return-fn)))
+         (cmp:irc-intrinsic-call "ltvc_toplevel_funcall" (list body-return-fn
+                                                               (jit-constant-unique-string-ptr (llvm-sys:get-name body-return-fn)))))
         ((eq type :ltv) body-return-fn)
         (t (error "bad type"))))))
 
