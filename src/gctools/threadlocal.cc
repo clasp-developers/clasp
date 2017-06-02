@@ -34,7 +34,7 @@ namespace core {
 
 ThreadLocalState::ThreadLocalState(void* stack_top) :  _DisableInterrupts(false), _StackTop(stack_top), _PendingInterrupts(_Nil<core::T_O>()) {
   my_thread = this;
-  this->_InvocationHistoryStack = NULL;
+  this->_InvocationHistoryStackTop = NULL;
   this->_BufferStr8NsPool.reset_(); // Can't use _Nil<core::T_O>(); - too early
   this->_BufferStrWNsPool.reset_();
 }

@@ -1,3 +1,4 @@
+
 ;;
 ;;;    File: cmpir.lsp
 ;;;
@@ -688,7 +689,7 @@
               (*current-function-name* (llvm-sys:get-name ,fn))
               (*irbuilder-function-alloca* ,irbuilder-alloca)
               (*irbuilder-function-body* ,irbuilder-body)
-              (*gv-current-function-name* (jit-make-global-string *current-function-name* "fn-name")))
+              (*gv-current-function-name* (module-make-global-string *current-function-name* "fn-name")))
          (with-irbuilder (*irbuilder-function-body*)
            (with-new-function-prepare-for-try (,fn *irbuilder-function-alloca*)
              (with-try

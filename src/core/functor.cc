@@ -74,9 +74,10 @@ string Function_O::__repr__() const {
   ss << " " << _rep_(name);
   ss << " :ftype " << _rep_(this->getKind());
   ss << " lambda-list: " << _rep_(this->lambda_list());
-  if ( this->functionAddress() != NULL ) {
-    ss << " :fptr " << reinterpret_cast<void*>(this->functionAddress());
+  if ( this->entry != NULL ) {
+    ss << " :fptr " << reinterpret_cast<void*>(this->entry);
   }
+  
   ss << ">";
   return ss.str();
 }

@@ -69,5 +69,11 @@ RUN chown -R app:app /home/app/.jupyter
 RUN chown -R app:app /home/app/work
 USER app
 
+USER root
+RUN mkdir Downloads
+git clone --depth=1 https://github.com/apahl/rdkit_ipynb_tools.git /home/app/Downloads/rdkit
+RUN chown -R app:app Downloads
+USER app
+
 ENTRYPOINT [ "jupyter", "notebook" ]
 CMD        [ "--no-browser", "--ip=0.0.0.0", "--port=8888" ]

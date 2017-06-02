@@ -1435,8 +1435,8 @@ jump to blocks within this tagbody."
                               (source-debug-use-lineno t)) &rest body)
   `(let* ((*the-module* ,module)
  	  #+(or)(*generate-load-time-values* t)
-	  (*gv-source-namestring* (jit-make-global-string ,source-namestring "source-namestring"))
-	  (*gv-source-debug-namestring* (jit-make-global-string (if ,source-debug-namestring
+	  (*gv-source-namestring* (module-make-global-string ,source-namestring "source-namestring"))
+	  (*gv-source-debug-namestring* (module-make-global-string (if ,source-debug-namestring
 									,source-debug-namestring
 									,source-namestring) "source-debug-namestring"))
 	  (*source-debug-offset* ,source-debug-offset)

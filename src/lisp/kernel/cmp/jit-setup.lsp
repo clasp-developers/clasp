@@ -249,9 +249,9 @@ No DIBuilder is defined for the default module")
     (llvm-sys:create-const-gep2-64 *irbuilder* str-gv 0 0 "str")))
 
 
-(defun jit-make-global-string (str &optional (label "global-str"))
+(defun module-make-global-string (str &optional (label "global-str"))
   "A function for creating unique strings within the module - return an LLVM pointer to the string"
-  (or *the-module* (error "jit-make-global-string-ptr *the-module* is NIL"))
+  (or *the-module* (error "module-make-global-string-ptr *the-module* is NIL"))
   (let* ((unique-string-global-variable
           (llvm-sys:get-or-create-uniqued-string-global-variable
            *the-module* str (bformat nil ":::global-str-%s" str)))

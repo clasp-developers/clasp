@@ -159,7 +159,11 @@ namespace core {
     mp::Process_sp _Process;
     void* _StackTop;
     DynamicBindingStack _Bindings;
-    const InvocationHistoryFrame* _InvocationHistoryStack;
+    const InvocationHistoryFrame* _InvocationHistoryStackTop;
+#ifdef DEBUG_IHS
+    // Save the last closure
+    core::T_O*                    _InvocationHistoryStackClosure;
+#endif
     ExceptionStack _ExceptionStack;
     MultipleValues _MultipleValues;
     /*! SingleDispatchGenericFunction cache */

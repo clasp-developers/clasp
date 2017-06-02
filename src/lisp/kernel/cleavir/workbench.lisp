@@ -60,6 +60,9 @@
   (time (asdf:load-system "clasp-cleavir"))
   (format t "Done  pid = ~a~%"  (core:getpid)))
 
+(load "sys:tests;tt-00001-preoptimize.ll")
+(core::foo)
+
 (let ((cmp:*compile-file-debug-dump-module* t))
   (clasp-cleavir:cleavir-compile-file "sys:tests;tt.lsp"
                                       :optimize nil))
