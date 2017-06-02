@@ -159,7 +159,7 @@ namespace core {
     mp::Process_sp _Process;
     void* _StackTop;
     DynamicBindingStack _Bindings;
-    InvocationHistoryFrame* _InvocationHistoryStack;
+    const InvocationHistoryFrame* _InvocationHistoryStack;
     ExceptionStack _ExceptionStack;
     MultipleValues _MultipleValues;
     /*! SingleDispatchGenericFunction cache */

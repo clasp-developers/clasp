@@ -3574,6 +3574,8 @@ public:
   Function_O() : Base(){};
   ~Function_O() {}
 
+  bool equal(core::T_sp obj) const;
+
   core::List_sp getArgumentList();
   void appendBasicBlock(BasicBlock_sp basicBlock);
 

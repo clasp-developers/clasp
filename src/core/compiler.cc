@@ -938,7 +938,8 @@ CL_DECLARE();
 CL_DOCSTRING("callWithVariableBound");
 CL_DEFUN T_mv core__call_with_variable_bound(Symbol_sp sym, T_sp val, T_sp thunk) {
   DynamicScopeManager scope(sym, val);
-  return eval::funcall(thunk);
+  Function_sp func = gc::As_unsafe<Function_sp>(thunk);
+  return (func->entry)(LCC_PASS_ARGS0_ELLIPSIS(func.raw_()));
   // Don't put anything in here - don't mess up the MV return
 }
 
@@ -1074,13 +1075,15 @@ CL_DEFUN T_mv core__multiple_value_funcall(T_sp funcDesignator, List_sp function
     T_mv result = (func->entry)(LCC_PASS_ARGS0_ELLIPSIS(func.raw_()));
 //    T_mv result = eval::funcall(func);
     ASSERT(idx < MultipleValues::MultipleValuesLimit);
-    (*frame)[idx] = result.raw_();
-    ++idx;
-    for (size_t i = 1, iEnd(result.number_of_values()); i < iEnd; ++i) {
-      ASSERT(idx < MultipleValues::MultipleValuesLimit);
-      (*frame)[idx] = mv._Values[i];
-      ++idx;
-    }
+    if (result.number_of_values() > 0  ) {
+        (*frame)[idx] = result.raw_();
+        ++idx;
+        for (size_t i = 1, iEnd(result.number_of_values()); i < iEnd; ++i) {
+          ASSERT(idx < MultipleValues::MultipleValuesLimit);
+          (*frame)[idx] = mv._Values[i];
+          ++idx;
+        }
+      }
   }
   frame->set_number_of_arguments(idx);
   VaList_S valist_s(frame);

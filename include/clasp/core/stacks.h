@@ -50,7 +50,7 @@ class InvocationHistoryFrame //: public gctools::StackRoot
   static const int NoColumn = -1;
 
  public:
-  InvocationHistoryFrame *_Previous;
+  const InvocationHistoryFrame *_Previous;
   mutable va_list   _args;
   size_t _remaining_nargs;
   size_t _Bds;
@@ -66,7 +66,7 @@ class InvocationHistoryFrame //: public gctools::StackRoot
 
   //	InvocationHistoryFrame(int sourceFileInfoHandle, int lineno, int column, ActivationFrame_sp env=_Nil<ActivationFrame_O>());
 //  VaList_sp valist_sp() const { return VaList_sp((gc::Tagged)this->_RawArgList); };
-  InvocationHistoryFrame *previous() { return this->_Previous; };
+  const InvocationHistoryFrame *previous() const { return this->_Previous; };
   SimpleVector_sp arguments() const;
   string argumentsAsString(int maxWidth) const;
   void dump(int index) const;
@@ -87,10 +87,21 @@ namespace core {
   string backtrace_as_string();
 };
 
+namespace core {
+  struct SafeUpdateInvocationHistoryStack {
+    SafeUpdateInvocationHistoryStack(InvocationHistoryFrame& ihf) {
+      my_thread->_InvocationHistoryStack = &ihf;
+    }
+    ~SafeUpdateInvocationHistoryStack() {
+      my_thread->_InvocationHistoryStack = my_thread->_InvocationHistoryStack->_Previous;
+    }
+  };
+};
 
 #ifdef USE_EXPENSIVE_BACKTRACE
 #define INVOCATION_HISTORY_FRAME() \
-  core::InvocationHistoryFrame zzzFrame(lcc_arglist_s._Args,lcc_arglist_s.remaining_nargs());
+  core::InvocationHistoryFrame zzzFrame(lcc_arglist_s._Args,lcc_arglist_s.remaining_nargs()); \
+  core::SafeUpdateInvocationHistoryStack zzzStackUpdate(zzzFrame);
 #else
 #define INVOCATION_HISTORY_FRAME()
 #endif

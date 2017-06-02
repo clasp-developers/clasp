@@ -2125,6 +2125,7 @@ CL_DEFMETHOD core::T_sp IRBuilderBase_O::getInsertPointInstruction() {
   return _Nil<core::T_O>();
 }
 
+
 CL_LISPIFY_NAME("SetCurrentDebugLocation");
 CL_DEFMETHOD void IRBuilderBase_O::SetCurrentDebugLocation(DebugLoc_sp loc) {
   //	llvm::DebugLoc dlold = this->wrappedPtr()->getCurrentDebugLocation();
@@ -2230,6 +2231,9 @@ string IRBuilder_O::__repr__() const {
   } else {
     ss << " :insert-block-name UNDEFINED-BASIC_BLOCK! ";
   }
+#ifdef USE_BOEHM
+  ss << "@" << (void*)this->_ptr;
+#endif
   ss << " >";
   return ss.str();
 }
@@ -2620,10 +2624,18 @@ CL_DEFMETHOD core::List_sp Function_O::getArgumentList() {
   return translate::to_object<llvm::Function::ArgumentListType &>::convert(args);
 }
 
+bool Function_O::equal(core::T_sp obj) const {
+  if (gc::IsA<Function_sp>(obj)) {
+    Function_sp other = gc::As_unsafe<Function_sp>(obj);
+    return this->_ptr == other->_ptr;
+  }
+  return false;
+}
+
 string Function_O::__repr__() const {
   stringstream ss;
-  ss << "#<" << this->_instanceClass()->classNameAsString() << ">";
-  //this->wrappedPtr()->dump();
+  ss << "#<" << this->_instanceClass()->classNameAsString() << " " << this->wrappedPtr()->getName().data() << ">";
+  ;;this->wrappedPtr()->dump();
   return ss.str();
 }
 

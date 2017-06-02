@@ -80,7 +80,8 @@
   (exception-typeid*-from-name name))
 
 (defun irc-preserve-exception-info (env lpad)
-  (let ((exn.slot (lookup-metadata env :exn.slot))
+  (error "This is now handled by preserve-exception-info in cmpeh.lsp")
+  #++(let ((exn.slot (lookup-metadata env :exn.slot))
 	(ehselector.slot (lookup-metadata env :ehselector.slot)))
     (let ((exception-structure (llvm-sys:create-extract-value *irbuilder* lpad (list 0) "")))
       (llvm-sys:create-store *irbuilder* exception-structure exn.slot nil))
@@ -90,7 +91,7 @@
 
 
 
-(defmacro with-catch ((exn.slot exception-ptr env) &rest body)
+(defmacro with-catch ((exn.slot exception-ptr) &rest body)
   (let ((exn-gs (gensym)))
     `(let* ((,exn-gs (llvm-sys:create-load-value-twine *irbuilder* ,exn.slot "exn"))
 	    (,exception-ptr (irc-intrinsic "__cxa_begin_catch" ,exn-gs)))
@@ -118,8 +119,7 @@
     (if *use-unwind-resume*
 	(progn
 	  (irc-intrinsic "_Unwind_Resume" exn7)
-	  (irc-unreachable)
-	  )
+	  (irc-unreachable))
 	(let ((sel (llvm-sys:create-load-value-twine *irbuilder* ehselector.slot "sel")))
 	  (let* ((undef (llvm-sys:undef-value-get %exception-struct% ))
 		 (lpad.val (llvm-sys:create-insert-value *irbuilder*
@@ -128,8 +128,7 @@
 	    (let ((lpad.val8 (llvm-sys:create-insert-value *irbuilder*
 							   lpad.val sel '(1) "lpad.val8")))
 	      (debug-print-i32 91)
-	      (llvm-sys:create-resume *irbuilder* lpad.val8)))))
-    ))
+	      (llvm-sys:create-resume *irbuilder* lpad.val8)))))))
 
 (defun irc-rethrow (env)
   (dbg-set-current-debug-location-here)
@@ -166,28 +165,35 @@
 
 
 
+#++
 (defun irc-setup-exception-handler-cleanup-block (env)
   (let ((cleanup-block (irc-basic-block-create "func-ehcleanup")))
     (setf-metadata env :exception-handler-cleanup-block cleanup-block)
     cleanup-block)
   )
 
+#++
 (defun irc-get-exception-handler-cleanup-block (env)
   (lookup-metadata env :exception-handler-cleanup-block))
 
 
+#++
 (defun irc-setup-exception-handler-resume-block (env)
+  (bformat t "In irc-setup-exception-handler-resume-block\n")
   (let ((cleanup-block (irc-basic-block-create "func-ehresume")))
     (setf-metadata env :exception-handler-resume-block cleanup-block)))
 
+#++
 (defun irc-get-exception-handler-resume-block (env)
   (lookup-metadata env :exception-handler-resume-block))
 
 
+#++
 (defun irc-setup-terminate-landing-pad-block (env)
   (let ((cleanup-block (irc-basic-block-create "func-terminate-lpad")))
     (setf-metadata env :terminate-landing-pad-block cleanup-block)))
 
+#++
 (defun irc-get-terminate-landing-pad-block (env)
   (lookup-metadata env :terminate-landing-pad-block))
 
@@ -343,6 +349,7 @@
 
 
 
+#++
 (defun irc-generate-terminate-code ()
       (let* ((landpad (irc-create-landing-pad 1)))
 	(llvm-sys:add-clause landpad (llvm-sys:constant-pointer-null-get %i8*%))
@@ -458,9 +465,19 @@
   (or (null (llvm-sys:get-parent theblock)) (error "irc-append-basic-block the block ~a already has a parent ~a" theblock (llvm-sys:get-parent theblock)))
   (llvm-sys:append-basic-block function theblock))
 
-(defun irc-set-insert-point (theblock)
-  "Set the current insert point"
-  (llvm-sys:set-insert-point-basic-block *irbuilder* theblock))
+(defun irc-set-insert-point-instruction (instruction &optional (irbuilder *irbuilder*))
+  (llvm-sys:set-insert-point-instruction irbuilder instruction))
+
+
+(defun irc-set-insert-point-basic-block (theblock &optional (irbuilder *irbuilder*))
+  "Set the current insert point.  Signal an error if *irbuilder* jumps to a different function."
+  (when (llvm-sys:get-insert-block irbuilder)
+    (let* ((irbuilder-cur-basic-block (llvm-sys:get-insert-block irbuilder))
+           (irbuilder-cur-function    (llvm-sys:get-parent irbuilder-cur-basic-block))
+           (theblock-function         (llvm-sys:get-parent theblock)))
+      (unless (equal irbuilder-cur-function theblock-function)
+        (error "The IRBuilder ~a that is currently in function ~a is being told to jump functions when its insert point is being set to ~a in ~a" irbuilder irbuilder-cur-function theblock theblock-function))))
+  (llvm-sys:set-insert-point-basic-block irbuilder theblock))
 
 
 
@@ -486,7 +503,7 @@
   "This doesn't invoke low-level-trace - it would interfere with the landing pad"
   (or (llvm-sys:get-parent theblock) (error "irc-begin-landing-pad-block>> The block ~a doesn't have a parent" theblock))
   #+(or)(irc-append-basic-block function theblock)
-  (irc-set-insert-point theblock)
+  (irc-set-insert-point-basic-block theblock)
   )
 
 
@@ -495,7 +512,7 @@
   (or function (error "The current function isn't defined - it must be defined to add a basic-block to"))
   (or (llvm-sys:get-parent theblock) (error "irc-begin-block>> The block ~a doesn't have a parent" theblock))
   #+(or)(irc-append-basic-block function theblock)
-  (irc-set-insert-point theblock)
+  (irc-set-insert-point-basic-block theblock)
   (dbg-set-current-debug-location-here)
   )
 
@@ -552,8 +569,8 @@
               (llvm-sys:terminator-inst-p (llvm-sys:basic-block-back cur-block))))
 	nil)))
     
-(defun irc-br (block)
-  (or block (error "Destination block is nil!!!"))
+(defun irc-br (block &optional (where "undefined"))
+  (or block (error "Destination block ~a is nil!!!" where))
   (llvm-sys:create-br *irbuilder* block))
 
 (defun irc-branch-if-no-terminator-inst (block)
@@ -618,43 +635,42 @@
 |#
 
 
-(defparameter *exception-handler-cleanup-block* nil)
-(defparameter *exception-clause-types-to-handle* nil)
 (defparameter *default-function-attributes* '(llvm-sys:attribute-uwtable
                                               ("no-frame-pointer-elim" "false")
                                               "no-frame-pointer-elim-non-leaf"))
-(defmacro with-new-function (( ;; FN is bound to the function being created
-			      fn
-			      ;; FN-ENV is bound to the function environment
-			      fn-env
-                              ;; RESULT is bound to the %tmv% result
-                              result
-			      &key
-			      ;; The function name can be a symbol or a string.
-			      ;; if its a string it is used unchanged
-			      ;; if its a symbol then it is mangled by appending "FN-SYMB." to it
-			      ;; if its a cons of the form (setf ...) then its mangled by appending FN-SETF. to it
-			      (function-name "function")
-			      ;; Specify the LLVM type of the function
-			      (function-type '%fn-prototype% function-type-p)
-			      ;; List the names of the arguments - this must match what
-			      ;; is passed to the the :FUNCTION-TYPE keyword above
-			      (argument-names '+fn-prototype-argument-names+ argument-names-p)
-			      ;; This is the parent environment of the new function environment that
-			      ;; will be returned
-			      parent-env
-			      ;; This is the form that will be compiled as the function code
-			      function-form
-                              ;; Set attributes - list of symbols, or string or string pairs
-                              (function-attributes *default-function-attributes* function-attributes-p )
-			      ;; This is the LLVM linkage - DONT USE "private" linkage - I encountered some
-			      ;; pretty subtle bugs with exception handling (I think) when I did that.
-			      ;; I currently use llvm-sys:internal-linkage or llvm-sys:external-linkage
-			      (linkage ''llvm-sys:internal-linkage)
-                              ;; If the generated function returns void then indicate with this keyword
-                              return-void
-			      )
-			     &rest body)
+(defmacro with-new-function
+    (( ;; FN is bound to the function being created
+      fn
+      ;; FN-ENV is bound to the function environment
+      fn-env
+      ;; RESULT is bound to the %tmv% result
+      result
+      &key
+      ;; The function name can be a symbol or a string.
+      ;; if its a string it is used unchanged
+      ;; if its a symbol then it is mangled by appending "FN-SYMB." to it
+      ;; if its a cons of the form (setf ...) then its mangled by appending FN-SETF. to it
+      (function-name "function")
+      ;; Specify the LLVM type of the function
+      (function-type '%fn-prototype% function-type-p)
+      ;; List the names of the arguments - this must match what
+      ;; is passed to the the :FUNCTION-TYPE keyword above
+      (argument-names '+fn-prototype-argument-names+ argument-names-p)
+      ;; This is the parent environment of the new function environment that
+      ;; will be returned
+      parent-env
+      ;; This is the form that will be compiled as the function code
+      function-form
+      ;; Set attributes - list of symbols, or string or string pairs
+      (function-attributes *default-function-attributes* function-attributes-p )
+      ;; This is the LLVM linkage - DONT USE "private" linkage - I encountered some
+      ;; pretty subtle bugs with exception handling (I think) when I did that.
+      ;; I currently use llvm-sys:internal-linkage or llvm-sys:external-linkage
+      (linkage ''llvm-sys:internal-linkage)
+      ;; If the generated function returns void then indicate with this keyword
+      return-void
+      )
+     &rest body)
   "Create a new function with {function-name} and {parent-env} - return the function"
   (cmp-log "Expanding with-new-function name: %s\n" function-name)
   (let ((cleanup-block-gs (gensym "cleanup-block"))
@@ -662,37 +678,44 @@
 	(irbuilder-alloca (gensym))
         (temp (gensym))
 	(irbuilder-body (gensym)))
-    `(multiple-value-bind (,fn ,fn-env ,cleanup-block-gs #| ,traceid-gs |# ,irbuilder-alloca ,irbuilder-body ,result)
+    `(multiple-value-bind (,fn ,fn-env ,cleanup-block-gs ,irbuilder-alloca ,irbuilder-body ,result)
 	 (irc-bclasp-function-create ,function-name ',function-form ,parent-env
                                      :function-type ,function-type
                                      :argument-names ,argument-names
                                      :function-attributes ',function-attributes
                                      :linkage ,linkage)
-;;       (format t "cmpir.lsp:660 entering with-new-function~%")
        (let* ((*current-function* ,fn)
-	      (*current-function-name* (llvm-sys:get-name ,fn))
-	      (*irbuilder-function-alloca* ,irbuilder-alloca)
-	      (*irbuilder-function-body* ,irbuilder-body))
-         (with-dbg-function (,function-name
-                             :linkage-name *current-function-name*
-                             :function ,fn
-                             :function-type ,function-type
-                             :form ,function-form )
-           (with-dbg-lexical-block (,function-form)
-             (dbg-set-current-source-pos-for-irbuilder ,irbuilder-alloca *current-form-lineno*)
-             (dbg-set-current-source-pos-for-irbuilder ,irbuilder-body *current-form-lineno*)
-             (with-irbuilder (*irbuilder-function-body*)
-	       (or *the-module* (error "with-new-function *the-module* is NIL"))
-	       (let* ((*gv-current-function-name* (jit-make-global-string *current-function-name* "fn-name"))
-		      (*exception-handler-cleanup-block* (irc-get-exception-handler-cleanup-block ,fn-env))
-		      (*exception-clause-types-to-handle* nil))
-                 (cmp-log "with-landing-pad around body\n")
-		 (with-landing-pad (irc-get-cleanup-landing-pad-block ,fn-env)
-		   ,@body)
-                 (cmp-log "with-landing-pad around irc-function-cleanup-and-return\n")
-		 (with-landing-pad (irc-get-terminate-landing-pad-block ,fn-env)
-		   (irc-function-cleanup-and-return ,fn-env ,result :return-void ,return-void))
-		 ,fn))))))))
+              (*current-function-name* (llvm-sys:get-name ,fn))
+              (*irbuilder-function-alloca* ,irbuilder-alloca)
+              (*irbuilder-function-body* ,irbuilder-body)
+              (*gv-current-function-name* (jit-make-global-string *current-function-name* "fn-name")))
+         (with-irbuilder (*irbuilder-function-body*)
+           (with-new-function-prepare-for-try (,fn *irbuilder-function-alloca*)
+             (with-try
+                 (with-dbg-function (,function-name
+                                     :linkage-name *current-function-name*
+                                     :function ,fn
+                                     :function-type ,function-type
+                                     :form ,function-form )
+                   (with-dbg-lexical-block (,function-form)
+                     (dbg-set-current-source-pos-for-irbuilder ,irbuilder-alloca *current-form-lineno*)
+                     (dbg-set-current-source-pos-for-irbuilder ,irbuilder-body *current-form-lineno*)
+                     (with-irbuilder (*irbuilder-function-body*)
+                       (or *the-module* (error "with-new-function *the-module* is NIL"))
+                       (cmp-log "with-landing-pad around body\n")
+                       ;; I don't think the with-landing-pad is necessary because with-try provides it
+                       #+(or)
+                       (with-landing-pad (irc-get-cleanup-landing-pad-block ,fn-env)
+                         ,@body)
+                       (progn ,@body))))
+               ((cleanup)
+                (irc-cleanup-function-environment ,fn-env)
+                #++(with-landing-pad (irc-get-terminate-landing-pad-block ,fn-env)
+                     (irc-function-cleanup-and-return ,fn-env ,result :return-void ,return-void)))))
+           (if ,return-void
+               (llvm-sys:create-ret-void *irbuilder*)
+               (llvm-sys:create-ret *irbuilder* (irc-load ,result)))
+           ,fn)))))
 
 (defun irc-function-create (function-type linkage llvm-function-name module
                             &key
@@ -753,30 +776,36 @@ and then the irbuilder-alloca, irbuilder-body."
 	 (irbuilder-alloca (llvm-sys:make-irbuilder *llvm-context*))
 	 (irbuilder-body (llvm-sys:make-irbuilder *llvm-context*)))
     (let ((entry-bb (irc-basic-block-create "entry" fn)))
-      (llvm-sys:set-insert-point-basic-block irbuilder-cur entry-bb))
+      (irc-set-insert-point-basic-block entry-bb irbuilder-cur))
     ;; Setup exception handling and cleanup landing pad
     (irc-set-function-for-environment func-env fn)
     (with-irbuilder (irbuilder-cur)
       (let* ((body-bb (irc-basic-block-create "body" fn))
 	     (entry-branch (irc-br body-bb)))
-	(llvm-sys:set-insert-point-instruction irbuilder-alloca entry-branch)
-	(llvm-sys:set-insert-point-basic-block irbuilder-body body-bb)))
-    #+(or)    (irc-setup-cleanup-return-block func-env)
-    (irc-setup-cleanup-landing-pad-block func-env) ;; used in irc-function-cleanup-and-return
-    (setq cleanup-block (irc-setup-exception-handler-cleanup-block func-env)) ;; used in irc-function-cleanup-and-return
-    (irc-setup-exception-handler-resume-block func-env)
-    (irc-setup-terminate-landing-pad-block func-env)
+	(irc-set-insert-point-instruction entry-branch irbuilder-alloca)
+	(irc-set-insert-point-basic-block body-bb irbuilder-body)))
     (setf-metadata func-env :cleanup ())
-    (let* ((exn.slot             (irc-alloca-i8* func-env :irbuilder irbuilder-alloca :label "exn.slot"))
-           (ehselector.slot      (irc-alloca-i32 func-env 0 :irbuilder irbuilder-alloca :label "ehselector.slot"))
-           (result               (irc-alloca-tmv func-env :irbuilder irbuilder-alloca :label "result")))
-      (setf-metadata func-env :exn.slot exn.slot)
-      (setf-metadata func-env :ehselector.slot ehselector.slot)
+    (let ((result               (irc-alloca-tmv func-env :irbuilder irbuilder-alloca :label "result")))
       (values fn func-env cleanup-block irbuilder-alloca irbuilder-body result))))
 
+#+(or)
+(defun irc-function-cleanup-and-return (env result &key return-void)
+  (let ((return-block (irc-basic-block-create "return-block")))
+    (cmp-log "About to irc-br return-block\n")
+    (irc-br return-block)
+    (irc-begin-block return-block)
+    (irc-cleanup-function-environment env #| invocation-history-frame |# ) ;; Why the hell was this commented out?
+    #|	  (irc-cleanup-function-environment env invocation-history-frame )  |#
+    (if return-void
+        (llvm-sys:create-ret-void *irbuilder*)
+        (llvm-sys:create-ret *irbuilder* (irc-load result))))
+  (irc-verify-function *current-function*))
+  
+#+(or)
 (defun irc-function-cleanup-and-return (env result &key return-void)
   (when env
     (let ((return-block (irc-basic-block-create "return-block")))
+      (cmp-log "About to irc-br return-block\n")
       (irc-br return-block)
       (irc-begin-landing-pad-block (irc-get-cleanup-landing-pad-block env)
 				   (irc-get-function-for-environment env))
@@ -785,8 +814,12 @@ and then the irbuilder-alloca, irbuilder-body."
 	(dbg-set-current-debug-location-here)
 	(irc-low-level-trace)
 	(multiple-value-bind (exn.slot ehselector.slot)
-	    (irc-preserve-exception-info env landpad)
+	    (preserve-exception-info landpad)
+          (cmp-log "About to irc-branch-to-and-begin-block (irc-get-exception-handler-cleanup-block env))\n")
 	  (irc-branch-to-and-begin-block (irc-get-exception-handler-cleanup-block env))
+          ;; I'll use this with-landing-pad for now because it looks like it directs
+          ;; to a termination landing block - which should never happen and is outside of
+          ;; the scope of with-try
 	  (with-landing-pad (irc-get-terminate-landing-pad-block env)
 	    (irc-cleanup-function-environment env #| invocation-history-frame |# ))
 	  (irc-branch-to-and-begin-block (irc-get-exception-handler-resume-block env))
@@ -795,14 +828,14 @@ and then the irbuilder-alloca, irbuilder-body."
 	(irc-generate-terminate-code)
 	;; put the return-block at the end of the function to see if that fixes exception handling problem
 	(progn
+          (cmp-log "About to irc-begin-block return-block\n")
 	  (irc-begin-block return-block)
 	  (irc-cleanup-function-environment env #| invocation-history-frame |# ) ;; Why the hell was this commented out?
-#|	  (irc-cleanup-function-environment env invocation-history-frame )  |#
+          #|	  (irc-cleanup-function-environment env invocation-history-frame )  |#
 	  (if return-void
               (llvm-sys:create-ret-void *irbuilder*)
               (llvm-sys:create-ret *irbuilder* (irc-load result))))
-	(cmp-log "About to verify the function in irc-function-cleanup-and-return\n")
-	(irc-verify-function *current-function*))))) 
+        (irc-verify-function *current-function*)))))
 
 (defun irc-cleanup-function-environment (env #||invocation-history-frame||#)
   "Generate the code to cleanup the environment"
@@ -942,11 +975,9 @@ Within the _irbuilder_ dynamic environment...
   (irc-intrinsic "makeTagbodyFrame" result-af))
 
 
-(defun irc-alloca-i32-no-init (env &key (irbuilder *irbuilder-function-alloca*) (label "i32-"))
+(defun irc-alloca-i32-no-init (&key (irbuilder *irbuilder-function-alloca*) (label "i32-"))
   "Allocate space for an i32"
-  (with-alloca-insert-point env irbuilder
-    :alloca (llvm-sys::create-alloca *irbuilder* %i32% (jit-constant-i32 1) label)
-    :init nil))
+  (llvm-sys::create-alloca irbuilder %i32% (jit-constant-i32 1) label))
 
 (defun irc-alloca-i8 (env init-val &key (irbuilder *irbuilder-function-alloca*) (label "i8-"))
   "Allocate space for an i8"
@@ -998,10 +1029,9 @@ Within the _irbuilder_ dynamic environment...
     :alloca (llvm-sys::create-alloca *irbuilder* %VaList_S% (jit-constant-size_t 1) label)
     :init nil))
 
-(defun irc-alloca-i8* (env &key (irbuilder *irbuilder-function-alloca*) (label "i8*-"))
+(defun irc-alloca-i8* (&key (irbuilder *irbuilder-function-alloca*) (label "i8*-"))
   "Allocate space for an i8*"
-  (with-alloca-insert-point env irbuilder
-    :alloca (llvm-sys::create-alloca *irbuilder* %i8*% (jit-constant-i32 1) label)))
+  (llvm-sys::create-alloca irbuilder %i8*% (jit-constant-i32 1) label))
 
 #++
 (defun irc-allocal-lisp-compiled-function-ihf (env &key (irbuilder *irbuilder-function-alloca*) (label "ihf"))
@@ -1133,14 +1163,6 @@ Write T_O* pointers into the current multiple-values array starting at the (offs
   ;;(throw-if-mismatched-arguments function-name args)
   (llvm-sys:create-call-array-ref *irbuilder* entry-point args label nil))
 
-(defparameter *current-unwind-landing-pad-dest* nil)
-
-(defmacro with-landing-pad (unwind-landing-pad-dest &rest body)
-  `(progn
-     (cmp-log "Setting *current-unwind-landing-pad-!dest* to %s\n" (llvm-sys:get-name ,unwind-landing-pad-dest))
-     (let ((*current-unwind-landing-pad-dest* ,unwind-landing-pad-dest))
-       ,@body)))
-
 (defun irc-create-invoke-default-unwind (function-name args &optional (label ""))
   (or *current-unwind-landing-pad-dest* (error "irc-create-invoke-default-unwind was called when *current-unwind-landing-pad-dest* was NIL - check the outer with-landing-pad macro"))
   (irc-create-invoke function-name args *current-unwind-landing-pad-dest* label))
@@ -1153,7 +1175,7 @@ Write T_O* pointers into the current multiple-values array starting at the (offs
       (progn
         (irc-create-call function args label))))
 
-(defun irc-intrinsic-call-or-invoke (function-name real-args label &optional (landing-pad *current-unwind-landing-pad-dest*))
+(defun irc-intrinsic-call-or-invoke (function-name real-args &optional (label "") (landing-pad *current-unwind-landing-pad-dest*))
   "landing-pad is either a landing pad or NIL (depends on function)"
   (throw-if-mismatched-arguments function-name real-args)
   (let* ((args            real-args)
@@ -1196,6 +1218,7 @@ Write T_O* pointers into the current multiple-values array starting at the (offs
       (progn
         (cmp-log "About to verify module prior to writing bitcode\n")
         (irc-verify-module *the-module* 'llvm-sys::return-status-action))
+    (cmp-log "Done verify module\n")
     (if found-errors
         (progn
           (format t "Module error: ~a~%" error-message)

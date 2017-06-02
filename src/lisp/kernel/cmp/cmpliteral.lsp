@@ -277,7 +277,7 @@ the value is put into *default-load-time-value-vector* and its index is returned
   (setf (gethash object table) index))
 
 
-(defun do-with-ltv (type body-fn)
+(defun do-ltv (type body-fn)
   "Evaluate body-fn in an environment where load-time-values, literals and constants are
 compiled into a DSL of creators and side-effects that can be used to generate calls
 in the RUN-ALL function to recreate those objects in a constants-table.
@@ -329,7 +329,7 @@ the constants-table."
 
 (defmacro with-ltv ( &body body)
   `(let ((*with-ltv-depth* (1+ *with-ltv-depth*)))
-     (do-with-ltv :ltv (lambda () ,@body))))
+     (do-ltv :ltv (lambda () ,@body))))
 
 (defmacro with-load-time-value (&body body)
   "Evaluate the body and then arrange to evaluate the generated function into a load-time-value.
@@ -338,17 +338,17 @@ Return the index of the load-time-value"
         (index (gensym)))
     `(let* ((*with-ltv-depth* (1+ *with-ltv-depth*))
             (,index (new-table-index))
-            (,ltv-func (do-with-ltv :ltv (lambda () ,@body))))
+            (,ltv-func (do-ltv :ltv (lambda () ,@body))))
        (evaluate-function-into-load-time-value ,index ,ltv-func)
        ,index)))
        
 (defmacro with-top-level-form ( &body body)
   `(let ((*with-ltv-depth* (1+ *with-ltv-depth*)))
-     (do-with-ltv :toplevel (lambda () ,@body))))
+     (do-ltv :toplevel (lambda () ,@body))))
 
 
 
-(defun do-with-constants-table (body-fn)
+(defun do-constants-table (body-fn)
   (let ((*gcroots-in-module*
          (llvm-sys:make-global-variable *the-module*
                                         cmp:%gcroots-in-module% ; type
@@ -414,7 +414,7 @@ Return the index of the load-time-value"
           (llvm-sys:erase-from-parent cmp:*load-time-value-holder-global-var*))))))
 
 (defmacro with-constants-table (&body body)
-  `(do-with-constants-table (lambda () ,@body)))
+  `(do-constants-table (lambda () ,@body)))
 
 (defmacro with-rtv (&body body)
   "Evaluate the code in the body in an environment where run-time values are assigned integer indices

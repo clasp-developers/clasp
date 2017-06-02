@@ -31,19 +31,19 @@ THE SOFTWARE.
 void dbg_hook(const char *errorString);
 
 namespace core {
-void errorFormatted(boost::format fmt);
-void errorFormatted(const char *errorString);
-void errorFormatted(const string &msg);
+  void errorFormatted(boost::format fmt);
+  void errorFormatted(const char *errorString);
+  void errorFormatted(const string &msg);
 
-class HardError : public gctools::GCIgnoreClass {
-private:
-  string _Message;
+  class HardError {
+  private:
+    string _Message;
 
-public:
-  HardError(const char *sourceFile, const char *functionName, uint lineNumber, const boost::format &fmt);
-  HardError(const char *sourceFile, const char *functionName, uint lineNumber, const string &msg);
-  string message();
-};
+  public:
+    HardError(const char *sourceFile, const char *functionName, uint lineNumber, const boost::format &fmt);
+    HardError(const char *sourceFile, const char *functionName, uint lineNumber, const string &msg);
+    string message();
+  };
 };
 
 #define THROW_HARD_ERROR(fmt)                                        \

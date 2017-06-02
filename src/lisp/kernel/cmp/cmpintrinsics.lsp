@@ -486,11 +486,17 @@ eg:  (f closure-ptr nargs a b c d ...)
 ;;;       If no argument is passed then pass NULL.")
 
   (define-symbol-macro %register-arg-types% (list %t*% %t*% %t*% %t*%))
+  (define-symbol-macro %reglist-types% (list %t*% %t*% %t*% %t*% %t*%)) ; VaList follows register arguments
   (defvar *register-arg-names* (list "farg0" "farg1" "farg2" "farg3"))
+  (defvar *reglist-arg-names* (list "farg0" "farg1" "farg2" "farg3" "VaList"))
   (defvar +fn-registers-prototype-argument-names+
     (list* "closure-ptr" "nargs" *register-arg-names*))
+  (defvar +fn-reglist-prototype-argument-names+
+    (list* "closure-ptr" "nargs" *reglist-arg-names*))
   (define-symbol-macro %fn-registers-prototype%
       (llvm-sys:function-type-get %tmv% (list* %t*% %size_t% %register-arg-types%) T #|VARARGS!|#))
+  (define-symbol-macro %fn-reglist-prototype%
+      (llvm-sys:function-type-get %tmv% (list* %t*% %size_t% %reglist-arg-types%) T #|VARARGS!|#))
   (define-symbol-macro %register-save-area% (llvm-sys:array-type-get
                                              %i8*%
                                              (/ +register-save-area-size+ +void*-size+)))
@@ -544,8 +550,12 @@ eg:  (f closure-ptr nargs a b c d ...)
 #-(and x86-64)
 (error "Define calling convention for system")
 
+;;; This is the normal C-style prototype for a function
 (define-symbol-macro %fn-prototype% %fn-registers-prototype%)
 (defvar +fn-prototype-argument-names+ +fn-registers-prototype-argument-names+)
+;;; This is the C-style prototype with an extra argument that contains the VaList_S for all arguments
+(define-symbol-macro %fn-va-prototype% %fn-reglist-prototype%)
+(defvar +fn-va-prototype-argument-names+ +fn-reglist-prototype-argument-names+)
 
 ;;;  "A pointer to the function prototype"
 (define-symbol-macro %fn-prototype*% (llvm-sys:type-get-pointer-to %fn-prototype%))
@@ -605,7 +615,7 @@ have it call the main-function"
       (let* ((irbuilder-body (llvm-sys:make-irbuilder *llvm-context*))
              (*current-function* fn)
              (entry-bb (irc-basic-block-create "entry" fn)))
-        (llvm-sys:set-insert-point-basic-block irbuilder-body entry-bb)
+        (irc-set-insert-point-basic-block entry-bb irbuilder-body)
         (with-irbuilder (irbuilder-body)
           (let* ((bc-bf (irc-bit-cast main-function %fn-start-up*% "fnptr-pointer"))
                  (_     (irc-intrinsic "cc_register_startup_function" bc-bf))
@@ -776,7 +786,7 @@ and initialize it with an array consisting of one function pointer."
            (values (first arguments))
            (size (second arguments))
            (gf-args (second arguments)))
-      (llvm-sys:set-insert-point-basic-block irbuilder-alloca entry-bb)
+      (cmp:irc-set-insert-point-basic-block entry-bb irbuilder-alloca)
       (with-irbuilder (irbuilder-alloca)
         (let ((start (irc-gep roots-array
                               (list (jit-constant-size_t 0)
@@ -798,7 +808,7 @@ and initialize it with an array consisting of one function pointer."
              (values (first arguments))
              (size (second arguments))
              (gf-args (second arguments)))
-        (llvm-sys:set-insert-point-basic-block irbuilder-alloca entry-bb)
+        (irc-set-insert-point-basic-block entry-bb irbuilder-alloca)
         (with-irbuilder (irbuilder-alloca)
           (let ((start (irc-gep roots-array
                                 (list (jit-constant-size_t 0)
@@ -1083,6 +1093,7 @@ and initialize it with an array consisting of one function pointer."
   (primitive-nounwind module "cc_pop_InvocationHistoryFrame" %void% (list %t*% %InvocationHistoryFrame*%))
   
   (primitive          module "cc_call_multipleValueOneFormCall" %return_type% (list %t*%))
+  (primitive          module "cc_call_multipleValueOneFormCallWithRet0" %return_type% (list %t*% %return_type%))
   (primitive          module "cc_call"   %return_type% (list* %t*% %size_t%
                                                               (map 'list (lambda (x) x)
                                                                    (make-array core:+number-of-fixed-arguments+ :initial-element %t*%))) :varargs t)
@@ -1251,6 +1262,7 @@ It has appending linkage.")
                               "-" name-suffix)
                        :type "ll"
                        :defaults *compile-file-output-pathname*)))
+    (cmp-log "Dumping module to %s\n" output-path)
     (ensure-directories-exist output-path)
     output-path))
 (defun compile-file-quick-module-dump (module file-name-modifier)
@@ -1294,6 +1306,7 @@ they are dumped into /tmp"
   "If called under COMPILE-FILE the modules are dumped into the
 same directory as the COMPILE-FILE output.  If called under COMPILE
 they are dumped into /tmp"
+  (cmp-log "About to dump module\n")
   (if *compile-file-output-pathname*
       (compile-file-quick-module-dump module name-modifier)
       (compile-quick-module-dump module name-modifier)))

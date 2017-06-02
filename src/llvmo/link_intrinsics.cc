@@ -349,7 +349,7 @@ gctools::Tagged ltvc_make_double(gctools::GCRootsInModule* holder, size_t index,
 gctools::Tagged ltvc_set_mlf_creator_funcall(gctools::GCRootsInModule* holder, size_t index, fnLispCallingConvention fptr) {
   core::T_O *lcc_arglist = _Nil<core::T_O>().raw_();
   LCC_RETURN ret = fptr(LCC_PASS_ARGS0_VA_LIST(NULL));
-  core::T_sp res((gctools::Tagged)ret.ret0);
+  core::T_sp res((gctools::Tagged)ret.ret0[0]);
   core::T_sp val = res;
   return holder->set(index,val.tagged_());
 }
@@ -357,14 +357,14 @@ gctools::Tagged ltvc_set_mlf_creator_funcall(gctools::GCRootsInModule* holder, s
 gctools::Tagged ltvc_mlf_init_funcall(fnLispCallingConvention fptr) {
   core::T_O *lcc_arglist = _Nil<core::T_O>().raw_();
   LCC_RETURN ret = fptr(LCC_PASS_ARGS0_VA_LIST(NULL));
-  return reinterpret_cast<gctools::Tagged>(ret.ret0);
+  return reinterpret_cast<gctools::Tagged>(ret.ret0[0]);
 }
 
 // This is exactly like the one above - is it necessary?
 gctools::Tagged ltvc_set_ltv_funcall(gctools::GCRootsInModule* holder, size_t index, fnLispCallingConvention fptr) {
   core::T_O *lcc_arglist = _Nil<core::T_O>().raw_();
   LCC_RETURN ret = fptr(LCC_PASS_ARGS0_VA_LIST(NULL));
-  core::T_sp res((gctools::Tagged)ret.ret0);
+  core::T_sp res((gctools::Tagged)ret.ret0[0]);
   core::T_sp val = res;
   return holder->set(index,val.tagged_());
 }
@@ -373,7 +373,7 @@ gctools::Tagged ltvc_set_ltv_funcall(gctools::GCRootsInModule* holder, size_t in
 gctools::Tagged ltvc_toplevel_funcall(fnLispCallingConvention fptr) {
   core::T_O *lcc_arglist = _Nil<core::T_O>().raw_();
   LCC_RETURN ret = fptr(LCC_PASS_ARGS0_VA_LIST(NULL));
-  return reinterpret_cast<gctools::Tagged>(ret.ret0);
+  return reinterpret_cast<gctools::Tagged>(ret.ret0[0]);
 }
 
 };
@@ -979,7 +979,7 @@ void debugInspectT_mv(core::T_mv *objP) {
 void debugInspect_return_type(gctools::return_type rt) {
   MultipleValues &mv = lisp_multipleValues();
   size_t size = mv.getSize();
-  printf("debugInspect_return_type rt.ret0@%p  rt.nvals=%zu mvarray.size=%zu\n", rt.ret0, rt.nvals, size);
+  printf("debugInspect_return_type rt.ret0@%p  rt.nvals=%zu mvarray.size=%zu\n", rt.ret0[0], rt.nvals, size);
   size = std::max(size, rt.nvals);
   for (size_t i(0); i < size; ++i) {
     printf("[%zu]->%p : %s\n", i, mv.valueGet(i, size).raw_(), _rep_(core::T_sp((gc::Tagged)mv.valueGet(i,size).raw_())).c_str());
@@ -1564,6 +1564,28 @@ LCC_RETURN cc_call_multipleValueOneFormCall(core::Function_O *tfunc) {
   size_t lcc_nargs = mvThreadLocal.getSize();
   MAKE_STACK_FRAME( mvargs, tfunc, lcc_nargs);
   for (size_t i(0); i < lcc_nargs; ++i) (*mvargs)[i] = ENSURE_VALID_OBJECT(mvThreadLocal[i]);
+#ifdef DEBUG_VALUES
+  if (_sym_STARdebug_valuesSTAR &&
+        _sym_STARdebug_valuesSTAR->boundP() &&
+        _sym_STARdebug_valuesSTAR->symbolValue().notnilp()) {
+    for (size_t i(0); i < lcc_nargs; ++i) {
+      core::T_sp mvobj((gctools::Tagged)(*mvargs)[i]);
+      printf("%s:%d  ....  cc_call_multipleValueOneFormCall[%lu] -> %s\n", __FILE__, __LINE__, i, _rep_(mvobj).c_str());
+    }
+  }
+#endif
+  core::Function_sp func((gctools::Tagged)tfunc);
+  return core::funcall_frame(func,mvargs);
+}
+
+LCC_RETURN cc_call_multipleValueOneFormCallWithRet0(core::Function_O *tfunc, gctools::return_type ret0 ) {
+  ASSERTF(gctools::tagged_generalp(tfunc), BF("The argument %p does not have a general tag!") % (void*)tfunc);
+  MAKE_STACK_FRAME( mvargs, tfunc, ret0.nvals);
+  FILL_FRAME_WITH_RETURN_REGISTERS(mvargs,ret0);
+  if (ret0.nvals>LCC_RETURN_VALUES_IN_REGISTERS) {
+    core::MultipleValues &mvThreadLocal = core::lisp_multipleValues();
+    for (size_t i(LCC_RETURN_VALUES_IN_REGISTERS); i < ret0.nvals; ++i) (*mvargs)[i] = ENSURE_VALID_OBJECT(mvThreadLocal[i]);
+  }
 #ifdef DEBUG_VALUES
   if (_sym_STARdebug_valuesSTAR &&
         _sym_STARdebug_valuesSTAR->boundP() &&

@@ -1440,11 +1440,13 @@ T_mv sp_multipleValueCall(List_sp args, T_sp env) {
   for (auto forms : (List_sp)oCdr(args)) {
     T_sp oneForm = oCar(forms);
     T_mv retval = eval::evaluate(oneForm, env);
-    *cur = Cons_O::create(retval, _Nil<T_O>());
-    cur = reinterpret_cast<Cons_sp *>(&(*cur)->_Cdr);
-    for (int i(1); i < retval.number_of_values(); i++) {
-      *cur = Cons_O::create(T_sp((gctools::Tagged)mv._Values[i]), _Nil<T_O>());
+    if (retval.number_of_values()>0) {
+      *cur = Cons_O::create(retval, _Nil<T_O>());
       cur = reinterpret_cast<Cons_sp *>(&(*cur)->_Cdr);
+      for (int i(1); i < retval.number_of_values(); i++) {
+        *cur = Cons_O::create(T_sp((gctools::Tagged)mv._Values[i]), _Nil<T_O>());
+        cur = reinterpret_cast<Cons_sp *>(&(*cur)->_Cdr);
+      }
     }
   }
   size_t sz = cl__length(resultList);

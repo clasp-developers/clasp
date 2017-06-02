@@ -273,13 +273,13 @@ CL_LAMBDA();
 CL_DECLARE();
 CL_DOCSTRING("lowLevelBacktrace");
 CL_DEFUN void core__low_level_backtrace() {
-  InvocationHistoryFrame *top = my_thread->_InvocationHistoryStack;
+  const InvocationHistoryFrame *top = my_thread->_InvocationHistoryStack;
   if (top == NULL) {
     printf("Empty InvocationHistoryStack\n");
     return;
   }
   int index = 0;
-  for (InvocationHistoryFrame *cur = top; cur != NULL; cur = cur->_Previous) {
+  for (const InvocationHistoryFrame *cur = top; cur != NULL; cur = cur->_Previous) {
     string name = "-no-name-";
     Function_sp closure = cur->function();
     if (!closure) {
@@ -309,13 +309,13 @@ CL_LAMBDA();
 CL_DECLARE();
 CL_DOCSTRING("lowLevelBacktrace");
 CL_DEFUN void core__low_level_backtrace_with_args() {
-  InvocationHistoryFrame *top = my_thread->_InvocationHistoryStack;
+  const InvocationHistoryFrame *top = my_thread->_InvocationHistoryStack;
   if (top == NULL) {
     printf("Empty InvocationHistoryStack\n");
     return;
   }
   int index = 0;
-  for (InvocationHistoryFrame *cur = top; cur != NULL; cur = cur->_Previous) {
+  for (const InvocationHistoryFrame *cur = top; cur != NULL; cur = cur->_Previous) {
     string name = "-no-name-";
     Function_sp closure = cur->function();
     if (!closure) {

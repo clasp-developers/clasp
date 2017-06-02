@@ -214,7 +214,6 @@ irc-load
 irc-begin-block
 irc-generate-terminate-code
 irc-begin-block
-irc-preserve-exception-info
 treat-as-special-operator-p
 %fn-prototype%
 jit-function-name

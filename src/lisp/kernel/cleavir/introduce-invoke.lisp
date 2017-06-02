@@ -41,15 +41,28 @@
      initial-instruction)
     result))
 
-;;; This class represents the landing pad for an entire function F.
-;;; TARGETS is a list of instructions.  The elements of that list are
+;;; This class represents information about the function that some instuctions will need.
+;;; UNWINDS is a list of instructions.  The elements of that list are
 ;;; the successors of each UNWIND-INSTRUCTION that has F as its
 ;;; invocation.
 ;;
 ;; I use HIR:landing-pad-instruction
-(defclass landing-pad ()
-  ((%unwinds :initarg :unwinds :initform nil :accessor unwinds)
-   (%basic-block :initarg :basic-block :accessor basic-block)))
+(defclass function-info ()
+  ((%enter-instruction :initarg :enter-instruction :accessor enter-instruction)
+   (%debug-on :initform nil :accessor debug-on)
+   (%landing-pad-for-debug :initform nil :accessor landing-pad-for-debug)
+   (%on-entry-for-debug :initform nil :accessor on-entry-for-debug)
+   (%on-exit-for-debug :initform nil :accessor on-exit-for-debug)
+   (%calling-convention :initarg :calling-convention :accessor calling-convention)
+   (%unwind-target :initarg :unwind-target :accessor unwind-target)
+   (%exn.slot :initform nil :accessor exn.slot)
+   (%ehselector.slot :initform nil :accessor ehselector.slot)
+   (%unwinds :initarg :unwinds :initform nil :accessor unwinds)
+   (%landing-pad-for-unwind :initform nil :accessor landing-pad-for-unwind)
+   (%on-entry-for-unwind :initform nil :accessor on-entry-for-unwind)
+   (%on-exit-for-unwind :initform nil :accessor on-exit-for-unwind)
+   ))
+
 
 ;;; Given a list of all the UNWIND-INSTRUCTIONs in a program, create an
 ;;; association list of CONS cell such that the CAR of each
@@ -67,7 +80,7 @@
 				     :test-not #'eq))
      until (null remaining)
      collect (let ((frame-holder (cleavir-ast-to-hir::make-temp)))
-	       (list enter (make-instance 'landing-pad) frame-holder))
+	       (list enter (make-instance 'function-info :unwind-target t) frame-holder))
      do (setf remaining
 	      (set-difference remaining current-unwinds))))
 

@@ -71,6 +71,7 @@
           calling-convention-args.va-arg
           calling-convention-va-list*
           calling-convention-register-save-area*
+          calling-convention-invocation-history-frame*
           calling-convention-nargs
           calling-convention-remaining-nargs*
           calling-convention-register-args
@@ -122,6 +123,7 @@
           irc-exception-typeid*
           irc-generate-terminate-code
           irc-smart-ptr-extract
+          irc-set-insert-point-basic-block
           irc-size_t-*current-source-pos-info*-filepos
           irc-size_t-*current-source-pos-info*-column
           irc-size_t-*current-source-pos-info*-lineno
@@ -133,7 +135,6 @@
           irc-phi
           irc-personality-function
           irc-phi-add-incoming
-          irc-preserve-exception-info
           irc-renv
           irc-ret-void
           irc-ret
@@ -160,11 +161,14 @@
           typeid-core-unwind
           walk-form-for-source-info
           with-catch
+          preserve-exception-info
           with-new-function
           with-dbg-function
           with-dbg-lexical-block
           dbg-set-current-source-pos
           dbg-set-current-source-pos-for-irbuilder
+          with-try
+          with-new-function-prepare-for-try
           with-debug-info-generator
           with-irbuilder
           with-landing-pad

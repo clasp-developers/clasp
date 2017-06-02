@@ -199,22 +199,22 @@ FORWARD(InvocationHistoryFrameIterator);
 class InvocationHistoryFrameIterator_O : public General_O {
   LISP_CLASS(core, CorePkg, InvocationHistoryFrameIterator_O, "InvocationHistoryFrameIterator",General_O);
 private: // instance variables here
-  InvocationHistoryFrame *_Frame;
-  int _Index;
+  mutable const InvocationHistoryFrame *_Frame;
+  mutable int _Index;
 public:
-  static InvocationHistoryFrameIterator_sp create(InvocationHistoryFrame* frame, int index) {
+  static InvocationHistoryFrameIterator_sp create(const InvocationHistoryFrame* frame, int index) {
     GC_ALLOCATE_VARIADIC(InvocationHistoryFrameIterator_O,it,frame,index);
     return it;
   }
   static InvocationHistoryFrameIterator_sp make(Fixnum first, T_sp test = _Nil<T_O>());
 public:
- InvocationHistoryFrameIterator_O(InvocationHistoryFrame* frame, int index) : _Frame(frame), _Index(index){};
+ InvocationHistoryFrameIterator_O(const InvocationHistoryFrame* frame, int index) : _Frame(frame), _Index(index){};
   virtual ~InvocationHistoryFrameIterator_O(){};
 public:
   InvocationHistoryFrameIterator_sp prev(T_sp test);
 //  void setFrame_(InvocationHistoryFrame *cur) { this->_Frame = cur; };
-  void move_to_previous_frame() { this->_Frame = this->_Frame->previous(); this->_Index--;};
-  InvocationHistoryFrame *frame() { return this->_Frame; };
+  void move_to_previous_frame() const { this->_Frame = this->_Frame->previous(); this->_Index--;};
+  const InvocationHistoryFrame *frame() const { return this->_Frame; };
   int index();
   T_sp functionName();
   Function_sp function();

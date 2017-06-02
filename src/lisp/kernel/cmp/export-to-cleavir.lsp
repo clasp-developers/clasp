@@ -90,7 +90,6 @@
           irc-phi
           irc-personality-function
           irc-phi-add-incoming
-          irc-preserve-exception-info
           irc-renv
           irc-ret-void
           irc-store
@@ -114,6 +113,8 @@
           typeid-core-unwind
           walk-form-for-source-info
           with-catch
+          with-try
+          with-new-function-prepare-for-try
           with-dbg-function
           with-dbg-lexical-block
           dbg-set-current-source-pos

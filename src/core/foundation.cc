@@ -1830,7 +1830,7 @@ CL_DEFUN void core__debug_invocation_history_frame(size_t v) {
   debug_InvocationHistoryFrame_name = ihf;
   printf("%s:%d     Will trap InvocationHistoryFrame at |%s|\n",__FILE__,__LINE__,debug_InvocationHistoryFrame_name); 
   printf("   ---------------   InvocationHistoryStack:\n");
-  InvocationHistoryFrame* cur = my_thread->_InvocationHistoryStack;
+  const InvocationHistoryFrame* cur = my_thread->_InvocationHistoryStack;
   size_t count= 0;
   while (cur!=NULL) {
     printf("    frame[%lu] @%p  function: %s\n", count, cur, _rep_(cur->function()->name()).c_str());

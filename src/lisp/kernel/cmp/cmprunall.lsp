@@ -60,13 +60,13 @@ load-time-value manager (true - in COMPILE-FILE) or not (false - in COMPILE)."
                                  :form nil) ;; No form for run-all
            ;; Set up dummy debug info for these irbuilders
            (let ((entry-bb (irc-basic-block-create "entry" ,run-all-fn)))
-             (llvm-sys:set-insert-point-basic-block ,irbuilder-alloca entry-bb))
+             (irc-set-insert-point-basic-block entry-bb ,irbuilder-alloca))
            (let ((body-bb (irc-basic-block-create "body" ,run-all-fn)))
-             (llvm-sys:set-insert-point-basic-block ,irbuilder-body body-bb)
+             (irc-set-insert-point-basic-block body-bb ,irbuilder-body)
              ;; Setup exception handling and cleanup landing pad
              (with-irbuilder (,irbuilder-alloca)
                (let ((entry-branch (irc-br body-bb)))
-                 (llvm-sys:set-insert-point-instruction ,irbuilder-alloca entry-branch)
+                 (irc-set-insert-point-instruction entry-branch ,irbuilder-alloca)
                  (with-irbuilder (,irbuilder-body)
                    (progn ,@body)
                    (irc-ret-void)))))))
@@ -77,15 +77,17 @@ load-time-value manager (true - in COMPILE-FILE) or not (false - in COMPILE)."
   "Generate code within the ltv-function - used by codegen-load-time-value"
   `(let ((*irbuilder-function-alloca* *irbuilder-run-all-alloca*)
 	 (*current-function* *run-all-function*))
-     (cmp:with-irbuilder (*irbuilder-run-all-alloca*)
-       ,@form)))
+     (cmp:with-landing-pad nil
+       (cmp:with-irbuilder (*irbuilder-run-all-alloca*)
+         ,@form))))
 
 (defmacro with-run-all-body-codegen ( &body form)
   "Generate code within the ltv-function - used by codegen-load-time-value"
   `(let ((*irbuilder-function-alloca* *irbuilder-run-all-alloca*)
 	 (*current-function* *run-all-function*))
-     (cmp:with-irbuilder (*irbuilder-run-all-body*)
-       ,@form)))
+     (cmp:with-landing-pad nil
+       (cmp:with-irbuilder (*irbuilder-run-all-body*)
+         ,@form))))
 
 (defun ltv-global ()
   "called by cclasp"
