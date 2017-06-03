@@ -9,7 +9,7 @@ Clasp is a new [Common Lisp](https://common-lisp.net/) implementation that seaml
 The currently latest release is [Clasp 0.5](https://github.com/drmeister/clasp/releases/tag/0.5.0). [Changes](https://github.com/drmeister/clasp/milestone/3) include:
 
 * Full integration of the Cleavir/Sicl compiler by Robert Strandh (https://github.com/robert-strandh/SICL)
-* A basic type inference system within Cleavir by Alex Wood
+* A nascent type inference system within Cleavir by Alex Wood
 * LLVM whole program, Link-Time-Optimization
 * Multi threading compatible with Bordeaux threads
 * Unicode, 32bit wide characters
