@@ -50,9 +50,9 @@
 (defclass function-info ()
   ((%enter-instruction :initarg :enter-instruction :accessor enter-instruction)
    (%debug-on :initform nil :accessor debug-on)
-   (%landing-pad-for-debug :initform nil :accessor landing-pad-for-debug)
-   (%on-entry-for-debug :initform nil :accessor on-entry-for-debug)
-   (%on-exit-for-debug :initform nil :accessor on-exit-for-debug)
+   (%landing-pad-for-cleanup :initform nil :accessor landing-pad-for-cleanup)
+   (%on-entry-for-cleanup :initform nil :accessor on-entry-for-cleanup)
+   (%on-exit-for-cleanup :initform nil :accessor on-exit-for-cleanup)
    (%calling-convention :initarg :calling-convention :accessor calling-convention)
    (%unwind-target :initarg :unwind-target :accessor unwind-target)
    (%exn.slot :initform nil :accessor exn.slot)
@@ -60,8 +60,7 @@
    (%unwinds :initarg :unwinds :initform nil :accessor unwinds)
    (%landing-pad-for-unwind :initform nil :accessor landing-pad-for-unwind)
    (%on-entry-for-unwind :initform nil :accessor on-entry-for-unwind)
-   (%on-exit-for-unwind :initform nil :accessor on-exit-for-unwind)
-   ))
+   (%on-exit-for-unwind :initform nil :accessor on-exit-for-unwind)))
 
 
 ;;; Given a list of all the UNWIND-INSTRUCTIONs in a program, create an
