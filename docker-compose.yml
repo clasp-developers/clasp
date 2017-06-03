@@ -40,3 +40,15 @@ services:
     ports:
       - "8888:8888"
       - "4005:4005"
+
+  # To build clasp for c++ analysis, run: docker-compose run clasp-cxxanalysis --help
+  # this should build the clasp image as a dependency
+  clasp-cxxanalysis:
+    image: clasp-cxxanalysis
+    build:
+      context: .
+      dockerfile: tools/dockerfiles/clasp-cxxanalysis/Dockerfile
+    depends_on:
+      - clasp
+    ports:
+      - "4005:4005"
