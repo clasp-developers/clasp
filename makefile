@@ -296,7 +296,7 @@ clang-format:
 docker:
 	docker-compose run clasp-build
 	docker-compose build clasp
-	docker-compose build cando
+	docker-compose run cando --help 
 
 push-to-master:
 	git fetch origin dev:testing
