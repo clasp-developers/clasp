@@ -174,9 +174,6 @@ def configure_common(cfg,variant):
     print("cfg.env.LINKFLAGS=%s" % cfg.env.LINKFLAGS)
     print("cfg.env.LDFLAGS=%s" % cfg.env.LDFLAGS)
     cfg.define("BUILD_LINKFLAGS", ' '.join(cfg.env.LINKFLAGS) + ' ' + ' '.join(cfg.env.LDFLAGS))
-#    cfg.define("DEBUG_STARTUP",1)
-#    cfg.define("DEBUG_ACCESSORS",1)
-#    cfg.define("DEBUG_GFDISPATCH",1)
 
 def strip_libs(libs):
     result = []
@@ -638,11 +635,6 @@ def configure(cfg):
     else:
         raise Exception("Unknown OS %s"%cfg.env['DEST_OS'])
     cfg.define("PROGRAM_CLASP",1)
-# -----------------
-# defines that slow down program execution
-#  There are more defined in clasp/include/gctools/configure_memory.h
-    cfg.define("DEBUG_SLOW",1)    # Code runs slower due to checks - undefine to remove checks
-# ----------
     cfg.define("CLASP_THREADS",1)
     cfg.define("CLASP_GIT_COMMIT",get_git_commit(cfg))
     cfg.define("CLASP_VERSION",get_clasp_version(cfg))
@@ -652,18 +644,12 @@ def configure(cfg):
     cfg.define("USE_SOURCE_DATABASE",1)
     cfg.define("USE_COMPILED_CLOSURE",1)  # disable this in the future and switch to ClosureWithSlots
     cfg.define("CLASP_UNICODE",1)
-    cfg.define("DEBUG_TRACE_INTERPRETED_CLOSURES",1)
-#    cfg.define("DEBUG_THREADS",1)
-#    cfg.define("DEBUG_BOUNDS_ASSERT",1)
 #    cfg.define("EXPAT",1)
     cfg.define("INCLUDED_FROM_CLASP",1)
     cfg.define("INHERITED_FROM_SRC",1)
     cfg.define("LLVM_VERSION_X100",400)
     cfg.define("LLVM_VERSION","4.0")
     cfg.define("NDEBUG",1)
-#    cfg.define("DEBUG_CACHE",1)      # Debug the dispatch caches - see cache.cc
-# Keep track of every allocation
-    cfg.define("METER_ALLOCATIONS",1)
 #    cfg.define("READLINE",1)
     cfg.define("USE_AMC_POOL",1)
     cfg.define("USE_EXPENSIVE_BACKTRACE",1)
@@ -705,6 +691,14 @@ def configure(cfg):
         cfg.env.append_value('LINKFLAGS', ['-stdlib=libc++'])
     cfg.env.append_value('INCLUDES', [ run_llvm_config(cfg,"--includedir") ])
     cfg.env.append_value('INCLUDES', ['/usr/include'] )
+    cfg.define("ENABLE_BACKTRACE_ARGS",1)
+# --------------------------------------------------
+# --------------------------------------------------
+# --------------------------------------------------
+#
+# The following debugging flags slow down clasp
+#  They should be disabled in production code
+# 
     if (cfg.env.ADDRESS_SANITIZER):
         cfg.env.append_value('CXXFLAGS', ['-fsanitize=address'] )
         cfg.env.append_value('LINKFLAGS', ['-fsanitize=address'])
@@ -713,15 +707,32 @@ def configure(cfg):
         cfg.define("DEBUG_GUARD_VALIDATE",1)
     if (cfg.env.DEBUG_GUARD_EXHAUSTIVE_VALIDATE):
         cfg.define("DEBUG_GUARD_EXHAUSTIVE_VALIDATE",1)
+# Keep track of every allocation
+    cfg.define("METER_ALLOCATIONS",1)
+    cfg.define("DEBUG_TRACE_INTERPRETED_CLOSURES",1)
+#    cfg.define("DEBUG_CACHE",1)      # Debug the dispatch caches - see cache.cc
 #    cfg.define("DEBUG_BITUNIT_CONTAINER",1)  # prints debug info for bitunit containers
-    cfg.define("ENABLE_BACKTRACE_ARGS",1)
 #    cfg.define("DEBUG_ZERO_KIND",1);
 #    cfg.define("DEBUG_FLOW_CONTROL",1)
 #    cfg.define("DEBUG_DYNAMIC_BINDING_STACK",1)
 #    cfg.define("DEBUG_VALUES",1)   # turn on printing (values x y z) values when core:*debug-values* is not nil
-    cfg.define("DEBUG_IHS",1)
-    cfg.define("DEBUG_ENSURE_VALID_OBJECT",1)
+#    cfg.define("DEBUG_IHS",1)
+#    cfg.define("DEBUG_ENSURE_VALID_OBJECT",1)
+#    cfg.define("DEBUG_THREADS",1)
+#    cfg.define("DEBUG_BOUNDS_ASSERT",1)
 #    cfg.define("DEBUG_QUICK_VALIDATE",1)    # quick/cheap validate if on and comprehensive validate if not
+#    cfg.define("DEBUG_STARTUP",1)
+#    cfg.define("DEBUG_ACCESSORS",1)
+#    cfg.define("DEBUG_GFDISPATCH",1)
+# -----------------
+# defines that slow down program execution
+#  There are more defined in clasp/include/gctools/configure_memory.h
+    cfg.define("DEBUG_SLOW",1)    # Code runs slower due to checks - undefine to remove checks
+# ----------
+
+# --------------------------------------------------
+# --------------------------------------------------
+# --------------------------------------------------
     cfg.env.append_value('CXXFLAGS', ['-Wno-macro-redefined'] )
     cfg.env.append_value('CXXFLAGS', ['-Wno-deprecated-register'] )
     cfg.env.append_value('CXXFLAGS', ['-Wno-expansion-to-defined'] )
