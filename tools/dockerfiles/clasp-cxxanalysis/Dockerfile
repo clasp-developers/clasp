@@ -32,11 +32,5 @@ RUN clasp -e '(load "/home/app/quicklisp/setup.lisp")'\
           -e "(ql:quickload :cffi-grovel)"\
           -e "(quit)"
 
-USER root
-RUN mkdir Downloads
-git clone --depth=1 https://github.com/apahl/rdkit_ipynb_tools.git /home/app/Downloads/rdkit
-RUN chown -R app:app Downloads
-USER app
-
 ENTRYPOINT [ "/home/app/clasp/bin/clasp" ]
 CMD        [ "--load", "/home/app/slime/start-swank.lisp" ]
