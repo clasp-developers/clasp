@@ -8,17 +8,25 @@ Clasp is a new [Common Lisp](https://common-lisp.net/) implementation that seaml
 ## Latest Release
 The currently latest release is [Clasp 0.5](https://github.com/drmeister/clasp/releases/tag/0.5.0). [Changes](https://github.com/drmeister/clasp/milestone/3) include:
 
-* Code cleanup, support for jumping to C++ function definitions,
-* Link-Time-Optimization,
-* New build system,
-* CFFI
+* Full integration of the Cleavir/Sicl compiler by Robert Strandh (https://github.com/robert-strandh/SICL)
+* LLVM whole program, Link-Time-Optimization
+* Multi threading compatible with Bordeaux threads
+* Unicode, 32bit wide characters
+* Specialized arrays for many primitive types (int8, int16, int32, int64, double, float)
+* CFFI (C Foreign Function Interface)
+* New build system based on waf (https://github.com/waf-project/waf)
+* Code cleanup
+* Better Emacs and Slime support including jumping to source (C++ and CL), tab-completion and lambda-list display
+* Many, many improvements and bug fixes
 
-### Getting It
+### Getting Clasp
 At the moment, Clasp is supported on Linux and Mac OS X. On these systems, you should be able to build it from source. See the [wiki entry](https://github.com/drmeister/clasp/wiki/Clasp-0.5-Build-Instructions) for instructions. In case things go wrong, the quickest way to get help is to either [file an issue](#reporting-problems), or to [chat with us directly](#irc).
 
-Building on most systems will take around 8-12GB of memory and ~2 hours with a relatively modern processor, so be prepared to watch a movie or do some other useful work until Clasp is all done. You may also want to activate a large enough swap file if your system does not have enough DRAM.
+Building on most systems will take around 8-12GB of memory and ~1-2 hours with a relatively modern processor, so be prepared to watch a movie or do some other useful work until Clasp is all done. You may also want to activate a large enough swap file if your system does not have enough DRAM.
 
 Currently there are no binary releases available.
+
+There is a docker image for a superset of Clasp called Cando:   drmeister/cando
 
 ### Common Lisp Ecosystem Support
 Clasp actively supports the following major components:
