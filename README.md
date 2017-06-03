@@ -1,35 +1,31 @@
 # Clasp — Bringing Common Lisp and C++ Together
 
-## NOTE:  June 22, 2016 - Build the 'testing' branch of Clasp along with the <a href="https://github.com/drmeister/externals-clasp">externals-clasp</a> - for now.
+## NOTE:  June 1, 2017 - This contains a pre-release of Clasp 0.5.
 
 ## What Is This?
 Clasp is a new [Common Lisp](https://common-lisp.net/) implementation that seamlessly interoperates with C++ libraries and programs using [LLVM](http://llvm.org/) for compilation to native code. This allows Clasp to take advantage of a vast array of preexisting libraries and programs, such as out of the scientific computing ecosystem. Embedding them in a Common Lisp environment allows you to make use of rapid prototyping, incremental development, and other capabilities that make it a powerful language.
 
 ## Latest Release
-The currently latest release is [Clasp 0.5](https://github.com/drmeister/clasp/releases/tag/0.5.0). [Changes](https://github.com/drmeister/clasp/milestone/3) include:
+The upcoming release is [Clasp 0.5](https://github.com/drmeister/clasp/releases/tag/0.5.0). [Changes](https://github.com/drmeister/clasp/milestone/3)
 
-* Code cleanup, support for jumping to C++ function definitions,
-* Link-Time-Optimization,
-* New build system,
-* CFFI
+See the [RELEASE-NOTES](RELEASE-NOTES)
 
-### Getting It
+### Getting Clasp
 At the moment, Clasp is supported on Linux and Mac OS X. On these systems, you should be able to build it from source. See the [wiki entry](https://github.com/drmeister/clasp/wiki/Clasp-0.5-Build-Instructions) for instructions. In case things go wrong, the quickest way to get help is to either [file an issue](#reporting-problems), or to [chat with us directly](#irc).
 
-Building on most systems will take around 8-12GB of memory and ~2 hours with a relatively modern processor, so be prepared to watch a movie or do some other useful work until Clasp is all done. You may also want to activate a large enough swap file if your system does not have enough DRAM.
+Building on most systems will take around 8-12GB of memory and ~1-2 hours with a relatively modern processor, so be prepared to watch a movie or do some other useful work until Clasp is all done. You may also want to activate a large enough swap file if your system does not have enough DRAM.
 
 Currently there are no binary releases available.
 
+There is a docker image for a superset of Clasp called [Cando](https://hub.docker.com/r/drmeister/cando/)
+
 ### Common Lisp Ecosystem Support
-Clasp actively supports the following major components:
+Clasp supports the following major components:
 
 * [SLIME](https://common-lisp.net/project/slime/)
 * [ASDF](https://common-lisp.net/project/asdf/)
 * [Quicklisp](https://www.quicklisp.org/beta/)
 * [CFFI](https://common-lisp.net/project/cffi/)
-
-However, some major components still do not have support:
-
 * [Bordeaux-Threads](https://github.com/drmeister/clasp/issues/163)
 * [Unicode](https://github.com/drmeister/clasp/issues/164)
 

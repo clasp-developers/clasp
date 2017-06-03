@@ -1,3 +1,19 @@
+Upcoming Clasp version 0.5.0
+
+* Full integration of the Cleavir/Sicl compiler by Robert Strandh (https://github.com/robert-strandh/SICL)
+* A nascent type inference system within Cleavir by Alex Wood
+* LLVM whole program, Link-Time-Optimization
+* Multi threading compatible with Bordeaux threads
+* Unicode, 32bit wide characters
+* Specialized arrays for many primitive types (int8, int16, int32, int64, double, float)
+* CFFI (C Foreign Function Interface)
+* New build system based on waf (https://github.com/waf-project/waf)
+* Code and file cleanup
+* Better Emacs and Slime support including jumping to source (C++ and CL),
+  tab-completion and lambda-list display
+* Many, many improvements and bug fixes
+
+
 Clasp version 0.4.0
 
 * Clasp has a completely new compiler!

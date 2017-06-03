@@ -67,12 +67,12 @@
          (_               (llvm-sys:create-resume ehbuilder lpad.val8)))
     ehresume))
 
-(defun generate-cleanup-for-debug (function function-info ehresume-block)
+(defun generate-cleanup-block (function function-info ehresume-block)
   (let* ((cleanup-block             (cmp:irc-basic-block-create "cleanup" function))
          (ehbuilder                 (llvm-sys:make-irbuilder cmp:*llvm-context*))
          (_                         (cmp:irc-set-insert-point-basic-block cleanup-block ehbuilder)))
     (cmp:with-irbuilder (ehbuilder)
-      (let* ((_                         (funcall (on-exit-for-debug function-info) function-info))
+      (let* ((_                         (funcall (on-exit-for-cleanup function-info) function-info))
              (_                         (cmp:irc-br ehresume-block)))))
     cleanup-block))
 
@@ -106,11 +106,11 @@
   (when (or (debug-on function-info) (unwind-target function-info))
     (let* ((ehresume-block  (generate-ehresume-code function function-info))
            (cleanup-block (when (debug-on function-info)
-                            (generate-cleanup-for-debug function function-info ehresume-block))))
+                            (generate-cleanup-block function function-info ehresume-block))))
       (when cleanup-block
-        (setf (landing-pad-for-debug function-info)
+        (setf (landing-pad-for-cleanup function-info)
               (generate-landing-pad-for-cleanup function function-info cleanup-block)))
-      ;; If (landing-pad-for-debug function-info) is NIL then if the UNWIND landing-pad causes
+      ;; If (landing-pad-for-cleanup function-info) is NIL then if the UNWIND landing-pad causes
       ;; a rethrow of the exception then it will be in the context of a CALL and be passed higher up
       ;; if it isn't NIL then the rethrown exception will be caught, cleanup will be performed and then
       ;; it will be rethrown
@@ -118,10 +118,10 @@
         (setf (landing-pad-for-unwind function-info)
               (generate-landing-pad-for-unwind function-info (enter-instruction function-info)
                                                return-value tags abi
-                                               (landing-pad-for-debug function-info)
+                                               (landing-pad-for-cleanup function-info)
                                                cleanup-block
                                                :is-cleanup t))))))
 
 (defun evaluate-cleanup-code (function-info)
   (and (on-exit-for-unwind function-info) (funcall (on-exit-for-unwind function-info) function-info))
-  (and (on-exit-for-debug function-info) (funcall (on-exit-for-debug function-info) function-info)))
+  (and (on-exit-for-cleanup function-info) (funcall (on-exit-for-cleanup function-info) function-info)))
