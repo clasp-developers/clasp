@@ -297,3 +297,21 @@ docker:
 	docker-compose run clasp-build
 	docker-compose build clasp
 	docker-compose build cando
+
+push-to-master:
+	git fetch origin dev:testing
+	git push origin testing
+	git fetch origin testing:preview
+	git push origin preview
+	git fetch origin preview:master
+	git push origin master
+
+push-to-preview:
+	git fetch origin dev:testing
+	git push origin testing
+	git fetch origin testing:preview
+	git push origin preview
+
+push-to-testing:
+	git fetch origin dev:testing
+	git push origin testing
