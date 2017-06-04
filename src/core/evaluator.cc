@@ -1938,15 +1938,6 @@ T_mv evaluate_atom(T_sp exp, T_sp environment) {
   return (Values(exp));
 }
 
-T_mv evaluate_lambdaHead(List_sp headCons, List_sp form, T_sp environment) {
-  T_mv result;
-  if (oCar(headCons) == cl::_sym_lambda) {
-    IMPLEMENT_MEF(BF("Handle lambda better"));
-  } else {
-    SIMPLE_ERROR(BF("Illegal form: %s") % _rep_(form));
-  }
-  return (result);
-}
 
 T_mv evaluate_specialForm(SpecialForm_sp specialForm, List_sp form, T_sp environment) {
   return specialForm->evaluate(oCdr(form), environment);
@@ -2207,7 +2198,6 @@ T_mv evaluate(T_sp exp, T_sp environment) {
   //            printf("    environment: %s\n", _rep_(environment).c_str() );
   ASSERT(environment.generalp());
   T_mv result;
-  Cons_sp cform;
   List_sp form;
   T_sp head;
   core__stack_monitor();
@@ -2220,12 +2210,10 @@ T_mv evaluate(T_sp exp, T_sp environment) {
     if (_evaluateVerbosity > 0) {
       printf("core::eval::evaluate depth[%5d] return <- %s\n", _evaluateDepth, _rep_(exp).c_str());
     }
-    result = Values(exp);
-    goto DONE;
+    return Values(exp);
   }
-  if (cl__atom(exp)) {
-    result = evaluate_atom(exp, environment);
-    goto DONE;
+  if (!exp.consp()) {
+    return evaluate_atom(exp, environment);
   }
   //
   // If it reached here then exp is a cons
@@ -2233,29 +2221,30 @@ T_mv evaluate(T_sp exp, T_sp environment) {
   //	    LOG(BF("Evaluating cons[%s]") % exp->__repr__() );
   //	    printf("    Evaluating: %s\n", _rep_(exp).c_str() );
   //	    printf("    In env: %s\n", _rep_(environment).c_str() );
-  cform = exp.asOrNull<Cons_O>();
+  Cons_sp cform((gctools::Tagged)exp.raw_());
   form = cform;
   ASSERTNOTNULL(form);
-  head = oCar(form);
-  if (Symbol_sp headSym = head.asOrNull<Symbol_O>()) {
+  head = CONS_CAR(form);
+  if (head.consp()) {
+    Cons_sp chead((gctools::Tagged)head.raw_());
+    if (CONS_CAR(chead)==cl::_sym_lambda) {
+      return core::eval::evaluate(Cons_O::create(cl::_sym_funcall,exp),environment);
+    }
+    SIMPLE_ERROR(BF("Illegal head of form %s") % _rep_(head));
+  } else if (Symbol_sp headSym = head.asOrNull<Symbol_O>()) {
     T_sp specialForm = _lisp->specialFormOrNil(headSym);
     if (!specialForm.nilp()) {
-      result = evaluate_specialForm(specialForm, form, environment);
-      goto DONE;
+      return evaluate_specialForm(specialForm, form, environment);
     }
 
     if (headSym == cl::_sym_cond) {
-      result = evaluate_cond(form, environment);
-      goto DONE;
+      return evaluate_cond(form, environment);
     } else if (headSym == cl::_sym_case) {
-      result = evaluate_case(form, environment);
-      goto DONE;
+      return evaluate_case(form, environment);
     } else if (headSym == cl::_sym_multipleValueSetq) {
-      result = evaluate_multipleValueSetq(form, environment);
-      goto DONE;
+      return evaluate_multipleValueSetq(form, environment);
     } else if (headSym == cl::_sym_prog1) {
-      result = evaluate_prog1(form, environment);
-      goto DONE;
+      return evaluate_prog1(form, environment);
     }
 
     T_sp theadFunc = af_interpreter_lookup_macro(headSym, environment);
@@ -2280,8 +2269,7 @@ T_mv evaluate(T_sp exp, T_sp environment) {
         string es = _rep_(expanded);
         printf("core::eval::evaluate expression is macro - expanded --> %s\n", es.c_str());
       }
-      result = eval::evaluate(expanded, environment);
-      goto DONE;
+      return eval::evaluate(expanded, environment);
     }
     theadFunc = af_interpreter_lookup_function(headSym, environment);
     if (theadFunc.nilp()) {
@@ -2303,35 +2291,9 @@ T_mv evaluate(T_sp exp, T_sp environment) {
     }
     VaList_S valist_struct(callArgs);
     VaList_sp valist(&valist_struct); // = callArgs.setupVaList(valist_struct);
-    if (_sym_STARinterpreterTraceSTAR->symbolValue().notnilp()) {
-      if (gc::As<HashTable_sp>(_sym_STARinterpreterTraceSTAR->symbolValue())->gethash(headSym).notnilp()) {
-        InterpreterTrace itrace;
-        printf("eval::evaluate Trace [%d] > (%s ", global_interpreter_trace_depth, _rep_(headSym).c_str());
-        for (int i(0), iEnd(nargs); i < iEnd; ++i) {
-          printf("%s ", _rep_(T_sp((gc::Tagged)(*callArgs)[i])).c_str());
-        }
-        printf(" )\n");
-        result = funcall_consume_valist_<core::Function_O>(headFunc.tagged_(), valist);
-        printf("eval::evaluate Trace [%d] < (%s ...)\n", global_interpreter_trace_depth, _rep_(headSym).c_str());
-      } else {
-        result = funcall_consume_valist_<core::Function_O>(headFunc.tagged_(), valist);
-      }
-    } else {
-      result = funcall_consume_valist_<core::Function_O>(headFunc.tagged_(), valist);
-    }
-    goto DONE;
+    return funcall_consume_valist_<core::Function_O>(headFunc.tagged_(), valist);
   }
-  {
-    List_sp headCons = head;
-    ASSERTF(headCons, BF("Illegal head %s - must be a LAMBDA expression") % _rep_(head));
-    result = evaluate_lambdaHead(headCons, form, environment);
-    goto DONE;
-  }
- DONE:
-  if (_evaluateVerbosity > 0) {
-    printf("core::eval::evaluate depth[%5d] <---- %p\n", _evaluateDepth, exp.raw_());
-  }
-  return result;
+  SIMPLE_ERROR(BF("Illegal form %s") % _rep_(exp));
 }
 
 void evaluateIntoActivationFrame(ActivationFrame_sp af,

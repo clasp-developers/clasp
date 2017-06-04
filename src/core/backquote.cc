@@ -101,7 +101,6 @@ CL_DOCSTRING("append as in clhs");
 CL_DEFUN T_sp core__backquote_append(VaList_sp lists) {
   ql::list list; // (lists);
   LOG(BF("Carrying out append with arguments: %s") % _rep_(lists));
-  List_sp appendArg = lists;
   unlikely_if (lists->total_nargs()==0) {
     SIMPLE_ERROR(BF("backquote-append was called with zero arguments"));
   }
@@ -117,7 +116,7 @@ CL_DEFUN T_sp core__backquote_append(VaList_sp lists) {
   }
   /* Now append the last argument by setting the new lists last element cdr
 	   to the last argument of append */
-  List_sp result = list.dot(oCar(lists->next_arg())).cons();
+  List_sp result = list.dot(lists->next_arg()).cons();
   return result;
 }
 
@@ -130,7 +129,7 @@ CL_DEFUN T_sp core__backquote_append_list(List_sp lists) {
   LOG(BF("Carrying out append with arguments: %s") % _rep_(lists));
   List_sp appendArg = lists;
   if (appendArg.consp()) {
-    for (; CONS_CDR(appendArg).conspp(); appendArg = CONS_CDR(appendArg)) {
+    for (; CONS_CDR(appendArg).consp(); appendArg = CONS_CDR(appendArg)) {
       T_sp head = CONS_CAR(appendArg);
       ASSERT(head.consp() || head.nilp());
       List_sp oneList = head;
@@ -228,7 +227,8 @@ CL_DEFUN T_sp core__backquote_bracket(T_sp x) {
     //	    return Cons_O::createList(_sym_STARbq_listSTAR,eval::funcall(_sym_backquote_process,x));
     return Cons_O::createList(_sym_STARbq_listSTAR, core__backquote_process(x));
   }
-  T_sp head = CONS_CAR(x.unsafe_cons());
+  Cons_sp cx((gctools::Tagged)x.raw_());
+  T_sp head = CONS_CAR(x);
   if (head == _sym_unquote) {
     return (Values(Cons_O::createList(_sym_STARbq_listSTAR, oCadr(cx))));
   } else if (head == _sym_unquote_splice) {
@@ -245,10 +245,11 @@ CL_DECLARE();
 CL_DOCSTRING("backquote_splicing_frob is true if a form that when read looked like ,@foo or ,.foo");
 CL_DEFUN bool core__backquote_splicing_frob(T_sp x) {
   if (x.consp()) {
-    T_sp head = CONS_CAR(x.unsafe_cons());
-    return ((((head == _sym_unquote_splice) || (head == _sym_unquote_nsplice))));
+    Cons_sp cx((gctools::Tagged)x.raw_());
+    T_sp head = CONS_CAR(cx);
+    return (head == _sym_unquote_splice) || (head == _sym_unquote_nsplice);
   }
-  return ((false));
+  return false;
 };
 
 CL_LAMBDA(x);
@@ -256,7 +257,8 @@ CL_DECLARE();
 CL_DOCSTRING("backquote_frob is true if a form that when read looked like ,foo or ,@foo or ,.foo");
 CL_DEFUN bool core__backquote_frob(T_sp x) {
   if (x.consp()) {
-    T_sp head = oCar(x.unsafe_cons());
+    Cons_sp cx((gctools::Tagged)x.raw_());
+    T_sp head = CONS_CAR(cx);
     return ((((head == _sym_unquote) || (head == _sym_unquote_splice) || (head == _sym_unquote_nsplice))));
   }
   return false;
@@ -272,7 +274,7 @@ CL_DEFUN T_sp core__backquote_maptree(Function_sp op, T_sp x) {
     T_sp result = eval::funcall(op, x);
     return result;
   }
-  Cons_sp cx = x.unsafe_cons();
+  Cons_sp cx((gctools::Tagged)x.raw_());
   T_sp a = eval::funcall(op, CONS_CAR(cx));
   T_sp d = core__backquote_maptree(op, CONS_CDR(cx));
   if (cl__eql(a, oCar(cx)) && cl__eql(d, CONS_CDR(cx))) return x;
@@ -285,13 +287,14 @@ CL_DECLARE();
 CL_DOCSTRING("temp_backquote_simplify");
 CL_DEFUN T_sp core__backquote_simplify(T_sp x) {
   if (!x.consp()) return x;
-  Cons_sp cx = x.unsafe_cons();
-  if (oCar(cx) == _sym_STARbq_quoteSTAR) {
+  Cons_sp cx((gctools::Tagged)x.raw_());
+  if (CONS_CAR(cx) == _sym_STARbq_quoteSTAR) {
     // do nothing x = x;
   } else {
     SYMBOL_SC_(CorePkg, backquote_simplify);
     x = core__backquote_maptree(_sym_backquote_simplify->symbolFunction(), x);
-    cx = x;
+    ASSERT(cx.consp());
+    cx = gc::As_unsafe<Cons_sp>(x);
   }
   if (CONS_CAR(cx) != _sym_STARbq_appendSTAR) {
     return (x);
@@ -305,14 +308,14 @@ CL_DECLARE();
 CL_DOCSTRING("backquote_simplify_args");
 CL_DEFUN T_sp core__backquote_simplify_args(T_sp x) {
   ASSERT(x.consp());
-  Cons_sp cx = x.unsafe_cons();
+  Cons_sp cx((gctools::Tagged)x.raw_());
   List_sp args = gc::As<Cons_sp>(CONS_CDR(cx))->reverse();
   T_sp result = _Nil<T_O>();
   while (args.consp()) {
     // Advance args
     args = CONS_CDR(args);
     // Advance result
-    T_sp head = CONS_CAR(args);
+    T_sp head = oCar(args);
     if (!head.consp()) {
       result = core__backquote_attach_append(_sym_STARbq_appendSTAR, head, result);
     } else {
@@ -353,7 +356,7 @@ CL_DEFUN T_sp core__backquote_null_or_quoted(T_sp x) {
   if (x.nilp())
     return (Values(_lisp->_true()));
   if ((x).consp()) {
-    Cons_sp cx = x.unsafe_cons();
+    Cons_sp cx((gctools::Tagged)x.raw_());
     if (CONS_CAR(cx) == _sym_STARbq_quoteSTAR)
       return (_lisp->_true());
   }
@@ -408,7 +411,7 @@ CL_DEFUN T_sp core__backquote_remove_tokens(T_sp x) {
   if (x == _sym_STARbq_listSTARSTAR) return cl::_sym_listSTAR;
   if (x == _sym_STARbq_quoteSTAR) return cl::_sym_quote;
   if (!x.consp()) return x;
-  Cons_sp cx = x.unsafe_consp();
+  Cons_sp cx((gctools::Tagged)x.raw_());
   T_sp head = CONS_CAR(cx);
   if (head == _sym_STARbq_clobberableSTAR) {
     return core__backquote_remove_tokens(oCadr(cx));
