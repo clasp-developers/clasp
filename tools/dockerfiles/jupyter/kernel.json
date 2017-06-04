@@ -1,6 +1,8 @@
 {
     "argv": [
         "/home/app/clasp/bin/clasp",
+        "--feature",
+        "jupyter",
         "--exec",
         "(ext:chdir #P\"/work/\" t)",
         "--load",
