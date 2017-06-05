@@ -49,14 +49,18 @@ successfully, T is returned, else error."
 	 (run-start (get-internal-run-time))
 	 (llvm-finalization-time-start llvm-sys:*accumulated-llvm-finalization-time*)
 	 (llvm-finalization-number-start llvm-sys:*number-of-llvm-finalizations*)
+	 llvm-finalization-time-end
+	 llvm-finalization-number-end
+	 (clang-link-time-start llvm-sys:*accumulated-clang-link-time*)
+	 (clang-link-number-start llvm-sys:*number-of-clang-links*)
+	 clang-link-time-end
+	 clang-link-number-end
 	 gc-start
          clasp-bytes-start clasp-bytes-end
 	 real-end
 	 run-end
          interpreted-calls-start interpreted-calls-end
          llh-calls-begin llh-calls-end
-	 llvm-finalization-time-end
-	 llvm-finalization-number-end
 	 gc-end)
     ;; Garbage collection forces counters to be updated
     #-clasp(si::gc t)
@@ -72,7 +76,10 @@ successfully, T is returned, else error."
 	    real-end (get-internal-real-time)
             interpreted-calls-end (core:interpreted-closure-calls)
 	    llvm-finalization-time-end llvm-sys:*accumulated-llvm-finalization-time*
-	    llvm-finalization-number-end llvm-sys:*number-of-llvm-finalizations*)
+	    llvm-finalization-number-end llvm-sys:*number-of-llvm-finalizations*
+	    clang-link-time-end llvm-sys:*accumulated-clang-link-time*
+	    clang-link-number-end llvm-sys:*number-of-clang-links*
+            )
       #-clasp(format *trace-output*
 		     "real time     : ~,3F secs~%~
               run time      : ~,3F secs~%~
@@ -91,12 +98,16 @@ successfully, T is returned, else error."
               Bytes consed        : ~a bytes~%~
               LLVM time           : ~,3F secs~%~
               LLVM compiles       : ~A~%~
+              clang link time     : ~,3F secs~%~
+              clang links         : ~A~%~
               Interpreted closures: ~A~%"
 		     (/ (- real-end real-start) internal-time-units-per-second)
 		     (/ (- run-end run-start) internal-time-units-per-second)
                      (- clasp-bytes-end clasp-bytes-start)
 		     (- llvm-finalization-time-end llvm-finalization-time-start)
 		     (- llvm-finalization-number-end llvm-finalization-number-start)
+		     (- clang-link-time-end clang-link-time-start)
+		     (- clang-link-number-end clang-link-number-start)
                      (- interpreted-calls-end interpreted-calls-start))))
   #+boehm-gc
   (let* ((*do-time-level* (1+ *do-time-level*))
