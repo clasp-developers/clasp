@@ -430,6 +430,7 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
 (defvar *alien-declarations* ())
 (export '*alien-declarations*)
 
+(defun split-at-white-space (s) (split s " "))
 
 (defun default-link-flags ()
   "Return the link flags and the library dir where libLTO.<library-extension> can be found and the library extension"
