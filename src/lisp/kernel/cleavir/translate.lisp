@@ -362,11 +362,20 @@ when this is t a lot of graphs will be generated.")
        (let ((load (%load input)))
          (%store load output))))))
 
+(defun safe-llvm-name (obj)
+  "Generate a name for the object that can be used as a variable label in llvm"
+  (cond
+    ((stringp obj) obj)
+    ((symbolp obj) (string obj))
+    ((listp obj) "list")
+    ((arrayp obj) "array")
+    (t "object")))
+
 (defmethod translate-simple-instruction
     ((instruction clasp-cleavir-hir:precalc-value-instruction) return-value inputs outputs abi function-info)
   (let ((idx (first inputs)))
     (cmp:irc-low-level-trace :flow)
-    (let* ((label (format nil "~s" (clasp-cleavir-hir:precalc-value-instruction-original-object instruction)))
+    (let* ((label (safe-llvm-name (clasp-cleavir-hir:precalc-value-instruction-original-object instruction)))
            (value (cmp::irc-smart-ptr-extract (cmp:irc-load (cmp::irc-gep (cmp:ltv-global) (list (%size_t 0) idx) label)))))
       (llvm-sys:create-store cmp:*irbuilder* value (first outputs) nil))))
 
