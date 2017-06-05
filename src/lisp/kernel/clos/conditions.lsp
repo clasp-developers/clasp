@@ -726,7 +726,7 @@ memory limits before executing the program again."))
   (:report "Console interrupt."))
 
 #+clasp(define-condition core:single-dispatch-missing-dispatch-argument-error (serious-condition)
-        (lambda-list :initarg :arguments)
+        ((lambda-list :initarg :arguments :reader lambda-list))
         (:REPORT (lambda (condition stream)
                    (format stream "You must specify which argument is to be single dispatched on - arguments: ~a" (arguments condition)"Cannot print object ~A readably."
                            (lambda-list condition)))))

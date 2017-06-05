@@ -25,8 +25,6 @@ when this is t a lot of graphs will be generated.")
 (defvar *tags*)
 (defvar *vars*)
 
-(defvar *entry-irbuilder*)
-
 (defun translate-datum (datum)
   (if (typep datum 'cleavir-ir:constant-input)
       (let* ((value (cleavir-ir:value datum)))
@@ -461,10 +459,10 @@ when this is t a lot of graphs will be generated.")
 	  (format t "    outputs: ~a~%" outputs))
 ;;; FIXME - this should use cmp::*current-unwind-landing-pad-dest*
   (cmp:irc-low-level-trace :flow)
-  (let ((call (closure-call-or-invoke (first inputs) return-value (cdr inputs) abi))))
-  (cc-dbg-when *debug-log*
-               (format *debug-log* "    translate-simple-instruction invoke-instruction: ~a~%" (cc-mir:describe-mir instruction))
-               (format *debug-log* "     instruction --> ~a~%" call)))
+  (let ((call (closure-call-or-invoke (first inputs) return-value (cdr inputs) abi)))
+    (cc-dbg-when *debug-log*
+                 (format *debug-log* "    translate-simple-instruction invoke-instruction: ~a~%" (cc-mir:describe-mir instruction))
+                 (format *debug-log* "     instruction --> ~a~%" call))))
 
 (defmethod translate-simple-instruction
     ((instruction cleavir-ir:nop-instruction) return-value inputs outputs abi function-info)
