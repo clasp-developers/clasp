@@ -19,10 +19,12 @@ RUN python -m pip install pytraj==1.0.9
 RUN python -m jupyter nbextension enable --py --sys-prefix widgetsnbextension
 RUN python -m jupyter nbextension install --py --sys-prefix nglview
 RUN python -m jupyter nbextension enable --py --sys-prefix nglview
-ADD tools/dockerfiles/jupyter/kernel.json \
-  /home/app/.local/share/jupyter/kernels/lisp/kernel.json
-RUN chown -R app:app /home/app/.local $HOME/clasp/Contents/Resources/source-code/extensions/cando/src/lisp
+ADD tools/dockerfiles/jupyter/kernel.json /home/app/.local/share/jupyter/kernels/lisp/kernel.json
+ADD tools/dockerfiles/jupyter/jupyter_notebook_config.py /home/app/.jupyter/jupyter_notebook_config.py
+RUN chown -R app:app /home/app/.jupyter /home/app/.local $HOME/clasp/Contents/Resources/source-code/extensions/cando/src/lisp
 USER app
+
+
 # Overwrite the clasp-build clasp/Contents/Resources/source-code/extensions/cando/src/lisp directory
 # with whatever new changes have been made in the hosts  extensions/cando/src/lisp/**   hierarchy
 #    This is to refresh the Common Lisp code for Cando
