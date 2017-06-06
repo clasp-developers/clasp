@@ -140,6 +140,7 @@
           irc-ret
           irc-undef-value-get
           irc-store
+          irc-store-t*
           irc-switch
           irc-unreachable
           irc-trunc

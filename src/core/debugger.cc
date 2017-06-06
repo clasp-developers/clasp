@@ -615,6 +615,15 @@ void dbg_controlC() {
 #endif
 };
 
+
+extern "C" {
+
+void tprint(void* ptr)
+{
+  core::dbg_printTPtr((uintptr_clasp_t) ptr,false);
+}
+
+};
 namespace core {
 
   SYMBOL_EXPORT_SC_(CorePkg, printCurrentIhsFrameEnvironment);

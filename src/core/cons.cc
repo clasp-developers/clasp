@@ -836,34 +836,21 @@ void Cons_O::describe(T_sp stream)
 
 string Cons_O::__repr__() const {
   Cons_sp start = this->asSmartPtr();
-  T_sp cdr = start;
+  T_sp car = start->_Car;
+  T_sp cdr = start->_Cdr;
   stringstream sout;
-#if 0
-  if (oCar(start) == cl::_sym_quote) {
-    if ((oCdr(start)).consp()) {
-      sout << "'" << _rep_(oCdr(start)) << " ";
-    } else {
-      sout << "QUOTE ." << _rep_(oCdr(start)) << " ";
-    }
-    return ((sout.str()));
+  sout << "(" << _rep_(car);
+  while (cdr.consp()) {
+    Cons_sp p = gc::As<Cons_sp>(cdr);
+    car = p->_Car;
+    sout << " " << _rep_(car);
+    cdr = oCdr(p);
   }
-#endif
-  sout << "(";
-  while (cdr.notnilp()) {
-    if ((cdr).consp()) {
-      Cons_sp p = gc::As<Cons_sp>(cdr);
-      T_sp po = p->_Car;
-      sout << _rep_(po) << " ";
-      cdr = oCdr(p);
-    } else {
-      if (cdr.notnilp()) {
-        sout << " . ";
-        sout << _rep_(cdr);
-      }
-      cdr = _Nil<T_O>();
-    }
+  if (cdr.notnilp()) {
+    sout << " . " << _rep_(cdr) << ")";
+  } else {
+    sout << ")";
   }
-  sout << " )";
 #if 0 // also checkout Cons_O::
         sout <<"@" << (void*)(this) << " ";
 #endif

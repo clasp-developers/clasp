@@ -1,4 +1,37 @@
 
+;;; --------------------------------------------------
+;;;
+;;; Work with metering literal compilation
+;;;
+
+
+(mon:with-monitoring (literal::ltv/cons
+                      literal::reference-literal
+                      literal::compile-reference-to-literal
+                      clasp-cleavir::%literal-index
+                      clasp-cleavir::%literal-ref
+                      clasp-cleavir::%literal-value
+                      clasp-cleavir::%literal
+                      compile-file
+                      ) ()
+  (compile-file "sys:tests;biglists.lsp" :output-type :bitcode))
+
+(time
+ (let ((cmp::*link-options* (list "-O0")))
+   (compile-file "sys:tests;biglists.lsp")))
+
+(time
+ (let ((cmp::*link-options* (list "-O2")))
+   (compile-file "sys:tests;biglists.lsp")))
+
+(time
+ (let ((*features* (cons :debug-run-clang *features*))
+       (cmp::*link-options* (list "-O2" "--time-passes")))
+   (compile-file "sys:tests;biglists20000.lsp")))
+
+;;; --------------------------------------------------
+;;; Work with generic function dispatch
+;;;
 (dolist (x (clos::all-generic-functions))
 ;;;  (core:bformat t "%s\n" x)
   (if (member x (list

@@ -188,7 +188,6 @@
     (finalize-inheritance class)))
 
 (defmethod initialize-instance ((class class) &rest initargs &key direct-slots)
-  (declare (ignore sealedp))
   (dbg-standard "standard.lsp:196  initialize-instance class->~a~%" class)
   ;; convert the slots from lists to direct slots
   (apply #'call-next-method class
@@ -241,7 +240,7 @@
 (defmethod shared-initialize ((class std-class) slot-names &rest initargs &key
                               (optimize-slot-access (list *optimize-slot-access*))
                               sealedp)
-  (declare (ignore initargs slot-names))
+  (declare (ignore slot-names))
   (setf (slot-value class 'optimize-slot-access) (first optimize-slot-access)
 	(slot-value class 'sealedp) (and sealedp t))
   (setf class (call-next-method))
@@ -498,7 +497,7 @@ because it contains a reference to the undefined class~%  ~A"
   (declare (ignore direct-default-initargs direct-slots))
   (multiple-value-bind (metaclass direct-superclasses options)
       (apply #'help-ensure-class rest)
-    (declare (ignore direct-superclasses))
+    (declare (ignore #-clasp direct-superclasses))
     ;;
     ;; initialize the default allocator for the new class
     ;; It is inherited from the direct-superclasses - if they are all 

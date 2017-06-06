@@ -68,8 +68,21 @@
 
 ;;; ------------------------------------------------------------
 ;;;
+;;; Immediate objects don't need to be put into tables
 ;;;
-;;;
+
+;;; Return NIL if the object is not immediate - or return
+;;;     a tagged pointer that represents the immediate object.
+(defun immediate-object-or-nil (x)
+  ;;; Turn off immediate object generation for now by returning NIL
+  nil
+  #++(let ((immediate (core:create-tagged-immediate-value-or-nil x)))
+    (if immediate
+        (let ((val (irc-int-to-ptr (jit-constant-i64 immediate) %t*%)))
+          val)
+        (progn
+          nil))))
+
 
 (defvar *table-index*)
 
@@ -132,9 +145,13 @@ the value is put into *default-load-time-value-vector* and its index is returned
             (load-time-reference-literal (denominator ratio) read-only-p)))
 
 (defun ltv/cons (cons index read-only-p)
-  (let ((isproper (core:proper-list-p cons)))
+  #++(add-creator "ltvc_make_cons" index
+               (load-time-reference-literal (car cons) read-only-p)
+               (load-time-reference-literal (cdr cons) read-only-p))
+  (let ((isproper (core:proper-list-p cons))
+        (list-max call-arguments-limit))
     (cond
-      ((and isproper (< (length cons) call-arguments-limit))
+      ((and isproper (< (length cons) list-max))
        (apply 'add-creator "ltvc_make_list" index
               (length cons) (mapcar (lambda (x)
                                       (load-time-reference-literal x read-only-p))
@@ -144,7 +161,7 @@ the value is put into *default-load-time-value-vector* and its index is returned
                     (load-time-reference-literal (car cons) read-only-p)
                     (load-time-reference-literal (cdr cons) read-only-p)))
       ;; Too long list
-      (t (let* ((pos (- call-arguments-limit 8))
+      (t (let* ((pos (- list-max 8))
                 (front (subseq cons 0 pos))
                 (back (nthcdr pos cons)))
            (add-creator "ltvc_nconc" index
@@ -299,7 +316,7 @@ the constants-table."
         (error "The body of with-ltv MUST return a compiled llvm::Function object resulting from compiling a thunk - instead it returned: ~a" body-return-fn))
     (with-run-all-body-codegen
         ;; Generate code for the constants-table DSL
-        (labels ((ensure-llvm-value (obj)
+        (labels ((ensure-creator-llvm-value (obj)
                    "Lookup or create the llvm::Value for obj"
                    (or (gethash obj *llvm-values*)
                        (setf (gethash obj *llvm-values*)
@@ -315,14 +332,14 @@ the constants-table."
                              (cond
                                ((fixnump x) (jit-constant-i64 x))
                                ((stringp x) (jit-constant-unique-string-ptr x))
-                               ((literal:constant-creator-p x) (ensure-llvm-value x))
+                               ((literal:constant-creator-p x) (ensure-creator-llvm-value x))
                                (t x))) ;;(error "Illegal run-all entry ~a" x))))
                            args)))
           (dolist (node constants-nodes)
             #+(or)(bformat t "generate-run-all-code  generating node: %s\n" node)
             (cond
               ((literal:constant-creator-p node)
-               (ensure-llvm-value node))
+               (ensure-creator-llvm-value node))
               ((literal:constant-side-effect-p node)
                (let* ((fn-name (literal:constant-side-effect-name node))
                       (args (literal:constant-side-effect-arguments node))
@@ -483,26 +500,20 @@ Return the orderered-raw-constants-list and the constants-table GlobalVariable"
 	 (values ordered-raw-constant-list constant-table startup-fn shutdown-fn)))))
 
 (defun load-time-reference-literal (object read-only-p)
-  (multiple-value-bind (similarity creator)
-      (object-similarity-table-and-creator object read-only-p)
-    (let ((existing (find-similar object similarity)))
-      (if existing
-          (gethash existing *constant-index-to-constant-creator*)
-          (let ((index (new-table-index)))
-            (add-similar object index similarity)
-            (setf (gethash index *constant-index-to-constant-creator*) creator)
-            (funcall creator object index read-only-p))))))
-
-#+(or)
-(defun load-time-reference-literal (object read-only-p)
-  (multiple-value-bind (similarity creator)
-      (object-similarity-table-and-creator object)
-    (let* ((existing (find-similar object similarity)))
-      (or existing
-          (let ((index (new-table-index)))
-            (add-similar object index similarity)
-            (funcall creator object index read-only-p)
-            index)))))
+  "If the object is an immediate object return (values immediate nil).
+   Otherwise return (values creator T)."
+  (let ((immediate (immediate-object-or-nil object)))
+    (if immediate
+        (values immediate nil)
+        (multiple-value-bind (similarity creator)
+            (object-similarity-table-and-creator object read-only-p)
+          (let ((existing (find-similar object similarity)))
+            (if existing
+                (values (gethash existing *constant-index-to-constant-creator*) t)
+                (let ((index (new-table-index)))
+                  (add-similar object index similarity)
+                  (setf (gethash index *constant-index-to-constant-creator*) creator)
+                  (values (funcall creator object index read-only-p) t))))))))
 
 (defun evaluate-function-into-load-time-value (index fn)
   (add-creator "ltvc_set_ltv_funcall" index fn (jit-constant-unique-string-ptr (llvm-sys:get-name fn)))
@@ -526,32 +537,21 @@ Return the orderered-raw-constants-list and the constants-table GlobalVariable"
 (defvar *run-time-coalesce*)
 
 (defun run-time-reference-literal (object read-only-p)
-  (let* ((similarity *run-time-coalesce*)
-         (existing (find-similar object similarity)))
-    (or existing
-        (let* ((index (new-table-index))
-               (new-obj (make-constant-runtime :index index :object object)))
-          (add-similar object new-obj similarity)
-          (run-all-add-node new-obj)
-          new-obj))))
-
-#+(or)
-(defun run-time-reference-literal (object read-only-p)
-  (let* ((similarity *run-time-coalesce*)
-         (existing (find-similar object similarity)))
-    (or existing
-        (let ((index (new-run-time-table-index)))
-          (add-similar object index similarity)
-          (add-run-time-object object index)
-          index))))
-
-
-
-
-
-
-
-
+  "If the object is an immediate object return (values immediate nil).
+   Otherwise return (values creator T)."
+  (let ((immediate (immediate-object-or-nil object)))
+    (if immediate
+        (values immediate NIL)
+        (let* ((similarity *run-time-coalesce*)
+               (existing (find-similar object similarity)))
+          (if existing
+              (values existing T)
+              (values (let* ((index (new-table-index))
+                             (new-obj (make-constant-runtime :index index :object object)))
+                        (add-similar object new-obj similarity)
+                        (run-all-add-node new-obj)
+                        new-obj)
+                      T))))))
 
 ;;; ------------------------------------------------------------
 ;;;
@@ -597,16 +597,25 @@ Return the orderered-raw-constants-list and the constants-table GlobalVariable"
 ;;; ------------------------------------------------------------
 
 (defun reference-literal (object &optional read-only-p)
-  "Return an index for the literal object in a constants-table"
+  "Return (values index T) for the literal object in a constants-table.
+   Returns (values :poison-value-from-reference-literal nil) if the object is an immediate and doesn't have a place in the constants-table."
   (let ((cmp:*compile-file-debug-dump-module* nil)
         (cmp:*compile-debug-dump-module* nil))
     (if (generate-load-time-values)
-        (let* ((data (load-time-reference-literal object read-only-p)))
-          (let ((index (constant-creator-index data)))
-            index))
-        (let ((data (run-time-reference-literal object read-only-p)))
-          (let ((index (constant-runtime-index data)))
-            index)))))
+        (multiple-value-bind (data in-array)
+            (load-time-reference-literal object read-only-p)
+          (if in-array
+              (let ((index (constant-creator-index data)))
+                (values index T))
+              (values data nil)))
+        (multiple-value-bind (immediate?constant-runtime in-array)
+            (run-time-reference-literal object read-only-p)
+          (if in-array
+              (let* ((constant-runtime immediate?constant-runtime)
+                     (index (constant-runtime-index constant-runtime)))
+                (values index T))
+              (let ((immediate immediate?constant-runtime))
+                (values immediate nil)))))))
 
 ;;; ------------------------------------------------------------
 ;;;
@@ -615,26 +624,41 @@ Return the orderered-raw-constants-list and the constants-table GlobalVariable"
 
 (defun compile-reference-to-literal (literal)
   "Generate a reference to a load-time-value or run-time-value literal depending if called from COMPILE-FILE or COMPILE respectively"
-  (let ((ltv-idx (reference-literal literal t)))
-    (constants-table-reference ltv-idx (pretty-load-time-name literal ltv-idx))))
+  (multiple-value-bind (data-or-index in-array)
+      (reference-literal literal t)
+    (if in-array
+        (constants-table-reference data-or-index (pretty-load-time-name literal data-or-index))
+        data-or-index)))
 
 (defun codegen-rtv (result obj)
   "bclasp calls this to get copy the run-time-value for obj into result"
-  (let* ((data (run-time-reference-literal obj t))
-         (idx (constant-runtime-index data)))
-    (when result
-      (irc-store (literal:constants-table-value idx) result))
-    idx))
+  (multiple-value-bind (immediate?constant-runtime in-array)
+      (run-time-reference-literal obj t)
+    (if in-array
+        (let* ((constant-runtime immediate?constant-runtime)
+               (index (constant-runtime-index constant-runtime)))
+          (when result
+            (irc-store (literal:constants-table-value index) result))
+          index)
+        (let ((immediate immediate?constant-runtime))
+          (when result
+            (irc-store-t* immediate result))
+          :poison-value-from-codegen-rtv))))
 
 (defun codegen-literal (result object env)
   "This is called by bclasp.  If result is nil then just return the ltv index.
 If it isn't NIL then copy the literal from its index in the LTV into result."
-  (let ((index (reference-literal object t)))
-    (when result
-      (irc-store (constants-table-value index) result))
-    index))
-        
-
+  (multiple-value-bind (data-or-index in-array)
+      (reference-literal object t)
+    (if in-array
+        (progn
+          (when result
+            (irc-store (constants-table-value data-or-index) result))
+          data-or-index)
+        (progn
+          (when result
+            (irc-store-t* data-or-index result))
+          :poison-value-from-codegen-literal))))
 
 ;; Should be bclasp-compile-load-time-value-thunk
 (defun compile-load-time-value-thunk (form)

@@ -3414,8 +3414,8 @@ CL_VALUE_ENUM(_sym_NotAtomic, llvm::AtomicOrdering::NotAtomic);
   SYMBOL_EXPORT_SC_(LlvmoPkg, STARmostRecentLlvmFinalizationTimeSTAR);
   SYMBOL_EXPORT_SC_(LlvmoPkg, STARaccumulatedLlvmFinalizationTimeSTAR);
   SYMBOL_EXPORT_SC_(LlvmoPkg, STARnumberOfLlvmFinalizationsSTAR);
-
-
+  SYMBOL_EXPORT_SC_(LlvmoPkg, STARaccumulatedClangLinkTimeSTAR);
+  SYMBOL_EXPORT_SC_(LlvmoPkg, STARnumberOfClangLinksSTAR);
 
   void initialize_llvmo_expose() {
     llvm::InitializeNativeTarget();
@@ -3424,6 +3424,8 @@ CL_VALUE_ENUM(_sym_NotAtomic, llvm::AtomicOrdering::NotAtomic);
     _sym_STARmostRecentLlvmFinalizationTimeSTAR->defparameter(core::DoubleFloat_O::create(0.0));
     _sym_STARaccumulatedLlvmFinalizationTimeSTAR->defparameter(core::DoubleFloat_O::create(0.0));
     _sym_STARnumberOfLlvmFinalizationsSTAR->defparameter(core::make_fixnum(0));
+    _sym_STARaccumulatedClangLinkTimeSTAR->defparameter(core::DoubleFloat_O::create(0.0));
+    _sym_STARnumberOfClangLinksSTAR->defparameter(core::make_fixnum(0));
     llvm::initializeScalarOpts(*llvm::PassRegistry::getPassRegistry());
   }
 

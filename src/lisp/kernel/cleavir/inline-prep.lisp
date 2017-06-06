@@ -16,6 +16,9 @@
       ;; Add other clauses here
       (t (warn "Add support for proclaim ~s~%" decl)))))
 
+(defparameter *simple-environment* nil)
+(defvar *code-walker* nil)
+
 (defun mark-env-as-function ()
   (push 'si::function-boundary *simple-environment*))
 
@@ -96,7 +99,5 @@
            (when (fboundp ',name)
              (core:setf-cleavir-ast (fdefinition ',name) ,ast)))))))
 
-  
-(defparameter *simple-environment* nil)
-(defvar *code-walker* nil)
+
 (export '(*simple-environment* *code-walker*))

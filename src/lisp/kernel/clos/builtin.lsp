@@ -29,10 +29,9 @@
 (si::*make-constant '+builtin-classes+ +builtin-classes-pre-array+)
 
 (defmethod ensure-class-using-class ((class null) name &rest rest)
-  (declare (ignore class))
   (multiple-value-bind (metaclass direct-superclasses options)
       (apply #'help-ensure-class rest)
-    (declare (ignore direct-superclasses))
+    (declare (ignore #-clasp direct-superclasses))
     ;;; In Clasp make-instance of a class requires that a new stamp is chosen
     (setf class (apply #'make-instance metaclass :name name options))
     ;;

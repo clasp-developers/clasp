@@ -190,7 +190,7 @@ gctools::Tagged ltvc_nconc(gctools::GCRootsInModule* holder, size_t index,
   return holder->set(index,val.tagged_());
 }
 
-gctools::Tagged ltvc_make_list(gctools::GCRootsInModule* holder, size_t index, size_t num, ... ) {
+NOINLINE gctools::Tagged ltvc_make_list(gctools::GCRootsInModule* holder, size_t index, size_t num, ... ) {
   core::T_sp first;
   core::T_sp* cur = &first;
   va_list va;

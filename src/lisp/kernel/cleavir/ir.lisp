@@ -5,6 +5,8 @@
 
 (in-package :clasp-cleavir)
 
+(defvar *entry-irbuilder*)
+
 (defun %literal-index (value &optional read-only-p)
   (let ((*debug-cleavir* *debug-cleavir-literals*))
     (literal:reference-literal value read-only-p)))
@@ -286,11 +288,11 @@
            (func (or (llvm-sys:get-function cmp:*the-module* intrinsic-name)
                      (let ((arg-types (make-list (length args) :initial-element cmp:%t*%))
                            (varargs nil))
-                       (setq func (cmp:irc-function-create
-                                   (llvm-sys:function-type-get cmp:%return_type% arg-types varargs)
-                                   'llvm-sys::External-linkage
-                                   intrinsic-name
-                                   cmp:*the-module*)))))
+                       (cmp:irc-function-create
+                        (llvm-sys:function-type-get cmp:%return_type% arg-types varargs)
+                        'llvm-sys::External-linkage
+                        intrinsic-name
+                        cmp:*the-module*))))
            (result-in-registers
             (if cmp::*current-unwind-landing-pad-dest*
                 (cmp::irc-create-invoke func args cmp::*current-unwind-landing-pad-dest*)

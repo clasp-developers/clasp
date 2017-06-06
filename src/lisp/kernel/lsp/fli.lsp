@@ -518,8 +518,7 @@
                                            (trans-arg-name (format nil "translated-~a" arg-name))
                                            ;; Create the function declaration on the fly
                                            (to-object-func (cmp::get-function-or-error cmp::*the-module* to-object-name)))
-                                      (llvm-sys:create-call-array-ref
-                                       cmp::*irbuilder*
+                                      (irc-create-call-or-invoke
                                        to-object-func
                                        (list c-arg)
                                        trans-arg-name nil)))
@@ -533,8 +532,7 @@
                                         (cmp::compile-lambda-function body-form)))
                    (invoke-fn (cmp::get-function-or-error cmp::*the-module* "cc_call_callback"))
                    (fptr (cmp:irc-bit-cast function-object cmp:%t*% "fptr-t*"))
-                   (cl-result (llvm-sys:create-call-array-ref
-                               cmp::*irbuilder*
+                   (cl-result (irc-create-call-or-invoke
                                invoke-fn
                                (list* fptr #| (cmp::null-t-ptr) not used in new call-conv |#
                                       (cmp:jit-constant-size_t (length cl-args)) real-args) "cl-result")))
@@ -545,8 +543,7 @@
                   ;; Return the result
                   (let* ((from-object-name (from-translator-name return-type-kw))
                          (from-object-func (cmp::get-function-or-error cmp::*the-module* from-object-name))
-                         (c-result (llvm-sys:create-call-array-ref
-                                    cmp::*irbuilder*
+                         (c-result (irc-create-call-or-invoke 
                                     from-object-func
                                     (list (llvm-sys:create-extract-value cmp::*irbuilder* cl-result (list 0) "val0"))
                                     "cl-result" nil)))

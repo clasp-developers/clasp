@@ -607,6 +607,20 @@
              (llvm-sys:create-store *irbuilder* tmv1 destination nil)))
           (t (error "!!! Mismatch in irc-store between val type ~a and destination type ~a\n" val-type dest-type))))))
 
+(defun irc-store-t* (val-t* destination &optional (label ""))
+  (let ((destination-type (llvm-sys:get-type destination)))
+    (cond
+      ((equal destination-type %tsp*%)
+        (let* ((undef (llvm-sys:undef-value-get %tsp%))
+               (val-tsp (llvm-sys:create-insert-value *irbuilder* undef val-t* '(0) "val")))
+          (irc-store val-tsp destination)))
+      ((equal destination-type %tmv*%)
+        (let* ((undef (llvm-sys:undef-value-get %tmv%))
+               (val-tmv0 (llvm-sys:create-insert-value *irbuilder* undef val-t* '(0) "val0"))
+               (val-tmv1 (llvm-sys:create-insert-value *irbuilder* val-tmv0 (jit-constant-i64 1) '(1) "nval")))
+          (irc-store val-tmv1 destination)))
+      (t (error "Illegal destination type ~a for value ~a - it cannot accept a t*" destination-type destination)))))
+
 (defun irc-phi (return-type num-reserved-values &optional (label "phi"))
   (llvm-sys:create-phi *irbuilder* return-type num-reserved-values label))
 
