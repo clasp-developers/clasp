@@ -16,7 +16,7 @@
 (defun make-characterp-instruction (input successors)
   (make-instance 'characterp-instruction
                  :inputs (list input)
-                 :successors (list successor)))
+                 :successors successors))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -30,7 +30,7 @@
 (defun make-single-float-p-instruction (input successors)
   (make-instance 'single-float-p-instruction
                  :inputs (list input)
-                 :successors (list successor)))
+                 :successors successors))
 
  
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

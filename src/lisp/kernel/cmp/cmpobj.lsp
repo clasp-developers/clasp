@@ -39,4 +39,4 @@
 
 (defun disassemble-asm (module)
   (with-output-to-string (sout)
-    (generate-obj-asm module fout 'llvm-sys:code-gen-file-type-assembly-file module)))
+    (generate-obj-asm module sout 'llvm-sys:code-gen-file-type-assembly-file module)))
