@@ -74,9 +74,7 @@
 ;;; Return NIL if the object is not immediate - or return
 ;;;     a tagged pointer that represents the immediate object.
 (defun immediate-object-or-nil (x)
-  ;;; Turn off immediate object generation for now by returning NIL
-  nil
-  #++(let ((immediate (core:create-tagged-immediate-value-or-nil x)))
+  (let ((immediate (core:create-tagged-immediate-value-or-nil x)))
     (if immediate
         (let ((val (irc-int-to-ptr (jit-constant-i64 immediate) %t*%)))
           val)
@@ -604,6 +602,7 @@ Return the orderered-raw-constants-list and the constants-table GlobalVariable"
     (if (generate-load-time-values)
         (multiple-value-bind (data in-array)
             (load-time-reference-literal object read-only-p)
+          (bformat t "reference literal object -> %s  generates data -> %s\n" object data)
           (if in-array
               (let ((index (constant-creator-index data)))
                 (values index T))

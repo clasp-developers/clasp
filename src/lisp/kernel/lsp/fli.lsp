@@ -514,10 +514,11 @@
                                            (trans-arg-name (format nil "translated-~a" arg-name))
                                            ;; Create the function declaration on the fly
                                            (to-object-func (cmp::get-function-or-error cmp::*the-module* to-object-name)))
-                                      (irc-create-call-or-invoke
+                                      (cmp::irc-call-or-invoke
                                        to-object-func
                                        (list c-arg)
-                                       trans-arg-name nil)))
+                                       cmp::*current-unwind-landing-pad-dest*
+                                       trans-arg-name)))
                                   c-args argument-type-kws argument-names)))
             ;; (2) Call the closure with the arguments in registers
             (let* ((real-args (if (< (length cl-args) core:+number-of-fixed-arguments+)
@@ -525,13 +526,15 @@
                                   cl-args))
                    (function-object (if core:*use-cleavir-compiler*
                                         (funcall (find-symbol "COMPILE-LAMBDA-FORM-TO-LLVM-FUNCTION" :clasp-cleavir) body-form)
-                                        (cmp::compile-lambda-function body-form)))
+                                        (cmp:compile-lambda-function body-form)))
                    (invoke-fn (cmp::get-function-or-error cmp::*the-module* "cc_call_callback"))
                    (fptr (cmp:irc-bit-cast function-object cmp:%t*% "fptr-t*"))
-                   (cl-result (irc-create-call-or-invoke
+                   (cl-result (cmp::irc-call-or-invoke
                                invoke-fn
                                (list* fptr #| (cmp::null-t-ptr) not used in new call-conv |#
-                                      (cmp:jit-constant-size_t (length cl-args)) real-args) "cl-result")))
+                                      (cmp:jit-constant-size_t (length cl-args)) real-args)
+                               cmp::*current-unwind-landing-pad-dest*
+                               "cl-result")))
               ;; (3) Call the translator for the return value
               (if (eq return-type-kw :void)
                   ;; Return with void
@@ -539,10 +542,11 @@
                   ;; Return the result
                   (let* ((from-object-name (from-translator-name return-type-kw))
                          (from-object-func (cmp::get-function-or-error cmp::*the-module* from-object-name))
-                         (c-result (irc-create-call-or-invoke 
+                         (c-result (cmp::irc-call-or-invoke 
                                     from-object-func
                                     (list (llvm-sys:create-extract-value cmp::*irbuilder* cl-result (list 0) "val0"))
-                                    "cl-result" nil)))
+                                    cmp::*current-unwind-landing-pad-dest*
+                                    "cl-result")))
                     (llvm-sys:create-ret cmp::*irbuilder* c-result))))))))
     `',function-name))
 
