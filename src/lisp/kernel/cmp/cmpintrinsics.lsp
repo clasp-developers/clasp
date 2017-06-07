@@ -962,6 +962,7 @@ and initialize it with an array consisting of one function pointer."
 
   (primitive          module "invokeTopLevelFunction" %void% (list %tmv*% %fn-prototype*% %i8*% %i32*% %size_t% %size_t% %size_t% %ltv**%))
   (primitive          module "cc_register_startup_function" %void% (list %fn-start-up*%))
+  (primitive          module "cc_invoke_sub_run_all_function" %void% (list %fn-start-up*%))
 
   (primitive-nounwind module "activationFrameSize" %i32% (list %afsp*%))
 
