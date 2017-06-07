@@ -310,7 +310,7 @@ CL_DEFUN T_sp core__bit_array_op(T_sp o, T_sp tx, T_sp ty, T_sp tr) {
   bit_operator op;
   bool replace = false;
   int xi, yi, ri;
-  byte *xp, *yp, *rp;
+  byte8_t *xp, *yp, *rp;
   int xo, yo, ro;
   AbstractSimpleVector_sp ax;
   size_t startx, endx;
