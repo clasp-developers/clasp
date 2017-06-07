@@ -303,8 +303,6 @@ CL_LAMBDA(op x y &optional r);
 CL_DECLARE();
 CL_DOCSTRING("bitArrayOp");
 CL_DEFUN T_sp core__bit_array_op(T_sp o, T_sp tx, T_sp ty, T_sp tr) {
-  IMPLEMENT_MEF(BF("This needs to be fixed to handle the new bitvectors and bit arrays"));
-#if 1
   int opval = unbox_fixnum(gc::As<Fixnum_sp>(o));
   gctools::Fixnum i, j, n, d;
   SimpleBitVector_sp r0;
@@ -425,7 +423,6 @@ L1:
   return r0;
 ERROR:
   SIMPLE_ERROR(BF("Illegal arguments for bit-array operation."));
-#endif
 }
 
 /*! Copied from ECL */
