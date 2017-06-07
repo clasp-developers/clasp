@@ -323,27 +323,37 @@ the constants-table."
                                                *gcroots-in-module*
                                                (cmp:jit-constant-size_t (constant-creator-index obj))
                                                (fix-args (constant-creator-arguments obj)))
-                                              (bformat nil "CONTAB[%d]" (constant-creator-index obj))))))
+                                              #+(or)(bformat nil "CONTAB[%d]" (constant-creator-index obj))))))
+                 (lookup-arg (creator)
+                   (ensure-creator-llvm-value creator)
+                   (let* ((idx (constant-creator-index creator))
+                          (entry (llvm-sys:create-geparray cmp:*irbuilder*
+                                                         cmp:*load-time-value-holder-global-var*
+                                                         (list (jit-constant-i32 0)
+                                                               (jit-constant-i32 idx))
+                                                         (bformat nil "CONTAB[%d]%tsp" idx)))
+                          (arg (irc-smart-ptr-extract (irc-load entry) (bformat nil "CONTAB[%d]%t*" idx))))
+                     arg))
                  (fix-args (args)
                    "Convert the args from Lisp form into llvm::Value*'s"
                    (mapcar (lambda (x)
                              (cond
                                ((fixnump x) (jit-constant-i64 x))
                                ((stringp x) (jit-constant-unique-string-ptr x))
-                               ((literal:constant-creator-p x) (ensure-creator-llvm-value x))
+                               ((literal:constant-creator-p x) (lookup-arg x))
                                (t x))) ;;(error "Illegal run-all entry ~a" x))))
                            args)))
-          (dolist (node constants-nodes)
-            #+(or)(bformat t "generate-run-all-code  generating node: %s\n" node)
-            (cond
-              ((literal:constant-creator-p node)
-               (ensure-creator-llvm-value node))
-              ((literal:constant-side-effect-p node)
-               (let* ((fn-name (literal:constant-side-effect-name node))
-                      (args (literal:constant-side-effect-arguments node))
-                      (fix-args (fix-args args)))
-                 (irc-intrinsic-call fn-name fix-args)))
-              (t (error "Unknown run-all node ~a" node)))))
+                     (dolist (node constants-nodes)
+                       #+(or)(bformat t "generate-run-all-code  generating node: %s\n" node)
+                       (cond
+                         ((literal:constant-creator-p node)
+                          (ensure-creator-llvm-value node))
+                         ((literal:constant-side-effect-p node)
+                          (let* ((fn-name (literal:constant-side-effect-name node))
+                                 (args (literal:constant-side-effect-arguments node))
+                                 (fix-args (fix-args args)))
+                            (irc-intrinsic-call fn-name fix-args)))
+                         (t (error "Unknown run-all node ~a" node)))))
       (cond
         ((eq type :toplevel)
          (cmp:irc-intrinsic-call "ltvc_toplevel_funcall" (list body-return-fn
@@ -513,6 +523,8 @@ Return the orderered-raw-constants-list and the constants-table GlobalVariable"
                   (setf (gethash index *constant-index-to-constant-creator*) creator)
                   (values (funcall creator object index read-only-p) t))))))))
 
+
+
 (defun evaluate-function-into-load-time-value (index fn)
   (add-creator "ltvc_set_ltv_funcall" index fn (jit-constant-unique-string-ptr (llvm-sys:get-name fn)))
   index)
@@ -602,7 +614,6 @@ Return the orderered-raw-constants-list and the constants-table GlobalVariable"
     (if (generate-load-time-values)
         (multiple-value-bind (data in-array)
             (load-time-reference-literal object read-only-p)
-          (bformat t "reference literal object -> %s  generates data -> %s\n" object data)
           (if in-array
               (let ((index (constant-creator-index data)))
                 (values index T))

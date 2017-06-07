@@ -122,6 +122,7 @@
           irc-create-landing-pad
           irc-exception-typeid*
           irc-generate-terminate-code
+          irc-gep
           irc-smart-ptr-extract
           irc-set-insert-point-basic-block
           irc-size_t-*current-source-pos-info*-filepos
