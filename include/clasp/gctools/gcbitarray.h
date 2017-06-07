@@ -58,7 +58,7 @@ namespace gctools {
 
 
 namespace gctools {
-  template <int BitUnitBitWidth, class UnsignedWordType=uintptr_clasp_t, class SignedWordType=intptr_t>
+  template <int BitUnitBitWidth, class UnsignedWordType=byte8_t /*uintptr_clasp_t*/, class SignedWordType=int8_t/*intptr_t*/>
     class GCBitUnitArray_moveable : public GCContainer {
   public:
     typedef UnsignedWordType word_type;
