@@ -101,8 +101,8 @@ successfully, T is returned, else error."
               clang link time     : ~,3F secs~%~
               clang links         : ~A~%~
               Interpreted closures: ~A~%"
-		     (/ (- real-end real-start) internal-time-units-per-second)
-		     (/ (- run-end run-start) internal-time-units-per-second)
+		     (float (/ (- real-end real-start) internal-time-units-per-second))
+		     (float (/ (- run-end run-start) internal-time-units-per-second))
                      (- clasp-bytes-end clasp-bytes-start)
 		     (- llvm-finalization-time-end llvm-finalization-time-start)
 		     (- llvm-finalization-number-end llvm-finalization-number-start)
