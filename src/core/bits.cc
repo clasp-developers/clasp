@@ -1,6 +1,7 @@
 #include <clasp/core/foundation.h>
 #include <clasp/core/corePackage.h>
 #include <clasp/core/symbolTable.h>
+#include <clasp/core/bformat.h>
 #include <clasp/core/array.h>
 #include <clasp/core/bits.h>
 #include <clasp/core/wrappers.h>
@@ -299,6 +300,7 @@ T_sp clasp_boole(int op, T_sp x, T_sp y) {
   return x;
 }
 
+#if BIT_ARRAY_BYTE_SIZE==8
 CL_LAMBDA(op x y &optional r);
 CL_DECLARE();
 CL_DOCSTRING("bitArrayOp");
@@ -370,40 +372,45 @@ L1:
   rp = r->bytes();
   ro = startr; // r->offset();
   op = fixnum_operations[opval];
-#define set_high(place, nbits, value) \
+  
+#define set_high8(place, nbits, value) \
   (place) = ((place) & ~(-0400 >> (nbits))) | ((value) & (-0400 >> (nbits)));
 
-#define set_low(place, nbits, value) \
+#define set_low8(place, nbits, value) \
   (place) = ((place) & (-0400 >> (8 - (nbits)))) | ((value) & ~(-0400 >> (8 - (nbits))));
-
-#define extract_byte(integer, pointer, index, offset) \
+  
+#define extract_byte8(integer, pointer, index, offset) \
   (integer) = (pointer)[(index)+1] & 0377;            \
   (integer) = ((pointer)[index] << (offset)) | ((integer) >> (8 - (offset)));
 
-#define store_byte(pointer, index, offset, value)               \
-  set_low((pointer)[index], 8 - (offset), (value) >> (offset)); \
-  set_high((pointer)[(index)+1], offset, (value) << (8 - (offset)));
+#define store_byte8(pointer, index, offset, value)               \
+  set_low8((pointer)[index], 8 - (offset), (value) >> (offset)); \
+  set_high8((pointer)[(index)+1], offset, (value) << (8 - (offset)));
 
   //
   if (xo == 0 && yo == 0 && ro == 0) {
-    for (n = d / 8, i = 0; i < n; i++)
+    for (n = d / 8, i = 0; i < n; i++) {
       rp[i] = (*op)(xp[i], yp[i]);
-    if ((j = d % 8) > 0)
-      set_high(rp[n], j, (*op)(xp[n], yp[n]));
+    }
+    if ((j = d % 8) > 0) {
+      byte rpt = (*op)(xp[n], yp[n]);
+      set_high8(rp[n], j, rpt);
+    }
     if (!replace)
       return r;
   } else {
     for (n = d / 8, i = 0; i <= n; i++) {
-      extract_byte(xi, xp, i, xo);
-      extract_byte(yi, yp, i, yo);
+      extract_byte8(xi, xp, i, xo);
+      extract_byte8(yi, yp, i, yo);
       if (i == n) {
         if ((j = d % 8) == 0)
           break;
-        extract_byte(ri, rp, n, ro);
-        set_high(ri, j, (*op)(xi, yi));
-      } else
+        extract_byte8(ri, rp, n, ro);
+        set_high8(ri, j, (*op)(xi, yi));
+      } else {
         ri = (*op)(xi, yi);
-      store_byte(rp, i, ro, ri);
+      }
+      store_byte8(rp, i, ro, ri);
     }
     if (!replace)
       return r;
@@ -414,16 +421,316 @@ L1:
     if (i == n) {
       if ((j = d % 8) == 0)
         break;
-      extract_byte(ri, rp, n, ro);
-      set_high(ri, j, r->bytes()[n]);
+      extract_byte8(ri, rp, n, ro);
+      set_high8(ri, j, r->bytes()[n]);
     } else
       ri = r->bytes()[i];
-    store_byte(rp, i, ro, ri);
+    store_byte8(rp, i, ro, ri);
   }
   return r0;
 ERROR:
   SIMPLE_ERROR(BF("Illegal arguments for bit-array operation."));
 }
+#endif
+
+#if BIT_ARRAY_BYTE_SIZE==32
+CL_LAMBDA(op x y &optional r);
+CL_DECLARE();
+CL_DOCSTRING("bitArrayOp");
+CL_DEFUN T_sp core__bit_array_op(T_sp o, T_sp tx, T_sp ty, T_sp tr) {
+  int opval = unbox_fixnum(gc::As<Fixnum_sp>(o));
+  gctools::Fixnum i, j, n, d;
+  SimpleBitVector_sp r0;
+  size_t startr0 = 0;
+  bit_operator op;
+  bool replace = false;
+  byte64_t xi, yi, ri;
+  byte32_t *xp, *yp, *rp;
+  byte64_t xo, yo, ro;
+  AbstractSimpleVector_sp ax;
+  size_t startx, endx;
+  AbstractSimpleVector_sp ay;
+  size_t starty, endy;
+  Array_sp array_x = gc::As<Array_sp>(tx);
+  array_x->asAbstractSimpleVectorRange(ax, startx, endx);
+  SimpleBitVector_sp x = gc::As_unsafe<SimpleBitVector_sp>(ax);
+  Array_sp array_y = gc::As<Array_sp>(ty);
+  array_y->asAbstractSimpleVectorRange(ay, starty, endy);
+  SimpleBitVector_sp y = gc::As_unsafe<SimpleBitVector_sp>(ay);
+  SimpleBitVector_sp r;
+  size_t startr, endr;
+  d = (endx - startx); // x->arrayTotalSize();
+  xp = x->bytes();
+  xo = startx; // x->offset();
+  if (d != array_y->arrayTotalSize())
+    goto ERROR;
+  yp = y->bytes();
+  yo = starty; // y->offset();
+  if (tr == _lisp->_true())
+    tr = x;
+  if (tr.notnilp()) {
+    AbstractSimpleVector_sp ar;
+    Array_sp array_r = gc::As<Array_sp>(tr);
+    array_y->asAbstractSimpleVectorRange(ar, startr, endr);
+    r = gc::As_unsafe<SimpleBitVector_sp>(ar);
+    if (!r) {
+      ERROR_WRONG_TYPE_NTH_ARG(core::_sym_bitArrayOp, 4, tr, cl::_sym_SimpleBitVector_O);
+    }
+    if (endr-startr != d) //(r->arrayTotalSize() != d)
+      goto ERROR;
+    i = (r->bytes()-xp)*32+startr-xo;
+    if ((i > 0 && i < d) || (i < 0 && -i < d)) {
+      r0 = r;
+      startr0 = startr;
+      tr = _Nil<T_O>();
+      replace = true;
+      goto L1;
+    }
+    i = (r->bytes() - yp) * 32 + (startr - yo);
+    if ((i > 0 && i < d) || (i < 0 && -i < d)) {
+      r0 = r;
+      startr0 = startr;
+      tr = _Nil<T_O>();
+      replace = true;
+    }
+  }
+L1:
+  if (tr.nilp()) {
+    startr = 0;
+    endr = d;
+    r = SimpleBitVector_O::make(d);
+  }
+  rp = r->bytes();
+  ro = startr; // r->offset();
+  op = fixnum_operations[opval];
+
+#define mask32 0xFFFFFFFF00000000
+#define set_high32(place, nbits, value) \
+  (place) = ((place) & ~(mask32 >> (nbits))) | ((value) & (mask32>> (nbits)));
+
+#define set_low32(place, nbits, value) \
+  (place) = ((place) & (mask32 >> (32 - (nbits)))) | ((value) & ~(mask32 >> (32 - (nbits))));
+  
+#define extract_byte32(integer, pointer, index, offset) \
+  (integer) = (pointer)[(index)+1] & (~mask32);            \
+  (integer) = ((pointer)[index] << (offset)) | ((integer) >> (32 - (offset)));
+
+#define store_byte32(pointer, index, offset, value)               \
+  set_low32((pointer)[index], 32 - (offset), (value) >> (offset)); \
+  set_high32((pointer)[(index)+1], offset, (value) << (32 - (offset)));
+
+  //
+  if (xo == 0 && yo == 0 && ro == 0) {
+    for (n = d / 32, i = 0; i < n; i++) {
+      rp[i] = (*op)(xp[i], yp[i]);
+    }
+    if ((j = d % 32) > 0) {
+      byte rpt = (*op)(xp[n], yp[n]);
+      set_high32(rp[n], j, rpt);
+    }
+    if (!replace)
+      return r;
+  } else {
+    for (n = d / 32, i = 0; i <= n; i++) {
+      extract_byte32(xi, xp, i, xo);
+      extract_byte32(yi, yp, i, yo);
+      if (i == n) {
+        if ((j = d % 32) == 0)
+          break;
+        extract_byte32(ri, rp, n, ro);
+        set_high32(ri, j, (*op)(xi, yi));
+      } else {
+        ri = (*op)(xi, yi);
+      }
+      store_byte32(rp, i, ro, ri);
+    }
+    if (!replace)
+      return r;
+  }
+  rp = r0->bytes();
+  ro = startr0; // r0->offset();
+  for (n = d / 32, i = 0; i <= n; i++) {
+    if (i == n) {
+      if ((j = d % 32) == 0)
+        break;
+      extract_byte32(ri, rp, n, ro);
+      set_high32(ri, j, r->bytes()[n]);
+    } else
+      ri = r->bytes()[i];
+    store_byte32(rp, i, ro, ri);
+  }
+  return r0;
+ERROR:
+  SIMPLE_ERROR(BF("Illegal arguments for bit-array operation."));
+}
+#endif
+
+
+
+#ifdef TEMPLATE_BIT_ARRAY_OP
+
+template <int OP> struct do_bit_op {};
+template <> struct do_bit_op<b_clr_op> {static gc::Fixnum do_it(gc::Fixnum i, gc::Fixnum j) { return b_clr_op(i,j); };};
+template <> struct do_bit_op<and_op> {static gc::Fixnum do_it(gc::Fixnum i, gc::Fixnum j) { return b_and_op(i,j);};};
+template <> struct do_bit_op<andc2_op> {static gc::Fixnum do_it(gc::Fixnum i, gc::Fixnum j) { return b_andc2_op(i,j);};};
+template <> struct do_bit_op<b_1_op> {static gc::Fixnum do_it(gc::Fixnum i, gc::Fixnum j) { return b_1_op(i,j);};};
+template <> struct do_bit_op<andc1_op> {static gc::Fixnum do_it(gc::Fixnum i, gc::Fixnum j) { return b_andc1_op(i,j);};};
+template <> struct do_bit_op<b_2_op> {static gc::Fixnum do_it(gc::Fixnum i, gc::Fixnum j) { return b_2_op(i,j);};};
+template <> struct do_bit_op<xor_op> {static gc::Fixnum do_it(gc::Fixnum i, gc::Fixnum j) { return b_xor_op(i,j);};};
+template <> struct do_bit_op<ior_op> {static gc::Fixnum do_it(gc::Fixnum i, gc::Fixnum j) { return b_ior_op(i,j);};};
+template <> struct do_bit_op<nor_op> {static gc::Fixnum do_it(gc::Fixnum i, gc::Fixnum j) { return b_nor_op(i,j);};};
+template <> struct do_bit_op<eqv_op> {static gc::Fixnum do_it(gc::Fixnum i, gc::Fixnum j) { return b_eqv_op(i,j);};};
+template <> struct do_bit_op<b_c2_op> {static gc::Fixnum do_it(gc::Fixnum i, gc::Fixnum j) { return b_c2_op(i,j);};};
+template <> struct do_bit_op<orc2_op> {static gc::Fixnum do_it(gc::Fixnum i, gc::Fixnum j) { return b_orc2_op(i,j);};};
+template <> struct do_bit_op<b_c1_op> {static gc::Fixnum do_it(gc::Fixnum i, gc::Fixnum j) { return b_c1_op(i,j);};};
+template <> struct do_bit_op<orc1_op> {static gc::Fixnum do_it(gc::Fixnum i, gc::Fixnum j) { return b_orc1_op(i,j);};};
+template <> struct do_bit_op<nand_op> {static gc::Fixnum do_it(gc::Fixnum i, gc::Fixnum j) { return b_nand_op(i,j);};};
+template <> struct do_bit_op<b_set_op> {static gc::Fixnum do_it(gc::Fixnum i, gc::Fixnum j) { return b_set_op(i,j);};};
+
+template <int OP>
+T_sp template_bit_array_op(T_sp tx, T_sp ty, T_sp tr) {
+  gctools::Fixnum i, j, n, d;
+  SimpleBitVector_sp r0;
+  size_t startr0 = 0;
+  bit_operator op;
+  bool replace = false;
+  byte64_t xi, yi, ri;
+  byte32_t *xp, *yp, *rp;
+  byte64_t xo, yo, ro;
+  AbstractSimpleVector_sp ax;
+  size_t startx, endx;
+  AbstractSimpleVector_sp ay;
+  size_t starty, endy;
+  Array_sp array_x = gc::As<Array_sp>(tx);
+  array_x->asAbstractSimpleVectorRange(ax, startx, endx);
+  SimpleBitVector_sp x = gc::As_unsafe<SimpleBitVector_sp>(ax);
+  Array_sp array_y = gc::As<Array_sp>(ty);
+  array_y->asAbstractSimpleVectorRange(ay, starty, endy);
+  SimpleBitVector_sp y = gc::As_unsafe<SimpleBitVector_sp>(ay);
+  SimpleBitVector_sp r;
+  size_t startr, endr;
+  d = (endx - startx); // x->arrayTotalSize();
+  xp = x->bytes();
+  xo = startx; // x->offset();
+  if (d != array_y->arrayTotalSize())
+    goto ERROR;
+  yp = y->bytes();
+  yo = starty; // y->offset();
+  if (tr == _lisp->_true())
+    tr = x;
+  if (tr.notnilp()) {
+    AbstractSimpleVector_sp ar;
+    Array_sp array_r = gc::As<Array_sp>(tr);
+    array_y->asAbstractSimpleVectorRange(ar, startr, endr);
+    r = gc::As_unsafe<SimpleBitVector_sp>(ar);
+    if (!r) {
+      ERROR_WRONG_TYPE_NTH_ARG(core::_sym_bitArrayOp, 4, tr, cl::_sym_SimpleBitVector_O);
+    }
+    if (endr-startr != d) //(r->arrayTotalSize() != d)
+      goto ERROR;
+    i = (r->bytes()-xp)*32+startr-xo;
+    if ((i > 0 && i < d) || (i < 0 && -i < d)) {
+      r0 = r;
+      startr0 = startr;
+      tr = _Nil<T_O>();
+      replace = true;
+      goto L1;
+    }
+    i = (r->bytes() - yp) * 32 + (startr - yo);
+    if ((i > 0 && i < d) || (i < 0 && -i < d)) {
+      r0 = r;
+      startr0 = startr;
+      tr = _Nil<T_O>();
+      replace = true;
+    }
+  }
+ L1:
+  if (tr.nilp()) {
+    startr = 0;
+    endr = d;
+    r = SimpleBitVector_O::make(d);
+  }
+  rp = r->bytes();
+  ro = startr; // r->offset();
+
+#define mask32 0xFFFFFFFF00000000
+#define set_high32(place, nbits, value) \
+  (place) = ((place) & ~(mask32 >> (nbits))) | ((value) & (mask32>> (nbits)));
+
+#define set_low32(place, nbits, value) \
+  (place) = ((place) & (mask32 >> (32 - (nbits)))) | ((value) & ~(mask32 >> (32 - (nbits))));
+  
+#define extract_byte32(integer, pointer, index, offset) \
+  (integer) = (pointer)[(index)+1] & (~mask32);            \
+  (integer) = ((pointer)[index] << (offset)) | ((integer) >> (32 - (offset)));
+
+#define store_byte32(pointer, index, offset, value)               \
+  set_low32((pointer)[index], 32 - (offset), (value) >> (offset)); \
+  set_high32((pointer)[(index)+1], offset, (value) << (32 - (offset)));
+
+  //
+  if (xo == 0 && yo == 0 && ro == 0) {
+    for (n = d / 32, i = 0; i < n; i++) {
+      rp[i] = do_bit_op<OP>::do_it(xp[i], yp[i]);
+    }
+    if ((j = d % 32) > 0) {
+      byte rpt = do_bit_op<OP>(xp[n], yp[n]);
+      set_high32(rp[n], j, rpt);
+    }
+    if (!replace)
+      return r;
+  } else {
+    for (n = d / 32, i = 0; i <= n; i++) {
+      extract_byte32(xi, xp, i, xo);
+      extract_byte32(yi, yp, i, yo);
+      if (i == n) {
+        if ((j = d % 32) == 0)
+          break;
+        extract_byte32(ri, rp, n, ro);
+        set_high32(ri, j, do_bit_op<OP>::do_it(xi, yi));
+      } else {
+        ri = do_bit_op<OP>::do_it(xi, yi);
+      }
+      store_byte32(rp, i, ro, ri);
+    }
+    if (!replace)
+      return r;
+  }
+  rp = r0->bytes();
+  ro = startr0; // r0->offset();
+  for (n = d / 32, i = 0; i <= n; i++) {
+    if (i == n) {
+      if ((j = d % 32) == 0)
+        break;
+      extract_byte32(ri, rp, n, ro);
+      set_high32(ri, j, r->bytes()[n]);
+    } else
+      ri = r->bytes()[i];
+    store_byte32(rp, i, ro, ri);
+  }
+  return r0;
+ ERROR:
+  SIMPLE_ERROR(BF("Illegal arguments for bit-array operation."));
+}
+
+CL_DEFUN core__bit_array_op_b_clr_op(T_sp tx, T_sp ty, T_sp tr) { return template_bit_array_op<b_clr_op>(tx,ty,tr); };
+CL_DEFUN core__bit_array_op_and_op(T_sp tx, T_sp ty, T_sp tr) { return template_bit_array_op<and_op>(tx,ty,tr); };
+CL_DEFUN core__bit_array_op_andc2_op(T_sp tx, T_sp ty, T_sp tr) { return template_bit_array_op<andc2_op>(tx,ty,tr); };
+CL_DEFUN core__bit_array_op_b_1_op(T_sp tx, T_sp ty, T_sp tr) { return template_bit_array_op<b_1_op>(tx,ty,tr); };
+CL_DEFUN core__bit_array_op_andc1_op(T_sp tx, T_sp ty, T_sp tr) { return template_bit_array_op<andc1_op>(tx,ty,tr); };
+CL_DEFUN core__bit_array_op_b_2_op(T_sp tx, T_sp ty, T_sp tr) { return template_bit_array_op<b_2_op>(tx,ty,tr); };
+CL_DEFUN core__bit_array_op_xor_op(T_sp tx, T_sp ty, T_sp tr) { return template_bit_array_op<xor_op>(tx,ty,tr); };
+CL_DEFUN core__bit_array_op_ior_op(T_sp tx, T_sp ty, T_sp tr) { return template_bit_array_op<ior_op>(tx,ty,tr); };
+CL_DEFUN core__bit_array_op_nor_op(T_sp tx, T_sp ty, T_sp tr) { return template_bit_array_op<nor_op>(tx,ty,tr); };
+CL_DEFUN core__bit_array_op_eqv_op(T_sp tx, T_sp ty, T_sp tr) { return template_bit_array_op<eqv_op>(tx,ty,tr); };
+CL_DEFUN core__bit_array_op_b_c2_op(T_sp tx, T_sp ty, T_sp tr) { return template_bit_array_op<b_c2_op>(tx,ty,tr); };
+CL_DEFUN core__bit_array_op_orc2_op(T_sp tx, T_sp ty, T_sp tr) { return template_bit_array_op<orc2_op>(tx,ty,tr); };
+CL_DEFUN core__bit_array_op_b_c1_op(T_sp tx, T_sp ty, T_sp tr) { return template_bit_array_op<b_c1_op>(tx,ty,tr); };
+CL_DEFUN core__bit_array_op_orc1_op(T_sp tx, T_sp ty, T_sp tr) { return template_bit_array_op<orc1_op>(tx,ty,tr); };
+CL_DEFUN core__bit_array_op_nand_op(T_sp tx, T_sp ty, T_sp tr) { return template_bit_array_op<nand_op>(tx,ty,tr); };
+CL_DEFUN core__bit_array_op_b_set_op(T_sp tx, T_sp ty, T_sp tr) { return template_bit_array_op<b_set_op>(tx,ty,tr); };
+
+#endif
 
 /*! Copied from ECL */
 CL_DEFUN T_sp cl__logbitp(Integer_sp p, Integer_sp x) {
