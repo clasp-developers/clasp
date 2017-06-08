@@ -390,7 +390,9 @@ Compile a lisp source file into an LLVM module.  type can be :kernel or :user"
                                (when *debug-compile-file* (bformat t "compile-file: %s\n" form))
                                (if (eq form eof-value)
                                    (return nil)
-                                   (compile-file-form form compile-file-hook)))))
+                                   (if *debug-compile-file*
+                                       (time (compile-file-form form compile-file-hook))
+                                       (compile-file-form form compile-file-hook))))))
                       (make-boot-function-global-variable *the-module* run-all-function)))))
               (cmp-log "About to verify the module\n")
               (cmp-log-dump *the-module*)

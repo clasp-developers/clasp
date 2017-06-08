@@ -869,26 +869,32 @@ when this is t a lot of graphs will be generated.")
   (quick-draw-hir init-instr "hir-before-transformations")
   ;; required by most of the below
   (cleavir-hir-transformations:process-captured-variables init-instr)
+  (setf *ct-process-captured-variables* (compiler-timer-elapsed))
   (quick-draw-hir init-instr "hir-after-pcv")
   ;; DX analysis
   (let ((liveness (cleavir-liveness:liveness init-instr)))
+    (setf *ct-liveness* (compiler-timer-elapsed))
     (clasp-cleavir:optimize-stack-enclose init-instr) ; see FIXME at definition
-    (cleavir-escape:mark-dynamic-extent init-instr
-                                        :liveness liveness)
+    (setf *ct-optimize-stack-enclose* (compiler-timer-elapsed))
+    (cleavir-escape:mark-dynamic-extent init-instr :liveness liveness)
+    (setf *ct-mark-dynamic-extent* (compiler-timer-elapsed))
     ;; Type inference
     (cleavir-typed-transforms:thes->typeqs init-instr)
+    (setf *ct-thes->typeqs* (compiler-timer-elapsed))
     (quick-draw-hir init-instr "hir-after-thes-typeqs")
     (when *enable-type-inference*
       ;; Conditionally use type inference.
       (handler-case
-          (let ((types (cleavir-type-inference:infer-types
-                        init-instr
-                        :liveness liveness)))
+          (let ((types (prog1 (cleavir-type-inference:infer-types
+                               init-instr
+                               :liveness liveness)
+                         (setf *ct-infer-types* (compiler-timer-elapsed)))))
             (when *debug-cleavir*
               (let ((cleavir-ir-graphviz::*types* types))
                 (quick-draw-hir init-instr "hir-before-prune-ti")))
             ;; prune paths with redundant typeqs
             (cleavir-typed-transforms:prune-typeqs init-instr types)
+            (setf *ct-prune-typeqs* (compiler-timer-elapsed))
             (when *debug-cleavir*
               (let ((cleavir-ir-graphviz::*types* types))
                 (quick-draw-hir init-instr "hir-after-ti"))))
@@ -897,13 +903,16 @@ when this is t a lot of graphs will be generated.")
           #+(or)(warn "Cannot infer types in ~s: ~s" init-instr c)))))
   ;; delete the-instruction and the-values-instruction
   (cleavir-typed-transforms:delete-the init-instr)
+  (setf *ct-delete-the* (compiler-timer-elapsed))
   (quick-draw-hir init-instr "hir-after-delete-the")
   ;; convert (typeq x fixnum) -> (fixnump x)
   ;;         (typeq x cons) -> (consp x)
   ;;         (typeq x YYY) -> (typep x 'YYY)
   (cleavir-hir-transformations:eliminate-typeq init-instr)
+(setf *ct-eliminate-typeq* (compiler-timer-elapsed))
   (quick-draw-hir init-instr "hir-after-eliminate-typeq")
   (clasp-cleavir::eliminate-load-time-value-inputs init-instr *clasp-system*)
+(setf *ct-eliminate-load-time-value-inputs* (compiler-timer-elapsed))
   (quick-draw-hir init-instr "hir-after-eliminate-load-time-value-inputs")
   ;; The following breaks code when inlining takes place
   ;;  (cleavir-hir-transformations:eliminate-superfluous-temporaries init-instr)
@@ -913,20 +922,27 @@ when this is t a lot of graphs will be generated.")
   "Compile a form down to MIR and return it.
 COMPILE might call this with an environment in ENV.
 COMPILE-FILE will use the default *clasp-env*."
+  (setf *ct-start* (compiler-timer-elapsed))
   (let* ((clasp-system *clasp-system*)
 	 (ast (let ((a (cleavir-generate-ast:generate-ast FORM ENV clasp-system)))
+                (setf *ct-generate-ast* (compiler-timer-elapsed))
 		(when *debug-cleavir* (draw-ast a))
 		a))
-	 (hoisted-ast (clasp-cleavir-ast:hoist-load-time-value ast))
-	 (hir (cleavir-ast-to-hir:compile-toplevel hoisted-ast)))
-    (let ((map-enter-to-function-info (clasp-cleavir:convert-funcalls hir)))
+	 (hoisted-ast (prog1 (clasp-cleavir-ast:hoist-load-time-value ast)
+                        (setf *ct-hoist-ast* (compiler-timer-elapsed))))
+	 (hir (prog1 (cleavir-ast-to-hir:compile-toplevel hoisted-ast)
+                (setf *ct-generate-hir* (compiler-timer-elapsed)))))
+    (let ((map-enter-to-function-info (prog1 (clasp-cleavir:convert-funcalls hir)
+                                        (setf *ct-convert-funcalls* (compiler-timer-elapsed)))))
       (my-hir-transformations hir clasp-system nil nil)
       (quick-draw-hir hir "hir-pre-mir")
       (cleavir-ir:hir-to-mir hir clasp-system nil nil)
       (cc-mir:assign-mir-instruction-datum-ids hir)
       (clasp-cleavir:finalize-unwind-and-landing-pad-instructions hir map-enter-to-function-info)
+      (setf *ct-finalize-unwind-and-landing-pad-instructions* (compiler-timer-elapsed))
       (quick-draw-hir hir "mir")
-      (values hir map-enter-to-function-info))))
+      (multiple-value-prog1 (values hir map-enter-to-function-info)
+        (setf *ct-translate* (compiler-timer-elapsed))))))
 
 (defun compile-lambda-form-to-llvm-function (lambda-form)
   "Compile a lambda-form into an llvm-function and return
@@ -1027,7 +1043,9 @@ that llvm function. This works like compile-lambda-function in bclasp."
         (core:*use-cleavir-compiler* t))
     (literal:with-top-level-form
      (cmp:dbg-set-current-source-pos form)
-     (compile-form form))))
+      (if cmp::*debug-compile-file*
+          (compiler-time (compile-form form))
+          (compile-form form)))))
 
 (defun cclasp-compile-in-env (name form &optional env)
   (let ((cleavir-generate-ast:*compiler* 'cl:compile)
