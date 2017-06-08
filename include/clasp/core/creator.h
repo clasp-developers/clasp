@@ -95,6 +95,21 @@ namespace core {
   };
 };
 
+namespace core {
+  FORWARD(ClassCreator);
+  class ClassCreator_O : public Creator_O {
+    LISP_CLASS(core,CorePkg,ClassCreator_O,"ClassCreator",Creator_O);
+  public:
+    Class_sp _class;
+  public:
+  ClassCreator_O(Class_sp class_) : _class(class_){};
+    void describe() const {
+      printf("ClassCreator class %s\n", _rep_(this->_class).c_str());
+    };
+    T_sp creator_allocate();
+    virtual size_t templatedSizeof() const { return sizeof(ClassCreator_O); };
+  };
+};
 
 namespace core {
   class StandardClassCreator_O : public Creator_O {
@@ -108,7 +123,6 @@ namespace core {
     virtual size_t templatedSizeof() const { return sizeof(StandardClassCreator_O); };
   };
 };
-
 namespace core {
   class StructureClassCreator_O : public Creator_O {
     LISP_CLASS(core,CorePkg,StructureClassCreator_O,"StructureClassCreator",Creator_O);
@@ -121,7 +135,6 @@ namespace core {
     virtual size_t templatedSizeof() const { return sizeof(StructureClassCreator_O); };
   };
 };
-
 
 
 #endif // ifndef creator_h

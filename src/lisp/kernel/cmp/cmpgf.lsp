@@ -702,6 +702,7 @@
           (setf valist_s-stamp (jit-constant-i64 +valist_s-stamp+))
           (insert-message)
           (irc-br done-bb)
+          (error "HANDLE THE CLASS_STAMP STUFF!!!!!!!!!!!")
           (irc-begin-block general-or-instance-bb)
           (let* ((header-ptr (irc-int-to-ptr (irc-sub (irc-ptr-to-int arg %uintptr_t%) (jit-constant-uintptr_t (+ +general-tag+ +header-size+)) "sub") %uintptr_t*% "header-ptr"))
                  (header-val (irc-load header-ptr "header-val")))

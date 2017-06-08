@@ -38,6 +38,7 @@ THE SOFTWARE.
 #include <clasp/core/foundation.h>
 #include <clasp/core/lisp.h>
 #include <clasp/core/metaClass.h>
+#include <clasp/core/standardClass.h>
 #include <clasp/core/package.h>
 #include <clasp/core/pointer.h>
 #include <clasp/core/symbolTable.h>
@@ -81,8 +82,15 @@ Class_sp Class_O::create(Symbol_sp symbol, Class_sp metaClass ) {
 
 Class_sp Class_O::createUncollectable(gctools::Stamp is, Class_sp metaClass, size_t number_of_slots) {
   GC_ALLOCATE_UNCOLLECTABLE(Class_O,oclass,is,metaClass, number_of_slots);
+  oclass->_MetaClass = metaClass;
+  oclass->initializeSlots(is,number_of_slots);
   return oclass;
 };
+
+void Class_O::setCreator(Creator_sp cb) {
+  printf("%s:%d    setCreator for %s @%p -> @%p\n", __FILE__, __LINE__, _rep_(this->name()).c_str(), this, cb.raw_());
+  this->_theCreator = cb;
+}
 
 };
 
@@ -106,21 +114,16 @@ CL_DEFUN void core__inherit_default_allocator(Class_sp cl, T_sp directSuperclass
   cl->inheritDefaultAllocator(directSuperclasses);
 };
 
+
 CL_LAMBDA(original meta-class slots &optional creates-classes);
 CL_DECLARE();
 CL_DOCSTRING(R"doc(allocate-raw-class - behaves like ECL instance::allocate_raw_instance)doc");
 CL_DEFUN T_sp core__allocate_raw_class(T_sp orig, T_sp tMetaClass, int slots, bool creates_classes) {
   if ( Class_sp cMetaClass = tMetaClass.asOrNull<Class_O>() ) {
-#if 0
-    if (slots == 28 ) {
-//      printf("%s:%d  Creating the class %s with 28 slots\n", __FILE__, __LINE__, cMetaClass->classNameAsString().c_str());
-    }
-#endif
     T_sp tNewClass = cMetaClass->allocate_newClass(cMetaClass,slots);
     if ( Class_sp newClass = tNewClass.asOrNull<Class_O>() ) {
-      newClass->initialize();
       newClass->_MetaClass = cMetaClass;
-      newClass->_NumberOfSlots = slots;
+      newClass->initializeSlots(cMetaClass->get_instance_stamp(),slots);
       //      newClass->initializeSlots(slots);
 //      printf("%s:%d allocate-raw-class %p of metaclass %s number_of_slots[%d]\n", __FILE__, __LINE__, (void *)(newClass.get()), cMetaClass->classNameAsString().c_str(), slots);
       if (creates_classes) {
@@ -131,7 +134,7 @@ CL_DEFUN T_sp core__allocate_raw_class(T_sp orig, T_sp tMetaClass, int slots, bo
         orig = newClass;
       } else if (Class_sp corig = orig.asOrNull<Class_O>()) {
         corig->_MetaClass = cMetaClass;
-        corig->_MetaClassSlots = newClass->_MetaClassSlots;
+        corig->_Rack = newClass->_Rack;
         printf("%s:%d Changing the #slots to %d for metaclass %s\n", __FILE__, __LINE__, slots, cMetaClass->classNameAsString().c_str() );
       }
       return orig;
@@ -153,12 +156,13 @@ CL_DEFUN T_sp core__allocate_raw_class(T_sp orig, T_sp tMetaClass, int slots, bo
 };
 
 
-void Class_O::initializeSlots(size_t slots) {
+void Class_O::initializeSlots(Fixnum stamp, size_t slots) {
   if (slots==0) {
     printf("%s:%d initializeSlots slots = 0\n", __FILE__, __LINE__ );
   }
 //  if ( _lisp->_PackagesInitialized ) printf("%s:%d Changing the #slots to %lu\n", __FILE__, __LINE__, slots );
-  this->_MetaClassSlots.resize(slots, _Unbound<T_O>());
+  this->_Rack = SimpleVector_O::make(slots+1, _Unbound<T_O>(),true);
+  this->stamp_set(stamp);
   this->instanceSet(REF_CLASS_DIRECT_SUPERCLASSES, _Nil<T_O>());
   this->instanceSet(REF_CLASS_DIRECT_DEFAULT_INITARGS, _Nil<T_O>());
   this->instanceSet(REF_CLASS_FINALIZED, _Nil<T_O>());
@@ -183,8 +187,10 @@ void Class_O::inheritDefaultAllocator(List_sp superclasses) {
   // If this class already has an allocator then leave it alone
   if (this->has_creator()) return;
   Class_sp aCxxDerivableAncestorClass_unsafe; // Danger!  Unitialized!
+  bool derives_from_Class = false;
   for (auto cur : superclasses) {
     T_sp tsuper = oCar(cur);
+    if (tsuper == Class_O::static_class) derives_from_Class = true;
     if (Class_sp aSuperClass = tsuper.asOrNull<Class_O>() ) {
       if (aSuperClass->cxxClassP() && !aSuperClass->cxxDerivableClassP()) {
         SIMPLE_ERROR(BF("You cannot derive from the non-derivable C++ class %s\n"
@@ -211,11 +217,16 @@ void Class_O::inheritDefaultAllocator(List_sp superclasses) {
   if (aCxxDerivableAncestorClass_unsafe) {
     // Here aCxxDerivableAncestorClass_unsafe has a value - so it's ok to dereference it
     Creator_sp aCxxAllocator(gctools::As<Creator_sp>(aCxxDerivableAncestorClass_unsafe->class_creator()));
+    printf("%s:%d   duplicating aCxxDerivableAncestorClass_unsafe %s creator\n", __FILE__, __LINE__, _rep_(aCxxDerivableAncestorClass_unsafe).c_str());
     Creator_sp dup = aCxxAllocator->duplicateForClassName(this->name());
     this->setCreator(dup); // this->setCreator(dup.get());
+  } else if (derives_from_Class) {
+    printf("%s:%d   Creating a ClassCreator for %s\n", __FILE__, __LINE__, _rep_(this->name()).c_str());
+    ClassCreator_sp classCreator = gc::GC<ClassCreator_O>::allocate(this->asSmartPtr());
+    this->setCreator(classCreator);
   } else {
     // I think this is the most common outcome -
-//    printf("%s:%d   Creating an InstanceCreator_O for the class: %s\n", __FILE__, __LINE__, _rep_(this->name()).c_str());
+    printf("%s:%d   Creating an InstanceCreator_O for the class: %s\n", __FILE__, __LINE__, _rep_(this->name()).c_str());
     InstanceCreator_sp instanceAllocator = gc::GC<InstanceCreator_O>::allocate(this->asSmartPtr());
     //gctools::StackRootedPointer<InstanceCreator> instanceAllocator(new InstanceCreator(this->name()));
     this->setCreator(instanceAllocator); // this->setCreator(instanceAllocator.get());
@@ -243,7 +254,10 @@ T_sp Class_O::allocate_newNil() {
 
 T_sp Class_O::allocate_newClass(Class_sp metaClass, int slots) {
   ASSERTF(this->_theCreator, BF("The class %s does not have a creator defined") % this->classNameAsString() );
-  Class_sp newClass = gc::As<Class_sp>(this->_theCreator->creator_allocate());
+  T_sp obj = this->_theCreator->creator_allocate();
+  printf("%s:%d  allocate_newClass metaClass -> %s   obj@%p class -> %s\n", __FILE__, __LINE__,  _rep_(metaClass).c_str(), obj.raw_(), _rep_(instance_class(obj)).c_str() );
+  Class_sp newClass = gc::As<Class_sp>(obj);
+  printf("%s:%d          allocate_newClass creator -> @%p \n", __FILE__, __LINE__, newClass.raw_());
   newClass->_MetaClass = metaClass;
   newClass->_NumberOfSlots = slots;
 //  printf("%s:%d  Initialize class slots here?????\n", __FILE__, __LINE__);
@@ -279,11 +293,6 @@ void Class_O::archive(ArchiveP node) {
   IMPLEMENT_ME();
 }
 #endif // defined(XML_ARCHIVE)
-
-void Class_O::initialize() {
-  this->Base::initialize();
-  this->initializeSlots(this->_NumberOfSlots);
-}
 
 string Class_O::__repr__() const {
   if (this == _lisp->_true().get()) {
@@ -537,21 +546,29 @@ void Class_O::describe(T_sp stream) {
 }
 
 T_sp Class_O::instanceRef(size_t idx) const {
-  if (idx>= this->_MetaClassSlots.size()) {
-    SIMPLE_ERROR(BF("Class slot %d is out of bounds only %d slots available with metaclass %s") % idx % this->_MetaClassSlots.size() % this->_MetaClass->classNameAsString().c_str());
+  if ((idx+1)>= this->_Rack->length()) {
+    SIMPLE_ERROR(BF("Class slot %d is out of bounds only %d slots available with metaclass %s") % (idx+1) % this->_Rack->length() % this->_MetaClass->classNameAsString().c_str());
   }
-  ASSERT(this->_MetaClassSlots[idx]);
-  T_sp val = this->_MetaClassSlots[idx];
+  ASSERT((*this->_Rack)[idx+1]);
+  T_sp val = (*this->_Rack)[idx+1];
   return val;
 }
 
 T_sp Class_O::instanceSet(size_t idx, T_sp val) {
-  if (idx>= this->_MetaClassSlots.size()) {
-    SIMPLE_ERROR(BF("Class slot %d is out of bounds only %d slots available with metaclass %s") % idx % this->_MetaClassSlots.size()  % this->_MetaClass->classNameAsString().c_str());
+  if ((idx+1)>= this->_Rack->length()) {
+    SIMPLE_ERROR(BF("Class slot %d is out of bounds only %d slots available with metaclass %s") % idx % this->_Rack->length()  % this->_MetaClass->classNameAsString().c_str());
   }
-  this->_MetaClassSlots[idx] = val;
+  (*this->_Rack)[idx+1] = val;
   return val;
 }
+
+
+Class_O::Class_O() {
+}
+
+Fixnum Class_O::stamp() const { return (*this->_Rack)[0].unsafe_fixnum();};
+void Class_O::stamp_set(Fixnum s) { (*this->_Rack)[0] = clasp_make_fixnum(s); };
+
 
 T_sp Class_O::copyInstance() const {
   GC_COPY(Class_O,c,*this);

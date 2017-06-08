@@ -39,6 +39,7 @@ THE SOFTWARE.
 #include <boost/graph/topological_sort.hpp>
 #pragma clang diagnostic pop
 #include <clasp/core/foundation.h>
+#include <clasp/core/array.h>
 #include <clasp/core/object.fwd.h>
 #include <clasp/core/numbers.fwd.h>
 #include <clasp/core/specializer.h>
@@ -46,7 +47,7 @@ THE SOFTWARE.
 
 template <>
 struct gctools::GCInfo<core::Class_O> {
-  static bool constexpr NeedsInitialization = true;
+  static bool constexpr NeedsInitialization = false;
   static bool constexpr NeedsFinalization = false;
   static GCInfo_policy constexpr Policy = normal;
 };
@@ -90,12 +91,6 @@ class Class_O : public StandardObject_O {
   friend BuiltInClass_sp hand_initialize_class(uint &classesHandInitialized, Lisp_sp prog, BuiltInClass_sp c);
   template <typename u>
   friend BuiltInClass_sp hand_initialize_allocatable_class(uint &classesHandInitialized, Lisp_sp prog, BuiltInClass_sp c);
-
-public:
-#if defined(XML_ARCHIVE)
-  void archive(ArchiveP node);
-#endif // defined(XML_ARCHIVE)
-  void initialize();
 
 public: // The hard-coded indexes above are defined below to be used by Class
   // These must match the +class-slots+ defined in hierarchy.lsp
@@ -160,7 +155,7 @@ public:
   T_sp _Signature_ClassSlots;
   /*! Callback function to allocate instances */
   Creator_sp _theCreator;
-  gctools::Vec0<T_sp> _MetaClassSlots;
+  SimpleVector_sp _Rack;
   size_t              _NumberOfSlots;
 public:
   /*! This is a factory function that returns either a BuiltInClass or a StandardClass depending on the
@@ -190,7 +185,7 @@ public:
 private:
   void lowLevel_calculateClassPrecedenceList();
 public: // Mimic CLOS classes that are represented by Instance_O
-  void initializeSlots(size_t slots);
+  void initializeSlots(Fixnum stamp, size_t slots);
 
   /*! Return this classes metaclass */
   virtual Class_sp _instanceClass() const;
@@ -212,7 +207,7 @@ public: // Mimic CLOS classes that are represented by Instance_O
   T_sp copyInstance() const;
 public:
   void inheritDefaultAllocator(List_sp directSuperclasses);
-  void setCreator(Creator_sp cb) { this->_theCreator = cb; };
+  void setCreator(Creator_sp cb);
 
   CL_NAME("CORE:CLASS-CREATOR");
   CL_DEFMETHOD T_sp class_creator() const { return (bool)(this->_theCreator) ? gctools::As<core::T_sp>(this->_theCreator) : _Nil<core::T_O>(); };
@@ -226,6 +221,9 @@ public:
 
   void setName(Symbol_sp id) { this->instanceSet(REF_CLASS_CLASS_NAME, id); };
   Symbol_sp name() const { return gc::As<Symbol_sp>(this->instanceRef(REF_CLASS_CLASS_NAME)); };
+
+  Fixnum stamp() const;
+  void stamp_set(Fixnum s);
 
   Symbol_sp className() const;
   string classNameAsString() const;
@@ -310,6 +308,8 @@ public:
     _theCreator(),
     _NumberOfSlots(slots)
     {};
+
+  explicit Class_O();
 
   virtual ~Class_O(){};
 };
