@@ -186,10 +186,8 @@
 	 (*readtable* *readtable*)
 	 (*package* *package*))
      (with-compilation-unit ()
-       (unwind-protect (progn (mp:get-lock *compiler-mutex*) ,@body)
-         (progn
-           (setq conditions *compilation-messages*)
-           (mp:giveup-lock *compiler-mutex*))))))
+       (unwind-protect (progn ,@body)
+         (setq conditions *compilation-messages*)))))
 
 
 (defstruct (global-function-def (:type vector) :named)

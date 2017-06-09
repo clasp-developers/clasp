@@ -829,8 +829,8 @@
 ;;;   is used to give the roots array in each dispatcher a unique name.
 (defparameter *dispatcher-count* 0)
 (defun codegen-dispatcher (dtree the-gf &key output-path)
-  (let ((*the-module* (create-run-time-module-for-compile)))
-    (define-primitives-in-module *the-module*)
+  (let* ((*the-module* (create-run-time-module-for-compile))
+         (*primitives* (primitives-in-module *the-module*)))
     (with-module (:module *the-module*
                           :optimize nil
 			  :source-namestring "dispatcher"
