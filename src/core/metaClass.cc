@@ -88,7 +88,9 @@ Class_sp Class_O::createUncollectable(gctools::Stamp is, Class_sp metaClass, siz
 };
 
 void Class_O::setCreator(Creator_sp cb) {
+#ifdef DEBUG_CLASS_INSTANCE
   printf("%s:%d    setCreator for %s @%p -> @%p\n", __FILE__, __LINE__, _rep_(this->name()).c_str(), this, cb.raw_());
+#endif
   this->_theCreator = cb;
 }
 
@@ -187,10 +189,18 @@ void Class_O::inheritDefaultAllocator(List_sp superclasses) {
   // If this class already has an allocator then leave it alone
   if (this->has_creator()) return;
   Class_sp aCxxDerivableAncestorClass_unsafe; // Danger!  Unitialized!
-  bool derives_from_Class = false;
+#ifdef DEBUG_CLASS_INSTANCE
+  printf("%s:%d:%s   for class -> %s   superclasses -> %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(this->name()).c_str(), _rep_(superclasses).c_str());
+#endif
+  bool derives_from_StandardClass = false;
   for (auto cur : superclasses) {
     T_sp tsuper = oCar(cur);
-    if (tsuper == Class_O::static_class) derives_from_Class = true;
+    if (tsuper == _lisp->_Roots._StandardClass) {
+      derives_from_StandardClass = true;
+#ifdef DEBUG_CLASS_INSTANCE
+      printf("%s:%d:%s        derives from class\n", __FILE__, __LINE__, __FUNCTION__ );
+#endif
+    }
     if (Class_sp aSuperClass = tsuper.asOrNull<Class_O>() ) {
       if (aSuperClass->cxxClassP() && !aSuperClass->cxxDerivableClassP()) {
         SIMPLE_ERROR(BF("You cannot derive from the non-derivable C++ class %s\n"
@@ -217,16 +227,22 @@ void Class_O::inheritDefaultAllocator(List_sp superclasses) {
   if (aCxxDerivableAncestorClass_unsafe) {
     // Here aCxxDerivableAncestorClass_unsafe has a value - so it's ok to dereference it
     Creator_sp aCxxAllocator(gctools::As<Creator_sp>(aCxxDerivableAncestorClass_unsafe->class_creator()));
+#ifdef DEBUG_CLASS_INSTANCE
     printf("%s:%d   duplicating aCxxDerivableAncestorClass_unsafe %s creator\n", __FILE__, __LINE__, _rep_(aCxxDerivableAncestorClass_unsafe).c_str());
+#endif
     Creator_sp dup = aCxxAllocator->duplicateForClassName(this->name());
     this->setCreator(dup); // this->setCreator(dup.get());
-  } else if (derives_from_Class) {
+  } else if (derives_from_StandardClass) {
+#ifdef DEBUG_CLASS_INSTANCE
     printf("%s:%d   Creating a ClassCreator for %s\n", __FILE__, __LINE__, _rep_(this->name()).c_str());
+#endif
     ClassCreator_sp classCreator = gc::GC<ClassCreator_O>::allocate(this->asSmartPtr());
     this->setCreator(classCreator);
   } else {
     // I think this is the most common outcome -
+#ifdef DEBUG_CLASS_INSTANCE
     printf("%s:%d   Creating an InstanceCreator_O for the class: %s\n", __FILE__, __LINE__, _rep_(this->name()).c_str());
+#endif
     InstanceCreator_sp instanceAllocator = gc::GC<InstanceCreator_O>::allocate(this->asSmartPtr());
     //gctools::StackRootedPointer<InstanceCreator> instanceAllocator(new InstanceCreator(this->name()));
     this->setCreator(instanceAllocator); // this->setCreator(instanceAllocator.get());
@@ -255,9 +271,13 @@ T_sp Class_O::allocate_newNil() {
 T_sp Class_O::allocate_newClass(Class_sp metaClass, int slots) {
   ASSERTF(this->_theCreator, BF("The class %s does not have a creator defined") % this->classNameAsString() );
   T_sp obj = this->_theCreator->creator_allocate();
+#ifdef DEBUG_CLASS_INSTANCE
   printf("%s:%d  allocate_newClass metaClass -> %s   obj@%p class -> %s\n", __FILE__, __LINE__,  _rep_(metaClass).c_str(), obj.raw_(), _rep_(instance_class(obj)).c_str() );
+#endif
   Class_sp newClass = gc::As<Class_sp>(obj);
+#ifdef DEBUG_CLASS_INSTANCE
   printf("%s:%d          allocate_newClass creator -> @%p \n", __FILE__, __LINE__, newClass.raw_());
+#endif
   newClass->_MetaClass = metaClass;
   newClass->_NumberOfSlots = slots;
 //  printf("%s:%d  Initialize class slots here?????\n", __FILE__, __LINE__);
