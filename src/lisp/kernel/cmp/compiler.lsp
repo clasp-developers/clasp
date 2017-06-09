@@ -27,8 +27,6 @@
 ;;
 (in-package :cmp)
 
-(defvar *compiler-mutex* (mp:make-lock :name 'compiler-mutex :recursive t))
-
 (defun augment-environment-with-declares (env declares)
   (let (specials)
     (mapc (lambda (decl)
@@ -1520,8 +1518,8 @@ We could do more fancy things here - like if cleavir-clasp fails, use the clasp 
 (defun compile-in-env (bind-to-name &optional definition env compile-hook (linkage 'llvm-sys:internal-linkage) &aux conditions)
   "Compile in the given environment"
   (with-compiler-env (conditions)
-    (let ((*the-module* (create-run-time-module-for-compile)))
-      (define-primitives-in-module *the-module*)
+    (let* ((*the-module* (create-run-time-module-for-compile))
+           (*primitives* (primitives-in-module *the-module*)))
       ;; Link the C++ intrinsics into the module
       (let* ((*declare-dump-module* nil)
              (pathname (if *load-pathname*

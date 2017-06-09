@@ -87,13 +87,6 @@ using features defined in corePackage.cc"
     (llvm-sys:set-data-layout m *default-data-layout*)
     m))
 
-(defun create-llvm-module-for-compile-file (module-name)
-  "Return a new module"
-  (let ((module (llvm-create-module module-name)))
-    ;; Define the primitives for the module
-    (define-primitives-in-module module)
-    module))
-
 
 
 #+(or)(defvar *use-function-pass-manager-for-compile-file* t)
