@@ -76,7 +76,7 @@
 					 ((typep x 'specializer) x)
 					 ((find-class x nil))
 					 (t
-					  (error "In method definition for ~A, found an invalid specializer ~A" name specializers))))
+					  (error "In method definition for ~A, found an invalid specializer ~A" name x))))
 			       specializers))
 	 (method (make-method (generic-function-method-class gf)
 			      qualifiers specializers lambda-list
