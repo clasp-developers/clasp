@@ -1,18 +1,17 @@
-FROM ubuntu:latest
+FROM ubuntu:16.10
 MAINTAINER Christian Schafmeister <meister@temple.edu>
 
 # add LLVM repo
-RUN apt-get -y update && apt-get -y install wget && apt-get clean
-RUN wget -O - http://apt.llvm.org/llvm-snapshot.gpg.key| apt-key add -
-RUN echo 'deb http://apt.llvm.org/xenial/ llvm-toolchain-xenial-4.0 main'\
+RUN apt-get update && apt-get -y upgrade && apt-get install -y wget curl
+RUN curl http://apt.llvm.org/llvm-snapshot.gpg.key | apt-key add -
+RUN echo 'deb http://apt.llvm.org/yakkety/ llvm-toolchain-yakkety-4.0 main'\
   >/etc/apt/sources.list.d/llvm4.list
 
 # Copied from the original dependencies
-
 RUN apt-get update && apt-get upgrade -y && apt-get install -y \
   libgc-dev libgmp-dev binutils-gold binutils-dev \
   zlib1g-dev libbz2-dev libexpat-dev
-  
+
 # Maybe need these...
 #  libncurses-dev libboost-filesystem-dev libboost-regex-dev \
 #  libboost-date-time-dev libboost-program-options-dev libboost-system-dev \
@@ -21,11 +20,10 @@ RUN apt-get update && apt-get upgrade -y && apt-get install -y \
 #  libllvm4.0 libllvm4.0-dbg lldb-4.0 llvm-4.0 llvm-4.0-dev llvm-4.0-doc \
 #  llvm-4.0-runtime clang-format-4.0 python-clang-4.0 lld-4.0
 
-
 # install clasp runtime dependencies
-RUN apt-get -y update && apt-get -y install \
-  libboost-filesystem1.58.0 libboost-date-time1.58.0 libboost-program-options1.58.0 \
-  libboost-iostreams1.58.0 libgc1c2 llvm-4.0-runtime libgmpxx4ldbl \
+RUN apt-get -y install \
+  libboost-filesystem1.61.0 libboost-date-time1.61.0 libboost-program-options1.61.0 \
+  libboost-iostreams1.61.0 libgc1c2 llvm-4.0-runtime libgmpxx4ldbl \
   clang-4.0 binutils python-clang-4.0 lld-4.0 libzmq3-dev \
   && apt-get clean
 
