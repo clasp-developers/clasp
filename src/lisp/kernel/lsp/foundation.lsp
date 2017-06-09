@@ -205,7 +205,8 @@ the corresponding VAR.  Returns NIL."
 ;; in-package macro is re-defined in evalmacros.lsp
 (si::fset 'in-package #'(lambda (whole env)
 			  `(eval-when (:compile-toplevel :load-toplevel :execute)
-			     (si::select-package ,(string (cadr whole)))))
+			     (si::select-package ,(string (cadr whole)))
+                             *package*))
 	  t)
 
 
@@ -327,14 +328,9 @@ the corresponding VAR.  Returns NIL."
 			`(car ,(cadr w)))
 	  t)
 
-
-
-
-
-
 (in-package :cl)
 
-;; We do not use this macroexpanso, and thus we do not care whether
+;; We do not use this macroexpansion, and thus we do not care whether
 ;; it is efficiently compiled by ECL or not.
 (core:fset 'multiple-value-bind
            #'(lambda (whole env)

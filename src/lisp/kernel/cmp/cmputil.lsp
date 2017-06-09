@@ -243,6 +243,7 @@
 
 (defun analyze-top-level-form (form)
   (cond
+    ((atom form) nil)
     ((eq (car form) 'core:fset)
      (let ((type (if (eq (fourth form) t)
                      'defmacro
