@@ -111,6 +111,24 @@ b_c2_op(gctools::Fixnum i, gctools::Fixnum j) {
 
 typedef gctools::Fixnum (*bit_operator)(gctools::Fixnum, gctools::Fixnum);
 
+typedef enum {
+    b_clr_op_id=0,
+    and_op_id  =1,
+    andc2_op_id=2,
+    b_1_op_id  =3,
+    andc1_op_id=4,
+    b_2_op_id  =5,
+    xor_op_id  =6,
+    ior_op_id  =7,
+    nor_op_id  =8,
+    eqv_op_id  =9,
+    b_c2_op_id =10,
+    orc2_op_id =11,
+    b_c1_op_id =12,
+    orc1_op_id =13,
+    nand_op_id =14,
+    b_set_op_id =15} bit_op_id;
+
 static bit_operator fixnum_operations[16] = {
     b_clr_op,
     and_op,
@@ -300,6 +318,7 @@ T_sp clasp_boole(int op, T_sp x, T_sp y) {
   return x;
 }
 
+
 #if BIT_ARRAY_BYTE_SIZE==8
 CL_LAMBDA(op x y &optional r);
 CL_DECLARE();
@@ -433,12 +452,39 @@ ERROR:
 }
 #endif
 
+
 #if BIT_ARRAY_BYTE_SIZE==32
+#define mask32 0xFFFFFFFF00000000
+template <typename Place, typename Nbits, typename Value>
+inline void set_high32(Place& place, Nbits nbits, Value value)
+{
+  (place) = ((place) & ~(mask32 >> (nbits))) | ((value) & (mask32>> (nbits)));
+}
+
+template <typename Place, typename Nbits, typename Value>
+inline void set_low32(Place& place, Nbits nbits, Value value) {
+  (place) = ((place) & (mask32 >> (32 - (nbits)))) | ((value) & ~(mask32 >> (32 - (nbits))));
+}
+
+template <typename Integer, typename Pointer, typename Index, typename Offset>
+inline void extract_byte32(Integer& integer, Pointer pointer, Index index, Offset offset) {
+  (integer) = (pointer)[(index)+1] & (~mask32);
+  (integer) = ((pointer)[index] << (offset)) | ((integer) >> (32 - (offset)));
+}
+
+template <typename Pointer, typename Index, typename Offset, typename Value>
+inline void store_byte32(Pointer pointer, Index index, Offset offset, Value value) {
+  set_low32((pointer)[index], 32 - (offset), (value) >> (offset));
+  set_high32((pointer)[(index)+1], offset, (value) << (32 - (offset)));
+}
+
+//#define TEMPLATE_BIT_ARRAY_OP 1
+#ifndef TEMPLATE_BIT_ARRAY_OP
+
 CL_LAMBDA(op x y &optional r);
 CL_DECLARE();
 CL_DOCSTRING("bitArrayOp");
-CL_DEFUN T_sp core__bit_array_op(T_sp o, T_sp tx, T_sp ty, T_sp tr) {
-  int opval = unbox_fixnum(gc::As<Fixnum_sp>(o));
+CL_DEFUN T_sp core__bit_array_op(int opval, T_sp tx, T_sp ty, T_sp tr) {
   gctools::Fixnum i, j, n, d;
   SimpleBitVector_sp r0;
   size_t startr0 = 0;
@@ -504,21 +550,6 @@ L1:
   ro = startr; // r->offset();
   op = fixnum_operations[opval];
 
-#define mask32 0xFFFFFFFF00000000
-#define set_high32(place, nbits, value) \
-  (place) = ((place) & ~(mask32 >> (nbits))) | ((value) & (mask32>> (nbits)));
-
-#define set_low32(place, nbits, value) \
-  (place) = ((place) & (mask32 >> (32 - (nbits)))) | ((value) & ~(mask32 >> (32 - (nbits))));
-  
-#define extract_byte32(integer, pointer, index, offset) \
-  (integer) = (pointer)[(index)+1] & (~mask32);            \
-  (integer) = ((pointer)[index] << (offset)) | ((integer) >> (32 - (offset)));
-
-#define store_byte32(pointer, index, offset, value)               \
-  set_low32((pointer)[index], 32 - (offset), (value) >> (offset)); \
-  set_high32((pointer)[(index)+1], offset, (value) << (32 - (offset)));
-
   //
   if (xo == 0 && yo == 0 && ro == 0) {
     for (n = d / 32, i = 0; i < n; i++) {
@@ -563,29 +594,42 @@ L1:
 ERROR:
   SIMPLE_ERROR(BF("Illegal arguments for bit-array operation."));
 }
-#endif
 
+CL_DEFUN T_sp core__bit_array_op_b_clr_op(T_sp tx, T_sp ty, T_sp tr) { return core__bit_array_op(b_clr_op_id,tx,ty,tr); };
+CL_DEFUN T_sp core__bit_array_op_and_op(T_sp tx, T_sp ty, T_sp tr) { return core__bit_array_op(and_op_id,tx,ty,tr); };
+CL_DEFUN T_sp core__bit_array_op_andc2_op(T_sp tx, T_sp ty, T_sp tr) { return core__bit_array_op(andc2_op_id,tx,ty,tr); };
+CL_DEFUN T_sp core__bit_array_op_b_1_op(T_sp tx, T_sp ty, T_sp tr) { return core__bit_array_op(b_1_op_id,tx,ty,tr); };
+CL_DEFUN T_sp core__bit_array_op_andc1_op(T_sp tx, T_sp ty, T_sp tr) { return core__bit_array_op(andc1_op_id,tx,ty,tr); };
+CL_DEFUN T_sp core__bit_array_op_b_2_op(T_sp tx, T_sp ty, T_sp tr) { return core__bit_array_op(b_2_op_id,tx,ty,tr); };
+CL_DEFUN T_sp core__bit_array_op_xor_op(T_sp tx, T_sp ty, T_sp tr) { return core__bit_array_op(xor_op_id,tx,ty,tr); };
+CL_DEFUN T_sp core__bit_array_op_ior_op(T_sp tx, T_sp ty, T_sp tr) { return core__bit_array_op(ior_op_id,tx,ty,tr); };
+CL_DEFUN T_sp core__bit_array_op_nor_op(T_sp tx, T_sp ty, T_sp tr) { return core__bit_array_op(nor_op_id,tx,ty,tr); };
+CL_DEFUN T_sp core__bit_array_op_eqv_op(T_sp tx, T_sp ty, T_sp tr) { return core__bit_array_op(eqv_op_id,tx,ty,tr); };
+CL_DEFUN T_sp core__bit_array_op_b_c2_op(T_sp tx, T_sp ty, T_sp tr) { return core__bit_array_op(b_c2_op_id,tx,ty,tr); };
+CL_DEFUN T_sp core__bit_array_op_orc2_op(T_sp tx, T_sp ty, T_sp tr) { return core__bit_array_op(orc2_op_id,tx,ty,tr); };
+CL_DEFUN T_sp core__bit_array_op_b_c1_op(T_sp tx, T_sp ty, T_sp tr) { return core__bit_array_op(b_c1_op_id,tx,ty,tr); };
+CL_DEFUN T_sp core__bit_array_op_orc1_op(T_sp tx, T_sp ty, T_sp tr) { return core__bit_array_op(orc1_op_id,tx,ty,tr); };
+CL_DEFUN T_sp core__bit_array_op_nand_op(T_sp tx, T_sp ty, T_sp tr) { return core__bit_array_op(nand_op_id,tx,ty,tr); };
+CL_DEFUN T_sp core__bit_array_op_b_set_op(T_sp tx, T_sp ty, T_sp tr) { return core__bit_array_op(b_set_op_id,tx,ty,tr); };
 
-
-#ifdef TEMPLATE_BIT_ARRAY_OP
-
+#else
 template <int OP> struct do_bit_op {};
-template <> struct do_bit_op<b_clr_op> {static gc::Fixnum do_it(gc::Fixnum i, gc::Fixnum j) { return b_clr_op(i,j); };};
-template <> struct do_bit_op<and_op> {static gc::Fixnum do_it(gc::Fixnum i, gc::Fixnum j) { return b_and_op(i,j);};};
-template <> struct do_bit_op<andc2_op> {static gc::Fixnum do_it(gc::Fixnum i, gc::Fixnum j) { return b_andc2_op(i,j);};};
-template <> struct do_bit_op<b_1_op> {static gc::Fixnum do_it(gc::Fixnum i, gc::Fixnum j) { return b_1_op(i,j);};};
-template <> struct do_bit_op<andc1_op> {static gc::Fixnum do_it(gc::Fixnum i, gc::Fixnum j) { return b_andc1_op(i,j);};};
-template <> struct do_bit_op<b_2_op> {static gc::Fixnum do_it(gc::Fixnum i, gc::Fixnum j) { return b_2_op(i,j);};};
-template <> struct do_bit_op<xor_op> {static gc::Fixnum do_it(gc::Fixnum i, gc::Fixnum j) { return b_xor_op(i,j);};};
-template <> struct do_bit_op<ior_op> {static gc::Fixnum do_it(gc::Fixnum i, gc::Fixnum j) { return b_ior_op(i,j);};};
-template <> struct do_bit_op<nor_op> {static gc::Fixnum do_it(gc::Fixnum i, gc::Fixnum j) { return b_nor_op(i,j);};};
-template <> struct do_bit_op<eqv_op> {static gc::Fixnum do_it(gc::Fixnum i, gc::Fixnum j) { return b_eqv_op(i,j);};};
-template <> struct do_bit_op<b_c2_op> {static gc::Fixnum do_it(gc::Fixnum i, gc::Fixnum j) { return b_c2_op(i,j);};};
-template <> struct do_bit_op<orc2_op> {static gc::Fixnum do_it(gc::Fixnum i, gc::Fixnum j) { return b_orc2_op(i,j);};};
-template <> struct do_bit_op<b_c1_op> {static gc::Fixnum do_it(gc::Fixnum i, gc::Fixnum j) { return b_c1_op(i,j);};};
-template <> struct do_bit_op<orc1_op> {static gc::Fixnum do_it(gc::Fixnum i, gc::Fixnum j) { return b_orc1_op(i,j);};};
-template <> struct do_bit_op<nand_op> {static gc::Fixnum do_it(gc::Fixnum i, gc::Fixnum j) { return b_nand_op(i,j);};};
-template <> struct do_bit_op<b_set_op> {static gc::Fixnum do_it(gc::Fixnum i, gc::Fixnum j) { return b_set_op(i,j);};};
+template <> struct do_bit_op<b_clr_op_id> {static gc::Fixnum do_it(gc::Fixnum i, gc::Fixnum j) { return b_clr_op(i,j); };};
+template <> struct do_bit_op<and_op_id> {static gc::Fixnum do_it(gc::Fixnum i, gc::Fixnum j) { return and_op(i,j);};};
+template <> struct do_bit_op<andc2_op_id> {static gc::Fixnum do_it(gc::Fixnum i, gc::Fixnum j) { return andc2_op(i,j);};};
+template <> struct do_bit_op<b_1_op_id> {static gc::Fixnum do_it(gc::Fixnum i, gc::Fixnum j) { return b_1_op(i,j);};};
+template <> struct do_bit_op<andc1_op_id> {static gc::Fixnum do_it(gc::Fixnum i, gc::Fixnum j) { return andc1_op(i,j);};};
+template <> struct do_bit_op<b_2_op_id> {static gc::Fixnum do_it(gc::Fixnum i, gc::Fixnum j) { return b_2_op(i,j);};};
+template <> struct do_bit_op<xor_op_id> {static gc::Fixnum do_it(gc::Fixnum i, gc::Fixnum j) { return xor_op(i,j);};};
+template <> struct do_bit_op<ior_op_id> {static gc::Fixnum do_it(gc::Fixnum i, gc::Fixnum j) { return ior_op(i,j);};};
+template <> struct do_bit_op<nor_op_id> {static gc::Fixnum do_it(gc::Fixnum i, gc::Fixnum j) { return nor_op(i,j);};};
+template <> struct do_bit_op<eqv_op_id> {static gc::Fixnum do_it(gc::Fixnum i, gc::Fixnum j) { return eqv_op(i,j);};};
+template <> struct do_bit_op<b_c2_op_id> {static gc::Fixnum do_it(gc::Fixnum i, gc::Fixnum j) { return b_c2_op(i,j);};};
+template <> struct do_bit_op<orc2_op_id> {static gc::Fixnum do_it(gc::Fixnum i, gc::Fixnum j) { return orc2_op(i,j);};};
+template <> struct do_bit_op<b_c1_op_id> {static gc::Fixnum do_it(gc::Fixnum i, gc::Fixnum j) { return b_c1_op(i,j);};};
+template <> struct do_bit_op<orc1_op_id> {static gc::Fixnum do_it(gc::Fixnum i, gc::Fixnum j) { return orc1_op(i,j);};};
+template <> struct do_bit_op<nand_op_id> {static gc::Fixnum do_it(gc::Fixnum i, gc::Fixnum j) { return nand_op(i,j);};};
+template <> struct do_bit_op<b_set_op_id> {static gc::Fixnum do_it(gc::Fixnum i, gc::Fixnum j) { return b_set_op(i,j);};};
 
 template <int OP>
 T_sp template_bit_array_op(T_sp tx, T_sp ty, T_sp tr) {
@@ -644,7 +688,7 @@ T_sp template_bit_array_op(T_sp tx, T_sp ty, T_sp tr) {
       replace = true;
     }
   }
- L1:
+L1:
   if (tr.nilp()) {
     startr = 0;
     endr = d;
@@ -652,29 +696,12 @@ T_sp template_bit_array_op(T_sp tx, T_sp ty, T_sp tr) {
   }
   rp = r->bytes();
   ro = startr; // r->offset();
-
-#define mask32 0xFFFFFFFF00000000
-#define set_high32(place, nbits, value) \
-  (place) = ((place) & ~(mask32 >> (nbits))) | ((value) & (mask32>> (nbits)));
-
-#define set_low32(place, nbits, value) \
-  (place) = ((place) & (mask32 >> (32 - (nbits)))) | ((value) & ~(mask32 >> (32 - (nbits))));
-  
-#define extract_byte32(integer, pointer, index, offset) \
-  (integer) = (pointer)[(index)+1] & (~mask32);            \
-  (integer) = ((pointer)[index] << (offset)) | ((integer) >> (32 - (offset)));
-
-#define store_byte32(pointer, index, offset, value)               \
-  set_low32((pointer)[index], 32 - (offset), (value) >> (offset)); \
-  set_high32((pointer)[(index)+1], offset, (value) << (32 - (offset)));
-
-  //
   if (xo == 0 && yo == 0 && ro == 0) {
     for (n = d / 32, i = 0; i < n; i++) {
       rp[i] = do_bit_op<OP>::do_it(xp[i], yp[i]);
     }
     if ((j = d % 32) > 0) {
-      byte64_t rpt = do_bit_op<OP>(xp[n], yp[n]);
+      byte64_t rpt = do_bit_op<OP>::do_it(xp[n], yp[n]);
       set_high32(rp[n], j, rpt);
     }
     if (!replace)
@@ -709,29 +736,29 @@ T_sp template_bit_array_op(T_sp tx, T_sp ty, T_sp tr) {
     store_byte32(rp, i, ro, ri);
   }
   return r0;
- ERROR:
+ERROR:
   SIMPLE_ERROR(BF("Illegal arguments for bit-array operation."));
 }
 
-CL_DEFUN core__bit_array_op_b_clr_op(T_sp tx, T_sp ty, T_sp tr) { return template_bit_array_op<b_clr_op>(tx,ty,tr); };
-CL_DEFUN core__bit_array_op_and_op(T_sp tx, T_sp ty, T_sp tr) { return template_bit_array_op<and_op>(tx,ty,tr); };
-CL_DEFUN core__bit_array_op_andc2_op(T_sp tx, T_sp ty, T_sp tr) { return template_bit_array_op<andc2_op>(tx,ty,tr); };
-CL_DEFUN core__bit_array_op_b_1_op(T_sp tx, T_sp ty, T_sp tr) { return template_bit_array_op<b_1_op>(tx,ty,tr); };
-CL_DEFUN core__bit_array_op_andc1_op(T_sp tx, T_sp ty, T_sp tr) { return template_bit_array_op<andc1_op>(tx,ty,tr); };
-CL_DEFUN core__bit_array_op_b_2_op(T_sp tx, T_sp ty, T_sp tr) { return template_bit_array_op<b_2_op>(tx,ty,tr); };
-CL_DEFUN core__bit_array_op_xor_op(T_sp tx, T_sp ty, T_sp tr) { return template_bit_array_op<xor_op>(tx,ty,tr); };
-CL_DEFUN core__bit_array_op_ior_op(T_sp tx, T_sp ty, T_sp tr) { return template_bit_array_op<ior_op>(tx,ty,tr); };
-CL_DEFUN core__bit_array_op_nor_op(T_sp tx, T_sp ty, T_sp tr) { return template_bit_array_op<nor_op>(tx,ty,tr); };
-CL_DEFUN core__bit_array_op_eqv_op(T_sp tx, T_sp ty, T_sp tr) { return template_bit_array_op<eqv_op>(tx,ty,tr); };
-CL_DEFUN core__bit_array_op_b_c2_op(T_sp tx, T_sp ty, T_sp tr) { return template_bit_array_op<b_c2_op>(tx,ty,tr); };
-CL_DEFUN core__bit_array_op_orc2_op(T_sp tx, T_sp ty, T_sp tr) { return template_bit_array_op<orc2_op>(tx,ty,tr); };
-CL_DEFUN core__bit_array_op_b_c1_op(T_sp tx, T_sp ty, T_sp tr) { return template_bit_array_op<b_c1_op>(tx,ty,tr); };
-CL_DEFUN core__bit_array_op_orc1_op(T_sp tx, T_sp ty, T_sp tr) { return template_bit_array_op<orc1_op>(tx,ty,tr); };
-CL_DEFUN core__bit_array_op_nand_op(T_sp tx, T_sp ty, T_sp tr) { return template_bit_array_op<nand_op>(tx,ty,tr); };
-CL_DEFUN core__bit_array_op_b_set_op(T_sp tx, T_sp ty, T_sp tr) { return template_bit_array_op<b_set_op>(tx,ty,tr); };
+CL_DEFUN T_sp core__bit_array_op_b_clr_op(T_sp tx, T_sp ty, T_sp tr) { return template_bit_array_op<b_clr_op_id>(tx,ty,tr); };
+CL_DEFUN T_sp core__bit_array_op_and_op(T_sp tx, T_sp ty, T_sp tr) { return template_bit_array_op<and_op_id>(tx,ty,tr); };
+CL_DEFUN T_sp core__bit_array_op_andc2_op(T_sp tx, T_sp ty, T_sp tr) { return template_bit_array_op<andc2_op_id>(tx,ty,tr); };
+CL_DEFUN T_sp core__bit_array_op_b_1_op(T_sp tx, T_sp ty, T_sp tr) { return template_bit_array_op<b_1_op_id>(tx,ty,tr); };
+CL_DEFUN T_sp core__bit_array_op_andc1_op(T_sp tx, T_sp ty, T_sp tr) { return template_bit_array_op<andc1_op_id>(tx,ty,tr); };
+CL_DEFUN T_sp core__bit_array_op_b_2_op(T_sp tx, T_sp ty, T_sp tr) { return template_bit_array_op<b_2_op_id>(tx,ty,tr); };
+CL_DEFUN T_sp core__bit_array_op_xor_op(T_sp tx, T_sp ty, T_sp tr) { return template_bit_array_op<xor_op_id>(tx,ty,tr); };
+CL_DEFUN T_sp core__bit_array_op_ior_op(T_sp tx, T_sp ty, T_sp tr) { return template_bit_array_op<ior_op_id>(tx,ty,tr); };
+CL_DEFUN T_sp core__bit_array_op_nor_op(T_sp tx, T_sp ty, T_sp tr) { return template_bit_array_op<nor_op_id>(tx,ty,tr); };
+CL_DEFUN T_sp core__bit_array_op_eqv_op(T_sp tx, T_sp ty, T_sp tr) { return template_bit_array_op<eqv_op_id>(tx,ty,tr); };
+CL_DEFUN T_sp core__bit_array_op_b_c2_op(T_sp tx, T_sp ty, T_sp tr) { return template_bit_array_op<b_c2_op_id>(tx,ty,tr); };
+CL_DEFUN T_sp core__bit_array_op_orc2_op(T_sp tx, T_sp ty, T_sp tr) { return template_bit_array_op<orc2_op_id>(tx,ty,tr); };
+CL_DEFUN T_sp core__bit_array_op_b_c1_op(T_sp tx, T_sp ty, T_sp tr) { return template_bit_array_op<b_c1_op_id>(tx,ty,tr); };
+CL_DEFUN T_sp core__bit_array_op_orc1_op(T_sp tx, T_sp ty, T_sp tr) { return template_bit_array_op<orc1_op_id>(tx,ty,tr); };
+CL_DEFUN T_sp core__bit_array_op_nand_op(T_sp tx, T_sp ty, T_sp tr) { return template_bit_array_op<nand_op_id>(tx,ty,tr); };
+CL_DEFUN T_sp core__bit_array_op_b_set_op(T_sp tx, T_sp ty, T_sp tr) { return template_bit_array_op<b_set_op_id>(tx,ty,tr); };
 
 #endif
-
+#endif
 /*! Copied from ECL */
 CL_DEFUN T_sp cl__logbitp(Integer_sp p, Integer_sp x) {
   bool i;
