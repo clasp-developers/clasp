@@ -747,19 +747,12 @@ void cc_register_startup_function(fnStartUp fptr) {
   register_startup_function(fptr);
 }
 
+void cc_invoke_sub_run_all_function(fnStartUp fptr) {
+  fptr();
+}
+
 void cc_invoke_startup_functions() {
   startup_functions_invoke();
-#if 0
-  if (core::_sym_STARtrace_startupSTAR->symbolValue().isTrue()) {
-    stringstream ss;
-    ss << "Time to run " << sourceName;
-    simple_timer timer(ss.str());
-    core::T_mv result = fptr(LCC_PASS_MAIN());
-    return;
-  } else {
-    core::T_mv result = fptr(LCC_PASS_MAIN());
-  }
-#endif
 };
 
 

@@ -64,6 +64,8 @@ THE SOFTWARE.
 
 #define INTPTR_BITS 64
 
+#define BIT_ARRAY_BYTE_SIZE 32
+
 typedef uint64_t   uintptr_clasp_t;
 #define CLASP_UINTPTR_IS_UINT64 1  // == true
 typedef int64_t    intptr_clasp_t;

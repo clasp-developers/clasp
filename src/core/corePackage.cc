@@ -261,6 +261,7 @@ SYMBOL_EXPORT_SC_(ClPkg, substitute);
 SYMBOL_EXPORT_SC_(ClPkg, subtypep);
 SYMBOL_EXPORT_SC_(ClPkg, subseq);
 
+SYMBOL_EXPORT_SC_(CorePkg, STARbits_in_bit_array_wordSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, setf_subseq);
 SYMBOL_EXPORT_SC_(CorePkg,STARextension_startup_loadsSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, multiple_value_foreign_call);
@@ -1147,6 +1148,8 @@ void CoreExposer_O::define_essential_globals(Lisp_sp lisp) {
   _sym_STARdebug_threadsSTAR->defparameter(_Nil<core::T_O>());
   _sym_STARdebug_dispatchSTAR->defparameter(_Nil<core::T_O>());
   _sym_STARdebug_valuesSTAR->defparameter(_Nil<core::T_O>());
+  _sym_STARbits_in_bit_array_wordSTAR->defparameter(core::clasp_make_fixnum(BIT_ARRAY_BYTE_SIZE));
+
 #if defined(__x86_64__)
   SYMBOL_EXPORT_SC_(KeywordPkg, address_model_64);
   Symbol_sp address_model = kw::_sym_address_model_64;

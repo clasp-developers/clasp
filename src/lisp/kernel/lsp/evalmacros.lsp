@@ -442,7 +442,8 @@ values of the last FORM.  If no FORM is given, returns NIL."
 
 (defmacro in-package (name)
   `(eval-when (:compile-toplevel :load-toplevel :execute)
-     (si::select-package ,(string name))))
+     (si::select-package ,(string name))
+     *package*))
 
 (defmacro define-symbol-macro (&whole whole symbol expansion)
   (cond ((not (symbolp symbol))

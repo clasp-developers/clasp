@@ -867,7 +867,7 @@ namespace core {
     virtual void __write__(T_sp strm) const final;
     virtual size_t elementSizeInBytes() const override {bitVectorDoesntSupportError();};
     virtual void* rowMajorAddressOfElement_(size_t i) const override {bitVectorDoesntSupportError();};
-    byte8_t* bytes() { return &this->_Data[0]; };
+    value_type* bytes() { return &this->_Data[0]; };
     virtual Array_sp reverse() const final;
     virtual Array_sp nreverse() final;
     virtual bool equal(T_sp other) const final;

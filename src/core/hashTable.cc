@@ -492,7 +492,7 @@ void HashTable_O::fields(Record_sp node) {
 uint HashTable_O::resizeEmptyTable(uint sz) {
   if (sz < 16) sz = 16;
   this->_HashTable = VectorObjects_O::make(sz, _Nil<T_O>() );
-  ENSURE_VALID_OBJECT(this->_HashTable);
+  (void) ENSURE_VALID_OBJECT(this->_HashTable);
 #ifdef USE_MPS
   mps_ld_reset(const_cast<mps_ld_t>(&(this->_LocationDependency)), global_arena);
 #endif

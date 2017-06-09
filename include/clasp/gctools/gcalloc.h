@@ -703,6 +703,11 @@ namespace gctools {
     }
 
     template <typename... ARGS>
+      static smart_pointer_type allocate_class(GCKindEnum kind, size_t size, ARGS &&... args) {
+      return GCObjectAllocator<OT>::allocate_kind(kind,size, std::forward<ARGS>(args)...);
+    }
+
+    template <typename... ARGS>
       static smart_pointer_type allocate( ARGS &&... args) {
       auto kind = OT::static_Kind;
       size_t size = sizeof_with_header<OT>();

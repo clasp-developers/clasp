@@ -54,10 +54,8 @@ namespace core {
     virtual ~Instance_O(){};
   public:
     Class_sp _Class;
-  public: // generic function specific instance variables here
     int _isgf;
     DispatchFunction_fptr_type _entryPoint;
-  public: // Slots
     SimpleVector_sp _Rack;
   /*! Mimicking ECL instance->sig generation signature
         This is pointed to the class slots in case they change 

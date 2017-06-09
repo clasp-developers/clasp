@@ -81,6 +81,11 @@ class_registration::class_registration(const std::string &name) : m_default_cons
 void class_registration::register_() const {
   ClassRegistry_sp registry = ClassRegistry_O::get_registry();
   clbind::ClassRep_sp crep = clbind::ClassRep_O::create(this->m_type, this->m_name, this->m_derivable);
+#ifdef DEBUG_CLASS_INSTANCE
+  printf("%s:%d   Registering clbind class\n", __FILE__, __LINE__ );
+#endif
+  crep->_MetaClass = core::lisp_StandardClass();
+  crep->initializeSlots(gctools::NextStamp(),REF_CLASS_NUMBER_OF_SLOTS_IN_STANDARD_CLASS);
   std::string classNameString(this->m_name);
   core::Symbol_sp className = core::lispify_intern(classNameString, _lisp->getCurrentPackage()->packageName());
   className->exportYourself();

@@ -178,6 +178,7 @@ calculate IsA relationships using simple GCKindEnum range comparisons.
                  KIND_CONS = 4,
                  KIND_VA_LIST_S = 5,
                  KIND_INSTANCE = 6,
+                 KIND_CLASS = 7,
                  // These are defined to support the GCKind<...> specializations below
                  // when defined(USE_CXX_DYNAMIC_CAST) || defined(RUNNING_GC_BUILDER)
                  KIND_LISPALLOC_core__VaList_dummy_O = KIND_VA_LIST_S, 
@@ -186,8 +187,8 @@ calculate IsA relationships using simple GCKindEnum range comparisons.
                  KIND_LISPALLOC_core__SingleFloat_dummy_O = KIND_SINGLE_FLOAT, 
                  KIND_LISPALLOC_core__Fixnum_dummy_O = KIND_FIXNUM,
                  KIND_LISPALLOC_core__Instance_O = KIND_INSTANCE,
-                 
-                 KIND_max = 6 } GCKindEnum; // minimally define this GCKind
+                 KIND_LISPALLOC_core__Class_O = KIND_CLASS,
+                 KIND_max = 7 } GCKindEnum; // minimally define this GCKind
 #else
  #define GC_ENUM
     typedef enum {
@@ -197,7 +198,8 @@ calculate IsA relationships using simple GCKindEnum range comparisons.
       KIND_CHARACTER = KIND_LISPALLOC_core__Character_dummy_O, 
       KIND_SINGLE_FLOAT = KIND_LISPALLOC_core__SingleFloat_dummy_O, 
       KIND_FIXNUM = KIND_LISPALLOC_core__Fixnum_dummy_O,
-      KIND_INSTANCE = KIND_LISPALLOC_core__Instance_O
+      KIND_INSTANCE = KIND_LISPALLOC_core__Instance_O,
+      KIND_CLASS = KIND_LISPALLOC_core__Class_O
   } GCKindEnum;
  #undef GC_ENUM
 #endif
@@ -617,6 +619,7 @@ namespace core {
   class Cons_O;
   class VaList_dummy_O;
   class Instance_O;
+  class Class_O;
 }
 #if defined(USE_CXX_DYNAMIC_CAST) || defined(RUNNING_GC_BUILDER)
 template <> class gctools::GCKind<core::Fixnum_dummy_O> {
@@ -642,6 +645,10 @@ public:
 template <> class gctools::GCKind<core::Instance_O> {
 public:
   static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__Instance_O ;
+};
+template <> class gctools::GCKind<core::Class_O> {
+public:
+  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__Class_O ;
 };
 #endif
 
