@@ -669,10 +669,18 @@ when this is t a lot of graphs will be generated.")
   (declare (ignore return-value inputs outputs abi function-info)))
 
 (defmethod translate-simple-instruction
+    ((instruction cleavir-ir:the-values-instruction) return-value inputs outputs abi function-info)
+  (declare (ignore return-value inputs outputs abi function-info)))
+
+(defmethod translate-simple-instruction
     ((instruction cleavir-ir:dynamic-allocation-instruction)
      return-value inputs outputs abi function-info)
   (declare (ignore return-value inputs outputs abi)))
 
+(defmethod translate-simple-instruction
+    ((instruction cleavir-ir:unreachable-instruction) return-value inputs outputs abi function-info)
+  (declare (ignore return-value inputs outputs abi function-info))
+  (cmp:irc-unreachable))
 
 #+(or)
 (progn
@@ -882,7 +890,7 @@ when this is t a lot of graphs will be generated.")
     (quick-draw-hir init-instr "hir-after-thes-typeqs")
     (when *enable-type-inference*
       ;; Conditionally use type inference.
-      (cleavir-kildall-type-inference:infer-types init-instr
+      (cleavir-kildall-type-inference:infer-types init-instr clasp-cleavir:*clasp-env*
          :liveness liveness :prune t
          :draw (quick-hir-pathname "hir-before-prune-ti"))
       (quick-draw-hir init-instr "hir-after-ti")))
