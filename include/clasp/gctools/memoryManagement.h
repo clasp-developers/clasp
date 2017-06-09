@@ -187,7 +187,7 @@ calculate IsA relationships using simple GCKindEnum range comparisons.
                  KIND_LISPALLOC_core__SingleFloat_dummy_O = KIND_SINGLE_FLOAT, 
                  KIND_LISPALLOC_core__Fixnum_dummy_O = KIND_FIXNUM,
                  KIND_LISPALLOC_core__Instance_O = KIND_INSTANCE,
-                 KIND_LISPALLOC_core__Class_O = KIND_CLASS,
+                 KIND_BOOTSTRAP_core__Class_O = KIND_CLASS,
                  KIND_max = 7 } GCKindEnum; // minimally define this GCKind
 #else
  #define GC_ENUM
@@ -199,7 +199,7 @@ calculate IsA relationships using simple GCKindEnum range comparisons.
       KIND_SINGLE_FLOAT = KIND_LISPALLOC_core__SingleFloat_dummy_O, 
       KIND_FIXNUM = KIND_LISPALLOC_core__Fixnum_dummy_O,
       KIND_INSTANCE = KIND_LISPALLOC_core__Instance_O,
-      KIND_CLASS = KIND_LISPALLOC_core__Class_O
+      KIND_CLASS = KIND_BOOTSTRAP_core__Class_O
   } GCKindEnum;
  #undef GC_ENUM
 #endif
