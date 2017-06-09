@@ -53,7 +53,7 @@ services:
     ports:
       - "4005:4005"
 
-ci:
+  ci:
     image: drmeister/cando-ci
     build:
       context: ./tools/dockerfiles/ci
