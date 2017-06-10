@@ -68,11 +68,12 @@ CL_DEFUN T_sp cl__get(Symbol_sp sym, T_sp indicator, T_sp defval) {
 CL_LAMBDA(sym plist);
 CL_DECLARE();
 CL_DOCSTRING("Set the symbol plist");
-CL_DEFUN void core__set_symbol_plist(Symbol_sp sym, List_sp plist) {
+CL_DEFUN T_sp core__set_symbol_plist(Symbol_sp sym, List_sp plist) {
   if (sym.nilp()) {
     SIMPLE_ERROR(BF("You cannot set the plist of nil"));
   };
   sym->setf_plist(plist);
+  return plist;
 }
 
 CL_LAMBDA(sym val indicator);
