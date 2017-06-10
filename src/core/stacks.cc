@@ -123,6 +123,7 @@ Vector_sp ExceptionStack::backtrace() {
 
 
 void InvocationHistoryFrame::validate() const {
+#if 0
   T_sp res((gctools::Tagged)(((core::T_O**)(this->_args->reg_save_area))[LCC_CLOSURE_REGISTER]));
   if (res) {
     if (gc::IsA<Function_sp>(res)) {
@@ -134,12 +135,15 @@ void InvocationHistoryFrame::validate() const {
   }
   printf("%s:%d  There is a problem in the creation of an InvocationHistoryFrame - bad function: %p\n:", __FILE__, __LINE__, res.raw_());
   abort();
+#endif
 }
 
 T_sp InvocationHistoryFrame::function() const
   {
     Function_sp res((gctools::Tagged)(((core::T_O**)(this->_args->reg_save_area))[LCC_CLOSURE_REGISTER]));
-    if ( !res ) return _Nil<T_O>();
+    if ( !res ) {
+      return _Nil<T_O>();
+    }
     return res;
   }
 

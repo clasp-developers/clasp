@@ -318,7 +318,6 @@ ALWAYS_INLINE gc::return_type cc_call(LCC_ARGS_CC_CALL_ELLIPSIS) {
 
 ALWAYS_INLINE gc::return_type cc_call_callback(LCC_ARGS_CC_CALL_ELLIPSIS) {
   //	core::Function_O* func = gctools::DynamicCast<core::NamedFunction_O*,core::T_O*>::castOrNULL(tfunc);
-  IMPLEMENT_ME();
   auto closure = reinterpret_cast<CompiledClosure_fptr_type>(lcc_closure);
   VaList_S lcc_arglist_s;
   va_start(lcc_arglist_s._Args, LCC_VA_START_ARG);
