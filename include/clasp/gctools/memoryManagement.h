@@ -648,7 +648,7 @@ public:
 };
 template <> class gctools::GCKind<core::Class_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__Class_O ;
+  static gctools::GCKindEnum const Kind = gctools::KIND_BOOTSTRAP_core__Class_O ;
 };
 #endif
 
