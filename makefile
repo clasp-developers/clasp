@@ -315,3 +315,8 @@ push-to-preview:
 push-to-testing:
 	git fetch origin dev:testing
 	git push origin testing
+
+analyze:
+	./waf build_cboehmdc
+	./waf build_impsprep
+	./waf analyze_clasp
