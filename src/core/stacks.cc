@@ -60,10 +60,22 @@ void validate_InvocationHistoryStack(int pushPop, const InvocationHistoryFrame* 
 
 void error_InvocationHistoryStack(const InvocationHistoryFrame* frame, const InvocationHistoryFrame* stackTop) {
 //  printf("%s:%d  Error in closure @%p\n", __FILE__, __LINE__, (void*)tagged_closure);
-  printf("       ------------- the InvocationHistoryStackTop pointer @%p\n", my_thread->_InvocationHistoryStackTop );
+  printf("\n%s:%d ------- the my_thread->_InvocationHistoryStackTop pointer @%p\n", __FILE__, __LINE__, my_thread->_InvocationHistoryStackTop );
   printf("          does not match the current frame being popped @%p\n", frame );
+  if (my_thread->_InvocationHistoryStackTop < frame ) {
+    printf("     It appears that a function did not clean up after itself\n");
+    printf("     and at least one frame was left on the stack when it should have been popped\n");
+    printf("     since my_thread->_InvocationHistoryStackTop < frame (stack grows down)\n");
+  } else {
+    printf("     my_thread->_InvocationHistoryStackTop > frame !!!!\n");
+    printf("     I'm not sure how this can happen - investigate and describe the problem here in the comment\n");
+  }
 #ifdef DEBUG_IHS
-  printf("                     the InvocationHistoryStackTopClosure @%p (the closure that may not have cleaned itself up)\n", my_thread->_InvocationHistoryStackClosure );
+  void* fn_ptr = NULL;
+  if (gctools::tagged_generalp(my_thread->_InvocationHistoryStackClosure)) {
+    fn_ptr = (void*)(reinterpret_cast<Function_O*>(gc::untag_general(my_thread->_InvocationHistoryStackClosure))->entry);
+  }
+  printf("                     the InvocationHistoryStackTopClosure @%p function pointer @%p\n", my_thread->_InvocationHistoryStackClosure, fn_ptr);
 #else
   printf("         Consider turning on DEBUG_IHS to assist in debugging this problem - it will give you the last closure that may not have cleaned itself up\n");
 #endif
@@ -257,9 +269,9 @@ void invocation_history_stack_dump(const InvocationHistoryFrame* frame, const ch
     T_sp tfn = cur->function();
     if (gc::IsA<Function_sp>(tfn)) {
       Function_sp fn = gc::As_unsafe<Function_sp>(tfn);
-      printf("    frame[%lu] @%p (previous %p)  function@%p: %s\n", count, cur, cur->_Previous, tfn.raw_(), _rep_(fn->name()).c_str());
+      printf("    frame[%4lu] @%p (previous %p)  closure@%p  fptr@%p: %s\n", count, cur, cur->_Previous, tfn.raw_(), (void*)fn->entry, _rep_(fn->name()).c_str());
     } else {
-      printf("    frame[%lu] @%p  function @%p : %s\n", count, cur, tfn.raw_(), _rep_(tfn).c_str());
+      printf("    frame[%4lu] @%p   NO-FUNCTION-INFO tfn@%p\n", count, cur, tfn.raw_());
     }
     cur = cur->_Previous;
     ++count;
@@ -315,21 +327,9 @@ string backtrace_as_string() {
 };
 
 extern "C" {
-void dump_backtrace(core::InvocationHistoryFrame* frame) {
-  std::cout << "--------STACK TRACE--------" << std::endl;
-  const core::InvocationHistoryFrame* cur = frame;
-  int i = 0;
-  while (cur) {
-    if (cur == my_thread->_InvocationHistoryStackTop) {
-      std::cout << "-->";
-    } else {
-      std::cout << "   ";
-    }
-    std::cout << "frame@" << (void*)cur << ": ";
-    std::cout << cur->asString(i) << std::endl;
-    cur = cur->_Previous;
-    ++i;
-  }
+void dump_backtrace() {
+  const core::InvocationHistoryFrame* frame = my_thread->_InvocationHistoryStackTop;
+  invocation_history_stack_dump(frame,"STACK TRACE");
 }
 };
 
