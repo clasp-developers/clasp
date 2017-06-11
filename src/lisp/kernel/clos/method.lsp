@@ -254,12 +254,17 @@ and wraps it in an flet |#
                                                                     (or args .method-args.))
                                                        (error "No next method") ;; Should be what is above -> (apply #'no-next-method ...)
                                                        (let ((use-args (if (> (va-list-length args) 0) args .method-args.)))
-                                                         (core:multiple-value-foreign-call "apply_call_next_method2"
+                                                         #++(core:multiple-value-foreign-call "apply_call_next_method2"
                                                           (car .next-methods.)
                                                           use-args ; (or args .method-args.)
                                                           (cdr .next-methods.)
                                                           use-args ; (or args .method-args.)
-                                                          ))))))
+                                                          )
+                                                         (apply (car .next-methods.)
+                                                                use-args ; (or args .method-args.)
+                                                                (cdr .next-methods.)
+                                                                use-args ; (or args .method-args.)
+                                                                ))))))
                         ,@(and next-method-p-p
                                `((next-method-p ()
                                                 (and .next-methods. t)))))
