@@ -44,6 +44,10 @@ void Cache_O::setup(int keySize, int cacheSize) {
 
 void Cache_O::removeOne(T_sp firstKey) {
   // For multithreading ecl_cache_remove_one does an ecl__atomic_push
+#ifdef DEBUG_CACHE
+  if (this->_debug)
+    printf("%s:%d removeOne  -> %s\n", __FILE__, __LINE__, _rep_(firstKey).c_str());
+#endif
 #ifdef CLASP_THREADS
   mp::atomic_push(this->_clear_list_spinlock,this->_clear_list_safe,firstKey);
 #else
@@ -67,13 +71,20 @@ void Cache_O::clearOneFromCache(T_sp target) {
 void Cache_O::clearListFromCache()
 {
   T_sp tlist = mp::atomic_get_and_set_to_Nil(this->_clear_list_spinlock,this->_clear_list_safe);
+#ifdef DEBUG_CACHE
+  if (this->_debug) printf("%s:%d   clearListFromCache generic functions: %s\n", __FILE__, __LINE__, _rep_(tlist).c_str());
+#endif
   if (tlist.consp()) {
     Cons_O* list = tlist.unsafe_cons();
     gctools::Vec0<CacheRecord>& table = this->_table;
     for (int i(0); i < this->_table.size(); ++i) {
       if (gc::IsA<SimpleVector_sp>(this->_table[i]._key)) {
         SimpleVector_sp key = gc::As_unsafe<SimpleVector_sp>(this->_table[i]._key);
-        if (list->memberEq((*key)[0])) {
+        T_sp member = list->memberEq((*key)[0]);
+        if (member.notnilp()) {
+#ifdef DEBUG_CACHE
+  if (this->_debug) printf("%s:%d:%s    Clearing cache[%d] key: %s\n", __FILE__, __LINE__, __FUNCTION__, i, _rep_((*key)[0]).c_str());
+#endif
           this->_table[i]._key = _Nil<T_O>();
           this->_table[i]._generation = 0;
         }
@@ -342,6 +353,28 @@ CL_DEFUN void core__debug_single_dispatch_method_cache(bool debug)
   my_thread->_SingleDispatchMethodCachePtr->_debug = debug;
 }
 #endif
+
+CL_DEFUN void core__debug_search_method_cache(T_sp gf) {
+  for (int i(0); i < my_thread->_MethodCachePtr->_table.size(); ++i) {
+    if (gc::IsA<SimpleVector_sp>(my_thread->_MethodCachePtr->_table[i]._key)) {
+      SimpleVector_sp key = gc::As_unsafe<SimpleVector_sp>(my_thread->_MethodCachePtr->_table[i]._key);
+      if (gf == (*key)[0]) {
+        printf("%s:%d:%s    found key at %d\n", __FILE__, __LINE__, __FUNCTION__, i );
+      }
+    }
+  }
+}
+
+CL_DEFUN void core__debug_search_slot_cache(T_sp gf) {
+  for (int i(0); i < my_thread->_SlotCachePtr->_table.size(); ++i) {
+    if (gc::IsA<SimpleVector_sp>(my_thread->_SlotCachePtr->_table[i]._key)) {
+      SimpleVector_sp key = gc::As_unsafe<SimpleVector_sp>(my_thread->_SlotCachePtr->_table[i]._key);
+      if (gf == (*key)[0]) {
+        printf("%s:%d:%s    found key at %d\n", __FILE__, __LINE__, __FUNCTION__, i );
+      }
+    }
+  }
+}
 
 
    
