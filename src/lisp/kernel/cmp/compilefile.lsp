@@ -448,6 +448,8 @@ Compile a lisp source file into an LLVM module.  type can be :kernel or :user"
         ((eq output-type :object)
          (when verbose (bformat t "Writing object to %s\n" (core:coerce-to-filename output-path)))
          (ensure-directories-exist output-path)
+         ;; Save the bitcode
+         (llvm-sys:write-bitcode-to-file module (core:coerce-to-filename (cfp-output-file-default output-path :bitcode)))
          (with-open-file (fout output-path :direction :output)
            (let ((reloc-model (cond
                                 ((member :target-os-linux *features*) 'llvm-sys:reloc-model-pic-)
