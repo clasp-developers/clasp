@@ -24,6 +24,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
+#include <libgen.h>
+
 #include <clasp/core/foundation.h>
 #include <clasp/core/stacks.h>
 #include <clasp/core/object.h>
@@ -55,7 +57,7 @@ void validate_InvocationHistoryStack(int pushPop, const InvocationHistoryFrame* 
   if (global_debug_ihs==1) invocation_history_stack_dump(frame,"Validating stack");
   fflush(stdout);
 }
-  
+
 
 
 void error_InvocationHistoryStack(const InvocationHistoryFrame* frame, const InvocationHistoryFrame* stackTop) {
@@ -121,8 +123,17 @@ Vector_sp ExceptionStack::backtrace() {
   return result;
 }
 
+static inline void args_and_reg_save_area_valid_p( const InvocationHistoryFrame * self, char *pc_file, int n_line, const char *pc_fn_name )
+{
+  if( ! self->_args->reg_save_area )
+  {
+    fprintf( stderr, "\n*** EMERGENCY in %s (%s:%d): this->_args->reg_save_area is invalid ! - ABORTING !!!\n", pc_fn_name, basename( pc_file ), n_line );
+    abort();
+  }
+}
 
 void InvocationHistoryFrame::validate() const {
+  args_and_reg_save_area_valid_p( this , __FILE__, __LINE__, __FUNCTION__ );
   T_sp res((gctools::Tagged)(((core::T_O**)(this->_args->reg_save_area))[LCC_CLOSURE_REGISTER]));
   if (res) {
     if (gc::IsA<Function_sp>(res)) {
@@ -138,6 +149,7 @@ void InvocationHistoryFrame::validate() const {
 
 T_sp InvocationHistoryFrame::function() const
   {
+    args_and_reg_save_area_valid_p( this , __FILE__, __LINE__, __FUNCTION__ );
     Function_sp res((gctools::Tagged)(((core::T_O**)(this->_args->reg_save_area))[LCC_CLOSURE_REGISTER]));
     if ( !res ) return _Nil<T_O>();
     return res;
@@ -145,6 +157,7 @@ T_sp InvocationHistoryFrame::function() const
 
 void* InvocationHistoryFrame::register_save_area() const
   {
+    args_and_reg_save_area_valid_p( this , __FILE__, __LINE__, __FUNCTION__ );
     return (this->_args->reg_save_area);
   }
 
@@ -446,7 +459,7 @@ void DynamicBindingStack::pop_binding() {
   }
 #endif
 #ifdef CLASP_THREADS
-  ASSERT(this->_ThreadLocalBindings.size()>bind._Var->_Binding); 
+  ASSERT(this->_ThreadLocalBindings.size()>bind._Var->_Binding);
   this->_ThreadLocalBindings[bind._Var->_Binding] = bind._Val;
   this->_Bindings.pop_back();
 #else
