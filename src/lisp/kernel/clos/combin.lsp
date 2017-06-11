@@ -68,7 +68,7 @@
                                       (if (not .next-methods.)
                                           (error "No next method")
                                           (let ((use-args (if (> (va-list-length args) 0) args .method-args.)))
-                                            (core:multiple-value-foreign-call "apply_call_next_method1"
+                                            (apply
                                              (car .next-methods.)
                                              use-args ; (or args .method-args)
                                              (cdr .next-methods.)
@@ -105,7 +105,8 @@
                (core:lambda-name combine-method-functions1.lambda))
       ;; TODO: Optimize this application and GF dispatch should be more efficient
       ;; .method-args. can be a valist or a regular list
-      (core:multiple-value-foreign-call "apply_method1" method .method-args. rest-methods args)))
+      #++(core:multiple-value-foreign-call "apply_method1" method .method-args. rest-methods args)
+      (apply method .method-args. rest-methods args)))
 
 (defun combine-method-functions2 (method rest-methods)
   (declare (si::c-local))
@@ -114,7 +115,8 @@
                (core:lambda-name combine-method-functions2.lambda))
       ;; TODO: Optimize this application and GF dispatch should be more efficient
       ;; .method-args. can be a valist or a regular list
-      (core:multiple-value-foreign-call "apply_method2" method .method-args. rest-methods args)))
+      #++(core:multiple-value-foreign-call "apply_method2" method .method-args. rest-methods args)
+      (apply method .method-args. rest-methods args)))
 
 (defun combine-method-functions3 (method rest-methods)
   (declare (si::c-local))
@@ -123,16 +125,24 @@
                (core:lambda-name combine-method-functions3.lambda))
       ;; TODO: Optimize this application and GF dispatch should be more efficient
       ;; .method-args. can be a valist or a regular list
-      (core:multiple-value-foreign-call "apply_method3" method .method-args. rest-methods args)))
+      #++(core:multiple-value-foreign-call "apply_method3" method .method-args. rest-methods args)
+      (apply method .method-args. rest-methods args)))
 
 (defmacro call-method (method &optional rest-methods)
-  `(core:multiple-value-foreign-call "apply_method4"
+  #++`(core:multiple-value-foreign-call "apply_method4"
                                      ,(effective-method-function method)
                                      ;; This is a stab in the dark - I don't know if .method-args.
                                      ;; will be defined in the lexical environment
                                      .method-args.
                                      ',(and rest-methods (mapcar #'effective-method-function rest-methods))
-                                     .method-args.))
+                                     .method-args.)
+  `(apply ,(effective-method-function method)
+          ;; This is a stab in the dark - I don't know if .method-args.
+          ;; will be defined in the lexical environment
+          .method-args.
+          ',(and rest-methods (mapcar #'effective-method-function rest-methods))
+          .method-args.)
+  )
 
 (defun error-qualifier (m qualifier)
   (declare (si::c-local))
@@ -147,13 +157,17 @@
       (declare (ignore no-next-method)
                (core:lambda-name standard-main-effective-method.lambda))
       (dolist (i before)
-        (core:multiple-value-foreign-call "apply_method5" i .method-args. nil .method-args.))
+        #++(core:multiple-value-foreign-call "apply_method5" i .method-args. nil .method-args.)
+        (apply i .method-args. nil .method-args.))
       (if after
 	  (multiple-value-prog1
-              (core:multiple-value-foreign-call "apply_method6" (first primary) .method-args. (rest primary) .method-args.)
-            (dolist (i after)
-              (core:multiple-value-foreign-call "apply_method7" i .method-args. nil .method-args.)))
-          (core:multiple-value-foreign-call "apply_method8" (first primary) .method-args. (rest primary) .method-args.))))
+              #++(core:multiple-value-foreign-call "apply_method6" (first primary) .method-args. (rest primary) .method-args.)
+              (apply (first primary) .method-args. (rest primary) .method-args.)
+              (dolist (i after)
+                #++(core:multiple-value-foreign-call "apply_method7" i .method-args. nil .method-args.)
+                (apply i .method-args. nil .method-args.)))
+          #++(core:multiple-value-foreign-call "apply_method8" (first primary) .method-args. (rest primary) .method-args.)
+          (apply (first primary) .method-args. (rest primary) .method-args.))))
 
 
 (defun standard-compute-effective-method (gf methods)

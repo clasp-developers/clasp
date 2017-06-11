@@ -5,7 +5,7 @@ Parameters:
     Description: Worker EC2 instance type (m1.small, etc).
     Type: String
     ConstraintDescription: must be a valid EC2 instance type.
-    Default: m4.large
+    Default: c4.xlarge
   SpotBid:
     Description: Spot instance price bid
     Type: Number
@@ -13,7 +13,7 @@ Parameters:
   DiskSize:
     Description: Disk space available for Docker, in GB
     Type: Number
-    Default: 30
+    Default: 50
   DiskType:
     Description: EBS Volume type - see https://goo.gl/iqtSrQ
     Type: String

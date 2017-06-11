@@ -357,8 +357,9 @@ CL_DEFMETHOD bool Cons_O::exactlyMatches(List_sp other) const {
 
 List_sp Cons_O::memberEq(T_sp item) const {
   for (auto cur : (List_sp) this->asSmartPtr()) {
-    if (oCar(cur) == item)
+    if (CONS_CAR(cur) == item) {
       return cur;
+    }
   }
   return _Nil<T_O>();
 }
