@@ -716,7 +716,7 @@ def configure(cfg):
 #    cfg.define("DEBUG_FLOW_CONTROL",1)
 #    cfg.define("DEBUG_DYNAMIC_BINDING_STACK",1)
 #    cfg.define("DEBUG_VALUES",1)   # turn on printing (values x y z) values when core:*debug-values* is not nil
-    cfg.define("DEBUG_IHS",1)
+#    cfg.define("DEBUG_IHS",1)
 #    cfg.define("DEBUG_ENSURE_VALID_OBJECT",1)
 #    cfg.define("DEBUG_THREADS",1)
 #    cfg.define("DEBUG_BOUNDS_ASSERT",1)

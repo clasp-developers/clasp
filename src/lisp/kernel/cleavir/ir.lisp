@@ -313,9 +313,9 @@
     ;;; FIXME: Do these calls also need an INVOKE version if landing-pad is set????
     (if (eq :void (first foreign-types))
         (progn
-          (llvm-sys:create-call-array-ref cmp:*irbuilder* func arguments "")
+          (cmp::irc-call-or-invoke func arguments)
           (%store (%intrinsic-invoke-if-landing-pad-or-call (clasp-ffi::to-translator-name (first foreign-types)) nil) output))
-        (let ((foreign-result (llvm-sys:create-call-array-ref cmp:*irbuilder* func arguments "foreign-result")))
+        (let ((foreign-result (cmp::irc-call-or-invoke func arguments)))
           (%store (%intrinsic-invoke-if-landing-pad-or-call (clasp-ffi::to-translator-name (first foreign-types)) (list foreign-result)) output)))))
 
 (defun unsafe-foreign-call-pointer (call-or-invoke foreign-types pointer output arg-allocas abi &key (label ""))
@@ -330,7 +330,7 @@
     ;;; FIXME: Do these calls also need an INVOKE version if landing-pad is set????
     (if (eq :void (first foreign-types))
         (progn
-          (llvm-sys:create-call-function-pointer cmp:*irbuilder* function-type function-pointer arguments "")
+          (cmp::irc-call-or-invoke function-pointer arguments)
           (%store (%intrinsic-invoke-if-landing-pad-or-call (clasp-ffi::to-translator-name (first foreign-types)) nil) output))
-        (let ((result-in-t* (llvm-sys:create-call-function-pointer cmp:*irbuilder* function-type function-pointer arguments "foreign-result")))
+        (let ((result-in-t* (cmp::irc-call-or-invoke function-pointer arguments)))
           (%store (%intrinsic-invoke-if-landing-pad-or-call (clasp-ffi::to-translator-name (first foreign-types)) (list result-in-t*)) output)))))

@@ -137,7 +137,7 @@ CL_DEFUN T_sp core__allocate_raw_class(T_sp orig, T_sp tMetaClass, int slots, bo
       } else if (Class_sp corig = orig.asOrNull<Class_O>()) {
         corig->_MetaClass = cMetaClass;
         corig->_Rack = newClass->_Rack;
-        printf("%s:%d Changing the #slots to %d for metaclass %s\n", __FILE__, __LINE__, slots, cMetaClass->classNameAsString().c_str() );
+//        printf("%s:%d Changing the #slots to %d for metaclass %s\n", __FILE__, __LINE__, slots, cMetaClass->classNameAsString().c_str() );
       }
       return orig;
     } else if ( Instance_sp iNewClass = tNewClass.asOrNull<Instance_O>() ) {

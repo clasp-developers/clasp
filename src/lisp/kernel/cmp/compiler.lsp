@@ -1190,7 +1190,7 @@ jump to blocks within this tagbody."
                       intrinsic-name
                       *the-module*)))
            (foreign-result
-            (irc-call-or-invoke func (nreverse args)) #++(llvm-sys:create-call-array-ref *irbuilder* func (nreverse args) "intrinsic"))
+            (irc-call-or-invoke func (nreverse args)))
            (result-in-t*
             (if (eq :void (first foreign-types))
                 (irc-intrinsic-call (clasp-ffi::to-translator-name (first foreign-types)) nil) ; returns :void
@@ -1218,7 +1218,7 @@ jump to blocks within this tagbody."
              (pointer-t* (irc-smart-ptr-extract (irc-load temp-result)))
              (function-pointer (llvm-sys:create-bit-cast *irbuilder* (irc-intrinsic "cc_getPointer" pointer-t*) function-pointer-type "cast-function-pointer"))
              (foreign-result
-              (irc-create-call-or-invoke function-pointer (nreverse args)) #++(llvm-sys:create-call-function-pointer *irbuilder* function-type function-pointer (nreverse args) "fn-ptr-call-result"))
+              (cmp::irc-call-or-invoke function-pointer (nreverse args)))
              (result-in-t*
               (if (eq :void (first foreign-types))
                   (irc-intrinsic-call (clasp-ffi::to-translator-name (first foreign-types)) nil) ; returns :void

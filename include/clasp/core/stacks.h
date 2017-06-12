@@ -91,29 +91,19 @@ namespace core {
   string backtrace_as_string();
 };
 
-namespace core {
 #ifdef DEBUG_IHS
   extern int global_debug_ihs;
 #endif
-  void invocation_history_stack_dump(const InvocationHistoryFrame* frame, const char* msg);
+
+namespace core {
+
+  void invocation_history_stack_dump(const InvocationHistoryFrame* frame, const char* msg, size_t num_frames);
   size_t invocation_history_stack_depth(const InvocationHistoryFrame* frame);
   
   void validate_InvocationHistoryStack(int pushPop, const InvocationHistoryFrame* frame, const InvocationHistoryFrame* stackTop);
   void error_InvocationHistoryStack(const InvocationHistoryFrame* frame, const InvocationHistoryFrame* stackTop);
-  inline void push_InvocationHistoryStack(const InvocationHistoryFrame* frame) {
-#ifdef DEBUG_IHS
-    if (global_debug_ihs) validate_InvocationHistoryStack(1,frame,my_thread->_InvocationHistoryStackTop);
-#endif
-    frame->_Previous = my_thread->_InvocationHistoryStackTop;
-    my_thread->_InvocationHistoryStackTop = frame;
-  }
-  inline void pop_InvocationHistoryStack(const InvocationHistoryFrame* frame) {
-#ifdef DEBUG_IHS
-    if (global_debug_ihs) validate_InvocationHistoryStack(0,frame,my_thread->_InvocationHistoryStackTop);
-#endif
-    unlikely_if (frame != my_thread->_InvocationHistoryStackTop) error_InvocationHistoryStack(frame,my_thread->_InvocationHistoryStackTop);
-    my_thread->_InvocationHistoryStackTop = my_thread->_InvocationHistoryStackTop->_Previous;
-  };
+  void push_InvocationHistoryStack(const InvocationHistoryFrame* frame);
+  void pop_InvocationHistoryStack(const InvocationHistoryFrame* frame);
   
   struct SafeUpdateInvocationHistoryStack {
     const InvocationHistoryFrame* frame;
