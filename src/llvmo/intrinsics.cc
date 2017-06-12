@@ -479,7 +479,6 @@ ALWAYS_INLINE void cc_push_InvocationHistoryFrame(core::T_O* tagged_closure, Inv
 #endif
 }
 
-
 ALWAYS_INLINE void cc_pop_InvocationHistoryFrame(core::T_O* tagged_closure, InvocationHistoryFrame* frame) {
   core::pop_InvocationHistoryStack(frame);
 }

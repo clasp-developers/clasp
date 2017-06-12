@@ -2140,12 +2140,16 @@ CL_DOCSTRING("Return the current sourceFileName");
 CL_DEFUN T_mv core__source_file_name() {
   Cons_sp ppcons;
   const InvocationHistoryFrame *frame = my_thread->_InvocationHistoryStackTop;
-  Function_sp closure = frame->function();
-  int sourceFileInfoHandle = closure->sourceFileInfoHandle();
-  string sourcePath = gc::As<SourceFileInfo_sp>(core__source_file_info(make_fixnum(sourceFileInfoHandle)))->namestring();
-  Path_sp path = Path_O::create(sourcePath);
-  Path_sp parent_path = path->parent_path();
-  return Values(SimpleBaseString_O::make(path->fileName()), SimpleBaseString_O::make(parent_path->asString()));
+  T_sp tclosure = frame->function();
+  if (tclosure.notnilp()) {
+    Function_sp closure = gc::As<Function_sp>(tclosure);
+    int sourceFileInfoHandle = closure->sourceFileInfoHandle();
+    string sourcePath = gc::As<SourceFileInfo_sp>(core__source_file_info(make_fixnum(sourceFileInfoHandle)))->namestring();
+    Path_sp path = Path_O::create(sourcePath);
+    Path_sp parent_path = path->parent_path();
+    return Values(SimpleBaseString_O::make(path->fileName()), SimpleBaseString_O::make(parent_path->asString()));
+  }
+  return Values(SimpleBaseString_O::make("NO-SOURCE-INFO-AVAILABLE"), SimpleBaseString_O::make("NO-PATH-INFO-AVAILABLE"));
 }
 
 CL_LAMBDA();
@@ -2153,8 +2157,12 @@ CL_DECLARE();
 CL_DOCSTRING("sourceLineColumn");
 CL_DEFUN T_mv core__source_line_column() {
   const InvocationHistoryFrame *frame = my_thread->_InvocationHistoryStackTop;
-  Function_sp closure = frame->function();
-  return Values(make_fixnum(closure->lineNumber()), make_fixnum(closure->column()));
+  T_sp tclosure = frame->function();
+  if (tclosure.notnilp()) {
+    Function_sp closure = gc::As<Function_sp>(tclosure);
+    return Values(make_fixnum(closure->lineNumber()), make_fixnum(closure->column()));
+  }
+  return Values(make_fixnum(0),make_fixnum(0));
 }
 
 /*
