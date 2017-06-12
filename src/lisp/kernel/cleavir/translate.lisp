@@ -901,7 +901,7 @@ when this is t a lot of graphs will be generated.")
   (setf *ct-eliminate-typeq* (compiler-timer-elapsed))
   (quick-draw-hir init-instr "hir-after-eliminate-typeq")
   (clasp-cleavir::eliminate-load-time-value-inputs init-instr *clasp-system*)
-  (quick-draw-hir init-instr "hir-after-eliminate-load-time-value-inputs")))
+  (quick-draw-hir init-instr "hir-after-eliminate-load-time-value-inputs"))
 
 (defun compile-form-to-mir (FORM &optional (ENV *clasp-env*))
   "Compile a form down to MIR and return it.
