@@ -1,6 +1,7 @@
 {
     "argv": [
         "/home/app/clasp/bin/clasp",
+        "--non-interactive",
         "--feature",
         "jupyter",
         "--exec",
