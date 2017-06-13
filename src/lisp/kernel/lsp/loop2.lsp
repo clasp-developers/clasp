@@ -966,12 +966,8 @@ a LET-like macro, and a SETQ-like macro, which perform LOOP-style destructuring.
 
 (defun loop-error (format-string &rest format-args)
   (declare (si::c-local))
-  #-clasp(si::simple-program-error "~?~%Current LOOP context:~{ ~S~}."
-			format-string format-args (loop-context))
-  #+clasp(si::simple-program-error (bformat nil "%s\nCurrent LOOP context:\n%s"
-					    (format nil format-string format-args)
-					    (loop-context)))
-  )
+  (si::simple-program-error "~?~%Current LOOP context:~{ ~S~}."
+                            format-string format-args (loop-context)))
 
 
 (defun loop-warn (format-string &rest format-args)
