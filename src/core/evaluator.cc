@@ -310,7 +310,11 @@ CL_DEFUN T_mv cl__eval(T_sp form) {
   return form;
 };
 
-
+CL_DECLARE();
+CL_DOCSTRING("Interpret FORM in the interpreter environment ENV.");
+CL_DEFUN T_mv core__interpret(T_sp form, T_sp env) {
+  return eval::evaluate(form, env);
+}
 
 
 // fast funcall
