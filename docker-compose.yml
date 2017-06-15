@@ -31,7 +31,7 @@ services:
   # To build cando, run: docker-compose run cando --help
   # this should build the clasp image as a dependency
   cando:
-    image: cando
+    image: drmeister/cando
     build:
       context: .
       dockerfile: tools/dockerfiles/cando/Dockerfile
