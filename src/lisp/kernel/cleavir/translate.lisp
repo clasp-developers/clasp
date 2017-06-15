@@ -551,18 +551,6 @@ when this is t a lot of graphs will be generated.")
     (%intrinsic-invoke-if-landing-pad-or-call "cc_setSymbolValue" (list sym val))))
 
 
-#|
-(defmethod translate-simple-instruction
-    ((instruction cleavir-ir:aref-instruction) return-value inputs outputs abi)
-  (let ((array (first inputs))
-        (index (second inputs)))
-    
-  (let ((cell (llvm-sys:create-load-value-twine cmp:*irbuilder* (first inputs) "cell")))
-  (cmp:irc-low-level-trace :flow)
-    (let ((result (cmp:irc-intrinsic-call "cc_readCell" (list cell))))
-      (llvm-sys:create-store cmp:*irbuilder* result (first outputs) nil))))
-|#
-
 (defmethod translate-simple-instruction
     ((instruction cleavir-ir:enclose-instruction) return-value inputs outputs abi function-info)
   (cmp:irc-low-level-trace :flow)
@@ -870,20 +858,21 @@ when this is t a lot of graphs will be generated.")
   ;; required by most of the below
   (cleavir-hir-transformations:process-captured-variables init-instr)
   (setf *ct-process-captured-variables* (compiler-timer-elapsed))
-  (quick-draw-hir init-instr "hir-after-pcv")
-  ;; DX analysis
-  (let ((liveness (cleavir-liveness:liveness init-instr)))
-    (setf *ct-liveness* (compiler-timer-elapsed))
-    (clasp-cleavir:optimize-stack-enclose init-instr) ; see FIXME at definition
-    (setf *ct-optimize-stack-enclose* (compiler-timer-elapsed))
-    (cleavir-escape:mark-dynamic-extent init-instr :liveness liveness)
-    (setf *ct-mark-dynamic-extent* (compiler-timer-elapsed))
-    ;; Type inference
-    (cleavir-typed-transforms:thes->typeqs init-instr)
-    (setf *ct-thes->typeqs* (compiler-timer-elapsed))
-    (quick-draw-hir init-instr "hir-after-thes-typeqs")
-    (when *enable-type-inference*
-      ;; Conditionally use type inference.
+  (quick-draw-hir init-instr "hir-after-pcv") 
+  (clasp-cleavir:optimize-stack-enclose init-instr) ; see FIXME at definition
+  (setf *ct-optimize-stack-enclose* (compiler-timer-elapsed))
+  (cleavir-typed-transforms:thes->typeqs init-instr)
+  (setf *ct-thes->typeqs* (compiler-timer-elapsed))
+
+  ;;; See comment in policy.lisp. tl;dr these analyses are slow.
+  (when (policy-anywhere-p init-instr 'analyze-flow)
+    (let ((liveness (cleavir-liveness:liveness init-instr)))
+      (setf *ct-liveness* (compiler-timer-elapsed))
+      ;; DX analysis
+      (cleavir-escape:mark-dynamic-extent init-instr :liveness liveness)
+      (setf *ct-mark-dynamic-extent* (compiler-timer-elapsed))
+      ;; Type inference
+      (quick-draw-hir init-instr "hir-after-thes-typeqs")
       (handler-case
           (let ((types (prog1 (cleavir-type-inference:infer-types
                                init-instr
@@ -909,10 +898,10 @@ when this is t a lot of graphs will be generated.")
   ;;         (typeq x cons) -> (consp x)
   ;;         (typeq x YYY) -> (typep x 'YYY)
   (cleavir-hir-transformations:eliminate-typeq init-instr)
-(setf *ct-eliminate-typeq* (compiler-timer-elapsed))
+  (setf *ct-eliminate-typeq* (compiler-timer-elapsed))
   (quick-draw-hir init-instr "hir-after-eliminate-typeq")
   (clasp-cleavir::eliminate-load-time-value-inputs init-instr *clasp-system*)
-(setf *ct-eliminate-load-time-value-inputs* (compiler-timer-elapsed))
+  (setf *ct-eliminate-load-time-value-inputs* (compiler-timer-elapsed))
   (quick-draw-hir init-instr "hir-after-eliminate-load-time-value-inputs")
   ;; The following breaks code when inlining takes place
   ;;  (cleavir-hir-transformations:eliminate-superfluous-temporaries init-instr)
@@ -941,8 +930,8 @@ COMPILE-FILE will use the default *clasp-env*."
       (clasp-cleavir:finalize-unwind-and-landing-pad-instructions hir map-enter-to-function-info)
       (setf *ct-finalize-unwind-and-landing-pad-instructions* (compiler-timer-elapsed))
       (quick-draw-hir hir "mir")
-      (multiple-value-prog1 (values hir map-enter-to-function-info)
-        (setf *ct-translate* (compiler-timer-elapsed))))))
+      (values hir map-enter-to-function-info))))
+                                                
 
 (defun compile-lambda-form-to-llvm-function (lambda-form)
   "Compile a lambda-form into an llvm-function and return
@@ -1036,7 +1025,8 @@ that llvm function. This works like compile-lambda-function in bclasp."
     (cmp:analyze-top-level-form form)
     (multiple-value-bind (mir map-enter-to-landing-pad)
         (compile-form-to-mir form *clasp-env*)
-      (translate mir map-enter-to-landing-pad *abi-x86-64*))))
+      (multiple-value-prog1 (translate mir map-enter-to-landing-pad *abi-x86-64*)
+        (setf *ct-translate* (compiler-timer-elapsed))))))
 
 (defun cleavir-compile-file-form (form)
   (let ((cleavir-generate-ast:*compiler* 'cl:compile-file)
@@ -1051,7 +1041,11 @@ that llvm function. This works like compile-lambda-function in bclasp."
   (let ((cleavir-generate-ast:*compiler* 'cl:compile)
         (core:*use-cleavir-compiler* t)
 	(cmp:*all-functions-for-one-compile* nil))
-    (cmp:compile-in-env name form env #'cclasp-compile* 'llvm-sys:external-linkage)))
+    (if cmp::*debug-compile-file*
+        (progn
+          (format t "cclasp-compile-in-env -> ~s~%" form)
+          (compiler-time (cmp:compile-in-env name form env #'cclasp-compile* 'llvm-sys:external-linkage)))
+        (cmp:compile-in-env name form env #'cclasp-compile* 'llvm-sys:external-linkage))))
         
 	
 (defun cleavir-compile (name form &key (debug *debug-cleavir*))

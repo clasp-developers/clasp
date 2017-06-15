@@ -2945,23 +2945,29 @@ namespace llvmo {
 
 namespace llvmo {
 
-void finalizeEngineAndTime(llvm::ExecutionEngine *engine) {
-  core::LightTimer timer;
-  timer.start();
-  engine->finalizeObject();
-  timer.stop();
-  double thisTime = timer.getAccumulatedTime();
-  core::DoubleFloat_sp df = core::DoubleFloat_O::create(thisTime);
+void accumulate_llvm_timing_data(double time)
+{
+  core::DoubleFloat_sp df = core::DoubleFloat_O::create(time);
   _sym_STARmostRecentLlvmFinalizationTimeSTAR->setf_symbolValue(df);
   double accTime = clasp_to_double(gc::As<core::Float_sp>(_sym_STARaccumulatedLlvmFinalizationTimeSTAR->symbolValue()));
-  accTime += thisTime;
+  accTime += time;
   _sym_STARaccumulatedLlvmFinalizationTimeSTAR->setf_symbolValue(core::DoubleFloat_O::create(accTime));
   int num = unbox_fixnum(gc::As<core::Fixnum_sp>(_sym_STARnumberOfLlvmFinalizationsSTAR->symbolValue()));
   ++num;
   _sym_STARnumberOfLlvmFinalizationsSTAR->setf_symbolValue(core::make_fixnum(num));
 }
 
+void finalizeEngineAndTime(llvm::ExecutionEngine *engine) {
+  core::LightTimer timer;
+  timer.start();
+  engine->finalizeObject();
+  timer.stop();
+  double thisTime = timer.getAccumulatedTime();
+  accumulate_llvm_timing_data(thisTime);
+}
+
 CL_DEFUN core::Function_sp finalizeEngineAndRegisterWithGcAndGetCompiledFunction(ExecutionEngine_sp oengine, core::T_sp functionName, Function_sp fn, core::T_sp activationFrameEnvironment, core::T_sp fileName, size_t filePos, int linenumber, Function_sp startupFn, Function_sp shutdownFn, core::T_sp initial_data) {
+  DEPRECATED();
   // Stuff to support MCJIT
   llvm::ExecutionEngine *engine = oengine->wrappedPtr();
   finalizeEngineAndTime(engine);
@@ -2987,26 +2993,26 @@ CL_DEFUN core::Function_sp finalizeEngineAndRegisterWithGcAndGetCompiledFunction
 
 
 //
-CL_DEFUN core::Function_sp finalizeEngineAndGetDispatchFunction(ExecutionEngine_sp oengine, core::T_sp functionName, Function_sp fn, Function_sp startupFn, Function_sp shutdownFn, core::T_sp initial_data) {
-  DEPRECATED();
-  llvm::ExecutionEngine *engine = oengine->wrappedPtr();
-  finalizeEngineAndTime(engine);
-  ASSERTF(fn.notnilp(), BF("The Function must never be nil"));
-  void *p = engine->getPointerToFunction(fn->wrappedPtr());
-  if (!p) {
-    SIMPLE_ERROR(BF("Could not get a pointer to the function finalizeEngineAndGetDispatchFunction: %s") % _rep_(functionName));
+  CL_DEFUN core::Function_sp finalizeEngineAndGetDispatchFunction(ExecutionEngine_sp oengine, core::T_sp functionName, Function_sp fn, Function_sp startupFn, Function_sp shutdownFn, core::T_sp initial_data) {
+    DEPRECATED();
+    llvm::ExecutionEngine *engine = oengine->wrappedPtr();
+    finalizeEngineAndTime(engine);
+    ASSERTF(fn.notnilp(), BF("The Function must never be nil"));
+    void *p = engine->getPointerToFunction(fn->wrappedPtr());
+    if (!p) {
+      SIMPLE_ERROR(BF("Could not get a pointer to the function finalizeEngineAndGetDispatchFunction: %s") % _rep_(functionName));
+    }
+    core::DispatchFunction_fptr_type dispatchFunction = (core::DispatchFunction_fptr_type)(p);
+    core::ShutdownFunction_fptr_type shutdownFunction = (core::ShutdownFunction_fptr_type)(engine->getPointerToFunction(shutdownFn->wrappedPtr()));
+    gctools::smart_ptr<core::CompiledDispatchFunction_O> functoid = gctools::GC<core::CompiledDispatchFunction_O>::allocate(functionName, kw::_sym_dispatch_function, dispatchFunction, _Unbound<Module_O>() );
+    void* pstartup = engine->getPointerToFunction(startupFn->wrappedPtr());
+    if (pstartup == NULL ) {
+      printf("%s:%d Could not find function named %s\n", __FILE__, __LINE__, MODULE_STARTUP_FUNCTION_NAME);
+    }
+    core::module_startup_function_type startup = reinterpret_cast<core::module_startup_function_type>(pstartup);
+    startup(initial_data.tagged_());
+    return functoid;
   }
-  core::DispatchFunction_fptr_type dispatchFunction = (core::DispatchFunction_fptr_type)(p);
-  core::ShutdownFunction_fptr_type shutdownFunction = (core::ShutdownFunction_fptr_type)(engine->getPointerToFunction(shutdownFn->wrappedPtr()));
-  gctools::smart_ptr<core::CompiledDispatchFunction_O> functoid = gctools::GC<core::CompiledDispatchFunction_O>::allocate(functionName, kw::_sym_dispatch_function, dispatchFunction, _Unbound<Module_O>() );
-  void* pstartup = engine->getPointerToFunction(startupFn->wrappedPtr());
-  if (pstartup == NULL ) {
-    printf("%s:%d Could not find function named %s\n", __FILE__, __LINE__, MODULE_STARTUP_FUNCTION_NAME);
-  }
-  core::module_startup_function_type startup = reinterpret_cast<core::module_startup_function_type>(pstartup);
-  startup(initial_data.tagged_());
-  return functoid;
-}
 
 
 
@@ -3014,78 +3020,78 @@ CL_DEFUN core::Function_sp finalizeEngineAndGetDispatchFunction(ExecutionEngine_
 
 
 
-struct CtorStruct {
-  int priority;
-  void (*ctor)();
-  char* obj;
-};
+  struct CtorStruct {
+    int priority;
+    void (*ctor)();
+    char* obj;
+  };
 
 
-CL_DEFUN void finalizeEngineAndRegisterWithGcAndRunMainFunctions(ExecutionEngine_sp oengine) {
+  CL_DEFUN void finalizeEngineAndRegisterWithGcAndRunMainFunctions(ExecutionEngine_sp oengine) {
   // Stuff to support MCJIT
-  llvm::ExecutionEngine *engine = oengine->wrappedPtr();
+    llvm::ExecutionEngine *engine = oengine->wrappedPtr();
 #ifdef DEBUG_STARTUP
-  printf("%s:%d Entered %s\n", __FILE__, __LINE__, __FUNCTION__ );
+    printf("%s:%d Entered %s\n", __FILE__, __LINE__, __FUNCTION__ );
 #endif
-  finalizeEngineAndTime(engine);
+    finalizeEngineAndTime(engine);
 #if 1
-  engine->runStaticConstructorsDestructors(false);
+    engine->runStaticConstructorsDestructors(false);
 #else
-  void (*clasp_ctor)() = reinterpret_cast<void(*)()>(engine->getGlobalValueAddress(CLASP_CTOR_FUNCTION_NAME));
+    void (*clasp_ctor)() = reinterpret_cast<void(*)()>(engine->getGlobalValueAddress(CLASP_CTOR_FUNCTION_NAME));
 //  printf("%s:%d clasp_ctor --> %p\n", __FILE__, __LINE__, clasp_ctor );
-  if ( clasp_ctor == NULL ) {
-    SIMPLE_ERROR(BF("Could not get a pointer to %s in finalizeEngineAndRegisterWithGcAndRunMainFunctions") % CLASP_CTOR_FUNCTION_NAME );
+    if ( clasp_ctor == NULL ) {
+      SIMPLE_ERROR(BF("Could not get a pointer to %s in finalizeEngineAndRegisterWithGcAndRunMainFunctions") % CLASP_CTOR_FUNCTION_NAME );
+    }
+#ifdef DEBUG_STARTUP
+    printf("%s:%d About to call clasp_ctor\n", __FILE__, __LINE__ );
+#endif
+    (clasp_ctor)();
+#ifdef DEBUG_STARTUP
+    printf("%s:%d Returned from call clasp_ctor\n", __FILE__, __LINE__ );
+#endif
+#endif
+    if ( core::startup_functions_are_waiting() ) {
+      core::startup_functions_invoke();
+    } else {
+      SIMPLE_ERROR(BF("There were no startup functions to invoke\n"));
+    }
+#ifdef DEBUG_STARTUP
+    printf("%s:%d Leaving %s\n", __FILE__, __LINE__, __FUNCTION__ );
+#endif
   }
-#ifdef DEBUG_STARTUP
-  printf("%s:%d About to call clasp_ctor\n", __FILE__, __LINE__ );
-#endif
-  (clasp_ctor)();
-#ifdef DEBUG_STARTUP
-  printf("%s:%d Returned from call clasp_ctor\n", __FILE__, __LINE__ );
-#endif
-#endif
-  if ( core::startup_functions_are_waiting() ) {
-    core::startup_functions_invoke();
-  } else {
-    SIMPLE_ERROR(BF("There were no startup functions to invoke\n"));
-  }
-#ifdef DEBUG_STARTUP
-  printf("%s:%d Leaving %s\n", __FILE__, __LINE__, __FUNCTION__ );
-#endif
-}
 
-CL_DEFUN void finalizeClosure(ExecutionEngine_sp oengine, core::Function_sp func) {
-  llvm::ExecutionEngine *engine = oengine->wrappedPtr();
-  auto closure = func.as<core::CompiledClosure_O>();
-  llvmo::Function_sp llvm_func = closure->llvmFunction;
-  void *p = engine->getPointerToFunction(llvm_func->wrappedPtr());
-  core::CompiledClosure_fptr_type lisp_funcPtr = (core::CompiledClosure_fptr_type)(p);
-  closure->entry = lisp_funcPtr;
-}
+  CL_DEFUN void finalizeClosure(ExecutionEngine_sp oengine, core::Function_sp func) {
+    llvm::ExecutionEngine *engine = oengine->wrappedPtr();
+    auto closure = func.as<core::CompiledClosure_O>();
+    llvmo::Function_sp llvm_func = closure->llvmFunction;
+    void *p = engine->getPointerToFunction(llvm_func->wrappedPtr());
+    core::CompiledClosure_fptr_type lisp_funcPtr = (core::CompiledClosure_fptr_type)(p);
+    closure->entry = lisp_funcPtr;
+  }
 
 
 /*! Return (values target nil) if successful or (values nil error-message) if not */
-CL_DEFUN core::T_mv TargetRegistryLookupTarget(const std::string &ArchName, Triple_sp triple) {
-  string message;
-  llvm::Target *target = const_cast<llvm::Target *>(llvm::TargetRegistry::lookupTarget(ArchName, *triple->wrappedPtr(), message));
-  if (target == NULL) {
-    return Values(_Nil<core::T_O>(), core::SimpleBaseString_O::make(message));
+  CL_DEFUN core::T_mv TargetRegistryLookupTarget(const std::string &ArchName, Triple_sp triple) {
+    string message;
+    llvm::Target *target = const_cast<llvm::Target *>(llvm::TargetRegistry::lookupTarget(ArchName, *triple->wrappedPtr(), message));
+    if (target == NULL) {
+      return Values(_Nil<core::T_O>(), core::SimpleBaseString_O::make(message));
+    }
+    Target_sp targeto = core::RP_Create_wrapped<Target_O, llvm::Target *>(target);
+    return Values(targeto, _Nil<core::T_O>());
   }
-  Target_sp targeto = core::RP_Create_wrapped<Target_O, llvm::Target *>(target);
-  return Values(targeto, _Nil<core::T_O>());
-}
 
 /*! Return (values target nil) if successful or (values nil error-message) if not */
-CL_LISPIFY_NAME(TargetRegistryLookupTarget.string);
-CL_DEFUN core::T_mv TargetRegistryLookupTarget_string(const std::string& Triple) {
-  string message;
-  llvm::Target *target = const_cast<llvm::Target *>(llvm::TargetRegistry::lookupTarget(Triple,message));
-  if (target == NULL) {
-    return Values(_Nil<core::T_O>(), core::SimpleBaseString_O::make(message));
+  CL_LISPIFY_NAME(TargetRegistryLookupTarget.string);
+  CL_DEFUN core::T_mv TargetRegistryLookupTarget_string(const std::string& Triple) {
+    string message;
+    llvm::Target *target = const_cast<llvm::Target *>(llvm::TargetRegistry::lookupTarget(Triple,message));
+    if (target == NULL) {
+      return Values(_Nil<core::T_O>(), core::SimpleBaseString_O::make(message));
+    }
+    Target_sp targeto = core::RP_Create_wrapped<Target_O, llvm::Target *>(target);
+    return Values(targeto, _Nil<core::T_O>());
   }
-  Target_sp targeto = core::RP_Create_wrapped<Target_O, llvm::Target *>(target);
-  return Values(targeto, _Nil<core::T_O>());
-}
 
   SYMBOL_SC_(LlvmoPkg, STARglobal_value_linkage_typesSTAR);
   SYMBOL_EXPORT_SC_(LlvmoPkg, ExternalLinkage);
@@ -3237,7 +3243,7 @@ CL_DEFUN core::T_mv TargetRegistryLookupTarget_string(const std::string& Triple)
   SYMBOL_EXPORT_SC_(LlvmoPkg, AquireRelease);
   SYMBOL_EXPORT_SC_(LlvmoPkg, SequentiallyConsistent);
   CL_BEGIN_ENUM(llvm::AtomicOrdering,_sym_STARatomic_orderingSTAR, "llvm::AtomicOrdering");
-CL_VALUE_ENUM(_sym_NotAtomic, llvm::AtomicOrdering::NotAtomic);
+  CL_VALUE_ENUM(_sym_NotAtomic, llvm::AtomicOrdering::NotAtomic);
   CL_VALUE_ENUM(_sym_Unordered, llvm::AtomicOrdering::Unordered);
   CL_VALUE_ENUM(_sym_Monotonic, llvm::AtomicOrdering::Monotonic);
   CL_VALUE_ENUM(_sym_Acquire, llvm::AtomicOrdering::Acquire);
@@ -3450,6 +3456,8 @@ ClaspJIT_O::ClaspJIT_O() : TM(EngineBuilder().selectTarget()), DL(TM->createData
 
 CL_LISPIFY_NAME("CLASP-JIT-ADD-MODULE");
 CL_DEFMETHOD ModuleHandle_sp ClaspJIT_O::addModule(Module_sp cM) {
+  core::LightTimer timer;
+  timer.start();
   Module* M = cM->wrappedPtr();
     // Build our symbol resolver:
     // Lambda 1: Look back into the JIT itself to find symbols that are part of
@@ -3475,9 +3483,13 @@ CL_DEFMETHOD ModuleHandle_sp ClaspJIT_O::addModule(Module_sp cM) {
 
     // Add the set to the JIT with the resolver we created above and a newly
     // created SectionMemoryManager.
-  return ModuleHandle_O::create(OptimizeLayer.addModuleSet(std::move(Ms),
-                                                        make_unique<SectionMemoryManager>(),
-                                                        std::move(Resolver)));
+  ModuleHandle_sp mh = ModuleHandle_O::create(OptimizeLayer.addModuleSet(std::move(Ms),
+                                                                         make_unique<SectionMemoryManager>(),
+                                                                         std::move(Resolver)));
+  timer.stop();
+  double thisTime = timer.getAccumulatedTime();
+  accumulate_llvm_timing_data(thisTime);
+  return mh;
 }
 
 CL_LISPIFY_NAME("CLASP-JIT-FIND-SYMBOL");
@@ -3518,6 +3530,8 @@ CL_DEFMETHOD bool ClaspJIT_O::removeModule(ModuleHandle_sp H) {
 
 
 std::unique_ptr<llvm::Module> ClaspJIT_O::optimizeModule(std::unique_ptr<llvm::Module> M) {
+  core::LightTimer timer;
+  timer.start();
   // Create a function pass manager.
   auto FPM = llvm::make_unique<llvm::legacy::FunctionPassManager>(M.get());
 
@@ -3537,7 +3551,9 @@ std::unique_ptr<llvm::Module> ClaspJIT_O::optimizeModule(std::unique_ptr<llvm::M
   llvm::legacy::PassManager my_passes;
   my_passes.add(llvm::createFunctionInliningPass(4096));
   my_passes.run(*M);
-  
+  timer.stop();
+  double thisTime = timer.getAccumulatedTime();
+  accumulate_llvm_timing_data(thisTime);
   return M;
 }
 
