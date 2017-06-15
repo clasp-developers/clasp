@@ -5,7 +5,7 @@ Parameters:
     Description: Worker EC2 instance type (m1.small, etc).
     Type: String
     ConstraintDescription: must be a valid EC2 instance type.
-    Default: c4.xlarge
+    Default: m2.large
   SpotBid:
     Description: Spot instance price bid
     Type: Number
