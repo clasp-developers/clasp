@@ -235,9 +235,35 @@
                                 (t
                                  (error "Add support to macroexpand of ~a using non-bclasp, non-top-level environment like: ~a" macro-form environment)))))
 
+(defun cleavir-env->interpreter (env)
+  ;; Convert a cleavir ENTRY (or null) into an environment clasp's interpreter can use.
+  ;; Only for compile time environments, so it's symbol macros, macros, and declarations.
+  ;; The interpreter doesn't use declarations besides SPECIAL.
+  (etypecase env
+    (clasp-global-environment nil)
+    (null env)
+    (cleavir-env:special-variable
+     (core:make-value-environment-for-locally-special-entries
+      (list (cleavir-env:name env))
+      (cleavir-env->interpreter (cleavir-env::next env))))
+    (cleavir-env:symbol-macro
+     (let ((result (core:make-symbol-macrolet-environment
+                    (cleavir-env->interpreter (cleavir-env::next env)))))
+       (core:add-symbol-macro
+        result (cleavir-env:name env)
+        (constantly (cleavir-env:expansion env)))
+       result))
+    (cleavir-env:macro
+     (let ((result (core:make-macrolet-environment
+                    (cleavir-env->interpreter (cleavir-env::next env)))))
+       (core:add-macro result (cleavir-env:name env)
+                       (cleavir-env:expander env))
+       result))
+    (cleavir-env::entry (cleavir-env->interpreter (cleavir-env::next env)))))
 
 (defmethod cleavir-environment:eval (form env (dispatch-env clasp-global-environment))
-  (cclasp-eval form env))
+  (core:interpret form (cleavir-env->interpreter env))
+  #+(or)(cclasp-eval form env))
 
 (defmethod cleavir-environment:eval (form env (dispatch-env NULL))
   "Evaluate the form in Clasp's top level environment"
