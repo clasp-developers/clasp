@@ -2958,7 +2958,6 @@ void accumulate_llvm_timing_data(double time)
 }
 
 void finalizeEngineAndTime(llvm::ExecutionEngine *engine) {
-  DEPRECATED();
   core::LightTimer timer;
   timer.start();
   engine->finalizeObject();
