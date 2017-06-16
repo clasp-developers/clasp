@@ -13,6 +13,14 @@
 
 (in-package "SYSTEM")
 
+;;; This could be improved, e.g. getting the lambda expression of
+;;; interpreted functions, but there are better introspection designs.
+(defun function-lambda-expression (function)
+  (values nil
+          (and (typep function 'core:closure)
+               (not (zerop (core:closure-length function))))
+          (core:function-name function)))
+
 (defun   logical-pathname-translations (p)
   (or (si:pathname-translations p)
       (error 'simple-type-error
