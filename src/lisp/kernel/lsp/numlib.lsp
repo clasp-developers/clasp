@@ -15,9 +15,6 @@
 
 (in-package "SYSTEM")
 
-#-(or ecl-min clasp)
-(ffi:clines "#include <math.h>")
-
 #.
 (flet ((binary-search (f min max)
 	 (do ((new (/ (+ min max) 2) (/ (+ min max) 2)))
@@ -127,18 +124,6 @@ Returns a complex number whose realpart and imagpart are the values of (COS
 RADIANS) and (SIN RADIANS) respectively."
   (exp (* imag-one x)))
 
-#-(or ecl-min clasp)
-(eval-when (:compile-toplevel)
-  (defmacro c-num-op (name arg)
-    #+long-float
-    `(ffi::c-inline (,arg) (:long-double) :long-double
-		    ,(format nil "~al(#0)" name)
-		    :one-liner t)
-    #-long-float
-    `(ffi::c-inline (,arg) (:double) :double
-		    ,(format nil "~a(#0)" name)
-		    :one-liner t)))
-
 (defun asin (x)
   "Args: (number)
 Returns the arc sine of NUMBER."
@@ -186,18 +171,6 @@ Returns the arc cosine of NUMBER."
     (complex (* 2 (atan (realpart sqrt-1-z) (realpart sqrt-1+z)))
 	     (asinh (imagpart (* (conjugate sqrt-1+z)
 				 sqrt-1-z))))))
-#+(and (not ecl-min) win32 (not mingw32) (not clasp))
-(progn
-  (ffi:clines "double asinh(double x) { return log(x+sqrt(1.0+x*x)); }")
-  (ffi:clines "double acosh(double x) { return log(x+sqrt((x-1)*(x+1))); }")
-  (ffi:clines "double atanh(double x) { return log((1+x)/(1-x))/2; }"))
-
-#+(and long-float (not ecl-min) win32 (not mingw32) (not clasp))
-(progn
-  (ffi:clines "double asinhl(long double x) { return logl(x+sqrtl(1.0+x*x)); }")
-  (ffi:clines "double acoshl(long double x) { return logl(x+sqrtl((x-1)*(x+1))); }")
-  (ffi:clines "double atanhl(long double x) { return logl((1+x)/(1-x))/2; }"))
-
 
 ;; Ported from CMUCL
 (defun asinh (x)
