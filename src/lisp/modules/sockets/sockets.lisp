@@ -143,8 +143,8 @@ directly instantiated."))
 		 (ff-socket (socket-family socket)
 			    (ecase (or type
 				       (socket-type socket))
-			      ((:datagram) +sock-dgram+ #|(c-constant "SOCK-DGRAM")|#)
-			      ((:stream) +sock-stream+ #|(c-constant "SOCK-STREAM")|#))
+			      ((:datagram) +sock-dgram+)
+			      ((:stream) +sock-stream+))
 			    proto-num))))
     (if (= fd -1) (socket-error "socket"))
     (setf (slot-value socket 'file-descriptor) fd
@@ -492,9 +492,9 @@ also known as unix-domain sockets."))
                             (name "FD-STREAM"))
   (assert (stringp name) (name) "name must be a string.")
   (let* ((smm-mode (ecase mode
-		       (:input +clasp-stream-mode-input+ #|(c-constant "ecl_smm_input")|# )
-		       (:output +clasp-stream-mode-output+ #| (c-constant "ecl_smm_output") |#)
-		       (:input-output +clasp-stream-mode-io+ #|(c-constant "ecl_smm_io")|#)
+		       (:input +clasp-stream-mode-input+)
+		       (:output +clasp-stream-mode-output+)
+		       (:input-output +clasp-stream-mode-io+)
 		       ))
 	 (external-format (unless (subtypep element-type 'integer) external-format))
          (stream (ll-make-stream-from-fd name fd smm-mode element-type external-format)))
@@ -592,7 +592,6 @@ also known as unix-domain sockets."))
 
 (defmacro define-socket-condition (symbol name)
   `(let () ; Prevents evaluation of constant value at compilation time
-;;     (defconstant ,symbol (c-constant ,(symbol-name symbol)))
      (define-condition ,name (socket-error)
        ((symbol :reader socket-error-symbol :initform (quote ,symbol))))
      (export ',name)
@@ -639,7 +638,7 @@ GET-NAME-SERVICE-ERRNO")
   (get-name-service-errno)
   ;; Comment next to NETDB-INTERNAL in netdb.h says "See errno.".
   ;; This special case treatment hasn't actually been tested yet.
-  (if (= *name-service-errno* (c-constant +NETDB-INTERNAL+))
+  (if (= *name-service-errno* +NETDB-INTERNAL+)
       (socket-error where)
     (let ((condition
 	   (condition-for-name-service-errno *name-service-errno*)))
