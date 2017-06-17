@@ -893,76 +893,11 @@ Use special code 0 to cancel this operation.")
      (lambda-list-from-annotations (compiled-function-name function)))))
 (export 'function-lambda-list)
 
-#-(or ecl-min clasp)
-(defun decode-env-elt (env ndx)
-  (ffi:c-inline (env ndx) (:object :fixnum) :object
-                "
-	cl_object v = #0;
-	cl_index ndx = #1;
-	typedef struct ecl_var_debug_info *pinfo;
-	pinfo d = (pinfo)(v->vector.self.t[1]) + ndx;
-	cl_object name = make_constant_base_string(d->name);
-	void *value = (void*)(v->vector.self.t[2+ndx]);
-	cl_object output;
-	switch (d->type) {
-	case _ecl_object_loc:
-		output = *((cl_object*)value);
-		break;
-	case _ecl_fixnum_loc: {
-		cl_fixnum *p = (cl_fixnum*)value;
-		output = ecl_make_integer(*p);
-		break;
-	}
-	case _ecl_float_loc: {
-		float *p = (float*)value;
-		output = ecl_make_single_float(*p);
-		break;
-	}
-	case _ecl_double_loc: {
-		double *p = (double*)value;
-		output = ecl_make_double_float(*p);
-		break;
-	}
-#ifdef ECL_SSE2
-	case _ecl_int_sse_pack_loc: {
-		__m128i *p = (__m128i*)value;
-		output = ecl_make_int_sse_pack(_mm_loadu_si128(p));
-		break;
-	}
-	case _ecl_float_sse_pack_loc: {
-		__m128 *p = (__m128*)value;
-		output = ecl_make_float_sse_pack(_mm_loadu_ps((float*)p));
-		break;
-	}
-	case _ecl_double_sse_pack_loc: {
-		__m128d *p = (__m128d*)value;
-		output = ecl_make_double_sse_pack(_mm_loadu_pd((double*)p));
-		break;
-	}
-#endif
-	default: {
-		ecl_base_char *p = (ecl_base_char*)value;
-		output = ECL_CODE_CHAR(*p);
-		break;
-	}
-	}
-	@(return) = CONS(name,output);
-" :one-liner nil))
-
 (defun decode-ihs-env (*break-env*)
   (let ((env *break-env*))
     (if (vectorp env)
-      #+(or ecl-min clasp)
-      nil
-      #-(or ecl-min clasp)
-      (let* ((next (decode-ihs-env
-                    (ffi:c-inline (env) (:object) :object
-                                  "(#0)->vector.self.t[0]" :one-liner t))))
-        (nreconc (loop with l = (- (length env) 2)
-                       for i from 0 below l
-                       do (push (decode-env-elt env i) next))
-                   next))
-      env)))
+        nil
+        env)))
 
 (defun ihs-environment (ihs-index)
   (labels ((newly-bound-special-variables (bds-min bds-max)
@@ -1085,7 +1020,7 @@ Use special code 0 to cancel this operation.")
 	 (values))
       (when (eq (bds-var bi) var)
 	(return (let ((val (bds-val bi)))
-		  (if (eq val si::unbound) "<unbound value>" val)))))
+		  (if (eq val (core:unbound)) "<unbound value>" val)))))
     (do ((bi (1+ (frs-bds (max 0 (1- *frs-base*)))) (1+ bi))
 	 (last (frs-bds (1+ *frs-top*)))
 	 (fi *frs-base*)
@@ -1100,7 +1035,7 @@ Use special code 0 to cancel this operation.")
       (format t "BDS[~d]: ~s = ~s~%"
 	      bi (bds-var bi)
 	      (let ((val (bds-val bi)))
-		(if (eq val si::unbound) "<unbound value>" val))))))
+		(if (eq val (core:unbound)) "<unbound value>" val))))))
 #+(and clasp (not use-expensive-backtrace))
 (defun clasp-backtrace (&optional (n 99999999))
   (core:clib-backtrace n))
