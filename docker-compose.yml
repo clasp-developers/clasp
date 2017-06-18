@@ -44,7 +44,7 @@ services:
   # To build clasp for c++ analysis, run: docker-compose run clasp-cxxanalysis --help
   # this should build the clasp image as a dependency
   clasp-cxxanalysis:
-    image: clasp-cxxanalysis
+    image: drmeister/clasp-cxxanalysis
     build:
       context: .
       dockerfile: tools/dockerfiles/clasp-cxxanalysis/Dockerfile
