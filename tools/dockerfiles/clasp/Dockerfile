@@ -31,7 +31,9 @@ RUN apt-get -y install \
 RUN groupadd -g 9999 app && useradd -u 9999 -g 9999 -ms /bin/bash app
 ENV HOME=/home/app
 
+RUN apt-get update && apt-get -y install git-core 
 USER app
+
 # checkout quicklisp and its subprojects
 RUN git clone --depth=1 https://github.com/quicklisp/quicklisp-client.git $HOME/quicklisp
 RUN mkdir $HOME/quicklisp/local-projects

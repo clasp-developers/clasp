@@ -13,8 +13,8 @@ namespace gctools {
     #define free(ptr) GC_FREE(ptr)
   #endif
   #ifdef USE_MPS
-    #define malloc(size_t size) printf("%s:%d IMPLEMENT malloc(%lu)for mps\n", __FILE__, __LINE__, size);abort();
-    #define free(void* ptr) printf("%s:%d IMPLEMENT free(%p) for mps\n", __FILE__, __LINE__, ptr); abort();
+    #define malloc(size) NULL /* printf("%s:%d IMPLEMENT malloc(%lu)for mps\n", __FILE__, __LINE__, size);abort(); */
+    #define free(ptr) /* nothing */
   #endif
 #endif
 
