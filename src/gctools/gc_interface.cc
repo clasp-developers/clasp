@@ -98,6 +98,7 @@ typedef bool _Bool;
 #include <clasp/core/cxxClass.h>
 #include <clasp/core/random.h>
 #include <clasp/core/mpPackage.h>
+#include <clasp/core/queue.h>
 #include <clasp/core/weakKeyMapping.h>
 #include <clasp/core/weakHashTable.h>
 #include <clasp/core/smallMultimap.h>

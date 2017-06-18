@@ -5,6 +5,9 @@
 ### This file has to be named `wscript.config` to be
 ### recognised by the build system.
 
+# Define where the llvm/clang is that clasp needs to build.
+LLVM_CONFIG_BINARY = '/path/to/llvm-config-4.0'
+
 # It contains some external dependencies for clasp. The end
 # goal is that it won't be needed anymore and the default
 # packages of the host OS are found and utilized. Unfortunately

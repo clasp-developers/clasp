@@ -800,7 +800,9 @@ string _rep_(T_sp obj) {
     General_sp gobj(obj.unsafe_general());
     return gobj->__repr__(); // This is the only place where obj->__repr__() is allowed
   } else if (obj.valistp()) {
-    return "VaList";
+    VaList_sp vobj((gctools::Tagged)obj.raw_());
+    List_sp l = core__list_from_va_list(vobj);
+    return _rep_(l);
   } else if (obj.unboundp()) {
     return "!UNBOUND!";
   }

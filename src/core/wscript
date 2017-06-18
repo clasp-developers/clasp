@@ -9,6 +9,7 @@ def build(bld):
             'evaluator',
             'functor',
             'creator',
+            'queue',
             'sharpEqualWrapper',
             'stacks',
             'weakKeyMapping',
