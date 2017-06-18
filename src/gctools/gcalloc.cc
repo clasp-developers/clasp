@@ -147,6 +147,7 @@ void* malloc_uncollectable_and_zero(size_t size)
   memset( buffer, 0, size);
 #endif
 #ifdef USE_MPS
+  void* buffer = NULL;
   printf("%s:%d  Add code to malloc_uncollectable_and_zero that works like the Boehm version\n", __FILE__, __LINE__ );
 #endif
   return buffer;
