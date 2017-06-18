@@ -32,9 +32,17 @@ RUN groupadd -g 9999 app && useradd -u 9999 -g 9999 -ms /bin/bash app
 ENV HOME=/home/app
 
 USER app
+# checkout quicklisp and its subprojects
+RUN git clone --depth=1 https://github.com/quicklisp/quicklisp-client.git $HOME/quicklisp
+RUN mkdir $HOME/quicklisp/local-projects
 
 # checkout slime
 RUN git clone --depth=1 https://github.com/slime/slime $HOME/slime
+
+WORKDIR $HOME
+# add clasp build output
+ADD ./build/clasp.tgz ${HOME}/clasp
+ENV PATH "$PATH:$HOME/clasp/bin"
 
 RUN clasp -f "setup-cando"\
           -e '(load "/home/app/quicklisp/setup.lisp")'\
@@ -45,8 +53,4 @@ RUN clasp -f "setup-cando"\
           -e "(swank-loader:init :delete nil :reload nil :load-contribs nil)"\
           -e "(quit)"
 
-WORKDIR $HOME
-# add clasp build output
-ADD ./build/clasp.tgz ${HOME}/clasp
-ENV PATH "$PATH:$HOME/clasp/bin"
 ENTRYPOINT [ "clasp" ]
