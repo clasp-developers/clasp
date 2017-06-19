@@ -438,8 +438,6 @@
 (define-walker-template ext::lambda-block walk-named-lambda)	;Not really right, but
 							        ;we don't hack block
 						        	;names anyways.
-#+ecl
-(define-walker-template ffi::c-inline walk-c-inline)
 
 
 ;;; Controls whether macros are expanded by walk-form

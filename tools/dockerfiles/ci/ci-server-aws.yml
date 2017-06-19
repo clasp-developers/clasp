@@ -5,7 +5,7 @@ Parameters:
     Description: Worker EC2 instance type (m1.small, etc).
     Type: String
     ConstraintDescription: must be a valid EC2 instance type.
-    Default: c4.xlarge
+    Default: m4.large
   SpotBid:
     Description: Spot instance price bid
     Type: Number
@@ -280,7 +280,9 @@ Mappings:
     eu-west-2: # London, England
       AMI: ami-b6daced2
     us-east-1: # Virginia, USA
-      AMI: ami-c58c1dd3
+      AMI: ami-c58c1dd3 
+    us-east-2: # Ohio, USA
+      AMI: ami-4191b524
     us-west-1: # California, USA
       AMI: ami-7a85a01a
     us-west-2: # Oregon, USA

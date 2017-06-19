@@ -70,7 +70,12 @@
 git clone https://github.com/drmeister/cando.git extensions/cando
 cd extensions/cando &amp;&amp; git checkout &quot;$CANDO_BRANCH&quot; &amp;&amp; rm -rf .git &amp;&amp; cd -
 docker-compose build --no-cache clasp-build
+pwd
+ls
 docker-compose run clasp-build
+pwd
+ls
+docker-compose build clasp
 docker-compose run cando --help
 </command>
     </hudson.tasks.Shell>

@@ -517,7 +517,7 @@ CL_DEFUN T_sp core__bit_array_op(int opval, T_sp tx, T_sp ty, T_sp tr) {
   if (tr.notnilp()) {
     AbstractSimpleVector_sp ar;
     Array_sp array_r = gc::As<Array_sp>(tr);
-    array_y->asAbstractSimpleVectorRange(ar, startr, endr);
+    array_r->asAbstractSimpleVectorRange(ar, startr, endr);
     r = gc::As_unsafe<SimpleBitVector_sp>(ar);
     if (!r) {
       ERROR_WRONG_TYPE_NTH_ARG(core::_sym_bitArrayOp, 4, tr, cl::_sym_SimpleBitVector_O);
@@ -665,7 +665,7 @@ T_sp template_bit_array_op(T_sp tx, T_sp ty, T_sp tr) {
   if (tr.notnilp()) {
     AbstractSimpleVector_sp ar;
     Array_sp array_r = gc::As<Array_sp>(tr);
-    array_y->asAbstractSimpleVectorRange(ar, startr, endr);
+    array_r->asAbstractSimpleVectorRange(ar, startr, endr);
     r = gc::As_unsafe<SimpleBitVector_sp>(ar);
     if (!r) {
       ERROR_WRONG_TYPE_NTH_ARG(core::_sym_bitArrayOp, 4, tr, cl::_sym_SimpleBitVector_O);
