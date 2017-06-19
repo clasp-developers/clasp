@@ -57,10 +57,6 @@ THE SOFTWARE.
 
 #define MAX_DEBUG_CALL_DEPTH 200
 
-#ifdef SOURCE_DEBUG
-#error "SOURCE_DEBUG is ON"
-#endif
-
 namespace core {
 
 void assert_failure(const char* file, size_t line, const char* func, const char* msg)

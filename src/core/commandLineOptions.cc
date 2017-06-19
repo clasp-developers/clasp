@@ -82,6 +82,8 @@ CommandLineOptions::CommandLineOptions(int argc, char *argv[])
              "  ignore-extensions  - Ignore any extensions startup scripts\n"
              "  clasp-builder-repl - Stop in the clasp builder repl to debug bootstrapping\n"
              "Environment variables:\n"
+             "export CLASP_DEBUG=<file-names-space-or-comma-separated>  Define files that\n"
+             "                        generate log info when DEBUG_LEVEL_FULL is set at top of file.\n"
              "export CLASP_HOME=<dir>   Define where clasp source code lives\n"
              "export CLASP_TRAP_INTERN=PKG:SYMBOL Trap the intern of the symbol\n"
              "export CLASP_VERBOSE_BUNDLE_SETUP   Dump info during bundle setup\n"

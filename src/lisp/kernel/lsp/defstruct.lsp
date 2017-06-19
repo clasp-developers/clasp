@@ -204,7 +204,7 @@
   (declare (si::c-local))
   (cond ((null type)
 	 #'(lambda (x)
-	     (structure-subtype-p x name)))
+	     (si::structure-subtypep (type-of x) name)))
         ((or (eq type 'VECTOR)
              (and (consp type) (eq (car type) 'VECTOR)))
          ;; The name is at the NAME-OFFSET in the vector.
@@ -541,15 +541,3 @@ as a STRUCTURE doc and can be retrieved by (documentation 'NAME 'structure)."
                   ,@constructors)
            #+clasp (progn ,@constructors))
 	 ',name))))
-
-;; Return
-#||(defun structure-subtype-p (x y)
-  "return true if the object x is a subtype of structure y"
-  (do (( sx (type-of x) (get-sysprop sx 'si::structure-include)))
-      ((not sx))
-    (when (eq sx y) (return t))))
-||#
-
-(defun structure-subtype-p (o ty)
-  "Return true if the object o is an instance of a subtype of ty"
-  (si::structure-subtypep (type-of o) ty))

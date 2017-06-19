@@ -729,6 +729,18 @@ Returns T if X belongs to TYPE; NIL otherwise."
 (defun error-coerce (object type)
   (error "Cannot coerce ~S to type ~S." object type))
 
+(defun character (character-designator)
+  (if (characterp character-designator)
+      character-designator
+      (let ((s (string character-designator)))
+        (if (= (length s) 1)
+            (char s 0)
+            (error 'simple-type-error
+                   :datum character-designator
+                   :expected-type '(or character (string 1) symbol)
+                   :format-control "~s is not a character designator."
+                   :format-arguments (list character-designator))))))
+
 (defun coerce (object type &aux aux)
   "Args: (x type)
 Coerces X to an object of the specified type, if possible.  Signals an error

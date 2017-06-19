@@ -13,6 +13,14 @@
 
 (in-package "SYSTEM")
 
+;;; This could be improved, e.g. getting the lambda expression of
+;;; interpreted functions, but there are better introspection designs.
+(defun function-lambda-expression (function)
+  (values nil
+          (and (typep function 'core:closure)
+               (not (zerop (core:closure-length function))))
+          (core:function-name function)))
+
 (defun   logical-pathname-translations (p)
   (or (si:pathname-translations p)
       (error 'simple-type-error
@@ -170,29 +178,7 @@ Evaluates FORM, outputs the realtime and runtime used for the evaluation to
 (defun get-local-time-zone ()
   "Returns the number of hours West of Greenwich for the local time zone."
   (declare (si::c-local))
-  (ffi::c-inline core:unix-get-local-time-zone () () :object "
-{
-  cl_fixnum mw;
-#if 0 && defined(HAVE_TZSET)
-  tzset();
-  mw = timezone/60;
-#else
-  struct tm ltm, gtm;
-  time_t when = time(0) /*0L*/;
-
-  ltm = *localtime(&when);
-  gtm = *gmtime(&when);
-
-  mw = (gtm.tm_min + 60 * gtm.tm_hour) - (ltm.tm_min + 60 * ltm.tm_hour);
-
-  if ((gtm.tm_wday + 1) % 7 == ltm.tm_wday)
-    mw -= 24*60;
-  else if (gtm.tm_wday == (ltm.tm_wday + 1) % 7)
-    mw += 24*60;
-#endif
-  @(return) = ecl_make_ratio(ecl_make_fixnum(mw),ecl_make_fixnum(60));
-}"
-		 :one-liner nil))
+  (core:unix-get-local-time-zone))
 
 (defun recode-universal-time (sec min hour day month year tz dst)
   (declare (si::c-local))
@@ -280,13 +266,7 @@ Universal Time UT, which defaults to the current time."
 			#.(encode-universal-time 0 0 0 1 1 2033 0))
 		    (- universal-time (encode-universal-time 0 0 0 1 1 year 0) utc-1-1-1970)))))
     #-(or ecl-min clasp-min)
-    (ffi::c-inline core:unix-daylight-saving-time (unix-time) (:unsigned-long) :bool "
-{
-	time_t when = (#0);
-	struct tm *ltm = localtime(&when);
-	@(return) = ltm->tm_isdst;
-}"
-		   :one-liner nil)))
+    (core:unix-daylight-saving-time unix-time)))
 
 (defun get-decoded-time ()
   "Args: ()

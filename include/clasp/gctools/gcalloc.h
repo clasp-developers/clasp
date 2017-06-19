@@ -1487,6 +1487,11 @@ public:
 };
 };
 
+namespace gctools {
+
+  extern void* malloc_uncollectable_and_zero(size_t size);
+};
+
 #endif // USE_BOEHM || USE_MPS
 
 #endif

@@ -930,8 +930,8 @@ COMPILE-FILE will use the default *clasp-env*."
       (clasp-cleavir:finalize-unwind-and-landing-pad-instructions hir map-enter-to-function-info)
       (setf *ct-finalize-unwind-and-landing-pad-instructions* (compiler-timer-elapsed))
       (quick-draw-hir hir "mir")
-      (multiple-value-prog1 (values hir map-enter-to-function-info)
-        (setf *ct-translate* (compiler-timer-elapsed))))))
+      (values hir map-enter-to-function-info))))
+                                                
 
 (defun compile-lambda-form-to-llvm-function (lambda-form)
   "Compile a lambda-form into an llvm-function and return
@@ -1025,7 +1025,8 @@ that llvm function. This works like compile-lambda-function in bclasp."
     (cmp:analyze-top-level-form form)
     (multiple-value-bind (mir map-enter-to-landing-pad)
         (compile-form-to-mir form *clasp-env*)
-      (translate mir map-enter-to-landing-pad *abi-x86-64*))))
+      (multiple-value-prog1 (translate mir map-enter-to-landing-pad *abi-x86-64*)
+        (setf *ct-translate* (compiler-timer-elapsed))))))
 
 (defun cleavir-compile-file-form (form)
   (let ((cleavir-generate-ast:*compiler* 'cl:compile-file)
@@ -1040,7 +1041,11 @@ that llvm function. This works like compile-lambda-function in bclasp."
   (let ((cleavir-generate-ast:*compiler* 'cl:compile)
         (core:*use-cleavir-compiler* t)
 	(cmp:*all-functions-for-one-compile* nil))
-    (cmp:compile-in-env name form env #'cclasp-compile* 'llvm-sys:external-linkage)))
+    (if cmp::*debug-compile-file*
+        (progn
+          (format t "cclasp-compile-in-env -> ~s~%" form)
+          (compiler-time (cmp:compile-in-env name form env #'cclasp-compile* 'llvm-sys:external-linkage)))
+        (cmp:compile-in-env name form env #'cclasp-compile* 'llvm-sys:external-linkage))))
         
 	
 (defun cleavir-compile (name form &key (debug *debug-cleavir*))
