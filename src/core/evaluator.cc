@@ -360,32 +360,26 @@ CL_DEFUN Function_sp core__coerce_to_function(T_sp arg) {
       }
       return sym->getSetfFdefinition();
     } else if (head == cl::_sym_lambda) {
-      if ( false ) { //core::_sym_bclasp_compile->fboundp() ) {
-//        printf("%s:%d coerce-to-function Compiling the form: %s\n", __FILE__, __LINE__, _rep_(carg).c_str());
-        T_sp fn = gctools::As<Function_sp>(eval::funcall(core::_sym_bclasp_compile, _Nil<T_O>() , carg));
-        return fn;
-      } else {
-        T_sp olambdaList = oCadr(carg);
-        List_sp body = oCdr(oCdr(arg));
-        List_sp declares;
-        gc::Nilable<String_sp> docstring;
-        List_sp code;
-        eval::parse_lambda_body(body, declares, docstring, code);
-        T_sp name = cl::_sym_lambda;
-        for ( auto cur : declares ) {
-          T_sp declare = oCar(cur);
-          if ( declare.consp() ) {
-            T_sp head = oCar(declare);
-            if ( head == core::_sym_lambdaName ) {
-              name = oCadr(declare);
-            }
+      T_sp olambdaList = oCadr(carg);
+      List_sp body = oCdr(oCdr(arg));
+      List_sp declares;
+      gc::Nilable<String_sp> docstring;
+      List_sp code;
+      eval::parse_lambda_body(body, declares, docstring, code);
+      T_sp name = cl::_sym_lambda;
+      for ( auto cur : declares ) {
+        T_sp declare = oCar(cur);
+        if ( declare.consp() ) {
+          T_sp head = oCar(declare);
+          if ( head == core::_sym_lambdaName ) {
+            name = oCadr(declare);
           }
         }
-        LambdaListHandler_sp llh = LambdaListHandler_O::create(olambdaList, declares, cl::_sym_function);
-//        printf("%s:%d coerce-to-function generating InterpretedClosure_O: %s\n", __FILE__, __LINE__, _rep_(carg).c_str());
-        InterpretedClosure_sp ic = gc::GC<InterpretedClosure_O>::allocate(name, kw::_sym_function, llh, declares, docstring, _Nil<T_O>(), code, SOURCE_POS_INFO_FIELDS(_Nil<T_O>()));
-        return ic;
       }
+      LambdaListHandler_sp llh = LambdaListHandler_O::create(olambdaList, declares, cl::_sym_function);
+//        printf("%s:%d coerce-to-function generating InterpretedClosure_O: %s\n", __FILE__, __LINE__, _rep_(carg).c_str());
+      InterpretedClosure_sp ic = gc::GC<InterpretedClosure_O>::allocate(name, kw::_sym_function, llh, declares, docstring, _Nil<T_O>(), code, SOURCE_POS_INFO_FIELDS(_Nil<T_O>()));
+      return ic;
     }
   }
   SIMPLE_ERROR(BF("Illegal function designator %s") % _rep_(arg));
@@ -1730,24 +1724,18 @@ T_mv doMacrolet(List_sp args, T_sp env, bool toplevel) {
     List_sp outer_func_cons = eval::funcall(core::_sym_parse_macro, name, olambdaList, inner_body);
     //		printf("%s:%d sp_macrolet outer_func_cons = %s\n", __FILE__, __LINE__, _rep_(outer_func_cons).c_str());
     Function_sp outer_func;
-    if (comp::_sym_compileInEnv->fboundp()) {
-      // If the compiler is set up then compile the outer func
-      outer_func = gc::As<Function_sp>(eval::funcall(comp::_sym_compileInEnv, _Nil<T_O>(), outer_func_cons, newEnv,_Nil<T_O>(),llvmo::_sym_ExternalLinkage));
-      outer_func->set_kind(kw::_sym_macro);
-    } else {
-      List_sp outer_ll = oCadr(outer_func_cons);
+    List_sp outer_ll = oCadr(outer_func_cons);
       //		printf("%s:%d sp_macrolet outer_ll = %s\n", __FILE__, __LINE__, _rep_(outer_ll).c_str());
-      List_sp outer_body = oCddr(outer_func_cons);
+    List_sp outer_body = oCddr(outer_func_cons);
       //		printf("%s:%d sp_macrolet outer_body = %s\n", __FILE__, __LINE__, _rep_(outer_body).c_str());
-      List_sp declares;
-      gc::Nilable<String_sp> docstring;
-      List_sp code;
-      parse_lambda_body(outer_body, declares, docstring, code);
-      LambdaListHandler_sp outer_llh = LambdaListHandler_O::create(outer_ll, declares, cl::_sym_function);
-      printf("%s:%d Creating InterpretedClosure with no source information - fix this\n", __FILE__, __LINE__);
-      Closure_sp ic = gc::GC<InterpretedClosure_O>::allocate(name, kw::_sym_macro, outer_llh, declares, docstring, newEnv, code, SOURCE_POS_INFO_FIELDS(_Nil<T_O>()));
-      outer_func = ic;
-    }
+    List_sp declares;
+    gc::Nilable<String_sp> docstring;
+    List_sp code;
+    parse_lambda_body(outer_body, declares, docstring, code);
+    LambdaListHandler_sp outer_llh = LambdaListHandler_O::create(outer_ll, declares, cl::_sym_function);
+    printf("%s:%d Creating InterpretedClosure with no source information - fix this\n", __FILE__, __LINE__);
+    Closure_sp ic = gc::GC<InterpretedClosure_O>::allocate(name, kw::_sym_macro, outer_llh, declares, docstring, newEnv, code, SOURCE_POS_INFO_FIELDS(_Nil<T_O>()));
+    outer_func = ic;
     LOG(BF("func = %s") % ic->__repr__());
     newEnv->addMacro(name, outer_func);
     //		newEnv->bind_function(name,outer_func);
@@ -2020,125 +2008,10 @@ T_mv t1Locally(List_sp args, T_sp env) {
 
 T_mv t1Macrolet(List_sp args, T_sp env) {
   return doMacrolet(args, env, true /*toplevel*/);
-#if 0
-  if ( _sym_STARdebugEvalSTAR && _sym_STARdebugEvalSTAR->symbolValue().notnilp() ) {
-    printf("%s:%d t1Macrolet args: %s\n", __FILE__, __LINE__, _rep_(args).c_str() );
-  }
-	    // TODO: handle trace
-  List_sp macros = oCar(args);
-  MacroletEnvironment_sp newEnv(MacroletEnvironment_O::make(env));
-  List_sp body = oCdr(args);
-  List_sp cur = macros;
-  LOG(BF("macros part=%s") % macros->__repr__() );
-  gc::Nilable<String_sp> docString = _Nil<T_O>();
-  while ( cur.notnilp() )
-  {
-    List_sp oneDef = oCar(cur);
-    Symbol_sp name = oCar(oneDef).as<Symbol_O>();
-    T_sp olambdaList = oCadr(oneDef);
-    List_sp inner_body = oCdr(oCdr(oneDef));
-    List_sp outer_func_cons = eval::funcall(core::_sym_parse_macro,name,olambdaList,inner_body);
-#if 1
-//                printf("%s:%d   outer_func_cons = %s\n", __FILE__, __LINE__, _rep_(outer_func_cons).c_str());
-    Function_sp outer_func = eval::funcall(comp::_sym_compileInEnv
-                                           , _Nil<T_O>()
-                                           , outer_func_cons
-                                           ,newEnv
-                                           ,_Nil<T_O>()
-                                           ,llvmo::_sym_ExternalLinkage
-                                           ).as<Function_O>();
-    outer_func->setKind(kw::_sym_macro);
-#else
-    List_sp outer_ll = oCaddr(outer_func_cons);
-    List_sp outer_body = cCdddr(outer_func_cons);
-    List_sp declares;
-    String_sp docstring;
-    List_sp code;
-    parse_lambda_body(outer_body,declares,docstring,code);
-    LambdaListHandler_sp outer_llh = LambdaListHandler_O::create(outer_ll,declares,cl::_sym_function);
-                // TODO: Change these to compiled functions when the compiler is available
-//                printf("%s:%d Creating InterpretedClosure with no source info\n", __FILE__, __LINE__ );
-    InterpretedClosure* ic = gctools::ClassAllocator<InterpretedClosure>::allocate_class(name
-                                                                                         , _Nil<SourcePosInfo_O>()
-                                                                                         , kw::_sym_macro
-                                                                                         , outer_llh
-                                                                                         , declares
-                                                                                         , docstring
-                                                                                         , newEnv
-                                                                                         , code );
-    NamedFunction_sp outer_func = NamedFunction_O::make(ic);
-#endif
-    LOG(BF("func = %s") % outer_func_cons->__repr__() );
-//                printf("%s:%d addMacro name: %s  macro: %s\n", __FILE__, __LINE__, _rep_(name).c_str(), _rep_(outer_func).c_str());
-    newEnv->addMacro(name,outer_func);
-//		newEnv->bind_function(name,outer_func);
-    cur = cCdr(cur);
-  }
-  List_sp declares;
-  List_sp code;
-  String_sp docstring;
-  List_sp specials;
-  extract_declares_docstring_code_specials(body,declares,false,docstring,code,specials);
-//            printf("%s:%d macrolet evaluating code: %s  in env: %s\n", __FILE__, __LINE__, _rep_(code).c_str(), _rep_(newEnv).c_str());
-  return t1Progn(code,newEnv);
-#endif
 }
 
 T_mv t1SymbolMacrolet(List_sp args, T_sp env) {
   return do_symbolMacrolet(args, env, true);
-#if 0
-  List_sp macros = oCar(args);
-  SymbolMacroletEnvironment_sp newEnv(SymbolMacroletEnvironment_O::make(env));
-  List_sp body = cCdr(args);
-  List_sp cur = macros;
-  LOG(BF("macros part=%s") % macros->__repr__() );
-  gc::Nilable<String_sp> docstring = _Nil<T_O>();
-  SYMBOL_SC_(CorePkg,whole);
-  SYMBOL_SC_(CorePkg,env);
-  List_sp outer_ll = Cons_O::createList(_sym_whole, _sym_env);
-  SYMBOL_EXPORT_SC_(ClPkg,ignore);
-  List_sp declares = Cons_O::createList(cl::_sym_declare,Cons_O::createList(cl::_sym_ignore,_sym_whole,_sym_env));
-  while ( cur.notnilp() )
-  {
-    List_sp oneDef = oCar(cur);
-    Symbol_sp name = oCar(oneDef).as<Symbol_O>();
-    List_sp expansion = Cons_O::create(Cons_O::createList(cl::_sym_quote,oCadr(oneDef)),_Nil<T_O>());
-//                printf("%s:%d  symbolmacrolet name=%s expansion=%s\n", __FILE__, __LINE__, _rep_(name).c_str(), _rep_(expansion).c_str() );
-    Function_sp outer_func;
-#if 0
-    T_sp olambdaList = _Nil<T_O>();
-    List_sp inner_body = oCadr(oneDef);
-    List_sp outer_func_cons = eval::funcall(core::_sym_parse_macro,name,olambdaList,inner_body);
-    printf("%s:%d  symbolmacrolet name=%s expansion I can compile=%s\n", __FILE__, __LINE__, _rep_(name).c_str(), _rep_(outer_func_cons).c_str() );
-    printf("%s:%d   outer_func_cons = %s\n", __FILE__, __LINE__, _rep_(outer_func_cons).c_str());
-    outer_func = eval::funcall(comp::_sym_compileInEnv
-                               , _Nil<T_O>()
-                               , outer_func_cons
-                               ,newEnv
-                               ,_Nil<T_O>()
-                               ,llvmo::_sym_ExternalLinkage).as<Function_O>();
-    outer_func->setKind(kw::_sym_macro);
-#else
-    LambdaListHandler_sp outer_llh = LambdaListHandler_O::create(outer_ll,
-                                                                 oCadr(declares),
-                                                                 cl::_sym_function);
-                // TODO: Change these to compiled functions when the compiler is available
-    printf("%s:%d Creating InterpretedClosure for expansion: %s\n", __FILE__, __LINE__, _rep_(expansion).c_str());
-    InterpretedClosure* ic = gctools::ClassAllocator<InterpretedClosure>::allocate_class(_sym_symbolMacroletLambda
-                                                                                         , _Nil<SourcePosInfo_O>()
-                                                                                         , kw::_sym_macro
-                                                                                         , outer_llh
-                                                                                         , declares
-                                                                                         , docstring
-                                                                                         , newEnv
-                                                                                         , expansion );
-    outer_func = Function_O::make(ic);
-#endif
-    newEnv->addSymbolMacro(name,outer_func);
-    cur = cCdr(cur);
-  }
-  return t1Locally(body,newEnv);
-#endif
 }
 
 struct SafeTopLevelFormStack {
