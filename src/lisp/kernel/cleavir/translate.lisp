@@ -869,7 +869,7 @@ when this is t a lot of graphs will be generated.")
   (quick-draw-hir init-instr "hir-after-pcv") 
   (clasp-cleavir:optimize-stack-enclose init-instr) ; see FIXME at definition
   (setf *ct-optimize-stack-enclose* (compiler-timer-elapsed))
-  (cleavir-kildall-type-inference:thes->typeqs init-instr)
+  (cleavir-kildall-type-inference:thes->typeqs init-instr clasp-cleavir:*clasp-env*)
   (quick-draw-hir init-instr "hir-after-thes-typeqs")
   (setf *ct-thes->typeqs* (compiler-timer-elapsed))
 
@@ -885,7 +885,7 @@ when this is t a lot of graphs will be generated.")
         :liveness liveness :prune t
         :draw (quick-hir-pathname "hir-before-prune-ti"))
       (quick-draw-hir init-instr "hir-after-ti")
-      (setf *ct-infer-types* (compiler-time-elapsed))))
+      (setf *ct-infer-types* (compiler-timer-elapsed))))
 
   ;; delete the-instruction and the-values-instruction
   (cleavir-kildall-type-inference:delete-the init-instr)
