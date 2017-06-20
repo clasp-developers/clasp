@@ -254,7 +254,7 @@ CL_DECLARE();
 CL_DOCSTRING("set");
 CL_DEFUN T_sp cl__set(Symbol_sp sym, T_sp val) {
   if (sym->isConstant())
-    SIMPLE_ERROR(BF("Cannot modify value of constant %s" % _rep_(sym)));
+    SIMPLE_ERROR(BF("Cannot modify value of constant %s") % _rep_(sym));
   sym->setf_symbolValue(val);
   return val;
 };

@@ -207,7 +207,7 @@ Symbol_sp Symbol_O::create_from_string(const string &nm) {
 CL_LISPIFY_NAME("makunbound");
 CL_DEFMETHOD Symbol_sp Symbol_O::makunbound() {
   if (this->isConstant())
-    SIMPLE_ERROR(BF("Cannot make constant %s unbound" % _rep_(this)));
+    SIMPLE_ERROR(BF("Cannot make constant %s unbound") % this->__repr__());
   *my_thread->_Bindings.reference_raw(this) = _Unbound<T_O>();
   return this->asSmartPtr();
 }
