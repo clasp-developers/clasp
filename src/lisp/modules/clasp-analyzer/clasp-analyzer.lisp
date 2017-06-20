@@ -3131,56 +3131,54 @@ Pointers to these objects are fixed in obj_scan or they must be roots."
        (generate-label-table ,dest-gs)
        (format stream "#endif // defined(GC_~a_TABLE)~%" ,table-name))))
 
-(defun generate-code (analysis &key test )
+(defun generate-code (analysis &key output-file)
   (format t "About to generate code~%")
-  (let ((filename (if test
-                      "test_clasp_gc"
-                    "clasp_gc")))
-    (with-open-file (stream (make-pathname :name filename :type "cc" :defaults (clang-tool:main-pathname)) :direction :output :if-exists :supersede)
-                    (format stream "#ifdef DECLARE_FORWARDS~%")
-                    (code-for-namespace-names stream (merge-forward-names-by-namespace analysis))
-                    (format stream "#endif // DECLARE_FORWARDS~%")
-                    (format stream "#if defined(GC_ENUM)~%")
-                    (generate-alloc-enum stream analysis)
-                    (format stream "#endif // defined(GC_ENUM)~%")
-                    (format stream "#if defined(GC_DYNAMIC_CAST)~%")
-                    (generate-dynamic-cast-code stream analysis )
-                    (format stream "#endif // defined(GC_DYNAMIC_CAST)~%")
-                    (format stream "#if defined(GC_KIND_SELECTORS)~%")
-                    (generate-gckind-for-enums stream analysis)
-                    (format stream "#endif // defined(GC_KIND_SELECTORS)~%")
-		    (do-generator stream analysis
-				  :table-name "OBJ_SCAN"
-				  :function-declaration "GC_RESULT ~a(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit)"
-				  :function-prefix "obj_scan"
-				  :function-table-type "GC_RESULT (*OBJ_SCAN_table[])(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit)"
-                                  :jump-table-index-function 'scanner-jump-table-index-for-enum-name
-				  :generator (lambda (dest anal)
-					       (dolist (enum (analysis-sorted-enums anal))
-						 (funcall (species-scan (enum-species enum)) dest enum anal))))
-		    (do-generator stream analysis
-				  :table-name "OBJ_FINALIZE"
-				  :function-declaration "void ~a(mps_addr_t client)"
-				  :function-prefix "obj_finalize"
-				  :function-table-type "void (*OBJ_FINALIZE_table[])(mps_addr_t client)"
-				  :generator (lambda (dest anal)
-					       (dolist (enum (analysis-sorted-enums anal))
-						 (funcall (species-finalize (enum-species enum)) dest enum anal))))
-		    (do-generator stream analysis
-				  :table-name "OBJ_DEALLOCATOR"
-				  :function-declaration "void ~a(mps_addr_t client)"
-				  :function-prefix "obj_deallocate_unmanaged_instance"
-				  :function-table-type "void (*OBJ_DEALLOCATOR_table[])(mps_addr_t client)"
-				  :generator (lambda (dest anal)
-					       (dolist (enum (analysis-sorted-enums anal))
-						 (funcall (species-deallocator (enum-species enum)) dest enum anal))))
-                    (format stream "#if defined(GC_GLOBALS)~%")
-                    (generate-code-for-global-non-symbol-variables stream analysis)
-                    (format stream "#endif // defined(GC_GLOBALS)~%")
-                    (format stream "#if defined(GC_GLOBAL_SYMBOLS)~%")
-                    (generate-code-for-global-symbols stream analysis)
-                    (format stream "#endif // defined(GC_GLOBAL_SYMBOLS)~%")
-                    )))
+  (or output-file (error "You must provide an output-file"))
+  (with-open-file (stream output-file :direction :output :if-exists :supersede)
+                  (format stream "#ifdef DECLARE_FORWARDS~%")
+                  (code-for-namespace-names stream (merge-forward-names-by-namespace analysis))
+                  (format stream "#endif // DECLARE_FORWARDS~%")
+                  (format stream "#if defined(GC_ENUM)~%")
+                  (generate-alloc-enum stream analysis)
+                  (format stream "#endif // defined(GC_ENUM)~%")
+                  (format stream "#if defined(GC_DYNAMIC_CAST)~%")
+                  (generate-dynamic-cast-code stream analysis )
+                  (format stream "#endif // defined(GC_DYNAMIC_CAST)~%")
+                  (format stream "#if defined(GC_KIND_SELECTORS)~%")
+                  (generate-gckind-for-enums stream analysis)
+                  (format stream "#endif // defined(GC_KIND_SELECTORS)~%")
+                  (do-generator stream analysis
+                                :table-name "OBJ_SCAN"
+                                :function-declaration "GC_RESULT ~a(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit)"
+                                :function-prefix "obj_scan"
+                                :function-table-type "GC_RESULT (*OBJ_SCAN_table[])(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit)"
+                                :jump-table-index-function 'scanner-jump-table-index-for-enum-name
+                                :generator (lambda (dest anal)
+                                             (dolist (enum (analysis-sorted-enums anal))
+                                               (funcall (species-scan (enum-species enum)) dest enum anal))))
+                  (do-generator stream analysis
+                                :table-name "OBJ_FINALIZE"
+                                :function-declaration "void ~a(mps_addr_t client)"
+                                :function-prefix "obj_finalize"
+                                :function-table-type "void (*OBJ_FINALIZE_table[])(mps_addr_t client)"
+                                :generator (lambda (dest anal)
+                                             (dolist (enum (analysis-sorted-enums anal))
+                                               (funcall (species-finalize (enum-species enum)) dest enum anal))))
+                  (do-generator stream analysis
+                                :table-name "OBJ_DEALLOCATOR"
+                                :function-declaration "void ~a(mps_addr_t client)"
+                                :function-prefix "obj_deallocate_unmanaged_instance"
+                                :function-table-type "void (*OBJ_DEALLOCATOR_table[])(mps_addr_t client)"
+                                :generator (lambda (dest anal)
+                                             (dolist (enum (analysis-sorted-enums anal))
+                                               (funcall (species-deallocator (enum-species enum)) dest enum anal))))
+                  (format stream "#if defined(GC_GLOBALS)~%")
+                  (generate-code-for-global-non-symbol-variables stream analysis)
+                  (format stream "#endif // defined(GC_GLOBALS)~%")
+                  (format stream "#if defined(GC_GLOBAL_SYMBOLS)~%")
+                  (generate-code-for-global-symbols stream analysis)
+                  (format stream "#endif // defined(GC_GLOBAL_SYMBOLS)~%")
+                  ))
 
 (defun build-arguments-adjuster ()
   "Build a function that fixes up compile command arguments to run the static analyzer."
@@ -3327,7 +3325,7 @@ Setup all of the ASTMatcher tools for the clasp-analyzer."
     (serial-search-all :test test :arguments-adjuster arguments-adjuster))
 (export 'serial-search-only)
 
-(defun serial-search-all (compilation-tool-database &key (save-project t))
+(defun serial-search-all (compilation-tool-database &key (output-file (merge-pathnames #P"project.dat" (clang-tool:main-pathname compilation-tool-database))))
   "* Arguments
 - test :: A list of files to run the search on, or NIL for all of them.
 - arguments-adjuster :: The arguments adjuster.
@@ -3341,10 +3339,11 @@ Run searches in *tools* on the source files in the compilation database."
     (format t "all-jobs: ~a~%" all-jobs)
     (setf (clang-tool:multitool-results tools) (make-project))
     (clang-tool:batch-run-multitool tools
-                         :compilation-tool-database compilation-tool-database)
+                                    :compilation-tool-database compilation-tool-database)
     (when save-project
       (let ((project (clang-tool:multitool-results tools)))
-        (save-data project (merge-pathnames #P"project.dat" (clang-tool:main-pathname compilation-tool-database)))))))
+        (save-data project output-file))))
+  output-file)
 
 (defun translate-include (args filename)
   "* Arguments
@@ -3385,13 +3384,14 @@ If the source location of a match contains the string source-path-identifier the
     compilation-tool-database))
 
 (defvar *analysis*)
-(defun search/generate-code (compilation-tool-database)
-  (clang-tool:with-compilation-tool-database compilation-tool-database
-    (setf *project* (serial-search-all compilation-tool-database))
+(defun search/generate-code (compilation-tool-database &key (output-file (merge-pathnames #P"project.dat" (clang-tool:main-pathname compilation-tool-database))))
+  (clang-tool:with-compilation-tool-database
+   compilation-tool-database
+    (setf *project* (serial-search-all compilation-tool-database :output-file output-file))
     (let ((analysis (analyze-project *project*)))
       (setq *analysis* analysis)
       (setf (analysis-inline analysis) '("core::Cons_O"))
-      (generate-code analysis))
+      (generate-code analysis :output-file output-file))
     *project*))
 
 (defun analyze-only (compilation-tool-database)
