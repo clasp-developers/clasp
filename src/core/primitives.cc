@@ -1099,6 +1099,8 @@ CL_DEFUN T_sp cl__fdefinition(T_sp functionName) {
       }
     }
   } else if ( Symbol_sp sym = functionName.asOrNull<Symbol_O>() ) {
+    if (!sym->fboundp())
+      SIMPLE_ERROR(BF("No fuction bound to %s") % _rep_(sym));
     return sym->symbolFunction();
   }
   TYPE_ERROR(functionName,cl::_sym_function);
