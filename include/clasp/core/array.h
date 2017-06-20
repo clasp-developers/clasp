@@ -910,6 +910,15 @@ namespace core {
                               Fixnum_sp displacedIndexOffset = clasp_make_fixnum(0),
                               T_sp initial_element = _Nil<T_O>(),
                               bool initial_element_supplied_p = false);
+
+MDArray_sp core__make_mdarray(List_sp dimensions,
+                              T_sp element_type,
+                              bool adjustable = false,
+                              T_sp displacedTo = _Nil<T_O>(),
+                              Fixnum_sp displacedIndexOffset = clasp_make_fixnum(0),
+                              T_sp initialElement = _Nil<T_O>(),
+                              bool initialElementSuppliedP = false);
+
 };
 
 
