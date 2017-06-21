@@ -216,14 +216,11 @@ LtvcReturn ltvc_make_array(gctools::GCRootsInModule* holder, size_t index,
   core::T_sp element_type(telement_type);
   core::List_sp dimensions(tdimensions);
   core::T_sp val;
-    if (element_type != cl::_sym_T_O) {
-      SIMPLE_WARN(BF("Call make-array to make the array/vector rather than defaulting to an VectorObjects/ArrayObjects"));
-    }
   if (core::cl__length(dimensions) == 1) // vector
   {
-    val = core::SimpleVector_O::make(oCar(dimensions).unsafe_fixnum(),_Nil<core::T_O>(),true);
+    val = core::core__make_vector(element_type, oCar(dimensions).unsafe_fixnum());
   } else {
-    val = core::SimpleMDArrayT_O::make_multi_dimensional(dimensions,_Nil<core::T_O>(),_Nil<core::T_O>());
+    val = core::core__make_mdarray(dimensions, element_type);
   }
   LTVCRETURN holder->set(index,val.tagged_());
 }
