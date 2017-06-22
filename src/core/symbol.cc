@@ -108,7 +108,7 @@ CL_DECLARE();
 CL_DOCSTRING("symbolFunction");
 CL_DEFUN Function_sp cl__symbol_function(Symbol_sp sym) {
   if (!sym->fboundp()) {
-    SIMPLE_ERROR(BF("No function bound to %s") % _rep_(sym));
+    ERROR_UNDEFINED_FUNCTION(sym);
   }
   return sym->symbolFunction();
 };

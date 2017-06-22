@@ -1095,12 +1095,14 @@ CL_DEFUN T_sp cl__fdefinition(T_sp functionName) {
     if (oCar(cname) == cl::_sym_setf) {
       Symbol_sp name = gc::As<Symbol_sp>(oCadr(cname));
       if (name.notnilp()) {
+        if (!name->setf_fboundp())
+          ERROR_UNDEFINED_FUNCTION(functionName);
         return name->getSetfFdefinition();
       }
     }
   } else if ( Symbol_sp sym = functionName.asOrNull<Symbol_O>() ) {
     if (!sym->fboundp())
-      SIMPLE_ERROR(BF("No fuction bound to %s") % _rep_(sym));
+      ERROR_UNDEFINED_FUNCTION(functionName);
     return sym->symbolFunction();
   }
   TYPE_ERROR(functionName,cl::_sym_function);
