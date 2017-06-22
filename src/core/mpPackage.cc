@@ -178,6 +178,17 @@ string Mutex_O::__repr__() const {
   return ss.str();
 }
 
+string SharedMutex_O::__repr__() const {
+  stringstream ss;
+  ss << "#<SHARED-MUTEX ";
+  ss << _rep_(this->_Name);
+#ifdef USE_BOEHM // things don't move in boehm
+  ss << " @" << (void*)(this->asSmartPtr().raw_());
+#endif
+  ss << ">";
+  return ss.str();
+}
+
 
 
 string Process_O::__repr__() const {

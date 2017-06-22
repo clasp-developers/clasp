@@ -33,6 +33,7 @@ THE SOFTWARE.
 namespace mp {
   FORWARD(Process);
   FORWARD(Mutex);
+  FORWARD(SharedMutex);
   FORWARD(RecursiveMutex);
   FORWARD(ConditionVariable);
 };
@@ -189,6 +190,50 @@ namespace mp {
   };
 };
 
+
+
+
+template <>
+struct gctools::GCInfo<mp::SharedMutex_O> {
+  static bool constexpr NeedsInitialization = false;
+  static bool constexpr NeedsFinalization = true;
+  static GCInfo_policy constexpr Policy = normal;
+};
+
+namespace mp {
+
+  FORWARD(SharedMutex);
+  class SharedMutex_O : public core::CxxObject_O {
+    LISP_CLASS(mp, MpPkg, SharedMutex_O, "SharedMutex",core::CxxObject_O);
+  public:
+    CL_LISPIFY_NAME("make-shared-mutex");
+    CL_LAMBDA(&optional name)
+      CL_DEF_CLASS_METHOD static SharedMutex_sp make_shared_mutex(core::T_sp name) {
+      GC_ALLOCATE_VARIADIC(SharedMutex_O,l,name);
+      return l;
+    };
+  public:
+    core::T_sp  _Name;
+    core::T_sp  _Owner;
+    SharedMutex _SharedMutex;
+  SharedMutex_O(core::T_sp name) : _Name(name), _Owner(_Nil<T_O>()) {};
+    CL_DEFMETHOD void write_lock() {
+      this->_SharedMutex.lock();
+    };
+    CL_DEFMETHOD void write_unlock() {
+      this->_SharedMutex.unlock();
+    };
+    
+    CL_DEFMETHOD void shared_lock() {
+      this->_SharedMutex.shared_lock();
+    };
+    CL_DEFMETHOD void shared_unlock() {
+      this->_SharedMutex.shared_unlock();
+    };
+    
+    string __repr__() const;
+  };
+};
 
 template <>
 struct gctools::GCInfo<mp::RecursiveMutex_O> {
