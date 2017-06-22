@@ -63,6 +63,16 @@ namespace core {
     virtual T_sp element_type() const override { return cl::_sym_double_float;};
     virtual T_sp arrayElementType() const override { return cl::_sym_double_float; };
     virtual clasp_elttype elttype() const { return clasp_aet_df; };
+  public: // Provide the API that I used for NVector_sp
+    static SimpleVectorDouble_sp create(size_t sz) {
+      return make(sz,0.0,false,0,NULL);
+    }
+    double& element(size_t i) { return this->operator[](i);};
+    double& getElement(size_t i) { return this->operator[](i);};
+    void setElement(size_t i, double v) { this->operator[](i) = v; };
+    void addToElement(size_t i, double v) { this->operator[](i) += v; };
+    void zero() { for(size_t i(0),iEnd(this->length()); i<iEnd;++i) this->operator[](i) = 0.0; };
+    size_t size() const { return this->length(); };
   };
 };
 
