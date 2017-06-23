@@ -187,7 +187,7 @@ CL_DEFMETHOD   bool specialP() const { return this->_IsSpecial; };
 
   bool isConstant() const { return this->_IsConstant; };
 
-  /*! Set the global fnction value of this symbol */
+  /*! Set the global function value of this symbol */
   void setf_symbolFunction(T_sp exec);
 
   /*! Return the global bound function */
