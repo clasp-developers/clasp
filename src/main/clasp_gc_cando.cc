@@ -177,10 +177,13 @@
     class MDNode_O;
  };
  namespace mp {
+    class ConcurrentQueue_O;
     class Mutex_O;
     class ConditionVariable_O;
     class Process_O;
     class RecursiveMutex_O;
+    class SharedMutex_O;
+    class BlockingConcurrentQueue_O;
  };
  namespace adapt {
     class StringSet_O;
@@ -403,12 +406,12 @@
     class MessageReport_O;
     class EntityNameSetBase_O;
     class AtomTable_O;
+    class EnergyRigidBodyStaple_O;
     class Command_O;
     class IterateResidues_O;
     class TagSet_O;
     class DirectionalCoupling_O;
     class EnergyChiralRestraint_O;
-    class NVector_O;
     class EnergyImproperRestraint_O;
     class Root_O;
     class ResidueOut;
@@ -462,6 +465,7 @@
     class ResidueTest_O;
     class SpecificContext_O;
     class MonoMonomer_O;
+    class EnergyRigidBodyStaple;
     class AtomOrBondMatchNode_O;
     class AntechamberFocusAtomMatch_O;
     class CDText_O;
@@ -509,8 +513,10 @@
     class Oligomer_O;
     class ConstitutionBond_O;
     class Entity_O;
+    class RigidBodyAtomInfo;
     class StereoisomerAtoms_O;
     class EntityNameSetWithCap_O;
+    class EnergyRigidBodyNonbond_O;
     class ConformationExplorerEntry_O;
     class AtomReferenceBase_O;
     class CDNode_O;
@@ -548,6 +554,7 @@
     class AntechamberBondTest_O;
     class IterateMatter_O;
     class BondMatchNode_O;
+    class EnergyRigidBodyComponent_O;
     class StatusTracker_O;
     class AtomPdbRec;
     class OneTypeRule_O;
@@ -563,6 +570,7 @@
     class ConformationCollection_O;
     class InfoDb_O;
     class ConformationExplorer_O;
+    class RigidBodyEnergyFunction_O;
     class ConstitutionVirtualAtom_O;
     class ConstitutionAtom_O;
     class NumericalFunction_O;
@@ -581,6 +589,7 @@
     class BondListMatchNode_O;
     class Trajectory_O;
     class MapOfMonomerNamesToAtomIndexers_O;
+    class ScoringFunction_O;
     class RingCoupling_O;
     class AfterMatchBondTest_O;
     class RingFinder_O;
@@ -613,6 +622,8 @@
 KIND_null = 0, 
 KIND_ABSTRACT_clang__tooling__ToolAction = 6,
 KIND_ABSTRACT_clang__tooling__FrontendActionFactory = 7,
+KIND_ABSTRACT_clbind__Derivable_clang__tooling__FrontendActionFactory_ = 8,
+KIND_LISPALLOC_asttooling__DerivableFrontendActionFactory = 9,
 KIND_ROOTCLASSALLOC_core__Lisp_O = 10,
 KIND_BOOTSTRAP_core__T_O = 11,
 KIND_LISPALLOC_core__VaList_dummy_O = 12,
@@ -628,438 +639,444 @@ KIND_LISPALLOC_units__UnitsExposer_O = 21,
 KIND_LISPALLOC_adapt__AdaptExposer_O = 22,
 KIND_LISPALLOC_core__CoreExposer_O = 23,
 KIND_LISPALLOC_core__StructureObject_O = 24,
-KIND_LISPALLOC_core__Pathname_O = 25,
-KIND_LISPALLOC_core__LogicalPathname_O = 26,
-KIND_LISPALLOC_core__HashTable_O = 27,
-KIND_LISPALLOC_core__HashTableEql_O = 28,
-KIND_LISPALLOC_core__HashTableEqual_O = 29,
-KIND_LISPALLOC_core__HashTableEq_O = 30,
-KIND_LISPALLOC_core__HashTableEqualp_O = 31,
-KIND_LISPALLOC_core__PosixTime_O = 32,
-KIND_LISPALLOC_core__SourcePosInfo_O = 33,
-KIND_LISPALLOC_core__InvocationHistoryFrameIterator_O = 34,
-KIND_LISPALLOC_adapt__IndexedObjectBag_O = 35,
-KIND_LISPALLOC_core__SequenceStepper_O = 36,
-KIND_LISPALLOC_core__VectorStepper_O = 37,
-KIND_LISPALLOC_core__ConsStepper_O = 38,
-KIND_BOOTSTRAP_core__Symbol_O = 39,
-KIND_LISPALLOC_core__Null_O = 40,
-KIND_LISPALLOC_core__ReadTable_O = 41,
-KIND_LISPALLOC_core__PosixTimeDuration_O = 42,
-KIND_LISPALLOC_core__SmallMultimap_O = 43,
-KIND_TEMPLATED_LISPALLOC_core__Creator_O = 44,
-KIND_LISPALLOC_core__ClassCreator_O = 45,
-KIND_LISPALLOC_clbind__DummyCreator_O = 46,
-KIND_LISPALLOC_core__StructureClassCreator_O = 47,
-KIND_LISPALLOC_core__InstanceCreator_O = 48,
-KIND_LISPALLOC_core__StandardClassCreator_O = 49,
-KIND_TEMPLATED_LISPALLOC_clbind__ConstructorCreator_O = 50,
-KIND_LISPALLOC_clasp_ffi__ForeignTypeSpec_O = 51,
-KIND_LISPALLOC_core__LoadTimeValues_O = 52,
-KIND_LISPALLOC_clbind__ClassRegistry_O = 53,
-KIND_BOOTSTRAP_core__StandardObject_O = 54,
-KIND_BOOTSTRAP_core__Class_O = 55,
-KIND_LISPALLOC_clbind__ClassRep_O = 56,
-KIND_LISPALLOC_llvmo__AttributeSet_O = 57,
-KIND_TEMPLATED_LISPALLOC_core__Iterator_O = 58,
-KIND_LISPALLOC_core__DirectoryIterator_O = 59,
-KIND_LISPALLOC_chem__IterateRestraints_O = 60,
-KIND_LISPALLOC_chem__IterateMatter_O = 61,
-KIND_LISPALLOC_chem__IterateResidues_O = 62,
-KIND_LISPALLOC_chem__IterateBonds_O = 63,
-KIND_LISPALLOC_chem__IterateAtoms_O = 64,
-KIND_LISPALLOC_core__RecursiveDirectoryIterator_O = 65,
-KIND_LISPALLOC_adapt__IterateCons_O = 66,
-KIND_TEMPLATED_LISPALLOC_core__WrappedPointer_O = 67,
-KIND_LISPALLOC_core__ExternalObject_O = 68,
-KIND_LISPALLOC_llvmo__NamedMDNode_O = 69,
-KIND_LISPALLOC_llvmo__TargetOptions_O = 70,
-KIND_LISPALLOC_llvmo__EngineBuilder_O = 71,
-KIND_LISPALLOC_llvmo__IRBuilderBase_O = 72,
-KIND_LISPALLOC_llvmo__IRBuilder_O = 73,
-KIND_LISPALLOC_llvmo__APInt_O = 74,
-KIND_LISPALLOC_llvmo__Metadata_O = 75,
-KIND_LISPALLOC_llvmo__MDString_O = 76,
-KIND_LISPALLOC_llvmo__ValueAsMetadata_O = 77,
-KIND_LISPALLOC_llvmo__MDNode_O = 78,
-KIND_LISPALLOC_llvmo__DINode_O = 79,
-KIND_LISPALLOC_llvmo__DIScope_O = 80,
-KIND_LISPALLOC_llvmo__DILocalScope_O = 81,
-KIND_LISPALLOC_llvmo__DILexicalBlockBase_O = 82,
-KIND_LISPALLOC_llvmo__DILexicalBlock_O = 83,
-KIND_LISPALLOC_llvmo__DISubprogram_O = 84,
-KIND_LISPALLOC_llvmo__DIFile_O = 85,
-KIND_LISPALLOC_llvmo__DIType_O = 86,
-KIND_LISPALLOC_llvmo__DICompositeType_O = 87,
-KIND_LISPALLOC_llvmo__DIBasicType_O = 88,
-KIND_LISPALLOC_llvmo__DIDerivedType_O = 89,
-KIND_LISPALLOC_llvmo__DISubroutineType_O = 90,
-KIND_LISPALLOC_llvmo__DICompileUnit_O = 91,
-KIND_LISPALLOC_llvmo__LLVMContext_O = 92,
-KIND_LISPALLOC_llvmo__TargetMachine_O = 93,
-KIND_LISPALLOC_llvmo__LLVMTargetMachine_O = 94,
-KIND_LISPALLOC_llvmo__MCSubtargetInfo_O = 95,
-KIND_LISPALLOC_llvmo__TargetSubtargetInfo_O = 96,
-KIND_LISPALLOC_llvmo__Value_O = 97,
-KIND_LISPALLOC_llvmo__User_O = 98,
-KIND_LISPALLOC_llvmo__Instruction_O = 99,
-KIND_LISPALLOC_llvmo__AtomicRMWInst_O = 100,
-KIND_LISPALLOC_llvmo__StoreInst_O = 101,
-KIND_LISPALLOC_llvmo__TerminatorInst_O = 102,
-KIND_LISPALLOC_llvmo__BranchInst_O = 103,
-KIND_LISPALLOC_llvmo__InvokeInst_O = 104,
-KIND_LISPALLOC_llvmo__IndirectBrInst_O = 105,
-KIND_LISPALLOC_llvmo__SwitchInst_O = 106,
-KIND_LISPALLOC_llvmo__ResumeInst_O = 107,
-KIND_LISPALLOC_llvmo__UnreachableInst_O = 108,
-KIND_LISPALLOC_llvmo__ReturnInst_O = 109,
-KIND_LISPALLOC_llvmo__PHINode_O = 110,
-KIND_LISPALLOC_llvmo__CallInst_O = 111,
-KIND_LISPALLOC_llvmo__UnaryInstruction_O = 112,
-KIND_LISPALLOC_llvmo__AllocaInst_O = 113,
-KIND_LISPALLOC_llvmo__LoadInst_O = 114,
-KIND_LISPALLOC_llvmo__VAArgInst_O = 115,
-KIND_LISPALLOC_llvmo__FenceInst_O = 116,
-KIND_LISPALLOC_llvmo__AtomicCmpXchgInst_O = 117,
-KIND_LISPALLOC_llvmo__LandingPadInst_O = 118,
-KIND_LISPALLOC_llvmo__Constant_O = 119,
-KIND_LISPALLOC_llvmo__GlobalValue_O = 120,
-KIND_LISPALLOC_llvmo__Function_O = 121,
-KIND_LISPALLOC_llvmo__GlobalVariable_O = 122,
-KIND_LISPALLOC_llvmo__ConstantExpr_O = 123,
-KIND_LISPALLOC_llvmo__ConstantArray_O = 124,
-KIND_LISPALLOC_llvmo__ConstantPointerNull_O = 125,
-KIND_LISPALLOC_llvmo__ConstantFP_O = 126,
-KIND_LISPALLOC_llvmo__ConstantInt_O = 127,
-KIND_LISPALLOC_llvmo__UndefValue_O = 128,
-KIND_LISPALLOC_llvmo__BlockAddress_O = 129,
-KIND_LISPALLOC_llvmo__ConstantStruct_O = 130,
-KIND_LISPALLOC_llvmo__ConstantDataSequential_O = 131,
-KIND_LISPALLOC_llvmo__ConstantDataArray_O = 132,
-KIND_LISPALLOC_llvmo__BasicBlock_O = 133,
-KIND_LISPALLOC_llvmo__Argument_O = 134,
-KIND_LISPALLOC_clasp_ffi__ForeignData_O = 135,
-KIND_LISPALLOC_llvmo__ExecutionEngine_O = 136,
-KIND_LISPALLOC_llvmo__DIBuilder_O = 137,
-KIND_LISPALLOC_llvmo__PassManagerBuilder_O = 138,
-KIND_LISPALLOC_llvmo__PassManagerBase_O = 139,
-KIND_LISPALLOC_llvmo__FunctionPassManager_O = 140,
-KIND_LISPALLOC_llvmo__PassManager_O = 141,
-KIND_LISPALLOC_llvmo__Triple_O = 142,
-KIND_LISPALLOC_llvmo__Pass_O = 143,
-KIND_LISPALLOC_llvmo__ModulePass_O = 144,
-KIND_LISPALLOC_llvmo__ImmutablePass_O = 145,
-KIND_LISPALLOC_llvmo__TargetLibraryInfoWrapperPass_O = 146,
-KIND_LISPALLOC_llvmo__FunctionPass_O = 147,
-KIND_LISPALLOC_llvmo__Module_O = 148,
-KIND_LISPALLOC_llvmo__Target_O = 149,
-KIND_LISPALLOC_llvmo__APFloat_O = 150,
-KIND_LISPALLOC_llvmo__Linker_O = 151,
-KIND_LISPALLOC_llvmo__Type_O = 152,
-KIND_LISPALLOC_llvmo__IntegerType_O = 153,
-KIND_LISPALLOC_llvmo__CompositeType_O = 154,
-KIND_LISPALLOC_llvmo__SequentialType_O = 155,
-KIND_LISPALLOC_llvmo__VectorType_O = 156,
-KIND_LISPALLOC_llvmo__ArrayType_O = 157,
-KIND_LISPALLOC_llvmo__PointerType_O = 158,
-KIND_LISPALLOC_llvmo__StructType_O = 159,
-KIND_LISPALLOC_llvmo__FunctionType_O = 160,
-KIND_LISPALLOC_llvmo__Attribute_O = 161,
-KIND_LISPALLOC_core__Package_O = 162,
-KIND_LISPALLOC_core__SmallMap_O = 163,
-KIND_LISPALLOC_core__Function_O = 164,
-KIND_LISPALLOC_core__NamedFunction_O = 165,
-KIND_LISPALLOC_core__SpecialForm_O = 166,
-KIND_LISPALLOC_core__Closure_O = 167,
-KIND_LISPALLOC_core__CompiledFunction_O = 168,
-KIND_LISPALLOC_core__FunctionClosure_O = 169,
-KIND_LISPALLOC_core__ClosureWithSlots_O = 170,
-KIND_LISPALLOC_core__SingleDispatchCxxEffectiveMethodFunction_O = 171,
-KIND_TEMPLATED_LISPALLOC_core__BuiltinClosure_O = 172,
-KIND_LISPALLOC_core__TranslationFunctor = 173,
-KIND_LISPALLOC_core__MacroClosure_O = 174,
-KIND_LISPALLOC_core__SingleDispatchEffectiveMethodFunction_O = 175,
-KIND_LISPALLOC_core__ClosureWithFrame_O = 176,
-KIND_LISPALLOC_core__CompiledClosure_O = 177,
-KIND_LISPALLOC_core__InterpretedClosure_O = 178,
-KIND_LISPALLOC_core__SingleDispatchGenericFunctionClosure_O = 179,
-KIND_LISPALLOC_core__SingleDispatchMethodFunction_O = 180,
-KIND_LISPALLOC_core__CxxMethodFunction_O = 181,
-KIND_LISPALLOC_core__CompiledDispatchFunction_O = 182,
-KIND_LISPALLOC_core__Instance_O = 183,
-KIND_ABSTRACT_clbind__Derivable_clang__tooling__FrontendActionFactory_ = 186,
-KIND_LISPALLOC_asttooling__DerivableFrontendActionFactory = 187,
-KIND_LISPALLOC_core__SNode_O = 192,
-KIND_LISPALLOC_core__LeafSNode_O = 193,
-KIND_LISPALLOC_core__BranchSNode_O = 194,
-KIND_LISPALLOC_core__SourceFileInfo_O = 195,
-KIND_LISPALLOC_core__Path_O = 196,
-KIND_LISPALLOC_core__WeakHashTable_O = 197,
-KIND_LISPALLOC_core__WeakKeyHashTable_O = 198,
-KIND_LISPALLOC_core__SingleDispatchMethod_O = 199,
-KIND_LISPALLOC_core__LambdaListHandler_O = 200,
-KIND_LISPALLOC_core__Array_O = 201,
-KIND_LISPALLOC_core__AbstractSimpleVector_O = 202,
-KIND_ABSTRACT_core__template_SimpleVector_core__SimpleVector_byte16_t_O_unsigned_short_core__AbstractSimpleVector_O_ = 203,
-KIND_LISPALLOC_core__SimpleVector_byte16_t_O = 204,
-KIND_ABSTRACT_core__template_SimpleVector_core__SimpleVector_fixnum_O_long_core__AbstractSimpleVector_O_ = 205,
-KIND_LISPALLOC_core__SimpleVector_fixnum_O = 206,
-KIND_ABSTRACT_core__template_SimpleVector_core__SimpleVector_int64_t_O_long_core__AbstractSimpleVector_O_ = 207,
-KIND_LISPALLOC_core__SimpleVector_int64_t_O = 208,
-KIND_LISPALLOC_core__SimpleBitVector_O = 209,
-KIND_ABSTRACT_core__template_SimpleVector_core__SimpleVector_byte32_t_O_unsigned_int_core__AbstractSimpleVector_O_ = 210,
-KIND_LISPALLOC_core__SimpleVector_byte32_t_O = 211,
-KIND_ABSTRACT_core__template_SimpleVector_core__SimpleVector_byte8_t_O_unsigned_char_core__AbstractSimpleVector_O_ = 212,
-KIND_LISPALLOC_core__SimpleVector_byte8_t_O = 213,
-KIND_ABSTRACT_core__template_SimpleVector_core__SimpleVector_int32_t_O_int_core__AbstractSimpleVector_O_ = 214,
-KIND_LISPALLOC_core__SimpleVector_int32_t_O = 215,
-KIND_ABSTRACT_core__template_SimpleVector_geom__SimpleVectorCoordinate_O_Vector3_core__AbstractSimpleVector_O_ = 216,
-KIND_LISPALLOC_geom__SimpleVectorCoordinate_O = 217,
-KIND_LISPALLOC_core__SimpleString_O = 218,
-KIND_ABSTRACT_core__template_SimpleVector_core__SimpleCharacterString_O_int_core__SimpleString_O_ = 219,
-KIND_LISPALLOC_core__SimpleCharacterString_O = 220,
-KIND_ABSTRACT_core__template_SimpleVector_core__SimpleBaseString_O_unsigned_char_core__SimpleString_O_ = 221,
-KIND_LISPALLOC_core__SimpleBaseString_O = 222,
-KIND_ABSTRACT_core__template_SimpleVector_core__SimpleVector_int8_t_O_signed_char_core__AbstractSimpleVector_O_ = 223,
-KIND_LISPALLOC_core__SimpleVector_int8_t_O = 224,
-KIND_ABSTRACT_core__template_SimpleVector_core__SimpleVector_int16_t_O_short_core__AbstractSimpleVector_O_ = 225,
-KIND_LISPALLOC_core__SimpleVector_int16_t_O = 226,
-KIND_ABSTRACT_core__template_SimpleVector_core__SimpleVectorDouble_O_double_core__AbstractSimpleVector_O_ = 227,
-KIND_LISPALLOC_core__SimpleVectorDouble_O = 228,
-KIND_ABSTRACT_core__template_SimpleVector_core__SimpleVector_byte64_t_O_unsigned_long_core__AbstractSimpleVector_O_ = 229,
-KIND_LISPALLOC_core__SimpleVector_byte64_t_O = 230,
-KIND_ABSTRACT_core__template_SimpleVector_core__SimpleVectorFloat_O_float_core__AbstractSimpleVector_O_ = 231,
-KIND_LISPALLOC_core__SimpleVectorFloat_O = 232,
-KIND_ABSTRACT_core__template_SimpleVector_core__SimpleVector_O_gctools__smart_ptr_core__T_O__core__AbstractSimpleVector_O_ = 233,
-KIND_LISPALLOC_core__SimpleVector_O = 234,
-KIND_ABSTRACT_core__template_SimpleVector_core__SimpleVector_size_t_O_unsigned_long_core__AbstractSimpleVector_O_ = 235,
-KIND_LISPALLOC_core__SimpleVector_size_t_O = 236,
-KIND_LISPALLOC_core__MDArray_O = 237,
-KIND_ABSTRACT_core__template_Array_core__MDArray_byte64_t_O_core__SimpleVector_byte64_t_O_core__MDArray_O_ = 238,
-KIND_LISPALLOC_core__MDArray_byte64_t_O = 239,
-KIND_ABSTRACT_core__template_Array_core__MDArray_fixnum_O_core__SimpleVector_fixnum_O_core__MDArray_O_ = 240,
-KIND_LISPALLOC_core__MDArray_fixnum_O = 241,
-KIND_ABSTRACT_core__template_Array_core__MDArrayCharacter_O_core__SimpleCharacterString_O_core__MDArray_O_ = 242,
-KIND_LISPALLOC_core__MDArrayCharacter_O = 243,
-KIND_ABSTRACT_core__template_Array_core__MDArray_int64_t_O_core__SimpleVector_int64_t_O_core__MDArray_O_ = 244,
-KIND_LISPALLOC_core__MDArray_int64_t_O = 245,
-KIND_LISPALLOC_core__SimpleMDArray_O = 246,
-KIND_ABSTRACT_core__template_SimpleArray_core__SimpleMDArray_byte32_t_O_core__SimpleVector_byte32_t_O_core__SimpleMDArray_O_ = 247,
-KIND_LISPALLOC_core__SimpleMDArray_byte32_t_O = 248,
-KIND_ABSTRACT_core__template_SimpleArray_core__SimpleMDArray_byte16_t_O_core__SimpleVector_byte16_t_O_core__SimpleMDArray_O_ = 249,
-KIND_LISPALLOC_core__SimpleMDArray_byte16_t_O = 250,
-KIND_ABSTRACT_core__template_SimpleArray_core__SimpleMDArray_int32_t_O_core__SimpleVector_int32_t_O_core__SimpleMDArray_O_ = 251,
-KIND_LISPALLOC_core__SimpleMDArray_int32_t_O = 252,
-KIND_LISPALLOC_core__SimpleMDArrayBit_O = 253,
-KIND_ABSTRACT_core__template_SimpleArray_core__SimpleMDArrayT_O_core__SimpleVector_O_core__SimpleMDArray_O_ = 254,
-KIND_LISPALLOC_core__SimpleMDArrayT_O = 255,
-KIND_ABSTRACT_core__template_SimpleArray_core__SimpleMDArray_fixnum_O_core__SimpleVector_fixnum_O_core__SimpleMDArray_O_ = 256,
-KIND_LISPALLOC_core__SimpleMDArray_fixnum_O = 257,
-KIND_ABSTRACT_core__template_SimpleArray_core__SimpleMDArray_int64_t_O_core__SimpleVector_int64_t_O_core__SimpleMDArray_O_ = 258,
-KIND_LISPALLOC_core__SimpleMDArray_int64_t_O = 259,
-KIND_ABSTRACT_core__template_SimpleArray_core__SimpleMDArray_size_t_O_core__SimpleVector_size_t_O_core__SimpleMDArray_O_ = 260,
-KIND_LISPALLOC_core__SimpleMDArray_size_t_O = 261,
-KIND_ABSTRACT_core__template_SimpleArray_core__SimpleMDArray_int8_t_O_core__SimpleVector_int8_t_O_core__SimpleMDArray_O_ = 262,
-KIND_LISPALLOC_core__SimpleMDArray_int8_t_O = 263,
-KIND_ABSTRACT_core__template_SimpleArray_core__SimpleMDArray_byte64_t_O_core__SimpleVector_byte64_t_O_core__SimpleMDArray_O_ = 264,
-KIND_LISPALLOC_core__SimpleMDArray_byte64_t_O = 265,
-KIND_ABSTRACT_core__template_SimpleArray_core__SimpleMDArray_byte8_t_O_core__SimpleVector_byte8_t_O_core__SimpleMDArray_O_ = 266,
-KIND_LISPALLOC_core__SimpleMDArray_byte8_t_O = 267,
-KIND_ABSTRACT_core__template_SimpleArray_core__SimpleMDArray_int16_t_O_core__SimpleVector_int16_t_O_core__SimpleMDArray_O_ = 268,
-KIND_LISPALLOC_core__SimpleMDArray_int16_t_O = 269,
-KIND_ABSTRACT_core__template_SimpleArray_core__SimpleMDArrayDouble_O_core__SimpleVectorDouble_O_core__SimpleMDArray_O_ = 270,
-KIND_LISPALLOC_core__SimpleMDArrayDouble_O = 271,
-KIND_ABSTRACT_core__template_SimpleArray_geom__SimpleMDArrayCoordinate_O_geom__SimpleVectorCoordinate_O_core__SimpleMDArray_O_ = 272,
-KIND_LISPALLOC_geom__SimpleMDArrayCoordinate_O = 273,
-KIND_ABSTRACT_core__template_SimpleArray_core__SimpleMDArrayCharacter_O_core__SimpleCharacterString_O_core__SimpleMDArray_O_ = 274,
-KIND_LISPALLOC_core__SimpleMDArrayCharacter_O = 275,
-KIND_ABSTRACT_core__template_SimpleArray_core__SimpleMDArrayBaseChar_O_core__SimpleBaseString_O_core__SimpleMDArray_O_ = 276,
-KIND_LISPALLOC_core__SimpleMDArrayBaseChar_O = 277,
-KIND_ABSTRACT_core__template_SimpleArray_core__SimpleMDArrayFloat_O_core__SimpleVectorFloat_O_core__SimpleMDArray_O_ = 278,
-KIND_LISPALLOC_core__SimpleMDArrayFloat_O = 279,
-KIND_LISPALLOC_core__MDArrayBit_O = 280,
-KIND_LISPALLOC_core__BitVectorNs_O = 281,
-KIND_ABSTRACT_core__template_Array_core__MDArray_byte32_t_O_core__SimpleVector_byte32_t_O_core__MDArray_O_ = 282,
-KIND_LISPALLOC_core__MDArray_byte32_t_O = 283,
-KIND_ABSTRACT_core__template_Array_core__MDArrayBaseChar_O_core__SimpleBaseString_O_core__MDArray_O_ = 284,
-KIND_LISPALLOC_core__MDArrayBaseChar_O = 285,
-KIND_ABSTRACT_core__template_Array_core__MDArray_byte8_t_O_core__SimpleVector_byte8_t_O_core__MDArray_O_ = 286,
-KIND_LISPALLOC_core__MDArray_byte8_t_O = 287,
-KIND_ABSTRACT_core__template_Array_core__MDArray_int16_t_O_core__SimpleVector_int16_t_O_core__MDArray_O_ = 288,
-KIND_LISPALLOC_core__MDArray_int16_t_O = 289,
-KIND_ABSTRACT_core__template_Array_core__MDArrayDouble_O_core__SimpleVectorDouble_O_core__MDArray_O_ = 290,
-KIND_LISPALLOC_core__MDArrayDouble_O = 291,
-KIND_ABSTRACT_core__template_Array_geom__MDArrayCoordinate_O_geom__SimpleVectorCoordinate_O_core__MDArray_O_ = 292,
-KIND_LISPALLOC_geom__MDArrayCoordinate_O = 293,
-KIND_ABSTRACT_core__template_Array_core__MDArray_int32_t_O_core__SimpleVector_int32_t_O_core__MDArray_O_ = 294,
-KIND_LISPALLOC_core__MDArray_int32_t_O = 295,
-KIND_LISPALLOC_core__StrNs_O = 296,
-KIND_ABSTRACT_core__template_Array_core__StrWNs_O_core__SimpleCharacterString_O_core__StrNs_O_ = 297,
-KIND_LISPALLOC_core__StrWNs_O = 298,
-KIND_ABSTRACT_core__template_Array_core__Str8Ns_O_core__SimpleBaseString_O_core__StrNs_O_ = 299,
-KIND_LISPALLOC_core__Str8Ns_O = 300,
-KIND_ABSTRACT_core__template_Array_core__MDArray_int8_t_O_core__SimpleVector_int8_t_O_core__MDArray_O_ = 301,
-KIND_LISPALLOC_core__MDArray_int8_t_O = 302,
-KIND_ABSTRACT_core__template_Array_core__MDArray_byte16_t_O_core__SimpleVector_byte16_t_O_core__MDArray_O_ = 303,
-KIND_LISPALLOC_core__MDArray_byte16_t_O = 304,
-KIND_ABSTRACT_core__template_Array_core__MDArrayFloat_O_core__SimpleVectorFloat_O_core__MDArray_O_ = 305,
-KIND_LISPALLOC_core__MDArrayFloat_O = 306,
-KIND_ABSTRACT_core__template_Array_core__MDArrayT_O_core__SimpleVector_O_core__MDArray_O_ = 307,
-KIND_LISPALLOC_core__MDArrayT_O = 308,
-KIND_ABSTRACT_core__template_Array_core__MDArray_size_t_O_core__SimpleVector_size_t_O_core__MDArray_O_ = 309,
-KIND_LISPALLOC_core__MDArray_size_t_O = 310,
-KIND_LISPALLOC_core__SharpEqualWrapper_O = 311,
-KIND_LISPALLOC_core__IntArray_O = 312,
-KIND_LISPALLOC_core__RandomState_O = 313,
-KIND_LISPALLOC_core__FileStatus_O = 314,
-KIND_LISPALLOC_core__MultiStringBuffer_O = 315,
-KIND_LISPALLOC_core__LightUserData_O = 316,
-KIND_LISPALLOC_core__UserData_O = 317,
-KIND_LISPALLOC_core__Character_dummy_O = 318,
-KIND_LISPALLOC_adapt__SymbolSet_O = 319,
-KIND_LISPALLOC_core__WeakKeyMapping_O = 320,
-KIND_LISPALLOC_core__Stream_O = 321,
-KIND_LISPALLOC_core__AnsiStream_O = 322,
-KIND_LISPALLOC_core__BroadcastStream_O = 323,
-KIND_LISPALLOC_core__SynonymStream_O = 324,
-KIND_LISPALLOC_core__ConcatenatedStream_O = 325,
-KIND_LISPALLOC_core__StringStream_O = 326,
-KIND_LISPALLOC_core__StringInputStream_O = 327,
-KIND_LISPALLOC_core__StringOutputStream_O = 328,
-KIND_LISPALLOC_core__EchoStream_O = 329,
-KIND_LISPALLOC_core__TwoWayStream_O = 330,
-KIND_LISPALLOC_core__FileStream_O = 331,
-KIND_LISPALLOC_core__IOStreamStream_O = 332,
-KIND_LISPALLOC_core__IOFileStream_O = 333,
-KIND_LISPALLOC_core__Record_O = 334,
-KIND_LISPALLOC_llvmo__DataLayout_O = 335,
-KIND_LISPALLOC_core__CxxObject_O = 336,
-KIND_LISPALLOC_mp__ConditionVariable_O = 337,
-KIND_LISPALLOC_chem__AtomTable_O = 338,
-KIND_LISPALLOC_chem__Plug_O = 339,
-KIND_LISPALLOC_chem__JumpPlug_O = 340,
-KIND_LISPALLOC_chem__PlugWithMates_O = 341,
-KIND_LISPALLOC_chem__OutPlug_O = 342,
-KIND_LISPALLOC_chem__RingClosingPlug_O = 343,
-KIND_LISPALLOC_chem__InPlug_O = 344,
-KIND_LISPALLOC_chem__StereoisomerAtoms_O = 345,
-KIND_LISPALLOC_chem__MonomerCoordinates_O = 346,
-KIND_LISPALLOC_chem__ConstitutionBond_O = 347,
-KIND_LISPALLOC_adapt__SymbolList_O = 348,
-KIND_LISPALLOC_units__Dimension_O = 349,
-KIND_LISPALLOC_chem__FFParameter_O = 350,
-KIND_LISPALLOC_chem__FFVdw_O = 351,
-KIND_LISPALLOC_chem__FFNonbond_O = 352,
-KIND_LISPALLOC_chem__FFAngle_O = 353,
-KIND_LISPALLOC_chem__FFStretch_O = 354,
-KIND_LISPALLOC_chem__FFItor_O = 355,
-KIND_LISPALLOC_chem__FFPtor_O = 356,
-KIND_LISPALLOC_chem__Angle_O = 357,
-KIND_LISPALLOC_adapt__QDomNode_O = 358,
-KIND_LISPALLOC_chem__Oligomer_O = 359,
-KIND_LISPALLOC_chem__StereoConfiguration_O = 360,
-KIND_LISPALLOC_chem__NVector_O = 361,
-KIND_LISPALLOC_chem__Entity_O = 362,
-KIND_LISPALLOC_chem__EntityNameSetBase_O = 363,
-KIND_LISPALLOC_chem__EntityNameSet_O = 364,
-KIND_LISPALLOC_chem__MonomerPack_O = 365,
-KIND_LISPALLOC_chem__RepresentedEntityNameSet_O = 366,
-KIND_LISPALLOC_chem__EntityNameSetWithCap_O = 367,
-KIND_LISPALLOC_chem__RingClosingMate_O = 368,
-KIND_LISPALLOC_chem__Mate_O = 369,
-KIND_LISPALLOC_chem__Monomer_O = 370,
-KIND_LISPALLOC_chem__MultiMonomer_O = 371,
-KIND_LISPALLOC_chem__MonoMonomer_O = 372,
-KIND_LISPALLOC_chem__Stereoisomer_O = 373,
-KIND_LISPALLOC_chem__Constitution_O = 374,
-KIND_LISPALLOC_chem__StereoisomerAtom_O = 375,
-KIND_LISPALLOC_chem__StereoisomerVirtualAtom_O = 376,
-KIND_LISPALLOC_chem__ForceField_O = 377,
-KIND_LISPALLOC_chem__Alias_O = 378,
-KIND_LISPALLOC_chem__MapOfMonomerNamesToAtomIndexers_O = 379,
-KIND_LISPALLOC_chem__TwisterDriver_O = 380,
-KIND_LISPALLOC_chem__ResidueList_O = 381,
-KIND_LISPALLOC_chem__MonomerContext_O = 382,
-KIND_LISPALLOC_chem__CoordinateSystem_O = 383,
-KIND_LISPALLOC_llvmo__DINodeArray_O = 384,
-KIND_LISPALLOC_chem__Command_O = 385,
-KIND_LISPALLOC_chem__BondList_O = 386,
-KIND_LISPALLOC_chem__Coupling_O = 387,
-KIND_LISPALLOC_chem__RingCoupling_O = 388,
-KIND_LISPALLOC_chem__DirectionalCoupling_O = 389,
-KIND_LISPALLOC_chem__OligomerPart_Base_O = 390,
-KIND_LISPALLOC_chem__OligomerPart_Monomer_O = 391,
-KIND_LISPALLOC_chem__OligomerPart_Link_O = 392,
-KIND_LISPALLOC_chem__ChemInfoNode_O = 393,
-KIND_LISPALLOC_chem__RootMatchNode_O = 394,
-KIND_LISPALLOC_chem__AfterMatchBondTest_O = 395,
-KIND_LISPALLOC_chem__BondListMatchNode_O = 396,
-KIND_LISPALLOC_chem__Branch_O = 397,
-KIND_LISPALLOC_chem__Chain_O = 398,
-KIND_LISPALLOC_chem__BondMatchNode_O = 399,
-KIND_LISPALLOC_chem__BondTest_O = 400,
-KIND_LISPALLOC_chem__AntechamberBondTest_O = 401,
-KIND_LISPALLOC_chem__AtomOrBondMatchNode_O = 402,
-KIND_LISPALLOC_chem__AtomTest_O = 403,
-KIND_LISPALLOC_chem__RingTest_O = 404,
-KIND_LISPALLOC_chem__TagSet_O = 405,
-KIND_LISPALLOC_chem__Root_O = 406,
-KIND_LISPALLOC_chem__AntechamberRoot_O = 407,
-KIND_LISPALLOC_chem__SmartsRoot_O = 408,
-KIND_LISPALLOC_chem__ResidueTest_O = 409,
-KIND_LISPALLOC_chem__Logical_O = 410,
-KIND_LISPALLOC_chem__AntechamberFocusAtomMatch_O = 411,
-KIND_LISPALLOC_geom__OVector2_O = 412,
-KIND_LISPALLOC_chem__TopologyAtomInfo_O = 413,
-KIND_LISPALLOC_chem__NumericalFunction_O = 414,
-KIND_LISPALLOC_chem__ZMatrix_O = 415,
-KIND_LISPALLOC_chem__CipPrioritizer_O = 416,
-KIND_LISPALLOC_chem__TrajectoryFrame_O = 417,
-KIND_LISPALLOC_chem__AtomIdToAtomMap_O = 418,
-KIND_LISPALLOC_chem__ComplexRestraint_O = 419,
-KIND_LISPALLOC_chem__RestrainedExoCyclicAtom_O = 420,
-KIND_LISPALLOC_chem__RestrainedPiBond_O = 421,
-KIND_LISPALLOC_chem__AGEdge_O = 422,
-KIND_LISPALLOC_chem__ConformationExplorerEntry_O = 423,
-KIND_LISPALLOC_chem__MinimizerLog_O = 424,
-KIND_LISPALLOC_core__NativeVector_int_O = 425,
-KIND_LISPALLOC_chem__ChemDraw_O = 426,
-KIND_LISPALLOC_chem__PdbMonomerConnectivity_O = 427,
-KIND_LISPALLOC_chem__Matter_O = 428,
-KIND_LISPALLOC_chem__Residue_O = 429,
-KIND_LISPALLOC_chem__Atom_O = 430,
-KIND_LISPALLOC_chem__VirtualAtom_O = 431,
-KIND_LISPALLOC_chem__Aggregate_O = 432,
-KIND_LISPALLOC_chem__Molecule_O = 433,
-KIND_LISPALLOC_chem__Trajectory_O = 434,
-KIND_LISPALLOC_chem__ChemInfoMatch_O = 435,
-KIND_LISPALLOC_geom__OVector3_O = 436,
-KIND_LISPALLOC_chem__ConformationCollectionEntry_O = 437,
-KIND_LISPALLOC_chem__AtomReferenceBase_O = 438,
-KIND_LISPALLOC_chem__AtomReference_O = 439,
-KIND_LISPALLOC_chem__ImproperTorsion_O = 440,
-KIND_LISPALLOC_chem__AbstractLargeSquareMatrix_O = 441,
-KIND_LISPALLOC_chem__FullLargeSquareMatrix_O = 442,
-KIND_LISPALLOC_chem__SparseLargeSquareMatrix_O = 443,
-KIND_LISPALLOC_chem__ConformationExplorerMatch_O = 444,
-KIND_LISPALLOC_chem__Rotamer_O = 445,
-KIND_LISPALLOC_chem__OneTypeRule_O = 446,
-KIND_LISPALLOC_chem__ConstitutionAtoms_O = 447,
-KIND_LISPALLOC_chem__RingFinder_O = 448,
-KIND_LISPALLOC_mp__Process_O = 449,
-KIND_LISPALLOC_chem__Topology_O = 450,
-KIND_LISPALLOC_core__NativeVector_float_O = 451,
-KIND_LISPALLOC_chem__PdbMonomerDatabase_O = 452,
-KIND_LISPALLOC_chem__FrameRecognizer_O = 453,
-KIND_LISPALLOC_core__NativeVector_double_O = 454,
-KIND_LISPALLOC_chem__CDBond_O = 455,
-KIND_LISPALLOC_chem__CandoDatabase_O = 456,
-KIND_LISPALLOC_chem__VirtualSphere_O = 457,
-KIND_LISPALLOC_chem__EnergyComponent_O = 458,
-KIND_LISPALLOC_chem__EnergyDihedral_O = 459,
-KIND_LISPALLOC_chem__EnergyChiralRestraint_O = 460,
-KIND_LISPALLOC_chem__EnergyNonbond_O = 461,
-KIND_LISPALLOC_chem__EnergyImproperRestraint_O = 462,
+KIND_LISPALLOC_mp__BlockingConcurrentQueue_O = 25,
+KIND_LISPALLOC_core__Pathname_O = 26,
+KIND_LISPALLOC_core__LogicalPathname_O = 27,
+KIND_LISPALLOC_core__HashTable_O = 28,
+KIND_LISPALLOC_core__HashTableEql_O = 29,
+KIND_LISPALLOC_core__HashTableEqual_O = 30,
+KIND_LISPALLOC_core__HashTableEq_O = 31,
+KIND_LISPALLOC_core__HashTableEqualp_O = 32,
+KIND_LISPALLOC_core__PosixTime_O = 33,
+KIND_LISPALLOC_core__SourcePosInfo_O = 34,
+KIND_LISPALLOC_core__InvocationHistoryFrameIterator_O = 35,
+KIND_LISPALLOC_adapt__IndexedObjectBag_O = 36,
+KIND_LISPALLOC_core__SequenceStepper_O = 37,
+KIND_LISPALLOC_core__VectorStepper_O = 38,
+KIND_LISPALLOC_core__ConsStepper_O = 39,
+KIND_BOOTSTRAP_core__Symbol_O = 40,
+KIND_LISPALLOC_core__Null_O = 41,
+KIND_LISPALLOC_core__ReadTable_O = 42,
+KIND_LISPALLOC_core__PosixTimeDuration_O = 43,
+KIND_LISPALLOC_core__SmallMultimap_O = 44,
+KIND_TEMPLATED_LISPALLOC_core__Creator_O = 45,
+KIND_LISPALLOC_core__ClassCreator_O = 46,
+KIND_LISPALLOC_clbind__DummyCreator_O = 47,
+KIND_LISPALLOC_core__StructureClassCreator_O = 48,
+KIND_LISPALLOC_core__InstanceCreator_O = 49,
+KIND_LISPALLOC_core__StandardClassCreator_O = 50,
+KIND_TEMPLATED_LISPALLOC_clbind__ConstructorCreator_O = 51,
+KIND_LISPALLOC_clasp_ffi__ForeignTypeSpec_O = 52,
+KIND_LISPALLOC_core__LoadTimeValues_O = 53,
+KIND_LISPALLOC_clbind__ClassRegistry_O = 54,
+KIND_BOOTSTRAP_core__StandardObject_O = 55,
+KIND_BOOTSTRAP_core__Class_O = 56,
+KIND_LISPALLOC_clbind__ClassRep_O = 57,
+KIND_LISPALLOC_llvmo__AttributeSet_O = 58,
+KIND_TEMPLATED_LISPALLOC_core__Iterator_O = 59,
+KIND_LISPALLOC_core__DirectoryIterator_O = 60,
+KIND_LISPALLOC_chem__IterateRestraints_O = 61,
+KIND_LISPALLOC_chem__IterateMatter_O = 62,
+KIND_LISPALLOC_chem__IterateResidues_O = 63,
+KIND_LISPALLOC_chem__IterateBonds_O = 64,
+KIND_LISPALLOC_chem__IterateAtoms_O = 65,
+KIND_LISPALLOC_core__RecursiveDirectoryIterator_O = 66,
+KIND_LISPALLOC_adapt__IterateCons_O = 67,
+KIND_TEMPLATED_LISPALLOC_core__WrappedPointer_O = 68,
+KIND_LISPALLOC_core__ExternalObject_O = 69,
+KIND_LISPALLOC_llvmo__NamedMDNode_O = 70,
+KIND_LISPALLOC_llvmo__TargetOptions_O = 71,
+KIND_LISPALLOC_llvmo__EngineBuilder_O = 72,
+KIND_LISPALLOC_llvmo__IRBuilderBase_O = 73,
+KIND_LISPALLOC_llvmo__IRBuilder_O = 74,
+KIND_LISPALLOC_llvmo__APInt_O = 75,
+KIND_LISPALLOC_llvmo__Metadata_O = 76,
+KIND_LISPALLOC_llvmo__MDString_O = 77,
+KIND_LISPALLOC_llvmo__ValueAsMetadata_O = 78,
+KIND_LISPALLOC_llvmo__MDNode_O = 79,
+KIND_LISPALLOC_llvmo__DINode_O = 80,
+KIND_LISPALLOC_llvmo__DIScope_O = 81,
+KIND_LISPALLOC_llvmo__DILocalScope_O = 82,
+KIND_LISPALLOC_llvmo__DILexicalBlockBase_O = 83,
+KIND_LISPALLOC_llvmo__DILexicalBlock_O = 84,
+KIND_LISPALLOC_llvmo__DISubprogram_O = 85,
+KIND_LISPALLOC_llvmo__DIFile_O = 86,
+KIND_LISPALLOC_llvmo__DIType_O = 87,
+KIND_LISPALLOC_llvmo__DICompositeType_O = 88,
+KIND_LISPALLOC_llvmo__DIBasicType_O = 89,
+KIND_LISPALLOC_llvmo__DIDerivedType_O = 90,
+KIND_LISPALLOC_llvmo__DISubroutineType_O = 91,
+KIND_LISPALLOC_llvmo__DICompileUnit_O = 92,
+KIND_LISPALLOC_llvmo__LLVMContext_O = 93,
+KIND_LISPALLOC_llvmo__TargetMachine_O = 94,
+KIND_LISPALLOC_llvmo__LLVMTargetMachine_O = 95,
+KIND_LISPALLOC_llvmo__MCSubtargetInfo_O = 96,
+KIND_LISPALLOC_llvmo__TargetSubtargetInfo_O = 97,
+KIND_LISPALLOC_llvmo__Value_O = 98,
+KIND_LISPALLOC_llvmo__User_O = 99,
+KIND_LISPALLOC_llvmo__Instruction_O = 100,
+KIND_LISPALLOC_llvmo__AtomicRMWInst_O = 101,
+KIND_LISPALLOC_llvmo__StoreInst_O = 102,
+KIND_LISPALLOC_llvmo__TerminatorInst_O = 103,
+KIND_LISPALLOC_llvmo__BranchInst_O = 104,
+KIND_LISPALLOC_llvmo__InvokeInst_O = 105,
+KIND_LISPALLOC_llvmo__IndirectBrInst_O = 106,
+KIND_LISPALLOC_llvmo__SwitchInst_O = 107,
+KIND_LISPALLOC_llvmo__ResumeInst_O = 108,
+KIND_LISPALLOC_llvmo__UnreachableInst_O = 109,
+KIND_LISPALLOC_llvmo__ReturnInst_O = 110,
+KIND_LISPALLOC_llvmo__PHINode_O = 111,
+KIND_LISPALLOC_llvmo__CallInst_O = 112,
+KIND_LISPALLOC_llvmo__UnaryInstruction_O = 113,
+KIND_LISPALLOC_llvmo__AllocaInst_O = 114,
+KIND_LISPALLOC_llvmo__LoadInst_O = 115,
+KIND_LISPALLOC_llvmo__VAArgInst_O = 116,
+KIND_LISPALLOC_llvmo__FenceInst_O = 117,
+KIND_LISPALLOC_llvmo__AtomicCmpXchgInst_O = 118,
+KIND_LISPALLOC_llvmo__LandingPadInst_O = 119,
+KIND_LISPALLOC_llvmo__Constant_O = 120,
+KIND_LISPALLOC_llvmo__GlobalValue_O = 121,
+KIND_LISPALLOC_llvmo__Function_O = 122,
+KIND_LISPALLOC_llvmo__GlobalVariable_O = 123,
+KIND_LISPALLOC_llvmo__ConstantExpr_O = 124,
+KIND_LISPALLOC_llvmo__ConstantArray_O = 125,
+KIND_LISPALLOC_llvmo__ConstantPointerNull_O = 126,
+KIND_LISPALLOC_llvmo__ConstantFP_O = 127,
+KIND_LISPALLOC_llvmo__ConstantInt_O = 128,
+KIND_LISPALLOC_llvmo__UndefValue_O = 129,
+KIND_LISPALLOC_llvmo__BlockAddress_O = 130,
+KIND_LISPALLOC_llvmo__ConstantStruct_O = 131,
+KIND_LISPALLOC_llvmo__ConstantDataSequential_O = 132,
+KIND_LISPALLOC_llvmo__ConstantDataArray_O = 133,
+KIND_LISPALLOC_llvmo__BasicBlock_O = 134,
+KIND_LISPALLOC_llvmo__Argument_O = 135,
+KIND_LISPALLOC_clasp_ffi__ForeignData_O = 136,
+KIND_LISPALLOC_llvmo__ExecutionEngine_O = 137,
+KIND_LISPALLOC_llvmo__DIBuilder_O = 138,
+KIND_LISPALLOC_llvmo__PassManagerBuilder_O = 139,
+KIND_LISPALLOC_llvmo__PassManagerBase_O = 140,
+KIND_LISPALLOC_llvmo__FunctionPassManager_O = 141,
+KIND_LISPALLOC_llvmo__PassManager_O = 142,
+KIND_LISPALLOC_llvmo__Triple_O = 143,
+KIND_LISPALLOC_llvmo__Pass_O = 144,
+KIND_LISPALLOC_llvmo__ModulePass_O = 145,
+KIND_LISPALLOC_llvmo__ImmutablePass_O = 146,
+KIND_LISPALLOC_llvmo__TargetLibraryInfoWrapperPass_O = 147,
+KIND_LISPALLOC_llvmo__FunctionPass_O = 148,
+KIND_LISPALLOC_llvmo__Module_O = 149,
+KIND_LISPALLOC_llvmo__Target_O = 150,
+KIND_LISPALLOC_llvmo__APFloat_O = 151,
+KIND_LISPALLOC_llvmo__Linker_O = 152,
+KIND_LISPALLOC_llvmo__Type_O = 153,
+KIND_LISPALLOC_llvmo__IntegerType_O = 154,
+KIND_LISPALLOC_llvmo__CompositeType_O = 155,
+KIND_LISPALLOC_llvmo__SequentialType_O = 156,
+KIND_LISPALLOC_llvmo__VectorType_O = 157,
+KIND_LISPALLOC_llvmo__ArrayType_O = 158,
+KIND_LISPALLOC_llvmo__PointerType_O = 159,
+KIND_LISPALLOC_llvmo__StructType_O = 160,
+KIND_LISPALLOC_llvmo__FunctionType_O = 161,
+KIND_LISPALLOC_llvmo__Attribute_O = 162,
+KIND_LISPALLOC_core__Package_O = 163,
+KIND_LISPALLOC_core__SmallMap_O = 164,
+KIND_LISPALLOC_core__Function_O = 165,
+KIND_LISPALLOC_core__NamedFunction_O = 166,
+KIND_LISPALLOC_core__SpecialForm_O = 167,
+KIND_LISPALLOC_core__Closure_O = 168,
+KIND_LISPALLOC_core__CompiledFunction_O = 169,
+KIND_LISPALLOC_core__FunctionClosure_O = 170,
+KIND_LISPALLOC_core__ClosureWithSlots_O = 171,
+KIND_LISPALLOC_core__SingleDispatchCxxEffectiveMethodFunction_O = 172,
+KIND_TEMPLATED_LISPALLOC_core__BuiltinClosure_O = 173,
+KIND_LISPALLOC_core__TranslationFunctor = 174,
+KIND_LISPALLOC_core__MacroClosure_O = 175,
+KIND_LISPALLOC_core__SingleDispatchEffectiveMethodFunction_O = 176,
+KIND_LISPALLOC_core__ClosureWithFrame_O = 177,
+KIND_LISPALLOC_core__CompiledClosure_O = 178,
+KIND_LISPALLOC_core__InterpretedClosure_O = 179,
+KIND_LISPALLOC_core__SingleDispatchGenericFunctionClosure_O = 180,
+KIND_LISPALLOC_core__SingleDispatchMethodFunction_O = 181,
+KIND_LISPALLOC_core__CxxMethodFunction_O = 182,
+KIND_LISPALLOC_core__CompiledDispatchFunction_O = 183,
+KIND_LISPALLOC_core__Instance_O = 184,
+KIND_LISPALLOC_core__SNode_O = 185,
+KIND_LISPALLOC_core__LeafSNode_O = 186,
+KIND_LISPALLOC_core__BranchSNode_O = 187,
+KIND_LISPALLOC_core__SourceFileInfo_O = 188,
+KIND_LISPALLOC_core__Path_O = 189,
+KIND_LISPALLOC_core__WeakHashTable_O = 190,
+KIND_LISPALLOC_core__WeakKeyHashTable_O = 191,
+KIND_LISPALLOC_core__SingleDispatchMethod_O = 192,
+KIND_LISPALLOC_core__LambdaListHandler_O = 193,
+KIND_LISPALLOC_core__Array_O = 194,
+KIND_LISPALLOC_core__AbstractSimpleVector_O = 195,
+KIND_ABSTRACT_core__template_SimpleVector_core__SimpleVector_byte16_t_O_unsigned_short_core__AbstractSimpleVector_O_ = 196,
+KIND_LISPALLOC_core__SimpleVector_byte16_t_O = 197,
+KIND_ABSTRACT_core__template_SimpleVector_core__SimpleVector_fixnum_O_long_core__AbstractSimpleVector_O_ = 198,
+KIND_LISPALLOC_core__SimpleVector_fixnum_O = 199,
+KIND_ABSTRACT_core__template_SimpleVector_core__SimpleVector_int64_t_O_long_core__AbstractSimpleVector_O_ = 200,
+KIND_LISPALLOC_core__SimpleVector_int64_t_O = 201,
+KIND_LISPALLOC_core__SimpleBitVector_O = 202,
+KIND_ABSTRACT_core__template_SimpleVector_core__SimpleVector_byte32_t_O_unsigned_int_core__AbstractSimpleVector_O_ = 203,
+KIND_LISPALLOC_core__SimpleVector_byte32_t_O = 204,
+KIND_ABSTRACT_core__template_SimpleVector_core__SimpleVector_byte8_t_O_unsigned_char_core__AbstractSimpleVector_O_ = 205,
+KIND_LISPALLOC_core__SimpleVector_byte8_t_O = 206,
+KIND_ABSTRACT_core__template_SimpleVector_core__SimpleVector_int32_t_O_int_core__AbstractSimpleVector_O_ = 207,
+KIND_LISPALLOC_core__SimpleVector_int32_t_O = 208,
+KIND_ABSTRACT_core__template_SimpleVector_geom__SimpleVectorCoordinate_O_Vector3_core__AbstractSimpleVector_O_ = 209,
+KIND_LISPALLOC_geom__SimpleVectorCoordinate_O = 210,
+KIND_LISPALLOC_core__SimpleString_O = 211,
+KIND_ABSTRACT_core__template_SimpleVector_core__SimpleCharacterString_O_int_core__SimpleString_O_ = 212,
+KIND_LISPALLOC_core__SimpleCharacterString_O = 213,
+KIND_ABSTRACT_core__template_SimpleVector_core__SimpleBaseString_O_unsigned_char_core__SimpleString_O_ = 214,
+KIND_LISPALLOC_core__SimpleBaseString_O = 215,
+KIND_ABSTRACT_core__template_SimpleVector_core__SimpleVector_int8_t_O_signed_char_core__AbstractSimpleVector_O_ = 216,
+KIND_LISPALLOC_core__SimpleVector_int8_t_O = 217,
+KIND_ABSTRACT_core__template_SimpleVector_core__SimpleVector_int16_t_O_short_core__AbstractSimpleVector_O_ = 218,
+KIND_LISPALLOC_core__SimpleVector_int16_t_O = 219,
+KIND_ABSTRACT_core__template_SimpleVector_core__SimpleVectorDouble_O_double_core__AbstractSimpleVector_O_ = 220,
+KIND_LISPALLOC_core__SimpleVectorDouble_O = 221,
+KIND_ABSTRACT_core__template_SimpleVector_core__SimpleVector_byte64_t_O_unsigned_long_core__AbstractSimpleVector_O_ = 222,
+KIND_LISPALLOC_core__SimpleVector_byte64_t_O = 223,
+KIND_ABSTRACT_core__template_SimpleVector_core__SimpleVectorFloat_O_float_core__AbstractSimpleVector_O_ = 224,
+KIND_LISPALLOC_core__SimpleVectorFloat_O = 225,
+KIND_ABSTRACT_core__template_SimpleVector_core__SimpleVector_O_gctools__smart_ptr_core__T_O__core__AbstractSimpleVector_O_ = 226,
+KIND_LISPALLOC_core__SimpleVector_O = 227,
+KIND_ABSTRACT_core__template_SimpleVector_core__SimpleVector_size_t_O_unsigned_long_core__AbstractSimpleVector_O_ = 228,
+KIND_LISPALLOC_core__SimpleVector_size_t_O = 229,
+KIND_LISPALLOC_core__MDArray_O = 230,
+KIND_ABSTRACT_core__template_Array_core__MDArray_byte64_t_O_core__SimpleVector_byte64_t_O_core__MDArray_O_ = 231,
+KIND_LISPALLOC_core__MDArray_byte64_t_O = 232,
+KIND_ABSTRACT_core__template_Array_core__MDArray_fixnum_O_core__SimpleVector_fixnum_O_core__MDArray_O_ = 233,
+KIND_LISPALLOC_core__MDArray_fixnum_O = 234,
+KIND_ABSTRACT_core__template_Array_core__MDArrayCharacter_O_core__SimpleCharacterString_O_core__MDArray_O_ = 235,
+KIND_LISPALLOC_core__MDArrayCharacter_O = 236,
+KIND_ABSTRACT_core__template_Array_core__MDArray_int64_t_O_core__SimpleVector_int64_t_O_core__MDArray_O_ = 237,
+KIND_LISPALLOC_core__MDArray_int64_t_O = 238,
+KIND_LISPALLOC_core__SimpleMDArray_O = 239,
+KIND_ABSTRACT_core__template_SimpleArray_core__SimpleMDArray_byte32_t_O_core__SimpleVector_byte32_t_O_core__SimpleMDArray_O_ = 240,
+KIND_LISPALLOC_core__SimpleMDArray_byte32_t_O = 241,
+KIND_ABSTRACT_core__template_SimpleArray_core__SimpleMDArray_byte16_t_O_core__SimpleVector_byte16_t_O_core__SimpleMDArray_O_ = 242,
+KIND_LISPALLOC_core__SimpleMDArray_byte16_t_O = 243,
+KIND_ABSTRACT_core__template_SimpleArray_core__SimpleMDArray_int32_t_O_core__SimpleVector_int32_t_O_core__SimpleMDArray_O_ = 244,
+KIND_LISPALLOC_core__SimpleMDArray_int32_t_O = 245,
+KIND_LISPALLOC_core__SimpleMDArrayBit_O = 246,
+KIND_ABSTRACT_core__template_SimpleArray_core__SimpleMDArrayT_O_core__SimpleVector_O_core__SimpleMDArray_O_ = 247,
+KIND_LISPALLOC_core__SimpleMDArrayT_O = 248,
+KIND_ABSTRACT_core__template_SimpleArray_core__SimpleMDArray_fixnum_O_core__SimpleVector_fixnum_O_core__SimpleMDArray_O_ = 249,
+KIND_LISPALLOC_core__SimpleMDArray_fixnum_O = 250,
+KIND_ABSTRACT_core__template_SimpleArray_core__SimpleMDArray_int64_t_O_core__SimpleVector_int64_t_O_core__SimpleMDArray_O_ = 251,
+KIND_LISPALLOC_core__SimpleMDArray_int64_t_O = 252,
+KIND_ABSTRACT_core__template_SimpleArray_core__SimpleMDArray_size_t_O_core__SimpleVector_size_t_O_core__SimpleMDArray_O_ = 253,
+KIND_LISPALLOC_core__SimpleMDArray_size_t_O = 254,
+KIND_ABSTRACT_core__template_SimpleArray_core__SimpleMDArray_int8_t_O_core__SimpleVector_int8_t_O_core__SimpleMDArray_O_ = 255,
+KIND_LISPALLOC_core__SimpleMDArray_int8_t_O = 256,
+KIND_ABSTRACT_core__template_SimpleArray_core__SimpleMDArray_byte64_t_O_core__SimpleVector_byte64_t_O_core__SimpleMDArray_O_ = 257,
+KIND_LISPALLOC_core__SimpleMDArray_byte64_t_O = 258,
+KIND_ABSTRACT_core__template_SimpleArray_core__SimpleMDArray_byte8_t_O_core__SimpleVector_byte8_t_O_core__SimpleMDArray_O_ = 259,
+KIND_LISPALLOC_core__SimpleMDArray_byte8_t_O = 260,
+KIND_ABSTRACT_core__template_SimpleArray_core__SimpleMDArray_int16_t_O_core__SimpleVector_int16_t_O_core__SimpleMDArray_O_ = 261,
+KIND_LISPALLOC_core__SimpleMDArray_int16_t_O = 262,
+KIND_ABSTRACT_core__template_SimpleArray_core__SimpleMDArrayDouble_O_core__SimpleVectorDouble_O_core__SimpleMDArray_O_ = 263,
+KIND_LISPALLOC_core__SimpleMDArrayDouble_O = 264,
+KIND_ABSTRACT_core__template_SimpleArray_geom__SimpleMDArrayCoordinate_O_geom__SimpleVectorCoordinate_O_core__SimpleMDArray_O_ = 265,
+KIND_LISPALLOC_geom__SimpleMDArrayCoordinate_O = 266,
+KIND_ABSTRACT_core__template_SimpleArray_core__SimpleMDArrayCharacter_O_core__SimpleCharacterString_O_core__SimpleMDArray_O_ = 267,
+KIND_LISPALLOC_core__SimpleMDArrayCharacter_O = 268,
+KIND_ABSTRACT_core__template_SimpleArray_core__SimpleMDArrayBaseChar_O_core__SimpleBaseString_O_core__SimpleMDArray_O_ = 269,
+KIND_LISPALLOC_core__SimpleMDArrayBaseChar_O = 270,
+KIND_ABSTRACT_core__template_SimpleArray_core__SimpleMDArrayFloat_O_core__SimpleVectorFloat_O_core__SimpleMDArray_O_ = 271,
+KIND_LISPALLOC_core__SimpleMDArrayFloat_O = 272,
+KIND_LISPALLOC_core__MDArrayBit_O = 273,
+KIND_LISPALLOC_core__BitVectorNs_O = 274,
+KIND_ABSTRACT_core__template_Array_core__MDArray_byte32_t_O_core__SimpleVector_byte32_t_O_core__MDArray_O_ = 275,
+KIND_LISPALLOC_core__MDArray_byte32_t_O = 276,
+KIND_ABSTRACT_core__template_Array_core__MDArrayBaseChar_O_core__SimpleBaseString_O_core__MDArray_O_ = 277,
+KIND_LISPALLOC_core__MDArrayBaseChar_O = 278,
+KIND_ABSTRACT_core__template_Array_core__MDArray_byte8_t_O_core__SimpleVector_byte8_t_O_core__MDArray_O_ = 279,
+KIND_LISPALLOC_core__MDArray_byte8_t_O = 280,
+KIND_ABSTRACT_core__template_Array_core__MDArray_int16_t_O_core__SimpleVector_int16_t_O_core__MDArray_O_ = 281,
+KIND_LISPALLOC_core__MDArray_int16_t_O = 282,
+KIND_ABSTRACT_core__template_Array_core__MDArrayDouble_O_core__SimpleVectorDouble_O_core__MDArray_O_ = 283,
+KIND_LISPALLOC_core__MDArrayDouble_O = 284,
+KIND_ABSTRACT_core__template_Array_geom__MDArrayCoordinate_O_geom__SimpleVectorCoordinate_O_core__MDArray_O_ = 285,
+KIND_LISPALLOC_geom__MDArrayCoordinate_O = 286,
+KIND_ABSTRACT_core__template_Array_core__MDArray_int32_t_O_core__SimpleVector_int32_t_O_core__MDArray_O_ = 287,
+KIND_LISPALLOC_core__MDArray_int32_t_O = 288,
+KIND_LISPALLOC_core__StrNs_O = 289,
+KIND_ABSTRACT_core__template_Array_core__StrWNs_O_core__SimpleCharacterString_O_core__StrNs_O_ = 290,
+KIND_LISPALLOC_core__StrWNs_O = 291,
+KIND_ABSTRACT_core__template_Array_core__Str8Ns_O_core__SimpleBaseString_O_core__StrNs_O_ = 292,
+KIND_LISPALLOC_core__Str8Ns_O = 293,
+KIND_ABSTRACT_core__template_Array_core__MDArray_int8_t_O_core__SimpleVector_int8_t_O_core__MDArray_O_ = 294,
+KIND_LISPALLOC_core__MDArray_int8_t_O = 295,
+KIND_ABSTRACT_core__template_Array_core__MDArray_byte16_t_O_core__SimpleVector_byte16_t_O_core__MDArray_O_ = 296,
+KIND_LISPALLOC_core__MDArray_byte16_t_O = 297,
+KIND_ABSTRACT_core__template_Array_core__MDArrayFloat_O_core__SimpleVectorFloat_O_core__MDArray_O_ = 298,
+KIND_LISPALLOC_core__MDArrayFloat_O = 299,
+KIND_ABSTRACT_core__template_Array_core__MDArrayT_O_core__SimpleVector_O_core__MDArray_O_ = 300,
+KIND_LISPALLOC_core__MDArrayT_O = 301,
+KIND_ABSTRACT_core__template_Array_core__MDArray_size_t_O_core__SimpleVector_size_t_O_core__MDArray_O_ = 302,
+KIND_LISPALLOC_core__MDArray_size_t_O = 303,
+KIND_LISPALLOC_core__SharpEqualWrapper_O = 304,
+KIND_LISPALLOC_core__IntArray_O = 305,
+KIND_LISPALLOC_core__RandomState_O = 306,
+KIND_LISPALLOC_core__FileStatus_O = 307,
+KIND_LISPALLOC_core__MultiStringBuffer_O = 308,
+KIND_LISPALLOC_core__LightUserData_O = 309,
+KIND_LISPALLOC_core__UserData_O = 310,
+KIND_LISPALLOC_core__Character_dummy_O = 311,
+KIND_LISPALLOC_adapt__SymbolSet_O = 312,
+KIND_LISPALLOC_core__WeakKeyMapping_O = 313,
+KIND_LISPALLOC_core__Stream_O = 314,
+KIND_LISPALLOC_core__AnsiStream_O = 315,
+KIND_LISPALLOC_core__BroadcastStream_O = 316,
+KIND_LISPALLOC_core__SynonymStream_O = 317,
+KIND_LISPALLOC_core__ConcatenatedStream_O = 318,
+KIND_LISPALLOC_core__StringStream_O = 319,
+KIND_LISPALLOC_core__StringInputStream_O = 320,
+KIND_LISPALLOC_core__StringOutputStream_O = 321,
+KIND_LISPALLOC_core__EchoStream_O = 322,
+KIND_LISPALLOC_core__TwoWayStream_O = 323,
+KIND_LISPALLOC_core__FileStream_O = 324,
+KIND_LISPALLOC_core__IOStreamStream_O = 325,
+KIND_LISPALLOC_core__IOFileStream_O = 326,
+KIND_LISPALLOC_core__Record_O = 327,
+KIND_LISPALLOC_llvmo__DataLayout_O = 328,
+KIND_LISPALLOC_mp__ConcurrentQueue_O = 329,
+KIND_LISPALLOC_core__CxxObject_O = 330,
+KIND_LISPALLOC_mp__ConditionVariable_O = 331,
+KIND_LISPALLOC_chem__AtomTable_O = 332,
+KIND_LISPALLOC_chem__Plug_O = 333,
+KIND_LISPALLOC_chem__JumpPlug_O = 334,
+KIND_LISPALLOC_chem__PlugWithMates_O = 335,
+KIND_LISPALLOC_chem__OutPlug_O = 336,
+KIND_LISPALLOC_chem__RingClosingPlug_O = 337,
+KIND_LISPALLOC_chem__InPlug_O = 338,
+KIND_LISPALLOC_chem__StereoisomerAtoms_O = 339,
+KIND_LISPALLOC_mp__SharedMutex_O = 340,
+KIND_LISPALLOC_chem__MonomerCoordinates_O = 341,
+KIND_LISPALLOC_chem__ConstitutionBond_O = 342,
+KIND_LISPALLOC_adapt__SymbolList_O = 343,
+KIND_LISPALLOC_units__Dimension_O = 344,
+KIND_LISPALLOC_chem__FFParameter_O = 345,
+KIND_LISPALLOC_chem__FFVdw_O = 346,
+KIND_LISPALLOC_chem__FFNonbond_O = 347,
+KIND_LISPALLOC_chem__FFAngle_O = 348,
+KIND_LISPALLOC_chem__FFStretch_O = 349,
+KIND_LISPALLOC_chem__FFItor_O = 350,
+KIND_LISPALLOC_chem__FFPtor_O = 351,
+KIND_LISPALLOC_chem__Angle_O = 352,
+KIND_LISPALLOC_adapt__QDomNode_O = 353,
+KIND_LISPALLOC_chem__Oligomer_O = 354,
+KIND_LISPALLOC_chem__StereoConfiguration_O = 355,
+KIND_LISPALLOC_chem__ScoringFunction_O = 356,
+KIND_LISPALLOC_chem__RigidBodyEnergyFunction_O = 357,
+KIND_LISPALLOC_chem__EnergyFunction_O = 358,
+KIND_LISPALLOC_chem__Entity_O = 359,
+KIND_LISPALLOC_chem__EntityNameSetBase_O = 360,
+KIND_LISPALLOC_chem__EntityNameSet_O = 361,
+KIND_LISPALLOC_chem__MonomerPack_O = 362,
+KIND_LISPALLOC_chem__RepresentedEntityNameSet_O = 363,
+KIND_LISPALLOC_chem__EntityNameSetWithCap_O = 364,
+KIND_LISPALLOC_chem__RingClosingMate_O = 365,
+KIND_LISPALLOC_chem__Mate_O = 366,
+KIND_LISPALLOC_chem__Monomer_O = 367,
+KIND_LISPALLOC_chem__MultiMonomer_O = 368,
+KIND_LISPALLOC_chem__MonoMonomer_O = 369,
+KIND_LISPALLOC_chem__Stereoisomer_O = 370,
+KIND_LISPALLOC_chem__Constitution_O = 371,
+KIND_LISPALLOC_chem__StereoisomerAtom_O = 372,
+KIND_LISPALLOC_chem__StereoisomerVirtualAtom_O = 373,
+KIND_LISPALLOC_chem__ForceField_O = 374,
+KIND_LISPALLOC_chem__Alias_O = 375,
+KIND_LISPALLOC_chem__MapOfMonomerNamesToAtomIndexers_O = 376,
+KIND_LISPALLOC_chem__TwisterDriver_O = 377,
+KIND_LISPALLOC_chem__ResidueList_O = 378,
+KIND_LISPALLOC_chem__MonomerContext_O = 379,
+KIND_LISPALLOC_chem__CoordinateSystem_O = 380,
+KIND_LISPALLOC_llvmo__DINodeArray_O = 381,
+KIND_LISPALLOC_chem__Command_O = 382,
+KIND_LISPALLOC_chem__BondList_O = 383,
+KIND_LISPALLOC_chem__Coupling_O = 384,
+KIND_LISPALLOC_chem__RingCoupling_O = 385,
+KIND_LISPALLOC_chem__DirectionalCoupling_O = 386,
+KIND_LISPALLOC_chem__OligomerPart_Base_O = 387,
+KIND_LISPALLOC_chem__OligomerPart_Monomer_O = 388,
+KIND_LISPALLOC_chem__OligomerPart_Link_O = 389,
+KIND_LISPALLOC_chem__ChemInfoNode_O = 390,
+KIND_LISPALLOC_chem__RootMatchNode_O = 391,
+KIND_LISPALLOC_chem__AfterMatchBondTest_O = 392,
+KIND_LISPALLOC_chem__BondListMatchNode_O = 393,
+KIND_LISPALLOC_chem__Branch_O = 394,
+KIND_LISPALLOC_chem__Chain_O = 395,
+KIND_LISPALLOC_chem__BondMatchNode_O = 396,
+KIND_LISPALLOC_chem__BondTest_O = 397,
+KIND_LISPALLOC_chem__AntechamberBondTest_O = 398,
+KIND_LISPALLOC_chem__AtomOrBondMatchNode_O = 399,
+KIND_LISPALLOC_chem__AtomTest_O = 400,
+KIND_LISPALLOC_chem__RingTest_O = 401,
+KIND_LISPALLOC_chem__TagSet_O = 402,
+KIND_LISPALLOC_chem__Root_O = 403,
+KIND_LISPALLOC_chem__AntechamberRoot_O = 404,
+KIND_LISPALLOC_chem__SmartsRoot_O = 405,
+KIND_LISPALLOC_chem__ResidueTest_O = 406,
+KIND_LISPALLOC_chem__Logical_O = 407,
+KIND_LISPALLOC_chem__AntechamberFocusAtomMatch_O = 408,
+KIND_LISPALLOC_geom__OVector2_O = 409,
+KIND_LISPALLOC_chem__TopologyAtomInfo_O = 410,
+KIND_LISPALLOC_chem__NumericalFunction_O = 411,
+KIND_LISPALLOC_chem__ZMatrix_O = 412,
+KIND_LISPALLOC_chem__CipPrioritizer_O = 413,
+KIND_LISPALLOC_chem__TrajectoryFrame_O = 414,
+KIND_LISPALLOC_chem__AtomIdToAtomMap_O = 415,
+KIND_LISPALLOC_chem__ComplexRestraint_O = 416,
+KIND_LISPALLOC_chem__RestrainedExoCyclicAtom_O = 417,
+KIND_LISPALLOC_chem__RestrainedPiBond_O = 418,
+KIND_LISPALLOC_chem__AGEdge_O = 419,
+KIND_LISPALLOC_chem__ConformationExplorerEntry_O = 420,
+KIND_LISPALLOC_chem__MinimizerLog_O = 421,
+KIND_LISPALLOC_core__NativeVector_int_O = 422,
+KIND_LISPALLOC_chem__ChemDraw_O = 423,
+KIND_LISPALLOC_chem__PdbMonomerConnectivity_O = 424,
+KIND_LISPALLOC_chem__Matter_O = 425,
+KIND_LISPALLOC_chem__Residue_O = 426,
+KIND_LISPALLOC_chem__Atom_O = 427,
+KIND_LISPALLOC_chem__VirtualAtom_O = 428,
+KIND_LISPALLOC_chem__Aggregate_O = 429,
+KIND_LISPALLOC_chem__Molecule_O = 430,
+KIND_LISPALLOC_chem__Trajectory_O = 431,
+KIND_LISPALLOC_chem__ChemInfoMatch_O = 432,
+KIND_LISPALLOC_geom__OVector3_O = 433,
+KIND_LISPALLOC_chem__ConformationCollectionEntry_O = 434,
+KIND_LISPALLOC_chem__AtomReferenceBase_O = 435,
+KIND_LISPALLOC_chem__AtomReference_O = 436,
+KIND_LISPALLOC_chem__ImproperTorsion_O = 437,
+KIND_LISPALLOC_chem__AbstractLargeSquareMatrix_O = 438,
+KIND_LISPALLOC_chem__FullLargeSquareMatrix_O = 439,
+KIND_LISPALLOC_chem__SparseLargeSquareMatrix_O = 440,
+KIND_LISPALLOC_chem__ConformationExplorerMatch_O = 441,
+KIND_LISPALLOC_chem__Rotamer_O = 442,
+KIND_LISPALLOC_chem__OneTypeRule_O = 443,
+KIND_LISPALLOC_chem__ConstitutionAtoms_O = 444,
+KIND_LISPALLOC_chem__RingFinder_O = 445,
+KIND_LISPALLOC_mp__Process_O = 446,
+KIND_LISPALLOC_chem__Topology_O = 447,
+KIND_LISPALLOC_core__NativeVector_float_O = 448,
+KIND_LISPALLOC_chem__PdbMonomerDatabase_O = 449,
+KIND_LISPALLOC_chem__FrameRecognizer_O = 450,
+KIND_LISPALLOC_core__NativeVector_double_O = 451,
+KIND_LISPALLOC_chem__CDBond_O = 452,
+KIND_LISPALLOC_chem__CandoDatabase_O = 453,
+KIND_LISPALLOC_chem__VirtualSphere_O = 454,
+KIND_LISPALLOC_chem__EnergyComponent_O = 455,
+KIND_LISPALLOC_chem__EnergyDihedral_O = 456,
+KIND_LISPALLOC_chem__EnergyChiralRestraint_O = 457,
+KIND_LISPALLOC_chem__EnergyNonbond_O = 458,
+KIND_LISPALLOC_chem__EnergyImproperRestraint_O = 459,
+KIND_LISPALLOC_chem__EnergyRigidBodyComponent_O = 460,
+KIND_LISPALLOC_chem__EnergyRigidBodyNonbond_O = 461,
+KIND_LISPALLOC_chem__EnergyRigidBodyStaple_O = 462,
 KIND_LISPALLOC_chem__EnergyAnchorRestraint_O = 463,
 KIND_LISPALLOC_chem__EnergyFixedNonbondRestraint_O = 464,
 KIND_LISPALLOC_chem__EnergyAngle_O = 465,
@@ -1071,207 +1088,208 @@ KIND_LISPALLOC_mp__RecursiveMutex_O = 470,
 KIND_LISPALLOC_chem__SpanningLoop_O = 471,
 KIND_LISPALLOC_chem__AtomId_O = 472,
 KIND_LISPALLOC_chem__Bond_O = 473,
-KIND_LISPALLOC_chem__EnergyFunction_O = 474,
-KIND_LISPALLOC_chem__ConformationExplorerEntryStage_O = 475,
-KIND_LISPALLOC_chem__FFNonbondCrossTermTable_O = 476,
-KIND_LISPALLOC_chem__PdbWriter_O = 477,
-KIND_LISPALLOC_chem__StereoInformation_O = 478,
-KIND_LISPALLOC_chem__StructureComparer_O = 479,
-KIND_LISPALLOC_chem__TypeAssignmentRules_O = 480,
-KIND_LISPALLOC_chem__ConstitutionAtom_O = 481,
-KIND_LISPALLOC_chem__ConstitutionVirtualAtom_O = 482,
-KIND_LISPALLOC_chem__ZMatrixEntry_O = 483,
-KIND_LISPALLOC_chem__CDNode_O = 484,
-KIND_LISPALLOC_units__Quantity_O = 485,
-KIND_LISPALLOC_chem__Twister_O = 486,
-KIND_LISPALLOC_chem__MacroModelFile_O = 487,
-KIND_LISPALLOC_chem__SearchStatistics_O = 488,
-KIND_LISPALLOC_chem__ChemInfo_O = 489,
-KIND_LISPALLOC_chem__WildElementDict_O = 490,
-KIND_LISPALLOC_chem__Structure_Old_List_O = 491,
-KIND_LISPALLOC_adapt__StringSet_O = 492,
-KIND_LISPALLOC_chem__CDFragment_O = 493,
-KIND_LISPALLOC_chem__PdbReader_O = 494,
-KIND_LISPALLOC_geom__OMatrix_O = 495,
-KIND_LISPALLOC_chem__FFBaseDb_O = 496,
-KIND_LISPALLOC_chem__FFVdwDb_O = 497,
-KIND_LISPALLOC_chem__FFTypesDb_O = 498,
-KIND_LISPALLOC_chem__FFParameterBaseDb_O = 499,
-KIND_LISPALLOC_chem__FFPtorDb_O = 500,
-KIND_LISPALLOC_chem__FFAngleDb_O = 501,
-KIND_LISPALLOC_chem__FFStretchDb_O = 502,
-KIND_LISPALLOC_chem__FFNonbondDb_O = 503,
-KIND_LISPALLOC_chem__FFItorDb_O = 504,
-KIND_LISPALLOC_chem__AGVertex_O = 505,
-KIND_LISPALLOC_chem__ReadAmberParameters_O = 506,
-KIND_LISPALLOC_geom__BoundingBox_O = 507,
-KIND_LISPALLOC_chem__SpecificContextSet_O = 508,
-KIND_LISPALLOC_chem__ZMatrixInternal_O = 509,
-KIND_LISPALLOC_chem__ZMatrixAngleInternal_O = 510,
-KIND_LISPALLOC_chem__ZMatrixDihedralInternal_O = 511,
-KIND_LISPALLOC_chem__ZMatrixBondInternal_O = 512,
-KIND_LISPALLOC_chem__ConformationCollection_O = 513,
-KIND_LISPALLOC_chem__SuperposableConformationCollection_O = 514,
-KIND_LISPALLOC_clcenv__Info_O = 515,
-KIND_LISPALLOC_clcenv__VariableInfo_O = 516,
-KIND_LISPALLOC_clcenv__SpecialVariableInfo_O = 517,
-KIND_LISPALLOC_clcenv__ConstantVariableInfo_O = 518,
-KIND_LISPALLOC_clcenv__SymbolMacroInfo_O = 519,
-KIND_LISPALLOC_clcenv__LexicalVariableInfo_O = 520,
-KIND_LISPALLOC_clcenv__BlockInfo_O = 521,
-KIND_LISPALLOC_clcenv__FunctionInfo_O = 522,
-KIND_LISPALLOC_clcenv__LocalFunctionInfo_O = 523,
-KIND_LISPALLOC_clcenv__LocalMacroInfo_O = 524,
-KIND_LISPALLOC_clcenv__GlobalFunctionInfo_O = 525,
-KIND_LISPALLOC_clcenv__SpecialOperatorInfo_O = 526,
-KIND_LISPALLOC_clcenv__LambdaNameInfo_O = 527,
-KIND_LISPALLOC_clcenv__GlobalMacroInfo_O = 528,
-KIND_LISPALLOC_clcenv__OptimizeInfo_O = 529,
-KIND_LISPALLOC_chem__ConformationExplorer_O = 530,
-KIND_LISPALLOC_units__Unit_O = 531,
-KIND_LISPALLOC_units__NamedUnit_O = 532,
-KIND_LISPALLOC_clcenv__Entry_O = 533,
-KIND_LISPALLOC_clcenv__Optimize_O = 534,
-KIND_LISPALLOC_clcenv__Closure_O = 535,
-KIND_LISPALLOC_clcenv__Block_O = 536,
-KIND_LISPALLOC_clcenv__GlobalEnvironment_O = 537,
-KIND_LISPALLOC_clcenv__VariableIgnore_O = 538,
-KIND_LISPALLOC_clcenv__Macro_O = 539,
-KIND_LISPALLOC_clcenv__VariableType_O = 540,
-KIND_LISPALLOC_clcenv__Tag_O = 541,
-KIND_LISPALLOC_clcenv__Function_O = 542,
-KIND_LISPALLOC_clcenv__VariableDynamicExtent_O = 543,
-KIND_LISPALLOC_clcenv__LexicalVariable_O = 544,
-KIND_LISPALLOC_clcenv__FunctionDynamicExtent_O = 545,
-KIND_LISPALLOC_clcenv__SpecialVariable_O = 546,
-KIND_LISPALLOC_clcenv__LambdaName_O = 547,
-KIND_LISPALLOC_clcenv__FunctionIgnore_O = 548,
-KIND_LISPALLOC_clcenv__SymbolMacro_O = 549,
-KIND_LISPALLOC_clcenv__Inline_O = 550,
-KIND_LISPALLOC_clcenv__FunctionType_O = 551,
-KIND_LISPALLOC_llvmo__DITypeRefArray_O = 552,
-KIND_LISPALLOC_chem__CalculatePosition_O = 553,
-KIND_LISPALLOC_chem__CalculatePositionAlongBond_O = 554,
-KIND_LISPALLOC_chem__CalculatePositionRelativeToOrigin_O = 555,
-KIND_LISPALLOC_chem__CalculatePositionUsingInternals_O = 556,
-KIND_LISPALLOC_chem__InfoDb_O = 557,
-KIND_LISPALLOC_chem__ReportBase_O = 558,
-KIND_LISPALLOC_chem__MessageReport_O = 559,
-KIND_LISPALLOC_chem__StepReport_O = 560,
-KIND_LISPALLOC_chem__ForceMatchReport_O = 561,
-KIND_LISPALLOC_chem__Restraint_O = 562,
-KIND_LISPALLOC_chem__RestraintFixedNonbond_O = 563,
-KIND_LISPALLOC_chem__RestraintDihedral_O = 564,
-KIND_LISPALLOC_chem__RestraintChiral_O = 565,
-KIND_LISPALLOC_chem__RestraintAngle_O = 566,
-KIND_LISPALLOC_chem__RestraintDistance_O = 567,
-KIND_LISPALLOC_chem__RestraintAnchor_O = 568,
-KIND_LISPALLOC_chem__Structure_Old_ListEntry_O = 569,
-KIND_LISPALLOC_chem__Minimizer_O = 570,
-KIND_LISPALLOC_chem__PathMessage_O = 571,
-KIND_LISPALLOC_chem__SpecificContext_O = 572,
-KIND_LISPALLOC_chem__StatusTracker_O = 573,
-KIND_LISPALLOC_geom__Color_O = 574,
-KIND_LISPALLOC_chem__CDText_O = 575,
-KIND_LISPALLOC_chem__ProperTorsion_O = 576,
-KIND_LISPALLOC_chem__AtomIndexer_O = 577,
-KIND_LISPALLOC_llvmo__ClaspJIT_O = 578,
-KIND_LISPALLOC_adapt__StringList_O = 579,
-KIND_LISPALLOC_core__SourceManager_O = 580,
-KIND_LISPALLOC_core__Environment_O = 581,
-KIND_LISPALLOC_core__LexicalEnvironment_O = 582,
-KIND_LISPALLOC_core__CompileTimeEnvironment_O = 583,
-KIND_LISPALLOC_core__FunctionContainerEnvironment_O = 584,
-KIND_LISPALLOC_core__BlockEnvironment_O = 585,
-KIND_LISPALLOC_core__CatchEnvironment_O = 586,
-KIND_LISPALLOC_core__UnwindProtectEnvironment_O = 587,
-KIND_LISPALLOC_core__SymbolMacroletEnvironment_O = 588,
-KIND_LISPALLOC_core__MacroletEnvironment_O = 589,
-KIND_LISPALLOC_core__StackValueEnvironment_O = 590,
-KIND_LISPALLOC_core__RuntimeVisibleEnvironment_O = 591,
-KIND_LISPALLOC_core__TagbodyEnvironment_O = 592,
-KIND_LISPALLOC_core__FunctionValueEnvironment_O = 593,
-KIND_LISPALLOC_core__ValueEnvironment_O = 594,
-KIND_LISPALLOC_core__GlueEnvironment_O = 595,
-KIND_LISPALLOC_core__ActivationFrame_O = 596,
-KIND_LISPALLOC_core__ValueFrame_O = 597,
-KIND_LISPALLOC_core__TagbodyFrame_O = 598,
-KIND_LISPALLOC_core__FunctionFrame_O = 599,
-KIND_LISPALLOC_core__Archive_O = 600,
-KIND_LISPALLOC_core__SaveArchive_O = 601,
-KIND_LISPALLOC_core__SexpSaveArchive_O = 602,
-KIND_LISPALLOC_core__LoadArchive_O = 603,
-KIND_LISPALLOC_core__SexpLoadArchive_O = 604,
-KIND_LISPALLOC_core__WeakPointer_O = 605,
-KIND_LISPALLOC_adapt__ObjectSet_O = 606,
-KIND_LISPALLOC_core__SymbolToEnumConverter_O = 607,
-KIND_LISPALLOC_llvmo__InsertPoint_O = 608,
-KIND_LISPALLOC_core__DirectoryEntry_O = 610,
-KIND_LISPALLOC_llvmo__DebugLoc_O = 611,
-KIND_LISPALLOC_core__Number_O = 612,
-KIND_LISPALLOC_core__Complex_O = 613,
-KIND_LISPALLOC_core__Real_O = 614,
-KIND_LISPALLOC_core__Float_O = 615,
-KIND_LISPALLOC_core__SingleFloat_dummy_O = 616,
-KIND_LISPALLOC_core__ShortFloat_O = 617,
-KIND_LISPALLOC_core__LongFloat_O = 618,
-KIND_LISPALLOC_core__DoubleFloat_O = 619,
-KIND_LISPALLOC_core__Rational_O = 620,
-KIND_LISPALLOC_core__Ratio_O = 621,
-KIND_LISPALLOC_core__Integer_O = 622,
-KIND_LISPALLOC_core__Bignum_O = 623,
-KIND_LISPALLOC_core__Fixnum_dummy_O = 624,
-KIND_LISPALLOC_core__Pointer_O = 625,
-KIND_LISPALLOC_core__Cache_O = 626,
-KIND_LISPALLOC_core__Reader_O = 627,
-KIND_ABSTRACT_gctools__GCContainer = 628,
-KIND_GCVECTOR_gctools__GCVector_moveable_double_ = 629,
-KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__StereoisomerAtom_O__ = 630,
-KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__FFVdw_O__ = 631,
-KIND_GCVECTOR_gctools__GCVector_moveable_chem__EnergyStretch_ = 632,
-KIND_GCVECTOR_gctools__GCVector_moveable_chem__FixedNonbondRestraint_ = 633,
-KIND_GCARRAY_gctools__GCArray_moveable_unsigned_char_ = 634,
-KIND_GCARRAY_gctools__GCArray_moveable_signed_char_ = 635,
-KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__ConformationExplorerEntryStage_O__ = 636,
-KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__AGEdge_O__ = 637,
-KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__Structure_Old_ListEntry_O__ = 638,
-KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__AtomIndexer_O___ = 639,
-KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__Molecule_O___ = 640,
-KIND_GCVECTOR_gctools__GCVector_moveable_chem__AtomInfo_ = 641,
-KIND_GCVECTOR_gctools__GCVector_moveable_core__AuxArgument_ = 642,
-KIND_GCVECTOR_gctools__GCVector_moveable_core__ExceptionEntry_ = 643,
-KIND_GCARRAY_gctools__GCArray_moveable_unsigned_short_ = 644,
-KIND_GCARRAY_gctools__GCArray_moveable_long_ = 645,
-KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__OneTypeRule_O__ = 646,
-KIND_GCVECTOR_gctools__GCVector_moveable_chem__ResidueOut_ = 647,
-KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_core__T_O___ = 648,
-KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__CDBond_O__ = 649,
-KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__CDFragment_O__ = 650,
-KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__SourceFileInfo_O__ = 651,
-KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_chem__Atom_O__gctools__smart_ptr_chem__CDNode_O___ = 652,
-KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__EntityNameSetBase_O___ = 653,
-KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__Molecule_O__ = 654,
-KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__Coupling_O__ = 655,
-KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__SimpleBitVector_O__ = 656,
-KIND_GCVECTOR_gctools__GCVector_moveable_chem__EnergyDihedral_ = 657,
-KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__Topology_O__ = 658,
-KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__SpecificContext_O___ = 659,
-KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__Entity_O___ = 660,
-KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__ZMatrixInternal_O__ = 661,
-KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_adapt__QDomNode_O__ = 662,
-KIND_GCARRAY_gctools__GCArray_moveable_short_ = 663,
-KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_core__DoubleFloat_O___ = 664,
-KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__Stereoisomer_O___ = 665,
-KIND_GCVECTOR_gctools__GCVector_moveable_core__T_O_P_ = 666,
-KIND_GCARRAY_gctools__GCArray_moveable_int_ = 667,
-KIND_GCVECTOR_gctools__GCVector_moveable_chem__AtomPdbRec_ = 668,
-KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_chem__Atom_O__unsigned_int__ = 669,
-KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__Monomer_O__ = 670,
-KIND_GCVECTOR_gctools__GCVector_moveable_chem__EnergyAnchorRestraint_ = 671,
-KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__Plug_O___ = 672,
-KIND_GCARRAY_gctools__GCArray_moveable_Vector3_ = 673,
-KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__StereoisomerAtoms_O___ = 674,
-KIND_GCBITUNITCONTAINER1_gctools__GCBitUnitArray_moveable_1_unsigned_int_int_ = 675,
+KIND_LISPALLOC_chem__ConformationExplorerEntryStage_O = 474,
+KIND_LISPALLOC_chem__FFNonbondCrossTermTable_O = 475,
+KIND_LISPALLOC_chem__PdbWriter_O = 476,
+KIND_LISPALLOC_chem__StereoInformation_O = 477,
+KIND_LISPALLOC_chem__StructureComparer_O = 478,
+KIND_LISPALLOC_chem__TypeAssignmentRules_O = 479,
+KIND_LISPALLOC_chem__ConstitutionAtom_O = 480,
+KIND_LISPALLOC_chem__ConstitutionVirtualAtom_O = 481,
+KIND_LISPALLOC_chem__ZMatrixEntry_O = 482,
+KIND_LISPALLOC_chem__CDNode_O = 483,
+KIND_LISPALLOC_units__Quantity_O = 484,
+KIND_LISPALLOC_chem__Twister_O = 485,
+KIND_LISPALLOC_chem__MacroModelFile_O = 486,
+KIND_LISPALLOC_chem__SearchStatistics_O = 487,
+KIND_LISPALLOC_chem__ChemInfo_O = 488,
+KIND_LISPALLOC_chem__WildElementDict_O = 489,
+KIND_LISPALLOC_chem__Structure_Old_List_O = 490,
+KIND_LISPALLOC_adapt__StringSet_O = 491,
+KIND_LISPALLOC_chem__CDFragment_O = 492,
+KIND_LISPALLOC_chem__PdbReader_O = 493,
+KIND_LISPALLOC_geom__OMatrix_O = 494,
+KIND_LISPALLOC_chem__FFBaseDb_O = 495,
+KIND_LISPALLOC_chem__FFVdwDb_O = 496,
+KIND_LISPALLOC_chem__FFTypesDb_O = 497,
+KIND_LISPALLOC_chem__FFParameterBaseDb_O = 498,
+KIND_LISPALLOC_chem__FFPtorDb_O = 499,
+KIND_LISPALLOC_chem__FFAngleDb_O = 500,
+KIND_LISPALLOC_chem__FFStretchDb_O = 501,
+KIND_LISPALLOC_chem__FFNonbondDb_O = 502,
+KIND_LISPALLOC_chem__FFItorDb_O = 503,
+KIND_LISPALLOC_chem__AGVertex_O = 504,
+KIND_LISPALLOC_chem__ReadAmberParameters_O = 505,
+KIND_LISPALLOC_geom__BoundingBox_O = 506,
+KIND_LISPALLOC_chem__SpecificContextSet_O = 507,
+KIND_LISPALLOC_chem__ZMatrixInternal_O = 508,
+KIND_LISPALLOC_chem__ZMatrixAngleInternal_O = 509,
+KIND_LISPALLOC_chem__ZMatrixDihedralInternal_O = 510,
+KIND_LISPALLOC_chem__ZMatrixBondInternal_O = 511,
+KIND_LISPALLOC_chem__ConformationCollection_O = 512,
+KIND_LISPALLOC_chem__SuperposableConformationCollection_O = 513,
+KIND_LISPALLOC_clcenv__Info_O = 514,
+KIND_LISPALLOC_clcenv__VariableInfo_O = 515,
+KIND_LISPALLOC_clcenv__SpecialVariableInfo_O = 516,
+KIND_LISPALLOC_clcenv__ConstantVariableInfo_O = 517,
+KIND_LISPALLOC_clcenv__SymbolMacroInfo_O = 518,
+KIND_LISPALLOC_clcenv__LexicalVariableInfo_O = 519,
+KIND_LISPALLOC_clcenv__BlockInfo_O = 520,
+KIND_LISPALLOC_clcenv__FunctionInfo_O = 521,
+KIND_LISPALLOC_clcenv__LocalFunctionInfo_O = 522,
+KIND_LISPALLOC_clcenv__LocalMacroInfo_O = 523,
+KIND_LISPALLOC_clcenv__GlobalFunctionInfo_O = 524,
+KIND_LISPALLOC_clcenv__SpecialOperatorInfo_O = 525,
+KIND_LISPALLOC_clcenv__LambdaNameInfo_O = 526,
+KIND_LISPALLOC_clcenv__GlobalMacroInfo_O = 527,
+KIND_LISPALLOC_clcenv__OptimizeInfo_O = 528,
+KIND_LISPALLOC_chem__ConformationExplorer_O = 529,
+KIND_LISPALLOC_units__Unit_O = 530,
+KIND_LISPALLOC_units__NamedUnit_O = 531,
+KIND_LISPALLOC_clcenv__Entry_O = 532,
+KIND_LISPALLOC_clcenv__Optimize_O = 533,
+KIND_LISPALLOC_clcenv__Closure_O = 534,
+KIND_LISPALLOC_clcenv__Block_O = 535,
+KIND_LISPALLOC_clcenv__GlobalEnvironment_O = 536,
+KIND_LISPALLOC_clcenv__VariableIgnore_O = 537,
+KIND_LISPALLOC_clcenv__Macro_O = 538,
+KIND_LISPALLOC_clcenv__VariableType_O = 539,
+KIND_LISPALLOC_clcenv__Tag_O = 540,
+KIND_LISPALLOC_clcenv__Function_O = 541,
+KIND_LISPALLOC_clcenv__VariableDynamicExtent_O = 542,
+KIND_LISPALLOC_clcenv__LexicalVariable_O = 543,
+KIND_LISPALLOC_clcenv__FunctionDynamicExtent_O = 544,
+KIND_LISPALLOC_clcenv__SpecialVariable_O = 545,
+KIND_LISPALLOC_clcenv__LambdaName_O = 546,
+KIND_LISPALLOC_clcenv__FunctionIgnore_O = 547,
+KIND_LISPALLOC_clcenv__SymbolMacro_O = 548,
+KIND_LISPALLOC_clcenv__Inline_O = 549,
+KIND_LISPALLOC_clcenv__FunctionType_O = 550,
+KIND_LISPALLOC_llvmo__DITypeRefArray_O = 551,
+KIND_LISPALLOC_chem__CalculatePosition_O = 552,
+KIND_LISPALLOC_chem__CalculatePositionAlongBond_O = 553,
+KIND_LISPALLOC_chem__CalculatePositionRelativeToOrigin_O = 554,
+KIND_LISPALLOC_chem__CalculatePositionUsingInternals_O = 555,
+KIND_LISPALLOC_chem__InfoDb_O = 556,
+KIND_LISPALLOC_chem__ReportBase_O = 557,
+KIND_LISPALLOC_chem__MessageReport_O = 558,
+KIND_LISPALLOC_chem__StepReport_O = 559,
+KIND_LISPALLOC_chem__ForceMatchReport_O = 560,
+KIND_LISPALLOC_chem__Restraint_O = 561,
+KIND_LISPALLOC_chem__RestraintFixedNonbond_O = 562,
+KIND_LISPALLOC_chem__RestraintDihedral_O = 563,
+KIND_LISPALLOC_chem__RestraintChiral_O = 564,
+KIND_LISPALLOC_chem__RestraintAngle_O = 565,
+KIND_LISPALLOC_chem__RestraintDistance_O = 566,
+KIND_LISPALLOC_chem__RestraintAnchor_O = 567,
+KIND_LISPALLOC_chem__Structure_Old_ListEntry_O = 568,
+KIND_LISPALLOC_chem__Minimizer_O = 569,
+KIND_LISPALLOC_chem__PathMessage_O = 570,
+KIND_LISPALLOC_chem__SpecificContext_O = 571,
+KIND_LISPALLOC_chem__StatusTracker_O = 572,
+KIND_LISPALLOC_geom__Color_O = 573,
+KIND_LISPALLOC_chem__CDText_O = 574,
+KIND_LISPALLOC_chem__ProperTorsion_O = 575,
+KIND_LISPALLOC_chem__AtomIndexer_O = 576,
+KIND_LISPALLOC_llvmo__ClaspJIT_O = 577,
+KIND_LISPALLOC_adapt__StringList_O = 578,
+KIND_LISPALLOC_core__SourceManager_O = 579,
+KIND_LISPALLOC_core__Environment_O = 580,
+KIND_LISPALLOC_core__LexicalEnvironment_O = 581,
+KIND_LISPALLOC_core__CompileTimeEnvironment_O = 582,
+KIND_LISPALLOC_core__FunctionContainerEnvironment_O = 583,
+KIND_LISPALLOC_core__BlockEnvironment_O = 584,
+KIND_LISPALLOC_core__CatchEnvironment_O = 585,
+KIND_LISPALLOC_core__UnwindProtectEnvironment_O = 586,
+KIND_LISPALLOC_core__SymbolMacroletEnvironment_O = 587,
+KIND_LISPALLOC_core__MacroletEnvironment_O = 588,
+KIND_LISPALLOC_core__StackValueEnvironment_O = 589,
+KIND_LISPALLOC_core__RuntimeVisibleEnvironment_O = 590,
+KIND_LISPALLOC_core__TagbodyEnvironment_O = 591,
+KIND_LISPALLOC_core__FunctionValueEnvironment_O = 592,
+KIND_LISPALLOC_core__ValueEnvironment_O = 593,
+KIND_LISPALLOC_core__GlueEnvironment_O = 594,
+KIND_LISPALLOC_core__ActivationFrame_O = 595,
+KIND_LISPALLOC_core__ValueFrame_O = 596,
+KIND_LISPALLOC_core__TagbodyFrame_O = 597,
+KIND_LISPALLOC_core__FunctionFrame_O = 598,
+KIND_LISPALLOC_core__Archive_O = 599,
+KIND_LISPALLOC_core__SaveArchive_O = 600,
+KIND_LISPALLOC_core__SexpSaveArchive_O = 601,
+KIND_LISPALLOC_core__LoadArchive_O = 602,
+KIND_LISPALLOC_core__SexpLoadArchive_O = 603,
+KIND_LISPALLOC_core__WeakPointer_O = 604,
+KIND_LISPALLOC_adapt__ObjectSet_O = 605,
+KIND_LISPALLOC_core__SymbolToEnumConverter_O = 606,
+KIND_LISPALLOC_llvmo__InsertPoint_O = 607,
+KIND_LISPALLOC_core__DirectoryEntry_O = 608,
+KIND_LISPALLOC_llvmo__DebugLoc_O = 609,
+KIND_LISPALLOC_core__Number_O = 610,
+KIND_LISPALLOC_core__Complex_O = 611,
+KIND_LISPALLOC_core__Real_O = 612,
+KIND_LISPALLOC_core__Float_O = 613,
+KIND_LISPALLOC_core__SingleFloat_dummy_O = 614,
+KIND_LISPALLOC_core__ShortFloat_O = 615,
+KIND_LISPALLOC_core__LongFloat_O = 616,
+KIND_LISPALLOC_core__DoubleFloat_O = 617,
+KIND_LISPALLOC_core__Rational_O = 618,
+KIND_LISPALLOC_core__Ratio_O = 619,
+KIND_LISPALLOC_core__Integer_O = 620,
+KIND_LISPALLOC_core__Bignum_O = 621,
+KIND_LISPALLOC_core__Fixnum_dummy_O = 622,
+KIND_LISPALLOC_core__Pointer_O = 623,
+KIND_LISPALLOC_core__Cache_O = 624,
+KIND_LISPALLOC_core__Reader_O = 625,
+KIND_ABSTRACT_gctools__GCContainer = 626,
+KIND_GCVECTOR_gctools__GCVector_moveable_double_ = 627,
+KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__StereoisomerAtom_O__ = 628,
+KIND_GCVECTOR_gctools__GCVector_moveable_chem__EnergyRigidBodyStaple_ = 629,
+KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__FFVdw_O__ = 630,
+KIND_GCVECTOR_gctools__GCVector_moveable_chem__EnergyStretch_ = 631,
+KIND_GCVECTOR_gctools__GCVector_moveable_chem__FixedNonbondRestraint_ = 632,
+KIND_GCARRAY_gctools__GCArray_moveable_unsigned_char_ = 633,
+KIND_GCARRAY_gctools__GCArray_moveable_signed_char_ = 634,
+KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__ConformationExplorerEntryStage_O__ = 635,
+KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__AGEdge_O__ = 636,
+KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__Structure_Old_ListEntry_O__ = 637,
+KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__AtomIndexer_O___ = 638,
+KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__Molecule_O___ = 639,
+KIND_GCVECTOR_gctools__GCVector_moveable_chem__AtomInfo_ = 640,
+KIND_GCVECTOR_gctools__GCVector_moveable_core__AuxArgument_ = 641,
+KIND_GCVECTOR_gctools__GCVector_moveable_core__ExceptionEntry_ = 642,
+KIND_GCARRAY_gctools__GCArray_moveable_unsigned_short_ = 643,
+KIND_GCARRAY_gctools__GCArray_moveable_long_ = 644,
+KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__OneTypeRule_O__ = 645,
+KIND_GCVECTOR_gctools__GCVector_moveable_chem__ResidueOut_ = 646,
+KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_core__T_O___ = 647,
+KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__CDBond_O__ = 648,
+KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__CDFragment_O__ = 649,
+KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__SourceFileInfo_O__ = 650,
+KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_chem__Atom_O__gctools__smart_ptr_chem__CDNode_O___ = 651,
+KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__EntityNameSetBase_O___ = 652,
+KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__Molecule_O__ = 653,
+KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__Coupling_O__ = 654,
+KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__SimpleBitVector_O__ = 655,
+KIND_GCVECTOR_gctools__GCVector_moveable_chem__EnergyDihedral_ = 656,
+KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__Topology_O__ = 657,
+KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__SpecificContext_O___ = 658,
+KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__Entity_O___ = 659,
+KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__ZMatrixInternal_O__ = 660,
+KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_adapt__QDomNode_O__ = 661,
+KIND_GCARRAY_gctools__GCArray_moveable_short_ = 662,
+KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_core__DoubleFloat_O___ = 663,
+KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__Stereoisomer_O___ = 664,
+KIND_GCVECTOR_gctools__GCVector_moveable_core__T_O_P_ = 665,
+KIND_GCARRAY_gctools__GCArray_moveable_int_ = 666,
+KIND_GCVECTOR_gctools__GCVector_moveable_chem__AtomPdbRec_ = 667,
+KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_chem__Atom_O__unsigned_int__ = 668,
+KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__Monomer_O__ = 669,
+KIND_GCVECTOR_gctools__GCVector_moveable_chem__EnergyAnchorRestraint_ = 670,
+KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__Plug_O___ = 671,
+KIND_GCARRAY_gctools__GCArray_moveable_Vector3_ = 672,
+KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__StereoisomerAtoms_O___ = 673,
+KIND_GCBITUNITCONTAINER1_gctools__GCBitUnitArray_moveable_1_unsigned_int_int_ = 674,
+KIND_GCVECTOR_gctools__GCVector_moveable_chem__RigidBodyAtomInfo_ = 675,
 KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__Stereoisomer_O__ = 676,
 KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__Atom_O__ = 677,
 KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__Rotamer_O__ = 678,
@@ -1360,8 +1378,8 @@ template <typename FP> struct Cast<chem::AtomIndexer_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 577 577 
-      return (kindVal == 577);
+      // low high --> 576 576 
+      return (kindVal == 576);
   };
 };
 // KIND_LISPALLOC_chem__EnergyStretch_O
@@ -1387,8 +1405,8 @@ template <typename FP> struct Cast<chem::ProperTorsion_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 576 576 
-      return (kindVal == 576);
+      // low high --> 575 575 
+      return (kindVal == 575);
   };
 };
 // KIND_LISPALLOC_chem__FFParameterBaseDb_O
@@ -1396,8 +1414,8 @@ template <typename FP> struct Cast<chem::FFParameterBaseDb_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 499 504 
-      return ((499 <= kindVal) && (kindVal <= 504));
+      // low high --> 498 503 
+      return ((498 <= kindVal) && (kindVal <= 503));
   };
 };
 // KIND_LISPALLOC_llvmo__DISubprogram_O
@@ -1405,8 +1423,8 @@ template <typename FP> struct Cast<llvmo::DISubprogram_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 84 84 
-      return (kindVal == 84);
+      // low high --> 85 85 
+      return (kindVal == 85);
   };
 };
 // KIND_LISPALLOC_core__SimpleMDArray_int32_t_O
@@ -1414,8 +1432,8 @@ template <typename FP> struct Cast<core::SimpleMDArray_int32_t_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 252 252 
-      return (kindVal == 252);
+      // low high --> 245 245 
+      return (kindVal == 245);
   };
 };
 // KIND_LISPALLOC_chem__CDText_O
@@ -1423,8 +1441,8 @@ template <typename FP> struct Cast<chem::CDText_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 575 575 
-      return (kindVal == 575);
+      // low high --> 574 574 
+      return (kindVal == 574);
   };
 };
 // KIND_LISPALLOC_chem__IterateAtoms_O
@@ -1432,8 +1450,8 @@ template <typename FP> struct Cast<chem::IterateAtoms_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 64 64 
-      return (kindVal == 64);
+      // low high --> 65 65 
+      return (kindVal == 65);
   };
 };
 // KIND_LISPALLOC_clcenv__FunctionType_O
@@ -1441,8 +1459,8 @@ template <typename FP> struct Cast<clcenv::FunctionType_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 551 551 
-      return (kindVal == 551);
+      // low high --> 550 550 
+      return (kindVal == 550);
   };
 };
 // KIND_LISPALLOC_clcenv__GlobalMacroInfo_O
@@ -1450,8 +1468,8 @@ template <typename FP> struct Cast<clcenv::GlobalMacroInfo_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 528 528 
-      return (kindVal == 528);
+      // low high --> 527 527 
+      return (kindVal == 527);
   };
 };
 // KIND_LISPALLOC_clcenv__Inline_O
@@ -1459,8 +1477,8 @@ template <typename FP> struct Cast<clcenv::Inline_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 550 550 
-      return (kindVal == 550);
+      // low high --> 549 549 
+      return (kindVal == 549);
   };
 };
 // KIND_LISPALLOC_llvmo__ConstantDataArray_O
@@ -1468,8 +1486,8 @@ template <typename FP> struct Cast<llvmo::ConstantDataArray_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 132 132 
-      return (kindVal == 132);
+      // low high --> 133 133 
+      return (kindVal == 133);
   };
 };
 // KIND_LISPALLOC_llvmo__DICompileUnit_O
@@ -1477,8 +1495,8 @@ template <typename FP> struct Cast<llvmo::DICompileUnit_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 91 91 
-      return (kindVal == 91);
+      // low high --> 92 92 
+      return (kindVal == 92);
   };
 };
 // KIND_LISPALLOC_chem__Chain_O
@@ -1486,8 +1504,8 @@ template <typename FP> struct Cast<chem::Chain_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 398 398 
-      return (kindVal == 398);
+      // low high --> 395 395 
+      return (kindVal == 395);
   };
 };
 // KIND_LISPALLOC_geom__Color_O
@@ -1495,8 +1513,8 @@ template <typename FP> struct Cast<geom::Color_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 574 574 
-      return (kindVal == 574);
+      // low high --> 573 573 
+      return (kindVal == 573);
   };
 };
 // KIND_LISPALLOC_core__Reader_O
@@ -1504,8 +1522,8 @@ template <typename FP> struct Cast<core::Reader_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 627 627 
-      return (kindVal == 627);
+      // low high --> 625 625 
+      return (kindVal == 625);
   };
 };
 // KIND_LISPALLOC_core__Cache_O
@@ -1513,17 +1531,23 @@ template <typename FP> struct Cast<core::Cache_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 626 626 
-      return (kindVal == 626);
+      // low high --> 624 624 
+      return (kindVal == 624);
   };
 };
 // KIND_LISPALLOC_core__Instance_O
 template <typename FP> struct Cast<core::Instance_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
+// FIXME!!!  There is a HUGE problem here - derivable_class_'s inherit from Instance_O  but the KIND test won't show that!!!!
+//           Something needs to be done to allow derivable_classes to be defined without screwing up the class hierarchy!!!
+//           The problem is that isA relationships defined by Clasp can only work with single inheritance
+//           but derivable_classes inherit from Instance_O and whatever else they are defined to inherit from.
+//           For now I'll special case core::Instance_O and fall back to dynamic_cast
       int kindVal = header->kind();
-      // low high --> 183 754 
-      return ((183 <= kindVal) && (kindVal <= 754));
+      // low high --> 184 184 
+      if (kindVal == 184) return true;
+      return (dynamic_cast<core::Instance_O*>(client)!=NULL);
   };
 };
 // KIND_GCVECTOR_gctools__GCVector_moveable_chem__EnergyAngle_
@@ -1540,8 +1564,8 @@ template <typename FP> struct Cast<chem::StatusTracker_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 573 573 
-      return (kindVal == 573);
+      // low high --> 572 572 
+      return (kindVal == 572);
   };
 };
 // KIND_LISPALLOC_chem__InPlug_O
@@ -1549,8 +1573,8 @@ template <typename FP> struct Cast<chem::InPlug_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 344 344 
-      return (kindVal == 344);
+      // low high --> 338 338 
+      return (kindVal == 338);
   };
 };
 // KIND_LISPALLOC_chem__IterateBonds_O
@@ -1558,8 +1582,8 @@ template <typename FP> struct Cast<chem::IterateBonds_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 63 63 
-      return (kindVal == 63);
+      // low high --> 64 64 
+      return (kindVal == 64);
   };
 };
 // KIND_LISPALLOC_chem__Molecule_O
@@ -1567,8 +1591,8 @@ template <typename FP> struct Cast<chem::Molecule_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 433 433 
-      return (kindVal == 433);
+      // low high --> 430 430 
+      return (kindVal == 430);
   };
 };
 // KIND_LISPALLOC_core__SimpleBaseString_O
@@ -1576,8 +1600,8 @@ template <typename FP> struct Cast<core::SimpleBaseString_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 222 222 
-      return (kindVal == 222);
+      // low high --> 215 215 
+      return (kindVal == 215);
   };
 };
 // KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__T_O__
@@ -1594,8 +1618,8 @@ template <typename FP> struct Cast<llvmo::ConstantDataSequential_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 131 132 
-      return ((131 <= kindVal) && (kindVal <= 132));
+      // low high --> 132 133 
+      return ((132 <= kindVal) && (kindVal <= 133));
   };
 };
 // KIND_LISPALLOC_core__SimpleVector_int32_t_O
@@ -1603,8 +1627,8 @@ template <typename FP> struct Cast<core::SimpleVector_int32_t_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 215 215 
-      return (kindVal == 215);
+      // low high --> 208 208 
+      return (kindVal == 208);
   };
 };
 // KIND_LISPALLOC_llvmo__ConstantStruct_O
@@ -1612,8 +1636,8 @@ template <typename FP> struct Cast<llvmo::ConstantStruct_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 130 130 
-      return (kindVal == 130);
+      // low high --> 131 131 
+      return (kindVal == 131);
   };
 };
 // KIND_LISPALLOC_chem__SpecificContext_O
@@ -1621,8 +1645,8 @@ template <typename FP> struct Cast<chem::SpecificContext_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 572 572 
-      return (kindVal == 572);
+      // low high --> 571 571 
+      return (kindVal == 571);
   };
 };
 // KIND_LISPALLOC_core__ValueEnvironment_O
@@ -1630,8 +1654,8 @@ template <typename FP> struct Cast<core::ValueEnvironment_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 594 594 
-      return (kindVal == 594);
+      // low high --> 593 593 
+      return (kindVal == 593);
   };
 };
 // KIND_LISPALLOC_chem__EnergyAngle_O
@@ -1648,8 +1672,8 @@ template <typename FP> struct Cast<chem::PathMessage_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 571 571 
-      return (kindVal == 571);
+      // low high --> 570 570 
+      return (kindVal == 570);
   };
 };
 // KIND_LISPALLOC_core__Pointer_O
@@ -1657,8 +1681,8 @@ template <typename FP> struct Cast<core::Pointer_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 625 625 
-      return (kindVal == 625);
+      // low high --> 623 623 
+      return (kindVal == 623);
   };
 };
 // KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__Bond_O__
@@ -1675,8 +1699,8 @@ template <typename FP> struct Cast<clcenv::SymbolMacro_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 549 549 
-      return (kindVal == 549);
+      // low high --> 548 548 
+      return (kindVal == 548);
   };
 };
 // KIND_LISPALLOC_core__Number_O
@@ -1684,8 +1708,8 @@ template <typename FP> struct Cast<core::Number_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 612 624 
-      return ((612 <= kindVal) && (kindVal <= 624));
+      // low high --> 610 622 
+      return ((610 <= kindVal) && (kindVal <= 622));
   };
 };
 // KIND_LISPALLOC_units__NamedUnit_O
@@ -1693,8 +1717,8 @@ template <typename FP> struct Cast<units::NamedUnit_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 532 532 
-      return (kindVal == 532);
+      // low high --> 531 531 
+      return (kindVal == 531);
   };
 };
 // KIND_LISPALLOC_llvmo__BlockAddress_O
@@ -1702,8 +1726,8 @@ template <typename FP> struct Cast<llvmo::BlockAddress_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 129 129 
-      return (kindVal == 129);
+      // low high --> 130 130 
+      return (kindVal == 130);
   };
 };
 // KIND_GCVECTOR_gctools__GCVector_moveable_core__KeywordArgument_
@@ -1720,8 +1744,8 @@ template <typename FP> struct Cast<core::Real_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 614 624 
-      return ((614 <= kindVal) && (kindVal <= 624));
+      // low high --> 612 622 
+      return ((612 <= kindVal) && (kindVal <= 622));
   };
 };
 // KIND_GCVECTOR_gctools__GCVector_moveable_chem__EnergyImproperRestraint_
@@ -1738,8 +1762,8 @@ template <typename FP> struct Cast<chem::Minimizer_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 570 570 
-      return (kindVal == 570);
+      // low high --> 569 569 
+      return (kindVal == 569);
   };
 };
 // KIND_LISPALLOC_core__SimpleMDArray_int8_t_O
@@ -1747,8 +1771,8 @@ template <typename FP> struct Cast<core::SimpleMDArray_int8_t_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 263 263 
-      return (kindVal == 263);
+      // low high --> 256 256 
+      return (kindVal == 256);
   };
 };
 // KIND_LISPALLOC_chem__Structure_Old_ListEntry_O
@@ -1756,8 +1780,8 @@ template <typename FP> struct Cast<chem::Structure_Old_ListEntry_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 569 569 
-      return (kindVal == 569);
+      // low high --> 568 568 
+      return (kindVal == 568);
   };
 };
 // KIND_GCVECTOR_gctools__GCVector_moveable_core__SymbolClassPair_
@@ -1774,8 +1798,8 @@ template <typename FP> struct Cast<llvmo::Argument_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 134 134 
-      return (kindVal == 134);
+      // low high --> 135 135 
+      return (kindVal == 135);
   };
 };
 // KIND_LISPALLOC_llvmo__Type_O
@@ -1783,8 +1807,8 @@ template <typename FP> struct Cast<llvmo::Type_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 152 160 
-      return ((152 <= kindVal) && (kindVal <= 160));
+      // low high --> 153 161 
+      return ((153 <= kindVal) && (kindVal <= 161));
   };
 };
 // KIND_LISPALLOC_chem__Restraint_O
@@ -1792,8 +1816,8 @@ template <typename FP> struct Cast<chem::Restraint_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 562 568 
-      return ((562 <= kindVal) && (kindVal <= 568));
+      // low high --> 561 567 
+      return ((561 <= kindVal) && (kindVal <= 567));
   };
 };
 // KIND_LISPALLOC_core__FileStream_O
@@ -1801,8 +1825,8 @@ template <typename FP> struct Cast<core::FileStream_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 331 333 
-      return ((331 <= kindVal) && (kindVal <= 333));
+      // low high --> 324 326 
+      return ((324 <= kindVal) && (kindVal <= 326));
   };
 };
 // KIND_LISPALLOC_llvmo__DIType_O
@@ -1810,8 +1834,8 @@ template <typename FP> struct Cast<llvmo::DIType_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 86 90 
-      return ((86 <= kindVal) && (kindVal <= 90));
+      // low high --> 87 91 
+      return ((87 <= kindVal) && (kindVal <= 91));
   };
 };
 // KIND_LISPALLOC_core__SimpleMDArrayCharacter_O
@@ -1819,8 +1843,8 @@ template <typename FP> struct Cast<core::SimpleMDArrayCharacter_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 275 275 
-      return (kindVal == 275);
+      // low high --> 268 268 
+      return (kindVal == 268);
   };
 };
 // KIND_LISPALLOC_llvmo__Linker_O
@@ -1828,8 +1852,8 @@ template <typename FP> struct Cast<llvmo::Linker_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 151 151 
-      return (kindVal == 151);
+      // low high --> 152 152 
+      return (kindVal == 152);
   };
 };
 // KIND_BOOTSTRAP_core__Class_O
@@ -1837,8 +1861,8 @@ template <typename FP> struct Cast<core::Class_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 55 56 
-      return ((55 <= kindVal) && (kindVal <= 56));
+      // low high --> 56 57 
+      return ((56 <= kindVal) && (kindVal <= 57));
   };
 };
 // KIND_LISPALLOC_chem__ReportBase_O
@@ -1846,8 +1870,8 @@ template <typename FP> struct Cast<chem::ReportBase_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 558 561 
-      return ((558 <= kindVal) && (kindVal <= 561));
+      // low high --> 557 560 
+      return ((557 <= kindVal) && (kindVal <= 560));
   };
 };
 // KIND_LISPALLOC_chem__FFItorDb_O
@@ -1855,8 +1879,8 @@ template <typename FP> struct Cast<chem::FFItorDb_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 504 504 
-      return (kindVal == 504);
+      // low high --> 503 503 
+      return (kindVal == 503);
   };
 };
 // KIND_LISPALLOC_chem__BondMatchNode_O
@@ -1864,8 +1888,8 @@ template <typename FP> struct Cast<chem::BondMatchNode_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 399 411 
-      return ((399 <= kindVal) && (kindVal <= 411));
+      // low high --> 396 408 
+      return ((396 <= kindVal) && (kindVal <= 408));
   };
 };
 // KIND_GCVECTOR_gctools__GCVector_moveable_chem__EnergyNonbond_
@@ -1882,8 +1906,8 @@ template <typename FP> struct Cast<core::CompiledDispatchFunction_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 182 182 
-      return (kindVal == 182);
+      // low high --> 183 183 
+      return (kindVal == 183);
   };
 };
 // KIND_LISPALLOC_chem__InfoDb_O
@@ -1891,8 +1915,8 @@ template <typename FP> struct Cast<chem::InfoDb_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 557 557 
-      return (kindVal == 557);
+      // low high --> 556 556 
+      return (kindVal == 556);
   };
 };
 // KIND_LISPALLOC_chem__CalculatePosition_O
@@ -1900,8 +1924,8 @@ template <typename FP> struct Cast<chem::CalculatePosition_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 553 556 
-      return ((553 <= kindVal) && (kindVal <= 556));
+      // low high --> 552 555 
+      return ((552 <= kindVal) && (kindVal <= 555));
   };
 };
 // KIND_LISPALLOC_llvmo__DITypeRefArray_O
@@ -1909,8 +1933,8 @@ template <typename FP> struct Cast<llvmo::DITypeRefArray_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 552 552 
-      return (kindVal == 552);
+      // low high --> 551 551 
+      return (kindVal == 551);
   };
 };
 // KIND_LISPALLOC_llvmo__DebugLoc_O
@@ -1918,8 +1942,8 @@ template <typename FP> struct Cast<llvmo::DebugLoc_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 611 611 
-      return (kindVal == 611);
+      // low high --> 609 609 
+      return (kindVal == 609);
   };
 };
 // KIND_LISPALLOC_core__HashTableEqualp_O
@@ -1927,8 +1951,8 @@ template <typename FP> struct Cast<core::HashTableEqualp_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 31 31 
-      return (kindVal == 31);
+      // low high --> 32 32 
+      return (kindVal == 32);
   };
 };
 // KIND_LISPALLOC_core__DirectoryEntry_O
@@ -1936,8 +1960,8 @@ template <typename FP> struct Cast<core::DirectoryEntry_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 610 610 
-      return (kindVal == 610);
+      // low high --> 608 608 
+      return (kindVal == 608);
   };
 };
 // KIND_LISPALLOC_clcenv__Entry_O
@@ -1945,8 +1969,8 @@ template <typename FP> struct Cast<clcenv::Entry_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 533 551 
-      return ((533 <= kindVal) && (kindVal <= 551));
+      // low high --> 532 550 
+      return ((532 <= kindVal) && (kindVal <= 550));
   };
 };
 // KIND_LISPALLOC_chem__AtomOrBondMatchNode_O
@@ -1954,8 +1978,8 @@ template <typename FP> struct Cast<chem::AtomOrBondMatchNode_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 402 411 
-      return ((402 <= kindVal) && (kindVal <= 411));
+      // low high --> 399 408 
+      return ((399 <= kindVal) && (kindVal <= 408));
   };
 };
 // KIND_LISPALLOC_core__SimpleMDArray_byte8_t_O
@@ -1963,8 +1987,8 @@ template <typename FP> struct Cast<core::SimpleMDArray_byte8_t_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 267 267 
-      return (kindVal == 267);
+      // low high --> 260 260 
+      return (kindVal == 260);
   };
 };
 // KIND_LISPALLOC_units__Unit_O
@@ -1972,8 +1996,8 @@ template <typename FP> struct Cast<units::Unit_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 531 532 
-      return ((531 <= kindVal) && (kindVal <= 532));
+      // low high --> 530 531 
+      return ((530 <= kindVal) && (kindVal <= 531));
   };
 };
 // KIND_LISPALLOC_core__SimpleVector_byte32_t_O
@@ -1981,8 +2005,8 @@ template <typename FP> struct Cast<core::SimpleVector_byte32_t_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 211 211 
-      return (kindVal == 211);
+      // low high --> 204 204 
+      return (kindVal == 204);
   };
 };
 // KIND_LISPALLOC_llvmo__StructType_O
@@ -1990,8 +2014,8 @@ template <typename FP> struct Cast<llvmo::StructType_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 159 159 
-      return (kindVal == 159);
+      // low high --> 160 160 
+      return (kindVal == 160);
   };
 };
 // KIND_LISPALLOC_chem__ConformationExplorer_O
@@ -1999,8 +2023,8 @@ template <typename FP> struct Cast<chem::ConformationExplorer_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 530 530 
-      return (kindVal == 530);
+      // low high --> 529 529 
+      return (kindVal == 529);
   };
 };
 // KIND_LISPALLOC_asttooling__AstVisitor_O
@@ -2017,8 +2041,8 @@ template <typename FP> struct Cast<adapt::IterateCons_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 66 66 
-      return (kindVal == 66);
+      // low high --> 67 67 
+      return (kindVal == 67);
   };
 };
 // KIND_LISPALLOC_clcenv__Info_O
@@ -2026,8 +2050,8 @@ template <typename FP> struct Cast<clcenv::Info_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 515 529 
-      return ((515 <= kindVal) && (kindVal <= 529));
+      // low high --> 514 528 
+      return ((514 <= kindVal) && (kindVal <= 528));
   };
 };
 // KIND_GCVECTOR_gctools__GCVector_moveable_core__OptionalArgument_
@@ -2044,8 +2068,8 @@ template <typename FP> struct Cast<chem::ConformationCollection_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 513 514 
-      return ((513 <= kindVal) && (kindVal <= 514));
+      // low high --> 512 513 
+      return ((512 <= kindVal) && (kindVal <= 513));
   };
 };
 // KIND_LISPALLOC_core__SimpleMDArray_byte64_t_O
@@ -2053,8 +2077,8 @@ template <typename FP> struct Cast<core::SimpleMDArray_byte64_t_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 265 265 
-      return (kindVal == 265);
+      // low high --> 258 258 
+      return (kindVal == 258);
   };
 };
 // KIND_LISPALLOC_geom__SimpleVectorCoordinate_O
@@ -2062,8 +2086,8 @@ template <typename FP> struct Cast<geom::SimpleVectorCoordinate_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 217 217 
-      return (kindVal == 217);
+      // low high --> 210 210 
+      return (kindVal == 210);
   };
 };
 // KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__ConstitutionBond_O__
@@ -2080,8 +2104,8 @@ template <typename FP> struct Cast<core::SimpleMDArray_int16_t_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 269 269 
-      return (kindVal == 269);
+      // low high --> 262 262 
+      return (kindVal == 262);
   };
 };
 // KIND_LISPALLOC_core__MDArrayBaseChar_O
@@ -2089,8 +2113,8 @@ template <typename FP> struct Cast<core::MDArrayBaseChar_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 285 285 
-      return (kindVal == 285);
+      // low high --> 278 278 
+      return (kindVal == 278);
   };
 };
 // KIND_LISPALLOC_llvmo__InsertPoint_O
@@ -2098,8 +2122,8 @@ template <typename FP> struct Cast<llvmo::InsertPoint_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 608 608 
-      return (kindVal == 608);
+      // low high --> 607 607 
+      return (kindVal == 607);
   };
 };
 // KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__ReportBase_O__
@@ -2116,8 +2140,8 @@ template <typename FP> struct Cast<clcenv::FunctionIgnore_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 548 548 
-      return (kindVal == 548);
+      // low high --> 547 547 
+      return (kindVal == 547);
   };
 };
 // KIND_LISPALLOC_chem__StereoisomerVirtualAtom_O
@@ -2125,8 +2149,8 @@ template <typename FP> struct Cast<chem::StereoisomerVirtualAtom_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 376 376 
-      return (kindVal == 376);
+      // low high --> 373 373 
+      return (kindVal == 373);
   };
 };
 // KIND_LISPALLOC_chem__ZMatrixInternal_O
@@ -2134,8 +2158,8 @@ template <typename FP> struct Cast<chem::ZMatrixInternal_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 509 512 
-      return ((509 <= kindVal) && (kindVal <= 512));
+      // low high --> 508 511 
+      return ((508 <= kindVal) && (kindVal <= 511));
   };
 };
 // KIND_LISPALLOC_core__RecursiveDirectoryIterator_O
@@ -2143,8 +2167,8 @@ template <typename FP> struct Cast<core::RecursiveDirectoryIterator_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 65 65 
-      return (kindVal == 65);
+      // low high --> 66 66 
+      return (kindVal == 66);
   };
 };
 // KIND_LISPALLOC_chem__IterateMatter_O
@@ -2152,8 +2176,8 @@ template <typename FP> struct Cast<chem::IterateMatter_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 61 64 
-      return ((61 <= kindVal) && (kindVal <= 64));
+      // low high --> 62 65 
+      return ((62 <= kindVal) && (kindVal <= 65));
   };
 };
 // KIND_LISPALLOC_asttooling__DerivableMatchCallback
@@ -2179,8 +2203,8 @@ template <typename FP> struct Cast<chem::SpecificContextSet_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 508 508 
-      return (kindVal == 508);
+      // low high --> 507 507 
+      return (kindVal == 507);
   };
 };
 // KIND_LISPALLOC_llvmo__Constant_O
@@ -2188,8 +2212,8 @@ template <typename FP> struct Cast<llvmo::Constant_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 119 132 
-      return ((119 <= kindVal) && (kindVal <= 132));
+      // low high --> 120 133 
+      return ((120 <= kindVal) && (kindVal <= 133));
   };
 };
 // KIND_LISPALLOC_core__SimpleMDArray_int64_t_O
@@ -2197,8 +2221,8 @@ template <typename FP> struct Cast<core::SimpleMDArray_int64_t_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 259 259 
-      return (kindVal == 259);
+      // low high --> 252 252 
+      return (kindVal == 252);
   };
 };
 // KIND_LISPALLOC_llvmo__IRBuilder_O
@@ -2206,8 +2230,8 @@ template <typename FP> struct Cast<llvmo::IRBuilder_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 73 73 
-      return (kindVal == 73);
+      // low high --> 74 74 
+      return (kindVal == 74);
   };
 };
 // KIND_LISPALLOC_core__SymbolToEnumConverter_O
@@ -2215,8 +2239,8 @@ template <typename FP> struct Cast<core::SymbolToEnumConverter_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 607 607 
-      return (kindVal == 607);
+      // low high --> 606 606 
+      return (kindVal == 606);
   };
 };
 // KIND_LISPALLOC_core__ConsStepper_O
@@ -2224,8 +2248,8 @@ template <typename FP> struct Cast<core::ConsStepper_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 38 38 
-      return (kindVal == 38);
+      // low high --> 39 39 
+      return (kindVal == 39);
   };
 };
 // KIND_LISPALLOC_geom__BoundingBox_O
@@ -2233,8 +2257,8 @@ template <typename FP> struct Cast<geom::BoundingBox_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 507 507 
-      return (kindVal == 507);
+      // low high --> 506 506 
+      return (kindVal == 506);
   };
 };
 // KIND_GCARRAY_gctools__GCArray_moveable_float_
@@ -2251,8 +2275,8 @@ template <typename FP> struct Cast<clcenv::OptimizeInfo_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 529 529 
-      return (kindVal == 529);
+      // low high --> 528 528 
+      return (kindVal == 528);
   };
 };
 // KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__BondList_O__
@@ -2269,8 +2293,8 @@ template <typename FP> struct Cast<chem::ZMatrixBondInternal_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 512 512 
-      return (kindVal == 512);
+      // low high --> 511 511 
+      return (kindVal == 511);
   };
 };
 // KIND_LISPALLOC_adapt__ObjectSet_O
@@ -2278,8 +2302,8 @@ template <typename FP> struct Cast<adapt::ObjectSet_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 606 606 
-      return (kindVal == 606);
+      // low high --> 605 605 
+      return (kindVal == 605);
   };
 };
 // KIND_LISPALLOC_core__SexpLoadArchive_O
@@ -2287,8 +2311,8 @@ template <typename FP> struct Cast<core::SexpLoadArchive_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 604 604 
-      return (kindVal == 604);
+      // low high --> 603 603 
+      return (kindVal == 603);
   };
 };
 // KIND_LISPALLOC_core__LoadArchive_O
@@ -2296,8 +2320,8 @@ template <typename FP> struct Cast<core::LoadArchive_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 603 604 
-      return ((603 <= kindVal) && (kindVal <= 604));
+      // low high --> 602 603 
+      return ((602 <= kindVal) && (kindVal <= 603));
   };
 };
 // KIND_GCVECTOR_gctools__GCVector_moveable_chem__EnergyAtom_
@@ -2323,8 +2347,8 @@ template <typename FP> struct Cast<llvmo::LandingPadInst_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 118 118 
-      return (kindVal == 118);
+      // low high --> 119 119 
+      return (kindVal == 119);
   };
 };
 // KIND_LISPALLOC_llvmo__APFloat_O
@@ -2332,8 +2356,8 @@ template <typename FP> struct Cast<llvmo::APFloat_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 150 150 
-      return (kindVal == 150);
+      // low high --> 151 151 
+      return (kindVal == 151);
   };
 };
 // KIND_GCARRAY_gctools__GCArray_moveable_unsigned_int_
@@ -2350,8 +2374,8 @@ template <typename FP> struct Cast<chem::ReadAmberParameters_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 506 506 
-      return (kindVal == 506);
+      // low high --> 505 505 
+      return (kindVal == 505);
   };
 };
 // KIND_LISPALLOC_chem__DirectionalCoupling_O
@@ -2359,8 +2383,8 @@ template <typename FP> struct Cast<chem::DirectionalCoupling_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 389 389 
-      return (kindVal == 389);
+      // low high --> 386 386 
+      return (kindVal == 386);
   };
 };
 // KIND_LISPALLOC_core__CoreExposer_O
@@ -2377,8 +2401,8 @@ template <typename FP> struct Cast<llvmo::AtomicCmpXchgInst_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 117 117 
-      return (kindVal == 117);
+      // low high --> 118 118 
+      return (kindVal == 118);
   };
 };
 // KIND_LISPALLOC_core__WeakPointer_O
@@ -2386,8 +2410,8 @@ template <typename FP> struct Cast<core::WeakPointer_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 605 605 
-      return (kindVal == 605);
+      // low high --> 604 604 
+      return (kindVal == 604);
   };
 };
 // KIND_LISPALLOC_chem__AGVertex_O
@@ -2395,8 +2419,8 @@ template <typename FP> struct Cast<chem::AGVertex_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 505 505 
-      return (kindVal == 505);
+      // low high --> 504 504 
+      return (kindVal == 504);
   };
 };
 // KIND_LISPALLOC_llvmo__ReturnInst_O
@@ -2404,8 +2428,8 @@ template <typename FP> struct Cast<llvmo::ReturnInst_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 109 109 
-      return (kindVal == 109);
+      // low high --> 110 110 
+      return (kindVal == 110);
   };
 };
 // KIND_LISPALLOC_core__Archive_O
@@ -2413,8 +2437,8 @@ template <typename FP> struct Cast<core::Archive_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 600 604 
-      return ((600 <= kindVal) && (kindVal <= 604));
+      // low high --> 599 603 
+      return ((599 <= kindVal) && (kindVal <= 603));
   };
 };
 // KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__MonomerCoordinates_O__
@@ -2431,8 +2455,8 @@ template <typename FP> struct Cast<chem::RestrainedPiBond_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 421 421 
-      return (kindVal == 421);
+      // low high --> 418 418 
+      return (kindVal == 418);
   };
 };
 // KIND_LISPALLOC_core__SimpleMDArrayBaseChar_O
@@ -2440,8 +2464,8 @@ template <typename FP> struct Cast<core::SimpleMDArrayBaseChar_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 277 277 
-      return (kindVal == 277);
+      // low high --> 270 270 
+      return (kindVal == 270);
   };
 };
 // KIND_LISPALLOC_core__Fixnum_dummy_O
@@ -2449,8 +2473,8 @@ template <typename FP> struct Cast<core::Fixnum_dummy_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 624 624 
-      return (kindVal == 624);
+      // low high --> 622 622 
+      return (kindVal == 622);
   };
 };
 // KIND_LISPALLOC_core__Environment_O
@@ -2458,8 +2482,8 @@ template <typename FP> struct Cast<core::Environment_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 581 599 
-      return ((581 <= kindVal) && (kindVal <= 599));
+      // low high --> 580 598 
+      return ((580 <= kindVal) && (kindVal <= 598));
   };
 };
 // KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__Coupling_O___
@@ -2476,8 +2500,8 @@ template <typename FP> struct Cast<geom::SimpleMDArrayCoordinate_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 273 273 
-      return (kindVal == 273);
+      // low high --> 266 266 
+      return (kindVal == 266);
   };
 };
 // KIND_LISPALLOC_chem__FFPtor_O
@@ -2485,8 +2509,8 @@ template <typename FP> struct Cast<chem::FFPtor_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 356 356 
-      return (kindVal == 356);
+      // low high --> 351 351 
+      return (kindVal == 351);
   };
 };
 // KIND_LISPALLOC_chem__FFItor_O
@@ -2494,8 +2518,8 @@ template <typename FP> struct Cast<chem::FFItor_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 355 355 
-      return (kindVal == 355);
+      // low high --> 350 350 
+      return (kindVal == 350);
   };
 };
 // KIND_LISPALLOC_chem__EnergyFixedNonbondRestraint_O
@@ -2512,8 +2536,8 @@ template <typename FP> struct Cast<chem::RepresentedEntityNameSet_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 366 366 
-      return (kindVal == 366);
+      // low high --> 363 363 
+      return (kindVal == 363);
   };
 };
 // KIND_LISPALLOC_chem__Constitution_O
@@ -2521,8 +2545,8 @@ template <typename FP> struct Cast<chem::Constitution_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 374 374 
-      return (kindVal == 374);
+      // low high --> 371 371 
+      return (kindVal == 371);
   };
 };
 // KIND_LISPALLOC_chem__MonomerPack_O
@@ -2530,8 +2554,8 @@ template <typename FP> struct Cast<chem::MonomerPack_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 365 365 
-      return (kindVal == 365);
+      // low high --> 362 362 
+      return (kindVal == 362);
   };
 };
 // KIND_LISPALLOC_chem__FFBaseDb_O
@@ -2539,8 +2563,8 @@ template <typename FP> struct Cast<chem::FFBaseDb_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 496 504 
-      return ((496 <= kindVal) && (kindVal <= 504));
+      // low high --> 495 503 
+      return ((495 <= kindVal) && (kindVal <= 503));
   };
 };
 // KIND_LISPALLOC_core__SourceManager_O
@@ -2548,8 +2572,8 @@ template <typename FP> struct Cast<core::SourceManager_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 580 580 
-      return (kindVal == 580);
+      // low high --> 579 579 
+      return (kindVal == 579);
   };
 };
 // KIND_TEMPLATED_LISPALLOC_clbind__ConstructorCreator_O
@@ -2557,8 +2581,8 @@ template <typename FP> struct Cast<clbind::ConstructorCreator_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 50 50 
-      return (kindVal == 50);
+      // low high --> 51 51 
+      return (kindVal == 51);
   };
 };
 // KIND_LISPALLOC_geom__OMatrix_O
@@ -2566,8 +2590,8 @@ template <typename FP> struct Cast<geom::OMatrix_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 495 495 
-      return (kindVal == 495);
+      // low high --> 494 494 
+      return (kindVal == 494);
   };
 };
 // KIND_GCVECTOR_gctools__GCVector_moveable_core__RequiredArgument_
@@ -2593,8 +2617,8 @@ template <typename FP> struct Cast<clcenv::LambdaName_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 547 547 
-      return (kindVal == 547);
+      // low high --> 546 546 
+      return (kindVal == 546);
   };
 };
 // KIND_LISPALLOC_adapt__AdaptExposer_O
@@ -2611,8 +2635,8 @@ template <typename FP> struct Cast<adapt::StringList_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 579 579 
-      return (kindVal == 579);
+      // low high --> 578 578 
+      return (kindVal == 578);
   };
 };
 // KIND_LISPALLOC_llvmo__DIFile_O
@@ -2620,8 +2644,8 @@ template <typename FP> struct Cast<llvmo::DIFile_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 85 85 
-      return (kindVal == 85);
+      // low high --> 86 86 
+      return (kindVal == 86);
   };
 };
 // KIND_LISPALLOC_clcenv__FunctionInfo_O
@@ -2629,8 +2653,8 @@ template <typename FP> struct Cast<clcenv::FunctionInfo_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 522 528 
-      return ((522 <= kindVal) && (kindVal <= 528));
+      // low high --> 521 527 
+      return ((521 <= kindVal) && (kindVal <= 527));
   };
 };
 // KIND_LISPALLOC_chem__BondListMatchNode_O
@@ -2638,8 +2662,8 @@ template <typename FP> struct Cast<chem::BondListMatchNode_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 396 398 
-      return ((396 <= kindVal) && (kindVal <= 398));
+      // low high --> 393 395 
+      return ((393 <= kindVal) && (kindVal <= 395));
   };
 };
 // KIND_GCVECTOR_gctools__GCVector_moveable_chem__BeyondThresholdFixedNonbondRestraint_
@@ -2656,8 +2680,8 @@ template <typename FP> struct Cast<core::StrNs_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 296 300 
-      return ((296 <= kindVal) && (kindVal <= 300));
+      // low high --> 289 293 
+      return ((289 <= kindVal) && (kindVal <= 293));
   };
 };
 // KIND_LISPALLOC_chem__OutPlug_O
@@ -2665,8 +2689,8 @@ template <typename FP> struct Cast<chem::OutPlug_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 342 343 
-      return ((342 <= kindVal) && (kindVal <= 343));
+      // low high --> 336 337 
+      return ((336 <= kindVal) && (kindVal <= 337));
   };
 };
 // KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__Symbol_O__
@@ -2683,8 +2707,8 @@ template <typename FP> struct Cast<llvmo::ClaspJIT_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 578 578 
-      return (kindVal == 578);
+      // low high --> 577 577 
+      return (kindVal == 577);
   };
 };
 // KIND_LISPALLOC_llvmo__PointerType_O
@@ -2692,8 +2716,8 @@ template <typename FP> struct Cast<llvmo::PointerType_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 158 158 
-      return (kindVal == 158);
+      // low high --> 159 159 
+      return (kindVal == 159);
   };
 };
 // KIND_LISPALLOC_llvmo__UndefValue_O
@@ -2701,8 +2725,8 @@ template <typename FP> struct Cast<llvmo::UndefValue_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 128 128 
-      return (kindVal == 128);
+      // low high --> 129 129 
+      return (kindVal == 129);
   };
 };
 // KIND_LISPALLOC_chem__PdbReader_O
@@ -2710,8 +2734,17 @@ template <typename FP> struct Cast<chem::PdbReader_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 494 494 
-      return (kindVal == 494);
+      // low high --> 493 493 
+      return (kindVal == 493);
+  };
+};
+// KIND_LISPALLOC_chem__EnergyRigidBodyStaple_O
+template <typename FP> struct Cast<chem::EnergyRigidBodyStaple_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
+      int kindVal = header->kind();
+      // low high --> 462 462 
+      return (kindVal == 462);
   };
 };
 // KIND_LISPALLOC_core__MDArray_int16_t_O
@@ -2719,8 +2752,8 @@ template <typename FP> struct Cast<core::MDArray_int16_t_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 289 289 
-      return (kindVal == 289);
+      // low high --> 282 282 
+      return (kindVal == 282);
   };
 };
 // KIND_LISPALLOC_clcenv__LexicalVariableInfo_O
@@ -2728,8 +2761,8 @@ template <typename FP> struct Cast<clcenv::LexicalVariableInfo_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 520 520 
-      return (kindVal == 520);
+      // low high --> 519 519 
+      return (kindVal == 519);
   };
 };
 // KIND_LISPALLOC_llvmo__FenceInst_O
@@ -2737,8 +2770,8 @@ template <typename FP> struct Cast<llvmo::FenceInst_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 116 116 
-      return (kindVal == 116);
+      // low high --> 117 117 
+      return (kindVal == 117);
   };
 };
 // KIND_LISPALLOC_chem__IterateRestraints_O
@@ -2746,8 +2779,8 @@ template <typename FP> struct Cast<chem::IterateRestraints_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 60 60 
-      return (kindVal == 60);
+      // low high --> 61 61 
+      return (kindVal == 61);
   };
 };
 // KIND_GCVECTOR_gctools__GCVector_moveable_float_
@@ -2764,8 +2797,8 @@ template <typename FP> struct Cast<chem::CDFragment_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 493 493 
-      return (kindVal == 493);
+      // low high --> 492 492 
+      return (kindVal == 492);
   };
 };
 // KIND_LISPALLOC_core__CxxObject_O
@@ -2773,8 +2806,8 @@ template <typename FP> struct Cast<core::CxxObject_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 336 577 
-      return ((336 <= kindVal) && (kindVal <= 577));
+      // low high --> 330 576 
+      return ((330 <= kindVal) && (kindVal <= 576));
   };
 };
 // KIND_LISPALLOC_adapt__StringSet_O
@@ -2782,8 +2815,8 @@ template <typename FP> struct Cast<adapt::StringSet_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 492 492 
-      return (kindVal == 492);
+      // low high --> 491 491 
+      return (kindVal == 491);
   };
 };
 // KIND_LISPALLOC_core__TwoWayStream_O
@@ -2791,8 +2824,8 @@ template <typename FP> struct Cast<core::TwoWayStream_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 330 330 
-      return (kindVal == 330);
+      // low high --> 323 323 
+      return (kindVal == 323);
   };
 };
 // KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__Twister_O__
@@ -2827,8 +2860,8 @@ template <typename FP> struct Cast<core::VectorStepper_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 37 37 
-      return (kindVal == 37);
+      // low high --> 38 38 
+      return (kindVal == 38);
   };
 };
 // KIND_LISPALLOC_chem__Structure_Old_List_O
@@ -2836,8 +2869,8 @@ template <typename FP> struct Cast<chem::Structure_Old_List_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 491 491 
-      return (kindVal == 491);
+      // low high --> 490 490 
+      return (kindVal == 490);
   };
 };
 // KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__Topology_O___
@@ -2863,8 +2896,8 @@ template <typename FP> struct Cast<chem::FFStretch_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 354 354 
-      return (kindVal == 354);
+      // low high --> 349 349 
+      return (kindVal == 349);
   };
 };
 // KIND_GCARRAY_gctools__GCArray_moveable_gctools__smart_ptr_core__T_O__
@@ -2881,8 +2914,17 @@ template <typename FP> struct Cast<core::HashTableEq_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 30 30 
-      return (kindVal == 30);
+      // low high --> 31 31 
+      return (kindVal == 31);
+  };
+};
+// KIND_LISPALLOC_mp__ConcurrentQueue_O
+template <typename FP> struct Cast<mp::ConcurrentQueue_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
+      int kindVal = header->kind();
+      // low high --> 329 329 
+      return (kindVal == 329);
   };
 };
 // KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__MonomerCoordinates_O___
@@ -2899,8 +2941,8 @@ template <typename FP> struct Cast<chem::WildElementDict_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 490 490 
-      return (kindVal == 490);
+      // low high --> 489 489 
+      return (kindVal == 489);
   };
 };
 // KIND_LISPALLOC_chem__ChemInfo_O
@@ -2908,8 +2950,8 @@ template <typename FP> struct Cast<chem::ChemInfo_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 489 489 
-      return (kindVal == 489);
+      // low high --> 488 488 
+      return (kindVal == 488);
   };
 };
 // KIND_LISPALLOC_core__DoubleFloat_O
@@ -2917,8 +2959,8 @@ template <typename FP> struct Cast<core::DoubleFloat_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 619 619 
-      return (kindVal == 619);
+      // low high --> 617 617 
+      return (kindVal == 617);
   };
 };
 // KIND_LISPALLOC_chem__FFNonbondDb_O
@@ -2926,8 +2968,8 @@ template <typename FP> struct Cast<chem::FFNonbondDb_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 503 503 
-      return (kindVal == 503);
+      // low high --> 502 502 
+      return (kindVal == 502);
   };
 };
 // KIND_LISPALLOC_chem__RingClosingPlug_O
@@ -2935,8 +2977,8 @@ template <typename FP> struct Cast<chem::RingClosingPlug_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 343 343 
-      return (kindVal == 343);
+      // low high --> 337 337 
+      return (kindVal == 337);
   };
 };
 // KIND_GCVECTOR_gctools__GCVector_moveable_core__CacheRecord_
@@ -2953,8 +2995,8 @@ template <typename FP> struct Cast<core::MDArray_int8_t_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 302 302 
-      return (kindVal == 302);
+      // low high --> 295 295 
+      return (kindVal == 295);
   };
 };
 // KIND_LISPALLOC_llvmo__FunctionType_O
@@ -2962,8 +3004,8 @@ template <typename FP> struct Cast<llvmo::FunctionType_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 160 160 
-      return (kindVal == 160);
+      // low high --> 161 161 
+      return (kindVal == 161);
   };
 };
 // KIND_LISPALLOC_llvmo__BasicBlock_O
@@ -2971,8 +3013,8 @@ template <typename FP> struct Cast<llvmo::BasicBlock_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 133 133 
-      return (kindVal == 133);
+      // low high --> 134 134 
+      return (kindVal == 134);
   };
 };
 // KIND_LISPALLOC_llvmo__DataLayout_O
@@ -2980,8 +3022,8 @@ template <typename FP> struct Cast<llvmo::DataLayout_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 335 335 
-      return (kindVal == 335);
+      // low high --> 328 328 
+      return (kindVal == 328);
   };
 };
 // KIND_LISPALLOC_core__SimpleVectorFloat_O
@@ -2989,8 +3031,8 @@ template <typename FP> struct Cast<core::SimpleVectorFloat_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 232 232 
-      return (kindVal == 232);
+      // low high --> 225 225 
+      return (kindVal == 225);
   };
 };
 // KIND_LISPALLOC_core__SingleDispatchMethodFunction_O
@@ -2998,8 +3040,8 @@ template <typename FP> struct Cast<core::SingleDispatchMethodFunction_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 180 181 
-      return ((180 <= kindVal) && (kindVal <= 181));
+      // low high --> 181 182 
+      return ((181 <= kindVal) && (kindVal <= 182));
   };
 };
 // KIND_LISPALLOC_chem__SearchStatistics_O
@@ -3007,8 +3049,8 @@ template <typename FP> struct Cast<chem::SearchStatistics_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 488 488 
-      return (kindVal == 488);
+      // low high --> 487 487 
+      return (kindVal == 487);
   };
 };
 // KIND_LISPALLOC_chem__MacroModelFile_O
@@ -3016,8 +3058,8 @@ template <typename FP> struct Cast<chem::MacroModelFile_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 487 487 
-      return (kindVal == 487);
+      // low high --> 486 486 
+      return (kindVal == 486);
   };
 };
 // KIND_LISPALLOC_llvmo__DIScope_O
@@ -3025,8 +3067,8 @@ template <typename FP> struct Cast<llvmo::DIScope_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 80 91 
-      return ((80 <= kindVal) && (kindVal <= 91));
+      // low high --> 81 92 
+      return ((81 <= kindVal) && (kindVal <= 92));
   };
 };
 // KIND_LISPALLOC_llvmo__User_O
@@ -3034,8 +3076,8 @@ template <typename FP> struct Cast<llvmo::User_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 98 132 
-      return ((98 <= kindVal) && (kindVal <= 132));
+      // low high --> 99 133 
+      return ((99 <= kindVal) && (kindVal <= 133));
   };
 };
 // KIND_LISPALLOC_llvmo__Target_O
@@ -3043,8 +3085,8 @@ template <typename FP> struct Cast<llvmo::Target_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 149 149 
-      return (kindVal == 149);
+      // low high --> 150 150 
+      return (kindVal == 150);
   };
 };
 // KIND_LISPALLOC_core__IOFileStream_O
@@ -3052,8 +3094,8 @@ template <typename FP> struct Cast<core::IOFileStream_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 333 333 
-      return (kindVal == 333);
+      // low high --> 326 326 
+      return (kindVal == 326);
   };
 };
 // KIND_LISPALLOC_llvmo__UnreachableInst_O
@@ -3061,8 +3103,8 @@ template <typename FP> struct Cast<llvmo::UnreachableInst_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 108 108 
-      return (kindVal == 108);
+      // low high --> 109 109 
+      return (kindVal == 109);
   };
 };
 // KIND_LISPALLOC_core__DirectoryIterator_O
@@ -3070,8 +3112,8 @@ template <typename FP> struct Cast<core::DirectoryIterator_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 59 59 
-      return (kindVal == 59);
+      // low high --> 60 60 
+      return (kindVal == 60);
   };
 };
 // KIND_LISPALLOC_core__Closure_O
@@ -3079,8 +3121,8 @@ template <typename FP> struct Cast<core::Closure_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 167 182 
-      return ((167 <= kindVal) && (kindVal <= 182));
+      // low high --> 168 183 
+      return ((168 <= kindVal) && (kindVal <= 183));
   };
 };
 // KIND_LISPALLOC_core__Integer_O
@@ -3088,8 +3130,8 @@ template <typename FP> struct Cast<core::Integer_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 622 624 
-      return ((622 <= kindVal) && (kindVal <= 624));
+      // low high --> 620 622 
+      return ((620 <= kindVal) && (kindVal <= 622));
   };
 };
 // KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__ChemInfo_O__
@@ -3106,8 +3148,8 @@ template <typename FP> struct Cast<llvmo::ArrayType_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 157 157 
-      return (kindVal == 157);
+      // low high --> 158 158 
+      return (kindVal == 158);
   };
 };
 // KIND_LISPALLOC_core__CxxMethodFunction_O
@@ -3115,8 +3157,8 @@ template <typename FP> struct Cast<core::CxxMethodFunction_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 181 181 
-      return (kindVal == 181);
+      // low high --> 182 182 
+      return (kindVal == 182);
   };
 };
 // KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__FrameRecognizer_O___
@@ -3133,8 +3175,8 @@ template <typename FP> struct Cast<core::MDArrayCharacter_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 243 243 
-      return (kindVal == 243);
+      // low high --> 236 236 
+      return (kindVal == 236);
   };
 };
 // KIND_LISPALLOC_chem__RestraintAnchor_O
@@ -3142,8 +3184,8 @@ template <typename FP> struct Cast<chem::RestraintAnchor_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 568 568 
-      return (kindVal == 568);
+      // low high --> 567 567 
+      return (kindVal == 567);
   };
 };
 // KIND_LISPALLOC_core__SpecialForm_O
@@ -3151,8 +3193,8 @@ template <typename FP> struct Cast<core::SpecialForm_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 166 166 
-      return (kindVal == 166);
+      // low high --> 167 167 
+      return (kindVal == 167);
   };
 };
 // KIND_LISPALLOC_core__Record_O
@@ -3160,8 +3202,8 @@ template <typename FP> struct Cast<core::Record_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 334 334 
-      return (kindVal == 334);
+      // low high --> 327 327 
+      return (kindVal == 327);
   };
 };
 // KIND_LISPALLOC_chem__Twister_O
@@ -3169,8 +3211,8 @@ template <typename FP> struct Cast<chem::Twister_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 486 486 
-      return (kindVal == 486);
+      // low high --> 485 485 
+      return (kindVal == 485);
   };
 };
 // KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__Package_O__
@@ -3187,8 +3229,8 @@ template <typename FP> struct Cast<llvmo::GlobalVariable_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 122 122 
-      return (kindVal == 122);
+      // low high --> 123 123 
+      return (kindVal == 123);
   };
 };
 // KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__List_V__
@@ -3223,8 +3265,8 @@ template <typename FP> struct Cast<chem::AtomReference_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 439 439 
-      return (kindVal == 439);
+      // low high --> 436 436 
+      return (kindVal == 436);
   };
 };
 // KIND_LISPALLOC_core__Stream_O
@@ -3232,8 +3274,8 @@ template <typename FP> struct Cast<core::Stream_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 321 333 
-      return ((321 <= kindVal) && (kindVal <= 333));
+      // low high --> 314 326 
+      return ((314 <= kindVal) && (kindVal <= 326));
   };
 };
 // KIND_LISPALLOC_core__StackValueEnvironment_O
@@ -3241,8 +3283,8 @@ template <typename FP> struct Cast<core::StackValueEnvironment_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 590 590 
-      return (kindVal == 590);
+      // low high --> 589 589 
+      return (kindVal == 589);
   };
 };
 // KIND_LISPALLOC_clcenv__SymbolMacroInfo_O
@@ -3250,8 +3292,8 @@ template <typename FP> struct Cast<clcenv::SymbolMacroInfo_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 519 519 
-      return (kindVal == 519);
+      // low high --> 518 518 
+      return (kindVal == 518);
   };
 };
 // KIND_LISPALLOC_core__Bignum_O
@@ -3259,8 +3301,8 @@ template <typename FP> struct Cast<core::Bignum_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 623 623 
-      return (kindVal == 623);
+      // low high --> 621 621 
+      return (kindVal == 621);
   };
 };
 // KIND_LISPALLOC_units__Quantity_O
@@ -3268,8 +3310,8 @@ template <typename FP> struct Cast<units::Quantity_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 485 485 
-      return (kindVal == 485);
+      // low high --> 484 484 
+      return (kindVal == 484);
   };
 };
 // KIND_LISPALLOC_core__WeakKeyMapping_O
@@ -3277,8 +3319,8 @@ template <typename FP> struct Cast<core::WeakKeyMapping_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 320 320 
-      return (kindVal == 320);
+      // low high --> 313 313 
+      return (kindVal == 313);
   };
 };
 // KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__Mate_O__
@@ -3295,8 +3337,8 @@ template <typename FP> struct Cast<chem::AntechamberFocusAtomMatch_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 411 411 
-      return (kindVal == 411);
+      // low high --> 408 408 
+      return (kindVal == 408);
   };
 };
 // KIND_LISPALLOC_core__SimpleVector_int16_t_O
@@ -3304,8 +3346,8 @@ template <typename FP> struct Cast<core::SimpleVector_int16_t_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 226 226 
-      return (kindVal == 226);
+      // low high --> 219 219 
+      return (kindVal == 219);
   };
 };
 // KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__PdbMonomerConnectivity_O___
@@ -3322,8 +3364,8 @@ template <typename FP> struct Cast<chem::RestraintDistance_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 567 567 
-      return (kindVal == 567);
+      // low high --> 566 566 
+      return (kindVal == 566);
   };
 };
 // KIND_LISPALLOC_adapt__SymbolSet_O
@@ -3331,8 +3373,8 @@ template <typename FP> struct Cast<adapt::SymbolSet_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 319 319 
-      return (kindVal == 319);
+      // low high --> 312 312 
+      return (kindVal == 312);
   };
 };
 // KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__chem__EstimateStretch__
@@ -3349,8 +3391,8 @@ template <typename FP> struct Cast<clcenv::SpecialVariable_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 546 546 
-      return (kindVal == 546);
+      // low high --> 545 545 
+      return (kindVal == 545);
   };
 };
 // KIND_LISPALLOC_chem__RestrainedExoCyclicAtom_O
@@ -3358,8 +3400,8 @@ template <typename FP> struct Cast<chem::RestrainedExoCyclicAtom_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 420 420 
-      return (kindVal == 420);
+      // low high --> 417 417 
+      return (kindVal == 417);
   };
 };
 // KIND_LISPALLOC_chem__CDNode_O
@@ -3367,8 +3409,8 @@ template <typename FP> struct Cast<chem::CDNode_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 484 484 
-      return (kindVal == 484);
+      // low high --> 483 483 
+      return (kindVal == 483);
   };
 };
 // KIND_LISPALLOC_core__Character_dummy_O
@@ -3376,8 +3418,8 @@ template <typename FP> struct Cast<core::Character_dummy_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 318 318 
-      return (kindVal == 318);
+      // low high --> 311 311 
+      return (kindVal == 311);
   };
 };
 // KIND_LISPALLOC_chem__RestraintAngle_O
@@ -3385,8 +3427,8 @@ template <typename FP> struct Cast<chem::RestraintAngle_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 566 566 
-      return (kindVal == 566);
+      // low high --> 565 565 
+      return (kindVal == 565);
   };
 };
 // KIND_LISPALLOC_core__SexpSaveArchive_O
@@ -3394,8 +3436,8 @@ template <typename FP> struct Cast<core::SexpSaveArchive_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 602 602 
-      return (kindVal == 602);
+      // low high --> 601 601 
+      return (kindVal == 601);
   };
 };
 // KIND_LISPALLOC_chem__Aggregate_O
@@ -3403,8 +3445,8 @@ template <typename FP> struct Cast<chem::Aggregate_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 432 432 
-      return (kindVal == 432);
+      // low high --> 429 429 
+      return (kindVal == 429);
   };
 };
 // KIND_LISPALLOC_chem__PlugWithMates_O
@@ -3412,8 +3454,8 @@ template <typename FP> struct Cast<chem::PlugWithMates_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 341 344 
-      return ((341 <= kindVal) && (kindVal <= 344));
+      // low high --> 335 338 
+      return ((335 <= kindVal) && (kindVal <= 338));
   };
 };
 // KIND_LISPALLOC_core__FunctionFrame_O
@@ -3421,8 +3463,8 @@ template <typename FP> struct Cast<core::FunctionFrame_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 599 599 
-      return (kindVal == 599);
+      // low high --> 598 598 
+      return (kindVal == 598);
   };
 };
 // KIND_LISPALLOC_core__SingleDispatchGenericFunctionClosure_O
@@ -3430,8 +3472,8 @@ template <typename FP> struct Cast<core::SingleDispatchGenericFunctionClosure_O*
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 179 179 
-      return (kindVal == 179);
+      // low high --> 180 180 
+      return (kindVal == 180);
   };
 };
 // KIND_LISPALLOC_core__LightUserData_O
@@ -3439,8 +3481,8 @@ template <typename FP> struct Cast<core::LightUserData_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 316 317 
-      return ((316 <= kindVal) && (kindVal <= 317));
+      // low high --> 309 310 
+      return ((309 <= kindVal) && (kindVal <= 310));
   };
 };
 // KIND_LISPALLOC_core__EchoStream_O
@@ -3448,8 +3490,8 @@ template <typename FP> struct Cast<core::EchoStream_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 329 329 
-      return (kindVal == 329);
+      // low high --> 322 322 
+      return (kindVal == 322);
   };
 };
 // KIND_LISPALLOC_chem__CalculatePositionUsingInternals_O
@@ -3457,8 +3499,8 @@ template <typename FP> struct Cast<chem::CalculatePositionUsingInternals_O*,FP> 
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 556 556 
-      return (kindVal == 556);
+      // low high --> 555 555 
+      return (kindVal == 555);
   };
 };
 // KIND_LISPALLOC_llvmo__DILocalScope_O
@@ -3466,8 +3508,8 @@ template <typename FP> struct Cast<llvmo::DILocalScope_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 81 84 
-      return ((81 <= kindVal) && (kindVal <= 84));
+      // low high --> 82 85 
+      return ((82 <= kindVal) && (kindVal <= 85));
   };
 };
 // KIND_LISPALLOC_chem__ZMatrixEntry_O
@@ -3475,8 +3517,8 @@ template <typename FP> struct Cast<chem::ZMatrixEntry_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 483 483 
-      return (kindVal == 483);
+      // low high --> 482 482 
+      return (kindVal == 482);
   };
 };
 // KIND_LISPALLOC_core__SimpleMDArray_size_t_O
@@ -3484,8 +3526,8 @@ template <typename FP> struct Cast<core::SimpleMDArray_size_t_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 261 261 
-      return (kindVal == 261);
+      // low high --> 254 254 
+      return (kindVal == 254);
   };
 };
 // KIND_LISPALLOC_llvmo__Instruction_O
@@ -3493,8 +3535,8 @@ template <typename FP> struct Cast<llvmo::Instruction_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 99 118 
-      return ((99 <= kindVal) && (kindVal <= 118));
+      // low high --> 100 119 
+      return ((100 <= kindVal) && (kindVal <= 119));
   };
 };
 // KIND_LISPALLOC_core__FunctionClosure_O
@@ -3502,8 +3544,8 @@ template <typename FP> struct Cast<core::FunctionClosure_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 169 181 
-      return ((169 <= kindVal) && (kindVal <= 181));
+      // low high --> 170 182 
+      return ((170 <= kindVal) && (kindVal <= 182));
   };
 };
 // KIND_LISPALLOC_chem__ConstitutionAtom_O
@@ -3511,8 +3553,8 @@ template <typename FP> struct Cast<chem::ConstitutionAtom_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 481 482 
-      return ((481 <= kindVal) && (kindVal <= 482));
+      // low high --> 480 481 
+      return ((480 <= kindVal) && (kindVal <= 481));
   };
 };
 // KIND_LISPALLOC_chem__MonoMonomer_O
@@ -3520,8 +3562,8 @@ template <typename FP> struct Cast<chem::MonoMonomer_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 372 372 
-      return (kindVal == 372);
+      // low high --> 369 369 
+      return (kindVal == 369);
   };
 };
 // KIND_LISPALLOC_clcenv__FunctionDynamicExtent_O
@@ -3529,8 +3571,8 @@ template <typename FP> struct Cast<clcenv::FunctionDynamicExtent_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 545 545 
-      return (kindVal == 545);
+      // low high --> 544 544 
+      return (kindVal == 544);
   };
 };
 // KIND_LISPALLOC_clcenv__LexicalVariable_O
@@ -3538,8 +3580,8 @@ template <typename FP> struct Cast<clcenv::LexicalVariable_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 544 544 
-      return (kindVal == 544);
+      // low high --> 543 543 
+      return (kindVal == 543);
   };
 };
 // KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_int_gctools__smart_ptr_chem__CDNode_O___
@@ -3574,8 +3616,8 @@ template <typename FP> struct Cast<chem::TypeAssignmentRules_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 480 480 
-      return (kindVal == 480);
+      // low high --> 479 479 
+      return (kindVal == 479);
   };
 };
 // KIND_LISPALLOC_chem__Mate_O
@@ -3583,8 +3625,8 @@ template <typename FP> struct Cast<chem::Mate_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 369 369 
-      return (kindVal == 369);
+      // low high --> 366 366 
+      return (kindVal == 366);
   };
 };
 // KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__Residue_O__
@@ -3601,8 +3643,8 @@ template <typename FP> struct Cast<clcenv::VariableDynamicExtent_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 543 543 
-      return (kindVal == 543);
+      // low high --> 542 542 
+      return (kindVal == 542);
   };
 };
 // KIND_LISPALLOC_chem__StructureComparer_O
@@ -3610,8 +3652,8 @@ template <typename FP> struct Cast<chem::StructureComparer_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 479 479 
-      return (kindVal == 479);
+      // low high --> 478 478 
+      return (kindVal == 478);
   };
 };
 // KIND_LISPALLOC_core__MultiStringBuffer_O
@@ -3619,8 +3661,8 @@ template <typename FP> struct Cast<core::MultiStringBuffer_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 315 315 
-      return (kindVal == 315);
+      // low high --> 308 308 
+      return (kindVal == 308);
   };
 };
 // KIND_LISPALLOC_chem__StereoInformation_O
@@ -3628,8 +3670,8 @@ template <typename FP> struct Cast<chem::StereoInformation_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 478 478 
-      return (kindVal == 478);
+      // low high --> 477 477 
+      return (kindVal == 477);
   };
 };
 // KIND_LISPALLOC_llvmo__Module_O
@@ -3637,8 +3679,8 @@ template <typename FP> struct Cast<llvmo::Module_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 148 148 
-      return (kindVal == 148);
+      // low high --> 149 149 
+      return (kindVal == 149);
   };
 };
 // KIND_LISPALLOC_core__FileStatus_O
@@ -3646,8 +3688,8 @@ template <typename FP> struct Cast<core::FileStatus_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 314 314 
-      return (kindVal == 314);
+      // low high --> 307 307 
+      return (kindVal == 307);
   };
 };
 // KIND_LISPALLOC_chem__Branch_O
@@ -3655,8 +3697,8 @@ template <typename FP> struct Cast<chem::Branch_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 397 397 
-      return (kindVal == 397);
+      // low high --> 394 394 
+      return (kindVal == 394);
   };
 };
 // KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_int_gctools__smart_ptr_chem__Residue_O___
@@ -3673,8 +3715,8 @@ template <typename FP> struct Cast<core::SimpleMDArray_fixnum_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 257 257 
-      return (kindVal == 257);
+      // low high --> 250 250 
+      return (kindVal == 250);
   };
 };
 // KIND_LISPALLOC_core__MDArray_int32_t_O
@@ -3682,8 +3724,8 @@ template <typename FP> struct Cast<core::MDArray_int32_t_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 295 295 
-      return (kindVal == 295);
+      // low high --> 288 288 
+      return (kindVal == 288);
   };
 };
 // KIND_LISPALLOC_llvmo__MDNode_O
@@ -3691,8 +3733,17 @@ template <typename FP> struct Cast<llvmo::MDNode_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 78 91 
-      return ((78 <= kindVal) && (kindVal <= 91));
+      // low high --> 79 92 
+      return ((79 <= kindVal) && (kindVal <= 92));
+  };
+};
+// KIND_LISPALLOC_chem__EnergyRigidBodyComponent_O
+template <typename FP> struct Cast<chem::EnergyRigidBodyComponent_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
+      int kindVal = header->kind();
+      // low high --> 460 462 
+      return ((460 <= kindVal) && (kindVal <= 462));
   };
 };
 // KIND_LISPALLOC_chem__PdbWriter_O
@@ -3700,8 +3751,8 @@ template <typename FP> struct Cast<chem::PdbWriter_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 477 477 
-      return (kindVal == 477);
+      // low high --> 476 476 
+      return (kindVal == 476);
   };
 };
 // KIND_LISPALLOC_chem__FFStretchDb_O
@@ -3709,8 +3760,8 @@ template <typename FP> struct Cast<chem::FFStretchDb_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 502 502 
-      return (kindVal == 502);
+      // low high --> 501 501 
+      return (kindVal == 501);
   };
 };
 // KIND_LISPALLOC_llvmo__UnaryInstruction_O
@@ -3718,8 +3769,8 @@ template <typename FP> struct Cast<llvmo::UnaryInstruction_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 112 115 
-      return ((112 <= kindVal) && (kindVal <= 115));
+      // low high --> 113 116 
+      return ((113 <= kindVal) && (kindVal <= 116));
   };
 };
 // KIND_LISPALLOC_llvmo__DILexicalBlockBase_O
@@ -3727,8 +3778,8 @@ template <typename FP> struct Cast<llvmo::DILexicalBlockBase_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 82 83 
-      return ((82 <= kindVal) && (kindVal <= 83));
+      // low high --> 83 84 
+      return ((83 <= kindVal) && (kindVal <= 84));
   };
 };
 // KIND_LISPALLOC_core__InterpretedClosure_O
@@ -3736,8 +3787,8 @@ template <typename FP> struct Cast<core::InterpretedClosure_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 178 178 
-      return (kindVal == 178);
+      // low high --> 179 179 
+      return (kindVal == 179);
   };
 };
 // KIND_LISPALLOC_core__WeakKeyHashTable_O
@@ -3745,8 +3796,8 @@ template <typename FP> struct Cast<core::WeakKeyHashTable_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 198 198 
-      return (kindVal == 198);
+      // low high --> 191 191 
+      return (kindVal == 191);
   };
 };
 // KIND_LISPALLOC_core__RandomState_O
@@ -3754,8 +3805,8 @@ template <typename FP> struct Cast<core::RandomState_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 313 313 
-      return (kindVal == 313);
+      // low high --> 306 306 
+      return (kindVal == 306);
   };
 };
 // KIND_LISPALLOC_chem__AfterMatchBondTest_O
@@ -3763,8 +3814,8 @@ template <typename FP> struct Cast<chem::AfterMatchBondTest_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 395 395 
-      return (kindVal == 395);
+      // low high --> 392 392 
+      return (kindVal == 392);
   };
 };
 // KIND_LISPALLOC_llvmo__Pass_O
@@ -3772,8 +3823,8 @@ template <typename FP> struct Cast<llvmo::Pass_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 143 147 
-      return ((143 <= kindVal) && (kindVal <= 147));
+      // low high --> 144 148 
+      return ((144 <= kindVal) && (kindVal <= 148));
   };
 };
 // KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_unsigned_int_gctools__smart_ptr_chem__Residue_O___
@@ -3790,8 +3841,8 @@ template <typename FP> struct Cast<core::ActivationFrame_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 596 599 
-      return ((596 <= kindVal) && (kindVal <= 599));
+      // low high --> 595 598 
+      return ((595 <= kindVal) && (kindVal <= 598));
   };
 };
 // KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__ConformationCollectionEntry_O__
@@ -3808,8 +3859,8 @@ template <typename FP> struct Cast<core::StringOutputStream_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 328 328 
-      return (kindVal == 328);
+      // low high --> 321 321 
+      return (kindVal == 321);
   };
 };
 // KIND_LISPALLOC_core__IntArray_O
@@ -3817,8 +3868,8 @@ template <typename FP> struct Cast<core::IntArray_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 312 312 
-      return (kindVal == 312);
+      // low high --> 305 305 
+      return (kindVal == 305);
   };
 };
 // KIND_LISPALLOC_chem__SparseLargeSquareMatrix_O
@@ -3826,8 +3877,8 @@ template <typename FP> struct Cast<chem::SparseLargeSquareMatrix_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 443 443 
-      return (kindVal == 443);
+      // low high --> 440 440 
+      return (kindVal == 440);
   };
 };
 // KIND_LISPALLOC_chem__FFNonbondCrossTermTable_O
@@ -3835,8 +3886,8 @@ template <typename FP> struct Cast<chem::FFNonbondCrossTermTable_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 476 476 
-      return (kindVal == 476);
+      // low high --> 475 475 
+      return (kindVal == 475);
   };
 };
 // KIND_LISPALLOC_core__SharpEqualWrapper_O
@@ -3844,8 +3895,8 @@ template <typename FP> struct Cast<core::SharpEqualWrapper_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 311 311 
-      return (kindVal == 311);
+      // low high --> 304 304 
+      return (kindVal == 304);
   };
 };
 // KIND_LISPALLOC_chem__ConformationExplorerEntryStage_O
@@ -3853,8 +3904,8 @@ template <typename FP> struct Cast<chem::ConformationExplorerEntryStage_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 475 475 
-      return (kindVal == 475);
+      // low high --> 474 474 
+      return (kindVal == 474);
   };
 };
 // KIND_LISPALLOC_chem__EnergyFunction_O
@@ -3862,8 +3913,8 @@ template <typename FP> struct Cast<chem::EnergyFunction_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 474 474 
-      return (kindVal == 474);
+      // low high --> 358 358 
+      return (kindVal == 358);
   };
 };
 // KIND_GCARRAY_gctools__GCArray_moveable_unsigned_long_
@@ -3889,8 +3940,8 @@ template <typename FP> struct Cast<core::UserData_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 317 317 
-      return (kindVal == 317);
+      // low high --> 310 310 
+      return (kindVal == 310);
   };
 };
 // KIND_LISPALLOC_chem__Bond_O
@@ -3907,8 +3958,8 @@ template <typename FP> struct Cast<chem::Logical_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 410 410 
-      return (kindVal == 410);
+      // low high --> 407 407 
+      return (kindVal == 407);
   };
 };
 // KIND_LISPALLOC_chem__FFAngleDb_O
@@ -3916,8 +3967,8 @@ template <typename FP> struct Cast<chem::FFAngleDb_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 501 501 
-      return (kindVal == 501);
+      // low high --> 500 500 
+      return (kindVal == 500);
   };
 };
 // KIND_LISPALLOC_chem__AtomId_O
@@ -3934,8 +3985,8 @@ template <typename FP> struct Cast<core::Array_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 201 310 
-      return ((201 <= kindVal) && (kindVal <= 310));
+      // low high --> 194 303 
+      return ((194 <= kindVal) && (kindVal <= 303));
   };
 };
 // KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__CDFragment_O___
@@ -3961,8 +4012,8 @@ template <typename FP> struct Cast<core::LambdaListHandler_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 200 200 
-      return (kindVal == 200);
+      // low high --> 193 193 
+      return (kindVal == 193);
   };
 };
 // KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_core__Array_O___
@@ -3979,8 +4030,8 @@ template <typename FP> struct Cast<clcenv::LambdaNameInfo_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 527 527 
-      return (kindVal == 527);
+      // low high --> 526 526 
+      return (kindVal == 526);
   };
 };
 // KIND_LISPALLOC_core__MDArray_int64_t_O
@@ -3988,8 +4039,8 @@ template <typename FP> struct Cast<core::MDArray_int64_t_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 245 245 
-      return (kindVal == 245);
+      // low high --> 238 238 
+      return (kindVal == 238);
   };
 };
 // KIND_GCVECTOR_gctools__GCVector_moveable_chem__EnergyChiralRestraint_
@@ -4006,8 +4057,8 @@ template <typename FP> struct Cast<core::ClosureWithFrame_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 176 178 
-      return ((176 <= kindVal) && (kindVal <= 178));
+      // low high --> 177 179 
+      return ((177 <= kindVal) && (kindVal <= 179));
   };
 };
 // KIND_LISPALLOC_llvmo__ImmutablePass_O
@@ -4015,8 +4066,8 @@ template <typename FP> struct Cast<llvmo::ImmutablePass_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 145 146 
-      return ((145 <= kindVal) && (kindVal <= 146));
+      // low high --> 146 147 
+      return ((146 <= kindVal) && (kindVal <= 147));
   };
 };
 // KIND_LISPALLOC_core__StandardClassCreator_O
@@ -4024,8 +4075,8 @@ template <typename FP> struct Cast<core::StandardClassCreator_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 49 49 
-      return (kindVal == 49);
+      // low high --> 50 50 
+      return (kindVal == 50);
   };
 };
 // KIND_LISPALLOC_llvmo__ConstantInt_O
@@ -4033,8 +4084,8 @@ template <typename FP> struct Cast<llvmo::ConstantInt_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 127 127 
-      return (kindVal == 127);
+      // low high --> 128 128 
+      return (kindVal == 128);
   };
 };
 // KIND_LISPALLOC_llvmo__Function_O
@@ -4042,8 +4093,8 @@ template <typename FP> struct Cast<llvmo::Function_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 121 121 
-      return (kindVal == 121);
+      // low high --> 122 122 
+      return (kindVal == 122);
   };
 };
 // KIND_LISPALLOC_chem__SpanningLoop_O
@@ -4069,8 +4120,8 @@ template <typename FP> struct Cast<chem::FFAngle_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 353 353 
-      return (kindVal == 353);
+      // low high --> 348 348 
+      return (kindVal == 348);
   };
 };
 // KIND_LISPALLOC_core__FunctionValueEnvironment_O
@@ -4078,8 +4129,8 @@ template <typename FP> struct Cast<core::FunctionValueEnvironment_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 593 593 
-      return (kindVal == 593);
+      // low high --> 592 592 
+      return (kindVal == 592);
   };
 };
 // KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_core__Symbol_O___
@@ -4114,8 +4165,8 @@ template <typename FP> struct Cast<core::GlueEnvironment_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 595 595 
-      return (kindVal == 595);
+      // low high --> 594 594 
+      return (kindVal == 594);
   };
 };
 // KIND_LISPALLOC_core__IOStreamStream_O
@@ -4123,8 +4174,8 @@ template <typename FP> struct Cast<core::IOStreamStream_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 332 332 
-      return (kindVal == 332);
+      // low high --> 325 325 
+      return (kindVal == 325);
   };
 };
 // KIND_LISPALLOC_core__Ratio_O
@@ -4132,8 +4183,8 @@ template <typename FP> struct Cast<core::Ratio_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 621 621 
-      return (kindVal == 621);
+      // low high --> 619 619 
+      return (kindVal == 619);
   };
 };
 // KIND_LISPALLOC_core__SingleDispatchMethod_O
@@ -4141,8 +4192,8 @@ template <typename FP> struct Cast<core::SingleDispatchMethod_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 199 199 
-      return (kindVal == 199);
+      // low high --> 192 192 
+      return (kindVal == 192);
   };
 };
 // KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__ConformationExplorerEntry_O__
@@ -4159,8 +4210,8 @@ template <typename FP> struct Cast<core::SimpleVectorDouble_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 228 228 
-      return (kindVal == 228);
+      // low high --> 221 221 
+      return (kindVal == 221);
   };
 };
 // KIND_LISPALLOC_llvmo__Triple_O
@@ -4168,8 +4219,8 @@ template <typename FP> struct Cast<llvmo::Triple_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 142 142 
-      return (kindVal == 142);
+      // low high --> 143 143 
+      return (kindVal == 143);
   };
 };
 // KIND_LISPALLOC_core__SimpleVector_fixnum_O
@@ -4177,8 +4228,8 @@ template <typename FP> struct Cast<core::SimpleVector_fixnum_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 206 206 
-      return (kindVal == 206);
+      // low high --> 199 199 
+      return (kindVal == 199);
   };
 };
 // KIND_LISPALLOC_core__WeakHashTable_O
@@ -4186,8 +4237,8 @@ template <typename FP> struct Cast<core::WeakHashTable_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 197 198 
-      return ((197 <= kindVal) && (kindVal <= 198));
+      // low high --> 190 191 
+      return ((190 <= kindVal) && (kindVal <= 191));
   };
 };
 // KIND_LISPALLOC_chem__EnergyComponent_O
@@ -4195,8 +4246,8 @@ template <typename FP> struct Cast<chem::EnergyComponent_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 458 466 
-      return ((458 <= kindVal) && (kindVal <= 466));
+      // low high --> 455 466 
+      return ((455 <= kindVal) && (kindVal <= 466));
   };
 };
 // KIND_LISPALLOC_core__SingleDispatchEffectiveMethodFunction_O
@@ -4204,8 +4255,8 @@ template <typename FP> struct Cast<core::SingleDispatchEffectiveMethodFunction_O
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 175 175 
-      return (kindVal == 175);
+      // low high --> 176 176 
+      return (kindVal == 176);
   };
 };
 // KIND_LISPALLOC_core__General_O
@@ -4213,8 +4264,8 @@ template <typename FP> struct Cast<core::General_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 14 627 
-      return ((14 <= kindVal) && (kindVal <= 627));
+      // low high --> 14 625 
+      return ((14 <= kindVal) && (kindVal <= 625));
   };
 };
 // KIND_TEMPLATED_LISPALLOC_core__BuiltinClosure_O
@@ -4222,8 +4273,8 @@ template <typename FP> struct Cast<core::BuiltinClosure_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 172 174 
-      return ((172 <= kindVal) && (kindVal <= 174));
+      // low high --> 173 175 
+      return ((173 <= kindVal) && (kindVal <= 175));
   };
 };
 // KIND_LISPALLOC_llvmo__FunctionPass_O
@@ -4231,8 +4282,8 @@ template <typename FP> struct Cast<llvmo::FunctionPass_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 147 147 
-      return (kindVal == 147);
+      // low high --> 148 148 
+      return (kindVal == 148);
   };
 };
 // KIND_LISPALLOC_llvmo__PassManager_O
@@ -4240,8 +4291,8 @@ template <typename FP> struct Cast<llvmo::PassManager_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 141 141 
-      return (kindVal == 141);
+      // low high --> 142 142 
+      return (kindVal == 142);
   };
 };
 // KIND_LISPALLOC_core__Cons_O
@@ -4258,8 +4309,8 @@ template <typename FP> struct Cast<core::SimpleMDArray_byte32_t_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 248 248 
-      return (kindVal == 248);
+      // low high --> 241 241 
+      return (kindVal == 241);
   };
 };
 // KIND_LISPALLOC_clcenv__Function_O
@@ -4267,8 +4318,8 @@ template <typename FP> struct Cast<clcenv::Function_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 542 542 
-      return (kindVal == 542);
+      // low high --> 541 541 
+      return (kindVal == 541);
   };
 };
 // KIND_LISPALLOC_llvmo__VAArgInst_O
@@ -4276,8 +4327,8 @@ template <typename FP> struct Cast<llvmo::VAArgInst_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 115 115 
-      return (kindVal == 115);
+      // low high --> 116 116 
+      return (kindVal == 116);
   };
 };
 // KIND_LISPALLOC_asttooling__DerivableFrontendActionFactory
@@ -4285,8 +4336,8 @@ template <typename FP> struct Cast<asttooling::DerivableFrontendActionFactory*,F
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 187 187 
-      return (kindVal == 187);
+      // low high --> 9 9 
+      return (kindVal == 9);
   };
 };
 // KIND_LISPALLOC_chem__VirtualSphere_O
@@ -4294,8 +4345,8 @@ template <typename FP> struct Cast<chem::VirtualSphere_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 457 457 
-      return (kindVal == 457);
+      // low high --> 454 454 
+      return (kindVal == 454);
   };
 };
 // KIND_LISPALLOC_llvmo__PassManagerBase_O
@@ -4303,8 +4354,8 @@ template <typename FP> struct Cast<llvmo::PassManagerBase_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 139 141 
-      return ((139 <= kindVal) && (kindVal <= 141));
+      // low high --> 140 142 
+      return ((140 <= kindVal) && (kindVal <= 142));
   };
 };
 // KIND_LISPALLOC_core__StringStream_O
@@ -4312,8 +4363,8 @@ template <typename FP> struct Cast<core::StringStream_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 326 328 
-      return ((326 <= kindVal) && (kindVal <= 328));
+      // low high --> 319 321 
+      return ((319 <= kindVal) && (kindVal <= 321));
   };
 };
 // KIND_LISPALLOC_core__SimpleString_O
@@ -4321,8 +4372,8 @@ template <typename FP> struct Cast<core::SimpleString_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 218 222 
-      return ((218 <= kindVal) && (kindVal <= 222));
+      // low high --> 211 215 
+      return ((211 <= kindVal) && (kindVal <= 215));
   };
 };
 // KIND_LISPALLOC_llvmo__TargetSubtargetInfo_O
@@ -4330,8 +4381,8 @@ template <typename FP> struct Cast<llvmo::TargetSubtargetInfo_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 96 96 
-      return (kindVal == 96);
+      // low high --> 97 97 
+      return (kindVal == 97);
   };
 };
 // KIND_LISPALLOC_core__MDArrayFloat_O
@@ -4339,8 +4390,8 @@ template <typename FP> struct Cast<core::MDArrayFloat_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 306 306 
-      return (kindVal == 306);
+      // low high --> 299 299 
+      return (kindVal == 299);
   };
 };
 // KIND_LISPALLOC_llvmo__ValueAsMetadata_O
@@ -4348,8 +4399,8 @@ template <typename FP> struct Cast<llvmo::ValueAsMetadata_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 77 77 
-      return (kindVal == 77);
+      // low high --> 78 78 
+      return (kindVal == 78);
   };
 };
 // KIND_LISPALLOC_clbind__ClassRep_O
@@ -4357,8 +4408,8 @@ template <typename FP> struct Cast<clbind::ClassRep_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 56 56 
-      return (kindVal == 56);
+      // low high --> 57 57 
+      return (kindVal == 57);
   };
 };
 // KIND_LISPALLOC_llvmo__PassManagerBuilder_O
@@ -4366,8 +4417,8 @@ template <typename FP> struct Cast<llvmo::PassManagerBuilder_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 138 138 
-      return (kindVal == 138);
+      // low high --> 139 139 
+      return (kindVal == 139);
   };
 };
 // KIND_LISPALLOC_llvmo__DIBuilder_O
@@ -4375,8 +4426,8 @@ template <typename FP> struct Cast<llvmo::DIBuilder_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 137 137 
-      return (kindVal == 137);
+      // low high --> 138 138 
+      return (kindVal == 138);
   };
 };
 // KIND_LISPALLOC_llvmo__DISubroutineType_O
@@ -4384,8 +4435,8 @@ template <typename FP> struct Cast<llvmo::DISubroutineType_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 90 90 
-      return (kindVal == 90);
+      // low high --> 91 91 
+      return (kindVal == 91);
   };
 };
 // KIND_LISPALLOC_chem__CandoDatabase_O
@@ -4393,8 +4444,8 @@ template <typename FP> struct Cast<chem::CandoDatabase_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 456 456 
-      return (kindVal == 456);
+      // low high --> 453 453 
+      return (kindVal == 453);
   };
 };
 // KIND_LISPALLOC_chem__CDBond_O
@@ -4402,8 +4453,8 @@ template <typename FP> struct Cast<chem::CDBond_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 455 455 
-      return (kindVal == 455);
+      // low high --> 452 452 
+      return (kindVal == 452);
   };
 };
 // KIND_LISPALLOC_core__Path_O
@@ -4411,8 +4462,8 @@ template <typename FP> struct Cast<core::Path_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 196 196 
-      return (kindVal == 196);
+      // low high --> 189 189 
+      return (kindVal == 189);
   };
 };
 // KIND_LISPALLOC_clcenv__BlockInfo_O
@@ -4420,8 +4471,8 @@ template <typename FP> struct Cast<clcenv::BlockInfo_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 521 521 
-      return (kindVal == 521);
+      // low high --> 520 520 
+      return (kindVal == 520);
   };
 };
 // KIND_LISPALLOC_core__RuntimeVisibleEnvironment_O
@@ -4429,8 +4480,8 @@ template <typename FP> struct Cast<core::RuntimeVisibleEnvironment_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 591 594 
-      return ((591 <= kindVal) && (kindVal <= 594));
+      // low high --> 590 593 
+      return ((590 <= kindVal) && (kindVal <= 593));
   };
 };
 // KIND_LISPALLOC_core__SourceFileInfo_O
@@ -4438,8 +4489,8 @@ template <typename FP> struct Cast<core::SourceFileInfo_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 195 195 
-      return (kindVal == 195);
+      // low high --> 188 188 
+      return (kindVal == 188);
   };
 };
 // KIND_LISPALLOC_chem__VirtualAtom_O
@@ -4447,8 +4498,8 @@ template <typename FP> struct Cast<chem::VirtualAtom_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 431 431 
-      return (kindVal == 431);
+      // low high --> 428 428 
+      return (kindVal == 428);
   };
 };
 // KIND_LISPALLOC_llvmo__LoadInst_O
@@ -4456,8 +4507,8 @@ template <typename FP> struct Cast<llvmo::LoadInst_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 114 114 
-      return (kindVal == 114);
+      // low high --> 115 115 
+      return (kindVal == 115);
   };
 };
 // KIND_LISPALLOC_clcenv__VariableInfo_O
@@ -4465,8 +4516,8 @@ template <typename FP> struct Cast<clcenv::VariableInfo_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 516 520 
-      return ((516 <= kindVal) && (kindVal <= 520));
+      // low high --> 515 519 
+      return ((515 <= kindVal) && (kindVal <= 519));
   };
 };
 // KIND_LISPALLOC_clcenv__Tag_O
@@ -4474,8 +4525,8 @@ template <typename FP> struct Cast<clcenv::Tag_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 541 541 
-      return (kindVal == 541);
+      // low high --> 540 540 
+      return (kindVal == 540);
   };
 };
 // KIND_LISPALLOC_llvmo__ExecutionEngine_O
@@ -4483,8 +4534,8 @@ template <typename FP> struct Cast<llvmo::ExecutionEngine_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 136 136 
-      return (kindVal == 136);
+      // low high --> 137 137 
+      return (kindVal == 137);
   };
 };
 // KIND_LISPALLOC_asttooling__DerivableSyntaxOnlyAction
@@ -4501,8 +4552,8 @@ template <typename FP> struct Cast<geom::MDArrayCoordinate_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 293 293 
-      return (kindVal == 293);
+      // low high --> 286 286 
+      return (kindVal == 286);
   };
 };
 // KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__PathMessage_O__
@@ -4555,8 +4606,8 @@ template <typename FP> struct Cast<core::Complex_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 613 613 
-      return (kindVal == 613);
+      // low high --> 611 611 
+      return (kindVal == 611);
   };
 };
 // KIND_LISPALLOC_chem__ResidueTest_O
@@ -4564,8 +4615,8 @@ template <typename FP> struct Cast<chem::ResidueTest_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 409 409 
-      return (kindVal == 409);
+      // low high --> 406 406 
+      return (kindVal == 406);
   };
 };
 // KIND_LISPALLOC_core__SimpleMDArrayDouble_O
@@ -4573,8 +4624,8 @@ template <typename FP> struct Cast<core::SimpleMDArrayDouble_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 271 271 
-      return (kindVal == 271);
+      // low high --> 264 264 
+      return (kindVal == 264);
   };
 };
 // KIND_LISPALLOC_core__InstanceCreator_O
@@ -4582,8 +4633,8 @@ template <typename FP> struct Cast<core::InstanceCreator_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 48 48 
-      return (kindVal == 48);
+      // low high --> 49 49 
+      return (kindVal == 49);
   };
 };
 // KIND_LISPALLOC_core__NativeVector_double_O
@@ -4591,8 +4642,8 @@ template <typename FP> struct Cast<core::NativeVector_double_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 454 454 
-      return (kindVal == 454);
+      // low high --> 451 451 
+      return (kindVal == 451);
   };
 };
 // KIND_LISPALLOC_llvmo__DILexicalBlock_O
@@ -4600,8 +4651,8 @@ template <typename FP> struct Cast<llvmo::DILexicalBlock_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 83 83 
-      return (kindVal == 83);
+      // low high --> 84 84 
+      return (kindVal == 84);
   };
 };
 // KIND_LISPALLOC_core__SNode_O
@@ -4609,8 +4660,8 @@ template <typename FP> struct Cast<core::SNode_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 192 194 
-      return ((192 <= kindVal) && (kindVal <= 194));
+      // low high --> 185 187 
+      return ((185 <= kindVal) && (kindVal <= 187));
   };
 };
 // KIND_ROOTCLASSALLOC_clbind__detail__class_map
@@ -4627,8 +4678,8 @@ template <typename FP> struct Cast<llvmo::AllocaInst_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 113 113 
-      return (kindVal == 113);
+      // low high --> 114 114 
+      return (kindVal == 114);
   };
 };
 // KIND_LISPALLOC_core__CompiledFunction_O
@@ -4636,8 +4687,8 @@ template <typename FP> struct Cast<core::CompiledFunction_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 168 168 
-      return (kindVal == 168);
+      // low high --> 169 169 
+      return (kindVal == 169);
   };
 };
 // KIND_LISPALLOC_chem__IterateResidues_O
@@ -4645,8 +4696,8 @@ template <typename FP> struct Cast<chem::IterateResidues_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 62 62 
-      return (kindVal == 62);
+      // low high --> 63 63 
+      return (kindVal == 63);
   };
 };
 // KIND_LISPALLOC_chem__FrameRecognizer_O
@@ -4654,8 +4705,8 @@ template <typename FP> struct Cast<chem::FrameRecognizer_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 453 453 
-      return (kindVal == 453);
+      // low high --> 450 450 
+      return (kindVal == 450);
   };
 };
 // KIND_GCVECTOR_gctools__GCVector_moveable_core__SymbolStorage_
@@ -4672,8 +4723,8 @@ template <typename FP> struct Cast<chem::PdbMonomerDatabase_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 452 452 
-      return (kindVal == 452);
+      // low high --> 449 449 
+      return (kindVal == 449);
   };
 };
 // KIND_LISPALLOC_core__NativeVector_float_O
@@ -4681,8 +4732,8 @@ template <typename FP> struct Cast<core::NativeVector_float_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 451 451 
-      return (kindVal == 451);
+      // low high --> 448 448 
+      return (kindVal == 448);
   };
 };
 // KIND_LISPALLOC_clcenv__VariableType_O
@@ -4690,8 +4741,8 @@ template <typename FP> struct Cast<clcenv::VariableType_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 540 540 
-      return (kindVal == 540);
+      // low high --> 539 539 
+      return (kindVal == 539);
   };
 };
 // KIND_LISPALLOC_core__Null_O
@@ -4699,8 +4750,8 @@ template <typename FP> struct Cast<core::Null_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 40 40 
-      return (kindVal == 40);
+      // low high --> 41 41 
+      return (kindVal == 41);
   };
 };
 // KIND_LISPALLOC_chem__FFTypesDb_O
@@ -4708,8 +4759,8 @@ template <typename FP> struct Cast<chem::FFTypesDb_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 498 498 
-      return (kindVal == 498);
+      // low high --> 497 497 
+      return (kindVal == 497);
   };
 };
 // KIND_LISPALLOC_core__StructureClassCreator_O
@@ -4717,8 +4768,8 @@ template <typename FP> struct Cast<core::StructureClassCreator_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 47 47 
-      return (kindVal == 47);
+      // low high --> 48 48 
+      return (kindVal == 48);
   };
 };
 // KIND_GCVECTOR_gctools__GCVector_moveable_chem__KeyEntry_
@@ -4735,8 +4786,8 @@ template <typename FP> struct Cast<llvmo::ConstantFP_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 126 126 
-      return (kindVal == 126);
+      // low high --> 127 127 
+      return (kindVal == 127);
   };
 };
 // KIND_LISPALLOC_chem__SmartsRoot_O
@@ -4744,8 +4795,8 @@ template <typename FP> struct Cast<chem::SmartsRoot_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 408 408 
-      return (kindVal == 408);
+      // low high --> 405 405 
+      return (kindVal == 405);
   };
 };
 // KIND_LISPALLOC_chem__Root_O
@@ -4753,8 +4804,8 @@ template <typename FP> struct Cast<chem::Root_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 406 408 
-      return ((406 <= kindVal) && (kindVal <= 408));
+      // low high --> 403 405 
+      return ((403 <= kindVal) && (kindVal <= 405));
   };
 };
 // KIND_LISPALLOC_chem__Topology_O
@@ -4762,8 +4813,8 @@ template <typename FP> struct Cast<chem::Topology_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 450 450 
-      return (kindVal == 450);
+      // low high --> 447 447 
+      return (kindVal == 447);
   };
 };
 // KIND_LISPALLOC_core__MDArray_byte16_t_O
@@ -4771,8 +4822,8 @@ template <typename FP> struct Cast<core::MDArray_byte16_t_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 304 304 
-      return (kindVal == 304);
+      // low high --> 297 297 
+      return (kindVal == 297);
   };
 };
 // KIND_LISPALLOC_chem__AntechamberBondTest_O
@@ -4780,8 +4831,8 @@ template <typename FP> struct Cast<chem::AntechamberBondTest_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 401 401 
-      return (kindVal == 401);
+      // low high --> 398 398 
+      return (kindVal == 398);
   };
 };
 // KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__ComplexRestraint_O__
@@ -4798,8 +4849,8 @@ template <typename FP> struct Cast<mp::Process_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 449 449 
-      return (kindVal == 449);
+      // low high --> 446 446 
+      return (kindVal == 446);
   };
 };
 // KIND_LISPALLOC_core__SimpleVector_byte8_t_O
@@ -4807,8 +4858,8 @@ template <typename FP> struct Cast<core::SimpleVector_byte8_t_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 213 213 
-      return (kindVal == 213);
+      // low high --> 206 206 
+      return (kindVal == 206);
   };
 };
 // KIND_LISPALLOC_core__Function_O
@@ -4816,8 +4867,8 @@ template <typename FP> struct Cast<core::Function_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 164 754 
-      return ((164 <= kindVal) && (kindVal <= 187));
+      // low high --> 165 184 
+      return ((165 <= kindVal) && (kindVal <= 184));
   };
 };
 // KIND_LISPALLOC_chem__TagSet_O
@@ -4825,8 +4876,8 @@ template <typename FP> struct Cast<chem::TagSet_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 405 405 
-      return (kindVal == 405);
+      // low high --> 402 402 
+      return (kindVal == 402);
   };
 };
 // KIND_LISPALLOC_core__MacroletEnvironment_O
@@ -4834,8 +4885,8 @@ template <typename FP> struct Cast<core::MacroletEnvironment_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 589 589 
-      return (kindVal == 589);
+      // low high --> 588 588 
+      return (kindVal == 588);
   };
 };
 // KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__Rotamer_O__
@@ -4852,8 +4903,8 @@ template <typename FP> struct Cast<clcenv::SpecialOperatorInfo_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 526 526 
-      return (kindVal == 526);
+      // low high --> 525 525 
+      return (kindVal == 525);
   };
 };
 // KIND_LISPALLOC_core__SmallMap_O
@@ -4861,8 +4912,8 @@ template <typename FP> struct Cast<core::SmallMap_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 163 163 
-      return (kindVal == 163);
+      // low high --> 164 164 
+      return (kindVal == 164);
   };
 };
 // KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__Atom_O__
@@ -4879,8 +4930,8 @@ template <typename FP> struct Cast<chem::RingFinder_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 448 448 
-      return (kindVal == 448);
+      // low high --> 445 445 
+      return (kindVal == 445);
   };
 };
 // KIND_LISPALLOC_chem__ConstitutionAtoms_O
@@ -4888,8 +4939,8 @@ template <typename FP> struct Cast<chem::ConstitutionAtoms_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 447 447 
-      return (kindVal == 447);
+      // low high --> 444 444 
+      return (kindVal == 444);
   };
 };
 // KIND_LISPALLOC_llvmo__DINode_O
@@ -4897,8 +4948,8 @@ template <typename FP> struct Cast<llvmo::DINode_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 79 91 
-      return ((79 <= kindVal) && (kindVal <= 91));
+      // low high --> 80 92 
+      return ((80 <= kindVal) && (kindVal <= 92));
   };
 };
 // KIND_LISPALLOC_core__HashTableEqual_O
@@ -4906,8 +4957,8 @@ template <typename FP> struct Cast<core::HashTableEqual_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 29 29 
-      return (kindVal == 29);
+      // low high --> 30 30 
+      return (kindVal == 30);
   };
 };
 // KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__Stereoisomer_O__
@@ -4924,8 +4975,8 @@ template <typename FP> struct Cast<core::SimpleCharacterString_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 220 220 
-      return (kindVal == 220);
+      // low high --> 213 213 
+      return (kindVal == 213);
   };
 };
 // KIND_LISPALLOC_chem__OneTypeRule_O
@@ -4933,8 +4984,8 @@ template <typename FP> struct Cast<chem::OneTypeRule_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 446 446 
-      return (kindVal == 446);
+      // low high --> 443 443 
+      return (kindVal == 443);
   };
 };
 // KIND_LISPALLOC_chem__EnergyImproperRestraint_O
@@ -4942,84 +4993,12 @@ template <typename FP> struct Cast<chem::EnergyImproperRestraint_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 462 462 
-      return (kindVal == 462);
+      // low high --> 459 459 
+      return (kindVal == 459);
   };
 };
-// KIND_LISPALLOC_chem__Rotamer_O
-template <typename FP> struct Cast<chem::Rotamer_O*,FP> {
-  inline static bool isA(FP client) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
-      // low high --> 445 445 
-      return (kindVal == 445);
-  };
-};
-// KIND_LISPALLOC_llvmo__CallInst_O
-template <typename FP> struct Cast<llvmo::CallInst_O*,FP> {
-  inline static bool isA(FP client) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
-      // low high --> 111 111 
-      return (kindVal == 111);
-  };
-};
-// KIND_LISPALLOC_core__Package_O
-template <typename FP> struct Cast<core::Package_O*,FP> {
-  inline static bool isA(FP client) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
-      // low high --> 162 162 
-      return (kindVal == 162);
-  };
-};
-// KIND_LISPALLOC_llvmo__Attribute_O
-template <typename FP> struct Cast<llvmo::Attribute_O*,FP> {
-  inline static bool isA(FP client) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
-      // low high --> 161 161 
-      return (kindVal == 161);
-  };
-};
-// KIND_LISPALLOC_core__SymbolMacroletEnvironment_O
-template <typename FP> struct Cast<core::SymbolMacroletEnvironment_O*,FP> {
-  inline static bool isA(FP client) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
-      // low high --> 588 588 
-      return (kindVal == 588);
-  };
-};
-// KIND_LISPALLOC_core__ExternalObject_O
-template <typename FP> struct Cast<core::ExternalObject_O*,FP> {
-  inline static bool isA(FP client) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
-      // low high --> 68 160 
-      return ((68 <= kindVal) && (kindVal <= 160));
-  };
-};
-// KIND_LISPALLOC_chem__EnergyNonbond_O
-template <typename FP> struct Cast<chem::EnergyNonbond_O*,FP> {
-  inline static bool isA(FP client) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
-      // low high --> 461 461 
-      return (kindVal == 461);
-  };
-};
-// KIND_LISPALLOC_clbind__DummyCreator_O
-template <typename FP> struct Cast<clbind::DummyCreator_O*,FP> {
-  inline static bool isA(FP client) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
-      // low high --> 46 46 
-      return (kindVal == 46);
-  };
-};
-// KIND_GCBITUNITCONTAINER1_gctools__GCBitUnitArray_moveable_1_unsigned_int_int_
-template <typename FP> struct Cast<gctools::GCBitUnitArray_moveable<1,unsigned int,int>*,FP> {
+// KIND_GCVECTOR_gctools__GCVector_moveable_chem__RigidBodyAtomInfo_
+template <typename FP> struct Cast<gctools::GCVector_moveable<chem::RigidBodyAtomInfo>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
@@ -5027,206 +5006,44 @@ template <typename FP> struct Cast<gctools::GCBitUnitArray_moveable<1,unsigned i
       return (kindVal == 675);
   };
 };
-// KIND_LISPALLOC_chem__ConformationExplorerMatch_O
-template <typename FP> struct Cast<chem::ConformationExplorerMatch_O*,FP> {
+// KIND_LISPALLOC_chem__Rotamer_O
+template <typename FP> struct Cast<chem::Rotamer_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 444 444 
-      return (kindVal == 444);
+      // low high --> 442 442 
+      return (kindVal == 442);
   };
 };
-// KIND_LISPALLOC_chem__SuperposableConformationCollection_O
-template <typename FP> struct Cast<chem::SuperposableConformationCollection_O*,FP> {
+// KIND_LISPALLOC_llvmo__CallInst_O
+template <typename FP> struct Cast<llvmo::CallInst_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 514 514 
-      return (kindVal == 514);
+      // low high --> 112 112 
+      return (kindVal == 112);
   };
 };
-// KIND_LISPALLOC_core__HashTableEql_O
-template <typename FP> struct Cast<core::HashTableEql_O*,FP> {
+// KIND_LISPALLOC_core__Package_O
+template <typename FP> struct Cast<core::Package_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 28 28 
-      return (kindVal == 28);
+      // low high --> 163 163 
+      return (kindVal == 163);
   };
 };
-// KIND_LISPALLOC_chem__Stereoisomer_O
-template <typename FP> struct Cast<chem::Stereoisomer_O*,FP> {
+// KIND_LISPALLOC_llvmo__Attribute_O
+template <typename FP> struct Cast<llvmo::Attribute_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 373 373 
-      return (kindVal == 373);
+      // low high --> 162 162 
+      return (kindVal == 162);
   };
 };
-// KIND_LISPALLOC_llvmo__PHINode_O
-template <typename FP> struct Cast<llvmo::PHINode_O*,FP> {
-  inline static bool isA(FP client) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
-      // low high --> 110 110 
-      return (kindVal == 110);
-  };
-};
-// KIND_LISPALLOC_core__MDArray_byte32_t_O
-template <typename FP> struct Cast<core::MDArray_byte32_t_O*,FP> {
-  inline static bool isA(FP client) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
-      // low high --> 283 283 
-      return (kindVal == 283);
-  };
-};
-// KIND_LISPALLOC_chem__AbstractLargeSquareMatrix_O
-template <typename FP> struct Cast<chem::AbstractLargeSquareMatrix_O*,FP> {
-  inline static bool isA(FP client) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
-      // low high --> 441 443 
-      return ((441 <= kindVal) && (kindVal <= 443));
-  };
-};
-// KIND_LISPALLOC_clasp_ffi__ForeignData_O
-template <typename FP> struct Cast<clasp_ffi::ForeignData_O*,FP> {
-  inline static bool isA(FP client) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
-      // low high --> 135 135 
-      return (kindVal == 135);
-  };
-};
-// KIND_TEMPLATED_LISPALLOC_core__WrappedPointer_O
-template <typename FP> struct Cast<core::WrappedPointer_O*,FP> {
-  inline static bool isA(FP client) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
-      // low high --> 67 67 
-      return (kindVal == 67);
-  };
-};
-// KIND_LISPALLOC_chem__EntityNameSetWithCap_O
-template <typename FP> struct Cast<chem::EntityNameSetWithCap_O*,FP> {
-  inline static bool isA(FP client) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
-      // low high --> 367 369 
-      return ((367 <= kindVal) && (kindVal <= 369));
-  };
-};
-// KIND_TEMPLATED_LISPALLOC_core__Iterator_O
-template <typename FP> struct Cast<core::Iterator_O*,FP> {
-  inline static bool isA(FP client) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
-      // low high --> 58 66 
-      return ((58 <= kindVal) && (kindVal <= 66));
-  };
-};
-// KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__StereoisomerAtoms_O___
-template <typename FP> struct Cast<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::StereoisomerAtoms_O>>>*,FP> {
-  inline static bool isA(FP client) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
-      // low high --> 674 674 
-      return (kindVal == 674);
-  };
-};
-// KIND_LISPALLOC_core__Str8Ns_O
-template <typename FP> struct Cast<core::Str8Ns_O*,FP> {
-  inline static bool isA(FP client) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
-      // low high --> 300 300 
-      return (kindVal == 300);
-  };
-};
-// KIND_LISPALLOC_chem__ImproperTorsion_O
-template <typename FP> struct Cast<chem::ImproperTorsion_O*,FP> {
-  inline static bool isA(FP client) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
-      // low high --> 440 440 
-      return (kindVal == 440);
-  };
-};
-// KIND_LISPALLOC_clcenv__GlobalFunctionInfo_O
-template <typename FP> struct Cast<clcenv::GlobalFunctionInfo_O*,FP> {
-  inline static bool isA(FP client) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
-      // low high --> 525 525 
-      return (kindVal == 525);
-  };
-};
-// KIND_LISPALLOC_core__SimpleMDArrayT_O
-template <typename FP> struct Cast<core::SimpleMDArrayT_O*,FP> {
-  inline static bool isA(FP client) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
-      // low high --> 255 255 
-      return (kindVal == 255);
-  };
-};
-// KIND_LISPALLOC_chem__AtomReferenceBase_O
-template <typename FP> struct Cast<chem::AtomReferenceBase_O*,FP> {
-  inline static bool isA(FP client) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
-      // low high --> 438 439 
-      return ((438 <= kindVal) && (kindVal <= 439));
-  };
-};
-// KIND_GCARRAY_gctools__GCArray_moveable_Vector3_
-template <typename FP> struct Cast<gctools::GCArray_moveable<Vector3>*,FP> {
-  inline static bool isA(FP client) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
-      // low high --> 673 673 
-      return (kindVal == 673);
-  };
-};
-// KIND_BOOTSTRAP_core__T_O
-template <typename FP> struct Cast<core::T_O*,FP> {
-  inline static bool isA(FP client) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
-      // low high --> 11 627 
-      return ((11 <= kindVal) && (kindVal <= 627));
-  };
-};
-// KIND_LISPALLOC_chem__ConformationCollectionEntry_O
-template <typename FP> struct Cast<chem::ConformationCollectionEntry_O*,FP> {
-  inline static bool isA(FP client) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
-      // low high --> 437 437 
-      return (kindVal == 437);
-  };
-};
-// KIND_LISPALLOC_core__MDArray_size_t_O
-template <typename FP> struct Cast<core::MDArray_size_t_O*,FP> {
-  inline static bool isA(FP client) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
-      // low high --> 310 310 
-      return (kindVal == 310);
-  };
-};
-// KIND_LISPALLOC_clcenv__Macro_O
-template <typename FP> struct Cast<clcenv::Macro_O*,FP> {
-  inline static bool isA(FP client) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
-      // low high --> 539 539 
-      return (kindVal == 539);
-  };
-};
-// KIND_LISPALLOC_core__UnwindProtectEnvironment_O
-template <typename FP> struct Cast<core::UnwindProtectEnvironment_O*,FP> {
+// KIND_LISPALLOC_core__SymbolMacroletEnvironment_O
+template <typename FP> struct Cast<core::SymbolMacroletEnvironment_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
@@ -5234,13 +5051,256 @@ template <typename FP> struct Cast<core::UnwindProtectEnvironment_O*,FP> {
       return (kindVal == 587);
   };
 };
+// KIND_LISPALLOC_core__ExternalObject_O
+template <typename FP> struct Cast<core::ExternalObject_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
+      int kindVal = header->kind();
+      // low high --> 69 161 
+      return ((69 <= kindVal) && (kindVal <= 161));
+  };
+};
+// KIND_LISPALLOC_chem__EnergyNonbond_O
+template <typename FP> struct Cast<chem::EnergyNonbond_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
+      int kindVal = header->kind();
+      // low high --> 458 458 
+      return (kindVal == 458);
+  };
+};
+// KIND_LISPALLOC_clbind__DummyCreator_O
+template <typename FP> struct Cast<clbind::DummyCreator_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
+      int kindVal = header->kind();
+      // low high --> 47 47 
+      return (kindVal == 47);
+  };
+};
+// KIND_GCBITUNITCONTAINER1_gctools__GCBitUnitArray_moveable_1_unsigned_int_int_
+template <typename FP> struct Cast<gctools::GCBitUnitArray_moveable<1,unsigned int,int>*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
+      int kindVal = header->kind();
+      // low high --> 674 674 
+      return (kindVal == 674);
+  };
+};
+// KIND_LISPALLOC_chem__ConformationExplorerMatch_O
+template <typename FP> struct Cast<chem::ConformationExplorerMatch_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
+      int kindVal = header->kind();
+      // low high --> 441 441 
+      return (kindVal == 441);
+  };
+};
+// KIND_LISPALLOC_chem__SuperposableConformationCollection_O
+template <typename FP> struct Cast<chem::SuperposableConformationCollection_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
+      int kindVal = header->kind();
+      // low high --> 513 513 
+      return (kindVal == 513);
+  };
+};
+// KIND_LISPALLOC_core__HashTableEql_O
+template <typename FP> struct Cast<core::HashTableEql_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
+      int kindVal = header->kind();
+      // low high --> 29 29 
+      return (kindVal == 29);
+  };
+};
+// KIND_LISPALLOC_chem__Stereoisomer_O
+template <typename FP> struct Cast<chem::Stereoisomer_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
+      int kindVal = header->kind();
+      // low high --> 370 370 
+      return (kindVal == 370);
+  };
+};
+// KIND_LISPALLOC_llvmo__PHINode_O
+template <typename FP> struct Cast<llvmo::PHINode_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
+      int kindVal = header->kind();
+      // low high --> 111 111 
+      return (kindVal == 111);
+  };
+};
+// KIND_LISPALLOC_core__MDArray_byte32_t_O
+template <typename FP> struct Cast<core::MDArray_byte32_t_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
+      int kindVal = header->kind();
+      // low high --> 276 276 
+      return (kindVal == 276);
+  };
+};
+// KIND_LISPALLOC_chem__AbstractLargeSquareMatrix_O
+template <typename FP> struct Cast<chem::AbstractLargeSquareMatrix_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
+      int kindVal = header->kind();
+      // low high --> 438 440 
+      return ((438 <= kindVal) && (kindVal <= 440));
+  };
+};
+// KIND_LISPALLOC_clasp_ffi__ForeignData_O
+template <typename FP> struct Cast<clasp_ffi::ForeignData_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
+      int kindVal = header->kind();
+      // low high --> 136 136 
+      return (kindVal == 136);
+  };
+};
+// KIND_TEMPLATED_LISPALLOC_core__WrappedPointer_O
+template <typename FP> struct Cast<core::WrappedPointer_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
+      int kindVal = header->kind();
+      // low high --> 68 68 
+      return (kindVal == 68);
+  };
+};
+// KIND_LISPALLOC_chem__EntityNameSetWithCap_O
+template <typename FP> struct Cast<chem::EntityNameSetWithCap_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
+      int kindVal = header->kind();
+      // low high --> 364 366 
+      return ((364 <= kindVal) && (kindVal <= 366));
+  };
+};
+// KIND_TEMPLATED_LISPALLOC_core__Iterator_O
+template <typename FP> struct Cast<core::Iterator_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
+      int kindVal = header->kind();
+      // low high --> 59 67 
+      return ((59 <= kindVal) && (kindVal <= 67));
+  };
+};
+// KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__StereoisomerAtoms_O___
+template <typename FP> struct Cast<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::StereoisomerAtoms_O>>>*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
+      int kindVal = header->kind();
+      // low high --> 673 673 
+      return (kindVal == 673);
+  };
+};
+// KIND_LISPALLOC_core__Str8Ns_O
+template <typename FP> struct Cast<core::Str8Ns_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
+      int kindVal = header->kind();
+      // low high --> 293 293 
+      return (kindVal == 293);
+  };
+};
+// KIND_LISPALLOC_chem__ImproperTorsion_O
+template <typename FP> struct Cast<chem::ImproperTorsion_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
+      int kindVal = header->kind();
+      // low high --> 437 437 
+      return (kindVal == 437);
+  };
+};
+// KIND_LISPALLOC_clcenv__GlobalFunctionInfo_O
+template <typename FP> struct Cast<clcenv::GlobalFunctionInfo_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
+      int kindVal = header->kind();
+      // low high --> 524 524 
+      return (kindVal == 524);
+  };
+};
+// KIND_LISPALLOC_core__SimpleMDArrayT_O
+template <typename FP> struct Cast<core::SimpleMDArrayT_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
+      int kindVal = header->kind();
+      // low high --> 248 248 
+      return (kindVal == 248);
+  };
+};
+// KIND_LISPALLOC_chem__AtomReferenceBase_O
+template <typename FP> struct Cast<chem::AtomReferenceBase_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
+      int kindVal = header->kind();
+      // low high --> 435 436 
+      return ((435 <= kindVal) && (kindVal <= 436));
+  };
+};
+// KIND_GCARRAY_gctools__GCArray_moveable_Vector3_
+template <typename FP> struct Cast<gctools::GCArray_moveable<Vector3>*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
+      int kindVal = header->kind();
+      // low high --> 672 672 
+      return (kindVal == 672);
+  };
+};
+// KIND_BOOTSTRAP_core__T_O
+template <typename FP> struct Cast<core::T_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
+      int kindVal = header->kind();
+      // low high --> 11 625 
+      return ((11 <= kindVal) && (kindVal <= 625));
+  };
+};
+// KIND_LISPALLOC_chem__ConformationCollectionEntry_O
+template <typename FP> struct Cast<chem::ConformationCollectionEntry_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
+      int kindVal = header->kind();
+      // low high --> 434 434 
+      return (kindVal == 434);
+  };
+};
+// KIND_LISPALLOC_core__MDArray_size_t_O
+template <typename FP> struct Cast<core::MDArray_size_t_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
+      int kindVal = header->kind();
+      // low high --> 303 303 
+      return (kindVal == 303);
+  };
+};
+// KIND_LISPALLOC_clcenv__Macro_O
+template <typename FP> struct Cast<clcenv::Macro_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
+      int kindVal = header->kind();
+      // low high --> 538 538 
+      return (kindVal == 538);
+  };
+};
+// KIND_LISPALLOC_core__UnwindProtectEnvironment_O
+template <typename FP> struct Cast<core::UnwindProtectEnvironment_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
+      int kindVal = header->kind();
+      // low high --> 586 586 
+      return (kindVal == 586);
+  };
+};
 // KIND_LISPALLOC_core__SimpleVector_byte64_t_O
 template <typename FP> struct Cast<core::SimpleVector_byte64_t_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 230 230 
-      return (kindVal == 230);
+      // low high --> 223 223 
+      return (kindVal == 223);
   };
 };
 // KIND_LISPALLOC_units__UnitsExposer_O
@@ -5257,8 +5317,8 @@ template <typename FP> struct Cast<core::ConcatenatedStream_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 325 325 
-      return (kindVal == 325);
+      // low high --> 318 318 
+      return (kindVal == 318);
   };
 };
 // KIND_LISPALLOC_llvmo__AttributeSet_O
@@ -5266,8 +5326,8 @@ template <typename FP> struct Cast<llvmo::AttributeSet_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 57 57 
-      return (kindVal == 57);
+      // low high --> 58 58 
+      return (kindVal == 58);
   };
 };
 // KIND_LISPALLOC_geom__OVector3_O
@@ -5275,8 +5335,8 @@ template <typename FP> struct Cast<geom::OVector3_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 436 436 
-      return (kindVal == 436);
+      // low high --> 433 433 
+      return (kindVal == 433);
   };
 };
 // KIND_LISPALLOC_core__BitVectorNs_O
@@ -5284,8 +5344,8 @@ template <typename FP> struct Cast<core::BitVectorNs_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 281 281 
-      return (kindVal == 281);
+      // low high --> 274 274 
+      return (kindVal == 274);
   };
 };
 // KIND_LISPALLOC_chem__ChemInfoMatch_O
@@ -5293,8 +5353,8 @@ template <typename FP> struct Cast<chem::ChemInfoMatch_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 435 435 
-      return (kindVal == 435);
+      // low high --> 432 432 
+      return (kindVal == 432);
   };
 };
 // KIND_LISPALLOC_llvmo__TargetLibraryInfoWrapperPass_O
@@ -5302,8 +5362,8 @@ template <typename FP> struct Cast<llvmo::TargetLibraryInfoWrapperPass_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 146 146 
-      return (kindVal == 146);
+      // low high --> 147 147 
+      return (kindVal == 147);
   };
 };
 // KIND_LISPALLOC_core__CatchEnvironment_O
@@ -5311,8 +5371,8 @@ template <typename FP> struct Cast<core::CatchEnvironment_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 586 586 
-      return (kindVal == 586);
+      // low high --> 585 585 
+      return (kindVal == 585);
   };
 };
 // KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__Plug_O___
@@ -5320,8 +5380,8 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<std::pair<gctools:
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 672 672 
-      return (kindVal == 672);
+      // low high --> 671 671 
+      return (kindVal == 671);
   };
 };
 // KIND_LISPALLOC_chem__Trajectory_O
@@ -5329,8 +5389,8 @@ template <typename FP> struct Cast<chem::Trajectory_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 434 434 
-      return (kindVal == 434);
+      // low high --> 431 431 
+      return (kindVal == 431);
   };
 };
 // KIND_LISPALLOC_chem__RingCoupling_O
@@ -5338,8 +5398,8 @@ template <typename FP> struct Cast<chem::RingCoupling_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 388 388 
-      return (kindVal == 388);
+      // low high --> 385 385 
+      return (kindVal == 385);
   };
 };
 // KIND_GCVECTOR_gctools__GCVector_moveable_chem__EnergyAnchorRestraint_
@@ -5347,8 +5407,8 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<chem::EnergyAnchor
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 671 671 
-      return (kindVal == 671);
+      // low high --> 670 670 
+      return (kindVal == 670);
   };
 };
 // KIND_LISPALLOC_chem__Matter_O
@@ -5356,8 +5416,8 @@ template <typename FP> struct Cast<chem::Matter_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 428 433 
-      return ((428 <= kindVal) && (kindVal <= 433));
+      // low high --> 425 430 
+      return ((425 <= kindVal) && (kindVal <= 430));
   };
 };
 // KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__Monomer_O__
@@ -5365,17 +5425,8 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 670 670 
-      return (kindVal == 670);
-  };
-};
-// KIND_LISPALLOC_clcenv__ConstantVariableInfo_O
-template <typename FP> struct Cast<clcenv::ConstantVariableInfo_O*,FP> {
-  inline static bool isA(FP client) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
-      // low high --> 518 518 
-      return (kindVal == 518);
+      // low high --> 669 669 
+      return (kindVal == 669);
   };
 };
 // KIND_LISPALLOC_core__TagbodyFrame_O
@@ -5383,8 +5434,17 @@ template <typename FP> struct Cast<core::TagbodyFrame_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 598 598 
-      return (kindVal == 598);
+      // low high --> 597 597 
+      return (kindVal == 597);
+  };
+};
+// KIND_LISPALLOC_clcenv__ConstantVariableInfo_O
+template <typename FP> struct Cast<clcenv::ConstantVariableInfo_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
+      int kindVal = header->kind();
+      // low high --> 517 517 
+      return (kindVal == 517);
   };
 };
 // KIND_LISPALLOC_chem__RingTest_O
@@ -5392,8 +5452,8 @@ template <typename FP> struct Cast<chem::RingTest_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 404 404 
-      return (kindVal == 404);
+      // low high --> 401 401 
+      return (kindVal == 401);
   };
 };
 // KIND_LISPALLOC_core__CompiledClosure_O
@@ -5401,8 +5461,8 @@ template <typename FP> struct Cast<core::CompiledClosure_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 177 177 
-      return (kindVal == 177);
+      // low high --> 178 178 
+      return (kindVal == 178);
   };
 };
 // KIND_LISPALLOC_clcenv__VariableIgnore_O
@@ -5410,8 +5470,8 @@ template <typename FP> struct Cast<clcenv::VariableIgnore_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 538 538 
-      return (kindVal == 538);
+      // low high --> 537 537 
+      return (kindVal == 537);
   };
 };
 // KIND_LISPALLOC_chem__CalculatePositionRelativeToOrigin_O
@@ -5419,8 +5479,8 @@ template <typename FP> struct Cast<chem::CalculatePositionRelativeToOrigin_O*,FP
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 555 555 
-      return (kindVal == 555);
+      // low high --> 554 554 
+      return (kindVal == 554);
   };
 };
 // KIND_LISPALLOC_chem__RestraintChiral_O
@@ -5428,8 +5488,8 @@ template <typename FP> struct Cast<chem::RestraintChiral_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 565 565 
-      return (kindVal == 565);
+      // low high --> 564 564 
+      return (kindVal == 564);
   };
 };
 // KIND_LISPALLOC_llvmo__ResumeInst_O
@@ -5437,8 +5497,8 @@ template <typename FP> struct Cast<llvmo::ResumeInst_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 107 107 
-      return (kindVal == 107);
+      // low high --> 108 108 
+      return (kindVal == 108);
   };
 };
 // KIND_LISPALLOC_llvmo__Value_O
@@ -5446,8 +5506,8 @@ template <typename FP> struct Cast<llvmo::Value_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 97 134 
-      return ((97 <= kindVal) && (kindVal <= 134));
+      // low high --> 98 135 
+      return ((98 <= kindVal) && (kindVal <= 135));
   };
 };
 // KIND_LISPALLOC_chem__RootMatchNode_O
@@ -5455,8 +5515,8 @@ template <typename FP> struct Cast<chem::RootMatchNode_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 394 395 
-      return ((394 <= kindVal) && (kindVal <= 395));
+      // low high --> 391 392 
+      return ((391 <= kindVal) && (kindVal <= 392));
   };
 };
 // KIND_LISPALLOC_llvmo__MCSubtargetInfo_O
@@ -5464,8 +5524,8 @@ template <typename FP> struct Cast<llvmo::MCSubtargetInfo_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 95 96 
-      return ((95 <= kindVal) && (kindVal <= 96));
+      // low high --> 96 97 
+      return ((96 <= kindVal) && (kindVal <= 97));
   };
 };
 // KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_chem__Atom_O__unsigned_int__
@@ -5473,8 +5533,8 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<std::pair<gctools:
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 669 669 
-      return (kindVal == 669);
+      // low high --> 668 668 
+      return (kindVal == 668);
   };
 };
 // KIND_LISPALLOC_chem__Monomer_O
@@ -5482,8 +5542,8 @@ template <typename FP> struct Cast<chem::Monomer_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 370 372 
-      return ((370 <= kindVal) && (kindVal <= 372));
+      // low high --> 367 369 
+      return ((367 <= kindVal) && (kindVal <= 369));
   };
 };
 // KIND_LISPALLOC_llvmo__CompositeType_O
@@ -5491,8 +5551,8 @@ template <typename FP> struct Cast<llvmo::CompositeType_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 154 159 
-      return ((154 <= kindVal) && (kindVal <= 159));
+      // low high --> 155 160 
+      return ((155 <= kindVal) && (kindVal <= 160));
   };
 };
 // KIND_LISPALLOC_core__SingleDispatchCxxEffectiveMethodFunction_O
@@ -5500,8 +5560,8 @@ template <typename FP> struct Cast<core::SingleDispatchCxxEffectiveMethodFunctio
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 171 171 
-      return (kindVal == 171);
+      // low high --> 172 172 
+      return (kindVal == 172);
   };
 };
 // KIND_LISPALLOC_core__LexicalEnvironment_O
@@ -5509,8 +5569,8 @@ template <typename FP> struct Cast<core::LexicalEnvironment_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 582 594 
-      return ((582 <= kindVal) && (kindVal <= 594));
+      // low high --> 581 593 
+      return ((581 <= kindVal) && (kindVal <= 593));
   };
 };
 // KIND_LISPALLOC_chem__PdbMonomerConnectivity_O
@@ -5518,8 +5578,8 @@ template <typename FP> struct Cast<chem::PdbMonomerConnectivity_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 427 427 
-      return (kindVal == 427);
+      // low high --> 424 424 
+      return (kindVal == 424);
   };
 };
 // KIND_LISPALLOC_chem__ChemDraw_O
@@ -5527,8 +5587,8 @@ template <typename FP> struct Cast<chem::ChemDraw_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 426 426 
-      return (kindVal == 426);
+      // low high --> 423 423 
+      return (kindVal == 423);
   };
 };
 // KIND_LISPALLOC_core__MDArrayBit_O
@@ -5536,8 +5596,8 @@ template <typename FP> struct Cast<core::MDArrayBit_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 280 280 
-      return (kindVal == 280);
+      // low high --> 273 273 
+      return (kindVal == 273);
   };
 };
 // KIND_LISPALLOC_llvmo__TargetMachine_O
@@ -5545,8 +5605,8 @@ template <typename FP> struct Cast<llvmo::TargetMachine_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 93 94 
-      return ((93 <= kindVal) && (kindVal <= 94));
+      // low high --> 94 95 
+      return ((94 <= kindVal) && (kindVal <= 95));
   };
 };
 // KIND_GCVECTOR_gctools__GCVector_moveable_chem__AtomPdbRec_
@@ -5554,8 +5614,8 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<chem::AtomPdbRec>*
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 668 668 
-      return (kindVal == 668);
+      // low high --> 667 667 
+      return (kindVal == 667);
   };
 };
 // KIND_GCARRAY_gctools__GCArray_moveable_int_
@@ -5563,8 +5623,8 @@ template <typename FP> struct Cast<gctools::GCArray_moveable<int>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 667 667 
-      return (kindVal == 667);
+      // low high --> 666 666 
+      return (kindVal == 666);
   };
 };
 // KIND_LISPALLOC_core__SimpleMDArray_O
@@ -5572,8 +5632,8 @@ template <typename FP> struct Cast<core::SimpleMDArray_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 246 279 
-      return ((246 <= kindVal) && (kindVal <= 279));
+      // low high --> 239 272 
+      return ((239 <= kindVal) && (kindVal <= 272));
   };
 };
 // KIND_ROOTCLASSALLOC_core__Lisp_O
@@ -5590,8 +5650,8 @@ template <typename FP> struct Cast<core::StandardObject_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 54 56 
-      return ((54 <= kindVal) && (kindVal <= 56));
+      // low high --> 55 57 
+      return ((55 <= kindVal) && (kindVal <= 57));
   };
 };
 // KIND_LISPALLOC_core__MacroClosure_O
@@ -5599,8 +5659,8 @@ template <typename FP> struct Cast<core::MacroClosure_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 174 174 
-      return (kindVal == 174);
+      // low high --> 175 175 
+      return (kindVal == 175);
   };
 };
 // KIND_LISPALLOC_core__NativeVector_int_O
@@ -5608,8 +5668,8 @@ template <typename FP> struct Cast<core::NativeVector_int_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 425 425 
-      return (kindVal == 425);
+      // low high --> 422 422 
+      return (kindVal == 422);
   };
 };
 // KIND_LISPALLOC_core__SimpleVector_O
@@ -5617,8 +5677,8 @@ template <typename FP> struct Cast<core::SimpleVector_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 234 234 
-      return (kindVal == 234);
+      // low high --> 227 227 
+      return (kindVal == 227);
   };
 };
 // KIND_LISPALLOC_chem__MultiMonomer_O
@@ -5626,8 +5686,8 @@ template <typename FP> struct Cast<chem::MultiMonomer_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 371 371 
-      return (kindVal == 371);
+      // low high --> 368 368 
+      return (kindVal == 368);
   };
 };
 // KIND_LISPALLOC_llvmo__ModulePass_O
@@ -5635,8 +5695,8 @@ template <typename FP> struct Cast<llvmo::ModulePass_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 144 146 
-      return ((144 <= kindVal) && (kindVal <= 146));
+      // low high --> 145 147 
+      return ((145 <= kindVal) && (kindVal <= 147));
   };
 };
 // KIND_GCVECTOR_gctools__GCVector_moveable_core__T_O_P_
@@ -5644,8 +5704,8 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<core::T_O *>*,FP> 
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 666 666 
-      return (kindVal == 666);
+      // low high --> 665 665 
+      return (kindVal == 665);
   };
 };
 // KIND_LISPALLOC_core__Rational_O
@@ -5653,8 +5713,8 @@ template <typename FP> struct Cast<core::Rational_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 620 624 
-      return ((620 <= kindVal) && (kindVal <= 624));
+      // low high --> 618 622 
+      return ((618 <= kindVal) && (kindVal <= 622));
   };
 };
 // KIND_LISPALLOC_chem__CalculatePositionAlongBond_O
@@ -5662,8 +5722,8 @@ template <typename FP> struct Cast<chem::CalculatePositionAlongBond_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 554 554 
-      return (kindVal == 554);
+      // low high --> 553 553 
+      return (kindVal == 553);
   };
 };
 // KIND_LISPALLOC_chem__ForceMatchReport_O
@@ -5671,8 +5731,8 @@ template <typename FP> struct Cast<chem::ForceMatchReport_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 561 561 
-      return (kindVal == 561);
+      // low high --> 560 560 
+      return (kindVal == 560);
   };
 };
 // KIND_LISPALLOC_llvmo__LLVMContext_O
@@ -5680,8 +5740,8 @@ template <typename FP> struct Cast<llvmo::LLVMContext_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 92 92 
-      return (kindVal == 92);
+      // low high --> 93 93 
+      return (kindVal == 93);
   };
 };
 // KIND_LISPALLOC_chem__OligomerPart_Link_O
@@ -5689,8 +5749,8 @@ template <typename FP> struct Cast<chem::OligomerPart_Link_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 392 392 
-      return (kindVal == 392);
+      // low high --> 389 389 
+      return (kindVal == 389);
   };
 };
 // KIND_LISPALLOC_clbind__ClassRegistry_O
@@ -5698,8 +5758,8 @@ template <typename FP> struct Cast<clbind::ClassRegistry_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 53 53 
-      return (kindVal == 53);
+      // low high --> 54 54 
+      return (kindVal == 54);
   };
 };
 // KIND_LISPALLOC_chem__MinimizerLog_O
@@ -5707,8 +5767,8 @@ template <typename FP> struct Cast<chem::MinimizerLog_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 424 424 
-      return (kindVal == 424);
+      // low high --> 421 421 
+      return (kindVal == 421);
   };
 };
 // KIND_LISPALLOC_chem__ConformationExplorerEntry_O
@@ -5716,8 +5776,8 @@ template <typename FP> struct Cast<chem::ConformationExplorerEntry_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 423 423 
-      return (kindVal == 423);
+      // low high --> 420 420 
+      return (kindVal == 420);
   };
 };
 // KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__Stereoisomer_O___
@@ -5725,8 +5785,8 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<std::pair<gctools:
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 665 665 
-      return (kindVal == 665);
+      // low high --> 664 664 
+      return (kindVal == 664);
   };
 };
 // KIND_LISPALLOC_asttooling__DerivableASTFrontendAction
@@ -5743,8 +5803,8 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<std::pair<gctools:
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 664 664 
-      return (kindVal == 664);
+      // low high --> 663 663 
+      return (kindVal == 663);
   };
 };
 // KIND_LISPALLOC_chem__StepReport_O
@@ -5752,8 +5812,8 @@ template <typename FP> struct Cast<chem::StepReport_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 560 560 
-      return (kindVal == 560);
+      // low high --> 559 559 
+      return (kindVal == 559);
   };
 };
 // KIND_LISPALLOC_core__TagbodyEnvironment_O
@@ -5761,8 +5821,8 @@ template <typename FP> struct Cast<core::TagbodyEnvironment_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 592 592 
-      return (kindVal == 592);
+      // low high --> 591 591 
+      return (kindVal == 591);
   };
 };
 // KIND_GCARRAY_gctools__GCArray_moveable_short_
@@ -5770,8 +5830,8 @@ template <typename FP> struct Cast<gctools::GCArray_moveable<short>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 663 663 
-      return (kindVal == 663);
+      // low high --> 662 662 
+      return (kindVal == 662);
   };
 };
 // KIND_LISPALLOC_chem__AGEdge_O
@@ -5779,8 +5839,8 @@ template <typename FP> struct Cast<chem::AGEdge_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 422 422 
-      return (kindVal == 422);
+      // low high --> 419 419 
+      return (kindVal == 419);
   };
 };
 // KIND_LISPALLOC_core__StrWNs_O
@@ -5788,8 +5848,8 @@ template <typename FP> struct Cast<core::StrWNs_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 298 298 
-      return (kindVal == 298);
+      // low high --> 291 291 
+      return (kindVal == 291);
   };
 };
 // KIND_LISPALLOC_chem__ComplexRestraint_O
@@ -5797,8 +5857,8 @@ template <typename FP> struct Cast<chem::ComplexRestraint_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 419 421 
-      return ((419 <= kindVal) && (kindVal <= 421));
+      // low high --> 416 418 
+      return ((416 <= kindVal) && (kindVal <= 418));
   };
 };
 // KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_adapt__QDomNode_O__
@@ -5806,8 +5866,8 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 662 662 
-      return (kindVal == 662);
+      // low high --> 661 661 
+      return (kindVal == 661);
   };
 };
 // KIND_LISPALLOC_llvmo__MDString_O
@@ -5815,8 +5875,8 @@ template <typename FP> struct Cast<llvmo::MDString_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 76 76 
-      return (kindVal == 76);
+      // low high --> 77 77 
+      return (kindVal == 77);
   };
 };
 // KIND_LISPALLOC_chem__AtomIdToAtomMap_O
@@ -5824,8 +5884,8 @@ template <typename FP> struct Cast<chem::AtomIdToAtomMap_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 418 418 
-      return (kindVal == 418);
+      // low high --> 415 415 
+      return (kindVal == 415);
   };
 };
 // KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__ZMatrixInternal_O__
@@ -5833,8 +5893,8 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 661 661 
-      return (kindVal == 661);
+      // low high --> 660 660 
+      return (kindVal == 660);
   };
 };
 // KIND_LISPALLOC_chem__Atom_O
@@ -5842,8 +5902,8 @@ template <typename FP> struct Cast<chem::Atom_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 430 431 
-      return ((430 <= kindVal) && (kindVal <= 431));
+      // low high --> 427 428 
+      return ((427 <= kindVal) && (kindVal <= 428));
   };
 };
 // KIND_LISPALLOC_clcenv__LocalMacroInfo_O
@@ -5851,8 +5911,8 @@ template <typename FP> struct Cast<clcenv::LocalMacroInfo_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 524 524 
-      return (kindVal == 524);
+      // low high --> 523 523 
+      return (kindVal == 523);
   };
 };
 // KIND_LISPALLOC_core__AnsiStream_O
@@ -5860,8 +5920,8 @@ template <typename FP> struct Cast<core::AnsiStream_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 322 333 
-      return ((322 <= kindVal) && (kindVal <= 333));
+      // low high --> 315 326 
+      return ((315 <= kindVal) && (kindVal <= 326));
   };
 };
 // KIND_LISPALLOC_core__BlockEnvironment_O
@@ -5869,8 +5929,8 @@ template <typename FP> struct Cast<core::BlockEnvironment_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 585 585 
-      return (kindVal == 585);
+      // low high --> 584 584 
+      return (kindVal == 584);
   };
 };
 // KIND_LISPALLOC_chem__TrajectoryFrame_O
@@ -5878,8 +5938,8 @@ template <typename FP> struct Cast<chem::TrajectoryFrame_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 417 417 
-      return (kindVal == 417);
+      // low high --> 414 414 
+      return (kindVal == 414);
   };
 };
 // KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__Entity_O___
@@ -5887,8 +5947,8 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<std::pair<gctools:
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 660 660 
-      return (kindVal == 660);
+      // low high --> 659 659 
+      return (kindVal == 659);
   };
 };
 // KIND_LISPALLOC_llvmo__ConstantPointerNull_O
@@ -5896,8 +5956,8 @@ template <typename FP> struct Cast<llvmo::ConstantPointerNull_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 125 125 
-      return (kindVal == 125);
+      // low high --> 126 126 
+      return (kindVal == 126);
   };
 };
 // KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__SpecificContext_O___
@@ -5905,8 +5965,8 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<std::pair<gctools:
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 659 659 
-      return (kindVal == 659);
+      // low high --> 658 658 
+      return (kindVal == 658);
   };
 };
 // KIND_LISPALLOC_core__LoadTimeValues_O
@@ -5914,8 +5974,8 @@ template <typename FP> struct Cast<core::LoadTimeValues_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 52 52 
-      return (kindVal == 52);
+      // low high --> 53 53 
+      return (kindVal == 53);
   };
 };
 // KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__Topology_O__
@@ -5923,8 +5983,8 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 658 658 
-      return (kindVal == 658);
+      // low high --> 657 657 
+      return (kindVal == 657);
   };
 };
 // KIND_LISPALLOC_clcenv__GlobalEnvironment_O
@@ -5932,8 +5992,8 @@ template <typename FP> struct Cast<clcenv::GlobalEnvironment_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 537 537 
-      return (kindVal == 537);
+      // low high --> 536 536 
+      return (kindVal == 536);
   };
 };
 // KIND_GCVECTOR_gctools__GCVector_moveable_chem__EnergyDihedral_
@@ -5941,8 +6001,8 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<chem::EnergyDihedr
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 657 657 
-      return (kindVal == 657);
+      // low high --> 656 656 
+      return (kindVal == 656);
   };
 };
 // KIND_LISPALLOC_clasp_ffi__ForeignTypeSpec_O
@@ -5950,8 +6010,8 @@ template <typename FP> struct Cast<clasp_ffi::ForeignTypeSpec_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 51 51 
-      return (kindVal == 51);
+      // low high --> 52 52 
+      return (kindVal == 52);
   };
 };
 // KIND_LISPALLOC_chem__CipPrioritizer_O
@@ -5959,8 +6019,8 @@ template <typename FP> struct Cast<chem::CipPrioritizer_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 416 416 
-      return (kindVal == 416);
+      // low high --> 413 413 
+      return (kindVal == 413);
   };
 };
 // KIND_LISPALLOC_core__LongFloat_O
@@ -5968,8 +6028,17 @@ template <typename FP> struct Cast<core::LongFloat_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 618 618 
-      return (kindVal == 618);
+      // low high --> 616 616 
+      return (kindVal == 616);
+  };
+};
+// KIND_LISPALLOC_chem__RigidBodyEnergyFunction_O
+template <typename FP> struct Cast<chem::RigidBodyEnergyFunction_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
+      int kindVal = header->kind();
+      // low high --> 357 357 
+      return (kindVal == 357);
   };
 };
 // KIND_TEMPLATED_LISPALLOC_core__Creator_O
@@ -5977,8 +6046,8 @@ template <typename FP> struct Cast<core::Creator_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 44 50 
-      return ((44 <= kindVal) && (kindVal <= 50));
+      // low high --> 45 51 
+      return ((45 <= kindVal) && (kindVal <= 51));
   };
 };
 // KIND_LISPALLOC_chem__ZMatrix_O
@@ -5986,8 +6055,8 @@ template <typename FP> struct Cast<chem::ZMatrix_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 415 415 
-      return (kindVal == 415);
+      // low high --> 412 412 
+      return (kindVal == 412);
   };
 };
 // KIND_LISPALLOC_chem__ChemExposer_O
@@ -6004,8 +6073,8 @@ template <typename FP> struct Cast<clcenv::SpecialVariableInfo_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 517 517 
-      return (kindVal == 517);
+      // low high --> 516 516 
+      return (kindVal == 516);
   };
 };
 // KIND_LISPALLOC_chem__NumericalFunction_O
@@ -6013,8 +6082,8 @@ template <typename FP> struct Cast<chem::NumericalFunction_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 414 414 
-      return (kindVal == 414);
+      // low high --> 411 411 
+      return (kindVal == 411);
   };
 };
 // KIND_LISPALLOC_chem__TopologyAtomInfo_O
@@ -6022,8 +6091,8 @@ template <typename FP> struct Cast<chem::TopologyAtomInfo_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 413 413 
-      return (kindVal == 413);
+      // low high --> 410 410 
+      return (kindVal == 410);
   };
 };
 // KIND_LISPALLOC_chem__FullLargeSquareMatrix_O
@@ -6031,8 +6100,8 @@ template <typename FP> struct Cast<chem::FullLargeSquareMatrix_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 442 442 
-      return (kindVal == 442);
+      // low high --> 439 439 
+      return (kindVal == 439);
   };
 };
 // KIND_LISPALLOC_llvmo__SwitchInst_O
@@ -6040,8 +6109,8 @@ template <typename FP> struct Cast<llvmo::SwitchInst_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 106 106 
-      return (kindVal == 106);
+      // low high --> 107 107 
+      return (kindVal == 107);
   };
 };
 // KIND_LISPALLOC_llvmo__FunctionPassManager_O
@@ -6049,8 +6118,8 @@ template <typename FP> struct Cast<llvmo::FunctionPassManager_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 140 140 
-      return (kindVal == 140);
+      // low high --> 141 141 
+      return (kindVal == 141);
   };
 };
 // KIND_LISPALLOC_llvmo__TerminatorInst_O
@@ -6058,8 +6127,8 @@ template <typename FP> struct Cast<llvmo::TerminatorInst_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 102 109 
-      return ((102 <= kindVal) && (kindVal <= 109));
+      // low high --> 103 110 
+      return ((103 <= kindVal) && (kindVal <= 110));
   };
 };
 // KIND_LISPALLOC_chem__EnergyChiralRestraint_O
@@ -6067,8 +6136,8 @@ template <typename FP> struct Cast<chem::EnergyChiralRestraint_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 460 460 
-      return (kindVal == 460);
+      // low high --> 457 457 
+      return (kindVal == 457);
   };
 };
 // KIND_LISPALLOC_chem__EnergyDihedral_O
@@ -6076,8 +6145,8 @@ template <typename FP> struct Cast<chem::EnergyDihedral_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 459 459 
-      return (kindVal == 459);
+      // low high --> 456 456 
+      return (kindVal == 456);
   };
 };
 // KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__SimpleBitVector_O__
@@ -6085,8 +6154,8 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 656 656 
-      return (kindVal == 656);
+      // low high --> 655 655 
+      return (kindVal == 655);
   };
 };
 // KIND_LISPALLOC_core__CompileTimeEnvironment_O
@@ -6094,8 +6163,8 @@ template <typename FP> struct Cast<core::CompileTimeEnvironment_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 583 590 
-      return ((583 <= kindVal) && (kindVal <= 590));
+      // low high --> 582 589 
+      return ((582 <= kindVal) && (kindVal <= 589));
   };
 };
 // KIND_LISPALLOC_geom__OVector2_O
@@ -6103,8 +6172,8 @@ template <typename FP> struct Cast<geom::OVector2_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 412 412 
-      return (kindVal == 412);
+      // low high --> 409 409 
+      return (kindVal == 409);
   };
 };
 // KIND_LISPALLOC_core__SmallMultimap_O
@@ -6112,8 +6181,8 @@ template <typename FP> struct Cast<core::SmallMultimap_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 43 43 
-      return (kindVal == 43);
+      // low high --> 44 44 
+      return (kindVal == 44);
   };
 };
 // KIND_LISPALLOC_llvmo__DIDerivedType_O
@@ -6121,8 +6190,8 @@ template <typename FP> struct Cast<llvmo::DIDerivedType_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 89 89 
-      return (kindVal == 89);
+      // low high --> 90 90 
+      return (kindVal == 90);
   };
 };
 // KIND_LISPALLOC_core__PosixTimeDuration_O
@@ -6130,8 +6199,8 @@ template <typename FP> struct Cast<core::PosixTimeDuration_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 42 42 
-      return (kindVal == 42);
+      // low high --> 43 43 
+      return (kindVal == 43);
   };
 };
 // KIND_LISPALLOC_clcenv__Block_O
@@ -6139,8 +6208,8 @@ template <typename FP> struct Cast<clcenv::Block_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 536 536 
-      return (kindVal == 536);
+      // low high --> 535 535 
+      return (kindVal == 535);
   };
 };
 // KIND_LISPALLOC_core__ReadTable_O
@@ -6148,8 +6217,8 @@ template <typename FP> struct Cast<core::ReadTable_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 41 41 
-      return (kindVal == 41);
+      // low high --> 42 42 
+      return (kindVal == 42);
   };
 };
 // KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__Coupling_O__
@@ -6157,8 +6226,8 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 655 655 
-      return (kindVal == 655);
+      // low high --> 654 654 
+      return (kindVal == 654);
   };
 };
 // KIND_LISPALLOC_llvmo__Metadata_O
@@ -6166,8 +6235,8 @@ template <typename FP> struct Cast<llvmo::Metadata_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 75 91 
-      return ((75 <= kindVal) && (kindVal <= 91));
+      // low high --> 76 92 
+      return ((76 <= kindVal) && (kindVal <= 92));
   };
 };
 // KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__Molecule_O__
@@ -6175,8 +6244,8 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 654 654 
-      return (kindVal == 654);
+      // low high --> 653 653 
+      return (kindVal == 653);
   };
 };
 // KIND_LISPALLOC_llvmo__APInt_O
@@ -6184,8 +6253,8 @@ template <typename FP> struct Cast<llvmo::APInt_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 74 74 
-      return (kindVal == 74);
+      // low high --> 75 75 
+      return (kindVal == 75);
   };
 };
 // KIND_LISPALLOC_core__LogicalPathname_O
@@ -6193,8 +6262,8 @@ template <typename FP> struct Cast<core::LogicalPathname_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 26 26 
-      return (kindVal == 26);
+      // low high --> 27 27 
+      return (kindVal == 27);
   };
 };
 // KIND_LISPALLOC_chem__AtomTest_O
@@ -6202,8 +6271,8 @@ template <typename FP> struct Cast<chem::AtomTest_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 403 403 
-      return (kindVal == 403);
+      // low high --> 400 400 
+      return (kindVal == 400);
   };
 };
 // KIND_LISPALLOC_core__TranslationFunctor
@@ -6211,8 +6280,8 @@ template <typename FP> struct Cast<core::TranslationFunctor*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 173 173 
-      return (kindVal == 173);
+      // low high --> 174 174 
+      return (kindVal == 174);
   };
 };
 // KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__EntityNameSetBase_O___
@@ -6220,8 +6289,8 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<std::pair<gctools:
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 653 653 
-      return (kindVal == 653);
+      // low high --> 652 652 
+      return (kindVal == 652);
   };
 };
 // KIND_LISPALLOC_llvmo__StoreInst_O
@@ -6229,17 +6298,8 @@ template <typename FP> struct Cast<llvmo::StoreInst_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 101 101 
-      return (kindVal == 101);
-  };
-};
-// KIND_LISPALLOC_llvmo__DIBasicType_O
-template <typename FP> struct Cast<llvmo::DIBasicType_O*,FP> {
-  inline static bool isA(FP client) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
-      // low high --> 88 88 
-      return (kindVal == 88);
+      // low high --> 102 102 
+      return (kindVal == 102);
   };
 };
 // KIND_LISPALLOC_core__SimpleVector_int64_t_O
@@ -6247,8 +6307,17 @@ template <typename FP> struct Cast<core::SimpleVector_int64_t_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 208 208 
-      return (kindVal == 208);
+      // low high --> 201 201 
+      return (kindVal == 201);
+  };
+};
+// KIND_LISPALLOC_llvmo__DIBasicType_O
+template <typename FP> struct Cast<llvmo::DIBasicType_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
+      int kindVal = header->kind();
+      // low high --> 89 89 
+      return (kindVal == 89);
   };
 };
 // KIND_LISPALLOC_core__SimpleMDArray_byte16_t_O
@@ -6256,8 +6325,8 @@ template <typename FP> struct Cast<core::SimpleMDArray_byte16_t_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 250 250 
-      return (kindVal == 250);
+      // low high --> 243 243 
+      return (kindVal == 243);
   };
 };
 // KIND_LISPALLOC_chem__Residue_O
@@ -6265,8 +6334,8 @@ template <typename FP> struct Cast<chem::Residue_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 429 429 
-      return (kindVal == 429);
+      // low high --> 426 426 
+      return (kindVal == 426);
   };
 };
 // KIND_LISPALLOC_chem__ChemInfoNode_O
@@ -6274,8 +6343,8 @@ template <typename FP> struct Cast<chem::ChemInfoNode_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 393 411 
-      return ((393 <= kindVal) && (kindVal <= 411));
+      // low high --> 390 408 
+      return ((390 <= kindVal) && (kindVal <= 408));
   };
 };
 // KIND_LISPALLOC_llvmo__IRBuilderBase_O
@@ -6283,8 +6352,8 @@ template <typename FP> struct Cast<llvmo::IRBuilderBase_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 72 73 
-      return ((72 <= kindVal) && (kindVal <= 73));
+      // low high --> 73 74 
+      return ((73 <= kindVal) && (kindVal <= 74));
   };
 };
 // KIND_LISPALLOC_core__MDArrayDouble_O
@@ -6292,8 +6361,8 @@ template <typename FP> struct Cast<core::MDArrayDouble_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 291 291 
-      return (kindVal == 291);
+      // low high --> 284 284 
+      return (kindVal == 284);
   };
 };
 // KIND_LISPALLOC_geom__GeomExposer_O
@@ -6310,8 +6379,8 @@ template <typename FP> struct Cast<chem::OligomerPart_Base_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 390 392 
-      return ((390 <= kindVal) && (kindVal <= 392));
+      // low high --> 387 389 
+      return ((387 <= kindVal) && (kindVal <= 389));
   };
 };
 // KIND_LISPALLOC_chem__Coupling_O
@@ -6319,8 +6388,8 @@ template <typename FP> struct Cast<chem::Coupling_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 387 389 
-      return ((387 <= kindVal) && (kindVal <= 389));
+      // low high --> 384 386 
+      return ((384 <= kindVal) && (kindVal <= 386));
   };
 };
 // KIND_LISPALLOC_core__MDArray_O
@@ -6328,8 +6397,8 @@ template <typename FP> struct Cast<core::MDArray_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 237 310 
-      return ((237 <= kindVal) && (kindVal <= 310));
+      // low high --> 230 303 
+      return ((230 <= kindVal) && (kindVal <= 303));
   };
 };
 // KIND_LISPALLOC_chem__EntityNameSetBase_O
@@ -6337,26 +6406,8 @@ template <typename FP> struct Cast<chem::EntityNameSetBase_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 363 369 
-      return ((363 <= kindVal) && (kindVal <= 369));
-  };
-};
-// KIND_LISPALLOC_chem__BondList_O
-template <typename FP> struct Cast<chem::BondList_O*,FP> {
-  inline static bool isA(FP client) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
-      // low high --> 386 386 
-      return (kindVal == 386);
-  };
-};
-// KIND_LISPALLOC_core__SynonymStream_O
-template <typename FP> struct Cast<core::SynonymStream_O*,FP> {
-  inline static bool isA(FP client) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
-      // low high --> 324 324 
-      return (kindVal == 324);
+      // low high --> 360 366 
+      return ((360 <= kindVal) && (kindVal <= 366));
   };
 };
 // KIND_LISPALLOC_core__ClassCreator_O
@@ -6364,48 +6415,12 @@ template <typename FP> struct Cast<core::ClassCreator_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 45 45 
-      return (kindVal == 45);
+      // low high --> 46 46 
+      return (kindVal == 46);
   };
 };
-// KIND_LISPALLOC_chem__Command_O
-template <typename FP> struct Cast<chem::Command_O*,FP> {
-  inline static bool isA(FP client) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
-      // low high --> 385 385 
-      return (kindVal == 385);
-  };
-};
-// KIND_LISPALLOC_llvmo__DINodeArray_O
-template <typename FP> struct Cast<llvmo::DINodeArray_O*,FP> {
-  inline static bool isA(FP client) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
-      // low high --> 384 384 
-      return (kindVal == 384);
-  };
-};
-// KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_chem__Atom_O__gctools__smart_ptr_chem__CDNode_O___
-template <typename FP> struct Cast<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<chem::Atom_O>,gctools::smart_ptr<chem::CDNode_O>>>*,FP> {
-  inline static bool isA(FP client) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
-      // low high --> 652 652 
-      return (kindVal == 652);
-  };
-};
-// KIND_LISPALLOC_core__ShortFloat_O
-template <typename FP> struct Cast<core::ShortFloat_O*,FP> {
-  inline static bool isA(FP client) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
-      // low high --> 617 617 
-      return (kindVal == 617);
-  };
-};
-// KIND_LISPALLOC_chem__CoordinateSystem_O
-template <typename FP> struct Cast<chem::CoordinateSystem_O*,FP> {
+// KIND_LISPALLOC_chem__BondList_O
+template <typename FP> struct Cast<chem::BondList_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
@@ -6413,17 +6428,17 @@ template <typename FP> struct Cast<chem::CoordinateSystem_O*,FP> {
       return (kindVal == 383);
   };
 };
-// KIND_LISPALLOC_core__StringInputStream_O
-template <typename FP> struct Cast<core::StringInputStream_O*,FP> {
+// KIND_LISPALLOC_core__SynonymStream_O
+template <typename FP> struct Cast<core::SynonymStream_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 327 327 
-      return (kindVal == 327);
+      // low high --> 317 317 
+      return (kindVal == 317);
   };
 };
-// KIND_LISPALLOC_chem__MonomerContext_O
-template <typename FP> struct Cast<chem::MonomerContext_O*,FP> {
+// KIND_LISPALLOC_chem__Command_O
+template <typename FP> struct Cast<chem::Command_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
@@ -6431,17 +6446,8 @@ template <typename FP> struct Cast<chem::MonomerContext_O*,FP> {
       return (kindVal == 382);
   };
 };
-// KIND_LISPALLOC_llvmo__DICompositeType_O
-template <typename FP> struct Cast<llvmo::DICompositeType_O*,FP> {
-  inline static bool isA(FP client) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
-      // low high --> 87 87 
-      return (kindVal == 87);
-  };
-};
-// KIND_LISPALLOC_chem__ResidueList_O
-template <typename FP> struct Cast<chem::ResidueList_O*,FP> {
+// KIND_LISPALLOC_llvmo__DINodeArray_O
+template <typename FP> struct Cast<llvmo::DINodeArray_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
@@ -6449,17 +6455,26 @@ template <typename FP> struct Cast<chem::ResidueList_O*,FP> {
       return (kindVal == 381);
   };
 };
-// KIND_BOOTSTRAP_core__Symbol_O
-template <typename FP> struct Cast<core::Symbol_O*,FP> {
+// KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_chem__Atom_O__gctools__smart_ptr_chem__CDNode_O___
+template <typename FP> struct Cast<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<chem::Atom_O>,gctools::smart_ptr<chem::CDNode_O>>>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 39 40 
-      return ((39 <= kindVal) && (kindVal <= 40));
+      // low high --> 651 651 
+      return (kindVal == 651);
   };
 };
-// KIND_LISPALLOC_chem__TwisterDriver_O
-template <typename FP> struct Cast<chem::TwisterDriver_O*,FP> {
+// KIND_LISPALLOC_core__ShortFloat_O
+template <typename FP> struct Cast<core::ShortFloat_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
+      int kindVal = header->kind();
+      // low high --> 615 615 
+      return (kindVal == 615);
+  };
+};
+// KIND_LISPALLOC_chem__CoordinateSystem_O
+template <typename FP> struct Cast<chem::CoordinateSystem_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
@@ -6467,13 +6482,67 @@ template <typename FP> struct Cast<chem::TwisterDriver_O*,FP> {
       return (kindVal == 380);
   };
 };
+// KIND_LISPALLOC_core__StringInputStream_O
+template <typename FP> struct Cast<core::StringInputStream_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
+      int kindVal = header->kind();
+      // low high --> 320 320 
+      return (kindVal == 320);
+  };
+};
+// KIND_LISPALLOC_chem__MonomerContext_O
+template <typename FP> struct Cast<chem::MonomerContext_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
+      int kindVal = header->kind();
+      // low high --> 379 379 
+      return (kindVal == 379);
+  };
+};
+// KIND_LISPALLOC_llvmo__DICompositeType_O
+template <typename FP> struct Cast<llvmo::DICompositeType_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
+      int kindVal = header->kind();
+      // low high --> 88 88 
+      return (kindVal == 88);
+  };
+};
+// KIND_LISPALLOC_chem__ResidueList_O
+template <typename FP> struct Cast<chem::ResidueList_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
+      int kindVal = header->kind();
+      // low high --> 378 378 
+      return (kindVal == 378);
+  };
+};
+// KIND_BOOTSTRAP_core__Symbol_O
+template <typename FP> struct Cast<core::Symbol_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
+      int kindVal = header->kind();
+      // low high --> 40 41 
+      return ((40 <= kindVal) && (kindVal <= 41));
+  };
+};
+// KIND_LISPALLOC_chem__TwisterDriver_O
+template <typename FP> struct Cast<chem::TwisterDriver_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
+      int kindVal = header->kind();
+      // low high --> 377 377 
+      return (kindVal == 377);
+  };
+};
 // KIND_LISPALLOC_core__SequenceStepper_O
 template <typename FP> struct Cast<core::SequenceStepper_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 36 38 
-      return ((36 <= kindVal) && (kindVal <= 38));
+      // low high --> 37 39 
+      return ((37 <= kindVal) && (kindVal <= 39));
   };
 };
 // KIND_LISPALLOC_llvmo__ConstantArray_O
@@ -6481,8 +6550,8 @@ template <typename FP> struct Cast<llvmo::ConstantArray_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 124 124 
-      return (kindVal == 124);
+      // low high --> 125 125 
+      return (kindVal == 125);
   };
 };
 // KIND_LISPALLOC_chem__RestraintDihedral_O
@@ -6490,8 +6559,8 @@ template <typename FP> struct Cast<chem::RestraintDihedral_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 564 564 
-      return (kindVal == 564);
+      // low high --> 563 563 
+      return (kindVal == 563);
   };
 };
 // KIND_LISPALLOC_core__BranchSNode_O
@@ -6499,8 +6568,8 @@ template <typename FP> struct Cast<core::BranchSNode_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 194 194 
-      return (kindVal == 194);
+      // low high --> 187 187 
+      return (kindVal == 187);
   };
 };
 // KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__SourceFileInfo_O__
@@ -6508,8 +6577,8 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 651 651 
-      return (kindVal == 651);
+      // low high --> 650 650 
+      return (kindVal == 650);
   };
 };
 // KIND_LISPALLOC_asttooling__AsttoolingExposer_O
@@ -6526,8 +6595,8 @@ template <typename FP> struct Cast<llvmo::AtomicRMWInst_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 100 100 
-      return (kindVal == 100);
+      // low high --> 101 101 
+      return (kindVal == 101);
   };
 };
 // KIND_LISPALLOC_chem__FFNonbond_O
@@ -6535,8 +6604,8 @@ template <typename FP> struct Cast<chem::FFNonbond_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 352 352 
-      return (kindVal == 352);
+      // low high --> 347 347 
+      return (kindVal == 347);
   };
 };
 // KIND_LISPALLOC_adapt__IndexedObjectBag_O
@@ -6544,8 +6613,8 @@ template <typename FP> struct Cast<adapt::IndexedObjectBag_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 35 35 
-      return (kindVal == 35);
+      // low high --> 36 36 
+      return (kindVal == 36);
   };
 };
 // KIND_LISPALLOC_chem__MapOfMonomerNamesToAtomIndexers_O
@@ -6553,8 +6622,8 @@ template <typename FP> struct Cast<chem::MapOfMonomerNamesToAtomIndexers_O*,FP> 
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 379 379 
-      return (kindVal == 379);
+      // low high --> 376 376 
+      return (kindVal == 376);
   };
 };
 // KIND_LISPALLOC_llvmo__IntegerType_O
@@ -6562,8 +6631,8 @@ template <typename FP> struct Cast<llvmo::IntegerType_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 153 153 
-      return (kindVal == 153);
+      // low high --> 154 154 
+      return (kindVal == 154);
   };
 };
 // KIND_LISPALLOC_chem__Alias_O
@@ -6571,8 +6640,8 @@ template <typename FP> struct Cast<chem::Alias_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 378 378 
-      return (kindVal == 378);
+      // low high --> 375 375 
+      return (kindVal == 375);
   };
 };
 // KIND_LISPALLOC_chem__AntechamberRoot_O
@@ -6580,8 +6649,8 @@ template <typename FP> struct Cast<chem::AntechamberRoot_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 407 407 
-      return (kindVal == 407);
+      // low high --> 404 404 
+      return (kindVal == 404);
   };
 };
 // KIND_LISPALLOC_chem__FFVdwDb_O
@@ -6589,8 +6658,8 @@ template <typename FP> struct Cast<chem::FFVdwDb_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 497 497 
-      return (kindVal == 497);
+      // low high --> 496 496 
+      return (kindVal == 496);
   };
 };
 // KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__CDFragment_O__
@@ -6598,8 +6667,8 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 650 650 
-      return (kindVal == 650);
+      // low high --> 649 649 
+      return (kindVal == 649);
   };
 };
 // KIND_LISPALLOC_chem__ForceField_O
@@ -6607,8 +6676,8 @@ template <typename FP> struct Cast<chem::ForceField_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 377 377 
-      return (kindVal == 377);
+      // low high --> 374 374 
+      return (kindVal == 374);
   };
 };
 // KIND_LISPALLOC_chem__StereoisomerAtom_O
@@ -6616,8 +6685,8 @@ template <typename FP> struct Cast<chem::StereoisomerAtom_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 375 376 
-      return ((375 <= kindVal) && (kindVal <= 376));
+      // low high --> 372 373 
+      return ((372 <= kindVal) && (kindVal <= 373));
   };
 };
 // KIND_LISPALLOC_core__InvocationHistoryFrameIterator_O
@@ -6625,8 +6694,8 @@ template <typename FP> struct Cast<core::InvocationHistoryFrameIterator_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 34 34 
-      return (kindVal == 34);
+      // low high --> 35 35 
+      return (kindVal == 35);
   };
 };
 // KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__CDBond_O__
@@ -6634,8 +6703,8 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 649 649 
-      return (kindVal == 649);
+      // low high --> 648 648 
+      return (kindVal == 648);
   };
 };
 // KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_core__T_O___
@@ -6643,8 +6712,8 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<std::pair<gctools:
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 648 648 
-      return (kindVal == 648);
+      // low high --> 647 647 
+      return (kindVal == 647);
   };
 };
 // KIND_LISPALLOC_chem__EntityNameSet_O
@@ -6652,8 +6721,8 @@ template <typename FP> struct Cast<chem::EntityNameSet_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 364 366 
-      return ((364 <= kindVal) && (kindVal <= 366));
+      // low high --> 361 363 
+      return ((361 <= kindVal) && (kindVal <= 363));
   };
 };
 // KIND_GCVECTOR_gctools__GCVector_moveable_chem__ResidueOut_
@@ -6661,8 +6730,8 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<chem::ResidueOut>*
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 647 647 
-      return (kindVal == 647);
+      // low high --> 646 646 
+      return (kindVal == 646);
   };
 };
 // KIND_LISPALLOC_chem__FFVdw_O
@@ -6670,8 +6739,8 @@ template <typename FP> struct Cast<chem::FFVdw_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 351 351 
-      return (kindVal == 351);
+      // low high --> 346 346 
+      return (kindVal == 346);
   };
 };
 // KIND_LISPALLOC_chem__Entity_O
@@ -6679,8 +6748,8 @@ template <typename FP> struct Cast<chem::Entity_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 362 374 
-      return ((362 <= kindVal) && (kindVal <= 374));
+      // low high --> 359 371 
+      return ((359 <= kindVal) && (kindVal <= 371));
   };
 };
 // KIND_LISPALLOC_chem__OligomerPart_Monomer_O
@@ -6688,8 +6757,17 @@ template <typename FP> struct Cast<chem::OligomerPart_Monomer_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 391 391 
-      return (kindVal == 391);
+      // low high --> 388 388 
+      return (kindVal == 388);
+  };
+};
+// KIND_LISPALLOC_chem__ScoringFunction_O
+template <typename FP> struct Cast<chem::ScoringFunction_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
+      int kindVal = header->kind();
+      // low high --> 356 358 
+      return ((356 <= kindVal) && (kindVal <= 358));
   };
 };
 // KIND_LISPALLOC_core__MDArray_byte64_t_O
@@ -6697,8 +6775,8 @@ template <typename FP> struct Cast<core::MDArray_byte64_t_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 239 239 
-      return (kindVal == 239);
+      // low high --> 232 232 
+      return (kindVal == 232);
   };
 };
 // KIND_LISPALLOC_chem__MessageReport_O
@@ -6706,8 +6784,8 @@ template <typename FP> struct Cast<chem::MessageReport_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 559 559 
-      return (kindVal == 559);
+      // low high --> 558 558 
+      return (kindVal == 558);
   };
 };
 // KIND_LISPALLOC_core__AbstractSimpleVector_O
@@ -6715,17 +6793,8 @@ template <typename FP> struct Cast<core::AbstractSimpleVector_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 202 236 
-      return ((202 <= kindVal) && (kindVal <= 236));
-  };
-};
-// KIND_LISPALLOC_chem__NVector_O
-template <typename FP> struct Cast<chem::NVector_O*,FP> {
-  inline static bool isA(FP client) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
-      // low high --> 361 361 
-      return (kindVal == 361);
+      // low high --> 195 229 
+      return ((195 <= kindVal) && (kindVal <= 229));
   };
 };
 // KIND_LISPALLOC_core__VaList_dummy_O
@@ -6742,8 +6811,17 @@ template <typename FP> struct Cast<chem::StereoConfiguration_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 360 360 
-      return (kindVal == 360);
+      // low high --> 355 355 
+      return (kindVal == 355);
+  };
+};
+// KIND_LISPALLOC_chem__EnergyRigidBodyNonbond_O
+template <typename FP> struct Cast<chem::EnergyRigidBodyNonbond_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
+      int kindVal = header->kind();
+      // low high --> 461 461 
+      return (kindVal == 461);
   };
 };
 // KIND_LISPALLOC_clcenv__LocalFunctionInfo_O
@@ -6751,8 +6829,8 @@ template <typename FP> struct Cast<clcenv::LocalFunctionInfo_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 523 523 
-      return (kindVal == 523);
+      // low high --> 522 522 
+      return (kindVal == 522);
   };
 };
 // KIND_LISPALLOC_core__SourcePosInfo_O
@@ -6760,8 +6838,8 @@ template <typename FP> struct Cast<core::SourcePosInfo_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 33 33 
-      return (kindVal == 33);
+      // low high --> 34 34 
+      return (kindVal == 34);
   };
 };
 // KIND_LISPALLOC_chem__ZMatrixDihedralInternal_O
@@ -6769,8 +6847,8 @@ template <typename FP> struct Cast<chem::ZMatrixDihedralInternal_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 511 511 
-      return (kindVal == 511);
+      // low high --> 510 510 
+      return (kindVal == 510);
   };
 };
 // KIND_LISPALLOC_llvmo__EngineBuilder_O
@@ -6778,8 +6856,8 @@ template <typename FP> struct Cast<llvmo::EngineBuilder_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 71 71 
-      return (kindVal == 71);
+      // low high --> 72 72 
+      return (kindVal == 72);
   };
 };
 // KIND_LISPALLOC_llvmo__IndirectBrInst_O
@@ -6787,8 +6865,8 @@ template <typename FP> struct Cast<llvmo::IndirectBrInst_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 105 105 
-      return (kindVal == 105);
+      // low high --> 106 106 
+      return (kindVal == 106);
   };
 };
 // KIND_LISPALLOC_llvmo__VectorType_O
@@ -6796,8 +6874,8 @@ template <typename FP> struct Cast<llvmo::VectorType_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 156 156 
-      return (kindVal == 156);
+      // low high --> 157 157 
+      return (kindVal == 157);
   };
 };
 // KIND_LISPALLOC_chem__ZMatrixAngleInternal_O
@@ -6805,8 +6883,8 @@ template <typename FP> struct Cast<chem::ZMatrixAngleInternal_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 510 510 
-      return (kindVal == 510);
+      // low high --> 509 509 
+      return (kindVal == 509);
   };
 };
 // KIND_LISPALLOC_core__SimpleVector_size_t_O
@@ -6814,8 +6892,8 @@ template <typename FP> struct Cast<core::SimpleVector_size_t_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 236 236 
-      return (kindVal == 236);
+      // low high --> 229 229 
+      return (kindVal == 229);
   };
 };
 // KIND_LISPALLOC_llvmo__ConstantExpr_O
@@ -6823,8 +6901,8 @@ template <typename FP> struct Cast<llvmo::ConstantExpr_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 123 123 
-      return (kindVal == 123);
+      // low high --> 124 124 
+      return (kindVal == 124);
   };
 };
 // KIND_LISPALLOC_chem__Oligomer_O
@@ -6832,8 +6910,8 @@ template <typename FP> struct Cast<chem::Oligomer_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 359 359 
-      return (kindVal == 359);
+      // low high --> 354 354 
+      return (kindVal == 354);
   };
 };
 // KIND_LISPALLOC_adapt__QDomNode_O
@@ -6841,8 +6919,8 @@ template <typename FP> struct Cast<adapt::QDomNode_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 358 358 
-      return (kindVal == 358);
+      // low high --> 353 353 
+      return (kindVal == 353);
   };
 };
 // KIND_LISPALLOC_chem__Angle_O
@@ -6850,8 +6928,8 @@ template <typename FP> struct Cast<chem::Angle_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 357 357 
-      return (kindVal == 357);
+      // low high --> 352 352 
+      return (kindVal == 352);
   };
 };
 // KIND_LISPALLOC_core__PosixTime_O
@@ -6859,8 +6937,8 @@ template <typename FP> struct Cast<core::PosixTime_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 32 32 
-      return (kindVal == 32);
+      // low high --> 33 33 
+      return (kindVal == 33);
   };
 };
 // KIND_LISPALLOC_chem__BondTest_O
@@ -6868,8 +6946,8 @@ template <typename FP> struct Cast<chem::BondTest_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 400 400 
-      return (kindVal == 400);
+      // low high --> 397 397 
+      return (kindVal == 397);
   };
 };
 // KIND_LISPALLOC_core__HashTable_O
@@ -6877,8 +6955,8 @@ template <typename FP> struct Cast<core::HashTable_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 27 31 
-      return ((27 <= kindVal) && (kindVal <= 31));
+      // low high --> 28 32 
+      return ((28 <= kindVal) && (kindVal <= 32));
   };
 };
 // KIND_LISPALLOC_chem__FFParameter_O
@@ -6886,8 +6964,8 @@ template <typename FP> struct Cast<chem::FFParameter_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 350 356 
-      return ((350 <= kindVal) && (kindVal <= 356));
+      // low high --> 345 351 
+      return ((345 <= kindVal) && (kindVal <= 351));
   };
 };
 // KIND_LISPALLOC_llvmo__InvokeInst_O
@@ -6895,8 +6973,8 @@ template <typename FP> struct Cast<llvmo::InvokeInst_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 104 104 
-      return (kindVal == 104);
+      // low high --> 105 105 
+      return (kindVal == 105);
   };
 };
 // KIND_LISPALLOC_units__Dimension_O
@@ -6904,8 +6982,8 @@ template <typename FP> struct Cast<units::Dimension_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 349 349 
-      return (kindVal == 349);
+      // low high --> 344 344 
+      return (kindVal == 344);
   };
 };
 // KIND_LISPALLOC_core__Pathname_O
@@ -6913,8 +6991,8 @@ template <typename FP> struct Cast<core::Pathname_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 25 26 
-      return ((25 <= kindVal) && (kindVal <= 26));
+      // low high --> 26 27 
+      return ((26 <= kindVal) && (kindVal <= 27));
   };
 };
 // KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__OneTypeRule_O__
@@ -6922,8 +7000,8 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 646 646 
-      return (kindVal == 646);
+      // low high --> 645 645 
+      return (kindVal == 645);
   };
 };
 // KIND_LISPALLOC_core__Float_O
@@ -6931,8 +7009,8 @@ template <typename FP> struct Cast<core::Float_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 615 619 
-      return ((615 <= kindVal) && (kindVal <= 619));
+      // low high --> 613 617 
+      return ((613 <= kindVal) && (kindVal <= 617));
   };
 };
 // KIND_LISPALLOC_clcenv__Closure_O
@@ -6940,8 +7018,17 @@ template <typename FP> struct Cast<clcenv::Closure_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 535 535 
-      return (kindVal == 535);
+      // low high --> 534 534 
+      return (kindVal == 534);
+  };
+};
+// KIND_LISPALLOC_mp__BlockingConcurrentQueue_O
+template <typename FP> struct Cast<mp::BlockingConcurrentQueue_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
+      int kindVal = header->kind();
+      // low high --> 25 25 
+      return (kindVal == 25);
   };
 };
 // KIND_LISPALLOC_core__FunctionContainerEnvironment_O
@@ -6949,8 +7036,8 @@ template <typename FP> struct Cast<core::FunctionContainerEnvironment_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 584 584 
-      return (kindVal == 584);
+      // low high --> 583 583 
+      return (kindVal == 583);
   };
 };
 // KIND_LISPALLOC_core__SimpleMDArrayBit_O
@@ -6958,8 +7045,8 @@ template <typename FP> struct Cast<core::SimpleMDArrayBit_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 253 253 
-      return (kindVal == 253);
+      // low high --> 246 246 
+      return (kindVal == 246);
   };
 };
 // KIND_LISPALLOC_adapt__SymbolList_O
@@ -6967,8 +7054,8 @@ template <typename FP> struct Cast<adapt::SymbolList_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 348 348 
-      return (kindVal == 348);
+      // low high --> 343 343 
+      return (kindVal == 343);
   };
 };
 // KIND_GCARRAY_gctools__GCArray_moveable_long_
@@ -6976,8 +7063,8 @@ template <typename FP> struct Cast<gctools::GCArray_moveable<long>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 645 645 
-      return (kindVal == 645);
+      // low high --> 644 644 
+      return (kindVal == 644);
   };
 };
 // KIND_LISPALLOC_chem__ConstitutionBond_O
@@ -6985,8 +7072,8 @@ template <typename FP> struct Cast<chem::ConstitutionBond_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 347 347 
-      return (kindVal == 347);
+      // low high --> 342 342 
+      return (kindVal == 342);
   };
 };
 // KIND_LISPALLOC_chem__MonomerCoordinates_O
@@ -6994,8 +7081,8 @@ template <typename FP> struct Cast<chem::MonomerCoordinates_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 346 346 
-      return (kindVal == 346);
+      // low high --> 341 341 
+      return (kindVal == 341);
   };
 };
 // KIND_LISPALLOC_core__StructureObject_O
@@ -7012,8 +7099,8 @@ template <typename FP> struct Cast<gctools::GCArray_moveable<unsigned short>*,FP
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 644 644 
-      return (kindVal == 644);
+      // low high --> 643 643 
+      return (kindVal == 643);
   };
 };
 // KIND_LISPALLOC_core__SimpleBitVector_O
@@ -7021,8 +7108,8 @@ template <typename FP> struct Cast<core::SimpleBitVector_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 209 209 
-      return (kindVal == 209);
+      // low high --> 202 202 
+      return (kindVal == 202);
   };
 };
 // KIND_GCVECTOR_gctools__GCVector_moveable_core__ExceptionEntry_
@@ -7030,8 +7117,8 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<core::ExceptionEnt
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 643 643 
-      return (kindVal == 643);
+      // low high --> 642 642 
+      return (kindVal == 642);
   };
 };
 // KIND_GCVECTOR_gctools__GCVector_moveable_core__AuxArgument_
@@ -7039,8 +7126,8 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<core::AuxArgument>
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 642 642 
-      return (kindVal == 642);
+      // low high --> 641 641 
+      return (kindVal == 641);
   };
 };
 // KIND_LISPALLOC_core__Exposer_O
@@ -7057,8 +7144,8 @@ template <typename FP> struct Cast<core::ClosureWithSlots_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 170 170 
-      return (kindVal == 170);
+      // low high --> 171 171 
+      return (kindVal == 171);
   };
 };
 // KIND_LISPALLOC_core__SimpleVector_byte16_t_O
@@ -7066,8 +7153,8 @@ template <typename FP> struct Cast<core::SimpleVector_byte16_t_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 204 204 
-      return (kindVal == 204);
+      // low high --> 197 197 
+      return (kindVal == 197);
   };
 };
 // KIND_LISPALLOC_core__ValueFrame_O
@@ -7075,8 +7162,8 @@ template <typename FP> struct Cast<core::ValueFrame_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 597 597 
-      return (kindVal == 597);
+      // low high --> 596 596 
+      return (kindVal == 596);
   };
 };
 // KIND_LISPALLOC_llvmo__TargetOptions_O
@@ -7084,8 +7171,8 @@ template <typename FP> struct Cast<llvmo::TargetOptions_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 70 70 
-      return (kindVal == 70);
+      // low high --> 71 71 
+      return (kindVal == 71);
   };
 };
 // KIND_LISPALLOC_chem__JumpPlug_O
@@ -7093,8 +7180,8 @@ template <typename FP> struct Cast<chem::JumpPlug_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 340 340 
-      return (kindVal == 340);
+      // low high --> 334 334 
+      return (kindVal == 334);
   };
 };
 // KIND_GCVECTOR_gctools__GCVector_moveable_chem__AtomInfo_
@@ -7102,8 +7189,8 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<chem::AtomInfo>*,F
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 641 641 
-      return (kindVal == 641);
+      // low high --> 640 640 
+      return (kindVal == 640);
   };
 };
 // KIND_LISPALLOC_core__CandoException_O
@@ -7120,8 +7207,8 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<std::pair<gctools:
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 640 640 
-      return (kindVal == 640);
+      // low high --> 639 639 
+      return (kindVal == 639);
   };
 };
 // KIND_LISPALLOC_llvmo__SequentialType_O
@@ -7129,8 +7216,17 @@ template <typename FP> struct Cast<llvmo::SequentialType_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 155 158 
-      return ((155 <= kindVal) && (kindVal <= 158));
+      // low high --> 156 159 
+      return ((156 <= kindVal) && (kindVal <= 159));
+  };
+};
+// KIND_LISPALLOC_mp__SharedMutex_O
+template <typename FP> struct Cast<mp::SharedMutex_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
+      int kindVal = header->kind();
+      // low high --> 340 340 
+      return (kindVal == 340);
   };
 };
 // KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__AtomIndexer_O___
@@ -7138,35 +7234,8 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<std::pair<gctools:
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 639 639 
-      return (kindVal == 639);
-  };
-};
-// KIND_LISPALLOC_chem__RestraintFixedNonbond_O
-template <typename FP> struct Cast<chem::RestraintFixedNonbond_O*,FP> {
-  inline static bool isA(FP client) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
-      // low high --> 563 563 
-      return (kindVal == 563);
-  };
-};
-// KIND_LISPALLOC_core__SingleFloat_dummy_O
-template <typename FP> struct Cast<core::SingleFloat_dummy_O*,FP> {
-  inline static bool isA(FP client) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
-      // low high --> 616 616 
-      return (kindVal == 616);
-  };
-};
-// KIND_LISPALLOC_chem__FFPtorDb_O
-template <typename FP> struct Cast<chem::FFPtorDb_O*,FP> {
-  inline static bool isA(FP client) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
-      // low high --> 500 500 
-      return (kindVal == 500);
+      // low high --> 638 638 
+      return (kindVal == 638);
   };
 };
 // KIND_LISPALLOC_chem__StereoisomerAtoms_O
@@ -7174,8 +7243,35 @@ template <typename FP> struct Cast<chem::StereoisomerAtoms_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 345 345 
-      return (kindVal == 345);
+      // low high --> 339 339 
+      return (kindVal == 339);
+  };
+};
+// KIND_LISPALLOC_chem__RestraintFixedNonbond_O
+template <typename FP> struct Cast<chem::RestraintFixedNonbond_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
+      int kindVal = header->kind();
+      // low high --> 562 562 
+      return (kindVal == 562);
+  };
+};
+// KIND_LISPALLOC_core__SingleFloat_dummy_O
+template <typename FP> struct Cast<core::SingleFloat_dummy_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
+      int kindVal = header->kind();
+      // low high --> 614 614 
+      return (kindVal == 614);
+  };
+};
+// KIND_LISPALLOC_chem__FFPtorDb_O
+template <typename FP> struct Cast<chem::FFPtorDb_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
+      int kindVal = header->kind();
+      // low high --> 499 499 
+      return (kindVal == 499);
   };
 };
 // KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__Structure_Old_ListEntry_O__
@@ -7183,8 +7279,8 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 638 638 
-      return (kindVal == 638);
+      // low high --> 637 637 
+      return (kindVal == 637);
   };
 };
 // KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__AGEdge_O__
@@ -7192,8 +7288,8 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 637 637 
-      return (kindVal == 637);
+      // low high --> 636 636 
+      return (kindVal == 636);
   };
 };
 // KIND_LISPALLOC_core__LeafSNode_O
@@ -7201,8 +7297,8 @@ template <typename FP> struct Cast<core::LeafSNode_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 193 193 
-      return (kindVal == 193);
+      // low high --> 186 186 
+      return (kindVal == 186);
   };
 };
 // KIND_LISPALLOC_chem__Plug_O
@@ -7210,8 +7306,8 @@ template <typename FP> struct Cast<chem::Plug_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 339 344 
-      return ((339 <= kindVal) && (kindVal <= 344));
+      // low high --> 333 338 
+      return ((333 <= kindVal) && (kindVal <= 338));
   };
 };
 // KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__ConformationExplorerEntryStage_O__
@@ -7219,8 +7315,8 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 636 636 
-      return (kindVal == 636);
+      // low high --> 635 635 
+      return (kindVal == 635);
   };
 };
 // KIND_LISPALLOC_llvmo__LLVMTargetMachine_O
@@ -7228,8 +7324,8 @@ template <typename FP> struct Cast<llvmo::LLVMTargetMachine_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 94 94 
-      return (kindVal == 94);
+      // low high --> 95 95 
+      return (kindVal == 95);
   };
 };
 // KIND_GCARRAY_gctools__GCArray_moveable_signed_char_
@@ -7237,8 +7333,8 @@ template <typename FP> struct Cast<gctools::GCArray_moveable<signed char>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 635 635 
-      return (kindVal == 635);
+      // low high --> 634 634 
+      return (kindVal == 634);
   };
 };
 // KIND_GCARRAY_gctools__GCArray_moveable_unsigned_char_
@@ -7246,8 +7342,8 @@ template <typename FP> struct Cast<gctools::GCArray_moveable<unsigned char>*,FP>
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 634 634 
-      return (kindVal == 634);
+      // low high --> 633 633 
+      return (kindVal == 633);
   };
 };
 // KIND_GCVECTOR_gctools__GCVector_moveable_chem__FixedNonbondRestraint_
@@ -7255,8 +7351,8 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<chem::FixedNonbond
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 633 633 
-      return (kindVal == 633);
+      // low high --> 632 632 
+      return (kindVal == 632);
   };
 };
 // KIND_GCVECTOR_gctools__GCVector_moveable_chem__EnergyStretch_
@@ -7264,8 +7360,8 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<chem::EnergyStretc
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 632 632 
-      return (kindVal == 632);
+      // low high --> 631 631 
+      return (kindVal == 631);
   };
 };
 // KIND_LISPALLOC_core__SimpleMDArrayFloat_O
@@ -7273,8 +7369,8 @@ template <typename FP> struct Cast<core::SimpleMDArrayFloat_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 279 279 
-      return (kindVal == 279);
+      // low high --> 272 272 
+      return (kindVal == 272);
   };
 };
 // KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__FFVdw_O__
@@ -7282,8 +7378,8 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 631 631 
-      return (kindVal == 631);
+      // low high --> 630 630 
+      return (kindVal == 630);
   };
 };
 // KIND_LISPALLOC_core__BroadcastStream_O
@@ -7291,8 +7387,8 @@ template <typename FP> struct Cast<core::BroadcastStream_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 323 323 
-      return (kindVal == 323);
+      // low high --> 316 316 
+      return (kindVal == 316);
   };
 };
 // KIND_LISPALLOC_llvmo__NamedMDNode_O
@@ -7300,8 +7396,8 @@ template <typename FP> struct Cast<llvmo::NamedMDNode_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 69 69 
-      return (kindVal == 69);
+      // low high --> 70 70 
+      return (kindVal == 70);
   };
 };
 // KIND_LISPALLOC_llvmo__BranchInst_O
@@ -7309,8 +7405,8 @@ template <typename FP> struct Cast<llvmo::BranchInst_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 103 103 
-      return (kindVal == 103);
+      // low high --> 104 104 
+      return (kindVal == 104);
   };
 };
 // KIND_LISPALLOC_core__MDArray_byte8_t_O
@@ -7318,8 +7414,8 @@ template <typename FP> struct Cast<core::MDArray_byte8_t_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 287 287 
-      return (kindVal == 287);
+      // low high --> 280 280 
+      return (kindVal == 280);
   };
 };
 // KIND_LISPALLOC_core__MDArray_fixnum_O
@@ -7327,8 +7423,8 @@ template <typename FP> struct Cast<core::MDArray_fixnum_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 241 241 
-      return (kindVal == 241);
+      // low high --> 234 234 
+      return (kindVal == 234);
   };
 };
 // KIND_LISPALLOC_clcenv__Optimize_O
@@ -7336,8 +7432,8 @@ template <typename FP> struct Cast<clcenv::Optimize_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 534 534 
-      return (kindVal == 534);
+      // low high --> 533 533 
+      return (kindVal == 533);
   };
 };
 // KIND_LISPALLOC_core__NamedFunction_O
@@ -7345,8 +7441,8 @@ template <typename FP> struct Cast<core::NamedFunction_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 165 182 
-      return ((165 <= kindVal) && (kindVal <= 182));
+      // low high --> 166 183 
+      return ((166 <= kindVal) && (kindVal <= 183));
   };
 };
 // KIND_LISPALLOC_llvmo__GlobalValue_O
@@ -7354,8 +7450,8 @@ template <typename FP> struct Cast<llvmo::GlobalValue_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 120 122 
-      return ((120 <= kindVal) && (kindVal <= 122));
+      // low high --> 121 123 
+      return ((121 <= kindVal) && (kindVal <= 123));
   };
 };
 // KIND_LISPALLOC_chem__ConstitutionVirtualAtom_O
@@ -7363,8 +7459,8 @@ template <typename FP> struct Cast<chem::ConstitutionVirtualAtom_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 482 482 
-      return (kindVal == 482);
+      // low high --> 481 481 
+      return (kindVal == 481);
   };
 };
 // KIND_LISPALLOC_llvmo__ModuleHandle_O
@@ -7381,8 +7477,8 @@ template <typename FP> struct Cast<core::MDArrayT_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 308 308 
-      return (kindVal == 308);
+      // low high --> 301 301 
+      return (kindVal == 301);
   };
 };
 // KIND_LISPALLOC_core__SimpleVector_int8_t_O
@@ -7390,8 +7486,8 @@ template <typename FP> struct Cast<core::SimpleVector_int8_t_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 224 224 
-      return (kindVal == 224);
+      // low high --> 217 217 
+      return (kindVal == 217);
   };
 };
 // KIND_LISPALLOC_core__SaveArchive_O
@@ -7399,8 +7495,8 @@ template <typename FP> struct Cast<core::SaveArchive_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 601 602 
-      return ((601 <= kindVal) && (kindVal <= 602));
+      // low high --> 600 601 
+      return ((600 <= kindVal) && (kindVal <= 601));
   };
 };
 // KIND_LISPALLOC_chem__AtomTable_O
@@ -7408,8 +7504,8 @@ template <typename FP> struct Cast<chem::AtomTable_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 338 338 
-      return (kindVal == 338);
+      // low high --> 332 332 
+      return (kindVal == 332);
   };
 };
 // KIND_LISPALLOC_mp__ConditionVariable_O
@@ -7417,8 +7513,8 @@ template <typename FP> struct Cast<mp::ConditionVariable_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 337 337 
-      return (kindVal == 337);
+      // low high --> 331 331 
+      return (kindVal == 331);
   };
 };
 // KIND_LISPALLOC_chem__SuperposeSelectedAtoms_O
@@ -7430,13 +7526,22 @@ template <typename FP> struct Cast<chem::SuperposeSelectedAtoms_O*,FP> {
       return (kindVal == 468);
   };
 };
+// KIND_GCVECTOR_gctools__GCVector_moveable_chem__EnergyRigidBodyStaple_
+template <typename FP> struct Cast<gctools::GCVector_moveable<chem::EnergyRigidBodyStaple>*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
+      int kindVal = header->kind();
+      // low high --> 629 629 
+      return (kindVal == 629);
+  };
+};
 // KIND_LISPALLOC_chem__RingClosingMate_O
 template <typename FP> struct Cast<chem::RingClosingMate_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 368 368 
-      return (kindVal == 368);
+      // low high --> 365 365 
+      return (kindVal == 365);
   };
 };
 // KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__StereoisomerAtom_O__
@@ -7444,8 +7549,8 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 630 630 
-      return (kindVal == 630);
+      // low high --> 628 628 
+      return (kindVal == 628);
   };
 };
 // KIND_GCVECTOR_gctools__GCVector_moveable_double_
@@ -7453,8 +7558,8 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<double>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 629 629 
-      return (kindVal == 629);
+      // low high --> 627 627 
+      return (kindVal == 627);
   };
 };
 #endif // defined(GC_DYNAMIC_CAST)
@@ -8063,6 +8168,10 @@ template <> class gctools::GCKind<chem::PdbReader_O> {
 public:
   static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__PdbReader_O ;
 };
+template <> class gctools::GCKind<chem::EnergyRigidBodyStaple_O> {
+public:
+  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__EnergyRigidBodyStaple_O ;
+};
 template <> class gctools::GCKind<core::MDArray_int16_t_O> {
 public:
   static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__MDArray_int16_t_O ;
@@ -8138,6 +8247,10 @@ public:
 template <> class gctools::GCKind<core::HashTableEq_O> {
 public:
   static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__HashTableEq_O ;
+};
+template <> class gctools::GCKind<mp::ConcurrentQueue_O> {
+public:
+  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_mp__ConcurrentQueue_O ;
 };
 template <> class gctools::GCKind<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::MonomerCoordinates_O>>>> {
 public:
@@ -8498,6 +8611,10 @@ public:
 template <> class gctools::GCKind<llvmo::MDNode_O> {
 public:
   static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__MDNode_O ;
+};
+template <> class gctools::GCKind<chem::EnergyRigidBodyComponent_O> {
+public:
+  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__EnergyRigidBodyComponent_O ;
 };
 template <> class gctools::GCKind<chem::PdbWriter_O> {
 public:
@@ -9055,6 +9172,10 @@ template <> class gctools::GCKind<chem::EnergyImproperRestraint_O> {
 public:
   static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__EnergyImproperRestraint_O ;
 };
+template <> class gctools::GCKind<gctools::GCVector_moveable<chem::RigidBodyAtomInfo>> {
+public:
+  static gctools::GCKindEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_chem__RigidBodyAtomInfo_ ;
+};
 template <> class gctools::GCKind<chem::Rotamer_O> {
 public:
   static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__Rotamer_O ;
@@ -9243,13 +9364,13 @@ template <> class gctools::GCKind<gctools::GCVector_moveable<gctools::smart_ptr<
 public:
   static gctools::GCKindEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__Monomer_O__ ;
 };
-template <> class gctools::GCKind<clcenv::ConstantVariableInfo_O> {
-public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_clcenv__ConstantVariableInfo_O ;
-};
 template <> class gctools::GCKind<core::TagbodyFrame_O> {
 public:
   static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__TagbodyFrame_O ;
+};
+template <> class gctools::GCKind<clcenv::ConstantVariableInfo_O> {
+public:
+  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_clcenv__ConstantVariableInfo_O ;
 };
 template <> class gctools::GCKind<chem::RingTest_O> {
 public:
@@ -9511,6 +9632,10 @@ template <> class gctools::GCKind<core::LongFloat_O> {
 public:
   static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__LongFloat_O ;
 };
+template <> class gctools::GCKind<chem::RigidBodyEnergyFunction_O> {
+public:
+  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__RigidBodyEnergyFunction_O ;
+};
 template <> class gctools::GCKind<core::Creator_O> {
 public:
   static gctools::GCKindEnum const Kind = gctools::KIND_TEMPLATED_LISPALLOC_core__Creator_O ;
@@ -9627,13 +9752,13 @@ template <> class gctools::GCKind<llvmo::StoreInst_O> {
 public:
   static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__StoreInst_O ;
 };
-template <> class gctools::GCKind<llvmo::DIBasicType_O> {
-public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__DIBasicType_O ;
-};
 template <> class gctools::GCKind<core::SimpleVector_int64_t_O> {
 public:
   static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__SimpleVector_int64_t_O ;
+};
+template <> class gctools::GCKind<llvmo::DIBasicType_O> {
+public:
+  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__DIBasicType_O ;
 };
 template <> class gctools::GCKind<core::SimpleMDArray_byte16_t_O> {
 public:
@@ -9675,6 +9800,10 @@ template <> class gctools::GCKind<chem::EntityNameSetBase_O> {
 public:
   static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__EntityNameSetBase_O ;
 };
+template <> class gctools::GCKind<core::ClassCreator_O> {
+public:
+  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__ClassCreator_O ;
+};
 template <> class gctools::GCKind<chem::BondList_O> {
 public:
   static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__BondList_O ;
@@ -9682,10 +9811,6 @@ public:
 template <> class gctools::GCKind<core::SynonymStream_O> {
 public:
   static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__SynonymStream_O ;
-};
-template <> class gctools::GCKind<core::ClassCreator_O> {
-public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__ClassCreator_O ;
 };
 template <> class gctools::GCKind<chem::Command_O> {
 public:
@@ -9831,6 +9956,10 @@ template <> class gctools::GCKind<chem::OligomerPart_Monomer_O> {
 public:
   static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__OligomerPart_Monomer_O ;
 };
+template <> class gctools::GCKind<chem::ScoringFunction_O> {
+public:
+  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__ScoringFunction_O ;
+};
 template <> class gctools::GCKind<core::MDArray_byte64_t_O> {
 public:
   static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__MDArray_byte64_t_O ;
@@ -9843,10 +9972,6 @@ template <> class gctools::GCKind<core::AbstractSimpleVector_O> {
 public:
   static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__AbstractSimpleVector_O ;
 };
-template <> class gctools::GCKind<chem::NVector_O> {
-public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__NVector_O ;
-};
 template <> class gctools::GCKind<core::VaList_dummy_O> {
 public:
   static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__VaList_dummy_O ;
@@ -9854,6 +9979,10 @@ public:
 template <> class gctools::GCKind<chem::StereoConfiguration_O> {
 public:
   static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__StereoConfiguration_O ;
+};
+template <> class gctools::GCKind<chem::EnergyRigidBodyNonbond_O> {
+public:
+  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__EnergyRigidBodyNonbond_O ;
 };
 template <> class gctools::GCKind<clcenv::LocalFunctionInfo_O> {
 public:
@@ -9943,6 +10072,10 @@ template <> class gctools::GCKind<clcenv::Closure_O> {
 public:
   static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_clcenv__Closure_O ;
 };
+template <> class gctools::GCKind<mp::BlockingConcurrentQueue_O> {
+public:
+  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_mp__BlockingConcurrentQueue_O ;
+};
 template <> class gctools::GCKind<core::FunctionContainerEnvironment_O> {
 public:
   static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__FunctionContainerEnvironment_O ;
@@ -10027,9 +10160,17 @@ template <> class gctools::GCKind<llvmo::SequentialType_O> {
 public:
   static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__SequentialType_O ;
 };
+template <> class gctools::GCKind<mp::SharedMutex_O> {
+public:
+  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_mp__SharedMutex_O ;
+};
 template <> class gctools::GCKind<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::AtomIndexer_O>>>> {
 public:
   static gctools::GCKindEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__AtomIndexer_O___ ;
+};
+template <> class gctools::GCKind<chem::StereoisomerAtoms_O> {
+public:
+  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__StereoisomerAtoms_O ;
 };
 template <> class gctools::GCKind<chem::RestraintFixedNonbond_O> {
 public:
@@ -10042,10 +10183,6 @@ public:
 template <> class gctools::GCKind<chem::FFPtorDb_O> {
 public:
   static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__FFPtorDb_O ;
-};
-template <> class gctools::GCKind<chem::StereoisomerAtoms_O> {
-public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__StereoisomerAtoms_O ;
 };
 template <> class gctools::GCKind<gctools::GCVector_moveable<gctools::smart_ptr<chem::Structure_Old_ListEntry_O>>> {
 public:
@@ -10159,6 +10296,10 @@ template <> class gctools::GCKind<chem::SuperposeSelectedAtoms_O> {
 public:
   static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__SuperposeSelectedAtoms_O ;
 };
+template <> class gctools::GCKind<gctools::GCVector_moveable<chem::EnergyRigidBodyStaple>> {
+public:
+  static gctools::GCKindEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_chem__EnergyRigidBodyStaple_ ;
+};
 template <> class gctools::GCKind<chem::RingClosingMate_O> {
 public:
   static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__RingClosingMate_O ;
@@ -10175,6 +10316,11 @@ public:
 #if defined(GC_OBJ_SCAN)
 #endif // defined(GC_OBJ_SCAN)
 #if defined(GC_OBJ_SCAN_HELPERS)
+{ class_kind, KIND_LISPALLOC_asttooling__DerivableFrontendActionFactory, sizeof(asttooling::DerivableFrontendActionFactory), 0, "asttooling::DerivableFrontendActionFactory" },
+ {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Class_O>), offsetof(SAFE_TYPE_MACRO(asttooling::DerivableFrontendActionFactory),_Class), "_Class" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
+ {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(asttooling::DerivableFrontendActionFactory),_isgf), "_isgf" }, // public: (T) fixable: NIL good-name: T
+ {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::SimpleVector_O>), offsetof(SAFE_TYPE_MACRO(asttooling::DerivableFrontendActionFactory),_Rack), "_Rack" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
+ {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(asttooling::DerivableFrontendActionFactory),_Sig), "_Sig" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
 { class_kind, KIND_ROOTCLASSALLOC_core__Lisp_O, sizeof(core::Lisp_O), 0, "core::Lisp_O" },
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._TerminalIO), "_Roots._TerminalIO" }, // public: (T T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::List_V>), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._ActiveThreads), "_Roots._ActiveThreads" }, // public: (T T) fixable: SMART-PTR-FIX good-name: T
@@ -10344,6 +10490,15 @@ public:
 { class_kind, KIND_LISPALLOC_core__StructureObject_O, sizeof(core::StructureObject_O), 0, "core::StructureObject_O" },
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Class_O>), offsetof(SAFE_TYPE_MACRO(core::StructureObject_O),_Type), "_Type" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, TAGGED_POINTER_OFFSET, sizeof(gctools::tagged_pointer<gctools::GCVector_moveable<gctools::smart_ptr<core::T_O>>>), offsetof(SAFE_TYPE_MACRO(core::StructureObject_O),_Slots._Vector._Contents), "_Slots._Vector._Contents" }, // public: (T T T) fixable: TAGGED-POINTER-FIX good-name: T
+{ class_kind, KIND_LISPALLOC_mp__BlockingConcurrentQueue_O, sizeof(mp::BlockingConcurrentQueue_O), 0, "mp::BlockingConcurrentQueue_O" },
+// not-exposing {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(mp::BlockingConcurrentQueue_O),_Queue.inner.producerCount._M_i), "_Queue.inner.producerCount._M_i" }, // public: (NIL NIL NIL NIL) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(mp::BlockingConcurrentQueue_O),_Queue.inner.initialBlockPoolIndex._M_i), "_Queue.inner.initialBlockPoolIndex._M_i" }, // public: (NIL NIL NIL NIL) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(mp::BlockingConcurrentQueue_O),_Queue.inner.initialBlockPoolSize), "_Queue.inner.initialBlockPoolSize" }, // public: (NIL NIL NIL) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(mp::BlockingConcurrentQueue_O),_Queue.inner.implicitProducerHashCount._M_i), "_Queue.inner.implicitProducerHashCount._M_i" }, // public: (NIL NIL NIL NIL) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(mp::BlockingConcurrentQueue_O),_Queue.inner.initialImplicitProducerHash.capacity), "_Queue.inner.initialImplicitProducerHash.capacity" }, // public: (NIL NIL NIL T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(mp::BlockingConcurrentQueue_O),_Queue.inner.implicitProducerHashResizeInProgress._M_i), "_Queue.inner.implicitProducerHashResizeInProgress._M_i" }, // public: (NIL NIL NIL T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(mp::BlockingConcurrentQueue_O),_Queue.inner.nextExplicitConsumerId._M_i), "_Queue.inner.nextExplicitConsumerId._M_i" }, // public: (NIL NIL NIL NIL) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(mp::BlockingConcurrentQueue_O),_Queue.inner.globalExplicitConsumerOffset._M_i), "_Queue.inner.globalExplicitConsumerOffset._M_i" }, // public: (NIL NIL NIL NIL) fixable: NIL good-name: T
 { class_kind, KIND_LISPALLOC_core__Pathname_O, sizeof(core::Pathname_O), 0, "core::Pathname_O" },
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::Pathname_O),_Host), "_Host" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::Pathname_O),_Device), "_Device" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
@@ -11042,11 +11197,6 @@ public:
  {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::Instance_O),_isgf), "_isgf" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::SimpleVector_O>), offsetof(SAFE_TYPE_MACRO(core::Instance_O),_Rack), "_Rack" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::Instance_O),_Sig), "_Sig" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
-{ class_kind, KIND_LISPALLOC_asttooling__DerivableFrontendActionFactory, sizeof(asttooling::DerivableFrontendActionFactory), 0, "asttooling::DerivableFrontendActionFactory" },
- {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Class_O>), offsetof(SAFE_TYPE_MACRO(asttooling::DerivableFrontendActionFactory),_Class), "_Class" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(asttooling::DerivableFrontendActionFactory),_isgf), "_isgf" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::SimpleVector_O>), offsetof(SAFE_TYPE_MACRO(asttooling::DerivableFrontendActionFactory),_Rack), "_Rack" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(asttooling::DerivableFrontendActionFactory),_Sig), "_Sig" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
 { class_kind, KIND_LISPALLOC_core__SNode_O, sizeof(core::SNode_O), 0, "core::SNode_O" },
 // not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::SNode_O),_RefCount), "_RefCount" }, // public: (NIL) fixable: NIL good-name: T
 { class_kind, KIND_LISPALLOC_core__LeafSNode_O, sizeof(core::LeafSNode_O), 0, "core::LeafSNode_O" },
@@ -11846,6 +11996,15 @@ public:
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::Record_O),_replacement_table), "_replacement_table" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::Record_O),_Seen), "_Seen" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
 { class_kind, KIND_LISPALLOC_llvmo__DataLayout_O, sizeof(llvmo::DataLayout_O), 0, "llvmo::DataLayout_O" },
+{ class_kind, KIND_LISPALLOC_mp__ConcurrentQueue_O, sizeof(mp::ConcurrentQueue_O), 0, "mp::ConcurrentQueue_O" },
+// not-exposing {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(mp::ConcurrentQueue_O),_Queue.producerCount._M_i), "_Queue.producerCount._M_i" }, // public: (NIL NIL NIL) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(mp::ConcurrentQueue_O),_Queue.initialBlockPoolIndex._M_i), "_Queue.initialBlockPoolIndex._M_i" }, // public: (NIL NIL NIL) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(mp::ConcurrentQueue_O),_Queue.initialBlockPoolSize), "_Queue.initialBlockPoolSize" }, // public: (NIL NIL) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(mp::ConcurrentQueue_O),_Queue.implicitProducerHashCount._M_i), "_Queue.implicitProducerHashCount._M_i" }, // public: (NIL NIL NIL) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(mp::ConcurrentQueue_O),_Queue.initialImplicitProducerHash.capacity), "_Queue.initialImplicitProducerHash.capacity" }, // public: (NIL NIL T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(mp::ConcurrentQueue_O),_Queue.implicitProducerHashResizeInProgress._M_i), "_Queue.implicitProducerHashResizeInProgress._M_i" }, // public: (NIL NIL T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(mp::ConcurrentQueue_O),_Queue.nextExplicitConsumerId._M_i), "_Queue.nextExplicitConsumerId._M_i" }, // public: (NIL NIL NIL) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(mp::ConcurrentQueue_O),_Queue.globalExplicitConsumerOffset._M_i), "_Queue.globalExplicitConsumerOffset._M_i" }, // public: (NIL NIL NIL) fixable: NIL good-name: T
 { class_kind, KIND_LISPALLOC_core__CxxObject_O, sizeof(core::CxxObject_O), 0, "core::CxxObject_O" },
 { class_kind, KIND_LISPALLOC_mp__ConditionVariable_O, sizeof(mp::ConditionVariable_O), 0, "mp::ConditionVariable_O" },
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(mp::ConditionVariable_O),_Name), "_Name" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
@@ -11881,6 +12040,14 @@ public:
  {  fixed_field, TAGGED_POINTER_OFFSET, sizeof(gctools::tagged_pointer<gctools::GCVector_moveable<gctools::smart_ptr<chem::Mate_O>>>), offsetof(SAFE_TYPE_MACRO(chem::InPlug_O),_Mates._Vector._Contents), "_Mates._Vector._Contents" }, // public: (NIL T T) fixable: TAGGED-POINTER-FIX good-name: T
 { class_kind, KIND_LISPALLOC_chem__StereoisomerAtoms_O, sizeof(chem::StereoisomerAtoms_O), 0, "chem::StereoisomerAtoms_O" },
  {  fixed_field, TAGGED_POINTER_OFFSET, sizeof(gctools::tagged_pointer<gctools::GCVector_moveable<gctools::smart_ptr<chem::StereoisomerAtom_O>>>), offsetof(SAFE_TYPE_MACRO(chem::StereoisomerAtoms_O),_Atoms._Vector._Contents), "_Atoms._Vector._Contents" }, // public: (NIL T T) fixable: TAGGED-POINTER-FIX good-name: T
+{ class_kind, KIND_LISPALLOC_mp__SharedMutex_O, sizeof(mp::SharedMutex_O), 0, "mp::SharedMutex_O" },
+ {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(mp::SharedMutex_O),_Name), "_Name" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
+ {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(mp::SharedMutex_O),_Owner), "_Owner" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
+ {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(mp::SharedMutex_O),_SharedMutex._r._Counter), "_SharedMutex._r._Counter" }, // public: (T T T) fixable: NIL good-name: T
+ {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(mp::SharedMutex_O),_SharedMutex._r._Recursive), "_SharedMutex._r._Recursive" }, // public: (T T T) fixable: NIL good-name: T
+ {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(mp::SharedMutex_O),_SharedMutex._g._Counter), "_SharedMutex._g._Counter" }, // public: (T T T) fixable: NIL good-name: T
+ {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(mp::SharedMutex_O),_SharedMutex._g._Recursive), "_SharedMutex._g._Recursive" }, // public: (T T T) fixable: NIL good-name: T
+ {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(mp::SharedMutex_O),_SharedMutex._b), "_SharedMutex._b" }, // public: (T T) fixable: NIL good-name: T
 { class_kind, KIND_LISPALLOC_chem__MonomerCoordinates_O, sizeof(chem::MonomerCoordinates_O), 0, "chem::MonomerCoordinates_O" },
 // not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(chem::MonomerCoordinates_O),_Comment._M_string_length), "_Comment._M_string_length" }, // public: (NIL NIL) fixable: NIL good-name: T
 // not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(chem::MonomerCoordinates_O),_Comment.NO-NAME._M_allocated_capacity), "_Comment.NO-NAME._M_allocated_capacity" }, // public: (NIL NIL T) fixable: NIL good-name: T
@@ -11996,8 +12163,41 @@ public:
 { class_kind, KIND_LISPALLOC_chem__StereoConfiguration_O, sizeof(chem::StereoConfiguration_O), 0, "chem::StereoConfiguration_O" },
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Symbol_O>), offsetof(SAFE_TYPE_MACRO(chem::StereoConfiguration_O),_AtomName), "_AtomName" }, // public: (NIL) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Symbol_O>), offsetof(SAFE_TYPE_MACRO(chem::StereoConfiguration_O),_Configuration), "_Configuration" }, // public: (NIL) fixable: SMART-PTR-FIX good-name: T
-{ class_kind, KIND_LISPALLOC_chem__NVector_O, sizeof(chem::NVector_O), 0, "chem::NVector_O" },
- {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(chem::NVector_O),_Size), "_Size" }, // public: (T) fixable: NIL good-name: T
+{ class_kind, KIND_LISPALLOC_chem__ScoringFunction_O, sizeof(chem::ScoringFunction_O), 0, "chem::ScoringFunction_O" },
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(chem::ScoringFunction_O),_Name._M_string_length), "_Name._M_string_length" }, // public: (T NIL) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(chem::ScoringFunction_O),_Name.NO-NAME._M_allocated_capacity), "_Name.NO-NAME._M_allocated_capacity" }, // public: (T NIL T) fixable: NIL good-name: T
+ {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(chem::ScoringFunction_O),_Debug), "_Debug" }, // public: (T) fixable: NIL good-name: T
+{ class_kind, KIND_LISPALLOC_chem__RigidBodyEnergyFunction_O, sizeof(chem::RigidBodyEnergyFunction_O), 0, "chem::RigidBodyEnergyFunction_O" },
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(chem::RigidBodyEnergyFunction_O),_Name._M_string_length), "_Name._M_string_length" }, // public: (T NIL) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(chem::RigidBodyEnergyFunction_O),_Name.NO-NAME._M_allocated_capacity), "_Name.NO-NAME._M_allocated_capacity" }, // public: (T NIL T) fixable: NIL good-name: T
+ {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(chem::RigidBodyEnergyFunction_O),_Debug), "_Debug" }, // public: (T) fixable: NIL good-name: T
+ {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(chem::RigidBodyEnergyFunction_O),_RigidBodies), "_RigidBodies" }, // public: (T) fixable: NIL good-name: T
+ {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::List_V>), offsetof(SAFE_TYPE_MACRO(chem::RigidBodyEnergyFunction_O),_Terms), "_Terms" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
+{ class_kind, KIND_LISPALLOC_chem__EnergyFunction_O, sizeof(chem::EnergyFunction_O), 0, "chem::EnergyFunction_O" },
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(chem::EnergyFunction_O),_Name._M_string_length), "_Name._M_string_length" }, // public: (T NIL) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(chem::EnergyFunction_O),_Name.NO-NAME._M_allocated_capacity), "_Name.NO-NAME._M_allocated_capacity" }, // public: (T NIL T) fixable: NIL good-name: T
+ {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(chem::EnergyFunction_O),_Debug), "_Debug" }, // public: (T) fixable: NIL good-name: T
+ {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<chem::Matter_O>), offsetof(SAFE_TYPE_MACRO(chem::EnergyFunction_O),_Matter), "_Matter" }, // public: (NIL) fixable: SMART-PTR-FIX good-name: T
+ {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<chem::FFNonbondCrossTermTable_O>), offsetof(SAFE_TYPE_MACRO(chem::EnergyFunction_O),_NonbondCrossTermTable), "_NonbondCrossTermTable" }, // public: (NIL) fixable: SMART-PTR-FIX good-name: T
+ {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<chem::AtomTable_O>), offsetof(SAFE_TYPE_MACRO(chem::EnergyFunction_O),_AtomTable), "_AtomTable" }, // public: (NIL) fixable: SMART-PTR-FIX good-name: T
+ {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<chem::EnergyStretch_O>), offsetof(SAFE_TYPE_MACRO(chem::EnergyFunction_O),_Stretch), "_Stretch" }, // public: (NIL) fixable: SMART-PTR-FIX good-name: T
+ {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<chem::EnergyAngle_O>), offsetof(SAFE_TYPE_MACRO(chem::EnergyFunction_O),_Angle), "_Angle" }, // public: (NIL) fixable: SMART-PTR-FIX good-name: T
+ {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<chem::EnergyDihedral_O>), offsetof(SAFE_TYPE_MACRO(chem::EnergyFunction_O),_Dihedral), "_Dihedral" }, // public: (NIL) fixable: SMART-PTR-FIX good-name: T
+ {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<chem::EnergyNonbond_O>), offsetof(SAFE_TYPE_MACRO(chem::EnergyFunction_O),_Nonbond), "_Nonbond" }, // public: (NIL) fixable: SMART-PTR-FIX good-name: T
+ {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<chem::EnergyImproperRestraint_O>), offsetof(SAFE_TYPE_MACRO(chem::EnergyFunction_O),_ImproperRestraint), "_ImproperRestraint" }, // public: (NIL) fixable: SMART-PTR-FIX good-name: T
+ {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<chem::EnergyChiralRestraint_O>), offsetof(SAFE_TYPE_MACRO(chem::EnergyFunction_O),_ChiralRestraint), "_ChiralRestraint" }, // public: (NIL) fixable: SMART-PTR-FIX good-name: T
+ {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<chem::EnergyAnchorRestraint_O>), offsetof(SAFE_TYPE_MACRO(chem::EnergyFunction_O),_AnchorRestraint), "_AnchorRestraint" }, // public: (NIL) fixable: SMART-PTR-FIX good-name: T
+ {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<chem::EnergyFixedNonbondRestraint_O>), offsetof(SAFE_TYPE_MACRO(chem::EnergyFunction_O),_FixedNonbondRestraint), "_FixedNonbondRestraint" }, // public: (NIL) fixable: SMART-PTR-FIX good-name: T
+// not-exposing {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(chem::EnergyFunction_O),_RestrainSecondaryAmides), "_RestrainSecondaryAmides" }, // public: (NIL) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_double, sizeof(double), offsetof(SAFE_TYPE_MACRO(chem::EnergyFunction_O),_ChiralRestraintWeight), "_ChiralRestraintWeight" }, // public: (NIL) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_double, sizeof(double), offsetof(SAFE_TYPE_MACRO(chem::EnergyFunction_O),_ChiralRestraintOffset), "_ChiralRestraintOffset" }, // public: (NIL) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_double, sizeof(double), offsetof(SAFE_TYPE_MACRO(chem::EnergyFunction_O),_AnchorRestraintWeight), "_AnchorRestraintWeight" }, // public: (NIL) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_double, sizeof(double), offsetof(SAFE_TYPE_MACRO(chem::EnergyFunction_O),_FixedNonbondRestraintWeight), "_FixedNonbondRestraintWeight" }, // public: (NIL) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_double, sizeof(double), offsetof(SAFE_TYPE_MACRO(chem::EnergyFunction_O),_TotalEnergy), "_TotalEnergy" }, // public: (NIL) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(chem::EnergyFunction_O),_Message._M_string_length), "_Message._M_string_length" }, // public: (NIL NIL) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(chem::EnergyFunction_O),_Message.NO-NAME._M_allocated_capacity), "_Message.NO-NAME._M_allocated_capacity" }, // public: (NIL NIL T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_double, sizeof(double), offsetof(SAFE_TYPE_MACRO(chem::EnergyFunction_O),_DielectricConstant), "_DielectricConstant" }, // public: (NIL) fixable: NIL good-name: T
+ {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::List_V>), offsetof(SAFE_TYPE_MACRO(chem::EnergyFunction_O),_MissingParameters), "_MissingParameters" }, // public: (NIL) fixable: SMART-PTR-FIX good-name: T
 { class_kind, KIND_LISPALLOC_chem__Entity_O, sizeof(chem::Entity_O), 0, "chem::Entity_O" },
 { class_kind, KIND_LISPALLOC_chem__EntityNameSetBase_O, sizeof(chem::EntityNameSetBase_O), 0, "chem::EntityNameSetBase_O" },
 // not-exposing {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(chem::EntityNameSetBase_O),_Optional), "_Optional" }, // public: (NIL) fixable: NIL good-name: T
@@ -12694,6 +12894,153 @@ public:
 // not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(chem::EnergyImproperRestraint_O),_DebugLog._M_stringbuf._M_string.NO-NAME._M_allocated_capacity), "_DebugLog._M_stringbuf._M_string.NO-NAME._M_allocated_capacity" }, // public: (NIL NIL NIL NIL T) fixable: NIL good-name: T
  {  fixed_field, TAGGED_POINTER_OFFSET, sizeof(gctools::tagged_pointer<gctools::GCVector_moveable<chem::EnergyImproperRestraint>>), offsetof(SAFE_TYPE_MACRO(chem::EnergyImproperRestraint_O),_Terms._Vector._Contents), "_Terms._Vector._Contents" }, // public: (T T T) fixable: TAGGED-POINTER-FIX good-name: T
  {  fixed_field, TAGGED_POINTER_OFFSET, sizeof(gctools::tagged_pointer<gctools::GCVector_moveable<chem::EnergyImproperRestraint>>), offsetof(SAFE_TYPE_MACRO(chem::EnergyImproperRestraint_O),_BeyondThresholdTerms._Vector._Contents), "_BeyondThresholdTerms._Vector._Contents" }, // public: (T T T) fixable: TAGGED-POINTER-FIX good-name: T
+{ class_kind, KIND_LISPALLOC_chem__EnergyRigidBodyComponent_O, sizeof(chem::EnergyRigidBodyComponent_O), 0, "chem::EnergyRigidBodyComponent_O" },
+// not-exposing {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(chem::EnergyRigidBodyComponent_O),_Enabled), "_Enabled" }, // public: (NIL) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_double, sizeof(double), offsetof(SAFE_TYPE_MACRO(chem::EnergyRigidBodyComponent_O),_Scale), "_Scale" }, // public: (NIL) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_double, sizeof(double), offsetof(SAFE_TYPE_MACRO(chem::EnergyRigidBodyComponent_O),_ErrorThreshold), "_ErrorThreshold" }, // public: (NIL) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(chem::EnergyRigidBodyComponent_O),_DebugEnergy), "_DebugEnergy" }, // public: (NIL) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_double, sizeof(double), offsetof(SAFE_TYPE_MACRO(chem::EnergyRigidBodyComponent_O),_TotalEnergy), "_TotalEnergy" }, // public: (NIL) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(chem::EnergyRigidBodyComponent_O),_Debug_NumberOfTermsToCalculate), "_Debug_NumberOfTermsToCalculate" }, // public: (NIL) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(chem::EnergyRigidBodyComponent_O),_DebugLog._M_precision), "_DebugLog._M_precision" }, // public: (NIL NIL) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(chem::EnergyRigidBodyComponent_O),_DebugLog._M_width), "_DebugLog._M_width" }, // public: (NIL NIL) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(chem::EnergyRigidBodyComponent_O),_DebugLog._M_word_zero._M_iword), "_DebugLog._M_word_zero._M_iword" }, // public: (NIL NIL T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(chem::EnergyRigidBodyComponent_O),_DebugLog._M_word_size), "_DebugLog._M_word_size" }, // public: (NIL NIL) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_char, sizeof(char), offsetof(SAFE_TYPE_MACRO(chem::EnergyRigidBodyComponent_O),_DebugLog._M_fill), "_DebugLog._M_fill" }, // public: (NIL NIL) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(chem::EnergyRigidBodyComponent_O),_DebugLog._M_fill_init), "_DebugLog._M_fill_init" }, // public: (NIL NIL) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(chem::EnergyRigidBodyComponent_O),_DebugLog._M_precision), "_DebugLog._M_precision" }, // public: (NIL NIL) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(chem::EnergyRigidBodyComponent_O),_DebugLog._M_width), "_DebugLog._M_width" }, // public: (NIL NIL) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(chem::EnergyRigidBodyComponent_O),_DebugLog._M_word_zero._M_iword), "_DebugLog._M_word_zero._M_iword" }, // public: (NIL NIL T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(chem::EnergyRigidBodyComponent_O),_DebugLog._M_word_size), "_DebugLog._M_word_size" }, // public: (NIL NIL) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_char, sizeof(char), offsetof(SAFE_TYPE_MACRO(chem::EnergyRigidBodyComponent_O),_DebugLog._M_fill), "_DebugLog._M_fill" }, // public: (NIL NIL) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(chem::EnergyRigidBodyComponent_O),_DebugLog._M_fill_init), "_DebugLog._M_fill_init" }, // public: (NIL NIL) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(chem::EnergyRigidBodyComponent_O),_DebugLog._M_gcount), "_DebugLog._M_gcount" }, // public: (NIL NIL) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(chem::EnergyRigidBodyComponent_O),_DebugLog._M_precision), "_DebugLog._M_precision" }, // public: (NIL NIL) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(chem::EnergyRigidBodyComponent_O),_DebugLog._M_width), "_DebugLog._M_width" }, // public: (NIL NIL) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(chem::EnergyRigidBodyComponent_O),_DebugLog._M_word_zero._M_iword), "_DebugLog._M_word_zero._M_iword" }, // public: (NIL NIL T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(chem::EnergyRigidBodyComponent_O),_DebugLog._M_word_size), "_DebugLog._M_word_size" }, // public: (NIL NIL) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_char, sizeof(char), offsetof(SAFE_TYPE_MACRO(chem::EnergyRigidBodyComponent_O),_DebugLog._M_fill), "_DebugLog._M_fill" }, // public: (NIL NIL) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(chem::EnergyRigidBodyComponent_O),_DebugLog._M_fill_init), "_DebugLog._M_fill_init" }, // public: (NIL NIL) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(chem::EnergyRigidBodyComponent_O),_DebugLog._M_precision), "_DebugLog._M_precision" }, // public: (NIL NIL) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(chem::EnergyRigidBodyComponent_O),_DebugLog._M_width), "_DebugLog._M_width" }, // public: (NIL NIL) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(chem::EnergyRigidBodyComponent_O),_DebugLog._M_word_zero._M_iword), "_DebugLog._M_word_zero._M_iword" }, // public: (NIL NIL T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(chem::EnergyRigidBodyComponent_O),_DebugLog._M_word_size), "_DebugLog._M_word_size" }, // public: (NIL NIL) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_char, sizeof(char), offsetof(SAFE_TYPE_MACRO(chem::EnergyRigidBodyComponent_O),_DebugLog._M_fill), "_DebugLog._M_fill" }, // public: (NIL NIL) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(chem::EnergyRigidBodyComponent_O),_DebugLog._M_fill_init), "_DebugLog._M_fill_init" }, // public: (NIL NIL) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(chem::EnergyRigidBodyComponent_O),_DebugLog._M_precision), "_DebugLog._M_precision" }, // public: (NIL NIL) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(chem::EnergyRigidBodyComponent_O),_DebugLog._M_width), "_DebugLog._M_width" }, // public: (NIL NIL) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(chem::EnergyRigidBodyComponent_O),_DebugLog._M_word_zero._M_iword), "_DebugLog._M_word_zero._M_iword" }, // public: (NIL NIL T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(chem::EnergyRigidBodyComponent_O),_DebugLog._M_word_size), "_DebugLog._M_word_size" }, // public: (NIL NIL) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_char, sizeof(char), offsetof(SAFE_TYPE_MACRO(chem::EnergyRigidBodyComponent_O),_DebugLog._M_fill), "_DebugLog._M_fill" }, // public: (NIL NIL) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(chem::EnergyRigidBodyComponent_O),_DebugLog._M_fill_init), "_DebugLog._M_fill_init" }, // public: (NIL NIL) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(chem::EnergyRigidBodyComponent_O),_DebugLog._M_precision), "_DebugLog._M_precision" }, // public: (NIL NIL) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(chem::EnergyRigidBodyComponent_O),_DebugLog._M_width), "_DebugLog._M_width" }, // public: (NIL NIL) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(chem::EnergyRigidBodyComponent_O),_DebugLog._M_word_zero._M_iword), "_DebugLog._M_word_zero._M_iword" }, // public: (NIL NIL T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(chem::EnergyRigidBodyComponent_O),_DebugLog._M_word_size), "_DebugLog._M_word_size" }, // public: (NIL NIL) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_char, sizeof(char), offsetof(SAFE_TYPE_MACRO(chem::EnergyRigidBodyComponent_O),_DebugLog._M_fill), "_DebugLog._M_fill" }, // public: (NIL NIL) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(chem::EnergyRigidBodyComponent_O),_DebugLog._M_fill_init), "_DebugLog._M_fill_init" }, // public: (NIL NIL) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(chem::EnergyRigidBodyComponent_O),_DebugLog._M_stringbuf._M_string._M_string_length), "_DebugLog._M_stringbuf._M_string._M_string_length" }, // public: (NIL NIL NIL NIL) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(chem::EnergyRigidBodyComponent_O),_DebugLog._M_stringbuf._M_string.NO-NAME._M_allocated_capacity), "_DebugLog._M_stringbuf._M_string.NO-NAME._M_allocated_capacity" }, // public: (NIL NIL NIL NIL T) fixable: NIL good-name: T
+{ class_kind, KIND_LISPALLOC_chem__EnergyRigidBodyNonbond_O, sizeof(chem::EnergyRigidBodyNonbond_O), 0, "chem::EnergyRigidBodyNonbond_O" },
+// not-exposing {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(chem::EnergyRigidBodyNonbond_O),_Enabled), "_Enabled" }, // public: (NIL) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_double, sizeof(double), offsetof(SAFE_TYPE_MACRO(chem::EnergyRigidBodyNonbond_O),_Scale), "_Scale" }, // public: (NIL) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_double, sizeof(double), offsetof(SAFE_TYPE_MACRO(chem::EnergyRigidBodyNonbond_O),_ErrorThreshold), "_ErrorThreshold" }, // public: (NIL) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(chem::EnergyRigidBodyNonbond_O),_DebugEnergy), "_DebugEnergy" }, // public: (NIL) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_double, sizeof(double), offsetof(SAFE_TYPE_MACRO(chem::EnergyRigidBodyNonbond_O),_TotalEnergy), "_TotalEnergy" }, // public: (NIL) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(chem::EnergyRigidBodyNonbond_O),_Debug_NumberOfTermsToCalculate), "_Debug_NumberOfTermsToCalculate" }, // public: (NIL) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(chem::EnergyRigidBodyNonbond_O),_DebugLog._M_precision), "_DebugLog._M_precision" }, // public: (NIL NIL) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(chem::EnergyRigidBodyNonbond_O),_DebugLog._M_width), "_DebugLog._M_width" }, // public: (NIL NIL) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(chem::EnergyRigidBodyNonbond_O),_DebugLog._M_word_zero._M_iword), "_DebugLog._M_word_zero._M_iword" }, // public: (NIL NIL T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(chem::EnergyRigidBodyNonbond_O),_DebugLog._M_word_size), "_DebugLog._M_word_size" }, // public: (NIL NIL) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_char, sizeof(char), offsetof(SAFE_TYPE_MACRO(chem::EnergyRigidBodyNonbond_O),_DebugLog._M_fill), "_DebugLog._M_fill" }, // public: (NIL NIL) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(chem::EnergyRigidBodyNonbond_O),_DebugLog._M_fill_init), "_DebugLog._M_fill_init" }, // public: (NIL NIL) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(chem::EnergyRigidBodyNonbond_O),_DebugLog._M_precision), "_DebugLog._M_precision" }, // public: (NIL NIL) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(chem::EnergyRigidBodyNonbond_O),_DebugLog._M_width), "_DebugLog._M_width" }, // public: (NIL NIL) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(chem::EnergyRigidBodyNonbond_O),_DebugLog._M_word_zero._M_iword), "_DebugLog._M_word_zero._M_iword" }, // public: (NIL NIL T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(chem::EnergyRigidBodyNonbond_O),_DebugLog._M_word_size), "_DebugLog._M_word_size" }, // public: (NIL NIL) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_char, sizeof(char), offsetof(SAFE_TYPE_MACRO(chem::EnergyRigidBodyNonbond_O),_DebugLog._M_fill), "_DebugLog._M_fill" }, // public: (NIL NIL) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(chem::EnergyRigidBodyNonbond_O),_DebugLog._M_fill_init), "_DebugLog._M_fill_init" }, // public: (NIL NIL) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(chem::EnergyRigidBodyNonbond_O),_DebugLog._M_gcount), "_DebugLog._M_gcount" }, // public: (NIL NIL) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(chem::EnergyRigidBodyNonbond_O),_DebugLog._M_precision), "_DebugLog._M_precision" }, // public: (NIL NIL) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(chem::EnergyRigidBodyNonbond_O),_DebugLog._M_width), "_DebugLog._M_width" }, // public: (NIL NIL) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(chem::EnergyRigidBodyNonbond_O),_DebugLog._M_word_zero._M_iword), "_DebugLog._M_word_zero._M_iword" }, // public: (NIL NIL T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(chem::EnergyRigidBodyNonbond_O),_DebugLog._M_word_size), "_DebugLog._M_word_size" }, // public: (NIL NIL) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_char, sizeof(char), offsetof(SAFE_TYPE_MACRO(chem::EnergyRigidBodyNonbond_O),_DebugLog._M_fill), "_DebugLog._M_fill" }, // public: (NIL NIL) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(chem::EnergyRigidBodyNonbond_O),_DebugLog._M_fill_init), "_DebugLog._M_fill_init" }, // public: (NIL NIL) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(chem::EnergyRigidBodyNonbond_O),_DebugLog._M_precision), "_DebugLog._M_precision" }, // public: (NIL NIL) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(chem::EnergyRigidBodyNonbond_O),_DebugLog._M_width), "_DebugLog._M_width" }, // public: (NIL NIL) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(chem::EnergyRigidBodyNonbond_O),_DebugLog._M_word_zero._M_iword), "_DebugLog._M_word_zero._M_iword" }, // public: (NIL NIL T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(chem::EnergyRigidBodyNonbond_O),_DebugLog._M_word_size), "_DebugLog._M_word_size" }, // public: (NIL NIL) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_char, sizeof(char), offsetof(SAFE_TYPE_MACRO(chem::EnergyRigidBodyNonbond_O),_DebugLog._M_fill), "_DebugLog._M_fill" }, // public: (NIL NIL) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(chem::EnergyRigidBodyNonbond_O),_DebugLog._M_fill_init), "_DebugLog._M_fill_init" }, // public: (NIL NIL) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(chem::EnergyRigidBodyNonbond_O),_DebugLog._M_precision), "_DebugLog._M_precision" }, // public: (NIL NIL) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(chem::EnergyRigidBodyNonbond_O),_DebugLog._M_width), "_DebugLog._M_width" }, // public: (NIL NIL) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(chem::EnergyRigidBodyNonbond_O),_DebugLog._M_word_zero._M_iword), "_DebugLog._M_word_zero._M_iword" }, // public: (NIL NIL T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(chem::EnergyRigidBodyNonbond_O),_DebugLog._M_word_size), "_DebugLog._M_word_size" }, // public: (NIL NIL) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_char, sizeof(char), offsetof(SAFE_TYPE_MACRO(chem::EnergyRigidBodyNonbond_O),_DebugLog._M_fill), "_DebugLog._M_fill" }, // public: (NIL NIL) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(chem::EnergyRigidBodyNonbond_O),_DebugLog._M_fill_init), "_DebugLog._M_fill_init" }, // public: (NIL NIL) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(chem::EnergyRigidBodyNonbond_O),_DebugLog._M_precision), "_DebugLog._M_precision" }, // public: (NIL NIL) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(chem::EnergyRigidBodyNonbond_O),_DebugLog._M_width), "_DebugLog._M_width" }, // public: (NIL NIL) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(chem::EnergyRigidBodyNonbond_O),_DebugLog._M_word_zero._M_iword), "_DebugLog._M_word_zero._M_iword" }, // public: (NIL NIL T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(chem::EnergyRigidBodyNonbond_O),_DebugLog._M_word_size), "_DebugLog._M_word_size" }, // public: (NIL NIL) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_char, sizeof(char), offsetof(SAFE_TYPE_MACRO(chem::EnergyRigidBodyNonbond_O),_DebugLog._M_fill), "_DebugLog._M_fill" }, // public: (NIL NIL) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(chem::EnergyRigidBodyNonbond_O),_DebugLog._M_fill_init), "_DebugLog._M_fill_init" }, // public: (NIL NIL) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(chem::EnergyRigidBodyNonbond_O),_DebugLog._M_stringbuf._M_string._M_string_length), "_DebugLog._M_stringbuf._M_string._M_string_length" }, // public: (NIL NIL NIL NIL) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(chem::EnergyRigidBodyNonbond_O),_DebugLog._M_stringbuf._M_string.NO-NAME._M_allocated_capacity), "_DebugLog._M_stringbuf._M_string.NO-NAME._M_allocated_capacity" }, // public: (NIL NIL NIL NIL T) fixable: NIL good-name: T
+ {  fixed_field, ctype_double, sizeof(double), offsetof(SAFE_TYPE_MACRO(chem::EnergyRigidBodyNonbond_O),_DielectricConstant), "_DielectricConstant" }, // public: (T) fixable: NIL good-name: T
+ {  fixed_field, ctype_double, sizeof(double), offsetof(SAFE_TYPE_MACRO(chem::EnergyRigidBodyNonbond_O),_ScaleVdw), "_ScaleVdw" }, // public: (T) fixable: NIL good-name: T
+ {  fixed_field, ctype_double, sizeof(double), offsetof(SAFE_TYPE_MACRO(chem::EnergyRigidBodyNonbond_O),_ScaleElectrostatic), "_ScaleElectrostatic" }, // public: (T) fixable: NIL good-name: T
+ {  fixed_field, ctype_double, sizeof(double), offsetof(SAFE_TYPE_MACRO(chem::EnergyRigidBodyNonbond_O),_EnergyVdw), "_EnergyVdw" }, // public: (T) fixable: NIL good-name: T
+ {  fixed_field, ctype_double, sizeof(double), offsetof(SAFE_TYPE_MACRO(chem::EnergyRigidBodyNonbond_O),_EnergyElectrostatic), "_EnergyElectrostatic" }, // public: (T) fixable: NIL good-name: T
+ {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<chem::FFNonbondDb_O>), offsetof(SAFE_TYPE_MACRO(chem::EnergyRigidBodyNonbond_O),_FFNonbondDb), "_FFNonbondDb" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
+ {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::MDArray_byte32_t_O>), offsetof(SAFE_TYPE_MACRO(chem::EnergyRigidBodyNonbond_O),_RigidBodyEndAtom), "_RigidBodyEndAtom" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
+ {  fixed_field, TAGGED_POINTER_OFFSET, sizeof(gctools::tagged_pointer<gctools::GCVector_moveable<chem::RigidBodyAtomInfo>>), offsetof(SAFE_TYPE_MACRO(chem::EnergyRigidBodyNonbond_O),_AtomInfoTable._Vector._Contents), "_AtomInfoTable._Vector._Contents" }, // public: (T T T) fixable: TAGGED-POINTER-FIX good-name: T
+{ class_kind, KIND_LISPALLOC_chem__EnergyRigidBodyStaple_O, sizeof(chem::EnergyRigidBodyStaple_O), 0, "chem::EnergyRigidBodyStaple_O" },
+// not-exposing {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(chem::EnergyRigidBodyStaple_O),_Enabled), "_Enabled" }, // public: (NIL) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_double, sizeof(double), offsetof(SAFE_TYPE_MACRO(chem::EnergyRigidBodyStaple_O),_Scale), "_Scale" }, // public: (NIL) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_double, sizeof(double), offsetof(SAFE_TYPE_MACRO(chem::EnergyRigidBodyStaple_O),_ErrorThreshold), "_ErrorThreshold" }, // public: (NIL) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(chem::EnergyRigidBodyStaple_O),_DebugEnergy), "_DebugEnergy" }, // public: (NIL) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_double, sizeof(double), offsetof(SAFE_TYPE_MACRO(chem::EnergyRigidBodyStaple_O),_TotalEnergy), "_TotalEnergy" }, // public: (NIL) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(chem::EnergyRigidBodyStaple_O),_Debug_NumberOfTermsToCalculate), "_Debug_NumberOfTermsToCalculate" }, // public: (NIL) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(chem::EnergyRigidBodyStaple_O),_DebugLog._M_precision), "_DebugLog._M_precision" }, // public: (NIL NIL) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(chem::EnergyRigidBodyStaple_O),_DebugLog._M_width), "_DebugLog._M_width" }, // public: (NIL NIL) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(chem::EnergyRigidBodyStaple_O),_DebugLog._M_word_zero._M_iword), "_DebugLog._M_word_zero._M_iword" }, // public: (NIL NIL T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(chem::EnergyRigidBodyStaple_O),_DebugLog._M_word_size), "_DebugLog._M_word_size" }, // public: (NIL NIL) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_char, sizeof(char), offsetof(SAFE_TYPE_MACRO(chem::EnergyRigidBodyStaple_O),_DebugLog._M_fill), "_DebugLog._M_fill" }, // public: (NIL NIL) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(chem::EnergyRigidBodyStaple_O),_DebugLog._M_fill_init), "_DebugLog._M_fill_init" }, // public: (NIL NIL) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(chem::EnergyRigidBodyStaple_O),_DebugLog._M_precision), "_DebugLog._M_precision" }, // public: (NIL NIL) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(chem::EnergyRigidBodyStaple_O),_DebugLog._M_width), "_DebugLog._M_width" }, // public: (NIL NIL) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(chem::EnergyRigidBodyStaple_O),_DebugLog._M_word_zero._M_iword), "_DebugLog._M_word_zero._M_iword" }, // public: (NIL NIL T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(chem::EnergyRigidBodyStaple_O),_DebugLog._M_word_size), "_DebugLog._M_word_size" }, // public: (NIL NIL) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_char, sizeof(char), offsetof(SAFE_TYPE_MACRO(chem::EnergyRigidBodyStaple_O),_DebugLog._M_fill), "_DebugLog._M_fill" }, // public: (NIL NIL) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(chem::EnergyRigidBodyStaple_O),_DebugLog._M_fill_init), "_DebugLog._M_fill_init" }, // public: (NIL NIL) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(chem::EnergyRigidBodyStaple_O),_DebugLog._M_gcount), "_DebugLog._M_gcount" }, // public: (NIL NIL) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(chem::EnergyRigidBodyStaple_O),_DebugLog._M_precision), "_DebugLog._M_precision" }, // public: (NIL NIL) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(chem::EnergyRigidBodyStaple_O),_DebugLog._M_width), "_DebugLog._M_width" }, // public: (NIL NIL) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(chem::EnergyRigidBodyStaple_O),_DebugLog._M_word_zero._M_iword), "_DebugLog._M_word_zero._M_iword" }, // public: (NIL NIL T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(chem::EnergyRigidBodyStaple_O),_DebugLog._M_word_size), "_DebugLog._M_word_size" }, // public: (NIL NIL) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_char, sizeof(char), offsetof(SAFE_TYPE_MACRO(chem::EnergyRigidBodyStaple_O),_DebugLog._M_fill), "_DebugLog._M_fill" }, // public: (NIL NIL) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(chem::EnergyRigidBodyStaple_O),_DebugLog._M_fill_init), "_DebugLog._M_fill_init" }, // public: (NIL NIL) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(chem::EnergyRigidBodyStaple_O),_DebugLog._M_precision), "_DebugLog._M_precision" }, // public: (NIL NIL) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(chem::EnergyRigidBodyStaple_O),_DebugLog._M_width), "_DebugLog._M_width" }, // public: (NIL NIL) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(chem::EnergyRigidBodyStaple_O),_DebugLog._M_word_zero._M_iword), "_DebugLog._M_word_zero._M_iword" }, // public: (NIL NIL T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(chem::EnergyRigidBodyStaple_O),_DebugLog._M_word_size), "_DebugLog._M_word_size" }, // public: (NIL NIL) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_char, sizeof(char), offsetof(SAFE_TYPE_MACRO(chem::EnergyRigidBodyStaple_O),_DebugLog._M_fill), "_DebugLog._M_fill" }, // public: (NIL NIL) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(chem::EnergyRigidBodyStaple_O),_DebugLog._M_fill_init), "_DebugLog._M_fill_init" }, // public: (NIL NIL) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(chem::EnergyRigidBodyStaple_O),_DebugLog._M_precision), "_DebugLog._M_precision" }, // public: (NIL NIL) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(chem::EnergyRigidBodyStaple_O),_DebugLog._M_width), "_DebugLog._M_width" }, // public: (NIL NIL) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(chem::EnergyRigidBodyStaple_O),_DebugLog._M_word_zero._M_iword), "_DebugLog._M_word_zero._M_iword" }, // public: (NIL NIL T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(chem::EnergyRigidBodyStaple_O),_DebugLog._M_word_size), "_DebugLog._M_word_size" }, // public: (NIL NIL) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_char, sizeof(char), offsetof(SAFE_TYPE_MACRO(chem::EnergyRigidBodyStaple_O),_DebugLog._M_fill), "_DebugLog._M_fill" }, // public: (NIL NIL) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(chem::EnergyRigidBodyStaple_O),_DebugLog._M_fill_init), "_DebugLog._M_fill_init" }, // public: (NIL NIL) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(chem::EnergyRigidBodyStaple_O),_DebugLog._M_precision), "_DebugLog._M_precision" }, // public: (NIL NIL) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(chem::EnergyRigidBodyStaple_O),_DebugLog._M_width), "_DebugLog._M_width" }, // public: (NIL NIL) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(chem::EnergyRigidBodyStaple_O),_DebugLog._M_word_zero._M_iword), "_DebugLog._M_word_zero._M_iword" }, // public: (NIL NIL T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(chem::EnergyRigidBodyStaple_O),_DebugLog._M_word_size), "_DebugLog._M_word_size" }, // public: (NIL NIL) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_char, sizeof(char), offsetof(SAFE_TYPE_MACRO(chem::EnergyRigidBodyStaple_O),_DebugLog._M_fill), "_DebugLog._M_fill" }, // public: (NIL NIL) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(chem::EnergyRigidBodyStaple_O),_DebugLog._M_fill_init), "_DebugLog._M_fill_init" }, // public: (NIL NIL) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(chem::EnergyRigidBodyStaple_O),_DebugLog._M_stringbuf._M_string._M_string_length), "_DebugLog._M_stringbuf._M_string._M_string_length" }, // public: (NIL NIL NIL NIL) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(chem::EnergyRigidBodyStaple_O),_DebugLog._M_stringbuf._M_string.NO-NAME._M_allocated_capacity), "_DebugLog._M_stringbuf._M_string.NO-NAME._M_allocated_capacity" }, // public: (NIL NIL NIL NIL T) fixable: NIL good-name: T
+ {  fixed_field, TAGGED_POINTER_OFFSET, sizeof(gctools::tagged_pointer<gctools::GCVector_moveable<chem::EnergyRigidBodyStaple>>), offsetof(SAFE_TYPE_MACRO(chem::EnergyRigidBodyStaple_O),_Terms._Vector._Contents), "_Terms._Vector._Contents" }, // public: (T T T) fixable: TAGGED-POINTER-FIX good-name: T
 { class_kind, KIND_LISPALLOC_chem__EnergyAnchorRestraint_O, sizeof(chem::EnergyAnchorRestraint_O), 0, "chem::EnergyAnchorRestraint_O" },
 // not-exposing {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(chem::EnergyAnchorRestraint_O),_Enabled), "_Enabled" }, // public: (NIL) fixable: NIL good-name: T
 // not-exposing {  fixed_field, ctype_double, sizeof(double), offsetof(SAFE_TYPE_MACRO(chem::EnergyAnchorRestraint_O),_Scale), "_Scale" }, // public: (NIL) fixable: NIL good-name: T
@@ -12941,30 +13288,6 @@ public:
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<chem::Atom_O>), offsetof(SAFE_TYPE_MACRO(chem::Bond_O),_Atom1), "_Atom1" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<chem::Atom_O>), offsetof(SAFE_TYPE_MACRO(chem::Bond_O),_Atom2), "_Atom2" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::List_V>), offsetof(SAFE_TYPE_MACRO(chem::Bond_O),_Properties), "_Properties" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
-{ class_kind, KIND_LISPALLOC_chem__EnergyFunction_O, sizeof(chem::EnergyFunction_O), 0, "chem::EnergyFunction_O" },
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(chem::EnergyFunction_O),_Name._M_string_length), "_Name._M_string_length" }, // public: (NIL NIL) fixable: NIL good-name: T
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(chem::EnergyFunction_O),_Name.NO-NAME._M_allocated_capacity), "_Name.NO-NAME._M_allocated_capacity" }, // public: (NIL NIL T) fixable: NIL good-name: T
- {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<chem::Matter_O>), offsetof(SAFE_TYPE_MACRO(chem::EnergyFunction_O),_Matter), "_Matter" }, // public: (NIL) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<chem::FFNonbondCrossTermTable_O>), offsetof(SAFE_TYPE_MACRO(chem::EnergyFunction_O),_NonbondCrossTermTable), "_NonbondCrossTermTable" }, // public: (NIL) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<chem::AtomTable_O>), offsetof(SAFE_TYPE_MACRO(chem::EnergyFunction_O),_AtomTable), "_AtomTable" }, // public: (NIL) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<chem::EnergyStretch_O>), offsetof(SAFE_TYPE_MACRO(chem::EnergyFunction_O),_Stretch), "_Stretch" }, // public: (NIL) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<chem::EnergyAngle_O>), offsetof(SAFE_TYPE_MACRO(chem::EnergyFunction_O),_Angle), "_Angle" }, // public: (NIL) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<chem::EnergyDihedral_O>), offsetof(SAFE_TYPE_MACRO(chem::EnergyFunction_O),_Dihedral), "_Dihedral" }, // public: (NIL) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<chem::EnergyNonbond_O>), offsetof(SAFE_TYPE_MACRO(chem::EnergyFunction_O),_Nonbond), "_Nonbond" }, // public: (NIL) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<chem::EnergyImproperRestraint_O>), offsetof(SAFE_TYPE_MACRO(chem::EnergyFunction_O),_ImproperRestraint), "_ImproperRestraint" }, // public: (NIL) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<chem::EnergyChiralRestraint_O>), offsetof(SAFE_TYPE_MACRO(chem::EnergyFunction_O),_ChiralRestraint), "_ChiralRestraint" }, // public: (NIL) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<chem::EnergyAnchorRestraint_O>), offsetof(SAFE_TYPE_MACRO(chem::EnergyFunction_O),_AnchorRestraint), "_AnchorRestraint" }, // public: (NIL) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<chem::EnergyFixedNonbondRestraint_O>), offsetof(SAFE_TYPE_MACRO(chem::EnergyFunction_O),_FixedNonbondRestraint), "_FixedNonbondRestraint" }, // public: (NIL) fixable: SMART-PTR-FIX good-name: T
-// not-exposing {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(chem::EnergyFunction_O),_RestrainSecondaryAmides), "_RestrainSecondaryAmides" }, // public: (NIL) fixable: NIL good-name: T
-// not-exposing {  fixed_field, ctype_double, sizeof(double), offsetof(SAFE_TYPE_MACRO(chem::EnergyFunction_O),_ChiralRestraintWeight), "_ChiralRestraintWeight" }, // public: (NIL) fixable: NIL good-name: T
-// not-exposing {  fixed_field, ctype_double, sizeof(double), offsetof(SAFE_TYPE_MACRO(chem::EnergyFunction_O),_ChiralRestraintOffset), "_ChiralRestraintOffset" }, // public: (NIL) fixable: NIL good-name: T
-// not-exposing {  fixed_field, ctype_double, sizeof(double), offsetof(SAFE_TYPE_MACRO(chem::EnergyFunction_O),_AnchorRestraintWeight), "_AnchorRestraintWeight" }, // public: (NIL) fixable: NIL good-name: T
-// not-exposing {  fixed_field, ctype_double, sizeof(double), offsetof(SAFE_TYPE_MACRO(chem::EnergyFunction_O),_FixedNonbondRestraintWeight), "_FixedNonbondRestraintWeight" }, // public: (NIL) fixable: NIL good-name: T
-// not-exposing {  fixed_field, ctype_double, sizeof(double), offsetof(SAFE_TYPE_MACRO(chem::EnergyFunction_O),_TotalEnergy), "_TotalEnergy" }, // public: (NIL) fixable: NIL good-name: T
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(chem::EnergyFunction_O),_Message._M_string_length), "_Message._M_string_length" }, // public: (NIL NIL) fixable: NIL good-name: T
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(chem::EnergyFunction_O),_Message.NO-NAME._M_allocated_capacity), "_Message.NO-NAME._M_allocated_capacity" }, // public: (NIL NIL T) fixable: NIL good-name: T
-// not-exposing {  fixed_field, ctype_double, sizeof(double), offsetof(SAFE_TYPE_MACRO(chem::EnergyFunction_O),_DielectricConstant), "_DielectricConstant" }, // public: (NIL) fixable: NIL good-name: T
- {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::List_V>), offsetof(SAFE_TYPE_MACRO(chem::EnergyFunction_O),_MissingParameters), "_MissingParameters" }, // public: (NIL) fixable: SMART-PTR-FIX good-name: T
 { class_kind, KIND_LISPALLOC_chem__ConformationExplorerEntryStage_O, sizeof(chem::ConformationExplorerEntryStage_O), 0, "chem::ConformationExplorerEntryStage_O" },
 // not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(chem::ConformationExplorerEntryStage_O),_BasedOnStageName._M_string_length), "_BasedOnStageName._M_string_length" }, // public: (NIL NIL) fixable: NIL good-name: T
 // not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(chem::ConformationExplorerEntryStage_O),_BasedOnStageName.NO-NAME._M_allocated_capacity), "_BasedOnStageName.NO-NAME._M_allocated_capacity" }, // public: (NIL NIL T) fixable: NIL good-name: T
@@ -13343,9 +13666,9 @@ public:
 // not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(chem::StepReport_O),_MinimizerStatus.NO-NAME._M_allocated_capacity), "_MinimizerStatus.NO-NAME._M_allocated_capacity" }, // public: (T NIL T) fixable: NIL good-name: T
 // not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(chem::StepReport_O),_Direction._M_string_length), "_Direction._M_string_length" }, // public: (T NIL) fixable: NIL good-name: T
 // not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(chem::StepReport_O),_Direction.NO-NAME._M_allocated_capacity), "_Direction.NO-NAME._M_allocated_capacity" }, // public: (T NIL T) fixable: NIL good-name: T
- {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<chem::NVector_O>), offsetof(SAFE_TYPE_MACRO(chem::StepReport_O),_LineSearchPosition), "_LineSearchPosition" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<chem::NVector_O>), offsetof(SAFE_TYPE_MACRO(chem::StepReport_O),_LineSearchDirection), "_LineSearchDirection" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<chem::NVector_O>), offsetof(SAFE_TYPE_MACRO(chem::StepReport_O),_LineSearchForce), "_LineSearchForce" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
+ {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::SimpleVectorDouble_O>), offsetof(SAFE_TYPE_MACRO(chem::StepReport_O),_LineSearchPosition), "_LineSearchPosition" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
+ {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::SimpleVectorDouble_O>), offsetof(SAFE_TYPE_MACRO(chem::StepReport_O),_LineSearchDirection), "_LineSearchDirection" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
+ {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::SimpleVectorDouble_O>), offsetof(SAFE_TYPE_MACRO(chem::StepReport_O),_LineSearchForce), "_LineSearchForce" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<chem::NumericalFunction_O>), offsetof(SAFE_TYPE_MACRO(chem::StepReport_O),_TotalEnergyFn), "_TotalEnergyFn" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<chem::NumericalFunction_O>), offsetof(SAFE_TYPE_MACRO(chem::StepReport_O),_StretchEnergyFn), "_StretchEnergyFn" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<chem::NumericalFunction_O>), offsetof(SAFE_TYPE_MACRO(chem::StepReport_O),_AngleEnergyFn), "_AngleEnergyFn" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
@@ -13373,8 +13696,8 @@ public:
  {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(chem::ForceMatchReport_O),_Time), "_Time" }, // public: (T) fixable: NIL good-name: T
 // not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(chem::ForceMatchReport_O),_Message._M_string_length), "_Message._M_string_length" }, // public: (T NIL) fixable: NIL good-name: T
 // not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(chem::ForceMatchReport_O),_Message.NO-NAME._M_allocated_capacity), "_Message.NO-NAME._M_allocated_capacity" }, // public: (T NIL T) fixable: NIL good-name: T
- {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<chem::NVector_O>), offsetof(SAFE_TYPE_MACRO(chem::ForceMatchReport_O),_AnalyticalForce), "_AnalyticalForce" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<chem::NVector_O>), offsetof(SAFE_TYPE_MACRO(chem::ForceMatchReport_O),_NumericalForce), "_NumericalForce" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
+ {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::SimpleVectorDouble_O>), offsetof(SAFE_TYPE_MACRO(chem::ForceMatchReport_O),_AnalyticalForce), "_AnalyticalForce" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
+ {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::SimpleVectorDouble_O>), offsetof(SAFE_TYPE_MACRO(chem::ForceMatchReport_O),_NumericalForce), "_NumericalForce" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
 { class_kind, KIND_LISPALLOC_chem__Restraint_O, sizeof(chem::Restraint_O), 0, "chem::Restraint_O" },
 // not-exposing {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(chem::Restraint_O),_Active), "_Active" }, // public: (NIL) fixable: NIL good-name: T
 { class_kind, KIND_LISPALLOC_chem__RestraintFixedNonbond_O, sizeof(chem::RestraintFixedNonbond_O), 0, "chem::RestraintFixedNonbond_O" },
@@ -13509,16 +13832,16 @@ public:
 // not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(chem::Minimizer_O),_IterationMessages._M_stringbuf._M_string.NO-NAME._M_allocated_capacity), "_IterationMessages._M_stringbuf._M_string.NO-NAME._M_allocated_capacity" }, // public: (NIL NIL NIL NIL T) fixable: NIL good-name: T
 // not-exposing {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(chem::Minimizer_O),_PrintIntermediateResults), "_PrintIntermediateResults" }, // public: (NIL) fixable: NIL good-name: T
 // not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(chem::Minimizer_O),_ReportEverySteps), "_ReportEverySteps" }, // public: (NIL) fixable: NIL good-name: T
- {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<chem::EnergyFunction_O>), offsetof(SAFE_TYPE_MACRO(chem::Minimizer_O),_EnergyFunction), "_EnergyFunction" }, // public: (NIL) fixable: SMART-PTR-FIX good-name: T
+ {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<chem::ScoringFunction_O>), offsetof(SAFE_TYPE_MACRO(chem::Minimizer_O),_ScoringFunction), "_ScoringFunction" }, // public: (NIL) fixable: SMART-PTR-FIX good-name: T
 // not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(chem::Minimizer_O),_Iteration), "_Iteration" }, // public: (NIL) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::PosixTime_O>), offsetof(SAFE_TYPE_MACRO(chem::Minimizer_O),_StartTime), "_StartTime" }, // public: (NIL) fixable: SMART-PTR-FIX good-name: T
 // not-exposing {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(chem::Minimizer_O),_ShowElapsedTime), "_ShowElapsedTime" }, // public: (NIL) fixable: NIL good-name: T
 // not-exposing {  fixed_field, ctype_double, sizeof(double), offsetof(SAFE_TYPE_MACRO(chem::Minimizer_O),_MinGradientMean), "_MinGradientMean" }, // public: (NIL) fixable: NIL good-name: T
 // not-exposing {  fixed_field, ctype_double, sizeof(double), offsetof(SAFE_TYPE_MACRO(chem::Minimizer_O),_RMSForce), "_RMSForce" }, // public: (NIL) fixable: NIL good-name: T
- {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<chem::NVector_O>), offsetof(SAFE_TYPE_MACRO(chem::Minimizer_O),nvP1DSearchTemp1), "nvP1DSearchTemp1" }, // public: (NIL) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<chem::NVector_O>), offsetof(SAFE_TYPE_MACRO(chem::Minimizer_O),nvP1DSearchTemp2), "nvP1DSearchTemp2" }, // public: (NIL) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<chem::NVector_O>), offsetof(SAFE_TYPE_MACRO(chem::Minimizer_O),nvP1DSearchOrigin), "nvP1DSearchOrigin" }, // public: (NIL) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<chem::NVector_O>), offsetof(SAFE_TYPE_MACRO(chem::Minimizer_O),nvP1DSearchDirection), "nvP1DSearchDirection" }, // public: (NIL) fixable: SMART-PTR-FIX good-name: T
+ {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::SimpleVectorDouble_O>), offsetof(SAFE_TYPE_MACRO(chem::Minimizer_O),nvP1DSearchTemp1), "nvP1DSearchTemp1" }, // public: (NIL) fixable: SMART-PTR-FIX good-name: T
+ {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::SimpleVectorDouble_O>), offsetof(SAFE_TYPE_MACRO(chem::Minimizer_O),nvP1DSearchTemp2), "nvP1DSearchTemp2" }, // public: (NIL) fixable: SMART-PTR-FIX good-name: T
+ {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::SimpleVectorDouble_O>), offsetof(SAFE_TYPE_MACRO(chem::Minimizer_O),nvP1DSearchOrigin), "nvP1DSearchOrigin" }, // public: (NIL) fixable: SMART-PTR-FIX good-name: T
+ {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::SimpleVectorDouble_O>), offsetof(SAFE_TYPE_MACRO(chem::Minimizer_O),nvP1DSearchDirection), "nvP1DSearchDirection" }, // public: (NIL) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, POINTER_OFFSET, sizeof(UnknownType), offsetof(SAFE_TYPE_MACRO(chem::Minimizer_O),_Position.theObject), "_Position.theObject" }, // public: (NIL T) fixable: RAW-TAGGED-POINTER-FIX good-name: T
  {  fixed_field, POINTER_OFFSET, sizeof(UnknownType), offsetof(SAFE_TYPE_MACRO(chem::Minimizer_O),_Force.theObject), "_Force.theObject" }, // public: (NIL T) fixable: RAW-TAGGED-POINTER-FIX good-name: T
 { class_kind, KIND_LISPALLOC_chem__PathMessage_O, sizeof(chem::PathMessage_O), 0, "chem::PathMessage_O" },
@@ -13789,6 +14112,12 @@ public:
 {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<chem::StereoisomerAtom_O>>),_Data), "_Data" },
 {  variable_capacity, sizeof(gctools::smart_ptr<chem::StereoisomerAtom_O>), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<chem::StereoisomerAtom_O>>),_End), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<chem::StereoisomerAtom_O>>),_Capacity), NULL },
 {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<chem::StereoisomerAtom_O>), 0, "only" },
+{ container_kind, KIND_GCVECTOR_gctools__GCVector_moveable_chem__EnergyRigidBodyStaple_, sizeof(gctools::GCVector_moveable<chem::EnergyRigidBodyStaple>), 0, "gctools::GCVector_moveable<chem::EnergyRigidBodyStaple>" },
+{  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<chem::EnergyRigidBodyStaple>),_Data), "_Data" },
+{  variable_capacity, sizeof(chem::EnergyRigidBodyStaple), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<chem::EnergyRigidBodyStaple>),_End), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<chem::EnergyRigidBodyStaple>),_Capacity), NULL },
+ {    variable_field, ctype_double, sizeof(double), offsetof(SAFE_TYPE_MACRO(chem::EnergyRigidBodyStaple),ks), "ks" }, // public: (T) fixable: NIL good-name: T
+ {    variable_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(chem::EnergyRigidBodyStaple),rigidBodyA), "rigidBodyA" }, // public: (T) fixable: NIL good-name: T
+ {    variable_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(chem::EnergyRigidBodyStaple),rigidBodyB), "rigidBodyB" }, // public: (T) fixable: NIL good-name: T
 { container_kind, KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__FFVdw_O__, sizeof(gctools::GCVector_moveable<gctools::smart_ptr<chem::FFVdw_O>>), 0, "gctools::GCVector_moveable<gctools::smart_ptr<chem::FFVdw_O>>" },
 {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<chem::FFVdw_O>>),_Data), "_Data" },
 {  variable_capacity, sizeof(gctools::smart_ptr<chem::FFVdw_O>), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<chem::FFVdw_O>>),_End), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<chem::FFVdw_O>>),_Capacity), NULL },
@@ -14036,6 +14365,13 @@ public:
 {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCBitUnitArray_moveable<1,unsigned int,int>),_Data), "_Data" },
 {  variable_capacity, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(gctools::GCBitUnitArray_moveable<1,unsigned int,int>),_Length), offsetof(SAFE_TYPE_MACRO(gctools::GCBitUnitArray_moveable<1,unsigned int,int>),_Length), NULL },
 {    variable_field, ctype_unsigned_int, sizeof(unsigned int), 0, "only" },
+{ container_kind, KIND_GCVECTOR_gctools__GCVector_moveable_chem__RigidBodyAtomInfo_, sizeof(gctools::GCVector_moveable<chem::RigidBodyAtomInfo>), 0, "gctools::GCVector_moveable<chem::RigidBodyAtomInfo>" },
+{  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<chem::RigidBodyAtomInfo>),_Data), "_Data" },
+{  variable_capacity, sizeof(chem::RigidBodyAtomInfo), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<chem::RigidBodyAtomInfo>),_End), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<chem::RigidBodyAtomInfo>),_Capacity), NULL },
+ {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<chem::Atom_O>), offsetof(SAFE_TYPE_MACRO(chem::RigidBodyAtomInfo),_Atom), "_Atom" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
+ {    variable_field, ctype_double, sizeof(double), offsetof(SAFE_TYPE_MACRO(chem::RigidBodyAtomInfo),_Radius), "_Radius" }, // public: (T) fixable: NIL good-name: T
+ {    variable_field, ctype_double, sizeof(double), offsetof(SAFE_TYPE_MACRO(chem::RigidBodyAtomInfo),_Epsilon), "_Epsilon" }, // public: (T) fixable: NIL good-name: T
+ {    variable_field, ctype_double, sizeof(double), offsetof(SAFE_TYPE_MACRO(chem::RigidBodyAtomInfo),_Charge), "_Charge" }, // public: (T) fixable: NIL good-name: T
 { container_kind, KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__Stereoisomer_O__, sizeof(gctools::GCVector_moveable<gctools::smart_ptr<chem::Stereoisomer_O>>), 0, "gctools::GCVector_moveable<gctools::smart_ptr<chem::Stereoisomer_O>>" },
 {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<chem::Stereoisomer_O>>),_Data), "_Data" },
 {  variable_capacity, sizeof(gctools::smart_ptr<chem::Stereoisomer_O>), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<chem::Stereoisomer_O>>),_End), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<chem::Stereoisomer_O>>),_Capacity), NULL },
@@ -14421,6 +14757,12 @@ static void* OBJ_SCAN_table[] = {
 };
 #endif // defined(GC_OBJ_SCAN_TABLE)
 #if defined(GC_OBJ_FINALIZE)
+obj_finalize_KIND_LISPALLOC_asttooling__DerivableFrontendActionFactory:
+{
+    asttooling::DerivableFrontendActionFactory* obj_gc_safe = reinterpret_cast<asttooling::DerivableFrontendActionFactory*>(client);
+    obj_gc_safe->~DerivableFrontendActionFactory();
+    goto finalize_done;
+}
 obj_finalize_KIND_ROOTCLASSALLOC_core__Lisp_O:
 {
     core::Lisp_O* obj_gc_safe = reinterpret_cast<core::Lisp_O*>(client);
@@ -14509,6 +14851,12 @@ obj_finalize_KIND_LISPALLOC_core__StructureObject_O:
 {
     core::StructureObject_O* obj_gc_safe = reinterpret_cast<core::StructureObject_O*>(client);
     obj_gc_safe->~StructureObject_O();
+    goto finalize_done;
+}
+obj_finalize_KIND_LISPALLOC_mp__BlockingConcurrentQueue_O:
+{
+    mp::BlockingConcurrentQueue_O* obj_gc_safe = reinterpret_cast<mp::BlockingConcurrentQueue_O*>(client);
+    obj_gc_safe->~BlockingConcurrentQueue_O();
     goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_core__Pathname_O:
@@ -15460,12 +15808,6 @@ obj_finalize_KIND_LISPALLOC_core__Instance_O:
     obj_gc_safe->~Instance_O();
     goto finalize_done;
 }
-obj_finalize_KIND_LISPALLOC_asttooling__DerivableFrontendActionFactory:
-{
-    asttooling::DerivableFrontendActionFactory* obj_gc_safe = reinterpret_cast<asttooling::DerivableFrontendActionFactory*>(client);
-    obj_gc_safe->~DerivableFrontendActionFactory();
-    goto finalize_done;
-}
 obj_finalize_KIND_LISPALLOC_core__SNode_O:
 {
     core::SNode_O* obj_gc_safe = reinterpret_cast<core::SNode_O*>(client);
@@ -16030,6 +16372,12 @@ obj_finalize_KIND_LISPALLOC_llvmo__DataLayout_O:
     obj_gc_safe->~DataLayout_O();
     goto finalize_done;
 }
+obj_finalize_KIND_LISPALLOC_mp__ConcurrentQueue_O:
+{
+    mp::ConcurrentQueue_O* obj_gc_safe = reinterpret_cast<mp::ConcurrentQueue_O*>(client);
+    obj_gc_safe->~ConcurrentQueue_O();
+    goto finalize_done;
+}
 obj_finalize_KIND_LISPALLOC_core__CxxObject_O:
 {
     core::CxxObject_O* obj_gc_safe = reinterpret_cast<core::CxxObject_O*>(client);
@@ -16088,6 +16436,12 @@ obj_finalize_KIND_LISPALLOC_chem__StereoisomerAtoms_O:
 {
     chem::StereoisomerAtoms_O* obj_gc_safe = reinterpret_cast<chem::StereoisomerAtoms_O*>(client);
     obj_gc_safe->~StereoisomerAtoms_O();
+    goto finalize_done;
+}
+obj_finalize_KIND_LISPALLOC_mp__SharedMutex_O:
+{
+    mp::SharedMutex_O* obj_gc_safe = reinterpret_cast<mp::SharedMutex_O*>(client);
+    obj_gc_safe->~SharedMutex_O();
     goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_chem__MonomerCoordinates_O:
@@ -16180,10 +16534,22 @@ obj_finalize_KIND_LISPALLOC_chem__StereoConfiguration_O:
     obj_gc_safe->~StereoConfiguration_O();
     goto finalize_done;
 }
-obj_finalize_KIND_LISPALLOC_chem__NVector_O:
+obj_finalize_KIND_LISPALLOC_chem__ScoringFunction_O:
 {
-    chem::NVector_O* obj_gc_safe = reinterpret_cast<chem::NVector_O*>(client);
-    obj_gc_safe->~NVector_O();
+    chem::ScoringFunction_O* obj_gc_safe = reinterpret_cast<chem::ScoringFunction_O*>(client);
+    obj_gc_safe->~ScoringFunction_O();
+    goto finalize_done;
+}
+obj_finalize_KIND_LISPALLOC_chem__RigidBodyEnergyFunction_O:
+{
+    chem::RigidBodyEnergyFunction_O* obj_gc_safe = reinterpret_cast<chem::RigidBodyEnergyFunction_O*>(client);
+    obj_gc_safe->~RigidBodyEnergyFunction_O();
+    goto finalize_done;
+}
+obj_finalize_KIND_LISPALLOC_chem__EnergyFunction_O:
+{
+    chem::EnergyFunction_O* obj_gc_safe = reinterpret_cast<chem::EnergyFunction_O*>(client);
+    obj_gc_safe->~EnergyFunction_O();
     goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_chem__Entity_O:
@@ -16792,6 +17158,24 @@ obj_finalize_KIND_LISPALLOC_chem__EnergyImproperRestraint_O:
     obj_gc_safe->~EnergyImproperRestraint_O();
     goto finalize_done;
 }
+obj_finalize_KIND_LISPALLOC_chem__EnergyRigidBodyComponent_O:
+{
+    chem::EnergyRigidBodyComponent_O* obj_gc_safe = reinterpret_cast<chem::EnergyRigidBodyComponent_O*>(client);
+    obj_gc_safe->~EnergyRigidBodyComponent_O();
+    goto finalize_done;
+}
+obj_finalize_KIND_LISPALLOC_chem__EnergyRigidBodyNonbond_O:
+{
+    chem::EnergyRigidBodyNonbond_O* obj_gc_safe = reinterpret_cast<chem::EnergyRigidBodyNonbond_O*>(client);
+    obj_gc_safe->~EnergyRigidBodyNonbond_O();
+    goto finalize_done;
+}
+obj_finalize_KIND_LISPALLOC_chem__EnergyRigidBodyStaple_O:
+{
+    chem::EnergyRigidBodyStaple_O* obj_gc_safe = reinterpret_cast<chem::EnergyRigidBodyStaple_O*>(client);
+    obj_gc_safe->~EnergyRigidBodyStaple_O();
+    goto finalize_done;
+}
 obj_finalize_KIND_LISPALLOC_chem__EnergyAnchorRestraint_O:
 {
     chem::EnergyAnchorRestraint_O* obj_gc_safe = reinterpret_cast<chem::EnergyAnchorRestraint_O*>(client);
@@ -16856,12 +17240,6 @@ obj_finalize_KIND_LISPALLOC_chem__Bond_O:
 {
     chem::Bond_O* obj_gc_safe = reinterpret_cast<chem::Bond_O*>(client);
     obj_gc_safe->~Bond_O();
-    goto finalize_done;
-}
-obj_finalize_KIND_LISPALLOC_chem__EnergyFunction_O:
-{
-    chem::EnergyFunction_O* obj_gc_safe = reinterpret_cast<chem::EnergyFunction_O*>(client);
-    obj_gc_safe->~EnergyFunction_O();
     goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_chem__ConformationExplorerEntryStage_O:
@@ -17782,6 +18160,9 @@ obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_double_:
 obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__StereoisomerAtom_O__:
 {
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<chem::StereoisomerAtom_O>>"));}
+obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_chem__EnergyRigidBodyStaple_:
+{
+    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<chem::EnergyRigidBodyStaple>"));}
 obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__FFVdw_O__:
 {
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<chem::FFVdw_O>>"));}
@@ -17918,6 +18299,9 @@ obj_finalize_KIND_GCBITUNITCONTAINER1_gctools__GCBitUnitArray_moveable_1_unsigne
 {
     THROW_HARD_ERROR(BF("Should never finalize gctools::GCBitUnitArray_moveable<1,unsigned int,int>"));
 }
+obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_chem__RigidBodyAtomInfo_:
+{
+    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<chem::RigidBodyAtomInfo>"));}
 obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__Stereoisomer_O__:
 {
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<chem::Stereoisomer_O>>"));}
@@ -18152,6 +18536,7 @@ obj_finalize_KIND_LISPALLOC_asttooling__DerivableSyntaxOnlyAction:
 #endif // defined(GC_OBJ_FINALIZE_HELPERS)
 #if defined(GC_OBJ_FINALIZE_TABLE)
 static void* OBJ_FINALIZE_table[] = { 
+  /* 9 */ &&obj_finalize_KIND_LISPALLOC_asttooling__DerivableFrontendActionFactory,
   /* 10 */ &&obj_finalize_KIND_ROOTCLASSALLOC_core__Lisp_O,
   /* 11 */ &&obj_finalize_KIND_BOOTSTRAP_core__T_O,
   /* 12 */ &&obj_finalize_KIND_LISPALLOC_core__VaList_dummy_O,
@@ -18167,387 +18552,394 @@ static void* OBJ_FINALIZE_table[] = {
   /* 22 */ &&obj_finalize_KIND_LISPALLOC_adapt__AdaptExposer_O,
   /* 23 */ &&obj_finalize_KIND_LISPALLOC_core__CoreExposer_O,
   /* 24 */ &&obj_finalize_KIND_LISPALLOC_core__StructureObject_O,
-  /* 25 */ &&obj_finalize_KIND_LISPALLOC_core__Pathname_O,
-  /* 26 */ &&obj_finalize_KIND_LISPALLOC_core__LogicalPathname_O,
-  /* 27 */ &&obj_finalize_KIND_LISPALLOC_core__HashTable_O,
-  /* 28 */ &&obj_finalize_KIND_LISPALLOC_core__HashTableEql_O,
-  /* 29 */ &&obj_finalize_KIND_LISPALLOC_core__HashTableEqual_O,
-  /* 30 */ &&obj_finalize_KIND_LISPALLOC_core__HashTableEq_O,
-  /* 31 */ &&obj_finalize_KIND_LISPALLOC_core__HashTableEqualp_O,
-  /* 32 */ &&obj_finalize_KIND_LISPALLOC_core__PosixTime_O,
-  /* 33 */ &&obj_finalize_KIND_LISPALLOC_core__SourcePosInfo_O,
-  /* 34 */ &&obj_finalize_KIND_LISPALLOC_core__InvocationHistoryFrameIterator_O,
-  /* 35 */ &&obj_finalize_KIND_LISPALLOC_adapt__IndexedObjectBag_O,
-  /* 36 */ &&obj_finalize_KIND_LISPALLOC_core__SequenceStepper_O,
-  /* 37 */ &&obj_finalize_KIND_LISPALLOC_core__VectorStepper_O,
-  /* 38 */ &&obj_finalize_KIND_LISPALLOC_core__ConsStepper_O,
-  /* 39 */ &&obj_finalize_KIND_BOOTSTRAP_core__Symbol_O,
-  /* 40 */ &&obj_finalize_KIND_LISPALLOC_core__Null_O,
-  /* 41 */ &&obj_finalize_KIND_LISPALLOC_core__ReadTable_O,
-  /* 42 */ &&obj_finalize_KIND_LISPALLOC_core__PosixTimeDuration_O,
-  /* 43 */ &&obj_finalize_KIND_LISPALLOC_core__SmallMultimap_O,
-  /* 44 */ &&obj_finalize_KIND_TEMPLATED_LISPALLOC_core__Creator_O,
-  /* 45 */ &&obj_finalize_KIND_LISPALLOC_core__ClassCreator_O,
-  /* 46 */ &&obj_finalize_KIND_LISPALLOC_clbind__DummyCreator_O,
-  /* 47 */ &&obj_finalize_KIND_LISPALLOC_core__StructureClassCreator_O,
-  /* 48 */ &&obj_finalize_KIND_LISPALLOC_core__InstanceCreator_O,
-  /* 49 */ &&obj_finalize_KIND_LISPALLOC_core__StandardClassCreator_O,
-  /* 50 */ &&obj_finalize_KIND_TEMPLATED_LISPALLOC_clbind__ConstructorCreator_O,
-  /* 51 */ &&obj_finalize_KIND_LISPALLOC_clasp_ffi__ForeignTypeSpec_O,
-  /* 52 */ &&obj_finalize_KIND_LISPALLOC_core__LoadTimeValues_O,
-  /* 53 */ &&obj_finalize_KIND_LISPALLOC_clbind__ClassRegistry_O,
-  /* 54 */ &&obj_finalize_KIND_BOOTSTRAP_core__StandardObject_O,
-  /* 55 */ &&obj_finalize_KIND_BOOTSTRAP_core__Class_O,
-  /* 56 */ &&obj_finalize_KIND_LISPALLOC_clbind__ClassRep_O,
-  /* 57 */ &&obj_finalize_KIND_LISPALLOC_llvmo__AttributeSet_O,
-  /* 58 */ &&obj_finalize_KIND_TEMPLATED_LISPALLOC_core__Iterator_O,
-  /* 59 */ &&obj_finalize_KIND_LISPALLOC_core__DirectoryIterator_O,
-  /* 60 */ &&obj_finalize_KIND_LISPALLOC_chem__IterateRestraints_O,
-  /* 61 */ &&obj_finalize_KIND_LISPALLOC_chem__IterateMatter_O,
-  /* 62 */ &&obj_finalize_KIND_LISPALLOC_chem__IterateResidues_O,
-  /* 63 */ &&obj_finalize_KIND_LISPALLOC_chem__IterateBonds_O,
-  /* 64 */ &&obj_finalize_KIND_LISPALLOC_chem__IterateAtoms_O,
-  /* 65 */ &&obj_finalize_KIND_LISPALLOC_core__RecursiveDirectoryIterator_O,
-  /* 66 */ &&obj_finalize_KIND_LISPALLOC_adapt__IterateCons_O,
-  /* 67 */ &&obj_finalize_KIND_TEMPLATED_LISPALLOC_core__WrappedPointer_O,
-  /* 68 */ &&obj_finalize_KIND_LISPALLOC_core__ExternalObject_O,
-  /* 69 */ &&obj_finalize_KIND_LISPALLOC_llvmo__NamedMDNode_O,
-  /* 70 */ &&obj_finalize_KIND_LISPALLOC_llvmo__TargetOptions_O,
-  /* 71 */ &&obj_finalize_KIND_LISPALLOC_llvmo__EngineBuilder_O,
-  /* 72 */ &&obj_finalize_KIND_LISPALLOC_llvmo__IRBuilderBase_O,
-  /* 73 */ &&obj_finalize_KIND_LISPALLOC_llvmo__IRBuilder_O,
-  /* 74 */ &&obj_finalize_KIND_LISPALLOC_llvmo__APInt_O,
-  /* 75 */ &&obj_finalize_KIND_LISPALLOC_llvmo__Metadata_O,
-  /* 76 */ &&obj_finalize_KIND_LISPALLOC_llvmo__MDString_O,
-  /* 77 */ &&obj_finalize_KIND_LISPALLOC_llvmo__ValueAsMetadata_O,
-  /* 78 */ &&obj_finalize_KIND_LISPALLOC_llvmo__MDNode_O,
-  /* 79 */ &&obj_finalize_KIND_LISPALLOC_llvmo__DINode_O,
-  /* 80 */ &&obj_finalize_KIND_LISPALLOC_llvmo__DIScope_O,
-  /* 81 */ &&obj_finalize_KIND_LISPALLOC_llvmo__DILocalScope_O,
-  /* 82 */ &&obj_finalize_KIND_LISPALLOC_llvmo__DILexicalBlockBase_O,
-  /* 83 */ &&obj_finalize_KIND_LISPALLOC_llvmo__DILexicalBlock_O,
-  /* 84 */ &&obj_finalize_KIND_LISPALLOC_llvmo__DISubprogram_O,
-  /* 85 */ &&obj_finalize_KIND_LISPALLOC_llvmo__DIFile_O,
-  /* 86 */ &&obj_finalize_KIND_LISPALLOC_llvmo__DIType_O,
-  /* 87 */ &&obj_finalize_KIND_LISPALLOC_llvmo__DICompositeType_O,
-  /* 88 */ &&obj_finalize_KIND_LISPALLOC_llvmo__DIBasicType_O,
-  /* 89 */ &&obj_finalize_KIND_LISPALLOC_llvmo__DIDerivedType_O,
-  /* 90 */ &&obj_finalize_KIND_LISPALLOC_llvmo__DISubroutineType_O,
-  /* 91 */ &&obj_finalize_KIND_LISPALLOC_llvmo__DICompileUnit_O,
-  /* 92 */ &&obj_finalize_KIND_LISPALLOC_llvmo__LLVMContext_O,
-  /* 93 */ &&obj_finalize_KIND_LISPALLOC_llvmo__TargetMachine_O,
-  /* 94 */ &&obj_finalize_KIND_LISPALLOC_llvmo__LLVMTargetMachine_O,
-  /* 95 */ &&obj_finalize_KIND_LISPALLOC_llvmo__MCSubtargetInfo_O,
-  /* 96 */ &&obj_finalize_KIND_LISPALLOC_llvmo__TargetSubtargetInfo_O,
-  /* 97 */ &&obj_finalize_KIND_LISPALLOC_llvmo__Value_O,
-  /* 98 */ &&obj_finalize_KIND_LISPALLOC_llvmo__User_O,
-  /* 99 */ &&obj_finalize_KIND_LISPALLOC_llvmo__Instruction_O,
-  /* 100 */ &&obj_finalize_KIND_LISPALLOC_llvmo__AtomicRMWInst_O,
-  /* 101 */ &&obj_finalize_KIND_LISPALLOC_llvmo__StoreInst_O,
-  /* 102 */ &&obj_finalize_KIND_LISPALLOC_llvmo__TerminatorInst_O,
-  /* 103 */ &&obj_finalize_KIND_LISPALLOC_llvmo__BranchInst_O,
-  /* 104 */ &&obj_finalize_KIND_LISPALLOC_llvmo__InvokeInst_O,
-  /* 105 */ &&obj_finalize_KIND_LISPALLOC_llvmo__IndirectBrInst_O,
-  /* 106 */ &&obj_finalize_KIND_LISPALLOC_llvmo__SwitchInst_O,
-  /* 107 */ &&obj_finalize_KIND_LISPALLOC_llvmo__ResumeInst_O,
-  /* 108 */ &&obj_finalize_KIND_LISPALLOC_llvmo__UnreachableInst_O,
-  /* 109 */ &&obj_finalize_KIND_LISPALLOC_llvmo__ReturnInst_O,
-  /* 110 */ &&obj_finalize_KIND_LISPALLOC_llvmo__PHINode_O,
-  /* 111 */ &&obj_finalize_KIND_LISPALLOC_llvmo__CallInst_O,
-  /* 112 */ &&obj_finalize_KIND_LISPALLOC_llvmo__UnaryInstruction_O,
-  /* 113 */ &&obj_finalize_KIND_LISPALLOC_llvmo__AllocaInst_O,
-  /* 114 */ &&obj_finalize_KIND_LISPALLOC_llvmo__LoadInst_O,
-  /* 115 */ &&obj_finalize_KIND_LISPALLOC_llvmo__VAArgInst_O,
-  /* 116 */ &&obj_finalize_KIND_LISPALLOC_llvmo__FenceInst_O,
-  /* 117 */ &&obj_finalize_KIND_LISPALLOC_llvmo__AtomicCmpXchgInst_O,
-  /* 118 */ &&obj_finalize_KIND_LISPALLOC_llvmo__LandingPadInst_O,
-  /* 119 */ &&obj_finalize_KIND_LISPALLOC_llvmo__Constant_O,
-  /* 120 */ &&obj_finalize_KIND_LISPALLOC_llvmo__GlobalValue_O,
-  /* 121 */ &&obj_finalize_KIND_LISPALLOC_llvmo__Function_O,
-  /* 122 */ &&obj_finalize_KIND_LISPALLOC_llvmo__GlobalVariable_O,
-  /* 123 */ &&obj_finalize_KIND_LISPALLOC_llvmo__ConstantExpr_O,
-  /* 124 */ &&obj_finalize_KIND_LISPALLOC_llvmo__ConstantArray_O,
-  /* 125 */ &&obj_finalize_KIND_LISPALLOC_llvmo__ConstantPointerNull_O,
-  /* 126 */ &&obj_finalize_KIND_LISPALLOC_llvmo__ConstantFP_O,
-  /* 127 */ &&obj_finalize_KIND_LISPALLOC_llvmo__ConstantInt_O,
-  /* 128 */ &&obj_finalize_KIND_LISPALLOC_llvmo__UndefValue_O,
-  /* 129 */ &&obj_finalize_KIND_LISPALLOC_llvmo__BlockAddress_O,
-  /* 130 */ &&obj_finalize_KIND_LISPALLOC_llvmo__ConstantStruct_O,
-  /* 131 */ &&obj_finalize_KIND_LISPALLOC_llvmo__ConstantDataSequential_O,
-  /* 132 */ &&obj_finalize_KIND_LISPALLOC_llvmo__ConstantDataArray_O,
-  /* 133 */ &&obj_finalize_KIND_LISPALLOC_llvmo__BasicBlock_O,
-  /* 134 */ &&obj_finalize_KIND_LISPALLOC_llvmo__Argument_O,
-  /* 135 */ &&obj_finalize_KIND_LISPALLOC_clasp_ffi__ForeignData_O,
-  /* 136 */ &&obj_finalize_KIND_LISPALLOC_llvmo__ExecutionEngine_O,
-  /* 137 */ &&obj_finalize_KIND_LISPALLOC_llvmo__DIBuilder_O,
-  /* 138 */ &&obj_finalize_KIND_LISPALLOC_llvmo__PassManagerBuilder_O,
-  /* 139 */ &&obj_finalize_KIND_LISPALLOC_llvmo__PassManagerBase_O,
-  /* 140 */ &&obj_finalize_KIND_LISPALLOC_llvmo__FunctionPassManager_O,
-  /* 141 */ &&obj_finalize_KIND_LISPALLOC_llvmo__PassManager_O,
-  /* 142 */ &&obj_finalize_KIND_LISPALLOC_llvmo__Triple_O,
-  /* 143 */ &&obj_finalize_KIND_LISPALLOC_llvmo__Pass_O,
-  /* 144 */ &&obj_finalize_KIND_LISPALLOC_llvmo__ModulePass_O,
-  /* 145 */ &&obj_finalize_KIND_LISPALLOC_llvmo__ImmutablePass_O,
-  /* 146 */ &&obj_finalize_KIND_LISPALLOC_llvmo__TargetLibraryInfoWrapperPass_O,
-  /* 147 */ &&obj_finalize_KIND_LISPALLOC_llvmo__FunctionPass_O,
-  /* 148 */ &&obj_finalize_KIND_LISPALLOC_llvmo__Module_O,
-  /* 149 */ &&obj_finalize_KIND_LISPALLOC_llvmo__Target_O,
-  /* 150 */ &&obj_finalize_KIND_LISPALLOC_llvmo__APFloat_O,
-  /* 151 */ &&obj_finalize_KIND_LISPALLOC_llvmo__Linker_O,
-  /* 152 */ &&obj_finalize_KIND_LISPALLOC_llvmo__Type_O,
-  /* 153 */ &&obj_finalize_KIND_LISPALLOC_llvmo__IntegerType_O,
-  /* 154 */ &&obj_finalize_KIND_LISPALLOC_llvmo__CompositeType_O,
-  /* 155 */ &&obj_finalize_KIND_LISPALLOC_llvmo__SequentialType_O,
-  /* 156 */ &&obj_finalize_KIND_LISPALLOC_llvmo__VectorType_O,
-  /* 157 */ &&obj_finalize_KIND_LISPALLOC_llvmo__ArrayType_O,
-  /* 158 */ &&obj_finalize_KIND_LISPALLOC_llvmo__PointerType_O,
-  /* 159 */ &&obj_finalize_KIND_LISPALLOC_llvmo__StructType_O,
-  /* 160 */ &&obj_finalize_KIND_LISPALLOC_llvmo__FunctionType_O,
-  /* 161 */ &&obj_finalize_KIND_LISPALLOC_llvmo__Attribute_O,
-  /* 162 */ &&obj_finalize_KIND_LISPALLOC_core__Package_O,
-  /* 163 */ &&obj_finalize_KIND_LISPALLOC_core__SmallMap_O,
-  /* 164 */ &&obj_finalize_KIND_LISPALLOC_core__Function_O,
-  /* 165 */ &&obj_finalize_KIND_LISPALLOC_core__NamedFunction_O,
-  /* 166 */ &&obj_finalize_KIND_LISPALLOC_core__SpecialForm_O,
-  /* 167 */ &&obj_finalize_KIND_LISPALLOC_core__Closure_O,
-  /* 168 */ &&obj_finalize_KIND_LISPALLOC_core__CompiledFunction_O,
-  /* 169 */ &&obj_finalize_KIND_LISPALLOC_core__FunctionClosure_O,
-  /* 170 */ &&obj_finalize_KIND_LISPALLOC_core__ClosureWithSlots_O,
-  /* 171 */ &&obj_finalize_KIND_LISPALLOC_core__SingleDispatchCxxEffectiveMethodFunction_O,
-  /* 172 */ &&obj_finalize_KIND_TEMPLATED_LISPALLOC_core__BuiltinClosure_O,
-  /* 173 */ &&obj_finalize_KIND_LISPALLOC_core__TranslationFunctor,
-  /* 174 */ &&obj_finalize_KIND_LISPALLOC_core__MacroClosure_O,
-  /* 175 */ &&obj_finalize_KIND_LISPALLOC_core__SingleDispatchEffectiveMethodFunction_O,
-  /* 176 */ &&obj_finalize_KIND_LISPALLOC_core__ClosureWithFrame_O,
-  /* 177 */ &&obj_finalize_KIND_LISPALLOC_core__CompiledClosure_O,
-  /* 178 */ &&obj_finalize_KIND_LISPALLOC_core__InterpretedClosure_O,
-  /* 179 */ &&obj_finalize_KIND_LISPALLOC_core__SingleDispatchGenericFunctionClosure_O,
-  /* 180 */ &&obj_finalize_KIND_LISPALLOC_core__SingleDispatchMethodFunction_O,
-  /* 181 */ &&obj_finalize_KIND_LISPALLOC_core__CxxMethodFunction_O,
-  /* 182 */ &&obj_finalize_KIND_LISPALLOC_core__CompiledDispatchFunction_O,
-  /* 183 */ &&obj_finalize_KIND_LISPALLOC_core__Instance_O,
-  /* 187 */ &&obj_finalize_KIND_LISPALLOC_asttooling__DerivableFrontendActionFactory,
-  /* 192 */ &&obj_finalize_KIND_LISPALLOC_core__SNode_O,
-  /* 193 */ &&obj_finalize_KIND_LISPALLOC_core__LeafSNode_O,
-  /* 194 */ &&obj_finalize_KIND_LISPALLOC_core__BranchSNode_O,
-  /* 195 */ &&obj_finalize_KIND_LISPALLOC_core__SourceFileInfo_O,
-  /* 196 */ &&obj_finalize_KIND_LISPALLOC_core__Path_O,
-  /* 197 */ &&obj_finalize_KIND_LISPALLOC_core__WeakHashTable_O,
-  /* 198 */ &&obj_finalize_KIND_LISPALLOC_core__WeakKeyHashTable_O,
-  /* 199 */ &&obj_finalize_KIND_LISPALLOC_core__SingleDispatchMethod_O,
-  /* 200 */ &&obj_finalize_KIND_LISPALLOC_core__LambdaListHandler_O,
-  /* 201 */ &&obj_finalize_KIND_LISPALLOC_core__Array_O,
-  /* 202 */ &&obj_finalize_KIND_LISPALLOC_core__AbstractSimpleVector_O,
-  /* 204 */ &&obj_finalize_KIND_LISPALLOC_core__SimpleVector_byte16_t_O,
-  /* 206 */ &&obj_finalize_KIND_LISPALLOC_core__SimpleVector_fixnum_O,
-  /* 208 */ &&obj_finalize_KIND_LISPALLOC_core__SimpleVector_int64_t_O,
-  /* 209 */ &&obj_finalize_KIND_LISPALLOC_core__SimpleBitVector_O,
-  /* 211 */ &&obj_finalize_KIND_LISPALLOC_core__SimpleVector_byte32_t_O,
-  /* 213 */ &&obj_finalize_KIND_LISPALLOC_core__SimpleVector_byte8_t_O,
-  /* 215 */ &&obj_finalize_KIND_LISPALLOC_core__SimpleVector_int32_t_O,
-  /* 217 */ &&obj_finalize_KIND_LISPALLOC_geom__SimpleVectorCoordinate_O,
-  /* 218 */ &&obj_finalize_KIND_LISPALLOC_core__SimpleString_O,
-  /* 220 */ &&obj_finalize_KIND_LISPALLOC_core__SimpleCharacterString_O,
-  /* 222 */ &&obj_finalize_KIND_LISPALLOC_core__SimpleBaseString_O,
-  /* 224 */ &&obj_finalize_KIND_LISPALLOC_core__SimpleVector_int8_t_O,
-  /* 226 */ &&obj_finalize_KIND_LISPALLOC_core__SimpleVector_int16_t_O,
-  /* 228 */ &&obj_finalize_KIND_LISPALLOC_core__SimpleVectorDouble_O,
-  /* 230 */ &&obj_finalize_KIND_LISPALLOC_core__SimpleVector_byte64_t_O,
-  /* 232 */ &&obj_finalize_KIND_LISPALLOC_core__SimpleVectorFloat_O,
-  /* 234 */ &&obj_finalize_KIND_LISPALLOC_core__SimpleVector_O,
-  /* 236 */ &&obj_finalize_KIND_LISPALLOC_core__SimpleVector_size_t_O,
-  /* 237 */ &&obj_finalize_KIND_LISPALLOC_core__MDArray_O,
-  /* 239 */ &&obj_finalize_KIND_LISPALLOC_core__MDArray_byte64_t_O,
-  /* 241 */ &&obj_finalize_KIND_LISPALLOC_core__MDArray_fixnum_O,
-  /* 243 */ &&obj_finalize_KIND_LISPALLOC_core__MDArrayCharacter_O,
-  /* 245 */ &&obj_finalize_KIND_LISPALLOC_core__MDArray_int64_t_O,
-  /* 246 */ &&obj_finalize_KIND_LISPALLOC_core__SimpleMDArray_O,
-  /* 248 */ &&obj_finalize_KIND_LISPALLOC_core__SimpleMDArray_byte32_t_O,
-  /* 250 */ &&obj_finalize_KIND_LISPALLOC_core__SimpleMDArray_byte16_t_O,
-  /* 252 */ &&obj_finalize_KIND_LISPALLOC_core__SimpleMDArray_int32_t_O,
-  /* 253 */ &&obj_finalize_KIND_LISPALLOC_core__SimpleMDArrayBit_O,
-  /* 255 */ &&obj_finalize_KIND_LISPALLOC_core__SimpleMDArrayT_O,
-  /* 257 */ &&obj_finalize_KIND_LISPALLOC_core__SimpleMDArray_fixnum_O,
-  /* 259 */ &&obj_finalize_KIND_LISPALLOC_core__SimpleMDArray_int64_t_O,
-  /* 261 */ &&obj_finalize_KIND_LISPALLOC_core__SimpleMDArray_size_t_O,
-  /* 263 */ &&obj_finalize_KIND_LISPALLOC_core__SimpleMDArray_int8_t_O,
-  /* 265 */ &&obj_finalize_KIND_LISPALLOC_core__SimpleMDArray_byte64_t_O,
-  /* 267 */ &&obj_finalize_KIND_LISPALLOC_core__SimpleMDArray_byte8_t_O,
-  /* 269 */ &&obj_finalize_KIND_LISPALLOC_core__SimpleMDArray_int16_t_O,
-  /* 271 */ &&obj_finalize_KIND_LISPALLOC_core__SimpleMDArrayDouble_O,
-  /* 273 */ &&obj_finalize_KIND_LISPALLOC_geom__SimpleMDArrayCoordinate_O,
-  /* 275 */ &&obj_finalize_KIND_LISPALLOC_core__SimpleMDArrayCharacter_O,
-  /* 277 */ &&obj_finalize_KIND_LISPALLOC_core__SimpleMDArrayBaseChar_O,
-  /* 279 */ &&obj_finalize_KIND_LISPALLOC_core__SimpleMDArrayFloat_O,
-  /* 280 */ &&obj_finalize_KIND_LISPALLOC_core__MDArrayBit_O,
-  /* 281 */ &&obj_finalize_KIND_LISPALLOC_core__BitVectorNs_O,
-  /* 283 */ &&obj_finalize_KIND_LISPALLOC_core__MDArray_byte32_t_O,
-  /* 285 */ &&obj_finalize_KIND_LISPALLOC_core__MDArrayBaseChar_O,
-  /* 287 */ &&obj_finalize_KIND_LISPALLOC_core__MDArray_byte8_t_O,
-  /* 289 */ &&obj_finalize_KIND_LISPALLOC_core__MDArray_int16_t_O,
-  /* 291 */ &&obj_finalize_KIND_LISPALLOC_core__MDArrayDouble_O,
-  /* 293 */ &&obj_finalize_KIND_LISPALLOC_geom__MDArrayCoordinate_O,
-  /* 295 */ &&obj_finalize_KIND_LISPALLOC_core__MDArray_int32_t_O,
-  /* 296 */ &&obj_finalize_KIND_LISPALLOC_core__StrNs_O,
-  /* 298 */ &&obj_finalize_KIND_LISPALLOC_core__StrWNs_O,
-  /* 300 */ &&obj_finalize_KIND_LISPALLOC_core__Str8Ns_O,
-  /* 302 */ &&obj_finalize_KIND_LISPALLOC_core__MDArray_int8_t_O,
-  /* 304 */ &&obj_finalize_KIND_LISPALLOC_core__MDArray_byte16_t_O,
-  /* 306 */ &&obj_finalize_KIND_LISPALLOC_core__MDArrayFloat_O,
-  /* 308 */ &&obj_finalize_KIND_LISPALLOC_core__MDArrayT_O,
-  /* 310 */ &&obj_finalize_KIND_LISPALLOC_core__MDArray_size_t_O,
-  /* 311 */ &&obj_finalize_KIND_LISPALLOC_core__SharpEqualWrapper_O,
-  /* 312 */ &&obj_finalize_KIND_LISPALLOC_core__IntArray_O,
-  /* 313 */ &&obj_finalize_KIND_LISPALLOC_core__RandomState_O,
-  /* 314 */ &&obj_finalize_KIND_LISPALLOC_core__FileStatus_O,
-  /* 315 */ &&obj_finalize_KIND_LISPALLOC_core__MultiStringBuffer_O,
-  /* 316 */ &&obj_finalize_KIND_LISPALLOC_core__LightUserData_O,
-  /* 317 */ &&obj_finalize_KIND_LISPALLOC_core__UserData_O,
-  /* 318 */ &&obj_finalize_KIND_LISPALLOC_core__Character_dummy_O,
-  /* 319 */ &&obj_finalize_KIND_LISPALLOC_adapt__SymbolSet_O,
-  /* 320 */ &&obj_finalize_KIND_LISPALLOC_core__WeakKeyMapping_O,
-  /* 321 */ &&obj_finalize_KIND_LISPALLOC_core__Stream_O,
-  /* 322 */ &&obj_finalize_KIND_LISPALLOC_core__AnsiStream_O,
-  /* 323 */ &&obj_finalize_KIND_LISPALLOC_core__BroadcastStream_O,
-  /* 324 */ &&obj_finalize_KIND_LISPALLOC_core__SynonymStream_O,
-  /* 325 */ &&obj_finalize_KIND_LISPALLOC_core__ConcatenatedStream_O,
-  /* 326 */ &&obj_finalize_KIND_LISPALLOC_core__StringStream_O,
-  /* 327 */ &&obj_finalize_KIND_LISPALLOC_core__StringInputStream_O,
-  /* 328 */ &&obj_finalize_KIND_LISPALLOC_core__StringOutputStream_O,
-  /* 329 */ &&obj_finalize_KIND_LISPALLOC_core__EchoStream_O,
-  /* 330 */ &&obj_finalize_KIND_LISPALLOC_core__TwoWayStream_O,
-  /* 331 */ &&obj_finalize_KIND_LISPALLOC_core__FileStream_O,
-  /* 332 */ &&obj_finalize_KIND_LISPALLOC_core__IOStreamStream_O,
-  /* 333 */ &&obj_finalize_KIND_LISPALLOC_core__IOFileStream_O,
-  /* 334 */ &&obj_finalize_KIND_LISPALLOC_core__Record_O,
-  /* 335 */ &&obj_finalize_KIND_LISPALLOC_llvmo__DataLayout_O,
-  /* 336 */ &&obj_finalize_KIND_LISPALLOC_core__CxxObject_O,
-  /* 337 */ &&obj_finalize_KIND_LISPALLOC_mp__ConditionVariable_O,
-  /* 338 */ &&obj_finalize_KIND_LISPALLOC_chem__AtomTable_O,
-  /* 339 */ &&obj_finalize_KIND_LISPALLOC_chem__Plug_O,
-  /* 340 */ &&obj_finalize_KIND_LISPALLOC_chem__JumpPlug_O,
-  /* 341 */ &&obj_finalize_KIND_LISPALLOC_chem__PlugWithMates_O,
-  /* 342 */ &&obj_finalize_KIND_LISPALLOC_chem__OutPlug_O,
-  /* 343 */ &&obj_finalize_KIND_LISPALLOC_chem__RingClosingPlug_O,
-  /* 344 */ &&obj_finalize_KIND_LISPALLOC_chem__InPlug_O,
-  /* 345 */ &&obj_finalize_KIND_LISPALLOC_chem__StereoisomerAtoms_O,
-  /* 346 */ &&obj_finalize_KIND_LISPALLOC_chem__MonomerCoordinates_O,
-  /* 347 */ &&obj_finalize_KIND_LISPALLOC_chem__ConstitutionBond_O,
-  /* 348 */ &&obj_finalize_KIND_LISPALLOC_adapt__SymbolList_O,
-  /* 349 */ &&obj_finalize_KIND_LISPALLOC_units__Dimension_O,
-  /* 350 */ &&obj_finalize_KIND_LISPALLOC_chem__FFParameter_O,
-  /* 351 */ &&obj_finalize_KIND_LISPALLOC_chem__FFVdw_O,
-  /* 352 */ &&obj_finalize_KIND_LISPALLOC_chem__FFNonbond_O,
-  /* 353 */ &&obj_finalize_KIND_LISPALLOC_chem__FFAngle_O,
-  /* 354 */ &&obj_finalize_KIND_LISPALLOC_chem__FFStretch_O,
-  /* 355 */ &&obj_finalize_KIND_LISPALLOC_chem__FFItor_O,
-  /* 356 */ &&obj_finalize_KIND_LISPALLOC_chem__FFPtor_O,
-  /* 357 */ &&obj_finalize_KIND_LISPALLOC_chem__Angle_O,
-  /* 358 */ &&obj_finalize_KIND_LISPALLOC_adapt__QDomNode_O,
-  /* 359 */ &&obj_finalize_KIND_LISPALLOC_chem__Oligomer_O,
-  /* 360 */ &&obj_finalize_KIND_LISPALLOC_chem__StereoConfiguration_O,
-  /* 361 */ &&obj_finalize_KIND_LISPALLOC_chem__NVector_O,
-  /* 362 */ &&obj_finalize_KIND_LISPALLOC_chem__Entity_O,
-  /* 363 */ &&obj_finalize_KIND_LISPALLOC_chem__EntityNameSetBase_O,
-  /* 364 */ &&obj_finalize_KIND_LISPALLOC_chem__EntityNameSet_O,
-  /* 365 */ &&obj_finalize_KIND_LISPALLOC_chem__MonomerPack_O,
-  /* 366 */ &&obj_finalize_KIND_LISPALLOC_chem__RepresentedEntityNameSet_O,
-  /* 367 */ &&obj_finalize_KIND_LISPALLOC_chem__EntityNameSetWithCap_O,
-  /* 368 */ &&obj_finalize_KIND_LISPALLOC_chem__RingClosingMate_O,
-  /* 369 */ &&obj_finalize_KIND_LISPALLOC_chem__Mate_O,
-  /* 370 */ &&obj_finalize_KIND_LISPALLOC_chem__Monomer_O,
-  /* 371 */ &&obj_finalize_KIND_LISPALLOC_chem__MultiMonomer_O,
-  /* 372 */ &&obj_finalize_KIND_LISPALLOC_chem__MonoMonomer_O,
-  /* 373 */ &&obj_finalize_KIND_LISPALLOC_chem__Stereoisomer_O,
-  /* 374 */ &&obj_finalize_KIND_LISPALLOC_chem__Constitution_O,
-  /* 375 */ &&obj_finalize_KIND_LISPALLOC_chem__StereoisomerAtom_O,
-  /* 376 */ &&obj_finalize_KIND_LISPALLOC_chem__StereoisomerVirtualAtom_O,
-  /* 377 */ &&obj_finalize_KIND_LISPALLOC_chem__ForceField_O,
-  /* 378 */ &&obj_finalize_KIND_LISPALLOC_chem__Alias_O,
-  /* 379 */ &&obj_finalize_KIND_LISPALLOC_chem__MapOfMonomerNamesToAtomIndexers_O,
-  /* 380 */ &&obj_finalize_KIND_LISPALLOC_chem__TwisterDriver_O,
-  /* 381 */ &&obj_finalize_KIND_LISPALLOC_chem__ResidueList_O,
-  /* 382 */ &&obj_finalize_KIND_LISPALLOC_chem__MonomerContext_O,
-  /* 383 */ &&obj_finalize_KIND_LISPALLOC_chem__CoordinateSystem_O,
-  /* 384 */ &&obj_finalize_KIND_LISPALLOC_llvmo__DINodeArray_O,
-  /* 385 */ &&obj_finalize_KIND_LISPALLOC_chem__Command_O,
-  /* 386 */ &&obj_finalize_KIND_LISPALLOC_chem__BondList_O,
-  /* 387 */ &&obj_finalize_KIND_LISPALLOC_chem__Coupling_O,
-  /* 388 */ &&obj_finalize_KIND_LISPALLOC_chem__RingCoupling_O,
-  /* 389 */ &&obj_finalize_KIND_LISPALLOC_chem__DirectionalCoupling_O,
-  /* 390 */ &&obj_finalize_KIND_LISPALLOC_chem__OligomerPart_Base_O,
-  /* 391 */ &&obj_finalize_KIND_LISPALLOC_chem__OligomerPart_Monomer_O,
-  /* 392 */ &&obj_finalize_KIND_LISPALLOC_chem__OligomerPart_Link_O,
-  /* 393 */ &&obj_finalize_KIND_LISPALLOC_chem__ChemInfoNode_O,
-  /* 394 */ &&obj_finalize_KIND_LISPALLOC_chem__RootMatchNode_O,
-  /* 395 */ &&obj_finalize_KIND_LISPALLOC_chem__AfterMatchBondTest_O,
-  /* 396 */ &&obj_finalize_KIND_LISPALLOC_chem__BondListMatchNode_O,
-  /* 397 */ &&obj_finalize_KIND_LISPALLOC_chem__Branch_O,
-  /* 398 */ &&obj_finalize_KIND_LISPALLOC_chem__Chain_O,
-  /* 399 */ &&obj_finalize_KIND_LISPALLOC_chem__BondMatchNode_O,
-  /* 400 */ &&obj_finalize_KIND_LISPALLOC_chem__BondTest_O,
-  /* 401 */ &&obj_finalize_KIND_LISPALLOC_chem__AntechamberBondTest_O,
-  /* 402 */ &&obj_finalize_KIND_LISPALLOC_chem__AtomOrBondMatchNode_O,
-  /* 403 */ &&obj_finalize_KIND_LISPALLOC_chem__AtomTest_O,
-  /* 404 */ &&obj_finalize_KIND_LISPALLOC_chem__RingTest_O,
-  /* 405 */ &&obj_finalize_KIND_LISPALLOC_chem__TagSet_O,
-  /* 406 */ &&obj_finalize_KIND_LISPALLOC_chem__Root_O,
-  /* 407 */ &&obj_finalize_KIND_LISPALLOC_chem__AntechamberRoot_O,
-  /* 408 */ &&obj_finalize_KIND_LISPALLOC_chem__SmartsRoot_O,
-  /* 409 */ &&obj_finalize_KIND_LISPALLOC_chem__ResidueTest_O,
-  /* 410 */ &&obj_finalize_KIND_LISPALLOC_chem__Logical_O,
-  /* 411 */ &&obj_finalize_KIND_LISPALLOC_chem__AntechamberFocusAtomMatch_O,
-  /* 412 */ &&obj_finalize_KIND_LISPALLOC_geom__OVector2_O,
-  /* 413 */ &&obj_finalize_KIND_LISPALLOC_chem__TopologyAtomInfo_O,
-  /* 414 */ &&obj_finalize_KIND_LISPALLOC_chem__NumericalFunction_O,
-  /* 415 */ &&obj_finalize_KIND_LISPALLOC_chem__ZMatrix_O,
-  /* 416 */ &&obj_finalize_KIND_LISPALLOC_chem__CipPrioritizer_O,
-  /* 417 */ &&obj_finalize_KIND_LISPALLOC_chem__TrajectoryFrame_O,
-  /* 418 */ &&obj_finalize_KIND_LISPALLOC_chem__AtomIdToAtomMap_O,
-  /* 419 */ &&obj_finalize_KIND_LISPALLOC_chem__ComplexRestraint_O,
-  /* 420 */ &&obj_finalize_KIND_LISPALLOC_chem__RestrainedExoCyclicAtom_O,
-  /* 421 */ &&obj_finalize_KIND_LISPALLOC_chem__RestrainedPiBond_O,
-  /* 422 */ &&obj_finalize_KIND_LISPALLOC_chem__AGEdge_O,
-  /* 423 */ &&obj_finalize_KIND_LISPALLOC_chem__ConformationExplorerEntry_O,
-  /* 424 */ &&obj_finalize_KIND_LISPALLOC_chem__MinimizerLog_O,
-  /* 425 */ &&obj_finalize_KIND_LISPALLOC_core__NativeVector_int_O,
-  /* 426 */ &&obj_finalize_KIND_LISPALLOC_chem__ChemDraw_O,
-  /* 427 */ &&obj_finalize_KIND_LISPALLOC_chem__PdbMonomerConnectivity_O,
-  /* 428 */ &&obj_finalize_KIND_LISPALLOC_chem__Matter_O,
-  /* 429 */ &&obj_finalize_KIND_LISPALLOC_chem__Residue_O,
-  /* 430 */ &&obj_finalize_KIND_LISPALLOC_chem__Atom_O,
-  /* 431 */ &&obj_finalize_KIND_LISPALLOC_chem__VirtualAtom_O,
-  /* 432 */ &&obj_finalize_KIND_LISPALLOC_chem__Aggregate_O,
-  /* 433 */ &&obj_finalize_KIND_LISPALLOC_chem__Molecule_O,
-  /* 434 */ &&obj_finalize_KIND_LISPALLOC_chem__Trajectory_O,
-  /* 435 */ &&obj_finalize_KIND_LISPALLOC_chem__ChemInfoMatch_O,
-  /* 436 */ &&obj_finalize_KIND_LISPALLOC_geom__OVector3_O,
-  /* 437 */ &&obj_finalize_KIND_LISPALLOC_chem__ConformationCollectionEntry_O,
-  /* 438 */ &&obj_finalize_KIND_LISPALLOC_chem__AtomReferenceBase_O,
-  /* 439 */ &&obj_finalize_KIND_LISPALLOC_chem__AtomReference_O,
-  /* 440 */ &&obj_finalize_KIND_LISPALLOC_chem__ImproperTorsion_O,
-  /* 441 */ &&obj_finalize_KIND_LISPALLOC_chem__AbstractLargeSquareMatrix_O,
-  /* 442 */ &&obj_finalize_KIND_LISPALLOC_chem__FullLargeSquareMatrix_O,
-  /* 443 */ &&obj_finalize_KIND_LISPALLOC_chem__SparseLargeSquareMatrix_O,
-  /* 444 */ &&obj_finalize_KIND_LISPALLOC_chem__ConformationExplorerMatch_O,
-  /* 445 */ &&obj_finalize_KIND_LISPALLOC_chem__Rotamer_O,
-  /* 446 */ &&obj_finalize_KIND_LISPALLOC_chem__OneTypeRule_O,
-  /* 447 */ &&obj_finalize_KIND_LISPALLOC_chem__ConstitutionAtoms_O,
-  /* 448 */ &&obj_finalize_KIND_LISPALLOC_chem__RingFinder_O,
-  /* 449 */ &&obj_finalize_KIND_LISPALLOC_mp__Process_O,
-  /* 450 */ &&obj_finalize_KIND_LISPALLOC_chem__Topology_O,
-  /* 451 */ &&obj_finalize_KIND_LISPALLOC_core__NativeVector_float_O,
-  /* 452 */ &&obj_finalize_KIND_LISPALLOC_chem__PdbMonomerDatabase_O,
-  /* 453 */ &&obj_finalize_KIND_LISPALLOC_chem__FrameRecognizer_O,
-  /* 454 */ &&obj_finalize_KIND_LISPALLOC_core__NativeVector_double_O,
-  /* 455 */ &&obj_finalize_KIND_LISPALLOC_chem__CDBond_O,
-  /* 456 */ &&obj_finalize_KIND_LISPALLOC_chem__CandoDatabase_O,
-  /* 457 */ &&obj_finalize_KIND_LISPALLOC_chem__VirtualSphere_O,
-  /* 458 */ &&obj_finalize_KIND_LISPALLOC_chem__EnergyComponent_O,
-  /* 459 */ &&obj_finalize_KIND_LISPALLOC_chem__EnergyDihedral_O,
-  /* 460 */ &&obj_finalize_KIND_LISPALLOC_chem__EnergyChiralRestraint_O,
-  /* 461 */ &&obj_finalize_KIND_LISPALLOC_chem__EnergyNonbond_O,
-  /* 462 */ &&obj_finalize_KIND_LISPALLOC_chem__EnergyImproperRestraint_O,
+  /* 25 */ &&obj_finalize_KIND_LISPALLOC_mp__BlockingConcurrentQueue_O,
+  /* 26 */ &&obj_finalize_KIND_LISPALLOC_core__Pathname_O,
+  /* 27 */ &&obj_finalize_KIND_LISPALLOC_core__LogicalPathname_O,
+  /* 28 */ &&obj_finalize_KIND_LISPALLOC_core__HashTable_O,
+  /* 29 */ &&obj_finalize_KIND_LISPALLOC_core__HashTableEql_O,
+  /* 30 */ &&obj_finalize_KIND_LISPALLOC_core__HashTableEqual_O,
+  /* 31 */ &&obj_finalize_KIND_LISPALLOC_core__HashTableEq_O,
+  /* 32 */ &&obj_finalize_KIND_LISPALLOC_core__HashTableEqualp_O,
+  /* 33 */ &&obj_finalize_KIND_LISPALLOC_core__PosixTime_O,
+  /* 34 */ &&obj_finalize_KIND_LISPALLOC_core__SourcePosInfo_O,
+  /* 35 */ &&obj_finalize_KIND_LISPALLOC_core__InvocationHistoryFrameIterator_O,
+  /* 36 */ &&obj_finalize_KIND_LISPALLOC_adapt__IndexedObjectBag_O,
+  /* 37 */ &&obj_finalize_KIND_LISPALLOC_core__SequenceStepper_O,
+  /* 38 */ &&obj_finalize_KIND_LISPALLOC_core__VectorStepper_O,
+  /* 39 */ &&obj_finalize_KIND_LISPALLOC_core__ConsStepper_O,
+  /* 40 */ &&obj_finalize_KIND_BOOTSTRAP_core__Symbol_O,
+  /* 41 */ &&obj_finalize_KIND_LISPALLOC_core__Null_O,
+  /* 42 */ &&obj_finalize_KIND_LISPALLOC_core__ReadTable_O,
+  /* 43 */ &&obj_finalize_KIND_LISPALLOC_core__PosixTimeDuration_O,
+  /* 44 */ &&obj_finalize_KIND_LISPALLOC_core__SmallMultimap_O,
+  /* 45 */ &&obj_finalize_KIND_TEMPLATED_LISPALLOC_core__Creator_O,
+  /* 46 */ &&obj_finalize_KIND_LISPALLOC_core__ClassCreator_O,
+  /* 47 */ &&obj_finalize_KIND_LISPALLOC_clbind__DummyCreator_O,
+  /* 48 */ &&obj_finalize_KIND_LISPALLOC_core__StructureClassCreator_O,
+  /* 49 */ &&obj_finalize_KIND_LISPALLOC_core__InstanceCreator_O,
+  /* 50 */ &&obj_finalize_KIND_LISPALLOC_core__StandardClassCreator_O,
+  /* 51 */ &&obj_finalize_KIND_TEMPLATED_LISPALLOC_clbind__ConstructorCreator_O,
+  /* 52 */ &&obj_finalize_KIND_LISPALLOC_clasp_ffi__ForeignTypeSpec_O,
+  /* 53 */ &&obj_finalize_KIND_LISPALLOC_core__LoadTimeValues_O,
+  /* 54 */ &&obj_finalize_KIND_LISPALLOC_clbind__ClassRegistry_O,
+  /* 55 */ &&obj_finalize_KIND_BOOTSTRAP_core__StandardObject_O,
+  /* 56 */ &&obj_finalize_KIND_BOOTSTRAP_core__Class_O,
+  /* 57 */ &&obj_finalize_KIND_LISPALLOC_clbind__ClassRep_O,
+  /* 58 */ &&obj_finalize_KIND_LISPALLOC_llvmo__AttributeSet_O,
+  /* 59 */ &&obj_finalize_KIND_TEMPLATED_LISPALLOC_core__Iterator_O,
+  /* 60 */ &&obj_finalize_KIND_LISPALLOC_core__DirectoryIterator_O,
+  /* 61 */ &&obj_finalize_KIND_LISPALLOC_chem__IterateRestraints_O,
+  /* 62 */ &&obj_finalize_KIND_LISPALLOC_chem__IterateMatter_O,
+  /* 63 */ &&obj_finalize_KIND_LISPALLOC_chem__IterateResidues_O,
+  /* 64 */ &&obj_finalize_KIND_LISPALLOC_chem__IterateBonds_O,
+  /* 65 */ &&obj_finalize_KIND_LISPALLOC_chem__IterateAtoms_O,
+  /* 66 */ &&obj_finalize_KIND_LISPALLOC_core__RecursiveDirectoryIterator_O,
+  /* 67 */ &&obj_finalize_KIND_LISPALLOC_adapt__IterateCons_O,
+  /* 68 */ &&obj_finalize_KIND_TEMPLATED_LISPALLOC_core__WrappedPointer_O,
+  /* 69 */ &&obj_finalize_KIND_LISPALLOC_core__ExternalObject_O,
+  /* 70 */ &&obj_finalize_KIND_LISPALLOC_llvmo__NamedMDNode_O,
+  /* 71 */ &&obj_finalize_KIND_LISPALLOC_llvmo__TargetOptions_O,
+  /* 72 */ &&obj_finalize_KIND_LISPALLOC_llvmo__EngineBuilder_O,
+  /* 73 */ &&obj_finalize_KIND_LISPALLOC_llvmo__IRBuilderBase_O,
+  /* 74 */ &&obj_finalize_KIND_LISPALLOC_llvmo__IRBuilder_O,
+  /* 75 */ &&obj_finalize_KIND_LISPALLOC_llvmo__APInt_O,
+  /* 76 */ &&obj_finalize_KIND_LISPALLOC_llvmo__Metadata_O,
+  /* 77 */ &&obj_finalize_KIND_LISPALLOC_llvmo__MDString_O,
+  /* 78 */ &&obj_finalize_KIND_LISPALLOC_llvmo__ValueAsMetadata_O,
+  /* 79 */ &&obj_finalize_KIND_LISPALLOC_llvmo__MDNode_O,
+  /* 80 */ &&obj_finalize_KIND_LISPALLOC_llvmo__DINode_O,
+  /* 81 */ &&obj_finalize_KIND_LISPALLOC_llvmo__DIScope_O,
+  /* 82 */ &&obj_finalize_KIND_LISPALLOC_llvmo__DILocalScope_O,
+  /* 83 */ &&obj_finalize_KIND_LISPALLOC_llvmo__DILexicalBlockBase_O,
+  /* 84 */ &&obj_finalize_KIND_LISPALLOC_llvmo__DILexicalBlock_O,
+  /* 85 */ &&obj_finalize_KIND_LISPALLOC_llvmo__DISubprogram_O,
+  /* 86 */ &&obj_finalize_KIND_LISPALLOC_llvmo__DIFile_O,
+  /* 87 */ &&obj_finalize_KIND_LISPALLOC_llvmo__DIType_O,
+  /* 88 */ &&obj_finalize_KIND_LISPALLOC_llvmo__DICompositeType_O,
+  /* 89 */ &&obj_finalize_KIND_LISPALLOC_llvmo__DIBasicType_O,
+  /* 90 */ &&obj_finalize_KIND_LISPALLOC_llvmo__DIDerivedType_O,
+  /* 91 */ &&obj_finalize_KIND_LISPALLOC_llvmo__DISubroutineType_O,
+  /* 92 */ &&obj_finalize_KIND_LISPALLOC_llvmo__DICompileUnit_O,
+  /* 93 */ &&obj_finalize_KIND_LISPALLOC_llvmo__LLVMContext_O,
+  /* 94 */ &&obj_finalize_KIND_LISPALLOC_llvmo__TargetMachine_O,
+  /* 95 */ &&obj_finalize_KIND_LISPALLOC_llvmo__LLVMTargetMachine_O,
+  /* 96 */ &&obj_finalize_KIND_LISPALLOC_llvmo__MCSubtargetInfo_O,
+  /* 97 */ &&obj_finalize_KIND_LISPALLOC_llvmo__TargetSubtargetInfo_O,
+  /* 98 */ &&obj_finalize_KIND_LISPALLOC_llvmo__Value_O,
+  /* 99 */ &&obj_finalize_KIND_LISPALLOC_llvmo__User_O,
+  /* 100 */ &&obj_finalize_KIND_LISPALLOC_llvmo__Instruction_O,
+  /* 101 */ &&obj_finalize_KIND_LISPALLOC_llvmo__AtomicRMWInst_O,
+  /* 102 */ &&obj_finalize_KIND_LISPALLOC_llvmo__StoreInst_O,
+  /* 103 */ &&obj_finalize_KIND_LISPALLOC_llvmo__TerminatorInst_O,
+  /* 104 */ &&obj_finalize_KIND_LISPALLOC_llvmo__BranchInst_O,
+  /* 105 */ &&obj_finalize_KIND_LISPALLOC_llvmo__InvokeInst_O,
+  /* 106 */ &&obj_finalize_KIND_LISPALLOC_llvmo__IndirectBrInst_O,
+  /* 107 */ &&obj_finalize_KIND_LISPALLOC_llvmo__SwitchInst_O,
+  /* 108 */ &&obj_finalize_KIND_LISPALLOC_llvmo__ResumeInst_O,
+  /* 109 */ &&obj_finalize_KIND_LISPALLOC_llvmo__UnreachableInst_O,
+  /* 110 */ &&obj_finalize_KIND_LISPALLOC_llvmo__ReturnInst_O,
+  /* 111 */ &&obj_finalize_KIND_LISPALLOC_llvmo__PHINode_O,
+  /* 112 */ &&obj_finalize_KIND_LISPALLOC_llvmo__CallInst_O,
+  /* 113 */ &&obj_finalize_KIND_LISPALLOC_llvmo__UnaryInstruction_O,
+  /* 114 */ &&obj_finalize_KIND_LISPALLOC_llvmo__AllocaInst_O,
+  /* 115 */ &&obj_finalize_KIND_LISPALLOC_llvmo__LoadInst_O,
+  /* 116 */ &&obj_finalize_KIND_LISPALLOC_llvmo__VAArgInst_O,
+  /* 117 */ &&obj_finalize_KIND_LISPALLOC_llvmo__FenceInst_O,
+  /* 118 */ &&obj_finalize_KIND_LISPALLOC_llvmo__AtomicCmpXchgInst_O,
+  /* 119 */ &&obj_finalize_KIND_LISPALLOC_llvmo__LandingPadInst_O,
+  /* 120 */ &&obj_finalize_KIND_LISPALLOC_llvmo__Constant_O,
+  /* 121 */ &&obj_finalize_KIND_LISPALLOC_llvmo__GlobalValue_O,
+  /* 122 */ &&obj_finalize_KIND_LISPALLOC_llvmo__Function_O,
+  /* 123 */ &&obj_finalize_KIND_LISPALLOC_llvmo__GlobalVariable_O,
+  /* 124 */ &&obj_finalize_KIND_LISPALLOC_llvmo__ConstantExpr_O,
+  /* 125 */ &&obj_finalize_KIND_LISPALLOC_llvmo__ConstantArray_O,
+  /* 126 */ &&obj_finalize_KIND_LISPALLOC_llvmo__ConstantPointerNull_O,
+  /* 127 */ &&obj_finalize_KIND_LISPALLOC_llvmo__ConstantFP_O,
+  /* 128 */ &&obj_finalize_KIND_LISPALLOC_llvmo__ConstantInt_O,
+  /* 129 */ &&obj_finalize_KIND_LISPALLOC_llvmo__UndefValue_O,
+  /* 130 */ &&obj_finalize_KIND_LISPALLOC_llvmo__BlockAddress_O,
+  /* 131 */ &&obj_finalize_KIND_LISPALLOC_llvmo__ConstantStruct_O,
+  /* 132 */ &&obj_finalize_KIND_LISPALLOC_llvmo__ConstantDataSequential_O,
+  /* 133 */ &&obj_finalize_KIND_LISPALLOC_llvmo__ConstantDataArray_O,
+  /* 134 */ &&obj_finalize_KIND_LISPALLOC_llvmo__BasicBlock_O,
+  /* 135 */ &&obj_finalize_KIND_LISPALLOC_llvmo__Argument_O,
+  /* 136 */ &&obj_finalize_KIND_LISPALLOC_clasp_ffi__ForeignData_O,
+  /* 137 */ &&obj_finalize_KIND_LISPALLOC_llvmo__ExecutionEngine_O,
+  /* 138 */ &&obj_finalize_KIND_LISPALLOC_llvmo__DIBuilder_O,
+  /* 139 */ &&obj_finalize_KIND_LISPALLOC_llvmo__PassManagerBuilder_O,
+  /* 140 */ &&obj_finalize_KIND_LISPALLOC_llvmo__PassManagerBase_O,
+  /* 141 */ &&obj_finalize_KIND_LISPALLOC_llvmo__FunctionPassManager_O,
+  /* 142 */ &&obj_finalize_KIND_LISPALLOC_llvmo__PassManager_O,
+  /* 143 */ &&obj_finalize_KIND_LISPALLOC_llvmo__Triple_O,
+  /* 144 */ &&obj_finalize_KIND_LISPALLOC_llvmo__Pass_O,
+  /* 145 */ &&obj_finalize_KIND_LISPALLOC_llvmo__ModulePass_O,
+  /* 146 */ &&obj_finalize_KIND_LISPALLOC_llvmo__ImmutablePass_O,
+  /* 147 */ &&obj_finalize_KIND_LISPALLOC_llvmo__TargetLibraryInfoWrapperPass_O,
+  /* 148 */ &&obj_finalize_KIND_LISPALLOC_llvmo__FunctionPass_O,
+  /* 149 */ &&obj_finalize_KIND_LISPALLOC_llvmo__Module_O,
+  /* 150 */ &&obj_finalize_KIND_LISPALLOC_llvmo__Target_O,
+  /* 151 */ &&obj_finalize_KIND_LISPALLOC_llvmo__APFloat_O,
+  /* 152 */ &&obj_finalize_KIND_LISPALLOC_llvmo__Linker_O,
+  /* 153 */ &&obj_finalize_KIND_LISPALLOC_llvmo__Type_O,
+  /* 154 */ &&obj_finalize_KIND_LISPALLOC_llvmo__IntegerType_O,
+  /* 155 */ &&obj_finalize_KIND_LISPALLOC_llvmo__CompositeType_O,
+  /* 156 */ &&obj_finalize_KIND_LISPALLOC_llvmo__SequentialType_O,
+  /* 157 */ &&obj_finalize_KIND_LISPALLOC_llvmo__VectorType_O,
+  /* 158 */ &&obj_finalize_KIND_LISPALLOC_llvmo__ArrayType_O,
+  /* 159 */ &&obj_finalize_KIND_LISPALLOC_llvmo__PointerType_O,
+  /* 160 */ &&obj_finalize_KIND_LISPALLOC_llvmo__StructType_O,
+  /* 161 */ &&obj_finalize_KIND_LISPALLOC_llvmo__FunctionType_O,
+  /* 162 */ &&obj_finalize_KIND_LISPALLOC_llvmo__Attribute_O,
+  /* 163 */ &&obj_finalize_KIND_LISPALLOC_core__Package_O,
+  /* 164 */ &&obj_finalize_KIND_LISPALLOC_core__SmallMap_O,
+  /* 165 */ &&obj_finalize_KIND_LISPALLOC_core__Function_O,
+  /* 166 */ &&obj_finalize_KIND_LISPALLOC_core__NamedFunction_O,
+  /* 167 */ &&obj_finalize_KIND_LISPALLOC_core__SpecialForm_O,
+  /* 168 */ &&obj_finalize_KIND_LISPALLOC_core__Closure_O,
+  /* 169 */ &&obj_finalize_KIND_LISPALLOC_core__CompiledFunction_O,
+  /* 170 */ &&obj_finalize_KIND_LISPALLOC_core__FunctionClosure_O,
+  /* 171 */ &&obj_finalize_KIND_LISPALLOC_core__ClosureWithSlots_O,
+  /* 172 */ &&obj_finalize_KIND_LISPALLOC_core__SingleDispatchCxxEffectiveMethodFunction_O,
+  /* 173 */ &&obj_finalize_KIND_TEMPLATED_LISPALLOC_core__BuiltinClosure_O,
+  /* 174 */ &&obj_finalize_KIND_LISPALLOC_core__TranslationFunctor,
+  /* 175 */ &&obj_finalize_KIND_LISPALLOC_core__MacroClosure_O,
+  /* 176 */ &&obj_finalize_KIND_LISPALLOC_core__SingleDispatchEffectiveMethodFunction_O,
+  /* 177 */ &&obj_finalize_KIND_LISPALLOC_core__ClosureWithFrame_O,
+  /* 178 */ &&obj_finalize_KIND_LISPALLOC_core__CompiledClosure_O,
+  /* 179 */ &&obj_finalize_KIND_LISPALLOC_core__InterpretedClosure_O,
+  /* 180 */ &&obj_finalize_KIND_LISPALLOC_core__SingleDispatchGenericFunctionClosure_O,
+  /* 181 */ &&obj_finalize_KIND_LISPALLOC_core__SingleDispatchMethodFunction_O,
+  /* 182 */ &&obj_finalize_KIND_LISPALLOC_core__CxxMethodFunction_O,
+  /* 183 */ &&obj_finalize_KIND_LISPALLOC_core__CompiledDispatchFunction_O,
+  /* 184 */ &&obj_finalize_KIND_LISPALLOC_core__Instance_O,
+  /* 185 */ &&obj_finalize_KIND_LISPALLOC_core__SNode_O,
+  /* 186 */ &&obj_finalize_KIND_LISPALLOC_core__LeafSNode_O,
+  /* 187 */ &&obj_finalize_KIND_LISPALLOC_core__BranchSNode_O,
+  /* 188 */ &&obj_finalize_KIND_LISPALLOC_core__SourceFileInfo_O,
+  /* 189 */ &&obj_finalize_KIND_LISPALLOC_core__Path_O,
+  /* 190 */ &&obj_finalize_KIND_LISPALLOC_core__WeakHashTable_O,
+  /* 191 */ &&obj_finalize_KIND_LISPALLOC_core__WeakKeyHashTable_O,
+  /* 192 */ &&obj_finalize_KIND_LISPALLOC_core__SingleDispatchMethod_O,
+  /* 193 */ &&obj_finalize_KIND_LISPALLOC_core__LambdaListHandler_O,
+  /* 194 */ &&obj_finalize_KIND_LISPALLOC_core__Array_O,
+  /* 195 */ &&obj_finalize_KIND_LISPALLOC_core__AbstractSimpleVector_O,
+  /* 197 */ &&obj_finalize_KIND_LISPALLOC_core__SimpleVector_byte16_t_O,
+  /* 199 */ &&obj_finalize_KIND_LISPALLOC_core__SimpleVector_fixnum_O,
+  /* 201 */ &&obj_finalize_KIND_LISPALLOC_core__SimpleVector_int64_t_O,
+  /* 202 */ &&obj_finalize_KIND_LISPALLOC_core__SimpleBitVector_O,
+  /* 204 */ &&obj_finalize_KIND_LISPALLOC_core__SimpleVector_byte32_t_O,
+  /* 206 */ &&obj_finalize_KIND_LISPALLOC_core__SimpleVector_byte8_t_O,
+  /* 208 */ &&obj_finalize_KIND_LISPALLOC_core__SimpleVector_int32_t_O,
+  /* 210 */ &&obj_finalize_KIND_LISPALLOC_geom__SimpleVectorCoordinate_O,
+  /* 211 */ &&obj_finalize_KIND_LISPALLOC_core__SimpleString_O,
+  /* 213 */ &&obj_finalize_KIND_LISPALLOC_core__SimpleCharacterString_O,
+  /* 215 */ &&obj_finalize_KIND_LISPALLOC_core__SimpleBaseString_O,
+  /* 217 */ &&obj_finalize_KIND_LISPALLOC_core__SimpleVector_int8_t_O,
+  /* 219 */ &&obj_finalize_KIND_LISPALLOC_core__SimpleVector_int16_t_O,
+  /* 221 */ &&obj_finalize_KIND_LISPALLOC_core__SimpleVectorDouble_O,
+  /* 223 */ &&obj_finalize_KIND_LISPALLOC_core__SimpleVector_byte64_t_O,
+  /* 225 */ &&obj_finalize_KIND_LISPALLOC_core__SimpleVectorFloat_O,
+  /* 227 */ &&obj_finalize_KIND_LISPALLOC_core__SimpleVector_O,
+  /* 229 */ &&obj_finalize_KIND_LISPALLOC_core__SimpleVector_size_t_O,
+  /* 230 */ &&obj_finalize_KIND_LISPALLOC_core__MDArray_O,
+  /* 232 */ &&obj_finalize_KIND_LISPALLOC_core__MDArray_byte64_t_O,
+  /* 234 */ &&obj_finalize_KIND_LISPALLOC_core__MDArray_fixnum_O,
+  /* 236 */ &&obj_finalize_KIND_LISPALLOC_core__MDArrayCharacter_O,
+  /* 238 */ &&obj_finalize_KIND_LISPALLOC_core__MDArray_int64_t_O,
+  /* 239 */ &&obj_finalize_KIND_LISPALLOC_core__SimpleMDArray_O,
+  /* 241 */ &&obj_finalize_KIND_LISPALLOC_core__SimpleMDArray_byte32_t_O,
+  /* 243 */ &&obj_finalize_KIND_LISPALLOC_core__SimpleMDArray_byte16_t_O,
+  /* 245 */ &&obj_finalize_KIND_LISPALLOC_core__SimpleMDArray_int32_t_O,
+  /* 246 */ &&obj_finalize_KIND_LISPALLOC_core__SimpleMDArrayBit_O,
+  /* 248 */ &&obj_finalize_KIND_LISPALLOC_core__SimpleMDArrayT_O,
+  /* 250 */ &&obj_finalize_KIND_LISPALLOC_core__SimpleMDArray_fixnum_O,
+  /* 252 */ &&obj_finalize_KIND_LISPALLOC_core__SimpleMDArray_int64_t_O,
+  /* 254 */ &&obj_finalize_KIND_LISPALLOC_core__SimpleMDArray_size_t_O,
+  /* 256 */ &&obj_finalize_KIND_LISPALLOC_core__SimpleMDArray_int8_t_O,
+  /* 258 */ &&obj_finalize_KIND_LISPALLOC_core__SimpleMDArray_byte64_t_O,
+  /* 260 */ &&obj_finalize_KIND_LISPALLOC_core__SimpleMDArray_byte8_t_O,
+  /* 262 */ &&obj_finalize_KIND_LISPALLOC_core__SimpleMDArray_int16_t_O,
+  /* 264 */ &&obj_finalize_KIND_LISPALLOC_core__SimpleMDArrayDouble_O,
+  /* 266 */ &&obj_finalize_KIND_LISPALLOC_geom__SimpleMDArrayCoordinate_O,
+  /* 268 */ &&obj_finalize_KIND_LISPALLOC_core__SimpleMDArrayCharacter_O,
+  /* 270 */ &&obj_finalize_KIND_LISPALLOC_core__SimpleMDArrayBaseChar_O,
+  /* 272 */ &&obj_finalize_KIND_LISPALLOC_core__SimpleMDArrayFloat_O,
+  /* 273 */ &&obj_finalize_KIND_LISPALLOC_core__MDArrayBit_O,
+  /* 274 */ &&obj_finalize_KIND_LISPALLOC_core__BitVectorNs_O,
+  /* 276 */ &&obj_finalize_KIND_LISPALLOC_core__MDArray_byte32_t_O,
+  /* 278 */ &&obj_finalize_KIND_LISPALLOC_core__MDArrayBaseChar_O,
+  /* 280 */ &&obj_finalize_KIND_LISPALLOC_core__MDArray_byte8_t_O,
+  /* 282 */ &&obj_finalize_KIND_LISPALLOC_core__MDArray_int16_t_O,
+  /* 284 */ &&obj_finalize_KIND_LISPALLOC_core__MDArrayDouble_O,
+  /* 286 */ &&obj_finalize_KIND_LISPALLOC_geom__MDArrayCoordinate_O,
+  /* 288 */ &&obj_finalize_KIND_LISPALLOC_core__MDArray_int32_t_O,
+  /* 289 */ &&obj_finalize_KIND_LISPALLOC_core__StrNs_O,
+  /* 291 */ &&obj_finalize_KIND_LISPALLOC_core__StrWNs_O,
+  /* 293 */ &&obj_finalize_KIND_LISPALLOC_core__Str8Ns_O,
+  /* 295 */ &&obj_finalize_KIND_LISPALLOC_core__MDArray_int8_t_O,
+  /* 297 */ &&obj_finalize_KIND_LISPALLOC_core__MDArray_byte16_t_O,
+  /* 299 */ &&obj_finalize_KIND_LISPALLOC_core__MDArrayFloat_O,
+  /* 301 */ &&obj_finalize_KIND_LISPALLOC_core__MDArrayT_O,
+  /* 303 */ &&obj_finalize_KIND_LISPALLOC_core__MDArray_size_t_O,
+  /* 304 */ &&obj_finalize_KIND_LISPALLOC_core__SharpEqualWrapper_O,
+  /* 305 */ &&obj_finalize_KIND_LISPALLOC_core__IntArray_O,
+  /* 306 */ &&obj_finalize_KIND_LISPALLOC_core__RandomState_O,
+  /* 307 */ &&obj_finalize_KIND_LISPALLOC_core__FileStatus_O,
+  /* 308 */ &&obj_finalize_KIND_LISPALLOC_core__MultiStringBuffer_O,
+  /* 309 */ &&obj_finalize_KIND_LISPALLOC_core__LightUserData_O,
+  /* 310 */ &&obj_finalize_KIND_LISPALLOC_core__UserData_O,
+  /* 311 */ &&obj_finalize_KIND_LISPALLOC_core__Character_dummy_O,
+  /* 312 */ &&obj_finalize_KIND_LISPALLOC_adapt__SymbolSet_O,
+  /* 313 */ &&obj_finalize_KIND_LISPALLOC_core__WeakKeyMapping_O,
+  /* 314 */ &&obj_finalize_KIND_LISPALLOC_core__Stream_O,
+  /* 315 */ &&obj_finalize_KIND_LISPALLOC_core__AnsiStream_O,
+  /* 316 */ &&obj_finalize_KIND_LISPALLOC_core__BroadcastStream_O,
+  /* 317 */ &&obj_finalize_KIND_LISPALLOC_core__SynonymStream_O,
+  /* 318 */ &&obj_finalize_KIND_LISPALLOC_core__ConcatenatedStream_O,
+  /* 319 */ &&obj_finalize_KIND_LISPALLOC_core__StringStream_O,
+  /* 320 */ &&obj_finalize_KIND_LISPALLOC_core__StringInputStream_O,
+  /* 321 */ &&obj_finalize_KIND_LISPALLOC_core__StringOutputStream_O,
+  /* 322 */ &&obj_finalize_KIND_LISPALLOC_core__EchoStream_O,
+  /* 323 */ &&obj_finalize_KIND_LISPALLOC_core__TwoWayStream_O,
+  /* 324 */ &&obj_finalize_KIND_LISPALLOC_core__FileStream_O,
+  /* 325 */ &&obj_finalize_KIND_LISPALLOC_core__IOStreamStream_O,
+  /* 326 */ &&obj_finalize_KIND_LISPALLOC_core__IOFileStream_O,
+  /* 327 */ &&obj_finalize_KIND_LISPALLOC_core__Record_O,
+  /* 328 */ &&obj_finalize_KIND_LISPALLOC_llvmo__DataLayout_O,
+  /* 329 */ &&obj_finalize_KIND_LISPALLOC_mp__ConcurrentQueue_O,
+  /* 330 */ &&obj_finalize_KIND_LISPALLOC_core__CxxObject_O,
+  /* 331 */ &&obj_finalize_KIND_LISPALLOC_mp__ConditionVariable_O,
+  /* 332 */ &&obj_finalize_KIND_LISPALLOC_chem__AtomTable_O,
+  /* 333 */ &&obj_finalize_KIND_LISPALLOC_chem__Plug_O,
+  /* 334 */ &&obj_finalize_KIND_LISPALLOC_chem__JumpPlug_O,
+  /* 335 */ &&obj_finalize_KIND_LISPALLOC_chem__PlugWithMates_O,
+  /* 336 */ &&obj_finalize_KIND_LISPALLOC_chem__OutPlug_O,
+  /* 337 */ &&obj_finalize_KIND_LISPALLOC_chem__RingClosingPlug_O,
+  /* 338 */ &&obj_finalize_KIND_LISPALLOC_chem__InPlug_O,
+  /* 339 */ &&obj_finalize_KIND_LISPALLOC_chem__StereoisomerAtoms_O,
+  /* 340 */ &&obj_finalize_KIND_LISPALLOC_mp__SharedMutex_O,
+  /* 341 */ &&obj_finalize_KIND_LISPALLOC_chem__MonomerCoordinates_O,
+  /* 342 */ &&obj_finalize_KIND_LISPALLOC_chem__ConstitutionBond_O,
+  /* 343 */ &&obj_finalize_KIND_LISPALLOC_adapt__SymbolList_O,
+  /* 344 */ &&obj_finalize_KIND_LISPALLOC_units__Dimension_O,
+  /* 345 */ &&obj_finalize_KIND_LISPALLOC_chem__FFParameter_O,
+  /* 346 */ &&obj_finalize_KIND_LISPALLOC_chem__FFVdw_O,
+  /* 347 */ &&obj_finalize_KIND_LISPALLOC_chem__FFNonbond_O,
+  /* 348 */ &&obj_finalize_KIND_LISPALLOC_chem__FFAngle_O,
+  /* 349 */ &&obj_finalize_KIND_LISPALLOC_chem__FFStretch_O,
+  /* 350 */ &&obj_finalize_KIND_LISPALLOC_chem__FFItor_O,
+  /* 351 */ &&obj_finalize_KIND_LISPALLOC_chem__FFPtor_O,
+  /* 352 */ &&obj_finalize_KIND_LISPALLOC_chem__Angle_O,
+  /* 353 */ &&obj_finalize_KIND_LISPALLOC_adapt__QDomNode_O,
+  /* 354 */ &&obj_finalize_KIND_LISPALLOC_chem__Oligomer_O,
+  /* 355 */ &&obj_finalize_KIND_LISPALLOC_chem__StereoConfiguration_O,
+  /* 356 */ &&obj_finalize_KIND_LISPALLOC_chem__ScoringFunction_O,
+  /* 357 */ &&obj_finalize_KIND_LISPALLOC_chem__RigidBodyEnergyFunction_O,
+  /* 358 */ &&obj_finalize_KIND_LISPALLOC_chem__EnergyFunction_O,
+  /* 359 */ &&obj_finalize_KIND_LISPALLOC_chem__Entity_O,
+  /* 360 */ &&obj_finalize_KIND_LISPALLOC_chem__EntityNameSetBase_O,
+  /* 361 */ &&obj_finalize_KIND_LISPALLOC_chem__EntityNameSet_O,
+  /* 362 */ &&obj_finalize_KIND_LISPALLOC_chem__MonomerPack_O,
+  /* 363 */ &&obj_finalize_KIND_LISPALLOC_chem__RepresentedEntityNameSet_O,
+  /* 364 */ &&obj_finalize_KIND_LISPALLOC_chem__EntityNameSetWithCap_O,
+  /* 365 */ &&obj_finalize_KIND_LISPALLOC_chem__RingClosingMate_O,
+  /* 366 */ &&obj_finalize_KIND_LISPALLOC_chem__Mate_O,
+  /* 367 */ &&obj_finalize_KIND_LISPALLOC_chem__Monomer_O,
+  /* 368 */ &&obj_finalize_KIND_LISPALLOC_chem__MultiMonomer_O,
+  /* 369 */ &&obj_finalize_KIND_LISPALLOC_chem__MonoMonomer_O,
+  /* 370 */ &&obj_finalize_KIND_LISPALLOC_chem__Stereoisomer_O,
+  /* 371 */ &&obj_finalize_KIND_LISPALLOC_chem__Constitution_O,
+  /* 372 */ &&obj_finalize_KIND_LISPALLOC_chem__StereoisomerAtom_O,
+  /* 373 */ &&obj_finalize_KIND_LISPALLOC_chem__StereoisomerVirtualAtom_O,
+  /* 374 */ &&obj_finalize_KIND_LISPALLOC_chem__ForceField_O,
+  /* 375 */ &&obj_finalize_KIND_LISPALLOC_chem__Alias_O,
+  /* 376 */ &&obj_finalize_KIND_LISPALLOC_chem__MapOfMonomerNamesToAtomIndexers_O,
+  /* 377 */ &&obj_finalize_KIND_LISPALLOC_chem__TwisterDriver_O,
+  /* 378 */ &&obj_finalize_KIND_LISPALLOC_chem__ResidueList_O,
+  /* 379 */ &&obj_finalize_KIND_LISPALLOC_chem__MonomerContext_O,
+  /* 380 */ &&obj_finalize_KIND_LISPALLOC_chem__CoordinateSystem_O,
+  /* 381 */ &&obj_finalize_KIND_LISPALLOC_llvmo__DINodeArray_O,
+  /* 382 */ &&obj_finalize_KIND_LISPALLOC_chem__Command_O,
+  /* 383 */ &&obj_finalize_KIND_LISPALLOC_chem__BondList_O,
+  /* 384 */ &&obj_finalize_KIND_LISPALLOC_chem__Coupling_O,
+  /* 385 */ &&obj_finalize_KIND_LISPALLOC_chem__RingCoupling_O,
+  /* 386 */ &&obj_finalize_KIND_LISPALLOC_chem__DirectionalCoupling_O,
+  /* 387 */ &&obj_finalize_KIND_LISPALLOC_chem__OligomerPart_Base_O,
+  /* 388 */ &&obj_finalize_KIND_LISPALLOC_chem__OligomerPart_Monomer_O,
+  /* 389 */ &&obj_finalize_KIND_LISPALLOC_chem__OligomerPart_Link_O,
+  /* 390 */ &&obj_finalize_KIND_LISPALLOC_chem__ChemInfoNode_O,
+  /* 391 */ &&obj_finalize_KIND_LISPALLOC_chem__RootMatchNode_O,
+  /* 392 */ &&obj_finalize_KIND_LISPALLOC_chem__AfterMatchBondTest_O,
+  /* 393 */ &&obj_finalize_KIND_LISPALLOC_chem__BondListMatchNode_O,
+  /* 394 */ &&obj_finalize_KIND_LISPALLOC_chem__Branch_O,
+  /* 395 */ &&obj_finalize_KIND_LISPALLOC_chem__Chain_O,
+  /* 396 */ &&obj_finalize_KIND_LISPALLOC_chem__BondMatchNode_O,
+  /* 397 */ &&obj_finalize_KIND_LISPALLOC_chem__BondTest_O,
+  /* 398 */ &&obj_finalize_KIND_LISPALLOC_chem__AntechamberBondTest_O,
+  /* 399 */ &&obj_finalize_KIND_LISPALLOC_chem__AtomOrBondMatchNode_O,
+  /* 400 */ &&obj_finalize_KIND_LISPALLOC_chem__AtomTest_O,
+  /* 401 */ &&obj_finalize_KIND_LISPALLOC_chem__RingTest_O,
+  /* 402 */ &&obj_finalize_KIND_LISPALLOC_chem__TagSet_O,
+  /* 403 */ &&obj_finalize_KIND_LISPALLOC_chem__Root_O,
+  /* 404 */ &&obj_finalize_KIND_LISPALLOC_chem__AntechamberRoot_O,
+  /* 405 */ &&obj_finalize_KIND_LISPALLOC_chem__SmartsRoot_O,
+  /* 406 */ &&obj_finalize_KIND_LISPALLOC_chem__ResidueTest_O,
+  /* 407 */ &&obj_finalize_KIND_LISPALLOC_chem__Logical_O,
+  /* 408 */ &&obj_finalize_KIND_LISPALLOC_chem__AntechamberFocusAtomMatch_O,
+  /* 409 */ &&obj_finalize_KIND_LISPALLOC_geom__OVector2_O,
+  /* 410 */ &&obj_finalize_KIND_LISPALLOC_chem__TopologyAtomInfo_O,
+  /* 411 */ &&obj_finalize_KIND_LISPALLOC_chem__NumericalFunction_O,
+  /* 412 */ &&obj_finalize_KIND_LISPALLOC_chem__ZMatrix_O,
+  /* 413 */ &&obj_finalize_KIND_LISPALLOC_chem__CipPrioritizer_O,
+  /* 414 */ &&obj_finalize_KIND_LISPALLOC_chem__TrajectoryFrame_O,
+  /* 415 */ &&obj_finalize_KIND_LISPALLOC_chem__AtomIdToAtomMap_O,
+  /* 416 */ &&obj_finalize_KIND_LISPALLOC_chem__ComplexRestraint_O,
+  /* 417 */ &&obj_finalize_KIND_LISPALLOC_chem__RestrainedExoCyclicAtom_O,
+  /* 418 */ &&obj_finalize_KIND_LISPALLOC_chem__RestrainedPiBond_O,
+  /* 419 */ &&obj_finalize_KIND_LISPALLOC_chem__AGEdge_O,
+  /* 420 */ &&obj_finalize_KIND_LISPALLOC_chem__ConformationExplorerEntry_O,
+  /* 421 */ &&obj_finalize_KIND_LISPALLOC_chem__MinimizerLog_O,
+  /* 422 */ &&obj_finalize_KIND_LISPALLOC_core__NativeVector_int_O,
+  /* 423 */ &&obj_finalize_KIND_LISPALLOC_chem__ChemDraw_O,
+  /* 424 */ &&obj_finalize_KIND_LISPALLOC_chem__PdbMonomerConnectivity_O,
+  /* 425 */ &&obj_finalize_KIND_LISPALLOC_chem__Matter_O,
+  /* 426 */ &&obj_finalize_KIND_LISPALLOC_chem__Residue_O,
+  /* 427 */ &&obj_finalize_KIND_LISPALLOC_chem__Atom_O,
+  /* 428 */ &&obj_finalize_KIND_LISPALLOC_chem__VirtualAtom_O,
+  /* 429 */ &&obj_finalize_KIND_LISPALLOC_chem__Aggregate_O,
+  /* 430 */ &&obj_finalize_KIND_LISPALLOC_chem__Molecule_O,
+  /* 431 */ &&obj_finalize_KIND_LISPALLOC_chem__Trajectory_O,
+  /* 432 */ &&obj_finalize_KIND_LISPALLOC_chem__ChemInfoMatch_O,
+  /* 433 */ &&obj_finalize_KIND_LISPALLOC_geom__OVector3_O,
+  /* 434 */ &&obj_finalize_KIND_LISPALLOC_chem__ConformationCollectionEntry_O,
+  /* 435 */ &&obj_finalize_KIND_LISPALLOC_chem__AtomReferenceBase_O,
+  /* 436 */ &&obj_finalize_KIND_LISPALLOC_chem__AtomReference_O,
+  /* 437 */ &&obj_finalize_KIND_LISPALLOC_chem__ImproperTorsion_O,
+  /* 438 */ &&obj_finalize_KIND_LISPALLOC_chem__AbstractLargeSquareMatrix_O,
+  /* 439 */ &&obj_finalize_KIND_LISPALLOC_chem__FullLargeSquareMatrix_O,
+  /* 440 */ &&obj_finalize_KIND_LISPALLOC_chem__SparseLargeSquareMatrix_O,
+  /* 441 */ &&obj_finalize_KIND_LISPALLOC_chem__ConformationExplorerMatch_O,
+  /* 442 */ &&obj_finalize_KIND_LISPALLOC_chem__Rotamer_O,
+  /* 443 */ &&obj_finalize_KIND_LISPALLOC_chem__OneTypeRule_O,
+  /* 444 */ &&obj_finalize_KIND_LISPALLOC_chem__ConstitutionAtoms_O,
+  /* 445 */ &&obj_finalize_KIND_LISPALLOC_chem__RingFinder_O,
+  /* 446 */ &&obj_finalize_KIND_LISPALLOC_mp__Process_O,
+  /* 447 */ &&obj_finalize_KIND_LISPALLOC_chem__Topology_O,
+  /* 448 */ &&obj_finalize_KIND_LISPALLOC_core__NativeVector_float_O,
+  /* 449 */ &&obj_finalize_KIND_LISPALLOC_chem__PdbMonomerDatabase_O,
+  /* 450 */ &&obj_finalize_KIND_LISPALLOC_chem__FrameRecognizer_O,
+  /* 451 */ &&obj_finalize_KIND_LISPALLOC_core__NativeVector_double_O,
+  /* 452 */ &&obj_finalize_KIND_LISPALLOC_chem__CDBond_O,
+  /* 453 */ &&obj_finalize_KIND_LISPALLOC_chem__CandoDatabase_O,
+  /* 454 */ &&obj_finalize_KIND_LISPALLOC_chem__VirtualSphere_O,
+  /* 455 */ &&obj_finalize_KIND_LISPALLOC_chem__EnergyComponent_O,
+  /* 456 */ &&obj_finalize_KIND_LISPALLOC_chem__EnergyDihedral_O,
+  /* 457 */ &&obj_finalize_KIND_LISPALLOC_chem__EnergyChiralRestraint_O,
+  /* 458 */ &&obj_finalize_KIND_LISPALLOC_chem__EnergyNonbond_O,
+  /* 459 */ &&obj_finalize_KIND_LISPALLOC_chem__EnergyImproperRestraint_O,
+  /* 460 */ &&obj_finalize_KIND_LISPALLOC_chem__EnergyRigidBodyComponent_O,
+  /* 461 */ &&obj_finalize_KIND_LISPALLOC_chem__EnergyRigidBodyNonbond_O,
+  /* 462 */ &&obj_finalize_KIND_LISPALLOC_chem__EnergyRigidBodyStaple_O,
   /* 463 */ &&obj_finalize_KIND_LISPALLOC_chem__EnergyAnchorRestraint_O,
   /* 464 */ &&obj_finalize_KIND_LISPALLOC_chem__EnergyFixedNonbondRestraint_O,
   /* 465 */ &&obj_finalize_KIND_LISPALLOC_chem__EnergyAngle_O,
@@ -18559,206 +18951,207 @@ static void* OBJ_FINALIZE_table[] = {
   /* 471 */ &&obj_finalize_KIND_LISPALLOC_chem__SpanningLoop_O,
   /* 472 */ &&obj_finalize_KIND_LISPALLOC_chem__AtomId_O,
   /* 473 */ &&obj_finalize_KIND_LISPALLOC_chem__Bond_O,
-  /* 474 */ &&obj_finalize_KIND_LISPALLOC_chem__EnergyFunction_O,
-  /* 475 */ &&obj_finalize_KIND_LISPALLOC_chem__ConformationExplorerEntryStage_O,
-  /* 476 */ &&obj_finalize_KIND_LISPALLOC_chem__FFNonbondCrossTermTable_O,
-  /* 477 */ &&obj_finalize_KIND_LISPALLOC_chem__PdbWriter_O,
-  /* 478 */ &&obj_finalize_KIND_LISPALLOC_chem__StereoInformation_O,
-  /* 479 */ &&obj_finalize_KIND_LISPALLOC_chem__StructureComparer_O,
-  /* 480 */ &&obj_finalize_KIND_LISPALLOC_chem__TypeAssignmentRules_O,
-  /* 481 */ &&obj_finalize_KIND_LISPALLOC_chem__ConstitutionAtom_O,
-  /* 482 */ &&obj_finalize_KIND_LISPALLOC_chem__ConstitutionVirtualAtom_O,
-  /* 483 */ &&obj_finalize_KIND_LISPALLOC_chem__ZMatrixEntry_O,
-  /* 484 */ &&obj_finalize_KIND_LISPALLOC_chem__CDNode_O,
-  /* 485 */ &&obj_finalize_KIND_LISPALLOC_units__Quantity_O,
-  /* 486 */ &&obj_finalize_KIND_LISPALLOC_chem__Twister_O,
-  /* 487 */ &&obj_finalize_KIND_LISPALLOC_chem__MacroModelFile_O,
-  /* 488 */ &&obj_finalize_KIND_LISPALLOC_chem__SearchStatistics_O,
-  /* 489 */ &&obj_finalize_KIND_LISPALLOC_chem__ChemInfo_O,
-  /* 490 */ &&obj_finalize_KIND_LISPALLOC_chem__WildElementDict_O,
-  /* 491 */ &&obj_finalize_KIND_LISPALLOC_chem__Structure_Old_List_O,
-  /* 492 */ &&obj_finalize_KIND_LISPALLOC_adapt__StringSet_O,
-  /* 493 */ &&obj_finalize_KIND_LISPALLOC_chem__CDFragment_O,
-  /* 494 */ &&obj_finalize_KIND_LISPALLOC_chem__PdbReader_O,
-  /* 495 */ &&obj_finalize_KIND_LISPALLOC_geom__OMatrix_O,
-  /* 496 */ &&obj_finalize_KIND_LISPALLOC_chem__FFBaseDb_O,
-  /* 497 */ &&obj_finalize_KIND_LISPALLOC_chem__FFVdwDb_O,
-  /* 498 */ &&obj_finalize_KIND_LISPALLOC_chem__FFTypesDb_O,
-  /* 499 */ &&obj_finalize_KIND_LISPALLOC_chem__FFParameterBaseDb_O,
-  /* 500 */ &&obj_finalize_KIND_LISPALLOC_chem__FFPtorDb_O,
-  /* 501 */ &&obj_finalize_KIND_LISPALLOC_chem__FFAngleDb_O,
-  /* 502 */ &&obj_finalize_KIND_LISPALLOC_chem__FFStretchDb_O,
-  /* 503 */ &&obj_finalize_KIND_LISPALLOC_chem__FFNonbondDb_O,
-  /* 504 */ &&obj_finalize_KIND_LISPALLOC_chem__FFItorDb_O,
-  /* 505 */ &&obj_finalize_KIND_LISPALLOC_chem__AGVertex_O,
-  /* 506 */ &&obj_finalize_KIND_LISPALLOC_chem__ReadAmberParameters_O,
-  /* 507 */ &&obj_finalize_KIND_LISPALLOC_geom__BoundingBox_O,
-  /* 508 */ &&obj_finalize_KIND_LISPALLOC_chem__SpecificContextSet_O,
-  /* 509 */ &&obj_finalize_KIND_LISPALLOC_chem__ZMatrixInternal_O,
-  /* 510 */ &&obj_finalize_KIND_LISPALLOC_chem__ZMatrixAngleInternal_O,
-  /* 511 */ &&obj_finalize_KIND_LISPALLOC_chem__ZMatrixDihedralInternal_O,
-  /* 512 */ &&obj_finalize_KIND_LISPALLOC_chem__ZMatrixBondInternal_O,
-  /* 513 */ &&obj_finalize_KIND_LISPALLOC_chem__ConformationCollection_O,
-  /* 514 */ &&obj_finalize_KIND_LISPALLOC_chem__SuperposableConformationCollection_O,
-  /* 515 */ &&obj_finalize_KIND_LISPALLOC_clcenv__Info_O,
-  /* 516 */ &&obj_finalize_KIND_LISPALLOC_clcenv__VariableInfo_O,
-  /* 517 */ &&obj_finalize_KIND_LISPALLOC_clcenv__SpecialVariableInfo_O,
-  /* 518 */ &&obj_finalize_KIND_LISPALLOC_clcenv__ConstantVariableInfo_O,
-  /* 519 */ &&obj_finalize_KIND_LISPALLOC_clcenv__SymbolMacroInfo_O,
-  /* 520 */ &&obj_finalize_KIND_LISPALLOC_clcenv__LexicalVariableInfo_O,
-  /* 521 */ &&obj_finalize_KIND_LISPALLOC_clcenv__BlockInfo_O,
-  /* 522 */ &&obj_finalize_KIND_LISPALLOC_clcenv__FunctionInfo_O,
-  /* 523 */ &&obj_finalize_KIND_LISPALLOC_clcenv__LocalFunctionInfo_O,
-  /* 524 */ &&obj_finalize_KIND_LISPALLOC_clcenv__LocalMacroInfo_O,
-  /* 525 */ &&obj_finalize_KIND_LISPALLOC_clcenv__GlobalFunctionInfo_O,
-  /* 526 */ &&obj_finalize_KIND_LISPALLOC_clcenv__SpecialOperatorInfo_O,
-  /* 527 */ &&obj_finalize_KIND_LISPALLOC_clcenv__LambdaNameInfo_O,
-  /* 528 */ &&obj_finalize_KIND_LISPALLOC_clcenv__GlobalMacroInfo_O,
-  /* 529 */ &&obj_finalize_KIND_LISPALLOC_clcenv__OptimizeInfo_O,
-  /* 530 */ &&obj_finalize_KIND_LISPALLOC_chem__ConformationExplorer_O,
-  /* 531 */ &&obj_finalize_KIND_LISPALLOC_units__Unit_O,
-  /* 532 */ &&obj_finalize_KIND_LISPALLOC_units__NamedUnit_O,
-  /* 533 */ &&obj_finalize_KIND_LISPALLOC_clcenv__Entry_O,
-  /* 534 */ &&obj_finalize_KIND_LISPALLOC_clcenv__Optimize_O,
-  /* 535 */ &&obj_finalize_KIND_LISPALLOC_clcenv__Closure_O,
-  /* 536 */ &&obj_finalize_KIND_LISPALLOC_clcenv__Block_O,
-  /* 537 */ &&obj_finalize_KIND_LISPALLOC_clcenv__GlobalEnvironment_O,
-  /* 538 */ &&obj_finalize_KIND_LISPALLOC_clcenv__VariableIgnore_O,
-  /* 539 */ &&obj_finalize_KIND_LISPALLOC_clcenv__Macro_O,
-  /* 540 */ &&obj_finalize_KIND_LISPALLOC_clcenv__VariableType_O,
-  /* 541 */ &&obj_finalize_KIND_LISPALLOC_clcenv__Tag_O,
-  /* 542 */ &&obj_finalize_KIND_LISPALLOC_clcenv__Function_O,
-  /* 543 */ &&obj_finalize_KIND_LISPALLOC_clcenv__VariableDynamicExtent_O,
-  /* 544 */ &&obj_finalize_KIND_LISPALLOC_clcenv__LexicalVariable_O,
-  /* 545 */ &&obj_finalize_KIND_LISPALLOC_clcenv__FunctionDynamicExtent_O,
-  /* 546 */ &&obj_finalize_KIND_LISPALLOC_clcenv__SpecialVariable_O,
-  /* 547 */ &&obj_finalize_KIND_LISPALLOC_clcenv__LambdaName_O,
-  /* 548 */ &&obj_finalize_KIND_LISPALLOC_clcenv__FunctionIgnore_O,
-  /* 549 */ &&obj_finalize_KIND_LISPALLOC_clcenv__SymbolMacro_O,
-  /* 550 */ &&obj_finalize_KIND_LISPALLOC_clcenv__Inline_O,
-  /* 551 */ &&obj_finalize_KIND_LISPALLOC_clcenv__FunctionType_O,
-  /* 552 */ &&obj_finalize_KIND_LISPALLOC_llvmo__DITypeRefArray_O,
-  /* 553 */ &&obj_finalize_KIND_LISPALLOC_chem__CalculatePosition_O,
-  /* 554 */ &&obj_finalize_KIND_LISPALLOC_chem__CalculatePositionAlongBond_O,
-  /* 555 */ &&obj_finalize_KIND_LISPALLOC_chem__CalculatePositionRelativeToOrigin_O,
-  /* 556 */ &&obj_finalize_KIND_LISPALLOC_chem__CalculatePositionUsingInternals_O,
-  /* 557 */ &&obj_finalize_KIND_LISPALLOC_chem__InfoDb_O,
-  /* 558 */ &&obj_finalize_KIND_LISPALLOC_chem__ReportBase_O,
-  /* 559 */ &&obj_finalize_KIND_LISPALLOC_chem__MessageReport_O,
-  /* 560 */ &&obj_finalize_KIND_LISPALLOC_chem__StepReport_O,
-  /* 561 */ &&obj_finalize_KIND_LISPALLOC_chem__ForceMatchReport_O,
-  /* 562 */ &&obj_finalize_KIND_LISPALLOC_chem__Restraint_O,
-  /* 563 */ &&obj_finalize_KIND_LISPALLOC_chem__RestraintFixedNonbond_O,
-  /* 564 */ &&obj_finalize_KIND_LISPALLOC_chem__RestraintDihedral_O,
-  /* 565 */ &&obj_finalize_KIND_LISPALLOC_chem__RestraintChiral_O,
-  /* 566 */ &&obj_finalize_KIND_LISPALLOC_chem__RestraintAngle_O,
-  /* 567 */ &&obj_finalize_KIND_LISPALLOC_chem__RestraintDistance_O,
-  /* 568 */ &&obj_finalize_KIND_LISPALLOC_chem__RestraintAnchor_O,
-  /* 569 */ &&obj_finalize_KIND_LISPALLOC_chem__Structure_Old_ListEntry_O,
-  /* 570 */ &&obj_finalize_KIND_LISPALLOC_chem__Minimizer_O,
-  /* 571 */ &&obj_finalize_KIND_LISPALLOC_chem__PathMessage_O,
-  /* 572 */ &&obj_finalize_KIND_LISPALLOC_chem__SpecificContext_O,
-  /* 573 */ &&obj_finalize_KIND_LISPALLOC_chem__StatusTracker_O,
-  /* 574 */ &&obj_finalize_KIND_LISPALLOC_geom__Color_O,
-  /* 575 */ &&obj_finalize_KIND_LISPALLOC_chem__CDText_O,
-  /* 576 */ &&obj_finalize_KIND_LISPALLOC_chem__ProperTorsion_O,
-  /* 577 */ &&obj_finalize_KIND_LISPALLOC_chem__AtomIndexer_O,
-  /* 578 */ &&obj_finalize_KIND_LISPALLOC_llvmo__ClaspJIT_O,
-  /* 579 */ &&obj_finalize_KIND_LISPALLOC_adapt__StringList_O,
-  /* 580 */ &&obj_finalize_KIND_LISPALLOC_core__SourceManager_O,
-  /* 581 */ &&obj_finalize_KIND_LISPALLOC_core__Environment_O,
-  /* 582 */ &&obj_finalize_KIND_LISPALLOC_core__LexicalEnvironment_O,
-  /* 583 */ &&obj_finalize_KIND_LISPALLOC_core__CompileTimeEnvironment_O,
-  /* 584 */ &&obj_finalize_KIND_LISPALLOC_core__FunctionContainerEnvironment_O,
-  /* 585 */ &&obj_finalize_KIND_LISPALLOC_core__BlockEnvironment_O,
-  /* 586 */ &&obj_finalize_KIND_LISPALLOC_core__CatchEnvironment_O,
-  /* 587 */ &&obj_finalize_KIND_LISPALLOC_core__UnwindProtectEnvironment_O,
-  /* 588 */ &&obj_finalize_KIND_LISPALLOC_core__SymbolMacroletEnvironment_O,
-  /* 589 */ &&obj_finalize_KIND_LISPALLOC_core__MacroletEnvironment_O,
-  /* 590 */ &&obj_finalize_KIND_LISPALLOC_core__StackValueEnvironment_O,
-  /* 591 */ &&obj_finalize_KIND_LISPALLOC_core__RuntimeVisibleEnvironment_O,
-  /* 592 */ &&obj_finalize_KIND_LISPALLOC_core__TagbodyEnvironment_O,
-  /* 593 */ &&obj_finalize_KIND_LISPALLOC_core__FunctionValueEnvironment_O,
-  /* 594 */ &&obj_finalize_KIND_LISPALLOC_core__ValueEnvironment_O,
-  /* 595 */ &&obj_finalize_KIND_LISPALLOC_core__GlueEnvironment_O,
-  /* 596 */ &&obj_finalize_KIND_LISPALLOC_core__ActivationFrame_O,
-  /* 597 */ &&obj_finalize_KIND_LISPALLOC_core__ValueFrame_O,
-  /* 598 */ &&obj_finalize_KIND_LISPALLOC_core__TagbodyFrame_O,
-  /* 599 */ &&obj_finalize_KIND_LISPALLOC_core__FunctionFrame_O,
-  /* 600 */ &&obj_finalize_KIND_LISPALLOC_core__Archive_O,
-  /* 601 */ &&obj_finalize_KIND_LISPALLOC_core__SaveArchive_O,
-  /* 602 */ &&obj_finalize_KIND_LISPALLOC_core__SexpSaveArchive_O,
-  /* 603 */ &&obj_finalize_KIND_LISPALLOC_core__LoadArchive_O,
-  /* 604 */ &&obj_finalize_KIND_LISPALLOC_core__SexpLoadArchive_O,
-  /* 605 */ &&obj_finalize_KIND_LISPALLOC_core__WeakPointer_O,
-  /* 606 */ &&obj_finalize_KIND_LISPALLOC_adapt__ObjectSet_O,
-  /* 607 */ &&obj_finalize_KIND_LISPALLOC_core__SymbolToEnumConverter_O,
-  /* 608 */ &&obj_finalize_KIND_LISPALLOC_llvmo__InsertPoint_O,
-  /* 610 */ &&obj_finalize_KIND_LISPALLOC_core__DirectoryEntry_O,
-  /* 611 */ &&obj_finalize_KIND_LISPALLOC_llvmo__DebugLoc_O,
-  /* 612 */ &&obj_finalize_KIND_LISPALLOC_core__Number_O,
-  /* 613 */ &&obj_finalize_KIND_LISPALLOC_core__Complex_O,
-  /* 614 */ &&obj_finalize_KIND_LISPALLOC_core__Real_O,
-  /* 615 */ &&obj_finalize_KIND_LISPALLOC_core__Float_O,
-  /* 616 */ &&obj_finalize_KIND_LISPALLOC_core__SingleFloat_dummy_O,
-  /* 617 */ &&obj_finalize_KIND_LISPALLOC_core__ShortFloat_O,
-  /* 618 */ &&obj_finalize_KIND_LISPALLOC_core__LongFloat_O,
-  /* 619 */ &&obj_finalize_KIND_LISPALLOC_core__DoubleFloat_O,
-  /* 620 */ &&obj_finalize_KIND_LISPALLOC_core__Rational_O,
-  /* 621 */ &&obj_finalize_KIND_LISPALLOC_core__Ratio_O,
-  /* 622 */ &&obj_finalize_KIND_LISPALLOC_core__Integer_O,
-  /* 623 */ &&obj_finalize_KIND_LISPALLOC_core__Bignum_O,
-  /* 624 */ &&obj_finalize_KIND_LISPALLOC_core__Fixnum_dummy_O,
-  /* 625 */ &&obj_finalize_KIND_LISPALLOC_core__Pointer_O,
-  /* 626 */ &&obj_finalize_KIND_LISPALLOC_core__Cache_O,
-  /* 627 */ &&obj_finalize_KIND_LISPALLOC_core__Reader_O,
-  /* 629 */ &&obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_double_,
-  /* 630 */ &&obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__StereoisomerAtom_O__,
-  /* 631 */ &&obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__FFVdw_O__,
-  /* 632 */ &&obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_chem__EnergyStretch_,
-  /* 633 */ &&obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_chem__FixedNonbondRestraint_,
-  /* 634 */ &&obj_finalize_KIND_GCARRAY_gctools__GCArray_moveable_unsigned_char_,
-  /* 635 */ &&obj_finalize_KIND_GCARRAY_gctools__GCArray_moveable_signed_char_,
-  /* 636 */ &&obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__ConformationExplorerEntryStage_O__,
-  /* 637 */ &&obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__AGEdge_O__,
-  /* 638 */ &&obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__Structure_Old_ListEntry_O__,
-  /* 639 */ &&obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__AtomIndexer_O___,
-  /* 640 */ &&obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__Molecule_O___,
-  /* 641 */ &&obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_chem__AtomInfo_,
-  /* 642 */ &&obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_core__AuxArgument_,
-  /* 643 */ &&obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_core__ExceptionEntry_,
-  /* 644 */ &&obj_finalize_KIND_GCARRAY_gctools__GCArray_moveable_unsigned_short_,
-  /* 645 */ &&obj_finalize_KIND_GCARRAY_gctools__GCArray_moveable_long_,
-  /* 646 */ &&obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__OneTypeRule_O__,
-  /* 647 */ &&obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_chem__ResidueOut_,
-  /* 648 */ &&obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_core__T_O___,
-  /* 649 */ &&obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__CDBond_O__,
-  /* 650 */ &&obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__CDFragment_O__,
-  /* 651 */ &&obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__SourceFileInfo_O__,
-  /* 652 */ &&obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_chem__Atom_O__gctools__smart_ptr_chem__CDNode_O___,
-  /* 653 */ &&obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__EntityNameSetBase_O___,
-  /* 654 */ &&obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__Molecule_O__,
-  /* 655 */ &&obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__Coupling_O__,
-  /* 656 */ &&obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__SimpleBitVector_O__,
-  /* 657 */ &&obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_chem__EnergyDihedral_,
-  /* 658 */ &&obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__Topology_O__,
-  /* 659 */ &&obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__SpecificContext_O___,
-  /* 660 */ &&obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__Entity_O___,
-  /* 661 */ &&obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__ZMatrixInternal_O__,
-  /* 662 */ &&obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_adapt__QDomNode_O__,
-  /* 663 */ &&obj_finalize_KIND_GCARRAY_gctools__GCArray_moveable_short_,
-  /* 664 */ &&obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_core__DoubleFloat_O___,
-  /* 665 */ &&obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__Stereoisomer_O___,
-  /* 666 */ &&obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_core__T_O_P_,
-  /* 667 */ &&obj_finalize_KIND_GCARRAY_gctools__GCArray_moveable_int_,
-  /* 668 */ &&obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_chem__AtomPdbRec_,
-  /* 669 */ &&obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_chem__Atom_O__unsigned_int__,
-  /* 670 */ &&obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__Monomer_O__,
-  /* 671 */ &&obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_chem__EnergyAnchorRestraint_,
-  /* 672 */ &&obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__Plug_O___,
-  /* 673 */ &&obj_finalize_KIND_GCARRAY_gctools__GCArray_moveable_Vector3_,
-  /* 674 */ &&obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__StereoisomerAtoms_O___,
-  /* 675 */ &&obj_finalize_KIND_GCBITUNITCONTAINER1_gctools__GCBitUnitArray_moveable_1_unsigned_int_int_,
+  /* 474 */ &&obj_finalize_KIND_LISPALLOC_chem__ConformationExplorerEntryStage_O,
+  /* 475 */ &&obj_finalize_KIND_LISPALLOC_chem__FFNonbondCrossTermTable_O,
+  /* 476 */ &&obj_finalize_KIND_LISPALLOC_chem__PdbWriter_O,
+  /* 477 */ &&obj_finalize_KIND_LISPALLOC_chem__StereoInformation_O,
+  /* 478 */ &&obj_finalize_KIND_LISPALLOC_chem__StructureComparer_O,
+  /* 479 */ &&obj_finalize_KIND_LISPALLOC_chem__TypeAssignmentRules_O,
+  /* 480 */ &&obj_finalize_KIND_LISPALLOC_chem__ConstitutionAtom_O,
+  /* 481 */ &&obj_finalize_KIND_LISPALLOC_chem__ConstitutionVirtualAtom_O,
+  /* 482 */ &&obj_finalize_KIND_LISPALLOC_chem__ZMatrixEntry_O,
+  /* 483 */ &&obj_finalize_KIND_LISPALLOC_chem__CDNode_O,
+  /* 484 */ &&obj_finalize_KIND_LISPALLOC_units__Quantity_O,
+  /* 485 */ &&obj_finalize_KIND_LISPALLOC_chem__Twister_O,
+  /* 486 */ &&obj_finalize_KIND_LISPALLOC_chem__MacroModelFile_O,
+  /* 487 */ &&obj_finalize_KIND_LISPALLOC_chem__SearchStatistics_O,
+  /* 488 */ &&obj_finalize_KIND_LISPALLOC_chem__ChemInfo_O,
+  /* 489 */ &&obj_finalize_KIND_LISPALLOC_chem__WildElementDict_O,
+  /* 490 */ &&obj_finalize_KIND_LISPALLOC_chem__Structure_Old_List_O,
+  /* 491 */ &&obj_finalize_KIND_LISPALLOC_adapt__StringSet_O,
+  /* 492 */ &&obj_finalize_KIND_LISPALLOC_chem__CDFragment_O,
+  /* 493 */ &&obj_finalize_KIND_LISPALLOC_chem__PdbReader_O,
+  /* 494 */ &&obj_finalize_KIND_LISPALLOC_geom__OMatrix_O,
+  /* 495 */ &&obj_finalize_KIND_LISPALLOC_chem__FFBaseDb_O,
+  /* 496 */ &&obj_finalize_KIND_LISPALLOC_chem__FFVdwDb_O,
+  /* 497 */ &&obj_finalize_KIND_LISPALLOC_chem__FFTypesDb_O,
+  /* 498 */ &&obj_finalize_KIND_LISPALLOC_chem__FFParameterBaseDb_O,
+  /* 499 */ &&obj_finalize_KIND_LISPALLOC_chem__FFPtorDb_O,
+  /* 500 */ &&obj_finalize_KIND_LISPALLOC_chem__FFAngleDb_O,
+  /* 501 */ &&obj_finalize_KIND_LISPALLOC_chem__FFStretchDb_O,
+  /* 502 */ &&obj_finalize_KIND_LISPALLOC_chem__FFNonbondDb_O,
+  /* 503 */ &&obj_finalize_KIND_LISPALLOC_chem__FFItorDb_O,
+  /* 504 */ &&obj_finalize_KIND_LISPALLOC_chem__AGVertex_O,
+  /* 505 */ &&obj_finalize_KIND_LISPALLOC_chem__ReadAmberParameters_O,
+  /* 506 */ &&obj_finalize_KIND_LISPALLOC_geom__BoundingBox_O,
+  /* 507 */ &&obj_finalize_KIND_LISPALLOC_chem__SpecificContextSet_O,
+  /* 508 */ &&obj_finalize_KIND_LISPALLOC_chem__ZMatrixInternal_O,
+  /* 509 */ &&obj_finalize_KIND_LISPALLOC_chem__ZMatrixAngleInternal_O,
+  /* 510 */ &&obj_finalize_KIND_LISPALLOC_chem__ZMatrixDihedralInternal_O,
+  /* 511 */ &&obj_finalize_KIND_LISPALLOC_chem__ZMatrixBondInternal_O,
+  /* 512 */ &&obj_finalize_KIND_LISPALLOC_chem__ConformationCollection_O,
+  /* 513 */ &&obj_finalize_KIND_LISPALLOC_chem__SuperposableConformationCollection_O,
+  /* 514 */ &&obj_finalize_KIND_LISPALLOC_clcenv__Info_O,
+  /* 515 */ &&obj_finalize_KIND_LISPALLOC_clcenv__VariableInfo_O,
+  /* 516 */ &&obj_finalize_KIND_LISPALLOC_clcenv__SpecialVariableInfo_O,
+  /* 517 */ &&obj_finalize_KIND_LISPALLOC_clcenv__ConstantVariableInfo_O,
+  /* 518 */ &&obj_finalize_KIND_LISPALLOC_clcenv__SymbolMacroInfo_O,
+  /* 519 */ &&obj_finalize_KIND_LISPALLOC_clcenv__LexicalVariableInfo_O,
+  /* 520 */ &&obj_finalize_KIND_LISPALLOC_clcenv__BlockInfo_O,
+  /* 521 */ &&obj_finalize_KIND_LISPALLOC_clcenv__FunctionInfo_O,
+  /* 522 */ &&obj_finalize_KIND_LISPALLOC_clcenv__LocalFunctionInfo_O,
+  /* 523 */ &&obj_finalize_KIND_LISPALLOC_clcenv__LocalMacroInfo_O,
+  /* 524 */ &&obj_finalize_KIND_LISPALLOC_clcenv__GlobalFunctionInfo_O,
+  /* 525 */ &&obj_finalize_KIND_LISPALLOC_clcenv__SpecialOperatorInfo_O,
+  /* 526 */ &&obj_finalize_KIND_LISPALLOC_clcenv__LambdaNameInfo_O,
+  /* 527 */ &&obj_finalize_KIND_LISPALLOC_clcenv__GlobalMacroInfo_O,
+  /* 528 */ &&obj_finalize_KIND_LISPALLOC_clcenv__OptimizeInfo_O,
+  /* 529 */ &&obj_finalize_KIND_LISPALLOC_chem__ConformationExplorer_O,
+  /* 530 */ &&obj_finalize_KIND_LISPALLOC_units__Unit_O,
+  /* 531 */ &&obj_finalize_KIND_LISPALLOC_units__NamedUnit_O,
+  /* 532 */ &&obj_finalize_KIND_LISPALLOC_clcenv__Entry_O,
+  /* 533 */ &&obj_finalize_KIND_LISPALLOC_clcenv__Optimize_O,
+  /* 534 */ &&obj_finalize_KIND_LISPALLOC_clcenv__Closure_O,
+  /* 535 */ &&obj_finalize_KIND_LISPALLOC_clcenv__Block_O,
+  /* 536 */ &&obj_finalize_KIND_LISPALLOC_clcenv__GlobalEnvironment_O,
+  /* 537 */ &&obj_finalize_KIND_LISPALLOC_clcenv__VariableIgnore_O,
+  /* 538 */ &&obj_finalize_KIND_LISPALLOC_clcenv__Macro_O,
+  /* 539 */ &&obj_finalize_KIND_LISPALLOC_clcenv__VariableType_O,
+  /* 540 */ &&obj_finalize_KIND_LISPALLOC_clcenv__Tag_O,
+  /* 541 */ &&obj_finalize_KIND_LISPALLOC_clcenv__Function_O,
+  /* 542 */ &&obj_finalize_KIND_LISPALLOC_clcenv__VariableDynamicExtent_O,
+  /* 543 */ &&obj_finalize_KIND_LISPALLOC_clcenv__LexicalVariable_O,
+  /* 544 */ &&obj_finalize_KIND_LISPALLOC_clcenv__FunctionDynamicExtent_O,
+  /* 545 */ &&obj_finalize_KIND_LISPALLOC_clcenv__SpecialVariable_O,
+  /* 546 */ &&obj_finalize_KIND_LISPALLOC_clcenv__LambdaName_O,
+  /* 547 */ &&obj_finalize_KIND_LISPALLOC_clcenv__FunctionIgnore_O,
+  /* 548 */ &&obj_finalize_KIND_LISPALLOC_clcenv__SymbolMacro_O,
+  /* 549 */ &&obj_finalize_KIND_LISPALLOC_clcenv__Inline_O,
+  /* 550 */ &&obj_finalize_KIND_LISPALLOC_clcenv__FunctionType_O,
+  /* 551 */ &&obj_finalize_KIND_LISPALLOC_llvmo__DITypeRefArray_O,
+  /* 552 */ &&obj_finalize_KIND_LISPALLOC_chem__CalculatePosition_O,
+  /* 553 */ &&obj_finalize_KIND_LISPALLOC_chem__CalculatePositionAlongBond_O,
+  /* 554 */ &&obj_finalize_KIND_LISPALLOC_chem__CalculatePositionRelativeToOrigin_O,
+  /* 555 */ &&obj_finalize_KIND_LISPALLOC_chem__CalculatePositionUsingInternals_O,
+  /* 556 */ &&obj_finalize_KIND_LISPALLOC_chem__InfoDb_O,
+  /* 557 */ &&obj_finalize_KIND_LISPALLOC_chem__ReportBase_O,
+  /* 558 */ &&obj_finalize_KIND_LISPALLOC_chem__MessageReport_O,
+  /* 559 */ &&obj_finalize_KIND_LISPALLOC_chem__StepReport_O,
+  /* 560 */ &&obj_finalize_KIND_LISPALLOC_chem__ForceMatchReport_O,
+  /* 561 */ &&obj_finalize_KIND_LISPALLOC_chem__Restraint_O,
+  /* 562 */ &&obj_finalize_KIND_LISPALLOC_chem__RestraintFixedNonbond_O,
+  /* 563 */ &&obj_finalize_KIND_LISPALLOC_chem__RestraintDihedral_O,
+  /* 564 */ &&obj_finalize_KIND_LISPALLOC_chem__RestraintChiral_O,
+  /* 565 */ &&obj_finalize_KIND_LISPALLOC_chem__RestraintAngle_O,
+  /* 566 */ &&obj_finalize_KIND_LISPALLOC_chem__RestraintDistance_O,
+  /* 567 */ &&obj_finalize_KIND_LISPALLOC_chem__RestraintAnchor_O,
+  /* 568 */ &&obj_finalize_KIND_LISPALLOC_chem__Structure_Old_ListEntry_O,
+  /* 569 */ &&obj_finalize_KIND_LISPALLOC_chem__Minimizer_O,
+  /* 570 */ &&obj_finalize_KIND_LISPALLOC_chem__PathMessage_O,
+  /* 571 */ &&obj_finalize_KIND_LISPALLOC_chem__SpecificContext_O,
+  /* 572 */ &&obj_finalize_KIND_LISPALLOC_chem__StatusTracker_O,
+  /* 573 */ &&obj_finalize_KIND_LISPALLOC_geom__Color_O,
+  /* 574 */ &&obj_finalize_KIND_LISPALLOC_chem__CDText_O,
+  /* 575 */ &&obj_finalize_KIND_LISPALLOC_chem__ProperTorsion_O,
+  /* 576 */ &&obj_finalize_KIND_LISPALLOC_chem__AtomIndexer_O,
+  /* 577 */ &&obj_finalize_KIND_LISPALLOC_llvmo__ClaspJIT_O,
+  /* 578 */ &&obj_finalize_KIND_LISPALLOC_adapt__StringList_O,
+  /* 579 */ &&obj_finalize_KIND_LISPALLOC_core__SourceManager_O,
+  /* 580 */ &&obj_finalize_KIND_LISPALLOC_core__Environment_O,
+  /* 581 */ &&obj_finalize_KIND_LISPALLOC_core__LexicalEnvironment_O,
+  /* 582 */ &&obj_finalize_KIND_LISPALLOC_core__CompileTimeEnvironment_O,
+  /* 583 */ &&obj_finalize_KIND_LISPALLOC_core__FunctionContainerEnvironment_O,
+  /* 584 */ &&obj_finalize_KIND_LISPALLOC_core__BlockEnvironment_O,
+  /* 585 */ &&obj_finalize_KIND_LISPALLOC_core__CatchEnvironment_O,
+  /* 586 */ &&obj_finalize_KIND_LISPALLOC_core__UnwindProtectEnvironment_O,
+  /* 587 */ &&obj_finalize_KIND_LISPALLOC_core__SymbolMacroletEnvironment_O,
+  /* 588 */ &&obj_finalize_KIND_LISPALLOC_core__MacroletEnvironment_O,
+  /* 589 */ &&obj_finalize_KIND_LISPALLOC_core__StackValueEnvironment_O,
+  /* 590 */ &&obj_finalize_KIND_LISPALLOC_core__RuntimeVisibleEnvironment_O,
+  /* 591 */ &&obj_finalize_KIND_LISPALLOC_core__TagbodyEnvironment_O,
+  /* 592 */ &&obj_finalize_KIND_LISPALLOC_core__FunctionValueEnvironment_O,
+  /* 593 */ &&obj_finalize_KIND_LISPALLOC_core__ValueEnvironment_O,
+  /* 594 */ &&obj_finalize_KIND_LISPALLOC_core__GlueEnvironment_O,
+  /* 595 */ &&obj_finalize_KIND_LISPALLOC_core__ActivationFrame_O,
+  /* 596 */ &&obj_finalize_KIND_LISPALLOC_core__ValueFrame_O,
+  /* 597 */ &&obj_finalize_KIND_LISPALLOC_core__TagbodyFrame_O,
+  /* 598 */ &&obj_finalize_KIND_LISPALLOC_core__FunctionFrame_O,
+  /* 599 */ &&obj_finalize_KIND_LISPALLOC_core__Archive_O,
+  /* 600 */ &&obj_finalize_KIND_LISPALLOC_core__SaveArchive_O,
+  /* 601 */ &&obj_finalize_KIND_LISPALLOC_core__SexpSaveArchive_O,
+  /* 602 */ &&obj_finalize_KIND_LISPALLOC_core__LoadArchive_O,
+  /* 603 */ &&obj_finalize_KIND_LISPALLOC_core__SexpLoadArchive_O,
+  /* 604 */ &&obj_finalize_KIND_LISPALLOC_core__WeakPointer_O,
+  /* 605 */ &&obj_finalize_KIND_LISPALLOC_adapt__ObjectSet_O,
+  /* 606 */ &&obj_finalize_KIND_LISPALLOC_core__SymbolToEnumConverter_O,
+  /* 607 */ &&obj_finalize_KIND_LISPALLOC_llvmo__InsertPoint_O,
+  /* 608 */ &&obj_finalize_KIND_LISPALLOC_core__DirectoryEntry_O,
+  /* 609 */ &&obj_finalize_KIND_LISPALLOC_llvmo__DebugLoc_O,
+  /* 610 */ &&obj_finalize_KIND_LISPALLOC_core__Number_O,
+  /* 611 */ &&obj_finalize_KIND_LISPALLOC_core__Complex_O,
+  /* 612 */ &&obj_finalize_KIND_LISPALLOC_core__Real_O,
+  /* 613 */ &&obj_finalize_KIND_LISPALLOC_core__Float_O,
+  /* 614 */ &&obj_finalize_KIND_LISPALLOC_core__SingleFloat_dummy_O,
+  /* 615 */ &&obj_finalize_KIND_LISPALLOC_core__ShortFloat_O,
+  /* 616 */ &&obj_finalize_KIND_LISPALLOC_core__LongFloat_O,
+  /* 617 */ &&obj_finalize_KIND_LISPALLOC_core__DoubleFloat_O,
+  /* 618 */ &&obj_finalize_KIND_LISPALLOC_core__Rational_O,
+  /* 619 */ &&obj_finalize_KIND_LISPALLOC_core__Ratio_O,
+  /* 620 */ &&obj_finalize_KIND_LISPALLOC_core__Integer_O,
+  /* 621 */ &&obj_finalize_KIND_LISPALLOC_core__Bignum_O,
+  /* 622 */ &&obj_finalize_KIND_LISPALLOC_core__Fixnum_dummy_O,
+  /* 623 */ &&obj_finalize_KIND_LISPALLOC_core__Pointer_O,
+  /* 624 */ &&obj_finalize_KIND_LISPALLOC_core__Cache_O,
+  /* 625 */ &&obj_finalize_KIND_LISPALLOC_core__Reader_O,
+  /* 627 */ &&obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_double_,
+  /* 628 */ &&obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__StereoisomerAtom_O__,
+  /* 629 */ &&obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_chem__EnergyRigidBodyStaple_,
+  /* 630 */ &&obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__FFVdw_O__,
+  /* 631 */ &&obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_chem__EnergyStretch_,
+  /* 632 */ &&obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_chem__FixedNonbondRestraint_,
+  /* 633 */ &&obj_finalize_KIND_GCARRAY_gctools__GCArray_moveable_unsigned_char_,
+  /* 634 */ &&obj_finalize_KIND_GCARRAY_gctools__GCArray_moveable_signed_char_,
+  /* 635 */ &&obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__ConformationExplorerEntryStage_O__,
+  /* 636 */ &&obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__AGEdge_O__,
+  /* 637 */ &&obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__Structure_Old_ListEntry_O__,
+  /* 638 */ &&obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__AtomIndexer_O___,
+  /* 639 */ &&obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__Molecule_O___,
+  /* 640 */ &&obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_chem__AtomInfo_,
+  /* 641 */ &&obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_core__AuxArgument_,
+  /* 642 */ &&obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_core__ExceptionEntry_,
+  /* 643 */ &&obj_finalize_KIND_GCARRAY_gctools__GCArray_moveable_unsigned_short_,
+  /* 644 */ &&obj_finalize_KIND_GCARRAY_gctools__GCArray_moveable_long_,
+  /* 645 */ &&obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__OneTypeRule_O__,
+  /* 646 */ &&obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_chem__ResidueOut_,
+  /* 647 */ &&obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_core__T_O___,
+  /* 648 */ &&obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__CDBond_O__,
+  /* 649 */ &&obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__CDFragment_O__,
+  /* 650 */ &&obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__SourceFileInfo_O__,
+  /* 651 */ &&obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_chem__Atom_O__gctools__smart_ptr_chem__CDNode_O___,
+  /* 652 */ &&obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__EntityNameSetBase_O___,
+  /* 653 */ &&obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__Molecule_O__,
+  /* 654 */ &&obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__Coupling_O__,
+  /* 655 */ &&obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__SimpleBitVector_O__,
+  /* 656 */ &&obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_chem__EnergyDihedral_,
+  /* 657 */ &&obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__Topology_O__,
+  /* 658 */ &&obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__SpecificContext_O___,
+  /* 659 */ &&obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__Entity_O___,
+  /* 660 */ &&obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__ZMatrixInternal_O__,
+  /* 661 */ &&obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_adapt__QDomNode_O__,
+  /* 662 */ &&obj_finalize_KIND_GCARRAY_gctools__GCArray_moveable_short_,
+  /* 663 */ &&obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_core__DoubleFloat_O___,
+  /* 664 */ &&obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__Stereoisomer_O___,
+  /* 665 */ &&obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_core__T_O_P_,
+  /* 666 */ &&obj_finalize_KIND_GCARRAY_gctools__GCArray_moveable_int_,
+  /* 667 */ &&obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_chem__AtomPdbRec_,
+  /* 668 */ &&obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_chem__Atom_O__unsigned_int__,
+  /* 669 */ &&obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__Monomer_O__,
+  /* 670 */ &&obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_chem__EnergyAnchorRestraint_,
+  /* 671 */ &&obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__Plug_O___,
+  /* 672 */ &&obj_finalize_KIND_GCARRAY_gctools__GCArray_moveable_Vector3_,
+  /* 673 */ &&obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__StereoisomerAtoms_O___,
+  /* 674 */ &&obj_finalize_KIND_GCBITUNITCONTAINER1_gctools__GCBitUnitArray_moveable_1_unsigned_int_int_,
+  /* 675 */ &&obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_chem__RigidBodyAtomInfo_,
   /* 676 */ &&obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__Stereoisomer_O__,
   /* 677 */ &&obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__Atom_O__,
   /* 678 */ &&obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__Rotamer_O__,
@@ -18834,6 +19227,12 @@ static void* OBJ_FINALIZE_table[] = {
 };
 #endif // defined(GC_OBJ_FINALIZE_TABLE)
 #if defined(GC_OBJ_DEALLOCATOR)
+obj_deallocate_unmanaged_instance_KIND_LISPALLOC_asttooling__DerivableFrontendActionFactory:
+{
+    asttooling::DerivableFrontendActionFactory* obj_gc_safe = reinterpret_cast<asttooling::DerivableFrontendActionFactory*>(client);
+    GC<asttooling::DerivableFrontendActionFactory>::deallocate_unmanaged_instance(obj_gc_safe);
+    return;
+}
 obj_deallocate_unmanaged_instance_KIND_ROOTCLASSALLOC_core__Lisp_O:
 {
     core::Lisp_O* obj_gc_safe = reinterpret_cast<core::Lisp_O*>(client);
@@ -18922,6 +19321,12 @@ obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__StructureObject_O:
 {
     core::StructureObject_O* obj_gc_safe = reinterpret_cast<core::StructureObject_O*>(client);
     GC<core::StructureObject_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    return;
+}
+obj_deallocate_unmanaged_instance_KIND_LISPALLOC_mp__BlockingConcurrentQueue_O:
+{
+    mp::BlockingConcurrentQueue_O* obj_gc_safe = reinterpret_cast<mp::BlockingConcurrentQueue_O*>(client);
+    GC<mp::BlockingConcurrentQueue_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__Pathname_O:
@@ -19873,12 +20278,6 @@ obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__Instance_O:
     GC<core::Instance_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
-obj_deallocate_unmanaged_instance_KIND_LISPALLOC_asttooling__DerivableFrontendActionFactory:
-{
-    asttooling::DerivableFrontendActionFactory* obj_gc_safe = reinterpret_cast<asttooling::DerivableFrontendActionFactory*>(client);
-    GC<asttooling::DerivableFrontendActionFactory>::deallocate_unmanaged_instance(obj_gc_safe);
-    return;
-}
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__SNode_O:
 {
     core::SNode_O* obj_gc_safe = reinterpret_cast<core::SNode_O*>(client);
@@ -20443,6 +20842,12 @@ obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__DataLayout_O:
     GC<llvmo::DataLayout_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
+obj_deallocate_unmanaged_instance_KIND_LISPALLOC_mp__ConcurrentQueue_O:
+{
+    mp::ConcurrentQueue_O* obj_gc_safe = reinterpret_cast<mp::ConcurrentQueue_O*>(client);
+    GC<mp::ConcurrentQueue_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    return;
+}
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__CxxObject_O:
 {
     core::CxxObject_O* obj_gc_safe = reinterpret_cast<core::CxxObject_O*>(client);
@@ -20501,6 +20906,12 @@ obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__StereoisomerAtoms_O:
 {
     chem::StereoisomerAtoms_O* obj_gc_safe = reinterpret_cast<chem::StereoisomerAtoms_O*>(client);
     GC<chem::StereoisomerAtoms_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    return;
+}
+obj_deallocate_unmanaged_instance_KIND_LISPALLOC_mp__SharedMutex_O:
+{
+    mp::SharedMutex_O* obj_gc_safe = reinterpret_cast<mp::SharedMutex_O*>(client);
+    GC<mp::SharedMutex_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__MonomerCoordinates_O:
@@ -20593,10 +21004,22 @@ obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__StereoConfiguration_O:
     GC<chem::StereoConfiguration_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
-obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__NVector_O:
+obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__ScoringFunction_O:
 {
-    chem::NVector_O* obj_gc_safe = reinterpret_cast<chem::NVector_O*>(client);
-    GC<chem::NVector_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    chem::ScoringFunction_O* obj_gc_safe = reinterpret_cast<chem::ScoringFunction_O*>(client);
+    GC<chem::ScoringFunction_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    return;
+}
+obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__RigidBodyEnergyFunction_O:
+{
+    chem::RigidBodyEnergyFunction_O* obj_gc_safe = reinterpret_cast<chem::RigidBodyEnergyFunction_O*>(client);
+    GC<chem::RigidBodyEnergyFunction_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    return;
+}
+obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__EnergyFunction_O:
+{
+    chem::EnergyFunction_O* obj_gc_safe = reinterpret_cast<chem::EnergyFunction_O*>(client);
+    GC<chem::EnergyFunction_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__Entity_O:
@@ -21205,6 +21628,24 @@ obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__EnergyImproperRestraint_O
     GC<chem::EnergyImproperRestraint_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
+obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__EnergyRigidBodyComponent_O:
+{
+    chem::EnergyRigidBodyComponent_O* obj_gc_safe = reinterpret_cast<chem::EnergyRigidBodyComponent_O*>(client);
+    GC<chem::EnergyRigidBodyComponent_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    return;
+}
+obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__EnergyRigidBodyNonbond_O:
+{
+    chem::EnergyRigidBodyNonbond_O* obj_gc_safe = reinterpret_cast<chem::EnergyRigidBodyNonbond_O*>(client);
+    GC<chem::EnergyRigidBodyNonbond_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    return;
+}
+obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__EnergyRigidBodyStaple_O:
+{
+    chem::EnergyRigidBodyStaple_O* obj_gc_safe = reinterpret_cast<chem::EnergyRigidBodyStaple_O*>(client);
+    GC<chem::EnergyRigidBodyStaple_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    return;
+}
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__EnergyAnchorRestraint_O:
 {
     chem::EnergyAnchorRestraint_O* obj_gc_safe = reinterpret_cast<chem::EnergyAnchorRestraint_O*>(client);
@@ -21269,12 +21710,6 @@ obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__Bond_O:
 {
     chem::Bond_O* obj_gc_safe = reinterpret_cast<chem::Bond_O*>(client);
     GC<chem::Bond_O>::deallocate_unmanaged_instance(obj_gc_safe);
-    return;
-}
-obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__EnergyFunction_O:
-{
-    chem::EnergyFunction_O* obj_gc_safe = reinterpret_cast<chem::EnergyFunction_O*>(client);
-    GC<chem::EnergyFunction_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__ConformationExplorerEntryStage_O:
@@ -22195,6 +22630,9 @@ obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_doubl
 obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__StereoisomerAtom_O__:
 {
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<chem::StereoisomerAtom_O>>"));}
+obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_chem__EnergyRigidBodyStaple_:
+{
+    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<chem::EnergyRigidBodyStaple>"));}
 obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__FFVdw_O__:
 {
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<chem::FFVdw_O>>"));}
@@ -22330,6 +22768,9 @@ obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_std__
 obj_deallocate_unmanaged_instance_KIND_GCBITUNITCONTAINER1_gctools__GCBitUnitArray_moveable_1_unsigned_int_int_:
 {
     THROW_HARD_ERROR(BF("Should never deallocate gcbitunits gctools::GCBitUnitArray_moveable<1,unsigned int,int>"));}
+obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_chem__RigidBodyAtomInfo_:
+{
+    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<chem::RigidBodyAtomInfo>"));}
 obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__Stereoisomer_O__:
 {
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<chem::Stereoisomer_O>>"));}
@@ -22564,6 +23005,7 @@ obj_deallocate_unmanaged_instance_KIND_LISPALLOC_asttooling__DerivableSyntaxOnly
 #endif // defined(GC_OBJ_DEALLOCATOR_HELPERS)
 #if defined(GC_OBJ_DEALLOCATOR_TABLE)
 static void* OBJ_DEALLOCATOR_table[] = { 
+  /* 9 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_asttooling__DerivableFrontendActionFactory,
   /* 10 */ &&obj_deallocate_unmanaged_instance_KIND_ROOTCLASSALLOC_core__Lisp_O,
   /* 11 */ &&obj_deallocate_unmanaged_instance_KIND_BOOTSTRAP_core__T_O,
   /* 12 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__VaList_dummy_O,
@@ -22579,387 +23021,394 @@ static void* OBJ_DEALLOCATOR_table[] = {
   /* 22 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_adapt__AdaptExposer_O,
   /* 23 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__CoreExposer_O,
   /* 24 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__StructureObject_O,
-  /* 25 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__Pathname_O,
-  /* 26 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__LogicalPathname_O,
-  /* 27 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__HashTable_O,
-  /* 28 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__HashTableEql_O,
-  /* 29 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__HashTableEqual_O,
-  /* 30 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__HashTableEq_O,
-  /* 31 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__HashTableEqualp_O,
-  /* 32 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__PosixTime_O,
-  /* 33 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__SourcePosInfo_O,
-  /* 34 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__InvocationHistoryFrameIterator_O,
-  /* 35 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_adapt__IndexedObjectBag_O,
-  /* 36 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__SequenceStepper_O,
-  /* 37 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__VectorStepper_O,
-  /* 38 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__ConsStepper_O,
-  /* 39 */ &&obj_deallocate_unmanaged_instance_KIND_BOOTSTRAP_core__Symbol_O,
-  /* 40 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__Null_O,
-  /* 41 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__ReadTable_O,
-  /* 42 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__PosixTimeDuration_O,
-  /* 43 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__SmallMultimap_O,
-  /* 44 */ &&obj_deallocate_unmanaged_instance_KIND_TEMPLATED_LISPALLOC_core__Creator_O,
-  /* 45 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__ClassCreator_O,
-  /* 46 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_clbind__DummyCreator_O,
-  /* 47 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__StructureClassCreator_O,
-  /* 48 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__InstanceCreator_O,
-  /* 49 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__StandardClassCreator_O,
-  /* 50 */ &&obj_deallocate_unmanaged_instance_KIND_TEMPLATED_LISPALLOC_clbind__ConstructorCreator_O,
-  /* 51 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_clasp_ffi__ForeignTypeSpec_O,
-  /* 52 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__LoadTimeValues_O,
-  /* 53 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_clbind__ClassRegistry_O,
-  /* 54 */ &&obj_deallocate_unmanaged_instance_KIND_BOOTSTRAP_core__StandardObject_O,
-  /* 55 */ &&obj_deallocate_unmanaged_instance_KIND_BOOTSTRAP_core__Class_O,
-  /* 56 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_clbind__ClassRep_O,
-  /* 57 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__AttributeSet_O,
-  /* 58 */ &&obj_deallocate_unmanaged_instance_KIND_TEMPLATED_LISPALLOC_core__Iterator_O,
-  /* 59 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__DirectoryIterator_O,
-  /* 60 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__IterateRestraints_O,
-  /* 61 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__IterateMatter_O,
-  /* 62 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__IterateResidues_O,
-  /* 63 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__IterateBonds_O,
-  /* 64 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__IterateAtoms_O,
-  /* 65 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__RecursiveDirectoryIterator_O,
-  /* 66 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_adapt__IterateCons_O,
-  /* 67 */ &&obj_deallocate_unmanaged_instance_KIND_TEMPLATED_LISPALLOC_core__WrappedPointer_O,
-  /* 68 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__ExternalObject_O,
-  /* 69 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__NamedMDNode_O,
-  /* 70 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__TargetOptions_O,
-  /* 71 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__EngineBuilder_O,
-  /* 72 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__IRBuilderBase_O,
-  /* 73 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__IRBuilder_O,
-  /* 74 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__APInt_O,
-  /* 75 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__Metadata_O,
-  /* 76 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__MDString_O,
-  /* 77 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__ValueAsMetadata_O,
-  /* 78 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__MDNode_O,
-  /* 79 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__DINode_O,
-  /* 80 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__DIScope_O,
-  /* 81 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__DILocalScope_O,
-  /* 82 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__DILexicalBlockBase_O,
-  /* 83 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__DILexicalBlock_O,
-  /* 84 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__DISubprogram_O,
-  /* 85 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__DIFile_O,
-  /* 86 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__DIType_O,
-  /* 87 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__DICompositeType_O,
-  /* 88 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__DIBasicType_O,
-  /* 89 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__DIDerivedType_O,
-  /* 90 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__DISubroutineType_O,
-  /* 91 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__DICompileUnit_O,
-  /* 92 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__LLVMContext_O,
-  /* 93 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__TargetMachine_O,
-  /* 94 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__LLVMTargetMachine_O,
-  /* 95 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__MCSubtargetInfo_O,
-  /* 96 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__TargetSubtargetInfo_O,
-  /* 97 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__Value_O,
-  /* 98 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__User_O,
-  /* 99 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__Instruction_O,
-  /* 100 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__AtomicRMWInst_O,
-  /* 101 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__StoreInst_O,
-  /* 102 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__TerminatorInst_O,
-  /* 103 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__BranchInst_O,
-  /* 104 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__InvokeInst_O,
-  /* 105 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__IndirectBrInst_O,
-  /* 106 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__SwitchInst_O,
-  /* 107 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__ResumeInst_O,
-  /* 108 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__UnreachableInst_O,
-  /* 109 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__ReturnInst_O,
-  /* 110 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__PHINode_O,
-  /* 111 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__CallInst_O,
-  /* 112 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__UnaryInstruction_O,
-  /* 113 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__AllocaInst_O,
-  /* 114 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__LoadInst_O,
-  /* 115 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__VAArgInst_O,
-  /* 116 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__FenceInst_O,
-  /* 117 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__AtomicCmpXchgInst_O,
-  /* 118 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__LandingPadInst_O,
-  /* 119 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__Constant_O,
-  /* 120 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__GlobalValue_O,
-  /* 121 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__Function_O,
-  /* 122 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__GlobalVariable_O,
-  /* 123 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__ConstantExpr_O,
-  /* 124 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__ConstantArray_O,
-  /* 125 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__ConstantPointerNull_O,
-  /* 126 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__ConstantFP_O,
-  /* 127 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__ConstantInt_O,
-  /* 128 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__UndefValue_O,
-  /* 129 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__BlockAddress_O,
-  /* 130 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__ConstantStruct_O,
-  /* 131 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__ConstantDataSequential_O,
-  /* 132 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__ConstantDataArray_O,
-  /* 133 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__BasicBlock_O,
-  /* 134 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__Argument_O,
-  /* 135 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_clasp_ffi__ForeignData_O,
-  /* 136 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__ExecutionEngine_O,
-  /* 137 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__DIBuilder_O,
-  /* 138 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__PassManagerBuilder_O,
-  /* 139 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__PassManagerBase_O,
-  /* 140 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__FunctionPassManager_O,
-  /* 141 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__PassManager_O,
-  /* 142 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__Triple_O,
-  /* 143 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__Pass_O,
-  /* 144 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__ModulePass_O,
-  /* 145 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__ImmutablePass_O,
-  /* 146 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__TargetLibraryInfoWrapperPass_O,
-  /* 147 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__FunctionPass_O,
-  /* 148 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__Module_O,
-  /* 149 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__Target_O,
-  /* 150 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__APFloat_O,
-  /* 151 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__Linker_O,
-  /* 152 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__Type_O,
-  /* 153 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__IntegerType_O,
-  /* 154 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__CompositeType_O,
-  /* 155 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__SequentialType_O,
-  /* 156 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__VectorType_O,
-  /* 157 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__ArrayType_O,
-  /* 158 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__PointerType_O,
-  /* 159 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__StructType_O,
-  /* 160 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__FunctionType_O,
-  /* 161 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__Attribute_O,
-  /* 162 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__Package_O,
-  /* 163 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__SmallMap_O,
-  /* 164 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__Function_O,
-  /* 165 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__NamedFunction_O,
-  /* 166 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__SpecialForm_O,
-  /* 167 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__Closure_O,
-  /* 168 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__CompiledFunction_O,
-  /* 169 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__FunctionClosure_O,
-  /* 170 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__ClosureWithSlots_O,
-  /* 171 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__SingleDispatchCxxEffectiveMethodFunction_O,
-  /* 172 */ &&obj_deallocate_unmanaged_instance_KIND_TEMPLATED_LISPALLOC_core__BuiltinClosure_O,
-  /* 173 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__TranslationFunctor,
-  /* 174 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__MacroClosure_O,
-  /* 175 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__SingleDispatchEffectiveMethodFunction_O,
-  /* 176 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__ClosureWithFrame_O,
-  /* 177 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__CompiledClosure_O,
-  /* 178 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__InterpretedClosure_O,
-  /* 179 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__SingleDispatchGenericFunctionClosure_O,
-  /* 180 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__SingleDispatchMethodFunction_O,
-  /* 181 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__CxxMethodFunction_O,
-  /* 182 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__CompiledDispatchFunction_O,
-  /* 183 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__Instance_O,
-  /* 187 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_asttooling__DerivableFrontendActionFactory,
-  /* 192 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__SNode_O,
-  /* 193 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__LeafSNode_O,
-  /* 194 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__BranchSNode_O,
-  /* 195 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__SourceFileInfo_O,
-  /* 196 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__Path_O,
-  /* 197 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__WeakHashTable_O,
-  /* 198 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__WeakKeyHashTable_O,
-  /* 199 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__SingleDispatchMethod_O,
-  /* 200 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__LambdaListHandler_O,
-  /* 201 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__Array_O,
-  /* 202 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__AbstractSimpleVector_O,
-  /* 204 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__SimpleVector_byte16_t_O,
-  /* 206 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__SimpleVector_fixnum_O,
-  /* 208 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__SimpleVector_int64_t_O,
-  /* 209 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__SimpleBitVector_O,
-  /* 211 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__SimpleVector_byte32_t_O,
-  /* 213 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__SimpleVector_byte8_t_O,
-  /* 215 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__SimpleVector_int32_t_O,
-  /* 217 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_geom__SimpleVectorCoordinate_O,
-  /* 218 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__SimpleString_O,
-  /* 220 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__SimpleCharacterString_O,
-  /* 222 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__SimpleBaseString_O,
-  /* 224 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__SimpleVector_int8_t_O,
-  /* 226 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__SimpleVector_int16_t_O,
-  /* 228 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__SimpleVectorDouble_O,
-  /* 230 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__SimpleVector_byte64_t_O,
-  /* 232 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__SimpleVectorFloat_O,
-  /* 234 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__SimpleVector_O,
-  /* 236 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__SimpleVector_size_t_O,
-  /* 237 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__MDArray_O,
-  /* 239 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__MDArray_byte64_t_O,
-  /* 241 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__MDArray_fixnum_O,
-  /* 243 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__MDArrayCharacter_O,
-  /* 245 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__MDArray_int64_t_O,
-  /* 246 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__SimpleMDArray_O,
-  /* 248 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__SimpleMDArray_byte32_t_O,
-  /* 250 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__SimpleMDArray_byte16_t_O,
-  /* 252 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__SimpleMDArray_int32_t_O,
-  /* 253 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__SimpleMDArrayBit_O,
-  /* 255 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__SimpleMDArrayT_O,
-  /* 257 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__SimpleMDArray_fixnum_O,
-  /* 259 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__SimpleMDArray_int64_t_O,
-  /* 261 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__SimpleMDArray_size_t_O,
-  /* 263 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__SimpleMDArray_int8_t_O,
-  /* 265 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__SimpleMDArray_byte64_t_O,
-  /* 267 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__SimpleMDArray_byte8_t_O,
-  /* 269 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__SimpleMDArray_int16_t_O,
-  /* 271 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__SimpleMDArrayDouble_O,
-  /* 273 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_geom__SimpleMDArrayCoordinate_O,
-  /* 275 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__SimpleMDArrayCharacter_O,
-  /* 277 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__SimpleMDArrayBaseChar_O,
-  /* 279 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__SimpleMDArrayFloat_O,
-  /* 280 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__MDArrayBit_O,
-  /* 281 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__BitVectorNs_O,
-  /* 283 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__MDArray_byte32_t_O,
-  /* 285 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__MDArrayBaseChar_O,
-  /* 287 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__MDArray_byte8_t_O,
-  /* 289 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__MDArray_int16_t_O,
-  /* 291 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__MDArrayDouble_O,
-  /* 293 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_geom__MDArrayCoordinate_O,
-  /* 295 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__MDArray_int32_t_O,
-  /* 296 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__StrNs_O,
-  /* 298 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__StrWNs_O,
-  /* 300 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__Str8Ns_O,
-  /* 302 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__MDArray_int8_t_O,
-  /* 304 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__MDArray_byte16_t_O,
-  /* 306 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__MDArrayFloat_O,
-  /* 308 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__MDArrayT_O,
-  /* 310 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__MDArray_size_t_O,
-  /* 311 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__SharpEqualWrapper_O,
-  /* 312 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__IntArray_O,
-  /* 313 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__RandomState_O,
-  /* 314 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__FileStatus_O,
-  /* 315 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__MultiStringBuffer_O,
-  /* 316 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__LightUserData_O,
-  /* 317 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__UserData_O,
-  /* 318 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__Character_dummy_O,
-  /* 319 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_adapt__SymbolSet_O,
-  /* 320 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__WeakKeyMapping_O,
-  /* 321 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__Stream_O,
-  /* 322 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__AnsiStream_O,
-  /* 323 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__BroadcastStream_O,
-  /* 324 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__SynonymStream_O,
-  /* 325 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__ConcatenatedStream_O,
-  /* 326 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__StringStream_O,
-  /* 327 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__StringInputStream_O,
-  /* 328 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__StringOutputStream_O,
-  /* 329 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__EchoStream_O,
-  /* 330 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__TwoWayStream_O,
-  /* 331 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__FileStream_O,
-  /* 332 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__IOStreamStream_O,
-  /* 333 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__IOFileStream_O,
-  /* 334 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__Record_O,
-  /* 335 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__DataLayout_O,
-  /* 336 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__CxxObject_O,
-  /* 337 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_mp__ConditionVariable_O,
-  /* 338 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__AtomTable_O,
-  /* 339 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__Plug_O,
-  /* 340 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__JumpPlug_O,
-  /* 341 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__PlugWithMates_O,
-  /* 342 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__OutPlug_O,
-  /* 343 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__RingClosingPlug_O,
-  /* 344 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__InPlug_O,
-  /* 345 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__StereoisomerAtoms_O,
-  /* 346 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__MonomerCoordinates_O,
-  /* 347 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__ConstitutionBond_O,
-  /* 348 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_adapt__SymbolList_O,
-  /* 349 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_units__Dimension_O,
-  /* 350 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__FFParameter_O,
-  /* 351 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__FFVdw_O,
-  /* 352 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__FFNonbond_O,
-  /* 353 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__FFAngle_O,
-  /* 354 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__FFStretch_O,
-  /* 355 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__FFItor_O,
-  /* 356 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__FFPtor_O,
-  /* 357 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__Angle_O,
-  /* 358 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_adapt__QDomNode_O,
-  /* 359 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__Oligomer_O,
-  /* 360 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__StereoConfiguration_O,
-  /* 361 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__NVector_O,
-  /* 362 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__Entity_O,
-  /* 363 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__EntityNameSetBase_O,
-  /* 364 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__EntityNameSet_O,
-  /* 365 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__MonomerPack_O,
-  /* 366 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__RepresentedEntityNameSet_O,
-  /* 367 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__EntityNameSetWithCap_O,
-  /* 368 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__RingClosingMate_O,
-  /* 369 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__Mate_O,
-  /* 370 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__Monomer_O,
-  /* 371 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__MultiMonomer_O,
-  /* 372 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__MonoMonomer_O,
-  /* 373 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__Stereoisomer_O,
-  /* 374 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__Constitution_O,
-  /* 375 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__StereoisomerAtom_O,
-  /* 376 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__StereoisomerVirtualAtom_O,
-  /* 377 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__ForceField_O,
-  /* 378 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__Alias_O,
-  /* 379 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__MapOfMonomerNamesToAtomIndexers_O,
-  /* 380 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__TwisterDriver_O,
-  /* 381 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__ResidueList_O,
-  /* 382 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__MonomerContext_O,
-  /* 383 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__CoordinateSystem_O,
-  /* 384 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__DINodeArray_O,
-  /* 385 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__Command_O,
-  /* 386 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__BondList_O,
-  /* 387 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__Coupling_O,
-  /* 388 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__RingCoupling_O,
-  /* 389 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__DirectionalCoupling_O,
-  /* 390 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__OligomerPart_Base_O,
-  /* 391 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__OligomerPart_Monomer_O,
-  /* 392 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__OligomerPart_Link_O,
-  /* 393 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__ChemInfoNode_O,
-  /* 394 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__RootMatchNode_O,
-  /* 395 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__AfterMatchBondTest_O,
-  /* 396 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__BondListMatchNode_O,
-  /* 397 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__Branch_O,
-  /* 398 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__Chain_O,
-  /* 399 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__BondMatchNode_O,
-  /* 400 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__BondTest_O,
-  /* 401 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__AntechamberBondTest_O,
-  /* 402 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__AtomOrBondMatchNode_O,
-  /* 403 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__AtomTest_O,
-  /* 404 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__RingTest_O,
-  /* 405 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__TagSet_O,
-  /* 406 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__Root_O,
-  /* 407 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__AntechamberRoot_O,
-  /* 408 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__SmartsRoot_O,
-  /* 409 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__ResidueTest_O,
-  /* 410 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__Logical_O,
-  /* 411 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__AntechamberFocusAtomMatch_O,
-  /* 412 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_geom__OVector2_O,
-  /* 413 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__TopologyAtomInfo_O,
-  /* 414 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__NumericalFunction_O,
-  /* 415 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__ZMatrix_O,
-  /* 416 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__CipPrioritizer_O,
-  /* 417 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__TrajectoryFrame_O,
-  /* 418 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__AtomIdToAtomMap_O,
-  /* 419 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__ComplexRestraint_O,
-  /* 420 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__RestrainedExoCyclicAtom_O,
-  /* 421 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__RestrainedPiBond_O,
-  /* 422 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__AGEdge_O,
-  /* 423 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__ConformationExplorerEntry_O,
-  /* 424 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__MinimizerLog_O,
-  /* 425 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__NativeVector_int_O,
-  /* 426 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__ChemDraw_O,
-  /* 427 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__PdbMonomerConnectivity_O,
-  /* 428 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__Matter_O,
-  /* 429 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__Residue_O,
-  /* 430 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__Atom_O,
-  /* 431 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__VirtualAtom_O,
-  /* 432 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__Aggregate_O,
-  /* 433 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__Molecule_O,
-  /* 434 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__Trajectory_O,
-  /* 435 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__ChemInfoMatch_O,
-  /* 436 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_geom__OVector3_O,
-  /* 437 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__ConformationCollectionEntry_O,
-  /* 438 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__AtomReferenceBase_O,
-  /* 439 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__AtomReference_O,
-  /* 440 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__ImproperTorsion_O,
-  /* 441 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__AbstractLargeSquareMatrix_O,
-  /* 442 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__FullLargeSquareMatrix_O,
-  /* 443 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__SparseLargeSquareMatrix_O,
-  /* 444 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__ConformationExplorerMatch_O,
-  /* 445 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__Rotamer_O,
-  /* 446 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__OneTypeRule_O,
-  /* 447 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__ConstitutionAtoms_O,
-  /* 448 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__RingFinder_O,
-  /* 449 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_mp__Process_O,
-  /* 450 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__Topology_O,
-  /* 451 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__NativeVector_float_O,
-  /* 452 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__PdbMonomerDatabase_O,
-  /* 453 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__FrameRecognizer_O,
-  /* 454 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__NativeVector_double_O,
-  /* 455 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__CDBond_O,
-  /* 456 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__CandoDatabase_O,
-  /* 457 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__VirtualSphere_O,
-  /* 458 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__EnergyComponent_O,
-  /* 459 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__EnergyDihedral_O,
-  /* 460 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__EnergyChiralRestraint_O,
-  /* 461 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__EnergyNonbond_O,
-  /* 462 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__EnergyImproperRestraint_O,
+  /* 25 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_mp__BlockingConcurrentQueue_O,
+  /* 26 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__Pathname_O,
+  /* 27 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__LogicalPathname_O,
+  /* 28 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__HashTable_O,
+  /* 29 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__HashTableEql_O,
+  /* 30 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__HashTableEqual_O,
+  /* 31 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__HashTableEq_O,
+  /* 32 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__HashTableEqualp_O,
+  /* 33 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__PosixTime_O,
+  /* 34 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__SourcePosInfo_O,
+  /* 35 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__InvocationHistoryFrameIterator_O,
+  /* 36 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_adapt__IndexedObjectBag_O,
+  /* 37 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__SequenceStepper_O,
+  /* 38 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__VectorStepper_O,
+  /* 39 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__ConsStepper_O,
+  /* 40 */ &&obj_deallocate_unmanaged_instance_KIND_BOOTSTRAP_core__Symbol_O,
+  /* 41 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__Null_O,
+  /* 42 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__ReadTable_O,
+  /* 43 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__PosixTimeDuration_O,
+  /* 44 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__SmallMultimap_O,
+  /* 45 */ &&obj_deallocate_unmanaged_instance_KIND_TEMPLATED_LISPALLOC_core__Creator_O,
+  /* 46 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__ClassCreator_O,
+  /* 47 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_clbind__DummyCreator_O,
+  /* 48 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__StructureClassCreator_O,
+  /* 49 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__InstanceCreator_O,
+  /* 50 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__StandardClassCreator_O,
+  /* 51 */ &&obj_deallocate_unmanaged_instance_KIND_TEMPLATED_LISPALLOC_clbind__ConstructorCreator_O,
+  /* 52 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_clasp_ffi__ForeignTypeSpec_O,
+  /* 53 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__LoadTimeValues_O,
+  /* 54 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_clbind__ClassRegistry_O,
+  /* 55 */ &&obj_deallocate_unmanaged_instance_KIND_BOOTSTRAP_core__StandardObject_O,
+  /* 56 */ &&obj_deallocate_unmanaged_instance_KIND_BOOTSTRAP_core__Class_O,
+  /* 57 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_clbind__ClassRep_O,
+  /* 58 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__AttributeSet_O,
+  /* 59 */ &&obj_deallocate_unmanaged_instance_KIND_TEMPLATED_LISPALLOC_core__Iterator_O,
+  /* 60 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__DirectoryIterator_O,
+  /* 61 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__IterateRestraints_O,
+  /* 62 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__IterateMatter_O,
+  /* 63 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__IterateResidues_O,
+  /* 64 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__IterateBonds_O,
+  /* 65 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__IterateAtoms_O,
+  /* 66 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__RecursiveDirectoryIterator_O,
+  /* 67 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_adapt__IterateCons_O,
+  /* 68 */ &&obj_deallocate_unmanaged_instance_KIND_TEMPLATED_LISPALLOC_core__WrappedPointer_O,
+  /* 69 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__ExternalObject_O,
+  /* 70 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__NamedMDNode_O,
+  /* 71 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__TargetOptions_O,
+  /* 72 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__EngineBuilder_O,
+  /* 73 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__IRBuilderBase_O,
+  /* 74 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__IRBuilder_O,
+  /* 75 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__APInt_O,
+  /* 76 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__Metadata_O,
+  /* 77 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__MDString_O,
+  /* 78 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__ValueAsMetadata_O,
+  /* 79 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__MDNode_O,
+  /* 80 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__DINode_O,
+  /* 81 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__DIScope_O,
+  /* 82 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__DILocalScope_O,
+  /* 83 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__DILexicalBlockBase_O,
+  /* 84 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__DILexicalBlock_O,
+  /* 85 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__DISubprogram_O,
+  /* 86 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__DIFile_O,
+  /* 87 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__DIType_O,
+  /* 88 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__DICompositeType_O,
+  /* 89 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__DIBasicType_O,
+  /* 90 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__DIDerivedType_O,
+  /* 91 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__DISubroutineType_O,
+  /* 92 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__DICompileUnit_O,
+  /* 93 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__LLVMContext_O,
+  /* 94 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__TargetMachine_O,
+  /* 95 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__LLVMTargetMachine_O,
+  /* 96 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__MCSubtargetInfo_O,
+  /* 97 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__TargetSubtargetInfo_O,
+  /* 98 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__Value_O,
+  /* 99 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__User_O,
+  /* 100 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__Instruction_O,
+  /* 101 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__AtomicRMWInst_O,
+  /* 102 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__StoreInst_O,
+  /* 103 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__TerminatorInst_O,
+  /* 104 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__BranchInst_O,
+  /* 105 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__InvokeInst_O,
+  /* 106 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__IndirectBrInst_O,
+  /* 107 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__SwitchInst_O,
+  /* 108 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__ResumeInst_O,
+  /* 109 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__UnreachableInst_O,
+  /* 110 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__ReturnInst_O,
+  /* 111 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__PHINode_O,
+  /* 112 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__CallInst_O,
+  /* 113 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__UnaryInstruction_O,
+  /* 114 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__AllocaInst_O,
+  /* 115 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__LoadInst_O,
+  /* 116 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__VAArgInst_O,
+  /* 117 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__FenceInst_O,
+  /* 118 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__AtomicCmpXchgInst_O,
+  /* 119 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__LandingPadInst_O,
+  /* 120 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__Constant_O,
+  /* 121 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__GlobalValue_O,
+  /* 122 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__Function_O,
+  /* 123 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__GlobalVariable_O,
+  /* 124 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__ConstantExpr_O,
+  /* 125 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__ConstantArray_O,
+  /* 126 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__ConstantPointerNull_O,
+  /* 127 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__ConstantFP_O,
+  /* 128 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__ConstantInt_O,
+  /* 129 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__UndefValue_O,
+  /* 130 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__BlockAddress_O,
+  /* 131 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__ConstantStruct_O,
+  /* 132 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__ConstantDataSequential_O,
+  /* 133 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__ConstantDataArray_O,
+  /* 134 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__BasicBlock_O,
+  /* 135 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__Argument_O,
+  /* 136 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_clasp_ffi__ForeignData_O,
+  /* 137 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__ExecutionEngine_O,
+  /* 138 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__DIBuilder_O,
+  /* 139 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__PassManagerBuilder_O,
+  /* 140 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__PassManagerBase_O,
+  /* 141 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__FunctionPassManager_O,
+  /* 142 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__PassManager_O,
+  /* 143 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__Triple_O,
+  /* 144 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__Pass_O,
+  /* 145 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__ModulePass_O,
+  /* 146 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__ImmutablePass_O,
+  /* 147 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__TargetLibraryInfoWrapperPass_O,
+  /* 148 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__FunctionPass_O,
+  /* 149 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__Module_O,
+  /* 150 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__Target_O,
+  /* 151 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__APFloat_O,
+  /* 152 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__Linker_O,
+  /* 153 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__Type_O,
+  /* 154 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__IntegerType_O,
+  /* 155 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__CompositeType_O,
+  /* 156 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__SequentialType_O,
+  /* 157 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__VectorType_O,
+  /* 158 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__ArrayType_O,
+  /* 159 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__PointerType_O,
+  /* 160 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__StructType_O,
+  /* 161 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__FunctionType_O,
+  /* 162 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__Attribute_O,
+  /* 163 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__Package_O,
+  /* 164 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__SmallMap_O,
+  /* 165 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__Function_O,
+  /* 166 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__NamedFunction_O,
+  /* 167 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__SpecialForm_O,
+  /* 168 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__Closure_O,
+  /* 169 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__CompiledFunction_O,
+  /* 170 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__FunctionClosure_O,
+  /* 171 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__ClosureWithSlots_O,
+  /* 172 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__SingleDispatchCxxEffectiveMethodFunction_O,
+  /* 173 */ &&obj_deallocate_unmanaged_instance_KIND_TEMPLATED_LISPALLOC_core__BuiltinClosure_O,
+  /* 174 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__TranslationFunctor,
+  /* 175 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__MacroClosure_O,
+  /* 176 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__SingleDispatchEffectiveMethodFunction_O,
+  /* 177 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__ClosureWithFrame_O,
+  /* 178 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__CompiledClosure_O,
+  /* 179 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__InterpretedClosure_O,
+  /* 180 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__SingleDispatchGenericFunctionClosure_O,
+  /* 181 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__SingleDispatchMethodFunction_O,
+  /* 182 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__CxxMethodFunction_O,
+  /* 183 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__CompiledDispatchFunction_O,
+  /* 184 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__Instance_O,
+  /* 185 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__SNode_O,
+  /* 186 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__LeafSNode_O,
+  /* 187 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__BranchSNode_O,
+  /* 188 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__SourceFileInfo_O,
+  /* 189 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__Path_O,
+  /* 190 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__WeakHashTable_O,
+  /* 191 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__WeakKeyHashTable_O,
+  /* 192 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__SingleDispatchMethod_O,
+  /* 193 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__LambdaListHandler_O,
+  /* 194 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__Array_O,
+  /* 195 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__AbstractSimpleVector_O,
+  /* 197 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__SimpleVector_byte16_t_O,
+  /* 199 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__SimpleVector_fixnum_O,
+  /* 201 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__SimpleVector_int64_t_O,
+  /* 202 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__SimpleBitVector_O,
+  /* 204 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__SimpleVector_byte32_t_O,
+  /* 206 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__SimpleVector_byte8_t_O,
+  /* 208 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__SimpleVector_int32_t_O,
+  /* 210 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_geom__SimpleVectorCoordinate_O,
+  /* 211 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__SimpleString_O,
+  /* 213 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__SimpleCharacterString_O,
+  /* 215 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__SimpleBaseString_O,
+  /* 217 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__SimpleVector_int8_t_O,
+  /* 219 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__SimpleVector_int16_t_O,
+  /* 221 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__SimpleVectorDouble_O,
+  /* 223 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__SimpleVector_byte64_t_O,
+  /* 225 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__SimpleVectorFloat_O,
+  /* 227 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__SimpleVector_O,
+  /* 229 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__SimpleVector_size_t_O,
+  /* 230 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__MDArray_O,
+  /* 232 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__MDArray_byte64_t_O,
+  /* 234 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__MDArray_fixnum_O,
+  /* 236 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__MDArrayCharacter_O,
+  /* 238 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__MDArray_int64_t_O,
+  /* 239 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__SimpleMDArray_O,
+  /* 241 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__SimpleMDArray_byte32_t_O,
+  /* 243 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__SimpleMDArray_byte16_t_O,
+  /* 245 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__SimpleMDArray_int32_t_O,
+  /* 246 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__SimpleMDArrayBit_O,
+  /* 248 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__SimpleMDArrayT_O,
+  /* 250 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__SimpleMDArray_fixnum_O,
+  /* 252 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__SimpleMDArray_int64_t_O,
+  /* 254 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__SimpleMDArray_size_t_O,
+  /* 256 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__SimpleMDArray_int8_t_O,
+  /* 258 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__SimpleMDArray_byte64_t_O,
+  /* 260 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__SimpleMDArray_byte8_t_O,
+  /* 262 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__SimpleMDArray_int16_t_O,
+  /* 264 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__SimpleMDArrayDouble_O,
+  /* 266 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_geom__SimpleMDArrayCoordinate_O,
+  /* 268 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__SimpleMDArrayCharacter_O,
+  /* 270 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__SimpleMDArrayBaseChar_O,
+  /* 272 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__SimpleMDArrayFloat_O,
+  /* 273 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__MDArrayBit_O,
+  /* 274 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__BitVectorNs_O,
+  /* 276 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__MDArray_byte32_t_O,
+  /* 278 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__MDArrayBaseChar_O,
+  /* 280 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__MDArray_byte8_t_O,
+  /* 282 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__MDArray_int16_t_O,
+  /* 284 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__MDArrayDouble_O,
+  /* 286 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_geom__MDArrayCoordinate_O,
+  /* 288 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__MDArray_int32_t_O,
+  /* 289 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__StrNs_O,
+  /* 291 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__StrWNs_O,
+  /* 293 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__Str8Ns_O,
+  /* 295 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__MDArray_int8_t_O,
+  /* 297 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__MDArray_byte16_t_O,
+  /* 299 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__MDArrayFloat_O,
+  /* 301 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__MDArrayT_O,
+  /* 303 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__MDArray_size_t_O,
+  /* 304 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__SharpEqualWrapper_O,
+  /* 305 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__IntArray_O,
+  /* 306 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__RandomState_O,
+  /* 307 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__FileStatus_O,
+  /* 308 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__MultiStringBuffer_O,
+  /* 309 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__LightUserData_O,
+  /* 310 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__UserData_O,
+  /* 311 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__Character_dummy_O,
+  /* 312 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_adapt__SymbolSet_O,
+  /* 313 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__WeakKeyMapping_O,
+  /* 314 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__Stream_O,
+  /* 315 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__AnsiStream_O,
+  /* 316 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__BroadcastStream_O,
+  /* 317 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__SynonymStream_O,
+  /* 318 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__ConcatenatedStream_O,
+  /* 319 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__StringStream_O,
+  /* 320 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__StringInputStream_O,
+  /* 321 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__StringOutputStream_O,
+  /* 322 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__EchoStream_O,
+  /* 323 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__TwoWayStream_O,
+  /* 324 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__FileStream_O,
+  /* 325 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__IOStreamStream_O,
+  /* 326 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__IOFileStream_O,
+  /* 327 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__Record_O,
+  /* 328 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__DataLayout_O,
+  /* 329 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_mp__ConcurrentQueue_O,
+  /* 330 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__CxxObject_O,
+  /* 331 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_mp__ConditionVariable_O,
+  /* 332 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__AtomTable_O,
+  /* 333 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__Plug_O,
+  /* 334 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__JumpPlug_O,
+  /* 335 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__PlugWithMates_O,
+  /* 336 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__OutPlug_O,
+  /* 337 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__RingClosingPlug_O,
+  /* 338 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__InPlug_O,
+  /* 339 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__StereoisomerAtoms_O,
+  /* 340 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_mp__SharedMutex_O,
+  /* 341 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__MonomerCoordinates_O,
+  /* 342 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__ConstitutionBond_O,
+  /* 343 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_adapt__SymbolList_O,
+  /* 344 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_units__Dimension_O,
+  /* 345 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__FFParameter_O,
+  /* 346 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__FFVdw_O,
+  /* 347 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__FFNonbond_O,
+  /* 348 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__FFAngle_O,
+  /* 349 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__FFStretch_O,
+  /* 350 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__FFItor_O,
+  /* 351 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__FFPtor_O,
+  /* 352 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__Angle_O,
+  /* 353 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_adapt__QDomNode_O,
+  /* 354 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__Oligomer_O,
+  /* 355 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__StereoConfiguration_O,
+  /* 356 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__ScoringFunction_O,
+  /* 357 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__RigidBodyEnergyFunction_O,
+  /* 358 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__EnergyFunction_O,
+  /* 359 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__Entity_O,
+  /* 360 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__EntityNameSetBase_O,
+  /* 361 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__EntityNameSet_O,
+  /* 362 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__MonomerPack_O,
+  /* 363 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__RepresentedEntityNameSet_O,
+  /* 364 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__EntityNameSetWithCap_O,
+  /* 365 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__RingClosingMate_O,
+  /* 366 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__Mate_O,
+  /* 367 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__Monomer_O,
+  /* 368 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__MultiMonomer_O,
+  /* 369 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__MonoMonomer_O,
+  /* 370 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__Stereoisomer_O,
+  /* 371 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__Constitution_O,
+  /* 372 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__StereoisomerAtom_O,
+  /* 373 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__StereoisomerVirtualAtom_O,
+  /* 374 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__ForceField_O,
+  /* 375 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__Alias_O,
+  /* 376 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__MapOfMonomerNamesToAtomIndexers_O,
+  /* 377 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__TwisterDriver_O,
+  /* 378 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__ResidueList_O,
+  /* 379 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__MonomerContext_O,
+  /* 380 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__CoordinateSystem_O,
+  /* 381 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__DINodeArray_O,
+  /* 382 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__Command_O,
+  /* 383 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__BondList_O,
+  /* 384 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__Coupling_O,
+  /* 385 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__RingCoupling_O,
+  /* 386 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__DirectionalCoupling_O,
+  /* 387 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__OligomerPart_Base_O,
+  /* 388 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__OligomerPart_Monomer_O,
+  /* 389 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__OligomerPart_Link_O,
+  /* 390 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__ChemInfoNode_O,
+  /* 391 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__RootMatchNode_O,
+  /* 392 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__AfterMatchBondTest_O,
+  /* 393 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__BondListMatchNode_O,
+  /* 394 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__Branch_O,
+  /* 395 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__Chain_O,
+  /* 396 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__BondMatchNode_O,
+  /* 397 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__BondTest_O,
+  /* 398 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__AntechamberBondTest_O,
+  /* 399 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__AtomOrBondMatchNode_O,
+  /* 400 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__AtomTest_O,
+  /* 401 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__RingTest_O,
+  /* 402 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__TagSet_O,
+  /* 403 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__Root_O,
+  /* 404 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__AntechamberRoot_O,
+  /* 405 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__SmartsRoot_O,
+  /* 406 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__ResidueTest_O,
+  /* 407 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__Logical_O,
+  /* 408 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__AntechamberFocusAtomMatch_O,
+  /* 409 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_geom__OVector2_O,
+  /* 410 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__TopologyAtomInfo_O,
+  /* 411 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__NumericalFunction_O,
+  /* 412 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__ZMatrix_O,
+  /* 413 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__CipPrioritizer_O,
+  /* 414 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__TrajectoryFrame_O,
+  /* 415 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__AtomIdToAtomMap_O,
+  /* 416 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__ComplexRestraint_O,
+  /* 417 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__RestrainedExoCyclicAtom_O,
+  /* 418 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__RestrainedPiBond_O,
+  /* 419 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__AGEdge_O,
+  /* 420 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__ConformationExplorerEntry_O,
+  /* 421 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__MinimizerLog_O,
+  /* 422 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__NativeVector_int_O,
+  /* 423 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__ChemDraw_O,
+  /* 424 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__PdbMonomerConnectivity_O,
+  /* 425 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__Matter_O,
+  /* 426 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__Residue_O,
+  /* 427 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__Atom_O,
+  /* 428 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__VirtualAtom_O,
+  /* 429 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__Aggregate_O,
+  /* 430 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__Molecule_O,
+  /* 431 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__Trajectory_O,
+  /* 432 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__ChemInfoMatch_O,
+  /* 433 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_geom__OVector3_O,
+  /* 434 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__ConformationCollectionEntry_O,
+  /* 435 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__AtomReferenceBase_O,
+  /* 436 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__AtomReference_O,
+  /* 437 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__ImproperTorsion_O,
+  /* 438 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__AbstractLargeSquareMatrix_O,
+  /* 439 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__FullLargeSquareMatrix_O,
+  /* 440 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__SparseLargeSquareMatrix_O,
+  /* 441 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__ConformationExplorerMatch_O,
+  /* 442 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__Rotamer_O,
+  /* 443 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__OneTypeRule_O,
+  /* 444 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__ConstitutionAtoms_O,
+  /* 445 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__RingFinder_O,
+  /* 446 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_mp__Process_O,
+  /* 447 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__Topology_O,
+  /* 448 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__NativeVector_float_O,
+  /* 449 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__PdbMonomerDatabase_O,
+  /* 450 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__FrameRecognizer_O,
+  /* 451 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__NativeVector_double_O,
+  /* 452 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__CDBond_O,
+  /* 453 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__CandoDatabase_O,
+  /* 454 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__VirtualSphere_O,
+  /* 455 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__EnergyComponent_O,
+  /* 456 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__EnergyDihedral_O,
+  /* 457 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__EnergyChiralRestraint_O,
+  /* 458 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__EnergyNonbond_O,
+  /* 459 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__EnergyImproperRestraint_O,
+  /* 460 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__EnergyRigidBodyComponent_O,
+  /* 461 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__EnergyRigidBodyNonbond_O,
+  /* 462 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__EnergyRigidBodyStaple_O,
   /* 463 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__EnergyAnchorRestraint_O,
   /* 464 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__EnergyFixedNonbondRestraint_O,
   /* 465 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__EnergyAngle_O,
@@ -22971,206 +23420,207 @@ static void* OBJ_DEALLOCATOR_table[] = {
   /* 471 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__SpanningLoop_O,
   /* 472 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__AtomId_O,
   /* 473 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__Bond_O,
-  /* 474 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__EnergyFunction_O,
-  /* 475 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__ConformationExplorerEntryStage_O,
-  /* 476 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__FFNonbondCrossTermTable_O,
-  /* 477 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__PdbWriter_O,
-  /* 478 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__StereoInformation_O,
-  /* 479 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__StructureComparer_O,
-  /* 480 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__TypeAssignmentRules_O,
-  /* 481 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__ConstitutionAtom_O,
-  /* 482 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__ConstitutionVirtualAtom_O,
-  /* 483 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__ZMatrixEntry_O,
-  /* 484 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__CDNode_O,
-  /* 485 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_units__Quantity_O,
-  /* 486 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__Twister_O,
-  /* 487 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__MacroModelFile_O,
-  /* 488 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__SearchStatistics_O,
-  /* 489 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__ChemInfo_O,
-  /* 490 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__WildElementDict_O,
-  /* 491 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__Structure_Old_List_O,
-  /* 492 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_adapt__StringSet_O,
-  /* 493 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__CDFragment_O,
-  /* 494 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__PdbReader_O,
-  /* 495 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_geom__OMatrix_O,
-  /* 496 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__FFBaseDb_O,
-  /* 497 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__FFVdwDb_O,
-  /* 498 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__FFTypesDb_O,
-  /* 499 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__FFParameterBaseDb_O,
-  /* 500 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__FFPtorDb_O,
-  /* 501 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__FFAngleDb_O,
-  /* 502 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__FFStretchDb_O,
-  /* 503 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__FFNonbondDb_O,
-  /* 504 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__FFItorDb_O,
-  /* 505 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__AGVertex_O,
-  /* 506 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__ReadAmberParameters_O,
-  /* 507 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_geom__BoundingBox_O,
-  /* 508 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__SpecificContextSet_O,
-  /* 509 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__ZMatrixInternal_O,
-  /* 510 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__ZMatrixAngleInternal_O,
-  /* 511 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__ZMatrixDihedralInternal_O,
-  /* 512 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__ZMatrixBondInternal_O,
-  /* 513 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__ConformationCollection_O,
-  /* 514 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__SuperposableConformationCollection_O,
-  /* 515 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_clcenv__Info_O,
-  /* 516 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_clcenv__VariableInfo_O,
-  /* 517 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_clcenv__SpecialVariableInfo_O,
-  /* 518 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_clcenv__ConstantVariableInfo_O,
-  /* 519 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_clcenv__SymbolMacroInfo_O,
-  /* 520 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_clcenv__LexicalVariableInfo_O,
-  /* 521 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_clcenv__BlockInfo_O,
-  /* 522 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_clcenv__FunctionInfo_O,
-  /* 523 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_clcenv__LocalFunctionInfo_O,
-  /* 524 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_clcenv__LocalMacroInfo_O,
-  /* 525 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_clcenv__GlobalFunctionInfo_O,
-  /* 526 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_clcenv__SpecialOperatorInfo_O,
-  /* 527 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_clcenv__LambdaNameInfo_O,
-  /* 528 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_clcenv__GlobalMacroInfo_O,
-  /* 529 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_clcenv__OptimizeInfo_O,
-  /* 530 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__ConformationExplorer_O,
-  /* 531 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_units__Unit_O,
-  /* 532 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_units__NamedUnit_O,
-  /* 533 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_clcenv__Entry_O,
-  /* 534 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_clcenv__Optimize_O,
-  /* 535 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_clcenv__Closure_O,
-  /* 536 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_clcenv__Block_O,
-  /* 537 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_clcenv__GlobalEnvironment_O,
-  /* 538 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_clcenv__VariableIgnore_O,
-  /* 539 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_clcenv__Macro_O,
-  /* 540 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_clcenv__VariableType_O,
-  /* 541 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_clcenv__Tag_O,
-  /* 542 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_clcenv__Function_O,
-  /* 543 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_clcenv__VariableDynamicExtent_O,
-  /* 544 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_clcenv__LexicalVariable_O,
-  /* 545 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_clcenv__FunctionDynamicExtent_O,
-  /* 546 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_clcenv__SpecialVariable_O,
-  /* 547 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_clcenv__LambdaName_O,
-  /* 548 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_clcenv__FunctionIgnore_O,
-  /* 549 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_clcenv__SymbolMacro_O,
-  /* 550 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_clcenv__Inline_O,
-  /* 551 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_clcenv__FunctionType_O,
-  /* 552 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__DITypeRefArray_O,
-  /* 553 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__CalculatePosition_O,
-  /* 554 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__CalculatePositionAlongBond_O,
-  /* 555 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__CalculatePositionRelativeToOrigin_O,
-  /* 556 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__CalculatePositionUsingInternals_O,
-  /* 557 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__InfoDb_O,
-  /* 558 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__ReportBase_O,
-  /* 559 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__MessageReport_O,
-  /* 560 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__StepReport_O,
-  /* 561 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__ForceMatchReport_O,
-  /* 562 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__Restraint_O,
-  /* 563 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__RestraintFixedNonbond_O,
-  /* 564 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__RestraintDihedral_O,
-  /* 565 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__RestraintChiral_O,
-  /* 566 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__RestraintAngle_O,
-  /* 567 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__RestraintDistance_O,
-  /* 568 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__RestraintAnchor_O,
-  /* 569 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__Structure_Old_ListEntry_O,
-  /* 570 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__Minimizer_O,
-  /* 571 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__PathMessage_O,
-  /* 572 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__SpecificContext_O,
-  /* 573 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__StatusTracker_O,
-  /* 574 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_geom__Color_O,
-  /* 575 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__CDText_O,
-  /* 576 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__ProperTorsion_O,
-  /* 577 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__AtomIndexer_O,
-  /* 578 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__ClaspJIT_O,
-  /* 579 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_adapt__StringList_O,
-  /* 580 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__SourceManager_O,
-  /* 581 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__Environment_O,
-  /* 582 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__LexicalEnvironment_O,
-  /* 583 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__CompileTimeEnvironment_O,
-  /* 584 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__FunctionContainerEnvironment_O,
-  /* 585 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__BlockEnvironment_O,
-  /* 586 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__CatchEnvironment_O,
-  /* 587 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__UnwindProtectEnvironment_O,
-  /* 588 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__SymbolMacroletEnvironment_O,
-  /* 589 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__MacroletEnvironment_O,
-  /* 590 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__StackValueEnvironment_O,
-  /* 591 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__RuntimeVisibleEnvironment_O,
-  /* 592 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__TagbodyEnvironment_O,
-  /* 593 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__FunctionValueEnvironment_O,
-  /* 594 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__ValueEnvironment_O,
-  /* 595 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__GlueEnvironment_O,
-  /* 596 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__ActivationFrame_O,
-  /* 597 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__ValueFrame_O,
-  /* 598 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__TagbodyFrame_O,
-  /* 599 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__FunctionFrame_O,
-  /* 600 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__Archive_O,
-  /* 601 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__SaveArchive_O,
-  /* 602 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__SexpSaveArchive_O,
-  /* 603 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__LoadArchive_O,
-  /* 604 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__SexpLoadArchive_O,
-  /* 605 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__WeakPointer_O,
-  /* 606 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_adapt__ObjectSet_O,
-  /* 607 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__SymbolToEnumConverter_O,
-  /* 608 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__InsertPoint_O,
-  /* 610 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__DirectoryEntry_O,
-  /* 611 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__DebugLoc_O,
-  /* 612 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__Number_O,
-  /* 613 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__Complex_O,
-  /* 614 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__Real_O,
-  /* 615 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__Float_O,
-  /* 616 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__SingleFloat_dummy_O,
-  /* 617 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__ShortFloat_O,
-  /* 618 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__LongFloat_O,
-  /* 619 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__DoubleFloat_O,
-  /* 620 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__Rational_O,
-  /* 621 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__Ratio_O,
-  /* 622 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__Integer_O,
-  /* 623 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__Bignum_O,
-  /* 624 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__Fixnum_dummy_O,
-  /* 625 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__Pointer_O,
-  /* 626 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__Cache_O,
-  /* 627 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__Reader_O,
-  /* 629 */ &&obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_double_,
-  /* 630 */ &&obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__StereoisomerAtom_O__,
-  /* 631 */ &&obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__FFVdw_O__,
-  /* 632 */ &&obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_chem__EnergyStretch_,
-  /* 633 */ &&obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_chem__FixedNonbondRestraint_,
-  /* 634 */ &&obj_deallocate_unmanaged_instance_KIND_GCARRAY_gctools__GCArray_moveable_unsigned_char_,
-  /* 635 */ &&obj_deallocate_unmanaged_instance_KIND_GCARRAY_gctools__GCArray_moveable_signed_char_,
-  /* 636 */ &&obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__ConformationExplorerEntryStage_O__,
-  /* 637 */ &&obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__AGEdge_O__,
-  /* 638 */ &&obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__Structure_Old_ListEntry_O__,
-  /* 639 */ &&obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__AtomIndexer_O___,
-  /* 640 */ &&obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__Molecule_O___,
-  /* 641 */ &&obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_chem__AtomInfo_,
-  /* 642 */ &&obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_core__AuxArgument_,
-  /* 643 */ &&obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_core__ExceptionEntry_,
-  /* 644 */ &&obj_deallocate_unmanaged_instance_KIND_GCARRAY_gctools__GCArray_moveable_unsigned_short_,
-  /* 645 */ &&obj_deallocate_unmanaged_instance_KIND_GCARRAY_gctools__GCArray_moveable_long_,
-  /* 646 */ &&obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__OneTypeRule_O__,
-  /* 647 */ &&obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_chem__ResidueOut_,
-  /* 648 */ &&obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_core__T_O___,
-  /* 649 */ &&obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__CDBond_O__,
-  /* 650 */ &&obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__CDFragment_O__,
-  /* 651 */ &&obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__SourceFileInfo_O__,
-  /* 652 */ &&obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_chem__Atom_O__gctools__smart_ptr_chem__CDNode_O___,
-  /* 653 */ &&obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__EntityNameSetBase_O___,
-  /* 654 */ &&obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__Molecule_O__,
-  /* 655 */ &&obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__Coupling_O__,
-  /* 656 */ &&obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__SimpleBitVector_O__,
-  /* 657 */ &&obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_chem__EnergyDihedral_,
-  /* 658 */ &&obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__Topology_O__,
-  /* 659 */ &&obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__SpecificContext_O___,
-  /* 660 */ &&obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__Entity_O___,
-  /* 661 */ &&obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__ZMatrixInternal_O__,
-  /* 662 */ &&obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_adapt__QDomNode_O__,
-  /* 663 */ &&obj_deallocate_unmanaged_instance_KIND_GCARRAY_gctools__GCArray_moveable_short_,
-  /* 664 */ &&obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_core__DoubleFloat_O___,
-  /* 665 */ &&obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__Stereoisomer_O___,
-  /* 666 */ &&obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_core__T_O_P_,
-  /* 667 */ &&obj_deallocate_unmanaged_instance_KIND_GCARRAY_gctools__GCArray_moveable_int_,
-  /* 668 */ &&obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_chem__AtomPdbRec_,
-  /* 669 */ &&obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_chem__Atom_O__unsigned_int__,
-  /* 670 */ &&obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__Monomer_O__,
-  /* 671 */ &&obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_chem__EnergyAnchorRestraint_,
-  /* 672 */ &&obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__Plug_O___,
-  /* 673 */ &&obj_deallocate_unmanaged_instance_KIND_GCARRAY_gctools__GCArray_moveable_Vector3_,
-  /* 674 */ &&obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__StereoisomerAtoms_O___,
-  /* 675 */ &&obj_deallocate_unmanaged_instance_KIND_GCBITUNITCONTAINER1_gctools__GCBitUnitArray_moveable_1_unsigned_int_int_,
+  /* 474 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__ConformationExplorerEntryStage_O,
+  /* 475 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__FFNonbondCrossTermTable_O,
+  /* 476 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__PdbWriter_O,
+  /* 477 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__StereoInformation_O,
+  /* 478 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__StructureComparer_O,
+  /* 479 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__TypeAssignmentRules_O,
+  /* 480 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__ConstitutionAtom_O,
+  /* 481 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__ConstitutionVirtualAtom_O,
+  /* 482 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__ZMatrixEntry_O,
+  /* 483 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__CDNode_O,
+  /* 484 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_units__Quantity_O,
+  /* 485 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__Twister_O,
+  /* 486 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__MacroModelFile_O,
+  /* 487 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__SearchStatistics_O,
+  /* 488 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__ChemInfo_O,
+  /* 489 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__WildElementDict_O,
+  /* 490 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__Structure_Old_List_O,
+  /* 491 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_adapt__StringSet_O,
+  /* 492 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__CDFragment_O,
+  /* 493 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__PdbReader_O,
+  /* 494 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_geom__OMatrix_O,
+  /* 495 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__FFBaseDb_O,
+  /* 496 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__FFVdwDb_O,
+  /* 497 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__FFTypesDb_O,
+  /* 498 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__FFParameterBaseDb_O,
+  /* 499 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__FFPtorDb_O,
+  /* 500 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__FFAngleDb_O,
+  /* 501 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__FFStretchDb_O,
+  /* 502 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__FFNonbondDb_O,
+  /* 503 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__FFItorDb_O,
+  /* 504 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__AGVertex_O,
+  /* 505 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__ReadAmberParameters_O,
+  /* 506 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_geom__BoundingBox_O,
+  /* 507 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__SpecificContextSet_O,
+  /* 508 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__ZMatrixInternal_O,
+  /* 509 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__ZMatrixAngleInternal_O,
+  /* 510 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__ZMatrixDihedralInternal_O,
+  /* 511 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__ZMatrixBondInternal_O,
+  /* 512 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__ConformationCollection_O,
+  /* 513 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__SuperposableConformationCollection_O,
+  /* 514 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_clcenv__Info_O,
+  /* 515 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_clcenv__VariableInfo_O,
+  /* 516 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_clcenv__SpecialVariableInfo_O,
+  /* 517 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_clcenv__ConstantVariableInfo_O,
+  /* 518 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_clcenv__SymbolMacroInfo_O,
+  /* 519 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_clcenv__LexicalVariableInfo_O,
+  /* 520 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_clcenv__BlockInfo_O,
+  /* 521 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_clcenv__FunctionInfo_O,
+  /* 522 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_clcenv__LocalFunctionInfo_O,
+  /* 523 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_clcenv__LocalMacroInfo_O,
+  /* 524 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_clcenv__GlobalFunctionInfo_O,
+  /* 525 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_clcenv__SpecialOperatorInfo_O,
+  /* 526 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_clcenv__LambdaNameInfo_O,
+  /* 527 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_clcenv__GlobalMacroInfo_O,
+  /* 528 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_clcenv__OptimizeInfo_O,
+  /* 529 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__ConformationExplorer_O,
+  /* 530 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_units__Unit_O,
+  /* 531 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_units__NamedUnit_O,
+  /* 532 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_clcenv__Entry_O,
+  /* 533 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_clcenv__Optimize_O,
+  /* 534 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_clcenv__Closure_O,
+  /* 535 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_clcenv__Block_O,
+  /* 536 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_clcenv__GlobalEnvironment_O,
+  /* 537 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_clcenv__VariableIgnore_O,
+  /* 538 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_clcenv__Macro_O,
+  /* 539 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_clcenv__VariableType_O,
+  /* 540 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_clcenv__Tag_O,
+  /* 541 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_clcenv__Function_O,
+  /* 542 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_clcenv__VariableDynamicExtent_O,
+  /* 543 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_clcenv__LexicalVariable_O,
+  /* 544 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_clcenv__FunctionDynamicExtent_O,
+  /* 545 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_clcenv__SpecialVariable_O,
+  /* 546 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_clcenv__LambdaName_O,
+  /* 547 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_clcenv__FunctionIgnore_O,
+  /* 548 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_clcenv__SymbolMacro_O,
+  /* 549 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_clcenv__Inline_O,
+  /* 550 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_clcenv__FunctionType_O,
+  /* 551 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__DITypeRefArray_O,
+  /* 552 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__CalculatePosition_O,
+  /* 553 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__CalculatePositionAlongBond_O,
+  /* 554 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__CalculatePositionRelativeToOrigin_O,
+  /* 555 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__CalculatePositionUsingInternals_O,
+  /* 556 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__InfoDb_O,
+  /* 557 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__ReportBase_O,
+  /* 558 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__MessageReport_O,
+  /* 559 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__StepReport_O,
+  /* 560 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__ForceMatchReport_O,
+  /* 561 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__Restraint_O,
+  /* 562 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__RestraintFixedNonbond_O,
+  /* 563 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__RestraintDihedral_O,
+  /* 564 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__RestraintChiral_O,
+  /* 565 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__RestraintAngle_O,
+  /* 566 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__RestraintDistance_O,
+  /* 567 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__RestraintAnchor_O,
+  /* 568 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__Structure_Old_ListEntry_O,
+  /* 569 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__Minimizer_O,
+  /* 570 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__PathMessage_O,
+  /* 571 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__SpecificContext_O,
+  /* 572 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__StatusTracker_O,
+  /* 573 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_geom__Color_O,
+  /* 574 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__CDText_O,
+  /* 575 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__ProperTorsion_O,
+  /* 576 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_chem__AtomIndexer_O,
+  /* 577 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__ClaspJIT_O,
+  /* 578 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_adapt__StringList_O,
+  /* 579 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__SourceManager_O,
+  /* 580 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__Environment_O,
+  /* 581 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__LexicalEnvironment_O,
+  /* 582 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__CompileTimeEnvironment_O,
+  /* 583 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__FunctionContainerEnvironment_O,
+  /* 584 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__BlockEnvironment_O,
+  /* 585 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__CatchEnvironment_O,
+  /* 586 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__UnwindProtectEnvironment_O,
+  /* 587 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__SymbolMacroletEnvironment_O,
+  /* 588 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__MacroletEnvironment_O,
+  /* 589 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__StackValueEnvironment_O,
+  /* 590 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__RuntimeVisibleEnvironment_O,
+  /* 591 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__TagbodyEnvironment_O,
+  /* 592 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__FunctionValueEnvironment_O,
+  /* 593 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__ValueEnvironment_O,
+  /* 594 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__GlueEnvironment_O,
+  /* 595 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__ActivationFrame_O,
+  /* 596 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__ValueFrame_O,
+  /* 597 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__TagbodyFrame_O,
+  /* 598 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__FunctionFrame_O,
+  /* 599 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__Archive_O,
+  /* 600 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__SaveArchive_O,
+  /* 601 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__SexpSaveArchive_O,
+  /* 602 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__LoadArchive_O,
+  /* 603 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__SexpLoadArchive_O,
+  /* 604 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__WeakPointer_O,
+  /* 605 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_adapt__ObjectSet_O,
+  /* 606 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__SymbolToEnumConverter_O,
+  /* 607 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__InsertPoint_O,
+  /* 608 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__DirectoryEntry_O,
+  /* 609 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__DebugLoc_O,
+  /* 610 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__Number_O,
+  /* 611 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__Complex_O,
+  /* 612 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__Real_O,
+  /* 613 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__Float_O,
+  /* 614 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__SingleFloat_dummy_O,
+  /* 615 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__ShortFloat_O,
+  /* 616 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__LongFloat_O,
+  /* 617 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__DoubleFloat_O,
+  /* 618 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__Rational_O,
+  /* 619 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__Ratio_O,
+  /* 620 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__Integer_O,
+  /* 621 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__Bignum_O,
+  /* 622 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__Fixnum_dummy_O,
+  /* 623 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__Pointer_O,
+  /* 624 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__Cache_O,
+  /* 625 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__Reader_O,
+  /* 627 */ &&obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_double_,
+  /* 628 */ &&obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__StereoisomerAtom_O__,
+  /* 629 */ &&obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_chem__EnergyRigidBodyStaple_,
+  /* 630 */ &&obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__FFVdw_O__,
+  /* 631 */ &&obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_chem__EnergyStretch_,
+  /* 632 */ &&obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_chem__FixedNonbondRestraint_,
+  /* 633 */ &&obj_deallocate_unmanaged_instance_KIND_GCARRAY_gctools__GCArray_moveable_unsigned_char_,
+  /* 634 */ &&obj_deallocate_unmanaged_instance_KIND_GCARRAY_gctools__GCArray_moveable_signed_char_,
+  /* 635 */ &&obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__ConformationExplorerEntryStage_O__,
+  /* 636 */ &&obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__AGEdge_O__,
+  /* 637 */ &&obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__Structure_Old_ListEntry_O__,
+  /* 638 */ &&obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__AtomIndexer_O___,
+  /* 639 */ &&obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__Molecule_O___,
+  /* 640 */ &&obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_chem__AtomInfo_,
+  /* 641 */ &&obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_core__AuxArgument_,
+  /* 642 */ &&obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_core__ExceptionEntry_,
+  /* 643 */ &&obj_deallocate_unmanaged_instance_KIND_GCARRAY_gctools__GCArray_moveable_unsigned_short_,
+  /* 644 */ &&obj_deallocate_unmanaged_instance_KIND_GCARRAY_gctools__GCArray_moveable_long_,
+  /* 645 */ &&obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__OneTypeRule_O__,
+  /* 646 */ &&obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_chem__ResidueOut_,
+  /* 647 */ &&obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_core__T_O___,
+  /* 648 */ &&obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__CDBond_O__,
+  /* 649 */ &&obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__CDFragment_O__,
+  /* 650 */ &&obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__SourceFileInfo_O__,
+  /* 651 */ &&obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_chem__Atom_O__gctools__smart_ptr_chem__CDNode_O___,
+  /* 652 */ &&obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__EntityNameSetBase_O___,
+  /* 653 */ &&obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__Molecule_O__,
+  /* 654 */ &&obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__Coupling_O__,
+  /* 655 */ &&obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__SimpleBitVector_O__,
+  /* 656 */ &&obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_chem__EnergyDihedral_,
+  /* 657 */ &&obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__Topology_O__,
+  /* 658 */ &&obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__SpecificContext_O___,
+  /* 659 */ &&obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__Entity_O___,
+  /* 660 */ &&obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__ZMatrixInternal_O__,
+  /* 661 */ &&obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_adapt__QDomNode_O__,
+  /* 662 */ &&obj_deallocate_unmanaged_instance_KIND_GCARRAY_gctools__GCArray_moveable_short_,
+  /* 663 */ &&obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_core__DoubleFloat_O___,
+  /* 664 */ &&obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__Stereoisomer_O___,
+  /* 665 */ &&obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_core__T_O_P_,
+  /* 666 */ &&obj_deallocate_unmanaged_instance_KIND_GCARRAY_gctools__GCArray_moveable_int_,
+  /* 667 */ &&obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_chem__AtomPdbRec_,
+  /* 668 */ &&obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_chem__Atom_O__unsigned_int__,
+  /* 669 */ &&obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__Monomer_O__,
+  /* 670 */ &&obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_chem__EnergyAnchorRestraint_,
+  /* 671 */ &&obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__Plug_O___,
+  /* 672 */ &&obj_deallocate_unmanaged_instance_KIND_GCARRAY_gctools__GCArray_moveable_Vector3_,
+  /* 673 */ &&obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__StereoisomerAtoms_O___,
+  /* 674 */ &&obj_deallocate_unmanaged_instance_KIND_GCBITUNITCONTAINER1_gctools__GCBitUnitArray_moveable_1_unsigned_int_int_,
+  /* 675 */ &&obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_chem__RigidBodyAtomInfo_,
   /* 676 */ &&obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__Stereoisomer_O__,
   /* 677 */ &&obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__Atom_O__,
   /* 678 */ &&obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__Rotamer_O__,
@@ -23266,6 +23716,7 @@ static void* OBJ_DEALLOCATOR_table[] = {
  SMART_PTR_FIX(core::T_O::static_class_symbol);
  SMART_PTR_FIX(chem::StereoisomerAtom_O::static_creator);
  SMART_PTR_FIX(core::Cons_O::static_class_symbol);
+ SMART_PTR_FIX(mp::SharedMutex_O::static_creator);
  SMART_PTR_FIX(core::SimpleMDArray_fixnum_O::static_class);
  SMART_PTR_FIX(chem::EnergyStretch_O::static_class);
  SMART_PTR_FIX(chem::Chain_O::static_creator);
@@ -23308,6 +23759,7 @@ static void* OBJ_DEALLOCATOR_table[] = {
  SMART_PTR_FIX(chem::TagSet_O::static_class_symbol);
  SMART_PTR_FIX(chem::Stereoisomer_O::static_class);
  SMART_PTR_FIX(llvmo::LLVMTargetMachine_O::static_class);
+ SMART_PTR_FIX(mp::ConcurrentQueue_O::static_class_symbol);
  SMART_PTR_FIX(chem::FFBaseDb_O::static_creator);
  SMART_PTR_FIX(core::FileStatus_O::static_class_symbol);
  SMART_PTR_FIX(llvmo::BranchInst_O::static_class_symbol);
@@ -23331,6 +23783,7 @@ static void* OBJ_DEALLOCATOR_table[] = {
  SMART_PTR_FIX(core::InstanceCreator_O::static_class);
  SMART_PTR_FIX(core::FunctionFrame_O::static_class_symbol);
  SMART_PTR_FIX(core::StructureObject_O::static_creator);
+ SMART_PTR_FIX(chem::EnergyRigidBodyStaple_O::static_class_symbol);
  SMART_PTR_FIX(chem::StructureComparer_O::static_class);
  SMART_PTR_FIX(core::TagbodyEnvironment_O::static_class_symbol);
  SMART_PTR_FIX(core::SingleDispatchMethodFunction_O::static_creator);
@@ -23401,6 +23854,7 @@ static void* OBJ_DEALLOCATOR_table[] = {
  SMART_PTR_FIX(llvmo::ImmutablePass_O::static_class_symbol);
  SMART_PTR_FIX(clcenv::Inline_O::static_creator);
  SMART_PTR_FIX(core::DoubleFloat_O::static_creator);
+ SMART_PTR_FIX(chem::EnergyRigidBodyStaple_O::static_class);
  SMART_PTR_FIX(chem::StereoisomerAtoms_O::static_class_symbol);
  SMART_PTR_FIX(llvmo::ModuleHandle_O::static_class_symbol);
  SMART_PTR_FIX(core::StrWNs_O::static_class_symbol);
@@ -23408,7 +23862,6 @@ static void* OBJ_DEALLOCATOR_table[] = {
  SMART_PTR_FIX(chem::OneTypeRule_O::static_class_symbol);
  SMART_PTR_FIX(chem::EnergyNonbond_O::static_class_symbol);
  SMART_PTR_FIX(core::Exposer_O::static_class_symbol);
- SMART_PTR_FIX(chem::NVector_O::static_class_symbol);
  SMART_PTR_FIX(chem::Root_O::static_class);
  SMART_PTR_FIX(llvmo::VAArgInst_O::static_creator);
  SMART_PTR_FIX(core::Archive_O::static_creator);
@@ -23440,11 +23893,13 @@ static void* OBJ_DEALLOCATOR_table[] = {
  SMART_PTR_FIX(llvmo::DILexicalBlockBase_O::static_class);
  SMART_PTR_FIX(chem::ConformationExplorerMatch_O::static_class);
  SMART_PTR_FIX(chem::MultiMonomer_O::static_creator);
+ SMART_PTR_FIX(mp::ConcurrentQueue_O::static_creator);
  SMART_PTR_FIX(chem::BondListMatchNode_O::static_creator);
  SMART_PTR_FIX(chem::ProperTorsion_O::static_creator);
  SMART_PTR_FIX(chem::EnergyFixedNonbondRestraint_O::static_creator);
  SMART_PTR_FIX(geom::SimpleVectorCoordinate_O::static_class_symbol);
  SMART_PTR_FIX(chem::ResidueTest_O::static_creator);
+ SMART_PTR_FIX(chem::RigidBodyEnergyFunction_O::static_creator);
  SMART_PTR_FIX(core::HashTableEql_O::static_class);
  SMART_PTR_FIX(chem::ZMatrixAngleInternal_O::static_class_symbol);
  SMART_PTR_FIX(llvmo::LoadInst_O::static_class);
@@ -23578,6 +24033,7 @@ static void* OBJ_DEALLOCATOR_table[] = {
  SMART_PTR_FIX(chem::FFStretchDb_O::static_class_symbol);
  SMART_PTR_FIX(core::HashTableEql_O::static_class_symbol);
  SMART_PTR_FIX(chem::EnergyImproperRestraint_O::static_class);
+ SMART_PTR_FIX(chem::EnergyRigidBodyNonbond_O::static_class);
  SMART_PTR_FIX(llvmo::AttributeSet_O::static_class);
  SMART_PTR_FIX(llvmo::Function_O::static_class);
  SMART_PTR_FIX(core::MDArray_byte32_t_O::static_class_symbol);
@@ -23604,6 +24060,7 @@ static void* OBJ_DEALLOCATOR_table[] = {
  SMART_PTR_FIX(chem::EnergyComponent_O::static_class);
  SMART_PTR_FIX(core::SingleDispatchEffectiveMethodFunction_O::static_creator);
  SMART_PTR_FIX(chem::VirtualSphere_O::static_class);
+ SMART_PTR_FIX(chem::EnergyRigidBodyNonbond_O::static_class_symbol);
  SIMPLE_POINTER_FIX(gctools::global_tagged_Symbol_OP_deleted);
  SMART_PTR_FIX(core::TagbodyEnvironment_O::static_creator);
  SMART_PTR_FIX(chem::Atom_O::static_creator);
@@ -23617,6 +24074,7 @@ static void* OBJ_DEALLOCATOR_table[] = {
  SMART_PTR_FIX(core::SimpleCharacterString_O::static_creator);
  SMART_PTR_FIX(core::BranchSNode_O::static_class);
  SMART_PTR_FIX(core::SimpleMDArray_fixnum_O::static_class_symbol);
+ SMART_PTR_FIX(chem::RigidBodyEnergyFunction_O::static_class_symbol);
  SMART_PTR_FIX(core::CandoException_O::static_class);
  SMART_PTR_FIX(llvmo::DIBuilder_O::static_class);
  SMART_PTR_FIX(chem::ConformationExplorerEntry_O::static_creator);
@@ -23636,6 +24094,7 @@ static void* OBJ_DEALLOCATOR_table[] = {
  SMART_PTR_FIX(core::CandoException_O::static_creator);
  SMART_PTR_FIX(core::SmallMultimap_O::static_class);
  SMART_PTR_FIX(chem::ChemInfo_O::static_class);
+ SMART_PTR_FIX(chem::EnergyRigidBodyComponent_O::static_class);
  SMART_PTR_FIX(core::SimpleMDArray_size_t_O::static_creator);
  SMART_PTR_FIX(core::IntArray_O::static_creator);
  SMART_PTR_FIX(clcenv::SymbolMacro_O::static_class_symbol);
@@ -23696,6 +24155,7 @@ static void* OBJ_DEALLOCATOR_table[] = {
  SMART_PTR_FIX(core::BitVectorNs_O::static_class_symbol);
  SMART_PTR_FIX(core::SpecialForm_O::static_class_symbol);
  SMART_PTR_FIX(clcenv::SpecialOperatorInfo_O::static_creator);
+ SMART_PTR_FIX(mp::SharedMutex_O::static_class_symbol);
  SMART_PTR_FIX(llvmo::IndirectBrInst_O::static_class);
  SMART_PTR_FIX(core::PosixTime_O::static_class);
  SMART_PTR_FIX(chem::EnergyComponent_O::static_class_symbol);
@@ -23862,6 +24322,7 @@ static void* OBJ_DEALLOCATOR_table[] = {
  SMART_PTR_FIX(llvmo::TerminatorInst_O::static_class_symbol);
  SMART_PTR_FIX(chem::ChemInfoNode_O::static_class_symbol);
  SMART_PTR_FIX(llvmo::DINodeArray_O::static_creator);
+ SMART_PTR_FIX(mp::BlockingConcurrentQueue_O::static_class_symbol);
  SMART_PTR_FIX(chem::ZMatrixAngleInternal_O::static_class);
  SMART_PTR_FIX(chem::RingCoupling_O::static_creator);
  SMART_PTR_FIX(llvmo::TargetLibraryInfoWrapperPass_O::static_creator);
@@ -23988,6 +24449,7 @@ static void* OBJ_DEALLOCATOR_table[] = {
  SMART_PTR_FIX(clcenv::BlockInfo_O::static_creator);
  SMART_PTR_FIX(llvmo::ConstantFP_O::static_creator);
  SMART_PTR_FIX(chem::CalculatePositionUsingInternals_O::static_class);
+ SMART_PTR_FIX(chem::EnergyRigidBodyComponent_O::static_class_symbol);
  SMART_PTR_FIX(chem::Oligomer_O::static_class_symbol);
  SMART_PTR_FIX(chem::MacroModelFile_O::static_creator);
  SMART_PTR_FIX(llvmo::DIBasicType_O::static_creator);
@@ -24072,10 +24534,12 @@ static void* OBJ_DEALLOCATOR_table[] = {
  SMART_PTR_FIX(llvmo::DICompileUnit_O::static_creator);
  SMART_PTR_FIX(chem::BondList_O::static_creator);
  SMART_PTR_FIX(chem::Minimizer_O::static_class);
+ SMART_PTR_FIX(chem::EnergyRigidBodyNonbond_O::static_creator);
  SMART_PTR_FIX(core::SequenceStepper_O::static_class);
  SMART_PTR_FIX(clcenv::FunctionType_O::static_class);
  SMART_PTR_FIX(core::SimpleMDArray_size_t_O::static_class_symbol);
  SMART_PTR_FIX(clcenv::SymbolMacro_O::static_class);
+ SMART_PTR_FIX(mp::BlockingConcurrentQueue_O::static_creator);
  SMART_PTR_FIX(core::SmallMap_O::static_class);
  SMART_PTR_FIX(chem::StepReport_O::static_class_symbol);
  SMART_PTR_FIX(llvmo::IRBuilderBase_O::static_class_symbol);
@@ -24131,7 +24595,6 @@ static void* OBJ_DEALLOCATOR_table[] = {
  SMART_PTR_FIX(chem::RingClosingMate_O::static_creator);
  SMART_PTR_FIX(core::UserData_O::static_class);
  SMART_PTR_FIX(core::SingleFloat_dummy_O::static_creator);
- SMART_PTR_FIX(chem::NVector_O::static_creator);
  SMART_PTR_FIX(core::SingleDispatchGenericFunctionClosure_O::static_class);
  SMART_PTR_FIX(clcenv::LexicalVariable_O::static_class);
  SMART_PTR_FIX(chem::Aggregate_O::static_class_symbol);
@@ -24355,7 +24818,6 @@ static void* OBJ_DEALLOCATOR_table[] = {
  SMART_PTR_FIX(core::ValueFrame_O::static_creator);
  SMART_PTR_FIX(chem::JumpPlug_O::static_class_symbol);
  SMART_PTR_FIX(core::StrNs_O::static_class_symbol);
- SMART_PTR_FIX(chem::NVector_O::static_class);
  SMART_PTR_FIX(core::Number_O::static_class_symbol);
  SMART_PTR_FIX(core::UnwindProtectEnvironment_O::static_creator);
  SMART_PTR_FIX(llvmo::TerminatorInst_O::static_class);
@@ -24459,6 +24921,7 @@ static void* OBJ_DEALLOCATOR_table[] = {
  SMART_PTR_FIX(core::LoadTimeValues_O::static_class);
  SMART_PTR_FIX(chem::SuperposeSelectedAtoms_O::static_class_symbol);
  SMART_PTR_FIX(clcenv::FunctionIgnore_O::static_class_symbol);
+ SMART_PTR_FIX(chem::RigidBodyEnergyFunction_O::static_class);
  SMART_PTR_FIX(chem::Logical_O::static_class);
  SMART_PTR_FIX(chem::AtomReferenceBase_O::static_class_symbol);
  SMART_PTR_FIX(clcenv::VariableIgnore_O::static_creator);
@@ -24513,11 +24976,13 @@ static void* OBJ_DEALLOCATOR_table[] = {
  SMART_PTR_FIX(core::WrappedPointer_O::static_class_symbol);
  SMART_PTR_FIX(chem::RestrainedExoCyclicAtom_O::static_creator);
  TAGGED_POINTER_FIX(_lisp);
+ SMART_PTR_FIX(chem::EnergyRigidBodyComponent_O::static_creator);
  SMART_PTR_FIX(chem::TagSet_O::static_creator);
  SMART_PTR_FIX(chem::FFAngleDb_O::static_class);
  SMART_PTR_FIX(llvmo::Target_O::static_class_symbol);
  SMART_PTR_FIX(core::Bignum_O::static_class_symbol);
  SMART_PTR_FIX(core::BroadcastStream_O::static_class_symbol);
+ SMART_PTR_FIX(mp::BlockingConcurrentQueue_O::static_class);
  SMART_PTR_FIX(chem::Matter_O::static_class);
  SMART_PTR_FIX(core::SymbolToEnumConverter_O::static_class);
  SMART_PTR_FIX(core::Null_O::static_class);
@@ -24761,8 +25226,8 @@ static void* OBJ_DEALLOCATOR_table[] = {
  SMART_PTR_FIX(clcenv::BlockInfo_O::static_class_symbol);
  SMART_PTR_FIX(llvmo::ArrayType_O::static_class_symbol);
  SMART_PTR_FIX(chem::Command_O::static_class);
- SMART_PTR_FIX(chem::ZMatrix_O::static_class);
  SMART_PTR_FIX(core::FileStream_O::static_creator);
+ SMART_PTR_FIX(chem::ZMatrix_O::static_class);
  SMART_PTR_FIX(clcenv::VariableType_O::static_class_symbol);
  SMART_PTR_FIX(chem::SpecificContext_O::static_creator);
  SMART_PTR_FIX(llvmo::ConstantPointerNull_O::static_class_symbol);
@@ -24775,8 +25240,9 @@ static void* OBJ_DEALLOCATOR_table[] = {
  SMART_PTR_FIX(clcenv::Entry_O::static_creator);
  SMART_PTR_FIX(core::SimpleMDArrayT_O::static_class_symbol);
  SMART_PTR_FIX(llvmo::PHINode_O::static_class_symbol);
- SMART_PTR_FIX(chem::ConformationExplorerMatch_O::static_class_symbol);
+ SMART_PTR_FIX(chem::ScoringFunction_O::static_class);
  SMART_PTR_FIX(core::LoadArchive_O::static_creator);
+ SMART_PTR_FIX(chem::ConformationExplorerMatch_O::static_class_symbol);
  SMART_PTR_FIX(llvmo::VAArgInst_O::static_class_symbol);
  SMART_PTR_FIX(chem::CandoDatabase_O::static_class_symbol);
  SMART_PTR_FIX(core::LambdaListHandler_O::static_class_symbol);
@@ -24785,6 +25251,7 @@ static void* OBJ_DEALLOCATOR_table[] = {
  SMART_PTR_FIX(geom::OVector2_O::static_creator);
  SMART_PTR_FIX(llvmo::BasicBlock_O::static_class_symbol);
  SMART_PTR_FIX(chem::FFPtorDb_O::static_class);
+ SMART_PTR_FIX(chem::ScoringFunction_O::static_class_symbol);
  SMART_PTR_FIX(core::MDArrayT_O::static_creator);
  SMART_PTR_FIX(chem::FFNonbond_O::static_class);
  SMART_PTR_FIX(core::FunctionClosure_O::static_class_symbol);
@@ -24803,8 +25270,8 @@ static void* OBJ_DEALLOCATOR_table[] = {
  SMART_PTR_FIX(chem::FFTypesDb_O::static_class_symbol);
  SMART_PTR_FIX(chem::SuperposeEngine_O::static_class);
  SMART_PTR_FIX(core::BitVectorNs_O::static_class);
- SMART_PTR_FIX(core::SimpleVectorFloat_O::static_class_symbol);
  SMART_PTR_FIX(core::Iterator_O::static_class);
+ SMART_PTR_FIX(core::SimpleVectorFloat_O::static_class_symbol);
  SMART_PTR_FIX(asttooling::AsttoolingExposer_O::static_creator);
  SMART_PTR_FIX(llvmo::LoadInst_O::static_class_symbol);
  SMART_PTR_FIX(llvmo::DISubroutineType_O::static_class_symbol);
@@ -24815,11 +25282,12 @@ static void* OBJ_DEALLOCATOR_table[] = {
  SMART_PTR_FIX(chem::MacroModelFile_O::static_class);
  SMART_PTR_FIX(chem::RingFinder_O::static_class);
  SMART_PTR_FIX(llvmo::APInt_O::static_class_symbol);
+ SMART_PTR_FIX(mp::SharedMutex_O::static_class);
  SMART_PTR_FIX(llvmo::InvokeInst_O::static_class_symbol);
  SMART_PTR_FIX(core::ValueEnvironment_O::static_class_symbol);
  SMART_PTR_FIX(llvmo::ResumeInst_O::static_class);
- SMART_PTR_FIX(llvmo::EngineBuilder_O::static_class);
  SMART_PTR_FIX(chem::ForceField_O::static_creator);
+ SMART_PTR_FIX(llvmo::EngineBuilder_O::static_class);
  SMART_PTR_FIX(core::HashTableEq_O::static_class_symbol);
  SMART_PTR_FIX(chem::Monomer_O::static_creator);
  SMART_PTR_FIX(core::ExternalObject_O::static_class);
@@ -24859,6 +25327,7 @@ static void* OBJ_DEALLOCATOR_table[] = {
  SMART_PTR_FIX(llvmo::Constant_O::static_class_symbol);
  SMART_PTR_FIX(chem::WildElementDict_O::static_class);
  SMART_PTR_FIX(chem::BondTest_O::static_class_symbol);
+ SMART_PTR_FIX(chem::ScoringFunction_O::static_creator);
  SMART_PTR_FIX(core::BlockEnvironment_O::static_creator);
  SMART_PTR_FIX(clcenv::LocalMacroInfo_O::static_creator);
  SMART_PTR_FIX(llvmo::FenceInst_O::static_creator);
@@ -24875,8 +25344,8 @@ static void* OBJ_DEALLOCATOR_table[] = {
  SMART_PTR_FIX(core::Symbol_O::static_class_symbol);
  SMART_PTR_FIX(clcenv::SpecialOperatorInfo_O::static_class_symbol);
  SMART_PTR_FIX(core::FunctionContainerEnvironment_O::static_class);
- SMART_PTR_FIX(chem::Bond_O::static_class);
  SMART_PTR_FIX(core::StringStream_O::static_creator);
+ SMART_PTR_FIX(chem::Bond_O::static_class);
  SMART_PTR_FIX(chem::Mate_O::static_creator);
  SMART_PTR_FIX(core::SimpleVector_int64_t_O::static_creator);
  SMART_PTR_FIX(llvmo::AtomicRMWInst_O::static_class_symbol);
@@ -24886,8 +25355,8 @@ static void* OBJ_DEALLOCATOR_table[] = {
  SMART_PTR_FIX(geom::Color_O::static_creator);
  SMART_PTR_FIX(core::Creator_O::static_class);
  SMART_PTR_FIX(llvmo::Instruction_O::static_creator);
- SMART_PTR_FIX(core::SimpleVector_byte64_t_O::static_creator);
  SMART_PTR_FIX(chem::ReportBase_O::static_class);
+ SMART_PTR_FIX(core::SimpleVector_byte64_t_O::static_creator);
  SMART_PTR_FIX(units::UnitsExposer_O::static_creator);
  SMART_PTR_FIX(chem::RingClosingMate_O::static_class_symbol);
  SMART_PTR_FIX(geom::OVector3_O::static_class_symbol);
@@ -24898,22 +25367,24 @@ static void* OBJ_DEALLOCATOR_table[] = {
  SMART_PTR_FIX(geom::BoundingBox_O::static_creator);
  SMART_PTR_FIX(core::ClosureWithFrame_O::static_class_symbol);
  SMART_PTR_FIX(chem::FFTypesDb_O::static_creator);
- SMART_PTR_FIX(chem::FFStretchDb_O::static_creator);
  SMART_PTR_FIX(core::MDArray_int16_t_O::static_class_symbol);
+ SMART_PTR_FIX(chem::FFStretchDb_O::static_creator);
+ SMART_PTR_FIX(mp::ConcurrentQueue_O::static_class);
  SMART_PTR_FIX(chem::RestrainedPiBond_O::static_creator);
  SMART_PTR_FIX(core::WeakKeyHashTable_O::static_class);
- SMART_PTR_FIX(chem::BondMatchNode_O::static_creator);
  SMART_PTR_FIX(chem::AGEdge_O::static_class);
+ SMART_PTR_FIX(chem::BondMatchNode_O::static_creator);
  SMART_PTR_FIX(core::ValueEnvironment_O::static_creator);
  SMART_PTR_FIX(chem::ForceField_O::static_class_symbol);
  SMART_PTR_FIX(chem::OutPlug_O::static_class_symbol);
  SMART_PTR_FIX(llvmo::SwitchInst_O::static_creator);
+ SMART_PTR_FIX(chem::EnergyRigidBodyStaple_O::static_creator);
  SMART_PTR_FIX(adapt::AdaptExposer_O::static_class);
  SMART_PTR_FIX(chem::Structure_Old_ListEntry_O::static_class_symbol);
  SMART_PTR_FIX(chem::Plug_O::static_creator);
  SMART_PTR_FIX(core::SimpleMDArrayBit_O::static_class);
- SMART_PTR_FIX(llvmo::DILexicalBlock_O::static_creator);
  SMART_PTR_FIX(llvmo::APFloat_O::static_class);
+ SMART_PTR_FIX(llvmo::DILexicalBlock_O::static_creator);
  SMART_PTR_FIX(core::Array_O::static_class);
  SMART_PTR_FIX(core::SingleFloat_dummy_O::static_class_symbol);
  SMART_PTR_FIX(chem::Chain_O::static_class);
