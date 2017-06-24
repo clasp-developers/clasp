@@ -50,6 +50,8 @@ RUN clasp -f "setup-cando"\
 
 RUN clasp -e '(load "/home/app/quicklisp/setup.lisp")'\
           -e "(ql:quickload :cl-jupyter)"\
+          -e "(ql:quickload :cl-json)"\
+          -e "(ql:quickload :cl-base64)"\
           -e "(ql:quickload :pzmq)"\
           -e "(ql:quickload :cffi)"\
           -e "(ql:quickload :cffi-grovel)"\
