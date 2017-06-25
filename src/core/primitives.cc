@@ -971,23 +971,18 @@ CL_DECLARE();
 CL_DOCSTRING("constantp");
 CL_DEFUN bool cl__constantp(T_sp obj, T_sp env) {
   // ignore env
-  if (cl__numberp(obj))
-    return true;
-  if (cl__characterp(obj))
-    return true;
-  if (core__arrayp(obj))
-    return true;
-  // TODO add various kinds of array
-  if ((obj).consp() && oCar(obj) == cl::_sym_quote)
-    return true;
-  if (obj.nilp())
-    return true;
+  if (obj.nilp()) return true;
   if (cl__symbolp(obj)) {
-    if (cl__keywordp(obj))
-      return true;
+    if (cl__keywordp(obj)) return true;
     return gc::As<Symbol_sp>(obj)->isConstant();
   }
-  return false;
+  if ((obj).consp()) {
+    if (oCar(obj) == cl::_sym_quote)
+      // more analysis could be done here.
+      return true;
+    else return false;
+  }
+  return true;
 };
 
 CL_LAMBDA(arg);
