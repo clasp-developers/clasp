@@ -567,10 +567,7 @@ CL_DEFUN T_mv cl__array_displacement(Array_sp array) {
   return Values(mdarray->displacedTo(),clasp_make_fixnum(mdarray->displacedIndexOffset()));
 }
 
-CL_LAMBDA(dest destStart orig origStart len);
-CL_DECLARE();
-CL_DOCSTRING("copy_subarray");
-CL_DEFUN void core__copy_subarray(Array_sp dest, Fixnum_sp destStart, Array_sp orig, Fixnum_sp origStart, Fixnum_sp len) {
+void core__copy_subarray(Array_sp dest, Fixnum_sp destStart, Array_sp orig, Fixnum_sp origStart, Fixnum_sp len) {
   // TODO: THIS NEEDS TO BE OPTIMIZED FOR DIFFERENT TYPES OF ARRAYS!!!!!!!
   //       Currently this is very inefficient
   intptr_clasp_t iLen = unbox_fixnum(len);
