@@ -36,10 +36,11 @@
       (bformat nil "%s-CONTAB%d" suffix *value-table-id*)
       (bformat nil "CONTAB%d" (incf *value-table-id*))))
 
-(defstruct (constant-creator (:type vector) :named) index name arguments)
-(defstruct (constant-call (:type vector) :named) function source-pos-info holder)
-(defstruct (constant-side-effect (:type vector) :named) name arguments)
-(defstruct (constant-runtime (:type vector) :named) index object)
+(defstruct (literal-node-toplevel-funcall (:type vector) :named) arguments)
+(defstruct (literal-node-creator (:type vector) :named) index name arguments)
+(defstruct (literal-node-call (:type vector) :named) function source-pos-info holder)
+(defstruct (literal-node-side-effect (:type vector) :named) name arguments)
+(defstruct (literal-node-runtime (:type vector) :named) index object)
 
 (defun constant-list-dump (constant-list)
   (dolist (e constant-list)
@@ -54,16 +55,13 @@
   (push node *run-all-objects*)
   node)
 
-(defun run-all-nodes-in-order ()
-  (reverse *run-all-objects*))
-
 (defun calculate-table-size (nodes)
   "Find the highest index and return 1+ that"
   (let ((highest-index -1))
     (dolist (node nodes)
       #+(or)(bformat t "generate-run-all-code  generating node: %s\n" node)
-      (when (literal:constant-creator-p node)
-        (setf highest-index (max highest-index (literal:constant-creator-index node)))))
+      (when (literal:literal-node-creator-p node)
+        (setf highest-index (max highest-index (literal:literal-node-creator-index node)))))
     (1+ highest-index)))
 
 ;;; ------------------------------------------------------------
@@ -105,7 +103,7 @@
 (defvar *single-float-coalesce*)
 (defvar *double-float-coalesce*)
 (defvar *identity-coalesce*)
-(defvar *constant-index-to-constant-creator*)
+(defvar *constant-index-to-literal-node-creator*)
 (defvar *llvm-values*)
 
 (defvar *with-ltv-depth* 0)
@@ -120,14 +118,14 @@ the value is put into *default-load-time-value-vector* and its index is returned
 
 (defun add-creator (name index &rest args)
   "Call the named function after converting fixnum args to llvm constants"
-  (let ((creator (make-constant-creator :index index :name name :arguments args)))
-    (setf (gethash index *constant-index-to-constant-creator*) creator)
+  (let ((creator (make-literal-node-creator :index index :name name :arguments args)))
+    (setf (gethash index *constant-index-to-literal-node-creator*) creator)
     (run-all-add-node creator)
     creator))
 
 (defun add-side-effect-call (name &rest args)
   "Call the named function after converting fixnum args to llvm constants"
-  (let ((rase (make-constant-side-effect :name name :arguments args)))
+  (let ((rase (make-literal-node-side-effect :name name :arguments args)))
     (run-all-add-node rase)
     rase))
 
@@ -301,20 +299,20 @@ the value is put into *default-load-time-value-vector* and its index is returned
 
 
 
-(defun generate-run-all-destroy-nodes (nodes)
+(defun generate-run-all-from-literal-nodes (nodes)
   (labels ((ensure-creator-llvm-value (obj)
              "Lookup or create the llvm::Value for obj"
              (or (gethash obj *llvm-values*)
                  (setf (gethash obj *llvm-values*)
-                       (irc-intrinsic-call (literal:constant-creator-name obj)
+                       (irc-intrinsic-call (literal:literal-node-creator-name obj)
                                            (list*
                                             *gcroots-in-module*
-                                            (cmp:jit-constant-size_t (constant-creator-index obj))
-                                            (fix-args (constant-creator-arguments obj)))
-                                           #+(or)(bformat nil "CONTAB[%d]" (constant-creator-index obj))))))
+                                            (cmp:jit-constant-size_t (literal-node-creator-index obj))
+                                            (fix-args (literal-node-creator-arguments obj)))
+                                           #+(or)(bformat nil "CONTAB[%d]" (literal-node-creator-index obj))))))
            (lookup-arg (creator)
              (ensure-creator-llvm-value creator)
-             (let* ((idx (constant-creator-index creator))
+             (let* ((idx (literal-node-creator-index creator))
                     (entry (llvm-sys:create-geparray cmp:*irbuilder*
                                                      cmp:*load-time-value-holder-global-var*
                                                      (list (jit-constant-i32 0)
@@ -328,7 +326,7 @@ the value is put into *default-load-time-value-vector* and its index is returned
                        (cond
                          ((fixnump x) (jit-constant-i64 x))
                          ((stringp x) (jit-constant-unique-string-ptr x))
-                         ((literal:constant-creator-p x) (lookup-arg x))
+                         ((literal:literal-node-creator-p x) (lookup-arg x))
                          (t x))) ;;(error "Illegal run-all entry ~a" x))))
                      args)))
     (cond
@@ -338,8 +336,8 @@ the value is put into *default-load-time-value-vector* and its index is returned
               (front nodes)
               (back (cdr middle-node))
               (_ (rplacd middle-node nil)) ; break the list in two
-              (front-run-all (generate-run-all-destroy-nodes front))
-              (back-run-all (generate-run-all-destroy-nodes back)))
+              (front-run-all (generate-run-all-from-literal-nodes front))
+              (back-run-all (generate-run-all-from-literal-nodes back)))
          (cmp::with-make-new-run-all (sub-run-all)
            (irc-intrinsic-call "cc_invoke_sub_run_all_function" (list front-run-all))
            (irc-intrinsic-call "cc_invoke_sub_run_all_function" (list back-run-all))
@@ -349,13 +347,15 @@ the value is put into *default-load-time-value-vector* and its index is returned
          (dolist (node nodes)
            #+(or)(bformat t "generate-run-all-code  generating node: %s\n" node)
            (cond
-             ((literal:constant-creator-p node)
+             ((literal-node-creator-p node)
               (ensure-creator-llvm-value node))
-             ((literal:constant-side-effect-p node)
-              (let* ((fn-name (literal:constant-side-effect-name node))
-                     (args (literal:constant-side-effect-arguments node))
+             ((literal-node-side-effect-p node)
+              (let* ((fn-name (literal-node-side-effect-name node))
+                     (args (literal-node-side-effect-arguments node))
                      (fix-args (fix-args args)))
                 (irc-intrinsic-call fn-name fix-args)))
+             ((literal-node-toplevel-funcall-p node)
+              (cmp:irc-intrinsic-call "ltvc_toplevel_funcall" (literal-node-toplevel-funcall-arguments node)))
              (t (error "Unknown run-all node ~a" node))))
          foo)))))
 
@@ -366,21 +366,18 @@ in the RUN-ALL function to recreate those objects in a constants-table.
 The body-fn must return an llvm::Function object that results from compiling code that
 can be arranged to be evaluated in the RUN-ALL function and that will use all of the values in
 the constants-table."
-  (let* ((*run-all-objects* nil)
-         (body-return-fn (funcall body-fn))
-         (constants-nodes (nreverse *run-all-objects*)))
+  (let* (#++(*run-all-objects* nil)
+            (body-return-fn (funcall body-fn))
+            #++(constants-nodes (nreverse *run-all-objects*)))
     (or (llvm-sys:valuep body-return-fn)
         (error "The body of with-ltv MUST return a compiled llvm::Function object resulting from compiling a thunk - instead it returned: ~a" body-return-fn))
-    (with-run-all-body-codegen
-        (let ((sub-run-all (generate-run-all-destroy-nodes constants-nodes))) 
-         (cmp:irc-intrinsic-call "cc_invoke_sub_run_all_function" (list sub-run-all)))
-      ;; Generate code for the constants-table DSL
-      (cond
-        ((eq type :toplevel)
-         (cmp:irc-intrinsic-call "ltvc_toplevel_funcall" (list body-return-fn
-                                                               (jit-constant-unique-string-ptr (llvm-sys:get-name body-return-fn)))))
-        ((eq type :ltv) body-return-fn)
-        (t (error "bad type"))))))
+    (cond
+      ((eq type :toplevel)
+       (run-all-add-node (make-literal-node-toplevel-funcall
+                          :arguments (list body-return-fn
+                                           (jit-constant-unique-string-ptr (llvm-sys:get-name body-return-fn))))))
+      ((eq type :ltv) body-return-fn)
+      (t (error "bad ltv type: ~a" type)))))
 
 (defmacro with-ltv ( &body body)
   `(let ((*with-ltv-depth* (1+ *with-ltv-depth*)))
@@ -394,7 +391,7 @@ Return the index of the load-time-value"
     `(let* ((*with-ltv-depth* (1+ *with-ltv-depth*))
             (,index (new-table-index))
             (,ltv-func (do-ltv :ltv (lambda () ,@body))))
-       (evaluate-function-into-load-time-value ,index ,ltv-func)
+       (add-creator "ltvc_set_ltv_funcall" ,index ,ltv-func (jit-constant-unique-string-ptr (llvm-sys:get-name ,ltv-func)))
        ,index)))
        
 (defmacro with-top-level-form ( &body body)
@@ -403,7 +400,7 @@ Return the index of the load-time-value"
 
 
 
-(defun do-constants-table (body-fn)
+(defun do-literal-table (body-fn)
   (let ((*gcroots-in-module*
          (llvm-sys:make-global-variable *the-module*
                                         cmp:%gcroots-in-module% ; type
@@ -439,10 +436,16 @@ Return the index of the load-time-value"
         (*built-in-class-coalesce* (make-similarity-table #'eq))
         (*single-float-coalesce* (make-similarity-table #'eql))
         (*double-float-coalesce* (make-similarity-table #'eql))
-        (*constant-index-to-constant-creator* (make-hash-table :test #'eql))
+        (*constant-index-to-literal-node-creator* (make-hash-table :test #'eql))
         (*table-index* 0)
-        (real-name (next-value-table-holder-name)))
+        (real-name (next-value-table-holder-name))
+        (*run-all-objects* nil))
     (funcall body-fn)
+    ;; Generate the run-all function here
+    (with-run-all-body-codegen
+        (let* ((ordered-run-all-nodes (nreverse *run-all-objects*))
+               (sub-run-all (generate-run-all-from-literal-nodes ordered-run-all-nodes)))
+          (cmp:irc-intrinsic-call "cc_invoke_sub_run_all_function" (list sub-run-all))))
     (let* ((table-entries *table-index*))
       (when (> table-entries 0)
         ;; We have a new table, replace the old one and generate code to register the new one
@@ -468,8 +471,8 @@ Return the index of the load-time-value"
           ;; Erase the dummy holder
           (llvm-sys:erase-from-parent cmp:*load-time-value-holder-global-var*))))))
 
-(defmacro with-constants-table (&body body)
-  `(do-constants-table (lambda () ,@body)))
+(defmacro with-literal-table (&body body)
+  `(do-literal-table (lambda () ,@body)))
 
 (defmacro with-rtv (&body body)
   "Evaluate the code in the body in an environment where run-time values are assigned integer indices
@@ -510,10 +513,10 @@ Return the orderered-raw-constants-list and the constants-table GlobalVariable"
                (literal::constant-list-dump run-time-values)
                (bformat t "Number of run-time-values: %d\n" (length run-time-values)))
        (when (> num-elements 0)
-         (let* ((ordered-constant-list (sort run-time-values #'< :key #'constant-runtime-index))
+         (let* ((ordered-constant-list (sort run-time-values #'< :key #'literal-node-runtime-index))
                 (array-type (llvm-sys:array-type-get %tsp% (length ordered-constant-list))))
            (setf ordered-raw-constant-list
-                 (mapcar (lambda (x) (constant-runtime-object x)) ordered-constant-list)
+                 (mapcar (lambda (x) (literal-node-runtime-object x)) ordered-constant-list)
                  constant-table (llvm-sys:make-global-variable *the-module*
                                                                array-type
                                                                nil ; isConstant
@@ -538,10 +541,10 @@ Return the orderered-raw-constants-list and the constants-table GlobalVariable"
             (object-similarity-table-and-creator object read-only-p)
           (let ((existing (find-similar object similarity)))
             (if existing
-                (values (gethash existing *constant-index-to-constant-creator*) t)
+                (values (gethash existing *constant-index-to-literal-node-creator*) t)
                 (let ((index (new-table-index)))
                   (add-similar object index similarity)
-                  (setf (gethash index *constant-index-to-constant-creator*) creator)
+                  (setf (gethash index *constant-index-to-literal-node-creator*) creator)
                   (values (funcall creator object index read-only-p) t))))))))
 
 
@@ -578,7 +581,7 @@ Return the orderered-raw-constants-list and the constants-table GlobalVariable"
           (if existing
               (values existing T)
               (values (let* ((index (new-table-index))
-                             (new-obj (make-constant-runtime :index index :object object)))
+                             (new-obj (make-literal-node-runtime :index index :object object)))
                         (add-similar object new-obj similarity)
                         (run-all-add-node new-obj)
                         new-obj)
@@ -636,16 +639,16 @@ Return the orderered-raw-constants-list and the constants-table GlobalVariable"
         (multiple-value-bind (data in-array)
             (load-time-reference-literal object read-only-p)
           (if in-array
-              (let ((index (constant-creator-index data)))
+              (let ((index (literal-node-creator-index data)))
                 (values index T))
               (values data nil)))
-        (multiple-value-bind (immediate?constant-runtime in-array)
+        (multiple-value-bind (immediate?literal-node-runtime in-array)
             (run-time-reference-literal object read-only-p)
           (if in-array
-              (let* ((constant-runtime immediate?constant-runtime)
-                     (index (constant-runtime-index constant-runtime)))
+              (let* ((literal-node-runtime immediate?literal-node-runtime)
+                     (index (literal-node-runtime-index literal-node-runtime)))
                 (values index T))
-              (let ((immediate immediate?constant-runtime))
+              (let ((immediate immediate?literal-node-runtime))
                 (values immediate nil)))))))
 
 ;;; ------------------------------------------------------------
@@ -663,15 +666,15 @@ Return the orderered-raw-constants-list and the constants-table GlobalVariable"
 
 (defun codegen-rtv (result obj)
   "bclasp calls this to get copy the run-time-value for obj into result"
-  (multiple-value-bind (immediate?constant-runtime in-array)
+  (multiple-value-bind (immediate?literal-node-runtime in-array)
       (run-time-reference-literal obj t)
     (if in-array
-        (let* ((constant-runtime immediate?constant-runtime)
-               (index (constant-runtime-index constant-runtime)))
+        (let* ((literal-node-runtime immediate?literal-node-runtime)
+               (index (literal-node-runtime-index literal-node-runtime)))
           (when result
             (irc-store (literal:constants-table-value index) result))
           index)
-        (let ((immediate immediate?constant-runtime))
+        (let ((immediate immediate?literal-node-runtime))
           (when result
             (irc-store-t* immediate result))
           :poison-value-from-codegen-rtv))))
