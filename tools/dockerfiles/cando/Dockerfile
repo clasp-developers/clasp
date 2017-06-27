@@ -48,6 +48,8 @@ RUN clasp -f "setup-cando"\
           -e "(swank-loader:init :delete nil :reload nil :load-contribs nil)"\
           -e "(quit)"
 
+RUN mkdir /home/app/logs/
+
 RUN clasp -e '(load "/home/app/quicklisp/setup.lisp")'\
           -e "(ql:quickload :cl-jupyter)"\
           -e "(ql:quickload :cl-json)"\

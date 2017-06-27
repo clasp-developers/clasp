@@ -12172,6 +12172,7 @@ public:
 // not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(chem::RigidBodyEnergyFunction_O),_Name.NO-NAME._M_allocated_capacity), "_Name.NO-NAME._M_allocated_capacity" }, // public: (T NIL T) fixable: NIL good-name: T
  {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(chem::RigidBodyEnergyFunction_O),_Debug), "_Debug" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(chem::RigidBodyEnergyFunction_O),_RigidBodies), "_RigidBodies" }, // public: (T) fixable: NIL good-name: T
+ {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::SimpleVectorDouble_O>), offsetof(SAFE_TYPE_MACRO(chem::RigidBodyEnergyFunction_O),_SavedCoordinates), "_SavedCoordinates" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::List_V>), offsetof(SAFE_TYPE_MACRO(chem::RigidBodyEnergyFunction_O),_Terms), "_Terms" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
 { class_kind, KIND_LISPALLOC_chem__EnergyFunction_O, sizeof(chem::EnergyFunction_O), 0, "chem::EnergyFunction_O" },
 // not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(chem::EnergyFunction_O),_Name._M_string_length), "_Name._M_string_length" }, // public: (T NIL) fixable: NIL good-name: T
@@ -12991,8 +12992,7 @@ public:
  {  fixed_field, ctype_double, sizeof(double), offsetof(SAFE_TYPE_MACRO(chem::EnergyRigidBodyNonbond_O),_ScaleElectrostatic), "_ScaleElectrostatic" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, ctype_double, sizeof(double), offsetof(SAFE_TYPE_MACRO(chem::EnergyRigidBodyNonbond_O),_EnergyVdw), "_EnergyVdw" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, ctype_double, sizeof(double), offsetof(SAFE_TYPE_MACRO(chem::EnergyRigidBodyNonbond_O),_EnergyElectrostatic), "_EnergyElectrostatic" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<chem::FFNonbondDb_O>), offsetof(SAFE_TYPE_MACRO(chem::EnergyRigidBodyNonbond_O),_FFNonbondDb), "_FFNonbondDb" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::MDArray_byte32_t_O>), offsetof(SAFE_TYPE_MACRO(chem::EnergyRigidBodyNonbond_O),_RigidBodyEndAtom), "_RigidBodyEndAtom" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
+ {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::SimpleVector_byte32_t_O>), offsetof(SAFE_TYPE_MACRO(chem::EnergyRigidBodyNonbond_O),_RigidBodyEndAtom), "_RigidBodyEndAtom" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, TAGGED_POINTER_OFFSET, sizeof(gctools::tagged_pointer<gctools::GCVector_moveable<chem::RigidBodyAtomInfo>>), offsetof(SAFE_TYPE_MACRO(chem::EnergyRigidBodyNonbond_O),_AtomInfoTable._Vector._Contents), "_AtomInfoTable._Vector._Contents" }, // public: (T T T) fixable: TAGGED-POINTER-FIX good-name: T
 { class_kind, KIND_LISPALLOC_chem__EnergyRigidBodyStaple_O, sizeof(chem::EnergyRigidBodyStaple_O), 0, "chem::EnergyRigidBodyStaple_O" },
 // not-exposing {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(chem::EnergyRigidBodyStaple_O),_Enabled), "_Enabled" }, // public: (NIL) fixable: NIL good-name: T
@@ -14116,8 +14116,9 @@ public:
 {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<chem::EnergyRigidBodyStaple>),_Data), "_Data" },
 {  variable_capacity, sizeof(chem::EnergyRigidBodyStaple), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<chem::EnergyRigidBodyStaple>),_End), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<chem::EnergyRigidBodyStaple>),_Capacity), NULL },
  {    variable_field, ctype_double, sizeof(double), offsetof(SAFE_TYPE_MACRO(chem::EnergyRigidBodyStaple),ks), "ks" }, // public: (T) fixable: NIL good-name: T
- {    variable_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(chem::EnergyRigidBodyStaple),rigidBodyA), "rigidBodyA" }, // public: (T) fixable: NIL good-name: T
- {    variable_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(chem::EnergyRigidBodyStaple),rigidBodyB), "rigidBodyB" }, // public: (T) fixable: NIL good-name: T
+ {    variable_field, ctype_double, sizeof(double), offsetof(SAFE_TYPE_MACRO(chem::EnergyRigidBodyStaple),r0), "r0" }, // public: (T) fixable: NIL good-name: T
+ {    variable_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(chem::EnergyRigidBodyStaple),rigidBodyK), "rigidBodyK" }, // public: (T) fixable: NIL good-name: T
+ {    variable_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(chem::EnergyRigidBodyStaple),rigidBodyL), "rigidBodyL" }, // public: (T) fixable: NIL good-name: T
 { container_kind, KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__FFVdw_O__, sizeof(gctools::GCVector_moveable<gctools::smart_ptr<chem::FFVdw_O>>), 0, "gctools::GCVector_moveable<gctools::smart_ptr<chem::FFVdw_O>>" },
 {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<chem::FFVdw_O>>),_Data), "_Data" },
 {  variable_capacity, sizeof(gctools::smart_ptr<chem::FFVdw_O>), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<chem::FFVdw_O>>),_End), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<chem::FFVdw_O>>),_Capacity), NULL },
@@ -23904,8 +23905,8 @@ static void* OBJ_DEALLOCATOR_table[] = {
  SMART_PTR_FIX(chem::ZMatrixAngleInternal_O::static_class_symbol);
  SMART_PTR_FIX(llvmo::LoadInst_O::static_class);
  SMART_PTR_FIX(core::MultiStringBuffer_O::static_class_symbol);
- SMART_PTR_FIX(chem::ConformationExplorerEntryStage_O::static_class);
  SMART_PTR_FIX(chem::VirtualAtom_O::static_creator);
+ SMART_PTR_FIX(chem::ConformationExplorerEntryStage_O::static_class);
  SMART_PTR_FIX(core::Float_O::static_class_symbol);
  SMART_PTR_FIX(units::Dimension_O::static_creator);
  SMART_PTR_FIX(chem::AtomOrBondMatchNode_O::static_creator);
@@ -24378,8 +24379,8 @@ static void* OBJ_DEALLOCATOR_table[] = {
  SMART_PTR_FIX(asttooling::AstVisitor_O::static_creator);
  SMART_PTR_FIX(core::Bignum_O::static_creator);
  SMART_PTR_FIX(geom::GeomExposer_O::static_creator);
- SMART_PTR_FIX(chem::ChemDraw_O::static_creator);
  SMART_PTR_FIX(chem::VirtualAtom_O::static_class_symbol);
+ SMART_PTR_FIX(chem::ChemDraw_O::static_creator);
  SMART_PTR_FIX(chem::AfterMatchBondTest_O::static_class_symbol);
  SMART_PTR_FIX(chem::CDNode_O::static_creator);
  SMART_PTR_FIX(chem::FFParameterBaseDb_O::static_class_symbol);
@@ -25226,8 +25227,8 @@ static void* OBJ_DEALLOCATOR_table[] = {
  SMART_PTR_FIX(clcenv::BlockInfo_O::static_class_symbol);
  SMART_PTR_FIX(llvmo::ArrayType_O::static_class_symbol);
  SMART_PTR_FIX(chem::Command_O::static_class);
- SMART_PTR_FIX(core::FileStream_O::static_creator);
  SMART_PTR_FIX(chem::ZMatrix_O::static_class);
+ SMART_PTR_FIX(core::FileStream_O::static_creator);
  SMART_PTR_FIX(clcenv::VariableType_O::static_class_symbol);
  SMART_PTR_FIX(chem::SpecificContext_O::static_creator);
  SMART_PTR_FIX(llvmo::ConstantPointerNull_O::static_class_symbol);
@@ -25241,8 +25242,8 @@ static void* OBJ_DEALLOCATOR_table[] = {
  SMART_PTR_FIX(core::SimpleMDArrayT_O::static_class_symbol);
  SMART_PTR_FIX(llvmo::PHINode_O::static_class_symbol);
  SMART_PTR_FIX(chem::ScoringFunction_O::static_class);
- SMART_PTR_FIX(core::LoadArchive_O::static_creator);
  SMART_PTR_FIX(chem::ConformationExplorerMatch_O::static_class_symbol);
+ SMART_PTR_FIX(core::LoadArchive_O::static_creator);
  SMART_PTR_FIX(llvmo::VAArgInst_O::static_class_symbol);
  SMART_PTR_FIX(chem::CandoDatabase_O::static_class_symbol);
  SMART_PTR_FIX(core::LambdaListHandler_O::static_class_symbol);
@@ -25270,8 +25271,8 @@ static void* OBJ_DEALLOCATOR_table[] = {
  SMART_PTR_FIX(chem::FFTypesDb_O::static_class_symbol);
  SMART_PTR_FIX(chem::SuperposeEngine_O::static_class);
  SMART_PTR_FIX(core::BitVectorNs_O::static_class);
- SMART_PTR_FIX(core::Iterator_O::static_class);
  SMART_PTR_FIX(core::SimpleVectorFloat_O::static_class_symbol);
+ SMART_PTR_FIX(core::Iterator_O::static_class);
  SMART_PTR_FIX(asttooling::AsttoolingExposer_O::static_creator);
  SMART_PTR_FIX(llvmo::LoadInst_O::static_class_symbol);
  SMART_PTR_FIX(llvmo::DISubroutineType_O::static_class_symbol);
@@ -25286,8 +25287,8 @@ static void* OBJ_DEALLOCATOR_table[] = {
  SMART_PTR_FIX(llvmo::InvokeInst_O::static_class_symbol);
  SMART_PTR_FIX(core::ValueEnvironment_O::static_class_symbol);
  SMART_PTR_FIX(llvmo::ResumeInst_O::static_class);
- SMART_PTR_FIX(chem::ForceField_O::static_creator);
  SMART_PTR_FIX(llvmo::EngineBuilder_O::static_class);
+ SMART_PTR_FIX(chem::ForceField_O::static_creator);
  SMART_PTR_FIX(core::HashTableEq_O::static_class_symbol);
  SMART_PTR_FIX(chem::Monomer_O::static_creator);
  SMART_PTR_FIX(core::ExternalObject_O::static_class);
@@ -25326,8 +25327,8 @@ static void* OBJ_DEALLOCATOR_table[] = {
  SMART_PTR_FIX(clcenv::SpecialOperatorInfo_O::static_class);
  SMART_PTR_FIX(llvmo::Constant_O::static_class_symbol);
  SMART_PTR_FIX(chem::WildElementDict_O::static_class);
- SMART_PTR_FIX(chem::BondTest_O::static_class_symbol);
  SMART_PTR_FIX(chem::ScoringFunction_O::static_creator);
+ SMART_PTR_FIX(chem::BondTest_O::static_class_symbol);
  SMART_PTR_FIX(core::BlockEnvironment_O::static_creator);
  SMART_PTR_FIX(clcenv::LocalMacroInfo_O::static_creator);
  SMART_PTR_FIX(llvmo::FenceInst_O::static_creator);
@@ -25344,8 +25345,8 @@ static void* OBJ_DEALLOCATOR_table[] = {
  SMART_PTR_FIX(core::Symbol_O::static_class_symbol);
  SMART_PTR_FIX(clcenv::SpecialOperatorInfo_O::static_class_symbol);
  SMART_PTR_FIX(core::FunctionContainerEnvironment_O::static_class);
- SMART_PTR_FIX(core::StringStream_O::static_creator);
  SMART_PTR_FIX(chem::Bond_O::static_class);
+ SMART_PTR_FIX(core::StringStream_O::static_creator);
  SMART_PTR_FIX(chem::Mate_O::static_creator);
  SMART_PTR_FIX(core::SimpleVector_int64_t_O::static_creator);
  SMART_PTR_FIX(llvmo::AtomicRMWInst_O::static_class_symbol);
@@ -25355,8 +25356,8 @@ static void* OBJ_DEALLOCATOR_table[] = {
  SMART_PTR_FIX(geom::Color_O::static_creator);
  SMART_PTR_FIX(core::Creator_O::static_class);
  SMART_PTR_FIX(llvmo::Instruction_O::static_creator);
- SMART_PTR_FIX(chem::ReportBase_O::static_class);
  SMART_PTR_FIX(core::SimpleVector_byte64_t_O::static_creator);
+ SMART_PTR_FIX(chem::ReportBase_O::static_class);
  SMART_PTR_FIX(units::UnitsExposer_O::static_creator);
  SMART_PTR_FIX(chem::RingClosingMate_O::static_class_symbol);
  SMART_PTR_FIX(geom::OVector3_O::static_class_symbol);
@@ -25367,13 +25368,13 @@ static void* OBJ_DEALLOCATOR_table[] = {
  SMART_PTR_FIX(geom::BoundingBox_O::static_creator);
  SMART_PTR_FIX(core::ClosureWithFrame_O::static_class_symbol);
  SMART_PTR_FIX(chem::FFTypesDb_O::static_creator);
- SMART_PTR_FIX(core::MDArray_int16_t_O::static_class_symbol);
  SMART_PTR_FIX(chem::FFStretchDb_O::static_creator);
+ SMART_PTR_FIX(core::MDArray_int16_t_O::static_class_symbol);
  SMART_PTR_FIX(mp::ConcurrentQueue_O::static_class);
  SMART_PTR_FIX(chem::RestrainedPiBond_O::static_creator);
  SMART_PTR_FIX(core::WeakKeyHashTable_O::static_class);
- SMART_PTR_FIX(chem::AGEdge_O::static_class);
  SMART_PTR_FIX(chem::BondMatchNode_O::static_creator);
+ SMART_PTR_FIX(chem::AGEdge_O::static_class);
  SMART_PTR_FIX(core::ValueEnvironment_O::static_creator);
  SMART_PTR_FIX(chem::ForceField_O::static_class_symbol);
  SMART_PTR_FIX(chem::OutPlug_O::static_class_symbol);
@@ -25383,8 +25384,8 @@ static void* OBJ_DEALLOCATOR_table[] = {
  SMART_PTR_FIX(chem::Structure_Old_ListEntry_O::static_class_symbol);
  SMART_PTR_FIX(chem::Plug_O::static_creator);
  SMART_PTR_FIX(core::SimpleMDArrayBit_O::static_class);
- SMART_PTR_FIX(llvmo::APFloat_O::static_class);
  SMART_PTR_FIX(llvmo::DILexicalBlock_O::static_creator);
+ SMART_PTR_FIX(llvmo::APFloat_O::static_class);
  SMART_PTR_FIX(core::Array_O::static_class);
  SMART_PTR_FIX(core::SingleFloat_dummy_O::static_class_symbol);
  SMART_PTR_FIX(chem::Chain_O::static_class);
