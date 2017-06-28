@@ -724,8 +724,11 @@ void setq_symbol_value(Symbol_sp symbol, T_sp value, T_sp environment) {
       SIMPLE_ERROR(BF("Cannot modify value of constant %s") % _rep_(symbol));
     symbol->setf_symbolValue(value);
     return;
-  } else {
-    bool updated = af_updateValue(environment, symbol, value);
+  } else  {
+    bool updated = false;
+    if (environment.notnilp()) {
+      updated = af_updateValue(environment, symbol, value);
+    }
     if (!updated) {
       symbol->setf_symbolValue(value);
     }
@@ -1735,7 +1738,7 @@ T_mv doMacrolet(List_sp args, T_sp env, bool toplevel) {
     List_sp code;
     parse_lambda_body(outer_body, declares, docstring, code);
     LambdaListHandler_sp outer_llh = LambdaListHandler_O::create(outer_ll, declares, cl::_sym_function);
-    printf("%s:%d Creating InterpretedClosure with no source information - fix this\n", __FILE__, __LINE__);
+//    printf("%s:%d Creating InterpretedClosure with no source information - fix this\n", __FILE__, __LINE__);
     Closure_sp ic = gc::GC<InterpretedClosure_O>::allocate(name, kw::_sym_macro, outer_llh, declares, docstring, newEnv, code, SOURCE_POS_INFO_FIELDS(_Nil<T_O>()));
     outer_func = ic;
     LOG(BF("func = %s") % ic->__repr__());
@@ -1788,7 +1791,7 @@ T_mv do_symbolMacrolet(List_sp args, T_sp env, bool topLevelForm) {
     LambdaListHandler_sp outer_llh = LambdaListHandler_O::create(outer_ll,
                                                                  oCadr(declares),
                                                                  cl::_sym_function);
-    printf("%s:%d Creating InterpretedClosure with no source information and empty name- fix this\n", __FILE__, __LINE__);
+//    printf("%s:%d Creating InterpretedClosure with no source information and empty name- fix this\n", __FILE__, __LINE__);
     InterpretedClosure_sp ic = gc::GC<InterpretedClosure_O>::allocate(_sym_symbolMacroletLambda, kw::_sym_macro, outer_llh, declares, _Nil<T_O>(), newEnv, expansion, SOURCE_POS_INFO_FIELDS(_Nil<T_O>()));
     Function_sp outer_func = ic;
     newEnv->addSymbolMacro(name, outer_func);
