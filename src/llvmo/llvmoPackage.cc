@@ -255,6 +255,8 @@ CL_DEFUN core::T_sp llvm_sys__cxxDataStructuresInfo() {
   ENTRY(list, "INSTANCE-RACK-STAMP-OFFSET", make_fixnum(Instance_O::rack_stamp_offset()));
   ENTRY(list, "INSTANCE-KIND", make_fixnum(static_cast<Fixnum>(gctools::KIND_INSTANCE)));
   ENTRY(list, "CLASS-KIND", make_fixnum(static_cast<Fixnum>(gctools::KIND_CLASS)));
+  ENTRY(list, "SIMPLE-VECTOR._DATA-OFFSET",make_fixnum(offsetof(SimpleVector_O,_Data)+offsetof(SimpleVector_O::vector_type,_Data)));
+  ENTRY(list, "SIMPLE-VECTOR._LENGTH-OFFSET",make_fixnum(offsetof(SimpleVector_O,_Data)+offsetof(SimpleVector_O::vector_type,_Length)));
   return list;
 }
 
