@@ -19,6 +19,7 @@
           *current-function*
           *current-function-name*
           *debug-compile-file*
+          *debug-compile-file-counter*
           *generate-compile-file-load-time-values*
           *load-time-initializer-environment*
           *gv-current-function-name*

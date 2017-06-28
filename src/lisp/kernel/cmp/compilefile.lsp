@@ -314,6 +314,7 @@ and the pathname of the source file - this will also be used as the module initi
     (values output-file warnings-p failures-p)))
 
 (defvar *debug-compile-file* nil)
+(defvar *debug-compile-file-counter* 0)
 
 (defun compile-file-to-module (given-input-pathname
                                &key
@@ -386,7 +387,7 @@ Compile a lisp source file into an LLVM module.  type can be :kernel or :user"
                                (let ((pos (core:input-stream-source-pos-info source-sin)))
                                  (setq *current-form-lineno* (core:source-file-pos-lineno pos)))))
                            (let ((form (read source-sin nil eof-value)))
-                             (when *debug-compile-file* (bformat t "compile-file: %s\n" form))
+                             (when *debug-compile-file* (bformat t "compile-file: cf%d -> %s\n" (incf *debug-compile-file-counter*) form))
                              (if (eq form eof-value)
                                  (return nil)
                                  (if *debug-compile-file*
