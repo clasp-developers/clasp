@@ -186,14 +186,68 @@
 ;;;
 ;;; Array functions
 ;;;
+
 #+(or)
 (progn
-  (declaim (inline svref))
-  (defun svref (vector index)
-    (cleavir-primop:aref vector index t t t))
-  )
 
+;;; This expands into a cond over all the array element types.
+;;; The body of each cond is a macro form where the macro is local,
+;;; and defined as (name (,uaet ,boxp) ,@body).
+;;; It's kind of confusing but I think it's ok here.
+(defmacro uaet-typeqcase (array (uaet boxp) &body body)
+  `(macrolet ((bodyer (,uaet ,boxp) ,@body))
+     (cond
+       ,@(loop for uaet in sys::+upgraded-array-element-types+
+               for boxp in +uaet-boxed+
+               collect `((cleavir-primop:typeq ,array (array ,uaet))
+                         (bodyer ,uaet ,boxp)))
+       (t (error "BUG: Missing UAET information for AREF")))))
 
+(defun row-major-aref (array index)
+  ;; We could inline accesses to a non-simple array by looping to get the
+  ;; underlying simple vector. But it might not be worth the complexity.
+  (if (cleavir-primop:typeq array simple-array)
+      (let ((data (if (cleavir-primop:typeq array vector)
+                      array
+                      (primop:array-displacement array))))
+        (uaet-typeqcase data (uaet boxp)
+          `(cleavir-primop:aref data index ,uaet t ,boxp))
+      (locally (declare (notinline row-major-aref))
+        (row-major-aref array index)))))
+
+;;; setf row-major-aref primitively expands into core:row-major-aset.
+;;; I prefer a new setf definition to redefining or layering over core functions.
+(defsetf row-major-aref (array index) (value)
+  `(if (cleavir-primop:typeq ,array simple-array)
+       (let ((data (if (cleavir-primop:typeq ,array vector)
+                       ,array
+                       (primop:array-underlying ,array))))
+         ;; Yow. Sorry. Try macroexpanding if you don't get it.
+         (uaet-typeqcase data (uaet boxp)
+           `(cleavir-primop:aset data ,',index ,',value ,uaet t ,boxp)))
+       (core:row-major-aset ,array ,index ,value)))
+
+)
+
+(declaim (inline svref)
+         (ftype (function (simple-vector fixnum) (values t &rest nil)) svref))
+(defun svref (simple-vector index)
+  ;; the type declaration should take care of the type check, but
+  (if (array-in-bounds-p simple-vector index)
+      (cleavir-primop:aref simple-vector index t t t)
+      (error "Out of bounds: (svref ~s ~s)" simple-vector index)))
+
+;;; Primitively, setf svref expands into core:setf-svref.
+;;; Ditto above comment on setf.
+(defsetf svref (simple-vector index) (value)
+  ;; I don't think anything else will put in the type declaration, therefore
+  `(progn
+     (cond ((array-in-bounds-p ,simple-vector ,index)
+            (cleavir-primop:aset (the simple-vector ,simple-vector)
+                                 ,index ,value t t t)
+            ,value)
+           (t (error "Out of bounds: (setf (svref ~s ~s) ~s)"
+                     ,simple-vector ,index ,value)))))
 
 ;;; ------------------------------------------------------------
 ;;;

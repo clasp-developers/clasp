@@ -15,46 +15,47 @@
 
 (defmethod cleavir-ir:specialize ((instr cleavir-ir:car-instruction)
                                   (impl clasp-cleavir:clasp) proc os)
-  (change-class instr 'cleavir-ir:memref2-instruction
-                :inputs (list (first (cleavir-ir:inputs instr))
-                              (cleavir-ir:make-immediate-input (- cmp:+cons-car-offset+ cmp:+cons-tag+)))
-                :outputs (cleavir-ir:outputs instr)))
+  (change-class instr 'cleavir-ir:memref-instruction
+                :offset (- cmp:+cons-car-offset+ cmp:+cons-tag+)))
 
 (defmethod cleavir-ir:specialize ((instr cleavir-ir:cdr-instruction)
                                   (impl clasp-cleavir:clasp) proc os)
-  (change-class instr 'cleavir-ir:memref2-instruction
-                :inputs (list (first (cleavir-ir:inputs instr))
-                              (cleavir-ir:make-immediate-input (- cmp:+cons-cdr-offset+ cmp:+cons-tag+)))
-                :outputs (cleavir-ir:outputs instr)))
+  (change-class instr 'cleavir-ir:memref-instruction
+                :offset (- cmp:+cons-cdr-offset+ cmp:+cons-tag+)))
 
 
 (defmethod cleavir-ir:specialize ((instr cleavir-ir:rplaca-instruction)
                                   (impl clasp-cleavir:clasp) proc os)
-  #+(or)(cleavir-ir:insert-instruction-after
-         (cleavir-ir:make-assignment-instruction
-          (first (cleavir-ir:inputs instr))
-          (first (cleavir-ir:outputs instr)))
-         instr)
-  (change-class instr 'cleavir-ir:memset2-instruction
-                :inputs (list (first (cleavir-ir:inputs instr))
-                              (cleavir-ir:make-immediate-input (- cmp:+cons-car-offset+ cmp:+cons-tag+))
-                              (second (cleavir-ir:inputs instr)))
-                :outputs nil))
-
+  (change-class instr 'cleavir-ir:memset1-instruction
+                :inputs (list (second (cleavir-ir:inputs instr))
+                              (first (cleavir-ir:inputs instr)))
+                :offset (- cmp:+cons-car-offset+ cmp:+cons-tag+)))
 
 (defmethod cleavir-ir:specialize ((instr cleavir-ir:rplacd-instruction)
                                   (impl clasp-cleavir:clasp) proc os)
-  #+(or)(cleavir-ir:insert-instruction-after
-         (cleavir-ir:make-assignment-instruction
-          (first (cleavir-ir:inputs instr))
-          (first (cleavir-ir:outputs instr)))
-         instr)
-  (change-class instr 'cleavir-ir:memset2-instruction
-                :inputs (list (first (cleavir-ir:inputs instr))
-                              (cleavir-ir:make-immediate-input (- cmp:+cons-cdr-offset+ cmp:+cons-tag+))
-                              (second (cleavir-ir:inputs instr)))
-                :outputs nil))
+  (change-class instr 'cleavir-ir:memset-instruction
+                :inputs (list (second (cleavir-ir:inputs instr))
+                              (first (cleavir-ir:inputs instr)))
+                :offset (- cmp:+cons-car-offset+ cmp:+cons-tag+)))
 
+
+(defmethod cleavir-ir:specialize ((instr cleavir-ir:aref-instruction)
+                                  (impl clasp-cleavir:clasp) proc os)
+  (unless (and (cleavir-ir:simple-p instr) (eq (cleavir-ir:element-type instr) t))
+    (error "BUG: Aref instruction we don't know how to deal with generated ~s" instr))
+  (change-class instr 'cleavir-ir:memref-instruction
+                :offset (- cmp:+simple-vector._length-offset+ cmp:+general-tag+)
+                :scale (list 1 cmp:+t-size+)))
+
+(defmethod cleavir-ir:specialize ((instr cleavir-ir:aset-instruction)
+                                  (impl clasp-cleavir:clasp) proc os)
+  (unless (and (cleavir-ir:simple-p instr) (eq (cleavir-ir:element-type instr) t))
+    (error "BUG: Aref instruction we don't know how to deal with generated ~s" instr))
+  (destructuring-bind (array index value) (cleavir-ir:inputs instr)
+    (change-class instr 'cleavir-ir:memref-instruction
+                  :inputs (list value array index)
+                  :offset (- cmp:+simple-vector._length-offset+ cmp:+general-tag+)
+                  :scale (list 1 cmp:+t-size+))))
 
 (defmethod cleavir-hir-transformations::maybe-eliminate :around ((instruction cleavir-ir:typeq-instruction))
   "This is HIR to MIR translation done by eliminate-typeq"

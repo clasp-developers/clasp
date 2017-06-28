@@ -628,28 +628,43 @@ when this is t a lot of graphs will be generated.")
 		 (cc-mir:describe-mir instruction))
 	 (format *debug-log* "     instruction --> ~a~%" call-result))))))
 
+;;; helper, could be improved. only good for powers of two
+(defun ilog2 (n) (1- (integer-length n)))
+
+(defun effective-address (inputs scale offset)
+  ;; FIXME: Probably shouldn't exist. GEP is real.
+  (assert (plusp (length inputs)))
+  (assert (= (length inputs) (length scale)))
+  ;; Start the effective address with the offset.
+  (let ((effective-address (%bit-cast offset cmp:%unitptr_t%)))
+    ;; then loop through the inputs and add to it.
+    (loop for input in inputs
+          for scale in scale
+          for tptr = (%load input)
+          for ui-tptr = (%ptrtoint tptr cmp:%unitptr_t%)
+          for scaled = (%shl ui-tptr scale)
+          do (setf effective-address
+                   (%add scaled effective-address)))
+    ;; and that's it.
+    effective-address))
 
 (defmethod translate-simple-instruction
-    ((instruction cleavir-ir:memref2-instruction) return-value inputs outputs abi function-info)
-  (let* ((tptr (%load (first inputs)))
-         (offset (second inputs))
-         (ui-tptr (%ptrtoint tptr cmp:%uintptr_t%))
-         (ui-offset (%bit-cast offset cmp:%uintptr_t%)))
-    (let* ((uiptr (%add ui-tptr ui-offset))
+    ((instruction cleavir-ir:memref-instruction) return-value inputs outputs abi function-info)
+    (let* ((uiptr (effective-address inputs
+                                     (cleavir-ir:scale instruction)
+                                     (cleavir-ir:offset instruction)))
            (ptr (%inttoptr uiptr cmp::%t**%))
            (read-val (%load ptr)))
-      (%store read-val (first outputs)))))
+      (%store read-val (first outputs))))
 
 (defmethod translate-simple-instruction
-    ((instruction cleavir-ir:memset2-instruction) return-value inputs outputs abi function-info)
-  (let* ((tptr (%load (first inputs)))
-         (offset (second inputs))
-         (ui-tptr (%ptrtoint tptr cmp:%uintptr_t%))
-         (ui-offset (%bit-cast offset cmp:%uintptr_t%)))
-    (let* ((uiptr (%add ui-tptr ui-offset))
-           (dest (%inttoptr uiptr cmp::%t**% "memset2-dest"))
-           (val (%load (third inputs) "memset2-val")))
-      (%store val dest))))
+    ((instruction cleavir-ir:memset-instruction) return-value inputs outputs abi function-info)
+  (let* ((uiptr (effective-address (rest inputs)
+                                   (cleavir-ir:scale instruction)
+                                   (cleavir-ir:offset instruction)))
+         (dest (%inttoptr uiptr cmp::%t**% "memset-dest"))
+         (val (%load (first inputs) "memset-val")))
+      (%store val dest)))
 
 
 (defmethod translate-simple-instruction
