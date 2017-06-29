@@ -67,8 +67,6 @@ THE SOFTWARE.
 #include <clasp/core/evaluator.h>
 #include <clasp/core/compiler.h>
 #include <clasp/core/print.h>
-#include <clasp/core/standardClass.h>
-#include <clasp/core/forwardReferencedClass.h>
 #include <clasp/core/singleDispatchMethod.h>
 #include <clasp/core/singleDispatchGenericFunction.h>
 #include <clasp/core/lambdaListHandler.h>

@@ -38,7 +38,6 @@ THE SOFTWARE.
 #include <clasp/core/foundation.h>
 #include <clasp/core/lisp.h>
 #include <clasp/core/metaClass.h>
-#include <clasp/core/standardClass.h>
 #include <clasp/core/package.h>
 #include <clasp/core/pointer.h>
 #include <clasp/core/symbolTable.h>
@@ -51,9 +50,6 @@ THE SOFTWARE.
 #include <clasp/core/hashTable.h>
 #include <clasp/core/builtInClass.h>
 #include <clasp/core/hashTableEq.h>
-#include <clasp/core/standardClass.h>
-#include <clasp/core/funcallableStandardClass.h>
-#include <clasp/core/structureClass.h>
 #include <clasp/core/wrappers.h>
 
 #define NAMESPACE_gctools_mem
@@ -279,7 +275,7 @@ T_sp Class_O::allocate_newClass(Class_sp metaClass, int slots) {
   printf("%s:%d          allocate_newClass creator -> @%p \n", __FILE__, __LINE__, newClass.raw_());
 #endif
   newClass->_MetaClass = metaClass;
-  newClass->_NumberOfSlots = slots;
+//  newClass->_NumberOfSlots = slots;
 //  printf("%s:%d  Initialize class slots here?????\n", __FILE__, __LINE__);
   return newClass;
 }

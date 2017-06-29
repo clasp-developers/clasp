@@ -92,7 +92,22 @@ class Class_O : public StandardObject_O {
   template <typename u>
   friend BuiltInClass_sp hand_initialize_allocatable_class(uint &classesHandInitialized, Lisp_sp prog, BuiltInClass_sp c);
 
-public: // The hard-coded indexes above are defined below to be used by Class
+ public:
+  /*! A Fixnum that represents the object stamp(aka KIND) of each instance of this class */
+  gctools::Stamp _instance_stamp;
+  Class_sp  _MetaClass;
+  /*! Callback function to allocate instances */
+  SimpleVector_sp _Rack;
+  /*! Mimic ECL Instance::sig */
+  T_sp _Signature_ClassSlots;
+  Creator_sp _theCreator;
+//  size_t              _NumberOfSlots;
+#ifdef METER_ALLOCATIONS
+  // Keep track of allocations
+  size_t _allocation_counter;
+  size_t _allocation_total_size;
+#endif
+ public: // The hard-coded indexes above are defined below to be used by Class
   // These must match the +class-slots+ defined in hierarchy.lsp
 
   // These must be exposed in core__class_slot_sanity_check()
@@ -142,21 +157,6 @@ public:
   static Class_sp create(Symbol_sp symbol,Class_sp metaClass);
   static Class_sp createUncollectable(gctools::Stamp is,Class_sp metaClass, size_t number_of_slots);
 
-public:
-  /*! A Fixnum that represents the object stamp(aka KIND) of each instance of this class */
-  gctools::Stamp _instance_stamp;
-#ifdef METER_ALLOCATIONS
-  // Keep track of allocations
-  size_t _allocation_counter;
-  size_t _allocation_total_size;
-#endif
-  Class_sp  _MetaClass;
-  /*! Mimic ECL Instance::sig */
-  T_sp _Signature_ClassSlots;
-  /*! Callback function to allocate instances */
-  Creator_sp _theCreator;
-  SimpleVector_sp _Rack;
-  size_t              _NumberOfSlots;
 public:
   /*! This is a factory function that returns either a BuiltInClass or a StandardClass depending on the
 	  type of metaClass */
@@ -305,8 +305,8 @@ public:
 #endif
     _MetaClass(metaClass),
     _Signature_ClassSlots(_Unbound<T_O>()),
-    _theCreator(),
-    _NumberOfSlots(slots)
+    _theCreator()
+//    ,_NumberOfSlots(slots)
     {};
 
   explicit Class_O();

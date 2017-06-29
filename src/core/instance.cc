@@ -33,7 +33,6 @@ THE SOFTWARE.
 #include <clasp/gctools/gcFunctions.h>
 #include <clasp/core/serialize.h>
 #include <clasp/core/evaluator.h>
-#include <clasp/core/standardClass.h>
 #include <clasp/core/genericFunction.h>
 #include <clasp/core/accessor.h>
 #include <clasp/core/instance.h>
@@ -173,39 +172,6 @@ size_t Instance_O::rack_stamp_offset() {
   return (char*)&(dummy_rack.operator[](0))-(char*)&dummy_rack;
 }
 
-
-
-void Instance_O::archiveBase(ArchiveP node) {
-  if (node->saving()) {
-    if (this->_isgf || this->isCallable()) {
-      SIMPLE_ERROR(BF("You cannot archive FUNCALLABLE instances or generic-functions"));
-    }
-    SYMBOL_EXPORT_SC_(KeywordPkg, iclass);
-    //	    Symbol_sp className = this->_Class->name();
-    //	    node->attribute(kw::_sym_iclass,className);
-    for (int i(1); i < this->_Rack->length(); ++i) {
-      node->pushVector((*this->_Rack)[i]);
-    }
-  } else {
-    this->_isgf = false;
-    this->_entryPoint = NULL;
-#if 1
-    Symbol_sp className = node->getKind();
-    //	    node->attribute(kw::_sym_iclass,className);
-    Class_sp cl = gc::As<Class_sp>(eval::funcall(cl::_sym_findClass, className, _lisp->_true()));
-    this->_Class = cl;
-    this->initializeSlots(cl->get_instance_stamp(),node->vectorSize());
-#endif
-    size_t idx(1);
-    if (node->vectorSize() != this->numberOfSlots()) {
-      SIMPLE_ERROR(BF("While loading archive class %s mismatch in number of slots - expected %d - loaded %d slots") % _rep_(this->_Class) % this->numberOfSlots() % node->vectorSize());
-    }
-    node->mapVector([this, &idx](T_sp value) {
-        (*this->_Rack)[idx++] = value;
-      });
-    this->instanceSigSet();
-  }
-}
 
 T_sp Instance_O::instanceSigSet() {
   T_sp classSlots(_Nil<T_O>());

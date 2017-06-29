@@ -10640,7 +10640,6 @@ public:
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::Class_O),_Signature_ClassSlots), "_Signature_ClassSlots" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Creator_O>), offsetof(SAFE_TYPE_MACRO(core::Class_O),_theCreator), "_theCreator" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::SimpleVector_O>), offsetof(SAFE_TYPE_MACRO(core::Class_O),_Rack), "_Rack" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::Class_O),_NumberOfSlots), "_NumberOfSlots" }, // public: (T) fixable: NIL good-name: T
 { class_kind, KIND_LISPALLOC_clbind__ClassRep_O, sizeof(clbind::ClassRep_O), 0, "clbind::ClassRep_O" },
  {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(clbind::ClassRep_O),_instance_stamp), "_instance_stamp" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(clbind::ClassRep_O),_allocation_counter), "_allocation_counter" }, // public: (T) fixable: NIL good-name: T
@@ -10649,7 +10648,6 @@ public:
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(clbind::ClassRep_O),_Signature_ClassSlots), "_Signature_ClassSlots" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Creator_O>), offsetof(SAFE_TYPE_MACRO(clbind::ClassRep_O),_theCreator), "_theCreator" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::SimpleVector_O>), offsetof(SAFE_TYPE_MACRO(clbind::ClassRep_O),_Rack), "_Rack" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(clbind::ClassRep_O),_NumberOfSlots), "_NumberOfSlots" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, TAGGED_POINTER_OFFSET, sizeof(gctools::tagged_pointer<gctools::GCVector_moveable<gctools::smart_ptr<core::Cons_O>>>), offsetof(SAFE_TYPE_MACRO(clbind::ClassRep_O),m_bases._Vector._Contents), "m_bases._Vector._Contents" }, // public: (T T T) fixable: TAGGED-POINTER-FIX good-name: T
 // not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(clbind::ClassRep_O),m_name._M_string_length), "m_name._M_string_length" }, // public: (T NIL) fixable: NIL good-name: T
 // not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(clbind::ClassRep_O),m_name.NO-NAME._M_allocated_capacity), "m_name.NO-NAME._M_allocated_capacity" }, // public: (T NIL T) fixable: NIL good-name: T

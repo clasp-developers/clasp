@@ -24,11 +24,9 @@ int gcFunctions_after;
 #include <clasp/core/builtInClass.h>
 #include <clasp/core/fileSystem.h>
 #include <clasp/core/environment.h>
-#include <clasp/core/standardClass.h>
 #include <clasp/core/evaluator.h>
 #include <clasp/core/activationFrame.h>
 #include <clasp/core/hashTableEq.h>
-#include <clasp/core/structureClass.h>
 #include <clasp/core/lispStream.h>
 #include <clasp/core/array.h>
 #include <clasp/core/symbolTable.h>

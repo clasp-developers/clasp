@@ -49,8 +49,6 @@ THE SOFTWARE.
 #include <clasp/core/compiler.h>
 #include <clasp/core/backquote.h>
 #include <clasp/core/bformat.h>
-#include <clasp/core/standardClass.h>
-#include <clasp/core/forwardReferencedClass.h>
 #include <clasp/core/singleDispatchMethod.h>
 #include <clasp/core/singleDispatchGenericFunction.h>
 #include <clasp/core/lambdaListHandler.h>

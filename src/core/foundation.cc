@@ -37,11 +37,7 @@ THE SOFTWARE.
 #include <clasp/core/lisp.h>
 #include <clasp/core/symbolToEnumConverter.h>
 #include <clasp/core/symbolTable.h>
-#include <clasp/core/builtInClass.h>
-#include <clasp/core/stdClass.h>
 #include <clasp/core/lispList.h>
-#include <clasp/core/standardClass.h>
-#include <clasp/core/structureClass.h>
 #include <clasp/core/corePackage.h>
 #include <clasp/core/ql.h>
 #include <clasp/core/fli.h>
@@ -60,7 +56,6 @@ THE SOFTWARE.
 #include <clasp/core/designators.h>
 #include <clasp/core/instance.h>
 #include <clasp/core/documentation.h>
-#include <clasp/core/structureClass.h>
 #include <clasp/core/structureObject.h>
 #include <clasp/core/array.h>
 #include <clasp/core/pointer.h>

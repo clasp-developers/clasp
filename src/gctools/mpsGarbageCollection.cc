@@ -59,8 +59,6 @@ templated_class_jump_table_index, jump_table_index, NULL
 #include <clasp/core/loadTimeValues.h>
 #include <clasp/core/posixTime.h> // was core/posixTime.cc???
 #include <clasp/core/symbolTable.h>
-#include <clasp/core/standardClass.h>
-#include <clasp/core/structureClass.h>
 #include <clasp/core/evaluator.h>
 #include <clasp/gctools/globals.h>
 #include <clasp/core/wrappers.h>

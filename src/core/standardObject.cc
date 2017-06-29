@@ -31,7 +31,6 @@ THE SOFTWARE.
 #include <clasp/core/symbolTable.h>
 #include <clasp/core/evaluator.h>
 #include <clasp/core/builtInClass.h>
-#include <clasp/core/standardClass.h>
 #include <clasp/core/wrappers.h>
 
 namespace core {

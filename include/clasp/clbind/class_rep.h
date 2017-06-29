@@ -62,18 +62,9 @@ THE SOFTWARE.
 #include <clasp/core/builtInClass.h>
 #include <clasp/core/instance.h>
 #include <clasp/core/numbers.h>
-//#include <clasp/clbind/lua_include.hpp>
-//#include <clasp/clbind/detail/object_rep.hpp>
-//#include <clasp/clbind/detail/garbage_collector.hpp>
-//#include <clasp/clbind/detail/operator_id.hpp>
 #include <clasp/clbind/class_registry.h>
-//#include <clasp/clbind/error.hpp>
-//#include <clasp/clbind/handle.hpp>
 #include <clasp/clbind/primitives.h>
 #include <clasp/clbind/typeid.h>
-//#include <clasp/clbind/detail/ref.hpp>
-
-
 
 namespace clbind {
 namespace detail {
@@ -123,19 +114,6 @@ public:
     GC_ALLOCATE_VARIADIC(ClassRep_O, val, mtype, name, derivable);
     return val;
   }
-
-#if 0
-        std::pair<void*,void*> allocate() const;
-
-        // this is called as metamethod __call on the ClassRep_O.
-        static int constructor_dispatcher();
-        struct base_info
-        {
-            core::Fixnum_sp pointer_offset; // the offset added to the pointer to obtain a basepointer (due to multiple-inheritance)
-            ClassRep_sp base;
-        };
-
-#endif
   void add_base_class(core::Fixnum_sp pointer_offset, ClassRep_sp base);
 
   const gctools::Vec0<core::Cons_sp> &bases() const throw() { return m_bases; }
@@ -145,28 +123,6 @@ public:
 
   std::string name() const throw() { return m_name; }
 
-#if 0 // begin_meister_disabled
-        // the lua reference to the metatable for this class' instances
-        int metatable_ref() const throw() { return m_instance_metatable; }
-
-        void get_table() const { m_table.push(); }
-        void get_default_table(core::Lisp_sp L) const { m_default_table.push(L); }
-
-        class_type get_class_type() const { return m_class_type; }
-
-        void add_static_constant(const char* name, int val);
-
-        static int super_callback(core::Lisp_sp L);
-
-        static int lua_settable_dispatcher(core::Lisp_sp L);
-
-        // called from the metamethod for __index
-        // obj is the object pointer
-        static int static_class_gettable(core::Lisp_sp L);
-
-        bool has_operator_in_lua(core::Lisp_sp, int id);
-#endif
-
   detail::cast_graph const &casts() const {
     return *m_casts;
   }
@@ -175,11 +131,7 @@ public:
     return *m_classes;
   }
 
-GCPRIVATE:
-
-#if 0
-        void cache_operators(core::Lisp_sp);
-#endif
+ private:
   // this is a pointer to the type_info structure for
   // this type
   // warning: this may be a problem when using dll:s, since

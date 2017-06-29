@@ -35,7 +35,6 @@ THE SOFTWARE.
 #include <clasp/core/builtInClass.h>
 #include <clasp/core/sysprop.h>
 #include <clasp/core/instance.h>
-#include <clasp/core/structureClass.h>
 #include <clasp/core/primitives.h>
 #include <clasp/core/wrappers.h>
 

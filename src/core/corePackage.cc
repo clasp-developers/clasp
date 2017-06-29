@@ -121,13 +121,7 @@ THE SOFTWARE.
 #include <clasp/core/metaClass.h>
 #include <clasp/core/bignum.h>
 #include <clasp/core/builtInClass.h>
-#include <clasp/core/cxxClass.h>
-#include <clasp/core/forwardReferencedClass.h>
-#include <clasp/core/stdClass.h>
-#include <clasp/core/structureClass.h>
 #include <clasp/clbind/class_rep.h>
-#include <clasp/core/funcallableStandardClass.h>
-#include <clasp/core/standardClass.h>
 
 //
 // Load the gctools::GcInfo<core-classes>::Kind specializers
