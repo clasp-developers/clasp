@@ -100,16 +100,6 @@
                     (locally
                         (multiple-value-bind (decls body) (core:process-declarations body nil)
                           (eval-progn body (augment-environment-with-declares decls env))))
-                    (macrolet
-                        (multiple-value-bind (macros declares macrolet-body)
-                            (cmp:parse-macrolet body)
-                          (let ((ml-env (augment-environment-with-macrolet macros env)))
-                            (eval-progn macrolet-body (augment-environment-with-declares declares ml-env)))))
-                    (symbol-macrolet
-                        (multiple-value-bind (macros declares macrolet-body)
-                            (cmp:parse-symbol-macrolet body)
-                          (let ((ml-env (augment-environment-with-symbol-macrolet macros env)))
-                            (eval-progn macrolet-body (augment-environment-with-declares declares ml-env)))))
                     (t (eval-compile form)))))))))))
 
 (defmethod cclasp-eval-with-env (form (env core:value-frame))
