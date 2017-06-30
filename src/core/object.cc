@@ -317,7 +317,7 @@ CL_DECLARE();
 CL_DOCSTRING("instancep");
 CL_DEFUN T_sp core__instancep(T_sp obj) {
   if (obj.generalp()) return obj.unsafe_general()->oinstancep();
-  IMPLEMENT_MEF(BF("Implement for non-general objects"));
+  else return _Nil<T_O>();
 };
 
 CL_LAMBDA(arg);
