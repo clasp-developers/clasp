@@ -229,6 +229,9 @@
 
 )
 
+#+(or)
+(progn
+
 (declaim (inline svref)
          (ftype (function (simple-vector fixnum) (values t &rest nil)) svref))
 (defun svref (simple-vector index)
@@ -248,6 +251,8 @@
             ,value)
            (t (error "Out of bounds: (setf (svref ~s ~s) ~s)"
                      ,simple-vector ,index ,value)))))
+
+)
 
 ;;; ------------------------------------------------------------
 ;;;

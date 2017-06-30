@@ -181,6 +181,7 @@
           make-uintptr_t
           +cons-car-offset+
           +cons-cdr-offset+
+          +simple-vector._length-offset+
           %uintptr_t%
           %return_type%
           %VaList_S%

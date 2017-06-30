@@ -636,13 +636,13 @@ when this is t a lot of graphs will be generated.")
   (assert (plusp (length inputs)))
   (assert (= (length inputs) (length scale)))
   ;; Start the effective address with the offset.
-  (let ((effective-address (%bit-cast offset cmp:%unitptr_t%)))
+  (let ((effective-address (%uintptr_t offset)))
     ;; then loop through the inputs and add to it.
     (loop for input in inputs
           for scale in scale
           for tptr = (%load input)
-          for ui-tptr = (%ptrtoint tptr cmp:%unitptr_t%)
-          for scaled = (%shl ui-tptr scale)
+          for ui-tptr = (%ptrtoint tptr cmp:%uintptr_t%)
+          for scaled = (%shl ui-tptr (ilog2 scale) :nuw t :label "shift address")
           do (setf effective-address
                    (%add scaled effective-address)))
     ;; and that's it.
