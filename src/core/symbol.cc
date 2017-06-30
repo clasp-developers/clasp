@@ -213,7 +213,7 @@ CL_DEFMETHOD Symbol_sp Symbol_O::makunbound() {
 }
 
 void Symbol_O::symbolUnboundError() const {
-  UNBOUND_VARIABLE_ERROR(this);
+  UNBOUND_VARIABLE_ERROR(this->asSmartPtr());
 }
 
 void Symbol_O::setf_plist(List_sp plist) {
