@@ -128,7 +128,7 @@ void Instance_O::set_kind(Symbol_sp k) {
   }
 }
 
-void Instance_O::initializeSlots(Fixnum stamp, size_t numberOfSlots) {
+void Instance_O::initializeSlots(gctools::Stamp stamp, size_t numberOfSlots) {
   this->_Rack = SimpleVector_O::make(numberOfSlots+1,_Unbound<T_O>(),true);
   this->stamp_set(stamp);
 #ifdef DEBUG_GUARD_VALIDATE
@@ -137,8 +137,12 @@ void Instance_O::initializeSlots(Fixnum stamp, size_t numberOfSlots) {
 //  printf("%s:%d  Make sure you initialize slots for classes this->_Class -> %s\n", __FILE__, __LINE__, _rep_(this->_Class).c_str());
 }
 
-void Instance_O::initializeClassSlots() {
+void Instance_O::initializeClassSlots(Creator_sp creator, gctools::Stamp stamp) {
   // Initialize slots they way they are in +class-slots+ in: https://github.com/drmeister/clasp/blob/dev-class/src/lisp/kernel/clos/hierarchy.lsp#L55
+  if (creator.unboundp()) {
+    printf("%s:%d:%s     creator for %s is unbound\n", __FILE__, __LINE__, __FUNCTION__, this->_classNameAsString().c_str() );
+    fflush(stdout);
+  }
   this->instanceSet(REF_CLASS_DIRECT_SUPERCLASSES, _Nil<T_O>());
   this->instanceSet(REF_CLASS_DIRECT_SUBCLASSES, _Nil<T_O>());
   this->instanceSet(REF_CLASS_DIRECT_DEFAULT_INITARGS, _Nil<T_O>());
@@ -146,6 +150,8 @@ void Instance_O::initializeClassSlots() {
   this->instanceSet(REF_CLASS_SEALEDP, _Nil<T_O>());
   this->instanceSet(REF_CLASS_DEPENDENTS, _Nil<T_O>());
   this->instanceSet(REF_CLASS_LOCATION_TABLE, _Nil<T_O>());
+  this->instanceSet(REF_CLASS_INSTANCE_STAMP, clasp_make_fixnum(stamp));
+  this->instanceSet(REF_CLASS_CREATOR, creator);
 }
 
 
@@ -186,17 +192,20 @@ T_sp core__allocateInstance(T_sp theClass, size_t numberOfSlots) {
     IMPLEMENT_MEF(BF("Handle no allocator class: %s slots: %d") % _rep_(theClass) % numberOfSlots);
   }
   Creator_sp creator = gctools::As<Creator_sp>(cl->_class_creator());
+  if (creator.unboundp()) {
+    printf("%s:%d:%s    Trying to allocate instance but creator is unbound\n", __FILE__, __LINE__, __FUNCTION__ );
+  }
   Instance_sp obj = gctools::As<Instance_sp>(creator->creator_allocate());
   obj->instanceClassSet(gc::As<Class_sp>(theClass));
   obj->initializeSlots(cl->_get_instance_stamp(),numberOfSlots);
-  return obj;
+  return obj;l
 }
 
 /*! See ECL>>instance.d>>si_allocate_raw_instance */
 CL_LISPIFY_NAME(allocate_raw_instance);
 CL_DEFUN T_sp core__allocate_raw_instance(T_sp orig, T_sp tclass, size_t numberOfSlots) {
   Class_sp class_ = gc::As<Class_sp>(tclass);
-  if (class_->_theCreator->creates_classes()) {
+  if (class_->_class_creator()->creates_classes()) {
     return core__allocate_raw_class(orig,tclass,numberOfSlots);
   }
   T_sp toutput = core__allocateInstance(tclass, numberOfSlots);
@@ -641,15 +650,15 @@ CL_DEFUN void core__generic_function_call_history_remove_entries_with_specialize
 
 
 namespace core {
-Class_sp Instance_O::create(Symbol_sp symbol, Class_sp metaClass ) {
+Class_sp Instance_O::create(Symbol_sp symbol, Class_sp metaClass, Creator_sp creator ) {
   DEPRECATED();
 };
 
-Class_sp Instance_O::createClassUncollectable(gctools::Stamp is, Class_sp metaClass, size_t number_of_slots) {
-  GC_ALLOCATE_UNCOLLECTABLE(Instance_O,oclass,is,metaClass, number_of_slots);
+Class_sp Instance_O::createClassUncollectable(gctools::Stamp is, Class_sp metaClass, size_t number_of_slots, Creator_sp creator ) {
+  GC_ALLOCATE_UNCOLLECTABLE(Instance_O, oclass, metaClass, number_of_slots);
   oclass->_Class = metaClass;
   oclass->initializeSlots(is,number_of_slots);
-  oclass->initializeClassSlots();
+  oclass->initializeClassSlots(creator,gctools::NextStamp());
   return oclass;
 };
 
@@ -657,7 +666,7 @@ void Instance_O::_set_creator(Creator_sp cb) {
 #ifdef DEBUG_CLASS_INSTANCE
   printf("%s:%d    setCreator for %s @%p -> @%p\n", __FILE__, __LINE__, _rep_(this->name()).c_str(), this, cb.raw_());
 #endif
-  this->_theCreator = cb;
+  this->instanceSet(REF_CLASS_CREATOR,cb);
 }
 
 void Instance_O::accumulateSuperClasses(HashTableEq_sp supers, VectorObjects_sp arrayedSupers, Class_sp mc) {
@@ -756,8 +765,7 @@ void Instance_O::setInstanceBaseClasses(List_sp classes) {
 
 
 T_sp Instance_O::allocate_newClass(Class_sp metaClass, int slots) {
-  ASSERTF(this->_theCreator, BF("The class %s does not have a creator defined") % this->_classNameAsString() );
-  T_sp obj = this->_theCreator->creator_allocate();
+  T_sp obj = this->_class_creator()->creator_allocate();
 #ifdef DEBUG_CLASS_INSTANCE
   printf("%s:%d  allocate_newClass metaClass -> %s   obj@%p class -> %s\n", __FILE__, __LINE__,  _rep_(metaClass).c_str(), obj.raw_(), _rep_(instance_class(obj)).c_str() );
 #endif
@@ -943,7 +951,7 @@ string Instance_O::_classNameAsString() const {
 
 
 T_sp Instance_O::make_instance() {
-  T_sp instance = this->_theCreator->creator_allocate(); //this->allocate_newNil();
+  T_sp instance = this->_class_creator()->creator_allocate(); //this->allocate_newNil();
   if (instance.generalp()) {
     instance.unsafe_general()->initialize();
   } else {
@@ -972,7 +980,7 @@ CL_DEFUN List_sp clos__direct_superclasses(Class_sp c) {
 
 CL_DEFUN void core__reinitialize_class(Class_sp c) {
   if (c->_Class->isSubClassOf(_lisp->_Roots._TheClass)) {
-    c->_instance_stamp = gctools::NextStamp();
+    c->instanceSet(Instance_O::REF_CLASS_INSTANCE_STAMP,clasp_make_fixnum(gctools::NextStamp()));
     return;
   }
   TYPE_ERROR(c,cl::_sym_class);

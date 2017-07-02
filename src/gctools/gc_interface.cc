@@ -644,13 +644,12 @@ NOINLINE void set_one_static_class_Kind() {
 template <class TheClass>
 NOINLINE  gc::smart_ptr<core::Class_O> allocate_one_metaclass(core::Symbol_sp classSymbol, core::Class_sp metaClass)
 {
-  gc::smart_ptr<core::Class_O> class_val = core::Class_O::createClassUncollectable(core::Class_O::static_Kind,metaClass,REF_CLASS_NUMBER_OF_SLOTS_IN_STANDARD_CLASS);
+  auto cb = gctools::GC<TheClass>::allocate();
+  gc::smart_ptr<core::Class_O> class_val = core::Class_O::createClassUncollectable(core::Class_O::static_Kind,metaClass,REF_CLASS_NUMBER_OF_SLOTS_IN_STANDARD_CLASS,cb);
   class_val->__setup_stage1_with_sharedPtr_lisp_sid(class_val,classSymbol);
 //  reg::lisp_associateClassIdWithClassSymbol(reg::registered_class<TheClass>::id,TheClass::static_classSymbol());
 //  TheClass::static_class = class_val;
   core::core__setf_find_class(class_val,classSymbol);
-  auto cb = gctools::GC<TheClass>::allocate();
-  class_val->_set_creator(cb);
   return class_val;
 }
 
@@ -658,14 +657,13 @@ NOINLINE  gc::smart_ptr<core::Class_O> allocate_one_metaclass(core::Symbol_sp cl
 template <class TheClass>
 NOINLINE  gc::smart_ptr<core::Class_O> allocate_one_class(core::Class_sp metaClass)
 {
-  gc::smart_ptr<core::Class_O> class_val = core::Class_O::createClassUncollectable(TheClass::static_Kind,metaClass,REF_CLASS_NUMBER_OF_SLOTS_IN_STANDARD_CLASS);
+  gctools::smart_ptr<core::BuiltInObjectCreator<TheClass>> cb = gctools::GC<core::BuiltInObjectCreator<TheClass>>::allocate();
+  TheClass::set_static_creator(cb);
+  gc::smart_ptr<core::Class_O> class_val = core::Class_O::createClassUncollectable(TheClass::static_Kind,metaClass,REF_CLASS_NUMBER_OF_SLOTS_IN_STANDARD_CLASS,cb);
   class_val->__setup_stage1_with_sharedPtr_lisp_sid(class_val,TheClass::static_classSymbol());
   reg::lisp_associateClassIdWithClassSymbol(reg::registered_class<TheClass>::id,TheClass::static_classSymbol());
   TheClass::static_class = class_val;
   core::core__setf_find_class(class_val,TheClass::static_classSymbol()); //,true,_Nil<core::T_O>());
-  gctools::smart_ptr<core::BuiltInObjectCreator<TheClass>> cb = gctools::GC<core::BuiltInObjectCreator<TheClass>>::allocate();
-  TheClass::set_static_creator(cb);
-  class_val->_set_creator(TheClass::static_creator);
   return class_val;
 }
 

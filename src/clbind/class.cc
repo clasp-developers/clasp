@@ -85,9 +85,15 @@ void class_registration::register_() const {
   printf("%s:%d   Registering clbind class\n", __FILE__, __LINE__ );
 #endif
   crep->_Class = core::lisp_standard_class();
-  crep->initializeSlots(gctools::NextStamp(),REF_CLASS_NUMBER_OF_SLOTS_IN_STANDARD_CLASS);
-  crep->initializeClassSlots();
+  crep->initializeSlots(crep->_Class->_get_instance_stamp() /* BEFORE: gctools::NextStamp() */,REF_CLASS_NUMBER_OF_SLOTS_IN_STANDARD_CLASS);
   std::string classNameString(this->m_name);
+  gctools::smart_ptr<core::Creator_O> creator;
+  if (m_default_constructor != NULL) {
+    creator = m_default_constructor->registerDefaultConstructor_();
+  } else {
+    creator = gctools::GC<DummyCreator_O>::allocate(classNameString);
+  }
+  crep->initializeClassSlots(creator,gctools::NextStamp());
   core::Symbol_sp className = core::lispify_intern(classNameString, _lisp->getCurrentPackage()->packageName());
   className->exportYourself();
   crep->_setClassName(className);
@@ -96,13 +102,7 @@ void class_registration::register_() const {
     core::_sym_STARallCxxClassesSTAR->setf_symbolValue(
         core::Cons_O::create(className, core::_sym_STARallCxxClassesSTAR->symbolValue()));
   }
-  gctools::smart_ptr<core::Creator_O> allocator;
-  if (m_default_constructor != NULL) {
-    allocator = m_default_constructor->registerDefaultConstructor_();
-  } else {
-    allocator = gctools::GC<DummyCreator_O>::allocate(classNameString);
-  }
-  _lisp->addClass(className, crep, allocator);
+  core__setf_find_class(crep, className );
   registry->add_class(m_type, crep);
 
   detail::class_map &classes = *globalClassMap;

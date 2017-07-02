@@ -84,13 +84,13 @@ CL_DEFUN T_sp core__allocate_raw_class(T_sp orig, T_sp tMetaClass, int slots, bo
     if ( Class_sp newClass = tNewClass.asOrNull<Class_O>() ) {
       newClass->_Class = cMetaClass;
       newClass->initializeSlots(cMetaClass->_get_instance_stamp(),slots);
-      newClass->initializeClassSlots();
+      Creator_sp cb = _Unbound<Creator_O>();
+      if (creates_classes) {
+        cb = gctools::GC<core::BuiltInObjectCreator<Class_O>>::allocate();
+      };
+      newClass->initializeClassSlots(cb,gctools::NextStamp());
       //      newClass->initializeSlots(slots);
 //      printf("%s:%d allocate-raw-class %p of metaclass %s number_of_slots[%d]\n", __FILE__, __LINE__, (void *)(newClass.get()), cMetaClass->_classNameAsString().c_str(), slots);
-      if (creates_classes) {
-        auto cb = gctools::GC<core::BuiltInObjectCreator<Class_O>>::allocate();
-        newClass->_set_creator(cb);
-      };
       if (orig.nilp()) {
         orig = newClass;
       } else if (Class_sp corig = orig.asOrNull<Class_O>()) {
@@ -106,10 +106,13 @@ CL_DEFUN T_sp core__allocate_raw_class(T_sp orig, T_sp tMetaClass, int slots, bo
     }
   } else if (tMetaClass.nilp()) {
     printf("%s:%d   core::allocate-raw-class was invoked with NIL as the meta-class - check out why\n", __FILE__, __LINE__ );
-    GC_ALLOCATE_UNCOLLECTABLE(Class_O,newClass,gctools::NextStamp(),lisp_standard_class(),REF_CLASS_NUMBER_OF_SLOTS_IN_STANDARD_CLASS);
+    GC_ALLOCATE_UNCOLLECTABLE(Class_O,newClass,lisp_standard_class(),REF_CLASS_NUMBER_OF_SLOTS_IN_STANDARD_CLASS);
     newClass->initialize();
+    printf("%s:%d:%s      creating class - creator is created here\n", __FILE__, __LINE__, __FUNCTION__ );
+#if 0
     auto cb = gctools::GC<core::BuiltInObjectCreator<Class_O>>::allocate();
     newClass->_set_creator(cb);
+#endif
 //    newClass->initializeSlots(slots);
     return newClass;
   }

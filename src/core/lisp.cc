@@ -1013,50 +1013,27 @@ void Lisp_O::addClassNameToPackageAsDynamic(const string &package, const string 
 
 /*! Add the class with (className) to the current package
  */
-void Lisp_O::addClass(Symbol_sp classSymbol,
-                      Creator_sp alloc,
-                      Symbol_sp base1ClassSymbol )
-//  ,
-//                      Symbol_sp base2ClassSymbol,
-//                      Symbol_sp base3ClassSymbol) {
+void Lisp_O::addClassSymbol(Symbol_sp classSymbol,
+                            Creator_sp alloc,
+                            Symbol_sp base1ClassSymbol )
 {
-  DEPRECATED();
   LOG(BF("Lisp_O::addClass classSymbol(%s) baseClassSymbol1(%u) baseClassSymbol2(%u)") % _rep_(classSymbol) % base1ClassSymbol % base2ClassSymbol);
-  Class_sp cc;
-  if (classSymbol == StandardObject_O::static_classSymbol()) {
-    IMPLEMENT_ME(); // WHEN DO StandardClasses get created with addClass?????
-  } else {
-    LOG(BF("Adding BuiltInClass with classSymbol(%d)") % classSymbol);
-    cc = Class_O::create(classSymbol,_lisp->_Roots._TheBuiltInClass);
-  }
+  Class_sp cc = Class_O::create(classSymbol,_lisp->_Roots._TheBuiltInClass,alloc);
   printf("%s:%d --> Adding class[%s]\n", __FILE__, __LINE__, _rep_(classSymbol).c_str());
   core__setf_find_class(cc, classSymbol);
-  if (IS_SYMBOL_DEFINED(base1ClassSymbol)) {
-    cc->addInstanceBaseClass(base1ClassSymbol);
-  } else {
-    SIMPLE_ERROR(BF("There must be one base class"));
-  }
-#if 0
-  if (IS_SYMBOL_DEFINED(base2ClassSymbol)) {
-    cc->addInstanceBaseClass(base2ClassSymbol);
-  }
-  if (IS_SYMBOL_DEFINED(base3ClassSymbol)) {
-    cc->addInstanceBaseClass(base3ClassSymbol);
-  }
-#endif
+  cc->addInstanceBaseClass(base1ClassSymbol);
   ASSERTF((bool)alloc, BF("_creator for %s is NULL!!!") % _rep_(classSymbol));
   cc->_set_creator(alloc);
 }
 /*! Add the class with (className) to the current package
  */
-void Lisp_O::addClass(Symbol_sp classSymbol, Class_sp theClass, Creator_sp allocator) {
+#if 0
+void Lisp_O::addClass(Symbol_sp classSymbol, Class_sp theClass) {
   //	printf("%s:%d:%s  Adding class with symbol %s -- _allocator=%p unless we initialize it properly\n", __FILE__,__LINE__,__FUNCTION__,_rep_(classSymbol).c_str(), allocator );
   LOG(BF("Lisp_O::addClass classSymbol(%s)") % _rep_(classSymbol));
-  //	printf("%s:%d --> Adding class[%s]\n", __FILE__, __LINE__, _rep_(classSymbol).c_str() );
   core__setf_find_class(theClass, classSymbol);
-  //        IMPLEMENT_MEF(BF("Pass an AllocateInstanceFunctor"));
-  theClass->_set_creator(allocator);
 }
+#endif
 
 void Lisp_O::exportToPython(Symbol_sp sym) const {
   _OF();

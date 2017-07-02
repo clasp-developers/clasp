@@ -918,13 +918,13 @@ T_sp lisp_boot_findClassBySymbolOrNil(Symbol_sp classSymbol) {
 //     mc->__setLambdaListHandlerString(argumentString);
 // }
 
-void lisp_addClass(Symbol_sp classSymbol,
+void lisp_addClassSymbol(Symbol_sp classSymbol,
                    gctools::smart_ptr<Creator_O> cb,
                    Symbol_sp base1ClassSymbol)
-//                   Symbol_sp base2ClassSymbol,
-//                   Symbol_sp base3ClassSymbol) {
 {
-  _lisp->addClass(classSymbol, cb, base1ClassSymbol); //, base2ClassSymbol);
+  DEPRECATED();
+  printf("%s:%d:%s    lisp_addClass   %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(classSymbol).c_str());
+  _lisp->addClassSymbol(classSymbol, cb, base1ClassSymbol); //, base2ClassSymbol);
 }
 void lisp_addClass(Symbol_sp classSymbol) {
   DEPRECATED();

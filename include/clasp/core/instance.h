@@ -62,16 +62,16 @@ namespace core {
                    REF_CLASS_FINALIZED = 11,
                    REF_CLASS_SEALEDP = 14,
                    REF_CLASS_DEPENDENTS = 16,
-                   REF_CLASS_LOCATION_TABLE = 19
+                   REF_CLASS_LOCATION_TABLE = 19,
+                   REF_CLASS_INSTANCE_STAMP = 20,
+                   REF_CLASS_CREATOR = 21
     } Slots;
     
   public: // ctor/dtor for classes with shared virtual base
   Instance_O() : Base(entry_point), _isgf(CLASP_NOT_FUNCALLABLE), _entryPoint(NULL), _Class(_Nil<Class_O>()), _Sig(_Nil<T_O>()){};
-    explicit Instance_O(gctools::Stamp is,Class_sp metaClass, size_t slots) :
+    explicit Instance_O(Class_sp metaClass, size_t slots) :
     Base(entry_point),
-      _instance_stamp(is)
-      ,_Class(metaClass)
-      ,_theCreator()
+      _Class(metaClass)
       ,_Sig(_Unbound<T_O>())
 #ifdef METER_ALLOCATIONS
       ,_allocation_counter(0)
@@ -81,10 +81,6 @@ namespace core {
 //    ,_NumberOfSlots(slots)
     {};
     virtual ~Instance_O(){};
-  public:
-    /* Class stuff - move into slots */
-    gctools::Stamp _instance_stamp;
-    Creator_sp  _theCreator;
   public:
     Class_sp _Class;
     int _isgf;
@@ -100,8 +96,8 @@ namespace core {
     size_t _allocation_total_size;
 #endif
   public:
-    static Instance_sp createClassUncollectable(gctools::Stamp is,Class_sp metaClass, size_t number_of_slots);
-    static Class_sp create(Symbol_sp symbol,Class_sp metaClass);
+    static Instance_sp createClassUncollectable(gctools::Stamp is,Class_sp metaClass, size_t number_of_slots, Creator_sp creator);
+    static Class_sp create(Symbol_sp symbol,Class_sp metaClass,Creator_sp creator);
   
   /*! Setup the instance nil value */
   //	void setupInstanceNil();
@@ -131,9 +127,9 @@ namespace core {
     Symbol_sp _className() const { return gc::As<Symbol_sp>(this->instanceRef(REF_CLASS_CLASS_NAME)); }
 
     void _set_creator(Creator_sp cb);
-    T_sp _class_creator() const { return (bool)(this->_theCreator) ? gctools::As<core::T_sp>(this->_theCreator) : _Nil<core::T_O>(); };
-    bool _has_creator() const { return (bool)(this->_theCreator); };
-    Fixnum _get_instance_stamp() const { return this->_instance_stamp; };
+    Creator_sp _class_creator() const { return gc::As_unsafe<Creator_sp>(this->instanceRef(REF_CLASS_CREATOR)); };
+    bool _has_creator() const { return (bool)(!this->instanceRef(REF_CLASS_CREATOR).unboundp()); };
+    Fixnum _get_instance_stamp() const { return this->instanceRef(REF_CLASS_INSTANCE_STAMP).unsafe_fixnum(); };
     
     string dumpInfo();
 
@@ -215,8 +211,8 @@ namespace core {
     virtual LambdaListHandler_sp lambdaListHandler() const { IMPLEMENT_ME(); };
     virtual void setAssociatedFunctions(List_sp funcs) { NOT_APPLICABLE(); };
   public: // The hard-coded indexes above are defined below to be used by Class
-    void initializeSlots(Fixnum stamp, size_t numberOfSlots);
-    void initializeClassSlots();
+    void initializeSlots(gctools::Stamp stamp, size_t numberOfSlots);
+    void initializeClassSlots(Creator_sp creator, gctools::Stamp class_stamp);
     void ensureClosure(DispatchFunction_fptr_type entryPoint);
     virtual void setf_lambda_list(List_sp lambda_list) { if (!this->_isgf) {SIMPLE_ERROR(BF("Cannot set lambda list of non gf function ll->%s") % _rep_(lambda_list));} this->GFUN_LAMBDA_LIST_set(lambda_list); }; //{ this->_lambda_list = lambda_list; };
     virtual T_sp lambda_list() const { return this->GFUN_LAMBDA_LIST(); };

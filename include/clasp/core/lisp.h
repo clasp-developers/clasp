@@ -970,8 +970,8 @@ public:
   void initializeEnvironment();
 
   void addClassNameToPackageAsDynamic(const string &package, const string &name, Class_sp cl);
-  void addClass(Symbol_sp classSymbol, Creator_sp creator, Symbol_sp base1ClassSymbol ); //, Symbol_sp base2ClassSymbol = UNDEFINED_SYMBOL, Symbol_sp base3ClassSymbol = UNDEFINED_SYMBOL);
-  void addClass(Symbol_sp classSymbol, Class_sp theClass, Creator_sp creator);
+  void addClassSymbol(Symbol_sp classSymbol, Creator_sp creator, Symbol_sp base1ClassSymbol ); //, Symbol_sp base2ClassSymbol = UNDEFINED_SYMBOL, Symbol_sp base3ClassSymbol = UNDEFINED_SYMBOL);
+//  void addClass(Symbol_sp classSymbol, Class_sp theClass);
   //	void addClass( Symbol_sp classSymbol);
 
   string __repr__() const;

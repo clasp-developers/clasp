@@ -74,6 +74,8 @@
       (valid-initargs :accessor class-valid-initargs)
       (slot-table :accessor slot-table)
       (location-table :initform nil :accessor class-location-table)
+      (instance-stamp :accessor instance-stamp)
+      (creator :accessor creator)
       ))
 
   #-clasp
