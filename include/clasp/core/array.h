@@ -29,11 +29,13 @@ THE SOFTWARE.
 
 #include <clasp/core/clasp_gmpxx.h>
 #include <clasp/core/foundation.h>
-#include <clasp/core/numbers.h>
+#include <clasp/core/object.h>
+#include <clasp/core/numbers.fwd.h>
 #include <clasp/core/character.fwd.h>
 #include <clasp/core/array.fwd.h>
 #include <clasp/core/sequence.fwd.h>
 #include <clasp/core/corePackage.fwd.h>
+
 
 namespace core {
   size_t calculate_extension(size_t arrayTotalSize);
@@ -1722,7 +1724,7 @@ namespace core {
 
   T_mv cl__parse_integer(String_sp str, Fixnum start = 0, T_sp end = _Nil<T_O>(), uint radix = 10, T_sp junkAllowed = _Nil<T_O>());
 
-  T_sp cl__string_equal(T_sp strdes1, T_sp strdes2, Fixnum_sp start1 = make_fixnum(0), T_sp end1 = _Nil<T_O>(), Fixnum_sp start2 = make_fixnum(0), T_sp end2 = _Nil<T_O>());
+  T_sp cl__string_equal(T_sp strdes1, T_sp strdes2, Fixnum_sp start1 = clasp_make_fixnum(0), T_sp end1 = _Nil<T_O>(), Fixnum_sp start2 = clasp_make_fixnum(0), T_sp end2 = _Nil<T_O>());
 
   /*! Push a c-style string worth of characters into the buffer */
   void StringPushStringCharStar(String_sp buffer, const char* cp);

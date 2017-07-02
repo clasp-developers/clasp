@@ -233,7 +233,7 @@ T_sp BranchSNode_O::createObject(HashTable_sp snodeToObject) {
 
 string BranchSNode_O::__repr__() const {
   stringstream ss;
-  ss << "#<" << _rep_(this->__class()->className()) << " ";
+  ss << "#<" << _rep_(this->__class()->_className()) << " ";
   ss << ":kind " << _rep_(this->_Kind) << " ";
   ss << ":plist " << _rep_(this->_SNodePList) << " ";
   ss << ":vector " << _rep_(this->_VectorSNodes) << ">";
@@ -295,7 +295,7 @@ Archive_O::Archive_O() : _Version(0), _TopNode(_Nil<T_O>()), _NextUniqueId(0){};
 
 string Archive_O::__repr__() const {
   stringstream ss;
-  ss << "#<" << _rep_(this->__class()->className()) << " ";
+  ss << "#<" << _rep_(this->__class()->_className()) << " ";
   ss << _rep_(this->_TopNode) << ">";
   return ss.str();
 }

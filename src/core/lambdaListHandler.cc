@@ -1260,7 +1260,7 @@ string LambdaListHandler_O::partsAsString() const {
 string LambdaListHandler_O::__repr__() const {
   _OF();
   stringstream ss;
-  ss << "#<" << cl__class_of(this->asSmartPtr())->classNameAsString();
+  ss << "#<" << cl__class_of(this->asSmartPtr())->_classNameAsString();
   {
     ss << this->partsAsString();
   }

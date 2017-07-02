@@ -294,7 +294,7 @@ void invocation_history_stack_dump(const InvocationHistoryFrame* frame, const ch
     T_sp tfn = cur->function();
     if (gc::IsA<Function_sp>(tfn)) {
       Function_sp fn = gc::As_unsafe<Function_sp>(tfn);
-      printf("    frame[%4lu] @%p (previous %p)  closure@%p  fptr@%p: %s\n", count, cur, cur->_Previous, tfn.raw_(), (void*)fn->entry, _rep_(fn->name()).c_str());
+      printf("    frame[%4lu] @%p (previous %p)  closure@%p  fptr@%p: %s\n", count, cur, cur->_Previous, tfn.raw_(), (void*)fn->entry, _rep_(fn->functionName()).c_str());
     } else {
       printf("    frame[%4lu] @%p   NO-FUNCTION-INFO tfn@%p\n", count, cur, tfn.raw_());
     }

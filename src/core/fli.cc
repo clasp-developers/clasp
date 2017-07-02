@@ -411,7 +411,7 @@ inline string ForeignData_O::__repr__() const
   stringstream ss;
 
   ss << "#<"
-     << this->_instanceClass()->classNameAsString()
+     << this->_instanceClass()->_classNameAsString()
      << " @ " << (BF("%p") % this)
      << " :kind " << this->m_kind
      << " :size " << this->m_size
@@ -805,7 +805,7 @@ inline string ForeignTypeSpec_O::__repr__() const
   stringstream ss;
 
   ss << "#<"
-     << this->_instanceClass()->classNameAsString()
+     << this->_instanceClass()->_classNameAsString()
      << " @ " << (BF("%p") % this)
      << " :lisp-symbol " << this->m_lisp_symbol
      << " :lisp-name "   << this->m_lisp_name

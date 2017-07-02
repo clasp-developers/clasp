@@ -44,15 +44,22 @@ THE SOFTWARE.
 #include <clasp/core/numbers.fwd.h>
 #include <clasp/core/specializer.h>
 #include <clasp/core/holder.h>
+#include <clasp/core/instance.h>
 
+#if 0
 template <>
 struct gctools::GCInfo<core::Class_O> {
   static bool constexpr NeedsInitialization = false;
   static bool constexpr NeedsFinalization = false;
   static GCInfo_policy constexpr Policy = normal;
 };
+#endif
+
 
 namespace core {
+
+  typedef Instance_O Class_O;
+  typedef Instance_sp Class_sp;
 
   Fixnum_sp clasp_make_fixnum(gc::Fixnum v);
   
@@ -60,7 +67,6 @@ namespace core {
 //  Class access functions for when we only have a forward
 //  definition for the Class_O class
 //
-SMART(Class);
 
 /*! Class spoofs ECL>>Instance_O classes by doing the following.
 
@@ -74,6 +80,12 @@ SMART(Class);
 
   
 */
+
+#define REF_CLASS_NUMBER_OF_SLOTS_IN_STANDARD_CLASS 22
+#define REF_CLASS_NUMBER_OF_SLOTS_IN_STRUCTURE_CLASS 28
+  
+
+#if 0
 class Class_O : public StandardObject_O {
   struct metadata_bootstrap_class {};
   struct metadata_gc_do_not_move {};
@@ -110,18 +122,6 @@ class Class_O : public StandardObject_O {
  public: // The hard-coded indexes above are defined below to be used by Class
   // These must match the +class-slots+ defined in hierarchy.lsp
 
-  // These must be exposed in core__class_slot_sanity_check()
-  typedef enum { REF_CLASS_CLASS_NAME = 3,
-                 REF_CLASS_DIRECT_SUPERCLASSES = 4,
-                 REF_CLASS_SLOTS = 6,
-                 REF_CLASS_DIRECT_DEFAULT_INITARGS = 9,
-                 REF_CLASS_FINALIZED = 11,
-                 REF_CLASS_CLASS_PRECEDENCE_LIST = 7,
-                 REF_CLASS_DIRECT_SLOTS = 8,
-                 REF_CLASS_DEFAULT_INITARGS = 10} Slots;
-  
-#define REF_CLASS_NUMBER_OF_SLOTS_IN_STANDARD_CLASS 22
-#define REF_CLASS_NUMBER_OF_SLOTS_IN_STRUCTURE_CLASS 28
   
 #if 0
   // If any of these are exposed - then they MUST be added to
@@ -279,7 +279,7 @@ public:
   virtual void describe(T_sp stream);
 
   /*! predicate if this is a BuiltInClass class */
-  virtual bool builtInClassP() const { return false; };
+  virtual bool builtInClassP() const { return this == &*lisp_builtInClass(); };
 
   /*! predicate if this is a raw C++ class that is wrapped with clbind
           - it can only be used to derive other classes if cxxDerivableClassP is true */
@@ -313,6 +313,8 @@ public:
 
   virtual ~Class_O(){};
 };
+
+#endif
 };
 
 
@@ -334,7 +336,7 @@ namespace core {
     virtual core::T_sp creator_allocate() {
       // BuiltInObjectCreator<Class_O> uses a different allocation method
       // that assigns the next Clos Stamp to the new Class
-      GC_ALLOCATE_VARIADIC(Class_O, obj, gctools::NextStamp(),lisp_StandardClass(),REF_CLASS_NUMBER_OF_SLOTS_IN_STANDARD_CLASS);
+      GC_ALLOCATE_VARIADIC(Class_O, obj, gctools::NextStamp(),lisp_standard_class(),REF_CLASS_NUMBER_OF_SLOTS_IN_STANDARD_CLASS);
       return obj;
     }
     virtual void searcher(){};

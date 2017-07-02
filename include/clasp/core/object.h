@@ -98,10 +98,7 @@ bool clasp_charEqual2(T_sp, T_sp);
 //
 //
 namespace core {
-  FORWARD(Class);
   FORWARD(Record);
-  FORWARD(BuiltInClass);
-  FORWARD(Model);
   FORWARD(LambdaListHandler);
   FORWARD(Binder);
   FORWARD(Symbol);
@@ -380,9 +377,6 @@ namespace core {
   /*! Objects can catch signals from Models
 	 * but only Model's and subclasses can send them
 	 */
-    virtual void catchSignal(core::Symbol_sp signal, core::Model_sp sender, core::List_sp data) { _G(); /*Do nothing*/ };
-    virtual void propagateSignal(core::Symbol_sp signal){}; // Objects don't propagate signals
-
     string className() const;
 
     T_sp deepCopy() const;
@@ -568,39 +562,7 @@ namespace core {
 
   extern int basic_compare(Number_sp na, Number_sp nb);
 
-  CL_LAMBDA(x y);
-  CL_DECLARE();
-  CL_DOCSTRING("equalp");
-  inline CL_DEFUN bool cl__equalp(T_sp x, T_sp y) {
-    if (x.fixnump()) {
-      if (y.fixnump()) {
-        return x.raw_() == y.raw_();
-      } else if (y.single_floatp()) {
-        return (x.unsafe_fixnum() == y.unsafe_single_float());
-      } else if (Number_sp ny = y.asOrNull<Number_O>()) {
-        return basic_compare(x, y) == 0;
-      }
-      return false;
-    } else if (x.single_floatp()) {
-      if (y.single_floatp()) {
-        return x.unsafe_single_float() == y.unsafe_single_float();
-      } else if (y.fixnump()) {
-        return x.unsafe_single_float() == y.unsafe_fixnum();
-      } else if (Number_sp ny = y.asOrNull<Number_O>()) {
-        return basic_compare(x, y);
-      }
-      return false;
-    } else if (x.characterp()) {
-      return clasp_charEqual2(x, y);
-    } else if (x.consp() ) {
-      Cons_O* cons = x.unsafe_cons();
-      return cons->equalp(y);
-    } else if ( x.generalp() ) {
-      General_O* genx = x.unsafe_general();
-      return genx->equalp(y);
-    }
-    SIMPLE_ERROR(BF("Bad equalp comparison"));
-  };
+  bool cl__equalp(T_sp x, T_sp y);
 };
 
 

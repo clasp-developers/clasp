@@ -466,7 +466,7 @@ CL_DEFMETHOD Pointer_sp Pointer_O::inc_pointer(core::Integer_sp offset) {
 
 string Pointer_O::__repr__() const {
   stringstream ss;
-  ss << "#<" << this->_instanceClass()->classNameAsString() << " ";
+  ss << "#<" << this->_instanceClass()->_classNameAsString() << " ";
   ss << this->_ptr << "> ";
   return ss.str();
 }

@@ -84,12 +84,13 @@ void class_registration::register_() const {
 #ifdef DEBUG_CLASS_INSTANCE
   printf("%s:%d   Registering clbind class\n", __FILE__, __LINE__ );
 #endif
-  crep->_MetaClass = core::lisp_StandardClass();
+  crep->_Class = core::lisp_standard_class();
   crep->initializeSlots(gctools::NextStamp(),REF_CLASS_NUMBER_OF_SLOTS_IN_STANDARD_CLASS);
+  crep->initializeClassSlots();
   std::string classNameString(this->m_name);
   core::Symbol_sp className = core::lispify_intern(classNameString, _lisp->getCurrentPackage()->packageName());
   className->exportYourself();
-  crep->setName(className);
+  crep->_setClassName(className);
   reg::lisp_associateClassIdWithClassSymbol(m_id, className); // TODO: Or do I want m_wrapper_id????
   if (core::_sym_STARallCxxClassesSTAR->symbolValueUnsafe()) {
     core::_sym_STARallCxxClassesSTAR->setf_symbolValue(
@@ -143,7 +144,7 @@ void class_registration::register_() const {
       ClassRep_sp bcrep = registry->find_class(i->first);
       ASSERTF(bcrep.notnilp(), BF("Could not find base class %s") % i->first.name());
       // Add it to the DirectSuperClass list
-      crep->addInstanceBaseClass(bcrep->className());
+      crep->addInstanceBaseClass(bcrep->_className());
       crep->add_base_class(core::make_fixnum(0), bcrep);
     }
   }

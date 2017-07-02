@@ -285,12 +285,13 @@ void setup_static_classSymbol(BootStrapCoreSymbolMap const &sidMap) {
 
 string dump_instanceClass_info(Class_sp co, Lisp_sp prog) {
   stringstream ss;
-  ss << "------------------------------------- class" << _rep_(co->className()) << std::endl;
+  ss << "------------------------------------- class" << _rep_(co->_className()) << std::endl;
   ;
   LOG(BF("Dumping info: %s") % co->dumpInfo());
   ss << co->dumpInfo();
   return ss.str();
 }
+
 template <class oclass>
 void dump_info(BuiltInClass_sp co, Lisp_sp lisp) {
   LOG(BF("-------    dump_info    --------------- className: %s @ %X") % oclass::static_className() % co.get());
@@ -1019,13 +1020,14 @@ void Lisp_O::addClass(Symbol_sp classSymbol,
 //                      Symbol_sp base2ClassSymbol,
 //                      Symbol_sp base3ClassSymbol) {
 {
+  DEPRECATED();
   LOG(BF("Lisp_O::addClass classSymbol(%s) baseClassSymbol1(%u) baseClassSymbol2(%u)") % _rep_(classSymbol) % base1ClassSymbol % base2ClassSymbol);
   Class_sp cc;
   if (classSymbol == StandardObject_O::static_classSymbol()) {
     IMPLEMENT_ME(); // WHEN DO StandardClasses get created with addClass?????
   } else {
     LOG(BF("Adding BuiltInClass with classSymbol(%d)") % classSymbol);
-    cc = Class_O::create(classSymbol,_lisp->_Roots._BuiltInClass);
+    cc = Class_O::create(classSymbol,_lisp->_Roots._TheBuiltInClass);
   }
   printf("%s:%d --> Adding class[%s]\n", __FILE__, __LINE__, _rep_(classSymbol).c_str());
   core__setf_find_class(cc, classSymbol);
@@ -1043,7 +1045,7 @@ void Lisp_O::addClass(Symbol_sp classSymbol,
   }
 #endif
   ASSERTF((bool)alloc, BF("_creator for %s is NULL!!!") % _rep_(classSymbol));
-  cc->setCreator(alloc);
+  cc->_set_creator(alloc);
 }
 /*! Add the class with (className) to the current package
  */
@@ -1053,7 +1055,7 @@ void Lisp_O::addClass(Symbol_sp classSymbol, Class_sp theClass, Creator_sp alloc
   //	printf("%s:%d --> Adding class[%s]\n", __FILE__, __LINE__, _rep_(classSymbol).c_str() );
   core__setf_find_class(theClass, classSymbol);
   //        IMPLEMENT_MEF(BF("Pass an AllocateInstanceFunctor"));
-  theClass->setCreator(allocator);
+  theClass->_set_creator(allocator);
 }
 
 void Lisp_O::exportToPython(Symbol_sp sym) const {
@@ -1763,6 +1765,11 @@ CL_LAMBDA(new-value name);
 CL_DECLARE();
 CL_DOCSTRING("setf_find_class, set value to NIL to remove the class name ");
 CL_DEFUN Class_mv core__set_class(T_sp newValue, Symbol_sp name) {
+#if 0
+  if ( name== cl::_sym_class) {
+    printf("%s:%d Setting CLASS to %p\n", __FILE__, __LINE__, newValue.raw_());
+  }
+#endif
   if (!newValue.nilp() && !clos__classp(newValue)) {
     SIMPLE_ERROR(BF("Classes in cando have to be subclasses of Class or NIL unlike ECL which uses Instances to represent classes - while trying to (setf find-class) of %s you gave: %s") % _rep_(name) % _rep_(newValue));
   }
@@ -1993,7 +2000,7 @@ void searchForApropos(List_sp packages, SimpleString_sp insubstring, bool print_
       if ( (sym)->specialP() || (sym)->fboundp() ) {
         if ( (sym)->fboundp() ) {
           ss << " ";
-          ss << cl__class_of(cl__symbol_function((sym)))->classNameAsString();
+          ss << cl__class_of(cl__symbol_function((sym)))->_classNameAsString();
           T_sp tfn = cl__symbol_function(sym);
           if ( !tfn.unboundp() && gc::IsA<Function_sp>(tfn)) {
             Function_sp fn = gc::As_unsafe<Function_sp>(tfn);
@@ -2483,7 +2490,7 @@ CL_DEFUN T_mv cl__not(T_sp x) {
 
 Symbol_sp Lisp_O::getClassSymbolForClassName(const string &name) {
   Class_sp mc = this->classFromClassName(name);
-  Symbol_sp sym = mc->className();
+  Symbol_sp sym = mc->_className();
   ASSERTNOTNULL(sym);
   return sym;
 }

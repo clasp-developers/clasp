@@ -546,8 +546,7 @@ env is the parent environment of the (result-af) value frame"
 	       ))
 	    )
 	  ))))
-  (cmp-log "Done codegen-let/let*\n")
-  )
+  (cmp-log "Done codegen-let/let*\n"))
 
 (defun codegen-let (result rest env)
   (codegen-let/let* 'let result rest env))

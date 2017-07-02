@@ -42,7 +42,7 @@ namespace core {
 
 SMART(StandardObject);
 class StandardObject_O : public General_O {
-  LISP_META_CLASS(::_lisp->_Roots._StandardClass);
+  LISP_META_CLASS(::core::lisp_standard_class());
   LISP_CLASS(core, ClPkg, StandardObject_O, "standard-object",General_O);
 
 public:

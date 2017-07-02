@@ -45,9 +45,11 @@ StandardClass_sp StandardClass_O::createUncollectable(gctools::Stamp is) {
 
 void StandardClass_O::initialize() {
   _OF();
+  DEPRECATED();
   this->Base::initialize();
 //  this->_InstanceCoreClass = _Nil<Class_O>();
   this->initializeSlots(REF_NUMBER_OF_SLOTS_IN_CLASSES);
+  this->initializeClassSlots();
 }
 
 };

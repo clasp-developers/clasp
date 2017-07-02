@@ -315,7 +315,7 @@ LCC_RETURN user_function_dispatch(gctools::Tagged tgf, gctools::Tagged tvargs) {
   Instance_sp gf(tgf);
   VaList_sp vargs(tvargs);
   Function_sp func = gc::As<Function_sp>(gf->instanceRef(gf->numberOfSlots()-1));
-  BFORMAT_T(BF("%s:%d a user-dispatch generic-function %s is being invoked\n") % __FILE__ % __LINE__ % _rep_(gf->name()) );
+  BFORMAT_T(BF("%s:%d a user-dispatch generic-function %s is being invoked\n") % __FILE__ % __LINE__ % _rep_(gf->functionName()) );
   return core::funcall_consume_valist_<core::Function_O>(func.tagged_(),vargs); // cl__apply(func,vargs).as_return_type();
 }
 

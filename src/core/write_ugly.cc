@@ -134,13 +134,15 @@ void Instance_O::__write__(T_sp stream) const {
   }
 }
 
+  SYMBOL_EXPORT_SC_(CorePkg, structure_print_function);
+  SYMBOL_EXPORT_SC_(CorePkg, STARprint_structureSTAR);
+
+#if 0
 void StructureObject_O::__write__(T_sp stream) const {
   //  printf("%s:%d StructureObject_O::__write__\n", __FILE__, __LINE__);
   if (UNLIKELY(!gc::IsA<Class_sp>(this->_Type)))
     SIMPLE_ERROR(BF("Found a corrupt structure with an invalid type %s") % _rep_(this->_Type));
   Symbol_sp type_name = this->_Type->className();
-  SYMBOL_EXPORT_SC_(CorePkg, structure_print_function);
-  SYMBOL_EXPORT_SC_(CorePkg, STARprint_structureSTAR);
   T_sp print_function = core__get_sysprop(type_name, _sym_structure_print_function);
   if (print_function.nilp() || !_sym_STARprint_structureSTAR->symbolValue().isTrue()) {
     clasp_write_string("#S", stream);
@@ -154,6 +156,8 @@ void StructureObject_O::__write__(T_sp stream) const {
     eval::funcall(print_function, this->asSmartPtr(), stream, make_fixnum(0));
   }
 }
+#endif
+
 
 void Integer_O::__write__(T_sp stream) const {
   SafeBuffer buffer;

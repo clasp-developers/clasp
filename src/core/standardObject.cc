@@ -64,7 +64,7 @@ void StandardObject_O::archiveBase(ArchiveP node) {
 
 string StandardObject_O::__repr__() const {
   stringstream ss;
-  ss << this->_instanceClass()->classNameAsString() << " ";
+  ss << this->_instanceClass()->_classNameAsString() << " ";
 #if 0
 	ASSERT(this->_InstanceClass);
 	if ( this->_InstanceClass.unboundp() )

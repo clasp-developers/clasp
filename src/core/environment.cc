@@ -394,7 +394,7 @@ string Environment_O::__repr__() const {
 #if 0
 	int tab = gc::As<Fixnum_sp>(_sym_STARenvironmentPrintingTabSTAR->symbolValue())->get();
 	{
-	    ss << (BF("--------------------------- %20s -----") % this->_instanceClass()->classNameAsString() ).str() << std::endl;
+	    ss << (BF("--------------------------- %20s -----") % this->_instanceClass()->_classNameAsString() ).str() << std::endl;
 	    tab += gc::As<Fixnum_sp>(_sym_STARenvironmentPrintingTabIncrementSTAR->symbolValue())->get();
 	    Fixnum_sp fntab = make_fixnum(tab);
 	    DynamicScopeManager scope(_sym_STARenvironmentPrintingTabSTAR,fntab);
@@ -1181,7 +1181,7 @@ public:
       ss << "UNBOUND";
     } else {
       Function_sp func = gc::As<Function_sp>(entry);
-      ss << "function " << _rep_(func->name());
+      ss << "function " << _rep_(func->functionName());
     }
     ss << std::endl;
     return true;

@@ -32,15 +32,15 @@ namespace core {
       if (supplied) {
         if (obj.single_floatp()) {
           return obj.unsafe_single_float();
-        } else if (gc::IsA<DoubleFloat_sp>(obj)) {
-          return gc::As_unsafe<DoubleFloat_sp>(obj)->get();
+        } else if (gc::IsA<General_sp>(obj)) {
+          return clasp_to_double(gc::As_unsafe<General_sp>(obj));
         }
         TYPE_ERROR(obj,cl::_sym_double_float);
       }
       return 0.0;
     }
-    static value_type from_object(T_sp obj) { if (gc::IsA<DoubleFloat_sp>(obj)) return gc::As_unsafe<DoubleFloat_sp>(obj)->get(); TYPE_ERROR(obj,cl::_sym_double_float); };
-    static T_sp to_object(const value_type& v) { return DoubleFloat_O::create(v); };
+    static value_type from_object(T_sp obj) { return clasp_to_double(gc::As_unsafe<DoubleFloat_sp>(obj));};
+    static T_sp to_object(const value_type& v) { return core::clasp_make_double_float(v); };
   public:
   SimpleVectorDouble_O(size_t length, value_type initialElement=value_type(),
                        bool initialElementSupplied=false,
