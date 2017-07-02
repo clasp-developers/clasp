@@ -198,7 +198,7 @@ T_sp core__allocateInstance(T_sp theClass, size_t numberOfSlots) {
   Instance_sp obj = gctools::As<Instance_sp>(creator->creator_allocate());
   obj->instanceClassSet(gc::As<Class_sp>(theClass));
   obj->initializeSlots(cl->_get_instance_stamp(),numberOfSlots);
-  return obj;l
+  return obj;
 }
 
 /*! See ECL>>instance.d>>si_allocate_raw_instance */
