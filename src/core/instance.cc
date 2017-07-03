@@ -139,10 +139,12 @@ void Instance_O::initializeSlots(gctools::Stamp stamp, size_t numberOfSlots) {
 
 void Instance_O::initializeClassSlots(Creator_sp creator, gctools::Stamp stamp) {
   // Initialize slots they way they are in +class-slots+ in: https://github.com/drmeister/clasp/blob/dev-class/src/lisp/kernel/clos/hierarchy.lsp#L55
+#if 0
   if (creator.unboundp()) {
     printf("%s:%d:%s     creator for %s is unbound\n", __FILE__, __LINE__, __FUNCTION__, this->_classNameAsString().c_str() );
     fflush(stdout);
   }
+#endif
   this->instanceSet(REF_CLASS_DIRECT_SUPERCLASSES, _Nil<T_O>());
   this->instanceSet(REF_CLASS_DIRECT_SUBCLASSES, _Nil<T_O>());
   this->instanceSet(REF_CLASS_DIRECT_DEFAULT_INITARGS, _Nil<T_O>());
