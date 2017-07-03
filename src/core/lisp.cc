@@ -1023,7 +1023,7 @@ void Lisp_O::addClassSymbol(Symbol_sp classSymbol,
   core__setf_find_class(cc, classSymbol);
   cc->addInstanceBaseClass(base1ClassSymbol);
   ASSERTF((bool)alloc, BF("_creator for %s is NULL!!!") % _rep_(classSymbol));
-  cc->_set_creator(alloc);
+  cc->CLASS_set_creator(alloc);
 }
 /*! Add the class with (className) to the current package
  */

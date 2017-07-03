@@ -353,6 +353,5 @@ bool core__subclassp(T_sp low, T_sp high);
 bool af_ofClassP(T_sp object, T_sp _class);
 
 
- T_sp core__allocate_raw_class(T_sp orig, T_sp tMetaClass, int slots, bool creates_classes=true);
 };
 #endif

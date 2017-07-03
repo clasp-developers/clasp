@@ -75,50 +75,6 @@ CL_DEFUN void core__inherit_default_allocator(Class_sp cl, T_sp directSuperclass
 };
 
 
-CL_LAMBDA(original meta-class slots &optional creates-classes);
-CL_DECLARE();
-CL_DOCSTRING(R"doc(allocate-raw-class - behaves like ECL instance::allocate_raw_instance)doc");
-CL_DEFUN T_sp core__allocate_raw_class(T_sp orig, T_sp tMetaClass, int slots, bool creates_classes) {
-  if ( Class_sp cMetaClass = tMetaClass.asOrNull<Class_O>() ) {
-    T_sp tNewClass = cMetaClass->allocate_newClass(cMetaClass,slots);
-    if ( Class_sp newClass = tNewClass.asOrNull<Class_O>() ) {
-      newClass->_Class = cMetaClass;
-      newClass->initializeSlots(cMetaClass->_get_instance_stamp(),slots);
-      Creator_sp cb = _Unbound<Creator_O>();
-      if (creates_classes) {
-        cb = gctools::GC<core::BuiltInObjectCreator<Class_O>>::allocate();
-      };
-      newClass->initializeClassSlots(cb,gctools::NextStamp());
-      //      newClass->initializeSlots(slots);
-//      printf("%s:%d allocate-raw-class %p of metaclass %s number_of_slots[%d]\n", __FILE__, __LINE__, (void *)(newClass.get()), cMetaClass->_classNameAsString().c_str(), slots);
-      if (orig.nilp()) {
-        orig = newClass;
-      } else if (Class_sp corig = orig.asOrNull<Class_O>()) {
-        corig->_Class = cMetaClass;
-        corig->_Rack = newClass->_Rack;
-//        printf("%s:%d Changing the #slots to %d for metaclass %s\n", __FILE__, __LINE__, slots, cMetaClass->_classNameAsString().c_str() );
-      }
-      return orig;
-    } else if ( Instance_sp iNewClass = tNewClass.asOrNull<Instance_O>() ) {
-      SIMPLE_ERROR(BF("Creating an instance of %s resulted in an instance of Instance_O") % _rep_(cMetaClass) );
-    } else {
-      SIMPLE_ERROR(BF("Creating an instance of %s resulted in something unexpected -> %s") % _rep_(cMetaClass) % _rep_(tNewClass) );
-    }
-  } else if (tMetaClass.nilp()) {
-    printf("%s:%d   core::allocate-raw-class was invoked with NIL as the meta-class - check out why\n", __FILE__, __LINE__ );
-    GC_ALLOCATE_UNCOLLECTABLE(Class_O,newClass,lisp_standard_class(),REF_CLASS_NUMBER_OF_SLOTS_IN_STANDARD_CLASS);
-    newClass->initialize();
-    printf("%s:%d:%s      creating class - creator is created here\n", __FILE__, __LINE__, __FUNCTION__ );
-#if 0
-    auto cb = gctools::GC<core::BuiltInObjectCreator<Class_O>>::allocate();
-    newClass->_set_creator(cb);
-#endif
-//    newClass->initializeSlots(slots);
-    return newClass;
-  }
-  SIMPLE_ERROR(BF("I don't know how to make class with metaclass %s") % _rep_(tMetaClass));
-};
-
 #if 0
 void Class_O::initializeSlots(Fixnum stamp, size_t slots) {
   if (slots==0) {

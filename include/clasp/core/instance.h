@@ -126,15 +126,15 @@ namespace core {
     void _setClassName(Symbol_sp id) { this->instanceSet(REF_CLASS_CLASS_NAME, id); };
     Symbol_sp _className() const { return gc::As<Symbol_sp>(this->instanceRef(REF_CLASS_CLASS_NAME)); }
 
-    void _set_creator(Creator_sp cb);
-    Creator_sp _class_creator() const { return gc::As_unsafe<Creator_sp>(this->instanceRef(REF_CLASS_CREATOR)); };
-    bool _has_creator() const { return (bool)(!this->instanceRef(REF_CLASS_CREATOR).unboundp()); };
+    void CLASS_set_creator(Creator_sp cb);
+    Creator_sp CLASS_get_creator() const { return gc::As_unsafe<Creator_sp>(this->instanceRef(REF_CLASS_CREATOR)); };
+    bool CLASS_has_creator() const { return (bool)(!this->instanceRef(REF_CLASS_CREATOR).unboundp()); };
     Fixnum _get_instance_stamp() const { return this->instanceRef(REF_CLASS_INSTANCE_STAMP).unsafe_fixnum(); };
     
     string dumpInfo();
 
     void inheritDefaultAllocator(List_sp directSuperclasses);
-    virtual T_sp allocate_newClass(Class_sp metaClass, int slots);
+    virtual T_sp allocate_class(Class_sp metaClass, int slots);
 
   /*! Return the direct superclasses */
     List_sp directSuperclasses() const;
@@ -314,7 +314,10 @@ namespace core {
 
   void core__generic_function_call_history_remove_entries_with_specializer(Instance_sp generic_function, T_sp specializer);
 
-  T_sp core__allocateInstance(T_sp theClass, size_t numberOfSlots);
+  Instance_sp allocate_instance(Class_sp theClass, size_t numberOfSlots);
+
+  T_sp core__allocate_raw_class(T_sp orig, Class_sp tMetaClass, int slots, bool creates_classes=true);
+
 };
 
 
