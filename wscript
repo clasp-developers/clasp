@@ -1086,7 +1086,7 @@ class compile_aclasp(Task.Task):
 #                      "--eval", '(setq cmp:*compile-file-debug-dump-module* t)',
 #                      "--eval", '(setq cmp:*compile-debug-dump-module* t)'
         cmd = cmd + ["--eval", "(core:compile-aclasp :output-file #P\"%s\")" % self.outputs[0],
-                     "--eval", "(quit)" ]
+                     "--eval", "(core:quit)" ]
         cmd = cmd + [ "--" ] + self.bld.clasp_aclasp
         if (self.bld.command ):
             dump_command(cmd)
@@ -1114,7 +1114,7 @@ class compile_bclasp(Task.Task):
                       "--feature", "debug-run-clang",
                       "--eval", '(load "sys:kernel;clasp-builder.lsp")' ]
         cmd = cmd + ["--eval", "(core:compile-bclasp :output-file #P\"%s\")" % self.outputs[0] ,
-                     "--eval", "(quit)" ]
+                     "--eval", "(core:quit)" ]
         cmd = cmd + [ "--" ] + self.bld.clasp_cclasp    # was self.bld.clasp_bclasp
         if (self.bld.command ):
             dump_command(cmd)
@@ -1142,7 +1142,7 @@ class compile_cclasp(Task.Task):
             cmd = cmd + [ "--eval", "(load-cclasp)" ]
         else:
             cmd = cmd + ["--eval", "(core:compile-cclasp :output-file #P\"%s\")" % self.outputs[0],
-                         "--eval", "(quit)" ]
+                         "--eval", "(core:quit)" ]
         cmd = cmd + [ "--" ] + self.bld.clasp_cclasp
         if (self.bld.command ):
             dump_command(cmd)
@@ -1166,7 +1166,7 @@ class recompile_cclasp(Task.Task):
                       "--resource-dir", "%s/%s/%s" % (self.bld.path.abspath(),out,self.bld.variant_obj.variant_dir()),
                       "--eval", '(load "sys:kernel;clasp-builder.lsp")',
                       "--eval", "(core:recompile-cclasp :output-file #P\"%s\")" % self.outputs[0],
-                      "--eval", "(quit)",
+                      "--eval", "(core:quit)",
                       "--" ] + self.bld.clasp_cclasp_no_wrappers
         print(" recompile_clasp cmd: %s" % cmd)
         return self.exec_command(cmd)
@@ -1189,7 +1189,7 @@ class compile_addons(Task.Task):
                       "--eval", '(load "sys:kernel;clasp-builder.lsp")'
                       "--eval", "(core:compile-addons)",
                       "--eval", "(core:link-addons)",
-                      "--eval", "(quit)" ]
+                      "--eval", "(core:quit)" ]
         return self.exec_command(cmd)
     def exec_command(self, cmd, **kw):
         kw['stdout'] = sys.stdout
@@ -1211,7 +1211,7 @@ class compile_module(Task.Task):
                       "--feature", "ignore-extensions",
                       "--feature", "debug-run-clang",
                       "--eval", "(compile-file #P\"%s\" :output-file #P\"%s\" :output-type :fasl)" % (self.inputs[2], self.outputs[0]),
-                      "--eval", "(quit)" ]
+                      "--eval", "(core:quit)" ]
         print("  cmd: %s" % cmd)
         return self.exec_command(cmd)
     def exec_command(self, cmd, **kw):
