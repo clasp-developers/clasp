@@ -1085,7 +1085,7 @@ class compile_aclasp(Task.Task):
                       "--eval", '(load "sys:kernel;clasp-builder.lsp")' ]
 #                      "--eval", '(setq cmp:*compile-file-debug-dump-module* t)',
 #                      "--eval", '(setq cmp:*compile-debug-dump-module* t)'
-        cmd = cmd + ["--eval", "(compile-aclasp :output-file #P\"%s\")" % self.outputs[0],
+        cmd = cmd + ["--eval", "(core:compile-aclasp :output-file #P\"%s\")" % self.outputs[0],
                      "--eval", "(quit)" ]
         cmd = cmd + [ "--" ] + self.bld.clasp_aclasp
         if (self.bld.command ):
@@ -1113,7 +1113,7 @@ class compile_bclasp(Task.Task):
                       "--image", self.inputs[1].abspath(),
                       "--feature", "debug-run-clang",
                       "--eval", '(load "sys:kernel;clasp-builder.lsp")' ]
-        cmd = cmd + ["--eval", "(compile-bclasp :output-file #P\"%s\")" % self.outputs[0] ,
+        cmd = cmd + ["--eval", "(core:compile-bclasp :output-file #P\"%s\")" % self.outputs[0] ,
                      "--eval", "(quit)" ]
         cmd = cmd + [ "--" ] + self.bld.clasp_cclasp    # was self.bld.clasp_bclasp
         if (self.bld.command ):
@@ -1141,7 +1141,7 @@ class compile_cclasp(Task.Task):
         if (self.bld.command ):
             cmd = cmd + [ "--eval", "(load-cclasp)" ]
         else:
-            cmd = cmd + ["--eval", "(compile-cclasp :output-file #P\"%s\")" % self.outputs[0],
+            cmd = cmd + ["--eval", "(core:compile-cclasp :output-file #P\"%s\")" % self.outputs[0],
                          "--eval", "(quit)" ]
         cmd = cmd + [ "--" ] + self.bld.clasp_cclasp
         if (self.bld.command ):
@@ -1165,7 +1165,7 @@ class recompile_cclasp(Task.Task):
                       "--feature", "ignore-extensions",
                       "--resource-dir", "%s/%s/%s" % (self.bld.path.abspath(),out,self.bld.variant_obj.variant_dir()),
                       "--eval", '(load "sys:kernel;clasp-builder.lsp")',
-                      "--eval", "(recompile-cclasp :output-file #P\"%s\")" % self.outputs[0],
+                      "--eval", "(core:recompile-cclasp :output-file #P\"%s\")" % self.outputs[0],
                       "--eval", "(quit)",
                       "--" ] + self.bld.clasp_cclasp_no_wrappers
         print(" recompile_clasp cmd: %s" % cmd)
