@@ -262,8 +262,9 @@
     (cleavir-env::entry (cleavir-env->interpreter (cleavir-env::next env)))))
 
 (defmethod cleavir-environment:eval (form env (dispatch-env clasp-global-environment))
-  (core:interpret form (cleavir-env->interpreter env))
-  #+(or)(cclasp-eval form env))
+  (if core:*use-interpreter-for-eval*
+      (core:interpret form (cleavir-env->interpreter env))
+      (cclasp-eval form env)))
 
 (defmethod cleavir-environment:eval (form env (dispatch-env NULL))
   "Evaluate the form in Clasp's top level environment"

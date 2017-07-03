@@ -1050,7 +1050,7 @@ void CoreExposer_O::define_essential_globals(Lisp_sp lisp) {
   _sym_STARnestedErrorDepthSTAR->defparameter(make_fixnum(0));
   cl::_sym_STARbreakOnSignalsSTAR->defparameter(_Nil<T_O>());
   cl::_sym_STARdebuggerHookSTAR->defparameter(_Nil<T_O>());
-  cl::_sym_internalTimeUnitsPerSecond->defparameter(make_fixnum(CLASP_INTERNAL_TIME_UNITS_PER_SECOND));
+  cl::_sym_internalTimeUnitsPerSecond->defconstant(make_fixnum(CLASP_INTERNAL_TIME_UNITS_PER_SECOND));
   _sym_STARstartRunTimeSTAR->defparameter(PosixTime_O::createNow());
   cl::_sym_MultipleValuesLimit->defconstant(make_fixnum(MultipleValues::MultipleValuesLimit));
   _sym_STARprint_structureSTAR->defparameter(_Nil<T_O>());
