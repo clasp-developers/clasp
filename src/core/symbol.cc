@@ -231,8 +231,10 @@ CL_DEFMETHOD Symbol_sp Symbol_O::copy_symbol(T_sp copy_properties) const {
   Symbol_sp new_symbol = Symbol_O::create(this->_Name);
   if (copy_properties.isTrue()) {
     ASSERT(this->_Function);
-    new_symbol->_GlobalValue = this->symbolValue();
-    new_symbol->_Function = this->_Function;
+    if (sym->boundP())
+      new_symbol->_GlobalValue = this->symbolValue();
+    if (sym->fboundp())
+      new_symbol->_Function = this->_Function;
     new_symbol->_IsConstant = this->_IsConstant;
     new_symbol->_ReadOnlyFunction = this->_ReadOnlyFunction;
     new_symbol->_PropertyList = cl__copy_list(this->_PropertyList);
