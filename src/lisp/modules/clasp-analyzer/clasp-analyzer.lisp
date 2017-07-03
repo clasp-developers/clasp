@@ -162,6 +162,7 @@
 (defstruct enum
   key
   value
+  flags
   cclass
   species ;; can be nil
   in-hierarchy ;; only generate TaggedCast entry for those in hierarchy
@@ -303,10 +304,16 @@
                (notify-parents node-name analysis))
            (analysis-enums analysis)))
 
+(defun calculate-flags (name)
+  (+ (if (derived-from-cclass name "core::Instance_O") 1 0)
+     (if (inherits-from-multiple-classes name) 2 0)))
+
+
 (defun traverse (name analysis)
   (let ((enum (gethash name (analysis-enums analysis)))
         (enum-value (analysis-cur-enum-value analysis)))
     (setf (enum-value enum) enum-value)
+    (setf (enum-flags enum) (calculate-flags name))
     (setf (enum-in-hierarchy enum) t)
     (incf (analysis-cur-enum-value analysis))
     (dolist (child (gethash enum (analysis-enum-children analysis)))
@@ -2539,19 +2546,51 @@ so that they don't have to be constantly recalculated"
 
 
 (defvar *project*)
+(defun derived-from-cclass* (child ancestor searched project)
+  (cond ((gethash child searched)
+         ;; Protect ourselves from loops in the inheritance
+         ;; There shouldn't be any but something is messed up
+         nil)
+        ((eq child ancestor)
+         t)
+        (t
+         (setf (gethash child searched) t)
+         (dolist (parent-name (cclass-bases child))
+           (let ((parent (gethash parent-name (project-classes project))))
+             (when (derived-from-cclass* parent ancestor searched project)
+               (return-from derived-from-cclass* t))))
+         (dolist (parent-name (cclass-vbases child))
+           (let ((parent (gethash parent-name (project-classes project))))
+             (when (derived-from-cclass* parent ancestor searched project)
+               (return-from derived-from-cclass* t))))
+         nil)))
+
 (defun derived-from-cclass (child ancestor &optional (project *project*))
-  (setq child (if (stringp child) (gethash child (project-classes project)) child))
-  (setq ancestor (if (stringp ancestor) (gethash ancestor (project-classes project)) ancestor))
-  (if (eq child ancestor)
-      t
-      (progn
-        (dolist (parent (cclass-bases child))
-          (when (derived-from-cclass parent ancestor)
-            (return-from derived-from-cclass t)))
-        (dolist (parent (cclass-vbases child))
-          (when (derived-from-cclass parent ancestor)
-            (return-from derived-from-cclass t)))
-        nil)))
+  (let ((child-class (if (stringp child) (gethash child (project-classes project)) child))
+        (ancestor-class (if (stringp ancestor) (gethash ancestor (project-classes project)) ancestor))
+        (searched (make-hash-table)))
+    (derived-from-cclass* child-class ancestor-class searched project)))
+
+(defun inherits-from-multiple-classes* (child searched project)
+  "Return true if somewhere in the ancestors there is a branch in the inheritance"
+  (cond ((gethash child searched)
+         ;; Protect ourselves from loops in the inheritance
+         ;; There shouldn't be any but something is messed up
+         nil)
+        (t
+         (setf (gethash child searched) t)
+         (let ((num-parents (+ (length (cclass-bases child)) (length (cclass-vbases child)))))
+           (if (> num-parents 1)
+               t
+               (let* ((parent (or (car (cclass-bases child)) (car (cclass-vbases child))))
+                      (parent-class (gethash parent (project-classes *project*))))
+                 (when parent-class
+                   (inherits-from-multiple-classes* parent-class searched project))))))))
+
+(defun inherits-from-multiple-classes (child &optional (project *project*))
+  (let ((child-class (if (stringp child) (gethash child (project-classes project)) child))
+        (searched (make-hash-table)))
+    (inherits-from-multiple-classes* child-class searched project)))
 
 
 (defun inherits-metadata (cclass metadata &optional (project *project*))
@@ -2598,6 +2637,7 @@ so that they don't have to be constantly recalculated"
        (format stream "template <> class gctools::GCKind<~A> {~%" (enum-key enum))))
     (format stream "public:~%")
     (format stream "  static gctools::GCKindEnum const Kind = gctools::~a ;~%" enum-name)
+    (format stream "  static const size_t Flags = ~a ;~%" (enum-flags enum))
     (format stream "};~%")))
 
 (defun abstract-species-enum-p (enum analysis)

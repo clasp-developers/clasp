@@ -10,19 +10,36 @@
 
 (in-package :clasp-analyzer)
 (defvar *compile-commands* "~/Dev/cando/build/mpsprep/compile_commands.json")
+
 (setf *print-pretty* nil)
 (defvar *db* (clasp-analyzer:setup-clasp-analyzer-compilation-tool-database
               (pathname *compile-commands*)
               :selection-pattern "cons.cc" ))
 (defvar *p* (search/generate-code *db* :output-file #P"cons_only.dat"))
 
-(untrace traverse)
 (defparameter *analysis* (analyze-project *project*))
 (analysis-enum-roots *analysis*)
 *analysis*
 (analyze-only *db*)
 
-(load-project *db*)
+;;; ------------------------------------------------------------
+;;;
+;;; To load and analyze the project
+;;;
+(progn
+  (defvar *compile-commands* "~/Dev/cando/build/mpsprep/compile_commands.json")
+  (setf *print-pretty* nil)
+  (defvar *db* (clasp-analyzer:setup-clasp-analyzer-compilation-tool-database
+                (pathname *compile-commands*))))
+(time
+ (progn
+   (format t "Loading project~%")
+   (load-project *db*)
+   (format t "Done loading project~%")))
+
+
+(analyze-only *db*)
+
 
 
 ;;
