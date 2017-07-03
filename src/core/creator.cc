@@ -85,7 +85,7 @@ T_sp StandardClassCreator_O::creator_allocate() {
   c->_allocation_total_size += size;
 #endif
   GC_ALLOCATE_VARIADIC(Class_O,class_,lisp_standard_class(),REF_CLASS_NUMBER_OF_SLOTS_IN_STANDARD_CLASS);
-  printf("%s:%d:%s   created class\n", __FILE__, __LINE__, __FUNCTION__ );
+//  printf("%s:%d:%s   created class\n", __FILE__, __LINE__, __FUNCTION__ );
   return class_;
 };
 };
