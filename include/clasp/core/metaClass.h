@@ -337,7 +337,7 @@ namespace core {
       // BuiltInObjectCreator<Class_O> uses a different allocation method
       // that assigns the next Clos Stamp to the new Class
       GC_ALLOCATE_VARIADIC(Class_O, obj, lisp_standard_class(),REF_CLASS_NUMBER_OF_SLOTS_IN_STANDARD_CLASS);
-      printf("%s:%d  creating class\n", __FILE__, __LINE__ );
+//      printf("%s:%d  creating class\n", __FILE__, __LINE__ );
       return obj;
     }
     virtual void searcher(){};
