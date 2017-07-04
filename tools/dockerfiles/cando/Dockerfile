@@ -46,7 +46,7 @@ RUN clasp -f "setup-cando"\
           -e '(setq core::*swank-home* "/home/app/slime")'\
           -e '(load (format nil "~a/swank-loader.lisp" core::*swank-home*))'\
           -e "(swank-loader:init :delete nil :reload nil :load-contribs nil)"\
-          -e "(quit)"
+          -e "(core:quit)"
 
 RUN mkdir /home/app/logs/
 
@@ -61,7 +61,7 @@ RUN clasp -e '(load "/home/app/quicklisp/setup.lisp")'\
           -e "(ql:quickload :ironclad)"\
           -e "(ql:quickload :uuid)"\
           -e "(ql:quickload :trivial-utf-8)"\
-          -e "(quit)"
+          -e "(core:quit)"
 
 USER root
 ADD tools/dockerfiles/examples /home/app/work/examples

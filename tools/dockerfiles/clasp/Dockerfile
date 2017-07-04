@@ -53,6 +53,6 @@ RUN clasp -f "setup-cando"\
           -e '(setq core::*swank-home* "/home/app/slime")'\
           -e '(load (format nil "~a/swank-loader.lisp" core::*swank-home*))'\
           -e "(swank-loader:init :delete nil :reload nil :load-contribs nil)"\
-          -e "(quit)"
+          -e "(core:quit)"
 
 ENTRYPOINT [ "clasp" ]
