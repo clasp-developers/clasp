@@ -3406,6 +3406,27 @@ Run searches in *tools* on the source files in the compilation database."
         (save-data project output-file)))
     (values (clang-tool:multitool-results tools) output-file)))
 
+
+(defun parallel-search-all (compilation-tool-database &key (output-file (merge-pathnames #P"project.dat" (clang-tool:main-pathname compilation-tool-database))) (save-project t))
+  "* Arguments
+- test :: A list of files to run the search on, or NIL for all of them.
+- arguments-adjuster :: The arguments adjuster.
+* Description
+Run searches in *tools* on the source files in the compilation database."
+  (format t "serial-search-all --> getcwd: ~a~%" (ext:getcwd))
+  (let ((tools (setup-tools compilation-tool-database))
+        (all-jobs (clang-tool:source-namestrings compilation-tool-database)))
+    (save-data all-jobs (make-pathname :type "lst" :defaults output-file))
+    (format t "compilation-tool-database: ~a~%" compilation-tool-database)
+    (format t "all-jobs: ~a~%" all-jobs)
+    (setf (clang-tool:multitool-results tools) (make-project))
+    (clang-tool:batch-run-multitool tools
+                                    :compilation-tool-database compilation-tool-database)
+    (when save-project
+      (let ((project (clang-tool:multitool-results tools)))
+        (save-data project output-file)))
+    (values (clang-tool:multitool-results tools) output-file)))
+
 (defun translate-include (args filename)
   "* Arguments
 - args :: A vector of strings (compilation arguments)
