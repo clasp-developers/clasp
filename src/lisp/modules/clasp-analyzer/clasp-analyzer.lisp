@@ -372,7 +372,7 @@
                  (format fout "//           The problem is that isA relationships defined by Clasp can only work with single inheritance~%")
                  (format fout "//           but derivable_classes inherit from Instance_O and whatever else they are defined to inherit from.~%")
                  (format fout "//           For now I'll special case core::Instance_O and fall back to dynamic_cast~%"))
-               (format fout "      int kindVal = header->kind();~%")
+               (format fout "      int kindVal = header->stamp();~%")
                (multiple-value-bind (low high)
                    (hierarchy-class-range key analysis)
                  (format fout "      // low high --> ~a ~a ~%" low high)
