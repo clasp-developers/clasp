@@ -44,7 +44,7 @@
   (unless (and (cleavir-ir:simple-p instr) (eq (cleavir-ir:element-type instr) t))
     (error "BUG: Aref instruction we don't know how to deal with generated ~s" instr))
   (change-class instr 'cleavir-ir:memref-instruction
-                :offset (- cmp:+simple-vector._length-offset+ cmp:+general-tag+)
+                :offset (- cmp::+simple-vector._data-offset+ cmp:+general-tag+)
                 :scale (list 1 cmp::+t-size+)))
 
 (defmethod cleavir-ir:specialize ((instr cleavir-ir:aset-instruction)
@@ -54,7 +54,7 @@
   (destructuring-bind (array index value) (cleavir-ir:inputs instr)
     (change-class instr 'cleavir-ir:memref-instruction
                   :inputs (list value array index)
-                  :offset (- cmp:+simple-vector._length-offset+ cmp:+general-tag+)
+                  :offset (- cmp::+simple-vector._data-offset+ cmp:+general-tag+)
                   :scale (list 1 cmp::+t-size+))))
 
 (defmethod cleavir-hir-transformations::maybe-eliminate :around ((instruction cleavir-ir:typeq-instruction))
