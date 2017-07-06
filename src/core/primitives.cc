@@ -1535,31 +1535,30 @@ CL_DEFUN T_mv cl__mapcan(T_sp op, List_sp lists) {
   them together into one list and then points the cdr of the last element of this new list
   to c.
 */
-CL_LAMBDA(&rest lists);
+CL_LAMBDA(&va-rest lists);
 CL_DECLARE();
 CL_DOCSTRING("append as in clhs");
-CL_DEFUN List_sp cl__append(List_sp lists) {
+CL_DEFUN T_sp cl__append(VaList_sp args) {
   ql::list list;
   LOG(BF("Carrying out append with arguments: %s") % _rep_(lists));
-  auto it = lists.begin();
-  auto end = lists.end();
-  T_sp curit = *it;
-  while (it != end) {
-    curit = *it;
-    it++;
-    if (it == end)
-      break;
-    for (auto inner : (List_sp)oCar(curit)) {
-      list << oCar(inner);
+  size_t lenArgs = args->total_nargs();
+  T_O* lastArg = args->relative_indexed_arg(lenArgs-1);
+  for ( int i(0),iEnd(lenArgs-1);i<iEnd; ++i ) {
+    T_sp curit = args->next_arg();
+    if (curit.consp()) {
+      for (auto inner : (List_sp)oCar(curit)) {
+        list << oCar(inner);
+      }
     }
   }
   /* Now append the last argument by setting the new lists last element cdr
        to the last argument of append */
-  T_sp last = oCar(curit);
+  T_sp last((gctools::Tagged)lastArg);
   list.dot(last);
   T_sp res = list.cons();
   return res;
 }
+
 
 CL_LAMBDA(func sequence start end);
 CL_DECLARE();
