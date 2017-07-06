@@ -7542,3429 +7542,3429 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<double>*,FP> {
 };
 #endif // defined(GC_DYNAMIC_CAST)
 #if defined(GC_KIND_SELECTORS)
-template <> class gctools::GCKind<chem::AtomIndexer_O> {
+template <> class gctools::GCStamp<chem::AtomIndexer_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__AtomIndexer_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__AtomIndexer_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::EnergyStretch_O> {
+template <> class gctools::GCStamp<chem::EnergyStretch_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__EnergyStretch_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__EnergyStretch_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<gctools::GCVector_moveable<int>> {
+template <> class gctools::GCStamp<gctools::GCVector_moveable<int>> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_int_ ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_int_ ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::ProperTorsion_O> {
+template <> class gctools::GCStamp<chem::ProperTorsion_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__ProperTorsion_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__ProperTorsion_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::FFParameterBaseDb_O> {
+template <> class gctools::GCStamp<chem::FFParameterBaseDb_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__FFParameterBaseDb_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__FFParameterBaseDb_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::DISubprogram_O> {
+template <> class gctools::GCStamp<llvmo::DISubprogram_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__DISubprogram_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__DISubprogram_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::SimpleMDArray_int32_t_O> {
+template <> class gctools::GCStamp<core::SimpleMDArray_int32_t_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__SimpleMDArray_int32_t_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__SimpleMDArray_int32_t_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::CDText_O> {
+template <> class gctools::GCStamp<chem::CDText_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__CDText_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__CDText_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::IterateAtoms_O> {
+template <> class gctools::GCStamp<chem::IterateAtoms_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__IterateAtoms_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__IterateAtoms_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<clcenv::FunctionType_O> {
+template <> class gctools::GCStamp<clcenv::FunctionType_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_clcenv__FunctionType_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_clcenv__FunctionType_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<clcenv::GlobalMacroInfo_O> {
+template <> class gctools::GCStamp<clcenv::GlobalMacroInfo_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_clcenv__GlobalMacroInfo_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_clcenv__GlobalMacroInfo_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<clcenv::Inline_O> {
+template <> class gctools::GCStamp<clcenv::Inline_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_clcenv__Inline_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_clcenv__Inline_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::ConstantDataArray_O> {
+template <> class gctools::GCStamp<llvmo::ConstantDataArray_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__ConstantDataArray_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__ConstantDataArray_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::DICompileUnit_O> {
+template <> class gctools::GCStamp<llvmo::DICompileUnit_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__DICompileUnit_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__DICompileUnit_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::Chain_O> {
+template <> class gctools::GCStamp<chem::Chain_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__Chain_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__Chain_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<geom::Color_O> {
+template <> class gctools::GCStamp<geom::Color_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_geom__Color_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_geom__Color_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::Reader_O> {
+template <> class gctools::GCStamp<core::Reader_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__Reader_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__Reader_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::Cache_O> {
+template <> class gctools::GCStamp<core::Cache_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__Cache_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__Cache_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::Instance_O> {
+template <> class gctools::GCStamp<core::Instance_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__Instance_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__Instance_O ;
   static const size_t Flags = 1 ;
 };
-template <> class gctools::GCKind<gctools::GCVector_moveable<chem::EnergyAngle>> {
+template <> class gctools::GCStamp<gctools::GCVector_moveable<chem::EnergyAngle>> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_chem__EnergyAngle_ ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_chem__EnergyAngle_ ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::StatusTracker_O> {
+template <> class gctools::GCStamp<chem::StatusTracker_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__StatusTracker_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__StatusTracker_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::InPlug_O> {
+template <> class gctools::GCStamp<chem::InPlug_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__InPlug_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__InPlug_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::IterateBonds_O> {
+template <> class gctools::GCStamp<chem::IterateBonds_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__IterateBonds_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__IterateBonds_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::Molecule_O> {
+template <> class gctools::GCStamp<chem::Molecule_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__Molecule_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__Molecule_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::SimpleBaseString_O> {
+template <> class gctools::GCStamp<core::SimpleBaseString_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__SimpleBaseString_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__SimpleBaseString_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<gctools::GCVector_moveable<gctools::smart_ptr<core::T_O>>> {
+template <> class gctools::GCStamp<gctools::GCVector_moveable<gctools::smart_ptr<core::T_O>>> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__T_O__ ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__T_O__ ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::ConstantDataSequential_O> {
+template <> class gctools::GCStamp<llvmo::ConstantDataSequential_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__ConstantDataSequential_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__ConstantDataSequential_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::SimpleVector_int32_t_O> {
+template <> class gctools::GCStamp<core::SimpleVector_int32_t_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__SimpleVector_int32_t_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__SimpleVector_int32_t_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::ConstantStruct_O> {
+template <> class gctools::GCStamp<llvmo::ConstantStruct_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__ConstantStruct_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__ConstantStruct_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::SpecificContext_O> {
+template <> class gctools::GCStamp<chem::SpecificContext_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__SpecificContext_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__SpecificContext_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::ValueEnvironment_O> {
+template <> class gctools::GCStamp<core::ValueEnvironment_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__ValueEnvironment_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__ValueEnvironment_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::EnergyAngle_O> {
+template <> class gctools::GCStamp<chem::EnergyAngle_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__EnergyAngle_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__EnergyAngle_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::PathMessage_O> {
+template <> class gctools::GCStamp<chem::PathMessage_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__PathMessage_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__PathMessage_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::Pointer_O> {
+template <> class gctools::GCStamp<core::Pointer_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__Pointer_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__Pointer_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<gctools::GCVector_moveable<gctools::smart_ptr<chem::Bond_O>>> {
+template <> class gctools::GCStamp<gctools::GCVector_moveable<gctools::smart_ptr<chem::Bond_O>>> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__Bond_O__ ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__Bond_O__ ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<clcenv::SymbolMacro_O> {
+template <> class gctools::GCStamp<clcenv::SymbolMacro_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_clcenv__SymbolMacro_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_clcenv__SymbolMacro_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::Number_O> {
+template <> class gctools::GCStamp<core::Number_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__Number_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__Number_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<units::NamedUnit_O> {
+template <> class gctools::GCStamp<units::NamedUnit_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_units__NamedUnit_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_units__NamedUnit_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::BlockAddress_O> {
+template <> class gctools::GCStamp<llvmo::BlockAddress_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__BlockAddress_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__BlockAddress_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<gctools::GCVector_moveable<core::KeywordArgument>> {
+template <> class gctools::GCStamp<gctools::GCVector_moveable<core::KeywordArgument>> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_core__KeywordArgument_ ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_core__KeywordArgument_ ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::Real_O> {
+template <> class gctools::GCStamp<core::Real_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__Real_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__Real_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<gctools::GCVector_moveable<chem::EnergyImproperRestraint>> {
+template <> class gctools::GCStamp<gctools::GCVector_moveable<chem::EnergyImproperRestraint>> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_chem__EnergyImproperRestraint_ ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_chem__EnergyImproperRestraint_ ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::Minimizer_O> {
+template <> class gctools::GCStamp<chem::Minimizer_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__Minimizer_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__Minimizer_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::SimpleMDArray_int8_t_O> {
+template <> class gctools::GCStamp<core::SimpleMDArray_int8_t_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__SimpleMDArray_int8_t_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__SimpleMDArray_int8_t_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::Structure_Old_ListEntry_O> {
+template <> class gctools::GCStamp<chem::Structure_Old_ListEntry_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__Structure_Old_ListEntry_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__Structure_Old_ListEntry_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<gctools::GCVector_moveable<core::SymbolClassPair>> {
+template <> class gctools::GCStamp<gctools::GCVector_moveable<core::SymbolClassPair>> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_core__SymbolClassPair_ ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_core__SymbolClassPair_ ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::Argument_O> {
+template <> class gctools::GCStamp<llvmo::Argument_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__Argument_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__Argument_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::Type_O> {
+template <> class gctools::GCStamp<llvmo::Type_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__Type_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__Type_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::Restraint_O> {
+template <> class gctools::GCStamp<chem::Restraint_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__Restraint_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__Restraint_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::FileStream_O> {
+template <> class gctools::GCStamp<core::FileStream_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__FileStream_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__FileStream_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::DIType_O> {
+template <> class gctools::GCStamp<llvmo::DIType_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__DIType_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__DIType_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::SimpleMDArrayCharacter_O> {
+template <> class gctools::GCStamp<core::SimpleMDArrayCharacter_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__SimpleMDArrayCharacter_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__SimpleMDArrayCharacter_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::Linker_O> {
+template <> class gctools::GCStamp<llvmo::Linker_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__Linker_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__Linker_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::ReportBase_O> {
+template <> class gctools::GCStamp<chem::ReportBase_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__ReportBase_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__ReportBase_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::FFItorDb_O> {
+template <> class gctools::GCStamp<chem::FFItorDb_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__FFItorDb_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__FFItorDb_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::BondMatchNode_O> {
+template <> class gctools::GCStamp<chem::BondMatchNode_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__BondMatchNode_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__BondMatchNode_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<gctools::GCVector_moveable<chem::EnergyNonbond>> {
+template <> class gctools::GCStamp<gctools::GCVector_moveable<chem::EnergyNonbond>> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_chem__EnergyNonbond_ ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_chem__EnergyNonbond_ ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::CompiledDispatchFunction_O> {
+template <> class gctools::GCStamp<core::CompiledDispatchFunction_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__CompiledDispatchFunction_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__CompiledDispatchFunction_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::InfoDb_O> {
+template <> class gctools::GCStamp<chem::InfoDb_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__InfoDb_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__InfoDb_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::CalculatePosition_O> {
+template <> class gctools::GCStamp<chem::CalculatePosition_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__CalculatePosition_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__CalculatePosition_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::DITypeRefArray_O> {
+template <> class gctools::GCStamp<llvmo::DITypeRefArray_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__DITypeRefArray_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__DITypeRefArray_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::DebugLoc_O> {
+template <> class gctools::GCStamp<llvmo::DebugLoc_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__DebugLoc_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__DebugLoc_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::HashTableEqualp_O> {
+template <> class gctools::GCStamp<core::HashTableEqualp_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__HashTableEqualp_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__HashTableEqualp_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::DirectoryEntry_O> {
+template <> class gctools::GCStamp<core::DirectoryEntry_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__DirectoryEntry_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__DirectoryEntry_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<clcenv::Entry_O> {
+template <> class gctools::GCStamp<clcenv::Entry_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_clcenv__Entry_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_clcenv__Entry_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::AtomOrBondMatchNode_O> {
+template <> class gctools::GCStamp<chem::AtomOrBondMatchNode_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__AtomOrBondMatchNode_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__AtomOrBondMatchNode_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::SimpleMDArray_byte8_t_O> {
+template <> class gctools::GCStamp<core::SimpleMDArray_byte8_t_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__SimpleMDArray_byte8_t_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__SimpleMDArray_byte8_t_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<units::Unit_O> {
+template <> class gctools::GCStamp<units::Unit_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_units__Unit_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_units__Unit_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::SimpleVector_byte32_t_O> {
+template <> class gctools::GCStamp<core::SimpleVector_byte32_t_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__SimpleVector_byte32_t_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__SimpleVector_byte32_t_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::StructType_O> {
+template <> class gctools::GCStamp<llvmo::StructType_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__StructType_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__StructType_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::ConformationExplorer_O> {
+template <> class gctools::GCStamp<chem::ConformationExplorer_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__ConformationExplorer_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__ConformationExplorer_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<asttooling::AstVisitor_O> {
+template <> class gctools::GCStamp<asttooling::AstVisitor_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_asttooling__AstVisitor_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_asttooling__AstVisitor_O ;
   static const size_t Flags = 2 ;
 };
-template <> class gctools::GCKind<adapt::IterateCons_O> {
+template <> class gctools::GCStamp<adapt::IterateCons_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_adapt__IterateCons_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_adapt__IterateCons_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<clcenv::Info_O> {
+template <> class gctools::GCStamp<clcenv::Info_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_clcenv__Info_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_clcenv__Info_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<gctools::GCVector_moveable<core::OptionalArgument>> {
+template <> class gctools::GCStamp<gctools::GCVector_moveable<core::OptionalArgument>> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_core__OptionalArgument_ ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_core__OptionalArgument_ ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::ConformationCollection_O> {
+template <> class gctools::GCStamp<chem::ConformationCollection_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__ConformationCollection_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__ConformationCollection_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::SimpleMDArray_byte64_t_O> {
+template <> class gctools::GCStamp<core::SimpleMDArray_byte64_t_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__SimpleMDArray_byte64_t_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__SimpleMDArray_byte64_t_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<geom::SimpleVectorCoordinate_O> {
+template <> class gctools::GCStamp<geom::SimpleVectorCoordinate_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_geom__SimpleVectorCoordinate_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_geom__SimpleVectorCoordinate_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<gctools::GCVector_moveable<gctools::smart_ptr<chem::ConstitutionBond_O>>> {
+template <> class gctools::GCStamp<gctools::GCVector_moveable<gctools::smart_ptr<chem::ConstitutionBond_O>>> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__ConstitutionBond_O__ ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__ConstitutionBond_O__ ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::SimpleMDArray_int16_t_O> {
+template <> class gctools::GCStamp<core::SimpleMDArray_int16_t_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__SimpleMDArray_int16_t_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__SimpleMDArray_int16_t_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::MDArrayBaseChar_O> {
+template <> class gctools::GCStamp<core::MDArrayBaseChar_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__MDArrayBaseChar_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__MDArrayBaseChar_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::InsertPoint_O> {
+template <> class gctools::GCStamp<llvmo::InsertPoint_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__InsertPoint_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__InsertPoint_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<gctools::GCVector_moveable<gctools::smart_ptr<chem::ReportBase_O>>> {
+template <> class gctools::GCStamp<gctools::GCVector_moveable<gctools::smart_ptr<chem::ReportBase_O>>> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__ReportBase_O__ ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__ReportBase_O__ ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<clcenv::FunctionIgnore_O> {
+template <> class gctools::GCStamp<clcenv::FunctionIgnore_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_clcenv__FunctionIgnore_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_clcenv__FunctionIgnore_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::StereoisomerVirtualAtom_O> {
+template <> class gctools::GCStamp<chem::StereoisomerVirtualAtom_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__StereoisomerVirtualAtom_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__StereoisomerVirtualAtom_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::ZMatrixInternal_O> {
+template <> class gctools::GCStamp<chem::ZMatrixInternal_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__ZMatrixInternal_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__ZMatrixInternal_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::RecursiveDirectoryIterator_O> {
+template <> class gctools::GCStamp<core::RecursiveDirectoryIterator_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__RecursiveDirectoryIterator_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__RecursiveDirectoryIterator_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::IterateMatter_O> {
+template <> class gctools::GCStamp<chem::IterateMatter_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__IterateMatter_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__IterateMatter_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<asttooling::DerivableMatchCallback> {
+template <> class gctools::GCStamp<asttooling::DerivableMatchCallback> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_asttooling__DerivableMatchCallback ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_asttooling__DerivableMatchCallback ;
   static const size_t Flags = 3 ;
 };
-template <> class gctools::GCKind<gctools::GCVector_moveable<gctools::smart_ptr<chem::StereoConfiguration_O>>> {
+template <> class gctools::GCStamp<gctools::GCVector_moveable<gctools::smart_ptr<chem::StereoConfiguration_O>>> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__StereoConfiguration_O__ ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__StereoConfiguration_O__ ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::SpecificContextSet_O> {
+template <> class gctools::GCStamp<chem::SpecificContextSet_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__SpecificContextSet_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__SpecificContextSet_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::Constant_O> {
+template <> class gctools::GCStamp<llvmo::Constant_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__Constant_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__Constant_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::SimpleMDArray_int64_t_O> {
+template <> class gctools::GCStamp<core::SimpleMDArray_int64_t_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__SimpleMDArray_int64_t_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__SimpleMDArray_int64_t_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::IRBuilder_O> {
+template <> class gctools::GCStamp<llvmo::IRBuilder_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__IRBuilder_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__IRBuilder_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::SymbolToEnumConverter_O> {
+template <> class gctools::GCStamp<core::SymbolToEnumConverter_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__SymbolToEnumConverter_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__SymbolToEnumConverter_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::ConsStepper_O> {
+template <> class gctools::GCStamp<core::ConsStepper_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__ConsStepper_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__ConsStepper_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<geom::BoundingBox_O> {
+template <> class gctools::GCStamp<geom::BoundingBox_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_geom__BoundingBox_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_geom__BoundingBox_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<gctools::GCArray_moveable<float>> {
+template <> class gctools::GCStamp<gctools::GCArray_moveable<float>> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_GCARRAY_gctools__GCArray_moveable_float_ ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_GCARRAY_gctools__GCArray_moveable_float_ ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<clcenv::OptimizeInfo_O> {
+template <> class gctools::GCStamp<clcenv::OptimizeInfo_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_clcenv__OptimizeInfo_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_clcenv__OptimizeInfo_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<gctools::GCVector_moveable<gctools::smart_ptr<chem::BondList_O>>> {
+template <> class gctools::GCStamp<gctools::GCVector_moveable<gctools::smart_ptr<chem::BondList_O>>> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__BondList_O__ ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__BondList_O__ ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::ZMatrixBondInternal_O> {
+template <> class gctools::GCStamp<chem::ZMatrixBondInternal_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__ZMatrixBondInternal_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__ZMatrixBondInternal_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<adapt::ObjectSet_O> {
+template <> class gctools::GCStamp<adapt::ObjectSet_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_adapt__ObjectSet_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_adapt__ObjectSet_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::SexpLoadArchive_O> {
+template <> class gctools::GCStamp<core::SexpLoadArchive_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__SexpLoadArchive_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__SexpLoadArchive_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::LoadArchive_O> {
+template <> class gctools::GCStamp<core::LoadArchive_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__LoadArchive_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__LoadArchive_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<gctools::GCVector_moveable<chem::EnergyAtom>> {
+template <> class gctools::GCStamp<gctools::GCVector_moveable<chem::EnergyAtom>> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_chem__EnergyAtom_ ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_chem__EnergyAtom_ ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<gctools::GCVector_moveable<gctools::smart_ptr<chem::Matter_O>>> {
+template <> class gctools::GCStamp<gctools::GCVector_moveable<gctools::smart_ptr<chem::Matter_O>>> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__Matter_O__ ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__Matter_O__ ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::LandingPadInst_O> {
+template <> class gctools::GCStamp<llvmo::LandingPadInst_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__LandingPadInst_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__LandingPadInst_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::APFloat_O> {
+template <> class gctools::GCStamp<llvmo::APFloat_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__APFloat_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__APFloat_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<gctools::GCArray_moveable<unsigned int>> {
+template <> class gctools::GCStamp<gctools::GCArray_moveable<unsigned int>> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_GCARRAY_gctools__GCArray_moveable_unsigned_int_ ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_GCARRAY_gctools__GCArray_moveable_unsigned_int_ ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::ReadAmberParameters_O> {
+template <> class gctools::GCStamp<chem::ReadAmberParameters_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__ReadAmberParameters_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__ReadAmberParameters_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::DirectionalCoupling_O> {
+template <> class gctools::GCStamp<chem::DirectionalCoupling_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__DirectionalCoupling_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__DirectionalCoupling_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::CoreExposer_O> {
+template <> class gctools::GCStamp<core::CoreExposer_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__CoreExposer_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__CoreExposer_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::AtomicCmpXchgInst_O> {
+template <> class gctools::GCStamp<llvmo::AtomicCmpXchgInst_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__AtomicCmpXchgInst_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__AtomicCmpXchgInst_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::WeakPointer_O> {
+template <> class gctools::GCStamp<core::WeakPointer_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__WeakPointer_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__WeakPointer_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::AGVertex_O> {
+template <> class gctools::GCStamp<chem::AGVertex_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__AGVertex_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__AGVertex_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::ReturnInst_O> {
+template <> class gctools::GCStamp<llvmo::ReturnInst_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__ReturnInst_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__ReturnInst_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::Archive_O> {
+template <> class gctools::GCStamp<core::Archive_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__Archive_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__Archive_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<gctools::GCVector_moveable<gctools::smart_ptr<chem::MonomerCoordinates_O>>> {
+template <> class gctools::GCStamp<gctools::GCVector_moveable<gctools::smart_ptr<chem::MonomerCoordinates_O>>> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__MonomerCoordinates_O__ ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__MonomerCoordinates_O__ ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::RestrainedPiBond_O> {
+template <> class gctools::GCStamp<chem::RestrainedPiBond_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__RestrainedPiBond_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__RestrainedPiBond_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::SimpleMDArrayBaseChar_O> {
+template <> class gctools::GCStamp<core::SimpleMDArrayBaseChar_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__SimpleMDArrayBaseChar_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__SimpleMDArrayBaseChar_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::Fixnum_dummy_O> {
+template <> class gctools::GCStamp<core::Fixnum_dummy_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__Fixnum_dummy_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__Fixnum_dummy_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::Environment_O> {
+template <> class gctools::GCStamp<core::Environment_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__Environment_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__Environment_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Coupling_O>>>> {
+template <> class gctools::GCStamp<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Coupling_O>>>> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__Coupling_O___ ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__Coupling_O___ ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<geom::SimpleMDArrayCoordinate_O> {
+template <> class gctools::GCStamp<geom::SimpleMDArrayCoordinate_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_geom__SimpleMDArrayCoordinate_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_geom__SimpleMDArrayCoordinate_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::FFPtor_O> {
+template <> class gctools::GCStamp<chem::FFPtor_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__FFPtor_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__FFPtor_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::FFItor_O> {
+template <> class gctools::GCStamp<chem::FFItor_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__FFItor_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__FFItor_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::EnergyFixedNonbondRestraint_O> {
+template <> class gctools::GCStamp<chem::EnergyFixedNonbondRestraint_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__EnergyFixedNonbondRestraint_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__EnergyFixedNonbondRestraint_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::RepresentedEntityNameSet_O> {
+template <> class gctools::GCStamp<chem::RepresentedEntityNameSet_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__RepresentedEntityNameSet_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__RepresentedEntityNameSet_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::Constitution_O> {
+template <> class gctools::GCStamp<chem::Constitution_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__Constitution_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__Constitution_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::MonomerPack_O> {
+template <> class gctools::GCStamp<chem::MonomerPack_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__MonomerPack_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__MonomerPack_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::FFBaseDb_O> {
+template <> class gctools::GCStamp<chem::FFBaseDb_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__FFBaseDb_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__FFBaseDb_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::SourceManager_O> {
+template <> class gctools::GCStamp<core::SourceManager_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__SourceManager_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__SourceManager_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<clbind::ConstructorCreator_O> {
+template <> class gctools::GCStamp<clbind::ConstructorCreator_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_TEMPLATED_LISPALLOC_clbind__ConstructorCreator_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_TEMPLATED_LISPALLOC_clbind__ConstructorCreator_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<geom::OMatrix_O> {
+template <> class gctools::GCStamp<geom::OMatrix_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_geom__OMatrix_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_geom__OMatrix_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<gctools::GCVector_moveable<core::RequiredArgument>> {
+template <> class gctools::GCStamp<gctools::GCVector_moveable<core::RequiredArgument>> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_core__RequiredArgument_ ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_core__RequiredArgument_ ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<gctools::GCVector_moveable<gctools::smart_ptr<chem::ZMatrixEntry_O>>> {
+template <> class gctools::GCStamp<gctools::GCVector_moveable<gctools::smart_ptr<chem::ZMatrixEntry_O>>> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__ZMatrixEntry_O__ ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__ZMatrixEntry_O__ ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<clcenv::LambdaName_O> {
+template <> class gctools::GCStamp<clcenv::LambdaName_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_clcenv__LambdaName_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_clcenv__LambdaName_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<adapt::AdaptExposer_O> {
+template <> class gctools::GCStamp<adapt::AdaptExposer_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_adapt__AdaptExposer_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_adapt__AdaptExposer_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<adapt::StringList_O> {
+template <> class gctools::GCStamp<adapt::StringList_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_adapt__StringList_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_adapt__StringList_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::DIFile_O> {
+template <> class gctools::GCStamp<llvmo::DIFile_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__DIFile_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__DIFile_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<clcenv::FunctionInfo_O> {
+template <> class gctools::GCStamp<clcenv::FunctionInfo_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_clcenv__FunctionInfo_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_clcenv__FunctionInfo_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::BondListMatchNode_O> {
+template <> class gctools::GCStamp<chem::BondListMatchNode_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__BondListMatchNode_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__BondListMatchNode_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<gctools::GCVector_moveable<chem::BeyondThresholdFixedNonbondRestraint>> {
+template <> class gctools::GCStamp<gctools::GCVector_moveable<chem::BeyondThresholdFixedNonbondRestraint>> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_chem__BeyondThresholdFixedNonbondRestraint_ ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_chem__BeyondThresholdFixedNonbondRestraint_ ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::StrNs_O> {
+template <> class gctools::GCStamp<core::StrNs_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__StrNs_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__StrNs_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::OutPlug_O> {
+template <> class gctools::GCStamp<chem::OutPlug_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__OutPlug_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__OutPlug_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<gctools::GCVector_moveable<gctools::smart_ptr<core::Symbol_O>>> {
+template <> class gctools::GCStamp<gctools::GCVector_moveable<gctools::smart_ptr<core::Symbol_O>>> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__Symbol_O__ ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__Symbol_O__ ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::ClaspJIT_O> {
+template <> class gctools::GCStamp<llvmo::ClaspJIT_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__ClaspJIT_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__ClaspJIT_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::PointerType_O> {
+template <> class gctools::GCStamp<llvmo::PointerType_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__PointerType_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__PointerType_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::UndefValue_O> {
+template <> class gctools::GCStamp<llvmo::UndefValue_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__UndefValue_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__UndefValue_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::PdbReader_O> {
+template <> class gctools::GCStamp<chem::PdbReader_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__PdbReader_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__PdbReader_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::EnergyRigidBodyStaple_O> {
+template <> class gctools::GCStamp<chem::EnergyRigidBodyStaple_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__EnergyRigidBodyStaple_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__EnergyRigidBodyStaple_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::MDArray_int16_t_O> {
+template <> class gctools::GCStamp<core::MDArray_int16_t_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__MDArray_int16_t_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__MDArray_int16_t_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<clcenv::LexicalVariableInfo_O> {
+template <> class gctools::GCStamp<clcenv::LexicalVariableInfo_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_clcenv__LexicalVariableInfo_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_clcenv__LexicalVariableInfo_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::FenceInst_O> {
+template <> class gctools::GCStamp<llvmo::FenceInst_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__FenceInst_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__FenceInst_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::IterateRestraints_O> {
+template <> class gctools::GCStamp<chem::IterateRestraints_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__IterateRestraints_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__IterateRestraints_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<gctools::GCVector_moveable<float>> {
+template <> class gctools::GCStamp<gctools::GCVector_moveable<float>> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_float_ ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_float_ ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::CDFragment_O> {
+template <> class gctools::GCStamp<chem::CDFragment_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__CDFragment_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__CDFragment_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::CxxObject_O> {
+template <> class gctools::GCStamp<core::CxxObject_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__CxxObject_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__CxxObject_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<adapt::StringSet_O> {
+template <> class gctools::GCStamp<adapt::StringSet_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_adapt__StringSet_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_adapt__StringSet_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::TwoWayStream_O> {
+template <> class gctools::GCStamp<core::TwoWayStream_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__TwoWayStream_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__TwoWayStream_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<gctools::GCVector_moveable<gctools::smart_ptr<chem::Twister_O>>> {
+template <> class gctools::GCStamp<gctools::GCVector_moveable<gctools::smart_ptr<chem::Twister_O>>> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__Twister_O__ ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__Twister_O__ ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<gctools::GCArray_moveable<double>> {
+template <> class gctools::GCStamp<gctools::GCArray_moveable<double>> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_GCARRAY_gctools__GCArray_moveable_double_ ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_GCARRAY_gctools__GCArray_moveable_double_ ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<gctools::GCVector_moveable<core::DynamicBinding>> {
+template <> class gctools::GCStamp<gctools::GCVector_moveable<core::DynamicBinding>> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_core__DynamicBinding_ ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_core__DynamicBinding_ ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::VectorStepper_O> {
+template <> class gctools::GCStamp<core::VectorStepper_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__VectorStepper_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__VectorStepper_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::Structure_Old_List_O> {
+template <> class gctools::GCStamp<chem::Structure_Old_List_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__Structure_Old_List_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__Structure_Old_List_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Topology_O>>>> {
+template <> class gctools::GCStamp<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Topology_O>>>> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__Topology_O___ ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__Topology_O___ ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<gctools::GCVector_moveable<gctools::smart_ptr<core::Cons_O>>> {
+template <> class gctools::GCStamp<gctools::GCVector_moveable<gctools::smart_ptr<core::Cons_O>>> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__Cons_O__ ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__Cons_O__ ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::FFStretch_O> {
+template <> class gctools::GCStamp<chem::FFStretch_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__FFStretch_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__FFStretch_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<gctools::GCArray_moveable<gctools::smart_ptr<core::T_O>>> {
+template <> class gctools::GCStamp<gctools::GCArray_moveable<gctools::smart_ptr<core::T_O>>> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_GCARRAY_gctools__GCArray_moveable_gctools__smart_ptr_core__T_O__ ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_GCARRAY_gctools__GCArray_moveable_gctools__smart_ptr_core__T_O__ ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::HashTableEq_O> {
+template <> class gctools::GCStamp<core::HashTableEq_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__HashTableEq_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__HashTableEq_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<mp::ConcurrentQueue_O> {
+template <> class gctools::GCStamp<mp::ConcurrentQueue_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_mp__ConcurrentQueue_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_mp__ConcurrentQueue_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::MonomerCoordinates_O>>>> {
+template <> class gctools::GCStamp<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::MonomerCoordinates_O>>>> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__MonomerCoordinates_O___ ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__MonomerCoordinates_O___ ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::WildElementDict_O> {
+template <> class gctools::GCStamp<chem::WildElementDict_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__WildElementDict_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__WildElementDict_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::ChemInfo_O> {
+template <> class gctools::GCStamp<chem::ChemInfo_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__ChemInfo_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__ChemInfo_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::DoubleFloat_O> {
+template <> class gctools::GCStamp<core::DoubleFloat_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__DoubleFloat_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__DoubleFloat_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::FFNonbondDb_O> {
+template <> class gctools::GCStamp<chem::FFNonbondDb_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__FFNonbondDb_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__FFNonbondDb_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::RingClosingPlug_O> {
+template <> class gctools::GCStamp<chem::RingClosingPlug_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__RingClosingPlug_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__RingClosingPlug_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<gctools::GCVector_moveable<core::CacheRecord>> {
+template <> class gctools::GCStamp<gctools::GCVector_moveable<core::CacheRecord>> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_core__CacheRecord_ ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_core__CacheRecord_ ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::MDArray_int8_t_O> {
+template <> class gctools::GCStamp<core::MDArray_int8_t_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__MDArray_int8_t_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__MDArray_int8_t_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::FunctionType_O> {
+template <> class gctools::GCStamp<llvmo::FunctionType_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__FunctionType_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__FunctionType_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::BasicBlock_O> {
+template <> class gctools::GCStamp<llvmo::BasicBlock_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__BasicBlock_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__BasicBlock_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::DataLayout_O> {
+template <> class gctools::GCStamp<llvmo::DataLayout_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__DataLayout_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__DataLayout_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::SimpleVectorFloat_O> {
+template <> class gctools::GCStamp<core::SimpleVectorFloat_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__SimpleVectorFloat_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__SimpleVectorFloat_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::SingleDispatchMethodFunction_O> {
+template <> class gctools::GCStamp<core::SingleDispatchMethodFunction_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__SingleDispatchMethodFunction_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__SingleDispatchMethodFunction_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::SearchStatistics_O> {
+template <> class gctools::GCStamp<chem::SearchStatistics_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__SearchStatistics_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__SearchStatistics_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::MacroModelFile_O> {
+template <> class gctools::GCStamp<chem::MacroModelFile_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__MacroModelFile_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__MacroModelFile_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::DIScope_O> {
+template <> class gctools::GCStamp<llvmo::DIScope_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__DIScope_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__DIScope_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::User_O> {
+template <> class gctools::GCStamp<llvmo::User_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__User_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__User_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::Target_O> {
+template <> class gctools::GCStamp<llvmo::Target_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__Target_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__Target_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::IOFileStream_O> {
+template <> class gctools::GCStamp<core::IOFileStream_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__IOFileStream_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__IOFileStream_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::UnreachableInst_O> {
+template <> class gctools::GCStamp<llvmo::UnreachableInst_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__UnreachableInst_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__UnreachableInst_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::DirectoryIterator_O> {
+template <> class gctools::GCStamp<core::DirectoryIterator_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__DirectoryIterator_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__DirectoryIterator_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::Closure_O> {
+template <> class gctools::GCStamp<core::Closure_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__Closure_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__Closure_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::Integer_O> {
+template <> class gctools::GCStamp<core::Integer_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__Integer_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__Integer_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<gctools::GCVector_moveable<gctools::smart_ptr<chem::ChemInfo_O>>> {
+template <> class gctools::GCStamp<gctools::GCVector_moveable<gctools::smart_ptr<chem::ChemInfo_O>>> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__ChemInfo_O__ ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__ChemInfo_O__ ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::ArrayType_O> {
+template <> class gctools::GCStamp<llvmo::ArrayType_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__ArrayType_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__ArrayType_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::CxxMethodFunction_O> {
+template <> class gctools::GCStamp<core::CxxMethodFunction_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__CxxMethodFunction_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__CxxMethodFunction_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::FrameRecognizer_O>>>> {
+template <> class gctools::GCStamp<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::FrameRecognizer_O>>>> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__FrameRecognizer_O___ ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__FrameRecognizer_O___ ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::MDArrayCharacter_O> {
+template <> class gctools::GCStamp<core::MDArrayCharacter_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__MDArrayCharacter_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__MDArrayCharacter_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::RestraintAnchor_O> {
+template <> class gctools::GCStamp<chem::RestraintAnchor_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__RestraintAnchor_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__RestraintAnchor_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::SpecialForm_O> {
+template <> class gctools::GCStamp<core::SpecialForm_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__SpecialForm_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__SpecialForm_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::Record_O> {
+template <> class gctools::GCStamp<core::Record_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__Record_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__Record_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::Twister_O> {
+template <> class gctools::GCStamp<chem::Twister_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__Twister_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__Twister_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<gctools::GCVector_moveable<gctools::smart_ptr<core::Package_O>>> {
+template <> class gctools::GCStamp<gctools::GCVector_moveable<gctools::smart_ptr<core::Package_O>>> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__Package_O__ ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__Package_O__ ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::GlobalVariable_O> {
+template <> class gctools::GCStamp<llvmo::GlobalVariable_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__GlobalVariable_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__GlobalVariable_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<gctools::GCVector_moveable<gctools::smart_ptr<core::List_V>>> {
+template <> class gctools::GCStamp<gctools::GCVector_moveable<gctools::smart_ptr<core::List_V>>> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__List_V__ ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__List_V__ ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<gctools::GCVector_moveable<gctools::smart_ptr<chem::FFNonbond_O>>> {
+template <> class gctools::GCStamp<gctools::GCVector_moveable<gctools::smart_ptr<chem::FFNonbond_O>>> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__FFNonbond_O__ ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__FFNonbond_O__ ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<gctools::GCVector_moveable<gctools::smart_ptr<core::SequenceStepper_O>>> {
+template <> class gctools::GCStamp<gctools::GCVector_moveable<gctools::smart_ptr<core::SequenceStepper_O>>> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__SequenceStepper_O__ ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__SequenceStepper_O__ ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::AtomReference_O> {
+template <> class gctools::GCStamp<chem::AtomReference_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__AtomReference_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__AtomReference_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::Stream_O> {
+template <> class gctools::GCStamp<core::Stream_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__Stream_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__Stream_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::StackValueEnvironment_O> {
+template <> class gctools::GCStamp<core::StackValueEnvironment_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__StackValueEnvironment_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__StackValueEnvironment_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<clcenv::SymbolMacroInfo_O> {
+template <> class gctools::GCStamp<clcenv::SymbolMacroInfo_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_clcenv__SymbolMacroInfo_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_clcenv__SymbolMacroInfo_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::Bignum_O> {
+template <> class gctools::GCStamp<core::Bignum_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__Bignum_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__Bignum_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<units::Quantity_O> {
+template <> class gctools::GCStamp<units::Quantity_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_units__Quantity_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_units__Quantity_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::WeakKeyMapping_O> {
+template <> class gctools::GCStamp<core::WeakKeyMapping_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__WeakKeyMapping_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__WeakKeyMapping_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<gctools::GCVector_moveable<gctools::smart_ptr<chem::Mate_O>>> {
+template <> class gctools::GCStamp<gctools::GCVector_moveable<gctools::smart_ptr<chem::Mate_O>>> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__Mate_O__ ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__Mate_O__ ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::AntechamberFocusAtomMatch_O> {
+template <> class gctools::GCStamp<chem::AntechamberFocusAtomMatch_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__AntechamberFocusAtomMatch_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__AntechamberFocusAtomMatch_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::SimpleVector_int16_t_O> {
+template <> class gctools::GCStamp<core::SimpleVector_int16_t_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__SimpleVector_int16_t_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__SimpleVector_int16_t_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::PdbMonomerConnectivity_O>>>> {
+template <> class gctools::GCStamp<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::PdbMonomerConnectivity_O>>>> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__PdbMonomerConnectivity_O___ ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__PdbMonomerConnectivity_O___ ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::RestraintDistance_O> {
+template <> class gctools::GCStamp<chem::RestraintDistance_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__RestraintDistance_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__RestraintDistance_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<adapt::SymbolSet_O> {
+template <> class gctools::GCStamp<adapt::SymbolSet_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_adapt__SymbolSet_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_adapt__SymbolSet_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,chem::EstimateStretch>>> {
+template <> class gctools::GCStamp<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,chem::EstimateStretch>>> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__chem__EstimateStretch__ ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__chem__EstimateStretch__ ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<clcenv::SpecialVariable_O> {
+template <> class gctools::GCStamp<clcenv::SpecialVariable_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_clcenv__SpecialVariable_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_clcenv__SpecialVariable_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::RestrainedExoCyclicAtom_O> {
+template <> class gctools::GCStamp<chem::RestrainedExoCyclicAtom_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__RestrainedExoCyclicAtom_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__RestrainedExoCyclicAtom_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::CDNode_O> {
+template <> class gctools::GCStamp<chem::CDNode_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__CDNode_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__CDNode_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::Character_dummy_O> {
+template <> class gctools::GCStamp<core::Character_dummy_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__Character_dummy_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__Character_dummy_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::RestraintAngle_O> {
+template <> class gctools::GCStamp<chem::RestraintAngle_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__RestraintAngle_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__RestraintAngle_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::SexpSaveArchive_O> {
+template <> class gctools::GCStamp<core::SexpSaveArchive_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__SexpSaveArchive_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__SexpSaveArchive_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::Aggregate_O> {
+template <> class gctools::GCStamp<chem::Aggregate_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__Aggregate_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__Aggregate_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::PlugWithMates_O> {
+template <> class gctools::GCStamp<chem::PlugWithMates_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__PlugWithMates_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__PlugWithMates_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::FunctionFrame_O> {
+template <> class gctools::GCStamp<core::FunctionFrame_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__FunctionFrame_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__FunctionFrame_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::SingleDispatchGenericFunctionClosure_O> {
+template <> class gctools::GCStamp<core::SingleDispatchGenericFunctionClosure_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__SingleDispatchGenericFunctionClosure_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__SingleDispatchGenericFunctionClosure_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::LightUserData_O> {
+template <> class gctools::GCStamp<core::LightUserData_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__LightUserData_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__LightUserData_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::EchoStream_O> {
+template <> class gctools::GCStamp<core::EchoStream_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__EchoStream_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__EchoStream_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::CalculatePositionUsingInternals_O> {
+template <> class gctools::GCStamp<chem::CalculatePositionUsingInternals_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__CalculatePositionUsingInternals_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__CalculatePositionUsingInternals_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::DILocalScope_O> {
+template <> class gctools::GCStamp<llvmo::DILocalScope_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__DILocalScope_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__DILocalScope_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::ZMatrixEntry_O> {
+template <> class gctools::GCStamp<chem::ZMatrixEntry_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__ZMatrixEntry_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__ZMatrixEntry_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::SimpleMDArray_size_t_O> {
+template <> class gctools::GCStamp<core::SimpleMDArray_size_t_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__SimpleMDArray_size_t_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__SimpleMDArray_size_t_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::Instruction_O> {
+template <> class gctools::GCStamp<llvmo::Instruction_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__Instruction_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__Instruction_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::FunctionClosure_O> {
+template <> class gctools::GCStamp<core::FunctionClosure_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__FunctionClosure_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__FunctionClosure_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::ConstitutionAtom_O> {
+template <> class gctools::GCStamp<chem::ConstitutionAtom_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__ConstitutionAtom_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__ConstitutionAtom_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::MonoMonomer_O> {
+template <> class gctools::GCStamp<chem::MonoMonomer_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__MonoMonomer_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__MonoMonomer_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<clcenv::FunctionDynamicExtent_O> {
+template <> class gctools::GCStamp<clcenv::FunctionDynamicExtent_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_clcenv__FunctionDynamicExtent_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_clcenv__FunctionDynamicExtent_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<clcenv::LexicalVariable_O> {
+template <> class gctools::GCStamp<clcenv::LexicalVariable_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_clcenv__LexicalVariable_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_clcenv__LexicalVariable_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<gctools::GCVector_moveable<std::pair<int,gctools::smart_ptr<chem::CDNode_O>>>> {
+template <> class gctools::GCStamp<gctools::GCVector_moveable<std::pair<int,gctools::smart_ptr<chem::CDNode_O>>>> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_int_gctools__smart_ptr_chem__CDNode_O___ ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_int_gctools__smart_ptr_chem__CDNode_O___ ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<gctools::GCVector_moveable<gctools::smart_ptr<chem::TrajectoryFrame_O>>> {
+template <> class gctools::GCStamp<gctools::GCVector_moveable<gctools::smart_ptr<chem::TrajectoryFrame_O>>> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__TrajectoryFrame_O__ ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__TrajectoryFrame_O__ ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::EnergyAnchorRestraint_O> {
+template <> class gctools::GCStamp<chem::EnergyAnchorRestraint_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__EnergyAnchorRestraint_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__EnergyAnchorRestraint_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::TypeAssignmentRules_O> {
+template <> class gctools::GCStamp<chem::TypeAssignmentRules_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__TypeAssignmentRules_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__TypeAssignmentRules_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::Mate_O> {
+template <> class gctools::GCStamp<chem::Mate_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__Mate_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__Mate_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<gctools::GCVector_moveable<gctools::smart_ptr<chem::Residue_O>>> {
+template <> class gctools::GCStamp<gctools::GCVector_moveable<gctools::smart_ptr<chem::Residue_O>>> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__Residue_O__ ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__Residue_O__ ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<clcenv::VariableDynamicExtent_O> {
+template <> class gctools::GCStamp<clcenv::VariableDynamicExtent_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_clcenv__VariableDynamicExtent_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_clcenv__VariableDynamicExtent_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::StructureComparer_O> {
+template <> class gctools::GCStamp<chem::StructureComparer_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__StructureComparer_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__StructureComparer_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::MultiStringBuffer_O> {
+template <> class gctools::GCStamp<core::MultiStringBuffer_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__MultiStringBuffer_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__MultiStringBuffer_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::StereoInformation_O> {
+template <> class gctools::GCStamp<chem::StereoInformation_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__StereoInformation_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__StereoInformation_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::Module_O> {
+template <> class gctools::GCStamp<llvmo::Module_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__Module_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__Module_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::FileStatus_O> {
+template <> class gctools::GCStamp<core::FileStatus_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__FileStatus_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__FileStatus_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::Branch_O> {
+template <> class gctools::GCStamp<chem::Branch_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__Branch_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__Branch_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<gctools::GCVector_moveable<std::pair<int,gctools::smart_ptr<chem::Residue_O>>>> {
+template <> class gctools::GCStamp<gctools::GCVector_moveable<std::pair<int,gctools::smart_ptr<chem::Residue_O>>>> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_int_gctools__smart_ptr_chem__Residue_O___ ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_int_gctools__smart_ptr_chem__Residue_O___ ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::SimpleMDArray_fixnum_O> {
+template <> class gctools::GCStamp<core::SimpleMDArray_fixnum_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__SimpleMDArray_fixnum_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__SimpleMDArray_fixnum_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::MDArray_int32_t_O> {
+template <> class gctools::GCStamp<core::MDArray_int32_t_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__MDArray_int32_t_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__MDArray_int32_t_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::MDNode_O> {
+template <> class gctools::GCStamp<llvmo::MDNode_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__MDNode_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__MDNode_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::EnergyRigidBodyComponent_O> {
+template <> class gctools::GCStamp<chem::EnergyRigidBodyComponent_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__EnergyRigidBodyComponent_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__EnergyRigidBodyComponent_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::PdbWriter_O> {
+template <> class gctools::GCStamp<chem::PdbWriter_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__PdbWriter_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__PdbWriter_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::FFStretchDb_O> {
+template <> class gctools::GCStamp<chem::FFStretchDb_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__FFStretchDb_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__FFStretchDb_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::UnaryInstruction_O> {
+template <> class gctools::GCStamp<llvmo::UnaryInstruction_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__UnaryInstruction_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__UnaryInstruction_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::DILexicalBlockBase_O> {
+template <> class gctools::GCStamp<llvmo::DILexicalBlockBase_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__DILexicalBlockBase_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__DILexicalBlockBase_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::InterpretedClosure_O> {
+template <> class gctools::GCStamp<core::InterpretedClosure_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__InterpretedClosure_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__InterpretedClosure_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::WeakKeyHashTable_O> {
+template <> class gctools::GCStamp<core::WeakKeyHashTable_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__WeakKeyHashTable_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__WeakKeyHashTable_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::RandomState_O> {
+template <> class gctools::GCStamp<core::RandomState_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__RandomState_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__RandomState_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::AfterMatchBondTest_O> {
+template <> class gctools::GCStamp<chem::AfterMatchBondTest_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__AfterMatchBondTest_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__AfterMatchBondTest_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::Pass_O> {
+template <> class gctools::GCStamp<llvmo::Pass_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__Pass_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__Pass_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<gctools::GCVector_moveable<std::pair<unsigned int,gctools::smart_ptr<chem::Residue_O>>>> {
+template <> class gctools::GCStamp<gctools::GCVector_moveable<std::pair<unsigned int,gctools::smart_ptr<chem::Residue_O>>>> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_unsigned_int_gctools__smart_ptr_chem__Residue_O___ ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_unsigned_int_gctools__smart_ptr_chem__Residue_O___ ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::ActivationFrame_O> {
+template <> class gctools::GCStamp<core::ActivationFrame_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__ActivationFrame_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__ActivationFrame_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<gctools::GCVector_moveable<gctools::smart_ptr<chem::ConformationCollectionEntry_O>>> {
+template <> class gctools::GCStamp<gctools::GCVector_moveable<gctools::smart_ptr<chem::ConformationCollectionEntry_O>>> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__ConformationCollectionEntry_O__ ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__ConformationCollectionEntry_O__ ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::StringOutputStream_O> {
+template <> class gctools::GCStamp<core::StringOutputStream_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__StringOutputStream_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__StringOutputStream_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::IntArray_O> {
+template <> class gctools::GCStamp<core::IntArray_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__IntArray_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__IntArray_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::SparseLargeSquareMatrix_O> {
+template <> class gctools::GCStamp<chem::SparseLargeSquareMatrix_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__SparseLargeSquareMatrix_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__SparseLargeSquareMatrix_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::FFNonbondCrossTermTable_O> {
+template <> class gctools::GCStamp<chem::FFNonbondCrossTermTable_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__FFNonbondCrossTermTable_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__FFNonbondCrossTermTable_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::SharpEqualWrapper_O> {
+template <> class gctools::GCStamp<core::SharpEqualWrapper_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__SharpEqualWrapper_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__SharpEqualWrapper_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::ConformationExplorerEntryStage_O> {
+template <> class gctools::GCStamp<chem::ConformationExplorerEntryStage_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__ConformationExplorerEntryStage_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__ConformationExplorerEntryStage_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::EnergyFunction_O> {
+template <> class gctools::GCStamp<chem::EnergyFunction_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__EnergyFunction_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__EnergyFunction_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<gctools::GCArray_moveable<unsigned long>> {
+template <> class gctools::GCStamp<gctools::GCArray_moveable<unsigned long>> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_GCARRAY_gctools__GCArray_moveable_unsigned_long_ ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_GCARRAY_gctools__GCArray_moveable_unsigned_long_ ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<gctools::GCVector_moveable<gctools::smart_ptr<core::SingleDispatchMethod_O>>> {
+template <> class gctools::GCStamp<gctools::GCVector_moveable<gctools::smart_ptr<core::SingleDispatchMethod_O>>> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__SingleDispatchMethod_O__ ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__SingleDispatchMethod_O__ ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::UserData_O> {
+template <> class gctools::GCStamp<core::UserData_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__UserData_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__UserData_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::Bond_O> {
+template <> class gctools::GCStamp<chem::Bond_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__Bond_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__Bond_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::Logical_O> {
+template <> class gctools::GCStamp<chem::Logical_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__Logical_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__Logical_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::FFAngleDb_O> {
+template <> class gctools::GCStamp<chem::FFAngleDb_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__FFAngleDb_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__FFAngleDb_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::AtomId_O> {
+template <> class gctools::GCStamp<chem::AtomId_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__AtomId_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__AtomId_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::Array_O> {
+template <> class gctools::GCStamp<core::Array_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__Array_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__Array_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::CDFragment_O>>>> {
+template <> class gctools::GCStamp<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::CDFragment_O>>>> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__CDFragment_O___ ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__CDFragment_O___ ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<mp::RecursiveMutex_O> {
+template <> class gctools::GCStamp<mp::RecursiveMutex_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_mp__RecursiveMutex_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_mp__RecursiveMutex_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::LambdaListHandler_O> {
+template <> class gctools::GCStamp<core::LambdaListHandler_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__LambdaListHandler_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__LambdaListHandler_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::Array_O>>>> {
+template <> class gctools::GCStamp<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::Array_O>>>> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_core__Array_O___ ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_core__Array_O___ ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<clcenv::LambdaNameInfo_O> {
+template <> class gctools::GCStamp<clcenv::LambdaNameInfo_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_clcenv__LambdaNameInfo_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_clcenv__LambdaNameInfo_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::MDArray_int64_t_O> {
+template <> class gctools::GCStamp<core::MDArray_int64_t_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__MDArray_int64_t_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__MDArray_int64_t_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<gctools::GCVector_moveable<chem::EnergyChiralRestraint>> {
+template <> class gctools::GCStamp<gctools::GCVector_moveable<chem::EnergyChiralRestraint>> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_chem__EnergyChiralRestraint_ ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_chem__EnergyChiralRestraint_ ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::ClosureWithFrame_O> {
+template <> class gctools::GCStamp<core::ClosureWithFrame_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__ClosureWithFrame_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__ClosureWithFrame_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::ImmutablePass_O> {
+template <> class gctools::GCStamp<llvmo::ImmutablePass_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__ImmutablePass_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__ImmutablePass_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::StandardClassCreator_O> {
+template <> class gctools::GCStamp<core::StandardClassCreator_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__StandardClassCreator_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__StandardClassCreator_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::ConstantInt_O> {
+template <> class gctools::GCStamp<llvmo::ConstantInt_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__ConstantInt_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__ConstantInt_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::Function_O> {
+template <> class gctools::GCStamp<llvmo::Function_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__Function_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__Function_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::SpanningLoop_O> {
+template <> class gctools::GCStamp<chem::SpanningLoop_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__SpanningLoop_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__SpanningLoop_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<mp::Mutex_O> {
+template <> class gctools::GCStamp<mp::Mutex_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_mp__Mutex_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_mp__Mutex_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::FFAngle_O> {
+template <> class gctools::GCStamp<chem::FFAngle_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__FFAngle_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__FFAngle_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::FunctionValueEnvironment_O> {
+template <> class gctools::GCStamp<core::FunctionValueEnvironment_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__FunctionValueEnvironment_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__FunctionValueEnvironment_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::Symbol_O>>>> {
+template <> class gctools::GCStamp<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::Symbol_O>>>> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_core__Symbol_O___ ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_core__Symbol_O___ ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<chem::Atom_O>,int>>> {
+template <> class gctools::GCStamp<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<chem::Atom_O>,int>>> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_chem__Atom_O__int__ ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_chem__Atom_O__int__ ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::SuperposeEngine_O> {
+template <> class gctools::GCStamp<chem::SuperposeEngine_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__SuperposeEngine_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__SuperposeEngine_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::GlueEnvironment_O> {
+template <> class gctools::GCStamp<core::GlueEnvironment_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__GlueEnvironment_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__GlueEnvironment_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::IOStreamStream_O> {
+template <> class gctools::GCStamp<core::IOStreamStream_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__IOStreamStream_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__IOStreamStream_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::Ratio_O> {
+template <> class gctools::GCStamp<core::Ratio_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__Ratio_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__Ratio_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::SingleDispatchMethod_O> {
+template <> class gctools::GCStamp<core::SingleDispatchMethod_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__SingleDispatchMethod_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__SingleDispatchMethod_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<gctools::GCVector_moveable<gctools::smart_ptr<chem::ConformationExplorerEntry_O>>> {
+template <> class gctools::GCStamp<gctools::GCVector_moveable<gctools::smart_ptr<chem::ConformationExplorerEntry_O>>> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__ConformationExplorerEntry_O__ ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__ConformationExplorerEntry_O__ ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::SimpleVectorDouble_O> {
+template <> class gctools::GCStamp<core::SimpleVectorDouble_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__SimpleVectorDouble_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__SimpleVectorDouble_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::Triple_O> {
+template <> class gctools::GCStamp<llvmo::Triple_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__Triple_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__Triple_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::SimpleVector_fixnum_O> {
+template <> class gctools::GCStamp<core::SimpleVector_fixnum_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__SimpleVector_fixnum_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__SimpleVector_fixnum_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::WeakHashTable_O> {
+template <> class gctools::GCStamp<core::WeakHashTable_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__WeakHashTable_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__WeakHashTable_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::EnergyComponent_O> {
+template <> class gctools::GCStamp<chem::EnergyComponent_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__EnergyComponent_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__EnergyComponent_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::SingleDispatchEffectiveMethodFunction_O> {
+template <> class gctools::GCStamp<core::SingleDispatchEffectiveMethodFunction_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__SingleDispatchEffectiveMethodFunction_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__SingleDispatchEffectiveMethodFunction_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::General_O> {
+template <> class gctools::GCStamp<core::General_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__General_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__General_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::BuiltinClosure_O> {
+template <> class gctools::GCStamp<core::BuiltinClosure_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_TEMPLATED_LISPALLOC_core__BuiltinClosure_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_TEMPLATED_LISPALLOC_core__BuiltinClosure_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::FunctionPass_O> {
+template <> class gctools::GCStamp<llvmo::FunctionPass_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__FunctionPass_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__FunctionPass_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::PassManager_O> {
+template <> class gctools::GCStamp<llvmo::PassManager_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__PassManager_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__PassManager_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::Cons_O> {
+template <> class gctools::GCStamp<core::Cons_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__Cons_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__Cons_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::SimpleMDArray_byte32_t_O> {
+template <> class gctools::GCStamp<core::SimpleMDArray_byte32_t_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__SimpleMDArray_byte32_t_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__SimpleMDArray_byte32_t_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<clcenv::Function_O> {
+template <> class gctools::GCStamp<clcenv::Function_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_clcenv__Function_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_clcenv__Function_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::VAArgInst_O> {
+template <> class gctools::GCStamp<llvmo::VAArgInst_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__VAArgInst_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__VAArgInst_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<asttooling::DerivableFrontendActionFactory> {
+template <> class gctools::GCStamp<asttooling::DerivableFrontendActionFactory> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_asttooling__DerivableFrontendActionFactory ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_asttooling__DerivableFrontendActionFactory ;
   static const size_t Flags = 3 ;
 };
-template <> class gctools::GCKind<chem::VirtualSphere_O> {
+template <> class gctools::GCStamp<chem::VirtualSphere_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__VirtualSphere_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__VirtualSphere_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::PassManagerBase_O> {
+template <> class gctools::GCStamp<llvmo::PassManagerBase_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__PassManagerBase_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__PassManagerBase_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::StringStream_O> {
+template <> class gctools::GCStamp<core::StringStream_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__StringStream_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__StringStream_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::SimpleString_O> {
+template <> class gctools::GCStamp<core::SimpleString_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__SimpleString_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__SimpleString_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::TargetSubtargetInfo_O> {
+template <> class gctools::GCStamp<llvmo::TargetSubtargetInfo_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__TargetSubtargetInfo_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__TargetSubtargetInfo_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::MDArrayFloat_O> {
+template <> class gctools::GCStamp<core::MDArrayFloat_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__MDArrayFloat_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__MDArrayFloat_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::ValueAsMetadata_O> {
+template <> class gctools::GCStamp<llvmo::ValueAsMetadata_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__ValueAsMetadata_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__ValueAsMetadata_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<clbind::ClassRep_O> {
+template <> class gctools::GCStamp<clbind::ClassRep_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_clbind__ClassRep_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_clbind__ClassRep_O ;
   static const size_t Flags = 1 ;
 };
-template <> class gctools::GCKind<llvmo::PassManagerBuilder_O> {
+template <> class gctools::GCStamp<llvmo::PassManagerBuilder_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__PassManagerBuilder_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__PassManagerBuilder_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::DIBuilder_O> {
+template <> class gctools::GCStamp<llvmo::DIBuilder_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__DIBuilder_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__DIBuilder_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::DISubroutineType_O> {
+template <> class gctools::GCStamp<llvmo::DISubroutineType_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__DISubroutineType_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__DISubroutineType_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::CandoDatabase_O> {
+template <> class gctools::GCStamp<chem::CandoDatabase_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__CandoDatabase_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__CandoDatabase_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::CDBond_O> {
+template <> class gctools::GCStamp<chem::CDBond_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__CDBond_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__CDBond_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::Path_O> {
+template <> class gctools::GCStamp<core::Path_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__Path_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__Path_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<clcenv::BlockInfo_O> {
+template <> class gctools::GCStamp<clcenv::BlockInfo_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_clcenv__BlockInfo_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_clcenv__BlockInfo_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::RuntimeVisibleEnvironment_O> {
+template <> class gctools::GCStamp<core::RuntimeVisibleEnvironment_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__RuntimeVisibleEnvironment_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__RuntimeVisibleEnvironment_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::SourceFileInfo_O> {
+template <> class gctools::GCStamp<core::SourceFileInfo_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__SourceFileInfo_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__SourceFileInfo_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::VirtualAtom_O> {
+template <> class gctools::GCStamp<chem::VirtualAtom_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__VirtualAtom_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__VirtualAtom_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::LoadInst_O> {
+template <> class gctools::GCStamp<llvmo::LoadInst_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__LoadInst_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__LoadInst_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<clcenv::VariableInfo_O> {
+template <> class gctools::GCStamp<clcenv::VariableInfo_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_clcenv__VariableInfo_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_clcenv__VariableInfo_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<clcenv::Tag_O> {
+template <> class gctools::GCStamp<clcenv::Tag_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_clcenv__Tag_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_clcenv__Tag_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::ExecutionEngine_O> {
+template <> class gctools::GCStamp<llvmo::ExecutionEngine_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__ExecutionEngine_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__ExecutionEngine_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<asttooling::DerivableSyntaxOnlyAction> {
+template <> class gctools::GCStamp<asttooling::DerivableSyntaxOnlyAction> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_asttooling__DerivableSyntaxOnlyAction ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_asttooling__DerivableSyntaxOnlyAction ;
   static const size_t Flags = 3 ;
 };
-template <> class gctools::GCKind<geom::MDArrayCoordinate_O> {
+template <> class gctools::GCStamp<geom::MDArrayCoordinate_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_geom__MDArrayCoordinate_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_geom__MDArrayCoordinate_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<gctools::GCVector_moveable<gctools::smart_ptr<chem::PathMessage_O>>> {
+template <> class gctools::GCStamp<gctools::GCVector_moveable<gctools::smart_ptr<chem::PathMessage_O>>> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__PathMessage_O__ ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__PathMessage_O__ ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<gctools::GCVector_moveable<gctools::smart_ptr<chem::ConstitutionAtom_O>>> {
+template <> class gctools::GCStamp<gctools::GCVector_moveable<gctools::smart_ptr<chem::ConstitutionAtom_O>>> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__ConstitutionAtom_O__ ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__ConstitutionAtom_O__ ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<gctools::GCVector_moveable<gctools::SmallOrderedSet<gctools::smart_ptr<chem::Atom_O>>>> {
+template <> class gctools::GCStamp<gctools::GCVector_moveable<gctools::SmallOrderedSet<gctools::smart_ptr<chem::Atom_O>>>> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__SmallOrderedSet_gctools__smart_ptr_chem__Atom_O___ ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__SmallOrderedSet_gctools__smart_ptr_chem__Atom_O___ ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<core::T_O>>>> {
+template <> class gctools::GCStamp<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<core::T_O>>>> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__T_O__gctools__smart_ptr_core__T_O___ ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__T_O__gctools__smart_ptr_core__T_O___ ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<gctools::GCVector_moveable<gctools::smart_ptr<clbind::ClassRep_O>>> {
+template <> class gctools::GCStamp<gctools::GCVector_moveable<gctools::smart_ptr<clbind::ClassRep_O>>> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_clbind__ClassRep_O__ ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_clbind__ClassRep_O__ ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::Complex_O> {
+template <> class gctools::GCStamp<core::Complex_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__Complex_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__Complex_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::ResidueTest_O> {
+template <> class gctools::GCStamp<chem::ResidueTest_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__ResidueTest_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__ResidueTest_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::SimpleMDArrayDouble_O> {
+template <> class gctools::GCStamp<core::SimpleMDArrayDouble_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__SimpleMDArrayDouble_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__SimpleMDArrayDouble_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::InstanceCreator_O> {
+template <> class gctools::GCStamp<core::InstanceCreator_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__InstanceCreator_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__InstanceCreator_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::NativeVector_double_O> {
+template <> class gctools::GCStamp<core::NativeVector_double_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__NativeVector_double_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__NativeVector_double_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::DILexicalBlock_O> {
+template <> class gctools::GCStamp<llvmo::DILexicalBlock_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__DILexicalBlock_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__DILexicalBlock_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::SNode_O> {
+template <> class gctools::GCStamp<core::SNode_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__SNode_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__SNode_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<clbind::detail::class_map> {
+template <> class gctools::GCStamp<clbind::detail::class_map> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_ROOTCLASSALLOC_clbind__detail__class_map ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_ROOTCLASSALLOC_clbind__detail__class_map ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::AllocaInst_O> {
+template <> class gctools::GCStamp<llvmo::AllocaInst_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__AllocaInst_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__AllocaInst_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::CompiledFunction_O> {
+template <> class gctools::GCStamp<core::CompiledFunction_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__CompiledFunction_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__CompiledFunction_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::IterateResidues_O> {
+template <> class gctools::GCStamp<chem::IterateResidues_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__IterateResidues_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__IterateResidues_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::FrameRecognizer_O> {
+template <> class gctools::GCStamp<chem::FrameRecognizer_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__FrameRecognizer_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__FrameRecognizer_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<gctools::GCVector_moveable<core::SymbolStorage>> {
+template <> class gctools::GCStamp<gctools::GCVector_moveable<core::SymbolStorage>> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_core__SymbolStorage_ ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_core__SymbolStorage_ ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::PdbMonomerDatabase_O> {
+template <> class gctools::GCStamp<chem::PdbMonomerDatabase_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__PdbMonomerDatabase_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__PdbMonomerDatabase_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::NativeVector_float_O> {
+template <> class gctools::GCStamp<core::NativeVector_float_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__NativeVector_float_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__NativeVector_float_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<clcenv::VariableType_O> {
+template <> class gctools::GCStamp<clcenv::VariableType_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_clcenv__VariableType_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_clcenv__VariableType_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::Null_O> {
+template <> class gctools::GCStamp<core::Null_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__Null_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__Null_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::FFTypesDb_O> {
+template <> class gctools::GCStamp<chem::FFTypesDb_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__FFTypesDb_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__FFTypesDb_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::StructureClassCreator_O> {
+template <> class gctools::GCStamp<core::StructureClassCreator_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__StructureClassCreator_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__StructureClassCreator_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<gctools::GCVector_moveable<chem::KeyEntry>> {
+template <> class gctools::GCStamp<gctools::GCVector_moveable<chem::KeyEntry>> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_chem__KeyEntry_ ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_chem__KeyEntry_ ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::ConstantFP_O> {
+template <> class gctools::GCStamp<llvmo::ConstantFP_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__ConstantFP_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__ConstantFP_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::SmartsRoot_O> {
+template <> class gctools::GCStamp<chem::SmartsRoot_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__SmartsRoot_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__SmartsRoot_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::Root_O> {
+template <> class gctools::GCStamp<chem::Root_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__Root_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__Root_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::Topology_O> {
+template <> class gctools::GCStamp<chem::Topology_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__Topology_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__Topology_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::MDArray_byte16_t_O> {
+template <> class gctools::GCStamp<core::MDArray_byte16_t_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__MDArray_byte16_t_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__MDArray_byte16_t_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::AntechamberBondTest_O> {
+template <> class gctools::GCStamp<chem::AntechamberBondTest_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__AntechamberBondTest_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__AntechamberBondTest_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<gctools::GCVector_moveable<gctools::smart_ptr<chem::ComplexRestraint_O>>> {
+template <> class gctools::GCStamp<gctools::GCVector_moveable<gctools::smart_ptr<chem::ComplexRestraint_O>>> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__ComplexRestraint_O__ ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__ComplexRestraint_O__ ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<mp::Process_O> {
+template <> class gctools::GCStamp<mp::Process_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_mp__Process_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_mp__Process_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::SimpleVector_byte8_t_O> {
+template <> class gctools::GCStamp<core::SimpleVector_byte8_t_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__SimpleVector_byte8_t_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__SimpleVector_byte8_t_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::Function_O> {
+template <> class gctools::GCStamp<core::Function_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__Function_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__Function_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::TagSet_O> {
+template <> class gctools::GCStamp<chem::TagSet_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__TagSet_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__TagSet_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::MacroletEnvironment_O> {
+template <> class gctools::GCStamp<core::MacroletEnvironment_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__MacroletEnvironment_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__MacroletEnvironment_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<gctools::GCVector_moveable<gctools::smart_ptr<chem::Rotamer_O>>> {
+template <> class gctools::GCStamp<gctools::GCVector_moveable<gctools::smart_ptr<chem::Rotamer_O>>> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__Rotamer_O__ ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__Rotamer_O__ ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<clcenv::SpecialOperatorInfo_O> {
+template <> class gctools::GCStamp<clcenv::SpecialOperatorInfo_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_clcenv__SpecialOperatorInfo_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_clcenv__SpecialOperatorInfo_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::SmallMap_O> {
+template <> class gctools::GCStamp<core::SmallMap_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__SmallMap_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__SmallMap_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<gctools::GCVector_moveable<gctools::smart_ptr<chem::Atom_O>>> {
+template <> class gctools::GCStamp<gctools::GCVector_moveable<gctools::smart_ptr<chem::Atom_O>>> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__Atom_O__ ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__Atom_O__ ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::RingFinder_O> {
+template <> class gctools::GCStamp<chem::RingFinder_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__RingFinder_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__RingFinder_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::ConstitutionAtoms_O> {
+template <> class gctools::GCStamp<chem::ConstitutionAtoms_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__ConstitutionAtoms_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__ConstitutionAtoms_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::DINode_O> {
+template <> class gctools::GCStamp<llvmo::DINode_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__DINode_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__DINode_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::HashTableEqual_O> {
+template <> class gctools::GCStamp<core::HashTableEqual_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__HashTableEqual_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__HashTableEqual_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<gctools::GCVector_moveable<gctools::smart_ptr<chem::Stereoisomer_O>>> {
+template <> class gctools::GCStamp<gctools::GCVector_moveable<gctools::smart_ptr<chem::Stereoisomer_O>>> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__Stereoisomer_O__ ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__Stereoisomer_O__ ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::SimpleCharacterString_O> {
+template <> class gctools::GCStamp<core::SimpleCharacterString_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__SimpleCharacterString_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__SimpleCharacterString_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::OneTypeRule_O> {
+template <> class gctools::GCStamp<chem::OneTypeRule_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__OneTypeRule_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__OneTypeRule_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::EnergyImproperRestraint_O> {
+template <> class gctools::GCStamp<chem::EnergyImproperRestraint_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__EnergyImproperRestraint_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__EnergyImproperRestraint_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<gctools::GCVector_moveable<chem::RigidBodyAtomInfo>> {
+template <> class gctools::GCStamp<gctools::GCVector_moveable<chem::RigidBodyAtomInfo>> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_chem__RigidBodyAtomInfo_ ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_chem__RigidBodyAtomInfo_ ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::Rotamer_O> {
+template <> class gctools::GCStamp<chem::Rotamer_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__Rotamer_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__Rotamer_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::CallInst_O> {
+template <> class gctools::GCStamp<llvmo::CallInst_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__CallInst_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__CallInst_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::Package_O> {
+template <> class gctools::GCStamp<core::Package_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__Package_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__Package_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::Attribute_O> {
+template <> class gctools::GCStamp<llvmo::Attribute_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__Attribute_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__Attribute_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::SymbolMacroletEnvironment_O> {
+template <> class gctools::GCStamp<core::SymbolMacroletEnvironment_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__SymbolMacroletEnvironment_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__SymbolMacroletEnvironment_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::ExternalObject_O> {
+template <> class gctools::GCStamp<core::ExternalObject_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__ExternalObject_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__ExternalObject_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::EnergyNonbond_O> {
+template <> class gctools::GCStamp<chem::EnergyNonbond_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__EnergyNonbond_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__EnergyNonbond_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<clbind::DummyCreator_O> {
+template <> class gctools::GCStamp<clbind::DummyCreator_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_clbind__DummyCreator_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_clbind__DummyCreator_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<gctools::GCBitUnitArray_moveable<1,unsigned int,int>> {
+template <> class gctools::GCStamp<gctools::GCBitUnitArray_moveable<1,unsigned int,int>> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_GCBITUNITCONTAINER1_gctools__GCBitUnitArray_moveable_1_unsigned_int_int_ ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_GCBITUNITCONTAINER1_gctools__GCBitUnitArray_moveable_1_unsigned_int_int_ ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::ConformationExplorerMatch_O> {
+template <> class gctools::GCStamp<chem::ConformationExplorerMatch_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__ConformationExplorerMatch_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__ConformationExplorerMatch_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::SuperposableConformationCollection_O> {
+template <> class gctools::GCStamp<chem::SuperposableConformationCollection_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__SuperposableConformationCollection_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__SuperposableConformationCollection_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::HashTableEql_O> {
+template <> class gctools::GCStamp<core::HashTableEql_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__HashTableEql_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__HashTableEql_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::Stereoisomer_O> {
+template <> class gctools::GCStamp<chem::Stereoisomer_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__Stereoisomer_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__Stereoisomer_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::PHINode_O> {
+template <> class gctools::GCStamp<llvmo::PHINode_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__PHINode_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__PHINode_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::MDArray_byte32_t_O> {
+template <> class gctools::GCStamp<core::MDArray_byte32_t_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__MDArray_byte32_t_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__MDArray_byte32_t_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::AbstractLargeSquareMatrix_O> {
+template <> class gctools::GCStamp<chem::AbstractLargeSquareMatrix_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__AbstractLargeSquareMatrix_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__AbstractLargeSquareMatrix_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<clasp_ffi::ForeignData_O> {
+template <> class gctools::GCStamp<clasp_ffi::ForeignData_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_clasp_ffi__ForeignData_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_clasp_ffi__ForeignData_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::WrappedPointer_O> {
+template <> class gctools::GCStamp<core::WrappedPointer_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_TEMPLATED_LISPALLOC_core__WrappedPointer_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_TEMPLATED_LISPALLOC_core__WrappedPointer_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::EntityNameSetWithCap_O> {
+template <> class gctools::GCStamp<chem::EntityNameSetWithCap_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__EntityNameSetWithCap_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__EntityNameSetWithCap_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::Iterator_O> {
+template <> class gctools::GCStamp<core::Iterator_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_TEMPLATED_LISPALLOC_core__Iterator_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_TEMPLATED_LISPALLOC_core__Iterator_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::StereoisomerAtoms_O>>>> {
+template <> class gctools::GCStamp<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::StereoisomerAtoms_O>>>> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__StereoisomerAtoms_O___ ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__StereoisomerAtoms_O___ ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::Str8Ns_O> {
+template <> class gctools::GCStamp<core::Str8Ns_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__Str8Ns_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__Str8Ns_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::ImproperTorsion_O> {
+template <> class gctools::GCStamp<chem::ImproperTorsion_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__ImproperTorsion_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__ImproperTorsion_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<clcenv::GlobalFunctionInfo_O> {
+template <> class gctools::GCStamp<clcenv::GlobalFunctionInfo_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_clcenv__GlobalFunctionInfo_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_clcenv__GlobalFunctionInfo_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::SimpleMDArrayT_O> {
+template <> class gctools::GCStamp<core::SimpleMDArrayT_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__SimpleMDArrayT_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__SimpleMDArrayT_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::AtomReferenceBase_O> {
+template <> class gctools::GCStamp<chem::AtomReferenceBase_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__AtomReferenceBase_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__AtomReferenceBase_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<gctools::GCArray_moveable<Vector3>> {
+template <> class gctools::GCStamp<gctools::GCArray_moveable<Vector3>> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_GCARRAY_gctools__GCArray_moveable_Vector3_ ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_GCARRAY_gctools__GCArray_moveable_Vector3_ ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::T_O> {
+template <> class gctools::GCStamp<core::T_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_BOOTSTRAP_core__T_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_BOOTSTRAP_core__T_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::ConformationCollectionEntry_O> {
+template <> class gctools::GCStamp<chem::ConformationCollectionEntry_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__ConformationCollectionEntry_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__ConformationCollectionEntry_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::MDArray_size_t_O> {
+template <> class gctools::GCStamp<core::MDArray_size_t_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__MDArray_size_t_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__MDArray_size_t_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<clcenv::Macro_O> {
+template <> class gctools::GCStamp<clcenv::Macro_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_clcenv__Macro_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_clcenv__Macro_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::UnwindProtectEnvironment_O> {
+template <> class gctools::GCStamp<core::UnwindProtectEnvironment_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__UnwindProtectEnvironment_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__UnwindProtectEnvironment_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::SimpleVector_byte64_t_O> {
+template <> class gctools::GCStamp<core::SimpleVector_byte64_t_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__SimpleVector_byte64_t_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__SimpleVector_byte64_t_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<units::UnitsExposer_O> {
+template <> class gctools::GCStamp<units::UnitsExposer_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_units__UnitsExposer_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_units__UnitsExposer_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::ConcatenatedStream_O> {
+template <> class gctools::GCStamp<core::ConcatenatedStream_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__ConcatenatedStream_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__ConcatenatedStream_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::AttributeSet_O> {
+template <> class gctools::GCStamp<llvmo::AttributeSet_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__AttributeSet_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__AttributeSet_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<geom::OVector3_O> {
+template <> class gctools::GCStamp<geom::OVector3_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_geom__OVector3_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_geom__OVector3_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::BitVectorNs_O> {
+template <> class gctools::GCStamp<core::BitVectorNs_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__BitVectorNs_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__BitVectorNs_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::ChemInfoMatch_O> {
+template <> class gctools::GCStamp<chem::ChemInfoMatch_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__ChemInfoMatch_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__ChemInfoMatch_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::TargetLibraryInfoWrapperPass_O> {
+template <> class gctools::GCStamp<llvmo::TargetLibraryInfoWrapperPass_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__TargetLibraryInfoWrapperPass_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__TargetLibraryInfoWrapperPass_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::CatchEnvironment_O> {
+template <> class gctools::GCStamp<core::CatchEnvironment_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__CatchEnvironment_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__CatchEnvironment_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Plug_O>>>> {
+template <> class gctools::GCStamp<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Plug_O>>>> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__Plug_O___ ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__Plug_O___ ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::Trajectory_O> {
+template <> class gctools::GCStamp<chem::Trajectory_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__Trajectory_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__Trajectory_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::RingCoupling_O> {
+template <> class gctools::GCStamp<chem::RingCoupling_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__RingCoupling_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__RingCoupling_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<gctools::GCVector_moveable<chem::EnergyAnchorRestraint>> {
+template <> class gctools::GCStamp<gctools::GCVector_moveable<chem::EnergyAnchorRestraint>> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_chem__EnergyAnchorRestraint_ ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_chem__EnergyAnchorRestraint_ ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::Matter_O> {
+template <> class gctools::GCStamp<chem::Matter_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__Matter_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__Matter_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<gctools::GCVector_moveable<gctools::smart_ptr<chem::Monomer_O>>> {
+template <> class gctools::GCStamp<gctools::GCVector_moveable<gctools::smart_ptr<chem::Monomer_O>>> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__Monomer_O__ ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__Monomer_O__ ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::TagbodyFrame_O> {
+template <> class gctools::GCStamp<core::TagbodyFrame_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__TagbodyFrame_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__TagbodyFrame_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<clcenv::ConstantVariableInfo_O> {
+template <> class gctools::GCStamp<clcenv::ConstantVariableInfo_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_clcenv__ConstantVariableInfo_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_clcenv__ConstantVariableInfo_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::RingTest_O> {
+template <> class gctools::GCStamp<chem::RingTest_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__RingTest_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__RingTest_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::CompiledClosure_O> {
+template <> class gctools::GCStamp<core::CompiledClosure_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__CompiledClosure_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__CompiledClosure_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<clcenv::VariableIgnore_O> {
+template <> class gctools::GCStamp<clcenv::VariableIgnore_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_clcenv__VariableIgnore_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_clcenv__VariableIgnore_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::CalculatePositionRelativeToOrigin_O> {
+template <> class gctools::GCStamp<chem::CalculatePositionRelativeToOrigin_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__CalculatePositionRelativeToOrigin_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__CalculatePositionRelativeToOrigin_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::RestraintChiral_O> {
+template <> class gctools::GCStamp<chem::RestraintChiral_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__RestraintChiral_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__RestraintChiral_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::ResumeInst_O> {
+template <> class gctools::GCStamp<llvmo::ResumeInst_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__ResumeInst_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__ResumeInst_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::Value_O> {
+template <> class gctools::GCStamp<llvmo::Value_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__Value_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__Value_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::RootMatchNode_O> {
+template <> class gctools::GCStamp<chem::RootMatchNode_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__RootMatchNode_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__RootMatchNode_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::MCSubtargetInfo_O> {
+template <> class gctools::GCStamp<llvmo::MCSubtargetInfo_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__MCSubtargetInfo_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__MCSubtargetInfo_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<chem::Atom_O>,unsigned int>>> {
+template <> class gctools::GCStamp<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<chem::Atom_O>,unsigned int>>> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_chem__Atom_O__unsigned_int__ ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_chem__Atom_O__unsigned_int__ ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::Monomer_O> {
+template <> class gctools::GCStamp<chem::Monomer_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__Monomer_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__Monomer_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::CompositeType_O> {
+template <> class gctools::GCStamp<llvmo::CompositeType_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__CompositeType_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__CompositeType_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::SingleDispatchCxxEffectiveMethodFunction_O> {
+template <> class gctools::GCStamp<core::SingleDispatchCxxEffectiveMethodFunction_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__SingleDispatchCxxEffectiveMethodFunction_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__SingleDispatchCxxEffectiveMethodFunction_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::LexicalEnvironment_O> {
+template <> class gctools::GCStamp<core::LexicalEnvironment_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__LexicalEnvironment_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__LexicalEnvironment_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::PdbMonomerConnectivity_O> {
+template <> class gctools::GCStamp<chem::PdbMonomerConnectivity_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__PdbMonomerConnectivity_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__PdbMonomerConnectivity_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::ChemDraw_O> {
+template <> class gctools::GCStamp<chem::ChemDraw_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__ChemDraw_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__ChemDraw_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::MDArrayBit_O> {
+template <> class gctools::GCStamp<core::MDArrayBit_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__MDArrayBit_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__MDArrayBit_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::TargetMachine_O> {
+template <> class gctools::GCStamp<llvmo::TargetMachine_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__TargetMachine_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__TargetMachine_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<gctools::GCVector_moveable<chem::AtomPdbRec>> {
+template <> class gctools::GCStamp<gctools::GCVector_moveable<chem::AtomPdbRec>> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_chem__AtomPdbRec_ ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_chem__AtomPdbRec_ ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<gctools::GCArray_moveable<int>> {
+template <> class gctools::GCStamp<gctools::GCArray_moveable<int>> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_GCARRAY_gctools__GCArray_moveable_int_ ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_GCARRAY_gctools__GCArray_moveable_int_ ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::SimpleMDArray_O> {
+template <> class gctools::GCStamp<core::SimpleMDArray_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__SimpleMDArray_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__SimpleMDArray_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::Lisp_O> {
+template <> class gctools::GCStamp<core::Lisp_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_ROOTCLASSALLOC_core__Lisp_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_ROOTCLASSALLOC_core__Lisp_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::StandardObject_O> {
+template <> class gctools::GCStamp<core::StandardObject_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_BOOTSTRAP_core__StandardObject_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_BOOTSTRAP_core__StandardObject_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::MacroClosure_O> {
+template <> class gctools::GCStamp<core::MacroClosure_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__MacroClosure_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__MacroClosure_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::NativeVector_int_O> {
+template <> class gctools::GCStamp<core::NativeVector_int_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__NativeVector_int_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__NativeVector_int_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::SimpleVector_O> {
+template <> class gctools::GCStamp<core::SimpleVector_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__SimpleVector_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__SimpleVector_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::MultiMonomer_O> {
+template <> class gctools::GCStamp<chem::MultiMonomer_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__MultiMonomer_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__MultiMonomer_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::ModulePass_O> {
+template <> class gctools::GCStamp<llvmo::ModulePass_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__ModulePass_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__ModulePass_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<gctools::GCVector_moveable<core::T_O *>> {
+template <> class gctools::GCStamp<gctools::GCVector_moveable<core::T_O *>> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_core__T_O_P_ ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_core__T_O_P_ ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::Rational_O> {
+template <> class gctools::GCStamp<core::Rational_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__Rational_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__Rational_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::CalculatePositionAlongBond_O> {
+template <> class gctools::GCStamp<chem::CalculatePositionAlongBond_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__CalculatePositionAlongBond_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__CalculatePositionAlongBond_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::ForceMatchReport_O> {
+template <> class gctools::GCStamp<chem::ForceMatchReport_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__ForceMatchReport_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__ForceMatchReport_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::LLVMContext_O> {
+template <> class gctools::GCStamp<llvmo::LLVMContext_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__LLVMContext_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__LLVMContext_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::OligomerPart_Link_O> {
+template <> class gctools::GCStamp<chem::OligomerPart_Link_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__OligomerPart_Link_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__OligomerPart_Link_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<clbind::ClassRegistry_O> {
+template <> class gctools::GCStamp<clbind::ClassRegistry_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_clbind__ClassRegistry_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_clbind__ClassRegistry_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::MinimizerLog_O> {
+template <> class gctools::GCStamp<chem::MinimizerLog_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__MinimizerLog_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__MinimizerLog_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::ConformationExplorerEntry_O> {
+template <> class gctools::GCStamp<chem::ConformationExplorerEntry_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__ConformationExplorerEntry_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__ConformationExplorerEntry_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Stereoisomer_O>>>> {
+template <> class gctools::GCStamp<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Stereoisomer_O>>>> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__Stereoisomer_O___ ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__Stereoisomer_O___ ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<asttooling::DerivableASTFrontendAction> {
+template <> class gctools::GCStamp<asttooling::DerivableASTFrontendAction> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_asttooling__DerivableASTFrontendAction ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_asttooling__DerivableASTFrontendAction ;
   static const size_t Flags = 3 ;
 };
-template <> class gctools::GCKind<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::DoubleFloat_O>>>> {
+template <> class gctools::GCStamp<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::DoubleFloat_O>>>> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_core__DoubleFloat_O___ ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_core__DoubleFloat_O___ ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::StepReport_O> {
+template <> class gctools::GCStamp<chem::StepReport_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__StepReport_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__StepReport_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::TagbodyEnvironment_O> {
+template <> class gctools::GCStamp<core::TagbodyEnvironment_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__TagbodyEnvironment_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__TagbodyEnvironment_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<gctools::GCArray_moveable<short>> {
+template <> class gctools::GCStamp<gctools::GCArray_moveable<short>> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_GCARRAY_gctools__GCArray_moveable_short_ ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_GCARRAY_gctools__GCArray_moveable_short_ ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::AGEdge_O> {
+template <> class gctools::GCStamp<chem::AGEdge_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__AGEdge_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__AGEdge_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::StrWNs_O> {
+template <> class gctools::GCStamp<core::StrWNs_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__StrWNs_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__StrWNs_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::ComplexRestraint_O> {
+template <> class gctools::GCStamp<chem::ComplexRestraint_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__ComplexRestraint_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__ComplexRestraint_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<gctools::GCVector_moveable<gctools::smart_ptr<adapt::QDomNode_O>>> {
+template <> class gctools::GCStamp<gctools::GCVector_moveable<gctools::smart_ptr<adapt::QDomNode_O>>> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_adapt__QDomNode_O__ ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_adapt__QDomNode_O__ ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::MDString_O> {
+template <> class gctools::GCStamp<llvmo::MDString_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__MDString_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__MDString_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::AtomIdToAtomMap_O> {
+template <> class gctools::GCStamp<chem::AtomIdToAtomMap_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__AtomIdToAtomMap_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__AtomIdToAtomMap_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<gctools::GCVector_moveable<gctools::smart_ptr<chem::ZMatrixInternal_O>>> {
+template <> class gctools::GCStamp<gctools::GCVector_moveable<gctools::smart_ptr<chem::ZMatrixInternal_O>>> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__ZMatrixInternal_O__ ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__ZMatrixInternal_O__ ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::Atom_O> {
+template <> class gctools::GCStamp<chem::Atom_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__Atom_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__Atom_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<clcenv::LocalMacroInfo_O> {
+template <> class gctools::GCStamp<clcenv::LocalMacroInfo_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_clcenv__LocalMacroInfo_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_clcenv__LocalMacroInfo_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::AnsiStream_O> {
+template <> class gctools::GCStamp<core::AnsiStream_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__AnsiStream_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__AnsiStream_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::BlockEnvironment_O> {
+template <> class gctools::GCStamp<core::BlockEnvironment_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__BlockEnvironment_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__BlockEnvironment_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::TrajectoryFrame_O> {
+template <> class gctools::GCStamp<chem::TrajectoryFrame_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__TrajectoryFrame_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__TrajectoryFrame_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Entity_O>>>> {
+template <> class gctools::GCStamp<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Entity_O>>>> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__Entity_O___ ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__Entity_O___ ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::ConstantPointerNull_O> {
+template <> class gctools::GCStamp<llvmo::ConstantPointerNull_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__ConstantPointerNull_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__ConstantPointerNull_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::SpecificContext_O>>>> {
+template <> class gctools::GCStamp<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::SpecificContext_O>>>> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__SpecificContext_O___ ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__SpecificContext_O___ ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::LoadTimeValues_O> {
+template <> class gctools::GCStamp<core::LoadTimeValues_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__LoadTimeValues_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__LoadTimeValues_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<gctools::GCVector_moveable<gctools::smart_ptr<chem::Topology_O>>> {
+template <> class gctools::GCStamp<gctools::GCVector_moveable<gctools::smart_ptr<chem::Topology_O>>> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__Topology_O__ ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__Topology_O__ ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<clcenv::GlobalEnvironment_O> {
+template <> class gctools::GCStamp<clcenv::GlobalEnvironment_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_clcenv__GlobalEnvironment_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_clcenv__GlobalEnvironment_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<gctools::GCVector_moveable<chem::EnergyDihedral>> {
+template <> class gctools::GCStamp<gctools::GCVector_moveable<chem::EnergyDihedral>> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_chem__EnergyDihedral_ ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_chem__EnergyDihedral_ ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<clasp_ffi::ForeignTypeSpec_O> {
+template <> class gctools::GCStamp<clasp_ffi::ForeignTypeSpec_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_clasp_ffi__ForeignTypeSpec_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_clasp_ffi__ForeignTypeSpec_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::CipPrioritizer_O> {
+template <> class gctools::GCStamp<chem::CipPrioritizer_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__CipPrioritizer_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__CipPrioritizer_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::LongFloat_O> {
+template <> class gctools::GCStamp<core::LongFloat_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__LongFloat_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__LongFloat_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::RigidBodyEnergyFunction_O> {
+template <> class gctools::GCStamp<chem::RigidBodyEnergyFunction_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__RigidBodyEnergyFunction_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__RigidBodyEnergyFunction_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::Creator_O> {
+template <> class gctools::GCStamp<core::Creator_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_TEMPLATED_LISPALLOC_core__Creator_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_TEMPLATED_LISPALLOC_core__Creator_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::ZMatrix_O> {
+template <> class gctools::GCStamp<chem::ZMatrix_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__ZMatrix_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__ZMatrix_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::ChemExposer_O> {
+template <> class gctools::GCStamp<chem::ChemExposer_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__ChemExposer_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__ChemExposer_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<clcenv::SpecialVariableInfo_O> {
+template <> class gctools::GCStamp<clcenv::SpecialVariableInfo_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_clcenv__SpecialVariableInfo_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_clcenv__SpecialVariableInfo_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::NumericalFunction_O> {
+template <> class gctools::GCStamp<chem::NumericalFunction_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__NumericalFunction_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__NumericalFunction_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::TopologyAtomInfo_O> {
+template <> class gctools::GCStamp<chem::TopologyAtomInfo_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__TopologyAtomInfo_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__TopologyAtomInfo_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::FullLargeSquareMatrix_O> {
+template <> class gctools::GCStamp<chem::FullLargeSquareMatrix_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__FullLargeSquareMatrix_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__FullLargeSquareMatrix_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::SwitchInst_O> {
+template <> class gctools::GCStamp<llvmo::SwitchInst_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__SwitchInst_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__SwitchInst_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::FunctionPassManager_O> {
+template <> class gctools::GCStamp<llvmo::FunctionPassManager_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__FunctionPassManager_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__FunctionPassManager_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::TerminatorInst_O> {
+template <> class gctools::GCStamp<llvmo::TerminatorInst_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__TerminatorInst_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__TerminatorInst_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::EnergyChiralRestraint_O> {
+template <> class gctools::GCStamp<chem::EnergyChiralRestraint_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__EnergyChiralRestraint_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__EnergyChiralRestraint_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::EnergyDihedral_O> {
+template <> class gctools::GCStamp<chem::EnergyDihedral_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__EnergyDihedral_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__EnergyDihedral_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<gctools::GCVector_moveable<gctools::smart_ptr<core::SimpleBitVector_O>>> {
+template <> class gctools::GCStamp<gctools::GCVector_moveable<gctools::smart_ptr<core::SimpleBitVector_O>>> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__SimpleBitVector_O__ ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__SimpleBitVector_O__ ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::CompileTimeEnvironment_O> {
+template <> class gctools::GCStamp<core::CompileTimeEnvironment_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__CompileTimeEnvironment_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__CompileTimeEnvironment_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<geom::OVector2_O> {
+template <> class gctools::GCStamp<geom::OVector2_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_geom__OVector2_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_geom__OVector2_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::SmallMultimap_O> {
+template <> class gctools::GCStamp<core::SmallMultimap_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__SmallMultimap_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__SmallMultimap_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::DIDerivedType_O> {
+template <> class gctools::GCStamp<llvmo::DIDerivedType_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__DIDerivedType_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__DIDerivedType_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::PosixTimeDuration_O> {
+template <> class gctools::GCStamp<core::PosixTimeDuration_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__PosixTimeDuration_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__PosixTimeDuration_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<clcenv::Block_O> {
+template <> class gctools::GCStamp<clcenv::Block_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_clcenv__Block_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_clcenv__Block_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::ReadTable_O> {
+template <> class gctools::GCStamp<core::ReadTable_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__ReadTable_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__ReadTable_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<gctools::GCVector_moveable<gctools::smart_ptr<chem::Coupling_O>>> {
+template <> class gctools::GCStamp<gctools::GCVector_moveable<gctools::smart_ptr<chem::Coupling_O>>> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__Coupling_O__ ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__Coupling_O__ ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::Metadata_O> {
+template <> class gctools::GCStamp<llvmo::Metadata_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__Metadata_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__Metadata_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<gctools::GCVector_moveable<gctools::smart_ptr<chem::Molecule_O>>> {
+template <> class gctools::GCStamp<gctools::GCVector_moveable<gctools::smart_ptr<chem::Molecule_O>>> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__Molecule_O__ ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__Molecule_O__ ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::APInt_O> {
+template <> class gctools::GCStamp<llvmo::APInt_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__APInt_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__APInt_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::LogicalPathname_O> {
+template <> class gctools::GCStamp<core::LogicalPathname_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__LogicalPathname_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__LogicalPathname_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::AtomTest_O> {
+template <> class gctools::GCStamp<chem::AtomTest_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__AtomTest_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__AtomTest_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::TranslationFunctor> {
+template <> class gctools::GCStamp<core::TranslationFunctor> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__TranslationFunctor ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__TranslationFunctor ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::EntityNameSetBase_O>>>> {
+template <> class gctools::GCStamp<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::EntityNameSetBase_O>>>> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__EntityNameSetBase_O___ ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__EntityNameSetBase_O___ ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::StoreInst_O> {
+template <> class gctools::GCStamp<llvmo::StoreInst_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__StoreInst_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__StoreInst_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::SimpleVector_int64_t_O> {
+template <> class gctools::GCStamp<core::SimpleVector_int64_t_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__SimpleVector_int64_t_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__SimpleVector_int64_t_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::DIBasicType_O> {
+template <> class gctools::GCStamp<llvmo::DIBasicType_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__DIBasicType_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__DIBasicType_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::SimpleMDArray_byte16_t_O> {
+template <> class gctools::GCStamp<core::SimpleMDArray_byte16_t_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__SimpleMDArray_byte16_t_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__SimpleMDArray_byte16_t_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::Residue_O> {
+template <> class gctools::GCStamp<chem::Residue_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__Residue_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__Residue_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::ChemInfoNode_O> {
+template <> class gctools::GCStamp<chem::ChemInfoNode_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__ChemInfoNode_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__ChemInfoNode_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::IRBuilderBase_O> {
+template <> class gctools::GCStamp<llvmo::IRBuilderBase_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__IRBuilderBase_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__IRBuilderBase_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::MDArrayDouble_O> {
+template <> class gctools::GCStamp<core::MDArrayDouble_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__MDArrayDouble_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__MDArrayDouble_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<geom::GeomExposer_O> {
+template <> class gctools::GCStamp<geom::GeomExposer_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_geom__GeomExposer_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_geom__GeomExposer_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::OligomerPart_Base_O> {
+template <> class gctools::GCStamp<chem::OligomerPart_Base_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__OligomerPart_Base_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__OligomerPart_Base_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::Coupling_O> {
+template <> class gctools::GCStamp<chem::Coupling_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__Coupling_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__Coupling_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::MDArray_O> {
+template <> class gctools::GCStamp<core::MDArray_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__MDArray_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__MDArray_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::EntityNameSetBase_O> {
+template <> class gctools::GCStamp<chem::EntityNameSetBase_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__EntityNameSetBase_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__EntityNameSetBase_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::BondList_O> {
+template <> class gctools::GCStamp<chem::BondList_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__BondList_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__BondList_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::SynonymStream_O> {
+template <> class gctools::GCStamp<core::SynonymStream_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__SynonymStream_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__SynonymStream_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::ClassCreator_O> {
+template <> class gctools::GCStamp<core::ClassCreator_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__ClassCreator_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__ClassCreator_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::Command_O> {
+template <> class gctools::GCStamp<chem::Command_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__Command_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__Command_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::DINodeArray_O> {
+template <> class gctools::GCStamp<llvmo::DINodeArray_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__DINodeArray_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__DINodeArray_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<chem::Atom_O>,gctools::smart_ptr<chem::CDNode_O>>>> {
+template <> class gctools::GCStamp<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<chem::Atom_O>,gctools::smart_ptr<chem::CDNode_O>>>> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_chem__Atom_O__gctools__smart_ptr_chem__CDNode_O___ ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_chem__Atom_O__gctools__smart_ptr_chem__CDNode_O___ ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::ShortFloat_O> {
+template <> class gctools::GCStamp<core::ShortFloat_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__ShortFloat_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__ShortFloat_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::CoordinateSystem_O> {
+template <> class gctools::GCStamp<chem::CoordinateSystem_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__CoordinateSystem_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__CoordinateSystem_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::StringInputStream_O> {
+template <> class gctools::GCStamp<core::StringInputStream_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__StringInputStream_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__StringInputStream_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::MonomerContext_O> {
+template <> class gctools::GCStamp<chem::MonomerContext_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__MonomerContext_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__MonomerContext_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::DICompositeType_O> {
+template <> class gctools::GCStamp<llvmo::DICompositeType_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__DICompositeType_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__DICompositeType_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::ResidueList_O> {
+template <> class gctools::GCStamp<chem::ResidueList_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__ResidueList_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__ResidueList_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::Symbol_O> {
+template <> class gctools::GCStamp<core::Symbol_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_BOOTSTRAP_core__Symbol_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_BOOTSTRAP_core__Symbol_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::TwisterDriver_O> {
+template <> class gctools::GCStamp<chem::TwisterDriver_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__TwisterDriver_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__TwisterDriver_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::SequenceStepper_O> {
+template <> class gctools::GCStamp<core::SequenceStepper_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__SequenceStepper_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__SequenceStepper_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::ConstantArray_O> {
+template <> class gctools::GCStamp<llvmo::ConstantArray_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__ConstantArray_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__ConstantArray_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::RestraintDihedral_O> {
+template <> class gctools::GCStamp<chem::RestraintDihedral_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__RestraintDihedral_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__RestraintDihedral_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::BranchSNode_O> {
+template <> class gctools::GCStamp<core::BranchSNode_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__BranchSNode_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__BranchSNode_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<gctools::GCVector_moveable<gctools::smart_ptr<core::SourceFileInfo_O>>> {
+template <> class gctools::GCStamp<gctools::GCVector_moveable<gctools::smart_ptr<core::SourceFileInfo_O>>> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__SourceFileInfo_O__ ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__SourceFileInfo_O__ ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<asttooling::AsttoolingExposer_O> {
+template <> class gctools::GCStamp<asttooling::AsttoolingExposer_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_asttooling__AsttoolingExposer_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_asttooling__AsttoolingExposer_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::AtomicRMWInst_O> {
+template <> class gctools::GCStamp<llvmo::AtomicRMWInst_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__AtomicRMWInst_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__AtomicRMWInst_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::FFNonbond_O> {
+template <> class gctools::GCStamp<chem::FFNonbond_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__FFNonbond_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__FFNonbond_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<adapt::IndexedObjectBag_O> {
+template <> class gctools::GCStamp<adapt::IndexedObjectBag_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_adapt__IndexedObjectBag_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_adapt__IndexedObjectBag_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::MapOfMonomerNamesToAtomIndexers_O> {
+template <> class gctools::GCStamp<chem::MapOfMonomerNamesToAtomIndexers_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__MapOfMonomerNamesToAtomIndexers_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__MapOfMonomerNamesToAtomIndexers_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::IntegerType_O> {
+template <> class gctools::GCStamp<llvmo::IntegerType_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__IntegerType_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__IntegerType_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::Alias_O> {
+template <> class gctools::GCStamp<chem::Alias_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__Alias_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__Alias_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::AntechamberRoot_O> {
+template <> class gctools::GCStamp<chem::AntechamberRoot_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__AntechamberRoot_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__AntechamberRoot_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::FFVdwDb_O> {
+template <> class gctools::GCStamp<chem::FFVdwDb_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__FFVdwDb_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__FFVdwDb_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<gctools::GCVector_moveable<gctools::smart_ptr<chem::CDFragment_O>>> {
+template <> class gctools::GCStamp<gctools::GCVector_moveable<gctools::smart_ptr<chem::CDFragment_O>>> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__CDFragment_O__ ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__CDFragment_O__ ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::ForceField_O> {
+template <> class gctools::GCStamp<chem::ForceField_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__ForceField_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__ForceField_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::StereoisomerAtom_O> {
+template <> class gctools::GCStamp<chem::StereoisomerAtom_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__StereoisomerAtom_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__StereoisomerAtom_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::InvocationHistoryFrameIterator_O> {
+template <> class gctools::GCStamp<core::InvocationHistoryFrameIterator_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__InvocationHistoryFrameIterator_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__InvocationHistoryFrameIterator_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<gctools::GCVector_moveable<gctools::smart_ptr<chem::CDBond_O>>> {
+template <> class gctools::GCStamp<gctools::GCVector_moveable<gctools::smart_ptr<chem::CDBond_O>>> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__CDBond_O__ ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__CDBond_O__ ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::T_O>>>> {
+template <> class gctools::GCStamp<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::T_O>>>> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_core__T_O___ ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_core__T_O___ ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::EntityNameSet_O> {
+template <> class gctools::GCStamp<chem::EntityNameSet_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__EntityNameSet_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__EntityNameSet_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<gctools::GCVector_moveable<chem::ResidueOut>> {
+template <> class gctools::GCStamp<gctools::GCVector_moveable<chem::ResidueOut>> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_chem__ResidueOut_ ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_chem__ResidueOut_ ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::FFVdw_O> {
+template <> class gctools::GCStamp<chem::FFVdw_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__FFVdw_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__FFVdw_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::Entity_O> {
+template <> class gctools::GCStamp<chem::Entity_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__Entity_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__Entity_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::OligomerPart_Monomer_O> {
+template <> class gctools::GCStamp<chem::OligomerPart_Monomer_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__OligomerPart_Monomer_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__OligomerPart_Monomer_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::ScoringFunction_O> {
+template <> class gctools::GCStamp<chem::ScoringFunction_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__ScoringFunction_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__ScoringFunction_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::MDArray_byte64_t_O> {
+template <> class gctools::GCStamp<core::MDArray_byte64_t_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__MDArray_byte64_t_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__MDArray_byte64_t_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::MessageReport_O> {
+template <> class gctools::GCStamp<chem::MessageReport_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__MessageReport_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__MessageReport_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::AbstractSimpleVector_O> {
+template <> class gctools::GCStamp<core::AbstractSimpleVector_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__AbstractSimpleVector_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__AbstractSimpleVector_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::VaList_dummy_O> {
+template <> class gctools::GCStamp<core::VaList_dummy_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__VaList_dummy_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__VaList_dummy_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::StereoConfiguration_O> {
+template <> class gctools::GCStamp<chem::StereoConfiguration_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__StereoConfiguration_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__StereoConfiguration_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::EnergyRigidBodyNonbond_O> {
+template <> class gctools::GCStamp<chem::EnergyRigidBodyNonbond_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__EnergyRigidBodyNonbond_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__EnergyRigidBodyNonbond_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<clcenv::LocalFunctionInfo_O> {
+template <> class gctools::GCStamp<clcenv::LocalFunctionInfo_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_clcenv__LocalFunctionInfo_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_clcenv__LocalFunctionInfo_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::SourcePosInfo_O> {
+template <> class gctools::GCStamp<core::SourcePosInfo_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__SourcePosInfo_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__SourcePosInfo_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::ZMatrixDihedralInternal_O> {
+template <> class gctools::GCStamp<chem::ZMatrixDihedralInternal_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__ZMatrixDihedralInternal_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__ZMatrixDihedralInternal_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::EngineBuilder_O> {
+template <> class gctools::GCStamp<llvmo::EngineBuilder_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__EngineBuilder_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__EngineBuilder_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::IndirectBrInst_O> {
+template <> class gctools::GCStamp<llvmo::IndirectBrInst_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__IndirectBrInst_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__IndirectBrInst_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::VectorType_O> {
+template <> class gctools::GCStamp<llvmo::VectorType_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__VectorType_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__VectorType_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::ZMatrixAngleInternal_O> {
+template <> class gctools::GCStamp<chem::ZMatrixAngleInternal_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__ZMatrixAngleInternal_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__ZMatrixAngleInternal_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::SimpleVector_size_t_O> {
+template <> class gctools::GCStamp<core::SimpleVector_size_t_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__SimpleVector_size_t_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__SimpleVector_size_t_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::ConstantExpr_O> {
+template <> class gctools::GCStamp<llvmo::ConstantExpr_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__ConstantExpr_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__ConstantExpr_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::Oligomer_O> {
+template <> class gctools::GCStamp<chem::Oligomer_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__Oligomer_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__Oligomer_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<adapt::QDomNode_O> {
+template <> class gctools::GCStamp<adapt::QDomNode_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_adapt__QDomNode_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_adapt__QDomNode_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::Angle_O> {
+template <> class gctools::GCStamp<chem::Angle_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__Angle_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__Angle_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::PosixTime_O> {
+template <> class gctools::GCStamp<core::PosixTime_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__PosixTime_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__PosixTime_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::BondTest_O> {
+template <> class gctools::GCStamp<chem::BondTest_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__BondTest_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__BondTest_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::HashTable_O> {
+template <> class gctools::GCStamp<core::HashTable_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__HashTable_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__HashTable_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::FFParameter_O> {
+template <> class gctools::GCStamp<chem::FFParameter_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__FFParameter_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__FFParameter_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::InvokeInst_O> {
+template <> class gctools::GCStamp<llvmo::InvokeInst_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__InvokeInst_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__InvokeInst_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<units::Dimension_O> {
+template <> class gctools::GCStamp<units::Dimension_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_units__Dimension_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_units__Dimension_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::Pathname_O> {
+template <> class gctools::GCStamp<core::Pathname_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__Pathname_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__Pathname_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<gctools::GCVector_moveable<gctools::smart_ptr<chem::OneTypeRule_O>>> {
+template <> class gctools::GCStamp<gctools::GCVector_moveable<gctools::smart_ptr<chem::OneTypeRule_O>>> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__OneTypeRule_O__ ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__OneTypeRule_O__ ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::Float_O> {
+template <> class gctools::GCStamp<core::Float_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__Float_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__Float_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<clcenv::Closure_O> {
+template <> class gctools::GCStamp<clcenv::Closure_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_clcenv__Closure_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_clcenv__Closure_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<mp::BlockingConcurrentQueue_O> {
+template <> class gctools::GCStamp<mp::BlockingConcurrentQueue_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_mp__BlockingConcurrentQueue_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_mp__BlockingConcurrentQueue_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::FunctionContainerEnvironment_O> {
+template <> class gctools::GCStamp<core::FunctionContainerEnvironment_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__FunctionContainerEnvironment_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__FunctionContainerEnvironment_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::SimpleMDArrayBit_O> {
+template <> class gctools::GCStamp<core::SimpleMDArrayBit_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__SimpleMDArrayBit_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__SimpleMDArrayBit_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<adapt::SymbolList_O> {
+template <> class gctools::GCStamp<adapt::SymbolList_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_adapt__SymbolList_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_adapt__SymbolList_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<gctools::GCArray_moveable<long>> {
+template <> class gctools::GCStamp<gctools::GCArray_moveable<long>> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_GCARRAY_gctools__GCArray_moveable_long_ ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_GCARRAY_gctools__GCArray_moveable_long_ ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::ConstitutionBond_O> {
+template <> class gctools::GCStamp<chem::ConstitutionBond_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__ConstitutionBond_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__ConstitutionBond_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::MonomerCoordinates_O> {
+template <> class gctools::GCStamp<chem::MonomerCoordinates_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__MonomerCoordinates_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__MonomerCoordinates_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<gctools::GCArray_moveable<unsigned short>> {
+template <> class gctools::GCStamp<gctools::GCArray_moveable<unsigned short>> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_GCARRAY_gctools__GCArray_moveable_unsigned_short_ ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_GCARRAY_gctools__GCArray_moveable_unsigned_short_ ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::SimpleBitVector_O> {
+template <> class gctools::GCStamp<core::SimpleBitVector_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__SimpleBitVector_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__SimpleBitVector_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<gctools::GCVector_moveable<core::ExceptionEntry>> {
+template <> class gctools::GCStamp<gctools::GCVector_moveable<core::ExceptionEntry>> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_core__ExceptionEntry_ ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_core__ExceptionEntry_ ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<gctools::GCVector_moveable<core::AuxArgument>> {
+template <> class gctools::GCStamp<gctools::GCVector_moveable<core::AuxArgument>> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_core__AuxArgument_ ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_core__AuxArgument_ ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::Exposer_O> {
+template <> class gctools::GCStamp<core::Exposer_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__Exposer_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__Exposer_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::ClosureWithSlots_O> {
+template <> class gctools::GCStamp<core::ClosureWithSlots_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__ClosureWithSlots_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__ClosureWithSlots_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::SimpleVector_byte16_t_O> {
+template <> class gctools::GCStamp<core::SimpleVector_byte16_t_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__SimpleVector_byte16_t_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__SimpleVector_byte16_t_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::ValueFrame_O> {
+template <> class gctools::GCStamp<core::ValueFrame_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__ValueFrame_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__ValueFrame_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::TargetOptions_O> {
+template <> class gctools::GCStamp<llvmo::TargetOptions_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__TargetOptions_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__TargetOptions_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::JumpPlug_O> {
+template <> class gctools::GCStamp<chem::JumpPlug_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__JumpPlug_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__JumpPlug_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<gctools::GCVector_moveable<chem::AtomInfo>> {
+template <> class gctools::GCStamp<gctools::GCVector_moveable<chem::AtomInfo>> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_chem__AtomInfo_ ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_chem__AtomInfo_ ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::CandoException_O> {
+template <> class gctools::GCStamp<core::CandoException_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__CandoException_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__CandoException_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Molecule_O>>>> {
+template <> class gctools::GCStamp<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Molecule_O>>>> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__Molecule_O___ ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__Molecule_O___ ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::SequentialType_O> {
+template <> class gctools::GCStamp<llvmo::SequentialType_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__SequentialType_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__SequentialType_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<mp::SharedMutex_O> {
+template <> class gctools::GCStamp<mp::SharedMutex_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_mp__SharedMutex_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_mp__SharedMutex_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::AtomIndexer_O>>>> {
+template <> class gctools::GCStamp<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::AtomIndexer_O>>>> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__AtomIndexer_O___ ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__AtomIndexer_O___ ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::RestraintFixedNonbond_O> {
+template <> class gctools::GCStamp<chem::RestraintFixedNonbond_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__RestraintFixedNonbond_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__RestraintFixedNonbond_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::SingleFloat_dummy_O> {
+template <> class gctools::GCStamp<core::SingleFloat_dummy_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__SingleFloat_dummy_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__SingleFloat_dummy_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::FFPtorDb_O> {
+template <> class gctools::GCStamp<chem::FFPtorDb_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__FFPtorDb_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__FFPtorDb_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::StereoisomerAtoms_O> {
+template <> class gctools::GCStamp<chem::StereoisomerAtoms_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__StereoisomerAtoms_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__StereoisomerAtoms_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<gctools::GCVector_moveable<gctools::smart_ptr<chem::Structure_Old_ListEntry_O>>> {
+template <> class gctools::GCStamp<gctools::GCVector_moveable<gctools::smart_ptr<chem::Structure_Old_ListEntry_O>>> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__Structure_Old_ListEntry_O__ ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__Structure_Old_ListEntry_O__ ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<gctools::GCVector_moveable<gctools::smart_ptr<chem::AGEdge_O>>> {
+template <> class gctools::GCStamp<gctools::GCVector_moveable<gctools::smart_ptr<chem::AGEdge_O>>> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__AGEdge_O__ ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__AGEdge_O__ ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::LeafSNode_O> {
+template <> class gctools::GCStamp<core::LeafSNode_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__LeafSNode_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__LeafSNode_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::Plug_O> {
+template <> class gctools::GCStamp<chem::Plug_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__Plug_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__Plug_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<gctools::GCVector_moveable<gctools::smart_ptr<chem::ConformationExplorerEntryStage_O>>> {
+template <> class gctools::GCStamp<gctools::GCVector_moveable<gctools::smart_ptr<chem::ConformationExplorerEntryStage_O>>> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__ConformationExplorerEntryStage_O__ ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__ConformationExplorerEntryStage_O__ ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::LLVMTargetMachine_O> {
+template <> class gctools::GCStamp<llvmo::LLVMTargetMachine_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__LLVMTargetMachine_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__LLVMTargetMachine_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<gctools::GCArray_moveable<signed char>> {
+template <> class gctools::GCStamp<gctools::GCArray_moveable<signed char>> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_GCARRAY_gctools__GCArray_moveable_signed_char_ ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_GCARRAY_gctools__GCArray_moveable_signed_char_ ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<gctools::GCArray_moveable<unsigned char>> {
+template <> class gctools::GCStamp<gctools::GCArray_moveable<unsigned char>> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_GCARRAY_gctools__GCArray_moveable_unsigned_char_ ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_GCARRAY_gctools__GCArray_moveable_unsigned_char_ ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<gctools::GCVector_moveable<chem::FixedNonbondRestraint>> {
+template <> class gctools::GCStamp<gctools::GCVector_moveable<chem::FixedNonbondRestraint>> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_chem__FixedNonbondRestraint_ ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_chem__FixedNonbondRestraint_ ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<gctools::GCVector_moveable<chem::EnergyStretch>> {
+template <> class gctools::GCStamp<gctools::GCVector_moveable<chem::EnergyStretch>> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_chem__EnergyStretch_ ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_chem__EnergyStretch_ ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::SimpleMDArrayFloat_O> {
+template <> class gctools::GCStamp<core::SimpleMDArrayFloat_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__SimpleMDArrayFloat_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__SimpleMDArrayFloat_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<gctools::GCVector_moveable<gctools::smart_ptr<chem::FFVdw_O>>> {
+template <> class gctools::GCStamp<gctools::GCVector_moveable<gctools::smart_ptr<chem::FFVdw_O>>> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__FFVdw_O__ ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__FFVdw_O__ ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::BroadcastStream_O> {
+template <> class gctools::GCStamp<core::BroadcastStream_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__BroadcastStream_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__BroadcastStream_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::NamedMDNode_O> {
+template <> class gctools::GCStamp<llvmo::NamedMDNode_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__NamedMDNode_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__NamedMDNode_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::BranchInst_O> {
+template <> class gctools::GCStamp<llvmo::BranchInst_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__BranchInst_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__BranchInst_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::MDArray_byte8_t_O> {
+template <> class gctools::GCStamp<core::MDArray_byte8_t_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__MDArray_byte8_t_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__MDArray_byte8_t_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::MDArray_fixnum_O> {
+template <> class gctools::GCStamp<core::MDArray_fixnum_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__MDArray_fixnum_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__MDArray_fixnum_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<clcenv::Optimize_O> {
+template <> class gctools::GCStamp<clcenv::Optimize_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_clcenv__Optimize_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_clcenv__Optimize_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::NamedFunction_O> {
+template <> class gctools::GCStamp<core::NamedFunction_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__NamedFunction_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__NamedFunction_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::GlobalValue_O> {
+template <> class gctools::GCStamp<llvmo::GlobalValue_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__GlobalValue_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__GlobalValue_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::ConstitutionVirtualAtom_O> {
+template <> class gctools::GCStamp<chem::ConstitutionVirtualAtom_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__ConstitutionVirtualAtom_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__ConstitutionVirtualAtom_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::ModuleHandle_O> {
+template <> class gctools::GCStamp<llvmo::ModuleHandle_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__ModuleHandle_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__ModuleHandle_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::MDArrayT_O> {
+template <> class gctools::GCStamp<core::MDArrayT_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__MDArrayT_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__MDArrayT_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::SimpleVector_int8_t_O> {
+template <> class gctools::GCStamp<core::SimpleVector_int8_t_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__SimpleVector_int8_t_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__SimpleVector_int8_t_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::SaveArchive_O> {
+template <> class gctools::GCStamp<core::SaveArchive_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__SaveArchive_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__SaveArchive_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::AtomTable_O> {
+template <> class gctools::GCStamp<chem::AtomTable_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__AtomTable_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__AtomTable_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<mp::ConditionVariable_O> {
+template <> class gctools::GCStamp<mp::ConditionVariable_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_mp__ConditionVariable_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_mp__ConditionVariable_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::SuperposeSelectedAtoms_O> {
+template <> class gctools::GCStamp<chem::SuperposeSelectedAtoms_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__SuperposeSelectedAtoms_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__SuperposeSelectedAtoms_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<gctools::GCVector_moveable<chem::EnergyRigidBodyStaple>> {
+template <> class gctools::GCStamp<gctools::GCVector_moveable<chem::EnergyRigidBodyStaple>> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_chem__EnergyRigidBodyStaple_ ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_chem__EnergyRigidBodyStaple_ ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<chem::RingClosingMate_O> {
+template <> class gctools::GCStamp<chem::RingClosingMate_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__RingClosingMate_O ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__RingClosingMate_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<gctools::GCVector_moveable<gctools::smart_ptr<chem::StereoisomerAtom_O>>> {
+template <> class gctools::GCStamp<gctools::GCVector_moveable<gctools::smart_ptr<chem::StereoisomerAtom_O>>> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__StereoisomerAtom_O__ ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__StereoisomerAtom_O__ ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<gctools::GCVector_moveable<double>> {
+template <> class gctools::GCStamp<gctools::GCVector_moveable<double>> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_double_ ;
+  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_double_ ;
   static const size_t Flags = 0 ;
 };
 #endif // defined(GC_KIND_SELECTORS)

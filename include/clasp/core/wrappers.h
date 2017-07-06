@@ -63,9 +63,10 @@ namespace core {
 
 /*! Make every templated VariadicFunctor KIND the same as the VariadicFunctor<T>::TemplatedBase */
 template <typename T>
-class gctools::GCKind<core::VariadicFunctor<T>> {
+class gctools::GCStamp<core::VariadicFunctor<T>> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::GCKind<typename core::VariadicFunctor<T>::TemplatedBase>::Kind;
+  static gctools::GCStampEnum const Stamp = gctools::GCStamp<typename core::VariadicFunctor<T>::TemplatedBase>::Kind;
+  static const size_t Flags = 0;
 };
 
 
@@ -109,9 +110,10 @@ void wrap_function(const string &packageName, const string &name, RT (*fp)(ARGS.
 };
 
 template <int DispatchOn, typename T>
-class gctools::GCKind<core::VariadicMethoid<DispatchOn, T>> {
+class gctools::GCStamp<core::VariadicMethoid<DispatchOn, T>> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::GCKind<typename core::VariadicMethoid<DispatchOn, T>::TemplatedBase>::Kind;
+  static gctools::GCStampEnum const Stamp = gctools::GCStamp<typename core::VariadicMethoid<DispatchOn, T>::TemplatedBase>::Kind;
+  static const size_t Flags = 0;
 };
 
 namespace core {

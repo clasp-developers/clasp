@@ -671,10 +671,10 @@ Class_sp Instance_O::create(Symbol_sp symbol, Class_sp metaClass, Creator_sp cre
   DEPRECATED();
 };
 
-Class_sp Instance_O::createClassUncollectable(gctools::Stamp is, Class_sp metaClass, size_t number_of_slots, Creator_sp creator ) {
+Class_sp Instance_O::createClassUncollectable(gctools::Stamp stamp, Class_sp metaClass, size_t number_of_slots, Creator_sp creator ) {
   GC_ALLOCATE_UNCOLLECTABLE(Instance_O, oclass, metaClass, number_of_slots);
   oclass->_Class = metaClass;
-  oclass->initializeSlots(is,number_of_slots);
+  oclass->initializeSlots(stamp,number_of_slots);
   oclass->initializeClassSlots(creator,gctools::NextStamp());
   return oclass;
 };

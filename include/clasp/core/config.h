@@ -79,6 +79,7 @@ typedef int64_t    Fixnum; // Signed Fixnum immediate value
 #define PRF "lld"
 #define PRFoctal "llo"
 #define PRFhex "llX"
+#define PRsize_t "lu"
 
 #else
 
@@ -102,6 +103,7 @@ typedef int32_t    Fixnum; // Signed Fixnum immediate value
 #define PRF "ld"
 #define PRFoctal "lo"
 #define PRFhex "lX"
+#define PRsize_t "lu"
 
 #endif // _ADDRESS_MODEL_32
 

@@ -282,7 +282,7 @@ generic_function_dispatch_vararg(cl_narg narg, ...)
 LCC_RETURN generic_function_dispatch(gctools::Tagged tgf, gctools::Tagged tvargs) {
   Instance_sp gf(tgf);
   VaList_sp vargs(tvargs);
-  Cache_sp cache = my_thread->_MethodCachePtr;
+  Cache_sp cache = _lisp->_Roots._MethodCachePtr;
   return standard_dispatch(gf, vargs, cache);
 }
 
@@ -331,11 +331,11 @@ CL_DECLARE();
 CL_DOCSTRING("See ecl/src/c/gfun.d:si_clear_gfun_hash. This function clears the generic function call hashes selectively. If what=T then clear the hash completely.  If what=generic_function then clear only these entries.");
 CL_DEFUN void core__clear_gfun_hash(T_sp what) {
   if ( what == _lisp->_true() ) {
-    my_thread->_MethodCachePtr->empty();
-    my_thread->_SlotCachePtr->empty();
+    _lisp->_Roots._MethodCachePtr->empty();
+    _lisp->_Roots._SlotCachePtr->empty();
   } else {
-    my_thread->_MethodCachePtr->removeOne(what);
-    my_thread->_SlotCachePtr->removeOne(what);
+    _lisp->_Roots._MethodCachePtr->removeOne(what);
+    _lisp->_Roots._SlotCachePtr->removeOne(what);
   }
 };
 

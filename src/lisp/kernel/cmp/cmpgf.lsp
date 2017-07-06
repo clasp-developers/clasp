@@ -708,7 +708,7 @@
                  (header-val (irc-load header-ptr "header-val")))
             (insert-message)
             (debug-call "debugPrint_size_t" (list header-val))
-            (setf general-stamp (llvm-sys:create-lshr-value-uint64 *irbuilder* header-val +kind-shift+ "gstamp" nil))
+            (setf general-stamp (llvm-sys:create-lshr-value-uint64 *irbuilder* header-val +stamp-shift+ "gstamp" nil))
             (let ((instance-cmp (irc-icmp-eq general-stamp (jit-constant-uintptr_t +instance-kind+))))
               (irc-cond-br instance-cmp instance-bb general-bb))
             (irc-begin-block instance-bb)

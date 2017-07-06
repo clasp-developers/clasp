@@ -257,24 +257,24 @@ using namespace gctools;
 size_t obj_kind( core::T_O *tagged_ptr) {
   const core::T_O *client = untag_object<const core::T_O *>(tagged_ptr);
   const Header_s *header = reinterpret_cast<const Header_s *>(ClientPtrToBasePtr(client));
-  return (size_t)(header->kind());
+  return (size_t)(header->stamp());
 }
 
 const char *obj_kind_name(core::T_O *tagged_ptr) {
   core::T_O *client = untag_object<core::T_O *>(tagged_ptr);
   const Header_s *header = reinterpret_cast<const Header_s *>(ClientPtrToBasePtr(client));
-  return obj_name(header->kind());
+  return obj_name(header->stamp());
 }
 
-const char *obj_name(gctools::kind_t kind) {
-  if (kind == (gctools::kind_t)KIND_null) {
+const char *obj_name(gctools::stamp_t stamp) {
+  if (stamp == (gctools::stamp_t)KIND_null) {
     return "UNDEFINED";
   }
-  if ( kind > KIND_max ) kind = GCKind<core::Instance_O>::Kind;
-  size_t kind_index = (size_t)kind;
-  ASSERT(kind_index<=global_kind_max);
-//  printf("%s:%d obj_name kind= %d  kind_index = %d\n", __FILE__, __LINE__, kind, kind_index);
-  return global_kind_info[kind_index].name;
+  if ( stamp > KIND_max ) stamp = GCStamp<core::Instance_O>::Stamp;
+  size_t stamp_index = (size_t)stamp;
+  ASSERT(stamp_index<=global_stamp_max);
+//  printf("%s:%d obj_name stamp= %d  stamp_index = %d\n", __FILE__, __LINE__, stamp, stamp_index);
+  return global_kind_info[stamp_index].name;
 }
 
 /*! I'm using a format_header so MPS gives me the object-pointer */
@@ -292,11 +292,11 @@ void obj_deallocate_unmanaged_instance(gctools::smart_ptr<core::T_O> obj ) {
 #endif
 
   const gctools::Header_s *header = reinterpret_cast<const gctools::Header_s *>(ClientPtrToBasePtr(client));
-  ASSERTF(header->kindP(), BF("obj_deallocate_unmanaged_instance called without a valid object"));
-  gctools::GCKindEnum kind = (GCKindEnum)(header->kind());
+  ASSERTF(header->stampP(), BF("obj_deallocate_unmanaged_instance called without a valid object"));
+  gctools::GCStampEnum stamp = (GCStampEnum)(header->stamp());
 #ifndef RUNNING_GC_BUILDER
   #ifndef USE_CXX_DYNAMIC_CAST
-  size_t jump_table_index = (size_t)kind - kind_first_general;
+  size_t jump_table_index = (size_t)stamp - stamp_first_general;
   goto *(OBJ_DEALLOCATOR_table[jump_table_index]);
     #define GC_OBJ_DEALLOCATOR
     #include CLASP_GC_FILENAME
@@ -342,17 +342,17 @@ mps_addr_t obj_skip(mps_addr_t client) {
   header->validate();
 #endif
   DEBUG_THROW_IF_INVALID_CLIENT(client);
-  if (header->kindP()) {
-    gctools::GCKindEnum kind = header->kind();
-    if ( kind > KIND_max ) kind = GCKind<core::Instance_O>::Kind;
-    const Kind_layout& kind_layout = global_kind_layout[kind];
+  if (header->stampP()) {
+    gctools::GCStampEnum stamp = header->stamp();
+    if ( stamp > STAMP_max ) stamp = GCStamp<core::Instance_O>::Stamp;
+    const Stamp_layout& stamp_layout = global_kind_layout[stamp];
 #ifndef RUNNING_GC_BUILDER
-    if ( kind_layout.layout_op == class_container_op ) {
-      size = kind_layout.size;
-      if ( kind_layout.container_layout ) {
-        Container_layout& container_layout = *kind_layout.container_layout;
-        if (kind_layout.bits_per_bitunit!=0) {
-          printf("%s:%d A bitvector was encountered with kind_layout.bits_per_bitunit = %" PRu "\n", __FILE__, __LINE__, kind_layout.bits_per_bitunit );
+    if ( stamp_layout.layout_op == class_container_op ) {
+      size = stamp_layout.size;
+      if ( stamp_layout.container_layout ) {
+        Container_layout& container_layout = *stamp_layout.container_layout;
+        if (stamp_layout.bits_per_bitunit!=0) {
+          printf("%s:%d A bitvector was encountered with stamp_layout.bits_per_bitunit = %" PRu "\n", __FILE__, __LINE__, stamp_layout.bits_per_bitunit );
         }
         size_t capacity = *(size_t*)((const char*)client + container_layout.capacity_offset);
         size = container_layout.element_size*capacity + container_layout.data_offset;
@@ -397,7 +397,7 @@ GC_RESULT obj_scan(mps_ss_t ss, mps_addr_t client, mps_addr_t limit) {
 #include CLASP_GC_FILENAME
 #undef GC_OBJ_SCAN_TABLE
 #endif
-  GCKindEnum kind;
+  GCStampEnum stamp;
   MPS_SCAN_BEGIN(GC_SCAN_STATE) {
     while (client < limit) {
       // The client must have a valid header
@@ -407,17 +407,17 @@ GC_RESULT obj_scan(mps_ss_t ss, mps_addr_t client, mps_addr_t limit) {
       header->validate();
 #endif
       original_client = (mps_addr_t)client;
-      if (header->kindP()) {
-        kind = header->kind();
-        if ( kind > KIND_max ) kind = GCKind<core::Instance_O>::Kind;
-        const Kind_layout& kind_layout = global_kind_layout[kind];
+      if (header->stampP()) {
+        stamp = header->stamp();
+        if ( stamp > STAMP_max ) stamp = GCStamp<core::Instance_O>::Stamp;
+        const Stamp_layout& stamp_layout = global_kind_layout[stamp];
 #ifndef RUNNING_GC_BUILDER
-        size = kind_layout.size;
-        if ( kind_layout.field_layout_start ) {
-          int num_fields = kind_layout.number_of_fields;
-          Field_layout* field_layout_cur = kind_layout.field_layout_start;
-          if (kind_layout.bits_per_bitunit!=0) {
-            printf("%s:%d A bitvector was encountered with kind_layout.bits_per_bitunit = %" PRu "\n", __FILE__, __LINE__, kind_layout.bits_per_bitunit );
+        size = stamp_layout.size;
+        if ( stamp_layout.field_layout_start ) {
+          int num_fields = stamp_layout.number_of_fields;
+          Field_layout* field_layout_cur = stamp_layout.field_layout_start;
+          if (stamp_layout.bits_per_bitunit!=0) {
+            printf("%s:%d A bitvector was encountered with stamp_layout.bits_per_bitunit = %" PRu "\n", __FILE__, __LINE__, stamp_layout.bits_per_bitunit );
           }
           for ( int i=0; i<num_fields; ++i ) {
             core::T_O** field = (core::T_O**)((const char*)client + field_layout_cur->field_offset);
@@ -425,8 +425,8 @@ GC_RESULT obj_scan(mps_ss_t ss, mps_addr_t client, mps_addr_t limit) {
             ++field_layout_cur;
           }
         }
-        if ( kind_layout.container_layout ) {
-          Container_layout& container_layout = *kind_layout.container_layout;
+        if ( stamp_layout.container_layout ) {
+          Container_layout& container_layout = *stamp_layout.container_layout;
           size_t capacity = *(size_t*)((const char*)client + container_layout.capacity_offset);
           size = container_layout.element_size*capacity + container_layout.data_offset;
           size_t end = *(size_t*)((const char*)client + container_layout.end_offset);
@@ -441,7 +441,7 @@ GC_RESULT obj_scan(mps_ss_t ss, mps_addr_t client, mps_addr_t limit) {
             }
           }
         }
-        if (kind_layout.layout_op != class_container_op) {
+        if (stamp_layout.layout_op != class_container_op) {
           size = ((core::General_O*)client)->templatedSizeof();
         }
         client = (mps_addr_t)((char*)client + AlignUp(size + sizeof(Header_s))
@@ -487,10 +487,10 @@ void obj_finalize(mps_addr_t client) {
     #undef GC_OBJ_FINALIZE_TABLE
   #endif // ifndef RUNNING_GC_BUILDER
   gctools::Header_s *header = reinterpret_cast<gctools::Header_s *>(const_cast<void*>(ClientPtrToBasePtr(client)));
-  ASSERTF(header->kindP(), BF("obj_finalized called without a valid object"));
-  gctools::GCKindEnum kind = (GCKindEnum)(header->kind());
+  ASSERTF(header->stampP(), BF("obj_finalized called without a valid object"));
+  gctools::GCStampEnum stamp = (GCStampEnum)(header->stamp());
   #ifndef RUNNING_GC_BUILDER
-  size_t table_index = (size_t)kind - kind_first_general;
+  size_t table_index = (size_t)stamp - stamp_first_general;
   goto *(OBJ_FINALIZE_table[table_index]);
     #define GC_OBJ_FINALIZE
     #include CLASP_GC_FILENAME
@@ -631,12 +631,12 @@ void allocate_symbols(core::BootStrapCoreSymbolMap* symbols)
 };
 
 template <class TheClass>
-NOINLINE void set_one_static_class_Kind() {
-  Stamp the_stamp = gctools::NextStamp(gctools::GCKind<TheClass>::Kind);
-  if (gctools::GCKind<TheClass>::Kind!=0) {
-    TheClass::static_Kind = gctools::GCKind<TheClass>::Kind;
+NOINLINE void set_one_static_class_Header() {
+  Stamp the_stamp = gctools::NextStamp(gctools::GCStamp<TheClass>::Stamp);
+  if (gctools::GCStamp<TheClass>::Stamp!=0) {
+    TheClass::static_HeaderValue = gctools::Header_s::Value::make<TheClass>();
   } else {
-    TheClass::static_Kind = static_cast<gctools::GCKindEnum>(the_stamp);
+    TheClass::static_HeaderValue = gctools::Header_s::Value::make_unknown((GCStampEnum)the_stamp);
   }
 }
 
@@ -645,7 +645,7 @@ template <class TheClass>
 NOINLINE  gc::smart_ptr<core::Class_O> allocate_one_metaclass(core::Symbol_sp classSymbol, core::Class_sp metaClass)
 {
   auto cb = gctools::GC<TheClass>::allocate();
-  gc::smart_ptr<core::Class_O> class_val = core::Class_O::createClassUncollectable(core::Class_O::static_Kind,metaClass,REF_CLASS_NUMBER_OF_SLOTS_IN_STANDARD_CLASS,cb);
+  gc::smart_ptr<core::Class_O> class_val = core::Class_O::createClassUncollectable(core::Class_O::static_HeaderValue.stamp(),metaClass,REF_CLASS_NUMBER_OF_SLOTS_IN_STANDARD_CLASS,cb);
   class_val->__setup_stage1_with_sharedPtr_lisp_sid(class_val,classSymbol);
 //  reg::lisp_associateClassIdWithClassSymbol(reg::registered_class<TheClass>::id,TheClass::static_classSymbol());
 //  TheClass::static_class = class_val;
@@ -659,7 +659,7 @@ NOINLINE  gc::smart_ptr<core::Class_O> allocate_one_class(core::Class_sp metaCla
 {
   gctools::smart_ptr<core::BuiltInObjectCreator<TheClass>> cb = gctools::GC<core::BuiltInObjectCreator<TheClass>>::allocate();
   TheClass::set_static_creator(cb);
-  gc::smart_ptr<core::Class_O> class_val = core::Class_O::createClassUncollectable(TheClass::static_Kind,metaClass,REF_CLASS_NUMBER_OF_SLOTS_IN_STANDARD_CLASS,cb);
+  gc::smart_ptr<core::Class_O> class_val = core::Class_O::createClassUncollectable(TheClass::static_HeaderValue.stamp(),metaClass,REF_CLASS_NUMBER_OF_SLOTS_IN_STANDARD_CLASS,cb);
   class_val->__setup_stage1_with_sharedPtr_lisp_sid(class_val,TheClass::static_classSymbol());
   reg::lisp_associateClassIdWithClassSymbol(reg::registered_class<TheClass>::id,TheClass::static_classSymbol());
   TheClass::static_class = class_val;

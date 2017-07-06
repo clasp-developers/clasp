@@ -95,7 +95,7 @@ namespace gctools {
 #include <clasp/gctools/other_tagged_casts.h>
 
 extern "C" {
-const char *obj_name(gctools::kind_t kind);
+const char *obj_name(gctools::stamp_t kind);
 extern void obj_dump_base(void *base);
 extern void obj_deallocate_unmanaged_instance(gctools::smart_ptr<core::T_O> obj);
 

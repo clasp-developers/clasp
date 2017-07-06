@@ -211,7 +211,7 @@ namespace core {
     virtual LambdaListHandler_sp lambdaListHandler() const { IMPLEMENT_ME(); };
     virtual void setAssociatedFunctions(List_sp funcs) { NOT_APPLICABLE(); };
   public: // The hard-coded indexes above are defined below to be used by Class
-    void initializeSlots(gctools::Stamp stamp, size_t numberOfSlots);
+    void initializeSlots(gctools::Stamp is, size_t numberOfSlots);
     void initializeClassSlots(Creator_sp creator, gctools::Stamp class_stamp);
     void ensureClosure(DispatchFunction_fptr_type entryPoint);
     virtual void setf_lambda_list(List_sp lambda_list) { if (!this->_isgf) {SIMPLE_ERROR(BF("Cannot set lambda list of non gf function ll->%s") % _rep_(lambda_list));} this->GFUN_LAMBDA_LIST_set(lambda_list); }; //{ this->_lambda_list = lambda_list; };

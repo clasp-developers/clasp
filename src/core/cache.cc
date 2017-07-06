@@ -152,7 +152,7 @@ void Cache_O::search_cache(CacheRecord *&min_e) {
   if (this->_debug) {
     printf("%s:%d ===================  search_cache argno=%d\n", __FILE__, __LINE__, argno);
     for (size_t zi=0; zi<keys.size(); ++zi ) {
-      printf("%s:%d    key[%" PRu "] -> %s\n", __FILE__, __LINE__, zi, _rep_(keys[zi]).c_str());
+      printf("%s:%d    key[%" PRsize_t "] -> %s\n", __FILE__, __LINE__, zi, _rep_(keys[zi]).c_str());
     }
   }
 #endif
@@ -165,7 +165,7 @@ void Cache_O::search_cache(CacheRecord *&min_e) {
   ASSERTF(idx >= 0, BF("idx must be positive"));
 #ifdef DEBUG_CACHE
   if (this->_debug) {
-    printf("%s:%d search_cache hash=%ld   hash-index=%d\n", __FILE__, __LINE__, hi, idx);
+    printf("%s:%d search_cache hash=%ld   hash-index=" PRu "\n", __FILE__, __LINE__, hi, idx);
   }
 #endif
   //	i = i - (i % 3);
@@ -272,7 +272,7 @@ CL_DECLARE();
 CL_DOCSTRING("clearGenericFunctionDispatchCache");
 CL_DEFUN void core__clear_generic_function_dispatch_cache() {
   printf("%s:%d Clearing generic function dispatch cache\n", __FILE__, __LINE__);
-  my_thread->_MethodCachePtr->empty();
+  _lisp->_Roots._MethodCachePtr->empty();
 };
 
 
@@ -284,7 +284,7 @@ CL_DEFUN void core__method_cache_resize(Fixnum pow) {
     SIMPLE_ERROR(BF("Cache power must be in the range of 2...64"));
   }
   size_t size = 1 << pow;
-  return my_thread->_MethodCachePtr->setup(Lisp_O::MaxFunctionArguments, size);
+  return _lisp->_Roots._MethodCachePtr->setup(Lisp_O::MaxFunctionArguments, size);
 }
 
 CL_LAMBDA(pow);
@@ -295,7 +295,7 @@ CL_DEFUN void core__slot_cache_resize(Fixnum pow) {
     SIMPLE_ERROR(BF("Cache power must be in the range of 2...64"));
   }
   size_t size = 1 << pow;
-  return my_thread->_SlotCachePtr->setup(Lisp_O::MaxClosSlots, size);
+  return _lisp->_Roots._SlotCachePtr->setup(Lisp_O::MaxClosSlots, size);
 }
 
 CL_LAMBDA(pow);
@@ -306,58 +306,58 @@ CL_DEFUN void core__single_dispatch_method_cache_resize(Fixnum pow) {
     SIMPLE_ERROR(BF("Cache power must be in the range of 2...64"));
   }
   size_t size = 1 << pow;
-  return my_thread->_SingleDispatchMethodCachePtr->setup(2, size);
+  return _lisp->_Roots._SingleDispatchMethodCachePtr->setup(2, size);
 }
 
 CL_LAMBDA();
 CL_DECLARE();
 CL_DOCSTRING("cache_status - (values searches misses total-depth)");
 CL_DEFUN T_mv core__method_cache_status() {
-  return Values(clasp_make_fixnum(my_thread->_MethodCachePtr->_searches),
-                clasp_make_fixnum(my_thread->_MethodCachePtr->_misses),
-                clasp_make_fixnum(my_thread->_MethodCachePtr->_total_depth));
+  return Values(clasp_make_fixnum(_lisp->_Roots._MethodCachePtr->_searches),
+                clasp_make_fixnum(_lisp->_Roots._MethodCachePtr->_misses),
+                clasp_make_fixnum(_lisp->_Roots._MethodCachePtr->_total_depth));
 }
 CL_LAMBDA();
 CL_DECLARE();
 CL_DOCSTRING("cache_status - (values searches misses total-depth)");
 CL_DEFUN T_mv core__slot_cache_status() {
-  return Values(clasp_make_fixnum(my_thread->_SlotCachePtr->_searches),
-                clasp_make_fixnum(my_thread->_SlotCachePtr->_misses),
-                clasp_make_fixnum(my_thread->_SlotCachePtr->_total_depth));
+  return Values(clasp_make_fixnum(_lisp->_Roots._SlotCachePtr->_searches),
+                clasp_make_fixnum(_lisp->_Roots._SlotCachePtr->_misses),
+                clasp_make_fixnum(_lisp->_Roots._SlotCachePtr->_total_depth));
 }
 
 CL_LAMBDA();
 CL_DECLARE();
 CL_DOCSTRING("cache_status - (values searches misses total-depth)");
 CL_DEFUN T_mv core__single_dispatch_method_cache_status() {
-  return Values(clasp_make_fixnum(my_thread->_SingleDispatchMethodCachePtr->_searches),
-                clasp_make_fixnum(my_thread->_SingleDispatchMethodCachePtr->_misses),
-                clasp_make_fixnum(my_thread->_SingleDispatchMethodCachePtr->_total_depth));
+  return Values(clasp_make_fixnum(_lisp->_Roots._SingleDispatchMethodCachePtr->_searches),
+                clasp_make_fixnum(_lisp->_Roots._SingleDispatchMethodCachePtr->_misses),
+                clasp_make_fixnum(_lisp->_Roots._SingleDispatchMethodCachePtr->_total_depth));
 }
 
 #ifdef DEBUG_CACHE
 CL_DOCSTRING("Turn debugging on and off for cache");
 CL_DEFUN void core__debug_method_cache(bool debug)
 {
-  my_thread->_MethodCachePtr->_debug = debug;
+  _lisp->_Roots._MethodCachePtr->_debug = debug;
 }
 
 CL_DOCSTRING("Turn debugging on and off for cache");
 CL_DEFUN void core__debug_slot_cache(bool debug)
 {
-  my_thread->_SlotCachePtr->_debug = debug;
+  _lisp->_Roots._SlotCachePtr->_debug = debug;
 }
 CL_DOCSTRING("Turn debugging on and off for cache");
 CL_DEFUN void core__debug_single_dispatch_method_cache(bool debug)
 {
-  my_thread->_SingleDispatchMethodCachePtr->_debug = debug;
+  _lisp->_Roots._SingleDispatchMethodCachePtr->_debug = debug;
 }
 #endif
 
 CL_DEFUN void core__debug_search_method_cache(T_sp gf) {
-  for (int i(0); i < my_thread->_MethodCachePtr->_table.size(); ++i) {
-    if (gc::IsA<SimpleVector_sp>(my_thread->_MethodCachePtr->_table[i]._key)) {
-      SimpleVector_sp key = gc::As_unsafe<SimpleVector_sp>(my_thread->_MethodCachePtr->_table[i]._key);
+  for (int i(0); i < _lisp->_Roots._MethodCachePtr->_table.size(); ++i) {
+    if (gc::IsA<SimpleVector_sp>(_lisp->_Roots._MethodCachePtr->_table[i]._key)) {
+      SimpleVector_sp key = gc::As_unsafe<SimpleVector_sp>(_lisp->_Roots._MethodCachePtr->_table[i]._key);
       if (gf == (*key)[0]) {
         printf("%s:%d:%s    found key at %d\n", __FILE__, __LINE__, __FUNCTION__, i );
       }
@@ -366,9 +366,9 @@ CL_DEFUN void core__debug_search_method_cache(T_sp gf) {
 }
 
 CL_DEFUN void core__debug_search_slot_cache(T_sp gf) {
-  for (int i(0); i < my_thread->_SlotCachePtr->_table.size(); ++i) {
-    if (gc::IsA<SimpleVector_sp>(my_thread->_SlotCachePtr->_table[i]._key)) {
-      SimpleVector_sp key = gc::As_unsafe<SimpleVector_sp>(my_thread->_SlotCachePtr->_table[i]._key);
+  for (int i(0); i < _lisp->_Roots._SlotCachePtr->_table.size(); ++i) {
+    if (gc::IsA<SimpleVector_sp>(_lisp->_Roots._SlotCachePtr->_table[i]._key)) {
+      SimpleVector_sp key = gc::As_unsafe<SimpleVector_sp>(_lisp->_Roots._SlotCachePtr->_table[i]._key);
       if (gf == (*key)[0]) {
         printf("%s:%d:%s    found key at %d\n", __FILE__, __LINE__, __FUNCTION__, i );
       }

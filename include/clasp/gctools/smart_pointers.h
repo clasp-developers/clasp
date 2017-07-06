@@ -1461,10 +1461,10 @@ public:
         return;
       }
 #endif
-      printf("%s:%d Cannot cast tagged_pointer from %s/%zu to some other type (check with debugger)\n", __FILE__, __LINE__, obj_kind_name(reinterpret_cast<core::T_O *>(rhs.thePointer)), obj_kind(reinterpret_cast<core::T_O *>(rhs.thePointer))); //% obj_name(gctools::GCKind<Type>::Kind) );
+      printf("%s:%d Cannot cast tagged_pointer from %s/%zu to some other type (check with debugger)\n", __FILE__, __LINE__, obj_kind_name(reinterpret_cast<core::T_O *>(rhs.thePointer)), obj_kind(reinterpret_cast<core::T_O *>(rhs.thePointer))); //% obj_name(gctools::GCStamp<Type>::Kind) );
       Type *tpx = TaggedCast<Type *, From *>::castOrNULL(rhs.thePointer);
       printf("tpx = %p\n", tpx);
-      THROW_HARD_ERROR(BF("Cannot cast tagged_pointer from %s/%zu to some other type (check with debugger)") % obj_kind_name(reinterpret_cast<core::T_O *>(rhs.thePointer)) % obj_kind(reinterpret_cast<core::T_O *>(rhs.thePointer))); //% obj_name(gctools::GCKind<Type>::Kind) );
+      THROW_HARD_ERROR(BF("Cannot cast tagged_pointer from %s/%zu to some other type (check with debugger)") % obj_kind_name(reinterpret_cast<core::T_O *>(rhs.thePointer)) % obj_kind(reinterpret_cast<core::T_O *>(rhs.thePointer))); //% obj_name(gctools::GCStamp<Type>::Kind) );
     }
     THROW_HARD_ERROR(BF("Bad tag on tagged_pointer in constructor"));
   };

@@ -67,9 +67,10 @@ public:
 };
 
 template <typename IT, typename Policy>
-class gctools::GCKind<clbind::Iterator<IT, Policy>> {
+class gctools::GCStamp<clbind::Iterator<IT, Policy>> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::GCKind<typename clbind::Iterator<IT, Policy>::TemplatedBase>::Kind;
+  static gctools::GCStampEnum const Stamp = gctools::GCStamp<typename clbind::Iterator<IT, Policy>::TemplatedBase>::Kind;
+  static const size_t Flags = 0;
 };
 
 #endif // clbind_wrapped_iterator

@@ -97,9 +97,10 @@ public:
 };
 
 template <typename GetterPolicies, typename OT, typename VariablePtrType>
-class gctools::GCKind<clbind::GetterMethoid<GetterPolicies, OT, VariablePtrType>> {
+class gctools::GCStamp<clbind::GetterMethoid<GetterPolicies, OT, VariablePtrType>> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::GCKind<typename clbind::GetterMethoid<GetterPolicies, OT, VariablePtrType>::TemplatedBase>::Kind;
+  static gctools::GCStampEnum const Stamp = gctools::GCStamp<typename clbind::GetterMethoid<GetterPolicies, OT, VariablePtrType>::TemplatedBase>::Kind;
+  static const size_t Flags = 0;
 };
 
 #endif

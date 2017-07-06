@@ -827,7 +827,7 @@ KIND_LISPALLOC_asttooling__DerivableFrontendActionFactory = 451,
 template <typename FP> struct Cast<llvmo::MDNode_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 361 374 
       return ((361 <= kindVal) && (kindVal <= 374));
   };
@@ -836,7 +836,7 @@ template <typename FP> struct Cast<llvmo::MDNode_O*,FP> {
 template <typename FP> struct Cast<clcenv::GlobalFunctionInfo_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 90 90 
       return (kindVal == 90);
   };
@@ -845,7 +845,7 @@ template <typename FP> struct Cast<clcenv::GlobalFunctionInfo_O*,FP> {
 template <typename FP> struct Cast<clcenv::Optimize_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 116 116 
       return (kindVal == 116);
   };
@@ -854,7 +854,7 @@ template <typename FP> struct Cast<clcenv::Optimize_O*,FP> {
 template <typename FP> struct Cast<llvmo::LLVMTargetMachine_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 348 348 
       return (kindVal == 348);
   };
@@ -863,7 +863,7 @@ template <typename FP> struct Cast<llvmo::LLVMTargetMachine_O*,FP> {
 template <typename FP> struct Cast<core::SimpleMDArray_int8_t_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 162 162 
       return (kindVal == 162);
   };
@@ -872,7 +872,7 @@ template <typename FP> struct Cast<core::SimpleMDArray_int8_t_O*,FP> {
 template <typename FP> struct Cast<llvmo::ReturnInst_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 331 331 
       return (kindVal == 331);
   };
@@ -881,7 +881,7 @@ template <typename FP> struct Cast<llvmo::ReturnInst_O*,FP> {
 template <typename FP> struct Cast<core::ConsStepper_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 260 260 
       return (kindVal == 260);
   };
@@ -890,7 +890,7 @@ template <typename FP> struct Cast<core::ConsStepper_O*,FP> {
 template <typename FP> struct Cast<llvmo::ModuleHandle_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 446 446 
       return (kindVal == 446);
   };
@@ -899,7 +899,7 @@ template <typename FP> struct Cast<llvmo::ModuleHandle_O*,FP> {
 template <typename FP> struct Cast<core::DoubleFloat_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 395 395 
       return (kindVal == 395);
   };
@@ -908,7 +908,7 @@ template <typename FP> struct Cast<core::DoubleFloat_O*,FP> {
 template <typename FP> struct Cast<core::LightUserData_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 444 445 
       return ((444 <= kindVal) && (kindVal <= 445));
   };
@@ -917,7 +917,7 @@ template <typename FP> struct Cast<core::LightUserData_O*,FP> {
 template <typename FP> struct Cast<asttooling::AsttoolingExposer_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 226 226 
       return (kindVal == 226);
   };
@@ -926,7 +926,7 @@ template <typename FP> struct Cast<asttooling::AsttoolingExposer_O*,FP> {
 template <typename FP> struct Cast<llvmo::PassManagerBuilder_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 377 377 
       return (kindVal == 377);
   };
@@ -935,7 +935,7 @@ template <typename FP> struct Cast<llvmo::PassManagerBuilder_O*,FP> {
 template <typename FP> struct Cast<core::SmallMap_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 443 443 
       return (kindVal == 443);
   };
@@ -944,7 +944,7 @@ template <typename FP> struct Cast<core::SmallMap_O*,FP> {
 template <typename FP> struct Cast<core::ShortFloat_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 394 394 
       return (kindVal == 394);
   };
@@ -953,7 +953,7 @@ template <typename FP> struct Cast<core::ShortFloat_O*,FP> {
 template <typename FP> struct Cast<llvmo::TargetSubtargetInfo_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 344 344 
       return (kindVal == 344);
   };
@@ -962,7 +962,7 @@ template <typename FP> struct Cast<llvmo::TargetSubtargetInfo_O*,FP> {
 template <typename FP> struct Cast<llvmo::LoadInst_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 338 338 
       return (kindVal == 338);
   };
@@ -971,7 +971,7 @@ template <typename FP> struct Cast<llvmo::LoadInst_O*,FP> {
 template <typename FP> struct Cast<core::Record_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 442 442 
       return (kindVal == 442);
   };
@@ -980,7 +980,7 @@ template <typename FP> struct Cast<core::Record_O*,FP> {
 template <typename FP> struct Cast<gctools::GCArray_moveable<int>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 53 53 
       return (kindVal == 53);
   };
@@ -989,7 +989,7 @@ template <typename FP> struct Cast<gctools::GCArray_moveable<int>*,FP> {
 template <typename FP> struct Cast<core::SourceManager_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 441 441 
       return (kindVal == 441);
   };
@@ -998,7 +998,7 @@ template <typename FP> struct Cast<core::SourceManager_O*,FP> {
 template <typename FP> struct Cast<core::SaveArchive_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 405 406 
       return ((405 <= kindVal) && (kindVal <= 406));
   };
@@ -1007,7 +1007,7 @@ template <typename FP> struct Cast<core::SaveArchive_O*,FP> {
 template <typename FP> struct Cast<core::SimpleMDArray_int16_t_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 158 158 
       return (kindVal == 158);
   };
@@ -1016,7 +1016,7 @@ template <typename FP> struct Cast<core::SimpleMDArray_int16_t_O*,FP> {
 template <typename FP> struct Cast<core::Pathname_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 439 440 
       return ((439 <= kindVal) && (kindVal <= 440));
   };
@@ -1025,7 +1025,7 @@ template <typename FP> struct Cast<core::Pathname_O*,FP> {
 template <typename FP> struct Cast<core::MDArrayDouble_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 122 122 
       return (kindVal == 122);
   };
@@ -1034,7 +1034,7 @@ template <typename FP> struct Cast<core::MDArrayDouble_O*,FP> {
 template <typename FP> struct Cast<core::MacroClosure_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 275 275 
       return (kindVal == 275);
   };
@@ -1043,7 +1043,7 @@ template <typename FP> struct Cast<core::MacroClosure_O*,FP> {
 template <typename FP> struct Cast<clcenv::VariableType_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 115 115 
       return (kindVal == 115);
   };
@@ -1052,7 +1052,7 @@ template <typename FP> struct Cast<clcenv::VariableType_O*,FP> {
 template <typename FP> struct Cast<gctools::GCVector_moveable<core::RequiredArgument>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 52 52 
       return (kindVal == 52);
   };
@@ -1061,7 +1061,7 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<core::RequiredArgu
 template <typename FP> struct Cast<clcenv::OptimizeInfo_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 91 91 
       return (kindVal == 91);
   };
@@ -1070,7 +1070,7 @@ template <typename FP> struct Cast<clcenv::OptimizeInfo_O*,FP> {
 template <typename FP> struct Cast<core::LeafSNode_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 223 223 
       return (kindVal == 223);
   };
@@ -1079,7 +1079,7 @@ template <typename FP> struct Cast<core::LeafSNode_O*,FP> {
 template <typename FP> struct Cast<core::CatchEnvironment_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 425 425 
       return (kindVal == 425);
   };
@@ -1088,7 +1088,7 @@ template <typename FP> struct Cast<core::CatchEnvironment_O*,FP> {
 template <typename FP> struct Cast<llvmo::DIScope_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 363 374 
       return ((363 <= kindVal) && (kindVal <= 374));
   };
@@ -1097,7 +1097,7 @@ template <typename FP> struct Cast<llvmo::DIScope_O*,FP> {
 template <typename FP> struct Cast<core::Str8Ns_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 150 150 
       return (kindVal == 150);
   };
@@ -1106,7 +1106,7 @@ template <typename FP> struct Cast<core::Str8Ns_O*,FP> {
 template <typename FP> struct Cast<core::SimpleMDArray_fixnum_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 179 179 
       return (kindVal == 179);
   };
@@ -1115,7 +1115,7 @@ template <typename FP> struct Cast<core::SimpleMDArray_fixnum_O*,FP> {
 template <typename FP> struct Cast<core::InterpretedClosure_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 279 279 
       return (kindVal == 279);
   };
@@ -1124,7 +1124,7 @@ template <typename FP> struct Cast<core::InterpretedClosure_O*,FP> {
 template <typename FP> struct Cast<core::SimpleMDArray_byte32_t_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 175 175 
       return (kindVal == 175);
   };
@@ -1133,7 +1133,7 @@ template <typename FP> struct Cast<core::SimpleMDArray_byte32_t_O*,FP> {
 template <typename FP> struct Cast<core::SimpleCharacterString_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 201 201 
       return (kindVal == 201);
   };
@@ -1142,7 +1142,7 @@ template <typename FP> struct Cast<core::SimpleCharacterString_O*,FP> {
 template <typename FP> struct Cast<core::SmallMultimap_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 438 438 
       return (kindVal == 438);
   };
@@ -1151,7 +1151,7 @@ template <typename FP> struct Cast<core::SmallMultimap_O*,FP> {
 template <typename FP> struct Cast<core::SimpleBitVector_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 220 220 
       return (kindVal == 220);
   };
@@ -1160,7 +1160,7 @@ template <typename FP> struct Cast<core::SimpleBitVector_O*,FP> {
 template <typename FP> struct Cast<core::ValueFrame_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 416 416 
       return (kindVal == 416);
   };
@@ -1169,7 +1169,7 @@ template <typename FP> struct Cast<core::ValueFrame_O*,FP> {
 template <typename FP> struct Cast<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<core::T_O>>>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 51 51 
       return (kindVal == 51);
   };
@@ -1178,7 +1178,7 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<std::pair<gctools:
 template <typename FP> struct Cast<core::ClosureWithFrame_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 277 279 
       return ((277 <= kindVal) && (kindVal <= 279));
   };
@@ -1187,7 +1187,7 @@ template <typename FP> struct Cast<core::ClosureWithFrame_O*,FP> {
 template <typename FP> struct Cast<core::SimpleMDArrayT_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 173 173 
       return (kindVal == 173);
   };
@@ -1196,7 +1196,7 @@ template <typename FP> struct Cast<core::SimpleMDArrayT_O*,FP> {
 template <typename FP> struct Cast<core::Character_dummy_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 437 437 
       return (kindVal == 437);
   };
@@ -1205,7 +1205,7 @@ template <typename FP> struct Cast<core::Character_dummy_O*,FP> {
 template <typename FP> struct Cast<clcenv::LexicalVariable_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 114 114 
       return (kindVal == 114);
   };
@@ -1214,7 +1214,7 @@ template <typename FP> struct Cast<clcenv::LexicalVariable_O*,FP> {
 template <typename FP> struct Cast<llvmo::ExecutionEngine_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 376 376 
       return (kindVal == 376);
   };
@@ -1223,7 +1223,7 @@ template <typename FP> struct Cast<llvmo::ExecutionEngine_O*,FP> {
 template <typename FP> struct Cast<llvmo::MDString_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 360 360 
       return (kindVal == 360);
   };
@@ -1232,7 +1232,7 @@ template <typename FP> struct Cast<llvmo::MDString_O*,FP> {
 template <typename FP> struct Cast<llvmo::ConstantDataArray_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 319 319 
       return (kindVal == 319);
   };
@@ -1241,7 +1241,7 @@ template <typename FP> struct Cast<llvmo::ConstantDataArray_O*,FP> {
 template <typename FP> struct Cast<clbind::ConstructorCreator_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 71 71 
       return (kindVal == 71);
   };
@@ -1250,7 +1250,7 @@ template <typename FP> struct Cast<clbind::ConstructorCreator_O*,FP> {
 template <typename FP> struct Cast<clcenv::Entry_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 98 116 
       return ((98 <= kindVal) && (kindVal <= 116));
   };
@@ -1259,7 +1259,7 @@ template <typename FP> struct Cast<clcenv::Entry_O*,FP> {
 template <typename FP> struct Cast<llvmo::DIFile_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 374 374 
       return (kindVal == 374);
   };
@@ -1268,7 +1268,7 @@ template <typename FP> struct Cast<llvmo::DIFile_O*,FP> {
 template <typename FP> struct Cast<clcenv::LexicalVariableInfo_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 83 83 
       return (kindVal == 83);
   };
@@ -1277,7 +1277,7 @@ template <typename FP> struct Cast<clcenv::LexicalVariableInfo_O*,FP> {
 template <typename FP> struct Cast<llvmo::Attribute_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 436 436 
       return (kindVal == 436);
   };
@@ -1286,7 +1286,7 @@ template <typename FP> struct Cast<llvmo::Attribute_O*,FP> {
 template <typename FP> struct Cast<llvmo::NamedMDNode_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 375 375 
       return (kindVal == 375);
   };
@@ -1295,7 +1295,7 @@ template <typename FP> struct Cast<llvmo::NamedMDNode_O*,FP> {
 template <typename FP> struct Cast<core::SimpleBaseString_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 199 199 
       return (kindVal == 199);
   };
@@ -1304,7 +1304,7 @@ template <typename FP> struct Cast<core::SimpleBaseString_O*,FP> {
 template <typename FP> struct Cast<llvmo::Metadata_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 358 374 
       return ((358 <= kindVal) && (kindVal <= 374));
   };
@@ -1313,7 +1313,7 @@ template <typename FP> struct Cast<llvmo::Metadata_O*,FP> {
 template <typename FP> struct Cast<llvmo::DILexicalBlock_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 367 367 
       return (kindVal == 367);
   };
@@ -1322,7 +1322,7 @@ template <typename FP> struct Cast<llvmo::DILexicalBlock_O*,FP> {
 template <typename FP> struct Cast<llvmo::Type_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 349 357 
       return ((349 <= kindVal) && (kindVal <= 357));
   };
@@ -1331,7 +1331,7 @@ template <typename FP> struct Cast<llvmo::Type_O*,FP> {
 template <typename FP> struct Cast<llvmo::AllocaInst_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 337 337 
       return (kindVal == 337);
   };
@@ -1340,7 +1340,7 @@ template <typename FP> struct Cast<llvmo::AllocaInst_O*,FP> {
 template <typename FP> struct Cast<mp::BlockingConcurrentQueue_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 435 435 
       return (kindVal == 435);
   };
@@ -1349,7 +1349,7 @@ template <typename FP> struct Cast<mp::BlockingConcurrentQueue_O*,FP> {
 template <typename FP> struct Cast<core::Fixnum_dummy_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 399 399 
       return (kindVal == 399);
   };
@@ -1358,7 +1358,7 @@ template <typename FP> struct Cast<core::Fixnum_dummy_O*,FP> {
 template <typename FP> struct Cast<llvmo::CallInst_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 339 339 
       return (kindVal == 339);
   };
@@ -1367,7 +1367,7 @@ template <typename FP> struct Cast<llvmo::CallInst_O*,FP> {
 template <typename FP> struct Cast<core::TagbodyEnvironment_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 429 429 
       return (kindVal == 429);
   };
@@ -1376,7 +1376,7 @@ template <typename FP> struct Cast<core::TagbodyEnvironment_O*,FP> {
 template <typename FP> struct Cast<mp::SharedMutex_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 97 97 
       return (kindVal == 97);
   };
@@ -1385,7 +1385,7 @@ template <typename FP> struct Cast<mp::SharedMutex_O*,FP> {
 template <typename FP> struct Cast<llvmo::SwitchInst_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 330 330 
       return (kindVal == 330);
   };
@@ -1394,7 +1394,7 @@ template <typename FP> struct Cast<llvmo::SwitchInst_O*,FP> {
 template <typename FP> struct Cast<core::SimpleVector_byte16_t_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 219 219 
       return (kindVal == 219);
   };
@@ -1403,7 +1403,7 @@ template <typename FP> struct Cast<core::SimpleVector_byte16_t_O*,FP> {
 template <typename FP> struct Cast<core::SimpleMDArray_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 152 183 
       return ((152 <= kindVal) && (kindVal <= 183));
   };
@@ -1412,7 +1412,7 @@ template <typename FP> struct Cast<core::SimpleMDArray_O*,FP> {
 template <typename FP> struct Cast<core::SingleDispatchMethod_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 434 434 
       return (kindVal == 434);
   };
@@ -1421,7 +1421,7 @@ template <typename FP> struct Cast<core::SingleDispatchMethod_O*,FP> {
 template <typename FP> struct Cast<core::TagbodyFrame_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 415 415 
       return (kindVal == 415);
   };
@@ -1430,7 +1430,7 @@ template <typename FP> struct Cast<core::TagbodyFrame_O*,FP> {
 template <typename FP> struct Cast<llvmo::DINode_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 362 374 
       return ((362 <= kindVal) && (kindVal <= 374));
   };
@@ -1439,7 +1439,7 @@ template <typename FP> struct Cast<llvmo::DINode_O*,FP> {
 template <typename FP> struct Cast<core::DirectoryIterator_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 238 238 
       return (kindVal == 238);
   };
@@ -1448,7 +1448,7 @@ template <typename FP> struct Cast<core::DirectoryIterator_O*,FP> {
 template <typename FP> struct Cast<core::StringOutputStream_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 247 247 
       return (kindVal == 247);
   };
@@ -1457,7 +1457,7 @@ template <typename FP> struct Cast<core::StringOutputStream_O*,FP> {
 template <typename FP> struct Cast<core::SimpleMDArrayCharacter_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 171 171 
       return (kindVal == 171);
   };
@@ -1466,7 +1466,7 @@ template <typename FP> struct Cast<core::SimpleMDArrayCharacter_O*,FP> {
 template <typename FP> struct Cast<core::NamedFunction_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 265 282 
       return ((265 <= kindVal) && (kindVal <= 282));
   };
@@ -1475,7 +1475,7 @@ template <typename FP> struct Cast<core::NamedFunction_O*,FP> {
 template <typename FP> struct Cast<llvmo::Function_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 311 311 
       return (kindVal == 311);
   };
@@ -1484,7 +1484,7 @@ template <typename FP> struct Cast<llvmo::Function_O*,FP> {
 template <typename FP> struct Cast<llvmo::InsertPoint_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 433 433 
       return (kindVal == 433);
   };
@@ -1493,7 +1493,7 @@ template <typename FP> struct Cast<llvmo::InsertPoint_O*,FP> {
 template <typename FP> struct Cast<core::BitVectorNs_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 151 151 
       return (kindVal == 151);
   };
@@ -1502,7 +1502,7 @@ template <typename FP> struct Cast<core::BitVectorNs_O*,FP> {
 template <typename FP> struct Cast<core::LambdaListHandler_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 432 432 
       return (kindVal == 432);
   };
@@ -1511,7 +1511,7 @@ template <typename FP> struct Cast<core::LambdaListHandler_O*,FP> {
 template <typename FP> struct Cast<llvmo::ConstantDataSequential_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 318 319 
       return ((318 <= kindVal) && (kindVal <= 319));
   };
@@ -1520,7 +1520,7 @@ template <typename FP> struct Cast<llvmo::ConstantDataSequential_O*,FP> {
 template <typename FP> struct Cast<core::CompiledClosure_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 278 278 
       return (kindVal == 278);
   };
@@ -1529,7 +1529,7 @@ template <typename FP> struct Cast<core::CompiledClosure_O*,FP> {
 template <typename FP> struct Cast<clcenv::GlobalMacroInfo_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 89 89 
       return (kindVal == 89);
   };
@@ -1538,7 +1538,7 @@ template <typename FP> struct Cast<clcenv::GlobalMacroInfo_O*,FP> {
 template <typename FP> struct Cast<core::WeakKeyMapping_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 431 431 
       return (kindVal == 431);
   };
@@ -1547,7 +1547,7 @@ template <typename FP> struct Cast<core::WeakKeyMapping_O*,FP> {
 template <typename FP> struct Cast<core::Environment_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 412 430 
       return ((412 <= kindVal) && (kindVal <= 430));
   };
@@ -1556,7 +1556,7 @@ template <typename FP> struct Cast<core::Environment_O*,FP> {
 template <typename FP> struct Cast<core::CompiledDispatchFunction_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 281 281 
       return (kindVal == 281);
   };
@@ -1565,7 +1565,7 @@ template <typename FP> struct Cast<core::CompiledDispatchFunction_O*,FP> {
 template <typename FP> struct Cast<llvmo::ValueAsMetadata_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 359 359 
       return (kindVal == 359);
   };
@@ -1574,7 +1574,7 @@ template <typename FP> struct Cast<llvmo::ValueAsMetadata_O*,FP> {
 template <typename FP> struct Cast<clcenv::SymbolMacro_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 113 113 
       return (kindVal == 113);
   };
@@ -1583,7 +1583,7 @@ template <typename FP> struct Cast<clcenv::SymbolMacro_O*,FP> {
 template <typename FP> struct Cast<llvmo::DICompositeType_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 372 372 
       return (kindVal == 372);
   };
@@ -1592,7 +1592,7 @@ template <typename FP> struct Cast<llvmo::DICompositeType_O*,FP> {
 template <typename FP> struct Cast<core::MDArray_byte64_t_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 124 124 
       return (kindVal == 124);
   };
@@ -1601,7 +1601,7 @@ template <typename FP> struct Cast<core::MDArray_byte64_t_O*,FP> {
 template <typename FP> struct Cast<core::ConcatenatedStream_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 252 252 
       return (kindVal == 252);
   };
@@ -1610,7 +1610,7 @@ template <typename FP> struct Cast<core::ConcatenatedStream_O*,FP> {
 template <typename FP> struct Cast<core::SimpleVector_int64_t_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 209 209 
       return (kindVal == 209);
   };
@@ -1619,7 +1619,7 @@ template <typename FP> struct Cast<core::SimpleVector_int64_t_O*,FP> {
 template <typename FP> struct Cast<core::HashTable_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 407 411 
       return ((407 <= kindVal) && (kindVal <= 411));
   };
@@ -1628,7 +1628,7 @@ template <typename FP> struct Cast<core::HashTable_O*,FP> {
 template <typename FP> struct Cast<llvmo::DILexicalBlockBase_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 366 367 
       return ((366 <= kindVal) && (kindVal <= 367));
   };
@@ -1637,7 +1637,7 @@ template <typename FP> struct Cast<llvmo::DILexicalBlockBase_O*,FP> {
 template <typename FP> struct Cast<core::Archive_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 402 406 
       return ((402 <= kindVal) && (kindVal <= 406));
   };
@@ -1646,7 +1646,7 @@ template <typename FP> struct Cast<core::Archive_O*,FP> {
 template <typename FP> struct Cast<core::Rational_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 396 400 
       return ((396 <= kindVal) && (kindVal <= 400));
   };
@@ -1655,7 +1655,7 @@ template <typename FP> struct Cast<core::Rational_O*,FP> {
 template <typename FP> struct Cast<clcenv::LocalFunctionInfo_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 88 88 
       return (kindVal == 88);
   };
@@ -1664,7 +1664,7 @@ template <typename FP> struct Cast<clcenv::LocalFunctionInfo_O*,FP> {
 template <typename FP> struct Cast<core::AnsiStream_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 241 252 
       return ((241 <= kindVal) && (kindVal <= 252));
   };
@@ -1673,7 +1673,7 @@ template <typename FP> struct Cast<core::AnsiStream_O*,FP> {
 template <typename FP> struct Cast<mp::RecursiveMutex_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 75 75 
       return (kindVal == 75);
   };
@@ -1682,7 +1682,7 @@ template <typename FP> struct Cast<mp::RecursiveMutex_O*,FP> {
 template <typename FP> struct Cast<core::SharpEqualWrapper_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 401 401 
       return (kindVal == 401);
   };
@@ -1691,7 +1691,7 @@ template <typename FP> struct Cast<core::SharpEqualWrapper_O*,FP> {
 template <typename FP> struct Cast<core::CxxMethodFunction_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 272 272 
       return (kindVal == 272);
   };
@@ -1700,7 +1700,7 @@ template <typename FP> struct Cast<core::CxxMethodFunction_O*,FP> {
 template <typename FP> struct Cast<core::SimpleMDArray_byte16_t_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 181 181 
       return (kindVal == 181);
   };
@@ -1709,7 +1709,7 @@ template <typename FP> struct Cast<core::SimpleMDArray_byte16_t_O*,FP> {
 template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr<core::SingleDispatchMethod_O>>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 50 50 
       return (kindVal == 50);
   };
@@ -1718,7 +1718,7 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr
 template <typename FP> struct Cast<llvmo::UnaryInstruction_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 335 338 
       return ((335 <= kindVal) && (kindVal <= 338));
   };
@@ -1727,7 +1727,7 @@ template <typename FP> struct Cast<llvmo::UnaryInstruction_O*,FP> {
 template <typename FP> struct Cast<core::StringInputStream_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 246 246 
       return (kindVal == 246);
   };
@@ -1736,7 +1736,7 @@ template <typename FP> struct Cast<core::StringInputStream_O*,FP> {
 template <typename FP> struct Cast<core::SingleDispatchEffectiveMethodFunction_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 276 276 
       return (kindVal == 276);
   };
@@ -1745,7 +1745,7 @@ template <typename FP> struct Cast<core::SingleDispatchEffectiveMethodFunction_O
 template <typename FP> struct Cast<llvmo::TargetMachine_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 347 348 
       return ((347 <= kindVal) && (kindVal <= 348));
   };
@@ -1754,7 +1754,7 @@ template <typename FP> struct Cast<llvmo::TargetMachine_O*,FP> {
 template <typename FP> struct Cast<llvmo::DIBasicType_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 371 371 
       return (kindVal == 371);
   };
@@ -1763,7 +1763,7 @@ template <typename FP> struct Cast<llvmo::DIBasicType_O*,FP> {
 template <typename FP> struct Cast<core::MDArray_byte8_t_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 120 120 
       return (kindVal == 120);
   };
@@ -1772,7 +1772,7 @@ template <typename FP> struct Cast<core::MDArray_byte8_t_O*,FP> {
 template <typename FP> struct Cast<core::SimpleVector_fixnum_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 203 203 
       return (kindVal == 203);
   };
@@ -1781,7 +1781,7 @@ template <typename FP> struct Cast<core::SimpleVector_fixnum_O*,FP> {
 template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr<core::SequenceStepper_O>>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 49 49 
       return (kindVal == 49);
   };
@@ -1790,7 +1790,7 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr
 template <typename FP> struct Cast<clcenv::SpecialVariableInfo_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 82 82 
       return (kindVal == 82);
   };
@@ -1799,7 +1799,7 @@ template <typename FP> struct Cast<clcenv::SpecialVariableInfo_O*,FP> {
 template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr<core::Package_O>>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 48 48 
       return (kindVal == 48);
   };
@@ -1808,7 +1808,7 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr
 template <typename FP> struct Cast<core::Number_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 388 400 
       return ((388 <= kindVal) && (kindVal <= 400));
   };
@@ -1817,7 +1817,7 @@ template <typename FP> struct Cast<core::Number_O*,FP> {
 template <typename FP> struct Cast<core::CandoException_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 387 387 
       return (kindVal == 387);
   };
@@ -1826,7 +1826,7 @@ template <typename FP> struct Cast<core::CandoException_O*,FP> {
 template <typename FP> struct Cast<core::ReadTable_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 386 386 
       return (kindVal == 386);
   };
@@ -1835,7 +1835,7 @@ template <typename FP> struct Cast<core::ReadTable_O*,FP> {
 template <typename FP> struct Cast<llvmo::GlobalVariable_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 310 310 
       return (kindVal == 310);
   };
@@ -1844,7 +1844,7 @@ template <typename FP> struct Cast<llvmo::GlobalVariable_O*,FP> {
 template <typename FP> struct Cast<core::SymbolToEnumConverter_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 385 385 
       return (kindVal == 385);
   };
@@ -1853,7 +1853,7 @@ template <typename FP> struct Cast<core::SymbolToEnumConverter_O*,FP> {
 template <typename FP> struct Cast<core::Bignum_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 398 398 
       return (kindVal == 398);
   };
@@ -1862,7 +1862,7 @@ template <typename FP> struct Cast<core::Bignum_O*,FP> {
 template <typename FP> struct Cast<core::PosixTimeDuration_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 384 384 
       return (kindVal == 384);
   };
@@ -1871,7 +1871,7 @@ template <typename FP> struct Cast<core::PosixTimeDuration_O*,FP> {
 template <typename FP> struct Cast<clcenv::GlobalEnvironment_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 112 112 
       return (kindVal == 112);
   };
@@ -1880,7 +1880,7 @@ template <typename FP> struct Cast<clcenv::GlobalEnvironment_O*,FP> {
 template <typename FP> struct Cast<core::CompiledFunction_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 280 280 
       return (kindVal == 280);
   };
@@ -1889,7 +1889,7 @@ template <typename FP> struct Cast<core::CompiledFunction_O*,FP> {
 template <typename FP> struct Cast<core::NativeVector_float_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 96 96 
       return (kindVal == 96);
   };
@@ -1898,7 +1898,7 @@ template <typename FP> struct Cast<core::NativeVector_float_O*,FP> {
 template <typename FP> struct Cast<gctools::GCVector_moveable<core::ExceptionEntry>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 47 47 
       return (kindVal == 47);
   };
@@ -1907,7 +1907,7 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<core::ExceptionEnt
 template <typename FP> struct Cast<gctools::GCArray_moveable<unsigned int>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 46 46 
       return (kindVal == 46);
   };
@@ -1916,7 +1916,7 @@ template <typename FP> struct Cast<gctools::GCArray_moveable<unsigned int>*,FP> 
 template <typename FP> struct Cast<llvmo::DIDerivedType_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 370 370 
       return (kindVal == 370);
   };
@@ -1925,7 +1925,7 @@ template <typename FP> struct Cast<llvmo::DIDerivedType_O*,FP> {
 template <typename FP> struct Cast<core::MDArrayCharacter_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 131 131 
       return (kindVal == 131);
   };
@@ -1934,7 +1934,7 @@ template <typename FP> struct Cast<core::MDArrayCharacter_O*,FP> {
 template <typename FP> struct Cast<core::MDArray_byte32_t_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 126 126 
       return (kindVal == 126);
   };
@@ -1943,7 +1943,7 @@ template <typename FP> struct Cast<core::MDArray_byte32_t_O*,FP> {
 template <typename FP> struct Cast<llvmo::BlockAddress_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 317 317 
       return (kindVal == 317);
   };
@@ -1952,7 +1952,7 @@ template <typename FP> struct Cast<llvmo::BlockAddress_O*,FP> {
 template <typename FP> struct Cast<llvmo::StoreInst_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 334 334 
       return (kindVal == 334);
   };
@@ -1961,7 +1961,7 @@ template <typename FP> struct Cast<llvmo::StoreInst_O*,FP> {
 template <typename FP> struct Cast<llvmo::FunctionPass_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 293 293 
       return (kindVal == 293);
   };
@@ -1970,7 +1970,7 @@ template <typename FP> struct Cast<llvmo::FunctionPass_O*,FP> {
 template <typename FP> struct Cast<core::SimpleMDArray_int64_t_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 177 177 
       return (kindVal == 177);
   };
@@ -1979,7 +1979,7 @@ template <typename FP> struct Cast<core::SimpleMDArray_int64_t_O*,FP> {
 template <typename FP> struct Cast<core::LongFloat_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 393 393 
       return (kindVal == 393);
   };
@@ -1988,7 +1988,7 @@ template <typename FP> struct Cast<core::LongFloat_O*,FP> {
 template <typename FP> struct Cast<core::FileStream_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 249 251 
       return ((249 <= kindVal) && (kindVal <= 251));
   };
@@ -1997,7 +1997,7 @@ template <typename FP> struct Cast<core::FileStream_O*,FP> {
 template <typename FP> struct Cast<llvmo::AtomicRMWInst_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 333 333 
       return (kindVal == 333);
   };
@@ -2006,7 +2006,7 @@ template <typename FP> struct Cast<llvmo::AtomicRMWInst_O*,FP> {
 template <typename FP> struct Cast<llvmo::ResumeInst_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 329 329 
       return (kindVal == 329);
   };
@@ -2015,7 +2015,7 @@ template <typename FP> struct Cast<llvmo::ResumeInst_O*,FP> {
 template <typename FP> struct Cast<core::BlockEnvironment_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 424 424 
       return (kindVal == 424);
   };
@@ -2024,7 +2024,7 @@ template <typename FP> struct Cast<core::BlockEnvironment_O*,FP> {
 template <typename FP> struct Cast<clcenv::FunctionInfo_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 84 90 
       return ((84 <= kindVal) && (kindVal <= 90));
   };
@@ -2033,7 +2033,7 @@ template <typename FP> struct Cast<clcenv::FunctionInfo_O*,FP> {
 template <typename FP> struct Cast<core::StrNs_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 146 150 
       return ((146 <= kindVal) && (kindVal <= 150));
   };
@@ -2042,7 +2042,7 @@ template <typename FP> struct Cast<core::StrNs_O*,FP> {
 template <typename FP> struct Cast<core::SimpleVector_byte8_t_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 207 207 
       return (kindVal == 207);
   };
@@ -2051,7 +2051,7 @@ template <typename FP> struct Cast<core::SimpleVector_byte8_t_O*,FP> {
 template <typename FP> struct Cast<gctools::GCArray_moveable<double>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 45 45 
       return (kindVal == 45);
   };
@@ -2060,7 +2060,7 @@ template <typename FP> struct Cast<gctools::GCArray_moveable<double>*,FP> {
 template <typename FP> struct Cast<llvmo::ClaspJIT_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 383 383 
       return (kindVal == 383);
   };
@@ -2069,7 +2069,7 @@ template <typename FP> struct Cast<llvmo::ClaspJIT_O*,FP> {
 template <typename FP> struct Cast<core::LoadArchive_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 403 404 
       return ((403 <= kindVal) && (kindVal <= 404));
   };
@@ -2078,7 +2078,7 @@ template <typename FP> struct Cast<core::LoadArchive_O*,FP> {
 template <typename FP> struct Cast<core::Ratio_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 400 400 
       return (kindVal == 400);
   };
@@ -2087,7 +2087,7 @@ template <typename FP> struct Cast<core::Ratio_O*,FP> {
 template <typename FP> struct Cast<core::FunctionClosure_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 267 279 
       return ((267 <= kindVal) && (kindVal <= 279));
   };
@@ -2096,7 +2096,7 @@ template <typename FP> struct Cast<core::FunctionClosure_O*,FP> {
 template <typename FP> struct Cast<clcenv::VariableInfo_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 79 83 
       return ((79 <= kindVal) && (kindVal <= 83));
   };
@@ -2105,7 +2105,7 @@ template <typename FP> struct Cast<clcenv::VariableInfo_O*,FP> {
 template <typename FP> struct Cast<gctools::GCArray_moveable<float>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 44 44 
       return (kindVal == 44);
   };
@@ -2114,7 +2114,7 @@ template <typename FP> struct Cast<gctools::GCArray_moveable<float>*,FP> {
 template <typename FP> struct Cast<llvmo::Triple_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 346 346 
       return (kindVal == 346);
   };
@@ -2123,7 +2123,7 @@ template <typename FP> struct Cast<llvmo::Triple_O*,FP> {
 template <typename FP> struct Cast<llvmo::DataLayout_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 382 382 
       return (kindVal == 382);
   };
@@ -2132,7 +2132,7 @@ template <typename FP> struct Cast<llvmo::DataLayout_O*,FP> {
 template <typename FP> struct Cast<core::Symbol_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 380 381 
       return ((380 <= kindVal) && (kindVal <= 381));
   };
@@ -2141,7 +2141,7 @@ template <typename FP> struct Cast<core::Symbol_O*,FP> {
 template <typename FP> struct Cast<clcenv::LocalMacroInfo_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 87 87 
       return (kindVal == 87);
   };
@@ -2150,7 +2150,7 @@ template <typename FP> struct Cast<clcenv::LocalMacroInfo_O*,FP> {
 template <typename FP> struct Cast<core::T_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 57 447 
       return ((57 <= kindVal) && (kindVal <= 447));
   };
@@ -2159,7 +2159,7 @@ template <typename FP> struct Cast<core::T_O*,FP> {
 template <typename FP> struct Cast<llvmo::ConstantExpr_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 316 316 
       return (kindVal == 316);
   };
@@ -2168,7 +2168,7 @@ template <typename FP> struct Cast<llvmo::ConstantExpr_O*,FP> {
 template <typename FP> struct Cast<core::SimpleVector_int16_t_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 215 215 
       return (kindVal == 215);
   };
@@ -2177,7 +2177,7 @@ template <typename FP> struct Cast<core::SimpleVector_int16_t_O*,FP> {
 template <typename FP> struct Cast<core::Lisp_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 56 56 
       return (kindVal == 56);
   };
@@ -2186,7 +2186,7 @@ template <typename FP> struct Cast<core::Lisp_O*,FP> {
 template <typename FP> struct Cast<core::StackValueEnvironment_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 423 423 
       return (kindVal == 423);
   };
@@ -2195,7 +2195,7 @@ template <typename FP> struct Cast<core::StackValueEnvironment_O*,FP> {
 template <typename FP> struct Cast<gctools::GCArray_moveable<unsigned long>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 43 43 
       return (kindVal == 43);
   };
@@ -2204,7 +2204,7 @@ template <typename FP> struct Cast<gctools::GCArray_moveable<unsigned long>*,FP>
 template <typename FP> struct Cast<llvmo::FenceInst_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 332 332 
       return (kindVal == 332);
   };
@@ -2213,7 +2213,7 @@ template <typename FP> struct Cast<llvmo::FenceInst_O*,FP> {
 template <typename FP> struct Cast<clcenv::VariableIgnore_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 111 111 
       return (kindVal == 111);
   };
@@ -2222,7 +2222,7 @@ template <typename FP> struct Cast<clcenv::VariableIgnore_O*,FP> {
 template <typename FP> struct Cast<core::PosixTime_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 379 379 
       return (kindVal == 379);
   };
@@ -2231,7 +2231,7 @@ template <typename FP> struct Cast<core::PosixTime_O*,FP> {
 template <typename FP> struct Cast<gctools::GCVector_moveable<double>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 42 42 
       return (kindVal == 42);
   };
@@ -2240,7 +2240,7 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<double>*,FP> {
 template <typename FP> struct Cast<gctools::GCArray_moveable<short>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 41 41 
       return (kindVal == 41);
   };
@@ -2249,7 +2249,7 @@ template <typename FP> struct Cast<gctools::GCArray_moveable<short>*,FP> {
 template <typename FP> struct Cast<core::MDArray_byte16_t_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 143 143 
       return (kindVal == 143);
   };
@@ -2258,7 +2258,7 @@ template <typename FP> struct Cast<core::MDArray_byte16_t_O*,FP> {
 template <typename FP> struct Cast<core::IntArray_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 378 378 
       return (kindVal == 378);
   };
@@ -2272,7 +2272,7 @@ template <typename FP> struct Cast<core::Instance_O*,FP> {
 //           The problem is that isA relationships defined by Clasp can only work with single inheritance
 //           but derivable_classes inherit from Instance_O and whatever else they are defined to inherit from.
 //           For now I'll special case core::Instance_O and fall back to dynamic_cast
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 263 264 
       if ((263 <= kindVal) && (kindVal <= 264)) return true;
       return (dynamic_cast<core::Instance_O*>(client)!=NULL);
@@ -2282,7 +2282,7 @@ template <typename FP> struct Cast<core::Instance_O*,FP> {
 template <typename FP> struct Cast<core::MDArrayT_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 139 139 
       return (kindVal == 139);
   };
@@ -2291,7 +2291,7 @@ template <typename FP> struct Cast<core::MDArrayT_O*,FP> {
 template <typename FP> struct Cast<llvmo::IndirectBrInst_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 328 328 
       return (kindVal == 328);
   };
@@ -2300,7 +2300,7 @@ template <typename FP> struct Cast<llvmo::IndirectBrInst_O*,FP> {
 template <typename FP> struct Cast<gctools::GCVector_moveable<core::SymbolClassPair>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 40 40 
       return (kindVal == 40);
   };
@@ -2309,7 +2309,7 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<core::SymbolClassP
 template <typename FP> struct Cast<llvmo::ConstantPointerNull_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 315 315 
       return (kindVal == 315);
   };
@@ -2318,7 +2318,7 @@ template <typename FP> struct Cast<llvmo::ConstantPointerNull_O*,FP> {
 template <typename FP> struct Cast<llvmo::EngineBuilder_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 345 345 
       return (kindVal == 345);
   };
@@ -2327,7 +2327,7 @@ template <typename FP> struct Cast<llvmo::EngineBuilder_O*,FP> {
 template <typename FP> struct Cast<core::SimpleVector_size_t_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 194 194 
       return (kindVal == 194);
   };
@@ -2336,7 +2336,7 @@ template <typename FP> struct Cast<core::SimpleVector_size_t_O*,FP> {
 template <typename FP> struct Cast<core::ExternalObject_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 285 377 
       return ((285 <= kindVal) && (kindVal <= 377));
   };
@@ -2345,7 +2345,7 @@ template <typename FP> struct Cast<core::ExternalObject_O*,FP> {
 template <typename FP> struct Cast<core::RuntimeVisibleEnvironment_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 426 429 
       return ((426 <= kindVal) && (kindVal <= 429));
   };
@@ -2354,7 +2354,7 @@ template <typename FP> struct Cast<core::RuntimeVisibleEnvironment_O*,FP> {
 template <typename FP> struct Cast<core::VaList_dummy_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 447 447 
       return (kindVal == 447);
   };
@@ -2363,7 +2363,7 @@ template <typename FP> struct Cast<core::VaList_dummy_O*,FP> {
 template <typename FP> struct Cast<core::SimpleMDArray_byte8_t_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 169 169 
       return (kindVal == 169);
   };
@@ -2372,7 +2372,7 @@ template <typename FP> struct Cast<core::SimpleMDArray_byte8_t_O*,FP> {
 template <typename FP> struct Cast<core::NativeVector_double_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 95 95 
       return (kindVal == 95);
   };
@@ -2381,7 +2381,7 @@ template <typename FP> struct Cast<core::NativeVector_double_O*,FP> {
 template <typename FP> struct Cast<core::Pointer_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 284 284 
       return (kindVal == 284);
   };
@@ -2390,7 +2390,7 @@ template <typename FP> struct Cast<core::Pointer_O*,FP> {
 template <typename FP> struct Cast<core::WeakPointer_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 283 283 
       return (kindVal == 283);
   };
@@ -2399,7 +2399,7 @@ template <typename FP> struct Cast<core::WeakPointer_O*,FP> {
 template <typename FP> struct Cast<core::Function_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 262 282 
       return ((262 <= kindVal) && (kindVal <= 282));
   };
@@ -2408,7 +2408,7 @@ template <typename FP> struct Cast<core::Function_O*,FP> {
 template <typename FP> struct Cast<gctools::GCVector_moveable<float>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 39 39 
       return (kindVal == 39);
   };
@@ -2417,7 +2417,7 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<float>*,FP> {
 template <typename FP> struct Cast<llvmo::MCSubtargetInfo_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 343 344 
       return ((343 <= kindVal) && (kindVal <= 344));
   };
@@ -2426,7 +2426,7 @@ template <typename FP> struct Cast<llvmo::MCSubtargetInfo_O*,FP> {
 template <typename FP> struct Cast<llvmo::TerminatorInst_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 324 331 
       return ((324 <= kindVal) && (kindVal <= 331));
   };
@@ -2435,7 +2435,7 @@ template <typename FP> struct Cast<llvmo::TerminatorInst_O*,FP> {
 template <typename FP> struct Cast<core::TwoWayStream_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 248 248 
       return (kindVal == 248);
   };
@@ -2444,7 +2444,7 @@ template <typename FP> struct Cast<core::TwoWayStream_O*,FP> {
 template <typename FP> struct Cast<llvmo::UndefValue_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 314 314 
       return (kindVal == 314);
   };
@@ -2453,7 +2453,7 @@ template <typename FP> struct Cast<llvmo::UndefValue_O*,FP> {
 template <typename FP> struct Cast<core::Integer_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 397 399 
       return ((397 <= kindVal) && (kindVal <= 399));
   };
@@ -2462,7 +2462,7 @@ template <typename FP> struct Cast<core::Integer_O*,FP> {
 template <typename FP> struct Cast<core::BuiltinClosure_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 273 275 
       return ((273 <= kindVal) && (kindVal <= 275));
   };
@@ -2471,7 +2471,7 @@ template <typename FP> struct Cast<core::BuiltinClosure_O*,FP> {
 template <typename FP> struct Cast<core::IOFileStream_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 251 251 
       return (kindVal == 251);
   };
@@ -2480,7 +2480,7 @@ template <typename FP> struct Cast<core::IOFileStream_O*,FP> {
 template <typename FP> struct Cast<llvmo::IntegerType_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 357 357 
       return (kindVal == 357);
   };
@@ -2489,7 +2489,7 @@ template <typename FP> struct Cast<llvmo::IntegerType_O*,FP> {
 template <typename FP> struct Cast<core::StructureClassCreator_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 70 70 
       return (kindVal == 70);
   };
@@ -2498,7 +2498,7 @@ template <typename FP> struct Cast<core::StructureClassCreator_O*,FP> {
 template <typename FP> struct Cast<core::HashTableEqualp_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 411 411 
       return (kindVal == 411);
   };
@@ -2507,7 +2507,7 @@ template <typename FP> struct Cast<core::HashTableEqualp_O*,FP> {
 template <typename FP> struct Cast<llvmo::DebugLoc_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 261 261 
       return (kindVal == 261);
   };
@@ -2516,7 +2516,7 @@ template <typename FP> struct Cast<llvmo::DebugLoc_O*,FP> {
 template <typename FP> struct Cast<llvmo::DICompileUnit_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 373 373 
       return (kindVal == 373);
   };
@@ -2525,7 +2525,7 @@ template <typename FP> struct Cast<llvmo::DICompileUnit_O*,FP> {
 template <typename FP> struct Cast<core::MDArray_int64_t_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 145 145 
       return (kindVal == 145);
   };
@@ -2534,7 +2534,7 @@ template <typename FP> struct Cast<core::MDArray_int64_t_O*,FP> {
 template <typename FP> struct Cast<llvmo::VectorType_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 355 355 
       return (kindVal == 355);
   };
@@ -2543,7 +2543,7 @@ template <typename FP> struct Cast<llvmo::VectorType_O*,FP> {
 template <typename FP> struct Cast<core::RecursiveDirectoryIterator_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 237 237 
       return (kindVal == 237);
   };
@@ -2552,7 +2552,7 @@ template <typename FP> struct Cast<core::RecursiveDirectoryIterator_O*,FP> {
 template <typename FP> struct Cast<core::SequenceStepper_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 258 260 
       return ((258 <= kindVal) && (kindVal <= 260));
   };
@@ -2561,7 +2561,7 @@ template <typename FP> struct Cast<core::SequenceStepper_O*,FP> {
 template <typename FP> struct Cast<llvmo::AtomicCmpXchgInst_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 323 323 
       return (kindVal == 323);
   };
@@ -2570,7 +2570,7 @@ template <typename FP> struct Cast<llvmo::AtomicCmpXchgInst_O*,FP> {
 template <typename FP> struct Cast<llvmo::BasicBlock_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 340 340 
       return (kindVal == 340);
   };
@@ -2579,7 +2579,7 @@ template <typename FP> struct Cast<llvmo::BasicBlock_O*,FP> {
 template <typename FP> struct Cast<core::CompileTimeEnvironment_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 418 425 
       return ((418 <= kindVal) && (kindVal <= 425));
   };
@@ -2588,7 +2588,7 @@ template <typename FP> struct Cast<core::CompileTimeEnvironment_O*,FP> {
 template <typename FP> struct Cast<core::RandomState_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 257 257 
       return (kindVal == 257);
   };
@@ -2597,7 +2597,7 @@ template <typename FP> struct Cast<core::RandomState_O*,FP> {
 template <typename FP> struct Cast<llvmo::ConstantStruct_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 313 313 
       return (kindVal == 313);
   };
@@ -2606,7 +2606,7 @@ template <typename FP> struct Cast<llvmo::ConstantStruct_O*,FP> {
 template <typename FP> struct Cast<llvmo::SequentialType_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 352 355 
       return ((352 <= kindVal) && (kindVal <= 355));
   };
@@ -2615,7 +2615,7 @@ template <typename FP> struct Cast<llvmo::SequentialType_O*,FP> {
 template <typename FP> struct Cast<core::InvocationHistoryFrameIterator_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 256 256 
       return (kindVal == 256);
   };
@@ -2624,7 +2624,7 @@ template <typename FP> struct Cast<core::InvocationHistoryFrameIterator_O*,FP> {
 template <typename FP> struct Cast<core::IOStreamStream_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 250 250 
       return (kindVal == 250);
   };
@@ -2633,7 +2633,7 @@ template <typename FP> struct Cast<core::IOStreamStream_O*,FP> {
 template <typename FP> struct Cast<core::SingleFloat_dummy_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 392 392 
       return (kindVal == 392);
   };
@@ -2642,7 +2642,7 @@ template <typename FP> struct Cast<core::SingleFloat_dummy_O*,FP> {
 template <typename FP> struct Cast<clcenv::FunctionIgnore_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 110 110 
       return (kindVal == 110);
   };
@@ -2651,7 +2651,7 @@ template <typename FP> struct Cast<clcenv::FunctionIgnore_O*,FP> {
 template <typename FP> struct Cast<core::Path_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 255 255 
       return (kindVal == 255);
   };
@@ -2660,7 +2660,7 @@ template <typename FP> struct Cast<core::Path_O*,FP> {
 template <typename FP> struct Cast<gctools::GCVector_moveable<core::SymbolStorage>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 38 38 
       return (kindVal == 38);
   };
@@ -2669,7 +2669,7 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<core::SymbolStorag
 template <typename FP> struct Cast<core::StringStream_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 245 247 
       return ((245 <= kindVal) && (kindVal <= 247));
   };
@@ -2678,7 +2678,7 @@ template <typename FP> struct Cast<core::StringStream_O*,FP> {
 template <typename FP> struct Cast<core::SourceFileInfo_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 254 254 
       return (kindVal == 254);
   };
@@ -2687,7 +2687,7 @@ template <typename FP> struct Cast<core::SourceFileInfo_O*,FP> {
 template <typename FP> struct Cast<core::HashTableEql_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 410 410 
       return (kindVal == 410);
   };
@@ -2696,7 +2696,7 @@ template <typename FP> struct Cast<core::HashTableEql_O*,FP> {
 template <typename FP> struct Cast<core::MDArray_int8_t_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 137 137 
       return (kindVal == 137);
   };
@@ -2705,7 +2705,7 @@ template <typename FP> struct Cast<core::MDArray_int8_t_O*,FP> {
 template <typename FP> struct Cast<core::Cache_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 253 253 
       return (kindVal == 253);
   };
@@ -2714,7 +2714,7 @@ template <typename FP> struct Cast<core::Cache_O*,FP> {
 template <typename FP> struct Cast<core::MDArray_fixnum_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 141 141 
       return (kindVal == 141);
   };
@@ -2723,7 +2723,7 @@ template <typename FP> struct Cast<core::MDArray_fixnum_O*,FP> {
 template <typename FP> struct Cast<core::MDArray_int32_t_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 135 135 
       return (kindVal == 135);
   };
@@ -2732,7 +2732,7 @@ template <typename FP> struct Cast<core::MDArray_int32_t_O*,FP> {
 template <typename FP> struct Cast<mp::Process_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 94 94 
       return (kindVal == 94);
   };
@@ -2741,7 +2741,7 @@ template <typename FP> struct Cast<mp::Process_O*,FP> {
 template <typename FP> struct Cast<core::SimpleMDArrayFloat_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 167 167 
       return (kindVal == 167);
   };
@@ -2750,7 +2750,7 @@ template <typename FP> struct Cast<core::SimpleMDArrayFloat_O*,FP> {
 template <typename FP> struct Cast<core::InstanceCreator_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 69 69 
       return (kindVal == 69);
   };
@@ -2759,7 +2759,7 @@ template <typename FP> struct Cast<core::InstanceCreator_O*,FP> {
 template <typename FP> struct Cast<core::General_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 59 446 
       return ((59 <= kindVal) && (kindVal <= 446));
   };
@@ -2768,7 +2768,7 @@ template <typename FP> struct Cast<core::General_O*,FP> {
 template <typename FP> struct Cast<llvmo::BranchInst_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 327 327 
       return (kindVal == 327);
   };
@@ -2777,7 +2777,7 @@ template <typename FP> struct Cast<llvmo::BranchInst_O*,FP> {
 template <typename FP> struct Cast<llvmo::Instruction_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 320 339 
       return ((320 <= kindVal) && (kindVal <= 339));
   };
@@ -2786,7 +2786,7 @@ template <typename FP> struct Cast<llvmo::Instruction_O*,FP> {
 template <typename FP> struct Cast<core::SimpleMDArrayBaseChar_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 160 160 
       return (kindVal == 160);
   };
@@ -2795,7 +2795,7 @@ template <typename FP> struct Cast<core::SimpleMDArrayBaseChar_O*,FP> {
 template <typename FP> struct Cast<core::SpecialForm_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 282 282 
       return (kindVal == 282);
   };
@@ -2804,7 +2804,7 @@ template <typename FP> struct Cast<core::SpecialForm_O*,FP> {
 template <typename FP> struct Cast<llvmo::ConstantArray_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 312 312 
       return (kindVal == 312);
   };
@@ -2813,7 +2813,7 @@ template <typename FP> struct Cast<llvmo::ConstantArray_O*,FP> {
 template <typename FP> struct Cast<core::Cons_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 58 58 
       return (kindVal == 58);
   };
@@ -2822,7 +2822,7 @@ template <typename FP> struct Cast<core::Cons_O*,FP> {
 template <typename FP> struct Cast<clcenv::FunctionType_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 109 109 
       return (kindVal == 109);
   };
@@ -2831,7 +2831,7 @@ template <typename FP> struct Cast<clcenv::FunctionType_O*,FP> {
 template <typename FP> struct Cast<core::SimpleVector_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 217 217 
       return (kindVal == 217);
   };
@@ -2840,7 +2840,7 @@ template <typename FP> struct Cast<core::SimpleVector_O*,FP> {
 template <typename FP> struct Cast<core::Stream_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 240 252 
       return ((240 <= kindVal) && (kindVal <= 252));
   };
@@ -2849,7 +2849,7 @@ template <typename FP> struct Cast<core::Stream_O*,FP> {
 template <typename FP> struct Cast<core::Real_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 390 400 
       return ((390 <= kindVal) && (kindVal <= 400));
   };
@@ -2858,7 +2858,7 @@ template <typename FP> struct Cast<core::Real_O*,FP> {
 template <typename FP> struct Cast<gctools::GCVector_moveable<core::OptionalArgument>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 37 37 
       return (kindVal == 37);
   };
@@ -2867,7 +2867,7 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<core::OptionalArgu
 template <typename FP> struct Cast<clcenv::Tag_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 108 108 
       return (kindVal == 108);
   };
@@ -2876,7 +2876,7 @@ template <typename FP> struct Cast<clcenv::Tag_O*,FP> {
 template <typename FP> struct Cast<gctools::GCArray_moveable<long>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 36 36 
       return (kindVal == 36);
   };
@@ -2885,7 +2885,7 @@ template <typename FP> struct Cast<gctools::GCArray_moveable<long>*,FP> {
 template <typename FP> struct Cast<llvmo::GlobalValue_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 309 311 
       return ((309 <= kindVal) && (kindVal <= 311));
   };
@@ -2894,7 +2894,7 @@ template <typename FP> struct Cast<llvmo::GlobalValue_O*,FP> {
 template <typename FP> struct Cast<core::FileStatus_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 239 239 
       return (kindVal == 239);
   };
@@ -2903,7 +2903,7 @@ template <typename FP> struct Cast<core::FileStatus_O*,FP> {
 template <typename FP> struct Cast<llvmo::LandingPadInst_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 322 322 
       return (kindVal == 322);
   };
@@ -2912,7 +2912,7 @@ template <typename FP> struct Cast<llvmo::LandingPadInst_O*,FP> {
 template <typename FP> struct Cast<mp::ConditionVariable_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 93 93 
       return (kindVal == 93);
   };
@@ -2921,7 +2921,7 @@ template <typename FP> struct Cast<mp::ConditionVariable_O*,FP> {
 template <typename FP> struct Cast<llvmo::IRBuilderBase_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 341 342 
       return ((341 <= kindVal) && (kindVal <= 342));
   };
@@ -2930,7 +2930,7 @@ template <typename FP> struct Cast<llvmo::IRBuilderBase_O*,FP> {
 template <typename FP> struct Cast<gctools::GCVector_moveable<core::T_O *>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 35 35 
       return (kindVal == 35);
   };
@@ -2939,7 +2939,7 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<core::T_O *>*,FP> 
 template <typename FP> struct Cast<llvmo::Value_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 303 340 
       return ((303 <= kindVal) && (kindVal <= 340));
   };
@@ -2948,7 +2948,7 @@ template <typename FP> struct Cast<llvmo::Value_O*,FP> {
 template <typename FP> struct Cast<core::SymbolMacroletEnvironment_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 422 422 
       return (kindVal == 422);
   };
@@ -2957,7 +2957,7 @@ template <typename FP> struct Cast<core::SymbolMacroletEnvironment_O*,FP> {
 template <typename FP> struct Cast<llvmo::DINodeArray_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 92 92 
       return (kindVal == 92);
   };
@@ -2966,7 +2966,7 @@ template <typename FP> struct Cast<llvmo::DINodeArray_O*,FP> {
 template <typename FP> struct Cast<clcenv::Info_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 77 91 
       return ((77 <= kindVal) && (kindVal <= 91));
   };
@@ -2975,7 +2975,7 @@ template <typename FP> struct Cast<clcenv::Info_O*,FP> {
 template <typename FP> struct Cast<core::UnwindProtectEnvironment_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 421 421 
       return (kindVal == 421);
   };
@@ -2984,7 +2984,7 @@ template <typename FP> struct Cast<core::UnwindProtectEnvironment_O*,FP> {
 template <typename FP> struct Cast<clcenv::FunctionDynamicExtent_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 107 107 
       return (kindVal == 107);
   };
@@ -2993,7 +2993,7 @@ template <typename FP> struct Cast<clcenv::FunctionDynamicExtent_O*,FP> {
 template <typename FP> struct Cast<llvmo::ModulePass_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 290 292 
       return ((290 <= kindVal) && (kindVal <= 292));
   };
@@ -3002,7 +3002,7 @@ template <typename FP> struct Cast<llvmo::ModulePass_O*,FP> {
 template <typename FP> struct Cast<llvmo::PassManagerBase_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 300 302 
       return ((300 <= kindVal) && (kindVal <= 302));
   };
@@ -3011,7 +3011,7 @@ template <typename FP> struct Cast<llvmo::PassManagerBase_O*,FP> {
 template <typename FP> struct Cast<core::Iterator_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 236 238 
       return ((236 <= kindVal) && (kindVal <= 238));
   };
@@ -3020,7 +3020,7 @@ template <typename FP> struct Cast<core::Iterator_O*,FP> {
 template <typename FP> struct Cast<llvmo::IRBuilder_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 342 342 
       return (kindVal == 342);
   };
@@ -3029,7 +3029,7 @@ template <typename FP> struct Cast<llvmo::IRBuilder_O*,FP> {
 template <typename FP> struct Cast<gctools::GCArray_moveable<unsigned char>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 34 34 
       return (kindVal == 34);
   };
@@ -3038,7 +3038,7 @@ template <typename FP> struct Cast<gctools::GCArray_moveable<unsigned char>*,FP>
 template <typename FP> struct Cast<core::TranslationFunctor*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 274 274 
       return (kindVal == 274);
   };
@@ -3047,7 +3047,7 @@ template <typename FP> struct Cast<core::TranslationFunctor*,FP> {
 template <typename FP> struct Cast<gctools::GCVector_moveable<core::DynamicBinding>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 33 33 
       return (kindVal == 33);
   };
@@ -3056,7 +3056,7 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<core::DynamicBindi
 template <typename FP> struct Cast<core::MultiStringBuffer_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 235 235 
       return (kindVal == 235);
   };
@@ -3065,7 +3065,7 @@ template <typename FP> struct Cast<core::MultiStringBuffer_O*,FP> {
 template <typename FP> struct Cast<llvmo::DISubroutineType_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 369 369 
       return (kindVal == 369);
   };
@@ -3074,7 +3074,7 @@ template <typename FP> struct Cast<llvmo::DISubroutineType_O*,FP> {
 template <typename FP> struct Cast<core::SimpleVectorDouble_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 190 190 
       return (kindVal == 190);
   };
@@ -3083,7 +3083,7 @@ template <typename FP> struct Cast<core::SimpleVectorDouble_O*,FP> {
 template <typename FP> struct Cast<llvmo::DIType_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 368 372 
       return ((368 <= kindVal) && (kindVal <= 372));
   };
@@ -3092,7 +3092,7 @@ template <typename FP> struct Cast<llvmo::DIType_O*,FP> {
 template <typename FP> struct Cast<clcenv::SpecialOperatorInfo_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 86 86 
       return (kindVal == 86);
   };
@@ -3101,7 +3101,7 @@ template <typename FP> struct Cast<clcenv::SpecialOperatorInfo_O*,FP> {
 template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr<clbind::ClassRep_O>>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 32 32 
       return (kindVal == 32);
   };
@@ -3110,7 +3110,7 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr
 template <typename FP> struct Cast<gctools::GCVector_moveable<core::AuxArgument>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 31 31 
       return (kindVal == 31);
   };
@@ -3119,7 +3119,7 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<core::AuxArgument>
 template <typename FP> struct Cast<clcenv::LambdaNameInfo_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 85 85 
       return (kindVal == 85);
   };
@@ -3128,7 +3128,7 @@ template <typename FP> struct Cast<clcenv::LambdaNameInfo_O*,FP> {
 template <typename FP> struct Cast<llvmo::VAArgInst_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 336 336 
       return (kindVal == 336);
   };
@@ -3137,7 +3137,7 @@ template <typename FP> struct Cast<llvmo::VAArgInst_O*,FP> {
 template <typename FP> struct Cast<core::SimpleVector_int32_t_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 205 205 
       return (kindVal == 205);
   };
@@ -3146,7 +3146,7 @@ template <typename FP> struct Cast<core::SimpleVector_int32_t_O*,FP> {
 template <typename FP> struct Cast<core::SimpleVector_byte64_t_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 196 196 
       return (kindVal == 196);
   };
@@ -3155,7 +3155,7 @@ template <typename FP> struct Cast<core::SimpleVector_byte64_t_O*,FP> {
 template <typename FP> struct Cast<core::SimpleMDArray_int32_t_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 183 183 
       return (kindVal == 183);
   };
@@ -3164,7 +3164,7 @@ template <typename FP> struct Cast<core::SimpleMDArray_int32_t_O*,FP> {
 template <typename FP> struct Cast<core::SourcePosInfo_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 234 234 
       return (kindVal == 234);
   };
@@ -3173,7 +3173,7 @@ template <typename FP> struct Cast<core::SourcePosInfo_O*,FP> {
 template <typename FP> struct Cast<core::ClassCreator_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 68 68 
       return (kindVal == 68);
   };
@@ -3182,7 +3182,7 @@ template <typename FP> struct Cast<core::ClassCreator_O*,FP> {
 template <typename FP> struct Cast<llvmo::APInt_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 299 299 
       return (kindVal == 299);
   };
@@ -3191,7 +3191,7 @@ template <typename FP> struct Cast<llvmo::APInt_O*,FP> {
 template <typename FP> struct Cast<core::CoreExposer_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 225 225 
       return (kindVal == 225);
   };
@@ -3200,7 +3200,7 @@ template <typename FP> struct Cast<core::CoreExposer_O*,FP> {
 template <typename FP> struct Cast<clcenv::BlockInfo_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 78 78 
       return (kindVal == 78);
   };
@@ -3209,7 +3209,7 @@ template <typename FP> struct Cast<clcenv::BlockInfo_O*,FP> {
 template <typename FP> struct Cast<core::GlueEnvironment_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 430 430 
       return (kindVal == 430);
   };
@@ -3218,7 +3218,7 @@ template <typename FP> struct Cast<core::GlueEnvironment_O*,FP> {
 template <typename FP> struct Cast<llvmo::Target_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 298 298 
       return (kindVal == 298);
   };
@@ -3227,7 +3227,7 @@ template <typename FP> struct Cast<llvmo::Target_O*,FP> {
 template <typename FP> struct Cast<core::NativeVector_int_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 76 76 
       return (kindVal == 76);
   };
@@ -3236,7 +3236,7 @@ template <typename FP> struct Cast<core::NativeVector_int_O*,FP> {
 template <typename FP> struct Cast<llvmo::FunctionType_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 356 356 
       return (kindVal == 356);
   };
@@ -3245,7 +3245,7 @@ template <typename FP> struct Cast<llvmo::FunctionType_O*,FP> {
 template <typename FP> struct Cast<core::Null_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 381 381 
       return (kindVal == 381);
   };
@@ -3254,7 +3254,7 @@ template <typename FP> struct Cast<core::Null_O*,FP> {
 template <typename FP> struct Cast<mp::Mutex_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 74 75 
       return ((74 <= kindVal) && (kindVal <= 75));
   };
@@ -3263,7 +3263,7 @@ template <typename FP> struct Cast<mp::Mutex_O*,FP> {
 template <typename FP> struct Cast<llvmo::LLVMContext_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 297 297 
       return (kindVal == 297);
   };
@@ -3272,7 +3272,7 @@ template <typename FP> struct Cast<llvmo::LLVMContext_O*,FP> {
 template <typename FP> struct Cast<core::SimpleMDArrayBit_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 163 163 
       return (kindVal == 163);
   };
@@ -3281,7 +3281,7 @@ template <typename FP> struct Cast<core::SimpleMDArrayBit_O*,FP> {
 template <typename FP> struct Cast<gctools::GCBitUnitArray_moveable<1,unsigned int,int>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 30 30 
       return (kindVal == 30);
   };
@@ -3290,7 +3290,7 @@ template <typename FP> struct Cast<gctools::GCBitUnitArray_moveable<1,unsigned i
 template <typename FP> struct Cast<llvmo::ConstantFP_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 308 308 
       return (kindVal == 308);
   };
@@ -3299,7 +3299,7 @@ template <typename FP> struct Cast<llvmo::ConstantFP_O*,FP> {
 template <typename FP> struct Cast<core::SimpleMDArray_size_t_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 154 154 
       return (kindVal == 154);
   };
@@ -3308,7 +3308,7 @@ template <typename FP> struct Cast<core::SimpleMDArray_size_t_O*,FP> {
 template <typename FP> struct Cast<llvmo::APFloat_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 296 296 
       return (kindVal == 296);
   };
@@ -3317,7 +3317,7 @@ template <typename FP> struct Cast<llvmo::APFloat_O*,FP> {
 template <typename FP> struct Cast<gctools::GCVector_moveable<core::KeywordArgument>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 29 29 
       return (kindVal == 29);
   };
@@ -3326,7 +3326,7 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<core::KeywordArgum
 template <typename FP> struct Cast<clcenv::SymbolMacroInfo_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 81 81 
       return (kindVal == 81);
   };
@@ -3335,7 +3335,7 @@ template <typename FP> struct Cast<clcenv::SymbolMacroInfo_O*,FP> {
 template <typename FP> struct Cast<core::AbstractSimpleVector_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 188 220 
       return ((188 <= kindVal) && (kindVal <= 220));
   };
@@ -3344,7 +3344,7 @@ template <typename FP> struct Cast<core::AbstractSimpleVector_O*,FP> {
 template <typename FP> struct Cast<gctools::GCVector_moveable<int>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 28 28 
       return (kindVal == 28);
   };
@@ -3353,7 +3353,7 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<int>*,FP> {
 template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr<core::List_V>>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 27 27 
       return (kindVal == 27);
   };
@@ -3362,7 +3362,7 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr
 template <typename FP> struct Cast<core::LexicalEnvironment_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 417 429 
       return ((417 <= kindVal) && (kindVal <= 429));
   };
@@ -3371,7 +3371,7 @@ template <typename FP> struct Cast<core::LexicalEnvironment_O*,FP> {
 template <typename FP> struct Cast<clbind::detail::class_map*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 16 16 
       return (kindVal == 16);
   };
@@ -3380,7 +3380,7 @@ template <typename FP> struct Cast<clbind::detail::class_map*,FP> {
 template <typename FP> struct Cast<core::SimpleString_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 197 201 
       return ((197 <= kindVal) && (kindVal <= 201));
   };
@@ -3389,7 +3389,7 @@ template <typename FP> struct Cast<core::SimpleString_O*,FP> {
 template <typename FP> struct Cast<core::BroadcastStream_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 244 244 
       return (kindVal == 244);
   };
@@ -3398,7 +3398,7 @@ template <typename FP> struct Cast<core::BroadcastStream_O*,FP> {
 template <typename FP> struct Cast<core::VectorStepper_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 259 259 
       return (kindVal == 259);
   };
@@ -3407,7 +3407,7 @@ template <typename FP> struct Cast<core::VectorStepper_O*,FP> {
 template <typename FP> struct Cast<llvmo::Constant_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 306 319 
       return ((306 <= kindVal) && (kindVal <= 319));
   };
@@ -3416,7 +3416,7 @@ template <typename FP> struct Cast<llvmo::Constant_O*,FP> {
 template <typename FP> struct Cast<gctools::GCArray_moveable<unsigned short>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 26 26 
       return (kindVal == 26);
   };
@@ -3425,7 +3425,7 @@ template <typename FP> struct Cast<gctools::GCArray_moveable<unsigned short>*,FP
 template <typename FP> struct Cast<core::WeakKeyHashTable_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 63 63 
       return (kindVal == 63);
   };
@@ -3434,7 +3434,7 @@ template <typename FP> struct Cast<core::WeakKeyHashTable_O*,FP> {
 template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr<core::Symbol_O>>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 25 25 
       return (kindVal == 25);
   };
@@ -3443,7 +3443,7 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr
 template <typename FP> struct Cast<core::LoadTimeValues_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 233 233 
       return (kindVal == 233);
   };
@@ -3452,7 +3452,7 @@ template <typename FP> struct Cast<core::LoadTimeValues_O*,FP> {
 template <typename FP> struct Cast<core::SynonymStream_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 243 243 
       return (kindVal == 243);
   };
@@ -3461,7 +3461,7 @@ template <typename FP> struct Cast<core::SynonymStream_O*,FP> {
 template <typename FP> struct Cast<core::MDArrayBit_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 127 127 
       return (kindVal == 127);
   };
@@ -3470,7 +3470,7 @@ template <typename FP> struct Cast<core::MDArrayBit_O*,FP> {
 template <typename FP> struct Cast<llvmo::Module_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 295 295 
       return (kindVal == 295);
   };
@@ -3479,7 +3479,7 @@ template <typename FP> struct Cast<llvmo::Module_O*,FP> {
 template <typename FP> struct Cast<llvmo::ImmutablePass_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 291 292 
       return ((291 <= kindVal) && (kindVal <= 292));
   };
@@ -3488,7 +3488,7 @@ template <typename FP> struct Cast<llvmo::ImmutablePass_O*,FP> {
 template <typename FP> struct Cast<llvmo::DILocalScope_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 364 367 
       return ((364 <= kindVal) && (kindVal <= 367));
   };
@@ -3497,7 +3497,7 @@ template <typename FP> struct Cast<llvmo::DILocalScope_O*,FP> {
 template <typename FP> struct Cast<core::StandardObject_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 232 232 
       return (kindVal == 232);
   };
@@ -3506,7 +3506,7 @@ template <typename FP> struct Cast<core::StandardObject_O*,FP> {
 template <typename FP> struct Cast<core::Closure_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 266 281 
       return ((266 <= kindVal) && (kindVal <= 281));
   };
@@ -3515,7 +3515,7 @@ template <typename FP> struct Cast<core::Closure_O*,FP> {
 template <typename FP> struct Cast<core::SingleDispatchMethodFunction_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 271 272 
       return ((271 <= kindVal) && (kindVal <= 272));
   };
@@ -3524,7 +3524,7 @@ template <typename FP> struct Cast<core::SingleDispatchMethodFunction_O*,FP> {
 template <typename FP> struct Cast<core::LogicalPathname_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 440 440 
       return (kindVal == 440);
   };
@@ -3533,7 +3533,7 @@ template <typename FP> struct Cast<core::LogicalPathname_O*,FP> {
 template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr<core::SourceFileInfo_O>>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 24 24 
       return (kindVal == 24);
   };
@@ -3542,7 +3542,7 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr
 template <typename FP> struct Cast<llvmo::StructType_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 351 351 
       return (kindVal == 351);
   };
@@ -3551,7 +3551,7 @@ template <typename FP> struct Cast<llvmo::StructType_O*,FP> {
 template <typename FP> struct Cast<clbind::ClassRegistry_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 231 231 
       return (kindVal == 231);
   };
@@ -3560,7 +3560,7 @@ template <typename FP> struct Cast<clbind::ClassRegistry_O*,FP> {
 template <typename FP> struct Cast<core::HashTableEqual_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 409 409 
       return (kindVal == 409);
   };
@@ -3569,7 +3569,7 @@ template <typename FP> struct Cast<core::HashTableEqual_O*,FP> {
 template <typename FP> struct Cast<gctools::GCArray_moveable<gctools::smart_ptr<core::T_O>>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 23 23 
       return (kindVal == 23);
   };
@@ -3578,7 +3578,7 @@ template <typename FP> struct Cast<gctools::GCArray_moveable<gctools::smart_ptr<
 template <typename FP> struct Cast<core::DirectoryEntry_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 230 230 
       return (kindVal == 230);
   };
@@ -3587,7 +3587,7 @@ template <typename FP> struct Cast<core::DirectoryEntry_O*,FP> {
 template <typename FP> struct Cast<clcenv::SpecialVariable_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 106 106 
       return (kindVal == 106);
   };
@@ -3596,7 +3596,7 @@ template <typename FP> struct Cast<clcenv::SpecialVariable_O*,FP> {
 template <typename FP> struct Cast<core::SingleDispatchCxxEffectiveMethodFunction_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 270 270 
       return (kindVal == 270);
   };
@@ -3605,7 +3605,7 @@ template <typename FP> struct Cast<core::SingleDispatchCxxEffectiveMethodFunctio
 template <typename FP> struct Cast<gctools::GCVector_moveable<core::CacheRecord>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 22 22 
       return (kindVal == 22);
   };
@@ -3614,7 +3614,7 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<core::CacheRecord>
 template <typename FP> struct Cast<core::FunctionValueEnvironment_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 428 428 
       return (kindVal == 428);
   };
@@ -3623,7 +3623,7 @@ template <typename FP> struct Cast<core::FunctionValueEnvironment_O*,FP> {
 template <typename FP> struct Cast<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::T_O>>>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 21 21 
       return (kindVal == 21);
   };
@@ -3632,7 +3632,7 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<std::pair<gctools:
 template <typename FP> struct Cast<gctools::GCArray_moveable<signed char>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 20 20 
       return (kindVal == 20);
   };
@@ -3641,7 +3641,7 @@ template <typename FP> struct Cast<gctools::GCArray_moveable<signed char>*,FP> {
 template <typename FP> struct Cast<llvmo::Linker_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 294 294 
       return (kindVal == 294);
   };
@@ -3650,7 +3650,7 @@ template <typename FP> struct Cast<llvmo::Linker_O*,FP> {
 template <typename FP> struct Cast<llvmo::Pass_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 289 293 
       return ((289 <= kindVal) && (kindVal <= 293));
   };
@@ -3659,7 +3659,7 @@ template <typename FP> struct Cast<llvmo::Pass_O*,FP> {
 template <typename FP> struct Cast<core::FunctionFrame_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 414 414 
       return (kindVal == 414);
   };
@@ -3668,7 +3668,7 @@ template <typename FP> struct Cast<core::FunctionFrame_O*,FP> {
 template <typename FP> struct Cast<core::FunctionContainerEnvironment_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 420 420 
       return (kindVal == 420);
   };
@@ -3677,7 +3677,7 @@ template <typename FP> struct Cast<core::FunctionContainerEnvironment_O*,FP> {
 template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr<core::Cons_O>>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 19 19 
       return (kindVal == 19);
   };
@@ -3686,7 +3686,7 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr
 template <typename FP> struct Cast<asttooling::DerivableFrontendActionFactory*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 451 451 
       return (kindVal == 451);
   };
@@ -3695,7 +3695,7 @@ template <typename FP> struct Cast<asttooling::DerivableFrontendActionFactory*,F
 template <typename FP> struct Cast<llvmo::ArrayType_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 354 354 
       return (kindVal == 354);
   };
@@ -3704,7 +3704,7 @@ template <typename FP> struct Cast<llvmo::ArrayType_O*,FP> {
 template <typename FP> struct Cast<llvmo::TargetLibraryInfoWrapperPass_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 292 292 
       return (kindVal == 292);
   };
@@ -3713,7 +3713,7 @@ template <typename FP> struct Cast<llvmo::TargetLibraryInfoWrapperPass_O*,FP> {
 template <typename FP> struct Cast<llvmo::User_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 305 339 
       return ((305 <= kindVal) && (kindVal <= 339));
   };
@@ -3722,7 +3722,7 @@ template <typename FP> struct Cast<llvmo::User_O*,FP> {
 template <typename FP> struct Cast<core::WrappedPointer_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 229 229 
       return (kindVal == 229);
   };
@@ -3731,7 +3731,7 @@ template <typename FP> struct Cast<core::WrappedPointer_O*,FP> {
 template <typename FP> struct Cast<asttooling::DerivableMatchCallback*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 8 8 
       return (kindVal == 8);
   };
@@ -3740,7 +3740,7 @@ template <typename FP> struct Cast<asttooling::DerivableMatchCallback*,FP> {
 template <typename FP> struct Cast<core::Package_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 228 228 
       return (kindVal == 228);
   };
@@ -3749,7 +3749,7 @@ template <typename FP> struct Cast<core::Package_O*,FP> {
 template <typename FP> struct Cast<core::UserData_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 445 445 
       return (kindVal == 445);
   };
@@ -3758,7 +3758,7 @@ template <typename FP> struct Cast<core::UserData_O*,FP> {
 template <typename FP> struct Cast<llvmo::CompositeType_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 350 355 
       return ((350 <= kindVal) && (kindVal <= 355));
   };
@@ -3767,7 +3767,7 @@ template <typename FP> struct Cast<llvmo::CompositeType_O*,FP> {
 template <typename FP> struct Cast<core::MDArrayBaseChar_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 187 187 
       return (kindVal == 187);
   };
@@ -3776,7 +3776,7 @@ template <typename FP> struct Cast<core::MDArrayBaseChar_O*,FP> {
 template <typename FP> struct Cast<clcenv::Block_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 105 105 
       return (kindVal == 105);
   };
@@ -3785,7 +3785,7 @@ template <typename FP> struct Cast<clcenv::Block_O*,FP> {
 template <typename FP> struct Cast<core::ClosureWithSlots_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 269 269 
       return (kindVal == 269);
   };
@@ -3794,7 +3794,7 @@ template <typename FP> struct Cast<core::ClosureWithSlots_O*,FP> {
 template <typename FP> struct Cast<llvmo::PassManager_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 302 302 
       return (kindVal == 302);
   };
@@ -3803,7 +3803,7 @@ template <typename FP> struct Cast<llvmo::PassManager_O*,FP> {
 template <typename FP> struct Cast<core::ValueEnvironment_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 427 427 
       return (kindVal == 427);
   };
@@ -3812,7 +3812,7 @@ template <typename FP> struct Cast<core::ValueEnvironment_O*,FP> {
 template <typename FP> struct Cast<llvmo::AttributeSet_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 227 227 
       return (kindVal == 227);
   };
@@ -3821,7 +3821,7 @@ template <typename FP> struct Cast<llvmo::AttributeSet_O*,FP> {
 template <typename FP> struct Cast<core::SexpSaveArchive_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 406 406 
       return (kindVal == 406);
   };
@@ -3830,7 +3830,7 @@ template <typename FP> struct Cast<core::SexpSaveArchive_O*,FP> {
 template <typename FP> struct Cast<core::StrWNs_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 148 148 
       return (kindVal == 148);
   };
@@ -3839,7 +3839,7 @@ template <typename FP> struct Cast<core::StrWNs_O*,FP> {
 template <typename FP> struct Cast<clcenv::LambdaName_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 104 104 
       return (kindVal == 104);
   };
@@ -3848,7 +3848,7 @@ template <typename FP> struct Cast<clcenv::LambdaName_O*,FP> {
 template <typename FP> struct Cast<clcenv::Function_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 103 103 
       return (kindVal == 103);
   };
@@ -3857,7 +3857,7 @@ template <typename FP> struct Cast<clcenv::Function_O*,FP> {
 template <typename FP> struct Cast<llvmo::DITypeRefArray_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 73 73 
       return (kindVal == 73);
   };
@@ -3866,7 +3866,7 @@ template <typename FP> struct Cast<llvmo::DITypeRefArray_O*,FP> {
 template <typename FP> struct Cast<core::SexpLoadArchive_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 404 404 
       return (kindVal == 404);
   };
@@ -3875,7 +3875,7 @@ template <typename FP> struct Cast<core::SexpLoadArchive_O*,FP> {
 template <typename FP> struct Cast<core::Exposer_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 224 226 
       return ((224 <= kindVal) && (kindVal <= 226));
   };
@@ -3884,7 +3884,7 @@ template <typename FP> struct Cast<core::Exposer_O*,FP> {
 template <typename FP> struct Cast<asttooling::AstVisitor_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 55 55 
       return (kindVal == 55);
   };
@@ -3893,7 +3893,7 @@ template <typename FP> struct Cast<asttooling::AstVisitor_O*,FP> {
 template <typename FP> struct Cast<core::SNode_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 221 223 
       return ((221 <= kindVal) && (kindVal <= 223));
   };
@@ -3902,7 +3902,7 @@ template <typename FP> struct Cast<core::SNode_O*,FP> {
 template <typename FP> struct Cast<llvmo::InvokeInst_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 326 326 
       return (kindVal == 326);
   };
@@ -3911,7 +3911,7 @@ template <typename FP> struct Cast<llvmo::InvokeInst_O*,FP> {
 template <typename FP> struct Cast<clcenv::Macro_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 102 102 
       return (kindVal == 102);
   };
@@ -3920,7 +3920,7 @@ template <typename FP> struct Cast<clcenv::Macro_O*,FP> {
 template <typename FP> struct Cast<asttooling::DerivableASTFrontendAction*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 15 15 
       return (kindVal == 15);
   };
@@ -3929,7 +3929,7 @@ template <typename FP> struct Cast<asttooling::DerivableASTFrontendAction*,FP> {
 template <typename FP> struct Cast<llvmo::DIBuilder_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 288 288 
       return (kindVal == 288);
   };
@@ -3938,7 +3938,7 @@ template <typename FP> struct Cast<llvmo::DIBuilder_O*,FP> {
 template <typename FP> struct Cast<core::Array_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 117 220 
       return ((117 <= kindVal) && (kindVal <= 220));
   };
@@ -3947,7 +3947,7 @@ template <typename FP> struct Cast<core::Array_O*,FP> {
 template <typename FP> struct Cast<llvmo::ConstantInt_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 307 307 
       return (kindVal == 307);
   };
@@ -3956,7 +3956,7 @@ template <typename FP> struct Cast<llvmo::ConstantInt_O*,FP> {
 template <typename FP> struct Cast<core::SimpleVector_int8_t_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 213 213 
       return (kindVal == 213);
   };
@@ -3965,7 +3965,7 @@ template <typename FP> struct Cast<core::SimpleVector_int8_t_O*,FP> {
 template <typename FP> struct Cast<llvmo::TargetOptions_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 287 287 
       return (kindVal == 287);
   };
@@ -3974,7 +3974,7 @@ template <typename FP> struct Cast<llvmo::TargetOptions_O*,FP> {
 template <typename FP> struct Cast<llvmo::PointerType_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 353 353 
       return (kindVal == 353);
   };
@@ -3983,7 +3983,7 @@ template <typename FP> struct Cast<llvmo::PointerType_O*,FP> {
 template <typename FP> struct Cast<core::CxxObject_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 72 116 
       return ((72 <= kindVal) && (kindVal <= 116));
   };
@@ -3992,7 +3992,7 @@ template <typename FP> struct Cast<core::CxxObject_O*,FP> {
 template <typename FP> struct Cast<core::ActivationFrame_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 413 416 
       return ((413 <= kindVal) && (kindVal <= 416));
   };
@@ -4001,7 +4001,7 @@ template <typename FP> struct Cast<core::ActivationFrame_O*,FP> {
 template <typename FP> struct Cast<core::MDArray_size_t_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 185 185 
       return (kindVal == 185);
   };
@@ -4010,7 +4010,7 @@ template <typename FP> struct Cast<core::MDArray_size_t_O*,FP> {
 template <typename FP> struct Cast<core::Creator_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 65 71 
       return ((65 <= kindVal) && (kindVal <= 71));
   };
@@ -4019,7 +4019,7 @@ template <typename FP> struct Cast<core::Creator_O*,FP> {
 template <typename FP> struct Cast<llvmo::UnreachableInst_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 325 325 
       return (kindVal == 325);
   };
@@ -4028,7 +4028,7 @@ template <typename FP> struct Cast<llvmo::UnreachableInst_O*,FP> {
 template <typename FP> struct Cast<clcenv::VariableDynamicExtent_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 101 101 
       return (kindVal == 101);
   };
@@ -4037,7 +4037,7 @@ template <typename FP> struct Cast<clcenv::VariableDynamicExtent_O*,FP> {
 template <typename FP> struct Cast<core::MacroletEnvironment_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 419 419 
       return (kindVal == 419);
   };
@@ -4046,7 +4046,7 @@ template <typename FP> struct Cast<core::MacroletEnvironment_O*,FP> {
 template <typename FP> struct Cast<llvmo::PHINode_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 321 321 
       return (kindVal == 321);
   };
@@ -4055,7 +4055,7 @@ template <typename FP> struct Cast<llvmo::PHINode_O*,FP> {
 template <typename FP> struct Cast<core::SingleDispatchGenericFunctionClosure_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 268 268 
       return (kindVal == 268);
   };
@@ -4064,7 +4064,7 @@ template <typename FP> struct Cast<core::SingleDispatchGenericFunctionClosure_O*
 template <typename FP> struct Cast<core::SimpleMDArrayDouble_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 156 156 
       return (kindVal == 156);
   };
@@ -4073,7 +4073,7 @@ template <typename FP> struct Cast<core::SimpleMDArrayDouble_O*,FP> {
 template <typename FP> struct Cast<core::Reader_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 64 64 
       return (kindVal == 64);
   };
@@ -4082,7 +4082,7 @@ template <typename FP> struct Cast<core::Reader_O*,FP> {
 template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr<core::T_O>>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 18 18 
       return (kindVal == 18);
   };
@@ -4091,7 +4091,7 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr
 template <typename FP> struct Cast<core::WeakHashTable_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 62 63 
       return ((62 <= kindVal) && (kindVal <= 63));
   };
@@ -4100,7 +4100,7 @@ template <typename FP> struct Cast<core::WeakHashTable_O*,FP> {
 template <typename FP> struct Cast<asttooling::DerivableSyntaxOnlyAction*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 13 13 
       return (kindVal == 13);
   };
@@ -4109,7 +4109,7 @@ template <typename FP> struct Cast<asttooling::DerivableSyntaxOnlyAction*,FP> {
 template <typename FP> struct Cast<clasp_ffi::ForeignTypeSpec_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 61 61 
       return (kindVal == 61);
   };
@@ -4118,7 +4118,7 @@ template <typename FP> struct Cast<clasp_ffi::ForeignTypeSpec_O*,FP> {
 template <typename FP> struct Cast<core::BranchSNode_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 222 222 
       return (kindVal == 222);
   };
@@ -4127,7 +4127,7 @@ template <typename FP> struct Cast<core::BranchSNode_O*,FP> {
 template <typename FP> struct Cast<llvmo::DISubprogram_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 365 365 
       return (kindVal == 365);
   };
@@ -4136,7 +4136,7 @@ template <typename FP> struct Cast<llvmo::DISubprogram_O*,FP> {
 template <typename FP> struct Cast<core::SimpleVectorFloat_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 192 192 
       return (kindVal == 192);
   };
@@ -4145,7 +4145,7 @@ template <typename FP> struct Cast<core::SimpleVectorFloat_O*,FP> {
 template <typename FP> struct Cast<llvmo::FunctionPassManager_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 301 301 
       return (kindVal == 301);
   };
@@ -4154,7 +4154,7 @@ template <typename FP> struct Cast<llvmo::FunctionPassManager_O*,FP> {
 template <typename FP> struct Cast<core::EchoStream_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 242 242 
       return (kindVal == 242);
   };
@@ -4163,7 +4163,7 @@ template <typename FP> struct Cast<core::EchoStream_O*,FP> {
 template <typename FP> struct Cast<core::MDArrayFloat_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 133 133 
       return (kindVal == 133);
   };
@@ -4172,7 +4172,7 @@ template <typename FP> struct Cast<core::MDArrayFloat_O*,FP> {
 template <typename FP> struct Cast<clcenv::Closure_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 100 100 
       return (kindVal == 100);
   };
@@ -4181,7 +4181,7 @@ template <typename FP> struct Cast<clcenv::Closure_O*,FP> {
 template <typename FP> struct Cast<llvmo::Argument_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 304 304 
       return (kindVal == 304);
   };
@@ -4190,7 +4190,7 @@ template <typename FP> struct Cast<llvmo::Argument_O*,FP> {
 template <typename FP> struct Cast<clcenv::ConstantVariableInfo_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 80 80 
       return (kindVal == 80);
   };
@@ -4199,7 +4199,7 @@ template <typename FP> struct Cast<clcenv::ConstantVariableInfo_O*,FP> {
 template <typename FP> struct Cast<core::MDArray_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 118 187 
       return ((118 <= kindVal) && (kindVal <= 187));
   };
@@ -4208,7 +4208,7 @@ template <typename FP> struct Cast<core::MDArray_O*,FP> {
 template <typename FP> struct Cast<mp::ConcurrentQueue_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 60 60 
       return (kindVal == 60);
   };
@@ -4217,7 +4217,7 @@ template <typename FP> struct Cast<mp::ConcurrentQueue_O*,FP> {
 template <typename FP> struct Cast<core::Complex_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 389 389 
       return (kindVal == 389);
   };
@@ -4226,7 +4226,7 @@ template <typename FP> struct Cast<core::Complex_O*,FP> {
 template <typename FP> struct Cast<core::MDArray_int16_t_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 129 129 
       return (kindVal == 129);
   };
@@ -4235,7 +4235,7 @@ template <typename FP> struct Cast<core::MDArray_int16_t_O*,FP> {
 template <typename FP> struct Cast<clbind::ClassRep_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 264 264 
       return (kindVal == 264);
   };
@@ -4244,7 +4244,7 @@ template <typename FP> struct Cast<clbind::ClassRep_O*,FP> {
 template <typename FP> struct Cast<core::StandardClassCreator_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 67 67 
       return (kindVal == 67);
   };
@@ -4253,7 +4253,7 @@ template <typename FP> struct Cast<core::StandardClassCreator_O*,FP> {
 template <typename FP> struct Cast<core::SimpleVector_byte32_t_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 211 211 
       return (kindVal == 211);
   };
@@ -4262,7 +4262,7 @@ template <typename FP> struct Cast<core::SimpleVector_byte32_t_O*,FP> {
 template <typename FP> struct Cast<clcenv::Inline_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 99 99 
       return (kindVal == 99);
   };
@@ -4271,7 +4271,7 @@ template <typename FP> struct Cast<clcenv::Inline_O*,FP> {
 template <typename FP> struct Cast<core::HashTableEq_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 408 408 
       return (kindVal == 408);
   };
@@ -4280,7 +4280,7 @@ template <typename FP> struct Cast<core::HashTableEq_O*,FP> {
 template <typename FP> struct Cast<core::SimpleMDArray_byte64_t_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 165 165 
       return (kindVal == 165);
   };
@@ -4289,7 +4289,7 @@ template <typename FP> struct Cast<core::SimpleMDArray_byte64_t_O*,FP> {
 template <typename FP> struct Cast<clasp_ffi::ForeignData_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 286 286 
       return (kindVal == 286);
   };
@@ -4298,7 +4298,7 @@ template <typename FP> struct Cast<clasp_ffi::ForeignData_O*,FP> {
 template <typename FP> struct Cast<core::Float_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 391 395 
       return ((391 <= kindVal) && (kindVal <= 395));
   };
@@ -4307,1946 +4307,1946 @@ template <typename FP> struct Cast<core::Float_O*,FP> {
 template <typename FP> struct Cast<clbind::DummyCreator_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 66 66 
       return (kindVal == 66);
   };
 };
 #endif // defined(GC_DYNAMIC_CAST)
 #if defined(GC_KIND_SELECTORS)
-template <> class gctools::GCKind<llvmo::MDNode_O> {
+template <> class gctools::GCStamp<llvmo::MDNode_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__MDNode_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__MDNode_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<clcenv::GlobalFunctionInfo_O> {
+template <> class gctools::GCStamp<clcenv::GlobalFunctionInfo_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_clcenv__GlobalFunctionInfo_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_clcenv__GlobalFunctionInfo_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<clcenv::Optimize_O> {
+template <> class gctools::GCStamp<clcenv::Optimize_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_clcenv__Optimize_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_clcenv__Optimize_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::LLVMTargetMachine_O> {
+template <> class gctools::GCStamp<llvmo::LLVMTargetMachine_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__LLVMTargetMachine_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__LLVMTargetMachine_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::SimpleMDArray_int8_t_O> {
+template <> class gctools::GCStamp<core::SimpleMDArray_int8_t_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__SimpleMDArray_int8_t_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__SimpleMDArray_int8_t_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::ReturnInst_O> {
+template <> class gctools::GCStamp<llvmo::ReturnInst_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__ReturnInst_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__ReturnInst_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::ConsStepper_O> {
+template <> class gctools::GCStamp<core::ConsStepper_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__ConsStepper_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__ConsStepper_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::ModuleHandle_O> {
+template <> class gctools::GCStamp<llvmo::ModuleHandle_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__ModuleHandle_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__ModuleHandle_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::DoubleFloat_O> {
+template <> class gctools::GCStamp<core::DoubleFloat_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__DoubleFloat_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__DoubleFloat_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::LightUserData_O> {
+template <> class gctools::GCStamp<core::LightUserData_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__LightUserData_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__LightUserData_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<asttooling::AsttoolingExposer_O> {
+template <> class gctools::GCStamp<asttooling::AsttoolingExposer_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_asttooling__AsttoolingExposer_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_asttooling__AsttoolingExposer_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::PassManagerBuilder_O> {
+template <> class gctools::GCStamp<llvmo::PassManagerBuilder_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__PassManagerBuilder_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__PassManagerBuilder_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::SmallMap_O> {
+template <> class gctools::GCStamp<core::SmallMap_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__SmallMap_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__SmallMap_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::ShortFloat_O> {
+template <> class gctools::GCStamp<core::ShortFloat_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__ShortFloat_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__ShortFloat_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::TargetSubtargetInfo_O> {
+template <> class gctools::GCStamp<llvmo::TargetSubtargetInfo_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__TargetSubtargetInfo_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__TargetSubtargetInfo_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::LoadInst_O> {
+template <> class gctools::GCStamp<llvmo::LoadInst_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__LoadInst_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__LoadInst_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::Record_O> {
+template <> class gctools::GCStamp<core::Record_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__Record_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__Record_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<gctools::GCArray_moveable<int>> {
+template <> class gctools::GCStamp<gctools::GCArray_moveable<int>> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_GCARRAY_gctools__GCArray_moveable_int_ ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_GCARRAY_gctools__GCArray_moveable_int_ ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::SourceManager_O> {
+template <> class gctools::GCStamp<core::SourceManager_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__SourceManager_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__SourceManager_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::SaveArchive_O> {
+template <> class gctools::GCStamp<core::SaveArchive_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__SaveArchive_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__SaveArchive_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::SimpleMDArray_int16_t_O> {
+template <> class gctools::GCStamp<core::SimpleMDArray_int16_t_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__SimpleMDArray_int16_t_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__SimpleMDArray_int16_t_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::Pathname_O> {
+template <> class gctools::GCStamp<core::Pathname_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__Pathname_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__Pathname_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::MDArrayDouble_O> {
+template <> class gctools::GCStamp<core::MDArrayDouble_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__MDArrayDouble_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__MDArrayDouble_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::MacroClosure_O> {
+template <> class gctools::GCStamp<core::MacroClosure_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__MacroClosure_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__MacroClosure_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<clcenv::VariableType_O> {
+template <> class gctools::GCStamp<clcenv::VariableType_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_clcenv__VariableType_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_clcenv__VariableType_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<gctools::GCVector_moveable<core::RequiredArgument>> {
+template <> class gctools::GCStamp<gctools::GCVector_moveable<core::RequiredArgument>> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_core__RequiredArgument_ ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_core__RequiredArgument_ ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<clcenv::OptimizeInfo_O> {
+template <> class gctools::GCStamp<clcenv::OptimizeInfo_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_clcenv__OptimizeInfo_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_clcenv__OptimizeInfo_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::LeafSNode_O> {
+template <> class gctools::GCStamp<core::LeafSNode_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__LeafSNode_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__LeafSNode_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::CatchEnvironment_O> {
+template <> class gctools::GCStamp<core::CatchEnvironment_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__CatchEnvironment_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__CatchEnvironment_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::DIScope_O> {
+template <> class gctools::GCStamp<llvmo::DIScope_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__DIScope_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__DIScope_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::Str8Ns_O> {
+template <> class gctools::GCStamp<core::Str8Ns_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__Str8Ns_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__Str8Ns_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::SimpleMDArray_fixnum_O> {
+template <> class gctools::GCStamp<core::SimpleMDArray_fixnum_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__SimpleMDArray_fixnum_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__SimpleMDArray_fixnum_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::InterpretedClosure_O> {
+template <> class gctools::GCStamp<core::InterpretedClosure_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__InterpretedClosure_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__InterpretedClosure_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::SimpleMDArray_byte32_t_O> {
+template <> class gctools::GCStamp<core::SimpleMDArray_byte32_t_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__SimpleMDArray_byte32_t_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__SimpleMDArray_byte32_t_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::SimpleCharacterString_O> {
+template <> class gctools::GCStamp<core::SimpleCharacterString_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__SimpleCharacterString_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__SimpleCharacterString_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::SmallMultimap_O> {
+template <> class gctools::GCStamp<core::SmallMultimap_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__SmallMultimap_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__SmallMultimap_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::SimpleBitVector_O> {
+template <> class gctools::GCStamp<core::SimpleBitVector_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__SimpleBitVector_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__SimpleBitVector_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::ValueFrame_O> {
+template <> class gctools::GCStamp<core::ValueFrame_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__ValueFrame_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__ValueFrame_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<core::T_O>>>> {
+template <> class gctools::GCStamp<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<core::T_O>>>> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__T_O__gctools__smart_ptr_core__T_O___ ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__T_O__gctools__smart_ptr_core__T_O___ ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::ClosureWithFrame_O> {
+template <> class gctools::GCStamp<core::ClosureWithFrame_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__ClosureWithFrame_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__ClosureWithFrame_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::SimpleMDArrayT_O> {
+template <> class gctools::GCStamp<core::SimpleMDArrayT_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__SimpleMDArrayT_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__SimpleMDArrayT_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::Character_dummy_O> {
+template <> class gctools::GCStamp<core::Character_dummy_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__Character_dummy_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__Character_dummy_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<clcenv::LexicalVariable_O> {
+template <> class gctools::GCStamp<clcenv::LexicalVariable_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_clcenv__LexicalVariable_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_clcenv__LexicalVariable_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::ExecutionEngine_O> {
+template <> class gctools::GCStamp<llvmo::ExecutionEngine_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__ExecutionEngine_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__ExecutionEngine_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::MDString_O> {
+template <> class gctools::GCStamp<llvmo::MDString_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__MDString_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__MDString_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::ConstantDataArray_O> {
+template <> class gctools::GCStamp<llvmo::ConstantDataArray_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__ConstantDataArray_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__ConstantDataArray_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<clbind::ConstructorCreator_O> {
+template <> class gctools::GCStamp<clbind::ConstructorCreator_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_TEMPLATED_LISPALLOC_clbind__ConstructorCreator_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_TEMPLATED_LISPALLOC_clbind__ConstructorCreator_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<clcenv::Entry_O> {
+template <> class gctools::GCStamp<clcenv::Entry_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_clcenv__Entry_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_clcenv__Entry_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::DIFile_O> {
+template <> class gctools::GCStamp<llvmo::DIFile_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__DIFile_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__DIFile_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<clcenv::LexicalVariableInfo_O> {
+template <> class gctools::GCStamp<clcenv::LexicalVariableInfo_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_clcenv__LexicalVariableInfo_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_clcenv__LexicalVariableInfo_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::Attribute_O> {
+template <> class gctools::GCStamp<llvmo::Attribute_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__Attribute_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__Attribute_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::NamedMDNode_O> {
+template <> class gctools::GCStamp<llvmo::NamedMDNode_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__NamedMDNode_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__NamedMDNode_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::SimpleBaseString_O> {
+template <> class gctools::GCStamp<core::SimpleBaseString_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__SimpleBaseString_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__SimpleBaseString_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::Metadata_O> {
+template <> class gctools::GCStamp<llvmo::Metadata_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__Metadata_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__Metadata_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::DILexicalBlock_O> {
+template <> class gctools::GCStamp<llvmo::DILexicalBlock_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__DILexicalBlock_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__DILexicalBlock_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::Type_O> {
+template <> class gctools::GCStamp<llvmo::Type_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__Type_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__Type_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::AllocaInst_O> {
+template <> class gctools::GCStamp<llvmo::AllocaInst_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__AllocaInst_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__AllocaInst_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<mp::BlockingConcurrentQueue_O> {
+template <> class gctools::GCStamp<mp::BlockingConcurrentQueue_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_mp__BlockingConcurrentQueue_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_mp__BlockingConcurrentQueue_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::Fixnum_dummy_O> {
+template <> class gctools::GCStamp<core::Fixnum_dummy_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__Fixnum_dummy_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__Fixnum_dummy_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::CallInst_O> {
+template <> class gctools::GCStamp<llvmo::CallInst_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__CallInst_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__CallInst_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::TagbodyEnvironment_O> {
+template <> class gctools::GCStamp<core::TagbodyEnvironment_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__TagbodyEnvironment_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__TagbodyEnvironment_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<mp::SharedMutex_O> {
+template <> class gctools::GCStamp<mp::SharedMutex_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_mp__SharedMutex_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_mp__SharedMutex_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::SwitchInst_O> {
+template <> class gctools::GCStamp<llvmo::SwitchInst_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__SwitchInst_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__SwitchInst_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::SimpleVector_byte16_t_O> {
+template <> class gctools::GCStamp<core::SimpleVector_byte16_t_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__SimpleVector_byte16_t_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__SimpleVector_byte16_t_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::SimpleMDArray_O> {
+template <> class gctools::GCStamp<core::SimpleMDArray_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__SimpleMDArray_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__SimpleMDArray_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::SingleDispatchMethod_O> {
+template <> class gctools::GCStamp<core::SingleDispatchMethod_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__SingleDispatchMethod_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__SingleDispatchMethod_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::TagbodyFrame_O> {
+template <> class gctools::GCStamp<core::TagbodyFrame_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__TagbodyFrame_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__TagbodyFrame_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::DINode_O> {
+template <> class gctools::GCStamp<llvmo::DINode_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__DINode_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__DINode_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::DirectoryIterator_O> {
+template <> class gctools::GCStamp<core::DirectoryIterator_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__DirectoryIterator_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__DirectoryIterator_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::StringOutputStream_O> {
+template <> class gctools::GCStamp<core::StringOutputStream_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__StringOutputStream_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__StringOutputStream_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::SimpleMDArrayCharacter_O> {
+template <> class gctools::GCStamp<core::SimpleMDArrayCharacter_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__SimpleMDArrayCharacter_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__SimpleMDArrayCharacter_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::NamedFunction_O> {
+template <> class gctools::GCStamp<core::NamedFunction_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__NamedFunction_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__NamedFunction_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::Function_O> {
+template <> class gctools::GCStamp<llvmo::Function_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__Function_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__Function_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::InsertPoint_O> {
+template <> class gctools::GCStamp<llvmo::InsertPoint_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__InsertPoint_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__InsertPoint_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::BitVectorNs_O> {
+template <> class gctools::GCStamp<core::BitVectorNs_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__BitVectorNs_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__BitVectorNs_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::LambdaListHandler_O> {
+template <> class gctools::GCStamp<core::LambdaListHandler_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__LambdaListHandler_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__LambdaListHandler_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::ConstantDataSequential_O> {
+template <> class gctools::GCStamp<llvmo::ConstantDataSequential_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__ConstantDataSequential_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__ConstantDataSequential_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::CompiledClosure_O> {
+template <> class gctools::GCStamp<core::CompiledClosure_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__CompiledClosure_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__CompiledClosure_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<clcenv::GlobalMacroInfo_O> {
+template <> class gctools::GCStamp<clcenv::GlobalMacroInfo_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_clcenv__GlobalMacroInfo_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_clcenv__GlobalMacroInfo_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::WeakKeyMapping_O> {
+template <> class gctools::GCStamp<core::WeakKeyMapping_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__WeakKeyMapping_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__WeakKeyMapping_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::Environment_O> {
+template <> class gctools::GCStamp<core::Environment_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__Environment_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__Environment_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::CompiledDispatchFunction_O> {
+template <> class gctools::GCStamp<core::CompiledDispatchFunction_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__CompiledDispatchFunction_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__CompiledDispatchFunction_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::ValueAsMetadata_O> {
+template <> class gctools::GCStamp<llvmo::ValueAsMetadata_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__ValueAsMetadata_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__ValueAsMetadata_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<clcenv::SymbolMacro_O> {
+template <> class gctools::GCStamp<clcenv::SymbolMacro_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_clcenv__SymbolMacro_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_clcenv__SymbolMacro_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::DICompositeType_O> {
+template <> class gctools::GCStamp<llvmo::DICompositeType_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__DICompositeType_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__DICompositeType_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::MDArray_byte64_t_O> {
+template <> class gctools::GCStamp<core::MDArray_byte64_t_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__MDArray_byte64_t_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__MDArray_byte64_t_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::ConcatenatedStream_O> {
+template <> class gctools::GCStamp<core::ConcatenatedStream_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__ConcatenatedStream_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__ConcatenatedStream_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::SimpleVector_int64_t_O> {
+template <> class gctools::GCStamp<core::SimpleVector_int64_t_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__SimpleVector_int64_t_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__SimpleVector_int64_t_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::HashTable_O> {
+template <> class gctools::GCStamp<core::HashTable_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__HashTable_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__HashTable_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::DILexicalBlockBase_O> {
+template <> class gctools::GCStamp<llvmo::DILexicalBlockBase_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__DILexicalBlockBase_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__DILexicalBlockBase_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::Archive_O> {
+template <> class gctools::GCStamp<core::Archive_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__Archive_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__Archive_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::Rational_O> {
+template <> class gctools::GCStamp<core::Rational_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__Rational_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__Rational_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<clcenv::LocalFunctionInfo_O> {
+template <> class gctools::GCStamp<clcenv::LocalFunctionInfo_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_clcenv__LocalFunctionInfo_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_clcenv__LocalFunctionInfo_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::AnsiStream_O> {
+template <> class gctools::GCStamp<core::AnsiStream_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__AnsiStream_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__AnsiStream_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<mp::RecursiveMutex_O> {
+template <> class gctools::GCStamp<mp::RecursiveMutex_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_mp__RecursiveMutex_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_mp__RecursiveMutex_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::SharpEqualWrapper_O> {
+template <> class gctools::GCStamp<core::SharpEqualWrapper_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__SharpEqualWrapper_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__SharpEqualWrapper_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::CxxMethodFunction_O> {
+template <> class gctools::GCStamp<core::CxxMethodFunction_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__CxxMethodFunction_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__CxxMethodFunction_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::SimpleMDArray_byte16_t_O> {
+template <> class gctools::GCStamp<core::SimpleMDArray_byte16_t_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__SimpleMDArray_byte16_t_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__SimpleMDArray_byte16_t_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<gctools::GCVector_moveable<gctools::smart_ptr<core::SingleDispatchMethod_O>>> {
+template <> class gctools::GCStamp<gctools::GCVector_moveable<gctools::smart_ptr<core::SingleDispatchMethod_O>>> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__SingleDispatchMethod_O__ ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__SingleDispatchMethod_O__ ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::UnaryInstruction_O> {
+template <> class gctools::GCStamp<llvmo::UnaryInstruction_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__UnaryInstruction_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__UnaryInstruction_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::StringInputStream_O> {
+template <> class gctools::GCStamp<core::StringInputStream_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__StringInputStream_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__StringInputStream_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::SingleDispatchEffectiveMethodFunction_O> {
+template <> class gctools::GCStamp<core::SingleDispatchEffectiveMethodFunction_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__SingleDispatchEffectiveMethodFunction_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__SingleDispatchEffectiveMethodFunction_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::TargetMachine_O> {
+template <> class gctools::GCStamp<llvmo::TargetMachine_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__TargetMachine_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__TargetMachine_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::DIBasicType_O> {
+template <> class gctools::GCStamp<llvmo::DIBasicType_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__DIBasicType_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__DIBasicType_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::MDArray_byte8_t_O> {
+template <> class gctools::GCStamp<core::MDArray_byte8_t_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__MDArray_byte8_t_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__MDArray_byte8_t_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::SimpleVector_fixnum_O> {
+template <> class gctools::GCStamp<core::SimpleVector_fixnum_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__SimpleVector_fixnum_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__SimpleVector_fixnum_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<gctools::GCVector_moveable<gctools::smart_ptr<core::SequenceStepper_O>>> {
+template <> class gctools::GCStamp<gctools::GCVector_moveable<gctools::smart_ptr<core::SequenceStepper_O>>> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__SequenceStepper_O__ ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__SequenceStepper_O__ ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<clcenv::SpecialVariableInfo_O> {
+template <> class gctools::GCStamp<clcenv::SpecialVariableInfo_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_clcenv__SpecialVariableInfo_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_clcenv__SpecialVariableInfo_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<gctools::GCVector_moveable<gctools::smart_ptr<core::Package_O>>> {
+template <> class gctools::GCStamp<gctools::GCVector_moveable<gctools::smart_ptr<core::Package_O>>> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__Package_O__ ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__Package_O__ ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::Number_O> {
+template <> class gctools::GCStamp<core::Number_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__Number_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__Number_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::CandoException_O> {
+template <> class gctools::GCStamp<core::CandoException_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__CandoException_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__CandoException_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::ReadTable_O> {
+template <> class gctools::GCStamp<core::ReadTable_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__ReadTable_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__ReadTable_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::GlobalVariable_O> {
+template <> class gctools::GCStamp<llvmo::GlobalVariable_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__GlobalVariable_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__GlobalVariable_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::SymbolToEnumConverter_O> {
+template <> class gctools::GCStamp<core::SymbolToEnumConverter_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__SymbolToEnumConverter_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__SymbolToEnumConverter_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::Bignum_O> {
+template <> class gctools::GCStamp<core::Bignum_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__Bignum_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__Bignum_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::PosixTimeDuration_O> {
+template <> class gctools::GCStamp<core::PosixTimeDuration_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__PosixTimeDuration_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__PosixTimeDuration_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<clcenv::GlobalEnvironment_O> {
+template <> class gctools::GCStamp<clcenv::GlobalEnvironment_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_clcenv__GlobalEnvironment_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_clcenv__GlobalEnvironment_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::CompiledFunction_O> {
+template <> class gctools::GCStamp<core::CompiledFunction_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__CompiledFunction_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__CompiledFunction_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::NativeVector_float_O> {
+template <> class gctools::GCStamp<core::NativeVector_float_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__NativeVector_float_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__NativeVector_float_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<gctools::GCVector_moveable<core::ExceptionEntry>> {
+template <> class gctools::GCStamp<gctools::GCVector_moveable<core::ExceptionEntry>> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_core__ExceptionEntry_ ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_core__ExceptionEntry_ ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<gctools::GCArray_moveable<unsigned int>> {
+template <> class gctools::GCStamp<gctools::GCArray_moveable<unsigned int>> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_GCARRAY_gctools__GCArray_moveable_unsigned_int_ ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_GCARRAY_gctools__GCArray_moveable_unsigned_int_ ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::DIDerivedType_O> {
+template <> class gctools::GCStamp<llvmo::DIDerivedType_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__DIDerivedType_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__DIDerivedType_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::MDArrayCharacter_O> {
+template <> class gctools::GCStamp<core::MDArrayCharacter_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__MDArrayCharacter_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__MDArrayCharacter_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::MDArray_byte32_t_O> {
+template <> class gctools::GCStamp<core::MDArray_byte32_t_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__MDArray_byte32_t_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__MDArray_byte32_t_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::BlockAddress_O> {
+template <> class gctools::GCStamp<llvmo::BlockAddress_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__BlockAddress_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__BlockAddress_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::StoreInst_O> {
+template <> class gctools::GCStamp<llvmo::StoreInst_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__StoreInst_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__StoreInst_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::FunctionPass_O> {
+template <> class gctools::GCStamp<llvmo::FunctionPass_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__FunctionPass_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__FunctionPass_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::SimpleMDArray_int64_t_O> {
+template <> class gctools::GCStamp<core::SimpleMDArray_int64_t_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__SimpleMDArray_int64_t_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__SimpleMDArray_int64_t_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::LongFloat_O> {
+template <> class gctools::GCStamp<core::LongFloat_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__LongFloat_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__LongFloat_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::FileStream_O> {
+template <> class gctools::GCStamp<core::FileStream_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__FileStream_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__FileStream_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::AtomicRMWInst_O> {
+template <> class gctools::GCStamp<llvmo::AtomicRMWInst_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__AtomicRMWInst_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__AtomicRMWInst_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::ResumeInst_O> {
+template <> class gctools::GCStamp<llvmo::ResumeInst_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__ResumeInst_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__ResumeInst_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::BlockEnvironment_O> {
+template <> class gctools::GCStamp<core::BlockEnvironment_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__BlockEnvironment_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__BlockEnvironment_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<clcenv::FunctionInfo_O> {
+template <> class gctools::GCStamp<clcenv::FunctionInfo_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_clcenv__FunctionInfo_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_clcenv__FunctionInfo_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::StrNs_O> {
+template <> class gctools::GCStamp<core::StrNs_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__StrNs_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__StrNs_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::SimpleVector_byte8_t_O> {
+template <> class gctools::GCStamp<core::SimpleVector_byte8_t_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__SimpleVector_byte8_t_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__SimpleVector_byte8_t_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<gctools::GCArray_moveable<double>> {
+template <> class gctools::GCStamp<gctools::GCArray_moveable<double>> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_GCARRAY_gctools__GCArray_moveable_double_ ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_GCARRAY_gctools__GCArray_moveable_double_ ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::ClaspJIT_O> {
+template <> class gctools::GCStamp<llvmo::ClaspJIT_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__ClaspJIT_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__ClaspJIT_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::LoadArchive_O> {
+template <> class gctools::GCStamp<core::LoadArchive_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__LoadArchive_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__LoadArchive_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::Ratio_O> {
+template <> class gctools::GCStamp<core::Ratio_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__Ratio_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__Ratio_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::FunctionClosure_O> {
+template <> class gctools::GCStamp<core::FunctionClosure_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__FunctionClosure_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__FunctionClosure_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<clcenv::VariableInfo_O> {
+template <> class gctools::GCStamp<clcenv::VariableInfo_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_clcenv__VariableInfo_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_clcenv__VariableInfo_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<gctools::GCArray_moveable<float>> {
+template <> class gctools::GCStamp<gctools::GCArray_moveable<float>> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_GCARRAY_gctools__GCArray_moveable_float_ ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_GCARRAY_gctools__GCArray_moveable_float_ ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::Triple_O> {
+template <> class gctools::GCStamp<llvmo::Triple_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__Triple_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__Triple_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::DataLayout_O> {
+template <> class gctools::GCStamp<llvmo::DataLayout_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__DataLayout_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__DataLayout_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::Symbol_O> {
+template <> class gctools::GCStamp<core::Symbol_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_BOOTSTRAP_core__Symbol_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_BOOTSTRAP_core__Symbol_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<clcenv::LocalMacroInfo_O> {
+template <> class gctools::GCStamp<clcenv::LocalMacroInfo_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_clcenv__LocalMacroInfo_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_clcenv__LocalMacroInfo_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::T_O> {
+template <> class gctools::GCStamp<core::T_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_BOOTSTRAP_core__T_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_BOOTSTRAP_core__T_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::ConstantExpr_O> {
+template <> class gctools::GCStamp<llvmo::ConstantExpr_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__ConstantExpr_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__ConstantExpr_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::SimpleVector_int16_t_O> {
+template <> class gctools::GCStamp<core::SimpleVector_int16_t_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__SimpleVector_int16_t_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__SimpleVector_int16_t_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::Lisp_O> {
+template <> class gctools::GCStamp<core::Lisp_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_ROOTCLASSALLOC_core__Lisp_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_ROOTCLASSALLOC_core__Lisp_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::StackValueEnvironment_O> {
+template <> class gctools::GCStamp<core::StackValueEnvironment_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__StackValueEnvironment_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__StackValueEnvironment_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<gctools::GCArray_moveable<unsigned long>> {
+template <> class gctools::GCStamp<gctools::GCArray_moveable<unsigned long>> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_GCARRAY_gctools__GCArray_moveable_unsigned_long_ ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_GCARRAY_gctools__GCArray_moveable_unsigned_long_ ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::FenceInst_O> {
+template <> class gctools::GCStamp<llvmo::FenceInst_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__FenceInst_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__FenceInst_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<clcenv::VariableIgnore_O> {
+template <> class gctools::GCStamp<clcenv::VariableIgnore_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_clcenv__VariableIgnore_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_clcenv__VariableIgnore_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::PosixTime_O> {
+template <> class gctools::GCStamp<core::PosixTime_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__PosixTime_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__PosixTime_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<gctools::GCVector_moveable<double>> {
+template <> class gctools::GCStamp<gctools::GCVector_moveable<double>> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_double_ ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_double_ ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<gctools::GCArray_moveable<short>> {
+template <> class gctools::GCStamp<gctools::GCArray_moveable<short>> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_GCARRAY_gctools__GCArray_moveable_short_ ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_GCARRAY_gctools__GCArray_moveable_short_ ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::MDArray_byte16_t_O> {
+template <> class gctools::GCStamp<core::MDArray_byte16_t_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__MDArray_byte16_t_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__MDArray_byte16_t_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::IntArray_O> {
+template <> class gctools::GCStamp<core::IntArray_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__IntArray_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__IntArray_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::Instance_O> {
+template <> class gctools::GCStamp<core::Instance_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__Instance_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__Instance_O ;
   static const size_t Flags = 1 ;
 };
-template <> class gctools::GCKind<core::MDArrayT_O> {
+template <> class gctools::GCStamp<core::MDArrayT_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__MDArrayT_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__MDArrayT_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::IndirectBrInst_O> {
+template <> class gctools::GCStamp<llvmo::IndirectBrInst_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__IndirectBrInst_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__IndirectBrInst_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<gctools::GCVector_moveable<core::SymbolClassPair>> {
+template <> class gctools::GCStamp<gctools::GCVector_moveable<core::SymbolClassPair>> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_core__SymbolClassPair_ ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_core__SymbolClassPair_ ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::ConstantPointerNull_O> {
+template <> class gctools::GCStamp<llvmo::ConstantPointerNull_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__ConstantPointerNull_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__ConstantPointerNull_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::EngineBuilder_O> {
+template <> class gctools::GCStamp<llvmo::EngineBuilder_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__EngineBuilder_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__EngineBuilder_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::SimpleVector_size_t_O> {
+template <> class gctools::GCStamp<core::SimpleVector_size_t_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__SimpleVector_size_t_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__SimpleVector_size_t_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::ExternalObject_O> {
+template <> class gctools::GCStamp<core::ExternalObject_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__ExternalObject_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__ExternalObject_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::RuntimeVisibleEnvironment_O> {
+template <> class gctools::GCStamp<core::RuntimeVisibleEnvironment_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__RuntimeVisibleEnvironment_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__RuntimeVisibleEnvironment_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::VaList_dummy_O> {
+template <> class gctools::GCStamp<core::VaList_dummy_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__VaList_dummy_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__VaList_dummy_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::SimpleMDArray_byte8_t_O> {
+template <> class gctools::GCStamp<core::SimpleMDArray_byte8_t_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__SimpleMDArray_byte8_t_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__SimpleMDArray_byte8_t_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::NativeVector_double_O> {
+template <> class gctools::GCStamp<core::NativeVector_double_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__NativeVector_double_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__NativeVector_double_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::Pointer_O> {
+template <> class gctools::GCStamp<core::Pointer_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__Pointer_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__Pointer_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::WeakPointer_O> {
+template <> class gctools::GCStamp<core::WeakPointer_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__WeakPointer_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__WeakPointer_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::Function_O> {
+template <> class gctools::GCStamp<core::Function_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__Function_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__Function_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<gctools::GCVector_moveable<float>> {
+template <> class gctools::GCStamp<gctools::GCVector_moveable<float>> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_float_ ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_float_ ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::MCSubtargetInfo_O> {
+template <> class gctools::GCStamp<llvmo::MCSubtargetInfo_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__MCSubtargetInfo_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__MCSubtargetInfo_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::TerminatorInst_O> {
+template <> class gctools::GCStamp<llvmo::TerminatorInst_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__TerminatorInst_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__TerminatorInst_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::TwoWayStream_O> {
+template <> class gctools::GCStamp<core::TwoWayStream_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__TwoWayStream_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__TwoWayStream_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::UndefValue_O> {
+template <> class gctools::GCStamp<llvmo::UndefValue_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__UndefValue_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__UndefValue_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::Integer_O> {
+template <> class gctools::GCStamp<core::Integer_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__Integer_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__Integer_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::BuiltinClosure_O> {
+template <> class gctools::GCStamp<core::BuiltinClosure_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_TEMPLATED_LISPALLOC_core__BuiltinClosure_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_TEMPLATED_LISPALLOC_core__BuiltinClosure_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::IOFileStream_O> {
+template <> class gctools::GCStamp<core::IOFileStream_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__IOFileStream_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__IOFileStream_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::IntegerType_O> {
+template <> class gctools::GCStamp<llvmo::IntegerType_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__IntegerType_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__IntegerType_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::StructureClassCreator_O> {
+template <> class gctools::GCStamp<core::StructureClassCreator_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__StructureClassCreator_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__StructureClassCreator_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::HashTableEqualp_O> {
+template <> class gctools::GCStamp<core::HashTableEqualp_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__HashTableEqualp_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__HashTableEqualp_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::DebugLoc_O> {
+template <> class gctools::GCStamp<llvmo::DebugLoc_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__DebugLoc_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__DebugLoc_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::DICompileUnit_O> {
+template <> class gctools::GCStamp<llvmo::DICompileUnit_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__DICompileUnit_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__DICompileUnit_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::MDArray_int64_t_O> {
+template <> class gctools::GCStamp<core::MDArray_int64_t_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__MDArray_int64_t_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__MDArray_int64_t_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::VectorType_O> {
+template <> class gctools::GCStamp<llvmo::VectorType_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__VectorType_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__VectorType_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::RecursiveDirectoryIterator_O> {
+template <> class gctools::GCStamp<core::RecursiveDirectoryIterator_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__RecursiveDirectoryIterator_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__RecursiveDirectoryIterator_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::SequenceStepper_O> {
+template <> class gctools::GCStamp<core::SequenceStepper_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__SequenceStepper_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__SequenceStepper_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::AtomicCmpXchgInst_O> {
+template <> class gctools::GCStamp<llvmo::AtomicCmpXchgInst_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__AtomicCmpXchgInst_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__AtomicCmpXchgInst_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::BasicBlock_O> {
+template <> class gctools::GCStamp<llvmo::BasicBlock_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__BasicBlock_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__BasicBlock_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::CompileTimeEnvironment_O> {
+template <> class gctools::GCStamp<core::CompileTimeEnvironment_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__CompileTimeEnvironment_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__CompileTimeEnvironment_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::RandomState_O> {
+template <> class gctools::GCStamp<core::RandomState_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__RandomState_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__RandomState_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::ConstantStruct_O> {
+template <> class gctools::GCStamp<llvmo::ConstantStruct_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__ConstantStruct_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__ConstantStruct_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::SequentialType_O> {
+template <> class gctools::GCStamp<llvmo::SequentialType_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__SequentialType_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__SequentialType_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::InvocationHistoryFrameIterator_O> {
+template <> class gctools::GCStamp<core::InvocationHistoryFrameIterator_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__InvocationHistoryFrameIterator_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__InvocationHistoryFrameIterator_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::IOStreamStream_O> {
+template <> class gctools::GCStamp<core::IOStreamStream_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__IOStreamStream_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__IOStreamStream_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::SingleFloat_dummy_O> {
+template <> class gctools::GCStamp<core::SingleFloat_dummy_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__SingleFloat_dummy_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__SingleFloat_dummy_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<clcenv::FunctionIgnore_O> {
+template <> class gctools::GCStamp<clcenv::FunctionIgnore_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_clcenv__FunctionIgnore_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_clcenv__FunctionIgnore_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::Path_O> {
+template <> class gctools::GCStamp<core::Path_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__Path_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__Path_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<gctools::GCVector_moveable<core::SymbolStorage>> {
+template <> class gctools::GCStamp<gctools::GCVector_moveable<core::SymbolStorage>> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_core__SymbolStorage_ ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_core__SymbolStorage_ ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::StringStream_O> {
+template <> class gctools::GCStamp<core::StringStream_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__StringStream_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__StringStream_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::SourceFileInfo_O> {
+template <> class gctools::GCStamp<core::SourceFileInfo_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__SourceFileInfo_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__SourceFileInfo_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::HashTableEql_O> {
+template <> class gctools::GCStamp<core::HashTableEql_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__HashTableEql_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__HashTableEql_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::MDArray_int8_t_O> {
+template <> class gctools::GCStamp<core::MDArray_int8_t_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__MDArray_int8_t_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__MDArray_int8_t_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::Cache_O> {
+template <> class gctools::GCStamp<core::Cache_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__Cache_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__Cache_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::MDArray_fixnum_O> {
+template <> class gctools::GCStamp<core::MDArray_fixnum_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__MDArray_fixnum_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__MDArray_fixnum_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::MDArray_int32_t_O> {
+template <> class gctools::GCStamp<core::MDArray_int32_t_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__MDArray_int32_t_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__MDArray_int32_t_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<mp::Process_O> {
+template <> class gctools::GCStamp<mp::Process_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_mp__Process_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_mp__Process_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::SimpleMDArrayFloat_O> {
+template <> class gctools::GCStamp<core::SimpleMDArrayFloat_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__SimpleMDArrayFloat_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__SimpleMDArrayFloat_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::InstanceCreator_O> {
+template <> class gctools::GCStamp<core::InstanceCreator_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__InstanceCreator_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__InstanceCreator_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::General_O> {
+template <> class gctools::GCStamp<core::General_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__General_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__General_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::BranchInst_O> {
+template <> class gctools::GCStamp<llvmo::BranchInst_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__BranchInst_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__BranchInst_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::Instruction_O> {
+template <> class gctools::GCStamp<llvmo::Instruction_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__Instruction_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__Instruction_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::SimpleMDArrayBaseChar_O> {
+template <> class gctools::GCStamp<core::SimpleMDArrayBaseChar_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__SimpleMDArrayBaseChar_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__SimpleMDArrayBaseChar_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::SpecialForm_O> {
+template <> class gctools::GCStamp<core::SpecialForm_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__SpecialForm_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__SpecialForm_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::ConstantArray_O> {
+template <> class gctools::GCStamp<llvmo::ConstantArray_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__ConstantArray_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__ConstantArray_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::Cons_O> {
+template <> class gctools::GCStamp<core::Cons_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__Cons_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__Cons_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<clcenv::FunctionType_O> {
+template <> class gctools::GCStamp<clcenv::FunctionType_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_clcenv__FunctionType_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_clcenv__FunctionType_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::SimpleVector_O> {
+template <> class gctools::GCStamp<core::SimpleVector_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__SimpleVector_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__SimpleVector_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::Stream_O> {
+template <> class gctools::GCStamp<core::Stream_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__Stream_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__Stream_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::Real_O> {
+template <> class gctools::GCStamp<core::Real_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__Real_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__Real_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<gctools::GCVector_moveable<core::OptionalArgument>> {
+template <> class gctools::GCStamp<gctools::GCVector_moveable<core::OptionalArgument>> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_core__OptionalArgument_ ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_core__OptionalArgument_ ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<clcenv::Tag_O> {
+template <> class gctools::GCStamp<clcenv::Tag_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_clcenv__Tag_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_clcenv__Tag_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<gctools::GCArray_moveable<long>> {
+template <> class gctools::GCStamp<gctools::GCArray_moveable<long>> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_GCARRAY_gctools__GCArray_moveable_long_ ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_GCARRAY_gctools__GCArray_moveable_long_ ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::GlobalValue_O> {
+template <> class gctools::GCStamp<llvmo::GlobalValue_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__GlobalValue_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__GlobalValue_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::FileStatus_O> {
+template <> class gctools::GCStamp<core::FileStatus_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__FileStatus_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__FileStatus_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::LandingPadInst_O> {
+template <> class gctools::GCStamp<llvmo::LandingPadInst_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__LandingPadInst_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__LandingPadInst_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<mp::ConditionVariable_O> {
+template <> class gctools::GCStamp<mp::ConditionVariable_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_mp__ConditionVariable_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_mp__ConditionVariable_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::IRBuilderBase_O> {
+template <> class gctools::GCStamp<llvmo::IRBuilderBase_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__IRBuilderBase_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__IRBuilderBase_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<gctools::GCVector_moveable<core::T_O *>> {
+template <> class gctools::GCStamp<gctools::GCVector_moveable<core::T_O *>> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_core__T_O_P_ ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_core__T_O_P_ ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::Value_O> {
+template <> class gctools::GCStamp<llvmo::Value_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__Value_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__Value_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::SymbolMacroletEnvironment_O> {
+template <> class gctools::GCStamp<core::SymbolMacroletEnvironment_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__SymbolMacroletEnvironment_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__SymbolMacroletEnvironment_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::DINodeArray_O> {
+template <> class gctools::GCStamp<llvmo::DINodeArray_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__DINodeArray_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__DINodeArray_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<clcenv::Info_O> {
+template <> class gctools::GCStamp<clcenv::Info_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_clcenv__Info_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_clcenv__Info_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::UnwindProtectEnvironment_O> {
+template <> class gctools::GCStamp<core::UnwindProtectEnvironment_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__UnwindProtectEnvironment_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__UnwindProtectEnvironment_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<clcenv::FunctionDynamicExtent_O> {
+template <> class gctools::GCStamp<clcenv::FunctionDynamicExtent_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_clcenv__FunctionDynamicExtent_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_clcenv__FunctionDynamicExtent_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::ModulePass_O> {
+template <> class gctools::GCStamp<llvmo::ModulePass_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__ModulePass_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__ModulePass_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::PassManagerBase_O> {
+template <> class gctools::GCStamp<llvmo::PassManagerBase_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__PassManagerBase_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__PassManagerBase_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::Iterator_O> {
+template <> class gctools::GCStamp<core::Iterator_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_TEMPLATED_LISPALLOC_core__Iterator_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_TEMPLATED_LISPALLOC_core__Iterator_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::IRBuilder_O> {
+template <> class gctools::GCStamp<llvmo::IRBuilder_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__IRBuilder_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__IRBuilder_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<gctools::GCArray_moveable<unsigned char>> {
+template <> class gctools::GCStamp<gctools::GCArray_moveable<unsigned char>> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_GCARRAY_gctools__GCArray_moveable_unsigned_char_ ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_GCARRAY_gctools__GCArray_moveable_unsigned_char_ ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::TranslationFunctor> {
+template <> class gctools::GCStamp<core::TranslationFunctor> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__TranslationFunctor ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__TranslationFunctor ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<gctools::GCVector_moveable<core::DynamicBinding>> {
+template <> class gctools::GCStamp<gctools::GCVector_moveable<core::DynamicBinding>> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_core__DynamicBinding_ ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_core__DynamicBinding_ ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::MultiStringBuffer_O> {
+template <> class gctools::GCStamp<core::MultiStringBuffer_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__MultiStringBuffer_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__MultiStringBuffer_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::DISubroutineType_O> {
+template <> class gctools::GCStamp<llvmo::DISubroutineType_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__DISubroutineType_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__DISubroutineType_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::SimpleVectorDouble_O> {
+template <> class gctools::GCStamp<core::SimpleVectorDouble_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__SimpleVectorDouble_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__SimpleVectorDouble_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::DIType_O> {
+template <> class gctools::GCStamp<llvmo::DIType_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__DIType_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__DIType_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<clcenv::SpecialOperatorInfo_O> {
+template <> class gctools::GCStamp<clcenv::SpecialOperatorInfo_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_clcenv__SpecialOperatorInfo_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_clcenv__SpecialOperatorInfo_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<gctools::GCVector_moveable<gctools::smart_ptr<clbind::ClassRep_O>>> {
+template <> class gctools::GCStamp<gctools::GCVector_moveable<gctools::smart_ptr<clbind::ClassRep_O>>> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_clbind__ClassRep_O__ ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_clbind__ClassRep_O__ ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<gctools::GCVector_moveable<core::AuxArgument>> {
+template <> class gctools::GCStamp<gctools::GCVector_moveable<core::AuxArgument>> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_core__AuxArgument_ ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_core__AuxArgument_ ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<clcenv::LambdaNameInfo_O> {
+template <> class gctools::GCStamp<clcenv::LambdaNameInfo_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_clcenv__LambdaNameInfo_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_clcenv__LambdaNameInfo_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::VAArgInst_O> {
+template <> class gctools::GCStamp<llvmo::VAArgInst_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__VAArgInst_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__VAArgInst_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::SimpleVector_int32_t_O> {
+template <> class gctools::GCStamp<core::SimpleVector_int32_t_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__SimpleVector_int32_t_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__SimpleVector_int32_t_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::SimpleVector_byte64_t_O> {
+template <> class gctools::GCStamp<core::SimpleVector_byte64_t_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__SimpleVector_byte64_t_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__SimpleVector_byte64_t_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::SimpleMDArray_int32_t_O> {
+template <> class gctools::GCStamp<core::SimpleMDArray_int32_t_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__SimpleMDArray_int32_t_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__SimpleMDArray_int32_t_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::SourcePosInfo_O> {
+template <> class gctools::GCStamp<core::SourcePosInfo_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__SourcePosInfo_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__SourcePosInfo_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::ClassCreator_O> {
+template <> class gctools::GCStamp<core::ClassCreator_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__ClassCreator_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__ClassCreator_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::APInt_O> {
+template <> class gctools::GCStamp<llvmo::APInt_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__APInt_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__APInt_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::CoreExposer_O> {
+template <> class gctools::GCStamp<core::CoreExposer_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__CoreExposer_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__CoreExposer_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<clcenv::BlockInfo_O> {
+template <> class gctools::GCStamp<clcenv::BlockInfo_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_clcenv__BlockInfo_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_clcenv__BlockInfo_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::GlueEnvironment_O> {
+template <> class gctools::GCStamp<core::GlueEnvironment_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__GlueEnvironment_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__GlueEnvironment_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::Target_O> {
+template <> class gctools::GCStamp<llvmo::Target_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__Target_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__Target_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::NativeVector_int_O> {
+template <> class gctools::GCStamp<core::NativeVector_int_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__NativeVector_int_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__NativeVector_int_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::FunctionType_O> {
+template <> class gctools::GCStamp<llvmo::FunctionType_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__FunctionType_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__FunctionType_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::Null_O> {
+template <> class gctools::GCStamp<core::Null_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__Null_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__Null_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<mp::Mutex_O> {
+template <> class gctools::GCStamp<mp::Mutex_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_mp__Mutex_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_mp__Mutex_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::LLVMContext_O> {
+template <> class gctools::GCStamp<llvmo::LLVMContext_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__LLVMContext_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__LLVMContext_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::SimpleMDArrayBit_O> {
+template <> class gctools::GCStamp<core::SimpleMDArrayBit_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__SimpleMDArrayBit_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__SimpleMDArrayBit_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<gctools::GCBitUnitArray_moveable<1,unsigned int,int>> {
+template <> class gctools::GCStamp<gctools::GCBitUnitArray_moveable<1,unsigned int,int>> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_GCBITUNITCONTAINER1_gctools__GCBitUnitArray_moveable_1_unsigned_int_int_ ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_GCBITUNITCONTAINER1_gctools__GCBitUnitArray_moveable_1_unsigned_int_int_ ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::ConstantFP_O> {
+template <> class gctools::GCStamp<llvmo::ConstantFP_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__ConstantFP_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__ConstantFP_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::SimpleMDArray_size_t_O> {
+template <> class gctools::GCStamp<core::SimpleMDArray_size_t_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__SimpleMDArray_size_t_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__SimpleMDArray_size_t_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::APFloat_O> {
+template <> class gctools::GCStamp<llvmo::APFloat_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__APFloat_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__APFloat_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<gctools::GCVector_moveable<core::KeywordArgument>> {
+template <> class gctools::GCStamp<gctools::GCVector_moveable<core::KeywordArgument>> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_core__KeywordArgument_ ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_core__KeywordArgument_ ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<clcenv::SymbolMacroInfo_O> {
+template <> class gctools::GCStamp<clcenv::SymbolMacroInfo_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_clcenv__SymbolMacroInfo_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_clcenv__SymbolMacroInfo_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::AbstractSimpleVector_O> {
+template <> class gctools::GCStamp<core::AbstractSimpleVector_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__AbstractSimpleVector_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__AbstractSimpleVector_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<gctools::GCVector_moveable<int>> {
+template <> class gctools::GCStamp<gctools::GCVector_moveable<int>> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_int_ ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_int_ ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<gctools::GCVector_moveable<gctools::smart_ptr<core::List_V>>> {
+template <> class gctools::GCStamp<gctools::GCVector_moveable<gctools::smart_ptr<core::List_V>>> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__List_V__ ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__List_V__ ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::LexicalEnvironment_O> {
+template <> class gctools::GCStamp<core::LexicalEnvironment_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__LexicalEnvironment_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__LexicalEnvironment_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<clbind::detail::class_map> {
+template <> class gctools::GCStamp<clbind::detail::class_map> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_ROOTCLASSALLOC_clbind__detail__class_map ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_ROOTCLASSALLOC_clbind__detail__class_map ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::SimpleString_O> {
+template <> class gctools::GCStamp<core::SimpleString_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__SimpleString_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__SimpleString_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::BroadcastStream_O> {
+template <> class gctools::GCStamp<core::BroadcastStream_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__BroadcastStream_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__BroadcastStream_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::VectorStepper_O> {
+template <> class gctools::GCStamp<core::VectorStepper_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__VectorStepper_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__VectorStepper_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::Constant_O> {
+template <> class gctools::GCStamp<llvmo::Constant_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__Constant_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__Constant_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<gctools::GCArray_moveable<unsigned short>> {
+template <> class gctools::GCStamp<gctools::GCArray_moveable<unsigned short>> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_GCARRAY_gctools__GCArray_moveable_unsigned_short_ ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_GCARRAY_gctools__GCArray_moveable_unsigned_short_ ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::WeakKeyHashTable_O> {
+template <> class gctools::GCStamp<core::WeakKeyHashTable_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__WeakKeyHashTable_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__WeakKeyHashTable_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<gctools::GCVector_moveable<gctools::smart_ptr<core::Symbol_O>>> {
+template <> class gctools::GCStamp<gctools::GCVector_moveable<gctools::smart_ptr<core::Symbol_O>>> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__Symbol_O__ ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__Symbol_O__ ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::LoadTimeValues_O> {
+template <> class gctools::GCStamp<core::LoadTimeValues_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__LoadTimeValues_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__LoadTimeValues_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::SynonymStream_O> {
+template <> class gctools::GCStamp<core::SynonymStream_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__SynonymStream_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__SynonymStream_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::MDArrayBit_O> {
+template <> class gctools::GCStamp<core::MDArrayBit_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__MDArrayBit_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__MDArrayBit_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::Module_O> {
+template <> class gctools::GCStamp<llvmo::Module_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__Module_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__Module_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::ImmutablePass_O> {
+template <> class gctools::GCStamp<llvmo::ImmutablePass_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__ImmutablePass_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__ImmutablePass_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::DILocalScope_O> {
+template <> class gctools::GCStamp<llvmo::DILocalScope_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__DILocalScope_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__DILocalScope_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::StandardObject_O> {
+template <> class gctools::GCStamp<core::StandardObject_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_BOOTSTRAP_core__StandardObject_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_BOOTSTRAP_core__StandardObject_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::Closure_O> {
+template <> class gctools::GCStamp<core::Closure_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__Closure_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__Closure_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::SingleDispatchMethodFunction_O> {
+template <> class gctools::GCStamp<core::SingleDispatchMethodFunction_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__SingleDispatchMethodFunction_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__SingleDispatchMethodFunction_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::LogicalPathname_O> {
+template <> class gctools::GCStamp<core::LogicalPathname_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__LogicalPathname_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__LogicalPathname_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<gctools::GCVector_moveable<gctools::smart_ptr<core::SourceFileInfo_O>>> {
+template <> class gctools::GCStamp<gctools::GCVector_moveable<gctools::smart_ptr<core::SourceFileInfo_O>>> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__SourceFileInfo_O__ ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__SourceFileInfo_O__ ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::StructType_O> {
+template <> class gctools::GCStamp<llvmo::StructType_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__StructType_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__StructType_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<clbind::ClassRegistry_O> {
+template <> class gctools::GCStamp<clbind::ClassRegistry_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_clbind__ClassRegistry_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_clbind__ClassRegistry_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::HashTableEqual_O> {
+template <> class gctools::GCStamp<core::HashTableEqual_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__HashTableEqual_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__HashTableEqual_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<gctools::GCArray_moveable<gctools::smart_ptr<core::T_O>>> {
+template <> class gctools::GCStamp<gctools::GCArray_moveable<gctools::smart_ptr<core::T_O>>> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_GCARRAY_gctools__GCArray_moveable_gctools__smart_ptr_core__T_O__ ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_GCARRAY_gctools__GCArray_moveable_gctools__smart_ptr_core__T_O__ ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::DirectoryEntry_O> {
+template <> class gctools::GCStamp<core::DirectoryEntry_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__DirectoryEntry_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__DirectoryEntry_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<clcenv::SpecialVariable_O> {
+template <> class gctools::GCStamp<clcenv::SpecialVariable_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_clcenv__SpecialVariable_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_clcenv__SpecialVariable_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::SingleDispatchCxxEffectiveMethodFunction_O> {
+template <> class gctools::GCStamp<core::SingleDispatchCxxEffectiveMethodFunction_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__SingleDispatchCxxEffectiveMethodFunction_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__SingleDispatchCxxEffectiveMethodFunction_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<gctools::GCVector_moveable<core::CacheRecord>> {
+template <> class gctools::GCStamp<gctools::GCVector_moveable<core::CacheRecord>> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_core__CacheRecord_ ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_core__CacheRecord_ ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::FunctionValueEnvironment_O> {
+template <> class gctools::GCStamp<core::FunctionValueEnvironment_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__FunctionValueEnvironment_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__FunctionValueEnvironment_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::T_O>>>> {
+template <> class gctools::GCStamp<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::T_O>>>> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_core__T_O___ ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_core__T_O___ ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<gctools::GCArray_moveable<signed char>> {
+template <> class gctools::GCStamp<gctools::GCArray_moveable<signed char>> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_GCARRAY_gctools__GCArray_moveable_signed_char_ ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_GCARRAY_gctools__GCArray_moveable_signed_char_ ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::Linker_O> {
+template <> class gctools::GCStamp<llvmo::Linker_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__Linker_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__Linker_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::Pass_O> {
+template <> class gctools::GCStamp<llvmo::Pass_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__Pass_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__Pass_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::FunctionFrame_O> {
+template <> class gctools::GCStamp<core::FunctionFrame_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__FunctionFrame_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__FunctionFrame_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::FunctionContainerEnvironment_O> {
+template <> class gctools::GCStamp<core::FunctionContainerEnvironment_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__FunctionContainerEnvironment_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__FunctionContainerEnvironment_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<gctools::GCVector_moveable<gctools::smart_ptr<core::Cons_O>>> {
+template <> class gctools::GCStamp<gctools::GCVector_moveable<gctools::smart_ptr<core::Cons_O>>> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__Cons_O__ ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__Cons_O__ ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<asttooling::DerivableFrontendActionFactory> {
+template <> class gctools::GCStamp<asttooling::DerivableFrontendActionFactory> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_asttooling__DerivableFrontendActionFactory ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_asttooling__DerivableFrontendActionFactory ;
   static const size_t Flags = 3 ;
 };
-template <> class gctools::GCKind<llvmo::ArrayType_O> {
+template <> class gctools::GCStamp<llvmo::ArrayType_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__ArrayType_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__ArrayType_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::TargetLibraryInfoWrapperPass_O> {
+template <> class gctools::GCStamp<llvmo::TargetLibraryInfoWrapperPass_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__TargetLibraryInfoWrapperPass_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__TargetLibraryInfoWrapperPass_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::User_O> {
+template <> class gctools::GCStamp<llvmo::User_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__User_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__User_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::WrappedPointer_O> {
+template <> class gctools::GCStamp<core::WrappedPointer_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_TEMPLATED_LISPALLOC_core__WrappedPointer_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_TEMPLATED_LISPALLOC_core__WrappedPointer_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<asttooling::DerivableMatchCallback> {
+template <> class gctools::GCStamp<asttooling::DerivableMatchCallback> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_asttooling__DerivableMatchCallback ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_asttooling__DerivableMatchCallback ;
   static const size_t Flags = 3 ;
 };
-template <> class gctools::GCKind<core::Package_O> {
+template <> class gctools::GCStamp<core::Package_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__Package_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__Package_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::UserData_O> {
+template <> class gctools::GCStamp<core::UserData_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__UserData_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__UserData_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::CompositeType_O> {
+template <> class gctools::GCStamp<llvmo::CompositeType_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__CompositeType_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__CompositeType_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::MDArrayBaseChar_O> {
+template <> class gctools::GCStamp<core::MDArrayBaseChar_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__MDArrayBaseChar_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__MDArrayBaseChar_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<clcenv::Block_O> {
+template <> class gctools::GCStamp<clcenv::Block_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_clcenv__Block_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_clcenv__Block_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::ClosureWithSlots_O> {
+template <> class gctools::GCStamp<core::ClosureWithSlots_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__ClosureWithSlots_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__ClosureWithSlots_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::PassManager_O> {
+template <> class gctools::GCStamp<llvmo::PassManager_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__PassManager_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__PassManager_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::ValueEnvironment_O> {
+template <> class gctools::GCStamp<core::ValueEnvironment_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__ValueEnvironment_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__ValueEnvironment_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::AttributeSet_O> {
+template <> class gctools::GCStamp<llvmo::AttributeSet_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__AttributeSet_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__AttributeSet_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::SexpSaveArchive_O> {
+template <> class gctools::GCStamp<core::SexpSaveArchive_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__SexpSaveArchive_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__SexpSaveArchive_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::StrWNs_O> {
+template <> class gctools::GCStamp<core::StrWNs_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__StrWNs_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__StrWNs_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<clcenv::LambdaName_O> {
+template <> class gctools::GCStamp<clcenv::LambdaName_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_clcenv__LambdaName_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_clcenv__LambdaName_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<clcenv::Function_O> {
+template <> class gctools::GCStamp<clcenv::Function_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_clcenv__Function_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_clcenv__Function_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::DITypeRefArray_O> {
+template <> class gctools::GCStamp<llvmo::DITypeRefArray_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__DITypeRefArray_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__DITypeRefArray_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::SexpLoadArchive_O> {
+template <> class gctools::GCStamp<core::SexpLoadArchive_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__SexpLoadArchive_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__SexpLoadArchive_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::Exposer_O> {
+template <> class gctools::GCStamp<core::Exposer_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__Exposer_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__Exposer_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<asttooling::AstVisitor_O> {
+template <> class gctools::GCStamp<asttooling::AstVisitor_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_asttooling__AstVisitor_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_asttooling__AstVisitor_O ;
   static const size_t Flags = 2 ;
 };
-template <> class gctools::GCKind<core::SNode_O> {
+template <> class gctools::GCStamp<core::SNode_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__SNode_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__SNode_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::InvokeInst_O> {
+template <> class gctools::GCStamp<llvmo::InvokeInst_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__InvokeInst_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__InvokeInst_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<clcenv::Macro_O> {
+template <> class gctools::GCStamp<clcenv::Macro_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_clcenv__Macro_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_clcenv__Macro_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<asttooling::DerivableASTFrontendAction> {
+template <> class gctools::GCStamp<asttooling::DerivableASTFrontendAction> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_asttooling__DerivableASTFrontendAction ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_asttooling__DerivableASTFrontendAction ;
   static const size_t Flags = 3 ;
 };
-template <> class gctools::GCKind<llvmo::DIBuilder_O> {
+template <> class gctools::GCStamp<llvmo::DIBuilder_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__DIBuilder_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__DIBuilder_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::Array_O> {
+template <> class gctools::GCStamp<core::Array_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__Array_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__Array_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::ConstantInt_O> {
+template <> class gctools::GCStamp<llvmo::ConstantInt_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__ConstantInt_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__ConstantInt_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::SimpleVector_int8_t_O> {
+template <> class gctools::GCStamp<core::SimpleVector_int8_t_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__SimpleVector_int8_t_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__SimpleVector_int8_t_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::TargetOptions_O> {
+template <> class gctools::GCStamp<llvmo::TargetOptions_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__TargetOptions_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__TargetOptions_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::PointerType_O> {
+template <> class gctools::GCStamp<llvmo::PointerType_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__PointerType_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__PointerType_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::CxxObject_O> {
+template <> class gctools::GCStamp<core::CxxObject_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__CxxObject_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__CxxObject_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::ActivationFrame_O> {
+template <> class gctools::GCStamp<core::ActivationFrame_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__ActivationFrame_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__ActivationFrame_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::MDArray_size_t_O> {
+template <> class gctools::GCStamp<core::MDArray_size_t_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__MDArray_size_t_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__MDArray_size_t_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::Creator_O> {
+template <> class gctools::GCStamp<core::Creator_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_TEMPLATED_LISPALLOC_core__Creator_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_TEMPLATED_LISPALLOC_core__Creator_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::UnreachableInst_O> {
+template <> class gctools::GCStamp<llvmo::UnreachableInst_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__UnreachableInst_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__UnreachableInst_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<clcenv::VariableDynamicExtent_O> {
+template <> class gctools::GCStamp<clcenv::VariableDynamicExtent_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_clcenv__VariableDynamicExtent_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_clcenv__VariableDynamicExtent_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::MacroletEnvironment_O> {
+template <> class gctools::GCStamp<core::MacroletEnvironment_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__MacroletEnvironment_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__MacroletEnvironment_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::PHINode_O> {
+template <> class gctools::GCStamp<llvmo::PHINode_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__PHINode_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__PHINode_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::SingleDispatchGenericFunctionClosure_O> {
+template <> class gctools::GCStamp<core::SingleDispatchGenericFunctionClosure_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__SingleDispatchGenericFunctionClosure_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__SingleDispatchGenericFunctionClosure_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::SimpleMDArrayDouble_O> {
+template <> class gctools::GCStamp<core::SimpleMDArrayDouble_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__SimpleMDArrayDouble_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__SimpleMDArrayDouble_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::Reader_O> {
+template <> class gctools::GCStamp<core::Reader_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__Reader_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__Reader_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<gctools::GCVector_moveable<gctools::smart_ptr<core::T_O>>> {
+template <> class gctools::GCStamp<gctools::GCVector_moveable<gctools::smart_ptr<core::T_O>>> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__T_O__ ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__T_O__ ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::WeakHashTable_O> {
+template <> class gctools::GCStamp<core::WeakHashTable_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__WeakHashTable_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__WeakHashTable_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<asttooling::DerivableSyntaxOnlyAction> {
+template <> class gctools::GCStamp<asttooling::DerivableSyntaxOnlyAction> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_asttooling__DerivableSyntaxOnlyAction ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_asttooling__DerivableSyntaxOnlyAction ;
   static const size_t Flags = 3 ;
 };
-template <> class gctools::GCKind<clasp_ffi::ForeignTypeSpec_O> {
+template <> class gctools::GCStamp<clasp_ffi::ForeignTypeSpec_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_clasp_ffi__ForeignTypeSpec_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_clasp_ffi__ForeignTypeSpec_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::BranchSNode_O> {
+template <> class gctools::GCStamp<core::BranchSNode_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__BranchSNode_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__BranchSNode_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::DISubprogram_O> {
+template <> class gctools::GCStamp<llvmo::DISubprogram_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__DISubprogram_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__DISubprogram_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::SimpleVectorFloat_O> {
+template <> class gctools::GCStamp<core::SimpleVectorFloat_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__SimpleVectorFloat_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__SimpleVectorFloat_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::FunctionPassManager_O> {
+template <> class gctools::GCStamp<llvmo::FunctionPassManager_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__FunctionPassManager_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__FunctionPassManager_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::EchoStream_O> {
+template <> class gctools::GCStamp<core::EchoStream_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__EchoStream_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__EchoStream_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::MDArrayFloat_O> {
+template <> class gctools::GCStamp<core::MDArrayFloat_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__MDArrayFloat_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__MDArrayFloat_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<clcenv::Closure_O> {
+template <> class gctools::GCStamp<clcenv::Closure_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_clcenv__Closure_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_clcenv__Closure_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<llvmo::Argument_O> {
+template <> class gctools::GCStamp<llvmo::Argument_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__Argument_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__Argument_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<clcenv::ConstantVariableInfo_O> {
+template <> class gctools::GCStamp<clcenv::ConstantVariableInfo_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_clcenv__ConstantVariableInfo_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_clcenv__ConstantVariableInfo_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::MDArray_O> {
+template <> class gctools::GCStamp<core::MDArray_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__MDArray_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__MDArray_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<mp::ConcurrentQueue_O> {
+template <> class gctools::GCStamp<mp::ConcurrentQueue_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_mp__ConcurrentQueue_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_mp__ConcurrentQueue_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::Complex_O> {
+template <> class gctools::GCStamp<core::Complex_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__Complex_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__Complex_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::MDArray_int16_t_O> {
+template <> class gctools::GCStamp<core::MDArray_int16_t_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__MDArray_int16_t_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__MDArray_int16_t_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<clbind::ClassRep_O> {
+template <> class gctools::GCStamp<clbind::ClassRep_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_clbind__ClassRep_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_clbind__ClassRep_O ;
   static const size_t Flags = 1 ;
 };
-template <> class gctools::GCKind<core::StandardClassCreator_O> {
+template <> class gctools::GCStamp<core::StandardClassCreator_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__StandardClassCreator_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__StandardClassCreator_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::SimpleVector_byte32_t_O> {
+template <> class gctools::GCStamp<core::SimpleVector_byte32_t_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__SimpleVector_byte32_t_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__SimpleVector_byte32_t_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<clcenv::Inline_O> {
+template <> class gctools::GCStamp<clcenv::Inline_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_clcenv__Inline_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_clcenv__Inline_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::HashTableEq_O> {
+template <> class gctools::GCStamp<core::HashTableEq_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__HashTableEq_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__HashTableEq_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::SimpleMDArray_byte64_t_O> {
+template <> class gctools::GCStamp<core::SimpleMDArray_byte64_t_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__SimpleMDArray_byte64_t_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__SimpleMDArray_byte64_t_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<clasp_ffi::ForeignData_O> {
+template <> class gctools::GCStamp<clasp_ffi::ForeignData_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_clasp_ffi__ForeignData_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_clasp_ffi__ForeignData_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<core::Float_O> {
+template <> class gctools::GCStamp<core::Float_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__Float_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__Float_O ;
   static const size_t Flags = 0 ;
 };
-template <> class gctools::GCKind<clbind::DummyCreator_O> {
+template <> class gctools::GCStamp<clbind::DummyCreator_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_clbind__DummyCreator_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_clbind__DummyCreator_O ;
   static const size_t Flags = 0 ;
 };
 #endif // defined(GC_KIND_SELECTORS)

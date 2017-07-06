@@ -56,7 +56,7 @@ T_sp InstanceCreator_O::creator_allocate() {
     this->_class->_allocation_total_size += size;
   }
 #endif
-  Instance_sp instance = gctools::GC<Instance_O>::allocate_instance(gctools::KIND_INSTANCE, size);
+  Instance_sp instance = gctools::GC<Instance_O>::allocate_instance(gctools::Header_s::Value::make_instance(), size);
   return instance;
     };
 };
@@ -71,7 +71,7 @@ T_sp ClassCreator_O::creator_allocate() {
     this->_class->_allocation_total_size += size;
   }
 #endif
-  Class_sp class_ = gctools::GC<Class_O>::allocate_class(gctools::KIND_INSTANCE, size);
+  Class_sp class_ = gctools::GC<Class_O>::allocate_class(gctools::Header_s::Value::make_instance(), size);
   return class_;
 };
 };

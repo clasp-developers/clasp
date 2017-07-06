@@ -300,6 +300,13 @@ class Lisp_O {
 #endif // ifdef CLASP_LONG_FLOAT
     bool _Booted;
     HashTableEq_sp _KnownSignals;
+        /*! SingleDispatchGenericFunction cache */
+    Cache_sp _SingleDispatchMethodCachePtr;
+    /*! Generic functions method cache */
+    Cache_sp _MethodCachePtr;
+    /*! Generic functions slot cache */
+    Cache_sp _SlotCachePtr;
+
     GCRoots();
   };
 
@@ -538,11 +545,9 @@ public: // numerical constants
   LongFloat_sp longFloatOne() const { return this->_Roots._LongFloatOne; };
 #endif // ifdef CLASP_LONG_FLOAT
 public:
-#if 0
   Cache_sp singleDispatchMethodCachePtr() const { return this->_Roots._SingleDispatchMethodCachePtr; };
   Cache_sp methodCachePtr() const { return this->_Roots._MethodCachePtr; };
   Cache_sp slotCachePtr() const { return this->_Roots._SlotCachePtr; };
-#endif
 public:
   /*! Setup makePackage and exportSymbol callbacks */
   void setMakePackageAndExportSymbolCallbacks(MakePackageCallback mpc, ExportSymbolCallback esc);
