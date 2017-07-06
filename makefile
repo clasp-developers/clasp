@@ -318,5 +318,8 @@ push-to-testing:
 
 analyze:
 	./waf build_cboehmdc
+	make analyze_rest
+
+analyze_rest:
 	./waf build_impsprep
 	./waf analyze_clasp
