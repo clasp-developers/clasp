@@ -212,7 +212,7 @@ Layout_code* get_kind_layout_codes() {
  */
 
 #define BAD_HEADER(msg,hdr) \
-    printf("%s:%d Illegal header@%p in %s  header->header=%lX  header->data[0]=%lX  header->data[1]=%lX\n", __FILE__, __LINE__, hdr, msg, hdr->header, hdr->data[0], hdr->data[1]);
+  printf("%s:%d Illegal header@%p in %s  header->header=%lX  header->data[0]=%lX  header->data[1]=%lX\n", __FILE__, __LINE__, hdr, msg, hdr->header._value, hdr->additional_data[0], hdr->additional_data[1]);
 
 template <typename RT, typename...ARGS>
 NOINLINE void expose_function(const std::string& pkg_sym,
@@ -344,8 +344,8 @@ mps_addr_t obj_skip(mps_addr_t client) {
   DEBUG_THROW_IF_INVALID_CLIENT(client);
   if (header->stampP()) {
     gctools::GCStampEnum stamp = header->stamp();
-    if ( stamp > STAMP_max ) stamp = GCStamp<core::Instance_O>::Stamp;
-    const Stamp_layout& stamp_layout = global_kind_layout[stamp];
+    if ( stamp > KIND_max ) stamp = GCStamp<core::Instance_O>::Stamp;
+    const Kind_layout& stamp_layout = global_kind_layout[stamp];
 #ifndef RUNNING_GC_BUILDER
     if ( stamp_layout.layout_op == class_container_op ) {
       size = stamp_layout.size;
@@ -409,8 +409,8 @@ GC_RESULT obj_scan(mps_ss_t ss, mps_addr_t client, mps_addr_t limit) {
       original_client = (mps_addr_t)client;
       if (header->stampP()) {
         stamp = header->stamp();
-        if ( stamp > STAMP_max ) stamp = GCStamp<core::Instance_O>::Stamp;
-        const Stamp_layout& stamp_layout = global_kind_layout[stamp];
+        if ( stamp > KIND_max ) stamp = GCStamp<core::Instance_O>::Stamp;
+        const Kind_layout& stamp_layout = global_kind_layout[stamp];
 #ifndef RUNNING_GC_BUILDER
         size = stamp_layout.size;
         if ( stamp_layout.field_layout_start ) {

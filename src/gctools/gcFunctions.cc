@@ -349,8 +349,8 @@ extern "C" {
 void amc_apply_stepper(mps_addr_t client, void *p, size_t s) {
   const gctools::Header_s *header = reinterpret_cast<const gctools::Header_s *>(gctools::ClientPtrToBasePtr(client));
   vector<ReachableMPSObject> *reachablesP = reinterpret_cast<vector<ReachableMPSObject> *>(p);
-  if (header->kindP()) {
-    ReachableMPSObject &obj = (*reachablesP)[header->kind()];
+  if (header->stampP()) {
+    ReachableMPSObject &obj = (*reachablesP)[header->stamp()];
     ++obj.instances;
     size_t sz = (char *)(obj_skip(client)) - (char *)client;
     obj.totalMemory += sz;

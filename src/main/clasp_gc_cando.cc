@@ -1373,7 +1373,7 @@ KIND_LISPALLOC_asttooling__DerivableSyntaxOnlyAction = 752,
 template <typename FP> struct Cast<chem::AtomIndexer_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 574 574 
       return (kindVal == 574);
   };
@@ -1382,7 +1382,7 @@ template <typename FP> struct Cast<chem::AtomIndexer_O*,FP> {
 template <typename FP> struct Cast<chem::EnergyStretch_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 464 464 
       return (kindVal == 464);
   };
@@ -1391,7 +1391,7 @@ template <typename FP> struct Cast<chem::EnergyStretch_O*,FP> {
 template <typename FP> struct Cast<gctools::GCVector_moveable<int>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 739 739 
       return (kindVal == 739);
   };
@@ -1400,7 +1400,7 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<int>*,FP> {
 template <typename FP> struct Cast<chem::ProperTorsion_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 573 573 
       return (kindVal == 573);
   };
@@ -1409,7 +1409,7 @@ template <typename FP> struct Cast<chem::ProperTorsion_O*,FP> {
 template <typename FP> struct Cast<chem::FFParameterBaseDb_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 496 501 
       return ((496 <= kindVal) && (kindVal <= 501));
   };
@@ -1418,7 +1418,7 @@ template <typename FP> struct Cast<chem::FFParameterBaseDb_O*,FP> {
 template <typename FP> struct Cast<llvmo::DISubprogram_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 82 82 
       return (kindVal == 82);
   };
@@ -1427,7 +1427,7 @@ template <typename FP> struct Cast<llvmo::DISubprogram_O*,FP> {
 template <typename FP> struct Cast<core::SimpleMDArray_int32_t_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 243 243 
       return (kindVal == 243);
   };
@@ -1436,7 +1436,7 @@ template <typename FP> struct Cast<core::SimpleMDArray_int32_t_O*,FP> {
 template <typename FP> struct Cast<chem::CDText_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 572 572 
       return (kindVal == 572);
   };
@@ -1445,7 +1445,7 @@ template <typename FP> struct Cast<chem::CDText_O*,FP> {
 template <typename FP> struct Cast<chem::IterateAtoms_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 62 62 
       return (kindVal == 62);
   };
@@ -1454,7 +1454,7 @@ template <typename FP> struct Cast<chem::IterateAtoms_O*,FP> {
 template <typename FP> struct Cast<clcenv::FunctionType_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 548 548 
       return (kindVal == 548);
   };
@@ -1463,7 +1463,7 @@ template <typename FP> struct Cast<clcenv::FunctionType_O*,FP> {
 template <typename FP> struct Cast<clcenv::GlobalMacroInfo_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 525 525 
       return (kindVal == 525);
   };
@@ -1472,7 +1472,7 @@ template <typename FP> struct Cast<clcenv::GlobalMacroInfo_O*,FP> {
 template <typename FP> struct Cast<clcenv::Inline_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 547 547 
       return (kindVal == 547);
   };
@@ -1481,7 +1481,7 @@ template <typename FP> struct Cast<clcenv::Inline_O*,FP> {
 template <typename FP> struct Cast<llvmo::ConstantDataArray_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 130 130 
       return (kindVal == 130);
   };
@@ -1490,7 +1490,7 @@ template <typename FP> struct Cast<llvmo::ConstantDataArray_O*,FP> {
 template <typename FP> struct Cast<llvmo::DICompileUnit_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 89 89 
       return (kindVal == 89);
   };
@@ -1499,7 +1499,7 @@ template <typename FP> struct Cast<llvmo::DICompileUnit_O*,FP> {
 template <typename FP> struct Cast<chem::Chain_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 393 393 
       return (kindVal == 393);
   };
@@ -1508,7 +1508,7 @@ template <typename FP> struct Cast<chem::Chain_O*,FP> {
 template <typename FP> struct Cast<geom::Color_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 571 571 
       return (kindVal == 571);
   };
@@ -1517,7 +1517,7 @@ template <typename FP> struct Cast<geom::Color_O*,FP> {
 template <typename FP> struct Cast<core::Reader_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 623 623 
       return (kindVal == 623);
   };
@@ -1526,7 +1526,7 @@ template <typename FP> struct Cast<core::Reader_O*,FP> {
 template <typename FP> struct Cast<core::Cache_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 622 622 
       return (kindVal == 622);
   };
@@ -1540,7 +1540,7 @@ template <typename FP> struct Cast<core::Instance_O*,FP> {
 //           The problem is that isA relationships defined by Clasp can only work with single inheritance
 //           but derivable_classes inherit from Instance_O and whatever else they are defined to inherit from.
 //           For now I'll special case core::Instance_O and fall back to dynamic_cast
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 181 182 
       if ((181 <= kindVal) && (kindVal <= 182)) return true;
       return (dynamic_cast<core::Instance_O*>(client)!=NULL);
@@ -1550,7 +1550,7 @@ template <typename FP> struct Cast<core::Instance_O*,FP> {
 template <typename FP> struct Cast<gctools::GCVector_moveable<chem::EnergyAngle>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 738 738 
       return (kindVal == 738);
   };
@@ -1559,7 +1559,7 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<chem::EnergyAngle>
 template <typename FP> struct Cast<chem::StatusTracker_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 570 570 
       return (kindVal == 570);
   };
@@ -1568,7 +1568,7 @@ template <typename FP> struct Cast<chem::StatusTracker_O*,FP> {
 template <typename FP> struct Cast<chem::InPlug_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 336 336 
       return (kindVal == 336);
   };
@@ -1577,7 +1577,7 @@ template <typename FP> struct Cast<chem::InPlug_O*,FP> {
 template <typename FP> struct Cast<chem::IterateBonds_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 61 61 
       return (kindVal == 61);
   };
@@ -1586,7 +1586,7 @@ template <typename FP> struct Cast<chem::IterateBonds_O*,FP> {
 template <typename FP> struct Cast<chem::Molecule_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 428 428 
       return (kindVal == 428);
   };
@@ -1595,7 +1595,7 @@ template <typename FP> struct Cast<chem::Molecule_O*,FP> {
 template <typename FP> struct Cast<core::SimpleBaseString_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 213 213 
       return (kindVal == 213);
   };
@@ -1604,7 +1604,7 @@ template <typename FP> struct Cast<core::SimpleBaseString_O*,FP> {
 template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr<core::T_O>>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 737 737 
       return (kindVal == 737);
   };
@@ -1613,7 +1613,7 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr
 template <typename FP> struct Cast<llvmo::ConstantDataSequential_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 129 130 
       return ((129 <= kindVal) && (kindVal <= 130));
   };
@@ -1622,7 +1622,7 @@ template <typename FP> struct Cast<llvmo::ConstantDataSequential_O*,FP> {
 template <typename FP> struct Cast<core::SimpleVector_int32_t_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 206 206 
       return (kindVal == 206);
   };
@@ -1631,7 +1631,7 @@ template <typename FP> struct Cast<core::SimpleVector_int32_t_O*,FP> {
 template <typename FP> struct Cast<llvmo::ConstantStruct_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 128 128 
       return (kindVal == 128);
   };
@@ -1640,7 +1640,7 @@ template <typename FP> struct Cast<llvmo::ConstantStruct_O*,FP> {
 template <typename FP> struct Cast<chem::SpecificContext_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 569 569 
       return (kindVal == 569);
   };
@@ -1649,7 +1649,7 @@ template <typename FP> struct Cast<chem::SpecificContext_O*,FP> {
 template <typename FP> struct Cast<core::ValueEnvironment_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 591 591 
       return (kindVal == 591);
   };
@@ -1658,7 +1658,7 @@ template <typename FP> struct Cast<core::ValueEnvironment_O*,FP> {
 template <typename FP> struct Cast<chem::EnergyAngle_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 463 463 
       return (kindVal == 463);
   };
@@ -1667,7 +1667,7 @@ template <typename FP> struct Cast<chem::EnergyAngle_O*,FP> {
 template <typename FP> struct Cast<chem::PathMessage_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 568 568 
       return (kindVal == 568);
   };
@@ -1676,7 +1676,7 @@ template <typename FP> struct Cast<chem::PathMessage_O*,FP> {
 template <typename FP> struct Cast<core::Pointer_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 621 621 
       return (kindVal == 621);
   };
@@ -1685,7 +1685,7 @@ template <typename FP> struct Cast<core::Pointer_O*,FP> {
 template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr<chem::Bond_O>>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 736 736 
       return (kindVal == 736);
   };
@@ -1694,7 +1694,7 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr
 template <typename FP> struct Cast<clcenv::SymbolMacro_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 546 546 
       return (kindVal == 546);
   };
@@ -1703,7 +1703,7 @@ template <typename FP> struct Cast<clcenv::SymbolMacro_O*,FP> {
 template <typename FP> struct Cast<core::Number_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 608 620 
       return ((608 <= kindVal) && (kindVal <= 620));
   };
@@ -1712,7 +1712,7 @@ template <typename FP> struct Cast<core::Number_O*,FP> {
 template <typename FP> struct Cast<units::NamedUnit_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 529 529 
       return (kindVal == 529);
   };
@@ -1721,7 +1721,7 @@ template <typename FP> struct Cast<units::NamedUnit_O*,FP> {
 template <typename FP> struct Cast<llvmo::BlockAddress_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 127 127 
       return (kindVal == 127);
   };
@@ -1730,7 +1730,7 @@ template <typename FP> struct Cast<llvmo::BlockAddress_O*,FP> {
 template <typename FP> struct Cast<gctools::GCVector_moveable<core::KeywordArgument>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 735 735 
       return (kindVal == 735);
   };
@@ -1739,7 +1739,7 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<core::KeywordArgum
 template <typename FP> struct Cast<core::Real_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 610 620 
       return ((610 <= kindVal) && (kindVal <= 620));
   };
@@ -1748,7 +1748,7 @@ template <typename FP> struct Cast<core::Real_O*,FP> {
 template <typename FP> struct Cast<gctools::GCVector_moveable<chem::EnergyImproperRestraint>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 734 734 
       return (kindVal == 734);
   };
@@ -1757,7 +1757,7 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<chem::EnergyImprop
 template <typename FP> struct Cast<chem::Minimizer_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 567 567 
       return (kindVal == 567);
   };
@@ -1766,7 +1766,7 @@ template <typename FP> struct Cast<chem::Minimizer_O*,FP> {
 template <typename FP> struct Cast<core::SimpleMDArray_int8_t_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 254 254 
       return (kindVal == 254);
   };
@@ -1775,7 +1775,7 @@ template <typename FP> struct Cast<core::SimpleMDArray_int8_t_O*,FP> {
 template <typename FP> struct Cast<chem::Structure_Old_ListEntry_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 566 566 
       return (kindVal == 566);
   };
@@ -1784,7 +1784,7 @@ template <typename FP> struct Cast<chem::Structure_Old_ListEntry_O*,FP> {
 template <typename FP> struct Cast<gctools::GCVector_moveable<core::SymbolClassPair>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 733 733 
       return (kindVal == 733);
   };
@@ -1793,7 +1793,7 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<core::SymbolClassP
 template <typename FP> struct Cast<llvmo::Argument_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 132 132 
       return (kindVal == 132);
   };
@@ -1802,7 +1802,7 @@ template <typename FP> struct Cast<llvmo::Argument_O*,FP> {
 template <typename FP> struct Cast<llvmo::Type_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 150 158 
       return ((150 <= kindVal) && (kindVal <= 158));
   };
@@ -1811,7 +1811,7 @@ template <typename FP> struct Cast<llvmo::Type_O*,FP> {
 template <typename FP> struct Cast<chem::Restraint_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 559 565 
       return ((559 <= kindVal) && (kindVal <= 565));
   };
@@ -1820,7 +1820,7 @@ template <typename FP> struct Cast<chem::Restraint_O*,FP> {
 template <typename FP> struct Cast<core::FileStream_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 322 324 
       return ((322 <= kindVal) && (kindVal <= 324));
   };
@@ -1829,7 +1829,7 @@ template <typename FP> struct Cast<core::FileStream_O*,FP> {
 template <typename FP> struct Cast<llvmo::DIType_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 84 88 
       return ((84 <= kindVal) && (kindVal <= 88));
   };
@@ -1838,7 +1838,7 @@ template <typename FP> struct Cast<llvmo::DIType_O*,FP> {
 template <typename FP> struct Cast<core::SimpleMDArrayCharacter_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 266 266 
       return (kindVal == 266);
   };
@@ -1847,7 +1847,7 @@ template <typename FP> struct Cast<core::SimpleMDArrayCharacter_O*,FP> {
 template <typename FP> struct Cast<llvmo::Linker_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 149 149 
       return (kindVal == 149);
   };
@@ -1856,7 +1856,7 @@ template <typename FP> struct Cast<llvmo::Linker_O*,FP> {
 template <typename FP> struct Cast<chem::ReportBase_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 555 558 
       return ((555 <= kindVal) && (kindVal <= 558));
   };
@@ -1865,7 +1865,7 @@ template <typename FP> struct Cast<chem::ReportBase_O*,FP> {
 template <typename FP> struct Cast<chem::FFItorDb_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 501 501 
       return (kindVal == 501);
   };
@@ -1874,7 +1874,7 @@ template <typename FP> struct Cast<chem::FFItorDb_O*,FP> {
 template <typename FP> struct Cast<chem::BondMatchNode_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 394 406 
       return ((394 <= kindVal) && (kindVal <= 406));
   };
@@ -1883,7 +1883,7 @@ template <typename FP> struct Cast<chem::BondMatchNode_O*,FP> {
 template <typename FP> struct Cast<gctools::GCVector_moveable<chem::EnergyNonbond>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 732 732 
       return (kindVal == 732);
   };
@@ -1892,7 +1892,7 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<chem::EnergyNonbon
 template <typename FP> struct Cast<core::CompiledDispatchFunction_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 180 180 
       return (kindVal == 180);
   };
@@ -1901,7 +1901,7 @@ template <typename FP> struct Cast<core::CompiledDispatchFunction_O*,FP> {
 template <typename FP> struct Cast<chem::InfoDb_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 554 554 
       return (kindVal == 554);
   };
@@ -1910,7 +1910,7 @@ template <typename FP> struct Cast<chem::InfoDb_O*,FP> {
 template <typename FP> struct Cast<chem::CalculatePosition_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 550 553 
       return ((550 <= kindVal) && (kindVal <= 553));
   };
@@ -1919,7 +1919,7 @@ template <typename FP> struct Cast<chem::CalculatePosition_O*,FP> {
 template <typename FP> struct Cast<llvmo::DITypeRefArray_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 549 549 
       return (kindVal == 549);
   };
@@ -1928,7 +1928,7 @@ template <typename FP> struct Cast<llvmo::DITypeRefArray_O*,FP> {
 template <typename FP> struct Cast<llvmo::DebugLoc_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 607 607 
       return (kindVal == 607);
   };
@@ -1937,7 +1937,7 @@ template <typename FP> struct Cast<llvmo::DebugLoc_O*,FP> {
 template <typename FP> struct Cast<core::HashTableEqualp_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 31 31 
       return (kindVal == 31);
   };
@@ -1946,7 +1946,7 @@ template <typename FP> struct Cast<core::HashTableEqualp_O*,FP> {
 template <typename FP> struct Cast<core::DirectoryEntry_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 606 606 
       return (kindVal == 606);
   };
@@ -1955,7 +1955,7 @@ template <typename FP> struct Cast<core::DirectoryEntry_O*,FP> {
 template <typename FP> struct Cast<clcenv::Entry_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 530 548 
       return ((530 <= kindVal) && (kindVal <= 548));
   };
@@ -1964,7 +1964,7 @@ template <typename FP> struct Cast<clcenv::Entry_O*,FP> {
 template <typename FP> struct Cast<chem::AtomOrBondMatchNode_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 397 406 
       return ((397 <= kindVal) && (kindVal <= 406));
   };
@@ -1973,7 +1973,7 @@ template <typename FP> struct Cast<chem::AtomOrBondMatchNode_O*,FP> {
 template <typename FP> struct Cast<core::SimpleMDArray_byte8_t_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 258 258 
       return (kindVal == 258);
   };
@@ -1982,7 +1982,7 @@ template <typename FP> struct Cast<core::SimpleMDArray_byte8_t_O*,FP> {
 template <typename FP> struct Cast<units::Unit_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 528 529 
       return ((528 <= kindVal) && (kindVal <= 529));
   };
@@ -1991,7 +1991,7 @@ template <typename FP> struct Cast<units::Unit_O*,FP> {
 template <typename FP> struct Cast<core::SimpleVector_byte32_t_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 202 202 
       return (kindVal == 202);
   };
@@ -2000,7 +2000,7 @@ template <typename FP> struct Cast<core::SimpleVector_byte32_t_O*,FP> {
 template <typename FP> struct Cast<llvmo::StructType_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 157 157 
       return (kindVal == 157);
   };
@@ -2009,7 +2009,7 @@ template <typename FP> struct Cast<llvmo::StructType_O*,FP> {
 template <typename FP> struct Cast<chem::ConformationExplorer_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 527 527 
       return (kindVal == 527);
   };
@@ -2018,7 +2018,7 @@ template <typename FP> struct Cast<chem::ConformationExplorer_O*,FP> {
 template <typename FP> struct Cast<asttooling::AstVisitor_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 745 745 
       return (kindVal == 745);
   };
@@ -2027,7 +2027,7 @@ template <typename FP> struct Cast<asttooling::AstVisitor_O*,FP> {
 template <typename FP> struct Cast<adapt::IterateCons_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 64 64 
       return (kindVal == 64);
   };
@@ -2036,7 +2036,7 @@ template <typename FP> struct Cast<adapt::IterateCons_O*,FP> {
 template <typename FP> struct Cast<clcenv::Info_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 512 526 
       return ((512 <= kindVal) && (kindVal <= 526));
   };
@@ -2045,7 +2045,7 @@ template <typename FP> struct Cast<clcenv::Info_O*,FP> {
 template <typename FP> struct Cast<gctools::GCVector_moveable<core::OptionalArgument>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 731 731 
       return (kindVal == 731);
   };
@@ -2054,7 +2054,7 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<core::OptionalArgu
 template <typename FP> struct Cast<chem::ConformationCollection_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 510 511 
       return ((510 <= kindVal) && (kindVal <= 511));
   };
@@ -2063,7 +2063,7 @@ template <typename FP> struct Cast<chem::ConformationCollection_O*,FP> {
 template <typename FP> struct Cast<core::SimpleMDArray_byte64_t_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 256 256 
       return (kindVal == 256);
   };
@@ -2072,7 +2072,7 @@ template <typename FP> struct Cast<core::SimpleMDArray_byte64_t_O*,FP> {
 template <typename FP> struct Cast<geom::SimpleVectorCoordinate_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 208 208 
       return (kindVal == 208);
   };
@@ -2081,7 +2081,7 @@ template <typename FP> struct Cast<geom::SimpleVectorCoordinate_O*,FP> {
 template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr<chem::ConstitutionBond_O>>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 730 730 
       return (kindVal == 730);
   };
@@ -2090,7 +2090,7 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr
 template <typename FP> struct Cast<core::SimpleMDArray_int16_t_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 260 260 
       return (kindVal == 260);
   };
@@ -2099,7 +2099,7 @@ template <typename FP> struct Cast<core::SimpleMDArray_int16_t_O*,FP> {
 template <typename FP> struct Cast<core::MDArrayBaseChar_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 276 276 
       return (kindVal == 276);
   };
@@ -2108,7 +2108,7 @@ template <typename FP> struct Cast<core::MDArrayBaseChar_O*,FP> {
 template <typename FP> struct Cast<llvmo::InsertPoint_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 605 605 
       return (kindVal == 605);
   };
@@ -2117,7 +2117,7 @@ template <typename FP> struct Cast<llvmo::InsertPoint_O*,FP> {
 template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr<chem::ReportBase_O>>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 729 729 
       return (kindVal == 729);
   };
@@ -2126,7 +2126,7 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr
 template <typename FP> struct Cast<clcenv::FunctionIgnore_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 545 545 
       return (kindVal == 545);
   };
@@ -2135,7 +2135,7 @@ template <typename FP> struct Cast<clcenv::FunctionIgnore_O*,FP> {
 template <typename FP> struct Cast<chem::StereoisomerVirtualAtom_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 371 371 
       return (kindVal == 371);
   };
@@ -2144,7 +2144,7 @@ template <typename FP> struct Cast<chem::StereoisomerVirtualAtom_O*,FP> {
 template <typename FP> struct Cast<chem::ZMatrixInternal_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 506 509 
       return ((506 <= kindVal) && (kindVal <= 509));
   };
@@ -2153,7 +2153,7 @@ template <typename FP> struct Cast<chem::ZMatrixInternal_O*,FP> {
 template <typename FP> struct Cast<core::RecursiveDirectoryIterator_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 63 63 
       return (kindVal == 63);
   };
@@ -2162,7 +2162,7 @@ template <typename FP> struct Cast<core::RecursiveDirectoryIterator_O*,FP> {
 template <typename FP> struct Cast<chem::IterateMatter_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 59 62 
       return ((59 <= kindVal) && (kindVal <= 62));
   };
@@ -2171,7 +2171,7 @@ template <typename FP> struct Cast<chem::IterateMatter_O*,FP> {
 template <typename FP> struct Cast<asttooling::DerivableMatchCallback*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 743 743 
       return (kindVal == 743);
   };
@@ -2180,7 +2180,7 @@ template <typename FP> struct Cast<asttooling::DerivableMatchCallback*,FP> {
 template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr<chem::StereoConfiguration_O>>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 728 728 
       return (kindVal == 728);
   };
@@ -2189,7 +2189,7 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr
 template <typename FP> struct Cast<chem::SpecificContextSet_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 505 505 
       return (kindVal == 505);
   };
@@ -2198,7 +2198,7 @@ template <typename FP> struct Cast<chem::SpecificContextSet_O*,FP> {
 template <typename FP> struct Cast<llvmo::Constant_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 117 130 
       return ((117 <= kindVal) && (kindVal <= 130));
   };
@@ -2207,7 +2207,7 @@ template <typename FP> struct Cast<llvmo::Constant_O*,FP> {
 template <typename FP> struct Cast<core::SimpleMDArray_int64_t_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 250 250 
       return (kindVal == 250);
   };
@@ -2216,7 +2216,7 @@ template <typename FP> struct Cast<core::SimpleMDArray_int64_t_O*,FP> {
 template <typename FP> struct Cast<llvmo::IRBuilder_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 71 71 
       return (kindVal == 71);
   };
@@ -2225,7 +2225,7 @@ template <typename FP> struct Cast<llvmo::IRBuilder_O*,FP> {
 template <typename FP> struct Cast<core::SymbolToEnumConverter_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 604 604 
       return (kindVal == 604);
   };
@@ -2234,7 +2234,7 @@ template <typename FP> struct Cast<core::SymbolToEnumConverter_O*,FP> {
 template <typename FP> struct Cast<core::ConsStepper_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 38 38 
       return (kindVal == 38);
   };
@@ -2243,7 +2243,7 @@ template <typename FP> struct Cast<core::ConsStepper_O*,FP> {
 template <typename FP> struct Cast<geom::BoundingBox_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 504 504 
       return (kindVal == 504);
   };
@@ -2252,7 +2252,7 @@ template <typename FP> struct Cast<geom::BoundingBox_O*,FP> {
 template <typename FP> struct Cast<gctools::GCArray_moveable<float>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 727 727 
       return (kindVal == 727);
   };
@@ -2261,7 +2261,7 @@ template <typename FP> struct Cast<gctools::GCArray_moveable<float>*,FP> {
 template <typename FP> struct Cast<clcenv::OptimizeInfo_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 526 526 
       return (kindVal == 526);
   };
@@ -2270,7 +2270,7 @@ template <typename FP> struct Cast<clcenv::OptimizeInfo_O*,FP> {
 template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr<chem::BondList_O>>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 726 726 
       return (kindVal == 726);
   };
@@ -2279,7 +2279,7 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr
 template <typename FP> struct Cast<chem::ZMatrixBondInternal_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 509 509 
       return (kindVal == 509);
   };
@@ -2288,7 +2288,7 @@ template <typename FP> struct Cast<chem::ZMatrixBondInternal_O*,FP> {
 template <typename FP> struct Cast<adapt::ObjectSet_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 603 603 
       return (kindVal == 603);
   };
@@ -2297,7 +2297,7 @@ template <typename FP> struct Cast<adapt::ObjectSet_O*,FP> {
 template <typename FP> struct Cast<core::SexpLoadArchive_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 601 601 
       return (kindVal == 601);
   };
@@ -2306,7 +2306,7 @@ template <typename FP> struct Cast<core::SexpLoadArchive_O*,FP> {
 template <typename FP> struct Cast<core::LoadArchive_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 600 601 
       return ((600 <= kindVal) && (kindVal <= 601));
   };
@@ -2315,7 +2315,7 @@ template <typename FP> struct Cast<core::LoadArchive_O*,FP> {
 template <typename FP> struct Cast<gctools::GCVector_moveable<chem::EnergyAtom>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 725 725 
       return (kindVal == 725);
   };
@@ -2324,7 +2324,7 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<chem::EnergyAtom>*
 template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr<chem::Matter_O>>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 724 724 
       return (kindVal == 724);
   };
@@ -2333,7 +2333,7 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr
 template <typename FP> struct Cast<llvmo::LandingPadInst_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 116 116 
       return (kindVal == 116);
   };
@@ -2342,7 +2342,7 @@ template <typename FP> struct Cast<llvmo::LandingPadInst_O*,FP> {
 template <typename FP> struct Cast<llvmo::APFloat_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 148 148 
       return (kindVal == 148);
   };
@@ -2351,7 +2351,7 @@ template <typename FP> struct Cast<llvmo::APFloat_O*,FP> {
 template <typename FP> struct Cast<gctools::GCArray_moveable<unsigned int>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 723 723 
       return (kindVal == 723);
   };
@@ -2360,7 +2360,7 @@ template <typename FP> struct Cast<gctools::GCArray_moveable<unsigned int>*,FP> 
 template <typename FP> struct Cast<chem::ReadAmberParameters_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 503 503 
       return (kindVal == 503);
   };
@@ -2369,7 +2369,7 @@ template <typename FP> struct Cast<chem::ReadAmberParameters_O*,FP> {
 template <typename FP> struct Cast<chem::DirectionalCoupling_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 384 384 
       return (kindVal == 384);
   };
@@ -2378,7 +2378,7 @@ template <typename FP> struct Cast<chem::DirectionalCoupling_O*,FP> {
 template <typename FP> struct Cast<core::CoreExposer_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 23 23 
       return (kindVal == 23);
   };
@@ -2387,7 +2387,7 @@ template <typename FP> struct Cast<core::CoreExposer_O*,FP> {
 template <typename FP> struct Cast<llvmo::AtomicCmpXchgInst_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 115 115 
       return (kindVal == 115);
   };
@@ -2396,7 +2396,7 @@ template <typename FP> struct Cast<llvmo::AtomicCmpXchgInst_O*,FP> {
 template <typename FP> struct Cast<core::WeakPointer_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 602 602 
       return (kindVal == 602);
   };
@@ -2405,7 +2405,7 @@ template <typename FP> struct Cast<core::WeakPointer_O*,FP> {
 template <typename FP> struct Cast<chem::AGVertex_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 502 502 
       return (kindVal == 502);
   };
@@ -2414,7 +2414,7 @@ template <typename FP> struct Cast<chem::AGVertex_O*,FP> {
 template <typename FP> struct Cast<llvmo::ReturnInst_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 107 107 
       return (kindVal == 107);
   };
@@ -2423,7 +2423,7 @@ template <typename FP> struct Cast<llvmo::ReturnInst_O*,FP> {
 template <typename FP> struct Cast<core::Archive_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 597 601 
       return ((597 <= kindVal) && (kindVal <= 601));
   };
@@ -2432,7 +2432,7 @@ template <typename FP> struct Cast<core::Archive_O*,FP> {
 template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr<chem::MonomerCoordinates_O>>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 722 722 
       return (kindVal == 722);
   };
@@ -2441,7 +2441,7 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr
 template <typename FP> struct Cast<chem::RestrainedPiBond_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 416 416 
       return (kindVal == 416);
   };
@@ -2450,7 +2450,7 @@ template <typename FP> struct Cast<chem::RestrainedPiBond_O*,FP> {
 template <typename FP> struct Cast<core::SimpleMDArrayBaseChar_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 268 268 
       return (kindVal == 268);
   };
@@ -2459,7 +2459,7 @@ template <typename FP> struct Cast<core::SimpleMDArrayBaseChar_O*,FP> {
 template <typename FP> struct Cast<core::Fixnum_dummy_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 620 620 
       return (kindVal == 620);
   };
@@ -2468,7 +2468,7 @@ template <typename FP> struct Cast<core::Fixnum_dummy_O*,FP> {
 template <typename FP> struct Cast<core::Environment_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 578 596 
       return ((578 <= kindVal) && (kindVal <= 596));
   };
@@ -2477,7 +2477,7 @@ template <typename FP> struct Cast<core::Environment_O*,FP> {
 template <typename FP> struct Cast<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Coupling_O>>>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 721 721 
       return (kindVal == 721);
   };
@@ -2486,7 +2486,7 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<std::pair<gctools:
 template <typename FP> struct Cast<geom::SimpleMDArrayCoordinate_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 264 264 
       return (kindVal == 264);
   };
@@ -2495,7 +2495,7 @@ template <typename FP> struct Cast<geom::SimpleMDArrayCoordinate_O*,FP> {
 template <typename FP> struct Cast<chem::FFPtor_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 349 349 
       return (kindVal == 349);
   };
@@ -2504,7 +2504,7 @@ template <typename FP> struct Cast<chem::FFPtor_O*,FP> {
 template <typename FP> struct Cast<chem::FFItor_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 348 348 
       return (kindVal == 348);
   };
@@ -2513,7 +2513,7 @@ template <typename FP> struct Cast<chem::FFItor_O*,FP> {
 template <typename FP> struct Cast<chem::EnergyFixedNonbondRestraint_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 462 462 
       return (kindVal == 462);
   };
@@ -2522,7 +2522,7 @@ template <typename FP> struct Cast<chem::EnergyFixedNonbondRestraint_O*,FP> {
 template <typename FP> struct Cast<chem::RepresentedEntityNameSet_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 361 361 
       return (kindVal == 361);
   };
@@ -2531,7 +2531,7 @@ template <typename FP> struct Cast<chem::RepresentedEntityNameSet_O*,FP> {
 template <typename FP> struct Cast<chem::Constitution_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 369 369 
       return (kindVal == 369);
   };
@@ -2540,7 +2540,7 @@ template <typename FP> struct Cast<chem::Constitution_O*,FP> {
 template <typename FP> struct Cast<chem::MonomerPack_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 360 360 
       return (kindVal == 360);
   };
@@ -2549,7 +2549,7 @@ template <typename FP> struct Cast<chem::MonomerPack_O*,FP> {
 template <typename FP> struct Cast<chem::FFBaseDb_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 493 501 
       return ((493 <= kindVal) && (kindVal <= 501));
   };
@@ -2558,7 +2558,7 @@ template <typename FP> struct Cast<chem::FFBaseDb_O*,FP> {
 template <typename FP> struct Cast<core::SourceManager_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 577 577 
       return (kindVal == 577);
   };
@@ -2567,7 +2567,7 @@ template <typename FP> struct Cast<core::SourceManager_O*,FP> {
 template <typename FP> struct Cast<clbind::ConstructorCreator_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 50 50 
       return (kindVal == 50);
   };
@@ -2576,7 +2576,7 @@ template <typename FP> struct Cast<clbind::ConstructorCreator_O*,FP> {
 template <typename FP> struct Cast<geom::OMatrix_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 492 492 
       return (kindVal == 492);
   };
@@ -2585,7 +2585,7 @@ template <typename FP> struct Cast<geom::OMatrix_O*,FP> {
 template <typename FP> struct Cast<gctools::GCVector_moveable<core::RequiredArgument>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 720 720 
       return (kindVal == 720);
   };
@@ -2594,7 +2594,7 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<core::RequiredArgu
 template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr<chem::ZMatrixEntry_O>>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 719 719 
       return (kindVal == 719);
   };
@@ -2603,7 +2603,7 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr
 template <typename FP> struct Cast<clcenv::LambdaName_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 544 544 
       return (kindVal == 544);
   };
@@ -2612,7 +2612,7 @@ template <typename FP> struct Cast<clcenv::LambdaName_O*,FP> {
 template <typename FP> struct Cast<adapt::AdaptExposer_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 22 22 
       return (kindVal == 22);
   };
@@ -2621,7 +2621,7 @@ template <typename FP> struct Cast<adapt::AdaptExposer_O*,FP> {
 template <typename FP> struct Cast<adapt::StringList_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 576 576 
       return (kindVal == 576);
   };
@@ -2630,7 +2630,7 @@ template <typename FP> struct Cast<adapt::StringList_O*,FP> {
 template <typename FP> struct Cast<llvmo::DIFile_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 83 83 
       return (kindVal == 83);
   };
@@ -2639,7 +2639,7 @@ template <typename FP> struct Cast<llvmo::DIFile_O*,FP> {
 template <typename FP> struct Cast<clcenv::FunctionInfo_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 519 525 
       return ((519 <= kindVal) && (kindVal <= 525));
   };
@@ -2648,7 +2648,7 @@ template <typename FP> struct Cast<clcenv::FunctionInfo_O*,FP> {
 template <typename FP> struct Cast<chem::BondListMatchNode_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 391 393 
       return ((391 <= kindVal) && (kindVal <= 393));
   };
@@ -2657,7 +2657,7 @@ template <typename FP> struct Cast<chem::BondListMatchNode_O*,FP> {
 template <typename FP> struct Cast<gctools::GCVector_moveable<chem::BeyondThresholdFixedNonbondRestraint>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 718 718 
       return (kindVal == 718);
   };
@@ -2666,7 +2666,7 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<chem::BeyondThresh
 template <typename FP> struct Cast<core::StrNs_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 287 291 
       return ((287 <= kindVal) && (kindVal <= 291));
   };
@@ -2675,7 +2675,7 @@ template <typename FP> struct Cast<core::StrNs_O*,FP> {
 template <typename FP> struct Cast<chem::OutPlug_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 334 335 
       return ((334 <= kindVal) && (kindVal <= 335));
   };
@@ -2684,7 +2684,7 @@ template <typename FP> struct Cast<chem::OutPlug_O*,FP> {
 template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr<core::Symbol_O>>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 717 717 
       return (kindVal == 717);
   };
@@ -2693,7 +2693,7 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr
 template <typename FP> struct Cast<llvmo::ClaspJIT_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 575 575 
       return (kindVal == 575);
   };
@@ -2702,7 +2702,7 @@ template <typename FP> struct Cast<llvmo::ClaspJIT_O*,FP> {
 template <typename FP> struct Cast<llvmo::PointerType_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 156 156 
       return (kindVal == 156);
   };
@@ -2711,7 +2711,7 @@ template <typename FP> struct Cast<llvmo::PointerType_O*,FP> {
 template <typename FP> struct Cast<llvmo::UndefValue_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 126 126 
       return (kindVal == 126);
   };
@@ -2720,7 +2720,7 @@ template <typename FP> struct Cast<llvmo::UndefValue_O*,FP> {
 template <typename FP> struct Cast<chem::PdbReader_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 491 491 
       return (kindVal == 491);
   };
@@ -2729,7 +2729,7 @@ template <typename FP> struct Cast<chem::PdbReader_O*,FP> {
 template <typename FP> struct Cast<chem::EnergyRigidBodyStaple_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 460 460 
       return (kindVal == 460);
   };
@@ -2738,7 +2738,7 @@ template <typename FP> struct Cast<chem::EnergyRigidBodyStaple_O*,FP> {
 template <typename FP> struct Cast<core::MDArray_int16_t_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 280 280 
       return (kindVal == 280);
   };
@@ -2747,7 +2747,7 @@ template <typename FP> struct Cast<core::MDArray_int16_t_O*,FP> {
 template <typename FP> struct Cast<clcenv::LexicalVariableInfo_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 517 517 
       return (kindVal == 517);
   };
@@ -2756,7 +2756,7 @@ template <typename FP> struct Cast<clcenv::LexicalVariableInfo_O*,FP> {
 template <typename FP> struct Cast<llvmo::FenceInst_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 114 114 
       return (kindVal == 114);
   };
@@ -2765,7 +2765,7 @@ template <typename FP> struct Cast<llvmo::FenceInst_O*,FP> {
 template <typename FP> struct Cast<chem::IterateRestraints_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 58 58 
       return (kindVal == 58);
   };
@@ -2774,7 +2774,7 @@ template <typename FP> struct Cast<chem::IterateRestraints_O*,FP> {
 template <typename FP> struct Cast<gctools::GCVector_moveable<float>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 716 716 
       return (kindVal == 716);
   };
@@ -2783,7 +2783,7 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<float>*,FP> {
 template <typename FP> struct Cast<chem::CDFragment_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 490 490 
       return (kindVal == 490);
   };
@@ -2792,7 +2792,7 @@ template <typename FP> struct Cast<chem::CDFragment_O*,FP> {
 template <typename FP> struct Cast<core::CxxObject_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 328 574 
       return ((328 <= kindVal) && (kindVal <= 574));
   };
@@ -2801,7 +2801,7 @@ template <typename FP> struct Cast<core::CxxObject_O*,FP> {
 template <typename FP> struct Cast<adapt::StringSet_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 489 489 
       return (kindVal == 489);
   };
@@ -2810,7 +2810,7 @@ template <typename FP> struct Cast<adapt::StringSet_O*,FP> {
 template <typename FP> struct Cast<core::TwoWayStream_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 321 321 
       return (kindVal == 321);
   };
@@ -2819,7 +2819,7 @@ template <typename FP> struct Cast<core::TwoWayStream_O*,FP> {
 template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr<chem::Twister_O>>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 715 715 
       return (kindVal == 715);
   };
@@ -2828,7 +2828,7 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr
 template <typename FP> struct Cast<gctools::GCArray_moveable<double>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 714 714 
       return (kindVal == 714);
   };
@@ -2837,7 +2837,7 @@ template <typename FP> struct Cast<gctools::GCArray_moveable<double>*,FP> {
 template <typename FP> struct Cast<gctools::GCVector_moveable<core::DynamicBinding>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 713 713 
       return (kindVal == 713);
   };
@@ -2846,7 +2846,7 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<core::DynamicBindi
 template <typename FP> struct Cast<core::VectorStepper_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 37 37 
       return (kindVal == 37);
   };
@@ -2855,7 +2855,7 @@ template <typename FP> struct Cast<core::VectorStepper_O*,FP> {
 template <typename FP> struct Cast<chem::Structure_Old_List_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 488 488 
       return (kindVal == 488);
   };
@@ -2864,7 +2864,7 @@ template <typename FP> struct Cast<chem::Structure_Old_List_O*,FP> {
 template <typename FP> struct Cast<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Topology_O>>>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 712 712 
       return (kindVal == 712);
   };
@@ -2873,7 +2873,7 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<std::pair<gctools:
 template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr<core::Cons_O>>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 711 711 
       return (kindVal == 711);
   };
@@ -2882,7 +2882,7 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr
 template <typename FP> struct Cast<chem::FFStretch_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 347 347 
       return (kindVal == 347);
   };
@@ -2891,7 +2891,7 @@ template <typename FP> struct Cast<chem::FFStretch_O*,FP> {
 template <typename FP> struct Cast<gctools::GCArray_moveable<gctools::smart_ptr<core::T_O>>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 710 710 
       return (kindVal == 710);
   };
@@ -2900,7 +2900,7 @@ template <typename FP> struct Cast<gctools::GCArray_moveable<gctools::smart_ptr<
 template <typename FP> struct Cast<core::HashTableEq_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 30 30 
       return (kindVal == 30);
   };
@@ -2909,7 +2909,7 @@ template <typename FP> struct Cast<core::HashTableEq_O*,FP> {
 template <typename FP> struct Cast<mp::ConcurrentQueue_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 327 327 
       return (kindVal == 327);
   };
@@ -2918,7 +2918,7 @@ template <typename FP> struct Cast<mp::ConcurrentQueue_O*,FP> {
 template <typename FP> struct Cast<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::MonomerCoordinates_O>>>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 709 709 
       return (kindVal == 709);
   };
@@ -2927,7 +2927,7 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<std::pair<gctools:
 template <typename FP> struct Cast<chem::WildElementDict_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 487 487 
       return (kindVal == 487);
   };
@@ -2936,7 +2936,7 @@ template <typename FP> struct Cast<chem::WildElementDict_O*,FP> {
 template <typename FP> struct Cast<chem::ChemInfo_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 486 486 
       return (kindVal == 486);
   };
@@ -2945,7 +2945,7 @@ template <typename FP> struct Cast<chem::ChemInfo_O*,FP> {
 template <typename FP> struct Cast<core::DoubleFloat_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 615 615 
       return (kindVal == 615);
   };
@@ -2954,7 +2954,7 @@ template <typename FP> struct Cast<core::DoubleFloat_O*,FP> {
 template <typename FP> struct Cast<chem::FFNonbondDb_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 500 500 
       return (kindVal == 500);
   };
@@ -2963,7 +2963,7 @@ template <typename FP> struct Cast<chem::FFNonbondDb_O*,FP> {
 template <typename FP> struct Cast<chem::RingClosingPlug_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 335 335 
       return (kindVal == 335);
   };
@@ -2972,7 +2972,7 @@ template <typename FP> struct Cast<chem::RingClosingPlug_O*,FP> {
 template <typename FP> struct Cast<gctools::GCVector_moveable<core::CacheRecord>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 708 708 
       return (kindVal == 708);
   };
@@ -2981,7 +2981,7 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<core::CacheRecord>
 template <typename FP> struct Cast<core::MDArray_int8_t_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 293 293 
       return (kindVal == 293);
   };
@@ -2990,7 +2990,7 @@ template <typename FP> struct Cast<core::MDArray_int8_t_O*,FP> {
 template <typename FP> struct Cast<llvmo::FunctionType_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 158 158 
       return (kindVal == 158);
   };
@@ -2999,7 +2999,7 @@ template <typename FP> struct Cast<llvmo::FunctionType_O*,FP> {
 template <typename FP> struct Cast<llvmo::BasicBlock_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 131 131 
       return (kindVal == 131);
   };
@@ -3008,7 +3008,7 @@ template <typename FP> struct Cast<llvmo::BasicBlock_O*,FP> {
 template <typename FP> struct Cast<llvmo::DataLayout_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 326 326 
       return (kindVal == 326);
   };
@@ -3017,7 +3017,7 @@ template <typename FP> struct Cast<llvmo::DataLayout_O*,FP> {
 template <typename FP> struct Cast<core::SimpleVectorFloat_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 223 223 
       return (kindVal == 223);
   };
@@ -3026,7 +3026,7 @@ template <typename FP> struct Cast<core::SimpleVectorFloat_O*,FP> {
 template <typename FP> struct Cast<core::SingleDispatchMethodFunction_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 178 179 
       return ((178 <= kindVal) && (kindVal <= 179));
   };
@@ -3035,7 +3035,7 @@ template <typename FP> struct Cast<core::SingleDispatchMethodFunction_O*,FP> {
 template <typename FP> struct Cast<chem::SearchStatistics_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 485 485 
       return (kindVal == 485);
   };
@@ -3044,7 +3044,7 @@ template <typename FP> struct Cast<chem::SearchStatistics_O*,FP> {
 template <typename FP> struct Cast<chem::MacroModelFile_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 484 484 
       return (kindVal == 484);
   };
@@ -3053,7 +3053,7 @@ template <typename FP> struct Cast<chem::MacroModelFile_O*,FP> {
 template <typename FP> struct Cast<llvmo::DIScope_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 78 89 
       return ((78 <= kindVal) && (kindVal <= 89));
   };
@@ -3062,7 +3062,7 @@ template <typename FP> struct Cast<llvmo::DIScope_O*,FP> {
 template <typename FP> struct Cast<llvmo::User_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 96 130 
       return ((96 <= kindVal) && (kindVal <= 130));
   };
@@ -3071,7 +3071,7 @@ template <typename FP> struct Cast<llvmo::User_O*,FP> {
 template <typename FP> struct Cast<llvmo::Target_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 147 147 
       return (kindVal == 147);
   };
@@ -3080,7 +3080,7 @@ template <typename FP> struct Cast<llvmo::Target_O*,FP> {
 template <typename FP> struct Cast<core::IOFileStream_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 324 324 
       return (kindVal == 324);
   };
@@ -3089,7 +3089,7 @@ template <typename FP> struct Cast<core::IOFileStream_O*,FP> {
 template <typename FP> struct Cast<llvmo::UnreachableInst_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 106 106 
       return (kindVal == 106);
   };
@@ -3098,7 +3098,7 @@ template <typename FP> struct Cast<llvmo::UnreachableInst_O*,FP> {
 template <typename FP> struct Cast<core::DirectoryIterator_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 57 57 
       return (kindVal == 57);
   };
@@ -3107,7 +3107,7 @@ template <typename FP> struct Cast<core::DirectoryIterator_O*,FP> {
 template <typename FP> struct Cast<core::Closure_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 165 180 
       return ((165 <= kindVal) && (kindVal <= 180));
   };
@@ -3116,7 +3116,7 @@ template <typename FP> struct Cast<core::Closure_O*,FP> {
 template <typename FP> struct Cast<core::Integer_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 618 620 
       return ((618 <= kindVal) && (kindVal <= 620));
   };
@@ -3125,7 +3125,7 @@ template <typename FP> struct Cast<core::Integer_O*,FP> {
 template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr<chem::ChemInfo_O>>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 707 707 
       return (kindVal == 707);
   };
@@ -3134,7 +3134,7 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr
 template <typename FP> struct Cast<llvmo::ArrayType_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 155 155 
       return (kindVal == 155);
   };
@@ -3143,7 +3143,7 @@ template <typename FP> struct Cast<llvmo::ArrayType_O*,FP> {
 template <typename FP> struct Cast<core::CxxMethodFunction_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 179 179 
       return (kindVal == 179);
   };
@@ -3152,7 +3152,7 @@ template <typename FP> struct Cast<core::CxxMethodFunction_O*,FP> {
 template <typename FP> struct Cast<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::FrameRecognizer_O>>>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 706 706 
       return (kindVal == 706);
   };
@@ -3161,7 +3161,7 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<std::pair<gctools:
 template <typename FP> struct Cast<core::MDArrayCharacter_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 234 234 
       return (kindVal == 234);
   };
@@ -3170,7 +3170,7 @@ template <typename FP> struct Cast<core::MDArrayCharacter_O*,FP> {
 template <typename FP> struct Cast<chem::RestraintAnchor_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 565 565 
       return (kindVal == 565);
   };
@@ -3179,7 +3179,7 @@ template <typename FP> struct Cast<chem::RestraintAnchor_O*,FP> {
 template <typename FP> struct Cast<core::SpecialForm_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 164 164 
       return (kindVal == 164);
   };
@@ -3188,7 +3188,7 @@ template <typename FP> struct Cast<core::SpecialForm_O*,FP> {
 template <typename FP> struct Cast<core::Record_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 325 325 
       return (kindVal == 325);
   };
@@ -3197,7 +3197,7 @@ template <typename FP> struct Cast<core::Record_O*,FP> {
 template <typename FP> struct Cast<chem::Twister_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 483 483 
       return (kindVal == 483);
   };
@@ -3206,7 +3206,7 @@ template <typename FP> struct Cast<chem::Twister_O*,FP> {
 template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr<core::Package_O>>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 705 705 
       return (kindVal == 705);
   };
@@ -3215,7 +3215,7 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr
 template <typename FP> struct Cast<llvmo::GlobalVariable_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 120 120 
       return (kindVal == 120);
   };
@@ -3224,7 +3224,7 @@ template <typename FP> struct Cast<llvmo::GlobalVariable_O*,FP> {
 template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr<core::List_V>>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 704 704 
       return (kindVal == 704);
   };
@@ -3233,7 +3233,7 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr
 template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr<chem::FFNonbond_O>>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 703 703 
       return (kindVal == 703);
   };
@@ -3242,7 +3242,7 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr
 template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr<core::SequenceStepper_O>>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 702 702 
       return (kindVal == 702);
   };
@@ -3251,7 +3251,7 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr
 template <typename FP> struct Cast<chem::AtomReference_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 434 434 
       return (kindVal == 434);
   };
@@ -3260,7 +3260,7 @@ template <typename FP> struct Cast<chem::AtomReference_O*,FP> {
 template <typename FP> struct Cast<core::Stream_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 312 324 
       return ((312 <= kindVal) && (kindVal <= 324));
   };
@@ -3269,7 +3269,7 @@ template <typename FP> struct Cast<core::Stream_O*,FP> {
 template <typename FP> struct Cast<core::StackValueEnvironment_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 587 587 
       return (kindVal == 587);
   };
@@ -3278,7 +3278,7 @@ template <typename FP> struct Cast<core::StackValueEnvironment_O*,FP> {
 template <typename FP> struct Cast<clcenv::SymbolMacroInfo_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 516 516 
       return (kindVal == 516);
   };
@@ -3287,7 +3287,7 @@ template <typename FP> struct Cast<clcenv::SymbolMacroInfo_O*,FP> {
 template <typename FP> struct Cast<core::Bignum_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 619 619 
       return (kindVal == 619);
   };
@@ -3296,7 +3296,7 @@ template <typename FP> struct Cast<core::Bignum_O*,FP> {
 template <typename FP> struct Cast<units::Quantity_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 482 482 
       return (kindVal == 482);
   };
@@ -3305,7 +3305,7 @@ template <typename FP> struct Cast<units::Quantity_O*,FP> {
 template <typename FP> struct Cast<core::WeakKeyMapping_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 311 311 
       return (kindVal == 311);
   };
@@ -3314,7 +3314,7 @@ template <typename FP> struct Cast<core::WeakKeyMapping_O*,FP> {
 template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr<chem::Mate_O>>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 701 701 
       return (kindVal == 701);
   };
@@ -3323,7 +3323,7 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr
 template <typename FP> struct Cast<chem::AntechamberFocusAtomMatch_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 406 406 
       return (kindVal == 406);
   };
@@ -3332,7 +3332,7 @@ template <typename FP> struct Cast<chem::AntechamberFocusAtomMatch_O*,FP> {
 template <typename FP> struct Cast<core::SimpleVector_int16_t_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 217 217 
       return (kindVal == 217);
   };
@@ -3341,7 +3341,7 @@ template <typename FP> struct Cast<core::SimpleVector_int16_t_O*,FP> {
 template <typename FP> struct Cast<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::PdbMonomerConnectivity_O>>>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 700 700 
       return (kindVal == 700);
   };
@@ -3350,7 +3350,7 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<std::pair<gctools:
 template <typename FP> struct Cast<chem::RestraintDistance_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 564 564 
       return (kindVal == 564);
   };
@@ -3359,7 +3359,7 @@ template <typename FP> struct Cast<chem::RestraintDistance_O*,FP> {
 template <typename FP> struct Cast<adapt::SymbolSet_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 310 310 
       return (kindVal == 310);
   };
@@ -3368,7 +3368,7 @@ template <typename FP> struct Cast<adapt::SymbolSet_O*,FP> {
 template <typename FP> struct Cast<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,chem::EstimateStretch>>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 699 699 
       return (kindVal == 699);
   };
@@ -3377,7 +3377,7 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<std::pair<gctools:
 template <typename FP> struct Cast<clcenv::SpecialVariable_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 543 543 
       return (kindVal == 543);
   };
@@ -3386,7 +3386,7 @@ template <typename FP> struct Cast<clcenv::SpecialVariable_O*,FP> {
 template <typename FP> struct Cast<chem::RestrainedExoCyclicAtom_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 415 415 
       return (kindVal == 415);
   };
@@ -3395,7 +3395,7 @@ template <typename FP> struct Cast<chem::RestrainedExoCyclicAtom_O*,FP> {
 template <typename FP> struct Cast<chem::CDNode_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 481 481 
       return (kindVal == 481);
   };
@@ -3404,7 +3404,7 @@ template <typename FP> struct Cast<chem::CDNode_O*,FP> {
 template <typename FP> struct Cast<core::Character_dummy_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 309 309 
       return (kindVal == 309);
   };
@@ -3413,7 +3413,7 @@ template <typename FP> struct Cast<core::Character_dummy_O*,FP> {
 template <typename FP> struct Cast<chem::RestraintAngle_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 563 563 
       return (kindVal == 563);
   };
@@ -3422,7 +3422,7 @@ template <typename FP> struct Cast<chem::RestraintAngle_O*,FP> {
 template <typename FP> struct Cast<core::SexpSaveArchive_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 599 599 
       return (kindVal == 599);
   };
@@ -3431,7 +3431,7 @@ template <typename FP> struct Cast<core::SexpSaveArchive_O*,FP> {
 template <typename FP> struct Cast<chem::Aggregate_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 427 427 
       return (kindVal == 427);
   };
@@ -3440,7 +3440,7 @@ template <typename FP> struct Cast<chem::Aggregate_O*,FP> {
 template <typename FP> struct Cast<chem::PlugWithMates_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 333 336 
       return ((333 <= kindVal) && (kindVal <= 336));
   };
@@ -3449,7 +3449,7 @@ template <typename FP> struct Cast<chem::PlugWithMates_O*,FP> {
 template <typename FP> struct Cast<core::FunctionFrame_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 596 596 
       return (kindVal == 596);
   };
@@ -3458,7 +3458,7 @@ template <typename FP> struct Cast<core::FunctionFrame_O*,FP> {
 template <typename FP> struct Cast<core::SingleDispatchGenericFunctionClosure_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 177 177 
       return (kindVal == 177);
   };
@@ -3467,7 +3467,7 @@ template <typename FP> struct Cast<core::SingleDispatchGenericFunctionClosure_O*
 template <typename FP> struct Cast<core::LightUserData_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 307 308 
       return ((307 <= kindVal) && (kindVal <= 308));
   };
@@ -3476,7 +3476,7 @@ template <typename FP> struct Cast<core::LightUserData_O*,FP> {
 template <typename FP> struct Cast<core::EchoStream_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 320 320 
       return (kindVal == 320);
   };
@@ -3485,7 +3485,7 @@ template <typename FP> struct Cast<core::EchoStream_O*,FP> {
 template <typename FP> struct Cast<chem::CalculatePositionUsingInternals_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 553 553 
       return (kindVal == 553);
   };
@@ -3494,7 +3494,7 @@ template <typename FP> struct Cast<chem::CalculatePositionUsingInternals_O*,FP> 
 template <typename FP> struct Cast<llvmo::DILocalScope_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 79 82 
       return ((79 <= kindVal) && (kindVal <= 82));
   };
@@ -3503,7 +3503,7 @@ template <typename FP> struct Cast<llvmo::DILocalScope_O*,FP> {
 template <typename FP> struct Cast<chem::ZMatrixEntry_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 480 480 
       return (kindVal == 480);
   };
@@ -3512,7 +3512,7 @@ template <typename FP> struct Cast<chem::ZMatrixEntry_O*,FP> {
 template <typename FP> struct Cast<core::SimpleMDArray_size_t_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 252 252 
       return (kindVal == 252);
   };
@@ -3521,7 +3521,7 @@ template <typename FP> struct Cast<core::SimpleMDArray_size_t_O*,FP> {
 template <typename FP> struct Cast<llvmo::Instruction_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 97 116 
       return ((97 <= kindVal) && (kindVal <= 116));
   };
@@ -3530,7 +3530,7 @@ template <typename FP> struct Cast<llvmo::Instruction_O*,FP> {
 template <typename FP> struct Cast<core::FunctionClosure_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 167 179 
       return ((167 <= kindVal) && (kindVal <= 179));
   };
@@ -3539,7 +3539,7 @@ template <typename FP> struct Cast<core::FunctionClosure_O*,FP> {
 template <typename FP> struct Cast<chem::ConstitutionAtom_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 478 479 
       return ((478 <= kindVal) && (kindVal <= 479));
   };
@@ -3548,7 +3548,7 @@ template <typename FP> struct Cast<chem::ConstitutionAtom_O*,FP> {
 template <typename FP> struct Cast<chem::MonoMonomer_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 367 367 
       return (kindVal == 367);
   };
@@ -3557,7 +3557,7 @@ template <typename FP> struct Cast<chem::MonoMonomer_O*,FP> {
 template <typename FP> struct Cast<clcenv::FunctionDynamicExtent_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 542 542 
       return (kindVal == 542);
   };
@@ -3566,7 +3566,7 @@ template <typename FP> struct Cast<clcenv::FunctionDynamicExtent_O*,FP> {
 template <typename FP> struct Cast<clcenv::LexicalVariable_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 541 541 
       return (kindVal == 541);
   };
@@ -3575,7 +3575,7 @@ template <typename FP> struct Cast<clcenv::LexicalVariable_O*,FP> {
 template <typename FP> struct Cast<gctools::GCVector_moveable<std::pair<int,gctools::smart_ptr<chem::CDNode_O>>>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 698 698 
       return (kindVal == 698);
   };
@@ -3584,7 +3584,7 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<std::pair<int,gcto
 template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr<chem::TrajectoryFrame_O>>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 697 697 
       return (kindVal == 697);
   };
@@ -3593,7 +3593,7 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr
 template <typename FP> struct Cast<chem::EnergyAnchorRestraint_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 461 461 
       return (kindVal == 461);
   };
@@ -3602,7 +3602,7 @@ template <typename FP> struct Cast<chem::EnergyAnchorRestraint_O*,FP> {
 template <typename FP> struct Cast<chem::TypeAssignmentRules_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 477 477 
       return (kindVal == 477);
   };
@@ -3611,7 +3611,7 @@ template <typename FP> struct Cast<chem::TypeAssignmentRules_O*,FP> {
 template <typename FP> struct Cast<chem::Mate_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 364 364 
       return (kindVal == 364);
   };
@@ -3620,7 +3620,7 @@ template <typename FP> struct Cast<chem::Mate_O*,FP> {
 template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr<chem::Residue_O>>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 696 696 
       return (kindVal == 696);
   };
@@ -3629,7 +3629,7 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr
 template <typename FP> struct Cast<clcenv::VariableDynamicExtent_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 540 540 
       return (kindVal == 540);
   };
@@ -3638,7 +3638,7 @@ template <typename FP> struct Cast<clcenv::VariableDynamicExtent_O*,FP> {
 template <typename FP> struct Cast<chem::StructureComparer_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 476 476 
       return (kindVal == 476);
   };
@@ -3647,7 +3647,7 @@ template <typename FP> struct Cast<chem::StructureComparer_O*,FP> {
 template <typename FP> struct Cast<core::MultiStringBuffer_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 306 306 
       return (kindVal == 306);
   };
@@ -3656,7 +3656,7 @@ template <typename FP> struct Cast<core::MultiStringBuffer_O*,FP> {
 template <typename FP> struct Cast<chem::StereoInformation_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 475 475 
       return (kindVal == 475);
   };
@@ -3665,7 +3665,7 @@ template <typename FP> struct Cast<chem::StereoInformation_O*,FP> {
 template <typename FP> struct Cast<llvmo::Module_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 146 146 
       return (kindVal == 146);
   };
@@ -3674,7 +3674,7 @@ template <typename FP> struct Cast<llvmo::Module_O*,FP> {
 template <typename FP> struct Cast<core::FileStatus_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 305 305 
       return (kindVal == 305);
   };
@@ -3683,7 +3683,7 @@ template <typename FP> struct Cast<core::FileStatus_O*,FP> {
 template <typename FP> struct Cast<chem::Branch_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 392 392 
       return (kindVal == 392);
   };
@@ -3692,7 +3692,7 @@ template <typename FP> struct Cast<chem::Branch_O*,FP> {
 template <typename FP> struct Cast<gctools::GCVector_moveable<std::pair<int,gctools::smart_ptr<chem::Residue_O>>>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 695 695 
       return (kindVal == 695);
   };
@@ -3701,7 +3701,7 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<std::pair<int,gcto
 template <typename FP> struct Cast<core::SimpleMDArray_fixnum_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 248 248 
       return (kindVal == 248);
   };
@@ -3710,7 +3710,7 @@ template <typename FP> struct Cast<core::SimpleMDArray_fixnum_O*,FP> {
 template <typename FP> struct Cast<core::MDArray_int32_t_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 286 286 
       return (kindVal == 286);
   };
@@ -3719,7 +3719,7 @@ template <typename FP> struct Cast<core::MDArray_int32_t_O*,FP> {
 template <typename FP> struct Cast<llvmo::MDNode_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 76 89 
       return ((76 <= kindVal) && (kindVal <= 89));
   };
@@ -3728,7 +3728,7 @@ template <typename FP> struct Cast<llvmo::MDNode_O*,FP> {
 template <typename FP> struct Cast<chem::EnergyRigidBodyComponent_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 458 460 
       return ((458 <= kindVal) && (kindVal <= 460));
   };
@@ -3737,7 +3737,7 @@ template <typename FP> struct Cast<chem::EnergyRigidBodyComponent_O*,FP> {
 template <typename FP> struct Cast<chem::PdbWriter_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 474 474 
       return (kindVal == 474);
   };
@@ -3746,7 +3746,7 @@ template <typename FP> struct Cast<chem::PdbWriter_O*,FP> {
 template <typename FP> struct Cast<chem::FFStretchDb_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 499 499 
       return (kindVal == 499);
   };
@@ -3755,7 +3755,7 @@ template <typename FP> struct Cast<chem::FFStretchDb_O*,FP> {
 template <typename FP> struct Cast<llvmo::UnaryInstruction_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 110 113 
       return ((110 <= kindVal) && (kindVal <= 113));
   };
@@ -3764,7 +3764,7 @@ template <typename FP> struct Cast<llvmo::UnaryInstruction_O*,FP> {
 template <typename FP> struct Cast<llvmo::DILexicalBlockBase_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 80 81 
       return ((80 <= kindVal) && (kindVal <= 81));
   };
@@ -3773,7 +3773,7 @@ template <typename FP> struct Cast<llvmo::DILexicalBlockBase_O*,FP> {
 template <typename FP> struct Cast<core::InterpretedClosure_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 176 176 
       return (kindVal == 176);
   };
@@ -3782,7 +3782,7 @@ template <typename FP> struct Cast<core::InterpretedClosure_O*,FP> {
 template <typename FP> struct Cast<core::WeakKeyHashTable_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 189 189 
       return (kindVal == 189);
   };
@@ -3791,7 +3791,7 @@ template <typename FP> struct Cast<core::WeakKeyHashTable_O*,FP> {
 template <typename FP> struct Cast<core::RandomState_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 304 304 
       return (kindVal == 304);
   };
@@ -3800,7 +3800,7 @@ template <typename FP> struct Cast<core::RandomState_O*,FP> {
 template <typename FP> struct Cast<chem::AfterMatchBondTest_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 390 390 
       return (kindVal == 390);
   };
@@ -3809,7 +3809,7 @@ template <typename FP> struct Cast<chem::AfterMatchBondTest_O*,FP> {
 template <typename FP> struct Cast<llvmo::Pass_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 141 145 
       return ((141 <= kindVal) && (kindVal <= 145));
   };
@@ -3818,7 +3818,7 @@ template <typename FP> struct Cast<llvmo::Pass_O*,FP> {
 template <typename FP> struct Cast<gctools::GCVector_moveable<std::pair<unsigned int,gctools::smart_ptr<chem::Residue_O>>>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 694 694 
       return (kindVal == 694);
   };
@@ -3827,7 +3827,7 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<std::pair<unsigned
 template <typename FP> struct Cast<core::ActivationFrame_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 593 596 
       return ((593 <= kindVal) && (kindVal <= 596));
   };
@@ -3836,7 +3836,7 @@ template <typename FP> struct Cast<core::ActivationFrame_O*,FP> {
 template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr<chem::ConformationCollectionEntry_O>>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 693 693 
       return (kindVal == 693);
   };
@@ -3845,7 +3845,7 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr
 template <typename FP> struct Cast<core::StringOutputStream_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 319 319 
       return (kindVal == 319);
   };
@@ -3854,7 +3854,7 @@ template <typename FP> struct Cast<core::StringOutputStream_O*,FP> {
 template <typename FP> struct Cast<core::IntArray_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 303 303 
       return (kindVal == 303);
   };
@@ -3863,7 +3863,7 @@ template <typename FP> struct Cast<core::IntArray_O*,FP> {
 template <typename FP> struct Cast<chem::SparseLargeSquareMatrix_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 438 438 
       return (kindVal == 438);
   };
@@ -3872,7 +3872,7 @@ template <typename FP> struct Cast<chem::SparseLargeSquareMatrix_O*,FP> {
 template <typename FP> struct Cast<chem::FFNonbondCrossTermTable_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 473 473 
       return (kindVal == 473);
   };
@@ -3881,7 +3881,7 @@ template <typename FP> struct Cast<chem::FFNonbondCrossTermTable_O*,FP> {
 template <typename FP> struct Cast<core::SharpEqualWrapper_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 302 302 
       return (kindVal == 302);
   };
@@ -3890,7 +3890,7 @@ template <typename FP> struct Cast<core::SharpEqualWrapper_O*,FP> {
 template <typename FP> struct Cast<chem::ConformationExplorerEntryStage_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 472 472 
       return (kindVal == 472);
   };
@@ -3899,7 +3899,7 @@ template <typename FP> struct Cast<chem::ConformationExplorerEntryStage_O*,FP> {
 template <typename FP> struct Cast<chem::EnergyFunction_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 356 356 
       return (kindVal == 356);
   };
@@ -3908,7 +3908,7 @@ template <typename FP> struct Cast<chem::EnergyFunction_O*,FP> {
 template <typename FP> struct Cast<gctools::GCArray_moveable<unsigned long>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 692 692 
       return (kindVal == 692);
   };
@@ -3917,7 +3917,7 @@ template <typename FP> struct Cast<gctools::GCArray_moveable<unsigned long>*,FP>
 template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr<core::SingleDispatchMethod_O>>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 691 691 
       return (kindVal == 691);
   };
@@ -3926,7 +3926,7 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr
 template <typename FP> struct Cast<core::UserData_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 308 308 
       return (kindVal == 308);
   };
@@ -3935,7 +3935,7 @@ template <typename FP> struct Cast<core::UserData_O*,FP> {
 template <typename FP> struct Cast<chem::Bond_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 471 471 
       return (kindVal == 471);
   };
@@ -3944,7 +3944,7 @@ template <typename FP> struct Cast<chem::Bond_O*,FP> {
 template <typename FP> struct Cast<chem::Logical_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 405 405 
       return (kindVal == 405);
   };
@@ -3953,7 +3953,7 @@ template <typename FP> struct Cast<chem::Logical_O*,FP> {
 template <typename FP> struct Cast<chem::FFAngleDb_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 498 498 
       return (kindVal == 498);
   };
@@ -3962,7 +3962,7 @@ template <typename FP> struct Cast<chem::FFAngleDb_O*,FP> {
 template <typename FP> struct Cast<chem::AtomId_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 470 470 
       return (kindVal == 470);
   };
@@ -3971,7 +3971,7 @@ template <typename FP> struct Cast<chem::AtomId_O*,FP> {
 template <typename FP> struct Cast<core::Array_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 192 301 
       return ((192 <= kindVal) && (kindVal <= 301));
   };
@@ -3980,7 +3980,7 @@ template <typename FP> struct Cast<core::Array_O*,FP> {
 template <typename FP> struct Cast<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::CDFragment_O>>>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 690 690 
       return (kindVal == 690);
   };
@@ -3989,7 +3989,7 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<std::pair<gctools:
 template <typename FP> struct Cast<mp::RecursiveMutex_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 468 468 
       return (kindVal == 468);
   };
@@ -3998,7 +3998,7 @@ template <typename FP> struct Cast<mp::RecursiveMutex_O*,FP> {
 template <typename FP> struct Cast<core::LambdaListHandler_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 191 191 
       return (kindVal == 191);
   };
@@ -4007,7 +4007,7 @@ template <typename FP> struct Cast<core::LambdaListHandler_O*,FP> {
 template <typename FP> struct Cast<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::Array_O>>>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 689 689 
       return (kindVal == 689);
   };
@@ -4016,7 +4016,7 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<std::pair<gctools:
 template <typename FP> struct Cast<clcenv::LambdaNameInfo_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 524 524 
       return (kindVal == 524);
   };
@@ -4025,7 +4025,7 @@ template <typename FP> struct Cast<clcenv::LambdaNameInfo_O*,FP> {
 template <typename FP> struct Cast<core::MDArray_int64_t_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 236 236 
       return (kindVal == 236);
   };
@@ -4034,7 +4034,7 @@ template <typename FP> struct Cast<core::MDArray_int64_t_O*,FP> {
 template <typename FP> struct Cast<gctools::GCVector_moveable<chem::EnergyChiralRestraint>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 688 688 
       return (kindVal == 688);
   };
@@ -4043,7 +4043,7 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<chem::EnergyChiral
 template <typename FP> struct Cast<core::ClosureWithFrame_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 174 176 
       return ((174 <= kindVal) && (kindVal <= 176));
   };
@@ -4052,7 +4052,7 @@ template <typename FP> struct Cast<core::ClosureWithFrame_O*,FP> {
 template <typename FP> struct Cast<llvmo::ImmutablePass_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 143 144 
       return ((143 <= kindVal) && (kindVal <= 144));
   };
@@ -4061,7 +4061,7 @@ template <typename FP> struct Cast<llvmo::ImmutablePass_O*,FP> {
 template <typename FP> struct Cast<core::StandardClassCreator_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 49 49 
       return (kindVal == 49);
   };
@@ -4070,7 +4070,7 @@ template <typename FP> struct Cast<core::StandardClassCreator_O*,FP> {
 template <typename FP> struct Cast<llvmo::ConstantInt_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 125 125 
       return (kindVal == 125);
   };
@@ -4079,7 +4079,7 @@ template <typename FP> struct Cast<llvmo::ConstantInt_O*,FP> {
 template <typename FP> struct Cast<llvmo::Function_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 119 119 
       return (kindVal == 119);
   };
@@ -4088,7 +4088,7 @@ template <typename FP> struct Cast<llvmo::Function_O*,FP> {
 template <typename FP> struct Cast<chem::SpanningLoop_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 469 469 
       return (kindVal == 469);
   };
@@ -4097,7 +4097,7 @@ template <typename FP> struct Cast<chem::SpanningLoop_O*,FP> {
 template <typename FP> struct Cast<mp::Mutex_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 467 468 
       return ((467 <= kindVal) && (kindVal <= 468));
   };
@@ -4106,7 +4106,7 @@ template <typename FP> struct Cast<mp::Mutex_O*,FP> {
 template <typename FP> struct Cast<chem::FFAngle_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 346 346 
       return (kindVal == 346);
   };
@@ -4115,7 +4115,7 @@ template <typename FP> struct Cast<chem::FFAngle_O*,FP> {
 template <typename FP> struct Cast<core::FunctionValueEnvironment_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 590 590 
       return (kindVal == 590);
   };
@@ -4124,7 +4124,7 @@ template <typename FP> struct Cast<core::FunctionValueEnvironment_O*,FP> {
 template <typename FP> struct Cast<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::Symbol_O>>>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 687 687 
       return (kindVal == 687);
   };
@@ -4133,7 +4133,7 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<std::pair<gctools:
 template <typename FP> struct Cast<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<chem::Atom_O>,int>>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 686 686 
       return (kindVal == 686);
   };
@@ -4142,7 +4142,7 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<std::pair<gctools:
 template <typename FP> struct Cast<chem::SuperposeEngine_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 465 466 
       return ((465 <= kindVal) && (kindVal <= 466));
   };
@@ -4151,7 +4151,7 @@ template <typename FP> struct Cast<chem::SuperposeEngine_O*,FP> {
 template <typename FP> struct Cast<core::GlueEnvironment_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 592 592 
       return (kindVal == 592);
   };
@@ -4160,7 +4160,7 @@ template <typename FP> struct Cast<core::GlueEnvironment_O*,FP> {
 template <typename FP> struct Cast<core::IOStreamStream_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 323 323 
       return (kindVal == 323);
   };
@@ -4169,7 +4169,7 @@ template <typename FP> struct Cast<core::IOStreamStream_O*,FP> {
 template <typename FP> struct Cast<core::Ratio_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 617 617 
       return (kindVal == 617);
   };
@@ -4178,7 +4178,7 @@ template <typename FP> struct Cast<core::Ratio_O*,FP> {
 template <typename FP> struct Cast<core::SingleDispatchMethod_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 190 190 
       return (kindVal == 190);
   };
@@ -4187,7 +4187,7 @@ template <typename FP> struct Cast<core::SingleDispatchMethod_O*,FP> {
 template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr<chem::ConformationExplorerEntry_O>>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 685 685 
       return (kindVal == 685);
   };
@@ -4196,7 +4196,7 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr
 template <typename FP> struct Cast<core::SimpleVectorDouble_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 219 219 
       return (kindVal == 219);
   };
@@ -4205,7 +4205,7 @@ template <typename FP> struct Cast<core::SimpleVectorDouble_O*,FP> {
 template <typename FP> struct Cast<llvmo::Triple_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 140 140 
       return (kindVal == 140);
   };
@@ -4214,7 +4214,7 @@ template <typename FP> struct Cast<llvmo::Triple_O*,FP> {
 template <typename FP> struct Cast<core::SimpleVector_fixnum_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 197 197 
       return (kindVal == 197);
   };
@@ -4223,7 +4223,7 @@ template <typename FP> struct Cast<core::SimpleVector_fixnum_O*,FP> {
 template <typename FP> struct Cast<core::WeakHashTable_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 188 189 
       return ((188 <= kindVal) && (kindVal <= 189));
   };
@@ -4232,7 +4232,7 @@ template <typename FP> struct Cast<core::WeakHashTable_O*,FP> {
 template <typename FP> struct Cast<chem::EnergyComponent_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 453 464 
       return ((453 <= kindVal) && (kindVal <= 464));
   };
@@ -4241,7 +4241,7 @@ template <typename FP> struct Cast<chem::EnergyComponent_O*,FP> {
 template <typename FP> struct Cast<core::SingleDispatchEffectiveMethodFunction_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 173 173 
       return (kindVal == 173);
   };
@@ -4250,7 +4250,7 @@ template <typename FP> struct Cast<core::SingleDispatchEffectiveMethodFunction_O
 template <typename FP> struct Cast<core::General_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 14 623 
       return ((14 <= kindVal) && (kindVal <= 623));
   };
@@ -4259,7 +4259,7 @@ template <typename FP> struct Cast<core::General_O*,FP> {
 template <typename FP> struct Cast<core::BuiltinClosure_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 170 172 
       return ((170 <= kindVal) && (kindVal <= 172));
   };
@@ -4268,7 +4268,7 @@ template <typename FP> struct Cast<core::BuiltinClosure_O*,FP> {
 template <typename FP> struct Cast<llvmo::FunctionPass_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 145 145 
       return (kindVal == 145);
   };
@@ -4277,7 +4277,7 @@ template <typename FP> struct Cast<llvmo::FunctionPass_O*,FP> {
 template <typename FP> struct Cast<llvmo::PassManager_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 139 139 
       return (kindVal == 139);
   };
@@ -4286,7 +4286,7 @@ template <typename FP> struct Cast<llvmo::PassManager_O*,FP> {
 template <typename FP> struct Cast<core::Cons_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 13 13 
       return (kindVal == 13);
   };
@@ -4295,7 +4295,7 @@ template <typename FP> struct Cast<core::Cons_O*,FP> {
 template <typename FP> struct Cast<core::SimpleMDArray_byte32_t_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 239 239 
       return (kindVal == 239);
   };
@@ -4304,7 +4304,7 @@ template <typename FP> struct Cast<core::SimpleMDArray_byte32_t_O*,FP> {
 template <typename FP> struct Cast<clcenv::Function_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 539 539 
       return (kindVal == 539);
   };
@@ -4313,7 +4313,7 @@ template <typename FP> struct Cast<clcenv::Function_O*,FP> {
 template <typename FP> struct Cast<llvmo::VAArgInst_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 113 113 
       return (kindVal == 113);
   };
@@ -4322,7 +4322,7 @@ template <typename FP> struct Cast<llvmo::VAArgInst_O*,FP> {
 template <typename FP> struct Cast<asttooling::DerivableFrontendActionFactory*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 9 9 
       return (kindVal == 9);
   };
@@ -4331,7 +4331,7 @@ template <typename FP> struct Cast<asttooling::DerivableFrontendActionFactory*,F
 template <typename FP> struct Cast<chem::VirtualSphere_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 452 452 
       return (kindVal == 452);
   };
@@ -4340,7 +4340,7 @@ template <typename FP> struct Cast<chem::VirtualSphere_O*,FP> {
 template <typename FP> struct Cast<llvmo::PassManagerBase_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 137 139 
       return ((137 <= kindVal) && (kindVal <= 139));
   };
@@ -4349,7 +4349,7 @@ template <typename FP> struct Cast<llvmo::PassManagerBase_O*,FP> {
 template <typename FP> struct Cast<core::StringStream_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 317 319 
       return ((317 <= kindVal) && (kindVal <= 319));
   };
@@ -4358,7 +4358,7 @@ template <typename FP> struct Cast<core::StringStream_O*,FP> {
 template <typename FP> struct Cast<core::SimpleString_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 209 213 
       return ((209 <= kindVal) && (kindVal <= 213));
   };
@@ -4367,7 +4367,7 @@ template <typename FP> struct Cast<core::SimpleString_O*,FP> {
 template <typename FP> struct Cast<llvmo::TargetSubtargetInfo_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 94 94 
       return (kindVal == 94);
   };
@@ -4376,7 +4376,7 @@ template <typename FP> struct Cast<llvmo::TargetSubtargetInfo_O*,FP> {
 template <typename FP> struct Cast<core::MDArrayFloat_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 297 297 
       return (kindVal == 297);
   };
@@ -4385,7 +4385,7 @@ template <typename FP> struct Cast<core::MDArrayFloat_O*,FP> {
 template <typename FP> struct Cast<llvmo::ValueAsMetadata_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 75 75 
       return (kindVal == 75);
   };
@@ -4394,7 +4394,7 @@ template <typename FP> struct Cast<llvmo::ValueAsMetadata_O*,FP> {
 template <typename FP> struct Cast<clbind::ClassRep_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 182 182 
       return (kindVal == 182);
   };
@@ -4403,7 +4403,7 @@ template <typename FP> struct Cast<clbind::ClassRep_O*,FP> {
 template <typename FP> struct Cast<llvmo::PassManagerBuilder_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 136 136 
       return (kindVal == 136);
   };
@@ -4412,7 +4412,7 @@ template <typename FP> struct Cast<llvmo::PassManagerBuilder_O*,FP> {
 template <typename FP> struct Cast<llvmo::DIBuilder_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 135 135 
       return (kindVal == 135);
   };
@@ -4421,7 +4421,7 @@ template <typename FP> struct Cast<llvmo::DIBuilder_O*,FP> {
 template <typename FP> struct Cast<llvmo::DISubroutineType_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 88 88 
       return (kindVal == 88);
   };
@@ -4430,7 +4430,7 @@ template <typename FP> struct Cast<llvmo::DISubroutineType_O*,FP> {
 template <typename FP> struct Cast<chem::CandoDatabase_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 451 451 
       return (kindVal == 451);
   };
@@ -4439,7 +4439,7 @@ template <typename FP> struct Cast<chem::CandoDatabase_O*,FP> {
 template <typename FP> struct Cast<chem::CDBond_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 450 450 
       return (kindVal == 450);
   };
@@ -4448,7 +4448,7 @@ template <typename FP> struct Cast<chem::CDBond_O*,FP> {
 template <typename FP> struct Cast<core::Path_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 187 187 
       return (kindVal == 187);
   };
@@ -4457,7 +4457,7 @@ template <typename FP> struct Cast<core::Path_O*,FP> {
 template <typename FP> struct Cast<clcenv::BlockInfo_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 518 518 
       return (kindVal == 518);
   };
@@ -4466,7 +4466,7 @@ template <typename FP> struct Cast<clcenv::BlockInfo_O*,FP> {
 template <typename FP> struct Cast<core::RuntimeVisibleEnvironment_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 588 591 
       return ((588 <= kindVal) && (kindVal <= 591));
   };
@@ -4475,7 +4475,7 @@ template <typename FP> struct Cast<core::RuntimeVisibleEnvironment_O*,FP> {
 template <typename FP> struct Cast<core::SourceFileInfo_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 186 186 
       return (kindVal == 186);
   };
@@ -4484,7 +4484,7 @@ template <typename FP> struct Cast<core::SourceFileInfo_O*,FP> {
 template <typename FP> struct Cast<chem::VirtualAtom_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 426 426 
       return (kindVal == 426);
   };
@@ -4493,7 +4493,7 @@ template <typename FP> struct Cast<chem::VirtualAtom_O*,FP> {
 template <typename FP> struct Cast<llvmo::LoadInst_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 112 112 
       return (kindVal == 112);
   };
@@ -4502,7 +4502,7 @@ template <typename FP> struct Cast<llvmo::LoadInst_O*,FP> {
 template <typename FP> struct Cast<clcenv::VariableInfo_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 513 517 
       return ((513 <= kindVal) && (kindVal <= 517));
   };
@@ -4511,7 +4511,7 @@ template <typename FP> struct Cast<clcenv::VariableInfo_O*,FP> {
 template <typename FP> struct Cast<clcenv::Tag_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 538 538 
       return (kindVal == 538);
   };
@@ -4520,7 +4520,7 @@ template <typename FP> struct Cast<clcenv::Tag_O*,FP> {
 template <typename FP> struct Cast<llvmo::ExecutionEngine_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 134 134 
       return (kindVal == 134);
   };
@@ -4529,7 +4529,7 @@ template <typename FP> struct Cast<llvmo::ExecutionEngine_O*,FP> {
 template <typename FP> struct Cast<asttooling::DerivableSyntaxOnlyAction*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 752 752 
       return (kindVal == 752);
   };
@@ -4538,7 +4538,7 @@ template <typename FP> struct Cast<asttooling::DerivableSyntaxOnlyAction*,FP> {
 template <typename FP> struct Cast<geom::MDArrayCoordinate_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 284 284 
       return (kindVal == 284);
   };
@@ -4547,7 +4547,7 @@ template <typename FP> struct Cast<geom::MDArrayCoordinate_O*,FP> {
 template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr<chem::PathMessage_O>>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 684 684 
       return (kindVal == 684);
   };
@@ -4556,7 +4556,7 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr
 template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr<chem::ConstitutionAtom_O>>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 683 683 
       return (kindVal == 683);
   };
@@ -4565,7 +4565,7 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr
 template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::SmallOrderedSet<gctools::smart_ptr<chem::Atom_O>>>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 682 682 
       return (kindVal == 682);
   };
@@ -4574,7 +4574,7 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::SmallOrde
 template <typename FP> struct Cast<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<core::T_O>>>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 681 681 
       return (kindVal == 681);
   };
@@ -4583,7 +4583,7 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<std::pair<gctools:
 template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr<clbind::ClassRep_O>>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 680 680 
       return (kindVal == 680);
   };
@@ -4592,7 +4592,7 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr
 template <typename FP> struct Cast<core::Complex_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 609 609 
       return (kindVal == 609);
   };
@@ -4601,7 +4601,7 @@ template <typename FP> struct Cast<core::Complex_O*,FP> {
 template <typename FP> struct Cast<chem::ResidueTest_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 404 404 
       return (kindVal == 404);
   };
@@ -4610,7 +4610,7 @@ template <typename FP> struct Cast<chem::ResidueTest_O*,FP> {
 template <typename FP> struct Cast<core::SimpleMDArrayDouble_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 262 262 
       return (kindVal == 262);
   };
@@ -4619,7 +4619,7 @@ template <typename FP> struct Cast<core::SimpleMDArrayDouble_O*,FP> {
 template <typename FP> struct Cast<core::InstanceCreator_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 48 48 
       return (kindVal == 48);
   };
@@ -4628,7 +4628,7 @@ template <typename FP> struct Cast<core::InstanceCreator_O*,FP> {
 template <typename FP> struct Cast<core::NativeVector_double_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 449 449 
       return (kindVal == 449);
   };
@@ -4637,7 +4637,7 @@ template <typename FP> struct Cast<core::NativeVector_double_O*,FP> {
 template <typename FP> struct Cast<llvmo::DILexicalBlock_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 81 81 
       return (kindVal == 81);
   };
@@ -4646,7 +4646,7 @@ template <typename FP> struct Cast<llvmo::DILexicalBlock_O*,FP> {
 template <typename FP> struct Cast<core::SNode_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 183 185 
       return ((183 <= kindVal) && (kindVal <= 185));
   };
@@ -4655,7 +4655,7 @@ template <typename FP> struct Cast<core::SNode_O*,FP> {
 template <typename FP> struct Cast<clbind::detail::class_map*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 740 740 
       return (kindVal == 740);
   };
@@ -4664,7 +4664,7 @@ template <typename FP> struct Cast<clbind::detail::class_map*,FP> {
 template <typename FP> struct Cast<llvmo::AllocaInst_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 111 111 
       return (kindVal == 111);
   };
@@ -4673,7 +4673,7 @@ template <typename FP> struct Cast<llvmo::AllocaInst_O*,FP> {
 template <typename FP> struct Cast<core::CompiledFunction_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 166 166 
       return (kindVal == 166);
   };
@@ -4682,7 +4682,7 @@ template <typename FP> struct Cast<core::CompiledFunction_O*,FP> {
 template <typename FP> struct Cast<chem::IterateResidues_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 60 60 
       return (kindVal == 60);
   };
@@ -4691,7 +4691,7 @@ template <typename FP> struct Cast<chem::IterateResidues_O*,FP> {
 template <typename FP> struct Cast<chem::FrameRecognizer_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 448 448 
       return (kindVal == 448);
   };
@@ -4700,7 +4700,7 @@ template <typename FP> struct Cast<chem::FrameRecognizer_O*,FP> {
 template <typename FP> struct Cast<gctools::GCVector_moveable<core::SymbolStorage>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 679 679 
       return (kindVal == 679);
   };
@@ -4709,7 +4709,7 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<core::SymbolStorag
 template <typename FP> struct Cast<chem::PdbMonomerDatabase_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 447 447 
       return (kindVal == 447);
   };
@@ -4718,7 +4718,7 @@ template <typename FP> struct Cast<chem::PdbMonomerDatabase_O*,FP> {
 template <typename FP> struct Cast<core::NativeVector_float_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 446 446 
       return (kindVal == 446);
   };
@@ -4727,7 +4727,7 @@ template <typename FP> struct Cast<core::NativeVector_float_O*,FP> {
 template <typename FP> struct Cast<clcenv::VariableType_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 537 537 
       return (kindVal == 537);
   };
@@ -4736,7 +4736,7 @@ template <typename FP> struct Cast<clcenv::VariableType_O*,FP> {
 template <typename FP> struct Cast<core::Null_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 40 40 
       return (kindVal == 40);
   };
@@ -4745,7 +4745,7 @@ template <typename FP> struct Cast<core::Null_O*,FP> {
 template <typename FP> struct Cast<chem::FFTypesDb_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 495 495 
       return (kindVal == 495);
   };
@@ -4754,7 +4754,7 @@ template <typename FP> struct Cast<chem::FFTypesDb_O*,FP> {
 template <typename FP> struct Cast<core::StructureClassCreator_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 47 47 
       return (kindVal == 47);
   };
@@ -4763,7 +4763,7 @@ template <typename FP> struct Cast<core::StructureClassCreator_O*,FP> {
 template <typename FP> struct Cast<gctools::GCVector_moveable<chem::KeyEntry>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 678 678 
       return (kindVal == 678);
   };
@@ -4772,7 +4772,7 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<chem::KeyEntry>*,F
 template <typename FP> struct Cast<llvmo::ConstantFP_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 124 124 
       return (kindVal == 124);
   };
@@ -4781,7 +4781,7 @@ template <typename FP> struct Cast<llvmo::ConstantFP_O*,FP> {
 template <typename FP> struct Cast<chem::SmartsRoot_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 403 403 
       return (kindVal == 403);
   };
@@ -4790,7 +4790,7 @@ template <typename FP> struct Cast<chem::SmartsRoot_O*,FP> {
 template <typename FP> struct Cast<chem::Root_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 401 403 
       return ((401 <= kindVal) && (kindVal <= 403));
   };
@@ -4799,7 +4799,7 @@ template <typename FP> struct Cast<chem::Root_O*,FP> {
 template <typename FP> struct Cast<chem::Topology_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 445 445 
       return (kindVal == 445);
   };
@@ -4808,7 +4808,7 @@ template <typename FP> struct Cast<chem::Topology_O*,FP> {
 template <typename FP> struct Cast<core::MDArray_byte16_t_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 295 295 
       return (kindVal == 295);
   };
@@ -4817,7 +4817,7 @@ template <typename FP> struct Cast<core::MDArray_byte16_t_O*,FP> {
 template <typename FP> struct Cast<chem::AntechamberBondTest_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 396 396 
       return (kindVal == 396);
   };
@@ -4826,7 +4826,7 @@ template <typename FP> struct Cast<chem::AntechamberBondTest_O*,FP> {
 template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr<chem::ComplexRestraint_O>>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 677 677 
       return (kindVal == 677);
   };
@@ -4835,7 +4835,7 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr
 template <typename FP> struct Cast<mp::Process_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 444 444 
       return (kindVal == 444);
   };
@@ -4844,7 +4844,7 @@ template <typename FP> struct Cast<mp::Process_O*,FP> {
 template <typename FP> struct Cast<core::SimpleVector_byte8_t_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 204 204 
       return (kindVal == 204);
   };
@@ -4853,7 +4853,7 @@ template <typename FP> struct Cast<core::SimpleVector_byte8_t_O*,FP> {
 template <typename FP> struct Cast<core::Function_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 162 182 
       return ((162 <= kindVal) && (kindVal <= 182));
   };
@@ -4862,7 +4862,7 @@ template <typename FP> struct Cast<core::Function_O*,FP> {
 template <typename FP> struct Cast<chem::TagSet_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 400 400 
       return (kindVal == 400);
   };
@@ -4871,7 +4871,7 @@ template <typename FP> struct Cast<chem::TagSet_O*,FP> {
 template <typename FP> struct Cast<core::MacroletEnvironment_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 586 586 
       return (kindVal == 586);
   };
@@ -4880,7 +4880,7 @@ template <typename FP> struct Cast<core::MacroletEnvironment_O*,FP> {
 template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr<chem::Rotamer_O>>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 676 676 
       return (kindVal == 676);
   };
@@ -4889,7 +4889,7 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr
 template <typename FP> struct Cast<clcenv::SpecialOperatorInfo_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 523 523 
       return (kindVal == 523);
   };
@@ -4898,7 +4898,7 @@ template <typename FP> struct Cast<clcenv::SpecialOperatorInfo_O*,FP> {
 template <typename FP> struct Cast<core::SmallMap_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 161 161 
       return (kindVal == 161);
   };
@@ -4907,7 +4907,7 @@ template <typename FP> struct Cast<core::SmallMap_O*,FP> {
 template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr<chem::Atom_O>>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 675 675 
       return (kindVal == 675);
   };
@@ -4916,7 +4916,7 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr
 template <typename FP> struct Cast<chem::RingFinder_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 443 443 
       return (kindVal == 443);
   };
@@ -4925,7 +4925,7 @@ template <typename FP> struct Cast<chem::RingFinder_O*,FP> {
 template <typename FP> struct Cast<chem::ConstitutionAtoms_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 442 442 
       return (kindVal == 442);
   };
@@ -4934,7 +4934,7 @@ template <typename FP> struct Cast<chem::ConstitutionAtoms_O*,FP> {
 template <typename FP> struct Cast<llvmo::DINode_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 77 89 
       return ((77 <= kindVal) && (kindVal <= 89));
   };
@@ -4943,7 +4943,7 @@ template <typename FP> struct Cast<llvmo::DINode_O*,FP> {
 template <typename FP> struct Cast<core::HashTableEqual_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 29 29 
       return (kindVal == 29);
   };
@@ -4952,7 +4952,7 @@ template <typename FP> struct Cast<core::HashTableEqual_O*,FP> {
 template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr<chem::Stereoisomer_O>>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 674 674 
       return (kindVal == 674);
   };
@@ -4961,7 +4961,7 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr
 template <typename FP> struct Cast<core::SimpleCharacterString_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 211 211 
       return (kindVal == 211);
   };
@@ -4970,7 +4970,7 @@ template <typename FP> struct Cast<core::SimpleCharacterString_O*,FP> {
 template <typename FP> struct Cast<chem::OneTypeRule_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 441 441 
       return (kindVal == 441);
   };
@@ -4979,7 +4979,7 @@ template <typename FP> struct Cast<chem::OneTypeRule_O*,FP> {
 template <typename FP> struct Cast<chem::EnergyImproperRestraint_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 457 457 
       return (kindVal == 457);
   };
@@ -4988,7 +4988,7 @@ template <typename FP> struct Cast<chem::EnergyImproperRestraint_O*,FP> {
 template <typename FP> struct Cast<gctools::GCVector_moveable<chem::RigidBodyAtomInfo>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 673 673 
       return (kindVal == 673);
   };
@@ -4997,7 +4997,7 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<chem::RigidBodyAto
 template <typename FP> struct Cast<chem::Rotamer_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 440 440 
       return (kindVal == 440);
   };
@@ -5006,7 +5006,7 @@ template <typename FP> struct Cast<chem::Rotamer_O*,FP> {
 template <typename FP> struct Cast<llvmo::CallInst_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 109 109 
       return (kindVal == 109);
   };
@@ -5015,7 +5015,7 @@ template <typename FP> struct Cast<llvmo::CallInst_O*,FP> {
 template <typename FP> struct Cast<core::Package_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 160 160 
       return (kindVal == 160);
   };
@@ -5024,7 +5024,7 @@ template <typename FP> struct Cast<core::Package_O*,FP> {
 template <typename FP> struct Cast<llvmo::Attribute_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 159 159 
       return (kindVal == 159);
   };
@@ -5033,7 +5033,7 @@ template <typename FP> struct Cast<llvmo::Attribute_O*,FP> {
 template <typename FP> struct Cast<core::SymbolMacroletEnvironment_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 585 585 
       return (kindVal == 585);
   };
@@ -5042,7 +5042,7 @@ template <typename FP> struct Cast<core::SymbolMacroletEnvironment_O*,FP> {
 template <typename FP> struct Cast<core::ExternalObject_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 66 158 
       return ((66 <= kindVal) && (kindVal <= 158));
   };
@@ -5051,7 +5051,7 @@ template <typename FP> struct Cast<core::ExternalObject_O*,FP> {
 template <typename FP> struct Cast<chem::EnergyNonbond_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 456 456 
       return (kindVal == 456);
   };
@@ -5060,7 +5060,7 @@ template <typename FP> struct Cast<chem::EnergyNonbond_O*,FP> {
 template <typename FP> struct Cast<clbind::DummyCreator_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 46 46 
       return (kindVal == 46);
   };
@@ -5069,7 +5069,7 @@ template <typename FP> struct Cast<clbind::DummyCreator_O*,FP> {
 template <typename FP> struct Cast<gctools::GCBitUnitArray_moveable<1,unsigned int,int>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 672 672 
       return (kindVal == 672);
   };
@@ -5078,7 +5078,7 @@ template <typename FP> struct Cast<gctools::GCBitUnitArray_moveable<1,unsigned i
 template <typename FP> struct Cast<chem::ConformationExplorerMatch_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 439 439 
       return (kindVal == 439);
   };
@@ -5087,7 +5087,7 @@ template <typename FP> struct Cast<chem::ConformationExplorerMatch_O*,FP> {
 template <typename FP> struct Cast<chem::SuperposableConformationCollection_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 511 511 
       return (kindVal == 511);
   };
@@ -5096,7 +5096,7 @@ template <typename FP> struct Cast<chem::SuperposableConformationCollection_O*,F
 template <typename FP> struct Cast<core::HashTableEql_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 28 28 
       return (kindVal == 28);
   };
@@ -5105,7 +5105,7 @@ template <typename FP> struct Cast<core::HashTableEql_O*,FP> {
 template <typename FP> struct Cast<chem::Stereoisomer_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 368 368 
       return (kindVal == 368);
   };
@@ -5114,7 +5114,7 @@ template <typename FP> struct Cast<chem::Stereoisomer_O*,FP> {
 template <typename FP> struct Cast<llvmo::PHINode_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 108 108 
       return (kindVal == 108);
   };
@@ -5123,7 +5123,7 @@ template <typename FP> struct Cast<llvmo::PHINode_O*,FP> {
 template <typename FP> struct Cast<core::MDArray_byte32_t_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 274 274 
       return (kindVal == 274);
   };
@@ -5132,7 +5132,7 @@ template <typename FP> struct Cast<core::MDArray_byte32_t_O*,FP> {
 template <typename FP> struct Cast<chem::AbstractLargeSquareMatrix_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 436 438 
       return ((436 <= kindVal) && (kindVal <= 438));
   };
@@ -5141,7 +5141,7 @@ template <typename FP> struct Cast<chem::AbstractLargeSquareMatrix_O*,FP> {
 template <typename FP> struct Cast<clasp_ffi::ForeignData_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 133 133 
       return (kindVal == 133);
   };
@@ -5150,7 +5150,7 @@ template <typename FP> struct Cast<clasp_ffi::ForeignData_O*,FP> {
 template <typename FP> struct Cast<core::WrappedPointer_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 65 65 
       return (kindVal == 65);
   };
@@ -5159,7 +5159,7 @@ template <typename FP> struct Cast<core::WrappedPointer_O*,FP> {
 template <typename FP> struct Cast<chem::EntityNameSetWithCap_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 362 364 
       return ((362 <= kindVal) && (kindVal <= 364));
   };
@@ -5168,7 +5168,7 @@ template <typename FP> struct Cast<chem::EntityNameSetWithCap_O*,FP> {
 template <typename FP> struct Cast<core::Iterator_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 56 64 
       return ((56 <= kindVal) && (kindVal <= 64));
   };
@@ -5177,7 +5177,7 @@ template <typename FP> struct Cast<core::Iterator_O*,FP> {
 template <typename FP> struct Cast<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::StereoisomerAtoms_O>>>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 671 671 
       return (kindVal == 671);
   };
@@ -5186,7 +5186,7 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<std::pair<gctools:
 template <typename FP> struct Cast<core::Str8Ns_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 291 291 
       return (kindVal == 291);
   };
@@ -5195,7 +5195,7 @@ template <typename FP> struct Cast<core::Str8Ns_O*,FP> {
 template <typename FP> struct Cast<chem::ImproperTorsion_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 435 435 
       return (kindVal == 435);
   };
@@ -5204,7 +5204,7 @@ template <typename FP> struct Cast<chem::ImproperTorsion_O*,FP> {
 template <typename FP> struct Cast<clcenv::GlobalFunctionInfo_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 522 522 
       return (kindVal == 522);
   };
@@ -5213,7 +5213,7 @@ template <typename FP> struct Cast<clcenv::GlobalFunctionInfo_O*,FP> {
 template <typename FP> struct Cast<core::SimpleMDArrayT_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 246 246 
       return (kindVal == 246);
   };
@@ -5222,7 +5222,7 @@ template <typename FP> struct Cast<core::SimpleMDArrayT_O*,FP> {
 template <typename FP> struct Cast<chem::AtomReferenceBase_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 433 434 
       return ((433 <= kindVal) && (kindVal <= 434));
   };
@@ -5231,7 +5231,7 @@ template <typename FP> struct Cast<chem::AtomReferenceBase_O*,FP> {
 template <typename FP> struct Cast<gctools::GCArray_moveable<Vector3>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 670 670 
       return (kindVal == 670);
   };
@@ -5240,7 +5240,7 @@ template <typename FP> struct Cast<gctools::GCArray_moveable<Vector3>*,FP> {
 template <typename FP> struct Cast<core::T_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 11 623 
       return ((11 <= kindVal) && (kindVal <= 623));
   };
@@ -5249,7 +5249,7 @@ template <typename FP> struct Cast<core::T_O*,FP> {
 template <typename FP> struct Cast<chem::ConformationCollectionEntry_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 432 432 
       return (kindVal == 432);
   };
@@ -5258,7 +5258,7 @@ template <typename FP> struct Cast<chem::ConformationCollectionEntry_O*,FP> {
 template <typename FP> struct Cast<core::MDArray_size_t_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 301 301 
       return (kindVal == 301);
   };
@@ -5267,7 +5267,7 @@ template <typename FP> struct Cast<core::MDArray_size_t_O*,FP> {
 template <typename FP> struct Cast<clcenv::Macro_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 536 536 
       return (kindVal == 536);
   };
@@ -5276,7 +5276,7 @@ template <typename FP> struct Cast<clcenv::Macro_O*,FP> {
 template <typename FP> struct Cast<core::UnwindProtectEnvironment_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 584 584 
       return (kindVal == 584);
   };
@@ -5285,7 +5285,7 @@ template <typename FP> struct Cast<core::UnwindProtectEnvironment_O*,FP> {
 template <typename FP> struct Cast<core::SimpleVector_byte64_t_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 221 221 
       return (kindVal == 221);
   };
@@ -5294,7 +5294,7 @@ template <typename FP> struct Cast<core::SimpleVector_byte64_t_O*,FP> {
 template <typename FP> struct Cast<units::UnitsExposer_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 21 21 
       return (kindVal == 21);
   };
@@ -5303,7 +5303,7 @@ template <typename FP> struct Cast<units::UnitsExposer_O*,FP> {
 template <typename FP> struct Cast<core::ConcatenatedStream_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 316 316 
       return (kindVal == 316);
   };
@@ -5312,7 +5312,7 @@ template <typename FP> struct Cast<core::ConcatenatedStream_O*,FP> {
 template <typename FP> struct Cast<llvmo::AttributeSet_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 55 55 
       return (kindVal == 55);
   };
@@ -5321,7 +5321,7 @@ template <typename FP> struct Cast<llvmo::AttributeSet_O*,FP> {
 template <typename FP> struct Cast<geom::OVector3_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 431 431 
       return (kindVal == 431);
   };
@@ -5330,7 +5330,7 @@ template <typename FP> struct Cast<geom::OVector3_O*,FP> {
 template <typename FP> struct Cast<core::BitVectorNs_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 272 272 
       return (kindVal == 272);
   };
@@ -5339,7 +5339,7 @@ template <typename FP> struct Cast<core::BitVectorNs_O*,FP> {
 template <typename FP> struct Cast<chem::ChemInfoMatch_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 430 430 
       return (kindVal == 430);
   };
@@ -5348,7 +5348,7 @@ template <typename FP> struct Cast<chem::ChemInfoMatch_O*,FP> {
 template <typename FP> struct Cast<llvmo::TargetLibraryInfoWrapperPass_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 144 144 
       return (kindVal == 144);
   };
@@ -5357,7 +5357,7 @@ template <typename FP> struct Cast<llvmo::TargetLibraryInfoWrapperPass_O*,FP> {
 template <typename FP> struct Cast<core::CatchEnvironment_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 583 583 
       return (kindVal == 583);
   };
@@ -5366,7 +5366,7 @@ template <typename FP> struct Cast<core::CatchEnvironment_O*,FP> {
 template <typename FP> struct Cast<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Plug_O>>>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 669 669 
       return (kindVal == 669);
   };
@@ -5375,7 +5375,7 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<std::pair<gctools:
 template <typename FP> struct Cast<chem::Trajectory_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 429 429 
       return (kindVal == 429);
   };
@@ -5384,7 +5384,7 @@ template <typename FP> struct Cast<chem::Trajectory_O*,FP> {
 template <typename FP> struct Cast<chem::RingCoupling_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 383 383 
       return (kindVal == 383);
   };
@@ -5393,7 +5393,7 @@ template <typename FP> struct Cast<chem::RingCoupling_O*,FP> {
 template <typename FP> struct Cast<gctools::GCVector_moveable<chem::EnergyAnchorRestraint>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 668 668 
       return (kindVal == 668);
   };
@@ -5402,7 +5402,7 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<chem::EnergyAnchor
 template <typename FP> struct Cast<chem::Matter_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 423 428 
       return ((423 <= kindVal) && (kindVal <= 428));
   };
@@ -5411,7 +5411,7 @@ template <typename FP> struct Cast<chem::Matter_O*,FP> {
 template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr<chem::Monomer_O>>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 667 667 
       return (kindVal == 667);
   };
@@ -5420,7 +5420,7 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr
 template <typename FP> struct Cast<core::TagbodyFrame_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 595 595 
       return (kindVal == 595);
   };
@@ -5429,7 +5429,7 @@ template <typename FP> struct Cast<core::TagbodyFrame_O*,FP> {
 template <typename FP> struct Cast<clcenv::ConstantVariableInfo_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 515 515 
       return (kindVal == 515);
   };
@@ -5438,7 +5438,7 @@ template <typename FP> struct Cast<clcenv::ConstantVariableInfo_O*,FP> {
 template <typename FP> struct Cast<chem::RingTest_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 399 399 
       return (kindVal == 399);
   };
@@ -5447,7 +5447,7 @@ template <typename FP> struct Cast<chem::RingTest_O*,FP> {
 template <typename FP> struct Cast<core::CompiledClosure_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 175 175 
       return (kindVal == 175);
   };
@@ -5456,7 +5456,7 @@ template <typename FP> struct Cast<core::CompiledClosure_O*,FP> {
 template <typename FP> struct Cast<clcenv::VariableIgnore_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 535 535 
       return (kindVal == 535);
   };
@@ -5465,7 +5465,7 @@ template <typename FP> struct Cast<clcenv::VariableIgnore_O*,FP> {
 template <typename FP> struct Cast<chem::CalculatePositionRelativeToOrigin_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 552 552 
       return (kindVal == 552);
   };
@@ -5474,7 +5474,7 @@ template <typename FP> struct Cast<chem::CalculatePositionRelativeToOrigin_O*,FP
 template <typename FP> struct Cast<chem::RestraintChiral_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 562 562 
       return (kindVal == 562);
   };
@@ -5483,7 +5483,7 @@ template <typename FP> struct Cast<chem::RestraintChiral_O*,FP> {
 template <typename FP> struct Cast<llvmo::ResumeInst_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 105 105 
       return (kindVal == 105);
   };
@@ -5492,7 +5492,7 @@ template <typename FP> struct Cast<llvmo::ResumeInst_O*,FP> {
 template <typename FP> struct Cast<llvmo::Value_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 95 132 
       return ((95 <= kindVal) && (kindVal <= 132));
   };
@@ -5501,7 +5501,7 @@ template <typename FP> struct Cast<llvmo::Value_O*,FP> {
 template <typename FP> struct Cast<chem::RootMatchNode_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 389 390 
       return ((389 <= kindVal) && (kindVal <= 390));
   };
@@ -5510,7 +5510,7 @@ template <typename FP> struct Cast<chem::RootMatchNode_O*,FP> {
 template <typename FP> struct Cast<llvmo::MCSubtargetInfo_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 93 94 
       return ((93 <= kindVal) && (kindVal <= 94));
   };
@@ -5519,7 +5519,7 @@ template <typename FP> struct Cast<llvmo::MCSubtargetInfo_O*,FP> {
 template <typename FP> struct Cast<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<chem::Atom_O>,unsigned int>>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 666 666 
       return (kindVal == 666);
   };
@@ -5528,7 +5528,7 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<std::pair<gctools:
 template <typename FP> struct Cast<chem::Monomer_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 365 367 
       return ((365 <= kindVal) && (kindVal <= 367));
   };
@@ -5537,7 +5537,7 @@ template <typename FP> struct Cast<chem::Monomer_O*,FP> {
 template <typename FP> struct Cast<llvmo::CompositeType_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 152 157 
       return ((152 <= kindVal) && (kindVal <= 157));
   };
@@ -5546,7 +5546,7 @@ template <typename FP> struct Cast<llvmo::CompositeType_O*,FP> {
 template <typename FP> struct Cast<core::SingleDispatchCxxEffectiveMethodFunction_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 169 169 
       return (kindVal == 169);
   };
@@ -5555,7 +5555,7 @@ template <typename FP> struct Cast<core::SingleDispatchCxxEffectiveMethodFunctio
 template <typename FP> struct Cast<core::LexicalEnvironment_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 579 591 
       return ((579 <= kindVal) && (kindVal <= 591));
   };
@@ -5564,7 +5564,7 @@ template <typename FP> struct Cast<core::LexicalEnvironment_O*,FP> {
 template <typename FP> struct Cast<chem::PdbMonomerConnectivity_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 422 422 
       return (kindVal == 422);
   };
@@ -5573,7 +5573,7 @@ template <typename FP> struct Cast<chem::PdbMonomerConnectivity_O*,FP> {
 template <typename FP> struct Cast<chem::ChemDraw_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 421 421 
       return (kindVal == 421);
   };
@@ -5582,7 +5582,7 @@ template <typename FP> struct Cast<chem::ChemDraw_O*,FP> {
 template <typename FP> struct Cast<core::MDArrayBit_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 271 271 
       return (kindVal == 271);
   };
@@ -5591,7 +5591,7 @@ template <typename FP> struct Cast<core::MDArrayBit_O*,FP> {
 template <typename FP> struct Cast<llvmo::TargetMachine_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 91 92 
       return ((91 <= kindVal) && (kindVal <= 92));
   };
@@ -5600,7 +5600,7 @@ template <typename FP> struct Cast<llvmo::TargetMachine_O*,FP> {
 template <typename FP> struct Cast<gctools::GCVector_moveable<chem::AtomPdbRec>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 665 665 
       return (kindVal == 665);
   };
@@ -5609,7 +5609,7 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<chem::AtomPdbRec>*
 template <typename FP> struct Cast<gctools::GCArray_moveable<int>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 664 664 
       return (kindVal == 664);
   };
@@ -5618,7 +5618,7 @@ template <typename FP> struct Cast<gctools::GCArray_moveable<int>*,FP> {
 template <typename FP> struct Cast<core::SimpleMDArray_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 237 270 
       return ((237 <= kindVal) && (kindVal <= 270));
   };
@@ -5627,7 +5627,7 @@ template <typename FP> struct Cast<core::SimpleMDArray_O*,FP> {
 template <typename FP> struct Cast<core::Lisp_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 10 10 
       return (kindVal == 10);
   };
@@ -5636,7 +5636,7 @@ template <typename FP> struct Cast<core::Lisp_O*,FP> {
 template <typename FP> struct Cast<core::StandardObject_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 54 54 
       return (kindVal == 54);
   };
@@ -5645,7 +5645,7 @@ template <typename FP> struct Cast<core::StandardObject_O*,FP> {
 template <typename FP> struct Cast<core::MacroClosure_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 172 172 
       return (kindVal == 172);
   };
@@ -5654,7 +5654,7 @@ template <typename FP> struct Cast<core::MacroClosure_O*,FP> {
 template <typename FP> struct Cast<core::NativeVector_int_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 420 420 
       return (kindVal == 420);
   };
@@ -5663,7 +5663,7 @@ template <typename FP> struct Cast<core::NativeVector_int_O*,FP> {
 template <typename FP> struct Cast<core::SimpleVector_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 225 225 
       return (kindVal == 225);
   };
@@ -5672,7 +5672,7 @@ template <typename FP> struct Cast<core::SimpleVector_O*,FP> {
 template <typename FP> struct Cast<chem::MultiMonomer_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 366 366 
       return (kindVal == 366);
   };
@@ -5681,7 +5681,7 @@ template <typename FP> struct Cast<chem::MultiMonomer_O*,FP> {
 template <typename FP> struct Cast<llvmo::ModulePass_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 142 144 
       return ((142 <= kindVal) && (kindVal <= 144));
   };
@@ -5690,7 +5690,7 @@ template <typename FP> struct Cast<llvmo::ModulePass_O*,FP> {
 template <typename FP> struct Cast<gctools::GCVector_moveable<core::T_O *>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 663 663 
       return (kindVal == 663);
   };
@@ -5699,7 +5699,7 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<core::T_O *>*,FP> 
 template <typename FP> struct Cast<core::Rational_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 616 620 
       return ((616 <= kindVal) && (kindVal <= 620));
   };
@@ -5708,7 +5708,7 @@ template <typename FP> struct Cast<core::Rational_O*,FP> {
 template <typename FP> struct Cast<chem::CalculatePositionAlongBond_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 551 551 
       return (kindVal == 551);
   };
@@ -5717,7 +5717,7 @@ template <typename FP> struct Cast<chem::CalculatePositionAlongBond_O*,FP> {
 template <typename FP> struct Cast<chem::ForceMatchReport_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 558 558 
       return (kindVal == 558);
   };
@@ -5726,7 +5726,7 @@ template <typename FP> struct Cast<chem::ForceMatchReport_O*,FP> {
 template <typename FP> struct Cast<llvmo::LLVMContext_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 90 90 
       return (kindVal == 90);
   };
@@ -5735,7 +5735,7 @@ template <typename FP> struct Cast<llvmo::LLVMContext_O*,FP> {
 template <typename FP> struct Cast<chem::OligomerPart_Link_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 387 387 
       return (kindVal == 387);
   };
@@ -5744,7 +5744,7 @@ template <typename FP> struct Cast<chem::OligomerPart_Link_O*,FP> {
 template <typename FP> struct Cast<clbind::ClassRegistry_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 53 53 
       return (kindVal == 53);
   };
@@ -5753,7 +5753,7 @@ template <typename FP> struct Cast<clbind::ClassRegistry_O*,FP> {
 template <typename FP> struct Cast<chem::MinimizerLog_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 419 419 
       return (kindVal == 419);
   };
@@ -5762,7 +5762,7 @@ template <typename FP> struct Cast<chem::MinimizerLog_O*,FP> {
 template <typename FP> struct Cast<chem::ConformationExplorerEntry_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 418 418 
       return (kindVal == 418);
   };
@@ -5771,7 +5771,7 @@ template <typename FP> struct Cast<chem::ConformationExplorerEntry_O*,FP> {
 template <typename FP> struct Cast<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Stereoisomer_O>>>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 662 662 
       return (kindVal == 662);
   };
@@ -5780,7 +5780,7 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<std::pair<gctools:
 template <typename FP> struct Cast<asttooling::DerivableASTFrontendAction*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 749 749 
       return (kindVal == 749);
   };
@@ -5789,7 +5789,7 @@ template <typename FP> struct Cast<asttooling::DerivableASTFrontendAction*,FP> {
 template <typename FP> struct Cast<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::DoubleFloat_O>>>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 661 661 
       return (kindVal == 661);
   };
@@ -5798,7 +5798,7 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<std::pair<gctools:
 template <typename FP> struct Cast<chem::StepReport_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 557 557 
       return (kindVal == 557);
   };
@@ -5807,7 +5807,7 @@ template <typename FP> struct Cast<chem::StepReport_O*,FP> {
 template <typename FP> struct Cast<core::TagbodyEnvironment_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 589 589 
       return (kindVal == 589);
   };
@@ -5816,7 +5816,7 @@ template <typename FP> struct Cast<core::TagbodyEnvironment_O*,FP> {
 template <typename FP> struct Cast<gctools::GCArray_moveable<short>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 660 660 
       return (kindVal == 660);
   };
@@ -5825,7 +5825,7 @@ template <typename FP> struct Cast<gctools::GCArray_moveable<short>*,FP> {
 template <typename FP> struct Cast<chem::AGEdge_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 417 417 
       return (kindVal == 417);
   };
@@ -5834,7 +5834,7 @@ template <typename FP> struct Cast<chem::AGEdge_O*,FP> {
 template <typename FP> struct Cast<core::StrWNs_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 289 289 
       return (kindVal == 289);
   };
@@ -5843,7 +5843,7 @@ template <typename FP> struct Cast<core::StrWNs_O*,FP> {
 template <typename FP> struct Cast<chem::ComplexRestraint_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 414 416 
       return ((414 <= kindVal) && (kindVal <= 416));
   };
@@ -5852,7 +5852,7 @@ template <typename FP> struct Cast<chem::ComplexRestraint_O*,FP> {
 template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr<adapt::QDomNode_O>>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 659 659 
       return (kindVal == 659);
   };
@@ -5861,7 +5861,7 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr
 template <typename FP> struct Cast<llvmo::MDString_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 74 74 
       return (kindVal == 74);
   };
@@ -5870,7 +5870,7 @@ template <typename FP> struct Cast<llvmo::MDString_O*,FP> {
 template <typename FP> struct Cast<chem::AtomIdToAtomMap_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 413 413 
       return (kindVal == 413);
   };
@@ -5879,7 +5879,7 @@ template <typename FP> struct Cast<chem::AtomIdToAtomMap_O*,FP> {
 template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr<chem::ZMatrixInternal_O>>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 658 658 
       return (kindVal == 658);
   };
@@ -5888,7 +5888,7 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr
 template <typename FP> struct Cast<chem::Atom_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 425 426 
       return ((425 <= kindVal) && (kindVal <= 426));
   };
@@ -5897,7 +5897,7 @@ template <typename FP> struct Cast<chem::Atom_O*,FP> {
 template <typename FP> struct Cast<clcenv::LocalMacroInfo_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 521 521 
       return (kindVal == 521);
   };
@@ -5906,7 +5906,7 @@ template <typename FP> struct Cast<clcenv::LocalMacroInfo_O*,FP> {
 template <typename FP> struct Cast<core::AnsiStream_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 313 324 
       return ((313 <= kindVal) && (kindVal <= 324));
   };
@@ -5915,7 +5915,7 @@ template <typename FP> struct Cast<core::AnsiStream_O*,FP> {
 template <typename FP> struct Cast<core::BlockEnvironment_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 582 582 
       return (kindVal == 582);
   };
@@ -5924,7 +5924,7 @@ template <typename FP> struct Cast<core::BlockEnvironment_O*,FP> {
 template <typename FP> struct Cast<chem::TrajectoryFrame_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 412 412 
       return (kindVal == 412);
   };
@@ -5933,7 +5933,7 @@ template <typename FP> struct Cast<chem::TrajectoryFrame_O*,FP> {
 template <typename FP> struct Cast<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Entity_O>>>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 657 657 
       return (kindVal == 657);
   };
@@ -5942,7 +5942,7 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<std::pair<gctools:
 template <typename FP> struct Cast<llvmo::ConstantPointerNull_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 123 123 
       return (kindVal == 123);
   };
@@ -5951,7 +5951,7 @@ template <typename FP> struct Cast<llvmo::ConstantPointerNull_O*,FP> {
 template <typename FP> struct Cast<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::SpecificContext_O>>>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 656 656 
       return (kindVal == 656);
   };
@@ -5960,7 +5960,7 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<std::pair<gctools:
 template <typename FP> struct Cast<core::LoadTimeValues_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 52 52 
       return (kindVal == 52);
   };
@@ -5969,7 +5969,7 @@ template <typename FP> struct Cast<core::LoadTimeValues_O*,FP> {
 template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr<chem::Topology_O>>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 655 655 
       return (kindVal == 655);
   };
@@ -5978,7 +5978,7 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr
 template <typename FP> struct Cast<clcenv::GlobalEnvironment_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 534 534 
       return (kindVal == 534);
   };
@@ -5987,7 +5987,7 @@ template <typename FP> struct Cast<clcenv::GlobalEnvironment_O*,FP> {
 template <typename FP> struct Cast<gctools::GCVector_moveable<chem::EnergyDihedral>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 654 654 
       return (kindVal == 654);
   };
@@ -5996,7 +5996,7 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<chem::EnergyDihedr
 template <typename FP> struct Cast<clasp_ffi::ForeignTypeSpec_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 51 51 
       return (kindVal == 51);
   };
@@ -6005,7 +6005,7 @@ template <typename FP> struct Cast<clasp_ffi::ForeignTypeSpec_O*,FP> {
 template <typename FP> struct Cast<chem::CipPrioritizer_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 411 411 
       return (kindVal == 411);
   };
@@ -6014,7 +6014,7 @@ template <typename FP> struct Cast<chem::CipPrioritizer_O*,FP> {
 template <typename FP> struct Cast<core::LongFloat_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 614 614 
       return (kindVal == 614);
   };
@@ -6023,7 +6023,7 @@ template <typename FP> struct Cast<core::LongFloat_O*,FP> {
 template <typename FP> struct Cast<chem::RigidBodyEnergyFunction_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 355 355 
       return (kindVal == 355);
   };
@@ -6032,7 +6032,7 @@ template <typename FP> struct Cast<chem::RigidBodyEnergyFunction_O*,FP> {
 template <typename FP> struct Cast<core::Creator_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 44 50 
       return ((44 <= kindVal) && (kindVal <= 50));
   };
@@ -6041,7 +6041,7 @@ template <typename FP> struct Cast<core::Creator_O*,FP> {
 template <typename FP> struct Cast<chem::ZMatrix_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 410 410 
       return (kindVal == 410);
   };
@@ -6050,7 +6050,7 @@ template <typename FP> struct Cast<chem::ZMatrix_O*,FP> {
 template <typename FP> struct Cast<chem::ChemExposer_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 20 20 
       return (kindVal == 20);
   };
@@ -6059,7 +6059,7 @@ template <typename FP> struct Cast<chem::ChemExposer_O*,FP> {
 template <typename FP> struct Cast<clcenv::SpecialVariableInfo_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 514 514 
       return (kindVal == 514);
   };
@@ -6068,7 +6068,7 @@ template <typename FP> struct Cast<clcenv::SpecialVariableInfo_O*,FP> {
 template <typename FP> struct Cast<chem::NumericalFunction_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 409 409 
       return (kindVal == 409);
   };
@@ -6077,7 +6077,7 @@ template <typename FP> struct Cast<chem::NumericalFunction_O*,FP> {
 template <typename FP> struct Cast<chem::TopologyAtomInfo_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 408 408 
       return (kindVal == 408);
   };
@@ -6086,7 +6086,7 @@ template <typename FP> struct Cast<chem::TopologyAtomInfo_O*,FP> {
 template <typename FP> struct Cast<chem::FullLargeSquareMatrix_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 437 437 
       return (kindVal == 437);
   };
@@ -6095,7 +6095,7 @@ template <typename FP> struct Cast<chem::FullLargeSquareMatrix_O*,FP> {
 template <typename FP> struct Cast<llvmo::SwitchInst_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 104 104 
       return (kindVal == 104);
   };
@@ -6104,7 +6104,7 @@ template <typename FP> struct Cast<llvmo::SwitchInst_O*,FP> {
 template <typename FP> struct Cast<llvmo::FunctionPassManager_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 138 138 
       return (kindVal == 138);
   };
@@ -6113,7 +6113,7 @@ template <typename FP> struct Cast<llvmo::FunctionPassManager_O*,FP> {
 template <typename FP> struct Cast<llvmo::TerminatorInst_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 100 107 
       return ((100 <= kindVal) && (kindVal <= 107));
   };
@@ -6122,7 +6122,7 @@ template <typename FP> struct Cast<llvmo::TerminatorInst_O*,FP> {
 template <typename FP> struct Cast<chem::EnergyChiralRestraint_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 455 455 
       return (kindVal == 455);
   };
@@ -6131,7 +6131,7 @@ template <typename FP> struct Cast<chem::EnergyChiralRestraint_O*,FP> {
 template <typename FP> struct Cast<chem::EnergyDihedral_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 454 454 
       return (kindVal == 454);
   };
@@ -6140,7 +6140,7 @@ template <typename FP> struct Cast<chem::EnergyDihedral_O*,FP> {
 template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr<core::SimpleBitVector_O>>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 653 653 
       return (kindVal == 653);
   };
@@ -6149,7 +6149,7 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr
 template <typename FP> struct Cast<core::CompileTimeEnvironment_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 580 587 
       return ((580 <= kindVal) && (kindVal <= 587));
   };
@@ -6158,7 +6158,7 @@ template <typename FP> struct Cast<core::CompileTimeEnvironment_O*,FP> {
 template <typename FP> struct Cast<geom::OVector2_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 407 407 
       return (kindVal == 407);
   };
@@ -6167,7 +6167,7 @@ template <typename FP> struct Cast<geom::OVector2_O*,FP> {
 template <typename FP> struct Cast<core::SmallMultimap_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 43 43 
       return (kindVal == 43);
   };
@@ -6176,7 +6176,7 @@ template <typename FP> struct Cast<core::SmallMultimap_O*,FP> {
 template <typename FP> struct Cast<llvmo::DIDerivedType_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 87 87 
       return (kindVal == 87);
   };
@@ -6185,7 +6185,7 @@ template <typename FP> struct Cast<llvmo::DIDerivedType_O*,FP> {
 template <typename FP> struct Cast<core::PosixTimeDuration_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 42 42 
       return (kindVal == 42);
   };
@@ -6194,7 +6194,7 @@ template <typename FP> struct Cast<core::PosixTimeDuration_O*,FP> {
 template <typename FP> struct Cast<clcenv::Block_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 533 533 
       return (kindVal == 533);
   };
@@ -6203,7 +6203,7 @@ template <typename FP> struct Cast<clcenv::Block_O*,FP> {
 template <typename FP> struct Cast<core::ReadTable_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 41 41 
       return (kindVal == 41);
   };
@@ -6212,7 +6212,7 @@ template <typename FP> struct Cast<core::ReadTable_O*,FP> {
 template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr<chem::Coupling_O>>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 652 652 
       return (kindVal == 652);
   };
@@ -6221,7 +6221,7 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr
 template <typename FP> struct Cast<llvmo::Metadata_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 73 89 
       return ((73 <= kindVal) && (kindVal <= 89));
   };
@@ -6230,7 +6230,7 @@ template <typename FP> struct Cast<llvmo::Metadata_O*,FP> {
 template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr<chem::Molecule_O>>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 651 651 
       return (kindVal == 651);
   };
@@ -6239,7 +6239,7 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr
 template <typename FP> struct Cast<llvmo::APInt_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 72 72 
       return (kindVal == 72);
   };
@@ -6248,7 +6248,7 @@ template <typename FP> struct Cast<llvmo::APInt_O*,FP> {
 template <typename FP> struct Cast<core::LogicalPathname_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 26 26 
       return (kindVal == 26);
   };
@@ -6257,7 +6257,7 @@ template <typename FP> struct Cast<core::LogicalPathname_O*,FP> {
 template <typename FP> struct Cast<chem::AtomTest_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 398 398 
       return (kindVal == 398);
   };
@@ -6266,7 +6266,7 @@ template <typename FP> struct Cast<chem::AtomTest_O*,FP> {
 template <typename FP> struct Cast<core::TranslationFunctor*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 171 171 
       return (kindVal == 171);
   };
@@ -6275,7 +6275,7 @@ template <typename FP> struct Cast<core::TranslationFunctor*,FP> {
 template <typename FP> struct Cast<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::EntityNameSetBase_O>>>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 650 650 
       return (kindVal == 650);
   };
@@ -6284,7 +6284,7 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<std::pair<gctools:
 template <typename FP> struct Cast<llvmo::StoreInst_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 99 99 
       return (kindVal == 99);
   };
@@ -6293,7 +6293,7 @@ template <typename FP> struct Cast<llvmo::StoreInst_O*,FP> {
 template <typename FP> struct Cast<core::SimpleVector_int64_t_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 199 199 
       return (kindVal == 199);
   };
@@ -6302,7 +6302,7 @@ template <typename FP> struct Cast<core::SimpleVector_int64_t_O*,FP> {
 template <typename FP> struct Cast<llvmo::DIBasicType_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 86 86 
       return (kindVal == 86);
   };
@@ -6311,7 +6311,7 @@ template <typename FP> struct Cast<llvmo::DIBasicType_O*,FP> {
 template <typename FP> struct Cast<core::SimpleMDArray_byte16_t_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 241 241 
       return (kindVal == 241);
   };
@@ -6320,7 +6320,7 @@ template <typename FP> struct Cast<core::SimpleMDArray_byte16_t_O*,FP> {
 template <typename FP> struct Cast<chem::Residue_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 424 424 
       return (kindVal == 424);
   };
@@ -6329,7 +6329,7 @@ template <typename FP> struct Cast<chem::Residue_O*,FP> {
 template <typename FP> struct Cast<chem::ChemInfoNode_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 388 406 
       return ((388 <= kindVal) && (kindVal <= 406));
   };
@@ -6338,7 +6338,7 @@ template <typename FP> struct Cast<chem::ChemInfoNode_O*,FP> {
 template <typename FP> struct Cast<llvmo::IRBuilderBase_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 70 71 
       return ((70 <= kindVal) && (kindVal <= 71));
   };
@@ -6347,7 +6347,7 @@ template <typename FP> struct Cast<llvmo::IRBuilderBase_O*,FP> {
 template <typename FP> struct Cast<core::MDArrayDouble_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 282 282 
       return (kindVal == 282);
   };
@@ -6356,7 +6356,7 @@ template <typename FP> struct Cast<core::MDArrayDouble_O*,FP> {
 template <typename FP> struct Cast<geom::GeomExposer_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 19 19 
       return (kindVal == 19);
   };
@@ -6365,7 +6365,7 @@ template <typename FP> struct Cast<geom::GeomExposer_O*,FP> {
 template <typename FP> struct Cast<chem::OligomerPart_Base_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 385 387 
       return ((385 <= kindVal) && (kindVal <= 387));
   };
@@ -6374,7 +6374,7 @@ template <typename FP> struct Cast<chem::OligomerPart_Base_O*,FP> {
 template <typename FP> struct Cast<chem::Coupling_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 382 384 
       return ((382 <= kindVal) && (kindVal <= 384));
   };
@@ -6383,7 +6383,7 @@ template <typename FP> struct Cast<chem::Coupling_O*,FP> {
 template <typename FP> struct Cast<core::MDArray_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 228 301 
       return ((228 <= kindVal) && (kindVal <= 301));
   };
@@ -6392,7 +6392,7 @@ template <typename FP> struct Cast<core::MDArray_O*,FP> {
 template <typename FP> struct Cast<chem::EntityNameSetBase_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 358 364 
       return ((358 <= kindVal) && (kindVal <= 364));
   };
@@ -6401,7 +6401,7 @@ template <typename FP> struct Cast<chem::EntityNameSetBase_O*,FP> {
 template <typename FP> struct Cast<chem::BondList_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 381 381 
       return (kindVal == 381);
   };
@@ -6410,7 +6410,7 @@ template <typename FP> struct Cast<chem::BondList_O*,FP> {
 template <typename FP> struct Cast<core::SynonymStream_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 315 315 
       return (kindVal == 315);
   };
@@ -6419,7 +6419,7 @@ template <typename FP> struct Cast<core::SynonymStream_O*,FP> {
 template <typename FP> struct Cast<core::ClassCreator_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 45 45 
       return (kindVal == 45);
   };
@@ -6428,7 +6428,7 @@ template <typename FP> struct Cast<core::ClassCreator_O*,FP> {
 template <typename FP> struct Cast<chem::Command_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 380 380 
       return (kindVal == 380);
   };
@@ -6437,7 +6437,7 @@ template <typename FP> struct Cast<chem::Command_O*,FP> {
 template <typename FP> struct Cast<llvmo::DINodeArray_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 379 379 
       return (kindVal == 379);
   };
@@ -6446,7 +6446,7 @@ template <typename FP> struct Cast<llvmo::DINodeArray_O*,FP> {
 template <typename FP> struct Cast<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<chem::Atom_O>,gctools::smart_ptr<chem::CDNode_O>>>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 649 649 
       return (kindVal == 649);
   };
@@ -6455,7 +6455,7 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<std::pair<gctools:
 template <typename FP> struct Cast<core::ShortFloat_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 613 613 
       return (kindVal == 613);
   };
@@ -6464,7 +6464,7 @@ template <typename FP> struct Cast<core::ShortFloat_O*,FP> {
 template <typename FP> struct Cast<chem::CoordinateSystem_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 378 378 
       return (kindVal == 378);
   };
@@ -6473,7 +6473,7 @@ template <typename FP> struct Cast<chem::CoordinateSystem_O*,FP> {
 template <typename FP> struct Cast<core::StringInputStream_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 318 318 
       return (kindVal == 318);
   };
@@ -6482,7 +6482,7 @@ template <typename FP> struct Cast<core::StringInputStream_O*,FP> {
 template <typename FP> struct Cast<chem::MonomerContext_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 377 377 
       return (kindVal == 377);
   };
@@ -6491,7 +6491,7 @@ template <typename FP> struct Cast<chem::MonomerContext_O*,FP> {
 template <typename FP> struct Cast<llvmo::DICompositeType_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 85 85 
       return (kindVal == 85);
   };
@@ -6500,7 +6500,7 @@ template <typename FP> struct Cast<llvmo::DICompositeType_O*,FP> {
 template <typename FP> struct Cast<chem::ResidueList_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 376 376 
       return (kindVal == 376);
   };
@@ -6509,7 +6509,7 @@ template <typename FP> struct Cast<chem::ResidueList_O*,FP> {
 template <typename FP> struct Cast<core::Symbol_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 39 40 
       return ((39 <= kindVal) && (kindVal <= 40));
   };
@@ -6518,7 +6518,7 @@ template <typename FP> struct Cast<core::Symbol_O*,FP> {
 template <typename FP> struct Cast<chem::TwisterDriver_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 375 375 
       return (kindVal == 375);
   };
@@ -6527,7 +6527,7 @@ template <typename FP> struct Cast<chem::TwisterDriver_O*,FP> {
 template <typename FP> struct Cast<core::SequenceStepper_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 36 38 
       return ((36 <= kindVal) && (kindVal <= 38));
   };
@@ -6536,7 +6536,7 @@ template <typename FP> struct Cast<core::SequenceStepper_O*,FP> {
 template <typename FP> struct Cast<llvmo::ConstantArray_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 122 122 
       return (kindVal == 122);
   };
@@ -6545,7 +6545,7 @@ template <typename FP> struct Cast<llvmo::ConstantArray_O*,FP> {
 template <typename FP> struct Cast<chem::RestraintDihedral_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 561 561 
       return (kindVal == 561);
   };
@@ -6554,7 +6554,7 @@ template <typename FP> struct Cast<chem::RestraintDihedral_O*,FP> {
 template <typename FP> struct Cast<core::BranchSNode_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 185 185 
       return (kindVal == 185);
   };
@@ -6563,7 +6563,7 @@ template <typename FP> struct Cast<core::BranchSNode_O*,FP> {
 template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr<core::SourceFileInfo_O>>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 648 648 
       return (kindVal == 648);
   };
@@ -6572,7 +6572,7 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr
 template <typename FP> struct Cast<asttooling::AsttoolingExposer_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 18 18 
       return (kindVal == 18);
   };
@@ -6581,7 +6581,7 @@ template <typename FP> struct Cast<asttooling::AsttoolingExposer_O*,FP> {
 template <typename FP> struct Cast<llvmo::AtomicRMWInst_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 98 98 
       return (kindVal == 98);
   };
@@ -6590,7 +6590,7 @@ template <typename FP> struct Cast<llvmo::AtomicRMWInst_O*,FP> {
 template <typename FP> struct Cast<chem::FFNonbond_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 345 345 
       return (kindVal == 345);
   };
@@ -6599,7 +6599,7 @@ template <typename FP> struct Cast<chem::FFNonbond_O*,FP> {
 template <typename FP> struct Cast<adapt::IndexedObjectBag_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 35 35 
       return (kindVal == 35);
   };
@@ -6608,7 +6608,7 @@ template <typename FP> struct Cast<adapt::IndexedObjectBag_O*,FP> {
 template <typename FP> struct Cast<chem::MapOfMonomerNamesToAtomIndexers_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 374 374 
       return (kindVal == 374);
   };
@@ -6617,7 +6617,7 @@ template <typename FP> struct Cast<chem::MapOfMonomerNamesToAtomIndexers_O*,FP> 
 template <typename FP> struct Cast<llvmo::IntegerType_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 151 151 
       return (kindVal == 151);
   };
@@ -6626,7 +6626,7 @@ template <typename FP> struct Cast<llvmo::IntegerType_O*,FP> {
 template <typename FP> struct Cast<chem::Alias_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 373 373 
       return (kindVal == 373);
   };
@@ -6635,7 +6635,7 @@ template <typename FP> struct Cast<chem::Alias_O*,FP> {
 template <typename FP> struct Cast<chem::AntechamberRoot_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 402 402 
       return (kindVal == 402);
   };
@@ -6644,7 +6644,7 @@ template <typename FP> struct Cast<chem::AntechamberRoot_O*,FP> {
 template <typename FP> struct Cast<chem::FFVdwDb_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 494 494 
       return (kindVal == 494);
   };
@@ -6653,7 +6653,7 @@ template <typename FP> struct Cast<chem::FFVdwDb_O*,FP> {
 template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr<chem::CDFragment_O>>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 647 647 
       return (kindVal == 647);
   };
@@ -6662,7 +6662,7 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr
 template <typename FP> struct Cast<chem::ForceField_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 372 372 
       return (kindVal == 372);
   };
@@ -6671,7 +6671,7 @@ template <typename FP> struct Cast<chem::ForceField_O*,FP> {
 template <typename FP> struct Cast<chem::StereoisomerAtom_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 370 371 
       return ((370 <= kindVal) && (kindVal <= 371));
   };
@@ -6680,7 +6680,7 @@ template <typename FP> struct Cast<chem::StereoisomerAtom_O*,FP> {
 template <typename FP> struct Cast<core::InvocationHistoryFrameIterator_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 34 34 
       return (kindVal == 34);
   };
@@ -6689,7 +6689,7 @@ template <typename FP> struct Cast<core::InvocationHistoryFrameIterator_O*,FP> {
 template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr<chem::CDBond_O>>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 646 646 
       return (kindVal == 646);
   };
@@ -6698,7 +6698,7 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr
 template <typename FP> struct Cast<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::T_O>>>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 645 645 
       return (kindVal == 645);
   };
@@ -6707,7 +6707,7 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<std::pair<gctools:
 template <typename FP> struct Cast<chem::EntityNameSet_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 359 361 
       return ((359 <= kindVal) && (kindVal <= 361));
   };
@@ -6716,7 +6716,7 @@ template <typename FP> struct Cast<chem::EntityNameSet_O*,FP> {
 template <typename FP> struct Cast<gctools::GCVector_moveable<chem::ResidueOut>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 644 644 
       return (kindVal == 644);
   };
@@ -6725,7 +6725,7 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<chem::ResidueOut>*
 template <typename FP> struct Cast<chem::FFVdw_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 344 344 
       return (kindVal == 344);
   };
@@ -6734,7 +6734,7 @@ template <typename FP> struct Cast<chem::FFVdw_O*,FP> {
 template <typename FP> struct Cast<chem::Entity_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 357 369 
       return ((357 <= kindVal) && (kindVal <= 369));
   };
@@ -6743,7 +6743,7 @@ template <typename FP> struct Cast<chem::Entity_O*,FP> {
 template <typename FP> struct Cast<chem::OligomerPart_Monomer_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 386 386 
       return (kindVal == 386);
   };
@@ -6752,7 +6752,7 @@ template <typename FP> struct Cast<chem::OligomerPart_Monomer_O*,FP> {
 template <typename FP> struct Cast<chem::ScoringFunction_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 354 356 
       return ((354 <= kindVal) && (kindVal <= 356));
   };
@@ -6761,7 +6761,7 @@ template <typename FP> struct Cast<chem::ScoringFunction_O*,FP> {
 template <typename FP> struct Cast<core::MDArray_byte64_t_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 230 230 
       return (kindVal == 230);
   };
@@ -6770,7 +6770,7 @@ template <typename FP> struct Cast<core::MDArray_byte64_t_O*,FP> {
 template <typename FP> struct Cast<chem::MessageReport_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 556 556 
       return (kindVal == 556);
   };
@@ -6779,7 +6779,7 @@ template <typename FP> struct Cast<chem::MessageReport_O*,FP> {
 template <typename FP> struct Cast<core::AbstractSimpleVector_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 193 227 
       return ((193 <= kindVal) && (kindVal <= 227));
   };
@@ -6788,7 +6788,7 @@ template <typename FP> struct Cast<core::AbstractSimpleVector_O*,FP> {
 template <typename FP> struct Cast<core::VaList_dummy_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 12 12 
       return (kindVal == 12);
   };
@@ -6797,7 +6797,7 @@ template <typename FP> struct Cast<core::VaList_dummy_O*,FP> {
 template <typename FP> struct Cast<chem::StereoConfiguration_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 353 353 
       return (kindVal == 353);
   };
@@ -6806,7 +6806,7 @@ template <typename FP> struct Cast<chem::StereoConfiguration_O*,FP> {
 template <typename FP> struct Cast<chem::EnergyRigidBodyNonbond_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 459 459 
       return (kindVal == 459);
   };
@@ -6815,7 +6815,7 @@ template <typename FP> struct Cast<chem::EnergyRigidBodyNonbond_O*,FP> {
 template <typename FP> struct Cast<clcenv::LocalFunctionInfo_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 520 520 
       return (kindVal == 520);
   };
@@ -6824,7 +6824,7 @@ template <typename FP> struct Cast<clcenv::LocalFunctionInfo_O*,FP> {
 template <typename FP> struct Cast<core::SourcePosInfo_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 33 33 
       return (kindVal == 33);
   };
@@ -6833,7 +6833,7 @@ template <typename FP> struct Cast<core::SourcePosInfo_O*,FP> {
 template <typename FP> struct Cast<chem::ZMatrixDihedralInternal_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 508 508 
       return (kindVal == 508);
   };
@@ -6842,7 +6842,7 @@ template <typename FP> struct Cast<chem::ZMatrixDihedralInternal_O*,FP> {
 template <typename FP> struct Cast<llvmo::EngineBuilder_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 69 69 
       return (kindVal == 69);
   };
@@ -6851,7 +6851,7 @@ template <typename FP> struct Cast<llvmo::EngineBuilder_O*,FP> {
 template <typename FP> struct Cast<llvmo::IndirectBrInst_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 103 103 
       return (kindVal == 103);
   };
@@ -6860,7 +6860,7 @@ template <typename FP> struct Cast<llvmo::IndirectBrInst_O*,FP> {
 template <typename FP> struct Cast<llvmo::VectorType_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 154 154 
       return (kindVal == 154);
   };
@@ -6869,7 +6869,7 @@ template <typename FP> struct Cast<llvmo::VectorType_O*,FP> {
 template <typename FP> struct Cast<chem::ZMatrixAngleInternal_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 507 507 
       return (kindVal == 507);
   };
@@ -6878,7 +6878,7 @@ template <typename FP> struct Cast<chem::ZMatrixAngleInternal_O*,FP> {
 template <typename FP> struct Cast<core::SimpleVector_size_t_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 227 227 
       return (kindVal == 227);
   };
@@ -6887,7 +6887,7 @@ template <typename FP> struct Cast<core::SimpleVector_size_t_O*,FP> {
 template <typename FP> struct Cast<llvmo::ConstantExpr_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 121 121 
       return (kindVal == 121);
   };
@@ -6896,7 +6896,7 @@ template <typename FP> struct Cast<llvmo::ConstantExpr_O*,FP> {
 template <typename FP> struct Cast<chem::Oligomer_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 352 352 
       return (kindVal == 352);
   };
@@ -6905,7 +6905,7 @@ template <typename FP> struct Cast<chem::Oligomer_O*,FP> {
 template <typename FP> struct Cast<adapt::QDomNode_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 351 351 
       return (kindVal == 351);
   };
@@ -6914,7 +6914,7 @@ template <typename FP> struct Cast<adapt::QDomNode_O*,FP> {
 template <typename FP> struct Cast<chem::Angle_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 350 350 
       return (kindVal == 350);
   };
@@ -6923,7 +6923,7 @@ template <typename FP> struct Cast<chem::Angle_O*,FP> {
 template <typename FP> struct Cast<core::PosixTime_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 32 32 
       return (kindVal == 32);
   };
@@ -6932,7 +6932,7 @@ template <typename FP> struct Cast<core::PosixTime_O*,FP> {
 template <typename FP> struct Cast<chem::BondTest_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 395 395 
       return (kindVal == 395);
   };
@@ -6941,7 +6941,7 @@ template <typename FP> struct Cast<chem::BondTest_O*,FP> {
 template <typename FP> struct Cast<core::HashTable_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 27 31 
       return ((27 <= kindVal) && (kindVal <= 31));
   };
@@ -6950,7 +6950,7 @@ template <typename FP> struct Cast<core::HashTable_O*,FP> {
 template <typename FP> struct Cast<chem::FFParameter_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 343 349 
       return ((343 <= kindVal) && (kindVal <= 349));
   };
@@ -6959,7 +6959,7 @@ template <typename FP> struct Cast<chem::FFParameter_O*,FP> {
 template <typename FP> struct Cast<llvmo::InvokeInst_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 102 102 
       return (kindVal == 102);
   };
@@ -6968,7 +6968,7 @@ template <typename FP> struct Cast<llvmo::InvokeInst_O*,FP> {
 template <typename FP> struct Cast<units::Dimension_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 342 342 
       return (kindVal == 342);
   };
@@ -6977,7 +6977,7 @@ template <typename FP> struct Cast<units::Dimension_O*,FP> {
 template <typename FP> struct Cast<core::Pathname_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 25 26 
       return ((25 <= kindVal) && (kindVal <= 26));
   };
@@ -6986,7 +6986,7 @@ template <typename FP> struct Cast<core::Pathname_O*,FP> {
 template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr<chem::OneTypeRule_O>>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 643 643 
       return (kindVal == 643);
   };
@@ -6995,7 +6995,7 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr
 template <typename FP> struct Cast<core::Float_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 611 615 
       return ((611 <= kindVal) && (kindVal <= 615));
   };
@@ -7004,7 +7004,7 @@ template <typename FP> struct Cast<core::Float_O*,FP> {
 template <typename FP> struct Cast<clcenv::Closure_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 532 532 
       return (kindVal == 532);
   };
@@ -7013,7 +7013,7 @@ template <typename FP> struct Cast<clcenv::Closure_O*,FP> {
 template <typename FP> struct Cast<mp::BlockingConcurrentQueue_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 24 24 
       return (kindVal == 24);
   };
@@ -7022,7 +7022,7 @@ template <typename FP> struct Cast<mp::BlockingConcurrentQueue_O*,FP> {
 template <typename FP> struct Cast<core::FunctionContainerEnvironment_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 581 581 
       return (kindVal == 581);
   };
@@ -7031,7 +7031,7 @@ template <typename FP> struct Cast<core::FunctionContainerEnvironment_O*,FP> {
 template <typename FP> struct Cast<core::SimpleMDArrayBit_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 244 244 
       return (kindVal == 244);
   };
@@ -7040,7 +7040,7 @@ template <typename FP> struct Cast<core::SimpleMDArrayBit_O*,FP> {
 template <typename FP> struct Cast<adapt::SymbolList_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 341 341 
       return (kindVal == 341);
   };
@@ -7049,7 +7049,7 @@ template <typename FP> struct Cast<adapt::SymbolList_O*,FP> {
 template <typename FP> struct Cast<gctools::GCArray_moveable<long>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 642 642 
       return (kindVal == 642);
   };
@@ -7058,7 +7058,7 @@ template <typename FP> struct Cast<gctools::GCArray_moveable<long>*,FP> {
 template <typename FP> struct Cast<chem::ConstitutionBond_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 340 340 
       return (kindVal == 340);
   };
@@ -7067,7 +7067,7 @@ template <typename FP> struct Cast<chem::ConstitutionBond_O*,FP> {
 template <typename FP> struct Cast<chem::MonomerCoordinates_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 339 339 
       return (kindVal == 339);
   };
@@ -7076,7 +7076,7 @@ template <typename FP> struct Cast<chem::MonomerCoordinates_O*,FP> {
 template <typename FP> struct Cast<gctools::GCArray_moveable<unsigned short>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 641 641 
       return (kindVal == 641);
   };
@@ -7085,7 +7085,7 @@ template <typename FP> struct Cast<gctools::GCArray_moveable<unsigned short>*,FP
 template <typename FP> struct Cast<core::SimpleBitVector_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 200 200 
       return (kindVal == 200);
   };
@@ -7094,7 +7094,7 @@ template <typename FP> struct Cast<core::SimpleBitVector_O*,FP> {
 template <typename FP> struct Cast<gctools::GCVector_moveable<core::ExceptionEntry>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 640 640 
       return (kindVal == 640);
   };
@@ -7103,7 +7103,7 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<core::ExceptionEnt
 template <typename FP> struct Cast<gctools::GCVector_moveable<core::AuxArgument>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 639 639 
       return (kindVal == 639);
   };
@@ -7112,7 +7112,7 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<core::AuxArgument>
 template <typename FP> struct Cast<core::Exposer_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 17 23 
       return ((17 <= kindVal) && (kindVal <= 23));
   };
@@ -7121,7 +7121,7 @@ template <typename FP> struct Cast<core::Exposer_O*,FP> {
 template <typename FP> struct Cast<core::ClosureWithSlots_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 168 168 
       return (kindVal == 168);
   };
@@ -7130,7 +7130,7 @@ template <typename FP> struct Cast<core::ClosureWithSlots_O*,FP> {
 template <typename FP> struct Cast<core::SimpleVector_byte16_t_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 195 195 
       return (kindVal == 195);
   };
@@ -7139,7 +7139,7 @@ template <typename FP> struct Cast<core::SimpleVector_byte16_t_O*,FP> {
 template <typename FP> struct Cast<core::ValueFrame_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 594 594 
       return (kindVal == 594);
   };
@@ -7148,7 +7148,7 @@ template <typename FP> struct Cast<core::ValueFrame_O*,FP> {
 template <typename FP> struct Cast<llvmo::TargetOptions_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 68 68 
       return (kindVal == 68);
   };
@@ -7157,7 +7157,7 @@ template <typename FP> struct Cast<llvmo::TargetOptions_O*,FP> {
 template <typename FP> struct Cast<chem::JumpPlug_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 332 332 
       return (kindVal == 332);
   };
@@ -7166,7 +7166,7 @@ template <typename FP> struct Cast<chem::JumpPlug_O*,FP> {
 template <typename FP> struct Cast<gctools::GCVector_moveable<chem::AtomInfo>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 638 638 
       return (kindVal == 638);
   };
@@ -7175,7 +7175,7 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<chem::AtomInfo>*,F
 template <typename FP> struct Cast<core::CandoException_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 16 16 
       return (kindVal == 16);
   };
@@ -7184,7 +7184,7 @@ template <typename FP> struct Cast<core::CandoException_O*,FP> {
 template <typename FP> struct Cast<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Molecule_O>>>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 637 637 
       return (kindVal == 637);
   };
@@ -7193,7 +7193,7 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<std::pair<gctools:
 template <typename FP> struct Cast<llvmo::SequentialType_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 153 156 
       return ((153 <= kindVal) && (kindVal <= 156));
   };
@@ -7202,7 +7202,7 @@ template <typename FP> struct Cast<llvmo::SequentialType_O*,FP> {
 template <typename FP> struct Cast<mp::SharedMutex_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 338 338 
       return (kindVal == 338);
   };
@@ -7211,7 +7211,7 @@ template <typename FP> struct Cast<mp::SharedMutex_O*,FP> {
 template <typename FP> struct Cast<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::AtomIndexer_O>>>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 636 636 
       return (kindVal == 636);
   };
@@ -7220,7 +7220,7 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<std::pair<gctools:
 template <typename FP> struct Cast<chem::RestraintFixedNonbond_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 560 560 
       return (kindVal == 560);
   };
@@ -7229,7 +7229,7 @@ template <typename FP> struct Cast<chem::RestraintFixedNonbond_O*,FP> {
 template <typename FP> struct Cast<core::SingleFloat_dummy_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 612 612 
       return (kindVal == 612);
   };
@@ -7238,7 +7238,7 @@ template <typename FP> struct Cast<core::SingleFloat_dummy_O*,FP> {
 template <typename FP> struct Cast<chem::FFPtorDb_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 497 497 
       return (kindVal == 497);
   };
@@ -7247,7 +7247,7 @@ template <typename FP> struct Cast<chem::FFPtorDb_O*,FP> {
 template <typename FP> struct Cast<chem::StereoisomerAtoms_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 337 337 
       return (kindVal == 337);
   };
@@ -7256,7 +7256,7 @@ template <typename FP> struct Cast<chem::StereoisomerAtoms_O*,FP> {
 template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr<chem::Structure_Old_ListEntry_O>>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 635 635 
       return (kindVal == 635);
   };
@@ -7265,7 +7265,7 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr
 template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr<chem::AGEdge_O>>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 634 634 
       return (kindVal == 634);
   };
@@ -7274,7 +7274,7 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr
 template <typename FP> struct Cast<core::LeafSNode_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 184 184 
       return (kindVal == 184);
   };
@@ -7283,7 +7283,7 @@ template <typename FP> struct Cast<core::LeafSNode_O*,FP> {
 template <typename FP> struct Cast<chem::Plug_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 331 336 
       return ((331 <= kindVal) && (kindVal <= 336));
   };
@@ -7292,7 +7292,7 @@ template <typename FP> struct Cast<chem::Plug_O*,FP> {
 template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr<chem::ConformationExplorerEntryStage_O>>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 633 633 
       return (kindVal == 633);
   };
@@ -7301,7 +7301,7 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr
 template <typename FP> struct Cast<llvmo::LLVMTargetMachine_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 92 92 
       return (kindVal == 92);
   };
@@ -7310,7 +7310,7 @@ template <typename FP> struct Cast<llvmo::LLVMTargetMachine_O*,FP> {
 template <typename FP> struct Cast<gctools::GCArray_moveable<signed char>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 632 632 
       return (kindVal == 632);
   };
@@ -7319,7 +7319,7 @@ template <typename FP> struct Cast<gctools::GCArray_moveable<signed char>*,FP> {
 template <typename FP> struct Cast<gctools::GCArray_moveable<unsigned char>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 631 631 
       return (kindVal == 631);
   };
@@ -7328,7 +7328,7 @@ template <typename FP> struct Cast<gctools::GCArray_moveable<unsigned char>*,FP>
 template <typename FP> struct Cast<gctools::GCVector_moveable<chem::FixedNonbondRestraint>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 630 630 
       return (kindVal == 630);
   };
@@ -7337,7 +7337,7 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<chem::FixedNonbond
 template <typename FP> struct Cast<gctools::GCVector_moveable<chem::EnergyStretch>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 629 629 
       return (kindVal == 629);
   };
@@ -7346,7 +7346,7 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<chem::EnergyStretc
 template <typename FP> struct Cast<core::SimpleMDArrayFloat_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 270 270 
       return (kindVal == 270);
   };
@@ -7355,7 +7355,7 @@ template <typename FP> struct Cast<core::SimpleMDArrayFloat_O*,FP> {
 template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr<chem::FFVdw_O>>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 628 628 
       return (kindVal == 628);
   };
@@ -7364,7 +7364,7 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr
 template <typename FP> struct Cast<core::BroadcastStream_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 314 314 
       return (kindVal == 314);
   };
@@ -7373,7 +7373,7 @@ template <typename FP> struct Cast<core::BroadcastStream_O*,FP> {
 template <typename FP> struct Cast<llvmo::NamedMDNode_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 67 67 
       return (kindVal == 67);
   };
@@ -7382,7 +7382,7 @@ template <typename FP> struct Cast<llvmo::NamedMDNode_O*,FP> {
 template <typename FP> struct Cast<llvmo::BranchInst_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 101 101 
       return (kindVal == 101);
   };
@@ -7391,7 +7391,7 @@ template <typename FP> struct Cast<llvmo::BranchInst_O*,FP> {
 template <typename FP> struct Cast<core::MDArray_byte8_t_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 278 278 
       return (kindVal == 278);
   };
@@ -7400,7 +7400,7 @@ template <typename FP> struct Cast<core::MDArray_byte8_t_O*,FP> {
 template <typename FP> struct Cast<core::MDArray_fixnum_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 232 232 
       return (kindVal == 232);
   };
@@ -7409,7 +7409,7 @@ template <typename FP> struct Cast<core::MDArray_fixnum_O*,FP> {
 template <typename FP> struct Cast<clcenv::Optimize_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 531 531 
       return (kindVal == 531);
   };
@@ -7418,7 +7418,7 @@ template <typename FP> struct Cast<clcenv::Optimize_O*,FP> {
 template <typename FP> struct Cast<core::NamedFunction_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 163 180 
       return ((163 <= kindVal) && (kindVal <= 180));
   };
@@ -7427,7 +7427,7 @@ template <typename FP> struct Cast<core::NamedFunction_O*,FP> {
 template <typename FP> struct Cast<llvmo::GlobalValue_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 118 120 
       return ((118 <= kindVal) && (kindVal <= 120));
   };
@@ -7436,7 +7436,7 @@ template <typename FP> struct Cast<llvmo::GlobalValue_O*,FP> {
 template <typename FP> struct Cast<chem::ConstitutionVirtualAtom_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 479 479 
       return (kindVal == 479);
   };
@@ -7445,7 +7445,7 @@ template <typename FP> struct Cast<chem::ConstitutionVirtualAtom_O*,FP> {
 template <typename FP> struct Cast<llvmo::ModuleHandle_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 15 15 
       return (kindVal == 15);
   };
@@ -7454,7 +7454,7 @@ template <typename FP> struct Cast<llvmo::ModuleHandle_O*,FP> {
 template <typename FP> struct Cast<core::MDArrayT_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 299 299 
       return (kindVal == 299);
   };
@@ -7463,7 +7463,7 @@ template <typename FP> struct Cast<core::MDArrayT_O*,FP> {
 template <typename FP> struct Cast<core::SimpleVector_int8_t_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 215 215 
       return (kindVal == 215);
   };
@@ -7472,7 +7472,7 @@ template <typename FP> struct Cast<core::SimpleVector_int8_t_O*,FP> {
 template <typename FP> struct Cast<core::SaveArchive_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 598 599 
       return ((598 <= kindVal) && (kindVal <= 599));
   };
@@ -7481,7 +7481,7 @@ template <typename FP> struct Cast<core::SaveArchive_O*,FP> {
 template <typename FP> struct Cast<chem::AtomTable_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 330 330 
       return (kindVal == 330);
   };
@@ -7490,7 +7490,7 @@ template <typename FP> struct Cast<chem::AtomTable_O*,FP> {
 template <typename FP> struct Cast<mp::ConditionVariable_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 329 329 
       return (kindVal == 329);
   };
@@ -7499,7 +7499,7 @@ template <typename FP> struct Cast<mp::ConditionVariable_O*,FP> {
 template <typename FP> struct Cast<chem::SuperposeSelectedAtoms_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 466 466 
       return (kindVal == 466);
   };
@@ -7508,7 +7508,7 @@ template <typename FP> struct Cast<chem::SuperposeSelectedAtoms_O*,FP> {
 template <typename FP> struct Cast<gctools::GCVector_moveable<chem::EnergyRigidBodyStaple>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 627 627 
       return (kindVal == 627);
   };
@@ -7517,7 +7517,7 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<chem::EnergyRigidB
 template <typename FP> struct Cast<chem::RingClosingMate_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 363 363 
       return (kindVal == 363);
   };
@@ -7526,7 +7526,7 @@ template <typename FP> struct Cast<chem::RingClosingMate_O*,FP> {
 template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr<chem::StereoisomerAtom_O>>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 626 626 
       return (kindVal == 626);
   };
@@ -7535,7 +7535,7 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr
 template <typename FP> struct Cast<gctools::GCVector_moveable<double>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
+      int kindVal = header->stamp();
       // low high --> 625 625 
       return (kindVal == 625);
   };
@@ -7544,3427 +7544,3427 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<double>*,FP> {
 #if defined(GC_KIND_SELECTORS)
 template <> class gctools::GCStamp<chem::AtomIndexer_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__AtomIndexer_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__AtomIndexer_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::EnergyStretch_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__EnergyStretch_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__EnergyStretch_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<gctools::GCVector_moveable<int>> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_int_ ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_int_ ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::ProperTorsion_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__ProperTorsion_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__ProperTorsion_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::FFParameterBaseDb_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__FFParameterBaseDb_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__FFParameterBaseDb_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<llvmo::DISubprogram_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__DISubprogram_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__DISubprogram_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::SimpleMDArray_int32_t_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__SimpleMDArray_int32_t_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__SimpleMDArray_int32_t_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::CDText_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__CDText_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__CDText_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::IterateAtoms_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__IterateAtoms_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__IterateAtoms_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<clcenv::FunctionType_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_clcenv__FunctionType_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_clcenv__FunctionType_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<clcenv::GlobalMacroInfo_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_clcenv__GlobalMacroInfo_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_clcenv__GlobalMacroInfo_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<clcenv::Inline_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_clcenv__Inline_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_clcenv__Inline_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<llvmo::ConstantDataArray_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__ConstantDataArray_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__ConstantDataArray_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<llvmo::DICompileUnit_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__DICompileUnit_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__DICompileUnit_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::Chain_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__Chain_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__Chain_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<geom::Color_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_geom__Color_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_geom__Color_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::Reader_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__Reader_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__Reader_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::Cache_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__Cache_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__Cache_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::Instance_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__Instance_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__Instance_O ;
   static const size_t Flags = 1 ;
 };
 template <> class gctools::GCStamp<gctools::GCVector_moveable<chem::EnergyAngle>> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_chem__EnergyAngle_ ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_chem__EnergyAngle_ ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::StatusTracker_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__StatusTracker_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__StatusTracker_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::InPlug_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__InPlug_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__InPlug_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::IterateBonds_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__IterateBonds_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__IterateBonds_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::Molecule_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__Molecule_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__Molecule_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::SimpleBaseString_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__SimpleBaseString_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__SimpleBaseString_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<gctools::GCVector_moveable<gctools::smart_ptr<core::T_O>>> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__T_O__ ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__T_O__ ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<llvmo::ConstantDataSequential_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__ConstantDataSequential_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__ConstantDataSequential_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::SimpleVector_int32_t_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__SimpleVector_int32_t_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__SimpleVector_int32_t_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<llvmo::ConstantStruct_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__ConstantStruct_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__ConstantStruct_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::SpecificContext_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__SpecificContext_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__SpecificContext_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::ValueEnvironment_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__ValueEnvironment_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__ValueEnvironment_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::EnergyAngle_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__EnergyAngle_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__EnergyAngle_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::PathMessage_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__PathMessage_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__PathMessage_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::Pointer_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__Pointer_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__Pointer_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<gctools::GCVector_moveable<gctools::smart_ptr<chem::Bond_O>>> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__Bond_O__ ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__Bond_O__ ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<clcenv::SymbolMacro_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_clcenv__SymbolMacro_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_clcenv__SymbolMacro_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::Number_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__Number_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__Number_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<units::NamedUnit_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_units__NamedUnit_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_units__NamedUnit_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<llvmo::BlockAddress_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__BlockAddress_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__BlockAddress_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<gctools::GCVector_moveable<core::KeywordArgument>> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_core__KeywordArgument_ ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_core__KeywordArgument_ ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::Real_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__Real_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__Real_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<gctools::GCVector_moveable<chem::EnergyImproperRestraint>> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_chem__EnergyImproperRestraint_ ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_chem__EnergyImproperRestraint_ ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::Minimizer_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__Minimizer_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__Minimizer_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::SimpleMDArray_int8_t_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__SimpleMDArray_int8_t_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__SimpleMDArray_int8_t_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::Structure_Old_ListEntry_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__Structure_Old_ListEntry_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__Structure_Old_ListEntry_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<gctools::GCVector_moveable<core::SymbolClassPair>> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_core__SymbolClassPair_ ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_core__SymbolClassPair_ ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<llvmo::Argument_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__Argument_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__Argument_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<llvmo::Type_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__Type_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__Type_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::Restraint_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__Restraint_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__Restraint_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::FileStream_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__FileStream_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__FileStream_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<llvmo::DIType_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__DIType_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__DIType_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::SimpleMDArrayCharacter_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__SimpleMDArrayCharacter_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__SimpleMDArrayCharacter_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<llvmo::Linker_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__Linker_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__Linker_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::ReportBase_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__ReportBase_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__ReportBase_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::FFItorDb_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__FFItorDb_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__FFItorDb_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::BondMatchNode_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__BondMatchNode_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__BondMatchNode_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<gctools::GCVector_moveable<chem::EnergyNonbond>> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_chem__EnergyNonbond_ ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_chem__EnergyNonbond_ ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::CompiledDispatchFunction_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__CompiledDispatchFunction_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__CompiledDispatchFunction_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::InfoDb_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__InfoDb_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__InfoDb_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::CalculatePosition_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__CalculatePosition_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__CalculatePosition_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<llvmo::DITypeRefArray_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__DITypeRefArray_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__DITypeRefArray_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<llvmo::DebugLoc_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__DebugLoc_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__DebugLoc_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::HashTableEqualp_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__HashTableEqualp_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__HashTableEqualp_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::DirectoryEntry_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__DirectoryEntry_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__DirectoryEntry_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<clcenv::Entry_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_clcenv__Entry_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_clcenv__Entry_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::AtomOrBondMatchNode_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__AtomOrBondMatchNode_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__AtomOrBondMatchNode_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::SimpleMDArray_byte8_t_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__SimpleMDArray_byte8_t_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__SimpleMDArray_byte8_t_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<units::Unit_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_units__Unit_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_units__Unit_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::SimpleVector_byte32_t_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__SimpleVector_byte32_t_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__SimpleVector_byte32_t_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<llvmo::StructType_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__StructType_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__StructType_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::ConformationExplorer_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__ConformationExplorer_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__ConformationExplorer_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<asttooling::AstVisitor_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_asttooling__AstVisitor_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_asttooling__AstVisitor_O ;
   static const size_t Flags = 2 ;
 };
 template <> class gctools::GCStamp<adapt::IterateCons_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_adapt__IterateCons_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_adapt__IterateCons_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<clcenv::Info_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_clcenv__Info_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_clcenv__Info_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<gctools::GCVector_moveable<core::OptionalArgument>> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_core__OptionalArgument_ ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_core__OptionalArgument_ ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::ConformationCollection_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__ConformationCollection_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__ConformationCollection_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::SimpleMDArray_byte64_t_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__SimpleMDArray_byte64_t_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__SimpleMDArray_byte64_t_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<geom::SimpleVectorCoordinate_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_geom__SimpleVectorCoordinate_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_geom__SimpleVectorCoordinate_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<gctools::GCVector_moveable<gctools::smart_ptr<chem::ConstitutionBond_O>>> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__ConstitutionBond_O__ ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__ConstitutionBond_O__ ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::SimpleMDArray_int16_t_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__SimpleMDArray_int16_t_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__SimpleMDArray_int16_t_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::MDArrayBaseChar_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__MDArrayBaseChar_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__MDArrayBaseChar_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<llvmo::InsertPoint_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__InsertPoint_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__InsertPoint_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<gctools::GCVector_moveable<gctools::smart_ptr<chem::ReportBase_O>>> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__ReportBase_O__ ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__ReportBase_O__ ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<clcenv::FunctionIgnore_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_clcenv__FunctionIgnore_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_clcenv__FunctionIgnore_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::StereoisomerVirtualAtom_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__StereoisomerVirtualAtom_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__StereoisomerVirtualAtom_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::ZMatrixInternal_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__ZMatrixInternal_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__ZMatrixInternal_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::RecursiveDirectoryIterator_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__RecursiveDirectoryIterator_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__RecursiveDirectoryIterator_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::IterateMatter_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__IterateMatter_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__IterateMatter_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<asttooling::DerivableMatchCallback> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_asttooling__DerivableMatchCallback ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_asttooling__DerivableMatchCallback ;
   static const size_t Flags = 3 ;
 };
 template <> class gctools::GCStamp<gctools::GCVector_moveable<gctools::smart_ptr<chem::StereoConfiguration_O>>> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__StereoConfiguration_O__ ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__StereoConfiguration_O__ ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::SpecificContextSet_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__SpecificContextSet_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__SpecificContextSet_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<llvmo::Constant_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__Constant_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__Constant_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::SimpleMDArray_int64_t_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__SimpleMDArray_int64_t_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__SimpleMDArray_int64_t_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<llvmo::IRBuilder_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__IRBuilder_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__IRBuilder_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::SymbolToEnumConverter_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__SymbolToEnumConverter_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__SymbolToEnumConverter_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::ConsStepper_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__ConsStepper_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__ConsStepper_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<geom::BoundingBox_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_geom__BoundingBox_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_geom__BoundingBox_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<gctools::GCArray_moveable<float>> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_GCARRAY_gctools__GCArray_moveable_float_ ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_GCARRAY_gctools__GCArray_moveable_float_ ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<clcenv::OptimizeInfo_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_clcenv__OptimizeInfo_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_clcenv__OptimizeInfo_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<gctools::GCVector_moveable<gctools::smart_ptr<chem::BondList_O>>> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__BondList_O__ ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__BondList_O__ ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::ZMatrixBondInternal_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__ZMatrixBondInternal_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__ZMatrixBondInternal_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<adapt::ObjectSet_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_adapt__ObjectSet_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_adapt__ObjectSet_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::SexpLoadArchive_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__SexpLoadArchive_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__SexpLoadArchive_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::LoadArchive_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__LoadArchive_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__LoadArchive_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<gctools::GCVector_moveable<chem::EnergyAtom>> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_chem__EnergyAtom_ ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_chem__EnergyAtom_ ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<gctools::GCVector_moveable<gctools::smart_ptr<chem::Matter_O>>> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__Matter_O__ ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__Matter_O__ ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<llvmo::LandingPadInst_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__LandingPadInst_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__LandingPadInst_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<llvmo::APFloat_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__APFloat_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__APFloat_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<gctools::GCArray_moveable<unsigned int>> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_GCARRAY_gctools__GCArray_moveable_unsigned_int_ ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_GCARRAY_gctools__GCArray_moveable_unsigned_int_ ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::ReadAmberParameters_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__ReadAmberParameters_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__ReadAmberParameters_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::DirectionalCoupling_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__DirectionalCoupling_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__DirectionalCoupling_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::CoreExposer_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__CoreExposer_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__CoreExposer_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<llvmo::AtomicCmpXchgInst_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__AtomicCmpXchgInst_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__AtomicCmpXchgInst_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::WeakPointer_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__WeakPointer_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__WeakPointer_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::AGVertex_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__AGVertex_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__AGVertex_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<llvmo::ReturnInst_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__ReturnInst_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__ReturnInst_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::Archive_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__Archive_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__Archive_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<gctools::GCVector_moveable<gctools::smart_ptr<chem::MonomerCoordinates_O>>> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__MonomerCoordinates_O__ ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__MonomerCoordinates_O__ ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::RestrainedPiBond_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__RestrainedPiBond_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__RestrainedPiBond_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::SimpleMDArrayBaseChar_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__SimpleMDArrayBaseChar_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__SimpleMDArrayBaseChar_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::Fixnum_dummy_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__Fixnum_dummy_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__Fixnum_dummy_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::Environment_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__Environment_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__Environment_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Coupling_O>>>> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__Coupling_O___ ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__Coupling_O___ ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<geom::SimpleMDArrayCoordinate_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_geom__SimpleMDArrayCoordinate_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_geom__SimpleMDArrayCoordinate_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::FFPtor_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__FFPtor_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__FFPtor_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::FFItor_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__FFItor_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__FFItor_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::EnergyFixedNonbondRestraint_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__EnergyFixedNonbondRestraint_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__EnergyFixedNonbondRestraint_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::RepresentedEntityNameSet_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__RepresentedEntityNameSet_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__RepresentedEntityNameSet_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::Constitution_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__Constitution_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__Constitution_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::MonomerPack_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__MonomerPack_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__MonomerPack_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::FFBaseDb_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__FFBaseDb_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__FFBaseDb_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::SourceManager_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__SourceManager_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__SourceManager_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<clbind::ConstructorCreator_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_TEMPLATED_LISPALLOC_clbind__ConstructorCreator_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_TEMPLATED_LISPALLOC_clbind__ConstructorCreator_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<geom::OMatrix_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_geom__OMatrix_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_geom__OMatrix_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<gctools::GCVector_moveable<core::RequiredArgument>> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_core__RequiredArgument_ ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_core__RequiredArgument_ ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<gctools::GCVector_moveable<gctools::smart_ptr<chem::ZMatrixEntry_O>>> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__ZMatrixEntry_O__ ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__ZMatrixEntry_O__ ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<clcenv::LambdaName_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_clcenv__LambdaName_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_clcenv__LambdaName_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<adapt::AdaptExposer_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_adapt__AdaptExposer_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_adapt__AdaptExposer_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<adapt::StringList_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_adapt__StringList_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_adapt__StringList_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<llvmo::DIFile_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__DIFile_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__DIFile_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<clcenv::FunctionInfo_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_clcenv__FunctionInfo_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_clcenv__FunctionInfo_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::BondListMatchNode_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__BondListMatchNode_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__BondListMatchNode_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<gctools::GCVector_moveable<chem::BeyondThresholdFixedNonbondRestraint>> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_chem__BeyondThresholdFixedNonbondRestraint_ ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_chem__BeyondThresholdFixedNonbondRestraint_ ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::StrNs_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__StrNs_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__StrNs_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::OutPlug_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__OutPlug_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__OutPlug_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<gctools::GCVector_moveable<gctools::smart_ptr<core::Symbol_O>>> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__Symbol_O__ ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__Symbol_O__ ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<llvmo::ClaspJIT_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__ClaspJIT_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__ClaspJIT_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<llvmo::PointerType_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__PointerType_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__PointerType_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<llvmo::UndefValue_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__UndefValue_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__UndefValue_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::PdbReader_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__PdbReader_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__PdbReader_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::EnergyRigidBodyStaple_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__EnergyRigidBodyStaple_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__EnergyRigidBodyStaple_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::MDArray_int16_t_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__MDArray_int16_t_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__MDArray_int16_t_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<clcenv::LexicalVariableInfo_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_clcenv__LexicalVariableInfo_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_clcenv__LexicalVariableInfo_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<llvmo::FenceInst_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__FenceInst_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__FenceInst_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::IterateRestraints_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__IterateRestraints_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__IterateRestraints_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<gctools::GCVector_moveable<float>> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_float_ ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_float_ ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::CDFragment_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__CDFragment_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__CDFragment_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::CxxObject_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__CxxObject_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__CxxObject_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<adapt::StringSet_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_adapt__StringSet_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_adapt__StringSet_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::TwoWayStream_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__TwoWayStream_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__TwoWayStream_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<gctools::GCVector_moveable<gctools::smart_ptr<chem::Twister_O>>> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__Twister_O__ ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__Twister_O__ ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<gctools::GCArray_moveable<double>> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_GCARRAY_gctools__GCArray_moveable_double_ ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_GCARRAY_gctools__GCArray_moveable_double_ ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<gctools::GCVector_moveable<core::DynamicBinding>> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_core__DynamicBinding_ ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_core__DynamicBinding_ ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::VectorStepper_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__VectorStepper_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__VectorStepper_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::Structure_Old_List_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__Structure_Old_List_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__Structure_Old_List_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Topology_O>>>> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__Topology_O___ ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__Topology_O___ ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<gctools::GCVector_moveable<gctools::smart_ptr<core::Cons_O>>> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__Cons_O__ ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__Cons_O__ ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::FFStretch_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__FFStretch_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__FFStretch_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<gctools::GCArray_moveable<gctools::smart_ptr<core::T_O>>> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_GCARRAY_gctools__GCArray_moveable_gctools__smart_ptr_core__T_O__ ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_GCARRAY_gctools__GCArray_moveable_gctools__smart_ptr_core__T_O__ ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::HashTableEq_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__HashTableEq_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__HashTableEq_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<mp::ConcurrentQueue_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_mp__ConcurrentQueue_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_mp__ConcurrentQueue_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::MonomerCoordinates_O>>>> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__MonomerCoordinates_O___ ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__MonomerCoordinates_O___ ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::WildElementDict_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__WildElementDict_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__WildElementDict_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::ChemInfo_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__ChemInfo_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__ChemInfo_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::DoubleFloat_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__DoubleFloat_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__DoubleFloat_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::FFNonbondDb_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__FFNonbondDb_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__FFNonbondDb_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::RingClosingPlug_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__RingClosingPlug_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__RingClosingPlug_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<gctools::GCVector_moveable<core::CacheRecord>> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_core__CacheRecord_ ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_core__CacheRecord_ ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::MDArray_int8_t_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__MDArray_int8_t_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__MDArray_int8_t_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<llvmo::FunctionType_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__FunctionType_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__FunctionType_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<llvmo::BasicBlock_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__BasicBlock_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__BasicBlock_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<llvmo::DataLayout_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__DataLayout_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__DataLayout_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::SimpleVectorFloat_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__SimpleVectorFloat_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__SimpleVectorFloat_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::SingleDispatchMethodFunction_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__SingleDispatchMethodFunction_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__SingleDispatchMethodFunction_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::SearchStatistics_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__SearchStatistics_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__SearchStatistics_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::MacroModelFile_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__MacroModelFile_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__MacroModelFile_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<llvmo::DIScope_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__DIScope_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__DIScope_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<llvmo::User_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__User_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__User_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<llvmo::Target_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__Target_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__Target_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::IOFileStream_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__IOFileStream_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__IOFileStream_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<llvmo::UnreachableInst_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__UnreachableInst_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__UnreachableInst_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::DirectoryIterator_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__DirectoryIterator_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__DirectoryIterator_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::Closure_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__Closure_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__Closure_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::Integer_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__Integer_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__Integer_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<gctools::GCVector_moveable<gctools::smart_ptr<chem::ChemInfo_O>>> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__ChemInfo_O__ ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__ChemInfo_O__ ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<llvmo::ArrayType_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__ArrayType_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__ArrayType_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::CxxMethodFunction_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__CxxMethodFunction_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__CxxMethodFunction_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::FrameRecognizer_O>>>> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__FrameRecognizer_O___ ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__FrameRecognizer_O___ ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::MDArrayCharacter_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__MDArrayCharacter_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__MDArrayCharacter_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::RestraintAnchor_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__RestraintAnchor_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__RestraintAnchor_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::SpecialForm_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__SpecialForm_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__SpecialForm_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::Record_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__Record_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__Record_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::Twister_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__Twister_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__Twister_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<gctools::GCVector_moveable<gctools::smart_ptr<core::Package_O>>> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__Package_O__ ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__Package_O__ ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<llvmo::GlobalVariable_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__GlobalVariable_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__GlobalVariable_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<gctools::GCVector_moveable<gctools::smart_ptr<core::List_V>>> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__List_V__ ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__List_V__ ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<gctools::GCVector_moveable<gctools::smart_ptr<chem::FFNonbond_O>>> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__FFNonbond_O__ ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__FFNonbond_O__ ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<gctools::GCVector_moveable<gctools::smart_ptr<core::SequenceStepper_O>>> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__SequenceStepper_O__ ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__SequenceStepper_O__ ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::AtomReference_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__AtomReference_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__AtomReference_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::Stream_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__Stream_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__Stream_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::StackValueEnvironment_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__StackValueEnvironment_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__StackValueEnvironment_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<clcenv::SymbolMacroInfo_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_clcenv__SymbolMacroInfo_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_clcenv__SymbolMacroInfo_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::Bignum_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__Bignum_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__Bignum_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<units::Quantity_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_units__Quantity_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_units__Quantity_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::WeakKeyMapping_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__WeakKeyMapping_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__WeakKeyMapping_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<gctools::GCVector_moveable<gctools::smart_ptr<chem::Mate_O>>> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__Mate_O__ ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__Mate_O__ ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::AntechamberFocusAtomMatch_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__AntechamberFocusAtomMatch_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__AntechamberFocusAtomMatch_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::SimpleVector_int16_t_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__SimpleVector_int16_t_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__SimpleVector_int16_t_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::PdbMonomerConnectivity_O>>>> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__PdbMonomerConnectivity_O___ ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__PdbMonomerConnectivity_O___ ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::RestraintDistance_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__RestraintDistance_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__RestraintDistance_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<adapt::SymbolSet_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_adapt__SymbolSet_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_adapt__SymbolSet_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,chem::EstimateStretch>>> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__chem__EstimateStretch__ ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__chem__EstimateStretch__ ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<clcenv::SpecialVariable_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_clcenv__SpecialVariable_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_clcenv__SpecialVariable_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::RestrainedExoCyclicAtom_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__RestrainedExoCyclicAtom_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__RestrainedExoCyclicAtom_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::CDNode_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__CDNode_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__CDNode_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::Character_dummy_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__Character_dummy_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__Character_dummy_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::RestraintAngle_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__RestraintAngle_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__RestraintAngle_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::SexpSaveArchive_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__SexpSaveArchive_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__SexpSaveArchive_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::Aggregate_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__Aggregate_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__Aggregate_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::PlugWithMates_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__PlugWithMates_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__PlugWithMates_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::FunctionFrame_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__FunctionFrame_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__FunctionFrame_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::SingleDispatchGenericFunctionClosure_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__SingleDispatchGenericFunctionClosure_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__SingleDispatchGenericFunctionClosure_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::LightUserData_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__LightUserData_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__LightUserData_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::EchoStream_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__EchoStream_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__EchoStream_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::CalculatePositionUsingInternals_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__CalculatePositionUsingInternals_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__CalculatePositionUsingInternals_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<llvmo::DILocalScope_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__DILocalScope_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__DILocalScope_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::ZMatrixEntry_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__ZMatrixEntry_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__ZMatrixEntry_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::SimpleMDArray_size_t_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__SimpleMDArray_size_t_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__SimpleMDArray_size_t_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<llvmo::Instruction_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__Instruction_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__Instruction_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::FunctionClosure_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__FunctionClosure_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__FunctionClosure_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::ConstitutionAtom_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__ConstitutionAtom_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__ConstitutionAtom_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::MonoMonomer_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__MonoMonomer_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__MonoMonomer_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<clcenv::FunctionDynamicExtent_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_clcenv__FunctionDynamicExtent_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_clcenv__FunctionDynamicExtent_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<clcenv::LexicalVariable_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_clcenv__LexicalVariable_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_clcenv__LexicalVariable_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<gctools::GCVector_moveable<std::pair<int,gctools::smart_ptr<chem::CDNode_O>>>> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_int_gctools__smart_ptr_chem__CDNode_O___ ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_int_gctools__smart_ptr_chem__CDNode_O___ ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<gctools::GCVector_moveable<gctools::smart_ptr<chem::TrajectoryFrame_O>>> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__TrajectoryFrame_O__ ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__TrajectoryFrame_O__ ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::EnergyAnchorRestraint_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__EnergyAnchorRestraint_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__EnergyAnchorRestraint_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::TypeAssignmentRules_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__TypeAssignmentRules_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__TypeAssignmentRules_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::Mate_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__Mate_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__Mate_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<gctools::GCVector_moveable<gctools::smart_ptr<chem::Residue_O>>> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__Residue_O__ ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__Residue_O__ ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<clcenv::VariableDynamicExtent_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_clcenv__VariableDynamicExtent_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_clcenv__VariableDynamicExtent_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::StructureComparer_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__StructureComparer_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__StructureComparer_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::MultiStringBuffer_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__MultiStringBuffer_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__MultiStringBuffer_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::StereoInformation_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__StereoInformation_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__StereoInformation_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<llvmo::Module_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__Module_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__Module_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::FileStatus_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__FileStatus_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__FileStatus_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::Branch_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__Branch_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__Branch_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<gctools::GCVector_moveable<std::pair<int,gctools::smart_ptr<chem::Residue_O>>>> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_int_gctools__smart_ptr_chem__Residue_O___ ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_int_gctools__smart_ptr_chem__Residue_O___ ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::SimpleMDArray_fixnum_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__SimpleMDArray_fixnum_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__SimpleMDArray_fixnum_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::MDArray_int32_t_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__MDArray_int32_t_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__MDArray_int32_t_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<llvmo::MDNode_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__MDNode_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__MDNode_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::EnergyRigidBodyComponent_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__EnergyRigidBodyComponent_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__EnergyRigidBodyComponent_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::PdbWriter_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__PdbWriter_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__PdbWriter_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::FFStretchDb_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__FFStretchDb_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__FFStretchDb_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<llvmo::UnaryInstruction_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__UnaryInstruction_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__UnaryInstruction_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<llvmo::DILexicalBlockBase_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__DILexicalBlockBase_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__DILexicalBlockBase_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::InterpretedClosure_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__InterpretedClosure_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__InterpretedClosure_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::WeakKeyHashTable_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__WeakKeyHashTable_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__WeakKeyHashTable_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::RandomState_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__RandomState_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__RandomState_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::AfterMatchBondTest_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__AfterMatchBondTest_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__AfterMatchBondTest_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<llvmo::Pass_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__Pass_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__Pass_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<gctools::GCVector_moveable<std::pair<unsigned int,gctools::smart_ptr<chem::Residue_O>>>> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_unsigned_int_gctools__smart_ptr_chem__Residue_O___ ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_unsigned_int_gctools__smart_ptr_chem__Residue_O___ ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::ActivationFrame_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__ActivationFrame_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__ActivationFrame_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<gctools::GCVector_moveable<gctools::smart_ptr<chem::ConformationCollectionEntry_O>>> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__ConformationCollectionEntry_O__ ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__ConformationCollectionEntry_O__ ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::StringOutputStream_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__StringOutputStream_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__StringOutputStream_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::IntArray_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__IntArray_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__IntArray_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::SparseLargeSquareMatrix_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__SparseLargeSquareMatrix_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__SparseLargeSquareMatrix_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::FFNonbondCrossTermTable_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__FFNonbondCrossTermTable_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__FFNonbondCrossTermTable_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::SharpEqualWrapper_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__SharpEqualWrapper_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__SharpEqualWrapper_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::ConformationExplorerEntryStage_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__ConformationExplorerEntryStage_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__ConformationExplorerEntryStage_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::EnergyFunction_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__EnergyFunction_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__EnergyFunction_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<gctools::GCArray_moveable<unsigned long>> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_GCARRAY_gctools__GCArray_moveable_unsigned_long_ ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_GCARRAY_gctools__GCArray_moveable_unsigned_long_ ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<gctools::GCVector_moveable<gctools::smart_ptr<core::SingleDispatchMethod_O>>> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__SingleDispatchMethod_O__ ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__SingleDispatchMethod_O__ ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::UserData_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__UserData_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__UserData_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::Bond_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__Bond_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__Bond_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::Logical_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__Logical_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__Logical_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::FFAngleDb_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__FFAngleDb_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__FFAngleDb_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::AtomId_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__AtomId_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__AtomId_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::Array_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__Array_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__Array_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::CDFragment_O>>>> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__CDFragment_O___ ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__CDFragment_O___ ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<mp::RecursiveMutex_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_mp__RecursiveMutex_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_mp__RecursiveMutex_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::LambdaListHandler_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__LambdaListHandler_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__LambdaListHandler_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::Array_O>>>> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_core__Array_O___ ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_core__Array_O___ ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<clcenv::LambdaNameInfo_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_clcenv__LambdaNameInfo_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_clcenv__LambdaNameInfo_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::MDArray_int64_t_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__MDArray_int64_t_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__MDArray_int64_t_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<gctools::GCVector_moveable<chem::EnergyChiralRestraint>> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_chem__EnergyChiralRestraint_ ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_chem__EnergyChiralRestraint_ ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::ClosureWithFrame_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__ClosureWithFrame_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__ClosureWithFrame_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<llvmo::ImmutablePass_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__ImmutablePass_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__ImmutablePass_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::StandardClassCreator_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__StandardClassCreator_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__StandardClassCreator_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<llvmo::ConstantInt_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__ConstantInt_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__ConstantInt_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<llvmo::Function_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__Function_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__Function_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::SpanningLoop_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__SpanningLoop_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__SpanningLoop_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<mp::Mutex_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_mp__Mutex_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_mp__Mutex_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::FFAngle_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__FFAngle_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__FFAngle_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::FunctionValueEnvironment_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__FunctionValueEnvironment_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__FunctionValueEnvironment_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::Symbol_O>>>> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_core__Symbol_O___ ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_core__Symbol_O___ ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<chem::Atom_O>,int>>> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_chem__Atom_O__int__ ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_chem__Atom_O__int__ ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::SuperposeEngine_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__SuperposeEngine_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__SuperposeEngine_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::GlueEnvironment_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__GlueEnvironment_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__GlueEnvironment_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::IOStreamStream_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__IOStreamStream_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__IOStreamStream_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::Ratio_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__Ratio_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__Ratio_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::SingleDispatchMethod_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__SingleDispatchMethod_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__SingleDispatchMethod_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<gctools::GCVector_moveable<gctools::smart_ptr<chem::ConformationExplorerEntry_O>>> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__ConformationExplorerEntry_O__ ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__ConformationExplorerEntry_O__ ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::SimpleVectorDouble_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__SimpleVectorDouble_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__SimpleVectorDouble_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<llvmo::Triple_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__Triple_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__Triple_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::SimpleVector_fixnum_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__SimpleVector_fixnum_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__SimpleVector_fixnum_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::WeakHashTable_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__WeakHashTable_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__WeakHashTable_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::EnergyComponent_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__EnergyComponent_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__EnergyComponent_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::SingleDispatchEffectiveMethodFunction_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__SingleDispatchEffectiveMethodFunction_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__SingleDispatchEffectiveMethodFunction_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::General_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__General_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__General_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::BuiltinClosure_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_TEMPLATED_LISPALLOC_core__BuiltinClosure_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_TEMPLATED_LISPALLOC_core__BuiltinClosure_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<llvmo::FunctionPass_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__FunctionPass_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__FunctionPass_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<llvmo::PassManager_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__PassManager_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__PassManager_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::Cons_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__Cons_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__Cons_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::SimpleMDArray_byte32_t_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__SimpleMDArray_byte32_t_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__SimpleMDArray_byte32_t_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<clcenv::Function_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_clcenv__Function_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_clcenv__Function_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<llvmo::VAArgInst_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__VAArgInst_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__VAArgInst_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<asttooling::DerivableFrontendActionFactory> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_asttooling__DerivableFrontendActionFactory ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_asttooling__DerivableFrontendActionFactory ;
   static const size_t Flags = 3 ;
 };
 template <> class gctools::GCStamp<chem::VirtualSphere_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__VirtualSphere_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__VirtualSphere_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<llvmo::PassManagerBase_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__PassManagerBase_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__PassManagerBase_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::StringStream_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__StringStream_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__StringStream_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::SimpleString_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__SimpleString_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__SimpleString_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<llvmo::TargetSubtargetInfo_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__TargetSubtargetInfo_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__TargetSubtargetInfo_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::MDArrayFloat_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__MDArrayFloat_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__MDArrayFloat_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<llvmo::ValueAsMetadata_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__ValueAsMetadata_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__ValueAsMetadata_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<clbind::ClassRep_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_clbind__ClassRep_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_clbind__ClassRep_O ;
   static const size_t Flags = 1 ;
 };
 template <> class gctools::GCStamp<llvmo::PassManagerBuilder_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__PassManagerBuilder_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__PassManagerBuilder_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<llvmo::DIBuilder_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__DIBuilder_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__DIBuilder_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<llvmo::DISubroutineType_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__DISubroutineType_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__DISubroutineType_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::CandoDatabase_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__CandoDatabase_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__CandoDatabase_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::CDBond_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__CDBond_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__CDBond_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::Path_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__Path_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__Path_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<clcenv::BlockInfo_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_clcenv__BlockInfo_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_clcenv__BlockInfo_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::RuntimeVisibleEnvironment_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__RuntimeVisibleEnvironment_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__RuntimeVisibleEnvironment_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::SourceFileInfo_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__SourceFileInfo_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__SourceFileInfo_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::VirtualAtom_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__VirtualAtom_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__VirtualAtom_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<llvmo::LoadInst_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__LoadInst_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__LoadInst_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<clcenv::VariableInfo_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_clcenv__VariableInfo_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_clcenv__VariableInfo_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<clcenv::Tag_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_clcenv__Tag_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_clcenv__Tag_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<llvmo::ExecutionEngine_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__ExecutionEngine_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__ExecutionEngine_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<asttooling::DerivableSyntaxOnlyAction> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_asttooling__DerivableSyntaxOnlyAction ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_asttooling__DerivableSyntaxOnlyAction ;
   static const size_t Flags = 3 ;
 };
 template <> class gctools::GCStamp<geom::MDArrayCoordinate_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_geom__MDArrayCoordinate_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_geom__MDArrayCoordinate_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<gctools::GCVector_moveable<gctools::smart_ptr<chem::PathMessage_O>>> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__PathMessage_O__ ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__PathMessage_O__ ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<gctools::GCVector_moveable<gctools::smart_ptr<chem::ConstitutionAtom_O>>> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__ConstitutionAtom_O__ ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__ConstitutionAtom_O__ ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<gctools::GCVector_moveable<gctools::SmallOrderedSet<gctools::smart_ptr<chem::Atom_O>>>> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__SmallOrderedSet_gctools__smart_ptr_chem__Atom_O___ ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__SmallOrderedSet_gctools__smart_ptr_chem__Atom_O___ ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<core::T_O>>>> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__T_O__gctools__smart_ptr_core__T_O___ ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__T_O__gctools__smart_ptr_core__T_O___ ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<gctools::GCVector_moveable<gctools::smart_ptr<clbind::ClassRep_O>>> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_clbind__ClassRep_O__ ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_clbind__ClassRep_O__ ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::Complex_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__Complex_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__Complex_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::ResidueTest_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__ResidueTest_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__ResidueTest_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::SimpleMDArrayDouble_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__SimpleMDArrayDouble_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__SimpleMDArrayDouble_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::InstanceCreator_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__InstanceCreator_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__InstanceCreator_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::NativeVector_double_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__NativeVector_double_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__NativeVector_double_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<llvmo::DILexicalBlock_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__DILexicalBlock_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__DILexicalBlock_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::SNode_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__SNode_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__SNode_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<clbind::detail::class_map> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_ROOTCLASSALLOC_clbind__detail__class_map ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_ROOTCLASSALLOC_clbind__detail__class_map ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<llvmo::AllocaInst_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__AllocaInst_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__AllocaInst_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::CompiledFunction_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__CompiledFunction_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__CompiledFunction_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::IterateResidues_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__IterateResidues_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__IterateResidues_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::FrameRecognizer_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__FrameRecognizer_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__FrameRecognizer_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<gctools::GCVector_moveable<core::SymbolStorage>> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_core__SymbolStorage_ ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_core__SymbolStorage_ ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::PdbMonomerDatabase_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__PdbMonomerDatabase_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__PdbMonomerDatabase_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::NativeVector_float_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__NativeVector_float_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__NativeVector_float_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<clcenv::VariableType_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_clcenv__VariableType_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_clcenv__VariableType_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::Null_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__Null_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__Null_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::FFTypesDb_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__FFTypesDb_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__FFTypesDb_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::StructureClassCreator_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__StructureClassCreator_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__StructureClassCreator_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<gctools::GCVector_moveable<chem::KeyEntry>> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_chem__KeyEntry_ ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_chem__KeyEntry_ ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<llvmo::ConstantFP_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__ConstantFP_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__ConstantFP_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::SmartsRoot_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__SmartsRoot_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__SmartsRoot_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::Root_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__Root_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__Root_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::Topology_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__Topology_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__Topology_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::MDArray_byte16_t_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__MDArray_byte16_t_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__MDArray_byte16_t_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::AntechamberBondTest_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__AntechamberBondTest_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__AntechamberBondTest_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<gctools::GCVector_moveable<gctools::smart_ptr<chem::ComplexRestraint_O>>> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__ComplexRestraint_O__ ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__ComplexRestraint_O__ ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<mp::Process_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_mp__Process_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_mp__Process_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::SimpleVector_byte8_t_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__SimpleVector_byte8_t_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__SimpleVector_byte8_t_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::Function_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__Function_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__Function_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::TagSet_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__TagSet_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__TagSet_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::MacroletEnvironment_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__MacroletEnvironment_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__MacroletEnvironment_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<gctools::GCVector_moveable<gctools::smart_ptr<chem::Rotamer_O>>> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__Rotamer_O__ ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__Rotamer_O__ ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<clcenv::SpecialOperatorInfo_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_clcenv__SpecialOperatorInfo_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_clcenv__SpecialOperatorInfo_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::SmallMap_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__SmallMap_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__SmallMap_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<gctools::GCVector_moveable<gctools::smart_ptr<chem::Atom_O>>> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__Atom_O__ ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__Atom_O__ ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::RingFinder_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__RingFinder_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__RingFinder_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::ConstitutionAtoms_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__ConstitutionAtoms_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__ConstitutionAtoms_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<llvmo::DINode_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__DINode_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__DINode_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::HashTableEqual_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__HashTableEqual_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__HashTableEqual_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<gctools::GCVector_moveable<gctools::smart_ptr<chem::Stereoisomer_O>>> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__Stereoisomer_O__ ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__Stereoisomer_O__ ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::SimpleCharacterString_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__SimpleCharacterString_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__SimpleCharacterString_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::OneTypeRule_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__OneTypeRule_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__OneTypeRule_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::EnergyImproperRestraint_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__EnergyImproperRestraint_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__EnergyImproperRestraint_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<gctools::GCVector_moveable<chem::RigidBodyAtomInfo>> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_chem__RigidBodyAtomInfo_ ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_chem__RigidBodyAtomInfo_ ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::Rotamer_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__Rotamer_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__Rotamer_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<llvmo::CallInst_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__CallInst_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__CallInst_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::Package_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__Package_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__Package_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<llvmo::Attribute_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__Attribute_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__Attribute_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::SymbolMacroletEnvironment_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__SymbolMacroletEnvironment_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__SymbolMacroletEnvironment_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::ExternalObject_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__ExternalObject_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__ExternalObject_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::EnergyNonbond_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__EnergyNonbond_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__EnergyNonbond_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<clbind::DummyCreator_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_clbind__DummyCreator_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_clbind__DummyCreator_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<gctools::GCBitUnitArray_moveable<1,unsigned int,int>> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_GCBITUNITCONTAINER1_gctools__GCBitUnitArray_moveable_1_unsigned_int_int_ ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_GCBITUNITCONTAINER1_gctools__GCBitUnitArray_moveable_1_unsigned_int_int_ ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::ConformationExplorerMatch_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__ConformationExplorerMatch_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__ConformationExplorerMatch_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::SuperposableConformationCollection_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__SuperposableConformationCollection_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__SuperposableConformationCollection_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::HashTableEql_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__HashTableEql_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__HashTableEql_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::Stereoisomer_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__Stereoisomer_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__Stereoisomer_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<llvmo::PHINode_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__PHINode_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__PHINode_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::MDArray_byte32_t_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__MDArray_byte32_t_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__MDArray_byte32_t_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::AbstractLargeSquareMatrix_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__AbstractLargeSquareMatrix_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__AbstractLargeSquareMatrix_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<clasp_ffi::ForeignData_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_clasp_ffi__ForeignData_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_clasp_ffi__ForeignData_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::WrappedPointer_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_TEMPLATED_LISPALLOC_core__WrappedPointer_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_TEMPLATED_LISPALLOC_core__WrappedPointer_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::EntityNameSetWithCap_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__EntityNameSetWithCap_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__EntityNameSetWithCap_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::Iterator_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_TEMPLATED_LISPALLOC_core__Iterator_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_TEMPLATED_LISPALLOC_core__Iterator_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::StereoisomerAtoms_O>>>> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__StereoisomerAtoms_O___ ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__StereoisomerAtoms_O___ ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::Str8Ns_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__Str8Ns_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__Str8Ns_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::ImproperTorsion_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__ImproperTorsion_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__ImproperTorsion_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<clcenv::GlobalFunctionInfo_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_clcenv__GlobalFunctionInfo_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_clcenv__GlobalFunctionInfo_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::SimpleMDArrayT_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__SimpleMDArrayT_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__SimpleMDArrayT_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::AtomReferenceBase_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__AtomReferenceBase_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__AtomReferenceBase_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<gctools::GCArray_moveable<Vector3>> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_GCARRAY_gctools__GCArray_moveable_Vector3_ ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_GCARRAY_gctools__GCArray_moveable_Vector3_ ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::T_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_BOOTSTRAP_core__T_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_BOOTSTRAP_core__T_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::ConformationCollectionEntry_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__ConformationCollectionEntry_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__ConformationCollectionEntry_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::MDArray_size_t_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__MDArray_size_t_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__MDArray_size_t_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<clcenv::Macro_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_clcenv__Macro_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_clcenv__Macro_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::UnwindProtectEnvironment_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__UnwindProtectEnvironment_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__UnwindProtectEnvironment_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::SimpleVector_byte64_t_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__SimpleVector_byte64_t_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__SimpleVector_byte64_t_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<units::UnitsExposer_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_units__UnitsExposer_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_units__UnitsExposer_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::ConcatenatedStream_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__ConcatenatedStream_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__ConcatenatedStream_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<llvmo::AttributeSet_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__AttributeSet_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__AttributeSet_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<geom::OVector3_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_geom__OVector3_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_geom__OVector3_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::BitVectorNs_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__BitVectorNs_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__BitVectorNs_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::ChemInfoMatch_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__ChemInfoMatch_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__ChemInfoMatch_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<llvmo::TargetLibraryInfoWrapperPass_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__TargetLibraryInfoWrapperPass_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__TargetLibraryInfoWrapperPass_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::CatchEnvironment_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__CatchEnvironment_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__CatchEnvironment_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Plug_O>>>> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__Plug_O___ ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__Plug_O___ ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::Trajectory_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__Trajectory_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__Trajectory_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::RingCoupling_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__RingCoupling_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__RingCoupling_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<gctools::GCVector_moveable<chem::EnergyAnchorRestraint>> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_chem__EnergyAnchorRestraint_ ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_chem__EnergyAnchorRestraint_ ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::Matter_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__Matter_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__Matter_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<gctools::GCVector_moveable<gctools::smart_ptr<chem::Monomer_O>>> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__Monomer_O__ ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__Monomer_O__ ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::TagbodyFrame_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__TagbodyFrame_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__TagbodyFrame_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<clcenv::ConstantVariableInfo_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_clcenv__ConstantVariableInfo_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_clcenv__ConstantVariableInfo_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::RingTest_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__RingTest_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__RingTest_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::CompiledClosure_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__CompiledClosure_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__CompiledClosure_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<clcenv::VariableIgnore_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_clcenv__VariableIgnore_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_clcenv__VariableIgnore_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::CalculatePositionRelativeToOrigin_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__CalculatePositionRelativeToOrigin_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__CalculatePositionRelativeToOrigin_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::RestraintChiral_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__RestraintChiral_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__RestraintChiral_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<llvmo::ResumeInst_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__ResumeInst_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__ResumeInst_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<llvmo::Value_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__Value_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__Value_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::RootMatchNode_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__RootMatchNode_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__RootMatchNode_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<llvmo::MCSubtargetInfo_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__MCSubtargetInfo_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__MCSubtargetInfo_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<chem::Atom_O>,unsigned int>>> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_chem__Atom_O__unsigned_int__ ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_chem__Atom_O__unsigned_int__ ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::Monomer_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__Monomer_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__Monomer_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<llvmo::CompositeType_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__CompositeType_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__CompositeType_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::SingleDispatchCxxEffectiveMethodFunction_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__SingleDispatchCxxEffectiveMethodFunction_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__SingleDispatchCxxEffectiveMethodFunction_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::LexicalEnvironment_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__LexicalEnvironment_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__LexicalEnvironment_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::PdbMonomerConnectivity_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__PdbMonomerConnectivity_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__PdbMonomerConnectivity_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::ChemDraw_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__ChemDraw_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__ChemDraw_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::MDArrayBit_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__MDArrayBit_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__MDArrayBit_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<llvmo::TargetMachine_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__TargetMachine_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__TargetMachine_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<gctools::GCVector_moveable<chem::AtomPdbRec>> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_chem__AtomPdbRec_ ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_chem__AtomPdbRec_ ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<gctools::GCArray_moveable<int>> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_GCARRAY_gctools__GCArray_moveable_int_ ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_GCARRAY_gctools__GCArray_moveable_int_ ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::SimpleMDArray_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__SimpleMDArray_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__SimpleMDArray_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::Lisp_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_ROOTCLASSALLOC_core__Lisp_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_ROOTCLASSALLOC_core__Lisp_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::StandardObject_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_BOOTSTRAP_core__StandardObject_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_BOOTSTRAP_core__StandardObject_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::MacroClosure_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__MacroClosure_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__MacroClosure_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::NativeVector_int_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__NativeVector_int_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__NativeVector_int_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::SimpleVector_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__SimpleVector_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__SimpleVector_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::MultiMonomer_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__MultiMonomer_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__MultiMonomer_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<llvmo::ModulePass_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__ModulePass_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__ModulePass_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<gctools::GCVector_moveable<core::T_O *>> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_core__T_O_P_ ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_core__T_O_P_ ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::Rational_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__Rational_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__Rational_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::CalculatePositionAlongBond_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__CalculatePositionAlongBond_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__CalculatePositionAlongBond_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::ForceMatchReport_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__ForceMatchReport_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__ForceMatchReport_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<llvmo::LLVMContext_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__LLVMContext_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__LLVMContext_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::OligomerPart_Link_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__OligomerPart_Link_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__OligomerPart_Link_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<clbind::ClassRegistry_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_clbind__ClassRegistry_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_clbind__ClassRegistry_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::MinimizerLog_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__MinimizerLog_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__MinimizerLog_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::ConformationExplorerEntry_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__ConformationExplorerEntry_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__ConformationExplorerEntry_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Stereoisomer_O>>>> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__Stereoisomer_O___ ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__Stereoisomer_O___ ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<asttooling::DerivableASTFrontendAction> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_asttooling__DerivableASTFrontendAction ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_asttooling__DerivableASTFrontendAction ;
   static const size_t Flags = 3 ;
 };
 template <> class gctools::GCStamp<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::DoubleFloat_O>>>> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_core__DoubleFloat_O___ ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_core__DoubleFloat_O___ ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::StepReport_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__StepReport_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__StepReport_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::TagbodyEnvironment_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__TagbodyEnvironment_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__TagbodyEnvironment_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<gctools::GCArray_moveable<short>> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_GCARRAY_gctools__GCArray_moveable_short_ ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_GCARRAY_gctools__GCArray_moveable_short_ ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::AGEdge_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__AGEdge_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__AGEdge_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::StrWNs_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__StrWNs_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__StrWNs_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::ComplexRestraint_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__ComplexRestraint_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__ComplexRestraint_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<gctools::GCVector_moveable<gctools::smart_ptr<adapt::QDomNode_O>>> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_adapt__QDomNode_O__ ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_adapt__QDomNode_O__ ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<llvmo::MDString_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__MDString_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__MDString_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::AtomIdToAtomMap_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__AtomIdToAtomMap_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__AtomIdToAtomMap_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<gctools::GCVector_moveable<gctools::smart_ptr<chem::ZMatrixInternal_O>>> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__ZMatrixInternal_O__ ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__ZMatrixInternal_O__ ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::Atom_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__Atom_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__Atom_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<clcenv::LocalMacroInfo_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_clcenv__LocalMacroInfo_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_clcenv__LocalMacroInfo_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::AnsiStream_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__AnsiStream_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__AnsiStream_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::BlockEnvironment_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__BlockEnvironment_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__BlockEnvironment_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::TrajectoryFrame_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__TrajectoryFrame_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__TrajectoryFrame_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Entity_O>>>> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__Entity_O___ ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__Entity_O___ ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<llvmo::ConstantPointerNull_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__ConstantPointerNull_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__ConstantPointerNull_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::SpecificContext_O>>>> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__SpecificContext_O___ ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__SpecificContext_O___ ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::LoadTimeValues_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__LoadTimeValues_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__LoadTimeValues_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<gctools::GCVector_moveable<gctools::smart_ptr<chem::Topology_O>>> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__Topology_O__ ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__Topology_O__ ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<clcenv::GlobalEnvironment_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_clcenv__GlobalEnvironment_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_clcenv__GlobalEnvironment_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<gctools::GCVector_moveable<chem::EnergyDihedral>> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_chem__EnergyDihedral_ ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_chem__EnergyDihedral_ ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<clasp_ffi::ForeignTypeSpec_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_clasp_ffi__ForeignTypeSpec_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_clasp_ffi__ForeignTypeSpec_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::CipPrioritizer_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__CipPrioritizer_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__CipPrioritizer_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::LongFloat_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__LongFloat_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__LongFloat_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::RigidBodyEnergyFunction_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__RigidBodyEnergyFunction_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__RigidBodyEnergyFunction_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::Creator_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_TEMPLATED_LISPALLOC_core__Creator_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_TEMPLATED_LISPALLOC_core__Creator_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::ZMatrix_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__ZMatrix_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__ZMatrix_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::ChemExposer_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__ChemExposer_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__ChemExposer_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<clcenv::SpecialVariableInfo_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_clcenv__SpecialVariableInfo_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_clcenv__SpecialVariableInfo_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::NumericalFunction_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__NumericalFunction_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__NumericalFunction_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::TopologyAtomInfo_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__TopologyAtomInfo_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__TopologyAtomInfo_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::FullLargeSquareMatrix_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__FullLargeSquareMatrix_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__FullLargeSquareMatrix_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<llvmo::SwitchInst_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__SwitchInst_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__SwitchInst_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<llvmo::FunctionPassManager_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__FunctionPassManager_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__FunctionPassManager_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<llvmo::TerminatorInst_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__TerminatorInst_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__TerminatorInst_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::EnergyChiralRestraint_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__EnergyChiralRestraint_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__EnergyChiralRestraint_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::EnergyDihedral_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__EnergyDihedral_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__EnergyDihedral_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<gctools::GCVector_moveable<gctools::smart_ptr<core::SimpleBitVector_O>>> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__SimpleBitVector_O__ ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__SimpleBitVector_O__ ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::CompileTimeEnvironment_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__CompileTimeEnvironment_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__CompileTimeEnvironment_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<geom::OVector2_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_geom__OVector2_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_geom__OVector2_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::SmallMultimap_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__SmallMultimap_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__SmallMultimap_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<llvmo::DIDerivedType_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__DIDerivedType_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__DIDerivedType_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::PosixTimeDuration_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__PosixTimeDuration_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__PosixTimeDuration_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<clcenv::Block_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_clcenv__Block_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_clcenv__Block_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::ReadTable_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__ReadTable_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__ReadTable_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<gctools::GCVector_moveable<gctools::smart_ptr<chem::Coupling_O>>> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__Coupling_O__ ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__Coupling_O__ ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<llvmo::Metadata_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__Metadata_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__Metadata_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<gctools::GCVector_moveable<gctools::smart_ptr<chem::Molecule_O>>> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__Molecule_O__ ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__Molecule_O__ ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<llvmo::APInt_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__APInt_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__APInt_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::LogicalPathname_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__LogicalPathname_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__LogicalPathname_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::AtomTest_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__AtomTest_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__AtomTest_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::TranslationFunctor> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__TranslationFunctor ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__TranslationFunctor ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::EntityNameSetBase_O>>>> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__EntityNameSetBase_O___ ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__EntityNameSetBase_O___ ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<llvmo::StoreInst_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__StoreInst_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__StoreInst_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::SimpleVector_int64_t_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__SimpleVector_int64_t_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__SimpleVector_int64_t_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<llvmo::DIBasicType_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__DIBasicType_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__DIBasicType_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::SimpleMDArray_byte16_t_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__SimpleMDArray_byte16_t_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__SimpleMDArray_byte16_t_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::Residue_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__Residue_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__Residue_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::ChemInfoNode_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__ChemInfoNode_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__ChemInfoNode_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<llvmo::IRBuilderBase_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__IRBuilderBase_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__IRBuilderBase_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::MDArrayDouble_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__MDArrayDouble_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__MDArrayDouble_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<geom::GeomExposer_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_geom__GeomExposer_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_geom__GeomExposer_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::OligomerPart_Base_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__OligomerPart_Base_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__OligomerPart_Base_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::Coupling_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__Coupling_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__Coupling_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::MDArray_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__MDArray_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__MDArray_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::EntityNameSetBase_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__EntityNameSetBase_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__EntityNameSetBase_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::BondList_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__BondList_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__BondList_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::SynonymStream_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__SynonymStream_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__SynonymStream_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::ClassCreator_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__ClassCreator_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__ClassCreator_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::Command_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__Command_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__Command_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<llvmo::DINodeArray_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__DINodeArray_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__DINodeArray_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<chem::Atom_O>,gctools::smart_ptr<chem::CDNode_O>>>> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_chem__Atom_O__gctools__smart_ptr_chem__CDNode_O___ ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_chem__Atom_O__gctools__smart_ptr_chem__CDNode_O___ ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::ShortFloat_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__ShortFloat_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__ShortFloat_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::CoordinateSystem_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__CoordinateSystem_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__CoordinateSystem_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::StringInputStream_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__StringInputStream_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__StringInputStream_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::MonomerContext_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__MonomerContext_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__MonomerContext_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<llvmo::DICompositeType_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__DICompositeType_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__DICompositeType_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::ResidueList_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__ResidueList_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__ResidueList_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::Symbol_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_BOOTSTRAP_core__Symbol_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_BOOTSTRAP_core__Symbol_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::TwisterDriver_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__TwisterDriver_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__TwisterDriver_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::SequenceStepper_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__SequenceStepper_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__SequenceStepper_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<llvmo::ConstantArray_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__ConstantArray_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__ConstantArray_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::RestraintDihedral_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__RestraintDihedral_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__RestraintDihedral_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::BranchSNode_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__BranchSNode_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__BranchSNode_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<gctools::GCVector_moveable<gctools::smart_ptr<core::SourceFileInfo_O>>> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__SourceFileInfo_O__ ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__SourceFileInfo_O__ ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<asttooling::AsttoolingExposer_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_asttooling__AsttoolingExposer_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_asttooling__AsttoolingExposer_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<llvmo::AtomicRMWInst_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__AtomicRMWInst_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__AtomicRMWInst_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::FFNonbond_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__FFNonbond_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__FFNonbond_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<adapt::IndexedObjectBag_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_adapt__IndexedObjectBag_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_adapt__IndexedObjectBag_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::MapOfMonomerNamesToAtomIndexers_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__MapOfMonomerNamesToAtomIndexers_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__MapOfMonomerNamesToAtomIndexers_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<llvmo::IntegerType_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__IntegerType_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__IntegerType_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::Alias_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__Alias_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__Alias_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::AntechamberRoot_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__AntechamberRoot_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__AntechamberRoot_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::FFVdwDb_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__FFVdwDb_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__FFVdwDb_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<gctools::GCVector_moveable<gctools::smart_ptr<chem::CDFragment_O>>> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__CDFragment_O__ ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__CDFragment_O__ ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::ForceField_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__ForceField_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__ForceField_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::StereoisomerAtom_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__StereoisomerAtom_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__StereoisomerAtom_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::InvocationHistoryFrameIterator_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__InvocationHistoryFrameIterator_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__InvocationHistoryFrameIterator_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<gctools::GCVector_moveable<gctools::smart_ptr<chem::CDBond_O>>> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__CDBond_O__ ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__CDBond_O__ ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::T_O>>>> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_core__T_O___ ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_core__T_O___ ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::EntityNameSet_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__EntityNameSet_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__EntityNameSet_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<gctools::GCVector_moveable<chem::ResidueOut>> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_chem__ResidueOut_ ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_chem__ResidueOut_ ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::FFVdw_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__FFVdw_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__FFVdw_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::Entity_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__Entity_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__Entity_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::OligomerPart_Monomer_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__OligomerPart_Monomer_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__OligomerPart_Monomer_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::ScoringFunction_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__ScoringFunction_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__ScoringFunction_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::MDArray_byte64_t_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__MDArray_byte64_t_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__MDArray_byte64_t_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::MessageReport_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__MessageReport_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__MessageReport_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::AbstractSimpleVector_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__AbstractSimpleVector_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__AbstractSimpleVector_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::VaList_dummy_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__VaList_dummy_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__VaList_dummy_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::StereoConfiguration_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__StereoConfiguration_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__StereoConfiguration_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::EnergyRigidBodyNonbond_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__EnergyRigidBodyNonbond_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__EnergyRigidBodyNonbond_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<clcenv::LocalFunctionInfo_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_clcenv__LocalFunctionInfo_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_clcenv__LocalFunctionInfo_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::SourcePosInfo_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__SourcePosInfo_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__SourcePosInfo_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::ZMatrixDihedralInternal_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__ZMatrixDihedralInternal_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__ZMatrixDihedralInternal_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<llvmo::EngineBuilder_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__EngineBuilder_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__EngineBuilder_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<llvmo::IndirectBrInst_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__IndirectBrInst_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__IndirectBrInst_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<llvmo::VectorType_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__VectorType_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__VectorType_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::ZMatrixAngleInternal_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__ZMatrixAngleInternal_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__ZMatrixAngleInternal_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::SimpleVector_size_t_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__SimpleVector_size_t_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__SimpleVector_size_t_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<llvmo::ConstantExpr_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__ConstantExpr_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__ConstantExpr_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::Oligomer_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__Oligomer_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__Oligomer_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<adapt::QDomNode_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_adapt__QDomNode_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_adapt__QDomNode_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::Angle_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__Angle_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__Angle_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::PosixTime_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__PosixTime_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__PosixTime_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::BondTest_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__BondTest_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__BondTest_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::HashTable_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__HashTable_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__HashTable_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::FFParameter_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__FFParameter_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__FFParameter_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<llvmo::InvokeInst_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__InvokeInst_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__InvokeInst_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<units::Dimension_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_units__Dimension_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_units__Dimension_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::Pathname_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__Pathname_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__Pathname_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<gctools::GCVector_moveable<gctools::smart_ptr<chem::OneTypeRule_O>>> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__OneTypeRule_O__ ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__OneTypeRule_O__ ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::Float_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__Float_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__Float_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<clcenv::Closure_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_clcenv__Closure_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_clcenv__Closure_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<mp::BlockingConcurrentQueue_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_mp__BlockingConcurrentQueue_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_mp__BlockingConcurrentQueue_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::FunctionContainerEnvironment_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__FunctionContainerEnvironment_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__FunctionContainerEnvironment_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::SimpleMDArrayBit_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__SimpleMDArrayBit_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__SimpleMDArrayBit_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<adapt::SymbolList_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_adapt__SymbolList_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_adapt__SymbolList_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<gctools::GCArray_moveable<long>> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_GCARRAY_gctools__GCArray_moveable_long_ ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_GCARRAY_gctools__GCArray_moveable_long_ ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::ConstitutionBond_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__ConstitutionBond_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__ConstitutionBond_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::MonomerCoordinates_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__MonomerCoordinates_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__MonomerCoordinates_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<gctools::GCArray_moveable<unsigned short>> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_GCARRAY_gctools__GCArray_moveable_unsigned_short_ ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_GCARRAY_gctools__GCArray_moveable_unsigned_short_ ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::SimpleBitVector_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__SimpleBitVector_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__SimpleBitVector_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<gctools::GCVector_moveable<core::ExceptionEntry>> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_core__ExceptionEntry_ ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_core__ExceptionEntry_ ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<gctools::GCVector_moveable<core::AuxArgument>> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_core__AuxArgument_ ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_core__AuxArgument_ ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::Exposer_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__Exposer_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__Exposer_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::ClosureWithSlots_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__ClosureWithSlots_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__ClosureWithSlots_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::SimpleVector_byte16_t_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__SimpleVector_byte16_t_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__SimpleVector_byte16_t_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::ValueFrame_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__ValueFrame_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__ValueFrame_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<llvmo::TargetOptions_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__TargetOptions_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__TargetOptions_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::JumpPlug_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__JumpPlug_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__JumpPlug_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<gctools::GCVector_moveable<chem::AtomInfo>> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_chem__AtomInfo_ ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_chem__AtomInfo_ ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::CandoException_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__CandoException_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__CandoException_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Molecule_O>>>> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__Molecule_O___ ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__Molecule_O___ ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<llvmo::SequentialType_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__SequentialType_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__SequentialType_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<mp::SharedMutex_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_mp__SharedMutex_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_mp__SharedMutex_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::AtomIndexer_O>>>> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__AtomIndexer_O___ ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__AtomIndexer_O___ ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::RestraintFixedNonbond_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__RestraintFixedNonbond_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__RestraintFixedNonbond_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::SingleFloat_dummy_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__SingleFloat_dummy_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__SingleFloat_dummy_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::FFPtorDb_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__FFPtorDb_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__FFPtorDb_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::StereoisomerAtoms_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__StereoisomerAtoms_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__StereoisomerAtoms_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<gctools::GCVector_moveable<gctools::smart_ptr<chem::Structure_Old_ListEntry_O>>> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__Structure_Old_ListEntry_O__ ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__Structure_Old_ListEntry_O__ ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<gctools::GCVector_moveable<gctools::smart_ptr<chem::AGEdge_O>>> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__AGEdge_O__ ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__AGEdge_O__ ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::LeafSNode_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__LeafSNode_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__LeafSNode_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::Plug_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__Plug_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__Plug_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<gctools::GCVector_moveable<gctools::smart_ptr<chem::ConformationExplorerEntryStage_O>>> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__ConformationExplorerEntryStage_O__ ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__ConformationExplorerEntryStage_O__ ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<llvmo::LLVMTargetMachine_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__LLVMTargetMachine_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__LLVMTargetMachine_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<gctools::GCArray_moveable<signed char>> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_GCARRAY_gctools__GCArray_moveable_signed_char_ ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_GCARRAY_gctools__GCArray_moveable_signed_char_ ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<gctools::GCArray_moveable<unsigned char>> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_GCARRAY_gctools__GCArray_moveable_unsigned_char_ ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_GCARRAY_gctools__GCArray_moveable_unsigned_char_ ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<gctools::GCVector_moveable<chem::FixedNonbondRestraint>> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_chem__FixedNonbondRestraint_ ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_chem__FixedNonbondRestraint_ ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<gctools::GCVector_moveable<chem::EnergyStretch>> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_chem__EnergyStretch_ ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_chem__EnergyStretch_ ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::SimpleMDArrayFloat_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__SimpleMDArrayFloat_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__SimpleMDArrayFloat_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<gctools::GCVector_moveable<gctools::smart_ptr<chem::FFVdw_O>>> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__FFVdw_O__ ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__FFVdw_O__ ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::BroadcastStream_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__BroadcastStream_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__BroadcastStream_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<llvmo::NamedMDNode_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__NamedMDNode_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__NamedMDNode_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<llvmo::BranchInst_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__BranchInst_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__BranchInst_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::MDArray_byte8_t_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__MDArray_byte8_t_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__MDArray_byte8_t_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::MDArray_fixnum_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__MDArray_fixnum_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__MDArray_fixnum_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<clcenv::Optimize_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_clcenv__Optimize_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_clcenv__Optimize_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::NamedFunction_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__NamedFunction_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__NamedFunction_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<llvmo::GlobalValue_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__GlobalValue_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__GlobalValue_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::ConstitutionVirtualAtom_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__ConstitutionVirtualAtom_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__ConstitutionVirtualAtom_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<llvmo::ModuleHandle_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_llvmo__ModuleHandle_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_llvmo__ModuleHandle_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::MDArrayT_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__MDArrayT_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__MDArrayT_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::SimpleVector_int8_t_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__SimpleVector_int8_t_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__SimpleVector_int8_t_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<core::SaveArchive_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_core__SaveArchive_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__SaveArchive_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::AtomTable_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__AtomTable_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__AtomTable_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<mp::ConditionVariable_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_mp__ConditionVariable_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_mp__ConditionVariable_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::SuperposeSelectedAtoms_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__SuperposeSelectedAtoms_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__SuperposeSelectedAtoms_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<gctools::GCVector_moveable<chem::EnergyRigidBodyStaple>> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_chem__EnergyRigidBodyStaple_ ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_chem__EnergyRigidBodyStaple_ ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<chem::RingClosingMate_O> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_LISPALLOC_chem__RingClosingMate_O ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_chem__RingClosingMate_O ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<gctools::GCVector_moveable<gctools::smart_ptr<chem::StereoisomerAtom_O>>> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__StereoisomerAtom_O__ ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__StereoisomerAtom_O__ ;
   static const size_t Flags = 0 ;
 };
 template <> class gctools::GCStamp<gctools::GCVector_moveable<double>> {
 public:
-  static gctools::GCStampEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_double_ ;
+  static gctools::GCStampEnum const Stamp = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_double_ ;
   static const size_t Flags = 0 ;
 };
 #endif // defined(GC_KIND_SELECTORS)
@@ -11061,6 +11061,9 @@ public:
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::DoubleFloat_O>), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._DoubleFloatOne), "_Roots._DoubleFloatOne" }, // public: (T T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._Booted), "_Roots._Booted" }, // public: (T T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::HashTableEq_O>), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._KnownSignals), "_Roots._KnownSignals" }, // public: (T T) fixable: SMART-PTR-FIX good-name: T
+ {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Cache_O>), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._SingleDispatchMethodCachePtr), "_Roots._SingleDispatchMethodCachePtr" }, // public: (T T) fixable: SMART-PTR-FIX good-name: T
+ {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Cache_O>), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._MethodCachePtr), "_Roots._MethodCachePtr" }, // public: (T T) fixable: SMART-PTR-FIX good-name: T
+ {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Cache_O>), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._SlotCachePtr), "_Roots._SlotCachePtr" }, // public: (T T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_TrapIntern), "_TrapIntern" }, // public: (T) fixable: NIL good-name: T
 // not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_TrapInternPackage._M_string_length), "_TrapInternPackage._M_string_length" }, // public: (T NIL) fixable: NIL good-name: T
 // not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_TrapInternPackage.NO-NAME._M_allocated_capacity), "_TrapInternPackage.NO-NAME._M_allocated_capacity" }, // public: (T NIL T) fixable: NIL good-name: T
@@ -14747,6 +14750,7 @@ public:
  {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::Cache_O),_generation), "_generation" }, // public: (T) fixable: NIL good-name: T
 // not-exposing {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(core::Cache_O),_clear_list_spinlock.lck._M_i), "_clear_list_spinlock.lck._M_i" }, // public: (T NIL T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::Cache_O),_clear_list_safe), "_clear_list_safe" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
+ {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(core::Cache_O),_debug), "_debug" }, // public: (T) fixable: NIL good-name: T
 { class_kind, KIND_LISPALLOC_core__Reader_O, sizeof(core::Reader_O), 0, "core::Reader_O" },
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::Reader_O),_Input), "_Input" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
 { container_kind, KIND_GCVECTOR_gctools__GCVector_moveable_double_, sizeof(gctools::GCVector_moveable<double>), 0, "gctools::GCVector_moveable<double>" },

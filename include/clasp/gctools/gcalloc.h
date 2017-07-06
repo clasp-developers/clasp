@@ -194,7 +194,7 @@ namespace gctools {
   };
 
   template <class PTR_TYPE, typename... ARGS>
-    inline PTR_TYPE do_mps_allocation(tagged_stamp_t the_header,
+    inline PTR_TYPE do_mps_allocation(const Header_s::Value& the_header,
                                       size_t size,
                                       mps_ap_t& allocation_point,
                                       const char* ap_name,
@@ -203,7 +203,7 @@ namespace gctools {
     mps_addr_t addr;
     typedef typename PTR_TYPE::Type T;
     typedef typename GCHeader<T>::HeaderType HeadT;
-    GCTOOLS_ASSERTF(the_header>=stamp_first_general,\
+    GCTOOLS_ASSERTF(the_header.stamp()>=stamp_first_general,\
                     BF("The kind value[%d] must be > %d - if the type being allocated is a templated type then it should have the same kind as its TemplateBase ... eg:\n"\
 "template <typename T>\n"\
 "class gctools::GCStamp<clbind::Wrapper<T, T *>> {\n"\
@@ -355,7 +355,7 @@ namespace gctools {
       return smart_ptr<Cons>((Tagged)tag_cons(cons));
 #endif
 #ifdef USE_MPS
-        monitor_allocation(kind_cons,sizeof(Cons));
+        monitor_allocation(stamp_cons,sizeof(Cons));
         mps_ap_t obj_ap = global_amc_cons_allocation_point;
         smart_ptr<Cons> obj =
           cons_mps_allocation<Cons>(obj_ap,"CONS",
@@ -809,7 +809,7 @@ public:
 
     // allocate but don't initialize num elements of type value_type
   gc::tagged_pointer<container_type> allocate(size_type num, const void * = 0) {
-    return allocate_kind(GCStamp<TY>::Kind,num);
+    return allocate_kind(Header_s::Value::make<TY>(),num);
   }
 
   // allocate but don't initialize num elements of type value_type
