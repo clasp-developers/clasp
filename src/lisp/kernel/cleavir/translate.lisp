@@ -639,12 +639,12 @@ when this is t a lot of graphs will be generated.")
   (let ((effective-address (%uintptr_t offset)))
     ;; then loop through the inputs and add to it.
     (loop for input in inputs
-          for scale in scale
+;          for scale in scale
           for tptr = (%load input)
           for ui-tptr = (%ptrtoint tptr cmp:%uintptr_t%)
-          for scaled = (%shl ui-tptr (ilog2 scale) :nuw t :label "shift address")
+;          for scaled = (%shl ui-tptr (ilog2 scale) :nuw t :label "shift address")
           do (setf effective-address
-                   (%add scaled effective-address)))
+                   (%add #|scaled|# ui-tptr effective-address)))
     ;; and that's it.
     effective-address))
 
