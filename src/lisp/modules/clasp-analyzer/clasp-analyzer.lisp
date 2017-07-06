@@ -2065,7 +2065,7 @@ so that they don't have to be constantly recalculated"
                                  :species species)))))))
 
 (defun organize-allocs-into-species-and-create-enums (analysis &aux (project (analysis-project analysis)))
-  "Every GCObject and GCContainer is assigned to a species and given a GCKind enum value."
+  "Every GCObject and GCContainer is assigned to a species and given a GCStamp enum value."
   (let ((project (analysis-project analysis)))
     (maphash (lambda (k alloc) (ensure-enum-for-alloc-and-parent-classes alloc analysis)) (project-lispallocs project))
     (maphash (lambda (k alloc) (ensure-enum-for-alloc-and-parent-classes alloc analysis)) (project-containerallocs project))
@@ -2631,12 +2631,12 @@ so that they don't have to be constantly recalculated"
     (cond
       ((simple-enum-p enum)
 ;;       (format stream "//GCKind for ~a~%" enum)
-       (format stream "template <> class gctools::GCKind<~A> {~%" (enum-key enum)))
+       (format stream "template <> class gctools::GCStamp<~A> {~%" (enum-key enum)))
       (t ;; templated-enum
 ;;       (format stream "//GCTemplatedKind for ~a~%" enum)
-       (format stream "template <> class gctools::GCKind<~A> {~%" (enum-key enum))))
+       (format stream "template <> class gctools::GCStamp<~A> {~%" (enum-key enum))))
     (format stream "public:~%")
-    (format stream "  static gctools::GCKindEnum const Kind = gctools::~a ;~%" enum-name)
+    (format stream "  static gctools::GCStampEnum const Stamp = gctools::~a ;~%" enum-name)
     (format stream "  static const size_t Flags = ~a ;~%" (enum-flags enum))
     (format stream "};~%")))
 
