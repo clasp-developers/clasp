@@ -682,12 +682,12 @@ void Lisp_O::startupLispEnvironment(Bundle *bundle) {
   my_thread->initialize_thread(main_process);
   {
     // initialize caches
-    this->_Roots._SingleDispatchMethodCachePtr = gc::GC<Cache_O>::allocate();
-    this->_Roots._SingleDispatchMethodCachePtr->setup(2, Lisp_O::SingleDispatchMethodCacheSize);
-    this->_Roots._MethodCachePtr = gctools::GC<Cache_O>::allocate();
-    this->_Roots._MethodCachePtr->setup(Lisp_O::MaxFunctionArguments, Lisp_O::ClosCacheSize);
-    this->_Roots._SlotCachePtr = gctools::GC<Cache_O>::allocate();
-    this->_Roots._SlotCachePtr->setup(Lisp_O::MaxClosSlots, Lisp_O::ClosCacheSize);
+    my_thread->_SingleDispatchMethodCachePtr = gc::GC<Cache_O>::allocate();
+    my_thread->_SingleDispatchMethodCachePtr->setup(2, Lisp_O::SingleDispatchMethodCacheSize);
+    my_thread->_MethodCachePtr = gctools::GC<Cache_O>::allocate();
+    my_thread->_MethodCachePtr->setup(Lisp_O::MaxFunctionArguments, Lisp_O::ClosCacheSize);
+    my_thread->_SlotCachePtr = gctools::GC<Cache_O>::allocate();
+    my_thread->_SlotCachePtr->setup(Lisp_O::MaxClosSlots, Lisp_O::ClosCacheSize);
   }
   printf("%s:%d  After my_thread->initialize_thread  my_thread->_Process -> %p\n", __FILE__, __LINE__, (void*)my_thread->_Process.raw_());
   {

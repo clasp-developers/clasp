@@ -166,7 +166,8 @@ namespace core {
 #endif
     ExceptionStack _ExceptionStack;
     MultipleValues _MultipleValues;
-#if 0 // caches aren't thread local
+#if 1
+// thread local caches work fine
     /*! SingleDispatchGenericFunction cache */
     Cache_sp _SingleDispatchMethodCachePtr;
     /*! Generic functions method cache */
