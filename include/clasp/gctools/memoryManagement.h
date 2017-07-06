@@ -306,6 +306,9 @@ namespace gctools {
     static const tagged_stamp_t stamp_mask    = ~0xF; // BOOST_BINARY(11...11111111110000);
     static const tagged_stamp_t stamp_in_rack_mask     = 0x4;
     static const tagged_stamp_t stamp_needs_call_mask  = 0x8;
+    static const tagged_stamp_t stamp_type_mask        = (stamp_in_rack_mask|stamp_needs_call_mask);
+    static const tagged_stamp_t stamp_in_header_value  = 0;
+    static const tagged_stamp_t stamp_in_rack_value    = stamp_in_rack_mask;
     static const tagged_stamp_t largest_possible_stamp = stamp_mask>>stamp_shift;
   public:
     struct Value {
