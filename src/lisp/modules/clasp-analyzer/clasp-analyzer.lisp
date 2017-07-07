@@ -5,11 +5,11 @@
   (:shadow #:dump #:get-string #:size #:type)
   (:export
    #:setup-clasp-analyzer-compilation-tool-database
-   #:search/generate-code
    #:load-project
    #:save-project
    #:serial-search-all
-   #:search/generate-code
+   #:serial-search/generate-code
+   #:parallel-search/generate-code
    #:analyze-project
    #:generate-code
    #:build-arguments-adjuster))
@@ -3406,14 +3406,25 @@ Run searches in *tools* on the source files in the compilation database."
       (values *results* output-file))))
 
 
-(defun one-search-process (compilation-tool-database tools job-queue result-queue)
-  (loop while (> (mp:queue-size-approximate job-queue) 0)
-     do (let ((one-job (mp:queue-dequeue job-queue)))
-          (let ((*results* one-job))
-            (clang-tool:batch-run-multitool tools compilation-tool-database :search-namestrings (list one-job))
-            (mp:queue-enqueue result-queue *results*)))))
+(defun one-search-process (compilation-tool-database tools jobid job-queue result-queue)
+  (let* ((output-file (open (format nil "/tmp/process~a.log" jobid) :direction :output))
+         (*standard-output* output-file))
+    (format t "Starting process ~a~%" jobid)
+    (clang-tool:with-compilation-tool-database compilation-tool-database
+      (loop while (> (mp:queue-size-approximate job-queue) 0)
+         do (let ((one-job (mp:queue-dequeue job-queue)))
+              (when one-job
+                (let ((*results* (make-project)))
+                  (format t "Running search on ~a~%" one-job)
+                  (clang-tool:batch-run-multitool tools compilation-tool-database :source-namestrings (list one-job))
+                  (mp:queue-enqueue result-queue *results*))))))
+    (close output-file)))
           
-(defun parallel-search-all (compilation-tool-database &key (output-file (merge-pathnames #P"project.dat" (clang-tool:main-pathname compilation-tool-database))) (save-project t))
+(defun parallel-search-all (compilation-tool-database
+                            &key (source-namestrings (clang-tool:source-namestrings compilation-tool-database))
+                              (output-file (merge-pathnames #P"project.dat" (clang-tool:main-pathname compilation-tool-database)))
+                              (save-project t)
+                              jobs 2)
   "* Arguments
 - test :: A list of files to run the search on, or NIL for all of them.
 - arguments-adjuster :: The arguments adjuster.
@@ -3421,26 +3432,33 @@ Run searches in *tools* on the source files in the compilation database."
 Run searches in *tools* on the source files in the compilation database."
   (format t "serial-search-all --> getcwd: ~a~%" (ext:getcwd))
   (let ((tools (setup-tools compilation-tool-database))
-        (all-jobs (clang-tool:source-namestrings compilation-tool-database))
-        (job-queue (make-cxx-object 'mp:blocking-concurrent-queue))
+        (all-jobs source-namestrings)
+        (job-queue (make-cxx-object 'mp:concurrent-queue))
         (result-queue (make-cxx-object 'mp:concurrent-queue)))
     (save-data all-jobs (make-pathname :type "lst" :defaults output-file))
     (format t "compilation-tool-database: ~a~%" compilation-tool-database)
     (format t "all-jobs: ~a~%" all-jobs)
     (loop for job in all-jobs
        do (mp:queue-enqueue job-queue job))
-    (let ((processes (loop for x from 0 below max-jobs
+    (format t "Starting processes~%")
+    (let ((processes (loop for x from 0 below jobs
+                        do (format t "loop for process ~a~%" x)
                         collect (mp:process-run-function
                                  nil
-                                 #'(lambda () (one-search-process compilation-tool-database tools one-search-process job-queue result-queue))))))
+                                 (lambda ()
+                                   (one-search-process compilation-tool-database tools x job-queue result-queue))))))
       (loop for x in processes
-           do (mp:join-thread x))
-    (let ((*results* (make-project)))
-      (clang-tool:batch-run-multitool tools compilation-tool-database)
-      (when save-project
-        (let ((project *results*))
-          (save-data project output-file)))
-      (values *results* output-file))))
+         do (mp:process-join x))
+      (format t "All processes done~%")
+      (let ((merged-results (make-project)))
+        (loop while (> (mp:queue-size-approximate result-queue) 0)
+           do (let ((one-result (mp:queue-dequeue result-queue)))
+                (format t "Merging results~%")
+                (merge-projects merged-results one-result)))
+        (when save-project
+          (let ((project merged-results))
+            (save-data project output-file)))
+        (values merged-results output-file)))))
 
 (defun translate-include (args filename)
   "* Arguments
@@ -3481,7 +3499,7 @@ If the source location of a match contains the string source-path-identifier the
     compilation-tool-database))
 
 (defvar *analysis*)
-(defun search/generate-code (compilation-tool-database &key (output-file (merge-pathnames #P"project.dat" (clang-tool:main-pathname compilation-tool-database))))
+(defun serial-search/generate-code (compilation-tool-database &key (output-file (merge-pathnames #P"project.dat" (clang-tool:main-pathname compilation-tool-database))))
   (clang-tool:with-compilation-tool-database
    compilation-tool-database
     (setf *project* (serial-search-all compilation-tool-database :output-file output-file))
@@ -3498,3 +3516,18 @@ If the source location of a match contains the string source-path-identifier the
       (generate-code analysis :output-file (make-pathname :type "cc" :defaults output-file)))
     *project*))
 
+(defun parallel-search/generate-code (compilation-tool-database
+                                      &key (output-file (merge-pathnames #P"project.dat" (clang-tool:main-pathname compilation-tool-database))))
+  (let ((pjobs (let ((pj (ext:getenv "PJOBS")))
+                 (if pj
+                     (parse-integer pj)
+                     2))))
+    (clang-tool:with-compilation-tool-database
+        compilation-tool-database
+      (setf *project* (parallel-search-all compilation-tool-database :output-file output-file
+                                           :jobs pjobs))
+      (let ((analysis (analyze-project *project*)))
+        (setq *analysis* analysis)
+        (setf (analysis-inline analysis) '("core::Cons_O"))
+        (generate-code analysis :output-file (make-pathname :type "cc" :defaults output-file)))
+      *project*)))

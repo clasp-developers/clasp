@@ -100,7 +100,7 @@ def analyze_clasp(cfg):
                      "-e", '(load (compile-file #P"sys:modules;clang-tool;clang-tool.lisp" :print t))',
                      "-e", '(load (compile-file #P"sys:modules;clasp-analyzer;clasp-analyzer.lisp" :print t))',
                      "-e", "(defparameter *compile-commands* \"build/mpsprep/compile_commands.json\")",
-                     "-e", "(time (clasp-analyzer:search/generate-code (clasp-analyzer:setup-clasp-analyzer-compilation-tool-database (pathname *compile-commands*))))",
+                     "-e", "(time (clasp-analyzer:parallel-search/generate-code (clasp-analyzer:setup-clasp-analyzer-compilation-tool-database (pathname *compile-commands*))))",
                      "-e", "(core:quit)")
     print("\n\n\n----------------- proceeding with static analysis --------------------")
 

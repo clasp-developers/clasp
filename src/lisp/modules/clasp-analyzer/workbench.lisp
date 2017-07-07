@@ -3,7 +3,9 @@
 ;;
 (progn
   (compile-file #P"sys:modules;clang-tool;clang-tool.lisp" :print t)
-  (compile-file #P"sys:modules;clasp-analyzer;clasp-analyzer.lisp" :print t))
+  (compile-file #P"sys:modules;clasp-analyzer;clasp-analyzer.lisp" :print t)
+  (format t "Done compile~%"))
+
 (progn
   (load #P"sys:modules;clang-tool;clang-tool.fasl")
   (load #P"sys:modules;clasp-analyzer;clasp-analyzer.fasl"))
@@ -26,11 +28,10 @@
 ;;;
 ;;; To load and analyze the project
 ;;;
-(progn
-  (defvar *compile-commands* "~/Dev/cando/build/mpsprep/compile_commands.json")
-  (setf *print-pretty* nil)
-  (defvar *db* (clasp-analyzer:setup-clasp-analyzer-compilation-tool-database
-                (pathname *compile-commands*))))
+(defparameter *compile-commands* (probe-file "~/Development/clasp/build/mpsprep/compile_commands.json"))
+(setf *print-pretty* nil)
+(defvar *db* (clasp-analyzer:setup-clasp-analyzer-compilation-tool-database
+                (pathname *compile-commands*)))
 (time
  (progn
    (format t "Loading project~%")
@@ -41,6 +42,30 @@
 (analyze-only *db*)
 
 
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Test parallel stuff
+;;;
+
+(progn
+  (compile-file #P"sys:modules;clang-tool;clang-tool.lisp" :print t)
+  (compile-file #P"sys:modules;clasp-analyzer;clasp-analyzer.lisp" :print t)
+  (format t "Done compile~%"))
+
+(progn
+  (load #P"sys:modules;clang-tool;clang-tool.fasl")
+  (load #P"sys:modules;clasp-analyzer;clasp-analyzer.fasl"))
+
+(progn
+  (defparameter *compile-commands* (probe-file "~/Development/clasp/build/mpsprep/compile_commands.json"))
+  (setf *print-pretty* nil)
+  (defvar *db* (clasp-analyzer:setup-clasp-analyzer-compilation-tool-database
+                (pathname *compile-commands*))))
+
+(clasp-analyzer::parallel-search-all *db* :jobs 8)
+
+(defparameter *q* (make-cxx-object 'mp:quueue
 
 ;;
 ;; Small run
