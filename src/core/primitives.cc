@@ -1546,7 +1546,7 @@ CL_DEFUN T_sp cl__append(VaList_sp args) {
   for ( int i(0),iEnd(lenArgs-1);i<iEnd; ++i ) {
     T_sp curit = args->next_arg();
     if (curit.consp()) {
-      for (auto inner : (List_sp)oCar(curit)) {
+      for (auto inner : (List_sp)curit) {
         list << oCar(inner);
       }
     }
