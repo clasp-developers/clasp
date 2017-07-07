@@ -3424,7 +3424,7 @@ Run searches in *tools* on the source files in the compilation database."
                             &key (source-namestrings (clang-tool:source-namestrings compilation-tool-database))
                               (output-file (merge-pathnames #P"project.dat" (clang-tool:main-pathname compilation-tool-database)))
                               (save-project t)
-                              jobs 2)
+                              (jobs 2))
   "* Arguments
 - test :: A list of files to run the search on, or NIL for all of them.
 - arguments-adjuster :: The arguments adjuster.
