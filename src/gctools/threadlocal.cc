@@ -1,6 +1,7 @@
 #include <clasp/core/foundation.h>
 #include <clasp/gctools/threadlocal.h>
 #include <clasp/core/lisp.h>
+#include <clasp/core/mpPackage.h>
 #include <clasp/core/lispStream.h>
 
 
@@ -43,6 +44,7 @@ void ThreadLocalState::initialize_thread(mp::Process_sp process) {
 //  printf("%s:%d Initialize all ThreadLocalState things this->%p\n",__FILE__, __LINE__, (void*)this);
   this->_Bindings.reserve(1024);
   this->_Process = process;
+  process->_ThreadInfo = this;
   this->_BFormatStringOutputStream = clasp_make_string_output_stream();
   this->_BignumRegister0 = Bignum_O::create( (gc::Fixnum) 0);
   this->_BignumRegister1 = Bignum_O::create( (gc::Fixnum) 0);
