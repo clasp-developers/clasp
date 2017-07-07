@@ -47,7 +47,7 @@ void ThreadLocalState::initialize_thread(mp::Process_sp process) {
   this->_BignumRegister0 = Bignum_O::create( (gc::Fixnum) 0);
   this->_BignumRegister1 = Bignum_O::create( (gc::Fixnum) 0);
   this->_BignumRegister2 = Bignum_O::create( (gc::Fixnum) 0);
-#if 0
+#if 1
   this->_SingleDispatchMethodCachePtr = gc::GC<Cache_O>::allocate();
   this->_SingleDispatchMethodCachePtr->setup(2, Lisp_O::SingleDispatchMethodCacheSize);
   this->_MethodCachePtr = gctools::GC<Cache_O>::allocate();
