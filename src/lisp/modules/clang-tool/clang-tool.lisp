@@ -1086,10 +1086,12 @@ run out of memory. This function can be used to rapidly search ASTs for testing 
   (mapcar (lambda (ot) (single-tool-name ot)) (multitool-active-tools mtool)))
 
 
-(defun batch-run-multitool (mtool &key compilation-tool-database run-and-save (print-reports t))
+(defun batch-run-multitool (mtool compilation-tool-database
+                            &key (source-namestrings (source-namestrings compilation-tool-database))
+                              run-and-save (print-reports t))
   (let* ((*match-refactoring-tool* (ast-tooling:new-refactoring-tool
                                     (clang-database compilation-tool-database)
-                                    (source-namestrings compilation-tool-database)))
+                                    source-namestrings))
          (*match-counter* 0)
          (*current-multitool* mtool)
          (*print-reports* print-reports)
