@@ -272,7 +272,7 @@ const char *obj_name(gctools::stamp_t stamp) {
   }
   if ( stamp > KIND_max ) stamp = GCStamp<core::Instance_O>::Stamp;
   size_t stamp_index = (size_t)stamp;
-  ASSERT(stamp_index<=global_stamp_max);
+  ASSERT(stamp_index<=global_kind_max);
 //  printf("%s:%d obj_name stamp= %d  stamp_index = %d\n", __FILE__, __LINE__, stamp, stamp_index);
   return global_kind_info[stamp_index].name;
 }

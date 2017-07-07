@@ -187,7 +187,7 @@ T_sp Instance_O::oinstancepSTAR() const {
 
 /*! See ECL>>instance.d>>si_allocate_instance */
 Instance_sp allocate_instance(Class_sp cl, size_t numberOfSlots) {
-  ASSERT(cl->_has_creator());
+  ASSERT(cl->CLASS_has_creator());
   Creator_sp creator = gctools::As<Creator_sp>(cl->CLASS_get_creator());
   Instance_sp obj = gctools::As<Instance_sp>(creator->creator_allocate());
   obj->_Class = cl;
