@@ -3405,9 +3405,11 @@ Run searches in *tools* on the source files in the compilation database."
           (save-data project output-file)))
       (values *results* output-file))))
 
-
+(defstruct parallel-job id filename)
+(defstruct parallel-result id filename result)
+    
 (defun one-search-process (compilation-tool-database tools jobid job-queue result-queue)
-  (let* ((output-file (open (format nil "/tmp/process~a.log" jobid) :direction :output))
+  (let* ((output-file (open (format nil "/tmp/process~a.log" jobid) :direction :output :if-exists :superscede))
          (*standard-output* output-file))
     (format t "Starting process ~a~%" jobid)
     (clang-tool:with-compilation-tool-database compilation-tool-database
@@ -3415,11 +3417,35 @@ Run searches in *tools* on the source files in the compilation database."
          do (let ((one-job (mp:queue-dequeue job-queue)))
               (when one-job
                 (let ((*results* (make-project)))
-                  (format t "Running search on ~a~%" one-job)
-                  (clang-tool:batch-run-multitool tools compilation-tool-database :source-namestrings (list one-job))
-                  (mp:queue-enqueue result-queue *results*))))))
+                  (format t "Running search on ~a ~a~%" (parallel-job-id one-job) (parallel-job-filename one-job))
+                  (clang-tool:batch-run-multitool tools compilation-tool-database :source-namestrings (list (parallel-job-filename one-job)))
+                  (mp:queue-enqueue result-queue (make-parallel-result :id (parallel-job-id one-job)
+                                                                       :filename (parallel-job-filename one-job)
+                                                                       :result *results*)))))))
     (close output-file)))
-          
+
+(defun merge-process (compilation-tool-database tools number-of-jobs result-queue merged-results)
+  (let ((output-file (open (format nil "/tmp/analyzer-merge.log") :direction :output :if-exists :superscede))
+        (results-processed 0)
+        (scan-number 0))
+    (format output-file "Starting merge job process for ~a jobs~%" number-of-jobs)
+    (finish-output output-file)
+    (loop while (< results-processed number-of-jobs)
+       do (multiple-value-bind (result found)
+              (mp:queue-wait-dequeue-timed result-queue 1000)
+            (if found
+                (progn
+                  (format output-file "Merging result ~a of ~a~%" results-processed number-of-jobs)
+                  (format output-file "    Job#~a  filename: ~a~%" (parallel-result-id result) (parallel-result-filename result))
+                  (finish-output output-file)
+                  (merge-projects merged-results (parallel-result-result result))
+                  (incf results-processed))
+                (progn
+                  (format output-file "    Scan ~a~%" scan-number)
+                  (finish-output output-file)))
+            (incf scan-number)))
+    (close output-file)))
+
 (defun parallel-search-all (compilation-tool-database
                             &key (source-namestrings (clang-tool:source-namestrings compilation-tool-database))
                               (output-file (merge-pathnames #P"project.dat" (clang-tool:main-pathname compilation-tool-database)))
@@ -3434,31 +3460,31 @@ Run searches in *tools* on the source files in the compilation database."
   (let ((tools (setup-tools compilation-tool-database))
         (all-jobs source-namestrings)
         (job-queue (make-cxx-object 'mp:concurrent-queue))
-        (result-queue (make-cxx-object 'mp:concurrent-queue)))
+        (result-queue (make-cxx-object 'mp:blocking-concurrent-queue)))
     (save-data all-jobs (make-pathname :type "lst" :defaults output-file))
     (format t "compilation-tool-database: ~a~%" compilation-tool-database)
     (format t "all-jobs: ~a~%" all-jobs)
     (loop for job in all-jobs
-       do (mp:queue-enqueue job-queue job))
+         for id from 0
+       do (mp:queue-enqueue job-queue (make-parallel-job :id id :filename job)))
     (format t "Starting processes~%")
     (let ((processes (loop for x from 0 below jobs
                         do (format t "loop for process ~a~%" x)
-                        collect (mp:process-run-function
-                                 nil
-                                 (lambda ()
-                                   (one-search-process compilation-tool-database tools x job-queue result-queue))))))
-      (loop for x in processes
-         do (mp:process-join x))
+                        collect (prog1
+                                    (mp:process-run-function
+                                     nil
+                                     (lambda ()
+                                       (one-search-process compilation-tool-database tools x job-queue result-queue)))
+                                  (sleep 2)))))
+      (mp:process-join (mp:process-run-function
+                        'merge-process
+                        (lambda ()
+                          (merge-process compilation-tool-database tools (length all-jobs) result-queue (make-project)))))
       (format t "All processes done~%")
-      (let ((merged-results (make-project)))
-        (loop while (> (mp:queue-size-approximate result-queue) 0)
-           do (let ((one-result (mp:queue-dequeue result-queue)))
-                (format t "Merging results~%")
-                (merge-projects merged-results one-result)))
-        (when save-project
-          (let ((project merged-results))
-            (save-data project output-file)))
-        (values merged-results output-file)))))
+      (when save-project
+        (let ((project merged-results))
+          (save-data project output-file)))
+      (values merged-results output-file))))
 
 (defun translate-include (args filename)
   "* Arguments

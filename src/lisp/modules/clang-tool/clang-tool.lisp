@@ -59,9 +59,9 @@ Find directories that look like them and replace the ones defined in the constan
 
 
 (defparameter *print-reports* nil)
+(defparameter *current-multitool* nil
+  "Keep track of the current multitool")
 
-(defun keyword-everything (tree)
-  (mapcar #'(lambda (l) (mapcar #'(lambda (x) (intern x :keyword)))) l) tree )
 
 ;;; Load the lists that describe each matcher.
 ;;; They describe the VariadicDynCastAllOfMatcher<SourceT,TargetT> matcher
@@ -1022,19 +1022,16 @@ run out of memory. This function can be used to rapidly search ASTs for testing 
                                     (clang-database compilation-tool-database)
                                     (source-namestrings compilation-tool-database))))
     (apply-arguments-adjusters compilation-tool-database *match-refactoring-tool*)
-    (let ((*run-and-save* run-and-save)
-          (matcher (compile-matcher match-sexp))
-          (match-finder (let ((mf (ast-tooling:new-match-finder)))
-                          (safe-add-dynamic-matcher mf matcher callback :matcher-sexp match-sexp)
-                          mf))
-          (factory (ast-tooling:new-frontend-action-factory match-finder)))
+    (let* ((*run-and-save* run-and-save)
+           (matcher (compile-matcher match-sexp))
+           (match-finder (let ((mf (ast-tooling:new-match-finder)))
+                           (safe-add-dynamic-matcher mf matcher callback :matcher-sexp match-sexp)
+                           mf))
+           (factory (ast-tooling:new-frontend-action-factory match-finder)))
       (time (if (not run-and-save)
                 (ast-tooling:clang-tool-run *match-refactoring-tool* factory)
                 (ast-tooling:run-and-save *match-refactoring-tool* factory)))
       (format t "Number of matches ~a~%" *match-counter*))))
-
-(defparameter *current-multitool* nil
-  "Keep track of the current multitool")
 
 (defstruct multitool
   "Store multiple tools to run in one go across a bunch of source files."
