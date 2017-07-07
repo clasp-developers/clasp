@@ -646,20 +646,36 @@ CL_DEFMETHOD List_sp Cons_O::filterOutNil() {
 #endif
 
 T_sp Cons_O::onth(cl_index idx) const {
-  _OF();
-  List_sp cur = this->asSmartPtr();
+  T_sp cur = this->asSmartPtr();
   for (cl_index i = 0; i < idx; i++) {
-    cur = oCdr(cur);
+    LIKELY_if (cur.consp()) {
+      cur = CONS_CDR(cur);
+    } else if (cur.nilp()) {
+      return cur;
+    } else {
+      TYPE_ERROR(cur,cl::_sym_Cons_O);
+    }
   }
-  return ((oCar(cur)));
+  LIKELY_if (cur.consp()) {
+    return CONS_CAR(cur);
+  } else if (cur.nilp()) {
+    return cur;
+  }
+  TYPE_ERROR(cur,cl::_sym_Cons_O);
 }
 
-List_sp Cons_O::onthcdr(cl_index idx) const {
-  List_sp cur = this->asSmartPtr();
+T_sp Cons_O::onthcdr(cl_index idx) const {
+  T_sp cur = this->asSmartPtr();
   for (cl_index i = 0; i < idx; i++) {
-    cur = oCdr(cur);
+    LIKELY_if (cur.consp()) {
+      cur = cur.unsafe_cons()->_Cdr;
+    } else if (cur.nilp()) {
+      return cur;
+    } else {
+      TYPE_ERROR(cur,cl::_sym_Cons_O);
+    }
   }
-  return ((cur));
+  return cur;
 }
 
 /*! This algorithm works by first stepping through (n) CONS elements with (r)

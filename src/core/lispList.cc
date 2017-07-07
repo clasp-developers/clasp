@@ -182,10 +182,10 @@ CL_LAMBDA(idx arg);
 CL_DECLARE();
 CL_DOCSTRING("See CLHS nth");
 CL_DEFUN T_sp cl__nth(int idx, T_sp arg) {
-  if (arg.nilp())
-    return _Nil<T_O>();
-  if (Cons_sp list = arg.asOrNull<Cons_O>()) {
-    return list->onth(idx);
+  LIKELY_if (arg.consp()) {
+    return arg.unsafe_cons()->onth(idx);
+  } else if (arg.nilp()) {
+    return arg;
   }
   TYPE_ERROR(arg, cl::_sym_list);
 };
@@ -194,10 +194,10 @@ CL_LAMBDA(idx arg);
 CL_DECLARE();
 CL_DOCSTRING("See CLHS nth");
 CL_DEFUN T_sp cl__nthcdr(int idx, T_sp arg) {
-  if (arg.nilp())
+  LIKELY_if (arg.consp()) {
+    return arg.unsafe_cons()->onthcdr(idx);
+  } else if (arg.nilp()) {
     return arg;
-  if (Cons_sp list = arg.asOrNull<Cons_O>()) {
-    return list->onthcdr(idx);
   }
   TYPE_ERROR(arg, cl::_sym_list);
 };

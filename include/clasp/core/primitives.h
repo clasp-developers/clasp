@@ -63,6 +63,7 @@ T_sp core__every_list(T_sp predicate, List_sp sequences);
 
 T_sp cl__mapcar(T_sp func_desig, List_sp lists);
 
+//T_sp cl__append(List_sp lists);
 T_sp cl__append(VaList_sp lists);
 
 //    Stream_mv af_open(T_sp filespec, Symbol_sp direction, T_sp element_type, T_sp if_exists, T_sp if_does_not_exist, T_sp external_format );
