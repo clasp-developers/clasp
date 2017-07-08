@@ -613,7 +613,7 @@ memory limits before executing the program again."))
 (define-condition package-error (error)
   ((package :INITARG :PACKAGE :READER package-error-package))
   (:report (lambda (condition stream)
-             (format stream "Package error on package ~S" (package-error-package condition))))))
+             (format stream "Package error on package ~S" (package-error-package condition)))))
 
 (define-condition cell-error (error)
   ((name :INITARG :NAME :READER cell-error-name)))
