@@ -215,6 +215,8 @@ class Lisp_O {
     List_sp _DefaultSpecialBindings;
     mutable mp::SharedMutex _DefaultSpecialBindingsMutex;
 #endif
+    // FIXME: Remove this mutex - I've switched to thread-safe hash tables
+    //        and its not needed
 #ifdef CLASP_THREADS
     mutable mp::SharedMutex _SyspropMutex;
 #endif

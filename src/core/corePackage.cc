@@ -1123,6 +1123,9 @@ void CoreExposer_O::define_essential_globals(Lisp_sp lisp) {
   _sym_STARfunctions_to_notinlineSTAR->defparameter(HashTableEqual_O::create_default());
   _sym_STARextension_startup_loadsSTAR->defparameter(_Nil<T_O>());
   _lisp->_Roots._Sysprop = HashTableEql_O::create_default();
+#ifdef CLASP_THREADS
+  _lisp->_Roots._Sysprop->set_thread_safe(true);
+#endif
   _sym_STARdebug_accessorsSTAR->defparameter(_Nil<T_O>());
   _sym_STARmodule_startup_function_nameSTAR->defparameter(SimpleBaseString_O::make(std::string(MODULE_STARTUP_FUNCTION_NAME)));
   _sym_STARmodule_shutdown_function_nameSTAR->defparameter(SimpleBaseString_O::make(std::string(MODULE_SHUTDOWN_FUNCTION_NAME)));
