@@ -18,8 +18,6 @@
 
 (in-package #:clasp-analyzer)
 
-(defvar *results*)
-
 (defun ensure-list (x)
   (unless (listp x)
     (error "The argument ~a must be a list" x))
@@ -35,6 +33,7 @@
 ;;(push :use-breaks *features*)
 ;;(push :gc-warnings *features*)
 
+#|
 #+(or)(defconstant +isystem-dir+ 
         #+target-os-darwin "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/7.0"
         #+target-os-linux "/usr/include/clang/3.6/include"
@@ -56,7 +55,7 @@
                             #+(or)"-I/home/meister/local/gcc-4.8.3/include/c++/4.8.3/x86_64-redhat-linux"
                             #+(or)"-I/home/meister/local/gcc-4.8.3/include/c++/4.8.3/tr1"
                             #+(or)"-I/home/meister/local/gcc-4.8.3/lib/gcc/x86_64-redhat-linux/4.8.3/include"))
-
+|#
 
 ;;; --------------------------------------------------
 ;;; --------------------------------------------------
@@ -174,9 +173,6 @@
 (defstruct (templated-enum (:include enum))
   all-allocs)
 
-
-
-
 (defstruct variable
   location
   name
@@ -198,15 +194,15 @@
 (defstruct project
   "Store the results of matching to the entire codebase"
   ;; All class information
-  (classes (make-hash-table :test #'equal))
+  (classes (make-hash-table :test #'equal :thread-safe t))
   ;; Different allocs of objects(classes)
-  (lispallocs (make-hash-table :test #'equal))   ; exposed to Lisp
-  (classallocs (make-hash-table :test #'equal)) ; regular classes
-  (rootclassallocs (make-hash-table :test #'equal)) ; regular root classes
-  (containerallocs (make-hash-table :test #'equal)) ; containers
-  (local-variables (make-hash-table :test #'equal))
-  (global-variables (make-hash-table :test #'equal))
-  (static-local-variables (make-hash-table :test #'equal))
+  (lispallocs (make-hash-table :test #'equal :thread-safe t))   ; exposed to Lisp
+  (classallocs (make-hash-table :test #'equal :thread-safe t)) ; regular classes
+  (rootclassallocs (make-hash-table :test #'equal :thread-safe t)) ; regular root classes
+  (containerallocs (make-hash-table :test #'equal :thread-safe t)) ; containers
+  (local-variables (make-hash-table :test #'equal :thread-safe t))
+  (global-variables (make-hash-table :test #'equal :thread-safe t))
+  (static-local-variables (make-hash-table :test #'equal :thread-safe t))
 ;;  (new-gcobject-exprs (make-hash-table :test #'equal))
 ;;  (new-housekeeping-class-exprs (make-hash-table :test #'equal))
   )
@@ -1245,7 +1241,7 @@ can be saved and reloaded within the project for later analysis"
 
 
 (defun setup-cclass-search (mtool)
-  (symbol-macrolet ((results (project-classes *results*)))
+  (symbol-macrolet ((results (project-classes (clang-tool:multitool-results mtool))))
     (labels ((%%new-class-callback (match-info class-node record-key template-specializer)
                (let ((cname (clang-tool:mtag-name match-info :whole))
                      (record-decl (clang-tool:mtag-node match-info :whole))
@@ -1336,7 +1332,7 @@ can be saved and reloaded within the project for later analysis"
       (clang-tool:multitool-add-matcher mtool
                              :name :cclasses
                              :matcher-sexp *class-matcher*
-                             :initializer (lambda () (setf results (make-hash-table :test #'equal)))
+                             :initializer (lambda () (setf results (make-hash-table :test #'equal :thread-safe t)))
                              :callback (make-instance 'clang-tool:code-match-callback
                                                       :timer (make-instance 'clang-tool:code-match-timer
                                                                             :name 'class-callback)
@@ -1363,7 +1359,7 @@ can be saved and reloaded within the project for later analysis"
 (defun setup-lispalloc-search (mtool)
   "Setup the TOOL (multitool) to look for instance variables that we want to garbage collect
 and the inheritance hierarchy that the garbage collector will need"
-  (symbol-macrolet ((class-results (project-lispallocs *results*)))
+  (symbol-macrolet ((class-results (project-lispallocs (clang-tool:multitool-results mtool))))
     (flet ((%%lispalloc-matcher-callback (match-info)
              "This function can only be called as a ASTMatcher callback"
              (let* ((decl (clang-tool:mtag-node match-info :whole))
@@ -1389,7 +1385,7 @@ and the inheritance hierarchy that the garbage collector will need"
       (clang-tool:multitool-add-matcher mtool
                              :name :lispallocs
                              :matcher-sexp `(:bind :whole ,*lispalloc-matcher*)
-                             :initializer (lambda () (setf class-results (make-hash-table :test #'equal))) ; initializer
+                             :initializer (lambda () (setf class-results (make-hash-table :test #'equal :thread-safe t))) ; initializer
                              :callback (make-instance 'clang-tool:code-match-callback
                                                       :timer (make-instance 'clang-tool:code-match-timer
                                                                             :name 'lisp-alloc-matcher)
@@ -1416,7 +1412,7 @@ and the inheritance hierarchy that the garbage collector will need"
 (defun setup-classalloc-search (mtool)
   "Setup the TOOL (multitool) to look for instance variables that we want to garbage collect
 and the inheritance hierarchy that the garbage collector will need"
-  (symbol-macrolet ((class-results (project-classallocs *results*)))
+  (symbol-macrolet ((class-results (project-classallocs (clang-tool:multitool-results mtool))))
     (flet ((%%classalloc-matcher-callback (match-info)
              "This function can only be called as a ASTMatcher callback"
              (let* ((decl (clang-tool:mtag-node match-info :whole))
@@ -1441,7 +1437,7 @@ and the inheritance hierarchy that the garbage collector will need"
       (clang-tool:multitool-add-matcher mtool
                              :name :classallocs
                              :matcher-sexp `(:bind :whole ,*classalloc-matcher*)
-                             :initializer (lambda () (setf class-results (make-hash-table :test #'equal))) ; initializer
+                             :initializer (lambda () (setf class-results (make-hash-table :test #'equal :thread-safe t))) ; initializer
                              :callback (make-instance 'clang-tool:code-match-callback
                                                       :timer (make-instance 'clang-tool:code-match-timer
                                                                             :name 'classalloc-matcher)
@@ -1469,7 +1465,7 @@ and the inheritance hierarchy that the garbage collector will need"
 (defun setup-rootclassalloc-search (mtool)
   "Setup the TOOL (multitool) to look for instance variables that we want to garbage collect
 and the inheritance hierarchy that the garbage collector will need"
-  (symbol-macrolet ((class-results (project-rootclassallocs *results*)))
+  (symbol-macrolet ((class-results (project-rootclassallocs (clang-tool:multitool-results mtool))))
     (flet ((%%rootclassalloc-matcher-callback (match-info)
              "This function can only be called as a ASTMatcher callback"
              (let* ((decl (clang-tool:mtag-node match-info :whole))
@@ -1494,7 +1490,7 @@ and the inheritance hierarchy that the garbage collector will need"
       (clang-tool:multitool-add-matcher mtool
                              :name :rootclassallocs
                              :matcher-sexp `(:bind :whole ,*rootclassalloc-matcher*)
-                             :initializer (lambda () (setf class-results (make-hash-table :test #'equal))) ; initializer
+                             :initializer (lambda () (setf class-results (make-hash-table :test #'equal :thread-safe t))) ; initializer
                              :callback (make-instance 'clang-tool:code-match-callback
                                                       :timer (make-instance 'clang-tool:code-match-timer
                                                                             :name 'rootclassalloc-matcher)
@@ -1518,7 +1514,7 @@ and the inheritance hierarchy that the garbage collector will need"
 (defun setup-containeralloc-search (mtool)
   "Setup the TOOL (multitool) to look for instance variables that we want to garbage collect
 and the inheritance hierarchy that the garbage collector will need"
-  (symbol-macrolet ((class-results (project-containerallocs *results*)))
+  (symbol-macrolet ((class-results (project-containerallocs (clang-tool:multitool-results mtool))))
     (flet ((%%containeralloc-matcher-callback (match-info)
              "This function can only be called as a ASTMatcher callback"
              (let* ((decl (clang-tool:mtag-node match-info :whole))
@@ -1539,7 +1535,7 @@ and the inheritance hierarchy that the garbage collector will need"
       (clang-tool:multitool-add-matcher mtool
                              :name :containerallocs
                              :matcher-sexp `(:bind :whole ,*containeralloc-matcher*)
-                             :initializer (lambda () (setf class-results (make-hash-table :test #'equal))) ; initializer
+                             :initializer (lambda () (setf class-results (make-hash-table :test #'equal :thread-safe t))) ; initializer
                              :callback (make-instance 'clang-tool:code-match-callback
                                                       :timer (make-instance 'clang-tool:code-match-timer
                                                                             :name 'containeralloc-matcher)
@@ -1571,7 +1567,7 @@ and the inheritance hierarchy that the garbage collector will need"
 
 
 (defun setup-global-variable-search (mtool)
-  (symbol-macrolet ((global-variables (project-global-variables *results*)))
+  (symbol-macrolet ((global-variables (project-global-variables (clang-tool:multitool-results mtool))))
     ;; The matcher is going to match static locals and locals as well as globals - so we need to explicitly recognize and ignore them
     (flet ((%%global-variable-callback (match-info)
              (block matcher
@@ -1604,7 +1600,7 @@ and the inheritance hierarchy that the garbage collector will need"
       (clang-tool:multitool-add-matcher mtool
                              :name :global-variables
                              :matcher-sexp *global-variable-matcher*
-                             :initializer (lambda () (setf global-variables (make-hash-table :test #'equal)))
+                             :initializer (lambda () (setf global-variables (make-hash-table :test #'equal :thread-safe t)))
                              :callback (make-instance 'clang-tool:code-match-callback
                                                       :timer (make-instance 'clang-tool:code-match-timer
                                                                             :name 'global-variable)
@@ -1670,7 +1666,7 @@ and the inheritance hierarchy that the garbage collector will need"
                                           :name :variables
                                           :matcher-sexp *variable-matcher*
                                           :initializer (lambda ()
-                                                         (setf static-local-variables (make-hash-table :test #'equal))
+                                                         (setf static-local-variables (make-hash-table :test #'equal :thread-safe t))
                                                          (setf local-variables (make-hash-table :test #'equal)))
                                           :callback (make-instance 'clang-tool:code-match-callback
                                                                    :timer (make-instance 'clang-tool:code-match-timer
@@ -1699,7 +1695,7 @@ and the inheritance hierarchy that the garbage collector will need"
 (defun setup-gcinfo-search (mtool)
   "Setup the TOOL (multitool) to look for instance variables that we want to garbage collect
 and the inheritance hierarchy that the garbage collector will need"
-  (symbol-macrolet ((class-results (project-gcinfos *results*)))
+  (symbol-macrolet ((class-results (project-gcinfos (clang-tool:multitool-results mtool))))
     (flet ((%%gcinfo-matcher-callback (match-info)
              "This function can only be called as a ASTMatcher callback"
              (let* ((decl (clang-tool:mtag-node match-info :whole))
@@ -1724,7 +1720,7 @@ and the inheritance hierarchy that the garbage collector will need"
       (clang-tool:multitool-add-matcher mtool
                                         :name :gcinfos
                                         :matcher-sexp `(:bind :whole ,*gcinfo-matcher*)
-                                        :initializer (lambda () (setf class-results (make-hash-table :test #'equal))) ; initializer
+                                        :initializer (lambda () (setf class-results (make-hash-table :test #'equal :thread-safe t))) ; initializer
                                         :callback (make-instance 'clang-tool:code-match-callback
                                                                  :timer (make-instance 'clang-tool:code-match-timer
                                                                                        :name 'gcinfo-matcher)
@@ -3398,53 +3394,27 @@ Run searches in *tools* on the source files in the compilation database."
     (save-data all-jobs (make-pathname :type "lst" :defaults output-file))
     (format t "compilation-tool-database: ~a~%" compilation-tool-database)
     (format t "all-jobs: ~a~%" all-jobs)
-    (let ((*results* (make-project)))
-      (clang-tool:batch-run-multitool tools compilation-tool-database)
-      (when save-project
-        (let ((project *results*))
-          (save-data project output-file)))
-      (values *results* output-file))))
+    (setf (clang-tool:multitool-results tools) (make-project))
+    (clang-tool:batch-run-multitool tools compilation-tool-database)
+    (when save-project
+      (let ((project (clang-tool:multitool-results tools)))
+        (save-data project output-file)
+        (values project output-file)))))
 
 (defstruct parallel-job id filename)
 (defstruct parallel-result id filename result)
     
-(defun one-search-process (compilation-tool-database tools jobid job-queue result-queue)
-  (let* ((output-file (open (format nil "/tmp/process~a.log" jobid) :direction :output :if-exists :superscede))
-         (*standard-output* output-file))
+(defun one-search-process (compilation-tool-database tools jobid job-queue)
+  (let* ((log-file (open (format nil "/tmp/process~a.log" jobid) :direction :output :if-exists :supersede))
+         (*standard-output* log-file))
     (format t "Starting process ~a~%" jobid)
     (clang-tool:with-compilation-tool-database compilation-tool-database
       (loop while (> (mp:queue-size-approximate job-queue) 0)
          do (let ((one-job (mp:queue-dequeue job-queue)))
               (when one-job
-                (let ((*results* (make-project)))
-                  (format t "Running search on ~a ~a~%" (parallel-job-id one-job) (parallel-job-filename one-job))
-                  (clang-tool:batch-run-multitool tools compilation-tool-database :source-namestrings (list (parallel-job-filename one-job)))
-                  (mp:queue-enqueue result-queue (make-parallel-result :id (parallel-job-id one-job)
-                                                                       :filename (parallel-job-filename one-job)
-                                                                       :result *results*)))))))
-    (close output-file)))
-
-(defun merge-process (compilation-tool-database tools number-of-jobs result-queue merged-results)
-  (let ((output-file (open (format nil "/tmp/analyzer-merge.log") :direction :output :if-exists :superscede))
-        (results-processed 0)
-        (scan-number 0))
-    (format output-file "Starting merge job process for ~a jobs~%" number-of-jobs)
-    (finish-output output-file)
-    (loop while (< results-processed number-of-jobs)
-       do (multiple-value-bind (result found)
-              (mp:queue-wait-dequeue-timed result-queue 1000)
-            (if found
-                (progn
-                  (format output-file "Merging result ~a of ~a~%" results-processed number-of-jobs)
-                  (format output-file "    Job#~a  filename: ~a~%" (parallel-result-id result) (parallel-result-filename result))
-                  (finish-output output-file)
-                  (merge-projects merged-results (parallel-result-result result))
-                  (incf results-processed))
-                (progn
-                  (format output-file "    Scan ~a~%" scan-number)
-                  (finish-output output-file)))
-            (incf scan-number)))
-    (close output-file)))
+                (format t "Running search on ~a ~a~%" (parallel-job-id one-job) (parallel-job-filename one-job))
+                (clang-tool:batch-run-multitool tools compilation-tool-database :source-namestrings (list (parallel-job-filename one-job)))))))
+    (close log-file)))
 
 (defun parallel-search-all (compilation-tool-database
                             &key (source-namestrings (clang-tool:source-namestrings compilation-tool-database))
@@ -3459,13 +3429,13 @@ Run searches in *tools* on the source files in the compilation database."
   (format t "serial-search-all --> getcwd: ~a~%" (ext:getcwd))
   (let ((tools (setup-tools compilation-tool-database))
         (all-jobs source-namestrings)
-        (job-queue (make-cxx-object 'mp:concurrent-queue))
-        (result-queue (make-cxx-object 'mp:blocking-concurrent-queue)))
+        (job-queue (make-cxx-object 'mp:concurrent-queue)))
+    (setf (clang-tool:multitool-results tools) (make-project))
     (save-data all-jobs (make-pathname :type "lst" :defaults output-file))
     (format t "compilation-tool-database: ~a~%" compilation-tool-database)
     (format t "all-jobs: ~a~%" all-jobs)
     (loop for job in all-jobs
-         for id from 0
+       for id from 0
        do (mp:queue-enqueue job-queue (make-parallel-job :id id :filename job)))
     (format t "Starting processes~%")
     (let ((processes (loop for x from 0 below jobs
@@ -3474,17 +3444,15 @@ Run searches in *tools* on the source files in the compilation database."
                                     (mp:process-run-function
                                      nil
                                      (lambda ()
-                                       (one-search-process compilation-tool-database tools x job-queue result-queue)))
+                                       (one-search-process compilation-tool-database tools x job-queue)))
                                   (sleep 2)))))
-      (mp:process-join (mp:process-run-function
-                        'merge-process
-                        (lambda ()
-                          (merge-process compilation-tool-database tools (length all-jobs) result-queue (make-project)))))
+      (loop for process in processes
+           do (mp:process-join process))
       (format t "All processes done~%")
       (when save-project
-        (let ((project merged-results))
-          (save-data project output-file)))
-      (values merged-results output-file))))
+        (let ((project (clang-tool:multitool-results tools)))
+          (save-data project output-file)
+          (values project output-file))))))
 
 (defun translate-include (args filename)
   "* Arguments
@@ -3543,11 +3511,12 @@ If the source location of a match contains the string source-path-identifier the
     *project*))
 
 (defun parallel-search/generate-code (compilation-tool-database
-                                      &key (output-file (merge-pathnames #P"project.dat" (clang-tool:main-pathname compilation-tool-database))))
-  (let ((pjobs (let ((pj (ext:getenv "PJOBS")))
-                 (if pj
-                     (parse-integer pj)
-                     2))))
+                                      &key (output-file (merge-pathnames #P"project.dat" (clang-tool:main-pathname compilation-tool-database)))
+                                        pjobs)
+  (let ((pjobs (or pjobs (let ((pj (ext:getenv "PJOBS")))
+                           (if pj
+                               (parse-integer pj)
+                               2)))))
     (clang-tool:with-compilation-tool-database
         compilation-tool-database
       (setf *project* (parallel-search-all compilation-tool-database :output-file output-file

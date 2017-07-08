@@ -403,9 +403,9 @@ Find directories that look like them and replace the ones defined in the constan
   (:WHILE-STMT :HAS-CONDITION :EXPR)))
 
 
-
+#++
 (defconstant +isystem-dir+ 
-  #+target-os-darwin "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/8.0.0"
+  #+target-os-darwin "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/8.1.0"
   #+target-os-linux "/usr/include/clang/3.6/include"
   "Define the -isystem command line option for Clang compiler runs")
 
@@ -415,9 +415,11 @@ Find directories that look like them and replace the ones defined in the constan
            )
 
 (defconstant +resource-dir+ 
-  #+target-os-darwin "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/8.0.0"  ; Used
+  #+target-os-darwin "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/8.1.0"  ; Used
   #+target-os-linux *externals-clasp-include-dir*
   "Define the -resource-dir command line option for Clang compiler runs")
+
+#++
 (defconstant +additional-arguments+
   #+target-os-darwin (vector "GARBAGE2")
   #+(or)(vector
@@ -521,9 +523,9 @@ Setup the default arguments adjusters."
   (push (lambda (args filename)
           (concatenate 'vector
                        args
-                       (vector "-isystem" +isystem-dir+
+                       (vector #++ "-isystem" #++ +isystem-dir+
                                "-resource-dir" +resource-dir+)
-                       +additional-arguments+))
+                       #++ +additional-arguments+))
         (arguments-adjuster-list compilation-tool-database))
   (cond
     ((eq convert-relative-includes-to-absolute t)

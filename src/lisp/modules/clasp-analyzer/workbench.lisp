@@ -63,6 +63,9 @@
   (defvar *db* (clasp-analyzer:setup-clasp-analyzer-compilation-tool-database
                 (pathname *compile-commands*))))
 
+(clasp-analyzer::parallel-search/generate-code *db* :pjobs 6)
+
+(ext:getenv "PJOBS")
 (clasp-analyzer::parallel-search-all *db* :jobs 8)
 
 (defparameter *q* (make-cxx-object 'mp:quueue
