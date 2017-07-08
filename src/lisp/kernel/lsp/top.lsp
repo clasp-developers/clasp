@@ -1041,7 +1041,7 @@ Use special code 0 to cancel this operation.")
   (core:clib-backtrace n))
 
 #+(and clasp use-expensive-backtrace)
-(defun clasp-backtrace (&optional (n 99999999))
+(defun clasp-backtrace (&optional (n 99999999) (stream *standard-output*))
   (unless n (setq n 99999999))
   (let (backtrace
         (top (or *stack-top-hint* (core::ihs-top))))
@@ -1067,8 +1067,7 @@ Use special code 0 to cancel this operation.")
                   (format nil "~4a ~20a ~5d (~s ~a)" icur filename lineno (function-name fun) (subseq arg-str 0 (if (> (length arg-str) 512) 512 nil))))
               backtrace)))
     (dolist (bl (nreverse backtrace))
-      (format t "~a~%" bl))
-    (format t "Backtrace done~%")))
+      (format stream "~a~%" bl))))
 
 (defun tpl-backtrace (&optional n)
   #+clasp
