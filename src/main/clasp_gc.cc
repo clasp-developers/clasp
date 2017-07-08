@@ -7562,6 +7562,7 @@ public:
  {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::Cache_O),_generation), "_generation" }, // public: (T) fixable: NIL good-name: T
 // not-exposing {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(core::Cache_O),_clear_list_spinlock.lck._M_i), "_clear_list_spinlock.lck._M_i" }, // public: (T NIL T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::Cache_O),_clear_list_safe), "_clear_list_safe" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
+ {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(core::Cache_O),_debug), "_debug" }, // public: (T) fixable: NIL good-name: T
 { class_kind, KIND_LISPALLOC_core__SourceFileInfo_O, sizeof(core::SourceFileInfo_O), 0, "core::SourceFileInfo_O" },
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Pathname_O>), offsetof(SAFE_TYPE_MACRO(core::SourceFileInfo_O),_pathname), "_pathname" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::SourceFileInfo_O),_FileHandle), "_FileHandle" }, // public: (T) fixable: NIL good-name: T
@@ -13475,8 +13476,8 @@ static void* OBJ_DEALLOCATOR_table[] = {
  SMART_PTR_FIX(llvmo::PassManagerBuilder_O::static_creator);
  SMART_PTR_FIX(core::MacroletEnvironment_O::static_creator);
  SMART_PTR_FIX(core::CandoException_O::static_class_symbol);
- SMART_PTR_FIX(clcenv::SymbolMacroInfo_O::static_class_symbol);
  SMART_PTR_FIX(core::SingleDispatchCxxEffectiveMethodFunction_O::static_class_symbol);
+ SMART_PTR_FIX(clcenv::SymbolMacroInfo_O::static_class_symbol);
  SMART_PTR_FIX(core::DoubleFloat_O::static_creator);
  SMART_PTR_FIX(llvmo::MDNode_O::static_creator);
  SMART_PTR_FIX(core::SimpleVector_int8_t_O::static_class_symbol);
@@ -13505,8 +13506,8 @@ static void* OBJ_DEALLOCATOR_table[] = {
  SMART_PTR_FIX(llvmo::Constant_O::static_class_symbol);
  SMART_PTR_FIX(core::SimpleMDArray_size_t_O::static_class);
  SMART_PTR_FIX(core::Closure_O::static_class_symbol);
- SMART_PTR_FIX(core::BuiltinClosure_O::static_creator);
  SMART_PTR_FIX(llvmo::BlockAddress_O::static_class);
+ SMART_PTR_FIX(core::BuiltinClosure_O::static_creator);
  SMART_PTR_FIX(core::StringOutputStream_O::static_creator);
  SMART_PTR_FIX(core::MDArray_byte8_t_O::static_creator);
  SMART_PTR_FIX(core::SimpleMDArray_fixnum_O::static_creator);
@@ -13561,25 +13562,25 @@ static void* OBJ_DEALLOCATOR_table[] = {
  SMART_PTR_FIX(core::StringStream_O::static_class_symbol);
  SMART_PTR_FIX(core::SynonymStream_O::static_class);
  SMART_PTR_FIX(core::Number_O::static_class);
- SMART_PTR_FIX(clcenv::VariableInfo_O::static_class_symbol);
  SMART_PTR_FIX(clcenv::FunctionInfo_O::static_creator);
+ SMART_PTR_FIX(clcenv::VariableInfo_O::static_class_symbol);
  SMART_PTR_FIX(core::Package_O::static_class);
  SMART_PTR_FIX(core::Path_O::static_class_symbol);
  SMART_PTR_FIX(core::Symbol_O::static_class_symbol);
  SMART_PTR_FIX(core::SingleDispatchCxxEffectiveMethodFunction_O::static_class);
  SMART_PTR_FIX(core::ClosureWithSlots_O::static_class);
- SMART_PTR_FIX(core::PosixTimeDuration_O::static_creator);
  SMART_PTR_FIX(llvmo::AttributeSet_O::static_class);
+ SMART_PTR_FIX(core::PosixTimeDuration_O::static_creator);
  SMART_PTR_FIX(core::SymbolMacroletEnvironment_O::static_class_symbol);
  SMART_PTR_FIX(core::StackValueEnvironment_O::static_creator);
  SMART_PTR_FIX(llvmo::LandingPadInst_O::static_creator);
  SMART_PTR_FIX(core::SimpleMDArray_O::static_class_symbol);
- SMART_PTR_FIX(core::EchoStream_O::static_class_symbol);
  SMART_PTR_FIX(core::Str8Ns_O::static_creator);
+ SMART_PTR_FIX(core::EchoStream_O::static_class_symbol);
  SMART_PTR_FIX(core::MDArrayDouble_O::static_class_symbol);
  SMART_PTR_FIX(llvmo::UnaryInstruction_O::static_creator);
- SMART_PTR_FIX(core::Pointer_O::static_creator);
  SMART_PTR_FIX(core::SexpSaveArchive_O::static_creator);
+ SMART_PTR_FIX(core::Pointer_O::static_creator);
  SMART_PTR_FIX(core::VectorStepper_O::static_creator);
  SMART_PTR_FIX(llvmo::DITypeRefArray_O::static_class);
  SMART_PTR_FIX(core::ClassCreator_O::static_creator);
@@ -13705,8 +13706,8 @@ static void* OBJ_DEALLOCATOR_table[] = {
  SMART_PTR_FIX(llvmo::global_arg2);
  SMART_PTR_FIX(core::MacroletEnvironment_O::static_class_symbol);
  SMART_PTR_FIX(clasp_ffi::ForeignTypeSpec_O::static_class);
- SMART_PTR_FIX(core::EchoStream_O::static_class);
  SMART_PTR_FIX(mp::Mutex_O::static_class);
+ SMART_PTR_FIX(core::EchoStream_O::static_class);
  SMART_PTR_FIX(llvmo::CallInst_O::static_creator);
  SMART_PTR_FIX(llvmo::UnreachableInst_O::static_class_symbol);
  SMART_PTR_FIX(asttooling::AstVisitor_O::static_class);
@@ -13774,8 +13775,8 @@ static void* OBJ_DEALLOCATOR_table[] = {
  SMART_PTR_FIX(core::FunctionClosure_O::static_class);
  SMART_PTR_FIX(llvmo::DINode_O::static_class);
  SMART_PTR_FIX(clcenv::VariableIgnore_O::static_creator);
- SMART_PTR_FIX(core::SimpleVector_int32_t_O::static_class_symbol);
  SMART_PTR_FIX(core::MDArrayT_O::static_creator);
+ SMART_PTR_FIX(core::SimpleVector_int32_t_O::static_class_symbol);
  SMART_PTR_FIX(core::Package_O::static_class_symbol);
  SMART_PTR_FIX(core::StandardObject_O::static_class);
  SMART_PTR_FIX(core::MDArrayT_O::static_class_symbol);
@@ -13828,19 +13829,19 @@ static void* OBJ_DEALLOCATOR_table[] = {
  SMART_PTR_FIX(core::Exposer_O::static_creator);
  SMART_PTR_FIX(core::ReadTable_O::static_class_symbol);
  SMART_PTR_FIX(core::SymbolToEnumConverter_O::static_creator);
- SMART_PTR_FIX(core::IntArray_O::static_class);
  SMART_PTR_FIX(llvmo::BranchInst_O::static_creator);
+ SMART_PTR_FIX(core::IntArray_O::static_class);
  SMART_PTR_FIX(core::SimpleVector_byte64_t_O::static_class_symbol);
- SMART_PTR_FIX(core::ValueFrame_O::static_creator);
  SMART_PTR_FIX(core::Reader_O::static_class_symbol);
+ SMART_PTR_FIX(core::ValueFrame_O::static_creator);
  SMART_PTR_FIX(llvmo::DIFile_O::static_class_symbol);
  SMART_PTR_FIX(clcenv::SpecialVariableInfo_O::static_creator);
  SMART_PTR_FIX(core::DirectoryEntry_O::static_class_symbol);
  SMART_PTR_FIX(core::Array_O::static_creator);
  SMART_PTR_FIX(llvmo::Module_O::static_class_symbol);
  SMART_PTR_FIX(core::BroadcastStream_O::static_class_symbol);
- SMART_PTR_FIX(mp::Process_O::static_class_symbol);
  SMART_PTR_FIX(llvmo::ReturnInst_O::static_class_symbol);
+ SMART_PTR_FIX(mp::Process_O::static_class_symbol);
  SMART_PTR_FIX(core::SourceFileInfo_O::static_class);
  SMART_PTR_FIX(core::NamedFunction_O::static_class);
  SMART_PTR_FIX(core::FunctionValueEnvironment_O::static_class_symbol);
@@ -13895,16 +13896,16 @@ static void* OBJ_DEALLOCATOR_table[] = {
  SMART_PTR_FIX(core::LogicalPathname_O::static_creator);
  SMART_PTR_FIX(llvmo::PassManager_O::static_class_symbol);
  SMART_PTR_FIX(llvmo::TargetOptions_O::static_creator);
- SMART_PTR_FIX(core::SimpleMDArray_byte64_t_O::static_creator);
  SMART_PTR_FIX(llvmo::UnaryInstruction_O::static_class_symbol);
+ SMART_PTR_FIX(core::SimpleMDArray_byte64_t_O::static_creator);
  SMART_PTR_FIX(llvmo::AtomicRMWInst_O::static_creator);
  SMART_PTR_FIX(core::SimpleVector_int64_t_O::static_class);
  SMART_PTR_FIX(core::Integer_O::static_creator);
  SMART_PTR_FIX(llvmo::NamedMDNode_O::static_class_symbol);
  SMART_PTR_FIX(llvmo::FenceInst_O::static_creator);
  SMART_PTR_FIX(llvmo::ExecutionEngine_O::static_class_symbol);
- SMART_PTR_FIX(llvmo::PassManagerBase_O::static_creator);
  SMART_PTR_FIX(llvmo::ClaspJIT_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::PassManagerBase_O::static_creator);
  SMART_PTR_FIX(llvmo::PHINode_O::static_creator);
  SMART_PTR_FIX(llvmo::MDNode_O::static_class_symbol);
  SMART_PTR_FIX(core::SharpEqualWrapper_O::static_class_symbol);
@@ -13969,8 +13970,8 @@ static void* OBJ_DEALLOCATOR_table[] = {
  SMART_PTR_FIX(core::SimpleMDArrayFloat_O::static_class);
  SMART_PTR_FIX(clcenv::SpecialOperatorInfo_O::static_class);
  SMART_PTR_FIX(core::SimpleVectorDouble_O::static_class);
- SMART_PTR_FIX(core::SimpleMDArrayBaseChar_O::static_class_symbol);
  SMART_PTR_FIX(llvmo::IndirectBrInst_O::static_class);
+ SMART_PTR_FIX(core::SimpleMDArrayBaseChar_O::static_class_symbol);
  SMART_PTR_FIX(llvmo::ValueAsMetadata_O::static_creator);
  SMART_PTR_FIX(core::SourceFileInfo_O::static_creator);
  SMART_PTR_FIX(clcenv::Inline_O::static_class);
@@ -14146,8 +14147,8 @@ static void* OBJ_DEALLOCATOR_table[] = {
  SMART_PTR_FIX(core::SimpleVector_int8_t_O::static_creator);
  SMART_PTR_FIX(core::LexicalEnvironment_O::static_creator);
  SMART_PTR_FIX(llvmo::AllocaInst_O::static_creator);
- SMART_PTR_FIX(core::DirectoryIterator_O::static_class_symbol);
  SMART_PTR_FIX(llvmo::Function_O::static_creator);
+ SMART_PTR_FIX(core::DirectoryIterator_O::static_class_symbol);
  SMART_PTR_FIX(llvmo::MDString_O::static_creator);
  SMART_PTR_FIX(core::ShortFloat_O::static_class);
  SMART_PTR_FIX(core::Real_O::static_class);
@@ -14160,8 +14161,8 @@ static void* OBJ_DEALLOCATOR_table[] = {
  SMART_PTR_FIX(core::SimpleVectorFloat_O::static_creator);
  SMART_PTR_FIX(core::SimpleMDArray_O::static_class);
  SMART_PTR_FIX(core::MDArray_byte32_t_O::static_class);
- SMART_PTR_FIX(llvmo::Triple_O::static_creator);
  SMART_PTR_FIX(llvmo::DICompositeType_O::static_creator);
+ SMART_PTR_FIX(llvmo::Triple_O::static_creator);
  SMART_PTR_FIX(core::SimpleVector_O::static_creator);
  SMART_PTR_FIX(llvmo::AtomicCmpXchgInst_O::static_class);
  SMART_PTR_FIX(llvmo::ConstantStruct_O::static_class_symbol);
@@ -14311,8 +14312,8 @@ static void* OBJ_DEALLOCATOR_table[] = {
  SMART_PTR_FIX(llvmo::APInt_O::static_class);
  SMART_PTR_FIX(core::SimpleVector_O::static_class);
  SMART_PTR_FIX(clcenv::Optimize_O::static_class_symbol);
- SMART_PTR_FIX(clcenv::Macro_O::static_class_symbol);
  SMART_PTR_FIX(llvmo::PassManagerBase_O::static_class_symbol);
+ SMART_PTR_FIX(clcenv::Macro_O::static_class_symbol);
  SMART_PTR_FIX(core::SimpleVector_int16_t_O::static_class_symbol);
  SMART_PTR_FIX(core::RuntimeVisibleEnvironment_O::static_creator);
  SMART_PTR_FIX(core::NativeVector_int_O::static_class_symbol);
@@ -14348,8 +14349,8 @@ static void* OBJ_DEALLOCATOR_table[] = {
  SMART_PTR_FIX(core::Real_O::static_class_symbol);
  SMART_PTR_FIX(llvmo::UndefValue_O::static_creator);
  SMART_PTR_FIX(llvmo::PointerType_O::static_class_symbol);
- SMART_PTR_FIX(core::Str8Ns_O::static_class_symbol);
  SMART_PTR_FIX(llvmo::VectorType_O::static_class_symbol);
+ SMART_PTR_FIX(core::Str8Ns_O::static_class_symbol);
  SMART_PTR_FIX(core::MDArray_fixnum_O::static_class);
  SMART_PTR_FIX(llvmo::ClaspJIT_O::static_creator);
  SMART_PTR_FIX(core::Exposer_O::static_class_symbol);
@@ -14415,8 +14416,8 @@ static void* OBJ_DEALLOCATOR_table[] = {
  SMART_PTR_FIX(core::ClassCreator_O::static_class);
  SMART_PTR_FIX(core::DoubleFloat_O::static_class_symbol);
  SMART_PTR_FIX(core::SimpleMDArrayT_O::static_class_symbol);
- SMART_PTR_FIX(core::InvocationHistoryFrameIterator_O::static_class);
  SMART_PTR_FIX(core::Creator_O::static_creator);
+ SMART_PTR_FIX(core::InvocationHistoryFrameIterator_O::static_class);
  SMART_PTR_FIX(llvmo::ConstantInt_O::static_class_symbol);
  SIMPLE_POINTER_FIX(gctools::global_tagged_Symbol_OP_unbound);
  SMART_PTR_FIX(core::Rational_O::static_class_symbol);
@@ -14440,13 +14441,13 @@ static void* OBJ_DEALLOCATOR_table[] = {
  SMART_PTR_FIX(clcenv::VariableType_O::static_class);
  SMART_PTR_FIX(core::BlockEnvironment_O::static_class_symbol);
  SMART_PTR_FIX(core::SimpleBaseString_O::static_class_symbol);
- SMART_PTR_FIX(core::HashTableEq_O::static_class_symbol);
  SMART_PTR_FIX(core::SexpLoadArchive_O::static_class);
+ SMART_PTR_FIX(core::HashTableEq_O::static_class_symbol);
  SMART_PTR_FIX(core::Environment_O::static_class);
  SMART_PTR_FIX(core::NativeVector_float_O::static_class);
  SMART_PTR_FIX(llvmo::VectorType_O::static_class);
- SMART_PTR_FIX(core::Archive_O::static_class);
  SMART_PTR_FIX(llvmo::CompositeType_O::static_class);
+ SMART_PTR_FIX(core::Archive_O::static_class);
  SMART_PTR_FIX(llvmo::Metadata_O::static_class);
  SMART_PTR_FIX(core::IOStreamStream_O::static_class_symbol);
  SMART_PTR_FIX(llvmo::GlobalValue_O::static_class_symbol);
@@ -14467,8 +14468,8 @@ static void* OBJ_DEALLOCATOR_table[] = {
  SMART_PTR_FIX(core::Environment_O::static_creator);
  SMART_PTR_FIX(llvmo::DebugLoc_O::static_class_symbol);
  SMART_PTR_FIX(core::MDArray_int8_t_O::static_class_symbol);
- SMART_PTR_FIX(core::Fixnum_dummy_O::static_class_symbol);
  SMART_PTR_FIX(core::SingleDispatchGenericFunctionClosure_O::static_class_symbol);
+ SMART_PTR_FIX(core::Fixnum_dummy_O::static_class_symbol);
  SMART_PTR_FIX(core::SingleDispatchGenericFunctionClosure_O::static_class);
  SMART_PTR_FIX(mp::BlockingConcurrentQueue_O::static_class_symbol);
  SMART_PTR_FIX(core::WeakHashTable_O::static_class);
@@ -14483,9 +14484,9 @@ static void* OBJ_DEALLOCATOR_table[] = {
  SMART_PTR_FIX(core::Archive_O::static_class_symbol);
  SMART_PTR_FIX(llvmo::UndefValue_O::static_class);
  SMART_PTR_FIX(core::Str8Ns_O::static_class);
- SMART_PTR_FIX(core::StringOutputStream_O::static_class);
- SMART_PTR_FIX(clcenv::LocalMacroInfo_O::static_creator);
  SMART_PTR_FIX(core::CxxMethodFunction_O::static_creator);
+ SMART_PTR_FIX(clcenv::LocalMacroInfo_O::static_creator);
+ SMART_PTR_FIX(core::StringOutputStream_O::static_class);
  SMART_PTR_FIX(core::Package_O::static_creator);
  SMART_PTR_FIX(core::WeakHashTable_O::static_creator);
  SMART_PTR_FIX(llvmo::DILocalScope_O::static_creator);
