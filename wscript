@@ -475,6 +475,8 @@ def get_git_commit(cfg):
     return run_program(cfg.env.GIT_BINARY, "rev-parse", "--short", "HEAD").strip()
 
 def get_clasp_version(cfg):
+    if (cfg.env.CLASP_VERSION):
+        return cfg.env.CLASP_VERSION
     return run_program(cfg.env.GIT_BINARY, "describe", "--always").strip()
 
 def run_llvm_config(cfg, *args):

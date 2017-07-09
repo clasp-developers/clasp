@@ -6,8 +6,6 @@
         "jupyter",
         "--exec",
         "(ext:chdir #P\"/work/\" t)",
-        "--exec",
-        "(defun cl:lisp-implementation-version () \"clasp-cl-jupyter-kernel\")",
         "--load",
         "/home/app/quicklisp/local-projects/cl-jupyter/cl-jupyter.lisp",
         "--",
