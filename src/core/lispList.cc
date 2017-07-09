@@ -164,18 +164,18 @@ CL_DEFUN T_sp cl__rassoc(T_sp item, List_sp a_list, T_sp test, T_sp test_not, T_
     key = coerce::functionDesignator(key);
   setup_test(&t, item, test, test_not, key);
   for (auto calist : a_list) {
-    T_sp pair = oCar(calist);
-    if (pair.notnilp()) {
-      if (!pair.consp())
-        TYPE_ERROR_LIST(pair);
-      if (TEST(&t, oCdr(pair))) {
-        a_list = pair;
-        break;
+    T_sp pair = CONS_CAR(calist);
+    LIKELY_if (pair.consp()) {
+      if (TEST(&t,CONS_CDR(pair))) {
+        close_test(&t);
+        return pair;
       }
+    } else if (pair.notnilp()) {
+      TYPE_ERROR_LIST(pair);
     }
   } //end_loop_for_in;
   close_test(&t);
-  return a_list;
+  return _Nil<T_O>();
 }
 
 CL_LAMBDA(idx arg);
