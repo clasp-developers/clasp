@@ -151,7 +151,7 @@ CL_DEFUN T_sp cl__lisp_implementation_type() {
 
 CL_LAMBDA();
 CL_DECLARE();
-CL_DOCSTRING("lispImplementationVersion");
+CL_DOCSTRING("lisp-implementation-version");
 CL_DEFUN T_sp cl__lisp_implementation_version() {
   stringstream ss;
   List_sp cleavir = gc::As<Cons_sp>(cl::_sym_STARfeaturesSTAR->symbolValue())->memberEq(kw::_sym_cclasp);
