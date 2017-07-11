@@ -657,10 +657,18 @@ when this is t a lot of graphs will be generated.")
   (declare (ignore return-value inputs outputs abi function-info)))
 
 (defmethod translate-simple-instruction
+    ((instruction cleavir-ir:the-values-instruction) return-value inputs outputs abi function-info)
+  (declare (ignore return-value inputs outputs abi function-info)))
+
+(defmethod translate-simple-instruction
     ((instruction cleavir-ir:dynamic-allocation-instruction)
      return-value inputs outputs abi function-info)
   (declare (ignore return-value inputs outputs abi)))
 
+(defmethod translate-simple-instruction
+    ((instruction cleavir-ir:unreachable-instruction) return-value inputs outputs abi function-info)
+  (declare (ignore return-value inputs outputs abi function-info))
+  (cmp:irc-unreachable))
 
 #+(or)
 (progn
@@ -861,7 +869,8 @@ when this is t a lot of graphs will be generated.")
   (quick-draw-hir init-instr "hir-after-pcv") 
   (clasp-cleavir:optimize-stack-enclose init-instr) ; see FIXME at definition
   (setf *ct-optimize-stack-enclose* (compiler-timer-elapsed))
-  (cleavir-typed-transforms:thes->typeqs init-instr)
+  (cleavir-kildall-type-inference:thes->typeqs init-instr clasp-cleavir:*clasp-env*)
+  (quick-draw-hir init-instr "hir-after-thes-typeqs")
   (setf *ct-thes->typeqs* (compiler-timer-elapsed))
 
   ;;; See comment in policy.lisp. tl;dr these analyses are slow.
@@ -872,40 +881,22 @@ when this is t a lot of graphs will be generated.")
       (cleavir-escape:mark-dynamic-extent init-instr :liveness liveness)
       (setf *ct-mark-dynamic-extent* (compiler-timer-elapsed))
       ;; Type inference
-      (quick-draw-hir init-instr "hir-after-thes-typeqs")
-      (handler-case
-          (let ((types (prog1 (cleavir-type-inference:infer-types
-                               init-instr
-                               :liveness liveness)
-                         (setf *ct-infer-types* (compiler-timer-elapsed)))))
-            (when *debug-cleavir*
-              (let ((cleavir-ir-graphviz::*types* types))
-                (quick-draw-hir init-instr "hir-before-prune-ti")))
-            ;; prune paths with redundant typeqs
-            (cleavir-typed-transforms:prune-typeqs init-instr types)
-            (setf *ct-prune-typeqs* (compiler-timer-elapsed))
-            (when *debug-cleavir*
-              (let ((cleavir-ir-graphviz::*types* types))
-                (quick-draw-hir init-instr "hir-after-ti"))))
-        (error (c)
-          nil
-          #+(or)(warn "Cannot infer types in ~s: ~s" init-instr c)))))
+      (cleavir-kildall-type-inference:infer-types init-instr clasp-cleavir:*clasp-env*
+        :liveness liveness :prune t
+        :draw (quick-hir-pathname "hir-before-prune-ti"))
+      (quick-draw-hir init-instr "hir-after-ti")
+      (setf *ct-infer-types* (compiler-timer-elapsed))))
+
   ;; delete the-instruction and the-values-instruction
-  (cleavir-typed-transforms:delete-the init-instr)
+  (cleavir-kildall-type-inference:delete-the init-instr)
   (setf *ct-delete-the* (compiler-timer-elapsed))
   (quick-draw-hir init-instr "hir-after-delete-the")
-  ;; convert (typeq x fixnum) -> (fixnump x)
-  ;;         (typeq x cons) -> (consp x)
-  ;;         (typeq x YYY) -> (typep x 'YYY)
   (cleavir-hir-transformations:eliminate-typeq init-instr)
   (setf *ct-eliminate-typeq* (compiler-timer-elapsed))
   (quick-draw-hir init-instr "hir-after-eliminate-typeq")
   (clasp-cleavir::eliminate-load-time-value-inputs init-instr *clasp-system*)
-  (setf *ct-eliminate-load-time-value-inputs* (compiler-timer-elapsed))
   (quick-draw-hir init-instr "hir-after-eliminate-load-time-value-inputs")
-  ;; The following breaks code when inlining takes place
-  ;;  (cleavir-hir-transformations:eliminate-superfluous-temporaries init-instr)
-  )
+  (setf *ct-eliminate-load-time-value-inputs* (compiler-timer-elapsed)))
 
 (defun compile-form-to-mir (FORM &optional (ENV *clasp-env*))
   "Compile a form down to MIR and return it.

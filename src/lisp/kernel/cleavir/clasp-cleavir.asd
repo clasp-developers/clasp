@@ -10,8 +10,7 @@
                  :cleavir-compilation-policy
 		 :cleavir-ast-to-hir
 		 :cleavir-ast-transformations
-                 :cleavir-type-inference
-                 :cleavir-typed-transforms
+                 :cleavir-kildall-type-inference
                  :cleavir-escape
 		 :cleavir-hir-transformations
                  :cleavir-remove-useless-instructions
