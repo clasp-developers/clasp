@@ -40,6 +40,7 @@ RUN cd $HOME/quicklisp/local-projects \
 
 
 RUN clasp -f "setup-cando"\
+          -f "debug-compile-file"\
           -e '(load "/home/app/quicklisp/setup.lisp")'\
           -e "(ql:quickload :trivial-http)"\
           -e "(require :inet)"\
@@ -50,7 +51,8 @@ RUN clasp -f "setup-cando"\
 
 RUN mkdir /home/app/logs/
 
-RUN clasp -e '(load "/home/app/quicklisp/setup.lisp")'\
+RUN clasp -f "debug-compile-file"\
+          -e '(load "/home/app/quicklisp/setup.lisp")'\
           -e "(ql:quickload :cl-jupyter)"\
           -e "(ql:quickload :cl-json)"\
           -e "(ql:quickload :cl-base64)"\
