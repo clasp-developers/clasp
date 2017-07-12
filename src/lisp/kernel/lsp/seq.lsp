@@ -137,8 +137,7 @@ default value of INITIAL-ELEMENT depends on TYPE."
     sequence))
 
 
-
-(defun make-seq-iterator (sequence &optional (start 0))
+(defun make-seq-iterator (sequence &key (start 0))
   (declare (optimize (safety 0)))
   (cond ((fixnump start)
          (let ((aux start))
@@ -186,6 +185,11 @@ default value of INITIAL-ELEMENT depends on TYPE."
            (error-not-a-sequence iterator))
          iterator)))
 
+(declaim (inline seq-iterator-endp))
+(defun seq-iterator-endp (sequence iterator)
+  (declare (ignore sequence))
+  (null iterator))
+
 (defun seq-iterator-list-pop (values-list seq-list iterator-list)
   (declare (optimize (safety 0)))
   (do* ((it-list iterator-list)
@@ -194,7 +198,7 @@ default value of INITIAL-ELEMENT depends on TYPE."
         values-list)
     (let* ((it (cons-car it-list))
            (sequence (cons-car seq-list)))
-      (cond ((null it)
+      (cond ((seq-iterator-endp it)
              (return nil))
             ((fixnump it)
              (let* ((n it) (s sequence))
@@ -249,10 +253,20 @@ SEQUENCEs."
       ((null sequences) output)
     (do* ((s (first sequences))
 	  (j (make-seq-iterator s) (seq-iterator-next s j)))
-	 ((null j))
+	 ((seq-iterator-endp j))
       (seq-iterator-set output i (seq-iterator-ref s j))
       (setq i (seq-iterator-next output i)))))
 
+;;; This is not called anywhere yet (just used for a compiler macro)
+;;; but it might be useful to have.
+(defun map-for-effect (function sequence &rest more-sequences)
+  "Does (map nil ...)"
+  (let ((sequences (list* sequence more-sequences))
+        (function (si::coerce-to-function function))
+        it)
+    (do-sequences (elt-list sequences)
+      (apply function elt-list)))
+  nil)
 
 (defun map (result-type function sequence &rest more-sequences)
   "Args: (type function sequence &rest more-sequences)
@@ -294,22 +308,6 @@ Returns T if every elements of SEQUENCEs satisfy PREDICATE; NIL otherwise."
      (unless (apply predicate elt-list)
        (return nil)))))
 
-#|
-(def-seq-bool-parser notany
-  "Args: (predicate sequence &rest more-sequences)
-Returns T if none of the elements in SEQUENCEs satisfies PREDICATE; NIL
-otherwise."
-  (when that-value (return nil))
-  t)
-
-(def-seq-bool-parser notevery
-  "Args: (predicate sequence &rest more-sequences)
-Returns T if at least one of the elements in SEQUENCEs does not satisfy
-PREDICATE; NIL otherwise."
-  (unless that-value (return t))
-  nil)
-|#
-
 (defun every* (predicate &rest sequences)
   "Args: (predicate sequence &rest more-sequences)
 Returns T if every elements of SEQUENCEs satisfy PREDICATE and all sequences
@@ -350,11 +348,11 @@ stops when it reaches the end of one of the given sequences."
     (do ((ir (make-seq-iterator result-sequence) (seq-iterator-next result-sequence ir))
          (it (mapcar #'make-seq-iterator sequences))
          (val (make-sequence 'list (length sequences))))
-        ((null ir) result-sequence)
+        ((seq-iterator-endp ir) result-sequence)
       (do ((i it (cdr i))
 	   (v val (cdr v))
            (s sequences (cdr s)))
-	  ((null i))
+	  ((seq-iterator-endp i))
 	(unless (car i) (return-from map-into result-sequence))
 	(rplaca v (seq-iterator-ref (car s) (car i)))
 	(rplaca i (seq-iterator-next (car s) (car i))))
