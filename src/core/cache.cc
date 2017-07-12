@@ -165,7 +165,7 @@ void Cache_O::search_cache(CacheRecord *&min_e) {
   ASSERTF(idx >= 0, BF("idx must be positive"));
 #ifdef DEBUG_CACHE
   if (this->_debug) {
-    printf("%s:%d search_cache hash=%ld   hash-index=" PRu "\n", __FILE__, __LINE__, hi, idx);
+    printf("%s:%d search_cache hash=%llu   hash-index=%d\n", __FILE__, __LINE__, hi, idx);
   }
 #endif
   //	i = i - (i % 3);
