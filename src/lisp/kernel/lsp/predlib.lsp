@@ -729,6 +729,7 @@ Returns T if X belongs to TYPE; NIL otherwise."
 (defun error-coerce (object type)
   (error "Cannot coerce ~S to type ~S." object type))
 
+(declaim (inline character))
 (defun character (character-designator)
   (if (characterp character-designator)
       character-designator
@@ -752,10 +753,7 @@ if not possible."
   (cond ((atom type)
 	 (case type
 	   ((T) object)
-	   (LIST
-	    (do ((io (make-seq-iterator object) (seq-iterator-next object io))
-	         (l nil (cons (seq-iterator-ref object io) l)))
-	        ((null io) l)))
+	   (LIST (coerce-to-list object))
 	   ((CHARACTER BASE-CHAR) (character object))
 	   (FLOAT (float object))
 	   (SINGLE-FLOAT (float object 0.0F0))
@@ -791,6 +789,61 @@ if not possible."
 	 (concatenate type object))
 	(t
 	 (error-coerce object type))))
+
+;;; FIXME: This should not exist. Instead, coerce should be inlined, and
+;;; the compiler should eliminate tests where both arguments are constant.
+;;; This will require expand-deftype or whatever to be constant foldable,
+;;; which is a little weird as its behavior does change. Just, per
+;;; the compiletime/runtime restrictions, any type defined at compile time
+;;; has to be the same at runtime.
+(define-compiler-macro coerce (&whole form object type &environment env)
+  (if (constantp type)
+      (let ((type (eval type)) ; constant-form-value
+            (obj (gensym "OBJECT")))
+        `(let ((,obj ,object))
+           ;; this check is required by the definition of coerce.
+           ;; of course, we should eliminate it later.
+           (if (typep ,obj ',type)
+               ,obj
+               ,(flet ((da (form) `(the (values ,type &rest nil) ,form)))
+                  (multiple-value-bind (head tail)
+                      (core::normalize-type type)
+                    (case head
+                      ((t) (da obj))
+                      ((character base-char) (da `(character ,obj)))
+                      ((float) (da `(float ,obj)))
+                      ((short-float) (da `(float ,obj 0.0s0)))
+                      ((single-float) (da `(float ,obj 0.0f0)))
+                      ((double-float) (da `(float ,obj 0.0d0)))
+                      ((long-float) (da `(float ,obj 0.0l0)))
+                      ((function) (da `(coerce-to-function ,obj)))
+                      ((complex)
+                       ;; This is the only case where the returned value
+                       ;; may not be of the provided type, due to complex rational rules.
+                       (destructuring-bind (&optional (realtype t) (imagtype t))
+                           tail
+                         `(complex (coerce (realpart ,obj) ',realtype)
+                                   (coerce (imagpart ,obj) ',imagtype))))
+                      ;; I don't think this is required or necessary, but we
+                      ;; already had it.
+                      ((and)
+                       (labels ((aux (form tail)
+                                  (if (= (length tail) 1)
+                                      `(coerce ,form ,(first tail))
+                                      (aux `(coerce ,form ,(first tail)) (rest tail)))))
+                         (if (= (length tail) 0)
+                             `(the t ,object)
+                             (aux obj tail))))
+                      (t ; a sequence type, we figure
+                       (cond ((subtypep type 'list env)
+                              (da `(coerce-to-list ,object)))
+                             ((subtypep type 'sequence env)
+                              ;; FIXME: full call to concatenate for this is ridick.
+                              (da `(concatenate ',type ,object)))
+                             ;; give up for runtime
+                             (t
+                              (return-from coerce form))))))))))
+      form))
 
 ;;************************************************************
 ;;			SUBTYPEP
