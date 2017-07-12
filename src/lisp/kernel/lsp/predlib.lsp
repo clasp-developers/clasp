@@ -832,14 +832,16 @@ if not possible."
                                       `(coerce ,form ,(first tail))
                                       (aux `(coerce ,form ,(first tail)) (rest tail)))))
                          (if (= (length tail) 0)
-                             `(the t ,object)
+                             `(the t ,obj)
                              (aux obj tail))))
                       (t ; a sequence type, we figure
                        (cond ((subtypep type 'list env)
-                              (da `(coerce-to-list ,object)))
+                              (da `(coerce-to-list ,obj)))
                              ((subtypep type 'sequence env)
                               ;; FIXME: full call to concatenate for this is ridick.
-                              (da `(concatenate ',type ,object)))
+                              ;; but replace make-sequence is actually slower.
+                              ;; presumably cl:replace sucks.
+                              (da `(concatenate ',type ,obj)))
                              ;; give up for runtime
                              (t
                               (return-from coerce form))))))))))
