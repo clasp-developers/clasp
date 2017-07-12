@@ -754,6 +754,11 @@ when this is t a lot of graphs will be generated.")
   (closure-call-or-invoke (first inputs) return-value (cdr inputs) abi)
   (cmp:irc-unreachable))
 
+(defmethod translate-branch-instruction
+    ((instruction cleavir-ir:unreachable-instruction) return-value inputs outputs successors abi function-info)
+  (declare (ignore return-value inputs output successors abi function-info))
+  (cmp:irc-unreachable))
+
 
 (defmethod translate-branch-instruction
     ((instruction clasp-cleavir-hir:throw-instruction) return-value inputs outputs successors abi function-info)
