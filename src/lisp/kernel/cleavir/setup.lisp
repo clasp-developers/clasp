@@ -223,6 +223,47 @@
 (defmethod cleavir-environment:symbol-macro-expansion (symbol (environment NULL))
   (macroexpand symbol nil))
 
+(defun type-expand-1 (type-specifier)
+  (let (head tail)
+    (etypecase type-specifier
+      (class (return-from type-expand-1 (values type-specifier nil)))
+      (symbol (setf head type-specifier tail nil))
+      (cons (setf head (first type-specifier) tail (rest type-specifier))))
+    (let ((def (get-sysprop head 'core::deftype-definition)))
+      (if def
+          (values (apply def tail) t)
+          (values type-specifier nil)))))
+
+(defmethod cleavir-env:type-expand ((environment clasp-global-environment) type-specifier)
+  (loop with ever-expanded = nil
+        do (multiple-value-bind (expansion expanded)
+               (type-expand-1 type-specifier)
+             (if expanded
+                 (setf ever-expanded t type-specifier expansion)
+                 (return (values type-specifier ever-expanded))))))
+(defmethod cleavir-env:type-expand ((environment null) type-specifier)
+  (cleavir-env:type-expand clasp-cleavir:*clasp-env* type-specifier))
+
+(defmethod cleavir-env:has-extended-char-p ((environment clasp-global-environment))
+  #+unicode t #-unicode nil)
+(defmethod cleavir-env:has-extended-char-p ((environment null))
+  (cleavir-env:has-extended-char-p clasp-cleavir:*clasp-env*))
+
+(defmethod cleavir-env:float-types ((environment clasp-global-environment))
+  '(#+short-float short-float single-float double-float #+long-float long-float))
+(defmethod cleavir-env:float-types ((environment null))
+  (cleavir-env:float-types clasp-cleavir:*clasp-env*))
+
+(defmethod cleavir-env:upgraded-complex-part-types ((environment clasp-global-environment))
+  ;; "ECL does not have specialized complex part types" according to upgraded-complex-part-type source.
+  '(real))
+(defmethod cleavir-env:upgraded-complex-part-types ((environment null))
+  (cleavir-env:upgraded-complex-part-types clasp-cleavir:*clasp-env*))
+
+(defmethod cleavir-env:upgraded-array-element-types ((environment clasp-global-environment))
+  core::+upgraded-array-element-types+)
+(defmethod cleavir-env:upgraded-array-element-types ((environment null))
+  (cleavir-env:upgraded-array-element-types clasp-cleavir:*clasp-env*))
 
 (setq cl:*macroexpand-hook* (lambda (macro-function macro-form environment)
 			      (cond
@@ -285,6 +326,10 @@
 	 (hir (cleavir-ast-to-hir:compile-toplevel ast)))
     (with-open-file (stream filename :direction :output)
       (cleavir-ir-graphviz:draw-flowchart hir stream))))
+
+(defun quick-hir-pathname (&optional (file-name-modifier "hir"))
+  (when *debug-cleavir*
+    (make-pathname :type "dot" :defaults (cmp::quick-module-pathname file-name-modifier))))
 
 (defun quick-draw-hir (hir &optional (file-name-modifier "hir"))
   (when *debug-cleavir*
