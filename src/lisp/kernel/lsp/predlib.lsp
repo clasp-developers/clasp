@@ -23,6 +23,7 @@
   (declare (ignore foo))
   nil)
 
+(declaim (inline constantly))
 (defun constantly (n)
   "Args: (n)
 Builds a new function which accepts any number of arguments but always outputs N."
