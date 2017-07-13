@@ -1117,7 +1117,11 @@ CL_DEFUN bool cl__fboundp(T_sp functionName) {
   } else if (functionName.nilp()) {
     return false;
   }
-  TYPE_ERROR(functionName,cl::_sym_function);
+  TYPE_ERROR(functionName,
+             // This is the type of function names, which may be defined as a macro somewhere.
+             Cons_O::createList(cl::_sym_or, cl::_sym_symbol,
+                                Cons_O::createList(cl::_sym_cons,
+                                                   Cons_O::createList(cl::_sym_eql, cl::_sym_setf))))
 }
 
 CL_LAMBDA(function-name);
