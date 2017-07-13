@@ -49,7 +49,6 @@
 ;;; KLUDGE. It should be easier to limit optimizations to lexical regions.
 
 (defun policy-anywhere-p (initial-instruction quality)
-  (setf cl-user::*test* initial-instruction)
   (cleavir-ir:map-instructions-arbitrary-order
    (lambda (i)
      (when (cleavir-policy:policy-value (cleavir-ir:policy i)
