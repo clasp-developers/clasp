@@ -284,3 +284,26 @@
            (map-into-fp ,output ,fun ,@seqs)
            (map-into-usual ,output ,fun ,@seqs))
        ,output)))
+
+(flet ((body (predicate sequences whenless found unfound)
+         (let ((p (gensym "PREDICATE"))
+               (b (gensym)))
+         `(reckless
+           (block ,b
+             (let ((,p ,predicate))
+               (do-static-sequences (call ,@sequences)
+                 (let ((it (call ,p)))
+                   (,whenless it (return-from ,b ,found))))
+               ,unfound))))))
+  (macrolet ((def (name whenless found unfound)
+               `(define-compiler-macro ,name (predicate sequence &rest more-sequences)
+                  (body predicate (cons sequence more-sequences) ',whenless ',found ',unfound))))
+    (def some when it nil)
+    (def every unless nil t)
+    (def notany when nil t)
+    (def notevery unless t nil)))
+
+(define-compiler-macro every* (predicate &rest sequences)
+  (let ((seqs (gensym-list sequences "SEQUENCE")))
+    `(and (= ,@(mapcar (lambda (s) `(length ,s)) seqs))
+          (every ,predicate ,@seqs))))
