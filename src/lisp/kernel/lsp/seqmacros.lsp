@@ -149,6 +149,34 @@
            ,@(and output (list output)))
        ,@body)))
 
+(define-compiler-macro make-sequence
+    (&whole form type size &key (initial-element nil iesp) &environment env)
+  (unless (constantp type)
+    (return-from make-sequence form))
+  (let ((type (eval type))) ; constant-form-value
+    (multiple-value-bind (element-type length success)
+        (closest-sequence-type type)
+      (cond ((not success) form) ; give up for runtime error; we could warn instead?
+            ((eq element-type 'list)
+             (if (eq length '*)
+                 `(make-list ,size :initial-element ,initial-element)
+                 (let ((ss (gensym "SIZE")) (r (gensym "RESULT")))
+                   `(let* ((,ss ,size)
+                           (,r (make-list ,ss :initial-element :initial-element)))
+                      (if (eql ,length ,ss)
+                          ,r
+                          (error-sequence-length ,r ',type ,ss))))))
+            (t (let ((r (gensym "RESULT")) (ss (gensym "SIZE")))
+                 `(let* ((,ss ,size)
+                         (,r (sys:make-vector ',(if (eq element-type '*) t element-type)
+                                              ,ss nil nil nil 0)))
+                    ,@(when iesp
+                        `((si::fill-array-with-elt ,r ,initial-element 0 nil)))
+                    ,@(unless (eql length '*)
+                        `((unless (eql ,length ,ss)
+                            (error-sequence-length ,r ',type ,ss))))
+                    ,r)))))))
+
 ;;; The following code is complicated but we do not have LOOP, so we use MAPCAR
 ;;; in places where I would prefer LOOP. It turned out okay though, I think.
 
