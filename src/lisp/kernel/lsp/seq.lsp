@@ -139,7 +139,7 @@ default value of INITIAL-ELEMENT depends on TYPE."
                (error-sequence-length result type size))
              result)))))
 
-(defun make-seq-iterator (sequence &key (start 0))
+(defun make-seq-iterator (sequence &optional (start 0))
   (declare (optimize (safety 0)))
   (cond ((fixnump start)
          (let ((aux start))
