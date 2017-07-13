@@ -216,6 +216,17 @@ default value of INITIAL-ELEMENT depends on TYPE."
             it-list (cons-cdr it-list)
             seq-list (cons-cdr seq-list)))))
 
+;;; FIXME: This should be moved. But right now this file is the earliest
+;;; use. Also we don't have typecase yet.
+;;; This is different from coerce-to-function, which implements the behavior
+;;; of (coerce x 'function). If we get a lambda expression here, that's a
+;;; type error, not a command to implicitly evaluate it.
+(declaim (inline coerce-fdesignator))
+(defun coerce-fdesignator (object)
+  (cond ((functionp object) object)
+        ((symbolp object) (fdefinition object))
+        (t (error 'type-error :datum object :expected-type '(or symbol function)))))
+
 (defun coerce-to-list (object)
   (if (listp object)
       object
@@ -262,7 +273,7 @@ SEQUENCEs."
 (defun map-for-effect (function sequence &rest more-sequences)
   "Does (map nil ...)"
   (let ((sequences (list* sequence more-sequences))
-        (function (si::coerce-to-function function))
+        (function (coerce-fdesignator function))
         it)
     (do-sequences (elt-list sequences)
       (apply function elt-list)))
@@ -274,7 +285,7 @@ Creates and returns a sequence of TYPE with K elements, with the N-th element
 being the value of applying FUNCTION to the N-th elements of the given
 SEQUENCEs, where K is the minimum length of the given SEQUENCEs."
   (let* ((sequences (list* sequence more-sequences))
-         (function (si::coerce-to-function function))
+         (function (coerce-fdesignator function))
          output
          it)
     (when result-type
