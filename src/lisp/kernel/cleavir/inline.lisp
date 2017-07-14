@@ -13,6 +13,11 @@
 (defmacro debug-inline (msg &rest msg-args)
   nil)
 
+(progn
+  (debug-inline "eq")
+  (declaim (inline cl:eq))
+  (defun cl:eq (x y)
+    (if (cleavir-primop:eq x y) t nil)))
 
 ;;; Use typeq
 (progn
