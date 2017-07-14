@@ -569,11 +569,9 @@ int cc_eql(core::T_O* x, core::T_O* y) {
     if (ty.single_floatp()) {
       if (tx.unsafe_single_float()==ty.unsafe_single_float()) return 1;
     }
-  } else if (gc::IsA<core::DoubleFloat_sp>(tx)) {
-    if (gc::IsA<core::DoubleFloat_sp>(ty)) {
-      if (gc::As_unsafe<core::DoubleFloat_sp>(tx)->get() == gc::As_unsafe<core::DoubleFloat_sp>(ty)->get()) {
-        return 1;
-      }
+  } else if (tx.generalp()) {
+    if (ty.generalp()) {
+      return cl__eql(tx,ty).nilp() ? 1 : 0;
     }
   }
   return 0;
