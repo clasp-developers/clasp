@@ -26,7 +26,7 @@
 	  body)))
 
 (defmacro with-predicate ((predicate) &body body)
-  `(let ((,predicate (si::coerce-to-function ,predicate)))
+  `(let ((,predicate (coerce-fdesignator ,predicate)))
      (declare (function ,predicate))
      (macrolet ((,predicate (&rest args)
 		  `(locally (declare (optimize (safety 0) (speed 3)))
@@ -34,7 +34,7 @@
        ,@body)))
 
 (defmacro with-key ((akey) &body body)
-  `(let ((,akey (if ,akey (si::coerce-to-function ,akey) #'identity)))
+  `(let ((,akey (if ,akey (coerce-fdesignator ,akey) #'identity)))
      (declare (function ,akey))
      (macrolet ((,akey (value)
 		  `(locally (declare (optimize (safety 0) (speed 3)))
@@ -47,9 +47,9 @@
 	    (,%test-not ,test-not)
 	    (,%test-fn (if ,%test
 			  (progn (when ,%test-not (test-error))
-				 (si::coerce-to-function ,%test))
+				 (coerce-fdesignator ,%test))
 			  (if ,%test-not
-			      (si::coerce-to-function ,%test-not)
+			      (coerce-fdesignator ,%test-not)
 			      #'eql))))
        (declare (function ,%test-fn))
        (macrolet ((compare (v1 v2)
@@ -149,6 +149,34 @@
            ,@(and output (list output)))
        ,@body)))
 
+(define-compiler-macro make-sequence
+    (&whole form type size &key (initial-element nil iesp) &environment env)
+  (unless (constantp type)
+    (return-from make-sequence form))
+  (let ((type (eval type))) ; constant-form-value
+    (multiple-value-bind (element-type length success)
+        (closest-sequence-type type)
+      (cond ((not success) form) ; give up for runtime error; we could warn instead?
+            ((eq element-type 'list)
+             (if (eq length '*)
+                 `(make-list ,size :initial-element ,initial-element)
+                 (let ((ss (gensym "SIZE")) (r (gensym "RESULT")))
+                   `(let* ((,ss ,size)
+                           (,r (make-list ,ss :initial-element :initial-element)))
+                      (if (eql ,length ,ss)
+                          ,r
+                          (error-sequence-length ,r ',type ,ss))))))
+            (t (let ((r (gensym "RESULT")) (ss (gensym "SIZE")))
+                 `(let* ((,ss ,size)
+                         (,r (sys:make-vector ',(if (eq element-type '*) t element-type)
+                                              ,ss nil nil nil 0)))
+                    ,@(when iesp
+                        `((si::fill-array-with-elt ,r ,initial-element 0 nil)))
+                    ,@(unless (eql length '*)
+                        `((unless (eql ,length ,ss)
+                            (error-sequence-length ,r ',type ,ss))))
+                    ,r)))))))
+
 ;;; The following code is complicated but we do not have LOOP, so we use MAPCAR
 ;;; in places where I would prefer LOOP. It turned out okay though, I think.
 
@@ -189,7 +217,7 @@
 (define-compiler-macro map-for-effect
     (function sequence &rest more-sequences)
   (let* ((fun (gensym "FUNCTION")))
-    `(let ((,fun (si::coerce-to-function ,function)))
+    `(let ((,fun (coerce-fdesignator ,function)))
        (do-static-sequences (call ,sequence ,@more-sequences)
          (call ,fun))
        nil)))
@@ -209,7 +237,7 @@
               `(the (values ,result-type &rest nil)
                     ;; this is basically MAP-INTO, except we don't bother checking
                     ;; for the end of output iteration.
-                    (let* ((,fun (si::coerce-to-function ,function))
+                    (let* ((,fun (coerce-fdesignator ,function))
                            ;; Have to (redundantly) once-only these because
                            ;; we need the lengths.
                            ,@(mapcar #'list seqs sequences)
@@ -250,9 +278,32 @@
         (fun (gensym "FUNCTION"))
         (seqs (gensym-list sequences "SEQUENCE")))
     `(let ((,output ,result)
-           (,fun (si::coerce-to-function ,function))
+           (,fun (coerce-fdesignator ,function))
            ,@(mapcar #'list seqs sequences))
        (if (and (vectorp ,output) (array-has-fill-pointer-p, output))
            (map-into-fp ,output ,fun ,@seqs)
            (map-into-usual ,output ,fun ,@seqs))
        ,output)))
+
+(flet ((body (predicate sequences whenless found unfound)
+         (let ((p (gensym "PREDICATE"))
+               (b (gensym)))
+         `(reckless
+           (block ,b
+             (let ((,p ,predicate))
+               (do-static-sequences (call ,@sequences)
+                 (let ((it (call ,p)))
+                   (,whenless it (return-from ,b ,found))))
+               ,unfound))))))
+  (macrolet ((def (name whenless found unfound)
+               `(define-compiler-macro ,name (predicate sequence &rest more-sequences)
+                  (body predicate (cons sequence more-sequences) ',whenless ',found ',unfound))))
+    (def some when it nil)
+    (def every unless nil t)
+    (def notany when nil t)
+    (def notevery unless t nil)))
+
+(define-compiler-macro every* (predicate &rest sequences)
+  (let ((seqs (gensym-list sequences "SEQUENCE")))
+    `(and (= ,@(mapcar (lambda (s) `(length ,s)) seqs))
+          (every ,predicate ,@seqs))))

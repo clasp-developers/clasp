@@ -23,6 +23,7 @@
   (declare (ignore foo))
   nil)
 
+(declaim (inline constantly))
 (defun constantly (n)
   "Args: (n)
 Builds a new function which accepts any number of arguments but always outputs N."
@@ -840,7 +841,10 @@ if not possible."
                              ((subtypep type 'sequence env)
                               ;; FIXME: full call to concatenate for this is ridick.
                               ;; but replace make-sequence is actually slower.
-                              ;; presumably cl:replace sucks.
+                              ;; Not sure why. concatenate can skip some parts of
+                              ;; replace, like an alias check, but how is that enough?
+                              #+(or)
+                              (da `(replace (make-sequence ',type (length ,obj)) ,obj))
                               (da `(concatenate ',type ,obj)))
                              ;; give up for runtime
                              (t

@@ -315,13 +315,13 @@
 
 
 (defun delete-if (predicate sequence &key (start 0) end from-end count key)
-  (delete (si::coerce-to-function predicate) sequence
+  (delete (coerce-fdesignator predicate) sequence
 	  :start start :end end :from-end from-end :count count
 	  :test #'unsafe-funcall1 :key key))
 
 (defun delete-if-not (predicate sequence &key (start 0) end
                       from-end count key)
-  (delete (si::coerce-to-function predicate) sequence
+  (delete (coerce-fdesignator predicate) sequence
 	  :start start :end end :from-end from-end :count count
 	  :test-not #'unsafe-funcall1 :key key))
 
@@ -356,12 +356,12 @@
 		(incf counter))))))))
 
 (defun count-if (predicate sequence &key from-end (start 0) end key)
-  (count (si::coerce-to-function predicate) sequence
+  (count (coerce-fdesignator predicate) sequence
 	 :from-end from-end :start start :end end
 	 :test #'unsafe-funcall1 :key key))
 
 (defun count-if-not (predicate sequence &key from-end (start 0) end key)
-  (count (si::coerce-to-function predicate)
+  (count (coerce-fdesignator predicate)
 	 sequence :from-end from-end :start start :end end
 	 :test-not #'unsafe-funcall1 :key key))
 
@@ -372,14 +372,14 @@
 
 (defun substitute-if (new predicate sequence
 		      &key (start 0) end from-end count key)
-  (nsubstitute new (si::coerce-to-function predicate) (copy-seq sequence)
+  (nsubstitute new (coerce-fdesignator predicate) (copy-seq sequence)
 	       :key key :test #'unsafe-funcall1
                :start start :end end :from-end from-end :count count
                ))
 
 (defun substitute-if-not (new predicate sequence
 			  &key (start 0) end from-end count key)
-  (nsubstitute new (si::coerce-to-function predicate) (copy-seq sequence)
+  (nsubstitute new (coerce-fdesignator predicate) (copy-seq sequence)
 	       :key key :test-not #'unsafe-funcall1
                :start start :end end :from-end from-end :count count
                ))
@@ -415,14 +415,14 @@
 
 (defun nsubstitute-if (new predicate sequence
                        &key (start 0) end from-end count key)
-  (nsubstitute new (si::coerce-to-function predicate) sequence
+  (nsubstitute new (coerce-fdesignator predicate) sequence
 	       :key key :test #'unsafe-funcall1
                :start start :end end :from-end from-end :count count
                ))
 
 (defun nsubstitute-if-not (new predicate sequence
                            &key (start 0) end from-end count key)
-  (nsubstitute new (si::coerce-to-function predicate) sequence
+  (nsubstitute new (coerce-fdesignator predicate) sequence
 	       :key key :test-not #'unsafe-funcall1
                :start start :end end :from-end from-end :count count
                ))
@@ -442,12 +442,12 @@
             (setf output elt)))))))
 
 (defun find-if (predicate sequence &key from-end (start 0) end key)
-  (find (si::coerce-to-function predicate) sequence
+  (find (coerce-fdesignator predicate) sequence
 	:from-end from-end :start start :end end
 	:test #'unsafe-funcall1 :key key))
 
 (defun find-if-not (predicate sequence &key from-end (start 0) end key)
-  (find (si::coerce-to-function predicate) sequence
+  (find (coerce-fdesignator predicate) sequence
 	:from-end from-end :start start :end end
 	:test-not #'unsafe-funcall1 :key key))
 
@@ -465,12 +465,12 @@
             (setf output index)))))))
 
 (defun position-if (predicate sequence &key from-end (start 0) end key)
-  (position (si::coerce-to-function predicate) sequence
+  (position (coerce-fdesignator predicate) sequence
             :from-end from-end :start start :end end
             :test #'unsafe-funcall1 :key key))
 
 (defun position-if-not (predicate sequence &key from-end (start 0) end key)
-  (position (si::coerce-to-function predicate) sequence
+  (position (coerce-fdesignator predicate) sequence
             :from-end from-end :start start :end end
             :test-not #'unsafe-funcall1 :key key))
 
@@ -790,8 +790,8 @@ elements X and Y is arbitrary if both
 	(FUNCALL TEST X Y)
 	(FUNCALL TEST Y X)
 evaluates to NIL.  See STABLE-SORT."
-  (setf key (if key (si::coerce-to-function key) #'identity)
-	predicate (si::coerce-to-function predicate))
+  (setf key (if key (coerce-fdesignator key) #'identity)
+	predicate (coerce-fdesignator predicate))
   (if (listp sequence)
       (list-merge-sort sequence predicate key)
       (quick-sort sequence 0 (truly-the fixnum (1- (length sequence))) predicate key)))
@@ -902,8 +902,8 @@ X and Y, if both
 	(FUNCALL TEST Y X)
 evaluates to NIL, then the order of X and Y are the same as in the original
 SEQUENCE.  See SORT."
-  (setf key (if key (si::coerce-to-function key) #'identity)
-	predicate (si::coerce-to-function predicate))
+  (setf key (if key (coerce-fdesignator key) #'identity)
+	predicate (coerce-fdesignator predicate))
   (if (listp sequence)
       (list-merge-sort sequence predicate key)
       (if (or (stringp sequence) (bit-vector-p sequence))
