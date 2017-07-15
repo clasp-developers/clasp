@@ -332,6 +332,9 @@ namespace gctools {
         Value v(the_stamp,0);
         return v;
       }
+    public:
+      template <typename T>
+      static size_t GenerateHeaderValue() { (GCStamp<T>::Stamp<<stamp_shift)|(GCStamp<T>::Flags<<flags_shift)|stamp_tag; };
     public: // header readers
       inline GCStampEnum stamp() const {
         return static_cast<GCStampEnum>( this->_value >> stamp_shift );

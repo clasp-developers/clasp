@@ -695,6 +695,33 @@ void calculate_class_precedence_lists()
   IMPLEMENT_MEF(BF("calculate_class_precendence_lists"));
 }
 
+// ------------------------------------------------------------
+//
+// Generate type specifier -> header value (range) map
+//
+
+template <typename TSingle>
+void add_single_typeq_test(core::HashTable_sp theMap) {
+  theMap->setf_gethash(TSingle::static_class_symbol,core::make_fixnum(gctools::Header_s::Value::GenerateHeaderValue<TSingle>()));
+}
+
+template <typename TRangeFirst,typename TRangeLast>
+void add_range_typeq_test(core::HashTable_sp theMap) {
+  theMap->setf_gethash(TRangeFirst::static_class_symbol,
+                       core::Cons_O::create(core::make_fixnum(gctools::Header_s::Value::GenerateHeaderValue<TRangeFirst>()),
+                                            core::make_fixnum(gctools::Header_s::Value::GenerateHeaderValue<TRangeLast>())));
+}
+  
+core::T_sp generate_type_header_value_map() {
+  core::HashTable_sp theMap = core::HashTableEqual_O::create_default();
+#if !defined(USE_CXX_DYNAMIC_CAST)
+  #define GC_TYPEQ
+    #include CLASP_GC_FILENAME
+  #undef GC_TYPEQ
+#endif
+  return theMap;
+};
+
 // ----------------------------------------------------------------------
 //
 // Expose classes and methods

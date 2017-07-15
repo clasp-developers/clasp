@@ -170,6 +170,7 @@ SYMBOL_EXPORT_SC_(CompPkg, STARllvm_contextSTAR);
 SYMBOL_EXPORT_SC_(CompPkg, STARload_time_value_holder_nameSTAR);
 SYMBOL_EXPORT_SC_(CorePkg,c_local);
 SYMBOL_EXPORT_SC_(CorePkg,_PLUS_known_typep_predicates_PLUS_);
+SYMBOL_EXPORT_SC_(CorePkg,_PLUS_type_header_value_map_PLUS_);
 SYMBOL_EXPORT_SC_(ExtPkg,check_arguments_type);
 SYMBOL_EXPORT_SC_(ExtPkg,array_index);
 SYMBOL_EXPORT_SC_(CorePkg,index);
@@ -1086,6 +1087,7 @@ void CoreExposer_O::define_essential_globals(Lisp_sp lisp) {
   _sym_STARnotify_on_compileSTAR->defparameter(_Nil<T_O>());
   _sym_STARtrace_startupSTAR->defparameter(_Nil<T_O>());
   _sym_STARinterpreterTraceSTAR->defparameter(_Nil<T_O>());
+  _sym__PLUS_type_header_value_map_PLUS_->defparameter(generate_type_header_value_map());
   gctools::_sym_STARfinalizersSTAR->defparameter(WeakKeyHashTable_O::create());
   _sym_STARllvmVersionSTAR->defparameter(SimpleBaseString_O::make(LLVM_VERSION));
   _sym__PLUS_numberOfFixedArguments_PLUS_->defconstant(make_fixnum(LCC_ARGS_IN_REGISTERS));

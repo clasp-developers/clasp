@@ -114,6 +114,6 @@ void initialize_clasp();
 void initialize_functions();
 void initialize_source_info();
 void initialize_classes_and_methods();
-
+core::T_sp generate_type_header_value_map();
 
 #endif
