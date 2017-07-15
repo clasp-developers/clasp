@@ -386,9 +386,10 @@
            (analysis-enums analysis)))
 
 (defun generate-typeq-code (fout analysis)
-  (maphash (lambda (key enum) 
+  (maphash (lambda (key enum)
              (when (and (not (abstract-species-enum-p enum analysis))
-                        (enum-in-hierarchy enum))
+                        (enum-in-hierarchy enum)
+                        (derived-from-cclass key "core::General_O" (analysis-project analysis)))
                (multiple-value-bind (low high)
                    (hierarchy-class-enum-range key analysis)
                  (if (string= key "core::Instance_O") ; special case core::Instance_O
