@@ -2274,7 +2274,6 @@ template <typename FP> struct Cast<core::Instance_O*,FP> {
 //           For now I'll special case core::Instance_O and fall back to dynamic_cast
       int kindVal = header->stamp();
       // low high --> 263 264 
-      if ((263 <= kindVal) && (kindVal <= 264)) return true;
       return (dynamic_cast<core::Instance_O*>(client)!=NULL);
   };
 };
@@ -4313,6 +4312,395 @@ template <typename FP> struct Cast<clbind::DummyCreator_O*,FP> {
   };
 };
 #endif // defined(GC_DYNAMIC_CAST)
+#if defined(GC_TYPEQ)
+      add_range_typeq_test<llvmo::MDNode_O,llvmo::DIFile_O>();
+      add_single_typeq_test<clcenv::GlobalFunctionInfo_O>();
+      add_single_typeq_test<clcenv::Optimize_O>();
+      add_single_typeq_test<llvmo::LLVMTargetMachine_O>();
+      add_single_typeq_test<core::SimpleMDArray_int8_t_O>();
+      add_single_typeq_test<llvmo::ReturnInst_O>();
+      add_single_typeq_test<core::ConsStepper_O>();
+      add_single_typeq_test<llvmo::ModuleHandle_O>();
+      add_single_typeq_test<core::DoubleFloat_O>();
+      add_range_typeq_test<core::LightUserData_O,core::UserData_O>();
+      add_single_typeq_test<asttooling::AsttoolingExposer_O>();
+      add_single_typeq_test<llvmo::PassManagerBuilder_O>();
+      add_single_typeq_test<core::SmallMap_O>();
+      add_single_typeq_test<core::ShortFloat_O>();
+      add_single_typeq_test<llvmo::TargetSubtargetInfo_O>();
+      add_single_typeq_test<llvmo::LoadInst_O>();
+      add_single_typeq_test<core::Record_O>();
+      add_single_typeq_test<gctools::GCArray_moveable<int>>();
+      add_single_typeq_test<core::SourceManager_O>();
+      add_range_typeq_test<core::SaveArchive_O,core::SexpSaveArchive_O>();
+      add_single_typeq_test<core::SimpleMDArray_int16_t_O>();
+      add_range_typeq_test<core::Pathname_O,core::LogicalPathname_O>();
+      add_single_typeq_test<core::MDArrayDouble_O>();
+      add_single_typeq_test<core::MacroClosure_O>();
+      add_single_typeq_test<clcenv::VariableType_O>();
+      add_single_typeq_test<gctools::GCVector_moveable<core::RequiredArgument>>();
+      add_single_typeq_test<clcenv::OptimizeInfo_O>();
+      add_single_typeq_test<core::LeafSNode_O>();
+      add_single_typeq_test<core::CatchEnvironment_O>();
+      add_range_typeq_test<llvmo::DIScope_O,llvmo::DIFile_O>();
+      add_single_typeq_test<core::Str8Ns_O>();
+      add_single_typeq_test<core::SimpleMDArray_fixnum_O>();
+      add_single_typeq_test<core::InterpretedClosure_O>();
+      add_single_typeq_test<core::SimpleMDArray_byte32_t_O>();
+      add_single_typeq_test<core::SimpleCharacterString_O>();
+      add_single_typeq_test<core::SmallMultimap_O>();
+      add_single_typeq_test<core::SimpleBitVector_O>();
+      add_single_typeq_test<core::ValueFrame_O>();
+      add_single_typeq_test<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<core::T_O>>>>();
+      add_range_typeq_test<core::ClosureWithFrame_O,core::InterpretedClosure_O>();
+      add_single_typeq_test<core::SimpleMDArrayT_O>();
+      add_single_typeq_test<core::Character_dummy_O>();
+      add_single_typeq_test<clcenv::LexicalVariable_O>();
+      add_single_typeq_test<llvmo::ExecutionEngine_O>();
+      add_single_typeq_test<llvmo::MDString_O>();
+      add_single_typeq_test<llvmo::ConstantDataArray_O>();
+      add_single_typeq_test<clbind::ConstructorCreator_O>();
+      add_range_typeq_test<clcenv::Entry_O,clcenv::Optimize_O>();
+      add_single_typeq_test<llvmo::DIFile_O>();
+      add_single_typeq_test<clcenv::LexicalVariableInfo_O>();
+      add_single_typeq_test<llvmo::Attribute_O>();
+      add_single_typeq_test<llvmo::NamedMDNode_O>();
+      add_single_typeq_test<core::SimpleBaseString_O>();
+      add_range_typeq_test<llvmo::Metadata_O,llvmo::DIFile_O>();
+      add_single_typeq_test<llvmo::DILexicalBlock_O>();
+      add_range_typeq_test<llvmo::Type_O,llvmo::IntegerType_O>();
+      add_single_typeq_test<llvmo::AllocaInst_O>();
+      add_single_typeq_test<mp::BlockingConcurrentQueue_O>();
+      add_single_typeq_test<core::Fixnum_dummy_O>();
+      add_single_typeq_test<llvmo::CallInst_O>();
+      add_single_typeq_test<core::TagbodyEnvironment_O>();
+      add_single_typeq_test<mp::SharedMutex_O>();
+      add_single_typeq_test<llvmo::SwitchInst_O>();
+      add_single_typeq_test<core::SimpleVector_byte16_t_O>();
+      add_range_typeq_test<core::SimpleMDArray_O,core::SimpleMDArray_int32_t_O>();
+      add_single_typeq_test<core::SingleDispatchMethod_O>();
+      add_single_typeq_test<core::TagbodyFrame_O>();
+      add_range_typeq_test<llvmo::DINode_O,llvmo::DIFile_O>();
+      add_single_typeq_test<core::DirectoryIterator_O>();
+      add_single_typeq_test<core::StringOutputStream_O>();
+      add_single_typeq_test<core::SimpleMDArrayCharacter_O>();
+      add_range_typeq_test<core::NamedFunction_O,core::SpecialForm_O>();
+      add_single_typeq_test<llvmo::Function_O>();
+      add_single_typeq_test<llvmo::InsertPoint_O>();
+      add_single_typeq_test<core::BitVectorNs_O>();
+      add_single_typeq_test<core::LambdaListHandler_O>();
+      add_range_typeq_test<llvmo::ConstantDataSequential_O,llvmo::ConstantDataArray_O>();
+      add_single_typeq_test<core::CompiledClosure_O>();
+      add_single_typeq_test<clcenv::GlobalMacroInfo_O>();
+      add_single_typeq_test<core::WeakKeyMapping_O>();
+      add_range_typeq_test<core::Environment_O,core::GlueEnvironment_O>();
+      add_single_typeq_test<core::CompiledDispatchFunction_O>();
+      add_single_typeq_test<llvmo::ValueAsMetadata_O>();
+      add_single_typeq_test<clcenv::SymbolMacro_O>();
+      add_single_typeq_test<llvmo::DICompositeType_O>();
+      add_single_typeq_test<core::MDArray_byte64_t_O>();
+      add_single_typeq_test<core::ConcatenatedStream_O>();
+      add_single_typeq_test<core::SimpleVector_int64_t_O>();
+      add_range_typeq_test<core::HashTable_O,core::HashTableEqualp_O>();
+      add_range_typeq_test<llvmo::DILexicalBlockBase_O,llvmo::DILexicalBlock_O>();
+      add_range_typeq_test<core::Archive_O,core::SexpSaveArchive_O>();
+      add_range_typeq_test<core::Rational_O,core::Ratio_O>();
+      add_single_typeq_test<clcenv::LocalFunctionInfo_O>();
+      add_range_typeq_test<core::AnsiStream_O,core::ConcatenatedStream_O>();
+      add_single_typeq_test<mp::RecursiveMutex_O>();
+      add_single_typeq_test<core::SharpEqualWrapper_O>();
+      add_single_typeq_test<core::CxxMethodFunction_O>();
+      add_single_typeq_test<core::SimpleMDArray_byte16_t_O>();
+      add_single_typeq_test<gctools::GCVector_moveable<gctools::smart_ptr<core::SingleDispatchMethod_O>>>();
+      add_range_typeq_test<llvmo::UnaryInstruction_O,llvmo::LoadInst_O>();
+      add_single_typeq_test<core::StringInputStream_O>();
+      add_single_typeq_test<core::SingleDispatchEffectiveMethodFunction_O>();
+      add_range_typeq_test<llvmo::TargetMachine_O,llvmo::LLVMTargetMachine_O>();
+      add_single_typeq_test<llvmo::DIBasicType_O>();
+      add_single_typeq_test<core::MDArray_byte8_t_O>();
+      add_single_typeq_test<core::SimpleVector_fixnum_O>();
+      add_single_typeq_test<gctools::GCVector_moveable<gctools::smart_ptr<core::SequenceStepper_O>>>();
+      add_single_typeq_test<clcenv::SpecialVariableInfo_O>();
+      add_single_typeq_test<gctools::GCVector_moveable<gctools::smart_ptr<core::Package_O>>>();
+      add_range_typeq_test<core::Number_O,core::Ratio_O>();
+      add_single_typeq_test<core::CandoException_O>();
+      add_single_typeq_test<core::ReadTable_O>();
+      add_single_typeq_test<llvmo::GlobalVariable_O>();
+      add_single_typeq_test<core::SymbolToEnumConverter_O>();
+      add_single_typeq_test<core::Bignum_O>();
+      add_single_typeq_test<core::PosixTimeDuration_O>();
+      add_single_typeq_test<clcenv::GlobalEnvironment_O>();
+      add_single_typeq_test<core::CompiledFunction_O>();
+      add_single_typeq_test<core::NativeVector_float_O>();
+      add_single_typeq_test<gctools::GCVector_moveable<core::ExceptionEntry>>();
+      add_single_typeq_test<gctools::GCArray_moveable<unsigned int>>();
+      add_single_typeq_test<llvmo::DIDerivedType_O>();
+      add_single_typeq_test<core::MDArrayCharacter_O>();
+      add_single_typeq_test<core::MDArray_byte32_t_O>();
+      add_single_typeq_test<llvmo::BlockAddress_O>();
+      add_single_typeq_test<llvmo::StoreInst_O>();
+      add_single_typeq_test<llvmo::FunctionPass_O>();
+      add_single_typeq_test<core::SimpleMDArray_int64_t_O>();
+      add_single_typeq_test<core::LongFloat_O>();
+      add_range_typeq_test<core::FileStream_O,core::IOFileStream_O>();
+      add_single_typeq_test<llvmo::AtomicRMWInst_O>();
+      add_single_typeq_test<llvmo::ResumeInst_O>();
+      add_single_typeq_test<core::BlockEnvironment_O>();
+      add_range_typeq_test<clcenv::FunctionInfo_O,clcenv::GlobalFunctionInfo_O>();
+      add_range_typeq_test<core::StrNs_O,core::Str8Ns_O>();
+      add_single_typeq_test<core::SimpleVector_byte8_t_O>();
+      add_single_typeq_test<gctools::GCArray_moveable<double>>();
+      add_single_typeq_test<llvmo::ClaspJIT_O>();
+      add_range_typeq_test<core::LoadArchive_O,core::SexpLoadArchive_O>();
+      add_single_typeq_test<core::Ratio_O>();
+      add_range_typeq_test<core::FunctionClosure_O,core::InterpretedClosure_O>();
+      add_range_typeq_test<clcenv::VariableInfo_O,clcenv::LexicalVariableInfo_O>();
+      add_single_typeq_test<gctools::GCArray_moveable<float>>();
+      add_single_typeq_test<llvmo::Triple_O>();
+      add_single_typeq_test<llvmo::DataLayout_O>();
+      add_range_typeq_test<core::Symbol_O,core::Null_O>();
+      add_single_typeq_test<clcenv::LocalMacroInfo_O>();
+      add_range_typeq_test<core::T_O,core::VaList_dummy_O>();
+      add_single_typeq_test<llvmo::ConstantExpr_O>();
+      add_single_typeq_test<core::SimpleVector_int16_t_O>();
+      add_single_typeq_test<core::Lisp_O>();
+      add_single_typeq_test<core::StackValueEnvironment_O>();
+      add_single_typeq_test<gctools::GCArray_moveable<unsigned long>>();
+      add_single_typeq_test<llvmo::FenceInst_O>();
+      add_single_typeq_test<clcenv::VariableIgnore_O>();
+      add_single_typeq_test<core::PosixTime_O>();
+      add_single_typeq_test<gctools::GCVector_moveable<double>>();
+      add_single_typeq_test<gctools::GCArray_moveable<short>>();
+      add_single_typeq_test<core::MDArray_byte16_t_O>();
+      add_single_typeq_test<core::IntArray_O>();
+      add_range_typeq_test_instance<core::Instance_O,clbind::ClassRep_O>();
+      add_single_typeq_test<core::MDArrayT_O>();
+      add_single_typeq_test<llvmo::IndirectBrInst_O>();
+      add_single_typeq_test<gctools::GCVector_moveable<core::SymbolClassPair>>();
+      add_single_typeq_test<llvmo::ConstantPointerNull_O>();
+      add_single_typeq_test<llvmo::EngineBuilder_O>();
+      add_single_typeq_test<core::SimpleVector_size_t_O>();
+      add_range_typeq_test<core::ExternalObject_O,llvmo::PassManagerBuilder_O>();
+      add_range_typeq_test<core::RuntimeVisibleEnvironment_O,core::TagbodyEnvironment_O>();
+      add_single_typeq_test<core::VaList_dummy_O>();
+      add_single_typeq_test<core::SimpleMDArray_byte8_t_O>();
+      add_single_typeq_test<core::NativeVector_double_O>();
+      add_single_typeq_test<core::Pointer_O>();
+      add_single_typeq_test<core::WeakPointer_O>();
+      add_range_typeq_test<core::Function_O,core::SpecialForm_O>();
+      add_single_typeq_test<gctools::GCVector_moveable<float>>();
+      add_range_typeq_test<llvmo::MCSubtargetInfo_O,llvmo::TargetSubtargetInfo_O>();
+      add_range_typeq_test<llvmo::TerminatorInst_O,llvmo::ReturnInst_O>();
+      add_single_typeq_test<core::TwoWayStream_O>();
+      add_single_typeq_test<llvmo::UndefValue_O>();
+      add_range_typeq_test<core::Integer_O,core::Fixnum_dummy_O>();
+      add_range_typeq_test<core::BuiltinClosure_O,core::MacroClosure_O>();
+      add_single_typeq_test<core::IOFileStream_O>();
+      add_single_typeq_test<llvmo::IntegerType_O>();
+      add_single_typeq_test<core::StructureClassCreator_O>();
+      add_single_typeq_test<core::HashTableEqualp_O>();
+      add_single_typeq_test<llvmo::DebugLoc_O>();
+      add_single_typeq_test<llvmo::DICompileUnit_O>();
+      add_single_typeq_test<core::MDArray_int64_t_O>();
+      add_single_typeq_test<llvmo::VectorType_O>();
+      add_single_typeq_test<core::RecursiveDirectoryIterator_O>();
+      add_range_typeq_test<core::SequenceStepper_O,core::ConsStepper_O>();
+      add_single_typeq_test<llvmo::AtomicCmpXchgInst_O>();
+      add_single_typeq_test<llvmo::BasicBlock_O>();
+      add_range_typeq_test<core::CompileTimeEnvironment_O,core::CatchEnvironment_O>();
+      add_single_typeq_test<core::RandomState_O>();
+      add_single_typeq_test<llvmo::ConstantStruct_O>();
+      add_range_typeq_test<llvmo::SequentialType_O,llvmo::VectorType_O>();
+      add_single_typeq_test<core::InvocationHistoryFrameIterator_O>();
+      add_single_typeq_test<core::IOStreamStream_O>();
+      add_single_typeq_test<core::SingleFloat_dummy_O>();
+      add_single_typeq_test<clcenv::FunctionIgnore_O>();
+      add_single_typeq_test<core::Path_O>();
+      add_single_typeq_test<gctools::GCVector_moveable<core::SymbolStorage>>();
+      add_range_typeq_test<core::StringStream_O,core::StringOutputStream_O>();
+      add_single_typeq_test<core::SourceFileInfo_O>();
+      add_single_typeq_test<core::HashTableEql_O>();
+      add_single_typeq_test<core::MDArray_int8_t_O>();
+      add_single_typeq_test<core::Cache_O>();
+      add_single_typeq_test<core::MDArray_fixnum_O>();
+      add_single_typeq_test<core::MDArray_int32_t_O>();
+      add_single_typeq_test<mp::Process_O>();
+      add_single_typeq_test<core::SimpleMDArrayFloat_O>();
+      add_single_typeq_test<core::InstanceCreator_O>();
+      add_range_typeq_test<core::General_O,llvmo::ModuleHandle_O>();
+      add_single_typeq_test<llvmo::BranchInst_O>();
+      add_range_typeq_test<llvmo::Instruction_O,llvmo::CallInst_O>();
+      add_single_typeq_test<core::SimpleMDArrayBaseChar_O>();
+      add_single_typeq_test<core::SpecialForm_O>();
+      add_single_typeq_test<llvmo::ConstantArray_O>();
+      add_single_typeq_test<core::Cons_O>();
+      add_single_typeq_test<clcenv::FunctionType_O>();
+      add_single_typeq_test<core::SimpleVector_O>();
+      add_range_typeq_test<core::Stream_O,core::ConcatenatedStream_O>();
+      add_range_typeq_test<core::Real_O,core::Ratio_O>();
+      add_single_typeq_test<gctools::GCVector_moveable<core::OptionalArgument>>();
+      add_single_typeq_test<clcenv::Tag_O>();
+      add_single_typeq_test<gctools::GCArray_moveable<long>>();
+      add_range_typeq_test<llvmo::GlobalValue_O,llvmo::Function_O>();
+      add_single_typeq_test<core::FileStatus_O>();
+      add_single_typeq_test<llvmo::LandingPadInst_O>();
+      add_single_typeq_test<mp::ConditionVariable_O>();
+      add_range_typeq_test<llvmo::IRBuilderBase_O,llvmo::IRBuilder_O>();
+      add_single_typeq_test<gctools::GCVector_moveable<core::T_O *>>();
+      add_range_typeq_test<llvmo::Value_O,llvmo::BasicBlock_O>();
+      add_single_typeq_test<core::SymbolMacroletEnvironment_O>();
+      add_single_typeq_test<llvmo::DINodeArray_O>();
+      add_range_typeq_test<clcenv::Info_O,clcenv::OptimizeInfo_O>();
+      add_single_typeq_test<core::UnwindProtectEnvironment_O>();
+      add_single_typeq_test<clcenv::FunctionDynamicExtent_O>();
+      add_range_typeq_test<llvmo::ModulePass_O,llvmo::TargetLibraryInfoWrapperPass_O>();
+      add_range_typeq_test<llvmo::PassManagerBase_O,llvmo::PassManager_O>();
+      add_range_typeq_test<core::Iterator_O,core::DirectoryIterator_O>();
+      add_single_typeq_test<llvmo::IRBuilder_O>();
+      add_single_typeq_test<gctools::GCArray_moveable<unsigned char>>();
+      add_single_typeq_test<core::TranslationFunctor>();
+      add_single_typeq_test<gctools::GCVector_moveable<core::DynamicBinding>>();
+      add_single_typeq_test<core::MultiStringBuffer_O>();
+      add_single_typeq_test<llvmo::DISubroutineType_O>();
+      add_single_typeq_test<core::SimpleVectorDouble_O>();
+      add_range_typeq_test<llvmo::DIType_O,llvmo::DICompositeType_O>();
+      add_single_typeq_test<clcenv::SpecialOperatorInfo_O>();
+      add_single_typeq_test<gctools::GCVector_moveable<gctools::smart_ptr<clbind::ClassRep_O>>>();
+      add_single_typeq_test<gctools::GCVector_moveable<core::AuxArgument>>();
+      add_single_typeq_test<clcenv::LambdaNameInfo_O>();
+      add_single_typeq_test<llvmo::VAArgInst_O>();
+      add_single_typeq_test<core::SimpleVector_int32_t_O>();
+      add_single_typeq_test<core::SimpleVector_byte64_t_O>();
+      add_single_typeq_test<core::SimpleMDArray_int32_t_O>();
+      add_single_typeq_test<core::SourcePosInfo_O>();
+      add_single_typeq_test<core::ClassCreator_O>();
+      add_single_typeq_test<llvmo::APInt_O>();
+      add_single_typeq_test<core::CoreExposer_O>();
+      add_single_typeq_test<clcenv::BlockInfo_O>();
+      add_single_typeq_test<core::GlueEnvironment_O>();
+      add_single_typeq_test<llvmo::Target_O>();
+      add_single_typeq_test<core::NativeVector_int_O>();
+      add_single_typeq_test<llvmo::FunctionType_O>();
+      add_single_typeq_test<core::Null_O>();
+      add_range_typeq_test<mp::Mutex_O,mp::RecursiveMutex_O>();
+      add_single_typeq_test<llvmo::LLVMContext_O>();
+      add_single_typeq_test<core::SimpleMDArrayBit_O>();
+      add_single_typeq_test<gctools::GCBitUnitArray_moveable<1,unsigned int,int>>();
+      add_single_typeq_test<llvmo::ConstantFP_O>();
+      add_single_typeq_test<core::SimpleMDArray_size_t_O>();
+      add_single_typeq_test<llvmo::APFloat_O>();
+      add_single_typeq_test<gctools::GCVector_moveable<core::KeywordArgument>>();
+      add_single_typeq_test<clcenv::SymbolMacroInfo_O>();
+      add_range_typeq_test<core::AbstractSimpleVector_O,core::SimpleBitVector_O>();
+      add_single_typeq_test<gctools::GCVector_moveable<int>>();
+      add_single_typeq_test<gctools::GCVector_moveable<gctools::smart_ptr<core::List_V>>>();
+      add_range_typeq_test<core::LexicalEnvironment_O,core::TagbodyEnvironment_O>();
+      add_single_typeq_test<clbind::detail::class_map>();
+      add_range_typeq_test<core::SimpleString_O,core::SimpleCharacterString_O>();
+      add_single_typeq_test<core::BroadcastStream_O>();
+      add_single_typeq_test<core::VectorStepper_O>();
+      add_range_typeq_test<llvmo::Constant_O,llvmo::ConstantDataArray_O>();
+      add_single_typeq_test<gctools::GCArray_moveable<unsigned short>>();
+      add_single_typeq_test<core::WeakKeyHashTable_O>();
+      add_single_typeq_test<gctools::GCVector_moveable<gctools::smart_ptr<core::Symbol_O>>>();
+      add_single_typeq_test<core::LoadTimeValues_O>();
+      add_single_typeq_test<core::SynonymStream_O>();
+      add_single_typeq_test<core::MDArrayBit_O>();
+      add_single_typeq_test<llvmo::Module_O>();
+      add_range_typeq_test<llvmo::ImmutablePass_O,llvmo::TargetLibraryInfoWrapperPass_O>();
+      add_range_typeq_test<llvmo::DILocalScope_O,llvmo::DILexicalBlock_O>();
+      add_single_typeq_test<core::StandardObject_O>();
+      add_range_typeq_test<core::Closure_O,core::CompiledDispatchFunction_O>();
+      add_range_typeq_test<core::SingleDispatchMethodFunction_O,core::CxxMethodFunction_O>();
+      add_single_typeq_test<core::LogicalPathname_O>();
+      add_single_typeq_test<gctools::GCVector_moveable<gctools::smart_ptr<core::SourceFileInfo_O>>>();
+      add_single_typeq_test<llvmo::StructType_O>();
+      add_single_typeq_test<clbind::ClassRegistry_O>();
+      add_single_typeq_test<core::HashTableEqual_O>();
+      add_single_typeq_test<gctools::GCArray_moveable<gctools::smart_ptr<core::T_O>>>();
+      add_single_typeq_test<core::DirectoryEntry_O>();
+      add_single_typeq_test<clcenv::SpecialVariable_O>();
+      add_single_typeq_test<core::SingleDispatchCxxEffectiveMethodFunction_O>();
+      add_single_typeq_test<gctools::GCVector_moveable<core::CacheRecord>>();
+      add_single_typeq_test<core::FunctionValueEnvironment_O>();
+      add_single_typeq_test<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::T_O>>>>();
+      add_single_typeq_test<gctools::GCArray_moveable<signed char>>();
+      add_single_typeq_test<llvmo::Linker_O>();
+      add_range_typeq_test<llvmo::Pass_O,llvmo::FunctionPass_O>();
+      add_single_typeq_test<core::FunctionFrame_O>();
+      add_single_typeq_test<core::FunctionContainerEnvironment_O>();
+      add_single_typeq_test<gctools::GCVector_moveable<gctools::smart_ptr<core::Cons_O>>>();
+      add_single_typeq_test<asttooling::DerivableFrontendActionFactory>();
+      add_single_typeq_test<llvmo::ArrayType_O>();
+      add_single_typeq_test<llvmo::TargetLibraryInfoWrapperPass_O>();
+      add_range_typeq_test<llvmo::User_O,llvmo::CallInst_O>();
+      add_single_typeq_test<core::WrappedPointer_O>();
+      add_single_typeq_test<asttooling::DerivableMatchCallback>();
+      add_single_typeq_test<core::Package_O>();
+      add_single_typeq_test<core::UserData_O>();
+      add_range_typeq_test<llvmo::CompositeType_O,llvmo::VectorType_O>();
+      add_single_typeq_test<core::MDArrayBaseChar_O>();
+      add_single_typeq_test<clcenv::Block_O>();
+      add_single_typeq_test<core::ClosureWithSlots_O>();
+      add_single_typeq_test<llvmo::PassManager_O>();
+      add_single_typeq_test<core::ValueEnvironment_O>();
+      add_single_typeq_test<llvmo::AttributeSet_O>();
+      add_single_typeq_test<core::SexpSaveArchive_O>();
+      add_single_typeq_test<core::StrWNs_O>();
+      add_single_typeq_test<clcenv::LambdaName_O>();
+      add_single_typeq_test<clcenv::Function_O>();
+      add_single_typeq_test<llvmo::DITypeRefArray_O>();
+      add_single_typeq_test<core::SexpLoadArchive_O>();
+      add_range_typeq_test<core::Exposer_O,asttooling::AsttoolingExposer_O>();
+      add_single_typeq_test<asttooling::AstVisitor_O>();
+      add_range_typeq_test<core::SNode_O,core::LeafSNode_O>();
+      add_single_typeq_test<llvmo::InvokeInst_O>();
+      add_single_typeq_test<clcenv::Macro_O>();
+      add_single_typeq_test<asttooling::DerivableASTFrontendAction>();
+      add_single_typeq_test<llvmo::DIBuilder_O>();
+      add_range_typeq_test<core::Array_O,core::SimpleBitVector_O>();
+      add_single_typeq_test<llvmo::ConstantInt_O>();
+      add_single_typeq_test<core::SimpleVector_int8_t_O>();
+      add_single_typeq_test<llvmo::TargetOptions_O>();
+      add_single_typeq_test<llvmo::PointerType_O>();
+      add_range_typeq_test<core::CxxObject_O,clcenv::Optimize_O>();
+      add_range_typeq_test<core::ActivationFrame_O,core::ValueFrame_O>();
+      add_single_typeq_test<core::MDArray_size_t_O>();
+      add_range_typeq_test<core::Creator_O,clbind::ConstructorCreator_O>();
+      add_single_typeq_test<llvmo::UnreachableInst_O>();
+      add_single_typeq_test<clcenv::VariableDynamicExtent_O>();
+      add_single_typeq_test<core::MacroletEnvironment_O>();
+      add_single_typeq_test<llvmo::PHINode_O>();
+      add_single_typeq_test<core::SingleDispatchGenericFunctionClosure_O>();
+      add_single_typeq_test<core::SimpleMDArrayDouble_O>();
+      add_single_typeq_test<core::Reader_O>();
+      add_single_typeq_test<gctools::GCVector_moveable<gctools::smart_ptr<core::T_O>>>();
+      add_range_typeq_test<core::WeakHashTable_O,core::WeakKeyHashTable_O>();
+      add_single_typeq_test<asttooling::DerivableSyntaxOnlyAction>();
+      add_single_typeq_test<clasp_ffi::ForeignTypeSpec_O>();
+      add_single_typeq_test<core::BranchSNode_O>();
+      add_single_typeq_test<llvmo::DISubprogram_O>();
+      add_single_typeq_test<core::SimpleVectorFloat_O>();
+      add_single_typeq_test<llvmo::FunctionPassManager_O>();
+      add_single_typeq_test<core::EchoStream_O>();
+      add_single_typeq_test<core::MDArrayFloat_O>();
+      add_single_typeq_test<clcenv::Closure_O>();
+      add_single_typeq_test<llvmo::Argument_O>();
+      add_single_typeq_test<clcenv::ConstantVariableInfo_O>();
+      add_range_typeq_test<core::MDArray_O,core::MDArrayBaseChar_O>();
+      add_single_typeq_test<mp::ConcurrentQueue_O>();
+      add_single_typeq_test<core::Complex_O>();
+      add_single_typeq_test<core::MDArray_int16_t_O>();
+      add_single_typeq_test<clbind::ClassRep_O>();
+      add_single_typeq_test<core::StandardClassCreator_O>();
+      add_single_typeq_test<core::SimpleVector_byte32_t_O>();
+      add_single_typeq_test<clcenv::Inline_O>();
+      add_single_typeq_test<core::HashTableEq_O>();
+      add_single_typeq_test<core::SimpleMDArray_byte64_t_O>();
+      add_single_typeq_test<clasp_ffi::ForeignData_O>();
+      add_range_typeq_test<core::Float_O,core::DoubleFloat_O>();
+      add_single_typeq_test<clbind::DummyCreator_O>();
+#endif // defined(GC_TYPEQ)
 #if defined(GC_KIND_SELECTORS)
 template <> class gctools::GCStamp<llvmo::MDNode_O> {
 public:
@@ -8065,6 +8453,7 @@ public:
 // not-exposing {  fixed_field, ctype_double, sizeof(double), offsetof(SAFE_TYPE_MACRO(core::HashTable_O),_RehashThreshold), "_RehashThreshold" }, // public: (NIL) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::MDArrayT_O>), offsetof(SAFE_TYPE_MACRO(core::HashTable_O),_HashTable), "_HashTable" }, // public: (NIL) fixable: SMART-PTR-FIX good-name: T
 // not-exposing {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(core::HashTable_O),_HashTableCount), "_HashTableCount" }, // public: (NIL) fixable: NIL good-name: T
+ {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<mp::SharedMutex_O>), offsetof(SAFE_TYPE_MACRO(core::HashTable_O),_Mutex), "_Mutex" }, // public: (NIL) fixable: SMART-PTR-FIX good-name: T
 // not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::HashTable_O),_LocationDependency._epoch), "_LocationDependency._epoch" }, // public: (NIL T) fixable: NIL good-name: NIL
 // not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::HashTable_O),_LocationDependency._rs), "_LocationDependency._rs" }, // public: (NIL T) fixable: NIL good-name: NIL
 { class_kind, KIND_LISPALLOC_core__HashTableEq_O, sizeof(core::HashTableEq_O), 0, "core::HashTableEq_O" },
@@ -8073,6 +8462,7 @@ public:
 // not-exposing {  fixed_field, ctype_double, sizeof(double), offsetof(SAFE_TYPE_MACRO(core::HashTableEq_O),_RehashThreshold), "_RehashThreshold" }, // public: (NIL) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::MDArrayT_O>), offsetof(SAFE_TYPE_MACRO(core::HashTableEq_O),_HashTable), "_HashTable" }, // public: (NIL) fixable: SMART-PTR-FIX good-name: T
 // not-exposing {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(core::HashTableEq_O),_HashTableCount), "_HashTableCount" }, // public: (NIL) fixable: NIL good-name: T
+ {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<mp::SharedMutex_O>), offsetof(SAFE_TYPE_MACRO(core::HashTableEq_O),_Mutex), "_Mutex" }, // public: (NIL) fixable: SMART-PTR-FIX good-name: T
 // not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::HashTableEq_O),_LocationDependency._epoch), "_LocationDependency._epoch" }, // public: (NIL T) fixable: NIL good-name: NIL
 // not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::HashTableEq_O),_LocationDependency._rs), "_LocationDependency._rs" }, // public: (NIL T) fixable: NIL good-name: NIL
 { class_kind, KIND_LISPALLOC_core__HashTableEqual_O, sizeof(core::HashTableEqual_O), 0, "core::HashTableEqual_O" },
@@ -8081,6 +8471,7 @@ public:
 // not-exposing {  fixed_field, ctype_double, sizeof(double), offsetof(SAFE_TYPE_MACRO(core::HashTableEqual_O),_RehashThreshold), "_RehashThreshold" }, // public: (NIL) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::MDArrayT_O>), offsetof(SAFE_TYPE_MACRO(core::HashTableEqual_O),_HashTable), "_HashTable" }, // public: (NIL) fixable: SMART-PTR-FIX good-name: T
 // not-exposing {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(core::HashTableEqual_O),_HashTableCount), "_HashTableCount" }, // public: (NIL) fixable: NIL good-name: T
+ {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<mp::SharedMutex_O>), offsetof(SAFE_TYPE_MACRO(core::HashTableEqual_O),_Mutex), "_Mutex" }, // public: (NIL) fixable: SMART-PTR-FIX good-name: T
 // not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::HashTableEqual_O),_LocationDependency._epoch), "_LocationDependency._epoch" }, // public: (NIL T) fixable: NIL good-name: NIL
 // not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::HashTableEqual_O),_LocationDependency._rs), "_LocationDependency._rs" }, // public: (NIL T) fixable: NIL good-name: NIL
 { class_kind, KIND_LISPALLOC_core__HashTableEql_O, sizeof(core::HashTableEql_O), 0, "core::HashTableEql_O" },
@@ -8089,6 +8480,7 @@ public:
 // not-exposing {  fixed_field, ctype_double, sizeof(double), offsetof(SAFE_TYPE_MACRO(core::HashTableEql_O),_RehashThreshold), "_RehashThreshold" }, // public: (NIL) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::MDArrayT_O>), offsetof(SAFE_TYPE_MACRO(core::HashTableEql_O),_HashTable), "_HashTable" }, // public: (NIL) fixable: SMART-PTR-FIX good-name: T
 // not-exposing {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(core::HashTableEql_O),_HashTableCount), "_HashTableCount" }, // public: (NIL) fixable: NIL good-name: T
+ {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<mp::SharedMutex_O>), offsetof(SAFE_TYPE_MACRO(core::HashTableEql_O),_Mutex), "_Mutex" }, // public: (NIL) fixable: SMART-PTR-FIX good-name: T
 // not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::HashTableEql_O),_LocationDependency._epoch), "_LocationDependency._epoch" }, // public: (NIL T) fixable: NIL good-name: NIL
 // not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::HashTableEql_O),_LocationDependency._rs), "_LocationDependency._rs" }, // public: (NIL T) fixable: NIL good-name: NIL
 { class_kind, KIND_LISPALLOC_core__HashTableEqualp_O, sizeof(core::HashTableEqualp_O), 0, "core::HashTableEqualp_O" },
@@ -8097,6 +8489,7 @@ public:
 // not-exposing {  fixed_field, ctype_double, sizeof(double), offsetof(SAFE_TYPE_MACRO(core::HashTableEqualp_O),_RehashThreshold), "_RehashThreshold" }, // public: (NIL) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::MDArrayT_O>), offsetof(SAFE_TYPE_MACRO(core::HashTableEqualp_O),_HashTable), "_HashTable" }, // public: (NIL) fixable: SMART-PTR-FIX good-name: T
 // not-exposing {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(core::HashTableEqualp_O),_HashTableCount), "_HashTableCount" }, // public: (NIL) fixable: NIL good-name: T
+ {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<mp::SharedMutex_O>), offsetof(SAFE_TYPE_MACRO(core::HashTableEqualp_O),_Mutex), "_Mutex" }, // public: (NIL) fixable: SMART-PTR-FIX good-name: T
 // not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::HashTableEqualp_O),_LocationDependency._epoch), "_LocationDependency._epoch" }, // public: (NIL T) fixable: NIL good-name: NIL
 // not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::HashTableEqualp_O),_LocationDependency._rs), "_LocationDependency._rs" }, // public: (NIL T) fixable: NIL good-name: NIL
 { class_kind, KIND_LISPALLOC_core__Environment_O, sizeof(core::Environment_O), 0, "core::Environment_O" },
@@ -13476,8 +13869,8 @@ static void* OBJ_DEALLOCATOR_table[] = {
  SMART_PTR_FIX(llvmo::PassManagerBuilder_O::static_creator);
  SMART_PTR_FIX(core::MacroletEnvironment_O::static_creator);
  SMART_PTR_FIX(core::CandoException_O::static_class_symbol);
- SMART_PTR_FIX(core::SingleDispatchCxxEffectiveMethodFunction_O::static_class_symbol);
  SMART_PTR_FIX(clcenv::SymbolMacroInfo_O::static_class_symbol);
+ SMART_PTR_FIX(core::SingleDispatchCxxEffectiveMethodFunction_O::static_class_symbol);
  SMART_PTR_FIX(core::DoubleFloat_O::static_creator);
  SMART_PTR_FIX(llvmo::MDNode_O::static_creator);
  SMART_PTR_FIX(core::SimpleVector_int8_t_O::static_class_symbol);
@@ -13506,8 +13899,8 @@ static void* OBJ_DEALLOCATOR_table[] = {
  SMART_PTR_FIX(llvmo::Constant_O::static_class_symbol);
  SMART_PTR_FIX(core::SimpleMDArray_size_t_O::static_class);
  SMART_PTR_FIX(core::Closure_O::static_class_symbol);
- SMART_PTR_FIX(llvmo::BlockAddress_O::static_class);
  SMART_PTR_FIX(core::BuiltinClosure_O::static_creator);
+ SMART_PTR_FIX(llvmo::BlockAddress_O::static_class);
  SMART_PTR_FIX(core::StringOutputStream_O::static_creator);
  SMART_PTR_FIX(core::MDArray_byte8_t_O::static_creator);
  SMART_PTR_FIX(core::SimpleMDArray_fixnum_O::static_creator);
@@ -13562,25 +13955,25 @@ static void* OBJ_DEALLOCATOR_table[] = {
  SMART_PTR_FIX(core::StringStream_O::static_class_symbol);
  SMART_PTR_FIX(core::SynonymStream_O::static_class);
  SMART_PTR_FIX(core::Number_O::static_class);
- SMART_PTR_FIX(clcenv::FunctionInfo_O::static_creator);
  SMART_PTR_FIX(clcenv::VariableInfo_O::static_class_symbol);
+ SMART_PTR_FIX(clcenv::FunctionInfo_O::static_creator);
  SMART_PTR_FIX(core::Package_O::static_class);
  SMART_PTR_FIX(core::Path_O::static_class_symbol);
  SMART_PTR_FIX(core::Symbol_O::static_class_symbol);
  SMART_PTR_FIX(core::SingleDispatchCxxEffectiveMethodFunction_O::static_class);
  SMART_PTR_FIX(core::ClosureWithSlots_O::static_class);
- SMART_PTR_FIX(llvmo::AttributeSet_O::static_class);
  SMART_PTR_FIX(core::PosixTimeDuration_O::static_creator);
+ SMART_PTR_FIX(llvmo::AttributeSet_O::static_class);
  SMART_PTR_FIX(core::SymbolMacroletEnvironment_O::static_class_symbol);
  SMART_PTR_FIX(core::StackValueEnvironment_O::static_creator);
  SMART_PTR_FIX(llvmo::LandingPadInst_O::static_creator);
  SMART_PTR_FIX(core::SimpleMDArray_O::static_class_symbol);
- SMART_PTR_FIX(core::Str8Ns_O::static_creator);
  SMART_PTR_FIX(core::EchoStream_O::static_class_symbol);
+ SMART_PTR_FIX(core::Str8Ns_O::static_creator);
  SMART_PTR_FIX(core::MDArrayDouble_O::static_class_symbol);
  SMART_PTR_FIX(llvmo::UnaryInstruction_O::static_creator);
- SMART_PTR_FIX(core::SexpSaveArchive_O::static_creator);
  SMART_PTR_FIX(core::Pointer_O::static_creator);
+ SMART_PTR_FIX(core::SexpSaveArchive_O::static_creator);
  SMART_PTR_FIX(core::VectorStepper_O::static_creator);
  SMART_PTR_FIX(llvmo::DITypeRefArray_O::static_class);
  SMART_PTR_FIX(core::ClassCreator_O::static_creator);
@@ -13706,8 +14099,8 @@ static void* OBJ_DEALLOCATOR_table[] = {
  SMART_PTR_FIX(llvmo::global_arg2);
  SMART_PTR_FIX(core::MacroletEnvironment_O::static_class_symbol);
  SMART_PTR_FIX(clasp_ffi::ForeignTypeSpec_O::static_class);
- SMART_PTR_FIX(mp::Mutex_O::static_class);
  SMART_PTR_FIX(core::EchoStream_O::static_class);
+ SMART_PTR_FIX(mp::Mutex_O::static_class);
  SMART_PTR_FIX(llvmo::CallInst_O::static_creator);
  SMART_PTR_FIX(llvmo::UnreachableInst_O::static_class_symbol);
  SMART_PTR_FIX(asttooling::AstVisitor_O::static_class);
@@ -13775,8 +14168,8 @@ static void* OBJ_DEALLOCATOR_table[] = {
  SMART_PTR_FIX(core::FunctionClosure_O::static_class);
  SMART_PTR_FIX(llvmo::DINode_O::static_class);
  SMART_PTR_FIX(clcenv::VariableIgnore_O::static_creator);
- SMART_PTR_FIX(core::MDArrayT_O::static_creator);
  SMART_PTR_FIX(core::SimpleVector_int32_t_O::static_class_symbol);
+ SMART_PTR_FIX(core::MDArrayT_O::static_creator);
  SMART_PTR_FIX(core::Package_O::static_class_symbol);
  SMART_PTR_FIX(core::StandardObject_O::static_class);
  SMART_PTR_FIX(core::MDArrayT_O::static_class_symbol);
@@ -13829,19 +14222,19 @@ static void* OBJ_DEALLOCATOR_table[] = {
  SMART_PTR_FIX(core::Exposer_O::static_creator);
  SMART_PTR_FIX(core::ReadTable_O::static_class_symbol);
  SMART_PTR_FIX(core::SymbolToEnumConverter_O::static_creator);
- SMART_PTR_FIX(llvmo::BranchInst_O::static_creator);
  SMART_PTR_FIX(core::IntArray_O::static_class);
+ SMART_PTR_FIX(llvmo::BranchInst_O::static_creator);
  SMART_PTR_FIX(core::SimpleVector_byte64_t_O::static_class_symbol);
- SMART_PTR_FIX(core::Reader_O::static_class_symbol);
  SMART_PTR_FIX(core::ValueFrame_O::static_creator);
+ SMART_PTR_FIX(core::Reader_O::static_class_symbol);
  SMART_PTR_FIX(llvmo::DIFile_O::static_class_symbol);
  SMART_PTR_FIX(clcenv::SpecialVariableInfo_O::static_creator);
  SMART_PTR_FIX(core::DirectoryEntry_O::static_class_symbol);
  SMART_PTR_FIX(core::Array_O::static_creator);
  SMART_PTR_FIX(llvmo::Module_O::static_class_symbol);
  SMART_PTR_FIX(core::BroadcastStream_O::static_class_symbol);
- SMART_PTR_FIX(llvmo::ReturnInst_O::static_class_symbol);
  SMART_PTR_FIX(mp::Process_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::ReturnInst_O::static_class_symbol);
  SMART_PTR_FIX(core::SourceFileInfo_O::static_class);
  SMART_PTR_FIX(core::NamedFunction_O::static_class);
  SMART_PTR_FIX(core::FunctionValueEnvironment_O::static_class_symbol);
@@ -13896,16 +14289,16 @@ static void* OBJ_DEALLOCATOR_table[] = {
  SMART_PTR_FIX(core::LogicalPathname_O::static_creator);
  SMART_PTR_FIX(llvmo::PassManager_O::static_class_symbol);
  SMART_PTR_FIX(llvmo::TargetOptions_O::static_creator);
- SMART_PTR_FIX(llvmo::UnaryInstruction_O::static_class_symbol);
  SMART_PTR_FIX(core::SimpleMDArray_byte64_t_O::static_creator);
+ SMART_PTR_FIX(llvmo::UnaryInstruction_O::static_class_symbol);
  SMART_PTR_FIX(llvmo::AtomicRMWInst_O::static_creator);
  SMART_PTR_FIX(core::SimpleVector_int64_t_O::static_class);
  SMART_PTR_FIX(core::Integer_O::static_creator);
  SMART_PTR_FIX(llvmo::NamedMDNode_O::static_class_symbol);
  SMART_PTR_FIX(llvmo::FenceInst_O::static_creator);
  SMART_PTR_FIX(llvmo::ExecutionEngine_O::static_class_symbol);
- SMART_PTR_FIX(llvmo::ClaspJIT_O::static_class_symbol);
  SMART_PTR_FIX(llvmo::PassManagerBase_O::static_creator);
+ SMART_PTR_FIX(llvmo::ClaspJIT_O::static_class_symbol);
  SMART_PTR_FIX(llvmo::PHINode_O::static_creator);
  SMART_PTR_FIX(llvmo::MDNode_O::static_class_symbol);
  SMART_PTR_FIX(core::SharpEqualWrapper_O::static_class_symbol);
@@ -13970,8 +14363,8 @@ static void* OBJ_DEALLOCATOR_table[] = {
  SMART_PTR_FIX(core::SimpleMDArrayFloat_O::static_class);
  SMART_PTR_FIX(clcenv::SpecialOperatorInfo_O::static_class);
  SMART_PTR_FIX(core::SimpleVectorDouble_O::static_class);
- SMART_PTR_FIX(llvmo::IndirectBrInst_O::static_class);
  SMART_PTR_FIX(core::SimpleMDArrayBaseChar_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::IndirectBrInst_O::static_class);
  SMART_PTR_FIX(llvmo::ValueAsMetadata_O::static_creator);
  SMART_PTR_FIX(core::SourceFileInfo_O::static_creator);
  SMART_PTR_FIX(clcenv::Inline_O::static_class);
@@ -14147,8 +14540,8 @@ static void* OBJ_DEALLOCATOR_table[] = {
  SMART_PTR_FIX(core::SimpleVector_int8_t_O::static_creator);
  SMART_PTR_FIX(core::LexicalEnvironment_O::static_creator);
  SMART_PTR_FIX(llvmo::AllocaInst_O::static_creator);
- SMART_PTR_FIX(llvmo::Function_O::static_creator);
  SMART_PTR_FIX(core::DirectoryIterator_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::Function_O::static_creator);
  SMART_PTR_FIX(llvmo::MDString_O::static_creator);
  SMART_PTR_FIX(core::ShortFloat_O::static_class);
  SMART_PTR_FIX(core::Real_O::static_class);
@@ -14161,8 +14554,8 @@ static void* OBJ_DEALLOCATOR_table[] = {
  SMART_PTR_FIX(core::SimpleVectorFloat_O::static_creator);
  SMART_PTR_FIX(core::SimpleMDArray_O::static_class);
  SMART_PTR_FIX(core::MDArray_byte32_t_O::static_class);
- SMART_PTR_FIX(llvmo::DICompositeType_O::static_creator);
  SMART_PTR_FIX(llvmo::Triple_O::static_creator);
+ SMART_PTR_FIX(llvmo::DICompositeType_O::static_creator);
  SMART_PTR_FIX(core::SimpleVector_O::static_creator);
  SMART_PTR_FIX(llvmo::AtomicCmpXchgInst_O::static_class);
  SMART_PTR_FIX(llvmo::ConstantStruct_O::static_class_symbol);
@@ -14312,8 +14705,8 @@ static void* OBJ_DEALLOCATOR_table[] = {
  SMART_PTR_FIX(llvmo::APInt_O::static_class);
  SMART_PTR_FIX(core::SimpleVector_O::static_class);
  SMART_PTR_FIX(clcenv::Optimize_O::static_class_symbol);
- SMART_PTR_FIX(llvmo::PassManagerBase_O::static_class_symbol);
  SMART_PTR_FIX(clcenv::Macro_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::PassManagerBase_O::static_class_symbol);
  SMART_PTR_FIX(core::SimpleVector_int16_t_O::static_class_symbol);
  SMART_PTR_FIX(core::RuntimeVisibleEnvironment_O::static_creator);
  SMART_PTR_FIX(core::NativeVector_int_O::static_class_symbol);
@@ -14349,8 +14742,8 @@ static void* OBJ_DEALLOCATOR_table[] = {
  SMART_PTR_FIX(core::Real_O::static_class_symbol);
  SMART_PTR_FIX(llvmo::UndefValue_O::static_creator);
  SMART_PTR_FIX(llvmo::PointerType_O::static_class_symbol);
- SMART_PTR_FIX(llvmo::VectorType_O::static_class_symbol);
  SMART_PTR_FIX(core::Str8Ns_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::VectorType_O::static_class_symbol);
  SMART_PTR_FIX(core::MDArray_fixnum_O::static_class);
  SMART_PTR_FIX(llvmo::ClaspJIT_O::static_creator);
  SMART_PTR_FIX(core::Exposer_O::static_class_symbol);
@@ -14416,8 +14809,8 @@ static void* OBJ_DEALLOCATOR_table[] = {
  SMART_PTR_FIX(core::ClassCreator_O::static_class);
  SMART_PTR_FIX(core::DoubleFloat_O::static_class_symbol);
  SMART_PTR_FIX(core::SimpleMDArrayT_O::static_class_symbol);
- SMART_PTR_FIX(core::Creator_O::static_creator);
  SMART_PTR_FIX(core::InvocationHistoryFrameIterator_O::static_class);
+ SMART_PTR_FIX(core::Creator_O::static_creator);
  SMART_PTR_FIX(llvmo::ConstantInt_O::static_class_symbol);
  SIMPLE_POINTER_FIX(gctools::global_tagged_Symbol_OP_unbound);
  SMART_PTR_FIX(core::Rational_O::static_class_symbol);
@@ -14441,13 +14834,13 @@ static void* OBJ_DEALLOCATOR_table[] = {
  SMART_PTR_FIX(clcenv::VariableType_O::static_class);
  SMART_PTR_FIX(core::BlockEnvironment_O::static_class_symbol);
  SMART_PTR_FIX(core::SimpleBaseString_O::static_class_symbol);
- SMART_PTR_FIX(core::SexpLoadArchive_O::static_class);
  SMART_PTR_FIX(core::HashTableEq_O::static_class_symbol);
+ SMART_PTR_FIX(core::SexpLoadArchive_O::static_class);
  SMART_PTR_FIX(core::Environment_O::static_class);
  SMART_PTR_FIX(core::NativeVector_float_O::static_class);
  SMART_PTR_FIX(llvmo::VectorType_O::static_class);
- SMART_PTR_FIX(llvmo::CompositeType_O::static_class);
  SMART_PTR_FIX(core::Archive_O::static_class);
+ SMART_PTR_FIX(llvmo::CompositeType_O::static_class);
  SMART_PTR_FIX(llvmo::Metadata_O::static_class);
  SMART_PTR_FIX(core::IOStreamStream_O::static_class_symbol);
  SMART_PTR_FIX(llvmo::GlobalValue_O::static_class_symbol);
@@ -14468,8 +14861,8 @@ static void* OBJ_DEALLOCATOR_table[] = {
  SMART_PTR_FIX(core::Environment_O::static_creator);
  SMART_PTR_FIX(llvmo::DebugLoc_O::static_class_symbol);
  SMART_PTR_FIX(core::MDArray_int8_t_O::static_class_symbol);
- SMART_PTR_FIX(core::SingleDispatchGenericFunctionClosure_O::static_class_symbol);
  SMART_PTR_FIX(core::Fixnum_dummy_O::static_class_symbol);
+ SMART_PTR_FIX(core::SingleDispatchGenericFunctionClosure_O::static_class_symbol);
  SMART_PTR_FIX(core::SingleDispatchGenericFunctionClosure_O::static_class);
  SMART_PTR_FIX(mp::BlockingConcurrentQueue_O::static_class_symbol);
  SMART_PTR_FIX(core::WeakHashTable_O::static_class);
@@ -14484,9 +14877,9 @@ static void* OBJ_DEALLOCATOR_table[] = {
  SMART_PTR_FIX(core::Archive_O::static_class_symbol);
  SMART_PTR_FIX(llvmo::UndefValue_O::static_class);
  SMART_PTR_FIX(core::Str8Ns_O::static_class);
- SMART_PTR_FIX(core::CxxMethodFunction_O::static_creator);
- SMART_PTR_FIX(clcenv::LocalMacroInfo_O::static_creator);
  SMART_PTR_FIX(core::StringOutputStream_O::static_class);
+ SMART_PTR_FIX(clcenv::LocalMacroInfo_O::static_creator);
+ SMART_PTR_FIX(core::CxxMethodFunction_O::static_creator);
  SMART_PTR_FIX(core::Package_O::static_creator);
  SMART_PTR_FIX(core::WeakHashTable_O::static_creator);
  SMART_PTR_FIX(llvmo::DILocalScope_O::static_creator);
