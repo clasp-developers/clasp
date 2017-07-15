@@ -394,11 +394,11 @@
                    (hierarchy-class-enum-range key analysis)
                  (if (string= key "core::Instance_O") ; special case core::Instance_O
                      (if (eql low high)
-                         (format fout "      add_single_typeq_test_instance<~a>();~%" key)
-                         (format fout "      add_range_typeq_test_instance<~a,~a>();~%" key (enum-key high)))
+                         (format fout "      add_single_typeq_test_instance<~a>(theMap);~%" key)
+                         (format fout "      add_range_typeq_test_instance<~a,~a>(theMap);~%" key (enum-key high)))
                      (if (eql low high)
-                         (format fout "      add_single_typeq_test<~a>();~%" key)
-                         (format fout "      add_range_typeq_test<~a,~a>();~%" key (enum-key high)))))))
+                         (format fout "      add_single_typeq_test<~a>(theMap);~%" key)
+                         (format fout "      add_range_typeq_test<~a,~a>(theMap);~%" key (enum-key high)))))))
            (analysis-enums analysis)))
 
 
