@@ -571,7 +571,7 @@ int cc_eql(core::T_O* x, core::T_O* y) {
     }
   } else if (tx.generalp()) {
     if (ty.generalp()) {
-      return cl__eql(tx,ty).nilp() ? 1 : 0;
+      return cl__eql(tx,ty) ? 1 : 0;
     }
   }
   return 0;

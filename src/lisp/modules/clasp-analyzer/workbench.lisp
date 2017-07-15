@@ -11,7 +11,7 @@
   (load #P"sys:modules;clasp-analyzer;clasp-analyzer.fasl"))
 
 (in-package :clasp-analyzer)
-(defvar *compile-commands* "~/Dev/cando/build/mpsprep/compile_commands.json")
+(defvar *compile-commands* "~/Dev/clasp/build/mpsprep/compile_commands.json")
 
 (setf *print-pretty* nil)
 (defvar *db* (clasp-analyzer:setup-clasp-analyzer-compilation-tool-database
@@ -28,7 +28,7 @@
 ;;;
 ;;; To load and analyze the project
 ;;;
-(defparameter *compile-commands* (probe-file "~/Development/clasp/build/mpsprep/compile_commands.json"))
+(defparameter *compile-commands* (probe-file "~/Dev/clasp/build/mpsprep/compile_commands.json"))
 (setf *print-pretty* nil)
 (defvar *db* (clasp-analyzer:setup-clasp-analyzer-compilation-tool-database
                 (pathname *compile-commands*)))

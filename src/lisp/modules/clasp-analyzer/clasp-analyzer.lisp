@@ -345,13 +345,13 @@
 (defun hierarchy-end-value (class-name analysis)
   (let ((enum (gethash class-name (analysis-enums analysis))))
     (if (null (gethash enum (analysis-enum-children analysis)))
-        (values (enum-value enum) (enum-flags enum))
+        enum
         (hierarchy-end-value (car (last (gethash enum (analysis-enum-children analysis)))) analysis))))
 
         
 (defun hierarchy-class-enum-range (class-name analysis)
   (let ((enum (gethash class-name (analysis-enums analysis))))
-    (values (enum-value enum) (hierarchy-end-value class-name analysis))))
+    (values enum (hierarchy-end-value class-name analysis))))
 
 
 (defun generate-dynamic-cast-code (fout analysis)
@@ -376,8 +376,8 @@
                      (progn
                        (if (eq low high)
                            (format fout "      if (kindVal == ~a) return true;~%" (enum-value low)
-                           (format fout "      if ((~a <= kindVal) && (kindVal <= ~a)) return true;~%" (enum-value low) (enum-value high)))
-                       (format fout "      return (dynamic_cast<core::Instance_O*>(client)!=NULL);~%"))
+                                   (format fout "      if ((~a <= kindVal) && (kindVal <= ~a)) return true;~%" (enum-value low) (enum-value high)))
+                           (format fout "      return (dynamic_cast<core::Instance_O*>(client)!=NULL);~%")))
                      (if (eq low high)
                          (format fout "      return (kindVal == ~a);~%" (enum-value low))
                          (format fout "      return ((~a <= kindVal) && (kindVal <= ~a));~%" (enum-value low) (enum-value high)))))
@@ -397,8 +397,8 @@
                          (format fout "      add_range_typeq_test_instance<~a,~a>();~%" key (enum-key high)))
                      (if (eql low high)
                          (format fout "      add_single_typeq_test<~a>();~%" key)
-                         (format fout "      add_range_typeq_test<~a,~a>();~%" key (enum-key high))))))
-             (analysis-enums analysis))))
+                         (format fout "      add_range_typeq_test<~a,~a>();~%" key (enum-key high)))))))
+           (analysis-enums analysis)))
 
 
 ;; ----------------------------------------------------------------------
