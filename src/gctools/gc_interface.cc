@@ -711,6 +711,17 @@ void add_range_typeq_test(core::HashTable_sp theMap) {
                        core::Cons_O::create(core::make_fixnum(gctools::Header_s::Value::GenerateHeaderValue<TRangeFirst>()),
                                             core::make_fixnum(gctools::Header_s::Value::GenerateHeaderValue<TRangeLast>())));
 }
+template <typename TSingle>
+void add_single_typeq_test_instance(core::HashTable_sp theMap) {
+  theMap->setf_gethash(TSingle::static_class_symbol,core::make_fixnum(gctools::Header_s::Value::GenerateHeaderValue<TSingle>()));
+}
+
+template <typename TRangeFirst,typename TRangeLast>
+void add_range_typeq_test_instance(core::HashTable_sp theMap) {
+  theMap->setf_gethash(TRangeFirst::static_class_symbol,
+                       core::Cons_O::create(core::make_fixnum(gctools::Header_s::Value::GenerateHeaderValue<TRangeFirst>()),
+                                            core::make_fixnum(gctools::Header_s::Value::GenerateHeaderValue<TRangeLast>())));
+}
   
 core::T_sp generate_type_header_value_map() {
   core::HashTable_sp theMap = core::HashTableEqual_O::create_default();
