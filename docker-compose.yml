@@ -61,3 +61,12 @@ services:
       - "8080:8080"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
+
+  # To build cando, run: docker-compose run python --help
+  python:
+    image: python
+    build:
+      context: .
+      dockerfile: tools/dockerfiles/python/Dockerfile
+    ports:
+      - "8888:8888"
