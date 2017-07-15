@@ -28,6 +28,15 @@ services:
       dockerfile: tools/dockerfiles/clasp/Dockerfile
     depends_on:
       - clasp-build
+  # To compile all of the quicklisp dependencies run: docker-compose build cando-compile
+  #    Expected time:  hour
+  cando-compile:
+    image: cando-compile
+    build:
+      context: .
+      dockerfile: tools/dockerfiles/cando-compile/Dockerfile
+    depends_on:
+      - clasp
   # To build cando, run: docker-compose run cando --help
   # this should build the clasp image as a dependency
   cando:
@@ -36,7 +45,7 @@ services:
       context: .
       dockerfile: tools/dockerfiles/cando/Dockerfile
     depends_on:
-      - clasp
+      - cando-compile
     ports:
       - "8888:8888"
       - "4005:4005"

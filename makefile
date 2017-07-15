@@ -296,6 +296,7 @@ clang-format:
 docker:
 	time docker-compose run clasp-build
 	time docker-compose build clasp
+	time docker-compose build cando-compile
 	time docker-compose run cando --help 
 
 push-to-master:
