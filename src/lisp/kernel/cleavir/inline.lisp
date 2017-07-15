@@ -13,9 +13,66 @@
 (defmacro debug-inline (msg &rest msg-args)
   nil)
 
-
-;;; Use typeq
 (progn
+  (debug-inline "eq")
+  (declaim (inline cl:eq))
+  (defun cl:eq (x y)
+    (if (cleavir-primop:eq x y) t nil)))
+
+(progn
+  (debug-inline "not")
+  (declaim (inline cl:not))
+  (defun not (object)
+    (if (cleavir-primop:eq object nil) t nil)))
+
+(progn
+  (debug-inline "identity")
+  (declaim (inline cl:identity))
+  (defun identity (object)
+    ;; preserve nontoplevelness
+    (the t object)))
+
+;;; Type predicates.
+;;; Should not be used yet, as TYPEQ will turn into a full call to TYPEP
+#+(or)
+(macrolet ((defpred (name type)
+             `(progn
+                (debug-inline ,(symbol-name name))
+                (declaim (inline ,name))
+                (defun ,name (o)
+                  (if (cleavir-primop:typeq o ,type) t nil))))
+           (defpreds (&rest rest)
+             `(progn
+                ,@(loop for (fun name) on rest by #'cddr
+                        collect `(defpred ,fun ,name)))))
+  (defpreds consp cons
+    hash-table-p hash-table
+    simple-string-p simple-string
+    atom atom
+    simple-vector-p simple-vector
+    integerp integer
+    numberp number
+    random-state-p random-state
+    compiled-function-p compiled-function
+    standard-char-p standard-char
+    simple-bit-vector-p simple-bit-vector
+    realp real
+    stringp string
+    functionp function
+    streamp stream
+    floatp float
+    symbolp symbol
+    pathnamep pathname
+    arrayp array
+    vectorp vector
+    characterp character
+    packagep package
+    listp list
+    complexp complex
+    rationalp rational))
+  
+(progn
+  (debug-inline "consp")
   (declaim (inline cl:consp))
   (defun cl:consp (x)
     (if (cleavir-primop:typeq x cons) t nil)))
