@@ -1220,7 +1220,28 @@ jump to blocks within this tagbody."
         (irc-store-result-t* result result-in-t*)))
     (irc-low-level-trace :flow)))
 
-
+(defun codegen-header-check (header-value-min-max object then-br else-br)
+  (let* ((header-check-br  (irc-basic-block-create "header-check-br"))
+         (x                (irc-load object))
+         (tag              (irc-and (irc-ptrtoint x %i32%) (jit-constant-i32 +immediate-mask+) "tag-only"))
+         (match            (irc-icmp-eq tag (jit-constant-i32 +general-tag+) "test")))
+    (irc-cond-br match header-check-br else-br)
+    (irc-begin-block header-check-br)
+    (let* ((byte-ptr           (irc-bit-cast x %i8%))
+           (header-addr        (irc-gep byte-ptr (list 0 (- (+ +header-size+ +general-tag+)))))
+           (header-value       (irc-load (irc-bit-cast header-addr %size_t*%))))
+      (if (fixnump header-value-min-max)
+          (let ((match (irc-icmp-eq header-value (jit-constant-size_t header-value-min-max))))
+            (irc-cond-br match then-br else-br))
+          (let ((maybr-in-range-br (irc-basic-block-create "maybe-in-range")))
+            (check-type header-value-min-max cons)
+            (let* ((header-range-min (car header-value-min-max))
+                   (header-range-max (cdr header-value-min-max))
+                   (min-match        (irc-icmp-uge header-value (jit-constant-size_t header-range-min))))
+              (irc-cond-br min-match maybe-in-range-br else-br)
+              (irc-begin-block maybe-in-range-br)
+              (let* ((max-match (irc-icmp-ule header-value (jit-constant-size_t header-range-max))))
+                (irc-cond-br max-match then-br else-br))))))))
 
 
 

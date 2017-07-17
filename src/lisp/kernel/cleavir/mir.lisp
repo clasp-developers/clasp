@@ -32,6 +32,20 @@
                  :inputs (list input)
                  :successors successors))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; HEADERQ-INSTRUCTION
+;;;
+;;; Branch based on the type header of an object.
+;;;
+
+(defclass headerq-instruction (cleavir-ir:instruction cleavir-ir:two-successors-mixin)
+  ((%header-value-min-max :initarg :hvmm :accessor header-value-min-max)))
+
+(defun make-headerq-instruction (header-value-min-max input successors)
+  (make-instance 'headerq-instruction
+                 :inputs (list input)
+                 :successors successors))
  
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;

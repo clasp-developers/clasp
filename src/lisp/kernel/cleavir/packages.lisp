@@ -134,6 +134,8 @@
    #:make-characterp-instruction
    #:single-float-p-instruction
    #:make-single-float-p-instruction
+   #:headerq-instruction
+   #:make-headerq-instruction
    #:enter-instruction
    #:closure-pointer-dynamic-lexical-location
    #:describe-mir

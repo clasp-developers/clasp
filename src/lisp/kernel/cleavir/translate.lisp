@@ -739,6 +739,13 @@ when this is t a lot of graphs will be generated.")
 
 
 (defmethod translate-branch-instruction
+    ((instruction cc-mir:headerq-instruction) return-value inputs outputs successors abi function-info)
+  (declare (ignore return-value outputs abi function-info))
+  (codegen-header-check
+   (header-value-min-max instruction)
+   (first inputs) (first successors) (second successors)))
+
+(defmethod translate-branch-instruction
     ((instruction cleavir-ir:return-instruction) return-value inputs outputs successors abi function-info)
   (declare (ignore successors))
   (cmp:irc-low-level-trace :flow)
