@@ -554,33 +554,15 @@ env is the parent environment of the (result-af) value frame"
 
 
 
-
-
-#||
-#+(or)(defun codegen-primop-consp (result rest env)
-  (let* ((value (car rest))
-         (tag (llvm-sys:create-and *irbuilder* (llvm-sys:create-bit-cast value %uintptr_t%) (jit-constant-uintptr_t +tag-mask+) "tag-only"))
-         (consp-tag-match (llvm-sys:create-icmp-eq tag (jit-constant-uintptr_t +cons-tag+))))
-    (
-         
-         (consp-true-block (irc-basic-block-create "consp-true"))
-         (consp-false-block
-    (
-||#
-
-
-
-
-(defun compile-if-cond (cond env)
-  "Generate code for cond that writes into result and then calls isTrue function that returns a boolean"
-  (let (test-result)
-    (let ((test-temp-store (irc-alloca-tsp :label "if-cond-tsp")))
-      (codegen test-temp-store cond env)
-      (setq test-result (llvm-sys:create-icmp-eq *irbuilder* (irc-intrinsic "isTrue" test-temp-store) (jit-constant-i32 1) "ifcond")))
-    test-result))
-
-
-
+(defun compile-if-cond (cond env thenb elseb)
+  "Generate code for cond that branches to one of the provided successor blocks"
+  (let ((test-temp-store (irc-alloca-tsp :label "if-cond-tsp")))
+    (codegen test-temp-store cond env)
+    (let ((test-result (llvm-sys:create-icmp-eq *irbuilder*
+                                                (irc-intrinsic "isTrue" test-temp-store)
+                                                (jit-constant-i32 1)
+                                                "ifcond")))
+      (irc-cond-br test-result thenb elseb))))
 
 (defun codegen-if (result rest env)
   "See Kaleidoscope example for if/then/else"
@@ -590,52 +572,27 @@ env is the parent environment of the (result-af) value frame"
     (when (cdddr rest)
       (format t "codegen-if (cdddr rest) = ~a ~%" (cdddr rest))
       (compiler-error (cdddr rest) "too many arguments for if"))
-    ;; codegen-if-cond generates code that returns true if cond evaluates to something other than nil
-    (let ((condv (compile-if-cond icond env)))
-;;      (unless condv (break "condv is nil") (return-from codegen-if nil)) ;; REALLY? return?????
-      ;;Here we diverge a bit from the Kaleidoscope demo
-      ;; condv should already return a bool so we don't have to convert it to one
-      ;; example had: CondV = Builder.CreateFCmpONE(CondV,ConstantFP::get(getGlobalContext(),APFloat(0.0)),"ifcond")
-;;      (break "make sure that divergence with kaleidoscope demo works")
-      ;;      (setq condv (llvm-sys:create-fcmp-one))
-      ;; Create blocks for the then and else cases. Insert the 'then' block at
-      ;; the end of the function
-      (let* ((thenbb (irc-basic-block-create "then" *current-function*))
-	     (elsebb (irc-basic-block-create "else" ))
-	     (mergebb (irc-basic-block-create "ifcont" )))
-	(llvm-sys:create-cond-br *irbuilder* condv thenbb elsebb nil)
-	(irc-set-insert-point-basic-block thenbb)
-	(dbg-set-current-debug-location-here)
-	(irc-low-level-trace)
-	(let ((thenv (progn
-                       (dbg-set-current-source-pos ithen)
-                       (codegen result #|REALLY? put result in result?|# ithen env))))
-	  ;;	  (unless thenv (break "thenv is nil") (return-from codegen-if nil))  ;; REALLY? return?????
-	  (irc-branch-if-no-terminator-inst mergebb)
-	  ;; Codegen of 'Then' can change the current block, update thenbb for the PHI.
-	  ;; ---weird! We overwrite thenbb here!
-	  (setq thenbb (llvm-sys:get-insert-block *irbuilder*))
-	  ;; Emit else block
-	  (irc-begin-block elsebb)
-	  ;; REALLY? Again- do I use result here?
-	  (let ((elsev (progn
-                         (dbg-set-current-source-pos ielse)
-                         (codegen result ielse env))))
-	    ;;	    (unless elsev (break "elsev is nil") (return-from codegen-if nil)) ;; REALLY? return???
-	    (irc-branch-if-no-terminator-inst mergebb)
-	    ;;Codegen of 'else' can change the current block, update elsebb for the phi
-	    (setq elsebb (llvm-sys:get-insert-block *irbuilder*))
-	    ;; emit mergeblock
-	    ;; Again use my 'append-basic-block' function
-	    (irc-begin-block mergebb)
-	    ;; HOW DO I CREATE-PHI??????????????
-	    ))))
-    ;; Kaleidoscope demo has...
-    ;;  PHINode *PN = Builder.CreatePHI(Type::getDoubleTy(getGlobalContext()), 2,"iftmp");
-    ;;  PN->addIncoming(ThenV, ThenBB);
-    ;;  PN->addIncoming(ElseV, ElseBB);
-    ;;  return PN;
-))
+    (let* ((thenbb (irc-basic-block-create "then"))
+           (elsebb (irc-basic-block-create "else"))
+           (mergebb (irc-basic-block-create "ifcont")))
+      ;; We have block references so we can compile the branch now.
+      (compile-if-cond icond env thenbb elsebb)
+
+      ;; Compile the THEN branch.
+      (irc-begin-block thenbb)
+      (irc-low-level-trace)
+      (dbg-set-current-source-pos ithen)
+      (codegen result ithen env)
+      (irc-branch-if-no-terminator-inst mergebb)
+
+      ;; Compile the ELSE branch.
+      (irc-begin-block elsebb)
+      (irc-low-level-trace)
+      (codegen result ielse env)
+      (irc-branch-if-no-terminator-inst mergebb)
+
+      ;; Everything after starts at the block THEN and ELSE merge into.
+      (irc-begin-block mergebb))))
 
 
 
@@ -1223,7 +1180,7 @@ jump to blocks within this tagbody."
 (defun codegen-header-check (header-value-min-max object then-br else-br)
   (let* ((header-check-br  (irc-basic-block-create "header-check-br"))
          (x                (irc-load object))
-         (tag              (irc-and (irc-ptrtoint x %i32%) (jit-constant-i32 +immediate-mask+) "tag-only"))
+         (tag              (irc-and (irc-ptr-to-int x %i32%) (jit-constant-i32 +immediate-mask+) "tag-only"))
          (match            (irc-icmp-eq tag (jit-constant-i32 +general-tag+) "test")))
     (irc-cond-br match header-check-br else-br)
     (irc-begin-block header-check-br)
@@ -1233,7 +1190,7 @@ jump to blocks within this tagbody."
       (if (fixnump header-value-min-max)
           (let ((match (irc-icmp-eq header-value (jit-constant-size_t header-value-min-max))))
             (irc-cond-br match then-br else-br))
-          (let ((maybr-in-range-br (irc-basic-block-create "maybe-in-range")))
+          (let ((maybe-in-range-br (irc-basic-block-create "maybe-in-range")))
             (check-type header-value-min-max cons)
             (let* ((header-range-min (car header-value-min-max))
                    (header-range-max (cdr header-value-min-max))
