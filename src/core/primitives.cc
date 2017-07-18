@@ -964,6 +964,7 @@ CL_DEFUN void core__gdb_inspect(String_sp msg, T_sp o) {
   core__invoke_internal_debugger(_Nil<core::T_O>());
 };
 
+// Must be synced with constant-form-value in source-transformations.lsp
 CL_LAMBDA(obj &optional env);
 CL_DECLARE();
 CL_DOCSTRING("constantp");
