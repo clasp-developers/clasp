@@ -140,6 +140,7 @@ Set this to other IRBuilders to make code go where you want")
 (defvar +instance-rack-offset+ (get-cxx-data-structure-info :instance-rack-offset))
 (defvar +instance-kind+ (get-cxx-data-structure-info :instance-kind))
 
+(defvar +header-size+ (get-cxx-data-structure-info :header-size))
 (defvar +fixnum-mask+ (get-cxx-data-structure-info :fixnum-mask))
 (defvar +fixnum-shift+ (get-cxx-data-structure-info :fixnum-shift))
 ;;(error "kind-shift is not defined anymore - it's :stamp-shift and :stamp-in-rack-mask and :stamp-needs-call-mask")
