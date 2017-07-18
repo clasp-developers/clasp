@@ -557,7 +557,6 @@ env is the parent environment of the (result-af) value frame"
  ;; object at this point is a smart ptr { {}* }
   (let* ((tag (irc-and (irc-ptr-to-int object-raw %uintptr_t%) (jit-constant-uintptr_t mask) "tag-only"))
          (cmp (irc-icmp-eq tag (jit-constant-uintptr_t ctag) "test")))
-    (llvm-sys:dump *current-function*)
     (irc-cond-br cmp then-br else-br)))
 
 (defun compile-header-check (header-value-min-max object-raw then-br else-br)
