@@ -68,7 +68,7 @@
 
 
 (defun irc-gep (array indices &optional (name "gep"))
-  (let ((indices (mapcar (lambda (x) (if (fixnump x) (jit-constant-i32 x) x)) indices)))
+  (let ((indices (mapcar (lambda (x) (if (fixnump x) (jit-constant-intptr_t x) x)) indices)))
     (llvm-sys:create-in-bounds-gep *irbuilder* array indices name )))
 
 (defun irc-in-bounds-gep-type (type value indices &optional (label "gep"))
