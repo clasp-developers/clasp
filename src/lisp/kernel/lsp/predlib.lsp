@@ -526,8 +526,8 @@ and is not adjustable."
 (defun gen-primitive-typep (var type)
   `(if (cmp::typeq ,var ,type) t nil))
 
-;;; FIXME: Move these
-(defvar +simple-vector-type-map+
+;;; FIXME: Move these?
+(defparameter +simple-vector-type-map+
   '((bit . simple-bit-vector)
     (fixnum . core:simple-vector-fixnum)
     (ext:byte8 . core:simple-vector-byte8-t)
@@ -541,6 +541,8 @@ and is not adjustable."
     ;; ext:cl-index is apparently byte64. ??
     (single-float . core:simple-vector-float)
     (double-float . core:simple-vector-double)
+    (base-char . simple-base-string)
+    (character . simple-string)
     (t . simple-vector)))
 
 (defun simple-vector-type (uaet)
@@ -552,7 +554,7 @@ and is not adjustable."
 (defun all-simple-vector-types ()
   (mapcar #'cdr +simple-vector-type-map+))
 
-(defvar +simple-mdarray-type-map+
+(defparameter +simple-mdarray-type-map+
   '((bit . core:simple-mdarray-bit)
     (fixnum . core:simple-mdarray-fixnum)
     (ext:byte8 . core:simple-mdarray-byte8-t)
@@ -566,6 +568,8 @@ and is not adjustable."
     ;; cl-index?
     (single-float . core:simple-mdarray-float)
     (double-float . core:simple-mdarray-double)
+    (base-char . core:simple-mdarray-base-char)
+    (character . core:simple-mdarray-character)
     (t . simple-mdarray-t)))
 
 (defun simple-mdarray-type (uaet)
@@ -577,7 +581,7 @@ and is not adjustable."
 (defun all-simple-mdarray-types ()
   (mapcar #'cdr +simple-mdarray-type-map+))
 
-(defvar +complex-mdarray-type-map+
+(defparameter +complex-mdarray-type-map+
   '((bit . core:mdarray-bit)
     (fixnum . core:mdarray-fixnum)
     (ext:byte8 . core:mdarray-byte8-t)
@@ -591,6 +595,8 @@ and is not adjustable."
     ;; cl-index?
     (single-float . core:mdarray-float)
     (double-float . core:mdarray-double)
+    (base-char . core:mdarray-base-char)
+    (character . core:mdarray-character)
     (t . mdarray-t)))
 
 (defun complex-mdarray-type (uaet)
@@ -603,30 +609,33 @@ and is not adjustable."
   (mapcar #'cdr +complex-mdarray-type-map+))
 
 (defun gen-array-typep (var element-type dimensions simple-only-p)
-  (when (integerp dimensions) (setq dimensions (list dimensions))) ; normalize
-  `(and ,(if (eq element-type '*)
-             `(and ,@(mapcar (lambda (ty) (gen-primitive-typep var ty))
-                             (all-simple-vector-types))
-                   ,@(unless (and (consp dimensions) (null (rest dimensions)))
-                       (mapcar (lambda (ty) (gen-primitive-typep var ty))
-                               (all-simple-mdarray-types)))
-                   ,@(unless simple-only-p
-                       (mapcar (lambda (ty) (gen-primitive-typep var ty))
-                               (all-complex-mdarray-types))))
-             `(and ,(gen-primitive-typep var (simple-vector-type element-type))
-                   ,@(unless (and (consp dimensions) (null (rest dimensions)))
-                       (list (gen-primitive-typep var (simple-mdarray-type element-type))))
-                   ,@(unless simple-only-p
-                       (list (gen-primitive-typep var (complex-mdarray-type element-type))))))
-        ;; no LOOP, so do something dumb
-        ,@(mapcar (let ((count 0))
-                    (lambda (dim)
-                      (prog1
-                          (if (eq dim '*)
-                              't ; don't check
-                              `(eql (array-dimension ,var ,count) ,dim))
-                        (incf count))))
-                  dimensions)))
+  (let* ((dimensions (if (integerp dimensions) (list dimensions) dimensions))
+         (rank (if (eq dimensions '*) '* (length dimensions))))
+    `(and ,(if (eq element-type '*)
+               ;; This turns out pretty long. Check how it works for speed.
+               `(and ,@(when (or (eql rank '*) (eql rank 1))
+                         (list (gen-primitive-typep var 'core:abstract-simple-vector)))
+                     ,@(when (or (eql rank '*) (not (eql rank 1)))
+                         (list
+                          (if simple-only-p
+                              (gen-primitive-typep var 'core:simple-mdarray)
+                              (gen-primitive-typep var 'core:mdarray)))))
+               `(and ,@(when (or (eql rank '*) (eql rank 1))
+                         (list (gen-primitive-typep var (simple-vector-type element-type))))
+                     ,@(when (or (eql rank '*) (not (eql rank 1)))
+                         (list (gen-primitive-typep var (simple-mdarray-type element-type))))
+                     ,@(unless simple-only-p
+                         (list (gen-primitive-typep var (complex-mdarray-type element-type))))))
+          ;; no LOOP, so do something dumb
+          ,@(unless (eql rank '*)
+              (mapcar (let ((count 0))
+                        (lambda (dim)
+                          (prog1
+                              (if (eq dim '*)
+                                  't ; don't check
+                                  `(eql (array-dimension ,var ,count) ,dim))
+                            (incf count))))
+                      dimensions)))))
 
 (defun gen-interval-typep (var head low high)
   (let ((prims
@@ -651,7 +660,7 @@ and is not adjustable."
                       single-float double-float #+long-float long-float))
             (otherwise (error "BUG: Unknown thing ~a passed to gen-interval-typep"
                               head)))))
-    `(and (or ,@(mapcar (lambda (prim) (gen-primitive-typep var prim))))
+    `(and (or ,@(mapcar (lambda (prim) (gen-primitive-typep var prim)) prims))
           ,@(unless (eq low '*)
               (if (listp low)
                   `((> ,var ,(first low)))
