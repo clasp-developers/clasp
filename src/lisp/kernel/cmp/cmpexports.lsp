@@ -36,6 +36,7 @@
 ;;          *run-time-values-table*
           *run-time-values-table-global-var*
           *the-module*
+          +header-size+
           +cons-tag+
           +fixnum-tag+
           +Valist_S-tag+
