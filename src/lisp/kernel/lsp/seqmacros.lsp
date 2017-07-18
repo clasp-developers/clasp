@@ -151,12 +151,12 @@
 
 (define-compiler-macro make-sequence
     (&whole form type size &key (initial-element nil iesp) &environment env)
-  (unless (constantp type)
+  (unless (constantp type env)
     (return-from make-sequence form))
-  (let ((type (eval type))) ; constant-form-value
+  (let ((type (ext:constant-form-value type env)))
     (multiple-value-bind (element-type length success)
         (closest-sequence-type type)
-      (cond ((not success) form) ; give up for runtime error; we could warn instead?
+      (cond ((not success) form) ; give up for runtime error or unknown; we could warn too?
             ((eq element-type 'list)
              (if (eq length '*)
                  `(make-list ,size :initial-element ,initial-element)
@@ -224,9 +224,8 @@
 
 (define-compiler-macro map
     (&whole form result-type function sequence &rest more-sequences &environment env)
-  (declare (ignore env))
-  (if (constantp result-type)
-      (let ((result-type (eval result-type))) ; constant-form-value
+  (if (constantp result-type env)
+      (let ((result-type (ext:constant-form-value result-type env))) ; constant-form-value
         (if result-type
             (let* ((fun (gensym "FUNCTION"))
                    (output (gensym "OUTPUT"))
