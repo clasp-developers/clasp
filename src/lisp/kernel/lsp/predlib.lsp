@@ -60,7 +60,7 @@ Builds a new function which accepts any number of arguments but always outputs N
 
 ;;; DEFTYPE macro.
 (defmacro deftype (name lambda-list &rest body &environment env)
-  "Syntax: (deftype name lambda-list {decl | doc}* {form}*)
+  "Syntax: \(deftype name lambda-list {decl | doc}* {form}*)
 Defines a new type-specifier abbreviation in terms of an 'expansion' function
 	(lambda lambda-list1 {DECL}* {FORM}*)
 where LAMBDA-LIST1 is identical to LAMBDA-LIST except that all optional
@@ -473,15 +473,12 @@ and is not adjustable."
 	      ((atom pat)
 	       (error "~S does not describe array dimensions." pat))))))
 
-(define-compiler-macro typep (&whole whole object type &optional environment)
-  (let ((type (and (consp type)
-                   (eq (car type) 'quote)
-                   (cdr type)
-                   (not (cddr type))
-                   (cadr type))))
-    (cond ((or environment
-               (not type))
-           whole)
+(define-compiler-macro typep (&whole whole object type &optional environment
+                                     &environment macro-env)
+  (unless (constantp type macro-env)
+    (return-from typep whole))
+  (let ((type (ext:constant-form-value type macro-env)))
+    (cond (environment whole)
           ((eq type t)
            `(progn
               ,object
