@@ -743,7 +743,7 @@ when this is t a lot of graphs will be generated.")
   (declare (ignore return-value outputs abi function-info))
   (cmp::compile-header-check
    (cc-mir:header-value-min-max instruction)
-   (first inputs) (first successors) (second successors)))
+   (%load (first inputs)) (first successors) (second successors)))
 
 (defmethod translate-branch-instruction
     ((instruction cleavir-ir:return-instruction) return-value inputs outputs successors abi function-info)

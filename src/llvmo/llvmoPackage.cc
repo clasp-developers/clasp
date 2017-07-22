@@ -244,6 +244,7 @@ CL_DEFUN core::T_sp llvm_sys__cxxDataStructuresInfo() {
   ENTRY(list, "GCVECTOR-CAPACITY-OFFSET", make_fixnum((char *)&tempGCVector._Capacity - (char *)&tempGCVector));
   ENTRY(list, "GCVECTOR-END-OFFSET", make_fixnum((char *)&tempGCVector._End - (char *)&tempGCVector));
   ENTRY(list, "GCVECTOR-DATA0-OFFSET", make_fixnum((char *)&tempGCVector._Data[0] - (char *)&tempGCVector));
+  ENTRY(list, "ISGF-OFFSET", make_fixnum(offsetof(FuncallableInstance_O,_isgf)));
   ENTRY(list, "FIXNUM-STAMP", make_fixnum(gctools::KIND_FIXNUM));
   ENTRY(list, "FIXNUM-SHIFT", make_fixnum(gctools::fixnum_shift));
   ENTRY(list, "STAMP-SHIFT", make_fixnum(gctools::Header_s::stamp_shift));

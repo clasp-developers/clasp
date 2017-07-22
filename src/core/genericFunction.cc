@@ -82,7 +82,7 @@ List_sp listOfClasses(VaList_sp vargs) {
 }
 
 /*! This function copies ECL>>gfun.d generic_compute_applicable_method */
-T_mv generic_compute_applicable_method(Instance_sp gf, VaList_sp vargs) {
+T_mv generic_compute_applicable_method(FuncallableInstance_sp gf, VaList_sp vargs) {
   /* method not cached */
   //cl_object memoize;
   T_sp memoize;
@@ -113,8 +113,8 @@ SYMBOL_SC_(ClosPkg, std_compute_applicable_methods);
 SYMBOL_SC_(ClosPkg, std_compute_effective_method);
 
 /*! This function copies ECL>>gfun.d restricted_compute_applicable_method */
-T_mv restricted_compute_applicable_method(Instance_sp gf, VaList_sp vargs) {
-  Instance_sp igf = gf;
+T_mv restricted_compute_applicable_method(FuncallableInstance_sp gf, VaList_sp vargs) {
+  FuncallableInstance_sp igf = gf;
   /* method not cached */
   List_sp arglist = listOfObjects(vargs);
   //  T_sp arglist = lisp_ArgArrayToCons(nargs, args); // used to be frame_to_list
@@ -155,8 +155,8 @@ CL_DEFUN T_sp core__maybe_expand_generic_function_arguments(T_sp args) {
   return args;
 }
 
-T_mv compute_applicable_method(Instance_sp gf, VaList_sp vargs) {
-  if (gc::As<Instance_sp>(gf)->isgf() == CLASP_RESTRICTED_DISPATCH) {
+T_mv compute_applicable_method(FuncallableInstance_sp gf, VaList_sp vargs) {
+  if (gc::As<FuncallableInstance_sp>(gf)->isgf() == CLASP_RESTRICTED_DISPATCH) {
     return restricted_compute_applicable_method(gf, vargs);
   } else {
     return generic_compute_applicable_method(gf, vargs);
@@ -164,7 +164,7 @@ T_mv compute_applicable_method(Instance_sp gf, VaList_sp vargs) {
 }
 
 /*! Mimic ECL>>gfun.d fill_spec_vector */
-gctools::Vec0<T_sp> &fill_spec_vector(Instance_sp gf, gctools::Vec0<T_sp> &vektor, VaList_sp vargs) {
+gctools::Vec0<T_sp> &fill_spec_vector(FuncallableInstance_sp gf, gctools::Vec0<T_sp> &vektor, VaList_sp vargs) {
   va_list cargs;
   va_copy(cargs, (*vargs)._Args);
   int narg = vargs->remaining_nargs();//LCC_VA_LIST_NUMBER_OF_ARGUMENTS(vargs);
@@ -203,7 +203,7 @@ gctools::Vec0<T_sp> &fill_spec_vector(Instance_sp gf, gctools::Vec0<T_sp> &vekto
 }
 
 
-CL_DEFUN T_sp clos__memoization_key(Instance_sp gf, VaList_sp vargs) {
+CL_DEFUN T_sp clos__memoization_key(FuncallableInstance_sp gf, VaList_sp vargs) {
   gctools::Vec0<T_sp> key;
   key.resize((*vargs).remaining_nargs(),_Nil<T_O>());
   fill_spec_vector(gf,key,vargs);
@@ -261,7 +261,7 @@ LCC_RETURN standard_dispatch(T_sp gf, VaList_sp arglist, Cache_sp cache) {
       printf("%s:%d call_history_key -> %s\n", __FILE__, __LINE__, _rep_(call_history_key).c_str());
   }
 #endif
-      core__generic_function_call_history_push_new(gc::As_unsafe<Instance_sp>(gf), call_history_key, func);
+      core__generic_function_call_history_push_new(gc::As_unsafe<FuncallableInstance_sp>(gf), call_history_key, func);
     }
   }
   return cc_dispatch_effective_method(func.raw_(),gf.raw_(), arglist.raw_());
@@ -280,14 +280,14 @@ generic_function_dispatch_vararg(cl_narg narg, ...)
 }
  */
 LCC_RETURN generic_function_dispatch(gctools::Tagged tgf, gctools::Tagged tvargs) {
-  Instance_sp gf(tgf);
+  FuncallableInstance_sp gf(tgf);
   VaList_sp vargs(tvargs);
   Cache_sp cache = my_thread->_MethodCachePtr;
   return standard_dispatch(gf, vargs, cache);
 }
 
 LCC_RETURN invalidated_dispatch(gctools::Tagged tgf, gctools::Tagged tvargs) {
-  Instance_sp gf(tgf);
+  FuncallableInstance_sp gf(tgf);
   VaList_sp vargs(tvargs);
   return eval::funcall(clos::_sym_invalidated_dispatch_function,gf,vargs);
 }
@@ -295,7 +295,7 @@ LCC_RETURN invalidated_dispatch(gctools::Tagged tgf, gctools::Tagged tvargs) {
 #if 0
 /*! Reproduces functionality in ecl_slot_reader_dispatch */
 LCC_RETURN slot_reader_dispatch(gctools::Tagged tgf, gctools::Tagged tvargs) {
-  Instance_sp gf(tgf);
+  FuncallableInstance_sp gf(tgf);
   VaList_sp vargs(tvargs);
   Cache_sp cache = _lisp->slotCachePtr();
   // Should I use standard_dispatch or do something special for slots?
@@ -303,7 +303,7 @@ LCC_RETURN slot_reader_dispatch(gctools::Tagged tgf, gctools::Tagged tvargs) {
 }
 
 /*! Reproduces functionality in ecl_slot_writer_dispatch */
-LCC_RETURN slot_writer_dispatch(Instance_sp gf, VaList_sp vargs) {
+LCC_RETURN slot_writer_dispatch(FuncallableInstance_sp gf, VaList_sp vargs) {
   Cache_sp cache = _lisp->slotCachePtr();
   // Should I use standard_dispatch or do something special for slots?
   return standard_dispatch(gf, vargs, cache);
@@ -312,7 +312,7 @@ LCC_RETURN slot_writer_dispatch(Instance_sp gf, VaList_sp vargs) {
 
 /*! Reproduces functionality in user_function_dispatch */
 LCC_RETURN user_function_dispatch(gctools::Tagged tgf, gctools::Tagged tvargs) {
-  Instance_sp gf(tgf);
+  FuncallableInstance_sp gf(tgf);
   VaList_sp vargs(tvargs);
   Function_sp func = gc::As<Function_sp>(gf->instanceRef(gf->numberOfSlots()-1));
   BFORMAT_T(BF("%s:%d a user-dispatch generic-function %s is being invoked\n") % __FILE__ % __LINE__ % _rep_(gf->functionName()) );
@@ -321,7 +321,7 @@ LCC_RETURN user_function_dispatch(gctools::Tagged tgf, gctools::Tagged tvargs) {
 
 /*! Reproduces functionality in FEnot_funcallable_vararg */
 LCC_RETURN not_funcallable_dispatch(gctools::Tagged tgf, gctools::Tagged tvargs) {
-  Instance_sp gf(tgf);
+  FuncallableInstance_sp gf(tgf);
   VaList_sp vargs(tvargs);
   SIMPLE_ERROR(BF("Not a funcallable instance %s") % _rep_(gf));
 }

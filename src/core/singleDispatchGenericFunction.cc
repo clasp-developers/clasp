@@ -284,7 +284,7 @@ Function_sp SingleDispatchGenericFunctionClosure_O::computeEffectiveMethodFuncti
   int i = 0;
   for ( auto cur : applicableMethodsList ) {
     SingleDispatchMethod_sp method = gctools::As<SingleDispatchMethod_sp>(oCar(cur));
-    printf("      selector[%d]: %s\n", i++, _rep_(method->receiver_class()->functionName()).c_str());
+    printf("      selector[%d]: %s\n", i++, _rep_(method->receiver_class()->_className()).c_str());
   }
 #endif
   SIMPLE_ERROR(BF("Generate an effective-single-dispatch-generic-function"));

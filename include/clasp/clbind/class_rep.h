@@ -103,7 +103,7 @@ public:
   bool cxxDerivableClassP() const { return this->m_derivable; };
   bool primaryCxxDerivableClassP() const { return gctools::As<core::Creator_sp>(this->CLASS_get_creator())->duplicationLevel() == 0; };
 
- ClassRep_O() : Instance_O(core::lisp_standard_class(),REF_CLASS_NUMBER_OF_SLOTS_IN_STANDARD_CLASS) {
+ ClassRep_O() : Instance_O(core::lisp_standard_class()/*,REF_CLASS_NUMBER_OF_SLOTS_IN_STANDARD_CLASS*/) {
     printf("%s:%d:%s  create class\n", __FILE__, __LINE__, __FUNCTION__ );
   };
 

@@ -98,7 +98,7 @@ CL_LAMBDA(arg);
 CL_DECLARE();
 CL_DOCSTRING("functionP");
 CL_DEFUN bool cl__functionp(T_sp obj) {
-  if (Instance_sp inst_obj = obj.asOrNull<Instance_O>()) {
+  if (FuncallableInstance_sp inst_obj = obj.asOrNull<FuncallableInstance_O>()) {
     return inst_obj->isgf();
   }
   return gc::IsA<Function_sp>(obj);
@@ -319,8 +319,8 @@ CL_LAMBDA(arg);
 CL_DECLARE();
 CL_DOCSTRING("genericFunctionP");
 CL_DEFUN bool core__generic_function_p(T_sp o) {
-  if (gc::IsA<Instance_sp>(o)) {
-    return gc::As_unsafe<Instance_sp>(o)->isgf();
+  if (gc::IsA<FuncallableInstance_sp>(o)) {
+    return gc::As_unsafe<FuncallableInstance_sp>(o)->isgf();
   }
   return false;
 };
