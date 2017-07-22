@@ -114,13 +114,12 @@ namespace core {
       }
 #endif
     };
-    virtual T_sp name() const = 0;
     virtual string nameAsString() const {SUBIMP();};
     virtual bool compiledP() const { return false; };
     virtual bool interpretedP() const { return false; };
     virtual bool builtinP() const { return false; };
     virtual T_sp sourcePosInfo() const { return _Nil<T_O>(); };
-    CL_DEFMETHOD T_sp functionName() const { return this->name(); };
+    CL_DEFMETHOD virtual T_sp functionName() const = 0;
     CL_DEFMETHOD Symbol_sp functionKind() const { return this->getKind(); };
     CL_DEFMETHOD List_sp function_declares() const { return this->declares(); };
     CL_DEFMETHOD T_sp functionLambdaListHandler() const {
@@ -170,7 +169,6 @@ public:
  NamedFunction_O(claspFunction fptr,T_sp name) : Function_O(fptr), _name(name) {};
   virtual ~NamedFunction_O(){};
 public:
-    T_sp name() const { return this->_name; };
   CL_LISPIFY_NAME("core:functionName");
   CL_DEFMETHOD T_sp functionName() const {
     return this->_name;

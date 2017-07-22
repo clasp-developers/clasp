@@ -1052,14 +1052,6 @@ namespace core {
   // THE NEXT TWO FUNCTIONS ARE HERE FOR BACKWARDS COMPATIBILITY
   // frgo, 2017-01-21
 
-  inline int64_t clasp_to_int64(Integer_sp x)
-  {
-    return clasp_to_int64_t( x );
-  }
-  inline uint64_t clasp_to_uint64(Integer_sp x)
-  {
-    return clasp_to_uint64_t( x );
-  }
 
   cl_intptr_t         clasp_to_cl_intptr_t( core::T_sp );
   mpz_class           clasp_to_mpz( core::T_sp );
@@ -1088,7 +1080,7 @@ namespace core {
   inline Number_sp clasp_reciprocal(Number_sp x) {
     if (x.fixnump() ) {
       if ( x.unsafe_fixnum() == 1 ) return x;
-      return Ratio_O::create(clasp_make_fixnum(1),x);
+      return Ratio_O::create(clasp_make_fixnum((Fixnum)1),x);
     } else if (x.single_floatp()) {
       float f = x.unsafe_single_float();
       return clasp_make_single_float(1.0 / f);

@@ -411,10 +411,8 @@ inline string ForeignData_O::__repr__() const
   stringstream ss;
 
   ss << "#<"
-     << this->_instanceClass()->classNameAsString()
-#ifdef USE_BOEHM // things don't move in boehm
+     << this->_instanceClass()->_classNameAsString()
      << " @ " << (BF("%p") % this)
-#endif
      << " :kind " << this->m_kind
      << " :size " << this->m_size
      << " :ownership-flags " << this->m_ownership_flags
@@ -807,7 +805,7 @@ inline string ForeignTypeSpec_O::__repr__() const
   stringstream ss;
 
   ss << "#<"
-     << this->_instanceClass()->classNameAsString()
+     << this->_instanceClass()->_classNameAsString()
      << " @ " << (BF("%p") % this)
      << " :lisp-symbol " << this->m_lisp_symbol
      << " :lisp-name "   << this->m_lisp_name

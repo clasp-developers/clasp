@@ -456,7 +456,7 @@ CL_DEFUN Number_sp contagen_add(Number_sp na, Number_sp nb) {
       return Complex_O::create(r, i);
     } break;
     default:
-        SIMPLE_ERROR(BF("Cannot contagen_add two numbers of class %s and %s") % na->_instanceClass()->classNameAsString() % nb->_instanceClass()->classNameAsString());
+        SIMPLE_ERROR(BF("Cannot contagen_add two numbers of class %s and %s") % na->_instanceClass()->_classNameAsString() % nb->_instanceClass()->_classNameAsString());
   };
   MATH_DISPATCH_END();
 };
@@ -579,7 +579,7 @@ CL_DEFUN Number_sp contagen_sub(Number_sp na, Number_sp nb) {
       return Complex_O::create(r, i);
     } break;
     default:
-        SIMPLE_ERROR(BF("Cannot contagen_sub two numbers of class %s and %s") % na->_instanceClass()->classNameAsString() % nb->_instanceClass()->classNameAsString());
+        SIMPLE_ERROR(BF("Cannot contagen_sub two numbers of class %s and %s") % na->_instanceClass()->_classNameAsString() % nb->_instanceClass()->_classNameAsString());
   };
   MATH_DISPATCH_END();
 }
@@ -696,7 +696,7 @@ CL_DEFUN Number_sp contagen_mul(Number_sp na, Number_sp nb) {
                                gc::As<Real_sp>(contagen_add(contagen_mul(x, v), contagen_mul(y, u))));
     } break;
     default:
-        SIMPLE_ERROR(BF("Cannot contagen_mul two numbers of class %s and %s") % na->_instanceClass()->classNameAsString() % nb->_instanceClass()->classNameAsString());
+        SIMPLE_ERROR(BF("Cannot contagen_mul two numbers of class %s and %s") % na->_instanceClass()->_classNameAsString() % nb->_instanceClass()->_classNameAsString());
   };
   MATH_DISPATCH_END();
 }
@@ -805,7 +805,7 @@ CL_DEFUN Number_sp contagen_div(Number_sp na, Number_sp nb) {
     }
   }
   MATH_DISPATCH_END();
-  SIMPLE_ERROR(BF("Add support to div numbers %s[%s] and %s[%s]") % _rep_(na) % na->_instanceClass()->classNameAsString() % _rep_(nb) % nb->_instanceClass()->classNameAsString());
+  SIMPLE_ERROR(BF("Add support to div numbers %s[%s] and %s[%s]") % _rep_(na) % na->_instanceClass()->_classNameAsString() % _rep_(nb) % nb->_instanceClass()->_classNameAsString());
 }
 
 CL_LAMBDA(&rest numbers);
@@ -1114,7 +1114,7 @@ int basic_compare(Number_sp na, Number_sp nb) {
     }
 #endif
     default:
-        SIMPLE_ERROR(BF("Cannot compare two numbers of class %s and %s") % na->_instanceClass()->classNameAsString() % nb->_instanceClass()->classNameAsString());
+        SIMPLE_ERROR(BF("Cannot compare two numbers of class %s and %s") % na->_instanceClass()->_classNameAsString() % nb->_instanceClass()->_classNameAsString());
   };
   MATH_DISPATCH_END();
 }
@@ -1282,7 +1282,7 @@ bool basic_equalp(Number_sp na, Number_sp nb) {
       return a == b;
     }
     default:
-        SIMPLE_ERROR(BF("Cannot compare two numbers of class %s and %s") % na->_instanceClass()->classNameAsString() % nb->_instanceClass()->classNameAsString());
+        SIMPLE_ERROR(BF("Cannot compare two numbers of class %s and %s") % na->_instanceClass()->_classNameAsString() % nb->_instanceClass()->_classNameAsString());
   };
   MATH_DISPATCH_END();
 }
@@ -1411,6 +1411,7 @@ CL_DEFUN DoubleFloat_mv core__nan() {
 T_sp Integer_O::makeIntegerType(gc::Fixnum low, gc::Fixnum hi) {
   return Cons_O::createList(cl::_sym_Integer_O, Integer_O::create(low), Integer_O::create(hi));
 }
+
 
 Integer_sp Integer_O::create( gctools::Fixnum v )
 {
@@ -2926,6 +2927,20 @@ ALWAYS_INLINE Fixnum clasp_to_fixnum( core::T_sp x )
   TYPE_ERROR( x, Cons_O::createList(cl::_sym_Integer_O, make_fixnum(gc::most_negative_fixnum), make_fixnum(gc::most_positive_fixnum)));
 };
 
+ALWAYS_INLINE Fixnum clasp_to_fixnum( core::Integer_sp x )
+{
+  ASSERT(!x.single_floatp());
+  if ( x.fixnump() ) {
+    return x.unsafe_fixnum();
+  } else if (gc::IsA<Bignum_sp>(x)) {
+    Bignum_sp bx = gc::As_unsafe<Bignum_sp>(x);
+    LIKELY_if ( bx->mpz_ref()>=gc::most_negative_fixnum && bx->mpz_ref() <= gc::most_positive_fixnum) {
+      return static_cast<size_t>(bx->mpz_ref().get_si());
+    }
+  }
+  TYPE_ERROR( x, Cons_O::createList(cl::_sym_Integer_O, make_fixnum(gc::most_negative_fixnum), make_fixnum(gc::most_positive_fixnum)));
+};
+
 
   // --- SHORT ---
 
@@ -3294,9 +3309,28 @@ ALWAYS_INLINE float clasp_to_float( core::Number_sp x )
   return x->as_float_();
 }
 
+
+ALWAYS_INLINE float clasp_to_float( core::T_sp x )
+{
+  if (x.fixnump()) return (float) x.unsafe_fixnum();
+  else if (x.single_floatp()) return (float) x.unsafe_single_float();
+  else if (gc::IsA<Number_sp>(x)) {
+    return gc::As_unsafe<Number_sp>(x)->as_float_();
+  }
+  TYPE_ERROR(x,cl::_sym_Number_O);
+}
+
+ALWAYS_INLINE float clasp_to_float( core::General_sp x )
+{
+  if (gc::IsA<Number_sp>(x)) {
+    return gc::As_unsafe<Number_sp>(x)->as_float_();
+  }
+  TYPE_ERROR(x,cl::_sym_Number_O);
+}
+
 // --- DOUBLE ---
 
-ALWAYS_INLINE double clasp_to_double( core::Number_sp x )
+ALWAYS_INLINE double clasp_to_double(core::Number_sp x)
 {
   if (x.fixnump()) {
     double d = x.unsafe_fixnum();
@@ -3307,6 +3341,61 @@ ALWAYS_INLINE double clasp_to_double( core::Number_sp x )
   }
   return x->as_double_();
 };
+
+ALWAYS_INLINE double clasp_to_double( core::Integer_sp x )
+{
+  if (x.fixnump()) {
+    double d = x.unsafe_fixnum();
+    return d;
+  }
+  return x->as_double_();
+};
+
+ALWAYS_INLINE double clasp_to_double( core::T_sp x )
+{
+  if (x.fixnump()) {
+    double d = x.unsafe_fixnum();
+    return d;
+  } else if (x.single_floatp()) {
+    double d = x.unsafe_single_float();
+    return d;
+  } else if (gc::IsA<Number_sp>(x)) {
+    return gc::As_unsafe<Number_sp>(x)->as_double_();
+  }
+  TYPE_ERROR(x,Cons_O::createList(cl::_sym_Number_O));
+}
+
+ALWAYS_INLINE double clasp_to_double( core::Real_sp x )
+{
+  if (x.fixnump()) {
+    double d = x.unsafe_fixnum();
+    return d;
+  } else if (x.single_floatp()) {
+    double d = x.unsafe_single_float();
+    return d;
+  } else if (gc::IsA<Number_sp>(x)) {
+    return gc::As_unsafe<Number_sp>(x)->as_double_();
+  }
+  TYPE_ERROR(x,Cons_O::createList(cl::_sym_Real_O));
+}
+
+ALWAYS_INLINE double clasp_to_double( core::General_sp x )
+{
+  if (gc::IsA<Number_sp>(x)) {
+    return gc::As_unsafe<Number_sp>(x)->as_double_();
+  }
+  TYPE_ERROR(x,Cons_O::createList(cl::_sym_Number_O));
+};
+
+
+double clasp_to_double( core::DoubleFloat_sp x )
+{
+  return x->get();
+};
+
+
+
+
 
 ALWAYS_INLINE LongFloat clasp_to_long_float(Number_sp x)
 {
@@ -3335,5 +3424,10 @@ CL_DEFUN T_sp cl__rational(T_sp num) {
 CL_DEFUN T_sp cl__rationalize(T_sp num) {
   return cl__rational(num);
 };
+
+Integer_sp clasp_make_integer(size_t s)
+{
+  return Integer_O::create((uint64_t)s);
+}
 
 };

@@ -32,15 +32,15 @@ namespace core {
       if (supplied) {
         if (obj.single_floatp()) {
           return obj.unsafe_single_float();
-        } else if (gc::IsA<DoubleFloat_sp>(obj)) {
-          return gc::As_unsafe<DoubleFloat_sp>(obj)->get();
+        } else if (gc::IsA<General_sp>(obj)) {
+          return clasp_to_double(gc::As_unsafe<General_sp>(obj));
         }
         TYPE_ERROR(obj,cl::_sym_double_float);
       }
       return 0.0;
     }
-    static value_type from_object(T_sp obj) { if (gc::IsA<DoubleFloat_sp>(obj)) return gc::As_unsafe<DoubleFloat_sp>(obj)->get(); TYPE_ERROR(obj,cl::_sym_double_float); };
-    static T_sp to_object(const value_type& v) { return DoubleFloat_O::create(v); };
+    static value_type from_object(T_sp obj) { return clasp_to_double(gc::As_unsafe<DoubleFloat_sp>(obj));};
+    static T_sp to_object(const value_type& v) { return core::clasp_make_double_float(v); };
   public:
   SimpleVectorDouble_O(size_t length, value_type initialElement=value_type(),
                        bool initialElementSupplied=false,
@@ -63,6 +63,16 @@ namespace core {
     virtual T_sp element_type() const override { return cl::_sym_double_float;};
     virtual T_sp arrayElementType() const override { return cl::_sym_double_float; };
     virtual clasp_elttype elttype() const { return clasp_aet_df; };
+  public: // Provide the API that I used for NVector_sp
+    static SimpleVectorDouble_sp create(size_t sz) {
+      return make(sz,0.0,false,0,NULL);
+    }
+    double& element(size_t i) { return this->operator[](i);};
+    double& getElement(size_t i) { return this->operator[](i);};
+    void setElement(size_t i, double v) { this->operator[](i) = v; };
+    void addToElement(size_t i, double v) { this->operator[](i) += v; };
+    void zero() { for(size_t i(0),iEnd(this->length()); i<iEnd;++i) this->operator[](i) = 0.0; };
+    size_t size() const { return this->length(); };
   };
 };
 

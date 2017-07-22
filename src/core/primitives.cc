@@ -67,8 +67,6 @@ THE SOFTWARE.
 #include <clasp/core/evaluator.h>
 #include <clasp/core/compiler.h>
 #include <clasp/core/print.h>
-#include <clasp/core/standardClass.h>
-#include <clasp/core/forwardReferencedClass.h>
 #include <clasp/core/singleDispatchMethod.h>
 #include <clasp/core/singleDispatchGenericFunction.h>
 #include <clasp/core/lambdaListHandler.h>
@@ -137,7 +135,7 @@ CL_DEFUN void cl__sleep(T_sp oseconds) {
   if (oseconds.nilp()) {
     ERROR_WRONG_TYPE_ONLY_ARG(cl::_sym_sleep, oseconds, cl::_sym_Number_O);
   }
-  double dsec = clasp_to_double(gc::As<Real_sp>(oseconds));
+  double dsec = clasp_to_double(oseconds);
   if (dsec < 0.0) {
     SIMPLE_ERROR(BF("You cannot sleep for < 0 seconds"));
   }
@@ -253,9 +251,8 @@ CL_LAMBDA(sym value);
 CL_DECLARE();
 CL_DOCSTRING("set");
 CL_DEFUN T_sp cl__set(Symbol_sp sym, T_sp val) {
-  if (sym.nilp()) {
-    SIMPLE_ERROR(BF("You cannot assign to the constant NIL"));
-  }
+  if (sym->isConstant())
+    SIMPLE_ERROR(BF("Cannot modify value of constant %s") % _rep_(sym));
   sym->setf_symbolValue(val);
   return val;
 };
@@ -972,23 +969,18 @@ CL_DECLARE();
 CL_DOCSTRING("constantp");
 CL_DEFUN bool cl__constantp(T_sp obj, T_sp env) {
   // ignore env
-  if (cl__numberp(obj))
-    return true;
-  if (cl__characterp(obj))
-    return true;
-  if (core__arrayp(obj))
-    return true;
-  // TODO add various kinds of array
-  if ((obj).consp() && oCar(obj) == cl::_sym_quote)
-    return true;
-  if (obj.nilp())
-    return true;
+  if (obj.nilp()) return true;
   if (cl__symbolp(obj)) {
-    if (cl__keywordp(obj))
-      return true;
+    if (cl__keywordp(obj)) return true;
     return gc::As<Symbol_sp>(obj)->isConstant();
   }
-  return false;
+  if ((obj).consp()) {
+    if (oCar(obj) == cl::_sym_quote)
+      // more analysis could be done here.
+      return true;
+    else return false;
+  }
+  return true;
 };
 
 CL_LAMBDA(arg);
@@ -1014,7 +1006,7 @@ CL_DEFUN T_mv core__macroexpand_default(Function_sp macro_function, T_sp form, T
       err << "Passing argument 1: " << _rep_(form) << std::endl;
       err << "Passing argument 2: " << _rep_(macro_env) << std::endl;
       Closure_sp closure = macro_function;
-      err << "macro_function[" << _rep_(macro_function->name()) << std::endl;
+      err << "macro_function[" << _rep_(macro_function->functionName()) << std::endl;
       if (auto ic = closure.as<InterpretedClosure_O>()) {
         err << "code: " << _rep_(ic->code());
       } else {
@@ -1096,10 +1088,14 @@ CL_DEFUN T_sp cl__fdefinition(T_sp functionName) {
     if (oCar(cname) == cl::_sym_setf) {
       Symbol_sp name = gc::As<Symbol_sp>(oCadr(cname));
       if (name.notnilp()) {
+        if (!name->setf_fboundp())
+          ERROR_UNDEFINED_FUNCTION(functionName);
         return name->getSetfFdefinition();
       }
     }
   } else if ( Symbol_sp sym = functionName.asOrNull<Symbol_O>() ) {
+    if (!sym->fboundp())
+      ERROR_UNDEFINED_FUNCTION(functionName);
     return sym->symbolFunction();
   }
   TYPE_ERROR(functionName,cl::_sym_function);
@@ -1213,7 +1209,7 @@ ListOfSequenceSteppers::ListOfSequenceSteppers(List_sp sequences) {
       goto EMPTY;
     } else if (obj.generalp()) {
       General_sp gobj((gctools::Tagged)obj.raw_());
-      SIMPLE_ERROR(BF("Illegal object for stepper[%s] class[%s]") % _rep_(gobj) % gobj->_instanceClass()->classNameAsString());
+      SIMPLE_ERROR(BF("Illegal object for stepper[%s] class[%s]") % _rep_(gobj) % gobj->_instanceClass()->_classNameAsString());
     }
   }
   this->_AtEnd = false;
@@ -1679,9 +1675,9 @@ CL_DEFUN Symbol_mv core__type_to_symbol(T_sp x) {
       return (Values(cl::_sym_Stream_O));
     else if (ReadTable_sp rtx = gx.asOrNull<ReadTable_O>())
       return (Values(cl::_sym_ReadTable_O));
-    return Values(gx->__class()->className());
+    return Values(gx->__class()->_className());
   }
-  SIMPLE_ERROR(BF("Add core__type_to_symbol support for type: %s") % cl__class_of(x)->classNameAsString());
+  SIMPLE_ERROR(BF("Add core__type_to_symbol support for type: %s") % cl__class_of(x)->_classNameAsString());
 #pragma clang diagnostic pop
 }
 
@@ -1710,7 +1706,7 @@ T_sp type_of(T_sp x) {
     T_sp cl = lisp_instance_class(instance);
     T_sp t;
     if (Class_sp mcl = cl.asOrNull<Class_O>()) {
-      t = mcl->className();
+      t = mcl->_className();
     } else if (Instance_sp icl = cl.asOrNull<Instance_O>()) {
       (void)icl;
       DEPRECATEDP("Classes of instances should always be of Class_O type, not Instance_O");
@@ -1725,7 +1721,7 @@ T_sp type_of(T_sp x) {
     return t;
   } else if (Class_sp mc = x.asOrNull<Class_O>()) {
     Class_sp mcc = lisp_static_class(mc);
-    return mcc->className();
+    return mcc->_className();
   }
 #endif
   if (Symbol_sp symx = x.asOrNull<Symbol_O>()) {
@@ -1739,9 +1735,11 @@ T_sp type_of(T_sp x) {
     Array_sp ax = gc::As_unsafe<Array_sp>(x);
     return ax->type_of();
   } else if (WrappedPointer_sp pp = x.asOrNull<WrappedPointer_O>()) {
-    return pp->_instanceClass()->className();
+    return pp->_instanceClass()->_className();
+#if 0
   } else if (core__structurep(x)) {
     return gc::As<StructureObject_sp>(x)->structureType();
+#endif
   } else if (Stream_sp stx = x.asOrNull<Stream_O>()) {
     if (gc::IsA<SynonymStream_sp>(stx))
       return cl::_sym_SynonymStream_O;
@@ -1861,7 +1859,7 @@ CL_DEFMETHOD T_sp InvocationHistoryFrameIterator_O::functionName() {
   if (!closure) {
     SIMPLE_ERROR(BF("Could not access closure of InvocationHistoryFrame"));
   }
-  return closure->name();
+  return closure->functionName();
 }
 
 CL_LISPIFY_NAME("frameIteratorEnvironment");

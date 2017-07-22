@@ -44,15 +44,22 @@ THE SOFTWARE.
 #include <clasp/core/numbers.fwd.h>
 #include <clasp/core/specializer.h>
 #include <clasp/core/holder.h>
+#include <clasp/core/instance.h>
 
+#if 0
 template <>
 struct gctools::GCInfo<core::Class_O> {
   static bool constexpr NeedsInitialization = false;
   static bool constexpr NeedsFinalization = false;
   static GCInfo_policy constexpr Policy = normal;
 };
+#endif
+
 
 namespace core {
+
+  typedef Instance_O Class_O;
+  typedef Instance_sp Class_sp;
 
   Fixnum_sp clasp_make_fixnum(gc::Fixnum v);
   
@@ -60,7 +67,6 @@ namespace core {
 //  Class access functions for when we only have a forward
 //  definition for the Class_O class
 //
-SMART(Class);
 
 /*! Class spoofs ECL>>Instance_O classes by doing the following.
 
@@ -74,6 +80,12 @@ SMART(Class);
 
   
 */
+
+#define REF_CLASS_NUMBER_OF_SLOTS_IN_STANDARD_CLASS 24 // was 22
+#define REF_CLASS_NUMBER_OF_SLOTS_IN_STRUCTURE_CLASS 30 // was 28
+  
+
+#if 0
 class Class_O : public StandardObject_O {
   struct metadata_bootstrap_class {};
   struct metadata_gc_do_not_move {};
@@ -92,21 +104,24 @@ class Class_O : public StandardObject_O {
   template <typename u>
   friend BuiltInClass_sp hand_initialize_allocatable_class(uint &classesHandInitialized, Lisp_sp prog, BuiltInClass_sp c);
 
-public: // The hard-coded indexes above are defined below to be used by Class
+ public:
+  /*! A Fixnum that represents the object stamp(aka KIND) of each instance of this class */
+  gctools::Stamp _instance_stamp;
+  Class_sp  _MetaClass;
+  /*! Callback function to allocate instances */
+  SimpleVector_sp _Rack;
+  /*! Mimic ECL Instance::sig */
+  T_sp _Signature_ClassSlots;
+  Creator_sp _theCreator;
+//  size_t              _NumberOfSlots;
+#ifdef METER_ALLOCATIONS
+  // Keep track of allocations
+  size_t _allocation_counter;
+  size_t _allocation_total_size;
+#endif
+ public: // The hard-coded indexes above are defined below to be used by Class
   // These must match the +class-slots+ defined in hierarchy.lsp
 
-  // These must be exposed in core__class_slot_sanity_check()
-  typedef enum { REF_CLASS_CLASS_NAME = 3,
-                 REF_CLASS_DIRECT_SUPERCLASSES = 4,
-                 REF_CLASS_SLOTS = 6,
-                 REF_CLASS_DIRECT_DEFAULT_INITARGS = 9,
-                 REF_CLASS_FINALIZED = 11,
-                 REF_CLASS_CLASS_PRECEDENCE_LIST = 7,
-                 REF_CLASS_DIRECT_SLOTS = 8,
-                 REF_CLASS_DEFAULT_INITARGS = 10} Slots;
-  
-#define REF_CLASS_NUMBER_OF_SLOTS_IN_STANDARD_CLASS 22
-#define REF_CLASS_NUMBER_OF_SLOTS_IN_STRUCTURE_CLASS 28
   
 #if 0
   // If any of these are exposed - then they MUST be added to
@@ -142,21 +157,6 @@ public:
   static Class_sp create(Symbol_sp symbol,Class_sp metaClass);
   static Class_sp createUncollectable(gctools::Stamp is,Class_sp metaClass, size_t number_of_slots);
 
-public:
-  /*! A Fixnum that represents the object stamp(aka KIND) of each instance of this class */
-  gctools::Stamp _instance_stamp;
-#ifdef METER_ALLOCATIONS
-  // Keep track of allocations
-  size_t _allocation_counter;
-  size_t _allocation_total_size;
-#endif
-  Class_sp  _MetaClass;
-  /*! Mimic ECL Instance::sig */
-  T_sp _Signature_ClassSlots;
-  /*! Callback function to allocate instances */
-  Creator_sp _theCreator;
-  SimpleVector_sp _Rack;
-  size_t              _NumberOfSlots;
 public:
   /*! This is a factory function that returns either a BuiltInClass or a StandardClass depending on the
 	  type of metaClass */
@@ -279,7 +279,7 @@ public:
   virtual void describe(T_sp stream);
 
   /*! predicate if this is a BuiltInClass class */
-  virtual bool builtInClassP() const { return false; };
+  virtual bool builtInClassP() const { return this == &*lisp_builtInClass(); };
 
   /*! predicate if this is a raw C++ class that is wrapped with clbind
           - it can only be used to derive other classes if cxxDerivableClassP is true */
@@ -305,14 +305,16 @@ public:
 #endif
     _MetaClass(metaClass),
     _Signature_ClassSlots(_Unbound<T_O>()),
-    _theCreator(),
-    _NumberOfSlots(slots)
+    _theCreator()
+//    ,_NumberOfSlots(slots)
     {};
 
   explicit Class_O();
 
   virtual ~Class_O(){};
 };
+
+#endif
 };
 
 
@@ -334,7 +336,8 @@ namespace core {
     virtual core::T_sp creator_allocate() {
       // BuiltInObjectCreator<Class_O> uses a different allocation method
       // that assigns the next Clos Stamp to the new Class
-      GC_ALLOCATE_VARIADIC(Class_O, obj, gctools::NextStamp(),lisp_StandardClass(),REF_CLASS_NUMBER_OF_SLOTS_IN_STANDARD_CLASS);
+      GC_ALLOCATE_VARIADIC(Class_O, obj, lisp_standard_class(),REF_CLASS_NUMBER_OF_SLOTS_IN_STANDARD_CLASS);
+      printf("%s:%d  creating class\n", __FILE__, __LINE__ );
       return obj;
     }
     virtual void searcher(){};

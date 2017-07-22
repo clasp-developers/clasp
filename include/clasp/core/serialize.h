@@ -409,7 +409,7 @@ public: // bidirectional
       _BLOCK_TRACE("Saving");
       typename map<string, pType>::iterator oi;
       for (oi = v.begin(); oi != v.end(); oi++) {
-        List_sp pair = Cons_O::create(str_create(oi->first), Integer_O::create(oi->second));
+        List_sp pair = Cons_O::create(str_create(oi->first), clasp_make_integer(oi->second));
         this->pushVector(pair);
       }
     } else {

@@ -254,12 +254,14 @@ CL_DEFUN bool cl__readtablep(T_sp obj) {
   return gc::IsA<ReadTable_sp>(obj);
 };
 
+
 CL_LAMBDA(arg);
 CL_DECLARE();
 CL_DOCSTRING("structureObjectP");
 CL_DEFUN bool core__structure_object_p(T_sp obj) {
-  if (gc::IsA<StructureObject_sp>(obj))
-    return true;
+#if 0
+  if (gc::IsA<StructureObject_sp>(obj)) return true;
+#endif
   return gc::IsA<Instance_sp>(obj);
 };
 

@@ -24,11 +24,9 @@ int gcFunctions_after;
 #include <clasp/core/builtInClass.h>
 #include <clasp/core/fileSystem.h>
 #include <clasp/core/environment.h>
-#include <clasp/core/standardClass.h>
 #include <clasp/core/evaluator.h>
 #include <clasp/core/activationFrame.h>
 #include <clasp/core/hashTableEq.h>
-#include <clasp/core/structureClass.h>
 #include <clasp/core/lispStream.h>
 #include <clasp/core/array.h>
 #include <clasp/core/symbolTable.h>
@@ -130,12 +128,10 @@ CL_DOCSTRING("Return the stamp for the object");
 CL_DEFUN Fixnum core__header_stamp(core::T_sp obj)
 {
   Fixnum kind = core__header_kind(obj);
-  if (kind== gctools::KIND_INSTANCE) {
+  if (gctools::IsA<core::Instance_sp>(obj)) {
+    // if (kind== gctools::KIND_INSTANCE) {
     core::Instance_sp iobj = gc::As_unsafe<core::Instance_sp>(obj);
     return iobj->stamp();
-  } else if (kind== gctools::KIND_CLASS) {
-    core::Class_sp cobj = gc::As_unsafe<core::Class_sp>(obj);
-    return cobj->stamp();
   }
   return kind;
 }

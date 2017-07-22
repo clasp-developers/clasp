@@ -390,7 +390,7 @@ void HashTable_O::sxhash_equalp(HashGenerator &hg, T_sp obj, LocationDependencyP
       if (gobj->instancep()) {
         Instance_sp iobj = gc::As<Instance_sp>(gobj);
         if (hg.isFilling())
-          HashTable_O::sxhash_equalp(hg, iobj->_Class->className(), ld);
+          HashTable_O::sxhash_equalp(hg, iobj->_Class->_className(), ld);
         for (size_t i(0), iEnd(iobj->numberOfSlots()); i < iEnd; ++i) {
             if (!iobj->instanceRef(i).unboundp() && hg.isFilling())
               HashTable_O::sxhash_equalp(hg, iobj->instanceRef(i), ld);
@@ -700,7 +700,7 @@ List_sp HashTable_O::findAssoc(gc::Fixnum index, T_sp key) const {
 
   string HashTable_O::__repr__() const {
     stringstream ss;
-    ss << "#<" << this->_instanceClass()->classNameAsString() << " :count " << this->_HashTableCount;
+    ss << "#<" << this->_instanceClass()->_classNameAsString() << " :count " << this->_HashTableCount;
     ss << " :total-alist-entries " << this->calculateHashTableCount();
     ss << " @" << (void *)(this) << "> ";
     return ss.str();
@@ -736,11 +736,11 @@ List_sp HashTable_O::findAssoc(gc::Fixnum index, T_sp key) const {
   CL_DEFMETHOD string HashTable_O::hash_table_dump(Fixnum start, T_sp end) const {
     stringstream ss;
 #ifndef DUMP_LOW_LEVEL
-    ss << "#<" << this->_instanceClass()->classNameAsString() << std::endl;
+    ss << "#<" << this->_instanceClass()->_classNameAsString() << std::endl;
 #endif
     int iend(cl__length(ENSURE_VALID_OBJECT(this->_HashTable)));
     if (end.notnilp()) {
-      iend = clasp_to_fixnum(gc::As<Fixnum_sp>(end));
+      iend = clasp_to_fixnum(end);
     }
     if (start < 0 || start >= cl__length(ENSURE_VALID_OBJECT(this->_HashTable))) {
       SIMPLE_ERROR(BF("start must be [0,%d)") % cl__length(ENSURE_VALID_OBJECT(this->_HashTable)));

@@ -184,7 +184,7 @@
 
 (defmethod shared-initialize ((gfun standard-generic-function) slot-names
 			      &rest initargs)
-  (declare (ignore initargs slot-names)
+  (declare (ignore slot-names)
            (core:lambda-name shared-initialize-standard-generic-function))
   (call-next-method)
   (when (generic-function-methods gfun)

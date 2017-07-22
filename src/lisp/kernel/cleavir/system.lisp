@@ -181,7 +181,7 @@
        (setf *ct-end* (compiler-timer-elapsed))
        (format *trace-output*
                "~{~,5F secs : ~,30a~%~}~
-~,5F secs : Total~%"
+~,5F secs : Total   cf~a ~%"
                (list
                 (float (/ *ct-start* internal-time-units-per-second)) "*ct-start*"
                 (float (/ *ct-generate-ast* internal-time-units-per-second)) "*ct-generate-ast*"
@@ -202,7 +202,8 @@
                 (float (/ *ct-translate* internal-time-units-per-second)) "*ct-translate*"
                 (float (/ *ct-end* internal-time-units-per-second)) "*ct-end*"
                 )
-               (float (/ (ct-total) internal-time-units-per-second))))))
+               (float (/ (ct-total) internal-time-units-per-second))
+               cmp:*debug-compile-file-counter*))))
 
 
   

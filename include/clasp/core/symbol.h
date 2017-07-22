@@ -68,7 +68,7 @@ public:
   List_sp _PropertyList;
 
 private:
-  friend class Class_O;
+  friend class Instance_O;
   friend class Package_O;
   friend class CoreExposer;
   LISP_CLASS(core, ClPkg, Symbol_O, "Symbol",General_O);
@@ -187,7 +187,7 @@ CL_DEFMETHOD   bool specialP() const { return this->_IsSpecial; };
 
   bool isConstant() const { return this->_IsConstant; };
 
-  /*! Set the global fnction value of this symbol */
+  /*! Set the global function value of this symbol */
   void setf_symbolFunction(T_sp exec);
 
   /*! Return the global bound function */

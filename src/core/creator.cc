@@ -71,7 +71,7 @@ T_sp ClassCreator_O::creator_allocate() {
     this->_class->_allocation_total_size += size;
   }
 #endif
-  Class_sp class_ = gctools::GC<Class_O>::allocate_class(gctools::KIND_CLASS, size);
+  Class_sp class_ = gctools::GC<Class_O>::allocate_class(gctools::KIND_INSTANCE, size);
   return class_;
 };
 };
@@ -80,11 +80,12 @@ namespace core {
 T_sp StandardClassCreator_O::creator_allocate() {
   size_t size = gctools::sizeof_with_header<Class_O>();
 #ifdef METER_ALLOCATIONS
-  Class_sp c = lisp_StandardClass();
+  Class_sp c = lisp_standard_class();
   c->_allocation_counter += 1;
   c->_allocation_total_size += size;
 #endif
-  GC_ALLOCATE_VARIADIC(Class_O,class_,gctools::NextStamp(),lisp_StandardClass(),REF_CLASS_NUMBER_OF_SLOTS_IN_STANDARD_CLASS);
+  GC_ALLOCATE_VARIADIC(Class_O,class_,lisp_standard_class(),REF_CLASS_NUMBER_OF_SLOTS_IN_STANDARD_CLASS);
+  printf("%s:%d:%s   created class\n", __FILE__, __LINE__, __FUNCTION__ );
   return class_;
 };
 };
@@ -93,11 +94,11 @@ namespace core {
 T_sp StructureClassCreator_O::creator_allocate() {
   size_t size = gctools::sizeof_with_header<Class_O>();
 #ifdef METER_ALLOCATIONS
-  Class_sp c = lisp_StandardClass();
+  Class_sp c = lisp_standard_class();
   c->_allocation_counter += 1;
   c->_allocation_total_size += size;
 #endif
-  GC_ALLOCATE_VARIADIC(Class_O,class_,gctools::NextStamp(),lisp_StandardClass(),REF_CLASS_NUMBER_OF_SLOTS_IN_STRUCTURE_CLASS);
+  GC_ALLOCATE_VARIADIC(Class_O,class_,lisp_standard_class(),REF_CLASS_NUMBER_OF_SLOTS_IN_STRUCTURE_CLASS);
   return class_;
 };
 

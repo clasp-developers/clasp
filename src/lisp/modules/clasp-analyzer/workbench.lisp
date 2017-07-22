@@ -1,18 +1,28 @@
 ;;
 ;; Normal run
 ;;
-(compile-file #P"sys:modules;clang-tool;clang-tool.lisp" :print t)
-(compile-file #P"sys:modules;clasp-analyzer;clasp-analyzer.lisp" :print t)
-
-(load #P"sys:modules;clang-tool;clang-tool.fasl")
-(load #P"sys:modules;clasp-analyzer;clasp-analyzer.fasl")
+(progn
+  (compile-file #P"sys:modules;clang-tool;clang-tool.lisp" :print t)
+  (compile-file #P"sys:modules;clasp-analyzer;clasp-analyzer.lisp" :print t))
+(progn
+  (load #P"sys:modules;clang-tool;clang-tool.fasl")
+  (load #P"sys:modules;clasp-analyzer;clasp-analyzer.fasl"))
 
 (in-package :clasp-analyzer)
-(defvar *compile-commands* "/Users/meister/Development/clasp/build/mpsprep/compile_commands.json")
+(defvar *compile-commands* "~/Dev/cando/build/mpsprep/compile_commands.json")
 (setf *print-pretty* nil)
-(defvar *db* (clasp-analyzer:setup-clasp-analyzer-compilation-tool-database (pathname *compile-commands*)))
-(defvar *p* (search/generate-code *db*))
+(defvar *db* (clasp-analyzer:setup-clasp-analyzer-compilation-tool-database
+              (pathname *compile-commands*)
+              :selection-pattern "cons.cc" ))
+(defvar *p* (search/generate-code *db* :output-file #P"cons_only.dat"))
 
+(untrace traverse)
+(defparameter *analysis* (analyze-project *project*))
+(analysis-enum-roots *analysis*)
+*analysis*
+(analyze-only *db*)
+
+(load-project *db*)
 
 
 ;;

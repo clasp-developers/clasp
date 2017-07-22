@@ -64,8 +64,6 @@ SMART(Intrinsic);
 SMART(NamedFunction);
 SMART(Reader);
 SMART(FunctionValueEnvironment);
-SMART(Class);
-SMART(BuiltInClass);
 SMART(Package);
 SMART(Path);
 SMART(Binder);
@@ -261,10 +259,10 @@ class Lisp_O {
     mutable mp::SharedMutex _SetfDefinitionsMutex;
 #endif
 #endif
-    Class_sp   _Class;
-    Class_sp   _BuiltInClass;
-    Class_sp   _StandardClass;
-    Class_sp   _StructureClass;
+    Class_sp   _TheClass;
+    Class_sp   _TheBuiltInClass;
+    Class_sp   _TheStandardClass;
+    Class_sp   _TheStructureClass;
     Package_sp _CorePackage;
     Package_sp _KeywordPackage;
     Package_sp _CommonLispPackage;
@@ -316,7 +314,6 @@ class Lisp_O {
   template <class oclass>
   friend void define_base_class(Class_sp co, Class_sp cob, uint &classesUpdated);
   template <class oclass>
-  friend BuiltInClass_sp hand_initialize_allocatable_class(uint &classesHandInitialized, Lisp_sp lisp, BuiltInClass_sp _class);
   friend T_sp core__put_sysprop(T_sp key, T_sp area, T_sp value);
   friend T_mv core__get_sysprop(T_sp key, T_sp area);
 
@@ -325,9 +322,11 @@ class Lisp_O {
 public:
   static void initializeGlobals(Lisp_sp lisp);
 
+#if 0
   template <class oclass>
-  friend BuiltInClass_sp hand_initialize_class(uint &classesHandInitialized, Lisp_sp prog, BuiltInClass_sp c);
-
+  friend Class_sp hand_initialize_class(uint &classesHandInitialized, Lisp_sp prog, BuiltInClass_sp c);
+#endif
+  
 public:
   static void lisp_initSymbols(Lisp_sp lisp);
 
@@ -971,8 +970,8 @@ public:
   void initializeEnvironment();
 
   void addClassNameToPackageAsDynamic(const string &package, const string &name, Class_sp cl);
-  void addClass(Symbol_sp classSymbol, Creator_sp creator, Symbol_sp base1ClassSymbol ); //, Symbol_sp base2ClassSymbol = UNDEFINED_SYMBOL, Symbol_sp base3ClassSymbol = UNDEFINED_SYMBOL);
-  void addClass(Symbol_sp classSymbol, Class_sp theClass, Creator_sp creator);
+  void addClassSymbol(Symbol_sp classSymbol, Creator_sp creator, Symbol_sp base1ClassSymbol ); //, Symbol_sp base2ClassSymbol = UNDEFINED_SYMBOL, Symbol_sp base3ClassSymbol = UNDEFINED_SYMBOL);
+//  void addClass(Symbol_sp classSymbol, Class_sp theClass);
   //	void addClass( Symbol_sp classSymbol);
 
   string __repr__() const;

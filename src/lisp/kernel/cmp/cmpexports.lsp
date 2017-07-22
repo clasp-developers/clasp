@@ -19,6 +19,7 @@
           *current-function*
           *current-function-name*
           *debug-compile-file*
+          *debug-compile-file-counter*
           *generate-compile-file-load-time-values*
           *load-time-initializer-environment*
           *gv-current-function-name*
@@ -220,23 +221,23 @@
 (export '(
           add-creator
           next-value-table-holder-name
-          make-constant-call
-          make-constant-creator
+          make-literal-node-call
+          make-literal-node-creator
           run-all-add-node
-          constant-runtime-p
-          constant-runtime-index
-          constant-runtime-object
-          constant-creator-p
-          constant-creator-index
-          constant-creator-name
-          constant-creator-arguments
-          constant-side-effect-p
-          constant-side-effect-name
-          constant-side-effect-arguments
-          constant-call-p
-          constant-call-function
-          constant-call-source-pos-info
-          constant-call-holder
+          literal-node-runtime-p
+          literal-node-runtime-index
+          literal-node-runtime-object
+          literal-node-creator-p
+          literal-node-creator-index
+          literal-node-creator-name
+          literal-node-creator-arguments
+          literal-node-side-effect-p
+          literal-node-side-effect-name
+          literal-node-side-effect-arguments
+          literal-node-call-p
+          literal-node-call-function
+          literal-node-call-source-pos-info
+          literal-node-call-holder
           number-of-entries
           reference-literal
           load-time-reference-literal
@@ -253,7 +254,7 @@
           with-load-time-value
           with-rtv
           with-top-level-form
-          with-constants-table
+          with-literal-table
           evaluate-function-into-load-time-value
           )
         )

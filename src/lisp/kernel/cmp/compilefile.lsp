@@ -314,6 +314,7 @@ and the pathname of the source file - this will also be used as the module initi
     (values output-file warnings-p failures-p)))
 
 (defvar *debug-compile-file* nil)
+(defvar *debug-compile-file-counter* 0)
 
 (defun compile-file-to-module (given-input-pathname
                                &key
@@ -379,20 +380,19 @@ Compile a lisp source file into an LLVM module.  type can be :kernel or :user"
                                        (jit-constant-i64 *source-debug-offset*)
                                        (jit-constant-i32 (if *source-debug-use-lineno* 1 0))
                                        *gv-source-file-info-handle*))
-                    (with-constants-table
+                    (with-literal-table
                         (loop
-                           (progn
-                             (let ((eof (peek-char t source-sin nil eof-value)))
-                               (unless (eq eof eof-value)
-                                 (let ((pos (core:input-stream-source-pos-info source-sin)))
-                                   (setq *current-form-lineno* (core:source-file-pos-lineno pos)))))
-                             (let ((form (read source-sin nil eof-value)))
-                               (when *debug-compile-file* (bformat t "compile-file: %s\n" form))
-                               (if (eq form eof-value)
-                                   (return nil)
-                                   (if *debug-compile-file*
-                                       (time (compile-file-form form compile-file-hook))
-                                       (compile-file-form form compile-file-hook))))))
+                           (let ((eof (peek-char t source-sin nil eof-value)))
+                             (unless (eq eof eof-value)
+                               (let ((pos (core:input-stream-source-pos-info source-sin)))
+                                 (setq *current-form-lineno* (core:source-file-pos-lineno pos)))))
+                           (let ((form (read source-sin nil eof-value)))
+                             (when *debug-compile-file* (bformat t "compile-file: cf%d -> %s\n" (incf *debug-compile-file-counter*) form))
+                             (if (eq form eof-value)
+                                 (return nil)
+                                 (if *debug-compile-file*
+                                     (time (compile-file-form form compile-file-hook))
+                                     (compile-file-form form compile-file-hook)))))
                       (make-boot-function-global-variable *the-module* run-all-function)))))
               (cmp-log "About to verify the module\n")
               (cmp-log-dump *the-module*)

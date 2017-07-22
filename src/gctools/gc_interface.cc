@@ -95,15 +95,12 @@ typedef bool _Bool;
 #include <clasp/gctools/gcStack.h>
 #include <clasp/gctools/containers.h>
 #include <clasp/core/weakPointer.h>
-#include <clasp/core/cxxClass.h>
 #include <clasp/core/random.h>
 #include <clasp/core/mpPackage.h>
 #include <clasp/core/queue.h>
 #include <clasp/core/weakKeyMapping.h>
 #include <clasp/core/weakHashTable.h>
 #include <clasp/core/smallMultimap.h>
-#include <clasp/core/funcallableStandardClass.h>
-#include <clasp/core/structureClass.h>
 //#include "core/symbolVector.h"
 #include <clasp/core/designators.h>
 #include <clasp/core/hashTable.h>
@@ -127,8 +124,6 @@ typedef bool _Bool;
 //#include <clasp/core/singleDispatchEffectiveMethodFunction.h>
 //#include <clasp/core/regex.h>
 #include <clasp/core/structureObject.h>
-#include <clasp/core/forwardReferencedClass.h>
-#include <clasp/core/standardClass.h>
 #include <clasp/core/array.h>
 #include <clasp/core/readtable.h>
 #include <clasp/core/nativeVector.h>
@@ -254,58 +249,6 @@ void initialize_functions()
   #undef EXPOSE_FUNCTION_BINDINGS
 #endif
 };
-
-#if 0
-// I moved this into clasp/src/gctools/source_info.cc
-// so that changes in source info don't constantly force recompiles of gc_interface
-typedef enum { code_kind, method_kind, class_kind, variable_kind, unknown_kind } source_info_kind;
-NOINLINE void define_source_info(source_info_kind kind,
-                        const string& lisp_name,
-                        const string& file, size_t character_offset,
-                        size_t line, const string& docstring ) {
-  std::string package_part, symbol_part;
-  core::colon_split(lisp_name,package_part,symbol_part);
-  core::Symbol_sp sym = core::lisp_intern(symbol_part,package_part);
-  core::SimpleBaseString_sp sourceFile = core::SimpleBaseString_O::make(file);
-  core::SimpleBaseString_sp docs = core::SimpleBaseString_O::make(docstring);
-  if ( kind == code_kind ) {
-    core::Function_sp func = core::coerce::functionDesignator(sym);
-    func->setSourcePosInfo(sourceFile, character_offset, line, 0 );
-    ext__annotate(sym,cl::_sym_documentation,cl::_sym_function, docs);
-    ext__annotate(func,cl::_sym_documentation,cl::_sym_function, docs);
-  } else if ( kind == method_kind ) {
-    core::List_sp info = core__get_sysprop(sym,core::_sym_cxx_method_source_location);
-    info = core::Cons_O::create(core::Cons_O::createList(sourceFile,core::clasp_make_fixnum(character_offset)),info);
-    core::core__put_sysprop(sym,core::_sym_cxx_method_source_location,info);
-    core::SimpleBaseString_sp docs = core::SimpleBaseString_O::make(docstring);
-    ext__annotate(sym,cl::_sym_documentation,cl::_sym_method, docs);
-  } else if ( kind == class_kind ) {
-    core::List_sp info = core::Cons_O::createList(sourceFile,core::clasp_make_fixnum(character_offset));
-    core::core__put_sysprop(sym,core::_sym_class_source_location,info);
-    ext__annotate(sym,cl::_sym_documentation,cl::_sym_class, docs);
-  } else if ( kind == variable_kind ) {
-    printf("%s:%d Handle setting source location of variable_kind\n", __FILE__, __LINE__ );
-  } else {
-    printf("%s:%d Could not set source-location for %d\n", __FILE__, __LINE__, kind);
-  }
-}
-
-#define SOURCE_INFO_HELPERS
-#undef SOURCE_INFO
-#ifndef SCRAPING
-#include SOURCE_INFO_INC_H
-#endif
-#undef SOURCE_INFO_HELPERS
-
-void initialize_source_info() {
-#define SOURCE_INFO
-#ifndef SCRAPING
-#include SOURCE_INFO_INC_H
-#endif
-#undef SOURCE_INFO
-};
-#endif
-
 
 
 extern "C" {
@@ -701,13 +644,12 @@ NOINLINE void set_one_static_class_Kind() {
 template <class TheClass>
 NOINLINE  gc::smart_ptr<core::Class_O> allocate_one_metaclass(core::Symbol_sp classSymbol, core::Class_sp metaClass)
 {
-  gc::smart_ptr<core::Class_O> class_val = core::Class_O::createUncollectable(core::Class_O::static_Kind,metaClass,REF_CLASS_NUMBER_OF_SLOTS_IN_STANDARD_CLASS);
+  auto cb = gctools::GC<TheClass>::allocate();
+  gc::smart_ptr<core::Class_O> class_val = core::Class_O::createClassUncollectable(core::Class_O::static_Kind,metaClass,REF_CLASS_NUMBER_OF_SLOTS_IN_STANDARD_CLASS,cb);
   class_val->__setup_stage1_with_sharedPtr_lisp_sid(class_val,classSymbol);
 //  reg::lisp_associateClassIdWithClassSymbol(reg::registered_class<TheClass>::id,TheClass::static_classSymbol());
 //  TheClass::static_class = class_val;
   core::core__setf_find_class(class_val,classSymbol);
-  auto cb = gctools::GC<TheClass>::allocate();
-  class_val->setCreator(cb);
   return class_val;
 }
 
@@ -715,14 +657,13 @@ NOINLINE  gc::smart_ptr<core::Class_O> allocate_one_metaclass(core::Symbol_sp cl
 template <class TheClass>
 NOINLINE  gc::smart_ptr<core::Class_O> allocate_one_class(core::Class_sp metaClass)
 {
-  gc::smart_ptr<core::Class_O> class_val = core::Class_O::createUncollectable(TheClass::static_Kind,metaClass,REF_CLASS_NUMBER_OF_SLOTS_IN_STANDARD_CLASS);
+  gctools::smart_ptr<core::BuiltInObjectCreator<TheClass>> cb = gctools::GC<core::BuiltInObjectCreator<TheClass>>::allocate();
+  TheClass::set_static_creator(cb);
+  gc::smart_ptr<core::Class_O> class_val = core::Class_O::createClassUncollectable(TheClass::static_Kind,metaClass,REF_CLASS_NUMBER_OF_SLOTS_IN_STANDARD_CLASS,cb);
   class_val->__setup_stage1_with_sharedPtr_lisp_sid(class_val,TheClass::static_classSymbol());
   reg::lisp_associateClassIdWithClassSymbol(reg::registered_class<TheClass>::id,TheClass::static_classSymbol());
   TheClass::static_class = class_val;
   core::core__setf_find_class(class_val,TheClass::static_classSymbol()); //,true,_Nil<core::T_O>());
-  gctools::smart_ptr<core::BuiltInObjectCreator<TheClass>> cb = gctools::GC<core::BuiltInObjectCreator<TheClass>>::allocate();
-  TheClass::set_static_creator(cb);
-  class_val->setCreator(TheClass::static_creator);
   return class_val;
 }
 
@@ -825,12 +766,14 @@ void initialize_clasp()
   set_static_class_symbols(&bootStrapCoreSymbolMap);
 
   printf("%s:%d  In gc_interface.cc about to set up metaclasses      cl::_sym_built_in_class->raw_()->%p\n", __FILE__, __LINE__, cl::_sym_built_in_class.raw_());
-  _lisp->_Roots._BuiltInClass = allocate_one_metaclass<core::StandardClassCreator_O>(cl::_sym_built_in_class,_Unbound<core::Class_O>());
-  _lisp->_Roots._StandardClass = allocate_one_metaclass<core::StandardClassCreator_O>(cl::_sym_standard_class,_Unbound<core::Class_O>());
-  _lisp->_Roots._StructureClass = allocate_one_metaclass<core::StructureClassCreator_O>(cl::_sym_structure_class,_Unbound<core::Class_O>());
-  _lisp->_Roots._BuiltInClass->_MetaClass = _lisp->_Roots._StandardClass;
-  _lisp->_Roots._StandardClass->_MetaClass = _lisp->_Roots._StandardClass;
-  _lisp->_Roots._StructureClass->_MetaClass = _lisp->_Roots._StandardClass;
+  _lisp->_Roots._TheClass = allocate_one_metaclass<core::StandardClassCreator_O>(cl::_sym_class,_Unbound<core::Class_O>());
+  _lisp->_Roots._TheBuiltInClass = allocate_one_metaclass<core::StandardClassCreator_O>(cl::_sym_built_in_class,_Unbound<core::Class_O>());
+  _lisp->_Roots._TheStandardClass = allocate_one_metaclass<core::StandardClassCreator_O>(cl::_sym_standard_class,_Unbound<core::Class_O>());
+  _lisp->_Roots._TheStructureClass = allocate_one_metaclass<core::StructureClassCreator_O>(cl::_sym_structure_class,_Unbound<core::Class_O>());
+  _lisp->_Roots._TheClass->_Class = _lisp->_Roots._TheStandardClass;
+  _lisp->_Roots._TheBuiltInClass->_Class = _lisp->_Roots._TheStandardClass;
+  _lisp->_Roots._TheStandardClass->_Class = _lisp->_Roots._TheStandardClass;
+  _lisp->_Roots._TheStructureClass->_Class = _lisp->_Roots._TheStandardClass;
   MPS_LOG("initialize_clasp ALLOCATE_ALL_CLASSES");
   #define ALLOCATE_ALL_CLASSES
   #ifndef SCRAPING
@@ -838,8 +781,7 @@ void initialize_clasp()
   #endif
   #undef ALLOCATE_ALL_CLASSES
   core_T_O_var->setInstanceBaseClasses(_Nil<core::T_O>());
-  _lisp->_Roots._Class = core_Class_O_var;
-
+  
   create_packages();
 
   bootStrapCoreSymbolMap.finish_setup_of_symbols();
@@ -858,19 +800,22 @@ void initialize_clasp()
   #endif
   #undef CALCULATE_CLASS_PRECEDENCE_ALL_CLASSES
 
-  _lisp->_Roots._BuiltInClass->instanceSet(core::Class_O::REF_CLASS_SLOTS,_Nil<core::T_O>());
-  _lisp->_Roots._BuiltInClass->instanceSet(core::Class_O::REF_CLASS_DIRECT_SLOTS,_Nil<core::T_O>());
-  _lisp->_Roots._BuiltInClass->instanceSet(core::Class_O::REF_CLASS_DEFAULT_INITARGS,_Nil<core::T_O>());
-  _lisp->_Roots._StandardClass->instanceSet(core::Class_O::REF_CLASS_SLOTS,_Nil<core::T_O>());
-  _lisp->_Roots._StandardClass->instanceSet(core::Class_O::REF_CLASS_DIRECT_SLOTS,_Nil<core::T_O>());
-  _lisp->_Roots._StandardClass->instanceSet(core::Class_O::REF_CLASS_DEFAULT_INITARGS,_Nil<core::T_O>());
-  _lisp->_Roots._StructureClass->instanceSet(core::Class_O::REF_CLASS_SLOTS,_Nil<core::T_O>());
-  _lisp->_Roots._StructureClass->instanceSet(core::Class_O::REF_CLASS_DIRECT_SLOTS,_Nil<core::T_O>());
-  _lisp->_Roots._StructureClass->instanceSet(core::Class_O::REF_CLASS_DEFAULT_INITARGS,_Nil<core::T_O>());
+  _lisp->_Roots._TheClass->instanceSet(core::Class_O::REF_CLASS_SLOTS,_Nil<core::T_O>());
+  _lisp->_Roots._TheClass->instanceSet(core::Class_O::REF_CLASS_DIRECT_SLOTS,_Nil<core::T_O>());
+  _lisp->_Roots._TheClass->instanceSet(core::Class_O::REF_CLASS_DEFAULT_INITARGS,_Nil<core::T_O>());
+  _lisp->_Roots._TheBuiltInClass->instanceSet(core::Class_O::REF_CLASS_SLOTS,_Nil<core::T_O>());
+  _lisp->_Roots._TheBuiltInClass->instanceSet(core::Class_O::REF_CLASS_DIRECT_SLOTS,_Nil<core::T_O>());
+  _lisp->_Roots._TheBuiltInClass->instanceSet(core::Class_O::REF_CLASS_DEFAULT_INITARGS,_Nil<core::T_O>());
+  _lisp->_Roots._TheStandardClass->instanceSet(core::Class_O::REF_CLASS_SLOTS,_Nil<core::T_O>());
+  _lisp->_Roots._TheStandardClass->instanceSet(core::Class_O::REF_CLASS_DIRECT_SLOTS,_Nil<core::T_O>());
+  _lisp->_Roots._TheStandardClass->instanceSet(core::Class_O::REF_CLASS_DEFAULT_INITARGS,_Nil<core::T_O>());
+  _lisp->_Roots._TheStructureClass->instanceSet(core::Class_O::REF_CLASS_SLOTS,_Nil<core::T_O>());
+  _lisp->_Roots._TheStructureClass->instanceSet(core::Class_O::REF_CLASS_DIRECT_SLOTS,_Nil<core::T_O>());
+  _lisp->_Roots._TheStructureClass->instanceSet(core::Class_O::REF_CLASS_DEFAULT_INITARGS,_Nil<core::T_O>());
 
-  _lisp->_Roots._BuiltInClass->setInstanceBaseClasses(core::Cons_O::createList(_lisp->_Roots._Class));
-  _lisp->_Roots._StandardClass->setInstanceBaseClasses(core::Cons_O::createList(_lisp->_Roots._Class));
-  _lisp->_Roots._StructureClass->setInstanceBaseClasses(core::Cons_O::createList(_lisp->_Roots._Class));
+  _lisp->_Roots._TheBuiltInClass->setInstanceBaseClasses(core::Cons_O::createList(_lisp->_Roots._TheClass));
+  _lisp->_Roots._TheStandardClass->setInstanceBaseClasses(core::Cons_O::createList(_lisp->_Roots._TheClass));
+  _lisp->_Roots._TheStructureClass->setInstanceBaseClasses(core::Cons_O::createList(_lisp->_Roots._TheClass));
 
   reg::lisp_registerClassSymbol<core::Character_I>(cl::_sym_character);
   reg::lisp_registerClassSymbol<core::Fixnum_I>(cl::_sym_fixnum);

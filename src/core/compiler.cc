@@ -247,7 +247,7 @@ CL_LAMBDA(pow2);
 CL_DECLARE();
 CL_DOCSTRING("Evaluate a TaggedCast 2^pow2 times");
 CL_DEFUN Fixnum_sp core__test_tagged_cast(Fixnum_sp pow2) __attribute__((optnone)) {
-  Fixnum fpow2 = clasp_to_fixnum(pow2);
+  Fixnum fpow2 = pow2.unsafe_fixnum();
   Fixnum times = 1;
   times = times << fpow2;
   printf("%s:%d  fpow2 = %" PRF " times = %" PRF "\n", __FILE__, __LINE__, fpow2, times);
@@ -266,8 +266,8 @@ CL_LAMBDA(reps num);
 CL_DECLARE();
 CL_DOCSTRING("Calculate the num Fibonacci number reps times");
 CL_DEFUN Integer_sp core__cxx_fibn(Fixnum_sp reps, Fixnum_sp num) {
-  long int freps = clasp_to_fixnum(reps);
-  long int fnum = clasp_to_fixnum(num);
+  long int freps = reps.unsafe_fixnum();
+  long int fnum = num.unsafe_fixnum();
   long int p1, p2, z;
   for (long int r = 0; r < freps; ++r) {
     p1 = 1;

@@ -34,8 +34,8 @@ namespace core {
       if (supplied) return from_object(obj);
       return 0;
     }
-    static value_type from_object(T_sp obj) { return clasp_to_fixnum(gc::As<core::Integer_sp>(obj)); };
-    static T_sp to_object(const value_type& v) { return core::Integer_O::create(v); };
+    static value_type from_object(T_sp obj) { return clasp_to_fixnum(obj); };
+    static T_sp to_object(const value_type& v) { return clasp_make_fixnum(v); };
   public:
   SimpleVector_fixnum_O(size_t length, value_type initialElement=value_type(),
                           bool initialElementSupplied=false,

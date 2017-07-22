@@ -201,6 +201,21 @@ printer and we should rather use MAKE-LOAD-FORM."
                                 (t spec)))))
   m)
 
+(defmethod print-object ((s slot-definition) stream)
+  (print-unreadable-object (s stream :type t)
+    (write (slot-definition-name s) :stream stream))
+  s)
+
+(defmethod print-object ((mc method-combination) stream)
+  (print-unreadable-object (mc stream :type t)
+    (write (method-combination-name mc) :stream stream))
+  mc)
+
+(defmethod print-object ((es eql-specializer) stream)
+  (print-unreadable-object (es stream :type t)
+    (write (eql-specializer-object es) :stream stream))
+  es)
+
 (defun ext::float-nan-string (x)
   (when *print-readably*
     (error 'print-not-readable :object x))

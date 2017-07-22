@@ -93,9 +93,6 @@
     (unless (eq :INSTANCE (slot-definition-allocation slot))
       (error "The structure class ~S can't have shared slots" (class-name class)))))
 
-(defmethod make-load-form ((object structure-object) &optional environment)
-  (make-load-form-saving-slots object :key environment))
-
 (defmethod print-object ((obj structure-object) stream)
   (let* ((class (si:instance-class obj))
 	 (slotds (class-slots class)))

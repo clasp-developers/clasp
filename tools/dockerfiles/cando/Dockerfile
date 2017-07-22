@@ -32,16 +32,12 @@ ADD extensions/cando/src/lisp $HOME/clasp/Contents/Resources/source-code/extensi
 
 
 # checkout quicklisp and its subprojects
-RUN git clone --depth=1 https://github.com/quicklisp/quicklisp-client.git $HOME/quicklisp
-RUN mkdir $HOME/quicklisp/local-projects
 RUN cd $HOME/quicklisp/local-projects \
  && git clone --depth=1 https://github.com/clasp-developers/usocket.git \
  && git clone --depth=1 https://github.com/clasp-developers/cl-jupyter.git \
  && git clone --depth=1 https://github.com/clasp-developers/bordeaux-threads.git \
  && git clone --depth=1 https://github.com/clasp-developers/cffi.git
 
-# checkout slime
-RUN git clone --depth=1 https://github.com/slime/slime $HOME/slime
 
 RUN clasp -f "setup-cando"\
           -e '(load "/home/app/quicklisp/setup.lisp")'\
@@ -52,8 +48,12 @@ RUN clasp -f "setup-cando"\
           -e "(swank-loader:init :delete nil :reload nil :load-contribs nil)"\
           -e "(quit)"
 
+RUN mkdir /home/app/logs/
+
 RUN clasp -e '(load "/home/app/quicklisp/setup.lisp")'\
           -e "(ql:quickload :cl-jupyter)"\
+          -e "(ql:quickload :cl-json)"\
+          -e "(ql:quickload :cl-base64)"\
           -e "(ql:quickload :pzmq)"\
           -e "(ql:quickload :cffi)"\
           -e "(ql:quickload :cffi-grovel)"\

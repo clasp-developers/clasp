@@ -35,7 +35,6 @@ THE SOFTWARE.
 #include <clasp/core/builtInClass.h>
 #include <clasp/core/sysprop.h>
 #include <clasp/core/instance.h>
-#include <clasp/core/structureClass.h>
 #include <clasp/core/primitives.h>
 #include <clasp/core/wrappers.h>
 
@@ -64,9 +63,14 @@ CL_DEFUN T_sp core__make_structure(T_sp type, List_sp slot_values) {
     return so;
   }
 #endif // CLOS
+#if 0
   StructureObject_sp so = StructureObject_O::create(type, slot_values);
   return so;
+#endif
+  SIMPLE_ERROR(BF("This should never be reached"));
 };
+
+
 
 CL_LAMBDA(arg);
 CL_DECLARE();
@@ -80,9 +84,11 @@ CL_DEFUN T_sp cl__copy_structure(T_sp arg) {
     return iarg->copyInstance();
   }
 #endif
+#if 0
   if (StructureObject_sp so = arg.asOrNull<StructureObject_O>()) {
     return so->copyStructure();
   }
+#endif
   SIMPLE_ERROR(BF("You cannot copy-structure a %s") % _rep_(arg));
 };
 
@@ -101,6 +107,7 @@ CL_DEFUN T_sp core__structure_ref(T_sp obj, Symbol_sp type, int idx) {
     return so->instanceRef(idx);
   }
 #endif
+#if 0
   if (StructureObject_sp so = obj.asOrNull<StructureObject_O>()) {
     T_sp soclass = cl__type_of(so);
     if (!core__structure_subtypep(soclass, type)) {
@@ -108,6 +115,7 @@ CL_DEFUN T_sp core__structure_ref(T_sp obj, Symbol_sp type, int idx) {
     }
     return so->structureRef(idx);
   }
+#endif
   TYPE_ERROR(obj, type);
 };
 
@@ -126,6 +134,7 @@ CL_DEFUN T_sp core__structure_set(T_sp obj, Symbol_sp type, int idx, T_sp val) {
     return so->instanceSet(idx, val);
   }
 #endif
+#if 0
   if (StructureObject_sp so = obj.asOrNull<StructureObject_O>()) {
     T_sp sotype = cl__type_of(so);
     if (!core__structure_subtypep(sotype, type)) {
@@ -133,6 +142,7 @@ CL_DEFUN T_sp core__structure_set(T_sp obj, Symbol_sp type, int idx, T_sp val) {
     }
     return so->structureSet(idx, val);
   }
+#endif
   TYPE_ERROR(obj, type);
 };
 
@@ -145,14 +155,16 @@ CL_DEFUN bool core__structurep(T_sp arg) {
   }
 #ifdef CLOS
   if (Instance_sp io = arg.asOrNull<Instance_O>()) {
-    if (core__structure_subtypep(io->_instanceClass(), cl::_sym_StructureObject_O))
+    if (core__structure_subtypep(io->_instanceClass(), cl::_sym_structure_object))
       return true;
   }
 #endif
+#if 0
   if (StructureObject_sp so = arg.asOrNull<StructureObject_O>()) {
     (void)so;
     return true;
   }
+#endif
   return false;
 };
 
@@ -164,7 +176,7 @@ CL_DEFUN bool core__structure_subtypep(T_sp x, Symbol_sp y) {
     return false;
 #ifdef CLOS
   if (Class_sp cx = x.asOrNull<Class_O>()) {
-    if (cx->className() == y) {
+    if (cx->_className() == y) {
       return true;
     } else {
       for (auto sup : cx->directSuperclasses()) {
@@ -187,6 +199,8 @@ CL_DEFUN bool core__structure_subtypep(T_sp x, Symbol_sp y) {
   return false;
 }
 
+
+#if 0
 StructureObject_sp StructureObject_O::create(T_sp type, List_sp slot_values) {
   StructureObject_sp co = StructureObject_O::create();
   // This better work or there will be trouble
@@ -199,7 +213,9 @@ StructureObject_sp StructureObject_O::create(T_sp type, List_sp slot_values) {
   }
   return co;
 }
+#endif
 
+#if 0
 void StructureObject_O::initialize() {
   LOG(BF("Initializing StructureObject"));
   this->Base::initialize();
@@ -209,17 +225,10 @@ void StructureObject_O::initialize() {
 T_sp StructureObject_O::oinstancepSTAR() const {
   return make_fixnum((int)(this->_Slots.size()));
 }
+#endif
 
-#if defined(OLD_SERIALIZE)
-void StructureObject_O::serialize(serialize::SNode node) {
-  IMPLEMENT_ME(); // handle slots properly so they are indexed by name
+
 #if 0
-	this->Base::serialize(node); 
-	node->archiveObject("slots",this->_SlotBinder);
-#endif
-}
-#endif
-
 T_sp StructureObject_O::structureAsList() const {
   Cons_O::CdrType_sp first(_Nil<Cons_O::CdrType_O>());
   Cons_O::CdrType_sp *curP = &first;
@@ -243,7 +252,9 @@ T_sp StructureObject_O::structureAsList() const {
   }
   return first;
 }
+#endif
 
+#if 0
 T_sp StructureObject_O::structureRef(int index) const {
   _OF();
   ASSERTF(index >= 0 && index < this->_Slots.size(), BF("Illegal slot index[%d] - must be less than %d") % index % this->_Slots.size());
@@ -256,7 +267,9 @@ T_sp StructureObject_O::structureSet(int index, T_sp value) {
   this->_Slots[index] = value;
   return value;
 }
+#endif
 
+#if 0
 void StructureObject_O::archiveBase(ArchiveP node) {
   // Call out to core:serialize
   IMPLEMENT_MEF(BF("Call out to core::serialize me node")); // handle slots properly so that they are indexed by name
@@ -271,7 +284,7 @@ T_sp StructureObject_O::copyStructure() const {
 string StructureObject_O::__repr__() const {
   stringstream ss;
   ss << "#< ";
-  ss << this->_instanceClass()->classNameAsString() << " ";
+  ss << this->_instanceClass()->_classNameAsString() << " ";
   ASSERT(this->_Type);
   ss << ":type " << _rep_(this->_Type) << std::endl;
   ss << "[slots ";
@@ -288,27 +301,6 @@ string StructureObject_O::__repr__() const {
   ss << " >";
   return ss.str();
 }
-
-#if 0
-    T_sp& StructureObject_O::slot_ref(Symbol_sp slot_name) throw(SlotRefFailed)
-    {_OF();
-	StructureClass_sp cc = this->_Type;
-	ASSERT(cc.notnilp());
-	// TODO: What about class slots? slot_location returns the index of an instance slot
-	// but where do we store class slots and how do we return a reference to one of them
-	LOG(BF("This object is of class: %s") % cc->__repr__() );
-	uint location = cc->slot_location(slot_name); // Can throw SlotRefFailed if slot_name not found
-	LOG(BF("Found the slot with name: %s")% slot_name->__repr__() );
-	LOG(BF("   the number of slots in this object are: %d")% this->_Slots.size());
-	return this->_Slots[location];
-    }
-#endif
-
-#if 0
-    void StructureObject_O::allocate_slot_storage(uint numSlots, T_sp initialValue )
-    {
-	this->_Slots.resize(numSlots,initialValue);
-    }
 #endif
 
   SYMBOL_EXPORT_SC_(CorePkg, structureRef);
@@ -317,4 +309,5 @@ string StructureObject_O::__repr__() const {
   SYMBOL_EXPORT_SC_(ClPkg, copyStructure);
   SYMBOL_EXPORT_SC_(CorePkg, structurep);
   SYMBOL_EXPORT_SC_(CorePkg, structureSubtypep);
+SYMBOL_EXPORT_SC_(ClPkg,structure_object);
 };

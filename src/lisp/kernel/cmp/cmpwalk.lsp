@@ -45,7 +45,7 @@
         (with-debug-info-generator (:module module
                                             :pathname #P"/dev/null")
           (with-make-new-run-all (run-all-function)
-            (with-constants-table
+            (with-literal-table
                 (let ((fn (literal:with-top-level-form (compile-thunk 'walk-thunk form env))))
                   ;; Do nothing (irc-intrinsic-call "ltvc_toplevel_funcall" (list fn))
                   ))))

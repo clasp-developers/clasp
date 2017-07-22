@@ -247,10 +247,6 @@ If this form has already been precalculated then just return the precalculated-v
          ;; COMPLE-FILE will generate a function for the form in the Module
          ;; and arrange for it's evaluation at load time
          ;; and to make its result available as a value
-         #+(or)(let* ((index (literal:new-table-index))
-                      (value (literal:with-ltv (literal:compile-load-time-value-thunk form))))
-                 (literal:evaluate-function-into-load-time-value index ltv-func)
-                 index)
          (literal:with-load-time-value (literal:compile-load-time-value-thunk form))
          ;; COMPILE on the other hand evaluates the form and puts its
          ;; value in the run-time environment

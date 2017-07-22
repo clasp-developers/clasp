@@ -29,7 +29,6 @@ THE SOFTWARE.
 #include <clasp/core/common.h>
 #include <clasp/core/environment.h>
 #include <clasp/core/forwardReferencedClass.h>
-#include <clasp/core/standardClass.h>
 #include <clasp/core/builtInClass.h>
 #include <clasp/core/wrappers.h>
 namespace core {

@@ -257,7 +257,7 @@ CL_DEFMETHOD string Path_O::asString() const {
 string Path_O::__repr__() const {
   _OF();
   stringstream ss;
-  ss << "#<" << this->_instanceClass()->classNameAsString() << " :string ";
+  ss << "#<" << _rep_(this->_instanceClass()->_className()) << " :string ";
   ss << this->_Path.string() << ">";
   return ss.str();
 }

@@ -38,9 +38,8 @@ THE SOFTWARE.
 #include <clasp/core/environment.h>
 
 namespace core {
-
+#if 0
 // Set up this class differently
-
   SMART(StructureObject);
   class StructureObject_O : public General_O {
     LISP_META_CLASS(::_lisp->_Roots._StructureClass);
@@ -71,7 +70,7 @@ namespace core {
 #endif
 
     virtual Class_sp _instanceClass() const { return this->_Type;};
-    T_sp structureType() const { return this->_Type->name();};
+    T_sp structureType() const { return this->_Type->functionName();};
 
     void allocate_slot_storage(uint numberOfSlots, T_sp initialValue);
 
@@ -90,6 +89,7 @@ namespace core {
     explicit StructureObject_O() : Base(){};
     virtual ~StructureObject_O(){};
   };
+#endif
 
   T_sp core__make_structure(T_sp type, List_sp slot_values);
   T_sp cl__copy_structure(T_sp arg);

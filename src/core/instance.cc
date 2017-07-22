@@ -26,14 +26,25 @@ THE SOFTWARE.
 /* -^- */
 //#define DEBUG_LEVEL_FULL
 
+#pragma clang diagnostic push
+#pragma GCC diagnostic ignored "-Warray-bounds"
+#pragma GCC diagnostic ignored "-Wunused-variable"
+#pragma GCC diagnostic ignored "-Wunneeded-internal-declaration"
+//#pragma GCC diagnostic ignored "-Wunused-local-typedef"
+#include <boost/graph/vector_as_graph.hpp>
+#include <boost/graph/topological_sort.hpp>
+#pragma clang diagnostic pop
+
 #include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
 #include <clasp/core/lisp.h>
 #include <clasp/core/symbolTable.h>
 #include <clasp/gctools/gcFunctions.h>
 #include <clasp/core/serialize.h>
+#include <clasp/core/lispList.h>
+#include <clasp/core/hashTable.h>
+#include <clasp/core/hashTableEq.h>
 #include <clasp/core/evaluator.h>
-#include <clasp/core/standardClass.h>
 #include <clasp/core/genericFunction.h>
 #include <clasp/core/accessor.h>
 #include <clasp/core/instance.h>
@@ -117,12 +128,53 @@ void Instance_O::set_kind(Symbol_sp k) {
   }
 }
 
-void Instance_O::initializeSlots(Fixnum stamp, size_t numberOfSlots) {
+void Instance_O::initializeSlots(gctools::Stamp stamp, size_t numberOfSlots) {
   this->_Rack = SimpleVector_O::make(numberOfSlots+1,_Unbound<T_O>(),true);
   this->stamp_set(stamp);
 #ifdef DEBUG_GUARD_VALIDATE
   client_validate(this->_Rack);
 #endif
+//  printf("%s:%d  Make sure you initialize slots for classes this->_Class -> %s\n", __FILE__, __LINE__, _rep_(this->_Class).c_str());
+}
+
+void Instance_O::initializeClassSlots(Creator_sp creator, gctools::Stamp stamp) {
+  // Initialize slots they way they are in +class-slots+ in: https://github.com/drmeister/clasp/blob/dev-class/src/lisp/kernel/clos/hierarchy.lsp#L55
+  if (creator.unboundp()) {
+    printf("%s:%d:%s     creator for %s is unbound\n", __FILE__, __LINE__, __FUNCTION__, this->_classNameAsString().c_str() );
+    fflush(stdout);
+  }
+  this->instanceSet(REF_CLASS_DIRECT_SUPERCLASSES, _Nil<T_O>());
+  this->instanceSet(REF_CLASS_DIRECT_SUBCLASSES, _Nil<T_O>());
+  this->instanceSet(REF_CLASS_DIRECT_DEFAULT_INITARGS, _Nil<T_O>());
+  this->instanceSet(REF_CLASS_FINALIZED, _Nil<T_O>());
+  this->instanceSet(REF_CLASS_SEALEDP, _Nil<T_O>());
+  this->instanceSet(REF_CLASS_DEPENDENTS, _Nil<T_O>());
+  this->instanceSet(REF_CLASS_LOCATION_TABLE, _Nil<T_O>());
+  this->instanceSet(REF_CLASS_INSTANCE_STAMP, clasp_make_fixnum(stamp));
+  this->instanceSet(REF_CLASS_CREATOR, creator);
+}
+
+
+CL_DEFUN List_sp core__class_slot_sanity_check()
+{
+  List_sp sanity = _Nil<T_O>();
+#define ADD_SANITY_CHECK(symbol_name,ref)   sanity = Cons_O::create(Cons_O::create(clos::_sym_##symbol_name, core::clasp_make_fixnum(Class_O::REF_CLASS_##ref)),sanity);
+  sanity = Cons_O::create(Cons_O::create(clos::_sym_name, core::clasp_make_fixnum(Class_O::REF_CLASS_CLASS_NAME)),sanity);
+  sanity = Cons_O::create(Cons_O::create(clos::_sym_DIRECT_SUPERCLASSES, core::clasp_make_fixnum(Class_O::REF_CLASS_DIRECT_SUPERCLASSES)),sanity);
+  sanity = Cons_O::create(Cons_O::create(clos::_sym_SLOTS, core::clasp_make_fixnum(Class_O::REF_CLASS_SLOTS)),sanity);
+  sanity = Cons_O::create(Cons_O::create(clos::_sym_DIRECT_DEFAULT_INITARGS, core::clasp_make_fixnum(Class_O::REF_CLASS_DIRECT_DEFAULT_INITARGS)),sanity);
+  sanity = Cons_O::create(Cons_O::create(clos::_sym_FINALIZED, core::clasp_make_fixnum(Class_O::REF_CLASS_FINALIZED)),sanity);
+  sanity = Cons_O::create(Cons_O::create(clos::_sym_PRECEDENCE_LIST, core::clasp_make_fixnum(Class_O::REF_CLASS_CLASS_PRECEDENCE_LIST)),sanity);
+  sanity = Cons_O::create(Cons_O::create(clos::_sym_DIRECT_SLOTS, core::clasp_make_fixnum(Class_O::REF_CLASS_DIRECT_SLOTS)),sanity);
+  sanity = Cons_O::create(Cons_O::create(clos::_sym_DEFAULT_INITARGS, core::clasp_make_fixnum(Class_O::REF_CLASS_DEFAULT_INITARGS)),sanity);
+  sanity = Cons_O::create(Cons_O::create(clos::_sym_NUMBER_OF_SLOTS_IN_STANDARD_CLASS, core::clasp_make_fixnum(REF_CLASS_NUMBER_OF_SLOTS_IN_STANDARD_CLASS)),sanity);
+  sanity = Cons_O::create(Cons_O::create(clos::_sym_NUMBER_OF_SLOTS_IN_STRUCTURE_CLASS, core::clasp_make_fixnum(REF_CLASS_NUMBER_OF_SLOTS_IN_STRUCTURE_CLASS)),sanity);
+#define ADD_SANITY_CHECK_SIMPLE(symbol_name)   sanity = Cons_O::create(Cons_O::create(clos::_sym_##symbol_name, core::clasp_make_fixnum(Class_O::REF_CLASS_##symbol_name)),sanity);
+  ADD_SANITY_CHECK_SIMPLE(DIRECT_SUBCLASSES);
+  ADD_SANITY_CHECK_SIMPLE(SEALEDP);
+  ADD_SANITY_CHECK_SIMPLE(DEPENDENTS);
+  ADD_SANITY_CHECK_SIMPLE(LOCATION_TABLE);
+  return sanity;
 }
 
 T_sp Instance_O::oinstancep() const {
@@ -136,13 +188,16 @@ T_sp Instance_O::oinstancepSTAR() const {
 /*! See ECL>>instance.d>>si_allocate_instance */
 T_sp core__allocateInstance(T_sp theClass, size_t numberOfSlots) {
   Class_sp cl = gc::As<Class_sp>(theClass);
-  if (!cl->has_creator()) {
+  if (!cl->_has_creator()) {
     IMPLEMENT_MEF(BF("Handle no allocator class: %s slots: %d") % _rep_(theClass) % numberOfSlots);
   }
-  Creator_sp creator = gctools::As<Creator_sp>(cl->class_creator());
+  Creator_sp creator = gctools::As<Creator_sp>(cl->_class_creator());
+  if (creator.unboundp()) {
+    printf("%s:%d:%s    Trying to allocate instance but creator is unbound\n", __FILE__, __LINE__, __FUNCTION__ );
+  }
   Instance_sp obj = gctools::As<Instance_sp>(creator->creator_allocate());
   obj->instanceClassSet(gc::As<Class_sp>(theClass));
-  obj->initializeSlots(cl->get_instance_stamp(),numberOfSlots);
+  obj->initializeSlots(cl->_get_instance_stamp(),numberOfSlots);
   return obj;
 }
 
@@ -150,7 +205,7 @@ T_sp core__allocateInstance(T_sp theClass, size_t numberOfSlots) {
 CL_LISPIFY_NAME(allocate_raw_instance);
 CL_DEFUN T_sp core__allocate_raw_instance(T_sp orig, T_sp tclass, size_t numberOfSlots) {
   Class_sp class_ = gc::As<Class_sp>(tclass);
-  if (class_->_theCreator->creates_classes()) {
+  if (class_->_class_creator()->creates_classes()) {
     return core__allocate_raw_class(orig,tclass,numberOfSlots);
   }
   T_sp toutput = core__allocateInstance(tclass, numberOfSlots);
@@ -173,39 +228,18 @@ size_t Instance_O::rack_stamp_offset() {
   return (char*)&(dummy_rack.operator[](0))-(char*)&dummy_rack;
 }
 
+Fixnum Instance_O::stamp() const {
+  return (*this->_Rack)[0].unsafe_fixnum();
+};
 
+void Instance_O::stamp_set(Fixnum s) {
+  (*this->_Rack)[0] = clasp_make_fixnum(s);
+};
 
-void Instance_O::archiveBase(ArchiveP node) {
-  if (node->saving()) {
-    if (this->_isgf || this->isCallable()) {
-      SIMPLE_ERROR(BF("You cannot archive FUNCALLABLE instances or generic-functions"));
-    }
-    SYMBOL_EXPORT_SC_(KeywordPkg, iclass);
-    //	    Symbol_sp className = this->_Class->name();
-    //	    node->attribute(kw::_sym_iclass,className);
-    for (int i(1); i < this->_Rack->length(); ++i) {
-      node->pushVector((*this->_Rack)[i]);
-    }
-  } else {
-    this->_isgf = false;
-    this->_entryPoint = NULL;
-#if 1
-    Symbol_sp className = node->getKind();
-    //	    node->attribute(kw::_sym_iclass,className);
-    Class_sp cl = gc::As<Class_sp>(eval::funcall(cl::_sym_findClass, className, _lisp->_true()));
-    this->_Class = cl;
-    this->initializeSlots(cl->get_instance_stamp(),node->vectorSize());
-#endif
-    size_t idx(1);
-    if (node->vectorSize() != this->numberOfSlots()) {
-      SIMPLE_ERROR(BF("While loading archive class %s mismatch in number of slots - expected %d - loaded %d slots") % _rep_(this->_Class) % this->numberOfSlots() % node->vectorSize());
-    }
-    node->mapVector([this, &idx](T_sp value) {
-        (*this->_Rack)[idx++] = value;
-      });
-    this->instanceSigSet();
-  }
-}
+size_t Instance_O::numberOfSlots() const {
+  return this->_Rack->length()-1;
+};
+
 
 T_sp Instance_O::instanceSigSet() {
   T_sp classSlots(_Nil<T_O>());
@@ -267,7 +301,7 @@ string Instance_O::__repr__() const {
   stringstream ss;
   ss << "#S(";
   if (Class_sp mc = this->_Class.asOrNull<Class_O>()) {
-    ss << mc->classNameAsString() << " ";
+    ss << mc->_classNameAsString() << " ";
   } else {
     ss << "<ADD SUPPORT FOR INSTANCE _CLASS=" << _rep_(this->_Class) << " >";
   }
@@ -611,3 +645,376 @@ CL_DEFUN void core__generic_function_call_history_remove_entries_with_specialize
 
 };
 
+
+
+
+
+namespace core {
+Class_sp Instance_O::create(Symbol_sp symbol, Class_sp metaClass, Creator_sp creator ) {
+  DEPRECATED();
+};
+
+Class_sp Instance_O::createClassUncollectable(gctools::Stamp is, Class_sp metaClass, size_t number_of_slots, Creator_sp creator ) {
+  GC_ALLOCATE_UNCOLLECTABLE(Instance_O, oclass, metaClass, number_of_slots);
+  oclass->_Class = metaClass;
+  oclass->initializeSlots(is,number_of_slots);
+  oclass->initializeClassSlots(creator,gctools::NextStamp());
+  return oclass;
+};
+
+void Instance_O::_set_creator(Creator_sp cb) {
+#ifdef DEBUG_CLASS_INSTANCE
+  printf("%s:%d    setCreator for %s @%p -> @%p\n", __FILE__, __LINE__, _rep_(this->name()).c_str(), this, cb.raw_());
+#endif
+  this->instanceSet(REF_CLASS_CREATOR,cb);
+}
+
+void Instance_O::accumulateSuperClasses(HashTableEq_sp supers, VectorObjects_sp arrayedSupers, Class_sp mc) {
+  if (IS_SYMBOL_UNDEFINED(mc->_className()))
+    return;
+  //	printf("%s:%d accumulateSuperClasses of: %s\n", __FILE__, __LINE__, _rep_(mc->className()).c_str() );
+  if (supers->contains(mc))
+    return;
+  Fixnum arraySuperLength = arrayedSupers->length();
+  supers->setf_gethash(mc, clasp_make_fixnum(arraySuperLength));
+  arrayedSupers->vectorPushExtend(mc);
+  List_sp directSuperclasses = mc->directSuperclasses();
+  //	printf("%s:%d accumulateSuperClasses arraySuperLength = %d\n", __FILE__, __LINE__, arraySuperLength->get());
+  for (auto cur : directSuperclasses) // ; cur.notnilp(); cur=cCdr(cur) )
+  {
+    T_sp one = oCar(cur);
+    Class_sp oneClass = gc::As<Class_sp>(one);
+    accumulateSuperClasses(supers, arrayedSupers, oneClass);
+  }
+}
+
+void Instance_O::lowLevel_calculateClassPrecedenceList() {
+  using namespace boost;
+  HashTableEq_sp supers = HashTableEq_O::create_default();
+  VectorObjects_sp arrayedSupers(VectorObjects_O::make(16, _Nil<T_O>(), clasp_make_fixnum(0)));
+  this->accumulateSuperClasses(supers, arrayedSupers, this->sharedThis<Class_O>());
+  vector<list<int>> graph(cl__length(arrayedSupers));
+
+  class TopoSortSetup : public KeyValueMapper {
+  private:
+    HashTable_sp supers;
+    vector<list<int>> *graphP;
+
+  public:
+    TopoSortSetup(HashTable_sp asupers, vector<list<int>> *gP) : supers(asupers), graphP(gP){};
+    virtual bool mapKeyValue(T_sp key, T_sp value) {
+      Fixnum_sp fnValue(gc::As<Fixnum_sp>(value));
+      int mcIndex = unbox_fixnum(fnValue);
+      Class_sp mc = gc::As<Class_sp>(key);
+      for (auto mit : (List_sp)(mc->directSuperclasses())) {
+        T_sp val = this->supers->gethash(oCar(mit));
+        ASSERT(val.notnilp());
+        Fixnum_sp fnval = gc::As<Fixnum_sp>(val);
+        int aSuperIndex = unbox_fixnum(fnval);
+        (*this->graphP)[mcIndex].push_front(aSuperIndex);
+      }
+      return true;
+    }
+  };
+  TopoSortSetup topoSortSetup(supers, &graph);
+  supers->lowLevelMapHash(&topoSortSetup);
+#ifdef DEBUG_ON
+  {
+    for (size_t zi(0), ziEnd(cl__length(arrayedSupers)); zi < ziEnd; ++zi) {
+      stringstream ss;
+      ss << (BF("graph[%d/name=%s] = ") % zi % arrayedSupers->operator[](zi).as<Class_O>()->instanceClassName()).str();
+      for (list<int>::const_iterator it = graph[zi].begin(); it != graph[zi].end(); it++) {
+        ss << *it << "-> ";
+      }
+      ss << ";";
+      LOG(BF("%s") % ss.str());
+    }
+  }
+#endif
+  deque<int> topo_order;
+  topological_sort(graph, front_inserter(topo_order), vertex_index_map(identity_property_map()));
+#ifdef DEBUG_ON
+  {
+    stringstream ss;
+    ss << "Topologically sorted superclasses ";
+    for (deque<int>::const_reverse_iterator it = topo_order.rbegin(); it != topo_order.rend(); it++) {
+      Class_sp mc = arrayedSupers->operator[](*it).as<Class_O>();
+      ss << "-> " << mc->className() << "/" << mc->instanceClassName();
+    }
+    LOG(BF("%s") % ss.str());
+  }
+#endif
+  List_sp cpl = _Nil<T_O>();
+  for (deque<int>::const_reverse_iterator it = topo_order.rbegin(); it != topo_order.rend(); it++) {
+    Class_sp mc = gc::As<Class_sp>(arrayedSupers->operator[](*it));
+    LOG(BF("pushing superclass[%s] to front of ClassPrecedenceList") % mc->instanceClassName());
+    cpl = Cons_O::create(mc, cpl);
+  }
+  this->instanceSet(REF_CLASS_CLASS_PRECEDENCE_LIST, cpl);
+}
+
+void Instance_O::addInstanceBaseClass(Symbol_sp className) {
+  this->addInstanceBaseClassDoNotCalculateClassPrecedenceList(className);
+  this->lowLevel_calculateClassPrecedenceList();
+}
+
+void Instance_O::setInstanceBaseClasses(List_sp classes) {
+  this->instanceSet(REF_CLASS_DIRECT_SUPERCLASSES, cl__copy_list(classes));
+  this->lowLevel_calculateClassPrecedenceList();
+}
+
+
+T_sp Instance_O::allocate_newClass(Class_sp metaClass, int slots) {
+  T_sp obj = this->_class_creator()->creator_allocate();
+#ifdef DEBUG_CLASS_INSTANCE
+  printf("%s:%d  allocate_newClass metaClass -> %s   obj@%p class -> %s\n", __FILE__, __LINE__,  _rep_(metaClass).c_str(), obj.raw_(), _rep_(instance_class(obj)).c_str() );
+#endif
+  Class_sp newClass = gc::As<Class_sp>(obj);
+#ifdef DEBUG_CLASS_INSTANCE
+  printf("%s:%d          allocate_newClass creator -> @%p \n", __FILE__, __LINE__, newClass.raw_());
+#endif
+  newClass->_Class = metaClass;
+//  newClass->_NumberOfSlots = slots;
+//  printf("%s:%d  Initialize class slots here?????\n", __FILE__, __LINE__);
+  return newClass;
+}
+
+bool Instance_O::isSubClassOf(Class_sp ancestor) const {
+#if 0
+  printf("%s:%d   Checking if this[%s] isSubClassOf[%s]\n", __FILE__, __LINE__, _rep_(this->asSmartPtr()).c_str(), _rep_(ancestor).c_str());
+  Class_sp find_theClass = cl__find_class(cl::_sym_class,true,_Nil<T_O>());
+  if (_lisp->_Roots._TheClass != find_theClass) {
+    printf("%s:%d   Instance_O::isSubClassOf  find_theClass(%p) and _lisp->_Root._TheClass(%p) don't match anymore\n", __FILE__, __LINE__, find_theClass.raw_(), _lisp->_Roots._TheClass.raw_() );
+  }
+#endif
+  if (this->_Class==_lisp->_Roots._TheClass
+      || this->_Class==_lisp->_Roots._TheBuiltInClass
+      || this->_Class==_lisp->_Roots._TheStandardClass
+      || this->_Class==_lisp->_Roots._TheStructureClass
+      || this->_Class->isSubClassOf(_lisp->_Roots._TheClass)) {
+    if (this == &*ancestor) return true;
+  // TODO: I need to memoize this somehow so that I'm not constantly searching a list in
+  // linear time
+    List_sp cpl = this->instanceRef(Class_O::REF_CLASS_CLASS_PRECEDENCE_LIST);
+    ASSERTF(!cpl.unboundp(), BF("You tried to use isSubClassOf when the ClassPrecedenceList had not been initialized"));
+    for (auto cur : cpl) {
+      if (CONS_CAR(cur) == ancestor) return true;
+    }
+    return false;
+  }
+  printf("%s:%d FAILED   this->_Class->isSubClassOf(_lisp->_Roots._TheClass) ->%d\n", __FILE__, __LINE__, this->_Class->isSubClassOf(_lisp->_Roots._TheClass));
+  {
+    printf("%s:%d   this->className() -> %s  checking if subclass of %s\n", __FILE__, __LINE__, _rep_(this->_className()).c_str(), _rep_(ancestor->_className()).c_str());
+    List_sp cpl = this->instanceRef(Class_O::REF_CLASS_CLASS_PRECEDENCE_LIST);
+    for ( auto cur: cpl ) {
+      printf("%s:%d  cpl -> %s\n", __FILE__, __LINE__, _rep_(gc::As<Instance_sp>(CONS_CAR(cur))->_className()).c_str());
+    }
+  }
+  {
+    printf("%s:%d   this->_Class->className() -> %s  its cpl ->>>\n", __FILE__, __LINE__, _rep_(this->_Class->_className()).c_str());
+    List_sp cpl = this->_Class->instanceRef(Class_O::REF_CLASS_CLASS_PRECEDENCE_LIST);
+    for ( auto cur: cpl ) {
+      Class_sp cc = gc::As<Instance_sp>(CONS_CAR(cur));
+      printf("%s:%d  cpl -> %s == _lisp->_Roots._TheClass -> %d\n", __FILE__, __LINE__, _rep_(cc->_className()).c_str(), cc == _lisp->_Roots._TheClass);
+    }
+  }
+  TYPE_ERROR(this->asSmartPtr(),cl::_sym_class);
+}
+
+gc::Nilable<Class_sp> identifyCxxDerivableAncestorClass(Class_sp aClass) {
+  if (aClass->cxxClassP()) {
+    if (aClass->cxxDerivableClassP()) {
+      return aClass;
+    }
+  }
+  for (auto supers : aClass->directSuperclasses()) {
+    Class_sp aSuperClass = gc::As<Class_sp>(oCar(supers));
+    gc::Nilable<Class_sp> taPossibleCxxDerivableAncestorClass = identifyCxxDerivableAncestorClass(aSuperClass);
+    if (taPossibleCxxDerivableAncestorClass.notnilp())
+      return taPossibleCxxDerivableAncestorClass;
+  }
+  return _Nil<Class_O>();
+}
+
+void Instance_O::inheritDefaultAllocator(List_sp superclasses) {
+  // If this class already has an allocator then leave it alone
+  if (this->_has_creator()) return;
+  Class_sp aCxxDerivableAncestorClass_unsafe; // Danger!  Unitialized!
+#ifdef DEBUG_CLASS_INSTANCE
+  printf("%s:%d:%s   for class -> %s   superclasses -> %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(this->name()).c_str(), _rep_(superclasses).c_str());
+#endif
+  bool derives_from_StandardClass = false;
+  for (auto cur : superclasses) {
+    T_sp tsuper = oCar(cur);
+    if (tsuper == _lisp->_Roots._TheStandardClass) {
+      derives_from_StandardClass = true;
+#ifdef DEBUG_CLASS_INSTANCE
+      printf("%s:%d:%s        derives from class\n", __FILE__, __LINE__, __FUNCTION__ );
+#endif
+    }
+    if (Class_sp aSuperClass = tsuper.asOrNull<Class_O>() ) {
+      if (aSuperClass->cxxClassP() && !aSuperClass->cxxDerivableClassP()) {
+        SIMPLE_ERROR(BF("You cannot derive from the non-derivable C++ class %s\n"
+                        "any C++ class you want to derive from must inherit from clbind::Adapter") %
+                     _rep_(aSuperClass->_className()));
+      }
+      gc::Nilable<Class_sp> aPossibleCxxDerivableAncestorClass = identifyCxxDerivableAncestorClass(aSuperClass);
+      if (aPossibleCxxDerivableAncestorClass.notnilp()) {
+        if (!aCxxDerivableAncestorClass_unsafe) {
+          aCxxDerivableAncestorClass_unsafe = aPossibleCxxDerivableAncestorClass;
+        } else {
+          SIMPLE_ERROR(BF("Only one derivable C++ class is allowed to be"
+                          " derived from at a time instead we have two %s and %s ") %
+                       _rep_(aCxxDerivableAncestorClass_unsafe->_className()) % _rep_(aPossibleCxxDerivableAncestorClass->_className()));
+        }
+      }
+    } else if ( Instance_sp iSuperClass = tsuper.asOrNull<Instance_O>() ) {
+      SIMPLE_ERROR(BF("In Clasp, Instances are never Classes - so this error should never occur.  If it does - figure out why tsuper is an Instance"));
+      // I don't think I do anything here
+      // If aCxxDerivableAncestorClass_unsafe is left unchanged then
+      // an InstanceCreator_O will be created for this class.
+    }
+  }
+  if (aCxxDerivableAncestorClass_unsafe) {
+    // Here aCxxDerivableAncestorClass_unsafe has a value - so it's ok to dereference it
+    Creator_sp aCxxAllocator(gctools::As<Creator_sp>(aCxxDerivableAncestorClass_unsafe->_class_creator()));
+#ifdef DEBUG_CLASS_INSTANCE
+    printf("%s:%d   duplicating aCxxDerivableAncestorClass_unsafe %s creator\n", __FILE__, __LINE__, _rep_(aCxxDerivableAncestorClass_unsafe).c_str());
+#endif
+    Creator_sp dup = aCxxAllocator->duplicateForClassName(this->_className());
+    this->_set_creator(dup); // this->setCreator(dup.get());
+  } else if (derives_from_StandardClass) {
+#ifdef DEBUG_CLASS_INSTANCE
+    printf("%s:%d   Creating a ClassCreator for %s\n", __FILE__, __LINE__, _rep_(this->name()).c_str());
+#endif
+    ClassCreator_sp classCreator = gc::GC<ClassCreator_O>::allocate(this->asSmartPtr());
+    this->_set_creator(classCreator);
+  } else {
+    // I think this is the most common outcome -
+#ifdef DEBUG_CLASS_INSTANCE
+    printf("%s:%d   Creating an InstanceCreator_O for the class: %s\n", __FILE__, __LINE__, _rep_(this->name()).c_str());
+#endif
+    InstanceCreator_sp instanceAllocator = gc::GC<InstanceCreator_O>::allocate(this->asSmartPtr());
+    //gctools::StackRootedPointer<InstanceCreator> instanceAllocator(new InstanceCreator(this->name()));
+    this->_set_creator(instanceAllocator); // this->setCreator(instanceAllocator.get());
+  }
+}
+
+void Instance_O::addInstanceBaseClassDoNotCalculateClassPrecedenceList(Symbol_sp className) {
+  _OF();
+  Class_sp cl = gc::As<Class_sp>(eval::funcall(cl::_sym_findClass, className, _lisp->_true()));
+  // When booting _DirectSuperClasses may be undefined
+  List_sp dsc = this->directSuperclasses();
+  this->instanceSet(REF_CLASS_DIRECT_SUPERCLASSES, Cons_O::create(cl, dsc));
+}
+
+
+
+void Instance_O::__setupStage3NameAndCalculateClassPrecedenceList(Symbol_sp className) {
+  this->_setClassName(className);
+  // Initialize some of the class slots
+  this->instanceSet(REF_CLASS_DIRECT_SLOTS,_Nil<T_O>());
+  this->instanceSet(REF_CLASS_DEFAULT_INITARGS,_Nil<T_O>());
+  T_sp tmc = this->_instanceClass();
+  ASSERTNOTNULL(tmc);
+  Class_sp mc = gc::As<Class_sp>(tmc);
+  (void)mc;
+  this->lowLevel_calculateClassPrecedenceList();
+}
+
+
+};
+
+
+
+namespace core {
+
+string Instance_O::dumpInfo() {
+  stringstream ss;
+  ss << (boost::format("this.instanceClassName: %s @ %X") % this->instanceClassName() % this) << std::endl;
+  ss << "_FullName[" << this->_className()->fullName() << "]" << std::endl;
+  ss << boost::format("    _Class = %X  this._Class.instanceClassName()=%s\n") % this->__class().get() % this->__class()->instanceClassName();
+  for (auto cc : this->directSuperclasses()) {
+    ss << "Base class: " << gc::As<Class_sp>(oCar(cc))->instanceClassName() << std::endl;
+  }
+  ss << boost::format("this.instanceCreator* = %p") % (void *)(&*this->_class_creator()) << std::endl;
+  return ss.str();
+}
+
+string Class_O::getPackagedName() const {
+  return this->_className()->formattedName(false);
+}
+
+string Instance_O::_classNameAsString() const {
+  return _rep_(this->_className());
+}
+
+
+T_sp Instance_O::make_instance() {
+  T_sp instance = this->_class_creator()->creator_allocate(); //this->allocate_newNil();
+  if (instance.generalp()) {
+    instance.unsafe_general()->initialize();
+  } else {
+    SIMPLE_ERROR(BF("Add support to make_instance of non general objects"));
+  }
+  return instance;
+}
+
+List_sp Instance_O::directSuperclasses() const {
+  T_sp obj = this->instanceRef(REF_CLASS_DIRECT_SUPERCLASSES);
+  ASSERT(obj);
+  ASSERT(!obj.unboundp());
+  return coerce_to_list(obj);
+}
+};
+
+
+/* The following functions should only work for Classes */
+namespace core {
+CL_DEFUN List_sp clos__direct_superclasses(Class_sp c) {
+  if (c->_Class->isSubClassOf(_lisp->_Roots._TheClass)) {
+    return c->directSuperclasses();
+  }
+  TYPE_ERROR(c,cl::_sym_class);
+}
+
+CL_DEFUN void core__reinitialize_class(Class_sp c) {
+  if (c->_Class->isSubClassOf(_lisp->_Roots._TheClass)) {
+    c->instanceSet(Instance_O::REF_CLASS_INSTANCE_STAMP,clasp_make_fixnum(gctools::NextStamp()));
+    return;
+  }
+  TYPE_ERROR(c,cl::_sym_class);
+}
+
+CL_DEFUN Fixnum core__get_instance_stamp(Class_sp c) {
+  if (c->_Class->isSubClassOf(_lisp->_Roots._TheClass)) {
+    return c->_get_instance_stamp();
+  }
+  TYPE_ERROR(c,cl::_sym_class);
+};
+
+CL_DEFUN T_sp core__name_of_class(Class_sp c) {
+  if (c->_Class->isSubClassOf(_lisp->_Roots._TheClass)) {
+    return c->_className();
+  }
+  TYPE_ERROR(c,cl::_sym_class);
+};
+
+CL_DEFUN T_sp core__class_creator(Class_sp c) {
+  if (c->_Class->isSubClassOf(_lisp->_Roots._TheClass)) {
+    return c->_class_creator();
+  }
+  TYPE_ERROR(c,cl::_sym_class);
+};
+
+CL_DEFUN bool core__has_creator(Class_sp c) {
+  if (c->_Class->isSubClassOf(_lisp->_Roots._TheClass)) {
+    return c->_has_creator();
+  }
+  TYPE_ERROR(c,cl::_sym_class);
+};
+
+
+
+
+};

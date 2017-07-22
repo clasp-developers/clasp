@@ -237,15 +237,17 @@
      object
      #'(lambda (dep) (apply #'update-dependent object dep initargs)))))
 
-(defmethod shared-initialize ((class std-class) slot-names &rest initargs &key
-                              (optimize-slot-access (list *optimize-slot-access*))
-                              sealedp)
+(defmethod reinitialize-instance :after ((class class) &rest initargs)
+  (update-dependents class initargs))
+
+(defmethod shared-initialize :before
+    ((class std-class) slot-names &rest initargs
+     &key
+       (optimize-slot-access (list *optimize-slot-access*))
+       sealedp)
   (declare (ignore slot-names))
   (setf (slot-value class 'optimize-slot-access) (first optimize-slot-access)
-	(slot-value class 'sealedp) (and sealedp t))
-  (setf class (call-next-method))
-  (update-dependents class initargs)
-  class)
+	(slot-value class 'sealedp) (and sealedp t)))
 
 (defmethod add-direct-subclass ((parent class) child)
   (pushnew child (class-direct-subclasses parent)))

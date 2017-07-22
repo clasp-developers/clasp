@@ -94,7 +94,6 @@ public:
       SIMPLE_ERROR(BF("Attempting to add methods for "
                       "class that isn't defined yet"));
     }
-
     this->_ClassSymbol = OT::static_classSymbol();
     reg::lisp_registerClassSymbol<OT>(this->_ClassSymbol);
     /*! Accumulate all of the classes in reverse order of how they were initialized
@@ -109,9 +108,9 @@ public:
     T_sp theClass = lisp_boot_findClassBySymbolOrNil(OT::static_classSymbol());
     if (theClass.nilp()) {
       LOG(BF("Adding class(%s) to environment") % OT::static_className());
-      lisp_addClass(OT::static_classSymbol(),
-                    OT::static_creator,
-                    OT::Bases::baseClass1Id() );
+      lisp_addClassSymbol(OT::static_classSymbol(),
+                          OT::static_creator,
+                          OT::Bases::baseClass1Id() );
     }
   }
 

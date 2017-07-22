@@ -546,8 +546,7 @@ env is the parent environment of the (result-af) value frame"
 	       ))
 	    )
 	  ))))
-  (cmp-log "Done codegen-let/let*\n")
-  )
+  (cmp-log "Done codegen-let/let*\n"))
 
 (defun codegen-let (result rest env)
   (codegen-let/let* 'let result rest env))
@@ -1050,10 +1049,6 @@ jump to blocks within this tagbody."
 ;;; Currently if read-only-p is T there is no
 ;;; coalescence performed - this could be added as an optimization
     (if *generate-compile-file-load-time-values*
-        #+(or)(let* ((index (literal:new-table-index))
-                     (ltv-func (literal:with-ltv (literal:compile-load-time-value-thunk form))))
-                (literal:evaluate-function-into-load-time-value index ltv-func)
-                (irc-store (literal:constants-table-value index) result))
         (let ((index (literal:with-load-time-value (literal:compile-load-time-value-thunk form))))
           (irc-store (literal:constants-table-value index) result))
         (let ((ltv (eval form)))
@@ -1457,8 +1452,8 @@ Return the orderered-raw-constants-list and the constants-table GlobalVariable"
           (bformat t "run-time-values: vvvvvvv\n")
           (literal::constant-list-dump run-time-values)
           (bformat t "Number of run-time-values: %d\n" (length run-time-values)))
-  (let* ((ordered-constant-list (sort run-time-values #'< :key #'constant-runtime-index))
-         (ordered-raw-constant-list (mapcar (lambda (x) (constant-runtime-object x)) ordered-constant-list))
+  (let* ((ordered-constant-list (sort run-time-values #'< :key #'literal-node-runtime-index))
+         (ordered-raw-constant-list (mapcar (lambda (x) (literal-node-runtime-object x)) ordered-constant-list))
          (array-type (llvm-sys:array-type-get %tsp% (length ordered-constant-list)))
          (constant-table (llvm-sys:make-global-variable *the-module*
                                                         array-type

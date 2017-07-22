@@ -32,8 +32,8 @@ namespace core {
       if (supplied) {
         if (obj.single_floatp()) {
           return obj.unsafe_single_float();
-        } else if (gc::IsA<DoubleFloat_sp>(obj)) {
-          return gc::As_unsafe<DoubleFloat_sp>(obj)->get();
+        } else if (gc::IsA<General_sp>(obj)) {
+          return clasp_to_float(gc::As_unsafe<General_sp>(obj));
         }
         TYPE_ERROR(obj,cl::_sym_single_float);
       }
