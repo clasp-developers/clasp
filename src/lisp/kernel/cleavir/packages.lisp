@@ -125,6 +125,8 @@
 
 (defpackage #:cc-hir-to-mir
   (:use #:common-lisp)
+  (:export
+   #:reduce-typeqs)
 )
 
 (defpackage #:cc-mir
@@ -135,6 +137,7 @@
    #:single-float-p-instruction
    #:make-single-float-p-instruction
    #:headerq-instruction
+   #:header-value-min-max
    #:make-headerq-instruction
    #:enter-instruction
    #:closure-pointer-dynamic-lexical-location

@@ -44,6 +44,7 @@
 
 (defun make-headerq-instruction (header-value-min-max input successors)
   (make-instance 'headerq-instruction
+                 :hvmm header-value-min-max
                  :inputs (list input)
                  :successors successors))
  
