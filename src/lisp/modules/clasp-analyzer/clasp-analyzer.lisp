@@ -5,11 +5,11 @@
   (:shadow #:dump #:get-string #:size #:type)
   (:export
    #:setup-clasp-analyzer-compilation-tool-database
-   #:search/generate-code
    #:load-project
    #:save-project
    #:serial-search-all
-   #:search/generate-code
+   #:serial-search/generate-code
+   #:parallel-search/generate-code
    #:analyze-project
    #:generate-code
    #:build-arguments-adjuster))
@@ -17,8 +17,6 @@
 (require :clang-tool)
 
 (in-package #:clasp-analyzer)
-
-
 
 (defun ensure-list (x)
   (unless (listp x)
@@ -35,6 +33,7 @@
 ;;(push :use-breaks *features*)
 ;;(push :gc-warnings *features*)
 
+#|
 #+(or)(defconstant +isystem-dir+ 
         #+target-os-darwin "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/7.0"
         #+target-os-linux "/usr/include/clang/3.6/include"
@@ -56,7 +55,7 @@
                             #+(or)"-I/home/meister/local/gcc-4.8.3/include/c++/4.8.3/x86_64-redhat-linux"
                             #+(or)"-I/home/meister/local/gcc-4.8.3/include/c++/4.8.3/tr1"
                             #+(or)"-I/home/meister/local/gcc-4.8.3/lib/gcc/x86_64-redhat-linux/4.8.3/include"))
-
+|#
 
 ;;; --------------------------------------------------
 ;;; --------------------------------------------------
@@ -162,6 +161,7 @@
 (defstruct enum
   key
   value
+  flags
   cclass
   species ;; can be nil
   in-hierarchy ;; only generate TaggedCast entry for those in hierarchy
@@ -172,9 +172,6 @@
 
 (defstruct (templated-enum (:include enum))
   all-allocs)
-
-
-
 
 (defstruct variable
   location
@@ -197,15 +194,15 @@
 (defstruct project
   "Store the results of matching to the entire codebase"
   ;; All class information
-  (classes (make-hash-table :test #'equal))
+  (classes (make-hash-table :test #'equal :thread-safe t))
   ;; Different allocs of objects(classes)
-  (lispallocs (make-hash-table :test #'equal))   ; exposed to Lisp
-  (classallocs (make-hash-table :test #'equal)) ; regular classes
-  (rootclassallocs (make-hash-table :test #'equal)) ; regular root classes
-  (containerallocs (make-hash-table :test #'equal)) ; containers
-  (local-variables (make-hash-table :test #'equal))
-  (global-variables (make-hash-table :test #'equal))
-  (static-local-variables (make-hash-table :test #'equal))
+  (lispallocs (make-hash-table :test #'equal :thread-safe t))   ; exposed to Lisp
+  (classallocs (make-hash-table :test #'equal :thread-safe t)) ; regular classes
+  (rootclassallocs (make-hash-table :test #'equal :thread-safe t)) ; regular root classes
+  (containerallocs (make-hash-table :test #'equal :thread-safe t)) ; containers
+  (local-variables (make-hash-table :test #'equal :thread-safe t))
+  (global-variables (make-hash-table :test #'equal :thread-safe t))
+  (static-local-variables (make-hash-table :test #'equal :thread-safe t))
 ;;  (new-gcobject-exprs (make-hash-table :test #'equal))
 ;;  (new-housekeeping-class-exprs (make-hash-table :test #'equal))
   )
@@ -303,10 +300,16 @@
                (notify-parents node-name analysis))
            (analysis-enums analysis)))
 
+(defun calculate-flags (name)
+  (+ (if (derived-from-cclass name "core::Instance_O") 1 0)
+     (if (inherits-from-multiple-classes name) 2 0)))
+
+
 (defun traverse (name analysis)
   (let ((enum (gethash name (analysis-enums analysis)))
         (enum-value (analysis-cur-enum-value analysis)))
     (setf (enum-value enum) enum-value)
+    (setf (enum-flags enum) (calculate-flags name))
     (setf (enum-in-hierarchy enum) t)
     (incf (analysis-cur-enum-value analysis))
     (dolist (child (gethash enum (analysis-enum-children analysis)))
@@ -339,16 +342,16 @@
   (assign-enum-values-to-hierarchy analysis)
   (assign-enum-values-to-those-without analysis))
 
-(defun hierarchy-end-range (class-name analysis)
+(defun hierarchy-end-value (class-name analysis)
   (let ((enum (gethash class-name (analysis-enums analysis))))
     (if (null (gethash enum (analysis-enum-children analysis)))
-        (enum-value enum)
-      (hierarchy-end-range (car (last (gethash enum (analysis-enum-children analysis)))) analysis))))
+        enum
+        (hierarchy-end-value (car (last (gethash enum (analysis-enum-children analysis)))) analysis))))
 
         
-(defun hierarchy-class-range (class-name analysis)
+(defun hierarchy-class-enum-range (class-name analysis)
   (let ((enum (gethash class-name (analysis-enums analysis))))
-    (values (enum-value enum) (hierarchy-end-range class-name analysis))))
+    (values enum (hierarchy-end-value class-name analysis))))
 
 
 (defun generate-dynamic-cast-code (fout analysis)
@@ -365,27 +368,37 @@
                  (format fout "//           The problem is that isA relationships defined by Clasp can only work with single inheritance~%")
                  (format fout "//           but derivable_classes inherit from Instance_O and whatever else they are defined to inherit from.~%")
                  (format fout "//           For now I'll special case core::Instance_O and fall back to dynamic_cast~%"))
-               (format fout "      int kindVal = header->kind();~%")
+               (format fout "      int kindVal = header->stamp();~%")
                (multiple-value-bind (low high)
-                   (hierarchy-class-range key analysis)
-                 (format fout "      // low high --> ~a ~a ~%" low high)
+                   (hierarchy-class-enum-range key analysis)
+                 (format fout "      // low high --> ~a ~a ~%" (enum-value low) (enum-value high))
                  (if (string= key "core::Instance_O") ; special case core::Instance_O
                      (progn
-                       (if (eql low high)
-                           (format fout "      if (kindVal == ~a) return true;~%" low)
-                           (format fout "      if ((~a <= kindVal) && (kindVal <= ~a)) return true;~%" low high))
-                       (format fout "      return (dynamic_cast<core::Instance_O*>(client)!=NULL);~%"))
-                     (if (eql low high)
-                         (format fout "      return (kindVal == ~a);~%" low)
-                         (format fout "      return ((~a <= kindVal) && (kindVal <= ~a));~%" low high))))
+                       (if (eq low high)
+                           (format fout "      if (kindVal == ~a) return true;~%" (enum-value low)
+                                   (format fout "      if ((~a <= kindVal) && (kindVal <= ~a)) return true;~%" (enum-value low) (enum-value high)))
+                           (format fout "      return (dynamic_cast<core::Instance_O*>(client)!=NULL);~%")))
+                     (if (eq low high)
+                         (format fout "      return (kindVal == ~a);~%" (enum-value low))
+                         (format fout "      return ((~a <= kindVal) && (kindVal <= ~a));~%" (enum-value low) (enum-value high)))))
                (format fout "  };~%")
-;;;               (format fout "  static ~a* castOrNULL(FP client) {~%" key)
-;;;               (format fout "    if (TaggedCast<~a*,FP>::isA(client)) {~%" key)
-;;;               (format fout "      return gctools::tag_general<~a*>(reinterpret_cast<~a*>(gctools::untag_general<FP>(client)));~%" key key)
-;;;               (format fout "    }~%")
-;;;               (format fout "    return NULL;~%")
-;;;               (format fout "  };~%")
                (format fout "};~%")))
+           (analysis-enums analysis)))
+
+(defun generate-typeq-code (fout analysis)
+  (maphash (lambda (key enum)
+             (when (and (not (abstract-species-enum-p enum analysis))
+                        (enum-in-hierarchy enum)
+                        (derived-from-cclass key "core::General_O" (analysis-project analysis)))
+               (multiple-value-bind (low high)
+                   (hierarchy-class-enum-range key analysis)
+                 (if (string= key "core::Instance_O") ; special case core::Instance_O
+                     (if (eql low high)
+                         (format fout "      add_single_typeq_test_instance<~a>(theMap);~%" key)
+                         (format fout "      add_range_typeq_test_instance<~a,~a>(theMap);~%" key (enum-key high)))
+                     (if (eql low high)
+                         (format fout "      add_single_typeq_test<~a>(theMap);~%" key)
+                         (format fout "      add_range_typeq_test<~a,~a>(theMap);~%" key (enum-key high)))))))
            (analysis-enums analysis)))
 
 
@@ -1329,7 +1342,7 @@ can be saved and reloaded within the project for later analysis"
       (clang-tool:multitool-add-matcher mtool
                              :name :cclasses
                              :matcher-sexp *class-matcher*
-                             :initializer (lambda () (setf results (make-hash-table :test #'equal)))
+                             :initializer (lambda () (setf results (make-hash-table :test #'equal :thread-safe t)))
                              :callback (make-instance 'clang-tool:code-match-callback
                                                       :timer (make-instance 'clang-tool:code-match-timer
                                                                             :name 'class-callback)
@@ -1382,7 +1395,7 @@ and the inheritance hierarchy that the garbage collector will need"
       (clang-tool:multitool-add-matcher mtool
                              :name :lispallocs
                              :matcher-sexp `(:bind :whole ,*lispalloc-matcher*)
-                             :initializer (lambda () (setf class-results (make-hash-table :test #'equal))) ; initializer
+                             :initializer (lambda () (setf class-results (make-hash-table :test #'equal :thread-safe t))) ; initializer
                              :callback (make-instance 'clang-tool:code-match-callback
                                                       :timer (make-instance 'clang-tool:code-match-timer
                                                                             :name 'lisp-alloc-matcher)
@@ -1434,7 +1447,7 @@ and the inheritance hierarchy that the garbage collector will need"
       (clang-tool:multitool-add-matcher mtool
                              :name :classallocs
                              :matcher-sexp `(:bind :whole ,*classalloc-matcher*)
-                             :initializer (lambda () (setf class-results (make-hash-table :test #'equal))) ; initializer
+                             :initializer (lambda () (setf class-results (make-hash-table :test #'equal :thread-safe t))) ; initializer
                              :callback (make-instance 'clang-tool:code-match-callback
                                                       :timer (make-instance 'clang-tool:code-match-timer
                                                                             :name 'classalloc-matcher)
@@ -1487,7 +1500,7 @@ and the inheritance hierarchy that the garbage collector will need"
       (clang-tool:multitool-add-matcher mtool
                              :name :rootclassallocs
                              :matcher-sexp `(:bind :whole ,*rootclassalloc-matcher*)
-                             :initializer (lambda () (setf class-results (make-hash-table :test #'equal))) ; initializer
+                             :initializer (lambda () (setf class-results (make-hash-table :test #'equal :thread-safe t))) ; initializer
                              :callback (make-instance 'clang-tool:code-match-callback
                                                       :timer (make-instance 'clang-tool:code-match-timer
                                                                             :name 'rootclassalloc-matcher)
@@ -1532,7 +1545,7 @@ and the inheritance hierarchy that the garbage collector will need"
       (clang-tool:multitool-add-matcher mtool
                              :name :containerallocs
                              :matcher-sexp `(:bind :whole ,*containeralloc-matcher*)
-                             :initializer (lambda () (setf class-results (make-hash-table :test #'equal))) ; initializer
+                             :initializer (lambda () (setf class-results (make-hash-table :test #'equal :thread-safe t))) ; initializer
                              :callback (make-instance 'clang-tool:code-match-callback
                                                       :timer (make-instance 'clang-tool:code-match-timer
                                                                             :name 'containeralloc-matcher)
@@ -1597,7 +1610,7 @@ and the inheritance hierarchy that the garbage collector will need"
       (clang-tool:multitool-add-matcher mtool
                              :name :global-variables
                              :matcher-sexp *global-variable-matcher*
-                             :initializer (lambda () (setf global-variables (make-hash-table :test #'equal)))
+                             :initializer (lambda () (setf global-variables (make-hash-table :test #'equal :thread-safe t)))
                              :callback (make-instance 'clang-tool:code-match-callback
                                                       :timer (make-instance 'clang-tool:code-match-timer
                                                                             :name 'global-variable)
@@ -1619,8 +1632,8 @@ and the inheritance hierarchy that the garbage collector will need"
   (clang-tool:compile-matcher *variable-matcher*)
 
   (defun setup-variable-search (mtool)
-    (symbol-macrolet ((static-local-variables (project-static-local-variables (clang-tool:multitool-results mtool)))
-                      (local-variables (project-local-variables (clang-tool:multitool-results mtool))))
+    (symbol-macrolet ((static-local-variables (project-static-local-variables *results*))
+                      (local-variables (project-local-variables *results*)))
       ;; The matcher is going to match globals as well as static locals and locals - so we need to explicitly recognize and ignore globals
       (flet ((%%variable-callback (match-info)
                (block matcher
@@ -1663,7 +1676,7 @@ and the inheritance hierarchy that the garbage collector will need"
                                           :name :variables
                                           :matcher-sexp *variable-matcher*
                                           :initializer (lambda ()
-                                                         (setf static-local-variables (make-hash-table :test #'equal))
+                                                         (setf static-local-variables (make-hash-table :test #'equal :thread-safe t))
                                                          (setf local-variables (make-hash-table :test #'equal)))
                                           :callback (make-instance 'clang-tool:code-match-callback
                                                                    :timer (make-instance 'clang-tool:code-match-timer
@@ -1717,7 +1730,7 @@ and the inheritance hierarchy that the garbage collector will need"
       (clang-tool:multitool-add-matcher mtool
                                         :name :gcinfos
                                         :matcher-sexp `(:bind :whole ,*gcinfo-matcher*)
-                                        :initializer (lambda () (setf class-results (make-hash-table :test #'equal))) ; initializer
+                                        :initializer (lambda () (setf class-results (make-hash-table :test #'equal :thread-safe t))) ; initializer
                                         :callback (make-instance 'clang-tool:code-match-callback
                                                                  :timer (make-instance 'clang-tool:code-match-timer
                                                                                        :name 'gcinfo-matcher)
@@ -2058,7 +2071,7 @@ so that they don't have to be constantly recalculated"
                                  :species species)))))))
 
 (defun organize-allocs-into-species-and-create-enums (analysis &aux (project (analysis-project analysis)))
-  "Every GCObject and GCContainer is assigned to a species and given a GCKind enum value."
+  "Every GCObject and GCContainer is assigned to a species and given a GCStamp enum value."
   (let ((project (analysis-project analysis)))
     (maphash (lambda (k alloc) (ensure-enum-for-alloc-and-parent-classes alloc analysis)) (project-lispallocs project))
     (maphash (lambda (k alloc) (ensure-enum-for-alloc-and-parent-classes alloc analysis)) (project-containerallocs project))
@@ -2539,19 +2552,51 @@ so that they don't have to be constantly recalculated"
 
 
 (defvar *project*)
+(defun derived-from-cclass* (child ancestor searched project)
+  (cond ((gethash child searched)
+         ;; Protect ourselves from loops in the inheritance
+         ;; There shouldn't be any but something is messed up
+         nil)
+        ((eq child ancestor)
+         t)
+        (t
+         (setf (gethash child searched) t)
+         (dolist (parent-name (cclass-bases child))
+           (let ((parent (gethash parent-name (project-classes project))))
+             (when (derived-from-cclass* parent ancestor searched project)
+               (return-from derived-from-cclass* t))))
+         (dolist (parent-name (cclass-vbases child))
+           (let ((parent (gethash parent-name (project-classes project))))
+             (when (derived-from-cclass* parent ancestor searched project)
+               (return-from derived-from-cclass* t))))
+         nil)))
+
 (defun derived-from-cclass (child ancestor &optional (project *project*))
-  (setq child (if (stringp child) (gethash child (project-classes project)) child))
-  (setq ancestor (if (stringp ancestor) (gethash ancestor (project-classes project)) ancestor))
-  (if (eq child ancestor)
-      t
-      (progn
-        (dolist (parent (cclass-bases child))
-          (when (derived-from-cclass parent ancestor)
-            (return-from derived-from-cclass t)))
-        (dolist (parent (cclass-vbases child))
-          (when (derived-from-cclass parent ancestor)
-            (return-from derived-from-cclass t)))
-        nil)))
+  (let ((child-class (if (stringp child) (gethash child (project-classes project)) child))
+        (ancestor-class (if (stringp ancestor) (gethash ancestor (project-classes project)) ancestor))
+        (searched (make-hash-table)))
+    (derived-from-cclass* child-class ancestor-class searched project)))
+
+(defun inherits-from-multiple-classes* (child searched project)
+  "Return true if somewhere in the ancestors there is a branch in the inheritance"
+  (cond ((gethash child searched)
+         ;; Protect ourselves from loops in the inheritance
+         ;; There shouldn't be any but something is messed up
+         nil)
+        (t
+         (setf (gethash child searched) t)
+         (let ((num-parents (+ (length (cclass-bases child)) (length (cclass-vbases child)))))
+           (if (> num-parents 1)
+               t
+               (let* ((parent (or (car (cclass-bases child)) (car (cclass-vbases child))))
+                      (parent-class (gethash parent (project-classes *project*))))
+                 (when parent-class
+                   (inherits-from-multiple-classes* parent-class searched project))))))))
+
+(defun inherits-from-multiple-classes (child &optional (project *project*))
+  (let ((child-class (if (stringp child) (gethash child (project-classes project)) child))
+        (searched (make-hash-table)))
+    (inherits-from-multiple-classes* child-class searched project)))
 
 
 (defun inherits-metadata (cclass metadata &optional (project *project*))
@@ -2592,12 +2637,13 @@ so that they don't have to be constantly recalculated"
     (cond
       ((simple-enum-p enum)
 ;;       (format stream "//GCKind for ~a~%" enum)
-       (format stream "template <> class gctools::GCKind<~A> {~%" (enum-key enum)))
+       (format stream "template <> class gctools::GCStamp<~A> {~%" (enum-key enum)))
       (t ;; templated-enum
 ;;       (format stream "//GCTemplatedKind for ~a~%" enum)
-       (format stream "template <> class gctools::GCKind<~A> {~%" (enum-key enum))))
+       (format stream "template <> class gctools::GCStamp<~A> {~%" (enum-key enum))))
     (format stream "public:~%")
-    (format stream "  static gctools::GCKindEnum const Kind = gctools::~a ;~%" enum-name)
+    (format stream "  static gctools::GCStampEnum const Stamp = gctools::~a ;~%" enum-name)
+    (format stream "  static const size_t Flags = ~a ;~%" (enum-flags enum))
     (format stream "};~%")))
 
 (defun abstract-species-enum-p (enum analysis)
@@ -3164,6 +3210,9 @@ Pointers to these objects are fixed in obj_scan or they must be roots."
     (format stream "#if defined(GC_DYNAMIC_CAST)~%")
     (generate-dynamic-cast-code stream analysis )
     (format stream "#endif // defined(GC_DYNAMIC_CAST)~%")
+    (format stream "#if defined(GC_TYPEQ)~%")
+    (generate-typeq-code stream analysis )
+    (format stream "#endif // defined(GC_TYPEQ)~%")
     (format stream "#if defined(GC_KIND_SELECTORS)~%")
     (generate-gckind-for-enums stream analysis)
     (format stream "#endif // defined(GC_KIND_SELECTORS)~%")
@@ -3244,15 +3293,15 @@ Setup all of the ASTMatcher tools for the clasp-analyzer."
 
 
 
-#+(or)(defun run-job (proc job-list compilation-tool-database)
-        (setf (clang-tool:multitool-results *tools*) (make-project))
-        (format t "====== Running jobs in fork #~a: ~a~%" proc job-list)
-        (clang-tool:batch-run-multitool *tools*
-                                        :compilation-tool-database compilation-tool-database)
-        (format t "------------ About to save-archive --------------~%")
-        (save-data (clang-tool:multitool-results *tools*)
-                   (merge-pathnames "project.dat" (clang-tool:main-pathname compilation-tool-database)))
-        (core:exit))
+#+(or)
+(defun run-job (proc job-list compilation-tool-database)
+  (let ((*results* (make-project)))
+    (format t "====== Running jobs in fork #~a: ~a~%" proc job-list)
+    (clang-tool:batch-run-multitool *tools* compilation-tool-database)
+    (format t "------------ About to save-archive --------------~%")
+    (save-data *results*
+               (merge-pathnames "project.dat" (clang-tool:main-pathname compilation-tool-database)))
+    (core:exit)))
 
 #+(or)(defvar *parallel-search-pids* nil)
 #+(or)(defun parallel-search-all (&key test one-at-a-time)
@@ -3359,12 +3408,64 @@ Run searches in *tools* on the source files in the compilation database."
     (format t "compilation-tool-database: ~a~%" compilation-tool-database)
     (format t "all-jobs: ~a~%" all-jobs)
     (setf (clang-tool:multitool-results tools) (make-project))
-    (clang-tool:batch-run-multitool tools
-                                    :compilation-tool-database compilation-tool-database)
+    (clang-tool:batch-run-multitool tools compilation-tool-database)
     (when save-project
       (let ((project (clang-tool:multitool-results tools)))
-        (save-data project output-file)))
-    (values (clang-tool:multitool-results tools) output-file)))
+        (save-data project output-file)
+        (values project output-file)))))
+
+(defstruct parallel-job id filename)
+(defstruct parallel-result id filename result)
+    
+(defun one-search-process (compilation-tool-database tools jobid job-queue)
+  (let* ((log-file (open (format nil "/tmp/process~a.log" jobid) :direction :output :if-exists :supersede))
+         (*standard-output* log-file))
+    (format t "Starting process ~a~%" jobid)
+    (clang-tool:with-compilation-tool-database compilation-tool-database
+      (loop while (> (mp:queue-size-approximate job-queue) 0)
+         do (let ((one-job (mp:queue-dequeue job-queue)))
+              (when one-job
+                (format t "Running search on ~a ~a~%" (parallel-job-id one-job) (parallel-job-filename one-job))
+                (clang-tool:batch-run-multitool tools compilation-tool-database :source-namestrings (list (parallel-job-filename one-job)))))))
+    (close log-file)))
+
+(defun parallel-search-all (compilation-tool-database
+                            &key (source-namestrings (clang-tool:source-namestrings compilation-tool-database))
+                              (output-file (merge-pathnames #P"project.dat" (clang-tool:main-pathname compilation-tool-database)))
+                              (save-project t)
+                              (jobs 2))
+  "* Arguments
+- test :: A list of files to run the search on, or NIL for all of them.
+- arguments-adjuster :: The arguments adjuster.
+* Description
+Run searches in *tools* on the source files in the compilation database."
+  (format t "serial-search-all --> getcwd: ~a~%" (ext:getcwd))
+  (let ((tools (setup-tools compilation-tool-database))
+        (all-jobs source-namestrings)
+        (job-queue (make-cxx-object 'mp:concurrent-queue)))
+    (setf (clang-tool:multitool-results tools) (make-project))
+    (save-data all-jobs (make-pathname :type "lst" :defaults output-file))
+    (format t "compilation-tool-database: ~a~%" compilation-tool-database)
+    (format t "all-jobs: ~a~%" all-jobs)
+    (loop for job in all-jobs
+       for id from 0
+       do (mp:queue-enqueue job-queue (make-parallel-job :id id :filename job)))
+    (format t "Starting processes~%")
+    (let ((processes (loop for x from 0 below jobs
+                        do (format t "loop for process ~a~%" x)
+                        collect (prog1
+                                    (mp:process-run-function
+                                     nil
+                                     (lambda ()
+                                       (one-search-process compilation-tool-database tools x job-queue)))
+                                  (sleep 2)))))
+      (loop for process in processes
+           do (mp:process-join process))
+      (format t "All processes done~%")
+      (when save-project
+        (let ((project (clang-tool:multitool-results tools)))
+          (save-data project output-file)
+          (values project output-file))))))
 
 (defun translate-include (args filename)
   "* Arguments
@@ -3405,7 +3506,7 @@ If the source location of a match contains the string source-path-identifier the
     compilation-tool-database))
 
 (defvar *analysis*)
-(defun search/generate-code (compilation-tool-database &key (output-file (merge-pathnames #P"project.dat" (clang-tool:main-pathname compilation-tool-database))))
+(defun serial-search/generate-code (compilation-tool-database &key (output-file (merge-pathnames #P"project.dat" (clang-tool:main-pathname compilation-tool-database))))
   (clang-tool:with-compilation-tool-database
    compilation-tool-database
     (setf *project* (serial-search-all compilation-tool-database :output-file output-file))
@@ -3422,3 +3523,19 @@ If the source location of a match contains the string source-path-identifier the
       (generate-code analysis :output-file (make-pathname :type "cc" :defaults output-file)))
     *project*))
 
+(defun parallel-search/generate-code (compilation-tool-database
+                                      &key (output-file (merge-pathnames #P"project.dat" (clang-tool:main-pathname compilation-tool-database)))
+                                        pjobs)
+  (let ((pjobs (or pjobs (let ((pj (ext:getenv "PJOBS")))
+                           (if pj
+                               (parse-integer pj)
+                               2)))))
+    (clang-tool:with-compilation-tool-database
+        compilation-tool-database
+      (setf *project* (parallel-search-all compilation-tool-database :output-file output-file
+                                           :jobs pjobs))
+      (let ((analysis (analyze-project *project*)))
+        (setq *analysis* analysis)
+        (setf (analysis-inline analysis) '("core::Cons_O"))
+        (generate-code analysis :output-file (make-pathname :type "cc" :defaults output-file)))
+      *project*)))

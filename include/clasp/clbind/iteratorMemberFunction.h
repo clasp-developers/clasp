@@ -76,9 +76,10 @@ public:
 };
 
 template <typename Pols, typename OT, typename Begin, typename End>
-class gctools::GCKind<clbind::IteratorMethoid<Pols, OT, Begin, End>> {
+class gctools::GCStamp<clbind::IteratorMethoid<Pols, OT, Begin, End>> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::GCKind<typename clbind::IteratorMethoid<Pols, OT, Begin, End>::TemplatedBase>::Kind;
+  static gctools::GCStampEnum const Stamp = gctools::GCStamp<typename clbind::IteratorMethoid<Pols, OT, Begin, End>::TemplatedBase>::Kind;
+  static const size_t Flags = 0;
 };
 
 #endif

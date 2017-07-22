@@ -680,6 +680,15 @@ void Lisp_O::startupLispEnvironment(Bundle *bundle) {
   //
   mp::Process_sp main_process = mp::Process_O::make_process(INTERN_(core,top_level),_Nil<T_O>(),_lisp->copy_default_special_bindings(),_Nil<T_O>(),0);
   my_thread->initialize_thread(main_process);
+  {
+    // initialize caches
+    my_thread->_SingleDispatchMethodCachePtr = gc::GC<Cache_O>::allocate();
+    my_thread->_SingleDispatchMethodCachePtr->setup(2, Lisp_O::SingleDispatchMethodCacheSize);
+    my_thread->_MethodCachePtr = gctools::GC<Cache_O>::allocate();
+    my_thread->_MethodCachePtr->setup(Lisp_O::MaxFunctionArguments, Lisp_O::ClosCacheSize);
+    my_thread->_SlotCachePtr = gctools::GC<Cache_O>::allocate();
+    my_thread->_SlotCachePtr->setup(Lisp_O::MaxClosSlots, Lisp_O::ClosCacheSize);
+  }
   printf("%s:%d  After my_thread->initialize_thread  my_thread->_Process -> %p\n", __FILE__, __LINE__, (void*)my_thread->_Process.raw_());
   {
     _BLOCK_TRACE("Start printing symbols properly");
@@ -1023,7 +1032,7 @@ void Lisp_O::addClassSymbol(Symbol_sp classSymbol,
   core__setf_find_class(cc, classSymbol);
   cc->addInstanceBaseClass(base1ClassSymbol);
   ASSERTF((bool)alloc, BF("_creator for %s is NULL!!!") % _rep_(classSymbol));
-  cc->_set_creator(alloc);
+  cc->CLASS_set_creator(alloc);
 }
 /*! Add the class with (className) to the current package
  */

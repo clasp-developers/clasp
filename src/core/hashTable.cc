@@ -33,6 +33,7 @@ THE SOFTWARE.
 #include <clasp/core/environment.h>
 #include <clasp/core/multipleValues.h>
 #include <clasp/core/symbolTable.h>
+#include <clasp/core/mpPackage.h>
 #include <clasp/core/hashTable.h>
 #include <clasp/core/hashTableEq.h>
 #include <clasp/core/hashTableEql.h>
@@ -47,6 +48,45 @@ THE SOFTWARE.
 #include <clasp/core/weakHashTable.h>
 #include <clasp/core/wrappers.h>
 namespace core {
+
+
+
+#ifdef CLASP_THREADS
+  struct HashTableReadLock {
+    const HashTable_O* _hashTable;
+  HashTableReadLock(const HashTable_O* ht) : _hashTable(ht) {
+    if (this->_hashTable->_Mutex) {
+      this->_hashTable->_Mutex->shared_lock();
+    }
+  }
+    ~HashTableReadLock() {
+      if (this->_hashTable->_Mutex) {
+        this->_hashTable->_Mutex->shared_unlock();
+      }
+    }
+  };
+  struct HashTableWriteLock {
+    const HashTable_O* _hashTable;
+  HashTableWriteLock(const HashTable_O* ht) : _hashTable(ht) {
+    if (this->_hashTable->_Mutex) {
+      this->_hashTable->_Mutex->write_lock();
+    }
+  }
+    ~HashTableWriteLock() {
+      if (this->_hashTable->_Mutex) {
+        this->_hashTable->_Mutex->write_unlock();
+      }
+    }
+  };
+#endif
+
+#ifdef CLASP_THREADS
+#define HT_READ_LOCK(me) HashTableReadLock _zzz(me)
+#define HT_WRITE_LOCK(me) HashTableWriteLock _zzz(me)
+#else
+#define HT_READ_LOCK(me) 
+#define HT_WRITE_LOCK(me) 
+#endif
 
 
 #ifdef USE_MPS
@@ -76,12 +116,21 @@ struct HashTableLocker {
 // ----------------------------------------------------------------------
 //
 
+void HashTable_O::set_thread_safe(bool thread_safe)
+{
+#ifdef CLASP_THREADS
+  if (thread_safe) {
+    this->_Mutex = mp::SharedMutex_O::make_shared_mutex(_Nil<T_O>());
+  } else {
+    this->_Mutex.reset_();
+  }
+#endif
+}
 
-
-CL_LAMBDA(&key (test (function eql)) (size 16) (rehash-size 1.5) (rehash-threshold 1.0) weakness debug);
+CL_LAMBDA(&key (test (function eql)) (size 16) (rehash-size 1.5) (rehash-threshold 1.0) weakness debug thread_safe);
 CL_DECLARE();
 CL_DOCSTRING("see CLHS");
-CL_DEFUN T_sp cl__make_hash_table(T_sp test, Fixnum_sp size, Number_sp rehash_size, Real_sp orehash_threshold, Symbol_sp weakness, T_sp debug) {
+CL_DEFUN T_sp cl__make_hash_table(T_sp test, Fixnum_sp size, Number_sp rehash_size, Real_sp orehash_threshold, Symbol_sp weakness, T_sp debug, T_sp thread_safe) {
   SYMBOL_EXPORT_SC_(KeywordPkg, key);
   if (weakness.notnilp()) {
     if (weakness == INTERN_(kw, key)) {
@@ -104,6 +153,11 @@ CL_DEFUN T_sp cl__make_hash_table(T_sp test, Fixnum_sp size, Number_sp rehash_si
   } else {
     SIMPLE_ERROR(BF("Illegal test[%s] for make-hash-table") % _rep_(test));
   }
+#ifdef CLASP_THREADS
+  if (thread_safe.notnilp()) {
+    table->_Mutex = mp::SharedMutex_O::make_shared_mutex(_Nil<T_O>());
+  }
+#endif
   return table;
 }
 
@@ -135,8 +189,8 @@ CL_DEFUN T_mv cl__maphash(T_sp function_desig, T_sp thash_table) {
   if (thash_table.nilp()) {
     SIMPLE_ERROR(BF("maphash called with nil hash-table"));
   }
-  //        HASH_TABLE_LOCK();
   HashTable_sp hash_table = gc::As<HashTable_sp>(thash_table);
+  HT_READ_LOCK(&*hash_table);
   VectorObjects_sp table = hash_table->_HashTable;
   for (size_t it = 0, itEnd = cl__length(table); it < itEnd; ++it) {
     List_sp first = (*table)[it];
@@ -222,7 +276,8 @@ void HashTable_O::clrhash() {
 }
 
 void HashTable_O::setup(uint sz, Number_sp rehashSize, double rehashThreshold) {
-  sz = this->resizeEmptyTable(sz);
+  HT_WRITE_LOCK(this);
+  sz = this->resizeEmptyTable_no_lock(sz);
   this->_InitialSize = sz;
   this->_RehashSize = rehashSize;
   ASSERT(!clasp_zerop(this->_RehashSize));
@@ -440,6 +495,7 @@ bool HashTable_O::equalp(T_sp other) const {
 }
 
 List_sp HashTable_O::keysAsCons() {
+  HT_READ_LOCK(this);
   List_sp res = _Nil<T_O>();
   this->mapHash([&res](T_sp key, T_sp val) {
       res = Cons_O::create(key,res);
@@ -447,18 +503,8 @@ List_sp HashTable_O::keysAsCons() {
   return res;
 }
 
-#if 0
-    void HashTable_O::serialize(::serialize::SNodeP node)
-    {
-        this->Bases::serialize(node);
-	// Archie other instance variables here
-	node->attribute("test",this->_Test);
-	node->archiveObject("rehashSize",this->_RehashSize);
-	node->attribute("rehashThreshold",this->_RehashThreshold);
-    }
-#endif
-
 void HashTable_O::fields(Record_sp node) {
+  
   // this->Base::fields(node);
   node->field(INTERN_(core, rehash_size), this->_RehashSize);
   node->/*pod_*/ field(INTERN_(core, rehash_threshold), this->_RehashThreshold);
@@ -489,7 +535,7 @@ void HashTable_O::fields(Record_sp node) {
   }
 }
 
-uint HashTable_O::resizeEmptyTable(uint sz) {
+uint HashTable_O::resizeEmptyTable_no_lock(size_t sz) {
   if (sz < 16) sz = 16;
   this->_HashTable = VectorObjects_O::make(sz, _Nil<T_O>() );
   (void) ENSURE_VALID_OBJECT(this->_HashTable);
@@ -501,10 +547,12 @@ uint HashTable_O::resizeEmptyTable(uint sz) {
 
 CL_LISPIFY_NAME("hash-table-count");
 CL_DEFMETHOD uint HashTable_O::hashTableCount() const {
+  HT_READ_LOCK(this);
   return this->_HashTableCount;
 }
 
 uint HashTable_O::calculateHashTableCount() const {
+  HT_READ_LOCK(this);
   uint cnt = 0;
   for (size_t it(0), itEnd(cl__length(ENSURE_VALID_OBJECT(this->_HashTable))); it < itEnd; ++it) {
     cnt += cl__length((ENSURE_VALID_OBJECT(this->_HashTable)->operator[](it)));
@@ -514,6 +562,7 @@ uint HashTable_O::calculateHashTableCount() const {
 
 CL_LISPIFY_NAME("hash-table-size");
 CL_DEFMETHOD uint HashTable_O::hashTableSize() const {
+  HT_READ_LOCK(this);
   return cl__length(ENSURE_VALID_OBJECT(this->_HashTable));
 }
 
@@ -525,7 +574,7 @@ gc::Fixnum HashTable_O::sxhashKey(T_sp obj, gc::Fixnum bound, bool willAddKey) c
   SUBCLASS_MUST_IMPLEMENT();
 }
 
-List_sp HashTable_O::findAssoc(gc::Fixnum index, T_sp key) const {
+List_sp HashTable_O::findAssoc_no_lock(gc::Fixnum index, T_sp key) const {
   LOG(BF("findAssoc at index %d\n") %index);
   for (auto cur : gc::As_unsafe<List_sp>((*ENSURE_VALID_OBJECT(this->_HashTable))[index])) {
     List_sp pair = CONS_CAR(cur);
@@ -543,17 +592,17 @@ List_sp HashTable_O::findAssoc(gc::Fixnum index, T_sp key) const {
     return ht->gethash(key, default_value);
   };
 
-  List_sp HashTable_O::bucketsFind(T_sp key) const {
+  List_sp HashTable_O::bucketsFind_no_lock(T_sp key) const {
     ASSERT(this->_HashTable);
     cl_index length = cl__length(ENSURE_VALID_OBJECT(this->_HashTable));
 //  printf("%s:%d:%s  _HashTable length = %ld\n", __FILE__, __LINE__, __FUNCTION__, length );
     cl_index index = this->safe_sxhashKey(key, length, false);
-    List_sp keyValueCons = this->findAssoc(index, key);
+    List_sp keyValueCons = this->findAssoc_no_lock(index, key);
     return keyValueCons;
   }
 
-  List_sp HashTable_O::tableRef(T_sp key) {
-    List_sp keyValueCons = this->bucketsFind(key);
+  List_sp HashTable_O::tableRef_no_lock(T_sp key) {
+    List_sp keyValueCons = this->bucketsFind_no_lock(key);
     if (keyValueCons.notnilp())
       return keyValueCons;
 #if defined(USE_MPS)
@@ -561,7 +610,7 @@ List_sp HashTable_O::findAssoc(gc::Fixnum index, T_sp key) const {
     if (key.objectp()) {
       void *blockAddr = &(*key);
       if (mps_ld_isstale(const_cast<mps_ld_t>(&(this->_LocationDependency)), global_arena, blockAddr)) {
-        keyValueCons = this->rehash(false, key);
+        keyValueCons = this->rehash_no_lock(false, key);
       }
     }
 #endif
@@ -577,7 +626,8 @@ List_sp HashTable_O::findAssoc(gc::Fixnum index, T_sp key) const {
 
   T_mv HashTable_O::gethash(T_sp key, T_sp default_value) {
     LOG(BF("gethash looking for key[%s]") % _rep_(key));
-    List_sp keyValuePair = this->tableRef(key);
+    HT_READ_LOCK(this);
+    List_sp keyValuePair = this->tableRef_no_lock(key);
     LOG(BF("Found keyValueCons")); // % keyValueCons->__repr__() ); INFINITE-LOOP
     if (keyValuePair.nilp()) {
       LOG(BF("valueOrUnbound is unbound - returning default"));
@@ -599,15 +649,15 @@ List_sp HashTable_O::findAssoc(gc::Fixnum index, T_sp key) const {
   }
 
   List_sp HashTable_O::find(T_sp key) {
-    List_sp keyValue = this->tableRef(key);
-    if (keyValue.nilp())
-      return keyValue;
-    if (oCdr(keyValue).unboundp())
-      return _Nil<T_O>();
+    HT_READ_LOCK(this);
+    List_sp keyValue = this->tableRef_no_lock(key);
+    if (keyValue.nilp()) return keyValue;
+    if (oCdr(keyValue).unboundp()) return _Nil<T_O>();
     return keyValue;
   }
 
   bool HashTable_O::contains(T_sp key) {
+    HT_READ_LOCK(this);
     List_sp keyValue = this->find(key);
     if (keyValue.nilp())
       return false;
@@ -615,40 +665,45 @@ List_sp HashTable_O::findAssoc(gc::Fixnum index, T_sp key) const {
   }
 
   bool HashTable_O::remhash(T_sp key) {
-    List_sp keyValuePair = this->tableRef(key);
-    if (keyValuePair.nilp() || oCdr(keyValuePair).unboundp())
-      return false;
-    keyValuePair.asCons()->setCdr(_Unbound<T_O>());
-    this->_HashTableCount--;
+    HT_WRITE_LOCK(this);
+    List_sp keyValuePair = this->tableRef_no_lock(key);
+    if (keyValuePair.nilp() || oCdr(keyValuePair).unboundp()) return false;
+    {
+      keyValuePair.asCons()->setCdr(_Unbound<T_O>());
+      this->_HashTableCount--;
+    }
     return true;
   }
 
   CL_LISPIFY_NAME("core:hashTableSetfGethash");
   CL_DEFMETHOD T_sp HashTable_O::hash_table_setf_gethash(T_sp key, T_sp value) {
     LOG(BF("About to hash_table_setf_gethash for %s@%p -> %s@%p\n") % _rep_(key) % (void*)&(*key) % _rep_(value) % (void*)&(*value));
-    List_sp keyValuePair = this->tableRef(key);
-    if (keyValuePair.nilp()) {
-      gc::Fixnum index = this->safe_sxhashKey(key, cl__length(ENSURE_VALID_OBJECT(this->_HashTable)), true /*Will add key*/);
-      Cons_sp newKeyValue = Cons_O::create(key, value);
+    HT_WRITE_LOCK(this);
+    List_sp keyValuePair = this->tableRef_no_lock(key);
+    {
+      if (keyValuePair.nilp()) {
+        gc::Fixnum index = this->safe_sxhashKey(key, cl__length(ENSURE_VALID_OBJECT(this->_HashTable)), true /*Will add key*/);
+        Cons_sp newKeyValue = Cons_O::create(key, value);
     //            printf("%s:%d  Inserted newKeyValue@%p\n", __FILE__, __LINE__, newKeyValue.raw_());
-      Cons_sp newEntry = Cons_O::create(newKeyValue, ENSURE_VALID_OBJECT(this->_HashTable)->operator[](index));
-      ENSURE_VALID_OBJECT(this->_HashTable)->operator[](index) = newEntry;
+        Cons_sp newEntry = Cons_O::create(newKeyValue, ENSURE_VALID_OBJECT(this->_HashTable)->operator[](index));
+        ENSURE_VALID_OBJECT(this->_HashTable)->operator[](index) = newEntry;
     //            this->_HashTableEntryCount++;
-      ++(this->_HashTableCount);
-    } else if (oCdr(keyValuePair).unboundp()) {
-      keyValuePair.asCons()->setCdr(value);
-      ++(this->_HashTableCount);
-    } else {
-      keyValuePair.asCons()->setCdr(value);
-    }
-    if (this->_HashTableCount > this->_RehashThreshold * cl__length(ENSURE_VALID_OBJECT(this->_HashTable))) {
-      LOG(BF("Expanding hash table"));
-      this->rehash(true, _Unbound<T_O>());
+        ++(this->_HashTableCount);
+      } else if (oCdr(keyValuePair).unboundp()) {
+        keyValuePair.asCons()->setCdr(value);
+        ++(this->_HashTableCount);
+      } else {
+        keyValuePair.asCons()->setCdr(value);
+      }
+      if (this->_HashTableCount > this->_RehashThreshold * cl__length(ENSURE_VALID_OBJECT(this->_HashTable))) {
+        LOG(BF("Expanding hash table"));
+        this->rehash_no_lock(true, _Unbound<T_O>());
+      }
     }
     return value;
   }
 
-  List_sp HashTable_O::rehash(bool expandTable, T_sp findKey) {
+  List_sp HashTable_O::rehash_no_lock(bool expandTable, T_sp findKey) {
   //        printf("%s:%d rehash of hash-table@%p\n", __FILE__, __LINE__,  this );
     ASSERTF(!clasp_zerop(this->_RehashSize), BF("RehashSize is zero - it shouldn't be"));
     ASSERTF(cl__length(ENSURE_VALID_OBJECT(this->_HashTable)) != 0, BF("HashTable is empty in expandHashTable - this shouldn't be"));
@@ -665,7 +720,7 @@ List_sp HashTable_O::findAssoc(gc::Fixnum index, T_sp key) const {
       newSize = cl__length(ENSURE_VALID_OBJECT(this->_HashTable));
     }
     VectorObjects_sp oldTable = ENSURE_VALID_OBJECT(this->_HashTable);
-    newSize = this->resizeEmptyTable(newSize);
+    newSize = this->resizeEmptyTable_no_lock(newSize);
     LOG(BF("Resizing table to size: %d") % newSize);
     size_t oldSize = cl__length(oldTable);
     for (size_t it(0), itEnd(oldSize); it < itEnd; ++it) {
@@ -696,6 +751,10 @@ List_sp HashTable_O::findAssoc(gc::Fixnum index, T_sp key) const {
       }
     }
     return foundKeyValuePair;
+  }
+
+  List_sp HashTable_O::rehash(bool expandTable, T_sp findKey) {
+    return this->rehash_no_lock(expandTable,findKey);
   }
 
   string HashTable_O::__repr__() const {
@@ -735,6 +794,7 @@ List_sp HashTable_O::findAssoc(gc::Fixnum index, T_sp key) const {
   CL_LISPIFY_NAME("core:hashTableDump");
   CL_DEFMETHOD string HashTable_O::hash_table_dump(Fixnum start, T_sp end) const {
     stringstream ss;
+    HT_READ_LOCK(this);
 #ifndef DUMP_LOW_LEVEL
     ss << "#<" << this->_instanceClass()->_classNameAsString() << std::endl;
 #endif
@@ -760,7 +820,7 @@ List_sp HashTable_O::findAssoc(gc::Fixnum index, T_sp key) const {
   }
 
   void HashTable_O::mapHash(std::function<void(T_sp, T_sp)> const &fn) {
-  //        HASH_TABLE_LOCK();
+    HT_READ_LOCK(this);
     VectorObjects_sp table = ENSURE_VALID_OBJECT(this->_HashTable);
     for (size_t it(0), itEnd(cl__length(table)); it < itEnd; ++it) {
       List_sp first = coerce_to_list((*table)[it]);
@@ -776,6 +836,7 @@ List_sp HashTable_O::findAssoc(gc::Fixnum index, T_sp key) const {
 
   void HashTable_O::map_while_true(std::function<bool(T_sp, T_sp)> const &fn) const {
   //        HASH_TABLE_LOCK();
+    HT_READ_LOCK(this);
     VectorObjects_sp table = ENSURE_VALID_OBJECT(this->_HashTable);
     for (size_t it(0), itEnd(cl__length(table)); it < itEnd; ++it) {
       List_sp first = (*table)[it];
@@ -793,7 +854,7 @@ List_sp HashTable_O::findAssoc(gc::Fixnum index, T_sp key) const {
   }
 
   void HashTable_O::lowLevelMapHash(KeyValueMapper *mapper) const {
-  //        HASH_TABLE_LOCK();
+    HT_READ_LOCK(this);
     VectorObjects_sp table = ENSURE_VALID_OBJECT(this->_HashTable);
     for (size_t it(0), itEnd(cl__length(table)); it < itEnd; ++it) {
       T_sp first = (*table)[it];
@@ -820,11 +881,13 @@ List_sp HashTable_O::findAssoc(gc::Fixnum index, T_sp key) const {
 
   CL_LISPIFY_NAME("core:hashTableNumberOfHashes");
   CL_DEFMETHOD int HashTable_O::hashTableNumberOfHashes() const {
+    HT_READ_LOCK(this);
     return cl__length(ENSURE_VALID_OBJECT(this->_HashTable));
   }
 
   CL_LISPIFY_NAME("core:hashTableAlistAtHash");
   CL_DEFMETHOD List_sp HashTable_O::hashTableAlistAtHash(int hash) const {
+    HT_READ_LOCK(this);
     ASSERTF(hash >= 0 && hash < cl__length(ENSURE_VALID_OBJECT(this->_HashTable)), BF("Illegal hash value[%d] must between [0,%d)") % hash % cl__length(ENSURE_VALID_OBJECT(this->_HashTable)));
     return ENSURE_VALID_OBJECT(this->_HashTable)->operator[](hash);
   }
@@ -836,6 +899,21 @@ List_sp HashTable_O::findAssoc(gc::Fixnum index, T_sp key) const {
       });
     return ss.str();
   }
+
+CL_LISPIFY_NAME("hash-table-rehash-size");
+CL_DEFMETHOD   Number_sp HashTable_O::hashTableRehashSize() const {
+  HT_READ_LOCK(this);
+  return this->_RehashSize;
+};
+
+CL_LISPIFY_NAME("hash-table-rehash-threshold");
+CL_DEFMETHOD   double HashTable_O::hashTableRehashThreshold() const {
+  HT_READ_LOCK(this);
+  return this->_RehashThreshold;
+};
+
+
+
 
   T_mv clasp_gethash_safe(T_sp key, T_sp thashTable, T_sp default_) {
     HashTable_sp hashTable = gc::As<HashTable_sp>(thashTable);

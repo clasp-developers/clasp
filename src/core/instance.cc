@@ -90,8 +90,6 @@ CL_DOCSTRING("instanceClassSet");
 CL_DEFUN T_sp core__instance_class_set(T_sp obj, Class_sp mc) {
   if (Instance_sp iobj = obj.asOrNull<Instance_O>()) {
     return iobj->instanceClassSet(mc);
-  } else if (Class_sp cobj = obj.asOrNull<Class_O>()) {
-    return cobj->instanceClassSet(mc);
   }
   SIMPLE_ERROR(BF("You can only instanceClassSet on Instance_O or Class_O - you tried to set it on a: %s") % _rep_(mc));
 };
@@ -139,10 +137,12 @@ void Instance_O::initializeSlots(gctools::Stamp stamp, size_t numberOfSlots) {
 
 void Instance_O::initializeClassSlots(Creator_sp creator, gctools::Stamp stamp) {
   // Initialize slots they way they are in +class-slots+ in: https://github.com/drmeister/clasp/blob/dev-class/src/lisp/kernel/clos/hierarchy.lsp#L55
+#if 0
   if (creator.unboundp()) {
     printf("%s:%d:%s     creator for %s is unbound\n", __FILE__, __LINE__, __FUNCTION__, this->_classNameAsString().c_str() );
     fflush(stdout);
   }
+#endif
   this->instanceSet(REF_CLASS_DIRECT_SUPERCLASSES, _Nil<T_O>());
   this->instanceSet(REF_CLASS_DIRECT_SUBCLASSES, _Nil<T_O>());
   this->instanceSet(REF_CLASS_DIRECT_DEFAULT_INITARGS, _Nil<T_O>());
@@ -186,41 +186,58 @@ T_sp Instance_O::oinstancepSTAR() const {
   }
 
 /*! See ECL>>instance.d>>si_allocate_instance */
-T_sp core__allocateInstance(T_sp theClass, size_t numberOfSlots) {
-  Class_sp cl = gc::As<Class_sp>(theClass);
-  if (!cl->_has_creator()) {
-    IMPLEMENT_MEF(BF("Handle no allocator class: %s slots: %d") % _rep_(theClass) % numberOfSlots);
-  }
-  Creator_sp creator = gctools::As<Creator_sp>(cl->_class_creator());
-  if (creator.unboundp()) {
-    printf("%s:%d:%s    Trying to allocate instance but creator is unbound\n", __FILE__, __LINE__, __FUNCTION__ );
-  }
+Instance_sp allocate_instance(Class_sp cl, size_t numberOfSlots) {
+  ASSERT(cl->CLASS_has_creator());
+  Creator_sp creator = gctools::As<Creator_sp>(cl->CLASS_get_creator());
   Instance_sp obj = gctools::As<Instance_sp>(creator->creator_allocate());
-  obj->instanceClassSet(gc::As<Class_sp>(theClass));
+  obj->_Class = cl;
   obj->initializeSlots(cl->_get_instance_stamp(),numberOfSlots);
   return obj;
 }
 
 /*! See ECL>>instance.d>>si_allocate_raw_instance */
 CL_LISPIFY_NAME(allocate_raw_instance);
-CL_DEFUN T_sp core__allocate_raw_instance(T_sp orig, T_sp tclass, size_t numberOfSlots) {
-  Class_sp class_ = gc::As<Class_sp>(tclass);
-  if (class_->_class_creator()->creates_classes()) {
-    return core__allocate_raw_class(orig,tclass,numberOfSlots);
+CL_DEFUN T_sp core__allocate_raw_instance(T_sp orig, Class_sp class_, size_t numberOfSlots) {
+  if (class_->CLASS_get_creator()->creates_classes()) {
+    return core__allocate_raw_class(orig,class_,numberOfSlots);
   }
-  T_sp toutput = core__allocateInstance(tclass, numberOfSlots);
-  Instance_sp output = toutput.asOrNull<Instance_O>();
-  if (!output) {
-    SIMPLE_ERROR(BF("Could not convert a newly allocated instance of %s to Instance_sp - this going to require implementing the new Instance_O derived Kinds") % _rep_(tclass));
-  }
-  if (orig.nilp()) {
-    orig = output;
-  } else if (Instance_sp iorig = orig.asOrNull<Instance_O>()) {
-    iorig->instanceClassSet(gc::As<Class_sp>(tclass));
-    iorig->_Rack = output->_Rack; // orig->adoptSlots(output);
-  }
-  return (orig);
+  Instance_sp output = allocate_instance(class_, numberOfSlots);
+  if (orig.nilp()) return output;
+  ASSERT(gc::IsA<Instance_sp>(orig));
+  Instance_sp iorig = gc::As_unsafe<Instance_sp>(orig);
+  iorig->_Class = class_;
+  iorig->_Rack = output->_Rack; // orig->adoptSlots(output);
+  return iorig;
 }
+
+T_sp Instance_O::allocate_class(Class_sp metaClass, int slots) {
+  Instance_sp newClass = this->CLASS_get_creator()->creator_allocate();
+  newClass->initializeSlots(metaClass->_get_instance_stamp(),slots);
+  newClass->_Class = metaClass;
+  return newClass;
+}
+
+
+CL_LAMBDA(original meta-class slots &optional creates-classes);
+CL_DECLARE();
+CL_DOCSTRING(R"doc(allocate-raw-class - behaves like ECL instance::allocate_raw_instance)doc");
+CL_DEFUN T_sp core__allocate_raw_class(T_sp orig, Class_sp cMetaClass, int slots, bool creates_classes) {
+  Instance_sp newClass = cMetaClass->allocate_class(cMetaClass,slots);
+  Creator_sp cb = _Unbound<Creator_O>();
+  if (creates_classes) {
+    cb = gctools::GC<core::BuiltInObjectCreator<Class_O>>::allocate();
+  };
+  newClass->initializeClassSlots(cb,gctools::NextStamp());
+  if (orig.nilp()) return newClass;
+  ASSERT(gc::IsA<Class_sp>(orig));
+  Instance_sp iorig = gc::As_unsafe<Instance_sp>(orig);
+  iorig->_Class = cMetaClass;
+  iorig->_Rack = newClass->_Rack;
+  return iorig;
+};
+
+
+
 
 
 size_t Instance_O::rack_stamp_offset() {
@@ -343,7 +360,7 @@ string Instance_O::__repr__() const {
 }
 
 T_sp Instance_O::copyInstance() const {
-  Instance_sp iobj = gc::As<Instance_sp>(core__allocateInstance(this->_Class,1));
+  Instance_sp iobj = gc::As<Instance_sp>(allocate_instance(this->_Class,1));
   iobj->_isgf = this->_isgf;
   iobj->_Rack = this->_Rack;
   iobj->_entryPoint = this->_entryPoint;
@@ -654,15 +671,15 @@ Class_sp Instance_O::create(Symbol_sp symbol, Class_sp metaClass, Creator_sp cre
   DEPRECATED();
 };
 
-Class_sp Instance_O::createClassUncollectable(gctools::Stamp is, Class_sp metaClass, size_t number_of_slots, Creator_sp creator ) {
+Class_sp Instance_O::createClassUncollectable(gctools::Stamp stamp, Class_sp metaClass, size_t number_of_slots, Creator_sp creator ) {
   GC_ALLOCATE_UNCOLLECTABLE(Instance_O, oclass, metaClass, number_of_slots);
   oclass->_Class = metaClass;
-  oclass->initializeSlots(is,number_of_slots);
+  oclass->initializeSlots(stamp,number_of_slots);
   oclass->initializeClassSlots(creator,gctools::NextStamp());
   return oclass;
 };
 
-void Instance_O::_set_creator(Creator_sp cb) {
+void Instance_O::CLASS_set_creator(Creator_sp cb) {
 #ifdef DEBUG_CLASS_INSTANCE
   printf("%s:%d    setCreator for %s @%p -> @%p\n", __FILE__, __LINE__, _rep_(this->name()).c_str(), this, cb.raw_());
 #endif
@@ -764,21 +781,6 @@ void Instance_O::setInstanceBaseClasses(List_sp classes) {
 }
 
 
-T_sp Instance_O::allocate_newClass(Class_sp metaClass, int slots) {
-  T_sp obj = this->_class_creator()->creator_allocate();
-#ifdef DEBUG_CLASS_INSTANCE
-  printf("%s:%d  allocate_newClass metaClass -> %s   obj@%p class -> %s\n", __FILE__, __LINE__,  _rep_(metaClass).c_str(), obj.raw_(), _rep_(instance_class(obj)).c_str() );
-#endif
-  Class_sp newClass = gc::As<Class_sp>(obj);
-#ifdef DEBUG_CLASS_INSTANCE
-  printf("%s:%d          allocate_newClass creator -> @%p \n", __FILE__, __LINE__, newClass.raw_());
-#endif
-  newClass->_Class = metaClass;
-//  newClass->_NumberOfSlots = slots;
-//  printf("%s:%d  Initialize class slots here?????\n", __FILE__, __LINE__);
-  return newClass;
-}
-
 bool Instance_O::isSubClassOf(Class_sp ancestor) const {
 #if 0
   printf("%s:%d   Checking if this[%s] isSubClassOf[%s]\n", __FILE__, __LINE__, _rep_(this->asSmartPtr()).c_str(), _rep_(ancestor).c_str());
@@ -838,7 +840,7 @@ gc::Nilable<Class_sp> identifyCxxDerivableAncestorClass(Class_sp aClass) {
 
 void Instance_O::inheritDefaultAllocator(List_sp superclasses) {
   // If this class already has an allocator then leave it alone
-  if (this->_has_creator()) return;
+  if (this->CLASS_has_creator()) return;
   Class_sp aCxxDerivableAncestorClass_unsafe; // Danger!  Unitialized!
 #ifdef DEBUG_CLASS_INSTANCE
   printf("%s:%d:%s   for class -> %s   superclasses -> %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(this->name()).c_str(), _rep_(superclasses).c_str());
@@ -855,7 +857,7 @@ void Instance_O::inheritDefaultAllocator(List_sp superclasses) {
     if (Class_sp aSuperClass = tsuper.asOrNull<Class_O>() ) {
       if (aSuperClass->cxxClassP() && !aSuperClass->cxxDerivableClassP()) {
         SIMPLE_ERROR(BF("You cannot derive from the non-derivable C++ class %s\n"
-                        "any C++ class you want to derive from must inherit from clbind::Adapter") %
+                        "any C++ class you want to derive from must inherit from the clbind derivable class") %
                      _rep_(aSuperClass->_className()));
       }
       gc::Nilable<Class_sp> aPossibleCxxDerivableAncestorClass = identifyCxxDerivableAncestorClass(aSuperClass);
@@ -877,18 +879,18 @@ void Instance_O::inheritDefaultAllocator(List_sp superclasses) {
   }
   if (aCxxDerivableAncestorClass_unsafe) {
     // Here aCxxDerivableAncestorClass_unsafe has a value - so it's ok to dereference it
-    Creator_sp aCxxAllocator(gctools::As<Creator_sp>(aCxxDerivableAncestorClass_unsafe->_class_creator()));
+    Creator_sp aCxxAllocator(gctools::As<Creator_sp>(aCxxDerivableAncestorClass_unsafe->CLASS_get_creator()));
 #ifdef DEBUG_CLASS_INSTANCE
     printf("%s:%d   duplicating aCxxDerivableAncestorClass_unsafe %s creator\n", __FILE__, __LINE__, _rep_(aCxxDerivableAncestorClass_unsafe).c_str());
 #endif
     Creator_sp dup = aCxxAllocator->duplicateForClassName(this->_className());
-    this->_set_creator(dup); // this->setCreator(dup.get());
+    this->CLASS_set_creator(dup); // this->setCreator(dup.get());
   } else if (derives_from_StandardClass) {
 #ifdef DEBUG_CLASS_INSTANCE
     printf("%s:%d   Creating a ClassCreator for %s\n", __FILE__, __LINE__, _rep_(this->name()).c_str());
 #endif
     ClassCreator_sp classCreator = gc::GC<ClassCreator_O>::allocate(this->asSmartPtr());
-    this->_set_creator(classCreator);
+    this->CLASS_set_creator(classCreator);
   } else {
     // I think this is the most common outcome -
 #ifdef DEBUG_CLASS_INSTANCE
@@ -896,7 +898,7 @@ void Instance_O::inheritDefaultAllocator(List_sp superclasses) {
 #endif
     InstanceCreator_sp instanceAllocator = gc::GC<InstanceCreator_O>::allocate(this->asSmartPtr());
     //gctools::StackRootedPointer<InstanceCreator> instanceAllocator(new InstanceCreator(this->name()));
-    this->_set_creator(instanceAllocator); // this->setCreator(instanceAllocator.get());
+    this->CLASS_set_creator(instanceAllocator); // this->setCreator(instanceAllocator.get());
   }
 }
 
@@ -937,7 +939,7 @@ string Instance_O::dumpInfo() {
   for (auto cc : this->directSuperclasses()) {
     ss << "Base class: " << gc::As<Class_sp>(oCar(cc))->instanceClassName() << std::endl;
   }
-  ss << boost::format("this.instanceCreator* = %p") % (void *)(&*this->_class_creator()) << std::endl;
+  ss << boost::format("this.instanceCreator* = %p") % (void *)(&*this->CLASS_get_creator()) << std::endl;
   return ss.str();
 }
 
@@ -951,7 +953,7 @@ string Instance_O::_classNameAsString() const {
 
 
 T_sp Instance_O::make_instance() {
-  T_sp instance = this->_class_creator()->creator_allocate(); //this->allocate_newNil();
+  T_sp instance = this->CLASS_get_creator()->creator_allocate(); //this->allocate_newNil();
   if (instance.generalp()) {
     instance.unsafe_general()->initialize();
   } else {
@@ -1002,14 +1004,14 @@ CL_DEFUN T_sp core__name_of_class(Class_sp c) {
 
 CL_DEFUN T_sp core__class_creator(Class_sp c) {
   if (c->_Class->isSubClassOf(_lisp->_Roots._TheClass)) {
-    return c->_class_creator();
+    return c->CLASS_get_creator();
   }
   TYPE_ERROR(c,cl::_sym_class);
 };
 
 CL_DEFUN bool core__has_creator(Class_sp c) {
   if (c->_Class->isSubClassOf(_lisp->_Roots._TheClass)) {
-    return c->_has_creator();
+    return c->CLASS_has_creator();
   }
   TYPE_ERROR(c,cl::_sym_class);
 };

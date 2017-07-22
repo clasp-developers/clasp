@@ -151,7 +151,7 @@ CL_DEFUN T_sp cl__lisp_implementation_type() {
 
 CL_LAMBDA();
 CL_DECLARE();
-CL_DOCSTRING("lispImplementationVersion");
+CL_DOCSTRING("lisp-implementation-version");
 CL_DEFUN T_sp cl__lisp_implementation_version() {
   stringstream ss;
   List_sp cleavir = gc::As<Cons_sp>(cl::_sym_STARfeaturesSTAR->symbolValue())->memberEq(kw::_sym_cclasp);
@@ -964,6 +964,7 @@ CL_DEFUN void core__gdb_inspect(String_sp msg, T_sp o) {
   core__invoke_internal_debugger(_Nil<core::T_O>());
 };
 
+// Must be synced with constant-form-value in source-transformations.lsp
 CL_LAMBDA(obj &optional env);
 CL_DECLARE();
 CL_DOCSTRING("constantp");
@@ -1117,7 +1118,11 @@ CL_DEFUN bool cl__fboundp(T_sp functionName) {
   } else if (functionName.nilp()) {
     return false;
   }
-  TYPE_ERROR(functionName,cl::_sym_function);
+  TYPE_ERROR(functionName,
+             // This is the type of function names, which may be defined as a macro somewhere.
+             Cons_O::createList(cl::_sym_or, cl::_sym_symbol,
+                                Cons_O::createList(cl::_sym_cons,
+                                                   Cons_O::createList(cl::_sym_eql, cl::_sym_setf))))
 }
 
 CL_LAMBDA(function-name);
@@ -1264,29 +1269,6 @@ ListOfListSteppers::ListOfListSteppers(List_sp sequences) {
 
 /* Only works on lists of lists - used to support macroexpansion backquote */
 bool test_every_some_notevery_notany(Function_sp predicate, List_sp sequences, bool elementTest, bool elementReturn, bool fallThroughReturn, T_sp &retVal) {
-#if 0
-  ListOfSequenceSteppers steppers(sequences);
-  ValueFrame_sp frame(ValueFrame_O::create(steppers.size(), _Nil<T_O>()));
-//  printf("%s:%d  %s  frame->length() = %d\n", __FILE__, __LINE__, __FUNCTION__,frame->length());
-//  printf("        frame->_Objects.capacity() = %d\n", frame->_Objects.capacity());
-  if (steppers.atEnd())
-    goto FALLTHROUGH; // return elementReturn;
-  while (!steppers.atEnd()) {
-    steppers.fillValueFrameUsingCurrentSteppers(frame);
-    LOG(BF("Applying predicate to elements[%s]") % frame->asString());
-    retVal = eval::applyToActivationFrame(predicate, frame);
-    bool test = retVal.isTrue();
-    if (test == elementTest) {
-      LOG(BF("element test was %d - returning %d") % elementTest % elementReturn);
-      return elementReturn;
-    }
-    steppers.advanceSteppers();
-  }
-  LOG(BF("passed-through - returning %d") % fallThroughReturn);
- FALLTHROUGH:
-  return fallThroughReturn;
-#endif
-
   if (!sequences.consp()) goto FALLTHROUGH;
   {
     MAKE_STACK_FRAME(frame,predicate.raw_(),sequences.unsafe_cons()->proper_list_length());
@@ -1346,18 +1328,6 @@ CL_DEFUN T_sp core__notany_list(T_sp predicate, List_sp sequences) {
   bool result = test_every_some_notevery_notany(op, sequences, true, false, true, dummy);
   return _lisp->_boolean(result);
 }
-
-#if 0
-CL_LAMBDA(predicate &rest sequences);
-CL_DECLARE();
-CL_DOCSTRING("See CLHS for notevery");
-CL_DEFUN T_sp cl__notevery(T_sp predicate, List_sp sequences) {
-  Function_sp op = coerce::functionDesignator(predicate);
-  T_sp dummy;
-  bool result = test_every_some_notevery_notany(op, sequences, false, true, false, dummy);
-  return _lisp->_boolean(result);
-}
-#endif
 
 /*
   __BEGIN_DOC(candoScript.general.mapcar)
@@ -1433,7 +1403,6 @@ CL_LAMBDA(func-desig &rest lists);
 CL_DECLARE();
 CL_DOCSTRING("See CLHS maplist");
 CL_DEFUN T_sp cl__maplist(T_sp func_desig, List_sp lists) {
-
   Function_sp func = coerce::functionDesignator(func_desig);
   if (lists.consp()) {
     ql::list result;
@@ -1490,24 +1459,6 @@ CL_DEFUN T_sp cl__mapl(T_sp func_desig, List_sp lists) {
   return _Nil<T_O>();
 }
 
-#if 0
-CL_LAMBDA(fun &rest cargs);
-CL_DECLARE();
-CL_DOCSTRING("mapappend is like mapcar except that the results are appended together - see AMOP 280");
-CL_DEFUN T_mv core__mapappend(Function_sp fun, List_sp cargs) {
-  IMPLEMENT_MEF(BF("Fix me - I think I'm broken"));
-  T_sp testNull = eval::funcall(cl::_sym_some, cl::_sym_null->symbolFunction(), cargs);
-  if (testNull.nilp()) return Values(_Nil<T_O>());
-  T_sp arg0 = eval::funcall(cl::_sym_mapcar, cl::_sym_car->symbolFunction(), cargs);
-  T_sp appendHead = eval::funcall(fun, arg0);
-  T_sp arg2 = eval::funcall(cl::_sym_mapcar, cl::_sym_cdr->symbolFunction(), cargs);
-  T_sp appendTail = eval::funcall(_sym_mapappend, fun, arg2);
-  return eval::funcall(cl::_sym_append, appendHead, appendTail);
-};
-#endif
-
-
-
 CL_LAMBDA(op &rest lists);
 CL_DECLARE();
 CL_DOCSTRING("mapcon");
@@ -1535,10 +1486,40 @@ CL_DEFUN T_mv cl__mapcan(T_sp op, List_sp lists) {
   them together into one list and then points the cdr of the last element of this new list
   to c.
 */
+#if 1
+CL_LAMBDA(&va-rest lists);
+CL_DECLARE();
+CL_DOCSTRING("append as in clhs");
+CL_DEFUN T_sp cl__append(VaList_sp args) {
+  ql::list list;
+  LOG(BF("Carrying out append with arguments: %s") % _rep_(lists));
+  size_t lenArgs = args->total_nargs();
+  unlikely_if (lenArgs==0) return _Nil<T_O>();
+  T_O* lastArg = args->relative_indexed_arg(lenArgs-1);
+  for ( int i(0),iEnd(lenArgs-1);i<iEnd; ++i ) {
+    T_sp curit = args->next_arg();
+    LIKELY_if (curit.consp()) {
+      for (auto inner : (List_sp)curit) {
+        list << CONS_CAR(inner);
+      }
+    } else if (!curit.nilp()) {
+      TYPE_ERROR(curit,cl::_sym_list);
+    }
+  }
+  /* Now append the last argument by setting the new lists last element cdr
+       to the last argument of append */
+  T_sp last((gctools::Tagged)lastArg);
+  list.dot(last);
+  T_sp res = list.cons();
+  return res;
+}
+#endif
+
+#if 0
 CL_LAMBDA(&rest lists);
 CL_DECLARE();
 CL_DOCSTRING("append as in clhs");
-CL_DEFUN List_sp cl__append(List_sp lists) {
+CL_DEFUN T_sp cl__append(List_sp lists) {
   ql::list list;
   LOG(BF("Carrying out append with arguments: %s") % _rep_(lists));
   auto it = lists.begin();
@@ -1560,6 +1541,7 @@ CL_DEFUN List_sp cl__append(List_sp lists) {
   T_sp res = list.cons();
   return res;
 }
+#endif
 
 CL_LAMBDA(func sequence start end);
 CL_DECLARE();

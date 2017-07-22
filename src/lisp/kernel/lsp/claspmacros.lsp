@@ -37,6 +37,21 @@
 (export '(do-c++-iterator map-c++-iterator))
 
 
+(defmacro with-locked-hash-table (ht &body body)
+  "If the hash table is thread safe - then turn on the lock"
+  (let ((htlock (gensym)))
+  `(let ((,htlock (hash-table-shared-mutex ,ht)))
+     (if ,htlock 
+         (unwind-protect
+              (progn
+                (mp:shared-lock ,htlock)
+                ,@body)
+           (mp:shared-unlock ,htlock))
+         (progn
+           ,@body)))))
+
+(export '(with-locked-hash-table))
+
 (in-package :cl)
 
 (defmacro unwind-protect (protected-form &rest cleanup-forms)

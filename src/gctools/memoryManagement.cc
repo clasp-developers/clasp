@@ -47,12 +47,12 @@ THE SOFTWARE.
 namespace gctools {
 std::vector<Immediate_info> get_immediate_info() {
   std::vector<Immediate_info> info;
-  info.push_back(Immediate_info(kind_fixnum,"FIXNUM"));
-  info.push_back(Immediate_info(kind_single_float,"SINGLE_FLOAT"));
-  info.push_back(Immediate_info(kind_character,"CHARACTER"));
-  info.push_back(Immediate_info(kind_cons,"CONS"));
-  info.push_back(Immediate_info(kind_va_list_s,"VA_LIST_S"));
-  if ( (info.size()+1) != kind_first_general ) {
+  info.push_back(Immediate_info(stamp_fixnum,"FIXNUM"));
+  info.push_back(Immediate_info(stamp_single_float,"SINGLE_FLOAT"));
+  info.push_back(Immediate_info(stamp_character,"CHARACTER"));
+  info.push_back(Immediate_info(stamp_cons,"CONS"));
+  info.push_back(Immediate_info(stamp_va_list_s,"VA_LIST_S"));
+  if ( (info.size()+1) != stamp_first_general ) {
     printf("get_immediate_info does not set up all of the immediate types\n");
     abort();
   }
@@ -132,7 +132,7 @@ void rawHeaderDescribe(const uintptr_clasp_t *headerP) {
       printf("  %p : %llu(%p) %llu(%p)\n", headerP, *headerP, (void*)*headerP, *(headerP + 1), (void*)*(headerP + 1));
     printf(" Not an object header!\n");
     break;
-  case Header_s::kind_tag: {
+  case Header_s::stamp_tag: {
     printf("  %p : %llu (%p)\n", headerP, *headerP, (void*)*headerP);
     printf("  %p : %llu (%p)\n", (headerP+1), *(headerP+1), (void*)*(headerP+1));
 #ifdef DEBUG_GUARD
@@ -141,7 +141,7 @@ void rawHeaderDescribe(const uintptr_clasp_t *headerP) {
     printf("  %p : %p\n", (headerP+4), (void*)*(headerP+4));
     printf("  %p : %p\n", (headerP+5), (void*)*(headerP+5));
 #endif    
-    gctools::GCKindEnum kind = (gctools::GCKindEnum)((*headerP) >> 2);
+    gctools::GCStampEnum kind = (gctools::GCStampEnum)((*headerP) >> 2);
     printf(" Kind tag - kind: %d", kind);
     fflush(stdout);
     printf("     %s\n", obj_name(kind));
@@ -243,13 +243,13 @@ void Header_s::signal_invalid_object(const Header_s* header, const char* msg)
 
 
 void Header_s::validate() const {
-  if ( this->header == 0 ) signal_invalid_object(this,"header is 0");
+  if ( this->header._value == 0 ) signal_invalid_object(this,"header is 0");
   if ( this->invalidP() ) signal_invalid_object(this,"header is invalidP");
-  if ( this->kindP() ) {
+  if ( this->stampP() ) {
 #ifdef DEBUG_GUARD    
     if ( this->guard != 0xFEEAFEEBDEADBEEF) signal_invalid_object(this,"normal object bad header guard");
 #endif
-    if ( this->kind() > global_NextStamp ) signal_invalid_object(this,"normal object bad header stamp");
+    if ( this->stamp() > global_NextStamp ) signal_invalid_object(this,"normal object bad header stamp");
 #ifdef DEBUG_GUARD
     if ( this->tail_start & 0xffffffffff000000 ) signal_invalid_object(this,"bad tail_start");
     if ( this->tail_size & 0xffffffffff000000 ) signal_invalid_object(this,"bad tail_size");
@@ -284,7 +284,7 @@ namespace gctools {
 std::atomic<Stamp>   global_NextStamp = ATOMIC_VAR_INIT(KIND_max+1);
 
 void OutOfStamps() {
-    printf("%s:%d Hello future entity!  Congratulations! - you have run clasp long enough to run out of STAMPs - %" PRu " are allowed - change the clasp header layout or add another word for the stamp\n", __FILE__, __LINE__, Header_s::largest_possible_kind );
+    printf("%s:%d Hello future entity!  Congratulations! - you have run clasp long enough to run out of STAMPs - %" PRu " are allowed - change the clasp header layout or add another word for the stamp\n", __FILE__, __LINE__, Header_s::largest_possible_stamp );
     abort();
 }
 
@@ -292,7 +292,7 @@ GCStack _ThreadLocalStack;
 const char *_global_stack_marker;
 size_t _global_stack_max_size;
 /*! Keeps track of the next available header KIND value */
-kind_t global_next_header_kind = (kind_t)KIND_max+1;
+stamp_t global_next_header_stamp = (stamp_t)KIND_max+1;
 
 #if 0
     HeapRoot* 	rooted_HeapRoots = NULL;
@@ -316,7 +316,7 @@ size_t global_alignup_sizeof_header;
 
 MonitorAllocations global_monitorAllocations;
 
-void monitorAllocation(kind_t k, size_t sz) {
+void monitorAllocation(stamp_t k, size_t sz) {
   printf("%s:%d monitor allocation of %s with %zu bytes\n", __FILE__, __LINE__, obj_name(k), sz);
   if (global_monitorAllocations.counter >= global_monitorAllocations.start && global_monitorAllocations.counter < global_monitorAllocations.end) {
     core::core__clib_backtrace(global_monitorAllocations.backtraceDepth);
@@ -368,14 +368,14 @@ int handleFatalCondition() {
   return exitCode;
 }
 
-kind_t next_header_kind()
+stamp_t next_header_kind()
 {
-    kind_t next = global_next_header_kind;
-    ++global_next_header_kind;
+    stamp_t next = global_next_header_stamp;
+    ++global_next_header_stamp;
     return next;
 }
 
-core::Fixnum ensure_fixnum(kind_t val)
+core::Fixnum ensure_fixnum(stamp_t val)
 {
   if ( val > most_positive_fixnum || val < most_negative_fixnum ) {
     SIMPLE_ERROR(BF("The value %d cannot be converted into a FIXNUM") % val );
@@ -384,11 +384,11 @@ core::Fixnum ensure_fixnum(kind_t val)
 }
 
 CL_LAMBDA();
-CL_DOCSTRING(R"doc(Return the next available header KIND value and increment the global variable global_next_header_kind)doc");
+CL_DOCSTRING(R"doc(Return the next available header KIND value and increment the global variable global_next_header_stamp)doc");
 CL_DEFUN core::Fixnum gctools__next_header_kind()
 {
-    kind_t next = global_next_header_kind;
-    ++global_next_header_kind;
+    stamp_t next = global_next_header_stamp;
+    ++global_next_header_stamp;
     return ensure_fixnum(next);
 }
 

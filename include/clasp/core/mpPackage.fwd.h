@@ -277,6 +277,8 @@ namespace mp {
 //    pthread_exit(NULL);
 //    printf("%s:%d Done pthread\n", __FILE__, __LINE__ );
   }
+
+  FORWARD(SharedMutex);
 };
 
 #endif

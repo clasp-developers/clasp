@@ -166,12 +166,15 @@ namespace core {
 #endif
     ExceptionStack _ExceptionStack;
     MultipleValues _MultipleValues;
+#if 1
+// thread local caches work fine
     /*! SingleDispatchGenericFunction cache */
     Cache_sp _SingleDispatchMethodCachePtr;
     /*! Generic functions method cache */
     Cache_sp _MethodCachePtr;
     /*! Generic functions slot cache */
     Cache_sp _SlotCachePtr;
+#endif
     /*! Pending interrupts */
     List_sp _PendingInterrupts;
     /*! Save CONS records so we don't need to do allocations

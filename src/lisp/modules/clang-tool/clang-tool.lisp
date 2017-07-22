@@ -59,9 +59,9 @@ Find directories that look like them and replace the ones defined in the constan
 
 
 (defparameter *print-reports* nil)
+(defparameter *current-multitool* nil
+  "Keep track of the current multitool")
 
-(defun keyword-everything (tree)
-  (mapcar #'(lambda (l) (mapcar #'(lambda (x) (intern x :keyword)))) l) tree )
 
 ;;; Load the lists that describe each matcher.
 ;;; They describe the VariadicDynCastAllOfMatcher<SourceT,TargetT> matcher
@@ -403,9 +403,9 @@ Find directories that look like them and replace the ones defined in the constan
   (:WHILE-STMT :HAS-CONDITION :EXPR)))
 
 
-
+#++
 (defconstant +isystem-dir+ 
-  #+target-os-darwin "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/8.0.0"
+  #+target-os-darwin "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/8.1.0"
   #+target-os-linux "/usr/include/clang/3.6/include"
   "Define the -isystem command line option for Clang compiler runs")
 
@@ -415,9 +415,11 @@ Find directories that look like them and replace the ones defined in the constan
            )
 
 (defconstant +resource-dir+ 
-  #+target-os-darwin "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/8.0.0"  ; Used
+  #+target-os-darwin "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/8.1.0"  ; Used
   #+target-os-linux *externals-clasp-include-dir*
   "Define the -resource-dir command line option for Clang compiler runs")
+
+#++
 (defconstant +additional-arguments+
   #+target-os-darwin (vector "GARBAGE2")
   #+(or)(vector
@@ -521,9 +523,9 @@ Setup the default arguments adjusters."
   (push (lambda (args filename)
           (concatenate 'vector
                        args
-                       (vector "-isystem" +isystem-dir+
+                       (vector #++ "-isystem" #++ +isystem-dir+
                                "-resource-dir" +resource-dir+)
-                       +additional-arguments+))
+                       #++ +additional-arguments+))
         (arguments-adjuster-list compilation-tool-database))
   (cond
     ((eq convert-relative-includes-to-absolute t)
@@ -1022,19 +1024,16 @@ run out of memory. This function can be used to rapidly search ASTs for testing 
                                     (clang-database compilation-tool-database)
                                     (source-namestrings compilation-tool-database))))
     (apply-arguments-adjusters compilation-tool-database *match-refactoring-tool*)
-    (let ((*run-and-save* run-and-save)
-          (matcher (compile-matcher match-sexp))
-          (match-finder (let ((mf (ast-tooling:new-match-finder)))
-                          (safe-add-dynamic-matcher mf matcher callback :matcher-sexp match-sexp)
-                          mf))
-          (factory (ast-tooling:new-frontend-action-factory match-finder)))
+    (let* ((*run-and-save* run-and-save)
+           (matcher (compile-matcher match-sexp))
+           (match-finder (let ((mf (ast-tooling:new-match-finder)))
+                           (safe-add-dynamic-matcher mf matcher callback :matcher-sexp match-sexp)
+                           mf))
+           (factory (ast-tooling:new-frontend-action-factory match-finder)))
       (time (if (not run-and-save)
                 (ast-tooling:clang-tool-run *match-refactoring-tool* factory)
                 (ast-tooling:run-and-save *match-refactoring-tool* factory)))
       (format t "Number of matches ~a~%" *match-counter*))))
-
-(defparameter *current-multitool* nil
-  "Keep track of the current multitool")
 
 (defstruct multitool
   "Store multiple tools to run in one go across a bunch of source files."
@@ -1086,10 +1085,12 @@ run out of memory. This function can be used to rapidly search ASTs for testing 
   (mapcar (lambda (ot) (single-tool-name ot)) (multitool-active-tools mtool)))
 
 
-(defun batch-run-multitool (mtool &key compilation-tool-database run-and-save (print-reports t))
+(defun batch-run-multitool (mtool compilation-tool-database
+                            &key (source-namestrings (source-namestrings compilation-tool-database))
+                              run-and-save (print-reports t))
   (let* ((*match-refactoring-tool* (ast-tooling:new-refactoring-tool
                                     (clang-database compilation-tool-database)
-                                    (source-namestrings compilation-tool-database)))
+                                    source-namestrings))
          (*match-counter* 0)
          (*current-multitool* mtool)
          (*print-reports* print-reports)

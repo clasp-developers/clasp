@@ -262,7 +262,7 @@ namespace core {
   static core::Symbol_sp static_class_symbol;                           \
   static core::Class_sp static_class;                                   \
   static gctools::smart_ptr<core::Creator_O> static_creator;            \
-  static gctools::GCKindEnum static_Kind;                                               \
+  static gctools::Header_s::Value static_HeaderValue;                   \
  public:                                                                \
   static void set_static_class_symbol(core::Symbol_sp i)                \
   { oClass::static_class_symbol = i; };                                 \

@@ -542,7 +542,7 @@ size_t processMpsMessages(size_t& finalizations) {
         obj = gctools::smart_ptr<core::Cons_O>((core::Cons_O*)ref_o);
       } else {
         gctools::Header_s* header = (gctools::Header_s*)((char*)ref_o - sizeof(gctools::Header_s));
-        dead_object = !(header->kindP());
+        dead_object = !(header->stampP());
         obj = gctools::smart_ptr<core::T_O>((core::T_O*)ref_o);
       }
       printf("%s:%d finalization message for %p reconstituted tagged ptr = %p\n", __FILE__, __LINE__, (void*)ref_o, (void*)obj.tagged_() );

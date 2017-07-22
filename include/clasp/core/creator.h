@@ -69,9 +69,10 @@ namespace core {
 };
 
 template <typename T>
-class gctools::GCKind<core::BuiltInObjectCreator<T>> {
+class gctools::GCStamp<core::BuiltInObjectCreator<T>> {
  public:
-  static gctools::GCKindEnum const Kind = gctools::GCKind<typename core::BuiltInObjectCreator<T>::TemplatedBase>::Kind;
+  static gctools::GCStampEnum const Stamp = gctools::GCStamp<typename core::BuiltInObjectCreator<T>::TemplatedBase>::Kind;
+  static const size_t Flags = 0;
 };
 template <typename T>
 struct gctools::GCInfo<core::BuiltInObjectCreator<T>> {

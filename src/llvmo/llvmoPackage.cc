@@ -246,7 +246,9 @@ CL_DEFUN core::T_sp llvm_sys__cxxDataStructuresInfo() {
   ENTRY(list, "GCVECTOR-DATA0-OFFSET", make_fixnum((char *)&tempGCVector._Data[0] - (char *)&tempGCVector));
   ENTRY(list, "FIXNUM-STAMP", make_fixnum(gctools::KIND_FIXNUM));
   ENTRY(list, "FIXNUM-SHIFT", make_fixnum(gctools::fixnum_shift));
-  ENTRY(list, "KIND-SHIFT", make_fixnum(gctools::Header_s::kind_shift));
+  ENTRY(list, "STAMP-SHIFT", make_fixnum(gctools::Header_s::stamp_shift));
+  ENTRY(list, "STAMP-IN-RACK-MASK", make_fixnum(gctools::Header_s::stamp_in_rack_mask));
+  ENTRY(list, "STAMP-NEEDS-CALL-MASK", make_fixnum(gctools::Header_s::stamp_needs_call_mask));
   ENTRY(list, "CONS-STAMP", make_fixnum(gctools::KIND_CONS));
   ENTRY(list, "VA_LIST_S-STAMP", make_fixnum(gctools::KIND_VA_LIST_S));
   ENTRY(list, "CHARACTER-STAMP", make_fixnum(gctools::KIND_CHARACTER));

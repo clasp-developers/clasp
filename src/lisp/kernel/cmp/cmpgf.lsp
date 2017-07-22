@@ -708,7 +708,7 @@
                  (header-val (irc-load header-ptr "header-val")))
             (insert-message)
             (debug-call "debugPrint_size_t" (list header-val))
-            (setf general-stamp (llvm-sys:create-lshr-value-uint64 *irbuilder* header-val +kind-shift+ "gstamp" nil))
+            (setf general-stamp (llvm-sys:create-lshr-value-uint64 *irbuilder* header-val +stamp-shift+ "gstamp" nil))
             (let ((instance-cmp (irc-icmp-eq general-stamp (jit-constant-uintptr_t +instance-kind+))))
               (irc-cond-br instance-cmp instance-bb general-bb))
             (irc-begin-block instance-bb)
@@ -829,8 +829,8 @@
 ;;;   is used to give the roots array in each dispatcher a unique name.
 (defparameter *dispatcher-count* 0)
 (defun codegen-dispatcher (dtree the-gf &key output-path)
-  (let ((*the-module* (create-run-time-module-for-compile)))
-    (define-primitives-in-module *the-module*)
+  (let* ((*the-module* (create-run-time-module-for-compile))
+         (*primitives* (primitives-in-module *the-module*)))
     (with-module (:module *the-module*
                           :optimize nil
 			  :source-namestring "dispatcher"

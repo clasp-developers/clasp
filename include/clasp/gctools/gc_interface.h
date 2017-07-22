@@ -95,7 +95,7 @@ namespace gctools {
 #include <clasp/gctools/other_tagged_casts.h>
 
 extern "C" {
-const char *obj_name(gctools::kind_t kind);
+const char *obj_name(gctools::stamp_t kind);
 extern void obj_dump_base(void *base);
 extern void obj_deallocate_unmanaged_instance(gctools::smart_ptr<core::T_O> obj);
 
@@ -114,6 +114,6 @@ void initialize_clasp();
 void initialize_functions();
 void initialize_source_info();
 void initialize_classes_and_methods();
-
+core::T_sp generate_type_header_value_map();
 
 #endif

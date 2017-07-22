@@ -522,6 +522,18 @@
   (irc-br theblock)
   (irc-begin-block theblock))
 
+(defun irc-icmp-ule (lhs rhs &optional (name ""))
+  (llvm-sys:create-icmp-ule *irbuilder* lhs rhs name))
+
+(defun irc-icmp-uge (lhs rhs &optional (name ""))
+  (llvm-sys:create-icmp-uge *irbuilder* lhs rhs name))
+
+(defun irc-icmp-ult (lhs rhs &optional (name ""))
+  (llvm-sys:create-icmp-ult *irbuilder* lhs rhs name))
+
+(defun irc-icmp-ugt (lhs rhs &optional (name ""))
+  (llvm-sys:create-icmp-ugt *irbuilder* lhs rhs name))
+
 (defun irc-icmp-slt (lhs rhs &optional (name ""))
   (llvm-sys:create-icmp-slt *irbuilder* lhs rhs name))
 

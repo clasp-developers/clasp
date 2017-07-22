@@ -92,16 +92,16 @@ struct class_registration;
 
 struct conversion_storage;
 
-class ClassRep_O : public core::Class_O {
+class ClassRep_O : public core::Instance_O {
   LISP_META_CLASS(::core::lisp_standard_class());
-  LISP_CLASS(clbind, ClbindPkg, ClassRep_O, "ClassRep",core::Class_O);
+  LISP_CLASS(clbind, ClbindPkg, ClassRep_O, "ClassRep",core::Instance_O);
 
   friend struct class_registration;
 
 public:
   bool cxxClassP() const { return true; };
   bool cxxDerivableClassP() const { return this->m_derivable; };
-  bool primaryCxxDerivableClassP() const { return gctools::As<core::Creator_sp>(this->_class_creator())->duplicationLevel() == 0; };
+  bool primaryCxxDerivableClassP() const { return gctools::As<core::Creator_sp>(this->CLASS_get_creator())->duplicationLevel() == 0; };
 
  ClassRep_O() : Instance_O(core::lisp_standard_class(),REF_CLASS_NUMBER_OF_SLOTS_IN_STANDARD_CLASS) {
     printf("%s:%d:%s  create class\n", __FILE__, __LINE__, __FUNCTION__ );

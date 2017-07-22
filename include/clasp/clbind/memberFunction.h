@@ -46,9 +46,10 @@ public:
 };
 
 template <typename Pols, typename OT, typename MethodPtrType>
-class gctools::GCKind<clbind::IndirectVariadicMethoid<Pols, OT, MethodPtrType>> {
+class gctools::GCStamp<clbind::IndirectVariadicMethoid<Pols, OT, MethodPtrType>> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::GCKind<typename clbind::IndirectVariadicMethoid<Pols, OT, MethodPtrType>::TemplatedBase>::Kind;
+  static gctools::GCStampEnum const Stamp = gctools::GCStamp<typename clbind::IndirectVariadicMethoid<Pols, OT, MethodPtrType>::TemplatedBase>::Kind;
+  static const size_t Flags = 0;
 };
 
 #endif

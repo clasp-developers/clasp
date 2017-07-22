@@ -243,7 +243,7 @@ namespace core {
     };
 
     T_sp onth(cl_index idx) const;
-    List_sp onthcdr(cl_index idx) const;
+    T_sp onthcdr(cl_index idx) const;
 
     T_sp elt(cl_index index) const;
     T_sp setf_elt(cl_index index, T_sp value);

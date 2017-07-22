@@ -8,33 +8,10 @@
            (null (cddr name)))))
 
 (defun augment-environment-with-declares (declares &optional env)
-  (mapc (lambda (decl)
-          (let ((head (car decl))
-                (rest (cdr decl)))
-            (case head
-              (special
-               (mapc (lambda (sym)
-                       (setq env (cleavir-environment:add-special-variable env sym)))
-                     rest))
-              (optimize
-               (mapc (lambda (quality)
-                       (setq env (if (atom quality)
-                                     (cleavir-environment:add-optimize env quality 3)
-                                     (cleavir-environment:add-optimize env
-                                                                       (car quality)
-                                                                       (cadr quality)))))
-                     rest))
-              (inline
-               (mapc (lambda (fn)
-                       (setq env (cleavir-environment:add-inline env fn 'cl:inline)))
-                     rest))
-              (notinline
-               (mapc (lambda (fn)
-                       (setq env (cleavir-environment:add-inline env fn 'cl:notinline)))
-                     rest))
-              (t nil))))
-        declares)
-  env)
+  ;; FIXME: Cleavir should export some interface.
+  (cleavir-generate-ast::augment-environment-with-declarations
+   env
+   (cleavir-generate-ast::canonicalize-declarations (list (cons 'declare declares)) env)))
 
 (defun augment-environment-with-macrolet (macros env)
   (mapc (lambda (macro)
@@ -100,16 +77,6 @@
                     (locally
                         (multiple-value-bind (decls body) (core:process-declarations body nil)
                           (eval-progn body (augment-environment-with-declares decls env))))
-                    (macrolet
-                        (multiple-value-bind (macros declares macrolet-body)
-                            (cmp:parse-macrolet body)
-                          (let ((ml-env (augment-environment-with-macrolet macros env)))
-                            (eval-progn macrolet-body (augment-environment-with-declares declares ml-env)))))
-                    (symbol-macrolet
-                        (multiple-value-bind (macros declares macrolet-body)
-                            (cmp:parse-symbol-macrolet body)
-                          (let ((ml-env (augment-environment-with-symbol-macrolet macros env)))
-                            (eval-progn macrolet-body (augment-environment-with-declares declares ml-env)))))
                     (t (eval-compile form)))))))))))
 
 (defmethod cclasp-eval-with-env (form (env core:value-frame))

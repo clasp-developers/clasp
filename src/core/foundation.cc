@@ -193,9 +193,6 @@ void lisp_errorDereferencedUnbound() {
 }
 
 void lisp_errorUnexpectedType(class_id expectedTyp, class_id givenTyp, core::T_O *objP) {
-  if (!objP) {
-    SIMPLE_ERROR(BF("NULL pointer error in lisp_errorUnexpectedType"));
-  }
   if (expectedTyp >= _lisp->classSymbolsHolder().size()) {
     core::lisp_error_simple(__FUNCTION__, __FILE__, __LINE__, boost::format("expected class_id %d out of range max[%d]") % expectedTyp % _lisp->classSymbolsHolder().size());
   }
@@ -1592,6 +1589,7 @@ NOINLINE void lisp_error_simple(const char *functionName, const char *fileName, 
                 _Nil<T_O>());
 }
 
+#if 0
 void lisp_error_condition(const char *functionName, const char *fileName, int lineNumber, T_sp baseCondition, T_sp initializers) {
   stringstream ss;
   if (!_sym_signalSimpleError->fboundp()) {
@@ -1608,18 +1606,18 @@ void lisp_error_condition(const char *functionName, const char *fileName, int li
                                ,
                                baseCondition, _Nil<T_O>() );// SimpleBaseString_O::make(ss.str()), _Nil<T_O>());
 }
+#endif
 
 void lisp_error(T_sp datum, T_sp arguments) {
   if (!cl::_sym_error->fboundp()) {
     stringstream ss;
     ss << "Error " << _rep_(datum) << " initializers: " << _rep_(arguments) << std::endl;
-    printf("%s:%d lisp_error_condition--->\n %s\n", __FILE__, __LINE__, ss.str().c_str());
+    printf("%s:%d lisp_error ->\n %s\n", __FILE__, __LINE__, ss.str().c_str());
     LispDebugger dbg;
     dbg.invoke();
     //	    af_error(CandoException_O::create(ss.str()),_Nil<T_O>());
   }
-  Cons_sp cargs = gc::As<Cons_sp>(arguments);
-  eval::applyLastArgsPLUSFirst(cl::_sym_error, cargs, datum);
+  eval::applyLastArgsPLUSFirst(cl::_sym_error, arguments, datum);
 }
 
 string stringUpper(const string &s) {

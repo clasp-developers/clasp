@@ -34,7 +34,7 @@ THE SOFTWARE.
 #include <clasp/core/primitives.h>
 #include <clasp/core/evaluator.h>
 #include <clasp/core/multipleValues.h>
-#include <clasp/core/array.h>
+#include <clasp/core/mpPackage.h>
 #include <clasp/core/predicates.h>
 #include <clasp/core/cache.h>
 #include <clasp/core/symbolTable.h>
@@ -330,13 +330,19 @@ CL_LAMBDA(what);
 CL_DECLARE();
 CL_DOCSTRING("See ecl/src/c/gfun.d:si_clear_gfun_hash. This function clears the generic function call hashes selectively. If what=T then clear the hash completely.  If what=generic_function then clear only these entries.");
 CL_DEFUN void core__clear_gfun_hash(T_sp what) {
-  if ( what == _lisp->_true() ) {
-    my_thread->_MethodCachePtr->empty();
-    my_thread->_SlotCachePtr->empty();
-  } else {
-    my_thread->_MethodCachePtr->removeOne(what);
-    my_thread->_SlotCachePtr->removeOne(what);
+#ifdef CLASP_THREADS
+  List_sp processes = _lisp->processes();
+  for ( auto cur : processes ) {
+    mp::Process_sp process = gc::As<mp::Process_sp>(CONS_CAR(cur));
+    ThreadLocalState* other_thread = process->_ThreadInfo;
+    if (other_thread != my_thread) {
+      other_thread->_MethodCachePtr->removeOne(what);
+      other_thread->_SlotCachePtr->removeOne(what);
+    }
   }
+#endif
+  my_thread->_MethodCachePtr->removeOne(what);
+  my_thread->_SlotCachePtr->removeOne(what);
 };
 
 };

@@ -909,7 +909,7 @@ extern gctools::smart_ptr<core::Symbol_O>& _sym_expectedType;
 }
 namespace core {
 extern gctools::smart_ptr<core::T_O> lisp_createList(gctools::smart_ptr<core::T_O> a1, gctools::smart_ptr<core::T_O> a2, gctools::smart_ptr<core::T_O> a3, gctools::smart_ptr<core::T_O> a4);
-extern void lisp_error_condition(const char *functionName, const char *fileName, int lineNumber, gctools::smart_ptr<core::T_O> baseCondition, gctools::smart_ptr<core::T_O> initializers);
+ extern void lisp_error(gctools::smart_ptr<core::T_O> baseCondition, gctools::smart_ptr<core::T_O> initializers);
 }
 
 namespace gctools {
@@ -1032,7 +1032,7 @@ public:
     } else if (other.nilp()) {
       this->theObject = other.theObject;
     } else {
-      lisp_error_condition(__FUNCTION__, __FILE__, __LINE__, cl::_sym_typeError, core::lisp_createList(kw::_sym_datum, other, kw::_sym_expectedType, cl::_sym_list));
+      lisp_error(cl::_sym_typeError, core::lisp_createList(kw::_sym_datum, other, kw::_sym_expectedType, cl::_sym_list));
     }
   }
   inline smart_ptr(smart_ptr<core::Cons_O> other) : theObject(other.raw_()) {
@@ -1244,7 +1244,7 @@ public:
     } else if (tagged_nilp<From *>(other.theObject)) {
       this->theObject = other.theObject;
     } else {
-      lisp_error_condition(__FUNCTION__, __FILE__, __LINE__, cl::_sym_typeError, core::lisp_createList(kw::_sym_datum, other, kw::_sym_expectedType, cl::_sym_list));
+      lisp_error(cl::_sym_typeError, core::lisp_createList(kw::_sym_datum, other, kw::_sym_expectedType, cl::_sym_list));
     }
     return *this;
   };
@@ -1461,10 +1461,10 @@ public:
         return;
       }
 #endif
-      printf("%s:%d Cannot cast tagged_pointer from %s/%zu to some other type (check with debugger)\n", __FILE__, __LINE__, obj_kind_name(reinterpret_cast<core::T_O *>(rhs.thePointer)), obj_kind(reinterpret_cast<core::T_O *>(rhs.thePointer))); //% obj_name(gctools::GCKind<Type>::Kind) );
+      printf("%s:%d Cannot cast tagged_pointer from %s/%zu to some other type (check with debugger)\n", __FILE__, __LINE__, obj_kind_name(reinterpret_cast<core::T_O *>(rhs.thePointer)), obj_kind(reinterpret_cast<core::T_O *>(rhs.thePointer))); //% obj_name(gctools::GCStamp<Type>::Kind) );
       Type *tpx = TaggedCast<Type *, From *>::castOrNULL(rhs.thePointer);
       printf("tpx = %p\n", tpx);
-      THROW_HARD_ERROR(BF("Cannot cast tagged_pointer from %s/%zu to some other type (check with debugger)") % obj_kind_name(reinterpret_cast<core::T_O *>(rhs.thePointer)) % obj_kind(reinterpret_cast<core::T_O *>(rhs.thePointer))); //% obj_name(gctools::GCKind<Type>::Kind) );
+      THROW_HARD_ERROR(BF("Cannot cast tagged_pointer from %s/%zu to some other type (check with debugger)") % obj_kind_name(reinterpret_cast<core::T_O *>(rhs.thePointer)) % obj_kind(reinterpret_cast<core::T_O *>(rhs.thePointer))); //% obj_name(gctools::GCStamp<Type>::Kind) );
     }
     THROW_HARD_ERROR(BF("Bad tag on tagged_pointer in constructor"));
   };

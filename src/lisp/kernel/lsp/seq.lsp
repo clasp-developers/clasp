@@ -45,7 +45,10 @@
 	 :expected-type type
 	 :datum object))
 
-(defun closest-sequence-type (type)
+;;; Given a type specifier, returns information about it in its capacity as a sequence.
+;;; Returns three values: An upgraded element type or 'list, a length or '*, and a boolean.
+;;; The third value is T if the function could determine the first two.
+(defun closest-sequence-type (type &optional env)
   (let (elt-type length name args)
     (cond ((consp type)
 	   (setq name (first type) args (cdr type)))
@@ -57,86 +60,84 @@
       ((LIST)
        ;; This is the only descriptor that does not match a real
        ;; array type.
-       (setq elt-type 'LIST length '*))
+       (values 'list '* t))
       ((VECTOR)
-       (setq elt-type (if (endp args) 'T (upgraded-array-element-type (first args)))
-	     length (if (endp (rest args)) '* (second args))))
-      ((SIMPLE-VECTOR)
-       (setq elt-type 'T
-	     length (if (endp args) '* (first args))))
+       (values (if (endp args) 't (upgraded-array-element-type (first args) env))
+               (if (endp (rest args)) '* (second args))
+               t))
+      ((SIMPLE-VECTOR) (values 't (if (endp args) '* (first args)) t))
       #-unicode
-      ((STRING SIMPLE-STRING)
-       (setq elt-type 'BASE-CHAR
-             length (if (endp args) '* (first args))))
+      ((STRING SIMPLE-STRING) (values 'base-char (if (endp args) '* (first args)) t))
       #+(or unicode clasp)
       ((BASE-STRING SIMPLE-BASE-STRING)
-       (setq elt-type 'BASE-CHAR
-	     length (if (endp args) '* (first args))))
+       (values 'base-char (if (endp args) '* (first args)) t))
       #+(or unicode clasp)
-      ((STRING SIMPLE-STRING)
-       (setq elt-type 'CHARACTER
-	     length (if (endp args) '* (first args))))
+      ((STRING SIMPLE-STRING) (values 'character (if (endp args) '* (first args)) t))
       ((BIT-VECTOR SIMPLE-BIT-VECTOR)
-       (setq elt-type 'BIT
-	     length (if (endp args) '* (first args))))
+       (values 'bit (if (endp args) '* (first args)) t))
       ((ARRAY SIMPLE-ARRAY)
-       (let ((dimension-spec (second args)))
-         (cond
-           ((eql dimension-spec 1)
-            (setf length '*))
-           ((and (consp dimension-spec)
-                 (null (cdr dimension-spec)))
-            (setf length (car dimension-spec)))
-           (T (error-sequence-type type))))
-       (setq elt-type (upgraded-array-element-type (first args))))
+       ;; It's only a sequence if a rank is specified.
+       (unless (= (length args) 2) (values nil nil nil))
+       (let ((element-type (upgraded-array-element-type (first args)))
+             (dimension-spec (second args)))
+         (cond ((eql dimension-spec 1) (values element-type '* t))
+               ((and (consp dimension-spec)
+                     (null (cdr dimension-spec)))
+                (values element-type (car dimension-spec) t))
+               (t (values nil nil nil)))))
+      ((null) (values 'list 0 t))
+      ;; This is pretty dumb, but we are required to signal a length mismatch
+      ;; error in safe code, and this case will probably not come up often.
+      ((cons)
+       (if (and (consp args) (consp (cdr args))) ; we have (cons x y
+           (multiple-value-bind (et len success)
+               (closest-sequence-type (second args) env)
+             (cond ((or (not success) ; can't figure out what cdr is
+                        (not (eq et 'list))) ; (a . #(...)) is not a sequence
+                    (values nil nil nil))
+                   ((eq len '*) (values 'list '* t))
+                   (t (values 'list (1+ len) t))))))
       (t
        ;; We arrive here when the sequence type is not easy to parse.
        ;; We give up trying to guess the length of the sequence.
        ;; Furthermore, we also give up trying to find if the element
        ;; type is *. Instead we just compare with some specialized
        ;; types and otherwise fail.
-       (dolist (i '((NIL . NIL)
-		    (LIST . LIST)
+       (when (subtypep type nil env) ; why would you do this
+         (return-from closest-sequence-type (values nil nil nil)))
+       (dolist (i '((LIST . LIST)
                     (STRING . CHARACTER)
                     . #.(mapcar #'(lambda (i) `((VECTOR ,i) . ,i))
                          sys::+upgraded-array-element-types+)) ;; clasp change
-		(if (subtypep type 'vector)
-		    ;; Does this have to be a type-error?
-		    ;; 17.3 for MAKE-SEQUENCE says it should be an error,
-		    ;; but does not specialize what kind.
-		    (error "Cannot find the element type in vector type ~S" type)
-		    (error-sequence-type type)))
-	  (when (subtypep type (car i))
-	    (setq elt-type (cdr i) length '*)
-	    ;; The (NIL . NIL) case above
-	    (unless elt-type
-	      (error-sequence-type type))
-	    (return)))))
-    (values elt-type length)))
+                  (values nil nil nil))
+         (when (subtypep type (car i) env)
+           (return (values (cdr i) '* t))))))))
 
-(defun make-sequence (type size	&key (initial-element nil iesp) &aux sequence)
+(defun make-sequence (type size	&key (initial-element nil iesp))
   "Args: (type length &key initial-element)
 Creates and returns a sequence of the given TYPE and LENGTH.  If INITIAL-
 ELEMENT is given, then it becomes the elements of the created sequence.  The
 default value of INITIAL-ELEMENT depends on TYPE."
-  (multiple-value-bind (element-type length)
+  (multiple-value-bind (element-type length success)
       (closest-sequence-type type)
-    (cond ((eq element-type 'LIST)
-           (setq sequence (make-list size :initial-element initial-element))
-           (unless (subtypep 'LIST type)
-             (when (or (and (subtypep type 'NULL) (plusp size))
-                       (and (subtypep type 'CONS) (zerop size)))
-               (error-sequence-length (make-list size :initial-element initial-element) type 0))))
+    (cond ((not success)
+           (if (subtypep type 'sequence)
+               (error "Could not determine element type in ~a" type)
+               (error-sequence-type type)))
+          ((eq element-type 'LIST)
+           (let ((result (make-list size :initial-element initial-element)))
+             (if (or (eq length '*) (eql length size))
+                 result
+                 (error-sequence-length result type size))))
           (t
-           (setq sequence (sys:make-vector (if (eq element-type '*) T element-type)
-                                           size nil nil nil #+ecl nil #+clasp 0))
-           (when iesp
-             (si::fill-array-with-elt sequence initial-element 0 nil))
-           (unless (or (eql length '*) (eql length size))
-             (error-sequence-length sequence type size))))
-    sequence))
-
-
+           (let ((result (sys:make-vector (if (eq element-type '*) 't element-type)
+                                          size nil nil nil #+ecl nil #+clasp 0)))
+             ;; Don't know why we don't just pass make-vector the initial element.
+             (when iesp
+               (si::fill-array-with-elt result initial-element 0 nil))
+             (unless (or (eql length '*) (eql length size))
+               (error-sequence-length result type size))
+             result)))))
 
 (defun make-seq-iterator (sequence &optional (start 0))
   (declare (optimize (safety 0)))
@@ -186,6 +187,11 @@ default value of INITIAL-ELEMENT depends on TYPE."
            (error-not-a-sequence iterator))
          iterator)))
 
+(declaim (inline seq-iterator-endp))
+(defun seq-iterator-endp (sequence iterator)
+  (declare (ignore sequence))
+  (null iterator))
+
 (defun seq-iterator-list-pop (values-list seq-list iterator-list)
   (declare (optimize (safety 0)))
   (do* ((it-list iterator-list)
@@ -194,7 +200,7 @@ default value of INITIAL-ELEMENT depends on TYPE."
         values-list)
     (let* ((it (cons-car it-list))
            (sequence (cons-car seq-list)))
-      (cond ((null it)
+      (cond ((seq-iterator-endp sequence it)
              (return nil))
             ((fixnump it)
              (let* ((n it) (s sequence))
@@ -211,6 +217,17 @@ default value of INITIAL-ELEMENT depends on TYPE."
       (setf v-list (cons-cdr v-list)
             it-list (cons-cdr it-list)
             seq-list (cons-cdr seq-list)))))
+
+;;; FIXME: This should be moved. But right now this file is the earliest
+;;; use. Also we don't have typecase yet.
+;;; This is different from coerce-to-function, which implements the behavior
+;;; of (coerce x 'function). If we get a lambda expression here, that's a
+;;; type error, not a command to implicitly evaluate it.
+(declaim (inline coerce-fdesignator))
+(defun coerce-fdesignator (object)
+  (cond ((functionp object) object)
+        ((symbolp object) (fdefinition object))
+        (t (error 'type-error :datum object :expected-type '(or symbol function)))))
 
 (defun coerce-to-list (object)
   (if (listp object)
@@ -249,10 +266,20 @@ SEQUENCEs."
       ((null sequences) output)
     (do* ((s (first sequences))
 	  (j (make-seq-iterator s) (seq-iterator-next s j)))
-	 ((null j))
+	 ((seq-iterator-endp s j))
       (seq-iterator-set output i (seq-iterator-ref s j))
       (setq i (seq-iterator-next output i)))))
 
+;;; This is not called anywhere yet (just used for a compiler macro)
+;;; but it might be useful to have.
+(defun map-for-effect (function sequence &rest more-sequences)
+  "Does (map nil ...)"
+  (let ((sequences (list* sequence more-sequences))
+        (function (coerce-fdesignator function))
+        it)
+    (do-sequences (elt-list sequences)
+      (apply function elt-list)))
+  nil)
 
 (defun map (result-type function sequence &rest more-sequences)
   "Args: (type function sequence &rest more-sequences)
@@ -260,7 +287,7 @@ Creates and returns a sequence of TYPE with K elements, with the N-th element
 being the value of applying FUNCTION to the N-th elements of the given
 SEQUENCEs, where K is the minimum length of the given SEQUENCEs."
   (let* ((sequences (list* sequence more-sequences))
-         (function (si::coerce-to-function function))
+         (function (coerce-fdesignator function))
          output
          it)
     (when result-type
@@ -293,22 +320,6 @@ Returns T if every elements of SEQUENCEs satisfy PREDICATE; NIL otherwise."
    (do-sequences (elt-list (cons sequence more-sequences) :output t)
      (unless (apply predicate elt-list)
        (return nil)))))
-
-#|
-(def-seq-bool-parser notany
-  "Args: (predicate sequence &rest more-sequences)
-Returns T if none of the elements in SEQUENCEs satisfies PREDICATE; NIL
-otherwise."
-  (when that-value (return nil))
-  t)
-
-(def-seq-bool-parser notevery
-  "Args: (predicate sequence &rest more-sequences)
-Returns T if at least one of the elements in SEQUENCEs does not satisfy
-PREDICATE; NIL otherwise."
-  (unless that-value (return t))
-  nil)
-|#
 
 (defun every* (predicate &rest sequences)
   "Args: (predicate sequence &rest more-sequences)
@@ -350,7 +361,7 @@ stops when it reaches the end of one of the given sequences."
     (do ((ir (make-seq-iterator result-sequence) (seq-iterator-next result-sequence ir))
          (it (mapcar #'make-seq-iterator sequences))
          (val (make-sequence 'list (length sequences))))
-        ((null ir) result-sequence)
+        ((seq-iterator-endp result-sequence ir) result-sequence)
       (do ((i it (cdr i))
 	   (v val (cdr v))
            (s sequences (cdr s)))

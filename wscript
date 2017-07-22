@@ -146,7 +146,7 @@ def analyze_clasp(cfg):
                      "-e", '(load (compile-file #P"sys:modules;clang-tool;clang-tool.lisp" :print t))',
                      "-e", '(load (compile-file #P"sys:modules;clasp-analyzer;clasp-analyzer.lisp" :print t))',
                      "-e", "(defparameter *compile-commands* \"build/mpsprep/compile_commands.json\")",
-                     "-e", "(time (clasp-analyzer:search/generate-code (clasp-analyzer:setup-clasp-analyzer-compilation-tool-database (pathname *compile-commands*))))",
+                     "-e", "(time (clasp-analyzer:serial-search/generate-code (clasp-analyzer:setup-clasp-analyzer-compilation-tool-database (pathname *compile-commands*))))",
                      "-e", "(core:quit)")
     print("\n\n\n----------------- proceeding with static analysis --------------------")
 
@@ -521,6 +521,8 @@ def get_git_commit(cfg):
     return run_program(cfg.env.GIT_BINARY, "rev-parse", "--short", "HEAD").strip()
 
 def get_clasp_version(cfg):
+    if (cfg.env.CLASP_VERSION):
+        return cfg.env.CLASP_VERSION
     return run_program(cfg.env.GIT_BINARY, "describe", "--always").strip()
 
 def run_llvm_config(cfg, *args):
@@ -756,7 +758,7 @@ def configure(cfg):
 # Keep track of every allocation
     cfg.define("METER_ALLOCATIONS",1)
     cfg.define("DEBUG_TRACE_INTERPRETED_CLOSURES",1)
-#    cfg.define("DEBUG_CACHE",1)      # Debug the dispatch caches - see cache.cc
+    cfg.define("DEBUG_CACHE",1)      # Debug the dispatch caches - see cache.cc
 #    cfg.define("DEBUG_BITUNIT_CONTAINER",1)  # prints debug info for bitunit containers
 #    cfg.define("DEBUG_ZERO_KIND",1);
 #    cfg.define("DEBUG_FLOW_CONTROL",1)
@@ -1131,8 +1133,8 @@ class compile_aclasp(Task.Task):
                       "--eval", '(load "sys:kernel;clasp-builder.lsp")' ]
 #                      "--eval", '(setq cmp:*compile-file-debug-dump-module* t)',
 #                      "--eval", '(setq cmp:*compile-debug-dump-module* t)'
-        cmd = cmd + ["--eval", "(compile-aclasp :output-file #P\"%s\")" % self.outputs[0],
-                     "--eval", "(quit)" ]
+        cmd = cmd + ["--eval", "(core:compile-aclasp :output-file #P\"%s\")" % self.outputs[0],
+                     "--eval", "(core:quit)" ]
         cmd = cmd + [ "--" ] + self.bld.clasp_aclasp
         if (self.bld.command ):
             dump_command(cmd)
@@ -1159,8 +1161,8 @@ class compile_bclasp(Task.Task):
                       "--image", self.inputs[1].abspath(),
                       "--feature", "debug-run-clang",
                       "--eval", '(load "sys:kernel;clasp-builder.lsp")' ]
-        cmd = cmd + ["--eval", "(compile-bclasp :output-file #P\"%s\")" % self.outputs[0] ,
-                     "--eval", "(quit)" ]
+        cmd = cmd + ["--eval", "(core:compile-bclasp :output-file #P\"%s\")" % self.outputs[0] ,
+                     "--eval", "(core:quit)" ]
         cmd = cmd + [ "--" ] + self.bld.clasp_cclasp    # was self.bld.clasp_bclasp
         if (self.bld.command ):
             dump_command(cmd)
@@ -1187,8 +1189,8 @@ class compile_cclasp(Task.Task):
         if (self.bld.command ):
             cmd = cmd + [ "--eval", "(load-cclasp)" ]
         else:
-            cmd = cmd + ["--eval", "(compile-cclasp :output-file #P\"%s\")" % self.outputs[0],
-                         "--eval", "(quit)" ]
+            cmd = cmd + ["--eval", "(core:compile-cclasp :output-file #P\"%s\")" % self.outputs[0],
+                         "--eval", "(core:quit)" ]
         cmd = cmd + [ "--" ] + self.bld.clasp_cclasp
         if (self.bld.command ):
             dump_command(cmd)
@@ -1211,8 +1213,8 @@ class recompile_cclasp(Task.Task):
                       "--feature", "ignore-extensions",
                       "--resource-dir", "%s/%s/%s" % (self.bld.path.abspath(),out,self.bld.variant_obj.variant_dir()),
                       "--eval", '(load "sys:kernel;clasp-builder.lsp")',
-                      "--eval", "(recompile-cclasp :output-file #P\"%s\")" % self.outputs[0],
-                      "--eval", "(quit)",
+                      "--eval", "(core:recompile-cclasp :output-file #P\"%s\")" % self.outputs[0],
+                      "--eval", "(core:quit)",
                       "--" ] + self.bld.clasp_cclasp_no_wrappers
         print(" recompile_clasp cmd: %s" % cmd)
         return self.exec_command(cmd)
@@ -1235,7 +1237,7 @@ class compile_addons(Task.Task):
                       "--eval", '(load "sys:kernel;clasp-builder.lsp")'
                       "--eval", "(core:compile-addons)",
                       "--eval", "(core:link-addons)",
-                      "--eval", "(quit)" ]
+                      "--eval", "(core:quit)" ]
         return self.exec_command(cmd)
     def exec_command(self, cmd, **kw):
         kw['stdout'] = sys.stdout
@@ -1257,7 +1259,7 @@ class compile_module(Task.Task):
                       "--feature", "ignore-extensions",
                       "--feature", "debug-run-clang",
                       "--eval", "(compile-file #P\"%s\" :output-file #P\"%s\" :output-type :fasl)" % (self.inputs[2], self.outputs[0]),
-                      "--eval", "(quit)" ]
+                      "--eval", "(core:quit)" ]
         print("  cmd: %s" % cmd)
         return self.exec_command(cmd)
     def exec_command(self, cmd, **kw):

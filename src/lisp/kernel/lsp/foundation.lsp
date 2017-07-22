@@ -355,6 +355,7 @@ the corresponding VAR.  Returns NIL."
 
 (export 'class-name)
 
+(in-package :core)
 
 (defun warn-or-ignore (x &rest args)
   nil)

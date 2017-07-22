@@ -1,7 +1,7 @@
 (in-package :clasp-cleavir)
 
 (defmethod cleavir-policy:compute-policy-quality
-    ((quality (eql 'cleavir-typed-transforms:insert-type-checks))
+    ((quality (eql 'cleavir-kildall-type-inference:insert-type-checks))
      optimize
      (environment clasp-cleavir::clasp-global-environment))
   (> (cleavir-policy:optimize-value optimize 'safety)
@@ -49,7 +49,6 @@
 ;;; KLUDGE. It should be easier to limit optimizations to lexical regions.
 
 (defun policy-anywhere-p (initial-instruction quality)
-  (setf cl-user::*test* initial-instruction)
   (cleavir-ir:map-instructions-arbitrary-order
    (lambda (i)
      (when (cleavir-policy:policy-value (cleavir-ir:policy i)
