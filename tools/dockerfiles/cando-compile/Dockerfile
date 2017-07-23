@@ -10,12 +10,6 @@ RUN pip install --upgrade pip && pip install jupyter
 USER app
 
 
-# Overwrite the clasp-build clasp/Contents/Resources/source-code/extensions/cando/src/lisp directory
-# with whatever new changes have been made in the hosts  extensions/cando/src/lisp/**   hierarchy
-#    This is to refresh the Common Lisp code for Cando
-ADD extensions/cando/src/lisp $HOME/clasp/Contents/Resources/source-code/extensions/cando/src/lisp
-
-
 # checkout quicklisp and its subprojects
 RUN cd $HOME/quicklisp/local-projects \
  && git clone --depth=1 https://github.com/clasp-developers/usocket.git \
@@ -50,5 +44,8 @@ RUN clasp -f "debug-compile-file"\
           -e "(ql:quickload :trivial-utf-8)"\
           -e "(core:quit)"
 
+#USER root
+#ADD tools/dockerfiles/examples /home/app/work/examples
+#USER app
 
 
