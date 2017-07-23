@@ -48,6 +48,7 @@ THE SOFTWARE.
 #include <clasp/core/package.h>
 #include <clasp/core/readtable.h>
 #include <clasp/core/instance.h>
+#include <clasp/core/funcallableInstance.h>
 #include <clasp/core/backquote.h>
 #include <clasp/core/sequence.h>
 #include <clasp/core/structureObject.h>

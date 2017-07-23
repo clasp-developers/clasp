@@ -19,6 +19,7 @@ def build(bld):
             'genericFunction',
             'accessor',
             'instance',
+            'funcallableInstance',
             'cache',
             'float_to_string',
             'primitives',

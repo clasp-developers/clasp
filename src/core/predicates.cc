@@ -37,11 +37,9 @@ THE SOFTWARE.
 #include <clasp/core/pathname.h>
 #include <clasp/core/hashTable.h>
 #include <clasp/core/random.h>
-//#ifndef CLOS
 #include <clasp/core/structureObject.h>
-//#else
 #include <clasp/core/instance.h>
-//#endif
+#include <clasp/core/funcallableInstance.h>
 #include <clasp/core/readtable.h>
 #include <clasp/core/lambdaListHandler.h>
 #include <clasp/core/singleDispatchGenericFunction.h>
@@ -98,9 +96,6 @@ CL_LAMBDA(arg);
 CL_DECLARE();
 CL_DOCSTRING("functionP");
 CL_DEFUN bool cl__functionp(T_sp obj) {
-  if (FuncallableInstance_sp inst_obj = obj.asOrNull<FuncallableInstance_O>()) {
-    return inst_obj->isgf();
-  }
   return gc::IsA<Function_sp>(obj);
 };
 
@@ -311,6 +306,8 @@ CL_DEFUN bool cl__compiled_function_p(T_sp o) {
   if (Closure_sp fn = o.asOrNull<Closure_O>()) {
     (void)fn;
     return fn->compiledP();
+  } else if (gc::IsA<FuncallableInstance_sp>(o)) {
+    return true;
   }
   return false;
 };

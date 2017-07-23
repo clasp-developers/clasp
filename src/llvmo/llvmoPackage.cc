@@ -46,6 +46,7 @@ THE SOFTWARE.
 #include <clasp/llvmo/intrinsics.h>
 #include <clasp/llvmo/claspLinkPass.h>
 #include <clasp/core/instance.h>
+#include <clasp/core/funcallableInstance.h>
 #include <clasp/core/pathname.h>
 #include <clasp/core/loadTimeValues.h>
 #include <clasp/core/unixfsys.h>

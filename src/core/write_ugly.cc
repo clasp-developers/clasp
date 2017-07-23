@@ -58,6 +58,7 @@ THE SOFTWARE.
 #include <clasp/core/pathname.h>
 #include <clasp/core/lispStream.h>
 #include <clasp/core/instance.h>
+#include <clasp/core/funcallableInstance.h>
 #include <clasp/core/structureObject.h>
 #include <clasp/core/sysprop.h>
 #include <clasp/core/numberToString.h>
@@ -128,6 +129,15 @@ void Pathname_O::__write__(T_sp strm) const {
 void Instance_O::__write__(T_sp stream) const {
   if ( cl::_sym_printObject->fboundp() ) {
     eval::funcall(cl::_sym_printObject, this->const_sharedThis<Instance_O>(), stream);
+  } else {
+    std::string str = _rep_(this->asSmartPtr());
+    clasp_write_string(str,stream);
+  }
+}
+
+void FuncallableInstance_O::__write__(T_sp stream) const {
+  if ( cl::_sym_printObject->fboundp() ) {
+    eval::funcall(cl::_sym_printObject, this->const_sharedThis<FuncallableInstance_O>(), stream);
   } else {
     std::string str = _rep_(this->asSmartPtr());
     clasp_write_string(str,stream);

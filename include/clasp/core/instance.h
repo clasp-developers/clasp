@@ -88,12 +88,16 @@ namespace core {
     {};
     virtual ~Instance_O(){};
   public:
+    // The order MUST be:
+    // _Sig
+    // _Class (matches offset of FuncallableInstance_O)
+    // _Rack  (matches offset of FuncallableInstance_O)
+    T_sp _Sig;
     Class_sp _Class;
     SimpleVector_sp _Rack;
   /*! Mimicking ECL instance->sig generation signature
         This is pointed to the class slots in case they change 
         - then the instances can be updated*/
-    T_sp _Sig;
 #ifdef METER_ALLOCATIONS
   // Keep track of allocations
     size_t _allocation_counter;
@@ -245,20 +249,22 @@ namespace gctools {
   };
 };
 
-
+#if 0
 namespace core {
   FORWARD(FuncallableInstance);
 };
-
 template <>
 struct gctools::GCInfo<core::FuncallableInstance_O> {
   static bool constexpr NeedsInitialization = false;
   static bool constexpr NeedsFinalization = false;
   static GCInfo_policy constexpr Policy = normal;
 };
+#endif
+
+
 
 namespace core {
-
+#if 0
   class FuncallableInstance_O : public Instance_O {
     LISP_CLASS(core, CorePkg, FuncallableInstance_O, "FuncallableInstance",Instance_O);
   // These must be exposed in core__class_slot_sanity_check()
@@ -334,7 +340,7 @@ namespace core {
     virtual void describe(T_sp stream);
 
   }; // FuncallableInstance class
-
+#endif
 }; // core namespace
 
 
@@ -354,14 +360,7 @@ namespace core {
 
 
 namespace core {
-
-  List_sp core__call_history_find_key(List_sp generic_function_call_history, SimpleVector_sp key);
-
-  bool core__generic_function_call_history_push_new(FuncallableInstance_sp generic_function, SimpleVector_sp key, T_sp effective_method);
-
-  void core__generic_function_call_history_remove_entries_with_specializer(FuncallableInstance_sp generic_function, T_sp specializer);
-
-  Instance_sp allocate_instance(Class_sp theClass, size_t numberOfSlots);
+  T_sp allocate_instance(Class_sp theClass, size_t numberOfSlots);
 
   T_sp core__allocate_raw_class(T_sp orig, Class_sp tMetaClass, int slots, bool creates_classes=true);
 

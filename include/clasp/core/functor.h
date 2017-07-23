@@ -489,5 +489,6 @@ namespace core {
 #include <clasp/core/lispCallingConvention.h>
 #undef LCC_FUNCALL
 };
-#endif
 
+
+#endif

@@ -5,6 +5,7 @@
 namespace core {
   FORWARD(Creator);
   FORWARD(InstanceCreator);
+  FORWARD(FuncallableInstanceCreator);
 };
 
 template <>
@@ -16,6 +17,13 @@ struct gctools::GCInfo<core::Creator_O> {
 
 template <>
 struct gctools::GCInfo<core::InstanceCreator_O> {
+  static bool constexpr NeedsInitialization = false;
+  static bool constexpr NeedsFinalization = false;
+  static GCInfo_policy constexpr Policy = normal;
+};
+
+template <>
+struct gctools::GCInfo<core::FuncallableInstanceCreator_O> {
   static bool constexpr NeedsInitialization = false;
   static bool constexpr NeedsFinalization = false;
   static GCInfo_policy constexpr Policy = normal;
@@ -88,6 +96,21 @@ namespace core {
     Class_sp _class;
   public:
   InstanceCreator_O(Class_sp class_) : _class(class_){};
+    void describe() const {
+      printf("InstanceAllocatorFunctor for class %s\n", _rep_(this->_class).c_str());
+    };
+    T_sp creator_allocate();
+    virtual size_t templatedSizeof() const { return sizeof(InstanceCreator_O); };
+  };
+};
+
+namespace core {
+  class FuncallableInstanceCreator_O : public Creator_O {
+    LISP_CLASS(core,CorePkg,FuncallableInstanceCreator_O,"FuncallableInstanceCreator",Creator_O);
+  public:
+    Class_sp _class;
+  public:
+  FuncallableInstanceCreator_O(Class_sp class_) : _class(class_){};
     void describe() const {
       printf("InstanceAllocatorFunctor for class %s\n", _rep_(this->_class).c_str());
     };

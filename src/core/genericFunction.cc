@@ -29,7 +29,7 @@ THE SOFTWARE.
 #include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
 #include <clasp/core/lisp.h>
-#include <clasp/core/instance.h>
+#include <clasp/core/funcallableInstance.h>
 #include <clasp/core/bformat.h>
 #include <clasp/core/primitives.h>
 #include <clasp/core/evaluator.h>
