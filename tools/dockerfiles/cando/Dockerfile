@@ -26,7 +26,11 @@ USER app
 
 USER root
 RUN chown -R app:app /home/app/nglview
+ADD tools/dockerfiles/examples /home/app/work/examples
+RUN chown -R app:app /home/app/.jupyter
+RUN chown -R app:app /home/app/work
 USER app
+
 
 ENTRYPOINT [ "jupyter", "notebook" ]
 CMD        [ "--no-browser", "--ip=0.0.0.0", "--port=8888" ]
