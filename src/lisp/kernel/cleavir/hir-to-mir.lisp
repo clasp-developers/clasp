@@ -121,25 +121,25 @@
             do (setf pro (gen-dimension-check object i dim pro con))))
     (cond ((eq element-type '*)
            (when (or (eq rank '*) (eql rank 1))
-             (setf con (gen-primitive-type-check
+             (setf con (maybe-gen-primitive-type-check
                         object 'core:abstract-simple-vector pro con)))
            (if simple-only-p
                (when (or (eq rank '*) (not (eql rank 1)))
                  (setf con
-                       (gen-primitive-type-check
+                       (maybe-gen-primitive-type-check
                         object 'core:simple-mdarray pro con)))
-               (setf con (gen-primitive-type-check
+               (setf con (maybe-gen-primitive-type-check
                           object 'core:mdarray pro con))))
           (t
            (when (or (eq rank '*) (eql rank 1))
-             (setf con (gen-primitive-type-check
+             (setf con (maybe-gen-primitive-type-check
                         object (simple-vector-type element-type) pro con)))
            (if simple-only-p
                (when (or (eq rank '*) (not (eql rank 1)))
                  (setf con
-                       (gen-primitive-type-check
+                       (maybe-gen-primitive-type-check
                         object (simple-mdarray-type element-type) pro con)))
-               (setf con (gen-primitive-type-check
+               (setf con (maybe-gen-primitive-type-check
                           object (complex-mdarray-type element-type) pro con)))))
     ;; we have set con to an appropriate start at least once
     con))
@@ -182,26 +182,20 @@
                 (gen-branch-call '> (list object (first low)) pro con)
                 (gen-branch-call '>= (list object low) pro con))))
     (loop for prim in prims
-          do (setf con (gen-primitive-type-check object prim pro con)))
+          do (setf con (maybe-gen-primitive-type-check object prim pro con)))
     con))
 
-(defun primitive-type-p (type)
-  (or (eq type 'fixnum) (eq type 'cons)
-      (eq type 'character) (eq type 'single-float)
-      (gethash type core:+type-header-value-map+)))
-
-(defun gen-primitive-type-check (object primitive-type pro con)
+(defun maybe-gen-primitive-type-check (object primitive-type pro con)
   (case primitive-type
     ((fixnum) (cleavir-ir:make-fixnump-instruction object (list pro con)))
     ((cons) (cleavir-ir:make-consp-instruction object (list pro con)))
     ((character) (cc-mir:make-characterp-instruction object (list pro con)))
     ((single-float) (cc-mir:make-single-float-p-instruction object (list pro con)))
     (t (let ((header-info (gethash primitive-type core:+type-header-value-map+)))
-         (if header-info
-             (progn
-               (check-type header-info (or integer cons)) ; sanity check
-               (cc-mir:make-headerq-instruction header-info object (list pro con)))
-             (gen-typep-check object primitive-type pro con))))))
+         (cond (header-info
+                (check-type header-info (or integer cons)) ; sanity check
+                (cc-mir:make-headerq-instruction header-info object (list pro con)))
+               (t (gen-typep-check object primitive-type pro con)))))))
 
 ;;; FIXME: Move these?
 (defparameter +simple-vector-type-map+
@@ -297,7 +291,7 @@
                       finally (return con)))
       ((cons)
        (destructuring-bind (&optional (cart '*) (cdrt '*)) args
-         (gen-primitive-type-check
+         (maybe-gen-primitive-type-check
           object 'cons
           (let* ((cdr-branch
                    (if (eq cdrt '*)
@@ -325,18 +319,16 @@
        (destructuring-bind (&optional (low '*) (high '*)) args
          (gen-interval-type-check object head low high pro con)))
       ((complex) ; we don't have multiple complex types
-       (gen-primitive-type-check object 'complex pro con))
+       (maybe-gen-primitive-type-check object 'complex pro con))
       ((function)
        (if args ; runtime error. we should warn.
            (gen-typep-check object type pro con)
-           (gen-primitive-type-check object 'function pro con)))
+           (maybe-gen-primitive-type-check object 'function pro con)))
       ((values) ; runtime error. we should warn.
        (gen-typep-check object type pro con))
-      (t (cond (args (gen-typep-check object type pro con)) ; unknown
-               ((primitive-type-p head)
-                (gen-primitive-type-check object head pro con))
-               ;; could also handle classes, hypothetically.
-               (t (gen-typep-check object type pro con)))))))
+      (t (if args
+             (gen-typep-check object type pro con) ; unknown compound type
+             (maybe-gen-primitive-type-check object head pro con))))))
 
 (defun replace-typeq (typeq-instruction)
   (let ((object (first (cleavir-ir:inputs typeq-instruction)))
