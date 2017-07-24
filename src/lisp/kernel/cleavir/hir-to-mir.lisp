@@ -197,8 +197,11 @@
     ((character) (cc-mir:make-characterp-instruction object (list pro con)))
     ((single-float) (cc-mir:make-single-float-p-instruction object (list pro con)))
     (t (let ((header-info (gethash primitive-type core:+type-header-value-map+)))
-         (check-type header-info (or integer cons)) ; sanity check
-         (cc-mir:make-headerq-instruction header-info object (list pro con))))))
+         (if header-info
+             (progn
+               (check-type header-info (or integer cons)) ; sanity check
+               (cc-mir:make-headerq-instruction header-info object (list pro con)))
+             (gen-typep-check object primitive-type pro con))))))
 
 ;;; FIXME: Move these?
 (defparameter +simple-vector-type-map+
