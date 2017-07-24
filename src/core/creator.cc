@@ -71,7 +71,7 @@ T_sp FuncallableInstanceCreator_O::creator_allocate() {
     this->_class->_allocation_total_size += size;
   }
 #endif
-  FuncallableInstance_sp instance = gctools::GC<FuncallableInstance_O>::allocate_instance(gctools::Header_s::Value::make_instance(), size);
+  FuncallableInstance_sp instance = gctools::GC<FuncallableInstance_O>::allocate_instance(gctools::Header_s::Value::make_funcallable_instance(), size);
   return instance;
     };
 };
@@ -117,4 +117,11 @@ T_sp StructureClassCreator_O::creator_allocate() {
   return class_;
 };
 
+};
+
+namespace core {
+CL_DEFUN T_sp core__run_creator(Creator_sp c)
+{
+  return c->creator_allocate();
+}
 };

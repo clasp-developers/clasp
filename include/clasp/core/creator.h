@@ -50,6 +50,12 @@ namespace core {
     CL_NAME("CORE:CREATOR-DESCRIBE");
     CL_DEFMETHOD virtual void describe() const = 0;
     virtual core::T_sp creator_allocate() = 0;
+#if 0
+    // use this when we inherit from Function_O
+    LCC_RETURN LISP_CALLING_CONVENTION();
+    // entry_point is LISP_CALLING_CONVENTION() macro
+  Creator_O() : Base(entry_point) {};
+#endif
     virtual ~Creator_O() {};
   };
 

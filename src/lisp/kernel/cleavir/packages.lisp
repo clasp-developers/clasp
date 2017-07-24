@@ -41,8 +41,7 @@
    #:alloca-i8
 ))
 
-(defpackage #:clasp-cleavir-generate-ast
-  (:nicknames #:cc-generate-ast))
+(defpackage #:cc-generate-ast)
 
 
 (defpackage #:clasp-cleavir-ast

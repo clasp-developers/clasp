@@ -77,6 +77,7 @@ namespace core {
     } Slots;
     
   public: // ctor/dtor for classes with shared virtual base
+    // entry_point is the LISP_CALLING_CONVENTION() macro
   FuncallableInstance_O() : Base(entry_point), _isgf(CLASP_NOT_FUNCALLABLE), _entryPoint(NULL), _Class(_Nil<Class_O>()), _Sig(_Nil<T_O>()){};
     explicit FuncallableInstance_O(Class_sp metaClass, size_t slots) :
     Base(entry_point),
@@ -146,7 +147,6 @@ namespace core {
     
     string dumpInfo();
 
-    void inheritDefaultAllocator(List_sp directSuperclasses);
 //    virtual T_sp allocate_class(Class_sp metaClass, int slots);
 
   /*! Return the direct superclasses */

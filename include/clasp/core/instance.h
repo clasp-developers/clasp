@@ -125,7 +125,6 @@ namespace core {
     
     string dumpInfo();
 
-    void inheritDefaultAllocator(List_sp directSuperclasses);
     virtual T_sp allocate_class(Class_sp metaClass, int slots);
 
   /*! Return the direct superclasses */

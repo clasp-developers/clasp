@@ -96,8 +96,7 @@
         ;; then we must inherit its allocator
         ;; This means that a class can only ever
         ;; inherit from one C++ adaptor class
-        (debug-boot "      inherit-default-allocator~%")
-        #+clasp(sys:inherit-default-allocator class superclasses)
+        #+clasp(setf (creator class) (sys:compute-instance-creator class the-metaclass superclasses))
         (debug-boot "      compute-clos-class-precedence-list  class->~a   superclasses->~a~%" class superclasses)
         (let ((cpl (compute-clos-class-precedence-list class superclasses)))
           (setf (class-precedence-list class) cpl)))
