@@ -1556,7 +1556,7 @@ We could do more fancy things here - like if cleavir-clasp fails, use the clasp 
            (compile-in-env name lambda-expression wrapped-env *cleavir-compile-hook* 'llvm-sys:external-linkage)))
         ((functionp definition)
          (error "COMPILE doesn't know how to handle this type of function"))
-        ((consp definition)
+        ((and (consp definition) (eq (car definition) 'lambda))
          (cmp-log "compile form: %s\n" definition)
          (compile-in-env name definition nil *cleavir-compile-hook* 'llvm-sys:external-linkage))
         ((null definition)
