@@ -324,6 +324,12 @@
        (if args ; runtime error. we should warn.
            (gen-typep-check object type pro con)
            (maybe-gen-primitive-type-check object 'function pro con)))
+      ((stream core:string-input-stream synonym-stream file-stream
+               concatenated-stream echo-stream core:string-output-stream
+               two-way-stream string-stream core:iostream-stream
+               core:iofile-stream ext:ansi-stream broadcast-stream)
+       ;; Can't use primitive typeq due to gray-streams, i.e. user subclassing.
+       (gen-typep-check object type pro con))
       ((values) ; runtime error. we should warn.
        (gen-typep-check object type pro con))
       (t (if args
