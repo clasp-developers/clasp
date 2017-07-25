@@ -32,8 +32,8 @@ struct gctools::GCInfo<core::FuncallableInstanceCreator_O> {
 
 namespace core {
 
-  class Creator_O : public General_O {
-    LISP_CLASS(core,CorePkg,Creator_O,"Creator",General_O);
+  class Creator_O : public Function_O {
+    LISP_CLASS(core,CorePkg,Creator_O,"Creator",Function_O);
   public:
   // Some Creators don't actually allocate anything -
   // classes that don't have default allocators
@@ -50,7 +50,7 @@ namespace core {
     CL_NAME("CORE:CREATOR-DESCRIBE");
     CL_DEFMETHOD virtual void describe() const = 0;
     virtual core::T_sp creator_allocate() = 0;
-#if 0
+#if 1
     // use this when we inherit from Function_O
     LCC_RETURN LISP_CALLING_CONVENTION();
     // entry_point is LISP_CALLING_CONVENTION() macro
@@ -58,7 +58,6 @@ namespace core {
 #endif
     virtual ~Creator_O() {};
   };
-
 
 
   template <class _W_>
