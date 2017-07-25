@@ -4,12 +4,58 @@
 (require :asdf)
 (progn
   (defparameter *clasp-home* #P"~/Development/clasp/")
-  (defpackage "CORE" (:export #:&va-rest))
+  (defpackage "CORE" (:use :cl)
+              (:nicknames "SI")
+              (:export #:&va-rest #:lambda-name
+                       #:multiple-value-funcall
+                       #:multiple-value-prog1-function
+                       #:debug-message
+                       #:multiple-value-foreign-call
+                       #:foreign-call
+                       #:foreign-call-pointer
+                       #:catch-function
+                       #:progv-function
+                       #:process-declarations
+                       #:value-frame
+                       #:get-parent-environment
+                       #:*top-level-form-stack*
+                       #:create-tagged-immediate-value-or-nil
+                       #:stack-monitor
+                       #:specialp
+                       #:cleavir-ast
+                       #:global-inline-status
+                       #:value-environment
+                       #:environment
+                       #:macroexpand-default
+                       #:MAKE-VALUE-ENVIRONMENT-FOR-LOCALLY-SPECIAL-ENTRIES
+                       #:make-symbol-macrolet-environment
+                       #:add-symbol-macro
+                       #:make-macrolet-environment
+                       #:add-macro
+                       #:*use-interpreter-for-eval*
+                       #:interpret
+                       #:call-with-variable-bound
+                       ))
+  (defpackage "LLVM-SYS" (:use :CL)
+              (:export
+               ))
+  (defpackage "EXT" (:use :CL)
+              (:export
+               #:system
+               ))
+
   (defpackage "CLOS" (:import-from :sb-mop #:ensure-class #:class-direct-superclasses #:ensure-class-using-class)
               (:export #:ensure-class #:class-direct-superclasses #:ensure-class-using-class))
-  (defpackage "CMP" (:export #:*debug-compile-file-counter*))
-  (defpackage "LITERAL" (:use :cl))
-  (load (compile-file (merge-pathnames "src/lisp/kernel/cmp/cmpliteral.lsp" *clasp-home*)))
+  (defpackage "CMP" (:use :cl)
+              (:export #:*debug-compile-file-counter*
+                       #:codegen-rtv
+                       #:treat-as-special-operator-p
+                       ))
+  (defpackage "LITERAL" (:use :cl)
+              (:export #:with-load-time-value
+                       #:compile-load-time-value-thunk
+                       ))
+
   (format t "Configuring ASDF for local directories~%")
   (defun all-subdirs (dir)
     (let (dirs)
@@ -29,11 +75,17 @@
                (length dirs) (translate-logical-pathname cleavir-dir)))
   )
 
-(in-package :literal)
+(declaim (declaration core:lambda-name))
+(in-package :cmp)
+(defun codegen-rtv (result val)
+  nil)
 
-(in-package :core)
-(defun create-tagged-immediate-value-or-nil (v)
-  0)
+(in-package :literal)
+(defmacro with-load-time-value (&body body)
+  `(progn
+     ,@body))
+(defun compile-load-time-value-thunk (form)
+  nil)
 
 (in-package :cl-user)
 
