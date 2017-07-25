@@ -169,6 +169,14 @@ void Integer_O::__write__(T_sp stream) const {
   cl__write_sequence(buffer._Buffer, stream, make_fixnum(0), _Nil<T_O>());
 }
 
+void Complex_O::__write__(T_sp stream) const {
+  clasp_write_string("#C(", stream);
+  write_ugly_object(this->_real, stream);
+  clasp_write_char(' ', stream);
+  write_ugly_object(this->_imaginary, stream);
+  clasp_write_char(')', stream);
+}
+
 #if 0 // working
 
     void
