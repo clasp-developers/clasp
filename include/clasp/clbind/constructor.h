@@ -77,15 +77,6 @@ public:
 
   /*! If this is the allocator for the original Adapter class return true - otherwise false */
   virtual int duplicationLevel() const { return this->_duplicationLevel; };
-  void describe() const {
-    stringstream ss;
-    core::Symbol_sp baseClassSymbol = reg::lisp_classSymbol<T>();
-    ss << "DefaultConstructorCreator for class " << _rep_(baseClassSymbol);
-    if (baseClassSymbol != this->_mostDerivedClassSymbol) {
-      ss << " derived class " << _rep_(this->_mostDerivedClassSymbol);
-    }
-    printf("%s", ss.str().c_str());
-  }
   core::T_sp creator_allocate() {
     T *naked_ptr(new T());
     //            printf("%s:%d - creating WrapperType\n", __FILE__,__LINE__);
@@ -132,15 +123,6 @@ public:
 
   /*! If this is the allocator for the original Adapter class return true - otherwise false */
   virtual int duplicationLevel() const { return this->_duplicationLevel; };
-  void describe() const {
-    stringstream ss;
-    core::Symbol_sp baseClassSymbol = reg::lisp_classSymbol<T>();
-    ss << "DerivableDefaultConstructorCreator for class " << _rep_(baseClassSymbol);
-    if (baseClassSymbol != this->_mostDerivedClassSymbol) {
-      ss << " derived class " << _rep_(this->_mostDerivedClassSymbol);
-    }
-    printf("%s", ss.str().c_str());
-  }
   core::T_sp creator_allocate() {
     GC_ALLOCATE(T, obj);
     return obj;

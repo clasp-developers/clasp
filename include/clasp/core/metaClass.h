@@ -330,9 +330,6 @@ namespace core {
   public:
     size_t templatedSizeof() const { return sizeof(BuiltInObjectCreator<Class_O>); };
     bool creates_classes() const { return true; };
-    virtual void describe() const {
-      printf("BuiltInObjectCreator for class %s  sizeof_instances-> %zu\n", _rep_(reg::lisp_classSymbol<Class_O>()).c_str(), sizeof(Class_O));
-    }
     virtual core::T_sp creator_allocate() {
       // BuiltInObjectCreator<Class_O> uses a different allocation method
       // that assigns the next Clos Stamp to the new Class

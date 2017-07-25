@@ -340,6 +340,7 @@ SYMBOL_EXPORT_SC_(ClPkg, synonym_stream_symbol);
 SYMBOL_EXPORT_SC_(ClPkg, broadcast_stream_streams);
 SYMBOL_EXPORT_SC_(ClPkg, getOutputStreamString);
 SYMBOL_EXPORT_SC_(CorePkg, closedStream);
+SYMBOL_EXPORT_SC_(CorePkg, creator);
 SYMBOL_EXPORT_SC_(ClPkg, elt);
 SYMBOL_EXPORT_SC_(ClPkg, null);
 SYMBOL_EXPORT_SC_(ClPkg, sequence);
