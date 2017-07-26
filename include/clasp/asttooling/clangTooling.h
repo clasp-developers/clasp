@@ -214,7 +214,6 @@ public:
     printf("dynamic_cast<DerivableMatchCallback*>(this) = %p\n", dynamic_cast<DerivableMatchCallback *>(this));
 
     printf("alien pointer = %p\n", this->pointerToAlienWithin());
-    printf("isgf %d\n", this->_isgf);
     printf("_Class: %s\n", _rep_(this->_Class).c_str());
     for (size_t i(0); i < this->numberOfSlots(); ++i) {
       printf("_Slots[%lu]: %s\n", i, _rep_(this->instanceRef(i)).c_str());

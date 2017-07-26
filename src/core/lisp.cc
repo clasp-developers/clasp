@@ -118,6 +118,8 @@ THE SOFTWARE.
 #include <clasp/core/designators.h>
 #include <clasp/core/unixfsys.h>
 #include <clasp/core/sort.h>
+#include <clasp/core/funcallableInstance.h>
+#include <clasp/core/instance.h>
 #include <clasp/core/character.h>
 #include <clasp/core/predicates.h>
 #include <clasp/core/primitives.h>
@@ -511,6 +513,21 @@ void testStrings() {
 
 void Lisp_O::startupLispEnvironment(Bundle *bundle) {
   { // Trap symbols as they are interned
+    if (offsetof(Function_O,entry)!=offsetof(FuncallableInstance_O,entry)) {
+      printf("%s:%d  The offsetf(Function_O,entry)/%lu!=offsetof(FuncallableInstance_O,entry)/%lu!!!!\n", __FILE__, __LINE__, offsetof(Function_O,entry),offsetof(FuncallableInstance_O,entry) );
+      printf("        These must match for Clasp to be able to function\n");
+      abort();
+    }
+    if (offsetof(Instance_O,_Rack)!=offsetof(FuncallableInstance_O,_Rack)) {
+      printf("%s:%d  The offsetf(Instance_O,_Rack)/%lu!=offsetof(FuncallableInstance_O,_Rack)/%lu!!!!\n", __FILE__, __LINE__, offsetof(Instance_O,_Rack),offsetof(FuncallableInstance_O,_Rack) );
+      printf("        These must match for Clasp to be able to function\n");
+      abort();
+    }
+    if (offsetof(Instance_O,_Class)!=offsetof(FuncallableInstance_O,_Class)) {
+      printf("%s:%d  The offsetf(Function_O,_Class)/%lu!=offsetof(FuncallableInstance_O,_Class)/%lu!!!!\n", __FILE__, __LINE__, offsetof(Instance_O,_Class),offsetof(FuncallableInstance_O,_Class) );
+      printf("        These must match for Clasp to be able to function\n");
+      abort();
+    }
     stringstream sdebug;
     gctools::get_immediate_info(); // discard result, just testing
 #ifdef DEBUG_PROGRESS

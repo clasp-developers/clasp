@@ -301,7 +301,8 @@
            (analysis-enums analysis)))
 
 (defun calculate-flags (name)
-  (+ (if (derived-from-cclass name "core::Instance_O") 1 0)
+  (+ (if (or (derived-from-cclass name "core::Instance_O")
+             (derived-from-cclass name "core::FuncallableInstance_O")) 1 0)
      (if (inherits-from-multiple-classes name) 2 0)))
 
 

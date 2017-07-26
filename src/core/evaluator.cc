@@ -604,21 +604,30 @@ T_sp af_interpreter_lookup_variable(Symbol_sp sym, T_sp env) {
   SIMPLE_ERROR(BF("Could not find variable %s in lexical/global environment") % _rep_(sym));
 };
 
-#define ARGS_af_interpreter_lookup_function "(symbol env)"
-#define DECL_af_interpreter_lookup_function ""
-#define DOCS_af_interpreter_lookup_function "environment_lookup_function return the function or UNBOUND"
-T_sp af_interpreter_lookup_function(Symbol_sp name, T_sp env) {
-  if (env.notnilp()) {
+Function_sp interpreter_lookup_function_or_error(T_sp name, T_sp env) {
+  unlikely_if (env.notnilp()) {
     Function_sp fn;
     int depth;
     int index;
-    if (Environment_O::clasp_findFunction(env, name, depth, index, fn)) {
-      return fn;
+    if (Environment_O::clasp_findFunction(env, name, depth, index, fn)) return fn;
+  }
+  if (name.consp()) {
+    T_sp head = CONS_CAR(name);
+    if (head == cl::_sym_setf) {
+      Symbol_sp sym = oCar(CONS_CDR(name)).template as<Symbol_O>();
+      if (sym->setf_fboundp()) {
+        return sym->getSetfFdefinition();
+      }
+      SIMPLE_ERROR(BF("SETF function value for %s is unbound") % _rep_(sym));
     }
   }
-  if (name->fboundp())
-    return name->symbolFunction();
-  return _Nil<T_O>(); // never let unbound propagate
+  if (gc::IsA<Symbol_sp>(name)) {
+    Symbol_sp sname = gc::As_unsafe<Symbol_sp>(name);
+    if (sname->fboundp()) return sname->symbolFunction();
+    SIMPLE_ERROR(BF("Could not find special-operator/macro/function(%s) in the lexical/dynamic environment") % _rep_(name) );
+  }
+  ASSERT(gc::IsA<Function_sp>(name));
+  return gc::As_unsafe<Function_sp>(name);
 };
 
 #define ARGS_af_interpreter_lookup_setf_function "(symbol env)"
@@ -1532,10 +1541,7 @@ T_mv sp_function(List_sp args, T_sp environment) {
     WRONG_TYPE_ARG(arg, Cons_O::createList(cl::_sym_or, cl::_sym_Symbol_O, cl::_sym_Cons_O));
   } else if (Symbol_sp fnSymbol = arg.asOrNull<Symbol_O>()) {
     LOG(BF("In sp_function - looking up for for[%s]") % fnSymbol->__repr__());
-    T_sp fn = af_interpreter_lookup_function(fnSymbol, environment);
-    if (fn.nilp()) {
-      SIMPLE_ERROR(BF("Could not find function %s args: %s") % _rep_(fnSymbol) % _rep_(args));
-    }
+    T_sp fn = interpreter_lookup_function_or_error(fnSymbol, environment);
     LOG(BF("     Found form: %s") % fn->__repr__());
     return (Values(fn));
   } else if (Cons_sp cconsArg = arg.asOrNull<Cons_O>()) {
@@ -1845,50 +1851,14 @@ T_mv sp_symbolMacrolet(List_sp args, T_sp env) {
 
 /*! Returns NIL if no function is found */
 T_sp lookupFunction(T_sp functionDesignator, T_sp env) {
-  ASSERTF(functionDesignator, BF("In apply, the head function designator is UNDEFINED"));
-  LIKELY_if (gc::IsA<Function_sp>(functionDesignator)) return functionDesignator;
-  Symbol_sp shead = gc::As<Symbol_sp>(functionDesignator);
-  T_sp exec = af_interpreter_lookup_function(shead, env);
-  return exec;
-}
-
-#if 0
-T_mv applyClosureToActivationFrame(Function_sp func, ActivationFrame_sp args) {
-  size_t nargs = args->length();
-  ValueFrame_sp vframe = gctools::As_unsafe<ValueFrame_sp>(args);
-#define frame (*vframe)
-//  T_sp *frame = args->argArray();
-  switch (nargs) {
-#define APPLY_TO_ACTIVATION_FRAME
-#include <clasp/core/generated/applyToActivationFrame.h>
-#undef APPLY_TO_ACTIVATION_FRAME
-#undef frame
-  default:
-      SIMPLE_ERROR(BF("Illegal number of arguments in call: %s") % nargs);
-  };
-}
-#endif
-
-#if 0
-T_mv applyToActivationFrame(T_sp head, ActivationFrame_sp targs) {
-  T_sp tfn = lookupFunction(head, targs);
-  ValueFrame_sp args = gctools::As_unsafe<ValueFrame_sp>(targs);
-  if (tfn.nilp()) {
-    if (head == cl::_sym_findClass) {
-      // When booting, cl::_sym_findClass may be apply'd but not
-      // defined yet
-      return (cl__find_class(gc::As<Symbol_sp>(args->entry(0)), true, _Nil<T_O>()));
-    }
-    SIMPLE_ERROR(BF("Could not find function %s args: %s") % _rep_(head) % _rep_(args));
+  if (gc::IsA<Symbol_sp>(functionDesignator)) {
+    Symbol_sp shead = gc::As<Symbol_sp>(functionDesignator);
+    T_sp exec = interpreter_lookup_function_or_error(shead, env);
+    return exec;
   }
-  Function_sp closure = tfn.asOrNull<Function_O>();
-  if (LIKELY(closure)) {
-    return applyClosureToActivationFrame(closure, args);
-  }
-  SIMPLE_ERROR(BF("In applyToActivationFrame the closure for %s is NULL and is being applied to arguments: %s") % _rep_(closure) % _rep_(args));
+  ASSERT(gc::IsA<Function_sp>(functionDesignator));
+  return functionDesignator;
 }
-#endif
-
 
 
 /*!
@@ -2152,18 +2122,14 @@ T_mv evaluate(T_sp exp, T_sp environment) {
       }
       return eval::evaluate(expanded, environment);
     }
-    theadFunc = af_interpreter_lookup_function(headSym, environment);
-    if (theadFunc.nilp()) {
-      SIMPLE_ERROR(BF("Could not find special-operator/macro/function(%s) in %s in the lexical/dynamic environment") % _rep_(headSym) % _rep_(form) );
-    }
-
+    theadFunc = interpreter_lookup_function_or_error(headSym, environment);
     //
     // It is a form and its head is a symbol,
     // evaluate the arguments and apply the function bound to the head to them
     //
     //		LOG(BF("Symbol[%s] is a normal form - evaluating arguments") % head->__repr__() );
     size_t nargs = cl__length(oCdr(form));
-    Function_sp headFunc = gc::reinterpret_cast_smart_ptr<Function_sp>(theadFunc);
+    T_sp headFunc = theadFunc;
     MAKE_STACK_FRAME(callArgs, headFunc.raw_(), nargs);
     size_t argIdx = 0;
     for (auto cur : (List_sp)oCdr(form)) {

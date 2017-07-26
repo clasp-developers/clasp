@@ -170,16 +170,18 @@ the clasp-analyzer static analyzer they are used along with template functions t
 calculate IsA relationships using simple GCStampEnum range comparisons.
 */
 #define FLAGS_INSTANCE 1
+#define FLAGS_FUNCALLABLE_INSTANCE 1
 #define FLAGS_DERIVABLE 3
   
 #if defined(USE_CXX_DYNAMIC_CAST) || defined(RUNNING_GC_BUILDER)
   typedef enum { KIND_null = 0,
                  KIND_FIXNUM = 1,
-                 KIND_SINGLE_FLOAT = 2,
-                 KIND_CHARACTER = 3,
-                 KIND_CONS = 4,
-                 KIND_VA_LIST_S = 5,
-                 KIND_INSTANCE = 6,
+                 KIND_INSTANCE = 2,
+                 KIND_FUNCALLABLE_INSTANCE = 3, 
+                 KIND_SINGLE_FLOAT = 4,
+                 KIND_CHARACTER = 5,
+                 KIND_CONS = 6,
+                 KIND_VA_LIST_S = 7,
                  // These are defined to support the GCStamp<...> specializations below
                  // when defined(USE_CXX_DYNAMIC_CAST) || defined(RUNNING_GC_BUILDER)
                  KIND_LISPALLOC_core__VaList_dummy_O = KIND_VA_LIST_S, 
@@ -188,7 +190,8 @@ calculate IsA relationships using simple GCStampEnum range comparisons.
                  KIND_LISPALLOC_core__SingleFloat_dummy_O = KIND_SINGLE_FLOAT, 
                  KIND_LISPALLOC_core__Fixnum_dummy_O = KIND_FIXNUM,
                  KIND_LISPALLOC_core__Instance_O = KIND_INSTANCE,
-                 KIND_max = 7 } GCStampEnum; // minimally define this GCStamp
+                 KIND_LISPALLOC_core__FuncallableInstance_O = KIND_FUNCALLABLE_INSTANCE,
+                 KIND_max = 8 } GCStampEnum; // minimally define this GCStamp
 #else
  #define GC_ENUM
     typedef enum {
@@ -198,8 +201,9 @@ calculate IsA relationships using simple GCStampEnum range comparisons.
       KIND_CHARACTER = KIND_LISPALLOC_core__Character_dummy_O, 
       KIND_SINGLE_FLOAT = KIND_LISPALLOC_core__SingleFloat_dummy_O, 
       KIND_FIXNUM = KIND_LISPALLOC_core__Fixnum_dummy_O,
-      KIND_INSTANCE = KIND_LISPALLOC_core__Instance_O
-  } GCStampEnum;
+      KIND_INSTANCE = KIND_LISPALLOC_core__Instance_O,
+      KIND_FUNCALLABLE_INSTANCE = KIND_LISPALLOC_core__FuncallableInstance_O
+ } GCStampEnum;
  #undef GC_ENUM
 #endif
 
@@ -324,6 +328,11 @@ namespace gctools {
       static Value make_instance()
       {
         Value v(KIND_INSTANCE,FLAGS_INSTANCE /*Flags*/);
+        return v;
+      }
+      static Value make_funcallable_instance()
+      {
+        Value v(KIND_FUNCALLABLE_INSTANCE,FLAGS_FUNCALLABLE_INSTANCE /*Flags*/);
         return v;
       }
       static Value make_unknown(GCStampEnum the_stamp)

@@ -118,6 +118,7 @@ Set this to other IRBuilders to make code go where you want")
 ;;;  "An array of pointers to the global-ctors-struct")
 (define-symbol-macro %global-ctors-struct[1]% (llvm-sys:array-type-get %global-ctors-struct% 1))
 
+(defvar +header-size+ 8) ; FIXME: where does this come from?
 
 
 (defvar +cxx-data-structures-info+ (llvm-sys:cxx-data-structures-info))
