@@ -187,13 +187,13 @@
     (unless (eq high '*)
       (setf pro
             (if (listp high)
-                (gen-branch-call '< (list object (first high)) pro con)
-                (gen-branch-call '<= (list object high) pro con))))
+                (with-constant (hi (first high)) (gen-branch-call '< (list object hi) pro con))
+                (with-constant (hi high) (gen-branch-call '<= (list object hi) pro con)))))
     (unless (eq low '*)
       (setf pro
             (if (listp low)
-                (gen-branch-call '> (list object (first low)) pro con)
-                (gen-branch-call '>= (list object low) pro con))))
+                (with-constant (lo (first low)) (gen-branch-call '> (list object lo) pro con))
+                (with-constant (lo low) (gen-branch-call '>= (list object lo) pro con)))))
     (loop for prim in prims
           do (setf con (maybe-gen-primitive-type-check object prim pro con)))
     con))
