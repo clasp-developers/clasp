@@ -84,11 +84,23 @@
         (list bool (cleavir-ir:make-constant-input 'nil))
         (list con pro)))))))
 
+;;; clasp doesn't like it when a funcall receives immediate arguments.
+;;; we make do.
+(defmacro with-constant ((var value) form)
+  (let ((const (gensym "CONST")))
+    `(let ((,const (cleavir-ir:make-constant-input ,value))
+           (,var (cleavir-ir:new-temporary)))
+       (cleavir-ir:make-assignment-instruction
+        ,const
+        ,var
+        ,form))))
+
 (defun gen-typep-check (object type pro con)
-  (gen-branch-call 'typep (list object (cleavir-ir:make-constant-input type)) pro con))
+  (with-constant (ty type)
+    (gen-branch-call 'typep (list object ty) pro con)))
 
 (defun gen-eql-check (object1 literal pro con)
-  (let ((object2 (cleavir-ir:make-constant-input literal)))
+  (with-constant (object2 literal)
     (if (typep literal '(and number (not fixnum) (not single-float))) ; non-eq-comparable
         (gen-branch-call 'eql (list object1 object2) pro con)
         (cleavir-ir:make-eq-instruction
@@ -99,10 +111,11 @@
   (if (eq spec '*)
       pro ; don't need a nop as this will not be returned from gen-array-type-check
       (let ((arrayd (cleavir-ir:new-temporary)))
-        (gen-sv-call 'array-dimension
-                     (list object (cleavir-ir:make-constant-input dim))
-                     arrayd
-                     (gen-eql-check arrayd spec pro con)))))
+        (with-constant (d dim)
+          (gen-sv-call 'array-dimension
+                       (list object d)
+                       arrayd
+                       (gen-eql-check arrayd spec pro con))))))
 
 (defun gen-rank-check (object rank pro con)
   (let ((arrayr (cleavir-ir:new-temporary)))
