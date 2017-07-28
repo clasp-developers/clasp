@@ -96,6 +96,12 @@
         ,form))))
 
 (defun gen-typep-check (object type pro con)
+  ;; We can sometimes call a predicate instead.
+  (when (symbolp type)
+    (let ((f (core:get-sysprop type 'core::type-predicate)))
+      (when f
+        (return-from gen-typep-check
+          (gen-branch-call f (list object) pro con)))))
   (with-constant (ty type)
     (gen-branch-call 'typep (list object ty) pro con)))
 
