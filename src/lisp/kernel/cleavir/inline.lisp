@@ -19,6 +19,24 @@
   (defun cl:eq (x y)
     (if (cleavir-primop:eq x y) t nil)))
 
+;;; FIXME: it would be nicer if this was just an inline definition
+;;; referring to core:eql or something.
+#+(or)
+(progn
+  (deftype eq-incomparable () '(and number (not fixnum)))
+  
+  (define-compiler-macro eql (x y)
+    (let ((sx (gensym "EQL-X"))
+          (sy (gensym "EQL-Y")))
+      `(let ((,sx ,x) (,sy ,y))
+         (cond ((eq ,sx ,sy) t)
+               ((cleavir-primop:typeq ,sx eq-incomparable)
+                (if (cleavir-primop:typeq ,sy eq-incomparable)
+                    (locally (declare (notinline eql)) ; avoid recursive c-m expansion
+                      (eql ,sx ,sy))
+                    nil))
+               (t nil))))))
+
 (progn
   (debug-inline "not")
   (declaim (inline cl:not))
@@ -33,8 +51,7 @@
     (the t object)))
 
 ;;; Type predicates.
-;;; Should not be used yet, as TYPEQ will turn into a full call to TYPEP
-#+(or)
+#+(or) ; recursion problem: e.g. (streamp x) => (typeq x stream) => (typep x 'stream) => (streamp x)
 (macrolet ((defpred (name type)
              `(progn
                 (debug-inline ,(symbol-name name))
@@ -70,7 +87,14 @@
     listp list
     complexp complex
     rationalp rational))
-  
+
+(define-compiler-macro typep
+    (&whole whole object type &optional env &environment macro-env)
+  (if (and (null env) (constantp type macro-env))
+      `(if (cleavir-primop:typeq ,object ,(ext:constant-form-value type macro-env))
+           t nil)
+      whole))
+
 (progn
   (debug-inline "consp")
   (declaim (inline cl:consp))
