@@ -349,6 +349,9 @@
                core:iofile-stream ext:ansi-stream broadcast-stream)
        ;; Can't use primitive typeq due to gray-streams, i.e. user subclassing.
        (gen-typep-check object type pro con))
+      ((standard-object)
+       ;; Header check doesn't work. Don't know why not.
+       (gen-typep-check object type pro con))
       ((values) ; runtime error. we should warn.
        (gen-typep-check object type pro con))
       (t (if args
