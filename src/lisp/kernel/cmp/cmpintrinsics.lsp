@@ -999,7 +999,7 @@ and initialize it with an array consisting of one function pointer."
     (primitive          module "va_tooManyArgumentsException" %void% (list %i8*% %size_t% %size_t%))
     (primitive          module "va_notEnoughArgumentsException" %void% (list %i8*% %size_t% %size_t%))
     (primitive          module "va_ifExcessKeywordArgumentsException" %void% (list %i8*% %size_t% %va_list*% %size_t%))
-    (primitive-nounwind module "va_symbolFunction" %t*% (list %tsp*%)) ;; void va_symbolFunction(core::Function_sp fn, core::Symbol_sp sym)
+    (primitive          module "va_symbolFunction" %t*% (list %tsp*%)) ;; void va_symbolFunction(core::Function_sp fn, core::Symbol_sp sym)
     (primitive-nounwind module "va_lexicalFunction" %t*% (list %i32% %i32% %afsp*%))
     
     (primitive-nounwind module "cc_gatherRestArguments" %t*% (list %va_list*% %size_t*%))
