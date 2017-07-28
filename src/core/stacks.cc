@@ -398,9 +398,9 @@ void pop_InvocationHistoryStack(const InvocationHistoryFrame* frame) {
 };
 
 CL_DEFUN void core__dump_debug_ihs_shadow_stack() {
+#ifdef DEBUG_IHS
   printf("global_debug_ihs_shadow_stack\n");
   backtrace_symbols_fd(&global_debug_ihs_shadow_stack[0],global_debug_ihs_shadow_stack.size(),1);
-#ifdef DEBUG_IHS
   printf("my_thread->_IHSBacktrace\n");
   backtrace_symbols_fd((void* const *)&my_thread->_IHSBacktrace[0],IHS_BACKTRACE_SIZE,1);
 #endif
