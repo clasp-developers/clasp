@@ -449,9 +449,6 @@ ALWAYS_INLINE void cc_rewind_va_list(core::T_O* tagged_closure, va_list va_args,
 ALWAYS_INLINE void cc_push_InvocationHistoryFrame(core::T_O* tagged_closure, InvocationHistoryFrame* frame, va_list va_args, size_t* nargsP) {
   new (frame) InvocationHistoryFrame(va_args, *nargsP);
   core::push_InvocationHistoryStack(frame);
-#ifdef DEBUG_IHS
-  my_thread->_InvocationHistoryStackClosure = tagged_closure;
-#endif
 #if 0
   if (core::debug_InvocationHistoryFrame) {
     Closure_sp closure((gc::Tagged)tagged_closure);
