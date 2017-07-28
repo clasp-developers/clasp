@@ -30,12 +30,10 @@ USER app
 
 
 USER root
+ADD tools/dockerfiles/examples /home/app/work/examples
 RUN chown -R app:app /home/app/work
 RUN chown -R app:app /home/app/.jupyter
 RUN chown -R app:app /home/app/nglview
-ADD tools/dockerfiles/examples /home/app/work/examples
-RUN chown -R app:app /home/app/.jupyter
-RUN chown -R app:app /home/app/work
 USER app
 
 
