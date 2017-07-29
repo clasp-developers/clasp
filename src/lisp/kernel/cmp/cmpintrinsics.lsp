@@ -547,7 +547,7 @@ eg:  (f closure-ptr nargs a b c d ...)
            (remaining-nargs*              (calling-convention-remaining-nargs* cc))
            (closure                       (calling-convention-closure cc))
            (_                             (irc-intrinsic "cc_rewind_va_list" closure va-list* remaining-nargs* register-save-area*)))))
-    
+  (defvar *mcount-name* "mcount")  ;;; The function that is used for profiling
 ;;; end of x86-64 specific stuff
   )
 
