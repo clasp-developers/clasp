@@ -96,6 +96,12 @@
         ,form))))
 
 (defun gen-typep-check (object type pro con)
+  ;; We can sometimes call a predicate instead.
+  (when (symbolp type)
+    (let ((f (core:get-sysprop type 'core::type-predicate)))
+      (when f
+        (return-from gen-typep-check
+          (gen-branch-call f (list object) pro con)))))
   (with-constant (ty type)
     (gen-branch-call 'typep (list object ty) pro con)))
 
@@ -146,7 +152,18 @@
           (t
            (when (or (eq rank '*) (eql rank 1))
              (setf con (maybe-gen-primitive-type-check
-                        object (simple-vector-type element-type) pro con)))
+                        object (simple-vector-type element-type) pro con))
+             (unless simple-only-p
+               (case element-type ; some have special complex vector versions
+                 ((base-char)
+                  (setf con (maybe-gen-primitive-type-check
+                             object 'core:str8ns pro con)))
+                 ((character)
+                  (setf con (maybe-gen-primitive-type-check
+                             object 'core:str-wns pro con)))
+                 ((bit)
+                  (setf con (maybe-gen-primitive-type-check
+                             object 'core:bit-vector-ns pro con))))))
            (if simple-only-p
                (when (or (eq rank '*) (not (eql rank 1)))
                  (setf con
@@ -342,6 +359,9 @@
                two-way-stream string-stream core:iostream-stream
                core:iofile-stream ext:ansi-stream broadcast-stream)
        ;; Can't use primitive typeq due to gray-streams, i.e. user subclassing.
+       (gen-typep-check object type pro con))
+      ((standard-object)
+       ;; Header check doesn't work. Don't know why not.
        (gen-typep-check object type pro con))
       ((values) ; runtime error. we should warn.
        (gen-typep-check object type pro con))
