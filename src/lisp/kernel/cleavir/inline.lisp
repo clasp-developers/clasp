@@ -37,6 +37,59 @@
                     nil))
                (t nil))))))
 
+#+(or)
+(progn
+;; Really want a bit-vector-equal intrinsic here.
+;; Maybe even separate simple and not vectors.
+
+(defmacro type2case (x y fail &rest cases)
+  (let ((sx (gensym "X")) (sy (gensym "Y")))
+    `(let ((,sx ,x) (,sy ,y))
+       (cond ,@(loop for (type . body) in cases
+                     collect `((typep ,sx ',type)
+                               (if (typep ,sy ',type)
+                                   (progn ,@body)
+                                   ,fail))
+                     collect `((typep ,sy ',type) ,fail))
+             (t ,fail)))))
+
+(defun equal (x y)
+  (or (eql x y)
+      (type2case x y nil
+        (cons (and (equal (car x) (car y))
+                   (equal (cdr x) (cdr y))))
+        (string (string= x y))
+        (bit-vector (bit-vector-equal x y))
+        (pathname (pathname-equal x y)))))
+
+(defun hash-table-equalp (x y)
+  (and (eq (hash-table-count x) (hash-table-count y))
+       (eq (hash-table-test x) (hash-table-test y))
+       ;; since the number of entries is the same,
+       ;; we don't need to check for extra keys in y.
+       (maphash (lambda (k v)
+                  (multiple-value-bind (otherv present)
+                      (gethash k y)
+                    (unless present
+                      (return-from hash-table-equalp nil))
+                    (unless (equalp v otherv)
+                      (return-from hash-table-equalp nil))))
+                x)
+       t))
+
+(defun equalp (x y)
+  (or (eq x y)
+      (type2case x y nil
+        (character (char-equal x y))
+        (number (= x y))
+        (cons (and (equalp (car x) (car y))
+                   (equalp (cdr x) (cdr y))))
+        (array (array-equalp x y))
+        (structure-object (structure-equalp x y))
+        (hash-table (hash-table-equalp x y))
+        (pathname (pathname-equal x y)))))
+)
+
 (progn
   (debug-inline "not")
   (declaim (inline cl:not))
@@ -149,6 +202,63 @@
         (if (null x)
             nil
             (error "Cannot get cdr of non-list ~s" x)))))
+
+;;; FIXME: This takes a lot of itme to compile for some reason?
+#+(or)
+(progn
+
+(defmacro defcr (name &rest ops)
+  `(progn
+     (debug-inline ,(symbol-name name))
+     (declaim (inline ,name))
+     (defun ,name (x)
+       ,(labels ((rec (ops)
+                   (if (null ops)
+                       'x
+                       `(,(first ops) ,(rec (rest ops))))))
+          (rec ops)))))
+
+(defcr caar   car car)
+(defcr cadr   car cdr)
+(defcr cdar   cdr car)
+(defcr cddr   cdr cdr)
+(defcr caaar  car car car)
+(defcr caadr  car car cdr)
+(defcr cadar  car cdr car)
+(defcr caddr  car cdr cdr)
+(defcr cdaar  cdr car car)
+(defcr cdadr  cdr car cdr)
+(defcr cddar  cdr cdr car)
+(defcr cdddr  cdr cdr cdr)
+(defcr caaaar car car car car)
+(defcr caaadr car car car cdr)
+(defcr caadar car car cdr car)
+(defcr caaddr car car cdr cdr)
+(defcr cadaar car cdr car car)
+(defcr cadadr car cdr car cdr)
+(defcr caddar car cdr cdr car)
+(defcr cadddr car cdr cdr cdr)
+(defcr cdaaar cdr car car car)
+(defcr cdaadr cdr car car cdr)
+(defcr cdadar cdr car cdr car)
+(defcr cdaddr cdr car cdr cdr)
+(defcr cddaar cdr cdr car car)
+(defcr cddadr cdr cdr car cdr)
+(defcr cdddar cdr cdr cdr car)
+(defcr cddddr cdr cdr cdr cdr)
+
+(defcr rest    cdr)
+(defcr first   car)
+(defcr second  car cdr)
+(defcr third   car cdr cdr)
+(defcr fourth  car cdr cdr cdr)
+(defcr fifth   car cdr cdr cdr cdr)
+(defcr sixth   car cdr cdr cdr cdr cdr)
+(defcr seventh car cdr cdr cdr cdr cdr cdr)
+(defcr eighth  car cdr cdr cdr cdr cdr cdr cdr)
+(defcr ninth   car cdr cdr cdr cdr cdr cdr cdr cdr)
+(defcr tenth   car cdr cdr cdr cdr cdr cdr cdr cdr cdr)
+)
 
 (debug-inline "rplaca")
 
@@ -269,6 +379,33 @@
 ;;;
 #+(or)
 (progn
+(define-compiler-macro aref (array &rest indices)
+  (let ((arr (gensym "ARRAY")))
+    `(let ((,arr ,array))
+       (row-major-aref ,array (array-row-major-index ,array ,@indices)))))
+
+(define-compiler-macro array-row-major-index (array &rest subscripts)
+  (let* ((rank (length subscripts))
+         (dimsyms (loop repeat rank collect (gensym "DIM")))
+         (subsyms (loop repeat rank collect (gensym "SUB")))
+         (a (gensym "ARRAY")))
+    `(let ((,a ,array))
+       (unless (typep array '(array * ,rank))
+         (error 'type-error :datum ,a :expected-type '(array * ,rank)))
+       ,(if subscripts
+            `(let (,@(loop for dimsym in dimsyms
+                           for d from 0
+                           collect `(,dimsym (array-dimension ,a ,d))))
+               (let* ((,(first subsyms) 1)
+                      ,@(loop for dimsym in (reverse (cdr dimsyms))
+                              for subsym in (cdr subsyms)
+                              for lastsym in subsyms
+                              collect `(,subsym (* ,lastsym ,dimsym))))
+                 (+ ,@(loop for sub in subscripts
+                            for subsym in (reverse subsyms)
+                            collect `(* ,sub ,subsym)))))
+            0))))
+
   (declaim (inline svref))
   (defun svref (vector index)
     (cleavir-primop:aref vector index t t t))
@@ -338,13 +475,12 @@
     (mapfoo-macro 'in 'nconc function (cons list more-lists)))
   (define-compiler-macro mapl (function list &rest more-lists)
     (mapfoo-macro 'on 'do function (cons list more-lists)))
-  (define-compiler-macro mapcan (function list &rest more-lists)
+  (define-compiler-macro maplist (function list &rest more-lists)
     (mapfoo-macro 'on 'collect function (cons list more-lists)))
-  (define-compiler-macro mapcan (function list &rest more-lists)
+  (define-compiler-macro mapcon (function list &rest more-lists)
     (mapfoo-macro 'on 'nconc function (cons list more-lists)))
   )
 
-#++
 (define-compiler-macro funcall (function &rest arguments)
   (let ((fsym (gensym "FUNCTION")))
     `(let ((,fsym ,function))
