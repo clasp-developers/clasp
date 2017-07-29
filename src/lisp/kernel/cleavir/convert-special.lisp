@@ -1,4 +1,4 @@
-(in-package :clasp-cleavir-generate-ast)
+(in-package :cc-generate-ast)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;

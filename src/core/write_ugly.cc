@@ -58,6 +58,7 @@ THE SOFTWARE.
 #include <clasp/core/pathname.h>
 #include <clasp/core/lispStream.h>
 #include <clasp/core/instance.h>
+#include <clasp/core/funcallableInstance.h>
 #include <clasp/core/structureObject.h>
 #include <clasp/core/sysprop.h>
 #include <clasp/core/numberToString.h>
@@ -134,6 +135,15 @@ void Instance_O::__write__(T_sp stream) const {
   }
 }
 
+void FuncallableInstance_O::__write__(T_sp stream) const {
+  if ( cl::_sym_printObject->fboundp() ) {
+    eval::funcall(cl::_sym_printObject, this->const_sharedThis<FuncallableInstance_O>(), stream);
+  } else {
+    std::string str = _rep_(this->asSmartPtr());
+    clasp_write_string(str,stream);
+  }
+}
+
   SYMBOL_EXPORT_SC_(CorePkg, structure_print_function);
   SYMBOL_EXPORT_SC_(CorePkg, STARprint_structureSTAR);
 
@@ -167,6 +177,14 @@ void Integer_O::__write__(T_sp stream) const {
                        cl::_sym_STARprint_radixSTAR->symbolValue().isTrue(),
                        true);
   cl__write_sequence(buffer._Buffer, stream, make_fixnum(0), _Nil<T_O>());
+}
+
+void Complex_O::__write__(T_sp stream) const {
+  clasp_write_string("#C(", stream);
+  write_ugly_object(this->_real, stream);
+  clasp_write_char(' ', stream);
+  write_ugly_object(this->_imaginary, stream);
+  clasp_write_char(')', stream);
 }
 
 #if 0 // working

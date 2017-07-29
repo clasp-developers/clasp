@@ -66,13 +66,94 @@ SYMBOL_EXPORT_SC_(CorePkg,cxx_class);
 
 namespace core {
 
-CL_LAMBDA(class theDirectSuperclasses);
-CL_DECLARE();
-CL_DOCSTRING("inheritDefaultAllocator - make this a regular function so that there are no dispatching problems at boot time");
-CL_DEFUN void core__inherit_default_allocator(Class_sp cl, T_sp directSuperclasses) {
-  //        printf("%s:%d In core__inherit_default_allocator for class: %s direct-superclasses: %s\n",__FILE__,__LINE__, _rep_(cl).c_str(), _rep_(directSuperclasses).c_str());
-  cl->inheritDefaultAllocator(directSuperclasses);
-};
+gc::Nilable<Class_sp> identifyCxxDerivableAncestorClass(Class_sp aClass) {
+  if (aClass->cxxClassP()) {
+    if (aClass->cxxDerivableClassP()) {
+      return aClass;
+    }
+  }
+  for (auto supers : aClass->directSuperclasses()) {
+    Class_sp aSuperClass = gc::As<Class_sp>(oCar(supers));
+    gc::Nilable<Class_sp> taPossibleCxxDerivableAncestorClass = identifyCxxDerivableAncestorClass(aSuperClass);
+    if (taPossibleCxxDerivableAncestorClass.notnilp())
+      return taPossibleCxxDerivableAncestorClass;
+  }
+  return _Nil<Class_O>();
+}
+
+
+CL_DEFUN T_sp core__compute_instance_creator(T_sp tinstance, T_sp tmetaclass, List_sp superclasses)
+{
+  // If there is no metaclass - then use _TheStandardClass
+  if (tmetaclass.nilp()) {
+    tmetaclass = _lisp->_Roots._TheStandardClass;
+  }
+  Instance_sp instance = gc::As<Instance_sp>(tinstance);
+  Instance_sp metaclass = gc::As<Instance_sp>(tmetaclass);
+  // If instance class already has an allocator then leave it alone
+  if (instance->CLASS_has_creator()) return instance->CLASS_get_creator();
+  if (metaclass->_className() == clos::_sym_funcallable_standard_class) {
+    Creator_sp funcallableInstanceCreator = gc::GC<FuncallableInstanceCreator_O>::allocate(instance);
+    return funcallableInstanceCreator;
+  };
+  Class_sp aCxxDerivableAncestorClass_unsafe; // Danger!  Unitialized!
+#ifdef DEBUG_CLASS_INSTANCE
+  printf("%s:%d:%s   for class -> %s   superclasses -> %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(instance->name()).c_str(), _rep_(superclasses).c_str());
+#endif
+  bool derives_from_StandardClass = false;
+  for (auto cur : superclasses) {
+    T_sp tsuper = oCar(cur);
+    if (tsuper == _lisp->_Roots._TheStandardClass) {
+      derives_from_StandardClass = true;
+#ifdef DEBUG_CLASS_INSTANCE
+      printf("%s:%d:%s        derives from class\n", __FILE__, __LINE__, __FUNCTION__ );
+#endif
+    }
+    if (Class_sp aSuperClass = tsuper.asOrNull<Class_O>() ) {
+      if (aSuperClass->cxxClassP() && !aSuperClass->cxxDerivableClassP()) {
+        SIMPLE_ERROR(BF("You cannot derive from the non-derivable C++ class %s\n"
+                        "any C++ class you want to derive from must inherit from the clbind derivable class") %
+                     _rep_(aSuperClass->_className()));
+      }
+      gc::Nilable<Class_sp> aPossibleCxxDerivableAncestorClass = identifyCxxDerivableAncestorClass(aSuperClass);
+      if (aPossibleCxxDerivableAncestorClass.notnilp()) {
+        if (!aCxxDerivableAncestorClass_unsafe) {
+          aCxxDerivableAncestorClass_unsafe = aPossibleCxxDerivableAncestorClass;
+        } else {
+          SIMPLE_ERROR(BF("Only one derivable C++ class is allowed to be"
+                          " derived from at a time instead we have two %s and %s ") %
+                       _rep_(aCxxDerivableAncestorClass_unsafe->_className()) % _rep_(aPossibleCxxDerivableAncestorClass->_className()));
+        }
+      }
+    } else if ( Instance_sp iSuperClass = tsuper.asOrNull<Instance_O>() ) {
+      SIMPLE_ERROR(BF("In Clasp, Instances are never Classes - so instance error should never occur.  If it does - figure out why tsuper is an Instance"));
+      // I don't think I do anything here
+      // If aCxxDerivableAncestorClass_unsafe is left unchanged then
+      // an InstanceCreator_O will be created for this class.
+    }
+  }
+  if (aCxxDerivableAncestorClass_unsafe) {
+    // Here aCxxDerivableAncestorClass_unsafe has a value - so it's ok to dereference it
+    Creator_sp aCxxAllocator(gctools::As<Creator_sp>(aCxxDerivableAncestorClass_unsafe->CLASS_get_creator()));
+#ifdef DEBUG_CLASS_INSTANCE
+    printf("%s:%d   duplicating aCxxDerivableAncestorClass_unsafe %s creator\n", __FILE__, __LINE__, _rep_(aCxxDerivableAncestorClass_unsafe).c_str());
+#endif
+    Creator_sp dup = aCxxAllocator->duplicateForClassName(instance->_className());
+    return dup;
+  } else if (derives_from_StandardClass) {
+#ifdef DEBUG_CLASS_INSTANCE
+    printf("%s:%d   Creating a ClassCreator for %s\n", __FILE__, __LINE__, _rep_(instance->name()).c_str());
+#endif
+    ClassCreator_sp classCreator = gc::GC<ClassCreator_O>::allocate(instance);
+    return classCreator;
+  }
+ // I think this is the most common outcome -
+#ifdef DEBUG_CLASS_INSTANCE
+  printf("%s:%d   Creating an InstanceCreator_O for the class: %s\n", __FILE__, __LINE__, _rep_(instance->name()).c_str());
+#endif
+  InstanceCreator_sp instanceAllocator = gc::GC<InstanceCreator_O>::allocate(instance);
+  return instanceAllocator;
+}
 
 
 #if 0

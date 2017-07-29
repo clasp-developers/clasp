@@ -395,16 +395,13 @@ type as a template argument.  Call it like this...
 funcall_consume_valist_<core::Function_O>(tagged_func_ptr,valist_args)
 */
 template <typename Func_O_Type>
-inline gctools::return_type funcall_consume_valist_(gc::Tagged func_tagged,
-                                                    VaList_sp args) {
-  if (!gc::tagged_generalp(func_tagged)){
-    printf("%s:%d Bad function - it is missing a tag %p\n", __FILE__, __LINE__, (void*)func_tagged);
-  }
-  gc::smart_ptr<Func_O_Type> func((gc::Tagged)func_tagged);
+inline gctools::return_type funcall_consume_valist_(gc::Tagged func_tagged, VaList_sp args) {
+  ASSERT(gc::tagged_generalp(func_tagged));
+  gc::smart_ptr<Function_O> func((gc::Tagged)func_tagged);
   size_t nargs = args->remaining_nargs();
   switch (nargs) {
 #define APPLY_TO_VA_LIST_CASE 1
-    #include <clasp/core/generated/applyToFrame.h>
+#include <clasp/core/generated/applyToFrame.h>
 #undef APPLY_TO_VA_LIST_CASE
   default:
       printf("%s:%d Handle functions with arity %lu for funcall or reduce the number of args in this call\n", __FILE__, __LINE__, nargs);

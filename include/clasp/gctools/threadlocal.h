@@ -151,6 +151,7 @@ namespace core {
 
 
 namespace core {
+#define IHS_BACKTRACE_SIZE 16
   struct InvocationHistoryFrame;
   struct ThreadLocalState {
     ThreadLocalState(void* stack_top);
@@ -161,8 +162,8 @@ namespace core {
     DynamicBindingStack _Bindings;
     const InvocationHistoryFrame* _InvocationHistoryStackTop;
 #ifdef DEBUG_IHS
-    // Save the last closure
-    core::T_O*                    _InvocationHistoryStackClosure;
+    // Save the last return address before IHS screws up
+    void*                    _IHSBacktrace[IHS_BACKTRACE_SIZE];
 #endif
     ExceptionStack _ExceptionStack;
     MultipleValues _MultipleValues;

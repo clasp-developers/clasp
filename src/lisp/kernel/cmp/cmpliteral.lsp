@@ -60,8 +60,8 @@
   (let ((highest-index -1))
     (dolist (node nodes)
       #+(or)(bformat t "generate-run-all-code  generating node: %s\n" node)
-      (when (literal:literal-node-creator-p node)
-        (setf highest-index (max highest-index (literal:literal-node-creator-index node)))))
+      (when (literal-node-creator-p node)
+        (setf highest-index (max highest-index (literal-node-creator-index node)))))
     (1+ highest-index)))
 
 ;;; ------------------------------------------------------------
@@ -304,7 +304,7 @@ the value is put into *default-load-time-value-vector* and its index is returned
              "Lookup or create the llvm::Value for obj"
              (or (gethash obj *llvm-values*)
                  (setf (gethash obj *llvm-values*)
-                       (irc-intrinsic-call (literal:literal-node-creator-name obj)
+                       (irc-intrinsic-call (literal-node-creator-name obj)
                                            (list*
                                             *gcroots-in-module*
                                             (cmp:jit-constant-size_t (literal-node-creator-index obj))
@@ -326,7 +326,7 @@ the value is put into *default-load-time-value-vector* and its index is returned
                        (cond
                          ((fixnump x) (jit-constant-i64 x))
                          ((stringp x) (jit-constant-unique-string-ptr x))
-                         ((literal:literal-node-creator-p x) (lookup-arg x))
+                         ((literal-node-creator-p x) (lookup-arg x))
                          (t x))) ;;(error "Illegal run-all entry ~a" x))))
                      args)))
     (cond
@@ -498,7 +498,7 @@ and  return the sorted values and the constant-table or (values nil nil)."
                                          nil      ; isConstant
                                          'llvm-sys:internal-linkage
                                          nil
-                                         (literal:next-value-table-holder-name)))
+                                         (next-value-table-holder-name)))
          (*run-time-coalesce* (make-hash-table :test #'eq))
          (*run-all-objects* nil))
      (progn ,@body)
@@ -522,7 +522,7 @@ Return the orderered-raw-constants-list and the constants-table GlobalVariable"
                                                                nil ; isConstant
                                                                'llvm-sys:internal-linkage
                                                                (llvm-sys:undef-value-get array-type)
-                                                               (literal:next-value-table-holder-name)))
+                                                               (next-value-table-holder-name)))
 
            (let ((bitcast-constant-table (irc-bit-cast constant-table %tsp[0]*% "bitcast-table")))
              (llvm-sys:replace-all-uses-with *load-time-value-holder-global-var* bitcast-constant-table))))
@@ -672,7 +672,7 @@ Return the orderered-raw-constants-list and the constants-table GlobalVariable"
         (let* ((literal-node-runtime immediate?literal-node-runtime)
                (index (literal-node-runtime-index literal-node-runtime)))
           (when result
-            (irc-store (literal:constants-table-value index) result))
+            (irc-store (constants-table-value index) result))
           index)
         (let ((immediate immediate?literal-node-runtime))
           (when result

@@ -149,12 +149,6 @@ public:
 	  Otherwise return nil.  
 	*/
   List_sp classifyVariable(T_sp sym) const;
-//  virtual T_sp _lookupValue(int depth, int index);
-//  virtual Function_sp _lookupFunction(int depth, int index) const;
-//  virtual T_sp _lookupTagbodyId(int depth, int index) const { SUBIMP(); };
-#if 0
-  virtual T_sp &lookupValueReference(int depth, int index);
-#endif
 public:
   string environmentStackAsString();
   /*! Search down the stack for the symbol
@@ -189,9 +183,6 @@ public:
   //	virtual bool updateValueDontThrow(Symbol_sp sym, T_sp value);
 
 public: // extend the environment with forms
-  /*! Lookup the Form, if it doesn't exist return nil */
-  //	virtual Function_sp function_lookup(T_sp functionName);
-
   /*! Classify function lookup
 	  If the function is not found return nil
 	  If the function is lexical return `(lexical-function ,symbol ,depth ,index)
@@ -454,24 +445,6 @@ struct gctools::GCInfo<core::FunctionValueEnvironment_O> {
 
 
 namespace core {
-
-#if 0 // depreciated
-    class HandlerHolder
-    {
-    private:
-	Class_sp		_Condition;
-	Function_sp	_Handler;
-    public:
-	HandlerHolder() {};
-	void setup(Class_sp mc, Function_sp exec)
-	{
-	    this->_Condition = mc;
-	    this->_Handler = exec;
-	}
-	Class_sp getCondition() { return this->_Condition;};
-	Function_sp getHandler() { return this->_Handler;};
-    };
-#endif
 
 class CompileTimeEnvironment_O : public LexicalEnvironment_O {
   LISP_CLASS(core, CorePkg, CompileTimeEnvironment_O, "CompileTimeEnvironment",LexicalEnvironment_O);

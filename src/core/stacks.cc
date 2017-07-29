@@ -26,6 +26,7 @@ THE SOFTWARE.
 /* -^- */
 #include <libgen.h>
 
+#include <execinfo.h>
 #include <clasp/core/foundation.h>
 #include <clasp/core/stacks.h>
 #include <clasp/core/object.h>
@@ -51,6 +52,14 @@ extern void dump_backtrace_n_frames(size_t n);
 
 namespace core {
 
+
+#ifdef DEBUG_IHS
+// Maintain a shadow stack of function pointers when DEBUG_IHS is turned on
+// This will slow the system down, but will provide function names of functions
+// on the stack when an IHS problem is 
+std::vector<void*>     global_debug_ihs_shadow_stack;
+#endif
+
 // TODO Get rid of this definition of global_debug_ihs
 int global_debug_ihs = 0;
 
@@ -68,13 +77,13 @@ void validate_InvocationHistoryStack(int pushPop, const InvocationHistoryFrame* 
   if (global_debug_ihs==2) invocation_history_stack_dump(frame,"Validating stack",0);
   fflush(stdout);
 }
-
+  
 
 
 void error_InvocationHistoryStack(const InvocationHistoryFrame* frame, const InvocationHistoryFrame* stackTop) {
 //  printf("%s:%d  Error in closure @%p\n", __FILE__, __LINE__, (void*)tagged_closure);
   printf("\n%s:%d ------- the my_thread->_InvocationHistoryStackTop pointer @%p\n", __FILE__, __LINE__, my_thread->_InvocationHistoryStackTop );
-  printf("          does not match the current frame being popped @%p\n", frame );
+  printf("          does not match the current frame being popped @%p  closure@%p  func_ptr@%p\n", frame, frame->function().raw_(), gc::As<Function_sp>(frame->function())->entry );
   if (my_thread->_InvocationHistoryStackTop < frame ) {
     printf("     It appears that a function did not clean up after itself\n");
     printf("     and at least one frame was left on the stack when it should have been popped\n");
@@ -85,20 +94,20 @@ void error_InvocationHistoryStack(const InvocationHistoryFrame* frame, const Inv
   }
 #ifdef DEBUG_IHS
   void* fn_ptr = NULL;
-  if (gctools::tagged_generalp(my_thread->_InvocationHistoryStackClosure)) {
-    fn_ptr = (void*)(reinterpret_cast<Function_O*>(gc::untag_general(my_thread->_InvocationHistoryStackClosure))->entry);
-  }
-  printf("                     the InvocationHistoryStackTopClosure @%p function pointer @%p\n", my_thread->_InvocationHistoryStackClosure, fn_ptr);
   printf("   To debug this do the following:\n");
   printf("     (1) Recompile EVERYTHING (including CL code) with DEBUG_IHS turned on - this is to ensure that old code in the image is recompiled\n");
   printf("     (2) Run under the debugger and reproduce the error\n");
-  printf("     (3) Set a break point on the function pointer above (b %p) - the function that is not cleaning up is on the stack above it\n", fn_ptr);
+  printf("     (3) Set a break point on one (TO BE DETERMINED) of the backtrace return addresses below\n");
+  backtrace_symbols_fd((void* const *)&my_thread->_IHSBacktrace[0],IHS_BACKTRACE_SIZE,1);
   printf("              (Note: This may not be true if the function above is a commonly called one\n");
-  printf("                - in that even you need to find some other function to break on when the bad function is on the stack\n");
+  printf("                - in that event you need to find some other function to break on when the bad function is on the stack\n");
   printf("     (4) Reproduce the error, breaking in the function above\n");
   printf("     (5) Type:   expr global_debug_ihs = 1    (this turns on additional debugging)\n");
   printf("     (6) continue running,  every push_InvocationHistoryFrame & pop_InvocationHistoryFrame call will cause some of the stack frames to be dumped\n");
   printf("     (7) when the error is hit and the debugger is reentered - look at the last push/pop partial stack dump - the bad function should be the top one.\n");
+  printf("   Also, look at the list of function symbols below - from the bottom up are the functions whose frames should have been popped off the stack but were not\n");
+  printf("        One of them should contain the bad code\n");
+  backtrace_symbols_fd(&global_debug_ihs_shadow_stack[0],global_debug_ihs_shadow_stack.size(),1);
 #else
   printf("         Turn on DEBUG_IHS and rebuild everything to assist in debugging this problem - when you rerun you will get more advice on how to fix this\n");
 #endif
@@ -155,14 +164,6 @@ Vector_sp ExceptionStack::backtrace() {
   return result;
 }
 
-static inline void args_and_reg_save_area_valid_p( const InvocationHistoryFrame * self, char *pc_file, int n_line, const char *pc_fn_name )
-{
-  if( ! self->_args->reg_save_area )
-  {
-    fprintf( stderr, "\n*** EMERGENCY in %s (%s:%d): this->_args->reg_save_area is invalid ! - ABORTING !!!\n", pc_fn_name, basename( pc_file ), n_line );
-    abort();
-  }
-}
 
 void InvocationHistoryFrame::validate() const {
 #if 0
@@ -182,7 +183,6 @@ void InvocationHistoryFrame::validate() const {
 
 T_sp InvocationHistoryFrame::function() const
   {
-    args_and_reg_save_area_valid_p( this , __FILE__, __LINE__, __FUNCTION__ );
     Function_sp res((gctools::Tagged)(((core::T_O**)(this->_args->reg_save_area))[LCC_CLOSURE_REGISTER]));
     if ( !res ) {
       return _Nil<T_O>();
@@ -192,7 +192,6 @@ T_sp InvocationHistoryFrame::function() const
 
 void* InvocationHistoryFrame::register_save_area() const
   {
-    args_and_reg_save_area_valid_p( this , __FILE__, __LINE__, __FUNCTION__ );
     return (this->_args->reg_save_area);
   }
 
@@ -306,9 +305,9 @@ void invocation_history_stack_dump(const InvocationHistoryFrame* frame, const ch
     T_sp tfn = cur->function();
     if (gc::IsA<Function_sp>(tfn)) {
       Function_sp fn = gc::As_unsafe<Function_sp>(tfn);
-      printf("    frame[%4lu] @%p (previous %p)  closure@%p  fptr@%p: %s\n", count, cur, cur->_Previous, tfn.raw_(), (void*)fn->entry, _rep_(fn->functionName()).c_str());
+      printf("    frame[%4lu] @%p (previous %p)  this->_args@%p this->_args->reg_save_area@%p closure@%p  fptr@%p: %s\n", count, cur, cur->_Previous, &cur->_args, cur->_args->reg_save_area, tfn.raw_(), (void*)fn->entry, _rep_(fn->functionName()).c_str());
     } else {
-      printf("    frame[%4lu] @%p   NO-FUNCTION-INFO tfn@%p\n", count, cur, tfn.raw_());
+      printf("    frame[%4lu] @%p (previous %p)  this->_args@%p this->_args->reg_save_area@%p  BAD-CLOSURE-INFO closure@%p\n", count, cur, cur->_Previous, &cur->_args, cur->_args->reg_save_area, tfn.raw_() );
     }
     cur = cur->_Previous;
     ++count;
@@ -380,6 +379,10 @@ namespace core {
 void push_InvocationHistoryStack(const InvocationHistoryFrame* frame) {
 #ifdef DEBUG_IHS
   if (global_debug_ihs) validate_InvocationHistoryStack(1,frame,my_thread->_InvocationHistoryStackTop);
+  void* frame_function_ptr = reinterpret_cast<void*>(gc::As_unsafe<Function_sp>(frame->function())->entry);
+  global_debug_ihs_shadow_stack.push_back(frame_function_ptr);
+  // Keep track of the last closure before things go haywire
+  backtrace(my_thread->_IHSBacktrace,IHS_BACKTRACE_SIZE);
 #endif
   frame->_Previous = my_thread->_InvocationHistoryStackTop;
   my_thread->_InvocationHistoryStackTop = frame;
@@ -387,11 +390,23 @@ void push_InvocationHistoryStack(const InvocationHistoryFrame* frame) {
 void pop_InvocationHistoryStack(const InvocationHistoryFrame* frame) {
 #ifdef DEBUG_IHS
   if (global_debug_ihs) validate_InvocationHistoryStack(0,frame,my_thread->_InvocationHistoryStackTop);
+  global_debug_ihs_shadow_stack.pop_back();
 #endif
   unlikely_if (frame != my_thread->_InvocationHistoryStackTop) error_InvocationHistoryStack(frame,my_thread->_InvocationHistoryStackTop);
   my_thread->_InvocationHistoryStackTop = my_thread->_InvocationHistoryStackTop->_Previous;
+#ifdef DEBUG_IHS
+  backtrace(my_thread->_IHSBacktrace,IHS_BACKTRACE_SIZE);
+#endif
 };
 
+CL_DEFUN void core__dump_debug_ihs_shadow_stack() {
+#ifdef DEBUG_IHS
+  printf("global_debug_ihs_shadow_stack\n");
+  backtrace_symbols_fd(&global_debug_ihs_shadow_stack[0],global_debug_ihs_shadow_stack.size(),1);
+  printf("my_thread->_IHSBacktrace\n");
+  backtrace_symbols_fd((void* const *)&my_thread->_IHSBacktrace[0],IHS_BACKTRACE_SIZE,1);
+#endif
+}
 
 
 

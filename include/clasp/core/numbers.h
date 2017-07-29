@@ -647,6 +647,8 @@ namespace core {
 
     virtual Number_sp conjugate_() const;
 
+    virtual void __write__(T_sp strm) const;
+
     Complex_O(Real_sp r, Real_sp i) : _real(r), _imaginary(i) {};
     Complex_O() : _real(clasp_make_single_float(0.0)), _imaginary(clasp_make_single_float(0.0)) {};
     virtual ~Complex_O() {};

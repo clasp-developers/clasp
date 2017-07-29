@@ -48,6 +48,7 @@ THE SOFTWARE.
 #include <clasp/core/package.h>
 #include <clasp/core/readtable.h>
 #include <clasp/core/instance.h>
+#include <clasp/core/funcallableInstance.h>
 #include <clasp/core/backquote.h>
 #include <clasp/core/sequence.h>
 #include <clasp/core/structureObject.h>
@@ -2195,8 +2196,8 @@ CL_DEFUN T_mv core__function_lambda_list(T_sp obj) {
     }
     Function_sp fn = sym->symbolFunction();
     return Values(core__function_lambda_list(fn),_lisp->_true());
-  } else if (gc::IsA<Instance_sp>(obj)) {
-    Instance_sp iobj = gc::As_unsafe<Instance_sp>(obj);
+  } else if (gc::IsA<FuncallableInstance_sp>(obj)) {
+    FuncallableInstance_sp iobj = gc::As_unsafe<FuncallableInstance_sp>(obj);
     if (iobj->isgf()) {
       return Values(core__get_sysprop(iobj, _sym_generic_function_lambda_lists),_lisp->_true());
     }
@@ -2211,8 +2212,8 @@ CL_LAMBDA(function lambda_list);
 CL_DECLARE();
 CL_DOCSTRING("Set the lambda-list that function-lambda-list would return for the generic function");
 CL_DEFUN void core__function_lambda_list_set(T_sp obj, T_sp lambda_list) {
-  if (gc::IsA<Instance_sp>(obj)) {
-    Instance_sp iobj = gc::As_unsafe<Instance_sp>(obj);
+  if (gc::IsA<FuncallableInstance_sp>(obj)) {
+    FuncallableInstance_sp iobj = gc::As_unsafe<FuncallableInstance_sp>(obj);
     if (iobj->isgf()) {
       core__put_sysprop(iobj, _sym_generic_function_lambda_lists, lambda_list);
     }

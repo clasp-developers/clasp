@@ -1,6 +1,11 @@
 FROM cando-compile
 MAINTAINER Christian Schafmeister <meister@temple.edu>
 
+# Overwrite the clasp-build clasp/Contents/Resources/source-code/extensions/cando/src/lisp directory
+# with whatever new changes have been made in the hosts  extensions/cando/src/lisp/**   hierarchy
+#    This is to refresh the Common Lisp code for Cando
+ADD extensions/cando/src/lisp $HOME/clasp/Contents/Resources/source-code/extensions/cando/src/lisp
+
 # Install nglview for python 2
 USER root
 RUN python -m pip install pip --upgrade
@@ -25,8 +30,12 @@ USER app
 
 
 USER root
+ADD tools/dockerfiles/examples /home/app/work/examples
+RUN chown -R app:app /home/app/work
+RUN chown -R app:app /home/app/.jupyter
 RUN chown -R app:app /home/app/nglview
 USER app
+
 
 ENTRYPOINT [ "jupyter", "notebook" ]
 CMD        [ "--no-browser", "--ip=0.0.0.0", "--port=8888" ]

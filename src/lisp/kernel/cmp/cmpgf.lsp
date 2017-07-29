@@ -146,9 +146,6 @@
   (defmacro gf-log (fmt &rest fmt-args) nil)
   (defmacro gf-do (&body code) nil))
 
-(unless (boundp '+header-size+)
-  (defparameter +header-size+ 8))
-
 
 ;;; ------------------------------------------------------------
 ;;;

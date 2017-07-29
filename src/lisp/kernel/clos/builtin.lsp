@@ -40,7 +40,7 @@
     ;; regular classes then it will get an Instance allocator
     ;; If one of them is a ClbindClass then this will inherit a
     ;; duplicate of its allocator
-    #+clasp(sys:inherit-default-allocator class direct-superclasses)
+    #+clasp(setf (creator class) (sys:compute-instance-creator class metaclass direct-superclasses))
     #+fast-dispatch(invalidate-generic-functions-with-class-selector class)
     (when name
       (si:create-type-name name)

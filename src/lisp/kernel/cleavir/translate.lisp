@@ -739,6 +739,13 @@ when this is t a lot of graphs will be generated.")
 
 
 (defmethod translate-branch-instruction
+    ((instruction cc-mir:headerq-instruction) return-value inputs outputs successors abi function-info)
+  (declare (ignore return-value outputs abi function-info))
+  (cmp::compile-header-check
+   (cc-mir:header-value-min-max instruction)
+   (%load (first inputs)) (first successors) (second successors)))
+
+(defmethod translate-branch-instruction
     ((instruction cleavir-ir:return-instruction) return-value inputs outputs successors abi function-info)
   (declare (ignore successors))
   (cmp:irc-low-level-trace :flow)
@@ -896,7 +903,7 @@ when this is t a lot of graphs will be generated.")
   (cleavir-kildall-type-inference:delete-the init-instr)
   (setf *ct-delete-the* (compiler-timer-elapsed))
   (quick-draw-hir init-instr "hir-after-delete-the")
-  (cleavir-hir-transformations:eliminate-typeq init-instr)
+  (cc-hir-to-mir:reduce-typeqs init-instr)
   (setf *ct-eliminate-typeq* (compiler-timer-elapsed))
   (quick-draw-hir init-instr "hir-after-eliminate-typeq")
   (clasp-cleavir::eliminate-load-time-value-inputs init-instr *clasp-system*)

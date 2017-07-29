@@ -27,6 +27,21 @@ THE SOFTWARE.
 #ifndef llvmo_intrinsics_H
 #define llvmo_intrinsics_H
 
+// If functions are defined with primitive-nounwind that means that they never unwind the stack and they can
+//   be invoked from generated code using 'call'.  If they do unwind the stack, then any function that invokes
+//   them with 'call' will fail to cleanup the stack and that will cause a failure.
+//   These 'nounwind' intrinsic functions can be diagnosed by wrapping them in NO_UNWIND_BEGIN()/NO_UNWIND_END()
+//   it wraps the body of the function in a try{...}catch(...){ERROR} block.
+//   This is zero-cost at runtime other than increasing the size of unwind tables.
+
+#ifdef DEBUG_NO_UNWIND
+  #define NO_UNWIND_BEGIN() try {
+  #define NO_UNWIND_END() } catch (...) {printf("%s:%d:%s  The stack is being unwound out of a function declared nounwind!!!\n", __FILE__, __LINE__, __FUNCTION__ );abort();}
+#else
+  #define NO_UNWIND_BEGIN()
+  #define NO_UNWIND_END()
+#endif
+
 namespace llvmo {
   extern core::T_sp  global_arg0;
   extern core::T_sp  global_arg1;

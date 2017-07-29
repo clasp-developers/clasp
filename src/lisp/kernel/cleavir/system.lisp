@@ -58,23 +58,23 @@
      (defclass ,name ,super-classes ,@for-defclass)
      (clos::ensure-class
       ',victim-class
-       :direct-superclasses
-       (adjoin ',name
-		(and (find-class ',victim-class nil) (clos::class-direct-superclasses
-						      (find-class ',victim-class)))
-		:test #'class-equalp))
+      :direct-superclasses
+      (adjoin ',name
+              (and (find-class ',victim-class nil) (clos::class-direct-superclasses
+                                                    (find-class ',victim-class)))
+              :test #'class-equalp))
      ;; Register it as a new mixin for the victim class
      (pushnew ',name (class-stealth-mixins ',victim-class))
      (defmethod clos::ensure-class-using-class :around 
-	 (class (name (eql ',victim-class))
-		&rest arguments
-		&key (direct-superclasses nil direct-superclasses-p) &allow-other-keys)
-	 (dolist (k (class-stealth-mixins name)) 
-	   (pushnew k direct-superclasses
-		    :test #'class-equalp)) 
-	 (apply #'call-next-method class name
-		  :direct-superclasses direct-superclasses
-		  arguments))
+       (class (name (eql ',victim-class))
+              &rest arguments
+              &key (direct-superclasses nil direct-superclasses-p) &allow-other-keys)
+       (dolist (k (class-stealth-mixins name)) 
+         (pushnew k direct-superclasses
+                  :test #'class-equalp)) 
+       (apply #'call-next-method class name
+              :direct-superclasses direct-superclasses
+              arguments))
      ',name))
 
 

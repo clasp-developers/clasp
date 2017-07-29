@@ -36,6 +36,7 @@ THE SOFTWARE.
 #include <clasp/core/designators.h>
 #include <clasp/core/primitives.h>
 #include <clasp/core/instance.h>
+#include <clasp/core/funcallableInstance.h>
 #include <clasp/core/sourceFileInfo.h>
 #include <clasp/core/activationFrame.h>
 #include <clasp/core/lambdaListHandler.h>
@@ -57,6 +58,20 @@ T_sp InstanceCreator_O::creator_allocate() {
   }
 #endif
   Instance_sp instance = gctools::GC<Instance_O>::allocate_instance(gctools::Header_s::Value::make_instance(), size);
+  return instance;
+    };
+};
+
+namespace core {
+T_sp FuncallableInstanceCreator_O::creator_allocate() {
+  size_t size = gctools::sizeof_with_header<FuncallableInstance_O>();
+#ifdef METER_ALLOCATIONS
+  if (this->_class) {
+    this->_class->_allocation_counter += 1;
+    this->_class->_allocation_total_size += size;
+  }
+#endif
+  FuncallableInstance_sp instance = gctools::GC<FuncallableInstance_O>::allocate_instance(gctools::Header_s::Value::make_funcallable_instance(), size);
   return instance;
     };
 };
@@ -84,7 +99,7 @@ T_sp StandardClassCreator_O::creator_allocate() {
   c->_allocation_counter += 1;
   c->_allocation_total_size += size;
 #endif
-  GC_ALLOCATE_VARIADIC(Class_O,class_,lisp_standard_class(),REF_CLASS_NUMBER_OF_SLOTS_IN_STANDARD_CLASS);
+  GC_ALLOCATE_VARIADIC(Class_O,class_,lisp_standard_class()  /*,REF_CLASS_NUMBER_OF_SLOTS_IN_STANDARD_CLASS*/);
 //  printf("%s:%d:%s   created class\n", __FILE__, __LINE__, __FUNCTION__ );
   return class_;
 };
@@ -98,8 +113,21 @@ T_sp StructureClassCreator_O::creator_allocate() {
   c->_allocation_counter += 1;
   c->_allocation_total_size += size;
 #endif
-  GC_ALLOCATE_VARIADIC(Class_O,class_,lisp_standard_class(),REF_CLASS_NUMBER_OF_SLOTS_IN_STRUCTURE_CLASS);
+  GC_ALLOCATE_VARIADIC(Class_O,class_,lisp_standard_class()/*,REF_CLASS_NUMBER_OF_SLOTS_IN_STRUCTURE_CLASS*/);
   return class_;
 };
 
+};
+
+namespace core {
+
+LCC_RETURN Creator_O::LISP_CALLING_CONVENTION() {
+  LCC_RETURN v;
+  return v;
+}
+
+CL_DEFUN T_sp core__run_creator(Creator_sp c)
+{
+  return c->creator_allocate();
+}
 };
