@@ -1083,7 +1083,7 @@ and initialize it with an array consisting of one function pointer."
     (primitive-nounwind* module "cc_initialize_gcroots_in_module" %void% (list %gcroots-in-module*% %tsp*% %size_t% %t*%))
     (primitive-nounwind* module "cc_shutdown_gcroots_in_module" %void% (list %gcroots-in-module*% ))
 
-    (primitive-nounwind* module "cc_enclose" %t*% (list %t*% %fn-prototype*% %i32*% %size_t% %size_t% %size_t% %size_t% ) :varargs t)
+    (primitive           module "cc_enclose" %t*% (list %t*% %fn-prototype*% %i32*% %size_t% %size_t% %size_t% %size_t% ) :varargs t)
     (primitive-nounwind* module "cc_stack_enclose" %t*% (list %i8*% %t*% %fn-prototype*% %i32*% %size_t% %size_t% %size_t% %size_t% ) :varargs t)
     (primitive-nounwind* module "cc_saveThreadLocalMultipleValues" %void% (list %tmv*% %mv-struct*%))
     (primitive-nounwind* module "cc_loadThreadLocalMultipleValues" %void% (list %tmv*% %mv-struct*%))
