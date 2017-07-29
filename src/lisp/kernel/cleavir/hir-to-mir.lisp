@@ -152,7 +152,18 @@
           (t
            (when (or (eq rank '*) (eql rank 1))
              (setf con (maybe-gen-primitive-type-check
-                        object (simple-vector-type element-type) pro con)))
+                        object (simple-vector-type element-type) pro con))
+             (unless simple-only-p
+               (case element-type ; some have special complex vector versions
+                 ((base-char)
+                  (setf con (maybe-gen-primitive-type-check
+                             object 'core:str8ns pro con)))
+                 ((character)
+                  (setf con (maybe-gen-primitive-type-check
+                             object 'core:str-wns pro con)))
+                 ((bit)
+                  (setf con (maybe-gen-primitive-type-check
+                             object 'core:bit-vector-ns pro con))))))
            (if simple-only-p
                (when (or (eq rank '*) (not (eql rank 1)))
                  (setf con
