@@ -530,6 +530,7 @@ def configure(cfg):
         exec(open("./wscript.config").read(), globals(), local_environment)
         cfg.env.update(local_environment)
 
+    # This is where configure(cfg) starts
         # KLUDGE there should be a better way than this
     cfg.env["BUILD_ROOT"] = os.path.abspath(top)
     load_local_config(cfg)
@@ -618,6 +619,10 @@ def configure(cfg):
     print("llvm_include_dir = %s" % llvm_include_dir)
     cfg.env.append_value('CXXFLAGS', ['-I./', '-I' + llvm_include_dir])
     cfg.env.append_value('CFLAGS', ['-I./'])
+    if (cfg.env["PROFILING"] == True):
+        cfg.env.append_value('CXXFLAGS',["-pg"])
+        cfg.env.append_value('CFLAGS',["-pg"])
+        cfg.define("ENABLE_PROFILING",1)
 #    if ('program_name' in cfg.__dict__):
 #        pass
 #    else:
