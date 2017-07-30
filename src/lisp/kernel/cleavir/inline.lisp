@@ -468,12 +468,9 @@
 ;;; Provided by bike  May 21, 2017
 ;;;
 
-<<<<<<< HEAD
 ;;; should be moved to non-cleavir-specific land.
 ;;; Seems to be slower. Probably would be an improvement
 ;;; if the called function was inlined as well.
-=======
->>>>>>> Inhibit TYPEQ stuff in boehmdc
 #+(or)
 (progn
   (defun mapfoo-macro (iter accum function lists)
