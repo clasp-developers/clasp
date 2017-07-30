@@ -81,7 +81,7 @@ CommandLineOptions::CommandLineOptions(int argc, char *argv[])
              " pause-pid           - Print the PID and pause at startup for a debugger to attach\n"
              " ignore-extensions   - Ignore any extensions startup scripts\n"
              " clasp-builder-repl  - Stop in the clasp builder repl to debug bootstrapping\n"
-             " no-enable-profiling - Set cmp::*enable-profiling* to NIL and \n"
+             " disable-profiling   - Set cmp::*enable-profiling* to NIL and \n"
              "                       disable generation of counting-function function attribute\n"
              "Environment variables:\n"
              "export CLASP_DEBUG=<file-names-space-or-comma-separated>  Define files that\n"
