@@ -756,8 +756,8 @@ when this is t a lot of graphs will be generated.")
     ((instruction cleavir-ir:funcall-no-return-instruction) return-value inputs outputs successors (abi abi-x86-64) function-info)
   (declare (ignore successors))
   (cmp:irc-low-level-trace :flow)
-  ;; FIXME:  If this function has cleanup forms then this needs to be an INVOKE
-  (evaluate-cleanup-code function-info)
+  ;; If there is cleanup to be done then the invoke will have a landing pad
+  ;;    and that will do the cleanup
   (closure-call-or-invoke (first inputs) return-value (cdr inputs) abi)
   (cmp:irc-unreachable))
 
