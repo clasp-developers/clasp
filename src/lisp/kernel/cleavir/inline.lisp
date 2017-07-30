@@ -164,7 +164,16 @@
   (declaim (inline cl:null))
   (defun cl:null (x)
     (eq x nil)))
-;; if (cleavir-primop:typeq x null) t nil)))
+;; (if (cleavir-primop:typeq x null) t nil)
+
+(progn
+  (debug-inline "endp")
+  ;; more clhs-like definition is (null (the list x))
+  (declaim (inline cl:endp))
+  (defun cl:endp (list)
+    (cond ((cleavir-primop:typeq list cons) nil) ; common case
+          ((null list) t)
+          (t (error 'type-error :datum list :expected-type 'list)))))
 
 #-use-boehmdc
 (progn
@@ -459,6 +468,9 @@
 ;;; Provided by bike  May 21, 2017
 ;;;
 
+;;; should be moved to non-cleavir-specific land.
+;;; Seems to be slower. Probably would be an improvement
+;;; if the called function was inlined as well.
 #+(or)
 (progn
   (defun mapfoo-macro (iter accum function lists)
