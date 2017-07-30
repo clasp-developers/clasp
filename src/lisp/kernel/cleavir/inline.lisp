@@ -141,6 +141,9 @@
     complexp complex
     rationalp rational))
 
+;;; On BOEHMDC, we don't have primitive type information, so typeq
+;;; just defers to typep anyway.
+#-use-boehmdc
 (define-compiler-macro typep
     (&whole whole object type &optional env &environment macro-env)
   (if (and (null env) (constantp type macro-env))
@@ -148,23 +151,24 @@
            t nil)
       whole))
 
+#-use-boehmdc
 (progn
   (debug-inline "consp")
   (declaim (inline cl:consp))
   (defun cl:consp (x)
     (if (cleavir-primop:typeq x cons) t nil)))
 
-(debug-inline "null")
-
+#-use-boehmdc
 (progn
+  (debug-inline "null")
   (declaim (inline cl:null))
   (defun cl:null (x)
     (eq x nil)))
 ;; if (cleavir-primop:typeq x null) t nil)))
 
-(debug-inline "fixnump")
-
+#-use-boehmdc
 (progn
+  (debug-inline "fixnump")
   (declaim (inline core:fixnump))
   (defun core:fixnump (x)
     (if (cleavir-primop:typeq x cl:fixnum) t nil)))
@@ -181,9 +185,9 @@
   (defun core:single-float-p (x)
     (if (cleavir-primop:typeq x cl:single-float) t nil)))
 
-(debug-inline "car")
-
+#-use-boehmdc
 (progn
+  (debug-inline "car")
   (declaim (inline cl:car))
   (defun cl:car (x)
     (if (consp x)
@@ -192,9 +196,9 @@
             nil
             (error "Cannot get car of non-list ~s of type ~a" x (type-of x))))))
 
-(debug-inline "cdr")
-
+#-use-boehmdc
 (progn
+  (debug-inline "cdr")
   (declaim (inline cl:cdr))
   (defun cl:cdr (x)
     (if (cleavir-primop:typeq x cons) ;; (consp x)
@@ -262,6 +266,7 @@
 
 (debug-inline "rplaca")
 
+#-use-boehmdc
 (progn
   (declaim (inline cl:rplaca))
   (defun cl:rplaca (p v)
@@ -271,6 +276,7 @@
           p)
         (error "Cannot rplaca non-cons ~s" p))))
 
+#-use-boehmdc
 (progn
   (declaim (inline cl:rplacd))
   (defun cl:rplacd (p v)
@@ -294,6 +300,7 @@
            #:inlined-two-arg->=
            ))
 
+#-use-boehmdc
 (progn
   (defun convert-to-bignum (z)
     (if (> z 0)
@@ -345,6 +352,7 @@
   (def-inline-comparison primop:inlined-two-arg->  cleavir-primop:fixnum->  core:two-arg->)
   (def-inline-comparison primop:inlined-two-arg->= cleavir-primop:fixnum->= core:two-arg->=))
 
+#-use-boehmdc
 (progn
   (define-compiler-macro + (&rest numbers)
     (core:expand-associative '+ 'primop:inlined-two-arg-+ numbers 0))
@@ -451,7 +459,7 @@
 ;;; Provided by bike  May 21, 2017
 ;;;
 
-#++
+#+(or)
 (progn
   (defun mapfoo-macro (iter accum function lists)
     ;; nothing cleavir-specific here
@@ -481,6 +489,7 @@
     (mapfoo-macro 'on 'nconc function (cons list more-lists)))
   )
 
+#-use-boehmdc
 (define-compiler-macro funcall (function &rest arguments)
   (let ((fsym (gensym "FUNCTION")))
     `(let ((,fsym ,function))
