@@ -55,6 +55,7 @@
                               (second (cleavir-ir:inputs instr)))
                 :outputs nil))
 
+#-use-boehmdc
 (defun gen-sv-call (fname args result succ)
   (let ((fdef (cleavir-ir:new-temporary))
         (vals (cleavir-ir:make-values-location)))
@@ -105,6 +106,7 @@
   (with-constant (ty type)
     (gen-branch-call 'typep (list object ty) pro con)))
 
+#-use-boehmdc
 (defun gen-eql-check (object1 literal pro con)
   (with-constant (object2 literal)
     (if (typep literal '(and number (not fixnum) (not single-float))) ; non-eq-comparable
@@ -113,6 +115,7 @@
          (list object1 object2)
          (list pro con)))))
 
+#-use-boehmdc
 (defun gen-dimension-check (object dim spec pro con)
   (if (eq spec '*)
       pro ; don't need a nop as this will not be returned from gen-array-type-check
@@ -123,6 +126,7 @@
                        arrayd
                        (gen-eql-check arrayd spec pro con))))))
 
+#-use-boehmdc
 (defun gen-rank-check (object rank pro con)
   (let ((arrayr (cleavir-ir:new-temporary)))
     (gen-sv-call 'array-rank
@@ -130,6 +134,7 @@
                  arrayr
                  (gen-eql-check arrayr rank pro con))))
 
+#-use-boehmdc
 (defun gen-array-type-check (object element-type dimensions simple-only-p pro con)
   (let* ((dimensions (if (integerp dimensions) (list dimensions) dimensions))
          (rank (if (eq dimensions '*) '* (length dimensions))))
@@ -174,6 +179,7 @@
     ;; we have set con to an appropriate start at least once
     con))
 
+#-use-boehmdc
 (defun gen-interval-type-check (object head low high pro con)
   (let ((prims
           (ecase head
@@ -215,6 +221,7 @@
           do (setf con (maybe-gen-primitive-type-check object prim pro con)))
     con))
 
+#-use-boehmdc
 (defun maybe-gen-primitive-type-check (object primitive-type pro con)
   (case primitive-type
     ((fixnum) (cleavir-ir:make-fixnump-instruction object (list pro con)))
@@ -228,6 +235,7 @@
                (t (gen-typep-check object primitive-type pro con)))))))
 
 ;;; FIXME: Move these?
+#-use-boehmdc
 (defparameter +simple-vector-type-map+
   '((bit . simple-bit-vector)
     (fixnum . core:simple-vector-fixnum)
@@ -246,12 +254,14 @@
     (character . simple-string)
     (t . simple-vector)))
 
+#-use-boehmdc
 (defun simple-vector-type (uaet)
   (let ((pair (assoc uaet +simple-vector-type-map+)))
     (if pair
         (cdr pair)
         (error "BUG: Unknown UAET ~a in simple-vector-type" uaet))))
 
+#-use-boehmdc
 (defparameter +simple-mdarray-type-map+
   '((bit . core:simple-mdarray-bit)
     (fixnum . core:simple-mdarray-fixnum)
@@ -270,12 +280,14 @@
     (character . core:simple-mdarray-character)
     (t . simple-mdarray-t)))
 
+#-use-boehmdc
 (defun simple-mdarray-type (uaet)
   (let ((pair (assoc uaet +simple-mdarray-type-map+)))
     (if pair
         (cdr pair)
         (error "BUG: Unknown UAET ~a in simple-mdarray-type" uaet))))
 
+#-use-boehmdc
 (defparameter +complex-mdarray-type-map+
   '((bit . core:mdarray-bit)
     (fixnum . core:mdarray-fixnum)
@@ -294,12 +306,14 @@
     (character . core:mdarray-character)
     (t . mdarray-t)))
 
+#-use-boehmdc
 (defun complex-mdarray-type (uaet)
   (let ((pair (assoc uaet +complex-mdarray-type-map+)))
     (if pair
         (cdr pair)
         (error "BUG: Unknown UAET ~a in complex-mdarray-type" uaet))))
 
+#-use-boehmdc
 (defun gen-type-check (object type pro con)
   (multiple-value-bind (head args) (core::normalize-type type)
     (case head
@@ -368,6 +382,10 @@
       (t (if args
              (gen-typep-check object type pro con) ; unknown compound type
              (maybe-gen-primitive-type-check object head pro con))))))
+
+#+use-boehmdc
+(defun gen-type-check (object type pro con)
+  (gen-typep-check object type pro con))
 
 (defun replace-typeq (typeq-instruction)
   (let ((object (first (cleavir-ir:inputs typeq-instruction)))
