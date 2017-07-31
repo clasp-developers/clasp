@@ -364,6 +364,11 @@
          (gen-interval-type-check object head low high pro con)))
       ((complex) ; we don't have multiple complex types
        (maybe-gen-primitive-type-check object 'complex pro con))
+      ((number)
+       ;;; have to special case cos of fixnum and single-float.
+       (gen-interval-type-check
+        object 'real '* '* pro
+        (maybe-gen-primitive-type-check object 'complex pro con)))
       ((function)
        (if args ; runtime error. we should warn.
            (gen-typep-check object type pro con)
