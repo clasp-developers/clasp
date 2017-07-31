@@ -253,6 +253,7 @@
           constants-table-value
           with-ltv
           with-load-time-value
+          with-load-time-value-cleavir
           with-rtv
           with-top-level-form
           with-literal-table

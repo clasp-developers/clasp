@@ -906,6 +906,7 @@ and initialize it with an array consisting of one function pointer."
     (primitive          module "ltvc_set_mlf_creator_funcall" %ltvc-return% (list %gcroots-in-module*% %size_t% %fn-prototype*% %i8*%))
     (primitive          module "ltvc_mlf_init_funcall" %ltvc-return% (list %fn-prototype*% %i8*%))
     (primitive          module "ltvc_set_ltv_funcall" %ltvc-return% (list %gcroots-in-module*% %size_t% %fn-prototype*% %i8*%))
+    (primitive          module "ltvc_set_ltv_funcall_cleavir" %ltvc-return% (list %gcroots-in-module*% %size_t% %fn-prototype*% %i8*%))
     (primitive          module "ltvc_toplevel_funcall" %ltvc-return% (list %fn-prototype*% %i8*%))
   
 ;;    (primitive-nounwind* module "newFunction_sp" %void% (list %Function_sp*%))
