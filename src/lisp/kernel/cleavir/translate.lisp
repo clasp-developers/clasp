@@ -886,18 +886,22 @@ when this is t a lot of graphs will be generated.")
   (setf *ct-thes->typeqs* (compiler-timer-elapsed))
 
   ;;; See comment in policy.lisp. tl;dr these analyses are slow.
-  (when (policy-anywhere-p init-instr 'analyze-flow)
-    (let ((liveness (cleavir-liveness:liveness init-instr)))
-      (setf *ct-liveness* (compiler-timer-elapsed))
-      ;; DX analysis
-      (cleavir-escape:mark-dynamic-extent init-instr :liveness liveness)
-      (setf *ct-mark-dynamic-extent* (compiler-timer-elapsed))
-      ;; Type inference
-      (cleavir-kildall-type-inference:infer-types init-instr clasp-cleavir:*clasp-env*
-        :liveness liveness :prune t
-        :draw (quick-hir-pathname "hir-before-prune-ti"))
-      (quick-draw-hir init-instr "hir-after-ti")
-      (setf *ct-infer-types* (compiler-timer-elapsed))))
+  (let ((do-dx (policy-anywhere-p init-instr 'do-dx-analysis))
+        (do-ty (policy-anywhere-p init-instr 'do-type-inference)))
+    (when (or do-dx do-ty)
+      (let ((liveness (cleavir-liveness:liveness init-instr)))
+        (setf *ct-liveness* (compiler-timer-elapsed))
+        ;; DX analysis
+        (when do-dx
+          (cleavir-escape:mark-dynamic-extent init-instr :liveness liveness)
+          (setf *ct-mark-dynamic-extent* (compiler-timer-elapsed)))
+        ;; Type inference
+        (when do-ty
+          (cleavir-kildall-type-inference:infer-types init-instr clasp-cleavir:*clasp-env*
+                                                      :liveness liveness :prune t
+                                                      :draw (quick-hir-pathname "hir-before-prune-ti"))
+          (quick-draw-hir init-instr "hir-after-ti")
+          (setf *ct-infer-types* (compiler-timer-elapsed))))))
 
   ;; delete the-instruction and the-values-instruction
   (cleavir-kildall-type-inference:delete-the init-instr)
