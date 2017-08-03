@@ -704,6 +704,8 @@ void calculate_class_precedence_lists()
 
 template <typename TSingle>
 void add_single_typeq_test(core::HashTable_sp theMap) {
+  Fixnum header_val = gctools::Header_s::Value::GenerateHeaderValue<TSingle>();
+  printf("%s:%d Header value for type %s -> %lld    stamp: %u  flags: %zu\n", __FILE__, __LINE__, _rep_(TSingle::static_class_symbol).c_str(), header_val, gctools::GCStamp<TSingle>::Stamp, gctools::GCStamp<TSingle>::Flags);
   theMap->setf_gethash(TSingle::static_class_symbol,core::make_fixnum(gctools::Header_s::Value::GenerateHeaderValue<TSingle>()));
 }
 

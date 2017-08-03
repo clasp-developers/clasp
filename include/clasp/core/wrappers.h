@@ -52,8 +52,11 @@ namespace core {
   };
 
 
+  class BuiltinVariadicFunctor_O : public BuiltinClosure_O {
+  };
+  
   template <typename FN>
-    class VariadicFunctor : public BuiltinClosure_O {
+    class VariadicFunctor : public BuiltinVariadicFunctor_O {
   public:
     typedef BuiltinClosure_O TemplatedBase;
     virtual size_t templatedSizeof() const { return sizeof(VariadicFunctor<FN>); };
