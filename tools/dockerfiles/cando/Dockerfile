@@ -22,6 +22,9 @@ RUN python -m jupyter nbextension install --py --sys-prefix nglview
 RUN python -m jupyter nbextension enable --py --sys-prefix nglview
 # tested with ipywidgets 5.2.2, notebook 4.2.1
 
+# Install sudo
+apt-get install -y sudo
+
 ADD tools/dockerfiles/jupyter/kernel.json /home/app/.local/share/jupyter/kernels/lisp/kernel.json
 ADD tools/dockerfiles/jupyter/jupyter_notebook_config.py /home/app/.jupyter/jupyter_notebook_config.py
 RUN chown -R app:app /home/app/.jupyter /home/app/.local $HOME/clasp/Contents/Resources/source-code/extensions/cando/src/lisp
