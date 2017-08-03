@@ -51,14 +51,10 @@ namespace core {
     }
   };
 
-
-  class BuiltinVariadicFunctor_O : public BuiltinClosure_O {
-  };
-  
   template <typename FN>
-    class VariadicFunctor : public BuiltinVariadicFunctor_O {
+    class VariadicFunctor : public TemplatedFunctionBase_O {
   public:
-    typedef BuiltinClosure_O TemplatedBase;
+    typedef TemplatedFunctionBase_O TemplatedBase;
     virtual size_t templatedSizeof() const { return sizeof(VariadicFunctor<FN>); };
   };
 };
@@ -81,9 +77,9 @@ namespace core {
 
 namespace core {
 template <int DispatchOn, typename FN>
-class VariadicMethoid : public BuiltinClosure_O {
+class VariadicMethoid : public TemplatedFunctionBase_O {
 public:
-  typedef BuiltinClosure_O TemplatedBase;
+  typedef TemplatedFunctionBase_O TemplatedBase;
   size_t templatedSizeof() const { return sizeof(VariadicMethoid<DispatchOn, FN>); };
 };
 

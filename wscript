@@ -97,10 +97,7 @@ def analyze_clasp(cfg):
     run_program_echo("build/boehmdc/iclasp-boehmdc",
                      "-i", "./build/boehmdc/fasl/cclasp-boehmdc-image.fasl",
                      "-f", "ignore-extensions",
-                     "-e", '(load (compile-file #P"sys:modules;clang-tool;clang-tool.lisp" :print t))',
-                     "-e", '(load (compile-file #P"sys:modules;clasp-analyzer;clasp-analyzer.lisp" :print t))',
-                     "-e", "(defparameter *compile-commands* \"build/mpsprep/compile_commands.json\")",
-                     "-e", "(time (clasp-analyzer:serial-search/generate-code (clasp-analyzer:setup-clasp-analyzer-compilation-tool-database (pathname *compile-commands*))))",
+                     "-l", "sys:modules;clasp-analyzer;run-analyzer.lisp",
                      "-e", "(core:quit)")
     print("\n\n\n----------------- proceeding with static analysis --------------------")
 
