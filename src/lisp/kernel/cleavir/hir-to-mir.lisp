@@ -139,10 +139,11 @@
   (let* ((dimensions (if (integerp dimensions) (list dimensions) dimensions))
          (rank (if (eq dimensions '*) '* (length dimensions))))
     (unless (eq dimensions '*)
-      (gen-rank-check object rank pro con)
       (loop for dim in dimensions
             for i from 0
-            do (setf pro (gen-dimension-check object i dim pro con))))
+            do (setf pro (gen-dimension-check object i dim pro con)))
+      ;; this means we check rank before checking the dimensions.
+      (setf pro (gen-rank-check object rank pro con)))
     (cond ((eq element-type '*)
            (when (or (eq rank '*) (eql rank 1))
              (setf con (maybe-gen-primitive-type-check
