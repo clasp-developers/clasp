@@ -17,8 +17,8 @@ RUN python -m pip install pytraj==1.0.9
 #RUN python -m pip install ipywidgets==5.2.2
 #RUN git clone https://github.com/arose/nglview /home/app/nglview
 
-### New version of nglview works with 7.0.0
-RUN python -m pip install ipywidgets==7.0.0
+### New version of nglview works with 7.0
+RUN python -m pip install ipywidgets==7.0
 RUN git clone -b "v1.0.a1" https://github.com/arose/nglview /home/app/nglview
 
 RUN cd /home/app/nglview && python setup.py install
