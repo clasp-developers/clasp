@@ -14,7 +14,7 @@
              (cleavir-policy:compute-policy *global-optimize*
                                             *clasp-env*)))
       ;; Add other clauses here
-      (t (warn "Add support for proclaim ~s~%" decl)))))
+      (t #+(or)(warn "Add support for proclaim ~s~%" decl)))))
 
 (defparameter *simple-environment* nil)
 (defvar *code-walker* nil)
