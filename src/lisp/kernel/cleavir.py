@@ -116,6 +116,7 @@ cleavir_parts = [
     "src/lisp/kernel/contrib/sicl/Code/Cleavir/Kildall/interfunction",
     "src/lisp/kernel/contrib/sicl/Code/Cleavir/Kildall/graphviz-drawing",
     "src/lisp/kernel/contrib/sicl/Code/Cleavir/Kildall/Specializations/Liveness/packages",
+    "src/lisp/kernel/contrib/sicl/Code/Cleavir/Kildall/Specializations/Liveness/sset",
     "src/lisp/kernel/contrib/sicl/Code/Cleavir/Kildall/Specializations/Liveness/liveness",
     "src/lisp/kernel/contrib/sicl/Code/Cleavir/Kildall/Specializations/Liveness/extend",
     "src/lisp/kernel/contrib/sicl/Code/Cleavir/Kildall/Specializations/Type-inference/packages",
