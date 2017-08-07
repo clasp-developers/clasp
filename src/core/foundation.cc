@@ -175,6 +175,10 @@ CL_DEFUN void core__dump_class_ids()
 }
 
 
+void lisp_errorExpectedList(core::T_O* v) {
+  T_sp tv((gctools::Tagged)v);
+  TYPE_ERROR(tv,cl::_sym_list);
+}
 
 void lisp_errorIllegalDereference(void *v) {
   SIMPLE_ERROR(BF("Tried to dereference px=%p") % v);

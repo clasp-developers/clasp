@@ -513,7 +513,8 @@ void lisp_errorUnexpectedNil(class_id expectedTyp);
 void lisp_errorDereferencedNil();
 void lisp_errorDereferencedUnbound();
 void lisp_errorIllegalDereference(void *v);
-
+ void lisp_errorExpectedList(core::T_O* objP);
+ 
 template <typename To, typename From, typename ObjPtrType>
 void __attribute__((noreturn)) lisp_errorCast(ObjPtrType objP) {
   class_id to_typ = reg::registered_class<To>::id;
