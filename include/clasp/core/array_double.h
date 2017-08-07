@@ -81,11 +81,11 @@ namespace core {
   FORWARD(MDArrayDouble);
 };
 namespace core {
-  class MDArrayDouble_O : public template_Array<MDArrayDouble_O,SimpleVectorDouble_O,MDArray_O> {
+  class MDArrayDouble_O : public template_Array<MDArrayDouble_O,SimpleMDArrayDouble_O,SimpleVectorDouble_O,MDArray_O> {
     LISP_CLASS(core, CorePkg, MDArrayDouble_O, "MDArrayDouble",MDArray_O);
     virtual ~MDArrayDouble_O() {};
   public:
-    typedef template_Array<MDArrayDouble_O,SimpleVectorDouble_O,MDArray_O> TemplatedBase;
+    typedef template_Array<MDArrayDouble_O,SimpleMDArrayDouble_O,SimpleVectorDouble_O,MDArray_O> TemplatedBase;
     typedef typename TemplatedBase::simple_element_type simple_element_type;
     typedef typename TemplatedBase::simple_type simple_type;
   public: // make vector
