@@ -389,6 +389,18 @@
   (define-compiler-macro 1- (x)
     `(primop:inlined-two-arg-- ,x 1)))
 
+(progn
+  (debug-inline "plusp")
+  (declaim (inline plusp))
+  (defun plusp (number)
+    (> number 0)))
+
+(progn
+  (debug-inline "minusp")
+  (declaim (inline minusp))
+  (defun minusp (number)
+    (< number 0)))
+
 
 ;;; ------------------------------------------------------------
 ;;;
@@ -435,9 +447,10 @@
 ;;;  Copied from clasp/src/lisp/kernel/lsp/assorted.lsp
 ;;;    and put here so that the inline definition is available
 ;;;
-(declaim (inline coerce-fdesignator)
-	 (ftype (function ((or function symbol)) function) fdesignator))
-(defun coerce-fdesignator (fdesignator)
+(declaim (inline core::coerce-fdesignator)
+	 (ftype (function ((or function symbol)) function)
+                core::coerce-fdesignator))
+(defun core::coerce-fdesignator (fdesignator)
   "Take a CL function designator and spit out a function."
   (etypecase fdesignator
     (function fdesignator)
