@@ -58,7 +58,7 @@
       `(cleavir-primop:multiple-value-call (core::coerce-fdesignator ,function-form) ,@forms)
       `(core:multiple-value-funcall
         (core::coerce-fdesignator ,function-form)
-        ,@(mapcar (x) `#'(lambda () (progn ,x)) forms))))
+        ,@(mapcar (lambda (x) `#'(lambda () (progn ,x))) forms))))
 
 
 
