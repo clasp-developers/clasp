@@ -165,15 +165,16 @@ namespace core {
 //#define DEBUG_HASH_GENERATOR
   class HashGenerator {
     static const int MaxParts = 32;
-
+    static const int MaxDepth = 8;
   private:
+    int _Depth;
     int _NextPartIndex;
     Fixnum _Parts[MaxParts];
 #ifdef DEBUG_HASH_GENERATOR
     bool _debug;
 #endif
   public:
-  HashGenerator(bool debug = false) : _NextPartIndex(0)
+  HashGenerator(bool debug = false) : _Depth(0), _NextPartIndex(0)
 #ifdef DEBUG_HASH_GENERATOR
       ,
       _debug(debug)
@@ -203,7 +204,7 @@ namespace core {
 
   /*! Return true if can still accept parts */
     bool isFilling() const {
-      return this->_NextPartIndex < MaxParts;
+      return (this->_NextPartIndex < MaxParts) || (this->_Depth>= MaxDepth);
     }
 
     gc::Fixnum hash(gc::Fixnum bound = 0) const {

@@ -401,7 +401,10 @@ bool General_O::isAInstanceOf(Class_sp mc) {
 #endif
 
 void HashGenerator::hashObject(T_sp obj) {
-  clasp_sxhash(obj, *this);
+  int depth = this->_Depth;
+  ++this->_Depth;
+  LIKELY_if (this->_Depth<MaxDepth) clasp_sxhash(obj, *this);
+  this->_Depth = depth;
 }
 
 static BignumExportBuffer static_HashGenerator_addPart_buffer;
