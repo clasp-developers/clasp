@@ -486,9 +486,10 @@ CL_DEFUN size_t cl__arrayRowMajorIndex(Array_sp array, VaList_sp indices) {
 
 
 CL_LISPIFY_NAME("core:rowMajorAset");
-CL_DEFUN void cl__rowMajorAset(Array_sp array, size_t idx, T_sp value)
+CL_DEFUN T_sp cl__rowMajorAset(Array_sp array, size_t idx, T_sp value)
 {
   array->rowMajorAset(idx,value);
+  return value;
 }
 
 CL_LISPIFY_NAME("cl:rowMajorAref");
