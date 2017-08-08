@@ -2283,10 +2283,10 @@ void StrWNs_O::vectorPushExtend_claspCharacter(claspCharacter newElement, size_t
   unlikely_if (idx >= this->_ArrayTotalSize) {
     if (extension <= 0) extension = calculate_extension(this->_ArrayTotalSize);
     cl_index new_size = this->_ArrayTotalSize+extension;
-    unlikely_if (!cl::_sym_adjust_array || !cl::_sym_adjust_array->boundP()) {
+    unlikely_if (!cl::_sym_adjust_array || !cl::_sym_adjust_array->fboundp()) {
       this->internalAdjustSize_(new_size);
     } else {
-      eval::funcall(cl::_sym_adjust_array,this->asSmartPtr(),clasp_make_fixnum(new_size),cl::_sym_fill_pointer,clasp_make_fixnum(this->_FillPointerOrLengthOrDummy));
+      eval::funcall(cl::_sym_adjust_array,this->asSmartPtr(),clasp_make_fixnum(new_size),kw::_sym_fill_pointer,clasp_make_fixnum(this->_FillPointerOrLengthOrDummy));
     }
   }
   (*this)[idx] = newElement;
