@@ -455,10 +455,10 @@ Fixnum_sp MDArray_O::vectorPushExtend(T_sp newElement, size_t extension) {
   unlikely_if (idx >= this->_ArrayTotalSize) {
     if (extension <= 0) extension = calculate_extension(this->_ArrayTotalSize);
     cl_index new_size = this->_ArrayTotalSize+extension;
-    unlikely_if (!cl::_sym_adjust_array || !cl::_sym_adjust_array->boundP()) {
+    unlikely_if (!cl::_sym_adjust_array || !cl::_sym_adjust_array->fboundp()) {
       this->internalAdjustSize_(new_size);
     } else {
-      eval::funcall(cl::_sym_adjust_array,this->asSmartPtr(),clasp_make_fixnum(new_size),cl::_sym_fill_pointer,clasp_make_fixnum(this->_FillPointerOrLengthOrDummy));
+      eval::funcall(cl::_sym_adjust_array,this->asSmartPtr(),clasp_make_fixnum(new_size),kw::_sym_fill_pointer,clasp_make_fixnum(this->_FillPointerOrLengthOrDummy));
     }
   }
   this->_Data->rowMajorAset(idx+this->_DisplacedIndexOffset,newElement);
@@ -2210,10 +2210,10 @@ void Str8Ns_O::vectorPushExtend_claspChar(claspChar newElement, size_t extension
   unlikely_if (idx >= this->_ArrayTotalSize) {
     if (extension <= 0) extension = calculate_extension(this->_ArrayTotalSize);
     cl_index new_size = this->_ArrayTotalSize+extension;
-    unlikely_if (!cl::_sym_adjust_array || !cl::_sym_adjust_array->boundP()) {
+    unlikely_if (!cl::_sym_adjust_array || !cl::_sym_adjust_array->fboundp()) {
       this->internalAdjustSize_(new_size);
     } else {
-      eval::funcall(cl::_sym_adjust_array,this->asSmartPtr(),clasp_make_fixnum(new_size),cl::_sym_fill_pointer,clasp_make_fixnum(this->_FillPointerOrLengthOrDummy));
+      eval::funcall(cl::_sym_adjust_array,this->asSmartPtr(),clasp_make_fixnum(new_size),kw::_sym_fill_pointer,clasp_make_fixnum(this->_FillPointerOrLengthOrDummy));
     }
   }
   (*this)[idx] = newElement;
@@ -2444,10 +2444,10 @@ void MDArray_size_t_O::vectorPushExtend_size_t(size_t newElement, size_t extensi
   unlikely_if (idx >= this->_ArrayTotalSize) {
     if (extension <= 0) extension = calculate_extension(this->_ArrayTotalSize);
     cl_index new_size = this->_ArrayTotalSize+extension;
-    unlikely_if (!cl::_sym_adjust_array || !cl::_sym_adjust_array->boundP()) {
+    unlikely_if (!cl::_sym_adjust_array || !cl::_sym_adjust_array->fboundp()) {
       this->internalAdjustSize_(new_size);
     } else {
-      eval::funcall(cl::_sym_adjust_array,this->asSmartPtr(),clasp_make_fixnum(new_size),cl::_sym_fill_pointer,clasp_make_fixnum(this->_FillPointerOrLengthOrDummy));
+      eval::funcall(cl::_sym_adjust_array,this->asSmartPtr(),clasp_make_fixnum(new_size),kw::_sym_fill_pointer,clasp_make_fixnum(this->_FillPointerOrLengthOrDummy));
     }
   }
   (*this)[idx] = newElement;
@@ -2464,10 +2464,10 @@ void MDArray_uint32_t_O::vectorPushExtend_uint32_t(uint32_t newElement, size_t e
   unlikely_if (idx >= this->_ArrayTotalSize) {
     if (extension <= 0) extension = calculate_extension(this->_ArrayTotalSize);
     cl_index new_size = this->_ArrayTotalSize+extension;
-    unlikely_if (!cl::_sym_adjust_array || !cl::_sym_adjust_array->boundP()) {
+    unlikely_if (!cl::_sym_adjust_array || !cl::_sym_adjust_array->fboundp()) {
       this->internalAdjustSize_(new_size);
     } else {
-      eval::funcall(cl::_sym_adjust_array,this->asSmartPtr(),clasp_make_fixnum(new_size),cl::_sym_fill_pointer,clasp_make_fixnum(this->_FillPointerOrLengthOrDummy));
+      eval::funcall(cl::_sym_adjust_array,this->asSmartPtr(),clasp_make_fixnum(new_size),kw::_sym_fill_pointer,clasp_make_fixnum(this->_FillPointerOrLengthOrDummy));
     }
   }
   (*this)[idx] = newElement;
