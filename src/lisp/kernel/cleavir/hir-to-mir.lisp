@@ -279,7 +279,7 @@
     (double-float . core:simple-mdarray-double)
     (base-char . core:simple-mdarray-base-char)
     (character . core:simple-mdarray-character)
-    (t . simple-mdarray-t)))
+    (t . core:simple-mdarray-t)))
 
 #-use-boehmdc
 (defun simple-mdarray-type (uaet)
