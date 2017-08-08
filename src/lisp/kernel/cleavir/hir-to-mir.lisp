@@ -136,7 +136,7 @@
 
 #-use-boehmdc
 (defun gen-array-type-check (object element-type dimensions simple-only-p pro con)
-  (let* ((dimensions (if (integerp dimensions) (list dimensions) dimensions))
+  (let* ((dimensions (if (integerp dimensions) (make-list dimensions :initial-element '*) dimensions))
          (rank (if (eq dimensions '*) '* (length dimensions))))
     (unless (eq dimensions '*)
       (loop for dim in dimensions
