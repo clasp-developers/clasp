@@ -2324,6 +2324,7 @@ void BitVectorNs_O::internalAdjustSize_(size_t size, T_sp initElement, bool init
   }
   this->set_data(newData);
   this->_ArrayTotalSize = size;
+  this->_Dimensions[0] = size;
   if (!this->_Flags.fillPointerP()) this->_FillPointerOrLengthOrDummy = size;
   this->_DisplacedIndexOffset = 0;
   this->_Flags.set_displacedToP(false);
