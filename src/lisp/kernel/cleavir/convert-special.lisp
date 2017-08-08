@@ -24,8 +24,23 @@
 	    (setf (cc-ast:protected-ast ast) protected-form)
 	    ast)))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Define a "macro" for the Cleavir compiler.
+;;; This shouldn't be necessary, but I'd like to
+;;; avoid overwriting any bclasp definitions.
+;;; Don't use &environment or &whole.
 
-
+(defmacro defsmacro (name lambda-list &body body)
+  (let ((head (gensym "HEAD"))
+        (form (gensym "FORM"))
+        (environment (gensym "ENVIRONMENT"))
+        (system (gensym "SYSTEM")))
+    `(defmethod cleavir-generate-ast:convert-special
+         ((,head (eql ',name)) ,form ,environment (,system clasp-cleavir:clasp))
+       (cleavir-generate-ast:convert
+        (destructuring-bind ,lambda-list (rest ,form) ,@body)
+        ,environment ,system))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -35,19 +50,16 @@
 ;;; into a multiple-value-call-ast.  In the general case with multiple forms
 ;;; it gets converted into a function call to CORE:MULTIPLE-VALUE-FUNCALL.
 ;;;
-(defmethod cleavir-generate-ast::convert-special
-    ((symbol (eql 'multiple-value-call)) form environment (system clasp-cleavir:clasp))
-  (destructuring-bind (function-form . forms) 
-      (rest form)
-    (if (eql (length forms) 1)
-	(cleavir-ast:make-multiple-value-call-ast
-	 (cleavir-generate-ast::convert function-form environment system)
-	 (cleavir-generate-ast::convert-sequence forms environment system))
-	(cleavir-generate-ast::convert `(core:multiple-value-funcall
-                                         ,function-form
-                                         ,@(mapcar (lambda (x) `#'(lambda () (progn ,x)))
-                                                   forms))
-                                       environment system))))
+(defsmacro multiple-value-call (function-form &rest forms)
+  ;;; Technically we could convert the 0-forms case to FUNCALL, but it's
+  ;;; probably not a big deal. (In practice, almost all MULTIPLE-VALUE-CALLs
+  ;;; result from MULTIPLE-VALUE-BIND, which uses only have one argument form.)
+  (if (eql (length forms) 1)
+      `(cleavir-primop:multiple-value-call (core::coerce-fdesignator ,function-form) ,@forms)
+      `(core:multiple-value-funcall
+        (core::coerce-fdesignator ,function-form)
+        ,@(mapcar (lambda (x) `#'(lambda () (progn ,x))) forms))))
+
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -58,11 +70,8 @@
 ;;; Func1 is evaluated and the multiple values are saved and then func2 is evaluated
 ;;; and the multiple values returned from func1 are restored
 ;;;
-(defmethod cleavir-generate-ast::convert-special
-    ((symbol (eql 'cl:multiple-value-prog1)) form environment (system clasp-cleavir:clasp))
-  (destructuring-bind (first-form . forms) 
-      (rest form)
-    (cleavir-generate-ast::convert `(core:multiple-value-prog1-function #'(lambda () (progn ,first-form)) (lambda () (progn ,@forms))) environment system)))
+(defsmacro multiple-value-prog1 (first-form &rest forms)
+  `(core:multiple-value-prog1-function (lambda () (progn ,first-form)) (lambda () (progn ,@forms))))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -156,11 +165,9 @@
 ;;; Converting CATCH
 ;;;
 ;;; Convert catch into a call
-(defmethod cleavir-generate-ast::convert-special
-    ((symbol (eql 'cl:catch)) form environment (system clasp-cleavir:clasp))
-  (destructuring-bind (tag . forms) 
-      (rest form)
-    (cleavir-generate-ast::convert `(core:catch-function ,tag (lambda () (declare (core:lambda-name catch-lambda)) (progn ,@forms))) environment system)))
+(defsmacro catch (tag &body body)
+  `(core:catch-function ,tag (lambda () (declare (core:lambda-name catch-lambda)) (progn ,@forms))))
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -186,11 +193,9 @@
 ;;; Converting CL:PROGV
 ;;;
 ;;; Convert this into a function call
-(defmethod cleavir-generate-ast::convert-special
-    ((symbol (eql 'cl:progv)) form environment (system clasp-cleavir:clasp))
-  (destructuring-bind (symbols values . forms) 
-      (rest form)
-    (cleavir-generate-ast::convert `(core:progv-function ,symbols ,values #'(lambda () (progn ,@forms))) environment system)))
+(defsmacro progv (symbols values &body forms)
+  `(core:progv-function ,symbols ,values (lambda () (progn ,@forms))))
+
 
 (defmethod cleavir-generate-ast:convert-global-function (info global-env (system clasp-cleavir:clasp))
   (declare (ignore global-env))

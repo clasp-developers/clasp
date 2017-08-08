@@ -429,6 +429,21 @@ LtvcReturn ltvc_set_ltv_funcall(gctools::GCRootsInModule* holder, size_t index, 
   LTVCRETURN holder->set(index,val.tagged_());
 }
 
+LtvcReturn ltvc_set_ltv_funcall_cleavir(gctools::GCRootsInModule* holder, size_t index, fnLispCallingConvention fptr, const char* name) {
+  // I created this function just in case cleavir returns a function that when evaluated returns a function that
+  // would return the ltv value - that appears not to be the case.
+  // FIXME: Remove this function and use the ltvc_set_ltv_funcall instead
+  core::T_O *lcc_arglist = _Nil<core::T_O>().raw_();
+  Symbol_sp sname = Symbol_O::create_from_string(std::string(name));
+  GC_ALLOCATE_VARIADIC(CompiledClosure_O, toplevel_closure, fptr, sname, kw::_sym_function, _Nil<T_O>(), _Nil<T_O>(), _Nil<T_O>(), _Nil<T_O>(), 0, 0, 0, 0 );
+  LCC_RETURN ret = fptr(LCC_PASS_ARGS0_VA_LIST(toplevel_closure.raw_()));
+  core::T_sp tret((gctools::Tagged)ret.ret0);
+//  printf("%s:%d:%s     ret -> %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(tret).c_str());
+  core::T_sp res((gctools::Tagged)ret.ret0[0]);
+  core::T_sp val = res;
+  LTVCRETURN holder->set(index,val.tagged_());
+}
+
 
 LtvcReturn ltvc_toplevel_funcall(fnLispCallingConvention fptr, const char* name) {
   core::T_O *lcc_arglist = _Nil<core::T_O>().raw_();
@@ -1632,7 +1647,7 @@ core::T_O *cc_enclose(core::T_O *lambdaName, fnLispCallingConvention llvm_func,
                       int *sourceFileInfoHandleP,
                       size_t filePos, size_t lineno, size_t column,
                       std::size_t numCells, ...)
-{NO_UNWIND_BEGIN();
+{
   core::T_sp tlambdaName = gctools::smart_ptr<core::T_O>((gc::Tagged)lambdaName);
   gctools::smart_ptr<core::ClosureWithSlots_O> functoid =
     gctools::GC<core::ClosureWithSlots_O>::allocate_container(numCells
@@ -1655,7 +1670,6 @@ core::T_O *cc_enclose(core::T_O *lambdaName, fnLispCallingConvention llvm_func,
   }
   va_end(argp);
   return functoid.raw_();
-  NO_UNWIND_END();
 }
 
 

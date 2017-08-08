@@ -1161,6 +1161,9 @@ private:
     List_sp_iterator &operator++() {
       GCTOOLS_ASSERT(this->consp());
       core::T_O *rawcdr = cons_cdr(&*ptr).raw_();
+      unlikely_if (!tagged_consp(rawcdr) && !tagged_nilp(rawcdr)) {
+        core::lisp_errorExpectedList(rawcdr);
+      }
       ptr.rawRef_() = reinterpret_cast<core::Cons_O *>(rawcdr);
       return *this;
     }
@@ -1170,6 +1173,7 @@ private:
       return *clone;
     }
     bool consp() const { return tagged_consp(ptr.raw_()); };
+    bool nilp() const { return tagged_nilp(ptr.raw_()); };
     smart_ptr<core::Cons_O> *operator->() { return &ptr; }
     const smart_ptr<core::Cons_O> *operator->() const { return &ptr; }
     const smart_ptr<core::Cons_O> &operator*() const { return ptr; }

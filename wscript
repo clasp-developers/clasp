@@ -143,10 +143,7 @@ def analyze_clasp(cfg):
     run_program_echo("build/boehmdc/iclasp-boehmdc",
                      "-i", "./build/boehmdc/fasl/cclasp-boehmdc-image.fasl",
                      "-f", "ignore-extensions",
-                     "-e", '(load (compile-file #P"sys:modules;clang-tool;clang-tool.lisp" :print t))',
-                     "-e", '(load (compile-file #P"sys:modules;clasp-analyzer;clasp-analyzer.lisp" :print t))',
-                     "-e", "(defparameter *compile-commands* \"build/mpsprep/compile_commands.json\")",
-                     "-e", "(time (clasp-analyzer:serial-search/generate-code (clasp-analyzer:setup-clasp-analyzer-compilation-tool-database (pathname *compile-commands*))))",
+                     "-l", "sys:modules;clasp-analyzer;run-analyzer.lisp",
                      "-e", "(core:quit)")
     print("\n\n\n----------------- proceeding with static analysis --------------------")
 
@@ -576,6 +573,7 @@ def configure(cfg):
         exec(open("./wscript.config").read(), globals(), local_environment)
         cfg.env.update(local_environment)
 
+    # This is where configure(cfg) starts
         # KLUDGE there should be a better way than this
     cfg.env["BUILD_ROOT"] = os.path.abspath(top)
     load_local_config(cfg)
@@ -664,6 +662,10 @@ def configure(cfg):
     print("llvm_include_dir = %s" % llvm_include_dir)
     cfg.env.append_value('CXXFLAGS', ['-I./', '-I' + llvm_include_dir])
     cfg.env.append_value('CFLAGS', ['-I./'])
+    if (cfg.env["PROFILING"] == True):
+        cfg.env.append_value('CXXFLAGS',["-pg"])
+        cfg.env.append_value('CFLAGS',["-pg"])
+        cfg.define("ENABLE_PROFILING",1)
 #    if ('program_name' in cfg.__dict__):
 #        pass
 #    else:
@@ -765,7 +767,7 @@ def configure(cfg):
 #    cfg.define("DEBUG_DYNAMIC_BINDING_STACK",1)
 #    cfg.define("DEBUG_VALUES",1)   # turn on printing (values x y z) values when core:*debug-values* is not nil
 #    cfg.define("DEBUG_IHS",1)
-#    cfg.define("DEBUG_NO_UNWIND",1)
+    cfg.define("DEBUG_NO_UNWIND",1)
 #    cfg.define("DEBUG_ENSURE_VALID_OBJECT",1)
 #    cfg.define("DEBUG_THREADS",1)
 #    cfg.define("DEBUG_BOUNDS_ASSERT",1)

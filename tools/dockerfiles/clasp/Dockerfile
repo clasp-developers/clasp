@@ -48,8 +48,6 @@ ENV PATH "$PATH:$HOME/clasp/bin"
 
 RUN clasp -f "setup-cando"\
           -e '(load "/home/app/quicklisp/setup.lisp")'\
-          -e "(ql:quickload :trivial-http)"\
-          -e "(require :inet)"\
           -e '(setq core::*swank-home* "/home/app/slime")'\
           -e '(load (format nil "~a/swank-loader.lisp" core::*swank-home*))'\
           -e "(swank-loader:init :delete nil :reload nil :load-contribs nil)"\

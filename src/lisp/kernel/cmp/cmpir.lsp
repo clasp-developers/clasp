@@ -757,6 +757,8 @@
 				       linkage
 				       llvm-function-name
 				       module)))
+    (when *enable-profiling*
+      (llvm-sys:add-fn-attr2string fn "counting-function" *mcount-name*))
     (dolist (temp function-attributes)
       (cond
         ((symbolp temp) (llvm-sys:add-fn-attr fn temp))

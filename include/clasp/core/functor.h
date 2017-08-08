@@ -275,6 +275,16 @@ namespace core {
 }
 
 namespace core {
+    class TemplatedFunctionBase_O : public BuiltinClosure_O {
+    LISP_CLASS(core,CorePkg,TemplatedFunctionBase_O,"TemplatedFunctionBase",BuiltinClosure_O);
+    TemplatedFunctionBase_O(claspFunction fptr, T_sp name, Symbol_sp k, SOURCE_INFO)
+    : BuiltinClosure_O(fptr, name, k, SOURCE_INFO_PASS){};
+    TemplatedFunctionBase_O(claspFunction fptr, T_sp name )
+    : BuiltinClosure_O(fptr,name) {}
+    };
+};
+
+namespace core {
   class ClosureWithSlots_O final : public core::FunctionClosure_O {
     LISP_CLASS(core,CorePkg,ClosureWithSlots_O,"ClosureWithSlots",core::FunctionClosure_O);
   public:

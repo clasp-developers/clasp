@@ -17,18 +17,18 @@ template <int DispatchOn ,typename RT, typename OT ,typename ARG1,typename ARG2,
     typename ARG14,typename ARG15 >
 class VariadicMethoid
 <DispatchOn,RT (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12, ARG13, ARG14, ARG15)  >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef VariadicMethoid<DispatchOn,RT (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12, ARG13,
     ARG14, ARG15)  > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
 typedef RT(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12, ARG13, ARG14, ARG15) ;
 Type mptr;
 public:
 enum { NumParams = 16 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : TemplatedFunctionBase_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
@@ -73,18 +73,18 @@ template <int DispatchOn ,typename RT, typename OT ,typename ARG1,typename ARG2,
     typename ARG14 >
 class VariadicMethoid
 <DispatchOn,RT (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12, ARG13, ARG14)  >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef VariadicMethoid<DispatchOn,RT (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12, ARG13,
     ARG14)  > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
 typedef RT(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12, ARG13, ARG14) ;
 Type mptr;
 public:
 enum { NumParams = 15 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : TemplatedFunctionBase_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
@@ -127,18 +127,18 @@ template <int DispatchOn ,typename RT, typename OT ,typename ARG1,typename ARG2,
     typename ARG6,typename ARG7,typename ARG8,typename ARG9,typename ARG10,typename ARG11,typename ARG12,typename ARG13 >
 class VariadicMethoid
 <DispatchOn,RT (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12, ARG13)  >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef VariadicMethoid<DispatchOn,RT (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12,
     ARG13)  > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
 typedef RT(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12, ARG13) ;
 Type mptr;
 public:
 enum { NumParams = 14 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : TemplatedFunctionBase_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
@@ -180,17 +180,17 @@ template <int DispatchOn ,typename RT, typename OT ,typename ARG1,typename ARG2,
     typename ARG6,typename ARG7,typename ARG8,typename ARG9,typename ARG10,typename ARG11,typename ARG12 >
 class VariadicMethoid
 <DispatchOn,RT (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12)  >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef VariadicMethoid<DispatchOn,RT (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12)  > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
 typedef RT(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12) ;
 Type mptr;
 public:
 enum { NumParams = 13 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : TemplatedFunctionBase_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
@@ -230,17 +230,17 @@ template <int DispatchOn ,typename RT, typename OT ,typename ARG1,typename ARG2,
     typename ARG6,typename ARG7,typename ARG8,typename ARG9,typename ARG10,typename ARG11 >
 class VariadicMethoid
 <DispatchOn,RT (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11)  >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef VariadicMethoid<DispatchOn,RT (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11)  > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
 typedef RT(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11) ;
 Type mptr;
 public:
 enum { NumParams = 12 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : TemplatedFunctionBase_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
@@ -279,17 +279,17 @@ template <int DispatchOn ,typename RT, typename OT ,typename ARG1,typename ARG2,
     typename ARG6,typename ARG7,typename ARG8,typename ARG9,typename ARG10 >
 class VariadicMethoid
 <DispatchOn,RT (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10)  >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef VariadicMethoid<DispatchOn,RT (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10)  > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
 typedef RT(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10) ;
 Type mptr;
 public:
 enum { NumParams = 11 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : TemplatedFunctionBase_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
@@ -327,17 +327,17 @@ template <int DispatchOn ,typename RT, typename OT ,typename ARG1,typename ARG2,
     typename ARG6,typename ARG7,typename ARG8,typename ARG9 >
 class VariadicMethoid
 <DispatchOn,RT (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9)  >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef VariadicMethoid<DispatchOn,RT (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9)  > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
 typedef RT(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9) ;
 Type mptr;
 public:
 enum { NumParams = 10 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : TemplatedFunctionBase_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
@@ -374,17 +374,17 @@ template <int DispatchOn ,typename RT, typename OT ,typename ARG1,typename ARG2,
     typename ARG6,typename ARG7,typename ARG8 >
 class VariadicMethoid
 <DispatchOn,RT (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8)  >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef VariadicMethoid<DispatchOn,RT (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8)  > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
 typedef RT(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8) ;
 Type mptr;
 public:
 enum { NumParams = 9 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : TemplatedFunctionBase_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
@@ -420,17 +420,17 @@ template <int DispatchOn ,typename RT, typename OT ,typename ARG1,typename ARG2,
     typename ARG6,typename ARG7 >
 class VariadicMethoid
 <DispatchOn,RT (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7)  >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef VariadicMethoid<DispatchOn,RT (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7)  > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
 typedef RT(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7) ;
 Type mptr;
 public:
 enum { NumParams = 8 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : TemplatedFunctionBase_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
@@ -465,17 +465,17 @@ template <int DispatchOn ,typename RT, typename OT ,typename ARG1,typename ARG2,
     typename ARG6 >
 class VariadicMethoid
 <DispatchOn,RT (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6)  >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef VariadicMethoid<DispatchOn,RT (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6)  > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
 typedef RT(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, ARG6) ;
 Type mptr;
 public:
 enum { NumParams = 7 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : TemplatedFunctionBase_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
@@ -508,17 +508,17 @@ return Values(translate::to_object<RT>::convert(retval));
 template <int DispatchOn ,typename RT, typename OT ,typename ARG1,typename ARG2,typename ARG3,typename ARG4,typename ARG5 >
 class VariadicMethoid
 <DispatchOn,RT (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5)  >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef VariadicMethoid<DispatchOn,RT (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5)  > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
 typedef RT(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5) ;
 Type mptr;
 public:
 enum { NumParams = 6 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : TemplatedFunctionBase_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
@@ -550,17 +550,17 @@ return Values(translate::to_object<RT>::convert(retval));
 template <int DispatchOn ,typename RT, typename OT ,typename ARG1,typename ARG2,typename ARG3,typename ARG4 >
 class VariadicMethoid
 <DispatchOn,RT (OT::*)( ARG1, ARG2, ARG3, ARG4)  >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef VariadicMethoid<DispatchOn,RT (OT::*)( ARG1, ARG2, ARG3, ARG4)  > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
 typedef RT(OT::*Type)(ARG1, ARG2, ARG3, ARG4) ;
 Type mptr;
 public:
 enum { NumParams = 5 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : TemplatedFunctionBase_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
@@ -591,17 +591,17 @@ return Values(translate::to_object<RT>::convert(retval));
 template <int DispatchOn ,typename RT, typename OT ,typename ARG1,typename ARG2,typename ARG3 >
 class VariadicMethoid
 <DispatchOn,RT (OT::*)( ARG1, ARG2, ARG3)  >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef VariadicMethoid<DispatchOn,RT (OT::*)( ARG1, ARG2, ARG3)  > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
 typedef RT(OT::*Type)(ARG1, ARG2, ARG3) ;
 Type mptr;
 public:
 enum { NumParams = 4 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : TemplatedFunctionBase_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
@@ -631,17 +631,17 @@ return Values(translate::to_object<RT>::convert(retval));
 template <int DispatchOn ,typename RT, typename OT ,typename ARG1,typename ARG2 >
 class VariadicMethoid
 <DispatchOn,RT (OT::*)( ARG1, ARG2)  >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef VariadicMethoid<DispatchOn,RT (OT::*)( ARG1, ARG2)  > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
 typedef RT(OT::*Type)(ARG1, ARG2) ;
 Type mptr;
 public:
 enum { NumParams = 3 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : TemplatedFunctionBase_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
@@ -670,17 +670,17 @@ return Values(translate::to_object<RT>::convert(retval));
 template <int DispatchOn ,typename RT, typename OT ,typename ARG1 >
 class VariadicMethoid
 <DispatchOn,RT (OT::*)( ARG1)  >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef VariadicMethoid<DispatchOn,RT (OT::*)( ARG1)  > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
 typedef RT(OT::*Type)(ARG1) ;
 Type mptr;
 public:
 enum { NumParams = 2 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : TemplatedFunctionBase_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
@@ -708,17 +708,17 @@ return Values(translate::to_object<RT>::convert(retval));
 template <int DispatchOn ,typename RT, typename OT  >
 class VariadicMethoid
 <DispatchOn,RT (OT::*)( )  >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef VariadicMethoid<DispatchOn,RT (OT::*)( )  > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
 typedef RT(OT::*Type)() ;
 Type mptr;
 public:
 enum { NumParams = 1 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : TemplatedFunctionBase_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
@@ -747,18 +747,18 @@ template <int DispatchOn , typename OT ,typename ARG1,typename ARG2,typename ARG
     typename ARG15 >
 class VariadicMethoid
 <DispatchOn,void (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12, ARG13, ARG14, ARG15)  >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef VariadicMethoid<DispatchOn,void (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12, ARG13,
     ARG14, ARG15)  > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
 typedef void(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12, ARG13, ARG14, ARG15) ;
 Type mptr;
 public:
 enum { NumParams = 16 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : TemplatedFunctionBase_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
@@ -802,18 +802,18 @@ template <int DispatchOn , typename OT ,typename ARG1,typename ARG2,typename ARG
     typename ARG7,typename ARG8,typename ARG9,typename ARG10,typename ARG11,typename ARG12,typename ARG13,typename ARG14 >
 class VariadicMethoid
 <DispatchOn,void (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12, ARG13, ARG14)  >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef VariadicMethoid<DispatchOn,void (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12, ARG13,
     ARG14)  > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
 typedef void(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12, ARG13, ARG14) ;
 Type mptr;
 public:
 enum { NumParams = 15 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : TemplatedFunctionBase_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
@@ -855,18 +855,18 @@ template <int DispatchOn , typename OT ,typename ARG1,typename ARG2,typename ARG
     typename ARG7,typename ARG8,typename ARG9,typename ARG10,typename ARG11,typename ARG12,typename ARG13 >
 class VariadicMethoid
 <DispatchOn,void (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12, ARG13)  >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef VariadicMethoid<DispatchOn,void (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12,
     ARG13)  > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
 typedef void(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12, ARG13) ;
 Type mptr;
 public:
 enum { NumParams = 14 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : TemplatedFunctionBase_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
@@ -907,18 +907,18 @@ template <int DispatchOn , typename OT ,typename ARG1,typename ARG2,typename ARG
     typename ARG7,typename ARG8,typename ARG9,typename ARG10,typename ARG11,typename ARG12 >
 class VariadicMethoid
 <DispatchOn,void (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12)  >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef VariadicMethoid<DispatchOn,void (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11,
     ARG12)  > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
 typedef void(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12) ;
 Type mptr;
 public:
 enum { NumParams = 13 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : TemplatedFunctionBase_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
@@ -958,17 +958,17 @@ template <int DispatchOn , typename OT ,typename ARG1,typename ARG2,typename ARG
     typename ARG7,typename ARG8,typename ARG9,typename ARG10,typename ARG11 >
 class VariadicMethoid
 <DispatchOn,void (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11)  >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef VariadicMethoid<DispatchOn,void (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11)  > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
 typedef void(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11) ;
 Type mptr;
 public:
 enum { NumParams = 12 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : TemplatedFunctionBase_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
@@ -1007,17 +1007,17 @@ template <int DispatchOn , typename OT ,typename ARG1,typename ARG2,typename ARG
     typename ARG7,typename ARG8,typename ARG9,typename ARG10 >
 class VariadicMethoid
 <DispatchOn,void (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10)  >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef VariadicMethoid<DispatchOn,void (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10)  > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
 typedef void(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10) ;
 Type mptr;
 public:
 enum { NumParams = 11 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : TemplatedFunctionBase_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
@@ -1055,17 +1055,17 @@ template <int DispatchOn , typename OT ,typename ARG1,typename ARG2,typename ARG
     typename ARG7,typename ARG8,typename ARG9 >
 class VariadicMethoid
 <DispatchOn,void (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9)  >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef VariadicMethoid<DispatchOn,void (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9)  > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
 typedef void(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9) ;
 Type mptr;
 public:
 enum { NumParams = 10 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : TemplatedFunctionBase_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
@@ -1102,17 +1102,17 @@ template <int DispatchOn , typename OT ,typename ARG1,typename ARG2,typename ARG
     typename ARG7,typename ARG8 >
 class VariadicMethoid
 <DispatchOn,void (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8)  >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef VariadicMethoid<DispatchOn,void (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8)  > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
 typedef void(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8) ;
 Type mptr;
 public:
 enum { NumParams = 9 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : TemplatedFunctionBase_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
@@ -1148,17 +1148,17 @@ template <int DispatchOn , typename OT ,typename ARG1,typename ARG2,typename ARG
     typename ARG7 >
 class VariadicMethoid
 <DispatchOn,void (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7)  >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef VariadicMethoid<DispatchOn,void (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7)  > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
 typedef void(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7) ;
 Type mptr;
 public:
 enum { NumParams = 8 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : TemplatedFunctionBase_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
@@ -1192,17 +1192,17 @@ return Values0<core::T_O>();
 template <int DispatchOn , typename OT ,typename ARG1,typename ARG2,typename ARG3,typename ARG4,typename ARG5,typename ARG6 >
 class VariadicMethoid
 <DispatchOn,void (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6)  >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef VariadicMethoid<DispatchOn,void (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6)  > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
 typedef void(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, ARG6) ;
 Type mptr;
 public:
 enum { NumParams = 7 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : TemplatedFunctionBase_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
@@ -1235,17 +1235,17 @@ return Values0<core::T_O>();
 template <int DispatchOn , typename OT ,typename ARG1,typename ARG2,typename ARG3,typename ARG4,typename ARG5 >
 class VariadicMethoid
 <DispatchOn,void (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5)  >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef VariadicMethoid<DispatchOn,void (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5)  > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
 typedef void(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5) ;
 Type mptr;
 public:
 enum { NumParams = 6 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : TemplatedFunctionBase_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
@@ -1277,17 +1277,17 @@ return Values0<core::T_O>();
 template <int DispatchOn , typename OT ,typename ARG1,typename ARG2,typename ARG3,typename ARG4 >
 class VariadicMethoid
 <DispatchOn,void (OT::*)( ARG1, ARG2, ARG3, ARG4)  >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef VariadicMethoid<DispatchOn,void (OT::*)( ARG1, ARG2, ARG3, ARG4)  > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
 typedef void(OT::*Type)(ARG1, ARG2, ARG3, ARG4) ;
 Type mptr;
 public:
 enum { NumParams = 5 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : TemplatedFunctionBase_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
@@ -1318,17 +1318,17 @@ return Values0<core::T_O>();
 template <int DispatchOn , typename OT ,typename ARG1,typename ARG2,typename ARG3 >
 class VariadicMethoid
 <DispatchOn,void (OT::*)( ARG1, ARG2, ARG3)  >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef VariadicMethoid<DispatchOn,void (OT::*)( ARG1, ARG2, ARG3)  > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
 typedef void(OT::*Type)(ARG1, ARG2, ARG3) ;
 Type mptr;
 public:
 enum { NumParams = 4 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : TemplatedFunctionBase_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
@@ -1358,17 +1358,17 @@ return Values0<core::T_O>();
 template <int DispatchOn , typename OT ,typename ARG1,typename ARG2 >
 class VariadicMethoid
 <DispatchOn,void (OT::*)( ARG1, ARG2)  >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef VariadicMethoid<DispatchOn,void (OT::*)( ARG1, ARG2)  > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
 typedef void(OT::*Type)(ARG1, ARG2) ;
 Type mptr;
 public:
 enum { NumParams = 3 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : TemplatedFunctionBase_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
@@ -1397,17 +1397,17 @@ return Values0<core::T_O>();
 template <int DispatchOn , typename OT ,typename ARG1 >
 class VariadicMethoid
 <DispatchOn,void (OT::*)( ARG1)  >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef VariadicMethoid<DispatchOn,void (OT::*)( ARG1)  > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
 typedef void(OT::*Type)(ARG1) ;
 Type mptr;
 public:
 enum { NumParams = 2 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : TemplatedFunctionBase_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
@@ -1435,17 +1435,17 @@ return Values0<core::T_O>();
 template <int DispatchOn , typename OT  >
 class VariadicMethoid
 <DispatchOn,void (OT::*)( )  >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef VariadicMethoid<DispatchOn,void (OT::*)( )  > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
 typedef void(OT::*Type)() ;
 Type mptr;
 public:
 enum { NumParams = 1 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : TemplatedFunctionBase_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
@@ -1475,11 +1475,11 @@ template <int DispatchOn ,typename RT, typename OT ,typename ARG1,typename ARG2,
 class VariadicMethoid
 <DispatchOn,gctools::multiple_values<RT> (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12, ARG13,
     ARG14, ARG15)  >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef VariadicMethoid<DispatchOn,gctools::multiple_values<RT> (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9,
     ARG10, ARG11, ARG12, ARG13, ARG14, ARG15)  > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
 typedef gctools::multiple_values<RT>(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12, ARG13,
@@ -1487,7 +1487,7 @@ typedef gctools::multiple_values<RT>(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, AR
 Type mptr;
 public:
 enum { NumParams = 16 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : TemplatedFunctionBase_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
@@ -1533,11 +1533,11 @@ template <int DispatchOn ,typename RT, typename OT ,typename ARG1,typename ARG2,
 class VariadicMethoid
 <DispatchOn,gctools::multiple_values<RT> (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12, ARG13,
     ARG14)  >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef VariadicMethoid<DispatchOn,gctools::multiple_values<RT> (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9,
     ARG10, ARG11, ARG12, ARG13, ARG14)  > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
 typedef gctools::multiple_values<RT>(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12, ARG13,
@@ -1545,7 +1545,7 @@ typedef gctools::multiple_values<RT>(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, AR
 Type mptr;
 public:
 enum { NumParams = 15 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : TemplatedFunctionBase_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
@@ -1589,18 +1589,18 @@ template <int DispatchOn ,typename RT, typename OT ,typename ARG1,typename ARG2,
 class VariadicMethoid
 <DispatchOn,gctools::multiple_values<RT> (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12,
     ARG13)  >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef VariadicMethoid<DispatchOn,gctools::multiple_values<RT> (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9,
     ARG10, ARG11, ARG12, ARG13)  > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
 typedef gctools::multiple_values<RT>(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12, ARG13) ;
 Type mptr;
 public:
 enum { NumParams = 14 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : TemplatedFunctionBase_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
@@ -1642,18 +1642,18 @@ template <int DispatchOn ,typename RT, typename OT ,typename ARG1,typename ARG2,
     typename ARG6,typename ARG7,typename ARG8,typename ARG9,typename ARG10,typename ARG11,typename ARG12 >
 class VariadicMethoid
 <DispatchOn,gctools::multiple_values<RT> (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12)  >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef VariadicMethoid<DispatchOn,gctools::multiple_values<RT> (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9,
     ARG10, ARG11, ARG12)  > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
 typedef gctools::multiple_values<RT>(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12) ;
 Type mptr;
 public:
 enum { NumParams = 13 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : TemplatedFunctionBase_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
@@ -1694,18 +1694,18 @@ template <int DispatchOn ,typename RT, typename OT ,typename ARG1,typename ARG2,
     typename ARG6,typename ARG7,typename ARG8,typename ARG9,typename ARG10,typename ARG11 >
 class VariadicMethoid
 <DispatchOn,gctools::multiple_values<RT> (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11)  >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef VariadicMethoid<DispatchOn,gctools::multiple_values<RT> (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9,
     ARG10, ARG11)  > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
 typedef gctools::multiple_values<RT>(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11) ;
 Type mptr;
 public:
 enum { NumParams = 12 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : TemplatedFunctionBase_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
@@ -1745,18 +1745,18 @@ template <int DispatchOn ,typename RT, typename OT ,typename ARG1,typename ARG2,
     typename ARG6,typename ARG7,typename ARG8,typename ARG9,typename ARG10 >
 class VariadicMethoid
 <DispatchOn,gctools::multiple_values<RT> (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10)  >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef VariadicMethoid<DispatchOn,gctools::multiple_values<RT> (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9,
     ARG10)  > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
 typedef gctools::multiple_values<RT>(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10) ;
 Type mptr;
 public:
 enum { NumParams = 11 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : TemplatedFunctionBase_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
@@ -1795,18 +1795,18 @@ template <int DispatchOn ,typename RT, typename OT ,typename ARG1,typename ARG2,
     typename ARG6,typename ARG7,typename ARG8,typename ARG9 >
 class VariadicMethoid
 <DispatchOn,gctools::multiple_values<RT> (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9)  >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef VariadicMethoid<DispatchOn,gctools::multiple_values<RT> (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8,
     ARG9)  > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
 typedef gctools::multiple_values<RT>(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9) ;
 Type mptr;
 public:
 enum { NumParams = 10 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : TemplatedFunctionBase_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
@@ -1844,17 +1844,17 @@ template <int DispatchOn ,typename RT, typename OT ,typename ARG1,typename ARG2,
     typename ARG6,typename ARG7,typename ARG8 >
 class VariadicMethoid
 <DispatchOn,gctools::multiple_values<RT> (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8)  >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef VariadicMethoid<DispatchOn,gctools::multiple_values<RT> (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8)  > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
 typedef gctools::multiple_values<RT>(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8) ;
 Type mptr;
 public:
 enum { NumParams = 9 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : TemplatedFunctionBase_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
@@ -1890,17 +1890,17 @@ template <int DispatchOn ,typename RT, typename OT ,typename ARG1,typename ARG2,
     typename ARG6,typename ARG7 >
 class VariadicMethoid
 <DispatchOn,gctools::multiple_values<RT> (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7)  >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef VariadicMethoid<DispatchOn,gctools::multiple_values<RT> (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7)  > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
 typedef gctools::multiple_values<RT>(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7) ;
 Type mptr;
 public:
 enum { NumParams = 8 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : TemplatedFunctionBase_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
@@ -1935,17 +1935,17 @@ template <int DispatchOn ,typename RT, typename OT ,typename ARG1,typename ARG2,
     typename ARG6 >
 class VariadicMethoid
 <DispatchOn,gctools::multiple_values<RT> (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6)  >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef VariadicMethoid<DispatchOn,gctools::multiple_values<RT> (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6)  > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
 typedef gctools::multiple_values<RT>(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, ARG6) ;
 Type mptr;
 public:
 enum { NumParams = 7 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : TemplatedFunctionBase_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
@@ -1978,17 +1978,17 @@ return retval.as_return_type();
 template <int DispatchOn ,typename RT, typename OT ,typename ARG1,typename ARG2,typename ARG3,typename ARG4,typename ARG5 >
 class VariadicMethoid
 <DispatchOn,gctools::multiple_values<RT> (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5)  >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef VariadicMethoid<DispatchOn,gctools::multiple_values<RT> (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5)  > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
 typedef gctools::multiple_values<RT>(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5) ;
 Type mptr;
 public:
 enum { NumParams = 6 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : TemplatedFunctionBase_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
@@ -2020,17 +2020,17 @@ return retval.as_return_type();
 template <int DispatchOn ,typename RT, typename OT ,typename ARG1,typename ARG2,typename ARG3,typename ARG4 >
 class VariadicMethoid
 <DispatchOn,gctools::multiple_values<RT> (OT::*)( ARG1, ARG2, ARG3, ARG4)  >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef VariadicMethoid<DispatchOn,gctools::multiple_values<RT> (OT::*)( ARG1, ARG2, ARG3, ARG4)  > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
 typedef gctools::multiple_values<RT>(OT::*Type)(ARG1, ARG2, ARG3, ARG4) ;
 Type mptr;
 public:
 enum { NumParams = 5 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : TemplatedFunctionBase_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
@@ -2061,17 +2061,17 @@ return retval.as_return_type();
 template <int DispatchOn ,typename RT, typename OT ,typename ARG1,typename ARG2,typename ARG3 >
 class VariadicMethoid
 <DispatchOn,gctools::multiple_values<RT> (OT::*)( ARG1, ARG2, ARG3)  >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef VariadicMethoid<DispatchOn,gctools::multiple_values<RT> (OT::*)( ARG1, ARG2, ARG3)  > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
 typedef gctools::multiple_values<RT>(OT::*Type)(ARG1, ARG2, ARG3) ;
 Type mptr;
 public:
 enum { NumParams = 4 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : TemplatedFunctionBase_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
@@ -2101,17 +2101,17 @@ return retval.as_return_type();
 template <int DispatchOn ,typename RT, typename OT ,typename ARG1,typename ARG2 >
 class VariadicMethoid
 <DispatchOn,gctools::multiple_values<RT> (OT::*)( ARG1, ARG2)  >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef VariadicMethoid<DispatchOn,gctools::multiple_values<RT> (OT::*)( ARG1, ARG2)  > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
 typedef gctools::multiple_values<RT>(OT::*Type)(ARG1, ARG2) ;
 Type mptr;
 public:
 enum { NumParams = 3 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : TemplatedFunctionBase_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
@@ -2140,17 +2140,17 @@ return retval.as_return_type();
 template <int DispatchOn ,typename RT, typename OT ,typename ARG1 >
 class VariadicMethoid
 <DispatchOn,gctools::multiple_values<RT> (OT::*)( ARG1)  >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef VariadicMethoid<DispatchOn,gctools::multiple_values<RT> (OT::*)( ARG1)  > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
 typedef gctools::multiple_values<RT>(OT::*Type)(ARG1) ;
 Type mptr;
 public:
 enum { NumParams = 2 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : TemplatedFunctionBase_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
@@ -2178,17 +2178,17 @@ return retval.as_return_type();
 template <int DispatchOn ,typename RT, typename OT  >
 class VariadicMethoid
 <DispatchOn,gctools::multiple_values<RT> (OT::*)( )  >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef VariadicMethoid<DispatchOn,gctools::multiple_values<RT> (OT::*)( )  > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
 typedef gctools::multiple_values<RT>(OT::*Type)() ;
 Type mptr;
 public:
 enum { NumParams = 1 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : TemplatedFunctionBase_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
@@ -2217,18 +2217,18 @@ template <int DispatchOn ,typename RT, typename OT ,typename ARG1,typename ARG2,
     typename ARG14,typename ARG15 >
 class VariadicMethoid
 <DispatchOn,RT (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12, ARG13, ARG14, ARG15) const >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef VariadicMethoid<DispatchOn,RT (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12, ARG13,
     ARG14, ARG15) const > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
 typedef RT(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12, ARG13, ARG14, ARG15) const;
 Type mptr;
 public:
 enum { NumParams = 16 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : TemplatedFunctionBase_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
@@ -2273,18 +2273,18 @@ template <int DispatchOn ,typename RT, typename OT ,typename ARG1,typename ARG2,
     typename ARG14 >
 class VariadicMethoid
 <DispatchOn,RT (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12, ARG13, ARG14) const >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef VariadicMethoid<DispatchOn,RT (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12, ARG13,
     ARG14) const > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
 typedef RT(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12, ARG13, ARG14) const;
 Type mptr;
 public:
 enum { NumParams = 15 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : TemplatedFunctionBase_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
@@ -2327,18 +2327,18 @@ template <int DispatchOn ,typename RT, typename OT ,typename ARG1,typename ARG2,
     typename ARG6,typename ARG7,typename ARG8,typename ARG9,typename ARG10,typename ARG11,typename ARG12,typename ARG13 >
 class VariadicMethoid
 <DispatchOn,RT (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12, ARG13) const >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef VariadicMethoid<DispatchOn,RT (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12,
     ARG13) const > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
 typedef RT(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12, ARG13) const;
 Type mptr;
 public:
 enum { NumParams = 14 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : TemplatedFunctionBase_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
@@ -2380,18 +2380,18 @@ template <int DispatchOn ,typename RT, typename OT ,typename ARG1,typename ARG2,
     typename ARG6,typename ARG7,typename ARG8,typename ARG9,typename ARG10,typename ARG11,typename ARG12 >
 class VariadicMethoid
 <DispatchOn,RT (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12) const >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef VariadicMethoid<DispatchOn,RT (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11,
     ARG12) const > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
 typedef RT(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12) const;
 Type mptr;
 public:
 enum { NumParams = 13 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : TemplatedFunctionBase_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
@@ -2431,17 +2431,17 @@ template <int DispatchOn ,typename RT, typename OT ,typename ARG1,typename ARG2,
     typename ARG6,typename ARG7,typename ARG8,typename ARG9,typename ARG10,typename ARG11 >
 class VariadicMethoid
 <DispatchOn,RT (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11) const >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef VariadicMethoid<DispatchOn,RT (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11) const > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
 typedef RT(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11) const;
 Type mptr;
 public:
 enum { NumParams = 12 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : TemplatedFunctionBase_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
@@ -2480,17 +2480,17 @@ template <int DispatchOn ,typename RT, typename OT ,typename ARG1,typename ARG2,
     typename ARG6,typename ARG7,typename ARG8,typename ARG9,typename ARG10 >
 class VariadicMethoid
 <DispatchOn,RT (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10) const >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef VariadicMethoid<DispatchOn,RT (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10) const > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
 typedef RT(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10) const;
 Type mptr;
 public:
 enum { NumParams = 11 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : TemplatedFunctionBase_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
@@ -2528,17 +2528,17 @@ template <int DispatchOn ,typename RT, typename OT ,typename ARG1,typename ARG2,
     typename ARG6,typename ARG7,typename ARG8,typename ARG9 >
 class VariadicMethoid
 <DispatchOn,RT (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9) const >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef VariadicMethoid<DispatchOn,RT (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9) const > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
 typedef RT(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9) const;
 Type mptr;
 public:
 enum { NumParams = 10 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : TemplatedFunctionBase_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
@@ -2575,17 +2575,17 @@ template <int DispatchOn ,typename RT, typename OT ,typename ARG1,typename ARG2,
     typename ARG6,typename ARG7,typename ARG8 >
 class VariadicMethoid
 <DispatchOn,RT (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8) const >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef VariadicMethoid<DispatchOn,RT (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8) const > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
 typedef RT(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8) const;
 Type mptr;
 public:
 enum { NumParams = 9 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : TemplatedFunctionBase_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
@@ -2621,17 +2621,17 @@ template <int DispatchOn ,typename RT, typename OT ,typename ARG1,typename ARG2,
     typename ARG6,typename ARG7 >
 class VariadicMethoid
 <DispatchOn,RT (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7) const >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef VariadicMethoid<DispatchOn,RT (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7) const > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
 typedef RT(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7) const;
 Type mptr;
 public:
 enum { NumParams = 8 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : TemplatedFunctionBase_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
@@ -2666,17 +2666,17 @@ template <int DispatchOn ,typename RT, typename OT ,typename ARG1,typename ARG2,
     typename ARG6 >
 class VariadicMethoid
 <DispatchOn,RT (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6) const >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef VariadicMethoid<DispatchOn,RT (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6) const > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
 typedef RT(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, ARG6) const;
 Type mptr;
 public:
 enum { NumParams = 7 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : TemplatedFunctionBase_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
@@ -2709,17 +2709,17 @@ return Values(translate::to_object<RT>::convert(retval));
 template <int DispatchOn ,typename RT, typename OT ,typename ARG1,typename ARG2,typename ARG3,typename ARG4,typename ARG5 >
 class VariadicMethoid
 <DispatchOn,RT (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5) const >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef VariadicMethoid<DispatchOn,RT (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5) const > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
 typedef RT(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5) const;
 Type mptr;
 public:
 enum { NumParams = 6 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : TemplatedFunctionBase_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
@@ -2751,17 +2751,17 @@ return Values(translate::to_object<RT>::convert(retval));
 template <int DispatchOn ,typename RT, typename OT ,typename ARG1,typename ARG2,typename ARG3,typename ARG4 >
 class VariadicMethoid
 <DispatchOn,RT (OT::*)( ARG1, ARG2, ARG3, ARG4) const >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef VariadicMethoid<DispatchOn,RT (OT::*)( ARG1, ARG2, ARG3, ARG4) const > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
 typedef RT(OT::*Type)(ARG1, ARG2, ARG3, ARG4) const;
 Type mptr;
 public:
 enum { NumParams = 5 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : TemplatedFunctionBase_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
@@ -2792,17 +2792,17 @@ return Values(translate::to_object<RT>::convert(retval));
 template <int DispatchOn ,typename RT, typename OT ,typename ARG1,typename ARG2,typename ARG3 >
 class VariadicMethoid
 <DispatchOn,RT (OT::*)( ARG1, ARG2, ARG3) const >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef VariadicMethoid<DispatchOn,RT (OT::*)( ARG1, ARG2, ARG3) const > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
 typedef RT(OT::*Type)(ARG1, ARG2, ARG3) const;
 Type mptr;
 public:
 enum { NumParams = 4 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : TemplatedFunctionBase_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
@@ -2832,17 +2832,17 @@ return Values(translate::to_object<RT>::convert(retval));
 template <int DispatchOn ,typename RT, typename OT ,typename ARG1,typename ARG2 >
 class VariadicMethoid
 <DispatchOn,RT (OT::*)( ARG1, ARG2) const >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef VariadicMethoid<DispatchOn,RT (OT::*)( ARG1, ARG2) const > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
 typedef RT(OT::*Type)(ARG1, ARG2) const;
 Type mptr;
 public:
 enum { NumParams = 3 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : TemplatedFunctionBase_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
@@ -2871,17 +2871,17 @@ return Values(translate::to_object<RT>::convert(retval));
 template <int DispatchOn ,typename RT, typename OT ,typename ARG1 >
 class VariadicMethoid
 <DispatchOn,RT (OT::*)( ARG1) const >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef VariadicMethoid<DispatchOn,RT (OT::*)( ARG1) const > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
 typedef RT(OT::*Type)(ARG1) const;
 Type mptr;
 public:
 enum { NumParams = 2 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : TemplatedFunctionBase_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
@@ -2909,17 +2909,17 @@ return Values(translate::to_object<RT>::convert(retval));
 template <int DispatchOn ,typename RT, typename OT  >
 class VariadicMethoid
 <DispatchOn,RT (OT::*)( ) const >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef VariadicMethoid<DispatchOn,RT (OT::*)( ) const > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
 typedef RT(OT::*Type)() const;
 Type mptr;
 public:
 enum { NumParams = 1 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : TemplatedFunctionBase_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
@@ -2948,18 +2948,18 @@ template <int DispatchOn , typename OT ,typename ARG1,typename ARG2,typename ARG
     typename ARG15 >
 class VariadicMethoid
 <DispatchOn,void (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12, ARG13, ARG14, ARG15) const >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef VariadicMethoid<DispatchOn,void (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12, ARG13,
     ARG14, ARG15) const > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
 typedef void(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12, ARG13, ARG14, ARG15) const;
 Type mptr;
 public:
 enum { NumParams = 16 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : TemplatedFunctionBase_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
@@ -3003,18 +3003,18 @@ template <int DispatchOn , typename OT ,typename ARG1,typename ARG2,typename ARG
     typename ARG7,typename ARG8,typename ARG9,typename ARG10,typename ARG11,typename ARG12,typename ARG13,typename ARG14 >
 class VariadicMethoid
 <DispatchOn,void (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12, ARG13, ARG14) const >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef VariadicMethoid<DispatchOn,void (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12, ARG13,
     ARG14) const > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
 typedef void(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12, ARG13, ARG14) const;
 Type mptr;
 public:
 enum { NumParams = 15 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : TemplatedFunctionBase_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
@@ -3056,18 +3056,18 @@ template <int DispatchOn , typename OT ,typename ARG1,typename ARG2,typename ARG
     typename ARG7,typename ARG8,typename ARG9,typename ARG10,typename ARG11,typename ARG12,typename ARG13 >
 class VariadicMethoid
 <DispatchOn,void (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12, ARG13) const >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef VariadicMethoid<DispatchOn,void (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12,
     ARG13) const > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
 typedef void(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12, ARG13) const;
 Type mptr;
 public:
 enum { NumParams = 14 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : TemplatedFunctionBase_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
@@ -3108,18 +3108,18 @@ template <int DispatchOn , typename OT ,typename ARG1,typename ARG2,typename ARG
     typename ARG7,typename ARG8,typename ARG9,typename ARG10,typename ARG11,typename ARG12 >
 class VariadicMethoid
 <DispatchOn,void (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12) const >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef VariadicMethoid<DispatchOn,void (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11,
     ARG12) const > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
 typedef void(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12) const;
 Type mptr;
 public:
 enum { NumParams = 13 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : TemplatedFunctionBase_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
@@ -3159,17 +3159,17 @@ template <int DispatchOn , typename OT ,typename ARG1,typename ARG2,typename ARG
     typename ARG7,typename ARG8,typename ARG9,typename ARG10,typename ARG11 >
 class VariadicMethoid
 <DispatchOn,void (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11) const >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef VariadicMethoid<DispatchOn,void (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11) const > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
 typedef void(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11) const;
 Type mptr;
 public:
 enum { NumParams = 12 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : TemplatedFunctionBase_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
@@ -3208,17 +3208,17 @@ template <int DispatchOn , typename OT ,typename ARG1,typename ARG2,typename ARG
     typename ARG7,typename ARG8,typename ARG9,typename ARG10 >
 class VariadicMethoid
 <DispatchOn,void (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10) const >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef VariadicMethoid<DispatchOn,void (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10) const > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
 typedef void(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10) const;
 Type mptr;
 public:
 enum { NumParams = 11 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : TemplatedFunctionBase_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
@@ -3256,17 +3256,17 @@ template <int DispatchOn , typename OT ,typename ARG1,typename ARG2,typename ARG
     typename ARG7,typename ARG8,typename ARG9 >
 class VariadicMethoid
 <DispatchOn,void (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9) const >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef VariadicMethoid<DispatchOn,void (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9) const > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
 typedef void(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9) const;
 Type mptr;
 public:
 enum { NumParams = 10 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : TemplatedFunctionBase_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
@@ -3303,17 +3303,17 @@ template <int DispatchOn , typename OT ,typename ARG1,typename ARG2,typename ARG
     typename ARG7,typename ARG8 >
 class VariadicMethoid
 <DispatchOn,void (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8) const >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef VariadicMethoid<DispatchOn,void (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8) const > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
 typedef void(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8) const;
 Type mptr;
 public:
 enum { NumParams = 9 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : TemplatedFunctionBase_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
@@ -3349,17 +3349,17 @@ template <int DispatchOn , typename OT ,typename ARG1,typename ARG2,typename ARG
     typename ARG7 >
 class VariadicMethoid
 <DispatchOn,void (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7) const >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef VariadicMethoid<DispatchOn,void (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7) const > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
 typedef void(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7) const;
 Type mptr;
 public:
 enum { NumParams = 8 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : TemplatedFunctionBase_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
@@ -3393,17 +3393,17 @@ return Values0<core::T_O>();
 template <int DispatchOn , typename OT ,typename ARG1,typename ARG2,typename ARG3,typename ARG4,typename ARG5,typename ARG6 >
 class VariadicMethoid
 <DispatchOn,void (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6) const >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef VariadicMethoid<DispatchOn,void (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6) const > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
 typedef void(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, ARG6) const;
 Type mptr;
 public:
 enum { NumParams = 7 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : TemplatedFunctionBase_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
@@ -3436,17 +3436,17 @@ return Values0<core::T_O>();
 template <int DispatchOn , typename OT ,typename ARG1,typename ARG2,typename ARG3,typename ARG4,typename ARG5 >
 class VariadicMethoid
 <DispatchOn,void (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5) const >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef VariadicMethoid<DispatchOn,void (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5) const > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
 typedef void(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5) const;
 Type mptr;
 public:
 enum { NumParams = 6 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : TemplatedFunctionBase_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
@@ -3478,17 +3478,17 @@ return Values0<core::T_O>();
 template <int DispatchOn , typename OT ,typename ARG1,typename ARG2,typename ARG3,typename ARG4 >
 class VariadicMethoid
 <DispatchOn,void (OT::*)( ARG1, ARG2, ARG3, ARG4) const >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef VariadicMethoid<DispatchOn,void (OT::*)( ARG1, ARG2, ARG3, ARG4) const > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
 typedef void(OT::*Type)(ARG1, ARG2, ARG3, ARG4) const;
 Type mptr;
 public:
 enum { NumParams = 5 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : TemplatedFunctionBase_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
@@ -3519,17 +3519,17 @@ return Values0<core::T_O>();
 template <int DispatchOn , typename OT ,typename ARG1,typename ARG2,typename ARG3 >
 class VariadicMethoid
 <DispatchOn,void (OT::*)( ARG1, ARG2, ARG3) const >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef VariadicMethoid<DispatchOn,void (OT::*)( ARG1, ARG2, ARG3) const > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
 typedef void(OT::*Type)(ARG1, ARG2, ARG3) const;
 Type mptr;
 public:
 enum { NumParams = 4 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : TemplatedFunctionBase_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
@@ -3559,17 +3559,17 @@ return Values0<core::T_O>();
 template <int DispatchOn , typename OT ,typename ARG1,typename ARG2 >
 class VariadicMethoid
 <DispatchOn,void (OT::*)( ARG1, ARG2) const >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef VariadicMethoid<DispatchOn,void (OT::*)( ARG1, ARG2) const > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
 typedef void(OT::*Type)(ARG1, ARG2) const;
 Type mptr;
 public:
 enum { NumParams = 3 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : TemplatedFunctionBase_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
@@ -3598,17 +3598,17 @@ return Values0<core::T_O>();
 template <int DispatchOn , typename OT ,typename ARG1 >
 class VariadicMethoid
 <DispatchOn,void (OT::*)( ARG1) const >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef VariadicMethoid<DispatchOn,void (OT::*)( ARG1) const > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
 typedef void(OT::*Type)(ARG1) const;
 Type mptr;
 public:
 enum { NumParams = 2 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : TemplatedFunctionBase_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
@@ -3636,17 +3636,17 @@ return Values0<core::T_O>();
 template <int DispatchOn , typename OT  >
 class VariadicMethoid
 <DispatchOn,void (OT::*)( ) const >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef VariadicMethoid<DispatchOn,void (OT::*)( ) const > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
 typedef void(OT::*Type)() const;
 Type mptr;
 public:
 enum { NumParams = 1 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : TemplatedFunctionBase_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
@@ -3676,11 +3676,11 @@ template <int DispatchOn ,typename RT, typename OT ,typename ARG1,typename ARG2,
 class VariadicMethoid
 <DispatchOn,gctools::multiple_values<RT> (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12, ARG13,
     ARG14, ARG15) const >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef VariadicMethoid<DispatchOn,gctools::multiple_values<RT> (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9,
     ARG10, ARG11, ARG12, ARG13, ARG14, ARG15) const > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
 typedef gctools::multiple_values<RT>(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12, ARG13,
@@ -3688,7 +3688,7 @@ typedef gctools::multiple_values<RT>(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, AR
 Type mptr;
 public:
 enum { NumParams = 16 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : TemplatedFunctionBase_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
@@ -3734,11 +3734,11 @@ template <int DispatchOn ,typename RT, typename OT ,typename ARG1,typename ARG2,
 class VariadicMethoid
 <DispatchOn,gctools::multiple_values<RT> (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12, ARG13,
     ARG14) const >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef VariadicMethoid<DispatchOn,gctools::multiple_values<RT> (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9,
     ARG10, ARG11, ARG12, ARG13, ARG14) const > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
 typedef gctools::multiple_values<RT>(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12, ARG13,
@@ -3746,7 +3746,7 @@ typedef gctools::multiple_values<RT>(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, AR
 Type mptr;
 public:
 enum { NumParams = 15 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : TemplatedFunctionBase_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
@@ -3790,11 +3790,11 @@ template <int DispatchOn ,typename RT, typename OT ,typename ARG1,typename ARG2,
 class VariadicMethoid
 <DispatchOn,gctools::multiple_values<RT> (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12,
     ARG13) const >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef VariadicMethoid<DispatchOn,gctools::multiple_values<RT> (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9,
     ARG10, ARG11, ARG12, ARG13) const > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
 typedef gctools::multiple_values<RT>(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12,
@@ -3802,7 +3802,7 @@ typedef gctools::multiple_values<RT>(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, AR
 Type mptr;
 public:
 enum { NumParams = 14 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : TemplatedFunctionBase_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
@@ -3844,18 +3844,18 @@ template <int DispatchOn ,typename RT, typename OT ,typename ARG1,typename ARG2,
     typename ARG6,typename ARG7,typename ARG8,typename ARG9,typename ARG10,typename ARG11,typename ARG12 >
 class VariadicMethoid
 <DispatchOn,gctools::multiple_values<RT> (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12) const >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef VariadicMethoid<DispatchOn,gctools::multiple_values<RT> (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9,
     ARG10, ARG11, ARG12) const > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
 typedef gctools::multiple_values<RT>(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12) const;
 Type mptr;
 public:
 enum { NumParams = 13 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : TemplatedFunctionBase_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
@@ -3896,18 +3896,18 @@ template <int DispatchOn ,typename RT, typename OT ,typename ARG1,typename ARG2,
     typename ARG6,typename ARG7,typename ARG8,typename ARG9,typename ARG10,typename ARG11 >
 class VariadicMethoid
 <DispatchOn,gctools::multiple_values<RT> (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11) const >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef VariadicMethoid<DispatchOn,gctools::multiple_values<RT> (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9,
     ARG10, ARG11) const > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
 typedef gctools::multiple_values<RT>(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11) const;
 Type mptr;
 public:
 enum { NumParams = 12 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : TemplatedFunctionBase_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
@@ -3947,18 +3947,18 @@ template <int DispatchOn ,typename RT, typename OT ,typename ARG1,typename ARG2,
     typename ARG6,typename ARG7,typename ARG8,typename ARG9,typename ARG10 >
 class VariadicMethoid
 <DispatchOn,gctools::multiple_values<RT> (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10) const >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef VariadicMethoid<DispatchOn,gctools::multiple_values<RT> (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9,
     ARG10) const > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
 typedef gctools::multiple_values<RT>(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10) const;
 Type mptr;
 public:
 enum { NumParams = 11 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : TemplatedFunctionBase_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
@@ -3997,18 +3997,18 @@ template <int DispatchOn ,typename RT, typename OT ,typename ARG1,typename ARG2,
     typename ARG6,typename ARG7,typename ARG8,typename ARG9 >
 class VariadicMethoid
 <DispatchOn,gctools::multiple_values<RT> (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9) const >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef VariadicMethoid<DispatchOn,gctools::multiple_values<RT> (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8,
     ARG9) const > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
 typedef gctools::multiple_values<RT>(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9) const;
 Type mptr;
 public:
 enum { NumParams = 10 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : TemplatedFunctionBase_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
@@ -4046,18 +4046,18 @@ template <int DispatchOn ,typename RT, typename OT ,typename ARG1,typename ARG2,
     typename ARG6,typename ARG7,typename ARG8 >
 class VariadicMethoid
 <DispatchOn,gctools::multiple_values<RT> (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8) const >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef VariadicMethoid<DispatchOn,gctools::multiple_values<RT> (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7,
     ARG8) const > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
 typedef gctools::multiple_values<RT>(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8) const;
 Type mptr;
 public:
 enum { NumParams = 9 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : TemplatedFunctionBase_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
@@ -4093,17 +4093,17 @@ template <int DispatchOn ,typename RT, typename OT ,typename ARG1,typename ARG2,
     typename ARG6,typename ARG7 >
 class VariadicMethoid
 <DispatchOn,gctools::multiple_values<RT> (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7) const >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef VariadicMethoid<DispatchOn,gctools::multiple_values<RT> (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7) const > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
 typedef gctools::multiple_values<RT>(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7) const;
 Type mptr;
 public:
 enum { NumParams = 8 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : TemplatedFunctionBase_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
@@ -4138,17 +4138,17 @@ template <int DispatchOn ,typename RT, typename OT ,typename ARG1,typename ARG2,
     typename ARG6 >
 class VariadicMethoid
 <DispatchOn,gctools::multiple_values<RT> (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6) const >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef VariadicMethoid<DispatchOn,gctools::multiple_values<RT> (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6) const > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
 typedef gctools::multiple_values<RT>(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5, ARG6) const;
 Type mptr;
 public:
 enum { NumParams = 7 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : TemplatedFunctionBase_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
@@ -4181,17 +4181,17 @@ return retval.as_return_type();
 template <int DispatchOn ,typename RT, typename OT ,typename ARG1,typename ARG2,typename ARG3,typename ARG4,typename ARG5 >
 class VariadicMethoid
 <DispatchOn,gctools::multiple_values<RT> (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5) const >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef VariadicMethoid<DispatchOn,gctools::multiple_values<RT> (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5) const > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
 typedef gctools::multiple_values<RT>(OT::*Type)(ARG1, ARG2, ARG3, ARG4, ARG5) const;
 Type mptr;
 public:
 enum { NumParams = 6 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : TemplatedFunctionBase_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
@@ -4223,17 +4223,17 @@ return retval.as_return_type();
 template <int DispatchOn ,typename RT, typename OT ,typename ARG1,typename ARG2,typename ARG3,typename ARG4 >
 class VariadicMethoid
 <DispatchOn,gctools::multiple_values<RT> (OT::*)( ARG1, ARG2, ARG3, ARG4) const >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef VariadicMethoid<DispatchOn,gctools::multiple_values<RT> (OT::*)( ARG1, ARG2, ARG3, ARG4) const > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
 typedef gctools::multiple_values<RT>(OT::*Type)(ARG1, ARG2, ARG3, ARG4) const;
 Type mptr;
 public:
 enum { NumParams = 5 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : TemplatedFunctionBase_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
@@ -4264,17 +4264,17 @@ return retval.as_return_type();
 template <int DispatchOn ,typename RT, typename OT ,typename ARG1,typename ARG2,typename ARG3 >
 class VariadicMethoid
 <DispatchOn,gctools::multiple_values<RT> (OT::*)( ARG1, ARG2, ARG3) const >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef VariadicMethoid<DispatchOn,gctools::multiple_values<RT> (OT::*)( ARG1, ARG2, ARG3) const > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
 typedef gctools::multiple_values<RT>(OT::*Type)(ARG1, ARG2, ARG3) const;
 Type mptr;
 public:
 enum { NumParams = 4 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : TemplatedFunctionBase_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
@@ -4304,17 +4304,17 @@ return retval.as_return_type();
 template <int DispatchOn ,typename RT, typename OT ,typename ARG1,typename ARG2 >
 class VariadicMethoid
 <DispatchOn,gctools::multiple_values<RT> (OT::*)( ARG1, ARG2) const >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef VariadicMethoid<DispatchOn,gctools::multiple_values<RT> (OT::*)( ARG1, ARG2) const > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
 typedef gctools::multiple_values<RT>(OT::*Type)(ARG1, ARG2) const;
 Type mptr;
 public:
 enum { NumParams = 3 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : TemplatedFunctionBase_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
@@ -4343,17 +4343,17 @@ return retval.as_return_type();
 template <int DispatchOn ,typename RT, typename OT ,typename ARG1 >
 class VariadicMethoid
 <DispatchOn,gctools::multiple_values<RT> (OT::*)( ARG1) const >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef VariadicMethoid<DispatchOn,gctools::multiple_values<RT> (OT::*)( ARG1) const > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
 typedef gctools::multiple_values<RT>(OT::*Type)(ARG1) const;
 Type mptr;
 public:
 enum { NumParams = 2 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : TemplatedFunctionBase_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
@@ -4381,17 +4381,17 @@ return retval.as_return_type();
 template <int DispatchOn ,typename RT, typename OT  >
 class VariadicMethoid
 <DispatchOn,gctools::multiple_values<RT> (OT::*)( ) const >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef VariadicMethoid<DispatchOn,gctools::multiple_values<RT> (OT::*)( ) const > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicMethoid";};
 typedef gctools::multiple_values<RT>(OT::*Type)() const;
 Type mptr;
 public:
 enum { NumParams = 1 };
-VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
+VariadicMethoid(T_sp name, Type ptr) : TemplatedFunctionBase_O(&MyType::method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)

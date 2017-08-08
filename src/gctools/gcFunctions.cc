@@ -893,6 +893,13 @@ bool debugging_configuration(stringstream& ss) {
 #endif
   ss << (BF("DEBUG_IHS = %s\n") % (debug_ihs ? "defined" : "undefined") ).str();
 
+  bool debug_enable_profiling = false;
+#ifdef ENABLE_PROFILING
+  debug_enable_profiling = true;
+  debugging = true;
+#endif
+  ss << (BF("ENABLE_PROFILING = %s\n") % (debug_ihs ? "defined" : "undefined") ).str();
+
   return debugging;
 }
 

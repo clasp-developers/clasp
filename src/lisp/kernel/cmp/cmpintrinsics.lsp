@@ -547,7 +547,7 @@ eg:  (f closure-ptr nargs a b c d ...)
            (remaining-nargs*              (calling-convention-remaining-nargs* cc))
            (closure                       (calling-convention-closure cc))
            (_                             (irc-intrinsic "cc_rewind_va_list" closure va-list* remaining-nargs* register-save-area*)))))
-    
+  (defvar *mcount-name* "mcount")  ;;; The function that is used for profiling
 ;;; end of x86-64 specific stuff
   )
 
@@ -906,6 +906,7 @@ and initialize it with an array consisting of one function pointer."
     (primitive          module "ltvc_set_mlf_creator_funcall" %ltvc-return% (list %gcroots-in-module*% %size_t% %fn-prototype*% %i8*%))
     (primitive          module "ltvc_mlf_init_funcall" %ltvc-return% (list %fn-prototype*% %i8*%))
     (primitive          module "ltvc_set_ltv_funcall" %ltvc-return% (list %gcroots-in-module*% %size_t% %fn-prototype*% %i8*%))
+    (primitive          module "ltvc_set_ltv_funcall_cleavir" %ltvc-return% (list %gcroots-in-module*% %size_t% %fn-prototype*% %i8*%))
     (primitive          module "ltvc_toplevel_funcall" %ltvc-return% (list %fn-prototype*% %i8*%))
   
 ;;    (primitive-nounwind* module "newFunction_sp" %void% (list %Function_sp*%))
@@ -1083,7 +1084,7 @@ and initialize it with an array consisting of one function pointer."
     (primitive-nounwind* module "cc_initialize_gcroots_in_module" %void% (list %gcroots-in-module*% %tsp*% %size_t% %t*%))
     (primitive-nounwind* module "cc_shutdown_gcroots_in_module" %void% (list %gcroots-in-module*% ))
 
-    (primitive-nounwind* module "cc_enclose" %t*% (list %t*% %fn-prototype*% %i32*% %size_t% %size_t% %size_t% %size_t% ) :varargs t)
+    (primitive           module "cc_enclose" %t*% (list %t*% %fn-prototype*% %i32*% %size_t% %size_t% %size_t% %size_t% ) :varargs t)
     (primitive-nounwind* module "cc_stack_enclose" %t*% (list %i8*% %t*% %fn-prototype*% %i32*% %size_t% %size_t% %size_t% %size_t% ) :varargs t)
     (primitive-nounwind* module "cc_saveThreadLocalMultipleValues" %void% (list %tmv*% %mv-struct*%))
     (primitive-nounwind* module "cc_loadThreadLocalMultipleValues" %void% (list %tmv*% %mv-struct*%))

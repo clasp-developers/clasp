@@ -11,16 +11,16 @@ template <typename Pols, typename Pointer, typename T ,typename ARG0,typename AR
     typename ARG5,typename ARG6,typename ARG7 >
 class VariadicConstructorFunction_O
 < Pols, Pointer, T, constructor<ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7> >
-: public core::BuiltinClosure_O {
+: public core::TemplatedFunctionBase_O {
 public:
 typedef VariadicConstructorFunction_O< Pols, Pointer, T, constructor<ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7> > MyType;
-typedef core::BuiltinClosure_O TemplatedBase;
+typedef core::TemplatedFunctionBase_O TemplatedBase;
 public:
 typedef Wrapper<T,Pointer>  WrapperType;
 public:
 virtual const char* describe() const { return "VariadicConstructorFunctor"; };
 enum { NumParams = 8 };
-VariadicConstructorFunction_O(core::T_sp name) : core::BuiltinClosure_O(entry_point,name) {};
+VariadicConstructorFunction_O(core::T_sp name) : core::TemplatedFunctionBase_O(entry_point,name) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 static inline LCC_RETURN LISP_CALLING_CONVENTION()
@@ -89,16 +89,16 @@ template <typename Pols, typename Pointer, typename T ,typename ARG0,typename AR
     typename ARG5,typename ARG6 >
 class VariadicConstructorFunction_O
 < Pols, Pointer, T, constructor<ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6> >
-: public core::BuiltinClosure_O {
+: public core::TemplatedFunctionBase_O {
 public:
 typedef VariadicConstructorFunction_O< Pols, Pointer, T, constructor<ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6> > MyType;
-typedef core::BuiltinClosure_O TemplatedBase;
+typedef core::TemplatedFunctionBase_O TemplatedBase;
 public:
 typedef Wrapper<T,Pointer>  WrapperType;
 public:
 virtual const char* describe() const { return "VariadicConstructorFunctor"; };
 enum { NumParams = 7 };
-VariadicConstructorFunction_O(core::T_sp name) : core::BuiltinClosure_O(entry_point,name) {};
+VariadicConstructorFunction_O(core::T_sp name) : core::TemplatedFunctionBase_O(entry_point,name) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 static inline LCC_RETURN LISP_CALLING_CONVENTION()
@@ -162,16 +162,16 @@ template <typename Pols, typename Pointer, typename T ,typename ARG0,typename AR
     typename ARG5 >
 class VariadicConstructorFunction_O
 < Pols, Pointer, T, constructor<ARG0, ARG1, ARG2, ARG3, ARG4, ARG5> >
-: public core::BuiltinClosure_O {
+: public core::TemplatedFunctionBase_O {
 public:
 typedef VariadicConstructorFunction_O< Pols, Pointer, T, constructor<ARG0, ARG1, ARG2, ARG3, ARG4, ARG5> > MyType;
-typedef core::BuiltinClosure_O TemplatedBase;
+typedef core::TemplatedFunctionBase_O TemplatedBase;
 public:
 typedef Wrapper<T,Pointer>  WrapperType;
 public:
 virtual const char* describe() const { return "VariadicConstructorFunctor"; };
 enum { NumParams = 6 };
-VariadicConstructorFunction_O(core::T_sp name) : core::BuiltinClosure_O(entry_point,name) {};
+VariadicConstructorFunction_O(core::T_sp name) : core::TemplatedFunctionBase_O(entry_point,name) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 static inline LCC_RETURN LISP_CALLING_CONVENTION()
@@ -229,16 +229,16 @@ return LCC_RETURN(retval.raw_(),oidx);
 template <typename Pols, typename Pointer, typename T ,typename ARG0,typename ARG1,typename ARG2,typename ARG3,typename ARG4 >
 class VariadicConstructorFunction_O
 < Pols, Pointer, T, constructor<ARG0, ARG1, ARG2, ARG3, ARG4> >
-: public core::BuiltinClosure_O {
+: public core::TemplatedFunctionBase_O {
 public:
 typedef VariadicConstructorFunction_O< Pols, Pointer, T, constructor<ARG0, ARG1, ARG2, ARG3, ARG4> > MyType;
-typedef core::BuiltinClosure_O TemplatedBase;
+typedef core::TemplatedFunctionBase_O TemplatedBase;
 public:
 typedef Wrapper<T,Pointer>  WrapperType;
 public:
 virtual const char* describe() const { return "VariadicConstructorFunctor"; };
 enum { NumParams = 5 };
-VariadicConstructorFunction_O(core::T_sp name) : core::BuiltinClosure_O(entry_point,name) {};
+VariadicConstructorFunction_O(core::T_sp name) : core::TemplatedFunctionBase_O(entry_point,name) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 static inline LCC_RETURN LISP_CALLING_CONVENTION()
@@ -291,16 +291,16 @@ return LCC_RETURN(retval.raw_(),oidx);
 template <typename Pols, typename Pointer, typename T ,typename ARG0,typename ARG1,typename ARG2,typename ARG3 >
 class VariadicConstructorFunction_O
 < Pols, Pointer, T, constructor<ARG0, ARG1, ARG2, ARG3> >
-: public core::BuiltinClosure_O {
+: public core::TemplatedFunctionBase_O {
 public:
 typedef VariadicConstructorFunction_O< Pols, Pointer, T, constructor<ARG0, ARG1, ARG2, ARG3> > MyType;
-typedef core::BuiltinClosure_O TemplatedBase;
+typedef core::TemplatedFunctionBase_O TemplatedBase;
 public:
 typedef Wrapper<T,Pointer>  WrapperType;
 public:
 virtual const char* describe() const { return "VariadicConstructorFunctor"; };
 enum { NumParams = 4 };
-VariadicConstructorFunction_O(core::T_sp name) : core::BuiltinClosure_O(entry_point,name) {};
+VariadicConstructorFunction_O(core::T_sp name) : core::TemplatedFunctionBase_O(entry_point,name) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 static inline LCC_RETURN LISP_CALLING_CONVENTION()
@@ -348,16 +348,16 @@ return LCC_RETURN(retval.raw_(),oidx);
 template <typename Pols, typename Pointer, typename T ,typename ARG0,typename ARG1,typename ARG2 >
 class VariadicConstructorFunction_O
 < Pols, Pointer, T, constructor<ARG0, ARG1, ARG2> >
-: public core::BuiltinClosure_O {
+: public core::TemplatedFunctionBase_O {
 public:
 typedef VariadicConstructorFunction_O< Pols, Pointer, T, constructor<ARG0, ARG1, ARG2> > MyType;
-typedef core::BuiltinClosure_O TemplatedBase;
+typedef core::TemplatedFunctionBase_O TemplatedBase;
 public:
 typedef Wrapper<T,Pointer>  WrapperType;
 public:
 virtual const char* describe() const { return "VariadicConstructorFunctor"; };
 enum { NumParams = 3 };
-VariadicConstructorFunction_O(core::T_sp name) : core::BuiltinClosure_O(entry_point,name) {};
+VariadicConstructorFunction_O(core::T_sp name) : core::TemplatedFunctionBase_O(entry_point,name) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 static inline LCC_RETURN LISP_CALLING_CONVENTION()
@@ -400,16 +400,16 @@ return LCC_RETURN(retval.raw_(),oidx);
 template <typename Pols, typename Pointer, typename T ,typename ARG0,typename ARG1 >
 class VariadicConstructorFunction_O
 < Pols, Pointer, T, constructor<ARG0, ARG1> >
-: public core::BuiltinClosure_O {
+: public core::TemplatedFunctionBase_O {
 public:
 typedef VariadicConstructorFunction_O< Pols, Pointer, T, constructor<ARG0, ARG1> > MyType;
-typedef core::BuiltinClosure_O TemplatedBase;
+typedef core::TemplatedFunctionBase_O TemplatedBase;
 public:
 typedef Wrapper<T,Pointer>  WrapperType;
 public:
 virtual const char* describe() const { return "VariadicConstructorFunctor"; };
 enum { NumParams = 2 };
-VariadicConstructorFunction_O(core::T_sp name) : core::BuiltinClosure_O(entry_point,name) {};
+VariadicConstructorFunction_O(core::T_sp name) : core::TemplatedFunctionBase_O(entry_point,name) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 static inline LCC_RETURN LISP_CALLING_CONVENTION()
@@ -447,16 +447,16 @@ return LCC_RETURN(retval.raw_(),oidx);
 template <typename Pols, typename Pointer, typename T ,typename ARG0 >
 class VariadicConstructorFunction_O
 < Pols, Pointer, T, constructor<ARG0> >
-: public core::BuiltinClosure_O {
+: public core::TemplatedFunctionBase_O {
 public:
 typedef VariadicConstructorFunction_O< Pols, Pointer, T, constructor<ARG0> > MyType;
-typedef core::BuiltinClosure_O TemplatedBase;
+typedef core::TemplatedFunctionBase_O TemplatedBase;
 public:
 typedef Wrapper<T,Pointer>  WrapperType;
 public:
 virtual const char* describe() const { return "VariadicConstructorFunctor"; };
 enum { NumParams = 1 };
-VariadicConstructorFunction_O(core::T_sp name) : core::BuiltinClosure_O(entry_point,name) {};
+VariadicConstructorFunction_O(core::T_sp name) : core::TemplatedFunctionBase_O(entry_point,name) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 static inline LCC_RETURN LISP_CALLING_CONVENTION()
@@ -489,16 +489,16 @@ return LCC_RETURN(retval.raw_(),oidx);
 template <typename Pols, typename Pointer, typename T  >
 class VariadicConstructorFunction_O
 < Pols, Pointer, T, constructor<> >
-: public core::BuiltinClosure_O {
+: public core::TemplatedFunctionBase_O {
 public:
 typedef VariadicConstructorFunction_O< Pols, Pointer, T, constructor<> > MyType;
-typedef core::BuiltinClosure_O TemplatedBase;
+typedef core::TemplatedFunctionBase_O TemplatedBase;
 public:
 typedef Wrapper<T,Pointer>  WrapperType;
 public:
 virtual const char* describe() const { return "VariadicConstructorFunctor"; };
 enum { NumParams = 0 };
-VariadicConstructorFunction_O(core::T_sp name) : core::BuiltinClosure_O(entry_point,name) {};
+VariadicConstructorFunction_O(core::T_sp name) : core::TemplatedFunctionBase_O(entry_point,name) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 static inline LCC_RETURN LISP_CALLING_CONVENTION()

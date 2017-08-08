@@ -167,9 +167,9 @@ public:
 
 namespace clbind {
 
-template <typename Pols, typename Pointer, typename T, typename Sig> class VariadicConstructorFunction_O : public core::BuiltinClosure_O {
+template <typename Pols, typename Pointer, typename T, typename Sig> class VariadicConstructorFunction_O : public core::TemplatedFunctionBase_O {
 public:
-  typedef core::BuiltinClosure_O TemplatedBase;
+  typedef core::TemplatedFunctionBase_O TemplatedBase;
 public:
   virtual size_t templatedSizeof() const { return sizeof(*this); };
 };

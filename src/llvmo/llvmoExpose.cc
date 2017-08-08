@@ -3167,10 +3167,14 @@ CL_DEFUN core::Function_sp finalizeEngineAndRegisterWithGcAndGetCompiledFunction
   //    core::af_def(LlvmoPkg,"createDbgInfoPrinterPass",&llvm::createDbgInfoPrinterPass);
   CL_LISPIFY_NAME(createRegionInfoPass);
   CL_EXTERN_DEFUN( &llvm::createRegionInfoPass);
-  CL_LISPIFY_NAME(createModuleDebugInfoPrinterPass);
-  CL_EXTERN_DEFUN( &llvm::createModuleDebugInfoPrinterPass);
-  CL_LISPIFY_NAME(createMemDepPrinter);
-  CL_EXTERN_DEFUN( &llvm::createMemDepPrinter);
+
+CL_LISPIFY_NAME(createCountingFunctionInserterPass);
+CL_EXTERN_DEFUN( &llvm::createCountingFunctionInserterPass);
+
+CL_LISPIFY_NAME(createModuleDebugInfoPrinterPass);
+CL_EXTERN_DEFUN( &llvm::createModuleDebugInfoPrinterPass);
+CL_LISPIFY_NAME(createMemDepPrinter);
+CL_EXTERN_DEFUN( &llvm::createMemDepPrinter);
   //    core::af_def(LlvmoPkg,"createInstructionCombiningPass",&llvm::createInstructionCombiningPass);
   //    core::af_def(LlvmoPkg,"createReassociatePass",&llvm::createReassociatePass);
   //    core::af_def(LlvmoPkg,"createPostDomTree",&llvm::createPostDomTree);

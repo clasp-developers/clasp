@@ -63,11 +63,11 @@ namespace core {
   FORWARD(MDArray_size_t);
 };
 namespace core {
-  class MDArray_size_t_O : public template_Array<MDArray_size_t_O,SimpleVector_size_t_O,MDArray_O> {
+  class MDArray_size_t_O : public template_Array<MDArray_size_t_O,SimpleMDArray_size_t_O,SimpleVector_size_t_O,MDArray_O> {
     LISP_CLASS(core, CorePkg, MDArray_size_t_O, "MDArray_size_t",MDArray_O);
     virtual ~MDArray_size_t_O() {};
   public:
-    typedef template_Array<MDArray_size_t_O,SimpleVector_size_t_O,MDArray_O> TemplatedBase;
+    typedef template_Array<MDArray_size_t_O,SimpleMDArray_size_t_O,SimpleVector_size_t_O,MDArray_O> TemplatedBase;
     typedef typename TemplatedBase::simple_element_type simple_element_type;
     typedef typename TemplatedBase::simple_type simple_type;
   public: // make vector

@@ -89,8 +89,8 @@ void error_InvocationHistoryStack(const InvocationHistoryFrame* frame, const Inv
     printf("     and at least one frame was left on the stack when it should have been popped\n");
     printf("     since my_thread->_InvocationHistoryStackTop < frame (stack grows down)\n");
   } else {
-    printf("     my_thread->_InvocationHistoryStackTop > frame !!!!\n");
-    printf("     I'm not sure how this can happen - investigate and describe the problem here in the comment\n");
+    printf("     my_thread->_InvocationHistoryStackTop > frame   !!!!\n");
+    printf("     This will happen if a function calls cc_pop_InvocationHistoryStack TWICE before it exits - that means bad code generation\n");
   }
 #ifdef DEBUG_IHS
   void* fn_ptr = NULL;

@@ -393,7 +393,19 @@ Return the index of the load-time-value"
             (,ltv-func (do-ltv :ltv (lambda () ,@body))))
        (add-creator "ltvc_set_ltv_funcall" ,index ,ltv-func (jit-constant-unique-string-ptr (llvm-sys:get-name ,ltv-func)))
        ,index)))
-       
+
+
+(defmacro with-load-time-value-cleavir (&body body)
+  "Evaluate the body and then arrange to evaluate the generated function into a load-time-value.
+Return the index of the load-time-value"
+  (let ((ltv-func (gensym))
+        (index (gensym)))
+    `(let* ((*with-ltv-depth* (1+ *with-ltv-depth*))
+            (,index (new-table-index))
+            (,ltv-func (do-ltv :ltv (lambda () ,@body))))
+       (add-creator "ltvc_set_ltv_funcall_cleavir" ,index ,ltv-func (jit-constant-unique-string-ptr (llvm-sys:get-name ,ltv-func)))
+       ,index)))
+
 (defmacro with-top-level-form ( &body body)
   `(let ((*with-ltv-depth* (1+ *with-ltv-depth*)))
      (do-ltv :toplevel (lambda () ,@body))))
