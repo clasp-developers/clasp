@@ -631,40 +631,25 @@ when this is t a lot of graphs will be generated.")
 ;;; helper, could be improved. only good for powers of two
 (defun ilog2 (n) (1- (integer-length n)))
 
-(defun effective-address (inputs scale offset)
-  ;; FIXME: Probably shouldn't exist. GEP is real.
-  (assert (plusp (length inputs)))
-  (assert (= (length inputs) (length scale)))
-  ;; Start the effective address with the offset.
-  (let ((effective-address (%uintptr_t offset)))
-    ;; then loop through the inputs and add to it.
-    (loop for input in inputs
-;          for scale in scale
-          for tptr = (%load input)
-          for ui-tptr = (%ptrtoint tptr cmp:%uintptr_t%)
-;          for scaled = (%shl ui-tptr (ilog2 scale) :nuw t :label "shift address")
-          do (setf effective-address
-                   (%add #|scaled|# ui-tptr effective-address)))
-    ;; and that's it.
-    effective-address))
-
+;;; FIXME: TEMPORARY. Fragile. Only handles simple-vector.
 (defmethod translate-simple-instruction
-    ((instruction cleavir-ir:memref-instruction) return-value inputs outputs abi function-info)
-    (let* ((uiptr (effective-address inputs
-                                     (cleavir-ir:scale instruction)
-                                     (cleavir-ir:offset instruction)))
-           (ptr (%inttoptr uiptr cmp::%t**%))
-           (read-val (%load ptr)))
-      (%store read-val (first outputs))))
-
-(defmethod translate-simple-instruction
-    ((instruction cleavir-ir:memset-instruction) return-value inputs outputs abi function-info)
-  (let* ((uiptr (effective-address (rest inputs)
-                                   (cleavir-ir:scale instruction)
-                                   (cleavir-ir:offset instruction)))
-         (dest (%inttoptr uiptr cmp::%t**% "memset-dest"))
-         (val (%load (first inputs) "memset-val")))
-      (%store val dest)))
+    ((instruction cleavir-ir:aref-instruction) return-value inputs outputs abi function-info)
+  (declare (ignore return-value abi function-info))
+  (let* ((array (first inputs)) (index (second inputs))
+         (fixed-offset (%uintptr_t (- cmp::+simple-vector._data-offset+ cmp:+general-tag+)))
+         (base (%ptrtoint (%load array) cmp:%uintptr_t%))
+         (offset-base (%add base fixed-offset))
+         (var-offset (%ptrtoint (%load index) cmp:%uintptr_t%))
+         ;; :exact tells LLVM that the shifted out bits are zero.
+         ;; so there's an assumption about the nature of fixnum tags.
+         ;; Additionally it's a logical shift, because the index must be
+         ;; a nonnegative fixnum anyway; no sign to extend
+         (untagged (%lshr var-offset cmp::+fixnum-shift+ :exact t :label "untag fixnum"))
+         (scaled (%shl untagged (ilog2 cmp::+t-size+) :nuw t :label "shift address"))
+         (total (%add offset-base scaled))
+         (ptr (%inttoptr total cmp:%t**%))
+         (read-val (%load ptr)))
+    (%store read-val (first outputs))))
 
 
 (defmethod translate-simple-instruction
