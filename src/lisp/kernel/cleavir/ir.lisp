@@ -178,6 +178,10 @@
   (llvm-sys:create-shl-value-uint64
    cmp:*irbuilder* value shift label nuw nsw))
 
+(defun %lshr (value shift &key (label "") exact)
+  (llvm-sys:create-lshr-value-uint64
+   cmp:*irbuilder* value shift label exact))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
 ;;; with-entry-basic-block
