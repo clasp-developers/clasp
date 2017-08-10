@@ -203,7 +203,7 @@
         (cleavir-primop:car x)
         (if (null x)
             nil
-            (error "Cannot get car of non-list ~s of type ~a" x (type-of x))))))
+            (error 'type-error :datum x :expected-type 'list)))))
 
 #-use-boehmdc
 (progn
@@ -214,7 +214,7 @@
         (cleavir-primop:cdr x)
         (if (null x)
             nil
-            (error "Cannot get cdr of non-list ~s" x)))))
+            (error 'type-error :datum x :expected-type 'list)))))
 
 ;;; FIXME: This takes a lot of itme to compile for some reason?
 #+(or)
@@ -283,7 +283,7 @@
         (progn
           (cleavir-primop:rplaca p v)
           p)
-        (error "Cannot rplaca non-cons ~s" p))))
+        (error 'type-error :datum p :expected-type 'cons))))
 
 #-use-boehmdc
 (progn
@@ -293,7 +293,7 @@
         (progn
           (cleavir-primop:rplacd p v)
           p)
-        (error "Cannot rplacd non-cons ~s" p))))
+        (error 'type-error :datum p :expected-type 'cons))))
 
 
 (debug-inline "primop")
