@@ -413,23 +413,6 @@
    initial-instruction)
   (cleavir-ir:set-predecessors initial-instruction))
 
-(defmethod cleavir-ir:specialize ((instr cleavir-ir:aref-instruction)
-                                  (impl clasp-cleavir:clasp) proc os)
-  (unless (and (cleavir-ir:simple-p instr) (eq (cleavir-ir:element-type instr) t))
-    (error "BUG: Aref instruction we don't know how to deal with generated ~s" instr))
-  (change-class instr 'cleavir-ir:memref-instruction
-                :offset (- cmp::+simple-vector._data-offset+ cmp:+general-tag+)
-                :scale (list 1 cmp::+t-size+)))
-
-(defmethod cleavir-ir:specialize ((instr cleavir-ir:aset-instruction)
-                                  (impl clasp-cleavir:clasp) proc os)
-  (unless (and (cleavir-ir:simple-p instr) (eq (cleavir-ir:element-type instr) t))
-    (error "BUG: Aref instruction we don't know how to deal with generated ~s" instr))
-  (destructuring-bind (array index value) (cleavir-ir:inputs instr)
-    (change-class instr 'cleavir-ir:memref-instruction
-                  :inputs (list value array index)
-                  :offset (- cmp::+simple-vector._data-offset+ cmp:+general-tag+)
-                  :scale (list 1 cmp::+t-size+))))
 
 (defmethod cleavir-hir-transformations::maybe-eliminate :around ((instruction cleavir-ir:typeq-instruction))
   "This is HIR to MIR translation done by eliminate-typeq"
