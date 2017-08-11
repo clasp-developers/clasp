@@ -90,6 +90,7 @@
   (cond
     ((cmp:treat-as-special-operator-p name) t)
     ((eq name 'cleavir-primop::call-with-variable-bound) nil)
+    ((eq name 'core::simple-vector-length) t)
     ((eq (symbol-package name) (find-package :cleavir-primop)) t)
     (t nil)))
 

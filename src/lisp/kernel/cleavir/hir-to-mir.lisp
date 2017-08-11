@@ -137,48 +137,71 @@
 #-use-boehmdc
 (defun gen-array-type-check (object element-type dimensions simple-only-p pro con)
   (let* ((dimensions (if (integerp dimensions) (make-list dimensions :initial-element '*) dimensions))
-         (rank (if (eq dimensions '*) '* (length dimensions))))
-    (unless (eq dimensions '*)
-      (loop for dim in dimensions
-            for i from 0
-            do (setf pro (gen-dimension-check object i dim pro con)))
-      ;; this means we check rank before checking the dimensions.
-      (setf pro (gen-rank-check object rank pro con)))
-    (cond ((eq element-type '*)
-           (when (or (eq rank '*) (eql rank 1))
-             (setf con (maybe-gen-primitive-type-check
-                        object 'core:abstract-simple-vector pro con)))
-           (if simple-only-p
-               (when (or (eq rank '*) (not (eql rank 1)))
-                 (setf con
-                       (maybe-gen-primitive-type-check
-                        object 'core:simple-mdarray pro con)))
-               (setf con (maybe-gen-primitive-type-check
-                          object 'core:mdarray pro con))))
-          (t
-           (when (or (eq rank '*) (eql rank 1))
-             (setf con (maybe-gen-primitive-type-check
-                        object (simple-vector-type element-type) pro con))
-             (unless simple-only-p
-               (case element-type ; some have special complex vector versions
-                 ((base-char)
-                  (setf con (maybe-gen-primitive-type-check
-                             object 'core:str8ns pro con)))
-                 ((character)
-                  (setf con (maybe-gen-primitive-type-check
-                             object 'core:str-wns pro con)))
-                 ((bit)
-                  (setf con (maybe-gen-primitive-type-check
-                             object 'core:bit-vector-ns pro con))))))
-           (if simple-only-p
-               (when (or (eq rank '*) (not (eql rank 1)))
-                 (setf con
-                       (maybe-gen-primitive-type-check
-                        object (simple-mdarray-type element-type) pro con)))
-               (setf con (maybe-gen-primitive-type-check
-                          object (complex-mdarray-type element-type) pro con)))))
-    ;; we have set con to an appropriate start at least once
-    con))
+         (rank (if (eq dimensions '*) '* (length dimensions)))
+         (simple-vector-type
+           (if (eq element-type '*)
+               'core:abstract-simple-vector
+               (simple-vector-type element-type)))
+         (complex-vector-type
+           (case element-type
+             ((base-char) 'core:str8ns)
+             ((character) 'core:str-wns)
+             ((bit) 'core:bit-vector-ns)
+             (t nil)))
+         (simple-mdarray-type
+           (if (eq element-type '*)
+               'core:simple-mdarray
+               (simple-mdarray-type element-type)))
+         (mdarray-type
+           (if (eq element-type '*)
+               'core:mdarray
+               (complex-mdarray-type element-type))))
+    (labels ((dimensions-check ()
+               (loop for dim in dimensions
+                     for i from 0
+                     do (setf pro (gen-dimension-check object i dim pro con))))
+             (maybe-dimensions-and-rank-check ()
+               (unless (eq rank '*)
+                 (dimensions-check)
+                 (setf pro (gen-rank-check object rank pro con)))))
+      (cond (simple-only-p
+             (cond ((eql rank 1)
+                    (dimensions-check)
+                    (setf con (maybe-gen-primitive-type-check
+                               object simple-vector-type pro con)))
+                   (t
+                    (maybe-dimensions-and-rank-check)
+                    (setf con (maybe-gen-primitive-type-check
+                               object simple-mdarray-type pro con))
+                    (when (eq rank '*) ; includes vectors
+                      (setf con (maybe-gen-primitive-type-check
+                                 object simple-vector-type pro con))))))
+            (t
+             (cond ((eql rank 1)
+                    (cond (complex-vector-type
+                           (dimensions-check)
+                           ;; complex and simple vector types are actually exclusive.
+                           (setf con (maybe-gen-primitive-type-check
+                                      object complex-vector-type pro con)))
+                          (t
+                           (maybe-dimensions-and-rank-check)
+                           (setf con (maybe-gen-primitive-type-check
+                                      object mdarray-type pro con))))
+                    ;; check for simple vectors first; probably most likely.
+                    (setf con (maybe-gen-primitive-type-check
+                               object simple-vector-type pro con)))
+                   (t
+                    (maybe-dimensions-and-rank-check)
+                    (setf con (maybe-gen-primitive-type-check
+                               object mdarray-type pro con))
+                    (when (or (eql rank 1) (eq rank '*)) ; includes vectors
+                      (when complex-vector-type
+                        (setf con (maybe-gen-primitive-type-check
+                                   object complex-vector-type pro con)))
+                      (setf con (maybe-gen-primitive-type-check
+                                 object simple-vector-type pro con)))))))))
+  ;; we have set con to an appropriate start at least once
+  con)
 
 #-use-boehmdc
 (defun gen-interval-type-check (object head low high pro con)

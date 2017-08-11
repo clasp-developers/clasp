@@ -159,6 +159,22 @@
   (cleavir-code-utilities:check-argcount form 2 nil))
 
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Converting CORE:SIMPLE-VECTOR-LENGTH
+;;;
+;;; Gets the length of a (array * (*))
+;;;
+(defmethod cleavir-generate-ast::convert-special
+    ((symbol (eql 'core::simple-vector-length)) form environment (system clasp-cleavir:clasp))
+  (destructuring-bind (vector) (rest form)
+    (make-instance 'clasp-cleavir-ast::simple-vector-length-ast
+                   :vector (cleavir-generate-ast:convert vector environment system))))
+
+(defmethod cleavir-generate-ast:check-special-form-syntax ((head (eql 'core::simple-vector-length)) form)
+  (cleavir-code-utilities:check-form-proper-list form)
+  (cleavir-code-utilities:check-argcount form 1 nil))
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;

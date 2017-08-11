@@ -655,6 +655,20 @@ when this is t a lot of graphs will be generated.")
          (read-val (%load ptr)))
     (%store read-val (first outputs))))
 
+(defmethod translate-simple-instruction
+    ((instruction clasp-cleavir-hir::simple-vector-length-instruction)
+     return-value inputs outputs abi function-info)
+  (declare (ignore return-value function-info))
+  (let* ((tptr (%load (first inputs)))
+         (ui-offset (%uintptr_t (- cmp::+simple-vector._length-offset+ cmp:+general-tag+)))
+         (ui-tptr (%ptrtoint tptr cmp:%uintptr_t%)))
+    (let* ((uiptr (%add ui-tptr ui-offset))
+           (ptr (%inttoptr uiptr cmp:%t**%))
+           (read-val (%ptrtoint (%load ptr) (%default-int-type abi)))
+           ;; now we just make it a fixnum.
+           (fixnum (%shl read-val cmp::+fixnum-shift+ :nuw t :label "tag fixnum")))
+      (%store (%inttoptr fixnum cmp:%t*%) (first outputs)))))
+
 
 (defmethod translate-simple-instruction
     ((instruction cleavir-ir:memref2-instruction) return-value inputs outputs abi function-info)
