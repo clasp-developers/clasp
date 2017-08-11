@@ -635,7 +635,11 @@ when this is t a lot of graphs will be generated.")
 (defmethod translate-simple-instruction
     ((instruction cleavir-ir:aref-instruction) return-value inputs outputs abi function-info)
   (declare (ignore return-value abi function-info))
-  (let* ((array (first inputs)) (index (second inputs))
+  (let* ((size
+           (ilog2
+            (ecase (cleavir-ir:element-type instruction)
+              ((t) cmp::+t-size+))))
+         (array (first inputs)) (index (second inputs))
          (fixed-offset (%uintptr_t (- cmp::+simple-vector._data-offset+ cmp:+general-tag+)))
          (base (%ptrtoint (%load array) cmp:%uintptr_t%))
          (offset-base (%add base fixed-offset))
@@ -645,7 +649,7 @@ when this is t a lot of graphs will be generated.")
          ;; Additionally it's a logical shift, because the index must be
          ;; a nonnegative fixnum anyway; no sign to extend
          (untagged (%lshr var-offset cmp::+fixnum-shift+ :exact t :label "untag fixnum"))
-         (scaled (%shl untagged (ilog2 cmp::+t-size+) :nuw t :label "shift address"))
+         (scaled (%shl untagged size :nuw t :label "shift address"))
          (total (%add offset-base scaled))
          (ptr (%inttoptr total cmp:%t**%))
          (read-val (%load ptr)))
