@@ -395,6 +395,12 @@ List_sp Cons_O::member1(T_sp item, T_sp key, T_sp test, T_sp testNot) const {
   return ((_Nil<T_O>()));
 }
 
+CL_DEFUN void core__test_proper_list(T_sp l) {
+  for (auto cur : (List_sp) l) {
+    printf("%s:%d  element cur -> %s  consp -> %d\n", __FILE__, __LINE__, _rep_(cur).c_str(), cur.consp());
+  }
+}
+
 List_sp Cons_O::assoc(T_sp item, T_sp key, T_sp test, T_sp testNot) const {
   _OF();
   Tester t(item, key, test, testNot, false);
@@ -404,6 +410,8 @@ List_sp Cons_O::assoc(T_sp item, T_sp key, T_sp test, T_sp testNot) const {
       T_sp obj = CONS_CAR(CONS_CAR(cur));
       if (t.test(obj))
         return (coerce_to_list(CONS_CAR(cur)));
+    } else {
+      TYPE_ERROR(cur, cl::_sym_list);
     }
   }
   return coerce_to_list(_Nil<T_O>());
@@ -646,20 +654,36 @@ CL_DEFMETHOD List_sp Cons_O::filterOutNil() {
 #endif
 
 T_sp Cons_O::onth(cl_index idx) const {
-  _OF();
-  List_sp cur = this->asSmartPtr();
+  T_sp cur = this->asSmartPtr();
   for (cl_index i = 0; i < idx; i++) {
-    cur = oCdr(cur);
+    LIKELY_if (cur.consp()) {
+      cur = CONS_CDR(cur);
+    } else if (cur.nilp()) {
+      return cur;
+    } else {
+      TYPE_ERROR(cur,cl::_sym_Cons_O);
+    }
   }
-  return ((oCar(cur)));
+  LIKELY_if (cur.consp()) {
+    return CONS_CAR(cur);
+  } else if (cur.nilp()) {
+    return cur;
+  }
+  TYPE_ERROR(cur,cl::_sym_Cons_O);
 }
 
-List_sp Cons_O::onthcdr(cl_index idx) const {
-  List_sp cur = this->asSmartPtr();
+T_sp Cons_O::onthcdr(cl_index idx) const {
+  T_sp cur = this->asSmartPtr();
   for (cl_index i = 0; i < idx; i++) {
-    cur = oCdr(cur);
+    LIKELY_if (cur.consp()) {
+      cur = cur.unsafe_cons()->_Cdr;
+    } else if (cur.nilp()) {
+      return cur;
+    } else {
+      TYPE_ERROR(cur,cl::_sym_Cons_O);
+    }
   }
-  return ((cur));
+  return cur;
 }
 
 /*! This algorithm works by first stepping through (n) CONS elements with (r)

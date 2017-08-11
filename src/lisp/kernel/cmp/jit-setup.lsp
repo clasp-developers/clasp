@@ -87,13 +87,6 @@ using features defined in corePackage.cc"
     (llvm-sys:set-data-layout m *default-data-layout*)
     m))
 
-(defun create-llvm-module-for-compile-file (module-name)
-  "Return a new module"
-  (let ((module (llvm-create-module module-name)))
-    ;; Define the primitives for the module
-    (define-primitives-in-module module)
-    module))
-
 
 
 #+(or)(defvar *use-function-pass-manager-for-compile-file* t)
@@ -232,6 +225,13 @@ No DIBuilder is defined for the default module")
       ((= 4 sizeof-size_t) (jit-constant-ui32 val))
       (t (error "Add support for size_t sizeof = ~a" sizeof-size_t)))))
 
+(defun jit-constant-intptr_t (val)
+  (let ((sizeof-size_t (cdr (assoc 'core:size-t (llvm-sys:cxx-data-structures-info)))))
+    (cond
+      ((= 8 sizeof-size_t) (jit-constant-i64 val))
+      ((= 4 sizeof-size_t) (jit-constant-i32 val))
+      (t (error "Add support for size_t sizeof = ~a" sizeof-size_t)))))
+
 (defun jit-constant-size_t (val)
   (let ((sizeof-size_t (cdr (assoc 'core:size-t (llvm-sys:cxx-data-structures-info)))))
     (cond
@@ -301,7 +301,7 @@ No DIBuilder is defined for the default module")
             (pkg-name (if sym-pkg
                           (string (package-name sym-pkg))
                           "NIL")))
-       (bformat nil "FN_%s::%s" pkg-name sym-name)))
+       (bformat nil "%s``%s_FN" sym-name pkg-name)))
     ((and (consp lname) (eq (car lname) 'setf))
      (let* ((sn (cadr lname))
             (sym-pkg (symbol-package sn))
@@ -309,13 +309,13 @@ No DIBuilder is defined for the default module")
             (pkg-name (if sym-pkg
                           (string (package-name sym-pkg))
                           "NIL")))
-       (bformat nil "FN-SETF/%s::%s" pkg-name sym-name)))
+       (bformat nil "%s``%s_SETF" sym-name pkg-name)))
     ((and (consp lname) (eq (car lname) 'method) (symbolp (second lname)))
-     (let ((pkg (symbol-package (second lname)))
+     (let ((pkg-name (string (package-name (symbol-package (second lname)))))
            (name (symbol-name (second lname))))
-     (bformat nil "FN_(METHOD %s::%s %s)" pkg name (cddr lname))))
+     (bformat nil "%s``%s(METHOD %s)" name pkg-name (cddr lname))))
     ((consp lname)
-     (bformat nil "FN_%s" lname))
+     (bformat nil "%s_FN" lname))
     (t (error "Illegal lisp function name[~a]" lname))))
 (export 'jit-function-name)
 

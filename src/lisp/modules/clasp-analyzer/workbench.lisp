@@ -3,27 +3,72 @@
 ;;
 (progn
   (compile-file #P"sys:modules;clang-tool;clang-tool.lisp" :print t)
-  (compile-file #P"sys:modules;clasp-analyzer;clasp-analyzer.lisp" :print t))
+  (compile-file #P"sys:modules;clasp-analyzer;clasp-analyzer.lisp" :print t)
+  (format t "Done compile~%"))
+
 (progn
   (load #P"sys:modules;clang-tool;clang-tool.fasl")
   (load #P"sys:modules;clasp-analyzer;clasp-analyzer.fasl"))
 
 (in-package :clasp-analyzer)
-(defvar *compile-commands* "~/Dev/cando/build/mpsprep/compile_commands.json")
+(defvar *compile-commands* "~/Dev/clasp/build/mpsprep/compile_commands.json")
+
 (setf *print-pretty* nil)
 (defvar *db* (clasp-analyzer:setup-clasp-analyzer-compilation-tool-database
               (pathname *compile-commands*)
               :selection-pattern "cons.cc" ))
 (defvar *p* (search/generate-code *db* :output-file #P"cons_only.dat"))
 
-(untrace traverse)
 (defparameter *analysis* (analyze-project *project*))
 (analysis-enum-roots *analysis*)
 *analysis*
 (analyze-only *db*)
 
-(load-project *db*)
+;;; ------------------------------------------------------------
+;;;
+;;; To load and analyze the project
+;;;
+(defparameter *compile-commands* (probe-file "~/Dev/clasp/build/mpsprep/compile_commands.json"))
+(setf *print-pretty* nil)
+(defvar *db* (clasp-analyzer:setup-clasp-analyzer-compilation-tool-database
+                (pathname *compile-commands*)))
+(time
+ (progn
+   (format t "Loading project~%")
+   (load-project *db*)
+   (format t "Done loading project~%")))
 
+
+(analyze-only *db*)
+
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Test parallel stuff
+;;;
+
+(progn
+  (compile-file #P"sys:modules;clang-tool;clang-tool.lisp" :print t)
+  (compile-file #P"sys:modules;clasp-analyzer;clasp-analyzer.lisp" :print t)
+  (format t "Done compile~%"))
+
+(progn
+  (load #P"sys:modules;clang-tool;clang-tool.fasl")
+  (load #P"sys:modules;clasp-analyzer;clasp-analyzer.fasl"))
+
+(progn
+  (defparameter *compile-commands* (probe-file "~/Development/clasp/build/mpsprep/compile_commands.json"))
+  (setf *print-pretty* nil)
+  (defvar *db* (clasp-analyzer:setup-clasp-analyzer-compilation-tool-database
+                (pathname *compile-commands*))))
+
+(clasp-analyzer::parallel-search/generate-code *db* :pjobs 6)
+
+(ext:getenv "PJOBS")
+(clasp-analyzer::parallel-search-all *db* :jobs 8)
+
+(defparameter *q* (make-cxx-object 'mp:quueue
 
 ;;
 ;; Small run

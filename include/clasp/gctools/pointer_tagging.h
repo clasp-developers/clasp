@@ -228,17 +228,17 @@ ABI's  */
        If the ranges aren't sufficiently large (general or alien)
        then move the numbers around.
        We need at least 62 bits to represent general CLOS objects.  */
-  static const uintptr_clasp_t kind_fixnum = 1;
-  static const uintptr_clasp_t kind_single_float = 2;
-  static const uintptr_clasp_t kind_character = 3;
-  static const uintptr_clasp_t kind_cons = 4;
-  static const uintptr_clasp_t kind_va_list_s = 5;
-  static const uintptr_clasp_t kind_first_general  = 6;
-  static const uintptr_clasp_t kind_last_general   = 4095;
-  static const uintptr_clasp_t kind_first_alien    = 4096;
-  static const uintptr_clasp_t kind_last_alien     = 65535;
-  static const uintptr_clasp_t kind_first_instance = 65536;
-  static const uintptr_clasp_t kind_last_instance  = ((uintptr_clasp_t)most_positive_fixnum)<<1;
+  static const uintptr_clasp_t stamp_fixnum = 1;
+  static const uintptr_clasp_t stamp_single_float = 2;
+  static const uintptr_clasp_t stamp_character = 3;
+  static const uintptr_clasp_t stamp_cons = 4;
+  static const uintptr_clasp_t stamp_va_list_s = 5;
+  static const uintptr_clasp_t stamp_first_general  = 6;
+  static const uintptr_clasp_t stamp_last_general   = 4095;
+  static const uintptr_clasp_t stamp_first_alien    = 4096;
+  static const uintptr_clasp_t stamp_last_alien     = 65535;
+  static const uintptr_clasp_t stamp_first_instance = 65536;
+  static const uintptr_clasp_t stamp_last_instance  = ((uintptr_clasp_t)most_positive_fixnum)<<1;
 
   static const char * tagged_fixnum_str = "FIXNUM";
   static const char * tagged_character_str = "CHARACTER";

@@ -24,11 +24,9 @@ int gcFunctions_after;
 #include <clasp/core/builtInClass.h>
 #include <clasp/core/fileSystem.h>
 #include <clasp/core/environment.h>
-#include <clasp/core/standardClass.h>
 #include <clasp/core/evaluator.h>
 #include <clasp/core/activationFrame.h>
 #include <clasp/core/hashTableEq.h>
-#include <clasp/core/structureClass.h>
 #include <clasp/core/lispStream.h>
 #include <clasp/core/array.h>
 #include <clasp/core/symbolTable.h>
@@ -104,6 +102,20 @@ CL_DEFUN size_t core__next_unused_kind() {
 
 
 namespace gctools {
+
+CL_DOCSTRING("Return the header value for the object");
+CL_DEFUN core::T_sp core__header_value(core::T_sp obj) {
+  if (obj.generalp()) {
+    void *mostDerived = gctools::untag_general<void *>(obj.raw_());
+    const gctools::Header_s *header = reinterpret_cast<const gctools::Header_s *>(gctools::ClientPtrToBasePtr(mostDerived));
+    return core::clasp_make_integer(header->header._value);
+  }
+  SIMPLE_ERROR(BF("The object %s is not a general object and doesn't have a header-value") % _rep_(obj));
+}
+
+
+
+
 CL_DOCSTRING("Return the header kind for the object");
 CL_DEFUN Fixnum core__header_kind(core::T_sp obj) {
   if (obj.consp()) {
@@ -113,8 +125,8 @@ CL_DEFUN Fixnum core__header_kind(core::T_sp obj) {
   } else if (obj.generalp()) {
     void *mostDerived = gctools::untag_general<void *>(obj.raw_());
     const gctools::Header_s *header = reinterpret_cast<const gctools::Header_s *>(gctools::ClientPtrToBasePtr(mostDerived));
-    gctools::GCKindEnum kind = header->kind();
-    return (Fixnum)kind;
+    gctools::GCStampEnum stamp = header->stamp();
+    return (Fixnum)stamp;
   } else if (obj.single_floatp()) {
     return gctools::KIND_SINGLE_FLOAT;
   } else if (obj.characterp()) {
@@ -130,12 +142,10 @@ CL_DOCSTRING("Return the stamp for the object");
 CL_DEFUN Fixnum core__header_stamp(core::T_sp obj)
 {
   Fixnum kind = core__header_kind(obj);
-  if (kind== gctools::KIND_INSTANCE) {
+  if (gctools::IsA<core::Instance_sp>(obj)) {
+    // if (kind== gctools::KIND_INSTANCE) {
     core::Instance_sp iobj = gc::As_unsafe<core::Instance_sp>(obj);
     return iobj->stamp();
-  } else if (kind== gctools::KIND_CLASS) {
-    core::Class_sp cobj = gc::As_unsafe<core::Class_sp>(obj);
-    return cobj->stamp();
   }
   return kind;
 }
@@ -169,7 +179,7 @@ CL_DEFUN core::T_mv core__hardwired_kinds() {
     result = core::Cons_O::create(core::Cons_O::create(core::SimpleBaseString_O::make(immediates[i]._name), core::clasp_make_fixnum(immediates[i]._kind)),result);
   }
   core::List_sp ignoreClasses = _Nil<core::T_O>(); // core::Cons_O::createList(SimpleBaseString_O::make("core__Cons_O") <-- future when CONS are in their own pool
-  return Values(result, ignoreClasses, core::clasp_make_fixnum(kind_first_general), core::clasp_make_fixnum(kind_first_alien), core::clasp_make_fixnum(kind_last_alien), core::clasp_make_fixnum(kind_first_instance));
+  return Values(result, ignoreClasses, core::clasp_make_fixnum(stamp_first_general), core::clasp_make_fixnum(stamp_first_alien), core::clasp_make_fixnum(stamp_last_alien), core::clasp_make_fixnum(stamp_first_instance));
 }
 
 #if 0
@@ -253,12 +263,12 @@ void af_testArray0()
 
 struct ReachableClass {
   ReachableClass() : _Kind(gctools::KIND_null){};
-  ReachableClass(gctools::GCKindEnum tn) : _Kind(tn), instances(0), totalSize(0) {}
+  ReachableClass(gctools::GCStampEnum tn) : _Kind(tn), instances(0), totalSize(0) {}
   void update(size_t sz) {
     ++this->instances;
     this->totalSize += sz;
   };
-  gctools::GCKindEnum _Kind;
+  gctools::GCStampEnum _Kind;
   size_t instances;
   size_t totalSize;
   size_t print(const std::string &shortName) {
@@ -281,7 +291,7 @@ struct ReachableClass {
 };
 
 
-typedef map<gctools::GCKindEnum, ReachableClass> ReachableClassMap;
+typedef map<gctools::GCStampEnum, ReachableClass> ReachableClassMap;
 static ReachableClassMap *static_ReachableClassKinds;
 static size_t invalidHeaderTotalSize = 0;
 int globalSearchMarker = 0;
@@ -289,11 +299,11 @@ extern "C" {
 void boehm_callback_reachable_object(void *ptr, size_t sz, void *client_data) {
   gctools::Header_s *h = reinterpret_cast<gctools::Header_s *>(ptr);
 //  if (h->markerMatches(globalSearchMarker)) {
-    ReachableClassMap::iterator it = static_ReachableClassKinds->find(h->kind());
+    ReachableClassMap::iterator it = static_ReachableClassKinds->find(h->stamp());
     if (it == static_ReachableClassKinds->end()) {
-      ReachableClass reachableClass(h->kind());
+      ReachableClass reachableClass(h->stamp());
       reachableClass.update(sz);
-      (*static_ReachableClassKinds)[h->kind()] = reachableClass;
+      (*static_ReachableClassKinds)[h->stamp()] = reachableClass;
     } else {
       it->second.update(sz);
     }
@@ -343,7 +353,7 @@ struct ReachableMPSObject {
   size_t print(const std::string &shortName) {
     if (this->instances > 0) {
       printf("%s: totalMemory: %10lu count: %8lu largest: %8lu avg.sz: %8lu %s/%d\n", shortName.c_str(),
-             this->totalMemory, this->instances, this->largest, this->totalMemory / this->instances, obj_name((gctools::GCKindEnum) this->kind), this->kind);
+             this->totalMemory, this->instances, this->largest, this->totalMemory / this->instances, obj_name((gctools::GCStampEnum) this->kind), this->kind);
     }
     return this->totalMemory;
   }
@@ -353,8 +363,8 @@ extern "C" {
 void amc_apply_stepper(mps_addr_t client, void *p, size_t s) {
   const gctools::Header_s *header = reinterpret_cast<const gctools::Header_s *>(gctools::ClientPtrToBasePtr(client));
   vector<ReachableMPSObject> *reachablesP = reinterpret_cast<vector<ReachableMPSObject> *>(p);
-  if (header->kindP()) {
-    ReachableMPSObject &obj = (*reachablesP)[header->kind()];
+  if (header->stampP()) {
+    ReachableMPSObject &obj = (*reachablesP)[header->stamp()];
     ++obj.instances;
     size_t sz = (char *)(obj_skip(client)) - (char *)client;
     obj.totalMemory += sz;
@@ -882,6 +892,13 @@ bool debugging_configuration(stringstream& ss) {
   debugging = true;
 #endif
   ss << (BF("DEBUG_IHS = %s\n") % (debug_ihs ? "defined" : "undefined") ).str();
+
+  bool debug_enable_profiling = false;
+#ifdef ENABLE_PROFILING
+  debug_enable_profiling = true;
+  debugging = true;
+#endif
+  ss << (BF("ENABLE_PROFILING = %s\n") % (debug_ihs ? "defined" : "undefined") ).str();
 
   return debugging;
 }

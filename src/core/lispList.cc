@@ -164,28 +164,28 @@ CL_DEFUN T_sp cl__rassoc(T_sp item, List_sp a_list, T_sp test, T_sp test_not, T_
     key = coerce::functionDesignator(key);
   setup_test(&t, item, test, test_not, key);
   for (auto calist : a_list) {
-    T_sp pair = oCar(calist);
-    if (pair.notnilp()) {
-      if (!pair.consp())
-        TYPE_ERROR_LIST(pair);
-      if (TEST(&t, oCdr(pair))) {
-        a_list = pair;
-        break;
+    T_sp pair = CONS_CAR(calist);
+    LIKELY_if (pair.consp()) {
+      if (TEST(&t,CONS_CDR(pair))) {
+        close_test(&t);
+        return pair;
       }
+    } else if (pair.notnilp()) {
+      TYPE_ERROR_LIST(pair);
     }
   } //end_loop_for_in;
   close_test(&t);
-  return a_list;
+  return _Nil<T_O>();
 }
 
 CL_LAMBDA(idx arg);
 CL_DECLARE();
 CL_DOCSTRING("See CLHS nth");
 CL_DEFUN T_sp cl__nth(int idx, T_sp arg) {
-  if (arg.nilp())
-    return _Nil<T_O>();
-  if (Cons_sp list = arg.asOrNull<Cons_O>()) {
-    return list->onth(idx);
+  LIKELY_if (arg.consp()) {
+    return arg.unsafe_cons()->onth(idx);
+  } else if (arg.nilp()) {
+    return arg;
   }
   TYPE_ERROR(arg, cl::_sym_list);
 };
@@ -194,10 +194,10 @@ CL_LAMBDA(idx arg);
 CL_DECLARE();
 CL_DOCSTRING("See CLHS nth");
 CL_DEFUN T_sp cl__nthcdr(int idx, T_sp arg) {
-  if (arg.nilp())
+  LIKELY_if (arg.consp()) {
+    return arg.unsafe_cons()->onthcdr(idx);
+  } else if (arg.nilp()) {
     return arg;
-  if (Cons_sp list = arg.asOrNull<Cons_O>()) {
-    return list->onthcdr(idx);
   }
   TYPE_ERROR(arg, cl::_sym_list);
 };

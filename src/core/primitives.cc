@@ -48,6 +48,7 @@ THE SOFTWARE.
 #include <clasp/core/package.h>
 #include <clasp/core/readtable.h>
 #include <clasp/core/instance.h>
+#include <clasp/core/funcallableInstance.h>
 #include <clasp/core/backquote.h>
 #include <clasp/core/sequence.h>
 #include <clasp/core/structureObject.h>
@@ -67,8 +68,6 @@ THE SOFTWARE.
 #include <clasp/core/evaluator.h>
 #include <clasp/core/compiler.h>
 #include <clasp/core/print.h>
-#include <clasp/core/standardClass.h>
-#include <clasp/core/forwardReferencedClass.h>
 #include <clasp/core/singleDispatchMethod.h>
 #include <clasp/core/singleDispatchGenericFunction.h>
 #include <clasp/core/lambdaListHandler.h>
@@ -137,7 +136,7 @@ CL_DEFUN void cl__sleep(T_sp oseconds) {
   if (oseconds.nilp()) {
     ERROR_WRONG_TYPE_ONLY_ARG(cl::_sym_sleep, oseconds, cl::_sym_Number_O);
   }
-  double dsec = clasp_to_double(gc::As<Real_sp>(oseconds));
+  double dsec = clasp_to_double(oseconds);
   if (dsec < 0.0) {
     SIMPLE_ERROR(BF("You cannot sleep for < 0 seconds"));
   }
@@ -153,7 +152,7 @@ CL_DEFUN T_sp cl__lisp_implementation_type() {
 
 CL_LAMBDA();
 CL_DECLARE();
-CL_DOCSTRING("lispImplementationVersion");
+CL_DOCSTRING("lisp-implementation-version");
 CL_DEFUN T_sp cl__lisp_implementation_version() {
   stringstream ss;
   List_sp cleavir = gc::As<Cons_sp>(cl::_sym_STARfeaturesSTAR->symbolValue())->memberEq(kw::_sym_cclasp);
@@ -966,6 +965,7 @@ CL_DEFUN void core__gdb_inspect(String_sp msg, T_sp o) {
   core__invoke_internal_debugger(_Nil<core::T_O>());
 };
 
+// Must be synced with constant-form-value in source-transformations.lsp
 CL_LAMBDA(obj &optional env);
 CL_DECLARE();
 CL_DOCSTRING("constantp");
@@ -1008,7 +1008,7 @@ CL_DEFUN T_mv core__macroexpand_default(Function_sp macro_function, T_sp form, T
       err << "Passing argument 1: " << _rep_(form) << std::endl;
       err << "Passing argument 2: " << _rep_(macro_env) << std::endl;
       Closure_sp closure = macro_function;
-      err << "macro_function[" << _rep_(macro_function->name()) << std::endl;
+      err << "macro_function[" << _rep_(macro_function->functionName()) << std::endl;
       if (auto ic = closure.as<InterpretedClosure_O>()) {
         err << "code: " << _rep_(ic->code());
       } else {
@@ -1119,7 +1119,11 @@ CL_DEFUN bool cl__fboundp(T_sp functionName) {
   } else if (functionName.nilp()) {
     return false;
   }
-  TYPE_ERROR(functionName,cl::_sym_function);
+  TYPE_ERROR(functionName,
+             // This is the type of function names, which may be defined as a macro somewhere.
+             Cons_O::createList(cl::_sym_or, cl::_sym_symbol,
+                                Cons_O::createList(cl::_sym_cons,
+                                                   Cons_O::createList(cl::_sym_eql, cl::_sym_setf))))
 }
 
 CL_LAMBDA(function-name);
@@ -1211,7 +1215,7 @@ ListOfSequenceSteppers::ListOfSequenceSteppers(List_sp sequences) {
       goto EMPTY;
     } else if (obj.generalp()) {
       General_sp gobj((gctools::Tagged)obj.raw_());
-      SIMPLE_ERROR(BF("Illegal object for stepper[%s] class[%s]") % _rep_(gobj) % gobj->_instanceClass()->classNameAsString());
+      SIMPLE_ERROR(BF("Illegal object for stepper[%s] class[%s]") % _rep_(gobj) % gobj->_instanceClass()->_classNameAsString());
     }
   }
   this->_AtEnd = false;
@@ -1266,29 +1270,6 @@ ListOfListSteppers::ListOfListSteppers(List_sp sequences) {
 
 /* Only works on lists of lists - used to support macroexpansion backquote */
 bool test_every_some_notevery_notany(Function_sp predicate, List_sp sequences, bool elementTest, bool elementReturn, bool fallThroughReturn, T_sp &retVal) {
-#if 0
-  ListOfSequenceSteppers steppers(sequences);
-  ValueFrame_sp frame(ValueFrame_O::create(steppers.size(), _Nil<T_O>()));
-//  printf("%s:%d  %s  frame->length() = %d\n", __FILE__, __LINE__, __FUNCTION__,frame->length());
-//  printf("        frame->_Objects.capacity() = %d\n", frame->_Objects.capacity());
-  if (steppers.atEnd())
-    goto FALLTHROUGH; // return elementReturn;
-  while (!steppers.atEnd()) {
-    steppers.fillValueFrameUsingCurrentSteppers(frame);
-    LOG(BF("Applying predicate to elements[%s]") % frame->asString());
-    retVal = eval::applyToActivationFrame(predicate, frame);
-    bool test = retVal.isTrue();
-    if (test == elementTest) {
-      LOG(BF("element test was %d - returning %d") % elementTest % elementReturn);
-      return elementReturn;
-    }
-    steppers.advanceSteppers();
-  }
-  LOG(BF("passed-through - returning %d") % fallThroughReturn);
- FALLTHROUGH:
-  return fallThroughReturn;
-#endif
-
   if (!sequences.consp()) goto FALLTHROUGH;
   {
     MAKE_STACK_FRAME(frame,predicate.raw_(),sequences.unsafe_cons()->proper_list_length());
@@ -1348,18 +1329,6 @@ CL_DEFUN T_sp core__notany_list(T_sp predicate, List_sp sequences) {
   bool result = test_every_some_notevery_notany(op, sequences, true, false, true, dummy);
   return _lisp->_boolean(result);
 }
-
-#if 0
-CL_LAMBDA(predicate &rest sequences);
-CL_DECLARE();
-CL_DOCSTRING("See CLHS for notevery");
-CL_DEFUN T_sp cl__notevery(T_sp predicate, List_sp sequences) {
-  Function_sp op = coerce::functionDesignator(predicate);
-  T_sp dummy;
-  bool result = test_every_some_notevery_notany(op, sequences, false, true, false, dummy);
-  return _lisp->_boolean(result);
-}
-#endif
 
 /*
   __BEGIN_DOC(candoScript.general.mapcar)
@@ -1435,7 +1404,6 @@ CL_LAMBDA(func-desig &rest lists);
 CL_DECLARE();
 CL_DOCSTRING("See CLHS maplist");
 CL_DEFUN T_sp cl__maplist(T_sp func_desig, List_sp lists) {
-
   Function_sp func = coerce::functionDesignator(func_desig);
   if (lists.consp()) {
     ql::list result;
@@ -1492,24 +1460,6 @@ CL_DEFUN T_sp cl__mapl(T_sp func_desig, List_sp lists) {
   return _Nil<T_O>();
 }
 
-#if 0
-CL_LAMBDA(fun &rest cargs);
-CL_DECLARE();
-CL_DOCSTRING("mapappend is like mapcar except that the results are appended together - see AMOP 280");
-CL_DEFUN T_mv core__mapappend(Function_sp fun, List_sp cargs) {
-  IMPLEMENT_MEF(BF("Fix me - I think I'm broken"));
-  T_sp testNull = eval::funcall(cl::_sym_some, cl::_sym_null->symbolFunction(), cargs);
-  if (testNull.nilp()) return Values(_Nil<T_O>());
-  T_sp arg0 = eval::funcall(cl::_sym_mapcar, cl::_sym_car->symbolFunction(), cargs);
-  T_sp appendHead = eval::funcall(fun, arg0);
-  T_sp arg2 = eval::funcall(cl::_sym_mapcar, cl::_sym_cdr->symbolFunction(), cargs);
-  T_sp appendTail = eval::funcall(_sym_mapappend, fun, arg2);
-  return eval::funcall(cl::_sym_append, appendHead, appendTail);
-};
-#endif
-
-
-
 CL_LAMBDA(op &rest lists);
 CL_DECLARE();
 CL_DOCSTRING("mapcon");
@@ -1537,10 +1487,40 @@ CL_DEFUN T_mv cl__mapcan(T_sp op, List_sp lists) {
   them together into one list and then points the cdr of the last element of this new list
   to c.
 */
+#if 1
+CL_LAMBDA(&va-rest lists);
+CL_DECLARE();
+CL_DOCSTRING("append as in clhs");
+CL_DEFUN T_sp cl__append(VaList_sp args) {
+  ql::list list;
+  LOG(BF("Carrying out append with arguments: %s") % _rep_(lists));
+  size_t lenArgs = args->total_nargs();
+  unlikely_if (lenArgs==0) return _Nil<T_O>();
+  T_O* lastArg = args->relative_indexed_arg(lenArgs-1);
+  for ( int i(0),iEnd(lenArgs-1);i<iEnd; ++i ) {
+    T_sp curit = args->next_arg();
+    LIKELY_if (curit.consp()) {
+      for (auto inner : (List_sp)curit) {
+        list << CONS_CAR(inner);
+      }
+    } else if (!curit.nilp()) {
+      TYPE_ERROR(curit,cl::_sym_list);
+    }
+  }
+  /* Now append the last argument by setting the new lists last element cdr
+       to the last argument of append */
+  T_sp last((gctools::Tagged)lastArg);
+  list.dot(last);
+  T_sp res = list.cons();
+  return res;
+}
+#endif
+
+#if 0
 CL_LAMBDA(&rest lists);
 CL_DECLARE();
 CL_DOCSTRING("append as in clhs");
-CL_DEFUN List_sp cl__append(List_sp lists) {
+CL_DEFUN T_sp cl__append(List_sp lists) {
   ql::list list;
   LOG(BF("Carrying out append with arguments: %s") % _rep_(lists));
   auto it = lists.begin();
@@ -1562,6 +1542,7 @@ CL_DEFUN List_sp cl__append(List_sp lists) {
   T_sp res = list.cons();
   return res;
 }
+#endif
 
 CL_LAMBDA(func sequence start end);
 CL_DECLARE();
@@ -1677,9 +1658,9 @@ CL_DEFUN Symbol_mv core__type_to_symbol(T_sp x) {
       return (Values(cl::_sym_Stream_O));
     else if (ReadTable_sp rtx = gx.asOrNull<ReadTable_O>())
       return (Values(cl::_sym_ReadTable_O));
-    return Values(gx->__class()->className());
+    return Values(gx->__class()->_className());
   }
-  SIMPLE_ERROR(BF("Add core__type_to_symbol support for type: %s") % cl__class_of(x)->classNameAsString());
+  SIMPLE_ERROR(BF("Add core__type_to_symbol support for type: %s") % cl__class_of(x)->_classNameAsString());
 #pragma clang diagnostic pop
 }
 
@@ -1708,7 +1689,7 @@ T_sp type_of(T_sp x) {
     T_sp cl = lisp_instance_class(instance);
     T_sp t;
     if (Class_sp mcl = cl.asOrNull<Class_O>()) {
-      t = mcl->className();
+      t = mcl->_className();
     } else if (Instance_sp icl = cl.asOrNull<Instance_O>()) {
       (void)icl;
       DEPRECATEDP("Classes of instances should always be of Class_O type, not Instance_O");
@@ -1723,7 +1704,7 @@ T_sp type_of(T_sp x) {
     return t;
   } else if (Class_sp mc = x.asOrNull<Class_O>()) {
     Class_sp mcc = lisp_static_class(mc);
-    return mcc->className();
+    return mcc->_className();
   }
 #endif
   if (Symbol_sp symx = x.asOrNull<Symbol_O>()) {
@@ -1737,9 +1718,11 @@ T_sp type_of(T_sp x) {
     Array_sp ax = gc::As_unsafe<Array_sp>(x);
     return ax->type_of();
   } else if (WrappedPointer_sp pp = x.asOrNull<WrappedPointer_O>()) {
-    return pp->_instanceClass()->className();
+    return pp->_instanceClass()->_className();
+#if 0
   } else if (core__structurep(x)) {
     return gc::As<StructureObject_sp>(x)->structureType();
+#endif
   } else if (Stream_sp stx = x.asOrNull<Stream_O>()) {
     if (gc::IsA<SynonymStream_sp>(stx))
       return cl::_sym_SynonymStream_O;
@@ -1859,7 +1842,7 @@ CL_DEFMETHOD T_sp InvocationHistoryFrameIterator_O::functionName() {
   if (!closure) {
     SIMPLE_ERROR(BF("Could not access closure of InvocationHistoryFrame"));
   }
-  return closure->name();
+  return closure->functionName();
 }
 
 CL_LISPIFY_NAME("frameIteratorEnvironment");
@@ -2213,8 +2196,8 @@ CL_DEFUN T_mv core__function_lambda_list(T_sp obj) {
     }
     Function_sp fn = sym->symbolFunction();
     return Values(core__function_lambda_list(fn),_lisp->_true());
-  } else if (gc::IsA<Instance_sp>(obj)) {
-    Instance_sp iobj = gc::As_unsafe<Instance_sp>(obj);
+  } else if (gc::IsA<FuncallableInstance_sp>(obj)) {
+    FuncallableInstance_sp iobj = gc::As_unsafe<FuncallableInstance_sp>(obj);
     if (iobj->isgf()) {
       return Values(core__get_sysprop(iobj, _sym_generic_function_lambda_lists),_lisp->_true());
     }
@@ -2229,8 +2212,8 @@ CL_LAMBDA(function lambda_list);
 CL_DECLARE();
 CL_DOCSTRING("Set the lambda-list that function-lambda-list would return for the generic function");
 CL_DEFUN void core__function_lambda_list_set(T_sp obj, T_sp lambda_list) {
-  if (gc::IsA<Instance_sp>(obj)) {
-    Instance_sp iobj = gc::As_unsafe<Instance_sp>(obj);
+  if (gc::IsA<FuncallableInstance_sp>(obj)) {
+    FuncallableInstance_sp iobj = gc::As_unsafe<FuncallableInstance_sp>(obj);
     if (iobj->isgf()) {
       core__put_sysprop(iobj, _sym_generic_function_lambda_lists, lambda_list);
     }

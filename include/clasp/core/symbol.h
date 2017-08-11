@@ -68,7 +68,7 @@ public:
   List_sp _PropertyList;
 
 private:
-  friend class Class_O;
+  friend class Instance_O;
   friend class Package_O;
   friend class CoreExposer;
   LISP_CLASS(core, ClPkg, Symbol_O, "Symbol",General_O);

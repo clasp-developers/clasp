@@ -838,7 +838,7 @@ T_sp ReadTable_O::set_macro_character(Character_sp ch, T_sp funcDesig, T_sp non_
 
 string ReadTable_O::__repr__() const {
   stringstream ss;
-  ss << "#<" << this->_instanceClass()->classNameAsString();
+  ss << "#<" << this->_instanceClass()->_classNameAsString();
   ss << " :case " << _rep_(this->_Case);
   ss << "> ";
   return ss.str();

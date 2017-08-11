@@ -91,7 +91,6 @@ THE SOFTWARE.
 #include <clasp/core/hashTableEql.h>
 #include <clasp/core/debugger.h>
 #include <clasp/core/builtInClass.h>
-#include <clasp/core/standardClass.h>
 #include <clasp/core/numberToString.h>
 #include <clasp/core/sourceFileInfo.h>
 #include <clasp/core/lispStream.h>
@@ -119,6 +118,8 @@ THE SOFTWARE.
 #include <clasp/core/designators.h>
 #include <clasp/core/unixfsys.h>
 #include <clasp/core/sort.h>
+#include <clasp/core/funcallableInstance.h>
+#include <clasp/core/instance.h>
 #include <clasp/core/character.h>
 #include <clasp/core/predicates.h>
 #include <clasp/core/primitives.h>
@@ -286,12 +287,13 @@ void setup_static_classSymbol(BootStrapCoreSymbolMap const &sidMap) {
 
 string dump_instanceClass_info(Class_sp co, Lisp_sp prog) {
   stringstream ss;
-  ss << "------------------------------------- class" << _rep_(co->className()) << std::endl;
+  ss << "------------------------------------- class" << _rep_(co->_className()) << std::endl;
   ;
   LOG(BF("Dumping info: %s") % co->dumpInfo());
   ss << co->dumpInfo();
   return ss.str();
 }
+
 template <class oclass>
 void dump_info(BuiltInClass_sp co, Lisp_sp lisp) {
   LOG(BF("-------    dump_info    --------------- className: %s @ %X") % oclass::static_className() % co.get());
@@ -511,6 +513,21 @@ void testStrings() {
 
 void Lisp_O::startupLispEnvironment(Bundle *bundle) {
   { // Trap symbols as they are interned
+    if (offsetof(Function_O,entry)!=offsetof(FuncallableInstance_O,entry)) {
+      printf("%s:%d  The offsetf(Function_O,entry)/%lu!=offsetof(FuncallableInstance_O,entry)/%lu!!!!\n", __FILE__, __LINE__, offsetof(Function_O,entry),offsetof(FuncallableInstance_O,entry) );
+      printf("        These must match for Clasp to be able to function\n");
+      abort();
+    }
+    if (offsetof(Instance_O,_Rack)!=offsetof(FuncallableInstance_O,_Rack)) {
+      printf("%s:%d  The offsetf(Instance_O,_Rack)/%lu!=offsetof(FuncallableInstance_O,_Rack)/%lu!!!!\n", __FILE__, __LINE__, offsetof(Instance_O,_Rack),offsetof(FuncallableInstance_O,_Rack) );
+      printf("        These must match for Clasp to be able to function\n");
+      abort();
+    }
+    if (offsetof(Instance_O,_Class)!=offsetof(FuncallableInstance_O,_Class)) {
+      printf("%s:%d  The offsetf(Function_O,_Class)/%lu!=offsetof(FuncallableInstance_O,_Class)/%lu!!!!\n", __FILE__, __LINE__, offsetof(Instance_O,_Class),offsetof(FuncallableInstance_O,_Class) );
+      printf("        These must match for Clasp to be able to function\n");
+      abort();
+    }
     stringstream sdebug;
     gctools::get_immediate_info(); // discard result, just testing
 #ifdef DEBUG_PROGRESS
@@ -680,6 +697,15 @@ void Lisp_O::startupLispEnvironment(Bundle *bundle) {
   //
   mp::Process_sp main_process = mp::Process_O::make_process(INTERN_(core,top_level),_Nil<T_O>(),_lisp->copy_default_special_bindings(),_Nil<T_O>(),0);
   my_thread->initialize_thread(main_process);
+  {
+    // initialize caches
+    my_thread->_SingleDispatchMethodCachePtr = gc::GC<Cache_O>::allocate();
+    my_thread->_SingleDispatchMethodCachePtr->setup(2, Lisp_O::SingleDispatchMethodCacheSize);
+    my_thread->_MethodCachePtr = gctools::GC<Cache_O>::allocate();
+    my_thread->_MethodCachePtr->setup(Lisp_O::MaxFunctionArguments, Lisp_O::ClosCacheSize);
+    my_thread->_SlotCachePtr = gctools::GC<Cache_O>::allocate();
+    my_thread->_SlotCachePtr->setup(Lisp_O::MaxClosSlots, Lisp_O::ClosCacheSize);
+  }
   printf("%s:%d  After my_thread->initialize_thread  my_thread->_Process -> %p\n", __FILE__, __LINE__, (void*)my_thread->_Process.raw_());
   {
     _BLOCK_TRACE("Start printing symbols properly");
@@ -1013,49 +1039,27 @@ void Lisp_O::addClassNameToPackageAsDynamic(const string &package, const string 
 
 /*! Add the class with (className) to the current package
  */
-void Lisp_O::addClass(Symbol_sp classSymbol,
-                      Creator_sp alloc,
-                      Symbol_sp base1ClassSymbol )
-//  ,
-//                      Symbol_sp base2ClassSymbol,
-//                      Symbol_sp base3ClassSymbol) {
+void Lisp_O::addClassSymbol(Symbol_sp classSymbol,
+                            Creator_sp alloc,
+                            Symbol_sp base1ClassSymbol )
 {
   LOG(BF("Lisp_O::addClass classSymbol(%s) baseClassSymbol1(%u) baseClassSymbol2(%u)") % _rep_(classSymbol) % base1ClassSymbol % base2ClassSymbol);
-  Class_sp cc;
-  if (classSymbol == StandardObject_O::static_classSymbol()) {
-    IMPLEMENT_ME(); // WHEN DO StandardClasses get created with addClass?????
-  } else {
-    LOG(BF("Adding BuiltInClass with classSymbol(%d)") % classSymbol);
-    cc = Class_O::create(classSymbol,_lisp->_Roots._BuiltInClass);
-  }
+  Class_sp cc = Class_O::create(classSymbol,_lisp->_Roots._TheBuiltInClass,alloc);
   printf("%s:%d --> Adding class[%s]\n", __FILE__, __LINE__, _rep_(classSymbol).c_str());
   core__setf_find_class(cc, classSymbol);
-  if (IS_SYMBOL_DEFINED(base1ClassSymbol)) {
-    cc->addInstanceBaseClass(base1ClassSymbol);
-  } else {
-    SIMPLE_ERROR(BF("There must be one base class"));
-  }
-#if 0
-  if (IS_SYMBOL_DEFINED(base2ClassSymbol)) {
-    cc->addInstanceBaseClass(base2ClassSymbol);
-  }
-  if (IS_SYMBOL_DEFINED(base3ClassSymbol)) {
-    cc->addInstanceBaseClass(base3ClassSymbol);
-  }
-#endif
+  cc->addInstanceBaseClass(base1ClassSymbol);
   ASSERTF((bool)alloc, BF("_creator for %s is NULL!!!") % _rep_(classSymbol));
-  cc->setCreator(alloc);
+  cc->CLASS_set_creator(alloc);
 }
 /*! Add the class with (className) to the current package
  */
-void Lisp_O::addClass(Symbol_sp classSymbol, Class_sp theClass, Creator_sp allocator) {
+#if 0
+void Lisp_O::addClass(Symbol_sp classSymbol, Class_sp theClass) {
   //	printf("%s:%d:%s  Adding class with symbol %s -- _allocator=%p unless we initialize it properly\n", __FILE__,__LINE__,__FUNCTION__,_rep_(classSymbol).c_str(), allocator );
   LOG(BF("Lisp_O::addClass classSymbol(%s)") % _rep_(classSymbol));
-  //	printf("%s:%d --> Adding class[%s]\n", __FILE__, __LINE__, _rep_(classSymbol).c_str() );
   core__setf_find_class(theClass, classSymbol);
-  //        IMPLEMENT_MEF(BF("Pass an AllocateInstanceFunctor"));
-  theClass->setCreator(allocator);
 }
+#endif
 
 void Lisp_O::exportToPython(Symbol_sp sym) const {
   _OF();
@@ -1369,6 +1373,9 @@ void Lisp_O::parseCommandLineArguments(int argc, char *argv[], const CommandLine
 #endif
 #ifdef METER_ALLOCATIONS
   features = Cons_O::create(_lisp->internKeyword("METER-ALLOCATIONS"),features);
+#endif
+#ifdef ENABLE_PROFILING
+  features = Cons_O::create(_lisp->internKeyword("ENABLE-PROFILING"),features);
 #endif
   cl::_sym_STARfeaturesSTAR->setf_symbolValue(features);
 
@@ -1764,6 +1771,11 @@ CL_LAMBDA(new-value name);
 CL_DECLARE();
 CL_DOCSTRING("setf_find_class, set value to NIL to remove the class name ");
 CL_DEFUN Class_mv core__set_class(T_sp newValue, Symbol_sp name) {
+#if 0
+  if ( name== cl::_sym_class) {
+    printf("%s:%d Setting CLASS to %p\n", __FILE__, __LINE__, newValue.raw_());
+  }
+#endif
   if (!newValue.nilp() && !clos__classp(newValue)) {
     SIMPLE_ERROR(BF("Classes in cando have to be subclasses of Class or NIL unlike ECL which uses Instances to represent classes - while trying to (setf find-class) of %s you gave: %s") % _rep_(name) % _rep_(newValue));
   }
@@ -1994,7 +2006,7 @@ void searchForApropos(List_sp packages, SimpleString_sp insubstring, bool print_
       if ( (sym)->specialP() || (sym)->fboundp() ) {
         if ( (sym)->fboundp() ) {
           ss << " ";
-          ss << cl__class_of(cl__symbol_function((sym)))->classNameAsString();
+          ss << cl__class_of(cl__symbol_function((sym)))->_classNameAsString();
           T_sp tfn = cl__symbol_function(sym);
           if ( !tfn.unboundp() && gc::IsA<Function_sp>(tfn)) {
             Function_sp fn = gc::As_unsafe<Function_sp>(tfn);
@@ -2484,7 +2496,7 @@ CL_DEFUN T_mv cl__not(T_sp x) {
 
 Symbol_sp Lisp_O::getClassSymbolForClassName(const string &name) {
   Class_sp mc = this->classFromClassName(name);
-  Symbol_sp sym = mc->className();
+  Symbol_sp sym = mc->_className();
   ASSERTNOTNULL(sym);
   return sym;
 }

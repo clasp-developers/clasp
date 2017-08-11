@@ -137,37 +137,6 @@ namespace core {
       It creates a FunctionValueEnvironment that defines call-next-method and next-method-p 
       with the method environment as its parent and then invokes the method-function
       with (args next-emfun) */
-#if 0
-  class Lambda_method_function : public BuiltinClosure_O {
-    FRIEND_GC_SCANNER(core::Lambda_method_function);
-
-  private:
-    SingleDispatchMethod_sp _method;
-    Function_sp _temporary_function;
-
-  public:
-    const char *describe() const { return "Lambda_method_function"; };
-
-  public:
-  Lambda_method_function(T_sp name, SingleDispatchMethod_sp method)
-    : BuiltinClosure_O(name) {
-      _G();
-      this->_method = method;
-      this->_temporary_function = _Nil<Function_O>();
-    }
-
-    DISABLE_NEW();
-    virtual size_t templatedSizeof() const { return sizeof(*this); };
-    bool requires_activation_frame() const { return true; };
-
-  /*! The argument list is: (args next-emfun)
-	  Use next-emfun to set up a FunctionValueEnvironment that defines call-next-method and next-method-p */
-    void LISP_INVOKE();
-  };
-#endif
-
-
- 
   void core__ensure_single_dispatch_method(Symbol_sp gfname, Class_sp receiver_class, LambdaListHandler_sp lambda_list_handler, List_sp declares, gc::Nilable<String_sp> docstring, Function_sp body);
 
 

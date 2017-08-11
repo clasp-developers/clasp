@@ -29,8 +29,6 @@ THE SOFTWARE.
 #include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
 #include <clasp/core/lisp.h>
-#include <clasp/core/standardClass.h>
-#include <clasp/core/builtInClass.h>
 #include <clasp/core/array.h>
 #include <clasp/clbind/clbindPackage.h>
 #include <clasp/clbind/clbind.h>

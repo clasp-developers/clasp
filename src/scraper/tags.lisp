@@ -67,7 +67,7 @@
       (if (search "::" (meta-class% tag))
           (meta-class% tag)
           (format nil "~a::~a" (namespace% namespace-tag) (meta-class% tag)))
-      "_lisp->_Roots._BuiltInClass"))
+      "_lisp->_Roots._TheBuiltInClass"))
 
 (defclass tags:cl-lambda-tag (tag)
   ((lambda-list% :initarg :lambda-list% :reader tags:lambda-list%)))

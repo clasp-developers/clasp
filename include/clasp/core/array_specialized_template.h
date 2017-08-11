@@ -40,8 +40,8 @@ namespace core {
       if (supplied) return from_object(obj);
       return 0;
     }
-    static value_type from_object(T_sp obj) { return clasp_to_SPECIALIZE_ME(gc::As<core::Integer_sp>(obj)); };
-    static T_sp to_object(const value_type& v) { return core::Integer_O::create(v); };
+    static value_type from_object(T_sp obj) { return clasp_to_SPECIALIZE_ME(obj); };
+    static T_sp to_object(const value_type& v) { return clasp_make_integer(v); };
   public:
   SimpleVector_SPECIALIZE_ME_O(size_t length, value_type initialElement=value_type(),
                           bool initialElementSupplied=false,
@@ -66,11 +66,11 @@ namespace core {
 
 
 namespace core {
-  class MDArray_SPECIALIZE_ME_O : public template_Array<MDArray_SPECIALIZE_ME_O,SimpleVector_SPECIALIZE_ME_O,MDArray_O> {
+  class MDArray_SPECIALIZE_ME_O : public template_Array<MDArray_SPECIALIZE_ME_O,SimpleMDArray_SPECIALIZE_ME_O,SimpleVector_SPECIALIZE_ME_O,MDArray_O> {
     LISP_CLASS(core, CorePkg, MDArray_SPECIALIZE_ME_O, "MDArray_SPECIALIZE_ME",MDArray_O);
     virtual ~MDArray_SPECIALIZE_ME_O() {};
   public:
-    typedef template_Array<MDArray_SPECIALIZE_ME_O,SimpleVector_SPECIALIZE_ME_O,MDArray_O> TemplatedBase;
+    typedef template_Array<MDArray_SPECIALIZE_ME_O,SimpleMDArray_SPECIALIZE_ME_O,SimpleVector_SPECIALIZE_ME_O,MDArray_O> TemplatedBase;
     typedef typename TemplatedBase::simple_element_type simple_element_type;
     typedef typename TemplatedBase::simple_type simple_type;
   public: // make vector

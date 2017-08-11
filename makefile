@@ -294,9 +294,10 @@ clang-format:
 
 
 docker:
-	time docker-compose run clasp-build
-	time docker-compose build clasp
-	time docker-compose run cando --help 
+	time sudo docker-compose run clasp-build
+	time sudo docker-compose build clasp
+	time sudo docker-compose build cando-compile
+	time sudo docker-compose run cando --help 
 
 push-to-master:
 	git fetch origin dev:testing
@@ -318,5 +319,8 @@ push-to-testing:
 
 analyze:
 	./waf build_cboehmdc
+	make analyze_rest
+
+analyze_rest:
 	./waf build_impsprep
 	./waf analyze_clasp

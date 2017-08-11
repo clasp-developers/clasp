@@ -65,7 +65,7 @@ string ActivationFrame_O::clasp_asString(T_sp af) {
   if (af.nilp()) {
     stringstream ss;
     General_sp gaf(af.unsafe_general());
-    ss << "#<" << gaf->_instanceClass()->classNameAsString() << " NIL>";
+    ss << "#<" << gaf->_instanceClass()->_classNameAsString() << " NIL>";
     return ((ss.str()));
   }
   return gc::As<ActivationFrame_sp>(af)->asString();
@@ -143,7 +143,7 @@ namespace core {
 
 string ValueFrame_O::summaryOfContents() const {
   stringstream ss;
-  ss << "---" << this->_instanceClass()->classNameAsString() << " :len " << this->length() << std::endl;
+  ss << "---" << this->_instanceClass()->_classNameAsString() << " :len " << this->length() << std::endl;
   T_sp debuggingInfo = _Nil<T_O>();
   if (this->_DebuggingInfo.notnilp()) {
     debuggingInfo = gc::As<Vector_sp>(this->_DebuggingInfo);
@@ -288,7 +288,7 @@ string FunctionFrame_O::summaryOfContents() const {
 
 string FunctionFrame_O::asString() const {
   stringstream ss;
-  ss << "#<[" << this->_instanceClass()->classNameAsString() << " :len " << this->length() << " ";
+  ss << "#<[" << this->_instanceClass()->_classNameAsString() << " :len " << this->length() << " ";
   for (int i = 0; i < this->_Objects.length(); ++i) {
     ss << _rep_(this->_Objects[i]) << " " << std::endl;
   }
@@ -326,7 +326,7 @@ T_sp TagbodyFrame_O::_lookupTagbodyId(int depth, int index) const {
 
 string TagbodyFrame_O::summaryOfContents() const {
   stringstream ss;
-  ss << "---" << this->_instanceClass()->classNameAsString()
+  ss << "---" << this->_instanceClass()->_classNameAsString()
      << std::endl;
   return (ss.str());
 }

@@ -46,6 +46,7 @@ THE SOFTWARE.
 #include <clasp/llvmo/intrinsics.h>
 #include <clasp/llvmo/claspLinkPass.h>
 #include <clasp/core/instance.h>
+#include <clasp/core/funcallableInstance.h>
 #include <clasp/core/pathname.h>
 #include <clasp/core/loadTimeValues.h>
 #include <clasp/core/unixfsys.h>
@@ -244,9 +245,12 @@ CL_DEFUN core::T_sp llvm_sys__cxxDataStructuresInfo() {
   ENTRY(list, "GCVECTOR-CAPACITY-OFFSET", make_fixnum((char *)&tempGCVector._Capacity - (char *)&tempGCVector));
   ENTRY(list, "GCVECTOR-END-OFFSET", make_fixnum((char *)&tempGCVector._End - (char *)&tempGCVector));
   ENTRY(list, "GCVECTOR-DATA0-OFFSET", make_fixnum((char *)&tempGCVector._Data[0] - (char *)&tempGCVector));
+  ENTRY(list, "ISGF-OFFSET", make_fixnum(offsetof(FuncallableInstance_O,_isgf)));
   ENTRY(list, "FIXNUM-STAMP", make_fixnum(gctools::KIND_FIXNUM));
   ENTRY(list, "FIXNUM-SHIFT", make_fixnum(gctools::fixnum_shift));
-  ENTRY(list, "KIND-SHIFT", make_fixnum(gctools::Header_s::kind_shift));
+  ENTRY(list, "STAMP-SHIFT", make_fixnum(gctools::Header_s::stamp_shift));
+  ENTRY(list, "STAMP-IN-RACK-MASK", make_fixnum(gctools::Header_s::stamp_in_rack_mask));
+  ENTRY(list, "STAMP-NEEDS-CALL-MASK", make_fixnum(gctools::Header_s::stamp_needs_call_mask));
   ENTRY(list, "CONS-STAMP", make_fixnum(gctools::KIND_CONS));
   ENTRY(list, "VA_LIST_S-STAMP", make_fixnum(gctools::KIND_VA_LIST_S));
   ENTRY(list, "CHARACTER-STAMP", make_fixnum(gctools::KIND_CHARACTER));
@@ -254,7 +258,7 @@ CL_DEFUN core::T_sp llvm_sys__cxxDataStructuresInfo() {
   ENTRY(list, "INSTANCE-RACK-OFFSET", make_fixnum(offsetof(Instance_O,_Rack)));
   ENTRY(list, "INSTANCE-RACK-STAMP-OFFSET", make_fixnum(Instance_O::rack_stamp_offset()));
   ENTRY(list, "INSTANCE-KIND", make_fixnum(static_cast<Fixnum>(gctools::KIND_INSTANCE)));
-  ENTRY(list, "CLASS-KIND", make_fixnum(static_cast<Fixnum>(gctools::KIND_CLASS)));
+//  ENTRY(list, "CLASS-KIND", make_fixnum(static_cast<Fixnum>(gctools::KIND_CLASS)));
   ENTRY(list, "SIMPLE-VECTOR._DATA-OFFSET",make_fixnum(offsetof(SimpleVector_O,_Data)+offsetof(SimpleVector_O::vector_type,_Data)));
   ENTRY(list, "SIMPLE-VECTOR._LENGTH-OFFSET",make_fixnum(offsetof(SimpleVector_O,_Data)+offsetof(SimpleVector_O::vector_type,_Length)));
   return list;

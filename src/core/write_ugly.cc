@@ -58,6 +58,7 @@ THE SOFTWARE.
 #include <clasp/core/pathname.h>
 #include <clasp/core/lispStream.h>
 #include <clasp/core/instance.h>
+#include <clasp/core/funcallableInstance.h>
 #include <clasp/core/structureObject.h>
 #include <clasp/core/sysprop.h>
 #include <clasp/core/numberToString.h>
@@ -134,13 +135,24 @@ void Instance_O::__write__(T_sp stream) const {
   }
 }
 
+void FuncallableInstance_O::__write__(T_sp stream) const {
+  if ( cl::_sym_printObject->fboundp() ) {
+    eval::funcall(cl::_sym_printObject, this->const_sharedThis<FuncallableInstance_O>(), stream);
+  } else {
+    std::string str = _rep_(this->asSmartPtr());
+    clasp_write_string(str,stream);
+  }
+}
+
+  SYMBOL_EXPORT_SC_(CorePkg, structure_print_function);
+  SYMBOL_EXPORT_SC_(CorePkg, STARprint_structureSTAR);
+
+#if 0
 void StructureObject_O::__write__(T_sp stream) const {
   //  printf("%s:%d StructureObject_O::__write__\n", __FILE__, __LINE__);
   if (UNLIKELY(!gc::IsA<Class_sp>(this->_Type)))
     SIMPLE_ERROR(BF("Found a corrupt structure with an invalid type %s") % _rep_(this->_Type));
   Symbol_sp type_name = this->_Type->className();
-  SYMBOL_EXPORT_SC_(CorePkg, structure_print_function);
-  SYMBOL_EXPORT_SC_(CorePkg, STARprint_structureSTAR);
   T_sp print_function = core__get_sysprop(type_name, _sym_structure_print_function);
   if (print_function.nilp() || !_sym_STARprint_structureSTAR->symbolValue().isTrue()) {
     clasp_write_string("#S", stream);
@@ -154,6 +166,8 @@ void StructureObject_O::__write__(T_sp stream) const {
     eval::funcall(print_function, this->asSmartPtr(), stream, make_fixnum(0));
   }
 }
+#endif
+
 
 void Integer_O::__write__(T_sp stream) const {
   SafeBuffer buffer;
@@ -163,6 +177,14 @@ void Integer_O::__write__(T_sp stream) const {
                        cl::_sym_STARprint_radixSTAR->symbolValue().isTrue(),
                        true);
   cl__write_sequence(buffer._Buffer, stream, make_fixnum(0), _Nil<T_O>());
+}
+
+void Complex_O::__write__(T_sp stream) const {
+  clasp_write_string("#C(", stream);
+  write_ugly_object(this->_real, stream);
+  clasp_write_char(' ', stream);
+  write_ugly_object(this->_imaginary, stream);
+  clasp_write_char(')', stream);
 }
 
 #if 0 // working

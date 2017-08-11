@@ -16,17 +16,17 @@ template <typename Pols, typename OT , typename RT  ,typename ARG1,typename ARG2
     typename ARG6,typename ARG7 >
 class IndirectVariadicMethoid
 < Pols,OT ,RT (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7)  >
-: public core::BuiltinClosure_O {
+: public core::TemplatedFunctionBase_O {
 public:
 typedef IndirectVariadicMethoid < Pols,OT ,RT (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7)  > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const { return "IndirectVariadicMethoid"; };
 typedef RT (OT::*Type)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7) ;
 Type mptr;
 public:
 enum { NumParams = 8 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure_O(entry_point,name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::TemplatedFunctionBase_O(entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
@@ -103,17 +103,17 @@ template <typename Pols, typename OT , typename RT  ,typename ARG1,typename ARG2
     typename ARG6 >
 class IndirectVariadicMethoid
 < Pols,OT ,RT (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6)  >
-: public core::BuiltinClosure_O {
+: public core::TemplatedFunctionBase_O {
 public:
 typedef IndirectVariadicMethoid < Pols,OT ,RT (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6)  > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const { return "IndirectVariadicMethoid"; };
 typedef RT (OT::*Type)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6) ;
 Type mptr;
 public:
 enum { NumParams = 7 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure_O(entry_point,name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::TemplatedFunctionBase_O(entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
@@ -183,17 +183,17 @@ return LCC_RETURN(translate::to_object<RT,typename AdoptPointer<Pols,result>::ty
 template <typename Pols, typename OT , typename RT  ,typename ARG1,typename ARG2,typename ARG3,typename ARG4,typename ARG5 >
 class IndirectVariadicMethoid
 < Pols,OT ,RT (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5)  >
-: public core::BuiltinClosure_O {
+: public core::TemplatedFunctionBase_O {
 public:
 typedef IndirectVariadicMethoid < Pols,OT ,RT (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5)  > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const { return "IndirectVariadicMethoid"; };
 typedef RT (OT::*Type)( ARG1, ARG2, ARG3, ARG4, ARG5) ;
 Type mptr;
 public:
 enum { NumParams = 6 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure_O(entry_point,name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::TemplatedFunctionBase_O(entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
@@ -257,17 +257,17 @@ return LCC_RETURN(translate::to_object<RT,typename AdoptPointer<Pols,result>::ty
 template <typename Pols, typename OT , typename RT  ,typename ARG1,typename ARG2,typename ARG3,typename ARG4 >
 class IndirectVariadicMethoid
 < Pols,OT ,RT (OT::*)( ARG1, ARG2, ARG3, ARG4)  >
-: public core::BuiltinClosure_O {
+: public core::TemplatedFunctionBase_O {
 public:
 typedef IndirectVariadicMethoid < Pols,OT ,RT (OT::*)( ARG1, ARG2, ARG3, ARG4)  > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const { return "IndirectVariadicMethoid"; };
 typedef RT (OT::*Type)( ARG1, ARG2, ARG3, ARG4) ;
 Type mptr;
 public:
 enum { NumParams = 5 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure_O(entry_point,name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::TemplatedFunctionBase_O(entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
@@ -325,17 +325,17 @@ return LCC_RETURN(translate::to_object<RT,typename AdoptPointer<Pols,result>::ty
 template <typename Pols, typename OT , typename RT  ,typename ARG1,typename ARG2,typename ARG3 >
 class IndirectVariadicMethoid
 < Pols,OT ,RT (OT::*)( ARG1, ARG2, ARG3)  >
-: public core::BuiltinClosure_O {
+: public core::TemplatedFunctionBase_O {
 public:
 typedef IndirectVariadicMethoid < Pols,OT ,RT (OT::*)( ARG1, ARG2, ARG3)  > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const { return "IndirectVariadicMethoid"; };
 typedef RT (OT::*Type)( ARG1, ARG2, ARG3) ;
 Type mptr;
 public:
 enum { NumParams = 4 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure_O(entry_point,name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::TemplatedFunctionBase_O(entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
@@ -387,17 +387,17 @@ return LCC_RETURN(translate::to_object<RT,typename AdoptPointer<Pols,result>::ty
 template <typename Pols, typename OT , typename RT  ,typename ARG1,typename ARG2 >
 class IndirectVariadicMethoid
 < Pols,OT ,RT (OT::*)( ARG1, ARG2)  >
-: public core::BuiltinClosure_O {
+: public core::TemplatedFunctionBase_O {
 public:
 typedef IndirectVariadicMethoid < Pols,OT ,RT (OT::*)( ARG1, ARG2)  > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const { return "IndirectVariadicMethoid"; };
 typedef RT (OT::*Type)( ARG1, ARG2) ;
 Type mptr;
 public:
 enum { NumParams = 3 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure_O(entry_point,name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::TemplatedFunctionBase_O(entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
@@ -443,17 +443,17 @@ return LCC_RETURN(translate::to_object<RT,typename AdoptPointer<Pols,result>::ty
 template <typename Pols, typename OT , typename RT  ,typename ARG1 >
 class IndirectVariadicMethoid
 < Pols,OT ,RT (OT::*)( ARG1)  >
-: public core::BuiltinClosure_O {
+: public core::TemplatedFunctionBase_O {
 public:
 typedef IndirectVariadicMethoid < Pols,OT ,RT (OT::*)( ARG1)  > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const { return "IndirectVariadicMethoid"; };
 typedef RT (OT::*Type)( ARG1) ;
 Type mptr;
 public:
 enum { NumParams = 2 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure_O(entry_point,name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::TemplatedFunctionBase_O(entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
@@ -493,17 +493,17 @@ return LCC_RETURN(translate::to_object<RT,typename AdoptPointer<Pols,result>::ty
 template <typename Pols, typename OT , typename RT   >
 class IndirectVariadicMethoid
 < Pols,OT ,RT (OT::*)( )  >
-: public core::BuiltinClosure_O {
+: public core::TemplatedFunctionBase_O {
 public:
 typedef IndirectVariadicMethoid < Pols,OT ,RT (OT::*)( )  > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const { return "IndirectVariadicMethoid"; };
 typedef RT (OT::*Type)( ) ;
 Type mptr;
 public:
 enum { NumParams = 1 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure_O(entry_point,name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::TemplatedFunctionBase_O(entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
@@ -538,17 +538,17 @@ template <typename Pols, typename OT  ,typename ARG1,typename ARG2,typename ARG3
     typename ARG7 >
 class IndirectVariadicMethoid
 < Pols,OT ,void(OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7)  >
-: public core::BuiltinClosure_O {
+: public core::TemplatedFunctionBase_O {
 public:
 typedef IndirectVariadicMethoid < Pols,OT ,void(OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7)  > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const { return "IndirectVariadicMethoid"; };
 typedef void (OT::*Type)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7) ;
 Type mptr;
 public:
 enum { NumParams = 8 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure_O(entry_point,name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::TemplatedFunctionBase_O(entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
@@ -623,17 +623,17 @@ return LCC_RETURN(returnValues.valueGet(0,oidx).raw_(),oidx);
 template <typename Pols, typename OT  ,typename ARG1,typename ARG2,typename ARG3,typename ARG4,typename ARG5,typename ARG6 >
 class IndirectVariadicMethoid
 < Pols,OT ,void(OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6)  >
-: public core::BuiltinClosure_O {
+: public core::TemplatedFunctionBase_O {
 public:
 typedef IndirectVariadicMethoid < Pols,OT ,void(OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6)  > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const { return "IndirectVariadicMethoid"; };
 typedef void (OT::*Type)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6) ;
 Type mptr;
 public:
 enum { NumParams = 7 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure_O(entry_point,name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::TemplatedFunctionBase_O(entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
@@ -702,17 +702,17 @@ return LCC_RETURN(returnValues.valueGet(0,oidx).raw_(),oidx);
 template <typename Pols, typename OT  ,typename ARG1,typename ARG2,typename ARG3,typename ARG4,typename ARG5 >
 class IndirectVariadicMethoid
 < Pols,OT ,void(OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5)  >
-: public core::BuiltinClosure_O {
+: public core::TemplatedFunctionBase_O {
 public:
 typedef IndirectVariadicMethoid < Pols,OT ,void(OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5)  > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const { return "IndirectVariadicMethoid"; };
 typedef void (OT::*Type)( ARG1, ARG2, ARG3, ARG4, ARG5) ;
 Type mptr;
 public:
 enum { NumParams = 6 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure_O(entry_point,name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::TemplatedFunctionBase_O(entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
@@ -775,17 +775,17 @@ return LCC_RETURN(returnValues.valueGet(0,oidx).raw_(),oidx);
 template <typename Pols, typename OT  ,typename ARG1,typename ARG2,typename ARG3,typename ARG4 >
 class IndirectVariadicMethoid
 < Pols,OT ,void(OT::*)( ARG1, ARG2, ARG3, ARG4)  >
-: public core::BuiltinClosure_O {
+: public core::TemplatedFunctionBase_O {
 public:
 typedef IndirectVariadicMethoid < Pols,OT ,void(OT::*)( ARG1, ARG2, ARG3, ARG4)  > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const { return "IndirectVariadicMethoid"; };
 typedef void (OT::*Type)( ARG1, ARG2, ARG3, ARG4) ;
 Type mptr;
 public:
 enum { NumParams = 5 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure_O(entry_point,name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::TemplatedFunctionBase_O(entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
@@ -842,17 +842,17 @@ return LCC_RETURN(returnValues.valueGet(0,oidx).raw_(),oidx);
 template <typename Pols, typename OT  ,typename ARG1,typename ARG2,typename ARG3 >
 class IndirectVariadicMethoid
 < Pols,OT ,void(OT::*)( ARG1, ARG2, ARG3)  >
-: public core::BuiltinClosure_O {
+: public core::TemplatedFunctionBase_O {
 public:
 typedef IndirectVariadicMethoid < Pols,OT ,void(OT::*)( ARG1, ARG2, ARG3)  > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const { return "IndirectVariadicMethoid"; };
 typedef void (OT::*Type)( ARG1, ARG2, ARG3) ;
 Type mptr;
 public:
 enum { NumParams = 4 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure_O(entry_point,name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::TemplatedFunctionBase_O(entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
@@ -903,17 +903,17 @@ return LCC_RETURN(returnValues.valueGet(0,oidx).raw_(),oidx);
 template <typename Pols, typename OT  ,typename ARG1,typename ARG2 >
 class IndirectVariadicMethoid
 < Pols,OT ,void(OT::*)( ARG1, ARG2)  >
-: public core::BuiltinClosure_O {
+: public core::TemplatedFunctionBase_O {
 public:
 typedef IndirectVariadicMethoid < Pols,OT ,void(OT::*)( ARG1, ARG2)  > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const { return "IndirectVariadicMethoid"; };
 typedef void (OT::*Type)( ARG1, ARG2) ;
 Type mptr;
 public:
 enum { NumParams = 3 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure_O(entry_point,name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::TemplatedFunctionBase_O(entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
@@ -958,17 +958,17 @@ return LCC_RETURN(returnValues.valueGet(0,oidx).raw_(),oidx);
 template <typename Pols, typename OT  ,typename ARG1 >
 class IndirectVariadicMethoid
 < Pols,OT ,void(OT::*)( ARG1)  >
-: public core::BuiltinClosure_O {
+: public core::TemplatedFunctionBase_O {
 public:
 typedef IndirectVariadicMethoid < Pols,OT ,void(OT::*)( ARG1)  > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const { return "IndirectVariadicMethoid"; };
 typedef void (OT::*Type)( ARG1) ;
 Type mptr;
 public:
 enum { NumParams = 2 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure_O(entry_point,name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::TemplatedFunctionBase_O(entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
@@ -1007,17 +1007,17 @@ return LCC_RETURN(returnValues.valueGet(0,oidx).raw_(),oidx);
 template <typename Pols, typename OT   >
 class IndirectVariadicMethoid
 < Pols,OT ,void(OT::*)( )  >
-: public core::BuiltinClosure_O {
+: public core::TemplatedFunctionBase_O {
 public:
 typedef IndirectVariadicMethoid < Pols,OT ,void(OT::*)( )  > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const { return "IndirectVariadicMethoid"; };
 typedef void (OT::*Type)( ) ;
 Type mptr;
 public:
 enum { NumParams = 1 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure_O(entry_point,name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::TemplatedFunctionBase_O(entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
@@ -1052,17 +1052,17 @@ template <typename Pols, typename OT , typename UPRT  ,typename ARG1,typename AR
     typename ARG6,typename ARG7 >
 class IndirectVariadicMethoid
 < Pols,OT , std::unique_ptr<UPRT> (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7)  >
-: public core::BuiltinClosure_O {
+: public core::TemplatedFunctionBase_O {
 public:
 typedef IndirectVariadicMethoid < Pols,OT , std::unique_ptr<UPRT> (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7)  > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const { return "IndirectVariadicMethoid"; };
 typedef std::unique_ptr<UPRT> (OT::*Type)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7) ;
 Type mptr;
 public:
 enum { NumParams = 8 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure_O(entry_point,name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::TemplatedFunctionBase_O(entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
@@ -1140,17 +1140,17 @@ template <typename Pols, typename OT , typename UPRT  ,typename ARG1,typename AR
     typename ARG6 >
 class IndirectVariadicMethoid
 < Pols,OT , std::unique_ptr<UPRT> (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6)  >
-: public core::BuiltinClosure_O {
+: public core::TemplatedFunctionBase_O {
 public:
 typedef IndirectVariadicMethoid < Pols,OT , std::unique_ptr<UPRT> (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6)  > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const { return "IndirectVariadicMethoid"; };
 typedef std::unique_ptr<UPRT> (OT::*Type)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6) ;
 Type mptr;
 public:
 enum { NumParams = 7 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure_O(entry_point,name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::TemplatedFunctionBase_O(entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
@@ -1221,17 +1221,17 @@ return LCC_RETURN(translate::to_object<std::unique_ptr<UPRT>,typename AdoptPoint
 template <typename Pols, typename OT , typename UPRT  ,typename ARG1,typename ARG2,typename ARG3,typename ARG4,typename ARG5 >
 class IndirectVariadicMethoid
 < Pols,OT , std::unique_ptr<UPRT> (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5)  >
-: public core::BuiltinClosure_O {
+: public core::TemplatedFunctionBase_O {
 public:
 typedef IndirectVariadicMethoid < Pols,OT , std::unique_ptr<UPRT> (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5)  > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const { return "IndirectVariadicMethoid"; };
 typedef std::unique_ptr<UPRT> (OT::*Type)( ARG1, ARG2, ARG3, ARG4, ARG5) ;
 Type mptr;
 public:
 enum { NumParams = 6 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure_O(entry_point,name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::TemplatedFunctionBase_O(entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
@@ -1296,17 +1296,17 @@ return LCC_RETURN(translate::to_object<std::unique_ptr<UPRT>,typename AdoptPoint
 template <typename Pols, typename OT , typename UPRT  ,typename ARG1,typename ARG2,typename ARG3,typename ARG4 >
 class IndirectVariadicMethoid
 < Pols,OT , std::unique_ptr<UPRT> (OT::*)( ARG1, ARG2, ARG3, ARG4)  >
-: public core::BuiltinClosure_O {
+: public core::TemplatedFunctionBase_O {
 public:
 typedef IndirectVariadicMethoid < Pols,OT , std::unique_ptr<UPRT> (OT::*)( ARG1, ARG2, ARG3, ARG4)  > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const { return "IndirectVariadicMethoid"; };
 typedef std::unique_ptr<UPRT> (OT::*Type)( ARG1, ARG2, ARG3, ARG4) ;
 Type mptr;
 public:
 enum { NumParams = 5 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure_O(entry_point,name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::TemplatedFunctionBase_O(entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
@@ -1365,17 +1365,17 @@ return LCC_RETURN(translate::to_object<std::unique_ptr<UPRT>,typename AdoptPoint
 template <typename Pols, typename OT , typename UPRT  ,typename ARG1,typename ARG2,typename ARG3 >
 class IndirectVariadicMethoid
 < Pols,OT , std::unique_ptr<UPRT> (OT::*)( ARG1, ARG2, ARG3)  >
-: public core::BuiltinClosure_O {
+: public core::TemplatedFunctionBase_O {
 public:
 typedef IndirectVariadicMethoid < Pols,OT , std::unique_ptr<UPRT> (OT::*)( ARG1, ARG2, ARG3)  > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const { return "IndirectVariadicMethoid"; };
 typedef std::unique_ptr<UPRT> (OT::*Type)( ARG1, ARG2, ARG3) ;
 Type mptr;
 public:
 enum { NumParams = 4 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure_O(entry_point,name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::TemplatedFunctionBase_O(entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
@@ -1428,17 +1428,17 @@ return LCC_RETURN(translate::to_object<std::unique_ptr<UPRT>,typename AdoptPoint
 template <typename Pols, typename OT , typename UPRT  ,typename ARG1,typename ARG2 >
 class IndirectVariadicMethoid
 < Pols,OT , std::unique_ptr<UPRT> (OT::*)( ARG1, ARG2)  >
-: public core::BuiltinClosure_O {
+: public core::TemplatedFunctionBase_O {
 public:
 typedef IndirectVariadicMethoid < Pols,OT , std::unique_ptr<UPRT> (OT::*)( ARG1, ARG2)  > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const { return "IndirectVariadicMethoid"; };
 typedef std::unique_ptr<UPRT> (OT::*Type)( ARG1, ARG2) ;
 Type mptr;
 public:
 enum { NumParams = 3 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure_O(entry_point,name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::TemplatedFunctionBase_O(entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
@@ -1485,17 +1485,17 @@ return LCC_RETURN(translate::to_object<std::unique_ptr<UPRT>,typename AdoptPoint
 template <typename Pols, typename OT , typename UPRT  ,typename ARG1 >
 class IndirectVariadicMethoid
 < Pols,OT , std::unique_ptr<UPRT> (OT::*)( ARG1)  >
-: public core::BuiltinClosure_O {
+: public core::TemplatedFunctionBase_O {
 public:
 typedef IndirectVariadicMethoid < Pols,OT , std::unique_ptr<UPRT> (OT::*)( ARG1)  > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const { return "IndirectVariadicMethoid"; };
 typedef std::unique_ptr<UPRT> (OT::*Type)( ARG1) ;
 Type mptr;
 public:
 enum { NumParams = 2 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure_O(entry_point,name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::TemplatedFunctionBase_O(entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
@@ -1536,17 +1536,17 @@ return LCC_RETURN(translate::to_object<std::unique_ptr<UPRT>,typename AdoptPoint
 template <typename Pols, typename OT , typename UPRT   >
 class IndirectVariadicMethoid
 < Pols,OT , std::unique_ptr<UPRT> (OT::*)( )  >
-: public core::BuiltinClosure_O {
+: public core::TemplatedFunctionBase_O {
 public:
 typedef IndirectVariadicMethoid < Pols,OT , std::unique_ptr<UPRT> (OT::*)( )  > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const { return "IndirectVariadicMethoid"; };
 typedef std::unique_ptr<UPRT> (OT::*Type)( ) ;
 Type mptr;
 public:
 enum { NumParams = 1 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure_O(entry_point,name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::TemplatedFunctionBase_O(entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
@@ -1582,17 +1582,17 @@ template <typename Pols, typename OT , typename RT  ,typename ARG1,typename ARG2
     typename ARG6,typename ARG7 >
 class IndirectVariadicMethoid
 < Pols,OT ,RT (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7) const >
-: public core::BuiltinClosure_O {
+: public core::TemplatedFunctionBase_O {
 public:
 typedef IndirectVariadicMethoid < Pols,OT ,RT (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7) const > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const { return "IndirectVariadicMethoid"; };
 typedef RT (OT::*Type)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7) const;
 Type mptr;
 public:
 enum { NumParams = 8 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure_O(entry_point,name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::TemplatedFunctionBase_O(entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
@@ -1669,17 +1669,17 @@ template <typename Pols, typename OT , typename RT  ,typename ARG1,typename ARG2
     typename ARG6 >
 class IndirectVariadicMethoid
 < Pols,OT ,RT (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6) const >
-: public core::BuiltinClosure_O {
+: public core::TemplatedFunctionBase_O {
 public:
 typedef IndirectVariadicMethoid < Pols,OT ,RT (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6) const > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const { return "IndirectVariadicMethoid"; };
 typedef RT (OT::*Type)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6) const;
 Type mptr;
 public:
 enum { NumParams = 7 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure_O(entry_point,name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::TemplatedFunctionBase_O(entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
@@ -1749,17 +1749,17 @@ return LCC_RETURN(translate::to_object<RT,typename AdoptPointer<Pols,result>::ty
 template <typename Pols, typename OT , typename RT  ,typename ARG1,typename ARG2,typename ARG3,typename ARG4,typename ARG5 >
 class IndirectVariadicMethoid
 < Pols,OT ,RT (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5) const >
-: public core::BuiltinClosure_O {
+: public core::TemplatedFunctionBase_O {
 public:
 typedef IndirectVariadicMethoid < Pols,OT ,RT (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5) const > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const { return "IndirectVariadicMethoid"; };
 typedef RT (OT::*Type)( ARG1, ARG2, ARG3, ARG4, ARG5) const;
 Type mptr;
 public:
 enum { NumParams = 6 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure_O(entry_point,name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::TemplatedFunctionBase_O(entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
@@ -1823,17 +1823,17 @@ return LCC_RETURN(translate::to_object<RT,typename AdoptPointer<Pols,result>::ty
 template <typename Pols, typename OT , typename RT  ,typename ARG1,typename ARG2,typename ARG3,typename ARG4 >
 class IndirectVariadicMethoid
 < Pols,OT ,RT (OT::*)( ARG1, ARG2, ARG3, ARG4) const >
-: public core::BuiltinClosure_O {
+: public core::TemplatedFunctionBase_O {
 public:
 typedef IndirectVariadicMethoid < Pols,OT ,RT (OT::*)( ARG1, ARG2, ARG3, ARG4) const > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const { return "IndirectVariadicMethoid"; };
 typedef RT (OT::*Type)( ARG1, ARG2, ARG3, ARG4) const;
 Type mptr;
 public:
 enum { NumParams = 5 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure_O(entry_point,name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::TemplatedFunctionBase_O(entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
@@ -1891,17 +1891,17 @@ return LCC_RETURN(translate::to_object<RT,typename AdoptPointer<Pols,result>::ty
 template <typename Pols, typename OT , typename RT  ,typename ARG1,typename ARG2,typename ARG3 >
 class IndirectVariadicMethoid
 < Pols,OT ,RT (OT::*)( ARG1, ARG2, ARG3) const >
-: public core::BuiltinClosure_O {
+: public core::TemplatedFunctionBase_O {
 public:
 typedef IndirectVariadicMethoid < Pols,OT ,RT (OT::*)( ARG1, ARG2, ARG3) const > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const { return "IndirectVariadicMethoid"; };
 typedef RT (OT::*Type)( ARG1, ARG2, ARG3) const;
 Type mptr;
 public:
 enum { NumParams = 4 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure_O(entry_point,name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::TemplatedFunctionBase_O(entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
@@ -1953,17 +1953,17 @@ return LCC_RETURN(translate::to_object<RT,typename AdoptPointer<Pols,result>::ty
 template <typename Pols, typename OT , typename RT  ,typename ARG1,typename ARG2 >
 class IndirectVariadicMethoid
 < Pols,OT ,RT (OT::*)( ARG1, ARG2) const >
-: public core::BuiltinClosure_O {
+: public core::TemplatedFunctionBase_O {
 public:
 typedef IndirectVariadicMethoid < Pols,OT ,RT (OT::*)( ARG1, ARG2) const > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const { return "IndirectVariadicMethoid"; };
 typedef RT (OT::*Type)( ARG1, ARG2) const;
 Type mptr;
 public:
 enum { NumParams = 3 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure_O(entry_point,name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::TemplatedFunctionBase_O(entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
@@ -2009,17 +2009,17 @@ return LCC_RETURN(translate::to_object<RT,typename AdoptPointer<Pols,result>::ty
 template <typename Pols, typename OT , typename RT  ,typename ARG1 >
 class IndirectVariadicMethoid
 < Pols,OT ,RT (OT::*)( ARG1) const >
-: public core::BuiltinClosure_O {
+: public core::TemplatedFunctionBase_O {
 public:
 typedef IndirectVariadicMethoid < Pols,OT ,RT (OT::*)( ARG1) const > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const { return "IndirectVariadicMethoid"; };
 typedef RT (OT::*Type)( ARG1) const;
 Type mptr;
 public:
 enum { NumParams = 2 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure_O(entry_point,name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::TemplatedFunctionBase_O(entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
@@ -2059,17 +2059,17 @@ return LCC_RETURN(translate::to_object<RT,typename AdoptPointer<Pols,result>::ty
 template <typename Pols, typename OT , typename RT   >
 class IndirectVariadicMethoid
 < Pols,OT ,RT (OT::*)( ) const >
-: public core::BuiltinClosure_O {
+: public core::TemplatedFunctionBase_O {
 public:
 typedef IndirectVariadicMethoid < Pols,OT ,RT (OT::*)( ) const > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const { return "IndirectVariadicMethoid"; };
 typedef RT (OT::*Type)( ) const;
 Type mptr;
 public:
 enum { NumParams = 1 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure_O(entry_point,name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::TemplatedFunctionBase_O(entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
@@ -2104,17 +2104,17 @@ template <typename Pols, typename OT  ,typename ARG1,typename ARG2,typename ARG3
     typename ARG7 >
 class IndirectVariadicMethoid
 < Pols,OT ,void(OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7) const >
-: public core::BuiltinClosure_O {
+: public core::TemplatedFunctionBase_O {
 public:
 typedef IndirectVariadicMethoid < Pols,OT ,void(OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7) const > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const { return "IndirectVariadicMethoid"; };
 typedef void (OT::*Type)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7) const;
 Type mptr;
 public:
 enum { NumParams = 8 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure_O(entry_point,name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::TemplatedFunctionBase_O(entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
@@ -2189,17 +2189,17 @@ return LCC_RETURN(returnValues.valueGet(0,oidx).raw_(),oidx);
 template <typename Pols, typename OT  ,typename ARG1,typename ARG2,typename ARG3,typename ARG4,typename ARG5,typename ARG6 >
 class IndirectVariadicMethoid
 < Pols,OT ,void(OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6) const >
-: public core::BuiltinClosure_O {
+: public core::TemplatedFunctionBase_O {
 public:
 typedef IndirectVariadicMethoid < Pols,OT ,void(OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6) const > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const { return "IndirectVariadicMethoid"; };
 typedef void (OT::*Type)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6) const;
 Type mptr;
 public:
 enum { NumParams = 7 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure_O(entry_point,name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::TemplatedFunctionBase_O(entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
@@ -2268,17 +2268,17 @@ return LCC_RETURN(returnValues.valueGet(0,oidx).raw_(),oidx);
 template <typename Pols, typename OT  ,typename ARG1,typename ARG2,typename ARG3,typename ARG4,typename ARG5 >
 class IndirectVariadicMethoid
 < Pols,OT ,void(OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5) const >
-: public core::BuiltinClosure_O {
+: public core::TemplatedFunctionBase_O {
 public:
 typedef IndirectVariadicMethoid < Pols,OT ,void(OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5) const > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const { return "IndirectVariadicMethoid"; };
 typedef void (OT::*Type)( ARG1, ARG2, ARG3, ARG4, ARG5) const;
 Type mptr;
 public:
 enum { NumParams = 6 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure_O(entry_point,name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::TemplatedFunctionBase_O(entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
@@ -2341,17 +2341,17 @@ return LCC_RETURN(returnValues.valueGet(0,oidx).raw_(),oidx);
 template <typename Pols, typename OT  ,typename ARG1,typename ARG2,typename ARG3,typename ARG4 >
 class IndirectVariadicMethoid
 < Pols,OT ,void(OT::*)( ARG1, ARG2, ARG3, ARG4) const >
-: public core::BuiltinClosure_O {
+: public core::TemplatedFunctionBase_O {
 public:
 typedef IndirectVariadicMethoid < Pols,OT ,void(OT::*)( ARG1, ARG2, ARG3, ARG4) const > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const { return "IndirectVariadicMethoid"; };
 typedef void (OT::*Type)( ARG1, ARG2, ARG3, ARG4) const;
 Type mptr;
 public:
 enum { NumParams = 5 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure_O(entry_point,name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::TemplatedFunctionBase_O(entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
@@ -2408,17 +2408,17 @@ return LCC_RETURN(returnValues.valueGet(0,oidx).raw_(),oidx);
 template <typename Pols, typename OT  ,typename ARG1,typename ARG2,typename ARG3 >
 class IndirectVariadicMethoid
 < Pols,OT ,void(OT::*)( ARG1, ARG2, ARG3) const >
-: public core::BuiltinClosure_O {
+: public core::TemplatedFunctionBase_O {
 public:
 typedef IndirectVariadicMethoid < Pols,OT ,void(OT::*)( ARG1, ARG2, ARG3) const > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const { return "IndirectVariadicMethoid"; };
 typedef void (OT::*Type)( ARG1, ARG2, ARG3) const;
 Type mptr;
 public:
 enum { NumParams = 4 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure_O(entry_point,name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::TemplatedFunctionBase_O(entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
@@ -2469,17 +2469,17 @@ return LCC_RETURN(returnValues.valueGet(0,oidx).raw_(),oidx);
 template <typename Pols, typename OT  ,typename ARG1,typename ARG2 >
 class IndirectVariadicMethoid
 < Pols,OT ,void(OT::*)( ARG1, ARG2) const >
-: public core::BuiltinClosure_O {
+: public core::TemplatedFunctionBase_O {
 public:
 typedef IndirectVariadicMethoid < Pols,OT ,void(OT::*)( ARG1, ARG2) const > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const { return "IndirectVariadicMethoid"; };
 typedef void (OT::*Type)( ARG1, ARG2) const;
 Type mptr;
 public:
 enum { NumParams = 3 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure_O(entry_point,name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::TemplatedFunctionBase_O(entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
@@ -2524,17 +2524,17 @@ return LCC_RETURN(returnValues.valueGet(0,oidx).raw_(),oidx);
 template <typename Pols, typename OT  ,typename ARG1 >
 class IndirectVariadicMethoid
 < Pols,OT ,void(OT::*)( ARG1) const >
-: public core::BuiltinClosure_O {
+: public core::TemplatedFunctionBase_O {
 public:
 typedef IndirectVariadicMethoid < Pols,OT ,void(OT::*)( ARG1) const > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const { return "IndirectVariadicMethoid"; };
 typedef void (OT::*Type)( ARG1) const;
 Type mptr;
 public:
 enum { NumParams = 2 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure_O(entry_point,name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::TemplatedFunctionBase_O(entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
@@ -2573,17 +2573,17 @@ return LCC_RETURN(returnValues.valueGet(0,oidx).raw_(),oidx);
 template <typename Pols, typename OT   >
 class IndirectVariadicMethoid
 < Pols,OT ,void(OT::*)( ) const >
-: public core::BuiltinClosure_O {
+: public core::TemplatedFunctionBase_O {
 public:
 typedef IndirectVariadicMethoid < Pols,OT ,void(OT::*)( ) const > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const { return "IndirectVariadicMethoid"; };
 typedef void (OT::*Type)( ) const;
 Type mptr;
 public:
 enum { NumParams = 1 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure_O(entry_point,name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::TemplatedFunctionBase_O(entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
@@ -2618,17 +2618,17 @@ template <typename Pols, typename OT , typename UPRT  ,typename ARG1,typename AR
     typename ARG6,typename ARG7 >
 class IndirectVariadicMethoid
 < Pols,OT , std::unique_ptr<UPRT> (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7) const >
-: public core::BuiltinClosure_O {
+: public core::TemplatedFunctionBase_O {
 public:
 typedef IndirectVariadicMethoid < Pols,OT , std::unique_ptr<UPRT> (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7) const > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const { return "IndirectVariadicMethoid"; };
 typedef std::unique_ptr<UPRT> (OT::*Type)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7) const;
 Type mptr;
 public:
 enum { NumParams = 8 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure_O(entry_point,name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::TemplatedFunctionBase_O(entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
@@ -2706,17 +2706,17 @@ template <typename Pols, typename OT , typename UPRT  ,typename ARG1,typename AR
     typename ARG6 >
 class IndirectVariadicMethoid
 < Pols,OT , std::unique_ptr<UPRT> (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6) const >
-: public core::BuiltinClosure_O {
+: public core::TemplatedFunctionBase_O {
 public:
 typedef IndirectVariadicMethoid < Pols,OT , std::unique_ptr<UPRT> (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6) const > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const { return "IndirectVariadicMethoid"; };
 typedef std::unique_ptr<UPRT> (OT::*Type)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6) const;
 Type mptr;
 public:
 enum { NumParams = 7 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure_O(entry_point,name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::TemplatedFunctionBase_O(entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
@@ -2787,17 +2787,17 @@ return LCC_RETURN(translate::to_object<std::unique_ptr<UPRT>,typename AdoptPoint
 template <typename Pols, typename OT , typename UPRT  ,typename ARG1,typename ARG2,typename ARG3,typename ARG4,typename ARG5 >
 class IndirectVariadicMethoid
 < Pols,OT , std::unique_ptr<UPRT> (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5) const >
-: public core::BuiltinClosure_O {
+: public core::TemplatedFunctionBase_O {
 public:
 typedef IndirectVariadicMethoid < Pols,OT , std::unique_ptr<UPRT> (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5) const > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const { return "IndirectVariadicMethoid"; };
 typedef std::unique_ptr<UPRT> (OT::*Type)( ARG1, ARG2, ARG3, ARG4, ARG5) const;
 Type mptr;
 public:
 enum { NumParams = 6 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure_O(entry_point,name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::TemplatedFunctionBase_O(entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
@@ -2862,17 +2862,17 @@ return LCC_RETURN(translate::to_object<std::unique_ptr<UPRT>,typename AdoptPoint
 template <typename Pols, typename OT , typename UPRT  ,typename ARG1,typename ARG2,typename ARG3,typename ARG4 >
 class IndirectVariadicMethoid
 < Pols,OT , std::unique_ptr<UPRT> (OT::*)( ARG1, ARG2, ARG3, ARG4) const >
-: public core::BuiltinClosure_O {
+: public core::TemplatedFunctionBase_O {
 public:
 typedef IndirectVariadicMethoid < Pols,OT , std::unique_ptr<UPRT> (OT::*)( ARG1, ARG2, ARG3, ARG4) const > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const { return "IndirectVariadicMethoid"; };
 typedef std::unique_ptr<UPRT> (OT::*Type)( ARG1, ARG2, ARG3, ARG4) const;
 Type mptr;
 public:
 enum { NumParams = 5 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure_O(entry_point,name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::TemplatedFunctionBase_O(entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
@@ -2931,17 +2931,17 @@ return LCC_RETURN(translate::to_object<std::unique_ptr<UPRT>,typename AdoptPoint
 template <typename Pols, typename OT , typename UPRT  ,typename ARG1,typename ARG2,typename ARG3 >
 class IndirectVariadicMethoid
 < Pols,OT , std::unique_ptr<UPRT> (OT::*)( ARG1, ARG2, ARG3) const >
-: public core::BuiltinClosure_O {
+: public core::TemplatedFunctionBase_O {
 public:
 typedef IndirectVariadicMethoid < Pols,OT , std::unique_ptr<UPRT> (OT::*)( ARG1, ARG2, ARG3) const > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const { return "IndirectVariadicMethoid"; };
 typedef std::unique_ptr<UPRT> (OT::*Type)( ARG1, ARG2, ARG3) const;
 Type mptr;
 public:
 enum { NumParams = 4 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure_O(entry_point,name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::TemplatedFunctionBase_O(entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
@@ -2994,17 +2994,17 @@ return LCC_RETURN(translate::to_object<std::unique_ptr<UPRT>,typename AdoptPoint
 template <typename Pols, typename OT , typename UPRT  ,typename ARG1,typename ARG2 >
 class IndirectVariadicMethoid
 < Pols,OT , std::unique_ptr<UPRT> (OT::*)( ARG1, ARG2) const >
-: public core::BuiltinClosure_O {
+: public core::TemplatedFunctionBase_O {
 public:
 typedef IndirectVariadicMethoid < Pols,OT , std::unique_ptr<UPRT> (OT::*)( ARG1, ARG2) const > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const { return "IndirectVariadicMethoid"; };
 typedef std::unique_ptr<UPRT> (OT::*Type)( ARG1, ARG2) const;
 Type mptr;
 public:
 enum { NumParams = 3 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure_O(entry_point,name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::TemplatedFunctionBase_O(entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
@@ -3051,17 +3051,17 @@ return LCC_RETURN(translate::to_object<std::unique_ptr<UPRT>,typename AdoptPoint
 template <typename Pols, typename OT , typename UPRT  ,typename ARG1 >
 class IndirectVariadicMethoid
 < Pols,OT , std::unique_ptr<UPRT> (OT::*)( ARG1) const >
-: public core::BuiltinClosure_O {
+: public core::TemplatedFunctionBase_O {
 public:
 typedef IndirectVariadicMethoid < Pols,OT , std::unique_ptr<UPRT> (OT::*)( ARG1) const > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const { return "IndirectVariadicMethoid"; };
 typedef std::unique_ptr<UPRT> (OT::*Type)( ARG1) const;
 Type mptr;
 public:
 enum { NumParams = 2 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure_O(entry_point,name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::TemplatedFunctionBase_O(entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
@@ -3102,17 +3102,17 @@ return LCC_RETURN(translate::to_object<std::unique_ptr<UPRT>,typename AdoptPoint
 template <typename Pols, typename OT , typename UPRT   >
 class IndirectVariadicMethoid
 < Pols,OT , std::unique_ptr<UPRT> (OT::*)( ) const >
-: public core::BuiltinClosure_O {
+: public core::TemplatedFunctionBase_O {
 public:
 typedef IndirectVariadicMethoid < Pols,OT , std::unique_ptr<UPRT> (OT::*)( ) const > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const { return "IndirectVariadicMethoid"; };
 typedef std::unique_ptr<UPRT> (OT::*Type)( ) const;
 Type mptr;
 public:
 enum { NumParams = 1 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure_O(entry_point,name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::TemplatedFunctionBase_O(entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 

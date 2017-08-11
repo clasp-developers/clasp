@@ -29,11 +29,13 @@ THE SOFTWARE.
 
 #include <clasp/core/clasp_gmpxx.h>
 #include <clasp/core/foundation.h>
-#include <clasp/core/numbers.h>
+#include <clasp/core/object.h>
+#include <clasp/core/numbers.fwd.h>
 #include <clasp/core/character.fwd.h>
 #include <clasp/core/array.fwd.h>
 #include <clasp/core/sequence.fwd.h>
 #include <clasp/core/corePackage.fwd.h>
+
 
 namespace core {
   size_t calculate_extension(size_t arrayTotalSize);
@@ -923,15 +925,17 @@ MDArray_sp core__make_mdarray(List_sp dimensions,
 
 
 namespace core {
-  template <typename MyArrayType, typename MySimpleType, typename MyParentType >
+  template <typename MyArrayType, typename MySimpleArrayType, typename MySimpleType, typename MyParentType >
     class template_Array : public MyParentType {
   public:
     // The types that define what this class does
     typedef MyParentType Base;
     typedef MyArrayType /*eg: VectorTNs_O*/ my_array_type;
+    typedef MySimpleArrayType /*eg: VectorTNs_O*/ my_simple_array_type;
     typedef MySimpleType /*eg: SimpleVector_O*/ simple_type;
     typedef typename simple_type::simple_element_type /*eg: T_sp*/ simple_element_type;
     typedef gctools::smart_ptr<my_array_type> my_smart_ptr_type;
+    typedef gctools::smart_ptr<my_simple_array_type> my_simple_smart_ptr_type;
     typedef gctools::GCArray_moveable<simple_element_type> simple_vector_type;
     typedef typename MDArray_O::value_type dimension_element_type;
   public:
@@ -945,6 +949,132 @@ namespace core {
     : Base(dummy,dimension,fillPointer,data,displacedToP,displacedIndexOffset) {};
     // multidimensional array
   template_Array(size_t rank,
+                 List_sp dimensions,
+                 Array_sp data,
+                 bool displacedToP,
+                 Fixnum_sp displacedIndexOffset)
+    : Base(rank,dimensions,data,displacedToP,displacedIndexOffset) {};
+  public:
+    // Primary functions/operators for operator[] that handle displacement
+    // There's a non-const and a const version of each
+    template <typename array_type>
+    simple_element_type& unsafe_indirectReference(size_t index) {
+      array_type& vecns = *reinterpret_cast<array_type*>(&*this->_Data);
+      return vecns[this->_DisplacedIndexOffset+index];
+    }
+    simple_element_type& operator[](size_t index) {
+      BOUNDS_ASSERT(index<this->arrayTotalSize());
+      LIKELY_if (gc::IsA<gc::smart_ptr<simple_type>>(this->_Data)) {
+        return (*reinterpret_cast<simple_type*>(&*(this->_Data)))[this->_DisplacedIndexOffset+index];
+      }
+      if (gc::IsA<my_smart_ptr_type>(this->_Data)) return this->unsafe_indirectReference<my_array_type>(index);
+      return this->unsafe_indirectReference<my_simple_array_type>(index);
+    }
+    template <typename array_type>
+    const simple_element_type& unsafe_indirectReference(size_t index) const {
+      array_type& vecns = *reinterpret_cast<array_type*>(&*this->_Data);
+      return vecns[this->_DisplacedIndexOffset+index];
+    }
+    const simple_element_type& operator[](size_t index) const {
+      BOUNDS_ASSERT(index<this->arrayTotalSize());
+      LIKELY_if (gc::IsA<gc::smart_ptr<simple_type>>(this->_Data)) {
+        return (*reinterpret_cast<simple_type*>(&*(this->_Data)))[this->_DisplacedIndexOffset+index];
+      }
+      if (gc::IsA<my_smart_ptr_type>(this->_Data)) return this->unsafe_indirectReference<my_array_type>(index);
+      return this->unsafe_indirectReference<my_simple_array_type>(index);
+    }
+  public:
+    // Iterators
+    simple_element_type* begin() { return &(*this)[0]; };
+    simple_element_type* end() { return &(*this)[this->length()]; };
+    const simple_element_type* begin() const { return &(*this)[0]; };
+    const simple_element_type* end() const { return &(*this)[this->length()]; };
+  public:
+    void this_asAbstractSimpleVectorRange(AbstractSimpleVector_sp& sv, size_t& start, size_t& end) const  {
+      unlikely_if (gc::IsA<my_smart_ptr_type>(this->_Data)) {
+        this->asAbstractSimpleVectorRange(sv,start,end);
+        start += this->_DisplacedIndexOffset;
+        end = this->length()+this->_DisplacedIndexOffset;
+        return;
+      }
+      sv = gc::As<AbstractSimpleVector_sp>(this->_Data);
+      start = this->_DisplacedIndexOffset;
+      end = this->length()+this->_DisplacedIndexOffset;
+    }
+    void asAbstractSimpleVectorRange(AbstractSimpleVector_sp& sv, size_t& start, size_t& end) const final {
+      this->this_asAbstractSimpleVectorRange(sv,start,end);
+    }
+    virtual Array_sp reverse() const final { return templated_reverse_VectorNs(*this); };
+    virtual Array_sp nreverse() final { return templated_nreverse_VectorNs(*this); };
+    virtual void internalAdjustSize_(size_t size, T_sp initElement=_Nil<T_O>(), bool initElementSupplied=false ) final {
+      if (size == this->_ArrayTotalSize) return;
+      AbstractSimpleVector_sp basesv;
+      size_t start, end;
+      this->this_asAbstractSimpleVectorRange(basesv,start,end);
+      gctools::smart_ptr<simple_type> sv = gc::As_unsafe<gctools::smart_ptr<simple_type>>(basesv);
+      size_t initialContentsSize = MIN(this->length(),size);
+      my_smart_ptr_type newData = simple_type::make(size,simple_type::from_object(initElement),true,initialContentsSize,&(*sv)[start]);
+      this->set_data(newData);
+//      printf("%s:%d:%s  original size=%lu new size=%lu  copied %lu elements\n", __FILE__, __LINE__, __FUNCTION__, this->_ArrayTotalSize, size, initialContentsSize );
+      this->_ArrayTotalSize = size;
+      this->_Dimensions[0] = size;
+      if (!this->_Flags.fillPointerP()) this->_FillPointerOrLengthOrDummy = size;
+      this->_DisplacedIndexOffset = 0;
+      this->_Flags.set_displacedToP(false);
+    }
+    bool equalp(T_sp o) const {
+      if (&*o == this) return true;
+      if (my_smart_ptr_type other = o.asOrNull<my_array_type>()) {
+        if (this->rank() != other->rank() ) return false;
+        for (size_t i(0); i<this->rank(); ++i ) {
+          if (this->_Dimensions[i] != other->_Dimensions[i]) return false;
+        }
+        for (size_t i(0),iEnd(this->arrayTotalSize()); i<iEnd; ++i) {
+          if (!cl__equalp(this->rowMajorAref(i), other->rowMajorAref(i))) return false;
+        }
+        return true;
+      } else if (my_simple_smart_ptr_type other = o.asOrNull<my_simple_array_type>()) {
+        if (this->rank() != other->rank() ) return false;
+        for (size_t i(0); i<this->rank(); ++i ) {
+          if (this->_Dimensions[i] != other->_Dimensions[i]) return false;
+        }
+        for (size_t i(0),iEnd(this->arrayTotalSize()); i<iEnd; ++i) {
+          if (!cl__equalp(this->rowMajorAref(i), other->rowMajorAref(i))) return false;
+        }
+        return true;
+      }
+      return false;
+    }
+    CL_METHOD_OVERLOAD virtual void rowMajorAset(size_t idx, T_sp value) final {(*this)[idx] = simple_type::from_object(value);}
+    CL_METHOD_OVERLOAD virtual T_sp rowMajorAref(size_t idx) const final {return simple_type::to_object((*this)[idx]);}
+    bool equal(T_sp obj) const override { return this->eq(obj); };
+  };
+};
+
+
+namespace core {
+  template <typename MyArrayType, typename MySimpleType, typename MyParentType >
+    class template_Vector : public MyParentType {
+  public:
+    // The types that define what this class does
+    typedef MyParentType Base;
+    typedef MyArrayType /*eg: VectorTNs_O*/ my_array_type;
+    typedef MySimpleType /*eg: SimpleVector_O*/ simple_type;
+    typedef typename simple_type::simple_element_type /*eg: T_sp*/ simple_element_type;
+    typedef gctools::smart_ptr<my_array_type> my_smart_ptr_type;
+    typedef gctools::GCArray_moveable<simple_element_type> simple_vector_type;
+    typedef typename MDArray_O::value_type dimension_element_type;
+  public:
+    // vector
+  template_Vector(Rank1 dummy,
+                 size_t dimension,
+                 T_sp fillPointer,
+                 Array_sp data,
+                 bool displacedToP,
+                 Fixnum_sp displacedIndexOffset)
+    : Base(dummy,dimension,fillPointer,data,displacedToP,displacedIndexOffset) {};
+    // multidimensional array
+  template_Vector(size_t rank,
                  List_sp dimensions,
                  Array_sp data,
                  bool displacedToP,
@@ -1005,6 +1135,7 @@ namespace core {
       this->set_data(newData);
 //      printf("%s:%d:%s  original size=%lu new size=%lu  copied %lu elements\n", __FILE__, __LINE__, __FUNCTION__, this->_ArrayTotalSize, size, initialContentsSize );
       this->_ArrayTotalSize = size;
+      this->_Dimensions[0] = size;
       if (!this->_Flags.fillPointerP()) this->_FillPointerOrLengthOrDummy = size;
       this->_DisplacedIndexOffset = 0;
       this->_Flags.set_displacedToP(false);
@@ -1117,12 +1248,12 @@ namespace core {
 };
 
 namespace core {
-  class Str8Ns_O : public template_Array<Str8Ns_O,SimpleBaseString_O,StrNs_O> {
+  class Str8Ns_O : public template_Vector<Str8Ns_O,SimpleBaseString_O,StrNs_O> {
     LISP_CLASS(core, CorePkg, Str8Ns_O, "Str8Ns",StrNs_O);
     virtual ~Str8Ns_O() {};
   public:
     // The types that define what this class does
-    typedef template_Array<Str8Ns_O,SimpleBaseString_O,StrNs_O> TemplatedBase;
+    typedef template_Vector<Str8Ns_O,SimpleBaseString_O,StrNs_O> TemplatedBase;
     typedef typename TemplatedBase::simple_element_type simple_element_type;
     typedef typename TemplatedBase::simple_type simple_type;
     typedef typename TemplatedBase::dimension_element_type value_type;
@@ -1185,12 +1316,12 @@ namespace core {
 };
 
 namespace core {
-  class StrWNs_O : public template_Array<StrWNs_O,SimpleCharacterString_O,StrNs_O> {
+  class StrWNs_O : public template_Vector<StrWNs_O,SimpleCharacterString_O,StrNs_O> {
     LISP_CLASS(core, CorePkg, StrWNs_O, "StrWNs",StrNs_O);
     virtual ~StrWNs_O() {};
   public:
     // The types that define what this class does
-    typedef template_Array<StrWNs_O,SimpleCharacterString_O,StrNs_O> TemplatedBase;
+    typedef template_Vector<StrWNs_O,SimpleCharacterString_O,StrNs_O> TemplatedBase;
     typedef typename TemplatedBase::simple_element_type simple_element_type;
     typedef typename TemplatedBase::simple_type simple_type;
     typedef simple_element_type* iterator;
@@ -1327,14 +1458,14 @@ namespace core {
 //
 namespace core
 {
-  class MDArrayT_O : public template_Array< MDArrayT_O, SimpleVector_O, MDArray_O >
+  class MDArrayT_O : public template_Array< MDArrayT_O, SimpleMDArrayT_O, SimpleVector_O, MDArray_O >
   {
     LISP_CLASS(core, CorePkg, MDArrayT_O, "MDArrayT",MDArray_O);
     virtual ~MDArrayT_O() {};
 
   public:
 
-    typedef template_Array< MDArrayT_O, SimpleVector_O, MDArray_O> TemplatedBase;
+    typedef template_Array< MDArrayT_O, SimpleMDArrayT_O, SimpleVector_O, MDArray_O> TemplatedBase;
     typedef typename TemplatedBase::simple_element_type simple_element_type;
     typedef typename TemplatedBase::simple_type simple_type;
 
@@ -1557,11 +1688,11 @@ namespace core {
   FORWARD(MDArrayBaseChar);
 };
 namespace core {
-  class MDArrayBaseChar_O : public template_Array<MDArrayBaseChar_O,SimpleBaseString_O,MDArray_O> {
+  class MDArrayBaseChar_O : public template_Array<MDArrayBaseChar_O,SimpleMDArrayBaseChar_O,SimpleBaseString_O,MDArray_O> {
     LISP_CLASS(core, CorePkg, MDArrayBaseChar_O, "MDArrayBaseChar",MDArray_O);
     virtual ~MDArrayBaseChar_O() {};
   public:
-    typedef template_Array<MDArrayBaseChar_O,SimpleBaseString_O,MDArray_O> TemplatedBase;
+    typedef template_Array<MDArrayBaseChar_O,SimpleMDArrayBaseChar_O,SimpleBaseString_O,MDArray_O> TemplatedBase;
     typedef typename TemplatedBase::simple_element_type simple_element_type;
     typedef typename TemplatedBase::simple_type simple_type;
   public: // make array
@@ -1618,11 +1749,11 @@ namespace core {
   FORWARD(MDArrayCharacter);
 };
 namespace core {
-  class MDArrayCharacter_O : public template_Array<MDArrayCharacter_O,SimpleCharacterString_O,MDArray_O> {
+  class MDArrayCharacter_O : public template_Array<MDArrayCharacter_O,SimpleMDArrayCharacter_O,SimpleCharacterString_O,MDArray_O> {
     LISP_CLASS(core, CorePkg, MDArrayCharacter_O, "MDArrayCharacter",MDArray_O);
     virtual ~MDArrayCharacter_O() {};
   public:
-    typedef template_Array<MDArrayCharacter_O,SimpleCharacterString_O,MDArray_O> TemplatedBase;
+    typedef template_Array<MDArrayCharacter_O,SimpleMDArrayCharacter_O,SimpleCharacterString_O,MDArray_O> TemplatedBase;
     typedef typename TemplatedBase::simple_element_type simple_element_type;
     typedef typename TemplatedBase::simple_type simple_type;
   public: // make array
@@ -1722,7 +1853,7 @@ namespace core {
 
   T_mv cl__parse_integer(String_sp str, Fixnum start = 0, T_sp end = _Nil<T_O>(), uint radix = 10, T_sp junkAllowed = _Nil<T_O>());
 
-  T_sp cl__string_equal(T_sp strdes1, T_sp strdes2, Fixnum_sp start1 = make_fixnum(0), T_sp end1 = _Nil<T_O>(), Fixnum_sp start2 = make_fixnum(0), T_sp end2 = _Nil<T_O>());
+  T_sp cl__string_equal(T_sp strdes1, T_sp strdes2, Fixnum_sp start1 = clasp_make_fixnum(0), T_sp end1 = _Nil<T_O>(), Fixnum_sp start2 = clasp_make_fixnum(0), T_sp end2 = _Nil<T_O>());
 
   /*! Push a c-style string worth of characters into the buffer */
   void StringPushStringCharStar(String_sp buffer, const char* cp);

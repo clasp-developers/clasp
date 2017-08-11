@@ -912,7 +912,7 @@ CL_DEFUN Value_sp llvm_sys__makeStringGlobal(Module_sp module, core::String_sp s
 // Define Value_O::__repr__ which is prototyped in llvmoExpose.lisp
   string Value_O::__repr__() const {
     stringstream ss;
-    ss << "#<" << this->_instanceClass()->classNameAsString() << "@" << (void*)this->wrappedPtr() << " ";
+    ss << "#<" << this->_instanceClass()->_classNameAsString() << "@" << (void*)this->wrappedPtr() << " ";
     string str;
     llvm::raw_string_ostream ro(str);
     if (this->wrappedPtr() == 0) {
@@ -1138,7 +1138,7 @@ void ExecutionEngine_O::initialize() {
 
 string ExecutionEngine_O::__repr__() const {
   stringstream ss;
-  ss << "#<" << this->_instanceClass()->classNameAsString() << " " << this->_ptr << " > ";
+  ss << "#<" << this->_instanceClass()->_classNameAsString() << " " << this->_ptr << " > ";
   return ss.str();
 }
 
@@ -1850,7 +1850,7 @@ string ConstantFP_O::__repr__() const {
   llvm::SmallVector<char, 100> svistr;
   val.toString(svistr);
   std::string str(svistr.data(), svistr.size());
-  ss << "#<" << this->_instanceClass()->classNameAsString() << " " << str << ">";
+  ss << "#<" << this->_instanceClass()->_classNameAsString() << " " << str << ">";
   return ss.str();
 }
 
@@ -1872,7 +1872,7 @@ ConstantInt_sp ConstantInt_O::create(llvm::ConstantInt *ptr) {
 
 string ConstantInt_O::__repr__() const {
   stringstream ss;
-  ss << "#<" << this->_instanceClass()->classNameAsString() << " " << this->wrappedPtr()->getValue().toString(10, true) << ">";
+  ss << "#<" << this->_instanceClass()->_classNameAsString() << " " << this->wrappedPtr()->getValue().toString(10, true) << ">";
   return ss.str();
 }
 }; // llvmo
@@ -1907,7 +1907,7 @@ UndefValue_sp UndefValue_O::create(llvm::UndefValue *ptr) {
 
 string UndefValue_O::__repr__() const {
   stringstream ss;
-  ss << "#<" << this->_instanceClass()->classNameAsString() << ">";
+  ss << "#<" << this->_instanceClass()->_classNameAsString() << ">";
   return ss.str();
 }
 }; // llvmo
@@ -1927,7 +1927,7 @@ ConstantPointerNull_sp ConstantPointerNull_O::create(llvm::ConstantPointerNull *
 
 string ConstantPointerNull_O::__repr__() const {
   stringstream ss;
-  ss << "#<" << this->_instanceClass()->classNameAsString() << ">";
+  ss << "#<" << this->_instanceClass()->_classNameAsString() << ">";
   return ss.str();
 }
 }; // llvmo
@@ -2009,11 +2009,11 @@ CL_DEFUN APInt_sp APInt_O::makeAPIntWidth(core::Integer_sp value, uint width, bo
   llvm::APInt apint;
   int numbits;
   if (value.fixnump()) {
-    core::Fixnum_sp fixnum_value = gc::As<core::Fixnum_sp>(value);
-    if (!sign && unbox_fixnum(fixnum_value) < 0) {
-      SIMPLE_ERROR(BF("You tried to create an unsigned APInt32 with the negative value: %d") % unbox_fixnum(fixnum_value));
+    Fixnum fixnum_value = value.unsafe_fixnum();
+    if (!sign && fixnum_value < 0) {
+      SIMPLE_ERROR(BF("You tried to create an unsigned APInt32 with the negative value: %d") % fixnum_value);
     }
-    apint = llvm::APInt(width, clasp_to_fixnum(fixnum_value), sign);
+    apint = llvm::APInt(width, fixnum_value, sign);
     numbits = gc::fixnum_bits;
   } else {
     // It's a bignum so lets convert the bignum to a string and put it into an APInt
@@ -2076,7 +2076,7 @@ CL_DEFUN core::Integer_sp toInteger(APInt_sp api, bool issigned) {
 
 string APInt_O::__repr__() const {
   stringstream ss;
-  ss << "#<" << this->_instanceClass()->classNameAsString() << " ";
+  ss << "#<" << this->_instanceClass()->_classNameAsString() << " ";
   ss << this->_value.toString(10, true);
   ss << ">";
   return ss.str();
@@ -2218,7 +2218,7 @@ CL_DEFMETHOD llvm::Value *IRBuilder_O::CreateInsertValue(llvm::Value *Agg, llvm:
 string IRBuilder_O::__repr__() const {
   IRBuilder_O *irbuilder = const_cast<IRBuilder_O *>(this);
   stringstream ss;
-  ss << "#<" << this->_instanceClass()->classNameAsString() << " ";
+  ss << "#<" << this->_instanceClass()->_classNameAsString() << " ";
   llvm::BasicBlock *bb = irbuilder->wrappedPtr()->GetInsertBlock();
   if (bb) {
     ss << " :insert-block-name " << bb->getName().data();
@@ -2634,7 +2634,7 @@ bool Function_O::equal(core::T_sp obj) const {
 
 string Function_O::__repr__() const {
   stringstream ss;
-  ss << "#<" << this->_instanceClass()->classNameAsString() << " " << this->wrappedPtr()->getName().data() << ">";
+  ss << "#<" << this->_instanceClass()->_classNameAsString() << " " << this->wrappedPtr()->getName().data() << ">";
   ;;this->wrappedPtr()->dump();
   return ss.str();
 }
@@ -2730,7 +2730,7 @@ bool Type_O::equal(core::T_sp obj) const {
 
 string Type_O::__repr__() const {
   stringstream ss;
-  ss << "#<" << this->_instanceClass()->classNameAsString() << " ";
+  ss << "#<" << this->_instanceClass()->_classNameAsString() << " ";
   string str;
   llvm::raw_string_ostream ro(str);
   this->wrappedPtr()->print(ro);
@@ -2949,7 +2949,7 @@ void accumulate_llvm_timing_data(double time)
 {
   core::DoubleFloat_sp df = core::DoubleFloat_O::create(time);
   _sym_STARmostRecentLlvmFinalizationTimeSTAR->setf_symbolValue(df);
-  double accTime = clasp_to_double(gc::As<core::Float_sp>(_sym_STARaccumulatedLlvmFinalizationTimeSTAR->symbolValue()));
+  double accTime = clasp_to_double(_sym_STARaccumulatedLlvmFinalizationTimeSTAR->symbolValue());
   accTime += time;
   _sym_STARaccumulatedLlvmFinalizationTimeSTAR->setf_symbolValue(core::DoubleFloat_O::create(accTime));
   int num = unbox_fixnum(gc::As<core::Fixnum_sp>(_sym_STARnumberOfLlvmFinalizationsSTAR->symbolValue()));
@@ -3167,10 +3167,14 @@ CL_DEFUN core::Function_sp finalizeEngineAndRegisterWithGcAndGetCompiledFunction
   //    core::af_def(LlvmoPkg,"createDbgInfoPrinterPass",&llvm::createDbgInfoPrinterPass);
   CL_LISPIFY_NAME(createRegionInfoPass);
   CL_EXTERN_DEFUN( &llvm::createRegionInfoPass);
-  CL_LISPIFY_NAME(createModuleDebugInfoPrinterPass);
-  CL_EXTERN_DEFUN( &llvm::createModuleDebugInfoPrinterPass);
-  CL_LISPIFY_NAME(createMemDepPrinter);
-  CL_EXTERN_DEFUN( &llvm::createMemDepPrinter);
+
+CL_LISPIFY_NAME(createCountingFunctionInserterPass);
+CL_EXTERN_DEFUN( &llvm::createCountingFunctionInserterPass);
+
+CL_LISPIFY_NAME(createModuleDebugInfoPrinterPass);
+CL_EXTERN_DEFUN( &llvm::createModuleDebugInfoPrinterPass);
+CL_LISPIFY_NAME(createMemDepPrinter);
+CL_EXTERN_DEFUN( &llvm::createMemDepPrinter);
   //    core::af_def(LlvmoPkg,"createInstructionCombiningPass",&llvm::createInstructionCombiningPass);
   //    core::af_def(LlvmoPkg,"createReassociatePass",&llvm::createReassociatePass);
   //    core::af_def(LlvmoPkg,"createPostDomTree",&llvm::createPostDomTree);

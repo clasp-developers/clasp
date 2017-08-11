@@ -36,6 +36,7 @@
 ;;          *run-time-values-table*
           *run-time-values-table-global-var*
           *the-module*
+          +header-size+
           +cons-tag+
           +fixnum-tag+
           +Valist_S-tag+
@@ -253,6 +254,7 @@
           constants-table-value
           with-ltv
           with-load-time-value
+          with-load-time-value-cleavir
           with-rtv
           with-top-level-form
           with-literal-table

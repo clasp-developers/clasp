@@ -31,6 +31,7 @@ THE SOFTWARE.
 #include <clasp/core/lisp.h>
 #include <clasp/core/array.h>
 #include <clasp/core/instance.h>
+#include <clasp/core/funcallableInstance.h>
 #include <clasp/core/primitives.h>
 #include <clasp/core/evaluator.h>
 #include <clasp/core/multipleValues.h>

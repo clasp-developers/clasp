@@ -27,7 +27,6 @@ THE SOFTWARE.
 //#define DEBUG_LEVEL_FULL
 
 #include <clasp/core/foundation.h>
-#include <clasp/core/structureClass.h>
 #include <clasp/core/lisp.h>
 #include <clasp/core/evaluator.h>
 #include <clasp/core/builtInClass.h>
@@ -44,8 +43,11 @@ StructureClass_sp StructureClass_O::createUncollectable(gctools::Stamp is) {
 
 
 void StructureClass_O::initialize() {
+  DEPRECATED();
   this->Base::initialize();
   this->initializeSlots(REF_NUMBER_OF_SLOTS_IN_CLASSES);
+  this->initializeClassSlots();
+  
 //  this->_InstanceCoreClass = _Nil<Class_O>();
 }
 

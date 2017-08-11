@@ -56,7 +56,7 @@ bool Pointer_O::eql_(T_sp obj) const {
 
 string Pointer_O::__repr__() const {
   stringstream ss;
-  ss << "#<" << this->_instanceClass()->classNameAsString() << " :ptr " << (BF("%p") % this->_Pointer).str() << ">";
+  ss << "#<" << this->_instanceClass()->_classNameAsString() << " :ptr " << (BF("%p") % this->_Pointer).str() << ">";
   return ss.str();
 }
 };

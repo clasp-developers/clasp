@@ -152,7 +152,7 @@ void Cache_O::search_cache(CacheRecord *&min_e) {
   if (this->_debug) {
     printf("%s:%d ===================  search_cache argno=%d\n", __FILE__, __LINE__, argno);
     for (size_t zi=0; zi<keys.size(); ++zi ) {
-      printf("%s:%d    key[%" PRu "] -> %s\n", __FILE__, __LINE__, zi, _rep_(keys[zi]).c_str());
+      printf("%s:%d    key[%" PRsize_t "] -> %s\n", __FILE__, __LINE__, zi, _rep_(keys[zi]).c_str());
     }
   }
 #endif
@@ -165,7 +165,7 @@ void Cache_O::search_cache(CacheRecord *&min_e) {
   ASSERTF(idx >= 0, BF("idx must be positive"));
 #ifdef DEBUG_CACHE
   if (this->_debug) {
-    printf("%s:%d search_cache hash=%ld   hash-index=%d\n", __FILE__, __LINE__, hi, idx);
+    printf("%s:%d search_cache hash=%llu   hash-index=%d\n", __FILE__, __LINE__, hi, idx);
   }
 #endif
   //	i = i - (i % 3);

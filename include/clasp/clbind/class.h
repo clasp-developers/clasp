@@ -172,9 +172,6 @@ public:
   DISABLE_NEW();
   virtual size_t templatedSizeof() const { return sizeof(*this); };
   virtual bool allocates() const { return false; };
-  virtual void describe() const {
-    printf("DummyCreator for: %s\n", this->_name.c_str());
-  };
   virtual core::T_sp creator_allocate() {
     SIMPLE_ERROR(BF("This class cannot allocate instances"));
   } //return _Nil<core::T_O>(); };

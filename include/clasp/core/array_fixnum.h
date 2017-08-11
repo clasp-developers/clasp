@@ -34,8 +34,8 @@ namespace core {
       if (supplied) return from_object(obj);
       return 0;
     }
-    static value_type from_object(T_sp obj) { return clasp_to_fixnum(gc::As<core::Integer_sp>(obj)); };
-    static T_sp to_object(const value_type& v) { return core::Integer_O::create(v); };
+    static value_type from_object(T_sp obj) { return clasp_to_fixnum(obj); };
+    static T_sp to_object(const value_type& v) { return clasp_make_fixnum(v); };
   public:
   SimpleVector_fixnum_O(size_t length, value_type initialElement=value_type(),
                           bool initialElementSupplied=false,
@@ -60,11 +60,11 @@ namespace core {
 
 
 namespace core {
-  class MDArray_fixnum_O : public template_Array<MDArray_fixnum_O,SimpleVector_fixnum_O,MDArray_O> {
+  class MDArray_fixnum_O : public template_Array<MDArray_fixnum_O,SimpleMDArray_fixnum_O,SimpleVector_fixnum_O,MDArray_O> {
     LISP_CLASS(core, CorePkg, MDArray_fixnum_O, "MDArray_fixnum",MDArray_O);
     virtual ~MDArray_fixnum_O() {};
   public:
-    typedef template_Array<MDArray_fixnum_O,SimpleVector_fixnum_O,MDArray_O> TemplatedBase;
+    typedef template_Array<MDArray_fixnum_O,SimpleMDArray_fixnum_O,SimpleVector_fixnum_O,MDArray_O> TemplatedBase;
     typedef typename TemplatedBase::simple_element_type simple_element_type;
     typedef typename TemplatedBase::simple_type simple_type;
   public: // make vector

@@ -611,7 +611,9 @@ memory limits before executing the program again."))
 		     (file-error-pathname condition)))))
 
 (define-condition package-error (error)
-  ((package :INITARG :PACKAGE :READER package-error-package)))
+  ((package :INITARG :PACKAGE :READER package-error-package))
+  (:report (lambda (condition stream)
+             (format stream "Package error on package ~S" (package-error-package condition)))))
 
 (define-condition cell-error (error)
   ((name :INITARG :NAME :READER cell-error-name)))

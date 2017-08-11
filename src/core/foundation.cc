@@ -37,11 +37,7 @@ THE SOFTWARE.
 #include <clasp/core/lisp.h>
 #include <clasp/core/symbolToEnumConverter.h>
 #include <clasp/core/symbolTable.h>
-#include <clasp/core/builtInClass.h>
-#include <clasp/core/stdClass.h>
 #include <clasp/core/lispList.h>
-#include <clasp/core/standardClass.h>
-#include <clasp/core/structureClass.h>
 #include <clasp/core/corePackage.h>
 #include <clasp/core/ql.h>
 #include <clasp/core/fli.h>
@@ -60,7 +56,6 @@ THE SOFTWARE.
 #include <clasp/core/designators.h>
 #include <clasp/core/instance.h>
 #include <clasp/core/documentation.h>
-#include <clasp/core/structureClass.h>
 #include <clasp/core/structureObject.h>
 #include <clasp/core/array.h>
 #include <clasp/core/pointer.h>
@@ -147,6 +142,15 @@ core::Symbol_sp lisp_classSymbolFromClassId(class_id cid) {
 
 
 namespace core {
+
+Class_sp lisp_built_in_class() {
+  return cl__find_class(cl::_sym_built_in_class,false,_Nil<T_O>());
+}
+Class_sp lisp_standard_class() {
+  return cl__find_class(cl::_sym_standard_class,false,_Nil<T_O>());
+}
+
+
 /*! Convert valid objects to void*/
 void* lisp_to_void_ptr(T_sp o) {
   if (gc::IsA<clasp_ffi::ForeignData_sp>(o)) {
@@ -171,6 +175,10 @@ CL_DEFUN void core__dump_class_ids()
 }
 
 
+void lisp_errorExpectedList(core::T_O* v) {
+  T_sp tv((gctools::Tagged)v);
+  TYPE_ERROR(tv,cl::_sym_list);
+}
 
 void lisp_errorIllegalDereference(void *v) {
   SIMPLE_ERROR(BF("Tried to dereference px=%p") % v);
@@ -188,14 +196,7 @@ void lisp_errorDereferencedUnbound() {
   SIMPLE_ERROR(BF("Tried to dereference unbound"));
 }
 
-Class_sp lisp_StandardClass() {
-  return _lisp->_Roots._StandardClass;
-}
-
 void lisp_errorUnexpectedType(class_id expectedTyp, class_id givenTyp, core::T_O *objP) {
-  if (!objP) {
-    SIMPLE_ERROR(BF("NULL pointer error in lisp_errorUnexpectedType"));
-  }
   if (expectedTyp >= _lisp->classSymbolsHolder().size()) {
     core::lisp_error_simple(__FUNCTION__, __FILE__, __LINE__, boost::format("expected class_id %d out of range max[%d]") % expectedTyp % _lisp->classSymbolsHolder().size());
   }
@@ -265,7 +266,7 @@ extern "C" {
 void closure_dump(core::Closure_sp closure) {
   core::T_sp sourceFileInfo = core__source_file_info(core::clasp_make_fixnum(closure->sourceFileInfoHandle()), _Nil<core::T_O>(), 0, false);
   std::string namestring = gc::As<core::SourceFileInfo_sp>(sourceFileInfo)->namestring();
-  printf("%s:%d  Closure %s  file: %s lineno: %d\n", __FILE__, __LINE__, _rep_(closure->name()).c_str(), namestring.c_str(), closure->lineNumber());
+  printf("%s:%d  Closure %s  file: %s lineno: %d\n", __FILE__, __LINE__, _rep_(closure->functionName()).c_str(), namestring.c_str(), closure->lineNumber());
 }
 };
 
@@ -813,12 +814,12 @@ string _rep_(T_sp obj) {
 }
 
 void lisp_throwUnexpectedType(T_sp offendingObject, Symbol_sp expectedTypeId) {
-  Symbol_sp offendingTypeId = cl__class_of(offendingObject)->className();
+  Symbol_sp offendingTypeId = cl__class_of(offendingObject)->_className();
   SIMPLE_ERROR(BF("Expected %s of class[%s] to be subclass of class[%s]") % _rep_(offendingObject) % _rep_(offendingTypeId) % _rep_(expectedTypeId));
 }
 
 string lisp_classNameAsString(Class_sp c) {
-  return c->classNameAsString();
+  return c->_classNameAsString();
 }
 
 void lisp_throwLispError(const string &str) {
@@ -918,13 +919,13 @@ T_sp lisp_boot_findClassBySymbolOrNil(Symbol_sp classSymbol) {
 //     mc->__setLambdaListHandlerString(argumentString);
 // }
 
-void lisp_addClass(Symbol_sp classSymbol,
+void lisp_addClassSymbol(Symbol_sp classSymbol,
                    gctools::smart_ptr<Creator_O> cb,
                    Symbol_sp base1ClassSymbol)
-//                   Symbol_sp base2ClassSymbol,
-//                   Symbol_sp base3ClassSymbol) {
 {
-  _lisp->addClass(classSymbol, cb, base1ClassSymbol); //, base2ClassSymbol);
+  DEPRECATED();
+  printf("%s:%d:%s    lisp_addClass   %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(classSymbol).c_str());
+  _lisp->addClassSymbol(classSymbol, cb, base1ClassSymbol); //, base2ClassSymbol);
 }
 void lisp_addClass(Symbol_sp classSymbol) {
   DEPRECATED();
@@ -992,7 +993,7 @@ void lisp_defineSingleDispatchMethod(Symbol_sp sym,
                                      const std::set<int> pureOutIndices) {
   string arguments = fix_method_lambda(classSymbol,raw_arguments);
   Class_sp receiver_class = gc::As<Class_sp>(eval::funcall(cl::_sym_findClass, classSymbol, _lisp->_true()));
-  Symbol_sp className = receiver_class->name();
+  Symbol_sp className = receiver_class->_className();
 #if 0
 	if ( sym->symbolName()->get().find("JSONDATABASE-LOAD-FROM-FILE") != string::npos )
 	{
@@ -1592,6 +1593,7 @@ NOINLINE void lisp_error_simple(const char *functionName, const char *fileName, 
                 _Nil<T_O>());
 }
 
+#if 0
 void lisp_error_condition(const char *functionName, const char *fileName, int lineNumber, T_sp baseCondition, T_sp initializers) {
   stringstream ss;
   if (!_sym_signalSimpleError->fboundp()) {
@@ -1608,18 +1610,18 @@ void lisp_error_condition(const char *functionName, const char *fileName, int li
                                ,
                                baseCondition, _Nil<T_O>() );// SimpleBaseString_O::make(ss.str()), _Nil<T_O>());
 }
+#endif
 
 void lisp_error(T_sp datum, T_sp arguments) {
   if (!cl::_sym_error->fboundp()) {
     stringstream ss;
     ss << "Error " << _rep_(datum) << " initializers: " << _rep_(arguments) << std::endl;
-    printf("%s:%d lisp_error_condition--->\n %s\n", __FILE__, __LINE__, ss.str().c_str());
+    printf("%s:%d lisp_error ->\n %s\n", __FILE__, __LINE__, ss.str().c_str());
     LispDebugger dbg;
     dbg.invoke();
     //	    af_error(CandoException_O::create(ss.str()),_Nil<T_O>());
   }
-  Cons_sp cargs = gc::As<Cons_sp>(arguments);
-  eval::applyLastArgsPLUSFirst(cl::_sym_error, cargs, datum);
+  eval::applyLastArgsPLUSFirst(cl::_sym_error, arguments, datum);
 }
 
 string stringUpper(const string &s) {
@@ -1838,7 +1840,7 @@ CL_DEFUN void core__debug_invocation_history_frame(size_t v) {
     T_sp tfun = cur->function();
     if (gc::IsA<Function_sp>(tfun)) {
       Function_sp fun = gc::As_unsafe<Function_sp>(tfun);
-      printf("    frame[%lu] @%p  function: %s\n", count, cur, _rep_(fun->name()).c_str());
+      printf("    frame[%lu] @%p  function: %s\n", count, cur, _rep_(fun->functionName()).c_str());
     } else {
       printf("    frame[%lu] @%p  function: %s\n", count, cur, _rep_(tfun).c_str());
     }

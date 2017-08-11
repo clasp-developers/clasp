@@ -25,6 +25,7 @@ RUN rm -rf build/* && mkdir -p /out/clasp
 # checkout submodules, configure, and build
 RUN echo "LLVM_CONFIG_BINARY='/usr/bin/llvm-config-4.0'" > wscript.config
 RUN echo "INSTALL_PATH_PREFIX='/out/clasp'" >> wscript.config
+RUN echo "CLASP_VERSION='clasp_docker'" >> wscript.config
 RUN ./waf update_submodules
 RUN ./waf configure
 RUN ./waf -j $(nproc) build_cboehm -v

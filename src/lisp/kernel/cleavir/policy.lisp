@@ -1,7 +1,7 @@
 (in-package :clasp-cleavir)
 
 (defmethod cleavir-policy:compute-policy-quality
-    ((quality (eql 'cleavir-typed-transforms:insert-type-checks))
+    ((quality (eql 'cleavir-kildall-type-inference:insert-type-checks))
      optimize
      (environment clasp-cleavir::clasp-global-environment))
   (> (cleavir-policy:optimize-value optimize 'safety)
@@ -28,19 +28,26 @@
 ;;; See MY-HIR-TRANSFORMATIONS for use.
 
 (defmethod cleavir-policy:policy-qualities append ((env clasp-global-environment))
-  '((analyze-flow boolean t)))
+  '((do-type-inference boolean t)
+    (do-dx-analysis boolean t)))
 ;;; FIXME: Can't just punt like normal since it's an APPEND method combo.
 (defmethod cleavir-policy:policy-qualities append ((env null))
-  '((analyze-flow boolean t)))
+  '((do-type-inference boolean t)
+    (do-dx-analysis boolean t)))
 
 (defmethod cleavir-policy:compute-policy-quality
-    ((quality (eql 'analyze-flow))
+    ((quality (eql 'do-type-inference))
      optimize
      (environment clasp-global-environment))
-  (or (> (cleavir-policy:optimize-value optimize 'space)
-         (cleavir-policy:optimize-value optimize 'compilation-speed))
-      (> (cleavir-policy:optimize-value optimize 'speed)
-         (cleavir-policy:optimize-value optimize 'compilation-speed))))
+  (> (cleavir-policy:optimize-value optimize 'speed)
+     (cleavir-policy:optimize-value optimize 'compilation-speed)))
+
+(defmethod cleavir-policy:compute-policy-quality
+    ((quality (eql 'do-dx-analysis))
+     optimize
+     (environment clasp-global-environment))
+  (> (cleavir-policy:optimize-value optimize 'space)
+     (cleavir-policy:optimize-value optimize 'compilation-speed)))
 
 ;;; Kildall can only be done on whole functions, due to how control flow in
 ;;; HIR works. But do not affect the top level enter instruction most of the time.
@@ -49,7 +56,6 @@
 ;;; KLUDGE. It should be easier to limit optimizations to lexical regions.
 
 (defun policy-anywhere-p (initial-instruction quality)
-  (setf cl-user::*test* initial-instruction)
   (cleavir-ir:map-instructions-arbitrary-order
    (lambda (i)
      (when (cleavir-policy:policy-value (cleavir-ir:policy i)

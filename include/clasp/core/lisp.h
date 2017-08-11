@@ -64,8 +64,6 @@ SMART(Intrinsic);
 SMART(NamedFunction);
 SMART(Reader);
 SMART(FunctionValueEnvironment);
-SMART(Class);
-SMART(BuiltInClass);
 SMART(Package);
 SMART(Path);
 SMART(Binder);
@@ -217,6 +215,8 @@ class Lisp_O {
     List_sp _DefaultSpecialBindings;
     mutable mp::SharedMutex _DefaultSpecialBindingsMutex;
 #endif
+    // FIXME: Remove this mutex - I've switched to thread-safe hash tables
+    //        and its not needed
 #ifdef CLASP_THREADS
     mutable mp::SharedMutex _SyspropMutex;
 #endif
@@ -261,10 +261,10 @@ class Lisp_O {
     mutable mp::SharedMutex _SetfDefinitionsMutex;
 #endif
 #endif
-    Class_sp   _Class;
-    Class_sp   _BuiltInClass;
-    Class_sp   _StandardClass;
-    Class_sp   _StructureClass;
+    Class_sp   _TheClass;
+    Class_sp   _TheBuiltInClass;
+    Class_sp   _TheStandardClass;
+    Class_sp   _TheStructureClass;
     Package_sp _CorePackage;
     Package_sp _KeywordPackage;
     Package_sp _CommonLispPackage;
@@ -302,6 +302,15 @@ class Lisp_O {
 #endif // ifdef CLASP_LONG_FLOAT
     bool _Booted;
     HashTableEq_sp _KnownSignals;
+#if 0
+    // One set of caches for the entire system doesn't work with multi-threading
+        /*! SingleDispatchGenericFunction cache */
+    Cache_sp _SingleDispatchMethodCachePtr;
+    /*! Generic functions method cache */
+    Cache_sp _MethodCachePtr;
+    /*! Generic functions slot cache */
+    Cache_sp _SlotCachePtr;
+#endif
     GCRoots();
   };
 
@@ -316,7 +325,6 @@ class Lisp_O {
   template <class oclass>
   friend void define_base_class(Class_sp co, Class_sp cob, uint &classesUpdated);
   template <class oclass>
-  friend BuiltInClass_sp hand_initialize_allocatable_class(uint &classesHandInitialized, Lisp_sp lisp, BuiltInClass_sp _class);
   friend T_sp core__put_sysprop(T_sp key, T_sp area, T_sp value);
   friend T_mv core__get_sysprop(T_sp key, T_sp area);
 
@@ -325,9 +333,11 @@ class Lisp_O {
 public:
   static void initializeGlobals(Lisp_sp lisp);
 
+#if 0
   template <class oclass>
-  friend BuiltInClass_sp hand_initialize_class(uint &classesHandInitialized, Lisp_sp prog, BuiltInClass_sp c);
-
+  friend Class_sp hand_initialize_class(uint &classesHandInitialized, Lisp_sp prog, BuiltInClass_sp c);
+#endif
+  
 public:
   static void lisp_initSymbols(Lisp_sp lisp);
 
@@ -539,11 +549,9 @@ public: // numerical constants
   LongFloat_sp longFloatOne() const { return this->_Roots._LongFloatOne; };
 #endif // ifdef CLASP_LONG_FLOAT
 public:
-#if 0
-  Cache_sp singleDispatchMethodCachePtr() const { return this->_Roots._SingleDispatchMethodCachePtr; };
-  Cache_sp methodCachePtr() const { return this->_Roots._MethodCachePtr; };
-  Cache_sp slotCachePtr() const { return this->_Roots._SlotCachePtr; };
-#endif
+  Cache_sp singleDispatchMethodCachePtr() const { return my_thread->_SingleDispatchMethodCachePtr; };
+  Cache_sp methodCachePtr() const { return my_thread->_MethodCachePtr; };
+  Cache_sp slotCachePtr() const { return my_thread->_SlotCachePtr; };
 public:
   /*! Setup makePackage and exportSymbol callbacks */
   void setMakePackageAndExportSymbolCallbacks(MakePackageCallback mpc, ExportSymbolCallback esc);
@@ -971,8 +979,8 @@ public:
   void initializeEnvironment();
 
   void addClassNameToPackageAsDynamic(const string &package, const string &name, Class_sp cl);
-  void addClass(Symbol_sp classSymbol, Creator_sp creator, Symbol_sp base1ClassSymbol ); //, Symbol_sp base2ClassSymbol = UNDEFINED_SYMBOL, Symbol_sp base3ClassSymbol = UNDEFINED_SYMBOL);
-  void addClass(Symbol_sp classSymbol, Class_sp theClass, Creator_sp creator);
+  void addClassSymbol(Symbol_sp classSymbol, Creator_sp creator, Symbol_sp base1ClassSymbol ); //, Symbol_sp base2ClassSymbol = UNDEFINED_SYMBOL, Symbol_sp base3ClassSymbol = UNDEFINED_SYMBOL);
+//  void addClass(Symbol_sp classSymbol, Class_sp theClass);
   //	void addClass( Symbol_sp classSymbol);
 
   string __repr__() const;

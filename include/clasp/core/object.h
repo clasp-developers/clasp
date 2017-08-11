@@ -98,10 +98,7 @@ bool clasp_charEqual2(T_sp, T_sp);
 //
 //
 namespace core {
-  FORWARD(Class);
   FORWARD(Record);
-  FORWARD(BuiltInClass);
-  FORWARD(Model);
   FORWARD(LambdaListHandler);
   FORWARD(Binder);
   FORWARD(Symbol);
@@ -168,15 +165,16 @@ namespace core {
 //#define DEBUG_HASH_GENERATOR
   class HashGenerator {
     static const int MaxParts = 32;
-
+    static const int MaxDepth = 8;
   private:
+    int _Depth;
     int _NextPartIndex;
     Fixnum _Parts[MaxParts];
 #ifdef DEBUG_HASH_GENERATOR
     bool _debug;
 #endif
   public:
-  HashGenerator(bool debug = false) : _NextPartIndex(0)
+  HashGenerator(bool debug = false) : _Depth(0), _NextPartIndex(0)
 #ifdef DEBUG_HASH_GENERATOR
       ,
       _debug(debug)
@@ -206,7 +204,7 @@ namespace core {
 
   /*! Return true if can still accept parts */
     bool isFilling() const {
-      return this->_NextPartIndex < MaxParts;
+      return (this->_NextPartIndex < MaxParts) || (this->_Depth>= MaxDepth);
     }
 
     gc::Fixnum hash(gc::Fixnum bound = 0) const {
@@ -265,7 +263,7 @@ namespace core {
   static core::Symbol_sp static_class_symbol;                           \
   static core::Class_sp static_class;                                   \
   static gctools::smart_ptr<core::Creator_O> static_creator;            \
-  static gctools::GCKindEnum static_Kind;                                               \
+  static gctools::Header_s::Value static_HeaderValue;                   \
  public:                                                                \
   static void set_static_class_symbol(core::Symbol_sp i)                \
   { oClass::static_class_symbol = i; };                                 \
@@ -380,9 +378,6 @@ namespace core {
   /*! Objects can catch signals from Models
 	 * but only Model's and subclasses can send them
 	 */
-    virtual void catchSignal(core::Symbol_sp signal, core::Model_sp sender, core::List_sp data) { _G(); /*Do nothing*/ };
-    virtual void propagateSignal(core::Symbol_sp signal){}; // Objects don't propagate signals
-
     string className() const;
 
     T_sp deepCopy() const;
@@ -568,39 +563,7 @@ namespace core {
 
   extern int basic_compare(Number_sp na, Number_sp nb);
 
-  CL_LAMBDA(x y);
-  CL_DECLARE();
-  CL_DOCSTRING("equalp");
-  inline CL_DEFUN bool cl__equalp(T_sp x, T_sp y) {
-    if (x.fixnump()) {
-      if (y.fixnump()) {
-        return x.raw_() == y.raw_();
-      } else if (y.single_floatp()) {
-        return (x.unsafe_fixnum() == y.unsafe_single_float());
-      } else if (Number_sp ny = y.asOrNull<Number_O>()) {
-        return basic_compare(x, y) == 0;
-      }
-      return false;
-    } else if (x.single_floatp()) {
-      if (y.single_floatp()) {
-        return x.unsafe_single_float() == y.unsafe_single_float();
-      } else if (y.fixnump()) {
-        return x.unsafe_single_float() == y.unsafe_fixnum();
-      } else if (Number_sp ny = y.asOrNull<Number_O>()) {
-        return basic_compare(x, y);
-      }
-      return false;
-    } else if (x.characterp()) {
-      return clasp_charEqual2(x, y);
-    } else if (x.consp() ) {
-      Cons_O* cons = x.unsafe_cons();
-      return cons->equalp(y);
-    } else if ( x.generalp() ) {
-      General_O* genx = x.unsafe_general();
-      return genx->equalp(y);
-    }
-    SIMPLE_ERROR(BF("Bad equalp comparison"));
-  };
+  bool cl__equalp(T_sp x, T_sp y);
 };
 
 

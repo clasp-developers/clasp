@@ -151,6 +151,7 @@ namespace core {
 
 
 namespace core {
+#define IHS_BACKTRACE_SIZE 16
   struct InvocationHistoryFrame;
   struct ThreadLocalState {
     ThreadLocalState(void* stack_top);
@@ -161,17 +162,20 @@ namespace core {
     DynamicBindingStack _Bindings;
     const InvocationHistoryFrame* _InvocationHistoryStackTop;
 #ifdef DEBUG_IHS
-    // Save the last closure
-    core::T_O*                    _InvocationHistoryStackClosure;
+    // Save the last return address before IHS screws up
+    void*                    _IHSBacktrace[IHS_BACKTRACE_SIZE];
 #endif
     ExceptionStack _ExceptionStack;
     MultipleValues _MultipleValues;
+#if 1
+// thread local caches work fine
     /*! SingleDispatchGenericFunction cache */
     Cache_sp _SingleDispatchMethodCachePtr;
     /*! Generic functions method cache */
     Cache_sp _MethodCachePtr;
     /*! Generic functions slot cache */
     Cache_sp _SlotCachePtr;
+#endif
     /*! Pending interrupts */
     List_sp _PendingInterrupts;
     /*! Save CONS records so we don't need to do allocations

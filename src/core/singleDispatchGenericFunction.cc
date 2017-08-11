@@ -25,7 +25,7 @@ THE SOFTWARE.
 */
 /* -^- */
 
-//#define DEBUG_LEVEL_FULL
+#define DEBUG_LEVEL_FULL
 #include <clasp/core/foundation.h>
 #include <clasp/core/common.h>
 #include <clasp/core/environment.h>
@@ -188,14 +188,14 @@ LCC_RETURN SingleDispatchGenericFunctionClosure_O::LISP_CALLING_CONVENTION() {
   Function_sp func;
   Cache_sp cache = my_thread->_SingleDispatchMethodCachePtr;
   gctools::Vec0<T_sp> &vektor = cache->keys();
-  vektor[0] = closure->name();
+  vektor[0] = closure->functionName();
   Class_sp dispatchArgClass = vektor[1] = lisp_instance_class(LCC_ARG0());
   CacheRecord *e; //gctools::StackRootedPointer<CacheRecord> e;
   try {
     cache->search_cache(e); // e = ecl_search_cache(cache);
   } catch (CacheError &err) {
     printf("%s:%d - There was an CacheError searching the GF cache for the keys  You should try and get into cache->search_cache to see where the error is\n", __FILE__, __LINE__);
-    SIMPLE_ERROR(BF("Try #1 generic function cache search error looking for %s") % _rep_(closure->name()));
+    SIMPLE_ERROR(BF("Try #1 generic function cache search error looking for %s") % _rep_(closure->functionName()));
   }
   //        printf("%s:%d searched on %s/%s  cache record = %p\n", __FILE__, __LINE__, _rep_(vektor[0]).c_str(), _rep_(vektor[1]).c_str(), e );
   if (e->_key.notnilp()) {
@@ -234,7 +234,21 @@ Function_sp SingleDispatchGenericFunctionClosure_O::slowMethodLookup(Class_sp mc
     }
   }
   if (UNLIKELY(applicableMethods.size() == 0)) {
-    SIMPLE_ERROR(BF("There are no applicable methods of %s for receiver class %s") % _rep_(this->name()) % mc->instanceClassName());
+    printf("%s:%d   slowMethodLookup for %s\n", __FILE__, __LINE__, _rep_(this->functionName()).c_str());
+    printf("%s:%d    mc-> %s\n", __FILE__, __LINE__, mc->_classNameAsString().c_str());
+    for (auto cur : this->_Methods) {
+      SingleDispatchMethod_sp sdm = gc::As<SingleDispatchMethod_sp>(oCar(cur));
+      Class_sp ac = sdm->receiver_class();
+      printf("%s:%d   ac->className -> %s\n", __FILE__, __LINE__, _rep_(ac->_className()).c_str());
+      printf("%s:%d   mc->isSubClassOf(ac) -> %d\n", __FILE__, __LINE__, mc->isSubClassOf(ac));
+      printf("%s:%d    class-precedence-list of ac -> %s\n", __FILE__, __LINE__, _rep_(ac->_className()).c_str() );
+      List_sp cpl = ac->instanceRef(Class_O::REF_CLASS_CLASS_PRECEDENCE_LIST);
+      for (auto xxx : cpl ) {
+        Class_sp sc = gc::As<Class_sp>(CONS_CAR(xxx));
+        printf("%s:%d    :   %s matches mc -> %d\n", __FILE__, __LINE__, _rep_(sc->_className()).c_str(), (mc==sc));
+      }
+    }
+    SIMPLE_ERROR(BF("There are no applicable methods of %s for receiver class %s") % _rep_(this->functionName()) % mc->instanceClassName() );
   }
   /* Sort the methods from most applicable to least applicable */
   SingleDispatch_OrderByClassPrecedence sort_by_class_precedence;
@@ -254,7 +268,7 @@ Function_sp SingleDispatchGenericFunctionClosure_O::computeEffectiveMethodFuncti
     SingleDispatchMethod_sp cur_method = gc::As<SingleDispatchMethod_sp>(oCar(applicableMethodsList));
     SingleDispatchMethodFunction_sp mf = cur_method->_body;
     if ( CxxMethodFunction_sp cmf = mf.as<CxxMethodFunction_O>() ) {
-      Function_sp emf = gctools::GC<SingleDispatchCxxEffectiveMethodFunction_O>::allocate(this->name(),mf);
+      Function_sp emf = gctools::GC<SingleDispatchCxxEffectiveMethodFunction_O>::allocate(this->functionName(),mf);
       return emf;
     }
   }
@@ -263,14 +277,14 @@ Function_sp SingleDispatchGenericFunctionClosure_O::computeEffectiveMethodFuncti
   List_sp befores = _Nil<T_O>();
   List_sp primaries = Cons_O::create(cur_method->_body,_Nil<T_O>());
   List_sp afters = _Nil<T_O>();
-  Function_sp emf = gctools::GC<SingleDispatchEffectiveMethodFunction_O>::allocate(this->name(),befores,primaries,afters);
+  Function_sp emf = gctools::GC<SingleDispatchEffectiveMethodFunction_O>::allocate(this->functionName(),befores,primaries,afters);
   return emf;
 #if 1
-  printf("%s:%d   in computeEffectiveMethodFunction name: %s  contains %zu methods\n", __FILE__, __LINE__, _rep_(this->name()).c_str(), core::cl__length(applicableMethodsList) );
+  printf("%s:%d   in computeEffectiveMethodFunction name: %s  contains %zu methods\n", __FILE__, __LINE__, _rep_(this->functionName()).c_str(), core::cl__length(applicableMethodsList) );
   int i = 0;
   for ( auto cur : applicableMethodsList ) {
     SingleDispatchMethod_sp method = gctools::As<SingleDispatchMethod_sp>(oCar(cur));
-    printf("      selector[%d]: %s\n", i++, _rep_(method->receiver_class()->name()).c_str());
+    printf("      selector[%d]: %s\n", i++, _rep_(method->receiver_class()->_className()).c_str());
   }
 #endif
   SIMPLE_ERROR(BF("Generate an effective-single-dispatch-generic-function"));

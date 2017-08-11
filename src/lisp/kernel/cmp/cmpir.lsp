@@ -68,7 +68,7 @@
 
 
 (defun irc-gep (array indices &optional (name "gep"))
-  (let ((indices (mapcar (lambda (x) (if (fixnump x) (jit-constant-size_t x) x)) indices)))
+  (let ((indices (mapcar (lambda (x) (if (fixnump x) (jit-constant-intptr_t x) x)) indices)))
     (llvm-sys:create-in-bounds-gep *irbuilder* array indices name )))
 
 (defun irc-in-bounds-gep-type (type value indices &optional (label "gep"))
@@ -522,6 +522,18 @@
   (irc-br theblock)
   (irc-begin-block theblock))
 
+(defun irc-icmp-ule (lhs rhs &optional (name ""))
+  (llvm-sys:create-icmp-ule *irbuilder* lhs rhs name))
+
+(defun irc-icmp-uge (lhs rhs &optional (name ""))
+  (llvm-sys:create-icmp-uge *irbuilder* lhs rhs name))
+
+(defun irc-icmp-ult (lhs rhs &optional (name ""))
+  (llvm-sys:create-icmp-ult *irbuilder* lhs rhs name))
+
+(defun irc-icmp-ugt (lhs rhs &optional (name ""))
+  (llvm-sys:create-icmp-ugt *irbuilder* lhs rhs name))
+
 (defun irc-icmp-slt (lhs rhs &optional (name ""))
   (llvm-sys:create-icmp-slt *irbuilder* lhs rhs name))
 
@@ -533,6 +545,12 @@
 
 (defun irc-icmp-sle (lhs rhs &optional (name ""))
   (llvm-sys:create-icmp-sle *irbuilder* lhs rhs name))
+
+(defun irc-icmp-uge (lhs rhs &optional (name ""))
+  (llvm-sys:create-icmp-uge *irbuilder* lhs rhs name))
+
+(defun irc-icmp-ule (lhs rhs &optional (name ""))
+  (llvm-sys:create-icmp-ule *irbuilder* lhs rhs name))
 
 (defun irc-icmp-ne (lhs rhs &optional (name ""))
   (llvm-sys:create-icmp-ne *irbuilder* lhs rhs name))
@@ -739,6 +757,8 @@
 				       linkage
 				       llvm-function-name
 				       module)))
+    (when *enable-profiling*
+      (llvm-sys:add-fn-attr2string fn "counting-function" *mcount-name*))
     (dolist (temp function-attributes)
       (cond
         ((symbolp temp) (llvm-sys:add-fn-attr fn temp))

@@ -68,7 +68,7 @@ SingleDispatchMethod_sp SingleDispatchMethod_O::create(Symbol_sp name,
 
 string SingleDispatchMethod_O::__repr__() const {
   stringstream ss;
-  ss << "#<" << this->_instanceClass()->classNameAsString()
+  ss << "#<" << this->_instanceClass()->_classNameAsString()
      << " :name " << _rep_(this->_name)
      << " :receiver-class " << _rep_(this->_receiver_class)
      << " :code " << _rep_(this->_body)

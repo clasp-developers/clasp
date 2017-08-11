@@ -127,16 +127,21 @@ void intrinsic_error(ErrorCode err, core::T_sp arg0, core::T_sp arg1, core::T_sp
 
 extern "C" {
 
-void cc_initialize_gcroots_in_module(gctools::GCRootsInModule* holder, core::T_sp* root_address, size_t num_roots, gctools::Tagged initial_data ) {
+void cc_initialize_gcroots_in_module(gctools::GCRootsInModule* holder, core::T_sp* root_address, size_t num_roots, gctools::Tagged initial_data )
+{NO_UNWIND_BEGIN();
   initialize_gcroots_in_module(holder,root_address,num_roots,initial_data);
+  NO_UNWIND_END();
 }
 
-void cc_shutdown_gcroots_in_module(gctools::GCRootsInModule* holder) {
+void cc_shutdown_gcroots_in_module(gctools::GCRootsInModule* holder)
+{NO_UNWIND_BEGIN();
   shutdown_gcroots_in_module(holder);
+  NO_UNWIND_END();
 }
 
 
 void ltvc_assign_source_file_info_handle(const char *moduleName, const char *sourceDebugPathname, size_t sourceDebugOffset, int useLineno, int *sourceFileInfoHandleP) {
+  NO_UNWIND_BEGIN();
   //	printf("%s:%d assignSourceFileInfoHandle %s\n", __FILE__, __LINE__, moduleName );
   core::SimpleBaseString_sp mname = core::SimpleBaseString_O::make(moduleName);
   core::SimpleBaseString_sp struename = core::SimpleBaseString_O::make(sourceDebugPathname);
@@ -150,6 +155,7 @@ void ltvc_assign_source_file_info_handle(const char *moduleName, const char *sou
   }
 #endif
   *sourceFileInfoHandleP = sfindex;
+  NO_UNWIND_END();
 }
 
 // Define what ltvc_xxxx functions return - this must match what is
@@ -159,42 +165,55 @@ typedef void LtvcReturn;
 
 LtvcReturn ltvc_make_nil(gctools::GCRootsInModule* holder, size_t index)
 {
+  NO_UNWIND_BEGIN();
   core::T_sp val = _Nil<core::T_O>();
   LTVCRETURN holder->set(index,val.tagged_());
+  NO_UNWIND_END();
 }
 
 LtvcReturn ltvc_make_t(gctools::GCRootsInModule* holder, size_t index)
 {
+  NO_UNWIND_BEGIN();
   core::T_sp val = _lisp->_true();
   LTVCRETURN holder->set(index,val.tagged_());
+  NO_UNWIND_END();
 }
 
 
-LtvcReturn ltvc_make_ratio(gctools::GCRootsInModule* holder, size_t index, gctools::Tagged num, gctools::Tagged denom ) {
+LtvcReturn ltvc_make_ratio(gctools::GCRootsInModule* holder, size_t index, gctools::Tagged num, gctools::Tagged denom )
+{NO_UNWIND_BEGIN();
   core::T_sp val = core::Ratio_O::create(core::T_sp(num),core::T_sp(denom));
   LTVCRETURN holder->set(index,val.tagged_());
+  NO_UNWIND_END();
 }
 
-LtvcReturn ltvc_make_complex(gctools::GCRootsInModule* holder, size_t index, gctools::Tagged real, gctools::Tagged imag) {
+LtvcReturn ltvc_make_complex(gctools::GCRootsInModule* holder, size_t index, gctools::Tagged real, gctools::Tagged imag)
+{NO_UNWIND_BEGIN();
   core::Number_sp nreal((gctools::Tagged)real);
   core::Number_sp nimag((gctools::Tagged)imag);
   core::T_sp val = core::Complex_O::create(clasp_to_double(nreal),clasp_to_double(nimag));
   LTVCRETURN holder->set(index,val.tagged_());
+  NO_UNWIND_END();
 }
 
 
-LtvcReturn ltvc_make_cons(gctools::GCRootsInModule* holder, size_t index, gctools::Tagged car, gctools::Tagged cdr) {
+LtvcReturn ltvc_make_cons(gctools::GCRootsInModule* holder, size_t index, gctools::Tagged car, gctools::Tagged cdr)
+{NO_UNWIND_BEGIN();
   core::T_sp val = core::Cons_O::create(core::T_sp(car),core::T_sp(cdr));
   LTVCRETURN holder->set(index,val.tagged_());
+  NO_UNWIND_END();
 }
 
 LtvcReturn ltvc_nconc(gctools::GCRootsInModule* holder, size_t index,
-                               gctools::Tagged front, gctools::Tagged back) {
+                               gctools::Tagged front, gctools::Tagged back)
+{NO_UNWIND_BEGIN();
   core::T_sp val = core::clasp_nconc(core::T_sp(front),core::T_sp(back));
   LTVCRETURN holder->set(index,val.tagged_());
+  NO_UNWIND_END();
 }
 
-NOINLINE LtvcReturn ltvc_make_list(gctools::GCRootsInModule* holder, size_t index, size_t num, ... ) {
+NOINLINE LtvcReturn ltvc_make_list(gctools::GCRootsInModule* holder, size_t index, size_t num, ... )
+{NO_UNWIND_BEGIN();
   core::T_sp first;
   core::T_sp* cur = &first;
   va_list va;
@@ -208,11 +227,13 @@ NOINLINE LtvcReturn ltvc_make_list(gctools::GCRootsInModule* holder, size_t inde
   va_end(va);
   core::T_sp val = first;
   LTVCRETURN holder->set(index,val.tagged_());
+  NO_UNWIND_END();
 }
 
 LtvcReturn ltvc_make_array(gctools::GCRootsInModule* holder, size_t index,
                                 gctools::Tagged telement_type,
-                                gctools::Tagged tdimensions ) {
+                                gctools::Tagged tdimensions )
+{NO_UNWIND_BEGIN();
   core::T_sp element_type(telement_type);
   core::List_sp dimensions(tdimensions);
   core::T_sp val;
@@ -223,49 +244,62 @@ LtvcReturn ltvc_make_array(gctools::GCRootsInModule* holder, size_t index,
     val = core::core__make_mdarray(dimensions, element_type);
   }
   LTVCRETURN holder->set(index,val.tagged_());
+  NO_UNWIND_END();
 }
 
 void ltvc_setf_row_major_aref(gctools::Tagged array_t,
                               size_t row_major_index,
                               gctools::Tagged value_t )
-{
+{NO_UNWIND_BEGIN();
   core::Array_sp array = gc::As<core::Array_sp>(core::T_sp(array_t));
   array->rowMajorAset(row_major_index,core::T_sp(value_t));
+  NO_UNWIND_END();
 }
   
 LtvcReturn ltvc_make_hash_table(gctools::GCRootsInModule* holder, size_t index,
-                                gctools::Tagged test_t ) {
+                                gctools::Tagged test_t )
+{NO_UNWIND_BEGIN();
   LTVCRETURN holder->set(index,core::HashTable_O::create(core::T_sp(test_t)).tagged_());
+  NO_UNWIND_END();
 }
 
 void ltvc_setf_gethash(gctools::Tagged hash_table_t,
                        gctools::Tagged key_index_t,
-                       gctools::Tagged value_index_t ) {
+                       gctools::Tagged value_index_t )
+{NO_UNWIND_BEGIN();
   core::HashTable_sp hash_table = gctools::As<HashTable_sp>(core::T_sp(hash_table_t));
   core::T_sp key(key_index_t);
   core::T_sp value(value_index_t);
   hash_table->hash_table_setf_gethash(key, value);
+  NO_UNWIND_END();
 }
 
-LtvcReturn ltvc_make_fixnum(gctools::GCRootsInModule* holder, size_t index, int64_t val) {
+LtvcReturn ltvc_make_fixnum(gctools::GCRootsInModule* holder, size_t index, int64_t val)
+{NO_UNWIND_BEGIN();
   core::T_sp v = clasp_make_fixnum(val);
   LTVCRETURN holder->set(index,v.tagged_());
+  NO_UNWIND_END();
 }
 
-LtvcReturn ltvc_make_bignum(gctools::GCRootsInModule* holder, size_t index, gctools::Tagged bignum_string_t) {
+LtvcReturn ltvc_make_bignum(gctools::GCRootsInModule* holder, size_t index, gctools::Tagged bignum_string_t)
+{NO_UNWIND_BEGIN();
   core::SimpleBaseString_sp bignum_string = gctools::As<core::SimpleBaseString_sp>(core::T_sp(bignum_string_t));
   core::T_sp val = core::Bignum_O::make(bignum_string->get());
   LTVCRETURN holder->set(index,val.tagged_());
+  NO_UNWIND_END();
 }
 
-LtvcReturn ltvc_make_bitvector(gctools::GCRootsInModule* holder, size_t index, gctools::Tagged bitvector_string_t) {
+LtvcReturn ltvc_make_bitvector(gctools::GCRootsInModule* holder, size_t index, gctools::Tagged bitvector_string_t)
+{NO_UNWIND_BEGIN();
   core::SimpleBaseString_sp bitvector_string = gctools::As<core::SimpleBaseString_sp>(core::T_sp(bitvector_string_t));
   core::T_sp val = core::SimpleBitVector_O::make(bitvector_string->get());
   LTVCRETURN holder->set(index,val.tagged_());
+  NO_UNWIND_END();
 }
 
 LtvcReturn ltvc_make_symbol(gctools::GCRootsInModule* holder, size_t index, gctools::Tagged name_t,
-                                 gctools::Tagged package_t ) {
+                                 gctools::Tagged package_t )
+{NO_UNWIND_BEGIN();
   core::T_sp package(package_t);
   core::SimpleString_sp symbol_name(name_t);
   core::Symbol_sp sym;
@@ -276,16 +310,21 @@ LtvcReturn ltvc_make_symbol(gctools::GCRootsInModule* holder, size_t index, gcto
   }
   core::T_sp val = sym;
   LTVCRETURN holder->set(index,val.tagged_());
+  NO_UNWIND_END();
 }
 
-LtvcReturn ltvc_make_character(gctools::GCRootsInModule* holder, size_t index, uintptr_clasp_t val) {
+LtvcReturn ltvc_make_character(gctools::GCRootsInModule* holder, size_t index, uintptr_clasp_t val)
+{NO_UNWIND_BEGIN();
   core::T_sp v = clasp_make_character(val);
   LTVCRETURN holder->set(index,v.tagged_());
+  NO_UNWIND_END();
 }
 
-LtvcReturn ltvc_make_base_string(gctools::GCRootsInModule* holder, size_t index, const char* str) {
+LtvcReturn ltvc_make_base_string(gctools::GCRootsInModule* holder, size_t index, const char* str) \
+{NO_UNWIND_BEGIN();
   core::T_sp v = core::SimpleBaseString_O::make(str);
   LTVCRETURN holder->set(index,v.tagged_());
+  NO_UNWIND_END();
 }
 
 LtvcReturn ltvc_make_pathname(gctools::GCRootsInModule* holder, size_t index, gctools::Tagged host_t,
@@ -293,7 +332,8 @@ LtvcReturn ltvc_make_pathname(gctools::GCRootsInModule* holder, size_t index, gc
                                    gctools::Tagged directory_t,
                                    gctools::Tagged name_t,
                                    gctools::Tagged type_t,
-                                   gctools::Tagged version_t ) {
+                                   gctools::Tagged version_t )
+{NO_UNWIND_BEGIN();
   core::T_sp val = core::Pathname_O::makePathname(core::T_sp(host_t),
                                         core::T_sp(device_t),
                                         core::T_sp(directory_t),
@@ -303,9 +343,12 @@ LtvcReturn ltvc_make_pathname(gctools::GCRootsInModule* holder, size_t index, gc
                                         kw::_sym_local,
                                               core::T_sp(host_t).notnilp());
   LTVCRETURN holder->set(index,val.tagged_());
+  NO_UNWIND_END();
 }
 
-LtvcReturn ltvc_make_package(gctools::GCRootsInModule* holder, size_t index, gctools::Tagged package_name_t ) {
+LtvcReturn ltvc_make_package(gctools::GCRootsInModule* holder, size_t index, gctools::Tagged package_name_t )
+{
+  NO_UNWIND_BEGIN();
   core::SimpleBaseString_sp package_name(package_name_t);
   core::T_sp tpkg = _lisp->findPackage(package_name->get(),false);
   if ( tpkg.nilp() ) {
@@ -315,18 +358,22 @@ LtvcReturn ltvc_make_package(gctools::GCRootsInModule* holder, size_t index, gct
   }
   core::T_sp val = tpkg;
   LTVCRETURN holder->set(index,val.tagged_());
+  NO_UNWIND_END();
 }
 
-LtvcReturn ltvc_make_random_state(gctools::GCRootsInModule* holder, size_t index, gctools::Tagged random_state_string_t) {
+LtvcReturn ltvc_make_random_state(gctools::GCRootsInModule* holder, size_t index, gctools::Tagged random_state_string_t)
+{NO_UNWIND_BEGIN();
   core::SimpleBaseString_sp random_state_string(random_state_string_t);
   core::RandomState_sp rs = core::RandomState_O::create();
   rs->random_state_set(random_state_string->get());
   core::T_sp val = rs;
   LTVCRETURN holder->set(index,val.tagged_());
+  NO_UNWIND_END();
 }
 
 
-LtvcReturn ltvc_make_built_in_class(gctools::GCRootsInModule* holder, size_t index, gctools::Tagged class_name_t ) {
+LtvcReturn ltvc_make_built_in_class(gctools::GCRootsInModule* holder, size_t index, gctools::Tagged class_name_t )
+{NO_UNWIND_BEGIN();
   core::Symbol_sp class_name(class_name_t);
   core::T_sp cl = core::cl__find_class(class_name, true, _Nil<core::T_O>());
   if ( cl.nilp() ) {
@@ -335,17 +382,22 @@ LtvcReturn ltvc_make_built_in_class(gctools::GCRootsInModule* holder, size_t ind
     core::T_sp val = cl;
     LTVCRETURN holder->set(index,val.tagged_());
   }
+  NO_UNWIND_END();
 }
 
 
-LtvcReturn ltvc_make_float(gctools::GCRootsInModule* holder, size_t index, float f) {
+LtvcReturn ltvc_make_float(gctools::GCRootsInModule* holder, size_t index, float f)
+{NO_UNWIND_BEGIN();
   core::T_sp val = clasp_make_single_float(f);
   LTVCRETURN holder->set(index,val.tagged_());
+  NO_UNWIND_END();
 }
 
-LtvcReturn ltvc_make_double(gctools::GCRootsInModule* holder, size_t index, double f) {
+LtvcReturn ltvc_make_double(gctools::GCRootsInModule* holder, size_t index, double f)
+{NO_UNWIND_BEGIN();
   core::T_sp val = clasp_make_double_float(f);
   LTVCRETURN holder->set(index,val.tagged_());
+  NO_UNWIND_END();
 }
 
 LtvcReturn ltvc_set_mlf_creator_funcall(gctools::GCRootsInModule* holder, size_t index, fnLispCallingConvention fptr, const char* name) {
@@ -372,6 +424,21 @@ LtvcReturn ltvc_set_ltv_funcall(gctools::GCRootsInModule* holder, size_t index, 
   Symbol_sp sname = Symbol_O::create_from_string(std::string(name));
   GC_ALLOCATE_VARIADIC(CompiledClosure_O, toplevel_closure, fptr, sname, kw::_sym_function, _Nil<T_O>(), _Nil<T_O>(), _Nil<T_O>(), _Nil<T_O>(), 0, 0, 0, 0 );
   LCC_RETURN ret = fptr(LCC_PASS_ARGS0_VA_LIST(toplevel_closure.raw_()));
+  core::T_sp res((gctools::Tagged)ret.ret0[0]);
+  core::T_sp val = res;
+  LTVCRETURN holder->set(index,val.tagged_());
+}
+
+LtvcReturn ltvc_set_ltv_funcall_cleavir(gctools::GCRootsInModule* holder, size_t index, fnLispCallingConvention fptr, const char* name) {
+  // I created this function just in case cleavir returns a function that when evaluated returns a function that
+  // would return the ltv value - that appears not to be the case.
+  // FIXME: Remove this function and use the ltvc_set_ltv_funcall instead
+  core::T_O *lcc_arglist = _Nil<core::T_O>().raw_();
+  Symbol_sp sname = Symbol_O::create_from_string(std::string(name));
+  GC_ALLOCATE_VARIADIC(CompiledClosure_O, toplevel_closure, fptr, sname, kw::_sym_function, _Nil<T_O>(), _Nil<T_O>(), _Nil<T_O>(), _Nil<T_O>(), 0, 0, 0, 0 );
+  LCC_RETURN ret = fptr(LCC_PASS_ARGS0_VA_LIST(toplevel_closure.raw_()));
+  core::T_sp tret((gctools::Tagged)ret.ret0);
+//  printf("%s:%d:%s     ret -> %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(tret).c_str());
   core::T_sp res((gctools::Tagged)ret.ret0[0]);
   core::T_sp val = res;
   LTVCRETURN holder->set(index,val.tagged_());
@@ -409,7 +476,8 @@ uint _LLVMLowLevelTraceQueueIn = 0;
 uint _LLVMLowLevelTraceQueueWrapped = false;
 uint _LLVMLowLevelTraceQueue[LOW_LEVEL_TRACE_QUEUE_SIZE];
 
-NOINLINE void lowLevelTrace(uint traceid) {
+NOINLINE void lowLevelTrace(uint traceid)
+{NO_UNWIND_BEGIN();
   if (comp::_sym_STARlowLevelTracePrintSTAR->symbolValue().isTrue()) {
     printf("+++ lowLevelTrace[%d]\n", traceid);
     if (traceid == 1000115396) {
@@ -422,11 +490,14 @@ NOINLINE void lowLevelTrace(uint traceid) {
     _LLVMLowLevelTraceQueueIn = 0;
     _LLVMLowLevelTraceQueueWrapped = true;
   }
+  NO_UNWIND_END();
 }
 
-void unreachableError() {
+void unreachableError()
+{NO_UNWIND_BEGIN();
   printf("%s:%d In unreachableError -  Hit an unreachable block\n",
          __FILE__, __LINE__);
+  NO_UNWIND_END();
 }
 
 
@@ -474,14 +545,17 @@ NOINLINE extern void va_ifExcessKeywordArgumentsException(char *fnName, std::siz
 
 
 
-ALWAYS_INLINE T_O *va_lexicalFunction(int depth, int index, core::T_sp *evaluateFrameP) {
+ALWAYS_INLINE T_O *va_lexicalFunction(int depth, int index, core::T_sp *evaluateFrameP)
+{NO_UNWIND_BEGIN();
   core::ActivationFrame_sp af = gctools::reinterpret_cast_smart_ptr<core::ActivationFrame_O>(*evaluateFrameP);
   core::Function_sp func = core::function_frame_lookup(af, depth, index);
   return func.raw_();
+  NO_UNWIND_END();
 }
 
 
-__attribute__((visibility("default"))) core::T_O *cc_gatherRestArguments(va_list vargs, std::size_t* remainingP) {
+__attribute__((visibility("default"))) core::T_O *cc_gatherRestArguments(va_list vargs, std::size_t* remainingP)
+{NO_UNWIND_BEGIN();
   va_list rargs;
   va_copy(rargs, vargs);
   core::List_sp result = _Nil<core::T_O>();
@@ -493,16 +567,11 @@ __attribute__((visibility("default"))) core::T_O *cc_gatherRestArguments(va_list
     cur = reinterpret_cast<Cons_sp *>(&(*cur)->_Cdr);
   }
   return result.raw_();
+  NO_UNWIND_END();
 }
 
-extern size_t cc_allowOtherKeywords(size_t saw_aok, core::T_O *kw_arg) {
-  if (saw_aok)
-    return saw_aok;
-  bool aokTrue = !(gctools::tagged_nilp(kw_arg));
-  return aokTrue ? 2 : 1;
-}
-
-void cc_ifBadKeywordArgumentException(size_t allowOtherKeys, std::size_t badKwIdx, core::T_O *kw) {
+void cc_ifBadKeywordArgumentException(size_t allowOtherKeys, std::size_t badKwIdx, core::T_O *kw)
+{
   if (allowOtherKeys == 2) {
     return;
   }
@@ -510,146 +579,109 @@ void cc_ifBadKeywordArgumentException(size_t allowOtherKeys, std::size_t badKwId
     intrinsic_error(llvmo::badKeywordArgument, core::T_sp((gc::Tagged)kw));
 }
 
-void NamednewFunction_sp(core::Function_sp *sharedP) {
-  ASSERT(sharedP != NULL);
-  new (sharedP) core::Function_sp();
-}
 
-NOINLINE extern void copyArgs(core::T_sp *destP, int nargs, core::T_O *arg0, core::T_O *arg1, core::T_O *arg2, va_list args) {
-  DEPRECATED();
-  //        printf("%s:%d copyArgs destP=%p  nargs=%d\n", __FILE__, __LINE__, destP, nargs);
-  switch (nargs) {
-  case 0:
-    return;
-  case 1:
-    destP[0] = gctools::smart_ptr<core::T_O>(arg0); // Should these all be (gc::Tagged)???
-    return;
-  case 2:
-    destP[0] = gctools::smart_ptr<core::T_O>(arg0);
-    destP[1] = gctools::smart_ptr<core::T_O>(arg1);
-    return;
-  case 3:
-    destP[0] = gctools::smart_ptr<core::T_O>(arg0);
-    destP[1] = gctools::smart_ptr<core::T_O>(arg1);
-    destP[2] = gctools::smart_ptr<core::T_O>(arg2);
-    return;
-  default:
-    destP[0] = gctools::smart_ptr<core::T_O>(arg0);
-    destP[1] = gctools::smart_ptr<core::T_O>(arg1);
-    destP[2] = gctools::smart_ptr<core::T_O>(arg2);
-    int idx = 3;
-    while (idx < nargs) {
-      destP[idx] = gctools::smart_ptr<core::T_O>(va_arg(args, core::T_O *));
-      ++idx;
-    }
-    return;
-  }
-}
-
-void resetTmv(core::T_mv *sharedP) {
-  MAY_BE_DEPRECATED();
-  ASSERT(sharedP != NULL);
-  (*sharedP).reset_();
-}
-
-extern void mv_copyTmv(core::T_mv *destP, core::T_mv *sourceP) {
+extern void mv_copyTmv(core::T_mv *destP, core::T_mv *sourceP)
+{NO_UNWIND_BEGIN();
   ASSERT(sourceP != NULL);
   ASSERT(destP != NULL);
   *destP = *sourceP;
+  NO_UNWIND_END();
 }
 
 /* This function slices a T_mv down to a T_sp */
-extern void sp_copyTmv(core::T_sp *destP, core::T_mv *sourceP) {
+extern void sp_copyTmv(core::T_sp *destP, core::T_mv *sourceP)
+{NO_UNWIND_BEGIN();
   ASSERT(sourceP != NULL);
   ASSERT(destP != NULL);
   *destP = *sourceP;
+  NO_UNWIND_END();
 }
 };
 
 extern "C" {
-};
-
-extern "C" {
-
-#if 0
-NOINLINE core::T_O **getMultipleValues(int offset) {
-  return &lisp_multipleValues().callingArgsStart()[offset];
-}
-#endif
 
 /*! Return i32 1 if (valP) is != unbound 0 if it is */
-int isBound(core::T_sp *valP) {
+int isBound(core::T_sp *valP)
+{NO_UNWIND_BEGIN();
   ASSERT(valP != NULL);
   return (*valP).unboundp() ? 0 : 1;
   //return (gctools::tagged_ptr<core::T_O>::tagged_unboundp(valP)) ? 0 : 1;
+  NO_UNWIND_END();
 }
 
 /*! Return i32 1 if (valP) is != nil 0 if it is */
-int isTrue(core::T_sp *valP) {
+int isTrue(core::T_sp *valP)
+{NO_UNWIND_BEGIN();
   ASSERT(valP != NULL);
   return (*valP).nilp() ? 0 : 1;
   //	return (gctools::tagged_ptr<core::T_O>::tagged_nilp(valP)) ? 0 : 1;
+  NO_UNWIND_END();
 }
 
 
-void internSymbol_tsp(core::T_sp *resultP, const char *symbolNameP, const char *packageNameP) {
+void internSymbol_tsp(core::T_sp *resultP, const char *symbolNameP, const char *packageNameP)
+{NO_UNWIND_BEGIN();
   core::Symbol_sp newSym = _lisp->internWithPackageName(packageNameP, symbolNameP);
 #ifdef DEBUG_LOAD_TIME_VALUES
 //        printf("%s:%d  internSymbol_tsp(%s::%s)  newSym.px_ref() = %p   cl::destructuring-bind.px_ref()=%p\n", __FILE__, __LINE__, packageNameP, symbolNameP, newSym.px_ref(), cl::_sym_destructuring_bind.px_ref());
 #endif
   ASSERTNOTNULL(newSym);
   (*resultP) = newSym;
+  NO_UNWIND_END();
 }
 
-void makeSymbol_tsp(core::T_sp *resultP, const char *symbolNameP) {
+void makeSymbol_tsp(core::T_sp *resultP, const char *symbolNameP)
+{NO_UNWIND_BEGIN();
   core::Symbol_sp newSym = core::Symbol_O::create_from_string(std::string(symbolNameP));
   ASSERTNOTNULL(newSym);
   (*resultP) = newSym;
+  NO_UNWIND_END();
 }
 
-void internSymbol_symsp(core::Symbol_sp *resultP, const char *symbolNameP, const char *packageNameP) {
+void internSymbol_symsp(core::Symbol_sp *resultP, const char *symbolNameP, const char *packageNameP)
+{NO_UNWIND_BEGIN();
   core::Symbol_sp newSym = _lisp->internWithPackageName(packageNameP, symbolNameP);
   ASSERTNOTNULL(newSym);
   (*resultP) = newSym;
+  NO_UNWIND_END();
 }
 
-void makeSymbol_symsp(core::Symbol_sp *resultP, const char *symbolNameP) {
+void makeSymbol_symsp(core::Symbol_sp *resultP, const char *symbolNameP)
+{NO_UNWIND_BEGIN();
   core::Symbol_sp newSym = core::Symbol_O::create_from_string(std::string(symbolNameP));
   ASSERTNOTNULL(newSym);
   (*resultP) = newSym;
+  NO_UNWIND_END();
 }
 
-void makeFixnum(core::T_sp *fnP, gc::Fixnum s) {
-  ASSERT(fnP != NULL);
-  (*fnP) = core::Fixnum_sp(core::make_fixnum(s));
-}
 
-void makeCharacter(core::T_sp *fnP, int s) {
-  ASSERT(fnP != NULL);
-  (*fnP) = core::clasp_make_character((char)s);
-}
-
-void makeBignum(core::T_sp *fnP, const char *cP) {
+void makeBignum(core::T_sp *fnP, const char *cP)
+{NO_UNWIND_BEGIN();
   ASSERT(fnP != NULL);
   string str = cP;
   core::Bignum_sp ns = core::Bignum_O::make(str);
   (*fnP) = ns;
+  NO_UNWIND_END();
 }
 
-void makeString(core::T_sp *fnP, const char *str) {
+void makeString(core::T_sp *fnP, const char *str)
+{NO_UNWIND_BEGIN();
   // placement new into memory passed into this function
   ASSERT(fnP != NULL);
   core::SimpleBaseString_sp ns = core::SimpleBaseString_O::make(str);
   (*fnP) = ns;
+  NO_UNWIND_END();
 }
 
-void makePathname(core::T_sp *fnP, const char *cstr) {
+void makePathname(core::T_sp *fnP, const char *cstr)
+{NO_UNWIND_BEGIN();
   // placement new into memory passed into this function
   ASSERT(fnP != NULL);
 
   core::SimpleBaseString_sp str = core::SimpleBaseString_O::make(cstr);
   core::Pathname_sp ns = core::cl__pathname(str);
   (*fnP) = ns;
+  NO_UNWIND_END();
 }
 
 
@@ -658,14 +690,18 @@ void makeShortFloat(core::T_sp *fnP, double s) {
   (*fnP) = core::ShortFloat_sp(core::ShortFloat_O::create(s));
 }
 
-void makeSingleFloat(core::T_sp *fnP, float s) {
+void makeSingleFloat(core::T_sp *fnP, float s)
+{NO_UNWIND_BEGIN();
   ASSERT(fnP != NULL);
   (*fnP) = clasp_make_single_float(s);
+  NO_UNWIND_END();
 }
 
-void makeDoubleFloat(core::T_sp *fnP, double s) {
+void makeDoubleFloat(core::T_sp *fnP, double s)
+{NO_UNWIND_BEGIN();
   ASSERT(fnP != NULL);
   (*fnP) = core::DoubleFloat_sp(core::DoubleFloat_O::create(s));
+  NO_UNWIND_END();
 }
 
 #ifdef CLASP_LONG_FLOAT
@@ -676,10 +712,12 @@ void makeLongFloat(core::T_sp *fnP, LongFloat s) {
 #endif
 };
 
-core::T_sp proto_makeCompiledFunction(fnLispCallingConvention funcPtr, int *sourceFileInfoHandleP, size_t filePos, size_t lineno, size_t column, core::T_sp *functionNameP, core::T_sp *compiledFuncsP, core::ActivationFrame_sp *frameP, core::T_sp *lambdaListP) {
+core::T_sp proto_makeCompiledFunction(fnLispCallingConvention funcPtr, int *sourceFileInfoHandleP, size_t filePos, size_t lineno, size_t column, core::T_sp *functionNameP, core::T_sp *compiledFuncsP, core::ActivationFrame_sp *frameP, core::T_sp *lambdaListP)
+{NO_UNWIND_BEGIN();
   // TODO: If a pointer to an integer was passed here we could write the sourceName SourceFileInfo_sp index into it for source line debugging
   core::Closure_sp closure = gctools::GC<core::CompiledClosure_O>::allocate(funcPtr, *functionNameP, kw::_sym_function, _Nil<core::T_O>(), *frameP, *compiledFuncsP, *lambdaListP, *sourceFileInfoHandleP, filePos, lineno, column);
   return closure;
+  NO_UNWIND_END();
 };
 extern "C" {
 void sp_makeCompiledFunction(core::T_sp *resultCompiledFunctionP, fnLispCallingConvention funcPtr, int *sourceFileInfoHandleP, size_t filePos, size_t lineno, size_t column, core::T_sp *functionNameP, core::T_sp *compiledFuncsP, core::ActivationFrame_sp *frameP, core::T_sp *lambdaListP) {
@@ -864,25 +902,30 @@ void mv_prependMultipleValues(core::T_mv *resultP, core::T_mv *multipleValuesP) 
 extern "C" {
 
 /*! Invoke a symbol function with the given arguments and put the result in (*resultP) */
-void sp_symbolFunctionRead(core::T_sp *resultP, const core::T_sp *tsymP) {
+void sp_symbolFunctionRead(core::T_sp *resultP, const core::T_sp *tsymP)
+{NO_UNWIND_BEGIN();
   ASSERT(resultP != NULL);
   ASSERTF(tsymP != NULL, BF("passed symbol is NULL"));
   const core::Symbol_sp* symP = reinterpret_cast<const core::Symbol_sp*>(tsymP);
   ASSERTF((*symP)->fboundp(), BF("There is no function bound to symbol[%s]") % _rep_((*symP)));
   (*resultP) = (*symP)->symbolFunction();
   ASSERTNOTNULL(*resultP);
+  NO_UNWIND_END();
 }
-void mv_symbolFunctionRead(core::T_mv *resultP, const core::T_sp *tsymP) {
+void mv_symbolFunctionRead(core::T_mv *resultP, const core::T_sp *tsymP)
+{NO_UNWIND_BEGIN();
   ASSERT(resultP != NULL);
   const core::Symbol_sp* symP = reinterpret_cast<const core::Symbol_sp*>(tsymP);
   ASSERTF(symP != NULL, BF("passed symbol is NULL"));
   ASSERTF((*symP)->fboundp(), BF("There is no function bound to symbol[%s]") % _rep_((*symP)));
   (*resultP) = Values((*symP)->symbolFunction());
   ASSERTNOTNULL(*resultP);
+  NO_UNWIND_END();
 }
 
 /*! Invoke a symbol function with the given arguments and put the result in (*resultP) */
-extern void setfSymbolFunctionRead(core::T_sp *resultP, const core::T_sp *tsymP) {
+extern void setfSymbolFunctionRead(core::T_sp *resultP, const core::T_sp *tsymP)
+{NO_UNWIND_BEGIN();
   ASSERT(resultP != NULL);
   const core::Symbol_sp* symP = reinterpret_cast<const core::Symbol_sp*>(tsymP);
   ASSERTF(symP != NULL, BF("passed symbol is NULL"));
@@ -890,14 +933,17 @@ extern void setfSymbolFunctionRead(core::T_sp *resultP, const core::T_sp *tsymP)
   ASSERTF(setfFunc, BF("There is no setf function bound to symbol[%s]") % _rep_((*symP)));
   (*resultP) = setfFunc;
   ASSERTNOTNULL(*resultP);
+  NO_UNWIND_END();
 }
 };
 
 
 extern "C" {
-int activationFrameSize(core::ActivationFrame_sp *activationFrameP) {
+int activationFrameSize(core::ActivationFrame_sp *activationFrameP)
+{NO_UNWIND_BEGIN();
   ASSERT(activationFrameP != NULL);
   return (*activationFrameP)->length();
+  NO_UNWIND_END();
 }
 
 #if 0
@@ -930,24 +976,30 @@ void gdb() {
   printf("%s:%d Set a breakpoint here to invoke gdb\n", __FILE__, __LINE__);
 }
 
-void debugInspectActivationFrame(core::ActivationFrame_sp *afP) {
+void debugInspectActivationFrame(core::ActivationFrame_sp *afP)
+{NO_UNWIND_BEGIN();
   core::ActivationFrame_sp af = (*afP);
   printf("debugInspectActivationFrame: %s\n", _rep_(af).c_str());
   printf("Parent T_sp : %p\n", af->parentFrame().raw_());
   printf("%s:%d Insert breakpoint here if you want to inspect af\n", __FILE__, __LINE__);
+  NO_UNWIND_END();
 }
 
-void debugInspectT_sp(core::T_sp *objP) {
+void debugInspectT_sp(core::T_sp *objP)
+{NO_UNWIND_BEGIN();
   core::T_sp obj = (*objP);
   printf("debugInspectObject@%p  obj.px_ref()=%p: %s\n", (void *)objP, (*objP).raw_(), _rep_(obj).c_str());
   printf("%s:%d Insert breakpoint here if you want to inspect object\n", __FILE__, __LINE__);
+  NO_UNWIND_END();
 }
 
-void debugInspectTPtr(core::T_O *tP) {
+void debugInspectTPtr(core::T_O *tP)
+{NO_UNWIND_BEGIN();
   core::T_sp obj = gctools::smart_ptr<core::T_O>((gc::Tagged)tP);
   printf("debugInspectTPtr@%p\n", tP);
   printf("debugInspectTPtr obj.px_ref()=%p: %s\n", obj.raw_(), _rep_(obj).c_str());
   printf("%s:%d Insert breakpoint here if you want to inspect object\n", __FILE__, __LINE__);
+  NO_UNWIND_END();
 }
 
 void debugInspect_i8STAR(void *p) {
@@ -964,7 +1016,8 @@ void debugInspectTPtr_detailed(core::T_O *tP) {
   }
 }
 
-void debugInspectT_mv(core::T_mv *objP) {
+void debugInspectT_mv(core::T_mv *objP)
+{NO_UNWIND_BEGIN();
   MultipleValues &mv = lisp_multipleValues();
   size_t size = mv.getSize();
   printf("debugInspect_return_type T_mv.val0@%p  T_mv.nvals=%d mvarray.size=%zu\n", (*objP).raw_(), (*objP).number_of_values(), size);
@@ -977,9 +1030,11 @@ void debugInspectT_mv(core::T_mv *objP) {
   printf("debugInspectT_mv@%p  #val=%d\n", (void *)objP, objP->number_of_values());
   printf("   debugInspectT_mv  obj= %s\n", _rep_(*objP).c_str());
   printf("%s:%d Insert breakpoint here if you want to inspect object\n", __FILE__, __LINE__);
+  NO_UNWIND_END();
 }
 
-void debugInspect_return_type(gctools::return_type rt) {
+void debugInspect_return_type(gctools::return_type rt)
+{NO_UNWIND_BEGIN();
   MultipleValues &mv = lisp_multipleValues();
   size_t size = mv.getSize();
   printf("debugInspect_return_type rt.ret0@%p  rt.nvals=%zu mvarray.size=%zu\n", rt.ret0[0], rt.nvals, size);
@@ -989,40 +1044,50 @@ void debugInspect_return_type(gctools::return_type rt) {
   }
   printf("\n");
   printf("%s:%d Insert breakpoint here if you want to inspect object\n", __FILE__, __LINE__);
+  NO_UNWIND_END();
 }
 
-void debugMessage(const char *msg) {
+void debugMessage(const char *msg)
+{NO_UNWIND_BEGIN();
   printf("++++++ debug-message: %s", msg);
+  NO_UNWIND_END();
 }
 
 uintptr_clasp_t debug_match_two_uintptr_t(uintptr_clasp_t x, uintptr_clasp_t y)
-{
+{NO_UNWIND_BEGIN();
   if ( x == y ) return x;
   printf("%s:%d !!!!! in debug_match_two_uintptr_clasp_t the two pointers %p and %p don't match\n", __FILE__, __LINE__, (void*)x, (void*)y);
   gdb();
   UNREACHABLE();
+  NO_UNWIND_END();
 }
 
-void debugPointer(const unsigned char *ptr) {
+void debugPointer(const unsigned char *ptr)
+{NO_UNWIND_BEGIN();
   printf("++++++ debugPointer: %p \n", ptr);
+  NO_UNWIND_END();
 }
 
-void debug_VaList_SPtr(VaList_S *vargs) {
+void debug_VaList_SPtr(VaList_S *vargs)
+{NO_UNWIND_BEGIN();
   VaList_S *args = reinterpret_cast<VaList_S *>(gc::untag_valist((void *)vargs));
   printf("++++++ debug_va_list: reg_save_area @%p \n", args->_Args[0].reg_save_area);
   printf("++++++ debug_va_list: gp_offset %d \n", args->_Args[0].gp_offset);
   printf("++++++      next reg arg: %p\n", (void *)(((uintptr_clasp_t *)((char *)args->_Args[0].reg_save_area + args->_Args[0].gp_offset))[0]));
   printf("++++++ debug_va_list: overflow_arg_area @%p \n", args->_Args[0].overflow_arg_area);
   printf("++++++      next overflow arg: %p\n", (void *)(((uintptr_clasp_t *)((char *)args->_Args[0].overflow_arg_area))[0]));
+  NO_UNWIND_END();
 }
 
-void debug_va_list(va_list vargs) {
+void debug_va_list(va_list vargs)
+{NO_UNWIND_BEGIN();
   printf("++++++ debug_va_list:          gp_offset@%p -> %x \n", &vargs[0].gp_offset, vargs[0].gp_offset);
   printf("++++++ debug_va_list:          fp_offset@%p -> %x \n", &vargs[0].fp_offset, vargs[0].fp_offset);
   printf("++++++ debug_va_list: overflow_arg_area @%p -> %p \n", &vargs[0].overflow_arg_area, vargs[0].overflow_arg_area);
   printf("++++++ debug_va_list:     reg_save_area @%p -> %p \n", &vargs[0].reg_save_area, vargs[0].reg_save_area);
   printf("++++++      next reg arg: %p\n", (void *)(((uintptr_clasp_t *)((char *)vargs[0].reg_save_area + vargs[0].gp_offset))[0]));
   printf("++++++      next overflow arg: %p\n", (void *)(((uintptr_clasp_t *)((char *)vargs[0].overflow_arg_area))[0]));
+  NO_UNWIND_END();
 }
 
 void debugSymbolPointer(core::Symbol_sp *ptr) {
@@ -1033,7 +1098,8 @@ void debugSymbolValue(core::Symbol_sp sym) {
   printf("+++++ debugSymbolValue: %s\n", _rep_(core::cl__symbol_value(sym)).c_str());
 }
 
-void debugPrintObject(const char *msg, core::T_sp *objP) {
+void debugPrintObject(const char *msg, core::T_sp *objP)
+{NO_UNWIND_BEGIN();
   std::cout << "++++++ JIT-PRINT-OBJECT: ";
   std::cout << msg << " --> ";
   if (objP == NULL) {
@@ -1044,14 +1110,19 @@ void debugPrintObject(const char *msg, core::T_sp *objP) {
     std::cout << _rep_((*objP));
   }
   std::cout << std::endl;
+  NO_UNWIND_END();
 }
 
-void debugPrintI32(int i32) {
+void debugPrintI32(int i32)
+{NO_UNWIND_BEGIN();
   printf("+++DBG-I32[%d]\n", i32);
+  NO_UNWIND_END();
 }
 
-void debugPrint_size_t(size_t v) {
+void debugPrint_size_t(size_t v)
+{NO_UNWIND_BEGIN();
   printf("+++DBG-size_t[%lu/%lx]\n", v, v);
+  NO_UNWIND_END();
 }
 
 
@@ -1127,7 +1198,8 @@ extern "C" {
 // Set the result from the ReturnFrom exception return value   	- blockStoreResult
 //
 
-size_t pushCatchFrame(core::T_sp *tagP) {
+size_t pushCatchFrame(core::T_sp *tagP)
+{NO_UNWIND_BEGIN();
   ASSERT(tagP != NULL);
   size_t result = my_thread->exceptionStack().push(CatchFrame, *tagP);
 #ifdef DEBUG_FLOW_CONTROL
@@ -1138,9 +1210,11 @@ size_t pushCatchFrame(core::T_sp *tagP) {
   }
 #endif
   return result;
+  NO_UNWIND_END();
 }
 
-size_t pushBlockFrame(core::T_sp *tagP) {
+size_t pushBlockFrame(core::T_sp *tagP)
+{NO_UNWIND_BEGIN();
   ASSERT(tagP != NULL);
   core::T_sp osym = *tagP;
   size_t result = my_thread->exceptionStack().push(BlockFrame, osym);
@@ -1152,9 +1226,11 @@ size_t pushBlockFrame(core::T_sp *tagP) {
   }
 #endif
   return result;
+  NO_UNWIND_END();
 }
 
-size_t pushTagbodyFrame(core::ActivationFrame_sp *afP) {
+size_t pushTagbodyFrame(core::ActivationFrame_sp *afP)
+{NO_UNWIND_BEGIN();
   ASSERT(afP != NULL);
   core::T_sp tagbodyId = (*afP);
   size_t result = my_thread->exceptionStack().push(TagbodyFrame, tagbodyId);
@@ -1166,6 +1242,7 @@ size_t pushTagbodyFrame(core::ActivationFrame_sp *afP) {
   }
 #endif
   return result;
+  NO_UNWIND_END();
 }
 };
 
@@ -1197,13 +1274,15 @@ void mv_ifCatchFrameMatchesStoreResultElseRethrow(core::T_mv *resultP, size_t ca
 };
 
 extern "C" {
-void exceptionStackUnwind(size_t frame) {
+void exceptionStackUnwind(size_t frame)
+{NO_UNWIND_BEGIN();
 #ifdef DEBUG_FLOW_CONTROL
   if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp()) {
     printf("Unwinding to exception frame[%lu]\n", frame);
   }
 #endif
   my_thread->exceptionStack().unwind(frame);
+  NO_UNWIND_END();
 }
 
 void throwIllegalSwitchValue(size_t val, size_t max) {
@@ -1288,22 +1367,26 @@ size_t tagbodyDynamicGoIndexElseRethrow(char *exceptionP, size_t frame) {
 
 
 
-void debugSourceFileInfoHandle(int *sourceFileInfoHandleP) {
+void debugSourceFileInfoHandle(int *sourceFileInfoHandleP)
+{NO_UNWIND_BEGIN();
   int sfindex = *sourceFileInfoHandleP;
   core::Fixnum_sp fn = core::make_fixnum(sfindex);
   SourceFileInfo_sp sfi = core::core__source_file_info(fn);
   printf("%s:%d debugSourceFileInfoHandle[%d] --> %s\n", __FILE__, __LINE__, sfindex, _rep_(sfi).c_str());
+  NO_UNWIND_END();
 }
 };
 
-inline core::T_sp proto_copyLoadTimeValue(core::LoadTimeValues_O **ltvPP, size_t index) {
+inline core::T_sp proto_copyLoadTimeValue(core::LoadTimeValues_O **ltvPP, size_t index)
+{
   core::LoadTimeValues_O *tagged_ltvP = *ltvPP;
   core::LoadTimeValues_O *ltvP = gctools::untag_general<core::LoadTimeValues_O *>(tagged_ltvP);
   core::LoadTimeValues_O &ltv = *ltvP;
   return ltv.data_element(index);
 }
 extern "C" {
-void sp_copyLoadTimeValue(core::T_sp *resultP, core::LoadTimeValues_O **ltvPP, cl_index index) {
+void sp_copyLoadTimeValue(core::T_sp *resultP, core::LoadTimeValues_O **ltvPP, cl_index index)
+{NO_UNWIND_BEGIN();
   ASSERT(resultP != NULL);
   ASSERT(ltvPP != NULL);
   ASSERT((*ltvPP) != NULL);
@@ -1317,8 +1400,10 @@ void sp_copyLoadTimeValue(core::T_sp *resultP, core::LoadTimeValues_O **ltvPP, c
 #endif
   (*resultP) = val;
   ASSERTNOTNULL(*resultP);
+  NO_UNWIND_END();
 }
-void mv_copyLoadTimeValue(core::T_mv *resultP, core::LoadTimeValues_O **ltvPP, size_t index) {
+void mv_copyLoadTimeValue(core::T_mv *resultP, core::LoadTimeValues_O **ltvPP, size_t index)
+{NO_UNWIND_BEGIN();
   ASSERT(resultP != NULL);
   ASSERT(ltvPP != NULL);
   ASSERT((*ltvPP) != NULL);
@@ -1327,6 +1412,7 @@ void mv_copyLoadTimeValue(core::T_mv *resultP, core::LoadTimeValues_O **ltvPP, s
 //        printf("%s:%d mv_copyTimeValue@%p  index[%d]  result client@%p  value: %s\n", __FILE__, __LINE__, *ltvPP, index, (*resultP).pbase(), _rep_(*resultP).c_str());
 #endif
   ASSERTNOTNULL(*resultP);
+  NO_UNWIND_END();
 }
 };
 
@@ -1338,34 +1424,45 @@ inline core::T_sp proto_getLoadTimeValue(core::LoadTimeValues_O **ltvPP, int ind
 }
 
 extern "C" {
-void sp_getLoadTimeValue(core::T_sp *resultP, core::LoadTimeValues_O **ltvPP, int index) {
+void sp_getLoadTimeValue(core::T_sp *resultP, core::LoadTimeValues_O **ltvPP, int index)
+{NO_UNWIND_BEGIN();
   (*resultP) = proto_getLoadTimeValue(ltvPP, index);
   ASSERTNOTNULL(*resultP);
+  NO_UNWIND_END();
 }
-void mv_getLoadTimeValue(core::T_mv *resultP, core::LoadTimeValues_O **ltvPP, int index) {
+void mv_getLoadTimeValue(core::T_mv *resultP, core::LoadTimeValues_O **ltvPP, int index)
+{NO_UNWIND_BEGIN();
   (*resultP) = Values(proto_getLoadTimeValue(ltvPP, index));
   ASSERTNOTNULL(*resultP);
+  NO_UNWIND_END();
 }
 };
 
 extern "C" {
 
 
-void saveToMultipleValue0(core::T_mv *mvP) {
+void saveToMultipleValue0(core::T_mv *mvP)
+{NO_UNWIND_BEGIN();
   mvP->saveToMultipleValue0();
+  NO_UNWIND_END();
 }
 
-void sp_restoreFromMultipleValue0(core::T_sp *resultP) {
+void sp_restoreFromMultipleValue0(core::T_sp *resultP)
+{NO_UNWIND_BEGIN();
   T_mv mvResult = gc::multiple_values<core::T_O>::createFromValues();
   (*resultP).setRaw_((gc::Tagged)mvResult.raw_());
+  NO_UNWIND_END();
 }
 
-void mv_restoreFromMultipleValue0(core::T_mv *resultP) {
+void mv_restoreFromMultipleValue0(core::T_mv *resultP)
+{NO_UNWIND_BEGIN();
   resultP->readFromMultipleValue0();
+  NO_UNWIND_END();
 }
 
 /*! Copy the current MultipleValues in _lisp->values() into a SimpleVector */
-extern void saveValues(core::T_sp *resultP, core::T_mv *mvP) {
+extern void saveValues(core::T_sp *resultP, core::T_mv *mvP)
+{NO_UNWIND_BEGIN();
   ASSERT(resultP != NULL);
   ASSERT(mvP != NULL);
   int numValues = (*mvP).number_of_values();
@@ -1381,10 +1478,12 @@ extern void saveValues(core::T_sp *resultP, core::T_mv *mvP) {
   }
   (*resultP) = vo;
   ASSERTNOTNULL(*resultP);
+  NO_UNWIND_END();
 }
 
 /*! Copy the current MultipleValues in _lisp->values() into a VectorObjects */
-extern void loadValues(core::T_mv *resultP, core::T_sp *simpleVectorP) {
+extern void loadValues(core::T_mv *resultP, core::T_sp *simpleVectorP)
+{NO_UNWIND_BEGIN();
   ASSERT(resultP != NULL);
   ASSERT(simpleVectorP != NULL);
   if (!(*simpleVectorP)) {
@@ -1405,6 +1504,7 @@ extern void loadValues(core::T_mv *resultP, core::T_sp *simpleVectorP) {
   for (int i(1); i < vo->length(); ++i) {
     mv._Values[i] = vo->rowMajorAref(i).raw_();
   }
+  NO_UNWIND_END();
 }
 
 /*! If saw_aok > 0 then return that.
@@ -1422,17 +1522,20 @@ int kw_allowOtherKeywords(int saw_aok, core::ActivationFrame_sp *afP, int argIdx
 }
 #endif
 
-size_t cc_trackFirstUnexpectedKeyword(size_t badKwIdx, size_t newBadKwIdx) {
+size_t cc_trackFirstUnexpectedKeyword(size_t badKwIdx, size_t newBadKwIdx)
+{NO_UNWIND_BEGIN();
   // 65536 is the magic number for badKwIdx has not been assigned yet
   if (badKwIdx != 65536)
     return badKwIdx;
   return newBadKwIdx;
+  NO_UNWIND_END();
 }
 };
 
 extern "C" {
 
-void progvSaveSpecials(void **saveSpecialsP, core::T_sp *symbolsP, core::T_sp *valuesP) {
+void progvSaveSpecials(void **saveSpecialsP, core::T_sp *symbolsP, core::T_sp *valuesP)
+{NO_UNWIND_BEGIN();
   core::DynamicScopeManager *managerP = new core::DynamicScopeManager();
   (*saveSpecialsP) = (void *)managerP;
   core::List_sp symbols = (*symbolsP);
@@ -1442,22 +1545,28 @@ void progvSaveSpecials(void **saveSpecialsP, core::T_sp *symbolsP, core::T_sp *v
     core::T_sp value = oCar(values);
     managerP->pushSpecialVariableAndSet(symbol, value);
   }
+  NO_UNWIND_END();
 }
 
-void progvRestoreSpecials(void **saveSpecialsP) {
+void progvRestoreSpecials(void **saveSpecialsP)
+{NO_UNWIND_BEGIN();
   core::DynamicScopeManager *managerP = (core::DynamicScopeManager *)(*saveSpecialsP);
   delete (managerP);
+  NO_UNWIND_END();
 }
 };
 
 extern "C" {
 
-void pushDynamicBinding(core::T_sp *tsymbolP) {
+void pushDynamicBinding(core::T_sp *tsymbolP)
+{NO_UNWIND_BEGIN();
   core::Symbol_sp sym((gctools::Tagged)(tsymbolP->raw_()));
   my_thread->bindings().push_with_value_coming(sym);
+  NO_UNWIND_END();
 }
 
-void popDynamicBinding(core::T_sp *tsymbolP) {
+void popDynamicBinding(core::T_sp *tsymbolP)
+{NO_UNWIND_BEGIN();
   core::Symbol_sp sym((gctools::Tagged)(tsymbolP->raw_()));
   core::Symbol_sp top = my_thread->bindings().topSymbol();
   if (sym != my_thread->bindings().topSymbol()) {
@@ -1471,6 +1580,7 @@ void popDynamicBinding(core::T_sp *tsymbolP) {
     SIMPLE_ERROR(BF("Mismatch in popDynamicBinding:\n%s") % ss.str());
   }
   my_thread->bindings().pop_binding();
+  NO_UNWIND_END();
 }
 };
 
@@ -1493,12 +1603,14 @@ void trace_setActivationFrameForIHSTop(core::T_sp *afP) {
 }
 #endif
 
-extern size_t matchKeywordOnce(core::T_sp *xP, core::T_O *yP, unsigned char *sawKeyAlreadyP) {
+extern size_t matchKeywordOnce(core::T_sp *xP, core::T_O *yP, unsigned char *sawKeyAlreadyP)
+{NO_UNWIND_BEGIN();
   if ((*xP).raw_() != (yP))
     return 0;
   if (*sawKeyAlreadyP)
     return 2;
   return 1;
+  NO_UNWIND_END();
 }
 };
 
@@ -1514,23 +1626,28 @@ extern "C" {
 
 //#define DEBUG_CC
 
-void cc_setTmvToNil(core::T_mv *sharedP) {
+void cc_setTmvToNil(core::T_mv *sharedP)
+{NO_UNWIND_BEGIN();
   *sharedP = Values(_Nil<core::T_O>());
+  NO_UNWIND_END();
 }
 
 
 #define PROTO_cc_setSymbolValue "void (t* t*)"
 #define CATCH_cc_setSymbolValue false
-void cc_setSymbolValue(core::T_O *sym, core::T_O *val) {
+void cc_setSymbolValue(core::T_O *sym, core::T_O *val)
+{NO_UNWIND_BEGIN();
   //	core::Symbol_sp s = gctools::smart_ptr<core::Symbol_O>(reinterpret_cast<core::Symbol_O*>(sym));
   core::Symbol_sp s = gctools::smart_ptr<core::Symbol_O>((gc::Tagged)sym);
   s->setf_symbolValue(gctools::smart_ptr<core::T_O>((gc::Tagged)val));
+  NO_UNWIND_END();
 }
 
 core::T_O *cc_enclose(core::T_O *lambdaName, fnLispCallingConvention llvm_func,
                       int *sourceFileInfoHandleP,
                       size_t filePos, size_t lineno, size_t column,
-                      std::size_t numCells, ...) {
+                      std::size_t numCells, ...)
+{
   core::T_sp tlambdaName = gctools::smart_ptr<core::T_O>((gc::Tagged)lambdaName);
   gctools::smart_ptr<core::ClosureWithSlots_O> functoid =
     gctools::GC<core::ClosureWithSlots_O>::allocate_container(numCells
@@ -1603,29 +1720,26 @@ LCC_RETURN cc_call_multipleValueOneFormCallWithRet0(core::Function_O *tfunc, gct
   return core::funcall_frame(func,mvargs);
 }
 
-void cc_saveThreadLocalMultipleValues(core::T_mv *result, core::MultipleValues *mv) {
+void cc_saveThreadLocalMultipleValues(core::T_mv *result, core::MultipleValues *mv)
+{NO_UNWIND_BEGIN();
   core::MultipleValues &mvThread = core::lisp_multipleValues();
   (*mv)._Size = result->number_of_values();
   (*mv)[0] = ENSURE_VALID_OBJECT((*result).raw_());
   for (size_t i = 1; i < (*mv)._Size; ++i) (*mv)[i] = ENSURE_VALID_OBJECT(mvThread[i]);
+  NO_UNWIND_END();
 }
 
-void cc_loadThreadLocalMultipleValues(core::T_mv *result, core::MultipleValues *mv) {
+void cc_loadThreadLocalMultipleValues(core::T_mv *result, core::MultipleValues *mv)
+{NO_UNWIND_BEGIN();
   core::MultipleValues &mvThread = core::lisp_multipleValues();
   *result = gctools::multiple_values<core::T_O>(gctools::smart_ptr<core::T_O>((gc::Tagged)ENSURE_VALID_OBJECT((*mv)[0])), (*mv)._Size);
   for (size_t i = 1; i < (*mv)._Size; ++i) {
     mvThread[i] = ENSURE_VALID_OBJECT((*mv)[i]);
   }
+  NO_UNWIND_END();
 }
 
 
-size_t cc_matchKeywordOnce(core::T_O *xP, core::T_O *yP, core::T_O *sawKeyAlreadyP) {
-  if (xP != yP)
-    return 0;
-  if (!gctools::tagged_nilp(sawKeyAlreadyP))
-    return 2;
-  return 1;
-}
 
 void cc_ifNotKeywordException(core::T_O *obj, size_t argIdx, va_list valist) {
   T_sp vobj((gc::Tagged)obj);
@@ -1634,8 +1748,10 @@ void cc_ifNotKeywordException(core::T_O *obj, size_t argIdx, va_list valist) {
   }
 }
 
-T_O **cc_multipleValuesArrayAddress() {
+T_O **cc_multipleValuesArrayAddress()
+{NO_UNWIND_BEGIN();
   return &lisp_multipleValues().callingArgsStart()[0];
+  NO_UNWIND_END();
 }
 
 void cc_unwind(T_O *targetFrame, size_t index) {
@@ -1658,20 +1774,25 @@ void cc_unwind(T_O *targetFrame, size_t index) {
     throw unwind;
 }
 
-void cc_saveMultipleValue0(core::T_mv *result) {
+void cc_saveMultipleValue0(core::T_mv *result)
+{NO_UNWIND_BEGIN();
   (*result).saveToMultipleValue0();
+  NO_UNWIND_END();
 }
 
-void cc_restoreMultipleValue0(core::T_mv *result) {
+void cc_restoreMultipleValue0(core::T_mv *result)
+{NO_UNWIND_BEGIN();
   (*result).readFromMultipleValue0();
 #ifdef DEBUG_FLOW_CONTROL
   if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp()) {
     printf("%s:%d In cc_restoreMultipleValue0\n", __FILE__, __LINE__);
   }
 #endif
+  NO_UNWIND_END();
 }
 
-T_O *cc_pushLandingPadFrame() {
+T_O *cc_pushLandingPadFrame()
+{NO_UNWIND_BEGIN();
   core::T_sp ptr = _Nil<core::T_O>();
 #define DEBUG_UNWIND 1
 #ifdef DEBUG_UNWIND
@@ -1686,9 +1807,11 @@ T_O *cc_pushLandingPadFrame() {
   }
 #endif
   return gctools::tag_fixnum<core::T_O *>(index);
+  NO_UNWIND_END();
 }
 
-void cc_popLandingPadFrame(T_O *frameFixnum) {
+void cc_popLandingPadFrame(T_O *frameFixnum)
+{NO_UNWIND_BEGIN();
   ASSERT(gctools::tagged_fixnump(frameFixnum));
   size_t frameIndex = gctools::untag_fixnum(frameFixnum);
 #ifdef DEBUG_FLOW_CONTROL
@@ -1705,6 +1828,7 @@ void cc_popLandingPadFrame(T_O *frameFixnum) {
       printf("    After unwind of exceptionStack:  %s\n", my_thread->exceptionStack().summary().c_str());
   }
 #endif
+  NO_UNWIND_END();
 }
 
 size_t cc_landingpadUnwindMatchFrameElseRethrow(char *exceptionP, core::T_O *thisFrame) {
@@ -1839,9 +1963,11 @@ void cc_dispatch_debug(int msg_id, uintptr_clasp_t val)
   fflush(stdout);
 }
 
-void clasp_terminate(const char *file, size_t line, size_t column, const char *func) {
+void clasp_terminate(const char *file, size_t line, size_t column, const char *func)
+{NO_UNWIND_BEGIN();
   printf("Terminating file: %s  func: %s\n", file, func);
   abort();
+  NO_UNWIND_END();
 }
 };
 

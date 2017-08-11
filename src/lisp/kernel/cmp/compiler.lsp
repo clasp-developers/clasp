@@ -27,8 +27,6 @@
 ;;
 (in-package :cmp)
 
-(defvar *compiler-mutex* (mp:make-lock :name 'compiler-mutex :recursive t))
-
 (defun augment-environment-with-declares (env declares)
   (let (specials)
     (mapc (lambda (decl)
@@ -546,8 +544,7 @@ env is the parent environment of the (result-af) value frame"
 	       ))
 	    )
 	  ))))
-  (cmp-log "Done codegen-let/let*\n")
-  )
+  (cmp-log "Done codegen-let/let*\n"))
 
 (defun codegen-let (result rest env)
   (codegen-let/let* 'let result rest env))
@@ -556,34 +553,81 @@ env is the parent environment of the (result-af) value frame"
   (codegen-let/let* 'let* result rest env))
 
 
-
-
+(defun base-type-check (object-raw mask ctag then-br else-br)
+ ;; object at this point is a smart ptr { {}* }
+  (let* ((tag (irc-and (irc-ptr-to-int object-raw %uintptr_t%) (jit-constant-uintptr_t mask) "tag-only"))
+         (cmp (irc-icmp-eq tag (jit-constant-uintptr_t ctag) "test")))
+    (irc-cond-br cmp then-br else-br)))
 
 #||
-#+(or)(defun codegen-primop-consp (result rest env)
-  (let* ((value (car rest))
-         (tag (llvm-sys:create-and *irbuilder* (llvm-sys:create-bit-cast value %uintptr_t%) (jit-constant-uintptr_t +tag-mask+) "tag-only"))
-         (consp-tag-match (llvm-sys:create-icmp-eq tag (jit-constant-uintptr_t +cons-tag+))))
-    (
-         
-         (consp-true-block (irc-basic-block-create "consp-true"))
-         (consp-false-block
-    (
+(defun typeq-function (header-value-min-max)
+  (or (equal header-value-min-max (gethash 'function core:+type-header-value-map+))))
+
+(defun compile-generic-function-check (header-value then-br else-br)
+  (let ((match (irc-icmp-eq header-value (jit-constant-uintptr_t (gethash 'core:instance core:+type-header-value-map+))))
 ||#
+        
+(defun compile-header-check (header-value-min-max object-raw then-br else-br)
+  (let ((header-check-br  (irc-basic-block-create "header-check-br")))
+    (base-type-check object-raw +immediate-mask+ +general-tag+ header-check-br else-br)
+    (irc-begin-block header-check-br)
+    (let* ((byte-ptr           (irc-bit-cast object-raw %i8*%))
+           (header-addr        (irc-gep byte-ptr (list (jit-constant-i64 (- (+ +header-size+ +general-tag+))))))
+           (header-value       (irc-load (irc-bit-cast header-addr %uintptr_t*%))))
+      (if (fixnump header-value-min-max)
+          (let ((match (irc-icmp-eq header-value (jit-constant-uintptr_t header-value-min-max))))
+            (irc-cond-br match then-br else-br))
+          (let ((maybe-in-range-br (irc-basic-block-create "maybe-in-range")))
+            (check-type header-value-min-max cons)
+            (let* ((header-range-min (car header-value-min-max))
+                   (header-range-max (cdr header-value-min-max))
+                   (min-match        (irc-icmp-uge header-value (jit-constant-uintptr_t header-range-min))))
+              (irc-cond-br min-match maybe-in-range-br else-br)
+              (irc-begin-block maybe-in-range-br)
+              (let* ((maybe-more-tests-br (irc-basic-block-create "maybe-more-tests"))
+                     (max-match (irc-icmp-ule header-value (jit-constant-uintptr_t header-range-max))))
+                (irc-cond-br max-match maybe-more-tests-br else-br)
+                (irc-begin-block maybe-more-tests-br)
+                #+(or)(if (typeq-function header-value-min-max)
+                          (compile-generic-function-check header-value then-br else-br)
+                          (irc-br then-br))
+                (irc-br then-br))))))))
 
+(defun compile-typeq-condition (cond env thenb elseb)
+  (let ((object (second cond))
+        (type (third cond)))
+    (when (cdddr cond)
+      (format t "compile-typeq-condition (cdddr cond) = ~a~%" (cdddr cond))
+      (compiler-error (cdddr cond) "too many arguments for typeq"))
+    (let ((value (irc-alloca-tsp :label "if-typeq-tsp")))
+      (codegen value object env)
+      (let ((object-raw (irc-smart-ptr-extract (irc-load value))))
+        (case type
+          ((fixnum) (base-type-check object-raw +fixnum-mask+ +fixnum-tag+ thenb elseb))
+          ((cons) (base-type-check object-raw +immediate-mask+ +cons-tag+ thenb elseb))
+          ((character) (base-type-check object-raw +immediate-mask+ +character-tag+ thenb elseb))
+          ((single-float) (base-type-check object-raw +immediate-mask+ +single-float-tag+ thenb elseb))
+          (t
+           (let ((header-value-min-max (gethash type core:+type-header-value-map+)))
+             (when (null header-value-min-max)
+               (format t "typeq type = ~a~%" type)
+               (compiler-error type "unknown type for typeq"))
+             (compile-header-check header-value-min-max object-raw thenb elseb))))))))
 
+(defun compile-general-condition (cond env thenb elseb)
+  "Generate code for cond that branches to one of the provided successor blocks"
+  (let ((test-temp-store (irc-alloca-tsp :label "if-cond-tsp")))
+    (codegen test-temp-store cond env)
+    (let ((test-result (llvm-sys:create-icmp-eq *irbuilder*
+                                                (irc-intrinsic "isTrue" test-temp-store)
+                                                (jit-constant-i32 1)
+                                                "ifcond")))
+      (irc-cond-br test-result thenb elseb))))
 
-
-(defun compile-if-cond (cond env)
-  "Generate code for cond that writes into result and then calls isTrue function that returns a boolean"
-  (let (test-result)
-    (let ((test-temp-store (irc-alloca-tsp :label "if-cond-tsp")))
-      (codegen test-temp-store cond env)
-      (setq test-result (llvm-sys:create-icmp-eq *irbuilder* (irc-intrinsic "isTrue" test-temp-store) (jit-constant-i32 1) "ifcond")))
-    test-result))
-
-
-
+(defun compile-if-cond (cond env thenb elseb)
+  (cond ((and (consp cond) (eq (first cond) 'cmp::typeq))
+         (compile-typeq-condition cond env thenb elseb))
+        (t (compile-general-condition cond env thenb elseb))))
 
 (defun codegen-if (result rest env)
   "See Kaleidoscope example for if/then/else"
@@ -593,52 +637,27 @@ env is the parent environment of the (result-af) value frame"
     (when (cdddr rest)
       (format t "codegen-if (cdddr rest) = ~a ~%" (cdddr rest))
       (compiler-error (cdddr rest) "too many arguments for if"))
-    ;; codegen-if-cond generates code that returns true if cond evaluates to something other than nil
-    (let ((condv (compile-if-cond icond env)))
-;;      (unless condv (break "condv is nil") (return-from codegen-if nil)) ;; REALLY? return?????
-      ;;Here we diverge a bit from the Kaleidoscope demo
-      ;; condv should already return a bool so we don't have to convert it to one
-      ;; example had: CondV = Builder.CreateFCmpONE(CondV,ConstantFP::get(getGlobalContext(),APFloat(0.0)),"ifcond")
-;;      (break "make sure that divergence with kaleidoscope demo works")
-      ;;      (setq condv (llvm-sys:create-fcmp-one))
-      ;; Create blocks for the then and else cases. Insert the 'then' block at
-      ;; the end of the function
-      (let* ((thenbb (irc-basic-block-create "then" *current-function*))
-	     (elsebb (irc-basic-block-create "else" ))
-	     (mergebb (irc-basic-block-create "ifcont" )))
-	(llvm-sys:create-cond-br *irbuilder* condv thenbb elsebb nil)
-	(irc-set-insert-point-basic-block thenbb)
-	(dbg-set-current-debug-location-here)
-	(irc-low-level-trace)
-	(let ((thenv (progn
-                       (dbg-set-current-source-pos ithen)
-                       (codegen result #|REALLY? put result in result?|# ithen env))))
-	  ;;	  (unless thenv (break "thenv is nil") (return-from codegen-if nil))  ;; REALLY? return?????
-	  (irc-branch-if-no-terminator-inst mergebb)
-	  ;; Codegen of 'Then' can change the current block, update thenbb for the PHI.
-	  ;; ---weird! We overwrite thenbb here!
-	  (setq thenbb (llvm-sys:get-insert-block *irbuilder*))
-	  ;; Emit else block
-	  (irc-begin-block elsebb)
-	  ;; REALLY? Again- do I use result here?
-	  (let ((elsev (progn
-                         (dbg-set-current-source-pos ielse)
-                         (codegen result ielse env))))
-	    ;;	    (unless elsev (break "elsev is nil") (return-from codegen-if nil)) ;; REALLY? return???
-	    (irc-branch-if-no-terminator-inst mergebb)
-	    ;;Codegen of 'else' can change the current block, update elsebb for the phi
-	    (setq elsebb (llvm-sys:get-insert-block *irbuilder*))
-	    ;; emit mergeblock
-	    ;; Again use my 'append-basic-block' function
-	    (irc-begin-block mergebb)
-	    ;; HOW DO I CREATE-PHI??????????????
-	    ))))
-    ;; Kaleidoscope demo has...
-    ;;  PHINode *PN = Builder.CreatePHI(Type::getDoubleTy(getGlobalContext()), 2,"iftmp");
-    ;;  PN->addIncoming(ThenV, ThenBB);
-    ;;  PN->addIncoming(ElseV, ElseBB);
-    ;;  return PN;
-))
+    (let* ((thenbb (irc-basic-block-create "then"))
+           (elsebb (irc-basic-block-create "else"))
+           (mergebb (irc-basic-block-create "ifcont")))
+      ;; We have block references so we can compile the branch now.
+      (compile-if-cond icond env thenbb elsebb)
+
+      ;; Compile the THEN branch.
+      (irc-begin-block thenbb)
+      (irc-low-level-trace)
+      (dbg-set-current-source-pos ithen)
+      (codegen result ithen env)
+      (irc-branch-if-no-terminator-inst mergebb)
+
+      ;; Compile the ELSE branch.
+      (irc-begin-block elsebb)
+      (irc-low-level-trace)
+      (codegen result ielse env)
+      (irc-branch-if-no-terminator-inst mergebb)
+
+      ;; Everything after starts at the block THEN and ELSE merge into.
+      (irc-begin-block mergebb))))
 
 
 
@@ -1230,8 +1249,6 @@ jump to blocks within this tagbody."
 
 
 
-
-
 ;;--------------------------------------------------
 ;;--------------------------------------------------
 ;;
@@ -1516,8 +1533,8 @@ We could do more fancy things here - like if cleavir-clasp fails, use the clasp 
 (defun compile-in-env (bind-to-name &optional definition env compile-hook (linkage 'llvm-sys:internal-linkage) &aux conditions)
   "Compile in the given environment"
   (with-compiler-env (conditions)
-    (let ((*the-module* (create-run-time-module-for-compile)))
-      (define-primitives-in-module *the-module*)
+    (let* ((*the-module* (create-run-time-module-for-compile))
+           (*primitives* (primitives-in-module *the-module*)))
       ;; Link the C++ intrinsics into the module
       (let* ((*declare-dump-module* nil)
              (pathname (if *load-pathname*
@@ -1559,7 +1576,7 @@ We could do more fancy things here - like if cleavir-clasp fails, use the clasp 
            (compile-in-env name lambda-expression wrapped-env *cleavir-compile-hook* 'llvm-sys:external-linkage)))
         ((functionp definition)
          (error "COMPILE doesn't know how to handle this type of function"))
-        ((consp definition)
+        ((and (consp definition) (eq (car definition) 'lambda))
          (cmp-log "compile form: %s\n" definition)
          (compile-in-env name definition nil *cleavir-compile-hook* 'llvm-sys:external-linkage))
         ((null definition)

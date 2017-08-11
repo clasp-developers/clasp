@@ -51,11 +51,10 @@ namespace core {
     }
   };
 
-
   template <typename FN>
-    class VariadicFunctor : public BuiltinClosure_O {
+    class VariadicFunctor : public TemplatedFunctionBase_O {
   public:
-    typedef BuiltinClosure_O TemplatedBase;
+    typedef TemplatedFunctionBase_O TemplatedBase;
     virtual size_t templatedSizeof() const { return sizeof(VariadicFunctor<FN>); };
   };
 };
@@ -63,9 +62,10 @@ namespace core {
 
 /*! Make every templated VariadicFunctor KIND the same as the VariadicFunctor<T>::TemplatedBase */
 template <typename T>
-class gctools::GCKind<core::VariadicFunctor<T>> {
+class gctools::GCStamp<core::VariadicFunctor<T>> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::GCKind<typename core::VariadicFunctor<T>::TemplatedBase>::Kind;
+  static gctools::GCStampEnum const Stamp = gctools::GCStamp<typename core::VariadicFunctor<T>::TemplatedBase>::Kind;
+  static const size_t Flags = 0;
 };
 
 
@@ -77,9 +77,9 @@ namespace core {
 
 namespace core {
 template <int DispatchOn, typename FN>
-class VariadicMethoid : public BuiltinClosure_O {
+class VariadicMethoid : public TemplatedFunctionBase_O {
 public:
-  typedef BuiltinClosure_O TemplatedBase;
+  typedef TemplatedFunctionBase_O TemplatedBase;
   size_t templatedSizeof() const { return sizeof(VariadicMethoid<DispatchOn, FN>); };
 };
 
@@ -109,9 +109,10 @@ void wrap_function(const string &packageName, const string &name, RT (*fp)(ARGS.
 };
 
 template <int DispatchOn, typename T>
-class gctools::GCKind<core::VariadicMethoid<DispatchOn, T>> {
+class gctools::GCStamp<core::VariadicMethoid<DispatchOn, T>> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::GCKind<typename core::VariadicMethoid<DispatchOn, T>::TemplatedBase>::Kind;
+  static gctools::GCStampEnum const Stamp = gctools::GCStamp<typename core::VariadicMethoid<DispatchOn, T>::TemplatedBase>::Kind;
+  static const size_t Flags = 0;
 };
 
 namespace core {

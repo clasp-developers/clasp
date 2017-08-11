@@ -32,8 +32,8 @@ namespace core {
       if (supplied) {
         if (obj.single_floatp()) {
           return obj.unsafe_single_float();
-        } else if (gc::IsA<DoubleFloat_sp>(obj)) {
-          return gc::As_unsafe<DoubleFloat_sp>(obj)->get();
+        } else if (gc::IsA<General_sp>(obj)) {
+          return clasp_to_float(gc::As_unsafe<General_sp>(obj));
         }
         TYPE_ERROR(obj,cl::_sym_single_float);
       }
@@ -71,11 +71,11 @@ namespace core {
   FORWARD(MDArrayFloat);
 };
 namespace core {
-  class MDArrayFloat_O : public template_Array<MDArrayFloat_O,SimpleVectorFloat_O,MDArray_O> {
+  class MDArrayFloat_O : public template_Array<MDArrayFloat_O,SimpleMDArrayFloat_O,SimpleVectorFloat_O,MDArray_O> {
     LISP_CLASS(core, CorePkg, MDArrayFloat_O, "MDArrayFloat",MDArray_O);
     virtual ~MDArrayFloat_O() {};
   public:
-    typedef template_Array<MDArrayFloat_O,SimpleVectorFloat_O,MDArray_O> TemplatedBase;
+    typedef template_Array<MDArrayFloat_O,SimpleMDArrayFloat_O,SimpleVectorFloat_O,MDArray_O> TemplatedBase;
     typedef typename TemplatedBase::simple_element_type simple_element_type;
     typedef typename TemplatedBase::simple_type simple_type;
   public: // make vector

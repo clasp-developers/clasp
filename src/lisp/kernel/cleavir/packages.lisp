@@ -41,8 +41,7 @@
    #:alloca-i8
 ))
 
-(defpackage #:clasp-cleavir-generate-ast
-  (:nicknames #:cc-generate-ast))
+(defpackage #:cc-generate-ast)
 
 
 (defpackage #:clasp-cleavir-ast
@@ -125,6 +124,8 @@
 
 (defpackage #:cc-hir-to-mir
   (:use #:common-lisp)
+  (:export
+   #:reduce-typeqs)
 )
 
 (defpackage #:cc-mir
@@ -134,6 +135,9 @@
    #:make-characterp-instruction
    #:single-float-p-instruction
    #:make-single-float-p-instruction
+   #:headerq-instruction
+   #:header-value-min-max
+   #:make-headerq-instruction
    #:enter-instruction
    #:closure-pointer-dynamic-lexical-location
    #:describe-mir

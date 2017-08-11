@@ -65,9 +65,9 @@ CL_DEFUN size_t core__function_call_counter(Function_sp f)
 #endif
 
 string Function_O::__repr__() const {
-  T_sp name = this->name();
+  T_sp name = this->functionName();
   stringstream ss;
-  ss << "#<" << this->_instanceClass()->classNameAsString();
+  ss << "#<" << this->_instanceClass()->_classNameAsString();
 #ifdef USE_BOEHM
   ss << "@" << (void*)this << " ";
 #endif

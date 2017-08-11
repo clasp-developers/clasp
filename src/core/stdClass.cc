@@ -30,7 +30,6 @@ THE SOFTWARE.
 #include <clasp/core/standardObject.h>
 #include <clasp/core/symbolTable.h>
 #include <clasp/core/evaluator.h>
-#include <clasp/core/stdClass.h>
 #include <clasp/core/wrappers.h>
 
 namespace core {

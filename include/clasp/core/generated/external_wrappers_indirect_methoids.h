@@ -18,13 +18,13 @@ template <typename Pols,  typename RT,  typename OT ,typename ARG1,typename ARG2
 class IndirectVariadicMethoid
 < Pols,OT ,RT (OT::ExternalType::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12, ARG13, ARG14,
     ARG15)  >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef IndirectVariadicMethoid < Pols,OT ,RT (OT::ExternalType::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10,
     ARG11, ARG12, ARG13, ARG14, ARG15)  > MyType;
 public:
 virtual const char* describe() const {return "IndirectVariadicMethoid";};
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 // typedef std::function<RT (OT& ,ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12, ARG13, ARG14, ARG15)>
 // Type;
@@ -33,7 +33,7 @@ typedef RT (OT::ExternalType::*Type)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, 
 Type mptr;
 public:
 enum { NumParams = 16 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(method_entry_point,name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : TemplatedFunctionBase_O(method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
@@ -135,20 +135,20 @@ template <typename Pols,  typename RT,  typename OT ,typename ARG1,typename ARG2
     typename ARG14 >
 class IndirectVariadicMethoid
 < Pols,OT ,RT (OT::ExternalType::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12, ARG13, ARG14)  >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef IndirectVariadicMethoid < Pols,OT ,RT (OT::ExternalType::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10,
     ARG11, ARG12, ARG13, ARG14)  > MyType;
 public:
 virtual const char* describe() const {return "IndirectVariadicMethoid";};
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 // typedef std::function<RT (OT& ,ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12, ARG13, ARG14)> Type;
 typedef RT (OT::ExternalType::*Type)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12, ARG13, ARG14) ;
 Type mptr;
 public:
 enum { NumParams = 15 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(method_entry_point,name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : TemplatedFunctionBase_O(method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
@@ -245,20 +245,20 @@ template <typename Pols,  typename RT,  typename OT ,typename ARG1,typename ARG2
     typename ARG6,typename ARG7,typename ARG8,typename ARG9,typename ARG10,typename ARG11,typename ARG12,typename ARG13 >
 class IndirectVariadicMethoid
 < Pols,OT ,RT (OT::ExternalType::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12, ARG13)  >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef IndirectVariadicMethoid < Pols,OT ,RT (OT::ExternalType::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10,
     ARG11, ARG12, ARG13)  > MyType;
 public:
 virtual const char* describe() const {return "IndirectVariadicMethoid";};
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 //        typedef std::function<RT (OT& ,ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12, ARG13)> Type;
 typedef RT (OT::ExternalType::*Type)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12, ARG13) ;
 Type mptr;
 public:
 enum { NumParams = 14 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(method_entry_point,name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : TemplatedFunctionBase_O(method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
@@ -351,20 +351,20 @@ template <typename Pols,  typename RT,  typename OT ,typename ARG1,typename ARG2
     typename ARG6,typename ARG7,typename ARG8,typename ARG9,typename ARG10,typename ARG11,typename ARG12 >
 class IndirectVariadicMethoid
 < Pols,OT ,RT (OT::ExternalType::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12)  >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef IndirectVariadicMethoid < Pols,OT ,RT (OT::ExternalType::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10,
     ARG11, ARG12)  > MyType;
 public:
 virtual const char* describe() const {return "IndirectVariadicMethoid";};
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 //        typedef std::function<RT (OT& ,ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12)> Type;
 typedef RT (OT::ExternalType::*Type)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12) ;
 Type mptr;
 public:
 enum { NumParams = 13 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(method_entry_point,name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : TemplatedFunctionBase_O(method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
@@ -452,20 +452,20 @@ template <typename Pols,  typename RT,  typename OT ,typename ARG1,typename ARG2
     typename ARG6,typename ARG7,typename ARG8,typename ARG9,typename ARG10,typename ARG11 >
 class IndirectVariadicMethoid
 < Pols,OT ,RT (OT::ExternalType::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11)  >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef IndirectVariadicMethoid < Pols,OT ,RT (OT::ExternalType::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10,
     ARG11)  > MyType;
 public:
 virtual const char* describe() const {return "IndirectVariadicMethoid";};
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 //        typedef std::function<RT (OT& ,ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11)> Type;
 typedef RT (OT::ExternalType::*Type)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11) ;
 Type mptr;
 public:
 enum { NumParams = 12 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(method_entry_point,name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : TemplatedFunctionBase_O(method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
@@ -549,20 +549,20 @@ template <typename Pols,  typename RT,  typename OT ,typename ARG1,typename ARG2
     typename ARG6,typename ARG7,typename ARG8,typename ARG9,typename ARG10 >
 class IndirectVariadicMethoid
 < Pols,OT ,RT (OT::ExternalType::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10)  >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef IndirectVariadicMethoid < Pols,OT ,RT (OT::ExternalType::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9,
     ARG10)  > MyType;
 public:
 virtual const char* describe() const {return "IndirectVariadicMethoid";};
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 //        typedef std::function<RT (OT& ,ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10)> Type;
 typedef RT (OT::ExternalType::*Type)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10) ;
 Type mptr;
 public:
 enum { NumParams = 11 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(method_entry_point,name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : TemplatedFunctionBase_O(method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
@@ -642,20 +642,20 @@ template <typename Pols,  typename RT,  typename OT ,typename ARG1,typename ARG2
     typename ARG6,typename ARG7,typename ARG8,typename ARG9 >
 class IndirectVariadicMethoid
 < Pols,OT ,RT (OT::ExternalType::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9)  >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef IndirectVariadicMethoid < Pols,OT ,RT (OT::ExternalType::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8,
     ARG9)  > MyType;
 public:
 virtual const char* describe() const {return "IndirectVariadicMethoid";};
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 //        typedef std::function<RT (OT& ,ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9)> Type;
 typedef RT (OT::ExternalType::*Type)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9) ;
 Type mptr;
 public:
 enum { NumParams = 10 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(method_entry_point,name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : TemplatedFunctionBase_O(method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
@@ -731,19 +731,19 @@ template <typename Pols,  typename RT,  typename OT ,typename ARG1,typename ARG2
     typename ARG6,typename ARG7,typename ARG8 >
 class IndirectVariadicMethoid
 < Pols,OT ,RT (OT::ExternalType::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8)  >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef IndirectVariadicMethoid < Pols,OT ,RT (OT::ExternalType::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8)  > MyType;
 public:
 virtual const char* describe() const {return "IndirectVariadicMethoid";};
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 //        typedef std::function<RT (OT& ,ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8)> Type;
 typedef RT (OT::ExternalType::*Type)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8) ;
 Type mptr;
 public:
 enum { NumParams = 9 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(method_entry_point,name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : TemplatedFunctionBase_O(method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
@@ -815,19 +815,19 @@ template <typename Pols,  typename RT,  typename OT ,typename ARG1,typename ARG2
     typename ARG6,typename ARG7 >
 class IndirectVariadicMethoid
 < Pols,OT ,RT (OT::ExternalType::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7)  >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef IndirectVariadicMethoid < Pols,OT ,RT (OT::ExternalType::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7)  > MyType;
 public:
 virtual const char* describe() const {return "IndirectVariadicMethoid";};
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 //        typedef std::function<RT (OT& ,ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7)> Type;
 typedef RT (OT::ExternalType::*Type)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7) ;
 Type mptr;
 public:
 enum { NumParams = 8 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(method_entry_point,name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : TemplatedFunctionBase_O(method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
@@ -895,19 +895,19 @@ template <typename Pols,  typename RT,  typename OT ,typename ARG1,typename ARG2
     typename ARG6 >
 class IndirectVariadicMethoid
 < Pols,OT ,RT (OT::ExternalType::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6)  >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef IndirectVariadicMethoid < Pols,OT ,RT (OT::ExternalType::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6)  > MyType;
 public:
 virtual const char* describe() const {return "IndirectVariadicMethoid";};
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 //        typedef std::function<RT (OT& ,ARG1, ARG2, ARG3, ARG4, ARG5, ARG6)> Type;
 typedef RT (OT::ExternalType::*Type)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6) ;
 Type mptr;
 public:
 enum { NumParams = 7 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(method_entry_point,name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : TemplatedFunctionBase_O(method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
@@ -970,19 +970,19 @@ return LCC_RETURN(translate::to_object<RT>::convert(std::move(retval)).raw_(),oi
 template <typename Pols,  typename RT,  typename OT ,typename ARG1,typename ARG2,typename ARG3,typename ARG4,typename ARG5 >
 class IndirectVariadicMethoid
 < Pols,OT ,RT (OT::ExternalType::*)( ARG1, ARG2, ARG3, ARG4, ARG5)  >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef IndirectVariadicMethoid < Pols,OT ,RT (OT::ExternalType::*)( ARG1, ARG2, ARG3, ARG4, ARG5)  > MyType;
 public:
 virtual const char* describe() const {return "IndirectVariadicMethoid";};
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 //        typedef std::function<RT (OT& ,ARG1, ARG2, ARG3, ARG4, ARG5)> Type;
 typedef RT (OT::ExternalType::*Type)( ARG1, ARG2, ARG3, ARG4, ARG5) ;
 Type mptr;
 public:
 enum { NumParams = 6 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(method_entry_point,name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : TemplatedFunctionBase_O(method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
@@ -1041,19 +1041,19 @@ return LCC_RETURN(translate::to_object<RT>::convert(std::move(retval)).raw_(),oi
 template <typename Pols,  typename RT,  typename OT ,typename ARG1,typename ARG2,typename ARG3,typename ARG4 >
 class IndirectVariadicMethoid
 < Pols,OT ,RT (OT::ExternalType::*)( ARG1, ARG2, ARG3, ARG4)  >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef IndirectVariadicMethoid < Pols,OT ,RT (OT::ExternalType::*)( ARG1, ARG2, ARG3, ARG4)  > MyType;
 public:
 virtual const char* describe() const {return "IndirectVariadicMethoid";};
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 //        typedef std::function<RT (OT& ,ARG1, ARG2, ARG3, ARG4)> Type;
 typedef RT (OT::ExternalType::*Type)( ARG1, ARG2, ARG3, ARG4) ;
 Type mptr;
 public:
 enum { NumParams = 5 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(method_entry_point,name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : TemplatedFunctionBase_O(method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
@@ -1108,19 +1108,19 @@ return LCC_RETURN(translate::to_object<RT>::convert(std::move(retval)).raw_(),oi
 template <typename Pols,  typename RT,  typename OT ,typename ARG1,typename ARG2,typename ARG3 >
 class IndirectVariadicMethoid
 < Pols,OT ,RT (OT::ExternalType::*)( ARG1, ARG2, ARG3)  >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef IndirectVariadicMethoid < Pols,OT ,RT (OT::ExternalType::*)( ARG1, ARG2, ARG3)  > MyType;
 public:
 virtual const char* describe() const {return "IndirectVariadicMethoid";};
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 //        typedef std::function<RT (OT& ,ARG1, ARG2, ARG3)> Type;
 typedef RT (OT::ExternalType::*Type)( ARG1, ARG2, ARG3) ;
 Type mptr;
 public:
 enum { NumParams = 4 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(method_entry_point,name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : TemplatedFunctionBase_O(method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
@@ -1171,19 +1171,19 @@ return LCC_RETURN(translate::to_object<RT>::convert(std::move(retval)).raw_(),oi
 template <typename Pols,  typename RT,  typename OT ,typename ARG1,typename ARG2 >
 class IndirectVariadicMethoid
 < Pols,OT ,RT (OT::ExternalType::*)( ARG1, ARG2)  >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef IndirectVariadicMethoid < Pols,OT ,RT (OT::ExternalType::*)( ARG1, ARG2)  > MyType;
 public:
 virtual const char* describe() const {return "IndirectVariadicMethoid";};
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 //        typedef std::function<RT (OT& ,ARG1, ARG2)> Type;
 typedef RT (OT::ExternalType::*Type)( ARG1, ARG2) ;
 Type mptr;
 public:
 enum { NumParams = 3 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(method_entry_point,name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : TemplatedFunctionBase_O(method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
@@ -1230,19 +1230,19 @@ return LCC_RETURN(translate::to_object<RT>::convert(std::move(retval)).raw_(),oi
 template <typename Pols,  typename RT,  typename OT ,typename ARG1 >
 class IndirectVariadicMethoid
 < Pols,OT ,RT (OT::ExternalType::*)( ARG1)  >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef IndirectVariadicMethoid < Pols,OT ,RT (OT::ExternalType::*)( ARG1)  > MyType;
 public:
 virtual const char* describe() const {return "IndirectVariadicMethoid";};
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 //        typedef std::function<RT (OT& ,ARG1)> Type;
 typedef RT (OT::ExternalType::*Type)( ARG1) ;
 Type mptr;
 public:
 enum { NumParams = 2 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(method_entry_point,name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : TemplatedFunctionBase_O(method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
@@ -1285,19 +1285,19 @@ return LCC_RETURN(translate::to_object<RT>::convert(std::move(retval)).raw_(),oi
 template <typename Pols,  typename RT,  typename OT  >
 class IndirectVariadicMethoid
 < Pols,OT ,RT (OT::ExternalType::*)( )  >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef IndirectVariadicMethoid < Pols,OT ,RT (OT::ExternalType::*)( )  > MyType;
 public:
 virtual const char* describe() const {return "IndirectVariadicMethoid";};
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 //        typedef std::function<RT (OT& ,)> Type;
 typedef RT (OT::ExternalType::*Type)( ) ;
 Type mptr;
 public:
 enum { NumParams = 1 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(method_entry_point,name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : TemplatedFunctionBase_O(method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
@@ -1339,13 +1339,13 @@ template <typename Pols,  typename OT ,typename ARG1,typename ARG2,typename ARG3
 class IndirectVariadicMethoid
 < Pols,OT ,void(OT::ExternalType::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12, ARG13, ARG14,
     ARG15)  >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef IndirectVariadicMethoid < Pols,OT ,void(OT::ExternalType::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10,
     ARG11, ARG12, ARG13, ARG14, ARG15)  > MyType;
 public:
 virtual const char* describe() const {return "IndirectVariadicMethoid";};
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 // typedef std::function<void (OT& ,ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12, ARG13, ARG14,
 // ARG15)> Type;
@@ -1354,7 +1354,7 @@ typedef void (OT::ExternalType::*Type)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7
 Type mptr;
 public:
 enum { NumParams = 16 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(method_entry_point,name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : TemplatedFunctionBase_O(method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
@@ -1455,20 +1455,20 @@ template <typename Pols,  typename OT ,typename ARG1,typename ARG2,typename ARG3
     typename ARG7,typename ARG8,typename ARG9,typename ARG10,typename ARG11,typename ARG12,typename ARG13,typename ARG14 >
 class IndirectVariadicMethoid
 < Pols,OT ,void(OT::ExternalType::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12, ARG13, ARG14)  >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef IndirectVariadicMethoid < Pols,OT ,void(OT::ExternalType::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10,
     ARG11, ARG12, ARG13, ARG14)  > MyType;
 public:
 virtual const char* describe() const {return "IndirectVariadicMethoid";};
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 // typedef std::function<void (OT& ,ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12, ARG13, ARG14)> Type;
 typedef void (OT::ExternalType::*Type)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12, ARG13, ARG14) ;
 Type mptr;
 public:
 enum { NumParams = 15 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(method_entry_point,name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : TemplatedFunctionBase_O(method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
@@ -1564,20 +1564,20 @@ template <typename Pols,  typename OT ,typename ARG1,typename ARG2,typename ARG3
     typename ARG7,typename ARG8,typename ARG9,typename ARG10,typename ARG11,typename ARG12,typename ARG13 >
 class IndirectVariadicMethoid
 < Pols,OT ,void(OT::ExternalType::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12, ARG13)  >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef IndirectVariadicMethoid < Pols,OT ,void(OT::ExternalType::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10,
     ARG11, ARG12, ARG13)  > MyType;
 public:
 virtual const char* describe() const {return "IndirectVariadicMethoid";};
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 //        typedef std::function<void (OT& ,ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12, ARG13)> Type;
 typedef void (OT::ExternalType::*Type)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12, ARG13) ;
 Type mptr;
 public:
 enum { NumParams = 14 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(method_entry_point,name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : TemplatedFunctionBase_O(method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
@@ -1669,20 +1669,20 @@ template <typename Pols,  typename OT ,typename ARG1,typename ARG2,typename ARG3
     typename ARG7,typename ARG8,typename ARG9,typename ARG10,typename ARG11,typename ARG12 >
 class IndirectVariadicMethoid
 < Pols,OT ,void(OT::ExternalType::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12)  >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef IndirectVariadicMethoid < Pols,OT ,void(OT::ExternalType::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10,
     ARG11, ARG12)  > MyType;
 public:
 virtual const char* describe() const {return "IndirectVariadicMethoid";};
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 //        typedef std::function<void (OT& ,ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12)> Type;
 typedef void (OT::ExternalType::*Type)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12) ;
 Type mptr;
 public:
 enum { NumParams = 13 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(method_entry_point,name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : TemplatedFunctionBase_O(method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
@@ -1770,20 +1770,20 @@ template <typename Pols,  typename OT ,typename ARG1,typename ARG2,typename ARG3
     typename ARG7,typename ARG8,typename ARG9,typename ARG10,typename ARG11 >
 class IndirectVariadicMethoid
 < Pols,OT ,void(OT::ExternalType::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11)  >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef IndirectVariadicMethoid < Pols,OT ,void(OT::ExternalType::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10,
     ARG11)  > MyType;
 public:
 virtual const char* describe() const {return "IndirectVariadicMethoid";};
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 //        typedef std::function<void (OT& ,ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11)> Type;
 typedef void (OT::ExternalType::*Type)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11) ;
 Type mptr;
 public:
 enum { NumParams = 12 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(method_entry_point,name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : TemplatedFunctionBase_O(method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
@@ -1867,20 +1867,20 @@ template <typename Pols,  typename OT ,typename ARG1,typename ARG2,typename ARG3
     typename ARG7,typename ARG8,typename ARG9,typename ARG10 >
 class IndirectVariadicMethoid
 < Pols,OT ,void(OT::ExternalType::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10)  >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef IndirectVariadicMethoid < Pols,OT ,void(OT::ExternalType::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9,
     ARG10)  > MyType;
 public:
 virtual const char* describe() const {return "IndirectVariadicMethoid";};
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 //        typedef std::function<void (OT& ,ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10)> Type;
 typedef void (OT::ExternalType::*Type)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10) ;
 Type mptr;
 public:
 enum { NumParams = 11 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(method_entry_point,name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : TemplatedFunctionBase_O(method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
@@ -1960,20 +1960,20 @@ template <typename Pols,  typename OT ,typename ARG1,typename ARG2,typename ARG3
     typename ARG7,typename ARG8,typename ARG9 >
 class IndirectVariadicMethoid
 < Pols,OT ,void(OT::ExternalType::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9)  >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef IndirectVariadicMethoid < Pols,OT ,void(OT::ExternalType::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8,
     ARG9)  > MyType;
 public:
 virtual const char* describe() const {return "IndirectVariadicMethoid";};
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 //        typedef std::function<void (OT& ,ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9)> Type;
 typedef void (OT::ExternalType::*Type)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9) ;
 Type mptr;
 public:
 enum { NumParams = 10 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(method_entry_point,name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : TemplatedFunctionBase_O(method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
@@ -2049,19 +2049,19 @@ template <typename Pols,  typename OT ,typename ARG1,typename ARG2,typename ARG3
     typename ARG7,typename ARG8 >
 class IndirectVariadicMethoid
 < Pols,OT ,void(OT::ExternalType::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8)  >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef IndirectVariadicMethoid < Pols,OT ,void(OT::ExternalType::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8)  > MyType;
 public:
 virtual const char* describe() const {return "IndirectVariadicMethoid";};
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 //        typedef std::function<void (OT& ,ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8)> Type;
 typedef void (OT::ExternalType::*Type)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8) ;
 Type mptr;
 public:
 enum { NumParams = 9 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(method_entry_point,name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : TemplatedFunctionBase_O(method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
@@ -2133,19 +2133,19 @@ template <typename Pols,  typename OT ,typename ARG1,typename ARG2,typename ARG3
     typename ARG7 >
 class IndirectVariadicMethoid
 < Pols,OT ,void(OT::ExternalType::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7)  >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef IndirectVariadicMethoid < Pols,OT ,void(OT::ExternalType::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7)  > MyType;
 public:
 virtual const char* describe() const {return "IndirectVariadicMethoid";};
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 //        typedef std::function<void (OT& ,ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7)> Type;
 typedef void (OT::ExternalType::*Type)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7) ;
 Type mptr;
 public:
 enum { NumParams = 8 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(method_entry_point,name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : TemplatedFunctionBase_O(method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
@@ -2212,19 +2212,19 @@ return LCC_RETURN(returnValues.valueGet(0,oidx).raw_(),oidx);
 template <typename Pols,  typename OT ,typename ARG1,typename ARG2,typename ARG3,typename ARG4,typename ARG5,typename ARG6 >
 class IndirectVariadicMethoid
 < Pols,OT ,void(OT::ExternalType::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6)  >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef IndirectVariadicMethoid < Pols,OT ,void(OT::ExternalType::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6)  > MyType;
 public:
 virtual const char* describe() const {return "IndirectVariadicMethoid";};
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 //        typedef std::function<void (OT& ,ARG1, ARG2, ARG3, ARG4, ARG5, ARG6)> Type;
 typedef void (OT::ExternalType::*Type)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6) ;
 Type mptr;
 public:
 enum { NumParams = 7 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(method_entry_point,name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : TemplatedFunctionBase_O(method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
@@ -2287,19 +2287,19 @@ return LCC_RETURN(returnValues.valueGet(0,oidx).raw_(),oidx);
 template <typename Pols,  typename OT ,typename ARG1,typename ARG2,typename ARG3,typename ARG4,typename ARG5 >
 class IndirectVariadicMethoid
 < Pols,OT ,void(OT::ExternalType::*)( ARG1, ARG2, ARG3, ARG4, ARG5)  >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef IndirectVariadicMethoid < Pols,OT ,void(OT::ExternalType::*)( ARG1, ARG2, ARG3, ARG4, ARG5)  > MyType;
 public:
 virtual const char* describe() const {return "IndirectVariadicMethoid";};
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 //        typedef std::function<void (OT& ,ARG1, ARG2, ARG3, ARG4, ARG5)> Type;
 typedef void (OT::ExternalType::*Type)( ARG1, ARG2, ARG3, ARG4, ARG5) ;
 Type mptr;
 public:
 enum { NumParams = 6 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(method_entry_point,name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : TemplatedFunctionBase_O(method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
@@ -2358,19 +2358,19 @@ return LCC_RETURN(returnValues.valueGet(0,oidx).raw_(),oidx);
 template <typename Pols,  typename OT ,typename ARG1,typename ARG2,typename ARG3,typename ARG4 >
 class IndirectVariadicMethoid
 < Pols,OT ,void(OT::ExternalType::*)( ARG1, ARG2, ARG3, ARG4)  >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef IndirectVariadicMethoid < Pols,OT ,void(OT::ExternalType::*)( ARG1, ARG2, ARG3, ARG4)  > MyType;
 public:
 virtual const char* describe() const {return "IndirectVariadicMethoid";};
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 //        typedef std::function<void (OT& ,ARG1, ARG2, ARG3, ARG4)> Type;
 typedef void (OT::ExternalType::*Type)( ARG1, ARG2, ARG3, ARG4) ;
 Type mptr;
 public:
 enum { NumParams = 5 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(method_entry_point,name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : TemplatedFunctionBase_O(method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
@@ -2425,19 +2425,19 @@ return LCC_RETURN(returnValues.valueGet(0,oidx).raw_(),oidx);
 template <typename Pols,  typename OT ,typename ARG1,typename ARG2,typename ARG3 >
 class IndirectVariadicMethoid
 < Pols,OT ,void(OT::ExternalType::*)( ARG1, ARG2, ARG3)  >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef IndirectVariadicMethoid < Pols,OT ,void(OT::ExternalType::*)( ARG1, ARG2, ARG3)  > MyType;
 public:
 virtual const char* describe() const {return "IndirectVariadicMethoid";};
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 //        typedef std::function<void (OT& ,ARG1, ARG2, ARG3)> Type;
 typedef void (OT::ExternalType::*Type)( ARG1, ARG2, ARG3) ;
 Type mptr;
 public:
 enum { NumParams = 4 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(method_entry_point,name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : TemplatedFunctionBase_O(method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
@@ -2488,19 +2488,19 @@ return LCC_RETURN(returnValues.valueGet(0,oidx).raw_(),oidx);
 template <typename Pols,  typename OT ,typename ARG1,typename ARG2 >
 class IndirectVariadicMethoid
 < Pols,OT ,void(OT::ExternalType::*)( ARG1, ARG2)  >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef IndirectVariadicMethoid < Pols,OT ,void(OT::ExternalType::*)( ARG1, ARG2)  > MyType;
 public:
 virtual const char* describe() const {return "IndirectVariadicMethoid";};
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 //        typedef std::function<void (OT& ,ARG1, ARG2)> Type;
 typedef void (OT::ExternalType::*Type)( ARG1, ARG2) ;
 Type mptr;
 public:
 enum { NumParams = 3 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(method_entry_point,name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : TemplatedFunctionBase_O(method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
@@ -2547,19 +2547,19 @@ return LCC_RETURN(returnValues.valueGet(0,oidx).raw_(),oidx);
 template <typename Pols,  typename OT ,typename ARG1 >
 class IndirectVariadicMethoid
 < Pols,OT ,void(OT::ExternalType::*)( ARG1)  >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef IndirectVariadicMethoid < Pols,OT ,void(OT::ExternalType::*)( ARG1)  > MyType;
 public:
 virtual const char* describe() const {return "IndirectVariadicMethoid";};
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 //        typedef std::function<void (OT& ,ARG1)> Type;
 typedef void (OT::ExternalType::*Type)( ARG1) ;
 Type mptr;
 public:
 enum { NumParams = 2 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(method_entry_point,name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : TemplatedFunctionBase_O(method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
@@ -2602,19 +2602,19 @@ return LCC_RETURN(returnValues.valueGet(0,oidx).raw_(),oidx);
 template <typename Pols,  typename OT  >
 class IndirectVariadicMethoid
 < Pols,OT ,void(OT::ExternalType::*)( )  >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef IndirectVariadicMethoid < Pols,OT ,void(OT::ExternalType::*)( )  > MyType;
 public:
 virtual const char* describe() const {return "IndirectVariadicMethoid";};
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 //        typedef std::function<void (OT& ,)> Type;
 typedef void (OT::ExternalType::*Type)( ) ;
 Type mptr;
 public:
 enum { NumParams = 1 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(method_entry_point,name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : TemplatedFunctionBase_O(method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
@@ -2656,13 +2656,13 @@ template <typename Pols,  typename RT,  typename OT ,typename ARG1,typename ARG2
 class IndirectVariadicMethoid
 < Pols,OT ,RT (OT::ExternalType::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12, ARG13, ARG14,
     ARG15) const >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef IndirectVariadicMethoid < Pols,OT ,RT (OT::ExternalType::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10,
     ARG11, ARG12, ARG13, ARG14, ARG15) const > MyType;
 public:
 virtual const char* describe() const {return "IndirectVariadicMethoid";};
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 // typedef std::function<RT (OT& ,ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12, ARG13, ARG14, ARG15)>
 // Type;
@@ -2671,7 +2671,7 @@ typedef RT (OT::ExternalType::*Type)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, 
 Type mptr;
 public:
 enum { NumParams = 16 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(method_entry_point,name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : TemplatedFunctionBase_O(method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
@@ -2774,13 +2774,13 @@ template <typename Pols,  typename RT,  typename OT ,typename ARG1,typename ARG2
 class IndirectVariadicMethoid
 < Pols,OT ,RT (OT::ExternalType::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12, ARG13,
     ARG14) const >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef IndirectVariadicMethoid < Pols,OT ,RT (OT::ExternalType::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10,
     ARG11, ARG12, ARG13, ARG14) const > MyType;
 public:
 virtual const char* describe() const {return "IndirectVariadicMethoid";};
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 // typedef std::function<RT (OT& ,ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12, ARG13, ARG14)> Type;
 typedef RT (OT::ExternalType::*Type)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12, ARG13,
@@ -2788,7 +2788,7 @@ typedef RT (OT::ExternalType::*Type)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, 
 Type mptr;
 public:
 enum { NumParams = 15 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(method_entry_point,name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : TemplatedFunctionBase_O(method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
@@ -2885,20 +2885,20 @@ template <typename Pols,  typename RT,  typename OT ,typename ARG1,typename ARG2
     typename ARG6,typename ARG7,typename ARG8,typename ARG9,typename ARG10,typename ARG11,typename ARG12,typename ARG13 >
 class IndirectVariadicMethoid
 < Pols,OT ,RT (OT::ExternalType::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12, ARG13) const >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef IndirectVariadicMethoid < Pols,OT ,RT (OT::ExternalType::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10,
     ARG11, ARG12, ARG13) const > MyType;
 public:
 virtual const char* describe() const {return "IndirectVariadicMethoid";};
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 //        typedef std::function<RT (OT& ,ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12, ARG13)> Type;
 typedef RT (OT::ExternalType::*Type)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12, ARG13) const;
 Type mptr;
 public:
 enum { NumParams = 14 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(method_entry_point,name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : TemplatedFunctionBase_O(method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
@@ -2991,20 +2991,20 @@ template <typename Pols,  typename RT,  typename OT ,typename ARG1,typename ARG2
     typename ARG6,typename ARG7,typename ARG8,typename ARG9,typename ARG10,typename ARG11,typename ARG12 >
 class IndirectVariadicMethoid
 < Pols,OT ,RT (OT::ExternalType::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12) const >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef IndirectVariadicMethoid < Pols,OT ,RT (OT::ExternalType::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10,
     ARG11, ARG12) const > MyType;
 public:
 virtual const char* describe() const {return "IndirectVariadicMethoid";};
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 //        typedef std::function<RT (OT& ,ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12)> Type;
 typedef RT (OT::ExternalType::*Type)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12) const;
 Type mptr;
 public:
 enum { NumParams = 13 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(method_entry_point,name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : TemplatedFunctionBase_O(method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
@@ -3092,20 +3092,20 @@ template <typename Pols,  typename RT,  typename OT ,typename ARG1,typename ARG2
     typename ARG6,typename ARG7,typename ARG8,typename ARG9,typename ARG10,typename ARG11 >
 class IndirectVariadicMethoid
 < Pols,OT ,RT (OT::ExternalType::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11) const >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef IndirectVariadicMethoid < Pols,OT ,RT (OT::ExternalType::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10,
     ARG11) const > MyType;
 public:
 virtual const char* describe() const {return "IndirectVariadicMethoid";};
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 //        typedef std::function<RT (OT& ,ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11)> Type;
 typedef RT (OT::ExternalType::*Type)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11) const;
 Type mptr;
 public:
 enum { NumParams = 12 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(method_entry_point,name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : TemplatedFunctionBase_O(method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
@@ -3189,20 +3189,20 @@ template <typename Pols,  typename RT,  typename OT ,typename ARG1,typename ARG2
     typename ARG6,typename ARG7,typename ARG8,typename ARG9,typename ARG10 >
 class IndirectVariadicMethoid
 < Pols,OT ,RT (OT::ExternalType::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10) const >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef IndirectVariadicMethoid < Pols,OT ,RT (OT::ExternalType::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9,
     ARG10) const > MyType;
 public:
 virtual const char* describe() const {return "IndirectVariadicMethoid";};
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 //        typedef std::function<RT (OT& ,ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10)> Type;
 typedef RT (OT::ExternalType::*Type)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10) const;
 Type mptr;
 public:
 enum { NumParams = 11 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(method_entry_point,name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : TemplatedFunctionBase_O(method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
@@ -3282,20 +3282,20 @@ template <typename Pols,  typename RT,  typename OT ,typename ARG1,typename ARG2
     typename ARG6,typename ARG7,typename ARG8,typename ARG9 >
 class IndirectVariadicMethoid
 < Pols,OT ,RT (OT::ExternalType::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9) const >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef IndirectVariadicMethoid < Pols,OT ,RT (OT::ExternalType::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8,
     ARG9) const > MyType;
 public:
 virtual const char* describe() const {return "IndirectVariadicMethoid";};
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 //        typedef std::function<RT (OT& ,ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9)> Type;
 typedef RT (OT::ExternalType::*Type)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9) const;
 Type mptr;
 public:
 enum { NumParams = 10 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(method_entry_point,name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : TemplatedFunctionBase_O(method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
@@ -3371,19 +3371,19 @@ template <typename Pols,  typename RT,  typename OT ,typename ARG1,typename ARG2
     typename ARG6,typename ARG7,typename ARG8 >
 class IndirectVariadicMethoid
 < Pols,OT ,RT (OT::ExternalType::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8) const >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef IndirectVariadicMethoid < Pols,OT ,RT (OT::ExternalType::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8) const > MyType;
 public:
 virtual const char* describe() const {return "IndirectVariadicMethoid";};
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 //        typedef std::function<RT (OT& ,ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8)> Type;
 typedef RT (OT::ExternalType::*Type)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8) const;
 Type mptr;
 public:
 enum { NumParams = 9 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(method_entry_point,name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : TemplatedFunctionBase_O(method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
@@ -3455,19 +3455,19 @@ template <typename Pols,  typename RT,  typename OT ,typename ARG1,typename ARG2
     typename ARG6,typename ARG7 >
 class IndirectVariadicMethoid
 < Pols,OT ,RT (OT::ExternalType::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7) const >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef IndirectVariadicMethoid < Pols,OT ,RT (OT::ExternalType::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7) const > MyType;
 public:
 virtual const char* describe() const {return "IndirectVariadicMethoid";};
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 //        typedef std::function<RT (OT& ,ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7)> Type;
 typedef RT (OT::ExternalType::*Type)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7) const;
 Type mptr;
 public:
 enum { NumParams = 8 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(method_entry_point,name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : TemplatedFunctionBase_O(method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
@@ -3535,19 +3535,19 @@ template <typename Pols,  typename RT,  typename OT ,typename ARG1,typename ARG2
     typename ARG6 >
 class IndirectVariadicMethoid
 < Pols,OT ,RT (OT::ExternalType::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6) const >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef IndirectVariadicMethoid < Pols,OT ,RT (OT::ExternalType::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6) const > MyType;
 public:
 virtual const char* describe() const {return "IndirectVariadicMethoid";};
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 //        typedef std::function<RT (OT& ,ARG1, ARG2, ARG3, ARG4, ARG5, ARG6)> Type;
 typedef RT (OT::ExternalType::*Type)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6) const;
 Type mptr;
 public:
 enum { NumParams = 7 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(method_entry_point,name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : TemplatedFunctionBase_O(method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
@@ -3610,19 +3610,19 @@ return LCC_RETURN(translate::to_object<RT>::convert(std::move(retval)).raw_(),oi
 template <typename Pols,  typename RT,  typename OT ,typename ARG1,typename ARG2,typename ARG3,typename ARG4,typename ARG5 >
 class IndirectVariadicMethoid
 < Pols,OT ,RT (OT::ExternalType::*)( ARG1, ARG2, ARG3, ARG4, ARG5) const >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef IndirectVariadicMethoid < Pols,OT ,RT (OT::ExternalType::*)( ARG1, ARG2, ARG3, ARG4, ARG5) const > MyType;
 public:
 virtual const char* describe() const {return "IndirectVariadicMethoid";};
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 //        typedef std::function<RT (OT& ,ARG1, ARG2, ARG3, ARG4, ARG5)> Type;
 typedef RT (OT::ExternalType::*Type)( ARG1, ARG2, ARG3, ARG4, ARG5) const;
 Type mptr;
 public:
 enum { NumParams = 6 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(method_entry_point,name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : TemplatedFunctionBase_O(method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
@@ -3681,19 +3681,19 @@ return LCC_RETURN(translate::to_object<RT>::convert(std::move(retval)).raw_(),oi
 template <typename Pols,  typename RT,  typename OT ,typename ARG1,typename ARG2,typename ARG3,typename ARG4 >
 class IndirectVariadicMethoid
 < Pols,OT ,RT (OT::ExternalType::*)( ARG1, ARG2, ARG3, ARG4) const >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef IndirectVariadicMethoid < Pols,OT ,RT (OT::ExternalType::*)( ARG1, ARG2, ARG3, ARG4) const > MyType;
 public:
 virtual const char* describe() const {return "IndirectVariadicMethoid";};
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 //        typedef std::function<RT (OT& ,ARG1, ARG2, ARG3, ARG4)> Type;
 typedef RT (OT::ExternalType::*Type)( ARG1, ARG2, ARG3, ARG4) const;
 Type mptr;
 public:
 enum { NumParams = 5 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(method_entry_point,name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : TemplatedFunctionBase_O(method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
@@ -3748,19 +3748,19 @@ return LCC_RETURN(translate::to_object<RT>::convert(std::move(retval)).raw_(),oi
 template <typename Pols,  typename RT,  typename OT ,typename ARG1,typename ARG2,typename ARG3 >
 class IndirectVariadicMethoid
 < Pols,OT ,RT (OT::ExternalType::*)( ARG1, ARG2, ARG3) const >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef IndirectVariadicMethoid < Pols,OT ,RT (OT::ExternalType::*)( ARG1, ARG2, ARG3) const > MyType;
 public:
 virtual const char* describe() const {return "IndirectVariadicMethoid";};
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 //        typedef std::function<RT (OT& ,ARG1, ARG2, ARG3)> Type;
 typedef RT (OT::ExternalType::*Type)( ARG1, ARG2, ARG3) const;
 Type mptr;
 public:
 enum { NumParams = 4 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(method_entry_point,name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : TemplatedFunctionBase_O(method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
@@ -3811,19 +3811,19 @@ return LCC_RETURN(translate::to_object<RT>::convert(std::move(retval)).raw_(),oi
 template <typename Pols,  typename RT,  typename OT ,typename ARG1,typename ARG2 >
 class IndirectVariadicMethoid
 < Pols,OT ,RT (OT::ExternalType::*)( ARG1, ARG2) const >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef IndirectVariadicMethoid < Pols,OT ,RT (OT::ExternalType::*)( ARG1, ARG2) const > MyType;
 public:
 virtual const char* describe() const {return "IndirectVariadicMethoid";};
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 //        typedef std::function<RT (OT& ,ARG1, ARG2)> Type;
 typedef RT (OT::ExternalType::*Type)( ARG1, ARG2) const;
 Type mptr;
 public:
 enum { NumParams = 3 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(method_entry_point,name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : TemplatedFunctionBase_O(method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
@@ -3870,19 +3870,19 @@ return LCC_RETURN(translate::to_object<RT>::convert(std::move(retval)).raw_(),oi
 template <typename Pols,  typename RT,  typename OT ,typename ARG1 >
 class IndirectVariadicMethoid
 < Pols,OT ,RT (OT::ExternalType::*)( ARG1) const >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef IndirectVariadicMethoid < Pols,OT ,RT (OT::ExternalType::*)( ARG1) const > MyType;
 public:
 virtual const char* describe() const {return "IndirectVariadicMethoid";};
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 //        typedef std::function<RT (OT& ,ARG1)> Type;
 typedef RT (OT::ExternalType::*Type)( ARG1) const;
 Type mptr;
 public:
 enum { NumParams = 2 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(method_entry_point,name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : TemplatedFunctionBase_O(method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
@@ -3925,19 +3925,19 @@ return LCC_RETURN(translate::to_object<RT>::convert(std::move(retval)).raw_(),oi
 template <typename Pols,  typename RT,  typename OT  >
 class IndirectVariadicMethoid
 < Pols,OT ,RT (OT::ExternalType::*)( ) const >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef IndirectVariadicMethoid < Pols,OT ,RT (OT::ExternalType::*)( ) const > MyType;
 public:
 virtual const char* describe() const {return "IndirectVariadicMethoid";};
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 //        typedef std::function<RT (OT& ,)> Type;
 typedef RT (OT::ExternalType::*Type)( ) const;
 Type mptr;
 public:
 enum { NumParams = 1 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(method_entry_point,name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : TemplatedFunctionBase_O(method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
@@ -3979,13 +3979,13 @@ template <typename Pols,  typename OT ,typename ARG1,typename ARG2,typename ARG3
 class IndirectVariadicMethoid
 < Pols,OT ,void(OT::ExternalType::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12, ARG13, ARG14,
     ARG15) const >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef IndirectVariadicMethoid < Pols,OT ,void(OT::ExternalType::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10,
     ARG11, ARG12, ARG13, ARG14, ARG15) const > MyType;
 public:
 virtual const char* describe() const {return "IndirectVariadicMethoid";};
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 // typedef std::function<void (OT& ,ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12, ARG13, ARG14,
 // ARG15)> Type;
@@ -3994,7 +3994,7 @@ typedef void (OT::ExternalType::*Type)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7
 Type mptr;
 public:
 enum { NumParams = 16 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(method_entry_point,name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : TemplatedFunctionBase_O(method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
@@ -4096,13 +4096,13 @@ template <typename Pols,  typename OT ,typename ARG1,typename ARG2,typename ARG3
 class IndirectVariadicMethoid
 < Pols,OT ,void(OT::ExternalType::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12, ARG13,
     ARG14) const >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef IndirectVariadicMethoid < Pols,OT ,void(OT::ExternalType::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10,
     ARG11, ARG12, ARG13, ARG14) const > MyType;
 public:
 virtual const char* describe() const {return "IndirectVariadicMethoid";};
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 // typedef std::function<void (OT& ,ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12, ARG13, ARG14)> Type;
 typedef void (OT::ExternalType::*Type)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12, ARG13,
@@ -4110,7 +4110,7 @@ typedef void (OT::ExternalType::*Type)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7
 Type mptr;
 public:
 enum { NumParams = 15 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(method_entry_point,name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : TemplatedFunctionBase_O(method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
@@ -4206,20 +4206,20 @@ template <typename Pols,  typename OT ,typename ARG1,typename ARG2,typename ARG3
     typename ARG7,typename ARG8,typename ARG9,typename ARG10,typename ARG11,typename ARG12,typename ARG13 >
 class IndirectVariadicMethoid
 < Pols,OT ,void(OT::ExternalType::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12, ARG13) const >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef IndirectVariadicMethoid < Pols,OT ,void(OT::ExternalType::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10,
     ARG11, ARG12, ARG13) const > MyType;
 public:
 virtual const char* describe() const {return "IndirectVariadicMethoid";};
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 //        typedef std::function<void (OT& ,ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12, ARG13)> Type;
 typedef void (OT::ExternalType::*Type)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12, ARG13) const;
 Type mptr;
 public:
 enum { NumParams = 14 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(method_entry_point,name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : TemplatedFunctionBase_O(method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
@@ -4311,20 +4311,20 @@ template <typename Pols,  typename OT ,typename ARG1,typename ARG2,typename ARG3
     typename ARG7,typename ARG8,typename ARG9,typename ARG10,typename ARG11,typename ARG12 >
 class IndirectVariadicMethoid
 < Pols,OT ,void(OT::ExternalType::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12) const >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef IndirectVariadicMethoid < Pols,OT ,void(OT::ExternalType::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10,
     ARG11, ARG12) const > MyType;
 public:
 virtual const char* describe() const {return "IndirectVariadicMethoid";};
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 //        typedef std::function<void (OT& ,ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12)> Type;
 typedef void (OT::ExternalType::*Type)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12) const;
 Type mptr;
 public:
 enum { NumParams = 13 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(method_entry_point,name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : TemplatedFunctionBase_O(method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
@@ -4412,20 +4412,20 @@ template <typename Pols,  typename OT ,typename ARG1,typename ARG2,typename ARG3
     typename ARG7,typename ARG8,typename ARG9,typename ARG10,typename ARG11 >
 class IndirectVariadicMethoid
 < Pols,OT ,void(OT::ExternalType::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11) const >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef IndirectVariadicMethoid < Pols,OT ,void(OT::ExternalType::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10,
     ARG11) const > MyType;
 public:
 virtual const char* describe() const {return "IndirectVariadicMethoid";};
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 //        typedef std::function<void (OT& ,ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11)> Type;
 typedef void (OT::ExternalType::*Type)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11) const;
 Type mptr;
 public:
 enum { NumParams = 12 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(method_entry_point,name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : TemplatedFunctionBase_O(method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
@@ -4509,20 +4509,20 @@ template <typename Pols,  typename OT ,typename ARG1,typename ARG2,typename ARG3
     typename ARG7,typename ARG8,typename ARG9,typename ARG10 >
 class IndirectVariadicMethoid
 < Pols,OT ,void(OT::ExternalType::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10) const >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef IndirectVariadicMethoid < Pols,OT ,void(OT::ExternalType::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9,
     ARG10) const > MyType;
 public:
 virtual const char* describe() const {return "IndirectVariadicMethoid";};
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 //        typedef std::function<void (OT& ,ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10)> Type;
 typedef void (OT::ExternalType::*Type)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10) const;
 Type mptr;
 public:
 enum { NumParams = 11 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(method_entry_point,name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : TemplatedFunctionBase_O(method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
@@ -4602,20 +4602,20 @@ template <typename Pols,  typename OT ,typename ARG1,typename ARG2,typename ARG3
     typename ARG7,typename ARG8,typename ARG9 >
 class IndirectVariadicMethoid
 < Pols,OT ,void(OT::ExternalType::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9) const >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef IndirectVariadicMethoid < Pols,OT ,void(OT::ExternalType::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8,
     ARG9) const > MyType;
 public:
 virtual const char* describe() const {return "IndirectVariadicMethoid";};
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 //        typedef std::function<void (OT& ,ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9)> Type;
 typedef void (OT::ExternalType::*Type)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9) const;
 Type mptr;
 public:
 enum { NumParams = 10 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(method_entry_point,name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : TemplatedFunctionBase_O(method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
@@ -4691,20 +4691,20 @@ template <typename Pols,  typename OT ,typename ARG1,typename ARG2,typename ARG3
     typename ARG7,typename ARG8 >
 class IndirectVariadicMethoid
 < Pols,OT ,void(OT::ExternalType::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8) const >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef IndirectVariadicMethoid < Pols,OT ,void(OT::ExternalType::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7,
     ARG8) const > MyType;
 public:
 virtual const char* describe() const {return "IndirectVariadicMethoid";};
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 //        typedef std::function<void (OT& ,ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8)> Type;
 typedef void (OT::ExternalType::*Type)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8) const;
 Type mptr;
 public:
 enum { NumParams = 9 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(method_entry_point,name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : TemplatedFunctionBase_O(method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
@@ -4776,19 +4776,19 @@ template <typename Pols,  typename OT ,typename ARG1,typename ARG2,typename ARG3
     typename ARG7 >
 class IndirectVariadicMethoid
 < Pols,OT ,void(OT::ExternalType::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7) const >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef IndirectVariadicMethoid < Pols,OT ,void(OT::ExternalType::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7) const > MyType;
 public:
 virtual const char* describe() const {return "IndirectVariadicMethoid";};
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 //        typedef std::function<void (OT& ,ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7)> Type;
 typedef void (OT::ExternalType::*Type)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7) const;
 Type mptr;
 public:
 enum { NumParams = 8 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(method_entry_point,name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : TemplatedFunctionBase_O(method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
@@ -4855,19 +4855,19 @@ return LCC_RETURN(returnValues.valueGet(0,oidx).raw_(),oidx);
 template <typename Pols,  typename OT ,typename ARG1,typename ARG2,typename ARG3,typename ARG4,typename ARG5,typename ARG6 >
 class IndirectVariadicMethoid
 < Pols,OT ,void(OT::ExternalType::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6) const >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef IndirectVariadicMethoid < Pols,OT ,void(OT::ExternalType::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6) const > MyType;
 public:
 virtual const char* describe() const {return "IndirectVariadicMethoid";};
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 //        typedef std::function<void (OT& ,ARG1, ARG2, ARG3, ARG4, ARG5, ARG6)> Type;
 typedef void (OT::ExternalType::*Type)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6) const;
 Type mptr;
 public:
 enum { NumParams = 7 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(method_entry_point,name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : TemplatedFunctionBase_O(method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
@@ -4930,19 +4930,19 @@ return LCC_RETURN(returnValues.valueGet(0,oidx).raw_(),oidx);
 template <typename Pols,  typename OT ,typename ARG1,typename ARG2,typename ARG3,typename ARG4,typename ARG5 >
 class IndirectVariadicMethoid
 < Pols,OT ,void(OT::ExternalType::*)( ARG1, ARG2, ARG3, ARG4, ARG5) const >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef IndirectVariadicMethoid < Pols,OT ,void(OT::ExternalType::*)( ARG1, ARG2, ARG3, ARG4, ARG5) const > MyType;
 public:
 virtual const char* describe() const {return "IndirectVariadicMethoid";};
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 //        typedef std::function<void (OT& ,ARG1, ARG2, ARG3, ARG4, ARG5)> Type;
 typedef void (OT::ExternalType::*Type)( ARG1, ARG2, ARG3, ARG4, ARG5) const;
 Type mptr;
 public:
 enum { NumParams = 6 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(method_entry_point,name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : TemplatedFunctionBase_O(method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
@@ -5001,19 +5001,19 @@ return LCC_RETURN(returnValues.valueGet(0,oidx).raw_(),oidx);
 template <typename Pols,  typename OT ,typename ARG1,typename ARG2,typename ARG3,typename ARG4 >
 class IndirectVariadicMethoid
 < Pols,OT ,void(OT::ExternalType::*)( ARG1, ARG2, ARG3, ARG4) const >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef IndirectVariadicMethoid < Pols,OT ,void(OT::ExternalType::*)( ARG1, ARG2, ARG3, ARG4) const > MyType;
 public:
 virtual const char* describe() const {return "IndirectVariadicMethoid";};
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 //        typedef std::function<void (OT& ,ARG1, ARG2, ARG3, ARG4)> Type;
 typedef void (OT::ExternalType::*Type)( ARG1, ARG2, ARG3, ARG4) const;
 Type mptr;
 public:
 enum { NumParams = 5 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(method_entry_point,name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : TemplatedFunctionBase_O(method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
@@ -5068,19 +5068,19 @@ return LCC_RETURN(returnValues.valueGet(0,oidx).raw_(),oidx);
 template <typename Pols,  typename OT ,typename ARG1,typename ARG2,typename ARG3 >
 class IndirectVariadicMethoid
 < Pols,OT ,void(OT::ExternalType::*)( ARG1, ARG2, ARG3) const >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef IndirectVariadicMethoid < Pols,OT ,void(OT::ExternalType::*)( ARG1, ARG2, ARG3) const > MyType;
 public:
 virtual const char* describe() const {return "IndirectVariadicMethoid";};
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 //        typedef std::function<void (OT& ,ARG1, ARG2, ARG3)> Type;
 typedef void (OT::ExternalType::*Type)( ARG1, ARG2, ARG3) const;
 Type mptr;
 public:
 enum { NumParams = 4 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(method_entry_point,name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : TemplatedFunctionBase_O(method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
@@ -5131,19 +5131,19 @@ return LCC_RETURN(returnValues.valueGet(0,oidx).raw_(),oidx);
 template <typename Pols,  typename OT ,typename ARG1,typename ARG2 >
 class IndirectVariadicMethoid
 < Pols,OT ,void(OT::ExternalType::*)( ARG1, ARG2) const >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef IndirectVariadicMethoid < Pols,OT ,void(OT::ExternalType::*)( ARG1, ARG2) const > MyType;
 public:
 virtual const char* describe() const {return "IndirectVariadicMethoid";};
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 //        typedef std::function<void (OT& ,ARG1, ARG2)> Type;
 typedef void (OT::ExternalType::*Type)( ARG1, ARG2) const;
 Type mptr;
 public:
 enum { NumParams = 3 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(method_entry_point,name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : TemplatedFunctionBase_O(method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
@@ -5190,19 +5190,19 @@ return LCC_RETURN(returnValues.valueGet(0,oidx).raw_(),oidx);
 template <typename Pols,  typename OT ,typename ARG1 >
 class IndirectVariadicMethoid
 < Pols,OT ,void(OT::ExternalType::*)( ARG1) const >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef IndirectVariadicMethoid < Pols,OT ,void(OT::ExternalType::*)( ARG1) const > MyType;
 public:
 virtual const char* describe() const {return "IndirectVariadicMethoid";};
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 //        typedef std::function<void (OT& ,ARG1)> Type;
 typedef void (OT::ExternalType::*Type)( ARG1) const;
 Type mptr;
 public:
 enum { NumParams = 2 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(method_entry_point,name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : TemplatedFunctionBase_O(method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
@@ -5245,19 +5245,19 @@ return LCC_RETURN(returnValues.valueGet(0,oidx).raw_(),oidx);
 template <typename Pols,  typename OT  >
 class IndirectVariadicMethoid
 < Pols,OT ,void(OT::ExternalType::*)( ) const >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef IndirectVariadicMethoid < Pols,OT ,void(OT::ExternalType::*)( ) const > MyType;
 public:
 virtual const char* describe() const {return "IndirectVariadicMethoid";};
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 //        typedef std::function<void (OT& ,)> Type;
 typedef void (OT::ExternalType::*Type)( ) const;
 Type mptr;
 public:
 enum { NumParams = 1 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(method_entry_point,name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : TemplatedFunctionBase_O(method_entry_point,name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)

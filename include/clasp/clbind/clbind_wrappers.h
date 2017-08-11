@@ -230,9 +230,10 @@ public:
 };
 
 template <typename T>
-class gctools::GCKind<clbind::Wrapper<T, T *>> {
+class gctools::GCStamp<clbind::Wrapper<T, T *>> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::GCKind<typename clbind::Wrapper<T, T *>::TemplatedBase>::Kind;
+  static gctools::GCStampEnum const Stamp = gctools::GCStamp<typename clbind::Wrapper<T, T *>::TemplatedBase>::Stamp;
+  static const size_t Flags = 0;
 };
 template <typename T>
 struct gctools::GCInfo<clbind::Wrapper<T, T *>> {
@@ -243,9 +244,10 @@ struct gctools::GCInfo<clbind::Wrapper<T, T *>> {
 
 /*! Wrappers of unique_ptr need to be finalized */
 template <typename T>
-class gctools::GCKind<clbind::Wrapper<T, std::unique_ptr<T>>> {
+class gctools::GCStamp<clbind::Wrapper<T, std::unique_ptr<T>>> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::GCKind<typename clbind::Wrapper<T, std::unique_ptr<T>>::TemplatedBase>::Kind;
+  static gctools::GCStampEnum const Stamp = gctools::GCStamp<typename clbind::Wrapper<T, std::unique_ptr<T>>::TemplatedBase>::Stamp;
+  static const size_t Flags = 0;
 };
 template <typename T>
 struct gctools::GCInfo<clbind::Wrapper<T, std::unique_ptr<T>>> {

@@ -95,15 +95,28 @@ namespace mp {
     };
 
     CL_DOCSTRING("Try to dequeue the next entry.  Return (values entry bool) where the second value is T if a value was available.");
-    CL_DEFMETHOD   core::T_mv queue_dequeue() {
+    CL_DEFMETHOD   core::T_mv queue_wait_dequeue_timed(core::T_sp wait_time_milliseconds) {
       TQueueElement element;
-      bool dequeued = this->_Queue.try_dequeue(element);
+      bool dequeued;
+      if (wait_time_milliseconds.fixnump()) {
+        dequeued = this->_Queue.wait_dequeue_timed(element,std::chrono::milliseconds(wait_time_milliseconds.unsafe_fixnum()));
+      } else {
+        this->_Queue.wait_dequeue(element);
+        dequeued = true;
+      }
       unlikely_if (!dequeued) {
         return Values(_Nil<core::T_O>(),_Nil<core::T_O>());
       }
       return Values(element._Value,_lisp->_true());
     };
-      
+
+    CL_DOCSTRING("Try to dequeue the next entry.  Return (values entry bool) where the second value is T if a value was available.");
+    CL_DEFMETHOD   core::T_sp queue_wait_dequeue() {
+      TQueueElement element;
+      this->_Queue.wait_dequeue(element);
+      return element._Value;
+    };
+
 
     CL_DEFMETHOD size_t queue_size_approximate() {
       return this->_Queue.size_approx();

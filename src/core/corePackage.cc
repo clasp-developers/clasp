@@ -121,13 +121,7 @@ THE SOFTWARE.
 #include <clasp/core/metaClass.h>
 #include <clasp/core/bignum.h>
 #include <clasp/core/builtInClass.h>
-#include <clasp/core/cxxClass.h>
-#include <clasp/core/forwardReferencedClass.h>
-#include <clasp/core/stdClass.h>
-#include <clasp/core/structureClass.h>
 #include <clasp/clbind/class_rep.h>
-#include <clasp/core/funcallableStandardClass.h>
-#include <clasp/core/standardClass.h>
 
 //
 // Load the gctools::GcInfo<core-classes>::Kind specializers
@@ -176,6 +170,7 @@ SYMBOL_EXPORT_SC_(CompPkg, STARllvm_contextSTAR);
 SYMBOL_EXPORT_SC_(CompPkg, STARload_time_value_holder_nameSTAR);
 SYMBOL_EXPORT_SC_(CorePkg,c_local);
 SYMBOL_EXPORT_SC_(CorePkg,_PLUS_known_typep_predicates_PLUS_);
+SYMBOL_EXPORT_SC_(CorePkg,_PLUS_type_header_value_map_PLUS_);
 SYMBOL_EXPORT_SC_(ExtPkg,check_arguments_type);
 SYMBOL_EXPORT_SC_(ExtPkg,array_index);
 SYMBOL_EXPORT_SC_(CorePkg,index);
@@ -345,6 +340,7 @@ SYMBOL_EXPORT_SC_(ClPkg, synonym_stream_symbol);
 SYMBOL_EXPORT_SC_(ClPkg, broadcast_stream_streams);
 SYMBOL_EXPORT_SC_(ClPkg, getOutputStreamString);
 SYMBOL_EXPORT_SC_(CorePkg, closedStream);
+SYMBOL_EXPORT_SC_(CorePkg, creator);
 SYMBOL_EXPORT_SC_(ClPkg, elt);
 SYMBOL_EXPORT_SC_(ClPkg, null);
 SYMBOL_EXPORT_SC_(ClPkg, sequence);
@@ -1056,7 +1052,7 @@ void CoreExposer_O::define_essential_globals(Lisp_sp lisp) {
   _sym_STARnestedErrorDepthSTAR->defparameter(make_fixnum(0));
   cl::_sym_STARbreakOnSignalsSTAR->defparameter(_Nil<T_O>());
   cl::_sym_STARdebuggerHookSTAR->defparameter(_Nil<T_O>());
-  cl::_sym_internalTimeUnitsPerSecond->defparameter(make_fixnum(CLASP_INTERNAL_TIME_UNITS_PER_SECOND));
+  cl::_sym_internalTimeUnitsPerSecond->defconstant(make_fixnum(CLASP_INTERNAL_TIME_UNITS_PER_SECOND));
   _sym_STARstartRunTimeSTAR->defparameter(PosixTime_O::createNow());
   cl::_sym_MultipleValuesLimit->defconstant(make_fixnum(MultipleValues::MultipleValuesLimit));
   _sym_STARprint_structureSTAR->defparameter(_Nil<T_O>());
@@ -1092,6 +1088,7 @@ void CoreExposer_O::define_essential_globals(Lisp_sp lisp) {
   _sym_STARnotify_on_compileSTAR->defparameter(_Nil<T_O>());
   _sym_STARtrace_startupSTAR->defparameter(_Nil<T_O>());
   _sym_STARinterpreterTraceSTAR->defparameter(_Nil<T_O>());
+  _sym__PLUS_type_header_value_map_PLUS_->defparameter(generate_type_header_value_map());
   gctools::_sym_STARfinalizersSTAR->defparameter(WeakKeyHashTable_O::create());
   _sym_STARllvmVersionSTAR->defparameter(SimpleBaseString_O::make(LLVM_VERSION));
   _sym__PLUS_numberOfFixedArguments_PLUS_->defconstant(make_fixnum(LCC_ARGS_IN_REGISTERS));
@@ -1129,6 +1126,9 @@ void CoreExposer_O::define_essential_globals(Lisp_sp lisp) {
   _sym_STARfunctions_to_notinlineSTAR->defparameter(HashTableEqual_O::create_default());
   _sym_STARextension_startup_loadsSTAR->defparameter(_Nil<T_O>());
   _lisp->_Roots._Sysprop = HashTableEql_O::create_default();
+#ifdef CLASP_THREADS
+  _lisp->_Roots._Sysprop->set_thread_safe(true);
+#endif
   _sym_STARdebug_accessorsSTAR->defparameter(_Nil<T_O>());
   _sym_STARmodule_startup_function_nameSTAR->defparameter(SimpleBaseString_O::make(std::string(MODULE_STARTUP_FUNCTION_NAME)));
   _sym_STARmodule_shutdown_function_nameSTAR->defparameter(SimpleBaseString_O::make(std::string(MODULE_SHUTDOWN_FUNCTION_NAME)));
@@ -1143,7 +1143,7 @@ void CoreExposer_O::define_essential_globals(Lisp_sp lisp) {
   _sym_STARinterrupts_enabledSTAR->defparameter(_lisp->_true());
   _sym_STARallow_with_interruptsSTAR->defparameter(_lisp->_true());
   _sym_STARexit_backtraceSTAR->defparameter(_Nil<core::T_O>());
-  clos::_sym__PLUS_the_standard_class_PLUS_->defparameter(_lisp->_Roots._StandardClass);
+  clos::_sym__PLUS_the_standard_class_PLUS_->defparameter(_lisp->_Roots._TheStandardClass);
   _sym_STARinvalidated_dispatch_function_stackSTAR->defparameter(_Nil<core::T_O>());
   _sym_STARdebug_threadsSTAR->defparameter(_Nil<core::T_O>());
   _sym_STARdebug_dispatchSTAR->defparameter(_Nil<core::T_O>());
