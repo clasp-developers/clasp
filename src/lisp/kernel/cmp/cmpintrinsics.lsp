@@ -170,6 +170,7 @@ Set this to other IRBuilders to make code go where you want")
 (defvar +cons-cdr-offset+ (get-cxx-data-structure-info :cons-cdr-offset))
 (defvar +uintptr_t-size+ (get-cxx-data-structure-info :uintptr_t-size))
 (defvar +t-size+ (get-cxx-data-structure-info 'core:tsp))
+(defvar +simple-vector._length-offset+ (get-cxx-data-structure-info :simple-vector._length-offset))
 (defvar +simple-vector._data-offset+ (get-cxx-data-structure-info :simple-vector._data-offset))
 (define-symbol-macro %intptr_t%
   (cond
