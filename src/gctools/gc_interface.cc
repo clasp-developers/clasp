@@ -807,7 +807,6 @@ void initialize_clasp()
   MPS_LOG("initialize_clasp set_static_class_symbols");
   set_static_class_symbols(&bootStrapCoreSymbolMap);
 
-  printf("%s:%d  In gc_interface.cc about to set up metaclasses      cl::_sym_built_in_class->raw_()->%p\n", __FILE__, __LINE__, cl::_sym_built_in_class.raw_());
   _lisp->_Roots._TheClass = allocate_one_metaclass<core::StandardClassCreator_O>(cl::_sym_class,_Unbound<core::Class_O>());
   _lisp->_Roots._TheBuiltInClass = allocate_one_metaclass<core::StandardClassCreator_O>(cl::_sym_built_in_class,_Unbound<core::Class_O>());
   _lisp->_Roots._TheStandardClass = allocate_one_metaclass<core::StandardClassCreator_O>(cl::_sym_standard_class,_Unbound<core::Class_O>());

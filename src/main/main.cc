@@ -388,7 +388,6 @@ int main( int argc, char *argv[] )
   uintptr_t y = 1;
   x = y;
   y = x;
-  printf("%s:%d   sizeof(uintptr_clasp_t) -> %lu   sizeof(uintptr_t) -> %lu\n", __FILE__, __LINE__, sizeof(uintptr_clasp_t), sizeof(uintptr_t));
 #if 0
    // A few tests - delete them when not needed anymore
   test_va_list(NULL,6
