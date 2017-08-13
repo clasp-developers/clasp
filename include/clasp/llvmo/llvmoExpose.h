@@ -4344,7 +4344,7 @@ namespace llvmo {
                         const ObjListT &Objects,
                         const LoadedObjInfoListT &Infos) const {
         for (unsigned i = 0; i < Objects.size(); ++i) {
-          printf("%s:%d:%s informing GDBEventListener  i=%d &Objects[i]->%p  &Infos[i]->%p\n", __FILE__, __LINE__, __FUNCTION__, i, Objects[i].get(), Infos[i].get());
+//          printf("%s:%d:%s informing GDBEventListener  i=%d &Objects[i]->%p  &Infos[i]->%p\n", __FILE__, __LINE__, __FUNCTION__, i, Objects[i].get(), Infos[i].get());
           this->_TheJIT.GDBEventListener->NotifyObjectEmitted(getObject(*Objects[i]), *Infos[i]);
         }
       }
