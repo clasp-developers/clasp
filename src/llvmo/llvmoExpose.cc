@@ -3448,12 +3448,16 @@ using namespace llvm;
 using namespace llvm::orc;
 
 
-ClaspJIT_O::ClaspJIT_O() : TM(EngineBuilder().selectTarget()), DL(TM->createDataLayout()),
+ClaspJIT_O::ClaspJIT_O() : TM(EngineBuilder().selectTarget()),
+                           DL(TM->createDataLayout()),
+                           NotifyObjectLoaded(*this),
+                           ObjectLayer(this->NotifyObjectLoaded),
                            CompileLayer(ObjectLayer, SimpleCompiler(*TM)),
                            OptimizeLayer(CompileLayer,
                                          [this](std::unique_ptr<Module> M) {
                                            return optimizeModule(std::move(M));
-                                         }) 
+                                         }),
+                           GDBEventListener(JITEventListener::createGDBRegistrationListener())
 {
   llvm::sys::DynamicLibrary::LoadLibraryPermanently(nullptr);
 }
@@ -3516,7 +3520,7 @@ CL_DEFMETHOD core::Pointer_sp ClaspJIT_O::findSymbolIn(ModuleHandle_sp handle, c
   raw_string_ostream MangledNameStream(MangledName);
   llvm::Mangler::getNameWithPrefix(MangledNameStream, Name, DL);
 //  printf("%s:%d ClaspJIT_O::findSymbolIn looking for symbol: |%s|\n", __FILE__, __LINE__, MangledNameStream.str().c_str());
-  llvm::JITSymbol sym = OptimizeLayer.findSymbolIn(handle->_Handle,MangledNameStream.str(), exportedSymbolsOnly );
+  llvm::JITSymbol sym = this->OptimizeLayer.findSymbolIn(handle->_Handle,MangledNameStream.str(), exportedSymbolsOnly );
 //  printf("          -->   address: %p\n", (void*)sym.getAddress());
   if (!sym) {
     printf("%s:%d  Cound not find symbol %s in the module\n", __FILE__, __LINE__, MangledNameStream.str().c_str());
