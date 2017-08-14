@@ -656,6 +656,25 @@ when this is t a lot of graphs will be generated.")
     (%store read-val (first outputs))))
 
 (defmethod translate-simple-instruction
+    ((instruction cleavir-ir:aset-instruction) return-value inputs outputs abi function-info)
+  (declare (ignore return-value abi function-info))
+  (let* ((size
+           (ilog2
+            (ecase (cleavir-ir:element-type instruction)
+              ((t) cmp::+t-size+))))
+         (array (first inputs)) (index (second inputs)) (value (third inputs))
+         (fixed-offset (%uintptr_t (- cmp::+simple-vector._data-offset+ cmp:+general-tag+)))
+         (base (%ptrtoint (%load array) cmp:%uintptr_t%))
+         (offset-base (%add base fixed-offset))
+         (var-offset (%ptrtoint (%load index) cmp:%uintptr_t%))
+         ;; see above comment on shifts
+         (untagged (%lshr var-offset cmp::+fixnum-shift+ :exact t :label "untag fixnum"))
+         (scaled (%shl untagged size :nuw t :label "shift address"))
+         (total (%add offset-base scaled))
+         (ptr (%inttoptr total cmp:%t**%)))
+    (%store (%load value) ptr)))
+
+(defmethod translate-simple-instruction
     ((instruction clasp-cleavir-hir::simple-vector-length-instruction)
      return-value inputs outputs abi function-info)
   (declare (ignore return-value function-info))

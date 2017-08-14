@@ -436,8 +436,8 @@
                             collect `(* ,sub ,subsym)))))
             0)))))
 
-(declaim (inline svref*))
-(defun svref* (vector index)
+(declaim (inline svref))
+(defun svref (vector index)
   (if (typep vector 'simple-vector)
       (if (typep index 'fixnum)
           (let ((ats (core::simple-vector-length vector)))
@@ -447,6 +447,18 @@
           (error 'type-error :datum index :expected-type 'fixnum))
       (error 'type-error :datum vector :expected-type 'simple-vector)))
 
+;;; (setf (svref x y) z) macroexpands into (core:setf-svref x y z)
+(declaim (inline core:setf-svref))
+(defun core:setf-svref (vector index value)
+  (if (typep vector 'simple-vector)
+      (if (typep index 'fixnum)
+          (let ((ats (core::simple-vector-length vector)))
+            (if (and (<= 0 index) (< index ats))
+                (progn (cleavir-primop:aset vector index value t t t)
+                       value)
+                (error "Invalid index ~d for vector of length ~d" index ats)))
+          (error 'type-error :datum index :expected-type 'fixnum))
+      (error 'type-error :datum vector :expected-type 'simple-vector)))
 
 ;;; ------------------------------------------------------------
 ;;;
