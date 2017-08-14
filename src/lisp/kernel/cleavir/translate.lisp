@@ -631,16 +631,8 @@ when this is t a lot of graphs will be generated.")
 ;;; helper, could be improved. only good for powers of two
 (defun ilog2 (n) (1- (integer-length n)))
 
-;;; FIXME: TEMPORARY. Fragile. Only handles simple-vector.
-(defmethod translate-simple-instruction
-    ((instruction cleavir-ir:aref-instruction) return-value inputs outputs abi function-info)
-  (declare (ignore return-value abi function-info))
-  (let* ((size
-           (ilog2
-            (ecase (cleavir-ir:element-type instruction)
-              ((t) cmp::+t-size+))))
-         (array (first inputs)) (index (second inputs))
-         (fixed-offset (%uintptr_t (- cmp::+simple-vector._data-offset+ cmp:+general-tag+)))
+(defun gen-get-vector-ptr (size array index type)
+  (let* ((fixed-offset (%uintptr_t (- cmp::+simple-vector._data-offset+ cmp:+general-tag+)))
          (base (%ptrtoint (%load array) cmp:%uintptr_t%))
          (offset-base (%add base fixed-offset))
          (var-offset (%ptrtoint (%load index) cmp:%uintptr_t%))
@@ -650,29 +642,30 @@ when this is t a lot of graphs will be generated.")
          ;; a nonnegative fixnum anyway; no sign to extend
          (untagged (%lshr var-offset cmp::+fixnum-shift+ :exact t :label "untag fixnum"))
          (scaled (%shl untagged size :nuw t :label "shift address"))
-         (total (%add offset-base scaled))
-         (ptr (%inttoptr total cmp:%t**%))
-         (read-val (%load ptr)))
-    (%store read-val (first outputs))))
+         (total (%add offset-base scaled)))
+    (%inttoptr total type)))
+
+(defun vector-size-type (uaet)
+  (ecase uaet
+    ((t) (values (ilog2 cmp::+t-size+) cmp:%t**%))
+    ((ext:byte32) (values 4 cmp::%i32*%))))
+
+;;; FIXME: TEMPORARY. Fragile. Only handles simple-vector.
+(defmethod translate-simple-instruction
+    ((instruction cleavir-ir:aref-instruction) return-value inputs outputs abi function-info)
+  (declare (ignore return-value abi function-info))
+  (multiple-value-bind (size type)
+      (vector-size-type (cleavir-ir:element-type instruction))
+    (%store (%load (gen-get-vector-ptr size (first inputs) (second inputs) type))
+            (first outputs))))
 
 (defmethod translate-simple-instruction
     ((instruction cleavir-ir:aset-instruction) return-value inputs outputs abi function-info)
   (declare (ignore return-value abi function-info))
-  (let* ((size
-           (ilog2
-            (ecase (cleavir-ir:element-type instruction)
-              ((t) cmp::+t-size+))))
-         (array (first inputs)) (index (second inputs)) (value (third inputs))
-         (fixed-offset (%uintptr_t (- cmp::+simple-vector._data-offset+ cmp:+general-tag+)))
-         (base (%ptrtoint (%load array) cmp:%uintptr_t%))
-         (offset-base (%add base fixed-offset))
-         (var-offset (%ptrtoint (%load index) cmp:%uintptr_t%))
-         ;; see above comment on shifts
-         (untagged (%lshr var-offset cmp::+fixnum-shift+ :exact t :label "untag fixnum"))
-         (scaled (%shl untagged size :nuw t :label "shift address"))
-         (total (%add offset-base scaled))
-         (ptr (%inttoptr total cmp:%t**%)))
-    (%store (%load value) ptr)))
+  (multiple-value-bind (size type)
+      (vector-size-type (cleavir-ir:element-type instruction))
+    (%store (%load (third inputs))
+            (gen-get-vector-ptr size (first inputs) (second inputs) type))))
 
 (defmethod translate-simple-instruction
     ((instruction clasp-cleavir-hir::simple-vector-length-instruction)
