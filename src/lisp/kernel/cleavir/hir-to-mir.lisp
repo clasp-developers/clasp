@@ -422,3 +422,29 @@
            (change-class instruction 'cc-mir:single-float-p-instruction))
           (t (call-next-method)))))
 
+(defun convert-to-tll (lexical-location type)
+  (unless (typep lexical-location 'cc-mir:typed-lexical-location)
+    (change-class lexical-location 'cc-mir:typed-lexical-location :type type)))
+
+(defun convert-tll-list (list type)
+  (mapc (lambda (ll) (convert-to-tll ll type)) list))
+
+(defmethod cleavir-ir:specialize ((instruction cleavir-ir:box-instruction)
+                                  (impl clasp-cleavir:clasp) proc os)
+  (convert-tll-list (cleavir-ir:inputs instruction)
+                    (ecase (cleavir-ir:element-type instruction)
+                      (double-float cmp::%double%)))
+  instruction)
+
+(defmethod cleavir-ir:specialize ((instruction cleavir-ir:unbox-instruction)
+                                  (impl clasp-cleavir:clasp) proc os)
+  (convert-tll-list (cleavir-ir:outputs instruction)
+                    (ecase (cleavir-ir:element-type instruction)
+                      (double-float cmp::%double%)))
+  instruction)
+
+(defmethod cleavir-ir:specialize ((instruction cleavir-ir:double-float-add-instruction)
+                                  (impl clasp-cleavir:clasp) proc os)
+  (convert-tll-list (cleavir-ir:inputs instruction) cmp::%double%)
+  (convert-tll-list (cleavir-ir:outputs instruction) cmp::%double%)
+  instruction)

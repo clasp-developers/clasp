@@ -31,14 +31,12 @@ when this is t a lot of graphs will be generated.")
         (%literal-ref value t))
       (let ((var (gethash datum *vars*)))
 	(when (null var)
-	  (cond
-	    ;; do nothing for values-location - there is only one
-	    ((typep datum 'cleavir-ir:values-location)
-	     #+(or)(setf var (alloca-mv-struct (string (gensym "v")))) )
-	    ((typep datum 'cleavir-ir:immediate-input)
-	     (setf var (%i64 (cleavir-ir:value datum))))
-	    ((typep datum 'cleavir-ir:lexical-location)
-	     (setf var (alloca-t* (string (cleavir-ir:name datum)))))
+          (typecase datum
+            (cleavir-ir:values-location) ; do nothing - we don't actually use them
+            (cleavir-ir:immediate-input (setf var (%i64 (cleavir-ir:value datum))))
+            (cc-mir:typed-lexical-location
+             (setf var (alloca (cc-mir:lexical-location-type datum) 1 (string (cleavir-ir:name datum)))))
+            (cleavir-ir:lexical-location (setf var (alloca-t* (string (cleavir-ir:name datum)))))
             (t (error "add support to translate datum: ~a~%" datum)))
 	  (setf (gethash datum *vars*) var))
 	var)))
@@ -653,6 +651,26 @@ when this is t a lot of graphs will be generated.")
 
 
 (defmethod translate-simple-instruction
+    ((instruction cleavir-ir:box-instruction) return-value inputs outputs abi function-info)
+  (declare (ignore return-value abi function-info))
+  (let ((intrinsic
+          (ecase (cleavir-ir:element-type instruction)
+            ((double-float) "to_object_double"))))
+    (%store
+     (%intrinsic-call intrinsic (list (%load (first inputs))))
+     (first outputs))))
+
+(defmethod translate-simple-instruction
+    ((instruction cleavir-ir:unbox-instruction) return-value inputs outputs abi function-info)
+  (declare (ignore return-value abi function-info))
+  (let ((intrinsic
+          (ecase (cleavir-ir:element-type instruction)
+            ((double-float) "from_object_double"))))
+    (%store
+     (%intrinsic-call intrinsic (list (%load (first inputs))))
+     (first outputs))))
+
+(defmethod translate-simple-instruction
     ((instruction cleavir-ir:the-instruction) return-value inputs outputs abi function-info)
   (declare (ignore return-value inputs outputs abi function-info)))
 
@@ -696,6 +714,32 @@ when this is t a lot of graphs will be generated.")
       ((instruction cleavir-ir:rplacd-instruction) return-value inputs outputs abi function-info)
     (declare (ignore outputs))
     `(rplacd ,(first inputs) ,(second inputs))))
+
+;;; Double instructions
+
+(defmethod translate-simple-instruction
+    ((instruction cleavir-ir:double-float-add-instruction) return-value inputs outputs abi function-info)
+  (declare (ignore return-value abi function-info))
+  (%store (%fadd (%load (first inputs)) (%load (second inputs)))
+          (first outputs)))
+
+(defmethod translate-simple-instruction
+    ((instruction cleavir-ir:double-float-sub-instruction) return-value inputs outputs abi function-info)
+  (declare (ignore return-value abi function-info))
+  (%store (%fsub (%load (first inputs)) (%load (second inputs)))
+          (first outputs)))
+
+(defmethod translate-simple-instruction
+    ((instruction cleavir-ir:double-float-mul-instruction) return-value inputs outputs abi function-info)
+  (declare (ignore return-value abi function-info))
+  (%store (%fmul (%load (first inputs)) (%load (second inputs)))
+          (first outputs)))
+
+(defmethod translate-simple-instruction
+    ((instruction cleavir-ir:double-float-div-instruction) return-value inputs outputs abi function-info)
+  (declare (ignore return-value abi function-info))
+  (%store (%fdiv (%load (first inputs)) (%load (second inputs)))
+          (first outputs)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -783,6 +827,10 @@ when this is t a lot of graphs will be generated.")
   ;; I don't call cc_popLandingPadFrame explicitly anymore
   ;;(%intrinsic-call "cc_popLandingPadFrame" (list (cmp:irc-load (car (last inputs)))))
   (call-next-method))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Fixnum comparison instructions
 
 (defmethod translate-branch-instruction
     ((instruction cleavir-ir:fixnum-add-instruction) return-value inputs outputs successors abi function-info)

@@ -57,34 +57,36 @@
   "A nil in a T*"
   (%literal nil))
 
+(defun alloca (type size &optional (label ""))
+  (llvm-sys:create-alloca *entry-irbuilder* type (%i32 size) label))
+
 (defun alloca-VaList_S (&optional (label "VaList_S"))
-  (llvm-sys:create-alloca *entry-irbuilder* cmp:%VaList_S% (%i32 1) label))
+  (alloca cmp:%VaList_S% 1 label))
 
 (defun alloca-invocation-history-frame (&optional (label "ihf"))
-  (llvm-sys:create-alloca *entry-irbuilder* cmp:%InvocationHistoryFrame% (%i32 1) label))
+  (alloca cmp:%InvocationHistoryFrame% 1 label))
 
 (defun alloca-register-save-area (&optional (label "ihf"))
-  (llvm-sys:create-alloca *entry-irbuilder* cmp:%register-save-area% (%i32 1) label))
+  (alloca cmp:%register-save-area% 1 label))
 
 (defun alloca-size_t (&optional (label "var"))
-  (llvm-sys:create-alloca *entry-irbuilder* cmp:%size_t% (%i32 1) label))
+  (alloca cmp:%size_t% 1 label))
 
 (defun alloca-i32 (&optional (label "var"))
-  (llvm-sys:create-alloca *entry-irbuilder* cmp:%i32% (%i32 1) label))
+  (alloca cmp:%i32% 1 label))
 
 (defun alloca-i8* (&optional (label "var"))
-  (llvm-sys:create-alloca *entry-irbuilder* cmp:%i8*% (%i32 1) label))
+  (alloca cmp:%i8*% 1 label))
 
 (defun alloca-i8 (num &optional (label "var"))
   "Allocate a block of memory in the stack frame"
-  (llvm-sys:create-alloca *entry-irbuilder* cmp:%i8% (%i32 num) label))
+  (alloca cmp:%i8% num label))
 
 (defun alloca-return_type (&optional (label "return-value"))
-  (let ((instr (llvm-sys:create-alloca *entry-irbuilder* cmp:%return_type% (%i32 1) label)))
-    instr))
+  (alloca cmp:%return_type% 1 label))
 
 (defun alloca-t* (&optional (label "var"))
-  (let ((instr (llvm-sys:create-alloca *entry-irbuilder* cmp:%t*% (%i32 1) label)))
+  (let ((instr (alloca cmp:%t*% 1 label)))
     #+(or)(cc-dbg-when *debug-log*
 		       (format *debug-log* "          alloca-t*   *entry-irbuilder* = ~a~%" *entry-irbuilder*)
 		       (format *debug-log* "          Wrote ALLOCA ~a into function ~a~%" instr (llvm-sys:get-name (instruction-llvm-function instr))))
@@ -174,6 +176,15 @@
 (defmethod %ssub.with-overflow (x y (abi abi-x86-32))
   (%intrinsic-call "llvm.ssub.with.overflow.i32" (list x y)))
 
+
+(defun %fadd (x y &optional (label "") fast-math-flags)
+  (llvm-sys:create-fadd cmp:*irbuilder* x y label fast-math-flags))
+(defun %fsub (x y &optional (label "") fast-math-flags)
+  (llvm-sys:create-fsub cmp:*irbuilder* x y label fast-math-flags))
+(defun %fmul (x y &optional (label "") fast-math-flags)
+  (llvm-sys:create-fmul cmp:*irbuilder* x y label fast-math-flags))
+(defun %fdiv (x y &optional (label "") fast-math-flags)
+  (llvm-sys:create-fdiv cmp:*irbuilder* x y label fast-math-flags))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
