@@ -35,6 +35,14 @@ THE SOFTWARE.
 #include <llvm/Bitcode/BitcodeWriter.h>
 #include <llvm/Bitcode/BitcodeReader.h>
 #include <llvm/IRReader/IRReader.h>
+#include "llvm/MC/MCObjectFileInfo.h"
+#include "llvm/MC/MCContext.h"
+#include "llvm/MC/MCDisassembler/MCDisassembler.h"
+#include "llvm/MC/MCInstPrinter.h"
+#include "llvm/MC/MCInstrInfo.h"
+#include "llvm/MC/MCInst.h"
+#include "llvm/MC/MCStreamer.h"
+#include "llvm/MC/MCSubtargetInfo.h"
 #include <llvm/Support/raw_ostream.h>
 #include <llvm/Support/MemoryBuffer.h>
 #include <llvm/Support/FileSystem.h>
@@ -121,6 +129,55 @@ CL_DEFUN bool llvm_sys__llvm_value_p(core::T_sp o) {
   }
   return false;
 };
+
+CL_DEFUN std::string llvm_sys__get_default_target_triple() {
+  return llvm::sys::getDefaultTargetTriple();
+}
+
+// See this for emitting comments and latency
+//   http://llvm.org/doxygen/Disassembler_8cpp_source.html#l00248
+CL_DEFUN void llvm_sys__disassemble_instructions(Target_sp targetsp, core::Pointer_sp address, size_t num)
+{
+  Target* target = targetsp->wrappedPtr();
+  std::string striple = llvm::sys::getDefaultTargetTriple();
+  Triple theTriple(striple);
+  MCRegisterInfo* MRI = target->createMCRegInfo(striple);
+  MCAsmInfo* MAI = target->createMCAsmInfo(*MRI, striple);
+  MCObjectFileInfo MOFI;
+  MCContext Ctx(MAI, MRI, &MOFI);
+  MOFI.InitMCObjectFileInfo(theTriple, false/*PIC*/, CodeModel::Default, Ctx);
+  std::string MCPU = "";
+  std::string FeaturesStr = "";
+  MCSubtargetInfo* STI = target->createMCSubtargetInfo(striple, MCPU, FeaturesStr);
+  MCInstrInfo* MCII = target->createMCInstrInfo();
+  MCDisassembler* disassembler = target->createMCDisassembler(*STI,Ctx);
+  stringstream sout;
+  MCInstPrinter *IP = target->createMCInstPrinter(theTriple, 0, *MAI, *MCII, *MRI);
+  MCInst mcinst;
+  uint64_t sz;
+  uint64_t offset = 0;
+  for (size_t i=0; i<num; ++i ) {
+    ArrayRef<uint8_t> memory((uint8_t*)address->ptr()+offset,1024);
+    SmallVector<char,64> InsnStr;
+    raw_svector_ostream Annotations(InsnStr);
+    llvm::MCDisassembler::DecodeStatus status = disassembler->getInstruction(mcinst,sz,memory,offset,nulls(),Annotations);
+    if (status == llvm::MCDisassembler::Success ) {
+      StringRef AnnotationsStr = Annotations.str();
+      SmallVector<char, 64> InsnStr;
+      raw_svector_ostream OS(InsnStr);
+      formatted_raw_ostream FormattedOS(OS);
+      IP->printInst(&mcinst, FormattedOS, AnnotationsStr, *STI);
+      size_t OutputSize = InsnStr.size();
+      std::string inststr(InsnStr.data(), OutputSize);
+      sout << inststr;
+      sout << std::endl;
+    } else {
+      BFORMAT_T(BF("Could not disassemble instruction\n"));
+    }
+    offset += sz;
+  }
+  core::clasp_write_string(sout.str());
+}
 
 
 CL_DEFUN LLVMContext_sp LLVMContext_O::create_llvm_context() {

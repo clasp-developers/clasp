@@ -1556,6 +1556,9 @@ We could do more fancy things here - like if cleavir-clasp fails, use the clasp 
                 (let ((lambda-list (cadr definition)))
                   (core:fset bind-to-name compiled-function nil t lambda-list)))
               (core:set-associated-functions compiled-function *all-functions-for-one-compile*)
+              #+(or)(progn
+                (bformat t "*all-functions-for-one-compile* -> %s\n" *all-functions-for-one-compile*)
+                (llvm-sys:disassemble* compiled-function))
               (values compiled-function warnp failp))))))))
 
 ;;; Use the *cleavir-compile-hook* to determine which compiler to use

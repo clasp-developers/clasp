@@ -341,23 +341,24 @@ No DIBuilder is defined for the default module")
   (defvar *declare-dump-module* nil)
   (defvar *jit-repl-module-handles* nil)
   (defvar *jit-fastgf-module-handles* nil)
-  (defun jit-add-module-return-function (module repl-fn startup-fn shutdown-fn literals-list)
-    (unwind-protect
-         (progn
-           #+threads(mp:get-lock *jit-engine-mutex*)
-           ;;    (bformat t "In jit-add-module-return-function dumping module\n")
-           ;;    (llvm-sys:print-module-to-stream module *standard-output*)
-           (if *jit-dump-module* (llvm-sys:dump module))
-           (if *declare-dump-module* (llvm-sys:dump module))
-           (let* ((repl-name (llvm-sys:get-name repl-fn))
-                  (startup-name (llvm-sys:get-name startup-fn))
-                  (shutdown-name (llvm-sys:get-name shutdown-fn))
-                  (handle (llvm-sys:clasp-jit-add-module *jit-engine* module)))
-             (setq *jit-repl-module-handles* (cons handle *jit-repl-module-handles*))
+  (defun jit-add-module-return-function (original-module repl-fn startup-fn shutdown-fn literals-list)
+    (let ((module (llvm-sys:clone-module original-module)))
+      (unwind-protect
+           (progn
+             #+threads(mp:get-lock *jit-engine-mutex*)
+             ;;    (bformat t "In jit-add-module-return-function dumping module\n")
+             ;;    (llvm-sys:print-module-to-stream module *standard-output*)
+             (if *jit-dump-module* (llvm-sys:dump module))
+             (if *declare-dump-module* (llvm-sys:dump module))
+             (let* ((repl-name (llvm-sys:get-name repl-fn))
+                    (startup-name (llvm-sys:get-name startup-fn))
+                    (shutdown-name (llvm-sys:get-name shutdown-fn))
+                    (handle (llvm-sys:clasp-jit-add-module *jit-engine* module)))
+               (setq *jit-repl-module-handles* (cons handle *jit-repl-module-handles*))
 ;;;      (bformat t "    repl-name -> |%s|\n" repl-name)
-             (llvm-sys:jit-finalize-repl-function *jit-engine* handle repl-name startup-name shutdown-name literals-list repl-fn nil)))
-      (progn
-        #+threads(mp:giveup-lock *jit-engine-mutex*))))
+               (llvm-sys:jit-finalize-repl-function *jit-engine* handle repl-name startup-name shutdown-name literals-list repl-fn nil)))
+        (progn
+          #+threads(mp:giveup-lock *jit-engine-mutex*)))))
 
   (defun jit-add-module-return-dispatch-function (module dispatch-fn startup-fn shutdown-fn literals-list)
     (unwind-protect

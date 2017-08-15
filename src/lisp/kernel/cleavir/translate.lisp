@@ -920,10 +920,8 @@ COMPILE might call this with an environment in ENV.
 COMPILE-FILE will use the default *clasp-env*."
   (setf *ct-start* (compiler-timer-elapsed))
   (let* ((clasp-system *clasp-system*)
-	 (ast (let ((a (cleavir-generate-ast:generate-ast FORM ENV clasp-system)))
-                (setf *ct-generate-ast* (compiler-timer-elapsed))
-		(when *debug-cleavir* (draw-ast a))
-		a))
+	 (ast (prog1 (cleavir-generate-ast:generate-ast FORM ENV clasp-system)
+                (setf *ct-generate-ast* (compiler-timer-elapsed))))
 	 (hoisted-ast (prog1 (clasp-cleavir-ast:hoist-load-time-value ast)
                         (setf *ct-hoist-ast* (compiler-timer-elapsed))))
 	 (hir (prog1 (cleavir-ast-to-hir:compile-toplevel hoisted-ast)
@@ -992,15 +990,15 @@ that llvm function. This works like compile-lambda-function in bclasp."
   (let ((cleavir-generate-ast:*compiler* 'cl:compile))
     (handler-bind
         ((cleavir-env:no-variable-info
-          (lambda (condition)
+           (lambda (condition)
 ;;;	  (declare (ignore condition))
-            #+verbose-compiler(warn "Condition: ~a" condition)
-            (invoke-restart 'cleavir-generate-ast::consider-special)))
+             #+verbose-compiler(warn "Condition: ~a" condition)
+             (invoke-restart 'cleavir-generate-ast::consider-special)))
          (cleavir-env:no-function-info
-          (lambda (condition)
+           (lambda (condition)
 ;;;	  (declare (ignore condition))
-            #+verbose-compiler(warn "Condition: ~a" condition)
-            (invoke-restart 'cleavir-generate-ast::consider-global))))
+             #+verbose-compiler(warn "Condition: ~a" condition)
+             (invoke-restart 'cleavir-generate-ast::consider-global))))
       (multiple-value-bind (fn lambda-name ordered-raw-constants-list constants-table startup-fn shutdown-fn)
           (cclasp-compile-to-module-with-run-time-table form env pathname :linkage linkage)
         (or fn (error "There was no function returned by compile-lambda-function"))
@@ -1010,8 +1008,6 @@ that llvm function. This works like compile-lambda-function in bclasp."
         (cmp:quick-module-dump cmp:*the-module* "cclasp-compile-module-pre-optimize")
         (let* ((setup-function (cmp:jit-add-module-return-function cmp:*the-module* fn startup-fn shutdown-fn ordered-raw-constants-list)))
           (let ((enclosed-function (funcall setup-function)))
-            ;;(format t "*all-functions-for-one-compile* -> ~s~%" cmp:*all-functions-for-one-compile*)
-            ;;(cmp:set-associated-funcs enclosed-function cmp:*all-functions-for-one-compile*)
             (values enclosed-function)))))))
 
 (defun compile-form (form)
@@ -1046,8 +1042,7 @@ that llvm function. This works like compile-lambda-function in bclasp."
 
 (defun cclasp-compile-in-env (name form &optional env)
   (let ((cleavir-generate-ast:*compiler* 'cl:compile)
-        (core:*use-cleavir-compiler* t)
-	(cmp:*all-functions-for-one-compile* nil))
+        (core:*use-cleavir-compiler* t))
     (if cmp::*debug-compile-file*
         (progn
           (format t "cclasp-compile-in-env -> ~s~%" form)
