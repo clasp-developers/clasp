@@ -659,6 +659,28 @@ when this is t a lot of graphs will be generated.")
     (%store (%load (gen-get-vector-ptr size (first inputs) (second inputs) type))
             (first outputs))))
 
+#+(or)
+(defmethod translate-simple-instruction
+    ((instruction cleavir-ir:aref-instruction) return-value inputs outputs abi function-info)
+  (let* ((array (%load (first inputs))) (index (%load (second inputs)))
+         (type
+           (llvm-sys:struct-type-get
+            cmp:*llvm-context*
+            (list (llvm-sys:array-type-get cmp:%i8% (- cmp::+simple-vector._data-offset+ cmp:+general-tag+))
+                  (llvm-sys:array-type-get cmp:%t*% 0))
+            t))
+         (cast (%bit-cast array (llvm-sys:type-get-pointer-to type)))
+         (var-offset (%ptrtoint index (%default-int-type abi)))
+         (untagged (%lshr var-offset cmp::+fixnum-shift+ :exact t :label "untag fixnum"))
+         (effective
+          (llvm-sys:create-in-bounds-gep cmp:*irbuilder*
+                                         cast
+                                         (list (%i32 0)
+                                               (%i32 1)
+                                               untagged)
+                                         "aref")))
+    (%store (%load effective) (first outputs))))
+
 (defmethod translate-simple-instruction
     ((instruction cleavir-ir:aset-instruction) return-value inputs outputs abi function-info)
   (declare (ignore return-value abi function-info))
