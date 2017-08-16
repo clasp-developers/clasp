@@ -4,6 +4,7 @@
   (list (read-line stream eofp eof)
         (read-line stream eofp eof)
         (read-line stream eofp eof)
+        (read-line stream eofp eof)
         (read-line stream eofp eof)))
 
 (defun read-dtrace-backtrace (stream &optional eofp eof)
@@ -70,6 +71,98 @@
     (when verbose (format t "Pruned ~a stacks~%" count))
     (close fin)
     (close fout)))
+
+
+(defun remove-address (line)
+  (let ((pos-plus (search "+0x" line :from-end t)))
+    (if pos-plus
+        (subseq line 0 pos-plus)
+        line)))
+  
+(defun pick-tip (backtrace)
+  (let ((line (first backtrace)))
+    (cond
+      ((search "VariadicFunctor" line) (remove-address (second backtrace)))
+      ((search "VariadicMethoid" line) (remove-address (second backtrace)))
+      ((search "SingleDispatchMethodFunction" line) (remove-address (second backtrace)))
+      (t (remove-address line)))))
+
+(defun trace-tips (fin)
+    (let ((header (read-dtrace-header fin)))
+      (let ((tips (loop for backtrace = (read-dtrace-backtrace fin nil :eof)
+                        until (eq backtrace :eof)
+                        when (> (length backtrace) 0)
+                          collect (pick-tip backtrace))))
+        tips))))
+
+(defun count-tips (input output)
+  (let ((fin (open input :direction :input :external-format :latin-1))
+        (fout (open output :direction :output :if-exists :supersede :external-format :latin-1)))
+    (let ((tips (trace-tips fin))
+          (counts (make-hash-table :test #'equal)))
+      (loop for tip in tips
+            do (incf (gethash tip counts 0)))
+      (let (counted-tips)
+        (maphash (lambda (k v)
+                   (push (cons v k) counted-tips))
+                 counts)
+        (let ((sorted (sort counted-tips #'< :key #'car))
+              (total 0)
+              (gc-counts 0)
+              (hash-table-counts 0))
+          (loop for (count . name ) in sorted
+                do (format fout "~5d  - ~a~%" count name)
+                do (incf total count)
+                do (cond
+                     ((search "GC_" name)
+                      (incf gc-counts count))
+                     ((search "HashTable_O" name)
+                      (incf hash-table-counts count))))
+          (format fout "There are ~a backtraces~%" (length tips))
+          (format fout "GC_ related counts: ~a~%" gc-counts)
+          (format fout "HashTable_O related counts: ~a~%" hash-table-counts))))
+    (close fin)
+    (close fout)))
+
+
+(defun trace-calls (fin)
+  (let ((header (read-dtrace-header fin)))
+    (let ((calls (loop for backtrace = (read-dtrace-backtrace fin nil :eof)
+                       until (eq backtrace :eof)
+                       when (> (length backtrace) 0)
+                         append (butlast backtrace 1))))
+      calls)))
+
+
+(defun count-calls (input output)
+  (let ((fin (open input :direction :input :external-format :latin-1))
+        (fout (open output :direction :output :if-exists :supersede :external-format :latin-1)))
+    (let ((calls (trace-calls fin))
+          (counts (make-hash-table :test #'equal)))
+      (loop for tip in tips
+            do (incf (gethash tip counts 0)))
+      (let (counted-tips)
+        (maphash (lambda (k v)
+                   (push (cons v k) counted-tips))
+                 counts)
+        (let ((sorted (sort counted-tips #'< :key #'car))
+              (total 0)
+              (gc-counts 0)
+              (hash-table-counts 0))
+          (loop for (count . name ) in sorted
+                do (format fout "~5d  - ~a~%" count name)
+                do (incf total count)
+                do (cond
+                     ((search "GC_" name)
+                      (incf gc-counts count))
+                     ((search "HashTable_O" name)
+                      (incf hash-table-counts count))))
+          (format fout "There are ~a backtraces~%" (length tips))
+          (format fout "GC_ related counts: ~a~%" gc-counts)
+          (format fout "HashTable_O related counts: ~a~%" hash-table-counts))))
+    (close fin)
+    (close fout)))
+
 
 (let ((in-file (third sb-ext:*posix-argv*))
       (out-file (fourth sb-ext:*posix-argv*)))

@@ -4347,18 +4347,7 @@ namespace llvmo {
         for (unsigned i = 0; i < Objects.size(); ++i) {
 //          printf("%s:%d:%s informing GDBEventListener  i=%d &Objects[i]->%p  &Infos[i]->%p\n", __FILE__, __LINE__, __FUNCTION__, i, Objects[i].get(), Infos[i].get());
           this->_TheJIT.GDBEventListener->NotifyObjectEmitted(getObject(*Objects[i]), *Infos[i]);
-          std::vector< std::pair< llvm::object::SymbolRef, uint64_t > > symbol_sizes = llvm::object::computeSymbolSizes(getObject(*Objects[i]));
-          for ( auto p : symbol_sizes ) {
-            llvm::object::SymbolRef symbol = p.first;
-            Expected<StringRef> expected_symbol_name = symbol.getName();
-            if (expected_symbol_name) {
-              auto &symbol_name = *expected_symbol_name;
-              uint64_t size = p.second;
-              printf("%s:%d NotifyObjectLoadedT  symbol: %s  size: %llu\n", __FILE__, __LINE__, symbol_name.data(), size);
-            } else {
-              printf("%s:%d Could not get SymbolRef name\n", __FILE__, __LINE__ );
-            }
-          }
+          this->save_symbol_info(getObject(*Objects[i]));
         }
       }
 
@@ -4366,6 +4355,7 @@ namespace llvmo {
       static const object::ObjectFile& getObject(const object::ObjectFile &Obj) {
         return Obj;
       }
+      void save_symbol_info(const llvm::object::ObjectFile& object_file) const;
 
       template <typename ObjT>
         static const object::ObjectFile&

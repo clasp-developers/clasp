@@ -3545,6 +3545,28 @@ ClaspJIT_O::ClaspJIT_O() : TM(EngineBuilder().selectTarget()),
   llvm::sys::DynamicLibrary::LoadLibraryPermanently(nullptr);
 }
 
+
+void ClaspJIT_O::NotifyObjectLoadedT::save_symbol_info(const llvm::object::ObjectFile& object_file) const
+{
+  std::vector< std::pair< llvm::object::SymbolRef, uint64_t > > symbol_sizes = llvm::object::computeSymbolSizes(object_file);
+  for ( auto p : symbol_sizes ) {
+    llvm::object::SymbolRef symbol = p.first;
+    Expected<StringRef> expected_symbol_name = symbol.getName();
+    if (expected_symbol_name) {
+      auto &symbol_name = *expected_symbol_name;
+      uint64_t size = p.second;
+      std::string name(symbol_name.data());
+      Expected<uint64_t> expected_address = symbol.getAddress();
+      if (expected_address) {
+        core::Cons_sp symbol_info = core::Cons_O::createList(core::SimpleBaseString_O::make(name),core::Pointer_O::create((void*)*expected_address),core::make_fixnum((Fixnum)size));
+        comp::_sym_STARjit_symbol_infoSTAR->setf_symbolValue(core::Cons_O::create(symbol_info,comp::_sym_STARjit_symbol_infoSTAR->symbolValue()));
+      }
+    }
+  }
+}
+
+
+
 CL_LISPIFY_NAME("CLASP-JIT-ADD-MODULE");
 CL_DEFMETHOD ModuleHandle_sp ClaspJIT_O::addModule(Module_sp cM) {
   core::LightTimer timer;

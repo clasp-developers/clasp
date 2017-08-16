@@ -341,6 +341,7 @@ No DIBuilder is defined for the default module")
   (defvar *declare-dump-module* nil)
   (defvar *jit-repl-module-handles* nil)
   (defvar *jit-fastgf-module-handles* nil)
+  (defvar *jit-symbol-info* nil)
   (defun jit-add-module-return-function (original-module repl-fn startup-fn shutdown-fn literals-list)
     (let ((module (llvm-sys:clone-module original-module)))
       (unwind-protect
@@ -356,7 +357,13 @@ No DIBuilder is defined for the default module")
                     (handle (llvm-sys:clasp-jit-add-module *jit-engine* module)))
                (setq *jit-repl-module-handles* (cons handle *jit-repl-module-handles*))
 ;;;      (bformat t "    repl-name -> |%s|\n" repl-name)
-               (llvm-sys:jit-finalize-repl-function *jit-engine* handle repl-name startup-name shutdown-name literals-list repl-fn nil)))
+               (let ((*jit-symbol-info* nil))
+                 (prog1
+                     (llvm-sys:jit-finalize-repl-function *jit-engine* handle repl-name startup-name shutdown-name literals-list repl-fn nil)
+                   #+(or)(dolist (e *jit-symbol-info*)
+                     (bformat t "%s\n" e)))
+                 )
+               ))
         (progn
           #+threads(mp:giveup-lock *jit-engine-mutex*)))))
 
