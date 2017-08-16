@@ -34,12 +34,7 @@ RUN apt-get install -y sudo
 ADD tools/dockerfiles/jupyter/kernel.json /home/app/.local/share/jupyter/kernels/lisp/kernel.json
 ADD tools/dockerfiles/jupyter/jupyter_notebook_config.py /home/app/.jupyter/jupyter_notebook_config.py
 RUN chown -R app:app /home/app/.jupyter /home/app/.local $HOME/clasp/Contents/Resources/source-code/extensions/cando/src/lisp
-USER app
-
-
-
-USER root
-ADD tools/dockerfiles/examples /home/app/work/examples
+ADD tools/dockerfiles/demos /home/app/demos
 RUN chown -R app:app /home/app/work
 RUN chown -R app:app /home/app/.jupyter
 RUN chown -R app:app /home/app/nglview

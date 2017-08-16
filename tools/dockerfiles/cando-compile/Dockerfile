@@ -45,7 +45,7 @@ RUN clasp -f "debug-compile-file"\
           -e "(core:quit)"
 
 #USER root
-#ADD tools/dockerfiles/examples /home/app/work/examples
+#ADD tools/dockerfiles/demos /home/app/demos
 #USER app
 
 
