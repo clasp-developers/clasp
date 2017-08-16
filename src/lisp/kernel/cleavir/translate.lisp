@@ -715,31 +715,30 @@ when this is t a lot of graphs will be generated.")
     (declare (ignore outputs))
     `(rplacd ,(first inputs) ,(second inputs))))
 
-;;; Double instructions
+;;; Floating point arithmetic
 
-(defmethod translate-simple-instruction
-    ((instruction cleavir-ir:double-float-add-instruction) return-value inputs outputs abi function-info)
-  (declare (ignore return-value abi function-info))
-  (%store (%fadd (%load (first inputs)) (%load (second inputs)))
-          (first outputs)))
 
-(defmethod translate-simple-instruction
-    ((instruction cleavir-ir:double-float-sub-instruction) return-value inputs outputs abi function-info)
-  (declare (ignore return-value abi function-info))
-  (%store (%fsub (%load (first inputs)) (%load (second inputs)))
-          (first outputs)))
+(defmacro define-fp-binop (instruction-class-name op)
+  `(defmethod translate-simple-instruction
+       ((instruction ,instruction-class-name) return-value inputs outputs abi function-info)
+     (declare (ignore return-value abi function-info))
+     (%store (,op (%load (first inputs)) (%load (second inputs)))
+             (first outputs))))
 
-(defmethod translate-simple-instruction
-    ((instruction cleavir-ir:double-float-mul-instruction) return-value inputs outputs abi function-info)
-  (declare (ignore return-value abi function-info))
-  (%store (%fmul (%load (first inputs)) (%load (second inputs)))
-          (first outputs)))
+;;; As it happens, we do the same IR generation for singles and doubles.
+;;; This is because the LLVM value descriptors have associated types,
+;;; so fadd of doubles is different from fadd of singles.
 
-(defmethod translate-simple-instruction
-    ((instruction cleavir-ir:double-float-div-instruction) return-value inputs outputs abi function-info)
-  (declare (ignore return-value abi function-info))
-  (%store (%fdiv (%load (first inputs)) (%load (second inputs)))
-          (first outputs)))
+(define-fp-binop cleavir-ir:single-float-add-instruction %fadd)
+(define-fp-binop cleavir-ir:single-float-sub-instruction %fsub)
+(define-fp-binop cleavir-ir:single-float-mul-instruction %fmul)
+(define-fp-binop cleavir-ir:single-float-div-instruction %fdiv)
+
+(define-fp-binop cleavir-ir:double-float-add-instruction %fadd)
+(define-fp-binop cleavir-ir:double-float-sub-instruction %fsub)
+(define-fp-binop cleavir-ir:double-float-mul-instruction %fmul)
+(define-fp-binop cleavir-ir:double-float-div-instruction %fdiv)
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
