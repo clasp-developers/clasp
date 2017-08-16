@@ -136,9 +136,34 @@ CL_DEFUN std::string llvm_sys__get_default_target_triple() {
 
 // See this for emitting comments and latency
 //   http://llvm.org/doxygen/Disassembler_8cpp_source.html#l00248
-CL_DEFUN void llvm_sys__disassemble_instructions(Target_sp targetsp, core::Pointer_sp address, size_t num)
+CL_DEFUN void llvm_sys__disassemble_instructions(const std::string& striple, core::Pointer_sp address, size_t start_instruction_index, size_t num_instructions)
 {
-  Target* target = targetsp->wrappedPtr();
+#define DISASM_NUM_BYTES 32
+#define DISASM_OUT_STRING_SIZE 64
+  LLVMDisasmContextRef dis = LLVMCreateDisasm(striple.c_str(),
+                                                    NULL,
+                                                    0,
+                                                    NULL,
+                                                    NULL);
+  uint64_t offset= 0;
+  for ( size_t ii = 0,iiEnd(start_instruction_index+num_instructions); ii<iiEnd; ++ii ) {
+    uint8_t* uiaddress = (uint8_t*)address->ptr()+offset;
+    ArrayRef<uint8_t> Bytes(uiaddress,DISASM_NUM_BYTES);
+    SmallVector<char, DISASM_OUT_STRING_SIZE> InsnStr;
+    size_t sz = LLVMDisasmInstruction(dis,(unsigned char*)&Bytes[0],DISASM_NUM_BYTES,(uint64_t)((uint8_t*)address->ptr()+offset),(char*)InsnStr.data(),DISASM_OUT_STRING_SIZE-1);
+    if (ii >= start_instruction_index) {
+      const char* str = InsnStr.data();
+      stringstream ss;
+      ss << std::hex << (void*)uiaddress << " <+" << std::dec << std::setw(3) << ii << ">";
+      core::clasp_write_string(ss.str());
+      core::writestr_stream(str);
+      core::clasp_terpri();
+    }
+    offset += sz;
+  }
+  LLVMDisasmDispose(dis);
+#if 0
+//  Target* target = targetsp->wrappedPtr();
   std::string striple = llvm::sys::getDefaultTargetTriple();
   Triple theTriple(striple);
   MCRegisterInfo* MRI = target->createMCRegInfo(striple);
@@ -177,6 +202,7 @@ CL_DEFUN void llvm_sys__disassemble_instructions(Target_sp targetsp, core::Point
     offset += sz;
   }
   core::clasp_write_string(sout.str());
+#endif
 }
 
 

@@ -360,18 +360,19 @@ No DIBuilder is defined for the default module")
         (progn
           #+threads(mp:giveup-lock *jit-engine-mutex*)))))
 
-  (defun jit-add-module-return-dispatch-function (module dispatch-fn startup-fn shutdown-fn literals-list)
-    (unwind-protect
-         (progn
-           #+threads(mp:get-lock *jit-engine-mutex*)
-           (let* ((dispatch-name (llvm-sys:get-name dispatch-fn))
-                  (startup-name (llvm-sys:get-name startup-fn))
-                  (shutdown-name (llvm-sys:get-name shutdown-fn))
-                  (handle (llvm-sys:clasp-jit-add-module *jit-engine* module)))
-             (setq *jit-fastgf-module-handles* (cons handle *jit-fastgf-module-handles*))
-             (llvm-sys:jit-finalize-dispatch-function *jit-engine* handle dispatch-name startup-name shutdown-name literals-list)))
-      (progn
-        #+threads(mp:giveup-lock *jit-engine-mutex*))))
+  (defun jit-add-module-return-dispatch-function (original-module dispatch-fn startup-fn shutdown-fn literals-list)
+    (let ((module (llvm-sys:clone-module original-module)))
+      (unwind-protect
+           (progn
+             #+threads(mp:get-lock *jit-engine-mutex*)
+             (let* ((dispatch-name (llvm-sys:get-name dispatch-fn))
+                    (startup-name (llvm-sys:get-name startup-fn))
+                    (shutdown-name (llvm-sys:get-name shutdown-fn))
+                    (handle (llvm-sys:clasp-jit-add-module *jit-engine* module)))
+               (setq *jit-fastgf-module-handles* (cons handle *jit-fastgf-module-handles*))
+               (llvm-sys:jit-finalize-dispatch-function *jit-engine* handle dispatch-name startup-name shutdown-name literals-list)))
+        (progn
+          #+threads(mp:giveup-lock *jit-engine-mutex*)))))
       
   (defun jit-remove-module (handle)
     (unwind-protect
