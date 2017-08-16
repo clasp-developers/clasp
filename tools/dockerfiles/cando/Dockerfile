@@ -35,6 +35,7 @@ ADD tools/dockerfiles/jupyter/kernel.json /home/app/.local/share/jupyter/kernels
 ADD tools/dockerfiles/jupyter/jupyter_notebook_config.py /home/app/.jupyter/jupyter_notebook_config.py
 RUN chown -R app:app /home/app/.jupyter /home/app/.local $HOME/clasp/Contents/Resources/source-code/extensions/cando/src/lisp
 ADD tools/dockerfiles/demos /home/app/demos
+RUN mkdir /home/app/work
 RUN chown -R app:app /home/app/work
 RUN chown -R app:app /home/app/.jupyter
 RUN chown -R app:app /home/app/nglview

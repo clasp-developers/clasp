@@ -32,6 +32,7 @@ THE SOFTWARE.
 #include <clasp/core/hashTableEqual.h>
 #include <clasp/core/array.h>
 #include <clasp/core/ql.h>
+#include <llvm/Object/SymbolSize.h>
 #include <llvm/IR/DerivedTypes.h>
 #include <llvm/IR/LLVMContext.h>
 #include <llvm/IR/Module.h>
@@ -4346,6 +4347,18 @@ namespace llvmo {
         for (unsigned i = 0; i < Objects.size(); ++i) {
 //          printf("%s:%d:%s informing GDBEventListener  i=%d &Objects[i]->%p  &Infos[i]->%p\n", __FILE__, __LINE__, __FUNCTION__, i, Objects[i].get(), Infos[i].get());
           this->_TheJIT.GDBEventListener->NotifyObjectEmitted(getObject(*Objects[i]), *Infos[i]);
+          std::vector< std::pair< llvm::object::SymbolRef, uint64_t > > symbol_sizes = llvm::object::computeSymbolSizes(getObject(*Objects[i]));
+          for ( auto p : symbol_sizes ) {
+            llvm::object::SymbolRef symbol = p.first;
+            Expected<StringRef> expected_symbol_name = symbol.getName();
+            if (expected_symbol_name) {
+              auto &symbol_name = *expected_symbol_name;
+              uint64_t size = p.second;
+              printf("%s:%d NotifyObjectLoadedT  symbol: %s  size: %llu\n", __FILE__, __LINE__, symbol_name.data(), size);
+            } else {
+              printf("%s:%d Could not get SymbolRef name\n", __FILE__, __LINE__ );
+            }
+          }
         }
       }
 
