@@ -4347,7 +4347,7 @@ namespace llvmo {
         for (unsigned i = 0; i < Objects.size(); ++i) {
 //          printf("%s:%d:%s informing GDBEventListener  i=%d &Objects[i]->%p  &Infos[i]->%p\n", __FILE__, __LINE__, __FUNCTION__, i, Objects[i].get(), Infos[i].get());
           this->_TheJIT.GDBEventListener->NotifyObjectEmitted(getObject(*Objects[i]), *Infos[i]);
-          this->save_symbol_info(getObject(*Objects[i]));
+          this->save_symbol_info(getObject(*Objects[i]), *Infos[i]);
         }
       }
 
@@ -4355,7 +4355,7 @@ namespace llvmo {
       static const object::ObjectFile& getObject(const object::ObjectFile &Obj) {
         return Obj;
       }
-      void save_symbol_info(const llvm::object::ObjectFile& object_file) const;
+      void save_symbol_info(const llvm::object::ObjectFile& object_file, const llvm::RuntimeDyld::LoadedObjectInfo& loaded_object_info) const;
 
       template <typename ObjT>
         static const object::ObjectFile&

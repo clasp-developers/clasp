@@ -1620,13 +1620,54 @@ We could do more fancy things here - like if cleavir-clasp fails, use the clasp 
     (compile name form)))
 
 
-(defun test-debug ()
-  (print "First")
-  (debug "test")
-  (print "Last"))
+(defun disassemble-assembly-for-llvm-functions (llvm-function-list)
+  "Given a list of llvm::Functions that were JITted - generate disassembly for them.
+Return T if disassembly was achieved - otherwise NIL"
+  (bformat t "There are %d associated functions - disassembling them.\n" (length llvm-function-list))
+  (let ((success nil))
+    (dolist (llvm-func llvm-function-list)
+      (bformat t "\n%s-----\n" (llvm-sys:get-name llvm-func))
+      (let* ((llvm-function-name (bformat nil "_%s" (llvm-sys:get-name llvm-func)))
+             (symbol-info (gethash llvm-function-name *jit-saved-symbol-info*)))
+        (if symbol-info
+            (let ((bytes (first symbol-info))
+                  (offset (second symbol-info))
+                  (segment-address (third symbol-info)))
+              (llvm-sys:disassemble-instructions (llvm-sys:get-default-target-triple)
+                                                 segment-address
+                                                 :start-byte-offset offset
+                                                 :end-byte-offset (+ offset bytes))
+              (setf success t))
+            (progn
+              (bformat t "Could not disassemble associated function\n")))))
+    success))
+  
+(defun disassemble-assembly (compiled-fn &optional (start-instruction-index 0) (num-instructions 16))
+  (if (core:associated-functions compiled-fn)
+      (let ((success (disassemble-assembly-for-llvm-functions (core:associated-functions compiled-fn))))
+        (if success
+            t
+            (progn
+              (llvm-sys:disassemble-instructions (llvm-sys:get-default-target-triple)
+                                                 (core:function-pointer compiled-fn)
+                                                 :start-instruction-index start-instruction-index
+                                                 :num-instructions num-instructions))))
+      (progn
+        (llvm-sys:disassemble-instructions (llvm-sys:get-default-target-triple)
+                                           (core:function-pointer compiled-fn)
+                                           :start-instruction-index start-instruction-index
+                                           :num-instructions num-instructions))))
 
+(defun disassemble-from-address (address &key (start-instruction-index 0) (num-instructions 16)
+                                           start-byte-offset end-byte-offset)
+  (llvm-sys:disassemble-instructions (llvm-sys:get-default-target-triple)
+                                     address
+                                     :start-instruction-index start-instruction-index
+                                     :num-instructions num-instructions
+                                     :start-byte-offset start-byte-offset
+                                     :end-byte-offset end-byte-offset))
 
-(defun disassemble (desig &key (start 0) (num 16) (type :IR))
+(defun disassemble (desig &key ((:start start-instruction-index) 0) ((:num num-instructions) 16) (type :IR))
   "If type is :ASM then disassemble to assembly language from the START instruction, disassembling NUM instructions
    if type is :IR then dump the llvm-ir for all of the associated functions and ignore START and NUM"
   (multiple-value-bind (func-or-lambda name)
@@ -1647,12 +1688,14 @@ We could do more fancy things here - like if cleavir-clasp fails, use the clasp 
 	 (cond
 	   ((compiled-function-p fn)
             (if (eq type :asm)
-                (llvm-sys:disassemble-instructions (llvm-sys:get-default-target-triple) (core:function-pointer fn) start num)
+                (progn
+                  (disassemble-assembly fn start-instruction-index num-instructions)
+                  (bformat t "Done\n"))
                 (llvm-sys:disassemble* fn)))
 	   ((interpreted-function-p fn)
 	    (format t "This is a interpreted function - compile it first~%"))
            ((eq type :asm)
-                (llvm-sys:disassemble-instructions (llvm-sys:get-default-target-triple) (core:function-pointer fn) start num))
+                (llvm-sys:disassemble-instructions (llvm-sys:get-default-target-triple) (core:function-pointer fn) :start-instruction-index start-instruction-index :num-instructions num-instructions))
 	   (t (error "Unknown target for disassemble: ~a" fn)))))
       ((and (consp desig) (or (eq (car desig) 'lambda) (eq (car desig) 'ext::lambda-block)))
        (let* ((*all-functions-for-one-compile* nil)

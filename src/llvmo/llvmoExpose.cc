@@ -134,9 +134,19 @@ CL_DEFUN std::string llvm_sys__get_default_target_triple() {
   return llvm::sys::getDefaultTargetTriple();
 }
 
-// See this for emitting comments and latency
-//   http://llvm.org/doxygen/Disassembler_8cpp_source.html#l00248
-CL_DEFUN void llvm_sys__disassemble_instructions(const std::string& striple, core::Pointer_sp address, size_t start_instruction_index, size_t num_instructions)
+/*! Disassemble code from the base (address).
+    The stopping criterion is defined by start_byte_offset/end_byte_offset and start_instruction_index/num_instructions.
+    If start_byte_offset is a fixnum then end_byte_offset must also be a fixnum >= start_byte_offset and they
+       are used to determine the start and stopping criterion.
+    Otherwise start printing disassembled instructions from the start_instruction_index up to num_instructions.
+TODO: See the link below to make the disassbmely more informative by emitting comments, symbols and latency
+   http://llvm.org/doxygen/Disassembler_8cpp_source.html#l00248
+*/
+CL_LAMBDA(target-triple address &key (start-instruction-index 0) (num-instructions 16) start-byte-offset end-byte-offset);
+CL_DEFUN void llvm_sys__disassemble_instructions(const std::string& striple,
+                                                 core::Pointer_sp address,
+                                                 size_t start_instruction_index, size_t num_instructions,
+                                                 core::T_sp start_byte_offset, core::T_sp end_byte_offset)
 {
 #define DISASM_NUM_BYTES 32
 #define DISASM_OUT_STRING_SIZE 64
@@ -145,8 +155,27 @@ CL_DEFUN void llvm_sys__disassemble_instructions(const std::string& striple, cor
                                                     0,
                                                     NULL,
                                                     NULL);
+  LLVMSetDisasmOptions(dis,LLVMDisassembler_Option_PrintImmHex|LLVMDisassembler_Option_PrintLatency
+                       /*|LLVMDisassembler_Option_UseMarkup*/);
   uint64_t offset= 0;
-  for ( size_t ii = 0,iiEnd(start_instruction_index+num_instructions); ii<iiEnd; ++ii ) {
+  if (start_byte_offset.fixnump()) {
+    if (!end_byte_offset.fixnump()) {
+      SIMPLE_ERROR(BF("If you provide start-byte-offset - you must provide a fixnum for end-byte-offset"));
+    }
+    if (start_byte_offset.unsafe_fixnum()>=end_byte_offset.unsafe_fixnum()) {
+      SIMPLE_ERROR(BF("start-byte-offset must be < end-byte-offset"));
+    }
+    offset = start_byte_offset.unsafe_fixnum();
+    start_instruction_index = 0;
+    num_instructions = UINT_MAX;
+  }
+  for ( size_t ii = 0,iiEnd(start_instruction_index+num_instructions); ; ++ii ) {
+      // stopping criterion
+    if (end_byte_offset.fixnump()) {
+      if (offset >= end_byte_offset.unsafe_fixnum()) break;
+    } else {
+      if (ii >= iiEnd) break;
+    }
     uint8_t* uiaddress = (uint8_t*)address->ptr()+offset;
     ArrayRef<uint8_t> Bytes(uiaddress,DISASM_NUM_BYTES);
     SmallVector<char, DISASM_OUT_STRING_SIZE> InsnStr;
@@ -154,7 +183,7 @@ CL_DEFUN void llvm_sys__disassemble_instructions(const std::string& striple, cor
     if (ii >= start_instruction_index) {
       const char* str = InsnStr.data();
       stringstream ss;
-      ss << std::hex << (void*)uiaddress << " <+" << std::dec << std::setw(3) << ii << ">";
+      ss << std::hex << (void*)uiaddress << " <#" << std::dec << std::setw(3) << ii << "+" << offset <<  ">";
       core::clasp_write_string(ss.str());
       core::writestr_stream(str);
       core::clasp_terpri();
@@ -3546,7 +3575,7 @@ ClaspJIT_O::ClaspJIT_O() : TM(EngineBuilder().selectTarget()),
 }
 
 
-void ClaspJIT_O::NotifyObjectLoadedT::save_symbol_info(const llvm::object::ObjectFile& object_file) const
+void ClaspJIT_O::NotifyObjectLoadedT::save_symbol_info(const llvm::object::ObjectFile& object_file, const llvm::RuntimeDyld::LoadedObjectInfo& loaded_object_info) const
 {
   std::vector< std::pair< llvm::object::SymbolRef, uint64_t > > symbol_sizes = llvm::object::computeSymbolSizes(object_file);
   for ( auto p : symbol_sizes ) {
@@ -3556,9 +3585,12 @@ void ClaspJIT_O::NotifyObjectLoadedT::save_symbol_info(const llvm::object::Objec
       auto &symbol_name = *expected_symbol_name;
       uint64_t size = p.second;
       std::string name(symbol_name.data());
-      Expected<uint64_t> expected_address = symbol.getAddress();
-      if (expected_address) {
-        core::Cons_sp symbol_info = core::Cons_O::createList(core::SimpleBaseString_O::make(name),core::Pointer_O::create((void*)*expected_address),core::make_fixnum((Fixnum)size));
+      uint64_t address = symbol.getValue();
+      Expected<llvm::object::section_iterator> expected_section_iterator = symbol.getSection();
+      if (expected_section_iterator) {
+        const llvm::object::SectionRef& section_ref = **expected_section_iterator;
+        uint64_t section_address = loaded_object_info.getSectionLoadAddress(section_ref);
+        core::Cons_sp symbol_info = core::Cons_O::createList(core::SimpleBaseString_O::make(name),core::make_fixnum((Fixnum)size),core::make_fixnum((Fixnum)address),core::Pointer_O::create((void*)section_address));
         comp::_sym_STARjit_symbol_infoSTAR->setf_symbolValue(core::Cons_O::create(symbol_info,comp::_sym_STARjit_symbol_infoSTAR->symbolValue()));
       }
     }
