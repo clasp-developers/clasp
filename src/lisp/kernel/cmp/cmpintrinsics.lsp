@@ -140,6 +140,7 @@ Set this to other IRBuilders to make code go where you want")
 (defvar +instance-rack-stamp-offset+ (get-cxx-data-structure-info :instance-rack-stamp-offset))
 (defvar +instance-rack-offset+ (get-cxx-data-structure-info :instance-rack-offset))
 (defvar +instance-kind+ (get-cxx-data-structure-info :instance-kind))
+(defvar +funcallable-instance-kind+ (get-cxx-data-structure-info :funcallable-instance-kind))
 
 (defvar +header-size+ (get-cxx-data-structure-info :header-size))
 (defvar +fixnum-mask+ (get-cxx-data-structure-info :fixnum-mask))
