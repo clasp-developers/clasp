@@ -93,7 +93,7 @@
                         until (eq backtrace :eof)
                         when (> (length backtrace) 0)
                           collect (pick-tip backtrace))))
-        tips))))
+        tips)))
 
 (defun count-tips (input output)
   (let ((fin (open input :direction :input :external-format :latin-1))
@@ -162,8 +162,19 @@
     (close fin)
     (close fout)))
 
-
-(let ((in-file (third sb-ext:*posix-argv*))
-      (out-file (fourth sb-ext:*posix-argv*)))
-  (format t "prune ~a -> ~a~%" in-file out-file)
-  (prune-dtrace-log in-file out-file))
+(let ((cmd (second sb-ext:*posix-argv*)))
+  (cond
+    ((search "prune-trace" cmd)
+     (let ((in-file (third sb-ext:*posix-argv*))
+           (out-file (fourth sb-ext:*posix-argv*)))
+       (format t "prune ~a -> ~a~%" in-file out-file)
+       (prune-dtrace-log in-file out-file)))
+    ((search "count-tips" cmd)
+     (let ((in-file (third sb-ext:*posix-argv*))
+           (out-file (fourth sb-ext:*posix-argv*)))
+       (count-tips in-file out-file)))
+    ((search "count-calls" cmd)
+     (let ((in-file (third sb-ext:*posix-argv*))
+           (out-file (fourth sb-ext:*posix-argv*)))
+       (count-calls in-file out-file)))
+    (t (error "Unknown command"))))
