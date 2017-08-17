@@ -730,6 +730,7 @@ when this is t a lot of graphs will be generated.")
   (declare (ignore return-value abi function-info))
   (let ((intrinsic
           (ecase (cleavir-ir:element-type instruction)
+            ((single-float) "to_object_float")
             ((double-float) "to_object_double"))))
     (%store
      (%intrinsic-call intrinsic (list (%load (first inputs))))
@@ -740,6 +741,7 @@ when this is t a lot of graphs will be generated.")
   (declare (ignore return-value abi function-info))
   (let ((intrinsic
           (ecase (cleavir-ir:element-type instruction)
+            ((single-float) "from_object_float")
             ((double-float) "from_object_double"))))
     (%store
      (%intrinsic-call intrinsic (list (%load (first inputs))))
