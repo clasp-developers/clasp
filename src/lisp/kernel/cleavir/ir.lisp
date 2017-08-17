@@ -176,6 +176,13 @@
 (defmethod %ssub.with-overflow (x y (abi abi-x86-32))
   (%intrinsic-call "llvm.ssub.with.overflow.i32" (list x y)))
 
+(defun %shl (value shift &key (label "") nuw nsw)
+  (llvm-sys:create-shl-value-uint64
+   cmp:*irbuilder* value shift label nuw nsw))
+
+(defun %lshr (value shift &key (label "") exact)
+  (llvm-sys:create-lshr-value-uint64
+   cmp:*irbuilder* value shift label exact))
 
 (defun %fadd (x y &optional (label "") fast-math-flags)
   (llvm-sys:create-fadd cmp:*irbuilder* x y label fast-math-flags))
