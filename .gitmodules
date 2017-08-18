@@ -3,7 +3,7 @@
 	url = https://github.com/Bike/SICL.git
 [submodule "src/lisp/modules/asdf"]
 	path = src/lisp/modules/asdf
-	url = https://gitlab.common-lisp.net/asdf/asdf.git
+	url = https://github.com/fare/asdf/asdf.git
 [submodule "src/mps"]
 	path = src/mps
 	url = https://github.com/Ravenbrook/mps.git
