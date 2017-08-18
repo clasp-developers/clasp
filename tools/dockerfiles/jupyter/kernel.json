@@ -9,7 +9,7 @@
         "--load",
         "/home/app/quicklisp/local-projects/cl-jupyter/cl-jupyter.lisp",
         "--load",
-        "cando:lisp/setup-cando-jupyter.lisp",
+        "cando:lisp;setup-cando-jupyter.lisp",
         "--",
         "/home/app/quicklisp/local-projects/cl-jupyter/src",
         "/home/app/quicklisp/local-projects/cl-jupyter",
