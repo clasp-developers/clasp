@@ -40,7 +40,7 @@ RUN clasp -e '(load "/home/app/quicklisp/setup.lisp")'\
           -e "(ql:quickload :ironclad)"\
           -e "(ql:quickload :uuid)"\
           -e "(ql:quickload :trivial-utf-8)"\
-          -l "cando:lisp;setup-cando-jupyter.lisp"
+          -l "cando:lisp;setup-cando-jupyter.lisp"\
           -e "(core:quit)"
 
 #USER root
