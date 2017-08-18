@@ -18,8 +18,9 @@ RUN cd $HOME/quicklisp/local-projects \
  && git clone --depth=1 https://github.com/clasp-developers/cffi.git
 
 
+RUN mkdir /home/app/logs/
+
 RUN clasp -f "setup-cando"\
-          -f "debug-compile-file"\
           -e '(load "/home/app/quicklisp/setup.lisp")'\
           -e "(ql:quickload :trivial-http)"\
           -e "(require :inet)"\
@@ -28,10 +29,7 @@ RUN clasp -f "setup-cando"\
           -e "(swank-loader:init :delete nil :reload nil :load-contribs nil)"\
           -e "(core:quit)"
 
-RUN mkdir /home/app/logs/
-
-RUN clasp -f "debug-compile-file"\
-          -e '(load "/home/app/quicklisp/setup.lisp")'\
+RUN clasp -e '(load "/home/app/quicklisp/setup.lisp")'\
           -e "(ql:quickload :cl-jupyter)"\
           -e "(ql:quickload :cl-json)"\
           -e "(ql:quickload :cl-base64)"\
@@ -42,6 +40,7 @@ RUN clasp -f "debug-compile-file"\
           -e "(ql:quickload :ironclad)"\
           -e "(ql:quickload :uuid)"\
           -e "(ql:quickload :trivial-utf-8)"\
+          -l "cando:lisp;setup-cando-jupyter.lisp"\
           -e "(core:quit)"
 
 #USER root
