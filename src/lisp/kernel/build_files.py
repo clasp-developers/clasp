@@ -47,6 +47,7 @@ def aclasp(wrappers):
         "src/lisp/kernel/cmp/cmputil",
         "src/lisp/kernel/cmp/runtime-info",
         "src/lisp/kernel/cmp/cmpintrinsics",
+        "src/lisp/kernel/cmp/primitives",
         "src/lisp/kernel/cmp/cmpir",
         "src/lisp/kernel/cmp/cmpeh",
         "src/lisp/kernel/cmp/debuginfo",

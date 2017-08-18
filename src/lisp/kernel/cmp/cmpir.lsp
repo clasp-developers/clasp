@@ -1175,6 +1175,32 @@ Write T_O* pointers into the current multiple-values array starting at the (offs
 
 ;----------------------------------------------------------------------
 
+(defun matching-arguments (required-type given-type arg-index)
+  (if (equal required-type +tsp*-or-tmv*+)
+      (if (eql arg-index 1)
+	  (if (or (equal given-type %tsp*%) (equal given-type %tmv*%))
+	      t
+	      nil)
+	  (error ":tsp*-or-tmv* can only be specified as the first argument of an intrinsic function"))
+      (equal required-type given-type)))
+
+(defun throw-if-mismatched-arguments (fn-name args)
+  (let* ((info (gethash fn-name *primitives*))
+	 (return-ty (car info))
+	 (required-args-ty (cadr info))
+	 (passed-args-ty (mapcar #'(lambda (x)
+				     (if (llvm-sys:llvm-value-p x)
+					 (if (llvm-sys:valid x)
+                                             (llvm-sys:get-type x)
+                                             (error "Invalid (NULL pointer) value ~a about to be passed to intrinsic function ~a" x fn-name))
+					 (core:class-name-as-string x)))
+				 args))
+	 (i 1))
+    (mapc #'(lambda (x y z)
+	      (unless (matching-arguments x y i)
+		(error "Constructing call to intrinsic ~a - mismatch of arg#~a value[~a], expected type ~a - received type ~a" fn-name i z x y))
+	      (setq i (1+ i))
+	      ) required-args-ty passed-args-ty args)))
 
 (defun irc-create-invoke (entry-point args unwind-dest &optional (label ""))
   ;;  (check-debug-info-setup *irbuilder*)
