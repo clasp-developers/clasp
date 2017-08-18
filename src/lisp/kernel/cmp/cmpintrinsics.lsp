@@ -301,7 +301,9 @@ Boehm and MPS use a single pointer"
 ;; Either the register arguments are available in register-args
 ;;   or the va-list/remaining-nargs is used to access the arguments
 ;;   one after the other with calling-convention.va-arg
-(defstruct (calling-convention-impl (:type vector))
+(defstruct (calling-convention-impl
+            (:conc-name "CALLING-CONVENTION-")
+            (:type vector))
   closure
   nargs
   use-only-registers ; If T then use only the register-args
@@ -358,24 +360,6 @@ Boehm and MPS use a single pointer"
                                                  (irc-intrinsic "debug_va_list" va-list*))))
           cc))))
 
-(defun calling-convention-closure (cc)
-  (calling-convention-impl-closure cc))
-
-(defun calling-convention-use-only-registers (cc)
-  (calling-convention-impl-use-only-registers cc))
-
-(defun calling-convention-nargs (cc)
-  (calling-convention-impl-nargs cc))
-
-(defun calling-convention-invocation-history-frame* (cc)
-  (calling-convention-impl-invocation-history-frame* cc))
-
-(defun calling-convention-register-args (cc)
-  (calling-convention-impl-register-args cc))
-
-(defun calling-convention-remaining-nargs* (cc)
-  (calling-convention-impl-remaining-nargs* cc))
-
 
 (defun calling-convention-maybe-push-invocation-history-frame (cc)
   (when (calling-convention-invocation-history-frame* cc)
@@ -391,13 +375,6 @@ Boehm and MPS use a single pointer"
                    (calling-convention-closure cc)
                    (calling-convention-invocation-history-frame* cc))))
 
-
-
-(defun calling-convention-va-list* (cc)
-  (calling-convention-impl-va-list* cc))
-
-(defun calling-convention-register-save-area* (cc)
-  (calling-convention-impl-register-save-area* cc))
 
 (defun calling-convention-args.va-end (cc)
   (let* ((_        (irc-intrinsic "llvm.va_end" (calling-convention-va-list* cc))))))
