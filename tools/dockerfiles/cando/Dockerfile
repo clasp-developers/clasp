@@ -41,6 +41,6 @@ RUN chown -R app:app /home/app/.jupyter
 RUN chown -R app:app /home/app/nglview
 USER app
 
-
+ENV HOME /home/app/demos/
 ENTRYPOINT [ "jupyter", "notebook" ]
 CMD        [ "--no-browser", "--ip=0.0.0.0", "--port=8888" ]
