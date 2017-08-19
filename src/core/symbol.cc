@@ -221,8 +221,14 @@ void Symbol_O::setf_plist(List_sp plist) {
 }
 
 void Symbol_O::sxhash_(HashGenerator &hg) const {
-  if (hg.isFilling())
-    this->_Name->sxhash_(hg);
+  if (hg.isFilling()) this->_HomePackage.unsafe_general()->sxhash_(hg);
+  if (hg.isFilling()) this->_Name->sxhash_(hg);
+}
+
+void Symbol_O::sxhash_equal(HashGenerator &hg,LocationDependencyPtrT ld) const
+{
+  if (hg.isFilling()) HashTable_O::sxhash_equal(hg,this->_HomePackage,ld);
+  if (hg.isFilling()) HashTable_O::sxhash_equal(hg,this->_Name,ld);
 }
 
 CL_LISPIFY_NAME("cl:copy_symbol");

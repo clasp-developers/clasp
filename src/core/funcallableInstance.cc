@@ -240,13 +240,21 @@ bool FuncallableInstance_O::equalp(T_sp obj) const {
 }
 
 void FuncallableInstance_O::sxhash_(HashGenerator &hg) const {
-  if (hg.isFilling())
-    hg.hashObject(this->_Class);
+  if (hg.isFilling()) hg.hashObject(this->_Class->_className());
   for (size_t i(1), iEnd(this->_Rack->length()); i < iEnd; ++i) {
     if (!(*this->_Rack)[i].unboundp() && hg.isFilling())
       hg.hashObject((*this->_Rack)[i]);
     else
       break;
+  }
+}
+
+void FuncallableInstance_O::sxhash_equalp(HashGenerator &hg, LocationDependencyPtrT ld) const {
+  if (hg.isFilling())
+    HashTable_O::sxhash_equalp(hg, this->_Class->_className(), ld);
+  for (size_t i(0), iEnd(this->numberOfSlots()); i < iEnd; ++i) {
+    if (!this->instanceRef(i).unboundp() && hg.isFilling())
+      HashTable_O::sxhash_equalp(hg, this->instanceRef(i), ld);
   }
 }
 

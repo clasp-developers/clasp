@@ -1,3 +1,11 @@
+(in-package :cl-user)
+
+(progn
+  (defgeneric foo (x))
+  (defmethod foo ((x integer)) :integer)
+  (defmethod foo ((x float)) :float)
+  (defmethod foo ((x string)) :string))
+
 
 ;;; --------------------------------------------------
 ;;;

@@ -32,6 +32,7 @@ THE SOFTWARE.
 #include <clasp/core/symbolTable.h>
 #include <clasp/core/evaluator.h>
 #include <clasp/core/numbers.h>
+#include <clasp/core/hashTable.h>
 #include <clasp/core/primitives.h>
 #include <clasp/core/designators.h>
 #include <clasp/core/lispStream.h>
@@ -175,6 +176,17 @@ void ranged_bit_vector_nreverse(SimpleBitVector_sp sv, size_t start, size_t end)
 // Array_O
 //
 //
+
+void Array_O::sxhash_equalp(HashGenerator &hg,LocationDependencyPtrT ld) const {
+  for (size_t i = 0; i < this->length(); ++i) {
+    if (hg.isFilling()) {
+      T_sp obj = this->rowMajorAref(i);
+      HashTable_O::sxhash_equalp(hg,obj,ld);
+    } else {
+      break;
+    }
+  }
+}
 
 
 void Array_O::fillInitialContents(T_sp ic) {

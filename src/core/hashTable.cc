@@ -363,25 +363,14 @@ void HashTable_O::sxhash_equal(HashGenerator &hg, T_sp obj, LocationDependencyPt
     } else if (BitVector_sp bv_obj = obj.asOrNull<BitVector_O>()) {
       if (hg.isFilling()) bv_obj->sxhash_(hg);
       return;
-    } else if (Pathname_sp pobj = obj.asOrNull<Pathname_O>()) {
-      if (hg.isFilling())
-        HashTable_O::sxhash_equal(hg, pobj->_Host, ld);
-      if (hg.isFilling())
-        HashTable_O::sxhash_equal(hg, pobj->_Device, ld);
-      if (hg.isFilling())
-        HashTable_O::sxhash_equal(hg, pobj->_Directory, ld);
-      if (hg.isFilling())
-        HashTable_O::sxhash_equal(hg, pobj->_Name, ld);
-      if (hg.isFilling())
-        HashTable_O::sxhash_equal(hg, pobj->_Type, ld);
-      if (hg.isFilling())
-        HashTable_O::sxhash_equal(hg, pobj->_Version, ld);
-      return;
     } else if (Cons_sp cobj = obj.asOrNull<Cons_O>()) {
       if (hg.isFilling())
         HashTable_O::sxhash_equal(hg, oCar(cobj), ld);
       if (hg.isFilling())
         HashTable_O::sxhash_equal(hg, oCdr(cobj), ld);
+      return;
+    } else if (Pathname_sp pobj = obj.asOrNull<Pathname_O>()) {
+      pobj->sxhash_equal(hg,ld);
       return;
     }
   }
@@ -420,20 +409,6 @@ void HashTable_O::sxhash_equalp(HashGenerator &hg, T_sp obj, LocationDependencyP
       if (hg.isFilling())
         clasp_sxhash(obj, hg);
       return;
-    } else if (Pathname_sp pobj = obj.asOrNull<Pathname_O>()) {
-      if (hg.isFilling())
-        HashTable_O::sxhash_equalp(hg, pobj->_Host, ld);
-      if (hg.isFilling())
-        HashTable_O::sxhash_equalp(hg, pobj->_Device, ld);
-      if (hg.isFilling())
-        HashTable_O::sxhash_equalp(hg, pobj->_Directory, ld);
-      if (hg.isFilling())
-        HashTable_O::sxhash_equalp(hg, pobj->_Name, ld);
-      if (hg.isFilling())
-        HashTable_O::sxhash_equalp(hg, pobj->_Type, ld);
-      if (hg.isFilling())
-        HashTable_O::sxhash_equalp(hg, pobj->_Version, ld);
-      return;
     } else if (Cons_sp cobj = obj.asOrNull<Cons_O>()) {
       if (hg.isFilling())
         HashTable_O::sxhash_equalp(hg, oCar(cobj), ld);
@@ -442,32 +417,8 @@ void HashTable_O::sxhash_equalp(HashGenerator &hg, T_sp obj, LocationDependencyP
       return;
     } else if ( obj.generalp() ) {
       General_sp gobj = General_sp((gctools::Tagged)obj.raw_());
-      if (gobj->instancep()) {
-        Instance_sp iobj = gc::As<Instance_sp>(gobj);
-        if (hg.isFilling())
-          HashTable_O::sxhash_equalp(hg, iobj->_Class->_className(), ld);
-        for (size_t i(0), iEnd(iobj->numberOfSlots()); i < iEnd; ++i) {
-            if (!iobj->instanceRef(i).unboundp() && hg.isFilling())
-              HashTable_O::sxhash_equalp(hg, iobj->instanceRef(i), ld);
-        }
-        return;
-      } else if (BitVector_sp bv_obj = gobj.asOrNull<BitVector_O>()) {
-        (void)bv_obj; // silence warning
-        IMPLEMENT_MEF(BF("Handle HashTable_O::sxhash_equalp for BitVector"));
-      } else if (Array_sp aobj = gobj.asOrNull<Array_O>()) {
-        for (size_t i = 0; i < aobj->length(); ++i) {
-          if (hg.isFilling()) {
-            T_sp obj = aobj->rowMajorAref(i);
-            HashTable_O::sxhash_equalp(hg,obj,ld);
-          } else {
-            break;
-          }
-        }
-        return;
-      } else if (HashTable_sp hobj = gobj.asOrNull<HashTable_O>()) {
-        (void)hobj; // silence warning
-        IMPLEMENT_MEF(BF("Handle HashTable_O::sxhash_equalp for HashTables"));
-      }
+      gobj->sxhash_equalp(hg,ld);
+      return;
     }
   }
   volatile void* address = &(*obj);

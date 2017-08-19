@@ -1052,11 +1052,15 @@
 ;;; and invalidating the generic functions
 
 (defun optimized-call-history* (call-history specializer-profile)
+  (format t "Entered optimized-call-history* 2~%")
+  (finish-output)
   (let* ((specializer-length (let ((pos (position-if #'identity specializer-profile :from-end t)))
                                (if pos
                                    (1+ pos)
                                    0)))
          (profiled (make-hash-table :test #'equalp)))
+    (format t "About to do loop~%")
+  (finish-output)
     (loop for entry in call-history
        for key = (car entry)
        for outcome = (cdr entry)
@@ -1069,14 +1073,17 @@
                                 (list (car val))
                                 val))
                           nil)))
+         do (format t "About to gethash new-key: ~a~%" new-key)
        do (setf (gethash new-key profiled) outcome))
     (let ((res))
       (maphash (lambda (k v) (push (cons k v) res)) profiled)
       res)))
 
 (defun optimized-call-history (generic-function)
+  (format t "Entered optimized-call-history 222~%")
   (let* ((call-history (clos::generic-function-call-history generic-function))
          (specializer-profile (clos::generic-function-specializer-profile generic-function)))
+    (format t "About to call optimized-call-history*~%")
     (optimized-call-history* call-history specializer-profile)))
 
 

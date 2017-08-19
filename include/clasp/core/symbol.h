@@ -106,7 +106,9 @@ public:
   //#include "symbol_apply_inc.h"
 
   void sxhash_(HashGenerator &hg) const;
-
+  void sxhash_equal(HashGenerator &hg,LocationDependencyPtrT ptr) const;
+  void sxhash_equalp(HashGenerator &hg,LocationDependencyPtrT ptr) const {this->sxhash_equal(hg,ptr);};
+  
   bool isKeywordSymbol();
   Symbol_sp asKeywordSymbol();
 

@@ -370,6 +370,9 @@ namespace core {
 //    General_O& &operator=(const General_O &) { return *this; };
 
     virtual void sxhash_(HashGenerator &hg) const;
+    virtual void sxhash_equal(HashGenerator &hg,LocationDependencyPtrT ptr) const {SUBIMP();}
+    virtual void sxhash_equalp(HashGenerator &hg,LocationDependencyPtrT ptr) const {SUBIMP();}
+    
     virtual size_t templatedSizeof() const { SUBIMP(); };
 
       //! Initialize member variables and those that depend on sharedThis

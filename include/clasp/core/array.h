@@ -271,6 +271,7 @@ namespace core {
     size_t       _Length[0];
   public:
   // Low level functions for access to contents
+    
     virtual clasp_elttype elttype() const = 0;
     virtual size_t elementSizeInBytes() const = 0;
     virtual void* rowMajorAddressOfElement_(size_t index) const = 0;
@@ -347,6 +348,7 @@ namespace core {
     }
     void fillInitialContents(T_sp initialContents);
     virtual void sxhash_(HashGenerator& hg) const = 0;
+    virtual void sxhash_equalp(HashGenerator &hg,LocationDependencyPtrT ptr) const;
   // --------------------------------------------------
   // Ranged operations with explicit limits
     virtual Array_sp unsafe_subseq(size_t start, size_t end) const = 0;
