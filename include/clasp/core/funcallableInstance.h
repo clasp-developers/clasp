@@ -254,11 +254,12 @@ namespace core {
     virtual T_sp instanceSigSet();
     virtual T_sp instanceSig() const;
 
-
+#if 0
     virtual bool equalp(T_sp obj) const;
     virtual void sxhash_(HashGenerator &hg) const;
     virtual void sxhash_equalp(HashGenerator &hg,LocationDependencyPtrT ptr) const;
-
+#endif
+    
   /*! Return the value of a slot */
     T_sp instanceRef(size_t idx) const;
   /*! Set the value of a slot and return the new value */

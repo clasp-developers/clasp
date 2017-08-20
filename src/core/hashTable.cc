@@ -340,46 +340,35 @@ void HashTable_O::sxhash_eql(HashGenerator &hg, T_sp obj, LocationDependencyPtrT
 
 void HashTable_O::sxhash_equal(HashGenerator &hg, T_sp obj, LocationDependencyPtrT ld) {
   if (obj.fixnump()) {
-    if (hg.isFilling())
-      hg.addPart(obj.unsafe_fixnum());
+    if (hg.isFilling()) hg.addPart(obj.unsafe_fixnum());
     return;
   } else if (obj.single_floatp()) {
-    if (hg.isFilling())
-      hg.addPart(std::abs(::floor(obj.unsafe_single_float())));
+    if (hg.isFilling()) hg.addPart(std::abs(::floor(obj.unsafe_single_float())));
     return;
   } else if (obj.characterp()) {
-    if (hg.isFilling())
-      hg.addPart(obj.unsafe_character());
+    if (hg.isFilling()) hg.addPart(obj.unsafe_character());
     return;
-  }
-  if (obj.objectp()) {
+  } else if (obj.consp()) {
+    Cons_sp cobj = gc::As_unsafe<Cons_sp>(obj);
+    if (hg.isFilling()) HashTable_O::sxhash_equal(hg, CONS_CAR(cobj), ld);
+    if (hg.isFilling()) HashTable_O::sxhash_equal(hg, CONS_CAR(cobj), ld);
+    return;
+  } else if (obj.generalp()) {
     if (cl__numberp(obj)) {
       hg.hashObject(obj);
       return;
     } else if (String_sp str_obj = obj.asOrNull<String_O>()) {
-      if (hg.isFilling())
-        str_obj->sxhash_(hg);
+      if (hg.isFilling()) str_obj->sxhash_(hg);
       return;
     } else if (BitVector_sp bv_obj = obj.asOrNull<BitVector_O>()) {
       if (hg.isFilling()) bv_obj->sxhash_(hg);
       return;
-    } else if (Cons_sp cobj = obj.asOrNull<Cons_O>()) {
-      if (hg.isFilling())
-        HashTable_O::sxhash_equal(hg, oCar(cobj), ld);
-      if (hg.isFilling())
-        HashTable_O::sxhash_equal(hg, oCdr(cobj), ld);
-      return;
-    } else if (Pathname_sp pobj = obj.asOrNull<Pathname_O>()) {
-      pobj->sxhash_equal(hg,ld);
-      return;
     }
+    General_sp gobj = gc::As_unsafe<General_sp>(obj);
+    gobj->sxhash_equal(hg,ld);
+    return;
   }
-  volatile void* address = &(*obj);
-#ifdef USE_MPS
-  if (ld) mps_ld_add(ld, global_arena, (mps_addr_t)address );
-#endif
-  hg.addPart((Fixnum)(((uintptr_clasp_t)address)>>gctools::tag_shift));
-  return;
+  SIMPLE_ERROR(BF("You cannot EQUAL hash on %s") % _rep_(obj));
 }
 
 void HashTable_O::sxhash_equalp(HashGenerator &hg, T_sp obj, LocationDependencyPtrT ld) {
@@ -395,38 +384,27 @@ void HashTable_O::sxhash_equalp(HashGenerator &hg, T_sp obj, LocationDependencyP
     if (hg.isFilling())
       hg.addPart(obj.unsafe_character());
     return;
-  }
-  if (obj.objectp()) {
+  } else if (obj.consp()) {
+    Cons_sp cobj = gc::As_unsafe<Cons_sp>(obj);
+    if (hg.isFilling())
+      HashTable_O::sxhash_equalp(hg, CONS_CAR(cobj), ld);
+    if (hg.isFilling())
+      HashTable_O::sxhash_equalp(hg, CONS_CDR(cobj), ld);
+    return;
+  } else if (obj.generalp()) {
     if (cl__numberp(obj)) {
-      hg.hashObject(obj);
+      if (hg.isFilling()) hg.hashObject(obj);
       return;
-    }
-    if (cl__stringp(obj)) {
+    } else if (cl__stringp(obj)) {
       SimpleString_sp upstr = cl__string_upcase(obj);
       hg.hashObject(upstr);
       return;
-    } else if (cl__numberp(obj)) {
-      if (hg.isFilling())
-        clasp_sxhash(obj, hg);
-      return;
-    } else if (Cons_sp cobj = obj.asOrNull<Cons_O>()) {
-      if (hg.isFilling())
-        HashTable_O::sxhash_equalp(hg, oCar(cobj), ld);
-      if (hg.isFilling())
-        HashTable_O::sxhash_equalp(hg, oCdr(cobj), ld);
-      return;
-    } else if ( obj.generalp() ) {
-      General_sp gobj = General_sp((gctools::Tagged)obj.raw_());
-      gobj->sxhash_equalp(hg,ld);
-      return;
     }
+    General_sp gobj = gc::As_unsafe<General_sp>(obj);
+    gobj->sxhash_equalp(hg,ld);
+    return;
   }
-  volatile void* address = &(*obj);
-#ifdef USE_MPS
-  if (ld) mps_ld_add(ld, global_arena, (mps_addr_t)address );
-#endif
-  hg.addPart((Fixnum)(((uintptr_clasp_t)address)>>gctools::tag_shift));
-  return;
+  SIMPLE_ERROR(BF("You cannot EQUALP hash on %s") % _rep_(obj));
 }
 
 bool HashTable_O::equalp(T_sp other) const {

@@ -201,7 +201,6 @@ namespace core {
 
 
     virtual bool equalp(T_sp obj) const;
-    virtual void sxhash_(HashGenerator &hg) const;
     virtual void sxhash_equalp(HashGenerator &hg,LocationDependencyPtrT ptr) const;
 
   /*! Return the value of a slot */

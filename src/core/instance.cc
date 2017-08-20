@@ -343,6 +343,9 @@ SYMBOL_SC_(ClosPkg, standardOptimizedWriterMethod);
 
 bool Instance_O::equalp(T_sp obj) const {
   if (!obj.generalp()) return false;
+  if (this->_Class->_Class != _lisp->_Roots._TheStructureClass ) {
+    return this == &*obj;
+  }
   if (this == obj.unsafe_general()) return true;
   if (Instance_sp iobj = obj.asOrNull<Instance_O>()) {
     if (this->_Class != iobj->_Class) return false;
@@ -355,18 +358,12 @@ bool Instance_O::equalp(T_sp obj) const {
   return false;
 }
 
-void Instance_O::sxhash_(HashGenerator &hg) const {
-  if (hg.isFilling())
-    hg.hashObject(this->_Class->_className());
-  for (size_t i(1), iEnd(this->_Rack->length()); i < iEnd; ++i) {
-    if (!(*this->_Rack)[i].unboundp() && hg.isFilling())
-      hg.hashObject((*this->_Rack)[i]);
-    else
-      break;
-  }
-}
 
 void Instance_O::sxhash_equalp(HashGenerator &hg, LocationDependencyPtrT ld) const {
+  if (this->_Class->_Class != _lisp->_Roots._TheStructureClass ) {
+    HashTable_O::sxhash_eq(hg,this->asSmartPtr(),ld);
+    return;
+  }
   if (hg.isFilling()) HashTable_O::sxhash_equalp(hg, this->_Class->_className(), ld);
   for (size_t i(0), iEnd(this->numberOfSlots()); i < iEnd; ++i) {
     if (!this->instanceRef(i).unboundp() && hg.isFilling())
