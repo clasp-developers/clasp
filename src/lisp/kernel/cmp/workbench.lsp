@@ -4,7 +4,10 @@
   (defgeneric foo (x))
   (defmethod foo ((x integer)) :integer)
   (defmethod foo ((x float)) :float)
-  (defmethod foo ((x string)) :string))
+  (defmethod foo ((x string)) :string)
+  (foo 1)
+  (foo 1.2)
+  (foo "asdf"))
 
 
 ;;; --------------------------------------------------
