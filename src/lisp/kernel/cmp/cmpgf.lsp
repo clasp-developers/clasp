@@ -27,10 +27,12 @@
 ;;; Add :DEBUG-CMPGF to *features* and recompile for lots of debugging info
 ;;;   during fastgf compilation and execution.
 ;;;
-#+(or)
+;;; Add :LOG-CMPGF to log fastgf messages during the slow path.
+;;;    
+;#+(or)
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (pushnew :debug-cmpgf *features*))
-#+(or)
+;#+(or)
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (pushnew :log-cmpgf *features*))
 
@@ -931,6 +933,7 @@
                   (let ((before-disp-name (llvm-sys:get-name disp-fn)))
                     (debug-save-dispatcher the-gf *the-module* disp-fn startup-fn shutdown-fn sorted-roots output-path)))
                 (let* ((compiled-dispatcher (jit-add-module-return-dispatch-function *the-module* disp-fn startup-fn shutdown-fn sorted-roots)))
+                  (core:set-associated-functions compiled-dispatcher (list disp-fn))
                   (gf-log "Compiled dispatcher -> ~a~%" compiled-dispatcher)
                   (gf-log "Dumping module\n")
                   (gf-do (cmp-log-dump *the-module*))
