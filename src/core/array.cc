@@ -178,13 +178,11 @@ void ranged_bit_vector_nreverse(SimpleBitVector_sp sv, size_t start, size_t end)
 //
 
 void Array_O::sxhash_equalp(HashGenerator &hg,LocationDependencyPtrT ld) const {
+  // TODO:  Write optimized versions for different array types
   for (size_t i = 0; i < this->length(); ++i) {
-    if (hg.isFilling()) {
-      T_sp obj = this->rowMajorAref(i);
-      HashTable_O::sxhash_equalp(hg,obj,ld);
-    } else {
-      break;
-    }
+    if (!hg.isFilling()) break;
+    T_sp obj = this->rowMajorAref(i);
+    HashTable_O::sxhash_equalp(hg,obj,ld);
   }
 }
 
@@ -1650,9 +1648,11 @@ CL_DEFUN Character_sp cl__char(String_sp str, size_t idx) {
   } else if (StrWNs_sp sw = str.asOrNull<StrWNs_O>() ) {
     return clasp_make_character((*sw)[idx]);
   }
+#if 0
   printf("%s:%d type of str -> %s\n", __FILE__, __LINE__, _rep_(instance_class(str)).c_str());
   printf("%s:%d   str.asOrNull<SimpleBaseString_O>() -> %p\n", __FILE__, __LINE__, str.asOrNull<SimpleBaseString_O>().raw_());
   printf("%s:%d    gc::IsA<SimpleBaseString_sp>(str) -> %d\n", __FILE__, __LINE__, gc::IsA<SimpleBaseString_sp>(str));
+#endif
   TYPE_ERROR(str,cl::_sym_string);
 };
 
@@ -2312,16 +2312,53 @@ SimpleString_sp StrWNs_O::asMinimalSimpleString() const {
 //
 //
 
+SYMBOL_EXPORT_SC_(ClPkg,vectorPushExtend);
+Fixnum_sp BitVectorNs_O::vectorPushExtend(T_sp newElement, size_t extension) {
+  unlikely_if (!this->_Flags.fillPointerP()) noFillPointerError(cl::_sym_vectorPushExtend,this->asSmartPtr());
+  cl_index idx = this->_FillPointerOrLengthOrDummy;
+//  printf("%s:%d  idx = %lld  this->_ArrayTotalSize = %zu\n", __FILE__, __LINE__, idx, this->_ArrayTotalSize );
+  unlikely_if (idx >= this->_ArrayTotalSize) {
+    unlikely_if (this->displacedToP()) {
+    // The array needs to be resized because it's displaced
+      if (extension <= 0) extension = calculate_extension(this->_ArrayTotalSize);
+      cl_index new_size = this->_ArrayTotalSize+extension;
+//      printf("%s:%d About to adjust displaced BitVectorNs_O size to %lld bits\n", __FILE__, __LINE__, new_size);
+      this->internalAdjustSize_(new_size);
+    } else {
+      size_t bytes_for_ArrayTotalSizeP1 = SimpleBitVector_O::bitunit_array_type::sizeof_for_length(this->_ArrayTotalSize+1);
+      size_t bytes_for_ArrayTotalSize = SimpleBitVector_O::bitunit_array_type::sizeof_for_length(this->_ArrayTotalSize);
+//      printf("%s:%d bytes_for_ArrayTotalSizeP1 = %zu\n", __FILE__, __LINE__, bytes_for_ArrayTotalSizeP1);
+//      printf("%s:%d bytes_for_ArrayTotalSize = %zu\n", __FILE__, __LINE__, bytes_for_ArrayTotalSize);
+      if (bytes_for_ArrayTotalSizeP1 > bytes_for_ArrayTotalSize) { // or it needs more words to store the bits
+    // The array needs to be resized because there aren't enough bits to hold the next bit
+        if (extension <= 0) extension = calculate_extension(this->_ArrayTotalSize);
+        cl_index new_size = this->_ArrayTotalSize+extension;
+//        printf("%s:%d About to adjust BitVectorNs_O size to %lld bits\n", __FILE__, __LINE__, new_size);
+        this->internalAdjustSize_(new_size);
+      } else {
+    // There were enough bits to handle the extend
+        this->_ArrayTotalSize = idx+1;
+      }
+    }
+  }
+  this->_Data->rowMajorAset(idx+this->_DisplacedIndexOffset,newElement);
+  ++this->_FillPointerOrLengthOrDummy;
+  return make_fixnum(idx);
+}
+
 void BitVectorNs_O::internalAdjustSize_(size_t size, T_sp initElement, bool initElementSupplied) {
+//  printf("%s:%d:%s    size = %zu\n", __FILE__, __LINE__, __FUNCTION__, size);
   if (size == this->_ArrayTotalSize) return;
   AbstractSimpleVector_sp basesv;
   size_t start, end;
   this->asAbstractSimpleVectorRange(basesv,start,end);
   gctools::smart_ptr<simple_type> sv = gc::As_unsafe<gctools::smart_ptr<simple_type>>(basesv);
   size_t initialContentsSize = MIN(this->length(),size);
-  smart_ptr_type newData = simple_type::make(size,0);
+  gc::smart_ptr<simple_type> newData = simple_type::make(size,0);
+//  printf("%s:%d  class-of newData -> %s   newData.raw_() -> %p\n", __FILE__, __LINE__, _rep_(cl__class_of(newData)).c_str(), (void*)newData.raw_());
   for (size_t i(0),iEnd(initialContentsSize); i<iEnd; ++i ) {
-    newData->setBit(i,this->testBit(i+start));
+//    printf("%s:%d   Reading bit at i+start->%zu  value-> %u    writing to index: %zu\n", __FILE__, __LINE__, i+start, sv->testBit(i+start), i);
+    newData->setBit(i,sv->testBit(i+start));
   }
   this->set_data(newData);
   this->_ArrayTotalSize = size;

@@ -454,7 +454,7 @@ namespace core {
     }
     void ensureSpaceAfterFillPointer(T_sp init_element, size_t size);
     virtual T_sp vectorPush(T_sp newElement) final;
-    virtual Fixnum_sp vectorPushExtend(T_sp newElement, size_t extension = 0) final;
+    virtual Fixnum_sp vectorPushExtend(T_sp newElement, size_t extension = 0) override;
     virtual Array_sp unsafe_subseq(size_t start, size_t end) const override;
     virtual Array_sp unsafe_setf_subseq(size_t start, size_t end, Array_sp newSubseq) override;
   };
@@ -1446,6 +1446,7 @@ namespace core {
         svec->ranged_sxhash(hg,start,end);
       }
     }
+    virtual Fixnum_sp vectorPushExtend(T_sp newElement, size_t extension = 0) override;
   };
 };
 
