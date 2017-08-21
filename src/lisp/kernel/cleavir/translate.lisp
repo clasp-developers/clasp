@@ -641,12 +641,14 @@ when this is t a lot of graphs will be generated.")
          (untagged (%lshr var-offset cmp::+fixnum-shift+ :exact t :label "untag fixnum"))
          (scaled (%shl untagged size :nuw t :label "shift address"))
          (total (%add offset-base scaled)))
-    (%inttoptr total type)))
+    (%inttoptr total (llvm-sys:type-get-pointer-to type))))
 
 (defun vector-size-type (uaet)
   (ecase uaet
-    ((t) (values (ilog2 cmp::+t-size+) cmp:%t**%))
-    ((ext:byte32) (values 4 cmp::%i32*%))))
+    ((t) (values (ilog2 cmp::+t-size+) cmp:%t*%))
+    ((single-float) (values 2 cmp::%float%))
+    ((double-float) (values 3 cmp::%double%))
+    ((ext:byte32) (values 2 cmp::%i32%))))
 
 ;;; FIXME: TEMPORARY. Fragile. Only handles simple-vector.
 (defmethod translate-simple-instruction
