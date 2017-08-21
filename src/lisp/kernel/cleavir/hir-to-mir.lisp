@@ -453,20 +453,25 @@
 (defun convert-tll-list (list type)
   (mapc (lambda (ll) (convert-to-tll ll type)) list))
 
+(defun et->llvm-type (et)
+  (ecase et
+    ((ext:byte8 ext:integer8) cmp::%i8%)
+    ((ext:byte16 ext:integer16) cmp::%i16%)
+    ((ext:byte32 ext:integer32) cmp::%i32%)
+    ((ext:byte64 ext:integer64) cmp::%i64%)
+    (single-float cmp::%float%)
+    (double-float cmp::%double%)))
+
 (defmethod cleavir-ir:specialize ((instruction cleavir-ir:box-instruction)
                                   (impl clasp-cleavir:clasp) proc os)
   (convert-tll-list (cleavir-ir:inputs instruction)
-                    (ecase (cleavir-ir:element-type instruction)
-                      (double-float cmp::%double%)
-                      (single-float cmp::%float%)))
+                    (et->llvm-type (cleavir-ir:element-type instruction)))
   instruction)
 
 (defmethod cleavir-ir:specialize ((instruction cleavir-ir:unbox-instruction)
                                   (impl clasp-cleavir:clasp) proc os)
   (convert-tll-list (cleavir-ir:outputs instruction)
-                    (ecase (cleavir-ir:element-type instruction)
-                      (double-float cmp::%double%)
-                      (single-float cmp::%float%)))
+                    (et->llvm-type (cleavir-ir:element-type instruction)))
   instruction)
 
 (defmacro define-float-specializer (instruction-class-name llvm-type)
