@@ -841,15 +841,19 @@ void initialize_clasp()
   #endif
   #undef CALCULATE_CLASS_PRECEDENCE_ALL_CLASSES
 
+  _lisp->_Roots._TheClass->instanceSet(core::Class_O::REF_CLASS_INSTANCE_STAMP,core::make_fixnum(gctools::NextStamp()));
   _lisp->_Roots._TheClass->instanceSet(core::Class_O::REF_CLASS_SLOTS,_Nil<core::T_O>());
   _lisp->_Roots._TheClass->instanceSet(core::Class_O::REF_CLASS_DIRECT_SLOTS,_Nil<core::T_O>());
   _lisp->_Roots._TheClass->instanceSet(core::Class_O::REF_CLASS_DEFAULT_INITARGS,_Nil<core::T_O>());
+  _lisp->_Roots._TheBuiltInClass->instanceSet(core::Class_O::REF_CLASS_INSTANCE_STAMP,core::make_fixnum(gctools::NextStamp()));
   _lisp->_Roots._TheBuiltInClass->instanceSet(core::Class_O::REF_CLASS_SLOTS,_Nil<core::T_O>());
   _lisp->_Roots._TheBuiltInClass->instanceSet(core::Class_O::REF_CLASS_DIRECT_SLOTS,_Nil<core::T_O>());
   _lisp->_Roots._TheBuiltInClass->instanceSet(core::Class_O::REF_CLASS_DEFAULT_INITARGS,_Nil<core::T_O>());
+  _lisp->_Roots._TheStandardClass->instanceSet(core::Class_O::REF_CLASS_INSTANCE_STAMP,core::make_fixnum(gctools::NextStamp()));
   _lisp->_Roots._TheStandardClass->instanceSet(core::Class_O::REF_CLASS_SLOTS,_Nil<core::T_O>());
   _lisp->_Roots._TheStandardClass->instanceSet(core::Class_O::REF_CLASS_DIRECT_SLOTS,_Nil<core::T_O>());
   _lisp->_Roots._TheStandardClass->instanceSet(core::Class_O::REF_CLASS_DEFAULT_INITARGS,_Nil<core::T_O>());
+  _lisp->_Roots._TheStructureClass->instanceSet(core::Class_O::REF_CLASS_INSTANCE_STAMP,core::make_fixnum(gctools::NextStamp()));
   _lisp->_Roots._TheStructureClass->instanceSet(core::Class_O::REF_CLASS_SLOTS,_Nil<core::T_O>());
   _lisp->_Roots._TheStructureClass->instanceSet(core::Class_O::REF_CLASS_DIRECT_SLOTS,_Nil<core::T_O>());
   _lisp->_Roots._TheStructureClass->instanceSet(core::Class_O::REF_CLASS_DEFAULT_INITARGS,_Nil<core::T_O>());

@@ -780,7 +780,7 @@ and initialize it with an array consisting of one function pointer."
 
 
 
-(defun codegen-startup-shutdown (gcroots-in-module roots-array number-of-roots)
+(defun codegen-startup-shutdown (gcroots-in-module roots-array-or-nil number-of-roots)
   (let ((startup-fn (irc-simple-function-create core:*module-startup-function-name*
                                                 (llvm-sys:function-type-get %void% (list %t*%))
                                                 'llvm-sys::External-linkage
@@ -798,9 +798,11 @@ and initialize it with an array consisting of one function pointer."
            (gf-args (second arguments)))
       (cmp:irc-set-insert-point-basic-block entry-bb irbuilder-alloca)
       (with-irbuilder (irbuilder-alloca)
-        (let ((start (irc-gep roots-array
-                              (list (jit-constant-size_t 0)
-                                    (jit-constant-size_t 0)))))
+        (let ((start (if roots-array-or-nil
+                         (irc-gep roots-array-or-nil
+                                  (list (jit-constant-size_t 0)
+                                        (jit-constant-size_t 0)))
+                         (llvm-sys:constant-pointer-null-get %tsp*%))))
           (irc-intrinsic-call "cc_initialize_gcroots_in_module" (list gcroots-in-module start (jit-constant-size_t number-of-roots) values))
           (irc-ret-void))))
     (let ((shutdown-fn (irc-simple-function-create core:*module-shutdown-function-name*
@@ -820,9 +822,7 @@ and initialize it with an array consisting of one function pointer."
              (gf-args (second arguments)))
         (irc-set-insert-point-basic-block entry-bb irbuilder-alloca)
         (with-irbuilder (irbuilder-alloca)
-          (let ((start (irc-gep roots-array
-                                (list (jit-constant-size_t 0)
-                                      (jit-constant-size_t 0)))))
+          (progn
             (irc-intrinsic-call "cc_shutdown_gcroots_in_module" (list gcroots-in-module))
             (irc-ret-void))))
       (values startup-fn shutdown-fn))))

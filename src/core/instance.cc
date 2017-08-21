@@ -266,6 +266,15 @@ T_sp Instance_O::instanceRef(size_t idx) const {
   return ((*this->_Rack)[idx+1]);
 }
 T_sp Instance_O::instanceSet(size_t idx, T_sp val) {
+#if 1
+  if (idx == REF_CLASS_INSTANCE_STAMP) {
+    string className = "UNBOUND-CLASS";
+    if (this->_Class == _lisp->_Roots._TheStandardClass ) {
+      className = _rep_(this->_className());
+    }
+//    printf("%s:%d Setting REF_CLASS_INSTANCE_STAMP of instance with  className -> %s  to val->%s\n", __FILE__, __LINE__, className.c_str(), _rep_(val).c_str());
+  }
+#endif
 #if DEBUG_CLOS >= 2
   printf("\nMLOG SI-INSTANCE-SET[%d] of Instance %p to val: %s\n", idx, (void *)(this), val->__repr__().c_str());
 #endif
@@ -399,10 +408,22 @@ Class_sp Instance_O::create(Symbol_sp symbol, Class_sp metaClass, Creator_sp cre
 };
 
 Class_sp Instance_O::createClassUncollectable(gctools::Stamp stamp, Class_sp metaClass, size_t number_of_slots, Creator_sp creator ) {
+#if 0  
+  printf("%s:%d:%s stamp -> %llu\n", __FILE__, __LINE__, __FUNCTION__, stamp);
+  if (!metaClass.unboundp()) {
+    printf("       metaClass->_get_instance_stamp() -> %llu\n", metaClass->_get_instance_stamp());
+  } else {
+    printf("       The metaClass was UNBOUND !!!!! I need a stamp for the class slots!!!!!!\n");
+  }
+#endif
   GC_ALLOCATE_UNCOLLECTABLE(Instance_O, oclass, metaClass /*, number_of_slots*/);
   oclass->_Class = metaClass;
-  oclass->initializeSlots(stamp,number_of_slots);
-  oclass->initializeClassSlots(creator,gctools::NextStamp());
+  gctools::Stamp class_stamp = 0;
+  if (!metaClass.unboundp()) {
+    class_stamp = metaClass->_get_instance_stamp();
+  }
+  oclass->initializeSlots(class_stamp,number_of_slots);
+  oclass->initializeClassSlots(creator,stamp);
   return oclass;
 };
 

@@ -1,5 +1,7 @@
 (in-package :cl-user)
 
+(load "sys:kernel;cmp;cmpgf.lsp")
+
 (progn
   (defgeneric foo (x))
   (defmethod foo ((x integer)) :integer)
@@ -9,6 +11,32 @@
   (foo 1.2)
   (foo "asdf"))
 
+
+(clos::calculate-fastgf-dispatch-function #'foo)
+
+(clos:switch-to-fastgf #'foo)
+
+(clos:get-funcallable-instance-function #'foo)
+
+(foo 1.2)
+(foo 1)
+(foo "asdfasdf")
+
+
+(progn
+  (defgeneric bar (x))
+  (defmethod bar ((x integer)) :integer)
+  (defmethod bar ((x float)) :float)
+  (defmethod bar ((x string)) :string)
+  (bar 1)
+  (bar 1.2)
+  (bar "asdf"))
+
+
+(time (progn (print "foo") (dotimes (i 1000000) (foo 1))))
+
+
+(time (progn (print "bar") (dotimes (i 1000000) (bar 1))))
 
 ;;; --------------------------------------------------
 ;;;

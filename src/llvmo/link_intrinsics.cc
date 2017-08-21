@@ -1935,6 +1935,14 @@ gctools::return_type cc_dispatch_miss(core::T_O* gf, core::T_O* gf_valist_s)
 
 void cc_dispatch_debug(int msg_id, uintptr_clasp_t val)
 {
+  // The msg_id switch values correspond to values passed from cmpgf.lsp
+  //   The values mean:
+  //         0 - print the argument as an integer step index
+  //         1 - Print the value as a integer
+  //         2 - print the value as a tag
+  //         3 - print the value as a tagged pointer to a VaList_S object
+  //         4 - print the value as a pointer
+  //         5 - print the contents of the va_list pointed to by the value
   switch (msg_id) {
   case 0:
       BFORMAT_T(BF("Step %d\n") % val);
@@ -1949,16 +1957,25 @@ void cc_dispatch_debug(int msg_id, uintptr_clasp_t val)
 //      printf("%s:%d    cc_dispatch_debug tag [%d]\n", __FILE__, __LINE__, val );
      break;
   case 3: {
-    VaList_S vl(0,*reinterpret_cast<va_list*>(val));
-    VaList_sp vls((gc::Tagged)vl.asTaggedPtr());
+    VaList_sp vls((gc::Tagged)val);
 //    printf("%s:%d    vaList_sp.raw_() = %p\n", __FILE__, __LINE__, vls.raw_());
     BFORMAT_T(BF("Arg VaList_sp.raw_() = %p list -> %s\n") % (void*)vls.raw_() % _rep_(vls) );
-    dump_VaList_S_ptr(&vl);
+    dump_VaList_S_ptr(&*vls);
     break;
   }
-  case 4:
+  case 4: {
 //      printf("%s:%d     ptr: %p\n", __FILE__, __LINE__, (void*)val);
       BFORMAT_T(BF("Ptr: %p\n") % (void*)val );
+  }
+      break;
+  case 5:
+//      printf("%s:%d     ptr: %p\n", __FILE__, __LINE__, (void*)val);
+      BFORMAT_T(BF("va_list: %p\n") % (void*)val );
+      void* dump_va_list_voidSTAR = (void*)&dump_va_list;
+      typedef void (*fptr)(uintptr_t);
+      fptr my_fptr = reinterpret_cast<fptr>(dump_va_list_voidSTAR);
+      my_fptr(val);
+      break;
   }
   fflush(stdout);
 }

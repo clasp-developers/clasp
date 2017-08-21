@@ -346,25 +346,33 @@ typedef LCC_RETURN (*ShutdownFunction_fptr_type)();
 
 #ifdef LCC_FUNCALL
 extern "C" {
+
+// Return true if the VaList_S is at the head of the list and false if it is used up
+inline void dump_va_list(va_list val) {
+  const char* atpos = "";
+  if (val[0].gp_offset==0x10) atpos = "atStartReg";
+  else if (val[0].gp_offset==0x30) atpos = "pastEnd";
+  printf("           gp_offset = %p (%s)\n", reinterpret_cast<void*>(val[0].gp_offset),  atpos );
+  printf("           fp_offset = %p\n", reinterpret_cast<void*>(val[0].fp_offset) );
+  printf("   overflow_arg_area = %p\n", reinterpret_cast<void*>(val[0].overflow_arg_area) );
+  printf("       reg_save_area = %p\n", reinterpret_cast<void*>(val[0].reg_save_area) );
+  printf("---Register save area@%p (NOTE: Often in other stack frame)\n", val[0].reg_save_area);
+  printf("       CLOSURE_REGISTER@%p = %p\n", reinterpret_cast<void*>(LCC_CLOSURE_REGISTER*8), ((core::T_O* *)val[0].reg_save_area)[LCC_CLOSURE_REGISTER] );
+  printf("         NARGS_REGISTER@%p = %zu\n", reinterpret_cast<void*>(LCC_NARGS_REGISTER*8),reinterpret_cast<size_t>(((core::T_O* *)val[0].reg_save_area)[LCC_NARGS_REGISTER]) );
+  printf("          ARG0_REGISTER@%p = %p\n", reinterpret_cast<void*>(LCC_ARG0_REGISTER*8), ((core::T_O* *)val[0].reg_save_area)[LCC_ARG0_REGISTER] );
+  printf("          ARG1_REGISTER@%p = %p\n", reinterpret_cast<void*>(LCC_ARG1_REGISTER*8), ((core::T_O* *)val[0].reg_save_area)[LCC_ARG1_REGISTER] );
+  printf("          ARG2_REGISTER@%p = %p\n", reinterpret_cast<void*>(LCC_ARG2_REGISTER*8), ((core::T_O* *)val[0].reg_save_area)[LCC_ARG2_REGISTER] );
+  printf("          ARG3_REGISTER@%p = %p\n", reinterpret_cast<void*>(LCC_ARG3_REGISTER*8), ((core::T_O* *)val[0].reg_save_area)[LCC_ARG3_REGISTER] );
+};
+
+
 // Return true if the VaList_S is at the head of the list and false if it is used up
 inline bool dump_VaList_S_ptr(VaList_S* args_orig) {
   VaList_S args(*args_orig);
   printf("va_list dump @%p\n", (void*)args_orig);
   printf("va_list remaining_args = %lu\n", args.remaining_nargs());
   bool atHead = (args.remaining_nargs() != args.total_nargs());
-  printf("---Register save area@%p (NOTE: Often in other stack frame)\n", args._Args[0].reg_save_area);
-  printf("       CLOSURE_REGISTER@%p = %p\n", reinterpret_cast<void*>(LCC_CLOSURE_REGISTER*8), ((core::T_O* *)(args)._Args->reg_save_area)[LCC_CLOSURE_REGISTER] );
-  printf("         NARGS_REGISTER@%p = %zu\n", reinterpret_cast<void*>(LCC_NARGS_REGISTER*8),reinterpret_cast<size_t>(((core::T_O* *)(args)._Args->reg_save_area)[LCC_NARGS_REGISTER]) );
-  printf("          ARG0_REGISTER@%p = %p\n", reinterpret_cast<void*>(LCC_ARG0_REGISTER*8), ((core::T_O* *)(args)._Args->reg_save_area)[LCC_ARG0_REGISTER] );
-  printf("          ARG1_REGISTER@%p = %p\n", reinterpret_cast<void*>(LCC_ARG1_REGISTER*8), ((core::T_O* *)(args)._Args->reg_save_area)[LCC_ARG1_REGISTER] );
-  printf("          ARG2_REGISTER@%p = %p\n", reinterpret_cast<void*>(LCC_ARG2_REGISTER*8), ((core::T_O* *)(args)._Args->reg_save_area)[LCC_ARG2_REGISTER] );
-  printf("          ARG3_REGISTER@%p = %p\n", reinterpret_cast<void*>(LCC_ARG3_REGISTER*8), ((core::T_O* *)(args)._Args->reg_save_area)[LCC_ARG3_REGISTER] );
-  const char* atpos = "";
-  if ((args)._Args[0].gp_offset==0x18) atpos = "atStartReg";
-  else if ((args)._Args[0].gp_offset==0x30) atpos = "pastEnd";
-  printf("           gp_offset = %p (%s)\n", reinterpret_cast<void*>((args)._Args[0].gp_offset),  atpos );
-  printf("           fp_offset = %p\n", reinterpret_cast<void*>((args)._Args[0].fp_offset) );
-  printf("       reg_save_area = %p (this points to the Register save area above ^^^)\n", reinterpret_cast<void*>((args)._Args[0].reg_save_area) );
+  dump_va_list((args)._Args);
   int iEnd = args.remaining_nargs();
   if (iEnd>CALL_ARGUMENTS_LIMIT) {
     iEnd = 0;
