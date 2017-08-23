@@ -275,7 +275,7 @@
     (single-float . core:simple-vector-float)
     (double-float . core:simple-vector-double)
     (base-char . simple-base-string)
-    (character . simple-string)
+    (character . core:simple-character-string)
     (t . simple-vector)))
 
 #-use-boehmdc
