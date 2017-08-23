@@ -262,6 +262,42 @@ Boehm and MPS use a single pointer"
 (define-symbol-macro %afsp% %tsp%)
 (define-symbol-macro %afsp*% %tsp*%)
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Vector access and unboxed value stuff
+
+(defparameter +element-type->llvm-type+
+  `((ext:byte8 . ,%i8%)
+    (ext:integer8 . ,%i8%)
+    (ext:byte16 . ,%i16%)
+    (ext:integer16 . ,%i16%)
+    (ext:byte32 . ,%i32%)
+    (ext:integer32 . ,%i32%)
+    (ext:byte64 . ,%i64%)
+    (ext:integer64 . ,%i64%)
+    (single-float . ,%float%)
+    (double-float . ,%double%)
+    ;; should be less hardcoded
+    (base-char . ,%i8%) ; C unsigned char
+    (character . ,%i32%) ; C int
+    (t . ,%t*%)))
+
+(defun element-type->llvm-type (element-type)
+  (let ((pair (assoc element-type +element-type->llvm-type+)))
+    (if pair
+        (cdr pair)
+        (error "BUG: Unknown element type ~a" element-type))))
+
+(defun simple-vector-llvm-type (element-type)
+  (llvm-sys:struct-type-get
+   *llvm-context*
+   (list
+    ;; Spacer to get to the data
+    (llvm-sys:array-type-get %i8% (- +simple-vector._data-offset+ +general-tag+))
+    ;; The data, a flexible member
+    (llvm-sys:array-type-get (element-type->llvm-type element-type) 0))
+   ;; Not totally sure it should be packed.
+   t))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

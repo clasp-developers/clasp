@@ -626,70 +626,32 @@ when this is t a lot of graphs will be generated.")
 		 (cc-mir:describe-mir instruction))
 	 (format *debug-log* "     instruction --> ~a~%" call-result))))))
 
-;;; helper, could be improved. only good for powers of two
-(defun ilog2 (n) (1- (integer-length n)))
-
-(defun gen-get-vector-ptr (size array index type)
-  (let* ((fixed-offset (%uintptr_t (- cmp::+simple-vector._data-offset+ cmp:+general-tag+)))
-         (base (%ptrtoint (%load array) cmp:%uintptr_t%))
-         (offset-base (%add base fixed-offset))
-         (var-offset (%ptrtoint (%load index) cmp:%uintptr_t%))
-         ;; :exact tells LLVM that the shifted out bits are zero.
-         ;; so there's an assumption about the nature of fixnum tags.
-         ;; Additionally it's a logical shift, because the index must be
-         ;; a nonnegative fixnum anyway; no sign to extend
-         (untagged (%lshr var-offset cmp::+fixnum-shift+ :exact t :label "untag fixnum"))
-         (scaled (%shl untagged size :nuw t :label "shift address"))
-         (total (%add offset-base scaled)))
-    (%inttoptr total (llvm-sys:type-get-pointer-to type))))
-
-(defun vector-size-type (uaet)
-  (ecase uaet
-    ((t) (values (ilog2 cmp::+t-size+) cmp:%t*%))
-    ((single-float) (values 2 cmp::%float%))
-    ((double-float) (values 3 cmp::%double%))
-    ((ext:byte8 ext:integer8) (values 0 cmp::%i8%))
-    ((ext:byte16 ext:integer16) (values 1 cmp::%i16%))
-    ((ext:byte32 ext:integer32) (values 2 cmp::%i32%))))
-
-;;; FIXME: TEMPORARY. Fragile. Only handles simple-vector.
-(defmethod translate-simple-instruction
-    ((instruction cleavir-ir:aref-instruction) return-value inputs outputs abi function-info)
-  (declare (ignore return-value abi function-info))
-  (multiple-value-bind (size type)
-      (vector-size-type (cleavir-ir:element-type instruction))
-    (%store (%load (gen-get-vector-ptr size (first inputs) (second inputs) type))
-            (first outputs))))
-
-#+(or)
-(defmethod translate-simple-instruction
-    ((instruction cleavir-ir:aref-instruction) return-value inputs outputs abi function-info)
-  (let* ((array (%load (first inputs))) (index (%load (second inputs)))
-         (type
-           (llvm-sys:struct-type-get
-            cmp:*llvm-context*
-            (list (llvm-sys:array-type-get cmp:%i8% (- cmp::+simple-vector._data-offset+ cmp:+general-tag+))
-                  (llvm-sys:array-type-get cmp:%t*% 0))
-            t))
+(defun gen-vector-effective-address (array index element-type fixnum-type)
+  (let* ((array (%load array)) (index (%load index))
+         (type (cmp::simple-vector-llvm-type element-type))
          (cast (%bit-cast array (llvm-sys:type-get-pointer-to type)))
-         (var-offset (%ptrtoint index (%default-int-type abi)))
-         (untagged (%lshr var-offset cmp::+fixnum-shift+ :exact t :label "untag fixnum"))
-         (effective
-          (llvm-sys:create-in-bounds-gep cmp:*irbuilder*
-                                         cast
-                                         (list (%i32 0)
-                                               (%i32 1)
-                                               untagged)
-                                         "aref")))
-    (%store (%load effective) (first outputs))))
+         (var-offset (%ptrtoint index fixnum-type))
+         (untagged (%lshr var-offset cmp::+fixnum-shift+ :exact t :label "untag fixnum")))
+    (llvm-sys:create-in-bounds-gep cmp:*irbuilder*
+                                   cast
+                                   (list (%i32 0) ; LLVM reasons, pointers are (C) arrays
+                                         (%i32 1) ; the "data" slot of the object
+                                         untagged) ; the actual offset into the vector
+                                   "aref")))
+
+(defmethod translate-simple-instruction
+    ((instruction cleavir-ir:aref-instruction) return-value inputs outputs abi function-info)
+  (%store (%load (gen-vector-effective-address (first inputs) (second inputs)
+                                               (cleavir-ir:element-type instruction)
+                                               (%default-int-type abi)))
+          (first outputs)))
 
 (defmethod translate-simple-instruction
     ((instruction cleavir-ir:aset-instruction) return-value inputs outputs abi function-info)
-  (declare (ignore return-value abi function-info))
-  (multiple-value-bind (size type)
-      (vector-size-type (cleavir-ir:element-type instruction))
-    (%store (%load (third inputs))
-            (gen-get-vector-ptr size (first inputs) (second inputs) type))))
+  (%store (%load (third inputs))
+          (gen-vector-effective-address (first inputs) (second inputs)
+                                        (cleavir-ir:element-type instruction)
+                                        (%default-int-type abi))))
 
 (defmethod translate-simple-instruction
     ((instruction clasp-cleavir-hir::simple-vector-length-instruction)
