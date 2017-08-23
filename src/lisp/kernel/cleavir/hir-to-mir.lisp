@@ -134,6 +134,16 @@
                  arrayr
                  (gen-eql-check arrayr rank pro con))))
 
+;;; The way these complicated ones are built is a little backwards.
+;;; We repeatedly set one of the branches, so that the next test produces branches
+;;; to that test.
+;;; For instance, to test (array * 2), we might first setf pro to a rank check,
+;;; then set con to check that it's an array, then return con.
+;;; The check that it's an array will use the 'pro' leading to a rank check, so that
+;;; the test when run will first check that it's an array, and if it is, go to the
+;;; rank check.
+;;; Basically this means we generate the tests in reverse order to how they're run.
+
 #-use-boehmdc
 (defun gen-array-type-check (object element-type dimensions simple-only-p pro con)
   (let* ((dimensions (if (integerp dimensions) (make-list dimensions :initial-element '*) dimensions))
