@@ -344,7 +344,8 @@ compile-lambda-function
 with-debug-info-generator
 *the-module*
 cmp-log
-cmp-log-dump
+cmp-log-dump-module
+cmp-log-dump-function
 *the-module*
 *the-module*
 cmp-log

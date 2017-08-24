@@ -154,10 +154,11 @@ namespace core {
 #define IHS_BACKTRACE_SIZE 16
   struct InvocationHistoryFrame;
   struct ThreadLocalState {
-    ThreadLocalState(void* stack_top);
+  ThreadLocalState(void* stack_top);
     void initialize_thread(mp::Process_sp process);
     int _DisableInterrupts;
     mp::Process_sp _Process;
+    uint64_t  _Tid;
     void* _StackTop;
     DynamicBindingStack _Bindings;
     const InvocationHistoryFrame* _InvocationHistoryStackTop;

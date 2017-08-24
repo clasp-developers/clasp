@@ -270,7 +270,7 @@ Compile a lisp source file into an LLVM module.  type can be :kernel or :user"
                                      (compile-file-form form compile-file-hook)))))
                       (make-boot-function-global-variable *the-module* run-all-function)))))
               (cmp-log "About to verify the module\n")
-              (cmp-log-dump *the-module*)
+              (cmp-log-dump-module *the-module*)
               (irc-verify-module-safe *the-module*)
               (quick-module-dump *the-module* "preoptimize"))
             (quick-module-dump module "postoptimize")

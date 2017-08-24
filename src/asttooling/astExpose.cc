@@ -1163,7 +1163,8 @@ void initialize_astExpose() {
         .def("isTypeAlias", &clang::TemplateSpecializationType::isTypeAlias)
         .def("isCurrentInstantiation", &clang::TemplateSpecializationType::isCurrentInstantiation),
     CLASS_TYPE(Auto, Type)
-        .def("desugar", &clang::AutoType::desugar),
+    ,
+//        .def("desugar", &clang::AutoType::desugar),
     CLASS_TYPE(InjectedClassName, Type)
         .def("getDecl", &clang::InjectedClassNameType::getDecl),
     CLASS_TYPE(DependentName, Type)

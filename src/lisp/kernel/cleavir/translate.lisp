@@ -1111,7 +1111,7 @@ that llvm function. This works like compile-lambda-function in bclasp."
           (cclasp-compile-to-module-with-run-time-table form env pathname :linkage linkage)
         (or fn (error "There was no function returned by compile-lambda-function"))
         (cmp:cmp-log "fn --> %s\n" fn)
-        (cmp:cmp-log-dump cmp:*the-module*)
+        (cmp:cmp-log-dump-module cmp:*the-module*)
         #+(or)(cmp:link-intrinsics-module cmp:*the-module*)
         (cmp:quick-module-dump cmp:*the-module* "cclasp-compile-module-pre-optimize")
         (let* ((setup-function (cmp:jit-add-module-return-function cmp:*the-module* fn startup-fn shutdown-fn ordered-raw-constants-list)))

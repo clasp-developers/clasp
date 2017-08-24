@@ -923,7 +923,7 @@
               (llvm-sys:erase-from-parent *gf-data*)
               #+debug-cmpgf(progn
                              (format t "Dumping the module from codegen-dispatcher~%")
-                             (llvm-sys:dump *the-module*))
+                             (llvm-sys:dump-module *the-module*))
               (let ((sorted-roots (gather-sorted-outcomes *eql-selectors* *outcomes*)))
                 ;; REMOVE THE FOLLOWING IN PRODUCTION CODE
                 #+debug-cmpgf
@@ -939,7 +939,7 @@
                 (let* ((compiled-dispatcher (jit-add-module-return-dispatch-function *the-module* disp-fn startup-fn shutdown-fn sorted-roots)))
                   (gf-log "Compiled dispatcher -> ~a~%" compiled-dispatcher)
                   (gf-log "Dumping module\n")
-                  (gf-do (cmp-log-dump *the-module*))
+                  (gf-do (cmp-log-dump-module *the-module*))
                   compiled-dispatcher)))))))))
 
 (export '(make-dtree

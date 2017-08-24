@@ -96,7 +96,8 @@ Options are :tagbody :go :all :eh-landing-pads
 #+(or)
 (progn
   (defmacro debug-print-i32 (num) nil)
-  (defmacro cmp-log-dump (fn) nil)
+  (defmacro cmp-log-dump-function (fn) nil)
+  (defmacro cmp-log-dump-module (fn) nil)
   (defmacro cmp-log (fmt &rest args ) nil)
   (defun is-debug-compiler-on () nil))
 
@@ -114,9 +115,13 @@ Options are :tagbody :go :all :eh-landing-pads
              (bformat t "CMP-LOG ")
              (bformat t ,fmt ,@args))
            nil)))
-(defmacro cmp-log-dump (fn-or-module)
+(defmacro cmp-log-dump-module (module)
   `(if (is-debug-compiler-on)
-       (llvm-sys:dump ,fn-or-module)
+       (llvm-sys:dump-module ,module)
+       nil))
+(defmacro cmp-log-dump-function (func)
+  `(if (is-debug-compiler-on)
+       (warn "Do something about cmp-log-dump-function")
        nil))
 
 

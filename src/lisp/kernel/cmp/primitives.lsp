@@ -13,39 +13,68 @@
 
 
 ;;#+(or)
-(defun create-primitive-function (module name return-ty args-ty varargs does-not-throw does-not-return)
+
+;;;
+;;; An attempt to inline specific functions from intrinsics.cc
+;;;
+
+
+(defun create-primitive-function (module name return-ty passed-args-ty varargs does-not-throw does-not-return)
   (let ((fnattrs nil))
     (when does-not-throw (push 'llvm-sys:attribute-no-unwind fnattrs))
     (when does-not-return (push 'llvm-sys:attribute-no-return fnattrs))
     (push '("no-frame-pointer-elim" "false") fnattrs)
     (push "no-frame-pointer-elim-non-leaf" fnattrs)
-    (cmp:irc-function-create (llvm-sys:function-type-get return-ty args-ty varargs)
-                             'llvm-sys::External-linkage
-                             name module
-                             :function-attributes fnattrs)))
+    (let (reversed-argument-types
+          attributes
+          (index 0))
+      (dolist (arg passed-args-ty)
+        (if (consp arg)
+            (let ((arg-ty (car arg))
+                  (attribute-list (cdr arg)))
+              (push arg-ty reversed-argument-types)
+              (push (cons index attribute-list) attributes))
+            (push arg reversed-argument-types))
+        (incf index))
+      (let* ((argument-types (nreverse reversed-argument-types))
+             (function (cmp:irc-function-create (llvm-sys:function-type-get return-ty argument-types varargs)
+                                                'llvm-sys::External-linkage
+                                                name module
+                                                :function-attributes fnattrs)))
+        #+(or)(warn "create-primitive-function - what do we do with attributes")
+        (dolist (index-attributes attributes)
+          (let ((index (car index-attributes))
+                (attributes (cdr index-attributes)))
+            (dolist (attribute attributes)
+              (llvm-sys:add-attribute function index attribute))))
+        (values function attributes)))))
 
 (defun primitive (module name return-ty args-ty &key varargs does-not-throw does-not-return )
   (mapc #'(lambda (x)
 	    (when (equal +tsp*-or-tmv*+ x)
 	      (error "When defining primitive ~a --> :tsp*-or-tmv* is only allowed in the first argument position" name ))) (cdr args-ty))
-  (if (equal (car args-ty) +tsp*-or-tmv*+)
-      (progn ;; create two versions of the function - one prefixed with sp_ and the other with mv_
-	(create-primitive-function module
-				   (dispatch-function-name name %tsp*%)
-				   return-ty
-				   (cons %tsp*% (cdr args-ty))
-				   varargs does-not-throw does-not-return)
-	(create-primitive-function module
-				   (dispatch-function-name name %tmv*%)
-				   return-ty
-				   (cons %tmv*% (cdr args-ty))
-				   varargs does-not-throw does-not-return))
-      (create-primitive-function module
-				 name return-ty args-ty varargs does-not-throw does-not-return))
-  (core::hash-table-setf-gethash *primitives* name
-				 (list return-ty args-ty '( (:varargs . varargs)
-							   (:does-not-throw . does-not-throw)
-							   ( :does-not-return . does-not-return) ))))
+  (multiple-value-bind (function attributes)
+      (if (equal (car args-ty) +tsp*-or-tmv*+)
+          (progn ;; create two versions of the function - one prefixed with sp_ and the other with mv_
+            (create-primitive-function module
+                                       (dispatch-function-name name %tsp*%)
+                                       return-ty
+                                       (cons %tsp*% (cdr args-ty))
+                                       varargs does-not-throw does-not-return)
+            (create-primitive-function module
+                                       (dispatch-function-name name %tmv*%)
+                                       return-ty
+                                       (cons %tmv*% (cdr args-ty))
+                                       varargs does-not-throw does-not-return))
+          (create-primitive-function module
+                                     name return-ty args-ty varargs does-not-throw does-not-return))
+    (core::hash-table-setf-gethash *primitives* name
+                                   (list return-ty
+                                         args-ty
+                                         attributes
+                                         (list (cons :varargs varargs)
+                                               (cons :does-not-throw does-not-throw)
+                                               (cons :does-not-return does-not-return))))))
 
 
 (defun primitive-nounwind* (module name return-ty args-ty &key varargs does-not-return)
@@ -342,7 +371,7 @@
 
     ;; INT8 & UINT8
     (primitive          module "from_object_int8" %i8% (list %t*%))
-    (primitive          module "to_object_int8" %t*% (list %i8%))
+    (primitive          module "to_object_int8" %t*% (list (list %i8% 'llvm-sys:attribute-sext)))
     (primitive          module "from_object_uint8" %i8% (list %t*%))
     (primitive          module "to_object_uint8" %t*% (list %i8%))
 
@@ -405,3 +434,4 @@
     ;; === END OF TRANSLATORS ===
     *primitives*
   ))
+

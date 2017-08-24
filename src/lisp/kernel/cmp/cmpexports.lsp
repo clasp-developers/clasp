@@ -80,7 +80,8 @@
           calling-convention-write-registers-to-multiple-values
           describe-constants-table
           cmp-log
-          cmp-log-dump
+          cmp-log-dump-module
+          cmp-log-dump-function
           irc-create-call
           irc-create-invoke
           compile-file-to-module

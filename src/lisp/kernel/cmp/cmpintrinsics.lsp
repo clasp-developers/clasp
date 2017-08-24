@@ -761,7 +761,6 @@ and initialize it with an array consisting of one function pointer."
 
 
 
-
 ;;; Define what ltvc_xxx functions return
 (define-symbol-macro %ltvc-return% %void%)
 

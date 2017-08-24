@@ -1236,21 +1236,24 @@ Write T_O* pointers into the current multiple-values array starting at the (offs
       (progn
         (irc-create-call function args label))))
 
-(defun irc-intrinsic-call-or-invoke (function-name real-args &optional (label "") (landing-pad *current-unwind-landing-pad-dest*))
+(defun irc-intrinsic-call-or-invoke (function-name args &optional (label "") (landing-pad *current-unwind-landing-pad-dest*))
   "landing-pad is either a landing pad or NIL (depends on function)"
-  (throw-if-mismatched-arguments function-name real-args)
-  (let* ((args            real-args)
-         (the-function    (get-function-or-error *the-module* function-name (car args)))
-         (function-throws (not (llvm-sys:does-not-throw the-function)))
-         (code            (cond
-                            ((and landing-pad function-throws)
-                             (irc-create-invoke the-function args landing-pad label))
-                            (t
-                             (irc-create-call the-function args label))))
-         (_               (when (llvm-sys:does-not-return the-function)
-                            (irc-unreachable)
-                            (irc-begin-block (irc-basic-block-create "from-invoke-that-never-returns")))))
-    code))
+  (throw-if-mismatched-arguments function-name args)
+  (multiple-value-bind (the-function param-attributes)
+      (get-function-or-error *the-module* function-name (car args))
+    (let* ((function-throws (not (llvm-sys:does-not-throw the-function)))
+           (code            (cond
+                              ((and landing-pad function-throws)
+                               (irc-create-invoke the-function args landing-pad label))
+                              (t
+                               (irc-create-call the-function args label))))
+           (_               (when (llvm-sys:does-not-return the-function)
+                              (irc-unreachable)
+                              (irc-begin-block (irc-basic-block-create "from-invoke-that-never-returns")))))
+      #+(or)(warn "Does add-param-attr work yet")
+      (dolist (index-attribute param-attributes)
+        (llvm-sys:add-param-attr code (car index-attribute) (cdr param-attributes)))
+      code)))
 
 (defun irc-intrinsic-call (function-name args &optional (label ""))
   (irc-intrinsic-call-or-invoke function-name args label nil))
@@ -1294,7 +1297,7 @@ Write T_O* pointers into the current multiple-values array starting at the (offs
           (progn
             (bformat t "!!!!!!!!!!! Function in module failed to verify !!!!!!!!!!!!!!!!!!!\n")
             (bformat t "---------------- dumping function to assist in debugging\n")
-            (llvm-sys:dump fn)
+            (cmp:dump-function fn)
             (bformat t "!!!!!!!!!!! ------- see above ------- !!!!!!!!!!!!!!!!!!!\n")
             (bformat t "llvm::verifyFunction error[%s]\n" error-msg)
             (if continue
@@ -1310,7 +1313,10 @@ If the *primitives* hashtable says that the function with (name) requires a firs
 +tsp*-or-tmv*+ then use the first argument type to create a function-name prefixed with sp_ or mv_"
   (let ((primitive-entry (gethash name *primitives*)))
     (unless primitive-entry (error "Could not find function ~a in *primitives*" name))
-    (let* ((required-first-argument-type (car (cadr primitive-entry)))
+    (let* ((return-ty (first primitive-entry))
+           (args-ty (second primitive-entry))
+           (attributes (third primitive-entry))
+           (required-first-argument-type (first args-ty))
 	   (dispatch-name (dispatch-function-name
                            name
                            (if (and first-argument (equal required-first-argument-type +tsp*-or-tmv*+))
@@ -1319,7 +1325,7 @@ If the *primitives* hashtable says that the function with (name) requires a firs
       (let ((f (llvm-sys:get-function module dispatch-name)))
         (or f (error "Could not llvm-sys:get-function ~a with name: ~a" dispatch-name name))
 	(if (llvm-sys:valid f)
-	    f
+	    (values f attributes)
 	    (error "Could not find function: ~a" dispatch-name))))))
 
 

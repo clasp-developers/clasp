@@ -221,7 +221,8 @@ struct Buckets<T, U, WeakLinks> : public BucketsBase<T, U> {
         //		    printf("%s:%d Buckets dtor idx: %zu unregister disappearing link @%p\n", __FILE__, __LINE__, i, &this->bucket[i].rawRef_());
         int result = GC_unregister_disappearing_link(reinterpret_cast<void **>(&this->bucket[i].rawRef_()));
         if (!result) {
-          THROW_HARD_ERROR(BF("The link was not registered as a disappearing link!"));
+          printf("%s:%d The link was not registered as a disappearing link!", __FILE__, __LINE__);
+          abort();
         }
       }
     }
@@ -425,6 +426,10 @@ struct Mapping<T, U, WeakLinks> : public MappingBase<T, U> {
     }
 #endif
   };
+
+
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wexceptions"
   virtual ~Mapping() {
 #ifdef USE_BOEHM
     GCTOOLS_ASSERT(this->bucket.objectp());
@@ -432,11 +437,14 @@ struct Mapping<T, U, WeakLinks> : public MappingBase<T, U> {
       // printf("%s:%d Mapping unregister disappearing link\n", __FILE__, __LINE__);
       int result = GC_unregister_disappearing_link(reinterpret_cast<void **>(&this->bucket.rawRef_()));
       if (!result) {
-        THROW_HARD_ERROR(BF("The link was not registered as a disappearing link!"));
+        printf("%s:%d The link was not registered as a disappearing link!", __FILE__, __LINE__);
+        abort();
       }
     }
 #endif
   }
+#pragma clang diagnostic pop
+  
 };
 
 template <class T, class U>
@@ -552,17 +560,21 @@ struct WeakPointerManager {
     }
 #endif
   }
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wexceptions"
   virtual ~WeakPointerManager() {
 #ifdef USE_BOEHM
     GCTOOLS_ASSERT(this->pointer->value.objectp());
     if (!unboundOrDeletedOrSplatted(this->pointer->value)) {
       int result = GC_unregister_disappearing_link(reinterpret_cast<void **>(&this->pointer->value.rawRef_()));
       if (!result) {
-        THROW_HARD_ERROR(BF("The link was not registered as a disappearing link!"));
+        printf("%s:%d The link was not registered as a disappearing link!", __FILE__, __LINE__);
+        abort();
       }
     }
 #endif
   };
+#pragma clang diagnostic pop
 
   // This will need to be a tagged_backcastable_base_ptr
   gctools::tagged_pointer<WeakPointer> pointer;

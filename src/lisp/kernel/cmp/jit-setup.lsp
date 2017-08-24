@@ -48,6 +48,9 @@
 (mp:push-default-special-binding 'cmp:*llvm-context* '(llvm-sys:create-llvm-context))
 
 
+(defun dump-function (func)
+  (error "Do something with dump-function"))
+(export 'dump-function)
 
 (defun generate-target-triple ()
   "Uses *features* to generate the target triple for the current machine
@@ -344,12 +347,12 @@ No DIBuilder is defined for the default module")
   (defvar *jit-symbol-info* nil)
   (defvar *jit-saved-symbol-info* (make-hash-table :test #'equal :thread-safe t))
   (defun jit-add-module-return-function (original-module repl-fn startup-fn shutdown-fn literals-list)
-    (let ((module (llvm-sys:clone-module original-module)))
-      #+threads(mp:get-lock *jit-engine-mutex*)
+    (let ((module original-module #+(or)(llvm-sys:clone-module original-module)))
+      ;;#+threads(mp:get-lock *jit-engine-mutex*)
       ;;    (bformat t "In jit-add-module-return-function dumping module\n")
       ;;    (llvm-sys:print-module-to-stream module *standard-output*)
-      (if *jit-dump-module* (llvm-sys:dump module))
-      (if *declare-dump-module* (llvm-sys:dump module))
+      (if *jit-dump-module* (llvm-sys:dump-module module))
+      (if *declare-dump-module* (llvm-sys:dump-module module))
       (let* ((repl-name (llvm-sys:get-name repl-fn))
              (startup-name (llvm-sys:get-name startup-fn))
              (shutdown-name (llvm-sys:get-name shutdown-fn))
@@ -366,7 +369,7 @@ No DIBuilder is defined for the default module")
             fn)))))
 
   (defun jit-add-module-return-dispatch-function (original-module dispatch-fn startup-fn shutdown-fn literals-list)
-    (let ((module (llvm-sys:clone-module original-module)))
+    (let ((module original-module #+(or)(llvm-sys:clone-module original-module)))
       (let* ((dispatch-name (llvm-sys:get-name dispatch-fn))
              (startup-name (llvm-sys:get-name startup-fn))
              (shutdown-name (llvm-sys:get-name shutdown-fn))
@@ -380,50 +383,7 @@ No DIBuilder is defined for the default module")
       
   (defun jit-remove-module (handle)
     (llvm-sys:clasp-jit-remove-module *jit-engine* handle))
+
+  ;;; Maybe add more jit engine code here
   )
 
-;;; Use old execution engine approach
-#+(or)
-(progn
-  (defun jit-add-module-return-function (module repl-fn startup-fn shutdown-fn literals-list)
-    "Add the module to the jit and return a handle"
-    (unwind-protect
-         (progn
-           #+threads(mp:get-lock *jit-engine-mutex*)
-           (if (not *jit-engine*)
-               (setq *jit-engine* (create-run-time-execution-engine module))
-               (llvm-sys:add-module *jit-engine* module))
-           (llvm-sys:finalize-engine-and-register-with-gc-and-get-compiled-function
-            *jit-engine*
-            "JIT"
-            repl-fn
-            (irc-environment-activation-frame nil) 0 0 0
-            startup-fn
-            shutdown-fn
-            literals-list))
-      (progn
-        #+threads(mp:giveup-lock *jit-engine-mutex*))))
-
-  (defun jit-add-module-return-dispatch-function (module repl-fn startup-fn shutdown-fn literals-list)
-    "Add the module to the jit and return a handle"
-    (irc-verify-function repl-fn)
-    (unwind-protect
-         (progn
-           #+threads(mp:get-lock *jit-engine-mutex*)
-           (if (not *jit-engine*)
-               (setq *jit-engine* (create-run-time-execution-engine module))
-               (llvm-sys:add-module *jit-engine* module))
-           (llvm-sys:finalize-engine-and-get-dispatch-function
-            *jit-engine*
-            "JIT-DISPATCH"
-            repl-fn
-            startup-fn
-            shutdown-fn
-            literals-list))
-      (progn
-        #+threads(mp:giveup-lock *jit-engine-mutex*)
-        )))
-
-  (defun jit-remove-module (handle)
-    "Maybe remove the module"
-    nil))

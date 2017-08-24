@@ -101,6 +101,19 @@ struct to_object<llvm::StringRef> {
    }
  };
 
+    template <>
+   struct from_object<llvm::DITypeArray> {
+   typedef llvm::DITypeArray DeclareType;
+   DeclareType _v;
+   from_object(core::T_sp o) {
+     if (o.nilp()) {
+       this->_v = nullptr;
+       return;
+     }
+     SIMPLE_ERROR(BF("Only NIL is supported for DITypeArray at this point"));
+   }
+ };
+
 template <>
 struct from_object<llvm::DICompileUnit::DebugEmissionKind> {
   typedef llvm::DICompileUnit::DebugEmissionKind DeclareType;

@@ -50,7 +50,8 @@
           calling-convention-register-args
           calling-convention-write-registers-to-multiple-values
           cmp-log
-          cmp-log-dump
+          cmp-log-dump-module
+          cmp-log-dump-function
           codegen-literal
           reference-literal
           codegen-rtv

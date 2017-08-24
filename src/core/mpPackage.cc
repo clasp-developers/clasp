@@ -26,6 +26,7 @@ THE SOFTWARE.
 /* -^- */
 
 #include <sched.h>
+#include <sys/types.h>
 #include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
 #include <clasp/core/lisp.h>
@@ -198,6 +199,8 @@ string Process_O::__repr__() const {
 #ifdef USE_BOEHM // things don't move in boehm
   ss << " @" << (void*)(this->asSmartPtr().raw_());
 #endif
+  ss << " :tid ";
+  ss << this->_ThreadInfo->_Tid;
   ss << ">";
   return ss.str();
 }

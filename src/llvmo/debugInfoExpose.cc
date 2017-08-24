@@ -163,7 +163,7 @@ CL_VALUE_ENUM(_sym_DIFlagsVector,llvm::DINode::FlagVector);
 CL_VALUE_ENUM(_sym_DIFlagsStaticMember,llvm::DINode::FlagStaticMember);
 CL_VALUE_ENUM(_sym_DIFlagsLValueReference,llvm::DINode::FlagLValueReference);
 CL_VALUE_ENUM(_sym_DIFlagsRValueReference,llvm::DINode::FlagRValueReference);
-CL_VALUE_ENUM(_sym_DIFlagsExternalTypeRef,llvm::DINode::FlagExternalTypeRef);
+//CL_VALUE_ENUM(_sym_DIFlagsExternalTypeRef,llvm::DINode::FlagExternalTypeRef);
 CL_VALUE_ENUM(_sym_DIFlagsSingleInheritance,llvm::DINode::FlagSingleInheritance);
 CL_VALUE_ENUM(_sym_DIFlagsMultipleInheritance,llvm::DINode::FlagMultipleInheritance);
 CL_VALUE_ENUM(_sym_DIFlagsVirtualInheritance,llvm::DINode::FlagVirtualInheritance);
@@ -202,7 +202,8 @@ CL_EXTERN_DEFMETHOD(DIBuilder_O,
                       unsigned, //flags
                       bool, // isOptimized
                       llvm::DITemplateParameterArray, // TParams
-                      llvm::DISubprogram * // decl
+                      llvm::DISubprogram *, // decl
+                      llvm::DITypeArray
 ))&llvm::DIBuilder::createFunction );
 CL_LISPIFY_NAME(createLexicalBlock);
 CL_EXTERN_DEFMETHOD(DIBuilder_O, &llvm::DIBuilder::createLexicalBlock);

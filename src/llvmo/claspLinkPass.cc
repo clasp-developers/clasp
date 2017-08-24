@@ -48,6 +48,7 @@ struct ClaspLinkPass : public ModulePass {
       return false;
     }
     llvm::PointerType *t = funcs->getType();
+#if 0
     errs() << "Dumping t\n";
     t->dump();
     errs() << '\n';
@@ -58,6 +59,7 @@ struct ClaspLinkPass : public ModulePass {
     int num = et->getArrayNumElements();
     errs() << "Number of elements: " << num << '\n';
     funcs->dump();
+#endif
     llvm::ConstantInt *ci = llvm::ConstantInt::get(M.getContext(), llvm::APInt(/*nbits*/ 32, num, true));
 #if 0
 #pragma clang diagnostic push

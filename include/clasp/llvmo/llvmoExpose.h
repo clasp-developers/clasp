@@ -62,6 +62,7 @@ THE SOFTWARE.
 #include <llvm/ExecutionEngine/Orc/IRCompileLayer.h>
 #include <llvm/ExecutionEngine/Orc/IRTransformLayer.h>
 #include <llvm/ExecutionEngine/Orc/LambdaResolver.h>
+#include <llvm/ExecutionEngine/Orc/RTDyldObjectLinkingLayer.h>
 #include <llvm/ExecutionEngine/Orc/ObjectLinkingLayer.h>
 //#include "llvm/Support/IRBuilder.h"
 
@@ -1547,14 +1548,14 @@ public:
   PointerToExternalType wrappedPtr() const { return llvm_cast<ExternalType>(this->_ptr); };
   void set_wrapped(PointerToExternalType ptr) {
     if (this->_ptr != NULL && this->_PtrIsOwned)
-      delete this->_ptr;
+      this->_ptr->deleteValue();
     this->_ptr = ptr;
   }
   void set_ptrIsOwned(bool b) { this->_PtrIsOwned = b; };
   GlobalValue_O() : Base(), _PtrIsOwned(false){};
   virtual ~GlobalValue_O() {
     if (this->_ptr != NULL && this->_PtrIsOwned)
-      delete this->_ptr;
+      this->_ptr->deleteValue();
   }
 
 }; // GlobalValue_O
@@ -2624,6 +2625,7 @@ class CallInst_O : public Instruction_O {
 
 public:
   PointerToExternalType wrappedPtr() const { return llvm_cast<ExternalType>(this->_ptr); };
+  void 	addParamAttr(unsigned ArgNo, llvm::Attribute Attr);
   void set_wrapped(PointerToExternalType ptr) {
     /*        if (this->_ptr != NULL ) delete this->_ptr; */
     this->_ptr = ptr;
@@ -3003,6 +3005,7 @@ class InvokeInst_O : public TerminatorInst_O {
 
 public:
   PointerToExternalType wrappedPtr() const { return llvm_cast<ExternalType>(this->_ptr); };
+  void 	addParamAttr(unsigned ArgNo, llvm::Attribute Attr);
   void set_wrapped(PointerToExternalType ptr) {
     /*        if (this->_ptr != NULL ) delete this->_ptr; */
     this->_ptr = ptr;
@@ -3719,6 +3722,7 @@ struct to_object<llvm::Argument> {
 };
 };
 
+#if 0
 namespace translate {
 template <>
 struct to_object<llvm::Function::ArgumentListType &> {
@@ -3732,6 +3736,8 @@ struct to_object<llvm::Function::ArgumentListType &> {
   }
 };
 };
+#endif
+
 
 namespace llvmo {
 FORWARD(Type);
@@ -4235,6 +4241,7 @@ struct from_object<llvm::AtomicOrdering, std::true_type> {
   }
 };
 
+#if 0
 template <>
 struct from_object<llvm::SynchronizationScope, std::true_type> {
   typedef llvm::SynchronizationScope DeclareType;
@@ -4249,7 +4256,8 @@ struct from_object<llvm::SynchronizationScope, std::true_type> {
     SIMPLE_ERROR(BF("Cannot convert object %s to llvm::SynchronizationScope") % _rep_(object));
   }
 };
-
+#endif
+ 
 template <>
 struct from_object<llvm::AtomicRMWInst::BinOp, std::true_type> {
   typedef llvm::AtomicRMWInst::BinOp DeclareType;
@@ -4330,6 +4338,8 @@ namespace llvmo {
   using namespace llvm;
   using namespace llvm::orc;
 
+  void save_symbol_info(const llvm::object::ObjectFile& object_file, const llvm::RuntimeDyld::LoadedObjectInfo& loaded_object_info);
+
   class ClaspJIT_O : public core::General_O {
     LISP_CLASS(llvmo, LlvmoPkg, ClaspJIT_O, "clasp-jit", core::General_O);
 
@@ -4369,14 +4379,15 @@ namespace llvmo {
   private:
     std::unique_ptr<llvm::TargetMachine> TM;
     const llvm::DataLayout DL;
-    NotifyObjectLoadedT NotifyObjectLoaded;
-    ObjectLinkingLayer<NotifyObjectLoadedT> ObjectLayer;
-    IRCompileLayer<decltype(ObjectLayer)> CompileLayer;
-    typedef std::function<std::unique_ptr<Module>(std::unique_ptr<Module>)> OptimizeFunction;
+//    NotifyObjectLoadedT NotifyObjectLoaded;
+    RTDyldObjectLinkingLayer ObjectLayer;
+    IRCompileLayer<decltype(ObjectLayer),SimpleCompiler> CompileLayer;
+    typedef std::function<std::shared_ptr<Module>(std::shared_ptr<Module>)> OptimizeFunction;
     IRTransformLayer<decltype(CompileLayer), OptimizeFunction> OptimizeLayer;
     JITEventListener* GDBEventListener;
   public:
-    typedef decltype(OptimizeLayer)::ModuleSetHandleT ModuleHandle;
+//    typedef decltype(OptimizeLayer)::ModuleSetHandleT ModuleHandle;
+    typedef decltype(CompileLayer)::ModuleHandleT ModuleHandle;
 
     ClaspJIT_O();
 
@@ -4387,7 +4398,7 @@ namespace llvmo {
     core::Pointer_sp findSymbolIn(ModuleHandle_sp handle, const std::string& Name, bool exportedSymbolsOnly );
     bool removeModule(ModuleHandle_sp H);
 
-    std::unique_ptr<llvm::Module> optimizeModule(std::unique_ptr<llvm::Module> M);
+    std::shared_ptr<llvm::Module> optimizeModule(std::shared_ptr<llvm::Module> M);
   };
 
 };

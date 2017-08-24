@@ -620,7 +620,7 @@ Return the orderered-raw-constants-list and the constants-table GlobalVariable"
                 (dbg-set-current-debug-location-here)
                 (codegen fn-result form fn-env)
                 (dbg-set-current-debug-location-here)))))
-    (cmp-log-dump fn)
+    (cmp-log-dump-function fn)
     (irc-verify-function fn t)
     fn))
 

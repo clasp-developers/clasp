@@ -382,8 +382,24 @@ static int startup(int argc, char *argv[], bool &mpiEnabled, int &mpiRank, int &
 //     M A I N
 // -------------------------------------------------------------------------
 
+
+void* to_fixnum(int8_t v) {
+    return reinterpret_cast<void*>(((Fixnum)v) << 2);
+}
+
+
+
 int main( int argc, char *argv[] )
 {
+
+    int8_t array[1] = {-3};
+    //    printf("sizeof(array[1]) -> %lu\n", sizeof(array));
+    int8_t v = array[0];
+    // printf("int8_t v -> %x\n", v);
+    void* foo = to_fixnum(v);
+    printf("int64_t v -> %p\n", foo);
+
+  // ------------
   uintptr_clasp_t x = 0;
   uintptr_t y = 1;
   x = y;

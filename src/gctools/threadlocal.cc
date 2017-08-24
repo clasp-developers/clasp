@@ -1,3 +1,5 @@
+
+#include <sys/types.h>
 #include <clasp/core/foundation.h>
 #include <clasp/gctools/threadlocal.h>
 #include <clasp/core/lisp.h>
@@ -35,6 +37,11 @@ namespace core {
 
 ThreadLocalState::ThreadLocalState(void* stack_top) :  _DisableInterrupts(false), _StackTop(stack_top), _PendingInterrupts(_Nil<core::T_O>()) {
   my_thread = this;
+#ifdef _TARGET_OS_DARWIN
+  this->_Tid = 0;
+#else
+  this->_Tid = gettid();
+#endif
   this->_InvocationHistoryStackTop = NULL;
   this->_BufferStr8NsPool.reset_(); // Can't use _Nil<core::T_O>(); - too early
   this->_BufferStrWNsPool.reset_();

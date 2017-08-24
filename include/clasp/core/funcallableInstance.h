@@ -75,6 +75,16 @@ namespace core {
                    REF_CLASS_INSTANCE_STAMP = 20,
                    REF_CLASS_CREATOR = 21
     } Slots;
+
+// These indices MUST match the order and positions of slots in +standard-generic-function-slots+
+    typedef enum { REF_GFUN_NAME = 0,
+                   REF_GFUN_SPECIALIZERS = 1,
+                   REF_GFUN_COMB = 2,
+                   REF_GFUN_DISPATCHER = 3,
+                   REF_GFUN_CALL_HISTORY = 4,
+                   REF_GFUN_LAMBDA_LIST = 5,
+                   REF_GFUN_SPECIALIZER_PROFILE = 6,
+                   REF_GFUN_LOCK = 7 } GenericFunctionSlots;
     
   public: // ctor/dtor for classes with shared virtual base
     // entry_point is the LISP_CALLING_CONVENTION() macro
@@ -118,22 +128,23 @@ namespace core {
 
   public:
     bool isCallable() const { return (bool)(this->_entryPoint); };
-  public: // These indices MUST match the order in +standard-generic-function-slots+
-    T_sp GFUN_NAME() const { return this->instanceRef(0); };
-    T_sp GFUN_SPECIALIZERS() const { return this->instanceRef(1); };
-    T_sp GFUN_COMB() const { return this->instanceRef(2); };
-    T_sp GFUN_DISPATCHER() const { return this->instanceRef(3);};
-    void GFUN_DISPATCHER_set(T_sp f)  { this->instanceSet(3,f);};
-    T_sp GFUN_CALL_HISTORY() const { return this->instanceRef(4);};
+  public:
+    T_sp GFUN_NAME() const { return this->instanceRef(REF_GFUN_NAME); };
+    T_sp GFUN_SPECIALIZERS() const { return this->instanceRef(REF_GFUN_SPECIALIZERS); };
+    T_sp GFUN_COMB() const { return this->instanceRef(REF_GFUN_COMB); };
+    T_sp GFUN_DISPATCHER() const { return this->instanceRef(REF_GFUN_DISPATCHER);};
+    void GFUN_DISPATCHER_set(T_sp f)  { this->instanceSet(REF_GFUN_DISPATCHER,f);};
+    T_sp GFUN_CALL_HISTORY() const { return this->instanceRef(REF_GFUN_CALL_HISTORY);};
     void GFUN_CALL_HISTORY_set(T_sp h);
-    T_sp GFUN_LAMBDA_LIST() const { return this->instanceRef(5);};
-    void GFUN_LAMBDA_LIST_set(T_sp lambda_list) {
-    if (this->instanceRef(5).unboundp() && lambda_list.nilp()) {
-    printf("%s:%d Ignoring GFUN_LAMBDA_LIST_SET - returning\n", __FILE__, __LINE__ );
-    return;
-  }
-    this->instanceSet(5,lambda_list);
-  };
+    T_sp GFUN_LAMBDA_LIST() const { return this->instanceRef(REF_GFUN_LAMBDA_LIST);};
+    void GFUN_LAMBDA_LIST_set(T_sp lambda_list)
+    {
+      if (this->instanceRef(REF_GFUN_LAMBDA_LIST).unboundp() && lambda_list.nilp()) {
+        printf("%s:%d Ignoring GFUN_LAMBDA_LIST_SET - returning\n", __FILE__, __LINE__ );
+        return;
+      }
+      this->instanceSet(REF_GFUN_LAMBDA_LIST,lambda_list);
+    };
   public:
     // Functions from Class_O
     string _classNameAsString() const;
