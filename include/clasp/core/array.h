@@ -292,23 +292,18 @@ namespace core {
     virtual T_sp rowMajorAref(size_t idx) const = 0;
     virtual bool adjustableArrayP() const =0;
     virtual bool displacedToP() const { return false; };
-    size_t arrayRowMajorIndex(VaList_sp indices) const {
-      return this->index_(indices);
-    }
+  /*! As the CL function: Return the offset into a one-dimensional vector for the
+      multidimensional indices in the (Va)List, using row-major ordering. */
+    size_t arrayRowMajorIndex(VaList_sp indices) const;
+    size_t arrayRowMajorIndex(List_sp indices) const;
     virtual LongLongInt setDimensions(List_sp dimensions, T_sp initialElement) { SUBIMP(); };
     virtual Array_sp reverse() const = 0;
     virtual Array_sp nreverse() = 0;
     virtual size_t rank() const = 0;
   /*! Return the offset into a one-dimensional vector for the multidimensional index
-      in the vector<int>s.  This is in rowMajor order.*/
+      in the vector<int>s.  This is in rowMajor order.
+      Separate from arrayRowMajorIndex because it's internal and does less error checking. */
     size_t index_vector_int(const vector<int> &indices) const;
-  /*! Return the offset into a one-dimensional vector for a multidimensional index
-	 If last_value_is_val == true then don't use the last value in the indices list */
-    size_t index_val_(List_sp indices, bool last_value_is_val, T_sp &last_val) const;
-    size_t index_val_(VaList_sp indices, bool last_value_is_val, T_sp &last_val) const;
-  /*! Return the offset into a one-dimensional vector for a multidimensional index */
-    inline size_t index_(List_sp indices) const {T_sp dummy; return this->index_val_(indices,false,dummy);};
-    inline size_t index_(VaList_sp indices) const {T_sp dummy; return this->index_val_(indices,false,dummy);};
   /*! Return the type returned by this array */
     virtual T_sp arrayElementType() const = 0;
     virtual bool arrayHasFillPointerP() const { return false; };

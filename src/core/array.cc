@@ -217,11 +217,11 @@ void Array_O::fillInitialContents(T_sp ic) {
 }
 
 size_t Array_O::index_vector_int(const vector<int> &indices) const {
+  size_t rank = this->rank();
   size_t offset = 0;
   size_t oneIndex = 0;
-  Cons_sp cur;
   size_t idx = 0;
-  for (idx = 0; idx < this->rank(); ++idx) {
+  for (idx = 0; idx < rank; ++idx) {
     if (idx > 0)
       offset *= this->arrayDimension(idx);
     oneIndex = indices[idx];
@@ -230,11 +230,11 @@ size_t Array_O::index_vector_int(const vector<int> &indices) const {
   return offset;
 }
 
-size_t Array_O::index_val_(List_sp indices, bool last_value_is_val, T_sp &last_val) const {
+size_t Array_O::arrayRowMajorIndex(List_sp indices) const {
   size_t rank = this->rank();
   size_t offset = 0;
   size_t idx = 0;
-  List_sp cur = indices;;
+  List_sp cur = indices;
   for ( ; idx<rank; ++idx ) {
     size_t curDimension = this->arrayDimension(idx);
     LIKELY_if (cur.consp()) {
@@ -249,17 +249,10 @@ size_t Array_O::index_val_(List_sp indices, bool last_value_is_val, T_sp &last_v
         indexNotFixnumError(index);
       }
     } else {
+      // cur is nil, and so
       insufficientIndexListError(indices);
     }
     cur = oCdr(cur);
-  }
-  if (last_value_is_val) {
-    LIKELY_if (cur.consp()) {
-      last_val = oCar(cur);
-      cur = oCdr(cur);
-    } else {
-      missingValueListError(indices);
-    }
   }
   unlikely_if (cur.consp()) {
     tooManyIndicesListError(indices);
@@ -267,34 +260,33 @@ size_t Array_O::index_val_(List_sp indices, bool last_value_is_val, T_sp &last_v
   return offset;
 }
 
-size_t Array_O::index_val_(VaList_sp indices, bool last_value_is_val, T_sp &last_val) const {
-  size_t indices_passed = indices->remaining_nargs() - (last_value_is_val ? 1 : 0);
+size_t Array_O::arrayRowMajorIndex(VaList_sp indices) const {
   size_t rank = this->rank();
-  unlikely_if (indices_passed!=rank) insufficientIndexListError(core__list_from_va_list(indices));
-  if (last_value_is_val) {
-    unlikely_if (indices->remaining_nargs()!=(rank+1)) {
-      if (indices->remaining_nargs()<(rank+1)) {
-        missingValueListError(core__list_from_va_list(indices));
-      }
+  size_t indices_passed = indices->remaining_nargs();
+
+  unlikely_if (indices_passed < rank) {
+    insufficientIndexListError(core__list_from_va_list(indices));
+  } else {
+    unlikely_if (indices_passed > rank) {
       tooManyIndicesListError(core__list_from_va_list(indices));
     }
   }
+  
   size_t offset = 0;
   size_t idx = 0;
   size_t idxEnd(indices_passed);
-  for ( ; idx < idxEnd; ++idx) {
+  for ( ; idx<rank; ++idx ) {
     core::T_sp one = indices->next_arg();
     size_t curDimension = this->arrayDimension(idx);
     LIKELY_if (one.fixnump()) {
       size_t oneIndex = one.unsafe_fixnum();
       unlikely_if (oneIndex < 0 || oneIndex >= curDimension) {
-        badIndexError(oneIndex,curDimension);
+        badIndexError(oneIndex, curDimension);
       }
       offset = offset * curDimension + oneIndex;
+    } else {
+      indexNotFixnumError(one);
     }
-  }
-  if (last_value_is_val) {
-    last_val = indices->next_arg();
   }
   return offset;
 }
@@ -604,14 +596,13 @@ void core__copy_subarray(Array_sp dest, Fixnum_sp destStart, Array_sp orig, Fixn
 }
 
 
-CL_LAMBDA(array &va-rest indices-value);
+CL_LAMBDA(array value &va-rest indices);
 CL_DECLARE();
 CL_DOCSTRING("aset");
-CL_DEFUN T_sp core__aset(Array_sp array, VaList_sp vargs) {
-  T_sp last_val;
-  cl_index rowMajorIndex = array->index_val_(vargs,true,last_val);
-  array->rowMajorAset(rowMajorIndex,last_val);
-  return last_val;
+CL_DEFUN T_sp core__aset(Array_sp array, T_sp value, VaList_sp indices) {
+  cl_index rowMajorIndex = array->arrayRowMajorIndex(indices);
+  array->rowMajorAset(rowMajorIndex,value);
+  return value;
 };
 
 CL_LISPIFY_NAME("cl:aref");
@@ -625,21 +616,8 @@ CL_DEFUN T_sp cl__aref(Array_sp array, VaList_sp vargs)
 CL_LAMBDA(array &va-rest indices);
 CL_LISPIFY_NAME("core:index");
 CL_DEFUN gc::Fixnum core__index(Array_sp array, VaList_sp indices) {
-  T_sp dummy;
-  return array->index_val_(indices, false, dummy);
+  return array->arrayRowMajorIndex(indices);
 }
-
-
-CL_LAMBDA(array &rest core::indices-val);
-CL_DOCSTRING("Setter for aref");
-CL_LISPIFY_NAME("core:array-setf-aref");
-CL_DEFUN T_sp core__setf_aref(Array_sp array, List_sp indices_val) {
-  T_sp last_val;
-  cl_index idx = array->index_val_(indices_val,true,last_val);
-  array->rowMajorAset(idx,last_val);
-  return last_val;
-};
-
 
 
 CL_LISPIFY_NAME("cl:svref");
