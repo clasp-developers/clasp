@@ -25,6 +25,7 @@ THE SOFTWARE.
 */
 /* -^- */
 
+#include <clasp/core/foundation.h>
 #include <clasp/core/common.h>
 #include <clasp/llvmo/llvmoPackage.h>
 #include <clasp/llvmo/intrinsics.h>

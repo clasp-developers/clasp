@@ -199,8 +199,6 @@ string Process_O::__repr__() const {
 #ifdef USE_BOEHM // things don't move in boehm
   ss << " @" << (void*)(this->asSmartPtr().raw_());
 #endif
-  ss << " :tid ";
-  ss << this->_ThreadInfo->_Tid;
   ss << ">";
   return ss.str();
 }

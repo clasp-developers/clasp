@@ -32,7 +32,6 @@ THE SOFTWARE.
 #include <boost/random.hpp>
 
 #include <clasp/core/clasp_gmpxx.h>
-#include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
 #include <clasp/core/numbers.h>
 

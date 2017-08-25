@@ -27,7 +27,6 @@ THE SOFTWARE.
 #if !defined( __CLASP_CORE_FFI_PACKAGE_H__ )
 #define __CLASP_CORE_FFI_PACKAGE_H__ __FILE__" $Id$"
 
-#include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
 #include <clasp/core/clasp_ffi_package.fwd.h>
 

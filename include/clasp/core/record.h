@@ -1,7 +1,6 @@
 #ifndef core_record_H
 #define core_record_H
 
-#include <clasp/core/foundation.h>
 #include <clasp/core/symbolTable.h>
 #include <clasp/core/array.h>
 

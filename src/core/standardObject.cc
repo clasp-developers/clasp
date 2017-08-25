@@ -26,6 +26,7 @@ THE SOFTWARE.
 /* -^- */
 //#define DEBUG_LEVEL_FULL
 
+#include <clasp/core/foundation.h>
 #include <clasp/core/lisp.h>
 #include <clasp/core/standardObject.h>
 #include <clasp/core/symbolTable.h>

@@ -39,7 +39,6 @@ THE SOFTWARE.
 #include <boost/date_time/gregorian/gregorian.hpp>
 #pragma clang diagnostic pop
 
-#include <clasp/core/foundation.h>
 #include <clasp/core/numerics.h>
 #include <clasp/core/object.h>
 

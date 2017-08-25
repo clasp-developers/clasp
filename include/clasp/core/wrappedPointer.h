@@ -27,7 +27,6 @@ THE SOFTWARE.
 #ifndef core_wrappedPointer_H
 #define core_wrappedPointer_H
 
-#include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
 #include <clasp/core/instance.h>
 #include <clasp/core/lisp.h>

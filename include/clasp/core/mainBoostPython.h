@@ -63,7 +63,6 @@ namespace bp = boost::python;
 
 #endif
 
-#include <clasp/core/foundation.h>
 
 inline void IndexError() {
   PyErr_SetString(PyExc_IndexError, "Index too large");

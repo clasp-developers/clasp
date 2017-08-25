@@ -27,7 +27,6 @@ THE SOFTWARE.
 #ifndef core_load_H
 #define core_load_H
 
-#include <clasp/core/foundation.h>
 
 namespace kw {
 extern core::Symbol_sp& _sym_default;

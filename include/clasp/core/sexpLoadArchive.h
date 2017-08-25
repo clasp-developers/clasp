@@ -27,7 +27,6 @@ THE SOFTWARE.
 #ifndef SEXP_LOAD_ARCHIVE_H //[
 #define SEXP_LOAD_ARCHIVE_H
 
-#include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
 #include <clasp/core/serialize.h>
 #include <clasp/core/lispStream.fwd.h>

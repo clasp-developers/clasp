@@ -26,7 +26,6 @@ THE SOFTWARE.
 /* -^- */
 #ifndef _core_VectorObjectsWithFillPtr_H
 #define _core_VectorObjectsWithFillPtr_H
-#include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
 #include <clasp/core/array.h>
 #include <clasp/core/corePackage.fwd.h>

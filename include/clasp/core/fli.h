@@ -63,7 +63,6 @@ THE SOFTWARE.
 //    APPLICATION INCLUDES
 // ---------------------------------------------------------------------------
 
-#include <clasp/core/foundation.h>
 #include <clasp/core/clasp_ffi_package.fwd.h>
 #include <clasp/core/array.h>
 #include <clasp/core/externalObject.h>

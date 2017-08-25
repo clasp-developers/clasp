@@ -26,7 +26,6 @@ THE SOFTWARE.
 /* -^- */
 #ifndef _core_Common_H
 #define _core_Common_H
-#include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
 #include <clasp/core/cons.h>
 #include <clasp/core/cxxObject.h>

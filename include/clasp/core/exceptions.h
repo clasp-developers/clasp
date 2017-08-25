@@ -39,7 +39,6 @@ THE SOFTWARE.
 #include <set>
 #include <boost/format.hpp>
 
-#include <clasp/core/foundation.h>
 #include <clasp/core/object.fwd.h>
 #include <clasp/core/symbol.fwd.h>
 #include <clasp/core/stacks.h>

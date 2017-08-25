@@ -28,7 +28,6 @@ THE SOFTWARE.
 #define _core_bignum_H_
 
 #include <clasp/core/clasp_gmpxx.h>
-#include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
 #include <clasp/core/numbers.h>
 #include <clasp/core/bignum.fwd.h>

@@ -27,7 +27,6 @@ THE SOFTWARE.
 #ifndef corePackage_H
 #define corePackage_H
 
-#include <clasp/core/foundation.h>
 #include <clasp/core/lisp.h>
 #include <clasp/core/corePackage.fwd.h>
 

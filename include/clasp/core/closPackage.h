@@ -27,7 +27,6 @@ THE SOFTWARE.
 #ifndef _clos_H
 #define _clos_H
 
-#include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
 #include <clasp/core/closPackage.fwd.h>
 

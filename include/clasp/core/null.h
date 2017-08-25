@@ -27,7 +27,6 @@ THE SOFTWARE.
 #ifndef _core_Null_H
 #define _core_Null_H
 
-#include <clasp/core/foundation.h>
 #include <clasp/core/symbol.h>
 #include <clasp/core/lispList.h>
 

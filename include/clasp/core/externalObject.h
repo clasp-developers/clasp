@@ -28,7 +28,6 @@ THE SOFTWARE.
 #if !defined(__CLASP_CORE_EXTERNAL_OBJECT_H__)
 #define __CLASP_CORE_EXTERNAL_OBJECT_H__ __FILE__" $Id"
 
-#include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
 #include <clasp/core/standardObject.h>
 

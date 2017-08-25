@@ -35,7 +35,6 @@ THE SOFTWARE.
 #ifndef OBJECT_H //[
 #define OBJECT_H
 
-#include <clasp/core/foundation.h>
 #include <clasp/core/newhash.h>
 #include <clasp/core/commonLispPackage.fwd.h>
 #include <clasp/core/corePackage.fwd.h>

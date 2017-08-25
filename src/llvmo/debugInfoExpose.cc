@@ -85,6 +85,7 @@ THE SOFTWARE.
 #include "llvm/IR/AssemblyAnnotationWriter.h" // Should be llvm/IR was
 //#include <llvm/IR/PrintModulePass.h> // will be llvm/IR
 
+#include <clasp/core/foundation.h>
 #include <clasp/core/common.h>
 #include <clasp/core/cons.h>
 #include <clasp/core/evaluator.h>

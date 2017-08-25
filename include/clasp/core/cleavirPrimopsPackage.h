@@ -27,7 +27,6 @@ THE SOFTWARE.
 #ifndef _cleavirPrimops_H
 #define _cleavirPrimops_H
 
-#include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
 #include <clasp/core/cleavirPrimopsPackage.fwd.h>
 

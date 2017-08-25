@@ -32,6 +32,7 @@ THE SOFTWARE.
 
 #include <boost/format.hpp>
 
+#include <clasp/core/foundation.h>
 #include <clasp/core/common.h>
 #include <clasp/core/numbers.h>
 #include <clasp/core/multipleValues.h>

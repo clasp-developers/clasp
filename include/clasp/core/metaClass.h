@@ -38,7 +38,6 @@ THE SOFTWARE.
 #include <boost/graph/adjacency_list.hpp>
 #include <boost/graph/topological_sort.hpp>
 #pragma clang diagnostic pop
-#include <clasp/core/foundation.h>
 #include <clasp/core/array.h>
 #include <clasp/core/object.fwd.h>
 #include <clasp/core/numbers.fwd.h>

@@ -27,7 +27,6 @@ THE SOFTWARE.
 #ifndef _core_funcallable_instance_H_
 #define _core_funcallable_instance_H_
 
-#include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
 #include <clasp/core/array.h>
 #include <clasp/core/hashTable.fwd.h>

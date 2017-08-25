@@ -27,7 +27,6 @@ THE SOFTWARE.
 #ifndef core_numberToString_H
 #define core_numberToString_H
 
-#include <clasp/core/foundation.h>
 #include <clasp/core/array.h>
 namespace core {
 

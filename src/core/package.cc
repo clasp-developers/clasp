@@ -30,8 +30,8 @@ THE SOFTWARE.
 #ifdef DEFINE_CL_SYMBOLS
 #include <clasp/core/allClSymbols.h>
 #endif
-#include <clasp/core/symbol.h>
 #include <clasp/core/common.h>
+#include <clasp/core/symbol.h>
 #include <clasp/core/corePackage.h>
 #include <clasp/core/package.h>
 #include <clasp/core/numberToString.h>

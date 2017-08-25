@@ -34,6 +34,8 @@ THE SOFTWARE.
 //#define DEBUG_LEVEL_FULL
 
 #include <string.h>
+
+#include <clasp/core/foundation.h>
 #include <clasp/core/common.h>
 //#i n c l u d e "stringSet.h"
 #include <clasp/core/symbolTable.h>

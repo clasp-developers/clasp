@@ -40,6 +40,7 @@ THE SOFTWARE.
 #include <set>
 #include <vector>
 
+#include <clasp/core/foundation.h>
 #include <clasp/core/common.h>
 #include <clasp/core/exceptions.h>
 #include <clasp/core/symbolTable.h>

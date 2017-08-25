@@ -27,7 +27,6 @@ THE SOFTWARE.
 #ifndef _SINGLEDISPATCHGENERICFUNCTION_H_
 #define _SINGLEDISPATCHGENERICFUNCTION_H_
 
-#include <clasp/core/foundation.h>
 #include <clasp/core/hashTable.fwd.h>
 #include <clasp/core/singleDispatchGenericFunction.fwd.h>
 #include <clasp/core/singleDispatchMethod.fwd.h>

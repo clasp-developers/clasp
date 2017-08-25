@@ -27,7 +27,6 @@ THE SOFTWARE.
 #ifndef evaluator_H
 #define evaluator_H
 
-#include <clasp/core/foundation.h>
 #include <clasp/core/ql.h>
 #include <clasp/core/evaluator.fwd.h>
 #include <clasp/core/activationFrame.h>

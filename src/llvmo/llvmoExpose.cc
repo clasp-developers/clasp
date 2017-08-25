@@ -74,6 +74,7 @@ THE SOFTWARE.
 #include "llvm/IR/AssemblyAnnotationWriter.h" // will be llvm/IR
 //#include <llvm/IR/PrintModulePass.h> // will be llvm/IR  was llvm/Assembly
 
+#include <clasp/core/foundation.h>
 #include <clasp/core/common.h>
 #include <clasp/core/cons.h>
 #include <clasp/core/evaluator.h>

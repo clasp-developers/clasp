@@ -33,7 +33,6 @@ THE SOFTWARE.
 #include <set>
 #include <unordered_set>
 #include <stack>
-//#include "foundation.h"
 //#include "conditions.h"
 #include <clasp/core/cons.h>
 

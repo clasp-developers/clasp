@@ -31,7 +31,6 @@ THE SOFTWARE.
 #include <string>
 #include <vector>
 #include <set>
-#include <clasp/core/foundation.h>
 #include <clasp/core/numerics.h>
 #include <clasp/core/object.h>
 
