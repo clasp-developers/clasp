@@ -108,6 +108,6 @@ Return T if disassembly was achieved - otherwise NIL"
        (let* ((*all-functions-for-one-compile* nil)
               (funcs (codegen-closure nil desig nil)))
 	 (dolist (i *all-functions-for-one-compile*)
-	   (llvm-sys:dump i))))
+	   (cmp:dump-function i))))
       (t (error "Cannot disassemble"))))
   nil)

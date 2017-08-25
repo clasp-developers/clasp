@@ -221,7 +221,6 @@ Compile a lisp source file into an LLVM module.  type can be :kernel or :user"
          (input-pathname (probe-file given-input-pathname))
 	 (source-sin (open input-pathname :direction :input))
          (module (llvm-create-module (namestring input-pathname)))
-         (*primitives* (primitives-in-module module))
 	 (module-name (cf-module-name type given-input-pathname))
 	 warnings-p failure-p)
     (or module (error "module is NIL"))

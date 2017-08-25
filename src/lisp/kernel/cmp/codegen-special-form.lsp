@@ -127,7 +127,7 @@
   "Evaluate forms discarding results but keep last one"
   (cmp-log "About to codegen-progn with forms: %s\n" forms)
   (cmp-log "Dumping the module\n")
-  (cmp-log-dump *the-module*)
+  (cmp-log-dump-module *the-module*)
   (if forms
       (let ((temp-val (irc-alloca-tsp :label "temp")))
         (do* ((cur forms (cdr cur))

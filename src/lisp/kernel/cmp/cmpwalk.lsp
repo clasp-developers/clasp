@@ -36,7 +36,6 @@
   "This is used in clos/method.lsp to code walk defmethod bodies"
   (and core:*use-cleavir-compiler* (error "The core:*use-cleavir-compiler* is set to T"))
   (let* ((module (llvm-create-module "code-walk-for-defmethod"))
-         (*primitives* (primitives-in-module module))
 	 (*code-walker* code-walker-function))
     (with-compilation-unit ()
       (with-module ( :module module

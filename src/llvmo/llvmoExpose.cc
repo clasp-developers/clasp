@@ -1756,16 +1756,14 @@ CL_DEFMETHOD bool Instruction_O::terminatorInstP() const {
 
 namespace llvmo {
 
-CL_DEFMETHOD void CallInst_O::addParamAttr(unsigned index, llvm::Attribute attribute)
+CL_DEFMETHOD void CallInst_O::addParamAttr(unsigned index, llvm::Attribute::AttrKind attrkind)
 {
-  // FIXME - call the new llvm5.0 API function
-//  this->wrappedPtr()->addParamAttr(index,attribute);
+  this->wrappedPtr()->addParamAttr(index,attrkind);
 }
 
-CL_DEFMETHOD void InvokeInst_O::addParamAttr(unsigned index, llvm::Attribute attribute)
+CL_DEFMETHOD void InvokeInst_O::addParamAttr(unsigned index, llvm::Attribute::AttrKind attrkind)
 {
-  // FIXME - call the new llvm5.0 API function
-//  this->wrappedPtr()->addParamAttr(index,attribute);
+  this->wrappedPtr()->addParamAttr(index,attrkind);
 }
 
 
@@ -2748,6 +2746,8 @@ CL_LISPIFY_NAME("setHasUWTable");
 CL_EXTERN_DEFMETHOD(Function_O,&llvm::Function::setHasUWTable);
 CL_LISPIFY_NAME("setDoesNotThrow");
 CL_EXTERN_DEFMETHOD(Function_O,&llvm::Function::setDoesNotThrow);
+CL_LISPIFY_NAME("addFnAttr");
+CL_EXTERN_DEFMETHOD(Function_O, (void (llvm::Function::*)(Attribute::AttrKind Kind))&llvm::Function::addFnAttr);
 CL_LISPIFY_NAME("addAttribute");
 CL_EXTERN_DEFMETHOD(Function_O, (void (llvm::Function::*)(unsigned i, typename llvm::Attribute::AttrKind Attr))&llvm::Function::addAttribute);
 CL_LISPIFY_NAME("addParamAttr");
@@ -2774,7 +2774,6 @@ bool Function_O::equal(core::T_sp obj) const {
 string Function_O::__repr__() const {
   stringstream ss;
   ss << "#<" << this->_instanceClass()->_classNameAsString() << " " << this->wrappedPtr()->getName().data() << ">";
-  IMPLEMENT_MEF(BF("Come up with a way to dump the llvm-ir for Function_O"));
 #if 0  
   this->wrappedPtr()->dump();
 #endif
@@ -2784,6 +2783,23 @@ string Function_O::__repr__() const {
 CL_LISPIFY_NAME("appendBasicBlock");
 CL_DEFMETHOD void Function_O::appendBasicBlock(BasicBlock_sp basicBlock) {
   this->wrappedPtr()->getBasicBlockList().push_back(basicBlock->wrappedPtr());
+}
+
+CL_LISPIFY_NAME("getEntryBlock");
+CL_DEFMETHOD BasicBlock_sp Function_O::getEntryBlock() const {
+  return translate::to_object<llvm::BasicBlock*>::convert(&this->wrappedPtr()->getEntryBlock());
+}
+
+CL_LISPIFY_NAME("basic-blocks");
+CL_DEFMETHOD core::List_sp Function_O::basic_blocks() const {
+  llvm::Function::BasicBlockListType& Blocks = this->wrappedPtr()->getBasicBlockList();
+  core::List_sp result = _Nil<core::T_O>();
+  for (llvm::Function::iterator b = this->wrappedPtr()->begin(), be = this->wrappedPtr()->end(); b != be; ++b) {
+    llvm::BasicBlock& BB = *b;
+    // Delete the basic block from the old function, and the list of blocks
+    result = core::Cons_O::create(translate::to_object<llvm::BasicBlock*>::convert(&BB));
+  }
+  return result;
 }
 
   CL_LISPIFY_NAME(getFunctionType);
@@ -2846,6 +2862,17 @@ CL_DEFMETHOD bool BasicBlock_O::empty() {
 CL_LISPIFY_NAME("BasicBlock-size");
 CL_DEFMETHOD size_t BasicBlock_O::size() {
   return this->wrappedPtr()->size();
+}
+
+CL_LISPIFY_NAME("instructions");
+CL_DEFMETHOD core::List_sp BasicBlock_O::instructions() const {
+  ql::list result;
+  llvm::BasicBlock* bb = const_cast<BasicBlock_O*>(this)->wrappedPtr();
+  for ( auto ic = bb->begin(); ic != bb->end(); ++ic ) {
+    llvm::Instruction& II = *ic;
+    result << translate::to_object<llvm::Instruction*>::convert(&II);
+  }
+  return result.cons();
 }
 
 CL_LISPIFY_NAME("BasicBlockBack");

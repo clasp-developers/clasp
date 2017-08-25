@@ -2625,7 +2625,7 @@ class CallInst_O : public Instruction_O {
 
 public:
   PointerToExternalType wrappedPtr() const { return llvm_cast<ExternalType>(this->_ptr); };
-  void 	addParamAttr(unsigned ArgNo, llvm::Attribute Attr);
+  void 	addParamAttr(unsigned ArgNo, llvm::Attribute::AttrKind Attr);
   void set_wrapped(PointerToExternalType ptr) {
     /*        if (this->_ptr != NULL ) delete this->_ptr; */
     this->_ptr = ptr;
@@ -3005,7 +3005,7 @@ class InvokeInst_O : public TerminatorInst_O {
 
 public:
   PointerToExternalType wrappedPtr() const { return llvm_cast<ExternalType>(this->_ptr); };
-  void 	addParamAttr(unsigned ArgNo, llvm::Attribute Attr);
+  void 	addParamAttr(unsigned ArgNo, llvm::Attribute::AttrKind Attr);
   void set_wrapped(PointerToExternalType ptr) {
     /*        if (this->_ptr != NULL ) delete this->_ptr; */
     this->_ptr = ptr;
@@ -3584,7 +3584,8 @@ public:
 
   core::List_sp getArgumentList();
   void appendBasicBlock(BasicBlock_sp basicBlock);
-
+  BasicBlock_sp getEntryBlock() const;
+  core::List_sp basic_blocks() const;
 }; // Function_O
 }; // llvmo
 /* from_object translators */
@@ -3654,6 +3655,8 @@ public:
   bool empty();
   size_t size();
   Instruction_sp back();
+
+  core::List_sp instructions() const;
 
 }; // BasicBlock_O
 }; // llvmo

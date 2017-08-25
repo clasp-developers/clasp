@@ -40,16 +40,19 @@
 ;;;
 (defvar *current-form-lineno* 0)
 
-
-
 (defconstant +debug-dwarf-version+ 4)
+
+;; bound when a new thread is created
+(defvar *primitives*)
+(export '*primitives*)
 
 ;;;(defvar *llvm-context* (llvm-sys:create-llvm-context))
 (mp:push-default-special-binding 'cmp:*llvm-context* '(llvm-sys:create-llvm-context))
+(mp:push-default-special-binding 'cmp:*primitives* nil)
 
 
 (defun dump-function (func)
-  (error "Do something with dump-function"))
+  (warn "Do something with dump-function"))
 (export 'dump-function)
 
 (defun generate-target-triple ()

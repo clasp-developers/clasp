@@ -117,7 +117,7 @@ Could return more functions that provide lambda-list for swank for example"
                       (calling-convention-maybe-pop-invocation-history-frame argument-holder)
                       (irc-unwind-environment new-env))))))))
     (cmp-log "About to dump the function constructed by generate-llvm-function-from-code\n")
-    (cmp-log-dump fn)
+    (cmp-log-dump-function fn)
     (irc-verify-function fn)
     (push fn *all-functions-for-one-compile*)
     ;; Return the llvm Function and the symbol/setf name
@@ -167,7 +167,7 @@ then compile it and return (values compiled-llvm-function lambda-name)"
     (or lambda-name (error "lambda-name is nil - this shouldn't happen"))
     (or fn (error "There was no function returned by compile-lambda-function outer: ~a" fn))
     (cmp-log "fn --> %s\n" fn)
-    (cmp-log-dump *the-module*)
+    (cmp-log-dump-module *the-module*)
     #+(or)(link-intrinsics-module *the-module*)
     (values fn function-kind wrapped-env lambda-name warnp failp)))
 
@@ -343,6 +343,6 @@ then compile it and return (values compiled-llvm-function lambda-name)"
                             (codegen result form fn-env)
                             (dbg-set-current-debug-location-here)))))
     (cmp-log "Dumping the repl function\n")
-    (cmp-log-dump top-level-func)
+    (cmp-log-dump-function top-level-func)
     (irc-verify-function top-level-func t)
     top-level-func))

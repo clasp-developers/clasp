@@ -184,7 +184,6 @@
   "Link a bunch of modules together, return the linked module"
   (with-compiler-env (conditions)
     (let* ((module (llvm-create-module (pathname-name output-pathname)))
-           (*primitives* (primitives-in-module module))
            (*compile-file-pathname* (pathname (merge-pathnames output-pathname)))
            (*compile-file-truename* (translate-logical-pathname *compile-file-pathname*))
            (bcnum 0))
