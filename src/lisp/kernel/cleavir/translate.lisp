@@ -632,12 +632,10 @@ when this is t a lot of graphs will be generated.")
          (cast (%bit-cast array (llvm-sys:type-get-pointer-to type)))
          (var-offset (%ptrtoint index fixnum-type))
          (untagged (%lshr var-offset cmp::+fixnum-shift+ :exact t :label "untagged fixnum")))
-    (llvm-sys:create-in-bounds-gep cmp:*irbuilder*
-                                   cast
-                                   (list (%i32 0) ; LLVM reasons, pointers are (C) arrays
-                                         (%i32 1) ; the "data" slot of the object
-                                         untagged) ; the actual offset into the vector
-                                   "aref")))
+    ;; 0 is for LLVM reasons, that pointers are C arrays. or something.
+    ;; 1 gets us to the "data" slot of the struct.
+    ;; untagged is the actual offset.
+    (%gep-variable cast (list (%i32 0) (%i32 1) untagged) "aref")))
 
 (defun translate-bit-aref (output array index fixnum-type)
   ;; FIXME: makes lots of assumptions
@@ -656,13 +654,7 @@ when this is t a lot of graphs will be generated.")
             cmp:*irbuilder* (%i32 1) internal-index "" #|nuw|# t #|nsw|# nil))
          (type (cmp::bit-vector-type))
          (cast (%bit-cast array (llvm-sys:type-get-pointer-to type)))
-         (wordptr (llvm-sys:create-in-bounds-gep
-                   cmp:*irbuilder*
-                   cast
-                   (list (%i32 0)
-                         (%i32 1)
-                         word-index)
-                   "aref"))
+         (wordptr (%gep-variable cast (list (%i32 0) (%i32 1) word-index) "bit-word-aref"))
          (word (%load wordptr))
          (unshifted-bit (%and word mask))
          (bit (llvm-sys:create-lshr-value-value
@@ -687,14 +679,7 @@ when this is t a lot of graphs will be generated.")
             cmp:*irbuilder* (%i32 1) internal-index "" t nil))
          (type (cmp::bit-vector-type))
          (cast (%bit-cast array (llvm-sys:type-get-pointer-to type)))
-         (wordptr
-           (llvm-sys:create-in-bounds-gep
-            cmp:*irbuilder*
-            cast
-            (list (%i32 0)
-                  (%i32 1)
-                  word-index)
-            "aset"))
+         (wordptr (%gep-variable cast (list (%i32 0) (%i32 1) word-index) "bit-word-aref"))
          (word (%load wordptr))
          (new-word (%or word mask)))
     (%store new-word wordptr)))
