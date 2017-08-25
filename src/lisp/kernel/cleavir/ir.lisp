@@ -228,16 +228,17 @@ Otherwise do a variable shift."
      ,@body))
 
 
-(defun %gep-variable (type object indices &optional (label "gep"))
-  "Check the type against the object type and if they match return the GEP"
-  (if (not (equal type (llvm-sys:get-type object)))
-      (error "%gep-variable expected object of type ~a but got ~a of type ~a"
-             type object (llvm-sys:get-type object))
-      (llvm-sys:create-in-bounds-gep cmp:*irbuilder* object converted-indices label)))
+(defun %gep-variable (object indices &optional (label "gep"))
+  (llvm-sys:create-in-bounds-gep cmp:*irbuilder* object indices label))
 
 (defun %gep (type object indices &optional (label "gep"))
+  "Check the type against the object type and if they match return the GEP.
+And convert everything to JIT constants."
+  (unless (equal type (llvm-sys:get-type object))
+    (error "%gep expected object of type ~a but got ~a of type ~a"
+           type object (llvm-sys:get-type object)))
   (let ((converted-indices (mapcar (lambda (x) (%i32 x)) indices)))
-    (%gep-variable type object converted-indices label)))
+    (%gep-variable object converted-indices label)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
