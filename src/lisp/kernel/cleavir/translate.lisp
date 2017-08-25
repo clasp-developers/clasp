@@ -371,7 +371,7 @@ when this is t a lot of graphs will be generated.")
     (cmp:irc-low-level-trace :flow)
     (let* ((label (safe-llvm-name (clasp-cleavir-hir:precalc-value-instruction-original-object instruction)))
            (value (cmp::irc-smart-ptr-extract (cmp:irc-load (cmp::irc-gep (cmp:ltv-global) (list (%size_t 0) idx) label)))))
-      (llvm-sys:create-store cmp:*irbuilder* value (first outputs) nil))))
+      (%store value (first outputs)))))
 
 (defmethod translate-simple-instruction
     ((instruction cleavir-ir:fixed-to-multiple-instruction) return-value inputs outputs (abi abi-x86-64) function-info)
@@ -398,7 +398,7 @@ when this is t a lot of graphs will be generated.")
 	  (llvm-sys:add-case switch (%size_t n) block)
 	  (dotimes (i (length outputs))
 	    (if (< i n)
-		(%store (cmp:irc-load (return-value-elt return-vals i)) (elt outputs i))
+		(%store (%load (return-value-elt return-vals i)) (elt outputs i))
 		(%store (%nil) (elt outputs i))))
           (cmp:irc-low-level-trace :flow)
 	  (cmp:irc-br final-block)))
@@ -502,7 +502,7 @@ when this is t a lot of graphs will be generated.")
   (let ((cell (llvm-sys:create-load-value-twine cmp:*irbuilder* (first inputs) "cell")))
   (cmp:irc-low-level-trace :flow)
     (let ((result (%intrinsic-call "cc_readCell" (list cell))))
-      (llvm-sys:create-store cmp:*irbuilder* result (first outputs) nil))))
+      (%store result (first outputs)))))
 
 (defmethod translate-simple-instruction
     ((instruction cleavir-ir:fetch-instruction) return-value inputs outputs abi function-info)
@@ -510,7 +510,7 @@ when this is t a lot of graphs will be generated.")
   (let ((env (cmp:irc-load (first inputs) "env"))
 	(idx (second inputs)))
     (let ((result (%intrinsic-call "cc_fetch" (list env idx))))
-      (llvm-sys:create-store cmp:*irbuilder* result (first outputs) nil))))
+      (%store result (first outputs)))))
 
 (defmethod translate-simple-instruction
     ((instruction cleavir-ir:fdefinition-instruction) return-value inputs outputs abi function-info)
@@ -562,12 +562,7 @@ when this is t a lot of graphs will be generated.")
                (if dx-p
                    (%intrinsic-call
                     "cc_stack_enclose"
-                    (list* (llvm-sys:create-bit-cast
-                            cmp:*irbuilder*
-                            ;; space for the stack closure
-                            (alloca-i8 (core:closure-with-slots-size (length inputs)) "stack-allocated-closure")
-                            cmp:%i8*%
-                            "closure-ptr")
+                    (list* (alloca-i8 (core:closure-with-slots-size (length inputs)) "stack-allocated-closure")
                            ltv-lambda-name
                            enclosed-function
                            cmp:*gv-source-file-info-handle*
@@ -648,17 +643,13 @@ when this is t a lot of graphs will be generated.")
          ;; so we have to subtract.
          (neg-internal-index (%urem untagged (%i64 cmp::+bit-vector-word-length+) :label "neg-internal-index"))
          (internal-index (%sub (%i32 31) neg-internal-index :nuw t :nsw t :label "internal-index"))
-         (mask
-           ;; assumption: bit vector word length is 32
-           (llvm-sys:create-shl-value-value
-            cmp:*irbuilder* (%i32 1) internal-index "" #|nuw|# t #|nsw|# nil))
+         (mask (%shl (%i32 1) internal-index :nuw t)) ; assumption: bit vector word length is 32
          (type (cmp::bit-vector-type))
          (cast (%bit-cast array (llvm-sys:type-get-pointer-to type)))
          (wordptr (%gep-variable cast (list (%i32 0) (%i32 1) word-index) "bit-word-aref"))
          (word (%load wordptr))
          (unshifted-bit (%and word mask))
-         (bit (llvm-sys:create-lshr-value-value
-               cmp:*irbuilder* unshifted-bit internal-index "" t))
+         (bit (%lshr unshifted-bit internal-index :exact t))
          (fixnum (%shl bit cmp::+fixnum-shift+ :nuw t))
          (fixnum-as-ptr (%inttoptr fixnum cmp:%t*% "bit-aref-result")))
     (%store fixnum-as-ptr output)))
@@ -673,10 +664,7 @@ when this is t a lot of graphs will be generated.")
          (internal-index (%sub (%i32 31) neg-internal-index :nuw t :nsw t :label "internal-index"))
          ;; Assume the value is a fixnum.
          (untagged-value (%lshr value cmp::+fixnum-shift+ :exact t :label "untagged-value"))
-         (mask
-           ;; BVWL still 32
-           (llvm-sys:create-shl-value-value
-            cmp:*irbuilder* (%i32 1) internal-index "" t nil))
+         (mask (%shl (%i32 1) internal-index :nuw t)) ; same assumption as above
          (type (cmp::bit-vector-type))
          (cast (%bit-cast array (llvm-sys:type-get-pointer-to type)))
          (wordptr (%gep-variable cast (list (%i32 0) (%i32 1) word-index) "bit-word-aref"))
@@ -905,7 +893,7 @@ when this is t a lot of graphs will be generated.")
   (declare (ignore successors))
   (cmp:irc-low-level-trace :flow)
   (evaluate-cleanup-code function-info)
-  (llvm-sys:create-ret cmp:*irbuilder* (%load return-value)))
+  (%ret (%load return-value)))
 
 (defmethod translate-branch-instruction
     ((instruction cleavir-ir:funcall-no-return-instruction) return-value inputs outputs successors (abi abi-x86-64) function-info)
