@@ -34,17 +34,15 @@ RUN apt-get install -y sudo
 ADD tools/dockerfiles/jupyter/kernel.json /home/app/.local/share/jupyter/kernels/lisp/kernel.json
 ADD tools/dockerfiles/jupyter/jupyter_notebook_config.py /home/app/.jupyter/jupyter_notebook_config.py
 RUN chown -R app:app /home/app/.jupyter /home/app/.local $HOME/clasp/Contents/Resources/source-code/extensions/cando/src/lisp
-USER app
+ADD tools/dockerfiles/demos /home/app/demos
+ADD tools/dockerfiles/start-demos.sh /home/app/start-demos.sh
 
-
-
-USER root
-ADD tools/dockerfiles/examples /home/app/work/examples
+RUN mkdir /home/app/work
 RUN chown -R app:app /home/app/work
 RUN chown -R app:app /home/app/.jupyter
 RUN chown -R app:app /home/app/nglview
 USER app
 
-
+ENV HOME /home/app/
 ENTRYPOINT [ "jupyter", "notebook" ]
 CMD        [ "--no-browser", "--ip=0.0.0.0", "--port=8888" ]

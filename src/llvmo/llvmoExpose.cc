@@ -35,6 +35,14 @@ THE SOFTWARE.
 #include <llvm/Bitcode/BitcodeWriter.h>
 #include <llvm/Bitcode/BitcodeReader.h>
 #include <llvm/IRReader/IRReader.h>
+#include "llvm/MC/MCObjectFileInfo.h"
+#include "llvm/MC/MCContext.h"
+#include "llvm/MC/MCDisassembler/MCDisassembler.h"
+#include "llvm/MC/MCInstPrinter.h"
+#include "llvm/MC/MCInstrInfo.h"
+#include "llvm/MC/MCInst.h"
+#include "llvm/MC/MCStreamer.h"
+#include "llvm/MC/MCSubtargetInfo.h"
 #include <llvm/Support/raw_ostream.h>
 #include <llvm/Support/MemoryBuffer.h>
 #include <llvm/Support/FileSystem.h>
@@ -121,6 +129,110 @@ CL_DEFUN bool llvm_sys__llvm_value_p(core::T_sp o) {
   }
   return false;
 };
+
+CL_DEFUN std::string llvm_sys__get_default_target_triple() {
+  return llvm::sys::getDefaultTargetTriple();
+}
+
+/*! Disassemble code from the base (address).
+    The stopping criterion is defined by start_byte_offset/end_byte_offset and start_instruction_index/num_instructions.
+    If start_byte_offset is a fixnum then end_byte_offset must also be a fixnum >= start_byte_offset and they
+       are used to determine the start and stopping criterion.
+    Otherwise start printing disassembled instructions from the start_instruction_index up to num_instructions.
+TODO: See the link below to make the disassbmely more informative by emitting comments, symbols and latency
+   http://llvm.org/doxygen/Disassembler_8cpp_source.html#l00248
+*/
+CL_LAMBDA(target-triple address &key (start-instruction-index 0) (num-instructions 16) start-byte-offset end-byte-offset);
+CL_DEFUN void llvm_sys__disassemble_instructions(const std::string& striple,
+                                                 core::Pointer_sp address,
+                                                 size_t start_instruction_index, size_t num_instructions,
+                                                 core::T_sp start_byte_offset, core::T_sp end_byte_offset)
+{
+#define DISASM_NUM_BYTES 32
+#define DISASM_OUT_STRING_SIZE 64
+  LLVMDisasmContextRef dis = LLVMCreateDisasm(striple.c_str(),
+                                                    NULL,
+                                                    0,
+                                                    NULL,
+                                                    NULL);
+  LLVMSetDisasmOptions(dis,LLVMDisassembler_Option_PrintImmHex|LLVMDisassembler_Option_PrintLatency
+                       /*|LLVMDisassembler_Option_UseMarkup*/);
+  uint64_t offset= 0;
+  if (start_byte_offset.fixnump()) {
+    if (!end_byte_offset.fixnump()) {
+      SIMPLE_ERROR(BF("If you provide start-byte-offset - you must provide a fixnum for end-byte-offset"));
+    }
+    if (start_byte_offset.unsafe_fixnum()>=end_byte_offset.unsafe_fixnum()) {
+      SIMPLE_ERROR(BF("start-byte-offset must be < end-byte-offset"));
+    }
+    offset = start_byte_offset.unsafe_fixnum();
+    start_instruction_index = 0;
+    num_instructions = UINT_MAX;
+  }
+  for ( size_t ii = 0,iiEnd(start_instruction_index+num_instructions); ; ++ii ) {
+      // stopping criterion
+    if (end_byte_offset.fixnump()) {
+      if (offset >= end_byte_offset.unsafe_fixnum()) break;
+    } else {
+      if (ii >= iiEnd) break;
+    }
+    uint8_t* uiaddress = (uint8_t*)address->ptr()+offset;
+    ArrayRef<uint8_t> Bytes(uiaddress,DISASM_NUM_BYTES);
+    SmallVector<char, DISASM_OUT_STRING_SIZE> InsnStr;
+    size_t sz = LLVMDisasmInstruction(dis,(unsigned char*)&Bytes[0],DISASM_NUM_BYTES,(uint64_t)((uint8_t*)address->ptr()+offset),(char*)InsnStr.data(),DISASM_OUT_STRING_SIZE-1);
+    if (ii >= start_instruction_index) {
+      const char* str = InsnStr.data();
+      stringstream ss;
+      ss << std::hex << (void*)uiaddress << " <#" << std::dec << std::setw(3) << ii << "+" << offset <<  ">";
+      core::clasp_write_string(ss.str());
+      core::writestr_stream(str);
+      core::clasp_terpri();
+    }
+    offset += sz;
+  }
+  LLVMDisasmDispose(dis);
+#if 0
+//  Target* target = targetsp->wrappedPtr();
+  std::string striple = llvm::sys::getDefaultTargetTriple();
+  Triple theTriple(striple);
+  MCRegisterInfo* MRI = target->createMCRegInfo(striple);
+  MCAsmInfo* MAI = target->createMCAsmInfo(*MRI, striple);
+  MCObjectFileInfo MOFI;
+  MCContext Ctx(MAI, MRI, &MOFI);
+  MOFI.InitMCObjectFileInfo(theTriple, false/*PIC*/, CodeModel::Default, Ctx);
+  std::string MCPU = "";
+  std::string FeaturesStr = "";
+  MCSubtargetInfo* STI = target->createMCSubtargetInfo(striple, MCPU, FeaturesStr);
+  MCInstrInfo* MCII = target->createMCInstrInfo();
+  MCDisassembler* disassembler = target->createMCDisassembler(*STI,Ctx);
+  stringstream sout;
+  MCInstPrinter *IP = target->createMCInstPrinter(theTriple, 0, *MAI, *MCII, *MRI);
+  MCInst mcinst;
+  uint64_t sz;
+  uint64_t offset = 0;
+  for (size_t i=0; i<num; ++i ) {
+    ArrayRef<uint8_t> memory((uint8_t*)address->ptr()+offset,1024);
+    SmallVector<char,64> InsnStr;
+    raw_svector_ostream Annotations(InsnStr);
+    llvm::MCDisassembler::DecodeStatus status = disassembler->getInstruction(mcinst,sz,memory,offset,nulls(),Annotations);
+    if (status == llvm::MCDisassembler::Success ) {
+      StringRef AnnotationsStr = Annotations.str();
+      SmallVector<char, 64> InsnStr;
+      raw_svector_ostream OS(InsnStr);
+      formatted_raw_ostream FormattedOS(OS);
+      IP->printInst(&mcinst, FormattedOS, AnnotationsStr, *STI);
+      size_t OutputSize = InsnStr.size();
+      std::string inststr(InsnStr.data(), OutputSize);
+      sout << inststr;
+      sout << std::endl;
+    } else {
+      BFORMAT_T(BF("Could not disassemble instruction\n"));
+    }
+    offset += sz;
+  }
+  core::clasp_write_string(sout.str());
+#endif
+}
 
 
 CL_DEFUN LLVMContext_sp LLVMContext_O::create_llvm_context() {
@@ -3448,15 +3560,44 @@ using namespace llvm;
 using namespace llvm::orc;
 
 
-ClaspJIT_O::ClaspJIT_O() : TM(EngineBuilder().selectTarget()), DL(TM->createDataLayout()),
+ClaspJIT_O::ClaspJIT_O() : TM(EngineBuilder().selectTarget()),
+                           DL(TM->createDataLayout()),
+                           NotifyObjectLoaded(*this),
+                           ObjectLayer(this->NotifyObjectLoaded),
                            CompileLayer(ObjectLayer, SimpleCompiler(*TM)),
                            OptimizeLayer(CompileLayer,
                                          [this](std::unique_ptr<Module> M) {
                                            return optimizeModule(std::move(M));
-                                         }) 
+                                         }),
+                           GDBEventListener(JITEventListener::createGDBRegistrationListener())
 {
   llvm::sys::DynamicLibrary::LoadLibraryPermanently(nullptr);
 }
+
+
+void ClaspJIT_O::NotifyObjectLoadedT::save_symbol_info(const llvm::object::ObjectFile& object_file, const llvm::RuntimeDyld::LoadedObjectInfo& loaded_object_info) const
+{
+  std::vector< std::pair< llvm::object::SymbolRef, uint64_t > > symbol_sizes = llvm::object::computeSymbolSizes(object_file);
+  for ( auto p : symbol_sizes ) {
+    llvm::object::SymbolRef symbol = p.first;
+    Expected<StringRef> expected_symbol_name = symbol.getName();
+    if (expected_symbol_name) {
+      auto &symbol_name = *expected_symbol_name;
+      uint64_t size = p.second;
+      std::string name(symbol_name.data());
+      uint64_t address = symbol.getValue();
+      Expected<llvm::object::section_iterator> expected_section_iterator = symbol.getSection();
+      if (expected_section_iterator) {
+        const llvm::object::SectionRef& section_ref = **expected_section_iterator;
+        uint64_t section_address = loaded_object_info.getSectionLoadAddress(section_ref);
+        core::Cons_sp symbol_info = core::Cons_O::createList(core::SimpleBaseString_O::make(name),core::make_fixnum((Fixnum)size),core::make_fixnum((Fixnum)address),core::Pointer_O::create((void*)section_address));
+        comp::_sym_STARjit_symbol_infoSTAR->setf_symbolValue(core::Cons_O::create(symbol_info,comp::_sym_STARjit_symbol_infoSTAR->symbolValue()));
+      }
+    }
+  }
+}
+
+
 
 CL_LISPIFY_NAME("CLASP-JIT-ADD-MODULE");
 CL_DEFMETHOD ModuleHandle_sp ClaspJIT_O::addModule(Module_sp cM) {
@@ -3516,7 +3657,7 @@ CL_DEFMETHOD core::Pointer_sp ClaspJIT_O::findSymbolIn(ModuleHandle_sp handle, c
   raw_string_ostream MangledNameStream(MangledName);
   llvm::Mangler::getNameWithPrefix(MangledNameStream, Name, DL);
 //  printf("%s:%d ClaspJIT_O::findSymbolIn looking for symbol: |%s|\n", __FILE__, __LINE__, MangledNameStream.str().c_str());
-  llvm::JITSymbol sym = OptimizeLayer.findSymbolIn(handle->_Handle,MangledNameStream.str(), exportedSymbolsOnly );
+  llvm::JITSymbol sym = this->OptimizeLayer.findSymbolIn(handle->_Handle,MangledNameStream.str(), exportedSymbolsOnly );
 //  printf("          -->   address: %p\n", (void*)sym.getAddress());
   if (!sym) {
     printf("%s:%d  Cound not find symbol %s in the module\n", __FILE__, __LINE__, MangledNameStream.str().c_str());

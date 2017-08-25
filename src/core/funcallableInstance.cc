@@ -225,30 +225,6 @@ void FuncallableInstance_O::reshapeInstance(int delta) {
   x->instance = aux->instance;
 */
 
-bool FuncallableInstance_O::equalp(T_sp obj) const {
-  if (!obj.generalp()) return false;
-  if (this == obj.unsafe_general()) return true;
-  if (Instance_sp iobj = obj.asOrNull<Instance_O>()) {
-    if (this->_Class != iobj->_Class) return false;
-    if (this->stamp() != iobj->stamp()) return false;
-    for (size_t i(1), iEnd(this->_Rack->length()); i < iEnd; ++i) {
-      if (!cl__equalp((*this->_Rack)[i], (*iobj->_Rack)[i])) return false;
-    }
-    return true;
-  }
-  return false;
-}
-
-void FuncallableInstance_O::sxhash_(HashGenerator &hg) const {
-  if (hg.isFilling())
-    hg.hashObject(this->_Class);
-  for (size_t i(1), iEnd(this->_Rack->length()); i < iEnd; ++i) {
-    if (!(*this->_Rack)[i].unboundp() && hg.isFilling())
-      hg.hashObject((*this->_Rack)[i]);
-    else
-      break;
-  }
-}
 
 void FuncallableInstance_O::LISP_INVOKE() {
   IMPLEMENT_ME();

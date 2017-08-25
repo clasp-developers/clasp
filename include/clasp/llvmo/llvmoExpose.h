@@ -32,6 +32,7 @@ THE SOFTWARE.
 #include <clasp/core/hashTableEqual.h>
 #include <clasp/core/array.h>
 #include <clasp/core/ql.h>
+#include <llvm/Object/SymbolSize.h>
 #include <llvm/IR/DerivedTypes.h>
 #include <llvm/IR/LLVMContext.h>
 #include <llvm/IR/Module.h>
@@ -43,6 +44,8 @@ THE SOFTWARE.
 #include <llvm/ExecutionEngine/MCJIT.h>
 //#include "llvm/ExecutionEngine/JITMemoryManager.h"
 #include <llvm/ExecutionEngine/SectionMemoryManager.h>
+#include <llvm/ExecutionEngine/JITEventListener.h>
+#include <llvm/ExecutionEngine/JITSymbol.h>
 #include <llvm/ExecutionEngine/Interpreter.h>
 #include <llvm/IR/Verifier.h>
 #include <llvm/Analysis/Passes.h>
@@ -4330,13 +4333,48 @@ namespace llvmo {
   class ClaspJIT_O : public core::General_O {
     LISP_CLASS(llvmo, LlvmoPkg, ClaspJIT_O, "clasp-jit", core::General_O);
 
+    class NotifyObjectLoadedT {
+    public:
+      typedef std::vector<std::unique_ptr<RuntimeDyld::LoadedObjectInfo>>
+        LoadedObjInfoListT;
+
+    NotifyObjectLoadedT(ClaspJIT_O &k) : _TheJIT(k) {}
+
+      template <typename ObjListT>
+        void operator()(ObjectLinkingLayerBase::ObjSetHandleT H,
+                        const ObjListT &Objects,
+                        const LoadedObjInfoListT &Infos) const {
+        for (unsigned i = 0; i < Objects.size(); ++i) {
+//          printf("%s:%d:%s informing GDBEventListener  i=%d &Objects[i]->%p  &Infos[i]->%p\n", __FILE__, __LINE__, __FUNCTION__, i, Objects[i].get(), Infos[i].get());
+          this->_TheJIT.GDBEventListener->NotifyObjectEmitted(getObject(*Objects[i]), *Infos[i]);
+          this->save_symbol_info(getObject(*Objects[i]), *Infos[i]);
+        }
+      }
+
+    private:
+      static const object::ObjectFile& getObject(const object::ObjectFile &Obj) {
+        return Obj;
+      }
+      void save_symbol_info(const llvm::object::ObjectFile& object_file, const llvm::RuntimeDyld::LoadedObjectInfo& loaded_object_info) const;
+
+      template <typename ObjT>
+        static const object::ObjectFile&
+        getObject(const object::OwningBinary<ObjT> &Obj) {
+        return *Obj.getBinary();
+      }
+
+      ClaspJIT_O &_TheJIT;
+    };
+
   private:
     std::unique_ptr<llvm::TargetMachine> TM;
     const llvm::DataLayout DL;
-    ObjectLinkingLayer<> ObjectLayer;
+    NotifyObjectLoadedT NotifyObjectLoaded;
+    ObjectLinkingLayer<NotifyObjectLoadedT> ObjectLayer;
     IRCompileLayer<decltype(ObjectLayer)> CompileLayer;
     typedef std::function<std::unique_ptr<Module>(std::unique_ptr<Module>)> OptimizeFunction;
     IRTransformLayer<decltype(CompileLayer), OptimizeFunction> OptimizeLayer;
+    JITEventListener* GDBEventListener;
   public:
     typedef decltype(OptimizeLayer)::ModuleSetHandleT ModuleHandle;
 

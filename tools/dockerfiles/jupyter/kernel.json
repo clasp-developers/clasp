@@ -7,6 +7,8 @@
         "--exec",
         "(ext:chdir #P\"/work/\" t)",
         "--load",
+        "cando:lisp;setup-cando-jupyter.lisp",
+        "--load",
         "/home/app/quicklisp/local-projects/cl-jupyter/cl-jupyter.lisp",
         "--",
         "/home/app/quicklisp/local-projects/cl-jupyter/src",

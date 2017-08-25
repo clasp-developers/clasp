@@ -374,6 +374,16 @@ void General_O::sxhash_(HashGenerator &hg) const {
   }
 }
 
+void General_O::sxhash_equal(HashGenerator &hg,LocationDependencyPtrT ptr) const {
+  if (!hg.isFilling()) return;
+  volatile void* address = (void*)this;
+#ifdef USE_MPS
+  if (ld) mps_ld_add(ld, global_arena, (mps_addr_t)address );
+#endif
+  hg.addPart((Fixnum)(((uintptr_clasp_t)address)>>gctools::tag_shift));
+  return;
+}
+
 T_sp General_O::deepCopy() const {
   SUBCLASS_MUST_IMPLEMENT();
 }

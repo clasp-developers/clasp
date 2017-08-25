@@ -134,51 +134,84 @@
                  arrayr
                  (gen-eql-check arrayr rank pro con))))
 
+;;; The way these complicated ones are built is a little backwards.
+;;; We repeatedly set one of the branches, so that the next test produces branches
+;;; to that test.
+;;; For instance, to test (array * 2), we might first setf pro to a rank check,
+;;; then set con to check that it's an array, then return con.
+;;; The check that it's an array will use the 'pro' leading to a rank check, so that
+;;; the test when run will first check that it's an array, and if it is, go to the
+;;; rank check.
+;;; Basically this means we generate the tests in reverse order to how they're run.
+
 #-use-boehmdc
 (defun gen-array-type-check (object element-type dimensions simple-only-p pro con)
   (let* ((dimensions (if (integerp dimensions) (make-list dimensions :initial-element '*) dimensions))
-         (rank (if (eq dimensions '*) '* (length dimensions))))
-    (unless (eq dimensions '*)
-      (loop for dim in dimensions
-            for i from 0
-            do (setf pro (gen-dimension-check object i dim pro con)))
-      ;; this means we check rank before checking the dimensions.
-      (setf pro (gen-rank-check object rank pro con)))
-    (cond ((eq element-type '*)
-           (when (or (eq rank '*) (eql rank 1))
-             (setf con (maybe-gen-primitive-type-check
-                        object 'core:abstract-simple-vector pro con)))
-           (if simple-only-p
-               (when (or (eq rank '*) (not (eql rank 1)))
-                 (setf con
-                       (maybe-gen-primitive-type-check
-                        object 'core:simple-mdarray pro con)))
-               (setf con (maybe-gen-primitive-type-check
-                          object 'core:mdarray pro con))))
-          (t
-           (when (or (eq rank '*) (eql rank 1))
-             (setf con (maybe-gen-primitive-type-check
-                        object (simple-vector-type element-type) pro con))
-             (unless simple-only-p
-               (case element-type ; some have special complex vector versions
-                 ((base-char)
-                  (setf con (maybe-gen-primitive-type-check
-                             object 'core:str8ns pro con)))
-                 ((character)
-                  (setf con (maybe-gen-primitive-type-check
-                             object 'core:str-wns pro con)))
-                 ((bit)
-                  (setf con (maybe-gen-primitive-type-check
-                             object 'core:bit-vector-ns pro con))))))
-           (if simple-only-p
-               (when (or (eq rank '*) (not (eql rank 1)))
-                 (setf con
-                       (maybe-gen-primitive-type-check
-                        object (simple-mdarray-type element-type) pro con)))
-               (setf con (maybe-gen-primitive-type-check
-                          object (complex-mdarray-type element-type) pro con)))))
-    ;; we have set con to an appropriate start at least once
-    con))
+         (rank (if (eq dimensions '*) '* (length dimensions)))
+         (simple-vector-type
+           (if (eq element-type '*)
+               'core:abstract-simple-vector
+               (simple-vector-type element-type)))
+         (complex-vector-type
+           (case element-type
+             ((base-char) 'core:str8ns)
+             ((character) 'core:str-wns)
+             ((bit) 'core:bit-vector-ns)
+             (t nil)))
+         (simple-mdarray-type
+           (if (eq element-type '*)
+               'core:simple-mdarray
+               (simple-mdarray-type element-type)))
+         (mdarray-type
+           (if (eq element-type '*)
+               'core:mdarray
+               (complex-mdarray-type element-type))))
+    (labels ((dimensions-check ()
+               (loop for dim in dimensions
+                     for i from 0
+                     do (setf pro (gen-dimension-check object i dim pro con))))
+             (maybe-dimensions-and-rank-check ()
+               (unless (eq rank '*)
+                 (dimensions-check)
+                 (setf pro (gen-rank-check object rank pro con)))))
+      (cond (simple-only-p
+             (cond ((eql rank 1)
+                    (dimensions-check)
+                    (setf con (maybe-gen-primitive-type-check
+                               object simple-vector-type pro con)))
+                   (t
+                    (maybe-dimensions-and-rank-check)
+                    (setf con (maybe-gen-primitive-type-check
+                               object simple-mdarray-type pro con))
+                    (when (eq rank '*) ; includes vectors
+                      (setf con (maybe-gen-primitive-type-check
+                                 object simple-vector-type pro con))))))
+            (t
+             (cond ((eql rank 1)
+                    (cond (complex-vector-type
+                           (dimensions-check)
+                           ;; complex and simple vector types are actually exclusive.
+                           (setf con (maybe-gen-primitive-type-check
+                                      object complex-vector-type pro con)))
+                          (t
+                           (maybe-dimensions-and-rank-check)
+                           (setf con (maybe-gen-primitive-type-check
+                                      object mdarray-type pro con))))
+                    ;; check for simple vectors first; probably most likely.
+                    (setf con (maybe-gen-primitive-type-check
+                               object simple-vector-type pro con)))
+                   (t
+                    (maybe-dimensions-and-rank-check)
+                    (setf con (maybe-gen-primitive-type-check
+                               object mdarray-type pro con))
+                    (when (or (eql rank 1) (eq rank '*)) ; includes vectors
+                      (when complex-vector-type
+                        (setf con (maybe-gen-primitive-type-check
+                                   object complex-vector-type pro con)))
+                      (setf con (maybe-gen-primitive-type-check
+                                 object simple-vector-type pro con)))))))))
+  ;; we have set con to an appropriate start at least once
+  con)
 
 #-use-boehmdc
 (defun gen-interval-type-check (object head low high pro con)
@@ -252,7 +285,7 @@
     (single-float . core:simple-vector-float)
     (double-float . core:simple-vector-double)
     (base-char . simple-base-string)
-    (character . simple-string)
+    (character . core:simple-character-string)
     (t . simple-vector)))
 
 #-use-boehmdc
@@ -413,6 +446,7 @@
    initial-instruction)
   (cleavir-ir:set-predecessors initial-instruction))
 
+
 (defmethod cleavir-hir-transformations::maybe-eliminate :around ((instruction cleavir-ir:typeq-instruction))
   "This is HIR to MIR translation done by eliminate-typeq"
   (let ((type (cleavir-ir:value-type instruction)))
@@ -422,3 +456,40 @@
            (change-class instruction 'cc-mir:single-float-p-instruction))
           (t (call-next-method)))))
 
+(defun convert-to-tll (lexical-location type)
+  (unless (typep lexical-location 'cc-mir:typed-lexical-location)
+    (change-class lexical-location 'cc-mir:typed-lexical-location :type type)))
+
+(defun convert-tll-list (list type)
+  (mapc (lambda (ll) (convert-to-tll ll type)) list))
+
+(defmethod cleavir-ir:specialize ((instruction cleavir-ir:box-instruction)
+                                  (impl clasp-cleavir:clasp) proc os)
+  (convert-tll-list (cleavir-ir:inputs instruction)
+                    (cmp::element-type->llvm-type (cleavir-ir:element-type instruction)))
+  instruction)
+
+(defmethod cleavir-ir:specialize ((instruction cleavir-ir:unbox-instruction)
+                                  (impl clasp-cleavir:clasp) proc os)
+  (convert-tll-list (cleavir-ir:outputs instruction)
+                    (cmp::element-type->llvm-type (cleavir-ir:element-type instruction)))
+  instruction)
+
+(defmacro define-float-specializer (instruction-class-name element-type)
+  `(defmethod cleavir-ir:specialize ((instruction ,instruction-class-name)
+                                     (impl clasp-cleavir:clasp) proc os)
+     (declare (ignore proc os))
+     ;; Could probably work out the llvm types ahead of time, but this shouldn't be a big deal.
+     (convert-tll-list (cleavir-ir:inputs instruction) (cmp::element-type->llvm-type ',element-type))
+     (convert-tll-list (cleavir-ir:outputs instruction) (cmp::element-type->llvm-type ',element-type))
+     instruction))
+
+(define-float-specializer cleavir-ir:double-float-add-instruction double-float)
+(define-float-specializer cleavir-ir:double-float-sub-instruction double-float)
+(define-float-specializer cleavir-ir:double-float-mul-instruction double-float)
+(define-float-specializer cleavir-ir:double-float-div-instruction double-float)
+
+(define-float-specializer cleavir-ir:single-float-add-instruction single-float)
+(define-float-specializer cleavir-ir:single-float-sub-instruction single-float)
+(define-float-specializer cleavir-ir:single-float-mul-instruction single-float)
+(define-float-specializer cleavir-ir:single-float-div-instruction single-float)

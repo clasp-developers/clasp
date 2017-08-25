@@ -406,6 +406,7 @@
 ;;;
 ;;; Array functions
 ;;;
+
 #+(or)
 (progn
 (define-compiler-macro aref (array &rest indices)
@@ -433,14 +434,31 @@
                  (+ ,@(loop for sub in subscripts
                             for subsym in (reverse subsyms)
                             collect `(* ,sub ,subsym)))))
-            0))))
+            0)))))
 
-  (declaim (inline svref))
-  (defun svref (vector index)
-    (cleavir-primop:aref vector index t t t))
-  )
+(declaim (inline svref))
+(defun svref (vector index)
+  (if (typep vector 'simple-vector)
+      (if (typep index 'fixnum)
+          (let ((ats (core::simple-vector-length vector)))
+            (if (and (<= 0 index) (< index ats))
+                (cleavir-primop:aref vector index t t t)
+                (error "Invalid index ~d for vector of length ~d" index ats)))
+          (error 'type-error :datum index :expected-type 'fixnum))
+      (error 'type-error :datum vector :expected-type 'simple-vector)))
 
-
+;;; (setf (svref x y) z) macroexpands into (core:setf-svref x y z)
+(declaim (inline core:setf-svref))
+(defun core:setf-svref (vector index value)
+  (if (typep vector 'simple-vector)
+      (if (typep index 'fixnum)
+          (let ((ats (core::simple-vector-length vector)))
+            (if (and (<= 0 index) (< index ats))
+                (progn (cleavir-primop:aset vector index value t t t)
+                       value)
+                (error "Invalid index ~d for vector of length ~d" index ats)))
+          (error 'type-error :datum index :expected-type 'fixnum))
+      (error 'type-error :datum vector :expected-type 'simple-vector)))
 
 ;;; ------------------------------------------------------------
 ;;;

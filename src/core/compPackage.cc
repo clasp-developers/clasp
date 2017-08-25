@@ -40,6 +40,7 @@ SYMBOL_EXPORT_SC_(CompPkg, STARlowLevelTraceSTAR);
 SYMBOL_EXPORT_SC_(CompPkg, STARthe_moduleSTAR);
 SYMBOL_EXPORT_SC_(CompPkg, STARlowLevelTracePrintSTAR);
 SYMBOL_EXPORT_SC_(CompPkg, jit_remove_module);
+SYMBOL_EXPORT_SC_(CompPkg, STARjit_symbol_infoSTAR);
 
 void initialize_compPackage() {
   list<string> lnicknames = {"CMP"};

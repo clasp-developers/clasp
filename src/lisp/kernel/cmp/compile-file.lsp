@@ -1,107 +1,33 @@
+(in-package #:cmp)
+
+;;;; Top level interface: COMPILE-FILE, etc.
+
+;;; Use the *cleavir-compile-file-hook* to determine which compiler to use
+;;; if nil == bclasp. Code for the bclasp compiler is in codegen-toplevel.lsp;
+;;; look for t1expr.
+
+(defvar *compile-verbose* nil)
+(defvar *compile-print* nil)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
-;;;    File: compilefile.lsp
+;;; Source database
+
+(defparameter *active-compilation-source-database* nil)
+(defun do-one-source-database (closure)
+  (if (null *active-compilation-source-database*)
+      (let ((*active-compilation-source-database* t)
+            (core:*source-database* (core:make-source-manager)))
+        (do-one-source-database closure))
+      (unwind-protect
+           (funcall closure)
+        (core:source-manager-empty core:*source-database*))))
+(defmacro with-one-source-database (&rest body)
+  `(do-one-source-database #'(lambda () ,@body)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
-
-;; Copyright (c) 2014, Christian E. Schafmeister
-;;
-;; CLASP is free software; you can redistribute it and/or
-;; modify it under the terms of the GNU Library General Public
-;; License as published by the Free Software Foundation; either
-;; version 2 of the License, or (at your option) any later version.
-;;
-;; See directory 'clasp/licenses' for full details.
-;;
-;; The above copyright notice and this permission notice shall be included in
-;; all copies or substantial portions of the Software.
-;;
-;; THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-;; IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-;; FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-;; AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-;; LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-;; OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-;; THE SOFTWARE.
-
-;; -^-
-
-
-(in-package :cmp)
-
-(defvar *compile-verbose* nil )
-(defvar *compile-print* nil )
-
-
-
-
-#+(or)
-(defun compile-main-function (name ltv-manager-fn)
-  (cmp-log "In compile-main-function\n")
-  (let ((main-fn (with-new-function (main-fn fn-env fn-result
-					     :function-name name
-					     :parent-env nil
-					     :linkage 'llvm-sys:internal-linkage ;; 'llvm-sys:external-linkage
-					     :function-type %fn-prototype%
-					     :argument-names +fn-prototype-argument-names+)
-		   (irc-low-level-trace :up)
-		   (let* ((given-name (llvm-sys:get-name main-fn)))
-		     (irc-low-level-trace)
-		     (cmp-log "About to add invokeMainFunction for ltv-manager-fn\n")
-		     (irc-intrinsic "invokeMainFunction" (irc-constant-string-ptr *gv-source-namestring*) ltv-manager-fn)
-                     (irc-intrinsic "cc_setTmvToNil" fn-result)))))
-    ;;    (cmp-log-dump main-fn)
-    (cmp-log "Done compile-main-function")
-    main-fn))
-
-
-
-;;; ------------------------------------------------------------
-;;;
-;;; BE VERY CAREFUL WHAT YOU DO HERE!!!
-;;; This function must return the result* of evaluating the closure
-;;; I have put things in the wrong place (following the UNWIND-PROTECT
-;;; and it introduced subtle bugs that were very difficult to track down.
-(defun do-compilation-unit (closure &key override)
-  (cond (override
-	 (let* ((*active-protection* nil))
-	   (do-compilation-unit closure)))
-	((null *active-protection*)
-	 (let* ((*active-protection* t)
-		(*pending-actions* nil)
-                (*compilation-unit-module-index* 0)
-                (*all-functions-for-one-compile* nil)
-                (*compilation-messages* nil)
-                (*global-function-defs* (make-hash-table))
-                (*global-function-refs* (make-hash-table :test #'equal)))
-	   (unwind-protect
-                (do-compilation-unit closure) ; --> result*
-             (progn
-               (dolist (action *pending-actions*)
-                 (funcall action))
-               (compilation-unit-finished *compilation-messages*))) ; --> result*
-           ))
-	(t
-	 (funcall closure))))
-
-(export 'do-compilation-unit)
-(defmacro with-compilation-unit ((&rest options) &body body)
-  `(do-compilation-unit #'(lambda () ,@body) ,@options))
-
-
-
-#||
-(defvar *compilation-messages* nil)
-(defvar *compilation-warnings-p* nil)
-(defvar *compilation-failures-p* nil)
-         #+clasp-min (progn ,@body)
-         #-clasp-min (handler-bind
-                       ((error #'(lambda (c)
-                                   (invoke-restart 'record-failure c)))
-                        (warning #'(lambda (c)
-                                     (invoke-restart 'record-warning c))))
-                     ,@body))
-||#
-
-
+;;; Describing top level forms (for compile-verbose)
 
 (defun describe-form (form)
   (cond
@@ -131,131 +57,46 @@
                                      second-part)))
        (bformat t";    %s %s\n" (car form) trimmed-second-part)))))
 
-(defun compile-top-level (form)
-  (analyze-top-level-form form)
-  (when *compile-print*
-    (describe-form form))
-  (literal:with-top-level-form
-   (dbg-set-current-source-pos form)
-    (compile-thunk 'repl form nil)
-    ;; After this literals are codegen'd into the RUN-ALL function
-    ;; by with-top-level-form
-    ))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Compilation units
 
-(defun t1progn (rest env)
-  "All forms in progn at top level are top level forms"
-  (dolist (form rest)
-    (t1expr form env)))
+;;; ------------------------------------------------------------
+;;;
+;;; BE VERY CAREFUL WHAT YOU DO HERE!!!
+;;; This function must return the result* of evaluating the closure.
+;;; I have put things in the wrong place (following the UNWIND-PROTECT)
+;;; and it introduced subtle bugs that were very difficult to track down.
+(defun do-compilation-unit (closure &key override)
+  (cond (override
+	 (let* ((*active-protection* nil))
+	   (do-compilation-unit closure)))
+	((null *active-protection*)
+	 (let* ((*active-protection* t)
+		(*pending-actions* nil)
+                (*compilation-unit-module-index* 0)
+                (*all-functions-for-one-compile* nil)
+                (*compilation-messages* nil)
+                (*global-function-defs* (make-hash-table))
+                (*global-function-refs* (make-hash-table :test #'equal)))
+	   (unwind-protect
+                (do-compilation-unit closure) ; --> result*
+             (progn
+               (dolist (action *pending-actions*)
+                 (funcall action))
+               (compilation-unit-finished *compilation-messages*))) ; --> result*
+           ))
+	(t
+	 (funcall closure))))
 
-(defun t1eval-when (rest env)
-  (let ((situations (car rest))
-	(body (cdr rest)))
-    (when (or (member 'cl:compile situations) (member :compile-toplevel situations))
-      (cmp-log "Performing eval-when :compile-toplevel side-effects\n")
-      (cmp-log "Evaluating: %s\n" body)
-      (funcall core:*eval-with-env-hook* `(progn ,@body) env)
-      (cmp-log "Done eval-when compile-toplevel side-effects\n"))
-    (when (or (member 'cl:load situations) (member :load-toplevel situations))
-      (cmp-log "Compiling body due to :load-toplevel --> %s\n" body)
-      ;; Each subform is a top-level form
-      (dolist (subform body)
-	(t1expr subform env))
-      (cmp-log "Done compiling body due to :load-toplevel\n")))) 
+(export 'do-compilation-unit)
 
-#+(or)(defun t1locally (rest env)
-  (multiple-value-bind (declares code docstring specials)
-      (process-declarations rest nil)
-    ;; TODO: Do something with the declares!!!!!  They should be put into the environment
-    (let ((new-env (core:make-value-environment-for-locally-special-entries specials env)))
-      (t1progn code new-env))))
+(defmacro with-compilation-unit ((&rest options) &body body)
+  `(do-compilation-unit #'(lambda () ,@body) ,@options))
 
-(defun t1locally (rest env)
-  (multiple-value-bind (declares code docstring specials)
-      (process-declarations rest nil)
-    (declare (ignore specials docstring))
-    ;; TODO: Do something with the declares!!!!!  They should be put into the environment
-    (t1progn code (augment-environment-with-declares env declares))))
-
-
-
-(defun parse-macrolet (body)
-  (let ((macros (mapcar (lambda (macro-def)
-                        (let ((macro-fn (eval (core:parse-macro (car macro-def)
-                                                                (cadr macro-def)
-                                                                (cddr macro-def)))))
-                          (set-kind macro-fn :macro)
-                          (cons (car macro-def) macro-fn)))
-                      (car body))))
-    (multiple-value-bind (decls macrolet-body)
-        (core:process-declarations (cdr body) nil)
-      (values macros decls macrolet-body))))
-
-(defun parse-symbol-macrolet (body)
-  (let ((macros (mapcar (lambda (macro-def)
-                          (cons (car macro-def)
-                                (constantly (cadr macro-def))))
-                             (car body))))
-    (multiple-value-bind (decls symbol-macrolet-body)
-        (core:process-declarations (cdr body) nil)
-      (values macros decls symbol-macrolet-body))))
-
-(export '(parse-macrolet parse-symbol-macrolet))
-
-
-(defun t1macrolet (rest env)
-  (multiple-value-bind (macros declares body)
-      (parse-macrolet rest)
-    (let ((macro-env (irc-new-macrolet-environment env)))
-      (mapc (lambda (macro)
-              (core:add-macro macro-env (car macro) (cdr macro)))
-            macros)
-      (t1progn body (augment-environment-with-declares macro-env declares)))))
-
-(defun t1symbol-macrolet (rest env)
-  (multiple-value-bind (macros declares body)
-      (parse-symbol-macrolet rest)
-    (let ((macro-env (irc-new-symbol-macrolet-environment env)))
-      (mapc (lambda (macro)
-              (core:add-symbol-macro macro-env (car macro) (cdr macro)))
-            macros)
-      (t1progn body (augment-environment-with-declares macro-env declares)))))
-
-
-(defun t1expr (form &optional env)
-  (cmp-log "t1expr-> %s\n" form)
-  (push form core:*top-level-form-stack*)
-  (unwind-protect
-       (let ((head (if (atom form) form (car form))))
-         (cond
-           ((eq head 'cl:eval-when) (t1eval-when (cdr form) env))
-           ((eq head 'cl:progn) (t1progn (cdr form) env))
-           ((eq head 'cl:locally) (t1locally (cdr form) env))
-           ((eq head 'cl:macrolet) (t1macrolet (cdr form) env))
-           ((eq head 'cl:symbol-macrolet) (t1symbol-macrolet (cdr form) env))
-           ((and (listp form)
-                 ;;(symbolp (car form))
-                 (not (core:lexical-function (car form) env))
-                 (not (core:lexical-macro-function (car form) env))
-                 (not (core:declared-global-notinline-p (car form)))
-                 (let ((expansion (core:compiler-macroexpand form env)))
-                   (if (eq expansion form)
-                       nil
-                       (progn
-                         (t1expr expansion env)
-                         t)))))
-           ((macro-function head env)
-            (let ((expanded (macroexpand form env)))
-              (t1expr expanded env)))
-           (t (compile-top-level form))))
-    (pop core:*top-level-form-stack*)))
-
-
-(defun compile-file-form (form compile-file-hook)
-  ;; If the Cleavir compiler hook is set up then use that
-  ;; to generate code 
-  (if compile-file-hook
-      (funcall compile-file-hook form)
-      (t1expr form)))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Compile-file pathnames
 
 (defun cfp-output-extension (output-type)
   (cond
@@ -293,14 +134,37 @@
          (ext (cfp-output-extension output-type)))
     (make-pathname :type ext :defaults pn)))
 
-
-
 (defun cf-module-name (type pathname)
   "Create a module name from the TYPE (either :user or :kernel)
 and the pathname of the source file - this will also be used as the module initialization function name"
   (string-downcase (bformat nil "___%s_%s" (string type) (pathname-name pathname))))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Compile-file proper
 
+(defun generate-obj-asm (module output-stream &key file-type (reloc-model 'llvm-sys:reloc-model-undefined))
+  (let* ((triple-string (llvm-sys:get-target-triple module))
+	 (normalized-triple-string (llvm-sys:triple-normalize triple-string))
+	 (triple (llvm-sys:make-triple normalized-triple-string))
+	 (target-options (llvm-sys:make-target-options)))
+    (multiple-value-bind (target msg)
+	(llvm-sys:target-registry-lookup-target "" triple)
+      (unless target (error msg))
+      (let* ((target-machine (llvm-sys:create-target-machine target
+							     (llvm-sys:get-triple triple)
+							     ""
+							     ""
+							     target-options
+							     reloc-model
+							     'llvm-sys:code-model-default
+							     'llvm-sys:code-gen-opt-default ))
+	     (pm (llvm-sys:make-pass-manager))
+	     (tli (llvm-sys:make-target-library-info-wrapper-pass triple #||LLVM3.7||#))
+	     (data-layout (llvm-sys:create-data-layout target-machine)))
+	(llvm-sys:set-data-layout module data-layout)
+	(llvm-sys:pass-manager-add pm tli)
+	(llvm-sys:add-passes-to-emit-file-and-run-pass-manager target-machine pm output-stream file-type module)))))
 
 (defun compile-file-results (output-file conditions)
   (let (warnings-p failures-p)
@@ -315,6 +179,16 @@ and the pathname of the source file - this will also be used as the module initi
 
 (defvar *debug-compile-file* nil)
 (defvar *debug-compile-file-counter* 0)
+
+(defvar *compile-file-output-pathname* nil)
+
+
+(defun compile-file-form (form compile-file-hook)
+  ;; If the Cleavir compiler hook is set up then use that
+  ;; to generate code 
+  (if compile-file-hook
+      (funcall compile-file-hook form)
+      (t1expr form)))
 
 (defun compile-file-to-module (given-input-pathname
                                &key
@@ -402,11 +276,6 @@ Compile a lisp source file into an LLVM module.  type can be :kernel or :user"
             (quick-module-dump module "postoptimize")
             module))))))
 
-(defvar *compile-file-output-pathname* nil)
-
-;;; Use the *cleavir-compile-file-hook* to determine which compiler to use
-;;; if nil == bclasp
-;;; if #'clasp-cleavir:cleavir-compile-file-form  == cclasp
 (defun compile-file (input-file
                      &key
                        (output-file nil output-file-p)
@@ -475,58 +344,5 @@ Compile a lisp source file into an LLVM module.  type can be :kernel or :user"
         (bformat t "conditions: %s\n" c))
       (llvm-sys:module-delete module)
       (compile-file-results output-path conditions))))
-#|
-    (let ((*compile-print* print)
-	  (*compile-verbose* verbose)
-          (*all-functions-for-one-compile* nil))
-      ;; Do the different kind of compile-file here
-      (let* ((output-path (compile-file-pathname given-input-pathname :output-file output-file :output-type output-type ))
-             (*compile-file-output-pathname* output-path)
-	     (module (compile-file-to-module given-input-pathname
-					     :type type 
-					     :source-debug-namestring source-debug-namestring 
-					     :source-debug-offset source-debug-offset
-                                             :compile-file-hook compile-file-hook)))
-	(cond
-	  ((eq output-type :object)
-	   (when verbose (bformat t "Writing object to %s\n" (core:coerce-to-filename output-path)))
-	   (ensure-directories-exist output-path)
-	   (with-open-file (fout output-path :direction :output)
-	     (let ((reloc-model (cond
-				  ((member :target-os-linux *features*) 'llvm-sys:reloc-model-pic-)
-				  (t 'llvm-sys:reloc-model-undefined))))
-	       (generate-obj-asm module fout :file-type 'llvm-sys:code-gen-file-type-object-file :reloc-model reloc-model))))
-	  ((eq output-type :bitcode)
-	   (when verbose (bformat t "Writing bitcode to %s\n" (core:coerce-to-filename output-path)))
-	   (ensure-directories-exist output-path)
-	   (llvm-sys:write-bitcode-to-file module (core:coerce-to-filename output-path)))
-	  ((eq output-type :fasl)
-	   (ensure-directories-exist output-path)
-	   (let ((temp-bitcode-file (compile-file-pathname given-input-pathname :output-file output-file :output-type :bitcode)))
-	     (ensure-directories-exist temp-bitcode-file)
-	     (bformat t "Writing temporary bitcode file to: %s\n" temp-bitcode-file)
-	     (llvm-sys:write-bitcode-to-file module (core:coerce-to-filename temp-bitcode-file))
-	     (bformat t "Writing fasl file to: %s\n" output-file)
-	     (llvm-link output-file
-                        :lisp-bitcode-files (list temp-bitcode-file))))
-	  (t ;; fasl
-	   (error "Add support to file of type: ~a" output-type)))
-	(dolist (c conditions)
-	  (bformat t "conditions: %s\n" c))
-        (llvm-sys:module-delete module)
-        (compile-file-results output-path conditions))))))
 
-(defun compile-file (&rest args)
-  ;; Use the *cleavir-compile-file-hook* to determine which compiler to use
-  ;; if nil == bclasp
-  ;; if #'clasp-cleavir:cleavir-compile-file-form  == cclasp
-  (apply #'compile-file* *cleavir-compile-file-hook* args))
-
-
-(defun bclasp-compile-file (input-file &rest args &key &allow-other-keys)
-  (let ((*cleavir-compile-file-hook* nil)
-        (core:*use-cleavir-compiler* nil))
-    (apply #'compile-file input-file args)))
->>>>>>> compile-file binds *all-functions-for-one-compile*
-|#
 (export 'compile-file)

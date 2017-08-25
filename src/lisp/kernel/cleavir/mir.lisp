@@ -1,5 +1,17 @@
 (in-package #:cc-mir)
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; TYPED-LEXICAL-LOCATION
+;;;
+;;; Lexical locations for unboxed values. Know their LLVM type.
+;;; Hypothetically, all lexical locations could be turned into
+;;; these, with the vast majority having an LLVM type of t*.
+
+(defclass typed-lexical-location (cleavir-ir:lexical-location)
+  ((%type :initarg :type :accessor lexical-location-type)))
+
+;;; Convenience
 (defun insert-after (new old)
   (cleavir-ir:insert-instruction-after new old)
   new)

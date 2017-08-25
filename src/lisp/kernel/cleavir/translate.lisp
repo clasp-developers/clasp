@@ -31,14 +31,12 @@ when this is t a lot of graphs will be generated.")
         (%literal-ref value t))
       (let ((var (gethash datum *vars*)))
 	(when (null var)
-	  (cond
-	    ;; do nothing for values-location - there is only one
-	    ((typep datum 'cleavir-ir:values-location)
-	     #+(or)(setf var (alloca-mv-struct (string (gensym "v")))) )
-	    ((typep datum 'cleavir-ir:immediate-input)
-	     (setf var (%i64 (cleavir-ir:value datum))))
-	    ((typep datum 'cleavir-ir:lexical-location)
-	     (setf var (alloca-t* (string (cleavir-ir:name datum)))))
+          (typecase datum
+            (cleavir-ir:values-location) ; do nothing - we don't actually use them
+            (cleavir-ir:immediate-input (setf var (%i64 (cleavir-ir:value datum))))
+            (cc-mir:typed-lexical-location
+             (setf var (alloca (cc-mir:lexical-location-type datum) 1 (string (cleavir-ir:name datum)))))
+            (cleavir-ir:lexical-location (setf var (alloca-t* (string (cleavir-ir:name datum)))))
             (t (error "add support to translate datum: ~a~%" datum)))
 	  (setf (gethash datum *vars*) var))
 	var)))
@@ -628,6 +626,47 @@ when this is t a lot of graphs will be generated.")
 		 (cc-mir:describe-mir instruction))
 	 (format *debug-log* "     instruction --> ~a~%" call-result))))))
 
+(defun gen-vector-effective-address (array index element-type fixnum-type)
+  (let* ((array (%load array)) (index (%load index))
+         (type (cmp::simple-vector-llvm-type element-type))
+         (cast (%bit-cast array (llvm-sys:type-get-pointer-to type)))
+         (var-offset (%ptrtoint index fixnum-type))
+         (untagged (%lshr var-offset cmp::+fixnum-shift+ :exact t :label "untag fixnum")))
+    (llvm-sys:create-in-bounds-gep cmp:*irbuilder*
+                                   cast
+                                   (list (%i32 0) ; LLVM reasons, pointers are (C) arrays
+                                         (%i32 1) ; the "data" slot of the object
+                                         untagged) ; the actual offset into the vector
+                                   "aref")))
+
+(defmethod translate-simple-instruction
+    ((instruction cleavir-ir:aref-instruction) return-value inputs outputs abi function-info)
+  (%store (%load (gen-vector-effective-address (first inputs) (second inputs)
+                                               (cleavir-ir:element-type instruction)
+                                               (%default-int-type abi)))
+          (first outputs)))
+
+(defmethod translate-simple-instruction
+    ((instruction cleavir-ir:aset-instruction) return-value inputs outputs abi function-info)
+  (%store (%load (third inputs))
+          (gen-vector-effective-address (first inputs) (second inputs)
+                                        (cleavir-ir:element-type instruction)
+                                        (%default-int-type abi))))
+
+(defmethod translate-simple-instruction
+    ((instruction clasp-cleavir-hir::simple-vector-length-instruction)
+     return-value inputs outputs abi function-info)
+  (declare (ignore return-value function-info))
+  (let* ((tptr (%load (first inputs)))
+         (ui-offset (%uintptr_t (- cmp::+simple-vector._length-offset+ cmp:+general-tag+)))
+         (ui-tptr (%ptrtoint tptr cmp:%uintptr_t%)))
+    (let* ((uiptr (%add ui-tptr ui-offset))
+           (ptr (%inttoptr uiptr cmp:%t**%))
+           (read-val (%ptrtoint (%load ptr) (%default-int-type abi)))
+           ;; now we just make it a fixnum.
+           (fixnum (%shl read-val cmp::+fixnum-shift+ :nuw t :label "tag fixnum")))
+      (%store (%inttoptr fixnum cmp:%t*%) (first outputs)))))
+
 
 (defmethod translate-simple-instruction
     ((instruction cleavir-ir:memref2-instruction) return-value inputs outputs abi function-info)
@@ -651,6 +690,46 @@ when this is t a lot of graphs will be generated.")
            (val (%load (third inputs) "memset2-val")))
       (%store val dest))))
 
+
+(defmethod translate-simple-instruction
+    ((instruction cleavir-ir:box-instruction) return-value inputs outputs abi function-info)
+  (declare (ignore return-value abi function-info))
+  (let ((intrinsic
+          (ecase (cleavir-ir:element-type instruction)
+            ((ext:byte8) "to_object_uint8")
+            ((ext:integer8) "to_object_int8")
+            ((ext:byte16) "to_object_uint16")
+            ((ext:integer16) "to_object_int16")
+            ((ext:byte32) "to_object_uint32")
+            ((ext:integer32) "to_object_int32")
+            #+(or)((fixnum) "to_object_fixnum")
+            ((ext:byte64) "to_object_uint64")
+            ((ext:integer64) "to_object_int64")
+            ((single-float) "to_object_float")
+            ((double-float) "to_object_double"))))
+    (%store
+     (%intrinsic-call intrinsic (list (%load (first inputs))))
+     (first outputs))))
+
+(defmethod translate-simple-instruction
+    ((instruction cleavir-ir:unbox-instruction) return-value inputs outputs abi function-info)
+  (declare (ignore return-value abi function-info))
+  (let ((intrinsic
+          (ecase (cleavir-ir:element-type instruction)
+            ((ext:byte8) "from_object_uint8")
+            ((ext:integer8) "from_object_int8")
+            ((ext:byte16) "from_object_uint16")
+            ((ext:integer16) "from_object_int16")
+            ((ext:byte32) "from_object_uint32")
+            ((ext:integer32) "from_object_int32")
+            #+(or)((fixnum) "from_object_fixnum")
+            ((ext:byte64) "from_object_uint64")
+            ((ext:integer64) "from_object_int64")
+            ((single-float) "from_object_float")
+            ((double-float) "from_object_double"))))
+    (%store
+     (%intrinsic-call intrinsic (list (%load (first inputs))))
+     (first outputs))))
 
 (defmethod translate-simple-instruction
     ((instruction cleavir-ir:the-instruction) return-value inputs outputs abi function-info)
@@ -696,6 +775,31 @@ when this is t a lot of graphs will be generated.")
       ((instruction cleavir-ir:rplacd-instruction) return-value inputs outputs abi function-info)
     (declare (ignore outputs))
     `(rplacd ,(first inputs) ,(second inputs))))
+
+;;; Floating point arithmetic
+
+
+(defmacro define-fp-binop (instruction-class-name op)
+  `(defmethod translate-simple-instruction
+       ((instruction ,instruction-class-name) return-value inputs outputs abi function-info)
+     (declare (ignore return-value abi function-info))
+     (%store (,op (%load (first inputs)) (%load (second inputs)))
+             (first outputs))))
+
+;;; As it happens, we do the same IR generation for singles and doubles.
+;;; This is because the LLVM value descriptors have associated types,
+;;; so fadd of doubles is different from fadd of singles.
+
+(define-fp-binop cleavir-ir:single-float-add-instruction %fadd)
+(define-fp-binop cleavir-ir:single-float-sub-instruction %fsub)
+(define-fp-binop cleavir-ir:single-float-mul-instruction %fmul)
+(define-fp-binop cleavir-ir:single-float-div-instruction %fdiv)
+
+(define-fp-binop cleavir-ir:double-float-add-instruction %fadd)
+(define-fp-binop cleavir-ir:double-float-sub-instruction %fsub)
+(define-fp-binop cleavir-ir:double-float-mul-instruction %fmul)
+(define-fp-binop cleavir-ir:double-float-div-instruction %fdiv)
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -783,6 +887,10 @@ when this is t a lot of graphs will be generated.")
   ;; I don't call cc_popLandingPadFrame explicitly anymore
   ;;(%intrinsic-call "cc_popLandingPadFrame" (list (cmp:irc-load (car (last inputs)))))
   (call-next-method))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Fixnum comparison instructions
 
 (defmethod translate-branch-instruction
     ((instruction cleavir-ir:fixnum-add-instruction) return-value inputs outputs successors abi function-info)
@@ -920,10 +1028,8 @@ COMPILE might call this with an environment in ENV.
 COMPILE-FILE will use the default *clasp-env*."
   (setf *ct-start* (compiler-timer-elapsed))
   (let* ((clasp-system *clasp-system*)
-	 (ast (let ((a (cleavir-generate-ast:generate-ast FORM ENV clasp-system)))
-                (setf *ct-generate-ast* (compiler-timer-elapsed))
-		(when *debug-cleavir* (draw-ast a))
-		a))
+	 (ast (prog1 (cleavir-generate-ast:generate-ast FORM ENV clasp-system)
+                (setf *ct-generate-ast* (compiler-timer-elapsed))))
 	 (hoisted-ast (prog1 (clasp-cleavir-ast:hoist-load-time-value ast)
                         (setf *ct-hoist-ast* (compiler-timer-elapsed))))
 	 (hir (prog1 (cleavir-ast-to-hir:compile-toplevel hoisted-ast)
@@ -992,15 +1098,15 @@ that llvm function. This works like compile-lambda-function in bclasp."
   (let ((cleavir-generate-ast:*compiler* 'cl:compile))
     (handler-bind
         ((cleavir-env:no-variable-info
-          (lambda (condition)
+           (lambda (condition)
 ;;;	  (declare (ignore condition))
-            #+verbose-compiler(warn "Condition: ~a" condition)
-            (invoke-restart 'cleavir-generate-ast::consider-special)))
+             #+verbose-compiler(warn "Condition: ~a" condition)
+             (invoke-restart 'cleavir-generate-ast::consider-special)))
          (cleavir-env:no-function-info
-          (lambda (condition)
+           (lambda (condition)
 ;;;	  (declare (ignore condition))
-            #+verbose-compiler(warn "Condition: ~a" condition)
-            (invoke-restart 'cleavir-generate-ast::consider-global))))
+             #+verbose-compiler(warn "Condition: ~a" condition)
+             (invoke-restart 'cleavir-generate-ast::consider-global))))
       (multiple-value-bind (fn lambda-name ordered-raw-constants-list constants-table startup-fn shutdown-fn)
           (cclasp-compile-to-module-with-run-time-table form env pathname :linkage linkage)
         (or fn (error "There was no function returned by compile-lambda-function"))
@@ -1010,8 +1116,6 @@ that llvm function. This works like compile-lambda-function in bclasp."
         (cmp:quick-module-dump cmp:*the-module* "cclasp-compile-module-pre-optimize")
         (let* ((setup-function (cmp:jit-add-module-return-function cmp:*the-module* fn startup-fn shutdown-fn ordered-raw-constants-list)))
           (let ((enclosed-function (funcall setup-function)))
-            ;;(format t "*all-functions-for-one-compile* -> ~s~%" cmp:*all-functions-for-one-compile*)
-            ;;(cmp:set-associated-funcs enclosed-function cmp:*all-functions-for-one-compile*)
             (values enclosed-function)))))))
 
 (defun compile-form (form)
@@ -1046,8 +1150,7 @@ that llvm function. This works like compile-lambda-function in bclasp."
 
 (defun cclasp-compile-in-env (name form &optional env)
   (let ((cleavir-generate-ast:*compiler* 'cl:compile)
-        (core:*use-cleavir-compiler* t)
-	(cmp:*all-functions-for-one-compile* nil))
+        (core:*use-cleavir-compiler* t))
     (if cmp::*debug-compile-file*
         (progn
           (format t "cclasp-compile-in-env -> ~s~%" form)

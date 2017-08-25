@@ -114,6 +114,7 @@ namespace core {
       }
 #endif
     };
+    Pointer_sp function_pointer() const;
     virtual string nameAsString() const {SUBIMP();};
     virtual bool compiledP() const { return false; };
     virtual bool interpretedP() const { return false; };

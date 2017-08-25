@@ -60,6 +60,7 @@ THE SOFTWARE.
 #include <clasp/core/array.h>
 #include <clasp/core/evaluator.h>
 #include <clasp/core/designators.h>
+#include <clasp/core/hashTable.h>
 #include <clasp/core/sequence.h>
 #include <clasp/core/primitives.h>
 #include <clasp/core/lispStream.h>
@@ -445,6 +446,37 @@ void Pathname_O::sxhash_(HashGenerator &hg) const {
   if (hg.isFilling())
     hg.hashObject(this->_Version);
 }
+
+void Pathname_O::sxhash_equal(HashGenerator &hg,LocationDependencyPtrT ld) const {
+  if (hg.isFilling())
+    HashTable_O::sxhash_equal(hg, this->_Host, ld);
+  if (hg.isFilling())
+    HashTable_O::sxhash_equal(hg, this->_Device, ld);
+  if (hg.isFilling())
+    HashTable_O::sxhash_equal(hg, this->_Directory, ld);
+  if (hg.isFilling())
+    HashTable_O::sxhash_equal(hg, this->_Name, ld);
+  if (hg.isFilling())
+    HashTable_O::sxhash_equal(hg, this->_Type, ld);
+  if (hg.isFilling())
+    HashTable_O::sxhash_equal(hg, this->_Version, ld);
+}
+ 
+void Pathname_O::sxhash_equalp(HashGenerator &hg,LocationDependencyPtrT ld) const {
+  if (hg.isFilling())
+    HashTable_O::sxhash_equalp(hg, this->_Host, ld);
+  if (hg.isFilling())
+    HashTable_O::sxhash_equalp(hg, this->_Device, ld);
+  if (hg.isFilling())
+    HashTable_O::sxhash_equalp(hg, this->_Directory, ld);
+  if (hg.isFilling())
+    HashTable_O::sxhash_equalp(hg, this->_Name, ld);
+  if (hg.isFilling())
+    HashTable_O::sxhash_equalp(hg, this->_Type, ld);
+  if (hg.isFilling())
+    HashTable_O::sxhash_equalp(hg, this->_Version, ld);
+}
+
 
 Pathname_sp Pathname_O::tilde_expand(Pathname_sp pathname) {
   /*

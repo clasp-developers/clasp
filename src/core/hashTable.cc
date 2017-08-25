@@ -340,57 +340,35 @@ void HashTable_O::sxhash_eql(HashGenerator &hg, T_sp obj, LocationDependencyPtrT
 
 void HashTable_O::sxhash_equal(HashGenerator &hg, T_sp obj, LocationDependencyPtrT ld) {
   if (obj.fixnump()) {
-    if (hg.isFilling())
-      hg.addPart(obj.unsafe_fixnum());
+    if (hg.isFilling()) hg.addPart(obj.unsafe_fixnum());
     return;
   } else if (obj.single_floatp()) {
-    if (hg.isFilling())
-      hg.addPart(std::abs(::floor(obj.unsafe_single_float())));
+    if (hg.isFilling()) hg.addPart(std::abs(::floor(obj.unsafe_single_float())));
     return;
   } else if (obj.characterp()) {
-    if (hg.isFilling())
-      hg.addPart(obj.unsafe_character());
+    if (hg.isFilling()) hg.addPart(obj.unsafe_character());
     return;
-  }
-  if (obj.objectp()) {
+  } else if (obj.consp()) {
+    Cons_sp cobj = gc::As_unsafe<Cons_sp>(obj);
+    if (hg.isFilling()) HashTable_O::sxhash_equal(hg, CONS_CAR(cobj), ld);
+    if (hg.isFilling()) HashTable_O::sxhash_equal(hg, CONS_CAR(cobj), ld);
+    return;
+  } else if (obj.generalp()) {
     if (cl__numberp(obj)) {
       hg.hashObject(obj);
       return;
     } else if (String_sp str_obj = obj.asOrNull<String_O>()) {
-      if (hg.isFilling())
-        str_obj->sxhash_(hg);
+      if (hg.isFilling()) str_obj->sxhash_(hg);
       return;
     } else if (BitVector_sp bv_obj = obj.asOrNull<BitVector_O>()) {
       if (hg.isFilling()) bv_obj->sxhash_(hg);
       return;
-    } else if (Pathname_sp pobj = obj.asOrNull<Pathname_O>()) {
-      if (hg.isFilling())
-        HashTable_O::sxhash_equal(hg, pobj->_Host, ld);
-      if (hg.isFilling())
-        HashTable_O::sxhash_equal(hg, pobj->_Device, ld);
-      if (hg.isFilling())
-        HashTable_O::sxhash_equal(hg, pobj->_Directory, ld);
-      if (hg.isFilling())
-        HashTable_O::sxhash_equal(hg, pobj->_Name, ld);
-      if (hg.isFilling())
-        HashTable_O::sxhash_equal(hg, pobj->_Type, ld);
-      if (hg.isFilling())
-        HashTable_O::sxhash_equal(hg, pobj->_Version, ld);
-      return;
-    } else if (Cons_sp cobj = obj.asOrNull<Cons_O>()) {
-      if (hg.isFilling())
-        HashTable_O::sxhash_equal(hg, oCar(cobj), ld);
-      if (hg.isFilling())
-        HashTable_O::sxhash_equal(hg, oCdr(cobj), ld);
-      return;
     }
+    General_sp gobj = gc::As_unsafe<General_sp>(obj);
+    gobj->sxhash_equal(hg,ld);
+    return;
   }
-  volatile void* address = &(*obj);
-#ifdef USE_MPS
-  if (ld) mps_ld_add(ld, global_arena, (mps_addr_t)address );
-#endif
-  hg.addPart((Fixnum)(((uintptr_clasp_t)address)>>gctools::tag_shift));
-  return;
+  SIMPLE_ERROR(BF("You cannot EQUAL hash on %s") % _rep_(obj));
 }
 
 void HashTable_O::sxhash_equalp(HashGenerator &hg, T_sp obj, LocationDependencyPtrT ld) {
@@ -406,76 +384,27 @@ void HashTable_O::sxhash_equalp(HashGenerator &hg, T_sp obj, LocationDependencyP
     if (hg.isFilling())
       hg.addPart(obj.unsafe_character());
     return;
-  }
-  if (obj.objectp()) {
+  } else if (obj.consp()) {
+    Cons_sp cobj = gc::As_unsafe<Cons_sp>(obj);
+    if (hg.isFilling())
+      HashTable_O::sxhash_equalp(hg, CONS_CAR(cobj), ld);
+    if (hg.isFilling())
+      HashTable_O::sxhash_equalp(hg, CONS_CDR(cobj), ld);
+    return;
+  } else if (obj.generalp()) {
     if (cl__numberp(obj)) {
-      hg.hashObject(obj);
+      if (hg.isFilling()) hg.hashObject(obj);
       return;
-    }
-    if (cl__stringp(obj)) {
+    } else if (cl__stringp(obj)) {
       SimpleString_sp upstr = cl__string_upcase(obj);
       hg.hashObject(upstr);
       return;
-    } else if (cl__numberp(obj)) {
-      if (hg.isFilling())
-        clasp_sxhash(obj, hg);
-      return;
-    } else if (Pathname_sp pobj = obj.asOrNull<Pathname_O>()) {
-      if (hg.isFilling())
-        HashTable_O::sxhash_equalp(hg, pobj->_Host, ld);
-      if (hg.isFilling())
-        HashTable_O::sxhash_equalp(hg, pobj->_Device, ld);
-      if (hg.isFilling())
-        HashTable_O::sxhash_equalp(hg, pobj->_Directory, ld);
-      if (hg.isFilling())
-        HashTable_O::sxhash_equalp(hg, pobj->_Name, ld);
-      if (hg.isFilling())
-        HashTable_O::sxhash_equalp(hg, pobj->_Type, ld);
-      if (hg.isFilling())
-        HashTable_O::sxhash_equalp(hg, pobj->_Version, ld);
-      return;
-    } else if (Cons_sp cobj = obj.asOrNull<Cons_O>()) {
-      if (hg.isFilling())
-        HashTable_O::sxhash_equalp(hg, oCar(cobj), ld);
-      if (hg.isFilling())
-        HashTable_O::sxhash_equalp(hg, oCdr(cobj), ld);
-      return;
-    } else if ( obj.generalp() ) {
-      General_sp gobj = General_sp((gctools::Tagged)obj.raw_());
-      if (gobj->instancep()) {
-        Instance_sp iobj = gc::As<Instance_sp>(gobj);
-        if (hg.isFilling())
-          HashTable_O::sxhash_equalp(hg, iobj->_Class->_className(), ld);
-        for (size_t i(0), iEnd(iobj->numberOfSlots()); i < iEnd; ++i) {
-            if (!iobj->instanceRef(i).unboundp() && hg.isFilling())
-              HashTable_O::sxhash_equalp(hg, iobj->instanceRef(i), ld);
-        }
-        return;
-      } else if (BitVector_sp bv_obj = gobj.asOrNull<BitVector_O>()) {
-        (void)bv_obj; // silence warning
-        IMPLEMENT_MEF(BF("Handle HashTable_O::sxhash_equalp for BitVector"));
-      } else if (Array_sp aobj = gobj.asOrNull<Array_O>()) {
-        for (size_t i = 0; i < aobj->length(); ++i) {
-          if (hg.isFilling()) {
-            T_sp obj = aobj->rowMajorAref(i);
-            HashTable_O::sxhash_equalp(hg,obj,ld);
-          } else {
-            break;
-          }
-        }
-        return;
-      } else if (HashTable_sp hobj = gobj.asOrNull<HashTable_O>()) {
-        (void)hobj; // silence warning
-        IMPLEMENT_MEF(BF("Handle HashTable_O::sxhash_equalp for HashTables"));
-      }
     }
+    General_sp gobj = gc::As_unsafe<General_sp>(obj);
+    gobj->sxhash_equalp(hg,ld);
+    return;
   }
-  volatile void* address = &(*obj);
-#ifdef USE_MPS
-  if (ld) mps_ld_add(ld, global_arena, (mps_addr_t)address );
-#endif
-  hg.addPart((Fixnum)(((uintptr_clasp_t)address)>>gctools::tag_shift));
-  return;
+  SIMPLE_ERROR(BF("You cannot EQUALP hash on %s") % _rep_(obj));
 }
 
 bool HashTable_O::equalp(T_sp other) const {

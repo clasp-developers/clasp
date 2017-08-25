@@ -807,7 +807,6 @@ void initialize_clasp()
   MPS_LOG("initialize_clasp set_static_class_symbols");
   set_static_class_symbols(&bootStrapCoreSymbolMap);
 
-  printf("%s:%d  In gc_interface.cc about to set up metaclasses      cl::_sym_built_in_class->raw_()->%p\n", __FILE__, __LINE__, cl::_sym_built_in_class.raw_());
   _lisp->_Roots._TheClass = allocate_one_metaclass<core::StandardClassCreator_O>(cl::_sym_class,_Unbound<core::Class_O>());
   _lisp->_Roots._TheBuiltInClass = allocate_one_metaclass<core::StandardClassCreator_O>(cl::_sym_built_in_class,_Unbound<core::Class_O>());
   _lisp->_Roots._TheStandardClass = allocate_one_metaclass<core::StandardClassCreator_O>(cl::_sym_standard_class,_Unbound<core::Class_O>());
@@ -842,15 +841,19 @@ void initialize_clasp()
   #endif
   #undef CALCULATE_CLASS_PRECEDENCE_ALL_CLASSES
 
+  _lisp->_Roots._TheClass->instanceSet(core::Class_O::REF_CLASS_INSTANCE_STAMP,core::make_fixnum(gctools::NextStamp()));
   _lisp->_Roots._TheClass->instanceSet(core::Class_O::REF_CLASS_SLOTS,_Nil<core::T_O>());
   _lisp->_Roots._TheClass->instanceSet(core::Class_O::REF_CLASS_DIRECT_SLOTS,_Nil<core::T_O>());
   _lisp->_Roots._TheClass->instanceSet(core::Class_O::REF_CLASS_DEFAULT_INITARGS,_Nil<core::T_O>());
+  _lisp->_Roots._TheBuiltInClass->instanceSet(core::Class_O::REF_CLASS_INSTANCE_STAMP,core::make_fixnum(gctools::NextStamp()));
   _lisp->_Roots._TheBuiltInClass->instanceSet(core::Class_O::REF_CLASS_SLOTS,_Nil<core::T_O>());
   _lisp->_Roots._TheBuiltInClass->instanceSet(core::Class_O::REF_CLASS_DIRECT_SLOTS,_Nil<core::T_O>());
   _lisp->_Roots._TheBuiltInClass->instanceSet(core::Class_O::REF_CLASS_DEFAULT_INITARGS,_Nil<core::T_O>());
+  _lisp->_Roots._TheStandardClass->instanceSet(core::Class_O::REF_CLASS_INSTANCE_STAMP,core::make_fixnum(gctools::NextStamp()));
   _lisp->_Roots._TheStandardClass->instanceSet(core::Class_O::REF_CLASS_SLOTS,_Nil<core::T_O>());
   _lisp->_Roots._TheStandardClass->instanceSet(core::Class_O::REF_CLASS_DIRECT_SLOTS,_Nil<core::T_O>());
   _lisp->_Roots._TheStandardClass->instanceSet(core::Class_O::REF_CLASS_DEFAULT_INITARGS,_Nil<core::T_O>());
+  _lisp->_Roots._TheStructureClass->instanceSet(core::Class_O::REF_CLASS_INSTANCE_STAMP,core::make_fixnum(gctools::NextStamp()));
   _lisp->_Roots._TheStructureClass->instanceSet(core::Class_O::REF_CLASS_SLOTS,_Nil<core::T_O>());
   _lisp->_Roots._TheStructureClass->instanceSet(core::Class_O::REF_CLASS_DIRECT_SLOTS,_Nil<core::T_O>());
   _lisp->_Roots._TheStructureClass->instanceSet(core::Class_O::REF_CLASS_DEFAULT_INITARGS,_Nil<core::T_O>());

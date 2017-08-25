@@ -13,7 +13,7 @@ RUN apt-get update && apt-get install -y \
   libboost-iostreams-dev csh flex gfortran zlib1g-dev libbz2-dev patch \
   git sbcl libexpat-dev wget vim libzmq3-dev \
   clang-4.0 libclang-common-4.0-dev libclang-4.0-dev libclang1-4.0 clang1-4.0-dbg \
-  libllvm4.0 libllvm4.0-dbg lldb-4.0 llvm-4.0 llvm-4.0-dev llvm-4.0-doc \
+  libllvm4.0 libllvm4.0-dbg llvm-4.0 llvm-4.0-dev llvm-4.0-doc \
   llvm-4.0-runtime clang-format-4.0 python-clang-4.0 lld-4.0
 ENV CC=/usr/bin/clang-4.0 CXX=/usr/bin/clang++-4.0
 

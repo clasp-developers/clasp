@@ -158,6 +158,27 @@
 (defmethod cleavir-ast:children ((ast foreign-call-pointer-ast))
   (argument-asts ast))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Class SIMPLE-VECTOR-LENGTH-AST
+;;;
+;;; Represents an operation to get the length of a
+;;; (array * (*)).
+
+(defclass simple-vector-length-ast (cleavir-ast:ast cleavir-ast:one-value-ast-mixin)
+  ((%vector :initarg :vector :accessor svl-ast-vector)))
+
+(cleavir-io:define-save-info simple-vector-length-ast
+    (:vector svl-ast-vector))
+
+(defmethod cleavir-ast-graphviz::label ((ast simple-vector-length-ast))
+  "svlength")
+
+(defmethod cleavir-ast:children ((ast simple-vector-length-ast))
+  (list (svl-ast-vector ast)))
+
+
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
