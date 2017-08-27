@@ -28,7 +28,7 @@ struct from_object<const vector<int> &> {
       }
       return;
     }
-    SIMPLE_ERROR(BF("Add support to convert other types to vector<int>"));
+    SIMPLE_ERROR_SPRINTF("Add support to convert other types to vector<int>");
   }
 };
 

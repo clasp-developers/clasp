@@ -218,7 +218,7 @@ CL_DEFUN core::Fixnum_sp cffi_sys__PERCENTforeign_type_size(core::Symbol_sp atyp
   } else if (atype == _sym_pointer) {
     align = sizeof(void *);
   } else if (atype == _sym_void) {
-    IMPLEMENT_MEF(BF("Implement sizeof(void)"));
+    IMPLEMENT_MEF("Implement sizeof(void)");
     //	align = sizeof(void);
   } else {
     SIMPLE_ERROR(BF("Cannot determine size of %s") % _rep_(atype));
@@ -251,7 +251,7 @@ CL_DEFUN Pointer_sp Pointer_O::make(core::Number_sp arg) {
     if (sizeof(unbox_fixnum(gc::As<core::Fixnum_sp>(arg))) != sizeof(void *)) {
       SIMPLE_ERROR(BF("You cannot make a pointer using an integer as the address sizeof(void*)=%d sizeof(Fixnum)=%d") % sizeof(void *) % sizeof(unbox_fixnum(gc::As<core::Fixnum_sp>(arg))));
     }
-    IMPLEMENT_MEF(BF("Deal with converting Fixnum or Bignum to void*"));
+    IMPLEMENT_MEF("Deal with converting Fixnum or Bignum to void*");
 #if 0
 	return Pointer_O::create((void*)(arg.as<core::Fixnum_O>()->get()));
 #endif

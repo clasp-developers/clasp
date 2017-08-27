@@ -545,14 +545,14 @@ CL_LAMBDA(stream ch num);
 CL_DECLARE();
 CL_DOCSTRING("sharp_a");
 CL_DEFUN T_mv core__sharp_a(T_sp sin, Character_sp ch, T_sp num) {
-  IMPLEMENT_MEF(BF("Implement sharp_a"));
+  IMPLEMENT_MEF("Implement sharp_a");
 }; // core__sharp_a
 
 CL_LAMBDA(stream ch num);
 CL_DECLARE();
 CL_DOCSTRING("sharp_s");
 CL_DEFUN T_mv core__sharp_s(T_sp sin, Character_sp ch, T_sp num) {
-  IMPLEMENT_MEF(BF("Implement sharp_s"));
+  IMPLEMENT_MEF("Implement sharp_s");
 }; // core__sharp_s
 
 CL_LAMBDA(stream ch num);

@@ -119,7 +119,6 @@ Could return more functions that provide lambda-list for swank for example"
     (cmp-log "About to dump the function constructed by generate-llvm-function-from-code\n")
     (cmp-log-dump-function fn)
     (irc-verify-function fn)
-    (push fn *all-functions-for-one-compile*)
     ;; Return the llvm Function and the symbol/setf name
     (if (null name) (error "The lambda name is nil"))
     (values fn name (core:lambda-list-handler-lambda-list lambda-list-handler))))
@@ -168,7 +167,6 @@ then compile it and return (values compiled-llvm-function lambda-name)"
     (or fn (error "There was no function returned by compile-lambda-function outer: ~a" fn))
     (cmp-log "fn --> %s\n" fn)
     (cmp-log-dump-module *the-module*)
-    #+(or)(link-intrinsics-module *the-module*)
     (values fn function-kind wrapped-env lambda-name warnp failp)))
 
 (defun compile-to-module-with-run-time-table (definition env pathname &key (linkage 'llvm-sys:internal-linkage))

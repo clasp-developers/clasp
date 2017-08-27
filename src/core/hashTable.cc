@@ -460,7 +460,7 @@ void HashTable_O::fields(Record_sp node) {
     node->field(INTERN_(core, data), keyValueVec);
   } break;
   case Record_O::patching: {
-    IMPLEMENT_MEF(BF("Add support to patch hash tables"));
+    IMPLEMENT_MEF("Add support to patch hash tables");
   } break;
   }
 }

@@ -118,10 +118,6 @@ llvm::Value* llvm_cast_error_ptr;
 namespace llvmo {
 
 
-CL_DEFUN void compiler__setAssociatedFuncs(core::CompiledFunction_sp cf, core::List_sp associatedFuncs) {
-  cf->setAssociatedFunctions(associatedFuncs);
-};
-
 CL_DEFUN bool llvm_sys__llvm_value_p(core::T_sp o) {
   if (o.nilp())
     return false;
@@ -1191,7 +1187,7 @@ CL_DEFMETHOD void Module_O::moduleDelete() {
 CL_LISPIFY_NAME("dump_namedMDList");
 CL_DEFMETHOD void Module_O::dump_namedMDList() const {
   llvm::Module *M = this->wrappedPtr();
-  IMPLEMENT_MEF(BF("Come up with a way to dump the MDList without using dump() (only enabled when LLVM_ENABLE_DUMP is on)"));
+  IMPLEMENT_MEF("Come up with a way to dump the MDList without using dump() (only enabled when LLVM_ENABLE_DUMP is on)");
 #if 0
   for (llvm::Module::const_named_metadata_iterator it = M->named_metadata_begin();
        it != M->named_metadata_end(); it++) {
@@ -1762,11 +1758,18 @@ CL_DEFMETHOD void CallInst_O::addParamAttr(unsigned index, llvm::Attribute::Attr
   this->wrappedPtr()->addParamAttr(index,attrkind);
 }
 
+CL_DEFMETHOD llvm::Function* CallInst_O::getCalledFunction() {
+  return this->wrappedPtr()->getCalledFunction();
+}
+
 CL_DEFMETHOD void InvokeInst_O::addParamAttr(unsigned index, llvm::Attribute::AttrKind attrkind)
 {
   this->wrappedPtr()->addParamAttr(index,attrkind);
 }
 
+CL_DEFMETHOD llvm::Function* InvokeInst_O::getCalledFunction() {
+  return this->wrappedPtr()->getCalledFunction();
+}
 
 }; // llvmo
 namespace llvmo {
@@ -2749,6 +2752,10 @@ CL_LISPIFY_NAME("setDoesNotThrow");
 CL_EXTERN_DEFMETHOD(Function_O,&llvm::Function::setDoesNotThrow);
 CL_LISPIFY_NAME("addFnAttr");
 CL_EXTERN_DEFMETHOD(Function_O, (void (llvm::Function::*)(Attribute::AttrKind Kind))&llvm::Function::addFnAttr);
+CL_LISPIFY_NAME("removeFnAttr");
+CL_EXTERN_DEFMETHOD(Function_O, (void (llvm::Function::*)(Attribute::AttrKind Kind))&llvm::Function::removeFnAttr);
+CL_LISPIFY_NAME("hasFnAttribute");
+CL_EXTERN_DEFMETHOD(Function_O, (bool (llvm::Function::*)(Attribute::AttrKind Kind) const)&llvm::Function::hasFnAttribute);
 CL_LISPIFY_NAME("addAttribute");
 CL_EXTERN_DEFMETHOD(Function_O, (void (llvm::Function::*)(unsigned i, typename llvm::Attribute::AttrKind Attr))&llvm::Function::addAttribute);
 CL_LISPIFY_NAME("addParamAttr");
@@ -3152,11 +3159,10 @@ CL_DEFUN core::Function_sp finalizeEngineAndRegisterWithGcAndGetCompiledFunction
     SIMPLE_ERROR(BF("Could not get a pointer to the function finalizeEngineAndRegisterWithGcAndGetCompiledFunction: %s") % _rep_(functionName));
   }
   core::CompiledClosure_fptr_type lisp_funcPtr = (core::CompiledClosure_fptr_type)(p);
-  core::Cons_sp associatedFunctions = core::Cons_O::create(fn, _Nil<core::T_O>());
   core::SourceFileInfo_mv sfi = core__source_file_info(fileName);
   int sfindex = unbox_fixnum(gc::As<core::Fixnum_sp>(sfi.valueGet_(1)));
   //	printf("%s:%d  Allocating CompiledClosure with name: %s\n", __FILE__, __LINE__, _rep_(sym).c_str() );
-  gctools::smart_ptr<core::CompiledClosure_O> functoid = gctools::GC<core::CompiledClosure_O>::allocate(lisp_funcPtr, fn, functionName, kw::_sym_function, activationFrameEnvironment, associatedFunctions, _Nil<core::T_O>() /*lambdaList*/, sfindex, filePos, linenumber, 0);
+  gctools::smart_ptr<core::CompiledClosure_O> functoid = gctools::GC<core::CompiledClosure_O>::allocate(lisp_funcPtr, functionName, kw::_sym_function, activationFrameEnvironment, _Nil<core::T_O>() /*lambdaList*/, sfindex, filePos, linenumber, 0);
   void* pstartup = engine->getPointerToFunction(startupFn->wrappedPtr());
   if (pstartup==NULL) {
     printf("%s:%d  Could not find function named %s\n", __FILE__, __LINE__, MODULE_STARTUP_FUNCTION_NAME );
@@ -3235,6 +3241,7 @@ CL_DEFUN core::Function_sp finalizeEngineAndRegisterWithGcAndGetCompiledFunction
 #endif
   }
 
+#if 0
   CL_DEFUN void finalizeClosure(ExecutionEngine_sp oengine, core::Function_sp func) {
     llvm::ExecutionEngine *engine = oengine->wrappedPtr();
     auto closure = func.as<core::CompiledClosure_O>();
@@ -3243,7 +3250,7 @@ CL_DEFUN core::Function_sp finalizeEngineAndRegisterWithGcAndGetCompiledFunction
     core::CompiledClosure_fptr_type lisp_funcPtr = (core::CompiledClosure_fptr_type)(p);
     closure->entry = lisp_funcPtr;
   }
-
+#endif
 
 /*! Return (values target nil) if successful or (values nil error-message) if not */
   CL_DEFUN core::T_mv TargetRegistryLookupTarget(const std::string &ArchName, Triple_sp triple) {
@@ -3822,7 +3829,13 @@ CL_DEFUN core::Function_sp llvm_sys__jitFinalizeReplFunction(ClaspJIT_sp jit, Mo
   printf("%s:%d shutdownPtr = %s\n", __FILE__, __LINE__, _rep_(shutdownPtr).c_str());
 #endif
   core::CompiledClosure_fptr_type lisp_funcPtr = (core::CompiledClosure_fptr_type)(gc::As_unsafe<core::Pointer_sp>(replPtr)->ptr());
-  gctools::smart_ptr<core::CompiledClosure_O> functoid = gctools::GC<core::CompiledClosure_O>::allocate(lisp_funcPtr, core::SimpleBaseString_O::make(replName), kw::_sym_function, fn, activationFrameEnvironment, _Nil<core::T_O>(), _Nil<core::T_O>() /*lambdaList*/, 0, 0, 0, 0 );
+  gctools::smart_ptr<core::CompiledClosure_O> functoid =
+    gctools::GC<core::CompiledClosure_O>::allocate( lisp_funcPtr,
+                                                    core::SimpleBaseString_O::make(replName),
+                                                    kw::_sym_function,
+                                                    activationFrameEnvironment,
+                                                    _Nil<core::T_O>() /*lambdaList*/,
+                                                    0, 0, 0, 0 );
   core::module_startup_function_type startup = reinterpret_cast<core::module_startup_function_type>(gc::As_unsafe<core::Pointer_sp>(startupPtr)->ptr());
   startup(initialData.tagged_());
   return functoid;

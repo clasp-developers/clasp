@@ -125,7 +125,8 @@ Return files."
 
 (defun out-of-date-target (target source-files)
   (let* ((last-source (car (reverse source-files)))
-         (cxx-bitcode (build-intrinsics-bitcode-pathname :executable))
+         (intrinsics-bitcode (build-inline-bitcode-pathname :executable) :intrinsics)
+         (builtins-bitcode (build-inline-bitcode-pathname :executable) :builtins)
          (last-bitcode (build-pathname (entry-filename last-source) :bc))
          (target-file target))
     #+(or)(progn
@@ -134,7 +135,9 @@ Return files."
     (if (probe-file target-file)
         (or (> (file-write-date last-bitcode)
                (file-write-date target-file))
-            (> (file-write-date cxx-bitcode)
+            (> (file-write-date intrinsics-bitcode)
+               (file-write-date target-file))
+            (> (file-write-date builtins-bitcode)
                (file-write-date target-file)))
         t)))
 
@@ -184,11 +187,9 @@ Return files."
          (name (namestring pathname)))
     (bformat t "Compiling/loading source: %s\n" (namestring name))
     (let ((m (cmp::compile-file-to-module name :print nil)))
-      #+(or)
       (progn
-        ;; Linking the intrinsics module is a bad idea - it includes way too much crap
-        (cmp::link-intrinsics-module m)
-        (cmp::optimize-module m))
+        (cmp::jit-link-builtins-module m)
+        (cmp::optimize-module-for-compile m))
       (llvm-sys:load-module m))))
 
 (defun load-system (files &key compile-file-load interp load-bitcode (target-backend *target-backend*) system)

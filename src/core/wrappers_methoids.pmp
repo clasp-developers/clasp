@@ -37,7 +37,6 @@ $for isConst [[
       public:
         enum { NumParams = $numArgs };
         VariadicMethoid(T_sp name, Type ptr) : TemplatedFunctionBase_O(&MyType::method_entry_point,name), mptr(ptr) {};
-        DISABLE_NEW();
         virtual size_t templatedSizeof() const { return sizeof(*this);};
         static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
         {   

@@ -386,7 +386,7 @@ string Package_O::__repr__() const {
 
 #if defined(XML_ARCHIVE)
 void Package_O::archiveBase(ArchiveP node) {
-  IMPLEMENT_MEF(BF("Handle archiving the package hash-tables"));
+  IMPLEMENT_MEF("Handle archiving the package hash-tables");
 #if 0
   WITH_PACKAGE_READ_WRITE_LOCK(this);
 	this->Base::archiveBase(node);

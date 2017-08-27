@@ -688,13 +688,13 @@ void create_packages()
 
 void define_base_classes()
 {
-  IMPLEMENT_MEF(BF("define_base_classes"));
+  IMPLEMENT_MEF("define_base_classes");
 }
 
 
 void calculate_class_precedence_lists()
 {
-  IMPLEMENT_MEF(BF("calculate_class_precendence_lists"));
+  IMPLEMENT_MEF("calculate_class_precendence_lists");
 }
 
 // ------------------------------------------------------------

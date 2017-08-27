@@ -27,7 +27,6 @@ THE SOFTWARE.
 #ifndef clbind_wrapped_iterator_H
 #define clbind_wrapped_iterator_H
 
-#include <clasp/core/foundation.h>
 #include <clasp/core/iterator.h>
 #include <clasp/core/instance.h>
 #include <clasp/clbind/adapter.fwd.h>

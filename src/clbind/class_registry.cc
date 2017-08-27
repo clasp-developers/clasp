@@ -73,7 +73,7 @@ CLBIND_API void push_instance_metatable();
 
         int create_cpp_class_metatable()
         {
-            IMPLEMENT_MEF(BF("create_cpp_class_metatable"));
+            IMPLEMENT_MEF("create_cpp_class_metatable");
 #if 0
             cl_newtable(L);
 
@@ -112,7 +112,7 @@ CLBIND_API void push_instance_metatable();
 
         int create_cl_class_metatable()
         {
-            IMPLEMENT_MEF(BF("create_cl_class_metatable"));
+            IMPLEMENT_MEF("create_cl_class_metatable");
 #if 0
             cl_newtable(L);
 

@@ -117,7 +117,6 @@ THE SOFTWARE.
 #include <boost/mpl/logical.hpp>
 #pragma GCC diagnostic pop
 
-#include <clasp/core/foundation.h>
 
 #include <clasp/clbind/config.h>
 #include <clasp/clbind/scope.h>
@@ -169,11 +168,10 @@ public:
   DummyCreator_O(const string &name) : _name(name){};
 
 public:
-  DISABLE_NEW();
   virtual size_t templatedSizeof() const { return sizeof(*this); };
   virtual bool allocates() const { return false; };
   virtual core::T_sp creator_allocate() {
-    SIMPLE_ERROR(BF("This class cannot allocate instances"));
+    SIMPLE_ERROR_SPRINTF("This class cannot allocate instances");
   } //return _Nil<core::T_O>(); };
   core::Creator_sp duplicateForClassName(core::Symbol_sp className) {
     return gc::GC<DummyCreator_O>::allocate(core::lisp_symbolNameAsString(className));
@@ -519,7 +517,7 @@ template <class Class, class Policies>
       : policies(policies), m_name(name), m_arguments(arguments), m_declares(declares), m_docstring(docstring) {}
 
   void register_() const {
-    IMPLEMENT_MEF(BF("Do I use this code?"));
+    IMPLEMENT_MEF("Do I use this code?");
 #if 0
                 string tname = m_name;
                 if (m_name == "") { tname = "default-ctor"; };

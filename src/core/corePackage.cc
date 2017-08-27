@@ -904,7 +904,7 @@ void CoreExposer_O::expose(core::Lisp_sp lisp, WhatToExpose what) const {
 
   break;
   case pythonClasses: {
-    IMPLEMENT_MEF(BF("Handle other packages"));
+    IMPLEMENT_MEF("Handle other packages");
   } break;
   case pythonFunctions:
 #ifdef USEBOOSTPYTHON

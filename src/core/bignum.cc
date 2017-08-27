@@ -69,7 +69,7 @@ void Bignum_O::sxhash_(HashGenerator &hg) const {
 }
 
 gc::Fixnum Bignum_O::as_int_() const {
-  IMPLEMENT_MEF(BF("Implement conversion of Bignum to Fixnum"));
+  IMPLEMENT_MEF("Implement conversion of Bignum to Fixnum");
   if (this->_value.fits_sint_p()) {
     return ((this->_value.get_si()));
   }

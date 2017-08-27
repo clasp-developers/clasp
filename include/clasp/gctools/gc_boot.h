@@ -27,7 +27,6 @@ THE SOFTWARE.
 
 #ifndef GC_BOOT_H
 #define GC_BOOT_H
-#include <clasp/core/foundation.h>
 namespace gctools {
 
   enum Data_types {

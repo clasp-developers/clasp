@@ -30,7 +30,6 @@ THE SOFTWARE.
 #ifndef _core__source_file_info_H_
 #define _core__source_file_info_H_
 
-#include <boost/filesystem.hpp>
 #include <clasp/core/object.h>
 #include <clasp/core/pathname.fwd.h>
 #include <clasp/core/fileSystem.fwd.h>

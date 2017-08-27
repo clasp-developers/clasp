@@ -42,7 +42,7 @@ THE SOFTWARE.
 #include <clasp/core/object.fwd.h>
 #include <clasp/core/numbers.fwd.h>
 #include <clasp/core/specializer.h>
-#include <clasp/core/holder.h>
+//#include <clasp/core/holder.h>
 #include <clasp/core/instance.h>
 
 #if 0
@@ -325,7 +325,6 @@ namespace core {
   public:
     typedef core::Creator_O TemplatedBase;
   public:
-    DISABLE_NEW();
   public:
     size_t templatedSizeof() const { return sizeof(BuiltInObjectCreator<Class_O>); };
     bool creates_classes() const { return true; };

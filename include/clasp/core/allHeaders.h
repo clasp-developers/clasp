@@ -92,7 +92,7 @@ THE SOFTWARE.
 #include <clasp/core/hashTableEql.h>
 #include <clasp/core/hashTableEqual.h>
 #include <clasp/core/hashTableEqualp.h>
-#include <clasp/core/holder.h>
+//#include <clasp/core/holder.h>
 #include <clasp/core/ifthenelse.h>
 #include <clasp/core/initializeClasses.h>
 #include <clasp/core/instance.fwd.h>

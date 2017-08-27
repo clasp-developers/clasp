@@ -231,7 +231,7 @@ struct Buckets<T, U, WeakLinks> : public BucketsBase<T, U> {
 
   void set(size_t idx, const value_type &val) {
     if (!val.objectp()) {
-      THROW_HARD_ERROR(BF("Only generalp() or consp() objects can be added to Mapping - you are trying to add a tagged pointer->%p") % (void*)val.tagged_());
+      throw_hard_error("Only generalp() or consp() objects can be added to Mapping - you are trying to add a tagged pointer->%p");
     }
 #ifdef USE_BOEHM
     //	    printf("%s:%d ---- Buckets set idx: %zu   this->bucket[idx] = %p\n", __FILE__, __LINE__, idx, this->bucket[idx].raw_() );
@@ -241,7 +241,7 @@ struct Buckets<T, U, WeakLinks> : public BucketsBase<T, U> {
       //		printf("%s:%d Buckets set idx: %zu unregister disappearing link @%p\n", __FILE__, __LINE__, idx, linkAddress );
       int result = GC_unregister_disappearing_link(linkAddress); //reinterpret_cast<void**>(&this->bucket[idx].rawRef_()));
       if (!result) {
-        THROW_HARD_ERROR(BF("The link was not registered as a disappearing link!"));
+        throw_hard_error("The link was not registered as a disappearing link!");
       }
     }
     if (!unboundOrDeletedOrSplatted(val)) {
@@ -335,7 +335,7 @@ public:
 public:
   size_t length() const {
     if (!this->_Keys) {
-      THROW_HARD_ERROR(BF("Keys should never be null"));
+      throw_hard_error("Keys should never be null");
     }
     return this->_Keys->length();
   }
@@ -415,7 +415,7 @@ struct Mapping<T, U, WeakLinks> : public MappingBase<T, U> {
   typedef typename MappingBase<T, U>::dependent_type dependent_type;
   Mapping(const T &val) : MappingBase<T, U>(val) {
     if (!val.objectp()) {
-      THROW_HARD_ERROR(BF("Only objectp() objects can be added to Mapping"));
+      throw_hard_error("Only objectp() objects can be added to Mapping");
     }
 #ifdef USE_BOEHM
     GCTOOLS_ASSERT(this->bucket.objectp());
@@ -547,7 +547,7 @@ struct WeakPointerManager {
 
   WeakPointerManager(const value_type &val) {
     if (!val.objectp()) {
-      THROW_HARD_ERROR(BF("Only objectp() objects can be added to Mapping"));
+      throw_hard_error("Only objectp() objects can be added to Mapping");
     }
     this->pointer = AllocatorType::allocate(val);
 #ifdef USE_BOEHM

@@ -34,7 +34,6 @@ Type mptr;
 public:
 enum { NumParams = 16 };
 IndirectVariadicMethoid(core::T_sp name, Type ptr) : TemplatedFunctionBase_O(method_entry_point,name), mptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
@@ -149,7 +148,6 @@ Type mptr;
 public:
 enum { NumParams = 15 };
 IndirectVariadicMethoid(core::T_sp name, Type ptr) : TemplatedFunctionBase_O(method_entry_point,name), mptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
@@ -259,7 +257,6 @@ Type mptr;
 public:
 enum { NumParams = 14 };
 IndirectVariadicMethoid(core::T_sp name, Type ptr) : TemplatedFunctionBase_O(method_entry_point,name), mptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
@@ -365,7 +362,6 @@ Type mptr;
 public:
 enum { NumParams = 13 };
 IndirectVariadicMethoid(core::T_sp name, Type ptr) : TemplatedFunctionBase_O(method_entry_point,name), mptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
@@ -466,7 +462,6 @@ Type mptr;
 public:
 enum { NumParams = 12 };
 IndirectVariadicMethoid(core::T_sp name, Type ptr) : TemplatedFunctionBase_O(method_entry_point,name), mptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
@@ -563,7 +558,6 @@ Type mptr;
 public:
 enum { NumParams = 11 };
 IndirectVariadicMethoid(core::T_sp name, Type ptr) : TemplatedFunctionBase_O(method_entry_point,name), mptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
@@ -656,7 +650,6 @@ Type mptr;
 public:
 enum { NumParams = 10 };
 IndirectVariadicMethoid(core::T_sp name, Type ptr) : TemplatedFunctionBase_O(method_entry_point,name), mptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
@@ -744,7 +737,6 @@ Type mptr;
 public:
 enum { NumParams = 9 };
 IndirectVariadicMethoid(core::T_sp name, Type ptr) : TemplatedFunctionBase_O(method_entry_point,name), mptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
@@ -828,7 +820,6 @@ Type mptr;
 public:
 enum { NumParams = 8 };
 IndirectVariadicMethoid(core::T_sp name, Type ptr) : TemplatedFunctionBase_O(method_entry_point,name), mptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
@@ -908,7 +899,6 @@ Type mptr;
 public:
 enum { NumParams = 7 };
 IndirectVariadicMethoid(core::T_sp name, Type ptr) : TemplatedFunctionBase_O(method_entry_point,name), mptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
@@ -983,7 +973,6 @@ Type mptr;
 public:
 enum { NumParams = 6 };
 IndirectVariadicMethoid(core::T_sp name, Type ptr) : TemplatedFunctionBase_O(method_entry_point,name), mptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
@@ -1054,7 +1043,6 @@ Type mptr;
 public:
 enum { NumParams = 5 };
 IndirectVariadicMethoid(core::T_sp name, Type ptr) : TemplatedFunctionBase_O(method_entry_point,name), mptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
@@ -1121,7 +1109,6 @@ Type mptr;
 public:
 enum { NumParams = 4 };
 IndirectVariadicMethoid(core::T_sp name, Type ptr) : TemplatedFunctionBase_O(method_entry_point,name), mptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
@@ -1184,7 +1171,6 @@ Type mptr;
 public:
 enum { NumParams = 3 };
 IndirectVariadicMethoid(core::T_sp name, Type ptr) : TemplatedFunctionBase_O(method_entry_point,name), mptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
@@ -1243,7 +1229,6 @@ Type mptr;
 public:
 enum { NumParams = 2 };
 IndirectVariadicMethoid(core::T_sp name, Type ptr) : TemplatedFunctionBase_O(method_entry_point,name), mptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
@@ -1298,7 +1283,6 @@ Type mptr;
 public:
 enum { NumParams = 1 };
 IndirectVariadicMethoid(core::T_sp name, Type ptr) : TemplatedFunctionBase_O(method_entry_point,name), mptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
@@ -1355,7 +1339,6 @@ Type mptr;
 public:
 enum { NumParams = 16 };
 IndirectVariadicMethoid(core::T_sp name, Type ptr) : TemplatedFunctionBase_O(method_entry_point,name), mptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
@@ -1469,7 +1452,6 @@ Type mptr;
 public:
 enum { NumParams = 15 };
 IndirectVariadicMethoid(core::T_sp name, Type ptr) : TemplatedFunctionBase_O(method_entry_point,name), mptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
@@ -1578,7 +1560,6 @@ Type mptr;
 public:
 enum { NumParams = 14 };
 IndirectVariadicMethoid(core::T_sp name, Type ptr) : TemplatedFunctionBase_O(method_entry_point,name), mptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
@@ -1683,7 +1664,6 @@ Type mptr;
 public:
 enum { NumParams = 13 };
 IndirectVariadicMethoid(core::T_sp name, Type ptr) : TemplatedFunctionBase_O(method_entry_point,name), mptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
@@ -1784,7 +1764,6 @@ Type mptr;
 public:
 enum { NumParams = 12 };
 IndirectVariadicMethoid(core::T_sp name, Type ptr) : TemplatedFunctionBase_O(method_entry_point,name), mptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
@@ -1881,7 +1860,6 @@ Type mptr;
 public:
 enum { NumParams = 11 };
 IndirectVariadicMethoid(core::T_sp name, Type ptr) : TemplatedFunctionBase_O(method_entry_point,name), mptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
@@ -1974,7 +1952,6 @@ Type mptr;
 public:
 enum { NumParams = 10 };
 IndirectVariadicMethoid(core::T_sp name, Type ptr) : TemplatedFunctionBase_O(method_entry_point,name), mptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
@@ -2062,7 +2039,6 @@ Type mptr;
 public:
 enum { NumParams = 9 };
 IndirectVariadicMethoid(core::T_sp name, Type ptr) : TemplatedFunctionBase_O(method_entry_point,name), mptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
@@ -2146,7 +2122,6 @@ Type mptr;
 public:
 enum { NumParams = 8 };
 IndirectVariadicMethoid(core::T_sp name, Type ptr) : TemplatedFunctionBase_O(method_entry_point,name), mptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
@@ -2225,7 +2200,6 @@ Type mptr;
 public:
 enum { NumParams = 7 };
 IndirectVariadicMethoid(core::T_sp name, Type ptr) : TemplatedFunctionBase_O(method_entry_point,name), mptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
@@ -2300,7 +2274,6 @@ Type mptr;
 public:
 enum { NumParams = 6 };
 IndirectVariadicMethoid(core::T_sp name, Type ptr) : TemplatedFunctionBase_O(method_entry_point,name), mptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
@@ -2371,7 +2344,6 @@ Type mptr;
 public:
 enum { NumParams = 5 };
 IndirectVariadicMethoid(core::T_sp name, Type ptr) : TemplatedFunctionBase_O(method_entry_point,name), mptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
@@ -2438,7 +2410,6 @@ Type mptr;
 public:
 enum { NumParams = 4 };
 IndirectVariadicMethoid(core::T_sp name, Type ptr) : TemplatedFunctionBase_O(method_entry_point,name), mptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
@@ -2501,7 +2472,6 @@ Type mptr;
 public:
 enum { NumParams = 3 };
 IndirectVariadicMethoid(core::T_sp name, Type ptr) : TemplatedFunctionBase_O(method_entry_point,name), mptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
@@ -2560,7 +2530,6 @@ Type mptr;
 public:
 enum { NumParams = 2 };
 IndirectVariadicMethoid(core::T_sp name, Type ptr) : TemplatedFunctionBase_O(method_entry_point,name), mptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
@@ -2615,7 +2584,6 @@ Type mptr;
 public:
 enum { NumParams = 1 };
 IndirectVariadicMethoid(core::T_sp name, Type ptr) : TemplatedFunctionBase_O(method_entry_point,name), mptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
@@ -2672,7 +2640,6 @@ Type mptr;
 public:
 enum { NumParams = 16 };
 IndirectVariadicMethoid(core::T_sp name, Type ptr) : TemplatedFunctionBase_O(method_entry_point,name), mptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
@@ -2789,7 +2756,6 @@ Type mptr;
 public:
 enum { NumParams = 15 };
 IndirectVariadicMethoid(core::T_sp name, Type ptr) : TemplatedFunctionBase_O(method_entry_point,name), mptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
@@ -2899,7 +2865,6 @@ Type mptr;
 public:
 enum { NumParams = 14 };
 IndirectVariadicMethoid(core::T_sp name, Type ptr) : TemplatedFunctionBase_O(method_entry_point,name), mptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
@@ -3005,7 +2970,6 @@ Type mptr;
 public:
 enum { NumParams = 13 };
 IndirectVariadicMethoid(core::T_sp name, Type ptr) : TemplatedFunctionBase_O(method_entry_point,name), mptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
@@ -3106,7 +3070,6 @@ Type mptr;
 public:
 enum { NumParams = 12 };
 IndirectVariadicMethoid(core::T_sp name, Type ptr) : TemplatedFunctionBase_O(method_entry_point,name), mptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
@@ -3203,7 +3166,6 @@ Type mptr;
 public:
 enum { NumParams = 11 };
 IndirectVariadicMethoid(core::T_sp name, Type ptr) : TemplatedFunctionBase_O(method_entry_point,name), mptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
@@ -3296,7 +3258,6 @@ Type mptr;
 public:
 enum { NumParams = 10 };
 IndirectVariadicMethoid(core::T_sp name, Type ptr) : TemplatedFunctionBase_O(method_entry_point,name), mptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
@@ -3384,7 +3345,6 @@ Type mptr;
 public:
 enum { NumParams = 9 };
 IndirectVariadicMethoid(core::T_sp name, Type ptr) : TemplatedFunctionBase_O(method_entry_point,name), mptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
@@ -3468,7 +3428,6 @@ Type mptr;
 public:
 enum { NumParams = 8 };
 IndirectVariadicMethoid(core::T_sp name, Type ptr) : TemplatedFunctionBase_O(method_entry_point,name), mptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
@@ -3548,7 +3507,6 @@ Type mptr;
 public:
 enum { NumParams = 7 };
 IndirectVariadicMethoid(core::T_sp name, Type ptr) : TemplatedFunctionBase_O(method_entry_point,name), mptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
@@ -3623,7 +3581,6 @@ Type mptr;
 public:
 enum { NumParams = 6 };
 IndirectVariadicMethoid(core::T_sp name, Type ptr) : TemplatedFunctionBase_O(method_entry_point,name), mptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
@@ -3694,7 +3651,6 @@ Type mptr;
 public:
 enum { NumParams = 5 };
 IndirectVariadicMethoid(core::T_sp name, Type ptr) : TemplatedFunctionBase_O(method_entry_point,name), mptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
@@ -3761,7 +3717,6 @@ Type mptr;
 public:
 enum { NumParams = 4 };
 IndirectVariadicMethoid(core::T_sp name, Type ptr) : TemplatedFunctionBase_O(method_entry_point,name), mptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
@@ -3824,7 +3779,6 @@ Type mptr;
 public:
 enum { NumParams = 3 };
 IndirectVariadicMethoid(core::T_sp name, Type ptr) : TemplatedFunctionBase_O(method_entry_point,name), mptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
@@ -3883,7 +3837,6 @@ Type mptr;
 public:
 enum { NumParams = 2 };
 IndirectVariadicMethoid(core::T_sp name, Type ptr) : TemplatedFunctionBase_O(method_entry_point,name), mptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
@@ -3938,7 +3891,6 @@ Type mptr;
 public:
 enum { NumParams = 1 };
 IndirectVariadicMethoid(core::T_sp name, Type ptr) : TemplatedFunctionBase_O(method_entry_point,name), mptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
@@ -3995,7 +3947,6 @@ Type mptr;
 public:
 enum { NumParams = 16 };
 IndirectVariadicMethoid(core::T_sp name, Type ptr) : TemplatedFunctionBase_O(method_entry_point,name), mptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
@@ -4111,7 +4062,6 @@ Type mptr;
 public:
 enum { NumParams = 15 };
 IndirectVariadicMethoid(core::T_sp name, Type ptr) : TemplatedFunctionBase_O(method_entry_point,name), mptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
@@ -4220,7 +4170,6 @@ Type mptr;
 public:
 enum { NumParams = 14 };
 IndirectVariadicMethoid(core::T_sp name, Type ptr) : TemplatedFunctionBase_O(method_entry_point,name), mptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
@@ -4325,7 +4274,6 @@ Type mptr;
 public:
 enum { NumParams = 13 };
 IndirectVariadicMethoid(core::T_sp name, Type ptr) : TemplatedFunctionBase_O(method_entry_point,name), mptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
@@ -4426,7 +4374,6 @@ Type mptr;
 public:
 enum { NumParams = 12 };
 IndirectVariadicMethoid(core::T_sp name, Type ptr) : TemplatedFunctionBase_O(method_entry_point,name), mptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
@@ -4523,7 +4470,6 @@ Type mptr;
 public:
 enum { NumParams = 11 };
 IndirectVariadicMethoid(core::T_sp name, Type ptr) : TemplatedFunctionBase_O(method_entry_point,name), mptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
@@ -4616,7 +4562,6 @@ Type mptr;
 public:
 enum { NumParams = 10 };
 IndirectVariadicMethoid(core::T_sp name, Type ptr) : TemplatedFunctionBase_O(method_entry_point,name), mptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
@@ -4705,7 +4650,6 @@ Type mptr;
 public:
 enum { NumParams = 9 };
 IndirectVariadicMethoid(core::T_sp name, Type ptr) : TemplatedFunctionBase_O(method_entry_point,name), mptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
@@ -4789,7 +4733,6 @@ Type mptr;
 public:
 enum { NumParams = 8 };
 IndirectVariadicMethoid(core::T_sp name, Type ptr) : TemplatedFunctionBase_O(method_entry_point,name), mptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
@@ -4868,7 +4811,6 @@ Type mptr;
 public:
 enum { NumParams = 7 };
 IndirectVariadicMethoid(core::T_sp name, Type ptr) : TemplatedFunctionBase_O(method_entry_point,name), mptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
@@ -4943,7 +4885,6 @@ Type mptr;
 public:
 enum { NumParams = 6 };
 IndirectVariadicMethoid(core::T_sp name, Type ptr) : TemplatedFunctionBase_O(method_entry_point,name), mptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
@@ -5014,7 +4955,6 @@ Type mptr;
 public:
 enum { NumParams = 5 };
 IndirectVariadicMethoid(core::T_sp name, Type ptr) : TemplatedFunctionBase_O(method_entry_point,name), mptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
@@ -5081,7 +5021,6 @@ Type mptr;
 public:
 enum { NumParams = 4 };
 IndirectVariadicMethoid(core::T_sp name, Type ptr) : TemplatedFunctionBase_O(method_entry_point,name), mptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
@@ -5144,7 +5083,6 @@ Type mptr;
 public:
 enum { NumParams = 3 };
 IndirectVariadicMethoid(core::T_sp name, Type ptr) : TemplatedFunctionBase_O(method_entry_point,name), mptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
@@ -5203,7 +5141,6 @@ Type mptr;
 public:
 enum { NumParams = 2 };
 IndirectVariadicMethoid(core::T_sp name, Type ptr) : TemplatedFunctionBase_O(method_entry_point,name), mptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {
@@ -5258,7 +5195,6 @@ Type mptr;
 public:
 enum { NumParams = 1 };
 IndirectVariadicMethoid(core::T_sp name, Type ptr) : TemplatedFunctionBase_O(method_entry_point,name), mptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
 {

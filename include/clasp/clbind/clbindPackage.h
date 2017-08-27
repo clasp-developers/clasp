@@ -37,7 +37,6 @@ namespace clbind {
 class ClbindExposer_O : public core::Exposer_O {
 private:
 public:
-  DISABLE_NEW();
   ClbindExposer_O(core::Lisp_sp lisp) : Exposer_O(lisp, ClbindPkg){};
   virtual void expose(core::Lisp_sp lisp, WhatToExpose what) const;
 };

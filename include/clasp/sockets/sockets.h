@@ -27,8 +27,6 @@ THE SOFTWARE.
 #ifndef _sockets_H_
 #define _sockets_H_
 
-#include <clasp/core/foundation.h>
-#include <clasp/core/object.h>
 
 namespace sockets {
 

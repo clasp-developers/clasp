@@ -337,7 +337,7 @@ DirectoryIterator_sp DirectoryIterator_O::create(Path_sp path) {
 #define DECL_af_makeDirectoryIterator ""
 #define DOCS_af_makeDirectoryIterator "make DirectoryIterator args: path"
 DirectoryIterator_mv af_makeDirectoryIterator(Path_sp path) {
-  IMPLEMENT_MEF(BF("What the heck was I doing below?"));
+  IMPLEMENT_MEF("What the heck was I doing below?");
 #if 0
 	DirectoryIterator_sp me(DirectoryIterator_O::create());
 	SYMBOL_SC_(CorePkg,path);

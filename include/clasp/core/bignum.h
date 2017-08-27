@@ -248,7 +248,7 @@ namespace translate {
         ;
         return;
       }
-      SIMPLE_ERROR(BF("Handle conversions of %s to Bignum") % _rep_(o));
+      SIMPLE_ERROR_SPRINTF("Handle conversions of %s to Bignum", _rep_(o).c_str());
     }
   };
 };

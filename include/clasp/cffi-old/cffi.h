@@ -27,7 +27,6 @@ THE SOFTWARE.
 #ifndef _cffi_H_
 #define _cffi_H_
 
-#include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
 #include <clasp/cffi/cffiPackage.h>
 #include <clasp/cffi/cffi.fwd.h>

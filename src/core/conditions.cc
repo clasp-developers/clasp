@@ -79,11 +79,14 @@ CandoException_sp CandoException_O::create(const string &msg) {
   return ce;
 }
 
+#if 0
 CandoException_sp CandoException_O::create(const boost::format &fmt) {
   GC_ALLOCATE(CandoException_O, ce);
   ce->setMessage(fmt.str());
   return ce;
 }
+#endif
+
 
 Condition::Condition(T_sp cond) {
   this->_ConditionObject = cond;

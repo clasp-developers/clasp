@@ -62,7 +62,7 @@ CL_LAMBDA(type size &key (initial-element nil iesp));
 CL_DECLARE();
 CL_DOCSTRING("make_sequence");
 CL_DEFUN T_mv cl__make_sequence(T_sp type, Fixnum_sp size, T_sp initial_element, T_sp iesp) {
-  IMPLEMENT_MEF(BF("make-sequence"));
+  IMPLEMENT_MEF("make-sequence");
 #if 0
 	Symbol_sp element_type;
 	Fixnum_sp length;
@@ -76,7 +76,7 @@ CL_DEFUN T_mv cl__make_sequence(T_sp type, Fixnum_sp size, T_sp initial_element,
 	    List_sp sequence = eval::funcall(cl::_sym_make_list,size,kw::_sym_initial_element,initial_element);
 	    return sequence;
 	}
-	IMPLEMENT_MEF(BF("Implement make_sequence"));
+	IMPLEMENT_MEF("Implement make_sequence");
 	return(Values(_Nil<T_O>()));
 #endif
 };

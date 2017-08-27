@@ -168,19 +168,6 @@ void _trapThrow(const string &fileName, uint line, const string &msg) {
   /* do nothing */
 }
 
-HardError::HardError(const char *sourceFile, const char *functionName, uint lineNumber, const boost::format &fmt) {
-  TRY_BOOST_FORMAT_STRING(fmt, fmt_str);
-  this->_Message = (BF("File: %s Function:%s LineNumber:%d\n%s") % sourceFile % functionName % lineNumber % fmt_str).str();
-}
-
-HardError::HardError(const char *sourceFile, const char *functionName, uint lineNumber, const string &msg) {
-  this->_Message = (BF("File: %s Function:%s LineNumber:%d\n%s") % sourceFile % functionName % lineNumber % msg).str();
-}
-
-string HardError::message() {
-  return this->_Message;
-}
-
 string debugFlagsAsNodeName(uint flags) {
   if (flags == (DEBUG_LOG))
     return "LOG";

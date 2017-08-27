@@ -24,7 +24,6 @@ public:
 virtual const char* describe() const { return "VariadicFunctor"; };
 enum { NumParams = 16 };
 VariadicFunctor(core::T_sp name, Type ptr) : core::TemplatedFunctionBase_O(entry_point,name), fptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 static inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
@@ -160,7 +159,6 @@ public:
 virtual const char* describe() const { return "VariadicFunctor"; };
 enum { NumParams = 15 };
 VariadicFunctor(core::T_sp name, Type ptr) : core::TemplatedFunctionBase_O(entry_point,name), fptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 static inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
@@ -289,7 +287,6 @@ public:
 virtual const char* describe() const { return "VariadicFunctor"; };
 enum { NumParams = 14 };
 VariadicFunctor(core::T_sp name, Type ptr) : core::TemplatedFunctionBase_O(entry_point,name), fptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 static inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
@@ -411,7 +408,6 @@ public:
 virtual const char* describe() const { return "VariadicFunctor"; };
 enum { NumParams = 13 };
 VariadicFunctor(core::T_sp name, Type ptr) : core::TemplatedFunctionBase_O(entry_point,name), fptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 static inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
@@ -527,7 +523,6 @@ public:
 virtual const char* describe() const { return "VariadicFunctor"; };
 enum { NumParams = 12 };
 VariadicFunctor(core::T_sp name, Type ptr) : core::TemplatedFunctionBase_O(entry_point,name), fptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 static inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
@@ -637,7 +632,6 @@ public:
 virtual const char* describe() const { return "VariadicFunctor"; };
 enum { NumParams = 11 };
 VariadicFunctor(core::T_sp name, Type ptr) : core::TemplatedFunctionBase_O(entry_point,name), fptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 static inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
@@ -741,7 +735,6 @@ public:
 virtual const char* describe() const { return "VariadicFunctor"; };
 enum { NumParams = 10 };
 VariadicFunctor(core::T_sp name, Type ptr) : core::TemplatedFunctionBase_O(entry_point,name), fptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 static inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
@@ -839,7 +832,6 @@ public:
 virtual const char* describe() const { return "VariadicFunctor"; };
 enum { NumParams = 9 };
 VariadicFunctor(core::T_sp name, Type ptr) : core::TemplatedFunctionBase_O(entry_point,name), fptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 static inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
@@ -931,7 +923,6 @@ public:
 virtual const char* describe() const { return "VariadicFunctor"; };
 enum { NumParams = 8 };
 VariadicFunctor(core::T_sp name, Type ptr) : core::TemplatedFunctionBase_O(entry_point,name), fptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 static inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
@@ -1017,7 +1008,6 @@ public:
 virtual const char* describe() const { return "VariadicFunctor"; };
 enum { NumParams = 7 };
 VariadicFunctor(core::T_sp name, Type ptr) : core::TemplatedFunctionBase_O(entry_point,name), fptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 static inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
@@ -1096,7 +1086,6 @@ public:
 virtual const char* describe() const { return "VariadicFunctor"; };
 enum { NumParams = 6 };
 VariadicFunctor(core::T_sp name, Type ptr) : core::TemplatedFunctionBase_O(entry_point,name), fptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 static inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
@@ -1169,7 +1158,6 @@ public:
 virtual const char* describe() const { return "VariadicFunctor"; };
 enum { NumParams = 5 };
 VariadicFunctor(core::T_sp name, Type ptr) : core::TemplatedFunctionBase_O(entry_point,name), fptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 static inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
@@ -1236,7 +1224,6 @@ public:
 virtual const char* describe() const { return "VariadicFunctor"; };
 enum { NumParams = 4 };
 VariadicFunctor(core::T_sp name, Type ptr) : core::TemplatedFunctionBase_O(entry_point,name), fptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 static inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
@@ -1297,7 +1284,6 @@ public:
 virtual const char* describe() const { return "VariadicFunctor"; };
 enum { NumParams = 3 };
 VariadicFunctor(core::T_sp name, Type ptr) : core::TemplatedFunctionBase_O(entry_point,name), fptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 static inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
@@ -1352,7 +1338,6 @@ public:
 virtual const char* describe() const { return "VariadicFunctor"; };
 enum { NumParams = 2 };
 VariadicFunctor(core::T_sp name, Type ptr) : core::TemplatedFunctionBase_O(entry_point,name), fptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 static inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
@@ -1401,7 +1386,6 @@ public:
 virtual const char* describe() const { return "VariadicFunctor"; };
 enum { NumParams = 1 };
 VariadicFunctor(core::T_sp name, Type ptr) : core::TemplatedFunctionBase_O(entry_point,name), fptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 static inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
@@ -1444,7 +1428,6 @@ public:
 virtual const char* describe() const { return "VariadicFunctor"; };
 enum { NumParams = 0 };
 VariadicFunctor(core::T_sp name, Type ptr) : core::TemplatedFunctionBase_O(entry_point,name), fptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 static inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
@@ -1479,7 +1462,6 @@ public:
 virtual const char* describe() const { return "VariadicFunctor"; };
 enum { NumParams = 16 };
 VariadicFunctor(core::T_sp name, Type ptr) : core::TemplatedFunctionBase_O(entry_point,name), fptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 static inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
@@ -1613,7 +1595,6 @@ public:
 virtual const char* describe() const { return "VariadicFunctor"; };
 enum { NumParams = 15 };
 VariadicFunctor(core::T_sp name, Type ptr) : core::TemplatedFunctionBase_O(entry_point,name), fptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 static inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
@@ -1741,7 +1722,6 @@ public:
 virtual const char* describe() const { return "VariadicFunctor"; };
 enum { NumParams = 14 };
 VariadicFunctor(core::T_sp name, Type ptr) : core::TemplatedFunctionBase_O(entry_point,name), fptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 static inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
@@ -1862,7 +1842,6 @@ public:
 virtual const char* describe() const { return "VariadicFunctor"; };
 enum { NumParams = 13 };
 VariadicFunctor(core::T_sp name, Type ptr) : core::TemplatedFunctionBase_O(entry_point,name), fptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 static inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
@@ -1977,7 +1956,6 @@ public:
 virtual const char* describe() const { return "VariadicFunctor"; };
 enum { NumParams = 12 };
 VariadicFunctor(core::T_sp name, Type ptr) : core::TemplatedFunctionBase_O(entry_point,name), fptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 static inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
@@ -2086,7 +2064,6 @@ public:
 virtual const char* describe() const { return "VariadicFunctor"; };
 enum { NumParams = 11 };
 VariadicFunctor(core::T_sp name, Type ptr) : core::TemplatedFunctionBase_O(entry_point,name), fptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 static inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
@@ -2189,7 +2166,6 @@ public:
 virtual const char* describe() const { return "VariadicFunctor"; };
 enum { NumParams = 10 };
 VariadicFunctor(core::T_sp name, Type ptr) : core::TemplatedFunctionBase_O(entry_point,name), fptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 static inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
@@ -2286,7 +2262,6 @@ public:
 virtual const char* describe() const { return "VariadicFunctor"; };
 enum { NumParams = 9 };
 VariadicFunctor(core::T_sp name, Type ptr) : core::TemplatedFunctionBase_O(entry_point,name), fptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 static inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
@@ -2377,7 +2352,6 @@ public:
 virtual const char* describe() const { return "VariadicFunctor"; };
 enum { NumParams = 8 };
 VariadicFunctor(core::T_sp name, Type ptr) : core::TemplatedFunctionBase_O(entry_point,name), fptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 static inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
@@ -2461,7 +2435,6 @@ public:
 virtual const char* describe() const { return "VariadicFunctor"; };
 enum { NumParams = 7 };
 VariadicFunctor(core::T_sp name, Type ptr) : core::TemplatedFunctionBase_O(entry_point,name), fptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 static inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
@@ -2539,7 +2512,6 @@ public:
 virtual const char* describe() const { return "VariadicFunctor"; };
 enum { NumParams = 6 };
 VariadicFunctor(core::T_sp name, Type ptr) : core::TemplatedFunctionBase_O(entry_point,name), fptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 static inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
@@ -2611,7 +2583,6 @@ public:
 virtual const char* describe() const { return "VariadicFunctor"; };
 enum { NumParams = 5 };
 VariadicFunctor(core::T_sp name, Type ptr) : core::TemplatedFunctionBase_O(entry_point,name), fptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 static inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
@@ -2677,7 +2648,6 @@ public:
 virtual const char* describe() const { return "VariadicFunctor"; };
 enum { NumParams = 4 };
 VariadicFunctor(core::T_sp name, Type ptr) : core::TemplatedFunctionBase_O(entry_point,name), fptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 static inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
@@ -2737,7 +2707,6 @@ public:
 virtual const char* describe() const { return "VariadicFunctor"; };
 enum { NumParams = 3 };
 VariadicFunctor(core::T_sp name, Type ptr) : core::TemplatedFunctionBase_O(entry_point,name), fptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 static inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
@@ -2791,7 +2760,6 @@ public:
 virtual const char* describe() const { return "VariadicFunctor"; };
 enum { NumParams = 2 };
 VariadicFunctor(core::T_sp name, Type ptr) : core::TemplatedFunctionBase_O(entry_point,name), fptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 static inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
@@ -2839,7 +2807,6 @@ public:
 virtual const char* describe() const { return "VariadicFunctor"; };
 enum { NumParams = 1 };
 VariadicFunctor(core::T_sp name, Type ptr) : core::TemplatedFunctionBase_O(entry_point,name), fptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 static inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
@@ -2881,7 +2848,6 @@ public:
 virtual const char* describe() const { return "VariadicFunctor"; };
 enum { NumParams = 0 };
 VariadicFunctor(core::T_sp name, Type ptr) : core::TemplatedFunctionBase_O(entry_point,name), fptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 static inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
@@ -2917,7 +2883,6 @@ public:
 virtual const char* describe() const { return "VariadicFunctor"; };
 enum { NumParams = 16 };
 VariadicFunctor(core::T_sp name, Type ptr) : core::TemplatedFunctionBase_O(entry_point,name), fptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 static inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
@@ -3056,7 +3021,6 @@ public:
 virtual const char* describe() const { return "VariadicFunctor"; };
 enum { NumParams = 15 };
 VariadicFunctor(core::T_sp name, Type ptr) : core::TemplatedFunctionBase_O(entry_point,name), fptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 static inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
@@ -3187,7 +3151,6 @@ public:
 virtual const char* describe() const { return "VariadicFunctor"; };
 enum { NumParams = 14 };
 VariadicFunctor(core::T_sp name, Type ptr) : core::TemplatedFunctionBase_O(entry_point,name), fptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 static inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
@@ -3312,7 +3275,6 @@ public:
 virtual const char* describe() const { return "VariadicFunctor"; };
 enum { NumParams = 13 };
 VariadicFunctor(core::T_sp name, Type ptr) : core::TemplatedFunctionBase_O(entry_point,name), fptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 static inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
@@ -3430,7 +3392,6 @@ public:
 virtual const char* describe() const { return "VariadicFunctor"; };
 enum { NumParams = 12 };
 VariadicFunctor(core::T_sp name, Type ptr) : core::TemplatedFunctionBase_O(entry_point,name), fptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 static inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
@@ -3542,7 +3503,6 @@ public:
 virtual const char* describe() const { return "VariadicFunctor"; };
 enum { NumParams = 11 };
 VariadicFunctor(core::T_sp name, Type ptr) : core::TemplatedFunctionBase_O(entry_point,name), fptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 static inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
@@ -3647,7 +3607,6 @@ public:
 virtual const char* describe() const { return "VariadicFunctor"; };
 enum { NumParams = 10 };
 VariadicFunctor(core::T_sp name, Type ptr) : core::TemplatedFunctionBase_O(entry_point,name), fptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 static inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
@@ -3746,7 +3705,6 @@ public:
 virtual const char* describe() const { return "VariadicFunctor"; };
 enum { NumParams = 9 };
 VariadicFunctor(core::T_sp name, Type ptr) : core::TemplatedFunctionBase_O(entry_point,name), fptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 static inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
@@ -3839,7 +3797,6 @@ public:
 virtual const char* describe() const { return "VariadicFunctor"; };
 enum { NumParams = 8 };
 VariadicFunctor(core::T_sp name, Type ptr) : core::TemplatedFunctionBase_O(entry_point,name), fptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 static inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
@@ -3926,7 +3883,6 @@ public:
 virtual const char* describe() const { return "VariadicFunctor"; };
 enum { NumParams = 7 };
 VariadicFunctor(core::T_sp name, Type ptr) : core::TemplatedFunctionBase_O(entry_point,name), fptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 static inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
@@ -4006,7 +3962,6 @@ public:
 virtual const char* describe() const { return "VariadicFunctor"; };
 enum { NumParams = 6 };
 VariadicFunctor(core::T_sp name, Type ptr) : core::TemplatedFunctionBase_O(entry_point,name), fptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 static inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
@@ -4080,7 +4035,6 @@ public:
 virtual const char* describe() const { return "VariadicFunctor"; };
 enum { NumParams = 5 };
 VariadicFunctor(core::T_sp name, Type ptr) : core::TemplatedFunctionBase_O(entry_point,name), fptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 static inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
@@ -4148,7 +4102,6 @@ public:
 virtual const char* describe() const { return "VariadicFunctor"; };
 enum { NumParams = 4 };
 VariadicFunctor(core::T_sp name, Type ptr) : core::TemplatedFunctionBase_O(entry_point,name), fptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 static inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
@@ -4210,7 +4163,6 @@ public:
 virtual const char* describe() const { return "VariadicFunctor"; };
 enum { NumParams = 3 };
 VariadicFunctor(core::T_sp name, Type ptr) : core::TemplatedFunctionBase_O(entry_point,name), fptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 static inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
@@ -4266,7 +4218,6 @@ public:
 virtual const char* describe() const { return "VariadicFunctor"; };
 enum { NumParams = 2 };
 VariadicFunctor(core::T_sp name, Type ptr) : core::TemplatedFunctionBase_O(entry_point,name), fptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 static inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
@@ -4316,7 +4267,6 @@ public:
 virtual const char* describe() const { return "VariadicFunctor"; };
 enum { NumParams = 1 };
 VariadicFunctor(core::T_sp name, Type ptr) : core::TemplatedFunctionBase_O(entry_point,name), fptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 static inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
@@ -4360,7 +4310,6 @@ public:
 virtual const char* describe() const { return "VariadicFunctor"; };
 enum { NumParams = 0 };
 VariadicFunctor(core::T_sp name, Type ptr) : core::TemplatedFunctionBase_O(entry_point,name), fptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 static inline LCC_RETURN LISP_CALLING_CONVENTION()
 {

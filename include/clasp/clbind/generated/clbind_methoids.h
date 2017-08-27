@@ -27,7 +27,6 @@ Type mptr;
 public:
 enum { NumParams = 8 };
 IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::TemplatedFunctionBase_O(entry_point,name), mptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
 static inline LCC_RETURN LISP_CALLING_CONVENTION()
@@ -114,7 +113,6 @@ Type mptr;
 public:
 enum { NumParams = 7 };
 IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::TemplatedFunctionBase_O(entry_point,name), mptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
 static inline LCC_RETURN LISP_CALLING_CONVENTION()
@@ -194,7 +192,6 @@ Type mptr;
 public:
 enum { NumParams = 6 };
 IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::TemplatedFunctionBase_O(entry_point,name), mptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
 static inline LCC_RETURN LISP_CALLING_CONVENTION()
@@ -268,7 +265,6 @@ Type mptr;
 public:
 enum { NumParams = 5 };
 IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::TemplatedFunctionBase_O(entry_point,name), mptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
 static inline LCC_RETURN LISP_CALLING_CONVENTION()
@@ -336,7 +332,6 @@ Type mptr;
 public:
 enum { NumParams = 4 };
 IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::TemplatedFunctionBase_O(entry_point,name), mptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
 static inline LCC_RETURN LISP_CALLING_CONVENTION()
@@ -398,7 +393,6 @@ Type mptr;
 public:
 enum { NumParams = 3 };
 IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::TemplatedFunctionBase_O(entry_point,name), mptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
 static inline LCC_RETURN LISP_CALLING_CONVENTION()
@@ -454,7 +448,6 @@ Type mptr;
 public:
 enum { NumParams = 2 };
 IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::TemplatedFunctionBase_O(entry_point,name), mptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
 static inline LCC_RETURN LISP_CALLING_CONVENTION()
@@ -504,7 +497,6 @@ Type mptr;
 public:
 enum { NumParams = 1 };
 IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::TemplatedFunctionBase_O(entry_point,name), mptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
 static inline LCC_RETURN LISP_CALLING_CONVENTION()
@@ -549,7 +541,6 @@ Type mptr;
 public:
 enum { NumParams = 8 };
 IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::TemplatedFunctionBase_O(entry_point,name), mptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
 static inline LCC_RETURN LISP_CALLING_CONVENTION()
@@ -634,7 +625,6 @@ Type mptr;
 public:
 enum { NumParams = 7 };
 IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::TemplatedFunctionBase_O(entry_point,name), mptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
 static inline LCC_RETURN LISP_CALLING_CONVENTION()
@@ -713,7 +703,6 @@ Type mptr;
 public:
 enum { NumParams = 6 };
 IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::TemplatedFunctionBase_O(entry_point,name), mptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
 static inline LCC_RETURN LISP_CALLING_CONVENTION()
@@ -786,7 +775,6 @@ Type mptr;
 public:
 enum { NumParams = 5 };
 IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::TemplatedFunctionBase_O(entry_point,name), mptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
 static inline LCC_RETURN LISP_CALLING_CONVENTION()
@@ -853,7 +841,6 @@ Type mptr;
 public:
 enum { NumParams = 4 };
 IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::TemplatedFunctionBase_O(entry_point,name), mptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
 static inline LCC_RETURN LISP_CALLING_CONVENTION()
@@ -914,7 +901,6 @@ Type mptr;
 public:
 enum { NumParams = 3 };
 IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::TemplatedFunctionBase_O(entry_point,name), mptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
 static inline LCC_RETURN LISP_CALLING_CONVENTION()
@@ -969,7 +955,6 @@ Type mptr;
 public:
 enum { NumParams = 2 };
 IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::TemplatedFunctionBase_O(entry_point,name), mptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
 static inline LCC_RETURN LISP_CALLING_CONVENTION()
@@ -1018,7 +1003,6 @@ Type mptr;
 public:
 enum { NumParams = 1 };
 IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::TemplatedFunctionBase_O(entry_point,name), mptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
 static inline LCC_RETURN LISP_CALLING_CONVENTION()
@@ -1063,7 +1047,6 @@ Type mptr;
 public:
 enum { NumParams = 8 };
 IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::TemplatedFunctionBase_O(entry_point,name), mptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
 static inline LCC_RETURN LISP_CALLING_CONVENTION()
@@ -1151,7 +1134,6 @@ Type mptr;
 public:
 enum { NumParams = 7 };
 IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::TemplatedFunctionBase_O(entry_point,name), mptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
 static inline LCC_RETURN LISP_CALLING_CONVENTION()
@@ -1232,7 +1214,6 @@ Type mptr;
 public:
 enum { NumParams = 6 };
 IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::TemplatedFunctionBase_O(entry_point,name), mptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
 static inline LCC_RETURN LISP_CALLING_CONVENTION()
@@ -1307,7 +1288,6 @@ Type mptr;
 public:
 enum { NumParams = 5 };
 IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::TemplatedFunctionBase_O(entry_point,name), mptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
 static inline LCC_RETURN LISP_CALLING_CONVENTION()
@@ -1376,7 +1356,6 @@ Type mptr;
 public:
 enum { NumParams = 4 };
 IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::TemplatedFunctionBase_O(entry_point,name), mptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
 static inline LCC_RETURN LISP_CALLING_CONVENTION()
@@ -1439,7 +1418,6 @@ Type mptr;
 public:
 enum { NumParams = 3 };
 IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::TemplatedFunctionBase_O(entry_point,name), mptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
 static inline LCC_RETURN LISP_CALLING_CONVENTION()
@@ -1496,7 +1474,6 @@ Type mptr;
 public:
 enum { NumParams = 2 };
 IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::TemplatedFunctionBase_O(entry_point,name), mptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
 static inline LCC_RETURN LISP_CALLING_CONVENTION()
@@ -1547,7 +1524,6 @@ Type mptr;
 public:
 enum { NumParams = 1 };
 IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::TemplatedFunctionBase_O(entry_point,name), mptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
 static inline LCC_RETURN LISP_CALLING_CONVENTION()
@@ -1593,7 +1569,6 @@ Type mptr;
 public:
 enum { NumParams = 8 };
 IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::TemplatedFunctionBase_O(entry_point,name), mptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
 static inline LCC_RETURN LISP_CALLING_CONVENTION()
@@ -1680,7 +1655,6 @@ Type mptr;
 public:
 enum { NumParams = 7 };
 IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::TemplatedFunctionBase_O(entry_point,name), mptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
 static inline LCC_RETURN LISP_CALLING_CONVENTION()
@@ -1760,7 +1734,6 @@ Type mptr;
 public:
 enum { NumParams = 6 };
 IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::TemplatedFunctionBase_O(entry_point,name), mptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
 static inline LCC_RETURN LISP_CALLING_CONVENTION()
@@ -1834,7 +1807,6 @@ Type mptr;
 public:
 enum { NumParams = 5 };
 IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::TemplatedFunctionBase_O(entry_point,name), mptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
 static inline LCC_RETURN LISP_CALLING_CONVENTION()
@@ -1902,7 +1874,6 @@ Type mptr;
 public:
 enum { NumParams = 4 };
 IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::TemplatedFunctionBase_O(entry_point,name), mptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
 static inline LCC_RETURN LISP_CALLING_CONVENTION()
@@ -1964,7 +1935,6 @@ Type mptr;
 public:
 enum { NumParams = 3 };
 IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::TemplatedFunctionBase_O(entry_point,name), mptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
 static inline LCC_RETURN LISP_CALLING_CONVENTION()
@@ -2020,7 +1990,6 @@ Type mptr;
 public:
 enum { NumParams = 2 };
 IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::TemplatedFunctionBase_O(entry_point,name), mptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
 static inline LCC_RETURN LISP_CALLING_CONVENTION()
@@ -2070,7 +2039,6 @@ Type mptr;
 public:
 enum { NumParams = 1 };
 IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::TemplatedFunctionBase_O(entry_point,name), mptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
 static inline LCC_RETURN LISP_CALLING_CONVENTION()
@@ -2115,7 +2083,6 @@ Type mptr;
 public:
 enum { NumParams = 8 };
 IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::TemplatedFunctionBase_O(entry_point,name), mptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
 static inline LCC_RETURN LISP_CALLING_CONVENTION()
@@ -2200,7 +2167,6 @@ Type mptr;
 public:
 enum { NumParams = 7 };
 IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::TemplatedFunctionBase_O(entry_point,name), mptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
 static inline LCC_RETURN LISP_CALLING_CONVENTION()
@@ -2279,7 +2245,6 @@ Type mptr;
 public:
 enum { NumParams = 6 };
 IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::TemplatedFunctionBase_O(entry_point,name), mptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
 static inline LCC_RETURN LISP_CALLING_CONVENTION()
@@ -2352,7 +2317,6 @@ Type mptr;
 public:
 enum { NumParams = 5 };
 IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::TemplatedFunctionBase_O(entry_point,name), mptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
 static inline LCC_RETURN LISP_CALLING_CONVENTION()
@@ -2419,7 +2383,6 @@ Type mptr;
 public:
 enum { NumParams = 4 };
 IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::TemplatedFunctionBase_O(entry_point,name), mptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
 static inline LCC_RETURN LISP_CALLING_CONVENTION()
@@ -2480,7 +2443,6 @@ Type mptr;
 public:
 enum { NumParams = 3 };
 IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::TemplatedFunctionBase_O(entry_point,name), mptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
 static inline LCC_RETURN LISP_CALLING_CONVENTION()
@@ -2535,7 +2497,6 @@ Type mptr;
 public:
 enum { NumParams = 2 };
 IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::TemplatedFunctionBase_O(entry_point,name), mptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
 static inline LCC_RETURN LISP_CALLING_CONVENTION()
@@ -2584,7 +2545,6 @@ Type mptr;
 public:
 enum { NumParams = 1 };
 IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::TemplatedFunctionBase_O(entry_point,name), mptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
 static inline LCC_RETURN LISP_CALLING_CONVENTION()
@@ -2629,7 +2589,6 @@ Type mptr;
 public:
 enum { NumParams = 8 };
 IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::TemplatedFunctionBase_O(entry_point,name), mptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
 static inline LCC_RETURN LISP_CALLING_CONVENTION()
@@ -2717,7 +2676,6 @@ Type mptr;
 public:
 enum { NumParams = 7 };
 IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::TemplatedFunctionBase_O(entry_point,name), mptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
 static inline LCC_RETURN LISP_CALLING_CONVENTION()
@@ -2798,7 +2756,6 @@ Type mptr;
 public:
 enum { NumParams = 6 };
 IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::TemplatedFunctionBase_O(entry_point,name), mptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
 static inline LCC_RETURN LISP_CALLING_CONVENTION()
@@ -2873,7 +2830,6 @@ Type mptr;
 public:
 enum { NumParams = 5 };
 IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::TemplatedFunctionBase_O(entry_point,name), mptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
 static inline LCC_RETURN LISP_CALLING_CONVENTION()
@@ -2942,7 +2898,6 @@ Type mptr;
 public:
 enum { NumParams = 4 };
 IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::TemplatedFunctionBase_O(entry_point,name), mptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
 static inline LCC_RETURN LISP_CALLING_CONVENTION()
@@ -3005,7 +2960,6 @@ Type mptr;
 public:
 enum { NumParams = 3 };
 IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::TemplatedFunctionBase_O(entry_point,name), mptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
 static inline LCC_RETURN LISP_CALLING_CONVENTION()
@@ -3062,7 +3016,6 @@ Type mptr;
 public:
 enum { NumParams = 2 };
 IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::TemplatedFunctionBase_O(entry_point,name), mptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
 static inline LCC_RETURN LISP_CALLING_CONVENTION()
@@ -3113,7 +3066,6 @@ Type mptr;
 public:
 enum { NumParams = 1 };
 IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::TemplatedFunctionBase_O(entry_point,name), mptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
 static inline LCC_RETURN LISP_CALLING_CONVENTION()

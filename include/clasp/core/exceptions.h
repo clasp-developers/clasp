@@ -37,12 +37,10 @@ THE SOFTWARE.
 #include <fstream>
 #include <string.h>
 #include <set>
-#include <boost/format.hpp>
 
 #include <clasp/core/object.fwd.h>
 #include <clasp/core/symbol.fwd.h>
 #include <clasp/core/stacks.h>
-#include <clasp/core/profile.h>
 #include <clasp/core/evaluator.fwd.h>
 #include <clasp/core/lispStream.fwd.h>
 #include <clasp/core/primitives.fwd.h>
@@ -86,8 +84,10 @@ struct _TRACE {
 #define ERROR(_type_, _initializers_)                                               \
   {                                                                                 \
     lisp_error( _type_, _initializers_); \
-    THROW_NEVER_REACH();                                                            \
   }
+
+#define SIMPLE_ERROR_SPRINTF(...) ::core::lisp_error_sprintf(__FILE__, __LINE__, __FUNCTION__, __VA_ARGS__)
+
 #define SIMPLE_ERROR(_boost_fmt_)                                             \
   {                                                                           \
     ::core::lisp_error_simple(__FUNCTION__, __FILE__, __LINE__, _boost_fmt_); \
@@ -350,36 +350,26 @@ struct CxxFunctionInvocationLogger {
   virtual ~CxxFunctionInvocationLogger();
 };
 
-#define lisp_THROW_base(l, x, m)                                                                                                                                                     \
-  {                                                                                                                                                                                  \
+#define lisp_THROW_base(l, x, m) { \
     core::eval::funcall(lisp_symbolFunction(core::_sym_setThrowPosition), x, core::lisp_createStr(__FILE__), core::lisp_createStr(__FUNCTION__), core::lisp_createFixnum(__LINE__)); \
-    core::lisp_logException(__FILE__, __FUNCTION__, __LINE__, m, x);                                                                                                                 \
-    core::eval::funcall(core::_sym_error, x);                                                                                                                                        \
-    THROW_HARD_ERROR(BF("Never reach here in lisp_THROW_base"));                                                                                                                     \
+    core::lisp_logException(__FILE__, __FUNCTION__, __LINE__, m, x); \
+    core::eval::funcall(core::_sym_error, x); \
+    throw_hard_error("Never reach here in lisp_THROW_base"); \
   }
 
-#define UNREACHABLE() THROW_HARD_ERROR(BF("Should never reach here"))
+#define UNREACHABLE() throw_hard_error("Should never reach here")
 
 // Make it easier to find "try" statements
 #define TRY() try
 
 #define NOT_SUPPORTED() SIMPLE_ERROR(BF("Subclass(%s) does not support the function(%s) file(%s) lineNumber(%d)") % this->className() % __FUNCTION__ % __FILE__ % __LINE__);
 
-#define SUBCLASS_MUST_IMPLEMENT() \
-  SIMPLE_ERROR(                   \
-               BF("File(%s) lineNumber(%d): Subclass[%s] must implement method[%s] ") % __FILE__ % __LINE__ % lisp_classNameAsString(core::instance_class(this->asSmartPtr())) % __FUNCTION__);
-
-#define SUBIMP() \
-  _G();          \
-  SUBCLASS_MUST_IMPLEMENT();
 
 #define HALT(bfmsg) THROW_HARD_ERROR(BF("%s:%d HALTED --- %s\n") % __FILE__ % __LINE__ % (bfmsg).str());
-#define NOT_APPLICABLE() THROW_HARD_ERROR(BF("%s:%d->%s not applicable for this class") % __FILE__ % __LINE__ % __FUNCTION__);
+#define NOT_APPLICABLE() throw_hard_error_not_applicable_method(__FUNCTION__);
 #define N_A_() NOT_APPLICABLE()
 #define INCOMPLETE(bf) SIMPLE_ERROR(BF("Finish implementing me!!!! function(%s) file(%s) lineNumber(%s): %s") % __FUNCTION__ % __FILE__ % __LINE__ % (bf).str())
 #define FIX_ME() SIMPLE_ERROR(BF("Fix me!!! function(%s) file(%s) lineNumber(%s)") % __FUNCTION__ % __FILE__ % __LINE__);
-#define IMPLEMENT_ME() SIMPLE_ERROR(BF("Implement me!!! function(%s) file(%s) lineNumber(%s)") % __FUNCTION__ % __FILE__ % __LINE__);
-#define IMPLEMENT_MEF(bfmsg) SIMPLE_ERROR(BF("Implement me!!! %s\nfunction(%s) file(%s) lineNumber(%s)") % (bfmsg).str() % __FUNCTION__ % __FILE__ % __LINE__);
 #define DEPRECATED() SIMPLE_ERROR(BF("Depreciated!!! function(%s) file(%s) lineNumber(%d)") % __FUNCTION__ % __FILE__ % __LINE__);
 #define STUB() printf("%s:%d>%s  stub\n", __FILE__, __LINE__, __FUNCTION__ )
 
@@ -406,7 +396,7 @@ FORWARD(Cons);
   {}
 #endif
 
-#define THROW_NEVER_REACH() throw(::core::HardError(__FILE__, __FUNCTION__, __LINE__, BF("Should never get here")));
+#define THROW_NEVER_REACH() throw(HardError("Should never get here"));
 
 #define MAXSOURCEFILENAME 1024
 class DebugStream {
@@ -453,7 +443,7 @@ public:
   DebugStream &writePtr(void *);
   DebugStream &writeLn();
   DebugStream &log(const string &msg);
-  DebugStream &log(const boost::format &fmt);
+//  DebugStream &log(const boost::format &fmt);
 
   string nextPosition();
 
@@ -673,8 +663,8 @@ extern string _stackTraceAsString();
 #define _BLOCK_TRACEF(f) _lisp_BLOCK_TRACEF(f)
 #define _BLOCK_TRACE(s) _lisp_BLOCK_TRACEF(BF("%s") % (s))
 #else //][
-#define _G() /* _LINE(); */ _PROFILE_FUNCTION();
-#define _OF() _G();
+#define _G() 
+#define _OF()
 #define _lisp_BLOCK_TRACEF(__f)
 #define _lisp_BLOCK_TRACE(__s)
 #define _BLOCK_TRACE(f)

@@ -105,6 +105,9 @@ void insufficientIndexListError(List_sp indices) {
 void notStringError(T_sp obj) {
   TYPE_ERROR(obj,cl::_sym_string);
 }
+void cannotAdjustSizeOfSimpleArrays(T_sp obj) {
+  SIMPLE_ERROR(BF("Cannot adjust the size of a simple array %s") % _rep_(obj));
+}
 void notSequenceError(T_sp obj) {
   TYPE_ERROR(obj,cl::_sym_string);
 }

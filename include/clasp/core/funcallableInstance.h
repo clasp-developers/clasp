@@ -168,8 +168,8 @@ namespace core {
 
     template <typename oclass>
       bool isSubClassOf() const {
-    return this->isSubClassOf(lisp_classFromClassSymbol(oclass::static_classSymbol()));
-  }
+      return this->isSubClassOf(lisp_classFromClassSymbol(oclass::static_classSymbol()));
+    }
 
     void accumulateSuperClasses(HashTableEq_sp supers, VectorObjects_sp arrayedSupers, Class_sp mc);
     void lowLevel_calculateClassPrecedenceList();
@@ -198,12 +198,12 @@ namespace core {
 
     void setInstanceBaseClasses(List_sp classes);
     void __setup_stage1_with_sharedPtr_lisp_sid(T_sp theThis, Symbol_sp instanceClassSymbol) {
-    this->instanceSet(REF_CLASS_CLASS_NAME, instanceClassSymbol);
-  }
+      this->instanceSet(REF_CLASS_CLASS_NAME, instanceClassSymbol);
+    }
 
     void __setup_stage2_with_classSymbol(Symbol_sp csid) {
-    _OF();
-  }
+      _OF();
+    }
 
     void __setupStage3NameAndCalculateClassPrecedenceList(Symbol_sp isid);
 
@@ -220,7 +220,7 @@ namespace core {
     virtual T_sp setSourcePosInfo(T_sp sourceFile, size_t filePos, int lineno, int column) { IMPLEMENT_ME(); };
 //  virtual T_mv functionSourcePos() const { IMPLEMENT_ME();;
     virtual T_sp cleavir_ast() const { return _Nil<T_O>(); };
-    virtual void setf_cleavir_ast(T_sp ast) { SIMPLE_ERROR(BF("Generic functions cannot be inlined"));};
+    virtual void setf_cleavir_ast(T_sp ast) { SIMPLE_ERROR_SPRINTF("Generic functions cannot be inlined");};
     virtual List_sp declares() const { IMPLEMENT_ME(); };
     virtual T_sp docstring() const { IMPLEMENT_ME(); };
     virtual void *functionAddress() const { IMPLEMENT_ME(); };
@@ -232,12 +232,11 @@ namespace core {
     virtual int lineNumber() const { return 0; }
     virtual int column() const { return 0; };
     virtual LambdaListHandler_sp lambdaListHandler() const { IMPLEMENT_ME(); };
-    virtual void setAssociatedFunctions(List_sp funcs) { NOT_APPLICABLE(); };
   public: // The hard-coded indexes above are defined below to be used by Class
     void initializeSlots(gctools::Stamp is, size_t numberOfSlots);
     void initializeClassSlots(Creator_sp creator, gctools::Stamp class_stamp);
     void ensureClosure(DispatchFunction_fptr_type entryPoint);
-    virtual void setf_lambda_list(List_sp lambda_list) { if (!this->_isgf) {SIMPLE_ERROR(BF("Cannot set lambda list of non gf function ll->%s") % _rep_(lambda_list));} this->GFUN_LAMBDA_LIST_set(lambda_list); }; //{ this->_lambda_list = lambda_list; };
+    virtual void setf_lambda_list(List_sp lambda_list) { if (!this->_isgf) {SIMPLE_ERROR_SPRINTF("Cannot set lambda list of non gf function ll->%s", _rep_(lambda_list).c_str());} this->GFUN_LAMBDA_LIST_set(lambda_list); }; //{ this->_lambda_list = lambda_list; };
     virtual T_sp lambda_list() const { return this->GFUN_LAMBDA_LIST(); };
   public:
     static size_t rack_stamp_offset();

@@ -170,6 +170,7 @@ namespace core {
   [[noreturn]] void insufficientIndexListError(List_sp indices);
   [[noreturn]] void insufficientIndexVaListError(VaList_sp indices);
   [[noreturn]] void notStringError(T_sp obj);
+  [[noreturn]] void cannotAdjustSizeOfSimpleArrays(T_sp obj);
   [[noreturn]] void notSequenceError(T_sp obj);
   [[noreturn]] void noFillPointerError(Symbol_sp fn_name, T_sp array);
   [[noreturn]] void noFillPointerSpecializedArrayError(T_sp array);
@@ -1201,7 +1202,7 @@ namespace core {
   public:
     virtual Array_sp reverse() const final { return templated_reverse_VectorNs(*this); };
     virtual Array_sp nreverse() final { return templated_nreverse_VectorNs(*this); };
-    virtual void internalAdjustSize_(size_t size, T_sp initElement=_Nil<T_O>(), bool initElementSupplied=false ) final {SIMPLE_ERROR(BF("You cannot adjust size of simple-arrays"));};
+    virtual void internalAdjustSize_(size_t size, T_sp initElement=_Nil<T_O>(), bool initElementSupplied=false ) final {cannotAdjustSizeOfSimpleArrays(this->asSmartPtr());};
 public:
     void this_asAbstractSimpleVectorRange(AbstractSimpleVector_sp& sv, size_t& start, size_t& end) const  {
       sv = gc::As<AbstractSimpleVector_sp>(this->_Data);

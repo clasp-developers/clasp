@@ -52,7 +52,6 @@ namespace core {
     List_sp declares() const { return _Nil<T_O>(); };
     LambdaListHandler_sp lambdaListHandler() const { return _Nil<LambdaListHandler_O>(); };
     T_sp lambda_list() const { return _Nil<T_O>(); };
-    void setAssociatedFunctions(List_sp funcs) {};
     T_sp setSourcePosInfo(T_sp sourceFile, size_t filePos, int lineno, int column ) {return _Nil<T_O>();};
     virtual int duplicationLevel() const { return 0; };
     virtual bool creates_classes() const { return false; };
@@ -78,7 +77,6 @@ namespace core {
   public:
     typedef core::Creator_O TemplatedBase;
   public:
-    DISABLE_NEW();
     size_t templatedSizeof() const { return sizeof(BuiltInObjectCreator<_W_>); };
     virtual core::T_sp creator_allocate() {
       GC_ALLOCATE(_W_, obj);

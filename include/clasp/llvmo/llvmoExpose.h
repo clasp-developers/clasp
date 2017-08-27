@@ -70,7 +70,6 @@ THE SOFTWARE.
 #include <string>
 #include <vector>
 #include <set>
-#include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
 #include <clasp/core/metaClass.fwd.h>
 #include <clasp/core/externalObject.h>
@@ -290,7 +289,7 @@ struct from_object<llvm::ArrayRef<llvm::Attribute::AttrKind>> {
       }
       return;
     }
-    SIMPLE_ERROR(BF("Could not convert %s to llvm::ArrayRef<llvm::Attribute::AttrKind>") % core::_rep_(o));
+    SIMPLE_ERROR_SPRINTF("Could not convert %s to llvm::ArrayRef<llvm::Attribute::AttrKind>",  core::_rep_(o).c_str());
   }
 };
 };
@@ -609,13 +608,13 @@ struct from_object<llvm::CodeGenOpt::Level, std::true_type> {
   DeclareType _v;
   from_object(T_P object) : _v(llvm::CodeGenOpt::Default) {
     if (object.nilp()) {
-      SIMPLE_ERROR(BF("You must pass a valid CodeGenOpt"));
+      SIMPLE_ERROR_SPRINTF("You must pass a valid CodeGenOpt");
     }
     if (core::Symbol_sp so = object.asOrNull<core::Symbol_O>()) {
       core::SymbolToEnumConverter_sp converter = gc::As<core::SymbolToEnumConverter_sp>(llvmo::_sym_CodeGenOpt->symbolValue());
       this->_v = converter->enumForSymbol<llvm::CodeGenOpt::Level>(so);
     } else {
-      SIMPLE_ERROR(BF("You must pass a valid CodeGenOpt"));
+      SIMPLE_ERROR_SPRINTF("You must pass a valid CodeGenOpt");
     }
   }
 };
@@ -636,7 +635,7 @@ template <>
         this->_v = converter->enumForSymbol<llvm::Reloc::Model>(so);
       }
     } else {
-      SIMPLE_ERROR(BF("You must pass a valid RelocModel or %s") % _rep_(llvmo::_sym_RelocModel_undefined));
+      SIMPLE_ERROR_SPRINTF("You must pass a valid RelocModel or %s", _rep_(llvmo::_sym_RelocModel_undefined).c_str());
     }
   }
 };
@@ -647,13 +646,13 @@ struct from_object<llvm::CodeModel::Model, std::true_type> {
   DeclareType _v;
   from_object(T_P object) : _v(llvm::CodeModel::Default) {
     if (object.nilp()) {
-      SIMPLE_ERROR(BF("You must pass a valid CodeModel"));
+      SIMPLE_ERROR_SPRINTF("You must pass a valid CodeModel");
     }
     if (core::Symbol_sp so = object.asOrNull<core::Symbol_O>()) {
       core::SymbolToEnumConverter_sp converter = gc::As<core::SymbolToEnumConverter_sp>(llvmo::_sym_CodeModel->symbolValue());
       this->_v = converter->enumForSymbol<llvm::CodeModel::Model>(so);
     } else {
-      SIMPLE_ERROR(BF("You must pass a valid CodeModel"));
+      SIMPLE_ERROR_SPRINTF("You must pass a valid CodeModel");
     }
   }
 };
@@ -669,7 +668,7 @@ struct from_object<llvm::TargetMachine::CodeGenFileType, std::true_type> {
         return;
       }
     }
-    SIMPLE_ERROR(BF("You must pass a valid "));
+    SIMPLE_ERROR_SPRINTF("You must pass a valid ");
   }
 };
 };
@@ -746,7 +745,7 @@ template <typename T, typename U>
   if (!llvm::isa<T>(p)) {
     // save the pointer in a global so we can take a look at it
     llvm_cast_error_ptr = reinterpret_cast<llvm::Value*>(p);
-    SIMPLE_ERROR(BF("llvm_cast<T> argument of incompatible type - bad pointer stored in (void*)llvm_cast_error_ptr!"));
+    SIMPLE_ERROR_SPRINTF("llvm_cast<T> argument of incompatible type - bad pointer stored in (void*)llvm_cast_error_ptr!");
   }
   return reinterpret_cast<T*>(p);
 }
@@ -1056,7 +1055,7 @@ struct from_object<llvm::ArrayRef<llvm::Value *>> {
       }
       return;
     }
-    SIMPLE_ERROR(BF("Could not convert %s to llvm::ArrayRef<llvm::Value*>") % core::_rep_(o));
+    SIMPLE_ERROR_SPRINTF("Could not convert %s to llvm::ArrayRef<llvm::Value*>", core::_rep_(o).c_str());
   }
 };
 
@@ -1140,7 +1139,7 @@ struct from_object<llvm::ArrayRef<llvm::Metadata *>> {
       }
       return;
     }
-    SIMPLE_ERROR(BF("Could not convert %s to llvm::ArrayRef<llvm::Metadata*>") % core::_rep_(o));
+    SIMPLE_ERROR_SPRINTF("Could not convert %s to llvm::ArrayRef<llvm::Metadata*>", core::_rep_(o).c_str());
   }
 };
 
@@ -1214,7 +1213,7 @@ struct from_object<llvm::Attribute::AttrKind, std::true_type> {
       this->_v = converter->enumForSymbol<llvm::Attribute::AttrKind>(sym);
       return;
     }
-    SIMPLE_ERROR(BF("Cannot convert object %s to llvm::Attribute::AttrKind") % _rep_(object));
+    SIMPLE_ERROR_SPRINTF("Cannot convert object %s to llvm::Attribute::AttrKind", _rep_(object).c_str());
   }
 };
 
@@ -1397,7 +1396,7 @@ struct from_object<llvm::ArrayRef<llvm::Constant *>> {
       }
       return;
     }
-    SIMPLE_ERROR(BF("Could not convert %s to llvm::ArrayRef<llvm::Constant*>") % core::_rep_(o));
+    SIMPLE_ERROR_SPRINTF("Could not convert %s to llvm::ArrayRef<llvm::Constant*>", core::_rep_(o).c_str());
   }
 };
 
@@ -1700,7 +1699,7 @@ public:
   };
   PointerToExternalType wrappedPtr() const {
     if ( this->_ptr ) return this->_ptr;
-    SIMPLE_ERROR(BF("The Module has a NULL pointer"));
+    SIMPLE_ERROR_SPRINTF("The Module has a NULL pointer");
   }
   void reset_wrappedPtr() {
     this->_ptr = NULL;
@@ -2358,6 +2357,7 @@ public:
 
 namespace llvmo {
 FORWARD(Instruction);
+
 class Instruction_O : public User_O {
   LISP_EXTERNAL_CLASS(llvmo, LlvmoPkg, llvm::Instruction, Instruction_O, "Instruction", User_O);
   typedef llvm::Instruction ExternalType;
@@ -2372,6 +2372,8 @@ public:
   core::T_sp getNextNode(); // instruction or nil
   core::T_sp getPrevNode(); // instruction or nil
   core::T_sp getParent(); // basic block or nil
+  CL_DEFMETHOD bool CallInstP() const { return llvm::isa<llvm::CallInst>(this->wrappedPtr()); };
+  CL_DEFMETHOD bool InvokeInstP() const { return llvm::isa<llvm::InvokeInst>(this->wrappedPtr()); };
   Instruction_O() : Base(){};
   ~Instruction_O() {}
 
@@ -2396,7 +2398,12 @@ namespace translate {
 template <>
 struct to_object<llvm::Instruction *> {
   static core::T_sp convert(llvm::Instruction *ptr) {
-    _G();
+    // Wrap the Instruction* using the most derived class possible
+    if (llvm::isa<llvm::CallInst>(ptr)) {
+      return core::RP_Create_wrapped<llvmo::CallInst_O,llvm::CallInst*>(reinterpret_cast<llvm::CallInst*>(ptr));
+    } else if (llvm::isa<llvm::InvokeInst>(ptr)) {
+      return core::RP_Create_wrapped<llvmo::InvokeInst_O,llvm::InvokeInst*>(reinterpret_cast<llvm::InvokeInst*>(ptr));
+    }
     return ((core::RP_Create_wrapped<llvmo::Instruction_O, llvm::Instruction *>(ptr)));
   }
 };
@@ -2630,6 +2637,8 @@ public:
     /*        if (this->_ptr != NULL ) delete this->_ptr; */
     this->_ptr = ptr;
   }
+  llvm::Function* getCalledFunction();
+  CL_DEFMETHOD bool CallInstP() const { return true; };
   CallInst_O() : Base(){};
   ~CallInst_O() {}
 
@@ -3010,6 +3019,8 @@ public:
     /*        if (this->_ptr != NULL ) delete this->_ptr; */
     this->_ptr = ptr;
   }
+  llvm::Function* getCalledFunction();
+  CL_DEFMETHOD bool InvokeInstP() const { return true; };
   InvokeInst_O() : Base(){};
   ~InvokeInst_O() {}
 
@@ -4187,7 +4198,7 @@ struct from_object<llvm::GlobalValue::LinkageTypes, std::true_type> {
       this->_v = converter->enumForSymbol<llvm::GlobalValue::LinkageTypes>(sym);
       return;
     }
-    SIMPLE_ERROR(BF("Cannot convert object %s to llvm::GlobalValue::LinkageType") % _rep_(object));
+    SIMPLE_ERROR_SPRINTF("Cannot convert object %s to llvm::GlobalValue::LinkageType", _rep_(object).c_str());
   }
 };
 
@@ -4204,7 +4215,7 @@ struct from_object<llvm::GlobalValue::ThreadLocalMode, std::true_type> {
         return;
       }
     }
-    SIMPLE_ERROR(BF("Cannot convert object %s to llvm::GlobalValue::ThreadLocalMode") % _rep_(object));
+    SIMPLE_ERROR_SPRINTF("Cannot convert object %s to llvm::GlobalValue::ThreadLocalMode", _rep_(object).c_str());
   }
 };
 
@@ -4222,7 +4233,7 @@ struct from_object<llvm::GlobalValue::ThreadLocalMode, std::true_type> {
 		this->_v = converter->enumForSymbol<llvm::VerifierFailureAction>(sym);
 		return;
 	    }
-	    SIMPLE_ERROR(BF("Cannot convert object %s to llvm::VerifierFailureAction") % _rep_(object) );
+	    SIMPLE_ERROR_SPRINTF("Cannot convert object %s to llvm::VerifierFailureAction", _rep_(object).c_str());
 	}
     };
 #endif
@@ -4240,7 +4251,7 @@ struct from_object<llvm::AtomicOrdering, std::true_type> {
         return;
       }
     }
-    SIMPLE_ERROR(BF("Cannot convert object %s to llvm::AtomicOrdering") % _rep_(object));
+    SIMPLE_ERROR_SPRINTF("Cannot convert object %s to llvm::AtomicOrdering", _rep_(object).c_str());
   }
 };
 
@@ -4256,7 +4267,7 @@ struct from_object<llvm::SynchronizationScope, std::true_type> {
       this->_v = converter->enumForSymbol<llvm::SynchronizationScope>(sym);
       return;
     }
-    SIMPLE_ERROR(BF("Cannot convert object %s to llvm::SynchronizationScope") % _rep_(object));
+    SIMPLE_ERROR_SPRINTF("Cannot convert object %s to llvm::SynchronizationScope", _rep_(object).c_str());
   }
 };
 #endif
@@ -4272,7 +4283,7 @@ struct from_object<llvm::AtomicRMWInst::BinOp, std::true_type> {
       this->_v = converter->enumForSymbol<llvm::AtomicRMWInst::BinOp>(sym);
       return;
     }
-    SIMPLE_ERROR(BF("Cannot convert object %s to llvm::AtomicRMWInst::BinOp") % _rep_(object));
+    SIMPLE_ERROR_SPRINTF("Cannot convert object %s to llvm::AtomicRMWInst::BinOp", _rep_(object).c_str());
   }
 };
 
@@ -4287,7 +4298,7 @@ struct from_object<llvm::Instruction::CastOps, std::true_type> {
       this->_v = converter->enumForSymbol<llvm::Instruction::CastOps>(sym);
       return;
     }
-    SIMPLE_ERROR(BF("Cannot convert object %s to llvm::Instruction::CastOps") % _rep_(object));
+    SIMPLE_ERROR_SPRINTF("Cannot convert object %s to llvm::Instruction::CastOps", _rep_(object).c_str());
   }
 };
 
@@ -4302,7 +4313,7 @@ struct from_object<llvm::Instruction::BinaryOps, std::true_type> {
       this->_v = converter->enumForSymbol<llvm::Instruction::BinaryOps>(sym);
       return;
     }
-    SIMPLE_ERROR(BF("Cannot convert object %s to llvm::Instruction::BinaryOps") % _rep_(object));
+    SIMPLE_ERROR_SPRINTF("Cannot convert object %s to llvm::Instruction::BinaryOps", _rep_(object).c_str());
   }
 };
 
@@ -4317,7 +4328,7 @@ struct from_object<llvm::CmpInst::Predicate, std::true_type> {
       this->_v = converter->enumForSymbol<llvm::CmpInst::Predicate>(sym);
       return;
     }
-    SIMPLE_ERROR(BF("Cannot convert object %s to llvm::CmpInst::Predicate") % _rep_(object));
+    SIMPLE_ERROR_SPRINTF("Cannot convert object %s to llvm::CmpInst::Predicate", _rep_(object).c_str());
   }
 };
 };

@@ -28,8 +28,7 @@
 	  cmp-log-dump-function
 	  irc-environment-activation-frame
 	  *run-time-values-table-name*
-	  *all-functions-for-one-compile*
-	  set-associated-funcs
+	  *saved-module-from-compile*
 	  *block-name-prefix*
 	  irc-switch
 	  %t*%

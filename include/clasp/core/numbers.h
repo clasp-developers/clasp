@@ -163,11 +163,6 @@ namespace core {
     //	static Number_sp create(size_t val);
   public:
     virtual NumberType number_type_() const { SUBIMP(); };
-    //	int number_type_int() const { return (int)(clasp_t_of(this->asSmartPtr()));;};
-    //	virtual	string	valueAsString_() const;
-    //	virtual Number_sp copy() const { _OF(); SUBCLASS_MUST_IMPLEMENT();}
-    //	virtual T_sp deepCopy() const { return this->copy();};
-    //virtual T_sp shallowCopy() const { return this->copy();};
     virtual Number_sp signum_() const {
       _OF();
       SUBCLASS_MUST_IMPLEMENT();

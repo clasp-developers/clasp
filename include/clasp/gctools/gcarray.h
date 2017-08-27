@@ -103,10 +103,10 @@ public:
 
 private:
   T &errorEmpty() {
-    THROW_HARD_ERROR(BF("GCArray had no contents"));
+    throw_hard_error("GCArray had no contents");
   };
   const T &errorEmpty() const {
-    THROW_HARD_ERROR(BF("GCArray had no contents"));
+    throw_hard_error("GCArray had no contents");
   };
 
 public:

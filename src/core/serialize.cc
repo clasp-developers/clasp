@@ -379,7 +379,7 @@ T_sp LoadArchive_O::loadObjectDirectly(SNode_sp node) {
         this->loadObjectDirectly(gc::As<SNode_sp>(branchSNodeVectorSNodes->rowMajorAref(i)));
       }
     }
-    IMPLEMENT_MEF(BF("Should I return NIL at this point?  The BranchSNode was not completely initialized"));
+    IMPLEMENT_MEF("Should I return NIL at this point?  The BranchSNode was not completely initialized");
     return _Nil<T_O>();
   } else {
     T_sp findObj = this->_ObjectForSNode->gethash(branchSNode, _Unbound<T_O>());

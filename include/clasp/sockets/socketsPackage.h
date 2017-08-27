@@ -37,7 +37,6 @@ namespace sockets {
 class SocketsExposer_O : public core::Exposer_O {
  private:
  public:
-  DISABLE_NEW();
  SocketsExposer_O(core::Lisp_sp lisp) : Exposer_O(lisp, SocketsPkg){};
   virtual void expose(core::Lisp_sp lisp, WhatToExpose what) const;
 };

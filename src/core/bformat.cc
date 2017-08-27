@@ -147,6 +147,10 @@ CL_DEFUN T_sp cl__format(T_sp destination, T_sp control, List_sp args) {
       case 'A':
         tf << "%s";
         break;
+      case 'v':
+      case 'V':
+        tf << "%s";
+        break;
       case '&':
         tf << std::endl;
         break;

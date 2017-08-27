@@ -101,13 +101,13 @@ struct lisp_SourceParam {
     _OF();
     this->_stringSaveStateDepth++;
     if (this->_stringSaveStateDepth != 1) {
-      SIMPLE_ERROR(BF("Illegal stringSaveStateDepth(%d) should only ever be (1)") % this->_stringSaveStateDepth);
+      SIMPLE_ERROR_SPRINTF("Illegal stringSaveStateDepth(%d) should only ever be (1)", this->_stringSaveStateDepth);
     }
     this->_stringSaveState = ss;
   }
   int getStringSaveState() {
     if (this->_stringSaveStateDepth != 1) {
-      SIMPLE_ERROR(BF("Illegal stringSaveStateDepth(%d) should only ever be (1)") % this->_stringSaveStateDepth);
+      SIMPLE_ERROR_SPRINTF("Illegal stringSaveStateDepth(%d) should only ever be (1)", this->_stringSaveStateDepth);
     }
     this->_stringSaveStateDepth--;
     return this->_stringSaveState;

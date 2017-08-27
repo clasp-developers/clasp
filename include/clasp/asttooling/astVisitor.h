@@ -29,7 +29,6 @@ THE SOFTWARE.
 
 #include <clang/AST/RecursiveASTVisitor.h>
 
-#include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
 #include <clasp/core/wrappers.h>
 #include <clasp/asttooling/asttoolingPackage.h>

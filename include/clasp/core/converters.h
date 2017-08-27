@@ -51,7 +51,7 @@ struct from_object {
 	ss << typeid(T_return).name();
 #endif
 	ss << ") should not be invoked, define a more specific one";
-	SIMPLE_ERROR(BF("%s") % ss.str() );
+	SIMPLE_ERROR_SPRINTF("%s", ss.str().c_str() );
     }
 #endif
 };

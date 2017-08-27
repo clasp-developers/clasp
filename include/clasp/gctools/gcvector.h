@@ -223,10 +223,10 @@ public:
 
 private:
   T &errorEmpty() {
-    THROW_HARD_ERROR(BF("GCVector had no contents"));
+    throw_hard_error("GCVector had no contents");
   };
   const T &errorEmpty() const {
-    THROW_HARD_ERROR(BF("GCVector had no contents"));
+    throw_hard_error("GCVector had no contents");
   };
 
 public:
@@ -260,7 +260,7 @@ public:
     Allocator alloc;
 #ifdef DEBUG_ASSERT
     if (this->_Contents->_End > this->_Contents->_Capacity) {
-      THROW_HARD_ERROR(BF("The end should NEVER be beyond the capacity"));
+      throw_hard_error("The end should NEVER be beyond the capacity");
     };
 #endif
     if (this->_Contents->_End == this->_Contents->_Capacity) {

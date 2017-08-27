@@ -27,7 +27,6 @@ THE SOFTWARE.
 #ifndef asttooling_translators_H
 #define asttooling_translators_H
 
-#include <clasp/core/foundation.h>
 #include <clasp/core/symbolTable.h>
 #include <clasp/core/array.h>
 #include <clasp/clbind/clbind.h>
@@ -51,7 +50,7 @@ struct from_object<int &, std::true_type> {
       this->_v = (int)(o.unsafe_fixnum());
       return;
     }
-    SIMPLE_ERROR(BF("Add support to convert other types to int"));
+    SIMPLE_ERROR_SPRINTF("Add support to convert other types to int");
   }
 };
 
@@ -124,7 +123,7 @@ struct from_object<const vector<string> &> {
       }
       return;
     }
-    SIMPLE_ERROR(BF("Add support to convert %s to vector<string>") % _rep_(o));
+    SIMPLE_ERROR_SPRINTF("Add support to convert %s to vector<string>", _rep_(o).c_str());
   }
 };
 

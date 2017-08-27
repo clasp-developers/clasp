@@ -109,7 +109,6 @@ public:
   gctools::Header_s::Value _Header;
   int _duplicationLevel;
 public:
-  DISABLE_NEW();
 public:
   virtual size_t templatedSizeof() const { return sizeof(*this); };
 public:
@@ -153,7 +152,7 @@ public:
   virtual size_t templatedSizeof() const { return sizeof(*this); };
 public:
   static inline LCC_RETURN LISP_CALLING_CONVENTION() {
-    SIMPLE_ERROR(BF("What do we do when this is called?"));
+    SIMPLE_ERROR_SPRINTF("What do we do when this is called?");
   }
 };
 };

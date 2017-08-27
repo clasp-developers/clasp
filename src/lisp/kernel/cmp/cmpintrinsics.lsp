@@ -833,10 +833,12 @@ It has appending linkage.")
   (if *compile-debug-dump-module*
       (let* ((output-path (compile-quick-module-pathname file-name-modifier)))
         (let* ((output-name (namestring output-path))
-               (fout (open output-name :direction :output)))
+               fout)
           (unwind-protect
-               (llvm-sys:dump-module module fout)
-            (close fout))))))
+               (progn
+                 (setf fout (open output-name :direction :output))
+                 (llvm-sys:dump-module module fout))
+            (when fout (close fout)))))))
 
 (defun quick-module-pathname (name-modifier)
   "If called under COMPILE-FILE the modules are dumped into the
@@ -850,7 +852,7 @@ they are dumped into /tmp"
   "If called under COMPILE-FILE the modules are dumped into the
 same directory as the COMPILE-FILE output.  If called under COMPILE
 they are dumped into /tmp"
-  (cmp-log "About to dump module\n")
+  (cmp-log "About to dump module - %s\n" name-modifier)
   (if *compile-file-output-pathname*
       (compile-file-quick-module-dump module name-modifier)
       (compile-quick-module-dump module name-modifier)))

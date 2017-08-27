@@ -509,10 +509,10 @@ T_mv core__classify_let_variables_and_declares(List_sp variables, List_sp declar
       classified << Cons_O::create(ext::_sym_specialVar, sym);
       specialInVariables->insert(sym);
     } else {
-      int idx;
+      Fixnum idx;
       T_sp fi = indices->gethash(sym, _Unbound<T_O>());
-      if (!fi.unboundp()) {
-        idx = unbox_fixnum(gc::As<Fixnum_sp>(fi));
+      if (fi.fixnump()) {
+        idx = fi.unsafe_fixnum();
       } else {
         idx = indicesSize;
         indices->hash_table_setf_gethash(sym, make_fixnum(idx));
@@ -863,7 +863,7 @@ void extract_declares_docstring_code_specials(List_sp inputBody, List_sp &declar
 #define DOCS_af_extractDeclaresDocstringCode "extractDeclaresDocstringCode"
 T_mv af_extractDeclaresDocstringCode(List_sp body, T_sp expectDocStr)
 {
-  IMPLEMENT_MEF(BF("Switch to process-declarations"));
+  IMPLEMENT_MEF("Switch to process-declarations");
   List_sp declares;
   String_sp docstr;
   List_sp code;
@@ -876,7 +876,7 @@ T_mv af_extractDeclaresDocstringCode(List_sp body, T_sp expectDocStr)
 void extract_declares_code(List_sp args, List_sp &declares, List_sp &code) {
   gc::Nilable<String_sp> dummy_docstring;
   List_sp specials;
-  IMPLEMENT_MEF(BF("Check who is using this and why they aren't calling extract_declares_docstring_code_specials directly"));
+  IMPLEMENT_MEF("Check who is using this and why they aren't calling extract_declares_docstring_code_specials directly");
   extract_declares_docstring_code_specials(args, declares, false, dummy_docstring, code, specials);
 }
 

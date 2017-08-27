@@ -1290,7 +1290,7 @@ class build_bitcode(Task.Task):
 #                       [ '-Wl', '-mllvm' ] + \
 #        build_args = ' '.join(preproc_args) + " " + self.inputs[0].abspath()
         cmd = build_args
-#        cmd.remove("-g")
+        cmd.remove("-g")
         print("build_intrinsics bitcode cmd = %s" % cmd)
         return self.exec_command(cmd, shell = True)
 

@@ -32,7 +32,7 @@ THE SOFTWARE.
 #include <vector>
 #include <set>
 #include <clasp/core/object.h>
-#include <clasp/core/holder.h>
+//#include <clasp/core/holder.h>
 #include <clasp/core/lispStream.fwd.h>
 #include <clasp/core/character.fwd.h>
 #include <clasp/core/cons.h>
@@ -111,7 +111,7 @@ public:
       this->_MostSignificantWordFirst = true;
       this->_mpz_import_word_order = 1;
     } else {
-      THROW_HARD_ERROR(BF("What the heck? - the Endian test failed when starting up Lisp environment"));
+throw_hard_error("What the heck? - the Endian test failed when starting up Lisp environment");
     }
   }
 };

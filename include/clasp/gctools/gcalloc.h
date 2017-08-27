@@ -67,7 +67,7 @@ template <class OT>
 struct GCObjectInitializer<tagged_pointer<OT>, true> {
   typedef tagged_pointer<OT> functor_pointer_type;
   static void initializeIfNeeded(functor_pointer_type sp) {
-    THROW_HARD_ERROR(BF("Figure out why this is being invoked, you should never need to initialize a functor!"));
+    throw_hard_error("Figure out why this is being invoked, you should never need to initialize a functor!");
   };
 };
 template <class OT>
@@ -262,11 +262,11 @@ namespace gctools {
       do {
         mps_res_t res = mps_reserve(&addr, allocation_point, size);
         if (res != MPS_RES_OK)
-          THROW_HARD_ERROR(BF("Out of memory"));
+          throw_hard_error("Out of memory");
         GC_LOG(("allocated @%p %zu bytes\n", addr, size));
         myAddress = reinterpret_cast<T*>(addr);
         if (!myAddress)
-          THROW_HARD_ERROR(BF("NULL address in allocate!"));
+          throw_hard_error("NULL address in allocate!");
         new (myAddress) T(std::forward<ARGS>(args)...);
         tagged_obj = PTR_TYPE(myAddress);
       } while (!mps_commit(allocation_point, addr, size));
@@ -274,7 +274,7 @@ namespace gctools {
     lisp_check_pending_interrupts(my_thread);
     DEBUG_MPS_UNDERSCANNING_TESTS();
     if (!myAddress)
-      THROW_HARD_ERROR(BF("Could not allocate from GCBucketAllocator<Buckets<VT,VT,WeakLinks>>"));
+      throw_hard_error("Could not allocate from GCBucketAllocator<Buckets<VT,VT,WeakLinks>>");
     GC_LOG(("malloc@%p %zu bytes\n", myAddress, size));
     return tagged_obj;
   }
@@ -324,7 +324,7 @@ namespace gctools {
         GC_FREE(&*memory);
 #endif
 #if defined(USE_MPS) && !defined(RUNNING_GC_BUILDER)
-        THROW_HARD_ERROR(BF("I need a way to deallocate MPS allocated objects that are not moveable or collectable"));
+        throw_hard_error("I need a way to deallocate MPS allocated objects that are not moveable or collectable");
         GCTOOLS_ASSERT(false); // ADD SOME WAY TO FREE THE MEMORY
 #endif
       };
@@ -503,7 +503,7 @@ should not be managed by the GC */
       GC_FREE(memory);
 #endif
 #if defined(USE_MPS) && !defined(RUNNING_GC_BUILDER)
-    THROW_HARD_ERROR(BF(" GCObjectAppropriatePoolAllocator<OT, unmanaged > I need a way to deallocate MPS allocated objects that are not moveable or collectable"));
+      throw_hard_error(" GCObjectAppropriatePoolAllocator<OT, unmanaged > I need a way to deallocate MPS allocated objects that are not moveable or collectable");
       GCTOOLS_ASSERT(false); // ADD SOME WAY TO FREE THE MEMORY
 #endif
     };
@@ -614,7 +614,7 @@ namespace gctools {
 #endif
     };
     static smart_pointer_type register_class_with_redeye() {
-      THROW_HARD_ERROR(BF("Never call this - it's only used to register with the redeye static analyzer"));
+      throw_hard_error("Never call this - it's only used to register with the redeye static analyzer");
     }
     static smart_pointer_type copy_kind(const Header_s::Value& the_header, size_t size, const OT &that) {
 #ifdef USE_BOEHM
@@ -1001,7 +1001,7 @@ public:
     { RAII_DISABLE_INTERRUPTS();
       Header_s *base = reinterpret_cast<Header_s *>(GC_MALLOC_ATOMIC(sz));
       if (!base)
-        THROW_HARD_ERROR(BF("Out of memory in allocate"));
+        throw_hard_error("Out of memory in allocate");
       new (base) Header_s(the_header);
       container_pointer myAddress = BasePtrToMostDerivedPtr<TY>(base);
       new (myAddress) TY(num);
@@ -1087,7 +1087,7 @@ public:
 #endif
     container_pointer myAddress = (container_pointer)GC_MALLOC_ATOMIC(size);
     if (!myAddress)
-      THROW_HARD_ERROR(BF("Out of memory in allocate"));
+      throw_hard_error("Out of memory in allocate");
     new (myAddress) container_type(num);
 #ifdef DEBUG_GCWEAK
     printf("%s:%d Check if Buckets has been initialized to unbound\n", __FILE__, __LINE__);
@@ -1107,7 +1107,7 @@ public:
   template <typename... ARGS>
   void construct(pointer p, ARGS &&... args) {
     // initialize memory with placement new
-    THROW_HARD_ERROR(BF("What do I do here"));
+    throw_hard_error("What do I do here");
     //            new((void*)p)value_type(std::forward<ARGS>(args)...);
   }
 
@@ -1161,7 +1161,7 @@ public:
 #endif
     container_pointer myAddress = (container_pointer)GC_MALLOC(size);
     if (!myAddress)
-      THROW_HARD_ERROR(BF("Out of memory in allocate"));
+      throw_hard_error("Out of memory in allocate");
     new (myAddress) container_type(num);
     return gctools::tagged_pointer<container_type>(myAddress);
 #endif
@@ -1178,7 +1178,7 @@ public:
   template <typename... ARGS>
   void construct(pointer p, ARGS &&... args) {
     // initialize memory with placement new
-    THROW_HARD_ERROR(BF("What do I do here"));
+    throw_hard_error("What do I do here");
     //            new((void*)p)value_type(std::forward<ARGS>(args)...);
   }
 
@@ -1225,7 +1225,7 @@ public:
     printf("%s:%d Allocating Mapping with GC_MALLOC_ATOMIC\n", __FILE__, __LINE__);
     container_pointer myAddress = (container_pointer)GC_MALLOC_ATOMIC(size);
     if (!myAddress)
-      THROW_HARD_ERROR(BF("Out of memory in allocate"));
+      throw_hard_error("Out of memory in allocate");
     new (myAddress) container_type(val);
     printf("%s:%d Check if Mapping has been initialized to unbound\n", __FILE__, __LINE__);
     return gctools::tagged_pointer<container_type>(myAddress);
@@ -1262,7 +1262,7 @@ public:
     printf("%s:%d Allocating Mapping with GC_MALLOC\n", __FILE__, __LINE__);
     container_pointer myAddress = (container_pointer)GC_MALLOC(size);
     if (!myAddress)
-      THROW_HARD_ERROR(BF("Out of memory in allocate"));
+      throw_hard_error("Out of memory in allocate");
     new (myAddress) container_type(val);
     printf("%s:%d Check if Mapping has been initialized to unbound\n", __FILE__, __LINE__);
     return gctools::tagged_pointer<container_type>(myAddress);
@@ -1299,7 +1299,7 @@ public:
     printf("%s:%d Allocating WeakPointer with GC_MALLOC_ATOMIC\n", __FILE__, __LINE__);
     value_pointer myAddress = (value_pointer)GC_MALLOC_ATOMIC(size);
     if (!myAddress)
-      THROW_HARD_ERROR(BF("Out of memory in allocate"));
+      throw_hard_error("Out of memory in allocate");
     new (myAddress) VT(val);
     return gctools::tagged_pointer<value_type>(myAddress);
 #endif
@@ -1386,7 +1386,7 @@ public:
 #ifdef USE_BOEHM
 #ifdef BOEHM_ONE_BIG_STACK
     if (this->_StackCur != this->_StackBottom) {
-      THROW_HARD_ERROR(BF("The stack is not empty"));
+      throw_hard_error("The stack is not empty");
     }
     GC_FREE(this->_StackBottom);
 #else
@@ -1444,11 +1444,11 @@ public:
 #ifdef DEBUG_BOEHM_STACK
     size_t calcSize = (char *)this->_StackTop - (char *)this->_StackBottom;
     if (calcSize != this->_TotalSize) {
-      THROW_HARD_ERROR(BF("The side-stack has gotten out of whack!  this->_TotalSize = %u  calcSize = %u\n") % this->_TotalSize % calcSize);
+      throw_hard_error_side_stack_damaged(this->_TotalSize,calcSize);
     }
     for (char *i = (char *)this->_StackTop; i < (char *)this->_StackLimit; ++i) {
       if (*i) {
-        THROW_HARD_ERROR(BF("The side-stack has garbage in it!"));
+        throw_hard_error("The side-stack has garbage in it!");
       }
     }
 #endif
@@ -1464,7 +1464,7 @@ public:
     this->frames.pop_back();
     mps_res_t res = mps_ap_frame_pop(this->_AllocationPoint, frame_o);
     if (res != MPS_RES_OK) {
-      THROW_HARD_ERROR(BF("There was a problem with mps_app_frame_pop result = %d") % res);
+      throw_hard_error_mps_bad_result(res);
     }
 #endif // USE_MPS
   }

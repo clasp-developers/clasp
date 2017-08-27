@@ -245,8 +245,9 @@
                     lisp-bitcode-files
                     (target-backend (default-target-backend)))
   (let* ((*target-backend* target-backend)
-         (intrinsics-bitcode-path (core:build-intrinsics-bitcode-pathname link-type))
-         (all-bitcode (list* intrinsics-bitcode-path lisp-bitcode-files))
+         (intrinsics-bitcode-path (core:build-inline-bitcode-pathname link-type :intrinsics))
+         (builtins-bitcode-path (core:build-inline-bitcode-pathname link-type :builtins))
+         (all-bitcode (list* builtins-bitcode-path intrinsics-bitcode-path lisp-bitcode-files))
          (output-pathname (pathname output-pathname)))
     (cond
       ((eq link-type :executable)

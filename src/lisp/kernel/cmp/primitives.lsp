@@ -89,7 +89,7 @@
     (primitive-nounwind* "copyTspTptr" %void% (list +tsp*-or-tmv*+ %t*%))
     (primitive-nounwind* "compareTspTptr" %i32% (list %tsp*% %t*%))
     
-    (primitive-nounwind* "newTmv" %void% (list %tmv*%))
+    (primitive           "newTmv" %void% (list %tmv*%))
 ;;    (primitive-nounwind* "resetTmv" %void% (list %tmv*%))
     (primitive-nounwind* "copyTmv" %void% (list %tmv*% %tmv*%))
     (primitive-nounwind* "copyTmvOrSlice" %void% (list +tsp*-or-tmv*+ %tmv*%))
@@ -116,7 +116,15 @@
     #+long-float (primitive-nounwind* "makeLongFloat" %void% (list %tsp*% %long-float%))
     (primitive-nounwind* "makeString" %void% (list %tsp*% %i8*%))
     (primitive-nounwind* "makePathname" %void% (list %tsp*% %i8*%))
-    (primitive-nounwind* "makeCompiledFunction" %void% (list +tsp*-or-tmv*+ %fn-prototype*% %i32*% %size_t% %size_t% %size_t% %tsp*% %tsp*% %afsp*% %tsp*%))
+    (primitive-nounwind* "makeCompiledFunction" %void% (list +tsp*-or-tmv*+ ; result
+                                                             %fn-prototype*% ; funcPtr
+                                                             %i32*%   ; sourceFileInfoHandleP
+                                                             %size_t% ; filePos
+                                                             %size_t% ; lineno
+                                                             %size_t% ; column
+                                                             %tsp*%   ; functionNameP
+                                                             %afsp*%  ; renv
+                                                             %tsp*%)) ; lambdaListP
     
     (primitive          "symbolValueRead" %void% (list +tsp*-or-tmv*+ %tsp*%))
     (primitive-nounwind* "symbolValueReference" %tsp*% (list %tsp*%))
@@ -172,7 +180,7 @@
     (primitive          "va_tooManyArgumentsException" %void% (list %i8*% %size_t% %size_t%))
     (primitive          "va_notEnoughArgumentsException" %void% (list %i8*% %size_t% %size_t%))
     (primitive          "va_ifExcessKeywordArgumentsException" %void% (list %i8*% %size_t% %va_list*% %size_t%))
-    (primitive          "va_symbolFunction" %t*% (list %tsp*%)) ;; void va_symbolFunction(core::Function_sp fn, core::Symbol_sp sym)
+    (primitive          "va_symbolFunction" %t*% (list %tsp*%))
     (primitive-nounwind* "va_lexicalFunction" %t*% (list %i32% %i32% %afsp*%))
     
     (primitive-nounwind* "cc_gatherRestArguments" %t*% (list %va_list*% %size_t*%))
@@ -258,7 +266,13 @@
     (primitive-nounwind* "cc_initialize_gcroots_in_module" %void% (list %gcroots-in-module*% %tsp*% %size_t% %t*%))
     (primitive-nounwind* "cc_shutdown_gcroots_in_module" %void% (list %gcroots-in-module*% ))
 
-    (primitive           "cc_enclose" %t*% (list %t*% %fn-prototype*% %i32*% %size_t% %size_t% %size_t% %size_t% ) :varargs t)
+    (primitive           "cc_enclose" %t*% (list %t*%
+                                                 %fn-prototype*%
+                                                 %i32*%
+                                                 %size_t%
+                                                 %size_t%
+                                                 %size_t%
+                                                 %size_t% ) :varargs t)
     (primitive-nounwind* "cc_stack_enclose" %t*% (list %i8*% %t*% %fn-prototype*% %i32*% %size_t% %size_t% %size_t% %size_t% ) :varargs t)
     (primitive-nounwind* "cc_saveThreadLocalMultipleValues" %void% (list %tmv*% %mv-struct*%))
     (primitive-nounwind* "cc_loadThreadLocalMultipleValues" %void% (list %tmv*% %mv-struct*%))

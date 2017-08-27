@@ -119,7 +119,7 @@ CL_LAMBDA(arg);
 CL_DECLARE();
 CL_DOCSTRING("funcName");
 CL_DEFUN core::T_mv sockets_internal__funcName() {
-  IMPLEMENT_MEF(BF("Implement funcName"));
+  IMPLEMENT_MEF("Implement funcName");
 };
 
 CL_LAMBDA();
@@ -610,7 +610,7 @@ CL_DECLARE();
 CL_DOCSTRING("ll_autoCloseTwoWayStream");
 CL_DEFUN void sockets_internal__ll_autoCloseTwoWayStream(core::Stream_sp stream) {
 #if 0
-	IMPLEMENT_MEF(BF("Handle ECL_STREAM_CLOSE_COMPONENTS"));
+	IMPLEMENT_MEF("Handle ECL_STREAM_CLOSE_COMPONENTS");
 	stream->stream.flags |= ECL_STREAM_CLOSE_COMPONENTS;
 #endif
 };

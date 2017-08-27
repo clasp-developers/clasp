@@ -273,7 +273,7 @@ T_sp StructureObject_O::structureSet(int index, T_sp value) {
 #if 0
 void StructureObject_O::archiveBase(ArchiveP node) {
   // Call out to core:serialize
-  IMPLEMENT_MEF(BF("Call out to core::serialize me node")); // handle slots properly so that they are indexed by name
+  IMPLEMENT_MEF("Call out to core::serialize me node"); // handle slots properly so that they are indexed by name
 }
 
 T_sp StructureObject_O::copyStructure() const {

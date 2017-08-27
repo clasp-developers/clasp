@@ -1165,14 +1165,14 @@ void lisp_defgeneric(const string &packageName,
                      const string &docstring,
                      bool autoExport) {
   // Remember to lock the function name
-  IMPLEMENT_MEF(BF("implement-defgeneric"));
+  IMPLEMENT_MEF("implement-defgeneric");
   string name = lispify_symbol_name(cname);
 #if 0
 	LOG(BF("Adding generic-function[%s:%s] with arguments[%s]") %packageName % name % arguments );
 	string lispName = lisp_convertCNameToLispName(name,true);
 	Symbol_sp sym = lisp->internWithPackageName(packageName,lispName);
 	lisp->createPredefinedSymbol(symSymbol,sym);
-	IMPLEMENT_MEF(BF("Switch to CompiledBody"));
+	IMPLEMENT_MEF("Switch to CompiledBody");
 	FunctionPrimitive_sp func = FunctionPrimitive_O::create(sym,f,arguments,""/*Docstring*/,lisp);
 	sym->setf_symbolFunction(func);
 	if ( autoExport ) sym->exportYourself();
@@ -1332,7 +1332,7 @@ void lisp_logException(const char *file, const char *fn, int line, const char *s
     {
 // # p r a g m a omp critical ( printv )
 	{
-            IMPLEMENT_MEF(BF("Make sure malloc works\n"));
+            IMPLEMENT_MEF("Make sure malloc works\n");
 	    va_list	arg_ptr;
 	    char	*outBuffer;
 	    char	*newOutBuffer;
@@ -1566,6 +1566,43 @@ struct ErrorSimpleDepthCounter {
   }
 };
 
+
+#define MAX_SPRINTF_BUFFER 1024
+[[noreturn]]void lisp_error_sprintf(const char* fileName, int lineNumber, const char* functionName, const char* fmt, ... ) {
+  va_list args;
+  va_start(args,fmt);
+  char buffer[MAX_SPRINTF_BUFFER];
+  vsnprintf(buffer,MAX_SPRINTF_BUFFER,fmt,args);
+  va_end(args);
+  stringstream ss;
+  ss << "In " << functionName << " " << fileName << " line " << lineNumber << std::endl;
+  ss << buffer;
+  ErrorSimpleDepthCounter counter(ss.str());
+  if (!_sym_signalSimpleError) {
+    printf("%s:%d %s\n", __FILE__, __LINE__, ss.str().c_str());
+    throw(HardError("System starting up - debugger not available yet: "+ss.str()));
+  }
+  if (!_sym_signalSimpleError->fboundp()) {
+    printf("%s:%d %s\n", __FILE__, __LINE__, ss.str().c_str());
+    dbg_hook(ss.str().c_str());
+    if (my_thread->_InvocationHistoryStackTop == NULL) {
+      throw(HardError("System starting up - debugger not available yet: "+ ss.str()));
+    }
+    LispDebugger dbg;
+    dbg.invoke();
+    //	    af_error(CandoException_O::create(ss.str()),_Nil<T_O>());
+  }
+  SYMBOL_EXPORT_SC_(ClPkg, programError);
+  eval::funcall(_sym_signalSimpleError,
+                cl::_sym_programError,    //arg0
+                _Nil<T_O>(),              // arg1
+                SimpleBaseString_O::make(buffer), // arg2
+                _Nil<T_O>());
+  UNREACHABLE();
+}
+
+
+
 NOINLINE void lisp_error_simple(const char *functionName, const char *fileName, int lineNumber, const boost::format &fmt) {
   stringstream ss;
   ss << "In " << functionName << " " << fileName << " line " << lineNumber << std::endl;
@@ -1573,13 +1610,13 @@ NOINLINE void lisp_error_simple(const char *functionName, const char *fileName, 
   ErrorSimpleDepthCounter counter(ss.str());
   if (!_sym_signalSimpleError) {
     printf("%s:%d %s\n", __FILE__, __LINE__, ss.str().c_str());
-    throw(core::HardError(__FILE__, __FUNCTION__, __LINE__, BF("System starting up - debugger not available yet:  %s") % ss.str()));
+    throw(HardError("System starting up - debugger not available yet: "+ss.str()));
   }
   if (!_sym_signalSimpleError->fboundp()) {
     printf("%s:%d %s\n", __FILE__, __LINE__, ss.str().c_str());
     dbg_hook(ss.str().c_str());
     if (my_thread->_InvocationHistoryStackTop == NULL) {
-      throw(core::HardError(__FILE__, __FUNCTION__, __LINE__, BF("System starting up - debugger not available yet:  %s") % ss.str()));
+      throw(HardError("System starting up - debugger not available yet: "+ ss.str()));
     }
     LispDebugger dbg;
     dbg.invoke();
@@ -1591,6 +1628,7 @@ NOINLINE void lisp_error_simple(const char *functionName, const char *fileName, 
                 _Nil<T_O>(),              // arg1
                 SimpleBaseString_O::make(fmt.str()), // arg2
                 _Nil<T_O>());
+  UNREACHABLE();
 }
 
 #if 0
@@ -1612,7 +1650,7 @@ void lisp_error_condition(const char *functionName, const char *fileName, int li
 }
 #endif
 
-void lisp_error(T_sp datum, T_sp arguments) {
+[[noreturn]] void lisp_error(T_sp datum, T_sp arguments) {
   if (!cl::_sym_error->fboundp()) {
     stringstream ss;
     ss << "Error " << _rep_(datum) << " initializers: " << _rep_(arguments) << std::endl;
@@ -1622,6 +1660,7 @@ void lisp_error(T_sp datum, T_sp arguments) {
     //	    af_error(CandoException_O::create(ss.str()),_Nil<T_O>());
   }
   eval::applyLastArgsPLUSFirst(cl::_sym_error, arguments, datum);
+  UNREACHABLE();
 }
 
 string stringUpper(const string &s) {

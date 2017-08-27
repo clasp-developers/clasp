@@ -520,19 +520,23 @@ a relative path from there."
     result))
 
 
-(defun build-intrinsics-bitcode-pathname (link-type)
-  (cond
-    ((eq link-type :fasl)
-     (translate-logical-pathname (bformat nil "lib:%s-intrinsics-cxx.a" +bitcode-name+)))
-    ((eq link-type :compile)
-     (translate-logical-pathname (bformat nil "lib:%s-intrinsics-cxx.bc" +bitcode-name+)))
-    ((eq link-type :executable)
-     (translate-logical-pathname (bformat nil "lib:%s-all-cxx.a" +bitcode-name+)))
-    (t (error "Provide a bitcode file for the link-type ~a" link-type))))
+(defun build-inline-bitcode-pathname (link-type &optional (filetype :intrinsics))
+  (let ((name (cond
+                ((eq filetype :intrinsics) "intrinsics")
+                ((eq filetype :builtins) "builtins")
+                (t (error "illegal filetype - only :intrinsics or :builtins allowed")))))
+    (cond
+      ((eq link-type :fasl)
+       (translate-logical-pathname (bformat nil "lib:%s-%s-cxx.a" +bitcode-name+ name)))
+      ((eq link-type :compile)
+       (translate-logical-pathname (bformat nil "lib:%s-%s-cxx.bc" +bitcode-name+ name)))
+      ((eq link-type :executable)
+       (translate-logical-pathname (bformat nil "lib:%s-all-cxx.a" +bitcode-name+)))
+      (t (error "Provide a bitcode file for the link-type ~a" link-type)))))
 
 (defun build-common-lisp-bitcode-pathname ()
   (translate-logical-pathname (pathname (bformat nil "lib:%sclasp-%s-common-lisp.bc" (default-target-stage) +variant-name+))))
-(export '(build-intrinsics-bitcode-pathname build-common-lisp-bitcode-pathname))
+(export '(build-inline-bitcode-pathname build-common-lisp-bitcode-pathname))
 #+(or)
 (progn
   (defconstant +image-pathname+ (make-pathname :directory '(:relative) :name "image" :type "fasl"))

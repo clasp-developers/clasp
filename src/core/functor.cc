@@ -251,7 +251,7 @@ void BuiltinClosure_O::setf_lambda_list(List_sp lambda_list) {
 #if 0
 LCC_RETURN BuiltinClosure_O::LISP_CALLING_CONVENTION() {
   INCREMENT_FUNCTION_CALL_COUNTER(this);
-  IMPLEMENT_MEF(BF("Handle call to BuiltinClosure"));
+  IMPLEMENT_MEF("Handle call to BuiltinClosure");
 };
 #endif
 
@@ -310,6 +310,9 @@ void CompiledClosure_O::setf_lambda_list(core::List_sp lambda_list) {
 }
 #endif
 
+
+void CompiledDispatchFunction_O::setf_lambda_list(core::List_sp lambda_list) 
+{ SIMPLE_ERROR(BF("You cannot set the lambda-list of a compiled-dispatch-function")); };  
 
 #if 0
 LCC_RETURN InstanceClosure_O::LISP_CALLING_CONVENTION() {

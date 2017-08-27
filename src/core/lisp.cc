@@ -46,6 +46,7 @@ THE SOFTWARE.
 #include <boost/program_options.hpp>
 #pragma GCC diagnostic pop
 //#i n c l u d e	"boost/fstream.hpp"
+#include <clasp/core/foundation.h>
 #include <clasp/gctools/gc_interface.h>
 #include <clasp/gctools/source_info.h>
 #include <clasp/gctools/gcFunctions.h>
@@ -941,7 +942,7 @@ void Lisp_O::defconstant(Symbol_sp sym, T_sp obj) {
 
 T_sp Lisp_O::error(const boost::format &fmt) {
   _OF();
-  return CandoException_O::create(fmt);
+  return CandoException_O::create(fmt.str());
 }
 
 Symbol_sp Lisp_O::errorUndefinedSymbol(const char *sym) {

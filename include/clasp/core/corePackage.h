@@ -39,7 +39,6 @@ class CoreExposer_O : public core::Exposer_O {
 public:
   CoreExposer_O(Lisp_sp lisp);
  public:
-  DISABLE_NEW();
   virtual void expose(core::Lisp_sp lisp, WhatToExpose what) const;
 public:
   /*! Lisp_O::startupLispEnvironment calls this to create the core classes */

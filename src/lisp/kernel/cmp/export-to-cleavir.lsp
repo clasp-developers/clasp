@@ -1,7 +1,7 @@
 (in-package :cmp)
 
 (export '(
-          *all-functions-for-one-compile*
+          *saved-module-from-compile*
           *cleavir-compile-file-hook*
           *cleavir-compile-hook*
           *current-form-lineno*
@@ -106,10 +106,9 @@
           jit-function-name
           module-make-global-string
           llvm-link
-          link-intrinsics-module
+          jit-link-builtins-module
           load-bitcode
           initialize-calling-convention
-          set-associated-funcs
           treat-as-special-operator-p
           typeid-core-unwind
           walk-form-for-source-info

@@ -61,7 +61,7 @@
     (if result
         (let ((funcs (compile-reference-to-literal (if *generate-compile-file-load-time-values*
                                                        nil
-                                                       *all-functions-for-one-compile*)))
+                                                       *saved-module-from-compile*)))
               (lambda-list (compile-reference-to-literal lambda-list)))
           ;; TODO:   Here walk the source code in lambda-or-lambda-block and
           ;; get the line-number/column for makeCompiledFunction
@@ -73,7 +73,6 @@
                          (irc-size_t-*current-source-pos-info*-lineno)
                          (irc-size_t-*current-source-pos-info*-column)
                          (compile-reference-to-literal lambda-name)
-                         funcs 
                          (irc-renv env)
                          lambda-list)
           (values compiled-fn lambda-name)))))

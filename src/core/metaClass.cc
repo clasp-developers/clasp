@@ -336,7 +336,7 @@ CL_DEFUN bool core__subclassp(T_sp low, T_sp high) {
     return lowClassPrecedenceList.asCons()->memberEq(high).notnilp();
   } else if (Instance_sp inst = low.asOrNull<Instance_O>()) {
     (void)inst;
-    IMPLEMENT_MEF(BF("Run some other tests to make sure that instance is a Class: %s") % _rep_(low));
+    IMPLEMENT_MEF("Run some other tests to make sure that instance is a Class:"+ _rep_(low));
   }
   SIMPLE_ERROR(BF("Illegal argument for subclassp: %s") % _rep_(low));
 };

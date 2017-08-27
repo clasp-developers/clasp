@@ -37,7 +37,6 @@ $for template_ [[
         public:
         enum { NumParams = $numArgs };
         VariadicFunctor(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : TemplatedFunctionBase_O(&MyType::entry_point,name,funcType,SOURCE_INFO_PASS), fptr(ptr) {};
-        DISABLE_NEW();
         virtual size_t templatedSizeof() const { return sizeof(*this); };
 	virtual void* functionAddress() const { return (void*)this->fptr; };
         static inline LCC_RETURN entry_point(LCC_ARGS_ELLIPSIS)
