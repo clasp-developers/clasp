@@ -30,6 +30,8 @@ THE SOFTWARE.
 #include <clasp/core/object.h>
 #include <clasp/core/array.h>
 #include <clasp/core/hashTable.fwd.h>
+#include <clasp/core/mpPackage.h>
+
 // may need more later
 #include <clasp/gctools/gc_interface.h>
 
@@ -77,12 +79,12 @@ namespace core {
 
 // These indices MUST match the order and positions of slots in +standard-generic-function-slots+
     typedef enum { REF_GFUN_NAME = 0,
-                   REF_GFUN_SPECIALIZERS = 1,
-                   REF_GFUN_COMB = 2,
+                   REF_GFUN_SPECIALIZERS = 1,  // lock
+                   REF_GFUN_COMB = 2,          
                    REF_GFUN_DISPATCHER = 3,
-                   REF_GFUN_CALL_HISTORY = 4,
-                   REF_GFUN_LAMBDA_LIST = 5,
-                   REF_GFUN_SPECIALIZER_PROFILE = 6,
+                   REF_GFUN_CALL_HISTORY = 4,  // lock
+                   REF_GFUN_LAMBDA_LIST = 5,   // lock
+                   REF_GFUN_SPECIALIZER_PROFILE = 6,  // lock
                    REF_GFUN_LOCK = 7 } GenericFunctionSlots;
     
   public: // ctor/dtor for classes with shared virtual base
@@ -144,6 +146,7 @@ namespace core {
       }
       this->instanceSet(REF_GFUN_LAMBDA_LIST,lambda_list);
     };
+    mp::SharedMutex_sp GFUN_LOCK() const { return gc::As<mp::SharedMutex_sp>(this->instanceRef(REF_GFUN_LOCK));};
   public:
     // Functions from Class_O
     string _classNameAsString() const;
@@ -290,8 +293,30 @@ namespace core {
 
     static  LCC_RETURN LISP_CALLING_CONVENTION();
 
-  }; // Instance class
+  }; // FuncallableInstance class
 
+
+  struct GenericFunctionReadLock {
+    mp::SharedMutex_sp _Lock;
+  GenericFunctionReadLock(mp::SharedMutex_sp lock) : _Lock(lock) {
+    this->_Lock->shared_lock();
+  }
+    ~GenericFunctionReadLock() {
+      this->_Lock->shared_unlock();
+    }
+  };
+
+  struct GenericFunctionWriteLock {
+    mp::SharedMutex_sp _Lock;
+  GenericFunctionWriteLock(mp::SharedMutex_sp lock) : _Lock(lock) {
+    this->_Lock->write_lock();
+  }
+    ~GenericFunctionWriteLock() {
+      this->_Lock->write_unlock();
+    }
+  };
+
+  
 }; // core namespace
 
 

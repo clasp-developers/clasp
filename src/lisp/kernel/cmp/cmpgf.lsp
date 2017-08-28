@@ -1014,9 +1014,15 @@
                 (cmp::gf-log-dispatch-miss-followup "!!!!!!  DID NOT MODIFY CALL-HISTORY\n")))
             (cmp::gf-log "Invalidating dispatch function~%")
             #+log-cmpgf(cmp::graph-call-history generic-function (cmp::log-cmpgf-filename "graph" "dot"))
-            (safe-set-funcallable-instance-function generic-function (calculate-fastgf-dispatch-function generic-function
-                                                                                                         #+log-cmpgf :output-path
-                                                                                                         #+log-cmpgf (cmp::log-cmpgf-filename "func" "ll"))) ;;'clos::invalidated-dispatch-function)
+            (unwind-protect
+                 (progn
+                   (mp:shared-lock (generic-function-lock generic-function))
+                   (safe-set-funcallable-instance-function
+                    generic-function (calculate-fastgf-dispatch-function
+                                      generic-function
+                                      #+log-cmpgf :output-path
+                                      #+log-cmpgf (cmp::log-cmpgf-filename "func" "ll"))))
+              (mp:shared-unlock (generic-function-lock generic-function)))
             (cmp::gf-log "Calling effective-method-function ~a~%" effective-method-function)
             (apply effective-method-function arguments nil arguments)))
         (progn
@@ -1093,6 +1099,15 @@
             (cmp::codegen-dispatcher dispatch-tree generic-function :output-path output-path)))
         'clos::invalidated-dispatch-function)))
 
+(defun disassemble-fastgf-dispatch-function (generic-function)
+  (let* ((*save-module-for-disassemble* t)
+         (cmp:*saved-module-from-clasp-jit* nil))
+    (let ((dispatcher (calculate-fastgf-dispatch-function generic-function)))
+      (let ((module cmp:*saved-module-from-clasp-jit*))
+        (if module
+            (llvm-sys:dump-module module)
+            (format t "Could not obtain module for disassemble of generic-function ~a dispatcher -> ~a~%" generic-function dispatcher))))))
+
 (defun graph-fastgf-dispatch-function (generic-function)
   (let* ((call-history (clos::optimized-call-history generic-function)))
     (if call-history
@@ -1108,13 +1123,7 @@
   (core:stack-monitor (lambda () (format t "In clos::invalidated-dispatch-function with generic function ~a~%" (instance-ref generic-function 0))))
   (cmp::gf-log "invalidated-dispatch-function generic-function -> ~a   arguments -> ~a~%" (clos::generic-function-name generic-function) va-list-args)
   (maybe-update-instances (core:list-from-va-list va-list-args))
-  (clos::dispatch-miss generic-function va-list-args)
-  #+(or)(multiple-value-prog1
-            (clos::dispatch-miss generic-function va-list-args)
-          (let ((dispatcher (calculate-fastgf-dispatch-function generic-function)))
-            ;; replace the old dispatch function with the new one
-            (cmp::gf-log "replacing funcallable-instance-function~%")
-            (safe-set-funcallable-instance-function generic-function dispatcher))))
+  (clos::dispatch-miss generic-function va-list-args))
 
 
 (defun maybe-invalidate-generic-function (gf)

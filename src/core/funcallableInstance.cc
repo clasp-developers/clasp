@@ -558,7 +558,7 @@ void FuncallableInstance_O::GFUN_CALL_HISTORY_set(T_sp h) {
     printf("%s:%d                      history: %s\n", __FILE__, __LINE__, _rep_(h).c_str());
   }
 #endif
-  this->instanceSet(4,h);
+  this->instanceSet(REF_GFUN_CALL_HISTORY,h);
 }
 
 void FuncallableInstance_O::set_kind(Symbol_sp k) {
@@ -871,6 +871,7 @@ CL_DEFUN List_sp core__call_history_find_key(List_sp generic_function_call_histo
 /*! Return true if an entry was pushed */
 CL_DEFUN bool core__generic_function_call_history_push_new(FuncallableInstance_sp generic_function, SimpleVector_sp key, T_sp effective_method )
 {
+  GenericFunctionWriteLock(generic_function->GFUN_LOCK());
 #ifdef DEBUG_GFDISPATCH
   if (_sym_STARdebug_dispatchSTAR->symbolValue().notnilp()) {
     printf("%s:%d   generic_function_call_history_push_new    gf: %s\n        key: %s\n          em: %s\n", __FILE__, __LINE__, _rep_(generic_function).c_str(), _rep_(key).c_str(), _rep_(effective_method).c_str());
@@ -892,6 +893,7 @@ CL_DEFUN bool core__generic_function_call_history_push_new(FuncallableInstance_s
 
 
 CL_DEFUN void core__generic_function_call_history_remove_entries_with_specializers(FuncallableInstance_sp generic_function, List_sp specializers ) {
+  GenericFunctionWriteLock(generic_function->GFUN_LOCK());
 //  printf("%s:%d Remember to remove entries with subclasses of specializer: %s\n", __FILE__, __LINE__, _rep_(specializer).c_str());
 #ifdef DEBUG_GFDISPATCH
   if (_sym_STARdebug_dispatchSTAR->symbolValue().notnilp()) {

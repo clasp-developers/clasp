@@ -141,7 +141,7 @@
               :accessor generic-function-specializer-profile)
       #+(and clasp threads)(lock
                             :initarg :lock
-                            :initform (mp:make-lock :name 'generic-function-lock)
+                            :initform (mp:make-shared-mutex 'generic-function-lock)
                             :accessor generic-function-lock)
       (argument-precedence-order 
        :initarg :argument-precedence-order
