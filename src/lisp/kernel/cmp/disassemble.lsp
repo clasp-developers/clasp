@@ -90,13 +90,15 @@ Return T if disassembly was achieved - otherwise NIL"
 			     (values desig name)))
         ((and (consp desig) (eq (car desig) 'lambda))
          (let* ((*save-module-for-disassemble* t)
-                (*saved-module-from-compile* nil)
-                (funcs (compile nil desig)))
-           (let ((module *saved-module-from-compile*))
-             (cond
-               ((eq type :ir) (llvm-sys:dump-module module))
-               ((eq type :asm) (warn "Handle disassemble of lambda-form to assembly"))
-               (t (error "Illegal type ~a - only :ir and :asm allowed" type )))))
+                (cmp:*saved-module-from-clasp-jit* :no-module))
+           (compile nil desig)
+           (let ((module cmp:*saved-module-from-clasp-jit*))
+             (if module
+                 (cond
+                   ((eq type :ir) (llvm-sys:dump-module module))
+                   ((eq type :asm) (warn "Handle disassemble of lambda-form to assembly"))
+                   (t (error "Illegal type ~a - only :ir and :asm allowed" type )))
+                 (error "Could not recover jitted module -> ~a" module))))
          (return-from disassemble nil))
 	(t (error "Unknown argument ~a passed to disassemble" desig)))
     (setq name (if name name 'lambda))

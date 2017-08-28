@@ -303,19 +303,15 @@ No DIBuilder is defined for the default module")
 
 
 
-(defvar *saved-module-from-compile* nil
-  "All functions for one COMPILE are accumulated in this dynamic variable.
-COMPILE-FILE just throws this away.   Return (values llvm-function lambda-name lambda-list)")
-
-(defvar *enable-builtins-inlining* t)
-
 (defun jit-link-builtins-module (module)
   "Merge the intrinsics module with the passed module.
 The passed module is modified as a side-effect."
   (when *enable-builtins-inlining*
     (unless *builtins-module*
-      (let ((builtins-bitcode-name (namestring (truename (build-inline-bitcode-pathname :compile :builtins)))))
-        (setf *builtins-module* (llvm-sys:parse-bitcode-file builtins-bitcode-name *llvm-context*))))
+      (let* ((builtins-bitcode-name (namestring (truename (build-inline-bitcode-pathname :compile :builtins))))
+             (builtins-module (llvm-sys:parse-bitcode-file builtins-bitcode-name *llvm-context*)))
+        (llvm-sys:remove-useless-global-ctors builtins-module)
+        (setf *builtins-module* builtins-module)))
     ;; Clone the intrinsics module and link it in
     (quick-module-dump module "module before linking builtins-clone")
     (let ((linker (llvm-sys:make-linker module))
@@ -332,7 +328,6 @@ The passed module is modified as a side-effect."
 
 (defun optimize-module-for-compile-file (module &optional (optimize-level *optimization-level*) (size-level *size-level*))
   (declare (type (or null llvm-sys:module) module))
-  (llvm-sys:dump-module module)
   (when (and *optimizations-on* module)
     #++(let ((call-sites (call-sites-to-always-inline module)))
       (bformat t "Call-sites -> %s\n" call-sites))
@@ -421,7 +416,7 @@ The passed module is modified as a side-effect."
   (defvar *builtins-module* nil)
   (defparameter *jit-dump-module* nil)
   (defvar *declare-dump-module* nil)
-  (defvar *save-module-for-disassemble* nil)
+  (defvar *enable-builtins-inlining* t)
   (defvar *jit-repl-module-handles* nil)
   (defvar *jit-fastgf-module-handles* nil)
   (defvar *jit-symbol-info* nil)
@@ -432,9 +427,6 @@ The passed module is modified as a side-effect."
     (optimize-module-for-compile original-module)
     (quick-module-dump original-module "module after-optimize")
     (let ((module original-module))
-      (when *save-module-for-disassemble*
-        (setf module (llvm-sys:clone-module original-module))
-        (setf *saved-module-from-compile* original-module))
       ;;#+threads(mp:get-lock *jit-engine-mutex*)
       ;;    (bformat t "In jit-add-module-return-function dumping module\n")
       ;;    (llvm-sys:print-module-to-stream module *standard-output*)
@@ -452,16 +444,12 @@ The passed module is modified as a side-effect."
             (dolist (e *jit-symbol-info*)
               (core:hash-table-setf-gethash *jit-saved-symbol-info* (car e) (cdr e))
               #++(bformat t "%s\n" e))
-            #++(bformat t "Dump of associated functions: %s\n" *saved-module-from-compile*)
             fn)))))
 
   (defun jit-add-module-return-dispatch-function (original-module dispatch-fn startup-fn shutdown-fn literals-list)
     (jit-link-builtins-module original-module)
     (optimize-module-for-compile original-module)
     (let ((module original-module))
-      (when *save-module-for-disassemble*
-        (setf module (llvm-sys:clone-module original-module))
-        (setf *saved-module-from-compile* original-module))
       (let* ((dispatch-name (llvm-sys:get-name dispatch-fn))
              (startup-name (llvm-sys:get-name startup-fn))
              (shutdown-name (llvm-sys:get-name shutdown-fn))

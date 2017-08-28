@@ -1,7 +1,6 @@
 (in-package :cmp)
 
 (export '(
-          *saved-module-from-compile*
           *cleavir-compile-file-hook*
           *cleavir-compile-hook*
           *current-form-lineno*

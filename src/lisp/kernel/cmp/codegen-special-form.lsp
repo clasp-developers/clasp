@@ -59,10 +59,7 @@
       (compile-lambda-function lambda-or-lambda-block env)
     (if (null lambda-name) (error "The lambda doesn't have a name"))
     (if result
-        (let ((funcs (compile-reference-to-literal (if *generate-compile-file-load-time-values*
-                                                       nil
-                                                       *saved-module-from-compile*)))
-              (lambda-list (compile-reference-to-literal lambda-list)))
+        (let ((lambda-list (compile-reference-to-literal lambda-list)))
           ;; TODO:   Here walk the source code in lambda-or-lambda-block and
           ;; get the line-number/column for makeCompiledFunction
           (irc-intrinsic "makeCompiledFunction" 

@@ -10,7 +10,6 @@
           irc-function-create
           irc-bclasp-function-create
           %fn-prototype%
-          *saved-module-from-compile*
           *cleavir-compile-file-hook*
           *cleavir-compile-hook*
           *compile-print*

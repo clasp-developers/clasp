@@ -1071,6 +1071,8 @@ void CoreExposer_O::define_essential_globals(Lisp_sp lisp) {
   core::_sym_STARpollTicksPerGcSTAR->defparameter(make_fixnum(POLL_TICKS_PER_GC));
   comp::_sym_STARlowLevelTraceSTAR->defparameter(_Nil<T_O>());
   comp::_sym_STARlowLevelTracePrintSTAR->defparameter(_Nil<T_O>());
+  comp::_sym_STARsave_module_for_disassembleSTAR->defparameter(_Nil<core::T_O>());
+  comp::_sym_STARsaved_module_from_clasp_jitSTAR->defparameter(_Nil<core::T_O>());
   _sym_STARallCxxClassesSTAR->defparameter(_Nil<T_O>());
   _sym_STARtopLevelCommandHookSTAR->defparameter(_Nil<T_O>());
   _sym_STARllvmFunctionNameHookSTAR->defparameter(_Nil<T_O>());
