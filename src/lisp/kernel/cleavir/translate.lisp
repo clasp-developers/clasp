@@ -693,7 +693,7 @@ when this is t a lot of graphs will be generated.")
                                               (%default-int-type abi))))))
 
 (defmethod translate-simple-instruction
-    ((instruction clasp-cleavir-hir::simple-vector-length-instruction)
+    ((instruction clasp-cleavir-hir::vector-length-instruction)
      return-value inputs outputs abi function-info)
   (declare (ignore return-value function-info))
   (let* ((tptr (%load (first inputs)))
