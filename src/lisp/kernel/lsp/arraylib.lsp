@@ -223,7 +223,7 @@ INDEXes must be equal to the rank of ARRAY."
 		 r i))))
 
 (defun row-major-index-inner (array indices)
-  (declare (optimize (safety 0))
+  (declare (optimize speed)
            (array array)
            (si::c-local))
   (flet ((indexing-error (array indices)
@@ -248,15 +248,6 @@ INDEXes must be equal to the rank of ARRAY."
           (indexing-error array indices))
         (setf j (* j d)
               j (+ j ndx))))))
-
-(defun array-row-major-index (array &rest indices)
-  "Args: (array &rest indexes)
-Returns the non-negative integer that represents the location of the element
-of ARRAY specified by INDEXes, assuming all elements of ARRAY are aligned in
-row-major order."
-  (declare (array array)
-           (ext:check-arguments-type))
-  (row-major-index-inner array indices))
 
 
 (defun bit (bit-array &rest indices)
