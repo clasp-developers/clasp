@@ -125,8 +125,8 @@ Return files."
 
 (defun out-of-date-target (target source-files)
   (let* ((last-source (car (reverse source-files)))
-         (intrinsics-bitcode (build-inline-bitcode-pathname :executable) :intrinsics)
-         (builtins-bitcode (build-inline-bitcode-pathname :executable) :builtins)
+         (intrinsics-bitcode (build-inline-bitcode-pathname :executable :intrinsics))
+         (builtins-bitcode (build-inline-bitcode-pathname :executable :builtins))
          (last-bitcode (build-pathname (entry-filename last-source) :bc))
          (target-file target))
     #+(or)(progn

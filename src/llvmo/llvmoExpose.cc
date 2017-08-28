@@ -3770,6 +3770,44 @@ CL_DEFMETHOD bool ClaspJIT_O::removeModule(ModuleHandle_sp H) {
 }
 
 
+/*! Remove the llvm.global_ctors array and any functions contained within it.
+    The proper way to remove them is to never allow them into the Module.
+    That would require a lot of C++ header file rearrangement.
+    The ctors should have been called by the executable so these ctors are unused.
+*/
+CL_DEFUN void llvm_sys__remove_useless_global_ctors(Module_sp module) {
+  llvm::Module* M = module->wrappedPtr();
+  llvm::GlobalVariable* ctors = M->getGlobalVariable("llvm.global_ctors");
+  if (ctors) {
+    Value* init = ctors->getInitializer();
+#if 0
+    printf("%s:%d   init is a ConstantArray -> %d\n", __FILE__, __LINE__, llvm::isa<ConstantArray>(init));
+    printf("%s:%d   init is a Constant -> %d\n", __FILE__, __LINE__, llvm::isa<Constant>(init));
+    printf("%s:%d   init is a User -> %d\n", __FILE__, __LINE__, llvm::isa<User>(init));
+    printf("%s:%d   init is a Value -> %d\n", __FILE__, __LINE__, llvm::isa<User>(init));
+    printf("%s:%d init -> %p\n", __FILE__, __LINE__, (void*)init );
+#endif    
+    ConstantArray *list = llvm::dyn_cast<ConstantArray>(init);
+    std::vector<Function*> ctors_to_delete;
+    if (list) {
+      for ( unsigned i = 0, e= list->getNumOperands(); i != e; ++i ) {
+        llvm::ConstantStruct* oneStruct = llvm::dyn_cast<llvm::ConstantStruct>(list->getOperand(i));
+        if (!oneStruct) continue;
+        llvm::Function* oneFunc = llvm::dyn_cast<llvm::Function>(oneStruct->getOperand(1));
+        if (!oneFunc) continue;
+//        printf("%s:%d  oneFunc[%u] = %s\n", __FILE__, __LINE__, i, oneFunc->getName().str().c_str());
+        ctors_to_delete.push_back(oneFunc);
+      }
+    }
+    ctors->eraseFromParent();
+    for ( auto ctor : ctors_to_delete ) {
+      ctor->eraseFromParent();
+    }
+  }
+}
+    
+  
+
 
 std::shared_ptr<llvm::Module> ClaspJIT_O::optimizeModule(std::shared_ptr<llvm::Module> M) {
   core::LightTimer timer;
@@ -3793,9 +3831,43 @@ std::shared_ptr<llvm::Module> ClaspJIT_O::optimizeModule(std::shared_ptr<llvm::M
   llvm::legacy::PassManager my_passes;
   my_passes.add(llvm::createFunctionInliningPass(4096));
   my_passes.run(*M);
+  llvm::GlobalVariable* used = M->getGlobalVariable("llvm.used");
+  if (used) {
+    Value* init = used->getInitializer();
+#if 0
+    printf("%s:%d   init is a ConstantArray -> %d\n", __FILE__, __LINE__, llvm::isa<ConstantArray>(init));
+    printf("%s:%d   init is a Constant -> %d\n", __FILE__, __LINE__, llvm::isa<Constant>(init));
+    printf("%s:%d   init is a User -> %d\n", __FILE__, __LINE__, llvm::isa<User>(init));
+    printf("%s:%d   init is a Value -> %d\n", __FILE__, __LINE__, llvm::isa<User>(init));
+    printf("%s:%d init -> %p\n", __FILE__, __LINE__, (void*)init );
+#endif
+    used->eraseFromParent();
+    std::vector<llvm::Function*> inline_funcs;
+    for (auto &F : *M) {
+      if (F.hasFnAttribute(llvm::Attribute::AlwaysInline)) {
+        inline_funcs.push_back(&F);
+      }
+    }
+    for ( auto f : inline_funcs) {
+//      printf("%s:%d Erasing function: %s\n", __FILE__, __LINE__, f->getName().str().c_str());
+      f->eraseFromParent();
+    }
+  } else {
+    printf("%s:%d   Could not find GlobalVariable llvm.used\n", __FILE__, __LINE__ );
+  }
+  
   timer.stop();
   double thisTime = timer.getAccumulatedTime();
   accumulate_llvm_timing_data(thisTime);
+
+  if (!comp::_sym_STARsave_module_for_disassembleSTAR.unboundp() &&
+      comp::_sym_STARsave_module_for_disassembleSTAR.notnilp()) {
+//    printf("%s:%d     About to save the module\n",__FILE__, __LINE__);
+    llvm::Module* o = &*M;
+    std::unique_ptr<llvm::Module> cm = llvm::CloneModule(o);
+    Module_sp module = core::RP_Create_wrapped<Module_O,llvm::Module*>(cm.release());
+    comp::_sym_STARsaved_module_from_clasp_jitSTAR->setf_symbolValue(module);
+  }
   return M;
 }
 
