@@ -362,18 +362,15 @@
   (def-inline-comparison primop:inlined-two-arg->= cleavir-primop:fixnum->= core:two-arg->=))
 
 #-use-boehmdc
-(progn
+(eval-when (:compile-toplevel :load-toplevel :execute)
   (define-compiler-macro + (&rest numbers)
     (core:expand-associative '+ 'primop:inlined-two-arg-+ numbers 0))
-#+(or)(define-compiler-macro - (&rest numbers)
-        (core:expand-associative '- 'primop:inlined-two-arg-- numbers 0))
-(define-compiler-macro - (minuend &rest subtrahends)
-  (if (core:proper-list-p subtrahends)
-      (if subtrahends
-          `(primop:inlined-two-arg-- ,minuend ,(core:expand-associative '+ 'primop:inlined-two-arg-+ subtrahends 0))
-          `(core:negate ,minuend))
-      (error "The - operator can not be part of a form that is a dotted list.")))
-
+  (define-compiler-macro - (minuend &rest subtrahends)
+    (if (core:proper-list-p subtrahends)
+        (if subtrahends
+            `(primop:inlined-two-arg-- ,minuend ,(core:expand-associative '+ 'primop:inlined-two-arg-+ subtrahends 0))
+            `(core:negate ,minuend))
+        (error "The - operator can not be part of a form that is a dotted list.")))
   (define-compiler-macro < (&rest numbers)
     (core:expand-compare 'primop:inlined-two-arg-< numbers))
   (define-compiler-macro <= (&rest numbers)
@@ -440,7 +437,7 @@
 (defun svref (vector index)
   (if (typep vector 'simple-vector)
       (if (typep index 'fixnum)
-          (let ((ats (core::simple-vector-length vector)))
+          (let ((ats (core::vector-length vector)))
             (if (and (<= 0 index) (< index ats))
                 (cleavir-primop:aref vector index t t t)
                 (error "Invalid index ~d for vector of length ~d" index ats)))
@@ -452,13 +449,154 @@
 (defun core:setf-svref (vector index value)
   (if (typep vector 'simple-vector)
       (if (typep index 'fixnum)
-          (let ((ats (core::simple-vector-length vector)))
+          (let ((ats (core::vector-length vector)))
             (if (and (<= 0 index) (< index ats))
                 (progn (cleavir-primop:aset vector index value t t t)
                        value)
                 (error "Invalid index ~d for vector of length ~d" index ats)))
           (error 'type-error :datum index :expected-type 'fixnum))
       (error 'type-error :datum vector :expected-type 'simple-vector)))
+
+;;; FIXME: It's difficult to not wholly subsume the C++ function cl:row-major-aref.
+(declaim (inline %row-major-aref))
+(defun %row-major-aref (array index)
+  (if (typep array '(simple-array * (*))) ; vector that is simple
+      (let ((ats (core::vector-length array)))
+        (if (and (<= 0 index) (< index ats))
+            ;; the real thing
+            ;; FIXME: type inference should be able to remove the redundant
+            ;; checking that it's an array... maybe?
+            ;; FIXME: should be replaced with a macro loop over
+            ;; sys::+upgraded-array-element-types+ or suchlike.
+            (typecase array
+              ((simple-array t (*))
+               (cleavir-primop:aref array index t t t))
+              ;; character, base-char
+              ((simple-array double-float (*))
+               (cleavir-primop:aref array index double-float t nil))
+              ((simple-array single-float (*))
+               (cleavir-primop:aref array index single-float t nil))
+              ((simple-array ext:byte64 (*))
+               (cleavir-primop:aref array index ext:byte64 t nil))
+              ((simple-array ext:byte32 (*))
+               (cleavir-primop:aref array index ext:byte32 t nil))
+              ((simple-array ext:byte16 (*))
+               (cleavir-primop:aref array index ext:byte16 t nil))
+              ((simple-array ext:byte8 (*))
+               (cleavir-primop:aref array index ext:byte8 t nil))
+              (t ;; FIXME: eliminate this. we should be able to do it all.
+               (row-major-aref array index)))
+            (error "~a: ~d is not a valid row major index for ~a"
+                   '%row-major-aref index array)))
+      ;; FIXME: Could undisplace?
+      (row-major-aref array index)))
+
+;;; Okay, so what do we have to do to implement aref.
+;;; There's bounds checking, undisplacement, row major index computation,
+;;; and element type discrimination.
+;;; Well let's do row-major-aref first
+
+#+(or)
+(defun row-major-aref (array index)
+  ;; First we do a bounds check.
+  ;; If it's a simple array, we can directly access the length.
+  ;; Otherwise, we first do the bounds check, then undisplace.
+  ;; The bounds check has to be done before undisplacement
+  ;; since you can have a vector of length 2 displaced into
+  ;; an array of larger size, etc.
+  ;; This also tests array for being a vector.
+  (etypecase array
+    ((simple-array * (*))
+     (unless (and (<= 0 index) (< index (core::vector-length array)))
+       (error "~a: ~d is not a valid row major index for ~a"
+              'row-major-aref index array)))
+    ((array * (*))
+     (unless (and (<= 0 index) (< index (length array)))
+       (error "~a: ~d is not a valid row major index for ~a"
+              'row-major-aref index array))
+     ;; Now undisplace until we get a vector/simple.
+     (loop (multiple-value-bind (displacement offset)
+               ;; This has to be "actual" array displacement,
+               ;; i.e. for a simple multidimensional array it
+               ;; returns an underlying vector/simple.
+               (array-displacement array)
+             (if displacement
+                 (setf array displacement
+                       index (+ index offset))
+                 (return))))))
+  ;; Okay, now array is a vector/simple, and index is valid.
+  ;; This function takes care of element type discrimination.
+  (%unsafe-vector-ref array index))
+
+(defun row-major-index-computer (array &rest subscripts)
+  ;; assumes once-only is taken care of
+  (let ((dimsyms (loop for sub in (rest subscripts) collect (gensym "DIM")))
+        (subsyms (loop for sub in subscripts collect (gensym "SUB"))))
+    (if subscripts
+        `(let (,@(loop for dimsym in dimsyms
+                       for d from 1
+                       collect `(,dimsym (array-dimension ,array ,d))))
+           (declare (type fixnum ,@dimsyms))
+           (let* ((,(first subsyms) 1)
+                  ,@(loop for dimsym in (reverse dimsyms)
+                          for subsym in (cdr subsyms)
+                          for lastsym in subsyms
+                          collect `(,subsym (* ,lastsym ,dimsym))))
+             (declare (type fixnum ,@subsyms))
+             (the fixnum
+                  (+ ,@(loop for sub in subscripts
+                             for subsym in (reverse subsyms)
+                             collect `(* ,sub ,subsym))))))
+        0)))
+
+#+(or)
+(define-compiler-macro array-row-major-index (array &rest subscripts)
+  (let ((sarray (gensym "ARRAY"))
+        (ssubscripts (loop for sub in subscripts collecting (gensym "SUBSCRIPT")))
+        (rmindex (gensym "ROW-MAJOR-INDEX")))
+    `(let ((,sarray ,array)
+           ,@(loop for ssub in ssubscripts for sub in subscripts
+                   collecting `(,ssub ,sub)))
+       (unless (eq (array-rank ,sarray) ,(length subscripts))
+         (error "Wrong number of subscripts, ~d, for an array of rank ~d."
+                ,(length subscripts) (array-rank ,sarray)))
+       (let ((,rmindex ,(apply #'row-major-index-computer sarray ssubscripts)))
+         (if (and (<= 0 ,rmindex) (< ,rmindex (array-total-size ,sarray)))
+             ,rmindex
+             ,(if (= (length subscripts) 1)
+                  `(error "Invalid index ~d for an array of total size ~d"
+                          ,(first subscripts) (array-total-size ,sarray))
+                  `(error "Invalid indices ~a for an array of total size ~d"
+                          ,subscripts (array-total-size ,sarray))))
+         ,rmindex))))
+
+#+(or)
+(define-compiler-macro aref (array &rest subscripts)
+  (case (length subscripts)
+    ((1) `(row-major-aref ,array ,(first subscripts)))
+    (t (let ((asym (gensym "ARRAY")))
+         `(let ((,asym ,array))
+            (row-major-aref ,asym (array-row-major-index ,asym ,@subscripts)))))))
+
+;;; ------------------------------------------------------------
+;;;
+;;; Sequence functions
+;;;
+
+(declaim (inline length))
+(defun length (sequence)
+  (etypecase sequence
+    (cons
+     (locally
+         (declare (optimize speed)
+                  (type cons sequence))
+       (let ((length 1))
+         (loop (let ((next (cdr sequence)))
+                 (etypecase next
+                   (cons (setf sequence next length (1+ length)))
+                   (null (return-from length length))))))))
+    (vector (core::vector-length sequence))
+    (null 0)))
 
 ;;; ------------------------------------------------------------
 ;;;
