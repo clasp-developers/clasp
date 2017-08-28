@@ -886,7 +886,7 @@ def build(bld):
         bld.install_as('${INSTALL_PATH_PREFIX}/Contents/Resources/lib/%s' % variant.common_lisp_bitcode_name(stage = 'b'), aclasp_common_lisp_bitcode)
     if (stage_val >= 3):
         print("About to add compile_cclasp")
-        # Build cclasp
+        # Build cclasp fasl
         cmp_cclasp = compile_cclasp(env=bld.env)
         cxx_all_bitcode_node = bld.path.find_or_declare(variant.cxx_all_bitcode_name())
         cmp_cclasp.set_inputs([iclasp_executable,bclasp_link_product,cxx_all_bitcode_node]+fix_lisp_paths(bld.path,out,variant,bld.clasp_cclasp))
@@ -935,36 +935,39 @@ def build(bld):
         if (os.path.islink(clasp_symlink_node.abspath())):
             os.unlink(clasp_symlink_node.abspath())
     if (stage == 'rebuild' or stage_val >= 4):
-        lnk_cclasp_exec = link_executable(env=bld.env)
-        cxx_all_bitcode_node = bld.path.find_or_declare(variant.cxx_all_bitcode_name())
-        lnk_cclasp_exec.set_inputs([cxx_all_bitcode_node,cclasp_common_lisp_bitcode])
-        cclasp_executable = bld.path.find_or_declare(variant.executable_name(stage='c'))
-        if ( bld.env['DEST_OS'] == DARWIN_OS ):
-            if (bld.env.LTO_FLAG):
-                cclasp_lto_o = bld.path.find_or_declare('%s.lto.o' % variant.executable_name(stage='c'))
-                lnk_cclasp_exec.set_outputs([cclasp_executable,cclasp_lto_o])
-            else:
+        if (False):   # build cclasp executable
+            lnk_cclasp_exec = link_executable(env=bld.env)
+            cxx_all_bitcode_node = bld.path.find_or_declare(variant.cxx_all_bitcode_name())
+            lnk_cclasp_exec.set_inputs([cxx_all_bitcode_node,cclasp_common_lisp_bitcode])
+            cclasp_executable = bld.path.find_or_declare(variant.executable_name(stage='c'))
+            if ( bld.env['DEST_OS'] == DARWIN_OS ):
+                if (bld.env.LTO_FLAG):
+                    cclasp_lto_o = bld.path.find_or_declare('%s.lto.o' % variant.executable_name(stage='c'))
+                    lnk_cclasp_exec.set_outputs([cclasp_executable,cclasp_lto_o])
+                else:
+                    cclasp_lto_o = None
+                    lnk_cclasp_exec.set_outputs([cclasp_executable])
+            elif (bld.env['DEST_OS'] == LINUX_OS ):
                 cclasp_lto_o = None
-                lnk_cclasp_exec.set_outputs([cclasp_executable])
-        elif (bld.env['DEST_OS'] == LINUX_OS ):
-            cclasp_lto_o = None
-            lnk_cclasp_exec.set_outputs(cclasp_executable)
-        bld.add_to_group(lnk_cclasp_exec)
-        if ( bld.env['DEST_OS'] == DARWIN_OS ):
-            cclasp_dsym = bld.path.find_or_declare("%s.dSYM"%variant.executable_name(stage='c'))
-            cclasp_dsym_files = generate_dsym_files(variant.executable_name(stage='c'),cclasp_dsym)
-            print("cclasp_dsym_files = %s" % cclasp_dsym_files)
-            dsymutil_cclasp = dsymutil(env=bld.env)
-            if (cclasp_lto_o):
-                dsymutil_cclasp.set_inputs([cclasp_executable,cclasp_lto_o])
-            else:
-                dsymutil_cclasp.set_inputs([cclasp_executable])
-            dsymutil_cclasp.set_outputs(cclasp_dsym_files)
-            bld.add_to_group(dsymutil_cclasp)
-            bld.install_files('${INSTALL_PATH_PREFIX}/%s/%s' % (executable_dir, cclasp_dsym.name), cclasp_dsym_files, relative_trick = True, cwd = cclasp_dsym)
-        bld.install_as('${INSTALL_PATH_PREFIX}/%s/%s' % (executable_dir, cclasp_executable.name), cclasp_executable, chmod = Utils.O755)
-        bld.symlink_as('${INSTALL_PATH_PREFIX}/%s/clasp' % executable_dir, '%s' % cclasp_executable.name)
-        os.symlink(cclasp_executable.abspath(),clasp_symlink_node.abspath())
+                lnk_cclasp_exec.set_outputs(cclasp_executable)
+            bld.add_to_group(lnk_cclasp_exec)
+            if ( bld.env['DEST_OS'] == DARWIN_OS ):
+                cclasp_dsym = bld.path.find_or_declare("%s.dSYM"%variant.executable_name(stage='c'))
+                cclasp_dsym_files = generate_dsym_files(variant.executable_name(stage='c'),cclasp_dsym)
+                print("cclasp_dsym_files = %s" % cclasp_dsym_files)
+                dsymutil_cclasp = dsymutil(env=bld.env)
+                if (cclasp_lto_o):
+                    dsymutil_cclasp.set_inputs([cclasp_executable,cclasp_lto_o])
+                else:
+                    dsymutil_cclasp.set_inputs([cclasp_executable])
+                dsymutil_cclasp.set_outputs(cclasp_dsym_files)
+                bld.add_to_group(dsymutil_cclasp)
+                bld.install_files('${INSTALL_PATH_PREFIX}/%s/%s' % (executable_dir, cclasp_dsym.name), cclasp_dsym_files, relative_trick = True, cwd = cclasp_dsym)
+            bld.install_as('${INSTALL_PATH_PREFIX}/%s/%s' % (executable_dir, cclasp_executable.name), cclasp_executable, chmod = Utils.O755)
+            bld.symlink_as('${INSTALL_PATH_PREFIX}/%s/clasp' % executable_dir, '%s' % cclasp_executable.name)
+            os.symlink(cclasp_executable.abspath(),clasp_symlink_node.abspath())
+        else:
+            os.symlink(iclasp_executable.abspath(),clasp_symlink_node.abspath())
 
 from waflib import TaskGen
 from waflib import Task
@@ -984,12 +987,15 @@ class link_fasl(Task.Task):
         else:
             lto_option = ""
             lto_optimize_flag = ""
-        if (self.env['DEST_OS'] == DARWIN_OS ):
-            cmd = "%s %s %s %s %s -flat_namespace -undefined suppress -bundle -o %s" % (self.env.CXX[0],self.inputs[0].abspath(),self.inputs[1].abspath(),lto_option,lto_optimize_flag,self.outputs[0].abspath())
-        elif (self.env['DEST_OS'] == LINUX_OS ):
-            cmd = "%s %s %s %s %s -fuse-ld=gold -shared -o %s" % (self.env.CXX[0],self.inputs[0].abspath(),self.inputs[1].abspath(),lto_option,lto_optimize_flag,self.outputs[0].abspath())
+        if (self.env['DEST_OS'] == DARWIN_OS):
+            link_options = [ "-flat_namespace", "-undefined", "suppress", "-bundle" ]
         else:
-            self.fatal("Illegal DEST_OS: %s" % self.env['DEST_OS'])
+            link_options = [ "-fuse-ld=gold", "-shared" ]
+        cmd = [self.env.CXX[0]] + \
+              list(map((lambda x:x.abspath()),self.inputs)) + \
+              [ lto_option, lto_optimize_flag ] + \
+              link_options + \
+              [ "-o", self.outputs[0].abspath() ]
         print(" link_fasl cmd: %s\n" % cmd)
         return self.exec_command(cmd)
     def exec_command(self, cmd, **kw):
@@ -1000,42 +1006,25 @@ class link_fasl(Task.Task):
 
 class link_executable(Task.Task):
     def run(self):
-        if (self.env['DEST_OS'] == DARWIN_OS ):
-            if (self.env.LTO_FLAG):
-                lto_option_list = [self.env.LTO_FLAG,"-O2"]
-                lto_object_path_lto = ["-Wl,-object_path_lto,%s"% self.outputs[1].abspath()]
-            else:
-                lto_option_list = []
-                lto_object_path_lto = []
-            cmd = [ self.env.CXX[0],
-                    self.inputs[0].abspath(),
-                    self.inputs[1].abspath() ] + \
-                    self.env['LINKFLAGS'] + \
-                    self.env['LDFLAGS']  + \
-                    libraries_as_link_flags(self.env.STLIB_ST,self.env.STLIB) + \
-                    libraries_as_link_flags(self.env.LIB_ST,self.env.LIB) + lto_option_list + [
-                        "-v",
-                        "-o",
-                        self.outputs[0].abspath()] + lto_object_path_lto
-        elif (self.env['DEST_OS'] == LINUX_OS ):
-            if (self.env.LTO_FLAG):
-                lto_option_list = [self.env.LTO_FLAG,"-O2"]
-                lto_object_path_lto = []
-            else:
-                lto_option_list = []
-                lto_object_path_lto = []
-            cmd = [ self.env.CXX[0],
-                    self.inputs[0].abspath(),
-                    self.inputs[1].abspath() ] + \
-                    self.env['LINKFLAGS'] + \
-                    self.env['LDFLAGS'] + \
-                    libraries_as_link_flags(self.env.STLIB_ST,self.env.STLIB) + \
-                    libraries_as_link_flags(self.env.LIB_ST,self.env.LIB) + lto_option_list + [
-                        "-fuse-ld=gold",
-                        "-o",
-                        self.outputs[0].abspath()]
+        if (self.env.LTO_FLAG):
+            lto_option_list = [self.env.LTO_FLAG,"-O2"]
+            lto_object_path_lto = ["-Wl,-object_path_lto,%s"% self.outputs[1].abspath()]
         else:
-            self.fatal("Illegal DEST_OS: %s" % self.env['DEST_OS'])
+            lto_option_list = []
+            lto_object_path_lto = []
+        if (self.env['DEST_OS'] == DARWIN_OS ):
+            link_options = [ "-flto=thin", "-v"]
+        else:
+            link_options = [ "-fuse-ld=gold", "-v" ]
+        cmd = [ self.env.CXX[0] ] + \
+              list(map((lambda x:x.abspath()),self.inputs)) + \
+              self.env['LINKFLAGS'] + \
+              self.env['LDFLAGS']  + \
+              libraries_as_link_flags(self.env.STLIB_ST,self.env.STLIB) + \
+              libraries_as_link_flags(self.env.LIB_ST,self.env.LIB) + \
+              lto_option_list + \
+              link_options + \
+              [ "-o", self.outputs[0].abspath()] + lto_object_path_lto
         print("link_executable cmd = %s" % cmd)
         return self.exec_command(cmd)
     def exec_command(self, cmd, **kw):
