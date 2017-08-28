@@ -391,13 +391,14 @@ void* to_fixnum(int8_t v) {
 
 int main( int argc, char *argv[] )
 {
-
+#if 0
     int8_t array[1] = {-3};
     //    printf("sizeof(array[1]) -> %lu\n", sizeof(array));
     int8_t v = array[0];
     // printf("int8_t v -> %x\n", v);
     void* foo = to_fixnum(v);
-    printf("int64_t v -> %p\n", foo);
+    ///printf("int64_t v -> %p\n", foo);
+#endif
 
   // ------------
   uintptr_clasp_t x = 0;
