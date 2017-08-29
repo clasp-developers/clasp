@@ -18,22 +18,41 @@
     (quality optimize (environment null))
     (cleavir-policy:compute-policy-quality quality optimize *clasp-env*))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;
-;;; Policy ANALYZE-FLOW.
-;;;
-;;; Since Kildall analyses are tragically slow at the moment,
-;;; they need to be suppessed for reasonable compile times.
-;;; If ANALYZE-FLOW is false, no Kildall is done.
-;;; See MY-HIR-TRANSFORMATIONS for use.
-
 (defmethod cleavir-policy:policy-qualities append ((env clasp-global-environment))
-  '((do-type-inference boolean t)
+  '((maintain-shadow-stack boolean t)
+    (do-type-inference boolean t)
     (do-dx-analysis boolean t)))
 ;;; FIXME: Can't just punt like normal since it's an APPEND method combo.
 (defmethod cleavir-policy:policy-qualities append ((env null))
-  '((do-type-inference boolean t)
+  '((maintain-shadow-stack boolean t)
+    (do-type-inference boolean t)
     (do-dx-analysis boolean t)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Policy MAINTAIN-SHADOW-STACK.
+;;;
+;;; Clasp presently maintains a stack trace by doing things
+;;; at runtime. This is expensive but doing otherwise is
+;;; slow going. If MAINTAIN-SHADOW-STACK is false this stuff
+;;; is not inserted, so functions so compiled won't show up
+;;; in backtraces.
+
+(defmethod cleavir-policy:compute-policy-quality
+    ((quality (eql 'maintain-shadow-stack))
+     optimize
+     (environment clasp-global-environment))
+  (= (cleavir-policy:optimize-value optimize 'debug) 3))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Policies DO-TYPE-INFERENCE, DO-DX-ANALYSIS.
+;;;
+;;; Since Kildall analyses are tragically slow at the moment,
+;;; they need to be suppessed for reasonable compile times.
+;;; If DO-TYPE-INFERENCE is false no type inference is done.
+;;; If DO-DX-ANALYSIS is false no DX analysis is done.
+;;; See MY-HIR-TRANSFORMATIONS for use.
 
 (defmethod cleavir-policy:compute-policy-quality
     ((quality (eql 'do-type-inference))
