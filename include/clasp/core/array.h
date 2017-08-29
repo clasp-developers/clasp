@@ -620,6 +620,7 @@ namespace core {
     typedef typename TemplatedBase::const_iterator const_iterator;
     typedef value_type container_value_type;
   public:
+    static value_type default_initial_element(void) {return '\0';}
     static value_type initial_element_from_object(T_sp obj, bool supplied);
     static value_type from_object(T_sp obj) {
       if (obj.characterp()) {
@@ -694,6 +695,7 @@ namespace core {
     typedef typename TemplatedBase::const_iterator const_iterator;
     typedef value_type container_value_type;
   public:
+    static value_type default_initial_element(void) {return '\0';}
     static value_type initial_element_from_object(T_sp obj, bool supplied);
     static value_type from_object(T_sp obj) {
       if (obj.characterp()) {
@@ -774,6 +776,7 @@ namespace core {
     typedef typename TemplatedBase::const_iterator const_iterator;
     typedef value_type container_value_type;
   public:
+    static value_type default_initial_element(void) {return _Nil<T_O>();}
     static value_type initial_element_from_object(T_sp obj, bool supplied) {return supplied ? obj : _Nil<T_O>();};
     static value_type from_object(T_sp obj) {return obj; };
     static T_sp to_object(const value_type& v) { return v; };
@@ -835,6 +838,7 @@ namespace core {
     }
     static SimpleBitVector_sp make(const string& bv);
   public:
+    static value_type default_initial_element(void) {return 0;}
     static value_type initial_element_from_object(T_sp initialElement, bool initialElementSupplied) {
       if (initialElementSupplied) {
         if (initialElement.fixnump()) {
@@ -845,6 +849,7 @@ namespace core {
       }
       return 0;
     }
+    static T_sp to_object(const value_type& v) { return clasp_make_integer(v); };
   public:
     virtual T_sp type_of() const final { return Cons_O::createList(cl::_sym_simple_bit_vector,clasp_make_fixnum(this->length()));};
     virtual T_sp array_type() const final { return cl::_sym_simple_array; };
