@@ -134,7 +134,7 @@
                  arrayr
                  (gen-eql-check arrayr rank pro con))))
 
-;;; The way these complicated ones are built is a little backwards.
+;;; The way some of the complicated ones are built is a little backwards.
 ;;; We repeatedly set one of the branches, so that the next test produces branches
 ;;; to that test.
 ;;; For instance, to test (array * 2), we might first setf pro to a rank check,
@@ -143,6 +143,8 @@
 ;;; the test when run will first check that it's an array, and if it is, go to the
 ;;; rank check.
 ;;; Basically this means we generate the tests in reverse order to how they're run.
+;;; We don't do this for arrays any more though.
+;;; This should all be source-level but we are unprepared.
 
 #-use-boehmdc
 (defun gen-array-type-check (object element-type dimensions simple-only-p pro con)
@@ -166,52 +168,56 @@
            (if (eq element-type '*)
                'core:mdarray
                (complex-mdarray-type element-type))))
-    (labels ((dimensions-check ()
-               (loop for dim in dimensions
-                     for i from 0
-                     do (setf pro (gen-dimension-check object i dim pro con))))
-             (maybe-dimensions-and-rank-check ()
-               (unless (eq rank '*)
-                 (dimensions-check)
-                 (setf pro (gen-rank-check object rank pro con)))))
+    (let ((pro (if (eq dimensions '*)
+                   pro
+                   (loop for dim in dimensions
+                         for i from 0
+                         for test = (gen-dimension-check object i dim pro con)
+                           then (gen-dimension-check object i dim test con)
+                         finally (return test)))))
       (cond (simple-only-p
              (cond ((eql rank 1)
-                    (dimensions-check)
-                    (setf con (maybe-gen-primitive-type-check
-                               object simple-vector-type pro con)))
+                    (maybe-gen-primitive-type-check
+                     object simple-vector-type pro con))
+                   ((eq rank '*)
+                    (maybe-gen-primitive-type-check
+                     object simple-vector-type pro
+                     (maybe-gen-primitive-type-check
+                      object simple-mdarray-type pro con)))
                    (t
-                    (maybe-dimensions-and-rank-check)
-                    (setf con (maybe-gen-primitive-type-check
-                               object simple-mdarray-type pro con))
-                    (when (eq rank '*) ; includes vectors
-                      (setf con (maybe-gen-primitive-type-check
-                                 object simple-vector-type pro con))))))
+                    (maybe-gen-primitive-type-check
+                     object simple-mdarray-type
+                     (gen-rank-check object rank pro con)))))
             (t
              (cond ((eql rank 1)
-                    (cond (complex-vector-type
-                           (dimensions-check)
-                           ;; complex and simple vector types are actually exclusive.
-                           (setf con (maybe-gen-primitive-type-check
-                                      object complex-vector-type pro con)))
-                          (t
-                           (maybe-dimensions-and-rank-check)
-                           (setf con (maybe-gen-primitive-type-check
-                                      object mdarray-type pro con))))
-                    ;; check for simple vectors first; probably most likely.
-                    (setf con (maybe-gen-primitive-type-check
-                               object simple-vector-type pro con)))
-                   (t
-                    (maybe-dimensions-and-rank-check)
-                    (setf con (maybe-gen-primitive-type-check
-                               object mdarray-type pro con))
-                    (when (or (eql rank 1) (eq rank '*)) ; includes vectors
-                      (when complex-vector-type
-                        (setf con (maybe-gen-primitive-type-check
-                                   object complex-vector-type pro con)))
-                      (setf con (maybe-gen-primitive-type-check
-                                 object simple-vector-type pro con)))))))))
-  ;; we have set con to an appropriate start at least once
-  con)
+                    (maybe-gen-primitive-type-check
+                     object simple-vector-type pro
+                     (if complex-vector-type ; probably next most likely.
+                         (maybe-gen-primitive-type-check
+                          object complex-vector-type pro
+                          (maybe-gen-primitive-type-check
+                           object mdarray-type
+                           (gen-rank-check object rank pro con)
+                           con))
+                         ;; no complex vector type, so just mdarray
+                         (maybe-gen-primitive-type-check
+                          object mdarray-type
+                          (gen-rank-check object rank pro con) con))))
+                   ((eq rank '*)
+                    ;; just the above without the rank check.
+                    (maybe-gen-primitive-type-check
+                     object simple-vector-type pro
+                     (if complex-vector-type
+                         (maybe-gen-primitive-type-check
+                          object complex-vector-type pro
+                          (maybe-gen-primitive-type-check
+                           object mdarray-type pro con))
+                         (maybe-gen-primitive-type-check
+                          object mdarray-type pro con))))
+                   (t ;; checking for some multidimensional type
+                    (maybe-gen-primitive-type-check
+                     object mdarray-type
+                     (gen-rank-check object rank pro con) con))))))))
 
 #-use-boehmdc
 (defun gen-interval-type-check (object head low high pro con)
