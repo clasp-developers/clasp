@@ -474,3 +474,61 @@ and cannot be added to ~A." method other-gf gf)))
 |#
           
 
+#| 
+;;;;;;  Trial code for converting existing generic functions with call history into fastgf generic functions.
+
+
+;;; Switch existing functions in one step (two step below) to fastgf while avoiding a few that cause metastability issues.
+
+(dolist (x (clos::all-generic-functions))
+;;;  (core:bformat t "%s\n" x)
+  (if (member x (list
+                 #'clos::compute-applicable-methods-using-classes
+                 #'clos::add-direct-method
+#|
+                 #'class-name
+                 #'initialize-instance
+                 #'clos:add-direct-subclass
+                 #'clos:validate-superclass
+|#
+                      ))
+;;;      (core:bformat t "     Skipping\n")
+      (progn
+        (clos::update-specializer-profile x)
+        (clos::switch-to-fastgf x))))
+
+
+;;; Switch existing functions to fastgf in two steps while avoiding a few that cause metastability issues.
+
+(let ((dispatchers (make-hash-table)))
+  (dolist (x (clos::all-generic-functions))
+    (clos::update-specializer-profile x)
+    (if (member x (list
+                   #'clos::compute-applicable-methods-using-classes
+                   #'clos::add-direct-method
+                   #'clos::compute-effective-method
+                   ))
+        nil
+        (setf (gethash x dispatchers) (clos::calculate-fastgf-dispatch-function x))))
+  (maphash (lambda (gf disp)
+             (clos::safe-set-funcallable-instance-function gf disp))
+           dispatchers))
+
+;;;  (core:bformat t "%s\n" x)
+  (if (member x (list
+                 #'clos::compute-applicable-methods-using-classes
+                 #'clos::add-direct-method
+#|
+                 #'class-name
+                 #'initialize-instance
+                 #'clos:add-direct-subclass
+                 #'clos:validate-superclass
+|#
+                      ))
+;;;      (core:bformat t "     Skipping\n")
+      (progn
+        (clos::update-specializer-profile x)
+        (clos::switch-to-fastgf x))))
+
+
+|#

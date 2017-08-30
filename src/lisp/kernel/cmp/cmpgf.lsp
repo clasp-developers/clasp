@@ -63,6 +63,8 @@
     `(progn
        (core:bformat *dml* "------- ")
        (core:bformat *dml* ,msg ,@args)))
+  (defmacro gf-log-dispatch-miss-message (msg &rest args)
+    `(core:bformat *dml* ,msg ,@args))
   (defmacro gf-log-sorted-roots (roots)
     `(progn
        (core:bformat *dml* ">>> sorted roots\n")
@@ -113,7 +115,8 @@
   (defmacro gf-log-sorted-roots (roots) nil)
   (defmacro gf-log-dispatch-graph (gf) nil)
   (defmacro gf-log-dispatch-miss (msg gf va-args) nil)
-  (defmacro gf-log-dispatch-miss-followup (msg &rest args) nil))
+  (defmacro gf-log-dispatch-miss-followup (msg &rest args) nil)
+  (defmacro gf-log-dispatch-miss-message (msg &rest args) nil))
 
 
 (defvar *message-counter* nil)
@@ -527,8 +530,6 @@
     (codegen-remaining-eql-tests eql-tests on-to-class-specializers arg args gf gf-args)
     (irc-begin-block on-to-class-specializers)))
 
-
-
 #++(defun gather-outcomes (outcome)
   (let ((tag (intern (format nil "T~a" (hash-table-count *map-tag-outcomes*)))))
     (setf (gethash tag *map-tag-outcomes*) outcome)
@@ -595,7 +596,6 @@
       ;; This is where I could insert the slot reader if the effective method wraps a single accessor
       ;; 
       (irc-ret (irc-intrinsic-call "cc_dispatch_effective_method" (list effective-method gf gf-args) "ret")))))
-
 
 (defun codegen-outcome (node args gf gf-args)
   ;; The effective method will be found in a slot in the modules *gf-data* array
@@ -1001,6 +1001,8 @@
           ;; If the method list contains a single entry and it is an accessor - then we can
           ;; create an optimized reader/writer and put that in the call history
           (cmp::gf-log "        check if method list (1) has one entry (2) is a reader or writer - if so - optimize it%&        method-list -> ~a" method-list)
+            ;;; FIXME:  To achieve optimized slot access - I need here to determine if I can use an optimized slot accessor.
+            ;;;         Can I use the 
           (let* ((memoize-key (clos:memoization-key generic-function valist-args))
                  (effective-method-function (clos::compute-effective-method-function
                                              generic-function
