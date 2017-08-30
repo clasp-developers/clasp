@@ -1002,7 +1002,7 @@
           ;; create an optimized reader/writer and put that in the call history
           (cmp::gf-log "        check if method list (1) has one entry (2) is a reader or writer - if so - optimize it%&        method-list -> ~a" method-list)
             ;;; FIXME:  To achieve optimized slot access - I need here to determine if I can use an optimized slot accessor.
-            ;;;         Can I use the 
+            ;;;         Can I use the method-list?
           (let* ((memoize-key (clos:memoization-key generic-function valist-args))
                  (effective-method-function (clos::compute-effective-method-function
                                              generic-function
