@@ -63,7 +63,7 @@ THE SOFTWARE.
 #include <llvm/ExecutionEngine/Orc/IRTransformLayer.h>
 #include <llvm/ExecutionEngine/Orc/LambdaResolver.h>
 #include <llvm/ExecutionEngine/Orc/RTDyldObjectLinkingLayer.h>
-#include <llvm/ExecutionEngine/Orc/ObjectLinkingLayer.h>
+//#include <llvm/ExecutionEngine/Orc/ObjectLinkingLayer.h>
 //#include "llvm/Support/IRBuilder.h"
 
 #include <stdio.h>
@@ -4356,7 +4356,7 @@ namespace llvmo {
 
   class ClaspJIT_O : public core::General_O {
     LISP_CLASS(llvmo, LlvmoPkg, ClaspJIT_O, "clasp-jit", core::General_O);
-
+#if 0
     class NotifyObjectLoadedT {
     public:
       typedef std::vector<std::unique_ptr<RuntimeDyld::LoadedObjectInfo>>
@@ -4389,6 +4389,7 @@ namespace llvmo {
 
       ClaspJIT_O &_TheJIT;
     };
+#endif
 
   private:
     std::unique_ptr<llvm::TargetMachine> TM;
