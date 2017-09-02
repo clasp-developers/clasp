@@ -849,6 +849,13 @@ namespace core {
       }
       return 0;
     }
+    static value_type from_object(T_sp object) {
+      if (object.fixnump()) {
+        value_type i = object.unsafe_fixnum();
+        if (i==0||i==1) return i;
+      }
+      TYPE_ERROR(object, cl::_sym_bit);
+    }
     static T_sp to_object(const value_type& v) { return clasp_make_integer(v); };
   public:
     virtual T_sp type_of() const final { return Cons_O::createList(cl::_sym_simple_bit_vector,clasp_make_fixnum(this->length()));};
