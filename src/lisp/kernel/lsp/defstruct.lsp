@@ -65,13 +65,13 @@
   (do-defsetf access-function
     (cond ((or (eq type 'list) (eq type 'vector))
 	   #'(lambda (newvalue struct)
-	       `(sys::elt-set ,struct ,index ,newvalue)))
+	       `(sys:elt-set ,struct ,index ,newvalue)))
 	  ((consp type)
 	   #'(lambda (newvalue struct)
-	       `(si::aset (the ,type ,struct) ,index ,newvalue)))
+	       `(si:row-major-aset (the ,type ,struct) ,index ,newvalue)))
 	  (t
 	   #'(lambda (newvalue struct)
-	       `(sys::structure-set ,struct ',type ,index ,newvalue))))))
+	       `(sys:structure-set ,struct ',type ,index ,newvalue))))))
 
 (defun process-boa-lambda-list (slot-names slot-descriptions boa-list assertions)
   (declare (si::c-local))

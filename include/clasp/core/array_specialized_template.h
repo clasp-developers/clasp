@@ -36,6 +36,7 @@ namespace core {
     typedef typename TemplatedBase::const_iterator const_iterator;
     typedef value_type container_value_type;
   public:
+    static value_type default_initial_element(void) {return 0;}
     static value_type initial_element_from_object(T_sp obj, bool supplied) {
       if (supplied) return from_object(obj);
       return 0;

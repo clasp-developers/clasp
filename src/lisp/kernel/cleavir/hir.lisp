@@ -94,18 +94,18 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
-;;; Instruction SIMPLE-VECTOR-LENGTH-INSTRUCTION
+;;; Instruction VECTOR-LENGTH-INSTRUCTION
 ;;;
-;;; This instruction gets the length of a (array * (*))
+;;; This instruction gets the length of a vector, as CL:LENGTH.
 
-(defclass simple-vector-length-instruction (cleavir-ir:instruction cleavir-ir:one-successor-mixin)
+(defclass vector-length-instruction (cleavir-ir:instruction cleavir-ir:one-successor-mixin)
   ())
 
-(defmethod cleavir-ir-graphviz:label ((instr simple-vector-length-instruction))
-  "svlength")
+(defmethod cleavir-ir-graphviz:label ((instr vector-length-instruction))
+  "vlength")
 
-(defun make-simple-vector-length-instruction (input output &optional (successor nil successor-p))
-  (make-instance 'simple-vector-length-instruction
+(defun make-vector-length-instruction (input output &optional (successor nil successor-p))
+  (make-instance 'vector-length-instruction
                  :inputs (list input)
                  :outputs (list output)
                  :successors (if successor-p (list successor) nil)))

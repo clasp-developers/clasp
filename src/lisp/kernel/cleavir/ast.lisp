@@ -160,22 +160,23 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
-;;; Class SIMPLE-VECTOR-LENGTH-AST
+;;; Class VECTOR-LENGTH-AST
 ;;;
-;;; Represents an operation to get the length of a
-;;; (array * (*)).
+;;; Represents an operation to get the length of a vector.
+;;; If the vector has a fill pointer it returns that,
+;;; as the length and fill pointer have the same offset.
 
-(defclass simple-vector-length-ast (cleavir-ast:ast cleavir-ast:one-value-ast-mixin)
-  ((%vector :initarg :vector :accessor svl-ast-vector)))
+(defclass vector-length-ast (cleavir-ast:ast cleavir-ast:one-value-ast-mixin)
+  ((%vector :initarg :vector :accessor vl-ast-vector)))
 
-(cleavir-io:define-save-info simple-vector-length-ast
-    (:vector svl-ast-vector))
+(cleavir-io:define-save-info vector-length-ast
+    (:vector vl-ast-vector))
 
-(defmethod cleavir-ast-graphviz::label ((ast simple-vector-length-ast))
-  "svlength")
+(defmethod cleavir-ast-graphviz::label ((ast vector-length-ast))
+  "vlength")
 
-(defmethod cleavir-ast:children ((ast simple-vector-length-ast))
-  (list (svl-ast-vector ast)))
+(defmethod cleavir-ast:children ((ast vector-length-ast))
+  (list (vl-ast-vector ast)))
 
 
 
