@@ -1471,7 +1471,7 @@ public:
   };
 
   explicit tagged_pointer(Type *f) : thePointer(reinterpret_cast<Type *>(reinterpret_cast<char *>(f) + general_tag)) {
-    GCTOOLS_ASSERTF((f != NULL), BF("Don't initialize tagged_pointer with NULL - use the constructor with zero arguments"));
+    GCTOOLS_ASSERTF((f != NULL), "Don't initialize tagged_pointer with NULL - use the constructor with zero arguments");
   };
 
   inline Type *operator->() {

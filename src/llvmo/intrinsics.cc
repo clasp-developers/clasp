@@ -376,6 +376,15 @@ void makeCharacter(core::T_sp *fnP, int s)
   NO_UNWIND_END();
 }
 
+
+ALWAYS_INLINE void makeTagbodyFrame(core::ActivationFrame_sp *resultP)
+{NO_UNWIND_BEGIN();
+  core::TagbodyFrame_sp tagbodyFrame(core::TagbodyFrame_O::create(_Nil<core::T_O>()));
+  (*resultP) = tagbodyFrame;
+  NO_UNWIND_END();
+}
+
+
 ALWAYS_INLINE void makeValueFrame(core::T_sp *resultActivationFrameP, size_t numargs)
 {NO_UNWIND_BEGIN();
   core::ValueFrame_sp valueFrame(core::ValueFrame_O::create(numargs, _Nil<core::T_O>()));
@@ -384,12 +393,6 @@ ALWAYS_INLINE void makeValueFrame(core::T_sp *resultActivationFrameP, size_t num
   NO_UNWIND_END();
 }
 
-ALWAYS_INLINE void makeTagbodyFrame(core::ActivationFrame_sp *resultP)
-{NO_UNWIND_BEGIN();
-  core::TagbodyFrame_sp tagbodyFrame(core::TagbodyFrame_O::create(_Nil<core::T_O>()));
-  (*resultP) = tagbodyFrame;
-  NO_UNWIND_END();
-}
 
 ALWAYS_INLINE core::T_sp *valueFrameReference(core::ActivationFrame_sp *frameP, int idx)
 {NO_UNWIND_BEGIN();

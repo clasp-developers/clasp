@@ -91,7 +91,6 @@ struct _TRACE {
 #define SIMPLE_ERROR(_boost_fmt_)                                             \
   {                                                                           \
     ::core::lisp_error_simple(__FUNCTION__, __FILE__, __LINE__, _boost_fmt_); \
-    THROW_NEVER_REACH();                                                      \
   }
 #define NOT_ENVIRONMENT_ERROR(_e_)                                                                  \
   ERROR(cl::_sym_simpleTypeError,                                                                      \
@@ -382,11 +381,11 @@ FORWARD(Cons);
 #define HARD_ASSERT(t)                                                                   \
   if (!(t)) {                                                                            \
     core::errorFormatted("HARD_ASSERT failed");                                          \
-    throw(core::HardError(__FILE__, __FUNCTION__, __LINE__, "Assertion " #t " failed")); \
+    throw(HardError(__FILE__, __FUNCTION__, __LINE__, "Assertion " #t " failed")); \
   };
-#define HARD_ASSERTF(t, fmt)                                                                                    \
-  if (!(t)) {                                                                                                   \
-    core::errorFormatted(fmt);                                                                                  \
+#define HARD_ASSERTF(t, fmt) \
+  if (!(t)) { \
+    core::errorFormatted(fmt); \
     throw(core::HardError(__FILE__, __FUNCTION__, __LINE__, BF("Assertion %s failed: %s") % #t % (fmt).str())); \
   };
 #else
@@ -396,7 +395,7 @@ FORWARD(Cons);
   {}
 #endif
 
-#define THROW_NEVER_REACH() throw(HardError("Should never get here"));
+#define THROW_NEVER_REACH() throw(HardError(__FILE__, __FUNCTION__, __LINE__, "Should never get here"));
 
 #define MAXSOURCEFILENAME 1024
 class DebugStream {

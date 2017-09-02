@@ -75,7 +75,7 @@ void af_stackSizeWarning(size_t size);
  T_sp cl__sort(List_sp sequence, T_sp predicate, T_sp key=_Nil<core::T_O>() );
  
 List_sp cl__member(T_sp item, T_sp list, T_sp key = _Nil<T_O>(), T_sp test = cl::_sym_eq, T_sp test_not = _Nil<T_O>());
-void core__invoke_internal_debugger(T_sp condition);
+[[noreturn]]void core__invoke_internal_debugger(T_sp condition);
 
 class SymbolClassPair {
 public:
@@ -454,7 +454,6 @@ public:
 
 public:
   DebugStream &debugLog() {
-    HARD_ASSERT(this->_DebugStream != NULL);
     return *(this->_DebugStream);
   };
   //	vector<string>& printfPrefixStack() { return this->_printfPrefixStack;};

@@ -76,12 +76,12 @@ struct Frame {
   }
 
   inline ElementType& operator[](size_t idx) {
-    GCTOOLS_ASSERTF(idx >= 0 && idx < this->number_of_arguments(),BF("idx = %d  number_of_arguments=%d") % idx % this->number_of_arguments());
+    GCTOOLS_ASSERTF(idx >= 0 && idx < this->number_of_arguments(),"idx out of bounds");
     // This works because the overflow area follows the register save area
     return this->_register_save_area[idx+LCC_ARG0_REGISTER];
   }
   inline const ElementType& operator[](size_t idx) const {
-    GCTOOLS_ASSERTF(idx >= 0 && idx < this->number_of_arguments(),BF("idx = %d  number_of_arguments=%d") % idx % this->number_of_arguments());
+    GCTOOLS_ASSERTF(idx >= 0 && idx < this->number_of_arguments(),"idx out of bounds");
     // This works because the overflow area follows the register save area
     return this->_register_save_area[idx+LCC_ARG0_REGISTER];
   }

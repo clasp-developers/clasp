@@ -53,6 +53,23 @@
   (setq *load-print* t)
   (setq *echo-repl-read* t))
 
+#+clasp
+(defun update-specializer-profile (generic-function)
+  (let ((methods (clos:generic-function-methods generic-function)))
+    (if methods
+        (let* ((first-method-specializers (method-specializers (car methods)))
+               (vec (make-array (length first-method-specializers) :initial-element nil))
+               (tc (find-class 't)))
+          (loop for method in methods
+             for specs = (method-specializers method)
+             do (loop for i from 0 below (length vec)
+                   for spec in specs
+                   for specialized = (not (eq spec tc))
+                   when specialized
+                   do (setf (elt vec i) t)))
+          (setf (generic-function-specializer-profile generic-function) vec))
+        (setf (generic-function-specializer-profile generic-function) nil))))
+
 
 (defmethod reader-method-class ((class std-class)
 				(direct-slot direct-slot-definition)
@@ -156,22 +173,6 @@
                                      (all-keywords keywords2))))
            t))))
 
-#+clasp
-(defun update-specializer-profile (generic-function)
-  (let ((methods (clos:generic-function-methods generic-function)))
-    (if methods
-        (let* ((first-method-specializers (method-specializers (car methods)))
-               (vec (make-array (length first-method-specializers) :initial-element nil))
-               (tc (find-class 't)))
-          (loop for method in methods
-             for specs = (method-specializers method)
-             do (loop for i from 0 below (length vec)
-                   for spec in specs
-                   for specialized = (not (eq spec tc))
-                   when specialized
-                   do (setf (elt vec i) t)))
-          (setf (generic-function-specializer-profile generic-function) vec))
-        (setf (generic-function-specializer-profile generic-function) nil))))
 
 (defun add-method (gf method)
   ;; during boot it's a structure accessor
@@ -437,6 +438,24 @@ and cannot be added to ~A." method other-gf gf)))
                (incf count))
              dispatchers)
     count))
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;;   Startup fastgf
+;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+#+(or)(progn
+        (startup-generic-functions)
+        (eval-when (:execute :load-time)
+          (format t "!~%!~%!~%!~%!~%Finished startup-generic-functions~%!~%!~%!~%")))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 
 ;;; April 2017  Turn this off for now to debug
 (eval-when (:execute :compile-toplevel :load-toplevel)

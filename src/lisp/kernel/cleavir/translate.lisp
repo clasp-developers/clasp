@@ -1215,12 +1215,12 @@ that llvm function. This works like compile-lambda-function in bclasp."
 
 
 (defmacro open-debug-log (log-file)
-  `(eval-when (:compile-toplevel)
+  `(eval-when (:compile-toplevel :execute)
      (setq *debug-log* (open (ensure-directories-exist ,log-file) :direction :output))
      (setq *debug-log-on* t)))
 
 (defmacro close-debug-log ()
-  `(eval-when (:compile-toplevel)
+  `(eval-when (:compile-toplevel :execute)
      (setq *debug-log-on* nil)
      (close *debug-log*)
      (setq *debug-log* nil)))

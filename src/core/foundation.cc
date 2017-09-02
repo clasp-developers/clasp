@@ -465,18 +465,18 @@ MultipleValues &lisp_callArgs() {
   return my_thread->_MultipleValues;
 }
 #endif
-void errorFormatted(boost::format fmt) {
+[[noreturn]]void errorFormatted(boost::format fmt) {
   TRY_BOOST_FORMAT_STRING(fmt, fmt_str);
   dbg_hook(fmt_str.c_str());
   core__invoke_internal_debugger(_Nil<core::T_O>());
 }
 
-void errorFormatted(const string &msg) {
+[[noreturn]]void errorFormatted(const string &msg) {
   dbg_hook(msg.c_str());
   core__invoke_internal_debugger(_Nil<core::T_O>());
 }
 
-void errorFormatted(const char *msg) {
+[[noreturn]]void errorFormatted(const char *msg) {
   dbg_hook(msg);
   core__invoke_internal_debugger(_Nil<core::T_O>());
 }
@@ -721,26 +721,29 @@ string symbol_repr(Symbol_sp sym) {
        Otherwise it returns lisp_static_class(o)
     */
 Class_sp lisp_instance_class(T_sp o) {
+  T_sp tc;
   if (o.fixnump()) {
-    return core::Fixnum_dummy_O::static_class;
+    tc = core::Fixnum_dummy_O::static_class;
     //	    return core::Fixnum_O::___staticClass;
   } else if (o.characterp()) {
-    return core::Character_dummy_O::static_class;
+    tc = core::Character_dummy_O::static_class;
   } else if (o.single_floatp()) {
-    return core::SingleFloat_dummy_O::static_class;
+    tc = core::SingleFloat_dummy_O::static_class;
   } else if (o.consp()) {
-    return core::Cons_O::static_class;
+    tc = core::Cons_O::static_class;
   } else if (o.generalp()) {
     General_sp go(o.unsafe_general());
-    if ( go.nilp() ) {
-      return core::Null_O::static_class;
+    unlikely_if ( go.nilp() ) {
+      tc = core::Null_O::static_class;
     }
-    return go->_instanceClass();
+    tc = go->_instanceClass();
   } else if (o.valistp()) {
-    // What do I return for this?
-    return core::VaList_dummy_O::static_class;
+    // What do I tc = for this?
+    tc = core::VaList_dummy_O::static_class;
+  } else {
+    SIMPLE_ERROR(BF("Add support for unknown (immediate?) object to lisp_instance_class obj = %p") % (void*)(o.raw_()));
   }
-  SIMPLE_ERROR(BF("Add support for unknown (immediate?) object to lisp_instance_class obj = %p") % (void*)(o.raw_()));
+  return gc::As_unsafe<Class_sp>(tc);
 }
 
 Class_sp lisp_static_class(T_sp o) {

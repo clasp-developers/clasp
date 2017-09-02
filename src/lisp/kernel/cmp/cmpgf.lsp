@@ -194,6 +194,10 @@
 (defun parse-call-history-entry (entry)
   (values (butlast entry) (car (last entry))))
 
+(defun foo ()
+  (dolist (a '(1 2 3 4))
+    (print "Hello")))
+
 (defun dtree-add-call-history (dtree call-history)
   "Add call-history for one generic-function to the dtree"
   (dolist (one call-history)
@@ -789,7 +793,6 @@
 
 (defun debug-save-dispatcher (gf module disp-fn startup-fn shutdown-fn sorted-roots &optional (output-path #P"/tmp/dispatcher.ll"))
   "Save everything about the generic function so that it can be saved to a file and then edited and re-installed"
-  (core:bformat t "In debug-save-dispatcher output-path -> %s\n" output-path)
   (setq *disp-fn-name* (llvm-sys:get-name disp-fn)
         *startup-fn-name* (llvm-sys:get-name startup-fn)
         *shutdown-fn-name* (llvm-sys:get-name shutdown-fn)
@@ -984,6 +987,22 @@
     invalid-instance))
 
 
+(defun calculate-call-history-and-dispatch-function (generic-function)
+  (unwind-protect
+       (progn
+         (mp:write-lock (generic-function-lock generic-function))
+         (let ((call-history (clos::generic-function-call-history generic-function)))
+           (dolist (entry call-history)
+             ;; Call genericFunction.cc function to generic-compute-applicable-method
+             (let ((effective-method-function (clos:generic-compute-applicable-method generic-function
+                                                                                      (coerce (car entry) 'list))))
+               (rplacd entry effective-method-function))))
+         (let ((dispatcher (calculate-fastgf-dispatch-function generic-function
+                                                               #+log-cmpgf :output-path
+                                                               #+log-cmpgf (cmp::log-cmpgf-filename "func" "ll"))))
+           (safe-set-funcallable-instance-function generic-function dispatcher)))
+    (mp:write-unlock (generic-function-lock generic-function))))
+
 (defun do-dispatch-miss (generic-function valist-args arguments)
   (multiple-value-bind (method-list ok)
       (clos::compute-applicable-methods-using-classes
@@ -1001,32 +1020,34 @@
           ;; If the method list contains a single entry and it is an accessor - then we can
           ;; create an optimized reader/writer and put that in the call history
           (cmp::gf-log "        check if method list (1) has one entry (2) is a reader or writer - if so - optimize it%&        method-list -> ~a" method-list)
-            ;;; FIXME:  To achieve optimized slot access - I need here to determine if I can use an optimized slot accessor.
-            ;;;         Can I use the method-list?
-          (let* ((memoize-key (clos:memoization-key generic-function valist-args))
-                 (effective-method-function (clos::compute-effective-method-function
-                                             generic-function
-                                             (clos::generic-function-method-combination generic-function)
-                                             method-list)))
+;;; FIXME:  To achieve optimized slot access - I need here to determine if I can use an optimized slot accessor.
+;;;         Can I use the method-list?
+          (let ((memoize-key (clos:memoization-key generic-function valist-args)))
             (cmp::gf-log "Memoizing key -> ~a ~%" memoize-key)
             (cmp::gf-log-dispatch-miss "Adding to history" generic-function valist-args)
-            (let ((pushed (core:generic-function-call-history-push-new generic-function memoize-key effective-method-function)))
-              (unless pushed
-                (warn "The generic-function ~a experienced a dispatch-miss but the call did not result in a new call-history entry - this suggests the fastgf is failing somehow - turn on log-cmpgf in cmpgf.lsp and recompile everything" (core:bformat nil "%s" (core:instance-ref generic-function 0)))
-                (cmp::gf-log-dispatch-miss-followup "!!!!!!  DID NOT MODIFY CALL-HISTORY\n")))
-            (cmp::gf-log "Invalidating dispatch function~%")
-            #+log-cmpgf(cmp::graph-call-history generic-function (cmp::log-cmpgf-filename "graph" "dot"))
-            (unwind-protect
-                 (progn
-                   (mp:shared-lock (generic-function-lock generic-function))
-                   (safe-set-funcallable-instance-function
-                    generic-function (calculate-fastgf-dispatch-function
-                                      generic-function
-                                      #+log-cmpgf :output-path
-                                      #+log-cmpgf (cmp::log-cmpgf-filename "func" "ll"))))
-              (mp:shared-unlock (generic-function-lock generic-function)))
-            (cmp::gf-log "Calling effective-method-function ~a~%" effective-method-function)
-            (apply effective-method-function arguments nil arguments)))
+            (cmp::gf-log-dispatch-miss-message "About to calculate-effective-method-function\n")
+            (cmp::gf-log-dispatch-miss-message "  method-list -> %s\n" (mapcar (lambda (m) (clos:method-specializers m)) method-list))
+            (let ((effective-method-function (clos::compute-effective-method-function
+                                              generic-function
+                                              (clos::generic-function-method-combination generic-function)
+                                              method-list)))
+              (let ((pushed (core:generic-function-call-history-push-new generic-function memoize-key effective-method-function)))
+                (unless pushed
+                  (warn "The generic-function ~a experienced a dispatch-miss but the call did not result in a new call-history entry - this suggests the fastgf is failing somehow - turn on log-cmpgf in cmpgf.lsp and recompile everything" (core:bformat nil "%s" (core:instance-ref generic-function 0)))
+                  (cmp::gf-log-dispatch-miss-followup "!!!!!!  DID NOT MODIFY CALL-HISTORY\n")))
+              (cmp::gf-log "Invalidating dispatch function~%")
+              #+log-cmpgf(cmp::graph-call-history generic-function (cmp::log-cmpgf-filename "graph" "dot"))
+              (unwind-protect
+                   (progn
+                     (mp:shared-lock (generic-function-lock generic-function))
+                     (safe-set-funcallable-instance-function
+                      generic-function (calculate-fastgf-dispatch-function
+                                        generic-function
+                                        #+log-cmpgf :output-path
+                                        #+log-cmpgf (cmp::log-cmpgf-filename "func" "ll"))))
+                (mp:shared-unlock (generic-function-lock generic-function)))
+              (cmp::gf-log "Calling effective-method-function ~a~%" effective-method-function)
+              (apply effective-method-function arguments nil arguments))))
         (progn
           (cmp::gf-log-dispatch-miss "no-applicable-method" generic-function valist-args)
           (apply #'no-applicable-method generic-function arguments)))))
@@ -1099,7 +1120,7 @@
           (let ((dispatch-tree (cmp::make-dtree)))
             (cmp::dtree-add-call-history dispatch-tree call-history)
             (cmp::codegen-dispatcher dispatch-tree generic-function :output-path output-path)))
-        'clos::invalidated-dispatch-function)))
+        'clos::empty-dispatch-function)))
 
 (defun disassemble-fastgf-dispatch-function (generic-function)
   (let* ((*save-module-for-disassemble* t)
@@ -1121,16 +1142,15 @@
           (ext:system "open /tmp/dispatch.pdf")))))
   
 
-(defun clos::invalidated-dispatch-function (generic-function va-list-args)
-  (core:stack-monitor (lambda () (format t "In clos::invalidated-dispatch-function with generic function ~a~%" (instance-ref generic-function 0))))
-  (cmp::gf-log "invalidated-dispatch-function generic-function -> ~a   arguments -> ~a~%" (clos::generic-function-name generic-function) va-list-args)
-  (maybe-update-instances (core:list-from-va-list va-list-args))
+(defun clos::empty-dispatch-function (generic-function va-list-args)
+  (core:stack-monitor (lambda () (format t "In clos::empty-dispatch-function with generic function ~a~%" (instance-ref generic-function 0))))
+  (cmp::gf-log "empty-dispatch-function generic-function -> ~a   arguments -> ~a~%" (clos::generic-function-name generic-function) va-list-args)
   (clos::dispatch-miss generic-function va-list-args))
 
 
 (defun maybe-invalidate-generic-function (gf)
   (when (typep (clos:get-funcallable-instance-function gf) 'core:compiled-dispatch-function)
-            (safe-set-funcallable-instance-function gf 'clos::invalidated-dispatch-function)))
+    (clos::calculate-call-history-and-dispatch-function gf)))
 
 (defun method-spec-matches-entry-spec (method-spec entry-spec)
   (or
@@ -1181,10 +1201,166 @@
 (export '(invalidate-generic-functions-with-class-selector
           switch-to-fastgf))
 
-(defun cache-status ()
-  (format t "                method-cache: ~a~%" (multiple-value-list (core:method-cache-status)))
-  (format t "single-dispatch-method-cache: ~a~%" (multiple-value-list (core:single-dispatch-method-cache-status)))
-  (format t "                  slot-cache: ~a~%" (multiple-value-list (core:slot-cache-status))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Satiation of generic functions to start fastgf
+;;;
+;;; Ideas copied from Sicl/Code/CLOS/satiation.lisp
+;;;
 
-(export 'cache-status)
+(defun cartesian-product (sets)
+  (if (null (cdr sets))
+      (mapcar #'list (car sets))
+      (loop for element in (car sets)
+	    append (mapcar (lambda (set)
+			     (cons element set))
+			   (cartesian-product (cdr sets))))))
+
+(defun calculate-all-argument-subclasses-of-method (classes-of-method profile)
+  (let ((sets (loop for class in classes-of-method
+                  for flag in profile
+                  collect (if (null flag)
+                              (list class)
+                              (subclasses* class)))))
+    (cartesian-product sets)))
+
+(defun add-to-call-history (generic-function classes-of-method profile)
+  (let* ((all-subclasses-of-method (calculate-all-argument-subclasses-of-method classes-of-method profile)))
+    (loop for combination in all-subclasses-of-method
+       for methods = (std-compute-applicable-methods-using-classes generic-function combination)
+       for effective-method-function = (compute-effective-method-function
+                                        generic-function
+                                        (generic-function-method-combination generic-function)
+                                        methods)
+       do (core:generic-function-call-history-push-new generic-function
+                                                       (coerce combination 'vector)
+                                                       effective-method-function))))
+
+(defun compute-and-install-discriminating-function (generic-function)
+  (let ((dispatcher (calculate-fastgf-dispatch-function generic-function
+                                                        #+log-cmpgf :output-path
+                                                        #+log-cmpgf (cmp::log-cmpgf-filename "func" "ll"))))
+    (safe-set-funcallable-instance-function generic-function dispatcher)))
+
+(defun load-generic-function (generic-function)
+  (update-specializer-profile generic-function)
+  (loop with profile = (coerce (generic-function-specializer-profile generic-function) 'list)
+     for method in (generic-function-methods generic-function)
+     for specializers = (method-specializers method)
+     do (add-to-call-history generic-function specializers profile))
+  (length (clos::generic-function-call-history generic-function)))
+  
+(defun satiate-generic-function (gf-name &rest stuff)
+  (format t "setup-generic-function  gf-name: ~a~%" gf-name)
+  (let ((generic-function (fdefinition gf-name)))
+    (load-generic-function generic-function)
+    (compute-and-install-discriminating-function generic-function)))
+
+(defun setup-generic-function (gf-name &rest stuff)
+  (format t "~a -> ~a~%" (load-generic-function (fdefinition gf-name)) gf-name))
+
+(defun startup-generic-functions ()
+;;  (setup-generic-function 'CLOS:ENSURE-CLASS-USING-CLASS '((class :skip)))
+  (setup-generic-function 'MAKE-INSTANCE '((symbol) (standard-class) (clos:funcallable-standard-class)))
+  (setup-generic-function 'ALLOCATE-INSTANCE '((standard-class) (clos:funcallable-standard-class) (built-in-class)))
+  (setup-generic-function 'CLOS:REMOVE-DIRECT-SUBCLASS '((class class)))
+  (setup-generic-function 'CLOS:COMPUTE-CLASS-PRECEDENCE-LIST '((class)))
+  (setup-generic-function 'CLOS:METHOD-FUNCTION '((standard-method)))
+  (setup-generic-function 'CLOS:METHOD-LAMBDA-LIST '((standard-method)))
+  (setup-generic-function 'CLOS:COMPUTE-DISCRIMINATING-FUNCTION '((standard-generic-function)))
+  (setup-generic-function 'CLOS:CLASS-SLOTS '((standard-class) (funcallable-standard-class) (forward-referenced-class) (built-in-class)))
+  (setup-generic-function 'ADD-METHOD '((standard-generic-function standard-method)))
+  (setup-generic-function 'CLOS:CLASS-DEFAULT-INITARGS '((standard-class) (funcallable-standard-class) (forward-referenced-class) (built-in-class)))
+  (setup-generic-function 'CLOS:GENERIC-FUNCTION-METHODS '((standard-generic-function)))
+  (setup-generic-function 'CLOS:COMPUTE-APPLICABLE-METHODS-USING-CLASSES '((standard-generic-function :skip)))
+  (setup-generic-function 'COMPUTE-APPLICABLE-METHODS '((standard-generic-function :skip)))
+  (setup-generic-function 'CLOS:METHOD-SPECIALIZERS '((standard-method)))
+  (setup-generic-function 'CLOS:SLOT-DEFINITION-INITFUNCTION '((standard-slot-definition)))
+  (setup-generic-function 'CLOS:METHOD-GENERIC-FUNCTION '((standard-method)))
+  (setup-generic-function 'CLOS:ADD-DEPENDENT '((standard-class :skip) (funcallable-standard-class :skip) (standard-generic-function :skip)))
+  (setup-generic-function 'CLOS:SLOT-DEFINITION-WRITERS '((standard-direct-slot-definition)))
+  (setup-generic-function 'CLOS:CLASS-DIRECT-SUBCLASSES '((standard-class) (funcallable-standard-class) (forward-referenced-class) (built-in-class)))
+  (setup-generic-function 'CLOS:GENERIC-FUNCTION-METHOD-CLASS '((standard-generic-function)))
+  (setup-generic-function 'CLOS:GENERIC-FUNCTION-ARGUMENT-PRECEDENCE-ORDER '((standard-generic-function)))
+  (setup-generic-function 'CLOS:SLOT-DEFINITION-ALLOCATION '((standard-slot-definition)))
+  (setup-generic-function 'CLOS:SLOT-DEFINITION-LOCATION '((standard-effective-slot-definition)))
+  (setup-generic-function 'CLOS:EFFECTIVE-SLOT-DEFINITION-CLASS '((standard-class) (funcallable-standard-class)))
+  (setup-generic-function 'CLOS:COMPUTE-DEFAULT-INITARGS '((standard-class) (funcallable-standard-class)))
+  (setup-generic-function 'CLOS:WRITER-METHOD-CLASS '((standard-class standard-direct-slot-definition) (funcallable-standard-class standard-direct-slot-definition)))
+  (setup-generic-function 'CLOS:REMOVE-DEPENDENT '((standard-class :skip) (funcallable-standard-class :skip) (standard-generic-function :skip)))
+  (setup-generic-function 'CLOS:REMOVE-DIRECT-METHOD '((class method) (eql-specializer method)))
+  (setup-generic-function 'CLOS:MAP-DEPENDENTS '((standard-class :skip) (funcallable-standard-class :skip) (standard-generic-function :skip)))
+  (setup-generic-function 'CLOS:SLOT-MAKUNBOUND-USING-CLASS '((standard-class :skip standard-effective-slot-definition) (funcallable-standard-class :skip standard-effective-slot-definition) (built-in-class :skip :skip)))
+  (setup-generic-function 'CLOS:ADD-DIRECT-METHOD '((class method) (eql-specializer method)))
+  (setup-generic-function 'CLOS:CLASS-FINALIZED-P '((standard-class) (funcallable-standard-class) (forward-referenced-class) (built-in-class)))
+  (setup-generic-function 'CLOS:SLOT-DEFINITION-NAME '((standard-slot-definition)))
+  (setup-generic-function 'CLOS:READER-METHOD-CLASS '((standard-class standard-direct-slot-definition) (funcallable-standard-class standard-direct-slot-definition)))
+  (setup-generic-function 'CLOS:VALIDATE-SUPERCLASS '((class class)))
+;;  (setup-generic-function 'CLASS-NAME '((standard-class) (funcallable-standard-class) (forward-referenced-class) (built-in-class)))
+;;  (setup-generic-function 'CLOS:CLASS-DIRECT-SUPERCLASSES '((standard-class) (funcallable-standard-class) (forward-referenced-class) (built-in-class)))
+  (setup-generic-function 'CLOS:COMPUTE-SLOTS '((standard-class) (funcallable-standard-class)) '((:around (standard-class)) (:around (funcallable-standard-class))))
+  (setup-generic-function 'METHOD-QUALIFIERS '((standard-method)))
+  (setup-generic-function 'CLOS:SLOT-BOUNDP-USING-CLASS '((standard-class :skip standard-effective-slot-definition) (funcallable-standard-class :skip standard-effective-slot-definition) (built-in-class :skip :skip)))
+  (setup-generic-function 'CLOS:GENERIC-FUNCTION-METHOD-COMBINATION '((standard-generic-function)))
+  (setup-generic-function 'CLOS:ADD-DIRECT-SUBCLASS '((class class)))
+  (setup-generic-function 'CLOS:SPECIALIZER-DIRECT-METHODS '((class) (eql-specializer)))
+  (setup-generic-function 'CLOS:COMPUTE-EFFECTIVE-SLOT-DEFINITION '((standard-class :skip :skip) (funcallable-standard-class :skip :skip)))
+  (setup-generic-function 'REMOVE-METHOD '((standard-generic-function standard-method)))
+  (setup-generic-function 'CLOS:CLASS-DIRECT-SLOTS '((standard-class) (funcallable-standard-class) (forward-referenced-class) (built-in-class)))
+  (setup-generic-function 'CLOS:GENERIC-FUNCTION-LAMBDA-LIST '((standard-generic-function)))
+  (setup-generic-function 'CLOS:SLOT-DEFINITION-INITARGS '((standard-slot-definition)))
+  (setup-generic-function 'CLOS:MAKE-METHOD-LAMBDA '((standard-generic-function standard-method :skip :skip)))
+  (setup-generic-function 'CLOS:SLOT-DEFINITION-READERS '((standard-direct-slot-definition)))
+  (setup-generic-function 'CLOS:ACCESSOR-METHOD-SLOT-DEFINITION '((standard-accessor-method)))
+  (setup-generic-function 'CLOS:GENERIC-FUNCTION-NAME '((standard-generic-function)))
+  (setup-generic-function 'CLOS:CLASS-PROTOTYPE '((standard-class :skip) (funcallable-standard-class :skip) (forward-referenced-class :skip) (built-in-class :skip)))
+  (setup-generic-function 'CLOS:SLOT-VALUE-USING-CLASS '((standard-class :skip standard-effective-slot-definition) (funcallable-standard-class :skip standard-effective-slot-definition) (built-in-class :skip :skip)))
+  (setup-generic-function 'CLOS:FINALIZE-INHERITANCE '((standard-class) (funcallable-standard-class) (forward-referenced-class)))
+  (setup-generic-function 'CLOS:DIRECT-SLOT-DEFINITION-CLASS '((standard-class) (funcallable-standard-class)))
+  (setup-generic-function 'CLOS:SLOT-DEFINITION-TYPE '((standard-slot-definition)))
+  (setup-generic-function 'CLOS:GENERIC-FUNCTION-DECLARATIONS '((standard-generic-function)))
+  (setup-generic-function 'CLOS:SPECIALIZER-DIRECT-GENERIC-FUNCTIONS '((class) (eql-specializer)))
+  (setup-generic-function 'CLOS:COMPUTE-EFFECTIVE-METHOD '((standard-generic-function :skip :skip)))
+  (setup-generic-function 'CLOS:ENSURE-GENERIC-FUNCTION-USING-CLASS '((generic-function :skip) (null :skip)))
+  (setup-generic-function 'CLOS:FIND-METHOD-COMBINATION '((:skip :skip :skip)))
+  (setup-generic-function 'CLOS:CLASS-PRECEDENCE-LIST '((standard-class) (funcallable-standard-class) (forward-referenced-class) (built-in-class)))
+  (setup-generic-function 'CLOS:CLASS-DIRECT-DEFAULT-INITARGS '((standard-class) (funcallable-standard-class) (forward-referenced-class) (built-in-class)))
+  (setup-generic-function 'REINITIALIZE-INSTANCE '((standard-object)))
+  (setup-generic-function 'PRINT-OBJECT '((standard-object) (structure-object)))
+  (setup-generic-function 'NO-APPLICABLE-METHOD '((:skip)))
+  (setup-generic-function 'SHARED-INITIALIZE '((standard-object)))
+  (setup-generic-function 'SLOT-UNBOUND '((:skip :skip :skip)))
+  (setup-generic-function 'MAKE-INSTANCES-OBSOLETE '((standard-class) (symbol)))
+
+  
+  (setup-generic-function 'UPDATE-INSTANCE-FOR-REDEFINED-CLASS '((standard-object :skip :skip :skip)))
+  (setup-generic-function 'SLOT-MISSING '((:skip)))
+  (setup-generic-function 'INITIALIZE-INSTANCE '((standard-object)))
+  (setup-generic-function 'NO-NEXT-METHOD '((standard-generic-function standard-method)))
+  (setup-generic-function 'CHANGE-CLASS '((standard-object standard-class) (:skip symbol)))
+  (setup-generic-function 'FIND-METHOD '((standard-generic-function :skip :skip)))
+  (setup-generic-function 'CLASS-NAME '((class)))
+  #||
+  (setup-generic-function 'CLOSE '((:skip)))
+  (setup-generic-function 'OUTPUT-STREAM-P )
+  (setup-generic-function 'DESCRIBE-OBJECT )
+  'CLOS:EQL-SPECIALIZER-OBJECT
+  'CLOS:SLOT-DEFINITION-INITFORM 
+  'CLOS:UPDATE-DEPENDENT 
+  'FUNCTION-KEYWORDS 
+  (setup-generic-function 'DOCUMENTATION )
+  (setup-generic-function 'INTERACTIVE-STREAM-P )
+  (setup-generic-function 'STREAM-ELEMENT-TYPE )
+  (setup-generic-function 'INPUT-STREAM-P )
+  (setup-generic-function 'OPEN-STREAM-P )
+  (setup-generic-function 'UPDATE-INSTANCE-FOR-DIFFERENT-CLASS '()
+  ||#
+  )
+
+  (defun cache-status ()
+    (format t "                method-cache: ~a~%" (multiple-value-list (core:method-cache-status)))
+    (format t "single-dispatch-method-cache: ~a~%" (multiple-value-list (core:single-dispatch-method-cache-status)))
+    (format t "                  slot-cache: ~a~%" (multiple-value-list (core:slot-cache-status))))
+
+  (export 'cache-status)
   

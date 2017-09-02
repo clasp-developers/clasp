@@ -48,7 +48,7 @@ namespace boost_filesystem = boost::filesystem;
 namespace core {
   [[noreturn]]void lisp_throwLispError(const std::string &str);
   [[noreturn]]void lisp_throwLispError(const boost::format &fmt);
-  void errorFormatted(boost::format fmt);
+  [[noreturn]]void errorFormatted(boost::format fmt);
   void lisp_write(const boost::format &fmt, T_sp stream);
   [[noreturn]]void lisp_error_simple(const char *functionName, const char *fileName, int lineNumber, const boost::format &fmt);
   void lisp_debugLogWrite(const char *fileName, const char *funcName, uint lineNumber, uint column, const boost::format &message, uint debugFlags = DEBUG_CPP_FUNCTION);

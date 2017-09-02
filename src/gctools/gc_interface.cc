@@ -651,7 +651,8 @@ NOINLINE  gc::smart_ptr<core::Class_O> allocate_one_metaclass(core::Symbol_sp cl
   class_val->__setup_stage1_with_sharedPtr_lisp_sid(class_val,classSymbol);
 //  reg::lisp_associateClassIdWithClassSymbol(reg::registered_class<TheClass>::id,TheClass::static_classSymbol());
 //  TheClass::static_class = class_val;
-  core::core__setf_find_class(class_val,classSymbol);
+  _lisp->boot_setf_findClass(classSymbol,class_val);
+//  core::core__setf_find_class(class_val,classSymbol);
   return class_val;
 }
 
@@ -665,7 +666,8 @@ NOINLINE  gc::smart_ptr<core::Class_O> allocate_one_class(core::Class_sp metaCla
   class_val->__setup_stage1_with_sharedPtr_lisp_sid(class_val,TheClass::static_classSymbol());
   reg::lisp_associateClassIdWithClassSymbol(reg::registered_class<TheClass>::id,TheClass::static_classSymbol());
   TheClass::static_class = class_val;
-  core::core__setf_find_class(class_val,TheClass::static_classSymbol()); //,true,_Nil<core::T_O>());
+//  core::core__setf_find_class(class_val,TheClass::static_classSymbol()); //,true,_Nil<core::T_O>()
+  _lisp->boot_setf_findClass(TheClass::static_classSymbol(),class_val);
   return class_val;
 }
 

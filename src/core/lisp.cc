@@ -2324,7 +2324,7 @@ CL_DEFUN T_mv core__universal_error_handler(T_sp continueString, T_sp datum, Lis
 CL_LAMBDA(&optional condition);
 CL_DECLARE();
 CL_DOCSTRING("invokeInternalDebugger");
-CL_DEFUN void core__invoke_internal_debugger(T_sp condition) {
+[[noreturn]] CL_DEFUN void core__invoke_internal_debugger(T_sp condition) {
   stringstream ss;
   if (condition.nilp()) {
     LispDebugger debugger;
@@ -2334,6 +2334,8 @@ CL_DEFUN void core__invoke_internal_debugger(T_sp condition) {
     LispDebugger debugger(condition);
     debugger.invoke();
   }
+  printf("%s:%d Unreachable\n", __FILE__, __LINE__);
+  abort();
 };
 
 CL_LAMBDA();

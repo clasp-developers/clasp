@@ -92,7 +92,7 @@ Could return more functions that provide lambda-list for swank for example"
                ;; load time values table
                #+(or)(irc-intrinsic-call "debugInspectT_sp" (list (literal:compile-reference-to-literal :This-is-a-test)))
                (let* ((arguments             (llvm-sys:get-argument-list fn))
-                      (argument-holder       (bclasp-setup-calling-convention arguments lambda-list-handler T #|DEBUG-ON|#)))
+                      (argument-holder       (bclasp-setup-calling-convention arguments lambda-list-handler NIL #|!DEBUG-ON|#)))
                  (calling-convention-maybe-push-invocation-history-frame argument-holder)
                  (let ((new-env (progn
                                   (cmp-log "Creating new-value-environment for arguments\n")

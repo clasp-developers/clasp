@@ -31,8 +31,8 @@ THE SOFTWARE.
 void dbg_hook(const char *errorString);
 
 namespace core {
-  void errorFormatted(const char *errorString);
-  void errorFormatted(const string &msg);
+  [[noreturn]]void errorFormatted(const char *errorString);
+  [[noreturn]]void errorFormatted(const string &msg);
 };
 
 class HardError {
@@ -41,6 +41,7 @@ class HardError {
  public:
     //HardError(const char *sourceFile, const char *functionName, uint lineNumber, const boost::format &fmt);
   HardError(const std::string& msg);
+  HardError(const char* file, const char* func, int lineno, const char* msg);
   string message();
 };
 
@@ -68,7 +69,6 @@ class HardError {
     std::string str = (fmt).str(); \
     dbg_hook(str.c_str());                                   \
     ::core::errorFormatted(str);                                     \
-    throw(HardError(str)); \
   }
 #define HARD_UNREACHABLE() throw_hard_error("Unreachable");
 #define HARD_SUBCLASS_MUST_IMPLEMENT() throw_hard_error("Subclass must implement");
@@ -78,10 +78,10 @@ class HardError {
     if (!(x))                                                   \
       throw_hard_error_failed_assertion( #x ); \
   };
-#define GCTOOLS_ASSERTF(x, fmt) \
+#define GCTOOLS_ASSERTF(x, msg) \
   {                             \
     if (!(x))                   \
-      THROW_HARD_ERROR(fmt);    \
+      throw_hard_error_failed_assertion( #x " " msg); \
   };
 #else
 #define GCTOOLS_ASSERT(x)

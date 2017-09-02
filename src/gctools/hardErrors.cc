@@ -58,6 +58,12 @@ HardError::HardError(const string &msg) {
   this->_Message = msg;
 }
 
+HardError::HardError(const char* file, const char* func, int lineno, const char* msg) {
+  stringstream ss;
+  ss << file << "/" << func << ":" << lineno << " " << msg;
+  this->_Message = ss.str();
+}
+
 string HardError::message() {
   return this->_Message;
 }

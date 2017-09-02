@@ -181,14 +181,11 @@
        (cond
          #+fast-dispatch
          ((typep (get-funcallable-instance-function gfun) 'core:compiled-dispatch-function)
-          'clos::invalidated-dispatch-function)
-         #+fast-dispatch
-         ((eq (get-funcallable-instance-function gfun) 'clos::invalidated-dispatch-function)
-          'clos::invalidated-dispatch-function)
+          (clos::calculate-call-history-and-dispatch-function gfun))
          ;; If *enable-fastgf* is T then new generic functions use fastgf
          #+fast-dispatch
          ((and *enable-fastgf* (eq (get-funcallable-instance-function gfun) 'clos::not-funcallable))
-          'clos::invalidated-dispatch-function)
+          (clos::calculate-call-history-and-dispatch-function gfun))
 	 ;; Case 1*
 	 ((or (not optimizable)
 	      (> (length (slot-value gfun 'spec-list))

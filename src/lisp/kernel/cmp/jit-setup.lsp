@@ -424,8 +424,8 @@ The passed module is modified as a side-effect."
   (defun jit-add-module-return-function (original-module repl-fn startup-fn shutdown-fn literals-list)
     ;; Link the builtins into the module and optimize them
     (jit-link-builtins-module original-module)
-    (optimize-module-for-compile original-module)
-    (quick-module-dump original-module "module after-optimize")
+    #+(or)(optimize-module-for-compile original-module)
+    #+(or)(quick-module-dump original-module "module after-optimize")
     (let ((module original-module))
       ;;#+threads(mp:get-lock *jit-engine-mutex*)
       ;;    (bformat t "In jit-add-module-return-function dumping module\n")
@@ -448,7 +448,7 @@ The passed module is modified as a side-effect."
 
   (defun jit-add-module-return-dispatch-function (original-module dispatch-fn startup-fn shutdown-fn literals-list)
     (jit-link-builtins-module original-module)
-    (optimize-module-for-compile original-module)
+    #+(or)(optimize-module-for-compile original-module)
     (let ((module original-module))
       (let* ((dispatch-name (llvm-sys:get-name dispatch-fn))
              (startup-name (llvm-sys:get-name startup-fn))

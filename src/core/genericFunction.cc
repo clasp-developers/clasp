@@ -82,25 +82,18 @@ List_sp listOfClasses(VaList_sp vargs) {
 }
 
 /*! This function copies ECL>>gfun.d generic_compute_applicable_method */
-T_mv generic_compute_applicable_method(FuncallableInstance_sp gf, VaList_sp vargs) {
+CL_DEFUN T_mv clos__generic_compute_applicable_method(FuncallableInstance_sp gf, List_sp arglist) {
   /* method not cached */
   //cl_object memoize;
   T_sp memoize;
-  T_mv methods = eval::funcall(clos::_sym_compute_applicable_methods_using_classes,
-                               gf, listOfClasses(vargs));
+  T_mv methods = eval::funcall(clos::_sym_compute_applicable_methods_using_classes, gf, arglist);
   memoize = methods.valueGet_(1); // unlikely_if (Null(memoize = env->values[1])) {
   if (memoize.nilp()) {
-    List_sp arglist = listOfObjects(vargs);
     //    T_sp arglist = lisp_va_list_toCons(vargs); // used to be frame_to_list
-    methods = eval::funcall(cl::_sym_compute_applicable_methods,
-                            gf, arglist);
+    methods = eval::funcall(cl::_sym_compute_applicable_methods, gf, arglist);
     if (methods.nilp()) {
       SYMBOL_EXPORT_SC_(ClPkg, no_applicable_method);
       T_sp func = eval::applyLastArgsPLUSFirst(cl::_sym_no_applicable_method, arglist, gf);
-      // Why was I setting the first argument to NIL???
-      // I could use LCC_VA_LIST_REGISTER_ARG0(vargs) = gctools::tag_nil<T_O*>();
-      //    args[0] = (T_O *)(gctools::tag_nil<T_O *>());
-
       return (Values(func, _Nil<T_O>()));
     }
   }
@@ -113,11 +106,9 @@ SYMBOL_SC_(ClosPkg, std_compute_applicable_methods);
 SYMBOL_SC_(ClosPkg, std_compute_effective_method);
 
 /*! This function copies ECL>>gfun.d restricted_compute_applicable_method */
-T_mv restricted_compute_applicable_method(FuncallableInstance_sp gf, VaList_sp vargs) {
+CL_DEFUN T_mv clos__restricted_compute_applicable_method(FuncallableInstance_sp gf, List_sp arglist) {
   FuncallableInstance_sp igf = gf;
   /* method not cached */
-  List_sp arglist = listOfObjects(vargs);
-  //  T_sp arglist = lisp_ArgArrayToCons(nargs, args); // used to be frame_to_list
   //  printf("%s:%d  restricted_compute_applicable_method gf: %s  args: %s\n", __FILE__, __LINE__, _rep_(gf).c_str(), _rep_(arglist).c_str());
   T_sp methods = eval::funcall(clos::_sym_std_compute_applicable_methods, igf, arglist);
   if (methods.nilp()) {
@@ -156,10 +147,11 @@ CL_DEFUN T_sp core__maybe_expand_generic_function_arguments(T_sp args) {
 }
 
 T_mv compute_applicable_method(FuncallableInstance_sp gf, VaList_sp vargs) {
+  List_sp arguments = listOfObjects(vargs);
   if (gc::As<FuncallableInstance_sp>(gf)->isgf() == CLASP_RESTRICTED_DISPATCH) {
-    return restricted_compute_applicable_method(gf, vargs);
+    return clos__restricted_compute_applicable_method(gf, arguments);
   } else {
-    return generic_compute_applicable_method(gf, vargs);
+    return clos__generic_compute_applicable_method(gf, arguments);
   }
 }
 
@@ -286,10 +278,10 @@ LCC_RETURN generic_function_dispatch(gctools::Tagged tgf, gctools::Tagged tvargs
   return standard_dispatch(gf, vargs, cache);
 }
 
-LCC_RETURN invalidated_dispatch(gctools::Tagged tgf, gctools::Tagged tvargs) {
+LCC_RETURN empty_dispatch(gctools::Tagged tgf, gctools::Tagged tvargs) {
   FuncallableInstance_sp gf(tgf);
   VaList_sp vargs(tvargs);
-  return eval::funcall(clos::_sym_invalidated_dispatch_function,gf,vargs);
+  return eval::funcall(clos::_sym_empty_dispatch_function,gf,vargs);
 }
 
 #if 0
