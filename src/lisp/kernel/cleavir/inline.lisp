@@ -457,76 +457,60 @@
           (error 'type-error :datum index :expected-type 'fixnum))
       (error 'type-error :datum vector :expected-type 'simple-vector)))
 
-;;; FIXME: It's difficult to not wholly subsume the C++ function cl:row-major-aref.
-(declaim (inline %row-major-aref))
+(declaim (inline %unsafe-vector-ref))
+(defun %unsafe-vector-ref (array index)
+  ;; FIXME: type inference should be able to remove the redundant
+  ;; checking that it's an array... maybe?
+  ;; FIXME: should be replaced with a macro loop over
+  ;; sys::+upgraded-array-element-types+ or suchlike.
+  (typecase array
+    ((simple-array t (*))
+     (cleavir-primop:aref array index t t t))
+    ;; character, base-char
+    ((simple-array double-float (*))
+     (cleavir-primop:aref array index double-float t nil))
+    ((simple-array single-float (*))
+     (cleavir-primop:aref array index single-float t nil))
+    ((simple-array ext:byte64 (*))
+     (cleavir-primop:aref array index ext:byte64 t nil))
+    ((simple-array ext:byte32 (*))
+     (cleavir-primop:aref array index ext:byte32 t nil))
+    ((simple-array ext:byte16 (*))
+     (cleavir-primop:aref array index ext:byte16 t nil))
+    ((simple-array ext:byte8 (*))
+     (cleavir-primop:aref array index ext:byte8 t nil))
+    ;; should be unreachable
+    (t (error "BUG: Unknown vector ~a" array))))
+
 (defun %row-major-aref (array index)
-  (if (typep array '(simple-array * (*))) ; vector that is simple
-      (let ((ats (core::vector-length array)))
-        (if (and (<= 0 index) (< index ats))
-            ;; the real thing
-            ;; FIXME: type inference should be able to remove the redundant
-            ;; checking that it's an array... maybe?
-            ;; FIXME: should be replaced with a macro loop over
-            ;; sys::+upgraded-array-element-types+ or suchlike.
-            (typecase array
-              ((simple-array t (*))
-               (cleavir-primop:aref array index t t t))
-              ;; character, base-char
-              ((simple-array double-float (*))
-               (cleavir-primop:aref array index double-float t nil))
-              ((simple-array single-float (*))
-               (cleavir-primop:aref array index single-float t nil))
-              ((simple-array ext:byte64 (*))
-               (cleavir-primop:aref array index ext:byte64 t nil))
-              ((simple-array ext:byte32 (*))
-               (cleavir-primop:aref array index ext:byte32 t nil))
-              ((simple-array ext:byte16 (*))
-               (cleavir-primop:aref array index ext:byte16 t nil))
-              ((simple-array ext:byte8 (*))
-               (cleavir-primop:aref array index ext:byte8 t nil))
-              (t ;; FIXME: eliminate this. we should be able to do it all.
-               (row-major-aref array index)))
-            (error "~a: ~d is not a valid row major index for ~a"
-                   '%row-major-aref index array)))
-      ;; FIXME: Could undisplace?
-      (row-major-aref array index)))
-
-;;; Okay, so what do we have to do to implement aref.
-;;; There's bounds checking, undisplacement, row major index computation,
-;;; and element type discrimination.
-;;; Well let's do row-major-aref first
-
-#+(or)
-(defun row-major-aref (array index)
-  ;; First we do a bounds check.
-  ;; If it's a simple array, we can directly access the length.
-  ;; Otherwise, we first do the bounds check, then undisplace.
-  ;; The bounds check has to be done before undisplacement
-  ;; since you can have a vector of length 2 displaced into
-  ;; an array of larger size, etc.
-  ;; This also tests array for being a vector.
-  (etypecase array
-    ((simple-array * (*))
-     (unless (and (<= 0 index) (< index (core::vector-length array)))
-       (error "~a: ~d is not a valid row major index for ~a"
-              'row-major-aref index array)))
-    ((array * (*))
-     (unless (and (<= 0 index) (< index (length array)))
-       (error "~a: ~d is not a valid row major index for ~a"
-              'row-major-aref index array))
-     ;; Now undisplace until we get a vector/simple.
-     (loop (multiple-value-bind (displacement offset)
-               ;; This has to be "actual" array displacement,
-               ;; i.e. for a simple multidimensional array it
-               ;; returns an underlying vector/simple.
-               (array-displacement array)
-             (if displacement
-                 (setf array displacement
-                       index (+ index offset))
-                 (return))))))
-  ;; Okay, now array is a vector/simple, and index is valid.
-  ;; This function takes care of element type discrimination.
-  (%unsafe-vector-ref array index))
+  ;; First, undisplace. This can be done independently
+  ;; of the index, meaning it could potentially be
+  ;; moved out of loops, though that can invite inconsistency
+  ;; in a multithreaded environment.
+  ;; FIXME: this should be multiple-value-bind,
+  ;; but that's not very optimized at this time.
+  ;; Really, it should be a separate 'undisplace' function.
+  (let ((underlying-array array) (offset 0))
+    (etypecase array
+      ((simple-array * (*))) ; already all set
+      (array
+       (loop (multiple-value-bind (displacement displaced-index-offset)
+                 (array-displacement array)
+               (if displacement
+                   (setf underlying-array displacement
+                         offset (+ offset displaced-index-offset))
+                   (return))))))
+    ;; Now bounds check. Use the original arguments.
+    (etypecase array
+      ((simple-array * (*))
+       (unless (and (<= 0 index) (< index (core::vector-length array)))
+         (error "~d is not a valid row-major index for ~a" index array)))
+      (array
+       (unless (and (<= 0 index) (< index (array-total-size array)))
+         (error "~d is not a valid row-major index for ~a" index array))))
+    ;; Okay, now array is a vector/simple, and index is valid.
+    ;; This function takes care of element type discrimination.
+    (%unsafe-vector-ref underlying-array (+ index offset))))
 
 (defun row-major-index-computer (array &rest subscripts)
   ;; assumes once-only is taken care of
@@ -565,9 +549,9 @@
              ,rmindex
              ,(if (= (length subscripts) 1)
                   `(error "Invalid index ~d for an array of total size ~d"
-                          ,(first subscripts) (array-total-size ,sarray))
+                          ',(first subscripts) (array-total-size ,sarray))
                   `(error "Invalid indices ~a for an array of total size ~d"
-                          ,subscripts (array-total-size ,sarray))))
+                          ',subscripts (array-total-size ,sarray))))
          ,rmindex))))
 
 #+(or)
@@ -588,7 +572,7 @@
   (etypecase sequence
     (cons
      (locally
-         (declare (optimize speed)
+         (declare ;(optimize speed)
                   (type cons sequence))
        (let ((length 1))
          (loop (let ((next (cdr sequence)))
