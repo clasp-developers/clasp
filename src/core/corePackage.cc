@@ -157,7 +157,7 @@ SYMBOL_EXPORT_SC_(CorePkg, some_list);
 SYMBOL_EXPORT_SC_(CorePkg, stack_closure);
 
 SYMBOL_EXPORT_SC_(CorePkg, make_source_pos_info);
-SYMBOL_EXPORT_SC_(CorePkg, STARinvalidated_dispatch_function_stackSTAR);
+//SYMBOL_EXPORT_SC_(CorePkg, STARinvalidated_dispatch_function_stackSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARtop_level_form_stackSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARloadHooksSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARmodule_startup_function_nameSTAR);
@@ -904,7 +904,7 @@ void CoreExposer_O::expose(core::Lisp_sp lisp, WhatToExpose what) const {
 
   break;
   case pythonClasses: {
-    IMPLEMENT_MEF(BF("Handle other packages"));
+    IMPLEMENT_MEF("Handle other packages");
   } break;
   case pythonFunctions:
 #ifdef USEBOOSTPYTHON
@@ -1071,6 +1071,8 @@ void CoreExposer_O::define_essential_globals(Lisp_sp lisp) {
   core::_sym_STARpollTicksPerGcSTAR->defparameter(make_fixnum(POLL_TICKS_PER_GC));
   comp::_sym_STARlowLevelTraceSTAR->defparameter(_Nil<T_O>());
   comp::_sym_STARlowLevelTracePrintSTAR->defparameter(_Nil<T_O>());
+  comp::_sym_STARsave_module_for_disassembleSTAR->defparameter(_Nil<core::T_O>());
+  comp::_sym_STARsaved_module_from_clasp_jitSTAR->defparameter(_Nil<core::T_O>());
   _sym_STARallCxxClassesSTAR->defparameter(_Nil<T_O>());
   _sym_STARtopLevelCommandHookSTAR->defparameter(_Nil<T_O>());
   _sym_STARllvmFunctionNameHookSTAR->defparameter(_Nil<T_O>());
@@ -1144,7 +1146,7 @@ void CoreExposer_O::define_essential_globals(Lisp_sp lisp) {
   _sym_STARallow_with_interruptsSTAR->defparameter(_lisp->_true());
   _sym_STARexit_backtraceSTAR->defparameter(_Nil<core::T_O>());
   clos::_sym__PLUS_the_standard_class_PLUS_->defparameter(_lisp->_Roots._TheStandardClass);
-  _sym_STARinvalidated_dispatch_function_stackSTAR->defparameter(_Nil<core::T_O>());
+//  _sym_STARinvalidated_dispatch_function_stackSTAR->defparameter(_Nil<core::T_O>());
   _sym_STARdebug_threadsSTAR->defparameter(_Nil<core::T_O>());
   _sym_STARdebug_dispatchSTAR->defparameter(_Nil<core::T_O>());
   _sym_STARdebug_valuesSTAR->defparameter(_Nil<core::T_O>());

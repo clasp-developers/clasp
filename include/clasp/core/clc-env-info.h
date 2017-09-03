@@ -28,7 +28,6 @@ THE SOFTWARE.
 #ifndef _core_env_info_H_
 #define _core_env_info_H_
 
-#include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
 #endif
 

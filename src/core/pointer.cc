@@ -24,6 +24,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
+#include <clasp/core/foundation.h>
 #include <clasp/core/common.h>
 #include <clasp/core/pointer.h>
 #include <clasp/core/wrappers.h>

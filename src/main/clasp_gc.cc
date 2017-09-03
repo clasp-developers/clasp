@@ -8018,8 +8018,6 @@ public:
  {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::ClosureWithSlots_O),_filePos), "_filePos" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::ClosureWithSlots_O),_lineno), "_lineno" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::ClosureWithSlots_O),_column), "_column" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::ClosureWithSlots_O),llvmFunction), "llvmFunction" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::ClosureWithSlots_O),_associatedFunctions), "_associatedFunctions" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::ClosureWithSlots_O),_lambdaList), "_lambdaList" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
 {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(core::ClosureWithSlots_O),_Slots._Data), "_Slots._Data" },
 {  variable_capacity, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::ClosureWithSlots_O),_Slots._Length), offsetof(SAFE_TYPE_MACRO(core::ClosureWithSlots_O),_Slots._Length), NULL },
@@ -8124,8 +8122,6 @@ public:
  {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::CompiledClosure_O),_lineno), "_lineno" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::CompiledClosure_O),_column), "_column" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::CompiledClosure_O),_closedEnvironment), "_closedEnvironment" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::CompiledClosure_O),llvmFunction), "llvmFunction" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::CompiledClosure_O),_associatedFunctions), "_associatedFunctions" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::CompiledClosure_O),_lambdaList), "_lambdaList" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
 { class_kind, KIND_LISPALLOC_core__InterpretedClosure_O, sizeof(core::InterpretedClosure_O), 0, "core::InterpretedClosure_O" },
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::InterpretedClosure_O),_name), "_name" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
@@ -8699,113 +8695,113 @@ obj_finalize_KIND_ROOTCLASSALLOC_clbind__detail__class_map:
 }
 obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__T_O__:
 {
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<core::T_O>>"));}
+  throw_hard_error("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<core::T_O>>");}
 obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__Cons_O__:
 {
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<core::Cons_O>>"));}
+  throw_hard_error("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<core::Cons_O>>");}
 obj_finalize_KIND_GCARRAY_gctools__GCArray_moveable_signed_char_:
 {
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCArray_moveable<signed char>"));}
+  throw_hard_error("Should never finalize containers gctools::GCArray_moveable<signed char>");}
 obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_core__T_O___:
 {
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::T_O>>>"));}
+  throw_hard_error("Should never finalize containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::T_O>>>");}
 obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_core__CacheRecord_:
 {
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<core::CacheRecord>"));}
+  throw_hard_error("Should never finalize containers gctools::GCVector_moveable<core::CacheRecord>");}
 obj_finalize_KIND_GCARRAY_gctools__GCArray_moveable_gctools__smart_ptr_core__T_O__:
 {
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCArray_moveable<gctools::smart_ptr<core::T_O>>"));}
+  throw_hard_error("Should never finalize containers gctools::GCArray_moveable<gctools::smart_ptr<core::T_O>>");}
 obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__SourceFileInfo_O__:
 {
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<core::SourceFileInfo_O>>"));}
+  throw_hard_error("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<core::SourceFileInfo_O>>");}
 obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__Symbol_O__:
 {
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<core::Symbol_O>>"));}
+  throw_hard_error("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<core::Symbol_O>>");}
 obj_finalize_KIND_GCARRAY_gctools__GCArray_moveable_unsigned_short_:
 {
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCArray_moveable<unsigned short>"));}
+  throw_hard_error("Should never finalize containers gctools::GCArray_moveable<unsigned short>");}
 obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__List_V__:
 {
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<core::List_V>>"));}
+  throw_hard_error("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<core::List_V>>");}
 obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_int_:
 {
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<int>"));}
+  throw_hard_error("Should never finalize containers gctools::GCVector_moveable<int>");}
 obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_core__KeywordArgument_:
 {
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<core::KeywordArgument>"));}
+  throw_hard_error("Should never finalize containers gctools::GCVector_moveable<core::KeywordArgument>");}
 obj_finalize_KIND_GCBITUNITCONTAINER1_gctools__GCBitUnitArray_moveable_1_unsigned_int_int_:
 {
-    THROW_HARD_ERROR(BF("Should never finalize gctools::GCBitUnitArray_moveable<1,unsigned int,int>"));
+  throw_hard_error("Should never finalize gctools::GCBitUnitArray_moveable<1,unsigned int,int>");
 }
 obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_core__AuxArgument_:
 {
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<core::AuxArgument>"));}
+  throw_hard_error("Should never finalize containers gctools::GCVector_moveable<core::AuxArgument>");}
 obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_clbind__ClassRep_O__:
 {
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<clbind::ClassRep_O>>"));}
+  throw_hard_error("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<clbind::ClassRep_O>>");}
 obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_core__DynamicBinding_:
 {
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<core::DynamicBinding>"));}
+  throw_hard_error("Should never finalize containers gctools::GCVector_moveable<core::DynamicBinding>");}
 obj_finalize_KIND_GCARRAY_gctools__GCArray_moveable_unsigned_char_:
 {
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCArray_moveable<unsigned char>"));}
+  throw_hard_error("Should never finalize containers gctools::GCArray_moveable<unsigned char>");}
 obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_core__T_O_P_:
 {
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<core::T_O *>"));}
+  throw_hard_error("Should never finalize containers gctools::GCVector_moveable<core::T_O *>");}
 obj_finalize_KIND_GCARRAY_gctools__GCArray_moveable_long_:
 {
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCArray_moveable<long>"));}
+  throw_hard_error("Should never finalize containers gctools::GCArray_moveable<long>");}
 obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_core__OptionalArgument_:
 {
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<core::OptionalArgument>"));}
+  throw_hard_error("Should never finalize containers gctools::GCVector_moveable<core::OptionalArgument>");}
 obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_core__SymbolStorage_:
 {
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<core::SymbolStorage>"));}
+  throw_hard_error("Should never finalize containers gctools::GCVector_moveable<core::SymbolStorage>");}
 obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_float_:
 {
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<float>"));}
+  throw_hard_error("Should never finalize containers gctools::GCVector_moveable<float>");}
 obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_core__SymbolClassPair_:
 {
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<core::SymbolClassPair>"));}
+  throw_hard_error("Should never finalize containers gctools::GCVector_moveable<core::SymbolClassPair>");}
 obj_finalize_KIND_GCARRAY_gctools__GCArray_moveable_short_:
 {
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCArray_moveable<short>"));}
+  throw_hard_error("Should never finalize containers gctools::GCArray_moveable<short>");}
 obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_double_:
 {
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<double>"));}
+  throw_hard_error("Should never finalize containers gctools::GCVector_moveable<double>");}
 obj_finalize_KIND_GCARRAY_gctools__GCArray_moveable_unsigned_long_:
 {
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCArray_moveable<unsigned long>"));}
+  throw_hard_error("Should never finalize containers gctools::GCArray_moveable<unsigned long>");}
 obj_finalize_KIND_GCARRAY_gctools__GCArray_moveable_float_:
 {
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCArray_moveable<float>"));}
+  throw_hard_error("Should never finalize containers gctools::GCArray_moveable<float>");}
 obj_finalize_KIND_GCARRAY_gctools__GCArray_moveable_double_:
 {
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCArray_moveable<double>"));}
+  throw_hard_error("Should never finalize containers gctools::GCArray_moveable<double>");}
 obj_finalize_KIND_GCARRAY_gctools__GCArray_moveable_unsigned_int_:
 {
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCArray_moveable<unsigned int>"));}
+  throw_hard_error("Should never finalize containers gctools::GCArray_moveable<unsigned int>");}
 obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_core__ExceptionEntry_:
 {
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<core::ExceptionEntry>"));}
+  throw_hard_error("Should never finalize containers gctools::GCVector_moveable<core::ExceptionEntry>");}
 obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__Package_O__:
 {
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<core::Package_O>>"));}
+  throw_hard_error("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<core::Package_O>>");}
 obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__SequenceStepper_O__:
 {
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<core::SequenceStepper_O>>"));}
+  throw_hard_error("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<core::SequenceStepper_O>>");}
 obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__SingleDispatchMethod_O__:
 {
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<core::SingleDispatchMethod_O>>"));}
+  throw_hard_error("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<core::SingleDispatchMethod_O>>");}
 obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__T_O__gctools__smart_ptr_core__T_O___:
 {
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<core::T_O>>>"));}
+  throw_hard_error("Should never finalize containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<core::T_O>>>");}
 obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_core__RequiredArgument_:
 {
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<core::RequiredArgument>"));}
+  throw_hard_error("Should never finalize containers gctools::GCVector_moveable<core::RequiredArgument>");}
 obj_finalize_KIND_GCARRAY_gctools__GCArray_moveable_int_:
 {
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCArray_moveable<int>"));}
+  throw_hard_error("Should never finalize containers gctools::GCArray_moveable<int>");}
 obj_finalize_KIND_LISPALLOC_asttooling__AstVisitor_O:
 {
     asttooling::AstVisitor_O* obj_gc_safe = reinterpret_cast<asttooling::AstVisitor_O*>(client);
@@ -11327,112 +11323,114 @@ obj_deallocate_unmanaged_instance_KIND_ROOTCLASSALLOC_clbind__detail__class_map:
 }
 obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__T_O__:
 {
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<core::T_O>>"));}
+  throw_hard_error("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<core::T_O>>");}
 obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__Cons_O__:
 {
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<core::Cons_O>>"));}
+  throw_hard_error("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<core::Cons_O>>");}
 obj_deallocate_unmanaged_instance_KIND_GCARRAY_gctools__GCArray_moveable_signed_char_:
 {
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCArray_moveable<signed char>"));}
+  throw_hard_error("Should never deallocate containers gctools::GCArray_moveable<signed char>");}
 obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_core__T_O___:
 {
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::T_O>>>"));}
+  throw_hard_error("Should never deallocate containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::T_O>>>");}
 obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_core__CacheRecord_:
 {
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<core::CacheRecord>"));}
+  throw_hard_error("Should never deallocate containers gctools::GCVector_moveable<core::CacheRecord>");}
 obj_deallocate_unmanaged_instance_KIND_GCARRAY_gctools__GCArray_moveable_gctools__smart_ptr_core__T_O__:
 {
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCArray_moveable<gctools::smart_ptr<core::T_O>>"));}
+  throw_hard_error("Should never deallocate containers gctools::GCArray_moveable<gctools::smart_ptr<core::T_O>>");}
 obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__SourceFileInfo_O__:
 {
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<core::SourceFileInfo_O>>"));}
+  throw_hard_error("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<core::SourceFileInfo_O>>");}
 obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__Symbol_O__:
 {
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<core::Symbol_O>>"));}
+  throw_hard_error("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<core::Symbol_O>>");}
 obj_deallocate_unmanaged_instance_KIND_GCARRAY_gctools__GCArray_moveable_unsigned_short_:
 {
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCArray_moveable<unsigned short>"));}
+  throw_hard_error("Should never deallocate containers gctools::GCArray_moveable<unsigned short>");}
 obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__List_V__:
 {
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<core::List_V>>"));}
+  throw_hard_error("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<core::List_V>>");}
 obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_int_:
 {
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<int>"));}
+  throw_hard_error("Should never deallocate containers gctools::GCVector_moveable<int>");}
 obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_core__KeywordArgument_:
 {
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<core::KeywordArgument>"));}
+  throw_hard_error("Should never deallocate containers gctools::GCVector_moveable<core::KeywordArgument>");}
 obj_deallocate_unmanaged_instance_KIND_GCBITUNITCONTAINER1_gctools__GCBitUnitArray_moveable_1_unsigned_int_int_:
 {
-    THROW_HARD_ERROR(BF("Should never deallocate gcbitunits gctools::GCBitUnitArray_moveable<1,unsigned int,int>"));}
+  throw_hard_error("Should never deallocate gcbitunits gctools::GCBitUnitArray_moveable<1,unsigned int,int>");}
 obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_core__AuxArgument_:
 {
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<core::AuxArgument>"));}
+  throw_hard_error("Should never deallocate containers gctools::GCVector_moveable<core::AuxArgument>");}
 obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_clbind__ClassRep_O__:
 {
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<clbind::ClassRep_O>>"));}
+  throw_hard_error("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<clbind::ClassRep_O>>");}
 obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_core__DynamicBinding_:
 {
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<core::DynamicBinding>"));}
+  throw_hard_error("Should never deallocate containers gctools::GCVector_moveable<core::DynamicBinding>");}
 obj_deallocate_unmanaged_instance_KIND_GCARRAY_gctools__GCArray_moveable_unsigned_char_:
 {
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCArray_moveable<unsigned char>"));}
+  throw_hard_error("Should never deallocate containers gctools::GCArray_moveable<unsigned char>");}
 obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_core__T_O_P_:
 {
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<core::T_O *>"));}
+  throw_hard_error("Should never deallocate containers gctools::GCVector_moveable<core::T_O *>");}
 obj_deallocate_unmanaged_instance_KIND_GCARRAY_gctools__GCArray_moveable_long_:
 {
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCArray_moveable<long>"));}
+  throw_hard_error("Should never deallocate containers gctools::GCArray_moveable<long>");}
 obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_core__OptionalArgument_:
 {
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<core::OptionalArgument>"));}
+  throw_hard_error("Should never deallocate containers gctools::GCVector_moveable<core::OptionalArgument>");}
 obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_core__SymbolStorage_:
 {
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<core::SymbolStorage>"));}
+  throw_hard_error("Should never deallocate containers gctools::GCVector_moveable<core::SymbolStorage>");}
 obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_float_:
 {
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<float>"));}
+  throw_hard_error("Should never deallocate containers gctools::GCVector_moveable<float>");}
 obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_core__SymbolClassPair_:
 {
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<core::SymbolClassPair>"));}
+  throw_hard_error("Should never deallocate containers gctools::GCVector_moveable<core::SymbolClassPair>");}
 obj_deallocate_unmanaged_instance_KIND_GCARRAY_gctools__GCArray_moveable_short_:
 {
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCArray_moveable<short>"));}
+  throw_hard_error("Should never deallocate containers gctools::GCArray_moveable<short>");}
 obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_double_:
 {
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<double>"));}
+  throw_hard_error("Should never deallocate containers gctools::GCVector_moveable<double>");}
 obj_deallocate_unmanaged_instance_KIND_GCARRAY_gctools__GCArray_moveable_unsigned_long_:
 {
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCArray_moveable<unsigned long>"));}
+  throw_hard_error("Should never deallocate containers gctools::GCArray_moveable<unsigned long>");}
 obj_deallocate_unmanaged_instance_KIND_GCARRAY_gctools__GCArray_moveable_float_:
 {
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCArray_moveable<float>"));}
+  throw_hard_error("Should never deallocate containers gctools::GCArray_moveable<float>");}
 obj_deallocate_unmanaged_instance_KIND_GCARRAY_gctools__GCArray_moveable_double_:
 {
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCArray_moveable<double>"));}
+  throw_hard_error("Should never deallocate containers gctools::GCArray_moveable<double>");}
 obj_deallocate_unmanaged_instance_KIND_GCARRAY_gctools__GCArray_moveable_unsigned_int_:
 {
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCArray_moveable<unsigned int>"));}
+  throw_hard_error("Should never deallocate containers gctools::GCArray_moveable<unsigned int>");}
 obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_core__ExceptionEntry_:
 {
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<core::ExceptionEntry>"));}
+  throw_hard_error("Should never deallocate containers gctools::GCVector_moveable<core::ExceptionEntry>");}
 obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__Package_O__:
 {
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<core::Package_O>>"));}
+  throw_hard_error("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<core::Package_O>>");}
 obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__SequenceStepper_O__:
 {
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<core::SequenceStepper_O>>"));}
+  throw_hard_error("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<core::SequenceStepper_O>>");}
 obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__SingleDispatchMethod_O__:
 {
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<core::SingleDispatchMethod_O>>"));}
+  throw_hard_error("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<core::SingleDispatchMethod_O>>");}
 obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__T_O__gctools__smart_ptr_core__T_O___:
 {
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<core::T_O>>>"));}
+  throw_hard_error("Should never deallocate containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<core::T_O>>>");}
 obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_core__RequiredArgument_:
 {
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<core::RequiredArgument>"));}
+  throw_hard_error("Should never deallocate containers gctools::GCVector_moveable<core::RequiredArgument>");
+}
 obj_deallocate_unmanaged_instance_KIND_GCARRAY_gctools__GCArray_moveable_int_:
 {
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCArray_moveable<int>"));}
+  throw_hard_error("Should never deallocate containers gctools::GCArray_moveable<int>")
+    ;}
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_asttooling__AstVisitor_O:
 {
     asttooling::AstVisitor_O* obj_gc_safe = reinterpret_cast<asttooling::AstVisitor_O*>(client);

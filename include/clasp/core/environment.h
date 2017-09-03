@@ -33,10 +33,9 @@ THE SOFTWARE.
 #include <string>
 #include <vector>
 #include <set>
-#include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
 #include <clasp/core/symbol.fwd.h>
-#include <clasp/core/holder.h>
+//#include <clasp/core/holder.h>
 //#i n c l u d e "stringSet.fwd.h"
 #include <clasp/core/hashTable.fwd.h>
 #include <clasp/core/environment.fwd.h>

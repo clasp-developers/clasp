@@ -42,7 +42,6 @@ $for isConst [[
               public:
               enum { NumParams = $numArgs };
               IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::TemplatedFunctionBase_O(entry_point,name), mptr(ptr) {};
-              DISABLE_NEW();
               virtual size_t templatedSizeof() const { return sizeof(*this);};
 
               static inline LCC_RETURN LISP_CALLING_CONVENTION()

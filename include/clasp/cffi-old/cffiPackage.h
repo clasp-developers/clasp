@@ -38,7 +38,6 @@ namespace cffi {
 class CffiExposer_O : public core::Exposer_O {
 private:
 public:
-  DISABLE_NEW();
   CffiExposer_O(core::Lisp_sp lisp) : Exposer_O(lisp, CffiPkg){};
   virtual void expose(core::Lisp_sp lisp, WhatToExpose what) const;
 };

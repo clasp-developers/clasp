@@ -26,7 +26,6 @@ $var NumArgs = 8
 		    virtual const char* describe() const { return "VariadicConstructorFunctor"; };
                     enum { NumParams = $numArgs };
                     VariadicConstructorFunction_O(core::T_sp name) : core::TemplatedFunctionBase_O(entry_point,name) {};
-                    DISABLE_NEW();
                     virtual size_t templatedSizeof() const { return sizeof(*this);};
                     static inline LCC_RETURN LISP_CALLING_CONVENTION()
                     {

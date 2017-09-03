@@ -60,10 +60,9 @@ public:
   typedef D(C::*MemPtr);
   MemPtr mptr;
  GetterMethoid(core::T_sp name, MemPtr ptr) : TemplatedFunctionBase_O(entry_point,name), mptr(ptr){};
-  DISABLE_NEW();
   virtual size_t templatedSizeof() const { return sizeof(*this); };
   static inline LCC_RETURN LISP_CALLING_CONVENTION() {
-    SIMPLE_ERROR(BF("What do I do here"));
+    SIMPLE_ERROR_SPRINTF("What do I do here");
   }
 };
 };
@@ -92,8 +91,7 @@ public:
   void setup_class(const string &makerName) {
     _G();
     if (IS_SYMBOL_UNDEFINED(OT::static_classSymbol())) {
-      SIMPLE_ERROR(BF("Attempting to add methods for "
-                      "class that isn't defined yet"));
+      SIMPLE_ERROR_SPRINTF("Attempting to add methods for class that isn't defined yet");
     }
     this->_ClassSymbol = OT::static_classSymbol();
     reg::lisp_registerClassSymbol<OT>(this->_ClassSymbol);

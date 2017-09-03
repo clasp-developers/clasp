@@ -1,7 +1,6 @@
 #ifndef functor_h
 #define functor_h
 
-#include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
 #include <clasp/core/symbol.h>
 
@@ -143,8 +142,6 @@ namespace core {
     virtual int column() const { return 0; };
     virtual LambdaListHandler_sp lambdaListHandler() const = 0;
     virtual T_sp lambda_list() const = 0;
-    CL_DEFMETHOD virtual void setAssociatedFunctions(List_sp funcs) = 0;
-    CL_DEFMETHOD virtual T_sp associatedFunctions() const {return _Nil<core::T_O>();};
     virtual string __repr__() const;
     virtual ~Function_O() {};
   };
@@ -244,7 +241,6 @@ namespace core {
     virtual List_sp declares() const {NOT_APPLICABLE();};
     virtual T_sp docstring() const {NOT_APPLICABLE();};
     virtual T_sp closedEnvironment() const { return _Nil<T_O>();};
-    virtual void setAssociatedFunctions(List_sp funcs) {NOT_APPLICABLE();};
   };
 
   class BuiltinClosure_O : public FunctionClosure_O {
@@ -289,8 +285,6 @@ namespace core {
   class ClosureWithSlots_O final : public core::FunctionClosure_O {
     LISP_CLASS(core,CorePkg,ClosureWithSlots_O,"ClosureWithSlots",core::FunctionClosure_O);
   public:
-    core::T_sp llvmFunction;
-    core::T_sp _associatedFunctions;
     core::T_sp _lambdaList;
   //! Slots must be the last field
     typedef core::T_sp value_type;
@@ -303,16 +297,11 @@ namespace core {
                      claspFunction ptr,
                      core::T_sp functionName,
                      core::Symbol_sp type,
-                     core::T_sp llvmFunc,
-                     core::T_sp assocFuncs,
                      core::T_sp ll,
                      SOURCE_INFO)
     : Base(ptr,functionName, type, SOURCE_INFO_PASS),
-      _associatedFunctions(assocFuncs),
       _lambdaList(ll), 
       _Slots(capacity,_Unbound<T_O>(),true) {};
-    void setAssociatedFunctions(core::List_sp assocFuncs) { this->_associatedFunctions = assocFuncs; };
-    T_sp associatedFunctions() const { return this->_associatedFunctions; };
     bool compiledP() const { return true; };
     core::T_sp lambda_list() const { return this->_lambdaList; };
     void setf_lambda_list(core::List_sp lambda_list) { this->_lambdaList = lambda_list; };
@@ -361,7 +350,6 @@ public:
   T_sp _docstring;
   List_sp _code;
 public:
-  DISABLE_NEW();
   InterpretedClosure_O(T_sp fn, Symbol_sp k, LambdaListHandler_sp llh, List_sp dec, T_sp doc, T_sp env, List_sp c, SOURCE_INFO);
   virtual size_t templatedSizeof() const { return sizeof(*this); };
   virtual const char *describe() const { return "InterpretedClosure"; };
@@ -409,22 +397,22 @@ class CompiledClosure_O : public core::ClosureWithFrame_O {
 //  friend void dump_funcs(core::CompiledFunction_sp compiledFunction);
   LISP_CLASS(core,CorePkg,CompiledClosure_O,"CompiledClosure",core::ClosureWithFrame_O);
 public:
-  core::T_sp llvmFunction;
-  core::T_sp _associatedFunctions;
   core::T_sp _lambdaList;
  public:
   virtual const char *describe() const { return "CompiledClosure"; };
   virtual size_t templatedSizeof() const { return sizeof(*this); };
 public:
- CompiledClosure_O(claspFunction fptr, core::T_sp functionName, core::Symbol_sp type, core::T_sp llvmFunc, core::T_sp renv, core::T_sp assocFuncs, core::T_sp ll, SOURCE_INFO)
-   : Base(fptr, functionName, type, renv, SOURCE_INFO_PASS), _associatedFunctions(assocFuncs), _lambdaList(ll){};
-  void setAssociatedFunctions(core::List_sp assocFuncs) { this->_associatedFunctions = assocFuncs; };
-    T_sp associatedFunctions() const { return this->_associatedFunctions; };
+ CompiledClosure_O(claspFunction fptr,
+                   core::T_sp functionName,
+                   core::Symbol_sp type,
+                   core::T_sp renv,
+                   core::T_sp ll,
+                   SOURCE_INFO)
+   : Base(fptr, functionName, type, renv, SOURCE_INFO_PASS), _lambdaList(ll){};
   bool compiledP() const { return true; };
   core::T_sp lambda_list() const;
   void setf_lambda_list(core::List_sp lambda_list);
   core::LambdaListHandler_sp lambdaListHandler() const { return _Nil<core::LambdaListHandler_O>(); };
-  DISABLE_NEW();
 };
 };
 #endif
@@ -447,9 +435,8 @@ namespace core {
   CompiledDispatchFunction_O(core::T_sp functionName, core::Symbol_sp type, core::DispatchFunction_fptr_type ptr, llvmo::ModuleHandle_sp module ) : Base(compiledDispatchFunctionDummyEntryPoint,functionName), _dispatchEntryPoint(ptr), _llvmModule(module) {};
     bool compiledP() const { return true; };
     DispatchFunction_fptr_type entryPoint() { return this->_dispatchEntryPoint;};
-    DISABLE_NEW();
     core::T_sp lambda_list() const { return Cons_O::createList(cl::_sym_generic_function, core::_sym_arguments); };
-    void setf_lambda_list(core::List_sp lambda_list) { SIMPLE_ERROR(BF("You cannot set the lambda-list of a compiled-dispatch-function")); };
+    void setf_lambda_list(core::List_sp lambda_list);
     CL_DEFMETHOD T_sp llvm_module() const { return this->_llvmModule;};
 
   public:
@@ -462,7 +449,6 @@ namespace core {
     Symbol_sp getKind() const { return kw::_sym_dispatch_function;};
     virtual int sourceFileInfoHandle() const {return 0; };
     virtual LambdaListHandler_sp lambdaListHandler() const {NOT_APPLICABLE();};
-    virtual void setAssociatedFunctions(List_sp funcs) {NOT_APPLICABLE();};
     virtual List_sp declares() const {NOT_APPLICABLE();};
     virtual bool macroP() const {NOT_APPLICABLE();};
 

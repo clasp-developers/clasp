@@ -60,7 +60,6 @@ public:
 
 public:
  GetterMethoid(core::T_sp name, VariablePtrType p) : core::TemplatedFunctionBase_O(entry_point,name), _MemberPtr(p){};
-  DISABLE_NEW();
   inline static LCC_RETURN LISP_CALLING_CONVENTION() {
     MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
     INCREMENT_FUNCTION_CALL_COUNTER(closure);
@@ -85,7 +84,6 @@ private:
   VariablePtrType _MemberPtr;
 public:
  GetterMethoid(core::T_sp name, VariablePtrType p) : TemplatedFunctionBase_O(entry_point,name), _MemberPtr(p){};
-  DISABLE_NEW();
   static inline LCC_RETURN LISP_CALLING_CONVENTION() {
     MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
     INCREMENT_FUNCTION_CALL_COUNTER(closure);

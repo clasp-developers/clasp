@@ -26,6 +26,7 @@ THE SOFTWARE.
 /* -^- */
 
 #include <sched.h>
+#include <sys/types.h>
 #include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
 #include <clasp/core/lisp.h>

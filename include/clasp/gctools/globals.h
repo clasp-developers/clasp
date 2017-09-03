@@ -28,7 +28,6 @@ THE SOFTWARE.
 #ifndef gctools_globals_H
 #define gctools_globals_H
 
-#include <clasp/core/foundation.h>
 namespace gctools {
 /*! Tagged pointer to the global nil */
 extern core::Symbol_O *global_tagged_Symbol_OP_nil;

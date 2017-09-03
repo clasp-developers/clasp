@@ -27,7 +27,6 @@ THE SOFTWARE.
 #ifndef _core_character_H
 #define _core_character_H
 
-#include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
 #include <clasp/core/array.fwd.h>
 #include <clasp/core/character.fwd.h>

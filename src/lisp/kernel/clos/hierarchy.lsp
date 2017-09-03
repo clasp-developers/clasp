@@ -138,7 +138,11 @@
       (lambda-list :initarg :lambda-list
        :accessor generic-function-lambda-list)
       #+clasp(specializer-profile :initarg :specializer-profile
-       :accessor generic-function-specializer-profile)
+              :accessor generic-function-specializer-profile)
+      #+(and clasp threads)(lock
+                            :initarg :lock
+                            :initform (mp:make-shared-mutex 'generic-function-lock)
+                            :accessor generic-function-lock)
       (argument-precedence-order 
        :initarg :argument-precedence-order
        :initform nil

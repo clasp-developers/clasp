@@ -35,7 +35,6 @@ THE SOFTWARE.
 #ifndef OBJECT_H //[
 #define OBJECT_H
 
-#include <clasp/core/foundation.h>
 #include <clasp/core/newhash.h>
 #include <clasp/core/commonLispPackage.fwd.h>
 #include <clasp/core/corePackage.fwd.h>
@@ -140,7 +139,7 @@ struct LispBases1 {
   typedef T_Base Base1;
   static inline bool baseClassSymbolsDefined() {
     if (IS_SYMBOL_UNDEFINED(Base1::static_classSymbol())) {
-      THROW_HARD_ERROR(BF("Base class is not defined yet"));
+      throw_hard_error("Base class is not defined yet");
     }
     return true;
   }
@@ -535,7 +534,7 @@ namespace core {
       General_O* general = x.unsafe_general();
       return general->eql_(y);
     }
-    SIMPLE_ERROR(BF("Bad eql comparison"));
+    SIMPLE_ERROR_SPRINTF("Bad eql comparison");
   };
 
   CL_LAMBDA(x y);
@@ -561,7 +560,7 @@ namespace core {
       General_O* general = x.unsafe_general();
       return general->equal(y);
     }
-    SIMPLE_ERROR(BF("Bad equal comparison"));
+    SIMPLE_ERROR_SPRINTF("Bad equal comparison");
   };
 
   extern int basic_compare(Number_sp na, Number_sp nb);
@@ -590,7 +589,7 @@ namespace core {
       general->sxhash_(hg);
       return;
     }
-    SIMPLE_ERROR(BF("Handle sxhash_ for object"));
+    SIMPLE_ERROR_SPRINTF("Handle sxhash_ for object");
   };
 };
 

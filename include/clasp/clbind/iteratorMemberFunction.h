@@ -59,7 +59,6 @@ public:
   virtual size_t templatedSizeof() const { return sizeof(*this); };
 
 public:
-  DISABLE_NEW();
   static LCC_RETURN LISP_CALLING_CONVENTION() {
     IteratorMethoid* closure = gctools::untag_general<IteratorMethoid*>((IteratorMethoid*)lcc_closure);
     INCREMENT_FUNCTION_CALL_COUNTER(closure);

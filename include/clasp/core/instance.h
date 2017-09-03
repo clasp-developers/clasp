@@ -27,24 +27,12 @@ THE SOFTWARE.
 #ifndef _core_instance_H_
 #define _core_instance_H_
 
-#include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
 #include <clasp/core/array.h>
 #include <clasp/core/hashTable.fwd.h>
 #include <clasp/core/instance.fwd.h>
 // may need more later
 #include <clasp/gctools/gc_interface.h>
-
-/*! Different values for Instance_O.isgf */
-#define CLASP_NOT_FUNCALLABLE 0
-#define CLASP_STANDARD_DISPATCH 1
-#define CLASP_RESTRICTED_DISPATCH 2
-#define CLASP_READER_DISPATCH 3
-#define CLASP_WRITER_DISPATCH 4
-#define CLASP_USER_DISPATCH 5
-#define CLASP_STRANDH_DISPATCH 6
-#define CLASP_INVALIDATED_DISPATCH 7
-
 
 template <>
 struct gctools::GCInfo<core::Instance_O> {
@@ -247,116 +235,6 @@ namespace gctools {
     }
   };
 };
-
-#if 0
-namespace core {
-  FORWARD(FuncallableInstance);
-};
-template <>
-struct gctools::GCInfo<core::FuncallableInstance_O> {
-  static bool constexpr NeedsInitialization = false;
-  static bool constexpr NeedsFinalization = false;
-  static GCInfo_policy constexpr Policy = normal;
-};
-#endif
-
-
-
-namespace core {
-#if 0
-  class FuncallableInstance_O : public Instance_O {
-    LISP_CLASS(core, CorePkg, FuncallableInstance_O, "FuncallableInstance",Instance_O);
-  // These must be exposed in core__class_slot_sanity_check()
-  public: // ctor/dtor for classes with shared virtual base
-  FuncallableInstance_O() : _isgf(CLASP_NOT_FUNCALLABLE), _entryPoint(NULL) {};
-    explicit FuncallableInstance_O(Class_sp metaClass) : Instance_O(metaClass) {};
-    virtual ~FuncallableInstance_O(){};
-  public:
-    DispatchFunction_fptr_type _entryPoint;
-    int _isgf;
-  public:
-    static Instance_sp createClassUncollectable(gctools::Stamp is,Class_sp metaClass, size_t number_of_slots, Creator_sp creator);
-    static Class_sp create(Symbol_sp symbol,Class_sp metaClass,Creator_sp creator);
-  
-  /*! Setup the instance nil value */
-  //	void setupInstanceNil();
-
-  public:
-    bool isCallable() const { return (bool)(this->_entryPoint); };
-  public: // These indices MUST match the order in +standard-generic-function-slots+
-    T_sp GFUN_NAME() const { return this->instanceRef(0); };
-    T_sp GFUN_SPECIALIZERS() const { return this->instanceRef(1); };
-    T_sp GFUN_COMB() const { return this->instanceRef(2); };
-    T_sp GFUN_DISPATCHER() const { return this->instanceRef(3);};
-    void GFUN_DISPATCHER_set(T_sp f)  { this->instanceSet(3,f);};
-    T_sp GFUN_CALL_HISTORY() const { return this->instanceRef(4);};
-    void GFUN_CALL_HISTORY_set(T_sp h);
-    T_sp GFUN_LAMBDA_LIST() const { return this->instanceRef(5);};
-    void GFUN_LAMBDA_LIST_set(T_sp lambda_list) {
-      if (this->instanceRef(5).unboundp() && lambda_list.nilp()) {
-        printf("%s:%d Ignoring GFUN_LAMBDA_LIST_SET - returning\n", __FILE__, __LINE__ );
-        return;
-      }
-      this->instanceSet(5,lambda_list);
-    };
-  public:
-  public:
-  // Add support for Function_O methods
-    CL_DEFMETHOD int isgf() const { return this->_isgf; };
-    T_sp functionName() const { ASSERT(this->isgf()); return this->GFUN_NAME(); };
-    virtual Symbol_sp functionKind() const { IMPLEMENT_ME(); };
-    virtual T_sp closedEnvironment() const { IMPLEMENT_ME(); };
-    virtual T_sp setSourcePosInfo(T_sp sourceFile, size_t filePos, int lineno, int column) { IMPLEMENT_ME(); };
-//  virtual T_mv functionSourcePos() const { IMPLEMENT_ME();;
-    virtual T_sp cleavir_ast() const { return _Nil<T_O>(); };
-    virtual void setf_cleavir_ast(T_sp ast) { SIMPLE_ERROR(BF("Generic functions cannot be inlined"));};
-    virtual List_sp declares() const { IMPLEMENT_ME(); };
-    virtual T_sp docstring() const { IMPLEMENT_ME(); };
-    virtual void *functionAddress() const { IMPLEMENT_ME(); };
-    virtual bool macroP() const { return false; };
-    virtual void set_kind(Symbol_sp k);
-    virtual Symbol_sp getKind() const { return kw::_sym_function; };
-    virtual int sourceFileInfoHandle() const { IMPLEMENT_ME(); };
-    virtual size_t filePos() const { return 0; }
-    virtual int lineNumber() const { return 0; }
-    virtual int column() const { return 0; };
-    virtual LambdaListHandler_sp lambdaListHandler() const { IMPLEMENT_ME(); };
-    virtual void setAssociatedFunctions(List_sp funcs) { NOT_APPLICABLE(); };
-  public: // The hard-coded indexes above are defined below to be used by Class
-    void initializeSlots(gctools::Stamp is, size_t numberOfSlots);
-    void initializeClassSlots(Creator_sp creator, gctools::Stamp class_stamp);
-    void ensureClosure(DispatchFunction_fptr_type entryPoint);
-    virtual void setf_lambda_list(List_sp lambda_list) { if (!this->_isgf) {SIMPLE_ERROR(BF("Cannot set lambda list of non gf function ll->%s") % _rep_(lambda_list));} this->GFUN_LAMBDA_LIST_set(lambda_list); }; //{ this->_lambda_list = lambda_list; };
-    virtual T_sp lambda_list() const { return this->GFUN_LAMBDA_LIST(); };
-  public:
-    virtual void LISP_INVOKE();
-    T_sp setFuncallableInstanceFunction(T_sp functionOrT);
-    T_sp userFuncallableInstanceFunction() const;
-    bool genericFunctionP() const;
-    static  LCC_RETURN LISP_CALLING_CONVENTION();
-    string __repr__() const;
-    virtual T_sp copyInstance() const;
-    virtual void describe(T_sp stream);
-
-  }; // FuncallableInstance class
-#endif
-}; // core namespace
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 namespace core {
   T_sp allocate_instance(Class_sp theClass, size_t numberOfSlots);

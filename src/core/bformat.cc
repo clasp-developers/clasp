@@ -26,6 +26,7 @@ THE SOFTWARE.
 /* -^- */
 //#define DEBUG_LEVEL_FULL
 
+#include <clasp/core/foundation.h>
 #include <clasp/core/common.h>
 #include <clasp/core/environment.h>
 #include <clasp/core/array.h>
@@ -144,6 +145,10 @@ CL_DEFUN T_sp cl__format(T_sp destination, T_sp control, List_sp args) {
         break;
       case 'a':
       case 'A':
+        tf << "%s";
+        break;
+      case 'v':
+      case 'V':
         tf << "%s";
         break;
       case '&':

@@ -21,7 +21,6 @@ public:
 virtual const char* describe() const { return "VariadicConstructorFunctor"; };
 enum { NumParams = 8 };
 VariadicConstructorFunction_O(core::T_sp name) : core::TemplatedFunctionBase_O(entry_point,name) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 static inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
@@ -99,7 +98,6 @@ public:
 virtual const char* describe() const { return "VariadicConstructorFunctor"; };
 enum { NumParams = 7 };
 VariadicConstructorFunction_O(core::T_sp name) : core::TemplatedFunctionBase_O(entry_point,name) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 static inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
@@ -172,7 +170,6 @@ public:
 virtual const char* describe() const { return "VariadicConstructorFunctor"; };
 enum { NumParams = 6 };
 VariadicConstructorFunction_O(core::T_sp name) : core::TemplatedFunctionBase_O(entry_point,name) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 static inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
@@ -239,7 +236,6 @@ public:
 virtual const char* describe() const { return "VariadicConstructorFunctor"; };
 enum { NumParams = 5 };
 VariadicConstructorFunction_O(core::T_sp name) : core::TemplatedFunctionBase_O(entry_point,name) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 static inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
@@ -301,7 +297,6 @@ public:
 virtual const char* describe() const { return "VariadicConstructorFunctor"; };
 enum { NumParams = 4 };
 VariadicConstructorFunction_O(core::T_sp name) : core::TemplatedFunctionBase_O(entry_point,name) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 static inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
@@ -358,7 +353,6 @@ public:
 virtual const char* describe() const { return "VariadicConstructorFunctor"; };
 enum { NumParams = 3 };
 VariadicConstructorFunction_O(core::T_sp name) : core::TemplatedFunctionBase_O(entry_point,name) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 static inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
@@ -410,7 +404,6 @@ public:
 virtual const char* describe() const { return "VariadicConstructorFunctor"; };
 enum { NumParams = 2 };
 VariadicConstructorFunction_O(core::T_sp name) : core::TemplatedFunctionBase_O(entry_point,name) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 static inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
@@ -457,7 +450,6 @@ public:
 virtual const char* describe() const { return "VariadicConstructorFunctor"; };
 enum { NumParams = 1 };
 VariadicConstructorFunction_O(core::T_sp name) : core::TemplatedFunctionBase_O(entry_point,name) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 static inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
@@ -499,7 +491,6 @@ public:
 virtual const char* describe() const { return "VariadicConstructorFunctor"; };
 enum { NumParams = 0 };
 VariadicConstructorFunction_O(core::T_sp name) : core::TemplatedFunctionBase_O(entry_point,name) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 static inline LCC_RETURN LISP_CALLING_CONVENTION()
 {

@@ -27,7 +27,6 @@ THE SOFTWARE.
 #ifndef _core_documentation_H_
 #define _core_documentation_H_
 
-#include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
 
 namespace core {

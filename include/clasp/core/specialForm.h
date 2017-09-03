@@ -31,13 +31,12 @@ THE SOFTWARE.
 #include <string>
 #include <vector>
 #include <set>
-#include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
 
 namespace core {
 
   inline LCC_RETURN specialFormDummyEntryPoint(LCC_ARGS_FUNCALL_ELLIPSIS) {
-    SIMPLE_ERROR(BF("Never call this"));
+    SIMPLE_ERROR_SPRINTF("Never call this");
   }
   
 
@@ -61,9 +60,9 @@ public:
 public: // initialize
   virtual bool isSpecialForm() { return true; };
 
-  void setf_lambda_list(List_sp lambda_list) {SIMPLE_ERROR(BF("special-form does not implement setf_lambda_list"));};
-  LambdaListHandler_sp lambdaListHandler() const { SIMPLE_ERROR(BF("special-form does not implement lambdaListHandler")); };
-  T_sp setSourcePosInfo(T_sp sourceFile, size_t filePos, int lineno, int column) { SIMPLE_ERROR(BF("special-form does not implement sourcePosInfo")); };
+  void setf_lambda_list(List_sp lambda_list) {SIMPLE_ERROR_SPRINTF("special-form does not implement setf_lambda_list");};
+  LambdaListHandler_sp lambdaListHandler() const { SIMPLE_ERROR_SPRINTF("special-form does not implement lambdaListHandler");} ;
+  T_sp setSourcePosInfo(T_sp sourceFile, size_t filePos, int lineno, int column) { SIMPLE_ERROR_SPRINTF("special-form does not implement sourcePosInfo"); } ;
   string __repr__() const;
   T_mv evaluate(List_sp args, T_sp environment);
   virtual T_sp cleavir_ast() const { NOT_APPLICABLE(); };
@@ -77,8 +76,6 @@ public: // initialize
   virtual T_sp closedEnvironment() const { NOT_APPLICABLE(); };
   virtual void *functionAddress() const { NOT_APPLICABLE(); };
   virtual void set_kind(Symbol_sp k) { NOT_APPLICABLE(); };
-  virtual void setAssociatedFunctions(List_sp funcs) { NOT_APPLICABLE(); };
-
   SpecialForm_O(const SpecialForm_O &ss); //!< Copy constructor
 
  SpecialForm_O(T_sp name) : Base(specialFormDummyEntryPoint,name) {};

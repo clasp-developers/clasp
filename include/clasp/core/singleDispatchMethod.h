@@ -27,7 +27,6 @@ THE SOFTWARE.
 #ifndef _singleDispatchMethod_H_
 #define _singleDispatchMethod_H_
 
-#include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
 #include <clasp/core/singleDispatchMethod.fwd.h>
 

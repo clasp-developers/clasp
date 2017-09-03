@@ -161,14 +161,14 @@
        (cleavir-ast-to-hir::invocation context)))))
 
 
-(defmethod cleavir-ast-to-hir:compile-ast ((ast cc-ast::simple-vector-length-ast) context)
+(defmethod cleavir-ast-to-hir:compile-ast ((ast cc-ast::vector-length-ast) context)
   (cleavir-ast-to-hir::assert-context ast context 1 1)
   (let ((temp (cleavir-ir:new-temporary)))
     (cleavir-ast-to-hir::compile-ast
-     (cc-ast::svl-ast-vector ast)
+     (cc-ast::vl-ast-vector ast)
      (cleavir-ast-to-hir::context
       (list temp)
-      (list (clasp-cleavir-hir::make-simple-vector-length-instruction
+      (list (clasp-cleavir-hir::make-vector-length-instruction
              temp (first (cleavir-ast-to-hir::results context))
              (first (cleavir-ast-to-hir::successors context))))
       (cleavir-ast-to-hir::invocation context)))))

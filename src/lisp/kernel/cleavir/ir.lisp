@@ -138,6 +138,8 @@
 
 (defun %and (x y &optional (label ""))
   (llvm-sys:create-and-value-value cmp:*irbuilder* x y label))
+(defun %or (x y &optional (label ""))
+  (llvm-sys:create-or-value-value cmp:*irbuilder* x y label))
 
 (defun %add (x y &optional (label ""))
   (llvm-sys:create-add cmp:*irbuilder* x y label))
@@ -164,6 +166,12 @@
 (defun %cond-br (test true-branch false-branch &key likely-true likely-false)
   (llvm-sys:create-cond-br cmp:*irbuilder* test true-branch false-branch nil))
 
+(defun %ret (val)
+  (cmp:irc-ret val))
+
+(defun %sub (minuend subtrahend &key (label "") nuw nsw)
+  (llvm-sys:create-sub cmp:*irbuilder* minuend subtrahend label nuw nsw))
+
 (defgeneric %sadd.with-overflow (x y abi))
 (defmethod %sadd.with-overflow (x y (abi abi-x86-64))
   (%intrinsic-call "llvm.sadd.with.overflow.i64" (list x y)))
@@ -177,12 +185,27 @@
   (%intrinsic-call "llvm.ssub.with.overflow.i32" (list x y)))
 
 (defun %shl (value shift &key (label "") nuw nsw)
-  (llvm-sys:create-shl-value-uint64
-   cmp:*irbuilder* value shift label nuw nsw))
+  "If shift is an integer, generate shl with a constant uint64.
+Otherwise do a variable shift."
+  (if (integerp shift)
+      (llvm-sys:create-shl-value-uint64
+       cmp:*irbuilder* value shift label nuw nsw)
+      (llvm-sys:create-shl-value-value
+       cmp:*irbuilder* value shift label nuw nsw)))
 
 (defun %lshr (value shift &key (label "") exact)
-  (llvm-sys:create-lshr-value-uint64
-   cmp:*irbuilder* value shift label exact))
+  "If shift is an integer, generate lshr with a constant uint64.
+Otherwise do a variable shift."
+  (if (integerp shift)
+      (llvm-sys:create-lshr-value-uint64
+       cmp:*irbuilder* value shift label exact)
+      (llvm-sys:create-lshr-value-value
+       cmp:*irbuilder* value shift label exact)))
+
+(defun %udiv (dividend divisor &key (label "") exact)
+  (llvm-sys:create-udiv cmp:*irbuilder* dividend divisor label exact))
+(defun %urem (dividend divisor &key (label ""))
+  (llvm-sys:create-urem cmp:*irbuilder* dividend divisor label))
 
 (defun %fadd (x y &optional (label "") fast-math-flags)
   (llvm-sys:create-fadd cmp:*irbuilder* x y label fast-math-flags))
@@ -205,12 +228,17 @@
      ,@body))
 
 
+(defun %gep-variable (object indices &optional (label "gep"))
+  (llvm-sys:create-in-bounds-gep cmp:*irbuilder* object indices label))
+
 (defun %gep (type object indices &optional (label "gep"))
-  "Check the type against the object type and if they match return the GEP"
+  "Check the type against the object type and if they match return the GEP.
+And convert everything to JIT constants."
+  (unless (equal type (llvm-sys:get-type object))
+    (error "%gep expected object of type ~a but got ~a of type ~a"
+           type object (llvm-sys:get-type object)))
   (let ((converted-indices (mapcar (lambda (x) (%i32 x)) indices)))
-    (if (not (equal type (llvm-sys:get-type object)))
-        (error "%gep expected object of type ~a but got ~a of type ~a" type object (llvm-sys:get-type object))
-        (llvm-sys:create-in-bounds-gep cmp:*irbuilder* object converted-indices label))))
+    (%gep-variable object converted-indices label)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;

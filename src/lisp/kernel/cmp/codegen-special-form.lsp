@@ -59,10 +59,7 @@
       (compile-lambda-function lambda-or-lambda-block env)
     (if (null lambda-name) (error "The lambda doesn't have a name"))
     (if result
-        (let ((funcs (compile-reference-to-literal (if *generate-compile-file-load-time-values*
-                                                       nil
-                                                       *all-functions-for-one-compile*)))
-              (lambda-list (compile-reference-to-literal lambda-list)))
+        (let ((lambda-list (compile-reference-to-literal lambda-list)))
           ;; TODO:   Here walk the source code in lambda-or-lambda-block and
           ;; get the line-number/column for makeCompiledFunction
           (irc-intrinsic "makeCompiledFunction" 
@@ -73,7 +70,6 @@
                          (irc-size_t-*current-source-pos-info*-lineno)
                          (irc-size_t-*current-source-pos-info*-column)
                          (compile-reference-to-literal lambda-name)
-                         funcs 
                          (irc-renv env)
                          lambda-list)
           (values compiled-fn lambda-name)))))
@@ -127,7 +123,7 @@
   "Evaluate forms discarding results but keep last one"
   (cmp-log "About to codegen-progn with forms: %s\n" forms)
   (cmp-log "Dumping the module\n")
-  (cmp-log-dump *the-module*)
+  (cmp-log-dump-module *the-module*)
   (if forms
       (let ((temp-val (irc-alloca-tsp :label "temp")))
         (do* ((cur forms (cdr cur))

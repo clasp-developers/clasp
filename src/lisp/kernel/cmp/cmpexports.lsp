@@ -10,7 +10,6 @@
           irc-function-create
           irc-bclasp-function-create
           %fn-prototype%
-          *all-functions-for-one-compile*
           *cleavir-compile-file-hook*
           *cleavir-compile-hook*
           *compile-print*
@@ -80,12 +79,14 @@
           calling-convention-write-registers-to-multiple-values
           describe-constants-table
           cmp-log
-          cmp-log-dump
+          cmp-log-dump-module
+          cmp-log-dump-function
           irc-create-call
           irc-create-invoke
           compile-file-to-module
-          link-intrinsics-module
-          optimize-module
+          jit-link-builtins-module
+          optimize-module-for-compile
+          optimize-module-for-compile-file
           codegen-rtv
           codegen
           compile-error-if-not-enough-arguments
@@ -157,10 +158,9 @@
           module-make-global-string
           make-boot-function-global-variable
           llvm-link
-          link-intrinsics-module
+          jit-link-builtins-module
           load-bitcode
           initialize-calling-convention
-          set-associated-funcs
           treat-as-special-operator-p
           typeid-core-unwind
           walk-form-for-source-info

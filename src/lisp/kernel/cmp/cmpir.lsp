@@ -48,7 +48,7 @@
 
 
 (defun irc-personality-function ()
-  (get-function-or-error *the-module* "__gxx_personality_v0"))
+  (get-or-declare-function-or-error *the-module* "__gxx_personality_v0"))
 
 (defun irc-set-cleanup (landpad val)
   (llvm-sys:set-cleanup landpad val))
@@ -494,7 +494,7 @@
 (defun irc-low-level-trace (&optional where)
   (if (member where *features*)
       (progn
-        (let ((llt (get-function-or-error *the-module* "lowLevelTrace")))
+        (let ((llt (get-or-declare-function-or-error *the-module* "lowLevelTrace")))
           (llvm-sys:create-call-array-ref *irbuilder* llt (list (jit-constant-i32 *next-low-level-trace-index*)) ""))
         (setq *next-low-level-trace-index* (+ 1 *next-low-level-trace-index*)))
       nil))
@@ -1184,23 +1184,28 @@ Write T_O* pointers into the current multiple-values array starting at the (offs
 	  (error ":tsp*-or-tmv* can only be specified as the first argument of an intrinsic function"))
       (equal required-type given-type)))
 
+(defun get-primitives ()
+  (if (and (boundp '*primitives*) *primitives*)
+      *primitives*
+      (setf *primitives* (primitives-in-thread))))
+
 (defun throw-if-mismatched-arguments (fn-name args)
-  (let* ((info (gethash fn-name *primitives*))
-	 (return-ty (car info))
-	 (required-args-ty (cadr info))
-	 (passed-args-ty (mapcar #'(lambda (x)
-				     (if (llvm-sys:llvm-value-p x)
-					 (if (llvm-sys:valid x)
+  (let* ((info (gethash fn-name (get-primitives)))
+         (return-ty (primitive-return-type info))
+         (required-args-ty (primitive-argument-types info))
+         (passed-args-ty (mapcar #'(lambda (x)
+                                     (if (llvm-sys:llvm-value-p x)
+                                         (if (llvm-sys:valid x)
                                              (llvm-sys:get-type x)
                                              (error "Invalid (NULL pointer) value ~a about to be passed to intrinsic function ~a" x fn-name))
-					 (core:class-name-as-string x)))
-				 args))
-	 (i 1))
+                                         (core:class-name-as-string x)))
+                                 args))
+         (i 1))
     (mapc #'(lambda (x y z)
-	      (unless (matching-arguments x y i)
-		(error "Constructing call to intrinsic ~a - mismatch of arg#~a value[~a], expected type ~a - received type ~a" fn-name i z x y))
-	      (setq i (1+ i))
-	      ) required-args-ty passed-args-ty args)))
+              (unless (matching-arguments x y i)
+                (error "Constructing call to intrinsic ~a - mismatch of arg#~a value[~a], expected type ~a - received type ~a" fn-name i z x y))
+              (setq i (1+ i))
+              ) required-args-ty passed-args-ty args)))
 
 (defun irc-create-invoke (entry-point args unwind-dest &optional (label ""))
   ;;  (check-debug-info-setup *irbuilder*)
@@ -1236,21 +1241,28 @@ Write T_O* pointers into the current multiple-values array starting at the (offs
       (progn
         (irc-create-call function args label))))
 
-(defun irc-intrinsic-call-or-invoke (function-name real-args &optional (label "") (landing-pad *current-unwind-landing-pad-dest*))
+(defun irc-intrinsic-call-or-invoke (function-name args &optional (label "") (landing-pad *current-unwind-landing-pad-dest*))
   "landing-pad is either a landing pad or NIL (depends on function)"
-  (throw-if-mismatched-arguments function-name real-args)
-  (let* ((args            real-args)
-         (the-function    (get-function-or-error *the-module* function-name (car args)))
-         (function-throws (not (llvm-sys:does-not-throw the-function)))
-         (code            (cond
-                            ((and landing-pad function-throws)
-                             (irc-create-invoke the-function args landing-pad label))
-                            (t
-                             (irc-create-call the-function args label))))
-         (_               (when (llvm-sys:does-not-return the-function)
-                            (irc-unreachable)
-                            (irc-begin-block (irc-basic-block-create "from-invoke-that-never-returns")))))
-    code))
+  (throw-if-mismatched-arguments function-name args)
+  (multiple-value-bind (the-function primitive-info)
+      (get-or-declare-function-or-error *the-module* function-name (car args))
+    (let* ((function-throws (not (llvm-sys:does-not-throw the-function)))
+           (code            (cond
+                              ((and landing-pad function-throws)
+                               (irc-create-invoke the-function args landing-pad label))
+                              (t
+                               (irc-create-call the-function args label))))
+           (_               (when (llvm-sys:does-not-return the-function)
+                              (irc-unreachable)
+                              (irc-begin-block (irc-basic-block-create "from-invoke-that-never-returns")))))
+      #+(or)(warn "Does add-param-attr work yet")
+      ;;; FIXME: Do I need to add attributes to the return value of the call
+      (dolist (index-attributes (primitive-argument-attributes primitive-info))
+        (let ((index (car index-attributes))
+              (attributes (cdr index-attributes)))
+          (dolist (attribute attributes)
+            (llvm-sys:add-param-attr code index attribute))))
+      code)))
 
 (defun irc-intrinsic-call (function-name args &optional (label ""))
   (irc-intrinsic-call-or-invoke function-name args label nil))
@@ -1294,7 +1306,7 @@ Write T_O* pointers into the current multiple-values array starting at the (offs
           (progn
             (bformat t "!!!!!!!!!!! Function in module failed to verify !!!!!!!!!!!!!!!!!!!\n")
             (bformat t "---------------- dumping function to assist in debugging\n")
-            (llvm-sys:dump fn)
+            (cmp:dump-function fn)
             (bformat t "!!!!!!!!!!! ------- see above ------- !!!!!!!!!!!!!!!!!!!\n")
             (bformat t "llvm::verifyFunction error[%s]\n" error-msg)
             (if continue
@@ -1302,26 +1314,59 @@ Write T_O* pointers into the current multiple-values array starting at the (offs
                 (error "Failed function verify")))
           (cmp-log "--------------  Function verified OK!!!!!!!\n")))))
 
+(defun resolve-dispatch-name (name first-argument info)
+  (let* ((required-first-argument-type (car (primitive-argument-types info)))
+         (dispatch-name (dispatch-function-name
+                         name
+                         (if (and first-argument (equal required-first-argument-type +tsp*-or-tmv*+))
+                             (llvm-sys:get-type first-argument)
+                             nil))))
+    #+(or)(bformat t "Looking for: %s  first-argument: %s  dispatch-function-name: %s  required-first-argument-type: %s\n" name first-argument dispatch-name required-first-argument-type)
+    dispatch-name))
 
+(defun declare-function-in-module (module dispatch-name first-argument primitive-info)
+  (let ((return-ty (primitive-return-type primitive-info))
+        (argument-types (let ((arg-ty (primitive-argument-types primitive-info)))
+                          (if (eq (car arg-ty) +tsp*-or-tmv*+)
+                              (cons (llvm-sys:get-type first-argument) (cdr arg-ty))
+                              arg-ty)))
+        (return-attributes (primitive-return-attributes primitive-info))
+        (argument-attributes (primitive-argument-attributes primitive-info))
+        (varargs (getf (primitive-properties primitive-info) :varargs))
+        (does-not-throw (getf (primitive-properties primitive-info) :does-not-throw))
+        (does-not-return (getf (primitive-properties primitive-info) :does-not-return))
+        fnattrs)
+    (when does-not-throw (push 'llvm-sys:attribute-no-unwind fnattrs))
+    (when does-not-return (push 'llvm-sys:attribute-no-return fnattrs))
+    (push '("no-frame-pointer-elim" "false") fnattrs)
+    (push "no-frame-pointer-elim-non-leaf" fnattrs)
+    (let ((function (cmp:irc-function-create (llvm-sys:function-type-get return-ty argument-types varargs)
+                                             'llvm-sys::External-linkage
+                                             dispatch-name
+                                             module
+                                             :function-attributes fnattrs)))
+      #+(or)(bformat t "Created function: %s arg-ty: %s\n" function argument-types)
+      (when return-attributes
+        (dolist (attribute return-attributes)
+          (llvm-sys:add-fn-attr function attribute)))
+      (dolist (index-attributes argument-attributes)
+        (let ((index (car index-attributes))
+              (attributes (cdr index-attributes)))
+          (dolist (attribute attributes)
+            (llvm-sys:add-attribute function index attribute))))
+      function)))
 
-(defun get-function-or-error (module name &optional first-argument)
-  "Return the function with (name) or throw an error.
-If the *primitives* hashtable says that the function with (name) requires a first argument type indicated by
-+tsp*-or-tmv*+ then use the first argument type to create a function-name prefixed with sp_ or mv_"
-  (let ((primitive-entry (gethash name *primitives*)))
-    (unless primitive-entry (error "Could not find function ~a in *primitives*" name))
-    (let* ((required-first-argument-type (car (cadr primitive-entry)))
-	   (dispatch-name (dispatch-function-name
-                           name
-                           (if (and first-argument (equal required-first-argument-type +tsp*-or-tmv*+))
-                               (llvm-sys:get-type first-argument)
-                               nil))))
-      (let ((f (llvm-sys:get-function module dispatch-name)))
-        (or f (error "Could not llvm-sys:get-function ~a with name: ~a" dispatch-name name))
-	(if (llvm-sys:valid f)
-	    f
-	    (error "Could not find function: ~a" dispatch-name))))))
-
+(defun get-or-declare-function-or-error (module name &optional first-argument)
+  #++(bformat t "Looking for function %s first arg: %s\n" name first-argument)
+  (let ((info (gethash name (get-primitives))))
+    #++(bformat t "   --> %s\n" info)
+    (unless info (error "Could not find function ~a in *primitives*" name))
+    (let ((dispatch-name (resolve-dispatch-name name first-argument info)))
+      (let ((func (llvm-sys:get-function module dispatch-name)))
+        (unless func
+          (setf func (declare-function-in-module module dispatch-name first-argument info)))
+        #++(bformat t "     FUNCTION -> %s\n" func)
+        (values func info)))))
 
 (defun irc-global-symbol (sym env)
   "Return an llvm GlobalValue for a symbol"

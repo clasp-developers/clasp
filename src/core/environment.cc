@@ -34,6 +34,8 @@ THE SOFTWARE.
 //#define DEBUG_LEVEL_FULL
 
 #include <string.h>
+
+#include <clasp/core/foundation.h>
 #include <clasp/core/common.h>
 //#i n c l u d e "stringSet.h"
 #include <clasp/core/symbolTable.h>
@@ -219,7 +221,7 @@ CL_DEFMETHOD T_sp Environment_O::getParentEnvironment() const {
 }
 
 T_mv Environment_O::clasp_lookupMetadata(T_sp env, Symbol_sp key) {
-  IMPLEMENT_MEF(BF("Checkout Environment_O::lookupMetadata - it doesn't look like we do much yet"));
+  IMPLEMENT_MEF("Checkout Environment_O::lookupMetadata - it doesn't look like we do much yet");
 }
 
 T_sp Environment_O::clasp_getActivationFrame(T_sp tenv) {

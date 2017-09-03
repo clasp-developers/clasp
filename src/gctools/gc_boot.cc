@@ -183,7 +183,7 @@ void build_kind_field_layout_tables()
         break;
     default:
         printf("%s:%d Illegal Layout_code table command: %d\n", __FILE__, __LINE__, codes[idx].cmd);
-        THROW_HARD_ERROR(BF("The Layout_code table contained an illegal command: %d\n") % codes[idx].cmd);
+        throw_hard_error_bad_layout_command(codes[idx].cmd);
     }
   }
 }

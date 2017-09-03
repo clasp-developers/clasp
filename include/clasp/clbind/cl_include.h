@@ -27,7 +27,6 @@ THE SOFTWARE.
 #ifndef clbind_cl_include_H
 #define clbind_cl_include_H
 
-#include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
 #include <clasp/core/lisp.h>
 

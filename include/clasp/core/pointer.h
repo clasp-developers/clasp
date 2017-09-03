@@ -27,7 +27,6 @@ THE SOFTWARE.
 #ifndef _core__pointer_H_
 #define _core__pointer_H_
 
-#include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
 #include <clasp/core/pointer.fwd.h>
 

@@ -27,6 +27,7 @@ THE SOFTWARE.
 //#define DEBUG_LEVEL_FULL
 
 #include <boost/format.hpp>
+#include <clasp/core/foundation.h>
 #include <clasp/core/common.h>
 #include <clasp/core/numbers.h>
 #include <clasp/core/symbol.h>
@@ -68,7 +69,7 @@ void Bignum_O::sxhash_(HashGenerator &hg) const {
 }
 
 gc::Fixnum Bignum_O::as_int_() const {
-  IMPLEMENT_MEF(BF("Implement conversion of Bignum to Fixnum"));
+  IMPLEMENT_MEF("Implement conversion of Bignum to Fixnum");
   if (this->_value.fits_sint_p()) {
     return ((this->_value.get_si()));
   }

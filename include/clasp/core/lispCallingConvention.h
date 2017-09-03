@@ -328,7 +328,7 @@ namespace gctools {
 #ifdef _DEBUG_BUILD
 #define SETUP_CLOSURE(Type,var) \
   if (!gc::TaggedCast<Type*,core::T_O*>::isA(lcc_closure)) { \
-    SIMPLE_ERROR(BF("Bad cast of closure %p to type: %s") % (void*)lcc_closure % #Type ); \
+    SIMPLE_ERROR_SPRINTF("Bad cast of closure %p to type: %s", (void*)lcc_closure, #Type ); \
   } \
   SETUP_CLOSURE_(Type,var);
 #else
@@ -413,10 +413,10 @@ inline gctools::return_type funcall_consume_valist_(gc::Tagged func_tagged, VaLi
 #undef APPLY_TO_VA_LIST_CASE
   default:
       printf("%s:%d Handle functions with arity %lu for funcall or reduce the number of args in this call\n", __FILE__, __LINE__, nargs);
-      SIMPLE_ERROR(BF("Illegal arity %lu for funcall") % nargs);
+      SIMPLE_ERROR_SPRINTF("Illegal arity %lu for funcall",  nargs);
       break;
   }
-  SIMPLE_ERROR(BF("Unsupported arity %lu must be less than %lu") % nargs % CALL_ARGUMENTS_LIMIT );
+  SIMPLE_ERROR_SPRINTF("Unsupported arity %lu must be less than %lu",  nargs, CALL_ARGUMENTS_LIMIT );
 }
 
 

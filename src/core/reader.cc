@@ -27,6 +27,7 @@ THE SOFTWARE.
 //#define DEBUG_LEVEL_FULL
 
 #include <string>
+#include <clasp/core/foundation.h>
 #include <clasp/core/common.h>
 #include <clasp/core/corePackage.h>
 #include <clasp/core/sourceFileInfo.h>
@@ -143,19 +144,19 @@ T_sp Reader_O::parseString(const string &chars, bool sawEscape) {
       goto INTERPRET_SYMBOL;
     }
 #if 0
-	    if ( lastChar == 'l' || lastChar == 'L')
-	    {
-		LOG(BF("last character is l/L"));
-		lli = strtoll(beginChar,&lastValid,10);
-		if ( lastValid == endChar-1 )
-		{
-		    if ( this->suppressRead() ) return _Nil<T_O>();
-		    LOG(BF("Returning LongLongInt"));
-		    LongLongInt_sp oll = LongLongInt_O::create(lli,_lisp);
-		    return oll;
-		}
-		goto INTERPRET_SYMBOL;
-	    }
+    if ( lastChar == 'l' || lastChar == 'L')
+    {
+      LOG(BF("last character is l/L"));
+      lli = strtoll(beginChar,&lastValid,10);
+      if ( lastValid == endChar-1 )
+      {
+        if ( this->suppressRead() ) return _Nil<T_O>();
+        LOG(BF("Returning LongLongInt"));
+        LongLongInt_sp oll = LongLongInt_O::create(lli,_lisp);
+        return oll;
+      }
+      goto INTERPRET_SYMBOL;
+    }
 #endif
     li = strtol(beginChar, &lastValid, 10);
     LOG(BF("beginChar(%X) endChar(%X) lastValid(%X)") % beginChar % endChar % lastValid);
@@ -168,7 +169,7 @@ T_sp Reader_O::parseString(const string &chars, bool sawEscape) {
     }
     goto INTERPRET_SYMBOL;
   }
-INTERPRET_SYMBOL:
+ INTERPRET_SYMBOL:
   if (this->suppressRead())
     return _Nil<T_O>();
   //	transform(feature.begin(),feature.end(),feature.begin(),::toUpper);
@@ -306,8 +307,8 @@ T_sp Reader_O::primitive_read(bool eofErrorP, T_sp eofValue, bool recursiveP) {
       break;
     }
     case sharpVerticalBar:
-      this->skipToMatchingVerticalBarSharp();
-      break;
+        this->skipToMatchingVerticalBarSharp();
+        break;
     case sharpBackslash: {
       stringstream ss;
       int iread = 0;
@@ -431,7 +432,7 @@ T_sp Reader_O::primitive_read(bool eofErrorP, T_sp eofValue, bool recursiveP) {
     }
   }
 
-RETURN:
+ RETURN:
   if (result.nilp())
     return _Nil<T_O>();
   return result;
@@ -575,18 +576,18 @@ Token Reader_O::nextToken(string &chars, bool &sawEscape) {
   char c = this->nextChar();
   switch (c) {
   case '(':
-    LOG(BF("Token[%c] - openParen") % c);
-    return openParen;
+      LOG(BF("Token[%c] - openParen") % c);
+      return openParen;
   case ')':
-    LOG(BF("Token[)] - closeParen"));
-    return closeParen;
+      LOG(BF("Token[)] - closeParen"));
+      return closeParen;
   case '\'':
-    LOG(BF("Token['] - singleQuote"));
-    return singleQuote;
+      LOG(BF("Token['] - singleQuote"));
+      return singleQuote;
   case '"':
-    LOG(BF("Token[\"] - doubleQuote"));
-    chars = this->readDoubleQuoteString();
-    return quotedString;
+      LOG(BF("Token[\"] - doubleQuote"));
+      chars = this->readDoubleQuoteString();
+      return quotedString;
   case '#': {
     LOG(BF("Token[#] - sharp"));
     char p = this->peekChar();
@@ -676,3 +677,4 @@ List_sp Reader_O::readDelimitedList(char endChar, bool recursiveP) {
   return oCdr(first);
 }
 };
+

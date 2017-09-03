@@ -114,21 +114,23 @@
     #+(or)(warn "Linking fasl with -fvisibility=default - use an exported symbol list in the future")
     (cond
       ((member :target-os-darwin *features*)
-       (ext:run-clang `(,@options
-                        ,@all-object-files
+       (let ((clang-args `(,@options
+                           ,@all-object-files
 ;;;                                 "-macosx_version_min" "10.10"
-                        "-flto=thin"
-                        "-flat_namespace"
-                        #+(or)"-fvisibility=default"
-                        "-undefined" "suppress"
-                        ,@*debug-link-options*
-                        #+(or)"-Wl,-save-temps"
-                        "-bundle"
+                           "-flto=thin"
+                           "-flat_namespace"
+                           #+(or)"-fvisibility=default"
+                           "-undefined" "suppress"
+                           ,@*debug-link-options*
+                           #+(or)"-Wl,-save-temps"
+                           "-bundle"
 ;;;                        ,@link-flags
 ;;;                        ,(bformat nil "-Wl,-object_path_lto,%s.lto.o" exec-file)
-                        "-o"
-                        ,bundle-file)
-                      :output-file-name bundle-file))
+                           "-o"
+                           ,bundle-file)))
+         (when (member :debug-run-clang *features*)
+           (bformat t "execute-link-fasl   clang-args -> %s\n" clang-args))
+         (ext:run-clang clang-args :output-file-name bundle-file)))
       ((member :target-os-linux *features*)
        ;; Linux needs to use clang to link
        (ext:run-clang `(#+(or)"-v"
@@ -184,7 +186,6 @@
   "Link a bunch of modules together, return the linked module"
   (with-compiler-env (conditions)
     (let* ((module (llvm-create-module (pathname-name output-pathname)))
-           (*primitives* (primitives-in-module module))
            (*compile-file-pathname* (pathname (merge-pathnames output-pathname)))
            (*compile-file-truename* (translate-logical-pathname *compile-file-pathname*))
            (bcnum 0))
@@ -246,13 +247,16 @@
                     lisp-bitcode-files
                     (target-backend (default-target-backend)))
   (let* ((*target-backend* target-backend)
-         (intrinsics-bitcode-path (core:build-intrinsics-bitcode-pathname link-type))
-         (all-bitcode (list* intrinsics-bitcode-path lisp-bitcode-files))
+         (intrinsics-bitcode-path (core:build-inline-bitcode-pathname link-type :intrinsics))
+         (builtins-bitcode-path (core:build-inline-bitcode-pathname link-type :builtins))
+         (all-bitcode (list* builtins-bitcode-path intrinsics-bitcode-path lisp-bitcode-files))
          (output-pathname (pathname output-pathname)))
     (cond
       ((eq link-type :executable)
        (execute-link-executable output-pathname all-bitcode))
       ((eq link-type :fasl)
+       (when (member :debug-run-clang *features*)
+         (bformat t "In llvm-link -> link-type :fasl all-bitcode -> %s\n" all-bitcode))
        (execute-link-fasl output-pathname all-bitcode))
       (t (error "Cannot link format ~a" link-type)))
     output-pathname))

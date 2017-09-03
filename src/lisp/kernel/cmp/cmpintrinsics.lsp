@@ -230,8 +230,8 @@ Boehm and MPS use a single pointer"
 (define-symbol-macro %tmv**% (llvm-sys:type-get-pointer-to %tmv*%))
 
 (define-symbol-macro %gcvector-tsp% (llvm-sys:struct-type-get *llvm-context* (list %size_t% %size_t% %tsp%) nil))
-(define-symbol-macro %gcvector-symsp% (llvm-sys:struct-type-get *llvm-context*(list %size_t% %size_t% %symsp%) nil))
-(define-symbol-macro %vec0-tsp% (llvm-sys:struct-type-get *llvm-context*(list %gcvector-tsp%) nil))
+(define-symbol-macro %gcvector-symsp% (llvm-sys:struct-type-get *llvm-context* (list %size_t% %size_t% %symsp%) nil))
+(define-symbol-macro %vec0-tsp% (llvm-sys:struct-type-get *llvm-context* (list %gcvector-tsp%) nil))
 (define-symbol-macro %vec0-symsp% (llvm-sys:struct-type-get *llvm-context* (list %gcvector-symsp%) nil))
 
 ;; Define the LoadTimeValue_O struct - right now just put in a dummy i32 - later put real fields here
@@ -761,7 +761,6 @@ and initialize it with an array consisting of one function pointer."
 
 
 
-
 ;;; Define what ltvc_xxx functions return
 (define-symbol-macro %ltvc-return% %void%)
 
@@ -834,10 +833,12 @@ It has appending linkage.")
   (if *compile-debug-dump-module*
       (let* ((output-path (compile-quick-module-pathname file-name-modifier)))
         (let* ((output-name (namestring output-path))
-               (fout (open output-name :direction :output)))
+               fout)
           (unwind-protect
-               (llvm-sys:dump-module module fout)
-            (close fout))))))
+               (progn
+                 (setf fout (open output-name :direction :output))
+                 (llvm-sys:dump-module module fout))
+            (when fout (close fout)))))))
 
 (defun quick-module-pathname (name-modifier)
   "If called under COMPILE-FILE the modules are dumped into the
@@ -851,7 +852,7 @@ they are dumped into /tmp"
   "If called under COMPILE-FILE the modules are dumped into the
 same directory as the COMPILE-FILE output.  If called under COMPILE
 they are dumped into /tmp"
-  (cmp-log "About to dump module\n")
+  (cmp-log "About to dump module - %s\n" name-modifier)
   (if *compile-file-output-pathname*
       (compile-file-quick-module-dump module name-modifier)
       (compile-quick-module-dump module name-modifier)))

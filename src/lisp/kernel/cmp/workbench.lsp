@@ -1,7 +1,5 @@
 (in-package :cl-user)
 
-(load "sys:kernel;cmp;cmpgf.lsp")
-
 (progn
   (defgeneric foo (x))
   (defmethod foo ((x integer)) :integer)
@@ -32,10 +30,32 @@
   (bar 1.2)
   (bar "asdf"))
 
-
+(print "Hello")
 (time (progn (print "foo") (dotimes (i 1000000) (foo 1))))
 
+(print  "Hello")
 
+(trace compile-file)
+(trace cmp::compile-file-to-module)
+(trace clasp-cleavir::cleavir-compile-file-form)
+(trace clasp-cleavir::compile-form)
+(trace clasp-cleavir::translate)
+(trace clasp-cleavir::compile-form-to-mir)
+(trace cleavir-generate-ast:generate-ast)
+(trace clasp-cleavir-ast:hoist-load-time-value)
+(trace cleavir-ast-to-hir:compile-toplevel)
+(trace clasp-cleavir:convert-funcalls)
+(trace clasp-cleavir::my-hir-transformations)
+(trace clasp-cleavir::quick-draw-hir)
+(trace cleavir-ir:hir-to-mir)
+(trace cc-mir:assign-mir-instruction-datum-ids)
+(trace clasp-cleavir:finalize-unwind-and-landing-pad-instructions)
+(trace cmp::jit-add-module-return-function)
+
+(trace cleavir-generate-ast::convert)
+(trace cleavir-generate-ast::convert-special)
+
+(print "hello")
 (time (progn (print "bar") (dotimes (i 1000000) (bar 1))))
 
 ;;; --------------------------------------------------

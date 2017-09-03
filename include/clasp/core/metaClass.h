@@ -38,12 +38,11 @@ THE SOFTWARE.
 #include <boost/graph/adjacency_list.hpp>
 #include <boost/graph/topological_sort.hpp>
 #pragma clang diagnostic pop
-#include <clasp/core/foundation.h>
 #include <clasp/core/array.h>
 #include <clasp/core/object.fwd.h>
 #include <clasp/core/numbers.fwd.h>
 #include <clasp/core/specializer.h>
-#include <clasp/core/holder.h>
+//#include <clasp/core/holder.h>
 #include <clasp/core/instance.h>
 
 #if 0
@@ -326,7 +325,6 @@ namespace core {
   public:
     typedef core::Creator_O TemplatedBase;
   public:
-    DISABLE_NEW();
   public:
     size_t templatedSizeof() const { return sizeof(BuiltInObjectCreator<Class_O>); };
     bool creates_classes() const { return true; };

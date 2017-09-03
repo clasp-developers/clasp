@@ -27,7 +27,6 @@ THE SOFTWARE.
 #ifndef methodptr_H
 #define methodptr_H
 
-#include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
 
 namespace core {

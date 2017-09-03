@@ -76,9 +76,9 @@
   (with-unique-names (%vector %count)
     (when setter
       (setf body `((macrolet ((,setter (value)
-                                `(reckless (si::aset ,',%vector
-                                                     ,',index
-                                                     ,value))))
+                                `(reckless (si:row-major-aset ,',%vector
+                                                              ,',index
+                                                              ,value))))
                      ,@body))))
     (if from-end
 	`(do* ((,%vector ,vector)

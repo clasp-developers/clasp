@@ -33,7 +33,6 @@ THE SOFTWARE.
 #include <atomic>
 #include <clasp/gctools/configure_memory.h>
 #include <clasp/gctools/hardErrors.h>
-#include <clasp/core/foundation.h>
 
 #ifdef USE_BOEHM
 #ifdef CLASP_THREADS
@@ -606,7 +605,7 @@ namespace gctools {
   inline void throwIfInvalidClient(core::T_O *client) {
     Header_s *header = (Header_s *)ClientPtrToBasePtr(client);
     if (header->invalidP()) {
-      THROW_HARD_ERROR(BF("The client pointer at %p is invalid!\n") % (void *)client);
+      throw_hard_error_bad_client((void*)client);
     }
   }
 
@@ -766,8 +765,7 @@ void *SmartPtrToBasePtr(smart_ptr<T> obj) {
   if (obj.objectp()) {
     ptr = reinterpret_cast<void *>(reinterpret_cast<char *>(obj.untag_object()) - sizeof(Header_s));
   } else {
-    THROW_HARD_ERROR(BF("Bad pointer for SmartPtrToBasePtr"));
-    //            ptr = reinterpret_cast<void*>(obj.px_ref());
+    throw_hard_error("Bad pointer for SmartPtrToBasePtr");
   }
   return ptr;
 }

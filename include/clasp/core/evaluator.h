@@ -27,7 +27,6 @@ THE SOFTWARE.
 #ifndef evaluator_H
 #define evaluator_H
 
-#include <clasp/core/foundation.h>
 #include <clasp/core/ql.h>
 #include <clasp/core/evaluator.fwd.h>
 #include <clasp/core/activationFrame.h>
@@ -85,11 +84,10 @@ extern void evaluateIntoActivationFrame(ActivationFrame_sp af, List_sp args, T_s
 template <class... Args>
 inline T_mv applyLastArgsPLUSFirst(T_sp fn, List_sp argsPLUS, Args&&... args) {
   Function_sp func;
-  unlikely_if (!cl__functionp(fn)) {
-    func = interpreter_lookup_function_or_error(fn, _Nil<T_O>());
-  } else {
-    ASSERT(gc::IsA<Function_sp>(func));
+  if (cl__functionp(fn)) {
     func = gc::As_unsafe<Function_sp>(fn);
+  } else {
+    func = interpreter_lookup_function_or_error(fn, _Nil<T_O>());
   }
   int numArgsPassed = sizeof...(Args);
   int numArgsPlus = argsPLUS.consp() ? argsPLUS.unsafe_cons()->proper_list_length() : 0;

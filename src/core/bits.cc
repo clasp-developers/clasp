@@ -775,7 +775,7 @@ CL_DEFUN T_sp cl__logbitp(Integer_sp p, Integer_sp x) {
       i = mpz_tstbit(gc::As<Bignum_sp>(x)->as_mpz_().get_mpz_t(), n);
     }
   } else {
-    IMPLEMENT_MEF(BF("Convert the code below to something Clasp can use"));
+    IMPLEMENT_MEF("Convert the code below to something Clasp can use");
 #if 0
     assert_type_non_negative_integer(p);
     if (CLASP_FIXNUMP(x))

@@ -31,11 +31,10 @@ THE SOFTWARE.
 #include <string>
 #include <vector>
 #include <set>
-#include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
 #include <clasp/core/hashTable.fwd.h>
 #include <clasp/core/bignum.fwd.h>
-#include <clasp/core/holder.h>
+//#include <clasp/core/holder.h>
 #include <clasp/core/mpPackage.h>
 #include <clasp/core/wrappers.h>
 

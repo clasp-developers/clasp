@@ -1,5 +1,4 @@
 
-#include <clasp/core/foundation.h>
 #include <clasp/gctools/containers.h>
 #include <clasp/core/nativeVector.fwd.h>
 #include <clasp/core/cxxObject.h>

@@ -266,7 +266,7 @@ T_sp Instance_O::instanceRef(size_t idx) const {
   return ((*this->_Rack)[idx+1]);
 }
 T_sp Instance_O::instanceSet(size_t idx, T_sp val) {
-#if 1
+#if 0
   if (idx == REF_CLASS_INSTANCE_STAMP) {
     string className = "UNBOUND-CLASS";
     if (this->_Class == _lisp->_Roots._TheStandardClass ) {

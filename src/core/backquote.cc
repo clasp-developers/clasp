@@ -40,6 +40,7 @@ THE SOFTWARE.
 
 #define TRACK_CONS 0
 
+#include <clasp/core/foundation.h>
 #include <clasp/core/common.h>
 #include <clasp/core/environment.h>
 #include <clasp/core/ql.h>

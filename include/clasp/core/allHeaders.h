@@ -24,7 +24,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
 #include <clasp/core/lisp.h>
 #include <clasp/core/cons.h>
@@ -93,7 +92,7 @@ THE SOFTWARE.
 #include <clasp/core/hashTableEql.h>
 #include <clasp/core/hashTableEqual.h>
 #include <clasp/core/hashTableEqualp.h>
-#include <clasp/core/holder.h>
+//#include <clasp/core/holder.h>
 #include <clasp/core/ifthenelse.h>
 #include <clasp/core/initializeClasses.h>
 #include <clasp/core/instance.fwd.h>

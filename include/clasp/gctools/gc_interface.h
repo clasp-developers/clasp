@@ -26,7 +26,6 @@ THE SOFTWARE.
 /* -^- */
 #ifndef GC_INTERFACE_H
 #define GC_INTERFACE_H
-#include <clasp/core/foundation.h>
 
 //
 // All class forward declarations

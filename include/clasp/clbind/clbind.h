@@ -27,7 +27,6 @@ THE SOFTWARE.
 #ifndef clbind_H
 #define clbind_H
 
-#include <clasp/core/foundation.h>
 #include <clasp/core/arguments.h>
 #include <clasp/clbind/scope.h>
 #include <clasp/clbind/function.h>

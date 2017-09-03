@@ -31,13 +31,12 @@ THE SOFTWARE.
 
 #include <alloca.h>
 #include <utility>
-#include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
 #include <clasp/core/activationFrame.fwd.h>
 #include <clasp/core/loadTimeValues.fwd.h>
 #include <clasp/core/environment.h>
 #include <clasp/core/sequence.h>
-#include <clasp/core/holder.h>
+//#include <clasp/core/holder.h>
 
 // may need more later
 //#include GC_INTERFACE_HEADER
@@ -88,7 +87,7 @@ virtual T_sp currentVisibleEnvironment() const;
 #ifdef DEBUG_ASSERT
     T_sp p((gctools::Tagged)parent);
     if (!(p.nilp() || p.asOrNull<Environment_O>()) ) {
-      SIMPLE_ERROR(BF("Activation frame is not an activation frame - it is a %s") % _rep_(p));
+      SIMPLE_ERROR_SPRINTF("Activation frame is not an activation frame - it is a %s", _rep_(p).c_str());
     }
 #endif
   }
@@ -106,7 +105,7 @@ public:
   };
 
   /*! Access a function */
-  Function_sp function(int idx) const { THROW_HARD_ERROR(BF("Subclass must implement function(idx)")); };
+  Function_sp function(int idx) const { throw_hard_error("Subclass must implement function(idx)"); };
 
 #if 0
   List_sp asCons(int start = 0) const {

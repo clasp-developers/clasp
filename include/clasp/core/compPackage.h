@@ -27,7 +27,6 @@ THE SOFTWARE.
 #ifndef _compiler_H
 #define _compiler_H
 
-#include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
 #include <clasp/core/compPackage.fwd.h>
 

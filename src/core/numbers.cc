@@ -32,6 +32,7 @@ THE SOFTWARE.
 
 #include <boost/format.hpp>
 
+#include <clasp/core/foundation.h>
 #include <clasp/core/common.h>
 #include <clasp/core/numbers.h>
 #include <clasp/core/multipleValues.h>
@@ -1699,7 +1700,7 @@ LongFloat LongFloat_O::as_long_float() const {
 }
 
 Integer_sp LongFloat_O::castToInteger() const {
-  IMPLEMENT_MEF(BF("How do I cast the value to a bignum?"));
+  IMPLEMENT_MEF("How do I cast the value to a bignum?");
 #if 0
   if (this->_Value < 0) {
     double f = -this->_Value;
@@ -2883,7 +2884,7 @@ fixint(T_sp x) {
   if (core__fixnump(x))
     return unbox_fixnum(gc::As<Fixnum_sp>(x));
   if (core__bignump(x)) {
-    IMPLEMENT_MEF(BF("Implement convert Bignum to fixint"));
+    IMPLEMENT_MEF("Implement convert Bignum to fixint");
   }
   ERROR_WRONG_TYPE_ONLY_ARG(cl::_sym_fixnum, x, cl::_sym_fixnum);
   UNREACHABLE();

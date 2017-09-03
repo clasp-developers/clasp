@@ -27,7 +27,6 @@ THE SOFTWARE.
 #ifndef _core_accessor_H_
 #define _core_accessor_H_
 
-#include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
 
 namespace core {

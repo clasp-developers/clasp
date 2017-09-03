@@ -29,6 +29,7 @@ THE SOFTWARE.
 #include <float.h>
 #include <math.h>
 
+#include <clasp/core/foundation.h>
 #include <clasp/core/lisp.h>
 #include <clasp/core/numerics.h>
 #ifdef darwin

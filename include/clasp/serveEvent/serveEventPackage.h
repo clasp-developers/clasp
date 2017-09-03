@@ -37,7 +37,6 @@ namespace serveEvent {
 class ServeEventExposer_O : public core::Exposer_O {
 private:
 public:
-  DISABLE_NEW();
   ServeEventExposer_O(core::Lisp_sp lisp) : Exposer_O(lisp, ServeEventPkg){};
   virtual void expose(core::Lisp_sp lisp, WhatToExpose what) const;
 };

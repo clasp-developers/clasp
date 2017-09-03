@@ -27,7 +27,6 @@ public:
 enum { NumParams = 18 };
 VariadicFunctor(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : TemplatedFunctionBase_O(&MyType::entry_point,name,funcType,
     SOURCE_INFO_PASS), fptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
 static inline LCC_RETURN entry_point(LCC_ARGS_ELLIPSIS)
@@ -86,7 +85,6 @@ public:
 enum { NumParams = 17 };
 VariadicFunctor(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : TemplatedFunctionBase_O(&MyType::entry_point,name,funcType,
     SOURCE_INFO_PASS), fptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
 static inline LCC_RETURN entry_point(LCC_ARGS_ELLIPSIS)
@@ -144,7 +142,6 @@ public:
 enum { NumParams = 16 };
 VariadicFunctor(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : TemplatedFunctionBase_O(&MyType::entry_point,name,funcType,
     SOURCE_INFO_PASS), fptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
 static inline LCC_RETURN entry_point(LCC_ARGS_ELLIPSIS)
@@ -199,7 +196,6 @@ public:
 enum { NumParams = 15 };
 VariadicFunctor(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : TemplatedFunctionBase_O(&MyType::entry_point,name,funcType,
     SOURCE_INFO_PASS), fptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
 static inline LCC_RETURN entry_point(LCC_ARGS_ELLIPSIS)
@@ -252,7 +248,6 @@ public:
 enum { NumParams = 14 };
 VariadicFunctor(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : TemplatedFunctionBase_O(&MyType::entry_point,name,funcType,
     SOURCE_INFO_PASS), fptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
 static inline LCC_RETURN entry_point(LCC_ARGS_ELLIPSIS)
@@ -304,7 +299,6 @@ public:
 enum { NumParams = 13 };
 VariadicFunctor(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : TemplatedFunctionBase_O(&MyType::entry_point,name,funcType,
     SOURCE_INFO_PASS), fptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
 static inline LCC_RETURN entry_point(LCC_ARGS_ELLIPSIS)
@@ -355,7 +349,6 @@ public:
 enum { NumParams = 12 };
 VariadicFunctor(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : TemplatedFunctionBase_O(&MyType::entry_point,name,funcType,
     SOURCE_INFO_PASS), fptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
 static inline LCC_RETURN entry_point(LCC_ARGS_ELLIPSIS)
@@ -405,7 +398,6 @@ public:
 enum { NumParams = 11 };
 VariadicFunctor(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : TemplatedFunctionBase_O(&MyType::entry_point,name,funcType,
     SOURCE_INFO_PASS), fptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
 static inline LCC_RETURN entry_point(LCC_ARGS_ELLIPSIS)
@@ -454,7 +446,6 @@ public:
 enum { NumParams = 10 };
 VariadicFunctor(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : TemplatedFunctionBase_O(&MyType::entry_point,name,funcType,
     SOURCE_INFO_PASS), fptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
 static inline LCC_RETURN entry_point(LCC_ARGS_ELLIPSIS)
@@ -502,7 +493,6 @@ public:
 enum { NumParams = 9 };
 VariadicFunctor(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : TemplatedFunctionBase_O(&MyType::entry_point,name,funcType,
     SOURCE_INFO_PASS), fptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
 static inline LCC_RETURN entry_point(LCC_ARGS_ELLIPSIS)
@@ -549,7 +539,6 @@ public:
 enum { NumParams = 8 };
 VariadicFunctor(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : TemplatedFunctionBase_O(&MyType::entry_point,name,funcType,
     SOURCE_INFO_PASS), fptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
 static inline LCC_RETURN entry_point(LCC_ARGS_ELLIPSIS)
@@ -594,7 +583,6 @@ public:
 enum { NumParams = 7 };
 VariadicFunctor(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : TemplatedFunctionBase_O(&MyType::entry_point,name,funcType,
     SOURCE_INFO_PASS), fptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
 static inline LCC_RETURN entry_point(LCC_ARGS_ELLIPSIS)
@@ -638,7 +626,6 @@ public:
 enum { NumParams = 6 };
 VariadicFunctor(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : TemplatedFunctionBase_O(&MyType::entry_point,name,funcType,
     SOURCE_INFO_PASS), fptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
 static inline LCC_RETURN entry_point(LCC_ARGS_ELLIPSIS)
@@ -681,7 +668,6 @@ public:
 enum { NumParams = 5 };
 VariadicFunctor(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : TemplatedFunctionBase_O(&MyType::entry_point,name,funcType,
     SOURCE_INFO_PASS), fptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
 static inline LCC_RETURN entry_point(LCC_ARGS_ELLIPSIS)
@@ -723,7 +709,6 @@ public:
 enum { NumParams = 4 };
 VariadicFunctor(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : TemplatedFunctionBase_O(&MyType::entry_point,name,funcType,
     SOURCE_INFO_PASS), fptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
 static inline LCC_RETURN entry_point(LCC_ARGS_ELLIPSIS)
@@ -764,7 +749,6 @@ public:
 enum { NumParams = 3 };
 VariadicFunctor(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : TemplatedFunctionBase_O(&MyType::entry_point,name,funcType,
     SOURCE_INFO_PASS), fptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
 static inline LCC_RETURN entry_point(LCC_ARGS_ELLIPSIS)
@@ -804,7 +788,6 @@ public:
 enum { NumParams = 2 };
 VariadicFunctor(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : TemplatedFunctionBase_O(&MyType::entry_point,name,funcType,
     SOURCE_INFO_PASS), fptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
 static inline LCC_RETURN entry_point(LCC_ARGS_ELLIPSIS)
@@ -843,7 +826,6 @@ public:
 enum { NumParams = 1 };
 VariadicFunctor(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : TemplatedFunctionBase_O(&MyType::entry_point,name,funcType,
     SOURCE_INFO_PASS), fptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
 static inline LCC_RETURN entry_point(LCC_ARGS_ELLIPSIS)
@@ -881,7 +863,6 @@ public:
 enum { NumParams = 0 };
 VariadicFunctor(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : TemplatedFunctionBase_O(&MyType::entry_point,name,funcType,
     SOURCE_INFO_PASS), fptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
 static inline LCC_RETURN entry_point(LCC_ARGS_ELLIPSIS)
@@ -919,7 +900,6 @@ public:
 enum { NumParams = 18 };
 VariadicFunctor(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : TemplatedFunctionBase_O(&MyType::entry_point,name,funcType,
     SOURCE_INFO_PASS), fptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
 static inline LCC_RETURN entry_point(LCC_ARGS_ELLIPSIS)
@@ -977,7 +957,6 @@ public:
 enum { NumParams = 17 };
 VariadicFunctor(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : TemplatedFunctionBase_O(&MyType::entry_point,name,funcType,
     SOURCE_INFO_PASS), fptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
 static inline LCC_RETURN entry_point(LCC_ARGS_ELLIPSIS)
@@ -1033,7 +1012,6 @@ public:
 enum { NumParams = 16 };
 VariadicFunctor(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : TemplatedFunctionBase_O(&MyType::entry_point,name,funcType,
     SOURCE_INFO_PASS), fptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
 static inline LCC_RETURN entry_point(LCC_ARGS_ELLIPSIS)
@@ -1088,7 +1066,6 @@ public:
 enum { NumParams = 15 };
 VariadicFunctor(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : TemplatedFunctionBase_O(&MyType::entry_point,name,funcType,
     SOURCE_INFO_PASS), fptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
 static inline LCC_RETURN entry_point(LCC_ARGS_ELLIPSIS)
@@ -1141,7 +1118,6 @@ public:
 enum { NumParams = 14 };
 VariadicFunctor(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : TemplatedFunctionBase_O(&MyType::entry_point,name,funcType,
     SOURCE_INFO_PASS), fptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
 static inline LCC_RETURN entry_point(LCC_ARGS_ELLIPSIS)
@@ -1193,7 +1169,6 @@ public:
 enum { NumParams = 13 };
 VariadicFunctor(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : TemplatedFunctionBase_O(&MyType::entry_point,name,funcType,
     SOURCE_INFO_PASS), fptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
 static inline LCC_RETURN entry_point(LCC_ARGS_ELLIPSIS)
@@ -1244,7 +1219,6 @@ public:
 enum { NumParams = 12 };
 VariadicFunctor(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : TemplatedFunctionBase_O(&MyType::entry_point,name,funcType,
     SOURCE_INFO_PASS), fptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
 static inline LCC_RETURN entry_point(LCC_ARGS_ELLIPSIS)
@@ -1294,7 +1268,6 @@ public:
 enum { NumParams = 11 };
 VariadicFunctor(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : TemplatedFunctionBase_O(&MyType::entry_point,name,funcType,
     SOURCE_INFO_PASS), fptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
 static inline LCC_RETURN entry_point(LCC_ARGS_ELLIPSIS)
@@ -1343,7 +1316,6 @@ public:
 enum { NumParams = 10 };
 VariadicFunctor(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : TemplatedFunctionBase_O(&MyType::entry_point,name,funcType,
     SOURCE_INFO_PASS), fptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
 static inline LCC_RETURN entry_point(LCC_ARGS_ELLIPSIS)
@@ -1391,7 +1363,6 @@ public:
 enum { NumParams = 9 };
 VariadicFunctor(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : TemplatedFunctionBase_O(&MyType::entry_point,name,funcType,
     SOURCE_INFO_PASS), fptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
 static inline LCC_RETURN entry_point(LCC_ARGS_ELLIPSIS)
@@ -1437,7 +1408,6 @@ public:
 enum { NumParams = 8 };
 VariadicFunctor(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : TemplatedFunctionBase_O(&MyType::entry_point,name,funcType,
     SOURCE_INFO_PASS), fptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
 static inline LCC_RETURN entry_point(LCC_ARGS_ELLIPSIS)
@@ -1482,7 +1452,6 @@ public:
 enum { NumParams = 7 };
 VariadicFunctor(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : TemplatedFunctionBase_O(&MyType::entry_point,name,funcType,
     SOURCE_INFO_PASS), fptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
 static inline LCC_RETURN entry_point(LCC_ARGS_ELLIPSIS)
@@ -1526,7 +1495,6 @@ public:
 enum { NumParams = 6 };
 VariadicFunctor(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : TemplatedFunctionBase_O(&MyType::entry_point,name,funcType,
     SOURCE_INFO_PASS), fptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
 static inline LCC_RETURN entry_point(LCC_ARGS_ELLIPSIS)
@@ -1569,7 +1537,6 @@ public:
 enum { NumParams = 5 };
 VariadicFunctor(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : TemplatedFunctionBase_O(&MyType::entry_point,name,funcType,
     SOURCE_INFO_PASS), fptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
 static inline LCC_RETURN entry_point(LCC_ARGS_ELLIPSIS)
@@ -1611,7 +1578,6 @@ public:
 enum { NumParams = 4 };
 VariadicFunctor(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : TemplatedFunctionBase_O(&MyType::entry_point,name,funcType,
     SOURCE_INFO_PASS), fptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
 static inline LCC_RETURN entry_point(LCC_ARGS_ELLIPSIS)
@@ -1652,7 +1618,6 @@ public:
 enum { NumParams = 3 };
 VariadicFunctor(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : TemplatedFunctionBase_O(&MyType::entry_point,name,funcType,
     SOURCE_INFO_PASS), fptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
 static inline LCC_RETURN entry_point(LCC_ARGS_ELLIPSIS)
@@ -1692,7 +1657,6 @@ public:
 enum { NumParams = 2 };
 VariadicFunctor(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : TemplatedFunctionBase_O(&MyType::entry_point,name,funcType,
     SOURCE_INFO_PASS), fptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
 static inline LCC_RETURN entry_point(LCC_ARGS_ELLIPSIS)
@@ -1731,7 +1695,6 @@ public:
 enum { NumParams = 1 };
 VariadicFunctor(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : TemplatedFunctionBase_O(&MyType::entry_point,name,funcType,
     SOURCE_INFO_PASS), fptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
 static inline LCC_RETURN entry_point(LCC_ARGS_ELLIPSIS)
@@ -1769,7 +1732,6 @@ public:
 enum { NumParams = 0 };
 VariadicFunctor(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : TemplatedFunctionBase_O(&MyType::entry_point,name,funcType,
     SOURCE_INFO_PASS), fptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
 static inline LCC_RETURN entry_point(LCC_ARGS_ELLIPSIS)
@@ -1808,7 +1770,6 @@ public:
 enum { NumParams = 18 };
 VariadicFunctor(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : TemplatedFunctionBase_O(&MyType::entry_point,name,funcType,
     SOURCE_INFO_PASS), fptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
 static inline LCC_RETURN entry_point(LCC_ARGS_ELLIPSIS)
@@ -1869,7 +1830,6 @@ public:
 enum { NumParams = 17 };
 VariadicFunctor(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : TemplatedFunctionBase_O(&MyType::entry_point,name,funcType,
     SOURCE_INFO_PASS), fptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
 static inline LCC_RETURN entry_point(LCC_ARGS_ELLIPSIS)
@@ -1929,7 +1889,6 @@ public:
 enum { NumParams = 16 };
 VariadicFunctor(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : TemplatedFunctionBase_O(&MyType::entry_point,name,funcType,
     SOURCE_INFO_PASS), fptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
 static inline LCC_RETURN entry_point(LCC_ARGS_ELLIPSIS)
@@ -1986,7 +1945,6 @@ public:
 enum { NumParams = 15 };
 VariadicFunctor(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : TemplatedFunctionBase_O(&MyType::entry_point,name,funcType,
     SOURCE_INFO_PASS), fptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
 static inline LCC_RETURN entry_point(LCC_ARGS_ELLIPSIS)
@@ -2042,7 +2000,6 @@ public:
 enum { NumParams = 14 };
 VariadicFunctor(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : TemplatedFunctionBase_O(&MyType::entry_point,name,funcType,
     SOURCE_INFO_PASS), fptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
 static inline LCC_RETURN entry_point(LCC_ARGS_ELLIPSIS)
@@ -2096,7 +2053,6 @@ public:
 enum { NumParams = 13 };
 VariadicFunctor(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : TemplatedFunctionBase_O(&MyType::entry_point,name,funcType,
     SOURCE_INFO_PASS), fptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
 static inline LCC_RETURN entry_point(LCC_ARGS_ELLIPSIS)
@@ -2149,7 +2105,6 @@ public:
 enum { NumParams = 12 };
 VariadicFunctor(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : TemplatedFunctionBase_O(&MyType::entry_point,name,funcType,
     SOURCE_INFO_PASS), fptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
 static inline LCC_RETURN entry_point(LCC_ARGS_ELLIPSIS)
@@ -2199,7 +2154,6 @@ public:
 enum { NumParams = 11 };
 VariadicFunctor(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : TemplatedFunctionBase_O(&MyType::entry_point,name,funcType,
     SOURCE_INFO_PASS), fptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
 static inline LCC_RETURN entry_point(LCC_ARGS_ELLIPSIS)
@@ -2248,7 +2202,6 @@ public:
 enum { NumParams = 10 };
 VariadicFunctor(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : TemplatedFunctionBase_O(&MyType::entry_point,name,funcType,
     SOURCE_INFO_PASS), fptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
 static inline LCC_RETURN entry_point(LCC_ARGS_ELLIPSIS)
@@ -2296,7 +2249,6 @@ public:
 enum { NumParams = 9 };
 VariadicFunctor(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : TemplatedFunctionBase_O(&MyType::entry_point,name,funcType,
     SOURCE_INFO_PASS), fptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
 static inline LCC_RETURN entry_point(LCC_ARGS_ELLIPSIS)
@@ -2343,7 +2295,6 @@ public:
 enum { NumParams = 8 };
 VariadicFunctor(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : TemplatedFunctionBase_O(&MyType::entry_point,name,funcType,
     SOURCE_INFO_PASS), fptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
 static inline LCC_RETURN entry_point(LCC_ARGS_ELLIPSIS)
@@ -2388,7 +2339,6 @@ public:
 enum { NumParams = 7 };
 VariadicFunctor(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : TemplatedFunctionBase_O(&MyType::entry_point,name,funcType,
     SOURCE_INFO_PASS), fptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
 static inline LCC_RETURN entry_point(LCC_ARGS_ELLIPSIS)
@@ -2432,7 +2382,6 @@ public:
 enum { NumParams = 6 };
 VariadicFunctor(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : TemplatedFunctionBase_O(&MyType::entry_point,name,funcType,
     SOURCE_INFO_PASS), fptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
 static inline LCC_RETURN entry_point(LCC_ARGS_ELLIPSIS)
@@ -2475,7 +2424,6 @@ public:
 enum { NumParams = 5 };
 VariadicFunctor(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : TemplatedFunctionBase_O(&MyType::entry_point,name,funcType,
     SOURCE_INFO_PASS), fptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
 static inline LCC_RETURN entry_point(LCC_ARGS_ELLIPSIS)
@@ -2517,7 +2465,6 @@ public:
 enum { NumParams = 4 };
 VariadicFunctor(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : TemplatedFunctionBase_O(&MyType::entry_point,name,funcType,
     SOURCE_INFO_PASS), fptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
 static inline LCC_RETURN entry_point(LCC_ARGS_ELLIPSIS)
@@ -2558,7 +2505,6 @@ public:
 enum { NumParams = 3 };
 VariadicFunctor(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : TemplatedFunctionBase_O(&MyType::entry_point,name,funcType,
     SOURCE_INFO_PASS), fptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
 static inline LCC_RETURN entry_point(LCC_ARGS_ELLIPSIS)
@@ -2598,7 +2544,6 @@ public:
 enum { NumParams = 2 };
 VariadicFunctor(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : TemplatedFunctionBase_O(&MyType::entry_point,name,funcType,
     SOURCE_INFO_PASS), fptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
 static inline LCC_RETURN entry_point(LCC_ARGS_ELLIPSIS)
@@ -2637,7 +2582,6 @@ public:
 enum { NumParams = 1 };
 VariadicFunctor(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : TemplatedFunctionBase_O(&MyType::entry_point,name,funcType,
     SOURCE_INFO_PASS), fptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
 static inline LCC_RETURN entry_point(LCC_ARGS_ELLIPSIS)
@@ -2675,7 +2619,6 @@ public:
 enum { NumParams = 0 };
 VariadicFunctor(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : TemplatedFunctionBase_O(&MyType::entry_point,name,funcType,
     SOURCE_INFO_PASS), fptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
 static inline LCC_RETURN entry_point(LCC_ARGS_ELLIPSIS)

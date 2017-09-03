@@ -387,6 +387,7 @@ void push_InvocationHistoryStack(const InvocationHistoryFrame* frame) {
   frame->_Previous = my_thread->_InvocationHistoryStackTop;
   my_thread->_InvocationHistoryStackTop = frame;
 }
+
 void pop_InvocationHistoryStack(const InvocationHistoryFrame* frame) {
 #ifdef DEBUG_IHS
   if (global_debug_ihs) validate_InvocationHistoryStack(0,frame,my_thread->_InvocationHistoryStackTop);

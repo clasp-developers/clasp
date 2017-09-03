@@ -1,7 +1,6 @@
 (in-package :cmp)
 
 (export '(
-          *all-functions-for-one-compile*
           *cleavir-compile-file-hook*
           *cleavir-compile-hook*
           *current-form-lineno*
@@ -50,7 +49,8 @@
           calling-convention-register-args
           calling-convention-write-registers-to-multiple-values
           cmp-log
-          cmp-log-dump
+          cmp-log-dump-module
+          cmp-log-dump-function
           codegen-literal
           reference-literal
           codegen-rtv
@@ -105,10 +105,9 @@
           jit-function-name
           module-make-global-string
           llvm-link
-          link-intrinsics-module
+          jit-link-builtins-module
           load-bitcode
           initialize-calling-convention
-          set-associated-funcs
           treat-as-special-operator-p
           typeid-core-unwind
           walk-form-for-source-info

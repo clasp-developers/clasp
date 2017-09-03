@@ -27,7 +27,6 @@ THE SOFTWARE.
 #ifndef _core_lispReader_H_
 #define _core_lispReader_H_
 
-#include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
 #include <clasp/core/lispReader.h>
 

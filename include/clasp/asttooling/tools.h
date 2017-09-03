@@ -33,7 +33,6 @@ THE SOFTWARE.
 #include <clang/AST/ASTConsumer.h>
 #include <clang/AST/RecursiveASTVisitor.h>
 
-#include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
 #include <clasp/core/metaClass.fwd.h>
 

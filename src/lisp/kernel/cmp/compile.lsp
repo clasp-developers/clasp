@@ -8,53 +8,8 @@
 
 (defparameter *lambda-args-num* 0)
 
-(defvar *all-functions-for-one-compile* nil
-  "All functions for one COMPILE are accumulated in this dynamic variable.
-COMPILE-FILE just throws this away.   Return (values llvm-function lambda-name lambda-list)")
-
-;;; Unused - memory balloons when intrinsics are linked in like this
-(defun link-intrinsics-module (module)
-  "Merge the intrinsics module with the passed module.
-The passed module is modified as a side-effect."
-(progn
-  (unless *intrinsics-module*
-    (let ((intrinsics-bitcode-name (namestring (truename (build-intrinsics-bitcode-pathname :compile)))))
-      (setf *intrinsics-module* (llvm-sys:parse-bitcode-file intrinsics-bitcode-name *llvm-context*))))
-  ;; Clone the intrinsics module and link it in
-  (let ((linker (llvm-sys:make-linker module))
-        (intrinsics-clone (llvm-sys:clone-module *intrinsics-module*)))
-    (llvm-sys:link-in-module linker intrinsics-clone)))
-    module)
-
-(defvar *optimizations-on* t)
-(defun optimize-module (module &optional (optimize-level :-O0) (size-level 1))
-  (declare (type (or null llvm-sys:module) module))
-  (when module
-    (let* ((pass-manager-builder (llvm-sys:make-pass-manager-builder))
-           (mpm (llvm-sys:make-pass-manager))
-           (fpm (llvm-sys:make-function-pass-manager module))
-           (olevel (cond
-                     ((eq optimize-level :-O3) 3)
-                     ((eq optimize-level :-O2) 2)
-                     ((eq optimize-level :-O1) 1)
-                     ((eq optimize-level :-O0) 0)
-                     (t (error "Unsupported optimize-level ~a - only :-O3 :-O2 :-O1 :-O0 are allowed" optimize-level)))))
-      (llvm-sys:pass-manager-builder-setf-opt-level pass-manager-builder olevel)
-      (llvm-sys:pass-manager-builder-setf-size-level pass-manager-builder size-level)
-      (llvm-sys:pass-manager-builder-setf-inliner pass-manager-builder (llvm-sys:create-always-inliner-legacy-pass))
-      (llvm-sys:populate-function-pass-manager pass-manager-builder fpm)
-      ;;    (llvm-sys:populate-module-pass-manager pass-manager-builder mpm)
-      (llvm-sys:populate-ltopass-manager pass-manager-builder mpm)
-      (llvm-sys:do-initialization fpm)
-      (let ((funcs (llvm-sys:module-get-function-list module)))
-        (dolist (func funcs)
-          (llvm-sys:function-pass-manager-run fpm func)))
-      (llvm-sys:do-finalization fpm)
-      (llvm-sys:pass-manager-run mpm module)))
-  module)
-
 (defmacro with-module (( &key module
-                              (optimize t)
+                              (optimize nil)
                               (optimize-level :-O3)
                               source-namestring
                               source-file-info-handle
@@ -75,7 +30,7 @@ The passed module is modified as a side-effect."
          (with-irbuilder ((llvm-sys:make-irbuilder *llvm-context*))
            ,@body)
        (cmp-log "About to optimize-module\n")
-       (when (and ,optimize ,optimize-level) (optimize-module ,module ,optimize-level )))))
+       (when (and ,optimize ,optimize-level) (funcall ,optimize ,module ,optimize-level )))))
 
 (defun compile-with-hook (compile-hook name &optional definition env pathname &key (linkage 'llvm-sys:internal-linkage))
   "Dispatch to clasp compiler or cleavir-clasp compiler if available.
@@ -92,8 +47,7 @@ We could do more fancy things here - like if cleavir-clasp fails, use the clasp 
 (defun compile-in-env (bind-to-name &optional definition env compile-hook (linkage 'llvm-sys:internal-linkage) &aux conditions)
   "Compile in the given environment"
   (with-compiler-env (conditions)
-    (let* ((*the-module* (create-run-time-module-for-compile))
-           (*primitives* (primitives-in-module *the-module*)))
+    (let* ((*the-module* (create-run-time-module-for-compile)))
       ;; Link the C++ intrinsics into the module
       (let* ((*declare-dump-module* nil)
              (pathname (if *load-pathname*
@@ -107,18 +61,13 @@ We could do more fancy things here - like if cleavir-clasp fails, use the clasp 
                               :source-namestring (namestring pathname)
                               :source-file-info-handle handle)
           (cmp-log "Dumping module\n")
-          (cmp-log-dump *the-module*)
-          (let ((*all-functions-for-one-compile* nil))
-            (multiple-value-bind (compiled-function warnp failp)
-                (compile-with-hook compile-hook bind-to-name definition env pathname :linkage linkage)
-              (when bind-to-name
-                (let ((lambda-list (cadr definition)))
-                  (core:fset bind-to-name compiled-function nil t lambda-list)))
-              (core:set-associated-functions compiled-function *all-functions-for-one-compile*)
-              #+(or)(progn
-                (bformat t "*all-functions-for-one-compile* -> %s\n" *all-functions-for-one-compile*)
-                (llvm-sys:disassemble* compiled-function))
-              (values compiled-function warnp failp))))))))
+          (cmp-log-dump-module *the-module*)
+          (multiple-value-bind (compiled-function warnp failp)
+              (compile-with-hook compile-hook bind-to-name definition env pathname :linkage linkage)
+            (when bind-to-name
+              (let ((lambda-list (cadr definition)))
+                (core:fset bind-to-name compiled-function nil t lambda-list)))
+            (values compiled-function warnp failp)))))))
 
 (defun compile (name &optional definition)
   (multiple-value-bind (function warnp failp)

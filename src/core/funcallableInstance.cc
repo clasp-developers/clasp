@@ -558,7 +558,7 @@ void FuncallableInstance_O::GFUN_CALL_HISTORY_set(T_sp h) {
     printf("%s:%d                      history: %s\n", __FILE__, __LINE__, _rep_(h).c_str());
   }
 #endif
-  this->instanceSet(4,h);
+  this->instanceSet(REF_GFUN_CALL_HISTORY,h);
 }
 
 void FuncallableInstance_O::set_kind(Symbol_sp k) {
@@ -590,16 +590,16 @@ T_sp FuncallableInstance_O::setFuncallableInstanceFunction(T_sp functionOrT) {
   SYMBOL_EXPORT_SC_(ClPkg, standardGenericFunction);
   SYMBOL_SC_(ClosPkg, standardOptimizedReaderFunction);
   SYMBOL_SC_(ClosPkg, standardOptimizedWriterFunction);
-  SYMBOL_SC_(ClosPkg, invalidated_dispatch_function );
+  SYMBOL_SC_(ClosPkg, empty_dispatch_function );
   if (functionOrT == _lisp->_true()) {
     this->_isgf = CLASP_STANDARD_DISPATCH;
     FuncallableInstance_O::ensureClosure(&generic_function_dispatch);
   } else if (functionOrT == cl::_sym_standardGenericFunction) {
     this->_isgf = CLASP_RESTRICTED_DISPATCH;
     FuncallableInstance_O::ensureClosure(&generic_function_dispatch);
-  } else if (functionOrT == clos::_sym_invalidated_dispatch_function) {
-    this->_isgf = CLASP_INVALIDATED_DISPATCH;
-    FuncallableInstance_O::ensureClosure(&invalidated_dispatch);
+  } else if (functionOrT == clos::_sym_empty_dispatch_function) {
+    this->_isgf = CLASP_EMPTY_DISPATCH;
+    FuncallableInstance_O::ensureClosure(&empty_dispatch);
   } else if (functionOrT.nilp()) {
     this->_isgf = CLASP_NOT_FUNCALLABLE;
     FuncallableInstance_O::ensureClosure(&not_funcallable_dispatch);
@@ -615,7 +615,7 @@ T_sp FuncallableInstance_O::setFuncallableInstanceFunction(T_sp functionOrT) {
     this->_isgf = CLASP_WRITER_DISPATCH;
     FuncallableInstance_O::ensureClosure(&optimized_slot_writer_dispatch);
   } else if (gc::IsA<CompiledDispatchFunction_sp>(functionOrT)) {
-    this->_isgf = CLASP_STRANDH_DISPATCH;
+    this->_isgf = CLASP_FASTGF_DISPATCH;
     this->GFUN_DISPATCHER_set(functionOrT);
     FuncallableInstance_O::ensureClosure(gc::As_unsafe<CompiledDispatchFunction_sp>(functionOrT)->entryPoint());
   } else if (!cl__functionp(functionOrT)) {
@@ -760,10 +760,10 @@ CL_DEFUN T_mv clos__getFuncallableInstanceFunction(T_sp obj) {
         return Values(clos::_sym_standardOptimizedWriterMethod,Pointer_O::create((void*)iobj->_entryPoint));
     case CLASP_USER_DISPATCH:
         return Values(iobj->userFuncallableInstanceFunction(),Pointer_O::create((void*)iobj->_entryPoint));
-    case CLASP_STRANDH_DISPATCH:
+    case CLASP_FASTGF_DISPATCH:
         return Values(iobj->GFUN_DISPATCHER(),Pointer_O::create((void*)iobj->_entryPoint));
-    case CLASP_INVALIDATED_DISPATCH:
-        return Values(clos::_sym_invalidated_dispatch_function,Pointer_O::create((void*)iobj->_entryPoint));
+    case CLASP_EMPTY_DISPATCH:
+        return Values(clos::_sym_empty_dispatch_function,Pointer_O::create((void*)iobj->_entryPoint));
     case CLASP_NOT_FUNCALLABLE:
         return Values(clos::_sym_not_funcallable);
     }
@@ -871,6 +871,7 @@ CL_DEFUN List_sp core__call_history_find_key(List_sp generic_function_call_histo
 /*! Return true if an entry was pushed */
 CL_DEFUN bool core__generic_function_call_history_push_new(FuncallableInstance_sp generic_function, SimpleVector_sp key, T_sp effective_method )
 {
+  GenericFunctionWriteLock(generic_function->GFUN_LOCK());
 #ifdef DEBUG_GFDISPATCH
   if (_sym_STARdebug_dispatchSTAR->symbolValue().notnilp()) {
     printf("%s:%d   generic_function_call_history_push_new    gf: %s\n        key: %s\n          em: %s\n", __FILE__, __LINE__, _rep_(generic_function).c_str(), _rep_(key).c_str(), _rep_(effective_method).c_str());
@@ -892,6 +893,7 @@ CL_DEFUN bool core__generic_function_call_history_push_new(FuncallableInstance_s
 
 
 CL_DEFUN void core__generic_function_call_history_remove_entries_with_specializers(FuncallableInstance_sp generic_function, List_sp specializers ) {
+  GenericFunctionWriteLock(generic_function->GFUN_LOCK());
 //  printf("%s:%d Remember to remove entries with subclasses of specializer: %s\n", __FILE__, __LINE__, _rep_(specializer).c_str());
 #ifdef DEBUG_GFDISPATCH
   if (_sym_STARdebug_dispatchSTAR->symbolValue().notnilp()) {

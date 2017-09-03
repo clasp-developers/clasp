@@ -1,7 +1,6 @@
 #ifndef core_record_H
 #define core_record_H
 
-#include <clasp/core/foundation.h>
 #include <clasp/core/symbolTable.h>
 #include <clasp/core/array.h>
 
@@ -77,7 +76,7 @@ public:
       // and search from there and reverse the alist once it's done
       List_sp find = core__alist_get(this->_alist, name);
       if (find.nilp())
-        SIMPLE_ERROR(BF("Could not find field %s") % _rep_(name));
+        SIMPLE_ERROR_SPRINTF("Could not find field %s",  _rep_(name).c_str());
       Cons_sp apair = gc::As<Cons_sp>(oCar(find));
       RECORD_LOG(BF("find apair %s\n") % _rep_(apair));
       value = translate::from_object<ST>(oCdr(apair))._v;
@@ -103,7 +102,7 @@ public:
     case loading: {
       List_sp find = core__alist_get(this->_alist, name);
       if (find.nilp())
-        SIMPLE_ERROR(BF("Could not find field %s") % _rep_(name));
+        SIMPLE_ERROR_SPRINTF("Could not find field %s",  _rep_(name).c_str());
       Cons_sp apair = gc::As<Cons_sp>(oCar(find));
       RECORD_LOG(BF("init/load find apair %s\n") % _rep_(apair));
       // Set the value and ignore its type!!!!!! This is to allow placeholders
@@ -143,7 +142,7 @@ public:
       // and search from there and reverse the alist once it's done
       List_sp find = core__alist_get(this->_alist, name);
       if (find.nilp())
-        SIMPLE_ERROR(BF("Could not find field %s") % _rep_(name));
+        SIMPLE_ERROR_SPRINTF("Could not find field %s",  _rep_(name).c_str());
       Cons_sp apair = gc::As<Cons_sp>(oCar(find));
       RECORD_LOG(BF("loading find: %s") % _rep_(apair));
       Vector_sp vec_value = gc::As<Vector_sp>(oCdr(apair));

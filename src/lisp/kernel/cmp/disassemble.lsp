@@ -49,21 +49,22 @@ Return T if disassembly was achieved - otherwise NIL"
               (bformat t "Could not disassemble associated function\n")))))
     success))
   
-(defun disassemble-assembly (compiled-fn &optional (start-instruction-index 0) (num-instructions 16))
-  (if (core:associated-functions compiled-fn)
-      (let ((success (disassemble-assembly-for-llvm-functions (core:associated-functions compiled-fn))))
-        (if success
-            t
+(defun disassemble-assembly (compiled-fn module &optional (start-instruction-index 0) (num-instructions 16))
+  (error "Deal iwth module")
+  #+(or)(if (core:associated-functions compiled-fn)
+            (let ((success (disassemble-assembly-for-llvm-functions (core:associated-functions compiled-fn))))
+              (if success
+                  t
+                  (progn
+                    (llvm-sys:disassemble-instructions (llvm-sys:get-default-target-triple)
+                                                       (core:function-pointer compiled-fn)
+                                                       :start-instruction-index start-instruction-index
+                                                       :num-instructions num-instructions))))
             (progn
               (llvm-sys:disassemble-instructions (llvm-sys:get-default-target-triple)
                                                  (core:function-pointer compiled-fn)
                                                  :start-instruction-index start-instruction-index
                                                  :num-instructions num-instructions))))
-      (progn
-        (llvm-sys:disassemble-instructions (llvm-sys:get-default-target-triple)
-                                           (core:function-pointer compiled-fn)
-                                           :start-instruction-index start-instruction-index
-                                           :num-instructions num-instructions))))
 
 (defun disassemble-from-address (address &key (start-instruction-index 0) (num-instructions 16)
                                            start-byte-offset end-byte-offset)
@@ -77,6 +78,7 @@ Return T if disassembly was achieved - otherwise NIL"
 (defun disassemble (desig &key ((:start start-instruction-index) 0) ((:num num-instructions) 16) (type :IR))
   "If type is :ASM then disassemble to assembly language from the START instruction, disassembling NUM instructions
    if type is :IR then dump the llvm-ir for all of the associated functions and ignore START and NUM"
+  (check-type type (member :ir :asm))
   (multiple-value-bind (func-or-lambda name)
       (cond
         ((null desig) (error "No function provided"))
@@ -86,6 +88,18 @@ Return T if disassembly was achieved - otherwise NIL"
 	((functionp desig) (multiple-value-bind (fn-lambda closurep name)
 			       (function-lambda-expression desig)
 			     (values desig name)))
+        ((and (consp desig) (eq (car desig) 'lambda))
+         (let* ((*save-module-for-disassemble* t)
+                (cmp:*saved-module-from-clasp-jit* :no-module))
+           (compile nil desig)
+           (let ((module cmp:*saved-module-from-clasp-jit*))
+             (if module
+                 (cond
+                   ((eq type :ir) (llvm-sys:dump-module module))
+                   ((eq type :asm) (warn "Handle disassemble of lambda-form to assembly"))
+                   (t (error "Illegal type ~a - only :ir and :asm allowed" type )))
+                 (error "Could not recover jitted module -> ~a" module))))
+         (return-from disassemble nil))
 	(t (error "Unknown argument ~a passed to disassemble" desig)))
     (setq name (if name name 'lambda))
     (bformat t "Disassembling function: %s\n" (repr func-or-lambda))
@@ -102,12 +116,7 @@ Return T if disassembly was achieved - otherwise NIL"
 	   ((interpreted-function-p fn)
 	    (format t "This is a interpreted function - compile it first~%"))
            ((eq type :asm)
-                (llvm-sys:disassemble-instructions (llvm-sys:get-default-target-triple) (core:function-pointer fn) :start-instruction-index start-instruction-index :num-instructions num-instructions))
+            (llvm-sys:disassemble-instructions (llvm-sys:get-default-target-triple) (core:function-pointer fn) :start-instruction-index start-instruction-index :num-instructions num-instructions))
 	   (t (error "Unknown target for disassemble: ~a" fn)))))
-      ((and (consp desig) (or (eq (car desig) 'lambda) (eq (car desig) 'ext::lambda-block)))
-       (let* ((*all-functions-for-one-compile* nil)
-              (funcs (codegen-closure nil desig nil)))
-	 (dolist (i *all-functions-for-one-compile*)
-	   (llvm-sys:dump i))))
       (t (error "Cannot disassemble"))))
   nil)

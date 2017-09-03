@@ -28,6 +28,7 @@ THE SOFTWARE.
 #define DEBUG_LEVEL_NONE
 
 #include <limits>
+#include <clasp/core/foundation.h>
 #include <clasp/core/common.h>
 #include <clasp/core/corePackage.h>
 #include <clasp/core/environment.h>
@@ -459,7 +460,7 @@ void HashTable_O::fields(Record_sp node) {
     node->field(INTERN_(core, data), keyValueVec);
   } break;
   case Record_O::patching: {
-    IMPLEMENT_MEF(BF("Add support to patch hash tables"));
+    IMPLEMENT_MEF("Add support to patch hash tables");
   } break;
   }
 }

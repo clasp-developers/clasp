@@ -27,7 +27,6 @@ THE SOFTWARE.
 #ifndef _core_stacks_H_
 #define _core_stacks_H_
 
-#include <clasp/core/foundation.h>
 #include <clasp/core/exceptions.h>
 #include <clasp/core/sourceFileInfo.fwd.h>
 #include <clasp/core/stacks.fwd.h>

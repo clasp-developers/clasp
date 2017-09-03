@@ -30,8 +30,8 @@ THE SOFTWARE.
 #ifdef DEFINE_CL_SYMBOLS
 #include <clasp/core/allClSymbols.h>
 #endif
-#include <clasp/core/symbol.h>
 #include <clasp/core/common.h>
+#include <clasp/core/symbol.h>
 #include <clasp/core/corePackage.h>
 #include <clasp/core/package.h>
 #include <clasp/core/numberToString.h>
@@ -386,7 +386,7 @@ string Package_O::__repr__() const {
 
 #if defined(XML_ARCHIVE)
 void Package_O::archiveBase(ArchiveP node) {
-  IMPLEMENT_MEF(BF("Handle archiving the package hash-tables"));
+  IMPLEMENT_MEF("Handle archiving the package hash-tables");
 #if 0
   WITH_PACKAGE_READ_WRITE_LOCK(this);
 	this->Base::archiveBase(node);

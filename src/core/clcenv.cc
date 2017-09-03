@@ -351,7 +351,6 @@ CL_DEFUN core::T_sp function_type(core::T_sp environment, Info_sp defining_info 
     if ( LocalMacroInfo_sp lmi = defining_info.asOrNull<LocalMacroInfo_O>() ) {
       if ( core::cl__eq(me->_Name,lmi->_Name) ) {
         return _Nil<core::T_O>();
-        //IMPLEMENT_MEF(BF("Cleavir would do... return core::Cons_O::create(lmi->_Type); - but that can't be right - macros don't have types"));
       } else {
         return function_type(me->_Next,defining_info);
       }
@@ -658,7 +657,7 @@ CL_DEFUN core::T_sp global_environment(core::T_sp environment)
 #ifdef PROVIDE_CONVERT_FORM
 clc::Ast_sp Info_O::convert_form(ARGS_form_env_rest)
 {
-  IMPLEMENT_MEF(BF("Implement convert_form for %s with name %s") % lisp_classNameAsString(core::instance_class(this->asSmartPtr())) % _rep_(this->name()) );
+  IMPLEMENT_MEF("Implement convert_form for " + lisp_classNameAsString(core::instance_class(this->asSmartPtr())) + " with name " + _rep_(this->name()) );
 }
 #endif
 

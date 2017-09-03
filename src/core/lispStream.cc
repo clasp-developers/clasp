@@ -46,6 +46,7 @@ THE SOFTWARE.
 //#define DEBUG_LEVEL_FULL
 #include <stdio.h>
 #include <fcntl.h>
+#include <clasp/core/foundation.h>
 #include <clasp/core/common.h>
 #include <clasp/core/fileSystem.h>
 #include <clasp/core/lispStream.h>
@@ -5439,7 +5440,7 @@ T_sp clasp_off_t_to_integer(clasp_off_t offset) {
   } else if (offset <= MOST_POSITIVE_FIXNUM) {
     output = make_fixnum((gctools::Fixnum)offset);
   } else {
-    IMPLEMENT_MEF(BF("Handle breaking converting clasp_off_t to Bignum"));
+    IMPLEMENT_MEF("Handle breaking converting clasp_off_t to Bignum");
 #if 0
             T_sp y = _clasp_big_register0();
             if (sizeof(ECL_BIGNUM_LIMBS(y)[0]) == sizeof(cl_index)) {
@@ -5465,7 +5466,7 @@ clasp_integer_to_off_t(T_sp offset) {
   } else if (core__fixnump(offset)) {
     output = fixint(offset);
   } else if (core__bignump(offset)) {
-    IMPLEMENT_MEF(BF("Implement convert Bignum to clasp_off_t"));
+    IMPLEMENT_MEF("Implement convert Bignum to clasp_off_t");
 #if 0
             if (sizeof(ECL_BIGNUM_LIMBS(offset)[0]) == sizeof(cl_index)) {
                 if (ECL_BIGNUM_SIZE(offset) > 2) {

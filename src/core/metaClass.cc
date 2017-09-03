@@ -329,14 +329,13 @@ CL_LAMBDA(low high);
 CL_DECLARE();
 CL_DOCSTRING("subclassp");
 CL_DEFUN bool core__subclassp(T_sp low, T_sp high) {
+  ASSERT(clos__classp(low));
+  ASSERT(clos__classp(high));
   if (low == high)
     return true;
-  if (Class_sp lowmc = low.asOrNull<Class_O>()) {
+  if (Instance_sp lowmc = low.asOrNull<Instance_O>()) {
     List_sp lowClassPrecedenceList = lowmc->instanceRef(Class_O::REF_CLASS_CLASS_PRECEDENCE_LIST); // classPrecedenceList();
     return lowClassPrecedenceList.asCons()->memberEq(high).notnilp();
-  } else if (Instance_sp inst = low.asOrNull<Instance_O>()) {
-    (void)inst;
-    IMPLEMENT_MEF(BF("Run some other tests to make sure that instance is a Class: %s") % _rep_(low));
   }
   SIMPLE_ERROR(BF("Illegal argument for subclassp: %s") % _rep_(low));
 };

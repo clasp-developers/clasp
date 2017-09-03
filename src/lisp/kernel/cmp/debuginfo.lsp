@@ -130,6 +130,7 @@
                                        :line-tables-only ; 9 DebugEmissionKind (:full-debug :line-tables-only)
                                        0 ; 10 DWOld
                                        t ; 11 SplitDebugInlining
+                                       nil ; 12 DebugInfoForProfiling
 				       )))
 	     (cmp-log "with-dbg-compile-unit *dbg-compile-unit*: %s\n" *dbg-compile-unit*)
 	     (cmp-log "with-dbg-compile-unit source-pathname: %s\n" ,source-pathname)
@@ -197,8 +198,9 @@
                       ,lineno ; 9 scopeLine - set to the beginning of the scope this starts
                       (core:enum-logical-or llvm-sys:diflags-enum '(llvm-sys:diflags-zero))    ; 10 flags
                       nil   ; 11 isOptimized - true if optimization is on
-                      nil               ; 12 TParam = 0
-                      nil               ; 13 Decl = 0
+                      nil               ; 12 TParam = nullptr
+                      nil               ; 13 Decl = nullptr
+                      nil               ; 14 ThrownTypes = nullptr
                       ))
                     (*dbg-current-scope* *dbg-current-function*))
                (cmp-log "with-dbg-function *dbg-compile-unit*: %s\n" *dbg-compile-unit*)

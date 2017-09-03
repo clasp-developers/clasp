@@ -57,7 +57,6 @@ THE SOFTWARE.
 #include <vector>
 
 #include <clasp/clbind/config.h>
-#include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
 #include <clasp/core/builtInClass.h>
 #include <clasp/core/instance.h>

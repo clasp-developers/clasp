@@ -78,30 +78,6 @@ extern "C" {
 
 extern void dump_backtrace(core::InvocationHistoryFrame* frame);
 
-ALWAYS_INLINE core::T_sp *symbolValueReference(core::T_sp *symbolP)
-{NO_UNWIND_BEGIN();
-  core::Symbol_sp sym((gctools::Tagged)ENSURE_VALID_OBJECT(symbolP->raw_()));
-  return sym->valueReference();
-  NO_UNWIND_END();
-}
-
-ALWAYS_INLINE core::T_sp *lexicalValueReference(int depth, int index, core::ActivationFrame_sp *frameP)
-{NO_UNWIND_BEGIN();
-  core::ActivationFrame_sp af = gctools::reinterpret_cast_smart_ptr<core::ActivationFrame_O>(*frameP);
-  return const_cast<core::T_sp *>(&core::value_frame_lookup_reference(af, depth, index));
-  NO_UNWIND_END();
-}
-
-ALWAYS_INLINE void sp_lexicalValueRead(core::T_sp *resultP, int depth, int index, core::ActivationFrame_sp *renvP)
-{NO_UNWIND_BEGIN();
-  (*resultP) = core::value_frame_lookup_reference(*renvP,depth,index);
-  NO_UNWIND_END();
-}
-ALWAYS_INLINE void mv_lexicalValueRead(core::T_mv *resultP, int depth, int index, core::ActivationFrame_sp *renvP)
-{NO_UNWIND_BEGIN();
-  (*resultP) = core::value_frame_lookup_reference(*renvP,depth,index);
-  NO_UNWIND_END();
-}
 
 
 ALWAYS_INLINE void makeFunctionFrame(core::ActivationFrame_sp *resultP, int numargs, core::ActivationFrame_sp *parentP)
@@ -151,11 +127,6 @@ ALWAYS_INLINE void newTsp(core::T_sp *sharedP)
 }
 #endif
 
-ALWAYS_INLINE void newTmv(core::T_mv *sharedP)
-{NO_UNWIND_BEGIN();
-  new (sharedP) core::T_mv();
-  NO_UNWIND_END();
-}
 
 ALWAYS_INLINE extern int compareTspTptr(core::T_sp *xP, core::T_O *yP)
 {NO_UNWIND_BEGIN();
@@ -246,7 +217,7 @@ ALWAYS_INLINE void mv_symbolValueRead(core::T_mv *resultP, const core::Symbol_sp
   *resultP = sv;
 }
 
-
+#if 0
 ALWAYS_INLINE T_O *va_symbolFunction(core::T_sp *symP) {
   NO_UNWIND_BEGIN();
   core::Symbol_sp sym((gctools::Tagged)symP->raw_());
@@ -257,6 +228,7 @@ ALWAYS_INLINE T_O *va_symbolFunction(core::T_sp *symP) {
   return func.raw_();
   NO_UNWIND_END();
 }
+#endif
 };
 
 extern "C" {
@@ -404,6 +376,15 @@ void makeCharacter(core::T_sp *fnP, int s)
   NO_UNWIND_END();
 }
 
+
+ALWAYS_INLINE void makeTagbodyFrame(core::ActivationFrame_sp *resultP)
+{NO_UNWIND_BEGIN();
+  core::TagbodyFrame_sp tagbodyFrame(core::TagbodyFrame_O::create(_Nil<core::T_O>()));
+  (*resultP) = tagbodyFrame;
+  NO_UNWIND_END();
+}
+
+
 ALWAYS_INLINE void makeValueFrame(core::T_sp *resultActivationFrameP, size_t numargs)
 {NO_UNWIND_BEGIN();
   core::ValueFrame_sp valueFrame(core::ValueFrame_O::create(numargs, _Nil<core::T_O>()));
@@ -412,12 +393,6 @@ ALWAYS_INLINE void makeValueFrame(core::T_sp *resultActivationFrameP, size_t num
   NO_UNWIND_END();
 }
 
-ALWAYS_INLINE void makeTagbodyFrame(core::ActivationFrame_sp *resultP)
-{NO_UNWIND_BEGIN();
-  core::TagbodyFrame_sp tagbodyFrame(core::TagbodyFrame_O::create(_Nil<core::T_O>()));
-  (*resultP) = tagbodyFrame;
-  NO_UNWIND_END();
-}
 
 ALWAYS_INLINE core::T_sp *valueFrameReference(core::ActivationFrame_sp *frameP, int idx)
 {NO_UNWIND_BEGIN();
@@ -433,7 +408,7 @@ ALWAYS_INLINE core::T_sp *valueFrameReference(core::ActivationFrame_sp *frameP, 
 #if 0
 ALWAYS_INLINE size_t cc_va_list_length(T_O* list)
 {NO_UNWIND_BEGIN();
-  IMPLEMENT_MEF(BF("This should use the untagged va_list structure"));
+  IMPLEMENT_MEF("This should use the untagged va_list structure");
   VaList_sp va_list_sp((gctools::Tagged)list);
   return va_list_sp->remaining_nargs();
   NO_UNWIND_END();
@@ -531,18 +506,6 @@ core::T_O *cc_fetch(core::T_O *tagged_closure, std::size_t idx)
   NO_UNWIND_END();
 }
 
-
-ALWAYS_INLINE void cc_rewind_va_list(core::T_O* tagged_closure, va_list va_args, size_t* nargsP, void** register_save_areaP)
-{NO_UNWIND_BEGIN();
-#if 0
-  if (core::debug_InvocationHistoryFrame==3) {
-    printf("%s:%d cc_rewind_va_list     va_args=%p     nargsP = %p      register_save_areaP = %p\n", __FILE__, __LINE__, va_args, nargsP, register_save_areaP );
-  }
-#endif
-  LCC_REWIND_VA_LIST(va_args,register_save_areaP);
-  *nargsP = (uintptr_t)register_save_areaP[1];
-  NO_UNWIND_END();
-}
 
 ALWAYS_INLINE void cc_push_InvocationHistoryFrame(core::T_O* tagged_closure, InvocationHistoryFrame* frame, va_list va_args, size_t* nargsP)
 {NO_UNWIND_BEGIN();
@@ -646,8 +609,6 @@ ALWAYS_INLINE core::T_O *cc_stack_enclose(void* closure_address,
                                                                            llvm_func,
                                                                            tlambdaName,
                                                                            core::_sym_stack_closure,
-                                                                           _Nil<T_O>(),
-                                                                           _Nil<T_O>(),
                                                                            _Nil<T_O>(),
                                                                            *sourceFileInfoHandleP, filePos, lineno, column);
 

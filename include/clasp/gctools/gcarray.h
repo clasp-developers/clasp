@@ -103,10 +103,10 @@ public:
 
 private:
   T &errorEmpty() {
-    THROW_HARD_ERROR(BF("GCArray had no contents"));
+    throw_hard_error("GCArray had no contents");
   };
   const T &errorEmpty() const {
-    THROW_HARD_ERROR(BF("GCArray had no contents"));
+    throw_hard_error("GCArray had no contents");
   };
 
 public:
@@ -115,7 +115,7 @@ public:
 
 #if 1
   void allocate(const value_type &initial_element, size_t length,bool initElementSupplied=true) {
-    GCTOOLS_ASSERTF(!(this->_Contents), BF("GCArray allocate called and array is already defined"));
+    GCTOOLS_ASSERTF(!(this->_Contents), "GCArray allocate called and array is already defined");
     allocator_type alloc;
     tagged_pointer_to_moveable implAddress = alloc.allocate_kind(Header_s::Value::make<impl_type>(),length);
     new (&*implAddress) GCArray_moveable<value_type>(length,initial_element,initElementSupplied );

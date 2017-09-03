@@ -24,11 +24,10 @@
 	  module-make-global-string
 	  *run-time-literal-holder*
 	  cmp-log
-	  cmp-log-dump
+	  cmp-log-dump-module
+	  cmp-log-dump-function
 	  irc-environment-activation-frame
 	  *run-time-values-table-name*
-	  *all-functions-for-one-compile*
-	  set-associated-funcs
 	  *block-name-prefix*
 	  irc-switch
 	  %t*%

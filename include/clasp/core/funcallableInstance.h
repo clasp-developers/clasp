@@ -27,10 +27,11 @@ THE SOFTWARE.
 #ifndef _core_funcallable_instance_H_
 #define _core_funcallable_instance_H_
 
-#include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
 #include <clasp/core/array.h>
 #include <clasp/core/hashTable.fwd.h>
+#include <clasp/core/mpPackage.h>
+
 // may need more later
 #include <clasp/gctools/gc_interface.h>
 
@@ -41,8 +42,8 @@ THE SOFTWARE.
 #define CLASP_READER_DISPATCH 3
 #define CLASP_WRITER_DISPATCH 4
 #define CLASP_USER_DISPATCH 5
-#define CLASP_STRANDH_DISPATCH 6
-#define CLASP_INVALIDATED_DISPATCH 7
+#define CLASP_FASTGF_DISPATCH 6
+#define CLASP_EMPTY_DISPATCH 7
 
 namespace core {
   FORWARD(FuncallableInstance);
@@ -75,6 +76,16 @@ namespace core {
                    REF_CLASS_INSTANCE_STAMP = 20,
                    REF_CLASS_CREATOR = 21
     } Slots;
+
+// These indices MUST match the order and positions of slots in +standard-generic-function-slots+
+    typedef enum { REF_GFUN_NAME = 0,
+                   REF_GFUN_SPECIALIZERS = 1,  // lock
+                   REF_GFUN_COMB = 2,          
+                   REF_GFUN_DISPATCHER = 3,
+                   REF_GFUN_CALL_HISTORY = 4,  // lock
+                   REF_GFUN_LAMBDA_LIST = 5,   // lock
+                   REF_GFUN_SPECIALIZER_PROFILE = 6,  // lock
+                   REF_GFUN_LOCK = 7 } GenericFunctionSlots;
     
   public: // ctor/dtor for classes with shared virtual base
     // entry_point is the LISP_CALLING_CONVENTION() macro
@@ -118,22 +129,24 @@ namespace core {
 
   public:
     bool isCallable() const { return (bool)(this->_entryPoint); };
-  public: // These indices MUST match the order in +standard-generic-function-slots+
-    T_sp GFUN_NAME() const { return this->instanceRef(0); };
-    T_sp GFUN_SPECIALIZERS() const { return this->instanceRef(1); };
-    T_sp GFUN_COMB() const { return this->instanceRef(2); };
-    T_sp GFUN_DISPATCHER() const { return this->instanceRef(3);};
-    void GFUN_DISPATCHER_set(T_sp f)  { this->instanceSet(3,f);};
-    T_sp GFUN_CALL_HISTORY() const { return this->instanceRef(4);};
+  public:
+    T_sp GFUN_NAME() const { return this->instanceRef(REF_GFUN_NAME); };
+    T_sp GFUN_SPECIALIZERS() const { return this->instanceRef(REF_GFUN_SPECIALIZERS); };
+    T_sp GFUN_COMB() const { return this->instanceRef(REF_GFUN_COMB); };
+    T_sp GFUN_DISPATCHER() const { return this->instanceRef(REF_GFUN_DISPATCHER);};
+    void GFUN_DISPATCHER_set(T_sp f)  { this->instanceSet(REF_GFUN_DISPATCHER,f);};
+    T_sp GFUN_CALL_HISTORY() const { return this->instanceRef(REF_GFUN_CALL_HISTORY);};
     void GFUN_CALL_HISTORY_set(T_sp h);
-    T_sp GFUN_LAMBDA_LIST() const { return this->instanceRef(5);};
-    void GFUN_LAMBDA_LIST_set(T_sp lambda_list) {
-    if (this->instanceRef(5).unboundp() && lambda_list.nilp()) {
-    printf("%s:%d Ignoring GFUN_LAMBDA_LIST_SET - returning\n", __FILE__, __LINE__ );
-    return;
-  }
-    this->instanceSet(5,lambda_list);
-  };
+    T_sp GFUN_LAMBDA_LIST() const { return this->instanceRef(REF_GFUN_LAMBDA_LIST);};
+    void GFUN_LAMBDA_LIST_set(T_sp lambda_list)
+    {
+      if (this->instanceRef(REF_GFUN_LAMBDA_LIST).unboundp() && lambda_list.nilp()) {
+        printf("%s:%d Ignoring GFUN_LAMBDA_LIST_SET - returning\n", __FILE__, __LINE__ );
+        return;
+      }
+      this->instanceSet(REF_GFUN_LAMBDA_LIST,lambda_list);
+    };
+    mp::SharedMutex_sp GFUN_LOCK() const { return gc::As<mp::SharedMutex_sp>(this->instanceRef(REF_GFUN_LOCK));};
   public:
     // Functions from Class_O
     string _classNameAsString() const;
@@ -158,8 +171,8 @@ namespace core {
 
     template <typename oclass>
       bool isSubClassOf() const {
-    return this->isSubClassOf(lisp_classFromClassSymbol(oclass::static_classSymbol()));
-  }
+      return this->isSubClassOf(lisp_classFromClassSymbol(oclass::static_classSymbol()));
+    }
 
     void accumulateSuperClasses(HashTableEq_sp supers, VectorObjects_sp arrayedSupers, Class_sp mc);
     void lowLevel_calculateClassPrecedenceList();
@@ -188,12 +201,12 @@ namespace core {
 
     void setInstanceBaseClasses(List_sp classes);
     void __setup_stage1_with_sharedPtr_lisp_sid(T_sp theThis, Symbol_sp instanceClassSymbol) {
-    this->instanceSet(REF_CLASS_CLASS_NAME, instanceClassSymbol);
-  }
+      this->instanceSet(REF_CLASS_CLASS_NAME, instanceClassSymbol);
+    }
 
     void __setup_stage2_with_classSymbol(Symbol_sp csid) {
-    _OF();
-  }
+      _OF();
+    }
 
     void __setupStage3NameAndCalculateClassPrecedenceList(Symbol_sp isid);
 
@@ -210,7 +223,7 @@ namespace core {
     virtual T_sp setSourcePosInfo(T_sp sourceFile, size_t filePos, int lineno, int column) { IMPLEMENT_ME(); };
 //  virtual T_mv functionSourcePos() const { IMPLEMENT_ME();;
     virtual T_sp cleavir_ast() const { return _Nil<T_O>(); };
-    virtual void setf_cleavir_ast(T_sp ast) { SIMPLE_ERROR(BF("Generic functions cannot be inlined"));};
+    virtual void setf_cleavir_ast(T_sp ast) { SIMPLE_ERROR_SPRINTF("Generic functions cannot be inlined");};
     virtual List_sp declares() const { IMPLEMENT_ME(); };
     virtual T_sp docstring() const { IMPLEMENT_ME(); };
     virtual void *functionAddress() const { IMPLEMENT_ME(); };
@@ -222,12 +235,11 @@ namespace core {
     virtual int lineNumber() const { return 0; }
     virtual int column() const { return 0; };
     virtual LambdaListHandler_sp lambdaListHandler() const { IMPLEMENT_ME(); };
-    virtual void setAssociatedFunctions(List_sp funcs) { NOT_APPLICABLE(); };
   public: // The hard-coded indexes above are defined below to be used by Class
     void initializeSlots(gctools::Stamp is, size_t numberOfSlots);
     void initializeClassSlots(Creator_sp creator, gctools::Stamp class_stamp);
     void ensureClosure(DispatchFunction_fptr_type entryPoint);
-    virtual void setf_lambda_list(List_sp lambda_list) { if (!this->_isgf) {SIMPLE_ERROR(BF("Cannot set lambda list of non gf function ll->%s") % _rep_(lambda_list));} this->GFUN_LAMBDA_LIST_set(lambda_list); }; //{ this->_lambda_list = lambda_list; };
+    virtual void setf_lambda_list(List_sp lambda_list) { if (!this->_isgf) {SIMPLE_ERROR_SPRINTF("Cannot set lambda list of non gf function ll->%s", _rep_(lambda_list).c_str());} this->GFUN_LAMBDA_LIST_set(lambda_list); }; //{ this->_lambda_list = lambda_list; };
     virtual T_sp lambda_list() const { return this->GFUN_LAMBDA_LIST(); };
   public:
     static size_t rack_stamp_offset();
@@ -281,8 +293,30 @@ namespace core {
 
     static  LCC_RETURN LISP_CALLING_CONVENTION();
 
-  }; // Instance class
+  }; // FuncallableInstance class
 
+
+  struct GenericFunctionReadLock {
+    mp::SharedMutex_sp _Lock;
+  GenericFunctionReadLock(mp::SharedMutex_sp lock) : _Lock(lock) {
+    this->_Lock->shared_lock();
+  }
+    ~GenericFunctionReadLock() {
+      this->_Lock->shared_unlock();
+    }
+  };
+
+  struct GenericFunctionWriteLock {
+    mp::SharedMutex_sp _Lock;
+  GenericFunctionWriteLock(mp::SharedMutex_sp lock) : _Lock(lock) {
+    this->_Lock->write_lock();
+  }
+    ~GenericFunctionWriteLock() {
+      this->_Lock->write_unlock();
+    }
+  };
+
+  
 }; // core namespace
 
 

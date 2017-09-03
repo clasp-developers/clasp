@@ -178,7 +178,7 @@ CL_DECLARE();
 CL_DOCSTRING("encode object as an a-list");
 CL_DEFUN core::List_sp core__encode(T_sp arg) {
   if (arg.generalp()) return arg.unsafe_general()->encode();
-  IMPLEMENT_MEF(BF("Implement for non-general objects"));
+  IMPLEMENT_MEF("Implement for non-general objects");
 };
 
 CL_LAMBDA(obj arg);
@@ -187,7 +187,7 @@ CL_DOCSTRING("decode object from a-list");
 CL_DEFUN T_sp core__decode(T_sp obj, core::List_sp arg) {
   if (obj.generalp()) obj.unsafe_general()->decode(arg);
   return obj;
-  IMPLEMENT_MEF(BF("Implement for non-general objects"));
+  IMPLEMENT_MEF("Implement for non-general objects");
 };
 
 CL_LAMBDA(obj stream);
@@ -281,7 +281,7 @@ CL_DEFUN T_sp core__instance_sig(T_sp obj) {
   if ( obj.generalp() ) {
     return obj.unsafe_general()->instanceSig();
   }
-  IMPLEMENT_MEF(BF("Implement for non-general objects"));
+  IMPLEMENT_MEF("Implement for non-general objects");
 };
 
 CL_LAMBDA(arg);
@@ -291,7 +291,7 @@ CL_DEFUN T_sp core__instance_sig_set(T_sp arg) {
   if ( arg.generalp() ) {
     return arg.unsafe_general()->instanceSigSet();
   }
-  IMPLEMENT_MEF(BF("Implement for non-general objects"));
+  IMPLEMENT_MEF("Implement for non-general objects");
 };
 
 CL_LAMBDA(obj idx val);
@@ -301,7 +301,7 @@ CL_DEFUN T_sp core__instance_set(T_sp obj, int idx, T_sp val) {
   if ( obj.generalp() ) {
     return obj.unsafe_general()->instanceSet(idx, val);
   }
-  IMPLEMENT_MEF(BF("Implement for non-general objects"));
+  IMPLEMENT_MEF("Implement for non-general objects");
 };
 
 CL_LAMBDA(obj idx);
@@ -309,7 +309,7 @@ CL_DECLARE();
 CL_DOCSTRING("instanceRef - return the (idx) slot value of (obj)");
 CL_DEFUN T_sp core__instance_ref(T_sp obj, int idx) {
   if (obj.generalp())return obj.unsafe_general()->instanceRef(idx);
-  IMPLEMENT_MEF(BF("Implement for non-general objects"));
+  IMPLEMENT_MEF("Implement for non-general objects");
 };
 
 CL_LAMBDA(obj);

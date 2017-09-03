@@ -1,0 +1,5 @@
+#! /bin/bash
+uname -a | tee build-time.log
+git rev-parse --long HEAD | tee build-time.log
+time ./waf distclean configure build_cboehm | tee /tmp/build_time.log
+tail -4 /tmp/build_time.log | tee build-time.log

@@ -221,7 +221,8 @@ struct Buckets<T, U, WeakLinks> : public BucketsBase<T, U> {
         //		    printf("%s:%d Buckets dtor idx: %zu unregister disappearing link @%p\n", __FILE__, __LINE__, i, &this->bucket[i].rawRef_());
         int result = GC_unregister_disappearing_link(reinterpret_cast<void **>(&this->bucket[i].rawRef_()));
         if (!result) {
-          THROW_HARD_ERROR(BF("The link was not registered as a disappearing link!"));
+          printf("%s:%d The link was not registered as a disappearing link!", __FILE__, __LINE__);
+          abort();
         }
       }
     }
@@ -230,7 +231,7 @@ struct Buckets<T, U, WeakLinks> : public BucketsBase<T, U> {
 
   void set(size_t idx, const value_type &val) {
     if (!val.objectp()) {
-      THROW_HARD_ERROR(BF("Only generalp() or consp() objects can be added to Mapping - you are trying to add a tagged pointer->%p") % (void*)val.tagged_());
+      throw_hard_error("Only generalp() or consp() objects can be added to Mapping - you are trying to add a tagged pointer->%p");
     }
 #ifdef USE_BOEHM
     //	    printf("%s:%d ---- Buckets set idx: %zu   this->bucket[idx] = %p\n", __FILE__, __LINE__, idx, this->bucket[idx].raw_() );
@@ -240,7 +241,7 @@ struct Buckets<T, U, WeakLinks> : public BucketsBase<T, U> {
       //		printf("%s:%d Buckets set idx: %zu unregister disappearing link @%p\n", __FILE__, __LINE__, idx, linkAddress );
       int result = GC_unregister_disappearing_link(linkAddress); //reinterpret_cast<void**>(&this->bucket[idx].rawRef_()));
       if (!result) {
-        THROW_HARD_ERROR(BF("The link was not registered as a disappearing link!"));
+        throw_hard_error("The link was not registered as a disappearing link!");
       }
     }
     if (!unboundOrDeletedOrSplatted(val)) {
@@ -334,7 +335,7 @@ public:
 public:
   size_t length() const {
     if (!this->_Keys) {
-      THROW_HARD_ERROR(BF("Keys should never be null"));
+      throw_hard_error("Keys should never be null");
     }
     return this->_Keys->length();
   }
@@ -414,7 +415,7 @@ struct Mapping<T, U, WeakLinks> : public MappingBase<T, U> {
   typedef typename MappingBase<T, U>::dependent_type dependent_type;
   Mapping(const T &val) : MappingBase<T, U>(val) {
     if (!val.objectp()) {
-      THROW_HARD_ERROR(BF("Only objectp() objects can be added to Mapping"));
+      throw_hard_error("Only objectp() objects can be added to Mapping");
     }
 #ifdef USE_BOEHM
     GCTOOLS_ASSERT(this->bucket.objectp());
@@ -425,6 +426,10 @@ struct Mapping<T, U, WeakLinks> : public MappingBase<T, U> {
     }
 #endif
   };
+
+
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wexceptions"
   virtual ~Mapping() {
 #ifdef USE_BOEHM
     GCTOOLS_ASSERT(this->bucket.objectp());
@@ -432,11 +437,14 @@ struct Mapping<T, U, WeakLinks> : public MappingBase<T, U> {
       // printf("%s:%d Mapping unregister disappearing link\n", __FILE__, __LINE__);
       int result = GC_unregister_disappearing_link(reinterpret_cast<void **>(&this->bucket.rawRef_()));
       if (!result) {
-        THROW_HARD_ERROR(BF("The link was not registered as a disappearing link!"));
+        printf("%s:%d The link was not registered as a disappearing link!", __FILE__, __LINE__);
+        abort();
       }
     }
 #endif
   }
+#pragma clang diagnostic pop
+  
 };
 
 template <class T, class U>
@@ -539,7 +547,7 @@ struct WeakPointerManager {
 
   WeakPointerManager(const value_type &val) {
     if (!val.objectp()) {
-      THROW_HARD_ERROR(BF("Only objectp() objects can be added to Mapping"));
+      throw_hard_error("Only objectp() objects can be added to Mapping");
     }
     this->pointer = AllocatorType::allocate(val);
 #ifdef USE_BOEHM
@@ -552,17 +560,21 @@ struct WeakPointerManager {
     }
 #endif
   }
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wexceptions"
   virtual ~WeakPointerManager() {
 #ifdef USE_BOEHM
     GCTOOLS_ASSERT(this->pointer->value.objectp());
     if (!unboundOrDeletedOrSplatted(this->pointer->value)) {
       int result = GC_unregister_disappearing_link(reinterpret_cast<void **>(&this->pointer->value.rawRef_()));
       if (!result) {
-        THROW_HARD_ERROR(BF("The link was not registered as a disappearing link!"));
+        printf("%s:%d The link was not registered as a disappearing link!", __FILE__, __LINE__);
+        abort();
       }
     }
 #endif
   };
+#pragma clang diagnostic pop
 
   // This will need to be a tagged_backcastable_base_ptr
   gctools::tagged_pointer<WeakPointer> pointer;

@@ -40,14 +40,20 @@
 ;;;
 (defvar *current-form-lineno* 0)
 
-
-
 (defconstant +debug-dwarf-version+ 4)
+
+;; bound when a new thread is created
+(defvar *primitives*)
+(export '*primitives*)
 
 ;;;(defvar *llvm-context* (llvm-sys:create-llvm-context))
 (mp:push-default-special-binding 'cmp:*llvm-context* '(llvm-sys:create-llvm-context))
+(mp:push-default-special-binding 'cmp:*primitives* nil)
 
 
+(defun dump-function (func)
+  (warn "Do something with dump-function"))
+(export 'dump-function)
 
 (defun generate-target-triple ()
   "Uses *features* to generate the target triple for the current machine
@@ -86,38 +92,6 @@ using features defined in corePackage.cc"
     (llvm-sys:set-target-triple m *default-target-triple*)
     (llvm-sys:set-data-layout m *default-data-layout*)
     m))
-
-
-
-#+(or)(defvar *use-function-pass-manager-for-compile-file* t)
-#+(or)
-(defun create-function-pass-manager-for-compile-file (module)
-  (let ((fpm (llvm-sys:make-function-pass-manager module)))
-    (warn "Look at what passes the Kaleidoscope demo is making")
-    ;;    (llvm-sys:function-pass-manager-add fpm (llvm-sys:create-basic-alias-analysis-pass))
-    (llvm-sys:function-pass-manager-add fpm (llvm-sys:create-instruction-combining-pass))
-    (llvm-sys:function-pass-manager-add fpm (llvm-sys:create-promote-memory-to-register-pass))
-    (llvm-sys:function-pass-manager-add fpm (llvm-sys:create-reassociate-pass))
-    (llvm-sys:function-pass-manager-add fpm (llvm-sys:create-gvnpass nil))
-    (llvm-sys:function-pass-manager-add fpm (llvm-sys:create-cfgsimplification-pass -1 #'(lambda (f) t)))
-    ;;    (if *debug-ir* (llvm-sys:function-pass-manager-add fpm (llvm-sys:create-debug-irpass "createDebugIR.log")))
-    (llvm-sys:do-initialization fpm)
-    fpm))
-
-
-#+(or)
-(defun create-function-pass-manager-for-compile (module)
-  (let ((fpm (llvm-sys:make-function-pass-manager module)))
-    (warn "Look at what passes the Kaleidoscope demo is making")
-    ;;    (llvm-sys:function-pass-manager-add fpm (llvm-sys:create-basic-alias-analysis-pass))
-    (llvm-sys:function-pass-manager-add fpm (llvm-sys:create-instruction-combining-pass))
-    (llvm-sys:function-pass-manager-add fpm (llvm-sys:create-promote-memory-to-register-pass))
-    (llvm-sys:function-pass-manager-add fpm (llvm-sys:create-reassociate-pass))
-    (llvm-sys:function-pass-manager-add fpm (llvm-sys:create-gvnpass nil))
-    (llvm-sys:function-pass-manager-add fpm (llvm-sys:create-cfgsimplification-pass -1 #'(lambda (f) t)))
-    (llvm-sys:do-initialization fpm)
-    fpm))
-
 
 (defvar *run-time-module-counter* 1)
 (defun next-run-time-module-name ()
@@ -328,6 +302,109 @@ No DIBuilder is defined for the default module")
 ;;;
 
 
+
+(defun jit-link-builtins-module (module)
+  "Merge the intrinsics module with the passed module.
+The passed module is modified as a side-effect."
+  (when *enable-builtins-inlining*
+    (unless *builtins-module*
+      (let* ((builtins-bitcode-name (namestring (truename (build-inline-bitcode-pathname :compile :builtins))))
+             (builtins-module (llvm-sys:parse-bitcode-file builtins-bitcode-name *llvm-context*)))
+        (llvm-sys:remove-useless-global-ctors builtins-module)
+        (setf *builtins-module* builtins-module)))
+    ;; Clone the intrinsics module and link it in
+    (quick-module-dump module "module before linking builtins-clone")
+    (let ((linker (llvm-sys:make-linker module))
+          (builtins-clone (llvm-sys:clone-module *builtins-module*)))
+      ;;(remove-always-inline-from-functions builtins-clone)
+      (quick-module-dump builtins-clone "builtins-clone")
+      (llvm-sys:link-in-module linker builtins-clone)))
+  module)
+
+(defvar *optimizations-on* t)
+(defvar *optimization-level* :-O3)
+(defvar *size-level* 1)
+
+
+(defun optimize-module-for-compile-file (module &optional (optimize-level *optimization-level*) (size-level *size-level*))
+  (declare (type (or null llvm-sys:module) module))
+  (when (and *optimizations-on* module)
+    #++(let ((call-sites (call-sites-to-always-inline module)))
+      (bformat t "Call-sites -> %s\n" call-sites))
+    (let* ((pass-manager-builder (llvm-sys:make-pass-manager-builder))
+           (mpm (llvm-sys:make-pass-manager))
+           (fpm (llvm-sys:make-function-pass-manager module))
+           (olevel (cond
+                     ((eq optimize-level :-O3) 3)
+                     ((eq optimize-level :-O2) 2)
+                     ((eq optimize-level :-O1) 1)
+                     ((eq optimize-level :-O0) 0)
+                     (t (error "Unsupported optimize-level ~a - only :-O3 :-O2 :-O1 :-O0 are allowed" optimize-level)))))
+      (llvm-sys:pass-manager-builder-setf-opt-level pass-manager-builder olevel)
+      (llvm-sys:pass-manager-builder-setf-size-level pass-manager-builder size-level)
+      (llvm-sys:populate-ltopass-manager pass-manager-builder mpm)
+      (llvm-sys:pass-manager-run mpm module)))
+  module)
+
+
+(defun optimize-module-for-compile (module &optional (optimize-level *optimization-level*) (size-level *size-level*))
+  (declare (type (or null llvm-sys:module) module))
+  (when (and *optimizations-on* module)
+    #++(let ((call-sites (call-sites-to-always-inline module)))
+      (bformat t "Call-sites -> %s\n" call-sites))
+    (let* ((pass-manager-builder (llvm-sys:make-pass-manager-builder))
+           (mpm (llvm-sys:make-pass-manager))
+           (fpm (llvm-sys:make-function-pass-manager module))
+           (olevel (cond
+                     ((eq optimize-level :-O3) 3)
+                     ((eq optimize-level :-O2) 2)
+                     ((eq optimize-level :-O1) 1)
+                     ((eq optimize-level :-O0) 0)
+                     (t (error "Unsupported optimize-level ~a - only :-O3 :-O2 :-O1 :-O0 are allowed" optimize-level)))))
+      (llvm-sys:pass-manager-builder-setf-opt-level pass-manager-builder olevel)
+      (llvm-sys:pass-manager-builder-setf-size-level pass-manager-builder size-level)
+      (llvm-sys:pass-manager-builder-setf-inliner pass-manager-builder (llvm-sys:create-always-inliner-legacy-pass))
+      (llvm-sys:populate-function-pass-manager pass-manager-builder fpm)
+      (llvm-sys:populate-module-pass-manager pass-manager-builder mpm)
+      ;; (llvm-sys:populate-ltopass-manager pass-manager-builder mpm)
+      (llvm-sys:do-initialization fpm)
+      (let ((funcs (llvm-sys:module-get-function-list module)))
+        (dolist (func funcs)
+          (llvm-sys:function-pass-manager-run fpm func)))
+      (llvm-sys:do-finalization fpm)
+      (llvm-sys:pass-manager-run mpm module)))
+  module)
+
+
+
+(defun remove-always-inline-from-functions (module)
+  (let ((functions (llvm-sys:module-get-function-list module))
+        inline-functions)
+    (dolist (f functions)
+      (if (llvm-sys:has-fn-attribute f 'llvm-sys:attribute-always-inline)
+          (progn
+            (llvm-sys:remove-fn-attr f 'llvm-sys:attribute-always-inline)
+            (setf inline-functions (cons f inline-functions)))))
+    inline-functions))
+
+
+(defun call-sites-to-always-inline (module)
+  (let (call-sites
+        (functions (llvm-sys:module-get-function-list module)))
+    (dolist (func functions)
+      (let ((basic-blocks (llvm-sys:basic-blocks func)))
+        (dolist (bb basic-blocks)
+          (let ((instructions (llvm-sys:instructions bb)))
+            (dolist (instr instructions)
+              (if (or (llvm-sys:call-inst-p instr)
+                      (llvm-sys:invoke-inst-p instr))
+                  (let ((call-func (llvm-sys:get-called-function instr)))
+                    (setq call-sites (cons instr call-sites))
+                    (if (llvm-sys:has-fn-attribute call-func 'llvm-sys:attribute-always-inline)
+                        (setq call-sites (cons instr call-sites))))))))))
+    call-sites))
+         
+
 ;;; ------------------------------------------------------------
 ;;;
 ;;; Using the new ORC JIT engine
@@ -336,20 +413,25 @@ No DIBuilder is defined for the default module")
   (defvar *jit-engine* (make-cxx-object 'llvm-sys:clasp-jit))
   #+threads(defvar *jit-engine-mutex* (mp:make-lock :name 'jit-engine-mutex :recursive t))
   (export '(jit-add-module-return-function jit-add-module-return-dispatch-function jit-remove-module))
-  (defvar *intrinsics-module* nil)
+  (defvar *builtins-module* nil)
   (defparameter *jit-dump-module* nil)
   (defvar *declare-dump-module* nil)
+  (defvar *enable-builtins-inlining* t)
   (defvar *jit-repl-module-handles* nil)
   (defvar *jit-fastgf-module-handles* nil)
   (defvar *jit-symbol-info* nil)
   (defvar *jit-saved-symbol-info* (make-hash-table :test #'equal :thread-safe t))
   (defun jit-add-module-return-function (original-module repl-fn startup-fn shutdown-fn literals-list)
-    (let ((module (llvm-sys:clone-module original-module)))
-      #+threads(mp:get-lock *jit-engine-mutex*)
+    ;; Link the builtins into the module and optimize them
+    (jit-link-builtins-module original-module)
+    #+(or)(optimize-module-for-compile original-module)
+    #+(or)(quick-module-dump original-module "module after-optimize")
+    (let ((module original-module))
+      ;;#+threads(mp:get-lock *jit-engine-mutex*)
       ;;    (bformat t "In jit-add-module-return-function dumping module\n")
       ;;    (llvm-sys:print-module-to-stream module *standard-output*)
-      (if *jit-dump-module* (llvm-sys:dump module))
-      (if *declare-dump-module* (llvm-sys:dump module))
+      (if *jit-dump-module* (llvm-sys:dump-module module))
+      (if *declare-dump-module* (llvm-sys:dump-module module))
       (let* ((repl-name (llvm-sys:get-name repl-fn))
              (startup-name (llvm-sys:get-name startup-fn))
              (shutdown-name (llvm-sys:get-name shutdown-fn))
@@ -362,11 +444,12 @@ No DIBuilder is defined for the default module")
             (dolist (e *jit-symbol-info*)
               (core:hash-table-setf-gethash *jit-saved-symbol-info* (car e) (cdr e))
               #++(bformat t "%s\n" e))
-            #++(bformat t "Dump of associated functions: %s\n" *all-functions-for-one-compile*)
             fn)))))
 
   (defun jit-add-module-return-dispatch-function (original-module dispatch-fn startup-fn shutdown-fn literals-list)
-    (let ((module (llvm-sys:clone-module original-module)))
+    (jit-link-builtins-module original-module)
+    #+(or)(optimize-module-for-compile original-module)
+    (let ((module original-module))
       (let* ((dispatch-name (llvm-sys:get-name dispatch-fn))
              (startup-name (llvm-sys:get-name startup-fn))
              (shutdown-name (llvm-sys:get-name shutdown-fn))
@@ -380,50 +463,7 @@ No DIBuilder is defined for the default module")
       
   (defun jit-remove-module (handle)
     (llvm-sys:clasp-jit-remove-module *jit-engine* handle))
+
+  ;;; Maybe add more jit engine code here
   )
 
-;;; Use old execution engine approach
-#+(or)
-(progn
-  (defun jit-add-module-return-function (module repl-fn startup-fn shutdown-fn literals-list)
-    "Add the module to the jit and return a handle"
-    (unwind-protect
-         (progn
-           #+threads(mp:get-lock *jit-engine-mutex*)
-           (if (not *jit-engine*)
-               (setq *jit-engine* (create-run-time-execution-engine module))
-               (llvm-sys:add-module *jit-engine* module))
-           (llvm-sys:finalize-engine-and-register-with-gc-and-get-compiled-function
-            *jit-engine*
-            "JIT"
-            repl-fn
-            (irc-environment-activation-frame nil) 0 0 0
-            startup-fn
-            shutdown-fn
-            literals-list))
-      (progn
-        #+threads(mp:giveup-lock *jit-engine-mutex*))))
-
-  (defun jit-add-module-return-dispatch-function (module repl-fn startup-fn shutdown-fn literals-list)
-    "Add the module to the jit and return a handle"
-    (irc-verify-function repl-fn)
-    (unwind-protect
-         (progn
-           #+threads(mp:get-lock *jit-engine-mutex*)
-           (if (not *jit-engine*)
-               (setq *jit-engine* (create-run-time-execution-engine module))
-               (llvm-sys:add-module *jit-engine* module))
-           (llvm-sys:finalize-engine-and-get-dispatch-function
-            *jit-engine*
-            "JIT-DISPATCH"
-            repl-fn
-            startup-fn
-            shutdown-fn
-            literals-list))
-      (progn
-        #+threads(mp:giveup-lock *jit-engine-mutex*)
-        )))
-
-  (defun jit-remove-module (handle)
-    "Maybe remove the module"
-    nil))

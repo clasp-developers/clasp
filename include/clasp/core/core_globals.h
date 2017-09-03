@@ -28,7 +28,6 @@ THE SOFTWARE.
 #ifndef globals_H
 #define globals_H
 
-#include <clasp/core/foundation.h>
 
 namespace core {
 

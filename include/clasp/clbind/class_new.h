@@ -168,7 +168,7 @@ public:
     printf("DummyCreator for: %s\n", this->_name.c_str());
   };
   virtual core::T_sp allocate() {
-    SIMPLE_ERROR(BF("This class cannot allocate instances"));
+    SIMPLE_ERROR_SPRINTF("This class cannot allocate instances");
   } //return _Nil<core::T_O>(); };
   Creator_sp duplicateForClassName(core::Symbol_sp className) {
     return gc::GC<DummyCreator_O>::allocate(core::lisp_symbolNameAsString(className));

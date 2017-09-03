@@ -53,6 +53,23 @@
   (setq *load-print* t)
   (setq *echo-repl-read* t))
 
+#+clasp
+(defun update-specializer-profile (generic-function)
+  (let ((methods (clos:generic-function-methods generic-function)))
+    (if methods
+        (let* ((first-method-specializers (method-specializers (car methods)))
+               (vec (make-array (length first-method-specializers) :initial-element nil))
+               (tc (find-class 't)))
+          (loop for method in methods
+             for specs = (method-specializers method)
+             do (loop for i from 0 below (length vec)
+                   for spec in specs
+                   for specialized = (not (eq spec tc))
+                   when specialized
+                   do (setf (elt vec i) t)))
+          (setf (generic-function-specializer-profile generic-function) vec))
+        (setf (generic-function-specializer-profile generic-function) nil))))
+
 
 (defmethod reader-method-class ((class std-class)
 				(direct-slot direct-slot-definition)
@@ -156,22 +173,6 @@
                                      (all-keywords keywords2))))
            t))))
 
-#+clasp
-(defun update-specializer-profile (generic-function)
-  (let ((methods (clos:generic-function-methods generic-function)))
-    (if methods
-        (let* ((first-method-specializers (method-specializers (car methods)))
-               (vec (make-array (length first-method-specializers) :initial-element nil))
-               (tc (find-class 't)))
-          (loop for method in methods
-             for specs = (method-specializers method)
-             do (loop for i from 0 below (length vec)
-                   for spec in specs
-                   for specialized = (not (eq spec tc))
-                   when specialized
-                   do (setf (elt vec i) t)))
-          (setf (generic-function-specializer-profile generic-function) vec))
-        (setf (generic-function-specializer-profile generic-function) nil))))
 
 (defun add-method (gf method)
   ;; during boot it's a structure accessor
@@ -438,6 +439,24 @@ and cannot be added to ~A." method other-gf gf)))
              dispatchers)
     count))
 
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;;   Startup fastgf
+;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+#+(or)(progn
+        (startup-generic-functions)
+        (eval-when (:execute :load-time)
+          (format t "!~%!~%!~%!~%!~%Finished startup-generic-functions~%!~%!~%!~%")))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
 ;;; April 2017  Turn this off for now to debug
 (eval-when (:execute :compile-toplevel :load-toplevel)
   ;; This turns on fast-dispatch that uses the code in cmpgf.lsp
@@ -474,3 +493,61 @@ and cannot be added to ~A." method other-gf gf)))
 |#
           
 
+#| 
+;;;;;;  Trial code for converting existing generic functions with call history into fastgf generic functions.
+
+
+;;; Switch existing functions in one step (two step below) to fastgf while avoiding a few that cause metastability issues.
+
+(dolist (x (clos::all-generic-functions))
+;;;  (core:bformat t "%s\n" x)
+  (if (member x (list
+                 #'clos::compute-applicable-methods-using-classes
+                 #'clos::add-direct-method
+#|
+                 #'class-name
+                 #'initialize-instance
+                 #'clos:add-direct-subclass
+                 #'clos:validate-superclass
+|#
+                      ))
+;;;      (core:bformat t "     Skipping\n")
+      (progn
+        (clos::update-specializer-profile x)
+        (clos::switch-to-fastgf x))))
+
+
+;;; Switch existing functions to fastgf in two steps while avoiding a few that cause metastability issues.
+
+(let ((dispatchers (make-hash-table)))
+  (dolist (x (clos::all-generic-functions))
+    (clos::update-specializer-profile x)
+    (if (member x (list
+                   #'clos::compute-applicable-methods-using-classes
+                   #'clos::add-direct-method
+                   #'clos::compute-effective-method
+                   ))
+        nil
+        (setf (gethash x dispatchers) (clos::calculate-fastgf-dispatch-function x))))
+  (maphash (lambda (gf disp)
+             (clos::safe-set-funcallable-instance-function gf disp))
+           dispatchers))
+
+;;;  (core:bformat t "%s\n" x)
+  (if (member x (list
+                 #'clos::compute-applicable-methods-using-classes
+                 #'clos::add-direct-method
+#|
+                 #'class-name
+                 #'initialize-instance
+                 #'clos:add-direct-subclass
+                 #'clos:validate-superclass
+|#
+                      ))
+;;;      (core:bformat t "     Skipping\n")
+      (progn
+        (clos::update-specializer-profile x)
+        (clos::switch-to-fastgf x))))
+
+
+|#

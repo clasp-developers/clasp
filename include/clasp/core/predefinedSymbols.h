@@ -27,7 +27,6 @@ THE SOFTWARE.
 #ifndef predefined_symbols_H
 #define predefined_symbols_H
 
-#include <clasp/core/foundation.h>
 namespace core {
 
 extern void initializeAllPredefinedSymbols(Lisp_sp lisp);

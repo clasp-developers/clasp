@@ -27,6 +27,7 @@ THE SOFTWARE.
 
 #define DEBUG_LEVEL_NONE
 
+#include <clasp/core/foundation.h>
 #include <clasp/core/lisp.h>
 #include <clasp/core/intArray.h>
 #include <clasp/core/wrappers.h>

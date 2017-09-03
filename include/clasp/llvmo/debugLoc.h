@@ -33,7 +33,6 @@ THE SOFTWARE.
 #include <llvm/IR/Module.h>
 #include <llvm/IR/Verifier.h>
 #include <llvm/IR/IRBuilder.h>
-#include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
 #include <clasp/llvmo/debugLoc.fwd.h>
 #include <clasp/llvmo/llvmoExpose.fwd.h>

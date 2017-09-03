@@ -28,7 +28,6 @@ THE SOFTWARE.
 #define _core_Array_H
 
 #include <clasp/core/clasp_gmpxx.h>
-#include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
 #include <clasp/core/numbers.fwd.h>
 #include <clasp/core/character.fwd.h>
@@ -171,6 +170,7 @@ namespace core {
   [[noreturn]] void insufficientIndexListError(List_sp indices);
   [[noreturn]] void insufficientIndexVaListError(VaList_sp indices);
   [[noreturn]] void notStringError(T_sp obj);
+  [[noreturn]] void cannotAdjustSizeOfSimpleArrays(T_sp obj);
   [[noreturn]] void notSequenceError(T_sp obj);
   [[noreturn]] void noFillPointerError(Symbol_sp fn_name, T_sp array);
   [[noreturn]] void noFillPointerSpecializedArrayError(T_sp array);
@@ -292,23 +292,18 @@ namespace core {
     virtual T_sp rowMajorAref(size_t idx) const = 0;
     virtual bool adjustableArrayP() const =0;
     virtual bool displacedToP() const { return false; };
-    size_t arrayRowMajorIndex(VaList_sp indices) const {
-      return this->index_(indices);
-    }
+  /*! As the CL function: Return the offset into a one-dimensional vector for the
+      multidimensional indices in the (Va)List, using row-major ordering. */
+    size_t arrayRowMajorIndex(VaList_sp indices) const;
+    size_t arrayRowMajorIndex(List_sp indices) const;
     virtual LongLongInt setDimensions(List_sp dimensions, T_sp initialElement) { SUBIMP(); };
     virtual Array_sp reverse() const = 0;
     virtual Array_sp nreverse() = 0;
     virtual size_t rank() const = 0;
   /*! Return the offset into a one-dimensional vector for the multidimensional index
-      in the vector<int>s.  This is in rowMajor order.*/
+      in the vector<int>s.  This is in rowMajor order.
+      Separate from arrayRowMajorIndex because it's internal and does less error checking. */
     size_t index_vector_int(const vector<int> &indices) const;
-  /*! Return the offset into a one-dimensional vector for a multidimensional index
-	 If last_value_is_val == true then don't use the last value in the indices list */
-    size_t index_val_(List_sp indices, bool last_value_is_val, T_sp &last_val) const;
-    size_t index_val_(VaList_sp indices, bool last_value_is_val, T_sp &last_val) const;
-  /*! Return the offset into a one-dimensional vector for a multidimensional index */
-    inline size_t index_(List_sp indices) const {T_sp dummy; return this->index_val_(indices,false,dummy);};
-    inline size_t index_(VaList_sp indices) const {T_sp dummy; return this->index_val_(indices,false,dummy);};
   /*! Return the type returned by this array */
     virtual T_sp arrayElementType() const = 0;
     virtual bool arrayHasFillPointerP() const { return false; };
@@ -625,6 +620,7 @@ namespace core {
     typedef typename TemplatedBase::const_iterator const_iterator;
     typedef value_type container_value_type;
   public:
+    static value_type default_initial_element(void) {return '\0';}
     static value_type initial_element_from_object(T_sp obj, bool supplied);
     static value_type from_object(T_sp obj) {
       if (obj.characterp()) {
@@ -699,6 +695,7 @@ namespace core {
     typedef typename TemplatedBase::const_iterator const_iterator;
     typedef value_type container_value_type;
   public:
+    static value_type default_initial_element(void) {return '\0';}
     static value_type initial_element_from_object(T_sp obj, bool supplied);
     static value_type from_object(T_sp obj) {
       if (obj.characterp()) {
@@ -779,6 +776,7 @@ namespace core {
     typedef typename TemplatedBase::const_iterator const_iterator;
     typedef value_type container_value_type;
   public:
+    static value_type default_initial_element(void) {return _Nil<T_O>();}
     static value_type initial_element_from_object(T_sp obj, bool supplied) {return supplied ? obj : _Nil<T_O>();};
     static value_type from_object(T_sp obj) {return obj; };
     static T_sp to_object(const value_type& v) { return v; };
@@ -840,6 +838,7 @@ namespace core {
     }
     static SimpleBitVector_sp make(const string& bv);
   public:
+    static value_type default_initial_element(void) {return 0;}
     static value_type initial_element_from_object(T_sp initialElement, bool initialElementSupplied) {
       if (initialElementSupplied) {
         if (initialElement.fixnump()) {
@@ -850,6 +849,14 @@ namespace core {
       }
       return 0;
     }
+    static value_type from_object(T_sp object) {
+      if (object.fixnump()) {
+        value_type i = object.unsafe_fixnum();
+        if (i==0||i==1) return i;
+      }
+      TYPE_ERROR(object, cl::_sym_bit);
+    }
+    static T_sp to_object(const value_type& v) { return clasp_make_integer(v); };
   public:
     virtual T_sp type_of() const final { return Cons_O::createList(cl::_sym_simple_bit_vector,clasp_make_fixnum(this->length()));};
     virtual T_sp array_type() const final { return cl::_sym_simple_array; };
@@ -1202,7 +1209,7 @@ namespace core {
   public:
     virtual Array_sp reverse() const final { return templated_reverse_VectorNs(*this); };
     virtual Array_sp nreverse() final { return templated_nreverse_VectorNs(*this); };
-    virtual void internalAdjustSize_(size_t size, T_sp initElement=_Nil<T_O>(), bool initElementSupplied=false ) final {SIMPLE_ERROR(BF("You cannot adjust size of simple-arrays"));};
+    virtual void internalAdjustSize_(size_t size, T_sp initElement=_Nil<T_O>(), bool initElementSupplied=false ) final {cannotAdjustSizeOfSimpleArrays(this->asSmartPtr());};
 public:
     void this_asAbstractSimpleVectorRange(AbstractSimpleVector_sp& sv, size_t& start, size_t& end) const  {
       sv = gc::As<AbstractSimpleVector_sp>(this->_Data);

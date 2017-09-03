@@ -7,6 +7,8 @@ include $(wildcard $(CLASP_HOME)/local.config)
 
 export PJOBS ?= 1
 
+export LLVM_VERSION := 5.0
+
 export PREFIX := $(or $(PREFIX), \
 			/usr/local/clasp )
 
@@ -41,8 +43,7 @@ export DEVEMACS ?= $(or $(and $(filter $(TARGET_OS),Linux), emacs -nw ./),\
                         $(and $(filter $(TARGET_OS),Darwin), open -n -a /Applications/Emacs.app ./))
 
 ifneq ($(EXTERNALS_CLASP_DIR),)
-export LLVM_CONFIG := $(or $(LLVM_CONFIG),\
-                           $(wildcard $(EXTERNALS_CLASP_DIR)/build/release/bin/llvm-config),\
+export LLVM_CONFIG := $(or $(wildcard $(EXTERNALS_CLASP_DIR)/build/release/bin/llvm-config),\
                            $(error Could not find llvm-config (release build) in externals-clasp.))
 export LLVM_CONFIG_DEBUG := $(or $(LLVM_CONFIG_DEBUG),\
                                  $(wildcard $(EXTERNALS_CLASP_DIR)/build/debug/bin/llvm-config),\
@@ -50,10 +51,11 @@ export LLVM_CONFIG_DEBUG := $(or $(LLVM_CONFIG_DEBUG),\
                                  $(LLVM_CONFIG))
 else
 # XXX: confirm the necessity of llvm-config* pathsearch!
-export LLVM_CONFIG ?= $(or $(call pathsearch, llvm-config-4.0),\
+export LLVM_CONFIG ?= $(or $(call pathsearch, llvm-config-$(LLVM_VERSION)),\
                            $(call pathsearch, llvm-config),\
                            $(call pathsearch, llvm-config*),\
                            $(error Could not find llvm-config.))
+export LLVM_CONFIG_DEBUG = $(LLVM_CONFIG)
 endif
 
 export GIT_COMMIT ?= $(shell git rev-parse --short HEAD || echo "unknown-commit")
@@ -211,6 +213,8 @@ export DEV_CLASP_LISP_SOURCE_DIR := $(shell pwd)/src/lisp
 export CLASP_LISP_SOURCE_DIR ?= $(DEV_CLASP_LISP_SOURCE_DIR)
 
 devemacs:
+	@echo EXTERNALS_CLASP_DIR = $(EXTERNALS_CLASP_DIR)
+	@echo LLVM_CONFIG = $(LLVM_CONFIG)
 	@echo This shell sets up environment variables
 	@echo as they are defined when commands execute within the makefile
 	(CLASP_LISP_SOURCE_DIR=$(DEV_CLASP_LISP_SOURCE_DIR) $(DEVEMACS))

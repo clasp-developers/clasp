@@ -21,7 +21,6 @@ namespace gctools {
 #include <clasp/external/concurrentqueue/concurrentqueue.h>
 #include <clasp/external/concurrentqueue/blockingconcurrentqueue.h>
 
-#include <clasp/core/foundation.h>
 #include <clasp/core/mpPackage.fwd.h>
 
 

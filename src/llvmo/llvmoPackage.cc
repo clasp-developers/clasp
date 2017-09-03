@@ -357,6 +357,7 @@ CL_DEFUN llvmo::GlobalVariable_sp llvm_sys__getOrCreateExternalGlobal(llvmo::Mod
   return gv;
 }
 
+#if 0
 void dump_funcs(core::Function_sp compiledFunction) {
   core::T_sp funcs = compiledFunction->associatedFunctions();
   if (funcs.notnilp()) {
@@ -379,6 +380,7 @@ void dump_funcs(core::Function_sp compiledFunction) {
     STDOUT_BFORMAT(BF("There were no associated functions available for disassembly\n"));
   }
 }
+#endif
 
 CL_LAMBDA(module &optional (stream t))
 CL_DEFUN void dump_module(Module_sp module, core::T_sp tstream) {
@@ -398,30 +400,18 @@ CL_DEFUN void dump_function(Function_sp function, core::T_sp tstream) {
   core::clasp_write_string(outstr,stream);
 }
 
-CL_DEFUN void llvm_sys__disassembleSTAR(core::Function_sp cf) {
-  dump_funcs(cf);
-}
-
 CL_LAMBDA(fn &optional only);
-CL_DEFUN void llvm_sys__viewCFG(core::T_sp funcDes, core::T_sp only) {
-  core::Function_sp compiledFunction = core::coerce::functionDesignator(funcDes);
-  if (auto cl = compiledFunction.asOrNull<core::CompiledClosure_O>()) {
-    core::T_sp funcs = cl->associatedFunctions();
-    if ((funcs).consp()) {
-      core::List_sp cfuncs = funcs;
-      for (auto cur : cfuncs) {
-        core::T_sp func = oCar(cur);
-        if (llvmo::Function_sp f = gc::As<llvmo::Function_sp>(func)) {
-          if (only.notnilp()) {
-            f->wrappedPtr()->viewCFGOnly();
-          } else {
-            f->wrappedPtr()->viewCFG();
-          }
-        }
+CL_DEFUN void llvm_sys__viewCFG(core::T_sp funcs, core::T_sp only) {
+  core::List_sp cfuncs = funcs;
+  for (auto cur : cfuncs) {
+    core::T_sp func = oCar(cur);
+    if (llvmo::Function_sp f = gc::As<llvmo::Function_sp>(func)) {
+      if (only.notnilp()) {
+        f->wrappedPtr()->viewCFGOnly();
+      } else {
+        f->wrappedPtr()->viewCFG();
       }
     }
-  } else {
-    SIMPLE_ERROR(BF("The function is not a compiled function"));
   }
 }
 

@@ -75,7 +75,6 @@
 	 (let* ((*active-protection* t)
 		(*pending-actions* nil)
                 (*compilation-unit-module-index* 0)
-                (*all-functions-for-one-compile* nil)
                 (*compilation-messages* nil)
                 (*global-function-defs* (make-hash-table))
                 (*global-function-refs* (make-hash-table :test #'equal)))
@@ -221,7 +220,6 @@ Compile a lisp source file into an LLVM module.  type can be :kernel or :user"
          (input-pathname (probe-file given-input-pathname))
 	 (source-sin (open input-pathname :direction :input))
          (module (llvm-create-module (namestring input-pathname)))
-         (*primitives* (primitives-in-module module))
 	 (module-name (cf-module-name type given-input-pathname))
 	 warnings-p failure-p)
     (or module (error "module is NIL"))
@@ -241,7 +239,7 @@ Compile a lisp source file into an LLVM module.  type can be :kernel or :user"
                                   :source-namestring (namestring source-location)
                                   :source-debug-namestring source-debug-namestring
                                   :source-debug-offset source-debug-offset
-                                  :optimize optimize
+                                  :optimize (when optimize #'optimize-module-for-compile-file)
                                   :optimize-level optimize-level)
               (with-debug-info-generator (:module *the-module*
                                                   :pathname *compile-file-truename*)
@@ -270,7 +268,7 @@ Compile a lisp source file into an LLVM module.  type can be :kernel or :user"
                                      (compile-file-form form compile-file-hook)))))
                       (make-boot-function-global-variable *the-module* run-all-function)))))
               (cmp-log "About to verify the module\n")
-              (cmp-log-dump *the-module*)
+              (cmp-log-dump-module *the-module*)
               (irc-verify-module-safe *the-module*)
               (quick-module-dump *the-module* "preoptimize"))
             (quick-module-dump module "postoptimize")
@@ -304,7 +302,6 @@ Compile a lisp source file into an LLVM module.  type can be :kernel or :user"
     (let* ((*compile-print* print)
            (*compile-verbose* verbose)
            (*current-form-lineno* 0)
-           (*all-functions-for-one-compile* nil)
            (output-path (compile-file-pathname input-file :output-file output-file :output-type output-type ))
            (*compile-file-output-pathname* output-path)
            (module (compile-file-to-module input-file

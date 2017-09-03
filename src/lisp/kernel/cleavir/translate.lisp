@@ -206,7 +206,6 @@ when this is t a lot of graphs will be generated.")
            (body-block (cmp:irc-basic-block-create "body")))
       (llvm-sys:set-personality-fn the-function (cmp:irc-personality-function))
       (llvm-sys:add-fn-attr the-function 'llvm-sys:attribute-uwtable)
-      (push the-function cmp:*all-functions-for-one-compile*)
       (cc-dbg-when *debug-log*
                    (format *debug-log* "------------ begin layout-procedure ~a~%" (llvm-sys:get-name the-function))
                    (format *debug-log* "   basic-blocks for procedure~%")
@@ -269,7 +268,7 @@ when this is t a lot of graphs will be generated.")
                     (let ((cc (calling-convention function-info))
                           (enter-instruction (enter-instruction function-info)))
                       (%intrinsic-call "cc_popLandingPadFrame"
-                                       (list (cmp:irc-load (translate-datum (clasp-cleavir-hir:frame-holder enter-instruction)))))))))
+                                       (list (%load (translate-datum (clasp-cleavir-hir:frame-holder enter-instruction)))))))))
           (layout-procedure* the-function
                              body-irbuilder
                              body-block
@@ -370,8 +369,8 @@ when this is t a lot of graphs will be generated.")
   (let ((idx (first inputs)))
     (cmp:irc-low-level-trace :flow)
     (let* ((label (safe-llvm-name (clasp-cleavir-hir:precalc-value-instruction-original-object instruction)))
-           (value (cmp::irc-smart-ptr-extract (cmp:irc-load (cmp::irc-gep (cmp:ltv-global) (list (%size_t 0) idx) label)))))
-      (llvm-sys:create-store cmp:*irbuilder* value (first outputs) nil))))
+           (value (cmp::irc-smart-ptr-extract (%load (%gep-variable (cmp:ltv-global) (list (%size_t 0) idx) label)))))
+      (%store value (first outputs)))))
 
 (defmethod translate-simple-instruction
     ((instruction cleavir-ir:fixed-to-multiple-instruction) return-value inputs outputs (abi abi-x86-64) function-info)
@@ -379,7 +378,7 @@ when this is t a lot of graphs will be generated.")
   (with-return-values (return-values return-value abi)
     (%store (%size_t (length inputs)) (number-of-return-values return-values))
     (dotimes (i (length inputs))
-      (%store (cmp:irc-load (elt inputs i)) (return-value-elt return-values i)))
+      (%store (%load (elt inputs i)) (return-value-elt return-values i)))
     #+(or)(cmp:irc-intrinsic "cc_saveThreadLocalMultipleValues" (sret-arg return-values) (first outputs))
     ))
 
@@ -391,14 +390,14 @@ when this is t a lot of graphs will be generated.")
     #+(or)(cmp:irc-intrinsic "cc_loadThreadLocalMultipleValues" (sret-arg return-vals) (first inputs))
     (let* ((blocks (let (b) (dotimes (i (1+ (length outputs))) (push (cmp:irc-basic-block-create (format nil "mvn~a-" i)) b)) (nreverse b)))
 	   (final-block (cmp:irc-basic-block-create "mvn-final"))
-	   (switch (cmp:irc-switch (cmp:irc-load (number-of-return-values return-vals)) (car (last blocks)) (length blocks))))
+	   (switch (cmp:irc-switch (%load (number-of-return-values return-vals)) (car (last blocks)) (length blocks))))
       (dotimes (n (length blocks))
 	(let ((block (elt blocks n)))
 	  (cmp:irc-begin-block block)
 	  (llvm-sys:add-case switch (%size_t n) block)
 	  (dotimes (i (length outputs))
 	    (if (< i n)
-		(%store (cmp:irc-load (return-value-elt return-vals i)) (elt outputs i))
+		(%store (%load (return-value-elt return-vals i)) (elt outputs i))
 		(%store (%nil) (elt outputs i))))
           (cmp:irc-low-level-trace :flow)
 	  (cmp:irc-br final-block)))
@@ -481,7 +480,7 @@ when this is t a lot of graphs will be generated.")
     (%intrinsic-call "cc_saveMultipleValue0" (list return-value)) ;; (sret-arg return-vals))
     (cmp:irc-low-level-trace :cclasp-eh)
     (evaluate-cleanup-code function-info)
-    (%intrinsic-call "cc_unwind" (list (cmp::irc-load (first inputs)) (%size_t (clasp-cleavir-hir:jump-id instruction))))))
+    (%intrinsic-call "cc_unwind" (list (%load (first inputs)) (%size_t (clasp-cleavir-hir:jump-id instruction))))))
 
 (defmethod translate-simple-instruction
     ((instruction cleavir-ir:create-cell-instruction) return-value inputs outputs abi function-info)
@@ -502,21 +501,21 @@ when this is t a lot of graphs will be generated.")
   (let ((cell (llvm-sys:create-load-value-twine cmp:*irbuilder* (first inputs) "cell")))
   (cmp:irc-low-level-trace :flow)
     (let ((result (%intrinsic-call "cc_readCell" (list cell))))
-      (llvm-sys:create-store cmp:*irbuilder* result (first outputs) nil))))
+      (%store result (first outputs)))))
 
 (defmethod translate-simple-instruction
     ((instruction cleavir-ir:fetch-instruction) return-value inputs outputs abi function-info)
   (cmp:irc-low-level-trace :flow)
-  (let ((env (cmp:irc-load (first inputs) "env"))
+  (let ((env (%load (first inputs) "env"))
 	(idx (second inputs)))
     (let ((result (%intrinsic-call "cc_fetch" (list env idx))))
-      (llvm-sys:create-store cmp:*irbuilder* result (first outputs) nil))))
+      (%store result (first outputs)))))
 
 (defmethod translate-simple-instruction
     ((instruction cleavir-ir:fdefinition-instruction) return-value inputs outputs abi function-info)
   ;; How do we figure out if we should use safe or unsafe version
   (cmp:irc-low-level-trace :flow)
-  (let ((cell (cmp:irc-load (first inputs) "func-name")))
+  (let ((cell (%load (first inputs) "func-name")))
     ;;    (format t "translate-simple-instruction (first inputs) = ~a ~%" (first inputs))
     (let ((result (%intrinsic-invoke-if-landing-pad-or-call "cc_safe_fdefinition" (list cell))))
       (%store result (first outputs)))))
@@ -530,22 +529,22 @@ when this is t a lot of graphs will be generated.")
 (defmethod translate-simple-instruction
     ((instruction clasp-cleavir-hir:setf-fdefinition-instruction) return-value inputs outputs abi function-info)
   (cmp:irc-low-level-trace :flow)
-  (let ((cell (cmp:irc-load (first inputs) "setf-func-name")))
+  (let ((cell (%load (first inputs) "setf-func-name")))
     (let ((result (%intrinsic-invoke-if-landing-pad-or-call "cc_safe_setfdefinition" (list cell))))
       (%store result (first outputs)))))
 
 (defmethod translate-simple-instruction
     ((instruction cleavir-ir:symbol-value-instruction) return-value inputs outputs abi function-info)
   (cmp:irc-low-level-trace :flow)
-  (let ((sym (cmp:irc-load (first inputs) "sym-name")))
+  (let ((sym (%load (first inputs) "sym-name")))
     (let ((result (%intrinsic-invoke-if-landing-pad-or-call "cc_safe_symbol_value" (list sym))))
       (%store result (first outputs)))))
 
 (defmethod translate-simple-instruction
     ((instruction cleavir-ir:set-symbol-value-instruction) return-value inputs outputs abi function-info)
   (cmp:irc-low-level-trace :flow)
-  (let ((sym (cmp:irc-load (first inputs) "sym-name"))
-	(val (cmp:irc-load (second inputs) "value")))
+  (let ((sym (%load (first inputs) "sym-name"))
+	(val (%load (second inputs) "value")))
     (%intrinsic-invoke-if-landing-pad-or-call "cc_setSymbolValue" (list sym val))))
 
 
@@ -555,19 +554,14 @@ when this is t a lot of graphs will be generated.")
   (let ((enter-instruction (cleavir-ir:code instruction)))
     (multiple-value-bind (enclosed-function lambda-name)
         (layout-procedure enter-instruction abi)
-      (let* ((loaded-inputs (mapcar (lambda (x) (cmp:irc-load x "cell")) inputs))
+      (let* ((loaded-inputs (mapcar (lambda (x) (%load x "cell")) inputs))
              (ltv-lambda-name (%literal-value lambda-name (format nil "lambda-name->~a" lambda-name)))
              (dx-p (cleavir-ir:dynamic-extent-p instruction))
              (result
                (if dx-p
                    (%intrinsic-call
                     "cc_stack_enclose"
-                    (list* (llvm-sys:create-bit-cast
-                            cmp:*irbuilder*
-                            ;; space for the stack closure
-                            (alloca-i8 (core:closure-with-slots-size (length inputs)) "stack-allocated-closure")
-                            cmp:%i8*%
-                            "closure-ptr")
+                    (list* (alloca-i8 (core:closure-with-slots-size (length inputs)) "stack-allocated-closure")
                            ltv-lambda-name
                            enclosed-function
                            cmp:*gv-source-file-info-handle*
@@ -601,7 +595,7 @@ when this is t a lot of graphs will be generated.")
  ;   (%intrinsic-call "cc_saveMultipleValue0" (list return-value)) ;; (sret-arg return-vals))
     ;; NOTE: (NOT A FIXME)  This instruction is explicitly for calls.
     (let ((call-result (%intrinsic-invoke-if-landing-pad-or-call "cc_call_multipleValueOneFormCallWithRet0" 
-				     (list (cmp:irc-load (first inputs)) (%load return-value)))))
+				     (list (%load (first inputs)) (%load return-value)))))
       (%store call-result return-value)
       (cc-dbg-when 
        *debug-log*
@@ -617,7 +611,7 @@ when this is t a lot of graphs will be generated.")
     (with-return-values (return-vals return-value abi)
       ;;(%intrinsic-call "cc_saveMultipleValue0" (list return-value)) ;; (sret-arg return-vals))
       (let ((call-result (%intrinsic-invoke-if-landing-pad-or-call "cc_call_multipleValueOneFormCallWithRet0" 
-                                                                   (list (cmp:irc-load (first inputs)) (%load return-value))
+                                                                   (list (%load (first inputs)) (%load return-value))
                                                            "mvofc")))
         (%store call-result return-value)
 	(cc-dbg-when 
@@ -628,33 +622,77 @@ when this is t a lot of graphs will be generated.")
 
 (defun gen-vector-effective-address (array index element-type fixnum-type)
   (let* ((array (%load array)) (index (%load index))
-         (type (cmp::simple-vector-llvm-type element-type))
-         (cast (%bit-cast array (llvm-sys:type-get-pointer-to type)))
+         (type (llvm-sys:type-get-pointer-to (cmp::simple-vector-llvm-type element-type)))
+         (cast (%bit-cast array type))
          (var-offset (%ptrtoint index fixnum-type))
-         (untagged (%lshr var-offset cmp::+fixnum-shift+ :exact t :label "untag fixnum")))
-    (llvm-sys:create-in-bounds-gep cmp:*irbuilder*
-                                   cast
-                                   (list (%i32 0) ; LLVM reasons, pointers are (C) arrays
-                                         (%i32 1) ; the "data" slot of the object
-                                         untagged) ; the actual offset into the vector
-                                   "aref")))
+         (untagged (%lshr var-offset cmp::+fixnum-shift+ :exact t :label "untagged fixnum")))
+    ;; 0 is for LLVM reasons, that pointers are C arrays. or something.
+    ;; 1 gets us to the "data" slot of the struct.
+    ;; untagged is the actual offset.
+    (%gep-variable cast (list (%i32 0) (%i32 1) untagged) "aref")))
+
+(defun translate-bit-aref (output array index fixnum-type)
+  ;; FIXME: makes lots of assumptions
+  (let* ((array (%load array)) (index (%load index))
+         (var-offset (%ptrtoint index fixnum-type))
+         (untagged (%lshr var-offset cmp::+fixnum-shift+ :exact t :label "untagged fixnum"))
+         (word-index (%udiv untagged (%i64 cmp::+bit-vector-word-length+) :label "word-index"))
+         ;; Bits are stored starting with the most significant,
+         ;; i.e. #*1101 is 110100000000000000000000000000000000
+         ;; so we have to subtract.
+         (neg-internal-index (%urem untagged (%i64 cmp::+bit-vector-word-length+) :label "neg-internal-index"))
+         (internal-index (%sub (%i32 31) neg-internal-index :nuw t :nsw t :label "internal-index"))
+         (mask (%shl (%i32 1) internal-index :nuw t)) ; assumption: bit vector word length is 32
+         (type (llvm-sys:type-get-pointer-to (cmp::bit-vector-type)))
+         (cast (%bit-cast array type))
+         (wordptr (%gep-variable cast (list (%i32 0) (%i32 1) word-index) "bit-word-aref"))
+         (word (%load wordptr))
+         (unshifted-bit (%and word mask))
+         (bit (%lshr unshifted-bit internal-index :exact t))
+         (fixnum (%shl bit cmp::+fixnum-shift+ :nuw t))
+         (fixnum-as-ptr (%inttoptr fixnum cmp:%t*% "bit-aref-result")))
+    (%store fixnum-as-ptr output)))
+
+(defun translate-bit-aset (value array index fixnum-type)
+  ;; FIXME: same assumptions.
+  (let* ((value (%load value)) (array (%load array)) (index (%load index))
+         (var-offset (%ptrtoint index fixnum-type))
+         (untagged (%lshr var-offset cmp::+fixnum-shift+ :exact t :label "untagged-offset"))
+         (word-index (%udiv untagged (%i64 cmp::+bit-vector-word-length+) :label "word-index"))
+         (neg-internal-index (%urem untagged (%i64 cmp::+bit-vector-word-length+) :label "neg-internal-index"))
+         (internal-index (%sub (%i32 31) neg-internal-index :nuw t :nsw t :label "internal-index"))
+         ;; Assume the value is a fixnum.
+         (untagged-value (%lshr value cmp::+fixnum-shift+ :exact t :label "untagged-value"))
+         (mask (%shl (%i32 1) internal-index :nuw t)) ; same assumption as above
+         (type (cmp::bit-vector-type))
+         (cast (%bit-cast array (llvm-sys:type-get-pointer-to type)))
+         (wordptr (%gep-variable cast (list (%i32 0) (%i32 1) word-index) "bit-word-aref"))
+         (word (%load wordptr))
+         (new-word (%or word mask)))
+    (%store new-word wordptr)))
 
 (defmethod translate-simple-instruction
     ((instruction cleavir-ir:aref-instruction) return-value inputs outputs abi function-info)
-  (%store (%load (gen-vector-effective-address (first inputs) (second inputs)
-                                               (cleavir-ir:element-type instruction)
-                                               (%default-int-type abi)))
-          (first outputs)))
+  (let ((et (cleavir-ir:element-type instruction)))
+    (if (eq et 'bit) ; have to special case due to the layout.
+        (translate-bit-aref (first outputs) (first inputs) (second inputs) (%default-int-type abi))
+        (%store (%load (gen-vector-effective-address (first inputs) (second inputs)
+                                                     (cleavir-ir:element-type instruction)
+                                                     (%default-int-type abi)))
+                (first outputs)))))
 
 (defmethod translate-simple-instruction
     ((instruction cleavir-ir:aset-instruction) return-value inputs outputs abi function-info)
-  (%store (%load (third inputs))
-          (gen-vector-effective-address (first inputs) (second inputs)
-                                        (cleavir-ir:element-type instruction)
-                                        (%default-int-type abi))))
+  (let ((et (cleavir-ir:element-type instruction)))
+    (if (eq et 'bit) ; ditto above
+        (translate-bit-aset (third inputs) (first inputs) (second inputs) (%default-int-type abi))
+        (%store (%load (third inputs))
+                (gen-vector-effective-address (first inputs) (second inputs)
+                                              (cleavir-ir:element-type instruction)
+                                              (%default-int-type abi))))))
 
 (defmethod translate-simple-instruction
-    ((instruction clasp-cleavir-hir::simple-vector-length-instruction)
+    ((instruction clasp-cleavir-hir::vector-length-instruction)
      return-value inputs outputs abi function-info)
   (declare (ignore return-value function-info))
   (let* ((tptr (%load (first inputs)))
@@ -854,7 +892,7 @@ when this is t a lot of graphs will be generated.")
   (declare (ignore successors))
   (cmp:irc-low-level-trace :flow)
   (evaluate-cleanup-code function-info)
-  (llvm-sys:create-ret cmp:*irbuilder* (%load return-value)))
+  (%ret (%load return-value)))
 
 (defmethod translate-branch-instruction
     ((instruction cleavir-ir:funcall-no-return-instruction) return-value inputs outputs successors (abi abi-x86-64) function-info)
@@ -1111,8 +1149,7 @@ that llvm function. This works like compile-lambda-function in bclasp."
           (cclasp-compile-to-module-with-run-time-table form env pathname :linkage linkage)
         (or fn (error "There was no function returned by compile-lambda-function"))
         (cmp:cmp-log "fn --> %s\n" fn)
-        (cmp:cmp-log-dump cmp:*the-module*)
-        #+(or)(cmp:link-intrinsics-module cmp:*the-module*)
+        (cmp:cmp-log-dump-module cmp:*the-module*)
         (cmp:quick-module-dump cmp:*the-module* "cclasp-compile-module-pre-optimize")
         (let* ((setup-function (cmp:jit-add-module-return-function cmp:*the-module* fn startup-fn shutdown-fn ordered-raw-constants-list)))
           (let ((enclosed-function (funcall setup-function)))
@@ -1178,12 +1215,12 @@ that llvm function. This works like compile-lambda-function in bclasp."
 
 
 (defmacro open-debug-log (log-file)
-  `(eval-when (:compile-toplevel)
+  `(eval-when (:compile-toplevel :execute)
      (setq *debug-log* (open (ensure-directories-exist ,log-file) :direction :output))
      (setq *debug-log-on* t)))
 
 (defmacro close-debug-log ()
-  `(eval-when (:compile-toplevel)
+  `(eval-when (:compile-toplevel :execute)
      (setq *debug-log-on* nil)
      (close *debug-log*)
      (setq *debug-log* nil)))

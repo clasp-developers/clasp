@@ -210,7 +210,7 @@ void add_custom_name(type_id const &i, std::string &s) {
 }
 
 std::string get_class_name(core::Lisp_sp L, type_id const &i) {
-  IMPLEMENT_MEF(BF("get_class_name"));
+  IMPLEMENT_MEF("get_class_name");
 #if 0  // start_meister_disabled
             std::string ret;
 

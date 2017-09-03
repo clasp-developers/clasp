@@ -330,7 +330,7 @@ class smart_ptr /*: public tagged_ptr<T>*/ {
     } else if (this->consp()) {
       return untag_cons<Type *>(this->theObject);
     }
-    THROW_HARD_ERROR(BF("This should never happen"));
+    throw_hard_error("This should never happen");
 #endif
   }
 
@@ -505,10 +505,8 @@ inline To_SP As(const return_type &rhs) {
     To_SP ret((Tagged)rhs.ret0[0]);
     return ret;
   }
-  // If the cast didn't work then signal a type error
   class_id expected_typ = reg::registered_class<typename To_SP::Type>::id;
-  class_id this_typ = reg::registered_class<core::T_O *>::id;
-  lisp_errorBadCast(expected_typ, this_typ, reinterpret_cast<core::T_O *>(rhs.ret0[0]));
+  lisp_errorBadCastFromT_O(expected_typ,reinterpret_cast<core::T_O *>(rhs.ret0[0]));
   HARD_UNREACHABLE();
 }
 
@@ -757,7 +755,7 @@ public:
     if (LIKELY(rhs.objectp())) {
       Type *px = TaggedCast<Type *, From *>::castOrNULL(rhs.theObject);
       if (px == 0) {
-        THROW_HARD_ERROR(BF("TaggedCast<Type*,From*> failed due to an illegal cast To* = %s  From* = %s") % typeid(Type *).name() % typeid(From *).name());
+        throw_hard_error_cast_failed(typeid(Type *).name(),typeid(From *).name());
       }
       this->theObject = px;
     } else {
@@ -909,7 +907,7 @@ extern gctools::smart_ptr<core::Symbol_O>& _sym_expectedType;
 }
 namespace core {
 extern gctools::smart_ptr<core::T_O> lisp_createList(gctools::smart_ptr<core::T_O> a1, gctools::smart_ptr<core::T_O> a2, gctools::smart_ptr<core::T_O> a3, gctools::smart_ptr<core::T_O> a4);
- extern void lisp_error(gctools::smart_ptr<core::T_O> baseCondition, gctools::smart_ptr<core::T_O> initializers);
+ [[noreturn]] extern void lisp_error(gctools::smart_ptr<core::T_O> baseCondition, gctools::smart_ptr<core::T_O> initializers);
 }
 
 namespace gctools {
@@ -1097,8 +1095,7 @@ public:
         return tag_nil<Type *>();
       }
     }
-    THROW_HARD_ERROR(BF("Figure out what to do when untag_object doesn't have "
-                        "a Cons_O or NIL"));
+    throw_hard_error("Figure out what to do when untag_object doesn't have a Cons_O or NIL");
 #endif
   }
 
@@ -1358,9 +1355,9 @@ public:
         this->thePointer = tag_general<Type *>(px);
         return;
       }
-      THROW_HARD_ERROR(BF("Cannot cast tagged_functor in constructor"));
+      throw_hard_error("Cannot cast tagged_functor in constructor");
     }
-    THROW_HARD_ERROR(BF("Bad tag on tagged_functor in constructor"));
+    throw_hard_error("Bad tag on tagged_functor in constructor");
   };
 
  explicit tagged_functor(Type *f) : thePointer(reinterpret_cast<Type *>(reinterpret_cast<char *>(f) + general_tag)){};
@@ -1395,7 +1392,7 @@ public:
       tagged_functor<o_class> ret(cast);
       return ret;
     }
-    THROW_HARD_ERROR(BF("Illegal tagged pointer for tagged_functor"));
+    throw_hard_error("Illegal tagged pointer for tagged_functor");
     // unreachable
     tagged_functor<o_class> fail;
     return fail;
@@ -1410,7 +1407,7 @@ public:
       tagged_functor<o_class> ret(cast);
       return ret;
     }
-    THROW_HARD_ERROR(BF("Illegal tagged pointer for tagged_functor"));
+    throw_hard_error("Illegal tagged pointer for tagged_functor");
     // unreachable
     tagged_functor<o_class> fail;
     return fail;
@@ -1420,7 +1417,7 @@ public:
     tagged_functor<o_class> ret = this->asOrNull<o_class>();
     if (ret)
       return ret;
-    THROW_HARD_ERROR(BF("Illegal cast of tagged_functor"));
+    throw_hard_error("Illegal cast of tagged_functor");
   }
 
   template <class o_class>
@@ -1428,7 +1425,7 @@ public:
     tagged_functor<o_class> ret = this->asOrNull<o_class>();
     if (ret)
       return ret;
-    THROW_HARD_ERROR(BF("Illegal cast of tagged_functor"));
+    throw_hard_error("Illegal cast of tagged_functor");
   }
 };
 };
@@ -1468,13 +1465,13 @@ public:
       printf("%s:%d Cannot cast tagged_pointer from %s/%zu to some other type (check with debugger)\n", __FILE__, __LINE__, obj_kind_name(reinterpret_cast<core::T_O *>(rhs.thePointer)), obj_kind(reinterpret_cast<core::T_O *>(rhs.thePointer))); //% obj_name(gctools::GCStamp<Type>::Kind) );
       Type *tpx = TaggedCast<Type *, From *>::castOrNULL(rhs.thePointer);
       printf("tpx = %p\n", tpx);
-      THROW_HARD_ERROR(BF("Cannot cast tagged_pointer from %s/%zu to some other type (check with debugger)") % obj_kind_name(reinterpret_cast<core::T_O *>(rhs.thePointer)) % obj_kind(reinterpret_cast<core::T_O *>(rhs.thePointer))); //% obj_name(gctools::GCStamp<Type>::Kind) );
+      throw_hard_error_cannot_cast_tagged_pointer(obj_kind_name(reinterpret_cast<core::T_O *>(rhs.thePointer)),obj_kind(reinterpret_cast<core::T_O *>(rhs.thePointer)));
     }
-    THROW_HARD_ERROR(BF("Bad tag on tagged_pointer in constructor"));
+    throw_hard_error("Bad tag on tagged_pointer in constructor");
   };
 
   explicit tagged_pointer(Type *f) : thePointer(reinterpret_cast<Type *>(reinterpret_cast<char *>(f) + general_tag)) {
-    GCTOOLS_ASSERTF((f != NULL), BF("Don't initialize tagged_pointer with NULL - use the constructor with zero arguments"));
+    GCTOOLS_ASSERTF((f != NULL), "Don't initialize tagged_pointer with NULL - use the constructor with zero arguments");
   };
 
   inline Type *operator->() {
@@ -1522,7 +1519,7 @@ public:
       tagged_pointer<o_class> ret(cast);
       return ret;
     }
-    THROW_HARD_ERROR(BF("Illegal tagged pointer for tagged_pointer"));
+    throw_hard_error("Illegal tagged pointer for tagged_pointer");
     // unreachable
     tagged_pointer<o_class> fail;
     return fail;
@@ -1537,7 +1534,7 @@ public:
       tagged_pointer<o_class> ret(cast);
       return ret;
     }
-    THROW_HARD_ERROR(BF("Illegal tagged pointer for tagged_pointer"));
+    throw_hard_error("Illegal tagged pointer for tagged_pointer");
     // unreachable
     tagged_pointer<o_class> fail;
     return fail;
@@ -1547,7 +1544,7 @@ public:
     tagged_pointer<o_class> ret = this->asOrNull<o_class>();
     if (ret)
       return ret;
-    THROW_HARD_ERROR(BF("Illegal cast of tagged_pointer"));
+    throw_hard_error("Illegal cast of tagged_pointer");
   }
 
   template <class o_class>
@@ -1555,7 +1552,7 @@ public:
     tagged_pointer<o_class> ret = this->asOrNull<o_class>();
     if (ret)
       return ret;
-    THROW_HARD_ERROR(BF("Illegal cast of tagged_pointer"));
+    throw_hard_error("Illegal cast of tagged_pointer");
   }
 };
 };
@@ -1675,7 +1672,7 @@ public:
     }
     class_id expected_typ = reg::registered_class<Type>::id;
     lisp_errorBadCastFromT_O(expected_typ, reinterpret_cast<core::T_O *>(this->theObject));
-    THROW_HARD_ERROR(BF("Unreachable"));
+    throw_hard_error("Unreachable");
   }
 
   inline return_type as_return_type() { return return_type(this->theObject,1);};
@@ -1720,6 +1717,8 @@ public:
   }
 };
 
+
+#if 0
 template <>
 class Nilable<smart_ptr<core::Fixnum_I>> : public smart_ptr<core::Fixnum_I> {
 public:
@@ -1764,7 +1763,7 @@ public:
     }
     class_id expected_typ = reg::registered_class<Type>::id;
     lisp_errorBadCastFromT_O(expected_typ, reinterpret_cast<core::T_O *>(this->theObject));
-    THROW_HARD_ERROR(BF("Unreachable"));
+    throw_hard_error("Unreachable");
   }
 
   inline return_type as_return_type() { return return_type(this->theObject,1);};
@@ -1800,10 +1799,10 @@ public:
     return smart_ptr<core::T_O>(*this);
   }
 };
+
+#endif
 };
 
-namespace gctools {
-};
 namespace gc = gctools;
 
 namespace gctools {

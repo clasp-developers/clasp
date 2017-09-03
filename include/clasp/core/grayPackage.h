@@ -27,7 +27,6 @@ THE SOFTWARE.
 #ifndef _gray_H
 #define _gray_H
 
-#include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
 #include <clasp/core/grayPackage.fwd.h>
 

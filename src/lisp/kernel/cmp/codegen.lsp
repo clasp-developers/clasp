@@ -92,7 +92,7 @@ Could return more functions that provide lambda-list for swank for example"
                ;; load time values table
                #+(or)(irc-intrinsic-call "debugInspectT_sp" (list (literal:compile-reference-to-literal :This-is-a-test)))
                (let* ((arguments             (llvm-sys:get-argument-list fn))
-                      (argument-holder       (bclasp-setup-calling-convention arguments lambda-list-handler T #|DEBUG-ON|#)))
+                      (argument-holder       (bclasp-setup-calling-convention arguments lambda-list-handler NIL #|!DEBUG-ON|#)))
                  (calling-convention-maybe-push-invocation-history-frame argument-holder)
                  (let ((new-env (progn
                                   (cmp-log "Creating new-value-environment for arguments\n")
@@ -117,9 +117,8 @@ Could return more functions that provide lambda-list for swank for example"
                       (calling-convention-maybe-pop-invocation-history-frame argument-holder)
                       (irc-unwind-environment new-env))))))))
     (cmp-log "About to dump the function constructed by generate-llvm-function-from-code\n")
-    (cmp-log-dump fn)
+    (cmp-log-dump-function fn)
     (irc-verify-function fn)
-    (push fn *all-functions-for-one-compile*)
     ;; Return the llvm Function and the symbol/setf name
     (if (null name) (error "The lambda name is nil"))
     (values fn name (core:lambda-list-handler-lambda-list lambda-list-handler))))
@@ -167,8 +166,7 @@ then compile it and return (values compiled-llvm-function lambda-name)"
     (or lambda-name (error "lambda-name is nil - this shouldn't happen"))
     (or fn (error "There was no function returned by compile-lambda-function outer: ~a" fn))
     (cmp-log "fn --> %s\n" fn)
-    (cmp-log-dump *the-module*)
-    #+(or)(link-intrinsics-module *the-module*)
+    (cmp-log-dump-module *the-module*)
     (values fn function-kind wrapped-env lambda-name warnp failp)))
 
 (defun compile-to-module-with-run-time-table (definition env pathname &key (linkage 'llvm-sys:internal-linkage))
@@ -343,6 +341,6 @@ then compile it and return (values compiled-llvm-function lambda-name)"
                             (codegen result form fn-env)
                             (dbg-set-current-debug-location-here)))))
     (cmp-log "Dumping the repl function\n")
-    (cmp-log-dump top-level-func)
+    (cmp-log-dump-function top-level-func)
     (irc-verify-function top-level-func t)
     top-level-func))
