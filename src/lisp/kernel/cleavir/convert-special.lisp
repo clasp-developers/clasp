@@ -173,8 +173,61 @@
 
 (defmethod cleavir-generate-ast:check-special-form-syntax ((head (eql 'core::vector-length)) form)
   (cleavir-code-utilities:check-form-proper-list form)
-  (cleavir-code-utilities:check-argcount form 1 nil))
+  (cleavir-code-utilities:check-argcount form 1 1))
 
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Converting CORE::%DISPLACEMENT
+;;;
+;;; Gets the underlying (simple-array * (*)) for
+;;; any MDArray, including SimpleMDArrays.
+;;;
+(defmethod cleavir-generate-ast:convert-special
+    ((symbol (eql 'core::%displacement)) form environment (system clasp-cleavir:clasp))
+  (destructuring-bind (mdarray) (rest form)
+    (make-instance 'clasp-cleavir-ast::displacement-ast
+                   :mdarray (cleavir-generate-ast:convert mdarray environment system))))
+
+(defmethod cleavir-generate-ast:check-special-form-syntax ((head (eql 'core::%displacement)) form)
+  (cleavir-code-utilities:check-form-proper-list form)
+  (cleavir-code-utilities:check-argcount form 1 1))
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Converting CORE::%DISPLACED-INDEX-OFFSET
+;;;
+;;; Gets the underlying DIO for
+;;; any MDArray, including SimpleMDArrays.
+;;;
+(defmethod cleavir-generate-ast:convert-special
+    ((symbol (eql 'core::%displaced-index-offset)) form environment (system clasp-cleavir:clasp))
+  (destructuring-bind (mdarray) (rest form)
+    (make-instance 'clasp-cleavir-ast::displaced-index-offset-ast
+                   :mdarray (cleavir-generate-ast:convert mdarray environment system))))
+
+(defmethod cleavir-generate-ast:check-special-form-syntax ((head (eql 'core::%displaced-index-offset)) form)
+  (cleavir-code-utilities:check-form-proper-list form)
+  (cleavir-code-utilities:check-argcount form 1 1))
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Converting CORE::%ARRAY-TOTAL-SIZE
+;;;
+;;; Gets the array total size for
+;;; any MDArray, including SimpleMDArrays.
+;;;
+(defmethod cleavir-generate-ast:convert-special
+    ((symbol (eql 'core::%array-total-size)) form environment (system clasp-cleavir:clasp))
+  (destructuring-bind (mdarray) (rest form)
+    (make-instance 'clasp-cleavir-ast::array-total-size-ast
+                   :mdarray (cleavir-generate-ast:convert mdarray environment system))))
+
+(defmethod cleavir-generate-ast:check-special-form-syntax ((head (eql 'core::%array-total-size)) form)
+  (cleavir-code-utilities:check-form-proper-list form)
+  (cleavir-code-utilities:check-argcount form 1 1))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;

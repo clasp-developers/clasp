@@ -112,6 +112,60 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
+;;; Instruction DISPLACEMENT-INSTRUCTION
+;;;
+;;; Get the actual _Data of an mdarray.
+
+(defclass displacement-instruction (cleavir-ir:instruction cleavir-ir:one-successor-mixin)
+  ())
+
+(defmethod cleavir-ir-graphviz:label ((instr displacement-instruction))
+  "displacement")
+
+(defun make-displacement-instruction (input output &optional (successor nil successor-p))
+  (make-instance 'displacement-instruction
+                 :inputs (list input)
+                 :outputs (list output)
+                 :successors (if successor-p (list successor) nil)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Instruction DISPLACED-INDEX-OFFSET-INSTRUCTION
+;;;
+;;; Get the actual _DisplacedIndexOffset of an mdarray.
+
+(defclass displaced-index-offset-instruction (cleavir-ir:instruction cleavir-ir:one-successor-mixin)
+  ())
+
+(defmethod cleavir-ir-graphviz:label ((instr displaced-index-offset-instruction))
+  "d-offset")
+
+(defun make-displaced-index-offset-instruction (input output &optional (successor nil successor-p))
+  (make-instance 'displaced-index-offset-instruction
+                 :inputs (list input)
+                 :outputs (list output)
+                 :successors (if successor-p (list successor) nil)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Instruction ARRAY-TOTAL-SIZE-INSTRUCTION
+;;;
+;;; Get the _ArrayTotalSize of an mdarray.
+
+(defclass array-total-size-instruction (cleavir-ir:instruction cleavir-ir:one-successor-mixin)
+  ())
+
+(defmethod cleavir-ir-graphviz:label ((instr array-total-size-instruction))
+  "ATS")
+
+(defun make-array-total-size-instruction (input output &optional (successor nil successor-p))
+  (make-instance 'array-total-size-instruction
+                 :inputs (list input)
+                 :outputs (list output)
+                 :successors (if successor-p (list successor) nil)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
 ;;; Instruction NAMED-ENTER-INSTRUCTION
 ;;;
 ;;; This instruction is an ENTER-INSTRUCTION that keeps
