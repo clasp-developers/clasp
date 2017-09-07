@@ -2320,6 +2320,7 @@ Fixnum_sp BitVectorNs_O::vectorPushExtend(T_sp newElement, size_t extension) {
       } else {
     // There were enough bits to handle the extend
         this->_ArrayTotalSize = idx+1;
+        this->_Dimensions[0] = idx+1;
       }
     }
   }
