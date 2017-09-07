@@ -275,6 +275,7 @@ Boehm and MPS use a single pointer"
     (ext:integer32 . ,%i32%)
     (ext:byte64 . ,%i64%)
     (ext:integer64 . ,%i64%)
+    (fixnum . ,%i64%) ; FIXME: store tagged?
     (single-float . ,%float%)
     (double-float . ,%double%)
     ;; should be less hardcoded
