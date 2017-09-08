@@ -174,6 +174,45 @@
       (cleavir-ast-to-hir::invocation context)))))
 
 
+(defmethod cleavir-ast-to-hir:compile-ast ((ast cc-ast::displacement-ast) context)
+  (cleavir-ast-to-hir::assert-context ast context 1 1)
+  (let ((temp (cleavir-ir:new-temporary)))
+    (cleavir-ast-to-hir::compile-ast
+     (cc-ast::displacement-ast-mdarray ast)
+     (cleavir-ast-to-hir::context
+      (list temp)
+      (list (clasp-cleavir-hir::make-displacement-instruction
+             temp (first (cleavir-ast-to-hir::results context))
+             (first (cleavir-ast-to-hir::successors context))))
+      (cleavir-ast-to-hir::invocation context)))))
+
+
+(defmethod cleavir-ast-to-hir:compile-ast ((ast cc-ast::displaced-index-offset-ast) context)
+  (cleavir-ast-to-hir::assert-context ast context 1 1)
+  (let ((temp (cleavir-ir:new-temporary)))
+    (cleavir-ast-to-hir::compile-ast
+     (cc-ast::displaced-index-offset-ast-mdarray ast)
+     (cleavir-ast-to-hir::context
+      (list temp)
+      (list (clasp-cleavir-hir::make-displaced-index-offset-instruction
+             temp (first (cleavir-ast-to-hir::results context))
+             (first (cleavir-ast-to-hir::successors context))))
+      (cleavir-ast-to-hir::invocation context)))))
+
+
+(defmethod cleavir-ast-to-hir:compile-ast ((ast cc-ast::array-total-size-ast) context)
+  (cleavir-ast-to-hir::assert-context ast context 1 1)
+  (let ((temp (cleavir-ir:new-temporary)))
+    (cleavir-ast-to-hir::compile-ast
+     (cc-ast::array-total-size-ast-mdarray ast)
+     (cleavir-ast-to-hir::context
+      (list temp)
+      (list (clasp-cleavir-hir::make-array-total-size-instruction
+             temp (first (cleavir-ast-to-hir::results context))
+             (first (cleavir-ast-to-hir::successors context))))
+      (cleavir-ast-to-hir::invocation context)))))
+
+
 
 (defmethod cleavir-ast-to-hir::compile-ast ((ast clasp-cleavir-ast:precalc-value-reference-ast) context)
   (cleavir-ast-to-hir::assert-context ast context 1 1)

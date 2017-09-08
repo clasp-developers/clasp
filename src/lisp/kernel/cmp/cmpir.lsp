@@ -1191,6 +1191,7 @@ Write T_O* pointers into the current multiple-values array starting at the (offs
 
 (defun throw-if-mismatched-arguments (fn-name args)
   (let* ((info (gethash fn-name (get-primitives)))
+         (_ (unless info (error "Unknown primitive ~a" fn-name)))
          (return-ty (primitive-return-type info))
          (required-args-ty (primitive-argument-types info))
          (passed-args-ty (mapcar #'(lambda (x)
@@ -1201,6 +1202,7 @@ Write T_O* pointers into the current multiple-values array starting at the (offs
                                          (core:class-name-as-string x)))
                                  args))
          (i 1))
+    (declare (ignore _))
     (mapc #'(lambda (x y z)
               (unless (matching-arguments x y i)
                 (error "Constructing call to intrinsic ~a - mismatch of arg#~a value[~a], expected type ~a - received type ~a" fn-name i z x y))

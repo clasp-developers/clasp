@@ -262,7 +262,9 @@
 ;;    (primitive-nounwind "cc_va_arg" %t*% (list %VaList_S*%))
 ;;    (primitive-nounwind "cc_va_list_length" %size_t% (list %VaList_S*%))
     (primitive-nounwind "cc_copy_va_list" %void% (list %size_t% %t*[0]*% %VaList_S*%))
-    
+    (primitive-nounwind "cc_realArrayDisplacement" %t*% (list %t*%))
+    (primitive-nounwind "cc_realArrayDisplacedIndexOffset" %size_t% (list %t*%))
+    (primitive-nounwind "cc_arrayTotalSize" %size_t% (list %t*%))
     (primitive-nounwind "cc_initialize_gcroots_in_module" %void% (list %gcroots-in-module*% %tsp*% %size_t% %t*%))
     (primitive-nounwind "cc_shutdown_gcroots_in_module" %void% (list %gcroots-in-module*% ))
 
@@ -328,6 +330,10 @@
     ;; size_t       -> size_t
     ;; ssize_t      -> size_t       (!)
     ;; void *       -> i64*         (!)
+
+    ;; FIXNUM
+    (primitive          "from_object_fixnum" (list %i64% 'llvm-sys:attribute-sext) (list %t*%))
+    (primitive          "to_object_fixnum" %t*% (list (list %i64% 'llvm-sys:attribute-sext)))
 
     ;; SHORT & UNSIGNED SHORT
     (primitive          "from_object_short" (list %i16% 'llvm-sys:attribute-sext) (list %t*%))

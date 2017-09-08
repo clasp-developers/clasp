@@ -1113,6 +1113,8 @@ CL_DEFUN bool cl__fboundp(T_sp functionName) {
       Symbol_sp name = gc::As<Symbol_sp>(oCadr(cname));
       if (name.notnilp())
         return name->setf_fboundp();
+      else
+        return false;
     }
   } else if (Symbol_sp sym = functionName.asOrNull<Symbol_O>() ) {
     return sym->fboundp();

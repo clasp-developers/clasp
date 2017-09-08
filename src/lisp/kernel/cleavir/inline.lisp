@@ -482,24 +482,24 @@
     ;; should be unreachable
     (t (error "BUG: Unknown vector ~a" array))))
 
+(declaim (inline %row-major-aref))
 (defun %row-major-aref (array index)
   ;; First, undisplace. This can be done independently
   ;; of the index, meaning it could potentially be
   ;; moved out of loops, though that can invite inconsistency
   ;; in a multithreaded environment.
-  ;; FIXME: this should be multiple-value-bind,
-  ;; but that's not very optimized at this time.
-  ;; Really, it should be a separate 'undisplace' function.
   (let ((underlying-array array) (offset 0))
     (etypecase array
       ((simple-array * (*))) ; already all set
+      (simple-array ; multidimensional. guaranteed to have offset zero and no recursion.
+       (setf underlying-array (core::%displacement underlying-array)))
       (array
-       (loop (multiple-value-bind (displacement displaced-index-offset)
-                 (array-displacement array)
-               (if displacement
-                   (setf underlying-array displacement
-                         offset (+ offset displaced-index-offset))
-                   (return))))))
+       (loop
+         (let ((displacement (core::%displacement underlying-array))
+               (displaced-index-offset (core::%displaced-index-offset underlying-array)))
+           (setf underlying-array displacement
+                 offset (+ offset displaced-index-offset)))
+         (when (typep underlying-array '(simple-array * (*))) (return)))))
     ;; Now bounds check. Use the original arguments.
     (etypecase array
       ((simple-array * (*))

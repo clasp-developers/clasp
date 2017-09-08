@@ -91,6 +91,9 @@
     ((cmp:treat-as-special-operator-p name) t)
     ((eq name 'cleavir-primop::call-with-variable-bound) nil)
     ((eq name 'core::vector-length) t)
+    ((eq name 'core::%displacement) t)
+    ((eq name 'core::%displaced-index-offset) t)
+    ((eq name 'core::%array-total-size) t)
     ((eq (symbol-package name) (find-package :cleavir-primop)) t)
     (t nil)))
 
