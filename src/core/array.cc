@@ -391,7 +391,8 @@ void MDArray_O::set_data(Array_sp a) {
 }
 
 void MDArray_O::sxhash_(HashGenerator& hg) const {
-  IMPLEMENT_ME();
+  // Just to get it working. FIXME
+  this->General_O::sxhash_(hg);
 }
 
 Array_sp MDArray_O::unsafe_subseq(size_t start, size_t iend) const
