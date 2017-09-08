@@ -187,11 +187,11 @@ CL_DEFUN T_sp cl__delete_package(T_sp pobj)
   WITH_PACKAGE_READ_WRITE_LOCK(pkg);
   for (auto pi : pkg->_UsingPackages) {
     if (pi.notnilp())
-      cl__unuse_package(pi, pkg);
+      pkg->unusePackage_no_outer_lock(pi);
   }
   for (auto pi : pkg->_PackagesUsedBy) {
     if (pi.notnilp())
-      cl__unuse_package(pkg, pi);
+      pi->unusePackage_no_inner_lock(pkg);
   }
   pkg->_InternalSymbols->mapHash([pkg](T_sp key, T_sp tsym) {
       Symbol_sp sym = gc::As<Symbol_sp>(tsym);
@@ -567,9 +567,8 @@ bool Package_O::usePackage(Package_sp usePackage) {
   return true;
 }
 
-bool Package_O::unusePackage(Package_sp usePackage) {
+bool Package_O::unusePackage_no_outer_lock(Package_sp usePackage) {
   Package_sp me(this);
-  WITH_PACKAGE_READ_WRITE_LOCK(this);
   for (auto it = this->_UsingPackages.begin();
        it != this->_UsingPackages.end(); ++it) {
     if ((*it) == usePackage) {
@@ -586,6 +585,32 @@ bool Package_O::unusePackage(Package_sp usePackage) {
     }
   }
   return true;
+}
+
+// Used by cl__delete_package
+bool Package_O::unusePackage_no_inner_lock(Package_sp usePackage) {
+  WITH_PACKAGE_READ_WRITE_LOCK(this);
+  Package_sp me(this);
+  for (auto it = this->_UsingPackages.begin();
+       it != this->_UsingPackages.end(); ++it) {
+    if ((*it) == usePackage) {
+      this->_UsingPackages.erase(it);
+      for (auto jt = usePackage->_PackagesUsedBy.begin();
+           jt != usePackage->_PackagesUsedBy.end(); ++jt) {
+        if (*jt == me) {
+          usePackage->_PackagesUsedBy.erase(jt);
+          return true;
+        }
+      }
+      SIMPLE_ERROR(BF("The unusePackage argument %s is not used by my package %s") % usePackage->getName() % this->getName());
+    }
+  }
+  return true;
+}
+
+bool Package_O::unusePackage(Package_sp usePackage) {
+  WITH_PACKAGE_READ_WRITE_LOCK(this);
+  return this->unusePackage_no_outer_lock(usePackage);
 }
 
 bool FindConflicts::mapKeyValue(T_sp key, T_sp value) {
