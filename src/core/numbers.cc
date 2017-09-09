@@ -1282,8 +1282,23 @@ bool basic_equalp(Number_sp na, Number_sp nb) {
       LongFloat b = clasp_to_long_float(nb);
       return a == b;
     }
-    default:
-        SIMPLE_ERROR(BF("Cannot compare two numbers of class %s and %s") % na->_instanceClass()->_classNameAsString() % nb->_instanceClass()->_classNameAsString());
+  default: {
+    string naclass, nbclass;
+    if (na.fixnump())
+      naclass = "FIXNUM";
+    else if (na.single_floatp())
+      naclass = "SINGLE-FLOAT";
+    else
+      naclass = na->_instanceClass()->_classNameAsString();
+    if (nb.fixnump())
+      nbclass = "FIXNUM";
+    else if (nb.single_floatp())
+      nbclass = "SINGLE-FLOAT";
+    else
+      nbclass = nb->_instanceClass()->_classNameAsString();
+
+    SIMPLE_ERROR(BF("Cannot compare two numbers of class %s and %s") % naclass % nbclass);
+  }
   };
   MATH_DISPATCH_END();
 }
@@ -1306,7 +1321,7 @@ CL_DEFUN T_sp cl___NE_(List_sp args) {
 
 CL_LAMBDA(&rest args);
 CL_DECLARE();
-CL_DOCSTRING("EQ_");
+CL_DOCSTRING("_EQ_");
 CL_DEFUN T_sp cl___EQ_(List_sp args) {
   if (args.nilp())
     return (_lisp->_true());
