@@ -49,7 +49,7 @@ template <typename Pols, typename OT, typename MethodPtrType>
 class gctools::GCStamp<clbind::IndirectVariadicMethoid<Pols, OT, MethodPtrType>> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::GCStamp<typename clbind::IndirectVariadicMethoid<Pols, OT, MethodPtrType>::TemplatedBase>::Kind;
-  static const size_t Flags = 0;
+  static const size_t Flags = FLAGS_STAMP_IN_HEADER;
 };
 
 #endif

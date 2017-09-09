@@ -29,7 +29,6 @@ THE SOFTWARE.
 
 #include <clasp/core/object.h>
 #include <clasp/core/instance.h>
-#include <clasp/core/lisp.h>
 
 namespace core {
 
@@ -39,14 +38,13 @@ class WrappedPointer_O : public core::General_O {
   FRIEND_GC_SCANNER(core::WrappedPointer_O);
   LISP_CLASS(core, CorePkg, WrappedPointer_O, "WrappedPointer",core::General_O);
 GCPROTECTED:
-  core::Class_sp _Class;
+  gctools::Fixnum Stamp_;
+  core::Class_sp Class_;
 
 public:
-  virtual core::Class_sp _instanceClass() const { return this->_Class; };
-  virtual T_sp instanceClassSet(Class_sp mc);
-
-  void setInstanceClassUsingSymbol(core::Symbol_sp classSymbol);
-
+  virtual core::Class_sp _instanceClass() const { return this->Class_; };
+  virtual T_sp _instanceClassSet(Class_sp mc);
+  void _setInstanceClassUsingSymbol(core::Symbol_sp classSymbol);
 public:
 CL_LISPIFY_NAME("validp");
 CL_DEFMETHOD   virtual bool validp() const { SUBIMP(); };
@@ -75,7 +73,7 @@ CL_DEFMETHOD   virtual bool validp() const { SUBIMP(); };
   virtual void pointerDelete() { SUBIMP(); };
 
 public:
-  explicit WrappedPointer_O() : Base(), _Class(_Nil<core::Class_O>()){};
+  explicit WrappedPointer_O() : Base(), Class_(_Nil<core::Class_O>()){};
   virtual ~WrappedPointer_O(){};
 };
 };

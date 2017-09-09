@@ -65,7 +65,7 @@ template <typename FunctionPtrType, typename Policies>
 class gctools::GCStamp<clbind::VariadicFunctor<FunctionPtrType, Policies>> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::GCStamp<typename clbind::VariadicFunctor<FunctionPtrType, Policies>::TemplatedBase>::Kind;
-  static const size_t Flags = 0;
+  static const size_t Flags = FLAGS_STAMP_IN_HEADER;
 };
 
 namespace clbind {

@@ -175,15 +175,16 @@ namespace gctools {
 /* FIXNUM's have the lsb x00 set to zero - this allows addition and comparison to be fast */
 /* The rest of the bits are the fixnum */
   static const uintptr_clasp_t tag_mask    = ZERO_TAG_MASK; // BOOST_BINARY(111);
-  static const uintptr_clasp_t fixnum_tag  = BOOST_BINARY(00); // x00 means fixnum
-  static const uintptr_clasp_t fixnum1_tag  = BOOST_BINARY(100); // x100 means fixnum odd
-  static const uintptr_clasp_t fixnum_mask = BOOST_BINARY(11);
+  static const uintptr_clasp_t fixnum0_tag  = FIXNUM0_TAG; // x00 means fixnum
+  static const uintptr_clasp_t fixnum1_tag  = FIXNUM1_TAG; // x100 means fixnum odd
+  static const uintptr_clasp_t fixnum_mask =  FIXNUM_MASK;
 /*! The pointer tags, that point to objects that the GC manages are general_tag and cons_tag
 Robert Strandh suggested a separate tag for CONS cells so that there would be a quick CONSP test
 for a CONS cell*/
   static const uintptr_clasp_t ptr_mask    = ~ZERO_TAG_MASK;
-  static const uintptr_clasp_t general_tag =  POINTER_GENERAL_TAG;  // means a GENERAL pointer
-  static const uintptr_clasp_t cons_tag    =  POINTER_CONS_TAG;     // means a CONS cell pointer
+  static const uintptr_clasp_t cptr_tag    =  CPTR_TAG;  // means an aligned C-pointer
+  static const uintptr_clasp_t general_tag =  GENERAL_TAG;  // means a GENERAL pointer
+  static const uintptr_clasp_t cons_tag    =  CONS_TAG;     // means a CONS cell pointer
   /*! A test for pointers has the form (potential_ptr&POINTER_TAG_MASK)==POINTER_TAG_EQ) */
   static const uintptr_clasp_t pointer_tag_mask = POINTER_TAG_MASK;
   static const uintptr_clasp_t pointer_tag_eq   = POINTER_TAG_EQ;
@@ -201,11 +202,11 @@ ABI dependent behavior into a single header file so that it can be implemented f
 ABI's  */
   static const uintptr_clasp_t valist_tag = BOOST_BINARY(101); // means a valist
                                                        /*! Immediate value tags */
-  static const uintptr_clasp_t immediate_mask   = BOOST_BINARY(111);
-  static const uintptr_clasp_t character_tag    = BOOST_BINARY(010); // Character
-  static const uintptr_clasp_t character_shift  = 3;
-  static const uintptr_clasp_t single_float_tag = BOOST_BINARY(110); // single-float
-  static const uintptr_clasp_t single_float_shift = 3;
+  static const uintptr_clasp_t immediate_mask   = IMMEDIATE_MASK;
+  static const uintptr_clasp_t character_tag    = CHARACTER_TAG;
+  static const uintptr_clasp_t character_shift  = CHARACTER_SHIFT;
+  static const uintptr_clasp_t single_float_tag = SINGLE_FLOAT_TAG;
+  static const uintptr_clasp_t single_float_shift = SINGLE_FLOAT_SHIFT;
   static const uintptr_clasp_t single_float_mask = 0x1FFFFFFFFF; // single-floats are in these 32+5bits
 
   struct Immediate_info {
@@ -341,7 +342,7 @@ template <class T>
 
 
   template <class T>
-    inline T untag_general(T ptr) {
+    ALWAYS_INLINE T untag_general(T ptr) {
     GCTOOLS_ASSERT((reinterpret_cast<uintptr_clasp_t>(ptr) & tag_mask) == general_tag);
     return reinterpret_cast<T>(reinterpret_cast<uintptr_clasp_t>(ptr) - general_tag);
   }
@@ -363,7 +364,7 @@ template <class T>
   }
   template <class T>
     inline bool tagged_fixnump(T ptr) {
-    return ((reinterpret_cast<uintptr_clasp_t>(ptr) & fixnum_mask) == fixnum_tag);
+    return ((reinterpret_cast<uintptr_clasp_t>(ptr) & fixnum_mask) == fixnum0_tag);
   };
   template <class T>
     inline T tag_character(int ch) {

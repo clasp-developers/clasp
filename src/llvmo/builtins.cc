@@ -5,6 +5,7 @@
 #include <clasp/core/object.h>
 #include <clasp/core/array.h>
 #include <clasp/core/instance.h>
+#include <clasp/core/wrappedPointer.h>
 #include <clasp/core/funcallableInstance.h>
 #include <clasp/llvmo/intrinsics.h>
 
@@ -20,7 +21,13 @@
 
 #define LINKAGE __attribute__ ((visibility ("default")))
 
-#define BUILTIN_ATTRIBUTES __attribute__((used)) ALWAYS_INLINE
+#define BUILTIN_ATTRIBUTES __attribute__((always_inline))
+
+extern "C" {
+
+BUILTIN_ATTRIBUTES int foobar(int x) {return x*x*x*x;}
+
+};
 
 extern "C" {
 
@@ -74,11 +81,10 @@ BUILTIN_ATTRIBUTES void mv_lexicalValueRead(core::T_mv *resultP, int depth, int 
 
 
 
-
-
-
-
-
 };
+
+
+
+
 
 

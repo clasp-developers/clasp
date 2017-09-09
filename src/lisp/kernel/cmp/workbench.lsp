@@ -262,7 +262,7 @@
 
 (print (clos::generic-function-call-history #'foo))
 (print (clos::valid-call-history-after-class-change #'foo (find-class 'bar)))
-(core:call-history-entry-key-contains-specializer (car (car (clos::generic-function-call-history #'foo))) 
+(clos:call-history-entry-key-contains-specializer (car (car (clos::generic-function-call-history #'foo))) 
 
 (clos::calculate-strandh-dispatch-function #'foo)
 

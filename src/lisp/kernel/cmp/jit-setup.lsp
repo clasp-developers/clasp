@@ -306,19 +306,35 @@ No DIBuilder is defined for the default module")
 (defun jit-link-builtins-module (module)
   "Merge the intrinsics module with the passed module.
 The passed module is modified as a side-effect."
-  (when *enable-builtins-inlining*
-    (unless *builtins-module*
-      (let* ((builtins-bitcode-name (namestring (truename (build-inline-bitcode-pathname :compile :builtins))))
-             (builtins-module (llvm-sys:parse-bitcode-file builtins-bitcode-name *llvm-context*)))
-        (llvm-sys:remove-useless-global-ctors builtins-module)
-        (setf *builtins-module* builtins-module)))
-    ;; Clone the intrinsics module and link it in
-    (quick-module-dump module "module before linking builtins-clone")
-    (let ((linker (llvm-sys:make-linker module))
-          (builtins-clone (llvm-sys:clone-module *builtins-module*)))
-      ;;(remove-always-inline-from-functions builtins-clone)
-      (quick-module-dump builtins-clone "builtins-clone")
-      (llvm-sys:link-in-module linker builtins-clone)))
+  (unless *builtins-module*
+    (let* ((builtins-bitcode-name (namestring (truename (build-inline-bitcode-pathname :compile :builtins))))
+           (builtins-module (llvm-sys:parse-bitcode-file builtins-bitcode-name *llvm-context*)))
+      (llvm-sys:remove-useless-global-ctors builtins-module)
+      (setf *builtins-module* builtins-module)))
+  ;; Clone the intrinsics module and link it in
+  (quick-module-dump module "module before linking builtins-clone")
+  (let ((linker (llvm-sys:make-linker module))
+        (builtins-clone (llvm-sys:clone-module *builtins-module*)))
+    ;;(remove-always-inline-from-functions builtins-clone)
+    (quick-module-dump builtins-clone "builtins-clone")
+    (llvm-sys:link-in-module linker builtins-clone))
+  module)
+
+(defun jit-link-fastgf-module (module)
+  "Merge the intrinsics module with the passed module.
+The passed module is modified as a side-effect."
+  (unless *fastgf-module*
+    (let* ((fastgf-bitcode-name (namestring (truename (build-inline-bitcode-pathname :compile :fastgf))))
+           (fastgf-module (llvm-sys:parse-bitcode-file fastgf-bitcode-name *llvm-context*)))
+      (llvm-sys:remove-useless-global-ctors fastgf-module)
+      (setf *fastgf-module* fastgf-module)))
+  ;; Clone the intrinsics module and link it in
+  (quick-module-dump module "module before linking fastgf-clone")
+  (let ((linker (llvm-sys:make-linker module))
+        (fastgf-clone (llvm-sys:clone-module *fastgf-module*)))
+    ;;(remove-always-inline-from-functions fastgf-clone)
+    (quick-module-dump fastgf-clone "fastgf-clone")
+    (llvm-sys:link-in-module linker fastgf-clone))
   module)
 
 (defvar *optimizations-on* t)
@@ -414,13 +430,15 @@ The passed module is modified as a side-effect."
   #+threads(defvar *jit-engine-mutex* (mp:make-lock :name 'jit-engine-mutex :recursive t))
   (export '(jit-add-module-return-function jit-add-module-return-dispatch-function jit-remove-module))
   (defvar *builtins-module* nil)
-  (defparameter *jit-dump-module* nil)
+  (defvar *fastgf-module* nil)
+  (defparameter *fastgf-dump-module* nil)
   (defvar *declare-dump-module* nil)
-  (defvar *enable-builtins-inlining* t)
   (defvar *jit-repl-module-handles* nil)
   (defvar *jit-fastgf-module-handles* nil)
   (defvar *jit-symbol-info* nil)
   (defvar *jit-saved-symbol-info* (make-hash-table :test #'equal :thread-safe t))
+  )
+(progn
   (defun jit-add-module-return-function (original-module repl-fn startup-fn shutdown-fn literals-list)
     ;; Link the builtins into the module and optimize them
     (jit-link-builtins-module original-module)
@@ -430,7 +448,6 @@ The passed module is modified as a side-effect."
       ;;#+threads(mp:get-lock *jit-engine-mutex*)
       ;;    (bformat t "In jit-add-module-return-function dumping module\n")
       ;;    (llvm-sys:print-module-to-stream module *standard-output*)
-      (if *jit-dump-module* (llvm-sys:dump-module module))
       (if *declare-dump-module* (llvm-sys:dump-module module))
       (let* ((repl-name (llvm-sys:get-name repl-fn))
              (startup-name (llvm-sys:get-name startup-fn))
@@ -446,10 +463,13 @@ The passed module is modified as a side-effect."
               #++(bformat t "%s\n" e))
             fn)))))
 
+  (eval-when (:execute :load-toplevel)
+    (setq *fastgf-dump-module* (member :fastgf-dump-module *features*)))
+  
   (defun jit-add-module-return-dispatch-function (original-module dispatch-fn startup-fn shutdown-fn literals-list)
-    (jit-link-builtins-module original-module)
-    #+(or)(optimize-module-for-compile original-module)
+    (jit-link-fastgf-module original-module)
     (let ((module original-module))
+      (if *fastgf-dump-module* (llvm-sys:dump-module module))
       (let* ((dispatch-name (llvm-sys:get-name dispatch-fn))
              (startup-name (llvm-sys:get-name startup-fn))
              (shutdown-name (llvm-sys:get-name shutdown-fn))
@@ -464,6 +484,6 @@ The passed module is modified as a side-effect."
   (defun jit-remove-module (handle)
     (llvm-sys:clasp-jit-remove-module *jit-engine* handle))
 
-  ;;; Maybe add more jit engine code here
+;;; Maybe add more jit engine code here
   )
 

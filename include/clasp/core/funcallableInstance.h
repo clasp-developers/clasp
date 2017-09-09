@@ -43,7 +43,7 @@ THE SOFTWARE.
 #define CLASP_WRITER_DISPATCH 4
 #define CLASP_USER_DISPATCH 5
 #define CLASP_FASTGF_DISPATCH 6
-#define CLASP_EMPTY_DISPATCH 7
+#define CLASP_INVALIDATED_DISPATCH 7
 
 namespace core {
   FORWARD(FuncallableInstance);
@@ -60,46 +60,26 @@ namespace core {
 
   class FuncallableInstance_O : public Function_O {
     LISP_CLASS(core, CorePkg, FuncallableInstance_O, "FuncallableInstance",Function_O);
-  // These must be exposed in core__class_slot_sanity_check()
-    typedef enum { REF_CLASS_CLASS_NAME = 3,
-                   REF_CLASS_DIRECT_SUPERCLASSES = 4,
-                   REF_CLASS_DIRECT_SUBCLASSES = 5,
-                   REF_CLASS_SLOTS = 6,
-                   REF_CLASS_CLASS_PRECEDENCE_LIST = 7,
-                   REF_CLASS_DIRECT_SLOTS = 8,
-                   REF_CLASS_DIRECT_DEFAULT_INITARGS = 9,
-                   REF_CLASS_DEFAULT_INITARGS = 10,
-                   REF_CLASS_FINALIZED = 11,
-                   REF_CLASS_SEALEDP = 14,
-                   REF_CLASS_DEPENDENTS = 16,
-                   REF_CLASS_LOCATION_TABLE = 19,
-                   REF_CLASS_INSTANCE_STAMP = 20,
-                   REF_CLASS_CREATOR = 21
-    } Slots;
-
 // These indices MUST match the order and positions of slots in +standard-generic-function-slots+
     typedef enum { REF_GFUN_NAME = 0,
                    REF_GFUN_SPECIALIZERS = 1,  // lock
                    REF_GFUN_COMB = 2,          
-                   REF_GFUN_DISPATCHER = 3,
-                   REF_GFUN_CALL_HISTORY = 4,  // lock
-                   REF_GFUN_LAMBDA_LIST = 5,   // lock
-                   REF_GFUN_SPECIALIZER_PROFILE = 6,  // lock
-                   REF_GFUN_LOCK = 7 } GenericFunctionSlots;
-    
+                   REF_GFUN_LAMBDA_LIST = 3,   // lock
+                   MIN_GFUN_SLOTS = 4 } GenericFunctionSlots;
   public: // ctor/dtor for classes with shared virtual base
     // entry_point is the LISP_CALLING_CONVENTION() macro
-  FuncallableInstance_O() : Base(entry_point), _isgf(CLASP_NOT_FUNCALLABLE), _entryPoint(NULL), _Class(_Nil<Class_O>()), _Sig(_Nil<T_O>()){};
+  FuncallableInstance_O() : Base(entry_point), _isgf(CLASP_NOT_FUNCALLABLE), _entryPoint(NULL), _Class(_Nil<Class_O>()), _Sig(_Nil<T_O>()), _CallHistory(_Nil<T_O>()),
+      _SpecializerProfile(_Nil<T_O>()),
+      _Lock(mp::SharedMutex_O::make_shared_mutex(_Nil<T_O>())),
+      _CompiledDispatchFunction(_Nil<T_O>()) {};
     explicit FuncallableInstance_O(Class_sp metaClass, size_t slots) :
     Base(entry_point),
       _Class(metaClass)
       ,_Sig(_Unbound<T_O>())
-#ifdef METER_ALLOCATIONS
-      ,_allocation_counter(0)
-      ,_allocation_total_size(0)
-#endif
-      
-//    ,_NumberOfSlots(slots)
+      , _CallHistory(_Nil<T_O>())
+      ,_SpecializerProfile(_Nil<T_O>())
+      ,_Lock(mp::SharedMutex_O::make_shared_mutex(_Nil<T_O>()))
+      , _CompiledDispatchFunction(_Nil<T_O>())
     {};
     virtual ~FuncallableInstance_O(){};
   public:
@@ -113,19 +93,15 @@ namespace core {
         This is pointed to the class slots in case they change 
         - then the instances can be updated*/
     DispatchFunction_fptr_type _entryPoint;
-    T_sp _Sig;
-    int _isgf;
-#ifdef METER_ALLOCATIONS
-  // Keep track of allocations
-    size_t _allocation_counter;
-    size_t _allocation_total_size;
-#endif
+    int    _isgf;
+    T_sp   _Sig;
+    T_sp   _CallHistory;
+    T_sp   _SpecializerProfile;
+    T_sp   _Lock;
+    T_sp   _CompiledDispatchFunction;
   public:
-    static Instance_sp createClassUncollectable(gctools::Stamp is,Class_sp metaClass, size_t number_of_slots, Creator_sp creator);
+//    static FuncallableInstance_sp createClassUncollectable(gctools::Stamp is,Class_sp metaClass, size_t number_of_slots, Creator_sp creator);
     static Class_sp create(Symbol_sp symbol,Class_sp metaClass,Creator_sp creator);
-  
-  /*! Setup the instance nil value */
-  //	void setupInstanceNil();
 
   public:
     bool isCallable() const { return (bool)(this->_entryPoint); };
@@ -133,10 +109,6 @@ namespace core {
     T_sp GFUN_NAME() const { return this->instanceRef(REF_GFUN_NAME); };
     T_sp GFUN_SPECIALIZERS() const { return this->instanceRef(REF_GFUN_SPECIALIZERS); };
     T_sp GFUN_COMB() const { return this->instanceRef(REF_GFUN_COMB); };
-    T_sp GFUN_DISPATCHER() const { return this->instanceRef(REF_GFUN_DISPATCHER);};
-    void GFUN_DISPATCHER_set(T_sp f)  { this->instanceSet(REF_GFUN_DISPATCHER,f);};
-    T_sp GFUN_CALL_HISTORY() const { return this->instanceRef(REF_GFUN_CALL_HISTORY);};
-    void GFUN_CALL_HISTORY_set(T_sp h);
     T_sp GFUN_LAMBDA_LIST() const { return this->instanceRef(REF_GFUN_LAMBDA_LIST);};
     void GFUN_LAMBDA_LIST_set(T_sp lambda_list)
     {
@@ -146,75 +118,31 @@ namespace core {
       }
       this->instanceSet(REF_GFUN_LAMBDA_LIST,lambda_list);
     };
-    mp::SharedMutex_sp GFUN_LOCK() const { return gc::As<mp::SharedMutex_sp>(this->instanceRef(REF_GFUN_LOCK));};
-  public:
-    // Functions from Class_O
-    string _classNameAsString() const;
-    void _setClassName(Symbol_sp id) { this->instanceSet(REF_CLASS_CLASS_NAME, id); };
-    Symbol_sp _className() const { return gc::As<Symbol_sp>(this->instanceRef(REF_CLASS_CLASS_NAME)); }
-
-    void CLASS_set_creator(Creator_sp cb);
-    Creator_sp CLASS_get_creator() const { return gc::As_unsafe<Creator_sp>(this->instanceRef(REF_CLASS_CREATOR)); };
-    bool CLASS_has_creator() const { return (bool)(!this->instanceRef(REF_CLASS_CREATOR).unboundp()); };
-    Fixnum _get_instance_stamp() const { return this->instanceRef(REF_CLASS_INSTANCE_STAMP).unsafe_fixnum(); };
-    
-    string dumpInfo();
-
-//    virtual T_sp allocate_class(Class_sp metaClass, int slots);
-
-  /*! Return the direct superclasses */
-//    List_sp directSuperclasses() const;
-
-//    void addInstanceBaseClass(Symbol_sp cl);
-
-    T_sp slots() const { return this->instanceRef(REF_CLASS_SLOTS); };
-
-    template <typename oclass>
-      bool isSubClassOf() const {
-      return this->isSubClassOf(lisp_classFromClassSymbol(oclass::static_classSymbol()));
+    T_sp GFUN_SPECIALIZER_PROFILE() const { return this->_SpecializerProfile; };
+    void GFUN_SPECIALIZER_PROFILE_set(T_sp val) { this->_SpecializerProfile = val; };
+    T_sp GFUN_CALL_HISTORY() const { return this->_CallHistory; };
+    void GFUN_CALL_HISTORY_set(T_sp h) {
+#ifdef DEBUG_GFDISPATCH
+      if (_sym_STARdebug_dispatchSTAR->symbolValue().notnilp()) {
+        printf("%s:%d   GFUN_CALL_HISTORY_set gf: %s\n", __FILE__, __LINE__, this->__repr__().c_str());
+        printf("%s:%d                      history: %s\n", __FILE__, __LINE__, _rep_(h).c_str());
+      }
+#endif
+      this->_CallHistory = h;
     }
+
+    mp::SharedMutex_sp GFUN_LOCK() const { return gc::As<mp::SharedMutex_sp>(this->_Lock);};
+    void GFUN_LOCK_set(T_sp l) { this->_Lock = l; };
+    T_sp GFUN_DISPATCHER() const { return this->_CompiledDispatchFunction; };
+    void GFUN_DISPATCHER_set(T_sp val) { this->_CompiledDispatchFunction = val; };
+  public:
 
     void accumulateSuperClasses(HashTableEq_sp supers, VectorObjects_sp arrayedSupers, Class_sp mc);
     void lowLevel_calculateClassPrecedenceList();
 
 //    virtual bool isSubClassOf(Class_sp mc) const;
 
-    string getPackagedName() const;
-    string instanceClassName() { return this->getPackagedName(); };
-    string instanceClassName() const { return this->getPackagedName(); };
-
     T_sp make_instance();
-  /*! predicate if this is a BuiltInClass class */
-    virtual bool builtInClassP() const { return false; };
-
-  /*! predicate if this is a raw C++ class that is wrapped with clbind
-          - it can only be used to derive other classes if cxxDerivableClassP is true */
-    virtual bool cxxClassP() const { return false; };
-
-  /*! cxxDerivableClass is a class that inherits from a raw C++ class and
-          the clbind::Adapter class - this allows it to be derived from */
-    virtual bool cxxDerivableClassP() const { return false; };
-
-  /*! primaryCxxDerivableClassP is a predicate that returns true if
-          this class is the primary derivable C++ class */
-    virtual bool primaryCxxDerivableClassP() const { return false; };
-
-    void setInstanceBaseClasses(List_sp classes);
-    void __setup_stage1_with_sharedPtr_lisp_sid(T_sp theThis, Symbol_sp instanceClassSymbol) {
-      this->instanceSet(REF_CLASS_CLASS_NAME, instanceClassSymbol);
-    }
-
-    void __setup_stage2_with_classSymbol(Symbol_sp csid) {
-      _OF();
-    }
-
-    void __setupStage3NameAndCalculateClassPrecedenceList(Symbol_sp isid);
-
-    void addInstanceBaseClassDoNotCalculateClassPrecedenceList(Symbol_sp cl);
-
-
-
-    
   public:
   // Add support for Function_O methods
     T_sp functionName() const { ASSERT(this->isgf()); return this->GFUN_NAME(); };
@@ -351,12 +279,12 @@ namespace gctools {
 
 namespace core {
 
-  bool core__call_history_entry_key_contains_specializer(SimpleVector_sp key, T_sp specializer);
-  List_sp core__call_history_find_key(List_sp generic_function_call_history, SimpleVector_sp key);
+  bool clos__call_history_entry_key_contains_specializer(SimpleVector_sp key, T_sp specializer);
+  List_sp clos__call_history_find_key(List_sp generic_function_call_history, SimpleVector_sp key);
 
-  bool core__generic_function_call_history_push_new(FuncallableInstance_sp generic_function, SimpleVector_sp key, T_sp effective_method);
+  bool clos__generic_function_call_history_push_new(FuncallableInstance_sp generic_function, SimpleVector_sp key, T_sp effective_method);
 
-  void core__generic_function_call_history_remove_entries_with_specializer(FuncallableInstance_sp generic_function, T_sp specializer);
+  void clos__generic_function_call_history_remove_entries_with_specializer(FuncallableInstance_sp generic_function, T_sp specializer);
 };
 
 

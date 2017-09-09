@@ -71,7 +71,7 @@ template <typename Policies, typename OT, typename Method>
 class gctools::GCStamp<core::IndirectVariadicMethoid<Policies, OT, Method>> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::GCStamp<typename core::IndirectVariadicMethoid<Policies, OT, Method>::TemplatedBase>::Kind;
-  static const size_t Flags = 0;
+  static const size_t Flags = FLAGS_STAMP_IN_HEADER;
 };
 
 namespace core {

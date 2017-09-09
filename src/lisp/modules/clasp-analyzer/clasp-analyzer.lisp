@@ -301,11 +301,17 @@
            (analysis-enums analysis)))
 
 (defun calculate-flags (name)
-  (+ (if (or (derived-from-cclass name "core::Instance_O")
-             (derived-from-cclass name "core::FuncallableInstance_O")) 1 0)
-     (if (inherits-from-multiple-classes name) 2 0)))
-
-
+  (cond
+    ((derived-from-cclass name "core::WrappedPointer_O")
+     "FLAGS_STAMP_IN_WRAPPER")
+    ((or (derived-from-cclass name "core::Instance_O")
+         (derived-from-cclass name "core::FuncallableInstance_O"))
+     "FLAGS_STAMP_IN_RACK")
+    ((inherits-from-multiple-classes name)
+     "FLAGS_STAMP_IN_CALLBACK")
+    (t
+     "FLAGS_STAMP_IN_HEADER")))
+  
 (defun traverse (name analysis)
   (let ((enum (gethash name (analysis-enums analysis)))
         (enum-value (analysis-cur-enum-value analysis)))
@@ -364,7 +370,7 @@
                (format fout "  inline static bool isA(FP client) {~%" key)
                (format fout "      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));~%")
                (when (string= key "core::Instance_O")
-                 (format fout "// FIXME!!!  There is a HUGE problem here - derivable_class_'s inherit from Instance_O  but the KIND test won't show that!!!!~%")
+                 (format fout "// FIXME!!!  There is a HUGE problem here - derivable_class_'s inherit from Instance_O  but the STAMP test won't show that!!!!~%")
                  (format fout "//           Something needs to be done to allow derivable_classes to be defined without screwing up the class hierarchy!!!~%")
                  (format fout "//           The problem is that isA relationships defined by Clasp can only work with single inheritance~%")
                  (format fout "//           but derivable_classes inherit from Instance_O and whatever else they are defined to inherit from.~%")
@@ -1940,7 +1946,7 @@ so that they don't have to be constantly recalculated"
   (let* ((key (enum-key enum))
          (species (enum-species enum))
          (species-name (if species (species-name species) :abstract))
-         (prefix "KIND")
+         (prefix "STAMP")
          (raw-name (format nil "~a_~a_~a" prefix (symbol-name species-name) (copy-seq key)))
          (name0 (nsubstitute-if #\_ (lambda (c) (member c '(#\SPACE #\, #\< #\> #\: #\- ))) raw-name))
          (name1 (nsubstitute #\P #\* name0))
@@ -3061,16 +3067,16 @@ Recursively analyze x and return T if x contains fixable pointers."
 
 (defun generate-alloc-enum (&optional (fout t) (anal *analysis*))
   (let ((maxenum 0))
-    (format fout "KIND_null = 0, ~%")
+    (format fout "STAMP_null = 0, ~%")
     #+(or)(let ((hardwired-kinds (core:hardwired-kinds)))
-            (mapc (lambda (kv) (format fout "KIND_~a = ~a, ~%" (car kv) (cdr kv))) hardwired-kinds))
+            (mapc (lambda (kv) (format fout "STAMP_~a = ~a, ~%" (car kv) (cdr kv))) hardwired-kinds))
     (mapc (lambda (enum)
                (format fout "~A = ~A,~%" (build-enum-name enum) (enum-value enum))
                (when (> (enum-value enum) maxenum)
                  (setq maxenum (enum-value enum))))
              (analysis-sorted-enums anal)
              )
-    (format fout "  KIND_max = ~a,~%" maxenum)
+    (format fout "  STAMP_max = ~a,~%" maxenum)
     (format fout "~%" )
     ))
 
@@ -3214,9 +3220,9 @@ Pointers to these objects are fixed in obj_scan or they must be roots."
     (format stream "#if defined(GC_TYPEQ)~%")
     (generate-typeq-code stream analysis )
     (format stream "#endif // defined(GC_TYPEQ)~%")
-    (format stream "#if defined(GC_KIND_SELECTORS)~%")
+    (format stream "#if defined(GC_STAMP_SELECTORS)~%")
     (generate-gckind-for-enums stream analysis)
-    (format stream "#endif // defined(GC_KIND_SELECTORS)~%")
+    (format stream "#endif // defined(GC_STAMP_SELECTORS)~%")
     (do-generator stream analysis
                   :table-name "OBJ_SCAN"
                   :function-declaration "GC_RESULT ~a(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit)"

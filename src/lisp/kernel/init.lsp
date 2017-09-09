@@ -88,6 +88,7 @@
 
 (eval-when (:execute :compile-toplevel :load-toplevel)
   (select-package :core))
+
 (if (find-package "C")
     nil
     (make-package "C" :use '(:cl :core)))
@@ -209,6 +210,7 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
 				     (SETQ ,var ,form))))
 	  t )
 (export 'defparameter)
+
 
 
 (si:fset 'core::defconstant #'(lambda (whole env)
@@ -355,6 +357,8 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
 (core::export 'defun)
 (eval-when (:execute :compile-toplevel :load-toplevel)
   (core::select-package :core))
+
+(defparameter *debug-bclasp* t)
 
 (defvar *special-init-defun-symbol* (gensym "special-init-defun-symbol"))
 (defvar *special-defun-symbol* (gensym "special-defun-symbol"))
@@ -524,7 +528,8 @@ a relative path from there."
   (let ((name (cond
                 ((eq filetype :intrinsics) "intrinsics")
                 ((eq filetype :builtins) "builtins")
-                (t (error "illegal filetype - only :intrinsics or :builtins allowed")))))
+                ((eq filetype :fastgf) "fastgf")
+                (t (error "illegal filetype - only :intrinsics, :builtins or :fastgf allowed")))))
     (cond
       ((eq link-type :fasl)
        (translate-logical-pathname (bformat nil "lib:%s-%s-cxx.a" +bitcode-name+ name)))

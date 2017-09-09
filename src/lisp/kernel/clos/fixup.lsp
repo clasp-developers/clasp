@@ -53,23 +53,6 @@
   (setq *load-print* t)
   (setq *echo-repl-read* t))
 
-#+clasp
-(defun update-specializer-profile (generic-function)
-  (let ((methods (clos:generic-function-methods generic-function)))
-    (if methods
-        (let* ((first-method-specializers (method-specializers (car methods)))
-               (vec (make-array (length first-method-specializers) :initial-element nil))
-               (tc (find-class 't)))
-          (loop for method in methods
-             for specs = (method-specializers method)
-             do (loop for i from 0 below (length vec)
-                   for spec in specs
-                   for specialized = (not (eq spec tc))
-                   when specialized
-                   do (setf (elt vec i) t)))
-          (setf (generic-function-specializer-profile generic-function) vec))
-        (setf (generic-function-specializer-profile generic-function) nil))))
-
 
 (defmethod reader-method-class ((class std-class)
 				(direct-slot direct-slot-definition)
@@ -212,6 +195,7 @@ and cannot be added to ~A." method other-gf gf)))
   ;;  i) Adding it to the list of methods
   (push method (generic-function-methods gf))
   (setf (method-generic-function method) gf)
+  ;;  FIXME!!!  Method specializers should be implemented shouldn't they? meister
   ;;  ii) Updating the specializers list of the generic function. Notice that
   ;;  we should call add-direct-method for each specializer but specializer
   ;;  objects are not yet implemented
@@ -222,11 +206,14 @@ and cannot be added to ~A." method other-gf gf)))
   ;;  ECL does not need the discriminating function because we always use
   ;;  the same one, we just update the spec-how list of the generic function.
   (compute-g-f-spec-list gf)
+  ;; Clasp must update the specializer-profile
+  #+clasp
+  (when *clos-booted*
+    (update-specializer-profile gf (method-specializers method))
+    (update-call-history-for-add-method gf method))
   (set-generic-function-dispatch gf)
   ;;  iv) Update dependents.
   (update-dependents gf (list 'add-method method))
-  ;;  Clasp keeps track of which specializers can be ignored
-  (update-specializer-profile gf)
   ;;  v) Register with specializers
   (register-method-with-specializers method)
   gf)
@@ -251,10 +238,12 @@ and cannot be added to ~A." method other-gf gf)))
   (loop for spec in (method-specializers method)
      do (remove-direct-method spec method))
   (compute-g-f-spec-list gf)
+  #+clasp
+  (when *clos-booted*
+    (compute-and-set-specializer-profile gf)
+    (update-call-history-for-remove-method gf method))
   (set-generic-function-dispatch gf)
   (update-dependents gf (list 'remove-method method))
-  ;;  Clasp keeps track of which specializers can be ignored
-  (update-specializer-profile gf)
   gf)
 
 
@@ -418,28 +407,6 @@ and cannot be added to ~A." method other-gf gf)))
    (mapappend #'specializer-direct-generic-functions
               (subclasses* (find-class 't)))))
 
-
-(defun switch-clos-to-fastgf ()
-  (let ((dispatchers (make-hash-table))
-        (count 0))
-    (dolist (x (clos::all-generic-functions))
-      (clos::update-specializer-profile x)
-      (if (member x (list
-                     #'clos::compute-applicable-methods-using-classes
-                     #'clos::add-direct-method
-                     #'clos::compute-effective-method
-                     #'print-object
-                     #'clos::generic-function-name
-                     ))
-          nil
-          (setf (gethash x dispatchers) (clos::calculate-fastgf-dispatch-function x))))
-    (maphash (lambda (gf disp)
-               (clos::safe-set-funcallable-instance-function gf disp)
-               (incf count))
-             dispatchers)
-    count))
-
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -448,10 +415,19 @@ and cannot be added to ~A." method other-gf gf)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-#+(or)(progn
-        (startup-generic-functions)
-        (eval-when (:execute :load-time)
-          (format t "!~%!~%!~%!~%!~%Finished startup-generic-functions~%!~%!~%!~%")))
+;;; MUST initialize specializer-profiles
+;;; Because when the generic functions were set up they had no
+;;; lambda-list slot!!!!
+
+(defun startup-fastgf ()
+  (setf clos:*enable-fastgf* t)
+  (satiate-standard-generic-functions :verbose t))
+
+#+(or)
+(eval-when (:execute :load-toplevel)
+  (startup-fastgf)
+  (eval-when (:execute :load-toplevel)
+    (format t "!~%!~%!~%!~%!~%Finished startup-generic-functions~%!~%!~%!~%")))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

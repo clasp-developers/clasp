@@ -416,6 +416,7 @@
     (primitive          "to_object_pointer" %t*% (list %i64*%))
     (primitive          "to_object_void" %t*% (list))
     ;; === END OF TRANSLATORS ===
+    (primitive-nounwind "cc_read_stamp" %i64% (list %void*%))
     *primitives*
   ))
 

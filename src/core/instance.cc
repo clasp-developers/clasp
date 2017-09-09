@@ -88,6 +88,54 @@ void Instance_O::initializeSlots(gctools::Stamp stamp, size_t numberOfSlots) {
 //  printf("%s:%d  Make sure you initialize slots for classes this->_Class -> %s\n", __FILE__, __LINE__, _rep_(this->_Class).c_str());
 }
 
+CL_DEFUN void core__calculate_all_direct_subclasses() {
+  List_sp classNames = gc::As<List_sp>(_sym_STARallCxxClassesSTAR->symbolValue());
+  for ( auto cur : classNames ) {
+    Symbol_sp name = gc::As<Symbol_sp>(CONS_CAR(cur));
+    Class_sp class_ = cl__find_class(name,true,_Nil<T_O>());
+    class_->instanceSet(Instance_O::REF_CLASS_DIRECT_SUBCLASSES,_Nil<T_O>());
+  }
+  for ( auto cur : classNames ) {
+    Symbol_sp name = gc::As<Symbol_sp>(CONS_CAR(cur));
+    Class_sp class_ = cl__find_class(name,true,_Nil<T_O>());
+    List_sp directSuperClasses = gc::As<List_sp>(class_->instanceRef(Instance_O::REF_CLASS_DIRECT_SUPERCLASSES));
+    for ( auto supcur : directSuperClasses ) {
+      Class_sp supclass = gc::As<Class_sp>(CONS_CAR(supcur));
+      T_sp subs = supclass->instanceRef(Instance_O::REF_CLASS_DIRECT_SUBCLASSES);
+      subs = Cons_O::create(class_,subs);
+      supclass->instanceSet(Instance_O::REF_CLASS_DIRECT_SUBCLASSES,subs);
+    }
+  }
+}
+
+List_sp accumulate_unique_subclasses(Class_sp class_, List_sp subclasses) {
+//  printf("%s:%d Accumulating from  %s\n", __FILE__, __LINE__, _rep_(class_).c_str());
+  List_sp directSubs = class_->instanceRef(Instance_O::REF_CLASS_DIRECT_SUBCLASSES);
+  for ( auto cur : directSubs ) {
+    Class_sp onesub = gc::As<Class_sp>(CONS_CAR(cur));
+//    printf("%s:%d Checking %s\n", __FILE__, __LINE__, _rep_(onesub).c_str());
+    if (subclasses.unsafe_cons()->memberEq(onesub).nilp()) {
+//      printf("%s:%d Adding %s\n", __FILE__, __LINE__, _rep_(onesub).c_str());
+      subclasses = Cons_O::create(onesub,subclasses);
+    }
+    subclasses = accumulate_unique_subclasses(onesub,subclasses);
+  }
+  return subclasses;
+}
+      
+CL_DEFUN List_sp core__all_unique_subclasses(Class_sp class_) {
+  return accumulate_unique_subclasses(class_,Cons_O::create(class_,_Nil<T_O>()));
+}
+
+void Instance_O::CLASS_set_stamp_for_instances(Fixnum s) {
+#if 0
+  if (s == gctools::GCStamp<Instance_O>::Stamp) {
+    printf("%s:%d  A Class is having its CLASS_stamp_for_instances set to Instance_O stamp\n", __FILE__, __LINE__ );
+  }
+#endif
+  this->instanceSet(REF_CLASS_STAMP_FOR_INSTANCES_,clasp_make_fixnum(s));
+};
+
 void Instance_O::initializeClassSlots(Creator_sp creator, gctools::Stamp stamp) {
   // Initialize slots they way they are in +class-slots+ in: https://github.com/drmeister/clasp/blob/dev-class/src/lisp/kernel/clos/hierarchy.lsp#L55
 #if 0
@@ -103,7 +151,7 @@ void Instance_O::initializeClassSlots(Creator_sp creator, gctools::Stamp stamp) 
   this->instanceSet(REF_CLASS_SEALEDP, _Nil<T_O>());
   this->instanceSet(REF_CLASS_DEPENDENTS, _Nil<T_O>());
   this->instanceSet(REF_CLASS_LOCATION_TABLE, _Nil<T_O>());
-  this->instanceSet(REF_CLASS_INSTANCE_STAMP, clasp_make_fixnum(stamp));
+  this->CLASS_set_stamp_for_instances(stamp);
   this->instanceSet(REF_CLASS_CREATOR, creator);
 }
 
@@ -146,13 +194,13 @@ T_sp allocate_instance(Class_sp cl, size_t numberOfSlots) {
   if (gc::IsA<Instance_sp>(obj)) {
     Instance_sp iobj = gc::As_unsafe<Instance_sp>(obj);
     iobj->_Class = cl;
-    iobj->initializeSlots(cl->_get_instance_stamp(),numberOfSlots);
+    iobj->initializeSlots(cl->CLASS_stamp_for_instances(),numberOfSlots);
     return iobj;
   }
   ASSERT(gc::IsA<FuncallableInstance_sp>(obj));
   FuncallableInstance_sp fiobj = gc::As_unsafe<FuncallableInstance_sp>(obj);
   fiobj->_Class = cl;
-  fiobj->initializeSlots(cl->_get_instance_stamp(),numberOfSlots);
+  fiobj->initializeSlots(cl->CLASS_stamp_for_instances(),numberOfSlots);
   return fiobj;
 }
 
@@ -183,7 +231,7 @@ CL_DEFUN T_sp core__allocate_raw_instance(T_sp orig, Class_sp class_, size_t num
 T_sp Instance_O::allocate_class(Class_sp metaClass, int slots) {
   // Classes are only ever regular instances of Instance_O
   Instance_sp newClass = this->CLASS_get_creator()->creator_allocate();
-  newClass->initializeSlots(metaClass->_get_instance_stamp(),slots);
+  newClass->initializeSlots(metaClass->CLASS_stamp_for_instances(),slots);
   newClass->_Class = metaClass;
   return newClass;
 }
@@ -292,6 +340,9 @@ string Instance_O::__repr__() const {
     ss << mc->_classNameAsString() << " ";
   } else {
     ss << "<ADD SUPPORT FOR INSTANCE _CLASS=" << _rep_(this->_Class) << " >";
+  }
+  if (clos__classp(this->asSmartPtr())) {
+    ss << _rep_(this->instanceRef(REF_CLASS_CLASS_NAME)) << " ";
   }
   {
     ss << " #slots[" << this->numberOfSlots() << "]";
@@ -411,7 +462,7 @@ Class_sp Instance_O::createClassUncollectable(gctools::Stamp stamp, Class_sp met
 #if 0  
   printf("%s:%d:%s stamp -> %llu\n", __FILE__, __LINE__, __FUNCTION__, stamp);
   if (!metaClass.unboundp()) {
-    printf("       metaClass->_get_instance_stamp() -> %llu\n", metaClass->_get_instance_stamp());
+    printf("       metaClass->CLASS_stamp_for_instances() -> %llu\n", metaClass->CLASS_stamp_for_instances());
   } else {
     printf("       The metaClass was UNBOUND !!!!! I need a stamp for the class slots!!!!!!\n");
   }
@@ -420,7 +471,7 @@ Class_sp Instance_O::createClassUncollectable(gctools::Stamp stamp, Class_sp met
   oclass->_Class = metaClass;
   gctools::Stamp class_stamp = 0;
   if (!metaClass.unboundp()) {
-    class_stamp = metaClass->_get_instance_stamp();
+    class_stamp = metaClass->CLASS_stamp_for_instances();
   }
   oclass->initializeSlots(class_stamp,number_of_slots);
   oclass->initializeClassSlots(creator,stamp);
@@ -656,15 +707,15 @@ CL_DEFUN List_sp clos__direct_superclasses(Class_sp c) {
 
 CL_DEFUN void core__reinitialize_class(Class_sp c) {
   if (c->_Class->isSubClassOf(_lisp->_Roots._TheClass)) {
-    c->instanceSet(Instance_O::REF_CLASS_INSTANCE_STAMP,clasp_make_fixnum(gctools::NextStamp()));
+    c->CLASS_set_stamp_for_instances(gctools::NextStamp());
     return;
   }
   TYPE_ERROR(c,cl::_sym_class);
 }
 
-CL_DEFUN Fixnum core__get_instance_stamp(Class_sp c) {
+CL_DEFUN Fixnum core__class_stamp_for_instances(Class_sp c) {
   if (c->_Class->isSubClassOf(_lisp->_Roots._TheClass)) {
-    return c->_get_instance_stamp();
+    return c->CLASS_stamp_for_instances();
   }
   TYPE_ERROR(c,cl::_sym_class);
 };

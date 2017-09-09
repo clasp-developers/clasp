@@ -50,6 +50,8 @@ extern "C" {
 #include <clasp/core/accessor.h>
 #include <clasp/core/fli.h>
 #include <clasp/core/instance.h>
+#include <clasp/core/funcallableInstance.h>
+#include <clasp/core/wrappedPointer.h>
 #include <clasp/core/hashTable.h>
 #include <clasp/core/evaluator.h>
 #include <clasp/core/genericFunction.h>
@@ -673,24 +675,12 @@ gctools::return_type cc_dispatch_slot_writer(core::T_O* tindex, core::T_O* tgf, 
 
 
 gctools::return_type cc_dispatch_effective_method(core::T_O* teffective_method, core::T_O* tgf, core::T_O* tgf_args_valist_s) {
-#if 0
-  if (gctools::TaggedCast<CompiledClosure_O*,T_O*>::isA(teffective_method)) {
-    core::CompiledClosure_O* ptrFunc = reinterpret_cast<core::CompiledClosure_O*>(gc::untag_general(teffective_method));
-    core::T_O* tagged_closure = gctools::tag_general(ptrFunc);
-    return ptrFunc->fptr(tagged_closure,NULL,2,tgf_args_valist_s,_Nil<core::T_O>().raw_(),NULL);
-  }
-  ASSERT((gctools::TaggedCast<ClosureWithSlots_O*,T_O*>::isA(teffective_method)));
-  core::ClosureWithSlots_O* ptrFunc = reinterpret_cast<core::ClosureWithSlots_O*>(gc::untag_general(teffective_method));
-  core::T_O* tagged_closure = gctools::tag_general(ptrFunc);
-  return ptrFunc->fptr(tagged_closure,NULL,2,tgf_args_valist_s,_Nil<core::T_O>().raw_(),NULL);
-#else
   core::T_sp effective_method((gctools::Tagged)teffective_method);
   core::T_sp gf((gctools::Tagged)tgf);
   core::T_sp gf_args((gctools::Tagged)tgf_args_valist_s);
 //  printf("%s:%d  Invoking effective-method %s with arguments %s\n", __FILE__, __LINE__,
   // Arguments are .method-args. .next-methods.
   return apply_method0(effective_method.raw_(),gf_args.raw_(),_Nil<core::T_O>().raw_(),gf_args.raw_());
-#endif
 }
 
 };
@@ -1262,6 +1252,13 @@ ALWAYS_INLINE core::T_O* to_object_pointer( void * x )
 
 }; // eytern "C"
 
+
+
+
+
+
+
+
 namespace llvmo
 {
 
@@ -1275,7 +1272,12 @@ void initialize_raw_translators( void )
 
 void initialize_intrinsics( void )
 {
-  // Do nothing
+  // FuncallableInstance and Instance have the rack pointer at the same place
+  if ((offsetof(Instance_O,_Rack)!=offsetof(FuncallableInstance_O,_Rack))) {
+    printf("%s:%d  The Instance_O._Rack offset %lu and FuncallableInstance_O._Rack offset %lu are not at the same\n", __FILE__, __LINE__,
+           offsetof(Instance_O,_Rack), offsetof(FuncallableInstance_O,_Rack));
+    abort();
+  }
 
   return;
 }

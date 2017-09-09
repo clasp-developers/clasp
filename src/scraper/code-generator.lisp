@@ -192,7 +192,7 @@ Convert colons to underscores"
              (maybe-fixed-magic-name (maybe-fix-magic-name raw-lisp-name)))
         (format cl-code "(generate-direct-call-defun ~a (~a) ~s )~%" maybe-fixed-magic-name (lambda-list% func) wrapped-name )))))
                                
-(defun generate-code-for-direct-call-functions (functions)
+(defun generate-code-for-direct-call-functions (functions classes)
   (let ((c-code (make-string-output-stream))
         (c-code-info (make-string-output-stream))
         (cl-code (make-string-output-stream))
@@ -644,7 +644,7 @@ Convert colons to underscores"
     (write-if-changed enum-info build-path (safe-app-config :enum_inc_h app-config))
     (write-if-changed initializers-info build-path (safe-app-config :initializers_inc_h app-config))
     (multiple-value-bind (direct-call-c-code direct-call-cl-code c-code-info cl-code-info)
-        (generate-code-for-direct-call-functions functions)
+        (generate-code-for-direct-call-functions functions classes)
       (write-if-changed direct-call-c-code build-path (safe-app-config :c_wrappers app-config))
       (write-if-changed direct-call-cl-code build-path (safe-app-config :lisp_wrappers app-config))
       (write-if-changed c-code-info build-path (merge-pathnames (make-pathname :type "txt") (safe-app-config :c_wrappers app-config)))

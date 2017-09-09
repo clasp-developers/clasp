@@ -509,6 +509,8 @@ have disappeared."
 	(setf (generic-function-argument-precedence-order gf)
 	      (rest (si::process-lambda-list (method-lambda-list method) t))))
       (compute-g-f-spec-list gf)
+;;      #+clasp (update-specializer-profile gf (method-specializers method))
+;;      #+clasp (update-call-history-for-add-method gf method)
       (set-generic-function-dispatch gf)
       method)))
 

@@ -3831,6 +3831,9 @@ std::shared_ptr<llvm::Module> ClaspJIT_O::optimizeModule(std::shared_ptr<llvm::M
   llvm::legacy::PassManager my_passes;
   my_passes.add(llvm::createFunctionInliningPass(4096));
   my_passes.run(*M);
+  // Silently remove llvm.used functions if they are defined
+  //     I may use this to prevent functions from being removed from the bitcode
+  //     by clang before we need them.
   llvm::GlobalVariable* used = M->getGlobalVariable("llvm.used");
   if (used) {
     Value* init = used->getInitializer();
@@ -3842,27 +3845,26 @@ std::shared_ptr<llvm::Module> ClaspJIT_O::optimizeModule(std::shared_ptr<llvm::M
     printf("%s:%d init -> %p\n", __FILE__, __LINE__, (void*)init );
 #endif
     used->eraseFromParent();
-    std::vector<llvm::Function*> inline_funcs;
-    for (auto &F : *M) {
-      if (F.hasFnAttribute(llvm::Attribute::AlwaysInline)) {
-        inline_funcs.push_back(&F);
-      }
+  }
+  // Silently remove always-inline functions from the module
+  std::vector<llvm::Function*> inline_funcs;
+  for (auto &F : *M) {
+    if (F.hasFnAttribute(llvm::Attribute::AlwaysInline)) {
+      inline_funcs.push_back(&F);
     }
-    for ( auto f : inline_funcs) {
-//      printf("%s:%d Erasing function: %s\n", __FILE__, __LINE__, f->getName().str().c_str());
-      f->eraseFromParent();
-    }
-  } else {
-    printf("%s:%d   Could not find GlobalVariable llvm.used\n", __FILE__, __LINE__ );
+  }
+  for ( auto f : inline_funcs) {
+//    printf("%s:%d Erasing function: %s\n", __FILE__, __LINE__, f->getName().str().c_str());
+    f->eraseFromParent();
   }
   
   timer.stop();
   double thisTime = timer.getAccumulatedTime();
   accumulate_llvm_timing_data(thisTime);
 
-  if (!comp::_sym_STARsave_module_for_disassembleSTAR.unboundp() &&
-      comp::_sym_STARsave_module_for_disassembleSTAR.notnilp()) {
-//    printf("%s:%d     About to save the module\n",__FILE__, __LINE__);
+  if ((!comp::_sym_STARsave_module_for_disassembleSTAR.unboundp()) &&
+      comp::_sym_STARsave_module_for_disassembleSTAR->symbolValue().notnilp()) {
+    printf("%s:%d     About to save the module *save-module-for-disassemble*->%s\n",__FILE__, __LINE__, _rep_(comp::_sym_STARsave_module_for_disassembleSTAR->symbolValue()).c_str());
     llvm::Module* o = &*M;
     std::unique_ptr<llvm::Module> cm = llvm::CloneModule(o);
     Module_sp module = core::RP_Create_wrapped<Module_O,llvm::Module*>(cm.release());

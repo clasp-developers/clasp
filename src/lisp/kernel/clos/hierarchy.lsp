@@ -74,7 +74,7 @@
       (valid-initargs :accessor class-valid-initargs)
       (slot-table :accessor slot-table)
       (location-table :initform nil :accessor class-location-table)
-      (instance-stamp :accessor instance-stamp)
+      (stamp-for-instances :accessor stamp-for-instances)
       (creator :accessor creator)
       ))
 
@@ -99,7 +99,8 @@
   (defparameter +standard-class-slots+
     (append +class-slots+
 	    '((optimize-slot-access)
-	      (forward)))))
+	      (forward)
+              (source-position :initform nil :initarg :source-position :accessor class-source-position)))))
 
 ;;; ----------------------------------------------------------------------
 ;;; STRUCTURE-CLASS
@@ -127,22 +128,8 @@
       (method-combination 
        :initarg :method-combination :initform (find-method-combination (class-prototype (find-class 'standard-generic-function)) 'standard nil)
        :accessor generic-function-method-combination)
-      #+clasp(compiled-dispatch-function
-              :initarg :compiled-dispatch-function
-              :initform nil
-              :accessor generic-function-compiled-dispatch-function)
-      #+clasp(call-history
-              :initarg :call-history
-              :initform nil
-              :accessor generic-function-call-history)
       (lambda-list :initarg :lambda-list
        :accessor generic-function-lambda-list)
-      #+clasp(specializer-profile :initarg :specializer-profile
-              :accessor generic-function-specializer-profile)
-      #+(and clasp threads)(lock
-                            :initarg :lock
-                            :initform (mp:make-shared-mutex 'generic-function-lock)
-                            :accessor generic-function-lock)
       (argument-precedence-order 
        :initarg :argument-precedence-order
        :initform nil
@@ -432,6 +419,11 @@
         :direct-slots #1#
         #+clasp :creates-classes #+clasp t
         )
+#+clasp(clbind:class-rep
+        :direct-superclasses (class)
+        :direct-slots #1#
+        #+clasp :creates-classes #+clasp t
+        )
       (std-class
        :direct-superclasses (class)
        :direct-slots #1#
@@ -509,10 +501,10 @@
             (cond
               ((eq name 'number-of-slots-in-standard-class)
                (unless (= core-slot-index (length +standard-class-slots+))
-                 (error "There is a mismatch between what clasp things should be the number of standard-class slots (~a) and what clos says it is (~a) - update metaClass.h" core-slot-index (length +standard-class-slots+))))
+                 (error "There is a mismatch between what clasp thinks should be the number of standard-class slots (~a) and what clos says it is (~a) - update metaClass.h" core-slot-index (length +standard-class-slots+))))
               ((eq name 'number-of-slots-in-structure-class)
                (unless (= core-slot-index (length +structure-class-slots+))
-                 (error "There is a mismatch between what clasp things should be the number of structure-class slots (~a) and what clos says it is (~a) - update metaClass.h" core-slot-index (length +structure-class-slots+))))
+                 (error "There is a mismatch between what clasp thinks should be the number of structure-class slots (~a) and what clos says it is (~a) - update metaClass.h" core-slot-index (length +structure-class-slots+))))
               (t (error "The class-slot-sanity-check ~a could not be verified against clos - fix the sanity check at the end of hierarchy.lsp" name-slot))))))))
         
             

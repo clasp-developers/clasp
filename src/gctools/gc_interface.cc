@@ -269,10 +269,10 @@ const char *obj_kind_name(core::T_O *tagged_ptr) {
 }
 
 const char *obj_name(gctools::stamp_t stamp) {
-  if (stamp == (gctools::stamp_t)KIND_null) {
+  if (stamp == (gctools::stamp_t)STAMP_null) {
     return "UNDEFINED";
   }
-  if ( stamp > KIND_max ) stamp = GCStamp<core::Instance_O>::Stamp;
+  if ( stamp > STAMP_max ) stamp = GCStamp<core::Instance_O>::Stamp;
   size_t stamp_index = (size_t)stamp;
   ASSERT(stamp_index<=global_kind_max);
 //  printf("%s:%d obj_name stamp= %d  stamp_index = %d\n", __FILE__, __LINE__, stamp, stamp_index);
@@ -346,7 +346,7 @@ mps_addr_t obj_skip(mps_addr_t client) {
   DEBUG_THROW_IF_INVALID_CLIENT(client);
   if (header->stampP()) {
     gctools::GCStampEnum stamp = header->stamp();
-    if ( stamp > KIND_max ) stamp = GCStamp<core::Instance_O>::Stamp;
+    if ( stamp > STAMP_max ) stamp = GCStamp<core::Instance_O>::Stamp;
     const Kind_layout& stamp_layout = global_kind_layout[stamp];
 #ifndef RUNNING_GC_BUILDER
     if ( stamp_layout.layout_op == class_container_op ) {
@@ -411,7 +411,7 @@ GC_RESULT obj_scan(mps_ss_t ss, mps_addr_t client, mps_addr_t limit) {
       original_client = (mps_addr_t)client;
       if (header->stampP()) {
         stamp = header->stamp();
-        if ( stamp > KIND_max ) stamp = GCStamp<core::Instance_O>::Stamp;
+        if ( stamp > STAMP_max ) stamp = GCStamp<core::Instance_O>::Stamp;
         const Kind_layout& stamp_layout = global_kind_layout[stamp];
 #ifndef RUNNING_GC_BUILDER
         size = stamp_layout.size;
@@ -644,10 +644,10 @@ NOINLINE void set_one_static_class_Header() {
 
 
 template <class TheClass>
-NOINLINE  gc::smart_ptr<core::Class_O> allocate_one_metaclass(core::Symbol_sp classSymbol, core::Class_sp metaClass)
+NOINLINE  gc::smart_ptr<core::Class_O> allocate_one_metaclass(Fixnum theStamp, core::Symbol_sp classSymbol, core::Class_sp metaClass)
 {
   auto cb = gctools::GC<TheClass>::allocate();
-  gc::smart_ptr<core::Class_O> class_val = core::Class_O::createClassUncollectable(core::Class_O::static_HeaderValue.stamp(),metaClass,REF_CLASS_NUMBER_OF_SLOTS_IN_STANDARD_CLASS,cb);
+  gc::smart_ptr<core::Class_O> class_val = core::Class_O::createClassUncollectable(theStamp,metaClass,REF_CLASS_NUMBER_OF_SLOTS_IN_STANDARD_CLASS,cb);
   class_val->__setup_stage1_with_sharedPtr_lisp_sid(class_val,classSymbol);
 //  reg::lisp_associateClassIdWithClassSymbol(reg::registered_class<TheClass>::id,TheClass::static_classSymbol());
 //  TheClass::static_class = class_val;
@@ -809,10 +809,14 @@ void initialize_clasp()
   MPS_LOG("initialize_clasp set_static_class_symbols");
   set_static_class_symbols(&bootStrapCoreSymbolMap);
 
-  _lisp->_Roots._TheClass = allocate_one_metaclass<core::StandardClassCreator_O>(cl::_sym_class,_Unbound<core::Class_O>());
-  _lisp->_Roots._TheBuiltInClass = allocate_one_metaclass<core::StandardClassCreator_O>(cl::_sym_built_in_class,_Unbound<core::Class_O>());
-  _lisp->_Roots._TheStandardClass = allocate_one_metaclass<core::StandardClassCreator_O>(cl::_sym_standard_class,_Unbound<core::Class_O>());
-  _lisp->_Roots._TheStructureClass = allocate_one_metaclass<core::StructureClassCreator_O>(cl::_sym_structure_class,_Unbound<core::Class_O>());
+  Fixnum TheClass_stamp = gctools::NextStamp();
+  Fixnum TheBuiltInClass_stamp = gctools::NextStamp();
+  Fixnum TheStandardClass_stamp = gctools::NextStamp();
+  Fixnum TheStructureClass_stamp = gctools::NextStamp();
+  _lisp->_Roots._TheClass = allocate_one_metaclass<core::StandardClassCreator_O>(TheClass_stamp,cl::_sym_class,_Unbound<core::Class_O>());
+  _lisp->_Roots._TheBuiltInClass = allocate_one_metaclass<core::StandardClassCreator_O>(TheBuiltInClass_stamp,cl::_sym_built_in_class,_Unbound<core::Class_O>());
+  _lisp->_Roots._TheStandardClass = allocate_one_metaclass<core::StandardClassCreator_O>(TheStandardClass_stamp,cl::_sym_standard_class,_Unbound<core::Class_O>());
+  _lisp->_Roots._TheStructureClass = allocate_one_metaclass<core::StructureClassCreator_O>(TheStructureClass_stamp,cl::_sym_structure_class,_Unbound<core::Class_O>());
   _lisp->_Roots._TheClass->_Class = _lisp->_Roots._TheStandardClass;
   _lisp->_Roots._TheBuiltInClass->_Class = _lisp->_Roots._TheStandardClass;
   _lisp->_Roots._TheStandardClass->_Class = _lisp->_Roots._TheStandardClass;
@@ -843,19 +847,19 @@ void initialize_clasp()
   #endif
   #undef CALCULATE_CLASS_PRECEDENCE_ALL_CLASSES
 
-  _lisp->_Roots._TheClass->instanceSet(core::Class_O::REF_CLASS_INSTANCE_STAMP,core::make_fixnum(gctools::NextStamp()));
+  _lisp->_Roots._TheClass->stamp_set(TheStandardClass_stamp);
   _lisp->_Roots._TheClass->instanceSet(core::Class_O::REF_CLASS_SLOTS,_Nil<core::T_O>());
   _lisp->_Roots._TheClass->instanceSet(core::Class_O::REF_CLASS_DIRECT_SLOTS,_Nil<core::T_O>());
   _lisp->_Roots._TheClass->instanceSet(core::Class_O::REF_CLASS_DEFAULT_INITARGS,_Nil<core::T_O>());
-  _lisp->_Roots._TheBuiltInClass->instanceSet(core::Class_O::REF_CLASS_INSTANCE_STAMP,core::make_fixnum(gctools::NextStamp()));
+  _lisp->_Roots._TheBuiltInClass->stamp_set(TheStandardClass_stamp);
   _lisp->_Roots._TheBuiltInClass->instanceSet(core::Class_O::REF_CLASS_SLOTS,_Nil<core::T_O>());
   _lisp->_Roots._TheBuiltInClass->instanceSet(core::Class_O::REF_CLASS_DIRECT_SLOTS,_Nil<core::T_O>());
   _lisp->_Roots._TheBuiltInClass->instanceSet(core::Class_O::REF_CLASS_DEFAULT_INITARGS,_Nil<core::T_O>());
-  _lisp->_Roots._TheStandardClass->instanceSet(core::Class_O::REF_CLASS_INSTANCE_STAMP,core::make_fixnum(gctools::NextStamp()));
+  _lisp->_Roots._TheStandardClass->stamp_set(TheStandardClass_stamp);
   _lisp->_Roots._TheStandardClass->instanceSet(core::Class_O::REF_CLASS_SLOTS,_Nil<core::T_O>());
   _lisp->_Roots._TheStandardClass->instanceSet(core::Class_O::REF_CLASS_DIRECT_SLOTS,_Nil<core::T_O>());
   _lisp->_Roots._TheStandardClass->instanceSet(core::Class_O::REF_CLASS_DEFAULT_INITARGS,_Nil<core::T_O>());
-  _lisp->_Roots._TheStructureClass->instanceSet(core::Class_O::REF_CLASS_INSTANCE_STAMP,core::make_fixnum(gctools::NextStamp()));
+  _lisp->_Roots._TheStructureClass->stamp_set(TheStandardClass_stamp);
   _lisp->_Roots._TheStructureClass->instanceSet(core::Class_O::REF_CLASS_SLOTS,_Nil<core::T_O>());
   _lisp->_Roots._TheStructureClass->instanceSet(core::Class_O::REF_CLASS_DIRECT_SLOTS,_Nil<core::T_O>());
   _lisp->_Roots._TheStructureClass->instanceSet(core::Class_O::REF_CLASS_DEFAULT_INITARGS,_Nil<core::T_O>());

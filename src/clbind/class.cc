@@ -85,7 +85,7 @@ void class_registration::register_() const {
   printf("%s:%d   Registering clbind class\n", __FILE__, __LINE__ );
 #endif
   crep->_Class = core::lisp_standard_class();
-  crep->initializeSlots(crep->_Class->_get_instance_stamp() /* BEFORE: gctools::NextStamp() */,REF_CLASS_NUMBER_OF_SLOTS_IN_STANDARD_CLASS);
+  crep->initializeSlots(crep->_Class->CLASS_stamp_for_instances() /* BEFORE: gctools::NextStamp() */,REF_CLASS_NUMBER_OF_SLOTS_IN_STANDARD_CLASS);
   std::string classNameString(this->m_name);
   gctools::smart_ptr<core::Creator_O> creator;
   if (m_default_constructor != NULL) {
@@ -98,10 +98,7 @@ void class_registration::register_() const {
   className->exportYourself();
   crep->_setClassName(className);
   reg::lisp_associateClassIdWithClassSymbol(m_id, className); // TODO: Or do I want m_wrapper_id????
-  if (core::_sym_STARallCxxClassesSTAR->symbolValueUnsafe()) {
-    core::_sym_STARallCxxClassesSTAR->setf_symbolValue(
-        core::Cons_O::create(className, core::_sym_STARallCxxClassesSTAR->symbolValue()));
-  }
+  lisp_pushClassSymbolOntoSTARallCxxClassesSTAR(className);
   core__setf_find_class(crep, className );
   registry->add_class(m_type, crep);
 

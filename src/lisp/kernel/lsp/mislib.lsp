@@ -188,6 +188,7 @@ Evaluates FORM, outputs the realtime and runtime used for the evaluation to
 		 (number-of-days-from-1900 year))))
     (+ sec (* 60 (+ min (* 60 (+ tz dst hour (* 24 days))))))))
 
+#-clasp-min
 (defun decode-universal-time (orig-ut &optional (tz nil tz-p) &aux (dstp nil))
   "Args: (integer &optional (timezone (si::get-local-time-zone)))
 Returns as nine values the day-and-time represented by INTEGER.  See GET-
@@ -337,7 +338,7 @@ hash table; otherwise it signals that we have reached the end of the hash table.
 
 ;;; Keep track of what classes of instances are being created while running a block of code.
 ;;; This is useful for debugging and reducing consing.
-#+(and clasp meter-allocations)
+#+(and (not clasp-min) clasp meter-allocations)
 (progn
   (defun run-with-allocation-meters (fun)
     (let ((classes (clos:subclasses* (find-class t))))

@@ -63,6 +63,8 @@ void FuncallableInstance_O::initializeSlots(gctools::Stamp stamp, size_t numberO
 }
 
 void FuncallableInstance_O::initializeClassSlots(Creator_sp creator, gctools::Stamp stamp) {
+  DEPRECATED();
+#if 0
   // Initialize slots they way they are in +class-slots+ in: https://github.com/drmeister/clasp/blob/dev-class/src/lisp/kernel/clos/hierarchy.lsp#L55
   this->instanceSet(REF_CLASS_DIRECT_SUPERCLASSES, _Nil<T_O>());
   this->instanceSet(REF_CLASS_DIRECT_SUBCLASSES, _Nil<T_O>());
@@ -71,8 +73,9 @@ void FuncallableInstance_O::initializeClassSlots(Creator_sp creator, gctools::St
   this->instanceSet(REF_CLASS_SEALEDP, _Nil<T_O>());
   this->instanceSet(REF_CLASS_DEPENDENTS, _Nil<T_O>());
   this->instanceSet(REF_CLASS_LOCATION_TABLE, _Nil<T_O>());
-  this->instanceSet(REF_CLASS_INSTANCE_STAMP, clasp_make_fixnum(stamp));
+  this->instanceSet(REF_CLASS_STAMP_FOR_INSTANCES, clasp_make_fixnum(stamp));
   this->instanceSet(REF_CLASS_CREATOR, creator);
+#endif
 }
 
 T_sp FuncallableInstance_O::oinstancep() const {
@@ -177,6 +180,7 @@ string FuncallableInstance_O::__repr__() const {
   if (this->isgf()) {
       ss << _rep_(this->GFUN_NAME());
   }
+  if (this->_Rack)
   {
     ss << " #slots[" << this->numberOfSlots() << "]";
 #if 0
@@ -206,6 +210,8 @@ string FuncallableInstance_O::__repr__() const {
       }
     }
 #endif
+  } else {
+    ss << " rack-undef";
   }
   ss << ")" ;
   return ss.str();
@@ -253,17 +259,6 @@ namespace core {
 Class_sp FuncallableInstance_O::create(Symbol_sp symbol, Class_sp metaClass, Creator_sp creator ) {
   DEPRECATED();
 };
-
-void FuncallableInstance_O::CLASS_set_creator(Creator_sp cb) {
-#ifdef DEBUG_CLASS_INSTANCE
-  printf("%s:%d    setCreator for %s @%p -> @%p\n", __FILE__, __LINE__, _rep_(this->name()).c_str(), this, cb.raw_());
-#endif
-  this->instanceSet(REF_CLASS_CREATOR,cb);
-}
-
-string FuncallableInstance_O::getPackagedName() const {
-  return this->_className()->formattedName(false);
-}
 
 
 #if 0  // CLASS_STUFF
@@ -515,7 +510,7 @@ CL_DEFUN List_sp clos__direct_superclasses(Class_sp c) {
   TYPE_ERROR(c,cl::_sym_class);
 }
 
-CL_DEFUN void core__reinitialize_class(Class_sp c) {
+CL_DEFUN void clos__reinitialize_class(Class_sp c) {
   if (c->_Class->isSubClassOf(_lisp->_Roots._TheClass)) {
     c->instanceSet(FuncallableInstance_O::REF_CLASS_INSTANCE_STAMP,clasp_make_fixnum(gctools::NextStamp()));
     return;
@@ -528,46 +523,13 @@ CL_DEFUN void core__reinitialize_class(Class_sp c) {
 };
 
 
-
 namespace core {
-
-string FuncallableInstance_O::dumpInfo() {
-  stringstream ss;
-  ss << (boost::format("this.instanceClassName: %s @ %X") % this->instanceClassName() % this) << std::endl;
-  ss << "_FullName[" << this->_className()->fullName() << "]" << std::endl;
-  ss << boost::format("    _Class = %X  this._Class.instanceClassName()=%s\n") % this->__class().get() % this->__class()->instanceClassName();
-  ss << boost::format("this.instanceCreator* = %p") % (void *)(&*this->CLASS_get_creator()) << std::endl;
-  return ss.str();
-}
-
-
-string FuncallableInstance_O::_classNameAsString() const {
-  return _rep_(this->_className());
-}
-
-};
-
-
-namespace core {
-
-
-void FuncallableInstance_O::GFUN_CALL_HISTORY_set(T_sp h) {
-#ifdef DEBUG_GFDISPATCH
-  if (_sym_STARdebug_dispatchSTAR->symbolValue().notnilp()) {
-    printf("%s:%d   GFUN_CALL_HISTORY_set gf: %s\n", __FILE__, __LINE__, this->__repr__().c_str());
-    printf("%s:%d                      history: %s\n", __FILE__, __LINE__, _rep_(h).c_str());
-  }
-#endif
-  this->instanceSet(REF_GFUN_CALL_HISTORY,h);
-}
 
 void FuncallableInstance_O::set_kind(Symbol_sp k) {
   if (k == kw::_sym_macro) {
     SIMPLE_ERROR(BF("You cannot set a generic-function (instance) to macro"));
   }
 }
-
-
 
 T_sp FuncallableInstance_O::copyInstance() const {
   FuncallableInstance_sp iobj = gc::As<FuncallableInstance_sp>(allocate_instance(this->_Class,1));
@@ -590,16 +552,16 @@ T_sp FuncallableInstance_O::setFuncallableInstanceFunction(T_sp functionOrT) {
   SYMBOL_EXPORT_SC_(ClPkg, standardGenericFunction);
   SYMBOL_SC_(ClosPkg, standardOptimizedReaderFunction);
   SYMBOL_SC_(ClosPkg, standardOptimizedWriterFunction);
-  SYMBOL_SC_(ClosPkg, empty_dispatch_function );
+  SYMBOL_SC_(ClosPkg, invalidated_dispatch_function );
   if (functionOrT == _lisp->_true()) {
     this->_isgf = CLASP_STANDARD_DISPATCH;
     FuncallableInstance_O::ensureClosure(&generic_function_dispatch);
   } else if (functionOrT == cl::_sym_standardGenericFunction) {
     this->_isgf = CLASP_RESTRICTED_DISPATCH;
     FuncallableInstance_O::ensureClosure(&generic_function_dispatch);
-  } else if (functionOrT == clos::_sym_empty_dispatch_function) {
-    this->_isgf = CLASP_EMPTY_DISPATCH;
-    FuncallableInstance_O::ensureClosure(&empty_dispatch);
+  } else if (functionOrT == clos::_sym_invalidated_dispatch_function) {
+    this->_isgf = CLASP_INVALIDATED_DISPATCH;
+    FuncallableInstance_O::ensureClosure(&invalidated_dispatch);
   } else if (functionOrT.nilp()) {
     this->_isgf = CLASP_NOT_FUNCALLABLE;
     FuncallableInstance_O::ensureClosure(&not_funcallable_dispatch);
@@ -622,6 +584,7 @@ T_sp FuncallableInstance_O::setFuncallableInstanceFunction(T_sp functionOrT) {
     TYPE_ERROR(functionOrT, cl::_sym_function);
     //SIMPLE_ERROR(BF("Wrong type argument: %s") % functionOrT->__repr__());
   } else {
+    printf("%s:%d  Installing CLASP_USER_DISPATCH: %s\n", __FILE__, __LINE__, _rep_(functionOrT).c_str());
     this->reshapeInstance(+1);
     (*this->_Rack)[this->_Rack->length() - 1] = functionOrT;
     this->_isgf = CLASP_USER_DISPATCH;
@@ -664,7 +627,7 @@ void FuncallableInstance_O::describe(T_sp stream) {
 
 
 #if 0
-CL_DEFUN bool core__call_history_entry_key_contains_specializer(SimpleVector_sp key, T_sp specializer) {
+CL_DEFUN bool clos__call_history_entry_key_contains_specializer(SimpleVector_sp key, T_sp specializer) {
   if (specializer.consp()) {
     Cons_sp eql_spec(gc::As_unsafe<Cons_sp>(specializer));
     // Check and remove eql specializer
@@ -683,7 +646,7 @@ CL_DEFUN bool core__call_history_entry_key_contains_specializer(SimpleVector_sp 
 }
   
 
-CL_DEFUN bool core__specializer_key_match(SimpleVector_sp x, SimpleVector_sp entry_key) {
+CL_DEFUN bool clos__specializer_key_match(SimpleVector_sp x, SimpleVector_sp entry_key) {
   if (x->length() != entry_key->length()) return false;
 #ifdef DEBUG_GFDISPATCH
   if (_sym_STARdebug_dispatchSTAR->symbolValue().notnilp()) {
@@ -730,7 +693,7 @@ CL_DEFUN bool core__specializer_key_match(SimpleVector_sp x, SimpleVector_sp ent
 
 
 
-CL_DEFUN List_sp core__call_history_find_key(List_sp generic_function_call_history, SimpleVector_sp key) {
+CL_DEFUN List_sp clos__call_history_find_key(List_sp generic_function_call_history, SimpleVector_sp key) {
 #ifdef DEBUG_GFDISPATCH
   if (_sym_STARdebug_dispatchSTAR->symbolValue().notnilp()) {
     printf("%s:%d   call_history_find_key    key: %s\n", __FILE__, __LINE__, _rep_(key).c_str());
@@ -741,7 +704,7 @@ CL_DEFUN List_sp core__call_history_find_key(List_sp generic_function_call_histo
     Cons_sp entry = gc::As_unsafe<Cons_sp>(oCar(cur));
     ASSERT(gc::IsA<SimpleVector_sp>(oCar(entry)));
     SimpleVector_sp entry_key = gc::As_unsafe<SimpleVector_sp>(oCar(entry));
-    if (core__specializer_key_match(key,entry_key)) return cur;
+    if (clos__specializer_key_match(key,entry_key)) return cur;
   }
   return _Nil<T_O>();
 }
@@ -762,8 +725,8 @@ CL_DEFUN T_mv clos__getFuncallableInstanceFunction(T_sp obj) {
         return Values(iobj->userFuncallableInstanceFunction(),Pointer_O::create((void*)iobj->_entryPoint));
     case CLASP_FASTGF_DISPATCH:
         return Values(iobj->GFUN_DISPATCHER(),Pointer_O::create((void*)iobj->_entryPoint));
-    case CLASP_EMPTY_DISPATCH:
-        return Values(clos::_sym_empty_dispatch_function,Pointer_O::create((void*)iobj->_entryPoint));
+    case CLASP_INVALIDATED_DISPATCH:
+        return Values(clos::_sym_invalidated_dispatch_function,Pointer_O::create((void*)iobj->_entryPoint));
     case CLASP_NOT_FUNCALLABLE:
         return Values(clos::_sym_not_funcallable);
     }
@@ -784,7 +747,7 @@ CL_DEFUN T_sp clos__setFuncallableInstanceFunction(T_sp obj, T_sp func) {
 
 namespace core {
 
-CL_DEFUN bool core__call_history_entry_key_contains_specializer(SimpleVector_sp key, T_sp specializer) {
+CL_DEFUN bool clos__call_history_entry_key_contains_specializer(SimpleVector_sp key, T_sp specializer) {
   if (specializer.consp()) {
     Cons_sp eql_spec(gc::As_unsafe<Cons_sp>(specializer));
     // Check and remove eql specializer
@@ -803,7 +766,7 @@ CL_DEFUN bool core__call_history_entry_key_contains_specializer(SimpleVector_sp 
 }
   
 
-CL_DEFUN bool core__specializer_key_match(SimpleVector_sp x, SimpleVector_sp entry_key) {
+CL_DEFUN bool clos__specializer_key_match(SimpleVector_sp x, SimpleVector_sp entry_key) {
   if (x->length() != entry_key->length()) return false;
 #ifdef DEBUG_GFDISPATCH
   if (_sym_STARdebug_dispatchSTAR->symbolValue().notnilp()) {
@@ -850,7 +813,7 @@ CL_DEFUN bool core__specializer_key_match(SimpleVector_sp x, SimpleVector_sp ent
 
 
 
-CL_DEFUN List_sp core__call_history_find_key(List_sp generic_function_call_history, SimpleVector_sp key) {
+CL_DEFUN List_sp clos__call_history_find_key(List_sp generic_function_call_history, SimpleVector_sp key) {
 #ifdef DEBUG_GFDISPATCH
   if (_sym_STARdebug_dispatchSTAR->symbolValue().notnilp()) {
     printf("%s:%d   call_history_find_key    key: %s\n", __FILE__, __LINE__, _rep_(key).c_str());
@@ -861,7 +824,7 @@ CL_DEFUN List_sp core__call_history_find_key(List_sp generic_function_call_histo
     Cons_sp entry = gc::As_unsafe<Cons_sp>(oCar(cur));
     ASSERT(gc::IsA<SimpleVector_sp>(oCar(entry)));
     SimpleVector_sp entry_key = gc::As_unsafe<SimpleVector_sp>(oCar(entry));
-    if (core__specializer_key_match(key,entry_key)) return cur;
+    if (clos__specializer_key_match(key,entry_key)) return cur;
   }
   return _Nil<T_O>();
 }
@@ -869,7 +832,7 @@ CL_DEFUN List_sp core__call_history_find_key(List_sp generic_function_call_histo
     
     
 /*! Return true if an entry was pushed */
-CL_DEFUN bool core__generic_function_call_history_push_new(FuncallableInstance_sp generic_function, SimpleVector_sp key, T_sp effective_method )
+CL_DEFUN bool clos__generic_function_call_history_push_new(FuncallableInstance_sp generic_function, SimpleVector_sp key, T_sp effective_method )
 {
   GenericFunctionWriteLock(generic_function->GFUN_LOCK());
 #ifdef DEBUG_GFDISPATCH
@@ -883,7 +846,7 @@ CL_DEFUN bool core__generic_function_call_history_push_new(FuncallableInstance_s
     return true;
   }
   // Search for existing entry
-  List_sp found = core__call_history_find_key(call_history,key);
+  List_sp found = clos__call_history_find_key(call_history,key);
   if (found.nilp()) {
     generic_function->GFUN_CALL_HISTORY_set(Cons_O::create(Cons_O::create(key,effective_method),generic_function->GFUN_CALL_HISTORY()));
     return true;
@@ -892,7 +855,7 @@ CL_DEFUN bool core__generic_function_call_history_push_new(FuncallableInstance_s
 }
 
 
-CL_DEFUN void core__generic_function_call_history_remove_entries_with_specializers(FuncallableInstance_sp generic_function, List_sp specializers ) {
+CL_DEFUN void clos__generic_function_call_history_remove_entries_with_specializers(FuncallableInstance_sp generic_function, List_sp specializers ) {
   GenericFunctionWriteLock(generic_function->GFUN_LOCK());
 //  printf("%s:%d Remember to remove entries with subclasses of specializer: %s\n", __FILE__, __LINE__, _rep_(specializer).c_str());
 #ifdef DEBUG_GFDISPATCH
@@ -915,7 +878,7 @@ CL_DEFUN void core__generic_function_call_history_remove_entries_with_specialize
           printf("%s:%d         check if entry_key: %s   contains specializer: %s\n", __FILE__, __LINE__, _rep_(entry_key).c_str(), _rep_(one_specializer).c_str());
         }
 #endif
-        if (core__call_history_entry_key_contains_specializer(entry_key,one_specializer)) {
+        if (clos__call_history_entry_key_contains_specializer(entry_key,one_specializer)) {
 #ifdef DEBUG_GFDISPATCH
         if (_sym_STARdebug_dispatchSTAR->symbolValue().notnilp()) {
           printf("%s:%d       IT DOES!!!\n", __FILE__, __LINE__ );
@@ -939,5 +902,40 @@ CL_DEFUN void core__generic_function_call_history_remove_entries_with_specialize
     generic_function->GFUN_CALL_HISTORY_set(call_history);
   }
 }
- 
+
+
+
+CL_DEFUN T_sp clos__generic_function_specializer_profile(T_sp obj) {
+  if (gc::IsA<FuncallableInstance_sp>(obj)) {
+    return gc::As_unsafe<FuncallableInstance_sp>(obj)->GFUN_SPECIALIZER_PROFILE();
+  }
+  SIMPLE_ERROR(BF("%s must be a FuncallableObject_O") % _rep_(obj));
+}
+CL_DEFUN void clos__set_generic_function_specializer_profile(T_sp obj, T_sp val) {
+  gc::As<FuncallableInstance_sp>(obj)->GFUN_SPECIALIZER_PROFILE_set(val);
+}
+
+
+
+CL_DEFUN T_sp clos__generic_function_call_history(T_sp obj) {
+  return gc::As<FuncallableInstance_sp>(obj)->GFUN_CALL_HISTORY();
+}
+CL_DEFUN void clos__set_generic_function_call_history(T_sp obj, T_sp val) {
+  gc::As<FuncallableInstance_sp>(obj)->GFUN_CALL_HISTORY_set(val);
+}
+
+CL_DEFUN T_sp clos__generic_function_lock(T_sp obj) {
+  return gc::As<FuncallableInstance_sp>(obj)->GFUN_LOCK();
+}
+CL_DEFUN void clos__set_generic_function_lock(T_sp obj, T_sp val) {
+  gc::As<FuncallableInstance_sp>(obj)->GFUN_LOCK_set(val);
+}
+
+CL_DEFUN T_sp clos__generic_function_compiled_dispatch_function(T_sp obj) {
+  return gc::As<FuncallableInstance_sp>(obj)->GFUN_DISPATCHER();
+}
+CL_DEFUN void clos__set_generic_function_compiled_dispatch_function(T_sp obj, T_sp val) {
+  gc::As<FuncallableInstance_sp>(obj)->GFUN_DISPATCHER_set(val);
+}
+
 };

@@ -1212,7 +1212,8 @@ namespace core {
     virtual void internalAdjustSize_(size_t size, T_sp initElement=_Nil<T_O>(), bool initElementSupplied=false ) final {cannotAdjustSizeOfSimpleArrays(this->asSmartPtr());};
 public:
     void this_asAbstractSimpleVectorRange(AbstractSimpleVector_sp& sv, size_t& start, size_t& end) const  {
-      sv = gc::As<AbstractSimpleVector_sp>(this->_Data);
+      ASSERT(gc::IsA<AbstractSimpleVector_sp>(this->_Data));
+      sv = gc::As_unsafe<AbstractSimpleVector_sp>(this->_Data);
       start = this->_DisplacedIndexOffset;
       end = this->length()+this->_DisplacedIndexOffset;
     }

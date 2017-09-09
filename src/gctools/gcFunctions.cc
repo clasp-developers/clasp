@@ -21,6 +21,7 @@ int gcFunctions_after;
 #include <clasp/core/bformat.h>
 #include <clasp/core/lisp.h>
 #include <clasp/core/instance.h>
+#include <clasp/core/funcallableInstance.h>
 #include <clasp/core/builtInClass.h>
 #include <clasp/core/fileSystem.h>
 #include <clasp/core/environment.h>
@@ -31,11 +32,12 @@ int gcFunctions_after;
 #include <clasp/core/array.h>
 #include <clasp/core/symbolTable.h>
 #include <clasp/gctools/gctoolsPackage.h>
+#include <clasp/llvmo/intrinsics.h>
 #include <clasp/core/wrappers.h>
 
 namespace gctools {
 
-size_t global_next_unused_kind = KIND_max+1;
+size_t global_next_unused_kind = STAMP_max+1;
 
 /*! Hardcode a few kinds of objects for bootstrapping
  */
@@ -119,46 +121,51 @@ CL_DEFUN core::T_sp core__header_value(core::T_sp obj) {
 CL_DOCSTRING("Return the header kind for the object");
 CL_DEFUN Fixnum core__header_kind(core::T_sp obj) {
   if (obj.consp()) {
-    return gctools::KIND_CONS;
+    return gctools::STAMP_CONS;
   } else if (obj.fixnump()) {
-    return gctools::KIND_FIXNUM;
+    return gctools::STAMP_FIXNUM;
   } else if (obj.generalp()) {
     void *mostDerived = gctools::untag_general<void *>(obj.raw_());
     const gctools::Header_s *header = reinterpret_cast<const gctools::Header_s *>(gctools::ClientPtrToBasePtr(mostDerived));
     gctools::GCStampEnum stamp = header->stamp();
     return (Fixnum)stamp;
   } else if (obj.single_floatp()) {
-    return gctools::KIND_SINGLE_FLOAT;
+    return gctools::STAMP_SINGLE_FLOAT;
   } else if (obj.characterp()) {
-    return gctools::KIND_CHARACTER;
+    return gctools::STAMP_CHARACTER;
   } else if (obj.valistp()) {
-    return gctools::KIND_VA_LIST_S;
+    return gctools::STAMP_VA_LIST_S;
   }
   printf("%s:%d HEADER-KIND requested for a non-general object - Clasp needs to define hard-coded kinds for non-general objects - returning -1 for now", __FILE__, __LINE__);
   SIMPLE_ERROR(BF("The object %s doesn't have a stamp") % _rep_(obj));
 }
 
-CL_DOCSTRING("Return the stamp for the object");
-CL_DEFUN Fixnum core__header_stamp(core::T_sp obj)
+CL_DOCSTRING("Return the stamp for the object, the flags and the header stamp");
+CL_DEFUN core::T_mv core__instance_stamp(core::T_sp obj)
 {
-  Fixnum kind = core__header_kind(obj);
-  if (gctools::IsA<core::Instance_sp>(obj)) {
-    // if (kind== gctools::KIND_INSTANCE) {
-    core::Instance_sp iobj = gc::As_unsafe<core::Instance_sp>(obj);
-    return iobj->stamp();
+  void* tagged_pointer = reinterpret_cast<void*>(obj.raw_());
+  Fixnum stamp = cc_read_stamp(tagged_pointer);
+  if (obj.generalp()) {
+    Header_s* header = reinterpret_cast<Header_s*>(ClientPtrToBasePtr(obj.unsafe_general()));
+    return Values(core::make_fixnum(stamp),
+                  core::make_fixnum(static_cast<Fixnum>(header->header.flags())),
+                  core::make_fixnum(static_cast<Fixnum>(header->header._value)>>gctools::Header_s::stamp_shift));
   }
-  return kind;
+  return Values(core::make_fixnum(stamp),_Nil<core::T_O>());
 }
 
 CL_DOCSTRING("Set the header stamp for the object");
-CL_DEFUN void core__header_stamp_set(core::T_sp obj, core::T_sp stamp)
+CL_DEFUN void core__instance_stamp_set(core::T_sp obj, core::T_sp stamp)
 {
   ASSERT(stamp.fixnump());
   if (gc::IsA<core::Instance_sp>(obj)) {
     core::Instance_sp iobj = gc::As_unsafe<core::Instance_sp>(obj);
     return iobj->stamp_set(stamp.unsafe_fixnum());
+  } else if (gc::IsA<core::FuncallableInstance_sp>(obj)) {
+    core::FuncallableInstance_sp iobj = gc::As_unsafe<core::FuncallableInstance_sp>(obj);
+    return iobj->stamp_set(stamp.unsafe_fixnum());
   }
-  SIMPLE_ERROR(BF("Only Instance objects can have their stamp set") % _rep_(obj));
+  SIMPLE_ERROR(BF("Only Instance and FuncallableInstance objects can have their stamp set") % _rep_(obj));
 }
 
 
@@ -262,7 +269,7 @@ void af_testArray0()
 #ifdef USE_BOEHM
 
 struct ReachableClass {
-  ReachableClass() : _Kind(gctools::KIND_null){};
+  ReachableClass() : _Kind(gctools::STAMP_null){};
   ReachableClass(gctools::GCStampEnum tn) : _Kind(tn), instances(0), totalSize(0) {}
   void update(size_t sz) {
     ++this->instances;
@@ -274,7 +281,7 @@ struct ReachableClass {
   size_t print(const std::string &shortName) {
     core::Fixnum k = this->_Kind;
     stringstream className;
-    if (k <= gctools::KIND_max) {
+    if (k <= gctools::STAMP_max) {
       const char* nm = obj_name(k);
       if (!nm) {
         className << "NULL-NAME";
@@ -494,7 +501,7 @@ CL_DEFUN core::T_mv cl__room(core::T_sp x, core::Fixnum_sp marker, core::T_sp tm
   size_t arena_committed = mps_arena_committed(global_arena);
   size_t arena_reserved = mps_arena_reserved(global_arena);
   vector<ReachableMPSObject> reachables;
-  for (int i = 0; i < gctools::KIND_max; ++i) {
+  for (int i = 0; i < gctools::STAMP_max; ++i) {
     reachables.push_back(ReachableMPSObject(i));
   }
   mps_amc_apply(_global_amc_pool, amc_apply_stepper, &reachables, 0);

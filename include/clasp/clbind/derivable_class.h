@@ -391,6 +391,17 @@ public:
 
 #undef CLBIND_GEN_BASE_INFO
 
+  static void validateRackOffset() {
+      printf("%s:%d The Derivable class _Rack offset (%lu) must be at the same offset as Instance_O::_Rack (%lu)\n",
+             __FILE__, __LINE__, offsetof(WrappedType,_Rack), offsetof(core::Instance_O,_Rack));
+    if (offsetof(WrappedType,_Rack) != offsetof(core::Instance_O,_Rack)) {
+      printf("The Derivable class _Rack offset (%lu) must be at the same offset as Instance_O::_Rack (%lu) - but it is not\n",
+             offsetof(WrappedType,_Rack), offsetof(core::Instance_O,_Rack));
+      abort();
+    };
+  };
+
+  
   derivable_class_(const char *name) : derivable_class_base(name), scope(*this) {
 #ifndef NDEBUG
 //            detail::check_link_compatibility();
@@ -399,6 +410,7 @@ public:
     // I have a constructor and I can test isDerivableCxxClass<T>(0)
     // I should dispatch to def_derivable_default_constructor
     this->def_default_constructor_("default_ctor", NULL, policies<>(), "", "", "");
+    validateRackOffset();
   }
 
   derivable_class_(const char *name, no_default_constructor_type) : derivable_class_base(name), scope(*this) {
@@ -406,6 +418,7 @@ public:
 //            detail::check_link_compatibility();
 #endif
     init(false /* Does not have constructor */);
+    validateRackOffset();
   }
 
   template <typename... Types>
