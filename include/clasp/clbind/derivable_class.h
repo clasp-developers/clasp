@@ -392,7 +392,7 @@ public:
 #undef CLBIND_GEN_BASE_INFO
 
   static void validateRackOffset() {
-      printf("%s:%d The Derivable class _Rack offset (%lu) must be at the same offset as Instance_O::_Rack (%lu)\n",
+    printf("%s:%d The Derivable class _Rack offset (%lu) must be at the same offset as Instance_O::_Rack (%lu)\n",
              __FILE__, __LINE__, offsetof(WrappedType,_Rack), offsetof(core::Instance_O,_Rack));
     if (offsetof(WrappedType,_Rack) != offsetof(core::Instance_O,_Rack)) {
       printf("The Derivable class _Rack offset (%lu) must be at the same offset as Instance_O::_Rack (%lu) - but it is not\n",
