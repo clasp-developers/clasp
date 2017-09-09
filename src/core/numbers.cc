@@ -1282,6 +1282,29 @@ bool basic_equalp(Number_sp na, Number_sp nb) {
       LongFloat b = clasp_to_long_float(nb);
       return a == b;
     }
+  case_Complex_v_LongFloat:
+  case_Complex_v_Fixnum:
+  case_Complex_v_Bignum:
+  case_Complex_v_Ratio:
+  case_Complex_v_SingleFloat:
+  case_Complex_v_DoubleFloat : {
+      Number_sp aux = na;
+      na = nb;
+      nb = aux;
+      goto Complex_v_Y;
+    }
+  case_Fixnum_v_Complex:
+  case_Bignum_v_Complex:
+  case_Ratio_v_Complex:
+  case_SingleFloat_v_Complex:
+  case_DoubleFloat_v_Complex:
+  case_LongFloat_v_Complex:
+  Complex_v_Y:
+    return (clasp_zerop(gc::As<Complex_sp>(nb)->imaginary())
+            && basic_equalp(na, gc::As<Complex_sp>(nb)->real()));
+  case_Complex_v_Complex:
+    return (basic_equalp(gc::As<Complex_sp>(na)->real(), gc::As<Complex_sp>(nb)->real())
+            && basic_equalp(gc::As<Complex_sp>(na)->imaginary(), gc::As<Complex_sp>(nb)->imaginary()));
   default: {
     string naclass, nbclass;
     if (na.fixnump())
