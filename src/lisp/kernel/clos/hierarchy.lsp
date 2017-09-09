@@ -480,6 +480,13 @@
       (structure-object
        :metaclass structure-class
        :direct-superclasses (t))
+      (derivable-cxx-class
+       :direct-superclasses (class)
+       :direct-slots #.+standard-class-slots+
+        #+clasp :creates-classes #+clasp t)
+      (derivable-cxx-object
+       :metaclass derivable-cxx-class
+       :direct-superclasses (t))
       )))
 
 ;;;#+cclasp
