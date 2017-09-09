@@ -157,6 +157,15 @@ namespace core {
     virtual size_t templatedSizeof() const { return sizeof(StructureClassCreator_O); };
   };
 };
+namespace core {
+  class DerivableCxxClassCreator_O : public Creator_O {
+    LISP_CLASS(core,CorePkg,DerivableCxxClassCreator_O,"DerivableCxxClassCreator",Creator_O);
+  public:
+    DerivableCxxClassCreator_O() {};
+    T_sp creator_allocate();
+    virtual size_t templatedSizeof() const { return sizeof(DerivableCxxClassCreator_O); };
+  };
+};
 
 
 #endif // ifndef creator_h

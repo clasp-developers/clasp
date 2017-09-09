@@ -155,6 +155,7 @@ SYMBOL_EXPORT_SC_(CorePkg, signal_servicing);
 SYMBOL_EXPORT_SC_(CorePkg, handle_signal);
 SYMBOL_EXPORT_SC_(CorePkg, every_list);
 SYMBOL_EXPORT_SC_(CorePkg, some_list);
+SYMBOL_EXPORT_SC_(CorePkg, derivable_cxx_class);
 SYMBOL_EXPORT_SC_(CorePkg, stack_closure);
 SYMBOL_EXPORT_SC_(CorePkg, STARminimum_number_generic_function_slotsSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, make_source_pos_info);

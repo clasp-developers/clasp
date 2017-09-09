@@ -119,6 +119,23 @@ T_sp StructureClassCreator_O::creator_allocate() {
 
 };
 
+
+
+
+namespace core {
+T_sp DerivableCxxClassCreator_O::creator_allocate() {
+  size_t size = gctools::sizeof_with_header<Class_O>();
+#ifdef METER_ALLOCATIONS
+  Class_sp c = lisp_standard_class();
+  c->_allocation_counter += 1;
+  c->_allocation_total_size += size;
+#endif
+  GC_ALLOCATE_VARIADIC(Class_O,class_,lisp_standard_class()/*,REF_CLASS_NUMBER_OF_SLOTS_IN_STRUCTURE_CLASS*/);
+  return class_;
+};
+
+};
+
 namespace core {
 
 LCC_RETURN Creator_O::LISP_CALLING_CONVENTION() {
