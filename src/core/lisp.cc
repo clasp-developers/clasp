@@ -1075,24 +1075,31 @@ void Lisp_O::exportToPython(Symbol_sp sym) const {
 void Lisp_O::mapNameToPackage(const string &name, Package_sp pkg) {
   //TODO Support package names with as regular strings
   int packageIndex;
-  WITH_READ_WRITE_LOCK(this->_Roots._PackagesMutex);
-  for (packageIndex = 0; packageIndex < this->_Roots._Packages.size(); ++packageIndex) {
-    if (this->_Roots._Packages[packageIndex] == pkg)
-      goto FOUND;
+  {
+    WITH_READ_WRITE_LOCK(this->_Roots._PackagesMutex);
+    for (packageIndex = 0; packageIndex < this->_Roots._Packages.size(); ++packageIndex) {
+      if (this->_Roots._Packages[packageIndex] == pkg) {
+        this->_Roots._PackageNameIndexMap[name] = packageIndex;
+        return;
+      }
+    }
   }
   SIMPLE_ERROR(BF("Could not find package with (nick)name: %s") % pkg->getName());
-FOUND:
-  this->_Roots._PackageNameIndexMap[name] = packageIndex;
 }
 
 void Lisp_O::unmapNameToPackage(const string &name) {
-  WITH_READ_WRITE_LOCK(this->_Roots._PackagesMutex);
-  map<string, int>::iterator it;
-  it = this->_Roots._PackageNameIndexMap.find(name);
-  if (it == this->_Roots._PackageNameIndexMap.end()) {
-    SIMPLE_ERROR(BF("Could not find package with (nick)name: %s") % name);
+  {
+    WITH_READ_WRITE_LOCK(this->_Roots._PackagesMutex);
+    map<string, int>::iterator it;
+    it = this->_Roots._PackageNameIndexMap.find(name);
+    if (it == this->_Roots._PackageNameIndexMap.end()) {
+      goto package_unfound;
+    }
+    this->_Roots._PackageNameIndexMap.erase(it);
+    return;
   }
-  this->_Roots._PackageNameIndexMap.erase(it);
+ package_unfound:
+  SIMPLE_ERROR(BF("Could not find package with (nick)name: %s") % name);
 }
 
 Package_sp Lisp_O::makePackage(const string &name, list<string> const &nicknames, list<string> const &usePackages, list<std::string> const& shadow) {
