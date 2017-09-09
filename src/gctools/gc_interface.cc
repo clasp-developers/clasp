@@ -823,7 +823,7 @@ void initialize_clasp()
   _lisp->_Roots._TheBuiltInClass->_Class = _lisp->_Roots._TheStandardClass;
   _lisp->_Roots._TheStandardClass->_Class = _lisp->_Roots._TheStandardClass;
   _lisp->_Roots._TheStructureClass->_Class = _lisp->_Roots._TheStandardClass;
-  _lisp->_Roots._TheDerivableCxxClass->_Class = _lisp->_Roots._TheDerivableCxxClass;
+  _lisp->_Roots._TheDerivableCxxClass->_Class = _lisp->_Roots._TheStandardClass;
   MPS_LOG("initialize_clasp ALLOCATE_ALL_CLASSES");
   #define ALLOCATE_ALL_CLASSES
   #ifndef SCRAPING
@@ -866,10 +866,15 @@ void initialize_clasp()
   _lisp->_Roots._TheStructureClass->instanceSet(core::Class_O::REF_CLASS_SLOTS,_Nil<core::T_O>());
   _lisp->_Roots._TheStructureClass->instanceSet(core::Class_O::REF_CLASS_DIRECT_SLOTS,_Nil<core::T_O>());
   _lisp->_Roots._TheStructureClass->instanceSet(core::Class_O::REF_CLASS_DEFAULT_INITARGS,_Nil<core::T_O>());
+  _lisp->_Roots._TheDerivableCxxClass->stamp_set(TheStandardClass_stamp);
+  _lisp->_Roots._TheDerivableCxxClass->instanceSet(core::Class_O::REF_CLASS_SLOTS,_Nil<core::T_O>());
+  _lisp->_Roots._TheDerivableCxxClass->instanceSet(core::Class_O::REF_CLASS_DIRECT_SLOTS,_Nil<core::T_O>());
+  _lisp->_Roots._TheDerivableCxxClass->instanceSet(core::Class_O::REF_CLASS_DEFAULT_INITARGS,_Nil<core::T_O>());
 
   _lisp->_Roots._TheBuiltInClass->setInstanceBaseClasses(core::Cons_O::createList(_lisp->_Roots._TheClass));
   _lisp->_Roots._TheStandardClass->setInstanceBaseClasses(core::Cons_O::createList(_lisp->_Roots._TheClass));
   _lisp->_Roots._TheStructureClass->setInstanceBaseClasses(core::Cons_O::createList(_lisp->_Roots._TheClass));
+  _lisp->_Roots._TheDerivableCxxClass->setInstanceBaseClasses(core::Cons_O::createList(_lisp->_Roots._TheClass));
 
   reg::lisp_registerClassSymbol<core::Character_I>(cl::_sym_character);
   reg::lisp_registerClassSymbol<core::Fixnum_I>(cl::_sym_fixnum);

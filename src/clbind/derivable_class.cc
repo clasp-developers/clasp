@@ -81,8 +81,8 @@ void derivable_class_registration::register_() const {
 #ifdef DEBUG_CLASS_INSTANCE
   printf("%s:%d:%s   Registering clbind class\n", __FILE__, __LINE__, __FUNCTION__ );
 #endif
-  crep->_Class = core::lisp_standard_class();
-  crep->initializeSlots(crep->_Class->CLASS_stamp_for_instances(),REF_CLASS_NUMBER_OF_SLOTS_IN_STANDARD_CLASS);
+  crep->_Class = _lisp->_Roots._TheDerivableCxxClass; // core::lisp_standard_class();
+  crep->initializeSlots(crep->_Class->CLASS_stamp_for_instances(),REF_CLASS_NUMBER_OF_SLOTS_IN_DERIVABLE_CXX_CLASS);
   std::string classNameString(this->m_name);
   gctools::smart_ptr<core::Creator_O> creator;
   if (m_default_constructor != NULL) {
@@ -130,7 +130,7 @@ void derivable_class_registration::register_() const {
     // If no base classes are specified then make T a base class from Common Lisp's point of view
     //
     printf("%s:%d           %s inherits from T\n", __FILE__, __LINE__, _rep_(className).c_str());
-    crep->addInstanceBaseClass(cl::_sym_T_O);
+    crep->addInstanceBaseClass(core::_sym_derivable_cxx_object);
   } else {
     for (std::vector<base_desc>::iterator i = m_bases.begin();
          i != m_bases.end(); ++i) {
@@ -144,6 +144,7 @@ void derivable_class_registration::register_() const {
       crep->addInstanceBaseClass(bcrep->_className());
       crep->add_base_class(core::make_fixnum(0), bcrep);
     }
+    crep->addInstanceBaseClass(core::_sym_derivable_cxx_object);
   }
 }
 

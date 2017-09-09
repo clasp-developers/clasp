@@ -340,21 +340,21 @@
   (defconstant +class-hierarchy+
     `((standard-class
        #+clasp :creates-classes #+clasp t)
-#+clasp
+      #+clasp
       (built-in-class
        #+clasp :creates-classes #+clasp t)
       (standard-effective-slot-definition)
       (standard-direct-slot-definition)
       (standard-class
-       :metaclass nil ; Special-cased in boot.lsp
+       :metaclass nil                   ; Special-cased in boot.lsp
        :direct-slots #.+standard-class-slots+
-        #+clasp :creates-classes #+clasp t
+       #+clasp :creates-classes #+clasp t
        )
-#+clasp
+      #+clasp
       (built-in-class
-       :metaclass nil ; Special-cased in boot.lsp
+       :metaclass nil                   ; Special-cased in boot.lsp
        :direct-slots #.+standard-class-slots+
-        #+clasp :creates-classes #+clasp t
+       #+clasp :creates-classes #+clasp t
        )
       (standard-direct-slot-definition
        :direct-slots #3=#.+slot-definition-slots+)
@@ -362,15 +362,15 @@
        :direct-slots #3#)
       (t
        :index 0)
-#+clasp(class
-        :direct-slots #.+class-slots+
-        #+clasp :creates-classes #+clasp t
-        )
+      #+clasp(class
+              :direct-slots #.+class-slots+
+              #+clasp :creates-classes #+clasp t
+              )
       (standard-object
        :direct-superclasses (t))
       #+clasp
       (core:cxx-object
-              :direct-superclasses (t))
+       :direct-superclasses (t))
       (metaobject
        :direct-superclasses (standard-object))
       (slot-definition
@@ -403,42 +403,42 @@
       (class
        :direct-superclasses (specializer)
        :direct-slots #.+class-slots+
-        #+clasp :creates-classes #+clasp t
+       #+clasp :creates-classes #+clasp t
        )
       (forward-referenced-class
        :direct-superclasses (class)
        :direct-slots #.+class-slots+
-        #+clasp :creates-classes #+clasp t
+       #+clasp :creates-classes #+clasp t
        )
       (built-in-class
        :direct-superclasses (class)
        :direct-slots #1=#.+standard-class-slots+
        #+clasp :creates-classes #+clasp t)
-#+clasp(core:cxx-class
-        :direct-superclasses (class)
-        :direct-slots #1#
-        #+clasp :creates-classes #+clasp t
-        )
-#+clasp(clbind:class-rep
-        :direct-superclasses (class)
-        :direct-slots #1#
-        #+clasp :creates-classes #+clasp t
-        )
+      #+clasp(core:cxx-class
+              :direct-superclasses (class)
+              :direct-slots #1#
+              #+clasp :creates-classes #+clasp t
+              )
+      #+clasp(clbind:class-rep
+              :direct-superclasses (class)
+              :direct-slots #1#
+              #+clasp :creates-classes #+clasp t
+              )
       (std-class
        :direct-superclasses (class)
        :direct-slots #1#
-        #+clasp :creates-classes #+clasp t
+       #+clasp :creates-classes #+clasp t
        )
       (standard-class
        :direct-superclasses (std-class)
        :direct-slots #1#
        :metaclass standard-class
-        #+clasp :creates-classes #+clasp t
+       #+clasp :creates-classes #+clasp t
        )
       (funcallable-standard-class
        :direct-superclasses (std-class)
        :direct-slots #1#
-        #+clasp :creates-classes #+clasp t
+       #+clasp :creates-classes #+clasp t
        )
       ,@(loop for (name . rest) in +builtin-classes-list+
            for index from 1
@@ -480,13 +480,13 @@
       (structure-object
        :metaclass structure-class
        :direct-superclasses (t))
-      (derivable-cxx-class
-       :direct-superclasses (class)
-       :direct-slots #.+standard-class-slots+
-        #+clasp :creates-classes #+clasp t)
-      (derivable-cxx-object
-       :metaclass derivable-cxx-class
-       :direct-superclasses (t))
+      #+clasp(core:derivable-cxx-class
+              :direct-superclasses (class)
+              :direct-slots #.+standard-class-slots+
+              :creates-classes t)
+      #+clasp(derivable-cxx-object
+              :metaclass core:derivable-cxx-class
+              :direct-superclasses (t))
       )))
 
 ;;;#+cclasp

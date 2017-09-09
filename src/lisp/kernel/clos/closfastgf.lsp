@@ -50,9 +50,7 @@
                   e))
             (coerce entry 'list)))
   (defun graph-call-history (generic-function output)
-    (let ((call-history (clos:generic-function-call-history generic-function))
-          (specializer-profile (clos:generic-function-specializer-profile generic-function)))
-      (cmp:generate-dot-file call-history specializer-profile output)))
+    (cmp:generate-dot-file generic-function output))
   (defun log-cmpgf-filename (suffix extension)
     (pathname (core:bformat nil "/tmp/dispatch-history/dispatch-%s%d.%s" suffix *didx* extension)))
   (defmacro gf-log-dispatch-graph (gf)
@@ -367,13 +365,11 @@ It takes the arguments in two forms, as a vaslist and as a list of arguments."
 
 (defun calculate-fastgf-dispatch-function (generic-function &key output-path)
   (with-generic-function-shared-lock (generic-function)
-    (let* ((call-history (generic-function-call-history generic-function))
-           (specializer-profile (generic-function-specializer-profile generic-function)))
-      (if call-history
-          (cmp:codegen-dispatcher call-history specializer-profile
-                                  :generic-function-name (core:function-name generic-function)
-                                  :output-path output-path)
-          'invalidated-dispatch-function))))
+    (if (generic-function-call-history generic-function)
+        (cmp:codegen-dispatcher generic-function
+                                :generic-function-name (core:function-name generic-function)
+                                :output-path output-path)
+        'invalidated-dispatch-function)))
 
 (defun maybe-invalidate-generic-function (gf)
   (when (typep (clos:get-funcallable-instance-function gf) 'core:compiled-dispatch-function)
