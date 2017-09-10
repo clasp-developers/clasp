@@ -37,87 +37,6 @@
   (pushnew :log-cmpgf *features*))
 
 
-#+log-cmpgf
-(progn
-  (ensure-directories-exist "/tmp/dispatch-history/")
-  (defvar *dml* (open "/tmp/dispatch-history/dispatch-miss.log" :direction :output))
-  (defvar *didx* 0)
-  (defvar *dmtrack* (make-hash-table))
-  (defun history-entry (entry)
-    (mapcar (lambda (e)
-              (if (consp e)
-                  (list 'eql (car e))
-                  e))
-            (coerce entry 'list)))
-  (defun graph-call-history (generic-function output)
-    (let* ((call-history (clos::optimized-call-history generic-function)))
-      (if call-history
-          (let ((dispatch-tree (cmp::make-dtree)))
-            (cmp::dtree-add-call-history dispatch-tree call-history)
-            (cmp::draw-graph output dispatch-tree)))))
-  (defun log-cmpgf-filename (suffix extension)
-    (pathname (core:bformat nil "/tmp/dispatch-history/dispatch-%s%d.%s" suffix *didx* extension)))
-  (defmacro gf-log-dispatch-graph (gf)
-    `(graph-call-history ,gf (log-cmpgf-filename "graph" "dot")))
-  (defmacro gf-log-dispatch-miss-followup (msg &rest args)
-    `(progn
-       (core:bformat *dml* "------- ")
-       (core:bformat *dml* ,msg ,@args)))
-  (defmacro gf-log-dispatch-miss-message (msg &rest args)
-    `(core:bformat *dml* ,msg ,@args))
-  (defmacro gf-log-sorted-roots (roots)
-    `(progn
-       (core:bformat *dml* ">>> sorted roots\n")
-       (let ((x 0))
-         (mapc (lambda (root)
-                 (core:bformat *dml* "  root[%d]: %s\n" (prog1 x (incf x)) root))))))
-  (defmacro gf-log-dispatch-miss (msg gf va-args)
-    `(progn
-       (incf *didx*)
-       (incf (gethash ,gf *dmtrack* 0))
-       (core:bformat *dml* "------- DIDX:%d %s\n" *didx* ,msg)
-       (core:bformat *dml* "Dispatch miss #%d for %s\n" (gethash ,gf *dmtrack*) (core:instance-ref ,gf 0))
-       (let* ((args-as-list (core:list-from-va-list ,va-args))
-              (call-history (clos::instance-ref ,gf 4))
-              (specializer-profile (clos::instance-ref ,gf 6)))
-         (core:bformat *dml* "      args (num args -> %d):  " (length args-as-list))
-         (dolist (arg args-as-list)
-           (core:bformat *dml* "%s[%d] " arg (core:instance-stamp arg)))
-         (core:bformat *dml* "\n")
-         (progn
-           (core:bformat *dml* "    raw call-history (length -> %d):\n" (length call-history))
-           (dolist (entry call-history)
-             (core:bformat *dml* "        entry: (")
-             (dolist (c (history-entry (car entry)))
-               (if (consp c)
-                   (core:bformat *dml* "%s " c)
-                   (core:bformat *dml* "%s[%d] " (class-name c) (core:class-stamp-for-instances c))))
-             (core:bformat *dml* ")\n")))
-         (let ((optimized-call-history (clos::optimized-call-history* call-history specializer-profile)))
-           (core:bformat *dml* "    optimized call-history (length -> %d):\n" (length optimized-call-history))
-           (dolist (entry optimized-call-history)
-             (core:bformat *dml* "        entry: (")
-             (let ((history-entry (history-entry (car entry))))
-               ;;(core:bformat *dml* "          ----> %s\n" history-entry)
-               (dolist (c history-entry)
-                 ;;(core:bformat *dml* "    c -> %s   (type-of c) -> %s (consp c) -> %s\n" c (type-of c) (consp c))
-                 (cond
-                   ((consp c) (core:bformat *dml* "%s " c))
-                   ((null c) (core:bformat *dml* "NIL "))
-                   (t (core:bformat *dml* "%s[%d] " (class-name c) (core:class-stamp-for-instances c))))))
-             (core:bformat *dml* ")\n")))
-         (finish-output *dml*)
-         #++(when (string= (subseq args 0 2) "''")
-           (break "Check backtrace"))))))
-
-#-log-cmpgf
-(progn
-  (defmacro gf-log-sorted-roots (roots) nil)
-  (defmacro gf-log-dispatch-graph (gf) nil)
-  (defmacro gf-log-dispatch-miss (msg gf va-args) nil)
-  (defmacro gf-log-dispatch-miss-followup (msg &rest args) nil)
-  (defmacro gf-log-dispatch-miss-message (msg &rest args) nil))
-
 
 (defvar *message-counter* nil)
 #+debug-cmpgf
@@ -437,27 +356,57 @@
     ((node-p node)
      (let* ((nodeid (gensym))
 	    (idx 0)
-	    (eql-entries (loop for key being the hash-keys of (node-eql-specializers node)
-			    using (hash-value value)
-			    collect (list (prog1 idx (incf idx))
-					  (format nil "eql ~a" key)
-					  (draw-node fout value))))
-	    (class-entries (loop for x in (node-class-specializers node)
-			      collect (list (prog1 idx (incf idx))
-                                            (cond
-                                              ((single-p x)
-                                               (format nil "~a;~a" (single-stamp x) (class-name (single-class-name x))))
-                                              ((range-p x)
-                                               (format nil "~a-~a;~a" (range-first-stamp x) (range-last-stamp x) (mapcar #'class-name (reverse (range-reversed-class-names x)))))
-                                              ((skip-p x)
-                                               (format nil "SKIP"))
-                                              (t (error "Unknown class-specializer type ~a" x)))
-                                            (draw-node fout (match-outcome x)))))
+	    (eql-entries (let (result)
+                           (maphash (lambda (key value)
+                                      (push (list (prog1 idx (incf idx))
+                                                  (format nil "eql ~a" key)
+                                                  (draw-node fout value))
+                                            result))
+                                    (node-eql-specializers node))
+                           result)
+              #+(or)(loop for key being the hash-keys of (node-eql-specializers node)
+                       using (hash-value value)
+                       collect (list (prog1 idx (incf idx))
+                                     (format nil "eql ~a" key)
+                                     (draw-node fout value))))
+	    (class-entries
+             (let (result)
+               (dolist (x (node-class-specializers node))
+                 (push (list (prog1 idx (incf idx))
+                             (cond
+                               ((single-p x)
+                                (format nil "~a;~a" (single-stamp x) (class-name (single-class-name x))))
+                               ((range-p x)
+                                (format nil "~a-~a;~a" (range-first-stamp x) (range-last-stamp x) (mapcar #'class-name (reverse (range-reversed-class-names x)))))
+                               ((skip-p x)
+                                (format nil "SKIP"))
+                               (t (error "Unknown class-specializer type ~a" x)))
+                             (draw-node fout (match-outcome x))) result))
+               result)
+              #+(or)(loop for x in (node-class-specializers node)
+                       collect (list (prog1 idx (incf idx))
+                                     (cond
+                                       ((single-p x)
+                                        (format nil "~a;~a" (single-stamp x) (class-name (single-class-name x))))
+                                       ((range-p x)
+                                        (format nil "~a-~a;~a" (range-first-stamp x) (range-last-stamp x) (mapcar #'class-name (reverse (range-reversed-class-names x)))))
+                                       ((skip-p x)
+                                        (format nil "SKIP"))
+                                       (t (error "Unknown class-specializer type ~a" x)))
+                                     (draw-node fout (match-outcome x)))))
 	    (entries (append eql-entries class-entries)))
-       (format fout "~a [shape = record, label = \"~{ <f~a> ~a ~^|~}\" ];~%" nodeid (loop for x in entries
-											 append (list (first x) (second x))))
-       (loop for x in entries
-	  do (format fout "~a:<f~a> -> ~a;~%" nodeid (first x) (third x)))
+       (format fout "~a [shape = record, label = \"~{ <f~a> ~a ~^|~}\" ];~%" nodeid
+               (let (result)
+                 (mapappend (lambda (x)
+                              (list (first x) (second x)))
+                            entries)
+                 #+(or)(loop for x in entries
+                          append (list (first x) (second x)))))
+       (mapc (lambda (x)
+               (format fout "~a:<f~a> -> ~a;~%" nodeid (first x) (third x)))
+             entries)
+       #+(or)(loop for x in entries
+                do (format fout "~a:<f~a> -> ~a;~%" nodeid (first x) (third x)))
        nodeid))
     (t (error "Handle draw-node for ~a" node )
        #+(or)(let ((id (gensym)))
@@ -526,9 +475,14 @@
 	(codegen-node-or-outcome eql-outcome args gf gf-args))))
 
 (defun codegen-eql-specializers (node arg args gf gf-args)
-  (let ((eql-tests (loop for key being the hash-keys of (node-eql-specializers node)
-		      using (hash-value value)
-		      collect (list key value)))
+  (let ((eql-tests (let (result)
+                     (maphash (lambda (key value)
+                                (push (list key value) result))
+                              (node-eql-specializers node))
+                     result)
+          #+(or)(loop for key being the hash-keys of (node-eql-specializers node)
+                   using (hash-value value)
+                   collect (list key value)))
 	(on-to-class-specializers (irc-basic-block-create "on-to-class-specializers")))
     (codegen-remaining-eql-tests eql-tests on-to-class-specializers arg args gf gf-args)
     (irc-begin-block on-to-class-specializers)))
@@ -791,6 +745,7 @@
 (defvar *sorted-roots*)
 (defvar *generic-function*)
 
+#||
 (defun debug-save-dispatcher (gf module disp-fn startup-fn shutdown-fn sorted-roots &optional (output-path #P"/tmp/dispatcher.ll"))
   "Save everything about the generic function so that it can be saved to a file and then edited and re-installed"
   (setq *disp-fn-name* (llvm-sys:get-name disp-fn)
@@ -812,7 +767,7 @@
                                module
                                disp-fn startup-fn shutdown-fn *sorted-roots*)))
     (clos::safe-set-funcallable-instance-function *generic-function* compiled-dispatcher)))
-
+||#
 
 (defun gather-sorted-outcomes (eql-selectors outcomes)
   (labels ((extract-outcome (outcome)
@@ -834,16 +789,45 @@
       (let ((sorted (sort values #'< :key #'car)))
         (mapcar #'extract-outcome sorted)))))
 
+(defun optimized-call-history (call-history specializer-profile)
+  (let* ((specializer-length (let ((pos (position-if #'identity specializer-profile :from-end t)))
+                               (if pos
+                                   (1+ pos)
+                                   0)))
+         (profiled (make-hash-table :test #'equalp)))
+    (loop for entry in call-history
+       for key = (car entry)
+       for outcome = (cdr entry)
+       for new-key = (make-array specializer-length :initial-element nil)
+       do (loop for i from 0 below specializer-length
+             do (setf (svref new-key i)
+                      (if (svref specializer-profile i)
+                          (let ((val (svref key i)))
+                            (if (consp val)
+                                (list (car val))
+                                val))
+                          nil)))
+       do (setf (gethash new-key profiled) outcome))
+    (let ((res))
+      (maphash (lambda (k v) (push (cons k v) res)) profiled)
+      res)))
+
 ;;; Keeps track of the number of dispatchers that were compiled and
 ;;;   is used to give the roots array in each dispatcher a unique name.
 (defparameter *dispatcher-count* 0)
-(defun codegen-dispatcher (dtree the-gf the-gf-name &key output-path)
-  (let* ((*the-module* (create-run-time-module-for-compile)))
+(defun codegen-dispatcher (generic-function &key generic-function-name output-path)
+  (let* ((raw-call-history (clos:generic-function-call-history generic-function))
+         (specializer-profile (clos:generic-function-specializer-profile generic-function))
+         (call-history (optimized-call-history raw-call-history specializer-profile))
+         (dtree (let ((dt (make-dtree)))
+                  (dtree-add-call-history dt call-history)
+                  dt))
+         (*the-module* (create-run-time-module-for-compile)))
     (with-module (:module *the-module*
                           :optimize nil
 			  :source-namestring "dispatcher"
 			  :source-file-info-handle 0)
-      (let ((disp-fn (irc-simple-function-create (core:bformat nil "gf-dispatcher^^^%s" the-gf-name)
+      (let ((disp-fn (irc-simple-function-create (core:bformat nil "gf-dispatcher^^^%s" generic-function-name)
 						 %fn-gf%
 						 'llvm-sys::External-linkage
 						 *the-module*
@@ -898,7 +882,7 @@
                      (_                             (insert-message))
                      (_                             (debug-arglist (irc-ptr-to-int passed-args %uintptr_t%)))
                      (_                             (irc-intrinsic-call "llvm.va_copy" (list (irc-pointer-cast in-frame-va_list/va_list* %i8*% "in-frame-va_list/i8*")
-                                                                                         (irc-pointer-cast passed-args-va_list/va_list* %i8*% "passed-args-va_list/i8*"))))
+                                                                                             (irc-pointer-cast passed-args-va_list/va_list* %i8*% "passed-args-va_list/i8*"))))
                      (_                             (insert-message))
                      (_                             (debug-va_list (irc-ptr-to-int in-frame-va_list/va_list* %uintptr_t%)))
                      (_                             (irc-br body-bb)))
@@ -928,16 +912,18 @@
                              (llvm-sys:dump-module *the-module*))
               (let ((sorted-roots (gather-sorted-outcomes *eql-selectors* *outcomes*)))
                 ;; REMOVE THE FOLLOWING IN PRODUCTION CODE
-                #+debug-cmpgf
+                #||                #+debug-cmpgf
                 (progn
-                  (let ((before-disp-name (llvm-sys:get-name disp-fn)))
-                    (debug-save-dispatcher the-gf *the-module* disp-fn startup-fn shutdown-fn sorted-roots)
-                    (let ((after-disp-name (llvm-sys:get-name disp-fn)))
-                      (format t "Saved dispatcher  before-disp-name -> ~a     after-disp-name -> ~a~%" before-disp-name after-disp-name))))
-                #+log-cmpgf
+                (let ((before-disp-name (llvm-sys:get-name disp-fn)))
+                (debug-save-dispatcher the-gf *the-module* disp-fn startup-fn shutdown-fn sorted-roots)
+                (let ((after-disp-name (llvm-sys:get-name disp-fn)))
+                (format t "Saved dispatcher  before-disp-name -> ~a     after-disp-name -> ~a~%" before-disp-name after-disp-name))))
+                ||#
+                #||                #+log-cmpgf
                 (when output-path
-                  (let ((before-disp-name (llvm-sys:get-name disp-fn)))
-                    (debug-save-dispatcher the-gf *the-module* disp-fn startup-fn shutdown-fn sorted-roots output-path)))
+                (let ((before-disp-name (llvm-sys:get-name disp-fn)))
+                (debug-save-dispatcher the-gf *the-module* disp-fn startup-fn shutdown-fn sorted-roots output-path)))
+                ||#
                 (let* ((compiled-dispatcher (jit-add-module-return-dispatch-function *the-module* disp-fn startup-fn shutdown-fn sorted-roots)))
                   (gf-log "Compiled dispatcher -> ~a~%" compiled-dispatcher)
                   (gf-log "Dumping module\n")
@@ -951,6 +937,36 @@
 
 
 
+(defun disassemble-fastgf (generic-function)
+  (if (clos:generic-function-call-history generic-function)
+      (let* ((*save-module-for-disassemble* t)
+             (*saved-module-from-clasp-jit* nil))
+        (let ((dispatcher (codegen-dispatcher generic-function :generic-function-name "disassemble"))
+              (module cmp:*saved-module-from-clasp-jit*))
+          (if module
+              (llvm-sys:dump-module module)
+              (format t "Could not obtain module for disassemble of generic-function ~a dispatcher -> ~a~%" generic-function dispatcher))))
+      (format t "The dispatcher cannot be built because there is no call history~%")))
+
+(defun generate-dot-file (generic-function output)
+  (let* ((raw-call-history (clos:generic-function-call-history generic-function))
+         (specializer-profile (clos:generic-function-specializer-profile generic-function))
+         (call-history (optimized-call-history raw-call-history specializer-profile))
+         (dispatch-tree (let ((dt (make-dtree)))
+                          (dtree-add-call-history dt call-history)
+                          dt)))
+    (cmp::draw-graph (namestring output) dispatch-tree)))
+
+(defun graph-fastgf-dispatch-function (generic-function)
+  (generate-dot-file generic-function "/tmp/dispatch.dot")
+  (ext:system "/usr/local/bin/dot -Tpdf -o /tmp/dispatch.pdf /tmp/dispatch.dot")
+  (sleep 0.2)
+  (ext:system "open /tmp/dispatch.pdf"))
+  
+
+(export '(generate-dot-file graph-fastgf-dispatch-function disassemble-fastgf))
+
+#||
 ;;; --------------------------------------------------
 ;;;
 ;;; Switch to CLOS package here
@@ -1031,7 +1047,7 @@
                                               generic-function
                                               (clos::generic-function-method-combination generic-function)
                                               method-list)))
-              (let ((pushed (generic-function-call-history-push-new generic-function memoize-key effective-method-function)))
+              (let ((pushed (core:generic-function-call-history-push-new generic-function memoize-key effective-method-function)))
                 (unless pushed
                   (warn "The generic-function ~a experienced a dispatch-miss but the call did not result in a new call-history entry - this suggests the fastgf is failing somehow - turn on log-cmpgf in cmpgf.lsp and recompile everything" (core:bformat nil "%s" (core:instance-ref generic-function 0)))
                   (cmp::gf-log-dispatch-miss-followup "!!!!!!  DID NOT MODIFY CALL-HISTORY\n")))
@@ -1180,7 +1196,7 @@
 ;;;  (format t "call-history-after-class-change  start: gf->~a  call-history ->~a~%" gf (clos::generic-function-call-history gf))
   (loop for entry in (clos::generic-function-call-history gf)
      unless (loop for subclass in (clos::subclasses* class)
-               thereis (clos:call-history-entry-key-contains-specializer (car entry) subclass))
+               thereis (core:call-history-entry-key-contains-specializer (car entry) subclass))
      collect entry))
 
 (defun invalidate-generic-functions-with-class-selector (top-class)
@@ -1194,7 +1210,7 @@
 	 (unique-generic-functions (remove-duplicates generic-functions)))
     ;;(when core:*debug-dispatch* (format t "    generic-functions: ~a~%" generic-functions))
     (loop for gf in unique-generic-functions
-       do (generic-function-call-history-remove-entries-with-specializers gf all-subclasses)
+       do (core:generic-function-call-history-remove-entries-with-specializers gf all-subclasses)
        do (maybe-invalidate-generic-function gf))))
 
 (defun switch-to-fastgf (gf)
@@ -1235,7 +1251,7 @@
                                         generic-function
                                         (generic-function-method-combination generic-function)
                                         methods)
-       do (generic-function-call-history-push-new generic-function
+       do (core:generic-function-call-history-push-new generic-function
                                                        (coerce combination 'vector)
                                                        effective-method-function))))
 
@@ -1360,3 +1376,4 @@
 
   (export 'cache-status)
   
+||#

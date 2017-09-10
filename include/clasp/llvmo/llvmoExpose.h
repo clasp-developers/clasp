@@ -86,6 +86,8 @@ THE SOFTWARE.
 
 
 namespace llvmo {
+  FORWARD(CallInst);
+  FORWARD(InvokeInst);
 FORWARD(LLVMContext);
 class LLVMContext_O : public core::ExternalObject_O {
   LISP_EXTERNAL_CLASS(llvmo, LlvmoPkg, llvm::LLVMContext, LLVMContext_O, "llvm-context", core::ExternalObject_O);

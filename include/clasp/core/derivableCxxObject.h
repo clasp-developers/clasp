@@ -1,5 +1,5 @@
 /*
-    File: genericFunction.h
+    File: structureObject.h
 */
 
 /*
@@ -24,32 +24,30 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#ifndef _core_genericFunction_H_
-#define _core_genericFunction_H_
+#ifndef DerivableCxxObject_H //[
+#define DerivableCxxObject_H
 
+#include <stdio.h>
+#include <string>
+#include <vector>
+#include <set>
 #include <clasp/core/object.h>
+#include <clasp/core/structureClass.fwd.h>
+//#include "model.h"
+#include <clasp/core/environment.h>
 
 namespace core {
+// Set up this class differently
+  SMART(DerivableCxxObject);
+  class DerivableCxxObject_O : public Instance_O {
+    LISP_META_CLASS(::_lisp->_Roots._TheDerivableCxxClass);
+    LISP_CLASS(core, CorePkg, DerivableCxxObject_O, "derivable-cxx-object",Instance_O);
 
-// Arguments are passed in the multiple_values structure
-
-  LCC_RETURN not_funcallable_dispatch(gctools::Tagged tgf, gctools::Tagged tvargs);
-
-  LCC_RETURN generic_function_dispatch(gctools::Tagged tgf, gctools::Tagged tvargs);
-
-  LCC_RETURN invalidated_dispatch(gctools::Tagged tgf, gctools::Tagged tvargs);
-
- // See accessor.h for optimized_slot_reader_dispatch and optimized_slot_writer_dispatch
- 
-#if 0
-  LCC_RETURN slot_reader_dispatch(gctools::Tagged tgf, gctools::Tagged tvargs);
-
-  LCC_RETURN slot_writer_dispatch(gctools::Tagged tgf, gctools::Tagged tvargs);
-#endif
-
-  LCC_RETURN user_function_dispatch(gctools::Tagged tgf, gctools::Tagged tvargs);
-
-  extern "C" LCC_RETURN apply_method0(T_O* func_tagged, T_O* arg0_tagged, T_O* arg1_tagged, T_O* rest_args_tagged);
-
+  public:
+    static DerivableCxxObject_sp create(T_sp type, List_sp slotNames);
+  public:
+    explicit DerivableCxxObject_O() : Base(){};
+    virtual ~DerivableCxxObject_O(){};
+  };
 };
-#endif /* _core_genericFunction_H_ */
+#endif //]

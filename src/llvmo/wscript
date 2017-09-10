@@ -9,6 +9,7 @@ def build(bld):
             'llvmoDwarf',
             'link_intrinsics',
             'builtins',
+            'fastgf',
             'intrinsics',
             'insertPoint',
             'irtests',

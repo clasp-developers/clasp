@@ -58,7 +58,7 @@ namespace core {
                    REF_CLASS_SEALEDP = 14,
                    REF_CLASS_DEPENDENTS = 16,
                    REF_CLASS_LOCATION_TABLE = 19,
-                   REF_CLASS_INSTANCE_STAMP = 20,
+                   REF_CLASS_STAMP_FOR_INSTANCES_ = 20,
                    REF_CLASS_CREATOR = 21
     } Slots;
     
@@ -109,7 +109,8 @@ namespace core {
     void CLASS_set_creator(Creator_sp cb);
     Creator_sp CLASS_get_creator() const { return gc::As_unsafe<Creator_sp>(this->instanceRef(REF_CLASS_CREATOR)); };
     bool CLASS_has_creator() const { return (bool)(!this->instanceRef(REF_CLASS_CREATOR).unboundp()); };
-    Fixnum _get_instance_stamp() const { return this->instanceRef(REF_CLASS_INSTANCE_STAMP).unsafe_fixnum(); };
+    Fixnum CLASS_stamp_for_instances() const { return this->instanceRef(REF_CLASS_STAMP_FOR_INSTANCES_).unsafe_fixnum(); };
+    void CLASS_set_stamp_for_instances(Fixnum s);
     
     string dumpInfo();
 

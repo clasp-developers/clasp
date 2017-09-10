@@ -78,7 +78,7 @@ template <typename Pols, typename OT, typename Begin, typename End>
 class gctools::GCStamp<clbind::IteratorMethoid<Pols, OT, Begin, End>> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::GCStamp<typename clbind::IteratorMethoid<Pols, OT, Begin, End>::TemplatedBase>::Kind;
-  static const size_t Flags = 0;
+  static const size_t Flags = FLAGS_STAMP_IN_HEADER;
 };
 
 #endif

@@ -33,15 +33,17 @@
              (progn
                ,foo
                nil)
-           (error (err) t)) :description ,description)))))
+           (error (err) t)) :description ,description))
        
 ;;; ------------------------------------------------------------
 ;;; Run tests
-(load (compile-file "sys:tests;regression;array0.lisp"))
-(load (compile-file "sys:tests;regression;tests01.lisp"))
-(load (compile-file "sys:tests;regression;finalizers.lisp"))
-(load (compile-file "sys:tests;regression;strings01.lisp"))
-(load (compile-file "sys:tests;regression;sequences01.lisp"))
-(load (compile-file "sys:tests;regression;clos.lisp"))
+(load (compile-file "sys:regression-tests;fastgf.lisp"))
+(load (compile-file "sys:regression-tests;stamps.lisp"))
+(load (compile-file "sys:regression-tests;array0.lisp"))
+(load (compile-file "sys:regression-tests;tests01.lisp"))
+(load (compile-file "sys:regression-tests;finalizers.lisp"))
+(load (compile-file "sys:regression-tests;strings01.lisp"))
+(load (compile-file "sys:regression-tests;sequences01.lisp"))
+(load (compile-file "sys:regression-tests;clos.lisp"))
 (format t "Passes: ~a~%" *passes*)
 (format t "Fails:  ~a~%" *fails*)

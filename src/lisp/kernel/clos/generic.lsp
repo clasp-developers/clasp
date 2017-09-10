@@ -182,6 +182,17 @@
   (set-generic-function-dispatch gfun)
   gfun)
 
+#+clasp
+(defmethod shared-initialize :after ((gfun generic-function) slot-names &rest initargs)
+  "In Clasp we need to initialize the specializer-profile with an 
+   array of (length (lambda-list-required-arguments lambda-list)) full of nil."
+  (setf (generic-function-specializer-profile gfun)
+        (if (slot-boundp gfun 'lambda-list)
+            (let ((lambda-list (generic-function-lambda-list gfun)))
+              (make-array (length (lambda-list-required-arguments lambda-list))
+                          :initial-element nil))
+            nil)))
+
 (defmethod shared-initialize ((gfun standard-generic-function) slot-names
 			      &rest initargs)
   (declare (ignore slot-names)

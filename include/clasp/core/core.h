@@ -88,6 +88,8 @@ class type_info;
 #endif
 
 #define DLL_PUBLIC __attribute__((visibility("default")))
+#include <limits>
+#include <typeinfo>
 
 #ifdef CLASP_THREADS
 #include <pthread.h>
@@ -491,6 +493,7 @@ namespace core {
   [[noreturn]]void lisp_errorUnexpectedType(class_id expectedTyp, class_id givenTyp, core::T_O *objP);
   [[noreturn]]void lisp_errorUnexpectedNil(class_id expectedTyp);
   [[noreturn]]void lisp_errorDereferencedNil();
+  [[noreturn]]void lisp_error_no_stamp();
   [[noreturn]]void lisp_errorDereferencedUnbound();
   [[noreturn]]void lisp_errorIllegalDereference(void *v);
   [[noreturn]]void lisp_errorExpectedList(core::T_O* objP);
@@ -576,6 +579,8 @@ namespace dummy_namespace {
 namespace core {
 class Instance_O;
 typedef gc::smart_ptr<Instance_O> Instance_sp;
+class FuncallableInstance_O;
+typedef gc::smart_ptr<FuncallableInstance_O> FuncallableInstance_sp;
 
 #define LCC_PROTOTYPES
 #include <clasp/core/lispCallingConvention.h>

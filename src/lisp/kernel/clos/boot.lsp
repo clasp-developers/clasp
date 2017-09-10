@@ -156,15 +156,16 @@
 (defmacro boot-hierarchy ()
   `(progn
      ,@(loop for (class . options) in +class-hierarchy+
-             for direct-slots = (getf options :direct-slots)
-             collect
-             (if direct-slots
-                 `(apply #'ensure-boot-class ',class
-                         :direct-slots ,(parse-slots direct-slots)
-                         ',(let ((copy (copy-list options)))
-                             (remf copy :direct-slots)
-                             copy))
-                 `(apply #'ensure-boot-class ',class ',options)))))
+          for direct-slots = (getf options :direct-slots)
+;;;          do (core:bformat t "boot-hierarchy  class->%s\n" class)
+          collect
+            (if direct-slots
+                `(apply #'ensure-boot-class ',class
+                        :direct-slots ,(parse-slots direct-slots)
+                        ',(let ((copy (copy-list options)))
+                               (remf copy :direct-slots)
+                               copy))
+                `(apply #'ensure-boot-class ',class ',options)))))
 
 (boot-hierarchy)
 

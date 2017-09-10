@@ -5,6 +5,7 @@
 #include <clasp/core/object.h>
 #include <clasp/core/array.h>
 #include <clasp/core/instance.h>
+#include <clasp/core/wrappedPointer.h>
 #include <clasp/core/funcallableInstance.h>
 #include <clasp/llvmo/intrinsics.h>
 
@@ -20,7 +21,13 @@
 
 #define LINKAGE __attribute__ ((visibility ("default")))
 
-#define BUILTIN_ATTRIBUTES __attribute__((used)) ALWAYS_INLINE
+#define BUILTIN_ATTRIBUTES __attribute__((always_inline))
+
+extern "C" {
+
+BUILTIN_ATTRIBUTES int foobar(int x) {return x*x*x*x;}
+
+};
 
 extern "C" {
 
@@ -50,12 +57,14 @@ core::T_O *va_symbolFunction(core::T_sp *symP) {
 }
 
 
-
+#if 0
 BUILTIN_ATTRIBUTES core::T_sp *symbolValueReference(core::T_sp *symbolP)
 {
   core::Symbol_sp sym((gctools::Tagged)ENSURE_VALID_OBJECT_BUILTINS(symbolP->raw_()));
   return sym->valueReference();
 }
+#endif
+
 
 BUILTIN_ATTRIBUTES core::T_sp *lexicalValueReference(int depth, int index, core::ActivationFrame_sp *frameP)
 {
@@ -87,10 +96,8 @@ BUILTIN_ATTRIBUTES size_t cc_arrayTotalSize(core::T_O* tarray) {
   core::MDArray_O* array = reinterpret_cast<core::MDArray_O*>(gctools::untag_general<core::T_O*>(tarray));
   return array->arrayTotalSize();
 }
-
-
-
-
 };
+
+
 
 

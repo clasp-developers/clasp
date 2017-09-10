@@ -761,7 +761,7 @@ def configure(cfg):
 # Keep track of every allocation
     cfg.define("METER_ALLOCATIONS",1)
     cfg.define("DEBUG_TRACE_INTERPRETED_CLOSURES",1)
-    cfg.define("DEBUG_CACHE",1)      # Debug the dispatch caches - see cache.cc
+#    cfg.define("DEBUG_CACHE",1)      # Debug the dispatch caches - see cache.cc
 #    cfg.define("DEBUG_BITUNIT_CONTAINER",1)  # prints debug info for bitunit containers
 #    cfg.define("DEBUG_ZERO_KIND",1);
 #    cfg.define("DEBUG_FLOW_CONTROL",1)
@@ -873,6 +873,7 @@ def build(bld):
     iclasp_executable = bld.path.find_or_declare(variant.executable_name(stage='i'))
     intrinsics_bitcode_node = bld.path.find_or_declare(variant.inline_bitcode_archive_name("intrinsics"))
     builtins_bitcode_node = bld.path.find_or_declare(variant.inline_bitcode_archive_name("builtins"))
+    fastgf_bitcode_node = bld.path.find_or_declare(variant.inline_bitcode_archive_name("fastgf"))
     if (bld.env['DEST_OS'] == LINUX_OS ):
         executable_dir = "bin"
         bld_task = bld.program(source=source_files,
@@ -904,13 +905,13 @@ def build(bld):
         print("About to add compile_aclasp")
         cmp_aclasp = compile_aclasp(env=bld.env)
 #        print("clasp_aclasp as nodes = %s" % fix_lisp_paths(bld.path,out,variant,bld.clasp_aclasp))
-        cmp_aclasp.set_inputs([iclasp_executable,intrinsics_bitcode_node,builtins_bitcode_node]+fix_lisp_paths(bld.path,out,variant,bld.clasp_aclasp))
+        cmp_aclasp.set_inputs([iclasp_executable,intrinsics_bitcode_node,builtins_bitcode_node,fastgf_bitcode_node]+fix_lisp_paths(bld.path,out,variant,bld.clasp_aclasp))
         aclasp_common_lisp_bitcode = bld.path.find_or_declare(variant.common_lisp_bitcode_name(stage='a'))
         print("find_or_declare aclasp_common_lisp_bitcode = %s" % aclasp_common_lisp_bitcode)
         cmp_aclasp.set_outputs(aclasp_common_lisp_bitcode)
         bld.add_to_group(cmp_aclasp)
         lnk_aclasp = link_fasl(env=bld.env)
-        lnk_aclasp.set_inputs([builtins_bitcode_node,intrinsics_bitcode_node,aclasp_common_lisp_bitcode])
+        lnk_aclasp.set_inputs([fastgf_bitcode_node,builtins_bitcode_node,intrinsics_bitcode_node,aclasp_common_lisp_bitcode])
         aclasp_link_product = bld.path.find_or_declare(variant.fasl_name(stage='a'))
         lnk_aclasp.set_outputs([aclasp_link_product])
         bld.add_to_group(lnk_aclasp)
@@ -919,13 +920,13 @@ def build(bld):
     if (stage_val >= 2):
         print("About to add compile_bclasp")
         cmp_bclasp = compile_bclasp(env=bld.env)
-        cmp_bclasp.set_inputs([iclasp_executable,aclasp_link_product,intrinsics_bitcode_node,builtins_bitcode_node]+fix_lisp_paths(bld.path,out,variant,bld.clasp_cclasp)) # bld.clasp_bclasp
+        cmp_bclasp.set_inputs([iclasp_executable,aclasp_link_product,intrinsics_bitcode_node,fastgf_bitcode_node,builtins_bitcode_node]+fix_lisp_paths(bld.path,out,variant,bld.clasp_cclasp)) # bld.clasp_bclasp
         bclasp_common_lisp_bitcode = bld.path.find_or_declare(variant.common_lisp_bitcode_name(stage='b'))
         cmp_bclasp.set_outputs(bclasp_common_lisp_bitcode)
         bld.add_to_group(cmp_bclasp)
         bclasp_link_product = bld.path.find_or_declare(variant.fasl_name(stage='b'))
         lnk_bclasp = link_fasl(env=bld.env)
-        lnk_bclasp.set_inputs([builtins_bitcode_node,intrinsics_bitcode_node,bclasp_common_lisp_bitcode])
+        lnk_bclasp.set_inputs([fastgf_bitcode_node,builtins_bitcode_node,intrinsics_bitcode_node,bclasp_common_lisp_bitcode])
         lnk_bclasp.set_outputs([bclasp_link_product])
         bld.add_to_group(lnk_bclasp)
         bld.install_as('${INSTALL_PATH_PREFIX}/%s/%s' % (executable_dir, bclasp_link_product.name), bclasp_link_product)
@@ -953,7 +954,7 @@ def build(bld):
     if (stage == 'dangerzone' or stage == 'rebuild' or stage_val >= 3):
         cclasp_fasl = bld.path.find_or_declare(variant.fasl_name(stage='c'))
         lnk_cclasp_fasl = link_fasl(env=bld.env)
-        lnk_cclasp_fasl.set_inputs([builtins_bitcode_node,intrinsics_bitcode_node,cclasp_common_lisp_bitcode])
+        lnk_cclasp_fasl.set_inputs([fastgf_bitcode_node,builtins_bitcode_node,intrinsics_bitcode_node,cclasp_common_lisp_bitcode])
         lnk_cclasp_fasl.set_outputs([cclasp_fasl])
         bld.add_to_group(lnk_cclasp_fasl)
         bld.install_as('${INSTALL_PATH_PREFIX}/%s/%s' % (executable_dir, cclasp_fasl.name), cclasp_fasl)
@@ -1315,7 +1316,7 @@ class build_bitcode(Task.Task):
     def run(self):
         env = self.env
         build_args = [] + env.CXX + self.colon("ARCH_ST", "ARCH") + env.CXXFLAGS + env.CPPFLAGS + \
-                     [ '-flto=thin' ] + \
+                     [ '-emit-llvm' ] + \
                        self.colon("FRAMEWORKPATH_ST", "FRAMEWORKPATH") + \
                        self.colon("CPPPATH_ST", "INCPATHS") + \
                        self.colon("DEFINES_ST", "DEFINES") + \
@@ -1397,6 +1398,7 @@ def scrape_task_generator(self):
     all_o_files = []
     intrinsics_o = None
     builtins_o = None
+    fastgf_o = None
     for task in self.compiled_tasks:
         if ( task.__class__.__name__ == 'cxx' ):
             for node in task.inputs:
@@ -1404,6 +1406,8 @@ def scrape_task_generator(self):
                     intrinsics_cc = node
                 if ( node.name[:len('builtins.cc')] == 'builtins.cc' ):
                     builtins_cc = node
+                if ( node.name[:len('fastgf.cc')] == 'fastgf.cc' ):
+                    fastgf_cc = node
                 sif_node = node.change_ext('.sif')
                 self.create_task('scrape_with_preproc_scan',node,[sif_node])
                 all_sif_files.append(sif_node)
@@ -1414,6 +1418,8 @@ def scrape_task_generator(self):
                     intrinsics_o = node
                 if ( node.name[:len('builtins.cc')] == 'builtins.cc' ):
                     builtins_o = node
+                if ( node.name[:len('fastgf.cc')] == 'fastgf.cc' ):
+                    fastgf_o = node
                 all_o_files.append(node)
         if ( task.__class__.__name__ == 'c' ):
             for node in task.outputs:
@@ -1452,6 +1458,16 @@ def scrape_task_generator(self):
     self.create_task('link_bitcode',[builtins_o],builtins_bitcode_archive_node)
     self.bld.install_files('${INSTALL_PATH_PREFIX}/Contents/Resources/lib/fasl/', builtins_bitcode_archive_node)
     self.bld.install_files('${INSTALL_PATH_PREFIX}/Contents/Resources/lib/fasl/', builtins_bitcode_alone_node)
+# fastgf
+    fastgf_bitcode_archive_node = self.path.find_or_declare(variant.inline_bitcode_archive_name("fastgf"))
+    fastgf_bitcode_alone_node = self.path.find_or_declare(variant.inline_bitcode_name("fastgf"))
+    print("fastgf_cc = %s" % fastgf_cc )
+    print("fastgf_o.name = %s" % fastgf_o.name )
+    print("fastgf_bitcode_alone_node = %s" % fastgf_bitcode_alone_node )
+    self.create_task('build_bitcode',[fastgf_cc]+output_nodes,fastgf_bitcode_alone_node)
+    self.create_task('link_bitcode',[fastgf_o],fastgf_bitcode_archive_node)
+    self.bld.install_files('${INSTALL_PATH_PREFIX}/Contents/Resources/lib/fasl/', fastgf_bitcode_archive_node)
+    self.bld.install_files('${INSTALL_PATH_PREFIX}/Contents/Resources/lib/fasl/', fastgf_bitcode_alone_node)
 #
     cxx_all_bitcode_node = self.path.find_or_declare(variant.cxx_all_bitcode_name())
     self.create_task('link_bitcode',all_o_files,cxx_all_bitcode_node)

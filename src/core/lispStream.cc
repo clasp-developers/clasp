@@ -281,7 +281,7 @@ void StreamCursor::advanceLineNumber(T_sp strm, claspCharacter c, int num) {
   this->_LineNumber += num;
   this->_Column = 0;
 #ifdef DEBUG_CURSOR
-  if (core::_sym_STARdebugMonitorSTAR.notnilp()) {
+  if (core::_sym_STARdebugMonitorSTAR->symbolValue().notnilp()) {
     printf("%s:%d stream=%s advanceLineNumber=%c/%d  ln/col=%lld/%d\n", __FILE__, __LINE__, clasp_filename(strm, false)->get().c_str(), c, c, this->_LineNumber, this->_Column);
   }
 #endif
@@ -291,7 +291,7 @@ void StreamCursor::advanceColumn(T_sp strm, claspCharacter c, int num) {
   this->_PrevColumn = this->_Column;
   this->_Column++;
 #ifdef DEBUG_CURSOR
-  if (core::_sym_STARdebugMonitorSTAR.notnilp()) {
+  if (core::_sym_STARdebugMonitorSTAR->symbolValue().notnilp()) {
     printf("%s:%d stream=%s advanceColumn=%c/%d  ln/col=%lld/%d\n", __FILE__, __LINE__, clasp_filename(strm, false)->get().c_str(), c, c, this->_LineNumber, this->_Column);
   }
 #endif
@@ -300,7 +300,7 @@ void StreamCursor::backup(T_sp strm, claspCharacter c) {
   this->_LineNumber = this->_PrevLineNumber;
   this->_Column = this->_PrevColumn;
 #ifdef DEBUG_CURSOR
-  if (core::_sym_STARdebugMonitorSTAR.notnilp()) {
+  if (core::_sym_STARdebugMonitorSTAR->symbolValue().notnilp()) {
     printf("%s:%d stream=%s backup=%c/%d ln/col=%lld/%d\n", __FILE__, __LINE__, clasp_filename(strm, false)->get().c_str(), c, c, this->_LineNumber, this->_Column);
   }
 #endif

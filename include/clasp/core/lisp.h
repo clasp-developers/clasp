@@ -264,6 +264,7 @@ class Lisp_O {
     Class_sp   _TheBuiltInClass;
     Class_sp   _TheStandardClass;
     Class_sp   _TheStructureClass;
+    Class_sp   _TheDerivableCxxClass;
     Package_sp _CorePackage;
     Package_sp _KeywordPackage;
     Package_sp _CommonLispPackage;

@@ -65,7 +65,7 @@ template <typename T>
 class gctools::GCStamp<core::VariadicFunctor<T>> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::GCStamp<typename core::VariadicFunctor<T>::TemplatedBase>::Kind;
-  static const size_t Flags = 0;
+  static const size_t Flags = FLAGS_STAMP_IN_HEADER;
 };
 
 
@@ -112,7 +112,7 @@ template <int DispatchOn, typename T>
 class gctools::GCStamp<core::VariadicMethoid<DispatchOn, T>> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::GCStamp<typename core::VariadicMethoid<DispatchOn, T>::TemplatedBase>::Kind;
-  static const size_t Flags = 0;
+  static const size_t Flags = FLAGS_STAMP_IN_HEADER;
 };
 
 namespace core {

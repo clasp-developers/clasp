@@ -81,8 +81,8 @@ void derivable_class_registration::register_() const {
 #ifdef DEBUG_CLASS_INSTANCE
   printf("%s:%d:%s   Registering clbind class\n", __FILE__, __LINE__, __FUNCTION__ );
 #endif
-  crep->_Class = core::lisp_standard_class();
-  crep->initializeSlots(gctools::NextStamp(),REF_CLASS_NUMBER_OF_SLOTS_IN_STANDARD_CLASS);
+  crep->_Class = _lisp->_Roots._TheDerivableCxxClass; // core::lisp_standard_class();
+  crep->initializeSlots(crep->_Class->CLASS_stamp_for_instances(),REF_CLASS_NUMBER_OF_SLOTS_IN_DERIVABLE_CXX_CLASS);
   std::string classNameString(this->m_name);
   gctools::smart_ptr<core::Creator_O> creator;
   if (m_default_constructor != NULL) {
@@ -95,10 +95,7 @@ void derivable_class_registration::register_() const {
   className->exportYourself();
   crep->_setClassName(className);
   reg::lisp_associateClassIdWithClassSymbol(m_id, className); // TODO: Or do I want m_wrapper_id????
-  if (core::_sym_STARallCxxClassesSTAR->symbolValueUnsafe()) {
-    core::_sym_STARallCxxClassesSTAR->setf_symbolValue(
-        core::Cons_O::create(className, core::_sym_STARallCxxClassesSTAR->symbolValue()));
-  }
+  lisp_pushClassSymbolOntoSTARallCxxClassesSTAR(className);
   core__setf_find_class(crep, className);
   registry->add_class(m_type, crep);
 
@@ -128,10 +125,12 @@ void derivable_class_registration::register_() const {
     casts->insert(e.src, e.target, e.cast);
   }
 
+  printf("%s:%d Registering Derivable class %s\n", __FILE__, __LINE__, _rep_(className).c_str());
   if (m_bases.size() == 0) {
     // If no base classes are specified then make T a base class from Common Lisp's point of view
     //
-    crep->addInstanceBaseClass(cl::_sym_T_O);
+    printf("%s:%d           %s inherits from T\n", __FILE__, __LINE__, _rep_(className).c_str());
+    crep->addInstanceBaseClass(core::_sym_derivable_cxx_object);
   } else {
     for (std::vector<base_desc>::iterator i = m_bases.begin();
          i != m_bases.end(); ++i) {
@@ -139,11 +138,13 @@ void derivable_class_registration::register_() const {
 
       // the baseclass' class_rep structure
       ClassRep_sp bcrep = registry->find_class(i->first);
+      printf("%s:%d         %s inherits from %s\n", __FILE__, __LINE__, _rep_(className).c_str(), _rep_(bcrep).c_str());
       ASSERTF(bcrep.notnilp(), BF("Could not find base class %s") % i->first.name());
       // Add it to the DirectSuperClass list
       crep->addInstanceBaseClass(bcrep->_className());
       crep->add_base_class(core::make_fixnum(0), bcrep);
     }
+    crep->addInstanceBaseClass(core::_sym_derivable_cxx_object);
   }
 }
 

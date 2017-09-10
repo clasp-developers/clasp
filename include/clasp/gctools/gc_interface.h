@@ -75,18 +75,18 @@ namespace gctools {
 
 #ifdef USE_MPS
 #ifndef RUNNING_GC_BUILDER // when running the static analyzer - don't include the following
-#define GC_KIND_SELECTORS
+#define GC_STAMP_SELECTORS
 #include CLASP_GC_FILENAME
-#undef GC_KIND_SELECTORS
+#undef GC_STAMP_SELECTORS
 #endif // ifndef RUNNING_GC_BUILDER
 #endif
 #ifdef USE_BOEHM
 #ifdef USE_CXX_DYNAMIC_CAST
 // Nothing
 #else
-#define GC_KIND_SELECTORS
+#define GC_STAMP_SELECTORS
 #include CLASP_GC_FILENAME
-#undef GC_KIND_SELECTORS
+#undef GC_STAMP_SELECTORS
 #endif
 #endif
 };

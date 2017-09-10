@@ -129,7 +129,7 @@ void rawHeaderDescribe(const uintptr_clasp_t *headerP) {
   uintptr_clasp_t headerTag = (*headerP) & Header_s::tag_mask;
   switch (headerTag) {
   case 0:
-      printf("  %p : %llu(%p) %llu(%p)\n", headerP, *headerP, (void*)*headerP, *(headerP + 1), (void*)*(headerP + 1));
+      printf("  %p : %" Plu "(%p) %" Plu "(%p)\n", headerP, *headerP, (void*)*headerP, *(headerP + 1), (void*)*(headerP + 1));
     printf(" Not an object header!\n");
     break;
   case Header_s::stamp_tag: {
@@ -278,10 +278,10 @@ void Header_s::validate() const {
 namespace gctools {
 
 /*! See NextStamp(...) definition in memoryManagement.h.
-  global_NextBuiltInStamp starts at KIND_max+1
+  global_NextBuiltInStamp starts at STAMP_max+1
   so that it doesn't use any stamps that correspond to KIND values
    assigned by the static analyzer. */
-std::atomic<Stamp>   global_NextStamp = ATOMIC_VAR_INIT(KIND_max+1);
+std::atomic<Stamp>   global_NextStamp = ATOMIC_VAR_INIT(STAMP_max+1);
 
 void OutOfStamps() {
     printf("%s:%d Hello future entity!  Congratulations! - you have run clasp long enough to run out of STAMPs - %" PRu " are allowed - change the clasp header layout or add another word for the stamp\n", __FILE__, __LINE__, Header_s::largest_possible_stamp );
@@ -292,7 +292,7 @@ GCStack _ThreadLocalStack;
 const char *_global_stack_marker;
 size_t _global_stack_max_size;
 /*! Keeps track of the next available header KIND value */
-stamp_t global_next_header_stamp = (stamp_t)KIND_max+1;
+stamp_t global_next_header_stamp = (stamp_t)STAMP_max+1;
 
 #if 0
     HeapRoot* 	rooted_HeapRoots = NULL;

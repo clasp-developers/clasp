@@ -80,12 +80,12 @@ public:
   core::T_sp creator_allocate() {
     T *naked_ptr(new T());
     //            printf("%s:%d - creating WrapperType\n", __FILE__,__LINE__);
-    gctools::smart_ptr<WrapperType> retval = WrapperType::create(naked_ptr, reg::registered_class<T>::id);
+    gctools::smart_ptr<WrapperType> retval = WrapperType::make_wrapper(naked_ptr, reg::registered_class<T>::id);
     //            clbind::support_enable_wrapper_from_this<T,Pointer>(retval,naked_ptr,naked_ptr);
     return retval;
   }
   core::Creator_sp duplicateForClassName(core::Symbol_sp className) {
-    printf("%s:%d  duplicateForClassName %s  this->_HeaderValue = %llu\n", __FILE__, __LINE__, _rep_(className).c_str(), this->_HeaderValue._value);
+    printf("%s:%d  duplicateForClassName %s  this->_HeaderValue = %" Ptagged_stamp_t "\n", __FILE__, __LINE__, _rep_(className).c_str(), this->_HeaderValue._value);
     core::Creator_sp allocator = gc::GC<DefaultConstructorCreator_O<T, Pointer>>::allocate(className, this->_HeaderValue, this->_duplicationLevel + 1);
     return allocator;
   }
@@ -96,7 +96,7 @@ template <typename T, typename Pointer>
 class gctools::GCStamp<clbind::DefaultConstructorCreator_O<T, Pointer>> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::GCStamp<typename clbind::DefaultConstructorCreator_O<T, Pointer>::TemplatedBase>::Kind;
-  static const size_t Flags = 0;
+  static const size_t Flags = FLAGS_STAMP_IN_HEADER;
 };
 
 namespace clbind {
@@ -137,7 +137,7 @@ template <typename T>
 class gctools::GCStamp<clbind::DerivableDefaultConstructorCreator_O<T>> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::GCStamp<typename clbind::DerivableDefaultConstructorCreator_O<T>::TemplatedBase>::Kind;
-  static const size_t Flags = 3;
+  static const size_t Flags = FLAGS_STAMP_IN_HEADER;
 };
 
 namespace clbind {
@@ -161,7 +161,7 @@ template <typename Policies, typename T>
 class gctools::GCStamp<clbind::DerivableDefaultConstructorFunctor<Policies, T>> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::GCStamp<typename clbind::DerivableDefaultConstructorFunctor<Policies, T>::TemplatedBase>::Kind;
-  static const size_t Flags = 3;
+  static const size_t Flags = FLAGS_STAMP_IN_HEADER;
 };
 
 namespace clbind {
@@ -180,7 +180,7 @@ template <typename Pols, typename Pointer, typename T, typename Sig>
 class gctools::GCStamp<clbind::VariadicConstructorFunction_O<Pols, Pointer, T, Sig>> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::GCStamp<typename clbind::VariadicConstructorFunction_O<Pols, Pointer, T, Sig>::TemplatedBase>::Kind;
-  static const size_t Flags = 0;
+  static const size_t Flags = FLAGS_STAMP_IN_HEADER;
 };
 
 #endif

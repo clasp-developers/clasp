@@ -89,7 +89,7 @@ namespace core
 
   template <typename FLOAT>
   inline FLOAT _log1p(FLOAT x) {
-    IMPLEMENT_MEF(BF("Implement specialized log1p for basic float type"));
+    IMPLEMENT_ME();
   }
 
   template <>

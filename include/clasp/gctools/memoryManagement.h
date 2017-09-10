@@ -158,50 +158,46 @@ void clasp_dealloc(char *buffer);
 
 
 namespace gctools {
-/*! GCStampEnum has one integer value for each type allocated by the GC.
-This value is written into the Header_s of every allocated object.
-Immediate (FIXNUM, SINGLE-FLOAT, CHARACTER)  and CONS have KIND values reserved.
-If USE_CXX_DYNAMIC_CAST is defined then GCStampEnum has only one value 
-and every header contains that KIND value (KIND_null)
-and C++ dynamic_cast<...> is used to determine IsA relationships.
-If USE_CXX_DYNAMIC_CAST is not defined then the GCStampEnum values calculated by
-the clasp-analyzer static analyzer they are used along with template functions that
-calculate IsA relationships using simple GCStampEnum range comparisons.
-*/
-#define FLAGS_INSTANCE 1
-#define FLAGS_FUNCALLABLE_INSTANCE 1
-#define FLAGS_DERIVABLE 3
+
+
   
 #if defined(USE_CXX_DYNAMIC_CAST) || defined(RUNNING_GC_BUILDER)
-  typedef enum { KIND_null = 0,
-                 KIND_FIXNUM = 1,
-                 KIND_INSTANCE = 2,
-                 KIND_FUNCALLABLE_INSTANCE = 3, 
-                 KIND_SINGLE_FLOAT = 4,
-                 KIND_CHARACTER = 5,
-                 KIND_CONS = 6,
-                 KIND_VA_LIST_S = 7,
+  typedef enum { STAMP_null = 0,
+                 STAMP_FIXNUM = 1,
+                 STAMP_INSTANCE = 2,
+                 STAMP_FUNCALLABLE_INSTANCE = 3, 
+                 STAMP_SINGLE_FLOAT = 4,
+                 STAMP_CHARACTER = 5,
+                 STAMP_CONS = 6,
+                 STAMP_VA_LIST_S = 7,
+                 STAMP_CPOINTER = 8,
+                 STAMP_WRAPPED_POINTER = 9,
                  // These are defined to support the GCStamp<...> specializations below
                  // when defined(USE_CXX_DYNAMIC_CAST) || defined(RUNNING_GC_BUILDER)
-                 KIND_LISPALLOC_core__VaList_dummy_O = KIND_VA_LIST_S, 
-                 KIND_LISPALLOC_core__Cons_O = KIND_CONS, 
-                 KIND_LISPALLOC_core__Character_dummy_O = KIND_CHARACTER, 
-                 KIND_LISPALLOC_core__SingleFloat_dummy_O = KIND_SINGLE_FLOAT, 
-                 KIND_LISPALLOC_core__Fixnum_dummy_O = KIND_FIXNUM,
-                 KIND_LISPALLOC_core__Instance_O = KIND_INSTANCE,
-                 KIND_LISPALLOC_core__FuncallableInstance_O = KIND_FUNCALLABLE_INSTANCE,
-                 KIND_max = 8 } GCStampEnum; // minimally define this GCStamp
+                 STAMP_LISPALLOC_core__VaList_dummy_O = STAMP_VA_LIST_S, 
+                 STAMP_LISPALLOC_core__Cons_O = STAMP_CONS, 
+                 STAMP_LISPALLOC_core__Character_dummy_O = STAMP_CHARACTER, 
+                 STAMP_LISPALLOC_core__CPointer_dummy_O = STAMP_CPOINTER, 
+                 STAMP_LISPALLOC_core__SingleFloat_dummy_O = STAMP_SINGLE_FLOAT, 
+                 STAMP_LISPALLOC_core__Fixnum_dummy_O = STAMP_FIXNUM,
+                 STAMP_LISPALLOC_core__Instance_O = STAMP_INSTANCE,
+                 STAMP_LISPALLOC_core__FuncallableInstance_O = STAMP_FUNCALLABLE_INSTANCE,
+                 STAMP_TEMPLATED_LISPALLOC_core__WrappedPointer_O = STAMP_WRAPPED_POINTER,
+                 STAMP_max = 10 } GCStampEnum; // minimally define this GCStamp
 #else
+  #define STAMP_DUMMY_FOR_CPOINTER 0
  #define GC_ENUM
     typedef enum {
  #include CLASP_GC_FILENAME
-      KIND_VA_LIST_S = KIND_LISPALLOC_core__VaList_dummy_O, 
-      KIND_CONS = KIND_LISPALLOC_core__Cons_O, 
-      KIND_CHARACTER = KIND_LISPALLOC_core__Character_dummy_O, 
-      KIND_SINGLE_FLOAT = KIND_LISPALLOC_core__SingleFloat_dummy_O, 
-      KIND_FIXNUM = KIND_LISPALLOC_core__Fixnum_dummy_O,
-      KIND_INSTANCE = KIND_LISPALLOC_core__Instance_O,
-      KIND_FUNCALLABLE_INSTANCE = KIND_LISPALLOC_core__FuncallableInstance_O
+      STAMP_VA_LIST_S = STAMP_LISPALLOC_core__VaList_dummy_O, 
+      STAMP_CONS = STAMP_LISPALLOC_core__Cons_O, 
+      STAMP_CHARACTER = STAMP_LISPALLOC_core__Character_dummy_O, 
+      STAMP_CPOINTER = STAMP_DUMMY_FOR_CPOINTER,
+      STAMP_SINGLE_FLOAT = STAMP_LISPALLOC_core__SingleFloat_dummy_O, 
+      STAMP_FIXNUM = STAMP_LISPALLOC_core__Fixnum_dummy_O,
+      STAMP_INSTANCE = STAMP_LISPALLOC_core__Instance_O,
+      STAMP_FUNCALLABLE_INSTANCE = STAMP_LISPALLOC_core__FuncallableInstance_O,
+      STAMP_WRAPPED_POINTER = STAMP_TEMPLATED_LISPALLOC_core__WrappedPointer_O
  } GCStampEnum;
  #undef GC_ENUM
 #endif
@@ -266,9 +262,11 @@ namespace gctools {
       #B00    The value in the rest of the header is the stamp of the object
       #B01    This object is an instance of Instance_O or a subclass and the Rack contains 
               the extended-stamp (64-bits).
-      #B10    This shouldn't happen - but asttooling::AstVisitor_O was given this value of flags
-              by the static analyzer.
-      #B11    This object inherits from Instance_O but an intrinsic function needs to be
+      #B10    The stamp is in a WrappedPointer_O object
+              FIXME:   OLD-> This shouldn't happen - 
+                             but asttooling::AstVisitor_O was given this value of flags
+                             by the static analyzer.
+      #B11    This object inherits from Instance_O the virtual function get_stamp() needs to be
               called to get the extended-stamp because the Rack won't be at 
               a specific offset in the object.
 
@@ -306,12 +304,15 @@ namespace gctools {
     //    These are C++ classes managed by the GC.
     static const int stamp_shift = 4;
     static const int flags_shift = 2;
+    static const tagged_stamp_t flags_mask    = (0x3<<flags_shift);
     static const tagged_stamp_t stamp_mask    = ~0xF; // BOOST_BINARY(11...11111111110000);
+#if 0
     static const tagged_stamp_t stamp_in_rack_mask     = 0x4;
     static const tagged_stamp_t stamp_needs_call_mask  = 0x8;
     static const tagged_stamp_t stamp_type_mask        = (stamp_in_rack_mask|stamp_needs_call_mask);
     static const tagged_stamp_t stamp_in_header_value  = 0;
     static const tagged_stamp_t stamp_in_rack_value    = stamp_in_rack_mask;
+#endif
     static const tagged_stamp_t largest_possible_stamp = stamp_mask>>stamp_shift;
   public:
     struct Value {
@@ -326,18 +327,18 @@ namespace gctools {
       }
       static Value make_instance()
       {
-        Value v(KIND_INSTANCE,FLAGS_INSTANCE /*Flags*/);
+        Value v(STAMP_INSTANCE,FLAGS_INSTANCE /*Flags*/);
         return v;
       }
       static Value make_funcallable_instance()
       {
-        Value v(KIND_FUNCALLABLE_INSTANCE,FLAGS_FUNCALLABLE_INSTANCE /*Flags*/);
+        Value v(STAMP_FUNCALLABLE_INSTANCE,FLAGS_FUNCALLABLE_INSTANCE /*Flags*/);
         return v;
       }
       static Value make_unknown(GCStampEnum the_stamp)
       {
-        printf("%s:%d Making an unknown Header kind stamp  What flag???? ->%u\n", __FILE__, __LINE__, the_stamp );
-        Value v(the_stamp,0);
+//        printf("%s:%d Making an unknown Header kind stamp  What flag???? ->%u\n", __FILE__, __LINE__, the_stamp );
+        Value v(the_stamp,FLAGS_STAMP_IN_HEADER);
         return v;
       }
     public:
@@ -347,12 +348,17 @@ namespace gctools {
       inline GCStampEnum stamp() const {
         return static_cast<GCStampEnum>( this->_value >> stamp_shift );
       }
+      inline Fixnum flags() const {
+        return static_cast<Fixnum>( (this->_value&flags_mask) >> flags_shift );
+      }
+#if 0
       inline bool stamp_in_rack_p() const {
         return (bool)(this->_value & stamp_in_rack_mask);
       }
       inline bool stamp_needs_call_p() const {
         return (bool)(this->_value & stamp_needs_call_mask);
       }
+#endif
     };
   public:
     static void signal_invalid_object(const Header_s* header, const char* msg);
@@ -450,6 +456,28 @@ namespace gctools {
   };
 };
 
+/*! GCStampEnum has one integer value for each type allocated by the GC.
+This value is written into the Header_s of every allocated object.
+Immediate (FIXNUM, SINGLE-FLOAT, CHARACTER)  and CONS have reserved STAMP values.
+If USE_CXX_DYNAMIC_CAST is not defined then the GCStampEnum values calculated by
+the clasp-analyzer static analyzer they are used along with template functions that
+calculate IsA relationships using simple GCStampEnum range comparisons.
+
+
+FIXME:  What happens when USE_CXX_DYNAMIC_CAST is defined??????
+What stamp values are used?
+
+OLD!!!!! ->
+If USE_CXX_DYNAMIC_CAST is defined then GCStampEnum has only one value 
+and every header contains that KIND value (STAMP_null)
+and C++ dynamic_cast<...> is used to determine IsA relationships.
+
+*/
+#if 0
+#define FLAGS_INSTANCE 1
+#define FLAGS_FUNCALLABLE_INSTANCE 1
+#define FLAGS_DERIVABLE 3
+#endif
 // ------------------------------------------------------------
 //
 // Stamp
@@ -461,17 +489,17 @@ namespace gctools {
      must be unique system-wide.  They are used for generic function dispatch.
   */
 
-  /*! global_NextBuiltInStamp starts at KIND_max+1
+  /*! global_NextBuiltInStamp starts at STAMP_max+1
       See definition in memoryManagement.cc
       This is so that it doesn't use any stamps that were set by the static analyzer. */
   extern std::atomic<Stamp> global_NextStamp;
   /*! Return a new stamp for BuiltIn classes.
-      If given != KIND_null then simply return give as the stamp.
+      If given != STAMP_null then simply return give as the stamp.
       Otherwise return the global_NextBuiltInStamp and advance it
       to the next one */
   void OutOfStamps();
-  inline Stamp NextStamp(Stamp given = KIND_null) {
-    if ( given != KIND_null ) return given;
+  inline Stamp NextStamp(Stamp given = STAMP_null) {
+    if ( given != STAMP_null ) return given;
     if (global_NextStamp.load() < Header_s::largest_possible_stamp) {
       return global_NextStamp.fetch_add(1);
     }
@@ -655,26 +683,27 @@ size_t obj_kind(core::T_O *ptr);
 extern void obj_dump_base(void *base);
 };
 
+
 namespace gctools {
 /*! Specialize GcKindSelector so that it returns the appropriate GcKindEnum for OT */
   template <class OT>
     struct GCStamp {
 #ifdef USE_MPS
 #ifdef RUNNING_GC_BUILDER
-      static GCStampEnum const Stamp = KIND_null;
-      static const size_t Flags = 0;
+      static GCStampEnum const Stamp = STAMP_null;
+      static const size_t Flags = FLAGS_STAMP_IN_HEADER;
 #else
   // We need a default Kind when running the gc-builder.lsp static analyzer
   // but we don't want a default Kind when compiling the mps version of the code
   // to force compiler errors when the Kind for an object hasn't been declared
-      static GCStampEnum const Stamp = KIND_null; // provide default for weak dependents
-      static const size_t Flags = 0;
+      static GCStampEnum const Stamp = STAMP_null; // provide default for weak dependents
+      static const size_t Flags = FLAGS_STAMP_IN_HEADER;
 #endif // RUNNING_GC_BUILDER
 #endif // USE_MPS
 #ifdef USE_BOEHM
 #ifdef USE_CXX_DYNAMIC_CAST
-      static GCStampEnum const Stamp = KIND_null; // minimally define KIND_null
-      static const size_t Flags = 0;
+      static GCStampEnum const Stamp = STAMP_null; // minimally define STAMP_null
+      static const size_t Flags = FLAGS_STAMP_IN_HEADER;
 #else
                                             // We don't want a default Kind when compiling the boehm version of the code
                                             // to force compiler errors when the Kind for an object hasn't been declared
@@ -692,41 +721,58 @@ namespace core {
   class Fixnum_dummy_O;
   class SingleFloat_dummy_O;
   class Character_dummy_O;
+  class CPointer_dummy_O;
   class Cons_O;
   class VaList_dummy_O;
   class Instance_O;
+  class FuncallableInstance_O;
   typedef Instance_O Class_O;
 }
 #if defined(USE_CXX_DYNAMIC_CAST) || defined(RUNNING_GC_BUILDER)
 template <> class gctools::GCStamp<core::Fixnum_dummy_O> {
 public:
-  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__Fixnum_dummy_O ;
-  static const size_t Flags = 0;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_LISPALLOC_core__Fixnum_dummy_O ;
+  static const size_t Flags = FLAGS_STAMP_IN_HEADER;
 };
 template <> class gctools::GCStamp<core::SingleFloat_dummy_O> {
 public:
-  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__SingleFloat_dummy_O ;
-  static const size_t Flags = 0;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_LISPALLOC_core__SingleFloat_dummy_O ;
+  static const size_t Flags = FLAGS_STAMP_IN_HEADER;
 };
 template <> class gctools::GCStamp<core::Character_dummy_O> {
 public:
-  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__Character_dummy_O ;
-  static const size_t Flags = 0;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_LISPALLOC_core__Character_dummy_O ;
+  static const size_t Flags = FLAGS_STAMP_IN_HEADER;
+};
+template <> class gctools::GCStamp<core::CPointer_dummy_O> {
+public:
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_LISPALLOC_core__CPointer_dummy_O ;
+  static const size_t Flags = FLAGS_STAMP_IN_HEADER;
 };
 template <> class gctools::GCStamp<core::Cons_O> {
 public:
-  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__Cons_O ;
-  static const size_t Flags = 0;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_LISPALLOC_core__Cons_O ;
+  static const size_t Flags = FLAGS_STAMP_IN_HEADER;
 };
 template <> class gctools::GCStamp<core::VaList_dummy_O> {
 public:
-  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__VaList_dummy_O ;
-  static const size_t Flags = 0;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_LISPALLOC_core__VaList_dummy_O ;
+  static const size_t Flags = FLAGS_STAMP_IN_HEADER;
 };
 template <> class gctools::GCStamp<core::Instance_O> {
 public:
-  static gctools::GCStampEnum const Stamp = gctools::KIND_LISPALLOC_core__Instance_O ;
-  static const size_t Flags = 1;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_LISPALLOC_core__Instance_O ;
+  static const size_t Flags = FLAGS_STAMP_IN_RACK;
+};
+template <> class gctools::GCStamp<core::FuncallableInstance_O> {
+public:
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_LISPALLOC_core__FuncallableInstance_O ;
+  static const size_t Flags = FLAGS_STAMP_IN_RACK;
+};
+template <> class gctools::GCStamp<core::WrappedPointer_O> {
+public:
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_TEMPLATED_LISPALLOC_core__WrappedPointer_O ;
+  static const size_t Flags = FLAGS_STAMP_IN_WRAPPER;
 };
 #endif
 

@@ -182,6 +182,9 @@ core::T_O* to_object_pointer( void * x );
 gctools::return_type cc_dispatch_effective_method(core::T_O* teffective_method, core::T_O* tgf, core::T_O* tgf_args_valist_s);
 };
 
+extern "C" {
+extern int64_t cc_read_stamp(void* tagged_pointer);
+}
 namespace llvmo {
 
   void redirect_llvm_interface_addSymbol();

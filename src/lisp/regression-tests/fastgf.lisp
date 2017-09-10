@@ -1,0 +1,8 @@
+(defmethod fgf-foo ((x integer)) :integer)
+(defmethod fgf-foo ((x string)) :string)
+(clos::switch-to-fastgf #'fgf-foo)
+(test (eq (fgf-foo 1) :integer))
+(test (eq (fgf-foo "testing") :string))
+(defmethod fgf-foo ((x symbol)) :symbol)
+(test (eq (fgf-foo :yadda) :symbol))
+(test-expect-error (fgf-foo 1.2) :description "This should not dispatch")

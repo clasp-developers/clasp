@@ -69,7 +69,7 @@ template <typename IT, typename Policy>
 class gctools::GCStamp<clbind::Iterator<IT, Policy>> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::GCStamp<typename clbind::Iterator<IT, Policy>::TemplatedBase>::Kind;
-  static const size_t Flags = 0;
+  static const size_t Flags = FLAGS_STAMP_IN_HEADER;
 };
 
 #endif // clbind_wrapped_iterator

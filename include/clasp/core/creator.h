@@ -93,7 +93,7 @@ template <typename T>
 class gctools::GCStamp<core::BuiltInObjectCreator<T>> {
  public:
   static gctools::GCStampEnum const Stamp = gctools::GCStamp<typename core::BuiltInObjectCreator<T>::TemplatedBase>::Kind;
-  static const size_t Flags = 0;
+  static const size_t Flags = FLAGS_STAMP_IN_HEADER;
 };
 template <typename T>
 struct gctools::GCInfo<core::BuiltInObjectCreator<T>> {
@@ -155,6 +155,15 @@ namespace core {
     StructureClassCreator_O() {};
     T_sp creator_allocate();
     virtual size_t templatedSizeof() const { return sizeof(StructureClassCreator_O); };
+  };
+};
+namespace core {
+  class DerivableCxxClassCreator_O : public Creator_O {
+    LISP_CLASS(core,CorePkg,DerivableCxxClassCreator_O,"DerivableCxxClassCreator",Creator_O);
+  public:
+    DerivableCxxClassCreator_O() {};
+    T_sp creator_allocate();
+    virtual size_t templatedSizeof() const { return sizeof(DerivableCxxClassCreator_O); };
   };
 };
 

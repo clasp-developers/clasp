@@ -530,7 +530,7 @@ core::T_sp ast_tooling__getSingleMatcher(core::T_sp variantMatcher) {
   clang::ast_matchers::dynamic::VariantMatcher *vp = gc::As<core::WrappedPointer_sp>(variantMatcher)->cast<clang::ast_matchers::dynamic::VariantMatcher>();
   llvm::Optional<clang::ast_matchers::internal::DynTypedMatcher> dtm = vp->getSingleMatcher();
   if (dtm.hasValue()) {
-    return clbind::Wrapper<clang::ast_matchers::internal::DynTypedMatcher>::create(*dtm, reg::registered_class<clang::ast_matchers::internal::DynTypedMatcher>::id);
+    return clbind::Wrapper<clang::ast_matchers::internal::DynTypedMatcher>::make_wrapper(*dtm, reg::registered_class<clang::ast_matchers::internal::DynTypedMatcher>::id);
   }
   return _Nil<core::T_O>();
 };
@@ -598,9 +598,9 @@ core::T_sp ast_tooling__newFrontendActionFactory(core::T_sp consumerFactory) {
     std::unique_ptr<clang::tooling::FrontendActionFactory> val = clang::tooling::newFrontendActionFactory(matchFinder);
 #if 0
 	    clang::tooling::FrontendActionFactory* fafptr = val.release();
-	    gctools::smart_ptr<wrapped_type> sp(wrapped_type::create(fafptr,reg::registered_class<clang::tooling::FrontendActionFactory>::id));
+	    gctools::smart_ptr<wrapped_type> sp(wrapped_type::make_wrapper(fafptr,reg::registered_class<clang::tooling::FrontendActionFactory>::id));
 #else
-    gctools::smart_ptr<wrapped_type> sp(wrapped_type::create(std::move(val), reg::registered_class<clang::tooling::FrontendActionFactory>::id));
+    gctools::smart_ptr<wrapped_type> sp(wrapped_type::make_wrapper(std::move(val), reg::registered_class<clang::tooling::FrontendActionFactory>::id));
 #endif
     return sp;
   }
@@ -643,7 +643,7 @@ CL_DEFUN core::T_mv ast_tooling__deduplicate(core::List_sp replacements) {
   for (auto j : vranges) {
     // Why does Range not have a Copy constructor?????
     clang::tooling::Range *rp = new clang::tooling::Range(j); //i.getOffset(),i.getLength());
-    core::T_sp wrapRang = clbind::Wrapper<clang::tooling::Range, std::unique_ptr<clang::tooling::Range>>::create(rp, reg::registered_class<clang::tooling::Range>::id);
+    core::T_sp wrapRang = clbind::Wrapper<clang::tooling::Range, std::unique_ptr<clang::tooling::Range>>::make_wrapper(rp, reg::registered_class<clang::tooling::Range>::id);
     core::Cons_sp oneRangCons = core::Cons_O::create(wrapRang);
     curRang->setCdr(oneRangCons);
     curRang = oneRangCons;

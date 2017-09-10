@@ -21,11 +21,11 @@
 ;;; INSTANCES INITIALIZATION AND REINITIALIZATION
 ;;;
 
-(defmethod initialize-instance ((instance T) &rest initargs)
+(defmethod initialize-instance ((instance #| #+clasp standard-object #+ecl |# T) &rest initargs)
   (dbg-standard "standard.lsp:29  initialize-instance unbound instance ->~a~%" (eq (core:unbound) instance))
   (apply #'shared-initialize instance 'T initargs))
 
-(defmethod reinitialize-instance ((instance T) &rest initargs)
+(defmethod reinitialize-instance ((instance #| #+clasp standard-object #+ecl |# T ) &rest initargs)
 ;;  (print "HUNT entered reinitialize-instance") ;
   (check-initargs (class-of instance) initargs
 		  (valid-keywords-from-methods
@@ -35,7 +35,7 @@
                     #'shared-initialize (list instance t))))
   (apply #'shared-initialize instance '() initargs))
 
-(defmethod shared-initialize ((instance T) slot-names &rest initargs)
+(defmethod shared-initialize ((instance #| #+clasp standard-object #+ecl |# T) slot-names &rest initargs)
   ;;
   ;; initialize the instance's slots is a two step process
   ;;   1 A slot for which one of the initargs in initargs can set

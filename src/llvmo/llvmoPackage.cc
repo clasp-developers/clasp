@@ -216,7 +216,7 @@ CL_DEFUN core::T_sp llvm_sys__cxxDataStructuresInfo() {
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("TAG-MASK"), make_fixnum((int)gctools::tag_mask)), list);
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("IMMEDIATE-MASK"), make_fixnum((int)gctools::immediate_mask)), list);
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("GENERAL-TAG"), make_fixnum((int)gctools::general_tag)), list);
-  list = Cons_O::create(Cons_O::create(lisp_internKeyword("FIXNUM-TAG"), make_fixnum((int)gctools::fixnum_tag)), list);
+  list = Cons_O::create(Cons_O::create(lisp_internKeyword("FIXNUM-TAG"), make_fixnum((int)gctools::fixnum0_tag)), list);
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("FIXNUM1-TAG"), make_fixnum((int)gctools::fixnum1_tag)), list);
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("CONS-TAG"), make_fixnum((int)gctools::cons_tag)), list);
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("VALIST-TAG"), make_fixnum((int)gctools::valist_tag)), list);
@@ -246,20 +246,22 @@ CL_DEFUN core::T_sp llvm_sys__cxxDataStructuresInfo() {
   ENTRY(list, "GCVECTOR-END-OFFSET", make_fixnum((char *)&tempGCVector._End - (char *)&tempGCVector));
   ENTRY(list, "GCVECTOR-DATA0-OFFSET", make_fixnum((char *)&tempGCVector._Data[0] - (char *)&tempGCVector));
   ENTRY(list, "ISGF-OFFSET", make_fixnum(offsetof(FuncallableInstance_O,_isgf)));
-  ENTRY(list, "FIXNUM-STAMP", make_fixnum(gctools::KIND_FIXNUM));
+  ENTRY(list, "FIXNUM-STAMP", make_fixnum(gctools::STAMP_FIXNUM));
   ENTRY(list, "FIXNUM-SHIFT", make_fixnum(gctools::fixnum_shift));
   ENTRY(list, "STAMP-SHIFT", make_fixnum(gctools::Header_s::stamp_shift));
+#if 0
   ENTRY(list, "STAMP-IN-RACK-MASK", make_fixnum(gctools::Header_s::stamp_in_rack_mask));
   ENTRY(list, "STAMP-NEEDS-CALL-MASK", make_fixnum(gctools::Header_s::stamp_needs_call_mask));
-  ENTRY(list, "CONS-STAMP", make_fixnum(gctools::KIND_CONS));
-  ENTRY(list, "VA_LIST_S-STAMP", make_fixnum(gctools::KIND_VA_LIST_S));
-  ENTRY(list, "CHARACTER-STAMP", make_fixnum(gctools::KIND_CHARACTER));
-  ENTRY(list, "SINGLE-FLOAT-STAMP", make_fixnum(gctools::KIND_SINGLE_FLOAT)); 
+#endif
+  ENTRY(list, "CONS-STAMP", make_fixnum(gctools::STAMP_CONS));
+  ENTRY(list, "VA_LIST_S-STAMP", make_fixnum(gctools::STAMP_VA_LIST_S));
+  ENTRY(list, "CHARACTER-STAMP", make_fixnum(gctools::STAMP_CHARACTER));
+  ENTRY(list, "SINGLE-FLOAT-STAMP", make_fixnum(gctools::STAMP_SINGLE_FLOAT)); 
   ENTRY(list, "INSTANCE-RACK-OFFSET", make_fixnum(offsetof(Instance_O,_Rack)));
   ENTRY(list, "INSTANCE-RACK-STAMP-OFFSET", make_fixnum(Instance_O::rack_stamp_offset()));
-  ENTRY(list, "INSTANCE-KIND", make_fixnum(static_cast<Fixnum>(gctools::KIND_INSTANCE)));
-  ENTRY(list, "FUNCALLABLE-INSTANCE-KIND", make_fixnum(static_cast<Fixnum>(gctools::KIND_FUNCALLABLE_INSTANCE)));
-//  ENTRY(list, "CLASS-KIND", make_fixnum(static_cast<Fixnum>(gctools::KIND_CLASS)));
+  ENTRY(list, "INSTANCE-KIND", make_fixnum(static_cast<Fixnum>(gctools::STAMP_INSTANCE)));
+  ENTRY(list, "FUNCALLABLE-INSTANCE-KIND", make_fixnum(static_cast<Fixnum>(gctools::STAMP_FUNCALLABLE_INSTANCE)));
+//  ENTRY(list, "CLASS-KIND", make_fixnum(static_cast<Fixnum>(gctools::STAMP_CLASS)));
   ENTRY(list, "SIMPLE-VECTOR._DATA-OFFSET",make_fixnum(offsetof(SimpleVector_O,_Data)+offsetof(SimpleVector_O::vector_type,_Data)));
   ENTRY(list, "SIMPLE-VECTOR._LENGTH-OFFSET",make_fixnum(offsetof(SimpleVector_O,_Data)+offsetof(SimpleVector_O::vector_type,_Length)));
   return list;
