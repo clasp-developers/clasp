@@ -482,7 +482,7 @@ It takes the arguments in two forms, as a vaslist and as a list of arguments."
    when the generic-function-specializer-profile says to specialize on that argument.
    If list-of-specializers-names is NIL then use the specializers of the generic-function-methods."
   (compute-and-set-specializer-profile generic-function)
-  (if list-of-specializers
+  (if list-of-specializers-names
       (loop with profile = (coerce (generic-function-specializer-profile generic-function) 'list)
          for specializers in (mapcar #'find-class list-of-specializers-names)
          do (add-to-call-history generic-function specializers profile verbose))

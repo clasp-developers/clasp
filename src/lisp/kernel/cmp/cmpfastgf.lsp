@@ -397,11 +397,10 @@
 	    (entries (append eql-entries class-entries)))
        (format fout "~a [shape = record, label = \"~{ <f~a> ~a ~^|~}\" ];~%" nodeid
                (let (result)
-                 (mapappend (lambda (x)
-                              (list (first x) (second x)))
-                            entries)
-                 #+(or)(loop for x in entries
-                          append (list (first x) (second x)))))
+                 (dolist (x entries)
+                   (push (second x) result)
+                   (push (first x) result))
+                 result))
        (mapc (lambda (x)
                (format fout "~a:<f~a> -> ~a;~%" nodeid (first x) (third x)))
              entries)
