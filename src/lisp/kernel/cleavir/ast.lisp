@@ -178,6 +178,59 @@
 (defmethod cleavir-ast:children ((ast vector-length-ast))
   (list (vl-ast-vector ast)))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Class DISPLACEMENT-AST
+;;;
+;;; Gets the actual underlying array of any mdarray.
+
+(defclass displacement-ast (cleavir-ast:ast cleavir-ast:one-value-ast-mixin)
+  ((%mdarray :initarg :mdarray :accessor displacement-ast-mdarray)))
+
+(cleavir-io:define-save-info displacement-ast
+    (:mdarray displacement-ast-mdarray))
+
+(defmethod cleavir-ast-graphviz::label ((ast displacement-ast))
+  "displacement")
+
+(defmethod cleavir-ast:children ((ast displacement-ast))
+  (list (displacement-ast-mdarray ast)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Class DISPLACED-INDEX-OFFSET-AST
+;;;
+;;; Gets the actual underlying DIO of any mdarray.
+
+(defclass displaced-index-offset-ast (cleavir-ast:ast cleavir-ast:one-value-ast-mixin)
+  ((%mdarray :initarg :mdarray :accessor displaced-index-offset-ast-mdarray)))
+
+(cleavir-io:define-save-info displaced-index-offset-ast
+    (:mdarray displaced-index-offset-ast-mdarray))
+
+(defmethod cleavir-ast-graphviz::label ((ast displaced-index-offset-ast))
+  "d-offset")
+
+(defmethod cleavir-ast:children ((ast displaced-index-offset-ast))
+  (list (displaced-index-offset-ast-mdarray ast)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Class DISPLACED-INDEX-OFFSET-AST
+;;;
+;;; Gets the actual underlying DIO of any mdarray.
+
+(defclass array-total-size-ast (cleavir-ast:ast cleavir-ast:one-value-ast-mixin)
+  ((%mdarray :initarg :mdarray :accessor array-total-size-ast-mdarray)))
+
+(cleavir-io:define-save-info array-total-size-ast
+    (:mdarray array-total-size-ast-mdarray))
+
+(defmethod cleavir-ast-graphviz::label ((ast array-total-size-ast))
+  "ATS")
+
+(defmethod cleavir-ast:children ((ast array-total-size-ast))
+  (list (array-total-size-ast-mdarray ast)))
 
 
 

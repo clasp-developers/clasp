@@ -414,6 +414,10 @@ namespace core {
       if (this->_Flags.displacedToP()) return this->_Data;
       return _Nil<T_O>();
     };
+    // like the above but ignores the flag
+    virtual T_sp realDisplacedTo() const {
+      return this->_Data;
+    }
 
     virtual size_t rank() const override { return this->_Dimensions._Length; };
     virtual size_t arrayDimension(size_t axisNumber) const override {

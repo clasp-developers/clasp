@@ -162,6 +162,8 @@ class Package_O : public General_O {
   /*! Unuse the package, the reverse of usePackage
 		 */
   bool unusePackage(Package_sp usePackage);
+  bool unusePackage_no_outer_lock(Package_sp usePackage);
+  bool unusePackage_no_inner_lock(Package_sp usePackage);
 
   bool usingPackageP_no_lock(Package_sp pkg) const;
   /*! Return true if we are using the package */

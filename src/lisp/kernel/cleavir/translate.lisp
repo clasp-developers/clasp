@@ -705,6 +705,39 @@ when this is t a lot of graphs will be generated.")
            (fixnum (%shl read-val cmp::+fixnum-shift+ :nuw t :label "tag fixnum")))
       (%store (%inttoptr fixnum cmp:%t*%) (first outputs)))))
 
+(defmethod translate-simple-instruction
+    ((instruction clasp-cleavir-hir::displacement-instruction)
+     return-value inputs outputs abi function-info)
+  (declare (ignore return-value function-info abi))
+  (%store (%intrinsic-call "cc_realArrayDisplacement"
+                           (list (%load (first inputs))))
+          (first outputs)))
+
+(defmethod translate-simple-instruction
+    ((instruction clasp-cleavir-hir::displaced-index-offset-instruction)
+     return-value inputs outputs abi function-info)
+  (declare (ignore return-value function-info abi))
+  (%store (%inttoptr
+           (%shl
+            (%intrinsic-call "cc_realArrayDisplacedIndexOffset"
+                             (list (%load (first inputs))))
+            cmp::+fixnum-shift+
+            :label "fixnum" :nuw t)
+           cmp:%t*%)
+          (first outputs)))
+
+(defmethod translate-simple-instruction
+    ((instruction clasp-cleavir-hir::array-total-size-instruction)
+     return-value inputs outputs abi function-info)
+  (declare (ignore return-value function-info abi))
+  (%store (%inttoptr
+           (%shl
+            (%intrinsic-call "cc_arrayTotalSize"
+                             (list (%load (first inputs))))
+            cmp::+fixnum-shift+
+            :label "fixnum" :nuw t)
+           cmp:%t*%)
+          (first outputs)))
 
 (defmethod translate-simple-instruction
     ((instruction cleavir-ir:memref2-instruction) return-value inputs outputs abi function-info)
@@ -740,7 +773,7 @@ when this is t a lot of graphs will be generated.")
             ((ext:integer16) "to_object_int16")
             ((ext:byte32) "to_object_uint32")
             ((ext:integer32) "to_object_int32")
-            #+(or)((fixnum) "to_object_fixnum")
+            ((fixnum) "to_object_fixnum")
             ((ext:byte64) "to_object_uint64")
             ((ext:integer64) "to_object_int64")
             ((single-float) "to_object_float")
@@ -760,7 +793,7 @@ when this is t a lot of graphs will be generated.")
             ((ext:integer16) "from_object_int16")
             ((ext:byte32) "from_object_uint32")
             ((ext:integer32) "from_object_int32")
-            #+(or)((fixnum) "from_object_fixnum")
+            ((fixnum) "from_object_fixnum")
             ((ext:byte64) "from_object_uint64")
             ((ext:integer64) "from_object_int64")
             ((single-float) "from_object_float")

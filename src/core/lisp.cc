@@ -1096,49 +1096,76 @@ void Lisp_O::unmapNameToPackage(const string &name) {
 }
 
 Package_sp Lisp_O::makePackage(const string &name, list<string> const &nicknames, list<string> const &usePackages, list<std::string> const& shadow) {
-  WITH_READ_WRITE_LOCK(this->_Roots._PackagesMutex);
-  map<string, int>::iterator it = this->_Roots._PackageNameIndexMap.find(name);
-  if (it != this->_Roots._PackageNameIndexMap.end()) {
-    SIMPLE_ERROR(BF("There already exists a package with name: %s") % name);
-  }
-  LOG(BF("Creating package with name[%s]") % name);
-  Package_sp newPackage = Package_O::create(name);
-  int packageIndex = this->_Roots._Packages.size();
-  {
-    //            printf("%s:%d Lisp_O::makePackage name: %s   index: %d   newPackage@%p\n", __FILE__, __LINE__, name.c_str(), packageIndex, newPackage.raw_());
-    this->_Roots._PackageNameIndexMap[name] = packageIndex;
-    this->_Roots._Packages.push_back(newPackage);
-  }
-  {
-    List_sp cnicknames(_Nil<T_O>());
-    for (list<string>::const_iterator it = nicknames.begin(); it != nicknames.end(); it++) {
-      string nickName = *it;
-      if (this->_Roots._PackageNameIndexMap.count(nickName) > 0 && nickName != name) {
-        int existingIndex = this->_Roots._PackageNameIndexMap[nickName];
-        SIMPLE_ERROR(BF("Package nickname[%s] is already being used by package[%s]") % nickName % this->_Roots._Packages[existingIndex]->getName());
+  /* This function is written somewhat bizarrely for lock safety reasons.
+   * The trick is that the error infrastructure, among other things, uses the package system.
+   * Therefore, if we lock the system, then signal an error, the error function will call findPackage or
+   * something, it will try to grab the lock, and it will fail because we already have it.
+   * Additionally, CLHS specifies that the errors are CORRECTABLE, so we could hypothetically have the user
+   * in the debugger while the package system is locked - that won't work.
+   * Instead we do this: Enter a loop. Grab the lock. Try the operation. If the operation succeeds, just return.
+   * If it fails, goto (yes, really) outside the lock scope so that we ungrab it, and signal an error there.
+   * FIXME: This is set up to be correctable, thus the loop, but SIMPLE_ERROR doesn't actually allow correction.
+   * */
+  while (true) {
+    string usedNickName;
+    string packageUsingNickName;
+    {
+      WITH_READ_WRITE_LOCK(this->_Roots._PackagesMutex);
+      map<string, int>::iterator it = this->_Roots._PackageNameIndexMap.find(name);
+      if (it != this->_Roots._PackageNameIndexMap.end()) {
+        goto name_exists;
       }
-      this->_Roots._PackageNameIndexMap[nickName] = packageIndex;
-      cnicknames = Cons_O::create(SimpleBaseString_O::make(nickName), cnicknames);
+      LOG(BF("Creating package with name[%s]") % name);
+      Package_sp newPackage = Package_O::create(name);
+      int packageIndex = this->_Roots._Packages.size();
+      {
+    //            printf("%s:%d Lisp_O::makePackage name: %s   index: %d   newPackage@%p\n", __FILE__, __LINE__, name.c_str(), packageIndex, newPackage.raw_());
+        this->_Roots._PackageNameIndexMap[name] = packageIndex;
+        this->_Roots._Packages.push_back(newPackage);
+      }
+      {
+        List_sp cnicknames(_Nil<T_O>());
+        for (list<string>::const_iterator it = nicknames.begin(); it != nicknames.end(); it++) {
+          string nickName = *it;
+          if (this->_Roots._PackageNameIndexMap.count(nickName) > 0 && nickName != name) {
+            int existingIndex = this->_Roots._PackageNameIndexMap[nickName];
+            usedNickName = nickName;
+            packageUsingNickName = this->_Roots._Packages[existingIndex]->getName();
+            goto nickname_exists;
+          }
+          this->_Roots._PackageNameIndexMap[nickName] = packageIndex;
+          cnicknames = Cons_O::create(SimpleBaseString_O::make(nickName), cnicknames);
+        }
+        newPackage->setNicknames(cnicknames);
+      }
+      for (list<string>::const_iterator jit = usePackages.begin(); jit != usePackages.end(); jit++) {
+        Package_sp usePkg = gc::As<Package_sp>(this->findPackage_no_lock(*jit, true));
+        LOG(BF("Using package[%s]") % usePkg->getName());
+        newPackage->usePackage(usePkg);
+      }
+      if (this->_MakePackageCallback != NULL) {
+        LOG(BF("Calling _MakePackageCallback with package[%s]") % name);
+        this->_MakePackageCallback(name, _lisp);
+      } else {
+        LOG(BF("_MakePackageCallback is NULL - not calling callback"));
+      }
+      for ( auto x : shadow ) {
+        SimpleBaseString_sp sx = SimpleBaseString_O::make(x);
+        printf("%s:%d in makePackage  for package %s  shadow: %s\n", __FILE__,__LINE__, newPackage->getName().c_str(),sx->get_std_string().c_str());
+        newPackage->shadow(sx);
+      }
+      return newPackage;
     }
-    newPackage->setNicknames(cnicknames);
+    // FIXME: These ought to be correctable.
+    // When SIMPLE_ERROR is replaced with something that can do corrections, the continues will be necessary.
+    // Corrections will mean, essentially, setting the name and nicknames variables.
+  name_exists:
+    SIMPLE_ERROR(BF("There already exists a package with name: %s") % name);
+    continue;
+  nickname_exists:
+    SIMPLE_ERROR(BF("Package nickname[%s] is already being used by package[%s]") % usedNickName % packageUsingNickName);
+    continue;
   }
-  for (list<string>::const_iterator jit = usePackages.begin(); jit != usePackages.end(); jit++) {
-    Package_sp usePkg = gc::As<Package_sp>(this->findPackage_no_lock(*jit, true));
-    LOG(BF("Using package[%s]") % usePkg->getName());
-    newPackage->usePackage(usePkg);
-  }
-  if (this->_MakePackageCallback != NULL) {
-    LOG(BF("Calling _MakePackageCallback with package[%s]") % name);
-    this->_MakePackageCallback(name, _lisp);
-  } else {
-    LOG(BF("_MakePackageCallback is NULL - not calling callback"));
-  }
-  for ( auto x : shadow ) {
-    SimpleBaseString_sp sx = SimpleBaseString_O::make(x);
-    printf("%s:%d in makePackage  for package %s  shadow: %s\n", __FILE__,__LINE__, newPackage->getName().c_str(),sx->get_std_string().c_str());
-    newPackage->shadow(sx);
-  }
-  return newPackage;
 }
 
 T_sp Lisp_O::findPackage_no_lock(const string &name, bool errorp) const {
