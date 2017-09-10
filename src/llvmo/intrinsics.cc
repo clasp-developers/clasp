@@ -1161,6 +1161,7 @@ ALWAYS_INLINE core::T_O* to_object_char( char x )
   return translate::to_object< char >::convert(x).raw_();
 }
 
+
 // ----------------------------------------------------------------------------
 // UNSIGNED CHAR
 // ----------------------------------------------------------------------------
@@ -1175,6 +1176,35 @@ ALWAYS_INLINE core::T_O* to_object_unsigned_char( unsigned char x )
 {
   return translate::to_object< unsigned char >::convert(x).raw_();
 }
+
+// ----------------------------------------------------------------------------
+// claspCharacter
+// ----------------------------------------------------------------------------
+
+ALWAYS_INLINE claspCharacter from_object_claspCharacter( core::T_O* obj )
+{
+  return reinterpret_cast<claspCharacter>(gctools::untag_character<core::T_O*>(obj));
+}
+
+ALWAYS_INLINE core::T_O* to_object_claspCharacter( claspCharacter x )
+{
+  return gctools::tag_character<core::T_O*>(x);
+}
+
+// ----------------------------------------------------------------------------
+// claspChar
+// ----------------------------------------------------------------------------
+
+ALWAYS_INLINE claspChar from_object_claspChar( core::T_O* obj )
+{
+  return static_cast<claspChar>(gctools::untag_character<core::T_O*>(obj));
+}
+
+ALWAYS_INLINE core::T_O* to_object_claspChar( claspChar x )
+{
+  return gctools::tag_character<core::T_O*>(x);
+}
+
 
 // ----------------------------------------------------------------------------
 // FLOAT

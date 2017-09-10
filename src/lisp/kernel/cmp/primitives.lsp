@@ -406,6 +406,11 @@
     (primitive          "from_object_unsigned_char" %i8% (list %t*%))
     (primitive          "to_object_unsigned_char" %t*% (list %i8%))
 
+    (primitive          "from_object_claspCharacter" %i32% (list %t*%))
+    (primitive          "to_object_claspCharacter" %t*% (list %i32%))
+    (primitive          "from_object_claspChar" %i8% (list %t*%))
+    (primitive          "to_object_claspChar" %t*% (list %i8%))
+    
     ;; FLOAT, DOUBLE & LONG FLOAT
     (primitive          "from_object_float" %float% (list %t*%))
     (primitive          "to_object_float" %t*% (list %float%))
