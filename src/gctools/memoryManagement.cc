@@ -129,7 +129,7 @@ void rawHeaderDescribe(const uintptr_clasp_t *headerP) {
   uintptr_clasp_t headerTag = (*headerP) & Header_s::tag_mask;
   switch (headerTag) {
   case 0:
-      printf("  %p : %llu(%p) %llu(%p)\n", headerP, *headerP, (void*)*headerP, *(headerP + 1), (void*)*(headerP + 1));
+      printf("  %p : %" Plu "(%p) %" Plu "(%p)\n", headerP, *headerP, (void*)*headerP, *(headerP + 1), (void*)*(headerP + 1));
     printf(" Not an object header!\n");
     break;
   case Header_s::stamp_tag: {

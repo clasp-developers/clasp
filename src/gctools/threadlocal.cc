@@ -40,7 +40,7 @@ ThreadLocalState::ThreadLocalState(void* stack_top) :  _DisableInterrupts(false)
 #ifdef _TARGET_OS_DARWIN
   this->_Tid = 0;
 #else
-  this->_Tid = gettid();
+  this->_Tid = 0;
 #endif
   this->_InvocationHistoryStackTop = NULL;
   this->_BufferStr8NsPool.reset_(); // Can't use _Nil<core::T_O>(); - too early

@@ -374,7 +374,7 @@ void General_O::sxhash_(HashGenerator &hg) const {
   }
 }
 
-void General_O::sxhash_equal(HashGenerator &hg,LocationDependencyPtrT ptr) const {
+void General_O::sxhash_equal(HashGenerator &hg,LocationDependencyPtrT ld) const {
   if (!hg.isFilling()) return;
   volatile void* address = (void*)this;
 #ifdef USE_MPS

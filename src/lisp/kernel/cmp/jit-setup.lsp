@@ -432,9 +432,10 @@ The passed module is modified as a side-effect."
   (defvar *builtins-module* nil)
   (defvar *fastgf-module* nil)
   (defparameter *fastgf-dump-module* nil)
-  (defvar *declare-dump-module* nil)
+  (defvar *declare-dump-module* t)
   (defvar *jit-repl-module-handles* nil)
   (defvar *jit-fastgf-module-handles* nil)
+  (defvar *jit-dump-module-before-optimizations* nil)
   (defvar *jit-symbol-info* nil)
   (defvar *jit-saved-symbol-info* (make-hash-table :test #'equal :thread-safe t))
   )
@@ -442,13 +443,18 @@ The passed module is modified as a side-effect."
   (defun jit-add-module-return-function (original-module repl-fn startup-fn shutdown-fn literals-list)
     ;; Link the builtins into the module and optimize them
     (jit-link-builtins-module original-module)
+    (if *jit-dump-module-before-optimizations*
+        (llvm-sys:dump-module original-module))
     #+(or)(optimize-module-for-compile original-module)
     #+(or)(quick-module-dump original-module "module after-optimize")
     (let ((module original-module))
       ;;#+threads(mp:get-lock *jit-engine-mutex*)
       ;;    (bformat t "In jit-add-module-return-function dumping module\n")
       ;;    (llvm-sys:print-module-to-stream module *standard-output*)
-      (if *declare-dump-module* (llvm-sys:dump-module module))
+      (if *declare-dump-module*
+          (progn
+            (core:bformat t "Dumping module\n")
+            (llvm-sys:dump-module module)))
       (let* ((repl-name (llvm-sys:get-name repl-fn))
              (startup-name (llvm-sys:get-name startup-fn))
              (shutdown-name (llvm-sys:get-name shutdown-fn))

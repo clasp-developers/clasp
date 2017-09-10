@@ -308,7 +308,7 @@ CL_DECLARE();
 CL_DOCSTRING("dumpTaggedFixnum");
 CL_DEFUN void core__dump_tagged_fixnum(T_sp val) {
   if (val.fixnump()) {
-    printf("%s:%d Raw TaggedFixnum %p   Untagged %" PRF "\n",
+    printf("%s:%d Raw TaggedFixnum %p   Untagged %" PFixnum "\n",
            __FILE__, __LINE__, val.raw_(), val.unsafe_fixnum());
   } else
     printf("%s:%d Not a tagged fixnum\n", __FILE__, __LINE__);

@@ -57,12 +57,14 @@ core::T_O *va_symbolFunction(core::T_sp *symP) {
 }
 
 
-
+#if 0
 BUILTIN_ATTRIBUTES core::T_sp *symbolValueReference(core::T_sp *symbolP)
 {
   core::Symbol_sp sym((gctools::Tagged)ENSURE_VALID_OBJECT_BUILTINS(symbolP->raw_()));
   return sym->valueReference();
 }
+#endif
+
 
 BUILTIN_ATTRIBUTES core::T_sp *lexicalValueReference(int depth, int index, core::ActivationFrame_sp *frameP)
 {

@@ -76,6 +76,8 @@ THE SOFTWARE.
 #define GCWEAK_LOG(x)
 #endif
 
+#include <functional>
+
 namespace core {
 string lisp_rep(T_sp obj);
 };

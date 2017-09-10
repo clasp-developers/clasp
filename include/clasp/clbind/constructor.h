@@ -85,7 +85,7 @@ public:
     return retval;
   }
   core::Creator_sp duplicateForClassName(core::Symbol_sp className) {
-    printf("%s:%d  duplicateForClassName %s  this->_HeaderValue = %llu\n", __FILE__, __LINE__, _rep_(className).c_str(), this->_HeaderValue._value);
+    printf("%s:%d  duplicateForClassName %s  this->_HeaderValue = %" Ptagged_stamp_t "\n", __FILE__, __LINE__, _rep_(className).c_str(), this->_HeaderValue._value);
     core::Creator_sp allocator = gc::GC<DefaultConstructorCreator_O<T, Pointer>>::allocate(className, this->_HeaderValue, this->_duplicationLevel + 1);
     return allocator;
   }

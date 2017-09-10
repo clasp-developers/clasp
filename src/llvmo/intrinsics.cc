@@ -207,6 +207,13 @@ ALWAYS_INLINE void makeCons(core::T_sp *resultConsP, core::T_sp *carP, core::T_s
   NO_UNWIND_END();
 }
 
+
+ALWAYS_INLINE core::T_sp *symbolValueReference(core::T_sp *symbolP)
+{
+  core::Symbol_sp sym((gctools::Tagged)ENSURE_VALID_OBJECT(symbolP->raw_()));
+  return sym->valueReference();
+}
+
 ALWAYS_INLINE void sp_symbolValueRead(core::T_sp *resultP, const core::T_sp *tsymP) {
   Symbol_sp sym((gctools::Tagged)(tsymP->raw_()));
   T_sp sv = sym->symbolValueUnsafe();

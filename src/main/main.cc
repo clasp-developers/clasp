@@ -343,7 +343,7 @@ static int startup(int argc, char *argv[], bool &mpiEnabled, int &mpiRank, int &
     ASSERT(gctools::tagged_fixnump(failedUnwind.getFrame()));
 
     fprintf( stderr,
-             "%s (%s:%d): An unwind was thrown but not caught - frame[%" PRF "] tag[%lu]\n",
+             "%s (%s:%d): An unwind was thrown but not caught - frame[%" PFixnum "] tag[%lu]\n",
              exe_name().c_str(), __FILE__, __LINE__, gctools::untag_fixnum( failedUnwind.getFrame() ), failedUnwind.index() );
 
     fprintf( stderr, "*** BACKTRACE:\n" );

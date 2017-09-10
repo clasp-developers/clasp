@@ -88,6 +88,8 @@ class type_info;
 #endif
 
 #define DLL_PUBLIC __attribute__((visibility("default")))
+#include <limits>
+#include <typeinfo>
 
 #ifdef CLASP_THREADS
 #include <pthread.h>

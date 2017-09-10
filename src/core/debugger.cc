@@ -499,7 +499,7 @@ void dbg_lowLevelDescribe(T_sp obj) {
   if (obj.valistp()) {
     dbg_VaList_sp_describe(obj);
   } else if (obj.fixnump()) {
-    printf("fixnum_tag: %" PRF "\n", obj.unsafe_fixnum());
+    printf("fixnum_tag: %" PFixnum "\n", obj.unsafe_fixnum());
   } else if (obj.single_floatp()) {
     printf("single-float: %f\n", obj.unsafe_single_float());
   } else if (obj.characterp()) {

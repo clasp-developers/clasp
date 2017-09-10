@@ -74,12 +74,25 @@ typedef int64_t    intptr_clasp_t;
 typedef int64_t    Fixnum; // Signed Fixnum immediate value
 #define CLASP_FIXNUM_IS_INT64 1  // == true
 
+#if defined( _TARGET_OS_DARWIN )
 #define PRu "llu"
 #define PRi "lld"
 #define PRF "lld"
 #define PRFoctal "llo"
 #define PRFhex "llX"
 #define PRsize_t "lu"
+#endif
+#if defined( _TARGET_OS_LINUX )
+#define Ptagged_stamp_t "lu"
+#define PFixnum "ld"
+#define Plu "lu"
+#define PRu "llu"
+#define PRi "lld"
+#define PRF "lld"
+#define PRFoctal "llo"
+#define PRFhex "llX"
+#define PRsize_t "lu"
+#endif
 
 #else
 
