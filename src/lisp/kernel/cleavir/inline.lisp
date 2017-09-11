@@ -404,6 +404,13 @@
 ;;; Array functions
 ;;;
 
+(declaim (inline array-total-size))
+(defun array-total-size (array)
+  (etypecase array
+    ((simple-array * (*)) (core::vector-length array))
+    ;; MDArray
+    (array (core::%array-total-size array))))
+
 #+(or)
 (progn
 (define-compiler-macro aref (array &rest indices)
@@ -466,7 +473,12 @@
   (typecase array
     ((simple-array t (*))
      (cleavir-primop:aref array index t t t))
-    ;; character, base-char
+    #+(or)
+    ((simple-array base-char (*))
+     (cleavir-primop:aref array index base-char t nil))
+    #+(or)
+    ((simple-array character (*))
+     (cleavir-primop:aref array index character t nil))
     ((simple-array double-float (*))
      (cleavir-primop:aref array index double-float t nil))
     ((simple-array single-float (*))
@@ -482,35 +494,82 @@
     ;; should be unreachable
     (t (error "BUG: Unknown vector ~a" array))))
 
+#+(or)
+(declaim (inline %unsafe-vector-set))
+#+(or)
+(defun %unsafe-vector-set (array index value)
+  (typecase array
+    ((simple-array t (*))
+     (cleavir-primop:aset array index value t t t))
+    #+(or)
+    ((simple-array base-char (*))
+     (cleavir-primop:aset array index value base-char t nil))
+    #+(or)
+    ((simple-array character (*))
+     (cleavir-primop:aset array index value character t nil))
+    ((simple-array double-float (*))
+     (cleavir-primop:aset array index value double-float t nil))
+    ((simple-array single-float (*))
+     (cleavir-primop:aset array index value single-float t nil))
+    ((simple-array ext:byte64 (*))
+     (cleavir-primop:aset array index value ext:byte64 t nil))
+    ((simple-array ext:byte32 (*))
+     (cleavir-primop:aset array index value ext:byte32 t nil))
+    ((simple-array ext:byte16 (*))
+     (cleavir-primop:aset array index value ext:byte16 t nil))
+    ((simple-array ext:byte8 (*))
+     (cleavir-primop:aset array index value ext:byte8 t nil))
+    ;; should be unreachable
+    (t (error "BUG: Unknown vector ~a" array))))
+
+(declaim (inline row-major-array-in-bounds-p))
+(defun row-major-array-in-bounds-p (array index)
+  (etypecase array
+    ((simple-array * (*))
+     (and (<= 0 index) (< index (core::vector-length array))))
+    (array
+     (and (<= 0 index) (< index (core::%array-total-size array))))))
+
+;; FIXME: This could be a function returning two values. But that's
+;; quite inefficient at the moment.
+(defmacro with-array-data ((arrayname offsetname array) &body body)
+  `(let ((,arrayname ,array) (,offsetname 0))
+     (declare (type fixnum ,offsetname))
+     (etypecase ,arrayname
+       ((simple-array * (*))) ; already all set
+       (simple-array ; multidimensional. guaranteed to have offset zero and no recursion.
+        (setf ,arrayname (core::%displacement ,arrayname)))
+       (array
+        (loop
+          (let ((displacement (core::%displacement ,arrayname))
+                (displaced-index-offset (core::%displaced-index-offset ,arrayname)))
+            (setf underlying-array displacement
+                  ,offsetname (+ ,offsetname displaced-index-offset)))
+          (when (typep ,arrayname '(simple-array * (*))) (return)))))
+     ,@body))
+
 (declaim (inline %row-major-aref))
 (defun %row-major-aref (array index)
   ;; First, undisplace. This can be done independently
   ;; of the index, meaning it could potentially be
   ;; moved out of loops, though that can invite inconsistency
   ;; in a multithreaded environment.
-  (let ((underlying-array array) (offset 0))
-    (etypecase array
-      ((simple-array * (*))) ; already all set
-      (simple-array ; multidimensional. guaranteed to have offset zero and no recursion.
-       (setf underlying-array (core::%displacement underlying-array)))
-      (array
-       (loop
-         (let ((displacement (core::%displacement underlying-array))
-               (displaced-index-offset (core::%displaced-index-offset underlying-array)))
-           (setf underlying-array displacement
-                 offset (+ offset displaced-index-offset)))
-         (when (typep underlying-array '(simple-array * (*))) (return)))))
+  (with-array-data (underlying-array offset array)
     ;; Now bounds check. Use the original arguments.
-    (etypecase array
-      ((simple-array * (*))
-       (unless (and (<= 0 index) (< index (core::vector-length array)))
-         (error "~d is not a valid row-major index for ~a" index array)))
-      (array
-       (unless (and (<= 0 index) (< index (array-total-size array)))
-         (error "~d is not a valid row-major index for ~a" index array))))
+    (unless (row-major-array-in-bounds-p array index)
+      (error "~d is not a valid row-major index for ~a" index array))
     ;; Okay, now array is a vector/simple, and index is valid.
     ;; This function takes care of element type discrimination.
     (%unsafe-vector-ref underlying-array (+ index offset))))
+
+#+(or)
+(declaim (inline core:row-major-aset))
+#+(or)
+(defun core:row-major-aset (array index value)
+  (with-array-data (underlying-array offset array)
+    (unless (row-major-array-in-bounds-p array index)
+      (error "~d is not a valid row-major index for ~a" index array))
+    (%unsafe-vector-set underlying-array (+ index offset) value)))
 
 (defun row-major-index-computer (array &rest subscripts)
   ;; assumes once-only is taken care of
