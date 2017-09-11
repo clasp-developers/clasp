@@ -69,6 +69,20 @@ THE SOFTWARE.
 #include <iostream>
 
 namespace clbind {
+
+void validateRackOffset(size_t wrapped_type_offset) {
+    printf("%s:%d The Derivable class _Rack offset (%lu) must be at the same offset as Instance_O::_Rack (%lu)\n",
+             __FILE__, __LINE__, wrapped_type_offset, offsetof(core::Instance_O,_Rack));
+    if (wrapped_type_offset != offsetof(core::Instance_O,_Rack)) {
+      printf("The Derivable class _Rack offset (%lu) must be at the same offset as Instance_O::_Rack (%lu) - but it is not\n",
+             wrapped_type_offset, offsetof(core::Instance_O,_Rack));
+      abort();
+    };
+  };
+
+};
+
+namespace clbind {
 namespace detail {
 
 derivable_class_registration::derivable_class_registration(char const *name) : m_default_constructor(NULL) {

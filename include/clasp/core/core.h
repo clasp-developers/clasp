@@ -46,7 +46,7 @@ THE SOFTWARE.
 #endif
 
 // Load the waf config file
-#include <config.h>
+#include "config.h"
 // Checkif we are running the static analyzer
 // Modify the preprocessor settings for the static analyzer
 // Turn on USE_MPS and turn off USE_BOEHM
@@ -125,7 +125,7 @@ typedef std::size_t class_id;
 
 
 /*! Configure architecture dependent types */
-#include <clasp/core/config.h>
+#include <clasp/core/configure_clasp.h>
 
 // BASE TYPES CL_POINTER_T AND CL_VALUE_T
 // A 64bit or 32bit value holding representing a Lisp Object - either

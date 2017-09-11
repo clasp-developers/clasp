@@ -114,6 +114,8 @@ THE SOFTWARE.
 #include <boost/mpl/eval_if.hpp>
 #include <boost/mpl/logical.hpp>
 
+#include <clasp/core/foundation.h>
+#include <clasp/core/instance.h>
 #include <clasp/clbind/config.h>
 #include <clasp/clbind/scope.h>
 // #include <clasp/clbind/back_reference.hpp>
@@ -323,6 +325,10 @@ template <class Class, class Policies>
 
 } // namespace detail
 
+
+ void validateRackOffset(size_t wrapped_type_offset);
+  
+
 // registers a class in the cl environment
 template <class T, class X1, class X2, class X3>
 struct derivable_class_ : detail::derivable_class_base {
@@ -391,17 +397,6 @@ public:
 
 #undef CLBIND_GEN_BASE_INFO
 
-  static void validateRackOffset() {
-    printf("%s:%d The Derivable class _Rack offset (%lu) must be at the same offset as Instance_O::_Rack (%lu)\n",
-             __FILE__, __LINE__, offsetof(WrappedType,_Rack), offsetof(core::Instance_O,_Rack));
-    if (offsetof(WrappedType,_Rack) != offsetof(core::Instance_O,_Rack)) {
-      printf("The Derivable class _Rack offset (%lu) must be at the same offset as Instance_O::_Rack (%lu) - but it is not\n",
-             offsetof(WrappedType,_Rack), offsetof(core::Instance_O,_Rack));
-      abort();
-    };
-  };
-
-  
   derivable_class_(const char *name) : derivable_class_base(name), scope(*this) {
 #ifndef NDEBUG
 //            detail::check_link_compatibility();
@@ -410,7 +405,7 @@ public:
     // I have a constructor and I can test isDerivableCxxClass<T>(0)
     // I should dispatch to def_derivable_default_constructor
     this->def_default_constructor_("default_ctor", NULL, policies<>(), "", "", "");
-    validateRackOffset();
+    validateRackOffset(offsetof(WrappedType,_Rack));
   }
 
   derivable_class_(const char *name, no_default_constructor_type) : derivable_class_base(name), scope(*this) {
@@ -418,7 +413,7 @@ public:
 //            detail::check_link_compatibility();
 #endif
     init(false /* Does not have constructor */);
-    validateRackOffset();
+    validateRackOffset(offsetof(WrappedType,_Rack));
   }
 
   template <typename... Types>

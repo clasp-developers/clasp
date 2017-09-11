@@ -484,7 +484,8 @@ It takes the arguments in two forms, as a vaslist and as a list of arguments."
   (compute-and-set-specializer-profile generic-function)
   (if list-of-specializers-names
       (loop with profile = (coerce (generic-function-specializer-profile generic-function) 'list)
-         for specializers in (mapcar #'find-class list-of-specializers-names)
+         for specializer-names in list-of-specializers-names
+         with specializers = (mapcar #'find-class specializer-names)
          do (add-to-call-history generic-function specializers profile verbose))
       (loop with profile = (coerce (generic-function-specializer-profile generic-function) 'list)
          for method in (generic-function-methods generic-function)

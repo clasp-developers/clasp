@@ -29,6 +29,7 @@ THE SOFTWARE.
 
 #include <clasp/core/arguments.h>
 #include <clasp/clbind/scope.h>
+#include <clasp/core/lambdaListHandler.fwd.h>
 #include <clasp/clbind/function.h>
 #include <clasp/clbind/class.h>
 #include <clasp/clbind/adapter.h>
