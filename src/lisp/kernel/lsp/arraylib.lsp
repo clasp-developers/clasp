@@ -88,7 +88,7 @@ OFFSET)th element of the given array.If the STATIC argument is supplied
 with a non-nil value, then the body of the array is allocated as a
 contiguous block."
   (let ((x (make-array-with-initial-element dimensions
-                                            element-type
+                                            (upgraded-array-element-type element-type)
                                             initial-element
                                             initial-element-supplied-p
                                             adjustable
@@ -106,7 +106,7 @@ contiguous block."
 
 #+clasp
 (defun make-array-with-initial-element (dimensions
-                                        element-type
+                                        upgraded-element-type
                                         initial-element
                                         initial-element-supplied-p
                                         adjustable
@@ -114,31 +114,28 @@ contiguous block."
                                         displaced-to
                                         &optional
                                           (displaced-index-offset 0))
-  ;;  (when element-type (inform "Add support for element-type in make-array\n"))
-  (if (and (consp element-type)
-	   (null initial-element)
-	   (eq (car element-type) 'cl:unsigned-byte))
-      (setq initial-element 0))
   (when displaced-to
     (if (let ((array-element-type (array-element-type displaced-to)))
-          (not (and (subtypep array-element-type element-type)
-                    (subtypep element-type array-element-type))))
+          (not (and (subtypep array-element-type upgraded-element-type)
+                    (subtypep upgraded-element-type array-element-type))))
         (error "Cannot displace the array, because the element types don't match")))
   (cond
     ((null dimensions)
-     (make-mdarray dimensions (upgraded-array-element-type element-type) adjustable displaced-to displaced-index-offset initial-element initial-element-supplied-p))
+     (make-mdarray dimensions upgraded-element-type adjustable displaced-to displaced-index-offset
+                   initial-element initial-element-supplied-p))
     ((or (fixnump dimensions) (and (consp dimensions) (eql 1 (length dimensions))))
      (let ((dim (if (fixnump dimensions)
 		    dimensions
 		    (car dimensions))))
-       (let ((x (make-vector (upgraded-array-element-type element-type) dim adjustable fill-pointer displaced-to displaced-index-offset initial-element initial-element-supplied-p)))
+       (let ((x (make-vector upgraded-element-type dim adjustable fill-pointer displaced-to displaced-index-offset
+                             initial-element initial-element-supplied-p)))
          (when (and displaced-to initial-element-supplied-p)
            (fill-array-with-elt x initial-element 0 nil))
          x)))
     ((listp dimensions)
      (when fill-pointer (error "Multi-dimensional arrays don't allow fill-pointer"))
      (let ((x (make-mdarray dimensions
-                            (upgraded-array-element-type element-type)
+                            upgraded-element-type
                             adjustable
                             displaced-to
                             displaced-index-offset
