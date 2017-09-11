@@ -96,8 +96,10 @@ BUILTIN_ATTRIBUTES size_t cc_arrayTotalSize(core::T_O* tarray) {
   core::MDArray_O* array = reinterpret_cast<core::MDArray_O*>(gctools::untag_general<core::T_O*>(tarray));
   return array->arrayTotalSize();
 }
+
+BUILTIN_ATTRIBUTES size_t cc_arrayRank(core::T_O* tarray) {
+  core::MDArray_O* array = reinterpret_cast<core::MDArray_O*>(gctools::untag_general<core::T_O*>(tarray));
+  return array->rank();
+}
 };
-
-
-
 

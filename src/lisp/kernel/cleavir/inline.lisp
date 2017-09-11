@@ -411,34 +411,11 @@
     ;; MDArray
     (array (core::%array-total-size array))))
 
-#+(or)
-(progn
-(define-compiler-macro aref (array &rest indices)
-  (let ((arr (gensym "ARRAY")))
-    `(let ((,arr ,array))
-       (row-major-aref ,array (array-row-major-index ,array ,@indices)))))
-
-(define-compiler-macro array-row-major-index (array &rest subscripts)
-  (let* ((rank (length subscripts))
-         (dimsyms (loop repeat rank collect (gensym "DIM")))
-         (subsyms (loop repeat rank collect (gensym "SUB")))
-         (a (gensym "ARRAY")))
-    `(let ((,a ,array))
-       (unless (typep array '(array * ,rank))
-         (error 'type-error :datum ,a :expected-type '(array * ,rank)))
-       ,(if subscripts
-            `(let (,@(loop for dimsym in dimsyms
-                           for d from 0
-                           collect `(,dimsym (array-dimension ,a ,d))))
-               (let* ((,(first subsyms) 1)
-                      ,@(loop for dimsym in (reverse (cdr dimsyms))
-                              for subsym in (cdr subsyms)
-                              for lastsym in subsyms
-                              collect `(,subsym (* ,lastsym ,dimsym))))
-                 (+ ,@(loop for sub in subscripts
-                            for subsym in (reverse subsyms)
-                            collect `(* ,sub ,subsym)))))
-            0)))))
+(declaim (inline array-rank))
+(defun array-rank (array)
+  (etypecase array
+    ((simple-array * (*)) 1)
+    (t (core::%array-rank array))))
 
 (declaim (inline svref))
 (defun svref (vector index)
@@ -473,10 +450,8 @@
   (typecase array
     ((simple-array t (*))
      (cleavir-primop:aref array index t t t))
-    #+(or)
     ((simple-array base-char (*))
      (cleavir-primop:aref array index base-char t nil))
-    #+(or)
     ((simple-array character (*))
      (cleavir-primop:aref array index character t nil))
     ((simple-array double-float (*))
@@ -494,31 +469,36 @@
     ;; should be unreachable
     (t (error "BUG: Unknown vector ~a" array))))
 
-#+(or)
 (declaim (inline %unsafe-vector-set))
-#+(or)
 (defun %unsafe-vector-set (array index value)
   (typecase array
     ((simple-array t (*))
-     (cleavir-primop:aset array index value t t t))
-    #+(or)
+     (cleavir-primop:aset array index value t t t)
+     value)
     ((simple-array base-char (*))
-     (cleavir-primop:aset array index value base-char t nil))
-    #+(or)
+     (cleavir-primop:aset array index value base-char t nil)
+     value)
     ((simple-array character (*))
-     (cleavir-primop:aset array index value character t nil))
+     (cleavir-primop:aset array index value character t nil)
+     value)
     ((simple-array double-float (*))
-     (cleavir-primop:aset array index value double-float t nil))
+     (cleavir-primop:aset array index value double-float t nil)
+     value)
     ((simple-array single-float (*))
-     (cleavir-primop:aset array index value single-float t nil))
+     (cleavir-primop:aset array index value single-float t nil)
+     value)
     ((simple-array ext:byte64 (*))
-     (cleavir-primop:aset array index value ext:byte64 t nil))
+     (cleavir-primop:aset array index value ext:byte64 t nil)
+     value)
     ((simple-array ext:byte32 (*))
-     (cleavir-primop:aset array index value ext:byte32 t nil))
+     (cleavir-primop:aset array index value ext:byte32 t nil)
+     value)
     ((simple-array ext:byte16 (*))
-     (cleavir-primop:aset array index value ext:byte16 t nil))
+     (cleavir-primop:aset array index value ext:byte16 t nil)
+     value)
     ((simple-array ext:byte8 (*))
-     (cleavir-primop:aset array index value ext:byte8 t nil))
+     (cleavir-primop:aset array index value ext:byte8 t nil)
+     value)
     ;; should be unreachable
     (t (error "BUG: Unknown vector ~a" array))))
 
@@ -562,14 +542,26 @@
     ;; This function takes care of element type discrimination.
     (%unsafe-vector-ref underlying-array (+ index offset))))
 
-#+(or)
-(declaim (inline core:row-major-aset))
-#+(or)
-(defun core:row-major-aset (array index value)
+(declaim (inline row-major-aset))
+(defun row-major-aset (array index value)
   (with-array-data (underlying-array offset array)
     (unless (row-major-array-in-bounds-p array index)
       (error "~d is not a valid row-major index for ~a" index array))
     (%unsafe-vector-set underlying-array (+ index offset) value)))
+
+#+(or)
+(progn
+(declaim (inline schar core:schar-set char core:char-set))
+(defun schar (string index)
+  (row-major-aref (the simple-string string) index))
+(defun core:schar-set (string index value)
+  (core:row-major-aset (the simple-string string) index value))
+
+(defun char (string index)
+  (row-major-aref (the string string) index))
+(defun core:char-set (string index value)
+  (core:row-major-aset (the string string) index value))
+)
 
 (defun row-major-index-computer (array &rest subscripts)
   ;; assumes once-only is taken care of
@@ -592,7 +584,6 @@
                              collect `(* ,sub ,subsym))))))
         0)))
 
-#+(or)
 (define-compiler-macro array-row-major-index (array &rest subscripts)
   (let ((sarray (gensym "ARRAY"))
         (ssubscripts (loop for sub in subscripts collecting (gensym "SUBSCRIPT")))
@@ -613,13 +604,12 @@
                           ',subscripts (array-total-size ,sarray))))
          ,rmindex))))
 
-#+(or)
-(define-compiler-macro aref (array &rest subscripts)
+(define-compiler-macro %aref (array &rest subscripts)
   (case (length subscripts)
-    ((1) `(row-major-aref ,array ,(first subscripts)))
+    ((1) `(%row-major-aref ,array ,(first subscripts)))
     (t (let ((asym (gensym "ARRAY")))
          `(let ((,asym ,array))
-            (row-major-aref ,asym (array-row-major-index ,asym ,@subscripts)))))))
+            (%row-major-aref ,asym (array-row-major-index ,asym ,@subscripts)))))))
 
 ;;; ------------------------------------------------------------
 ;;;

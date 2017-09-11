@@ -231,6 +231,21 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
+;;; Converting CORE::%ARRAY-RANK
+;;;
+;;; ARRAY-RANK for MDArrays
+(defmethod cleavir-generate-ast:convert-special
+    ((symbol (eql 'core::%array-rank)) form environment (system clasp-cleavir:clasp))
+  (destructuring-bind (mdarray) (rest form)
+    (make-instance 'clasp-cleavir-ast::array-rank-ast
+                   :mdarray (cleavir-generate-ast:convert mdarray environment system))))
+
+(defmethod cleavir-generate-ast:check-special-form-syntax ((head (eql 'core::%array-rank)) form)
+  (cleavir-code-utilities:check-form-proper-list form)
+  (cleavir-code-utilities:check-argcount form 1 1))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
 ;;; Converting CATCH
 ;;;
 ;;; Convert catch into a call

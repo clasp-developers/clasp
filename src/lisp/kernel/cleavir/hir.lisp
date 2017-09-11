@@ -166,6 +166,24 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
+;;; Instruction ARRAY-RANK-INSTRUCTION
+;;;
+;;; Get the rank of an mdarray.
+
+(defclass array-rank-instruction (cleavir-ir:instruction cleavir-ir:one-successor-mixin)
+  ())
+
+(defmethod cleavir-ir-graphviz:label ((instr array-rank-instruction))
+  "ATS")
+
+(defun make-array-rank-instruction (input output &optional (successor nil successor-p))
+  (make-instance 'array-rank-instruction
+                 :inputs (list input)
+                 :outputs (list output)
+                 :successors (if successor-p (list successor) nil)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
 ;;; Instruction NAMED-ENTER-INSTRUCTION
 ;;;
 ;;; This instruction is an ENTER-INSTRUCTION that keeps

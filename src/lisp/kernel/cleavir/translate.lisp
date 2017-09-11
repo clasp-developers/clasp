@@ -740,6 +740,19 @@ when this is t a lot of graphs will be generated.")
           (first outputs)))
 
 (defmethod translate-simple-instruction
+    ((instruction clasp-cleavir-hir::array-rank-instruction)
+     return-value inputs outputs abi function-info)
+  (declare (ignore return-value function-info abi))
+  (%store (%inttoptr
+           (%shl
+            (%intrinsic-call "cc_arrayRank"
+                             (list (%load (first inputs))))
+            cmp::+fixnum-shift+
+            :label "fixnum" :nuw t)
+           cmp:%t*%)
+          (first outputs)))
+
+(defmethod translate-simple-instruction
     ((instruction cleavir-ir:memref2-instruction) return-value inputs outputs abi function-info)
   (let* ((tptr (%load (first inputs)))
          (offset (second inputs))

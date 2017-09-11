@@ -232,6 +232,24 @@
 (defmethod cleavir-ast:children ((ast array-total-size-ast))
   (list (array-total-size-ast-mdarray ast)))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Class ARRAY-RANK-AST
+;;;
+;;; Gets the rank of any mdarray.
+
+(defclass array-rank-ast (cleavir-ast:ast cleavir-ast:one-value-ast-mixin)
+  ((%mdarray :initarg :mdarray :accessor array-rank-ast-mdarray)))
+
+(cleavir-io:define-save-info array-rank-ast
+    (:mdarray array-rank-ast-mdarray))
+
+(defmethod cleavir-ast-graphviz::label ((ast array-rank-ast))
+  "rank")
+
+(defmethod cleavir-ast:children ((ast array-rank-ast))
+  (list (array-rank-ast-mdarray ast)))
+
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
