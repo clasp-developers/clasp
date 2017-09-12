@@ -335,8 +335,8 @@
                 ;; ... Other tests
               generic
                 (return (,generic-name ,x ,y))))))))
-  (def-inline-arithmetic primop:inlined-two-arg-+ cleavir-primop:fixnum-+ core:two-arg-+)
-  (def-inline-arithmetic primop:inlined-two-arg-- cleavir-primop:fixnum-- core:two-arg--)
+  (def-inline-arithmetic primop:inlined-two-arg-+ cleavir-primop:fixnum-add core:two-arg-+)
+  (def-inline-arithmetic primop:inlined-two-arg-- cleavir-primop:fixnum-sub core:two-arg--)
   ;;; Need * / and other primops
   (defmacro def-inline-comparison (inlined-name cleavir-primop generic-name)
     (let ((x (gensym))
@@ -355,11 +355,11 @@
                 ;; ... Other tests
               generic
                 (return (,generic-name ,x ,y))))))))
-  (def-inline-comparison primop:inlined-two-arg-<  cleavir-primop:fixnum-<  core:two-arg-<)
-  (def-inline-comparison primop:inlined-two-arg-<= cleavir-primop:fixnum-<= core:two-arg-<=)
-  (def-inline-comparison primop:inlined-two-arg-=  cleavir-primop:fixnum-=  core:two-arg-=)
-  (def-inline-comparison primop:inlined-two-arg->  cleavir-primop:fixnum->  core:two-arg->)
-  (def-inline-comparison primop:inlined-two-arg->= cleavir-primop:fixnum->= core:two-arg->=))
+  (def-inline-comparison primop:inlined-two-arg-<  cleavir-primop:fixnum-less        core:two-arg-<)
+  (def-inline-comparison primop:inlined-two-arg-<= cleavir-primop:fixnum-not-greater core:two-arg-<=)
+  (def-inline-comparison primop:inlined-two-arg-=  cleavir-primop:fixnum-equal       core:two-arg-=)
+  (def-inline-comparison primop:inlined-two-arg->  cleavir-primop:fixnum-greater     core:two-arg->)
+  (def-inline-comparison primop:inlined-two-arg->= cleavir-primop:fixnum-not-less    core:two-arg->=))
 
 #-use-boehmdc
 (eval-when (:compile-toplevel :load-toplevel :execute)

@@ -303,11 +303,9 @@
     (cond 
       ((and (consp name) (eq (car name) 'cl:setf))
        (clasp-cleavir-ast:make-setf-fdefinition-ast
-	(cleavir-ast:make-load-time-value-ast `',(cadr name) t)
-	info))
+	(cleavir-ast:make-load-time-value-ast `',(cadr name) t)))
       ((consp name)
        (error "Illegal name for function - must be (setf xxx)"))
       (t
        (cleavir-ast:make-fdefinition-ast
-	(cleavir-ast:make-load-time-value-ast `',name t)
-	info)))))
+	(cleavir-ast:make-load-time-value-ast `',name t))))))

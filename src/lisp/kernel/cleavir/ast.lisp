@@ -10,8 +10,8 @@
 (defclass setf-fdefinition-ast (cleavir-ast:fdefinition-ast)
   ())
 
-(defun make-setf-fdefinition-ast (name-ast info)
-  (make-instance 'setf-fdefinition-ast :name-ast name-ast :info info))
+(defun make-setf-fdefinition-ast (name-ast)
+  (make-instance 'setf-fdefinition-ast :name-ast name-ast))
 
 (cleavir-io:define-save-info setf-fdefinition-ast)
 
