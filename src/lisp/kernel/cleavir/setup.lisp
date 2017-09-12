@@ -95,6 +95,7 @@
     ((eq name 'core::%displaced-index-offset) t)
     ((eq name 'core::%array-total-size) t)
     ((eq name 'core::%array-rank) t)
+    ((eq name 'core::%array-dimension) t)
     ((eq (symbol-package name) (find-package :cleavir-primop)) t)
     (t nil)))
 

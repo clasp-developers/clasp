@@ -753,6 +753,22 @@ when this is t a lot of graphs will be generated.")
           (first outputs)))
 
 (defmethod translate-simple-instruction
+    ((instruction clasp-cleavir-hir::array-dimension-instruction)
+     return-value inputs outputs abi function-info)
+  (declare (ignore return-value function-info))
+  (%store (%inttoptr
+           (%shl
+            (%intrinsic-call "cc_arrayDimension"
+                             (list (%load (first inputs))
+                                   (%lshr (%ptrtoint (%load (second inputs)) (%default-int-type abi))
+                                          cmp::+fixnum-shift+ 
+                                          :exact t :label "untagged fixnum")))
+            cmp::+fixnum-shift+
+            :label "fixnum" :nuw t)
+           cmp:%t*%)
+          (first outputs)))
+
+(defmethod translate-simple-instruction
     ((instruction cleavir-ir:memref2-instruction) return-value inputs outputs abi function-info)
   (let* ((tptr (%load (first inputs)))
          (offset (second inputs))

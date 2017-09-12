@@ -417,6 +417,26 @@
     ((simple-array * (*)) 1)
     (t (core::%array-rank array))))
 
+(declaim (inline array-dimension))
+(defun array-dimension (array axis-number)
+  (etypecase array
+    ((simple-array * (*))
+     (if (zerop axis-number)
+         (core::vector-length array)
+         (error "Invalid axis number ~d for array of rank ~d" axis-number 1)))
+    (array
+     (if (and (>= axis-number 0) (< axis-number (core::%array-rank array)))
+         (core::%array-dimension array axis-number)
+         (error "Invalid axis number ~d for array of rank ~d" axis-number (core::%array-rank array))))))
+
+;; Unsafe version for array-row-major-index
+(declaim (inline %array-dimension))
+(defun %array-dimension (array axis-number)
+  (etypecase array
+    ((simple-array * (*))
+     (core::vector-length array))
+    (array (core::array-dimension array axis-number))))
+
 (declaim (inline svref))
 (defun svref (vector index)
   (if (typep vector 'simple-vector)
@@ -563,46 +583,52 @@
   (core:row-major-aset (the string string) index value))
 )
 
-(defun row-major-index-computer (array &rest subscripts)
+(defun row-major-index-computer (array dimsyms subscripts)
   ;; assumes once-only is taken care of
   (let ((dimsyms (loop for sub in (rest subscripts) collect (gensym "DIM")))
         (subsyms (loop for sub in subscripts collect (gensym "SUB"))))
     (if subscripts
-        `(let (,@(loop for dimsym in dimsyms
-                       for d from 1
-                       collect `(,dimsym (array-dimension ,array ,d))))
-           (declare (type fixnum ,@dimsyms))
-           (let* ((,(first subsyms) 1)
-                  ,@(loop for dimsym in (reverse dimsyms)
-                          for subsym in (cdr subsyms)
-                          for lastsym in subsyms
-                          collect `(,subsym (* ,lastsym ,dimsym))))
-             (declare (type fixnum ,@subsyms))
-             (the fixnum
-                  (+ ,@(loop for sub in subscripts
-                             for subsym in (reverse subsyms)
-                             collect `(* ,sub ,subsym))))))
-        0)))
+        `(let* ((,(first subsyms) 1)
+                ,@(loop for dimsym in (reverse dimsyms)
+                        for subsym in (cdr subsyms)
+                        for lastsym in subsyms
+                        collect `(,subsym (* ,lastsym ,dimsym))))
+           (declare (type fixnum ,@subsyms))
+           (the fixnum
+                (+ ,@(loop for sub in subscripts
+                           for subsym in (reverse subsyms)
+                           collect `(* ,sub ,subsym)))))
+        '0)))
 
 (define-compiler-macro array-row-major-index (array &rest subscripts)
-  (let ((sarray (gensym "ARRAY"))
-        (ssubscripts (loop for sub in subscripts collecting (gensym "SUBSCRIPT")))
+  (let ((rank (length subscripts))
+        (sarray (gensym "ARRAY"))
+        (ssubscripts (loop repeat rank collecting (gensym "SUBSCRIPT")))
+        (dimsyms (loop repeat rank collecting (gensym "DIMENSION")))
         (rmindex (gensym "ROW-MAJOR-INDEX")))
+    ;; First up, once-only the array and subscripts.
     `(let ((,sarray ,array)
            ,@(loop for ssub in ssubscripts for sub in subscripts
                    collecting `(,ssub ,sub)))
-       (unless (eq (array-rank ,sarray) ,(length subscripts))
+       (declare (type fixnum ,@ssubscripts))
+       ;; Now verify that the rank is correct
+       (unless (eq (array-rank ,sarray) ,rank)
          (error "Wrong number of subscripts, ~d, for an array of rank ~d."
-                ,(length subscripts) (array-rank ,sarray)))
-       (let ((,rmindex ,(apply #'row-major-index-computer sarray ssubscripts)))
-         (if (and (<= 0 ,rmindex) (< ,rmindex (array-total-size ,sarray)))
-             ,rmindex
-             ,(if (= (length subscripts) 1)
-                  `(error "Invalid index ~d for an array of total size ~d"
-                          ',(first subscripts) (array-total-size ,sarray))
-                  `(error "Invalid indices ~a for an array of total size ~d"
-                          ',subscripts (array-total-size ,sarray))))
-         ,rmindex))))
+                ,rank (array-rank ,sarray)))
+       ;; We need the array dimensions, so bind those
+       (let (,@(loop for dimsym in dimsyms
+                     for axis below rank
+                     collect `(dimsym (%array-dimension ,sarray ,axis))))
+         (declare (type fixnum ,@dimsyms))
+         ;; Check that the index is valid
+         ,@(loop for ssub in ssubscripts
+                 for dimsym in dimsyms
+                 for axis below rank
+                 collect `(unless (and (>= ,ssub 0) (< ,ssub ,dimsym))
+                            (error "Invalid index ~d for axis ~d of array: expected 0-~d"
+                                   ,ssub ,axis ,dimsym)))
+         ;; Now we know we're good, do the actual computation
+         ,(row-major-index-computer sarray dimsyms ssubscripts)))))
 
 (define-compiler-macro %aref (array &rest subscripts)
   (case (length subscripts)

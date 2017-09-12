@@ -250,6 +250,27 @@
 (defmethod cleavir-ast:children ((ast array-rank-ast))
   (list (array-rank-ast-mdarray ast)))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Class ARRAY-DIMENSION-AST
+;;;
+;;; Gets the dimensions of any mdarray.
+
+(defclass array-dimension-ast (cleavir-ast:ast cleavir-ast:one-value-ast-mixin)
+  ((%mdarray :initarg :mdarray :accessor array-dimension-ast-mdarray)
+   (%axis :initarg :axis :accessor array-dimension-ast-axis)))
+
+(cleavir-io:define-save-info array-dimension-ast
+    (:mdarray array-dimension-ast-mdarray)
+  (:axis array-dimension-ast-axis))
+
+(defmethod cleavir-ast-graphviz::label ((ast array-dimension-ast))
+  "AD")
+
+(defmethod cleavir-ast:children ((ast array-dimension-ast))
+  (list (array-dimension-ast-mdarray ast)
+        (array-dimension-ast-axis ast)))
+
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

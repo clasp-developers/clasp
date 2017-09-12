@@ -246,6 +246,22 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
+;;; Converting CORE::%ARRAY-DIMENSION
+;;;
+;;; ARRAY-DIMENSION for MDArrays
+(defmethod cleavir-generate-ast:convert-special
+    ((symbol (eql 'core::%array-dimension)) form environment (system clasp-cleavir:clasp))
+  (destructuring-bind (mdarray axis) (rest form)
+    (make-instance 'clasp-cleavir-ast::array-dimension-ast
+                   :mdarray (cleavir-generate-ast:convert mdarray environment system)
+                   :axis (cleavir-generate-ast:convert axis environment system))))
+
+(defmethod cleavir-generate-ast:check-special-form-syntax ((head (eql 'core::%array-dimension)) form)
+  (cleavir-code-utilities:check-form-proper-list form)
+  (cleavir-code-utilities:check-argcount form 2 2))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
 ;;; Converting CATCH
 ;;;
 ;;; Convert catch into a call
