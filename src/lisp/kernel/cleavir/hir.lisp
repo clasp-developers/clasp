@@ -174,7 +174,7 @@
   ())
 
 (defmethod cleavir-ir-graphviz:label ((instr array-rank-instruction))
-  "ATS")
+  "rank")
 
 (defun make-array-rank-instruction (input output &optional (successor nil successor-p))
   (make-instance 'array-rank-instruction
@@ -195,7 +195,7 @@
   "AD")
 
 (defun make-array-dimension-instruction (mdarray axis output &optional (successor nil successor-p))
-  (make-instance 'array-rank-instruction
+  (make-instance 'array-dimension-instruction
                  :inputs (list mdarray axis)
                  :outputs (list output)
                  :successors (if successor-p (list successor) nil)))
