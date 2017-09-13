@@ -548,8 +548,8 @@
           (when (typep ,arrayname '(simple-array * (*))) (return)))))
      ,@body))
 
-(declaim (inline %row-major-aref))
-(defun %row-major-aref (array index)
+(declaim (inline cl:row-major-aref))
+(defun cl:row-major-aref (array index)
   ;; First, undisplace. This can be done independently
   ;; of the index, meaning it could potentially be
   ;; moved out of loops, though that can invite inconsistency
@@ -562,8 +562,8 @@
     ;; This function takes care of element type discrimination.
     (%unsafe-vector-ref underlying-array (+ index offset))))
 
-(declaim (inline row-major-aset))
-(defun row-major-aset (array index value)
+(declaim (inline core:row-major-aset))
+(defun core:row-major-aset (array index value)
   (with-array-data (underlying-array offset array)
     (unless (row-major-array-in-bounds-p array index)
       (error "~d is not a valid row-major index for ~a" index array))
