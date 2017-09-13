@@ -2761,6 +2761,11 @@ CL_EXTERN_DEFMETHOD(Function_O, (void (llvm::Function::*)(unsigned i, typename l
 CL_LISPIFY_NAME("addParamAttr");
 CL_EXTERN_DEFMETHOD(Function_O, (void (llvm::Function::*)(unsigned i, typename llvm::Attribute::AttrKind Attr))&llvm::Function::addParamAttr);
 
+CL_LISPIFY_NAME("addReturnAttr");
+CL_DEFMETHOD void Function_O::addReturnAttr(typename llvm::Attribute::AttrKind Attr) {
+  this->wrappedPtr()->addAttribute(llvm::AttributeList::ReturnIndex, Attr);
+}
+
 CL_LISPIFY_NAME("getArgumentList");
 CL_DEFMETHOD core::List_sp Function_O::getArgumentList() {
   ql::list l;
