@@ -465,62 +465,40 @@
 (defun %unsafe-vector-ref (array index)
   ;; FIXME: type inference should be able to remove the redundant
   ;; checking that it's an array... maybe?
-  ;; FIXME: should be replaced with a macro loop over
-  ;; sys::+upgraded-array-element-types+ or suchlike.
-  (typecase array
-    ((simple-array t (*))
-     (cleavir-primop:aref array index t t t))
-    ((simple-array base-char (*))
-     (cleavir-primop:aref array index base-char t nil))
-    ((simple-array character (*))
-     (cleavir-primop:aref array index character t nil))
-    ((simple-array double-float (*))
-     (cleavir-primop:aref array index double-float t nil))
-    ((simple-array single-float (*))
-     (cleavir-primop:aref array index single-float t nil))
-    ((simple-array ext:byte64 (*))
-     (cleavir-primop:aref array index ext:byte64 t nil))
-    ((simple-array ext:byte32 (*))
-     (cleavir-primop:aref array index ext:byte32 t nil))
-    ((simple-array ext:byte16 (*))
-     (cleavir-primop:aref array index ext:byte16 t nil))
-    ((simple-array ext:byte8 (*))
-     (cleavir-primop:aref array index ext:byte8 t nil))
-    ;; should be unreachable
-    (t (error "BUG: Unknown vector ~a" array))))
+  (macrolet ((mycase (&rest specs)
+               `(typecase array
+                  ,@(loop for (type boxed) in specs
+                          collect `((simple-array ,type (*))
+                                    (cleavir-primop:aref array index ,type t ,boxed)))
+                  (t (error "BUG: Unknown vector ~a" array)))))
+    (mycase (t t) (base-char nil) (character nil)
+            (double-float nil) (single-float nil)
+            (ext:integer64 nil) (ext:integer32 nil)
+            (ext:integer16 nil) (ext:integer8 nil)
+            (ext:byte64 nil) (ext:byte32 nil)
+            (ext:byte16 nil) (ext:byte8 nil))))
 
+;;; This is "unsafe" in that it doesn't bounds check.
+;;; It DOES check that the value is of the correct type,
+;;; because this is the only place we know the type.
 (declaim (inline %unsafe-vector-set))
 (defun %unsafe-vector-set (array index value)
-  (typecase array
-    ((simple-array t (*))
-     (cleavir-primop:aset array index value t t t)
-     value)
-    ((simple-array base-char (*))
-     (cleavir-primop:aset array index value base-char t nil)
-     value)
-    ((simple-array character (*))
-     (cleavir-primop:aset array index value character t nil)
-     value)
-    ((simple-array double-float (*))
-     (cleavir-primop:aset array index value double-float t nil)
-     value)
-    ((simple-array single-float (*))
-     (cleavir-primop:aset array index value single-float t nil)
-     value)
-    ((simple-array ext:byte64 (*))
-     (cleavir-primop:aset array index value ext:byte64 t nil)
-     value)
-    ((simple-array ext:byte32 (*))
-     (cleavir-primop:aset array index value ext:byte32 t nil)
-     value)
-    ((simple-array ext:byte16 (*))
-     (cleavir-primop:aset array index value ext:byte16 t nil)
-     value)
-    ((simple-array ext:byte8 (*))
-     (cleavir-primop:aset array index value ext:byte8 t nil)
-     value)
-    ;; should be unreachable
-    (t (error "BUG: Unknown vector ~a" array))))
+  (macrolet ((mycase (&rest specs)
+               `(typecase array
+                  ,@(loop for (type boxed) in specs
+                          collect `((simple-array ,type (*))
+                                    (unless (typep value ',type)
+                                      (error 'type-error :datum value :expected-type ',type))
+                                    (cleavir-primop:aset array index value ,type t ,boxed)
+                                    value))
+                  ;; should be unreachable
+                  (t (error "BUG: Unknown vector ~a" array)))))
+    (mycase (t t) (base-char nil) (character nil)
+            (double-float nil) (single-float nil)
+            (ext:integer64 nil) (ext:integer32 nil)
+            (ext:integer16 nil) (ext:integer8 nil)
+            (ext:byte64 nil) (ext:byte32 nil)
+            (ext:byte16 nil) (ext:byte8 nil))))
 
 (declaim (inline row-major-array-in-bounds-p))
 (defun row-major-array-in-bounds-p (array index)
