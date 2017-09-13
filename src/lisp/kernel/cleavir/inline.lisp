@@ -579,11 +579,11 @@
         '0)))
 
 (define-compiler-macro array-row-major-index (array &rest subscripts)
-  (let ((rank (length subscripts))
-        (sarray (gensym "ARRAY"))
-        (ssubscripts (loop repeat rank collecting (gensym "SUBSCRIPT")))
-        (dimsyms (loop repeat rank collecting (gensym "DIMENSION")))
-        (rmindex (gensym "ROW-MAJOR-INDEX")))
+  (let* ((rank (length subscripts))
+         (sarray (gensym "ARRAY"))
+         (ssubscripts (loop repeat rank collecting (gensym "SUBSCRIPT")))
+         (dimsyms (loop repeat rank collecting (gensym "DIMENSION")))
+         (rmindex (gensym "ROW-MAJOR-INDEX")))
     ;; First up, once-only the array and subscripts.
     `(let ((,sarray ,array)
            ,@(loop for ssub in ssubscripts for sub in subscripts
