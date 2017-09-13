@@ -893,16 +893,12 @@ when this is t a lot of graphs will be generated.")
 ;;; As it happens, we do the same IR generation for singles and doubles.
 ;;; This is because the LLVM value descriptors have associated types,
 ;;; so fadd of doubles is different from fadd of singles.
+;;; The generated boxes and unboxes are where actual types are more critical.
 
-(define-fp-binop cleavir-ir:single-float-add-instruction %fadd)
-(define-fp-binop cleavir-ir:single-float-sub-instruction %fsub)
-(define-fp-binop cleavir-ir:single-float-mul-instruction %fmul)
-(define-fp-binop cleavir-ir:single-float-div-instruction %fdiv)
-
-(define-fp-binop cleavir-ir:double-float-add-instruction %fadd)
-(define-fp-binop cleavir-ir:double-float-sub-instruction %fsub)
-(define-fp-binop cleavir-ir:double-float-mul-instruction %fmul)
-(define-fp-binop cleavir-ir:double-float-div-instruction %fdiv)
+(define-fp-binop cleavir-ir:float-add-instruction %fadd)
+(define-fp-binop cleavir-ir:float-sub-instruction %fsub)
+(define-fp-binop cleavir-ir:float-mul-instruction %fmul)
+(define-fp-binop cleavir-ir:float-div-instruction %fdiv)
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
