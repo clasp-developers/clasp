@@ -75,6 +75,7 @@ Set this to other IRBuilders to make code go where you want")
 (define-symbol-macro %fixnum% (if (member :address-model-64 *features*) ;; -> FIXNUM
                      %i64%
                      (error "Add support for non 64-bit address model")))
+(define-symbol-macro %uint% %i32%) ; FIXME: export from C++ probably
 
 (define-symbol-macro %float% (llvm-sys:type-get-float-ty *llvm-context*))
 (define-symbol-macro %double% (llvm-sys:type-get-double-ty *llvm-context*))

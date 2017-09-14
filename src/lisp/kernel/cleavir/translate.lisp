@@ -631,51 +631,30 @@ when this is t a lot of graphs will be generated.")
     ;; untagged is the actual offset.
     (%gep-variable cast (list (%i32 0) (%i32 1) untagged) "aref")))
 
-(defun translate-bit-aref (output array index fixnum-type)
-  ;; FIXME: makes lots of assumptions
+(defun translate-bit-aref (output array index)
   (let* ((array (%load array)) (index (%load index))
-         (var-offset (%ptrtoint index fixnum-type))
-         (untagged (%lshr var-offset cmp::+fixnum-shift+ :exact t :label "untagged fixnum"))
-         (word-index (%udiv untagged (%i64 cmp::+bit-vector-word-length+) :label "word-index"))
-         ;; Bits are stored starting with the most significant,
-         ;; i.e. #*1101 is 110100000000000000000000000000000000
-         ;; so we have to subtract.
-         (neg-internal-index (%urem untagged (%i64 cmp::+bit-vector-word-length+) :label "neg-internal-index"))
-         (internal-index (%sub (%i32 31) neg-internal-index :nuw t :nsw t :label "internal-index"))
-         (mask (%shl (%i32 1) internal-index :nuw t)) ; assumption: bit vector word length is 32
-         (type (llvm-sys:type-get-pointer-to (cmp::bit-vector-type)))
-         (cast (%bit-cast array type))
-         (wordptr (%gep-variable cast (list (%i32 0) (%i32 1) word-index) "bit-word-aref"))
-         (word (%load wordptr))
-         (unshifted-bit (%and word mask))
-         (bit (%lshr unshifted-bit internal-index :exact t))
-         (fixnum (%shl bit cmp::+fixnum-shift+ :nuw t))
-         (fixnum-as-ptr (%inttoptr fixnum cmp:%t*% "bit-aref-result")))
-    (%store fixnum-as-ptr output)))
-
-(defun translate-bit-aset (value array index fixnum-type)
-  ;; FIXME: same assumptions.
-  (let* ((value (%load value)) (array (%load array)) (index (%load index))
-         (var-offset (%ptrtoint index fixnum-type))
+         (var-offset (%ptrtoint index cmp:%size_t% "variable-offset"))
          (untagged (%lshr var-offset cmp::+fixnum-shift+ :exact t :label "untagged-offset"))
-         (word-index (%udiv untagged (%i64 cmp::+bit-vector-word-length+) :label "word-index"))
-         (neg-internal-index (%urem untagged (%i64 cmp::+bit-vector-word-length+) :label "neg-internal-index"))
-         (internal-index (%sub (%i32 31) neg-internal-index :nuw t :nsw t :label "internal-index"))
-         ;; Assume the value is a fixnum.
-         (untagged-value (%lshr value cmp::+fixnum-shift+ :exact t :label "untagged-value"))
-         (mask (%shl (%i32 1) internal-index :nuw t)) ; same assumption as above
-         (type (cmp::bit-vector-type))
-         (cast (%bit-cast array (llvm-sys:type-get-pointer-to type)))
-         (wordptr (%gep-variable cast (list (%i32 0) (%i32 1) word-index) "bit-word-aref"))
-         (word (%load wordptr))
-         (new-word (%or word mask)))
-    (%store new-word wordptr)))
+         (bit (%intrinsic-call "cc_simpleBitVectorAref" (list array untagged) "bit-aref"))
+         (tagged-bit (%shl bit cmp::+fixnum-shift+ :nuw t :label "tagged-bit"))
+         ;; inttoptr intrinsically zexts, according to docs.
+         (fixnum (%inttoptr tagged-bit cmp:%t*% "bit-aref-result")))
+    (%store fixnum output)))
+
+(defun translate-bit-aset (value array index)
+  (let* ((value (%load value)) (array (%load array)) (index (%load index))
+         (var-offset (%ptrtoint index cmp:%size_t% "variable-offset"))
+         (offset (%lshr var-offset cmp::+fixnum-shift+ :exact t :label "untagged-offset"))
+         (uint-value (%ptrtoint value cmp::%uint%))
+         (untagged-value (%lshr uint-value cmp::+fixnum-shift+ :exact t :label "untagged-value")))
+    ;; Note: We cannot label void calls, because then they'll get a variable
+    (%intrinsic-call "cc_simpleBitVectorAset" (list array offset untagged-value))))
 
 (defmethod translate-simple-instruction
     ((instruction cleavir-ir:aref-instruction) return-value inputs outputs abi function-info)
   (let ((et (cleavir-ir:element-type instruction)))
     (if (eq et 'bit) ; have to special case due to the layout.
-        (translate-bit-aref (first outputs) (first inputs) (second inputs) (%default-int-type abi))
+        (translate-bit-aref (first outputs) (first inputs) (second inputs))
         (%store (%load (gen-vector-effective-address (first inputs) (second inputs)
                                                      (cleavir-ir:element-type instruction)
                                                      (%default-int-type abi)))
@@ -685,7 +664,7 @@ when this is t a lot of graphs will be generated.")
     ((instruction cleavir-ir:aset-instruction) return-value inputs outputs abi function-info)
   (let ((et (cleavir-ir:element-type instruction)))
     (if (eq et 'bit) ; ditto above
-        (translate-bit-aset (third inputs) (first inputs) (second inputs) (%default-int-type abi))
+        (translate-bit-aset (third inputs) (first inputs) (second inputs))
         (%store (%load (third inputs))
                 (gen-vector-effective-address (first inputs) (second inputs)
                                               (cleavir-ir:element-type instruction)

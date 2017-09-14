@@ -476,7 +476,8 @@
             (ext:integer64 nil) (ext:integer32 nil)
             (ext:integer16 nil) (ext:integer8 nil)
             (ext:byte64 nil) (ext:byte32 nil)
-            (ext:byte16 nil) (ext:byte8 nil))))
+            (ext:byte16 nil) (ext:byte8 nil)
+            (bit t))))
 
 ;;; This is "unsafe" in that it doesn't bounds check.
 ;;; It DOES check that the value is of the correct type,
@@ -498,7 +499,8 @@
             (ext:integer64 nil) (ext:integer32 nil)
             (ext:integer16 nil) (ext:integer8 nil)
             (ext:byte64 nil) (ext:byte32 nil)
-            (ext:byte16 nil) (ext:byte8 nil))))
+            (ext:byte16 nil) (ext:byte8 nil)
+            (bit t))))
 
 (declaim (inline row-major-array-in-bounds-p))
 (defun row-major-array-in-bounds-p (array index)
