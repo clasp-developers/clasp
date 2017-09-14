@@ -1444,7 +1444,7 @@ package."
            (*print-circle* t)
            (*readtable* (or *break-readtable* *readtable*))
 	   (*break-condition* condition)
-           (*break-message* (format nil "~&Condition of type: ~A~%~A~%"
+           (*break-message* (format nil "~&THIRD!!!!  Condition of type: ~A~%~A~%"
 				    (type-of condition) condition))
            (*break-level* (1+ *break-level*))
            (break-level *break-level*)
@@ -1463,7 +1463,9 @@ package."
       (finish-output)
       (fresh-line *error-output*)
       (terpri *error-output*)
-      (princ *break-message* *error-output*)
+      (if *break-message*
+          (princ *break-message* *error-output*)
+          (core:bformat *error-output* "THIRD!!!! FOR SOME REASON THE *BREAK-MESSAGE* IS NIL\n"))
       (loop
 	 ;; Here we show a list of restarts and invoke the toplevel with
 	 ;; an extended set of commands which includes invoking the associated

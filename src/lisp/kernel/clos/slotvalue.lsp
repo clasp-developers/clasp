@@ -44,7 +44,8 @@
 
 (defmethod slot-makunbound-using-class ((class std-class) instance slotd)
   (declare (ignore class))
-  (standard-instance-set (si:unbound) instance (slot-definition-location slotd)))
+  (standard-instance-set (si:unbound) instance (slot-definition-location slotd))
+  instance)
 
 ;;;
 ;;; 3) Error messages related to slot access
@@ -71,6 +72,9 @@
 ;;;
 ;;; For the next accessor we define a method.
 ;;;
+
+(defmethod class-name ((what t))
+  (error "Never call class-name on ~a" what))
 
 (defmethod class-name ((class class))
   (class-id class))

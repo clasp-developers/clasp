@@ -1967,6 +1967,8 @@ void cc_dispatch_debug(int msg_id, uintptr_clasp_t val)
   //         3 - print the value as a tagged pointer to a VaList_S object
   //         4 - print the value as a pointer
   //         5 - print the contents of the va_list pointed to by the value
+  //         6 - print the value as a stamp
+  //         7 - print the value as a pointer to a dispatch function
   switch (msg_id) {
   case 0:
       BFORMAT_T(BF("Step %d\n") % val);
@@ -1992,13 +1994,20 @@ void cc_dispatch_debug(int msg_id, uintptr_clasp_t val)
       BFORMAT_T(BF("Ptr: %p\n") % (void*)val );
   }
       break;
-  case 5:
+  case 5: {
 //      printf("%s:%d     ptr: %p\n", __FILE__, __LINE__, (void*)val);
       BFORMAT_T(BF("va_list: %p\n") % (void*)val );
       void* dump_va_list_voidSTAR = (void*)&dump_va_list;
       typedef void (*fptr)(uintptr_t);
       fptr my_fptr = reinterpret_cast<fptr>(dump_va_list_voidSTAR);
       my_fptr(val);
+      break;
+  }
+  case 6:
+      BFORMAT_T(BF("Argument stamp: %lu\n") % val);
+      break;
+  case 7:
+      BFORMAT_T(BF("Dispatch to: %p\n") % val);
       break;
   }
   fflush(stdout);

@@ -182,8 +182,28 @@
   (set-generic-function-dispatch gfun)
   gfun)
 
+(defun initialize-generic-function-specializer-profile (gfun &optional errorp)
+  (setf (generic-function-specializer-profile gfun)
+        (if (slot-boundp gfun 'lambda-list)
+            (let ((lambda-list (generic-function-lambda-list gfun)))
+              (make-array (length (lambda-list-required-arguments lambda-list))
+                          :initial-element nil))
+            (if errorp
+                (errorp (error "The specializer-profile could not be initialized - lambda list of ~a was unbound" gfun))
+                nil))))
+  
+  
 #+clasp
 (defmethod shared-initialize :after ((gfun generic-function) slot-names &rest initargs)
+  "In Clasp we need to initialize the specializer-profile with an 
+   array of (length (lambda-list-required-arguments lambda-list)) full of nil."
+  (unless (generic-function-specializer-profile gfun)
+    (initialize-generic-function-specializer-profile gfun))
+  gfun)
+
+#|
+#+clasp
+(defmethod initialize-instance :after ((gfun generic-function) &rest initargs)
   "In Clasp we need to initialize the specializer-profile with an 
    array of (length (lambda-list-required-arguments lambda-list)) full of nil."
   (setf (generic-function-specializer-profile gfun)
@@ -191,7 +211,12 @@
             (let ((lambda-list (generic-function-lambda-list gfun)))
               (make-array (length (lambda-list-required-arguments lambda-list))
                           :initial-element nil))
-            nil)))
+            (progn
+              (warn "There was no lambda-list defined for the generic-function ~a" gfun)
+              nil)))
+  gfun)
+|#
+
 
 (defmethod shared-initialize ((gfun standard-generic-function) slot-names
 			      &rest initargs)
