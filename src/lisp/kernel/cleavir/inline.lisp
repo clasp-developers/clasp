@@ -315,7 +315,7 @@
     (if (> z 0)
         (- z (expt 2 cl-fixnum-bits))
         (+ z (expt 2 cl-fixnum-bits))))
-  (defmacro def-inline-arithmetic (inlined-name cleavir-primop generic-name)
+  (defmacro def-inline-arithmetic (inlined-name fixnum-primop float-primop generic-name)
     (let ((x (gensym))
           (y (gensym))
           (z (gensym)))
@@ -324,19 +324,36 @@
          (defun ,inlined-name (,x ,y)
            (block nil
              (tagbody
-                (if (cleavir-primop:typeq ,x fixnum)
-                    (if (cleavir-primop:typeq ,y fixnum)
-                        (cleavir-primop:let-uninitialized (,z)
-                                                          (if (,cleavir-primop ,x ,y ,z)
-                                                              (return ,z)
-                                                              (return (core:convert-overflow-result-to-bignum ,z))))
-                        (go generic))
-                    (go generic))
-                ;; ... Other tests
+                ;; FIXME: The "generic" jumps should actually coerce and then jump
+                ;; to a specialized one.
+                (cond ((cleavir-primop:typeq ,x fixnum)
+                       (if (cleavir-primop:typeq ,y fixnum)
+                           (go fixnum)
+                           (go generic)))
+                      ((cleavir-primop:typeq ,x single-float)
+                       (if (cleavir-primop:typeq ,y single-float)
+                           (go single-float)
+                           (go generic)))
+                      ((cleavir-primop:typeq ,x double-float)
+                       (if (cleavir-primop:typeq ,y double-float)
+                           (go double-float)
+                           (go generic)))
+                      (t (go generic)))
+              fixnum
+                (cleavir-primop:let-uninitialized (,z)
+                  (if (,fixnum-primop ,x ,y ,z)
+                      (return ,z)
+                      (return (core:convert-overflow-result-to-bignum ,z))))
+              single-float
+                (return (,float-primop single-float ,x ,y))
+              double-float
+                (return (,float-primop double-float ,x ,y))
               generic
                 (return (,generic-name ,x ,y))))))))
-  (def-inline-arithmetic primop:inlined-two-arg-+ cleavir-primop:fixnum-add core:two-arg-+)
-  (def-inline-arithmetic primop:inlined-two-arg-- cleavir-primop:fixnum-sub core:two-arg--)
+  (def-inline-arithmetic primop:inlined-two-arg-+ cleavir-primop:fixnum-add cleavir-primop:float-add
+    core:two-arg-+)
+  (def-inline-arithmetic primop:inlined-two-arg-- cleavir-primop:fixnum-sub cleavir-primop:float-sub
+    core:two-arg--)
   ;;; Need * / and other primops
   (defmacro def-inline-comparison (inlined-name cleavir-primop generic-name)
     (let ((x (gensym))
