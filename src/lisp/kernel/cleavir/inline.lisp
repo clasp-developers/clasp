@@ -549,8 +549,7 @@
       (error "~d is not a valid row-major index for ~a" index array))
     (%unsafe-vector-set underlying-array (+ index offset) value)))
 
-#+(or)
-(progn
+
 (declaim (inline schar core:schar-set char core:char-set))
 (defun schar (string index)
   (row-major-aref (the simple-string string) index))
@@ -561,7 +560,6 @@
   (row-major-aref (the string string) index))
 (defun core:char-set (string index value)
   (core:row-major-aset (the string string) index value))
-)
 
 (defun row-major-index-computer (array dimsyms subscripts)
   ;; assumes once-only is taken care of
