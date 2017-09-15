@@ -450,6 +450,11 @@ CL_DEFUN void core__print_object_address(T_sp obj)
   printf("%s:%d print_object %s @%p\n", __FILE__, __LINE__, _rep_(obj).c_str(), (void*)obj.raw_());
 }
 
+CL_DEFUN T_sp core__object_address(T_sp obj)
+{
+  return Pointer_O::create(&*obj);
+}
+
 extern "C" {
 
 

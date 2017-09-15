@@ -345,7 +345,7 @@ string Instance_O::__repr__() const {
     ss << _rep_(this->instanceRef(REF_CLASS_CLASS_NAME)) << " ";
   }
   {
-    ss << " #slots[" << this->numberOfSlots() << "]";
+    //    ss << " #slots[" << this->numberOfSlots() << "]";
 #if 0
     for (size_t i(1); i < this->numberOfSlots(); ++i) {
       T_sp obj = this->_Rack[i];

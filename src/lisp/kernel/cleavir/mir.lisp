@@ -66,6 +66,7 @@
 ;;; using the stealth mixin - see system.lisp
 ;;;
 
+#+stealth-gids
 (defun assign-mir-instruction-datum-ids (top)
   (let ((id 1)
 	(datums (make-hash-table)))

@@ -85,19 +85,19 @@ CL_DEFUN T_sp core__bformat(T_sp destination, const string &control, List_sp arg
     fmter_str = fmter.str();
   }
   catch (boost::io::bad_format_string &err) {
-    SIMPLE_ERROR(BF("bformat command error: bad format string"));
+    SIMPLE_ERROR(BF("bformat command error: bad format string: \"%s\"") % control);
   }
   catch (boost::io::too_few_args &err) {
-    SIMPLE_ERROR(BF("bformat command error: too few args"));
+    SIMPLE_ERROR(BF("bformat command error: too few args in format string: \"%s\"") % control);
   }
   catch (boost::io::too_many_args &err) {
-    SIMPLE_ERROR(BF("bformat command error: too many args"));
+    SIMPLE_ERROR(BF("bformat command error: too many args in format string: \"%s\"") % control);
   }
   catch (boost::io::out_of_range &err) {
-    SIMPLE_ERROR(BF("bformat command error: out of range"));
+    SIMPLE_ERROR(BF("bformat command error: out of range in format string: \"%s\"") % control);
   }
   catch (...) {
-    SIMPLE_ERROR(BF("Unknown bformat command error"));
+    SIMPLE_ERROR(BF("Unknown bformat command error in format string: \"%s\""));
   }
   if (output == _sym_printf) {
     printf("%s", fmter_str.c_str());

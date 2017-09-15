@@ -1162,7 +1162,7 @@ COMPILE-FILE will use the default *clasp-env*."
       (my-hir-transformations hir clasp-system nil nil)
       (quick-draw-hir hir "hir-pre-mir")
       (cleavir-ir:hir-to-mir hir clasp-system nil nil)
-      (cc-mir:assign-mir-instruction-datum-ids hir)
+      #+stealth-gids(cc-mir:assign-mir-instruction-datum-ids hir)
       (clasp-cleavir:finalize-unwind-and-landing-pad-instructions hir map-enter-to-function-info)
       (setf *ct-finalize-unwind-and-landing-pad-instructions* (compiler-timer-elapsed))
       (quick-draw-hir hir "mir")

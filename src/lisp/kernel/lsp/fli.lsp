@@ -10,6 +10,11 @@
 ;;;
 ;;; --- END OF IMPLEMEMTATION NOTES ---
 
+#+(or)
+(eval-when (:execute)
+	(format t "!~%!~%!~%!~%!~%In fli.lsp !~%")
+	(setq core:*echo-repl-read* t))
+
 (in-package "CLASP-FFI")
 
 ;;;----------------------------------------------------------------------------
@@ -80,8 +85,10 @@
             for idx from 0 to (1- (length *foreign-type-spec-table*))
             when spec
             collect
-              `(defmethod %lisp-type->type-spec ((lisp-type-kw (eql ',(%lisp-symbol spec))))
-                 (elt *foreign-type-spec-table* ,idx)))
+              `(progn
+;;;                 (core:bformat t "Defining %lisp-type->type-spec for %s\n" ,(%lisp-symbol spec))
+                 (defmethod %lisp-type->type-spec ((lisp-type-kw (eql ',(%lisp-symbol spec))))
+                   (elt *foreign-type-spec-table* ,idx))))
        ))
 
   (defmethod %lisp-type->type-spec (lisp-type-kw)
@@ -447,6 +454,7 @@
 ;;; F L I   I N I T I A L I Z A T I O N
 
 (eval-when (:load-toplevel :execute :compile-toplevel)
+;;  (print (macroexpand '(generate-type-spec-accessor-functions)))
   (generate-type-spec-accessor-functions)
   (init-translators)
   (generate-llvm-type-symbol-fn-accessor-functions)
