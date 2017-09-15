@@ -1012,6 +1012,36 @@ when this is t a lot of graphs will be generated.")
          (cmp-lt (%icmp-eq x y)))
       (%cond-br cmp-lt (first successors) (second successors))))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Float comparison instructions
+
+;;; Thanks to LLVM semantics, we translate these identically for all
+;;; float types. Types are more important for un/boxing.
+
+(defmethod translate-branch-instruction
+    ((instruction cleavir-ir:float-less-instruction) return-value inputs outputs successors abi function-info)
+  (let* ((x (%load (first inputs)))
+         (y (%load (second inputs)))
+         (cmp (%fcmp-olt x y)))
+    (%cond-br cmp (first successors) (second successors))))
+
+(defmethod translate-branch-instruction
+    ((instruction cleavir-ir:float-not-greater-instruction)
+     return-value inputs outputs successors abi function-info)
+  (let* ((x (%load (first inputs)))
+         (y (%load (second inputs)))
+         (cmp (%fcmp-ole x y)))
+    (%cond-br cmp (first successors) (second successors))))
+
+(defmethod translate-branch-instruction
+    ((instruction cleavir-ir:float-equal-instruction)
+     return-value inputs outputs successors abi function-info)
+  (let* ((x (%load (first inputs)))
+         (y (%load (second inputs)))
+         (cmp (%fcmp-oeq x y)))
+    (%cond-br cmp (first successors) (second successors))))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
 ;;; Main entry point.

@@ -294,7 +294,7 @@
           (cleavir-primop:rplacd p v)
           p)
         (error 'type-error :datum p :expected-type 'cons))))
-
+                                        
 
 (debug-inline "primop")
 
@@ -302,6 +302,8 @@
   (:export #:convert-to-bignum
            #:inlined-two-arg-+
            #:inlined-two-arg--
+           #:inlined-two-arg-*
+           #:inlined-two-arg-/
            #:inlined-two-arg-<
            #:inlined-two-arg-<=
            #:inlined-two-arg-=
@@ -315,68 +317,73 @@
     (if (> z 0)
         (- z (expt 2 cl-fixnum-bits))
         (+ z (expt 2 cl-fixnum-bits))))
-  (defmacro def-inline-arithmetic (inlined-name fixnum-primop float-primop generic-name)
-    (let ((x (gensym))
-          (y (gensym))
-          (z (gensym)))
-      `(progn
-         (declaim (inline ,inlined-name))
-         (defun ,inlined-name (,x ,y)
-           (block nil
-             (tagbody
-                ;; FIXME: The "generic" jumps should actually coerce and then jump
-                ;; to a specialized one.
-                (cond ((cleavir-primop:typeq ,x fixnum)
-                       (if (cleavir-primop:typeq ,y fixnum)
-                           (go fixnum)
-                           (go generic)))
-                      ((cleavir-primop:typeq ,x single-float)
-                       (if (cleavir-primop:typeq ,y single-float)
-                           (go single-float)
-                           (go generic)))
-                      ((cleavir-primop:typeq ,x double-float)
-                       (if (cleavir-primop:typeq ,y double-float)
-                           (go double-float)
-                           (go generic)))
-                      (t (go generic)))
-              fixnum
-                (cleavir-primop:let-uninitialized (,z)
-                  (if (,fixnum-primop ,x ,y ,z)
-                      (return ,z)
-                      (return (core:convert-overflow-result-to-bignum ,z))))
-              single-float
-                (return (,float-primop single-float ,x ,y))
-              double-float
-                (return (,float-primop double-float ,x ,y))
-              generic
-                (return (,generic-name ,x ,y))))))))
-  (def-inline-arithmetic primop:inlined-two-arg-+ cleavir-primop:fixnum-add cleavir-primop:float-add
-    core:two-arg-+)
-  (def-inline-arithmetic primop:inlined-two-arg-- cleavir-primop:fixnum-sub cleavir-primop:float-sub
-    core:two-arg--)
-  ;;; Need * / and other primops
-  (defmacro def-inline-comparison (inlined-name cleavir-primop generic-name)
-    (let ((x (gensym))
-          (y (gensym)))
-      `(progn
-         (declaim (inline ,inlined-name))
-         (defun ,inlined-name (,x ,y)
-           (block nil
-             (tagbody
-                (if (cleavir-primop:typeq ,x fixnum)
-                    (if (cleavir-primop:typeq ,y fixnum)
-                        (if (,cleavir-primop ,x ,y)
-                            (return t)
-                            (return nil)))
-                    (go generic))
-                ;; ... Other tests
-              generic
-                (return (,generic-name ,x ,y))))))))
-  (def-inline-comparison primop:inlined-two-arg-<  cleavir-primop:fixnum-less        core:two-arg-<)
-  (def-inline-comparison primop:inlined-two-arg-<= cleavir-primop:fixnum-not-greater core:two-arg-<=)
-  (def-inline-comparison primop:inlined-two-arg-=  cleavir-primop:fixnum-equal       core:two-arg-=)
-  (def-inline-comparison primop:inlined-two-arg->  cleavir-primop:fixnum-greater     core:two-arg->)
-  (def-inline-comparison primop:inlined-two-arg->= cleavir-primop:fixnum-not-less    core:two-arg->=))
+  (defmacro define-with-contagion (inlined-name comparison (x y) fixnum single-float double-float generic)
+    (declare (ignore comparison)) ; this will be used to control fp behavior, see CLHS 12.1.4.1
+    `(progn
+       (declaim (inline ,inlined-name))
+       (defun ,inlined-name (,x ,y)
+         (tagbody
+            ;; FIXME: The "generic" jumps should actually coerce and then jump
+            ;; to a specialized one.
+            (cond ((cleavir-primop:typeq ,x fixnum)
+                   (if (cleavir-primop:typeq ,y fixnum)
+                       (go fixnum)
+                       (go generic)))
+                  ((cleavir-primop:typeq ,x single-float)
+                   (if (cleavir-primop:typeq ,y single-float)
+                       (go single-float)
+                       (go generic)))
+                  ((cleavir-primop:typeq ,x double-float)
+                   (if (cleavir-primop:typeq ,y double-float)
+                       (go double-float)
+                       (go generic)))
+                  (t (go generic)))
+          fixnum (return-from ,inlined-name ,@fixnum)
+          single-float (return-from ,inlined-name ,@single-float)
+          double-float (return-from ,inlined-name ,@double-float)
+          generic (return-from ,inlined-name ,@generic)))))
+  (define-with-contagion primop:inlined-two-arg-+ nil (x y)
+    ((cleavir-primop:let-uninitialized (z)
+       (if (cleavir-primop:fixnum-add x y z)
+           z
+           (core:convert-overflow-result-to-bignum z))))
+    ((cleavir-primop:float-add single-float x y))
+    ((cleavir-primop:float-add double-float x y))
+    ((core:two-arg-+)))
+  (define-with-contagion primop:inlined-two-arg-- nil (x y)
+    ((cleavir-primop:let-uninitialized (z)
+       (if (cleavir-primop:fixnum-sub x y z)
+           z
+           (core:convert-overflow-result-to-bignum z))))
+    ((cleavir-primop:float-sub single-float x y))
+    ((cleavir-primop:float-sub double-float x y))
+    ((core:two-arg--)))
+  (define-with-contagion primop:inlined-two-arg-* nil (x y)
+    ((go generic)) ; FIXME: fixnum arithmetic!
+    ((cleavir-primop:float-mul single-float x y))
+    ((cleavir-primop:float-mul double-float x y))
+    ((core:two-arg-* x y)))
+  (define-with-contagion primop:inlined-two-arg-/ nil (x y)
+    ((go generic)) ; FIXME: fixnum arithmetic!
+    ((cleavir-primop:float-div single-float x y))
+    ((cleavir-primop:float-div double-float x y))
+    ((core:two-arg-/ x y)))
+  (macrolet ((defcomparison (inline-name fixnum-op float-op generic-name)
+               `(define-with-contagion ,inline-name t (x y)
+                  ((if (,fixnum-op x y) t nil))
+                  ((if (,float-op single-float x y) t nil))
+                  ((if (,float-op double-float x y) t nil))
+                  ((,generic-name x y)))))
+    (defcomparison primop:inlined-two-arg-<
+      cleavir-primop:fixnum-less        cleavir-primop:float-less        core:two-arg-<)
+    (defcomparison primop:inlined-two-arg-<=
+      cleavir-primop:fixnum-not-greater cleavir-primop:float-not-greater core:two-arg-<=)
+    (defcomparison primop:inlined-two-arg-=
+      cleavir-primop:fixnum-equal       cleavir-primop:float-equal       core:two-arg-=)
+    (defcomparison primop:inlined-two-arg->
+      cleavir-primop:fixnum-greater     cleavir-primop:float-greater     core:two-arg->)
+    (defcomparison primop:inlined-two-arg->=
+      cleavir-primop:fixnum-not-less    cleavir-primop:float-not-less    core:two-arg->=)))
 
 #-use-boehmdc
 (eval-when (:compile-toplevel :load-toplevel :execute)
@@ -388,6 +395,14 @@
             `(primop:inlined-two-arg-- ,minuend ,(core:expand-associative '+ 'primop:inlined-two-arg-+ subtrahends 0))
             `(core:negate ,minuend))
         (error "The - operator can not be part of a form that is a dotted list.")))
+  (define-compiler-macro * (&rest numbers)
+    (core:expand-associative '* 'primop:inlined-two-arg-* numbers 1))
+  (define-compiler-macro / (dividend &rest divisors)
+    (if (core:proper-list-p divisors)
+        (if divisors
+            `(primop:inlined-two-arg-/ ,dividend (* ,@divisors))
+            `(primop:inlined-two-arg-/ 1 ,dividend))
+        (error "The / operator can not be part of a form that is a dotted list.")))
   (define-compiler-macro < (&rest numbers)
     (core:expand-compare 'primop:inlined-two-arg-< numbers))
   (define-compiler-macro <= (&rest numbers)

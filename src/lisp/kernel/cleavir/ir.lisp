@@ -216,6 +216,13 @@ Otherwise do a variable shift."
 (defun %fdiv (x y &optional (label "") fast-math-flags)
   (llvm-sys:create-fdiv cmp:*irbuilder* x y label fast-math-flags))
 
+(defun %fcmp-olt (x y &optional (label "") fast-math-flags)
+  (llvm-sys:create-fcmp-olt cmp:*irbuilder* x y label fast-math-flags))
+(defun %fcmp-ole (x y &optional (label "") fast-math-flags)
+  (llvm-sys:create-fcmp-ole cmp:*irbuilder* x y label fast-math-flags))
+(defun %fcmp-oeq (x y &optional (label "") fast-math-flags)
+  (llvm-sys:create-fcmp-oeq cmp:*irbuilder* x y label fast-math-flags))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
 ;;; with-entry-basic-block
