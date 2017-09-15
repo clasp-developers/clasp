@@ -330,13 +330,21 @@
                        (go fixnum)
                        (go generic)))
                   ((cleavir-primop:typeq ,x single-float)
-                   (if (cleavir-primop:typeq ,y single-float)
-                       (go single-float)
-                       (go generic)))
+                   (cond ((cleavir-primop:typeq ,y single-float)
+                          (go single-float))
+                         #+(or)
+                         ((cleavir-primop:typeq ,y double-float)
+                          (setf ,x (cleavir-primop:coerce single-float double-float ,x))
+                          (go double-float))
+                         (t (go generic))))
                   ((cleavir-primop:typeq ,x double-float)
-                   (if (cleavir-primop:typeq ,y double-float)
-                       (go double-float)
-                       (go generic)))
+                   (cond ((cleavir-primop:typeq ,y double-float)
+                          (go double-float))
+                         #+(or)
+                         ((cleavir-primop:typeq ,y single-float)
+                          (setf ,y (cleavir-primop:coerce single-float double-float ,y))
+                          (go double-float))
+                         (t (go generic))))
                   (t (go generic)))
           fixnum (return-from ,inlined-name ,@fixnum)
           single-float (return-from ,inlined-name ,@single-float)
@@ -368,22 +376,22 @@
     ((cleavir-primop:float-div single-float x y))
     ((cleavir-primop:float-div double-float x y))
     ((core:two-arg-/ x y)))
-  (macrolet ((defcomparison (inline-name fixnum-op float-op generic-name)
-               `(define-with-contagion ,inline-name t (x y)
-                  ((if (,fixnum-op x y) t nil))
-                  ((if (,float-op single-float x y) t nil))
-                  ((if (,float-op double-float x y) t nil))
-                  ((,generic-name x y)))))
-    (defcomparison primop:inlined-two-arg-<
-      cleavir-primop:fixnum-less        cleavir-primop:float-less        core:two-arg-<)
-    (defcomparison primop:inlined-two-arg-<=
-      cleavir-primop:fixnum-not-greater cleavir-primop:float-not-greater core:two-arg-<=)
-    (defcomparison primop:inlined-two-arg-=
-      cleavir-primop:fixnum-equal       cleavir-primop:float-equal       core:two-arg-=)
-    (defcomparison primop:inlined-two-arg->
-      cleavir-primop:fixnum-greater     cleavir-primop:float-greater     core:two-arg->)
-    (defcomparison primop:inlined-two-arg->=
-      cleavir-primop:fixnum-not-less    cleavir-primop:float-not-less    core:two-arg->=)))
+  (defmacro defcomparison (inline-name fixnum-op float-op generic-name)
+    `(define-with-contagion ,inline-name t (x y)
+       ((if (,fixnum-op x y) t nil))
+       ((if (,float-op single-float x y) t nil))
+       ((if (,float-op double-float x y) t nil))
+       ((,generic-name x y))))
+  (defcomparison primop:inlined-two-arg-<
+    cleavir-primop:fixnum-less        cleavir-primop:float-less        core:two-arg-<)
+  (defcomparison primop:inlined-two-arg-<=
+    cleavir-primop:fixnum-not-greater cleavir-primop:float-not-greater core:two-arg-<=)
+  (defcomparison primop:inlined-two-arg-=
+    cleavir-primop:fixnum-equal       cleavir-primop:float-equal       core:two-arg-=)
+  (defcomparison primop:inlined-two-arg->
+    cleavir-primop:fixnum-greater     cleavir-primop:float-greater     core:two-arg->)
+  (defcomparison primop:inlined-two-arg->=
+    cleavir-primop:fixnum-not-less    cleavir-primop:float-not-less    core:two-arg->=))
 
 #-use-boehmdc
 (eval-when (:compile-toplevel :load-toplevel :execute)

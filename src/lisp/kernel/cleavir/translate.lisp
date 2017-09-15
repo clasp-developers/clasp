@@ -880,6 +880,20 @@ when this is t a lot of graphs will be generated.")
 (define-fp-binop cleavir-ir:float-div-instruction %fdiv)
 
 
+;;; Arithmetic conversion
+
+(defmethod translate-simple-instruction
+    ((instruction cleavir-ir:coerce-instruction) return-value inputs outputs abi function-info)
+  (declare (ignore return-value abi function-info))
+  (let ((input (%load (first inputs))) (output (first outputs)))
+    (%store
+     (ecase (cleavir-ir:from-type instruction)
+       ((single-float)
+        (ecase (cleavir-ir:to-type instruction)
+          ((double-float)
+           (%fpext input cmp::%double%)))))
+     output)))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
 ;;; Methods on TRANSLATE-BRANCH-INSTRUCTION.

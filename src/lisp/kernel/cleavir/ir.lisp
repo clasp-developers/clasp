@@ -223,6 +223,9 @@ Otherwise do a variable shift."
 (defun %fcmp-oeq (x y &optional (label "") fast-math-flags)
   (llvm-sys:create-fcmp-oeq cmp:*irbuilder* x y label fast-math-flags))
 
+(defun %fpext (value type &optional (label ""))
+  (llvm-sys:create-fpext cmp:*irbuilder* value type label))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
 ;;; with-entry-basic-block

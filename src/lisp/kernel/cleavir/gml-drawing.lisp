@@ -277,61 +277,13 @@
 ;;;
 ;;; Floating-point arithmetic instructions.
 
-(defmethod label ((instruction short-float-add-instruction)) "shf +")
-
-(defmethod label ((instruction short-float-sub-instruction)) "shf -")
-
-(defmethod label ((instruction short-float-mul-instruction)) "shf *")
-
-(defmethod label ((instruction short-float-div-instruction)) "shf /")
-
-(defmethod label ((instruction short-float-sin-instruction)) "shf sin")
-
-(defmethod label ((instruction short-float-cos-instruction)) "shf cos")
-
-(defmethod label ((instruction short-float-sqrt-instruction)) "shf sqrt")
-
-(defmethod label ((instruction single-float-add-instruction)) "sf +")
-
-(defmethod label ((instruction single-float-sub-instruction)) "sf -")
-
-(defmethod label ((instruction single-float-mul-instruction)) "sf *")
-
-(defmethod label ((instruction single-float-div-instruction)) "sf /")
-
-(defmethod label ((instruction single-float-sin-instruction)) "sf sin")
-
-(defmethod label ((instruction single-float-cos-instruction)) "sf cos")
-
-(defmethod label ((instruction single-float-sqrt-instruction)) "sf sqrt")
-
-(defmethod label ((instruction double-float-add-instruction)) "df +")
-
-(defmethod label ((instruction double-float-sub-instruction)) "df -")
-
-(defmethod label ((instruction double-float-mul-instruction)) "df *")
-
-(defmethod label ((instruction double-float-div-instruction)) "df /")
-
-(defmethod label ((instruction double-float-sin-instruction)) "df sin")
-
-(defmethod label ((instruction double-float-cos-instruction)) "df cos")
-
-(defmethod label ((instruction double-float-sqrt-instruction)) "df sqrt")
-
-(defmethod label ((instruction long-float-add-instruction)) "lf +")
-
-(defmethod label ((instruction long-float-sub-instruction)) "lf -")
-
-(defmethod label ((instruction long-float-mul-instruction)) "lf *")
-
-(defmethod label ((instruction long-float-div-instruction)) "lf /")
-
-(defmethod label ((instruction long-float-sin-instruction)) "lf sin")
-
-(defmethod label ((instruction long-float-cos-instruction)) "lf cos")
-
-(defmethod label ((instruction long-float-sqrt-instruction)) "lf sqrt")
+(defmethod label ((instruction float-add-instruction)) "float +")
+(defmethod label ((instruction float-sub-instruction)) "float -")
+(defmethod label ((instruction float-mul-instruction)) "float *")
+(defmethod label ((instruction float-div-instruction)) "float /")
+(defmethod label ((instruction float-sin-instruction)) "float sin")
+(defmethod label ((instruction float-cos-instruction)) "float cos")
+(defmethod label ((instruction float-sqrt-instruction)) "float sqrt")
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
