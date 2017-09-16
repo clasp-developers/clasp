@@ -159,7 +159,7 @@ CL_DEFUN T_sp cl__format(T_sp destination, T_sp control, List_sp args) {
         break;
       default: {
         success = false;
-        printf("%s:%d Could not translate FORMAT control string %s into a BFORMAT control string because of ~%c control\n",__FILE__, __LINE__, ts.c_str(), *cur);
+        return core__bformat(destination,"Could not format %s %s", Cons_O::createList(control, args));
       } break;
       }
       ++cur;

@@ -80,8 +80,8 @@ namespace core {
   
 */
 
-#define REF_CLASS_NUMBER_OF_SLOTS_IN_STANDARD_CLASS 25
-#define REF_CLASS_NUMBER_OF_SLOTS_IN_STRUCTURE_CLASS 30 // was 28
+#define REF_CLASS_NUMBER_OF_SLOTS_IN_STANDARD_CLASS 27
+#define REF_CLASS_NUMBER_OF_SLOTS_IN_STRUCTURE_CLASS 32 // was 28
 #define REF_CLASS_NUMBER_OF_SLOTS_IN_DERIVABLE_CXX_CLASS REF_CLASS_NUMBER_OF_SLOTS_IN_STANDARD_CLASS
   
 
@@ -121,35 +121,6 @@ class Class_O : public StandardObject_O {
 #endif
  public: // The hard-coded indexes above are defined below to be used by Class
   // These must match the +class-slots+ defined in hierarchy.lsp
-
-  
-#if 0
-  // If any of these are exposed - then they MUST be added to
-  //    core__class_slot_sanity_check() !!!!!!
-  static const int REF_CLASS_EQL_SPECIALIZER_FLAG = 0;
-  static const int REF_CLASS_SPECIALIZER_DIRECT_METHODS = 1;
-  static const int REF_CLASS_SPECIALIZER_DIRECT_GENERIC_FUNCTIONS = 2;
-  static const int REF_CLASS_CLASS_NAME = 3;
-  static const int REF_CLASS_DIRECT_SUPERCLASSES = 4;
-  static const int REF_CLASS_DIRECT_SUBCLASSES = 5;
-  static const int REF_CLASS_SLOTS = 6;
-  static const int REF_CLASS_CLASS_PRECEDENCE_LIST = 7;
-  static const int REF_CLASS_DIRECT_SLOTS = 8;
-  static const int REF_CLASS_DIRECT_DEFAULT_INITARGS = 9;
-  static const int REF_CLASS_DEFAULT_INITARGS = 10;
-  static const int REF_CLASS_FINALIZED = 11;
-  static const int REF_CLASS_DOCSTRING = 12;
-  static const int REF_CLASS_SIZE = 13;
-  static const int REF_CLASS_SEALEDP = 14;
-  static const int REF_CLASS_PROTOTYPE = 15;
-  static const int REF_CLASS_DEPENDENTS = 16;
-  static const int REF_CLASS_VALID_INITARGS = 17;
-  static const int REF_CLASS_SLOT_TABLE = 18;
-  static const int REF_CLASS_LOCATION_TABLE = 19;
-  static const int REF_CLASS_OPTIMIZE_SLOT_ACCESS = 20;
-  static const int REF_CLASS_FORWARD = 21;
-#endif
-
 private:
   void accumulateSuperClasses(HashTableEq_sp supers, VectorObjects_sp arrayedSupers, Class_sp mc);
 

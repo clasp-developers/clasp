@@ -22,12 +22,6 @@
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (setf *echo-repl-read* t))
 
-#+clasp
-(defun subclasses* (class)
-  (remove-duplicates
-   (cons class
-         (mapappend #'subclasses*
-                    (class-direct-subclasses class)))))
 
 ;;; ----------------------------------------------------------------------
 ;;;                                                                  slots
@@ -401,12 +395,6 @@ and cannot be added to ~A." method other-gf gf)))
 
 
   
-#+clasp
-(defun all-generic-functions ()
-  (remove-duplicates
-   (mapappend #'specializer-direct-generic-functions
-              (subclasses* (find-class 't)))))
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -421,14 +409,13 @@ and cannot be added to ~A." method other-gf gf)))
 
 (defun startup-fastgf ()
   (setf clos:*enable-fastgf* t)
-  (satiate-standard-generic-functions :verbose nil)
+  (satiate-standard-generic-functions :verbose t)
   (loop for gf in (clos::all-generic-functions)
      when (not (functionp (clos::get-funcallable-instance-function gf)))
      do (switch-to-fastgf gf)))
 
 ;;#+(or)
 (eval-when (:execute :load-toplevel)
-  (startup-fastgf)
-  (eval-when (:execute :load-toplevel)
-    (format t "!~%!~%!~%!~%!~%Finished startup-generic-functions~%!~%!~%!~%")))
+                                        ;(trace startup-fastgf satiate-standard-generic-functions satiate-generic-function)
+  (startup-fastgf))
 

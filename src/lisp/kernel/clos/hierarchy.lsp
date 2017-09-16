@@ -31,7 +31,10 @@
   (defparameter +specializer-slots+
     '((flag :initform nil :accessor eql-specializer-flag)
       (direct-methods :initform nil :accessor specializer-direct-methods)
-      (direct-generic-functions :initform nil :accessor specializer-direct-generic-functions))))
+      (direct-generic-functions :initform nil :accessor specializer-direct-generic-functions)
+      (call-history-generic-functions :initform nil :accessor specializer-call-history-generic-functions)
+      (specializer-mutex :initform (mp:make-shared-mutex 'call-history-generic-functions-mutex)
+       :accessor specializer-mutex))))
 
 (eval-when (:compile-toplevel :execute #+clasp :load-toplevel)
   (defparameter +eql-specializer-slots+
@@ -495,7 +498,6 @@
 
 #+clasp
 (eval-when (:compile-toplevel :execute)
-  (WARN "Sanity check class slots")
   (let ((sanity (core:class-slot-sanity-check)))
     (dolist (name-slot (core:class-slot-sanity-check))
       (let* ((name (car name-slot))

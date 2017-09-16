@@ -24,14 +24,8 @@
 ;;;
 ;;; Debugging code
 ;;;
-;;; Add :DEBUG-CMPGF to *features* and recompile for lots of debugging info
-;;;   during fastgf compilation and execution.
-;;;
 ;;; Add :LOG-CMPGF to log fastgf messages during the slow path.
 ;;;    
-#+(or)
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (pushnew :debug-cmpgf *features*))
 #+(or)
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (pushnew :log-cmpgf *features*))
@@ -53,10 +47,10 @@
             (coerce entry 'list)))
   (defun graph-call-history (generic-function output)
     (cmp:generate-dot-file generic-function output))
-  (defun log-cmpgf-filename (suffix extension)
-    (pathname (core:bformat nil "/tmp/dispatch-history/dispatch-%s%d.%s" suffix *didx* extension)))
+  (defun log-cmpgf-filename (gfname suffix extension)
+    (pathname (core:bformat nil "/tmp/dispatch-history/dispatch-%s%05d-%s.%s" suffix *didx* (core:bformat nil "%s" gfname) extension)))
   (defmacro gf-log-dispatch-graph (gf)
-    `(graph-call-history ,gf (log-cmpgf-filename "graph" "dot")))
+    `(graph-call-history ,gf (log-cmpgf-filename (clos::generic-function-name gf) "graph" "dot")))
   (defmacro bformat-indent (fmt &rest args)
     `(progn
        (core:bformat *dml* (subseq *dmspaces* 0 (min (length *dmspaces*) *dmindent*)))
@@ -98,11 +92,12 @@
                (if (consp c)
                    (bformat-noindent "%s " c)
                    (bformat-noindent "[%s/%d] " (class-name c) (core:class-stamp-for-instances c))))
-             (bformat-noindent ")\n")))
-         (let ((optimized-call-history (cmp::optimized-call-history generic-function)))
+             (bformat-noindent ") -> %s\n" (core:object-address (cdr entry)))))
+         (let ((optimized-call-history (cmp::optimized-call-history generic-function))
+               (index 0))
            (bformat-indent "    optimized call-history (length -> %d):\n" (length optimized-call-history))
            (dolist (entry optimized-call-history)
-             (bformat-indent "        entry: (")
+             (bformat-indent "        entry#%3d: (" (prog1 index (incf index)))
              (let ((history-entry (history-entry (car entry))))
                ;;(bformat-indent "          ----> %s\n" history-entry)
                (dolist (c history-entry)
@@ -116,6 +111,7 @@
          #++(when (string= (subseq args 0 2) "''")
               (break "Check backtrace")))))
   (defmacro gf-log (fmt &rest fmt-args) `(bformat-indent ,fmt ,@fmt-args))
+  (defmacro gf-log-noindent (fmt &rest fmt-args) `(bformat-noindent ,fmt ,@fmt-args))
   (defmacro gf-do (&body code) `(progn ,@code)))
 
 #-log-cmpgf
@@ -127,15 +123,6 @@
   (defmacro gf-log-dispatch-miss-message (msg &rest args) nil)
   (defmacro gf-log (fmt &rest fmt-args) nil)
   (defmacro gf-do (&body code) nil))
-
-
-#+debug-cmpgf
-(progn
-)
-
-#-debug-cmpgf
-(progn
-  )
 
 
 ;;; --------------------------------------------------
@@ -225,6 +212,21 @@
           ,@body)
      (mp:shared-unlock (generic-function-lock ,generic-function))))
 
+(defun compute-effective-method-function-maybe-log (generic-function method-combination methods &key log)
+  (let ((effective-method-function (compute-effective-method-function generic-function
+                                                                      method-combination
+                                                                      methods)))
+    #+log-cmpgf
+    (when log
+      (cmp::gf-log "vvv************************vvv\n")
+      (cmp::gf-log "compute-effective-method-function for %s\n" (generic-function-name generic-function))
+      (cmp::gf-log "There are %d methods...\n" (length methods))
+      (dolist (m methods)
+        (cmp::gf-log "Method: %s %s %s\n" (clos::method-specializers m) (clos::method-qualifiers m) m))
+      (cmp::gf-log "Effective method function at -> %s\n" (core:object-address effective-method-function))
+      (cmp::gf-log "^^^************************^^^\n"))
+    effective-method-function))
+
 (defun update-call-history-for-add-method (generic-function method)
   "When a method is added then we update the effective-method-functions for
    those call-history entries with specializers that the method would apply to."
@@ -235,7 +237,7 @@
        do (let* ((methods (compute-applicable-methods-using-specializers
                            generic-function
                            specializers))
-                 (effective-method-function (compute-effective-method-function
+                 (effective-method-function (compute-effective-method-function-maybe-log
                                              generic-function
                                              (generic-function-method-combination generic-function)
                                              methods)))
@@ -255,7 +257,7 @@
                              generic-function
                              specializers))
                    (effective-method-function (if methods
-                                                  (compute-effective-method-function
+                                                  (compute-effective-method-function-maybe-log
                                                    generic-function
                                                    (generic-function-method-combination generic-function)
                                                    methods)
@@ -273,7 +275,7 @@
   "This is called from set-generic-function-dispatch - which is called whenever a method is added or removed "
   (calculate-fastgf-dispatch-function generic-function
                                       #+log-cmpgf :output-path
-                                      #+log-cmpgf (cmp::log-cmpgf-filename "func" "ll")))
+                                      #+log-cmpgf (cmp::log-cmpgf-filename (clos::generic-function-name generic-function) "func" "ll")))
 
 (defun memoize-call (generic-function vaslist-arguments effective-method-function)
   "Memoizes the call and installs a new discriminator function - returns nothing"
@@ -283,15 +285,15 @@
                   (cmp::gf-log-dispatch-miss "Adding to history" generic-function vaslist-arguments)
                   (generic-function-call-history-push-new generic-function memoize-key effective-method-function))))
     (unless pushed
-      (warn "The generic-function ~a experienced a dispatch-miss but the call did not result in a new call-history entry - this suggests the fastgf is failing somehow - turn on log-cmpgf in cmpgf.lsp and recompile everything" (core:bformat nil "%s" (core:instance-ref generic-function 0)))
-      (cmp::gf-log-dispatch-miss-followup "!!!!!!  DID NOT MODIFY CALL-HISTORY\n"))
+      (cmp::gf-log "!!!!!!FAIL!!!  generic-function-call-history-push-new DID NOT MODIFY CALL-HISTORY - call-history length -> %d\n" (length (clos::generic-function-call-history generic-function)))
+      (warn "The generic-function ~a experienced a dispatch-miss but the call did not result in a new call-history entry - this suggests the fastgf is failing somehow - turn on log-cmpgf in closfastgf.lsp and recompile everything" (core:bformat nil "%s" (core:instance-ref generic-function 0))))
     (cmp::gf-log "Installing new discriminator function\n")
-    #+log-cmpgf(cmp::graph-call-history generic-function (cmp::log-cmpgf-filename "graph" "dot"))
+    #+log-cmpgf(cmp::graph-call-history generic-function (cmp::log-cmpgf-filename (generic-function-name generic-function) "graph" "dot"))
     (set-funcallable-instance-function generic-function
                                        (calculate-fastgf-dispatch-function
                                         generic-function
                                         #+log-cmpgf :output-path
-                                        #+log-cmpgf (cmp::log-cmpgf-filename "func" "ll")))
+                                        #+log-cmpgf (cmp::log-cmpgf-filename (generic-function-name generic-function) "func" "ll")))
     (cmp::gf-log "Done installing new discriminator function\n")))
 
 (defun do-dispatch-miss (generic-function vaslist-arguments arguments)
@@ -322,14 +324,11 @@ It takes the arguments in two forms, as a vaslist and as a list of arguments."
       ;;(cmp::gf-log "             method-list -> %s\n" method-list)
       (if method-list
           (progn
-            (cmp::gf-do
-             (cmp::gf-log "About to compute-effective-method-function for the following method list:\n")
-             (dolist (m method-list)
-               (cmp::gf-log "%s %s %s\n" (clos::method-specializers m) (clos::method-qualifiers m) m)))
-            (let ((effective-method-function (clos::compute-effective-method-function
+            (let ((effective-method-function (compute-effective-method-function-maybe-log
                                               generic-function
                                               (clos::generic-function-method-combination generic-function)
-                                              method-list)))
+                                              method-list
+                                              :log t)))
               (when can-memoize (memoize-call generic-function vaslist-arguments effective-method-function))
               (cmp::gf-log "Calling effective-method-function %s\n" effective-method-function)
               #+log-cmpgf(let ((results (multiple-value-list (apply effective-method-function arguments nil arguments))))
@@ -345,12 +344,16 @@ It takes the arguments in two forms, as a vaslist and as a list of arguments."
   ;; update instances
   ;; Update any invalid instances
   (let ((cmp::*dmindent* (+ cmp::*dmindent* 2)))
-    (cmp::gf-log "----{---- A dispatch-miss occurred -> %s\n" (clos::generic-function-name generic-function))
     (let* ((arguments (core:list-from-va-list valist-args))
            (invalid-instance (maybe-update-instances arguments)))
       (if invalid-instance
           (apply generic-function valist-args)
-          (do-dispatch-miss generic-function valist-args arguments)))))
+          (progn
+            (cmp::gf-log "----{---- A dispatch-miss occurred -> %s  " (clos::generic-function-name generic-function))
+            (dolist (arg (core:list-from-va-list valist-args))
+              (cmp::gf-log-noindent "%s[%s/%d] " arg (class-of arg) (core:instance-stamp arg)))
+            (cmp::gf-log-noindent "\n")
+            (do-dispatch-miss generic-function valist-args arguments))))))
 
 ;;; change-class requires removing call-history entries involving the class
 ;;; and invalidating the generic functions
@@ -394,7 +397,7 @@ It takes the arguments in two forms, as a vaslist and as a list of arguments."
                                 :output-path output-path)
         'invalidated-dispatch-function)))
 
-(defun maybe-invalidate-generic-function (gf)
+(defun invalidate-generic-function-if-fastgf (gf)
   (when (typep (clos:get-funcallable-instance-function gf) 'core:compiled-dispatch-function)
     (set-funcallable-instance-function gf
                                        'invalidated-dispatch-function
@@ -442,19 +445,46 @@ It takes the arguments in two forms, as a vaslist and as a list of arguments."
                thereis (clos:call-history-entry-key-contains-specializer (car entry) subclass))
      collect entry))
 
+#+clasp
+(defun subclasses* (class)
+  (remove-duplicates
+   (cons class
+         (reduce #'append (mapcar #'subclasses*
+                                  (class-direct-subclasses class))))))
+#+clasp
+(defun all-generic-functions ()
+  (remove-duplicates
+   (reduce #'append (mapcar #'specializer-direct-generic-functions
+                            (subclasses* (find-class 't))))))
+
+
 (defun invalidate-generic-functions-with-class-selector (top-class)
-;;;  (format t "!!!!Looking to invalidate-generic-functions-with-class-selector: ~a~%" top-class)
-  ;; Loop over all of the subclasses of class (including class) and append together
-  ;;    the lists of generic-functions for the specializer-direct-methods of each subclass
-  (let* ((all-subclasses (clos:subclasses* top-class))
-         (generic-functions (loop for subclass in all-subclasses
-                               nconc (loop for method in (clos:specializer-direct-methods subclass)
-                                        collect (clos:method-generic-function method))))
-	 (unique-generic-functions (remove-duplicates generic-functions)))
+  (cmp::gf-log "invalidate-generic-functions-with-class-selector %s\n" top-class)
+  (let* ((all-subclasses (subclasses* top-class))
+         (_ (cmp::gf-log "  %d subclasses*\n" (length all-subclasses)))
+         (_ (cmp::gf-log "        %s\n" all-subclasses))
+         (generic-functions
+          (loop for subclass in all-subclasses
+             for spec-generic-functions = (specializer-call-history-generic-functions subclass)
+             do (cmp::gf-log "   for subclass %s there are %d spec-generic-functions\n" subclass (length spec-generic-functions))
+             do (cmp::gf-log "         spec-generic-functions -> %s\n" spec-generic-functions)
+             append spec-generic-functions))
+         (_ (cmp::gf-log "  %d generic-functions...\n" (length generic-functions)))
+         (_ (cmp::gf-log "        %s\n" generic-functions))
+	 (unique-generic-functions (remove-duplicates generic-functions))
+         (_ (cmp::gf-log "  unique-generic-functions...\n"))
+         (_ (cmp::gf-log "        %s\n" unique-generic-functions))
+         edited)
+    (cmp::gf-log "   subclasses* -> %s\n" all-subclasses)
     ;;(when core:*debug-dispatch* (format t "    generic-functions: ~a~%" generic-functions))
     (loop for gf in unique-generic-functions
-       do (generic-function-call-history-remove-entries-with-specializers gf all-subclasses)
-       do (maybe-invalidate-generic-function gf))))
+       do (cmp::gf-log "Maybe editing %s at %s\n" gf (core:object-address gf))
+       do (let ((removed (generic-function-call-history-remove-entries-with-specializers gf all-subclasses)))
+            (cmp::gf-do
+             (dolist (rem removed)
+               (cmp::gf-log "Removed entry: %s\n" rem))))
+       do (invalidate-generic-function-if-fastgf gf)))
+  (cmp::gf-log "Done invalidate-generic-functions-with-class-selector\n"))
 
 (defun switch-to-fastgf (gf)
   (compute-and-set-specializer-profile gf)
@@ -493,7 +523,7 @@ It takes the arguments in two forms, as a vaslist and as a list of arguments."
   (let* ((all-arguments-subclassed-for-method (calculate-all-argument-subclasses-of-method specializers profile)))
     (loop for combination in all-arguments-subclassed-for-method
        for methods = (std-compute-applicable-methods-using-classes generic-function combination)
-       for effective-method-function = (compute-effective-method-function
+       for effective-method-function = (compute-effective-method-function-maybe-log
                                         generic-function
                                         (generic-function-method-combination generic-function)
                                         methods)

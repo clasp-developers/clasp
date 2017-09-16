@@ -96,10 +96,11 @@
 (defvar *bad-tag-bb*)
 (defvar *eql-selectors*)
 
+(defstruct (klass (:type vector) :named) stamp name)
 (defstruct (outcome (:type vector) :named) outcome)
 (defstruct (match (:type vector) :named) outcome)
-(defstruct (single (:include match) (:type vector) :named) stamp class-name)
-(defstruct (range (:include match) (:type vector) :named) first-stamp last-stamp reversed-class-names)
+(defstruct (single (:include match) (:type vector) :named) stamp class)
+(defstruct (range (:include match) (:type vector) :named) first-stamp last-stamp reversed-classes)
 (defstruct (skip (:include match) (:type vector) :named))
 (defstruct (node (:type vector) :named) (eql-specializers (make-hash-table :test #'eql) :type hash-table)
            (class-specializers nil :type list))
@@ -159,11 +160,22 @@
         (node-add node (svref specs argument-index) (1+ argument-index) specs goal)
         node)))
 
+(defun safe-class-name (class-designator)
+  (cond
+    ((symbolp class-designator) class-designator)
+    ((clos::classp class-designator) (class-name class-designator))
+    ((klass-p class-designator) (klass-name class-designator))
+    (t (error "Illegal class-designator"))))
+
 (defun node-class-add (node spec argument-index specializers goal)
   (or (<= argument-index (length specializers))
       (error "Overflow in argument-index ~a must be <= ~a" argument-index (length specializers)))
   (if spec
-      (let* ((stamp (core:class-stamp-for-instances (if (clos:classp spec) spec (find-class spec))))
+      (let* ((stamp (cond
+                      ((clos:classp spec) (core:class-stamp-for-instances spec))
+                      ((symbolp spec) (core:class-stamp-for-instances (find-class spec)))
+                      ((klass-p spec) (klass-stamp spec))
+                      (t (error "Illegal specializer ~a" spec))))
              (match (find stamp (node-class-specializers node) :test #'eql :key #'single-stamp)))
         (if match
             (if (outcome-p (match-outcome match))
@@ -171,7 +183,7 @@
                 (node-add (match-outcome match) (svref specializers argument-index) (1+ argument-index) specializers goal))
             (setf (node-class-specializers node)
                   (insert-sorted (make-single :stamp stamp
-                                              :class-name spec
+                                              :class spec
                                               :outcome (ensure-outcome argument-index specializers goal))
                                  (node-class-specializers node)))))
       (let ((match (first (node-class-specializers node))))
@@ -210,7 +222,7 @@
                                  head))
            ;; The new head extends the previous range
            (incf (range-last-stamp prev))
-           (push (single-class-name head) (range-reversed-class-names prev))
+           (push (single-class head) (range-reversed-classes prev))
            (setf merged t))
           ((range-p prev)
            ;; The new head doesn't extend the prev range
@@ -224,8 +236,8 @@
            (pop merged-specializers)
            (push (make-range :first-stamp (single-stamp prev)
                              :last-stamp (single-stamp head)
-                             :reversed-class-names (list (single-class-name head)
-                                                         (single-class-name prev))
+                             :reversed-classes (list (single-class head)
+                                                     (single-class prev))
                              :outcome (single-outcome head))
                  merged-specializers)
            (setf merged t))
@@ -382,9 +394,9 @@
                  (push (list (prog1 idx (incf idx))
                              (cond
                                ((single-p x)
-                                (core:bformat nil "%s;%s" (single-stamp x) (class-name (single-class-name x))))
+                                (core:bformat nil "%s;%s" (single-stamp x) (safe-class-name (single-class x))))
                                ((range-p x)
-                                (core:bformat nil "%s-%s;%s" (range-first-stamp x) (range-last-stamp x) (mapcar #'class-name (reverse (range-reversed-class-names x)))))
+                                (core:bformat nil "%s-%s;%s" (range-first-stamp x) (range-last-stamp x) (mapcar #'safe-class-name (reverse (range-reversed-classes x)))))
                                ((skip-p x)
                                 (core:bformat nil "SKIP"))
                                (t (error "Unknown class-specializer type ~a" x)))
@@ -657,7 +669,6 @@
 (defvar *sorted-roots*)
 (defvar *generic-function*)
 
-#||
 (defun debug-save-dispatcher (gf module disp-fn startup-fn shutdown-fn sorted-roots &optional (output-path #P"/tmp/dispatcher.ll"))
   "Save everything about the generic function so that it can be saved to a file and then edited and re-installed"
   (setq *disp-fn-name* (llvm-sys:get-name disp-fn)
@@ -665,11 +676,11 @@
         *shutdown-fn-name* (llvm-sys:get-name shutdown-fn)
         *sorted-roots* sorted-roots
         *generic-function* gf)
-;;  (cmp::gf-log-sorted-roots sorted-roots)
+  ;;  (cmp::gf-log-sorted-roots sorted-roots)
   (let ((fout (open output-path :direction :output)))
     (unwind-protect (llvm-sys:dump-module module fout)
       (close fout))))
-
+#||
 (defun debug-load-dispatcher (function-name)
   (let* ((module (llvm-sys:parse-irfile #P"/tmp/dispatcher.ll" cmp:*llvm-context*))
          (disp-fn (llvm-sys:get-function module *disp-fn-name*))
@@ -709,6 +720,8 @@
                                    (1+ pos)
                                    0)))
          (profiled (make-hash-table :test #'equalp)))
+    (unless (every #'consp call-history)
+      (error "The call history for ~a is not an alist: ~a" generic-function call-history))
     (or specializer-profile
         (error "The specializer-profile for ~a is NIL" generic-function))
     (dolist (entry call-history)
@@ -860,11 +873,8 @@
                 (let ((after-disp-name (llvm-sys:get-name disp-fn)))
                 (format t "Saved dispatcher  before-disp-name -> ~a     after-disp-name -> ~a~%" before-disp-name after-disp-name))))
                 ||#
-                #||                #+log-cmpgf
                 (when output-path
-                (let ((before-disp-name (llvm-sys:get-name disp-fn)))
-                (debug-save-dispatcher the-gf *the-module* disp-fn startup-fn shutdown-fn sorted-roots output-path)))
-                ||#
+                  (debug-save-dispatcher generic-function *the-module* disp-fn startup-fn shutdown-fn sorted-roots output-path))
                 (let* ((compiled-dispatcher (jit-add-module-return-dispatch-function *the-module* disp-fn startup-fn shutdown-fn sorted-roots)))
                   compiled-dispatcher)))))))))
 

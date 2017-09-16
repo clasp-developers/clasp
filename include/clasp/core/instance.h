@@ -30,6 +30,7 @@ THE SOFTWARE.
 #include <clasp/core/object.h>
 #include <clasp/core/array.h>
 #include <clasp/core/hashTable.fwd.h>
+#include <clasp/core/mpPackage.fwd.h>
 #include <clasp/core/instance.fwd.h>
 // may need more later
 #include <clasp/gctools/gc_interface.h>
@@ -46,20 +47,25 @@ namespace core {
   class Instance_O : public General_O {
     LISP_CLASS(core, CorePkg, Instance_O, "Instance",General_O);
   // These must be exposed in core__class_slot_sanity_check()
-    typedef enum { REF_CLASS_CLASS_NAME = 3,
-                   REF_CLASS_DIRECT_SUPERCLASSES = 4,
-                   REF_CLASS_DIRECT_SUBCLASSES = 5,
-                   REF_CLASS_SLOTS = 6,
-                   REF_CLASS_CLASS_PRECEDENCE_LIST = 7,
-                   REF_CLASS_DIRECT_SLOTS = 8,
-                   REF_CLASS_DIRECT_DEFAULT_INITARGS = 9,
-                   REF_CLASS_DEFAULT_INITARGS = 10,
-                   REF_CLASS_FINALIZED = 11,
-                   REF_CLASS_SEALEDP = 14,
-                   REF_CLASS_DEPENDENTS = 16,
-                   REF_CLASS_LOCATION_TABLE = 19,
-                   REF_CLASS_STAMP_FOR_INSTANCES_ = 20,
-                   REF_CLASS_CREATOR = 21
+#define NUMBER_OF_SPECIALIZER_SLOTS 5
+#define CLASS_SLOT_OFFSET NUMBER_OF_SPECIALIZER_SLOTS
+    typedef enum {
+        REF_SPECIALIZER_CALL_HISTORY_GENERIC_FUNCTIONS = 3,
+        REF_SPECIALIZER_MUTEX = 4,
+        REF_CLASS_CLASS_NAME = (0 + CLASS_SLOT_OFFSET),
+        REF_CLASS_DIRECT_SUPERCLASSES = (1+CLASS_SLOT_OFFSET),
+        REF_CLASS_DIRECT_SUBCLASSES = (2+CLASS_SLOT_OFFSET),
+        REF_CLASS_SLOTS = (3+CLASS_SLOT_OFFSET),
+        REF_CLASS_CLASS_PRECEDENCE_LIST = (4+CLASS_SLOT_OFFSET),
+        REF_CLASS_DIRECT_SLOTS = (5+CLASS_SLOT_OFFSET),
+        REF_CLASS_DIRECT_DEFAULT_INITARGS = (6+CLASS_SLOT_OFFSET),
+        REF_CLASS_DEFAULT_INITARGS = (7+CLASS_SLOT_OFFSET),
+        REF_CLASS_FINALIZED = (8+CLASS_SLOT_OFFSET),
+        REF_CLASS_SEALEDP = (11+CLASS_SLOT_OFFSET),
+        REF_CLASS_DEPENDENTS = (13+CLASS_SLOT_OFFSET),
+        REF_CLASS_LOCATION_TABLE = (16+CLASS_SLOT_OFFSET),
+        REF_CLASS_STAMP_FOR_INSTANCES_ = (17+CLASS_SLOT_OFFSET),
+        REF_CLASS_CREATOR = (18+CLASS_SLOT_OFFSET)
     } Slots;
     
   public: // ctor/dtor for classes with shared virtual base
@@ -111,6 +117,9 @@ namespace core {
     bool CLASS_has_creator() const { return (bool)(!this->instanceRef(REF_CLASS_CREATOR).unboundp()); };
     Fixnum CLASS_stamp_for_instances() const { return this->instanceRef(REF_CLASS_STAMP_FOR_INSTANCES_).unsafe_fixnum(); };
     void CLASS_set_stamp_for_instances(Fixnum s);
+
+    void CLASS_call_history_generic_functions_push_new(T_sp generic_function);
+    void CLASS_call_history_generic_functions_remove(T_sp list_ofgeneric_functions);
     
     string dumpInfo();
 
@@ -244,5 +253,19 @@ namespace core {
 
 };
 
+namespace core {
+  struct ClassReadLock {
+    mp::SharedMutex_sp _Lock;
+    ClassReadLock(mp::SharedMutex_sp lock);
+    ~ClassReadLock();
+  };
+
+  struct ClassWriteLock {
+    mp::SharedMutex_sp _Lock;
+    ClassWriteLock(mp::SharedMutex_sp lock);
+    ~ClassWriteLock();
+  };
+
+};
 
 #endif /* _core_instance_H_ */

@@ -2390,7 +2390,10 @@ CL_DEFUN void core__invoke_internal_debugger_from_gdb() {
 CL_LAMBDA(datum &rest arguments);
 CL_DECLARE();
 CL_DOCSTRING("See CLHS error");
+__attribute__((optnone))
 CL_DEFUN void cl__error(T_sp datum, List_sp initializers) {
+  volatile T_sp saved_datum = datum;
+  volatile List_sp saved_initializers = initializers;
   int nestedErrorDepth = unbox_fixnum(gc::As<Fixnum_sp>(_sym_STARnestedErrorDepthSTAR->symbolValue()));
   if (nestedErrorDepth > 10) {
     // TODO: Disable this code once error handling and conditions work properly
