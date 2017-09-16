@@ -122,6 +122,7 @@
   (defmacro gf-log-dispatch-miss-followup (msg &rest args) nil)
   (defmacro gf-log-dispatch-miss-message (msg &rest args) nil)
   (defmacro gf-log (fmt &rest fmt-args) nil)
+  (defmacro gf-log-noindent (fmt &rest fmt-args) nil)
   (defmacro gf-do (&body code) nil))
 
 
