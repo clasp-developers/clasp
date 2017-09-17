@@ -216,8 +216,8 @@ and cannot be added to ~A." method other-gf gf)))
                     nil
                     specializers
                     lambda-list
-                    (lambda (.method-args. .next-methods. #+ecl &rest #+clasp &va-rest args)
-                      (apply function args)))
+                    (lambda (.method-args. .next-methods. #| #+ecl &rest #+clasp &va-rest args |#)
+                      (apply function .method-args.)))
     (setf (fdefinition name) #'function-to-method-temp
           (generic-function-name #'function-to-method-temp) name)
     (fmakunbound 'function-to-method-temp)))

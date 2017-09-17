@@ -239,7 +239,7 @@ and wraps it in an flet |#
     (multiple-value-bind (declarations body doc)
         (process-declarations (cddr method-lambda) t) ; We expect docstring
 ;; source location here?
-      (values `(lambda (.method-args. .next-methods. ,@(cadr method-lambda))
+      (values `(lambda (.method-args. .next-methods.)
                  (declare #+(or)(core:lambda-name make-method-lambda.lambda) ,@declarations)
                  ,doc
                  (flet (,@(and call-next-method-p
@@ -250,21 +250,11 @@ and wraps it in an flet |#
                                                        ;; current generic function?   (apply #'no-next-method ,gf ,method ...)
                                                        ;; won't work because the compiler will need to externalize the generic function gf
                                                        ;; and the method method.
-                                                       #+(or)(apply #'no-next-method ,gf ,method
-                                                                    (or args .method-args.))
                                                        (error "No next method") ;; Should be what is above -> (apply #'no-next-method ...)
                                                        (let ((use-args (if (> (va-list-length args) 0) args .method-args.)))
-                                                         #++(core:multiple-value-foreign-call "apply_call_next_method2"
-                                                          (car .next-methods.)
-                                                          use-args ; (or args .method-args.)
-                                                          (cdr .next-methods.)
-                                                          use-args ; (or args .method-args.)
-                                                          )
-                                                         (apply (car .next-methods.)
-                                                                use-args ; (or args .method-args.)
-                                                                (cdr .next-methods.)
-                                                                use-args ; (or args .method-args.)
-                                                                ))))))
+                                                         (funcall (car .next-methods.)
+                                                                  use-args ; (or args .method-args.)
+                                                                  (cdr .next-methods.)))))))
                         ,@(and next-method-p-p
                                `((next-method-p ()
                                                 (and .next-methods. t)))))

@@ -682,12 +682,19 @@ gctools::return_type cc_dispatch_slot_writer(core::T_O* tindex, core::T_O* tgf, 
 
 
 gctools::return_type cc_dispatch_effective_method(core::T_O* teffective_method, core::T_O* tgf, core::T_O* tgf_args_valist_s) {
-  core::T_sp effective_method((gctools::Tagged)teffective_method);
-  core::T_sp gf((gctools::Tagged)tgf);
+  core::Function_sp effective_method((gctools::Tagged)teffective_method);
+//  core::T_sp gf((gctools::Tagged)tgf);
   core::T_sp gf_args((gctools::Tagged)tgf_args_valist_s);
 //  printf("%s:%d  Invoking effective-method %s with arguments %s\n", __FILE__, __LINE__,
   // Arguments are .method-args. .next-methods.
-  return apply_method0(effective_method.raw_(),gf_args.raw_(),_Nil<core::T_O>().raw_(),gf_args.raw_());
+
+  return (*effective_method).entry(LCC_PASS_ARGS2_ELLIPSIS(teffective_method,gf_args.raw_(),_Nil<core::T_O>().raw_()));
+#if 0
+  return (apply_method0(effective_method.raw_(),
+                        gf_args.raw_(),
+                        _Nil<core::T_O>().raw_(),
+                        gf_args.raw_());
+#endif
 }
 
 };

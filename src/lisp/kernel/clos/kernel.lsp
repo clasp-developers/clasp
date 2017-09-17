@@ -136,13 +136,12 @@
 			(compute-applicable-methods generic-function args))
 		  (unless method-list
 		    (apply #'no-applicable-method generic-function args)))
-		(apply (compute-effective-method-function
+		(funcall (compute-effective-method-function
 			  generic-function
 			  (generic-function-method-combination generic-function)
 			  method-list)
 			 args
-			 nil
-                         args)))
+			 nil)))
 	  t))
 
 (defun set-generic-function-dispatch (gfun)
