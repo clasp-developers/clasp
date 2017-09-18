@@ -65,6 +65,8 @@ struct BundleDirectories {
   boost_filesystem::path _IncludeDir;
   boost_filesystem::path _LibDir;
   boost_filesystem::path _DatabasesDir;
+  boost_filesystem::path _FaslDir;
+  boost_filesystem::path _BitcodeDir;
 };
 
 Bundle::Bundle(const string &raw_argv0, const string &appDirName) {
@@ -136,6 +138,8 @@ Bundle::Bundle(const string &raw_argv0, const string &appDirName) {
 #endif
     bf::path contents = this->_Directories->_ExecutableDir / "Contents";
     this->_Directories->_ContentsDir = contents;
+    this->_Directories->_FaslDir = this->_Directories->_ExecutableDir / "fasl";
+    this->_Directories->_BitcodeDir = this->_Directories->_ExecutableDir / "fasl";
     if (verbose) {
       printf("%s:%d   Set _ContentsDir = %s\n", __FILE__, __LINE__, this->_Directories->_ContentsDir.string().c_str());
     }
@@ -161,12 +165,50 @@ Bundle::Bundle(const string &raw_argv0, const string &appDirName) {
 //  this->_Directories->_RootDir = appDir;
     bf::path one_up_contents = this->_Directories->_ExecutableDir.parent_path();
     one_up_contents /= std::string("Contents");
-    this->_Directories->_ContentsDir = one_up_contents;
-    if (verbose) {
-      printf("%s:%d   Set _ContentsDir = %s\n", __FILE__, __LINE__, this->_Directories->_ContentsDir.string().c_str());
+    bool foundContents = false;
+    if (bf::exists(one_up_contents)) {
+      this->_Directories->_ContentsDir = one_up_contents;
+      if (verbose) {
+        printf("%s:%d   Set _ContentsDir = %s\n", __FILE__, __LINE__, this->_Directories->_ContentsDir.string().c_str());
+      }
+      foundContents = true;
+    } else {
+      if (verbose) {
+        printf("%s:%d  Could not find the Contents/clasp library directory - searching...\n", __FILE__, __LINE__ );
+      }
+      char *homedir = getenv("CLASP_HOME");
+      if (homedir) {
+        if (verbose) printf("%s:%d  Using the CLASP_HOME directory %s\n", __FILE__, __LINE__, homedir);
+        this->_Directories->_ContentsDir = bf::path(homedir) / "Contents";
+        foundContents = true;
+      } else {
+        const char* paths[] = { "/usr/local/lib/clasp/Contents",
+                                "/usr/lib/clasp/Contents" };
+        for ( size_t i=0; i<sizeof(paths)/sizeof(paths[0]); ++i ) {
+          bf::path test_path(paths[i]);
+          if (bf::exists(test_path)) {
+            if (verbose) printf("%s:%d  Looking for %s\n", __FILE__, __LINE__, paths[i]);
+            this->_Directories->_ContentsDir = test_path;
+            foundContents = true;
+            break;
+          }
+        }
+        if (!foundContents) {
+          printf("%s:%d   Could not find clasp Contents directory - set CLASP_HOME or install it in one of the approved paths: \n", __FILE__, __LINE__ );
+          for ( size_t i=0; i<sizeof(paths)/sizeof(paths[0]); ++i ) {
+            printf("    %s\n", paths[i]);
+          }
+          printf("Aborting\n");
+          abort();
+        }
+      }
     }
-    this->findContentSubDirectories(one_up_contents,verbose);
-    this->fillInMissingPaths(verbose);
+    if (foundContents) {
+      this->_Directories->_FaslDir = this->_Directories->_ContentsDir / "fasl";
+      this->_Directories->_BitcodeDir = this->_Directories->_ContentsDir / "bitcode";
+      this->findContentSubDirectories(this->_Directories->_ContentsDir,verbose);
+      this->fillInMissingPaths(verbose);
+    }
   }
   if (verbose) {
     printf("%s:%d  Final bundle setup:\n", __FILE__, __LINE__ );
@@ -444,6 +486,21 @@ void Bundle::setup_pathname_translations()
     core__pathname_translations(SimpleBaseString_O::make("app-executable"), _lisp->_true(), appc);
   }
 
+            // setup the APP-FASL logical-pathname-translations
+  {
+    Cons_sp appc =
+      Cons_O::createList(Cons_O::createList(SimpleBaseString_O::make("app-fasl:**;*.*"),
+                                            generate_pathname(this->_Directories->_FaslDir)));
+    core__pathname_translations(SimpleBaseString_O::make("app-fasl"), _lisp->_true(), appc);
+  }
+            // setup the APP-BITCODE logical-pathname-translations
+  {
+    Cons_sp appc =
+      Cons_O::createList(Cons_O::createList(SimpleBaseString_O::make("app-bitcode:**;*.*"),
+                                            generate_pathname(this->_Directories->_BitcodeDir)));
+    core__pathname_translations(SimpleBaseString_O::make("app-bitcode"), _lisp->_true(), appc);
+  }
+  
     // setup the APP-CONTENTS logical-pathname-translations
   if ( !this->_Directories->_ContentsDir.empty() ) {
     Cons_sp appc =
