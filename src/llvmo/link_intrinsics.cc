@@ -1767,7 +1767,7 @@ void cc_loadThreadLocalMultipleValues(core::T_mv *result, core::MultipleValues *
 
 void cc_ifNotKeywordException(core::T_O *obj, size_t argIdx, va_list valist) {
   T_sp vobj((gc::Tagged)obj);
-  if (!cl__keywordp(vobj)) {
+  if (!cl__symbolp(vobj)) {
     SIMPLE_ERROR(BF("Expected keyword argument at argument %d got %s") % argIdx % _rep_(gctools::smart_ptr<core::T_O>((gc::Tagged)obj)));
   }
 }
