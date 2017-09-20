@@ -357,7 +357,7 @@
            (core:convert-overflow-result-to-bignum z))))
     ((cleavir-primop:float-add single-float x y))
     ((cleavir-primop:float-add double-float x y))
-    ((core:two-arg-+)))
+    ((core:two-arg-+ x y)))
   (define-with-contagion primop:inlined-two-arg-- nil (x y)
     ((cleavir-primop:let-uninitialized (z)
        (if (cleavir-primop:fixnum-sub x y z)
@@ -365,7 +365,7 @@
            (core:convert-overflow-result-to-bignum z))))
     ((cleavir-primop:float-sub single-float x y))
     ((cleavir-primop:float-sub double-float x y))
-    ((core:two-arg--)))
+    ((core:two-arg-- x y)))
   (define-with-contagion primop:inlined-two-arg-* nil (x y)
     ((go generic)) ; FIXME: fixnum arithmetic!
     ((cleavir-primop:float-mul single-float x y))
@@ -748,7 +748,16 @@
   )
 
 #-use-boehmdc
-(define-compiler-macro funcall (function &rest arguments)
+(define-compiler-macro funcall (&whole form function &rest arguments &environment env)
+  ;; If we have (funcall #'foo ...), we might be able to apply the FOO compiler macro.
+  (when (and (consp function) (eq (first function) 'function)
+             (consp (cdr function)) (null (cddr function)))
+    (let ((cmf (compiler-macro-function (second function) env)))
+      (when cmf
+        (return-from funcall
+          ;; incidentally, this funcall should be okay given that it's compile-time.
+          (funcall cmf form env)))))
+  ;; If not, we can stil eliminate the call to FUNCALL as follows.
   (let ((fsym (gensym "FUNCTION")))
     `(let ((,fsym ,function))
        (cleavir-primop:funcall
