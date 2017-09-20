@@ -277,11 +277,12 @@
   ;; 2) optional arguments are (<lexical location> <lexical location>)
   ;; 3) keyword arguments are (<symbol> <lexical location> <lexical location>)
   ;; This lets us cheap out on parsing, except &rest and &allow-other-keys.
-  (let (required optional rest-type rest key aok-p
+  (let (required optional rest-type rest key aok-p key-flag
         (required-count 0) (optional-count 0) (key-count 0))
     (loop for item in lambda-list
           do (case item
-               ((&optional &key) #|ignore|#)
+               ((&optional) #|ignore|#)
+               ((&key) (setf key-flag t))
                ((&rest core:&va-rest) (setf rest-type item))
                ((&allow-other-keys) (setf aok-p t))
                (t (if (listp item)
@@ -314,7 +315,7 @@
     (values (cons required-count (nreverse required))
             (cons optional-count (nreverse optional))
             rest
-            (if key t nil)
+            key-flag
             (cons key-count (nreverse key))
             aok-p
             nil ; aux-p; unused here
