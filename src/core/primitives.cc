@@ -1078,7 +1078,10 @@ CL_DEFUN T_sp core__fset(T_sp functionName, Function_sp functor, T_sp is_macro, 
       return functor;
     }
   }
-  SIMPLE_ERROR(BF("Illegal name for function[%s]") % _rep_(functionName));
+  TYPE_ERROR(functionName, // type of function names
+             Cons_O::createList(cl::_sym_or, cl::_sym_symbol,
+                                Cons_O::createList(cl::_sym_cons,
+                                                   Cons_O::createList(cl::_sym_eql, cl::_sym_setf))));
 };
 
 CL_LAMBDA(function-name);
