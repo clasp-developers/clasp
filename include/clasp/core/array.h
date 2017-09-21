@@ -29,7 +29,7 @@ THE SOFTWARE.
 
 #include <clasp/core/clasp_gmpxx.h>
 #include <clasp/core/object.h>
-#include <clasp/core/numbers.fwd.h>
+#include <clasp/core/numbers.h> // need full definitions for to_object.
 #include <clasp/core/character.fwd.h>
 #include <clasp/core/array.fwd.h>
 #include <clasp/core/sequence.fwd.h>
