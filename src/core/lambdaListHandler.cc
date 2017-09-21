@@ -981,9 +981,6 @@ bool parse_lambda_list(List_sp original_lambda_list,
         if ((head).consp()) {
           List_sp namePart = head;
           keySymbol = gc::As<Symbol_sp>(oCar(namePart)); // This is the keyword name
-          if (!keySymbol->isKeywordSymbol()) {
-            SIMPLE_ERROR(BF("With key arguments of the form ((:x y) ...) the first argument must be a keyword symbol - you gave: %s") % _rep_(keySymbol));
-          }
           localTarget = oCadr(namePart); // this is the symbol to rename it to
         } else {
           localTarget = head;

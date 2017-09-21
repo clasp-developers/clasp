@@ -843,19 +843,29 @@ CL_DEFUN bool clos__generic_function_call_history_push_new(FuncallableInstance_s
   List_sp call_history(generic_function->GFUN_CALL_HISTORY());
   if (call_history.nilp()) {
     generic_function->GFUN_CALL_HISTORY_set(Cons_O::createList(Cons_O::create(key,effective_method)));
-    return true;
+    goto ADDED;
   }
+  {
   // Search for existing entry
-  List_sp found = clos__call_history_find_key(call_history,key);
-  if (found.nilp()) {
-    generic_function->GFUN_CALL_HISTORY_set(Cons_O::create(Cons_O::create(key,effective_method),generic_function->GFUN_CALL_HISTORY()));
-    return true;
+    List_sp found = clos__call_history_find_key(call_history,key);
+    if (found.nilp()) {
+      generic_function->GFUN_CALL_HISTORY_set(Cons_O::create(Cons_O::create(key,effective_method),generic_function->GFUN_CALL_HISTORY()));
+      goto ADDED;
+    }
   }
   return false;
+ ADDED:
+  for ( size_t i=0, iEnd(key->length()); i<iEnd; ++i ) {
+    if (!(*key)[i].consp()) {
+      Class_sp class_ = gc::As<Class_sp>((*key)[i]);
+      class_->CLASS_call_history_generic_functions_push_new(generic_function);
+    }
+  }
+  return true;
 }
 
 
-CL_DEFUN void clos__generic_function_call_history_remove_entries_with_specializers(FuncallableInstance_sp generic_function, List_sp specializers ) {
+CL_DEFUN List_sp clos__generic_function_call_history_remove_entries_with_specializers(FuncallableInstance_sp generic_function, List_sp specializers ) {
   GenericFunctionWriteLock(generic_function->GFUN_LOCK());
 //  printf("%s:%d Remember to remove entries with subclasses of specializer: %s\n", __FILE__, __LINE__, _rep_(specializer).c_str());
 #ifdef DEBUG_GFDISPATCH
@@ -864,15 +874,16 @@ CL_DEFUN void clos__generic_function_call_history_remove_entries_with_specialize
   }
 #endif
   List_sp call_history(generic_function->GFUN_CALL_HISTORY());
+  List_sp removed(_Nil<T_O>());
   if (call_history.notnilp()) {
     for ( auto cur_specializer : specializers ) {
-      List_sp edited(_Nil<T_O>());
-      T_sp one_specializer = oCar(cur_specializer);
-      for ( List_sp cur = call_history; cur.consp(); ) {
-        ASSERT(oCar(cur).consp());
-        Cons_sp entry = gc::As_unsafe<Cons_sp>(oCar(cur));
-        ASSERT(gc::IsA<SimpleVector_sp>(oCar(entry)));
-        SimpleVector_sp entry_key = gc::As_unsafe<SimpleVector_sp>(oCar(entry));
+      List_sp keep(_Nil<T_O>());
+      T_sp one_specializer = CONS_CAR(cur_specializer);
+      for ( T_sp tcur = call_history; tcur.consp();  ) {
+        Cons_sp cur = gc::As_unsafe<Cons_sp>(tcur);
+        Cons_sp entry = gc::As<Cons_sp>(CONS_CAR(cur));
+        ASSERT(gc::IsA<SimpleVector_sp>(CONS_CAR(entry)));
+        SimpleVector_sp entry_key = gc::As<SimpleVector_sp>(CONS_CAR(entry));
 #ifdef DEBUG_GFDISPATCH
         if (_sym_STARdebug_dispatchSTAR->symbolValue().notnilp()) {
           printf("%s:%d         check if entry_key: %s   contains specializer: %s\n", __FILE__, __LINE__, _rep_(entry_key).c_str(), _rep_(one_specializer).c_str());
@@ -880,27 +891,31 @@ CL_DEFUN void clos__generic_function_call_history_remove_entries_with_specialize
 #endif
         if (clos__call_history_entry_key_contains_specializer(entry_key,one_specializer)) {
 #ifdef DEBUG_GFDISPATCH
-        if (_sym_STARdebug_dispatchSTAR->symbolValue().notnilp()) {
-          printf("%s:%d       IT DOES!!!\n", __FILE__, __LINE__ );
-        }
+          if (_sym_STARdebug_dispatchSTAR->symbolValue().notnilp()) {
+            printf("%s:%d       IT DOES!!!\n", __FILE__, __LINE__ );
+          }
 #endif
-          cur = oCdr(cur);
+          Cons_sp save = cur;
+          tcur = oCdr(cur);
+          save->rplacd(removed);
+          removed = save;
         } else {
 #ifdef DEBUG_GFDISPATCH
-        if (_sym_STARdebug_dispatchSTAR->symbolValue().notnilp()) {
-          printf("%s:%d       it does not - keeping entry!!!\n", __FILE__, __LINE__ );
-        }
+          if (_sym_STARdebug_dispatchSTAR->symbolValue().notnilp()) {
+            printf("%s:%d       it does not - keeping entry!!!\n", __FILE__, __LINE__ );
+          }
 #endif
-          Cons_sp save = gc::As_unsafe<Cons_sp>(cur);
-          cur = oCdr(cur);
-          save->rplacd(edited);
-          edited = save;
+          Cons_sp save = cur;
+          tcur = oCdr(cur);
+          save->rplacd(keep);
+          keep = save;
         }
       }
-      call_history = edited;
+      call_history = keep;
     }
     generic_function->GFUN_CALL_HISTORY_set(call_history);
   }
+  return removed;
 }
 
 

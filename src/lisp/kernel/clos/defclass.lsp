@@ -75,6 +75,7 @@
     (and options `(list ,@options))))
   
 (defun load-defclass (name superclasses slot-definitions options)
+  (cmp::gf-log "In load-defclass name -> %s\n" name)
   (apply #'ensure-class name :direct-superclasses superclasses
                              :direct-slots slot-definitions options))
 

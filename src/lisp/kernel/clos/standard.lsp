@@ -497,6 +497,7 @@ because it contains a reference to the undefined class~%  ~A"
 (defmethod ensure-class-using-class ((class class) name &rest rest
 				     &key direct-slots direct-default-initargs)
   (declare (ignore direct-default-initargs direct-slots))
+  (cmp::gf-log "In ensure-class-using-class (class class) -> %s\n" name)
   (multiple-value-bind (metaclass direct-superclasses options)
       (apply #'help-ensure-class rest)
     (declare (ignore #-clasp direct-superclasses))
@@ -511,13 +512,15 @@ because it contains a reference to the undefined class~%  ~A"
 	   (change-class class metaclass))
 	  ((not (eq (class-of class) metaclass))
 	   (error "When redefining a class, the metaclass can not change.")))
-    ;;; In Clasp reinitialize-instance of a class requires that a new stamp is chosen
+;;; In Clasp reinitialize-instance of a class requires that a new stamp is chosen
     (setf class (apply #'reinitialize-instance class :name name options))
     (when name
       (si:create-type-name name)
       (setf (find-class name) class))
+    (cmp::gf-log "In ensure-class-using-class (class class) Z\n")
     #+fast-dispatch
     (clos:invalidate-generic-functions-with-class-selector class)
+    (cmp::gf-log "Returning from ensure-class-using-class (class class)\n")
     class))
 
 (defun coerce-to-class (class-or-symbol &optional (fail nil))

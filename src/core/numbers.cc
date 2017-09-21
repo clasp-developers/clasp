@@ -58,6 +58,26 @@ core::Fixnum not_fixnum_error( core::T_sp o )
   TYPE_ERROR( o, cl::_sym_fixnum );
 }
 
+[[noreturn]] void not_comparable_error(Number_sp na, Number_sp nb)
+{
+    string naclass, nbclass;
+    if (na.fixnump())
+      naclass = "FIXNUM";
+    else if (na.single_floatp())
+      naclass = "SINGLE-FLOAT";
+    else
+      naclass = na->_instanceClass()->_classNameAsString();
+    if (nb.fixnump())
+      nbclass = "FIXNUM";
+    else if (nb.single_floatp())
+      nbclass = "SINGLE-FLOAT";
+    else
+      nbclass = nb->_instanceClass()->_classNameAsString();
+    
+    SIMPLE_ERROR(BF("Numbers of class %s and %s are not commensurable, or operation is unimplemented")
+                 % naclass % nbclass);
+}
+
 CL_DEFUN core::Number_sp add_mod8(core::T_O* x, core::T_O* y)
 {
   uint64_t z = (reinterpret_cast<uint64_t>(x)
@@ -457,7 +477,7 @@ CL_DEFUN Number_sp contagen_add(Number_sp na, Number_sp nb) {
       return Complex_O::create(r, i);
     } break;
     default:
-        SIMPLE_ERROR(BF("Cannot contagen_add two numbers of class %s and %s") % na->_instanceClass()->_classNameAsString() % nb->_instanceClass()->_classNameAsString());
+        not_comparable_error(na, nb);
   };
   MATH_DISPATCH_END();
 };
@@ -579,8 +599,8 @@ CL_DEFUN Number_sp contagen_sub(Number_sp na, Number_sp nb) {
       Real_sp i = gc::As<Real_sp>(contagen_sub(gc::As<Complex_sp>(na)->imaginary(), gc::As<Complex_sp>(nb)->imaginary()));
       return Complex_O::create(r, i);
     } break;
-    default:
-        SIMPLE_ERROR(BF("Cannot contagen_sub two numbers of class %s and %s") % na->_instanceClass()->_classNameAsString() % nb->_instanceClass()->_classNameAsString());
+  default:
+      not_comparable_error(na, nb);
   };
   MATH_DISPATCH_END();
 }
@@ -696,8 +716,8 @@ CL_DEFUN Number_sp contagen_mul(Number_sp na, Number_sp nb) {
       return Complex_O::create(gc::As<Real_sp>(contagen_sub(contagen_mul(x, u), contagen_mul(y, v))),
                                gc::As<Real_sp>(contagen_add(contagen_mul(x, v), contagen_mul(y, u))));
     } break;
-    default:
-        SIMPLE_ERROR(BF("Cannot contagen_mul two numbers of class %s and %s") % na->_instanceClass()->_classNameAsString() % nb->_instanceClass()->_classNameAsString());
+  default:
+      not_comparable_error(na, nb);
   };
   MATH_DISPATCH_END();
 }
@@ -806,7 +826,7 @@ CL_DEFUN Number_sp contagen_div(Number_sp na, Number_sp nb) {
     }
   }
   MATH_DISPATCH_END();
-  SIMPLE_ERROR(BF("Add support to div numbers %s[%s] and %s[%s]") % _rep_(na) % na->_instanceClass()->_classNameAsString() % _rep_(nb) % nb->_instanceClass()->_classNameAsString());
+  not_comparable_error(na, nb);
 }
 
 CL_LAMBDA(&rest numbers);
@@ -1114,8 +1134,8 @@ int basic_compare(Number_sp na, Number_sp nb) {
       return 1;
     }
 #endif
-    default:
-        SIMPLE_ERROR(BF("Cannot compare two numbers of class %s and %s") % na->_instanceClass()->_classNameAsString() % nb->_instanceClass()->_classNameAsString());
+  default:
+      not_comparable_error(na, nb);
   };
   MATH_DISPATCH_END();
 }
@@ -1282,8 +1302,31 @@ bool basic_equalp(Number_sp na, Number_sp nb) {
       LongFloat b = clasp_to_long_float(nb);
       return a == b;
     }
-    default:
-        SIMPLE_ERROR(BF("Cannot compare two numbers of class %s and %s") % na->_instanceClass()->_classNameAsString() % nb->_instanceClass()->_classNameAsString());
+  case_Complex_v_LongFloat:
+  case_Complex_v_Fixnum:
+  case_Complex_v_Bignum:
+  case_Complex_v_Ratio:
+  case_Complex_v_SingleFloat:
+  case_Complex_v_DoubleFloat : {
+      Number_sp aux = na;
+      na = nb;
+      nb = aux;
+      goto Complex_v_Y;
+    }
+  case_Fixnum_v_Complex:
+  case_Bignum_v_Complex:
+  case_Ratio_v_Complex:
+  case_SingleFloat_v_Complex:
+  case_DoubleFloat_v_Complex:
+  case_LongFloat_v_Complex:
+  Complex_v_Y:
+    return (clasp_zerop(gc::As<Complex_sp>(nb)->imaginary())
+            && basic_equalp(na, gc::As<Complex_sp>(nb)->real()));
+  case_Complex_v_Complex:
+    return (basic_equalp(gc::As<Complex_sp>(na)->real(), gc::As<Complex_sp>(nb)->real())
+            && basic_equalp(gc::As<Complex_sp>(na)->imaginary(), gc::As<Complex_sp>(nb)->imaginary()));
+  default:
+      not_comparable_error(na, nb);
   };
   MATH_DISPATCH_END();
 }
@@ -1306,7 +1349,7 @@ CL_DEFUN T_sp cl___NE_(List_sp args) {
 
 CL_LAMBDA(&rest args);
 CL_DECLARE();
-CL_DOCSTRING("EQ_");
+CL_DOCSTRING("_EQ_");
 CL_DEFUN T_sp cl___EQ_(List_sp args) {
   if (args.nilp())
     return (_lisp->_true());

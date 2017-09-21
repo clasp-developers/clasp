@@ -95,7 +95,7 @@ slot_method_name(T_sp gfun, T_sp args)
   }
   T_sp first = oCar(methods);
   T_sp slotd = eval::funcall(cl::_sym_slot_value,first,clos::_sym_slot_definition);
-  return eval::funcall(cl::_sym_slot_value,slotd,clos::_sym_name);
+  return eval::funcall(cl::_sym_slot_value,slotd,clos::_sym_NAME);
 }
 
 
@@ -106,7 +106,7 @@ slot_method_index(T_sp gfun, T_sp instance, T_sp args)
   T_sp slot_name = slot_method_name(gfun, args);
   unlikely_if (slot_name.nilp()) return _Nil<T_O>();
   else {
-    T_sp table = eval::funcall(cl::_sym_slot_value,cl__class_of(instance),clos::_sym_location_table);
+    T_sp table = eval::funcall(cl::_sym_slot_value,cl__class_of(instance),clos::_sym_LOCATION_TABLE);
                 /* The class might not be a standard class. This happens
                  * when a nonstandard class inherits from a standard class
                  * and does not add any new slot accessor.

@@ -265,6 +265,10 @@
     (primitive-nounwind "cc_realArrayDisplacement" %t*% (list %t*%))
     (primitive-nounwind "cc_realArrayDisplacedIndexOffset" %size_t% (list %t*%))
     (primitive-nounwind "cc_arrayTotalSize" %size_t% (list %t*%))
+    (primitive-nounwind "cc_arrayRank" %size_t% (list %t*%))
+    (primitive-nounwind "cc_arrayDimension" %size_t% (list %t*% %size_t%))
+    (primitive-nounwind "cc_simpleBitVectorAref" %uint% (list %t*% %size_t%))
+    (primitive-nounwind "cc_simpleBitVectorAset" %void% (list %t*% %size_t% %uint%))
     (primitive-nounwind "cc_initialize_gcroots_in_module" %void% (list %gcroots-in-module*% %tsp*% %size_t% %t*%))
     (primitive-nounwind "cc_shutdown_gcroots_in_module" %void% (list %gcroots-in-module*% ))
 

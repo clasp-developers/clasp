@@ -142,7 +142,7 @@
    #:typed-lexical-location #:lexical-location-type
    #:closure-pointer-dynamic-lexical-location
    #:describe-mir
-   #:assign-mir-instruction-datum-ids
+   #+stealth-gids #:assign-mir-instruction-datum-ids
    ))
 
 (defpackage #:cleavir-ir-gml

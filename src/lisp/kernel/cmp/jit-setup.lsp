@@ -475,7 +475,10 @@ The passed module is modified as a side-effect."
   (defun jit-add-module-return-dispatch-function (original-module dispatch-fn startup-fn shutdown-fn literals-list)
     (jit-link-fastgf-module original-module)
     (let ((module original-module))
-      (if *fastgf-dump-module* (llvm-sys:dump-module module))
+      (if *fastgf-dump-module*
+          (progn
+            (core:bformat t "literals-list -> %s\n" literals-list)
+            (llvm-sys:dump-module module)))
       (let* ((dispatch-name (llvm-sys:get-name dispatch-fn))
              (startup-name (llvm-sys:get-name startup-fn))
              (shutdown-name (llvm-sys:get-name shutdown-fn))

@@ -231,6 +231,37 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
+;;; Converting CORE::%ARRAY-RANK
+;;;
+;;; ARRAY-RANK for MDArrays
+(defmethod cleavir-generate-ast:convert-special
+    ((symbol (eql 'core::%array-rank)) form environment (system clasp-cleavir:clasp))
+  (destructuring-bind (mdarray) (rest form)
+    (make-instance 'clasp-cleavir-ast::array-rank-ast
+                   :mdarray (cleavir-generate-ast:convert mdarray environment system))))
+
+(defmethod cleavir-generate-ast:check-special-form-syntax ((head (eql 'core::%array-rank)) form)
+  (cleavir-code-utilities:check-form-proper-list form)
+  (cleavir-code-utilities:check-argcount form 1 1))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Converting CORE::%ARRAY-DIMENSION
+;;;
+;;; ARRAY-DIMENSION for MDArrays
+(defmethod cleavir-generate-ast:convert-special
+    ((symbol (eql 'core::%array-dimension)) form environment (system clasp-cleavir:clasp))
+  (destructuring-bind (mdarray axis) (rest form)
+    (make-instance 'clasp-cleavir-ast::array-dimension-ast
+                   :mdarray (cleavir-generate-ast:convert mdarray environment system)
+                   :axis (cleavir-generate-ast:convert axis environment system))))
+
+(defmethod cleavir-generate-ast:check-special-form-syntax ((head (eql 'core::%array-dimension)) form)
+  (cleavir-code-utilities:check-form-proper-list form)
+  (cleavir-code-utilities:check-argcount form 2 2))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
 ;;; Converting CATCH
 ;;;
 ;;; Convert catch into a call
@@ -272,11 +303,9 @@
     (cond 
       ((and (consp name) (eq (car name) 'cl:setf))
        (clasp-cleavir-ast:make-setf-fdefinition-ast
-	(cleavir-ast:make-load-time-value-ast `',(cadr name) t)
-	info))
+	(cleavir-ast:make-load-time-value-ast `',(cadr name) t)))
       ((consp name)
        (error "Illegal name for function - must be (setf xxx)"))
       (t
        (cleavir-ast:make-fdefinition-ast
-	(cleavir-ast:make-load-time-value-ast `',name t)
-	info)))))
+	(cleavir-ast:make-load-time-value-ast `',name t))))))

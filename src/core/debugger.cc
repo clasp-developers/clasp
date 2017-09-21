@@ -300,9 +300,10 @@ void low_level_backtrace(bool with_args) {
         if (sfi.notnilp()) {
           sourceName = gc::As<SourceFileInfo_sp>(sfi)->fileName();
         }
-        printf("_Index: %4d  Frame@%p(previous=%p)  closure@%p  closure->name[%40s]  line: %3d  file: %s", index, cur, cur->_Previous, closure.raw_(), name.c_str(), func->lineNumber(), sourceName.c_str());
+        printf("#%4d frame@%p closure@%p %s/%3d\n    %40s ", index, cur, closure.raw_(), sourceName.c_str(), func->lineNumber(), name.c_str() );
         if (with_args) {
-          printf(" args: %s", _rep_(cur->arguments()).c_str());
+          SimpleVector_sp args = cur->arguments();
+          for ( size_t i(0), iEnd(args->length()); i<iEnd; ++i ) { printf( " %s@%p", _rep_((*args)[i]).c_str(), (*args)[i].raw_()); }
         }
         printf("\n");
         goto SKIP_PRINT;
@@ -622,6 +623,10 @@ void tprint(void* ptr)
 {
   core::dbg_printTPtr((uintptr_clasp_t) ptr,false);
 }
+
+void tbacktrace() {
+  core::low_level_backtrace(true);
+};
 
 };
 namespace core {

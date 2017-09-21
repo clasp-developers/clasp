@@ -631,51 +631,30 @@ when this is t a lot of graphs will be generated.")
     ;; untagged is the actual offset.
     (%gep-variable cast (list (%i32 0) (%i32 1) untagged) "aref")))
 
-(defun translate-bit-aref (output array index fixnum-type)
-  ;; FIXME: makes lots of assumptions
+(defun translate-bit-aref (output array index)
   (let* ((array (%load array)) (index (%load index))
-         (var-offset (%ptrtoint index fixnum-type))
-         (untagged (%lshr var-offset cmp::+fixnum-shift+ :exact t :label "untagged fixnum"))
-         (word-index (%udiv untagged (%i64 cmp::+bit-vector-word-length+) :label "word-index"))
-         ;; Bits are stored starting with the most significant,
-         ;; i.e. #*1101 is 110100000000000000000000000000000000
-         ;; so we have to subtract.
-         (neg-internal-index (%urem untagged (%i64 cmp::+bit-vector-word-length+) :label "neg-internal-index"))
-         (internal-index (%sub (%i32 31) neg-internal-index :nuw t :nsw t :label "internal-index"))
-         (mask (%shl (%i32 1) internal-index :nuw t)) ; assumption: bit vector word length is 32
-         (type (llvm-sys:type-get-pointer-to (cmp::bit-vector-type)))
-         (cast (%bit-cast array type))
-         (wordptr (%gep-variable cast (list (%i32 0) (%i32 1) word-index) "bit-word-aref"))
-         (word (%load wordptr))
-         (unshifted-bit (%and word mask))
-         (bit (%lshr unshifted-bit internal-index :exact t))
-         (fixnum (%shl bit cmp::+fixnum-shift+ :nuw t))
-         (fixnum-as-ptr (%inttoptr fixnum cmp:%t*% "bit-aref-result")))
-    (%store fixnum-as-ptr output)))
-
-(defun translate-bit-aset (value array index fixnum-type)
-  ;; FIXME: same assumptions.
-  (let* ((value (%load value)) (array (%load array)) (index (%load index))
-         (var-offset (%ptrtoint index fixnum-type))
+         (var-offset (%ptrtoint index cmp:%size_t% "variable-offset"))
          (untagged (%lshr var-offset cmp::+fixnum-shift+ :exact t :label "untagged-offset"))
-         (word-index (%udiv untagged (%i64 cmp::+bit-vector-word-length+) :label "word-index"))
-         (neg-internal-index (%urem untagged (%i64 cmp::+bit-vector-word-length+) :label "neg-internal-index"))
-         (internal-index (%sub (%i32 31) neg-internal-index :nuw t :nsw t :label "internal-index"))
-         ;; Assume the value is a fixnum.
-         (untagged-value (%lshr value cmp::+fixnum-shift+ :exact t :label "untagged-value"))
-         (mask (%shl (%i32 1) internal-index :nuw t)) ; same assumption as above
-         (type (cmp::bit-vector-type))
-         (cast (%bit-cast array (llvm-sys:type-get-pointer-to type)))
-         (wordptr (%gep-variable cast (list (%i32 0) (%i32 1) word-index) "bit-word-aref"))
-         (word (%load wordptr))
-         (new-word (%or word mask)))
-    (%store new-word wordptr)))
+         (bit (%intrinsic-call "cc_simpleBitVectorAref" (list array untagged) "bit-aref"))
+         (tagged-bit (%shl bit cmp::+fixnum-shift+ :nuw t :label "tagged-bit"))
+         ;; inttoptr intrinsically zexts, according to docs.
+         (fixnum (%inttoptr tagged-bit cmp:%t*% "bit-aref-result")))
+    (%store fixnum output)))
+
+(defun translate-bit-aset (value array index)
+  (let* ((value (%load value)) (array (%load array)) (index (%load index))
+         (var-offset (%ptrtoint index cmp:%size_t% "variable-offset"))
+         (offset (%lshr var-offset cmp::+fixnum-shift+ :exact t :label "untagged-offset"))
+         (uint-value (%ptrtoint value cmp::%uint%))
+         (untagged-value (%lshr uint-value cmp::+fixnum-shift+ :exact t :label "untagged-value")))
+    ;; Note: We cannot label void calls, because then they'll get a variable
+    (%intrinsic-call "cc_simpleBitVectorAset" (list array offset untagged-value))))
 
 (defmethod translate-simple-instruction
     ((instruction cleavir-ir:aref-instruction) return-value inputs outputs abi function-info)
   (let ((et (cleavir-ir:element-type instruction)))
     (if (eq et 'bit) ; have to special case due to the layout.
-        (translate-bit-aref (first outputs) (first inputs) (second inputs) (%default-int-type abi))
+        (translate-bit-aref (first outputs) (first inputs) (second inputs))
         (%store (%load (gen-vector-effective-address (first inputs) (second inputs)
                                                      (cleavir-ir:element-type instruction)
                                                      (%default-int-type abi)))
@@ -685,7 +664,7 @@ when this is t a lot of graphs will be generated.")
     ((instruction cleavir-ir:aset-instruction) return-value inputs outputs abi function-info)
   (let ((et (cleavir-ir:element-type instruction)))
     (if (eq et 'bit) ; ditto above
-        (translate-bit-aset (third inputs) (first inputs) (second inputs) (%default-int-type abi))
+        (translate-bit-aset (third inputs) (first inputs) (second inputs))
         (%store (%load (third inputs))
                 (gen-vector-effective-address (first inputs) (second inputs)
                                               (cleavir-ir:element-type instruction)
@@ -740,6 +719,35 @@ when this is t a lot of graphs will be generated.")
           (first outputs)))
 
 (defmethod translate-simple-instruction
+    ((instruction clasp-cleavir-hir::array-rank-instruction)
+     return-value inputs outputs abi function-info)
+  (declare (ignore return-value function-info abi))
+  (%store (%inttoptr
+           (%shl
+            (%intrinsic-call "cc_arrayRank"
+                             (list (%load (first inputs))))
+            cmp::+fixnum-shift+
+            :label "fixnum" :nuw t)
+           cmp:%t*%)
+          (first outputs)))
+
+(defmethod translate-simple-instruction
+    ((instruction clasp-cleavir-hir::array-dimension-instruction)
+     return-value inputs outputs abi function-info)
+  (declare (ignore return-value function-info))
+  (%store (%inttoptr
+           (%shl
+            (%intrinsic-call "cc_arrayDimension"
+                             (list (%load (first inputs))
+                                   (%lshr (%ptrtoint (%load (second inputs)) (%default-int-type abi))
+                                          cmp::+fixnum-shift+ 
+                                          :exact t :label "untagged fixnum")))
+            cmp::+fixnum-shift+
+            :label "fixnum" :nuw t)
+           cmp:%t*%)
+          (first outputs)))
+
+(defmethod translate-simple-instruction
     ((instruction cleavir-ir:memref2-instruction) return-value inputs outputs abi function-info)
   (let* ((tptr (%load (first inputs)))
          (offset (second inputs))
@@ -767,6 +775,8 @@ when this is t a lot of graphs will be generated.")
   (declare (ignore return-value abi function-info))
   (let ((intrinsic
           (ecase (cleavir-ir:element-type instruction)
+            ((base-char) "to_object_claspChar")
+            ((character) "to_object_claspCharacter")
             ((ext:byte8) "to_object_uint8")
             ((ext:integer8) "to_object_int8")
             ((ext:byte16) "to_object_uint16")
@@ -787,6 +797,8 @@ when this is t a lot of graphs will be generated.")
   (declare (ignore return-value abi function-info))
   (let ((intrinsic
           (ecase (cleavir-ir:element-type instruction)
+            ((base-char) "from_object_claspChar")
+            ((character) "from_object_claspCharacter")
             ((ext:byte8) "from_object_uint8")
             ((ext:integer8) "from_object_int8")
             ((ext:byte16) "from_object_uint16")
@@ -860,17 +872,27 @@ when this is t a lot of graphs will be generated.")
 ;;; As it happens, we do the same IR generation for singles and doubles.
 ;;; This is because the LLVM value descriptors have associated types,
 ;;; so fadd of doubles is different from fadd of singles.
+;;; The generated boxes and unboxes are where actual types are more critical.
 
-(define-fp-binop cleavir-ir:single-float-add-instruction %fadd)
-(define-fp-binop cleavir-ir:single-float-sub-instruction %fsub)
-(define-fp-binop cleavir-ir:single-float-mul-instruction %fmul)
-(define-fp-binop cleavir-ir:single-float-div-instruction %fdiv)
+(define-fp-binop cleavir-ir:float-add-instruction %fadd)
+(define-fp-binop cleavir-ir:float-sub-instruction %fsub)
+(define-fp-binop cleavir-ir:float-mul-instruction %fmul)
+(define-fp-binop cleavir-ir:float-div-instruction %fdiv)
 
-(define-fp-binop cleavir-ir:double-float-add-instruction %fadd)
-(define-fp-binop cleavir-ir:double-float-sub-instruction %fsub)
-(define-fp-binop cleavir-ir:double-float-mul-instruction %fmul)
-(define-fp-binop cleavir-ir:double-float-div-instruction %fdiv)
 
+;;; Arithmetic conversion
+
+(defmethod translate-simple-instruction
+    ((instruction cleavir-ir:coerce-instruction) return-value inputs outputs abi function-info)
+  (declare (ignore return-value abi function-info))
+  (let ((input (%load (first inputs))) (output (first outputs)))
+    (%store
+     (ecase (cleavir-ir:from-type instruction)
+       ((single-float)
+        (ecase (cleavir-ir:to-type instruction)
+          ((double-float)
+           (%fpext input cmp::%double%)))))
+     output)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -1004,6 +1026,36 @@ when this is t a lot of graphs will be generated.")
          (cmp-lt (%icmp-eq x y)))
       (%cond-br cmp-lt (first successors) (second successors))))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Float comparison instructions
+
+;;; Thanks to LLVM semantics, we translate these identically for all
+;;; float types. Types are more important for un/boxing.
+
+(defmethod translate-branch-instruction
+    ((instruction cleavir-ir:float-less-instruction) return-value inputs outputs successors abi function-info)
+  (let* ((x (%load (first inputs)))
+         (y (%load (second inputs)))
+         (cmp (%fcmp-olt x y)))
+    (%cond-br cmp (first successors) (second successors))))
+
+(defmethod translate-branch-instruction
+    ((instruction cleavir-ir:float-not-greater-instruction)
+     return-value inputs outputs successors abi function-info)
+  (let* ((x (%load (first inputs)))
+         (y (%load (second inputs)))
+         (cmp (%fcmp-ole x y)))
+    (%cond-br cmp (first successors) (second successors))))
+
+(defmethod translate-branch-instruction
+    ((instruction cleavir-ir:float-equal-instruction)
+     return-value inputs outputs successors abi function-info)
+  (let* ((x (%load (first inputs)))
+         (y (%load (second inputs)))
+         (cmp (%fcmp-oeq x y)))
+    (%cond-br cmp (first successors) (second successors))))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
 ;;; Main entry point.
@@ -1110,7 +1162,7 @@ COMPILE-FILE will use the default *clasp-env*."
       (my-hir-transformations hir clasp-system nil nil)
       (quick-draw-hir hir "hir-pre-mir")
       (cleavir-ir:hir-to-mir hir clasp-system nil nil)
-      (cc-mir:assign-mir-instruction-datum-ids hir)
+      #+stealth-gids(cc-mir:assign-mir-instruction-datum-ids hir)
       (clasp-cleavir:finalize-unwind-and-landing-pad-instructions hir map-enter-to-function-info)
       (setf *ct-finalize-unwind-and-landing-pad-instructions* (compiler-timer-elapsed))
       (quick-draw-hir hir "mir")

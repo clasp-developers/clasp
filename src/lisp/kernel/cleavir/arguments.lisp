@@ -271,9 +271,59 @@
 	#+(or)(format t "compile-all-register-required-arguments store: ~a to ~a  target: ~a~%" arg dest target)
 	(llvm-sys:create-store cmp:*irbuilder* arg dest nil)))))
 
+(defun process-cleavir-lambda-list (lambda-list)
+  ;; We assume that the lambda list is in its correct format:
+  ;; 1) required arguments are lexical locations.
+  ;; 2) optional arguments are (<lexical location> <lexical location>)
+  ;; 3) keyword arguments are (<symbol> <lexical location> <lexical location>)
+  ;; This lets us cheap out on parsing, except &rest and &allow-other-keys.
+  (let (required optional rest-type rest key aok-p key-flag
+        (required-count 0) (optional-count 0) (key-count 0))
+    (loop for item in lambda-list
+          do (case item
+               ((&optional) #|ignore|#)
+               ((&key) (setf key-flag t))
+               ((&rest core:&va-rest) (setf rest-type item))
+               ((&allow-other-keys) (setf aok-p t))
+               (t (if (listp item)
+                      (cond ((= (length item) 2)
+                             ;; optional
+                             (incf optional-count)
+                             ;; above, we expect (location -p whatever)
+                             ;; though it's specified as (var init -p)
+                             ;; FIX ME
+                             (push (first item) optional)
+                             (push (second item) optional)
+                             (push nil optional))
+                            (t ;; key, assumedly
+                             (incf key-count)
+                             (push (first item) key)
+                             (push (first item) key)
+                             ;; above, we treat this as being the location,
+                             ;; even though from process-lambda-list it's
+                             ;; the initform.
+                             ;; This file needs work FIXME.
+                             (push (second item) key)
+                             (push (third item) key)))
+                      ;; nonlist; we picked off lambda list keywords, so it's an argument.
+                      (cond (rest-type
+                             ;; we've seen a &rest lambda list keyword, so this must be that
+                             (setf rest item))
+                            ;; haven't seen anything, it's required
+                            (t (incf required-count)
+                               (push item required)))))))
+    (values (cons required-count (nreverse required))
+            (cons optional-count (nreverse optional))
+            rest
+            key-flag
+            (cons key-count (nreverse key))
+            aok-p
+            nil ; aux-p; unused here
+            (if (eq rest-type 'core:&va-rest) t nil))))
+
 (defun compile-lambda-list-code (lambda-list outputs calling-conv)
   (multiple-value-bind (reqargs optargs rest-var key-flag keyargs allow-other-keys unused-auxs varest-p)
-      (core:process-lambda-list lambda-list 'core::function)
+      (process-cleavir-lambda-list lambda-list)
     (if (cmp::calling-convention-use-only-registers calling-conv)
         ;; Special cases (foo) (foo x) (foo x y) (foo x y z)  - passed in registers
         (compile-all-register-required-arguments reqargs outputs calling-conv)

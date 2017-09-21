@@ -29,38 +29,44 @@
 ;;;
 ;;; Add :LOG-CMPGF to log fastgf messages during the slow path.
 ;;;    
-#+(or)
+;;#+(or)
 (eval-when (:compile-toplevel :load-toplevel :execute)
-  (pushnew :debug-cmpgf *features*))
-;#+(or)
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (pushnew :log-cmpgf *features*))
+  (pushnew :debug-cmpfastgf *features*))
 
-
-
+(defvar *debug-cmpfastgf-trace* nil)
 (defvar *message-counter* nil)
-#+debug-cmpgf
+#+debug-cmpfastgf
 (progn
   (defun insert-message ()
-    (irc-intrinsic-call "cc_dispatch_debug" (list (jit-constant-i32 0) (jit-constant-i64 (incf *message-counter*)))))
+    (when *debug-cmpfastgf-trace*
+      (irc-intrinsic-call "cc_dispatch_debug" (list (jit-constant-i32 0) (jit-constant-i64 (incf *message-counter*))))))
   (defun debug-argument (arg arg-tag)
-    (insert-message)
-    (irc-intrinsic-call "cc_dispatch_debug" (list (jit-constant-i32 1) arg))
-    (irc-intrinsic-call "cc_dispatch_debug" (list (jit-constant-i32 2) arg-tag)))
+    (when *debug-cmpfastgf-trace*
+      (insert-message)
+      (irc-intrinsic-call "cc_dispatch_debug" (list (jit-constant-i32 1) arg))
+      (irc-intrinsic-call "cc_dispatch_debug" (list (jit-constant-i32 2) arg-tag))))
   (defun debug-pointer (ptr)
-    (insert-message)
-    (irc-intrinsic-call "cc_dispatch_debug" (list (jit-constant-i32 4) ptr)))
+    (when *debug-cmpfastgf-trace*
+      (insert-message)
+      (irc-intrinsic-call "cc_dispatch_debug" (list (jit-constant-i32 4) ptr))))
   (defun debug-arglist (ptr)
-    (insert-message)
-    (irc-intrinsic-call "cc_dispatch_debug" (list (jit-constant-i32 3) ptr)))
+    (when *debug-cmpfastgf-trace*
+      (insert-message)
+      (irc-intrinsic-call "cc_dispatch_debug" (list (jit-constant-i32 3) ptr))))
   (defun debug-va_list (ptr)
-    (insert-message)
-    (irc-intrinsic-call "cc_dispatch_debug" (list (jit-constant-i32 5) ptr)))
+    (when *debug-cmpfastgf-trace*
+      (insert-message)
+      (irc-intrinsic-call "cc_dispatch_debug" (list (jit-constant-i32 5) ptr))))
+  (defun debug-stamp (ptr)
+    (when *debug-cmpfastgf-trace*
+      (irc-intrinsic-call "cc_dispatch_debug" (list (jit-constant-i32 6) ptr))))
+  (defun debug-dispatch (ptr)
+    (when *debug-cmpfastgf-trace*
+      (irc-intrinsic-call "cc_dispatch_debug" (list (jit-constant-i32 7) ptr))))
   (defun debug-call (fn args)
-    (irc-intrinsic-call fn args))
-  (defmacro insert-message ())
-  (defmacro gf-log (fmt &rest fmt-args) `(format t ,fmt ,@fmt-args))
-  (defmacro gf-do (&body code) `(progn ,@code)))
+    (when *debug-cmpfastgf-trace*
+      (irc-intrinsic-call fn args)))
+  (defmacro insert-message ()))
 
 #-debug-cmpgf
 (progn
@@ -69,10 +75,10 @@
   (defun debug-pointer (ptr))
   (defun debug-arglist (ptr))
   (defun debug-va_list (ptr))
+  (defun debug-stamp (ptr))
+  (defun debug-dispatch (ptr))
   (defun debug-call (fn args))
-  (defmacro insert-message ())
-  (defmacro gf-log (fmt &rest fmt-args) nil)
-  (defmacro gf-do (&body code) nil))
+  (defmacro insert-message ()))
 
 
 ;;; ------------------------------------------------------------
@@ -90,10 +96,11 @@
 (defvar *bad-tag-bb*)
 (defvar *eql-selectors*)
 
+(defstruct (klass (:type vector) :named) stamp name)
 (defstruct (outcome (:type vector) :named) outcome)
 (defstruct (match (:type vector) :named) outcome)
-(defstruct (single (:include match) (:type vector) :named) stamp class-name)
-(defstruct (range (:include match) (:type vector) :named) first-stamp last-stamp reversed-class-names)
+(defstruct (single (:include match) (:type vector) :named) stamp class)
+(defstruct (range (:include match) (:type vector) :named) first-stamp last-stamp reversed-classes)
 (defstruct (skip (:include match) (:type vector) :named))
 (defstruct (node (:type vector) :named) (eql-specializers (make-hash-table :test #'eql) :type hash-table)
            (class-specializers nil :type list))
@@ -133,10 +140,10 @@
    with the value in the CAR  - the 'EQL symbol has been removed"
   (consp spec))
 
-(defun node-add (node spec sidx rest-specs goal)
+(defun node-add (node spec argument-index specializers goal)
   (if (eql-specializer-p spec)
-      (node-eql-add node spec sidx rest-specs goal)
-      (node-class-add node spec sidx rest-specs goal)))
+      (node-eql-add node spec argument-index specializers goal)
+      (node-class-add node spec argument-index specializers goal)))
 
 (defun insert-sorted (item lst &optional (test #'<) (key #'single-stamp))
   (if (null lst)
@@ -146,42 +153,54 @@
           (cons (car lst) (insert-sorted item (cdr lst) test key)))))
 
 
-(defun ensure-outcome (sidx specs goal)
-  (if (>= sidx (length specs))
+(defun ensure-outcome (argument-index specs goal)
+  (if (>= argument-index (length specs))
       (make-outcome :outcome goal)
       (let ((node (make-node)))
-        (node-add node (svref specs sidx) (1+ sidx) specs goal)
+        (node-add node (svref specs argument-index) (1+ argument-index) specs goal)
         node)))
 
-(defun node-class-add (node spec sidx rest-specs goal)
-  (or (<= sidx (length rest-specs)) (error "Overflow in sidx ~a must be <= ~a" sidx (length rest-specs)))
+(defun safe-class-name (class-designator)
+  (cond
+    ((symbolp class-designator) class-designator)
+    ((clos::classp class-designator) (class-name class-designator))
+    ((klass-p class-designator) (klass-name class-designator))
+    (t (error "Illegal class-designator"))))
+
+(defun node-class-add (node spec argument-index specializers goal)
+  (or (<= argument-index (length specializers))
+      (error "Overflow in argument-index ~a must be <= ~a" argument-index (length specializers)))
   (if spec
-      (let* ((stamp (core:class-stamp-for-instances (if (clos:classp spec) spec (find-class spec))))
+      (let* ((stamp (cond
+                      ((clos:classp spec) (core:class-stamp-for-instances spec))
+                      ((symbolp spec) (core:class-stamp-for-instances (find-class spec)))
+                      ((klass-p spec) (klass-stamp spec))
+                      (t (error "Illegal specializer ~a" spec))))
              (match (find stamp (node-class-specializers node) :test #'eql :key #'single-stamp)))
         (if match
             (if (outcome-p (match-outcome match))
-                (warn "The dispatch function has two selectors with different outcomes - rest-specs: ~a goal: ~a" rest-specs goal)
-                (node-add (match-outcome match) (svref rest-specs sidx) (1+ sidx) rest-specs goal))
+                (warn "The dispatch function has two selectors with different outcomes~%---- argument-index: ~a~%---- specializers: ~a~%---- goal: ~a~%---- current node: ~a~%---- stamp: ~a~%---- match: ~a" argument-index specializers goal node stamp match)
+                (node-add (match-outcome match) (svref specializers argument-index) (1+ argument-index) specializers goal))
             (setf (node-class-specializers node)
                   (insert-sorted (make-single :stamp stamp
-                                              :class-name spec
-                                              :outcome (ensure-outcome sidx rest-specs goal))
+                                              :class spec
+                                              :outcome (ensure-outcome argument-index specializers goal))
                                  (node-class-specializers node)))))
       (let ((match (first (node-class-specializers node))))
         (if match
-            (node-add (match-outcome match) (svref rest-specs sidx) (1+ sidx) rest-specs goal)
+            (node-add (match-outcome match) (svref specializers argument-index) (1+ argument-index) specializers goal)
             (setf (node-class-specializers node)
-                  (list (make-skip :outcome (ensure-outcome sidx rest-specs goal))))))))
+                  (list (make-skip :outcome (ensure-outcome argument-index specializers goal))))))))
 
-(defun node-eql-add (node spec sidx rest-specs goal)
+(defun node-eql-add (node spec argument-index specializers goal)
   (let* ((eql-value (car spec))
 	 (eql-ht (node-eql-specializers node))
          (node (gethash eql-value eql-ht nil)))
     (if node
         (progn
           (or (node-p node) (error "The node ~a must be of node type" node))
-          (node-add node (svref rest-specs sidx) (1+ sidx) rest-specs goal))
-        (let ((outcome (ensure-outcome sidx rest-specs goal)))
+          (node-add node (svref specializers argument-index) (1+ argument-index) specializers goal))
+        (let ((outcome (ensure-outcome argument-index specializers goal)))
           (setf (gethash eql-value eql-ht) outcome)))))
 
 (defun extends-range-p (prev-last-stamp prev-outcome next)
@@ -203,7 +222,7 @@
                                  head))
            ;; The new head extends the previous range
            (incf (range-last-stamp prev))
-           (push (single-class-name head) (range-reversed-class-names prev))
+           (push (single-class head) (range-reversed-classes prev))
            (setf merged t))
           ((range-p prev)
            ;; The new head doesn't extend the prev range
@@ -217,8 +236,8 @@
            (pop merged-specializers)
            (push (make-range :first-stamp (single-stamp prev)
                              :last-stamp (single-stamp head)
-                             :reversed-class-names (list (single-class-name head)
-                                                         (single-class-name prev))
+                             :reversed-classes (list (single-class head)
+                                                     (single-class prev))
                              :outcome (single-outcome head))
                  merged-specializers)
            (setf merged t))
@@ -307,7 +326,7 @@
 (defvar *map-tag-outcomes* (make-hash-table))
 
 (defun gather-outcomes (outcome)
-  (let ((tag (intern (format nil "T~a" (hash-table-count *map-tag-outcomes*)))))
+  (let ((tag (intern (core:bformat nil "T%s" (hash-table-count *map-tag-outcomes*)))))
     (setf (gethash tag *map-tag-outcomes*) outcome)
     tag))
 
@@ -345,13 +364,13 @@
   (cond
     ((null node)
      #+(or)(let ((nodeid (gensym)))
-	     (format fout "~a [shape = circle];~%" nodeid)
-	     (format fout "~a [label = \"nil\"];~%" nodeid)
+	     (core:bformat fout "%s [shape = circle];\n" (string nodeid))
+	     (core:bformat fout "%s [label = \"nil\"];\n" (string nodeid))
 	     nodeid)
      nil)
     ((outcome-p node)
      (let ((nodeid (gensym)))
-       (format fout "~a [shape=ellipse,label=\"~a\"];~%" nodeid "HIT" #++(outcome-outcome node))
+       (core:bformat fout "%s [shape=ellipse,label=\"HIT-%s\"];\n" (string nodeid) (core:object-address (outcome-outcome node)))
        nodeid))
     ((node-p node)
      (let* ((nodeid (gensym))
@@ -359,7 +378,7 @@
 	    (eql-entries (let (result)
                            (maphash (lambda (key value)
                                       (push (list (prog1 idx (incf idx))
-                                                  (format nil "eql ~a" key)
+                                                  (core:bformat nil "eql %s" key)
                                                   (draw-node fout value))
                                             result))
                                     (node-eql-specializers node))
@@ -367,7 +386,7 @@
               #+(or)(loop for key being the hash-keys of (node-eql-specializers node)
                        using (hash-value value)
                        collect (list (prog1 idx (incf idx))
-                                     (format nil "eql ~a" key)
+                                     (core:bformat nil "eql %s" key)
                                      (draw-node fout value))))
 	    (class-entries
              (let (result)
@@ -375,41 +394,33 @@
                  (push (list (prog1 idx (incf idx))
                              (cond
                                ((single-p x)
-                                (format nil "~a;~a" (single-stamp x) (class-name (single-class-name x))))
+                                (core:bformat nil "%s;%s" (single-stamp x) (safe-class-name (single-class x))))
                                ((range-p x)
-                                (format nil "~a-~a;~a" (range-first-stamp x) (range-last-stamp x) (mapcar #'class-name (reverse (range-reversed-class-names x)))))
+                                (core:bformat nil "%s-%s;%s" (range-first-stamp x) (range-last-stamp x) (mapcar #'safe-class-name (reverse (range-reversed-classes x)))))
                                ((skip-p x)
-                                (format nil "SKIP"))
+                                (core:bformat nil "SKIP"))
                                (t (error "Unknown class-specializer type ~a" x)))
                              (draw-node fout (match-outcome x))) result))
-               result)
-              #+(or)(loop for x in (node-class-specializers node)
-                       collect (list (prog1 idx (incf idx))
-                                     (cond
-                                       ((single-p x)
-                                        (format nil "~a;~a" (single-stamp x) (class-name (single-class-name x))))
-                                       ((range-p x)
-                                        (format nil "~a-~a;~a" (range-first-stamp x) (range-last-stamp x) (mapcar #'class-name (reverse (range-reversed-class-names x)))))
-                                       ((skip-p x)
-                                        (format nil "SKIP"))
-                                       (t (error "Unknown class-specializer type ~a" x)))
-                                     (draw-node fout (match-outcome x)))))
+               (let ((rev-res (reverse result)))
+                 rev-res)))
 	    (entries (append eql-entries class-entries)))
-       (format fout "~a [shape = record, label = \"~{ <f~a> ~a ~^|~}\" ];~%" nodeid
-               (let (result)
-                 (dolist (x entries)
-                   (push (second x) result)
-                   (push (first x) result))
-                 result))
+       (core:bformat fout "%s [shape = record, label = \"" (string nodeid))
+       (let ((first-one t))
+         (dolist (x entries)
+           (if first-one
+               (setq first-one nil)
+               (core:bformat fout "| "))
+           (core:bformat fout " <f%s> %s " (first x) (second x)))
+         (core:bformat fout "\" ];\n"))
        (mapc (lambda (x)
-               (format fout "~a:<f~a> -> ~a;~%" nodeid (first x) (third x)))
+               (core:bformat fout "%s:<f%s> -> %s;\n" (string nodeid) (first x) (string (third x))))
              entries)
        #+(or)(loop for x in entries
-                do (format fout "~a:<f~a> -> ~a;~%" nodeid (first x) (third x)))
+                do (core:bformat fout "~a:<f~a> -> ~a;\n" (string nodeid) (first x) (string (third x))))
        nodeid))
     (t (error "Handle draw-node for ~a" node )
        #+(or)(let ((id (gensym)))
-	       (format fout "~a [ label = \"~a\"];~%" id node)
+	       (core:bformat fout "~a [ label = \"%s\"];\n" id node)
 	       id))))
 
 
@@ -420,16 +431,16 @@
 
 (defmacro with-graph ((name fout &rest open-args) &body body)
   `(with-open-file (,fout ,@open-args)
-     (format ,fout "digraph ~a {~%" ,name)
+     (core:bformat ,fout "digraph %s {\n" ,name)
      ,@body
-     (format ,fout "}~%")))
+     (core:bformat ,fout "}\n")))
 
 (defun draw-graph (pathname dtree)
   (with-graph ("G" fout pathname :direction :output)
-    (format fout "graph [ rankdir = \"LR\"];~%")
+    (core:bformat fout "graph [ rankdir = \"LR\"];\n")
     (let ((startid (gensym)))
-      (format fout "~a [ label = \"Start\", shape = diamond ];~%" startid)
-      (format fout "~a -> ~a;~%" startid (draw-node fout (dtree-root dtree))))))
+      (core:bformat fout "%s [ label = \"Start\", shape = diamond ];\n" (string startid))
+      (core:bformat fout "%s -> %s;\n" (string startid) (string (draw-node fout (dtree-root dtree)))))))
 
 (defun lookup-eql-selector (eql-test)
   (let ((tagged-immediate (core:create-tagged-immediate-value-or-nil eql-test)))
@@ -487,7 +498,7 @@
     (irc-begin-block on-to-class-specializers)))
 
 #++(defun gather-outcomes (outcome)
-  (let ((tag (intern (format nil "T~a" (hash-table-count *map-tag-outcomes*)))))
+  (let ((tag (intern (core:bformat nil "T%s" (hash-table-count *map-tag-outcomes*)))))
     (setf (gethash tag *map-tag-outcomes*) outcome)
     tag))
 
@@ -550,7 +561,8 @@
       (debug-call "debugPointer" (list (irc-bit-cast effective-method %i8*%)))
       (irc-intrinsic-call "llvm.va_end" (list (irc-pointer-cast args %i8*% "local-arglist-i8*")))
       ;; This is where I could insert the slot reader if the effective method wraps a single accessor
-      ;; 
+      ;;
+      (debug-dispatch effective-method)
       (irc-ret (irc-intrinsic-call "cc_dispatch_effective_method" (list effective-method gf gf-args) "ret")))))
 
 (defun codegen-outcome (node args gf gf-args)
@@ -615,96 +627,9 @@
 (defun codegen-arg-stamp (arg)
   "Return a uintptr_t llvm::Value that contains the stamp for this object"
   ;; First check the tag
-  (irc-intrinsic-call "cc_read_stamp" (list (irc-bit-cast arg %void*%)))
-  #+(or)(let* ((tagged-ptr (irc-ptr-to-int arg %uintptr_t%))
-               (tag (irc-and tagged-ptr (jit-constant-uintptr_t +tag-mask+))))
-          (insert-message)
-          (debug-argument tagged-ptr tag)
-          (let ((fixnum-bb (irc-basic-block-create "fixnum-bb"))
-                (cons-bb (irc-basic-block-create "cons-bb"))
-                (general-bb (irc-basic-block-create "general-bb"))
-                (single-float-bb (irc-basic-block-create "single-float-bb"))
-                (character-bb (irc-basic-block-create "character-bb"))
-                (valist_s-bb (irc-basic-block-create "valists-bb"))
-                (general-or-instance-bb (irc-basic-block-create "general-or-instance-bb"))
-                (instance-bb (irc-basic-block-create "instance-bb"))
-                (maybe-funcallable-instance-bb (irc-basic-block-create "funcallable-instance-bb"))
-                (done-bb (irc-basic-block-create "done-bb")))
-            (let ((tag-switch (irc-switch tag *bad-tag-bb* 7)))
-              (mapc (lambda (tag-bb)
-                      (let ((tag (car tag-bb))
-                            (bb (cadr tag-bb)))
-                        (irc-add-case tag-switch (jit-constant-uintptr_t tag) bb)))
-                    (list (list +fixnum-tag+ fixnum-bb)
-                          (list +fixnum1-tag+ fixnum-bb)
-                          (list +cons-tag+ cons-bb)
-                          (list +single-float-tag+ single-float-bb)
-                          (list +character-tag+ character-bb)
-                          (list +valist_s-tag+ valist_s-bb)
-                          (list +general-tag+ general-or-instance-bb)))
-              (let (fixnum-stamp fixnum1-stamp cons-stamp general-stamp instance-stamp single-float-stamp character-stamp valist_s-stamp)
-                (irc-begin-block fixnum-bb)
-                (setf fixnum-stamp (jit-constant-i64 +fixnum-stamp+))
-                (insert-message)
-                (irc-br done-bb)
-                (irc-begin-block cons-bb)
-                (setf cons-stamp (jit-constant-i64 +cons-stamp+))
-                (insert-message)
-                (irc-br done-bb)
-                (irc-begin-block single-float-bb)
-                (setf single-float-stamp (jit-constant-i64 +single-float-stamp+))
-                (insert-message)
-                (irc-br done-bb)
-                (irc-begin-block character-bb)
-                (setf character-stamp (jit-constant-i64 +character-stamp+))
-                (insert-message)
-                (irc-br done-bb)
-                (irc-begin-block valist_s-bb)
-                (setf valist_s-stamp (jit-constant-i64 +valist_s-stamp+))
-                (insert-message)
-                (irc-br done-bb)
-                (irc-begin-block general-or-instance-bb)
-                (let* ((header-ptr (irc-int-to-ptr (irc-sub (irc-ptr-to-int arg %uintptr_t%) (jit-constant-uintptr_t (+ +general-tag+ +header-size+)) "sub") %uintptr_t*% "header-ptr"))
-                       (header-val (irc-load header-ptr "header-val")))
-                  (insert-message)
-                  (debug-call "debugPrint_size_t" (list header-val))
-                  (setf general-stamp (llvm-sys:create-lshr-value-uint64 *irbuilder* header-val +stamp-shift+ "gstamp" nil))
-                  (let ((instance-cmp (irc-icmp-eq general-stamp (jit-constant-uintptr_t +instance-kind+))))
-                    (irc-cond-br instance-cmp instance-bb maybe-funcallable-instance-bb))
-                  (irc-begin-block maybe-funcallable-instance-bb)
-                  (let ((funcallable-instance-cmp (irc-icmp-eq general-stamp (jit-constant-uintptr_t +funcallable-instance-kind+))))
-                    (irc-cond-br funcallable-instance-cmp instance-bb general-bb))
-                  (irc-begin-block instance-bb)
-                  (insert-message)
-                  (let* ((rack-ptr-addr-int (irc-add (irc-ptr-to-int arg %uintptr_t%)
-                                                     (jit-constant-uintptr_t (- +instance-rack-offset+
-                                                                                +general-tag+))))
-                         (rack-ptr-addr (irc-int-to-ptr rack-ptr-addr-int %uintptr_t*%))
-                         (rack-tagged (irc-load rack-ptr-addr))
-                         (stamp-ptr (irc-int-to-ptr (irc-add rack-tagged (jit-constant-uintptr_t (- +instance-rack-stamp-offset+ +general-tag+))) %uintptr_t*%))
-                         (stamp-fixnum (irc-load stamp-ptr))
-                         (stamp (llvm-sys:create-lshr-value-uint64 *irbuilder* stamp-fixnum +fixnum-shift+ "stamp" nil)))
-                    (debug-call "debugPrint_size_t" (list stamp))
-                    (setf instance-stamp stamp)
-                    (irc-br done-bb)))
-                (irc-begin-block general-bb)
-                (debug-call "debugPrint_size_t" (list general-stamp))
-                (irc-br done-bb)
-                (irc-begin-block done-bb)
-                (let* ((phi-bbs (list (list fixnum-stamp fixnum-bb)
-                                      (list cons-stamp cons-bb)
-                                      (list single-float-stamp single-float-bb)
-                                      (list character-stamp character-bb)
-                                      (list valist_s-stamp valist_s-bb)
-                                      (list general-stamp general-bb)
-                                      (list instance-stamp instance-bb)))
-                       (stamp-phi (irc-phi %i64% (length phi-bbs) "stamp")))
-                  (mapc (lambda (val-bb)
-                          (let ((val (first val-bb))
-                                (bb (second val-bb)))
-                            (irc-phi-add-incoming stamp-phi val bb)))
-                        phi-bbs)
-                  stamp-phi))))))
+  (let ((stamp (irc-intrinsic-call "cc_read_stamp" (list (irc-bit-cast arg %void*%)))))
+    (debug-stamp stamp)
+    stamp))
 
 (defun codegen-class-specializers (node arg args gf gf-args)
       (let ((arg-stamp (codegen-arg-stamp arg)))
@@ -744,7 +669,6 @@
 (defvar *sorted-roots*)
 (defvar *generic-function*)
 
-#||
 (defun debug-save-dispatcher (gf module disp-fn startup-fn shutdown-fn sorted-roots &optional (output-path #P"/tmp/dispatcher.ll"))
   "Save everything about the generic function so that it can be saved to a file and then edited and re-installed"
   (setq *disp-fn-name* (llvm-sys:get-name disp-fn)
@@ -752,11 +676,11 @@
         *shutdown-fn-name* (llvm-sys:get-name shutdown-fn)
         *sorted-roots* sorted-roots
         *generic-function* gf)
-;;  (cmp::gf-log-sorted-roots sorted-roots)
+  ;;  (cmp::gf-log-sorted-roots sorted-roots)
   (let ((fout (open output-path :direction :output)))
     (unwind-protect (llvm-sys:dump-module module fout)
       (close fout))))
-
+#||
 (defun debug-load-dispatcher (function-name)
   (let* ((module (llvm-sys:parse-irfile #P"/tmp/dispatcher.ll" cmp:*llvm-context*))
          (disp-fn (llvm-sys:get-function module *disp-fn-name*))
@@ -788,25 +712,44 @@
       (let ((sorted (sort values #'< :key #'car)))
         (mapcar #'extract-outcome sorted)))))
 
-(defun optimized-call-history (call-history specializer-profile)
-  (let* ((specializer-length (let ((pos (position-if #'identity specializer-profile :from-end t)))
+(defun optimized-call-history (generic-function)
+  (let* ((call-history (clos:generic-function-call-history generic-function))
+         (specializer-profile (clos:generic-function-specializer-profile generic-function))
+         (specializer-length (let ((pos (position-if #'identity specializer-profile :from-end t)))
                                (if pos
                                    (1+ pos)
                                    0)))
          (profiled (make-hash-table :test #'equalp)))
-    (loop for entry in call-history
-       for key = (car entry)
-       for outcome = (cdr entry)
-       for new-key = (make-array specializer-length :initial-element nil)
-       do (loop for i from 0 below specializer-length
-             do (setf (svref new-key i)
-                      (if (svref specializer-profile i)
-                          (let ((val (svref key i)))
-                            (if (consp val)
-                                (list (car val))
-                                val))
-                          nil)))
-       do (setf (gethash new-key profiled) outcome))
+    (unless (every #'consp call-history)
+      (error "The call history for ~a is not an alist: ~a" generic-function call-history))
+    (or specializer-profile
+        (error "The specializer-profile for ~a is NIL" generic-function))
+    (dolist (entry call-history)
+      (let ((key (car entry))
+            (outcome (cdr entry))
+            (new-key (make-array specializer-length :initial-element nil)))
+        (dotimes (i specializer-length)
+          (setf (svref new-key i)
+                (if (svref specializer-profile i)
+                    (let ((val (svref key i)))
+                      (if (consp val)
+                          (list (car val))
+                          val))
+                    nil)))
+        (setf (gethash new-key profiled) outcome)))
+    #+(or)(loop for entry in call-history
+             for key = (car entry)
+             for outcome = (cdr entry)
+             for new-key = (make-array specializer-length :initial-element nil)
+             do (loop for i from 0 below specializer-length
+                   do (setf (svref new-key i)
+                            (if (svref specializer-profile i)
+                                (let ((val (svref key i)))
+                                  (if (consp val)
+                                      (list (car val))
+                                      val))
+                                nil)))
+             do (setf (gethash new-key profiled) outcome))
     (let ((res))
       (maphash (lambda (k v) (push (cons k v) res)) profiled)
       res)))
@@ -816,12 +759,24 @@
 (defparameter *dispatcher-count* 0)
 (defun codegen-dispatcher (generic-function &key generic-function-name output-path)
   (let* ((raw-call-history (clos:generic-function-call-history generic-function))
-         (specializer-profile (clos:generic-function-specializer-profile generic-function))
-         (call-history (optimized-call-history raw-call-history specializer-profile))
+         (call-history (optimized-call-history generic-function))
          (dtree (let ((dt (make-dtree)))
-                  (dtree-add-call-history dt call-history)
+                  (cond
+                    (call-history
+                     (dtree-add-call-history dt call-history))
+                    ;; If there is no call-history but there is a raw-call-history then
+                    ;; the outcome of every entry should be the same because there are no
+                    ;; specializers - so build a dispatch function that calls ignores
+                    ;; all arguments and immediately calls the first effective method.
+                    (raw-call-history
+                     (dtree-add-call-history dt (list (cons #() (cdr (car raw-call-history))))))
+                    (t (error "codegen-dispatcher was called with an empty call-history - no dispatcher can be generated")))
                   dt))
          (*the-module* (create-run-time-module-for-compile)))
+    #+(or)(unless call-history
+            (core:bformat t "codegen-dispatcher %s  optimized-call-history -> %s\n" generic-function-name call-history)
+            (core:bformat t "  raw-call-history -> %s\n" raw-call-history)
+            (core:bformat t "  specializer-profile -> %s\n" specializer-profile))
     (with-module (:module *the-module*
                           :optimize nil
 			  :source-namestring "dispatcher"
@@ -907,7 +862,7 @@
               (llvm-sys:replace-all-uses-with *gf-data* bitcast-correct-size-holder)
               (llvm-sys:erase-from-parent *gf-data*)
               #+debug-cmpgf(progn
-                             (format t "Dumping the module from codegen-dispatcher~%")
+                             (core:bformat t "Dumping the module from codegen-dispatcher\n")
                              (llvm-sys:dump-module *the-module*))
               (let ((sorted-roots (gather-sorted-outcomes *eql-selectors* *outcomes*)))
                 ;; REMOVE THE FOLLOWING IN PRODUCTION CODE
@@ -918,15 +873,9 @@
                 (let ((after-disp-name (llvm-sys:get-name disp-fn)))
                 (format t "Saved dispatcher  before-disp-name -> ~a     after-disp-name -> ~a~%" before-disp-name after-disp-name))))
                 ||#
-                #||                #+log-cmpgf
                 (when output-path
-                (let ((before-disp-name (llvm-sys:get-name disp-fn)))
-                (debug-save-dispatcher the-gf *the-module* disp-fn startup-fn shutdown-fn sorted-roots output-path)))
-                ||#
+                  (debug-save-dispatcher generic-function *the-module* disp-fn startup-fn shutdown-fn sorted-roots output-path))
                 (let* ((compiled-dispatcher (jit-add-module-return-dispatch-function *the-module* disp-fn startup-fn shutdown-fn sorted-roots)))
-                  (gf-log "Compiled dispatcher -> ~a~%" compiled-dispatcher)
-                  (gf-log "Dumping module\n")
-                  (gf-do (cmp-log-dump-module *the-module*))
                   compiled-dispatcher)))))))))
 
 (export '(make-dtree
@@ -944,13 +893,11 @@
               (module cmp:*saved-module-from-clasp-jit*))
           (if module
               (llvm-sys:dump-module module)
-              (format t "Could not obtain module for disassemble of generic-function ~a dispatcher -> ~a~%" generic-function dispatcher))))
-      (format t "The dispatcher cannot be built because there is no call history~%")))
+              (core:bformat t "Could not obtain module for disassemble of generic-function %s dispatcher -> %s\n" generic-function dispatcher))))
+      (core:bformat t "The dispatcher cannot be built because there is no call history\n")))
 
 (defun generate-dot-file (generic-function output)
-  (let* ((raw-call-history (clos:generic-function-call-history generic-function))
-         (specializer-profile (clos:generic-function-specializer-profile generic-function))
-         (call-history (optimized-call-history raw-call-history specializer-profile))
+  (let* ((call-history (optimized-call-history generic-function))
          (dispatch-tree (let ((dt (make-dtree)))
                           (dtree-add-call-history dt call-history)
                           dt)))
@@ -965,414 +912,3 @@
 
 (export '(generate-dot-file graph-fastgf-dispatch-function disassemble-fastgf))
 
-#||
-;;; --------------------------------------------------
-;;;
-;;; Switch to CLOS package here
-;;;
-;;; This section contains code that is called by CLOS to
-;;;   update generic-function-call-history and to call
-;;;   codegen-dispatcher to generate a new dispatch function when needed
-;;;
-
-(in-package :clos)
-
-(defun specializers-as-list (arguments)
-  (loop for arg in arguments
-     for specializer = (if (consp arg) (car arg) 'T)
-     collect specializer))
-
-(defparameter *trap* nil)
-(defparameter *dispatch-log* nil)
-
-(defun maybe-update-instances (arguments)
-  (let ((invalid-instance nil))
-    (dolist (x arguments)
-      (when (core:cxx-instance-p x)
-        (let* ((i x)
-               (s (si::instance-sig i)))
-          (declare (:read-only i s))
-          (clos::with-early-accessors (clos::+standard-class-slots+)
-            (when (si::sl-boundp s)
-              (unless (and (eq s (clos::class-slots (core:instance-class i)))
-                           (= (core:instance-stamp i) (core:class-stamp-for-instances (core:instance-class i))))
-                (setf invalid-instance t)
-                (clos::update-instance i)
-                (core:instance-stamp-set i (core:class-stamp-for-instances (si:instance-class i)))))))))
-    invalid-instance))
-
-
-(defun calculate-call-history-and-dispatch-function (generic-function)
-  (unwind-protect
-       (progn
-         (mp:write-lock (generic-function-lock generic-function))
-         (let ((call-history (clos::generic-function-call-history generic-function)))
-           (dolist (entry call-history)
-             ;; Call genericFunction.cc function to generic-compute-applicable-method
-             (let ((effective-method-function (clos:generic-compute-applicable-method generic-function
-                                                                                      (coerce (car entry) 'list))))
-               (rplacd entry effective-method-function))))
-         (let ((dispatcher (calculate-fastgf-dispatch-function generic-function
-                                                               #+log-cmpgf :output-path
-                                                               #+log-cmpgf (cmp::log-cmpgf-filename "func" "ll"))))
-           (safe-set-funcallable-instance-function generic-function dispatcher)))
-    (mp:write-unlock (generic-function-lock generic-function))))
-
-(defun do-dispatch-miss (generic-function valist-args arguments)
-  (multiple-value-bind (method-list ok)
-      (clos::compute-applicable-methods-using-classes
-       generic-function
-       (mapcar #'class-of arguments))
-    ;; If ok is NIL then what do we use as the key
-    (cmp::gf-log "Called compute-applicable-methods-using-classes - returned method-list: ~a  ok: ~a~%" method-list ok)
-    (unless ok
-      (cmp::gf-log "compute-applicable-methods-using-classes returned NIL for second argument~%")
-      (setf method-list
-            (clos::compute-applicable-methods generic-function arguments)))
-    (if method-list
-        (progn
-          (cmp::gf-log "about to call clos:memoization-key valist-args-> ~a" valist-args)
-          ;; If the method list contains a single entry and it is an accessor - then we can
-          ;; create an optimized reader/writer and put that in the call history
-          (cmp::gf-log "        check if method list (1) has one entry (2) is a reader or writer - if so - optimize it%&        method-list -> ~a" method-list)
-;;; FIXME:  To achieve optimized slot access - I need here to determine if I can use an optimized slot accessor.
-;;;         Can I use the method-list?
-          (let ((memoize-key (clos:memoization-key generic-function valist-args)))
-            (cmp::gf-log "Memoizing key -> ~a ~%" memoize-key)
-            (cmp::gf-log-dispatch-miss "Adding to history" generic-function valist-args)
-            (cmp::gf-log-dispatch-miss-message "About to calculate-effective-method-function\n")
-            (cmp::gf-log-dispatch-miss-message "  method-list -> %s\n" (mapcar (lambda (m) (clos:method-specializers m)) method-list))
-            (let ((effective-method-function (clos::compute-effective-method-function
-                                              generic-function
-                                              (clos::generic-function-method-combination generic-function)
-                                              method-list)))
-              (let ((pushed (core:generic-function-call-history-push-new generic-function memoize-key effective-method-function)))
-                (unless pushed
-                  (warn "The generic-function ~a experienced a dispatch-miss but the call did not result in a new call-history entry - this suggests the fastgf is failing somehow - turn on log-cmpgf in cmpgf.lsp and recompile everything" (core:bformat nil "%s" (core:instance-ref generic-function 0)))
-                  (cmp::gf-log-dispatch-miss-followup "!!!!!!  DID NOT MODIFY CALL-HISTORY\n")))
-              (cmp::gf-log "Invalidating dispatch function~%")
-              #+log-cmpgf(cmp::graph-call-history generic-function (cmp::log-cmpgf-filename "graph" "dot"))
-              (unwind-protect
-                   (progn
-                     (mp:shared-lock (generic-function-lock generic-function))
-                     (safe-set-funcallable-instance-function
-                      generic-function (calculate-fastgf-dispatch-function
-                                        generic-function
-                                        #+log-cmpgf :output-path
-                                        #+log-cmpgf (cmp::log-cmpgf-filename "func" "ll"))))
-                (mp:shared-unlock (generic-function-lock generic-function)))
-              (cmp::gf-log "Calling effective-method-function ~a~%" effective-method-function)
-              (apply effective-method-function arguments nil arguments))))
-        (progn
-          (cmp::gf-log-dispatch-miss "no-applicable-method" generic-function valist-args)
-          (apply #'no-applicable-method generic-function arguments)))))
-
-
-(defun clos::dispatch-miss (generic-function valist-args)
-  (cmp::gf-log "A dispatch-miss occurred~%")
-  (core:stack-monitor (lambda () (format t "In clos::dispatch-miss with generic function ~a~%" (clos::generic-function-name generic-function))))
-  ;; update instances
-  (cmp::gf-log "In clos::dispatch-miss~%")
-  ;; Update any invalid instances
-  (let* ((arguments (core:list-from-va-list valist-args))
-         (invalid-instance (maybe-update-instances arguments)))
-    (if invalid-instance
-        (apply generic-function valist-args)
-        (prog1
-            (do-dispatch-miss generic-function valist-args arguments)
-          (cmp::gf-log "Returned from do-dispatch-miss~%")))))
-
-
-(defun safe-set-funcallable-instance-function (gf func)
-  ;; FIXME: Not thread safe and GC safe!!!!
-  ;;   If a generic function dispatcher is being evaluated and on the stack in some other thread
-  ;;   and we replace the dispatcher here - then the GC could collect and remove the code
-  ;;   that is being run in another thread.   I REALLY NEED TO GC CODE!!!!
-  ;;
-  (cmp::gf-log "Here we must clean up the old compiled-dispatch-function: ~a~%" (instance-ref gf 0))
-  ;; old dispatcher removal is now handled by the GC and finalizer
-  (prog1
-      (clos:set-funcallable-instance-function gf func)
-    (setf (clos::generic-function-compiled-dispatch-function gf) func)
-    (cmp::gf-log "Done set-funcallable-instance-function~%")))
-
-;;; change-class requires removing call-history entries involving the class
-;;; and invalidating the generic functions
-
-(defun optimized-call-history* (call-history specializer-profile)
-  (let* ((specializer-length (let ((pos (position-if #'identity specializer-profile :from-end t)))
-                               (if pos
-                                   (1+ pos)
-                                   0)))
-         (profiled (make-hash-table :test #'equalp)))
-    (loop for entry in call-history
-       for key = (car entry)
-       for outcome = (cdr entry)
-       for new-key = (make-array specializer-length :initial-element nil)
-       do (loop for i from 0 below specializer-length
-             do (setf (svref new-key i)
-                      (if (svref specializer-profile i)
-                          (let ((val (svref key i)))
-                            (if (consp val)
-                                (list (car val))
-                                val))
-                          nil)))
-       do (setf (gethash new-key profiled) outcome))
-    (let ((res))
-      (maphash (lambda (k v) (push (cons k v) res)) profiled)
-      res)))
-
-(defun optimized-call-history (generic-function)
-  (let* ((call-history (clos::generic-function-call-history generic-function))
-         (specializer-profile (clos::generic-function-specializer-profile generic-function)))
-    (optimized-call-history* call-history specializer-profile)))
-
-
-(defun calculate-fastgf-dispatch-function (generic-function &key output-path)
-  (let* ((call-history (clos::optimized-call-history generic-function)))
-    (if call-history
-        (progn
-          (let ((dispatch-tree (cmp::make-dtree)))
-            (cmp::dtree-add-call-history dispatch-tree call-history)
-            (cmp::codegen-dispatcher dispatch-tree generic-function (core:function-name generic-function) :output-path output-path)))
-        'clos::empty-dispatch-function)))
-
-(defun disassemble-fastgf (generic-function)
-  (if (clos::generic-function-call-history generic-function)
-      (let* ((cmp:*save-module-for-disassemble* t)
-             (cmp:*saved-module-from-clasp-jit* nil))
-        (let ((dispatcher (calculate-fastgf-dispatch-function generic-function)))
-          (let ((module cmp:*saved-module-from-clasp-jit*))
-            (if module
-                (llvm-sys:dump-module module)
-                (format t "Could not obtain module for disassemble of generic-function ~a dispatcher -> ~a~%" generic-function dispatcher)))))
-      (format t "The dispatcher cannot be built because there is no call history~%")))
-
-
-(defun graph-fastgf-dispatch-function (generic-function)
-  (let* ((call-history (clos::optimized-call-history generic-function)))
-    (if call-history
-        (let ((dispatch-tree (cmp::make-dtree)))
-          (cmp::dtree-add-call-history dispatch-tree call-history)
-          (cmp::draw-graph "/tmp/dispatch.dot" dispatch-tree)
-          (ext:system "/usr/local/bin/dot -Tpdf -o /tmp/dispatch.pdf /tmp/dispatch.dot")
-          (sleep 0.2)
-          (ext:system "open /tmp/dispatch.pdf")))))
-  
-
-(defun clos::empty-dispatch-function (generic-function va-list-args)
-  (core:stack-monitor (lambda () (format t "In clos::empty-dispatch-function with generic function ~a~%" (instance-ref generic-function 0))))
-  (cmp::gf-log "empty-dispatch-function generic-function -> ~a   arguments -> ~a~%" (clos::generic-function-name generic-function) va-list-args)
-  (clos::dispatch-miss generic-function va-list-args))
-
-
-(defun maybe-invalidate-generic-function (gf)
-  (when (typep (clos:get-funcallable-instance-function gf) 'core:compiled-dispatch-function)
-    (clos::calculate-call-history-and-dispatch-function gf)))
-
-(defun method-spec-matches-entry-spec (method-spec entry-spec)
-  (or
-   (and (consp method-spec)
-        (consp entry-spec)
-        (eq (car method-spec) 'eql)
-        (eql (second method-spec) (car entry-spec)))
-   (and (classp method-spec) (classp entry-spec)
-        (member method-spec (clos:class-precedence-list entry-spec)))))
-
-(defun call-history-entry-involves-method-with-specializers (entry method-specializers)
-  (let ((key (car entry)))
-    (loop for method-spec in method-specializers
-       for entry-spec across key
-       always (method-spec-matches-entry-spec method-spec entry-spec))))
-
-(defun call-history-after-method-with-specializers-change (gf method-specializers)
-  (loop for entry in (clos::generic-function-call-history gf)
-     unless (call-history-entry-involves-method-with-specializers entry method-specializers)
-     collect entry))
-
-#+(or)
-(defun call-history-after-class-change (gf class)
-;;;  (format t "call-history-after-class-change  start: gf->~a  call-history ->~a~%" gf (clos::generic-function-call-history gf))
-  (loop for entry in (clos::generic-function-call-history gf)
-     unless (loop for subclass in (clos::subclasses* class)
-               thereis (core:call-history-entry-key-contains-specializer (car entry) subclass))
-     collect entry))
-
-(defun invalidate-generic-functions-with-class-selector (top-class)
-;;;  (format t "!!!!Looking to invalidate-generic-functions-with-class-selector: ~a~%" top-class)
-  ;; Loop over all of the subclasses of class (including class) and append together
-  ;;    the lists of generic-functions for the specializer-direct-methods of each subclass
-  (let* ((all-subclasses (clos:subclasses* top-class))
-         (generic-functions (loop for subclass in all-subclasses
-                               nconc (loop for method in (clos:specializer-direct-methods subclass)
-                                        collect (clos:method-generic-function method))))
-	 (unique-generic-functions (remove-duplicates generic-functions)))
-    ;;(when core:*debug-dispatch* (format t "    generic-functions: ~a~%" generic-functions))
-    (loop for gf in unique-generic-functions
-       do (core:generic-function-call-history-remove-entries-with-specializers gf all-subclasses)
-       do (maybe-invalidate-generic-function gf))))
-
-(defun switch-to-fastgf (gf)
-  (let ((dispatcher (calculate-fastgf-dispatch-function gf)))
-    (safe-set-funcallable-instance-function gf dispatcher)))
-
-(export '(invalidate-generic-functions-with-class-selector
-          switch-to-fastgf))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;
-;;; Satiation of generic functions to start fastgf
-;;;
-;;; Ideas copied from Sicl/Code/CLOS/satiation.lisp
-;;;
-
-(defun cartesian-product (sets)
-  (if (null (cdr sets))
-      (mapcar #'list (car sets))
-      (loop for element in (car sets)
-	    append (mapcar (lambda (set)
-			     (cons element set))
-			   (cartesian-product (cdr sets))))))
-
-(defun calculate-all-argument-subclasses-of-method (classes-of-method profile)
-  (let ((sets (loop for class in classes-of-method
-                  for flag in profile
-                  collect (if (null flag)
-                              (list class)
-                              (subclasses* class)))))
-    (cartesian-product sets)))
-
-(defun add-to-call-history (generic-function classes-of-method profile)
-  (let* ((all-subclasses-of-method (calculate-all-argument-subclasses-of-method classes-of-method profile)))
-    (loop for combination in all-subclasses-of-method
-       for methods = (std-compute-applicable-methods-using-classes generic-function combination)
-       for effective-method-function = (compute-effective-method-function
-                                        generic-function
-                                        (generic-function-method-combination generic-function)
-                                        methods)
-       do (core:generic-function-call-history-push-new generic-function
-                                                       (coerce combination 'vector)
-                                                       effective-method-function))))
-
-(defun compute-and-install-discriminating-function (generic-function)
-  (let ((dispatcher (calculate-fastgf-dispatch-function generic-function
-                                                        #+log-cmpgf :output-path
-                                                        #+log-cmpgf (cmp::log-cmpgf-filename "func" "ll"))))
-    (safe-set-funcallable-instance-function generic-function dispatcher)))
-
-(defun load-generic-function (generic-function)
-  (update-specializer-profile generic-function)
-  (loop with profile = (coerce (generic-function-specializer-profile generic-function) 'list)
-     for method in (generic-function-methods generic-function)
-     for specializers = (method-specializers method)
-     do (add-to-call-history generic-function specializers profile))
-  (length (clos::generic-function-call-history generic-function)))
-  
-(defun satiate-generic-function (gf-name test verbose)
-  (let* ((generic-function (fdefinition gf-name))
-         (loaded (load-generic-function generic-function)))
-    (when verbose (format t "~a ~a~%" loaded gf-name))
-    (unless test (compute-and-install-discriminating-function generic-function))))
-
-(defun startup-generic-functions (&key test verbose)
-;;  (satiate-generic-function 'CLOS:ENSURE-CLASS-USING-CLASS '((class :skip)))
-  (satiate-generic-function 'MAKE-INSTANCE test verbose)
-  (satiate-generic-function 'ALLOCATE-INSTANCE test verbose)
-  (satiate-generic-function 'CLOS:REMOVE-DIRECT-SUBCLASS test verbose)
-  (satiate-generic-function 'CLOS:COMPUTE-CLASS-PRECEDENCE-LIST test verbose)
-  (satiate-generic-function 'CLOS:METHOD-FUNCTION test verbose)
-  (satiate-generic-function 'CLOS:METHOD-LAMBDA-LIST test verbose)
-  (satiate-generic-function 'CLOS:COMPUTE-DISCRIMINATING-FUNCTION test verbose)
-  (satiate-generic-function 'CLOS:CLASS-SLOTS test verbose)
-  (satiate-generic-function 'ADD-METHOD test verbose)
-  (satiate-generic-function 'CLOS:CLASS-DEFAULT-INITARGS test verbose)
-  (satiate-generic-function 'CLOS:GENERIC-FUNCTION-METHODS test verbose)
-  (satiate-generic-function 'CLOS:COMPUTE-APPLICABLE-METHODS-USING-CLASSES test verbose)
-  (satiate-generic-function 'COMPUTE-APPLICABLE-METHODS test verbose)
-  (satiate-generic-function 'CLOS:METHOD-SPECIALIZERS test verbose)
-  (satiate-generic-function 'CLOS:SLOT-DEFINITION-INITFUNCTION test verbose)
-  (satiate-generic-function 'CLOS:METHOD-GENERIC-FUNCTION test verbose)
-  (satiate-generic-function 'CLOS:ADD-DEPENDENT test verbose)
-  (satiate-generic-function 'CLOS:SLOT-DEFINITION-WRITERS test verbose)
-;;  (satiate-generic-function 'CLOS:CLASS-DIRECT-SUBCLASSES test verbose)
-  (satiate-generic-function 'CLOS:GENERIC-FUNCTION-METHOD-CLASS test verbose)
-  (satiate-generic-function 'CLOS:GENERIC-FUNCTION-ARGUMENT-PRECEDENCE-ORDER test verbose)
-  (satiate-generic-function 'CLOS:SLOT-DEFINITION-ALLOCATION test verbose)
-  (satiate-generic-function 'CLOS:SLOT-DEFINITION-LOCATION test verbose)
-  (satiate-generic-function 'CLOS:EFFECTIVE-SLOT-DEFINITION-CLASS test verbose)
-  (satiate-generic-function 'CLOS:COMPUTE-DEFAULT-INITARGS test verbose)
-  (satiate-generic-function 'CLOS:WRITER-METHOD-CLASS test verbose)
-  (satiate-generic-function 'CLOS:REMOVE-DEPENDENT test verbose)
-  (satiate-generic-function 'CLOS:REMOVE-DIRECT-METHOD test verbose)
-  (satiate-generic-function 'CLOS:MAP-DEPENDENTS test verbose)
-  (satiate-generic-function 'CLOS:SLOT-MAKUNBOUND-USING-CLASS test verbose)
-  (satiate-generic-function 'CLOS:ADD-DIRECT-METHOD test verbose)
-  (satiate-generic-function 'CLOS:CLASS-FINALIZED-P test verbose)
-  (satiate-generic-function 'CLOS:SLOT-DEFINITION-NAME test verbose)
-  (satiate-generic-function 'CLOS:READER-METHOD-CLASS test verbose)
-  (satiate-generic-function 'CLOS:VALIDATE-SUPERCLASS test verbose)
-  (satiate-generic-function 'CLOS:COMPUTE-SLOTS test verbose)
-  (satiate-generic-function 'METHOD-QUALIFIERS test verbose)
-  (satiate-generic-function 'CLOS:SLOT-BOUNDP-USING-CLASS test verbose)
-  (satiate-generic-function 'CLOS:GENERIC-FUNCTION-METHOD-COMBINATION test verbose)
-  (satiate-generic-function 'CLOS:ADD-DIRECT-SUBCLASS test verbose)
-  (satiate-generic-function 'CLOS:SPECIALIZER-DIRECT-METHODS test verbose)
-  (satiate-generic-function 'CLOS:COMPUTE-EFFECTIVE-SLOT-DEFINITION test verbose)
-  (satiate-generic-function 'REMOVE-METHOD test verbose)
-  (satiate-generic-function 'CLOS:CLASS-DIRECT-SLOTS test verbose)
-  (satiate-generic-function 'CLOS:GENERIC-FUNCTION-LAMBDA-LIST test verbose)
-  (satiate-generic-function 'CLOS:SLOT-DEFINITION-INITARGS test verbose)
-  (satiate-generic-function 'CLOS:MAKE-METHOD-LAMBDA test verbose)
-  (satiate-generic-function 'CLOS:SLOT-DEFINITION-READERS test verbose)
-  (satiate-generic-function 'CLOS:ACCESSOR-METHOD-SLOT-DEFINITION test verbose)
-  (satiate-generic-function 'CLOS:GENERIC-FUNCTION-NAME test verbose)
-  (satiate-generic-function 'CLOS:CLASS-PROTOTYPE test verbose)
-  (satiate-generic-function 'CLOS:SLOT-VALUE-USING-CLASS test verbose)
-  (satiate-generic-function 'CLOS:FINALIZE-INHERITANCE test verbose)
-  (satiate-generic-function 'CLOS:DIRECT-SLOT-DEFINITION-CLASS test verbose)
-  (satiate-generic-function 'CLOS:SLOT-DEFINITION-TYPE test verbose)
-  (satiate-generic-function 'CLOS:GENERIC-FUNCTION-DECLARATIONS test verbose)
-  (satiate-generic-function 'CLOS:SPECIALIZER-DIRECT-GENERIC-FUNCTIONS test verbose)
-  (satiate-generic-function 'CLOS:COMPUTE-EFFECTIVE-METHOD test verbose)
-  (satiate-generic-function 'CLOS:ENSURE-GENERIC-FUNCTION-USING-CLASS test verbose)
-  (satiate-generic-function 'CLOS:FIND-METHOD-COMBINATION test verbose)
-  (satiate-generic-function 'CLOS:CLASS-PRECEDENCE-LIST test verbose)
-  (satiate-generic-function 'CLOS:CLASS-DIRECT-DEFAULT-INITARGS test verbose)
-  (satiate-generic-function 'REINITIALIZE-INSTANCE test verbose)
-  (satiate-generic-function 'PRINT-OBJECT test verbose)
-  (satiate-generic-function 'NO-APPLICABLE-METHOD test verbose)
-  (satiate-generic-function 'SHARED-INITIALIZE test verbose)
-  (satiate-generic-function 'SLOT-UNBOUND test verbose)
-  (satiate-generic-function 'MAKE-INSTANCES-OBSOLETE test verbose)
-  (satiate-generic-function 'UPDATE-INSTANCE-FOR-REDEFINED-CLASS test verbose)
-  (satiate-generic-function 'SLOT-MISSING test verbose)
-  (satiate-generic-function 'INITIALIZE-INSTANCE test verbose)
-  (satiate-generic-function 'NO-NEXT-METHOD test verbose)
-  (satiate-generic-function 'FIND-METHOD test verbose)
-  (satiate-generic-function 'CLASS-NAME test verbose)
-  #||
-;;  (satiate-generic-function 'CHANGE-CLASS)
-  (satiate-generic-function 'CLOSE)
-  (satiate-generic-function 'OUTPUT-STREAM-P )
-  (satiate-generic-function 'DESCRIBE-OBJECT )
-  'CLOS:EQL-SPECIALIZER-OBJECT
-  'CLOS:SLOT-DEFINITION-INITFORM 
-  'CLOS:UPDATE-DEPENDENT 
-  'FUNCTION-KEYWORDS 
-  (satiate-generic-function 'DOCUMENTATION )
-  (satiate-generic-function 'INTERACTIVE-STREAM-P )
-  (satiate-generic-function 'STREAM-ELEMENT-TYPE )
-  (satiate-generic-function 'INPUT-STREAM-P )
-  (satiate-generic-function 'OPEN-STREAM-P )
-  (satiate-generic-function 'UPDATE-INSTANCE-FOR-DIFFERENT-CLASS '()
-  ||#
-  )
-
-  (defun cache-status ()
-    (format t "                method-cache: ~a~%" (multiple-value-list (core:method-cache-status)))
-    (format t "single-dispatch-method-cache: ~a~%" (multiple-value-list (core:single-dispatch-method-cache-status)))
-    (format t "                  slot-cache: ~a~%" (multiple-value-list (core:slot-cache-status))))
-
-  (export 'cache-status)
-  
-||#

@@ -915,8 +915,8 @@ def build(bld):
         aclasp_link_product = bld.path.find_or_declare(variant.fasl_name(stage='a'))
         lnk_aclasp.set_outputs([aclasp_link_product])
         bld.add_to_group(lnk_aclasp)
-        bld.install_as('${INSTALL_PATH_PREFIX}/%s/%s' % (executable_dir, aclasp_link_product.name), aclasp_link_product)
-        bld.install_as('${INSTALL_PATH_PREFIX}/Contents/Resources/lib/%s' % variant.common_lisp_bitcode_name(stage='a'), aclasp_common_lisp_bitcode)
+        bld.install_as('${INSTALL_PATH_PREFIX}/Contents/fasl/%s' % aclasp_link_product.name, aclasp_link_product)
+        bld.install_as('${INSTALL_PATH_PREFIX}/Contents/bitcode/%s' % variant.common_lisp_bitcode_name(stage='a'), aclasp_common_lisp_bitcode)
     if (stage_val >= 2):
         print("About to add compile_bclasp")
         cmp_bclasp = compile_bclasp(env=bld.env)
@@ -929,8 +929,8 @@ def build(bld):
         lnk_bclasp.set_inputs([fastgf_bitcode_node,builtins_bitcode_node,intrinsics_bitcode_node,bclasp_common_lisp_bitcode])
         lnk_bclasp.set_outputs([bclasp_link_product])
         bld.add_to_group(lnk_bclasp)
-        bld.install_as('${INSTALL_PATH_PREFIX}/%s/%s' % (executable_dir, bclasp_link_product.name), bclasp_link_product)
-        bld.install_as('${INSTALL_PATH_PREFIX}/Contents/Resources/lib/%s' % variant.common_lisp_bitcode_name(stage = 'b'), aclasp_common_lisp_bitcode)
+        bld.install_as('${INSTALL_PATH_PREFIX}/Contents/fasl/%s' % bclasp_link_product.name, bclasp_link_product)
+        bld.install_as('${INSTALL_PATH_PREFIX}/Contents/bitcode/%s' % variant.common_lisp_bitcode_name(stage = 'b'), aclasp_common_lisp_bitcode)
     if (stage_val >= 3):
         print("About to add compile_cclasp")
         # Build cclasp fasl
@@ -957,10 +957,10 @@ def build(bld):
         lnk_cclasp_fasl.set_inputs([fastgf_bitcode_node,builtins_bitcode_node,intrinsics_bitcode_node,cclasp_common_lisp_bitcode])
         lnk_cclasp_fasl.set_outputs([cclasp_fasl])
         bld.add_to_group(lnk_cclasp_fasl)
-        bld.install_as('${INSTALL_PATH_PREFIX}/%s/%s' % (executable_dir, cclasp_fasl.name), cclasp_fasl)
+        bld.install_as('${INSTALL_PATH_PREFIX}/Contents/fasl/%s' % cclasp_fasl.name, cclasp_fasl)
     if (stage == 'rebuild' or stage_val >= 3):
         cclasp_common_lisp_bitcode = bld.path.find_or_declare(variant.common_lisp_bitcode_name(stage='c'))
-        bld.install_as('${INSTALL_PATH_PREFIX}/Contents/Resources/lib/%s' % variant.common_lisp_bitcode_name(stage = 'c'), cclasp_common_lisp_bitcode)
+        bld.install_as('${INSTALL_PATH_PREFIX}/Contents/bitcode/%s' % variant.common_lisp_bitcode_name(stage = 'c'), cclasp_common_lisp_bitcode)
         # Build serve-event
         serve_event_fasl = bld.path.find_or_declare("%s/src/lisp/modules/serve-event/serve-event.fasl" % variant.fasl_dir(stage='c'))
         cmp_serve_event = compile_module(env=bld.env)

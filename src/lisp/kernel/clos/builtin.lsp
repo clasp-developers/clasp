@@ -29,6 +29,7 @@
 (si::*make-constant '+builtin-classes+ +builtin-classes-pre-array+)
 
 (defmethod ensure-class-using-class ((class null) name &rest rest)
+  (cmp::gf-log "In ensure-class-using-class (class null) class -> %s\n" name)
   (multiple-value-bind (metaclass direct-superclasses options)
       (apply #'help-ensure-class rest)
     (declare (ignore #-clasp direct-superclasses))
@@ -58,7 +59,7 @@
 
 (defmethod slot-makunbound-using-class ((class built-in-class) self slotd)
   (declare (ignore class self slotd))
-  (error "SLOT-MAKUNBOUND-USING-CLASS cannot be applied on built-in objects"))
+  (error "SLOT-MAKUNBOUND-USING-CLASS cannot be applied on built-in object ~a of class ~a" class (class-of class)))
 
 (defmethod slot-boundp-using-class ((class built-in-class) self slotd)
   (declare (ignore class self slotd))

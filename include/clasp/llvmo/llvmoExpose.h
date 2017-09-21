@@ -3595,6 +3595,7 @@ public:
 
   bool equal(core::T_sp obj) const;
 
+  void addReturnAttr(typename llvm::Attribute::AttrKind);
   core::List_sp getArgumentList();
   void appendBasicBlock(BasicBlock_sp basicBlock);
   BasicBlock_sp getEntryBlock() const;

@@ -1,6 +1,7 @@
 #ifndef CLASP_CXX_INTEROP_H
 #define CLASP_CXX_INTEROP_H
 
+#include <clasp/core/foundation.h>
 #include <clasp/clbind/clbind.h>
 #include <clasp/core/lambdaListHandler.h>
 

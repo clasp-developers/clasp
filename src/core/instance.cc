@@ -42,6 +42,7 @@ THE SOFTWARE.
 #include <clasp/gctools/gcFunctions.h>
 #include <clasp/core/serialize.h>
 #include <clasp/core/lispList.h>
+#include <clasp/core/mpPackage.h>
 #include <clasp/core/hashTable.h>
 #include <clasp/core/hashTableEq.h>
 #include <clasp/core/evaluator.h>
@@ -127,6 +128,22 @@ CL_DEFUN List_sp core__all_unique_subclasses(Class_sp class_) {
   return accumulate_unique_subclasses(class_,Cons_O::create(class_,_Nil<T_O>()));
 }
 
+void Instance_O::CLASS_call_history_generic_functions_push_new(T_sp generic_function) {
+  if (this->instanceRef(REF_SPECIALIZER_MUTEX).unboundp()) {
+    this->instanceSet(REF_SPECIALIZER_MUTEX,mp::SharedMutex_O::make_shared_mutex(_Nil<T_O>()));
+  }
+  ClassWriteLock(gc::As<mp::SharedMutex_sp>(this->instanceRef(REF_SPECIALIZER_MUTEX)));
+  List_sp gflist = gc::As<List_sp>(this->instanceRef(REF_SPECIALIZER_CALL_HISTORY_GENERIC_FUNCTIONS));
+  if (gflist.consp()) {
+    if (gflist.unsafe_cons()->memberEq(generic_function).notnilp()) return;
+  }
+  this->instanceSet(REF_SPECIALIZER_CALL_HISTORY_GENERIC_FUNCTIONS,Cons_O::create(generic_function,gflist));
+}
+
+
+
+
+
 void Instance_O::CLASS_set_stamp_for_instances(Fixnum s) {
 #if 0
   if (s == gctools::GCStamp<Instance_O>::Stamp) {
@@ -144,6 +161,8 @@ void Instance_O::initializeClassSlots(Creator_sp creator, gctools::Stamp stamp) 
     fflush(stdout);
   }
 #endif
+  this->instanceSet(REF_SPECIALIZER_CALL_HISTORY_GENERIC_FUNCTIONS, _Nil<T_O>());
+//  this->instanceSet(REF_SPECIALIZER_MUTEX, mp::SharedMutex_O::make_shared_mutex(_Nil<T_O>()));
   this->instanceSet(REF_CLASS_DIRECT_SUPERCLASSES, _Nil<T_O>());
   this->instanceSet(REF_CLASS_DIRECT_SUBCLASSES, _Nil<T_O>());
   this->instanceSet(REF_CLASS_DIRECT_DEFAULT_INITARGS, _Nil<T_O>());
@@ -159,22 +178,23 @@ void Instance_O::initializeClassSlots(Creator_sp creator, gctools::Stamp stamp) 
 CL_DEFUN List_sp core__class_slot_sanity_check()
 {
   List_sp sanity = _Nil<T_O>();
-#define ADD_SANITY_CHECK(symbol_name,ref)   sanity = Cons_O::create(Cons_O::create(clos::_sym_##symbol_name, core::clasp_make_fixnum(Class_O::REF_CLASS_##ref)),sanity);
-  sanity = Cons_O::create(Cons_O::create(clos::_sym_name, core::clasp_make_fixnum(Class_O::REF_CLASS_CLASS_NAME)),sanity);
-  sanity = Cons_O::create(Cons_O::create(clos::_sym_DIRECT_SUPERCLASSES, core::clasp_make_fixnum(Class_O::REF_CLASS_DIRECT_SUPERCLASSES)),sanity);
-  sanity = Cons_O::create(Cons_O::create(clos::_sym_SLOTS, core::clasp_make_fixnum(Class_O::REF_CLASS_SLOTS)),sanity);
-  sanity = Cons_O::create(Cons_O::create(clos::_sym_DIRECT_DEFAULT_INITARGS, core::clasp_make_fixnum(Class_O::REF_CLASS_DIRECT_DEFAULT_INITARGS)),sanity);
-  sanity = Cons_O::create(Cons_O::create(clos::_sym_FINALIZED, core::clasp_make_fixnum(Class_O::REF_CLASS_FINALIZED)),sanity);
-  sanity = Cons_O::create(Cons_O::create(clos::_sym_PRECEDENCE_LIST, core::clasp_make_fixnum(Class_O::REF_CLASS_CLASS_PRECEDENCE_LIST)),sanity);
-  sanity = Cons_O::create(Cons_O::create(clos::_sym_DIRECT_SLOTS, core::clasp_make_fixnum(Class_O::REF_CLASS_DIRECT_SLOTS)),sanity);
-  sanity = Cons_O::create(Cons_O::create(clos::_sym_DEFAULT_INITARGS, core::clasp_make_fixnum(Class_O::REF_CLASS_DEFAULT_INITARGS)),sanity);
   sanity = Cons_O::create(Cons_O::create(clos::_sym_NUMBER_OF_SLOTS_IN_STANDARD_CLASS, core::clasp_make_fixnum(REF_CLASS_NUMBER_OF_SLOTS_IN_STANDARD_CLASS)),sanity);
   sanity = Cons_O::create(Cons_O::create(clos::_sym_NUMBER_OF_SLOTS_IN_STRUCTURE_CLASS, core::clasp_make_fixnum(REF_CLASS_NUMBER_OF_SLOTS_IN_STRUCTURE_CLASS)),sanity);
-#define ADD_SANITY_CHECK_SIMPLE(symbol_name)   sanity = Cons_O::create(Cons_O::create(clos::_sym_##symbol_name, core::clasp_make_fixnum(Class_O::REF_CLASS_##symbol_name)),sanity);
-  ADD_SANITY_CHECK_SIMPLE(DIRECT_SUBCLASSES);
-  ADD_SANITY_CHECK_SIMPLE(SEALEDP);
-  ADD_SANITY_CHECK_SIMPLE(DEPENDENTS);
-  ADD_SANITY_CHECK_SIMPLE(LOCATION_TABLE);
+#define ADD_SANITY_CHECK_SIMPLE(slot_name,enum_name)   sanity = Cons_O::create(Cons_O::create(clos::_sym_##slot_name, core::clasp_make_fixnum(Class_O::REF_##enum_name)),sanity);
+  ADD_SANITY_CHECK_SIMPLE(NAME,CLASS_CLASS_NAME);
+  ADD_SANITY_CHECK_SIMPLE(DIRECT_SUPERCLASSES,CLASS_DIRECT_SUPERCLASSES);
+  ADD_SANITY_CHECK_SIMPLE(SLOTS,CLASS_SLOTS);
+  ADD_SANITY_CHECK_SIMPLE(DIRECT_DEFAULT_INITARGS,CLASS_DIRECT_DEFAULT_INITARGS);
+  ADD_SANITY_CHECK_SIMPLE(FINALIZED,CLASS_FINALIZED);
+  ADD_SANITY_CHECK_SIMPLE(PRECEDENCE_LIST,CLASS_CLASS_PRECEDENCE_LIST);
+  ADD_SANITY_CHECK_SIMPLE(DIRECT_SLOTS,CLASS_DIRECT_SLOTS);
+  ADD_SANITY_CHECK_SIMPLE(DEFAULT_INITARGS,CLASS_DEFAULT_INITARGS);
+  ADD_SANITY_CHECK_SIMPLE(DIRECT_SUBCLASSES,CLASS_DIRECT_SUBCLASSES);
+  ADD_SANITY_CHECK_SIMPLE(SEALEDP,CLASS_SEALEDP);
+  ADD_SANITY_CHECK_SIMPLE(DEPENDENTS,CLASS_DEPENDENTS);
+  ADD_SANITY_CHECK_SIMPLE(LOCATION_TABLE,CLASS_LOCATION_TABLE);
+  ADD_SANITY_CHECK_SIMPLE(CALL_HISTORY_GENERIC_FUNCTIONS,SPECIALIZER_CALL_HISTORY_GENERIC_FUNCTIONS);
+  ADD_SANITY_CHECK_SIMPLE(SPECIALIZER_MUTEX,SPECIALIZER_MUTEX);
   return sanity;
 }
 
@@ -345,7 +365,7 @@ string Instance_O::__repr__() const {
     ss << _rep_(this->instanceRef(REF_CLASS_CLASS_NAME)) << " ";
   }
   {
-    ss << " #slots[" << this->numberOfSlots() << "]";
+    //    ss << " #slots[" << this->numberOfSlots() << "]";
 #if 0
     for (size_t i(1); i < this->numberOfSlots(); ++i) {
       T_sp obj = this->_Rack[i];
@@ -691,6 +711,9 @@ List_sp Instance_O::directSuperclasses() const {
   T_sp obj = this->instanceRef(REF_CLASS_DIRECT_SUPERCLASSES);
   ASSERT(obj);
   ASSERT(!obj.unboundp());
+  if (obj.unboundp()) {
+    printf("%s:%d  The REF_CLASS_DIRECT_SUPERCLASSES[%u] field is unbound\n", __FILE__, __LINE__, REF_CLASS_DIRECT_SUPERCLASSES);
+  }
   return coerce_to_list(obj);
 }
 };
@@ -741,6 +764,27 @@ CL_DEFUN bool core__has_creator(Class_sp c) {
   TYPE_ERROR(c,cl::_sym_class);
 };
 
+
+
+
+
+};
+
+
+namespace core {
+ClassReadLock::ClassReadLock(mp::SharedMutex_sp lock) : _Lock(lock) {
+  this->_Lock->shared_lock();
+}
+ClassReadLock::~ClassReadLock() {
+  this->_Lock->shared_unlock();
+}
+
+ClassWriteLock::ClassWriteLock(mp::SharedMutex_sp lock) : _Lock(lock) {
+  this->_Lock->write_lock();
+}
+ClassWriteLock::~ClassWriteLock() {
+  this->_Lock->write_unlock();
+}
 
 
 

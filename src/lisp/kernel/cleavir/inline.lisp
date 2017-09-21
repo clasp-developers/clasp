@@ -294,7 +294,7 @@
           (cleavir-primop:rplacd p v)
           p)
         (error 'type-error :datum p :expected-type 'cons))))
-
+                                        
 
 (debug-inline "primop")
 
@@ -302,6 +302,8 @@
   (:export #:convert-to-bignum
            #:inlined-two-arg-+
            #:inlined-two-arg--
+           #:inlined-two-arg-*
+           #:inlined-two-arg-/
            #:inlined-two-arg-<
            #:inlined-two-arg-<=
            #:inlined-two-arg-=
@@ -315,51 +317,81 @@
     (if (> z 0)
         (- z (expt 2 cl-fixnum-bits))
         (+ z (expt 2 cl-fixnum-bits))))
-  (defmacro def-inline-arithmetic (inlined-name cleavir-primop generic-name)
-    (let ((x (gensym))
-          (y (gensym))
-          (z (gensym)))
-      `(progn
-         (declaim (inline ,inlined-name))
-         (defun ,inlined-name (,x ,y)
-           (block nil
-             (tagbody
-                (if (cleavir-primop:typeq ,x fixnum)
-                    (if (cleavir-primop:typeq ,y fixnum)
-                        (cleavir-primop:let-uninitialized (,z)
-                                                          (if (,cleavir-primop ,x ,y ,z)
-                                                              (return ,z)
-                                                              (return (core:convert-overflow-result-to-bignum ,z))))
-                        (go generic))
-                    (go generic))
-                ;; ... Other tests
-              generic
-                (return (,generic-name ,x ,y))))))))
-  (def-inline-arithmetic primop:inlined-two-arg-+ cleavir-primop:fixnum-+ core:two-arg-+)
-  (def-inline-arithmetic primop:inlined-two-arg-- cleavir-primop:fixnum-- core:two-arg--)
-  ;;; Need * / and other primops
-  (defmacro def-inline-comparison (inlined-name cleavir-primop generic-name)
-    (let ((x (gensym))
-          (y (gensym)))
-      `(progn
-         (declaim (inline ,inlined-name))
-         (defun ,inlined-name (,x ,y)
-           (block nil
-             (tagbody
-                (if (cleavir-primop:typeq ,x fixnum)
-                    (if (cleavir-primop:typeq ,y fixnum)
-                        (if (,cleavir-primop ,x ,y)
-                            (return t)
-                            (return nil)))
-                    (go generic))
-                ;; ... Other tests
-              generic
-                (return (,generic-name ,x ,y))))))))
-  (def-inline-comparison primop:inlined-two-arg-<  cleavir-primop:fixnum-<  core:two-arg-<)
-  (def-inline-comparison primop:inlined-two-arg-<= cleavir-primop:fixnum-<= core:two-arg-<=)
-  (def-inline-comparison primop:inlined-two-arg-=  cleavir-primop:fixnum-=  core:two-arg-=)
-  (def-inline-comparison primop:inlined-two-arg->  cleavir-primop:fixnum->  core:two-arg->)
-  (def-inline-comparison primop:inlined-two-arg->= cleavir-primop:fixnum->= core:two-arg->=))
+  (defmacro define-with-contagion (inlined-name comparison (x y) fixnum single-float double-float generic)
+    (declare (ignore comparison)) ; this will be used to control fp behavior, see CLHS 12.1.4.1
+    `(progn
+       (declaim (inline ,inlined-name))
+       (defun ,inlined-name (,x ,y)
+         (tagbody
+            ;; FIXME: The "generic" jumps should actually coerce and then jump
+            ;; to a specialized one.
+            (cond ((cleavir-primop:typeq ,x fixnum)
+                   (if (cleavir-primop:typeq ,y fixnum)
+                       (go fixnum)
+                       (go generic)))
+                  ((cleavir-primop:typeq ,x single-float)
+                   (cond ((cleavir-primop:typeq ,y single-float)
+                          (go single-float))
+                         #+(or)
+                         ((cleavir-primop:typeq ,y double-float)
+                          (setf ,x (cleavir-primop:coerce single-float double-float ,x))
+                          (go double-float))
+                         (t (go generic))))
+                  ((cleavir-primop:typeq ,x double-float)
+                   (cond ((cleavir-primop:typeq ,y double-float)
+                          (go double-float))
+                         #+(or)
+                         ((cleavir-primop:typeq ,y single-float)
+                          (setf ,y (cleavir-primop:coerce single-float double-float ,y))
+                          (go double-float))
+                         (t (go generic))))
+                  (t (go generic)))
+          fixnum (return-from ,inlined-name ,@fixnum)
+          single-float (return-from ,inlined-name ,@single-float)
+          double-float (return-from ,inlined-name ,@double-float)
+          generic (return-from ,inlined-name ,@generic)))))
+  (define-with-contagion primop:inlined-two-arg-+ nil (x y)
+    ((cleavir-primop:let-uninitialized (z)
+       (if (cleavir-primop:fixnum-add x y z)
+           z
+           (core:convert-overflow-result-to-bignum z))))
+    ((cleavir-primop:float-add single-float x y))
+    ((cleavir-primop:float-add double-float x y))
+    ((core:two-arg-+ x y)))
+  (define-with-contagion primop:inlined-two-arg-- nil (x y)
+    ((cleavir-primop:let-uninitialized (z)
+       (if (cleavir-primop:fixnum-sub x y z)
+           z
+           (core:convert-overflow-result-to-bignum z))))
+    ((cleavir-primop:float-sub single-float x y))
+    ((cleavir-primop:float-sub double-float x y))
+    ((core:two-arg-- x y)))
+  (define-with-contagion primop:inlined-two-arg-* nil (x y)
+    ((go generic)) ; FIXME: fixnum arithmetic!
+    ((cleavir-primop:float-mul single-float x y))
+    ((cleavir-primop:float-mul double-float x y))
+    ((core:two-arg-* x y)))
+  (define-with-contagion primop:inlined-two-arg-/ nil (x y)
+    ((go generic)) ; FIXME: fixnum arithmetic!
+    ((cleavir-primop:float-div single-float x y))
+    ((cleavir-primop:float-div double-float x y))
+    ((core:two-arg-/ x y)))
+  (defmacro defcomparison (inline-name fixnum-op float-op generic-name)
+    `(define-with-contagion ,inline-name t (x y)
+       ((if (,fixnum-op x y) t nil))
+       ((if (,float-op single-float x y) t nil))
+       ((if (,float-op double-float x y) t nil))
+       ((,generic-name x y))))
+  (defcomparison primop:inlined-two-arg-<
+    cleavir-primop:fixnum-less        cleavir-primop:float-less        core:two-arg-<)
+  (defcomparison primop:inlined-two-arg-<=
+    cleavir-primop:fixnum-not-greater cleavir-primop:float-not-greater core:two-arg-<=)
+  (defcomparison primop:inlined-two-arg-=
+    cleavir-primop:fixnum-equal       cleavir-primop:float-equal       core:two-arg-=)
+  (defcomparison primop:inlined-two-arg->
+    cleavir-primop:fixnum-greater     cleavir-primop:float-greater     core:two-arg->)
+  (defcomparison primop:inlined-two-arg->=
+    cleavir-primop:fixnum-not-less    cleavir-primop:float-not-less    core:two-arg->=))
 
 #-use-boehmdc
 (eval-when (:compile-toplevel :load-toplevel :execute)
@@ -371,6 +403,14 @@
             `(primop:inlined-two-arg-- ,minuend ,(core:expand-associative '+ 'primop:inlined-two-arg-+ subtrahends 0))
             `(core:negate ,minuend))
         (error "The - operator can not be part of a form that is a dotted list.")))
+  (define-compiler-macro * (&rest numbers)
+    (core:expand-associative '* 'primop:inlined-two-arg-* numbers 1))
+  (define-compiler-macro / (dividend &rest divisors)
+    (if (core:proper-list-p divisors)
+        (if divisors
+            `(primop:inlined-two-arg-/ ,dividend (* ,@divisors))
+            `(primop:inlined-two-arg-/ 1 ,dividend))
+        (error "The / operator can not be part of a form that is a dotted list.")))
   (define-compiler-macro < (&rest numbers)
     (core:expand-compare 'primop:inlined-two-arg-< numbers))
   (define-compiler-macro <= (&rest numbers)
@@ -404,34 +444,38 @@
 ;;; Array functions
 ;;;
 
-#+(or)
-(progn
-(define-compiler-macro aref (array &rest indices)
-  (let ((arr (gensym "ARRAY")))
-    `(let ((,arr ,array))
-       (row-major-aref ,array (array-row-major-index ,array ,@indices)))))
+(declaim (inline array-total-size))
+(defun array-total-size (array)
+  (etypecase array
+    ((simple-array * (*)) (core::vector-length array))
+    ;; MDArray
+    (array (core::%array-total-size array))))
 
-(define-compiler-macro array-row-major-index (array &rest subscripts)
-  (let* ((rank (length subscripts))
-         (dimsyms (loop repeat rank collect (gensym "DIM")))
-         (subsyms (loop repeat rank collect (gensym "SUB")))
-         (a (gensym "ARRAY")))
-    `(let ((,a ,array))
-       (unless (typep array '(array * ,rank))
-         (error 'type-error :datum ,a :expected-type '(array * ,rank)))
-       ,(if subscripts
-            `(let (,@(loop for dimsym in dimsyms
-                           for d from 0
-                           collect `(,dimsym (array-dimension ,a ,d))))
-               (let* ((,(first subsyms) 1)
-                      ,@(loop for dimsym in (reverse (cdr dimsyms))
-                              for subsym in (cdr subsyms)
-                              for lastsym in subsyms
-                              collect `(,subsym (* ,lastsym ,dimsym))))
-                 (+ ,@(loop for sub in subscripts
-                            for subsym in (reverse subsyms)
-                            collect `(* ,sub ,subsym)))))
-            0)))))
+(declaim (inline array-rank))
+(defun array-rank (array)
+  (etypecase array
+    ((simple-array * (*)) 1)
+    (t (core::%array-rank array))))
+
+(declaim (inline array-dimension))
+(defun array-dimension (array axis-number)
+  (etypecase array
+    ((simple-array * (*))
+     (if (zerop axis-number)
+         (core::vector-length array)
+         (error "Invalid axis number ~d for array of rank ~d" axis-number 1)))
+    (array
+     (if (and (>= axis-number 0) (< axis-number (core::%array-rank array)))
+         (core::%array-dimension array axis-number)
+         (error "Invalid axis number ~d for array of rank ~d" axis-number (core::%array-rank array))))))
+
+;; Unsafe version for array-row-major-index
+(declaim (inline %array-dimension))
+(defun %array-dimension (array axis-number)
+  (etypecase array
+    ((simple-array * (*))
+     (core::vector-length array))
+    (array (core::array-dimension array axis-number))))
 
 (declaim (inline svref))
 (defun svref (vector index)
@@ -461,106 +505,155 @@
 (defun %unsafe-vector-ref (array index)
   ;; FIXME: type inference should be able to remove the redundant
   ;; checking that it's an array... maybe?
-  ;; FIXME: should be replaced with a macro loop over
-  ;; sys::+upgraded-array-element-types+ or suchlike.
-  (typecase array
-    ((simple-array t (*))
-     (cleavir-primop:aref array index t t t))
-    ;; character, base-char
-    ((simple-array double-float (*))
-     (cleavir-primop:aref array index double-float t nil))
-    ((simple-array single-float (*))
-     (cleavir-primop:aref array index single-float t nil))
-    ((simple-array ext:byte64 (*))
-     (cleavir-primop:aref array index ext:byte64 t nil))
-    ((simple-array ext:byte32 (*))
-     (cleavir-primop:aref array index ext:byte32 t nil))
-    ((simple-array ext:byte16 (*))
-     (cleavir-primop:aref array index ext:byte16 t nil))
-    ((simple-array ext:byte8 (*))
-     (cleavir-primop:aref array index ext:byte8 t nil))
-    ;; should be unreachable
-    (t (error "BUG: Unknown vector ~a" array))))
+  (macrolet ((mycase (&rest specs)
+               `(typecase array
+                  ,@(loop for (type boxed) in specs
+                          collect `((simple-array ,type (*))
+                                    (cleavir-primop:aref array index ,type t ,boxed)))
+                  (t (error "BUG: Unknown vector ~a" array)))))
+    (mycase (t t) (base-char nil) (character nil)
+            (double-float nil) (single-float nil)
+            (ext:integer64 nil) (ext:integer32 nil)
+            (ext:integer16 nil) (ext:integer8 nil)
+            (ext:byte64 nil) (ext:byte32 nil)
+            (ext:byte16 nil) (ext:byte8 nil)
+            (bit t))))
 
-(declaim (inline %row-major-aref))
-(defun %row-major-aref (array index)
+;;; This is "unsafe" in that it doesn't bounds check.
+;;; It DOES check that the value is of the correct type,
+;;; because this is the only place we know the type.
+(declaim (inline %unsafe-vector-set))
+(defun %unsafe-vector-set (array index value)
+  (macrolet ((mycase (&rest specs)
+               `(typecase array
+                  ,@(loop for (type boxed) in specs
+                          collect `((simple-array ,type (*))
+                                    (unless (typep value ',type)
+                                      (error 'type-error :datum value :expected-type ',type))
+                                    (cleavir-primop:aset array index value ,type t ,boxed)
+                                    value))
+                  ;; should be unreachable
+                  (t (error "BUG: Unknown vector ~a" array)))))
+    (mycase (t t) (base-char nil) (character nil)
+            (double-float nil) (single-float nil)
+            (ext:integer64 nil) (ext:integer32 nil)
+            (ext:integer16 nil) (ext:integer8 nil)
+            (ext:byte64 nil) (ext:byte32 nil)
+            (ext:byte16 nil) (ext:byte8 nil)
+            (bit t))))
+
+(declaim (inline row-major-array-in-bounds-p))
+(defun row-major-array-in-bounds-p (array index)
+  (etypecase array
+    ((simple-array * (*))
+     (and (<= 0 index) (< index (core::vector-length array))))
+    (array
+     (and (<= 0 index) (< index (core::%array-total-size array))))))
+
+;; FIXME: This could be a function returning two values. But that's
+;; quite inefficient at the moment.
+(defmacro with-array-data ((arrayname offsetname array) &body body)
+  `(let ((,arrayname ,array) (,offsetname 0))
+     (declare (type fixnum ,offsetname))
+     (etypecase ,arrayname
+       ((simple-array * (*))) ; already all set
+       (simple-array ; multidimensional. guaranteed to have offset zero and no recursion.
+        (setf ,arrayname (core::%displacement ,arrayname)))
+       (array
+        (loop
+          (let ((displacement (core::%displacement ,arrayname))
+                (displaced-index-offset (core::%displaced-index-offset ,arrayname)))
+            (setf underlying-array displacement
+                  ,offsetname (+ ,offsetname displaced-index-offset)))
+          (when (typep ,arrayname '(simple-array * (*))) (return)))))
+     ,@body))
+
+(declaim (inline cl:row-major-aref))
+(defun cl:row-major-aref (array index)
   ;; First, undisplace. This can be done independently
   ;; of the index, meaning it could potentially be
   ;; moved out of loops, though that can invite inconsistency
   ;; in a multithreaded environment.
-  (let ((underlying-array array) (offset 0))
-    (etypecase array
-      ((simple-array * (*))) ; already all set
-      (simple-array ; multidimensional. guaranteed to have offset zero and no recursion.
-       (setf underlying-array (core::%displacement underlying-array)))
-      (array
-       (loop
-         (let ((displacement (core::%displacement underlying-array))
-               (displaced-index-offset (core::%displaced-index-offset underlying-array)))
-           (setf underlying-array displacement
-                 offset (+ offset displaced-index-offset)))
-         (when (typep underlying-array '(simple-array * (*))) (return)))))
+  (with-array-data (underlying-array offset array)
     ;; Now bounds check. Use the original arguments.
-    (etypecase array
-      ((simple-array * (*))
-       (unless (and (<= 0 index) (< index (core::vector-length array)))
-         (error "~d is not a valid row-major index for ~a" index array)))
-      (array
-       (unless (and (<= 0 index) (< index (array-total-size array)))
-         (error "~d is not a valid row-major index for ~a" index array))))
+    (unless (row-major-array-in-bounds-p array index)
+      (error "~d is not a valid row-major index for ~a" index array))
     ;; Okay, now array is a vector/simple, and index is valid.
     ;; This function takes care of element type discrimination.
     (%unsafe-vector-ref underlying-array (+ index offset))))
 
-(defun row-major-index-computer (array &rest subscripts)
+(declaim (inline core:row-major-aset))
+(defun core:row-major-aset (array index value)
+  (with-array-data (underlying-array offset array)
+    (unless (row-major-array-in-bounds-p array index)
+      (error "~d is not a valid row-major index for ~a" index array))
+    (%unsafe-vector-set underlying-array (+ index offset) value)))
+
+
+(declaim (inline schar core:schar-set char core:char-set))
+(defun schar (string index)
+  (row-major-aref (the simple-string string) index))
+(defun core:schar-set (string index value)
+  (core:row-major-aset (the simple-string string) index value))
+
+(defun char (string index)
+  (row-major-aref (the string string) index))
+(defun core:char-set (string index value)
+  (core:row-major-aset (the string string) index value))
+
+(defun row-major-index-computer (array dimsyms subscripts)
   ;; assumes once-only is taken care of
   (let ((dimsyms (loop for sub in (rest subscripts) collect (gensym "DIM")))
         (subsyms (loop for sub in subscripts collect (gensym "SUB"))))
     (if subscripts
-        `(let (,@(loop for dimsym in dimsyms
-                       for d from 1
-                       collect `(,dimsym (array-dimension ,array ,d))))
-           (declare (type fixnum ,@dimsyms))
-           (let* ((,(first subsyms) 1)
-                  ,@(loop for dimsym in (reverse dimsyms)
-                          for subsym in (cdr subsyms)
-                          for lastsym in subsyms
-                          collect `(,subsym (* ,lastsym ,dimsym))))
-             (declare (type fixnum ,@subsyms))
-             (the fixnum
-                  (+ ,@(loop for sub in subscripts
-                             for subsym in (reverse subsyms)
-                             collect `(* ,sub ,subsym))))))
-        0)))
+        `(let* ((,(first subsyms) 1)
+                ,@(loop for dimsym in (reverse dimsyms)
+                        for subsym in (cdr subsyms)
+                        for lastsym in subsyms
+                        collect `(,subsym (* ,lastsym ,dimsym))))
+           (declare (type fixnum ,@subsyms))
+           (the fixnum
+                (+ ,@(loop for sub in subscripts
+                           for subsym in (reverse subsyms)
+                           collect `(* ,sub ,subsym)))))
+        '0)))
 
-#+(or)
 (define-compiler-macro array-row-major-index (array &rest subscripts)
-  (let ((sarray (gensym "ARRAY"))
-        (ssubscripts (loop for sub in subscripts collecting (gensym "SUBSCRIPT")))
-        (rmindex (gensym "ROW-MAJOR-INDEX")))
+  (let* ((rank (length subscripts))
+         (sarray (gensym "ARRAY"))
+         (ssubscripts (loop repeat rank collecting (gensym "SUBSCRIPT")))
+         (dimsyms (loop repeat rank collecting (gensym "DIMENSION")))
+         (rmindex (gensym "ROW-MAJOR-INDEX")))
+    ;; First up, once-only the array and subscripts.
     `(let ((,sarray ,array)
            ,@(loop for ssub in ssubscripts for sub in subscripts
                    collecting `(,ssub ,sub)))
-       (unless (eq (array-rank ,sarray) ,(length subscripts))
+       (declare (type fixnum ,@ssubscripts))
+       ;; Now verify that the rank is correct
+       (unless (eq (array-rank ,sarray) ,rank)
          (error "Wrong number of subscripts, ~d, for an array of rank ~d."
-                ,(length subscripts) (array-rank ,sarray)))
-       (let ((,rmindex ,(apply #'row-major-index-computer sarray ssubscripts)))
-         (if (and (<= 0 ,rmindex) (< ,rmindex (array-total-size ,sarray)))
-             ,rmindex
-             ,(if (= (length subscripts) 1)
-                  `(error "Invalid index ~d for an array of total size ~d"
-                          ',(first subscripts) (array-total-size ,sarray))
-                  `(error "Invalid indices ~a for an array of total size ~d"
-                          ',subscripts (array-total-size ,sarray))))
-         ,rmindex))))
+                ,rank (array-rank ,sarray)))
+       ;; We need the array dimensions, so bind those
+       (let (,@(loop for dimsym in dimsyms
+                     for axis below rank
+                     collect `(dimsym (%array-dimension ,sarray ,axis))))
+         (declare (type fixnum ,@dimsyms))
+         ;; Check that the index is valid
+         ,@(loop for ssub in ssubscripts
+                 for dimsym in dimsyms
+                 for axis below rank
+                 collect `(unless (and (>= ,ssub 0) (< ,ssub ,dimsym))
+                            (error "Invalid index ~d for axis ~d of array: expected 0-~d"
+                                   ,ssub ,axis ,dimsym)))
+         ;; Now we know we're good, do the actual computation
+         ,(row-major-index-computer sarray dimsyms ssubscripts)))))
 
-#+(or)
-(define-compiler-macro aref (array &rest subscripts)
+(define-compiler-macro %aref (array &rest subscripts)
   (case (length subscripts)
-    ((1) `(row-major-aref ,array ,(first subscripts)))
+    ((1) `(%row-major-aref ,array ,(first subscripts)))
     (t (let ((asym (gensym "ARRAY")))
          `(let ((,asym ,array))
-            (row-major-aref ,asym (array-row-major-index ,asym ,@subscripts)))))))
+            (%row-major-aref ,asym (array-row-major-index ,asym ,@subscripts)))))))
 
 ;;; ------------------------------------------------------------
 ;;;
@@ -655,7 +748,16 @@
   )
 
 #-use-boehmdc
-(define-compiler-macro funcall (function &rest arguments)
+(define-compiler-macro funcall (&whole form function &rest arguments &environment env)
+  ;; If we have (funcall #'foo ...), we might be able to apply the FOO compiler macro.
+  (when (and (consp function) (eq (first function) 'function)
+             (consp (cdr function)) (null (cddr function)))
+    (let ((cmf (compiler-macro-function (second function) env)))
+      (when cmf
+        (return-from funcall
+          ;; incidentally, this funcall should be okay given that it's compile-time.
+          (funcall cmf form env)))))
+  ;; If not, we can stil eliminate the call to FUNCALL as follows.
   (let ((fsym (gensym "FUNCTION")))
     `(let ((,fsym ,function))
        (cleavir-primop:funcall

@@ -1350,12 +1350,12 @@ Write T_O* pointers into the current multiple-values array starting at the (offs
       #+(or)(bformat t "Created function: %s arg-ty: %s\n" function argument-types)
       (when return-attributes
         (dolist (attribute return-attributes)
-          (llvm-sys:add-fn-attr function attribute)))
+          (llvm-sys:add-return-attr function attribute)))
       (dolist (index-attributes argument-attributes)
         (let ((index (car index-attributes))
               (attributes (cdr index-attributes)))
           (dolist (attribute attributes)
-            (llvm-sys:add-attribute function index attribute))))
+            (llvm-sys:add-param-attr function index attribute))))
       function)))
 
 (defun get-or-declare-function-or-error (module name &optional first-argument)
