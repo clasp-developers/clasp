@@ -17,6 +17,12 @@ LLVM_CONFIG_BINARY = '/path/to/llvm-config-4.0'
 # To link to llvm debug libraries set a path to the llvm-config for the llvm debug build
 # LLVM_CONFIG_DEBUG_PATH = "/full/path/externals-clasp/build/debug/bin/llvm-config"
 
+# Use JIT notification - which is broken in llvm5.0
+# Set this to True if you have applied the patch to llvm 5.0 or the
+#   fix has been installed in llvm 5.whatever
+LLVM5_ORC_NOTIFIER_PATCH = False
+
+
 # Where to install clasp. Defaults to '/usr/local/'.
 #PREFIX = '/usr/local/'
 

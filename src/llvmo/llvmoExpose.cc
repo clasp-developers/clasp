@@ -3644,7 +3644,7 @@ ClaspJIT_O::ClaspJIT_O() : TM(EngineBuilder().selectTarget()),
 /* The following doesn't work in llvm5.0 because of a bug in the definition of NotifyLoadedFtor
 https://groups.google.com/forum/#!topic/llvm-dev/m3JjMNswgcU
 */
-#if 1
+#ifdef LLVM5_ORC_NOTIFIER_PATCH
 ,
                                        [this](llvm::orc::RTDyldObjectLinkingLayer::ObjHandleT H,
                                               const RTDyldObjectLinkingLayerBase::ObjectPtr& Obj,
@@ -3704,6 +3704,7 @@ void save_symbol_info(const llvm::object::ObjectFile& object_file, const llvm::R
 
 
 CL_LISPIFY_NAME("CLASP-JIT-ADD-MODULE");
+__attribute__((optnone))
 CL_DEFMETHOD ModuleHandle_sp ClaspJIT_O::addModule(Module_sp cM) {
   core::LightTimer timer;
   timer.start();

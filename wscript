@@ -546,6 +546,9 @@ def configure(cfg):
     else:
         print("LLVM_CONFIG_DEBUG_PATH is not defined")
         cfg.env["LLVM_CONFIG_BINARY_FOR_LIBS"] = cfg.env.LLVM_CONFIG_BINARY
+    if (cfg.env.LLVM5_ORC_NOTIFIER_PATCH):
+        cfg.define("LLVM5_ORC_NOTIFIER_PATCH",clasp_gc_filename)
+    print("cfg.env.LINKFLAGS=%s" % cfg.env.LINKFLAGS)
     cfg.env["LLVM_BIN_DIR"] = run_llvm_config(cfg, "--bindir")
     cfg.env["LLVM_AR_BINARY"] = "%s/llvm-ar" % cfg.env.LLVM_BIN_DIR
 #    cfg.env["LLVM_AR_BINARY"] = cfg.find_program("llvm-ar", var = "LLVM_AR")[0]
