@@ -451,6 +451,7 @@ Compile the cclasp source code."
          (progn ;; Use load-cclasp?
            (load-system (select-source-files #P"src/lisp/kernel/tag/bclasp" #P"src/lisp/kernel/cleavir/inline-prep" :system system) :compile-file-load t )
            (load-system (select-source-files #P"src/lisp/kernel/cleavir/auto-compile" #P"src/lisp/kernel/tag/pre-epilogue-cclasp" :system system) :compile-file-load nil ))
+         (push :cleavir *features*)
          (compile-cclasp* output-file system))))))
 
 

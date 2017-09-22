@@ -99,7 +99,8 @@ when this is t a lot of graphs will be generated.")
             (t (translate-branch-instruction
                 last return-value input-vars output-vars successor-tags abi current-function-info)))
       (cc-dbg-when *debug-log*
-		   (format *debug-log* "- - - -  END layout-basic-block  owner: ~a:~a   -->  ~a~%" (cleavir-ir-gml::label owner) (clasp-cleavir:instruction-gid owner) basic-block)))))
+		   #+stealth-gids(format *debug-log* "- - - -  END layout-basic-block  owner: ~a:~a   -->  ~a~%" (cleavir-ir-gml::label owner) (clasp-cleavir:instruction-gid owner) basic-block)
+                   #-stealth-gids(format *debug-log* "- - - -  END layout-basic-block  owner: ~a   -->  ~a~%" (cleavir-ir-gml::label owner) basic-block)))))
 
 (defun get-or-create-lambda-name (instr)
   (if (typep instr 'clasp-cleavir-hir:named-enter-instruction)
@@ -168,6 +169,8 @@ when this is t a lot of graphs will be generated.")
 (defvar *forms*)
 (defvar *map-enter-to-function-info* nil)
 
+(defvar *top-level-procedure*)
+
 (defun layout-procedure (initial-instruction abi &key (linkage 'llvm-sys:internal-linkage))
   ;; I think this removes every basic-block that
   ;; isn't owned by this initial-instruction
@@ -176,7 +179,8 @@ when this is t a lot of graphs will be generated.")
          (current-function-info (if current-function-info-landing-pad
                                     current-function-info-landing-pad
                                     (make-instance 'function-info :unwind-target nil)))
-         (procedure-has-debug-on t) ; Currently all procedures have backtrace frames - later use (declare (debug...))
+         (procedure-has-debug-on #+(or) t (and (null *top-level-procedure*) (policy-anywhere-p initial-instruction 'maintain-shadow-stack)))
+         (*top-level-procedure* nil)
          (needs-cleanup (or (unwind-target current-function-info) procedure-has-debug-on))
          ;; Gather the basic blocks of this procedure in basic-blocks
          (basic-blocks (remove initial-instruction *basic-blocks* :test-not #'eq :key #'third))
@@ -211,7 +215,8 @@ when this is t a lot of graphs will be generated.")
                    (format *debug-log* "   basic-blocks for procedure~%")
                    (dolist (bb basic-blocks)
                      (destructuring-bind (first last owner) bb
-                       (format *debug-log* "basic-block owner: ~a:~a~%" (cleavir-ir-gml::label owner) (clasp-cleavir:instruction-gid owner))
+                       #+stealth-gids(format *debug-log* "basic-block owner: ~a:~a~%" (cleavir-ir-gml::label owner) (clasp-cleavir:instruction-gid owner))
+                       #-stealth-gids(format *debug-log* "basic-block owner: ~a~%" (cleavir-ir-gml::label owner))
                        (loop for instruction = first
                           then (first (cleavir-ir:successors instruction))
                           until (eq instruction last)
@@ -247,36 +252,36 @@ when this is t a lot of graphs will be generated.")
                   (let ((cc (calling-convention function-info)))
                     (%intrinsic-call "cc_push_InvocationHistoryFrame"
                                      (list (cmp:calling-convention-closure cc)
-                                     (cmp:calling-convention-invocation-history-frame* cc)
-                                     (cmp:calling-convention-va-list* cc)
-                                     (cmp:calling-convention-remaining-nargs* cc)))))
+                                           (cmp:calling-convention-invocation-history-frame* cc)
+                                           (cmp:calling-convention-va-list* cc)
+                                           (cmp:calling-convention-remaining-nargs* cc)))))
                 (on-exit-for-cleanup current-function-info)
                 (lambda (function-info)
                   (let ((cc (calling-convention function-info)))
                     (%intrinsic-call "cc_pop_InvocationHistoryFrame"
                                      (list (cmp:calling-convention-closure cc)
-                                           (cmp:calling-convention-invocation-history-frame* cc))))))
-          (when (unwind-target current-function-info)
-            (setf (on-entry-for-unwind current-function-info)
-                  (lambda (function-info)
-                    (let ((cc (calling-convention function-info))
-                          (enter-instruction (enter-instruction function-info))
-                          (result (%intrinsic-call "cc_pushLandingPadFrame" nil)))
-                      (%store result (translate-datum (clasp-cleavir-hir:frame-holder enter-instruction))))))
-            (setf (on-exit-for-unwind current-function-info)
-                  (lambda (function-info)
-                    (let ((cc (calling-convention function-info))
-                          (enter-instruction (enter-instruction function-info)))
-                      (%intrinsic-call "cc_popLandingPadFrame"
-                                       (list (%load (translate-datum (clasp-cleavir-hir:frame-holder enter-instruction)))))))))
-          (layout-procedure* the-function
-                             body-irbuilder
-                             body-block
-                             first-basic-block
-                             rest-basic-blocks
-                             current-function-info
-                             lambda-name
-                             initial-instruction abi :linkage linkage))))))
+                                           (cmp:calling-convention-invocation-history-frame* cc)))))))
+        (when (unwind-target current-function-info)
+          (setf (on-entry-for-unwind current-function-info)
+                (lambda (function-info)
+                  (let ((cc (calling-convention function-info))
+                        (enter-instruction (enter-instruction function-info))
+                        (result (%intrinsic-call "cc_pushLandingPadFrame" nil)))
+                    (%store result (translate-datum (clasp-cleavir-hir:frame-holder enter-instruction))))))
+          (setf (on-exit-for-unwind current-function-info)
+                (lambda (function-info)
+                  (let ((cc (calling-convention function-info))
+                        (enter-instruction (enter-instruction function-info)))
+                    (%intrinsic-call "cc_popLandingPadFrame"
+                                     (list (%load (translate-datum (clasp-cleavir-hir:frame-holder enter-instruction))))))))))
+      (layout-procedure* the-function
+                         body-irbuilder
+                         body-block
+                         first-basic-block
+                         rest-basic-blocks
+                         current-function-info
+                         lambda-name
+                         initial-instruction abi :linkage linkage))))
 
 (defun translate (initial-instruction map-enter-to-function-info &optional (abi *abi-x86-64*) &key (linkage 'llvm-sys:internal-linkage))
   (let* (#+use-ownerships(ownerships
@@ -287,22 +292,23 @@ when this is t a lot of graphs will be generated.")
            (*tags* (make-hash-table :test #'eq))
            (*vars* (make-hash-table :test #'eq))
            (*map-enter-to-function-info* map-enter-to-function-info)
+           (*top-level-procedure* t)
            )
       #+use-ownerships(setf *debug-ownerships* *ownerships*)
       (setf *debug-basic-blocks* *basic-blocks*
 	    *debug-tags* *tags*
 	    *debug-vars* *vars*)
-      (cc-dbg-when 
-       *debug-log*
-       (let ((mir-pathname (make-pathname :name (format nil "mir~a" (incf *debug-log-index*)) :type "gml" :defaults (pathname *debug-log*))))
-	 (multiple-value-bind (instruction-ids datum-ids)
-	     (cleavir-ir-gml:draw-flowchart initial-instruction (namestring mir-pathname)))
-	 (format *debug-log* "Wrote mir to: ~a~%" (namestring mir-pathname)))
-       (let ((mir-pathname (make-pathname :name (format nil "mir~a" (incf *debug-log-index*)) :type "dot" :defaults (pathname *debug-log*))))
-	 (cleavir-ir-graphviz:draw-flowchart initial-instruction (namestring mir-pathname))
-	 (format *debug-log* "Wrote mir to: ~a~%" (namestring mir-pathname))))
+      (cc-dbg-when *debug-log*
+                   (let ((mir-pathname (make-pathname :name (format nil "mir~a" (incf *debug-log-index*)) :type "gml" :defaults (pathname *debug-log*))))
+                     (multiple-value-bind (instruction-ids datum-ids)
+                         (cleavir-ir-gml:draw-flowchart initial-instruction (namestring mir-pathname)))
+                     (format *debug-log* "Wrote mir to: ~a~%" (namestring mir-pathname)))
+                   (let ((mir-pathname (make-pathname :name (format nil "mir~a" (incf *debug-log-index*)) :type "dot" :defaults (pathname *debug-log*))))
+                     (cleavir-ir-graphviz:draw-flowchart initial-instruction (namestring mir-pathname))
+                     (format *debug-log* "Wrote mir to: ~a~%" (namestring mir-pathname))))
       (multiple-value-bind (function lambda-name)
           (layout-procedure initial-instruction abi :linkage linkage)
+        (cmp::cmp-log-compile-file-dump-module cmp:*the-module* "after-translate")
         (values function lambda-name)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -435,7 +441,7 @@ when this is t a lot of graphs will be generated.")
     ((instruction cleavir-ir:funcall-instruction) return-value inputs outputs (abi abi-x86-64) function-info)
   #+(or)(progn
           (format t "--------------- translate-simple-instruction funcall-instruction~%")
-          (format t "       funcall:~a~%" (clasp-cleavir:instruction-gid instruction))
+          #+stealth-gids(format t "       funcall:~a~%" (clasp-cleavir:instruction-gid instruction))
           (format t "         return value: ~a~%" return-value)
           (format t "           arg inputs: ~a~%" inputs)
           (format t "          arg outputs: ~a~%" outputs)
@@ -597,11 +603,10 @@ when this is t a lot of graphs will be generated.")
     (let ((call-result (%intrinsic-invoke-if-landing-pad-or-call "cc_call_multipleValueOneFormCallWithRet0" 
 				     (list (%load (first inputs)) (%load return-value)))))
       (%store call-result return-value)
-      (cc-dbg-when 
-       *debug-log*
-       (format *debug-log* "    translate-simple-instruction multiple-value-call-instruction: ~a~%" 
-	       (cc-mir:describe-mir instruction))
-       (format *debug-log* "     instruction --> ~a~%" call-result))
+      (cc-dbg-when *debug-log*
+                   (format *debug-log* "    translate-simple-instruction multiple-value-call-instruction: ~a~%" 
+                           (cc-mir:describe-mir instruction))
+                   (format *debug-log* "     instruction --> ~a~%" call-result))
       )))
 
 (defmethod translate-simple-instruction
@@ -614,11 +619,10 @@ when this is t a lot of graphs will be generated.")
                                                                    (list (%load (first inputs)) (%load return-value))
                                                            "mvofc")))
         (%store call-result return-value)
-	(cc-dbg-when 
-	 *debug-log*
-	 (format *debug-log* "    translate-simple-instruction invoke-multiple-value-call-instruction: ~a~%" 
-		 (cc-mir:describe-mir instruction))
-	 (format *debug-log* "     instruction --> ~a~%" call-result))))))
+	(cc-dbg-when *debug-log*
+                     (format *debug-log* "    translate-simple-instruction invoke-multiple-value-call-instruction: ~a~%" 
+                             (cc-mir:describe-mir instruction))
+                     (format *debug-log* "     instruction --> ~a~%" call-result))))))
 
 (defun gen-vector-effective-address (array index element-type fixnum-type)
   (let* ((array (%load array)) (index (%load index))
@@ -1091,7 +1095,7 @@ when this is t a lot of graphs will be generated.")
       ((eq 'cl:defmethod (car form))
        (format t ";    defmethod ~a~%" (cadr form)))
       ((eq 'cl:defmacro (car form))
-       (format t ";    defun ~a~%" (cadr form)))
+       (format t ";    defmacro ~a~%" (cadr form)))
       ((eq 'cl:defconstant (car form))
        (format t ";    defconstant ~a~%" (cadr form)))
       ((eq 'cl:defvar (car form))
@@ -1221,20 +1225,20 @@ that llvm function. This works like compile-lambda-function in bclasp."
   (let ((cleavir-generate-ast:*compiler* 'cl:compile))
     (handler-bind
         ((cleavir-env:no-variable-info
-           (lambda (condition)
+          (lambda (condition)
 ;;;	  (declare (ignore condition))
-             #+verbose-compiler(warn "Condition: ~a" condition)
-             (invoke-restart 'cleavir-generate-ast::consider-special)))
+            #+verbose-compiler(warn "Condition: ~a" condition)
+            (invoke-restart 'cleavir-generate-ast::consider-special)))
          (cleavir-env:no-function-info
-           (lambda (condition)
+          (lambda (condition)
 ;;;	  (declare (ignore condition))
-             #+verbose-compiler(warn "Condition: ~a" condition)
-             (invoke-restart 'cleavir-generate-ast::consider-global))))
+            #+verbose-compiler(warn "Condition: ~a" condition)
+            (invoke-restart 'cleavir-generate-ast::consider-global))))
       (multiple-value-bind (fn lambda-name ordered-raw-constants-list constants-table startup-fn shutdown-fn)
           (cclasp-compile-to-module-with-run-time-table form env pathname :linkage linkage)
         (or fn (error "There was no function returned by compile-lambda-function"))
         (cmp:cmp-log "fn --> %s\n" fn)
-        (cmp:cmp-log-dump-module cmp:*the-module*)
+        ;;(cmp:cmp-log-dump-module cmp:*the-module*)
         (cmp:quick-module-dump cmp:*the-module* "cclasp-compile-module-pre-optimize")
         (let* ((setup-function (cmp:jit-add-module-return-function cmp:*the-module* fn startup-fn shutdown-fn ordered-raw-constants-list)))
           (let ((enclosed-function (funcall setup-function)))
@@ -1299,15 +1303,30 @@ that llvm function. This works like compile-lambda-function in bclasp."
 (export 'with-debug-compile-file)
 
 
-(defmacro open-debug-log (log-file)
+(defmacro open-debug-log (log-file &key (debug-compile-file t) debug-compile)
   `(eval-when (:compile-toplevel :execute)
+     (core:bformat t "Turning on compiler debug logging\n")
      (setq *debug-log* (open (ensure-directories-exist ,log-file) :direction :output))
-     (setq *debug-log-on* t)))
+     (setq *debug-log-on* t)
+     (setq cmp::*debug-compiler* t)
+     (setq cmp::*debug-compile-file* ,debug-compile-file)
+     (setq cmp::*compile-file-debug-dump-module* ,debug-compile-file)
+     (setq cmp::*debug-compile* ,debug-compile)
+     (setq cmp::*compile-debug-dump-module* ,debug-compile)
+     ))
 
 (defmacro close-debug-log ()
   `(eval-when (:compile-toplevel :execute)
+     (core:bformat t "Turning off compiler debug logging\n")
      (setq *debug-log-on* nil)
      (close *debug-log*)
-     (setq *debug-log* nil)))
+     (setq cmp::*debug-compiler* nil)
+     (setq *debug-log* nil)
+     (setq cmp::*compile-file-debug-dump-module* nil)
+     (setq cmp::*debug-compile-file* nil)
+     (setq cmp::*debug-compile* nil)
+     (setq cmp::*compile-debug-dump-module* nil)
+     ))
+
 (export '(open-debug-log close-debug-log))
   

@@ -241,7 +241,7 @@ A very important internal parameter is HIGHER-CLEANUP-BLOCK - this is a keyword 
 that is used to store and lookup in the environment the next cleanup-block for passing
 exceptions to higher levels of the code and unwinding the stack.
 "
-  (declare (optimize (debug 3) (safety 0) (speed 0)))
+;;;  (declare (optimize (debug 0) (safety 0) (speed 0)))
   (let ((parent-cleanup-block-gs (gensym "parent-cleanup-block"))
 	(landing-pad-block-gs (gensym "landing-pad-block"))
 	(all-clause-types-gs (gensym "all-clause-types"))

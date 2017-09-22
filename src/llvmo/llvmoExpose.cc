@@ -3637,12 +3637,14 @@ namespace llvmo {
 using namespace llvm;
 using namespace llvm::orc;
 
-
 ClaspJIT_O::ClaspJIT_O() : TM(EngineBuilder().selectTarget()),
                            DL(TM->createDataLayout()),
 //                           NotifyObjectLoaded(*this),
                            ObjectLayer([]() { return std::make_shared<SectionMemoryManager>(); }
-#if 0
+/* The following doesn't work in llvm5.0 because of a bug in the definition of NotifyLoadedFtor
+https://groups.google.com/forum/#!topic/llvm-dev/m3JjMNswgcU
+*/
+#if 1
 ,
                                        [this](llvm::orc::RTDyldObjectLinkingLayer::ObjHandleT H,
                                               const RTDyldObjectLinkingLayerBase::ObjectPtr& Obj,
@@ -3658,11 +3660,23 @@ ClaspJIT_O::ClaspJIT_O() : TM(EngineBuilder().selectTarget()),
                            OptimizeLayer(CompileLayer,
                                          [this](std::shared_ptr<Module> M) {
                                            return optimizeModule(std::move(M));
-                                         }),
+                                         }
+                                         ),
                            GDBEventListener(JITEventListener::createGDBRegistrationListener())
 {
+#if 0
+  RTDyldObjectLinkingLayer::NotifyLoadedFtor notify_func = [this](llvm::orc::RTDyldObjectLinkingLayer::ObjHandleT H,
+                                                                  const RTDyldObjectLinkingLayer::ObjectPtr& Obj,
+                                                                  const RuntimeDyld::LoadedObjectInfo &Info) {
+//          printf("%s:%d:%s informing GDBEventListener  i=%d &Objects[i]->%p  &Infos[i]->%p\n", __FILE__, __LINE__, __FUNCTION__, i, Objects[i].get(), Infos[i].get());
+      this->GDBEventListener->NotifyObjectEmitted(*(Obj->getBinary()), Info);
+      save_symbol_info(*(Obj->getBinary()), Info);
+  };
+  this->ObjectLayer.NotifyLoadedFtor = notify_func;
+#endif
   llvm::sys::DynamicLibrary::LoadLibraryPermanently(nullptr);
 }
+
 
 
 void save_symbol_info(const llvm::object::ObjectFile& object_file, const llvm::RuntimeDyld::LoadedObjectInfo& loaded_object_info)
@@ -3680,7 +3694,7 @@ void save_symbol_info(const llvm::object::ObjectFile& object_file, const llvm::R
       if (expected_section_iterator) {
         const llvm::object::SectionRef& section_ref = **expected_section_iterator;
         uint64_t section_address = loaded_object_info.getSectionLoadAddress(section_ref);
-        core::Cons_sp symbol_info = core::Cons_O::createList(core::SimpleBaseString_O::make(name),core::make_fixnum((Fixnum)size),core::make_fixnum((Fixnum)address),core::Pointer_O::create((void*)section_address));
+        core::Cons_sp symbol_info = core::Cons_O::createList(core::SimpleBaseString_O::make(name),core::make_fixnum((Fixnum)size)/*,core::make_fixnum((Fixnum)address)*/,core::Pointer_O::create((void*)((char*)section_address+address)));
         comp::_sym_STARjit_symbol_infoSTAR->setf_symbolValue(core::Cons_O::create(symbol_info,comp::_sym_STARjit_symbol_infoSTAR->symbolValue()));
       }
     }

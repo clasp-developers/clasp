@@ -409,7 +409,7 @@ and cannot be added to ~A." method other-gf gf)))
 
 (defun startup-fastgf ()
   (setf clos:*enable-fastgf* t)
-  (satiate-standard-generic-functions :verbose t)
+  (satiate-standard-generic-functions :verbose nil)
   (loop for gf in (clos::all-generic-functions)
      when (not (functionp (clos::get-funcallable-instance-function gf)))
      do (switch-to-fastgf gf)))

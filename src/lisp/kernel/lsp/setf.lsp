@@ -541,7 +541,6 @@ PLACE.  Returns NIL."
       (setq store-forms (cons store-form store-forms))
       (setq access-forms (cons access-form access-forms)))))
 
-
 ;;; DEFINE-MODIFY-MACRO macro, by Bruno Haible.
 (defmacro define-modify-macro (name lambdalist function &optional docstring)
   "Syntax: (define-modify-macro symbol lambda-list function-name [doc])
@@ -672,6 +671,8 @@ Decrements the value of PLACE by the value of FORM.  FORM defaults to 1.")
 #+(or)(eval-when (:compile-toplevel)
 	(setq clasp-cleavir:*debug-log-on* t))
 
+;;#+(and cclasp cleavir)(clasp-cleavir:open-debug-log "/tmp/setf-log/output.log")
+
 (defmacro push (&environment env item place)
   "Syntax: (push form place)
 Evaluates FORM, conses the value of FORM to the value stored in PLACE, and
@@ -691,6 +692,7 @@ makes it the new value of PLACE.  Returns the new value of PLACE."
 		    (append vals (list (list 'cons item access-form))))
        #-clasp(declare (:read-only ,@vars)) ; Beppe
        ,store-form)))
+;;#+(and cclasp cleavir)(clasp-cleavir:close-debug-log)
 
 #+(or)(eval-when (:compile-toplevel)
 	(setq clasp-cleavir:*debug-log-on* nil))

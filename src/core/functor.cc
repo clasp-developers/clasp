@@ -277,9 +277,9 @@ LCC_RETURN interpretedClosureEntryPoint(LCC_ARGS_FUNCALL_ELLIPSIS) {
 //  printf("%s:%d ValueEnvironment_O:createForLambdaListHandler llh: %s\n", __FILE__, __LINE__, _rep_(this->_lambdaListHandler).c_str());
 //  newValueEnvironment->dump();
   ValueEnvironmentDynamicScopeManager scope(newValueEnvironment);
-#ifdef USE_EXPENSIVE_BACKTRACE
+//#ifdef USE_EXPENSIVE_BACKTRACE
   INVOCATION_HISTORY_FRAME(); // InvocationHistoryFrame _frame(&lcc_arglist_s._Args);
-#endif
+//#endif
   lambdaListHandler_createBindings(closure->asSmartPtr(), closure->_lambdaListHandler, scope, LCC_PASS_ARGS_LLH);
 //  printf("%s:%d     after lambdaListHandler_createbindings\n", __FILE__, __LINE__);
 //  newValueEnvironment->dump();

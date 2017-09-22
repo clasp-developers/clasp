@@ -115,13 +115,16 @@ Options are :tagbody :go :all :eh-landing-pads
              (bformat t "CMP-LOG ")
              (bformat t ,fmt ,@args))
            nil)))
+
+(defmacro cmp-log-compile-file-dump-module (module &optional (name-modifier ""))
+  `(when *debug-compiler*
+     (compile-file-quick-module-dump ,module ,name-modifier)))
+
+(defmacro cmp-log-dump-function (fn) nil)
+
 (defmacro cmp-log-dump-module (module)
   `(if (is-debug-compiler-on)
        (llvm-sys:dump-module ,module)
-       nil))
-(defmacro cmp-log-dump-function (func)
-  `(if (is-debug-compiler-on)
-       (warn "Do something about cmp-log-dump-function")
        nil))
 
 

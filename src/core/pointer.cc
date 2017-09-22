@@ -60,4 +60,13 @@ string Pointer_O::__repr__() const {
   ss << "#<" << this->_instanceClass()->_classNameAsString() << " :ptr " << (BF("%p") % this->_Pointer).str() << ">";
   return ss.str();
 }
+
+CL_DEFUN bool core__pointer_in_pointer_range(Pointer_sp test, Pointer_sp low, T_sp high_or_size) {
+  if (gc::IsA<Pointer_sp>(high_or_size)) {
+    return test->in_pointer_range(low,gc::As_unsafe<Pointer_sp>(high_or_size));
+  } else if (high_or_size.fixnump()) {
+    return test->in_pointer_range(low,(uintptr_t)high_or_size.unsafe_fixnum());
+  }
+  SIMPLE_ERROR(BF("Illegal range for pointer comparison %s - %s") % _rep_(low) % _rep_(high_or_size));
+}
 };

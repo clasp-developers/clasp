@@ -72,7 +72,7 @@
 	(datums (make-hash-table)))
     (cleavir-ir:map-instructions 
      (lambda (instr)
-       (setf (clasp-cleavir:instruction-gid instr) (incf id))
+       #+stealth-gids (setf (clasp-cleavir:instruction-gid instr) (incf id))
        (loop for datum in (append (cleavir-ir:inputs instr) (cleavir-ir:outputs instr))
 	    do (unless (gethash datum datums)
 		 (setf (gethash datum datums) t)

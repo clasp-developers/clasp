@@ -21,7 +21,7 @@
    #:*debug-final-gml*
    #:*debug-cleavir*
    #:*debug-cleavir-literals*
-   #:instruction-gid
+   #+stealth-gids :instruction-gid
    #:unsafe-multiple-value-foreign-call
    #:unsafe-foreign-call
    #:unsafe-foreign-call-pointer

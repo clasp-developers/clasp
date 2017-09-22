@@ -217,9 +217,10 @@ public:
   void move_to_previous_frame() const { this->_Frame = this->_Frame->previous(); this->_Index--;};
   const InvocationHistoryFrame *frame() const { return this->_Frame; };
   int index();
+  Pointer_sp frame_address();
   T_sp functionName();
   T_sp function();
-  SimpleVector_sp arguments();
+  T_sp arguments();
   T_sp environment();
   InvocationHistoryFrameIterator_sp copy() {
     return InvocationHistoryFrameIterator_O::create(this->_Frame,this->_Index);

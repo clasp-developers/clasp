@@ -54,7 +54,8 @@ public:
 public: // Functions here
   void *ptr() const { return this->_Pointer; };
   virtual bool eql_(T_sp obj) const;
-
+  bool in_pointer_range(Pointer_sp other, intptr_t size) { return ((char*)this->_Pointer>=(char*)other->_Pointer) && (char*)this->_Pointer<((char*)other->_Pointer+size); };
+  bool in_pointer_range(Pointer_sp low, Pointer_sp high) { return ((char*)this->_Pointer>=(char*)low->_Pointer) && (char*)this->_Pointer<((char*)high->_Pointer);  };
   string __repr__() const;
 
 }; // Pointer class

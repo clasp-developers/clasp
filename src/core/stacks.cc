@@ -214,8 +214,12 @@ SimpleVector_sp InvocationHistoryFrame::arguments() const {
   size_t numberOfArguments = this->_remaining_nargs;
   va_list cargs;
   va_copy(cargs,this->_args);
-  SimpleVector_sp vargs = SimpleVector_O::make(numberOfArguments);
   T_O* objRaw;
+  if (numberOfArguments > CALL_ARGUMENTS_LIMIT) {
+    va_end(cargs);
+    return SimpleVector_O::make(0);
+  }
+  SimpleVector_sp vargs = SimpleVector_O::make(numberOfArguments);
   for (size_t i(0); i < numberOfArguments; ++i) {
     //objRaw = this->valist_sp().indexed_arg(i);
     objRaw = va_arg(cargs,core::T_O*);
@@ -374,6 +378,7 @@ void dump_backtrace_n_frames(size_t n) {
 
 namespace core {
 
+#if 0
 void push_InvocationHistoryStack(const InvocationHistoryFrame* frame) {
 #ifdef DEBUG_IHS
   if (global_debug_ihs) validate_InvocationHistoryStack(1,frame,my_thread->_InvocationHistoryStackTop);
@@ -397,6 +402,7 @@ void pop_InvocationHistoryStack(const InvocationHistoryFrame* frame) {
   backtrace(my_thread->_IHSBacktrace,IHS_BACKTRACE_SIZE);
 #endif
 };
+#endif
 
 CL_DEFUN void core__dump_debug_ihs_shadow_stack() {
 #ifdef DEBUG_IHS

@@ -781,7 +781,8 @@
                           :optimize nil
 			  :source-namestring "dispatcher"
 			  :source-file-info-handle 0)
-      (let ((disp-fn (irc-simple-function-create (core:bformat nil "gf-dispatcher^^^%s" generic-function-name)
+      (let* ((dispatcher-name (jit-function-name generic-function-name))
+             (disp-fn (irc-simple-function-create dispatcher-name
 						 %fn-gf%
 						 'llvm-sys::External-linkage
 						 *the-module*

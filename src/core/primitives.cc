@@ -1795,7 +1795,7 @@ namespace core {
 
 bool satisfiesTest(InvocationHistoryFrameIterator_sp iterator, T_sp test) {
   if (!iterator->isValid()) {
-    SIMPLE_ERROR(BF("Invalid InvocationHistoryFrameIterator"));
+    return true;
   }
   if (test.nilp())
     return true;
@@ -1841,46 +1841,67 @@ CL_DEFMETHOD InvocationHistoryFrameIterator_sp InvocationHistoryFrameIterator_O:
 CL_LISPIFY_NAME("frameIteratorFunctionName");
 CL_DEFMETHOD T_sp InvocationHistoryFrameIterator_O::functionName() {
   if (!this->isValid()) {
-    SIMPLE_ERROR(BF("Invalid InvocationHistoryFrameIterator"));
+    return _Nil<T_O>();
   }
-  Function_sp closure = this->_Frame->function();
-  if (!closure) {
-    SIMPLE_ERROR(BF("Could not access closure of InvocationHistoryFrame"));
+  if (this->_Frame->_Previous) {
+    Function_sp closure = this->_Frame->function();
+    if (!closure) {
+      SIMPLE_ERROR(BF("Could not access closure of InvocationHistoryFrame"));
+    }
+    return closure->functionName();
   }
-  return closure->functionName();
+  return _Nil<T_O>();
 }
 
 CL_LISPIFY_NAME("frameIteratorEnvironment");
 CL_DEFMETHOD T_sp InvocationHistoryFrameIterator_O::environment() {
   if (!this->isValid()) {
-    SIMPLE_ERROR(BF("Invalid InvocationHistoryFrameIterator"));
+    return _Nil<T_O>();
   }
-  T_sp closure = this->_Frame->function();
-  return closure;
+  if (this->_Frame->_Previous) {
+    T_sp closure = this->_Frame->function();
+    return closure;
+  }
+  return _Nil<T_O>();
 }
+
+CL_LISPIFY_NAME("frameIterator-frame-address");
+CL_DEFMETHOD Pointer_sp InvocationHistoryFrameIterator_O::frame_address()
+{
+  return Pointer_O::create((void*)this->_Frame);
+};
+
 
 int InvocationHistoryFrameIterator_O::index() {
   if (!this->isValid()) {
-    SIMPLE_ERROR(BF("Invalid InvocationHistoryFrameIterator"));
+    return 0;
   }
   return this->_Index;
 }
 
 T_sp InvocationHistoryFrameIterator_O::function() {
   if (!this->isValid()) {
-    SIMPLE_ERROR(BF("Invalid InvocationHistoryFrameIterator"));
+    return _Nil<T_O>();
   }
-  T_sp closure = this->_Frame->function();
-  return closure;
+  if (this->_Frame->_Previous) {
+    T_sp closure = this->_Frame->function();
+    return closure;
+  }
+  return _Nil<T_O>();
 }
 
 CL_LISPIFY_NAME("frameIteratorArguments");
-CL_DEFMETHOD SimpleVector_sp InvocationHistoryFrameIterator_O::arguments() {
+CL_DEFMETHOD T_sp InvocationHistoryFrameIterator_O::arguments() {
   if (!this->isValid()) {
-    SIMPLE_ERROR(BF("Invalid InvocationHistoryFrameIterator"));
+    return _Nil<T_O>();
   }
   const InvocationHistoryFrame *frame = this->_Frame;
-  return frame->arguments();
+  if (frame && frame->_Previous) {
+    if (frame->arguments().generalp()) {
+      return frame->arguments();
+    }
+  }
+  return _Nil<T_O>();
 }
 
 SYMBOL_SC_(CorePkg, makeInvocationHistoryFrameIterator);
@@ -2024,10 +2045,13 @@ CL_LAMBDA(cur);
 CL_DECLARE();
 CL_DOCSTRING("ihsBds");
 CL_DEFUN int core__ihs_bds(int idx) {
+  return 0;
+#if 0
   InvocationHistoryFrameIterator_sp cur = core__get_invocation_history_frame(idx);
   if (!cur->isValid())
     return 0;
   return cur->frame()->bds();
+#endif
 };
 
 CL_LAMBDA();

@@ -293,7 +293,7 @@ then compile it and return (values compiled-llvm-function lambda-name)"
 (export 'treat-as-special-operator-p)
 
 (defun codegen (result form env)
-  (declare (optimize (debug 3)))
+;;;  (declare (optimize (debug 3)))
   (assert-result-isa-llvm-value result) 
   (multiple-value-bind (source-directory source-filename lineno column)
       (dbg-set-current-source-pos form)

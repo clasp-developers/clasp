@@ -253,20 +253,74 @@ No DIBuilder is defined for the default module")
 (defconstant +target-min-mps+ :min-mps)
 (defconstant +target-full-mps+ :full-mps)
 
+(defun escape-and-join-jit-name (names)
+  (let ((all (make-string-output-stream))
+        name)
+    (tagbody
+     outer
+       (let ((name (string (car names))))
+         (let ((escaped (make-string-output-stream))
+               (i 0)
+               (len (length name)))
+           (tagbody
+            top
+              (let ((c (aref name i)))
+                (if (char= c #\\)
+                    (princ "\\\\" escaped)
+                    (if (char= c #\^)
+                        (princ "\\^" escaped)
+                        (princ c escaped))))
+              (setq i (+ 1 i))
+              (if (< i len) (go top)))
+           (princ (get-output-stream-string escaped) all)
+           (princ #\^ all)))
+       (setq names (cdr names))
+       (if names (go outer)))
+    (princ #\^ all)
+    (get-output-stream-string all)))
+
+(defun unescape-and-split-jit-name (name)
+  (let* (parts
+         (unescaped (make-string-output-stream))
+         (i 0)
+         (len (length name))
+         (len-1 (- len 1)))
+    (tagbody
+     top
+       (let ((c (aref name i))
+             (cnext (if (< i len-1) (aref name (+ i 1)) #\nul)))
+         (if (char= c #\\)
+             (if (char= cnext #\\)
+                 (progn
+                   (princ "\\" unescaped)
+                   (setq i (+ 1 i)))
+                 (if (char= cnext #\^)
+                     (progn
+                       (princ #\^ unescaped)
+                       (setq i (+ 1 i)))
+                     (error "Bad escape sequence in ~a starting at ~a" name i)))
+             (if (char= c #\^)
+                 (setq parts (cons (get-output-stream-string unescaped) parts))
+                 (princ c unescaped))))
+       (setq i (+ 1 i))
+       (if (< i len) (go top)))
+    (setq parts (cons (get-output-stream-string unescaped) parts))
+    (nreverse parts)))
+
 (defun jit-function-name (lname)
   "Depending on the type of LNAME an actual LLVM name is generated"
-;;  (break "Check backtrace")
+  ;;  (break "Check backtrace")
   (cond
     ((pathnamep lname) (bformat nil "MAIN-%s" (string-upcase (pathname-name lname))))
     ((stringp lname)
      (cond
        ((string= lname core:+run-all-function-name+) lname) ; this one is ok
        ((string= lname core:+clasp-ctor-function-name+) lname) ; this one is ok
-       ((string= lname "IMPLICIT-REPL") lname) ; this one is ok
-       ((string= lname "TOP-LEVEL") lname) ; this one is ok
+       ((string= lname "IMPLICIT-REPL") lname)  ; this one is ok
+       ((string= lname "TOP-LEVEL") lname)      ; this one is ok
        ((string= lname "UNNAMED-LAMBDA") lname) ; this one is ok
-       ((string= lname "lambda") lname) ; this one is ok
-       ((string= lname "ltv-literal") lname) ; this one is ok
+       ((string= lname "lambda") lname)         ; this one is ok
+       ((string= lname "ltv-literal") lname)    ; this one is ok
        (t (bformat t "jit-function-name lname = %s\n" lname)
           (break "Always pass symbol as name") lname)))
     ((symbolp lname)
@@ -274,24 +328,48 @@ No DIBuilder is defined for the default module")
             (sym-name (symbol-name lname))
             (pkg-name (if sym-pkg
                           (string (package-name sym-pkg))
-                          "NIL")))
-       (bformat nil "%s^^%s_FN" sym-name pkg-name)))
-    ((and (consp lname) (eq (car lname) 'setf))
+                          "KEYWORD")))
+       (escape-and-join-jit-name (list sym-name pkg-name "FN"))))
+    ((and (consp lname) (eq (car lname) 'setf) (symbolp (second lname)))
+;;;     (core:bformat t "jit-function-name handling SETF: %s\n" lname)
      (let* ((sn (cadr lname))
             (sym-pkg (symbol-package sn))
             (sym-name (symbol-name sn))
             (pkg-name (if sym-pkg
                           (string (package-name sym-pkg))
-                          "NIL")))
-       (bformat nil "%s^^%s_SETF" sym-name pkg-name)))
+                          "KEYWORD")))
+       (escape-and-join-jit-name (list sym-name pkg-name "SETF"))))
+    ((and (consp lname) (eq (car lname) 'setf) (consp (second lname)))
+;;;     (core:bformat t "jit-function-name handling SETFCONS: %s\n" lname)
+     ;; (setf (something ...))
+     (let* ((sn (second lname))
+            (sn-sym (first sn))
+            (sym-pkg (symbol-package sn-sym))
+            (sym-name (symbol-name sn-sym))
+            (pkg-name (if sym-pkg
+                          (string (package-name sym-pkg))
+                          "KEYWORD")))
+       (escape-and-join-jit-name (list sym-name pkg-name "SETFCONS"))))
     ((and (consp lname) (eq (car lname) 'method) (symbolp (second lname)))
+;;;     (core:bformat t "jit-function-name handling METHOD: %s\n" lname)
      (let ((pkg-name (string (package-name (symbol-package (second lname)))))
-           (name (symbol-name (second lname))))
-     (bformat nil "%s^^%s(METHOD %s)" name pkg-name (cddr lname))))
+           (name (symbol-name (second lname)))
+           (specializers (core:bformat nil "%s" (cddr lname))))
+       (escape-and-join-jit-name (list name pkg-name specializers "METHOD"))))
+    ((and (consp lname) (eq (car lname) 'method) (consp (second lname)) (eq (car (second lname)) 'setf))
+;;;     (core:bformat t "jit-function-name handling SETFMETHOD: %s\n" lname)
+     (let* ((name-list (second lname))
+            (setf-name-symbol (second name-list))
+            (pkg-name (string (package-name (symbol-package setf-name-symbol))))
+            (specializers (core:bformat nil "%s" (cddr lname))))
+       (escape-and-join-jit-name (list (string setf-name-symbol) pkg-name specializers "SETFMETHOD"))))
     ((consp lname)
-     (bformat nil "%s_FN" lname))
+;;;     (core:bformat t "jit-function-name handling UNKNOWN: %s\n" lname)
+     ;; What is this????
+     (bformat nil "%s_CONS-LNAME?" lname))
     (t (error "Illegal lisp function name[~a]" lname))))
-(export 'jit-function-name)
+(export '(jit-function-name unescape-and-split-jit-name escape-and-join-jit-name))
+
 
 (setq core:*llvm-function-name-hook* #'jit-function-name)
 

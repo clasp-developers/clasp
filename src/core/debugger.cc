@@ -66,18 +66,19 @@ LispDebugger::LispDebugger() : _CanContinue(true) {
 void LispDebugger::printExpression() {
   int index = core__ihs_current_frame();
   InvocationHistoryFrameIterator_sp frame = this->currentFrame();
-  stringstream ss;
-  ss << frame->frame()->asString(index);
-  _lisp->print(BF("%s\n") % ss.str());
+  if (frame->isValid()) {
+    stringstream ss;
+    ss << frame->frame()->asString(index);
+    _lisp->print(BF("%s\n") % ss.str());
+  } else {
+    _lisp->print(BF("No frame.\n"));
+  }
 }
 
 InvocationHistoryFrameIterator_sp LispDebugger::currentFrame() const {
   int index = core__ihs_current_frame();
   InvocationHistoryFrameIterator_sp frame = core__get_invocation_history_frame(index);
-  if (frame->isValid())
-    return frame;
-  printf("%s:%d  Could not get frame - aborting\n", __FILE__, __LINE__ );
-  abort(); //THROW_HARD_ERROR(BF("%s:%d Could not get frame") % __FILE__ % __LINE__);
+  return frame;
 }
 
 size_t global_low_level_debugger_depth = 0;
@@ -270,6 +271,24 @@ CL_DEFUN void core__test_backtrace() {
 #endif
 
 
+CL_DEFUN List_sp core__shadow_backtrace_as_list() {
+  const InvocationHistoryFrame *top = my_thread->_InvocationHistoryStackTop;
+  if (top == NULL) {
+    return _Nil<T_O>();
+  }
+  ql::list result;
+  int index = 0;
+  for (const InvocationHistoryFrame *cur = top; cur != NULL; cur = cur->_Previous) {
+    if (cur->_Previous) {
+      InvocationHistoryFrameIterator_sp it = InvocationHistoryFrameIterator_O::create(cur,index);
+      result << it;
+      ++index;
+    }
+  }
+  return result.cons();
+}
+
+
 void low_level_backtrace(bool with_args) {
   const InvocationHistoryFrame *top = my_thread->_InvocationHistoryStackTop;
   if (top == NULL) {
@@ -336,6 +355,73 @@ CL_DEFUN void core__low_level_backtrace_with_args() {
   low_level_backtrace(true);
 }
 
+
+int safe_backtrace(void**& return_buffer)
+{
+#define START_BACKTRACE_SIZE 512
+  size_t num = START_BACKTRACE_SIZE;
+  for ( int i=0; i<100; ++i ) {
+    void** buffer = (void**)malloc(sizeof(void*)*num);
+    size_t returned = backtrace(buffer,num);
+    if (returned < num) {
+      return_buffer = buffer;
+      return returned;
+    }
+    free(buffer);
+    num = num*2;
+  }
+  printf("%s:%d Couldn't get backtrace\n", __FILE__, __LINE__ );
+  abort();
+}
+
+
+CL_DEFUN T_sp core__maybe_demangle(core::String_sp s)
+{
+  char *funcname = (char *)malloc(1024);
+  size_t funcnamesize = 1024;
+  std::string fnName = s->get_std_string();
+  int status;
+  char *ret = abi::__cxa_demangle(fnName.c_str(), funcname, &funcnamesize, &status);
+  if (status == 0) {
+    std::string demangled(funcname);
+    free(ret);
+    return SimpleBaseString_O::make(demangled);
+  } else {
+    if (funcname) free(funcname);
+    return _Nil<T_O>();
+  }
+}
+  
+
+CL_LAMBDA(&optional (depth 0));
+CL_DECLARE();
+CL_DOCSTRING("backtrace");
+CL_DEFUN T_sp core__clib_backtrace_as_list() {
+// Play with Unix backtrace(3)
+  char *funcname = (char *)malloc(1024);
+  size_t funcnamesize = 1024;
+  void** buffer = NULL;
+  int nptrs = safe_backtrace(buffer);
+  char **strings = backtrace_symbols(buffer, nptrs);
+  if (strings == NULL) {
+    if (buffer) free(buffer);
+    return _Nil<T_O>();
+  } else {
+    ql::list result;
+    void* bp = __builtin_frame_address(0);
+    for (int i = 0; i < nptrs; ++i) {
+      std::string str(strings[i]);
+      SimpleBaseString_sp sstr = SimpleBaseString_O::make(str);
+      Pointer_sp ptr = Pointer_O::create(buffer[i]);
+      Pointer_sp frame = Pointer_O::create(bp);
+      if (bp) bp = *(void**)bp;
+      result << Cons_O::createList(ptr,sstr,frame);
+    }
+    if (buffer) free(buffer);
+    if (strings) free(strings);
+    return result.cons();
+  }
+};
 
 CL_LAMBDA(&optional (depth 0));
 CL_DECLARE();

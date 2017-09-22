@@ -41,6 +41,7 @@ def aclasp(wrappers):
         "src/lisp/kernel/lsp/logging",
         "src/lisp/kernel/lsp/sharpmacros",
         "src/lisp/kernel/lsp/trace",
+        "src/lisp/kernel/lsp/backtrace",
         "src/lisp/kernel/cmp/cmpexports",
         "src/lisp/kernel/cmp/cmpsetup",
         "src/lisp/kernel/cmp/cmpglobals",

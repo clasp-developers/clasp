@@ -544,7 +544,7 @@ eg:  (f closure-ptr nargs a b c d ...)
 ;; %"class.core::InvocationHistoryFrame" = type { i32 (...)**, i32, %"class.core::InvocationHistoryStack"*, %"class.core::InvocationHistoryFrame"*, i8, i32 }
 ;;"Make this a generic pointer"
 (define-symbol-macro %InvocationHistoryStack*% %i8*%)
-(define-symbol-macro %InvocationHistoryFrame% (llvm-sys:struct-type-get *llvm-context* (list %i8*% %va_list% %size_t% %size_t%) "InvocationHistoryFrame"))
+(define-symbol-macro %InvocationHistoryFrame% (llvm-sys:struct-type-get *llvm-context* (list %i8*% %va_list% %size_t% #| %size_t% #|Removed BDS|# |#) "InvocationHistoryFrame"))
 (define-symbol-macro %InvocationHistoryFrame*% (llvm-sys:type-get-pointer-to %InvocationHistoryFrame%))
 ;;  (llvm-sys:set-body %InvocationHistoryFrame% (list %i32**% %i32% #|%InvocationHistoryStack*% %InvocationHistoryFrame*%|# %i8*% %i8*% %i8% %i32%) nil)
 ;(define-symbol-macro %LispFunctionIHF% (llvm-sys:struct-type-create *llvm-context* :elements (list %InvocationHistoryFrame% %tsp% %tsp% %tsp% %i32% %i32%) :name "LispFunctionIHF"))

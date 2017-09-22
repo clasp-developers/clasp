@@ -136,7 +136,7 @@ Bundle::Bundle(const string &raw_argv0, const string &appDirName) {
 #ifdef DEBUG_DESC_BUNDLE
     printf("%s:%d Looking for Content subdirectories for building\n", __FILE__, __LINE__ );
 #endif
-    bf::path contents = this->_Directories->_ExecutableDir / "Contents";
+    bf::path contents = this->_Directories->_ExecutableDir / "lib" / "clasp";
     this->_Directories->_ContentsDir = contents;
     this->_Directories->_FaslDir = this->_Directories->_ExecutableDir / "fasl";
     this->_Directories->_BitcodeDir = this->_Directories->_ExecutableDir / "fasl";
@@ -164,7 +164,7 @@ Bundle::Bundle(const string &raw_argv0, const string &appDirName) {
 #endif
 //  this->_Directories->_RootDir = appDir;
     bf::path one_up_contents = this->_Directories->_ExecutableDir.parent_path();
-    one_up_contents /= std::string("Contents");
+    one_up_contents = one_up_contents / "lib" / "clasp";
     bool foundContents = false;
     if (bf::exists(one_up_contents)) {
       this->_Directories->_ContentsDir = one_up_contents;
@@ -179,18 +179,27 @@ Bundle::Bundle(const string &raw_argv0, const string &appDirName) {
       char *homedir = getenv("CLASP_HOME");
       if (homedir) {
         if (verbose) printf("%s:%d  Using the CLASP_HOME directory %s\n", __FILE__, __LINE__, homedir);
-        this->_Directories->_ContentsDir = bf::path(homedir) / "Contents";
+        this->_Directories->_ContentsDir = bf::path(homedir) / "lib" / "clasp";
         foundContents = true;
       } else {
+        std::string install_path = std::string(PREFIX)+"/lib/clasp";
+        bf::path test_path(install_path);
+        if (bf::exists(test_path)) {
+          if (verbose) printf("%s:%d  Looking for %s\n", __FILE__, __LINE__, install_path.c_str());
+          this->_Directories->_ContentsDir = test_path;
+          foundContents = true;
+        }
         const char* paths[] = { "/usr/local/lib/clasp/Contents",
                                 "/usr/lib/clasp/Contents" };
-        for ( size_t i=0; i<sizeof(paths)/sizeof(paths[0]); ++i ) {
-          bf::path test_path(paths[i]);
-          if (bf::exists(test_path)) {
-            if (verbose) printf("%s:%d  Looking for %s\n", __FILE__, __LINE__, paths[i]);
-            this->_Directories->_ContentsDir = test_path;
-            foundContents = true;
-            break;
+        if (!foundContents) {
+          for ( size_t i=0; i<sizeof(paths)/sizeof(paths[0]); ++i ) {
+            bf::path test_path(paths[i]);
+            if (bf::exists(test_path)) {
+              if (verbose) printf("%s:%d  Looking for %s\n", __FILE__, __LINE__, paths[i]);
+              this->_Directories->_ContentsDir = test_path;
+              foundContents = true;
+              break;
+            }
           }
         }
         if (!foundContents) {

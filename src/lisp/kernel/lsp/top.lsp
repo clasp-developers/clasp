@@ -1,4 +1,4 @@
-;;;;  -*- Mode: Lisp; Syntax: Common-Lisp; Package: SYSTEM -*-
+;;;;  -*- Mode: Lisp1; Syntax: Common-Lisp; Package: SYSTEM -*-
 ;;;;
 ;;;;  top.lsp -- Top-level loop, break loop, and error handlers
 ;;;;
@@ -1038,7 +1038,7 @@ Use special code 0 to cancel this operation.")
 		(if (eq val (core:unbound)) "<unbound value>" val))))))
 #+(and clasp (not use-expensive-backtrace))
 (defun clasp-backtrace (&optional (n 99999999))
-  (core:clib-backtrace n))
+  (core:btcl))
 
 #+(and clasp use-expensive-backtrace)
 (defun clasp-backtrace (&optional (n 99999999) (stream *standard-output*))
@@ -1444,7 +1444,7 @@ package."
            (*print-circle* t)
            (*readtable* (or *break-readtable* *readtable*))
 	   (*break-condition* condition)
-           (*break-message* (format nil "~&THIRD!!!!  Condition of type: ~A~%~A~%"
+           (*break-message* (format nil "~&Condition of type: ~A~%~A~%"
 				    (type-of condition) condition))
            (*break-level* (1+ *break-level*))
            (break-level *break-level*)

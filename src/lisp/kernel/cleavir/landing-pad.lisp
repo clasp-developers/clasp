@@ -119,8 +119,10 @@
               (generate-landing-pad-for-unwind function-info (enter-instruction function-info)
                                                return-value tags abi
                                                (landing-pad-for-cleanup function-info)
-                                               cleanup-block
-                                               :is-cleanup t))))))
+                                               (if cleanup-block
+                                                   cleanup-block
+                                                   ehresume-block)
+                                               :is-cleanup (not (null cleanup-block))))))))
 
 (defun evaluate-cleanup-code (function-info)
   (and (on-exit-for-unwind function-info) (funcall (on-exit-for-unwind function-info) function-info))

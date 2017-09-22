@@ -129,10 +129,42 @@
         (do* ((cur forms (cdr cur))
               (form (car cur) (car cur)))
              ((endp cur) nil)
-          (if (not (null (cdr cur)))
+          (if (cdr cur)
               (codegen temp-val form env)
               (codegen result form env))))
       (codegen-literal result nil env)))
+
+;;; IF
+
+(defun codegen-if (result rest env)
+  "See Kaleidoscope example for if/then/else"
+  (let ((icond (car rest))
+	(ithen (cadr rest))
+	(ielse (caddr rest)))
+    (when (cdddr rest)
+      (format t "codegen-if (cdddr rest) = ~a ~%" (cdddr rest))
+      (compiler-error (cdddr rest) "too many arguments for if"))
+    (let* ((thenbb (irc-basic-block-create "then"))
+           (elsebb (irc-basic-block-create "else"))
+           (mergebb (irc-basic-block-create "ifcont")))
+      ;; We have block references so we can compile the branch now.
+      (compile-if-cond icond env thenbb elsebb)
+
+      ;; Compile the THEN branch.
+      (irc-begin-block thenbb)
+      (irc-low-level-trace)
+      (dbg-set-current-source-pos ithen)
+      (codegen result ithen env)
+      (irc-branch-if-no-terminator-inst mergebb)
+
+      ;; Compile the ELSE branch.
+      (irc-begin-block elsebb)
+      (irc-low-level-trace)
+      (codegen result ielse env)
+      (irc-branch-if-no-terminator-inst mergebb)
+
+      ;; Everything after starts at the block THEN and ELSE merge into.
+      (irc-begin-block mergebb))))
 
 ;;; PROGV
 
@@ -387,35 +419,6 @@ env is the parent environment of the (result-af) value frame"
          (compile-typeq-condition cond env thenb elseb))
         (t (compile-general-condition cond env thenb elseb))))
 
-(defun codegen-if (result rest env)
-  "See Kaleidoscope example for if/then/else"
-  (let ((icond (car rest))
-	(ithen (cadr rest))
-	(ielse (caddr rest)))
-    (when (cdddr rest)
-      (format t "codegen-if (cdddr rest) = ~a ~%" (cdddr rest))
-      (compiler-error (cdddr rest) "too many arguments for if"))
-    (let* ((thenbb (irc-basic-block-create "then"))
-           (elsebb (irc-basic-block-create "else"))
-           (mergebb (irc-basic-block-create "ifcont")))
-      ;; We have block references so we can compile the branch now.
-      (compile-if-cond icond env thenbb elsebb)
-
-      ;; Compile the THEN branch.
-      (irc-begin-block thenbb)
-      (irc-low-level-trace)
-      (dbg-set-current-source-pos ithen)
-      (codegen result ithen env)
-      (irc-branch-if-no-terminator-inst mergebb)
-
-      ;; Compile the ELSE branch.
-      (irc-begin-block elsebb)
-      (irc-low-level-trace)
-      (codegen result ielse env)
-      (irc-branch-if-no-terminator-inst mergebb)
-
-      ;; Everything after starts at the block THEN and ELSE merge into.
-      (irc-begin-block mergebb))))
 
 ;;; TAGBODY, GO
 

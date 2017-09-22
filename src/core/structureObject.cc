@@ -68,7 +68,7 @@ CL_DEFUN T_sp core__make_structure(T_sp type, List_sp slot_values) {
   StructureObject_sp so = StructureObject_O::create(type, slot_values);
   return so;
 #endif
-  SIMPLE_ERROR(BF("This should never be reached"));
+  SIMPLE_ERROR(BF("You are trying to make a structure of type %s before CLOS is available - this will not work") % _rep_(type));
 };
 
 

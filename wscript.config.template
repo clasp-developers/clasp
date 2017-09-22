@@ -18,7 +18,7 @@ LLVM_CONFIG_BINARY = '/path/to/llvm-config-4.0'
 # LLVM_CONFIG_DEBUG_PATH = "/full/path/externals-clasp/build/debug/bin/llvm-config"
 
 # Where to install clasp. Defaults to '/usr/local/'.
-#INSTALL_PATH_PREFIX = '/opt/clasp/'
+#PREFIX = '/usr/local/'
 
 # SBCL is used at build time. Defaults to 'sbcl'.
 #SBCL                = '/path/sbcl/run-sbcl.sh'
