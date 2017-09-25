@@ -28,6 +28,7 @@ THE SOFTWARE.
 #define mpPackage_fwd_H
 
 #include <sys/time.h>
+#include <cassert>
 
 PACKAGE_USE("COMMON-LISP");
 NAMESPACE_PACKAGE_ASSOCIATION(mp, MpPkg, "MP")
