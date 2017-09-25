@@ -320,8 +320,10 @@ CL_DEFUN void core__check_pending_interrupts() {
 
 
 void fatal_error_handler(void *user_data, const std::string &reason, bool gen_crash_diag) {
-  printf("Hit a fatal error in llvm/clang: %s\n", reason.c_str());
-  printf("Clasp is terminating via abort(0)\n");
+  printf("Hit a fatal error in llvm: %s\n", reason.c_str());
+  printf("I (clasp) shall sleep for 1000 seconds and await the sweet kiss of the debugger.\n  If it does not reach me in time - I shall perish by abort().\n");
+  printf("    Find me at pid %d before I die!\n", getpid());
+  sleep(1000);
   abort();
 }
 

@@ -3694,14 +3694,37 @@ void save_symbol_info(const llvm::object::ObjectFile& object_file, const llvm::R
       if (expected_section_iterator) {
         const llvm::object::SectionRef& section_ref = **expected_section_iterator;
         uint64_t section_address = loaded_object_info.getSectionLoadAddress(section_ref);
-        core::Cons_sp symbol_info = core::Cons_O::createList(core::SimpleBaseString_O::make(name),core::make_fixnum((Fixnum)size)/*,core::make_fixnum((Fixnum)address)*/,core::Pointer_O::create((void*)((char*)section_address+address)));
-        comp::_sym_STARjit_symbol_infoSTAR->setf_symbolValue(core::Cons_O::create(symbol_info,comp::_sym_STARjit_symbol_infoSTAR->symbolValue()));
+        core::Cons_sp symbol_info = core::Cons_O::createList(core::make_fixnum((Fixnum)size),core::Pointer_O::create((void*)((char*)section_address+address)));
+        gc::As<core::HashTableEqual_sp>(comp::_sym_STARjit_saved_symbol_infoSTAR->symbolValue())->hash_table_setf_gethash(core::SimpleBaseString_O::make(name),symbol_info);
       }
     }
   }
 }
 
 
+CL_DEFUN core::T_sp llvm_sys__lookup_jit_symbol_info(void* ptr) {
+  core::HashTableEqual_sp ht = gc::As<core::HashTableEqual_sp>(comp::_sym_STARjit_saved_symbol_infoSTAR->symbolValue());
+  core::T_sp result = _Nil<core::T_O>();
+  ht->map_while_true([ptr,&result] (core::T_sp key, core::T_sp value) -> bool {
+      if (value.consp()) {
+        core::T_sp address = value.unsafe_cons()->ocadr();
+        core::T_sp size = value.unsafe_cons()->ocar();
+        char* start = (char*)(gc::As<core::Pointer_sp>(address)->ptr());
+        if (size.fixnump()) {
+          char* end = start+size.unsafe_fixnum();
+//          printf("%s:%d  Comparing ptr@%p to %p - %p\n", __FILE__, __LINE__, ptr, start, end);
+          if (start<=(char*)ptr && ptr<end) {
+            result = core::Cons_O::create(key,value);
+//            printf("Found a match\n");
+            return false;
+          }
+        }
+      }
+      return true;
+    });
+  return result;
+}
+          
 
 CL_LISPIFY_NAME("CLASP-JIT-ADD-MODULE");
 __attribute__((optnone))

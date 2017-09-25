@@ -1412,6 +1412,10 @@ void Lisp_O::parseCommandLineArguments(int argc, char *argv[], const CommandLine
 #ifdef ENABLE_PROFILING
   features = Cons_O::create(_lisp->internKeyword("ENABLE-PROFILING"),features);
 #endif
+#ifdef DEBUG_FASTGF
+  features = Cons_O::create(_lisp->internKeyword("DEBUG-FASTGF"),features);
+#endif
+  
   cl::_sym_STARfeaturesSTAR->setf_symbolValue(features);
 
   SYMBOL_EXPORT_SC_(CorePkg, STARprintVersionOnStartupSTAR);

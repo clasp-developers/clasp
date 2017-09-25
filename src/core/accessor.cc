@@ -227,7 +227,6 @@ LCC_RETURN optimized_slot_reader_dispatch(gctools::Tagged tgf, gctools::Tagged t
         SIMPLE_ERROR(BF("What do I do here?  e==NULL"));
       }
       SimpleVector_sp call_history_key = SimpleVector_O::make(1,cache->_keys[1],true);
-      clos__generic_function_call_history_push_new(gf,call_history_key,Cons_O::create(core::_sym_optimized_slot_reader,e->_value));
     }
     index = e->_value;
     value = do_slot_read(index.tagged_(),tgf,tinstance.tagged_());
@@ -311,7 +310,6 @@ LCC_RETURN optimized_slot_writer_dispatch(gctools::Tagged tgf, gctools::Tagged t
     do_slot_write(index.tagged_(),tgf,instance.tagged_(),value.tagged_());
     SimpleVector_sp call_history_key = SimpleVector_O::make(2,T_O::static_class);
     (*call_history_key)[1] = cache->_keys[1];
-    clos__generic_function_call_history_push_new(gf,call_history_key,Cons_O::create(core::_sym_optimized_slot_writer,index));
     return value.as_return_type();
   }
   eval::funcall(cl::_sym_no_applicable_method, gf, value, tinstance);

@@ -214,25 +214,35 @@ namespace mp {
   public:
     core::T_sp  _Name;
     core::T_sp  _Owner;
-    SharedMutex _SharedMutex;
+    UpgradableSharedMutex _SharedMutex;
   SharedMutex_O(core::T_sp name) : _Name(name), _Owner(_Nil<T_O>()) {};
-    CL_DEFMETHOD void write_lock() {
-      this->_SharedMutex.lock();
+    void write_lock(bool upgrade=false) {
+      this->_SharedMutex.writeLock(upgrade);
     };
-    CL_DEFMETHOD void write_unlock() {
-      this->_SharedMutex.unlock();
+    bool write_try_lock(bool upgrade=false) {
+      return this->_SharedMutex.writeTryLock(upgrade);
     };
-    
-    CL_DEFMETHOD void shared_lock() {
-      this->_SharedMutex.shared_lock();
-    };
-    CL_DEFMETHOD void shared_unlock() {
-      this->_SharedMutex.shared_unlock();
+void write_unlock(bool release_read_lock=false) {
+      this->_SharedMutex.writeUnlock(release_read_lock);
     };
     
+ void read_lock() {
+      this->_SharedMutex.readLock();
+    };
+ void read_unlock() {
+      this->_SharedMutex.readUnlock();
+    };
+ void shared_lock() {
+      this->_SharedMutex.readLock();
+    };
+ void shared_unlock() {
+      this->_SharedMutex.readUnlock();
+    };
     string __repr__() const;
   };
 };
+
+
 
 template <>
 struct gctools::GCInfo<mp::RecursiveMutex_O> {

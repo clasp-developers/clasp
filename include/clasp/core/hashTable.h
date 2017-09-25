@@ -60,7 +60,7 @@ namespace core {
     friend T_mv cl__maphash(T_sp function_desig, HashTable_sp hash_table);
     friend T_sp cl__clrhash(HashTable_sp hash_table);
 
-  protected: // instance variables here
+  public: // instance variables here
     uint _InitialSize;
     Number_sp _RehashSize;
     double _RehashThreshold;

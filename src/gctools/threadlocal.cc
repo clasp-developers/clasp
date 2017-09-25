@@ -38,7 +38,7 @@ namespace core {
 ThreadLocalState::ThreadLocalState(void* stack_top) :  _DisableInterrupts(false), _StackTop(stack_top), _PendingInterrupts(_Nil<core::T_O>()) {
   my_thread = this;
 #ifdef _TARGET_OS_DARWIN
-  this->_Tid = 0;
+  pthread_threadid_np(NULL, &this->_Tid);
 #else
   this->_Tid = 0;
 #endif

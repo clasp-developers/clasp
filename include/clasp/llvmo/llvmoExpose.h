@@ -4455,7 +4455,7 @@ namespace llvmo {
     virtual ~ModuleHandle_O();
   };
 
-
+  core::T_sp llvm_sys__lookup_jit_symbol_info(void* ptr);
 
 };
 

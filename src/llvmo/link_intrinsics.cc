@@ -72,7 +72,7 @@ namespace llvmo {
 core::T_sp  global_arg0;
 core::T_sp  global_arg1;
 core::T_sp  global_arg2;
-[[noreturn]]void intrinsic_error(ErrorCode err, core::T_sp arg0, core::T_sp arg1, core::T_sp arg2) {
+[[noreturn]] __attribute__((optnone))  void intrinsic_error(ErrorCode err, core::T_sp arg0, core::T_sp arg1, core::T_sp arg2) {
   global_arg0 = arg0;
   global_arg1 = arg1;
   global_arg2 = arg2;

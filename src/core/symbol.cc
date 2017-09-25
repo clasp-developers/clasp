@@ -213,7 +213,7 @@ CL_DEFMETHOD Symbol_sp Symbol_O::makunbound() {
   return this->asSmartPtr();
 }
 
-void Symbol_O::symbolUnboundError() const {
+__attribute__((optnone)) void Symbol_O::symbolUnboundError() const {
   UNBOUND_VARIABLE_ERROR(this->asSmartPtr());
 }
 

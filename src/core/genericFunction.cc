@@ -252,7 +252,6 @@ LCC_RETURN standard_dispatch(T_sp gf, VaList_sp arglist, Cache_sp cache) {
       printf("%s:%d call_history_key -> %s\n", __FILE__, __LINE__, _rep_(call_history_key).c_str());
   }
 #endif
-      clos__generic_function_call_history_push_new(gc::As_unsafe<FuncallableInstance_sp>(gf), call_history_key, func);
     }
   }
   return cc_dispatch_effective_method(func.raw_(),gf.raw_(), arglist.raw_());

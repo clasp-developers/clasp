@@ -27,6 +27,7 @@ THE SOFTWARE.
 #ifndef _core_funcallable_instance_H_
 #define _core_funcallable_instance_H_
 
+#include <atomic>
 #include <clasp/core/object.h>
 #include <clasp/core/array.h>
 #include <clasp/core/hashTable.fwd.h>
@@ -92,11 +93,11 @@ namespace core {
   /*! Mimicking ECL instance->sig generation signature
         This is pointed to the class slots in case they change 
         - then the instances can be updated*/
-    DispatchFunction_fptr_type _entryPoint;
+    std::atomic<DispatchFunction_fptr_type> _entryPoint;
     int    _isgf;
     T_sp   _Sig;
-    T_sp   _CallHistory;
-    T_sp   _SpecializerProfile;
+    std::atomic<T_sp>   _CallHistory;
+    std::atomic<T_sp>   _SpecializerProfile;
     T_sp   _Lock;
     T_sp   _CompiledDispatchFunction;
   public:
@@ -118,18 +119,10 @@ namespace core {
       }
       this->instanceSet(REF_GFUN_LAMBDA_LIST,lambda_list);
     };
-    T_sp GFUN_SPECIALIZER_PROFILE() const { return this->_SpecializerProfile; };
-    void GFUN_SPECIALIZER_PROFILE_set(T_sp val) { this->_SpecializerProfile = val; };
-    T_sp GFUN_CALL_HISTORY() const { return this->_CallHistory; };
-    void GFUN_CALL_HISTORY_set(T_sp h) {
-#ifdef DEBUG_GFDISPATCH
-      if (_sym_STARdebug_dispatchSTAR->symbolValue().notnilp()) {
-        printf("%s:%d   GFUN_CALL_HISTORY_set gf: %s\n", __FILE__, __LINE__, this->__repr__().c_str());
-        printf("%s:%d                      history: %s\n", __FILE__, __LINE__, _rep_(h).c_str());
-      }
-#endif
-      this->_CallHistory = h;
-    }
+    T_sp GFUN_SPECIALIZER_PROFILE() const { return this->_SpecializerProfile.load(); };
+    T_sp GFUN_SPECIALIZER_PROFILE_compare_exchange(T_sp expected, T_sp new_value);
+    T_sp GFUN_CALL_HISTORY() const { return this->_CallHistory.load(); };
+    T_sp GFUN_CALL_HISTORY_compare_exchange(T_sp expected, T_sp new_value);
 
     mp::SharedMutex_sp GFUN_LOCK() const { return gc::As<mp::SharedMutex_sp>(this->_Lock);};
     void GFUN_LOCK_set(T_sp l) { this->_Lock = l; };
@@ -224,23 +217,27 @@ namespace core {
   }; // FuncallableInstance class
 
 
-  struct GenericFunctionReadLock {
-    mp::SharedMutex_sp _Lock;
-  GenericFunctionReadLock(mp::SharedMutex_sp lock) : _Lock(lock) {
-    this->_Lock->shared_lock();
+  struct GFReadLock {
+    FuncallableInstance_sp _GF;
+  GFReadLock(FuncallableInstance_sp gf) : _GF(gf) {
+    printf("%s:%d GFSharedLock lock -> %s\n", __FILE__, __LINE__, _rep_(this->_GF).c_str() );
+    this->_GF->GFUN_LOCK()->shared_lock();
   }
-    ~GenericFunctionReadLock() {
-      this->_Lock->shared_unlock();
+    ~GFReadLock() {
+    printf("%s:%d GFSharedLock unlock -> %s\n", __FILE__, __LINE__, _rep_(this->_GF).c_str() );
+    this->_GF->GFUN_LOCK()->shared_unlock();
     }
   };
 
-  struct GenericFunctionWriteLock {
-    mp::SharedMutex_sp _Lock;
-  GenericFunctionWriteLock(mp::SharedMutex_sp lock) : _Lock(lock) {
-    this->_Lock->write_lock();
+  struct GFWriteLock {
+    FuncallableInstance_sp _GF;
+    GFWriteLock(FuncallableInstance_sp gf) : _GF(gf) {
+      printf("%s:%d GFWriteLock lock -> %s\n", __FILE__, __LINE__, _rep_(this->_GF).c_str() );
+      this->_GF->GFUN_LOCK()->write_lock();
   }
-    ~GenericFunctionWriteLock() {
-      this->_Lock->write_unlock();
+    ~GFWriteLock() {
+      printf("%s:%d GFWriteLock unlock -> %s\n", __FILE__, __LINE__, _rep_(this->_GF).c_str() );
+      this->_GF->GFUN_LOCK()->write_unlock();
     }
   };
 
@@ -274,17 +271,6 @@ namespace gctools {
       return NULL;
     }
   };
-};
-
-
-namespace core {
-
-  bool clos__call_history_entry_key_contains_specializer(SimpleVector_sp key, T_sp specializer);
-  List_sp clos__call_history_find_key(List_sp generic_function_call_history, SimpleVector_sp key);
-
-  bool clos__generic_function_call_history_push_new(FuncallableInstance_sp generic_function, SimpleVector_sp key, T_sp effective_method);
-
-  void clos__generic_function_call_history_remove_entries_with_specializer(FuncallableInstance_sp generic_function, T_sp specializer);
 };
 
 

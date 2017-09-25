@@ -245,7 +245,7 @@ LCC_RETURN FuncallableInstance_O::LISP_CALLING_CONVENTION() {
   SETUP_CLOSURE(FuncallableInstance_O,closure);
   INCREMENT_FUNCTION_CALL_COUNTER(closure);
   INITIALIZE_VA_LIST();
-  return (closure->_entryPoint)(closure->asSmartPtr().tagged_(), lcc_vargs.tagged_());
+  return ((closure->_entryPoint).load())(closure->asSmartPtr().tagged_(), lcc_vargs.tagged_());
 }
 
 
@@ -535,7 +535,7 @@ T_sp FuncallableInstance_O::copyInstance() const {
   FuncallableInstance_sp iobj = gc::As<FuncallableInstance_sp>(allocate_instance(this->_Class,1));
   iobj->_Rack = this->_Rack;
   iobj->_Sig = this->_Sig;
-  iobj->_entryPoint = this->_entryPoint;
+  iobj->_entryPoint.store(this->_entryPoint.load());
   iobj->_isgf = this->_isgf;
   return iobj;
 }
@@ -714,19 +714,19 @@ CL_DEFUN T_mv clos__getFuncallableInstanceFunction(T_sp obj) {
   if (FuncallableInstance_sp iobj = obj.asOrNull<FuncallableInstance_O>()) {
     switch (iobj->_isgf) {
     case CLASP_STANDARD_DISPATCH:
-        return Values(_lisp->_true(),Pointer_O::create((void*)iobj->_entryPoint));
+        return Values(_lisp->_true(),Pointer_O::create((void*)iobj->_entryPoint.load()));
     case CLASP_RESTRICTED_DISPATCH:
-        return Values(cl::_sym_standardGenericFunction,Pointer_O::create((void*)iobj->_entryPoint));
+        return Values(cl::_sym_standardGenericFunction,Pointer_O::create((void*)iobj->_entryPoint.load()));
     case CLASP_READER_DISPATCH:
-        return Values(clos::_sym_standardOptimizedReaderMethod,Pointer_O::create((void*)iobj->_entryPoint));
+        return Values(clos::_sym_standardOptimizedReaderMethod,Pointer_O::create((void*)iobj->_entryPoint.load()));
     case CLASP_WRITER_DISPATCH:
-        return Values(clos::_sym_standardOptimizedWriterMethod,Pointer_O::create((void*)iobj->_entryPoint));
+        return Values(clos::_sym_standardOptimizedWriterMethod,Pointer_O::create((void*)iobj->_entryPoint.load()));
     case CLASP_USER_DISPATCH:
-        return Values(iobj->userFuncallableInstanceFunction(),Pointer_O::create((void*)iobj->_entryPoint));
+        return Values(iobj->userFuncallableInstanceFunction(),Pointer_O::create((void*)iobj->_entryPoint.load()));
     case CLASP_FASTGF_DISPATCH:
-        return Values(iobj->GFUN_DISPATCHER(),Pointer_O::create((void*)iobj->_entryPoint));
+        return Values(iobj->GFUN_DISPATCHER(),Pointer_O::create((void*)iobj->_entryPoint.load()));
     case CLASP_INVALIDATED_DISPATCH:
-        return Values(clos::_sym_invalidated_dispatch_function,Pointer_O::create((void*)iobj->_entryPoint));
+        return Values(clos::_sym_invalidated_dispatch_function,Pointer_O::create((void*)iobj->_entryPoint.load()));
     case CLASP_NOT_FUNCALLABLE:
         return Values(clos::_sym_not_funcallable);
     }
@@ -830,11 +830,10 @@ CL_DEFUN List_sp clos__call_history_find_key(List_sp generic_function_call_histo
 }
            
     
-    
+#if 0
 /*! Return true if an entry was pushed */
-CL_DEFUN bool clos__generic_function_call_history_push_new(FuncallableInstance_sp generic_function, SimpleVector_sp key, T_sp effective_method )
+CL_DEFUN bool clos__generic_function_call_history_push_new_no_lock(FuncallableInstance_sp generic_function, SimpleVector_sp key, T_sp effective_method )
 {
-  GenericFunctionWriteLock(generic_function->GFUN_LOCK());
 #ifdef DEBUG_GFDISPATCH
   if (_sym_STARdebug_dispatchSTAR->symbolValue().notnilp()) {
     printf("%s:%d   generic_function_call_history_push_new    gf: %s\n        key: %s\n          em: %s\n", __FILE__, __LINE__, _rep_(generic_function).c_str(), _rep_(key).c_str(), _rep_(effective_method).c_str());
@@ -864,79 +863,87 @@ CL_DEFUN bool clos__generic_function_call_history_push_new(FuncallableInstance_s
   return true;
 }
 
+CL_DEFUN bool clos__generic_function_call_history_push_new_lock(FuncallableInstance_sp generic_function, SimpleVector_sp key, T_sp effective_method ) {
+  GFWriteLock lock(generic_function);
+  return clos__generic_function_call_history_push_new_no_lock(generic_function,key,effective_method);
+}
 
-CL_DEFUN List_sp clos__generic_function_call_history_remove_entries_with_specializers(FuncallableInstance_sp generic_function, List_sp specializers ) {
-  GenericFunctionWriteLock(generic_function->GFUN_LOCK());
+#endif
+
+T_sp FuncallableInstance_O::GFUN_CALL_HISTORY_compare_exchange(T_sp expected, T_sp new_value) {
+#ifdef DEBUG_GFDISPATCH
+      if (_sym_STARdebug_dispatchSTAR->symbolValue().notnilp()) {
+        printf("%s:%d   GFUN_CALL_HISTORY_set gf: %s\n", __FILE__, __LINE__, this->__repr__().c_str());
+        printf("%s:%d                      history: %s\n", __FILE__, __LINE__, _rep_(h).c_str());
+      }
+#endif
+  bool exchanged = this->_CallHistory.compare_exchange_strong(expected,new_value);
+  return exchanged ? new_value : expected;
+}
+
+T_sp FuncallableInstance_O::GFUN_SPECIALIZER_PROFILE_compare_exchange(T_sp expected, T_sp new_value) {
+  bool exchanged = this->_SpecializerProfile.compare_exchange_strong(expected,new_value);
+  return exchanged ? new_value : expected;
+}
+
+
+
+CL_DEFUN T_mv clos__generic_function_call_history_separate_entries_with_specializers(FuncallableInstance_sp gf, List_sp call_history, List_sp specializers ) {
 //  printf("%s:%d Remember to remove entries with subclasses of specializer: %s\n", __FILE__, __LINE__, _rep_(specializer).c_str());
 #ifdef DEBUG_GFDISPATCH
   if (_sym_STARdebug_dispatchSTAR->symbolValue().notnilp()) {
     printf("%s:%d   generic-function_call_history_remove_entries_with_specializers   gf: %s\n        specializers: %s\n", __FILE__, __LINE__, _rep_(generic_function).c_str(), _rep_(specializers).c_str());
   }
 #endif
-  List_sp call_history(generic_function->GFUN_CALL_HISTORY());
   List_sp removed(_Nil<T_O>());
-  if (call_history.notnilp()) {
+  List_sp keep(_Nil<T_O>());
+  for ( T_sp tcur = call_history; tcur.consp(); ) {
+    Cons_sp cur = gc::As_unsafe<Cons_sp>(tcur);
+    Cons_sp entry = gc::As<Cons_sp>(CONS_CAR(cur));
+    SimpleVector_sp entry_key = gc::As<SimpleVector_sp>(CONS_CAR(entry));
+    ASSERT(gc::IsA<SimpleVector_sp>(CONS_CAR(entry)));
     for ( auto cur_specializer : specializers ) {
-      List_sp keep(_Nil<T_O>());
       T_sp one_specializer = CONS_CAR(cur_specializer);
-      for ( T_sp tcur = call_history; tcur.consp();  ) {
-        Cons_sp cur = gc::As_unsafe<Cons_sp>(tcur);
-        Cons_sp entry = gc::As<Cons_sp>(CONS_CAR(cur));
-        ASSERT(gc::IsA<SimpleVector_sp>(CONS_CAR(entry)));
-        SimpleVector_sp entry_key = gc::As<SimpleVector_sp>(CONS_CAR(entry));
+#ifdef DEBUG_GFDISPATCH
+      if (_sym_STARdebug_dispatchSTAR->symbolValue().notnilp()) {
+        printf("%s:%d         check if entry_key: %s   contains specializer: %s\n", __FILE__, __LINE__, _rep_(entry_key).c_str(), _rep_(one_specializer).c_str());
+      }
+#endif
+      if (clos__call_history_entry_key_contains_specializer(entry_key,one_specializer)) {
 #ifdef DEBUG_GFDISPATCH
         if (_sym_STARdebug_dispatchSTAR->symbolValue().notnilp()) {
-          printf("%s:%d         check if entry_key: %s   contains specializer: %s\n", __FILE__, __LINE__, _rep_(entry_key).c_str(), _rep_(one_specializer).c_str());
+          printf("%s:%d       IT DOES!!!\n", __FILE__, __LINE__ );
         }
 #endif
-        if (clos__call_history_entry_key_contains_specializer(entry_key,one_specializer)) {
+        removed = Cons_O::create(entry,removed);
+      } else {
 #ifdef DEBUG_GFDISPATCH
-          if (_sym_STARdebug_dispatchSTAR->symbolValue().notnilp()) {
-            printf("%s:%d       IT DOES!!!\n", __FILE__, __LINE__ );
-          }
-#endif
-          Cons_sp save = cur;
-          tcur = oCdr(cur);
-          save->rplacd(removed);
-          removed = save;
-        } else {
-#ifdef DEBUG_GFDISPATCH
-          if (_sym_STARdebug_dispatchSTAR->symbolValue().notnilp()) {
-            printf("%s:%d       it does not - keeping entry!!!\n", __FILE__, __LINE__ );
-          }
-#endif
-          Cons_sp save = cur;
-          tcur = oCdr(cur);
-          save->rplacd(keep);
-          keep = save;
+        if (_sym_STARdebug_dispatchSTAR->symbolValue().notnilp()) {
+          printf("%s:%d       it does not - keeping entry!!!\n", __FILE__, __LINE__ );
         }
+#endif
+        keep = Cons_O::create(entry,keep);
       }
-      call_history = keep;
     }
-    generic_function->GFUN_CALL_HISTORY_set(call_history);
+    tcur = CONS_CDR(cur);
   }
-  return removed;
+  return Values(keep,removed);
 }
 
-
-
-CL_DEFUN T_sp clos__generic_function_specializer_profile(T_sp obj) {
-  if (gc::IsA<FuncallableInstance_sp>(obj)) {
-    return gc::As_unsafe<FuncallableInstance_sp>(obj)->GFUN_SPECIALIZER_PROFILE();
-  }
-  SIMPLE_ERROR(BF("%s must be a FuncallableObject_O") % _rep_(obj));
-}
-CL_DEFUN void clos__set_generic_function_specializer_profile(T_sp obj, T_sp val) {
-  gc::As<FuncallableInstance_sp>(obj)->GFUN_SPECIALIZER_PROFILE_set(val);
+CL_DEFUN T_sp clos__generic_function_specializer_profile(FuncallableInstance_sp gf) {
+  return gf->GFUN_SPECIALIZER_PROFILE();
 }
 
-
-
-CL_DEFUN T_sp clos__generic_function_call_history(T_sp obj) {
-  return gc::As<FuncallableInstance_sp>(obj)->GFUN_CALL_HISTORY();
+CL_DEFUN T_sp clos__generic_function_specializer_profile_compare_exchange(FuncallableInstance_sp gf, T_sp expected, T_sp new_value) {
+  return gf->GFUN_SPECIALIZER_PROFILE_compare_exchange(expected,new_value);
 }
-CL_DEFUN void clos__set_generic_function_call_history(T_sp obj, T_sp val) {
-  gc::As<FuncallableInstance_sp>(obj)->GFUN_CALL_HISTORY_set(val);
+
+CL_DEFUN T_sp clos__generic_function_call_history(FuncallableInstance_sp obj) {
+  return obj->GFUN_CALL_HISTORY();
+}
+
+CL_DEFUN T_sp clos__generic_function_call_history_compare_exchange(FuncallableInstance_sp gf, T_sp expected, T_sp new_value) {
+  return gf->GFUN_CALL_HISTORY_compare_exchange(expected,new_value);
 }
 
 CL_DEFUN T_sp clos__generic_function_lock(T_sp obj) {

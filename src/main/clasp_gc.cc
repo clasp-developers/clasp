@@ -7154,13 +7154,13 @@ public:
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(mp::SharedMutex_O),_Owner), "_Owner" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
 // {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(mp::SharedMutex_O),_SharedMutex._r._Mutex.__count), "_SharedMutex._r._Mutex.__count" }, // public: (T T T T) fixable: NIL good-name: T
 // {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(mp::SharedMutex_O),_SharedMutex._r._Mutex.__value.__wch), "_SharedMutex._r._Mutex.__value.__wch" }, // public: (T T T T T) fixable: NIL good-name: T
- {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(mp::SharedMutex_O),_SharedMutex._r._Counter), "_SharedMutex._r._Counter" }, // public: (T T T) fixable: NIL good-name: T
- {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(mp::SharedMutex_O),_SharedMutex._r._Recursive), "_SharedMutex._r._Recursive" }, // public: (T T T) fixable: NIL good-name: T
+ {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(mp::SharedMutex_O),_SharedMutex.mReadMutex._Counter), "_SharedMutex._r._Counter" }, // public: (T T T) fixable: NIL good-name: T
+ {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(mp::SharedMutex_O),_SharedMutex.mReadMutex._Recursive), "_SharedMutex._r._Recursive" }, // public: (T T T) fixable: NIL good-name: T
 // {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(mp::SharedMutex_O),_SharedMutex._g._Mutex.__count), "_SharedMutex._g._Mutex.__count" }, // public: (T T T T) fixable: NIL good-name: T
 // {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(mp::SharedMutex_O),_SharedMutex._g._Mutex.__value.__wch), "_SharedMutex._g._Mutex.__value.__wch" }, // public: (T T T T T) fixable: NIL good-name: T
- {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(mp::SharedMutex_O),_SharedMutex._g._Counter), "_SharedMutex._g._Counter" }, // public: (T T T) fixable: NIL good-name: T
- {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(mp::SharedMutex_O),_SharedMutex._g._Recursive), "_SharedMutex._g._Recursive" }, // public: (T T T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(mp::SharedMutex_O),_SharedMutex._b), "_SharedMutex._b" }, // public: (T T) fixable: NIL good-name: T
+ {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(mp::SharedMutex_O),_SharedMutex.mWriteMutex._Counter), "_SharedMutex._g._Counter" }, // public: (T T T) fixable: NIL good-name: T
+ {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(mp::SharedMutex_O),_SharedMutex.mWriteMutex._Recursive), "_SharedMutex._g._Recursive" }, // public: (T T T) fixable: NIL good-name: T
+// {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(mp::SharedMutex_O),_SharedMutex._b), "_SharedMutex._b" }, // public: (T T) fixable: NIL good-name: T
 { class_kind, STAMP_LISPALLOC_clcenv__Entry_O, sizeof(clcenv::Entry_O), 0, "clcenv::Entry_O" },
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(clcenv::Entry_O),_Next), "_Next" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
 { class_kind, STAMP_LISPALLOC_clcenv__Inline_O, sizeof(clcenv::Inline_O), 0, "clcenv::Inline_O" },

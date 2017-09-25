@@ -2,6 +2,10 @@
 ;; are not in :COMMON-LISP or :SYS package
 ;; so that we can use them as specializers for generic functions
 
+#+(or)
+(eval-when (:execute)
+  (setq core:*echo-repl-read* t))
+
 (in-package "CLOS")
 
 (defun gather-cxx-classes ()
@@ -18,8 +22,10 @@
     (let* ((class (find-class class-symbol))
 	   (supers-names (mapcar #'(lambda (x) (class-name x))
                                  (clos:direct-superclasses class))))
+;;      (bformat *debug-io* "add-cxx-class -> %s\n" class)
       (ensure-boot-class class-symbol :metaclass 'core:cxx-class ;; was 'builtin-class
                          :direct-superclasses supers-names)
+;;      (bformat *debug-io* "add-cxx-class -> %s finalize-inheritance\n" class)
       (finalize-inheritance class)))
 
 (defun add-extra-classes (additional-classes)
@@ -33,10 +39,4 @@
 ;; Initialize all extra classes
 ;;
 (add-extra-classes (gather-cxx-classes))
-#+(or)(add-extra-classes '(core:environment
-                           core:activation-frame
-                           core:value-frame
-                           core:lexical-environment
-                           core:runtime-visible-environment
-                           core:value-environment
-                           core:single-dispatch-effective-method-function))
+

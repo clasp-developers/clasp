@@ -70,7 +70,7 @@ namespace core {
     const HashTable_O* _hashTable;
   HashTableWriteLock(const HashTable_O* ht) : _hashTable(ht) {
     if (this->_hashTable->_Mutex) {
-      this->_hashTable->_Mutex->write_lock();
+      this->_hashTable->_Mutex->write_lock(false);
     }
   }
     ~HashTableWriteLock() {

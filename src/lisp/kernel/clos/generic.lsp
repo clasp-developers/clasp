@@ -182,16 +182,18 @@
   (set-generic-function-dispatch gfun)
   gfun)
 
-(defun initialize-generic-function-specializer-profile (gfun &optional errorp)
-  (setf (generic-function-specializer-profile gfun)
-        (if (slot-boundp gfun 'lambda-list)
-            (let ((lambda-list (generic-function-lambda-list gfun)))
-              (make-array (length (lambda-list-required-arguments lambda-list))
-                          :initial-element nil))
-            (if errorp
-                (errorp (error "The specializer-profile could not be initialized - lambda list of ~a was unbound" gfun))
-                nil))))
-  
+(defun initialize-generic-function-specializer-profile (gfun &key initial-vec errorp)
+  (loop for profile = (generic-function-specializer-profile gfun)
+     for new-profile = (or initial-vec
+                           (if (slot-boundp gfun 'lambda-list)
+                               (let ((lambda-list (generic-function-lambda-list gfun)))
+                                 (make-array (length (lambda-list-required-arguments lambda-list))
+                                             :initial-element nil))
+                               (if errorp
+                                   (error "The specializer-profile could not be initialized - lambda list of ~a was unbound" gfun)
+                                   nil)))
+     for exchange = (generic-function-specializer-profile-compare-exchange gfun profile new-profile)
+     until (eq exchange new-profile)))
   
 #+clasp
 (defmethod shared-initialize :after ((gfun generic-function) slot-names &rest initargs)
@@ -200,22 +202,6 @@
   (unless (generic-function-specializer-profile gfun)
     (initialize-generic-function-specializer-profile gfun))
   gfun)
-
-#|
-#+clasp
-(defmethod initialize-instance :after ((gfun generic-function) &rest initargs)
-  "In Clasp we need to initialize the specializer-profile with an 
-   array of (length (lambda-list-required-arguments lambda-list)) full of nil."
-  (setf (generic-function-specializer-profile gfun)
-        (if (slot-boundp gfun 'lambda-list)
-            (let ((lambda-list (generic-function-lambda-list gfun)))
-              (make-array (length (lambda-list-required-arguments lambda-list))
-                          :initial-element nil))
-            (progn
-              (warn "There was no lambda-list defined for the generic-function ~a" gfun)
-              nil)))
-  gfun)
-|#
 
 
 (defmethod shared-initialize ((gfun standard-generic-function) slot-names

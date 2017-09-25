@@ -32,6 +32,7 @@ THE SOFTWARE.
 #include <clasp/core/lisp.h>
 #include <clasp/gctools/memoryManagement.h>
 #include <clasp/core/symbol.h>
+#include <clasp/core/pointer.h>
 #include <clasp/core/mpPackage.h>
 #include <clasp/core/multipleValues.h>
 #include <clasp/core/primitives.h>
@@ -116,6 +117,7 @@ void* start_thread(void* claspProcess) {
   core::List_sp reversed_bindings = core::cl__reverse(p->_InitialSpecialBindings);
   for ( auto cur : reversed_bindings ) {
     core::Cons_sp pair = gc::As<core::Cons_sp>(oCar(cur));
+    printf("%s:%d  start_thread   setting special variable/(eval value) -> %s\n", __FILE__, __LINE__, _rep_(pair).c_str());
     scope.pushSpecialVariableAndSet(pair->_Car,core::eval::evaluate(pair->_Cdr,_Nil<core::T_O>()));
   }
 #if 0
@@ -179,6 +181,40 @@ string Mutex_O::__repr__() const {
   return ss.str();
 }
 
+CL_LAMBDA(m &optional (upgrade nil))
+CL_DEFUN void mp__write_lock(SharedMutex_sp m, bool upgrade) {
+  m->write_lock(upgrade);
+}
+
+CL_LAMBDA(m &optional (upgrade nil))
+CL_DEFUN bool mp__write_try_lock(SharedMutex_sp m, bool upgrade) {
+  return m->write_try_lock(upgrade);
+}
+
+CL_LAMBDA(m &optional (release_read_lock nil))
+CL_DEFUN void mp__write_unlock(SharedMutex_sp m, bool release_read_lock) {
+  m->write_unlock(release_read_lock);
+}
+
+CL_DEFUN void mp__read_lock(SharedMutex_sp m) {
+  m->read_lock();
+}
+
+CL_DEFUN void mp__read_unlock(SharedMutex_sp m) {
+  m->read_unlock();
+}
+
+CL_DEFUN void mp__shared_lock(SharedMutex_sp m) {
+  m->read_lock();
+}
+
+CL_DEFUN void mp__shared_unlock(SharedMutex_sp m) {
+  m->read_unlock();
+}
+
+
+
+
 string SharedMutex_O::__repr__() const {
   stringstream ss;
   ss << "#<SHARED-MUTEX ";
@@ -215,6 +251,10 @@ CL_DEFUN int mp__process_enable(Process_sp process)
 
 CL_LAMBDA(name function &optional special_bindings);
 CL_DEFUN Process_sp mp__process_run_function(core::T_sp name, core::T_sp function, core::List_sp special_bindings) {
+#ifdef DEBUG_FASTGF
+  core::Cons_sp fastgf = core::Cons_O::create(core::_sym_STARdebug_fastgfSTAR,_Nil<core::T_O>());
+  special_bindings = core::Cons_O::create(fastgf,special_bindings);
+#endif
   Process_sp p = Process_O::make_process(name,function,_Nil<core::T_O>(),special_bindings,DEFAULT_THREAD_STACK_SIZE);
   p->enable();
   return p;
@@ -227,6 +267,13 @@ CL_DEFUN core::List_sp mp__all_processes() {
 CL_DEFUN core::T_sp mp__process_name(Process_sp p) {
   return p->_Name;
 }
+
+CL_DEFUN core::T_sp mp__thread_id(Process_sp p) {
+  auto tid = p->_ThreadInfo->_Tid;
+  return core::Pointer_O::create((void*)tid);
+}
+
+
 
 CL_LAMBDA(&key name recursive)
 CL_DEFUN core::T_sp mp__make_lock(core::T_sp name, bool recursive) {

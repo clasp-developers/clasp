@@ -38,6 +38,9 @@ namespace mp {
   typedef gctools::smart_ptr<Process_O> Process_sp;
 };
 
+namespace core {
+  extern void clasp_musleep(double dsec, bool alertable);
+}
 
 
 namespace mp {
@@ -112,13 +115,13 @@ namespace mp {
   void debug_mutex_unlock(Mutex* m);
 
     struct Mutex {
-    pthread_mutex_t _Mutex;
-    gctools::Fixnum _Counter;
-    bool _Recursive;
-  Mutex() : _Counter(0), _Recursive(false) {
-    pthread_mutex_init(&this->_Mutex,NULL);
-  }
-  Mutex(bool recursive) : _Counter(0), _Recursive(recursive) {
+      pthread_mutex_t _Mutex;
+      gctools::Fixnum _Counter;
+      bool _Recursive;
+    Mutex() : _Counter(0), _Recursive(false) {
+      pthread_mutex_init(&this->_Mutex,NULL);
+    }
+    Mutex(bool recursive) : _Counter(0), _Recursive(recursive) {
     
       if (!recursive) {
 //      printf("%s:%d Creating Mutex@%p\n", __FILE__, __LINE__, (void*)&this->_Mutex);
@@ -131,33 +134,33 @@ namespace mp {
         pthread_mutexattr_destroy(&Attr);
       }
     };
-    bool lock(bool waitp=true) {
+      bool lock(bool waitp=true) {
 //      printf("%s:%d locking Mutex@%p\n", __FILE__, __LINE__, (void*)&this->_Mutex); fflush(stdout);
 #ifdef DEBUG_THREADS
-      debug_mutex_lock(this);
+        debug_mutex_lock(this);
 #endif
-      if (waitp) {
-        bool result = (pthread_mutex_lock(&this->_Mutex)==0);
-        ++this->_Counter;
-        return result;
-      }
-      return pthread_mutex_trylock(&this->_Mutex)==0;
-    };
-    void unlock() {
+        if (waitp) {
+          bool result = (pthread_mutex_lock(&this->_Mutex)==0);
+          ++this->_Counter;
+          return result;
+        }
+        return pthread_mutex_trylock(&this->_Mutex)==0;
+      };
+      void unlock() {
 //      printf("%s:%d unlocking Mutex@%p\n", __FILE__, __LINE__, (void*)&this->_Mutex); fflush(stdout);
 #ifdef DEBUG_THREADS
-      debug_mutex_unlock(this);
+        debug_mutex_unlock(this);
 #endif
-      --this->_Counter;
-      pthread_mutex_unlock(&this->_Mutex);
+        --this->_Counter;
+        pthread_mutex_unlock(&this->_Mutex);
+      };
+      size_t counter() const {
+        return this->_Counter;
+      }
+      ~Mutex() {
+        pthread_mutex_destroy(&this->_Mutex);
+      };
     };
-    size_t counter() const {
-      return this->_Counter;
-    }
-    ~Mutex() {
-      pthread_mutex_destroy(&this->_Mutex);
-    };
-  };
 
   
 
@@ -165,6 +168,7 @@ namespace mp {
   RecursiveMutex() : Mutex(true) {};
   };
 
+  
   struct SharedMutex {
     mp::Mutex _r;
     mp::Mutex _g;
@@ -190,6 +194,79 @@ namespace mp {
     void unlock() {
       this->_g.unlock();
     }
+  };
+
+  inline void muSleep(uint usec) { core::clasp_musleep(usec/1000000.0,false); };
+
+  class UpgradableSharedMutex {
+  public:
+  UpgradableSharedMutex( uint maxReaders = 64 ) : 
+    mReadsBlocked( false ), mMaxReaders( maxReaders ), mReaders( 0 ) {}
+    void readLock() {
+      while ( 1 ) {
+        mReadMutex.lock();
+        if (( !mReadsBlocked ) && ( mReaders < mMaxReaders )) {
+          mReaders++; 
+          mReadMutex.unlock();
+          return;
+        }
+        mReadMutex.unlock();
+        muSleep( 0 );
+      }
+      assert( 0 );
+    };
+    void readUnlock() { 
+      mReadMutex.lock(); 
+      assert( mReaders );
+      mReaders--; 
+      mReadMutex.unlock(); 
+    };
+ 
+    void writeLock(bool upgrade = false) {
+      mWriteMutex.lock(); 
+      waitReaders( upgrade ? 1 : 0 );
+    }
+    bool writeTryLock(bool upgrade = false) {
+      if ( !mWriteMutex.lock())
+        return false;
+      waitReaders( upgrade ? 1 : 0 );
+      return true;
+    }
+    void writeUnlock(bool releaseReadLock = false) {
+      mReadMutex.lock();
+      if ( releaseReadLock ) {
+        assert( mReaders <= 1 );
+        if ( mReaders == 1 )
+          mReaders--; 
+      }
+      mReadsBlocked = false;
+      mReadMutex.unlock();
+      mWriteMutex.unlock(); 
+    }
+  public:
+    void waitReaders(uint numReaders) {
+   // block new readers 
+      mReadMutex.lock();
+      mReadsBlocked = true;
+      mReadMutex.unlock();  
+   // wait for current readers to finish
+      while ( 1 ) {
+        mReadMutex.lock();
+        if ( mReaders == numReaders )
+        {
+          mReadMutex.unlock();  
+          break;
+        }
+        mReadMutex.unlock();  
+        muSleep( 0 );
+      }
+      assert( mReaders == numReaders );
+    }
+    bool    mReadsBlocked;
+    uint     mMaxReaders;
+    uint     mReaders;
+    Mutex mReadMutex;
+    Mutex mWriteMutex;
   };
 
 

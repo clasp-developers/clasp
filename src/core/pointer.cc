@@ -36,6 +36,19 @@ void Pointer_O::initialize() {
   this->_Pointer = NULL;
 }
 
+CL_DEFUN Pointer_sp core__make_pointer(T_sp address)
+{
+  if (address.fixnump()) {
+    return Pointer_O::create((void*)address.unsafe_fixnum());
+  }
+  SIMPLE_ERROR(BF("Cannot convert %s to pointer") % _rep_(address));
+}
+
+CL_DEFUN SimpleBaseString_sp core__pointer_as_string(Pointer_sp p) {
+  SimpleBaseString_sp s = SimpleBaseString_O::make((BF("%p") % p->ptr()).str());
+  return s;
+}
+  
 Pointer_sp Pointer_O::create(void *p) {
   GC_ALLOCATE(Pointer_O, ptr);
   ptr->_Pointer = p;

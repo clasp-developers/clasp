@@ -236,8 +236,6 @@ Does not check if the third gang is a single-element list."
 (defsetf sbit (array &rest indices) (value) `(si:aset ,array ,value ,@indices))
 (defsetf elt elt-set)
 (defsetf symbol-value set)
-#+clasp(defsetf clos::generic-function-specializer-profile (x) (y) `(progn (clos:set-generic-function-specializer-profile ,x ,y) ,y))
-#+clasp(defsetf clos::generic-function-call-history (x) (y) `(progn (clos:set-generic-function-call-history ,x ,y) ,y))
 #+clasp(defsetf clos::generic-function-lock (x) (y) `(progn (clos:set-generic-function-lock ,x ,y) ,y))
 #+clasp(defsetf clos::generic-function-compiled-dispatch-function (x) (y) `(progn (clos:set-generic-function-compiled-dispatch-function ,x ,y) ,y))
 #+clasp(defsetf core:sharp-equal-wrapper-value core:setf-sharp-equal-wrapper-value)

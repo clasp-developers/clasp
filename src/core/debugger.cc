@@ -39,10 +39,12 @@ THE SOFTWARE.
 #include <clasp/core/evaluator.h>
 #include <clasp/core/environment.h>
 #include <clasp/core/debugger.h>
+#include <clasp/core/hashTableEqual.h>
 #include <clasp/core/primitives.h>
 #include <clasp/core/array.h>
 #include <clasp/core/write_ugly.h>
 #include <clasp/core/lispStream.h>
+#include <clasp/llvmo/llvmoExpose.h>
 #include <clasp/core/wrappers.h>
 
 namespace core {
@@ -711,8 +713,15 @@ void tprint(void* ptr)
 }
 
 void tbacktrace() {
-  core::low_level_backtrace(true);
+  core::eval::funcall(core::_sym_bt->symbolFunction());
 };
+
+void tsymbol(void* ptr)
+{
+  printf("%s:%d Looking up symbol at ptr->%p\n", __FILE__, __LINE__, ptr);
+  core::T_sp result = llvmo::llvm_sys__lookup_jit_symbol_info(ptr);
+  printf("      Result -> %s\n", _rep_(result).c_str());
+}
 
 };
 namespace core {

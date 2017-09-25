@@ -1,9 +1,7 @@
 ;; Should be commented out
 #+(or)
 (eval-when (:execute)
-	(format t "!~%!~%!~%!~%!~%In fixup.lsp !~%  Turning on :compare *feature*  for ensure-generic-function~%!~%!~%!~%!~%")
-	(setq core:*echo-repl-read* t)
-	(setq cl:*features* (cons :compare cl:*features*)))
+  (setq core:*echo-repl-read* t))
 
 ;;;;  -*- Mode: Lisp; Syntax: Common-Lisp; Package: CLOS -*-
 ;;;;
@@ -204,7 +202,7 @@ and cannot be added to ~A." method other-gf gf)))
   #+clasp
   (when *clos-booted*
     (update-specializer-profile gf (method-specializers method))
-    (update-call-history-for-add-method gf method))
+    (update-generic-function-call-history-for-add-method gf method))
   (set-generic-function-dispatch gf)
   ;;  iv) Update dependents.
   (update-dependents gf (list 'add-method method))
@@ -235,7 +233,7 @@ and cannot be added to ~A." method other-gf gf)))
   #+clasp
   (when *clos-booted*
     (compute-and-set-specializer-profile gf)
-    (update-call-history-for-remove-method gf method))
+    (update-generic-function-call-history-for-remove-method gf method))
   (set-generic-function-dispatch gf)
   (update-dependents gf (list 'remove-method method))
   gf)
@@ -409,13 +407,14 @@ and cannot be added to ~A." method other-gf gf)))
 
 (defun startup-fastgf ()
   (setf clos:*enable-fastgf* t)
-  (satiate-standard-generic-functions :verbose nil)
+  (satiate-standard-generic-functions :verbose t)
   (loop for gf in (clos::all-generic-functions)
      when (not (functionp (clos::get-funcallable-instance-function gf)))
+       do (bformat t "switch-to-fastgf -> %s\n" gf)
      do (switch-to-fastgf gf)))
 
-;;#+(or)
+;;;#+(or)
 (eval-when (:execute :load-toplevel)
-                                        ;(trace startup-fastgf satiate-standard-generic-functions satiate-generic-function)
+;;;(trace startup-fastgf satiate-standard-generic-functions satiate-generic-function)
   (startup-fastgf))
 

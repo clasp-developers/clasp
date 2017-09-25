@@ -505,7 +505,7 @@ The passed module is modified as a side-effect."
 ;;;
 (progn
   (defvar *jit-engine* (make-cxx-object 'llvm-sys:clasp-jit))
-  #+threads(defvar *jit-engine-mutex* (mp:make-lock :name 'jit-engine-mutex :recursive t))
+  #+threads(defvar *jit-lock* (mp:make-lock :name 'jit-engine-mutex :recursive t))
   (export '(jit-add-module-return-function jit-add-module-return-dispatch-function jit-remove-module))
   (defvar *builtins-module* nil)
   (defvar *fastgf-module* nil)
@@ -514,8 +514,6 @@ The passed module is modified as a side-effect."
   (defvar *jit-repl-module-handles* nil)
   (defvar *jit-fastgf-module-handles* nil)
   (defvar *jit-dump-module-before-optimizations* nil)
-  (defvar *jit-symbol-info* nil)
-  (defvar *jit-saved-symbol-info* (make-hash-table :test #'equal :thread-safe t))
   )
 (progn
   (defun jit-add-module-return-function (original-module repl-fn startup-fn shutdown-fn literals-list)
@@ -537,15 +535,12 @@ The passed module is modified as a side-effect."
              (startup-name (llvm-sys:get-name startup-fn))
              (shutdown-name (llvm-sys:get-name shutdown-fn))
              (handle (llvm-sys:clasp-jit-add-module *jit-engine* module)))
-        (setq *jit-repl-module-handles* (cons handle *jit-repl-module-handles*))
-;;;      (bformat t "    repl-name -> |%s|\n" repl-name)
-        (let ((*jit-symbol-info* nil))
-          (let ((fn (llvm-sys:jit-finalize-repl-function *jit-engine* handle repl-name startup-name shutdown-name literals-list repl-fn nil)))
-            #++(bformat t "Dump of symbols associated with compilation\n")
-            (dolist (e *jit-symbol-info*)
-              (core:hash-table-setf-gethash *jit-saved-symbol-info* (car e) (cdr e))
-              #++(bformat t "%s\n" e))
-            fn)))))
+        (unwind-protect
+             (progn
+               (mp:lock *jit-lock* t)
+               (setq *jit-repl-module-handles* (cons handle *jit-repl-module-handles*))
+               (llvm-sys:jit-finalize-repl-function *jit-engine* handle repl-name startup-name shutdown-name literals-list repl-fn nil))
+          (mp:unlock *jit-lock*)))))
 
   (eval-when (:execute :load-toplevel)
     (setq *fastgf-dump-module* (member :fastgf-dump-module *features*)))
@@ -561,15 +556,19 @@ The passed module is modified as a side-effect."
              (startup-name (llvm-sys:get-name startup-fn))
              (shutdown-name (llvm-sys:get-name shutdown-fn))
              (handle (llvm-sys:clasp-jit-add-module *jit-engine* module)))
-        (setq *jit-fastgf-module-handles* (cons handle *jit-fastgf-module-handles*))
-        (let ((*jit-symbol-info* nil))
-          (let ((fn (llvm-sys:jit-finalize-dispatch-function *jit-engine* handle dispatch-name startup-name shutdown-name literals-list)))
-            (dolist (e *jit-symbol-info*)
-              (core:hash-table-setf-gethash *jit-saved-symbol-info* (car e) (cdr e)))
-            fn)))))
+        (unwind-protect
+             (progn
+               (mp:lock *jit-lock* t)
+               (setq *jit-fastgf-module-handles* (cons handle *jit-fastgf-module-handles*))
+               (llvm-sys:jit-finalize-dispatch-function *jit-engine* handle dispatch-name startup-name shutdown-name literals-list))
+          (mp:unlock *jit-lock*)))))
       
   (defun jit-remove-module (handle)
-    (llvm-sys:clasp-jit-remove-module *jit-engine* handle))
+    (unwind-protect
+         (progn
+           (mp:lock *jit-lock* t)
+           (llvm-sys:clasp-jit-remove-module *jit-engine* handle))
+      (mp:unlock *jit-lock*)))
 
 ;;; Maybe add more jit engine code here
   )

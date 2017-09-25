@@ -31,7 +31,7 @@
     ((and x (functionp x)) (compiled-function-file* x))
     (t (values nil 0 0))))
 
-#++
+#+(or)
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (format t "About to define the first defstruct~%")
   (setq core:*echo-repl-read* t))

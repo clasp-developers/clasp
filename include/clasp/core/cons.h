@@ -257,7 +257,6 @@ namespace core {
     inline T_sp cdr() const { return this->_Cdr; };
     inline T_sp ocar() const { return this->_Car; };
     inline T_sp ocadr() const {
-      TESTING();
       T_sp cdr = this->_Cdr;
       if (UNLIKELY(!this->_Cdr.consp()))
         return _Nil<T_O>();
