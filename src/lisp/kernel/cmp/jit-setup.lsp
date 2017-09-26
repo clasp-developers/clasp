@@ -55,17 +55,30 @@
   (warn "Do something with dump-function"))
 (export 'dump-function)
 
+(defvar *builtins-module* nil)
+
+(defun get-builtins-module ()
+  (if *builtins-module*
+      *builtins-module*
+    (let* ((builtins-bitcode-name (namestring (truename (build-inline-bitcode-pathname :compile :builtins))))
+           (builtins-module (llvm-sys:parse-bitcode-file builtins-bitcode-name *llvm-context*)))
+      (llvm-sys:remove-useless-global-ctors builtins-module)
+      (setq *builtins-module* builtins-module)
+      builtins-module)))
+
 (defun generate-target-triple ()
   "Uses *features* to generate the target triple for the current machine
 using features defined in corePackage.cc"
-  (cond
-    ((and (member :target-os-darwin *features*)
-          (member :address-model-64 *features*))
-     (values "x86_64-apple-macosx10.10.0" "e-m:o-i64:64-f80:128-n8:16:32:64-S128"))
-    ((and (member :target-os-linux *features*)
-          (member :address-model-64 *features*))
-     (values "x86_64-pc-linux-gnu"       "e-m:e-i64:64-f80:128-n8:16:32:64-S128"))
-    (t (error "Could not identify target triple for features ~a" *features*))))
+  (let ((builtins-module (get-builtins-module)))
+    (values (llvm-sys:get-target-triple builtins-module) (llvm-sys:get-data-layout-str builtins-module))
+    #+(or)(cond
+            ((and (member :target-os-darwin *features*)
+                  (member :address-model-64 *features*))
+             (values "x86_64-apple-macosx10.10.0" "e-m:o-i64:64-f80:128-n8:16:32:64-S128"))
+            ((and (member :target-os-linux *features*)
+                  (member :address-model-64 *features*))
+             (values "x86_64-pc-linux-gnu"       "e-m:e-i64:64-f80:128-n8:16:32:64-S128"))
+            (t (error "Could not identify target triple for features ~a" *features*)))))
 
 (defun generate-data-layout ()
   (let* ((triple (generate-target-triple))
@@ -380,19 +393,14 @@ No DIBuilder is defined for the default module")
 ;;;
 
 
-
 (defun jit-link-builtins-module (module)
   "Merge the intrinsics module with the passed module.
 The passed module is modified as a side-effect."
-  (unless *builtins-module*
-    (let* ((builtins-bitcode-name (namestring (truename (build-inline-bitcode-pathname :compile :builtins))))
-           (builtins-module (llvm-sys:parse-bitcode-file builtins-bitcode-name *llvm-context*)))
-      (llvm-sys:remove-useless-global-ctors builtins-module)
-      (setf *builtins-module* builtins-module)))
+  (get-builtins-module)
   ;; Clone the intrinsics module and link it in
   (quick-module-dump module "module before linking builtins-clone")
   (let ((linker (llvm-sys:make-linker module))
-        (builtins-clone (llvm-sys:clone-module *builtins-module*)))
+        (builtins-clone (llvm-sys:clone-module (get-builtins-module))))
     ;;(remove-always-inline-from-functions builtins-clone)
     (quick-module-dump builtins-clone "builtins-clone")
     (llvm-sys:link-in-module linker builtins-clone))
@@ -507,7 +515,6 @@ The passed module is modified as a side-effect."
   (defvar *jit-engine* (make-cxx-object 'llvm-sys:clasp-jit))
   #+threads(defvar *jit-lock* (mp:make-lock :name 'jit-engine-mutex :recursive t))
   (export '(jit-add-module-return-function jit-add-module-return-dispatch-function jit-remove-module))
-  (defvar *builtins-module* nil)
   (defvar *fastgf-module* nil)
   (defparameter *fastgf-dump-module* nil)
   (defvar *declare-dump-module* t)

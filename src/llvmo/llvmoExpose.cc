@@ -1124,6 +1124,8 @@ namespace llvmo {
 CL_EXTERN_DEFMETHOD(Module_O, (llvm::Constant*(llvm::Module::*)(llvm::StringRef,llvm::FunctionType*))&llvm::Module::getOrInsertFunction);
   CL_LISPIFY_NAME(getOrInsertGlobal);
   CL_EXTERN_DEFMETHOD(Module_O, &llvm::Module::getOrInsertGlobal);
+  CL_LISPIFY_NAME(getDataLayoutStr);
+  CL_EXTERN_DEFMETHOD(Module_O, &llvm::Module::getDataLayoutStr);
   CL_LISPIFY_NAME(getTargetTriple);
   CL_EXTERN_DEFMETHOD(Module_O, &llvm::Module::getTargetTriple);
   CL_LISPIFY_NAME(setDataLayout);
