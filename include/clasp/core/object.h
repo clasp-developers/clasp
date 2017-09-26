@@ -540,6 +540,14 @@ namespace core {
 
   CL_LAMBDA(x y);
   CL_DECLARE();
+  CL_DOCSTRING("Underlying eql. Only valid on general objects (not fixnums, single floats, characters, or conses)");
+  inline CL_DEFUN bool core__eql_underlying(T_sp x, T_sp y) {
+    General_O* general = x.unsafe_general();
+    return general->eql_(y);
+  };
+
+  CL_LAMBDA(x y);
+  CL_DECLARE();
   CL_DOCSTRING("equal");
   inline CL_DEFUN bool cl__equal(T_sp x, T_sp y) {
     if (x.fixnump()) {
