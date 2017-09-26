@@ -2911,7 +2911,7 @@ namespace llvmo {
 CL_LISPIFY_NAME(get_contained_type);
 CL_EXTERN_DEFMETHOD(Type_O,&llvm::Type::getContainedType);
 
-LLVMContext_sp Type_O::getContext() const {
+CL_DEFMETHOD LLVMContext_sp Type_O::getContext() const {
   return translate::to_object<llvm::LLVMContext&>::convert(this->wrappedPtr()->getContext());
 }
 

@@ -623,7 +623,9 @@
                   (tmv1 (llvm-sys:create-insert-value *irbuilder* tmv0 (jit-constant-uintptr_t 1) '(1) "tmv1")))
              #+(or)(bformat t "irc-store of val %s -> tmv1 %s to %s\n" val tmv1 destination)
              (llvm-sys:create-store *irbuilder* tmv1 destination nil)))
-          (t (error "!!! Mismatch in irc-store between val type ~a and destination type ~a\n" val-type dest-type))))))
+          (t (if (equal (llvm-sys:get-context val-type) (llvm-sys:get-context dest-type))
+                 (error "!!! Mismatch in irc-store between val type ~a and destination type ~a\n" val-type dest-type)
+                 (error "!!! Mismatch in irc-store involving the val type ~a and desintation type ~a - the type LLVMContexts don't match - so they were defined in different threads!" val-type dest-type)))))))
 
 (defun irc-store-t* (val-t* destination &optional (label ""))
   (let ((destination-type (llvm-sys:get-type destination)))
