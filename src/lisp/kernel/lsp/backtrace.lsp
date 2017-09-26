@@ -14,6 +14,7 @@
   return-address
   raw-name
   function-name
+  print-name
   function-start-address
   function-length-bytes
   base-pointer
@@ -65,6 +66,7 @@
                                      :return-address return-address
                                      :raw-name jit-name
                                      :function-name name
+                                     :print-name (cmp:print-name-from-unescaped-split-name jit-name parts name)
                                      :function-start-address function-start-address
                                      :function-length-bytes function-bytes
                                      :base-pointer base-pointer
@@ -74,6 +76,7 @@
                (make-backtrace-frame :type :unknown
                                      :return-address return-address
                                      :function-name (or jit-name (core:bformat nil "%s" return-address))
+                                     :print-name (or jit-name (core:bformat nil "%s" return-address))
                                      :raw-name backtrace-string
                                      :base-pointer base-pointer
                                      :next-base-pointer next-base-pointer)))))
@@ -86,6 +89,7 @@
          (make-backtrace-frame :type :lisp
                                :return-address return-address
                                :raw-name backtrace-string
+                               :print-name (cmp:print-name-from-unescaped-split-name backtrace-string parts name)
                                :function-name name
                                :base-pointer base-pointer
                                :next-base-pointer next-base-pointer)))
@@ -94,7 +98,8 @@
            (make-backtrace-frame :type :c
                                  :return-address return-address
                                  :raw-name backtrace-string
-                                 :function-name (if unmangled unmangled backtrace-string)
+                                 :print-name (or unmangled backtrace-string)
+                                 :function-name (or unmangled backtrace-string)
                                  :base-pointer base-pointer
                                  :next-base-pointer next-base-pointer))))))
 
@@ -173,11 +178,6 @@
                            :skip-universal-error-handler)
                           ((eq state :skip-universal-error-handler)
                            :gather)
-                          ((and focus
-                                (eq state :gather)
-                                (or (eq func-name 'clos::combine-method-functions3.lambda)
-                                    (eq func-name 'cmp::from-bclasp-implicit-compile-repl-form)))
-                           (return))
                           (t state)))
         (when verbose
           (bformat t "-----state -> %s   new-state -> %s\n" state new-state)
@@ -191,7 +191,7 @@
 (defun btcl ()
   (let ((l (common-lisp-backtrace-frames)))
     (dolist (e l)
-      (let ((name (backtrace-frame-function-name e))
+      (let ((name (backtrace-frame-print-name e))
             (arguments (backtrace-frame-arguments e)))
         (if arguments
             (progn
