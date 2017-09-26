@@ -358,7 +358,7 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
 (eval-when (:execute :compile-toplevel :load-toplevel)
   (core::select-package :core))
 
-(defparameter *debug-bclasp* t)
+(defparameter *debug-bclasp* nil)
 
 (defvar *special-init-defun-symbol* (gensym "special-init-defun-symbol"))
 (defvar *special-defun-symbol* (gensym "special-defun-symbol"))
