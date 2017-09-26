@@ -111,6 +111,7 @@ public:
     /*        if (this->_ptr != NULL ) delete this->_ptr; */
     this->_ptr = ptr;
   }
+  bool equal(core::T_sp obj) const;
   static LLVMContext_sp create_llvm_context();
   ;
   LLVMContext_O() : Base(), _ptr(NULL){};
@@ -125,12 +126,19 @@ public:
 }; // llvmo
 
 namespace translate {
-template <>
-struct from_object<llvm::LLVMContext &, std::true_type> {
-  typedef llvm::LLVMContext &DeclareType;
-  DeclareType _v;
+  template <>
+    struct from_object<llvm::LLVMContext &, std::true_type> {
+    typedef llvm::LLVMContext &DeclareType;
+    DeclareType _v;
   from_object(T_P object) : _v(*(gc::As<llvmo::LLVMContext_sp>(object)->wrappedPtr())){};
-};
+  };
+
+  template <>
+    struct to_object<llvm::LLVMContext &> {
+    static core::T_sp convert(llvm::LLVMContext& lc) {
+      return ((core::RP_Create_wrapped<llvmo::LLVMContext_O,llvm::LLVMContext*>(&lc)));
+    };
+  };
 };
     ;
 /* to_object translators */
@@ -3794,7 +3802,7 @@ public:
   PointerType_sp getPointerTo(int addressSpace = 0);
 
   bool equal(core::T_sp obj) const;
-
+  LLVMContext_sp getContext() const;
   string __repr__() const;
 
 }; // Type_O
