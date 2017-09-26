@@ -528,7 +528,7 @@ CL_DEFUN core::T_mv cl__room(core::T_sp x, core::Fixnum_sp marker, core::T_sp tm
   printf("Walked LispKinds\n");
   size_t totalSize(0);
   totalSize += dumpResults("Reachable ClassKinds", "class", static_ReachableClassKinds);
-  printf("Done walk of memory  %" Plu " ClassKinds\n", static_cast<uintptr_clasp_t>(static_ReachableClassKinds->size()));
+  printf("Done walk of memory  %" Puintptr_clasp_t " ClassKinds\n", static_cast<uintptr_clasp_t>(static_ReachableClassKinds->size()));
 #if USE_CXX_DYNAMIC_CAST
   printf("%s live memory total size = %12lu\n", smsg.c_str(), invalidHeaderTotalSize);
 #else
