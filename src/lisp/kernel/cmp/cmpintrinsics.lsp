@@ -267,28 +267,25 @@ Boehm and MPS use a single pointer"
 ;;;
 ;;; Vector access and unboxed value stuff
 
-(defparameter +element-type->llvm-type+
-  `((ext:byte8 . ,%i8%)
-    (ext:integer8 . ,%i8%)
-    (ext:byte16 . ,%i16%)
-    (ext:integer16 . ,%i16%)
-    (ext:byte32 . ,%i32%)
-    (ext:integer32 . ,%i32%)
-    (ext:byte64 . ,%i64%)
-    (ext:integer64 . ,%i64%)
-    (fixnum . ,%i64%) ; FIXME: store tagged?
-    (single-float . ,%float%)
-    (double-float . ,%double%)
-    ;; should be less hardcoded
-    (base-char . ,%i8%) ; C unsigned char
-    (character . ,%i32%) ; C int
-    (t . ,%t*%)))
-
 (defun element-type->llvm-type (element-type)
-  (let ((pair (assoc element-type +element-type->llvm-type+)))
-    (if pair
-        (cdr pair)
-        (error "BUG: Unknown element type ~a" element-type))))
+  (case element-type
+    ((t) %t*%)
+    (ext:byte8 %i8%)
+    (ext:integer8 %i8%)
+    (ext:byte16 %i16%)
+    (ext:integer16 %i16%)
+    (ext:byte32 %i32%)
+    (ext:integer32 %i32%)
+    (ext:byte64 %i64%)
+    (ext:integer64 %i64%)
+    (fixnum %i64%) ; FIXME: should we store fixnums in arrays tagged? we do now.
+    (single-float %float%)
+    (double-float %double%)
+    ;; should be less hardcoded
+    (base-char %i8%) ; in core as C unsigned char
+    (character %i32%) ; in core as C int
+    (otherwise
+     (error "BUG: Unknown element type ~a" element-type))))
 
 (defun simple-vector-llvm-type (element-type)
   (llvm-sys:struct-type-get
