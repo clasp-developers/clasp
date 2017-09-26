@@ -51,7 +51,7 @@ Return T if disassembly was achieved - otherwise NIL"
 (defun disassemble-assembly (module-or-func &optional (start-instruction-index 0) (num-instructions 16))
   (cond
     ((typep module-or-func 'llvm-sys:module)
-     (unless (disassemble-assembly-for-llvm-functions (llvm-sys:module-get-function-list module))
+     (unless (disassemble-assembly-for-llvm-functions (llvm-sys:module-get-function-list module-or-func))
        (error "Cannot disassemble module ~s" module-or-func)))
     ((functionp module-or-func)
      (let ((success (disassemble-assembly-for-llvm-functions (list module-or-func))))
@@ -59,7 +59,7 @@ Return T if disassembly was achieved - otherwise NIL"
            t
            (progn
              (llvm-sys:disassemble-instructions (llvm-sys:get-default-target-triple)
-                                                (core:function-pointer compiled-fn)
+                                                (core:function-pointer module-or-func)
                                                 :start-instruction-index start-instruction-index
                                                 :num-instructions num-instructions)))))
     (t (error "Cannot disassemble ~s" module-or-func))))
