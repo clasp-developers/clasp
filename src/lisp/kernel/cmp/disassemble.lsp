@@ -38,33 +38,31 @@ Return T if disassembly was achieved - otherwise NIL"
              (symbol-info (gethash llvm-function-name *jit-saved-symbol-info*)))
         (if symbol-info
             (let ((bytes (first symbol-info))
-                  (offset (second symbol-info))
-                  (segment-address (third symbol-info)))
+                  (address (second symbol-info)))
               (llvm-sys:disassemble-instructions (llvm-sys:get-default-target-triple)
-                                                 segment-address
-                                                 :start-byte-offset offset
-                                                 :end-byte-offset (+ offset bytes))
+                                                 address
+                                                 :start-byte-offset 09
+                                                 :end-byte-offset bytes)
               (setf success t))
             (progn
               (bformat t "Could not disassemble associated function\n")))))
     success))
-  
-(defun disassemble-assembly (compiled-fn module &optional (start-instruction-index 0) (num-instructions 16))
-  (error "Deal iwth module")
-  #+(or)(if (core:associated-functions compiled-fn)
-            (let ((success (disassemble-assembly-for-llvm-functions (core:associated-functions compiled-fn))))
-              (if success
-                  t
-                  (progn
-                    (llvm-sys:disassemble-instructions (llvm-sys:get-default-target-triple)
-                                                       (core:function-pointer compiled-fn)
-                                                       :start-instruction-index start-instruction-index
-                                                       :num-instructions num-instructions))))
-            (progn
-              (llvm-sys:disassemble-instructions (llvm-sys:get-default-target-triple)
-                                                 (core:function-pointer compiled-fn)
-                                                 :start-instruction-index start-instruction-index
-                                                 :num-instructions num-instructions))))
+
+(defun disassemble-assembly (module-or-func &optional (start-instruction-index 0) (num-instructions 16))
+  (cond
+    ((typep module-or-func 'llvm-sys:module)
+     (unless (disassemble-assembly-for-llvm-functions (llvm-sys:module-get-function-list module))
+       (error "Cannot disassemble module ~s" module-or-func)))
+    ((functionp module-or-func)
+     (let ((success (disassemble-assembly-for-llvm-functions (list module-or-func))))
+       (if success
+           t
+           (progn
+             (llvm-sys:disassemble-instructions (llvm-sys:get-default-target-triple)
+                                                (core:function-pointer compiled-fn)
+                                                :start-instruction-index start-instruction-index
+                                                :num-instructions num-instructions)))))
+    (t (error "Cannot disassemble ~s" module-or-func))))
 
 (defun disassemble-from-address (address &key (start-instruction-index 0) (num-instructions 16)
                                            start-byte-offset end-byte-offset)
