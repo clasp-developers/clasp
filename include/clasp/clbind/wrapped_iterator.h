@@ -43,16 +43,19 @@ public:
   IT _Iterator;
   //        End     _end;
 public:
-  Iterator(IT it /*, End end */) : _Iterator(it) /* , _end(end) */ {};
+Iterator(IT it /*, End end */) : _Iterator(it) /* , _end(end) */ {};
 
   core::T_sp unsafeElement() const {
     return translate::to_object<IT>::convert(this->_Iterator);
   }
   size_t templatedSizeof() const { return sizeof(*this); };
   void step() { ++this->_Iterator; };
-  bool operator==(core::T_sp other) const {
+bool operator==(core::T_sp other) const {
     if (gctools::smart_ptr<Iterator> io = other.asOrNull<Iterator<IT>>()) {
-      return this->_Iterator == io.get()->_Iterator;
+        IT& otherIterator = io.get()->_Iterator;
+        return this->_Iterator == otherIterator;
+    } else {
+        SIMPLE_ERROR(BF("You tried to compare an iterator %s to an object %s of class %s and the isA relationship failed") % _rep_(this->asSmartPtr()) % _rep_(other) % _rep_(core::instance_class(other)));
     }
     return false;
   }
