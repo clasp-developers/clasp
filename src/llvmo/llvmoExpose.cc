@@ -3661,7 +3661,6 @@ https://groups.google.com/forum/#!topic/llvm-dev/m3JjMNswgcU
                                        [this](llvm::orc::RTDyldObjectLinkingLayer::ObjHandleT H,
                                               const RTDyldObjectLinkingLayerBase::ObjectPtr& Obj,
                                               const RuntimeDyld::LoadedObjectInfo &Info) {
-//          printf("%s:%d:%s informing GDBEventListener  i=%d &Objects[i]->%p  &Infos[i]->%p\n", __FILE__, __LINE__, __FUNCTION__, i, Objects[i].get(), Infos[i].get());
                                          this->GDBEventListener->NotifyObjectEmitted(*(Obj->getBinary()), Info);
                                          save_symbol_info(*(Obj->getBinary()), Info);
                                        }
@@ -3706,8 +3705,14 @@ void save_symbol_info(const llvm::object::ObjectFile& object_file, const llvm::R
       if (expected_section_iterator) {
         const llvm::object::SectionRef& section_ref = **expected_section_iterator;
         uint64_t section_address = loaded_object_info.getSectionLoadAddress(section_ref);
-        core::Cons_sp symbol_info = core::Cons_O::createList(core::make_fixnum((Fixnum)size),core::Pointer_O::create((void*)((char*)section_address+address)));
-        gc::As<core::HashTableEqual_sp>(comp::_sym_STARjit_saved_symbol_infoSTAR->symbolValue())->hash_table_setf_gethash(core::SimpleBaseString_O::make(name),symbol_info);
+        if (((char*)section_address+address) != NULL ) {
+          core::Cons_sp symbol_info = core::Cons_O::createList(core::make_fixnum((Fixnum)size),core::Pointer_O::create((void*)((char*)section_address+address)));
+          if ((!comp::_sym_jit_register_symbol.unboundp()) && comp::_sym_jit_register_symbol->fboundp()) {
+            core::eval::funcall(comp::_sym_jit_register_symbol,core::SimpleBaseString_O::make(name),symbol_info);
+//            printf("%s:%d  Registering symbol -> %s : %s\n", __FILE__, __LINE__, name.c_str(), _rep_(symbol_info).c_str() );
+//        gc::As<core::HashTableEqual_sp>(comp::_sym_STARjit_saved_symbol_infoSTAR->symbolValue())->hash_table_setf_gethash(core::SimpleBaseString_O::make(name),symbol_info);
+          }
+        }
       }
     }
   }

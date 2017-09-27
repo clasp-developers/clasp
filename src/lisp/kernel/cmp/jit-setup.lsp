@@ -525,6 +525,25 @@ The passed module is modified as a side-effect."
 ;;;
 ;;; Using the new ORC JIT engine
 ;;;
+
+;;; jit-register-symbol is a call
+(defvar *jit-log-stream*)
+
+(defun jit-register-symbol (symbol-name-string symbol-info)
+  "This is a callback from llvmoExpose.cc::save_symbol_info for registering JITted symbols"
+  (core:hash-table-setf-gethash *jit-saved-symbol-info* symbol-name-string symbol-info)
+  (if (member :jit-log-symbols *features*)
+      (progn
+        (if (not (boundp '*jit-log-stream*))
+            (setq *jit-log-stream* (open (core:bformat nil "app-bitcode:%s.symbols" (core::build-configuration)) :direction :output)))
+        (princ (core:pointer-as-string (cadr symbol-info)) *jit-log-stream*)
+        (princ #\space *jit-log-stream*)
+        (princ (car symbol-info) *jit-log-stream*)
+        (princ #\space *jit-log-stream*)
+        (princ symbol-name-string *jit-log-stream*)
+        (terpri *jit-log-stream*)
+        (finish-output *jit-log-stream*))))
+
 (progn
   (defvar *jit-engine* (make-cxx-object 'llvm-sys:clasp-jit))
   #+threads(defvar *jit-lock* (mp:make-lock :name 'jit-engine-mutex :recursive t))

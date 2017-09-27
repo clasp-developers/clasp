@@ -1059,6 +1059,7 @@ class run_aclasp(Task.Task):
         cmd = cmd + [
                 "--ignore-image",
                 "--feature", "no-implicit-compilation",
+                "--feature", "jit-log-symbols",
                 "--feature", "clasp-min",
                 "--feature", "debug-run-clang",
                 "--eval", '(load "sys:kernel;clasp-builder.lsp")',
@@ -1084,6 +1085,7 @@ class compile_aclasp(Task.Task):
         cmd = cmd + [ "--norc",
                       "--ignore-image",
                       "--feature", "clasp-min",
+                      "--feature", "jit-log-symbols",
                       "--feature", "debug-run-clang",
                       "--eval", '(load "sys:kernel;clasp-builder.lsp")' ]
 #                      "--eval", '(setq cmp:*compile-file-debug-dump-module* t)',
@@ -1115,6 +1117,7 @@ class compile_bclasp(Task.Task):
         cmd = cmd + [ "--norc",
                       "--image", self.inputs[1].abspath(),
                       "--feature", "debug-run-clang",
+                      "--feature", "jit-log-symbols",
                       "--eval", '(load "sys:kernel;clasp-builder.lsp")' ]
         cmd = cmd + ["--eval", "(core:compile-bclasp :output-file #P\"%s\")" % self.outputs[0] ,
                      "--eval", "(core:quit)" ]
@@ -1140,6 +1143,7 @@ class compile_cclasp(Task.Task):
         cmd = cmd + [ "--norc",
                       "--image", self.inputs[1].abspath(),
                       "--feature", "debug-run-clang",
+                      "--feature", "jit-log-symbols",
                       "--eval", "(load \"sys:kernel;clasp-builder.lsp\")" ]
         if (self.bld.command ):
             cmd = cmd + [ "--eval", "(load-cclasp)" ]
@@ -1165,6 +1169,7 @@ class recompile_cclasp(Task.Task):
             raise Exception("To use the recompile targets you need to provide a working clasp executable. See wscript.config and/or set the CLASP env variable.")
         cmd = [ other_clasp ]
         cmd = cmd + [ "--feature", "debug-run-clang",
+                      "--feature", "jit-log-symbols",
                       "--feature", "ignore-extensions",
                       "--resource-dir", "%s/%s/%s" % (self.bld.path.abspath(),out,self.bld.variant_obj.variant_dir()),
                       "--eval", '(load "sys:kernel;clasp-builder.lsp")',
@@ -1188,6 +1193,7 @@ class compile_addons(Task.Task):
                           '--feature', 'pause-pid' ]
         cmd = cmd + [ "--norc",
                       "--feature", "ignore-extensions",
+                      "--feature", "jit-log-symbols",
                       "--feature", "debug-run-clang",
                       "--eval", '(load "sys:kernel;clasp-builder.lsp")'
                       "--eval", "(core:compile-addons)",
@@ -1212,6 +1218,7 @@ class compile_module(Task.Task):
                           '--feature', 'pause-pid' ]
         cmd = cmd + [ "--norc",
                       "--feature", "ignore-extensions",
+                      "--feature", "jit-log-symbols",
                       "--feature", "debug-run-clang",
                       "--eval", "(compile-file #P\"%s\" :output-file #P\"%s\" :output-type :fasl)" % (self.inputs[2], self.outputs[0]),
                       "--eval", "(core:quit)" ]
