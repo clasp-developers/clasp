@@ -96,6 +96,7 @@
     ((eq name 'core::%array-total-size) t)
     ((eq name 'core::%array-rank) t)
     ((eq name 'core::%array-dimension) t)
+    ((eq name 'core::bind-va-list) t)
     ((eq (symbol-package name) (find-package :cleavir-primop)) t)
     (t nil)))
 
