@@ -300,7 +300,10 @@ CL_DEFUN T_mv cl__eval(T_sp form) {
     return form;
   }
   if (form.consp()) {
-    if (core::_sym_STARuseInterpreterForEvalSTAR->symbolValue().isTrue()) {
+    if (core::_sym_STAReval_with_env_hookSTAR.unboundp() ||
+        !core::_sym_STAReval_with_env_hookSTAR->boundP() ||
+        core::_sym_STARuseInterpreterForEvalSTAR->symbolValue().isTrue()
+        ) {
       return eval::evaluate(form, _Nil<T_O>());
     } else {
       return eval::funcall(core::_sym_STAReval_with_env_hookSTAR->symbolValue(), form, _Nil<T_O>());
