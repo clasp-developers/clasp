@@ -11,13 +11,19 @@
   (load #P"sys:modules;clasp-analyzer;clasp-analyzer.fasl"))
 
 (in-package :clasp-analyzer)
-(defvar *compile-commands* "~/Dev/clasp/build/mpsprep/compile_commands.json")
+(defvar *compile-commands* "~/Development/clasp/build/boehm/compile_commands.json")
+;;;(defvar *compile-commands* "~/Dev/clasp/build/mpsprep/compile_commands.json")
 
 (setf *print-pretty* nil)
 (defvar *db* (clasp-analyzer:setup-clasp-analyzer-compilation-tool-database
               (pathname *compile-commands*)
-              :selection-pattern "cons.cc" ))
-(defvar *p* (search/generate-code *db* :output-file #P"cons_only.dat"))
+              :selection-pattern "gc_interface.cc" ))
+(defvar *p* (serial-search/generate-code *db* :output-file #P"gc_interface_only.dat"))
+
+
+
+
+
 
 (defparameter *analysis* (analyze-project *project*))
 (analysis-enum-roots *analysis*)

@@ -33,30 +33,6 @@
 ;;(push :use-breaks *features*)
 ;;(push :gc-warnings *features*)
 
-#|
-#+(or)(defconstant +isystem-dir+ 
-        #+target-os-darwin "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/7.0"
-        #+target-os-linux "/usr/include/clang/3.6/include"
-        "Define the -isystem command line option for Clang compiler runs")
-
-#+(or)(defconstant +resource-dir+ 
-        #+target-os-darwin "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/7.0"
-        #+target-os-linux "/usr/lib/llvm-3.6/bin/../lib/clang/3.6.0/include"
-        #+(or)"/home/meister/Development/externals-clasp/build/release/lib/clang/3.6.2"
-        "Define the -resource-dir command line option for Clang compiler runs")
-#+(or)(defconstant +additional-arguments+
-        #+target-os-darwin (vector
-                            "-I/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.11.sdk/usr/include"
-                            "-I/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include"
-                            "-I/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/7.0.0/include"
-                            "-I/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.11.sdk/System/Library/Frameworks")
-        #-target-os-darwin (vector
-                            #+(or)"-I/home/meister/local/gcc-4.8.3/include/c++/4.8.3"
-                            #+(or)"-I/home/meister/local/gcc-4.8.3/include/c++/4.8.3/x86_64-redhat-linux"
-                            #+(or)"-I/home/meister/local/gcc-4.8.3/include/c++/4.8.3/tr1"
-                            #+(or)"-I/home/meister/local/gcc-4.8.3/lib/gcc/x86_64-redhat-linux/4.8.3/include"))
-|#
-
 ;;; --------------------------------------------------
 ;;; --------------------------------------------------
 ;;; Should not need to modify below here
@@ -1267,12 +1243,18 @@ can be saved and reloaded within the project for later analysis"
                  ;; Run a matcher to find the base classes and their namespaces
                  ;;
                  (ext:do-c++-iterator (it (cast:bases-iterator class-node))
+                   (unless it
+                     (multiple-value-bind (start end)
+                         (cast:bases-iterator class-node)
+                       (format t "(cast:bases-iterator  ~s -> ~s~%" start end)
+                       (error "bases-iterator is nil for class -> ~s" class-node)))
                    (let* ((qty (cast:get-type it))
                           (canonical-qty (cast:get-canonical-type-internal (cast:get-type-ptr-or-null qty)))
                           (base-decl (cast:get-as-cxxrecord-decl (cast:get-type-ptr-or-null canonical-qty))))
                      (when base-decl
                        (push (record-key base-decl) bases))))
                  (ext:do-c++-iterator (it (cast:vbases-iterator class-node))
+                   (or it (error "vbases-iterator is nil for class -> ~s" class-node))
                    (let* ((qty (cast:get-type it))
                           (canonical-qty (cast:get-canonical-type-internal (cast:get-type-ptr-or-null qty)))
                           (base-decl (cast:get-as-cxxrecord-decl (cast:get-type-ptr-or-null canonical-qty))))
@@ -1288,7 +1270,9 @@ can be saved and reloaded within the project for later analysis"
                   (clang-tool:ast-context match-info)
                   (lambda (minfo)
                     (let* ((field-node (clang-tool:mtag-node minfo :field))
-                           (type (to-canonical-type (cast:get-type field-node))))
+                           (type (progn
+                                   (or field-node (error "field-node is nil"))
+                                   (to-canonical-type (cast:get-type field-node)))))
                       (gclog "      >> Field: ~30a~%" field-node)
                       (handler-case
                           (push (make-instance-variable
@@ -1605,6 +1589,7 @@ and the inheritance hierarchy that the garbage collector will need"
                                     (:local nil)))
                       (key (format nil "~a@~a" varname location)))
                  (unless (and hash-table (gethash key hash-table))
+                   (or var-node (error "var-node is nil"))
                    (let* ((qtype (cast:get-type var-node))
                           (type (cast:get-type-ptr-or-null qtype))
                           (classified-type (let ((*debug-info* (make-debug-info :name varname :location location)))
@@ -2820,6 +2805,7 @@ Recursively analyze x and return T if x contains fixable pointers."
 (defmethod ignorable-ctype-p ((ctype dependent-name-ctype)) t)
 (defmethod ignorable-ctype-p ((ctype smart-ptr-ctype)) nil)
 (defmethod ignorable-ctype-p ((ctype tagged-pointer-ctype)) nil)
+(defmethod ignorable-ctype-p ((ctype template-type-parm-ctype)) nil)
 (defmethod ignorable-ctype-p ((ctype unknown-ctype))
   (warn "ignorable-ctype-p called with ~a" ctype)
   t)
@@ -3111,6 +3097,9 @@ Pointers to these objects are fixed in obj_scan or they must be roots."
 (defmethod fix-variable-p ((var builtin-ctype) analysis) nil)
 (defmethod fix-variable-p ((var dependent-name-ctype) analysis) nil)
 (defmethod fix-variable-p ((var template-type-parm-ctype) analysis) nil)
+(defmethod fix-variable-p ((var unclassified-template-specialization-ctype) analysis) (format *debug-io* "unclassified-template-specialization-ctype -> ~a~%" var) nil)
+(defmethod fix-variable-p ((var rvalue-reference-ctype) analysis) (format *debug-io* "rvalue-reference-ctype -> ~a~%" var) nil)
+(defmethod fix-variable-p ((var incomplete-array-ctype) analysis) (format *debug-io* "incomplete-array-ctype -> ~a~%" var) nil)
 (defmethod fix-variable-p ((var enum-ctype) analysis) nil)
 (defmethod fix-variable-p ((var smart-ptr-ctype) analysis) t)
 (defmethod fix-variable-p ((var tagged-pointer-ctype) analysis) t)
