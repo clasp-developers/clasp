@@ -199,9 +199,10 @@
   project
   manager
   inline
-  (cur-enum-value (multiple-value-bind (hardwired-kinds ignore-classes first-general)
-                      (core:hardwired-kinds)
-                    first-general))
+  (cur-enum-value 1
+   #+(or)(multiple-value-bind (hardwired-kinds ignore-classes first-general)
+             (core:hardwired-kinds)
+           first-general))
   (forwards (make-hash-table :test #'equal))
   (enums (make-hash-table :test #'equal))
   enum-children
@@ -303,8 +304,8 @@
   (setf (analysis-enum-roots analysis) nil)
   (build-hierarchy analysis)
   (maphash (lambda (k v) (setf (enum-value v) nil)) (analysis-enums analysis))
-  (setf (analysis-cur-enum-value analysis)
-        (multiple-value-bind (hardwired-kinds ignore-classes first-general)
+  (setf (analysis-cur-enum-value analysis) 1
+        #+(or)(multiple-value-bind (hardwired-kinds ignore-classes first-general)
             (core:hardwired-kinds)
           first-general)))
 
@@ -3167,16 +3168,14 @@ Pointers to these objects are fixed in obj_scan or they must be roots."
 
 
 (defun generate-label-table (dest)
-  (multiple-value-bind (hardwired-kinds  ignore-classes first-general)
-      (core:hardwired-kinds)
-    (format (destination-stream dest)
-            "static void* ~a_table[] = { ~%"
-            (destination-table-name dest))
-    (let ((entries (reverse (destination-label-list dest))))
-      (dolist (entry entries)
-        (format (destination-stream dest) "  /* ~a */ &&~a,~%" (car entry) (cdr entry))))
-    (format (destination-stream dest) "   NULL~%" )
-    (format (destination-stream dest) "};~%")))
+  (format (destination-stream dest)
+          "static void* ~a_table[] = { ~%"
+          (destination-table-name dest))
+  (let ((entries (reverse (destination-label-list dest))))
+    (dolist (entry entries)
+      (format (destination-stream dest) "  /* ~a */ &&~a,~%" (car entry) (cdr entry))))
+  (format (destination-stream dest) "   NULL~%" )
+  (format (destination-stream dest) "};~%"))
 
 (defmacro do-generator (stream analysis &key table-name function-declaration function-prefix function-table-type generator jump-table-index-function)
   (let ((dest-gs (gensym)))

@@ -44,10 +44,64 @@ THE SOFTWARE.
 #include <signal.h>
 #endif
 
+
+
+#include <clasp/core/scrape.h>
+
+
+////////////////////////////////////////////////////////////
+//
+// GC_MANAGED_TYPE
+//
+// Objects that are managed by the GC and need a stamp
+//   but are not directly accessible to Common Lisp
+GC_MANAGED_TYPE(core::Lisp_O);
+GC_MANAGED_TYPE(clbind::detail::class_map);
+GC_MANAGED_TYPE(gctools::GCArray_moveable<double>);
+GC_MANAGED_TYPE(gctools::GCArray_moveable<float>);
+GC_MANAGED_TYPE(gctools::GCArray_moveable<gctools::smart_ptr<core::T_O>>);
+GC_MANAGED_TYPE(gctools::GCArray_moveable<int>);
+GC_MANAGED_TYPE(gctools::GCArray_moveable<long>);
+GC_MANAGED_TYPE(gctools::GCArray_moveable<short>);
+GC_MANAGED_TYPE(gctools::GCArray_moveable<signed char>);
+GC_MANAGED_TYPE(gctools::GCArray_moveable<unsigned char>);
+GC_MANAGED_TYPE(gctools::GCArray_moveable<unsigned int>);
+GC_MANAGED_TYPE(gctools::GCArray_moveable<unsigned long>);
+GC_MANAGED_TYPE(gctools::GCArray_moveable<unsigned short>);
+GC_MANAGED_TYPE(gctools::GCBitUnitArray_moveable<1,unsigned int,int>);
+GC_MANAGED_TYPE(gctools::GCVector_moveable<core::AuxArgument>);
+GC_MANAGED_TYPE(gctools::GCVector_moveable<core::CacheRecord>);
+GC_MANAGED_TYPE(gctools::GCVector_moveable<core::DynamicBinding>);
+GC_MANAGED_TYPE(gctools::GCVector_moveable<core::ExceptionEntry>);
+GC_MANAGED_TYPE(gctools::GCVector_moveable<core::KeywordArgument>);
+GC_MANAGED_TYPE(gctools::GCVector_moveable<core::OptionalArgument>);
+GC_MANAGED_TYPE(gctools::GCVector_moveable<core::RequiredArgument>);
+GC_MANAGED_TYPE(gctools::GCVector_moveable<core::SymbolClassPair>);
+GC_MANAGED_TYPE(gctools::GCVector_moveable<core::SymbolStorage>);
+GC_MANAGED_TYPE(gctools::GCVector_moveable<core::T_O *>);
+GC_MANAGED_TYPE(gctools::GCVector_moveable<double>);
+GC_MANAGED_TYPE(gctools::GCVector_moveable<float>);
+GC_MANAGED_TYPE(gctools::GCVector_moveable<gctools::smart_ptr<clbind::ClassRep_O>>);
+GC_MANAGED_TYPE(gctools::GCVector_moveable<gctools::smart_ptr<core::Cons_O>>);
+GC_MANAGED_TYPE(gctools::GCVector_moveable<gctools::smart_ptr<core::List_V>>);
+GC_MANAGED_TYPE(gctools::GCVector_moveable<gctools::smart_ptr<core::Package_O>>);
+GC_MANAGED_TYPE(gctools::GCVector_moveable<gctools::smart_ptr<core::SequenceStepper_O>>);
+GC_MANAGED_TYPE(gctools::GCVector_moveable<gctools::smart_ptr<core::SingleDispatchMethod_O>>);
+GC_MANAGED_TYPE(gctools::GCVector_moveable<gctools::smart_ptr<core::SourceFileInfo_O>>);
+GC_MANAGED_TYPE(gctools::GCVector_moveable<gctools::smart_ptr<core::Symbol_O>>);
+GC_MANAGED_TYPE(gctools::GCVector_moveable<gctools::smart_ptr<core::T_O>>);
+GC_MANAGED_TYPE(gctools::GCVector_moveable<int>);
+GC_MANAGED_TYPE(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::T_O>>>);
+GC_MANAGED_TYPE(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<core::T_O>>>);
+
+
+
+
+#if 0
 namespace gctools {
 std::vector<Immediate_info> get_immediate_info() {
   std::vector<Immediate_info> info;
-  info.push_back(Immediate_info(stamp_fixnum,"FIXNUM"));
+  info.push_back(Immediate_info(STAMP_fixnum,"FIXNUM"));
   info.push_back(Immediate_info(stamp_single_float,"SINGLE_FLOAT"));
   info.push_back(Immediate_info(stamp_character,"CHARACTER"));
   info.push_back(Immediate_info(stamp_cons,"CONS"));
@@ -59,6 +113,7 @@ std::vector<Immediate_info> get_immediate_info() {
   return info;
 };
 };
+#endif
 
 
 namespace gctools {

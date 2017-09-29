@@ -161,46 +161,24 @@ namespace gctools {
 
 
   
-#if defined(USE_CXX_DYNAMIC_CAST) || defined(RUNNING_GC_BUILDER)
-  typedef enum { STAMP_null = 0,
-                 STAMP_FIXNUM = 1,
-                 STAMP_INSTANCE = 2,
-                 STAMP_FUNCALLABLE_INSTANCE = 3, 
-                 STAMP_SINGLE_FLOAT = 4,
-                 STAMP_CHARACTER = 5,
-                 STAMP_CONS = 6,
-                 STAMP_VA_LIST_S = 7,
-                 STAMP_CPOINTER = 8,
-                 STAMP_WRAPPED_POINTER = 9,
-                 // These are defined to support the GCStamp<...> specializations below
-                 // when defined(USE_CXX_DYNAMIC_CAST) || defined(RUNNING_GC_BUILDER)
-                 STAMP_LISPALLOC_core__VaList_dummy_O = STAMP_VA_LIST_S, 
-                 STAMP_LISPALLOC_core__Cons_O = STAMP_CONS, 
-                 STAMP_LISPALLOC_core__Character_dummy_O = STAMP_CHARACTER, 
-                 STAMP_LISPALLOC_core__CPointer_dummy_O = STAMP_CPOINTER, 
-                 STAMP_LISPALLOC_core__SingleFloat_dummy_O = STAMP_SINGLE_FLOAT, 
-                 STAMP_LISPALLOC_core__Fixnum_dummy_O = STAMP_FIXNUM,
-                 STAMP_LISPALLOC_core__Instance_O = STAMP_INSTANCE,
-                 STAMP_LISPALLOC_core__FuncallableInstance_O = STAMP_FUNCALLABLE_INSTANCE,
-                 STAMP_TEMPLATED_LISPALLOC_core__WrappedPointer_O = STAMP_WRAPPED_POINTER,
-                 STAMP_max = 10 } GCStampEnum; // minimally define this GCStamp
-#else
-  #define STAMP_DUMMY_FOR_CPOINTER 0
- #define GC_ENUM
+#define STAMP_DUMMY_FOR_CPOINTER 0
     typedef enum {
- #include CLASP_GC_FILENAME
-      STAMP_VA_LIST_S = STAMP_LISPALLOC_core__VaList_dummy_O, 
-      STAMP_CONS = STAMP_LISPALLOC_core__Cons_O, 
-      STAMP_CHARACTER = STAMP_LISPALLOC_core__Character_dummy_O, 
-      STAMP_CPOINTER = STAMP_DUMMY_FOR_CPOINTER,
-      STAMP_SINGLE_FLOAT = STAMP_LISPALLOC_core__SingleFloat_dummy_O, 
-      STAMP_FIXNUM = STAMP_LISPALLOC_core__Fixnum_dummy_O,
-      STAMP_INSTANCE = STAMP_LISPALLOC_core__Instance_O,
-      STAMP_FUNCALLABLE_INSTANCE = STAMP_LISPALLOC_core__FuncallableInstance_O,
-      STAMP_WRAPPED_POINTER = STAMP_TEMPLATED_LISPALLOC_core__WrappedPointer_O
- } GCStampEnum;
- #undef GC_ENUM
+        STAMP_null = 0,
+#ifndef SCRAPING        
+#define GC_ENUM
+#include INIT_CLASSES_INC_H // REPLACED CLASP_GC_FILENAME
+#undef GC_ENUM
+        STAMP_VA_LIST_S = STAMP_core__VaList_dummy_O, 
+        STAMP_CONS = STAMP_core__Cons_O, 
+        STAMP_CHARACTER = STAMP_core__Character_dummy_O, 
+        STAMP_CPOINTER = STAMP_DUMMY_FOR_CPOINTER,
+        STAMP_SINGLE_FLOAT = STAMP_core__SingleFloat_dummy_O, 
+        STAMP_FIXNUM = STAMP_core__Fixnum_dummy_O,
+        STAMP_INSTANCE = STAMP_core__Instance_O,
+        STAMP_FUNCALLABLE_INSTANCE = STAMP_core__FuncallableInstance_O,
+        STAMP_WRAPPED_POINTER = STAMP_core__WrappedPointer_O
 #endif
+    } GCStampEnum;
 
 };
 

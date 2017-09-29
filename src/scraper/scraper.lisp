@@ -48,6 +48,7 @@ Read all of the scraped info files and interpret their tags."
      nconc tags))
 
 (defparameter *classes* nil)
+(defparameter *gc-managed-types* nil)
 (defparameter *symbols* nil)
 (defparameter *functions* nil)
 (defparameter *enums* nil)
@@ -67,15 +68,16 @@ Read all of the scraped info files and interpret their tags."
         (error "Could not get app-config"))
       (format t "Interpreting tags~%")
       (setf *tags* tags)
-      (multiple-value-bind (packages-to-create functions symbols classes enums initializers)
+      (multiple-value-bind (packages-to-create functions symbols classes gc-managed-types enums initializers)
           (interpret-tags tags)
         (setq *packages-to-create* packages-to-create)
         (setq *symbols* symbols)
         (setq *classes* classes)
+        (setq *gc-managed-types* gc-managed-types)
         (setq *functions* functions)
         (setq *enums* enums)
         (format t "Generating code~%")
-        (generate-code packages-to-create functions symbols classes enums initializers build-path app-config))
+        (generate-code packages-to-create functions symbols classes gc-managed-types enums initializers build-path app-config))
       (format t "Done scraping code~%"))))
 (export 'process-all-sif-files)
 
@@ -141,7 +143,7 @@ Read all of the scraped info files and interpret their tags."
     (error (msg) (format *error-output* "An error occurred~%"))))
 
 (defun generate-one-sif (clang-command output)
-  (let (#+(or)(*debug-io* (make-two-way-stream *standard-input* *standard-output*)))
+  (let ((*debug-io* (make-two-way-stream *standard-input* *standard-output*)))
     (let* ((bufs (slurp-clang-output output clang-command)))
       (when bufs
         (let ((tags (process-all-recognition-elements bufs))

@@ -27,6 +27,9 @@
   ((character-offset% :initform nil :initarg :character-offset% :accessor tags:character-offset%)
    (signature-text% :initform nil :initarg :signature-text% :accessor signature-text%)))
 
+(defclass tags:gc-managed-type-tag (tag)
+  ((c++type% :initform nil :initarg :c++type% :accessor c++type%)))
+
 (defclass tags:package-use-tag (tag)
   ((name% :initform nil :initarg :name% :accessor name%)))
 
@@ -148,10 +151,11 @@
 
 
 (defmacro add-tag-handler (tag-handlers tag-class-symbol begin-tag code)
-  `(setf (gethash ,begin-tag ,tag-handlers) (make-instance 'tag-handler
+  `(progn
+     (setf (gethash ,begin-tag ,tag-handlers) (make-instance 'tag-handler
                                                            :begin-tag ,begin-tag
                                                            :handler-code ,code)
-         (gethash ,tag-class-symbol *tag-codes*) ,begin-tag))
+         (gethash ,tag-class-symbol *tag-codes*) ,begin-tag)))
 
 (progn
   (defparameter *tag-codes* (make-hash-table :test #'equal))
@@ -178,6 +182,15 @@
                                         :name% (getf plist :class)
                                         :class-symbol% (getf plist :class-symbol)
                                         :base% (getf plist :base)))))
+  (add-tag-handler *tag-handlers* 'gc-managed-type-tag "GC_MANAGED_TYPE_TAG"
+                   #'(lambda (bufs)
+                       (let ((plist (read (cscrape:buffer-stream bufs))))
+                         (let ((key (maybe-unquote (getf plist :type))))
+;;;                           (format *debug-io* "Creating gc-managed-type-tag: ~a~%" key)
+                           (make-instance 'tags:gc-managed-type-tag
+                                          :file% (getf plist :file)
+                                          :line% (getf plist :line)
+                                          :c++type% key)))))
   (add-tag-handler *tag-handlers* 'cl-lispify-name-tag "CL_LISPIFY_NAME_TAG"
                    #'(lambda (bufs) ;(declare (core:lambda-name lambda-tag-handler))
                        (let ((plist (read (cscrape:buffer-stream bufs))))

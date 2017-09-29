@@ -47,15 +47,15 @@ namespace clbind {
 
 #ifdef USE_BOEHM
 //----------------------------------------------------------------------
-#ifndef USE_CXX_DYNAMIC_CAST
+#ifndef SCRAPING
 #define DECLARE_FORWARDS
-#include CLASP_GC_FILENAME
+#include INIT_CLASSES_INC_H // REPLACED CLASP_GC_FILENAME // "main/clasp_gc.cc"
 #undef DECLARE_FORWARDS
 #endif
 namespace cast {
-#ifndef USE_CXX_DYNAMIC_CAST
+#ifndef SCRAPING
 #define GC_DYNAMIC_CAST
-#include CLASP_GC_FILENAME // "main/clasp_gc.cc"
+#include INIT_CLASSES_INC_H // REPLACED CLASP_GC_FILENAME // "main/clasp_gc.cc"
 #undef GC_DYNAMIC_CAST
 #endif
 };

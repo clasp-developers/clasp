@@ -176,6 +176,7 @@ CL_DEFUN bool core__inherits_from_instance(core::T_sp obj)
   return (gc::IsA<core::Instance_sp>(obj));
 }
 
+#if 0
 CL_LAMBDA();
 CL_DECLARE();
 CL_DOCSTRING("Return the header kind for the object");
@@ -188,6 +189,7 @@ CL_DEFUN core::T_mv core__hardwired_kinds() {
   core::List_sp ignoreClasses = _Nil<core::T_O>(); // core::Cons_O::createList(SimpleBaseString_O::make("core__Cons_O") <-- future when CONS are in their own pool
   return Values(result, ignoreClasses, core::clasp_make_fixnum(stamp_first_general), core::clasp_make_fixnum(stamp_first_alien), core::clasp_make_fixnum(stamp_last_alien), core::clasp_make_fixnum(stamp_first_instance));
 }
+#endif
 
 #if 0
 #define ARGS_af_testVec0 "()"

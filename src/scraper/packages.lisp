@@ -57,10 +57,12 @@
    #:internal-code-tag
    #:external-code-tag
    #:package-use-tag
+   #:gc-managed-type-tag
    #:package-shadow-tag
    #:package-nickname-tag
    #:cl-pkg-name-tag
    #:name%
+   #:c++type%
    #:full-name
    #:meta-class-tag
    #:meta-class%
