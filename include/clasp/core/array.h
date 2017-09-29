@@ -1026,7 +1026,7 @@ namespace core {
       this->this_asAbstractSimpleVectorRange(basesv,start,end);
       gctools::smart_ptr<simple_type> sv = gc::As_unsafe<gctools::smart_ptr<simple_type>>(basesv);
       size_t initialContentsSize = MIN(this->length(),size);
-      my_smart_ptr_type newData = simple_type::make(size,simple_type::from_object(initElement),true,initialContentsSize,&(*sv)[start]);
+      my_smart_ptr_type newData = simple_type::make(size,simple_type::initial_element_from_object(initElement,initElementSupplied),true,initialContentsSize,&(*sv)[start]);
       this->set_data(newData);
 //      printf("%s:%d:%s  original size=%lu new size=%lu  copied %lu elements\n", __FILE__, __LINE__, __FUNCTION__, this->_ArrayTotalSize, size, initialContentsSize );
       this->_ArrayTotalSize = size;
@@ -1144,7 +1144,7 @@ namespace core {
       this->this_asAbstractSimpleVectorRange(basesv,start,end);
       gctools::smart_ptr<simple_type> sv = gc::As_unsafe<gctools::smart_ptr<simple_type>>(basesv);
       size_t initialContentsSize = MIN(this->length(),size);
-      my_smart_ptr_type newData = simple_type::make(size,simple_type::from_object(initElement),true,initialContentsSize,&(*sv)[start]);
+      my_smart_ptr_type newData = simple_type::make(size,simple_type::initial_element_from_object(initElement,initElementSupplied),true,initialContentsSize,&(*sv)[start]);
       this->set_data(newData);
 //      printf("%s:%d:%s  original size=%lu new size=%lu  copied %lu elements\n", __FILE__, __LINE__, __FUNCTION__, this->_ArrayTotalSize, size, initialContentsSize );
       this->_ArrayTotalSize = size;
