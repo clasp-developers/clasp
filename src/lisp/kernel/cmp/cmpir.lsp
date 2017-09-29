@@ -4,14 +4,14 @@
 ;;;
 
 ;; Copyright (c) 2014, Christian E. Schafmeister
-;; 
+;;
 ;; CLASP is free software; you can redistribute it and/or
 ;; modify it under the terms of the GNU Library General Public
 ;; License as published by the Free Software Foundation; either
 ;; version 2 of the License, or (at your option) any later version.
-;; 
+;;
 ;; See directory 'clasp/licenses' for full details.
-;; 
+;;
 ;; The above copyright notice and this permission notice shall be included in
 ;; all copies or substantial portions of the Software.
 ;;
@@ -25,7 +25,7 @@
 
 ;; -^-
 ;;
-;; Wrappers for llvm-ir instruction generation functions 
+;; Wrappers for llvm-ir instruction generation functions
 ;;
 ;; All instructions talk to the special variable *irbuilder*
 ;;
@@ -357,8 +357,8 @@
 	(dbg-set-current-debug-location-here)
 	(irc-low-level-trace)
 	(irc-intrinsic "clasp_terminate" (irc-constant-string-ptr *gv-source-namestring*)
-		       (irc-size_t-*current-source-pos-info*-lineno) 
-		       (irc-size_t-*current-source-pos-info*-column) 
+		       (irc-size_t-*current-source-pos-info*-lineno)
+		       (irc-size_t-*current-source-pos-info*-column)
 		       (irc-constant-string-ptr *gv-current-function-name* ))
 	(irc-unreachable)
 	))
@@ -440,8 +440,8 @@
 
 
 
-    
-  
+
+
 
 
 
@@ -587,7 +587,7 @@
             (progn
               (llvm-sys:terminator-inst-p (llvm-sys:basic-block-back cur-block))))
 	nil)))
-    
+
 (defun irc-br (block &optional (where "undefined"))
   (or block (error "Destination block ~a is nil!!!" where))
   (llvm-sys:create-br *irbuilder* block))
@@ -666,7 +666,7 @@
 
 
 
-#|(llvm-sys:create-in-bounds-gep *irbuilder* (llvm-sys:get-or-create-uniqued-string-global-variable *the-module* *current-function-name* (bformat nil ":::func-name-%s" *current-function-name*)) (list (jit-constant-i32 0) (jit-constant-i32 0)) "fn-name") 
+#|(llvm-sys:create-in-bounds-gep *irbuilder* (llvm-sys:get-or-create-uniqued-string-global-variable *the-module* *current-function-name* (bformat nil ":::func-name-%s" *current-function-name*)) (list (jit-constant-i32 0) (jit-constant-i32 0)) "fn-name")
 |#
 
 
@@ -784,7 +784,7 @@ But no irbuilders or basic-blocks. Return the fn."
     (mapcar #'(lambda (arg argname) (llvm-sys:set-name arg argname))
             (llvm-sys:get-argument-list fn) argument-names)
     fn))
-                                   
+
 (defun irc-bclasp-function-create (lisp-function-name body env
                                    &key
                                      (function-type %fn-prototype% function-type-p)
@@ -792,7 +792,7 @@ But no irbuilders or basic-blocks. Return the fn."
                                      ;; If the first argument is NOT meant to be a returned structure then set this to nil
                                      (argument-names '("result-ptr" "activation-frame-ptr") argument-names-p)
                                      (linkage 'llvm-sys:internal-linkage))
-  "Returns the new function, the lexical environment for the function 
+  "Returns the new function, the lexical environment for the function
 and the block that cleans up the function and rethrows exceptions,
 followed by the traceid for this function and then the current insert block,
 and then the irbuilder-alloca, irbuilder-body."
@@ -837,7 +837,7 @@ and then the irbuilder-alloca, irbuilder-body."
         (llvm-sys:create-ret-void *irbuilder*)
         (llvm-sys:create-ret *irbuilder* (irc-load result))))
   (irc-verify-function *current-function*))
-  
+
 #+(or)
 (defun irc-function-cleanup-and-return (env result &key return-void)
   (when env
@@ -925,7 +925,7 @@ and then the irbuilder-alloca, irbuilder-body."
 (defmacro with-alloca-insert-point-no-cleanup (irbuilder &key alloca init)
   "Switch to the alloca-insert-point and generate code to alloca a local variable.
 Within the _irbuilder_ dynamic environment...
-- insert the given alloca instruction using the provided irbuilder 
+- insert the given alloca instruction using the provided irbuilder
 - insert the initialization code (if provided) right after the alloca "
   (let ((alloca-sym (gensym))
 	(found-gs (gensym)))
@@ -938,7 +938,7 @@ Within the _irbuilder_ dynamic environment...
 				    &key alloca init cleanup)
   "Switch to the alloca-insert-point and generate code to alloca a local variable.
 Within the _irbuilder_ dynamic environment...
-- insert the given alloca instruction using the provided irbuilder 
+- insert the given alloca instruction using the provided irbuilder
 - insert the initialization code right after the alloca
 - setup the :cleanup code for this alloca
 - finally restore the insert-point to the end of the basic block that we entered this macro with."
@@ -1104,8 +1104,8 @@ Write T_O* pointers into the current multiple-values array starting at the (offs
 ;;;    (XXXXXXX)
     (irc-low-level-trace)
     multiple-values-array))
-	
-	
+
+
 (defun irc-struct-gep (struct idx &optional (label ""))
   (llvm-sys:create-struct-gep *irbuilder* struct idx label ))
 
@@ -1168,7 +1168,7 @@ Write T_O* pointers into the current multiple-values array starting at the (offs
                                                              :initial-element (null-t-ptr)))
                                      args)))
     real-args))
-         
+
 (defun irc-funcall (result closure args &optional (label ""))
   (let* ((entry-point         (irc-calculate-entry closure))   ; Calculate the function pointer
          (real-args           (irc-calculate-real-args args))  ; fill in NULL for missing register arguments
@@ -1273,7 +1273,7 @@ Write T_O* pointers into the current multiple-values array starting at the (offs
 
 (defun irc-intrinsic-invoke (function-name args &optional (landing-pad *current-unwind-landing-pad-dest*) (label ""))
   (irc-intrinsic-call-or-invoke function-name args label landing-pad))
-  
+
 (defun irc-intrinsic (function-name &rest args &aux (label ""))
   (let* ((last-arg (car (last args)))
 	 (real-args args))
@@ -1371,6 +1371,9 @@ Write T_O* pointers into the current multiple-values array starting at the (offs
           (setf func (declare-function-in-module module dispatch-name first-argument info)))
         #++(bformat t "     FUNCTION -> %s\n" func)
         (values func info)))))
+
+(defun get-function-or-error (module name &optional first-argument)
+  (get-or-declare-function-or-error module name first-argument))
 
 (defun irc-global-symbol (sym env)
   "Return an llvm GlobalValue for a symbol"
