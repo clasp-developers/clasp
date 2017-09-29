@@ -215,7 +215,7 @@ ABI's  */
   Immediate_info(uintptr_clasp_t k, const char* n) : _kind(k), _name(n) {};
   };
 
-  std::vector<Immediate_info> get_immediate_info();
+//  std::vector<Immediate_info> get_immediate_info();
 
   /* These values define the Stamp ranges for different kinds of
      objects.  There are the following kinds of objects:
@@ -229,12 +229,6 @@ ABI's  */
        If the ranges aren't sufficiently large (general or alien)
        then move the numbers around.
        We need at least 62 bits to represent general CLOS objects.  */
-  static const uintptr_clasp_t stamp_fixnum = 1;
-  static const uintptr_clasp_t stamp_single_float = 2;
-  static const uintptr_clasp_t stamp_character = 3;
-  static const uintptr_clasp_t stamp_cons = 4;
-  static const uintptr_clasp_t stamp_va_list_s = 5;
-  static const uintptr_clasp_t stamp_first_general  = 6;
   static const uintptr_clasp_t stamp_last_general   = 4095;
   static const uintptr_clasp_t stamp_first_alien    = 4096;
   static const uintptr_clasp_t stamp_last_alien     = 65535;

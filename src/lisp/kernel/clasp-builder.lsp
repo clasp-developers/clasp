@@ -413,12 +413,13 @@ Return files."
 
 (defun remove-files-for-boehmdc (system)
   "boehmdc doesn't do inlining and type inference properly - so we remove inline.lisp from the build system"
-  (let (keep)
-    (dolist (file system)
-      (if (string= "inline" (pathname-name file))
-          nil
-          (setq keep (cons file keep))))
-    (nreverse keep)))
+  #+(or)(let (keep)
+          (dolist (file system)
+            (if (string= "inline" (pathname-name file))
+                nil
+                (setq keep (cons file keep))))
+          (nreverse keep))
+  system)
 
 
 (defun link-cclasp (&key (output-file (build-common-lisp-bitcode-pathname)) (system (command-line-arguments-as-list)))

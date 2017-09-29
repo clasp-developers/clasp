@@ -530,7 +530,7 @@ void Lisp_O::startupLispEnvironment(Bundle *bundle) {
       abort();
     }
     stringstream sdebug;
-    gctools::get_immediate_info(); // discard result, just testing
+    //gctools::get_immediate_info(); // discard result, just testing
 #ifdef DEBUG_PROGRESS
     printf("%s:%d startupLispEnvironment\n", __FILE__, __LINE__ );
 #endif

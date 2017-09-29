@@ -414,6 +414,7 @@ and cannot be added to ~A." method other-gf gf)))
      do (switch-to-fastgf gf)))
 
 ;;;#+(or)
+#-boehmdc
 (eval-when (:execute :load-toplevel)
 ;;;(trace startup-fastgf satiate-standard-generic-functions satiate-generic-function)
   (startup-fastgf))

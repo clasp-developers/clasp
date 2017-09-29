@@ -347,7 +347,7 @@ namespace gctools {
 #ifdef USE_BOEHM
       Cons* cons;
       { RAII_DISABLE_INTERRUPTS();
-        monitor_allocation(stamp_cons,sizeof(Cons));
+        monitor_allocation(STAMP_CONS,sizeof(Cons));
         cons = reinterpret_cast<Cons*>(GC_MALLOC(sizeof(Cons)));
         new (cons) Cons(std::forward<ARGS>(args)...);
       }
@@ -355,7 +355,7 @@ namespace gctools {
       return smart_ptr<Cons>((Tagged)tag_cons(cons));
 #endif
 #ifdef USE_MPS
-        monitor_allocation(stamp_cons,sizeof(Cons));
+        monitor_allocation(STAMP_CONS,sizeof(Cons));
         mps_ap_t obj_ap = global_amc_cons_allocation_point;
         smart_ptr<Cons> obj =
           cons_mps_allocation<Cons>(obj_ap,"CONS",

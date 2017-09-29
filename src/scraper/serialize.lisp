@@ -36,7 +36,7 @@
 
 
 (defmethod print-object ((object standard-object) stream)
-  (format stream "{ ~s ~s}" (type-of object)
+  (format stream "{ ~s ~s}~%" (type-of object)
       (loop for i in (get-slots object)
          collect (cons i (slot-value object i)))))
 

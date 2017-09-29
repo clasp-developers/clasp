@@ -48,12 +48,47 @@ class ConstructorCreator_O;
 };
 
 
+//////////////////////////////////////////////////////////////////////
+//
+// Forward declarations
+//
+//
+namespace clbind {
+  namespace detail {
+    class class_map;
+  }
+}
+namespace core {
+  class KeywordArgument;
+  class RequiredArgument;
+  class SymbolClassPair;
+  class SymbolStorage;
+  class TranslationFunctor;
+  class DynamicBinding;
+  class AuxArgument;
+  class OptionalArgument;
+  class CacheRecord;
+  class ExceptionEntry;
+};
+namespace asttooling {
+  class DerivableSyntaxOnlyAction;
+  class DerivableASTFrontendAction;
+  class DerivableMatchCallback;
+  class DerivableFrontendActionFactory;
+};
+
 
 
 //#define GC_INTERFACE_FORWARD
 //#include <project_headers.h>
 //#undef GC_INTERFACE_FORWARD
-
+#if 1
+ #ifndef SCRAPING
+ #define DECLARE_FORWARDS
+ #include INIT_CLASSES_INC_H // REPLACED CLASP_GC_FILENAME // "main/clasp_gc.cc"
+ #undef DECLARE_FORWARDS
+#endif
+#else
 #ifdef USE_MPS
 #ifndef RUNNING_GC_BUILDER // when running the static analyzer - don't include the following
 #define DECLARE_FORWARDS
@@ -70,25 +105,16 @@ class ConstructorCreator_O;
 #undef DECLARE_FORWARDS
 #endif
 #endif
+#endif
 
 namespace gctools {
 
-#ifdef USE_MPS
-#ifndef RUNNING_GC_BUILDER // when running the static analyzer - don't include the following
+#ifndef SCRAPING
 #define GC_STAMP_SELECTORS
-#include CLASP_GC_FILENAME
-#undef GC_STAMP_SELECTORS
-#endif // ifndef RUNNING_GC_BUILDER
-#endif
-#ifdef USE_BOEHM
-#ifdef USE_CXX_DYNAMIC_CAST
-// Nothing
-#else
-#define GC_STAMP_SELECTORS
-#include CLASP_GC_FILENAME
+#include INIT_CLASSES_INC_H // REPLACED CLASP_GC_FILENAME
 #undef GC_STAMP_SELECTORS
 #endif
-#endif
+
 };
 
 #include <clasp/gctools/other_tagged_casts.h>
