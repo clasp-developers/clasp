@@ -78,10 +78,16 @@ namespace asttooling {
 };
 
 
+#ifdef BUILD_EXTENSION
+#define GC_INTERFACE_FORWARD
+#include <project_headers.h>
+#undef GC_INTERFACE_FORWARD
 
-//#define GC_INTERFACE_FORWARD
-//#include <project_headers.h>
-//#undef GC_INTERFACE_FORWARD
+#define GC_INTERFACE_GC_MANAGED_TYPES
+#include <project_headers.h>
+#undef GC_INTERFACE_GC_MANAGED_TYPES
+#endif
+
 #if 1
  #ifndef SCRAPING
  #define DECLARE_FORWARDS

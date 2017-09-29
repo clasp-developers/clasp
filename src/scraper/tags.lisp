@@ -186,7 +186,7 @@
                    #'(lambda (bufs)
                        (let ((plist (read (cscrape:buffer-stream bufs))))
                          (let ((key (maybe-unquote (getf plist :type))))
-                           (format *debug-io* "Creating gc-managed-type-tag: ~a~%" key)
+;;;                           (format *debug-io* "Creating gc-managed-type-tag: ~a~%" key)
                            (make-instance 'tags:gc-managed-type-tag
                                           :file% (getf plist :file)
                                           :line% (getf plist :line)
