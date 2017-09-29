@@ -164,9 +164,11 @@ typedef bool _Bool;
 //#include <clasp/asttooling/Diagnostics.h>
 //#include <clasp/asttooling/Marshallers.h>
 
-#define GC_INTERFACE_INCLUDE
-#include EXTENSION_HEADERS_INCLUDE
-#undef GC_INTERFACE_INCLUDE
+#ifdef BUILD_EXTENSION
+#define GC_INTERFACE_INCLUDES
+#include <project_headers.h>
+#undef GC_INTERFACE_INCLUDES
+#endif
 
 #define NAMESPACE_gctools
 #define NAMESPACE_core
