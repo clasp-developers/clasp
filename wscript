@@ -945,7 +945,7 @@ def build(bld):
         if (True):   # build cclasp executable
             lnk_cclasp_exec = link_executable(env=bld.env)
             cxx_all_bitcode_node = bld.path.find_or_declare(variant.cxx_all_bitcode_name())
-            lnk_cclasp_exec.set_inputs([cxx_all_bitcode_node,cclasp_common_lisp_bitcode])
+            lnk_cclasp_exec.set_inputs([cclasp_common_lisp_bitcode,cxx_all_bitcode_node])
             cclasp_executable = bld.path.find_or_declare(variant.executable_name(stage='c'))
             if ( bld.env['DEST_OS'] == DARWIN_OS ):
                 if (bld.env.LTO_FLAG):
