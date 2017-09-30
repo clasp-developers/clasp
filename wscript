@@ -1416,8 +1416,8 @@ def scrape_task_generator(self):
     print("intrinsics_bitcode_alone_node = %s" % intrinsics_bitcode_alone_node )
     self.create_task('build_bitcode',[intrinsics_cc]+output_nodes,intrinsics_bitcode_alone_node)
     self.create_task('link_bitcode',[intrinsics_o],intrinsics_bitcode_archive_node)
-    self.bld.install_files('${PREFIX}/lib/clasp/Contents/Resources/lib/fasl/', intrinsics_bitcode_archive_node)
-    self.bld.install_files('${PREFIX}/lib/clasp/Contents/Resources/lib/fasl/', intrinsics_bitcode_alone_node)
+    self.bld.install_files('${PREFIX}/lib/bitcode/', intrinsics_bitcode_archive_node)
+    self.bld.install_files('${PREFIX}/lib/bitcode/', intrinsics_bitcode_alone_node)
 # builtins
     builtins_bitcode_archive_node = self.path.find_or_declare(variant.inline_bitcode_archive_name("builtins"))
     builtins_bitcode_alone_node = self.path.find_or_declare(variant.inline_bitcode_name("builtins"))
@@ -1426,8 +1426,8 @@ def scrape_task_generator(self):
     print("builtins_bitcode_alone_node = %s" % builtins_bitcode_alone_node )
     self.create_task('build_bitcode',[builtins_cc]+output_nodes,builtins_bitcode_alone_node)
     self.create_task('link_bitcode',[builtins_o],builtins_bitcode_archive_node)
-    self.bld.install_files('${PREFIX}/lib/clasp/Resources/lib/fasl/', builtins_bitcode_archive_node)
-    self.bld.install_files('${PREFIX}/lib/clasp/Resources/lib/fasl/', builtins_bitcode_alone_node)
+    self.bld.install_files('${PREFIX}/lib/bitcode/', builtins_bitcode_archive_node)
+    self.bld.install_files('${PREFIX}/lib/bitcode/', builtins_bitcode_alone_node)
 # fastgf
     fastgf_bitcode_archive_node = self.path.find_or_declare(variant.inline_bitcode_archive_name("fastgf"))
     fastgf_bitcode_alone_node = self.path.find_or_declare(variant.inline_bitcode_name("fastgf"))
@@ -1436,12 +1436,12 @@ def scrape_task_generator(self):
     print("fastgf_bitcode_alone_node = %s" % fastgf_bitcode_alone_node )
     self.create_task('build_bitcode',[fastgf_cc]+output_nodes,fastgf_bitcode_alone_node)
     self.create_task('link_bitcode',[fastgf_o],fastgf_bitcode_archive_node)
-    self.bld.install_files('${PREFIX}/lib/clasp/Resources/lib/fasl/', fastgf_bitcode_archive_node)
-    self.bld.install_files('${PREFIX}/lib/clasp/Resources/lib/fasl/', fastgf_bitcode_alone_node)
+    self.bld.install_files('${PREFIX}/lib/bitcode/', fastgf_bitcode_archive_node)
+    self.bld.install_files('${PREFIX}/lib/bitcode/', fastgf_bitcode_alone_node)
 #
     cxx_all_bitcode_node = self.path.find_or_declare(variant.cxx_all_bitcode_name())
     self.create_task('link_bitcode',all_o_files,cxx_all_bitcode_node)
-    self.bld.install_files('${PREFIX}/lib/clasp/Resources/lib/fasl/', cxx_all_bitcode_node)
+    self.bld.install_files('${PREFIX}/lib/bitcode/', cxx_all_bitcode_node)
 
 def init(ctx):
     from waflib.Build import BuildContext, CleanContext, InstallContext, UninstallContext
