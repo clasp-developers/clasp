@@ -88,29 +88,10 @@ namespace asttooling {
 #undef GC_INTERFACE_GC_MANAGED_TYPES
 #endif
 
-#if 1
- #ifndef SCRAPING
- #define DECLARE_FORWARDS
- #include INIT_CLASSES_INC_H // REPLACED CLASP_GC_FILENAME // "main/clasp_gc.cc"
- #undef DECLARE_FORWARDS
-#endif
-#else
-#ifdef USE_MPS
-#ifndef RUNNING_GC_BUILDER // when running the static analyzer - don't include the following
-#define DECLARE_FORWARDS
-#include CLASP_GC_FILENAME
-#undef DECLARE_FORWARDS
-#endif // ifndef RUNNING_GC_BUILDER
-#endif
-#ifdef USE_BOEHM
-#ifdef USE_CXX_DYNAMIC_CAST
-// nothing
-#else
-#define DECLARE_FORWARDS
-#include CLASP_GC_FILENAME
-#undef DECLARE_FORWARDS
-#endif
-#endif
+#ifndef SCRAPING
+  #define DECLARE_FORWARDS
+  #include INIT_CLASSES_INC_H // REPLACED CLASP_GC_FILENAME // "main/clasp_gc.cc"
+  #undef DECLARE_FORWARDS
 #endif
 
 namespace gctools {
