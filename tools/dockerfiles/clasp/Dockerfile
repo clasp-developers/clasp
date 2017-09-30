@@ -4,7 +4,7 @@ MAINTAINER Christian Schafmeister <meister@temple.edu>
 # add LLVM repo
 RUN apt-get update && apt-get -y upgrade && apt-get install -y wget curl
 RUN curl http://apt.llvm.org/llvm-snapshot.gpg.key | apt-key add -
-RUN echo 'deb http://apt.llvm.org/yakkety/ llvm-toolchain-yakkety-5.0 main'\
+RUN echo 'deb http://apt.llvm.org/xenial/ llvm-toolchain-xenial-5.0 main'\
   >/etc/apt/sources.list.d/llvm4.list
 
 # Copied from the original dependencies
