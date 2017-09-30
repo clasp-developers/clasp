@@ -526,6 +526,8 @@ CL_DEFUN core::T_mv cl__room(core::T_sp x, core::Fixnum_sp marker, core::T_sp tm
   invalidHeaderTotalSize = 0;
 #ifdef BOEHM_GC_ENUMERATE_REACHABLE_OBJECTS_INNER_AVAILABLE
   GC_enumerate_reachable_objects_inner(boehm_callback_reachable_object, NULL);
+  #else
+  printf("%s:%d The boehm function GC_enumerate_reachable_objects_inner is not available\n", __FILE__, __LINE__ );
 #endif
   printf("Walked LispKinds\n");
   size_t totalSize(0);
