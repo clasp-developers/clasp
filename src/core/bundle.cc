@@ -325,12 +325,11 @@ void Bundle::findContentSubDirectories(boost_filesystem::path contentDir, bool v
         string leaf = dirs->path().filename().string();
         int dirsSize = dirs->path().string().size();
         std::transform(leaf.begin(), leaf.end(), leaf.begin(), ::tolower);
-        if (leaf == "resources" && (this->_Directories->_ResourcesDir.empty())) {
+        if (leaf == "lib" && (this->_Directories->_LibDir.empty())) {
           this->_Directories->_ResourcesDir = dirs->path();
           if (verbose) {
             printf("%s:%d Setting up _ResourcesDir = %s\n", __FILE__, __LINE__, this->_Directories->_ResourcesDir.string().c_str());
           }
-        } else if (leaf == "lib" && (this->_Directories->_LibDir.empty())) {
           this->_Directories->_LibDir = dirs->path() / "fasl";
           if (verbose) {
             printf("%s:%d Setting up _LibDir = %s\n", __FILE__, __LINE__, this->_Directories->_LibDir.string().c_str());
@@ -387,7 +386,7 @@ void Bundle::fillInMissingPaths(bool verbose) {
     }
   }
   if ( this->_Directories->_ResourcesDir.empty() ) {
-    this->_Directories->_ResourcesDir = this->_Directories->_ContentsDir / "Resources";
+    this->_Directories->_ResourcesDir = this->_Directories->_ContentsDir / "lib";
     bool created = bf::create_directory(this->_Directories->_ResourcesDir);
     if (verbose) {
       printf("%s:%d  Created _ResourcesDir = %s\n",  __FILE__, __LINE__, this->_Directories->_ResourcesDir.string().c_str() );
@@ -432,7 +431,7 @@ Pathname_sp Bundle::getAppContentsResourcesPathname() {
   ASSERT(!this->_Directories->_ContentsDir.empty());
   ss << this->_Directories->_ContentsDir.string();
   ss << DIR_SEPARATOR;
-  ss << "Resources";
+  ss << "lib";
   ss << DIR_SEPARATOR;
   ss << "**/*.*";
   return cl__pathname(SimpleBaseString_O::make(ss.str()));
