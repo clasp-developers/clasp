@@ -1015,7 +1015,10 @@ class link_executable(Task.Task):
     def run(self):
         if (self.env.LTO_FLAG):
             lto_option_list = [self.env.LTO_FLAG,"-O2"]
-            lto_object_path_lto = ["-Wl,-object_path_lto,%s"% self.outputs[1].abspath()]
+            if (self.env['DEST_OS'] == DARWIN_OS ):
+                lto_object_path_lto = ["-Wl,-object_path_lto,%s"% self.outputs[1].abspath()]
+            else:
+                lto_object_path_lto = []
         else:
             lto_option_list = []
             lto_object_path_lto = []
