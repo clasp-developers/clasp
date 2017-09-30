@@ -385,7 +385,7 @@ Convert colons to underscores"
         (format sout "#endif // GC_STAMP_SELECTORS~%")
         (format sout "#ifdef GC_DYNAMIC_CAST~%")
         (dolist (c sorted-classes)
-          (format sout "template <typename FP> struct Cast<~a,FP> {~%" (class-key% c))
+          (format sout "template <typename FP> struct Cast<~a*,FP> {~%" (class-key% c))
           (format sout "  inline static bool isA(FP client) {~%")
           (format sout "    gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));~%")
           (format sout "    size_t kindVal = header->stamp();~%")
