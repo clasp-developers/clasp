@@ -942,7 +942,7 @@ def build(bld):
         if (os.path.islink(clasp_symlink_node.abspath())):
             os.unlink(clasp_symlink_node.abspath())
     if (stage == 'rebuild' or stage_val >= 4):
-        if (False):   # build cclasp executable
+        if (True):   # build cclasp executable
             lnk_cclasp_exec = link_executable(env=bld.env)
             cxx_all_bitcode_node = bld.path.find_or_declare(variant.cxx_all_bitcode_name())
             lnk_cclasp_exec.set_inputs([cxx_all_bitcode_node,cclasp_common_lisp_bitcode])
