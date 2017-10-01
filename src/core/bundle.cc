@@ -201,7 +201,7 @@ Bundle::Bundle(const string &raw_argv0, const string &appDirName) {
     printf("%s:%d   Set _LibDir = %s\n", __FILE__, __LINE__, this->_Directories->_LibDir.string().c_str());
   }
 
-  this->_Directories->_SourceDir = this->_Directories->_ContentsDir / "src";
+  this->_Directories->_SourceDir = this->_Directories->_ContentsDir;
   if (verbose) printf("%s:%d Setting up _SourceDir = %s\n", __FILE__, __LINE__, this->_Directories->_SourceDir.string().c_str());
   this->_Directories->_IncludeDir = this->_Directories->_ContentsDir / "include";
   if (verbose) printf("%s:%d Setting up _IncludeDir = %s\n", __FILE__, __LINE__, this->_Directories->_IncludeDir.string().c_str());
