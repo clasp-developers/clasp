@@ -21,21 +21,15 @@
 
 ;;; FIXME: it would be nicer if this was just an inline definition
 ;;; referring to core:eql or something.
-#+(or)
 (progn
-  (deftype eq-incomparable () '(and number (not fixnum)))
-  
-  (define-compiler-macro eql (x y)
-    (let ((sx (gensym "EQL-X"))
-          (sy (gensym "EQL-Y")))
-      `(let ((,sx ,x) (,sy ,y))
-         (cond ((eq ,sx ,sy) t)
-               ((cleavir-primop:typeq ,sx eq-incomparable)
-                (if (cleavir-primop:typeq ,sy eq-incomparable)
-                    (locally (declare (notinline eql)) ; avoid recursive c-m expansion
-                      (eql ,sx ,sy))
-                    nil))
-               (t nil))))))
+  (deftype eq-incomparable () '(and number (not fixnum) (not single-float)))
+  (defun eql (x y)
+    (cond ((eq x y) t)
+          ((cleavir-primop:typeq x eq-incomparable)
+           (if (cleavir-primop:typeq y eq-incomparable)
+               (core:eql-underlying x y)
+               nil))
+          (t nil))))
 
 #+(or)
 (progn

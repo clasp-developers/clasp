@@ -328,6 +328,39 @@
 (defmethod cleavir-ast:children ((ast precalc-value-reference-ast))
   nil)
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Class BIND-VA-LIST-AST
+;;;
+;;; Bind variables according to an ordinary lambda list based on a va_list.
+;;; A lot like a function-ast, but not actually one because it just binds.
+
+(defclass bind-va-list-ast (cleavir-ast:ast)
+  ((%lambda-list :initarg :lambda-list :reader lambda-list)
+   (%va-list-ast :initarg :va-list :reader va-list-ast)
+   (%body-ast :initarg :body-ast :reader body-ast)))
+
+(defun make-bind-va-list-ast (lambda-list va-list-ast body-ast &key origin (policy cleavir-ast:*policy*))
+  (make-instance 'bind-va-list-ast
+    :origin origin :policy policy
+    :va-list va-list-ast :body-ast body-ast :lambda-list lambda-list))
+
+(cleavir-io:define-save-info bind-va-list-ast
+    (:lambda-list lambda-list)
+  (:va-list va-list-ast)
+  (:body-ast body-ast))
+
+(defmethod children ((ast bind-va-list-ast))
+  (list* (va-list-ast ast)
+         (body-ast ast)
+         (loop for entry in (lambda-list ast)
+               append (cond ((symbolp entry) '())
+                            ((consp entry)
+                             (if (= (length entry) 2)
+                                 entry
+                                 (cdr entry)))
+                            (t (list entry))))))
+
 
 (defun escaped-string (str)
   (with-output-to-string (s) (loop for c across str do (when (member c '(#\\ #\")) (princ #\\ s)) (princ c s))))

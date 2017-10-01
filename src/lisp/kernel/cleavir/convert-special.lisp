@@ -297,6 +297,48 @@
   `(core:progv-function ,symbols ,values (lambda () (progn ,@forms))))
 
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Converting CORE::BIND-VA-LIST
+;;;
+
+(defmethod cleavir-generate-ast:convert-special
+    ((symbol (eql 'core::bind-va-list)) form environment (system clasp-cleavir:clasp))
+  (cleavir-generate-ast:db origin (op lambda-list va-list-form . body) form
+    (declare (ignore op))
+    (let* ((parsed-lambda-list
+             (cleavir-code-utilities:parse-ordinary-lambda-list lambda-list))
+           (required (cleavir-code-utilities:required parsed-lambda-list)))
+      (multiple-value-bind (declarations documentation forms)
+          (cleavir-code-utilities:separate-function-body body)
+        (declare (ignore documentation))
+        (let ((canonicalized-dspecs
+                (cleavir-code-utilities:canonicalize-declaration-specifiers
+                 (reduce #'append (mapcar #'cdr declarations))
+                 (cleavir-env:declarations env))))
+          (multiple-value-bind (idspecs rdspecs)
+              (cleavir-generate-ast::itemize-declaration-specifiers
+               (cleavir-generate-ast::itemize-lambda-list parsed-lambda-list)
+               canonicalized-dspecs)
+            (multiple-value-bind (ast lexical-lambda-list)
+                (cleavir-generate-ast::process-required
+                 required
+                 parsed-lambda-list
+                 idspecs
+                 (cleavir-generate-ast::make-body rdspecs forms block-name block-name-p)
+                 env
+                 system)
+              (cc-ast:make-bind-va-list-ast
+               (cleavir-generate-ast::convert va-list-form environment system)
+               ast lexical-lambda-list))))))))
+
+(defmethod cleavir-generate-ast:check-special-form-syntax
+    ((head (eql 'core::bind-va-list)) form)
+  (cleavir-code-utilities:check-form-proper-list form)
+  (cleavir-code-utilities:check-argcount form 2 nil)
+  (assert (cleavir-code-utilities:proper-list-p (second form))))
+
+
 (defmethod cleavir-generate-ast:convert-global-function (info global-env (system clasp-cleavir:clasp))
   (declare (ignore global-env))
   (let ((name (cleavir-env:name info)))

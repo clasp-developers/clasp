@@ -125,36 +125,13 @@ Bundle::Bundle(const string &raw_argv0, const string &appDirName) {
 
   // Check if there is a 'src' directory in _ExecutableDir - if so we are building
   bf::path srcPath = this->_Directories->_ExecutableDir / "src";
+  bool foundContents = false;
   if (bf::exists(srcPath)) {
     if (verbose) {
-      printf("%s:%d   Found src path = %s\n", __FILE__, __LINE__, srcPath.string().c_str());
+      printf("%s:%d   In development environment - found src path = %s\n", __FILE__, __LINE__, srcPath.string().c_str());
     }
-    this->_Directories->_LibDir = this->_Directories->_ExecutableDir / "fasl";
-    if (verbose) {
-      printf("%s:%d   Set _LibDir = %s\n", __FILE__, __LINE__, this->_Directories->_LibDir.string().c_str());
-    }
-#ifdef DEBUG_DESC_BUNDLE
-    printf("%s:%d Looking for Content subdirectories for building\n", __FILE__, __LINE__ );
-#endif
-    bf::path contents = this->_Directories->_ExecutableDir / "lib" / "clasp";
-    this->_Directories->_ContentsDir = contents;
-    this->_Directories->_FaslDir = this->_Directories->_ExecutableDir / "fasl";
-    this->_Directories->_BitcodeDir = this->_Directories->_ExecutableDir / "fasl";
-    if (verbose) {
-      printf("%s:%d   Set _ContentsDir = %s\n", __FILE__, __LINE__, this->_Directories->_ContentsDir.string().c_str());
-    }
-    this->findContentSubDirectories(this->_Directories->_ContentsDir,verbose);
-    this->fillInMissingPaths(verbose);
-    // While building generated is within the executable directory
-    this->_Directories->_GeneratedDir = this->_Directories->_ExecutableDir / "generated";
-    if (verbose) {
-      printf("%s:%d   Set _GeneratedDir = %s\n", __FILE__, __LINE__, this->_Directories->_GeneratedDir.string().c_str());
-    }
-    this->_Directories->_SourceDir = srcPath.parent_path().parent_path().parent_path();
-    boost_filesystem::path lispdir = this->_Directories->_SourceDir / "src" / "lisp";
-    this->_Directories->_LispSourceDir = boost_filesystem::path(lispdir);
-    boost_filesystem::path includedir = this->_Directories->_SourceDir / "include";
-    this->_Directories->_IncludeDir = boost_filesystem::path(includedir);
+    this->_Directories->_ContentsDir = this->_Directories->_ExecutableDir.parent_path().parent_path();
+    foundContents = true;
   } else {
     if (verbose) {
       printf("%s:%d   Did not find src dir\n", __FILE__, __LINE__ );
@@ -165,7 +142,6 @@ Bundle::Bundle(const string &raw_argv0, const string &appDirName) {
 //  this->_Directories->_RootDir = appDir;
     bf::path one_up_contents = this->_Directories->_ExecutableDir.parent_path();
     one_up_contents = one_up_contents / "lib" / "clasp";
-    bool foundContents = false;
     if (bf::exists(one_up_contents)) {
       this->_Directories->_ContentsDir = one_up_contents;
       if (verbose) {
@@ -202,23 +178,41 @@ Bundle::Bundle(const string &raw_argv0, const string &appDirName) {
             }
           }
         }
-        if (!foundContents) {
-          printf("%s:%d   Could not find clasp Contents directory - set CLASP_HOME or install it in one of the approved paths: \n", __FILE__, __LINE__ );
-          for ( size_t i=0; i<sizeof(paths)/sizeof(paths[0]); ++i ) {
-            printf("    %s\n", paths[i]);
-          }
-          printf("Aborting\n");
-          abort();
-        }
       }
     }
-    if (foundContents) {
-      this->_Directories->_FaslDir = this->_Directories->_ContentsDir / "fasl";
-      this->_Directories->_BitcodeDir = this->_Directories->_ContentsDir / "bitcode";
-      this->findContentSubDirectories(this->_Directories->_ContentsDir,verbose);
-      this->fillInMissingPaths(verbose);
-    }
   }
+  if (foundContents) {
+    if (verbose) {
+      printf("%s:%d   Set _ContentsDir = %s\n", __FILE__, __LINE__, this->_Directories->_ContentsDir.string().c_str());
+    }
+  } else {
+    printf("%s:%d The ContentsDir could not be found\n", __FILE__, __LINE__ );
+    abort();
+  }
+#ifdef USE_BOEHM
+  std::string target = "boehm";
+#elif USE_MPS
+  std::string target = "mps";
+#else
+#error "There must be a target - only boehm and mps are supported"
+#endif
+  this->_Directories->_LibDir = this->_Directories->_ContentsDir / "build" / target / "fasl";
+  if (verbose) {
+    printf("%s:%d   Set _LibDir = %s\n", __FILE__, __LINE__, this->_Directories->_LibDir.string().c_str());
+  }
+
+  this->_Directories->_SourceDir = this->_Directories->_ContentsDir;
+  if (verbose) printf("%s:%d Setting up _SourceDir = %s\n", __FILE__, __LINE__, this->_Directories->_SourceDir.string().c_str());
+  this->_Directories->_IncludeDir = this->_Directories->_ContentsDir / "include";
+  if (verbose) printf("%s:%d Setting up _IncludeDir = %s\n", __FILE__, __LINE__, this->_Directories->_IncludeDir.string().c_str());
+  this->_Directories->_LispSourceDir = this->_Directories->_ContentsDir / "src" / "lisp";
+  if (verbose) printf("%s:%d Setting up _LispSourceDir = %s\n", __FILE__, __LINE__, this->_Directories->_LispSourceDir.string().c_str());
+  this->_Directories->_GeneratedDir = this->_Directories->_ContentsDir / "build" / target / "generated";
+  if (verbose) {printf("%s:%d Setting up _GeneratedDir = %s\n", __FILE__, __LINE__, this->_Directories->_GeneratedDir.string().c_str());}
+  this->_Directories->_FaslDir = this->_Directories->_LibDir;
+  if (verbose) {printf("%s:%d Setting up _FaslDir = %s\n", __FILE__, __LINE__, this->_Directories->_FaslDir.string().c_str());}
+  this->_Directories->_BitcodeDir = this->_Directories->_LibDir;
+  if (verbose) {printf("%s:%d Setting up _BitcodeDir = %s\n", __FILE__, __LINE__, this->_Directories->_BitcodeDir.string().c_str());}
   if (verbose) {
     printf("%s:%d  Final bundle setup:\n", __FILE__, __LINE__ );
     printf("%s\n", this->describe().c_str());
@@ -304,95 +298,6 @@ boost_filesystem::path Bundle::findAppDir( const string &argv0, const string &cw
   THROW_HARD_ERROR(BF("Could not determine absolute path to executable: %s") % argv0 );
 }
 
-void Bundle::findContentSubDirectories(boost_filesystem::path contentDir, bool verbose) {
-  if ( !bf::exists(contentDir) ) {
-    bf::create_directories(contentDir);
-    if (verbose) {
-      printf("%s:%d Setting up contentDir = %s\n", __FILE__, __LINE__, contentDir.string().c_str());
-    }
-  }
-  string appDirName;
-#ifdef _TARGET_OS_DARWIN
-  appDirName = "macos";
-#else
-  appDirName = "bin";
-#endif
-  ASSERTF(appDirName != "", BF("Could not figure out what OS this is running on in Bundle::findSubDirectories"));
-  {
-    bf::recursive_directory_iterator dirs(contentDir);
-    while (dirs != bf::recursive_directory_iterator()) {
-      if (is_directory(dirs->path())) {
-        string leaf = dirs->path().filename().string();
-        int dirsSize = dirs->path().string().size();
-        std::transform(leaf.begin(), leaf.end(), leaf.begin(), ::tolower);
-        if (leaf == "lib" && (this->_Directories->_LibDir.empty())) {
-          this->_Directories->_ResourcesDir = dirs->path();
-          if (verbose) {
-            printf("%s:%d Setting up _ResourcesDir = %s\n", __FILE__, __LINE__, this->_Directories->_ResourcesDir.string().c_str());
-          }
-          this->_Directories->_LibDir = dirs->path() / "fasl";
-          if (verbose) {
-            printf("%s:%d Setting up _LibDir = %s\n", __FILE__, __LINE__, this->_Directories->_LibDir.string().c_str());
-          }
-        } else if (leaf == "source-code" && (this->_Directories->_SourceDir.empty())) {
-          this->_Directories->_SourceDir = dirs->path();
-          if (verbose) {
-            printf("%s:%d Setting up _SourceDir = %s\n", __FILE__, __LINE__, this->_Directories->_SourceDir.string().c_str());
-          }
-        } else if (leaf == "include" && (this->_Directories->_IncludeDir.empty())) {
-          this->_Directories->_IncludeDir = dirs->path();
-          if (verbose) {
-            printf("%s:%d Setting up _IncludeDir = %s\n", __FILE__, __LINE__, this->_Directories->_IncludeDir.string().c_str());
-          }
-        } else if (leaf == "lisp" && (this->_Directories->_LispSourceDir.empty())) {
-          this->_Directories->_LispSourceDir = dirs->path();
-          if (verbose) {
-            printf("%s:%d Setting up _LispSourceDir = %s\n", __FILE__, __LINE__, this->_Directories->_LispSourceDir.string().c_str());
-          }
-        } else if (leaf == "generated" && (this->_Directories->_GeneratedDir.empty() )) {
-          this->_Directories->_GeneratedDir = dirs->path();
-          if (verbose) {
-            printf("%s:%d Setting up _GeneratedDir = %s\n", __FILE__, __LINE__, this->_Directories->_GeneratedDir.string().c_str());
-          }
-        }
-      }
-      dirs++;
-    }
-  }
-  char *homedir = getenv("CLASP_HOME");
-  if (homedir != NULL) {
-    if ( !this->_Directories->_SourceDir.empty() ) {
-      printf("%s:%d CLASP_HOME will override the default SOURCE-DIR: (was %s) will now be set to %s\n", __FILE__, __LINE__, this->_Directories->_SourceDir.c_str(), homedir);
-    }
-    this->_Directories->_SourceDir = boost_filesystem::path(homedir);
-    boost_filesystem::path lispdir = this->_Directories->_SourceDir / "src" / "lisp";
-    this->_Directories->_LispSourceDir = boost_filesystem::path(lispdir);
-    boost_filesystem::path includedir = this->_Directories->_SourceDir / "include";
-    this->_Directories->_IncludeDir = boost_filesystem::path(includedir);
-    if (verbose) {
-      printf("%s:%d  Using CLASP_HOME to set _SourceDir = %s\n", __FILE__, __LINE__, this->_Directories->_SourceDir.string().c_str());
-      printf("        and to set _LispSourceDir = %s\n",this->_Directories->_LispSourceDir.string().c_str());
-      printf("        and to set _IncludeDir = %s\n", this->_Directories->_IncludeDir.string().c_str());
-    }
-  }
-}
-
-
-void Bundle::fillInMissingPaths(bool verbose) {
-  if ( !bf::exists(this->_Directories->_ContentsDir) ) {
-    bool created = bf::create_directory(this->_Directories->_ContentsDir);
-    if (verbose) {
-      printf("%s:%d  Created _ContentsDir = %s\n",  __FILE__, __LINE__, this->_Directories->_ContentsDir.string().c_str() );
-    }
-  }
-  if ( this->_Directories->_ResourcesDir.empty() ) {
-    this->_Directories->_ResourcesDir = this->_Directories->_ContentsDir / "lib";
-    bool created = bf::create_directory(this->_Directories->_ResourcesDir);
-    if (verbose) {
-      printf("%s:%d  Created _ResourcesDir = %s\n",  __FILE__, __LINE__, this->_Directories->_ResourcesDir.string().c_str() );
-    }
-  }
-}
 
 
 string Bundle::describe() {
@@ -405,6 +310,8 @@ string Bundle::describe() {
   ss << "Source dir:      " << this->_Directories->_SourceDir.string() << std::endl;
   ss << "Generated dir:   " << this->_Directories->_GeneratedDir.string() << std::endl;
   ss << "Include dir:     " << this->_Directories->_IncludeDir.string() << std::endl;
+  ss << "Fasl dir:        " << this->_Directories->_FaslDir.string() << std::endl;
+  ss << "Bitcode dir:     " << this->_Directories->_BitcodeDir.string() << std::endl;
   ss << "Databases dir:   " << this->_Directories->_DatabasesDir.string() << std::endl;
   return ss.str();
 }

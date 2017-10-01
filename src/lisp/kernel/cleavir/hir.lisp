@@ -202,6 +202,33 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
+;;; Instruction BIND-VA-LIST-INSTRUCTION
+;;;
+;;; Sort of like destructuring-bind, but with a va-list
+;;; instead of a list (thus why it's a special operator),
+;;; and only allowing ordinary lambda lists.
+
+(defclass bind-va-list-instruction (cleavir-ir:instruction cleavir-ir:one-successor-mixin)
+  ((%lambda-list :initarg :lambda-list :accessor lambda-list)))
+
+(defmethod cleavir-ir-graphviz:label ((instr bind-va-list-instruction))
+  )
+
+(defun make-bind-va-list-instruction (lambda-list va-list &optional (successor nil successor-p))
+  (make-instance 'bind-va-list-instruction
+    :inputs (list va-list)
+    ;; copied from cleavir-ir:make-enter-instruction
+    :outputs (loop for item in lambda-list
+                   append (cond ((member item lambda-list-keywords) nil)
+                                ((consp item)
+                                 (if (= (length item) 3)
+                                     (rest item)
+                                     item))
+                                (t (list item))))
+    :successors (if successor-p (list successor) nil)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
 ;;; Instruction NAMED-ENTER-INSTRUCTION
 ;;;
 ;;; This instruction is an ENTER-INSTRUCTION that keeps

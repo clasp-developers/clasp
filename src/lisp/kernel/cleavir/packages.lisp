@@ -72,6 +72,13 @@
    #:result-ast
    #:tag-ast
    #:datum-id
+   #:vector-length-ast #:vl-ast-vector
+   #:displacement-ast #:displacement-ast-mdarray
+   #:displaced-index-offset-ast #:displaced-index-offset-ast-mdarray
+   #:array-total-size-ast #:array-total-size-ast-mdarray
+   #:array-rank-ast #:array-rank-ast-mdarray
+   #:array-dimension-ast #:array-dimension-ast-mdarray #:array-dimension-ast-axis
+   #:bind-va-list-ast #:make-bind-va-list-ast #:va-list-ast
    ))
 
 (defpackage #:clasp-cleavir-hir
@@ -110,6 +117,13 @@
    #:make-push-special-binding-instruction
    #:pop-special-binding-instruction
    #:make-pop-special-binding-instruction
+   #:make-vector-length-instruction
+   #:make-displacement-instruction
+   #:make-displaced-index-offset-instruction
+   #:make-array-total-size-instruction
+   #:make-array-rank-instruction
+   #:make-array-dimension-instruction
+   #:bind-va-list-instruction #:make-bind-va-list-instruction
    ))
 
 (defpackage #:clasp-cleavir-ast-to-hir
