@@ -521,7 +521,7 @@
                                     (let* ((to-object-name (to-translator-name arg-type-kw))
                                            (trans-arg-name (format nil "translated-~a" arg-name))
                                            ;; Create the function declaration on the fly
-                                           (to-object-func (cmp::get-function-or-error cmp::*the-module* to-object-name)))
+                                           (to-object-func (cmp::get-or-declare-function-or-error cmp::*the-module* to-object-name)))
                                       (cmp::irc-call-or-invoke
                                        to-object-func
                                        (list c-arg)
@@ -535,7 +535,7 @@
                    (function-object (if core:*use-cleavir-compiler*
                                         (funcall (find-symbol "COMPILE-LAMBDA-FORM-TO-LLVM-FUNCTION" :clasp-cleavir) body-form)
                                         (cmp:compile-lambda-function body-form)))
-                   (invoke-fn (cmp::get-function-or-error cmp::*the-module* "cc_call_callback"))
+                   (invoke-fn (cmp::get-or-declare-function-or-error cmp::*the-module* "cc_call_callback"))
                    (fptr (cmp:irc-bit-cast function-object cmp:%t*% "fptr-t*"))
                    (cl-result (cmp::irc-call-or-invoke
                                invoke-fn
@@ -549,7 +549,7 @@
                   (llvm-sys:create-ret-void cmp::*irbuilder*)
                   ;; Return the result
                   (let* ((from-object-name (from-translator-name return-type-kw))
-                         (from-object-func (cmp::get-function-or-error cmp::*the-module* from-object-name))
+                         (from-object-func (cmp::get-or-declare-function-or-error cmp::*the-module* from-object-name))
                          (c-result (cmp::irc-call-or-invoke 
                                     from-object-func
                                     (list (llvm-sys:create-extract-value cmp::*irbuilder* cl-result (list 0) "val0"))

@@ -807,10 +807,10 @@ def build(bld):
     bld.recurse('extensions')
     bld.recurse('src/main')
     source_files = bld.clasp_source_files + bld.extensions_source_files
-    bld.install_files('${PREFIX}/lib/clasp/Resources/source-code/', source_files, relative_trick = True, cwd = bld.path)
+    bld.install_files('${PREFIX}/lib/clasp/source-code/', source_files, relative_trick = True, cwd = bld.path)
     print("bld.path = %s"%bld.path)
     clasp_headers = bld.path.ant_glob("include/clasp/**/*.h")
-    bld.install_files('${PREFIX}/lib/clasp/Resources/source-code/', clasp_headers, relative_trick = True, cwd = bld.path)
+    bld.install_files('${PREFIX}/lib/clasp/source-code/', clasp_headers, relative_trick = True, cwd = bld.path)
     variant = eval(bld.variant+"()")
     bld.env = bld.all_envs[bld.variant]
     bld.variant_obj = variant
@@ -927,14 +927,14 @@ def build(bld):
         cmp_serve_event.set_inputs([iclasp_executable,cclasp_fasl] + fix_lisp_paths(bld.path,out,variant,["src/lisp/modules/serve-event/serve-event"]))
         cmp_serve_event.set_outputs(serve_event_fasl)
         bld.add_to_group(cmp_serve_event)
-        bld.install_as('${PREFIX}/lib/clasp/Resources/lib/%s/src/lisp/modules/serve-event/serve-event.fasl' % variant.fasl_dir(stage = "c"), serve_event_fasl)
+        bld.install_as('${PREFIX}/lib/clasp/lib/%s/src/lisp/modules/serve-event/serve-event.fasl' % variant.fasl_dir(stage = "c"), serve_event_fasl)
         # Build ASDF
         asdf_fasl = bld.path.find_or_declare("%s/src/lisp/modules/asdf/asdf.fasl" % variant.fasl_dir(stage='c'))
         cmp_asdf = compile_module(env=bld.env)
         cmp_asdf.set_inputs([iclasp_executable,cclasp_fasl] + fix_lisp_paths(bld.path,out,variant,["src/lisp/modules/asdf/build/asdf"]))
         cmp_asdf.set_outputs(asdf_fasl)
         bld.add_to_group(cmp_asdf)
-        bld.install_as('${PREFIX}/lib/clasp/Resources/lib/%s/src/lisp/modules/asdf/asdf.fasl' % variant.fasl_dir(stage = "c"), asdf_fasl)
+        bld.install_as('${PREFIX}/lib/clasp/lib/%s/src/lisp/modules/asdf/asdf.fasl' % variant.fasl_dir(stage = "c"), asdf_fasl)
         build_node = bld.path.find_dir(out)
         print("build_node = %s" % build_node)
         clasp_symlink_node = build_node.make_node("clasp")
@@ -1406,7 +1406,7 @@ def scrape_task_generator(self):
     for x in generated_headers:
         output_nodes.append(self.path.find_or_declare(x))
     self.create_task('generated_headers', all_sif_files, output_nodes)
-    self.bld.install_files('${PREFIX}/lib/clasp/Resources/source-code/include/', output_nodes)
+    self.bld.install_files('${PREFIX}/lib/clasp/source-code/include/', output_nodes)
     variant = self.bld.variant_obj
 # intrinsics    
     intrinsics_bitcode_archive_node = self.path.find_or_declare(variant.inline_bitcode_archive_name("intrinsics"))
@@ -1416,8 +1416,8 @@ def scrape_task_generator(self):
     print("intrinsics_bitcode_alone_node = %s" % intrinsics_bitcode_alone_node )
     self.create_task('build_bitcode',[intrinsics_cc]+output_nodes,intrinsics_bitcode_alone_node)
     self.create_task('link_bitcode',[intrinsics_o],intrinsics_bitcode_archive_node)
-    self.bld.install_files('${PREFIX}/lib/bitcode/', intrinsics_bitcode_archive_node)
-    self.bld.install_files('${PREFIX}/lib/bitcode/', intrinsics_bitcode_alone_node)
+    self.bld.install_files('${PREFIX}/lib/clasp/bitcode/', intrinsics_bitcode_archive_node)
+    self.bld.install_files('${PREFIX}/lib/clasp/bitcode/', intrinsics_bitcode_alone_node)
 # builtins
     builtins_bitcode_archive_node = self.path.find_or_declare(variant.inline_bitcode_archive_name("builtins"))
     builtins_bitcode_alone_node = self.path.find_or_declare(variant.inline_bitcode_name("builtins"))
@@ -1426,8 +1426,8 @@ def scrape_task_generator(self):
     print("builtins_bitcode_alone_node = %s" % builtins_bitcode_alone_node )
     self.create_task('build_bitcode',[builtins_cc]+output_nodes,builtins_bitcode_alone_node)
     self.create_task('link_bitcode',[builtins_o],builtins_bitcode_archive_node)
-    self.bld.install_files('${PREFIX}/lib/bitcode/', builtins_bitcode_archive_node)
-    self.bld.install_files('${PREFIX}/lib/bitcode/', builtins_bitcode_alone_node)
+    self.bld.install_files('${PREFIX}/lib/clasp/bitcode/', builtins_bitcode_archive_node)
+    self.bld.install_files('${PREFIX}/lib/clasp/bitcode/', builtins_bitcode_alone_node)
 # fastgf
     fastgf_bitcode_archive_node = self.path.find_or_declare(variant.inline_bitcode_archive_name("fastgf"))
     fastgf_bitcode_alone_node = self.path.find_or_declare(variant.inline_bitcode_name("fastgf"))
@@ -1436,12 +1436,12 @@ def scrape_task_generator(self):
     print("fastgf_bitcode_alone_node = %s" % fastgf_bitcode_alone_node )
     self.create_task('build_bitcode',[fastgf_cc]+output_nodes,fastgf_bitcode_alone_node)
     self.create_task('link_bitcode',[fastgf_o],fastgf_bitcode_archive_node)
-    self.bld.install_files('${PREFIX}/lib/bitcode/', fastgf_bitcode_archive_node)
-    self.bld.install_files('${PREFIX}/lib/bitcode/', fastgf_bitcode_alone_node)
+    self.bld.install_files('${PREFIX}/lib/clasp/bitcode/', fastgf_bitcode_archive_node)
+    self.bld.install_files('${PREFIX}/lib/clasp/bitcode/', fastgf_bitcode_alone_node)
 #
     cxx_all_bitcode_node = self.path.find_or_declare(variant.cxx_all_bitcode_name())
     self.create_task('link_bitcode',all_o_files,cxx_all_bitcode_node)
-    self.bld.install_files('${PREFIX}/lib/bitcode/', cxx_all_bitcode_node)
+    self.bld.install_files('${PREFIX}/lib/clasp/bitcode/', cxx_all_bitcode_node)
 
 def init(ctx):
     from waflib.Build import BuildContext, CleanContext, InstallContext, UninstallContext

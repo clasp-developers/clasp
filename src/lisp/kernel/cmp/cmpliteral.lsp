@@ -41,6 +41,12 @@
 (defstruct (literal-node-call (:type vector) :named) function source-pos-info holder)
 (defstruct (literal-node-side-effect (:type vector) :named) name arguments)
 (defstruct (literal-node-runtime (:type vector) :named) index object)
+;;; +max-run-all-size+ must be larger than +list-max+ so that
+;;;   even a full list will fit into one run-all
+(defconstant +max-run-all-size+ (max 200 call-arguments-limit))
+;;; +list-max+ must be smaller than call-arguments-limit so that
+;;;  no ltvc_make_list doesn't blow the call stack
+(defconstant +list-max+ (- call-arguments-limit 8))
 
 (defun constant-list-dump (constant-list)
   (dolist (e constant-list)
@@ -142,12 +148,11 @@ the value is put into *default-load-time-value-vector* and its index is returned
 
 (defun ltv/cons (cons index read-only-p)
   #++(add-creator "ltvc_make_cons" index
-               (load-time-reference-literal (car cons) read-only-p)
-               (load-time-reference-literal (cdr cons) read-only-p))
-  (let ((isproper (core:proper-list-p cons))
-        (list-max call-arguments-limit))
+                  (load-time-reference-literal (car cons) read-only-p)
+                  (load-time-reference-literal (cdr cons) read-only-p))
+  (let ((isproper (core:proper-list-p cons)))
     (cond
-      ((and isproper (< (length cons) list-max))
+      ((and isproper (<= (length cons) +list-max+))
        (apply 'add-creator "ltvc_make_list" index
               (length cons) (mapcar (lambda (x)
                                       (load-time-reference-literal x read-only-p))
@@ -157,7 +162,7 @@ the value is put into *default-load-time-value-vector* and its index is returned
                     (load-time-reference-literal (car cons) read-only-p)
                     (load-time-reference-literal (cdr cons) read-only-p)))
       ;; Too long list
-      (t (let* ((pos (- list-max 8))
+      (t (let* ((pos +list-max+)
                 (front (subseq cons 0 pos))
                 (back (nthcdr pos cons)))
            (add-creator "ltvc_nconc" index
@@ -297,7 +302,14 @@ the value is put into *default-load-time-value-vector* and its index is returned
 (defun add-similar (object index table)
   (setf (gethash object table) index))
 
-
+(defun estimate-run-all-size (nodes)
+  (let ((estimate 0))
+    (dolist (node nodes)
+      (cond ((and (literal-node-creator-p node)
+                  (string= "ltvc_make_list" (literal-node-creator-name node)))
+             (incf estimate (length (literal-node-creator-arguments node))))
+            (t (incf estimate))))
+    estimate))
 
 (defun generate-run-all-from-literal-nodes (nodes)
   (labels ((ensure-creator-llvm-value (obj)
@@ -330,7 +342,7 @@ the value is put into *default-load-time-value-vector* and its index is returned
                          (t x))) ;;(error "Illegal run-all entry ~a" x))))
                      args)))
     (cond
-      ((> (length nodes) 500)
+      ((> (estimate-run-all-size nodes) +max-run-all-size+)
        (let* ((half-len (floor (length nodes) 2))
               (middle-node (nthcdr (1- half-len) nodes))
               (front nodes)
