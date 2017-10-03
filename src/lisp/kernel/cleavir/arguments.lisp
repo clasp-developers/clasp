@@ -72,7 +72,7 @@
     ;; Copy argument values or evaluate init forms
     (let* ((arg-idx (cmp:irc-load arg-idx-alloca))
 	   (rest (if varest-p
-                     (let ((temp-valist (alloca-VaList_S)))
+                     (let ((temp-valist (alloca-vaslist)))
                        (%intrinsic-call "cc_gatherVaRestArguments" 
                                             (list (cmp:calling-convention-va-list* args)
                                                   (cmp:calling-convention-remaining-nargs* args)
@@ -413,7 +413,7 @@
            :use-only-registers t)
           (cmp::make-calling-convention-setup
            :use-only-registers may-use-only-registers ; if may-use-only-registers then debug-on is T and we could use only registers
-           :VaList_S* (alloca-VaList_S "VaList_S")
+           :vaslist* (alloca-vaslist "vaslist")
            :register-save-area* (alloca-register-save-area "register-save-area")
            :invocation-history-frame* (and debug-on (alloca-invocation-history-frame "invocation-history-frame")))))))
 

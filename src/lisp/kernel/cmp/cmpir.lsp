@@ -1060,10 +1060,10 @@ Within the _irbuilder_ dynamic environment...
     :alloca (llvm-sys::create-alloca *irbuilder* %register-save-area% (jit-constant-size_t 1) label)
     :init nil))
 
-(defun irc-alloca-VaList_S (&key (irbuilder *irbuilder-function-alloca*) (label "va_list"))
-  "Alloca space for an VaList_S"
+(defun irc-alloca-vaslist (&key (irbuilder *irbuilder-function-alloca*) (label "va_list"))
+  "Alloca space for an vaslist"
   (with-alloca-insert-point-no-cleanup irbuilder
-    :alloca (llvm-sys::create-alloca *irbuilder* %VaList_S% (jit-constant-size_t 1) label)
+    :alloca (llvm-sys::create-alloca *irbuilder* %vaslist% (jit-constant-size_t 1) label)
     :init nil))
 
 (defun irc-alloca-i8* (&key (irbuilder *irbuilder-function-alloca*) (label "i8*-"))

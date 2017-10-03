@@ -26,7 +26,7 @@
           *the-module*
           +cons-tag+
           +fixnum-tag+
-          +Valist_S-tag+
+          +vaslist-tag+
           +single-float-tag+
           +character-tag+
           +general-tag+
@@ -130,7 +130,7 @@
           +simple-vector._length-offset+
           %uintptr_t%
           %return_type%
-          %VaList_S%
+          %vaslist%
           null-t-ptr
           compile-error-if-wrong-number-of-arguments
           compile-error-if-too-many-arguments

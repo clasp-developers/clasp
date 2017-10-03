@@ -1091,7 +1091,7 @@ void debugPointer(const unsigned char *ptr)
   NO_UNWIND_END();
 }
 
-void debug_VaList_SPtr(VaList_S *vargs)
+void debug_vaslistPtr(VaList_S *vargs)
 {NO_UNWIND_BEGIN();
   VaList_S *args = reinterpret_cast<VaList_S *>(gc::untag_valist((void *)vargs));
   printf("++++++ debug_va_list: reg_save_area @%p \n", args->_Args[0].reg_save_area);

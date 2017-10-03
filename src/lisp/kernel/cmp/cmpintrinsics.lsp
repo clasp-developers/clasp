@@ -138,7 +138,7 @@ Set this to other IRBuilders to make code go where you want")
     ((= 4 +uintptr_t-size+) (jit-constant-i32 x))
     (t (error "Add support for size uintptr_t = ~a" +uintptr_t-size+))))
 
-;;; DO NOT CHANGE THE FOLLOWING STRUCT!!! IT MUST MATCH VaList_S
+;;; DO NOT CHANGE THE FOLLOWING STRUCT!!! IT MUST MATCH vaslist
 
 (defun build-list-of-pointers (size type)
   (multiple-value-bind (num-pointers remainder)
@@ -311,8 +311,8 @@ Boehm and MPS use a single pointer"
   (error "I need a va_list struct definition for this system")
 
   (define-symbol-macro %va_list*% (llvm-sys:type-get-pointer-to %va_list%))
-  (define-symbol-macro %VaList_S% (llvm-sys:struct-type-get *llvm-context* (list %va_list% %size_t%) nil))
-  (define-symbol-macro %VaList_S*% (llvm-sys:type-get-pointer-to %VaList_S%))
+  (define-symbol-macro %vaslist% (llvm-sys:struct-type-get *llvm-context* (list %va_list% %size_t%) nil))
+  (define-symbol-macro %vaslist*% (llvm-sys:type-get-pointer-to %vaslist%))
 
 ;;;    "Function prototype for generic functions")
   (define-symbol-macro %fn-gf% (llvm-sys:function-type-get %tmv% (list %t*% %t*%)))
@@ -329,7 +329,7 @@ Boehm and MPS use a single pointer"
 (defstruct (calling-convention-setup (:type vector))
   use-only-registers
   invocation-history-frame*
-  VaList_S*
+  vaslist*
   register-save-area*)
 
 ;; Provide the arguments passed to the function in a convenient manner.
@@ -343,8 +343,8 @@ Boehm and MPS use a single pointer"
   nargs
   use-only-registers ; If T then use only the register-args
   register-args ; The arguments that were passed in registers
-  va-list*       ; The address of VaList_S.va_list on the stack
-  remaining-nargs* ; The address of VaList_S._remaining_nargs on the stack
+  va-list*       ; The address of vaslist.va_list on the stack
+  remaining-nargs* ; The address of vaslist._remaining_nargs on the stack
   register-save-area*
   invocation-history-frame*
   )
@@ -353,8 +353,8 @@ Boehm and MPS use a single pointer"
 ;;
 ;; What if we don't want/need to spill the registers to the register-save-area?
 (defun initialize-calling-convention (arguments setup)
-  (if (null (calling-convention-setup-VaList_S* setup))
-      ;; If there is no VaList_S then only register arguments are available
+  (if (null (calling-convention-setup-vaslist* setup))
+      ;; If there is no vaslist then only register arguments are available
       ;;    no registers are spilled to the register-save-area and no InvocationHistoryFrame
       ;;    will be available to initialize
       (progn
@@ -363,21 +363,21 @@ Boehm and MPS use a single pointer"
                                       :use-only-registers t
                                       :register-args (nthcdr 2 arguments)))
       ;; The register arguments need to be spilled to the register-save-area
-      ;;    and the VaList_S needs to be initialized.
+      ;;    and the vaslist needs to be initialized.
       ;;    If a InvocationHistoryFrame is available, then initialize it.
       (progn
-        (let* ((VaList_S                    (calling-convention-setup-VaList_S* setup))
+        (let* ((vaslist                    (calling-convention-setup-vaslist* setup))
                #++(_dbg                        (progn
-                                                 (llvm-print "VaList_S\n")
-                                                 (irc-intrinsic "debugPointer" (irc-bit-cast VaList_S %i8*%))))
+                                                 (llvm-print "vaslist\n")
+                                                 (irc-intrinsic "debugPointer" (irc-bit-cast vaslist %i8*%))))
                (register-save-area*         (calling-convention-setup-register-save-area* setup))
                #++(_dbg                        (progn
                                                  (llvm-print "register-save-area\n")
                                                  (irc-intrinsic "debugPointer" (irc-bit-cast register-save-area* %i8*%))))
-               (VaList_S-addr-uint          (irc-ptr-to-int VaList_S %uintptr_t% "VaList_S-tagged-uint"))
-               (va-list-addr                (irc-add VaList_S-addr-uint (jit-constant-uintptr_t +VaList_S-valist-offset+) "va-list-addr"))
+               (vaslist-addr-uint           (irc-ptr-to-int vaslist %uintptr_t% "vaslist-tagged-uint"))
+               (va-list-addr                (irc-add vaslist-addr-uint (jit-constant-uintptr_t +vaslist-valist-offset+) "va-list-addr"))
                (va-list*                    (irc-int-to-ptr va-list-addr %va_list*% "va-list*"))
-               (remaining-nargs*-uint       (irc-add VaList_S-addr-uint (jit-constant-uintptr_t +VaList_S-remaining-nargs-offset+) "remaining-nargs*-uint"))
+               (remaining-nargs*-uint       (irc-add vaslist-addr-uint (jit-constant-uintptr_t +vaslist-remaining-nargs-offset+) "remaining-nargs*-uint"))
                (remaining-nargs*            (irc-int-to-ptr remaining-nargs*-uint %size_t*% "remaining-nargs*"))
                #++(_dbg                        (irc-intrinsic "debugPointer" (irc-bit-cast remaining-nargs* %i8*%)))
                (_                           (spill-to-register-save-area arguments register-save-area*))
@@ -394,6 +394,37 @@ Boehm and MPS use a single pointer"
                                                  (llvm-print "After calling-convention-args.va-start\n")
                                                  (irc-intrinsic "debug_va_list" va-list*))))
           cc))))
+
+
+;; Parse the function arguments into a calling-convention
+;;
+;; What if we don't want/need to spill the registers to the register-save-area?
+(defun initialize-calling-convention-for-method (arguments setup)
+  (let* ((vaslist                    (calling-convention-setup-vaslist* setup))
+         #++(_dbg                        (progn
+                                           (llvm-print "vaslist\n")
+                                           (irc-intrinsic "debugPointer" (irc-bit-cast vaslist %i8*%))))
+         (register-save-area*         (calling-convention-setup-register-save-area* setup))
+         #++(_dbg                        (progn
+                                           (llvm-print "register-save-area\n")
+                                           (irc-intrinsic "debugPointer" (irc-bit-cast register-save-area* %i8*%))))
+         (vaslist-addr-uint           (irc-ptr-to-int vaslist %uintptr_t% "vaslist-tagged-uint"))
+         (va-list-addr                (irc-add vaslist-addr-uint (jit-constant-uintptr_t +vaslist-valist-offset+) "va-list-addr"))
+         (va-list*                    (irc-int-to-ptr va-list-addr %va_list*% "va-list*"))
+         (remaining-nargs*-uint       (irc-add vaslist-addr-uint (jit-constant-uintptr_t +vaslist-remaining-nargs-offset+) "remaining-nargs*-uint"))
+         (remaining-nargs*            (irc-int-to-ptr remaining-nargs*-uint %size_t*% "remaining-nargs*"))
+         #++(_dbg                        (irc-intrinsic "debugPointer" (irc-bit-cast remaining-nargs* %i8*%)))
+         (_                           (spill-to-register-save-area arguments register-save-area*))
+         (cc                          (make-calling-convention-impl :use-only-registers nil
+                                                                    :va-list* va-list*
+                                                                    :remaining-nargs* remaining-nargs*
+                                                                    :register-save-area* (calling-convention-setup-register-save-area* setup)
+                                                                    :invocation-history-frame* (calling-convention-setup-invocation-history-frame* setup)))
+         (_                           (calling-convention-args.va-start cc))
+         #++(_dbg                        (progn
+                                           (llvm-print "After calling-convention-args.va-start\n")
+                                           (irc-intrinsic "debug_va_list" va-list*))))
+    cc))
 
 
 (defun calling-convention-maybe-push-invocation-history-frame (cc)
@@ -520,7 +551,7 @@ eg:  (f closure-ptr nargs a b c d ...)
 ;;; This is the normal C-style prototype for a function
 (define-symbol-macro %fn-prototype% %fn-registers-prototype%)
 (defvar +fn-prototype-argument-names+ +fn-registers-prototype-argument-names+)
-;;; This is the C-style prototype with an extra argument that contains the VaList_S for all arguments
+;;; This is the C-style prototype with an extra argument that contains the vaslist for all arguments
 (define-symbol-macro %fn-va-prototype% %fn-reglist-prototype%)
 (defvar +fn-va-prototype-argument-names+ +fn-reglist-prototype-argument-names+)
 
@@ -642,14 +673,14 @@ and initialize it with an array consisting of one function pointer."
          (data-layout (llvm-sys:get-data-layout execution-engine))
          (tsp-size (llvm-sys:data-layout-get-type-alloc-size data-layout %tsp%))
          (tmv-size (llvm-sys:data-layout-get-type-alloc-size data-layout %tmv%))
-         (valist_s-size (llvm-sys:data-layout-get-type-alloc-size data-layout %VaList_S%))
+         (vaslist-size (llvm-sys:data-layout-get-type-alloc-size data-layout %vaslist%))
          (register-save-area-size (llvm-sys:data-layout-get-type-alloc-size data-layout %register-save-area%))
          (invocation-history-frame-size (llvm-sys:data-layout-get-type-alloc-size data-layout %InvocationHistoryFrame%))
          (gcroots-in-module-size (llvm-sys:data-layout-get-type-alloc-size data-layout %gcroots-in-module%)))
     (llvm-sys:throw-if-mismatched-structure-sizes :tsp tsp-size
                                                   :tmv tmv-size
                                                   :contab gcroots-in-module-size
-                                                  :valist valist_s-size
+                                                  :valist vaslist-size
                                                   :ihf invocation-history-frame-size
                                                   :register-save-area register-save-area-size)))
 

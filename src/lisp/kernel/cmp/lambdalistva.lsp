@@ -292,7 +292,7 @@ will put a value into target-ref."
   (irc-branch-to-and-begin-block (irc-basic-block-create "process-rest-arguments"))
   (if varest
       (with-target-reference-do (rest-ref rest-var new-env)
-        (let ((temp-valist (irc-alloca-VaList_S)))
+        (let ((temp-valist (irc-alloca-vaslist)))
           (irc-intrinsic "copyTspTptr"
                          rest-ref
                          (irc-intrinsic "cc_gatherVaRestArguments"
@@ -651,7 +651,7 @@ lambda-list-handler/env/argument-activation-frame"
            :use-only-registers t)
           (make-calling-convention-setup
            :use-only-registers may-use-only-registers ; if may-use-only-registers then debug-on is T and we could use only registers
-           :VaList_S* (irc-alloca-VaList_S :label "VaList_S")
+           :vaslist* (irc-alloca-vaslist :label "vaslist")
            :register-save-area* (irc-alloca-register-save-area :label "register-save-area")
            :invocation-history-frame* (and debug-on (irc-alloca-invocation-history-frame :label "invocation-history-frame")))))))
 

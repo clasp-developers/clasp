@@ -38,7 +38,7 @@
           +header-size+
           +cons-tag+
           +fixnum-tag+
-          +Valist_S-tag+
+          +vaslist-tag+
           +single-float-tag+
           +character-tag+
           +general-tag+
@@ -185,7 +185,7 @@
           +simple-vector._length-offset+
           %uintptr_t%
           %return_type%
-          %VaList_S%
+          %vaslist%
           %InvocationHistoryFrame%
           %register-save-area%
           null-t-ptr

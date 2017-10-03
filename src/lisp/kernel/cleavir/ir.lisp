@@ -60,8 +60,8 @@
 (defun alloca (type size &optional (label ""))
   (llvm-sys:create-alloca *entry-irbuilder* type (%i32 size) label))
 
-(defun alloca-VaList_S (&optional (label "VaList_S"))
-  (alloca cmp:%VaList_S% 1 label))
+(defun alloca-vaslist (&optional (label "vaslist"))
+  (alloca cmp:%vaslist% 1 label))
 
 (defun alloca-invocation-history-frame (&optional (label "ihf"))
   (alloca cmp:%InvocationHistoryFrame% 1 label))

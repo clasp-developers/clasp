@@ -773,6 +773,40 @@ jump to blocks within this tagbody."
                  (,env-name ,compiler-env))
              ,@body))))
 
+
+#+(or)
+(defun codegen-bind-va-list (result form evaluate-env)
+  (let ((lambda-list (car form))
+        (vaslist (cadr form))
+        (body (cddr form)))
+    (multiple-value-bind (declares code docstring specials )
+        (process-declarations body t)
+      (let* ((lambda-list-handler (make-lambda-list-handler lambda-list declares 'core::function))
+             (new-env (irc-new-unbound-value-environment-of-size
+                       evaluate-env
+                       :number-of-arguments (number-of-lexical-variables lambda-list-handler)
+                       :label 'core:bind-va-list))
+             (debug-on nil)
+             (setup (make-calling-convention-setup
+                     :use-only-registers nil
+                     :vaslist* (irc-alloca-vaslist :label "vaslist")
+                     :register-save-area* (irc-alloca-register-save-area :label "register-save-area")
+                     :invocation-history-frame* (and debug-on (irc-alloca-invocation-history-frame :label "invocation-history-frame"))))
+             (_        (COPY_VASLIST_INTO_ARGUMENTS????????))
+             (callconv (initialize-calling-convention ARGUMENTS setup)))
+        (calling-convention-maybe-push-invocation-history-frame callconv)
+        (irc-make-value-frame (irc-renv new-env) (number-of-lexical-variables lambda-list-handler))
+        (irc-intrinsic "setParentOfActivationFrame" (irc-renv new-env) (irc-renv evaluate-env))
+        (with-try
+            (progn
+              (compile-general-lambda-list-code lambda-list-handler evaluate-env callconv new-env)
+              (codegen-progn result code new-env))
+          ((cleanup)
+           (cmp-log "About to calling-convention-maybe-pop-invocation-history-frame\n")
+           (calling-convention-maybe-pop-invocation-history-frame callconf)
+           (irc-unwind-environment new-env)))))))
+  
+
 ;;; MULTIPLE-VALUE-FOREIGN-CALL
 
 (defun codegen-multiple-value-foreign-call (result form evaluate-env)

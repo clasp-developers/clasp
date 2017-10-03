@@ -832,7 +832,7 @@
 	    (with-irbuilder (irbuilder-alloca)
 	      (let* ((in-frame-va_list/va_list*              (irc-alloca-va_list :label "in-frame-va_list/va_list*"))
                      (passed-args-tagged/uintptr_t  (irc-ptr-to-int passed-args %uintptr_t% "passed-args-tagged/uintptr_t"))
-                     (passed-args-va_list/uintptr_t (irc-add passed-args-tagged/uintptr_t (jit-constant-intptr_t (- +VaList_S-valist-offset+ +VaList_S-tag+)) "passed-args-va_list/uintptr_t"))
+                     (passed-args-va_list/uintptr_t (irc-add passed-args-tagged/uintptr_t (jit-constant-intptr_t (- +vaslist-valist-offset+ +vaslist-tag+)) "passed-args-va_list/uintptr_t"))
                      (passed-args-va_list/va_list*           (irc-int-to-ptr passed-args-va_list/uintptr_t %va_list*% "passed-args-va_list/va_list*"))
                      (_                             (insert-message))
                      (_                             (debug-arglist (irc-ptr-to-int passed-args %uintptr_t%)))
