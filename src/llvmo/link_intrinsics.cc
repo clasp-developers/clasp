@@ -1584,7 +1584,7 @@ extern "C" {
 void pushDynamicBinding(core::T_sp *tsymbolP)
 {NO_UNWIND_BEGIN();
   core::Symbol_sp sym((gctools::Tagged)(tsymbolP->raw_()));
-  my_thread->bindings().push_with_value_coming(sym);
+  my_thread->bindings().push_with_value_coming(sym,&sym->_GlobalValue);
   NO_UNWIND_END();
 }
 

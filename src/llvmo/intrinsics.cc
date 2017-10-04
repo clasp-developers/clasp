@@ -211,7 +211,7 @@ ALWAYS_INLINE void makeCons(core::T_sp *resultConsP, core::T_sp *carP, core::T_s
 ALWAYS_INLINE core::T_sp *symbolValueReference(core::T_sp *symbolP)
 {
   core::Symbol_sp sym((gctools::Tagged)ENSURE_VALID_OBJECT(symbolP->raw_()));
-  return sym->valueReference();
+  return sym->valueReference(&sym->_GlobalValue);
 }
 
 ALWAYS_INLINE void sp_symbolValueRead(core::T_sp *resultP, const core::T_sp *tsymP) {
