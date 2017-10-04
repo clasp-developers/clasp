@@ -93,13 +93,17 @@
                                :function-name name
                                :base-pointer base-pointer
                                :next-base-pointer next-base-pointer)))
-      (t (let ((unmangled (core::maybe-demangle backtrace-string)))
+      (t (let* ((first-space (position-if (lambda (c) (char= c #\space)) backtrace-string))
+                (just-name (if first-space
+                               (subseq backtrace-string 0 first-space)
+                               backtrace-string))
+                (unmangled (core::maybe-demangle just-name)))
            (if verbose (bformat *debug-io* "-->C++ frame\n"))
            (make-backtrace-frame :type :c
                                  :return-address return-address
                                  :raw-name backtrace-string
-                                 :print-name (or unmangled backtrace-string)
-                                 :function-name (or unmangled backtrace-string)
+                                 :print-name (or unmangled just-name)
+                                 :function-name (or unmangled just-name)
                                  :base-pointer base-pointer
                                  :next-base-pointer next-base-pointer))))))
 
@@ -160,23 +164,23 @@
     (add-call-arguments ordered shadow-backtrace)
     ordered))
 
-(defun common-lisp-backtrace-frames (&key verbose (focus t))
-  "Extract the common lisp backtrace frames"
+(defun common-lisp-backtrace-frames (&key verbose (focus t)
+                                       (gather-start-trigger nil))
+  "Extract the common lisp backtrace frames.  Provide a gather-start-trigger function
+that takes one argument (the backtrace-frame-function-name) and returns T it should trigger when to start
+recording backtrace frames for Common Lisp.   Looking for the 'universal_error_handler' string
+is one way to eliminate frames that aren't interesting to the user."
   (let ((frames (backtrace-with-arguments))
         result
-        (state :skip-first-frames)
+        (state (if gather-start-trigger :skip-first-frames :gather))
         new-state)
     (dolist (frame frames)
       (let ((func-name (backtrace-frame-function-name frame)))
         ;; State machine
         (setq new-state (cond
                           ((and (eq state :skip-first-frames)
-                                (search "universal_error_handler" (string (backtrace-frame-function-name frame))))
-                           :gather)
-                          ((and (eq state :skip-first-frames)
-                                (eq (backtrace-frame-function-name frame) 'core:universal-error-handler))
-                           :skip-universal-error-handler)
-                          ((eq state :skip-universal-error-handler)
+                                gather-start-trigger
+                                (funcall gather-start-trigger frame))
                            :gather)
                           (t state)))
         (when verbose
@@ -189,6 +193,7 @@
     (nreverse result)))
       
 (defun btcl ()
+  "Print backtrace of just common lisp frames"
   (let ((l (common-lisp-backtrace-frames)))
     (dolist (e l)
       (let ((name (backtrace-frame-print-name e))
@@ -211,4 +216,20 @@
     (dolist (e l)
           (bformat t "%s\n" (backtrace-frame-function-name e)))))
 
-(export '(btcl bt common-lisp-backtrace-frames))
+(defun btargs ()
+  (let ((l (backtrace-with-arguments)))
+    (bformat t "There are %s frames\n" (length l))
+    (dolist (e l)
+      (let ((name (backtrace-frame-print-name e))
+            (arguments (backtrace-frame-arguments e)))
+        (if arguments
+            (progn
+              (princ name)
+              (dotimes (i (length arguments))
+                (princ #\space)
+                (prin1 (aref arguments i))))
+            (progn
+              (princ name)))
+        (terpri)))))
+
+(export '(btcl bt btargs common-lisp-backtrace-frames))
