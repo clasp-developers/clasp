@@ -1290,7 +1290,7 @@ bool test_every_some_notevery_notany(Function_sp predicate, List_sp sequences, b
         } else atend = true;
       }
       if (!atend) {
-        VaList_S valist_struct(frame);
+        Vaslist valist_struct(frame);
         VaList_sp valist(&valist_struct);
         retVal = funcall_consume_valist_<core::Function_O>(predicate.tagged_(),valist);
         if (retVal.isTrue() == elementTest) {
@@ -1361,7 +1361,7 @@ CL_DEFUN T_sp cl__mapcar(T_sp func_desig, List_sp lists) {
         } else atend = true;
       }
       if (!atend) {
-        VaList_S valist_struct(frame);
+        Vaslist valist_struct(frame);
         VaList_sp valist(&valist_struct);
         result << funcall_consume_valist_<core::Function_O>(func.tagged_(),valist);
       }
@@ -1395,7 +1395,7 @@ CL_DEFUN T_sp cl__mapc(T_sp func_desig, List_sp lists) {
         } else atend = true;
       }
       if (!atend) {
-        VaList_S valist_struct(frame);
+        Vaslist valist_struct(frame);
         VaList_sp valist(&valist_struct);
         funcall_consume_valist_<core::Function_O>(func.tagged_(),valist);
       }
@@ -1425,7 +1425,7 @@ CL_DEFUN T_sp cl__maplist(T_sp func_desig, List_sp lists) {
         } else atend = true;
       }
       if (!atend) {
-        VaList_S valist_struct(frame);
+        Vaslist valist_struct(frame);
         VaList_sp valist(&valist_struct);
         result << funcall_consume_valist_<core::Function_O>(func.tagged_(),valist);
       }
@@ -1455,7 +1455,7 @@ CL_DEFUN T_sp cl__mapl(T_sp func_desig, List_sp lists) {
         } else atend = true;
       }
       if (!atend) {
-        VaList_S valist_struct(frame);
+        Vaslist valist_struct(frame);
         VaList_sp valist(&valist_struct);
         funcall_consume_valist_<core::Function_O>(func.tagged_(),valist);
       }
@@ -2175,7 +2175,7 @@ CL_DEFUN T_sp core__va_arg(VaList_sp v)
 
 CL_DEFUN List_sp core__list_from_va_list(VaList_sp vorig)
 {
-  VaList_S valist_copy(*vorig);
+  Vaslist valist_copy(*vorig);
   VaList_sp valist(&valist_copy);
 
   ql::list l;

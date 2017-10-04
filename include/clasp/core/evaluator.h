@@ -102,7 +102,7 @@ inline T_mv applyLastArgsPLUSFirst(T_sp fn, List_sp argsPLUS, Args&&... args) {
     (*frame)[i] = CONS_CAR(cur).raw_();
     ++i;
   }
-  VaList_S valist_struct(frame);
+  Vaslist valist_struct(frame);
   VaList_sp valist(&valist_struct);
   return funcall_consume_valist_<core::T_O>(func.tagged_(),valist);
 }

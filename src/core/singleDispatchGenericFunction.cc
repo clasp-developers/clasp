@@ -122,19 +122,19 @@ LCC_RETURN SingleDispatchEffectiveMethodFunction_O::LISP_CALLING_CONVENTION() {
   INCREMENT_FUNCTION_CALL_COUNTER(closure);
   COPY_VA_LIST();
   for ( auto cur : closure->_Befores ) {
-    VaList_S before_args_s(*lcc_vargs);
+    Vaslist before_args_s(*lcc_vargs);
     VaList_sp before_args(&before_args_s);
     Function_sp before((gctools::Tagged)oCar(cur).raw_());
     (*before).entry(LCC_PASS_ARGS_VASLIST(before.raw_(),before_args));
   }
   MultipleValues save;
   Function_sp primary0((gctools::Tagged)oCar(closure->_Primaries).raw_());
-  VaList_S primary_args_s(*lcc_vargs);
+  Vaslist primary_args_s(*lcc_vargs);
   VaList_sp primary_args(&primary_args_s);
   T_mv val0 = (*primary0).entry(LCC_PASS_ARGS_VASLIST(primary0.raw_(),primary_args));
   multipleValuesSaveToMultipleValues(val0, &save);
   for ( auto cur : closure->_Afters ) {
-    VaList_S after_args_s(*lcc_vargs);
+    Vaslist after_args_s(*lcc_vargs);
     VaList_sp after_args(&after_args_s);
     Function_sp after((gctools::Tagged)oCar(cur).raw_());
     (*after).entry(LCC_PASS_ARGS_VASLIST(after.raw_(),after_args));

@@ -528,10 +528,10 @@ NOINLINE void va_notEnoughArgumentsException(const char *funcName, std::size_t g
   SIMPLE_ERROR(BF("Too few arguments for %s - got %d and expected %d") % funcName % givenNumberOfArguments % requiredNumberOfArguments);
 }
 
-NOINLINE extern void va_ifExcessKeywordArgumentsException(char *fnName, std::size_t nargs, VaList_S *varglist, size_t argIdx) {
+NOINLINE extern void va_ifExcessKeywordArgumentsException(char *fnName, std::size_t nargs, Vaslist *varglist, size_t argIdx) {
   if (argIdx >= nargs)
     return;
-  VaList_S *vl = reinterpret_cast<VaList_S *>(gc::untag_valist((void *)varglist));
+  Vaslist *vl = reinterpret_cast<Vaslist *>(gc::untag_valist((void *)varglist));
   va_list vrest;
   va_copy(vrest, vl->_Args);
   stringstream ss;
@@ -774,7 +774,7 @@ void invokeTopLevelFunction(core::T_mv *resultP,
   // Evaluate the function
   MAKE_STACK_FRAME( onearg, tc.raw_(), 1);
   (*onearg)[0] = *ltvPP; // Leave the tag on
-  core::VaList_S onearg_valist_s(onearg);
+  core::Vaslist onearg_valist_s(onearg);
   LCC_SPILL_CLOSURE_TO_VA_LIST(onearg_valist_s,tc.raw_());
 #ifdef USE_EXPENSIVE_BACKTRACE
   // Why do this?
@@ -1091,9 +1091,9 @@ void debugPointer(const unsigned char *ptr)
   NO_UNWIND_END();
 }
 
-void debug_vaslistPtr(VaList_S *vargs)
+void debug_vaslistPtr(Vaslist *vargs)
 {NO_UNWIND_BEGIN();
-  VaList_S *args = reinterpret_cast<VaList_S *>(gc::untag_valist((void *)vargs));
+  Vaslist *args = reinterpret_cast<Vaslist *>(gc::untag_valist((void *)vargs));
   printf("++++++ debug_va_list: reg_save_area @%p \n", args->_Args[0].reg_save_area);
   printf("++++++ debug_va_list: gp_offset %d \n", args->_Args[0].gp_offset);
   printf("++++++      next reg arg: %p\n", (void *)(((uintptr_clasp_t *)((char *)args->_Args[0].reg_save_area + args->_Args[0].gp_offset))[0]));
@@ -1964,7 +1964,7 @@ void cc_dispatch_debug(int msg_id, uintptr_clasp_t val)
   //         0 - print the argument as an integer step index
   //         1 - Print the value as a integer
   //         2 - print the value as a tag
-  //         3 - print the value as a tagged pointer to a VaList_S object
+  //         3 - print the value as a tagged pointer to a Vaslist object
   //         4 - print the value as a pointer
   //         5 - print the contents of the va_list pointed to by the value
   //         6 - print the value as a stamp
@@ -1986,7 +1986,7 @@ void cc_dispatch_debug(int msg_id, uintptr_clasp_t val)
     VaList_sp vls((gc::Tagged)val);
 //    printf("%s:%d    vaList_sp.raw_() = %p\n", __FILE__, __LINE__, vls.raw_());
     BFORMAT_T(BF("Arg VaList_sp.raw_() = %p list -> %s\n") % (void*)vls.raw_() % _rep_(vls) );
-    dump_VaList_S_ptr(&*vls);
+    dump_Vaslist_ptr(&*vls);
     break;
   }
   case 4: {

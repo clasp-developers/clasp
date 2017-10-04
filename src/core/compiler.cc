@@ -1084,7 +1084,7 @@ CL_DEFUN T_mv core__multiple_value_funcall(T_sp funcDesignator, List_sp function
       }
   }
   frame->set_number_of_arguments(idx);
-  VaList_S valist_s(frame);
+  Vaslist valist_s(frame);
   VaList_sp args(&valist_s);
   return funcall_consume_valist_<Closure_O>(func.tagged_(),args);
 }

@@ -111,21 +111,21 @@ CL_DEFUN T_mv cl__apply(T_sp head, VaList_sp args) {
       (*frame)[idx] = args->next_arg_raw();
       ++idx;
     }
-    VaList_S valist_struct(frame);
+    Vaslist valist_struct(frame);
     VaList_sp valist(&valist_struct); // = frame.setupVaList(valist_struct);;
     return funcall_consume_valist_<core::Function_O>(func.tagged_(), valist);
   } else if (gctools::tagged_valistp(lastArgRaw) && lenArgs == 1) {
 //    printf("%s:%d apply with one argument and its a valist\n", __FILE__, __LINE__ );
     VaList_sp valast((gc::Tagged)lastArgRaw);
-    VaList_S valast_copy(*valast);
+    Vaslist valast_copy(*valast);
     VaList_sp valast_copy_sp(&valast_copy);
     return funcall_consume_valist_<core::Function_O>(func.tagged_(), valast_copy_sp);
   } else if (gctools::tagged_valistp(lastArgRaw)) {
     // The last argument is a VaList - so we need to create a new frame
     // to hold the contents of the two lists of arguments
     VaList_sp valast((gc::Tagged)lastArgRaw);
-    VaList_S valist_scopy(*valast);
-    VaList_sp lastArgs(&valist_scopy); // = gc::smart_ptr<VaList_S>((gc::Tagged)last.raw_());
+    Vaslist valist_scopy(*valast);
+    VaList_sp lastArgs(&valist_scopy); // = gc::smart_ptr<Vaslist>((gc::Tagged)last.raw_());
     int lenFirst = args->remaining_nargs()-1;
     int lenRest = lastArgs->remaining_nargs(); // LCC_VA_LIST_NUMBER_OF_ARGUMENTS(lastArgs);
     int nargs = lenFirst + lenRest;
@@ -142,7 +142,7 @@ CL_DEFUN T_mv cl__apply(T_sp head, VaList_sp args) {
       (*frame)[idx] = lastArgs->next_arg_raw();
       ++idx;
     }
-    VaList_S valist_struct(frame);
+    Vaslist valist_struct(frame);
     VaList_sp valist(&valist_struct); // = frame.setupVaList(valist_struct);
     return funcall_consume_valist_<core::Function_O>(func.tagged_(), valist);
   } else if (gctools::tagged_consp(lastArgRaw)) {
@@ -165,7 +165,7 @@ CL_DEFUN T_mv cl__apply(T_sp head, VaList_sp args) {
       cargs = oCdr(cargs);
       ++idx;
     }
-    VaList_S valist_struct(frame);
+    Vaslist valist_struct(frame);
     VaList_sp valist(&valist_struct); // = frame.setupVaList(valist_struct);;
     return funcall_consume_valist_<core::Function_O>(func.tagged_(), valist);
   }
@@ -197,7 +197,7 @@ gctools::return_type fast_apply_general(T_O* func_tagged, T_O* args_tagged) {
       (*frame)[j] = tail_cur->_Car.raw_();
       tail_cur = reinterpret_cast<Cons_O*>(gctools::untag_cons(tail_cur->_Cdr.raw_()));
     }
-    VaList_S valist_struct(frame);
+    Vaslist valist_struct(frame);
     VaList_sp valist(&valist_struct); // = frame.setupVaList(valist_struct);;
     return funcall_consume_valist_<core::Function_O>((gc::Tagged)func_tagged, valist);
   }
@@ -209,7 +209,7 @@ gctools::return_type fast_apply_general(T_O* func_tagged, T_O* args_tagged) {
     (*frame)[i] = front_cur->_Car.raw_();
     front_cur = reinterpret_cast<Cons_O*>(gctools::untag_cons(front_cur->_Cdr.raw_()));
   }
-  VaList_S valist_struct(frame);
+  Vaslist valist_struct(frame);
   VaList_sp valist(&valist_struct); // = frame.setupVaList(valist_struct);;
   return funcall_consume_valist_<core::Function_O>((gc::Tagged)func_tagged, valist);
 }
@@ -219,14 +219,14 @@ LCC_RETURN fast_apply_(T_O* function_tagged, T_O* rest_args_tagged, FixedArgs&&.
   int nargs;
   LIKELY_if ( gctools::tagged_valistp(rest_args_tagged) ) {
     VaList_sp rest_args_as_VaList_sp((gctools::Tagged)rest_args_tagged);
-    VaList_S va_rest_copy_S(*rest_args_as_VaList_sp);
+    Vaslist va_rest_copy_S(*rest_args_as_VaList_sp);
     VaList_sp va_rest_args(&va_rest_copy_S);
     nargs = sizeof...(FixedArgs)+va_rest_args->remaining_nargs();
     MAKE_STACK_FRAME( frame, function_tagged, nargs );
     T_O* _[] = {fixedArgs...};
     for (int i=0; i<sizeof...(FixedArgs); ++i ) (*frame)[i] = _[i];
     for (int j=sizeof...(FixedArgs);j<nargs; ++j ) (*frame)[j] = va_rest_copy_S.next_arg_raw();
-    VaList_S valist_struct(frame);
+    Vaslist valist_struct(frame);
     VaList_sp valist(&valist_struct); // = frame.setupVaList(valist_struct);;
     return funcall_consume_valist_<core::Function_O>((gc::Tagged)function_tagged, valist);
   } else if (gctools::tagged_consp(rest_args_tagged)) {
@@ -240,7 +240,7 @@ LCC_RETURN fast_apply_(T_O* function_tagged, T_O* rest_args_tagged, FixedArgs&&.
       (*frame)[j] = oCar(list_rest_args).raw_();
       list_rest_args = oCdr(list_rest_args);
     }
-    VaList_S valist_struct(frame);
+    Vaslist valist_struct(frame);
     VaList_sp valist(&valist_struct); // = frame.setupVaList(valist_struct);;
     return funcall_consume_valist_<core::Function_O>((gc::Tagged)function_tagged, valist);
   }
@@ -248,7 +248,7 @@ LCC_RETURN fast_apply_(T_O* function_tagged, T_O* rest_args_tagged, FixedArgs&&.
   MAKE_STACK_FRAME( frame, function_tagged, nargs );
   T_O* _[] = {fixedArgs...};
   for (int i=0; i<sizeof...(FixedArgs); ++i ) (*frame)[i] = _[i];
-  VaList_S valist_struct(frame);
+  Vaslist valist_struct(frame);
   VaList_sp valist(&valist_struct); // = frame.setupVaList(valist_struct);;
   return funcall_consume_valist_<core::Function_O>((gc::Tagged)function_tagged, valist);
 }
@@ -337,7 +337,7 @@ CL_DEFUN T_mv cl__funcall(T_sp function_desig, VaList_sp args) {
   }
 
 #ifdef _DEBUG_BUILD
-  VaList_S debug_valist(*args);
+  Vaslist debug_valist(*args);
   core::T_O* debug_lcc_valist = debug_valist.asTaggedPtr();
 #endif
   T_mv res = funcall_consume_valist_<core::Function_O>(func.tagged_(), args);
@@ -1471,7 +1471,7 @@ T_mv sp_multipleValueCall(List_sp args, T_sp env) {
     (*fargs)[i] = oCar(c).raw_();
     ++i;
   }
-  VaList_S valist_struct(fargs);
+  Vaslist valist_struct(fargs);
   VaList_sp valist(&valist_struct); // = valist_struct.fargs.setupVaList(valist_struct);
   return funcall_consume_valist_<core::Function_O>(func.tagged_(), valist);
 }
@@ -2140,7 +2140,7 @@ T_mv evaluate(T_sp exp, T_sp environment) {
       (*callArgs)[argIdx] = eval::evaluate(CONS_CAR(cur), environment).raw_();
       ++argIdx;
     }
-    VaList_S valist_struct(callArgs);
+    Vaslist valist_struct(callArgs);
     VaList_sp valist(&valist_struct); // = callArgs.setupVaList(valist_struct);
     return funcall_consume_valist_<core::Function_O>(headFunc.tagged_(), valist);
   }

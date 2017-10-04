@@ -196,7 +196,7 @@ void* InvocationHistoryFrame::register_save_area() const
 SimpleVector_sp InvocationHistoryFrame::arguments() const {
 #if 0
   VaList_sp orig_args = this->valist_sp();
-  VaList_S copy_args_s(*orig_args);
+  Vaslist copy_args_s(*orig_args);
   VaList_sp copy_args(&copy_args_s);
   LCC_RESET_VA_LIST_TO_START(copy_args_s);
   size_t numberOfArguments = LCC_VA_LIST_NUMBER_OF_ARGUMENTS(copy_args);

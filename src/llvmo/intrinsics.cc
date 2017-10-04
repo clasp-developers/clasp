@@ -287,9 +287,9 @@ ALWAYS_INLINE T_O *cc_precalcValue(core::LoadTimeValues_O **tarray, size_t idx)
   NO_UNWIND_END();
 }
 
-ALWAYS_INLINE void cc_copy_va_list(size_t nargs, T_O **mvPtr, VaList_S *va_args)
+ALWAYS_INLINE void cc_copy_va_list(size_t nargs, T_O **mvPtr, Vaslist *va_args)
 {NO_UNWIND_BEGIN();
-  VaList_S *vl = reinterpret_cast<VaList_S *>(gc::untag_valist((void *)va_args));
+  Vaslist *vl = reinterpret_cast<Vaslist *>(gc::untag_valist((void *)va_args));
   for (int i = LCC_FIXED_ARGS; i < nargs; ++i) {
     mvPtr[i] = va_arg(vl->_Args, core::T_O *);
   }
@@ -350,7 +350,7 @@ ALWAYS_INLINE gc::return_type cc_call(LCC_ARGS_CC_CALL_ELLIPSIS) {
   core::Closure_O *tagged_closure = reinterpret_cast<core::Closure_O *>(lcc_closure);
   core::Closure_O* closure = gc::untag_general<core::Closure_O *>(tagged_closure);
 #ifdef ENABLE_BACKTRACE_ARGS
-  VaList_S lcc_arglist_s;
+  Vaslist lcc_arglist_s;
   va_start(lcc_arglist_s._Args, LCC_VA_START_ARG);
   LCC_SPILL_REGISTER_ARGUMENTS_TO_VA_LIST(lcc_arglist_s);
 #endif
@@ -361,7 +361,7 @@ ALWAYS_INLINE gc::return_type cc_call(LCC_ARGS_CC_CALL_ELLIPSIS) {
 ALWAYS_INLINE gc::return_type cc_call_callback(LCC_ARGS_CC_CALL_ELLIPSIS) {
   //	core::Function_O* func = gctools::DynamicCast<core::NamedFunction_O*,core::T_O*>::castOrNULL(tfunc);
   auto closure = reinterpret_cast<CompiledClosure_fptr_type>(lcc_closure);
-  VaList_S lcc_arglist_s;
+  Vaslist lcc_arglist_s;
   va_start(lcc_arglist_s._Args, LCC_VA_START_ARG);
 #ifdef ENABLE_BACKTRACE_ARGS
   LCC_SPILL_REGISTER_ARGUMENTS_TO_VA_LIST(lcc_arglist_s);
@@ -443,7 +443,7 @@ size_t cc_matchKeywordOnce(core::T_O *xP, core::T_O *yP, core::T_O *sawKeyAlread
 }
 
 
-ALWAYS_INLINE core::T_O *cc_gatherVaRestArguments(va_list vargs, std::size_t* nargs, VaList_S* untagged_vargs_rest)
+ALWAYS_INLINE core::T_O *cc_gatherVaRestArguments(va_list vargs, std::size_t* nargs, Vaslist* untagged_vargs_rest)
 {NO_UNWIND_BEGIN();
   va_copy(untagged_vargs_rest->_Args,vargs);
 #ifdef DEBUG_ENSURE_VALID_OBJECT

@@ -320,7 +320,7 @@ LCC_RETURN InstanceClosure_O::LISP_CALLING_CONVENTION() {
 // Copy the arguments passed in registers into the multiple_values array and those
 // will be processed by the generic function
 #ifdef _DEBUG_BUILD
-  VaList_S saved_args(*reinterpret_cast<VaList_S *>(untag_valist(lcc_arglist)));
+  Vaslist saved_args(*reinterpret_cast<Vaslist *>(untag_valist(lcc_arglist)));
 #endif
   VaList_sp gfargs((gc::Tagged)lcc_arglist);
   return (this->entryPoint)(this->instance, gfargs);
