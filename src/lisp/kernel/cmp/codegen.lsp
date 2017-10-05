@@ -137,8 +137,8 @@ then compile it and return (values compiled-llvm-function lambda-name)"
   (let* ((lambda-list-handler (function-lambda-list-handler fn))
 	 (lambda-list (lambda-list-handler-lambda-list lambda-list-handler))
 	 (declares (function-declares fn))
-	 (docstring (function-docstring fn))
-	 (code (function-source-code fn))
+	 (docstring (docstring fn))
+	 (code (code fn))
 	 (env (closed-environment fn)))
     (when docstring (setq docstring (list docstring)))
     #+(or)(progn
