@@ -20,6 +20,7 @@
   base-pointer
   next-base-pointer
   arguments
+  shadow-frame
   )
 
 (defun dump-jit-symbol-info ()
@@ -113,22 +114,49 @@
         (frame-address (frame-iterator-frame-address entry)))
     (do* ((cur frames (cdr cur))
           (frame (car cur) (car cur)))
-         ((null cur) (or cur saved-frames))
+         ((null cur) (values (or cur saved-frames) nil))
       (let ((bp (backtrace-frame-base-pointer frame))
             (next-bp (backtrace-frame-next-base-pointer frame)))
         (when (and bp next-bp
                    (pointer-in-pointer-range frame-address bp next-bp))
-          (return-from search-for-matching-frame cur))))))
+          (return-from search-for-matching-frame (values cur t)))))))
 
-(defun add-call-arguments (frames shadow-backtrace)
-  (dolist (shadow-entry shadow-backtrace)
-    (let ((frame-cur (search-for-matching-frame frames shadow-entry)))
-      (if frame-cur
-          (let ((frame (car frame-cur)))
-            (setf (backtrace-frame-arguments frame) (frame-iterator-arguments shadow-entry))
-            (setf frames frame-cur))
-          (bformat t "Could not find stack frame for address: %s\n" (frame-iterator-frame-address shadow-entry))))))
+(defun merge-shadow-backtrace (orig-frames shadow-backtrace)
+  (let ((frames orig-frames))
+    (dolist (shadow-entry shadow-backtrace)
+      (multiple-value-bind (frame-cur found)
+          (search-for-matching-frame frames shadow-entry)
+        (if found
+            (let ((frame (car frame-cur)))
+              (setf (backtrace-frame-arguments frame) (frame-iterator-arguments shadow-entry))
+              (setf frames frame-cur)
+              (setf (backtrace-frame-shadow-frame frame) shadow-entry))
+            (bformat t "Could not find stack frame for address: %s\n" (frame-iterator-frame-address shadow-entry))))))
+  (let ((new-frames (add-interpreter-frames orig-frames)))
+    (nreverse new-frames)))
 
+(defconstant +interpreted-closure-entry-point+ "core::interpretedClosureEntryPoint")
+(defconstant +interpreted-closure-entry-point-length+ (length +interpreted-closure-entry-point+))
+(defun add-interpreter-frames (frames)
+  (let (new-frames)
+    (dolist (frame frames)
+      (when (backtrace-frame-shadow-frame frame)
+        (when (string= +interpreted-closure-entry-point+ (backtrace-frame-function-name frame)
+                       :start2 0 :end2 +interpreted-closure-entry-point-length+)
+          (let* ((shadow-frame (backtrace-frame-shadow-frame frame))
+                 (interpreted-frame (make-backtrace-frame :type :lisp
+                                                          :return-address nil 
+                                                          :raw-name (core:frame-iterator-function-name shadow-frame)
+                                                          :function-name (core:frame-iterator-function-name shadow-frame)
+                                                          :print-name (core:frame-iterator-function-name shadow-frame)
+                                                          :arguments (core:frame-iterator-arguments shadow-frame))))
+            (core:bformat t "Injected an interpreted-frame -> %s\n" interpreted-frame)
+            (core:bformat t "    based on frame -> %s\n" frame)
+            (push interpreted-frame new-frames))))
+      (push frame new-frames))
+    new-frames))
+
+    
 (defun extract-backtrace-frame-name (line)
   ;; On OS X this is how we get the name part
   (let* ((pos0 (position-if (lambda (c) (char/= c #\space)) line)) ; skip initial whitespace
@@ -161,8 +189,7 @@
 (defun backtrace-with-arguments ()
   (let ((ordered (backtrace-as-list))
         (shadow-backtrace (core:shadow-backtrace-as-list)))
-    (add-call-arguments ordered shadow-backtrace)
-    ordered))
+    (merge-shadow-backtrace ordered shadow-backtrace)))
 
 (defun common-lisp-backtrace-frames (&key verbose (focus t)
                                        (gather-start-trigger nil))
