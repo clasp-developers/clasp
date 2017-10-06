@@ -1,4 +1,6 @@
-(in-package #:cmp)
+;;(in-package :cmp)
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (core:select-package :cmp))
 
 (defvar +header-size+ 8) ; FIXME: where does this come from?
 
@@ -54,3 +56,4 @@
 (defvar +t-size+ (get-cxx-data-structure-info 'core:tsp))
 (defvar +simple-vector._length-offset+ (get-cxx-data-structure-info :simple-vector._length-offset))
 (defvar +simple-vector._data-offset+ (get-cxx-data-structure-info :simple-vector._data-offset))
+(defvar +size_t-bits+ (get-cxx-data-structure-info :size_t-bits))

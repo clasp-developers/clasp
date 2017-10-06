@@ -129,7 +129,7 @@ bignums."
 (deftype ext::integer64 () '(INTEGER #x-8000000000000000 #x7FFFFFFFFFFFFFFF))
 (deftype ext::cl-fixnum () '(SIGNED-BYTE #.sys:CL-FIXNUM-BITS))  ;; Clasp change
 #+ecl(deftype ext::cl-index () '(UNSIGNED-BYTE #.sys:CL-FIXNUM-BITS))
-#+clasp(deftype ext::cl-index () '(UNSIGNED-BYTE #.(cdr (assoc :size_t-bits (llvm-sys:cxx-data-structures-info))))) ;; Clasp change
+#+clasp(deftype ext::cl-index () '(UNSIGNED-BYTE #.cmp::+size_t-bits+)) ;; Clasp change
 
 (deftype real (&optional (start '* start-p) (end '*))
   (if start-p
@@ -380,10 +380,10 @@ and is not adjustable."
   '#.(append '(NIL BASE-CHAR #+unicode CHARACTER BIT EXT:BYTE8 EXT:INTEGER8)
              '(EXT:BYTE16 EXT:INTEGER16)
              '(EXT:BYTE32 EXT:INTEGER32)
-             (when (= 32 (cdr (assoc :size_t-bits (llvm-sys:cxx-data-structures-info)))) '(ext:cl-index))
+             (when (= 32 cmp::+size_t-bits+) '(ext:cl-index))
              (when (< 32 core:cl-fixnum-bits 64) '(FIXNUM))
              '(EXT:BYTE64 EXT:INTEGER64)
-             (when (= 64 (cdr (assoc :size_t-bits (llvm-sys:cxx-data-structures-info)))) '(ext:cl-index))
+             (when (= 64 cmp::+size_t-bits+) '(ext:cl-index))
              (when (< 64 core:cl-fixnum-bits) '(ext::CL-INDEX FIXNUM))
              '(SINGLE-FLOAT DOUBLE-FLOAT T)))
 
