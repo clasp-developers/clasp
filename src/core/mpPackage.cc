@@ -117,7 +117,7 @@ void* start_thread(void* claspProcess) {
   core::List_sp reversed_bindings = core::cl__reverse(p->_InitialSpecialBindings);
   for ( auto cur : reversed_bindings ) {
     core::Cons_sp pair = gc::As<core::Cons_sp>(oCar(cur));
-    printf("%s:%d  start_thread   setting special variable/(eval value) -> %s\n", __FILE__, __LINE__, _rep_(pair).c_str());
+//    printf("%s:%d  start_thread   setting special variable/(eval value) -> %s\n", __FILE__, __LINE__, _rep_(pair).c_str());
     scope.pushSpecialVariableAndSet(pair->_Car,core::eval::evaluate(pair->_Cdr,_Nil<core::T_O>()));
   }
 #if 0
