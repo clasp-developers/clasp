@@ -175,7 +175,12 @@ CL_DEFMETHOD   bool specialP() const { return this->_IsSpecial; };
 
   inline bool boundP() const { return !(*this->valueReference(&this->_GlobalValue)).unboundp(); };
 
+  inline bool boundPFomCell(Cons_sp cell) {
+    return !(*this->valueReference(&(CONS_CAR(cell)))).unboundp();
+  }
+
   Symbol_sp makunbound();
+  //Symbol_sp makunboundFromCell(Cons_sp cell);
 
   T_sp defparameter(T_sp obj);
   T_sp defconstant(T_sp obj);
@@ -183,6 +188,11 @@ CL_DEFMETHOD   bool specialP() const { return this->_IsSpecial; };
   inline T_sp setf_symbolValue(T_sp obj) {
     *this->valueReference(&this->_GlobalValue) = obj;
     return obj;
+  }
+
+  inline T_sp setf_symbolValueFromCell(T_sp val, Cons_sp cell) {
+    *this->valueReference(&(CONS_CAR(cell))) = val;
+    return val;
   }
 
   void setf_symbolValueReadOnlyOverRide(T_sp obj);
