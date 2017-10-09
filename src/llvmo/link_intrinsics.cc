@@ -618,91 +618,6 @@ int isTrue(core::T_sp *valP)
   NO_UNWIND_END();
 }
 
-
-void internSymbol_tsp(core::T_sp *resultP, const char *symbolNameP, const char *packageNameP)
-{NO_UNWIND_BEGIN();
-  core::Symbol_sp newSym = _lisp->internWithPackageName(packageNameP, symbolNameP);
-#ifdef DEBUG_LOAD_TIME_VALUES
-//        printf("%s:%d  internSymbol_tsp(%s::%s)  newSym.px_ref() = %p   cl::destructuring-bind.px_ref()=%p\n", __FILE__, __LINE__, packageNameP, symbolNameP, newSym.px_ref(), cl::_sym_destructuring_bind.px_ref());
-#endif
-  ASSERTNOTNULL(newSym);
-  (*resultP) = newSym;
-  NO_UNWIND_END();
-}
-
-void makeSymbol_tsp(core::T_sp *resultP, const char *symbolNameP)
-{NO_UNWIND_BEGIN();
-  core::Symbol_sp newSym = core::Symbol_O::create_from_string(std::string(symbolNameP));
-  ASSERTNOTNULL(newSym);
-  (*resultP) = newSym;
-  NO_UNWIND_END();
-}
-
-void internSymbol_symsp(core::Symbol_sp *resultP, const char *symbolNameP, const char *packageNameP)
-{NO_UNWIND_BEGIN();
-  core::Symbol_sp newSym = _lisp->internWithPackageName(packageNameP, symbolNameP);
-  ASSERTNOTNULL(newSym);
-  (*resultP) = newSym;
-  NO_UNWIND_END();
-}
-
-void makeSymbol_symsp(core::Symbol_sp *resultP, const char *symbolNameP)
-{NO_UNWIND_BEGIN();
-  core::Symbol_sp newSym = core::Symbol_O::create_from_string(std::string(symbolNameP));
-  ASSERTNOTNULL(newSym);
-  (*resultP) = newSym;
-  NO_UNWIND_END();
-}
-
-
-void makeString(core::T_sp *fnP, const char *str)
-{NO_UNWIND_BEGIN();
-  // placement new into memory passed into this function
-  ASSERT(fnP != NULL);
-  core::SimpleBaseString_sp ns = core::SimpleBaseString_O::make(str);
-  (*fnP) = ns;
-  NO_UNWIND_END();
-}
-
-void makePathname(core::T_sp *fnP, const char *cstr)
-{NO_UNWIND_BEGIN();
-  // placement new into memory passed into this function
-  ASSERT(fnP != NULL);
-
-  core::SimpleBaseString_sp str = core::SimpleBaseString_O::make(cstr);
-  core::Pathname_sp ns = core::cl__pathname(str);
-  (*fnP) = ns;
-  NO_UNWIND_END();
-}
-
-
-void makeShortFloat(core::T_sp *fnP, double s) {
-  ASSERT(fnP != NULL);
-  (*fnP) = core::ShortFloat_sp(core::ShortFloat_O::create(s));
-}
-
-void makeSingleFloat(core::T_sp *fnP, float s)
-{NO_UNWIND_BEGIN();
-  ASSERT(fnP != NULL);
-  (*fnP) = clasp_make_single_float(s);
-  NO_UNWIND_END();
-}
-
-void makeDoubleFloat(core::T_sp *fnP, double s)
-{NO_UNWIND_BEGIN();
-  ASSERT(fnP != NULL);
-  (*fnP) = core::DoubleFloat_sp(core::DoubleFloat_O::create(s));
-  NO_UNWIND_END();
-}
-
-#ifdef CLASP_LONG_FLOAT
-void makeLongFloat(core::T_sp *fnP, LongFloat s) {
-  ASSERT(fnP != NULL);
-  (*fnP) = core::LongFloat_sp(core::LongFloat_O::create(s));
-}
-#endif
-};
-
 core::T_sp proto_makeCompiledFunction(fnLispCallingConvention funcPtr,
                                       int *sourceFileInfoHandleP,
                                       size_t filePos,
@@ -717,7 +632,7 @@ core::T_sp proto_makeCompiledFunction(fnLispCallingConvention funcPtr,
   return closure;
   NO_UNWIND_END();
 };
-extern "C" {
+
 void sp_makeCompiledFunction(core::T_sp *resultCompiledFunctionP,
                              fnLispCallingConvention funcPtr,
                              int *sourceFileInfoHandleP,

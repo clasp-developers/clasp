@@ -97,19 +97,6 @@
     (primitive-nounwind "isTrue" %i32% (list %tsp*%))
     (primitive-nounwind "isBound" %i32% (list %tsp*%))
     
-    (primitive-nounwind "internSymbol_tsp" %void% (list %tsp*% %i8*% %i8*%))
-    (primitive-nounwind "makeSymbol_tsp" %void% (list %tsp*% %i8*%))
-    
-    (primitive-nounwind "internSymbol_symsp" %void% (list %symsp*% %i8*% %i8*%))
-    (primitive-nounwind "makeSymbol_symsp" %void% (list %symsp*% %i8*%))
-    
-    #+short-float (primitive-nounwind "makeShortFloat" %void% (list %tsp*% %double%))
-    (primitive-nounwind "makeSingleFloat" %void% (list %tsp*% %float%))
-    (primitive-nounwind "makeDoubleFloat" %void% (list %tsp*% %double%))
-    
-    #+long-float (primitive-nounwind "makeLongFloat" %void% (list %tsp*% %long-float%))
-    (primitive-nounwind "makeString" %void% (list %tsp*% %i8*%))
-    (primitive-nounwind "makePathname" %void% (list %tsp*% %i8*%))
     (primitive-nounwind "makeCompiledFunction" %void% (list +tsp*-or-tmv*+ ; result
                                                              %fn-prototype*% ; funcPtr
                                                              %i32*%   ; sourceFileInfoHandleP
