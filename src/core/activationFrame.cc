@@ -76,21 +76,21 @@ string ActivationFrame_O::asString() const {
 }
 
 bool ActivationFrame_O::_findTag(Symbol_sp sym, int &depth, int &index, bool &interFunction, T_sp &tagbodyEnv) const {
-  T_sp parent = clasp_currentVisibleEnvironment(this->getParentEnvironment());
+  T_sp parent = clasp_currentVisibleEnvironment(this->getParentEnvironment(),false);
   ++depth;
   return clasp_findTag(parent, sym, depth, index, interFunction, tagbodyEnv);
 }
 
-bool ActivationFrame_O::_findValue(T_sp sym, int &depth, int &index, ValueKind &valueKind, T_sp &value) const {
-  T_sp parent = clasp_currentVisibleEnvironment(this->getParentEnvironment());
+bool ActivationFrame_O::_findValue(T_sp sym, int &depth, int &index, bool& crossesFunction, ValueKind &valueKind, T_sp &value, T_sp& env) const {
+  T_sp parent = clasp_currentVisibleEnvironment(this->getParentEnvironment(),false);
   ++depth;
-  return clasp_findValue(parent, sym, depth, index, valueKind, value);
+  return clasp_findValue(parent, sym, depth, index, crossesFunction, valueKind, value, env);
 }
 
-bool ActivationFrame_O::_findFunction(T_sp functionName, int &depth, int &index, Function_sp &func) const {
-  T_sp parent = clasp_currentVisibleEnvironment(this->getParentEnvironment());
+bool ActivationFrame_O::_findFunction(T_sp functionName, int &depth, int &index, Function_sp &func, T_sp& functionEnv) const {
+  T_sp parent = clasp_currentVisibleEnvironment(this->getParentEnvironment(),false);
   ++depth;
-  return clasp_findFunction(parent, functionName, depth, index, func);
+  return clasp_findFunction(parent, functionName, depth, index, func, functionEnv);
 }
 
 string ActivationFrame_O::summaryOfContents() const {
@@ -246,22 +246,21 @@ bool ValueFrame_O::_updateValue(Symbol_sp sym, T_sp obj) {
       return true;
     }
   }
-  if (this->parentFrame().nilp())
-    return false;
-  return af_updateValue(this->parentFrame(), sym, obj);
+  if (this->parentFrame().nilp()) return false;
+  return clasp_updateValue(this->parentFrame(), sym, obj);
 }
 
 /*! Find the value bound to a symbol based on the symbol name.
        This is only used by the interpreter and shouldn't be expected to be fast.
     */
-bool ValueFrame_O::_findValue(T_sp sym, int &depth, int &index, ValueKind &valueKind, T_sp &value) const {
+bool ValueFrame_O::_findValue(T_sp sym, int &depth, int &index, bool& crossesFunction, ValueKind &valueKind, T_sp &value, T_sp& env) const {
   //	printf("%s:%d ValueFrame_O::_findValue - switch to DWARF debugging to look up values\n", __FILE__, __LINE__ );
   if (this->_DebuggingInfo.nilp()) {
-    return ((this->Base::_findValue(sym, depth, index, valueKind, value)));
+    return ((this->Base::_findValue(sym, depth, index, crossesFunction, valueKind, value, env)));
   }
   if (!this->_DebuggingInfo) {
     printf("%s:%d The debugging info was NULL!!!!! Why is this happening?\n",__FILE__,__LINE__);
-    return ((this->Base::_findValue(sym, depth, index, valueKind, value)));
+    return ((this->Base::_findValue(sym, depth, index, crossesFunction, valueKind, value, env)));
   }
   Vector_sp debuggingInfo = gc::As<Vector_sp>(this->_DebuggingInfo);
   int i = 0;
@@ -274,7 +273,7 @@ bool ValueFrame_O::_findValue(T_sp sym, int &depth, int &index, ValueKind &value
     }
   }
   ++depth;
-  return Environment_O::clasp_findValue(this->parentFrame(), sym, depth, index, valueKind, value);
+  return Environment_O::clasp_findValue(this->parentFrame(), sym, depth, index, crossesFunction, valueKind, value, env);
 }
 
 

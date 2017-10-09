@@ -581,15 +581,17 @@ List_sp separateTopLevelForms(List_sp accumulated, T_sp possibleForms) {
 T_sp af_interpreter_lookup_variable(Symbol_sp sym, T_sp env) {
   if (env.notnilp()) {
     int depth, index;
+    bool crossesFunction;
     Environment_O::ValueKind valueKind;
     T_sp value;
+    T_sp result_env;
 #if 0
     printf("%s:%d Looking for %s\n", __FILE__, __LINE__, _rep_(sym).c_str());
     if ( Environment_sp e = env.asOrNull<Environment_O>() ) {
       e->dump();
     }
 #endif
-    bool found = Environment_O::clasp_findValue(env, sym, depth, index, valueKind, value);
+    bool found = Environment_O::clasp_findValue(env, sym, depth, index, crossesFunction, valueKind, value, result_env);
     if (found) {
       switch (valueKind) {
       case Environment_O::lexicalValue:
@@ -613,7 +615,8 @@ Function_sp interpreter_lookup_function_or_error(T_sp name, T_sp env) {
     Function_sp fn;
     int depth;
     int index;
-    if (Environment_O::clasp_findFunction(env, name, depth, index, fn)) return fn;
+    T_sp functionEnv;
+    if (Environment_O::clasp_findFunction(env, name, depth, index, fn, functionEnv)) return fn;
   }
   if (name.consp()) {
     T_sp head = CONS_CAR(name);
@@ -643,8 +646,9 @@ T_sp af_interpreter_lookup_setf_function(List_sp setf_name, T_sp env) {
     Function_sp fn;
     int depth;
     int index;
+    T_sp functionEnv;
     // TODO: This may not work properly - it looks like it will find regular functions
-    if (Environment_O::clasp_findFunction(env, name, depth, index, fn))
+    if (Environment_O::clasp_findFunction(env, name, depth, index, fn, functionEnv))
       return fn;
   }
   if (name->setf_fboundp())
@@ -739,7 +743,7 @@ void setq_symbol_value(Symbol_sp symbol, T_sp value, T_sp environment) {
   } else  {
     bool updated = false;
     if (environment.notnilp()) {
-      updated = af_updateValue(environment, symbol, value);
+      updated = clasp_updateValue(environment, symbol, value);
     }
     if (!updated) {
       symbol->setf_symbolValue(value);
@@ -2047,7 +2051,7 @@ struct InterpreterTrace {
   };
 };
 
-T_mv evaluate(T_sp exp, T_sp environment) {
+__attribute__((optnone)) T_mv evaluate(T_sp exp, T_sp environment) {
   //	    Environment_sp localEnvironment = environment;
   //            printf("%s:%d evaluate %s environment@%p\n", __FILE__, __LINE__, _rep_(exp).c_str(), environment.raw_());
   //            printf("    environment: %s\n", _rep_(environment).c_str() );

@@ -72,6 +72,13 @@ BUILTIN_ATTRIBUTES core::T_sp *lexicalValueReference(int depth, int index, core:
   return const_cast<core::T_sp *>(&core::value_frame_lookup_reference(af, depth, index));
 }
 
+BUILTIN_ATTRIBUTES core::T_sp *registerReference(core::T_sp* register_)
+{
+  return register_;
+}
+
+
+#if 0
 BUILTIN_ATTRIBUTES void sp_lexicalValueRead(core::T_sp *resultP, int depth, int index, core::ActivationFrame_sp *renvP)
 {
   (*resultP) = core::value_frame_lookup_reference(*renvP,depth,index);
@@ -80,7 +87,7 @@ BUILTIN_ATTRIBUTES void mv_lexicalValueRead(core::T_mv *resultP, int depth, int 
 {
   (*resultP) = core::value_frame_lookup_reference(*renvP,depth,index);
 }
-
+#endif
 
 // The following two are only valid for non-simple arrays. Be careful!
 BUILTIN_ATTRIBUTES core::T_O* cc_realArrayDisplacement(core::T_O* tarray) {
@@ -116,6 +123,21 @@ BUILTIN_ATTRIBUTES void cc_simpleBitVectorAset(core::T_O* tarray, size_t index, 
   core::SimpleBitVector_O* array = reinterpret_cast<core::SimpleBitVector_O*>(gctools::untag_general<core::T_O*>(tarray));
   array->setBit(index, v);
 }
+
+BUILTIN_ATTRIBUTES void invisible_makeValueFrameSetParent(core::T_sp* tarray, core::T_sp* parent) {
+  *tarray = *parent;
+}
+
+BUILTIN_ATTRIBUTES void invisible_makeValueFrameSetParentFromClosure(core::T_sp* tarray, core::T_O* closureRaw) {
+  if (closureRaw!=NULL) {
+    core::Closure_sp closure = core::Closure_sp((gctools::Tagged)closureRaw);
+    core::T_sp activationFrame = closure->closedEnvironment();
+    *tarray = activationFrame;
+  } else {
+    *tarray = _Nil<core::T_O>();
+  }
+}
+
 
 };
 

@@ -545,7 +545,7 @@ NOINLINE extern void va_ifExcessKeywordArgumentsException(char *fnName, std::siz
 
 
 
-ALWAYS_INLINE T_O *va_lexicalFunction(int depth, int index, core::T_sp *evaluateFrameP)
+ALWAYS_INLINE T_O *va_lexicalFunction(size_t depth, size_t index, core::T_sp *evaluateFrameP)
 {NO_UNWIND_BEGIN();
   core::ActivationFrame_sp af = gctools::reinterpret_cast_smart_ptr<core::ActivationFrame_O>(*evaluateFrameP);
   core::Function_sp func = core::function_frame_lookup(af, depth, index);
@@ -654,15 +654,6 @@ void makeSymbol_symsp(core::Symbol_sp *resultP, const char *symbolNameP)
   NO_UNWIND_END();
 }
 
-
-void makeBignum(core::T_sp *fnP, const char *cP)
-{NO_UNWIND_BEGIN();
-  ASSERT(fnP != NULL);
-  string str = cP;
-  core::Bignum_sp ns = core::Bignum_O::make(str);
-  (*fnP) = ns;
-  NO_UNWIND_END();
-}
 
 void makeString(core::T_sp *fnP, const char *str)
 {NO_UNWIND_BEGIN();

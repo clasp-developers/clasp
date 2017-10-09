@@ -74,8 +74,8 @@ virtual T_sp currentVisibleEnvironment() const;
 //  virtual T_sp _lookupTagbodyId(int depth, int index) const;
 
   virtual bool _findTag(Symbol_sp tag, int &depth, int &index, bool &interFunction, T_sp &tagbodyEnv) const;
-  virtual bool _findValue(T_sp sym, int &depth, int &index, ValueKind &valueKind, T_sp &value) const;
-  virtual bool _findFunction(T_sp functionName, int &depth, int &index, Function_sp &value) const;
+  virtual bool _findValue(T_sp sym, int &depth, int &index, bool& crossesFunction, ValueKind &valueKind, T_sp &value, T_sp& env) const;
+  virtual bool _findFunction(T_sp functionName, int &depth, int &index, Function_sp &value, T_sp& functionEnv) const;
 
   /*! Methods for interogating ActivationFrames as Environments */
   T_sp getParentEnvironment() const { return this->parentFrame(); };
@@ -212,7 +212,7 @@ public:
 //  T_sp &lookupValueReference(int depth, int index);
 
   virtual bool _updateValue(Symbol_sp sym, T_sp obj);
-  virtual bool _findValue(T_sp sym, int &depth, int &index, ValueKind &valueKind, T_sp &value) const;
+  virtual bool _findValue(T_sp sym, int &depth, int &index, bool& crossesFunction, ValueKind &valueKind, T_sp &value, T_sp& env) const;
 
   inline bool boundp_entry(uint idx) const {
     return !(*this)[idx].unboundp();

@@ -150,8 +150,6 @@
                                                           :function-name (core:frame-iterator-function-name shadow-frame)
                                                           :print-name (core:frame-iterator-function-name shadow-frame)
                                                           :arguments (core:frame-iterator-arguments shadow-frame))))
-            (core:bformat t "Injected an interpreted-frame -> %s\n" interpreted-frame)
-            (core:bformat t "    based on frame -> %s\n" frame)
             (push interpreted-frame new-frames))))
       (push frame new-frames))
     new-frames))

@@ -119,12 +119,11 @@
     (irc-load ref "lexical-value")))
 
 
-(defun codegen-lexical-var-lookup (result depth index renv)
+(defun codegen-lexical-var-lookup (result depth index env)
   "Generate IR for lookup of lexical value in runtime-env using depth and index"
   (dbg-set-current-debug-location-here)
-  (let ((val (codegen-lexical-var-value depth index renv)))
+  (let ((val (codegen-lexical-var-value depth index env)))
     (irc-store val result))
-  #+(or)(irc-intrinsic "lexicalValueRead" result (jit-constant-i32 depth) (jit-constant-i32 index) renv)
   result)
 
 

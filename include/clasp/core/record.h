@@ -74,7 +74,7 @@ public:
     case loading: {
       // I could speed this up if I cache the entry after this find
       // and search from there and reverse the alist once it's done
-      List_sp find = core__alist_get(this->_alist, name);
+      List_sp find = core__alist_assoc_eq(this->_alist, name);
       if (find.nilp())
         SIMPLE_ERROR_SPRINTF("Could not find field %s",  _rep_(name).c_str());
       Cons_sp apair = gc::As<Cons_sp>(oCar(find));
@@ -100,7 +100,7 @@ public:
     } break;
     case initializing:
     case loading: {
-      List_sp find = core__alist_get(this->_alist, name);
+      List_sp find = core__alist_assoc_eq(this->_alist, name);
       if (find.nilp())
         SIMPLE_ERROR_SPRINTF("Could not find field %s",  _rep_(name).c_str());
       Cons_sp apair = gc::As<Cons_sp>(oCar(find));
@@ -140,7 +140,7 @@ public:
     case loading: {
       // I could speed this up if I cache the entry after this find
       // and search from there and reverse the alist once it's done
-      List_sp find = core__alist_get(this->_alist, name);
+      List_sp find = core__alist_assoc_eq(this->_alist, name);
       if (find.nilp())
         SIMPLE_ERROR_SPRINTF("Could not find field %s",  _rep_(name).c_str());
       Cons_sp apair = gc::As<Cons_sp>(oCar(find));
@@ -181,7 +181,7 @@ public:
     case loading: {
       // I could speed this up if I cache the entry after this find
       // and search from there and reverse the alist once it's done
-      List_sp find = core__alist_get(this->_alist, name);
+      List_sp find = core__alist_assoc_eq(this->_alist, name);
       if (find.notnilp()) {
         this->field(name, value);
         Cons_sp apair = gc::As<Cons_sp>(oCar(find));
@@ -211,7 +211,7 @@ public:
     case initializing: {
       // I could speed this up if I cache the entry after this find
       // and search from there and reverse the alist once it's done
-      List_sp find = core__alist_get(this->_alist, name);
+      List_sp find = core__alist_assoc_eq(this->_alist, name);
       if (find.nilp())
         value = _Nil<core::T_O>();
       else {
@@ -223,7 +223,7 @@ public:
     case loading: {
       // I could speed this up if I cache the entry after this find
       // and search from there and reverse the alist once it's done
-      List_sp find = core__alist_get(this->_alist, name);
+      List_sp find = core__alist_assoc_eq(this->_alist, name);
       if (find.nilp())
         value = _Nil<core::T_O>();
       else {
@@ -258,7 +258,7 @@ public:
     case loading: {
       // I could speed this up if I cache the entry after this find
       // and search from there and reverse the alist once it's done
-      List_sp find = core__alist_get(this->_alist, name);
+      List_sp find = core__alist_assoc_eq(this->_alist, name);
       if (find.nilp())
         value = _Nil<core::T_O>();
       else {
@@ -293,7 +293,7 @@ public:
     case loading: {
       // I could speed this up if I cache the entry after this find
       // and search from there and reverse the alist once it's done
-      List_sp find = core__alist_get(this->_alist, name);
+      List_sp find = core__alist_assoc_eq(this->_alist, name);
       if (find.nilp()) {
         value = default_value;
       } else {
@@ -323,7 +323,7 @@ public:
     case loading: {
       // I could speed this up if I cache the entry after this find
       // and search from there and reverse the alist once it's done
-      List_sp find = core__alist_get(this->_alist, name);
+      List_sp find = core__alist_assoc_eq(this->_alist, name);
       if (find.nilp()) {
         defined = false;
       } else {

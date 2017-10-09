@@ -719,6 +719,7 @@ def configure(cfg):
 # Keep track of every allocation
     cfg.define("METER_ALLOCATIONS",1)
     cfg.define("DEBUG_TRACE_INTERPRETED_CLOSURES",1)
+    cfg.define("DEBUG_ENVIRONMENTS",1)
 #    cfg.define("DEBUG_CACHE",1)      # Debug the dispatch caches - see cache.cc
 #    cfg.define("DEBUG_BITUNIT_CONTAINER",1)  # prints debug info for bitunit containers
 #    cfg.define("DEBUG_ZERO_KIND",1);

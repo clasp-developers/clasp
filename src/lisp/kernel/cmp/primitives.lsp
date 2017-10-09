@@ -103,12 +103,6 @@
     (primitive-nounwind "internSymbol_symsp" %void% (list %symsp*% %i8*% %i8*%))
     (primitive-nounwind "makeSymbol_symsp" %void% (list %symsp*% %i8*%))
     
-    (primitive-nounwind "makeNil" %void% (list +tsp*-or-tmv*+))
-    (primitive-nounwind "makeT" %void% (list %tsp*%))
-    (primitive-nounwind "makeCons" %void% (list %tsp*% %tsp*% %tsp*%))
-    (primitive-nounwind "makeFixnum" %void% (list %tsp*% %fixnum%))
-    (primitive-nounwind "makeCharacter" %void% (list %tsp*% %i32%))
-    (primitive-nounwind "makeBignum" %void% (list %tsp*% %i8*%))
     #+short-float (primitive-nounwind "makeShortFloat" %void% (list %tsp*% %double%))
     (primitive-nounwind "makeSingleFloat" %void% (list %tsp*% %float%))
     (primitive-nounwind "makeDoubleFloat" %void% (list %tsp*% %double%))
@@ -129,16 +123,21 @@
     (primitive          "symbolValueRead" %void% (list +tsp*-or-tmv*+ %tsp*%))
     (primitive-nounwind "symbolValueReference" %tsp*% (list %tsp*%))
     (primitive-nounwind "lexicalValueReference" %tsp*% (list %i32% %i32% %afsp*%))
-    (primitive-nounwind "lexicalValueRead" %void% (list +tsp*-or-tmv*+ %i32% %i32% %afsp*%))
+    (primitive-nounwind "registerReference" %tsp*% (list %tsp*%))
     (primitive-nounwind "symbolFunctionRead" %void% (list +tsp*-or-tmv*+ %tsp*%))
     (primitive-nounwind "setfSymbolFunctionRead" %void% (list %tsp*% %tsp*%))
-    (primitive-nounwind "lexicalFunctionRead" %void% (list +tsp*-or-tmv*+ %i32% %i32% %afsp*%))
-    
+;;    (primitive-nounwind "lexicalFunctionRead" %void% (list +tsp*-or-tmv*+ %i32% %i32% %afsp*%))
     
     (primitive-nounwind "makeTagbodyFrame" %void% (list %afsp*%))
+    
     (primitive-nounwind "makeValueFrame" %void% (list %tsp*% %i64%))
     (primitive-nounwind "setParentOfActivationFrameFromClosure" %void% (list %tsp*% %t*%))
     (primitive-nounwind "setParentOfActivationFrame" %void% (list %tsp*% %tsp*%))
+
+    (primitive-nounwind "makeValueFrameSetParent" %void% (list %tsp*% %i64% %tsp*%))
+    (primitive-nounwind "makeValueFrameSetParentFromClosure" %void% (list %tsp*% %i64% %t*%))
+    (primitive-nounwind "invisible_makeValueFrameSetParent" %void% (list %tsp*% %tsp*%))
+    (primitive-nounwind "invisible_makeValueFrameSetParentFromClosure" %void% (list %tsp*% %t*%))
     
     ;;  (primitive-nounwind "attachDebuggingInfoToValueFrame" %void% (list %afsp*% %tsp*%))
     
@@ -181,7 +180,7 @@
     (primitive          "va_notEnoughArgumentsException" %void% (list %i8*% %size_t% %size_t%))
     (primitive          "va_ifExcessKeywordArgumentsException" %void% (list %i8*% %size_t% %va_list*% %size_t%))
     (primitive          "va_symbolFunction" %t*% (list %tsp*%))
-    (primitive-nounwind "va_lexicalFunction" %t*% (list %i32% %i32% %afsp*%))
+    (primitive-nounwind "va_lexicalFunction" %t*% (list %size_t% %size_t% %afsp*%))
     
     (primitive-nounwind "cc_gatherRestArguments" %t*% (list %va_list*% %size_t*%))
     (primitive-nounwind "cc_gatherVaRestArguments" %t*% (list %va_list*% %size_t*% %vaslist*%))

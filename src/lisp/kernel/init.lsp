@@ -6,6 +6,7 @@
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (core:select-package "CORE"))
 
+
 #+(or)(setq *features* (cons :dbg-print *features*))
 (SYS:*MAKE-SPECIAL '*echo-repl-tpl-read*)
 (export '(*echo-repl-tpl-read*
@@ -73,11 +74,13 @@
 (if (member :enable-profiling *features*)
     (setq *enable-profiling* t)
     (setq *enable-profiling* nil))
+(sys:*make-special '*use-human-readable-bitcode*)
+(setq *use-human-readable-bitcode* (member :use-human-readable-bitcode *features*))
 (sys:*make-special '*compile-file-debug-dump-module*)
 (sys:*make-special '*debug-compile-file*)
 (if (boundp '*compile-file-debug-dump-module*)
     nil
-    (setq *compile-file-debug-dump-module* nil))
+    (setq *compile-file-debug-dump-module* t))
 (sys:*make-special '*compile-debug-dump-module*)
 (if (boundp '*compile-debug-dump-module*)
     nil
@@ -492,11 +495,12 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
     bitcode-host))
 
 (defun default-target-stage ()
-  (if (member :cclasp *features*)
-      "c"
-      (if (member :bclasp *features*)
-          "b"
-          "a")))
+  (let ((stage (if (member :cclasp *features*)
+                   "c"
+                   (if (member :bclasp *features*)
+                       "b"
+                       "a"))))
+    stage))
 
 
 (defun build-configuration ()
@@ -576,6 +580,7 @@ the stage, the +application-name+ and the +bitcode-name+"
                     (t
                      (find-lisp-source module (translate-logical-pathname "SOURCE-DIR:"))))))
                ((and partial-pathname (or (eq type :fasl) (eq type :bc)))
+                (if cmp::*use-human-readable-bitcode* (setq type :ll))
                 (merge-pathnames (merge-pathnames (ensure-relative-pathname partial-pathname)
                                                   (make-pathname :directory (list :relative target-dir) :type (string-downcase (string type))))
                                  (translate-logical-pathname (make-pathname :host target-host))))
@@ -590,7 +595,6 @@ the stage, the +application-name+ and the +bitcode-name+"
                        (exec-pathname (merge-pathnames (make-pathname :name filename :type nil) (translate-logical-pathname "app-executable:") )))
                   exec-pathname))
                (t (error "Add support for build-pathname type: ~a" type)))))
-        #+dbg-print(bformat t "DBG-PRINT build-pathname   result: %s\n" result)
         result))))
 (export '(build-pathname))
 
@@ -635,7 +639,7 @@ the stage, the +application-name+ and the +bitcode-name+"
     (if load-bc
 	(progn
 	  (bformat t "Loading bitcode file: %s\n" bc-path)
-	  (llvm-sys:load-bitcode bc-path))
+	  (cmp:load-bitcode bc-path))
 	(if (probe-file-case lsp-path)
 	    (progn
               (if cmp:*implicit-compile-hook*

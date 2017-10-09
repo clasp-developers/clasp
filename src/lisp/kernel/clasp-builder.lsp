@@ -169,7 +169,7 @@ Return files."
 	    (if reload
 		(progn
 		  (bformat t "    Loading newly compiled file: %s\n" bitcode-path)
-		  (llvm-sys:load-bitcode bitcode-path))))))
+		  (cmp:load-bitcode bitcode-path))))))
     bitcode-path))
 (export 'compile-kernel-file)
 
@@ -354,12 +354,14 @@ Return files."
   (if (or (out-of-date-bitcodes #P"src/lisp/kernel/tag/min-start" #P"src/lisp/kernel/tag/min-end" :system system)
           (null (probe-file output-file)))
       (progn
+        (bformat *debug-io* "About to load-system")
         (load-system
          (butlast (select-source-files #P"src/lisp/kernel/tag/after-init" #P"src/lisp/kernel/tag/min-pre-epilogue" :system system)))
         (let* ((*target-backend* target-backend)
                (files (out-of-date-bitcodes #P"src/lisp/kernel/tag/min-start" #P"src/lisp/kernel/tag/min-pre-epilogue" :system system))
                (files-with-epilogue (out-of-date-bitcodes #P"src/lisp/kernel/tag/min-start" #P"src/lisp/kernel/tag/min-end" :system system)))
           (with-compilation-unit ()
+            (bformat *debug-io* "About to compile-system")
             (compile-system files :reload t)
             (if files-with-epilogue (compile-system (bitcode-pathnames #P"src/lisp/kernel/tag/min-pre-epilogue" #P"src/lisp/kernel/tag/min-end" :system system) :reload nil)))
           (let ((all-bitcode (bitcode-pathnames #P"src/lisp/kernel/tag/min-start" #P"src/lisp/kernel/tag/min-end" :system system)))

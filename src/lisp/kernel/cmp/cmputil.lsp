@@ -231,13 +231,14 @@
 
 (defun variable-info (env var)
   "Lookup the variable in the lexical environment - if not found then check if it is a special"
-  (let ((info (classify-variable env var)))
-    (unless info
-      (setq info (cons 'ext:special-var var))
-      (unless (core:specialp var)
-        (compiler-warning-undefined-global-variable var)))
+  (let (#+(or)(core:*environment-debug* (null (symbol-package var))))
+    (let ((info (classify-variable env var)))
+      (unless info
+        (setq info (cons 'ext:special-var var))
+        (unless (core:specialp var)
+          (compiler-warning-undefined-global-variable var)))
 ;;;    (core:bformat t "variable-info: %s   @ %s\n" info (describe-source-location (ext:current-source-location)))
-    info))
+      info)))
 
 (defun analyze-top-level-form (form)
   (cond

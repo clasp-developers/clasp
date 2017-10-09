@@ -5,8 +5,6 @@
 
 (in-package :clasp-cleavir)
 
-(defvar *entry-irbuilder*)
-
 (defun %literal-index (value &optional read-only-p)
   (let ((*debug-cleavir* *debug-cleavir-literals*))
     (literal:reference-literal value read-only-p)))
@@ -58,19 +56,19 @@
   (%literal nil))
 
 (defun alloca (type size &optional (label ""))
-  (llvm-sys:create-alloca *entry-irbuilder* type (%i32 size) label))
+  (llvm-sys:create-alloca cmp:*irbuilder-function-alloca* type (%i32 size) label))
 
 (defun alloca-vaslist (&optional (label "vaslist"))
-  (alloca cmp:%vaslist% 1 label))
+  (cmp:irc-alloca-vaslist :label label))
 
 (defun alloca-invocation-history-frame (&optional (label "ihf"))
-  (alloca cmp:%InvocationHistoryFrame% 1 label))
+  (cmp:irc-alloca-invocation-history-frame :label label))
 
 (defun alloca-register-save-area (&optional (label "ihf"))
-  (alloca cmp:%register-save-area% 1 label))
+  (cmp:irc-alloca-register-save-area :label label))
 
 (defun alloca-size_t (&optional (label "var"))
-  (alloca cmp:%size_t% 1 label))
+  (cmp:irc-alloca-size_t :label label))
 
 (defun alloca-i32 (&optional (label "var"))
   (alloca cmp:%i32% 1 label))
@@ -88,12 +86,12 @@
 (defun alloca-t* (&optional (label "var"))
   (let ((instr (alloca cmp:%t*% 1 label)))
     #+(or)(cc-dbg-when *debug-log*
-		       (format *debug-log* "          alloca-t*   *entry-irbuilder* = ~a~%" *entry-irbuilder*)
+		       (format *debug-log* "          alloca-t*   cmp:*irbuilder-function-alloca* = ~a~%" cmp:*irbuilder-function-alloca*)
 		       (format *debug-log* "          Wrote ALLOCA ~a into function ~a~%" instr (llvm-sys:get-name (instruction-llvm-function instr))))
     instr))
 
 (defun alloca-mv-struct (&optional (label "V"))
-  (cmp:with-irbuilder (*entry-irbuilder*)
+  (cmp:with-irbuilder (cmp:*irbuilder-function-alloca*)
     (llvm-sys:create-alloca cmp:*irbuilder* cmp:%mv-struct% (%i32 1) label)))
 
 
@@ -110,10 +108,11 @@
   (cmp:irc-intrinsic-call function-name args label))
 
 (defun %intrinsic-invoke-if-landing-pad-or-call (function-name args &optional (label "") (maybe-landing-pad cmp::*current-unwind-landing-pad-dest*))
+  (cmp::irc-intrinsic-invoke-if-landing-pad-or-call function-name args label maybe-landing-pad)
   ;; FIXME:   If the current function has a landing pad - then use INVOKE
-  (if maybe-landing-pad
-      (cmp:irc-intrinsic-invoke function-name args maybe-landing-pad label)
-      (cmp:irc-intrinsic-call function-name args label)))
+  #+(or)(if maybe-landing-pad
+            (cmp:irc-intrinsic-invoke function-name args maybe-landing-pad label)
+            (cmp:irc-intrinsic-call function-name args label)))
 
 (defun %load (place &optional (label ""))
   (cmp:irc-load place label))
@@ -234,7 +233,7 @@ Otherwise do a variable shift."
 ;;;
 
 (defmacro with-entry-ir-builder (&rest body)
-  `(let ((cmp:*irbuilder* *entry-irbuilder*))
+  `(let ((cmp:*irbuilder* cmp:*irbuilder-function-alloca*))
      ,@body))
 
 

@@ -5,6 +5,8 @@
           *compile-debug-dump-module*  ;; Dump intermediate modules
           quick-module-dump
           quick-message-dump
+          write-bitcode
+          load-bitcode
           *irbuilder*
           %ltv*%
           irc-function-create

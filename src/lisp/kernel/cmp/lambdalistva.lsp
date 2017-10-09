@@ -94,53 +94,6 @@
 
 
 
-(defun compile-target-reference* (env target)
-  "This function determines if target is special or lexical and generates
-code to get the reference to the target.
-It then returns (values target-ref target-type target-symbol target-lexical-index).
-If target-type=='special-var then target-lexical-index will be nil.
-You don't want to only write into the target-reference because
-you need to also bind the target in the compile-time environment "
-  (cmp-log "compile-target-reference target[%s]\n" target)
-  (cond
-    ((eq (car target) 'ext:special-var)
-     (cmp-log "compiling as a special-var\n")
-     (values (irc-intrinsic "symbolValueReference" (irc-global-symbol (cdr target) env))
-	     (car target)		; target-type --> 'special-var
-	     (cdr target)		; target-symbol
-	     ))
-    ((eq (car target) 'ext:lexical-var)
-     (cmp-log "compiling as a ext:lexical-var\n")
-     (values #+(or)(irc-intrinsic "lexicalValueReference"
-		       (jit-constant-i32 0)
-		       (jit-constant-i32 (cddr target))
-		       (irc-renv env))
-             (codegen-lexical-var-reference 0 #|<-depth|# (cddr target) (irc-renv env))
-	     (car target)		; target-type --> 'ext:lexical-var
-	     (cadr target)		; target-symbol
-	     (cddr target)		; target-lexical-index
-	     ))
-    (t (error "Illegal target type[~a] for argument" target))))
-
-
-
-
-(defun define-binding-in-value-environment* (env target)
-  "Define the target within the ValueEnvironment in env.
-If the target is special then define-special-binding.
-If the target is lexical then define-lexical-binding."
-  (cmp-log "define-binding-in-value-environment for target: %s\n" target)
-  (cond
-    ((eq (car target) 'ext:special-var)
-     (let ((target-symbol (cdr target)))
-       (value-environment-define-special-binding env target-symbol)))
-    ((eq (car target) 'ext:lexical-var)
-     (let ((target-symbol (cadr target))
-	   (target-lexical-index (cddr target)))
-       (value-environment-define-lexical-binding env target-symbol target-lexical-index)))
-    (t (error "Illegal target-type ~a" (car target))))
-)
-
 
 
 

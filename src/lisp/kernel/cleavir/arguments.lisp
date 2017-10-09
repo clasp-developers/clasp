@@ -279,39 +279,39 @@
   ;; This lets us cheap out on parsing, except &rest and &allow-other-keys.
   (let (required optional rest-type rest key aok-p key-flag
         (required-count 0) (optional-count 0) (key-count 0))
-    (loop for item in lambda-list
-          do (case item
-               ((&optional) #|ignore|#)
-               ((&key) (setf key-flag t))
-               ((&rest core:&va-rest) (setf rest-type item))
-               ((&allow-other-keys) (setf aok-p t))
-               (t (if (listp item)
-                      (cond ((= (length item) 2)
-                             ;; optional
-                             (incf optional-count)
-                             ;; above, we expect (location -p whatever)
-                             ;; though it's specified as (var init -p)
-                             ;; FIX ME
-                             (push (first item) optional)
-                             (push (second item) optional)
-                             (push nil optional))
-                            (t ;; key, assumedly
-                             (incf key-count)
-                             (push (first item) key)
-                             (push (first item) key)
-                             ;; above, we treat this as being the location,
-                             ;; even though from process-lambda-list it's
-                             ;; the initform.
-                             ;; This file needs work FIXME.
-                             (push (second item) key)
-                             (push (third item) key)))
-                      ;; nonlist; we picked off lambda list keywords, so it's an argument.
-                      (cond (rest-type
-                             ;; we've seen a &rest lambda list keyword, so this must be that
-                             (setf rest item))
-                            ;; haven't seen anything, it's required
-                            (t (incf required-count)
-                               (push item required)))))))
+    (dolist (item lambda-list)
+      (case item
+        ((&optional) #|ignore|#)
+        ((&key) (setf key-flag t))
+        ((&rest core:&va-rest) (setf rest-type item))
+        ((&allow-other-keys) (setf aok-p t))
+        (t (if (listp item)
+               (cond ((= (length item) 2)
+                      ;; optional
+                      (incf optional-count)
+                      ;; above, we expect (location -p whatever)
+                      ;; though it's specified as (var init -p)
+                      ;; FIX ME
+                      (push (first item) optional)
+                      (push (second item) optional)
+                      (push nil optional))
+                     (t ;; key, assumedly
+                      (incf key-count)
+                      (push (first item) key)
+                      (push (first item) key)
+                      ;; above, we treat this as being the location,
+                      ;; even though from process-lambda-list it's
+                      ;; the initform.
+                      ;; This file needs work FIXME.
+                      (push (second item) key)
+                      (push (third item) key)))
+               ;; nonlist; we picked off lambda list keywords, so it's an argument.
+               (cond (rest-type
+                      ;; we've seen a &rest lambda list keyword, so this must be that
+                      (setf rest item))
+                     ;; haven't seen anything, it's required
+                     (t (incf required-count)
+                        (push item required)))))))
     (values (cons required-count (nreverse required))
             (cons optional-count (nreverse optional))
             rest
@@ -421,3 +421,30 @@
 (defun cclasp-setup-calling-convention (arguments lambda-list debug-on)
   (let ((setup (cclasp-maybe-alloc-cc-setup lambda-list debug-on)))
     (cmp:initialize-calling-convention arguments setup)))
+
+
+
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; bclasp 
+;;;
+
+(defun bclasp-compile-lambda-list-code (cleavir-lambda-list register-env callconv)
+  (multiple-value-bind (reqs opts rest key-flag keys aok-p auxargs-dummy va-rest-p)
+      (process-cleavir-lambda-list cleavir-lambda-list)
+    ;; Create the register lexicals using allocas
+    (dolist (req (cdr reqs)) (core:register-environment-add-register req (irc-alloca-tsp)))
+    (dolist (opt (cdr opts))
+      (core:register-environment-add-register (first opt) (irc-alloca-tsp))
+      (core:register-environment-add-register (second opt) (irc-alloca-tsp)))
+    (when rest (core:register-environment-add-register rest (irc-alloca-tsp)))
+    (dolist (key (cdr keys))
+      (core:register-environment-add-register (second opt) (irc-alloca-tsp))
+      (core:register-environment-add-register (third opt) (irc-alloca-tsp)))
+    (compile-lambda-list-code cleavir-lambda-list
+                              (lambda (datum)
+                                (core:register-environment-lookup-register datum))
+                              callconv)))
+    

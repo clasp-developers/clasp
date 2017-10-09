@@ -108,6 +108,7 @@ ALWAYS_INLINE core::T_sp *functionFrameReference(core::ActivationFrame_sp *frame
 
 
 
+#if 0
 ALWAYS_INLINE void sp_lexicalFunctionRead(core::T_sp *resultP, int depth, int index, core::ActivationFrame_sp *renvP)
 {NO_UNWIND_BEGIN();
   (*resultP) = core::function_frame_lookup(*renvP,depth,index);
@@ -119,6 +120,8 @@ ALWAYS_INLINE void mv_lexicalFunctionRead(core::T_mv *resultP, int depth, int in
   (*resultP) = core::function_frame_lookup(*renvP,depth,index);
   NO_UNWIND_END();
 }
+#endif
+
 
 #if 0
 ALWAYS_INLINE void newTsp(core::T_sp *sharedP)
@@ -182,31 +185,6 @@ ALWAYS_INLINE void sp_copyTmvOrSlice(core::T_sp *destP, core::T_mv *sourceP)
     (*destP) = (*sourceP);
   NO_UNWIND_END();
 }
-
-ALWAYS_INLINE void sp_makeNil(core::T_sp *result)
-{NO_UNWIND_BEGIN();
-  (*result) = _Nil<core::T_O>();
-  NO_UNWIND_END();
-}
-
-ALWAYS_INLINE void mv_makeNil(core::T_mv *result)
-{NO_UNWIND_BEGIN();
-  (*result) = Values(_Nil<core::T_O>());
-  NO_UNWIND_END();
-}
-
-ALWAYS_INLINE void makeT(core::T_sp *result)
-{NO_UNWIND_BEGIN();
-  (*result) = _lisp->_true();
-  NO_UNWIND_END();
-}
-
-ALWAYS_INLINE void makeCons(core::T_sp *resultConsP, core::T_sp *carP, core::T_sp *cdrP)
-{NO_UNWIND_BEGIN();
-  (*resultConsP) = core::Cons_O::create(*carP, *cdrP);
-  NO_UNWIND_END();
-}
-
 
 ALWAYS_INLINE core::T_sp *symbolValueReference(core::T_sp *symbolP)
 {
@@ -369,20 +347,6 @@ ALWAYS_INLINE gc::return_type cc_call_callback(LCC_ARGS_CC_CALL_ELLIPSIS) {
   core::T_O *lcc_arglist = lcc_arglist_s.asTaggedPtr();
   lcc_closure = NULL;
   return closure(LCC_PASS_ARGS);
-}
-
-void makeFixnum(core::T_sp *fnP, gc::Fixnum s)
-{NO_UNWIND_BEGIN();
-  ASSERT(fnP != NULL);
-  (*fnP) = core::Fixnum_sp(core::make_fixnum(s));
-  NO_UNWIND_END();
-}
-
-void makeCharacter(core::T_sp *fnP, int s)
-{NO_UNWIND_BEGIN();
-  ASSERT(fnP != NULL);
-  (*fnP) = core::clasp_make_character((char)s);
-  NO_UNWIND_END();
 }
 
 
@@ -566,6 +530,26 @@ ALWAYS_INLINE char *cc_getPointer(core::T_O *pointer_object)
 
 extern "C" {
 
+ALWAYS_INLINE void makeValueFrameSetParentFromClosure(core::T_sp *resultP, size_t numargs, core::T_O* closureRaw)
+{NO_UNWIND_BEGIN();
+  core::ValueFrame_sp valueFrame(core::ValueFrame_O::create(numargs, _Nil<core::T_O>()));
+//  valueFrame->setEnvironmentId(id);   // I don't use id anymore
+  (*resultP) = valueFrame;
+  core::T_O* parentP;
+  if (closureRaw != NULL ) {
+    Closure_sp closure = Closure_sp((gctools::Tagged)closureRaw);
+    T_sp activationFrame = closure->closedEnvironment();
+//    printf("%s:%d:%s     activationFrame = %p\n", __FILE__, __LINE__, __FUNCTION__, activationFrame.raw_());
+    parentP =  activationFrame.raw_();
+  } else {
+    parentP = _Nil<core::T_O>().raw_();
+  }
+  ASSERT((*resultP).isA<ActivationFrame_O>());
+  ActivationFrame_sp af = gc::reinterpret_cast_smart_ptr<ActivationFrame_O, T_O>((*resultP));
+  af->setParentFrame(parentP);
+  NO_UNWIND_END();
+}
+
 ALWAYS_INLINE void setParentOfActivationFrameFromClosure(core::T_sp *resultP, core::T_O *closureRaw)
 {NO_UNWIND_BEGIN();
 //  printf("%s:%d:%s  closureRaw = %p\n", __FILE__, __LINE__, __FUNCTION__, closureRaw);
@@ -581,6 +565,20 @@ ALWAYS_INLINE void setParentOfActivationFrameFromClosure(core::T_sp *resultP, co
   ASSERT((*resultP).isA<ActivationFrame_O>());
   ActivationFrame_sp af = gc::reinterpret_cast_smart_ptr<ActivationFrame_O, T_O>((*resultP));
   af->setParentFrame(parentP);
+  NO_UNWIND_END();
+}
+
+
+ALWAYS_INLINE void makeValueFrameSetParent(core::T_sp *resultP, size_t numargs, core::T_sp *parentsp)
+{NO_UNWIND_BEGIN();
+  core::ValueFrame_sp valueFrame(core::ValueFrame_O::create(numargs, _Nil<core::T_O>()));
+//  valueFrame->setEnvironmentId(id);   // I don't use id anymore
+  (*resultP) = valueFrame;
+  T_O *parentP = parentsp->raw_();
+  ASSERT((*resultP).isA<ActivationFrame_O>());
+  ActivationFrame_sp af = gc::reinterpret_cast_smart_ptr<ActivationFrame_O, T_O>((*resultP));
+  af->setParentFrame(parentP);
+  return;
   NO_UNWIND_END();
 }
 

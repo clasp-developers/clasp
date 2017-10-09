@@ -61,6 +61,7 @@ THE SOFTWARE.
 #include <llvm/IR/Instructions.h>
 #include <llvm/IR/Mangler.h>
 #include <llvm/Transforms/Instrumentation.h>
+#include <llvm/Transforms/Utils/BasicBlockUtils.h>
 #include <llvm/Transforms/IPO.h>
 #include <llvm/IR/InlineAsm.h>
 #include <llvm/Support/FormattedStream.h>
@@ -1744,6 +1745,9 @@ CL_DEFMETHOD void Instruction_O::setMetadata(core::String_sp kind, MDNode_sp mdn
   CL_LISPIFY_NAME(getParent);
   CL_EXTERN_DEFMETHOD(Instruction_O, (llvm::BasicBlock * (llvm::Instruction::*)()) & llvm::Instruction::getParent);
 
+  CL_LISPIFY_NAME(eraseFromParent);
+  CL_EXTERN_DEFMETHOD(Instruction_O, & llvm::Instruction::eraseFromParent);
+
 ;
 
 
@@ -1760,6 +1764,32 @@ CL_DEFMETHOD bool Instruction_O::terminatorInstP() const {
 }; // llvmo
 
 namespace llvmo {
+
+CL_DEFUN llvm::Instruction* llvm_sys__replace_call(llvm::Instruction* callOrInvoke, llvm::Function* func, llvm::ArrayRef<llvm::Value *> args) {
+//  printf("%s:%d In llvm-sys::replace-call\n",__FILE__, __LINE__);
+  llvm::CallSite CS(callOrInvoke);
+  llvm::Instruction *NewCI = NULL;
+  if (llvm::isa<llvm::CallInst>(callOrInvoke)) {
+    llvm::CallInst* NewCall = llvm::CallInst::Create(func,args);
+    NewCall->setCallingConv(func->getCallingConv());
+    NewCI = NewCall;
+  } else if (llvm::isa<llvm::InvokeInst>(callOrInvoke)) {
+    llvm::InvokeInst* invoke = llvm::cast<llvm::InvokeInst>(callOrInvoke);
+    llvm::BasicBlock* ifNormal = invoke->getNormalDest();
+    llvm::BasicBlock* ifException = invoke->getUnwindDest();
+    llvm::InvokeInst* NewInvoke = llvm::InvokeInst::Create(func,ifNormal,ifException,args);
+    NewInvoke->setCallingConv(func->getCallingConv());
+    NewCI = NewInvoke;
+  }
+  if (!callOrInvoke->use_empty()) {
+    callOrInvoke->replaceAllUsesWith(NewCI);
+  }
+  llvm::ReplaceInstWithInst(callOrInvoke,NewCI);
+  return NewCI;
+};
+
+
+
 
 CL_DEFMETHOD void CallInst_O::addParamAttr(unsigned index, llvm::Attribute::AttrKind attrkind)
 {
@@ -1862,6 +1892,13 @@ namespace llvmo {
   CL_LISPIFY_NAME(setAlignment);
   CL_EXTERN_DEFMETHOD(AllocaInst_O, &AllocaInst_O::ExternalType::setAlignment);;
 
+CL_DEFUN llvm::AllocaInst* llvm_sys__insert_alloca_before_terminator(llvm::Type* type, const llvm::Twine& name, llvm::BasicBlock* block)
+{
+//  printf("%s:%d   llvm-sys::insert-alloca\n", __FILE__, __LINE__ );
+  llvm::Instruction* insertBefore = block->getTerminator();
+  llvm::AllocaInst* alloca = new llvm::AllocaInst(type,0,name,insertBefore);
+  return alloca;
+}
 ;
 
 }; // llvmo
@@ -2867,6 +2904,9 @@ namespace llvmo {
 
 CL_LISPIFY_NAME(getParent);
 CL_EXTERN_DEFMETHOD(BasicBlock_O,(llvm::Function *(llvm::BasicBlock::*)())&llvm::BasicBlock::getParent);
+
+CL_LISPIFY_NAME(getTerminator);
+CL_EXTERN_DEFMETHOD(BasicBlock_O,(llvm::TerminatorInst *(llvm::BasicBlock::*)())&llvm::BasicBlock::getTerminator);
 
 CL_LAMBDA("context &optional (name \"\") parent basic-block");
 CL_LISPIFY_NAME(basic-block-create);
@@ -3880,6 +3920,7 @@ std::shared_ptr<llvm::Module> ClaspJIT_O::optimizeModule(std::shared_ptr<llvm::M
   FPM->add(createReassociatePass());
   FPM->add(createNewGVNPass());
   FPM->add(createCFGSimplificationPass());
+  FPM->add(createPromoteMemoryToRegisterPass());
 //  FPM->add(createFunctionInliningPass());
   FPM->doInitialization();
 
@@ -3891,6 +3932,12 @@ std::shared_ptr<llvm::Module> ClaspJIT_O::optimizeModule(std::shared_ptr<llvm::M
   llvm::legacy::PassManager my_passes;
   my_passes.add(llvm::createFunctionInliningPass(4096));
   my_passes.run(*M);
+
+    // Run the optimizations over all functions in the module being added to
+  // the JIT again.
+  for (auto &F : *M)
+    FPM->run(F);
+
   // Silently remove llvm.used functions if they are defined
   //     I may use this to prevent functions from being removed from the bitcode
   //     by clang before we need them.

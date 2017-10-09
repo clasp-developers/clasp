@@ -81,22 +81,24 @@
   (let ((setf-symbol (cadr setf-function-name)))
     (irc-intrinsic "setfSymbolFunctionRead" result (irc-global-setf-symbol setf-symbol env))))
 
-(defun codegen-lexical-function-lookup (result depth index env)
-  (irc-intrinsic "lexicalFunctionRead" result (jit-constant-i32 depth) (jit-constant-i32 index) (irc-renv env)))
+(defun codegen-lexical-function-lookup (result classified env)
+  (let ((lexical-function (irc-lexical-function-lookup classified env)))
+    (irc-store lexical-function result)))
+;;  (irc-intrinsic "lexicalFunctionRead" result (jit-constant-i32 depth) (jit-constant-i32 index) (irc-renv env)))
 
 (defun codegen-function-symbol-lookup (result func env)
   "Classify the function and look it up and put it in result"
   (let* ((classified (function-info env func)))
     (if (eq (car classified) 'core::global-function)
 	(codegen-global-function-lookup result func env)
-	(codegen-lexical-function-lookup result (caddr classified) (cadddr classified) env))))
+	(codegen-lexical-function-lookup result classified env))))
 
 (defun codegen-function-setf-symbol-lookup (result setf-func env)
   "Classify the (setf XXXX) function and put it in the result"
   (let* ((classified (function-info env setf-func)))
     (if (eq (car classified) 'core::global-function)
 	(codegen-global-setf-function-lookup result setf-func env)
-	(codegen-lexical-function-lookup result (caddr classified) (cadddr classified) env))))
+	(codegen-lexical-function-lookup result classified env))))
 
 (defun codegen-function (result rest env)
   "Return IR code for a function or closure"
@@ -240,10 +242,18 @@
 		(progn
 		  (cmp-log "The symbol[%s] was not macroexpanded - using SETQ to set it\n" cur-var)
 		  (let* ((classified (variable-info env cur-var))
-			 (target-ref (if (eq (car classified) 'ext:special-var)
-					 (codegen-special-var-reference cur-var env)
-					 (let ((depth-index (cddr classified)))
-                                           (codegen-lexical-var-reference (first depth-index) (second depth-index) (irc-renv env))))))
+			 (target-ref
+                           (cond
+                             ((eq (car classified) 'ext:special-var)
+                              (codegen-special-var-reference cur-var env))
+                             ((eq (car classified) 'ext:lexical-var)
+                              (let ((depth-index (cddr classified)))
+                                (codegen-lexical-var-reference (cadr classified)
+                                                               (first depth-index)
+                                                               (second depth-index)
+                                                               env)))
+                             (t (error "Handle codegen-setq with ~s" classified)))
+                           ))
 		    (codegen temp-res cur-expr env)
 		    (irc-intrinsic "copyTsp" target-ref temp-res)))
 		;; symbol was macroexpanded use SETF
@@ -267,9 +277,9 @@ env is the parent environment of the (result-af) value frame"
     (let ((number-of-lexical-vars (number-of-lexical-variables lambda-list-handler))
 	  (result-af (irc-renv new-env)))
       (dbg-set-current-debug-location-here)
-      (irc-make-value-frame result-af number-of-lexical-vars)
+;      (irc-make-value-frame result-af number-of-lexical-vars)
 ;;      (dbg-set-activation-frame-for-ihs-top (irc-renv new-env))
-      (irc-intrinsic "setParentOfActivationFrame" result-af (irc-renv parent-env))
+      (irc-make-value-frame-set-parent new-env number-of-lexical-vars parent-env) ;(irc-intrinsic "setParentOfActivationFrame" result-af (irc-renv parent-env))
       (dbg-set-current-debug-location-here)
       ;; Save all special variables
       (do* ((cur-req (cdr reqvars) (cdr cur-req))
@@ -305,14 +315,18 @@ env is the parent environment of the (result-af) value frame"
   "Evaluate each of the exps in the evaluate-env environment
 and put the values into the activation frame for new-env.
 env is the parent environment of the (result-af) value frame"
+  (cmp-log "entered codegen-fill-let*-environment\n")
+  (cmp-log "   new-env -> %s\n" new-env)
+  (cmp-log "   parent-env -> %s\n" parent-env)
+  (cmp-log "   evaluate-env -> %s\n" evaluate-env)
   (multiple-value-bind (reqvars)
       (process-lambda-list-handler lambda-list-handler)
     (let ((number-of-lexical-vars (number-of-lexical-variables lambda-list-handler))
 	  (result-af (irc-renv new-env)))
       (dbg-set-current-debug-location-here)
-      (irc-make-value-frame result-af number-of-lexical-vars)
+;      (irc-make-value-frame result-af number-of-lexical-vars)
 ;;      (dbg-set-activation-frame-for-ihs-top (irc-renv new-env))
-      (irc-intrinsic "setParentOfActivationFrame" result-af (irc-renv parent-env))
+      (irc-make-value-frame-set-parent new-env number-of-lexical-vars parent-env) ;      (irc-intrinsic "setParentOfActivationFrame" result-af (irc-renv parent-env))
       (dbg-set-current-debug-location-here)
       ;; Save all special variables
       (do* ((cur-req (cdr reqvars) (cdr cur-req))
@@ -451,8 +465,10 @@ jump to blocks within this tagbody."
 	 (enumerated-tag-blocks (tagbody.enumerate-tag-blocks rest tagbody-env)))
     ;; If the GO spec.ops. are in the same function we could use simple cleanup and branches for TAGBODY/GO
     ;; so save the function
-    (irc-make-tagbody-frame env (irc-renv tagbody-env))
-    (irc-intrinsic "setParentOfActivationFrame" (irc-renv tagbody-env) (irc-renv env))
+    (let ((instruction (irc-intrinsic "makeTagbodyFrame" (irc-renv tagbody-env))))
+      (push (make-tagbody-frame-maker :instruction instruction)
+            *tagbody-frame-makers*))
+    (irc-set-parent (irc-renv tagbody-env) env) ; (irc-intrinsic "setParentOfActivationFrame" (irc-renv tagbody-env) (irc-renv env))
     (irc-low-level-trace :tagbody)
     (setf-metadata tagbody-env 'tagbody-function *current-function*)
     (cmp-log "codegen-tagbody tagbody environment: %s\n" tagbody-env)
@@ -502,9 +518,18 @@ jump to blocks within this tagbody."
     (cond
       ((and classified-tag (eq (car classified-tag) 'dynamic-go))
        (let ((depth (cadr classified-tag))
-	     (index (caddr classified-tag)))
+	     (index (caddr classified-tag))
+             (tagbody-env (cadddr classified-tag)))
 	 (irc-low-level-trace :go)
-	 (irc-intrinsic "throwDynamicGo" (jit-constant-size_t depth) (jit-constant-size_t index) (irc-renv env))))
+	 (let ((instruction (irc-intrinsic "throwDynamicGo" (jit-constant-size_t depth) (jit-constant-size_t index) (irc-renv env))))
+           (push (make-throw-dynamic-go :instruction instruction
+                                        :depth depth
+                                        :index index
+                                        :start-env env
+                                        :start-renv (irc-renv env)
+                                        :tagbody-env tagbody-env)
+                 *throw-dynamic-go-instructions*)
+           instruction)))
       ((and classified-tag (eq (car classified-tag) 'local-go))
        (let ((depth (cadr classified-tag))
 	     (index (caddr classified-tag))
@@ -514,9 +539,7 @@ jump to blocks within this tagbody."
 		(go-block (elt go-vec index)))
 	   (irc-unwind-into-environment env tagbody-env)
 	   (irc-br go-block "go-block")
-	   (irc-begin-block (irc-basic-block-create "after-go"))
-	   )
-	 ))
+	   (irc-begin-block (irc-basic-block-create "after-go")))))
       (t (error "go to unknown classified tag ~a ~a" tag classified-tag)))))
 
 ;;; BLOCK, RETURN-FROM
@@ -549,8 +572,7 @@ jump to blocks within this tagbody."
 	    (irc-intrinsic "restoreFromMultipleValue0" result)
 	    (irc-br after-return-block "after-return-block-2")
 	    (irc-begin-block after-return-block)
-            (irc-intrinsic "exceptionStackUnwind" frame)
-	    ))))))
+            (irc-intrinsic "exceptionStackUnwind" frame)))))))
 
 (defun codegen-return-from (result rest env)
   (dbg-set-current-debug-location-here)
@@ -721,8 +743,8 @@ jump to blocks within this tagbody."
 		      :label "locally-env")))
 	;; TODO: A runtime environment will be created with space for the specials
 	;; but they aren't used - get rid of them
-	(irc-make-value-frame (irc-renv new-env) 0)
-	(irc-intrinsic "setParentOfActivationFrame" (irc-renv new-env) (irc-renv env))
+;;;	(irc-make-value-frame (irc-renv new-env) 0)
+        (irc-make-value-frame-set-parent new-env 0 env) ; (irc-intrinsic "setParentOfActivationFrame" (irc-renv new-env) (irc-renv env))
 	(dolist (sp specials)
 	  (value-environment-define-special-binding new-env sp))
 	(codegen-progn result code new-env)
@@ -773,15 +795,19 @@ jump to blocks within this tagbody."
                  (,env-name ,compiler-env))
              ,@body))))
 
-
+#|
 #+(or)
 (defun codegen-bind-va-list (result form evaluate-env)
-  (let ((lambda-list (car form))
-        (vaslist (cadr form))
-        (body (cddr form)))
-    (multiple-value-bind (declares code docstring specials )
+  (let ((lambda-list (first form))
+        (vaslist     (second form))
+        (body        (cddr form)))
+    (multiple-value-bind (declares code docstring specials)
         (process-declarations body t)
-      (let* ((lambda-list-handler (make-lambda-list-handler lambda-list declares 'core::function))
+      (let ((lambda-list-handler (make-lambda-list-handler lambda-list declares 'core::function)))
+        (multiple-value-bind (cleavir-lambda-list new-body)
+            (transform-lambda-parts lambda-list-handler declares docstring code)
+          
+             (c
              (new-env (irc-new-unbound-value-environment-of-size
                        evaluate-env
                        :number-of-arguments (number-of-lexical-variables lambda-list-handler)
@@ -795,8 +821,8 @@ jump to blocks within this tagbody."
              (_        (COPY_VASLIST_INTO_ARGUMENTS????????))
              (callconv (initialize-calling-convention ARGUMENTS setup)))
         (calling-convention-maybe-push-invocation-history-frame callconv)
-        (irc-make-value-frame (irc-renv new-env) (number-of-lexical-variables lambda-list-handler))
-        (irc-intrinsic "setParentOfActivationFrame" (irc-renv new-env) (irc-renv evaluate-env))
+;;;        (irc-make-value-frame (irc-renv new-env) (number-of-lexical-variables lambda-list-handler))
+        (irc-make-value-frame-set-parent (irc-renv new-env) (number-of-lexical-variables lambda-list-handler) evaluate-env) ; (irc-intrinsic "setParentOfActivationFrame" (irc-renv new-env) (irc-renv evaluate-env))
         (with-try
             (progn
               (compile-general-lambda-list-code lambda-list-handler evaluate-env callconv new-env)
@@ -805,7 +831,7 @@ jump to blocks within this tagbody."
            (cmp-log "About to calling-convention-maybe-pop-invocation-history-frame\n")
            (calling-convention-maybe-pop-invocation-history-frame callconf)
            (irc-unwind-environment new-env)))))))
-  
+|#  
 
 ;;; MULTIPLE-VALUE-FOREIGN-CALL
 

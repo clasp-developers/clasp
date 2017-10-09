@@ -198,9 +198,9 @@
             ;; Don't enforce .bc extension for additional-bitcode-pathnames
             ;; This is where I used to link the additional-bitcode-pathnames
             (dolist (part-pn part-pathnames)
-              (let* ((bc-file (make-pathname :type "bc" :defaults part-pn)))
+              (let* ((bc-file (make-pathname :type (if cmp::*use-human-readable-bitcode* "ll" "bc") :defaults part-pn)))
                 (bformat t "Linking %s\n" bc-file)
-                (let* ((part-module (llvm-sys:parse-bitcode-file (namestring (truename bc-file)) *llvm-context*)))
+                (let* ((part-module (parse-bitcode (namestring (truename bc-file)) *llvm-context*)))
                   (incf part-index)
                   (multiple-value-bind (failure error-msg)
                       (let ((global-ctor (find-global-ctor-function part-module))

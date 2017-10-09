@@ -55,6 +55,33 @@
   (warn "Do something with dump-function"))
 (export 'dump-function)
 
+(defun write-bitcode (module output-path)
+  ;; Write bitcode as either .bc files or .ll files
+  (if *use-human-readable-bitcode*
+      (let* ((filename (make-pathname :type "ll" :defaults (pathname output-path)))
+             (output-name (namestring filename))
+             (fout (open output-name :direction :output)))
+        (unwind-protect
+             (llvm-sys:dump-module module fout)
+          (close fout)))
+      (llvm-sys:write-bitcode-to-file module output-path)))
+
+(defun load-bitcode (filename)
+  (if *use-human-readable-bitcode*
+      (let* ((input-name (make-pathname :type "ll" :defaults (pathname filename))))
+        (llvm-sys:load-bitcode-ll input-name))
+      (llvm-sys:load-bitcode filename)))
+
+(defun parse-bitcode (filename context)
+  ;; Load a module from a bitcode or .ll file
+  (if *use-human-readable-bitcode*
+      (let ((input-name (make-pathname :type "ll" :defaults (pathname filename))))
+        (llvm-sys:parse-irfile input-name context))
+      (llvm-sys:parse-bitcode-file filename context)))
+
+(export '(write-bitcode load-bitcode parse-bitcode))
+
+
 (defvar *builtins-module* nil)
 
 (defun get-builtins-module ()

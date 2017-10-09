@@ -57,6 +57,9 @@
           compile-error-if-not-enough-arguments
           compile-in-env
           compile-lambda-function
+          compile-lambda-list-code
+          cclasp-maybe-alloc-cc-setup
+          cclasp-setup-calling-convention
           bclasp-compile-form
           compile-form
           compiler-error
@@ -118,9 +121,14 @@
           with-dbg-lexical-block
           dbg-set-current-source-pos
           dbg-set-current-source-pos-for-irbuilder
+          *irbuilder-function-alloca*
           with-debug-info-generator
           with-irbuilder
           with-landing-pad
+          irc-alloca-vaslist
+          irc-alloca-register-save-area
+          irc-alloca-invocation-history-frame
+          irc-alloca-size_t
           compile-reference-to-literal
           ltv-global
           bclasp-compile
