@@ -473,7 +473,15 @@ The passed module is modified as a side-effect."
   (declare (type (or null llvm-sys:module) module))
   (when (and *optimizations-on* module)
     #++(let ((call-sites (call-sites-to-always-inline module)))
-      (bformat t "Call-sites -> %s\n" call-sites))
+         (bformat t "Call-sites -> %s\n" call-sites))
+    ;; Link in the builtins as part of the optimization
+    (progn
+      (let ((linker (llvm-sys:make-linker module))
+            (builtins-clone (llvm-sys:clone-module (get-builtins-module))))
+        ;;(remove-always-inline-from-functions builtins-clone)
+        (quick-module-dump builtins-clone "builtins-clone")
+        (llvm-sys:link-in-module linker builtins-clone)))
+    
     (let* ((pass-manager-builder (llvm-sys:make-pass-manager-builder))
            (mpm (llvm-sys:make-pass-manager))
            (fpm (llvm-sys:make-function-pass-manager module))
@@ -485,8 +493,13 @@ The passed module is modified as a side-effect."
                      (t (error "Unsupported optimize-level ~a - only :-O3 :-O2 :-O1 :-O0 are allowed" optimize-level)))))
       (llvm-sys:pass-manager-builder-setf-opt-level pass-manager-builder olevel)
       (llvm-sys:pass-manager-builder-setf-size-level pass-manager-builder size-level)
-      (llvm-sys:populate-ltopass-manager pass-manager-builder mpm)
-      (llvm-sys:pass-manager-run mpm module)))
+      (progn
+        (llvm-sys:pass-manager-builder-setf-inliner pass-manager-builder (llvm-sys:create-always-inliner-legacy-pass))
+        (llvm-sys:populate-function-pass-manager pass-manager-builder fpm)
+        (llvm-sys:populate-module-pass-manager pass-manager-builder mpm))
+      #+(or)(llvm-sys:populate-ltopass-manager pass-manager-builder mpm)
+      (llvm-sys:pass-manager-run mpm module))
+    #+(or)(llvm-sys:remove-always-inline-functions module))
   module)
 
 

@@ -259,6 +259,7 @@
     (resize-closures-and-make-non-closures-invisible make-value-environment-instructions
                                                      closure-environments)))
 
+(defvar *activation-frame-optimize* t)
 (defmacro with-lexical-variable-optimizer ((optimize) &rest body)
   (let ((variable-map (gensym)))
     `(let ((*lexical-variable-references* nil)
@@ -268,7 +269,7 @@
            (*lexical-function-references* nil)
            (*lexical-function-frame-makers* nil))
        (multiple-value-prog1 (progn ,@body)
-         (when ,optimize
+         (when (and ,optimize *activation-frame-optimize*)
            (let ((,variable-map (optimize-value-environments *lexical-variable-references*)))
              (cv-log "optimize-closures ,variable-map \n")
              (optimize-closures ,variable-map *make-value-frame-instructions*)
@@ -381,7 +382,7 @@
 
 (defun codegen-lexical-var-value (symbol depth index env)
   (let ((ref (codegen-lexical-var-reference symbol depth index env)))
-    (irc-load ref "lexical-value")))
+    (irc-load ref "lexical-value-load")))
 
 
 (defun codegen-lexical-var-lookup (result symbol depth index env)

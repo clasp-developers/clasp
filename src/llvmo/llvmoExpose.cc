@@ -3908,8 +3908,34 @@ CL_DEFUN void llvm_sys__remove_useless_global_ctors(Module_sp module) {
     
   
 
+CL_DEFUN llvm::Module* llvm_sys_optimizeModule(llvm::Module* module)
+{
+  std::shared_ptr<llvm::Module> M(module);
+  return &*optimizeModule(std::move(M));
+}
 
-std::shared_ptr<llvm::Module> ClaspJIT_O::optimizeModule(std::shared_ptr<llvm::Module> M) {
+
+void removeAlwaysInlineFunctions(llvm::Module* M) {
+  // Silently remove always-inline functions from the module
+  std::vector<llvm::Function*> inline_funcs;
+  for (auto &F : *M) {
+    if (F.hasFnAttribute(llvm::Attribute::AlwaysInline)) {
+      inline_funcs.push_back(&F);
+    }
+  }
+  for ( auto f : inline_funcs) {
+//    printf("%s:%d Erasing function: %s\n", __FILE__, __LINE__, f->getName().str().c_str());
+    f->eraseFromParent();
+  }
+}
+
+CL_DEFUN void llvm_sys__removeAlwaysInlineFunctions(llvm::Module* module)
+{
+  removeAlwaysInlineFunctions(module);
+}
+
+
+std::shared_ptr<llvm::Module> optimizeModule(std::shared_ptr<llvm::Module> M) {
   core::LightTimer timer;
   timer.start();
   // Create a function pass manager.
@@ -3924,11 +3950,12 @@ std::shared_ptr<llvm::Module> ClaspJIT_O::optimizeModule(std::shared_ptr<llvm::M
 //  FPM->add(createFunctionInliningPass());
   FPM->doInitialization();
 
-  // Run the optimizations over all functions in the module being added to
-  // the JIT.
+  // !!!! I run this after inlining again -
+  // - But if I don't run it here - it crashes when I try to clone the module for disassemble
+  // Run the optimizations over all functions in the module being added to the JIT.
   for (auto &F : *M)
     FPM->run(F);
-
+  
   llvm::legacy::PassManager my_passes;
   my_passes.add(llvm::createFunctionInliningPass(4096));
   my_passes.run(*M);
@@ -3953,6 +3980,10 @@ std::shared_ptr<llvm::Module> ClaspJIT_O::optimizeModule(std::shared_ptr<llvm::M
 #endif
     used->eraseFromParent();
   }
+
+#if 1
+  removeAlwaysInlineFunctions(&*M);
+#else
   // Silently remove always-inline functions from the module
   std::vector<llvm::Function*> inline_funcs;
   for (auto &F : *M) {
@@ -3964,7 +3995,7 @@ std::shared_ptr<llvm::Module> ClaspJIT_O::optimizeModule(std::shared_ptr<llvm::M
 //    printf("%s:%d Erasing function: %s\n", __FILE__, __LINE__, f->getName().str().c_str());
     f->eraseFromParent();
   }
-  
+#endif
   timer.stop();
   double thisTime = timer.getAccumulatedTime();
   accumulate_llvm_timing_data(thisTime);

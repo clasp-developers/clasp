@@ -1003,7 +1003,7 @@ and then the irbuilder-alloca, irbuilder-body."
 (defun irc-pointer-cast (from totype &optional (label ""))
   (llvm-sys:create-pointer-cast *irbuilder* from totype label))
 
-(defun irc-bit-cast (from totype &optional (label ""))
+(defun irc-bit-cast (from totype &optional (label "irc-bit-cast"))
   (llvm-sys:create-bit-cast *irbuilder* from totype label))
 
 (defun irc-irbuilder-status (&optional (irbuilder *irbuilder*) (label "current *irbuilder*"))

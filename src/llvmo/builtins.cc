@@ -125,14 +125,14 @@ BUILTIN_ATTRIBUTES void cc_simpleBitVectorAset(core::T_O* tarray, size_t index, 
 }
 
 BUILTIN_ATTRIBUTES void invisible_makeValueFrameSetParent(core::T_sp* tarray, core::T_sp* parent) {
-  *tarray = *parent;
+  tarray->rawRef_() = parent->rawRef_();
 }
 
 BUILTIN_ATTRIBUTES void invisible_makeValueFrameSetParentFromClosure(core::T_sp* tarray, core::T_O* closureRaw) {
   if (closureRaw!=NULL) {
-    core::Closure_sp closure = core::Closure_sp((gctools::Tagged)closureRaw);
-    core::T_sp activationFrame = closure->closedEnvironment();
-    *tarray = activationFrame;
+    core::Closure_O* closureP = reinterpret_cast<core::Closure_O*>(gc::untag_general<core::T_O*>(closureRaw));
+    core::T_sp activationFrame = closureP->closedEnvironment();
+    *tarray = activationFrame; // >rawRef_() = closureRaw; //  = activationFrame;
   } else {
     *tarray = _Nil<core::T_O>();
   }

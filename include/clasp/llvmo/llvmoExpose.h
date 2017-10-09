@@ -4424,7 +4424,7 @@ namespace llvmo {
     core::Pointer_sp findSymbolIn(ModuleHandle_sp handle, const std::string& Name, bool exportedSymbolsOnly );
     bool removeModule(ModuleHandle_sp H);
 
-    std::shared_ptr<llvm::Module> optimizeModule(std::shared_ptr<llvm::Module> M);
+//    std::shared_ptr<llvm::Module> optimizeModule(std::shared_ptr<llvm::Module> M);
   };
 
 };
@@ -4465,6 +4465,7 @@ namespace llvmo {
 
   core::T_sp llvm_sys__lookup_jit_symbol_info(void* ptr);
 
+  std::shared_ptr<llvm::Module> optimizeModule(std::shared_ptr<llvm::Module> M);
 };
 
 
