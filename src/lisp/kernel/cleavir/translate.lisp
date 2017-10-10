@@ -1270,14 +1270,14 @@ that llvm function. This works like compile-lambda-function in bclasp."
       (multiple-value-prog1 (translate mir map-enter-to-landing-pad *abi-x86-64*)
         (setf *ct-translate* (compiler-timer-elapsed))))))
 
-(defun cleavir-compile-file-form (form)
+(defun cleavir-compile-file-form (form &optional (env *clasp-env*))
   (let ((cleavir-generate-ast:*compiler* 'cl:compile-file)
         (core:*use-cleavir-compiler* t))
     (literal:with-top-level-form
      (cmp:dbg-set-current-source-pos form)
       (if cmp::*debug-compile-file*
-          (compiler-time (compile-form form))
-          (compile-form form)))))
+          (compiler-time (compile-form form env))
+          (compile-form form env)))))
 
 (defun cclasp-compile-in-env (name form &optional env)
   (let ((cleavir-generate-ast:*compiler* 'cl:compile)
