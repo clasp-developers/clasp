@@ -48,7 +48,9 @@
           t)
          (cleavir-ast:make-load-time-value-ast
           '(sicl-genv:variable-cell ',(cleavir-env:name info) sicl-genv:+global-environment+)
-          t))))
+          t)
+         (cleavir-ast:make-load-time-value-ast
+          '(sicl-genv:variable-unbound ',(cleavir-env:name info) sicl-genv:+global-environment+)))))
 
 (defmethod cleavir-generate-ast:convert-setq-special-variable
     ((info cleavir-env:special-variable-info) var form-ast (env sandbox-environment) system)
@@ -169,6 +171,7 @@
         (lambda () environment))
   (setf (sicl-genv:fdefinition 'sicl-genv:function-cell environment) #'sicl-genv:function-cell)
   (setf (sicl-genv:fdefinition 'sicl-genv:variable-cell environment) #'sicl-genv:variable-cell)
+  (setf (sicl-genv:fdefinition 'sicl-genv:variable-unbound environment) #'sicl-genv:variable-unbound)
   (setf (sicl-genv:fdefinition 'core:symbol-value-from-cell environment) #'core:symbol-value-from-cell)
   (setf (sicl-genv:fdefinition 'core:setf-symbol-value-from-cell environment) #'core:setf-symbol-value-from-cell))
 

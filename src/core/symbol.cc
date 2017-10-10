@@ -129,11 +129,11 @@ CL_DEFUN T_sp cl__symbol_value(Symbol_sp arg) {
   return arg->symbolValue();
 };
 
-CL_LAMBDA(symbol cell);
+CL_LAMBDA(symbol cell unbound);
 CL_DECLARE();
 CL_DOCSTRING("Get the value of a symbol from TLS or from the given CELL");
-CL_DEFUN T_sp core__symbol_value_from_cell(Symbol_sp symbol, Cons_sp cell) {
-  return symbol->symbolValueFromCell(cell);
+CL_DEFUN T_sp core__symbol_value_from_cell(Symbol_sp symbol, Cons_sp cell, T_sp unbound_marker) {
+  return symbol->symbolValueFromCell(cell, unbound_marker);
 }
 
 CL_LAMBDA(arg);

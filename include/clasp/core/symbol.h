@@ -157,9 +157,11 @@ CL_DEFMETHOD   bool specialP() const { return this->_IsSpecial; };
     return val;
   }
 
-  inline T_sp symbolValueFromCell(Cons_sp cell) const {
+  inline T_sp symbolValueFromCell(Cons_sp cell, T_sp unbound_marker) const {
     T_sp val = *this->valueReference(&(CONS_CAR(cell)));
-    if (val.unboundp()) this->symbolUnboundError();
+    // FIXME: SICL allows many unbound values, but we don't even pick one properly,
+    // i.e. we just check for both rather than checking TLS.unboundp() and global.eq(marker).
+    if (val.unboundp() || val == unbound_marker) this->symbolUnboundError();
     return val;
   }
 
