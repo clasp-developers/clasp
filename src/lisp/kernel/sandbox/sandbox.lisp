@@ -102,7 +102,11 @@
                                           'llvm-sys:external-linkage))))
     (let ((form (mexpand form environment)))
       (typecase form
-        (symbol (car (sicl-genv:variable-cell form environment)))
+        (symbol
+         (core:symbol-value-from-cell
+          form
+          (sicl-genv:variable-cell form environment)
+          (sicl-genv:variable-unbound form environment)))
         (cons
          (if (symbolp (first form))
              (if (sicl-genv:special-operator (first form) environment)
@@ -148,7 +152,8 @@
       ;; this is inefficient in that it will look up the cell (a hash lookup)
       ;; every time. but since this is just the function it might be okay.
       (core:symbol-value-from-cell
-       symbol (sicl-genv:variable-cell symbol environment)))
+       symbol (sicl-genv:variable-cell symbol environment)
+       (sicl-genv:variable-unbound symbol environment)))
     (def (setf cl:symbol-value) (value symbol)
       (core:setf-symbol-value-from-cell
        symbol value (sicl-genv:variable-cell symbol environment)))
