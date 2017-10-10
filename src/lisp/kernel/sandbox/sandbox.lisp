@@ -70,6 +70,9 @@
 	  '(sicl-genv:variable-cell ',(cleavir-env:name info) sicl-genv:+global-environment+)
 	  nil))))
 
+(defmethod cleavir-env:eval (form environment (dispatch sandbox-environment))
+  (clasp-cleavir::cclasp-eval-with-env form environment))
+
 ;;; Hooking it up with us
 
 (defmethod clasp-cleavir::cclasp-eval-with-env (form (environment sandbox-environment))
@@ -174,6 +177,7 @@
   (setf (sicl-genv:constant-variable 'sicl-genv:+global-environment+ environment) environment)
   (setf (sicl-genv:fdefinition 'sicl-genv:global-environment environment)
         (lambda () environment))
+  (setf (sicl-genv:fdefinition 'sicl-genv:macro-function environment) #'sicl-genv:macro-function)
   (setf (sicl-genv:fdefinition 'sicl-genv:function-cell environment) #'sicl-genv:function-cell)
   (setf (sicl-genv:fdefinition 'sicl-genv:variable-cell environment) #'sicl-genv:variable-cell)
   (setf (sicl-genv:fdefinition 'sicl-genv:variable-unbound environment) #'sicl-genv:variable-unbound)
@@ -276,7 +280,9 @@
     with-standard-io-syntax with-accessors when prog1 call-method do do* and with-compilation-unit
     print-unreadable-object multiple-value-setq unless destructuring-bind with-slots cond
     multiple-value-bind dolist multiple-value-list loop-finish lambda time return with-output-to-string
-    or ecase))
+    or ecase
+    ;; in clasp these are macros, and safe ones, just converting to calls.
+    unwind-protect throw catch))
 
 (defun import-safe-macros (environment)
   (dolist (s *safe-macros*)
@@ -305,3 +311,7 @@
             (shiftf /// // / values)
             (shiftf *** ** * (car values))
             (repl-print values stream)))))))
+
+(defun sandbox-compile-file-hook (env)
+  (lambda (form)
+    (clasp-cleavir::cleavir-compile-file-form form env)))
