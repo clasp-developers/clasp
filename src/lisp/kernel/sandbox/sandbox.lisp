@@ -306,7 +306,25 @@
 (defun import-macros (environment macros)
   (dolist (s macros)
     (setf (sicl-genv:macro-function s environment)
-          (macro-function s))))  
+          (macro-function s))))
+
+(defpackage #:coerce
+  (:export #:fdesignator))
+
+;;; I want this one earlier because we need it for multiple-value-call, funcall, etc basic things
+(defun install-coerce-fdesignator (environment)
+  (setf (sicl-genv:fdefinition 'coerce:fdesignator environment)
+        (lambda (fdesignator)
+          (etypecase fdesignator
+            (symbol (sicl-genv:fdefinition fdesignator environment))
+            (function fdesignator)))))
+
+(defun install-multiple-value-call (environment)
+  (setf (sicl-genv:macro-function 'cl:multiple-value-call environment)
+        (macro-lambda multiple-value-call (function-form &rest forms)
+          `(cleavir-primop:multiple-value-call
+               (coerce:fdesignator ,function-form)
+             ,@forms))))
 
 (defun repl-print (values &optional (stream *terminal-io*))
   (fresh-line stream)
