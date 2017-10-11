@@ -37,12 +37,12 @@
   (cmp-log "About to codegen-special-var-lookup symbol[%s]\n" sym)
   (if (eq sym 'nil)
       (codegen-literal result nil env)
-      (let ((global-symbol-ptr (irc-global-symbol sym env)))
-	(cmp-log "About to invoke create-call2 - global-symbol-ptr --> %s\n" global-symbol-ptr)
-	(irc-intrinsic "symbolValueRead" result global-symbol-ptr))))
+      (let* ((global-symbol (irc-global-symbol sym env))
+             (val (irc-intrinsic "symbolValueRead" result global-symbol)))
+        (irc-store val result))))
 
 
-
+#+(or)
 (defun codegen-local-lexical-var-reference (index renv)
   "Generate code to reference a lexical variable in the current value frame"
   (or (equal (llvm-sys:get-type renv) %afsp*%)
@@ -60,6 +60,7 @@
          (entry-ptr                 (irc-int-to-ptr entry-uintptr_t %tsp*% (bformat nil "frame[%s]-ptr" index))))
     entry-ptr))
 
+#+(or)
 (defun codegen-parent-frame-lookup (renv)
   (let* ((value-frame-tsp        (irc-load          renv))
          (tagged-value-frame-ptr (irc-extract-value value-frame-tsp (list 0) "pfl-tagged-value-frame-ptr"))
@@ -139,7 +140,8 @@
 
 (defun codegen-symbol-value (result symbol env)
   (if (keywordp symbol)
-      (irc-intrinsic "symbolValueRead" result (irc-global-symbol symbol env))
+      (let ((val (irc-intrinsic "symbolValueRead" result (irc-global-symbol symbol env))))
+        (irc-store val result))
       (let ((expanded (macroexpand symbol env)))
 	(if (eq expanded symbol)
 	    ;; The symbol is unchanged, look up its value

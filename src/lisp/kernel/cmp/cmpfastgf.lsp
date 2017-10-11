@@ -450,10 +450,9 @@
 	  (unless eql-selector-id
 	    (setf eql-selector-id (prog1 *gf-data-id* (incf *gf-data-id*)))
 	    (setf (gethash eql-test *eql-selectors*) eql-selector-id))
-	  (let* ((eql-selector (irc-smart-ptr-extract
-				(irc-load (irc-gep *gf-data*
-						   (list (jit-constant-size_t 0)
-							 (jit-constant-size_t eql-selector-id))) "load") "extract-sp")))
+	  (let* ((eql-selector (irc-load (irc-gep *gf-data*
+                                                  (list (jit-constant-size_t 0)
+                                                        (jit-constant-size_t eql-selector-id))) "load")))
 	    eql-selector)))))
 
 ;;; ------------------------------------------------------------
@@ -511,10 +510,9 @@
     (setf (gethash outcome *outcomes*) gf-data-id)
     (irc-branch-to-and-begin-block effective-method-block)
     (let ((effective-method
-           (irc-smart-ptr-extract
             (irc-load (irc-gep *gf-data*
                                (list (jit-constant-size_t 0)
-                                     (jit-constant-size_t gf-data-id))) "load") "extract-sp")))
+                                     (jit-constant-size_t gf-data-id))) "load")))
       (debug-pointer (irc-ptr-to-int
                       (irc-gep *gf-data*
                                (list (jit-constant-size_t 0)
@@ -532,10 +530,9 @@
     (setf (gethash outcome *outcomes*) gf-data-id)
     (irc-branch-to-and-begin-block effective-method-block)
     (let ((effective-method
-           (irc-smart-ptr-extract
             (irc-load (irc-gep *gf-data*
                                (list (jit-constant-size_t 0)
-                                     (jit-constant-size_t gf-data-id))) "load") "extract-sp")))
+                                     (jit-constant-size_t gf-data-id))) "load")))
       (debug-pointer (irc-ptr-to-int
                       (irc-gep *gf-data*
                                (list (jit-constant-size_t 0)
@@ -550,10 +547,9 @@
     (setf (gethash outcome *outcomes*) gf-data-id)
     (irc-branch-to-and-begin-block effective-method-block)
     (let ((effective-method
-           (irc-smart-ptr-extract
             (irc-load (irc-gep *gf-data*
                                (list (jit-constant-size_t 0)
-                                     (jit-constant-size_t gf-data-id))) "load") "extract-sp")))
+                                     (jit-constant-size_t gf-data-id))) "load")))
       (debug-pointer (irc-ptr-to-int
                       (irc-gep *gf-data*
                                (list (jit-constant-size_t 0)
@@ -627,7 +623,7 @@
 (defun codegen-arg-stamp (arg)
   "Return a uintptr_t llvm::Value that contains the stamp for this object"
   ;; First check the tag
-  (let ((stamp (irc-intrinsic-call "cc_read_stamp" (list (irc-bit-cast arg %void*%)))))
+  (let ((stamp (irc-intrinsic-call "cc_read_stamp" (list (irc-bit-cast arg %i8*%)))))
     (debug-stamp stamp)
     stamp))
 
@@ -800,10 +796,10 @@
 	       (*current-function* disp-fn)
                (*gf-data* 
 		(llvm-sys:make-global-variable *the-module*
-					       cmp:%tsp[DUMMY]% ; type
+					       cmp:%t*[DUMMY]% ; type
 					       nil ; isConstant
 					       'llvm-sys:internal-linkage
-					       (llvm-sys:undef-value-get cmp:%tsp[DUMMY]%)
+					       (llvm-sys:undef-value-get cmp:%t*[DUMMY]%)
 					       ;; nil ; initializer
 					       (next-value-table-holder-name "dummy")))
                (*gcroots-in-module* 
@@ -850,14 +846,14 @@
 		(irc-begin-block miss-bb)
 		(irc-intrinsic-call "llvm.va_end" (list (irc-pointer-cast in-frame-va_list/va_list* %i8*% "in-frame-va_list/i8*")))
 		(irc-ret (irc-intrinsic-call "cc_dispatch_miss" (list gf passed-args) "ret")))))
-          (let* ((array-type (llvm-sys:array-type-get cmp:%tsp% *gf-data-id*))
+          (let* ((array-type (llvm-sys:array-type-get cmp:%t*% *gf-data-id*))
 		 (correct-size-holder (llvm-sys:make-global-variable *the-module*
 								     array-type
 								     nil ; isConstant
 								     'llvm-sys:internal-linkage
 								     (llvm-sys:undef-value-get array-type)
 								     (bformat nil "CONSTANTS-%d" (incf *dispatcher-count*))))
-		 (bitcast-correct-size-holder (irc-bit-cast correct-size-holder %tsp[DUMMY]*% "bitcast-table")))
+		 (bitcast-correct-size-holder (irc-bit-cast correct-size-holder %t*[DUMMY]*% "bitcast-table")))
             (multiple-value-bind (startup-fn shutdown-fn)
                 (codegen-startup-shutdown *gcroots-in-module* correct-size-holder *gf-data-id*)
               (llvm-sys:replace-all-uses-with *gf-data* bitcast-correct-size-holder)

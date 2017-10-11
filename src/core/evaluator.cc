@@ -2051,7 +2051,7 @@ struct InterpreterTrace {
   };
 };
 
-__attribute__((optnone)) T_mv evaluate(T_sp exp, T_sp environment) {
+DONT_OPTIMIZE_WHEN_DEBUG_RELEASE T_mv evaluate(T_sp exp, T_sp environment) {
   //	    Environment_sp localEnvironment = environment;
   //            printf("%s:%d evaluate %s environment@%p\n", __FILE__, __LINE__, _rep_(exp).c_str(), environment.raw_());
   //            printf("    environment: %s\n", _rep_(environment).c_str() );

@@ -861,10 +861,10 @@
 	       (*current-function* disp-fn)
                (*gf-data* 
 		(llvm-sys:make-global-variable *the-module*
-					       cmp:%tsp[DUMMY]% ; type
+					       cmp:%t*[DUMMY]% ; type
 					       nil ; isConstant
 					       'llvm-sys:internal-linkage
-					       (llvm-sys:undef-value-get cmp:%tsp[DUMMY]%)
+					       (llvm-sys:undef-value-get cmp:%t*[DUMMY]%)
 					       ;; nil ; initializer
 					       (next-value-table-holder-name "dummy")))
                (*gcroots-in-module* 
@@ -911,14 +911,14 @@
 		(irc-begin-block miss-bb)
 		(irc-intrinsic-call "llvm.va_end" (list (irc-pointer-cast in-frame-va_list/va_list* %i8*% "in-frame-va_list/i8*")))
 		(irc-ret (irc-intrinsic-call "cc_dispatch_miss" (list gf passed-args) "ret")))))
-          (let* ((array-type (llvm-sys:array-type-get cmp:%tsp% *gf-data-id*))
+          (let* ((array-type (llvm-sys:array-type-get cmp:%t*% *gf-data-id*))
 		 (correct-size-holder (llvm-sys:make-global-variable *the-module*
 								     array-type
 								     nil ; isConstant
 								     'llvm-sys:internal-linkage
 								     (llvm-sys:undef-value-get array-type)
 								     (bformat nil "CONSTANTS-%d" (incf *dispatcher-count*))))
-		 (bitcast-correct-size-holder (irc-bit-cast correct-size-holder %tsp[DUMMY]*% "bitcast-table")))
+		 (bitcast-correct-size-holder (irc-bit-cast correct-size-holder %t*[DUMMY]*% "bitcast-table")))
             (multiple-value-bind (startup-fn shutdown-fn)
                 (codegen-startup-shutdown *gcroots-in-module* correct-size-holder *gf-data-id*)
               (llvm-sys:replace-all-uses-with *gf-data* bitcast-correct-size-holder)

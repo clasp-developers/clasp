@@ -2647,6 +2647,7 @@ public:
     /*        if (this->_ptr != NULL ) delete this->_ptr; */
     this->_ptr = ptr;
   }
+  core::List_sp getArgumentList() const;
   llvm::Function* getCalledFunction();
   CL_DEFMETHOD bool CallInstP() const { return true; };
   CallInst_O() : Base(){};
@@ -3029,6 +3030,7 @@ public:
     /*        if (this->_ptr != NULL ) delete this->_ptr; */
     this->_ptr = ptr;
   }
+  core::List_sp getArgumentList() const;
   llvm::Function* getCalledFunction();
   CL_DEFMETHOD bool InvokeInstP() const { return true; };
   InvokeInst_O() : Base(){};

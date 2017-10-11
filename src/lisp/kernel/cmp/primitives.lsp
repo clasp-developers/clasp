@@ -2,7 +2,6 @@
 
 
 (defstruct (primitive (:type vector) :named)
-  tsp-tmv-function
   return-type
   argument-types
   return-attributes
@@ -31,7 +30,6 @@
     (let* ((return-ty (if (consp return-ty-attributes) (car return-ty-attributes) return-ty-attributes))
            (argument-types (nreverse reversed-argument-types)))
       (make-primitive
-       :tsp-tmv-function (equal (car argument-types) :tsp*-or-tmv*)
        :return-type return-ty
        :argument-types argument-types
        :return-attributes return-attributes
@@ -41,9 +39,6 @@
                          :does-not-return does-not-return)))))
 
 (defun primitive (name return-ty-attr args-ty-attr &key varargs does-not-throw does-not-return )
-  (mapc #'(lambda (x)
-	    (when (equal +tsp*-or-tmv*+ x)
-	      (error "When defining primitive ~a --> :tsp*-or-tmv* is only allowed in the first argument position" name ))) (cdr args-ty-attr))
   (let ((info (define-primitive-info name return-ty-attr args-ty-attr varargs does-not-throw does-not-return)))
     (core::hash-table-setf-gethash *primitives* name info)))
 
@@ -83,79 +78,53 @@
     (primitive          "ltvc_set_ltv_funcall_cleavir" %ltvc-return% (list %gcroots-in-module*% %size_t% %fn-prototype*% %i8*%))
     (primitive          "ltvc_toplevel_funcall" %ltvc-return% (list %fn-prototype*% %i8*%))
   
-;;    (primitive-nounwind "newFunction_sp" %void% (list %Function_sp*%))
-;;    (primitive-nounwind "newTsp" %void% (list %tsp*%))
-    (primitive-nounwind "copyTsp" %void% (list +tsp*-or-tmv*+ %tsp*%))
-    (primitive-nounwind "copyTspTptr" %void% (list +tsp*-or-tmv*+ %t*%))
-    (primitive-nounwind "compareTspTptr" %i32% (list %tsp*% %t*%))
-    
     (primitive-nounwind "newTmv" %void% (list %tmv*%))
-;;    (primitive-nounwind "resetTmv" %void% (list %tmv*%))
-    (primitive-nounwind "copyTmv" %void% (list %tmv*% %tmv*%))
-    (primitive-nounwind "copyTmvOrSlice" %void% (list +tsp*-or-tmv*+ %tmv*%))
+    (primitive-nounwind "isTrue" %i32% (list %t*%))
+    (primitive-nounwind "isBound" %i32% (list %t*%))
+    (primitive-nounwind "valueOrNilIfZero" %t*% (list %return_type%))
     
-    (primitive-nounwind "isTrue" %i32% (list %tsp*%))
-    (primitive-nounwind "isBound" %i32% (list %tsp*%))
-    
-    (primitive-nounwind "makeCompiledFunction" %void% (list +tsp*-or-tmv*+ ; result
-                                                             %fn-prototype*% ; funcPtr
+    (primitive-nounwind "makeCompiledFunction" %t*% (list %fn-prototype*% ; funcPtr
                                                              %i32*%   ; sourceFileInfoHandleP
                                                              %size_t% ; filePos
                                                              %size_t% ; lineno
                                                              %size_t% ; column
-                                                             %tsp*%   ; functionNameP
-                                                             %afsp*%  ; renv
-                                                             %tsp*%)) ; lambdaListP
+                                                             %t*%   ; functionNameP
+                                                             %t*%  ; renv
+                                                             %t*%)) ; lambdaListP
     
-    (primitive          "symbolValueRead" %void% (list +tsp*-or-tmv*+ %tsp*%))
-    (primitive-nounwind "symbolValueReference" %tsp*% (list %tsp*%))
-    (primitive-nounwind "lexicalValueReference" %tsp*% (list %i32% %i32% %afsp*%))
-    (primitive-nounwind "registerReference" %tsp*% (list %tsp*%))
-    (primitive-nounwind "symbolFunctionRead" %void% (list +tsp*-or-tmv*+ %tsp*%))
-    (primitive-nounwind "setfSymbolFunctionRead" %void% (list %tsp*% %tsp*%))
-;;    (primitive-nounwind "lexicalFunctionRead" %void% (list +tsp*-or-tmv*+ %i32% %i32% %afsp*%))
+    (primitive          "symbolValueRead" %t*% (list %t*%))
+    (primitive-nounwind "symbolValueReference" %t**% (list %t*%))
+    (primitive-nounwind "lexicalValueReference" %t**% (list %i32% %i32% %t*%))
+    (primitive-nounwind "registerReference" %t**% (list %t**%))
+    (primitive-nounwind "symbolFunctionRead" %t*% (list %t*%))
+    (primitive-nounwind "setfSymbolFunctionRead" %t*% (list %t*%))
     
-    (primitive-nounwind "makeTagbodyFrame" %void% (list %afsp*%))
-    
-    (primitive-nounwind "makeValueFrame" %void% (list %tsp*% %i64%))
-    (primitive-nounwind "setParentOfActivationFrameFromClosure" %void% (list %tsp*% %t*%))
-    (primitive-nounwind "setParentOfActivationFrame" %void% (list %tsp*% %tsp*%))
+    (primitive-nounwind "makeTagbodyFrameSetParent" %t*% (list %t*%))
 
-    (primitive-nounwind "makeValueFrameSetParent" %void% (list %tsp*% %i64% %tsp*%))
-    (primitive-nounwind "makeValueFrameSetParentFromClosure" %void% (list %tsp*% %i64% %t*%))
-    (primitive-nounwind "invisible_makeValueFrameSetParent" %void% (list %tsp*% %tsp*%))
-    (primitive-nounwind "invisible_makeValueFrameSetParentFromClosure" %void% (list %tsp*% %t*%))
+    (primitive-nounwind "activationFrameReferenceFromClosure" %t**% (list %t*%))
+;;    (primitive-nounwind "setParentOfActivationFrameFromClosure" %void% (list %t*% %t*%))
+    (primitive-nounwind "setParentOfActivationFrame" %void% (list %t*% %t*%))
+    (primitive-nounwind "makeValueFrameSetParent" %t*% (list %i64% %t*%))
+;;    (primitive-nounwind "makeValueFrameSetParentFromClosure" %t*% (list %i64% %t*%))
+    (primitive-nounwind "invisible_makeValueFrameSetParent" %t*% (list %t*%))
+;;    (primitive-nounwind "invisible_makeValueFrameSetParentFromClosure" %t*% (list %t*%))
     
-    ;;  (primitive-nounwind "attachDebuggingInfoToValueFrame" %void% (list %afsp*% %tsp*%))
-    
-    (primitive-nounwind "valueFrameReference" %tsp*% (list %afsp*% %i32%))
-    
-    (primitive          "makeFunctionFrame" %void% (list %afsp*% %i32% %afsp*%))
-    (primitive          "functionFrameReference" %tsp*% (list %afsp*% %i32%))
-    
-    (primitive          "prependMultipleValues" %void% (list +tsp*-or-tmv*+ %tmv*%))
+    (primitive          "makeFunctionFrame" %t*% (list %i32% %t*%))
+    (primitive          "functionFrameReference" %t**% (list %t*% %i32%))
     
     (primitive          "invokeTopLevelFunction" %void% (list %tmv*% %fn-prototype*% %i8*% %i32*% %size_t% %size_t% %size_t% %ltv**%))
     (primitive          "cc_register_startup_function" %void% (list %fn-start-up*%))
     (primitive          "cc_invoke_sub_run_all_function" %void% (list %fn-start-up*%))
     
-    (primitive-nounwind "activationFrameSize" %i32% (list %afsp*%))
-    
-    (primitive          "throwTooManyArgumentsException" %void% (list %i8*% %afsp*% %i32% %i32%))
-    (primitive          "throwNotEnoughArgumentsException" %void% (list %i8*% %afsp*% %i32% %i32%))
-    (primitive          "throwIfExcessKeywordArguments" %void% (list %i8*% %afsp*% %i32%))
     (primitive-nounwind "cc_trackFirstUnexpectedKeyword" %size_t% (list %size_t% %size_t%))
     (primitive          "gdb" %void% nil)
-    (primitive-nounwind "debugInspectActivationFrame" %void% (list %afsp*%))
-    (primitive-nounwind "debugInspectT_sp" %void% (list %tsp*%))
     (primitive-nounwind "debugInspectTPtr" %void% (list %t*%))
     (primitive-nounwind "debugInspectT_mv" %void% (list %tmv*%))
     (primitive-nounwind "debugInspect_return_type" %void% (list %return_type%))
-;;    (primitive-nounwind "debugInspect_mvarray" %void% nil)
+
     (primitive-nounwind "debugPointer" %void% (list %i8*%))
     (primitive-nounwind "debug_vaslistPtr" %void% (list %vaslist*%))
     (primitive-nounwind "debug_va_list" %void% (list %va_list*%))
-    (primitive-nounwind "debugPrintObject" %void% (list %i8*% %tsp*%))
     (primitive-nounwind "debugMessage" %void% (list %i8*%))
     (primitive-nounwind "debugPrintI32" %void% (list %i32%))
     (primitive-nounwind "debugPrint_size_t" %void% (list %size_t%))
@@ -166,24 +135,21 @@
     (primitive          "va_tooManyArgumentsException" %void% (list %i8*% %size_t% %size_t%))
     (primitive          "va_notEnoughArgumentsException" %void% (list %i8*% %size_t% %size_t%))
     (primitive          "va_ifExcessKeywordArgumentsException" %void% (list %i8*% %size_t% %va_list*% %size_t%))
-    (primitive          "va_symbolFunction" %t*% (list %tsp*%))
-    (primitive-nounwind "va_lexicalFunction" %t*% (list %size_t% %size_t% %afsp*%))
+    (primitive          "va_symbolFunction" %t*% (list %t*%))
+    (primitive-nounwind "va_lexicalFunction" %t*% (list %size_t% %size_t% %t*%))
     
     (primitive-nounwind "cc_gatherRestArguments" %t*% (list %va_list*% %size_t*%))
     (primitive-nounwind "cc_gatherVaRestArguments" %t*% (list %va_list*% %size_t*% %vaslist*%))
     (primitive          "cc_ifBadKeywordArgumentException" %void% (list %size_t% %size_t% %t*%))
     
-    (primitive-nounwind "pushCatchFrame" %size_t% (list %tsp*%))
-    (primitive-nounwind "pushBlockFrame" %size_t% (list %tsp*%))
-    (primitive-nounwind "pushTagbodyFrame" %size_t% (list %tsp*%))
+    (primitive-nounwind "pushBlockFrame" %size_t% (list %t*%))
+    (primitive-nounwind "pushTagbodyFrame" %size_t% (list %t*%))
     
-    (primitive          "throwCatchThrow" %void% (list %tsp*% #| %tmv*% |#) :does-not-return t)
-    (primitive          "throwReturnFrom" %void% (list %tsp*%) :does-not-return t)
-    (primitive          "throwDynamicGo" %void% (list %size_t% %size_t% %afsp*%) :does-not-return t)
+    (primitive          "throwReturnFrom" %void% (list %t*%) :does-not-return t)
+    (primitive          "throwDynamicGo" %void% (list %size_t% %size_t% %t*%) :does-not-return t)
     
-    (primitive          "ifCatchFrameMatchesStoreResultElseRethrow" %void% (list +tsp*-or-tmv*+ %size_t% %i8*%))
     (primitive-nounwind "exceptionStackUnwind" %void% (list %size_t%))
-    (primitive          "blockHandleReturnFrom" %void% (list +tsp*-or-tmv*+ %i8*% %size_t%))
+    (primitive          "blockHandleReturnFrom" %return_type% (list %i8*% %size_t%))
     (primitive          "tagbodyDynamicGoIndexElseRethrow" %size_t% (list %i8*% %size_t%))
     (primitive          "throwIllegalSwitchValue" %void% (list %size_t% %size_t%) :does-not-return t)
     
@@ -203,25 +169,21 @@
     (primitive-nounwind "llvm.va_start" %void% (list %i8*%))
     (primitive-nounwind "llvm.va_end" %void% (list %i8*%))
     
-    (primitive-nounwind "copyLoadTimeValue" %void% (list +tsp*-or-tmv*+ %ltv**% %size_t%))
-    (primitive-nounwind "getLoadTimeValue" %void% (list +tsp*-or-tmv*+ %ltv**% %i32%))
-    (primitive-nounwind "dumpLoadTimeValues" %void% (list %ltv**%))
-    
     (primitive-nounwind "debugSourceFileInfoHandle" %void% (list %i32*%))
     
     (primitive-nounwind "saveToMultipleValue0" %void% (list %tmv*%))
-    (primitive-nounwind "restoreFromMultipleValue0" %void% (list +tsp*-or-tmv*+ ))
-    (primitive-nounwind "saveValues" %void% (list %tsp*% %tmv*%))
-    (primitive-nounwind "loadValues" %void% (list %tmv*% %tsp*%))
+    (primitive-nounwind "restoreFromMultipleValue0" %return_type% nil)
+    (primitive-nounwind "saveValues" %t*% (list %tmv*%))
+    (primitive-nounwind "loadValues" %void% (list %tmv*% %t*%))
     
    
-    (primitive-nounwind "progvSaveSpecials" %void% (list %i8**% %tsp*% %tsp*%))
+    (primitive-nounwind "progvSaveSpecials" %void% (list %i8**% %t*% %t*%))
     (primitive-nounwind "progvRestoreSpecials" %void% (list %i8**%))
     
-    (primitive-nounwind "pushDynamicBinding" %void% (list %tsp*%))
-    (primitive-nounwind "popDynamicBinding" %void% (list %tsp*%))
+    (primitive-nounwind "pushDynamicBinding" %void% (list %t*%))
+    (primitive-nounwind "popDynamicBinding" %void% (list %t*%))
     
-    (primitive-nounwind "matchKeywordOnce" %size_t% (list %tsp*% %t*% %i8*%))
+    (primitive-nounwind "matchKeywordOnce" %size_t% (list %t*% %t*% %i8*%))
     
     ;; Primitives for Cleavir code
 
@@ -255,7 +217,7 @@
     (primitive-nounwind "cc_arrayDimension" %size_t% (list %t*% %size_t%))
     (primitive-nounwind "cc_simpleBitVectorAref" %uint% (list %t*% %size_t%))
     (primitive-nounwind "cc_simpleBitVectorAset" %void% (list %t*% %size_t% %uint%))
-    (primitive-nounwind "cc_initialize_gcroots_in_module" %void% (list %gcroots-in-module*% %tsp*% %size_t% %t*%))
+    (primitive-nounwind "cc_initialize_gcroots_in_module" %void% (list %gcroots-in-module*% %t**% %size_t% %t*%))
     (primitive-nounwind "cc_shutdown_gcroots_in_module" %void% (list %gcroots-in-module*% ))
 
     (primitive           "cc_enclose" %t*% (list %t*%
@@ -417,7 +379,7 @@
     (primitive          "to_object_pointer" %t*% (list %i64*%))
     (primitive          "to_object_void" %t*% (list))
     ;; === END OF TRANSLATORS ===
-    (primitive-nounwind "cc_read_stamp" %i64% (list %void*%))
+    (primitive-nounwind "cc_read_stamp" %i64% (list %i8*%))
     *primitives*
   ))
 

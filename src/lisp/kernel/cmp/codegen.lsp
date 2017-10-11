@@ -287,7 +287,7 @@ then compile it and return (values compiled-llvm-function lambda-name)"
       ((and (atom head) (symbolp head))
        (let ((nargs (length (cdr form)))
              args
-             (temp-result (irc-alloca-tsp)))
+             (temp-result (irc-alloca-t*)))
          (dbg-set-invocation-history-stack-top-source-pos form)
          ;; evaluate the arguments into the array
          ;;  used to be done by --->    (codegen-evaluate-arguments (cdr form) evaluate-env)
@@ -296,7 +296,7 @@ then compile it and return (values compiled-llvm-function lambda-name)"
                (i 0 (+ 1 i)))
               ((endp cur-exp) nil)
            (codegen temp-result exp evaluate-env)
-           (push (irc-smart-ptr-extract (irc-load temp-result)) args))
+           (push (irc-load temp-result) args))
          (let ((closure (codegen-lookup-function head evaluate-env)))
 	   (irc-low-level-trace :flow)
            (irc-funcall result closure (reverse args))

@@ -475,7 +475,7 @@ The passed module is modified as a side-effect."
     #++(let ((call-sites (call-sites-to-always-inline module)))
          (bformat t "Call-sites -> %s\n" call-sites))
     ;; Link in the builtins as part of the optimization
-    (progn
+    #+(or)(progn
       (let ((linker (llvm-sys:make-linker module))
             (builtins-clone (llvm-sys:clone-module (get-builtins-module))))
         ;;(remove-always-inline-from-functions builtins-clone)
@@ -503,6 +503,12 @@ The passed module is modified as a side-effect."
   module)
 
 
+(defun optimize-module-for-compile (module)
+  #+(or)(bformat *debug-io* "In optimize-module-for-compile\n")
+  #+(or)(llvm-sys:dump-module module)
+  module)
+
+#+(or)
 (defun optimize-module-for-compile (module &optional (optimize-level *optimization-level*) (size-level *size-level*))
   (declare (type (or null llvm-sys:module) module))
   (when (and *optimizations-on* module)
@@ -598,19 +604,16 @@ The passed module is modified as a side-effect."
 (progn
   (defun jit-add-module-return-function (original-module repl-fn startup-fn shutdown-fn literals-list)
     ;; Link the builtins into the module and optimize them
+    (quick-module-dump original-module "before-link-builtins")
     (jit-link-builtins-module original-module)
     (if *jit-dump-module-before-optimizations*
         (llvm-sys:dump-module original-module))
     #+(or)(optimize-module-for-compile original-module)
-    #+(or)(quick-module-dump original-module "module after-optimize")
+    (quick-module-dump original-module "module-before-optimize")
     (let ((module original-module))
       ;;#+threads(mp:get-lock *jit-engine-mutex*)
       ;;    (bformat t "In jit-add-module-return-function dumping module\n")
       ;;    (llvm-sys:print-module-to-stream module *standard-output*)
-      (if *declare-dump-module*
-          (progn
-            (core:bformat t "Dumping module\n")
-            (llvm-sys:dump-module module)))
       (let* ((repl-name (llvm-sys:get-name repl-fn))
              (startup-name (llvm-sys:get-name startup-fn))
              (shutdown-name (llvm-sys:get-name shutdown-fn))

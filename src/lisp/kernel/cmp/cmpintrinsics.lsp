@@ -208,15 +208,9 @@ Boehm and MPS use a single pointer"
 (define-symbol-macro %t**% (llvm-sys:type-get-pointer-to %t*%))
 (define-symbol-macro %t*[0]% (llvm-sys:array-type-get %t*% 0))
 (define-symbol-macro %t*[0]*% (llvm-sys:type-get-pointer-to %t*[0]%))
+(define-symbol-macro %t*[DUMMY]% (llvm-sys:array-type-get %t*% 64))
+(define-symbol-macro %t*[DUMMY]*% (llvm-sys:type-get-pointer-to %t*[DUMMY]%))
 (define-symbol-macro %tsp% (llvm-sys:struct-type-get *llvm-context* (smart-pointer-fields %t*%) nil))  ;; "T_sp"
-(define-symbol-macro %tsp[0]% (llvm-sys:array-type-get %tsp% 0))
-(define-symbol-macro %tsp[0]*% (llvm-sys:type-get-pointer-to %tsp[0]%))
-;;;(define-symbol-macro %tsp[1]% (llvm-sys:array-type-get %tsp% 1))
-;;;(define-symbol-macro %tsp[1]*% (llvm-sys:type-get-pointer-to %tsp[1]%))
-;;;(define-symbol-macro %tsp[2]% (llvm-sys:array-type-get %tsp% 2))
-;;;(define-symbol-macro %tsp[2]*% (llvm-sys:type-get-pointer-to %tsp[2]%))
-(define-symbol-macro %tsp[DUMMY]% (llvm-sys:array-type-get %tsp% 64))
-(define-symbol-macro %tsp[DUMMY]*% (llvm-sys:type-get-pointer-to %tsp[DUMMY]%))
 (define-symbol-macro %tsp*% (llvm-sys:type-get-pointer-to %tsp%))
 (define-symbol-macro %tsp**% (llvm-sys:type-get-pointer-to %tsp*%))
 
@@ -254,12 +248,14 @@ Boehm and MPS use a single pointer"
 
 #+(or)(progn
         (defvar +af+ (llvm-sys:struct-type-get *llvm-context* nil  nil)) ;; "ActivationFrame_O"
-        (defvar +af-ptr+ (llvm-sys:type-get-pointer-to +af+))
-        (define-symbol-macro %afsp% (llvm-sys:struct-type-get *llvm-context* (smart-pointer-fields +af-ptr+)  nil)) ;; "ActivationFrame_sp"
+        (defvar +af*+ (llvm-sys:type-get-pointer-to +af+))
+        (define-symbol-macro %afsp% (llvm-sys:struct-type-get *llvm-context* (smart-pointer-fields +af*+)  nil)) ;; "ActivationFrame_sp"
         (define-symbol-macro %afsp*% (llvm-sys:type-get-pointer-to %afsp%))
         )
 
 ;; Substitute afsp* with tsp
+(define-symbol-macro %af% %t%)
+(define-symbol-macro %af*% %t*%)
 (define-symbol-macro %afsp% %tsp%)
 (define-symbol-macro %afsp*% %tsp*%)
 
@@ -722,23 +718,6 @@ and initialize it with an array consisting of one function pointer."
       (error "result must be an instance of llvm-sys:Value_O but instead it has the value %s" result)))
 
 
-
-(defconstant +tsp*-or-tmv*+ :tsp*-or-tmv*
-  "This is a stand-in for a first argument type that can either be tsp* or tmv*")
-
-(defun dispatch-function-name (name &optional required-first-argument-type)
-  (let ((name-dispatch-prefix
-	 (cond
-	   ((equal required-first-argument-type %tsp*%)
-	    "sp_")
-	   ((equal required-first-argument-type %tmv*%)
-	    "mv_")
-	   (t
-	    ""))))
-    (bformat nil "%s%s" name-dispatch-prefix name)))
-
-
-
 (defun codegen-startup-shutdown (gcroots-in-module roots-array-or-nil number-of-roots)
   (let ((startup-fn (irc-simple-function-create core:*module-startup-function-name*
                                                 (llvm-sys:function-type-get %void% (list %t*%))
@@ -761,7 +740,7 @@ and initialize it with an array consisting of one function pointer."
                          (irc-gep roots-array-or-nil
                                   (list (jit-constant-size_t 0)
                                         (jit-constant-size_t 0)))
-                         (llvm-sys:constant-pointer-null-get %tsp*%))))
+                         (llvm-sys:constant-pointer-null-get %t**%))))
           (irc-intrinsic-call "cc_initialize_gcroots_in_module" (list gcroots-in-module start (jit-constant-size_t number-of-roots) values))
           (irc-ret-void))))
     (let ((shutdown-fn (irc-simple-function-create core:*module-shutdown-function-name*

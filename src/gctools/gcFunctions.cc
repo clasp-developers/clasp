@@ -909,8 +909,14 @@ bool debugging_configuration(stringstream& ss) {
   debug_enable_profiling = true;
   debugging = true;
 #endif
-  ss << (BF("ENABLE_PROFILING = %s\n") % (debug_ihs ? "defined" : "undefined") ).str();
+  ss << (BF("ENABLE_PROFILING = %s\n") % (debug_enable_profiling ? "defined" : "undefined") ).str();
 
+  bool debug_release = false;
+#ifdef DEBUG_RELEASE
+  debug_release = true;
+  debugging = true;
+#endif
+  ss << (BF("DEBUG_RELEASE = %s\n") % (debug_release ? "defined" : "undefined") ).str();
   return debugging;
 }
 

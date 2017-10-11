@@ -705,6 +705,7 @@ void dbg_controlC() {
 };
 
 
+
 extern "C" {
 
 void tprint(void* ptr)
@@ -712,8 +713,12 @@ void tprint(void* ptr)
   core::dbg_printTPtr((uintptr_clasp_t) ptr,false);
 }
 
-void tbacktrace() {
+void c_bt() {
   core::eval::funcall(core::_sym_bt->symbolFunction());
+};
+
+void c_btcl() {
+  core::eval::funcall(core::_sym_btcl->symbolFunction());
 };
 
 void tsymbol(void* ptr)

@@ -376,7 +376,7 @@ when this is t a lot of graphs will be generated.")
   (let ((idx (first inputs)))
     (cmp:irc-low-level-trace :flow)
     (let* ((label (safe-llvm-name (clasp-cleavir-hir:precalc-value-instruction-original-object instruction)))
-           (value (cmp::irc-smart-ptr-extract (%load (%gep-variable (cmp:ltv-global) (list (%size_t 0) idx) label)))))
+           (value (%load (%gep-variable (cmp:ltv-global) (list (%size_t 0) idx) label))))
       (%store value (first outputs)))))
 
 (defmethod translate-simple-instruction

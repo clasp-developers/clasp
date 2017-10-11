@@ -85,7 +85,7 @@
     (let* ((target-symbol (cdr target))
 	   (irc-target (irc-global-symbol target-symbol env)))
       (irc-intrinsic "pushDynamicBinding" irc-target)
-      (when make-unbound
+      #+(or)(when make-unbound
 	(irc-intrinsic "makeUnboundTsp" (irc-intrinsic "symbolValueReference" irc-target)))
       (irc-push-unwind env `(symbolValueRestore ,target-symbol))
       ;; Make the variable locally special

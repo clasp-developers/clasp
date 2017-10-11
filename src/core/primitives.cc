@@ -1980,14 +1980,14 @@ CL_DEFUN InvocationHistoryFrameIterator_sp core__get_invocation_history_frame_ne
 }
 };
 
-extern "C" void tbacktrace();
+extern "C" void c_bt();
 
 namespace core {
 CL_LAMBDA();
 CL_DECLARE();
 CL_DOCSTRING("ihsBacktraceNoArgs");
 CL_DEFUN void core__ihs_backtrace_no_args() {
-  tbacktrace(); // core__ihs_backtrace(_lisp->_true(), _Nil<core::T_O>());
+  c_bt(); // core__ihs_backtrace(_lisp->_true(), _Nil<core::T_O>());
 };
 
 CL_LAMBDA();

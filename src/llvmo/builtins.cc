@@ -49,8 +49,8 @@ BUILTIN_ATTRIBUTES void cc_rewind_va_list(core::T_O* tagged_closure, va_list va_
 }
 
 BUILTIN_ATTRIBUTES
-core::T_O *va_symbolFunction(core::T_sp *symP) {
-  core::Symbol_sp sym((gctools::Tagged)symP->raw_());
+core::T_O *va_symbolFunction(core::T_O *symP) {
+  core::Symbol_sp sym((gctools::Tagged)symP);
   unlikely_if (!sym->fboundp()) intrinsic_error(llvmo::noFunctionBoundToSymbol, sym);
   core::Function_sp func((gc::Tagged)(sym)->_Function.theObject);
   return func.raw_();
@@ -66,9 +66,9 @@ BUILTIN_ATTRIBUTES core::T_sp *symbolValueReference(core::T_sp *symbolP)
 #endif
 
 
-BUILTIN_ATTRIBUTES core::T_sp *lexicalValueReference(int depth, int index, core::ActivationFrame_sp *frameP)
+BUILTIN_ATTRIBUTES core::T_sp *lexicalValueReference(int depth, int index, core::ActivationFrame_O *frameP)
 {
-  core::ActivationFrame_sp af = gctools::reinterpret_cast_smart_ptr<core::ActivationFrame_O>(*frameP);
+  core::ActivationFrame_sp af((gctools::Tagged)frameP);
   return const_cast<core::T_sp *>(&core::value_frame_lookup_reference(af, depth, index));
 }
 
@@ -124,18 +124,46 @@ BUILTIN_ATTRIBUTES void cc_simpleBitVectorAset(core::T_O* tarray, size_t index, 
   array->setBit(index, v);
 }
 
-BUILTIN_ATTRIBUTES void invisible_makeValueFrameSetParent(core::T_sp* tarray, core::T_sp* parent) {
-  tarray->rawRef_() = parent->rawRef_();
+BUILTIN_ATTRIBUTES core::T_O* invisible_makeValueFrameSetParent(core::T_O* parent) {
+  return parent;
 }
 
-BUILTIN_ATTRIBUTES void invisible_makeValueFrameSetParentFromClosure(core::T_sp* tarray, core::T_O* closureRaw) {
+BUILTIN_ATTRIBUTES core::T_O* invisible_makeValueFrameSetParentFromClosure(core::T_O* closureRaw) {
   if (closureRaw!=NULL) {
     core::Closure_O* closureP = reinterpret_cast<core::Closure_O*>(gc::untag_general<core::T_O*>(closureRaw));
     core::T_sp activationFrame = closureP->closedEnvironment();
-    *tarray = activationFrame; // >rawRef_() = closureRaw; //  = activationFrame;
+    return activationFrame.raw_(); // >rawRef_() = closureRaw; //  = activationFrame;
   } else {
-    *tarray = _Nil<core::T_O>();
+    return _Nil<core::T_O>().raw_();
   }
+}
+
+
+/*! Return i32 1 if (valP) is != unbound 0 if it is */
+BUILTIN_ATTRIBUTES int isBound(core::T_O *valP)
+{
+  return gctools::tagged_unboundp<core::T_O*>(valP) ? 0 : 1;
+}
+
+/*! Return i32 1 if (valP) is != nil 0 if it is */
+BUILTIN_ATTRIBUTES int isTrue(core::T_O* valP)
+{
+  return gctools::tagged_nilp<core::T_O*>(valP) ? 0 : 1;
+}
+
+/*! Return i32 1 if (valP) is != nil 0 if it is */
+BUILTIN_ATTRIBUTES core::T_O* valueOrNilIfZero(gctools::return_type val) {
+  return val.nvals ? val.ret0[0] : _Nil<core::T_O>().raw_();
+}
+
+BUILTIN_ATTRIBUTES core::T_O** activationFrameReferenceFromClosure(core::T_O* closureRaw)
+{
+  ASSERT(closureRaw);
+  if (closureRaw!=NULL) {
+    core::ClosureWithFrame_sp closure = core::ClosureWithFrame_sp((gctools::Tagged)closureRaw);
+    return &closure->_closedEnvironment.rawRef_();
+  }
+  return NULL;
 }
 
 

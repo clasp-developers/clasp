@@ -308,6 +308,7 @@ public:
   }
   T_sp entry(int idx) const { return (*this)[idx];};
   const T_sp &entryReference(int idx) const { return (*this)[idx];};
+  T_sp &entryReference(int idx) { return (*this)[idx];};
 
   string asString() const;
 

@@ -18,8 +18,7 @@
     gep))
 
 (defun %literal-value (value &optional label)
-  (let ((ref (%literal-ref value)))
-    (cmp::irc-smart-ptr-extract (cmp:irc-load ref))))
+  (cmp:irc-load (%literal-ref value)))
 
 (defun %i1 (num)
   (cmp:jit-constant-i1 num))
@@ -44,9 +43,7 @@
 (defmethod %default-int-type ((abi abi-x86-32)) cmp:%i32%)
 
 (defun %literal (lit &optional (label "literal"))
-  (llvm-sys:create-extract-value
-   cmp:*irbuilder*
-   (cmp:irc-load (literal:compile-reference-to-literal lit)) (list 0) label))
+  (cmp:irc-load (literal:compile-reference-to-literal lit)))
 
 (defun %extract (val index &optional (label "extract"))
   (llvm-sys:create-extract-value cmp:*irbuilder* val (list index) label))
