@@ -71,15 +71,8 @@ Return files."
      top
        (setq file (car cur))
        (if (endp cur) (go done))
+       (if (not (keywordp file)) (setq files (cons file files)))
        (if (and last (eq cur last)) (go done))
-       (if last-file
-           (if (equal last-file file)
-               (progn
-                 (if (not (keywordp file))
-                     (setq files (cons file files)))
-                 (go done))))
-       (if (not (keywordp file))
-           (setq files (cons file files)))
        (setq cur (cdr cur))
        (go top)
      done)
