@@ -16,9 +16,9 @@
 (defparameter *tags* nil)
 
 (load "foundation.lisp")
-(load "serialize.lisp")
 (load "parse.lisp")
 (load "tags.lisp")
+(load "serialize.lisp")
 (load "extract-tags.lisp")
 (load "sif-file.lisp")
 (load "conditions.lisp")
