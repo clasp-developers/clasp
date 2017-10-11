@@ -1,6 +1,3 @@
-(defpackage #:clasp-sandbox
-  (:use #:cl))
-
 (in-package #:clasp-sandbox)
 
 (defclass sandbox-environment (sicl-simple-environment:simple-environment) ())
@@ -307,9 +304,6 @@
   (dolist (s macros)
     (setf (sicl-genv:macro-function s environment)
           (macro-function s))))
-
-(defpackage #:coerce
-  (:export #:fdesignator))
 
 ;;; I want this one earlier because we need it for multiple-value-call, funcall, etc basic things
 (defun install-coerce-fdesignator (environment)

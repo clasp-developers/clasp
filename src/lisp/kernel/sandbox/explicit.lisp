@@ -5,11 +5,6 @@
 
 ;;; They can be compiled+linked in whatever environment with standard CL, thus flagrant use of macros etc.
 
-(defpackage #:explicit
-  (:export #:funcall #:apply)
-  (:export #:member #:member-not #:member-if #:member-if-not)
-  (:export #:eval #:compile))
-
 (defun explicit:funcall (function &rest arguments)
   (explicit:apply function arguments))
 (define-compiler-macro explicit:funcall (function &rest arguments)
