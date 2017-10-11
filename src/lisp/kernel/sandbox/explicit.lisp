@@ -12,16 +12,18 @@
 
 (defun explicit:funcall (function &rest arguments)
   (explicit:apply function arguments))
+(define-compiler-macro explicit:funcall (function &rest arguments)
+  `(cleavir-primop:funcall ,function ,@arguments))
 
 #+clasp
 (defun explicit:apply (function &rest spreadable-arguments)
   (cl:apply function spreadable-arguments))
 
-(defun explicit:member (item list test negate-test key)
+(defun explicit:member (item list test key)
   (loop for ls on list
         when (explicit:funcall test item (explicit:funcall key (car ls)))
           return ls))
-(defun explicit:member-not (item list test negate-test key)
+(defun explicit:member-not (item list test key)
   (loop for ls on list
         unless (explicit:funcall test item (explicit:funcall key (car ls)))
           return ls))
@@ -34,6 +36,28 @@
   (loop for ls on list
         unless (explicit:funcall test (explicit:funcall key (car list)))
           return ls))
+
+(defun explicit:assoc (item list test key)
+  (loop for pair in list
+        when (and (not (null pair))
+                  (explicit:funcall test item (explicit:funcall key (car pair))))
+          return pair))
+(defun explicit:assoc-not (item list test key)
+  (loop for pair in list
+        when (and (not (null pair))
+                  (not (explicit:funcall test item (explicit:funcall key (car pair)))))
+          return pair))
+
+(defun explicit:assoc-if (test list key)
+  (loop for pair in list
+        when (and (not (null pair))
+                  (explicit:funcall test (explicit:funcall key (car pair))))
+          return pair))
+(defun explicit:assoc-if-not (test list key)
+  (loop for pair in list
+        when (and (not (null pair))
+                  (not (explicit:funcall test (explicit:funcall key (car pair)))))
+          return pair))
 
 #+(or)
 (progn
@@ -65,8 +89,3 @@
 #+clasp
 (defun explicit:compile (lambda-expression environment)
   (cmp:compile-in-env nil lambda-expression environment cmp:*cleavir-compile-hook* 'llvm-sys:external-linkage))
-
-;;;
-
-(define-compiler-macro explicit:funcall (function &rest arguments)
-  `(cleavir-primop:funcall ,function ,@arguments))
