@@ -60,7 +60,7 @@ Return files."
   (or first-file (error "You must provide first-file to select-source-files"))
   (or system (error "You must provide system to select-source-files"))
   (let ((cur (member first-file system :test #'equal))
-        (last (if last
+        (last (if last-file
                   (let ((llast (member last-file system :test #'equal)))
                     (or llast (error "last-file ~a was not a member of ~a" last-file system))
                     llast)))
