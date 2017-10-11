@@ -184,6 +184,20 @@
   (setf (sicl-genv:fdefinition 'core:symbol-value-from-cell environment) #'core:symbol-value-from-cell)
   (setf (sicl-genv:fdefinition 'core:setf-symbol-value-from-cell environment) #'core:setf-symbol-value-from-cell))
 
+(defun install-default-setf-expander (environment)
+  ;; basically copied from SICL/Code/Compiler/Extrinsic-environment/define-default-setf-expander.lisp
+  ;; not that there are many ways to do it.
+  (setf (sicl-genv:default-setf-expander environment)
+        (lambda (form env)
+          (declare (ignore env))
+          (let ((store (gensym "STORE")))
+            (if (symbolp form)
+                (values nil nil (list store) `(setq ,form ,store) form)
+                (let ((temps (loop for arg in (rest form) collect (gensym))))
+                  (values temps (rest form) (list store)
+                          `(funcall #'(setf ,(first form)) ,store ,@temps)
+                          `(,(first form) ,@temps))))))))
+
 (defun install-cl-special-operators (environment)
   (dolist (s '(block let* return-from
                #|catch|# load-time-value setq
@@ -284,8 +298,13 @@
     ;; in clasp these are macros, and safe ones, just converting to calls.
     unwind-protect throw catch))
 
-(defun import-safe-macros (environment)
-  (dolist (s *safe-macros*)
+(defparameter *setf-macros*
+  '(setf psetf shiftf rotatef
+    push pop remf pushnew
+    incf decf))
+
+(defun import-macros (environment macros)
+  (dolist (s macros)
     (setf (sicl-genv:macro-function s environment)
           (macro-function s))))  
 
