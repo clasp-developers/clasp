@@ -20,6 +20,7 @@
   base-pointer
   next-base-pointer
   arguments
+  shadow-frame
   )
 
 (defun dump-jit-symbol-info ()
@@ -93,13 +94,17 @@
                                :function-name name
                                :base-pointer base-pointer
                                :next-base-pointer next-base-pointer)))
-      (t (let ((unmangled (core::maybe-demangle backtrace-string)))
+      (t (let* ((first-space (position-if (lambda (c) (char= c #\space)) backtrace-string))
+                (just-name (if first-space
+                               (subseq backtrace-string 0 first-space)
+                               backtrace-string))
+                (unmangled (core::maybe-demangle just-name)))
            (if verbose (bformat *debug-io* "-->C++ frame\n"))
            (make-backtrace-frame :type :c
                                  :return-address return-address
                                  :raw-name backtrace-string
-                                 :print-name (or unmangled backtrace-string)
-                                 :function-name (or unmangled backtrace-string)
+                                 :print-name (or unmangled just-name)
+                                 :function-name (or unmangled just-name)
                                  :base-pointer base-pointer
                                  :next-base-pointer next-base-pointer))))))
 
@@ -109,22 +114,47 @@
         (frame-address (frame-iterator-frame-address entry)))
     (do* ((cur frames (cdr cur))
           (frame (car cur) (car cur)))
-         ((null cur) (or cur saved-frames))
+         ((null cur) (values (or cur saved-frames) nil))
       (let ((bp (backtrace-frame-base-pointer frame))
             (next-bp (backtrace-frame-next-base-pointer frame)))
         (when (and bp next-bp
                    (pointer-in-pointer-range frame-address bp next-bp))
-          (return-from search-for-matching-frame cur))))))
+          (return-from search-for-matching-frame (values cur t)))))))
 
-(defun add-call-arguments (frames shadow-backtrace)
-  (dolist (shadow-entry shadow-backtrace)
-    (let ((frame-cur (search-for-matching-frame frames shadow-entry)))
-      (if frame-cur
-          (let ((frame (car frame-cur)))
-            (setf (backtrace-frame-arguments frame) (frame-iterator-arguments shadow-entry))
-            (setf frames frame-cur))
-          (bformat t "Could not find stack frame for address: %s\n" (frame-iterator-frame-address shadow-entry))))))
+(defun merge-shadow-backtrace (orig-frames shadow-backtrace)
+  (let ((frames orig-frames))
+    (dolist (shadow-entry shadow-backtrace)
+      (multiple-value-bind (frame-cur found)
+          (search-for-matching-frame frames shadow-entry)
+        (if found
+            (let ((frame (car frame-cur)))
+              (setf (backtrace-frame-arguments frame) (frame-iterator-arguments shadow-entry))
+              (setf frames frame-cur)
+              (setf (backtrace-frame-shadow-frame frame) shadow-entry))
+            (bformat t "Could not find stack frame for address: %s\n" (frame-iterator-frame-address shadow-entry))))))
+  (let ((new-frames (add-interpreter-frames orig-frames)))
+    (nreverse new-frames)))
 
+(defconstant +interpreted-closure-entry-point+ "core::interpretedClosureEntryPoint")
+(defconstant +interpreted-closure-entry-point-length+ (length +interpreted-closure-entry-point+))
+(defun add-interpreter-frames (frames)
+  (let (new-frames)
+    (dolist (frame frames)
+      (when (backtrace-frame-shadow-frame frame)
+        (when (string= +interpreted-closure-entry-point+ (backtrace-frame-function-name frame)
+                       :start2 0 :end2 +interpreted-closure-entry-point-length+)
+          (let* ((shadow-frame (backtrace-frame-shadow-frame frame))
+                 (interpreted-frame (make-backtrace-frame :type :lisp
+                                                          :return-address nil 
+                                                          :raw-name (core:frame-iterator-function-name shadow-frame)
+                                                          :function-name (core:frame-iterator-function-name shadow-frame)
+                                                          :print-name (core:frame-iterator-function-name shadow-frame)
+                                                          :arguments (core:frame-iterator-arguments shadow-frame))))
+            (push interpreted-frame new-frames))))
+      (push frame new-frames))
+    new-frames))
+
+    
 (defun extract-backtrace-frame-name (line)
   ;; On OS X this is how we get the name part
   (let* ((pos0 (position-if (lambda (c) (char/= c #\space)) line)) ; skip initial whitespace
@@ -157,26 +187,25 @@
 (defun backtrace-with-arguments ()
   (let ((ordered (backtrace-as-list))
         (shadow-backtrace (core:shadow-backtrace-as-list)))
-    (add-call-arguments ordered shadow-backtrace)
-    ordered))
+    (merge-shadow-backtrace ordered shadow-backtrace)))
 
-(defun common-lisp-backtrace-frames (&key verbose (focus t))
-  "Extract the common lisp backtrace frames"
+(defun common-lisp-backtrace-frames (&key verbose (focus t)
+                                       (gather-start-trigger nil))
+  "Extract the common lisp backtrace frames.  Provide a gather-start-trigger function
+that takes one argument (the backtrace-frame-function-name) and returns T it should trigger when to start
+recording backtrace frames for Common Lisp.   Looking for the 'universal_error_handler' string
+is one way to eliminate frames that aren't interesting to the user."
   (let ((frames (backtrace-with-arguments))
         result
-        (state :skip-first-frames)
+        (state (if gather-start-trigger :skip-first-frames :gather))
         new-state)
     (dolist (frame frames)
       (let ((func-name (backtrace-frame-function-name frame)))
         ;; State machine
         (setq new-state (cond
                           ((and (eq state :skip-first-frames)
-                                (search "universal_error_handler" (string (backtrace-frame-function-name frame))))
-                           :gather)
-                          ((and (eq state :skip-first-frames)
-                                (eq (backtrace-frame-function-name frame) 'core:universal-error-handler))
-                           :skip-universal-error-handler)
-                          ((eq state :skip-universal-error-handler)
+                                gather-start-trigger
+                                (funcall gather-start-trigger frame))
                            :gather)
                           (t state)))
         (when verbose
@@ -189,6 +218,7 @@
     (nreverse result)))
       
 (defun btcl ()
+  "Print backtrace of just common lisp frames"
   (let ((l (common-lisp-backtrace-frames)))
     (dolist (e l)
       (let ((name (backtrace-frame-print-name e))
@@ -211,4 +241,20 @@
     (dolist (e l)
           (bformat t "%s\n" (backtrace-frame-function-name e)))))
 
-(export '(btcl bt common-lisp-backtrace-frames))
+(defun btargs ()
+  (let ((l (backtrace-with-arguments)))
+    (bformat t "There are %s frames\n" (length l))
+    (dolist (e l)
+      (let ((name (backtrace-frame-print-name e))
+            (arguments (backtrace-frame-arguments e)))
+        (if arguments
+            (progn
+              (princ name)
+              (dotimes (i (length arguments))
+                (princ #\space)
+                (prin1 (aref arguments i))))
+            (progn
+              (princ name)))
+        (terpri)))))
+
+(export '(btcl bt btargs common-lisp-backtrace-frames))

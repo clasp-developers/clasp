@@ -371,12 +371,12 @@ void describe_apply_method(T_O* func_tagged, int nargs, T_O* arg0_tagged, T_O* a
   printf("        to %d arguments\n", nargs );
   printf("        method_args: %s\n", sarg0.str().c_str());
   if (arg0.valistp()) {
-    dump_VaList_S_ptr(&*arg0);
+    dump_Vaslist_ptr(&*arg0);
   }
   printf("        next_methods: %s\n", _rep_(arg1).c_str() );
   printf("        rest_args: %s\n", srest_args.str().c_str() );
   if (rest_args.valistp()) {
-    dump_VaList_S_ptr(&*rest_args);
+    dump_Vaslist_ptr(&*rest_args);
   }
 }
 #endif
@@ -388,7 +388,7 @@ LCC_RETURN apply_method(T_O* func_tagged, T_O* arg0_tagged, T_O* arg1_tagged, T_
   int lenTotalArgs;
   LIKELY_if (gctools::tagged_valistp(rest_args_tagged)) {
     VaList_sp rest_args_as_VaList_sp((gctools::Tagged)rest_args_tagged);
-    VaList_S va_rest_copy_S(*rest_args_as_VaList_sp);
+    Vaslist va_rest_copy_S(*rest_args_as_VaList_sp);
     VaList_sp va_rest_args(&va_rest_copy_S);
     lenTotalArgs = 2+va_rest_args->remaining_nargs();
 #ifdef DEBUG_APPLY_METHOD
@@ -401,7 +401,7 @@ LCC_RETURN apply_method(T_O* func_tagged, T_O* arg0_tagged, T_O* arg1_tagged, T_
     for (int i(2); i < lenTotalArgs; ++i) {
       (*frame)[i] = va_rest_args->next_arg_raw();
     }
-    VaList_S valist_struct(frame);
+    Vaslist valist_struct(frame);
     VaList_sp valist(&valist_struct); // = frame.setupVaList(valist_struct);;
 #if 0
     printf("%s:%d:%s   func_tagged = %p \n", __FILE__, __LINE__, __FUNCTION__, (void*)func_tagged);
@@ -424,7 +424,7 @@ LCC_RETURN apply_method(T_O* func_tagged, T_O* arg0_tagged, T_O* arg1_tagged, T_
       (*frame)[i] = oCar(list_rest_args).raw_();
       list_rest_args = oCdr(list_rest_args);
     }
-    VaList_S valist_struct(frame);
+    Vaslist valist_struct(frame);
     VaList_sp valist(&valist_struct); // = frame.setupVaList(valist_struct);;
 #if 0
     printf("%s:%d:%s   func_tagged = %p \n", __FILE__, __LINE__, __FUNCTION__, (void*)func_tagged);

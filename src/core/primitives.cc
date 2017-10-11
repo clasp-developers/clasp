@@ -258,6 +258,14 @@ CL_DEFUN T_sp cl__set(Symbol_sp sym, T_sp val) {
   return val;
 };
 
+CL_LAMBDA(sym value cell);
+CL_DECLARE();
+CL_DOCSTRING("Set TLS symbol value, or if unbound there, the cell");
+CL_DEFUN T_sp core__setf_symbol_value_from_cell(Symbol_sp sym, T_sp val, Cons_sp cell) {
+  sym->setf_symbolValueFromCell(val, cell);
+  return val;
+}
+
 CL_LAMBDA(arg &optional msg);
 CL_DECLARE();
 CL_DEFUN T_sp core__print_address_of(T_sp arg, T_sp msg) {
@@ -1290,7 +1298,7 @@ bool test_every_some_notevery_notany(Function_sp predicate, List_sp sequences, b
         } else atend = true;
       }
       if (!atend) {
-        VaList_S valist_struct(frame);
+        Vaslist valist_struct(frame);
         VaList_sp valist(&valist_struct);
         retVal = funcall_consume_valist_<core::Function_O>(predicate.tagged_(),valist);
         if (retVal.isTrue() == elementTest) {
@@ -1361,7 +1369,7 @@ CL_DEFUN T_sp cl__mapcar(T_sp func_desig, List_sp lists) {
         } else atend = true;
       }
       if (!atend) {
-        VaList_S valist_struct(frame);
+        Vaslist valist_struct(frame);
         VaList_sp valist(&valist_struct);
         result << funcall_consume_valist_<core::Function_O>(func.tagged_(),valist);
       }
@@ -1395,7 +1403,7 @@ CL_DEFUN T_sp cl__mapc(T_sp func_desig, List_sp lists) {
         } else atend = true;
       }
       if (!atend) {
-        VaList_S valist_struct(frame);
+        Vaslist valist_struct(frame);
         VaList_sp valist(&valist_struct);
         funcall_consume_valist_<core::Function_O>(func.tagged_(),valist);
       }
@@ -1425,7 +1433,7 @@ CL_DEFUN T_sp cl__maplist(T_sp func_desig, List_sp lists) {
         } else atend = true;
       }
       if (!atend) {
-        VaList_S valist_struct(frame);
+        Vaslist valist_struct(frame);
         VaList_sp valist(&valist_struct);
         result << funcall_consume_valist_<core::Function_O>(func.tagged_(),valist);
       }
@@ -1455,7 +1463,7 @@ CL_DEFUN T_sp cl__mapl(T_sp func_desig, List_sp lists) {
         } else atend = true;
       }
       if (!atend) {
-        VaList_S valist_struct(frame);
+        Vaslist valist_struct(frame);
         VaList_sp valist(&valist_struct);
         funcall_consume_valist_<core::Function_O>(func.tagged_(),valist);
       }
@@ -1972,14 +1980,14 @@ CL_DEFUN InvocationHistoryFrameIterator_sp core__get_invocation_history_frame_ne
 }
 };
 
-extern "C" void tbacktrace();
+extern "C" void c_bt();
 
 namespace core {
 CL_LAMBDA();
 CL_DECLARE();
 CL_DOCSTRING("ihsBacktraceNoArgs");
 CL_DEFUN void core__ihs_backtrace_no_args() {
-  tbacktrace(); // core__ihs_backtrace(_lisp->_true(), _Nil<core::T_O>());
+  c_bt(); // core__ihs_backtrace(_lisp->_true(), _Nil<core::T_O>());
 };
 
 CL_LAMBDA();
@@ -2175,7 +2183,7 @@ CL_DEFUN T_sp core__va_arg(VaList_sp v)
 
 CL_DEFUN List_sp core__list_from_va_list(VaList_sp vorig)
 {
-  VaList_S valist_copy(*vorig);
+  Vaslist valist_copy(*vorig);
   VaList_sp valist(&valist_copy);
 
   ql::list l;

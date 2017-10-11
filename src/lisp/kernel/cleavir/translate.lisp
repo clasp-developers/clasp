@@ -115,9 +115,9 @@ when this is t a lot of graphs will be generated.")
                           function-info
                           lambda-name
                           initial-instruction abi &key (linkage 'llvm-sys:internal-linkage))
-  (let ((return-value (cmp:with-irbuilder (*entry-irbuilder*)
+  (let ((return-value (cmp:with-irbuilder (cmp:*irbuilder-function-alloca*)
                         (alloca-return_type))))
-    (cmp:with-irbuilder (*entry-irbuilder*)
+    (cmp:with-irbuilder (cmp:*irbuilder-function-alloca*)
       ;; in case of a non-local exit, zero out the number of returned values
       (with-return-values (return-values return-value abi)
         (%store (%size_t 0) (number-of-return-values return-values))))
@@ -130,7 +130,7 @@ when this is t a lot of graphs will be generated.")
                               :function-type cmp:%fn-prototype%
                               :form *form*)
         (cmp:with-dbg-lexical-block (*form*)
-          (cmp:dbg-set-current-source-pos-for-irbuilder *entry-irbuilder* cmp:*current-form-lineno*)
+          (cmp:dbg-set-current-source-pos-for-irbuilder cmp:*irbuilder-function-alloca* cmp:*current-form-lineno*)
           (cmp:dbg-set-current-source-pos-for-irbuilder body-irbuilder cmp:*current-form-lineno*)
           (cmp:irc-low-level-trace :arguments)
           #+use-ownerships(loop for var being each hash-key of *ownerships*
@@ -160,7 +160,7 @@ when this is t a lot of graphs will be generated.")
                   (cmp:irc-begin-block (gethash instruction *tags*))
                   (layout-basic-block block return-value abi function-info)))
           ;; finish up by jumping from the entry block to the body block
-          (cmp:with-irbuilder (*entry-irbuilder*)
+          (cmp:with-irbuilder (cmp:*irbuilder-function-alloca*)
             (cmp:irc-low-level-trace :flow)
             (cmp:irc-br body-block))
           (cc-dbg-when *debug-log* (format *debug-log* "----------end layout-procedure ~a~%" (llvm-sys:get-name the-function)))
@@ -205,7 +205,7 @@ when this is t a lot of graphs will be generated.")
            (entry-block (cmp:irc-basic-block-create "entry" the-function))
            (*current-function-entry-basic-block* entry-block)
            (*function-current-multiple-value-array-address* nil)
-           (*entry-irbuilder* (llvm-sys:make-irbuilder cmp:*llvm-context*))
+           (cmp:*irbuilder-function-alloca* (llvm-sys:make-irbuilder cmp:*llvm-context*))
            (body-irbuilder (llvm-sys:make-irbuilder cmp:*llvm-context*))
            (body-block (cmp:irc-basic-block-create "body")))
       (llvm-sys:set-personality-fn the-function (cmp:irc-personality-function))
@@ -229,17 +229,17 @@ when this is t a lot of graphs will be generated.")
       (loop for block in rest-basic-blocks
          for instruction = (first block)
          do (setf (gethash instruction *tags*) (cmp:irc-basic-block-create "tag")))
-      (cmp:irc-set-insert-point-basic-block entry-block *entry-irbuilder*)
+      (cmp:irc-set-insert-point-basic-block entry-block cmp:*irbuilder-function-alloca*)
 ;;; Set up the calling convention here by calling cclasp-setup-calling-convention using the
 ;;; first instruction and the function args
 ;;; From translate-simple-instruction on the enter-instruction
 ;;;               (fn-args (llvm-sys:get-argument-list cmp:*current-function*))
 ;;;               (calling-convention (cclasp-setup-calling-convention fn-args lambda-list NIL #|DEBUG-ON|#)))
 ;;;      Store this info in the function-info
-      (cmp:with-irbuilder (*entry-irbuilder*) ;; body-irbuilder)
+      (cmp:with-irbuilder (cmp:*irbuilder-function-alloca*) ;; body-irbuilder)
         (let* ((fn-args (llvm-sys:get-argument-list cmp:*current-function*))
                (lambda-list (cleavir-ir:lambda-list initial-instruction))
-               (calling-convention (cclasp-setup-calling-convention fn-args lambda-list procedure-has-debug-on #|DEBUG-ON|#)))
+               (calling-convention (cmp:cclasp-setup-calling-convention fn-args lambda-list procedure-has-debug-on #|DEBUG-ON|#)))
           (setf (calling-convention current-function-info) calling-convention)))
       (when needs-cleanup
         ;; This function will need a landing pad - so alloca exn.slot and ehselector.slot
@@ -318,7 +318,7 @@ when this is t a lot of graphs will be generated.")
 (defmethod translate-simple-instruction
     ((instr cleavir-ir:enter-instruction) return-value inputs outputs (abi abi-x86-64) function-info)
   (when (unwind-target function-info)
-    (cmp:with-irbuilder (*entry-irbuilder*)
+    (cmp:with-irbuilder (cmp:*irbuilder-function-alloca*)
       (funcall (on-entry-for-unwind function-info) function-info)))
   (let* ((lambda-list (cleavir-ir:lambda-list instr))
          (closed-env-dest (first outputs))
@@ -333,7 +333,8 @@ when this is t a lot of graphs will be generated.")
       (and (on-entry-for-cleanup function-info) (funcall (on-entry-for-cleanup function-info) function-info))
       (and (on-entry-for-unwind function-info) (funcall (on-entry-for-unwind function-info) function-info))
       (cmp:with-landing-pad (or (landing-pad-for-cleanup function-info) nil)
-        (compile-lambda-list-code lambda-list args calling-convention)))))
+        (cmp:compile-lambda-list-code lambda-list args calling-convention
+                                      :translate-datum #'translate-datum)))))
 
 
 
@@ -375,7 +376,7 @@ when this is t a lot of graphs will be generated.")
   (let ((idx (first inputs)))
     (cmp:irc-low-level-trace :flow)
     (let* ((label (safe-llvm-name (clasp-cleavir-hir:precalc-value-instruction-original-object instruction)))
-           (value (cmp::irc-smart-ptr-extract (%load (%gep-variable (cmp:ltv-global) (list (%size_t 0) idx) label)))))
+           (value (%load (%gep-variable (cmp:ltv-global) (list (%size_t 0) idx) label))))
       (%store value (first outputs)))))
 
 (defmethod translate-simple-instruction

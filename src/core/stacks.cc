@@ -196,7 +196,7 @@ void* InvocationHistoryFrame::register_save_area() const
 SimpleVector_sp InvocationHistoryFrame::arguments() const {
 #if 0
   VaList_sp orig_args = this->valist_sp();
-  VaList_S copy_args_s(*orig_args);
+  Vaslist copy_args_s(*orig_args);
   VaList_sp copy_args(&copy_args_s);
   LCC_RESET_VA_LIST_TO_START(copy_args_s);
   size_t numberOfArguments = LCC_VA_LIST_NUMBER_OF_ARGUMENTS(copy_args);
@@ -378,32 +378,6 @@ void dump_backtrace_n_frames(size_t n) {
 
 namespace core {
 
-#if 0
-void push_InvocationHistoryStack(const InvocationHistoryFrame* frame) {
-#ifdef DEBUG_IHS
-  if (global_debug_ihs) validate_InvocationHistoryStack(1,frame,my_thread->_InvocationHistoryStackTop);
-  void* frame_function_ptr = reinterpret_cast<void*>(gc::As_unsafe<Function_sp>(frame->function())->entry);
-  global_debug_ihs_shadow_stack.push_back(frame_function_ptr);
-  // Keep track of the last closure before things go haywire
-  backtrace(my_thread->_IHSBacktrace,IHS_BACKTRACE_SIZE);
-#endif
-  frame->_Previous = my_thread->_InvocationHistoryStackTop;
-  my_thread->_InvocationHistoryStackTop = frame;
-}
-
-void pop_InvocationHistoryStack(const InvocationHistoryFrame* frame) {
-#ifdef DEBUG_IHS
-  if (global_debug_ihs) validate_InvocationHistoryStack(0,frame,my_thread->_InvocationHistoryStackTop);
-  global_debug_ihs_shadow_stack.pop_back();
-#endif
-  unlikely_if (frame != my_thread->_InvocationHistoryStackTop) error_InvocationHistoryStack(frame,my_thread->_InvocationHistoryStackTop);
-  my_thread->_InvocationHistoryStackTop = my_thread->_InvocationHistoryStackTop->_Previous;
-#ifdef DEBUG_IHS
-  backtrace(my_thread->_IHSBacktrace,IHS_BACKTRACE_SIZE);
-#endif
-};
-#endif
-
 CL_DEFUN void core__dump_debug_ihs_shadow_stack() {
 #ifdef DEBUG_IHS
   printf("global_debug_ihs_shadow_stack\n");
@@ -414,131 +388,6 @@ CL_DEFUN void core__dump_debug_ihs_shadow_stack() {
 }
 
 
-
-
-size_t DynamicBindingStack::new_binding_index()
-{
-#ifdef CLASP_THREADS
-  RAIILock<mp::GlobalMutex> mutex(mp::global_BindingIndexPoolMutex);
-  if ( mp::global_BindingIndexPool.size() != 0 ) {
-    size_t index = mp::global_BindingIndexPool.back();
-    mp::global_BindingIndexPool.pop_back();
-    return index;
-  }
-  return mp::global_LastBindingIndex.fetch_add(1);
-#else
-  return 0;
-#endif
-};
-
-void DynamicBindingStack::release_binding_index(size_t index)
-{
-#ifdef CLASP_THREADS
-  RAIILock<mp::GlobalMutex> mutex(mp::global_BindingIndexPoolMutex);
-  mp::global_BindingIndexPool.push_back(index);
-#endif
-};
-
-T_sp* DynamicBindingStack::reference_raw_(Symbol_O* var) const{
-#ifdef CLASP_THREADS
-  if ( var->_Binding == NO_THREAD_LOCAL_BINDINGS ) {
-    return &var->_GlobalValue;
-  }
-  uintptr_clasp_t index = var->_Binding;
-  // If it has a _Binding value but our table is not big enough, then expand the table.
-  unlikely_if (index >= this->_ThreadLocalBindings.size()) {
-    this->_ThreadLocalBindings.resize(index+1,_NoThreadLocalBinding<T_O>());
-  }
-  if (gctools::tagged_no_thread_local_bindingp(this->_ThreadLocalBindings[index].raw_())) {
-    return &var->_GlobalValue;
-  }
-  return &this->_ThreadLocalBindings[index];
-#else
-  return &var->_GlobalValue;
-#endif
-}
-
-SYMBOL_EXPORT_SC_(CorePkg,STARwatchDynamicBindingStackSTAR);
-void DynamicBindingStack::push_with_value_coming(Symbol_sp var) {
-  T_sp* current_value_ptr = this->reference(var);
-#ifdef CLASP_THREADS
-  if ( var->_Binding == NO_THREAD_LOCAL_BINDINGS )
-    var->_Binding = this->new_binding_index();
-  uintptr_clasp_t index = var->_Binding;
-  // If it has a _Binding value but our table is not big enough, then expand the table.
-  unlikely_if (index >= this->_ThreadLocalBindings.size()) {
-    this->_ThreadLocalBindings.resize(index+1,_NoThreadLocalBinding<T_O>());
-  }
-#ifdef DEBUG_DYNAMIC_BINDING_STACK // debugging
-  if (  _sym_STARwatchDynamicBindingStackSTAR &&
-       _sym_STARwatchDynamicBindingStackSTAR->boundP() &&
-       _sym_STARwatchDynamicBindingStackSTAR->symbolValue().notnilp() ) {
-    printf("%s:%d  DynamicBindingStack::push_with_value_coming[%zu] of %s\n", __FILE__, __LINE__, this->_Bindings.size(), var->formattedName(true).c_str());
-  }
-#endif
-  this->_Bindings.emplace_back(var,this->_ThreadLocalBindings[index]);
-  this->_ThreadLocalBindings[index] = *current_value_ptr;
-#else
-  this->_Bindings.emplace_back(var,var->symbolValueUnsafe());
-#endif
-}
-
-
-void DynamicBindingStack::push_binding(Symbol_sp var, T_sp value) {
-#ifdef CLASP_THREADS
-  if ( var->_Binding == NO_THREAD_LOCAL_BINDINGS )
-    var->_Binding = this->new_binding_index();
-  uintptr_clasp_t index = var->_Binding;
-  // If it has a _Binding value but our table is not big enough, then expand the table.
-  unlikely_if (index >= this->_ThreadLocalBindings.size()) {
-    this->_ThreadLocalBindings.resize(index+1,_NoThreadLocalBinding<T_O>());
-  }
-#ifdef DEBUG_DYNAMIC_BINDING_STACK // debugging
-  if (  _sym_STARwatchDynamicBindingStackSTAR &&
-       _sym_STARwatchDynamicBindingStackSTAR->boundP() &&
-       _sym_STARwatchDynamicBindingStackSTAR->symbolValue().notnilp() ) {
-    printf("%s:%d  DynamicBindingStack::push_binding[%zu] of %s\n", __FILE__, __LINE__, this->_Bindings.size(), var->formattedName(true).c_str());
-  }
-#endif
-  this->_Bindings.emplace_back(var,this->_ThreadLocalBindings[index]);
-  this->_ThreadLocalBindings[index] = value;
-#else
-  this->_Bindings.emplace_back(var,var->symbolValueUnsafe());
-  this->_GlobalValue = value;
-#endif
-}
-
-
-
-void DynamicBindingStack::pop_binding() {
-  DynamicBinding &bind = this->_Bindings.back();
-#ifdef DEBUG_DYNAMIC_BINDING_STACK // debugging
-  if (  _sym_STARwatchDynamicBindingStackSTAR &&
-       _sym_STARwatchDynamicBindingStackSTAR->boundP() &&
-       _sym_STARwatchDynamicBindingStackSTAR->symbolValue().notnilp() ) {
-#if 0
-    List_sp assoc = cl__assoc(bind._Var,_sym_STARwatchDynamicBindingStackSTAR->symbolValue(),_Nil<T_O>());
-    if ( assoc.notnilp() ) {
-      T_sp funcDesig = oCdr(assoc);
-      if ( funcDesig.notnilp() ) {
-        eval::funcall(funcDesig,bind._Var,_Nil<T_O>());
-      } else {
-        printf("%s:%d  *watch-dynamic-binding-stack* caught pop[%zu] of %s  overwriting value = %s\n", __FILE__, __LINE__, this->_Bindings.size()-1, _rep_(bind._Var).c_str(), _rep_(bind._Var->symbolValue()).c_str() );
-      }
-    }
-#endif
-    printf("%s:%d  DynamicBindingStack::pop_binding[%lu]  %s\n", __FILE__, __LINE__, this->_Bindings.size(),bind._Var->formattedName(true).c_str());
-  }
-#endif
-#ifdef CLASP_THREADS
-  ASSERT(this->_ThreadLocalBindings.size()>bind._Var->_Binding); 
-  this->_ThreadLocalBindings[bind._Var->_Binding] = bind._Val;
-  this->_Bindings.pop_back();
-#else
-  bind._Var->setf_symbolValue(bind._Val);
-  this->_Bindings.pop_back();
-#endif
-}
 
 
 }

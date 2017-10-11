@@ -404,7 +404,7 @@ If this form has already been precalculated then just return the precalculated-v
 
 
 (defun find-load-time-value-asts (ast)
-  (let ((table (make-hash-table :test #'eq)))
+  (let ((table (make-hash-table :test #'eq :rehash-size 4.0 :rehash-threshold 1.0)))
     (labels ((traverse (ast parent)
                (declare (core:lambda-name traverse))
 	       (unless (gethash ast table)
@@ -413,7 +413,10 @@ If this form has already been precalculated then just return the precalculated-v
 		     (list (list ast parent))
 		     (let ((children (cleavir-ast:children ast)))
 		       (reduce #'append
-			       (mapcar (lambda (child) (funcall #'traverse child ast)) children)
+			       (mapcar (lambda (child)
+                                         (declare (core:lambda-name traverse.lambda))
+                                         (funcall #'traverse child ast))
+                                       children)
 			       :from-end t))))))
       (traverse ast nil))))
 

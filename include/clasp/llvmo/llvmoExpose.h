@@ -2647,6 +2647,7 @@ public:
     /*        if (this->_ptr != NULL ) delete this->_ptr; */
     this->_ptr = ptr;
   }
+  core::List_sp getArgumentList() const;
   llvm::Function* getCalledFunction();
   CL_DEFMETHOD bool CallInstP() const { return true; };
   CallInst_O() : Base(){};
@@ -3029,6 +3030,7 @@ public:
     /*        if (this->_ptr != NULL ) delete this->_ptr; */
     this->_ptr = ptr;
   }
+  core::List_sp getArgumentList() const;
   llvm::Function* getCalledFunction();
   CL_DEFMETHOD bool InvokeInstP() const { return true; };
   InvokeInst_O() : Base(){};
@@ -4424,7 +4426,7 @@ namespace llvmo {
     core::Pointer_sp findSymbolIn(ModuleHandle_sp handle, const std::string& Name, bool exportedSymbolsOnly );
     bool removeModule(ModuleHandle_sp H);
 
-    std::shared_ptr<llvm::Module> optimizeModule(std::shared_ptr<llvm::Module> M);
+//    std::shared_ptr<llvm::Module> optimizeModule(std::shared_ptr<llvm::Module> M);
   };
 
 };
@@ -4465,6 +4467,7 @@ namespace llvmo {
 
   core::T_sp llvm_sys__lookup_jit_symbol_info(void* ptr);
 
+  std::shared_ptr<llvm::Module> optimizeModule(std::shared_ptr<llvm::Module> M);
 };
 
 

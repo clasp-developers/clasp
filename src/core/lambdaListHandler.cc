@@ -627,7 +627,7 @@ void LambdaListHandler_O::createBindingsInScopeVaList(size_t nargs, VaList_sp va
                                                       DynamicScopeManager &scope) {
   if (UNLIKELY(!this->_CreatesBindings))
     return;
-  VaList_S arglist_struct(*va);
+  Vaslist arglist_struct(*va);
   VaList_sp arglist(&arglist_struct);
   int arg_idx = 0;
   arg_idx = bind_required_va_list(this->_RequiredArguments, nargs, arglist, arg_idx, scope);
@@ -640,7 +640,7 @@ void LambdaListHandler_O::createBindingsInScopeVaList(size_t nargs, VaList_sp va
   }
   if (UNLIKELY(this->_RestArgument.isDefined())) {
     // Make and use a copy of the arglist so that keyword processing can parse the args as well
-    VaList_S copy_arglist(*arglist);
+    Vaslist copy_arglist(*arglist);
     VaList_sp copy_arglist_sp(&copy_arglist);
     bind_rest_va_list(this->_RestArgument, nargs, copy_arglist_sp, arg_idx, scope);
   }

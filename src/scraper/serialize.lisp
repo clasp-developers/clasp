@@ -35,7 +35,7 @@
            class)))))
 
 
-(defmethod print-object ((object standard-object) stream)
+(defmethod print-object ((object tags:tag) stream) ; was standard-object
   (format stream "{ ~s ~s}~%" (type-of object)
       (loop for i in (get-slots object)
          collect (cons i (slot-value object i)))))

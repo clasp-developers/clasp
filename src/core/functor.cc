@@ -270,6 +270,7 @@ void InterpretedClosure_O::setf_lambda_list(List_sp lambda_list) {
 
 LCC_RETURN interpretedClosureEntryPoint(LCC_ARGS_FUNCALL_ELLIPSIS) {
   InterpretedClosure_O* closure = gctools::untag_general<InterpretedClosure_O*>((InterpretedClosure_O*)lcc_closure);
+//  printf("%s:%d    closure name -> %s\n", __FILE__, __LINE__, _rep_(closure->functionName()).c_str());
   INCREMENT_FUNCTION_CALL_COUNTER(closure);
   INITIALIZE_VA_LIST();
   ++global_interpreted_closure_calls;
@@ -278,7 +279,7 @@ LCC_RETURN interpretedClosureEntryPoint(LCC_ARGS_FUNCALL_ELLIPSIS) {
 //  newValueEnvironment->dump();
   ValueEnvironmentDynamicScopeManager scope(newValueEnvironment);
 //#ifdef USE_EXPENSIVE_BACKTRACE
-  INVOCATION_HISTORY_FRAME(); // InvocationHistoryFrame _frame(&lcc_arglist_s._Args);
+  ALWAYS_INVOCATION_HISTORY_FRAME(); // InvocationHistoryFrame _frame(&lcc_arglist_s._Args);
 //#endif
   lambdaListHandler_createBindings(closure->asSmartPtr(), closure->_lambdaListHandler, scope, LCC_PASS_ARGS_LLH);
 //  printf("%s:%d     after lambdaListHandler_createbindings\n", __FILE__, __LINE__);
@@ -320,7 +321,7 @@ LCC_RETURN InstanceClosure_O::LISP_CALLING_CONVENTION() {
 // Copy the arguments passed in registers into the multiple_values array and those
 // will be processed by the generic function
 #ifdef _DEBUG_BUILD
-  VaList_S saved_args(*reinterpret_cast<VaList_S *>(untag_valist(lcc_arglist)));
+  Vaslist saved_args(*reinterpret_cast<Vaslist *>(untag_valist(lcc_arglist)));
 #endif
   VaList_sp gfargs((gc::Tagged)lcc_arglist);
   return (this->entryPoint)(this->instance, gfargs);

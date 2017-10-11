@@ -26,7 +26,7 @@
           *the-module*
           +cons-tag+
           +fixnum-tag+
-          +Valist_S-tag+
+          +vaslist-tag+
           +single-float-tag+
           +character-tag+
           +general-tag+
@@ -57,6 +57,9 @@
           compile-error-if-not-enough-arguments
           compile-in-env
           compile-lambda-function
+          compile-lambda-list-code
+          cclasp-maybe-alloc-cc-setup
+          cclasp-setup-calling-convention
           bclasp-compile-form
           compile-form
           compiler-error
@@ -118,9 +121,14 @@
           with-dbg-lexical-block
           dbg-set-current-source-pos
           dbg-set-current-source-pos-for-irbuilder
+          *irbuilder-function-alloca*
           with-debug-info-generator
           with-irbuilder
           with-landing-pad
+          irc-alloca-vaslist
+          irc-alloca-register-save-area
+          irc-alloca-invocation-history-frame
+          irc-alloca-size_t
           compile-reference-to-literal
           ltv-global
           bclasp-compile
@@ -130,7 +138,7 @@
           +simple-vector._length-offset+
           %uintptr_t%
           %return_type%
-          %VaList_S%
+          %vaslist%
           null-t-ptr
           compile-error-if-wrong-number-of-arguments
           compile-error-if-too-many-arguments

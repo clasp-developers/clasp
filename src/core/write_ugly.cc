@@ -506,8 +506,8 @@ T_sp write_ugly_object(T_sp x, T_sp stream) {
   } else if (x.valistp()) {
     clasp_write_string("#<VA-LIST: ", stream);
     VaList_sp vl = VaList_sp((gc::Tagged)x.raw_());
-    VaList_S valist_scopy(*vl);
-    VaList_sp xa(&valist_scopy); // = gc::smart_ptr<VaList_S>((gc::Tagged)last.raw_());
+    Vaslist valist_scopy(*vl);
+    VaList_sp xa(&valist_scopy); // = gc::smart_ptr<Vaslist>((gc::Tagged)last.raw_());
     ql::list l;
     int nargs = xa->remaining_nargs();
     for (int i(0); i < nargs; ++i) {
